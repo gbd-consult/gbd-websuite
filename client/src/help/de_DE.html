@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hilfe</title>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+<style>
+    * {
+        color: #37474f;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    h1, h2, h3 {
+        font-weight: normal;
+    }
+
+    p, td, th {
+        font-size: 14px;
+        line-height: 120%;
+
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        padding: 5px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    td:last-child {
+        width: 100%;
+    }
+
+    th {
+        text-align: left;
+        background-color: #0086c9;
+        color: white;
+    }
+
+    .note {
+        margin: 10px 0;
+        padding: 5px;
+        background-color: #bbdefb;
+        font-size: 12px;
+    }
+
+</style>
+
+<h1>Kurz-Anleitung der GBD WebSuite</h1>
+
+<p>Die GBD WebSuite ist eine webbasierte Open Source GIS Plattform. Sie beinhaltet den GBD WebSuite Server und GBD WebSuite
+Client und zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus, externe Anwendungen und
+neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen. Die
+Kern-Bibliotheken von Client und Server sind schlank gehalten. Die gesamte Architektur ist Plugin-basiert. Auch die QGIS
+    Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.</p>
+
+<h2>Ausführliche Hilfe für die GBD WebSuite</h2>
+
+<p>Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie hier:
+    <a href="http://gws.gbd-consult.de/docs/index.html">Ausführliche Hilfe der GBD WebSuite</a></p>
+
+<h2>Übersicht der Bedienelemente in der GBD WebSuite</h2>
+
+<h3>Werkzeugleiste</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funktion</th>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path fill="none" d="M0 0h24v24H0z"/>
+                <path d="M9.7117255 15.233967l-2.9032853-2.903286-.9677627.967761 3.871048 3.87105L18.00683 8.8743876l-.967762-.9677622z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            </svg>
+        <td BGCOLOR="#f2f2f2">Bestätigen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M17 15.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            </svg>
+        </td>
+        <td>Abbrechen</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M15 3v4.59L7.59 15H3v6h6v-4.58L16.42 9H21V3m-4 2h2v2h-2M5 17h2v2H5"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Linie messen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M18.556 4.303L4.1 18.76c.078.3.237.572.448.792.22.211.492.37.792.448L19.806 5.543c-.168-.606-.642-1.081-1.25-1.24zm-6.713-.07l-7.814 7.814v2.489L14.332 4.233h-2.489zm-6.055 0c-.967 0-1.76.792-1.76 1.759v1.76l3.52-3.52h-1.76zm12.32 15.838c.484 0 .924-.194 1.24-.52.326-.316.52-.756.52-1.24v-1.76l-3.52 3.52h1.76zm-8.544 0h2.49l7.814-7.814V9.768L9.564 20.071z"/>
+                <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+            </svg>
+        </td>
+        <td>Fläche messen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                <path d="M18.227771 4.6687299L4.4584103 18.150455c.09.34.8093188.793818 1.0493188 1.043818.25.24.3802272.09641.720227.186409L19.71968 6.1146845c-.19-.69-.801909-1.2659546-1.491909-1.4459546zm-6.335635-1.626047L3.0121362 11.922683v2.83L14.722136 3.0426829zM9.3021362 21.042683h2.8299998l8.88-8.88V9.3326829z"/>
+            </svg>
+        </td>
+        <td>Kreis messen</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Drucken</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Objektidentifikation</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M13 1.07V9h7c0-4.08-3.05-7.44-7-7.93zM4 15c0 4.42 3.58 8 8 8s8-3.58 8-8v-4H4v4zm7-13.93C7.05 1.56 4 4.92 4 9h7V1.07z"/>
+            </svg>
+        </td>
+        <td>Kartenhinweis anzeigen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Weiter</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+                <path fill="none" d="M0 0h24v24H0V0z"/>
+            </svg>
+        </td>
+        <td>Zurück</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/>
+                <path fill="none" d="M0 0h24v24H0z"/>
+            </svg>
+        </td>
+        <td>Löschen</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M9.964 12l-4.58 4.59L6.794 18l6-6-6-6-1.41 1.41L9.964 12z"/>
+                <path d="M17.129 12l-4.578 4.59L13.959 18l6-6-6-6-1.408 1.41L17.129 12z"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Untermenü schließen</td>
+    </tr>
+</table>
+
+<div class="note">
+    Mehr über die einzelnen Funktionen finden sie unter:
+    <a href="http://gws.gbd-consult.de/docs/books/client-user/de/toolbox/mapfunction.html">Werkzeugleiste</a>
+</div>
+
+<h3>Menü</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funktion</th>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+            </svg>
+        </td>
+        <td>Menü ausklappen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Menü einklappen</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Übersicht</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Layer</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Unterlayer aufklappen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            </svg>
+        </td>
+        <td>Layer anzeigen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"/>
+                <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+            </svg>
+        </td>
+        <td>Layer ausschalten</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24">
+                <defs>
+                    <path id="a" d="M0 0h24v24H0z"/>
+                </defs>
+                <clipPath id="b">
+                    <use xlink:href="#a" overflow="visible"/>
+                </clipPath>
+                <path clip-path="url(#b)"
+                      d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/>
+                <path clip-path="url(#b)" fill="none" d="M0 0h24v24H0z"/>
+            </svg>
+        </td>
+        <td>Auf den Layer zoomen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"/>
+                <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+            </svg>
+        </td>
+        <td>Andere Layer verbergen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Layerdetails schließen</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h2v4h2V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Messen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Suche</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path fill="none" d="M0 0h24v24H0V0z"/>
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/>
+                <path fill="none" d="M0 0h24v24H0z"/>
+            </svg>
+        </td>
+        <td>Entfernen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Schließen</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Flurstückssuche</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+                <circle cx="12.5" cy="60.5" r="4"/>
+            </svg>
+        </td>
+        <td>Flurstücksauswahl per Klick</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+                <circle cx="19.104" cy="54.46" r="3"/>
+                <circle cx="6.461" cy="66.606" r="3"/>
+                <path d="M6.1000083 65.4031493L17.5005816 54.002576l1.8115902 1.8115902L7.9115985 67.2147395z"/>
+            </svg>
+        </td>
+        <td>Flurstücksauswahl per Linie</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+                <circle cx="19.104" cy="54.46" r="3"/>
+                <circle cx="6.296" cy="54.295" r="3"/>
+                <circle cx="18.773" cy="66.358" r="3"/>
+                <circle cx="6.461" cy="66.606" r="3"/>
+                <path d="M5.063 52.548h2.562V68.67H5.063zM17.706 52.465h2.562v16.122h-2.562z"/>
+                <path d="M4.978 52.801H21.1v2.562H4.978zM5.061 65.443h16.122v2.562H5.061z"/>
+            </svg>
+        </td>
+        <td>Flurstücksauswahl per Fläche</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+                <circle cx="12.5" cy="60.5" r="3"/>
+                <path d="M12.5 51.5c-4.975 0-9 4.031-9 9s4.025 9 9 9c4.966 0 9-4.031 9-9s-4.034-9-9-9zm0 15.687c-3.696 0-6.687-2.995-6.687-6.687s2.99-6.687 6.687-6.687c3.689 0 6.687 2.995 6.687 6.687s-2.998 6.687-6.687 6.687z"/>
+            </svg>
+        </td>
+        <td>Flurstücksauswahl per Kreis</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Flurstücksauswahl abbrechen</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Anmelden</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Suche</td>
+    </tr>
+</table>
+
+<div class="note">
+    Mehr über die einzelnen Funktionen finden sie unter: <a
+        href="http://gws.gbd-consult.de/docs/books/client-user/de/menu/menu.html">Menü</a>
+</div>
+
+<h3>Statusleiste</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funktion</th>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Vergrößern</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 13H5v-2h14v2z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Verkleinern</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Ganzes Projekt anzeigen</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <defs>
+                    <path d="M0 0h24v24H0V0z" id="a"/>
+                </defs>
+                <path d="M18.81391574 16.96138371h-.79l-.28-.27-.7.7.27.28v.79l5 4.99 1.49-1.49z"/>
+                <path d="M.00883074.06307871h24v24h-24z" fill="none"/>
+                <path d="M16.86752574 16.25726171H4.02248224V4.09345301h12.8450435z" fill="none" stroke="#000"
+                      stroke-width="2.16100001" stroke-linecap="square" stroke-miterlimit="3"
+                      stroke-dasharray="2.16100001,4.32200003" stroke-dashoffset="1.57753003"/>
+            </svg>
+        </td>
+        <td>Zoomrechteck aufziehen</td>
+    </tr>
+</table>
+
+<div class="note">
+    Mehr über die einzelnen Funktionen finden sie unter: <a
+        href="http://gws.gbd-consult.de/docs/books/client-user/de/sidebar/sidebar.html">Statusleiste</a>
+</div>
+
+<p><small>
+    &copy; Copyright 2018, Geoinformatikbüro Dassau GmbH.
+</small></p>
+
+</body>
+</html>

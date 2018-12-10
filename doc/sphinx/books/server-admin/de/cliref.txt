@@ -1,0 +1,211 @@
+
+.. _server_admin_de_cliref_alkis_index:
+
+Alkis Index
+~~~~~~~~~~~
+
+
+Erstellen Sie einen internen ALKIS-Suchindex für ein Projekt. 
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--force``~, ~force creating indexes~
+   ~``--project``~, ~project unique ID~
+
+.. _server_admin_en_cliref_alkis_parse:
+
+Alkis Parse
+~~~~~~~~~~~
+
+
+Vorverarbeitung der NAS-Datenmodelldateien. 
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--path``~, ~path to the NAS zip archive~
+
+.. _server_admin_en_cliref_auth_clear:
+
+Auth clear
+~~~~~~~~~~
+
+
+Logo ut all users and remove all active sessions.
+
+.. _server_admin_en_cliref_auth_passwd:
+
+auth passwd
+~~~~~~~~~~~
+
+
+Kodieren Sie ein Passwort für die Autorisierungsdatei. 
+
+.. _server_admin_en_cliref_auth_test:
+
+auth test
+~~~~~~~~~
+
+
+Interaktives Testen einer Anmeldung. 
+
+.. _server_admin_en_cliref_cache_drop:
+
+cache drop
+~~~~~~~~~~
+
+
+Drop the caches.
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--layers``~, ~comma separated list of layer IDs~
+
+.. _server_admin_en_cliref_cache_seed:
+
+cache seed
+~~~~~~~~~~
+
+
+Starten Sie den Cache-Seeding-Prozess. 
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--layers``~, ~comma separated list of layer IDs~
+   ~``--level``~, ~zoom level to build the cache for~
+
+.. _server_admin_en_cliref_cache_status:
+
+cache status
+~~~~~~~~~~~~
+
+
+Zeigen Sie den Cache-Status an. 
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--layers``~, ~comma separated list of layer IDs~
+
+.. _server_admin_en_cliref_cache_updateweb:
+
+cache updateweb
+~~~~~~~~~~~~~~~
+
+
+Aktualisieren Sie den vorderen (Web-)Cache aus dem hinteren Cache.
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--layers``~, ~comma separated list of layer IDs~
+
+.. _server_admin_en_cliref_config_dump:
+
+config dump
+~~~~~~~~~~~
+
+
+Dump den Konfigurationsbaum. 
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--depth``~, ~max depth~
+   ~``--full``~, ~dump all values~
+   ~``--path``~, ~configuration file path~
+
+.. _server_admin_en_cliref_config_test:
+
+config test
+~~~~~~~~~~~
+
+
+Run a configuration file test.
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--path``~, ~configuration file path~
+
+.. _server_admin_en_cliref_qgis_dump:
+
+QGIS dump
+~~~~~~~~~
+
+
+Dump die Struktur eines QGIS Projekts. 
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--map``~, ~path to qgis project file~
+
+.. _server_admin_en_cliref_server_configure:
+
+Serverkonfiguration
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Konfigurieren Sie den Server. 
+
+.. _server_admin_en_cliref_server_reload:
+
+Server reload
+~~~~~~~~~~~~~~~~~
+
+Konfigurieren Sie den Server neu und laden Sie ihn neu. 
+
+.. _server_admin_en_cliref_server_reset:
+
+Server reset
+~~~~~~~~~~~~
+
+
+Laden Sie den Server neu, ohne ihn neu zu konfigurieren. 
+
+.. _server_admin_en_cliref_server_start:
+
+Server starten
+~~~~~~~~~~~~~~~~
+
+
+Starten Sie den GBD WebSuite Server. 
+
+.. _server_admin_en_cliref_server_stop:
+
+Server stoppen
+~~~~~~~~~~~~~~~
+
+
+Stoppen Sie den GBD WebSuite Server.

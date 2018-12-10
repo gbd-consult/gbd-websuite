@@ -1,0 +1,1797 @@
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``crsref``~, ~CRS code like "EPSG:3857"~
+   ~``dirpath``~, ~valid readable directory path on the server~
+   ~``duration``~, ~string like "1w 2d 3h 4m 5s" or an int number of seconds~
+   ~``filepath``~, ~valid readable file path on the server~
+   ~``formatstr``~, ~string with {attribute} placeholders~
+   ~``regex``~, ~regular expression, as used in Python~
+   ~``url``~, ~http or https URL~
+
+
+.. _server_admin_en_configref_gws_common_application_Config:
+
+ApplicationConfig
+-----------------
+
+
+main gws application configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~default access mode~, ~no~, ~~
+   ~*actions*~, ~[:ref:`server_admin_en_configref_gws_types_ext_action_Config`...]~, ~available server actions~, ~no~, ~~
+   ~*auth*~, ~:ref:`server_admin_en_configref_gws_auth_types_Config`~, ~authorization methods and options~, ~no~, ~~
+   ~*client*~, ~:ref:`server_admin_en_configref_gws_common_client_Config`~, ~gws client configuration~, ~no~, ~~
+   ~*db*~, ~:ref:`server_admin_en_configref_gws_common_application_DbConfig`~, ~database configuration~, ~no~, ~~
+   ~*fonts*~, ~``dirpath``~, ~directory with the custom fonts~, ~no~, ~~
+   ~*locale*~, ~``str``~, ~default locale for all projects~, ~no~, ~"en_CA"~
+   ~*projectDirs*~, ~[``dirpath``...]~, ~directories with additional projects~, ~no~, ~~
+   ~*projectPaths*~, ~[``filepath``...]~, ~additional project paths~, ~no~, ~~
+   ~*projects*~, ~[:ref:`server_admin_en_configref_gws_common_project_Config`...]~, ~project configurations~, ~no~, ~~
+   ~*seeding*~, ~:ref:`server_admin_en_configref_gws_common_application_SeedingConfig`~, ~configuration for seeding jobs~, ~no~, ~~
+   ~*server*~, ~:ref:`server_admin_en_configref_gws_server_types_Config`~, ~server engine options~, ~no~, ~~
+   ~*timeZone*~, ~``str``~, ~timezone for this server~, ~no~, ~"UTC"~
+   ~*web*~, ~:ref:`server_admin_en_configref_gws_web_types_Config`~, ~webserver configuration~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_types_AccessRuleConfig:
+
+AccessRuleConfig
+----------------
+
+
+access rights definition for authorization roles
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*mode*~, ~[:ref:`server_admin_en_configref_gws_types_AccessMode`...]~, ~access mode~, ~no~, ~["read", "write", "execute"]~
+   ~*role*~, ~[``str``...]~, ~list of roles to which this rule applies~, ~yes~, ~~
+   ~*type*~, ~:ref:`server_admin_en_configref_gws_types_AccessType`~, ~access type (deny or allow)~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_alkis_Config:
+
+ActionAlkisConfig
+-----------------
+
+
+Flurstückssuche (cadaster parlcels search) action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*dataSchema*~, ~``str``~, ~schema where ALKIS tables are stored, must be readable~, ~no~, ~"public"~
+   ~*db*~, ~``str``~, ~database (postgis) provider ID~, ~no~, ~~
+   ~*eigentuemer*~, ~:ref:`server_admin_en_configref_gws_ext_action_alkis_EigentuemerConfig`~, ~access to the Eigentümer (eigentuemer) information~, ~no~, ~~
+   ~*excludeGemarkung*~, ~[``str``...]~, ~Gemarkung (AU) IDs to exclude from search~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~template for on-screen Flurstueck details~, ~no~, ~~
+   ~*grundbuch*~, ~:ref:`server_admin_en_configref_gws_ext_action_alkis_GrundbuchConfig`~, ~access to the Grundbuch (register) information~, ~no~, ~~
+   ~*indexSchema*~, ~``str``~, ~schema to store gws internal indexes, must be writable~, ~no~, ~"gws"~
+   ~*limit*~, ~``int``~, ~search results limit~, ~no~, ~100~
+   ~*printTemplate*~, ~:ref:`server_admin_en_configref_gws_types_ext_template_Config`~, ~template for printed Flurstueck details~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"alkis"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_alkis_EigentuemerConfig:
+
+ActionAlkisEigentuemerConfig
+----------------------------
+
+
+access to the Eigentümer (eigentuemer) information
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~yes~, ~~
+   ~*controlMode*~, ~``bool``~, ~restricted mode enabled~, ~no~, ~false~
+   ~*controlRules*~, ~[``str``...]~, ~list of regular expression for the restricted input control~, ~no~, ~~
+   ~*logTable*~, ~``str``~, ~data access protocol table name~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_alkis_GrundbuchConfig:
+
+ActionAlkisGrundbuchConfig
+--------------------------
+
+
+access to the Grundbuch (register) information
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_asset_Config:
+
+ActionAssetConfig
+-----------------
+
+
+asset (dynamic html) action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"asset"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_auth_Config:
+
+ActionAuthConfig
+----------------
+
+
+authorization action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"auth"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_edit_Config:
+
+ActionEditConfig
+----------------
+
+
+feature edit action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"edit"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_map_Config:
+
+ActionMapConfig
+---------------
+
+
+map rendering action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"map"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_printer_Config:
+
+ActionPrinterConfig
+-------------------
+
+
+print action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"printer"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_project_Config:
+
+ActionProjectConfig
+-------------------
+
+
+project action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"project"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_remoteadmin_Config:
+
+ActionRemoteadminConfig
+-----------------------
+
+
+remote administrator action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"remoteadmin"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_action_search_Config:
+
+ActionSearchConfig
+------------------
+
+
+search action
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*limit*~, ~``int``~, ~search results limit~, ~no~, ~1000~
+   ~*pixelTolerance*~, ~``int``~, ~pixel tolerance for geometry searches~, ~no~, ~5~
+   ~*type*~, ~``str``~, ~"search"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_common_application_DbConfig:
+
+ApplicationDbConfig
+-------------------
+
+
+database configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*providers*~, ~[:ref:`server_admin_en_configref_gws_types_ext_db_provider_Config`...]~, ~~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_common_application_SeedingConfig:
+
+ApplicationSeedingConfig
+------------------------
+
+
+seeding options
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*concurrency*~, ~``int``~, ~number of concurrent seeding jobs~, ~no~, ~1~
+   ~*maxTime*~, ~``duration``~, ~max. time for a seeding job~, ~no~, ~600~
+
+.. _server_admin_en_configref_gws_types_AttributeConfig:
+
+AttributeConfig
+---------------
+
+
+attribute configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*name*~, ~``str``~, ~internal name~, ~no~, ~~
+   ~*title*~, ~``str``~, ~title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~type~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_auth_types_Config:
+
+AuthConfig
+----------
+
+
+authentication and authorization options
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*cookie*~, ~:ref:`server_admin_en_configref_gws_auth_types_CookieConfig`~, ~session cookie parameters~, ~no~, ~~
+   ~*httpEnabled*~, ~``bool``~, ~http authorization enabled~, ~no~, ~true~
+   ~*httpsOnly*~, ~``bool``~, ~http authorization via ssl only~, ~no~, ~false~
+   ~*providers*~, ~[:ref:`server_admin_en_configref_gws_types_ext_auth_provider_Config`...]~, ~authorization providers~, ~yes~, ~~
+   ~*session*~, ~:ref:`server_admin_en_configref_gws_auth_types_SessionConfig`~, ~session configuration~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_auth_types_CookieConfig:
+
+AuthCookieConfig
+----------------
+
+
+session cookie parameters
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*name*~, ~``str``~, ~name for the cookie~, ~no~, ~"auth"~
+   ~*path*~, ~``str``~, ~cookie path~, ~no~, ~"/"~
+
+.. _server_admin_en_configref_gws_ext_auth_provider_file_Config:
+
+AuthProviderFileConfig
+----------------------
+
+
+file-based authorization provider
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*path*~, ~``filepath``~, ~path to the users json file~, ~yes~, ~~
+   ~*type*~, ~``str``~, ~"file"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_auth_provider_ldap_Config:
+
+AuthProviderLdapConfig
+----------------------
+
+
+LDAP authorization provider
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*activeDirectory*~, ~``bool``~, ~true if the LDAP server is ActiveDirectory~, ~no~, ~true~
+   ~*bindDN*~, ~``str``~, ~bind DN~, ~yes~, ~~
+   ~*bindPassword*~, ~``str``~, ~bind password~, ~yes~, ~~
+   ~*displayNameFormat*~, ~``formatstr``~, ~format for user's display name~, ~no~, ~"{dn}"~
+   ~*roles*~, ~[:ref:`server_admin_en_configref_gws_ext_auth_provider_ldap_RoleSpec`...]~, ~map LDAP filters to roles~, ~yes~, ~~
+   ~*timeout*~, ~``duration``~, ~LDAP server timeout~, ~no~, ~30~
+   ~*type*~, ~``str``~, ~"ldap"~, ~yes~, ~~
+   ~*url*~, ~``str``~, ~LDAP server url "ldap://host:port/baseDN?searchAttribute"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_auth_provider_ldap_RoleSpec:
+
+AuthProviderLdapRoleSpec
+------------------------
+
+
+map authorization roles to LDAP filters
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*matches*~, ~``str``~, ~LDAP filter the account has to match~, ~no~, ~~
+   ~*memberOf*~, ~``str``~, ~LDAP group the account has to be a member of~, ~no~, ~~
+   ~*role*~, ~``str``~, ~gws role name~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_auth_types_SessionConfig:
+
+AuthSessionConfig
+-----------------
+
+
+session configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*heartBeat*~, ~``bool``~, ~refresh sessions automatically~, ~no~, ~false~
+   ~*lifeTime*~, ~``duration``~, ~session life time~, ~no~, ~1200~
+   ~*storage*~, ~``str``~, ~session storage engine~, ~no~, ~"sqlite"~
+
+.. _server_admin_en_configref_gws_types_CacheConfig:
+
+CacheConfig
+-----------
+
+
+map cache configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*enabled*~, ~``bool``~, ~cache is enabled~, ~no~, ~false~
+   ~*maxAge*~, ~``duration``~, ~cache max. age~, ~no~, ~"1d"~
+   ~*maxLevel*~, ~``int``~, ~max. zoom level to cache~, ~no~, ~1~
+   ~*options*~, ~``dict``~, ~additional MapProxy cache options~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_common_client_Config:
+
+ClientConfig
+------------
+
+
+client UI element
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*elements*~, ~[:ref:`server_admin_en_configref_gws_common_client_Config`...]~, ~child elements of this element~, ~no~, ~~
+   ~*options*~, ~``dict``~, ~options for this element~, ~no~, ~~
+   ~*tag*~, ~``str``~, ~element tag~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_db_provider_postgis_Config:
+
+DbProviderPostgisConfig
+-----------------------
+
+
+Postgis database provider
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*database*~, ~``str``~, ~database name~, ~no~, ~~
+   ~*host*~, ~``str``~, ~database host~, ~no~, ~"localhost"~
+   ~*password*~, ~``str``~, ~password~, ~yes~, ~~
+   ~*port*~, ~``int``~, ~database port~, ~no~, ~5432~
+   ~*timeout*~, ~``duration``~, ~query timeout~, ~no~, ~0~
+   ~*type*~, ~``str``~, ~"postgis"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~unique id~, ~yes~, ~~
+   ~*user*~, ~``str``~, ~username~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_types_DocumentRootConfig:
+
+DocumentRootConfig
+------------------
+
+
+assets base directory configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*allowMime*~, ~[``str``...]~, ~allowed mime types~, ~no~, ~~
+   ~*denyMime*~, ~[``str``...]~, ~disallowed mime types (from the standard list)~, ~no~, ~~
+   ~*dir*~, ~``dirpath``~, ~directory path~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_types_FormatConfig:
+
+FormatConfig
+------------
+
+
+feature format
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*category*~, ~``formatstr``~, ~feature category~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for feature descriptions~, ~no~, ~~
+   ~*label*~, ~``formatstr``~, ~feature label on the map~, ~no~, ~~
+   ~*model*~, ~``dict``~, ~attribute transformation rules~, ~no~, ~~
+   ~*teaser*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for feature teasers (short descriptions)~, ~no~, ~~
+   ~*title*~, ~``formatstr``~, ~feature title~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_types_GridConfig:
+
+GridConfig
+----------
+
+
+grid configuration for tiled or cached map data
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*metaBuffer*~, ~``int``~, ~pixel buffer~, ~no~, ~200~
+   ~*metaSize*~, ~``int``~, ~number of meta-tiles to fetch~, ~no~, ~4~
+   ~*options*~, ~``dict``~, ~additional MapProxy grid options~, ~no~, ~~
+   ~*origin*~, ~``str``~, ~position of the first tile (nw or sw)~, ~no~, ~"nw"~
+   ~*tileSize*~, ~``int``~, ~tile size~, ~no~, ~256~
+
+.. _server_admin_en_configref_gws_ext_gis_layer_box_Config:
+
+LayerBoxConfig
+--------------
+
+
+box layer
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~cache configuration~, ~no~, ~~
+   ~*clientOptions*~, ~:ref:`server_admin_en_configref_gws_gis_layer_ClientOptions`~, ~options for the layer display in the client~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the layer description~, ~no~, ~~
+   ~*editable*~, ~``bool``~, ~this layer is editable~, ~no~, ~false~
+   ~*extent*~, ~``float4``~, ~layer extent~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~grid configuration~, ~no~, ~~
+   ~*legend*~, ~``url``~, ~legend url~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
+   ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
+   ~*source*~, ~:ref:`server_admin_en_configref_gws_types_ext_gis_source_Config`~, ~data source for the layer~, ~no~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_en_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~no~, ~~
+   ~*title*~, ~``str``~, ~layer title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"box"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~layer unique id~, ~no~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~layer resolutions and scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_gis_layer_ClientOptions:
+
+LayerClientOptions
+------------------
+
+
+client options for a layer
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*exclusive*~, ~``bool``~, ~only one of this layer's children is visible at a time~, ~no~, ~false~
+   ~*expanded*~, ~``bool``~, ~the layer is expanded in the list view~, ~no~, ~false~
+   ~*listed*~, ~``bool``~, ~the layer is displayed in this list view~, ~no~, ~true~
+   ~*selected*~, ~``bool``~, ~the layer is intially selected~, ~no~, ~false~
+   ~*unfolded*~, ~``bool``~, ~the layer is not listed, but its children are~, ~no~, ~false~
+   ~*visible*~, ~``bool``~, ~the layer is intially visible~, ~no~, ~true~
+
+.. _server_admin_en_configref_gws_ext_gis_layer_group_Config:
+
+LayerGroupConfig
+----------------
+
+
+group layer
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~cache configuration~, ~no~, ~~
+   ~*clientOptions*~, ~:ref:`server_admin_en_configref_gws_gis_layer_ClientOptions`~, ~options for the layer display in the client~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the layer description~, ~no~, ~~
+   ~*editable*~, ~``bool``~, ~this layer is editable~, ~no~, ~false~
+   ~*extent*~, ~``float4``~, ~layer extent~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~grid configuration~, ~no~, ~~
+   ~*layers*~, ~[:ref:`server_admin_en_configref_gws_types_ext_gis_layer_Config`...]~, ~layers in this group~, ~yes~, ~~
+   ~*legend*~, ~``url``~, ~legend url~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
+   ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
+   ~*source*~, ~:ref:`server_admin_en_configref_gws_types_ext_gis_source_Config`~, ~data source for the layer~, ~no~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_en_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~no~, ~~
+   ~*title*~, ~``str``~, ~layer title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"group"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~layer unique id~, ~no~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~layer resolutions and scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_layer_leaf_Config:
+
+LayerLeafConfig
+---------------
+
+
+leaf layer
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~cache configuration~, ~no~, ~~
+   ~*clientOptions*~, ~:ref:`server_admin_en_configref_gws_gis_layer_ClientOptions`~, ~options for the layer display in the client~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the layer description~, ~no~, ~~
+   ~*editable*~, ~``bool``~, ~this layer is editable~, ~no~, ~false~
+   ~*extent*~, ~``float4``~, ~layer extent~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~grid configuration~, ~no~, ~~
+   ~*legend*~, ~``url``~, ~legend url~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
+   ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
+   ~*source*~, ~:ref:`server_admin_en_configref_gws_types_ext_gis_source_Config`~, ~data source for the layer~, ~no~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_en_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~no~, ~~
+   ~*title*~, ~``str``~, ~layer title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"leaf"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~layer unique id~, ~no~, ~~
+   ~*wmsName*~, ~``str``~, ~this layer ID in the WMS service~, ~yes~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~layer resolutions and scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_layer_osm_Config:
+
+LayerOsmConfig
+--------------
+
+
+
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~cache configuration~, ~no~, ~~
+   ~*clientOptions*~, ~:ref:`server_admin_en_configref_gws_gis_layer_ClientOptions`~, ~options for the layer display in the client~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the layer description~, ~no~, ~~
+   ~*editable*~, ~``bool``~, ~this layer is editable~, ~no~, ~false~
+   ~*extent*~, ~``float4``~, ~layer extent~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~grid configuration~, ~no~, ~~
+   ~*legend*~, ~``url``~, ~legend url~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
+   ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
+   ~*source*~, ~:ref:`server_admin_en_configref_gws_types_ext_gis_source_Config`~, ~data source for the layer~, ~no~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_en_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~no~, ~~
+   ~*title*~, ~``str``~, ~layer title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"osm"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~layer unique id~, ~no~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~layer resolutions and scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_layer_qgis_Config:
+
+LayerQgisConfig
+---------------
+
+
+automatic QGIS layer
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~cache configuration~, ~no~, ~~
+   ~*clientOptions*~, ~:ref:`server_admin_en_configref_gws_gis_layer_ClientOptions`~, ~options for the layer display in the client~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the layer description~, ~no~, ~~
+   ~*directRender*~, ~[``str``...]~, ~QGIS providers that should be rendered directly~, ~no~, ~~
+   ~*directSearch*~, ~[``str``...]~, ~QGIS providers that should be searched directly~, ~no~, ~~
+   ~*editable*~, ~``bool``~, ~this layer is editable~, ~no~, ~false~
+   ~*extent*~, ~``float4``~, ~layer extent~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~grid configuration~, ~no~, ~~
+   ~*legend*~, ~``url``~, ~legend url~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
+   ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~~
+   ~*path*~, ~``filepath``~, ~path to a qgs project file~, ~yes~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
+   ~*source*~, ~:ref:`server_admin_en_configref_gws_types_ext_gis_source_Config`~, ~data source for the layer~, ~no~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_en_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~no~, ~~
+   ~*title*~, ~``str``~, ~layer title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"qgis"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~layer unique id~, ~no~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~layer resolutions and scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_layer_tile_Config:
+
+LayerTileConfig
+---------------
+
+
+tile layer
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~cache configuration~, ~no~, ~~
+   ~*clientOptions*~, ~:ref:`server_admin_en_configref_gws_gis_layer_ClientOptions`~, ~options for the layer display in the client~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the layer description~, ~no~, ~~
+   ~*editable*~, ~``bool``~, ~this layer is editable~, ~no~, ~false~
+   ~*extent*~, ~``float4``~, ~layer extent~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~grid configuration~, ~no~, ~~
+   ~*legend*~, ~``url``~, ~legend url~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
+   ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
+   ~*source*~, ~:ref:`server_admin_en_configref_gws_types_ext_gis_source_Config`~, ~data source for the layer~, ~no~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_en_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~no~, ~~
+   ~*title*~, ~``str``~, ~layer title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"tile"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~layer unique id~, ~no~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~layer resolutions and scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_layer_tree_Config:
+
+LayerTreeConfig
+---------------
+
+
+tree layer
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~cache configuration~, ~no~, ~~
+   ~*clientOptions*~, ~:ref:`server_admin_en_configref_gws_gis_layer_ClientOptions`~, ~options for the layer display in the client~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the layer description~, ~no~, ~~
+   ~*editable*~, ~``bool``~, ~this layer is editable~, ~no~, ~false~
+   ~*extent*~, ~``float4``~, ~layer extent~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~grid configuration~, ~no~, ~~
+   ~*legend*~, ~``url``~, ~legend url~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
+   ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
+   ~*source*~, ~:ref:`server_admin_en_configref_gws_types_ext_gis_source_Config`~, ~data source for the layer~, ~no~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_en_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~no~, ~~
+   ~*title*~, ~``str``~, ~layer title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"tree"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~layer unique id~, ~no~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~layer resolutions and scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_layer_vector_Config:
+
+LayerVectorConfig
+-----------------
+
+
+vector layer
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~cache configuration~, ~no~, ~~
+   ~*clientOptions*~, ~:ref:`server_admin_en_configref_gws_gis_layer_ClientOptions`~, ~options for the layer display in the client~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the layer description~, ~no~, ~~
+   ~*editStyle*~, ~:ref:`server_admin_en_configref_gws_types_StyleProps`~, ~style for features being edited~, ~no~, ~~
+   ~*editable*~, ~``bool``~, ~this layer is editable~, ~no~, ~false~
+   ~*extent*~, ~``float4``~, ~layer extent~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~grid configuration~, ~no~, ~~
+   ~*legend*~, ~``url``~, ~legend url~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
+   ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
+   ~*source*~, ~:ref:`server_admin_en_configref_gws_types_ext_gis_source_Config`~, ~data source for the layer~, ~no~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_en_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~no~, ~~
+   ~*style*~, ~:ref:`server_admin_en_configref_gws_types_StyleProps`~, ~style for features~, ~no~, ~~
+   ~*title*~, ~``str``~, ~layer title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"vector"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~layer unique id~, ~no~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~layer resolutions and scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_common_map_Config:
+
+MapConfig
+---------
+
+
+map configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*cache*~, ~:ref:`server_admin_en_configref_gws_types_CacheConfig`~, ~default cache~, ~no~, ~~
+   ~*center*~, ~``float2``~, ~map center~, ~no~, ~~
+   ~*crs*~, ~``crsref``~, ~crs for this map~, ~no~, ~"EPSG:3857"~
+   ~*extent*~, ~``float4``~, ~map extent~, ~yes~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~default grid configuration~, ~no~, ~~
+   ~*layers*~, ~[:ref:`server_admin_en_configref_gws_types_ext_gis_layer_Config`...]~, ~collection of layers for this map~, ~yes~, ~~
+   ~*title*~, ~``str``~, ~map title~, ~no~, ~~
+   ~*uid*~, ~``str``~, ~unique id~, ~no~, ~~
+   ~*zoom*~, ~:ref:`server_admin_en_configref_gws_gis_zoom_Config`~, ~map scales and resolutions~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_types_MetaConfig:
+
+MetaConfig
+----------
+
+
+object metadata configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*abstract*~, ~``str``~, ~object abstract description~, ~no~, ~~
+   ~*attribution*~, ~``str``~, ~attribution (copyright) string~, ~no~, ~~
+   ~*image*~, ~``url``~, ~image (logo) url~, ~no~, ~~
+   ~*images*~, ~``dict``~, ~further images~, ~no~, ~~
+   ~*keywords*~, ~[``str``...]~, ~keywords~, ~no~, ~[]~
+   ~*name*~, ~``str``~, ~object internal name~, ~no~, ~~
+   ~*title*~, ~``str``~, ~object title~, ~no~, ~~
+   ~*url*~, ~``url``~, ~object metadata url~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_common_printer_Config:
+
+PrinterConfig
+-------------
+
+
+
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*templates*~, ~[:ref:`server_admin_en_configref_gws_types_ext_template_Config`...]~, ~~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_common_project_Config:
+
+ProjectConfig
+-------------
+
+
+project configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*actions*~, ~[:ref:`server_admin_en_configref_gws_types_ext_action_Config`...]~, ~project-specific actions~, ~no~, ~~
+   ~*assets*~, ~:ref:`server_admin_en_configref_gws_types_DocumentRootConfig`~, ~project-specific assets options~, ~no~, ~~
+   ~*client*~, ~:ref:`server_admin_en_configref_gws_common_client_Config`~, ~project-specific gws client configuration~, ~no~, ~~
+   ~*description*~, ~:ref:`server_admin_en_configref_gws_types_TemplateConfig`~, ~template for the project description~, ~no~, ~~
+   ~*locale*~, ~``str``~, ~Project locale~, ~no~, ~~
+   ~*map*~, ~:ref:`server_admin_en_configref_gws_common_map_Config`~, ~Map configuration~, ~no~, ~~
+   ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~project metadata~, ~no~, ~~
+   ~*multi*~, ~``bool``~, ~true if this is a multi-project template~, ~no~, ~false~
+   ~*multiMatch*~, ~``regex``~, ~filename pattern for a multi-project template~, ~no~, ~~
+   ~*overviewMap*~, ~:ref:`server_admin_en_configref_gws_common_map_Config`~, ~Overview map configuration~, ~no~, ~~
+   ~*printer*~, ~:ref:`server_admin_en_configref_gws_common_printer_Config`~, ~printer configuration~, ~no~, ~~
+   ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~project-wide search configuration~, ~no~, ~~
+   ~*title*~, ~``str``~, ~project title~, ~no~, ~~
+   ~*uid*~, ~``str``~, ~unique id~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_common_search_Config:
+
+SearchConfig
+------------
+
+
+
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*providers*~, ~[:ref:`server_admin_en_configref_gws_types_ext_search_provider_Config`...]~, ~~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_search_provider_nominatim_Config:
+
+SearchProviderNominatimConfig
+-----------------------------
+
+
+nominatim (OSM) search provider
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*country*~, ~``str``~, ~country to limit the search~, ~no~, ~~
+   ~*defaultContext*~, ~``str``~, ~default spatial context ('view' or 'map')~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*language*~, ~``str``~, ~language to return the results in~, ~no~, ~~
+   ~*title*~, ~``str``~, ~search results title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"nominatim"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~unique ID~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_search_provider_qgis_postgis_Config:
+
+SearchProviderQgis_postgisConfig
+--------------------------------
+
+
+Qgis/Postgres automatic search provider
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*defaultContext*~, ~``str``~, ~default spatial context ('view' or 'map')~, ~no~, ~~
+   ~*ds*~, ~``dict``~, ~qgis data source~, ~yes~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*title*~, ~``str``~, ~search results title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"qgis_postgis"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~unique ID~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_search_provider_qgis_wms_Config:
+
+SearchProviderQgis_wmsConfig
+----------------------------
+
+
+Qgis/WMS automatic search provider
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*defaultContext*~, ~``str``~, ~default spatial context ('view' or 'map')~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*layers*~, ~[``str``...]~, ~layers to query~, ~yes~, ~~
+   ~*path*~, ~``filepath``~, ~project path~, ~yes~, ~~
+   ~*title*~, ~``str``~, ~search results title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"qgis_wms"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~unique ID~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_search_provider_sql_Config:
+
+SearchProviderSqlConfig
+-----------------------
+
+
+database-based search
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*db*~, ~``str``~, ~database provider uid~, ~no~, ~~
+   ~*defaultContext*~, ~``str``~, ~default spatial context ('view' or 'map')~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*geometryRequired*~, ~``bool``~, ~~, ~no~, ~false~
+   ~*keywordRequired*~, ~``bool``~, ~~, ~no~, ~false~
+   ~*sort*~, ~``str``~, ~sort expression~, ~no~, ~~
+   ~*table*~, ~:ref:`server_admin_en_configref_gws_types_SqlTableConfig`~, ~sql table configuration~, ~yes~, ~~
+   ~*title*~, ~``str``~, ~search results title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"sql"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~unique ID~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_search_provider_wfs_Config:
+
+SearchProviderWfsConfig
+-----------------------
+
+
+WFS search
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*axis*~, ~``str``~, ~force axis orientation (axis=xy or axis=yx)~, ~no~, ~~
+   ~*capsCacheMaxAge*~, ~``duration``~, ~max cache age for capabilities documents~, ~no~, ~"1d"~
+   ~*crs*~, ~``crsref``~, ~always use this crs~, ~no~, ~~
+   ~*defaultContext*~, ~``str``~, ~default spatial context ('view' or 'map')~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*layers*~, ~[``str``...]~, ~feature types to search for~, ~no~, ~~
+   ~*params*~, ~``dict``~, ~additional query parameters~, ~no~, ~~
+   ~*title*~, ~``str``~, ~search results title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"wfs"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~unique ID~, ~no~, ~~
+   ~*url*~, ~``url``~, ~service url~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_search_provider_wms_Config:
+
+SearchProviderWmsConfig
+-----------------------
+
+
+WMS search
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*axis*~, ~``str``~, ~force axis orientation (axis=xy or axis=yx)~, ~no~, ~~
+   ~*capsCacheMaxAge*~, ~``duration``~, ~max cache age for capabilities documents~, ~no~, ~"1d"~
+   ~*defaultContext*~, ~``str``~, ~default spatial context ('view' or 'map')~, ~no~, ~~
+   ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
+   ~*layers*~, ~[``str``...]~, ~layers to search for~, ~no~, ~~
+   ~*params*~, ~``dict``~, ~additional query parameters~, ~no~, ~~
+   ~*title*~, ~``str``~, ~search results title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"wms"~, ~yes~, ~~
+   ~*uid*~, ~``str``~, ~unique ID~, ~no~, ~~
+   ~*url*~, ~``url``~, ~service url~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_server_types_Config:
+
+ServerConfig
+------------
+
+
+Server module configuation
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*logLevel*~, ~:ref:`server_admin_en_configref_gws_log_Level`~, ~logging level~, ~no~, ~"INFO"~
+   ~*mapproxy*~, ~:ref:`server_admin_en_configref_gws_server_types_MapproxyConfig`~, ~bundled Mapproxy module~, ~no~, ~~
+   ~*qgis*~, ~:ref:`server_admin_en_configref_gws_server_types_QgisConfig`~, ~bundled Qgis module~, ~no~, ~~
+   ~*spool*~, ~:ref:`server_admin_en_configref_gws_server_types_SpoolConfig`~, ~spool server module~, ~no~, ~~
+   ~*timeout*~, ~``duration``~, ~server timeout~, ~no~, ~60~
+   ~*web*~, ~:ref:`server_admin_en_configref_gws_server_types_WebConfig`~, ~web server module~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_server_types_MapproxyConfig:
+
+ServerMapproxyConfig
+--------------------
+
+
+Mapproxy server module
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*enabled*~, ~``bool``~, ~the module is enabled~, ~no~, ~true~
+   ~*host*~, ~``str``~, ~~, ~no~, ~"localhost"~
+   ~*port*~, ~``int``~, ~~, ~no~, ~5000~
+   ~*threads*~, ~``int``~, ~number of threads for this module~, ~no~, ~0~
+   ~*workers*~, ~``int``~, ~number of processes for this module~, ~no~, ~4~
+
+.. _server_admin_en_configref_gws_server_types_QgisConfig:
+
+ServerQgisConfig
+----------------
+
+
+Bundled QGIS server module
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*debug*~, ~``int``~, ~QGIS_DEBUG (env. variable)~, ~no~, ~0~
+   ~*enabled*~, ~``bool``~, ~the module is enabled~, ~no~, ~true~
+   ~*host*~, ~``str``~, ~~, ~no~, ~"localhost"~
+   ~*maxCacheLayers*~, ~``int``~, ~MAX_CACHE_LAYERS (env. variable)~, ~no~, ~4000~
+   ~*maxRequests*~, ~``int``~, ~max concurrent requests to this server~, ~no~, ~6~
+   ~*port*~, ~``int``~, ~~, ~no~, ~4000~
+   ~*searchPathsForSVG*~, ~[``dirpath``...]~, ~searchPathsForSVG (ini setting)~, ~no~, ~~
+   ~*serverCacheSize*~, ~``int``~, ~QGIS_SERVER_CACHE_SIZE (env. variable)~, ~no~, ~10000000~
+   ~*serverLogLevel*~, ~``int``~, ~QGIS_SERVER_LOG_LEVEL (env. variable)~, ~no~, ~2~
+   ~*threads*~, ~``int``~, ~number of threads for this module~, ~no~, ~0~
+   ~*workers*~, ~``int``~, ~number of processes for this module~, ~no~, ~4~
+
+.. _server_admin_en_configref_gws_server_types_SpoolConfig:
+
+ServerSpoolConfig
+-----------------
+
+
+Spool server module
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*enabled*~, ~``bool``~, ~the module is enabled~, ~no~, ~true~
+   ~*jobFrequency*~, ~``duration``~, ~background jobs checking frequency~, ~no~, ~3~
+   ~*monitorFrequency*~, ~``duration``~, ~filesystem changes check frequency~, ~no~, ~30~
+   ~*threads*~, ~``int``~, ~number of threads for this module~, ~no~, ~0~
+   ~*workers*~, ~``int``~, ~number of processes for this module~, ~no~, ~4~
+
+.. _server_admin_en_configref_gws_server_types_WebConfig:
+
+ServerWebConfig
+---------------
+
+
+Web server module
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*enabled*~, ~``bool``~, ~the module is enabled~, ~no~, ~true~
+   ~*threads*~, ~``int``~, ~number of threads for this module~, ~no~, ~0~
+   ~*workers*~, ~``int``~, ~number of processes for this module~, ~no~, ~4~
+
+.. _server_admin_en_configref_gws_ext_gis_source_geojson_Config:
+
+SourceGeojsonConfig
+-------------------
+
+
+GeoJson source
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
+   ~*crs*~, ~``crsref``~, ~CRS for this source~, ~no~, ~~
+   ~*path*~, ~``filepath``~, ~path to a geojson file~, ~yes~, ~~
+   ~*searchAttribute*~, ~``str``~, ~text search attribute~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"geojson"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_gis_source_LayerFilterConfig:
+
+SourceLayerFilterConfig
+-----------------------
+
+
+Layer filter
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*level*~, ~``int``~, ~~, ~no~, ~0~
+   ~*names*~, ~[``str``...]~, ~~, ~no~, ~~
+   ~*pattern*~, ~``regex``~, ~~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_source_qgis_Config:
+
+SourceQgisConfig
+----------------
+
+
+Qgis source
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*crs*~, ~``crsref``~, ~CRS for this source~, ~no~, ~~
+   ~*extent*~, ~``float4``~, ~extent~, ~no~, ~~
+   ~*path*~, ~``filepath``~, ~path to a qgs project file~, ~yes~, ~~
+   ~*type*~, ~``str``~, ~"qgis"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_source_sql_Config:
+
+SourceSqlConfig
+---------------
+
+
+SQL source
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*db*~, ~``str``~, ~db provider id~, ~yes~, ~~
+   ~*table*~, ~:ref:`server_admin_en_configref_gws_types_SqlTableConfig`~, ~sql table configuration~, ~yes~, ~~
+   ~*type*~, ~``str``~, ~"sql"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_source_tile_Config:
+
+SourceTileConfig
+----------------
+
+
+tiled source
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*crs*~, ~``crsref``~, ~CRS for this source~, ~no~, ~~
+   ~*extent*~, ~``float4``~, ~extent~, ~no~, ~~
+   ~*grid*~, ~:ref:`server_admin_en_configref_gws_types_GridConfig`~, ~source grid configuration~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"tile"~, ~yes~, ~~
+   ~*url*~, ~``str``~, ~source url, with {x}, {y} and {z} placeholders~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_source_wms_Config:
+
+SourceWmsConfig
+---------------
+
+
+WMS source
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*capsCacheMaxAge*~, ~``duration``~, ~max cache age for capabilities documents~, ~no~, ~"1d"~
+   ~*crs*~, ~``crsref``~, ~CRS for this source~, ~no~, ~~
+   ~*extent*~, ~``float4``~, ~extent~, ~no~, ~~
+   ~*maxRequests*~, ~``int``~, ~max concurrent requests to this source~, ~no~, ~1~
+   ~*options*~, ~``dict``~, ~additional options~, ~no~, ~~
+   ~*params*~, ~``dict``~, ~query string parameters~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"wms"~, ~yes~, ~~
+   ~*url*~, ~``url``~, ~service url~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_gis_source_wmts_Config:
+
+SourceWmtsConfig
+----------------
+
+
+WMTS source
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*capsCacheMaxAge*~, ~``duration``~, ~max cache age for capabilities documents~, ~no~, ~"1d"~
+   ~*crs*~, ~``crsref``~, ~CRS for this source~, ~no~, ~~
+   ~*extent*~, ~``float4``~, ~extent~, ~no~, ~~
+   ~*format*~, ~``str``~, ~image format~, ~no~, ~"image/jpeg"~
+   ~*layer*~, ~``str``~, ~WMTS layer name~, ~no~, ~~
+   ~*options*~, ~``dict``~, ~additional options~, ~no~, ~~
+   ~*style*~, ~``str``~, ~image style~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"wmts"~, ~yes~, ~~
+   ~*url*~, ~``url``~, ~service url~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_types_SqlTableConfig:
+
+SqlTableConfig
+--------------
+
+
+SQL database table
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*geometryColumn*~, ~``str``~, ~geometry column name~, ~no~, ~~
+   ~*keyColumn*~, ~``str``~, ~primary key column name~, ~no~, ~~
+   ~*name*~, ~``str``~, ~table name~, ~yes~, ~~
+   ~*searchColumn*~, ~``str``~, ~column to be searched for~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_types_StyleProps:
+
+StyleProps
+----------
+
+
+Feature style
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*content*~, ~``dict``~, ~css rules~, ~no~, ~~
+   ~*type*~, ~``str``~, ~style type ("css")~, ~yes~, ~~
+   ~*value*~, ~``str``~, ~raw style content~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_types_TemplateConfig:
+
+TemplateConfig
+--------------
+
+
+
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*dataModel*~, ~[:ref:`server_admin_en_configref_gws_types_AttributeConfig`...]~, ~user-editable template attributes~, ~no~, ~~
+   ~*path*~, ~``filepath``~, ~path to a template file~, ~no~, ~~
+   ~*qualityLevels*~, ~[:ref:`server_admin_en_configref_gws_types_TemplateQualityLevel`...]~, ~list of quality levels supported by the template~, ~no~, ~~
+   ~*text*~, ~``str``~, ~template content~, ~no~, ~~
+   ~*title*~, ~``str``~, ~template title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~template type~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_template_html_Config:
+
+TemplateHtmlConfig
+------------------
+
+
+HTML template
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*dataModel*~, ~[:ref:`server_admin_en_configref_gws_types_AttributeConfig`...]~, ~user-editable template attributes~, ~no~, ~~
+   ~*path*~, ~``filepath``~, ~path to a template file~, ~no~, ~~
+   ~*qualityLevels*~, ~[:ref:`server_admin_en_configref_gws_types_TemplateQualityLevel`...]~, ~list of quality levels supported by the template~, ~no~, ~~
+   ~*text*~, ~``str``~, ~template content~, ~no~, ~~
+   ~*title*~, ~``str``~, ~template title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"html"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_ext_template_qgis_Config:
+
+TemplateQgisConfig
+------------------
+
+
+Qgis print template
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*dataModel*~, ~[:ref:`server_admin_en_configref_gws_types_AttributeConfig`...]~, ~user-editable template attributes~, ~no~, ~~
+   ~*path*~, ~``filepath``~, ~~, ~yes~, ~~
+   ~*qualityLevels*~, ~[:ref:`server_admin_en_configref_gws_types_TemplateQualityLevel`...]~, ~list of quality levels supported by the template~, ~no~, ~~
+   ~*text*~, ~``str``~, ~template content~, ~no~, ~~
+   ~*title*~, ~``str``~, ~template title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"qgis"~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_types_TemplateQualityLevel:
+
+TemplateQualityLevel
+--------------------
+
+
+named quality level for templates
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*dpi*~, ~``int``~, ~dpi value~, ~yes~, ~~
+   ~*name*~, ~``str``~, ~level name~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_web_types_Config:
+
+WebConfig
+---------
+
+
+web server configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*sites*~, ~[:ref:`server_admin_en_configref_gws_web_types_SiteConfig`...]~, ~configured sites~, ~no~, ~~
+   ~*ssl*~, ~:ref:`server_admin_en_configref_gws_web_types_SSLConfig`~, ~ssl configuration~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_web_types_CorsConfig:
+
+WebCorsConfig
+-------------
+
+
+CORS options
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*allowCredentials*~, ~``bool``~, ~~, ~no~, ~false~
+   ~*allowHeaders*~, ~[``str``...]~, ~~, ~no~, ~~
+   ~*allowOrigin*~, ~``str``~, ~~, ~no~, ~"*"~
+   ~*enabled*~, ~``bool``~, ~~, ~no~, ~false~
+
+.. _server_admin_en_configref_gws_web_types_RewriteRule:
+
+WebRewriteRule
+--------------
+
+
+rewrite rule
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*match*~, ~``regex``~, ~expression to match the url against~, ~yes~, ~~
+   ~*options*~, ~``dict``~, ~additional options~, ~no~, ~~
+   ~*target*~, ~``formatstr``~, ~target url with placeholders~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_web_types_SSLConfig:
+
+WebSSLConfig
+------------
+
+
+SSL configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*crt*~, ~``filepath``~, ~crt file location~, ~yes~, ~~
+   ~*key*~, ~``filepath``~, ~key file location~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_web_types_SiteConfig:
+
+WebSiteConfig
+-------------
+
+
+site (virtual host) configuration
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*assets*~, ~:ref:`server_admin_en_configref_gws_types_DocumentRootConfig`~, ~assets location and options~, ~no~, ~~
+   ~*cors*~, ~:ref:`server_admin_en_configref_gws_web_types_CorsConfig`~, ~cors configuration~, ~no~, ~~
+   ~*host*~, ~``str``~, ~host name~, ~no~, ~"*"~
+   ~*rewrite*~, ~[:ref:`server_admin_en_configref_gws_web_types_RewriteRule`...]~, ~rewrite rules~, ~no~, ~~
+   ~*root*~, ~:ref:`server_admin_en_configref_gws_types_DocumentRootConfig`~, ~document root location and options~, ~yes~, ~~
+
+.. _server_admin_en_configref_gws_gis_zoom_Config:
+
+ZoomConfig
+----------
+
+
+zoom and resolution configuation
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*initResolution*~, ~``float``~, ~initial resolution~, ~no~, ~~
+   ~*initScale*~, ~``float``~, ~initial scale~, ~no~, ~~
+   ~*maxResolution*~, ~``float``~, ~maximal resolution~, ~no~, ~~
+   ~*maxScale*~, ~``float``~, ~maximal scale~, ~no~, ~~
+   ~*minResolution*~, ~``float``~, ~minimal resolution~, ~no~, ~~
+   ~*minScale*~, ~``float``~, ~minimal scale~, ~no~, ~~
+   ~*resolutions*~, ~[``float``...]~, ~allowed resolutions~, ~no~, ~~
+   ~*scales*~, ~[``float``...]~, ~allowed scales~, ~no~, ~~
+
+.. _server_admin_en_configref_gws_types_AccessMode:
+
+AccessMode
+----------
+
+
+
+
+*One of:*
+
+* "execute"
+* "read"
+* "write"
+
+.. _server_admin_en_configref_gws_types_AccessType:
+
+AccessType
+----------
+
+
+
+
+*One of:*
+
+* "allow"
+* "deny"
+
+.. _server_admin_en_configref_gws_types_ext_action_Config:
+
+ActionConfig
+------------
+
+
+
+
+*One of:*
+
+* :ref:`server_admin_en_configref_gws_ext_action_alkis_Config`
+* :ref:`server_admin_en_configref_gws_ext_action_asset_Config`
+* :ref:`server_admin_en_configref_gws_ext_action_auth_Config`
+* :ref:`server_admin_en_configref_gws_ext_action_edit_Config`
+* :ref:`server_admin_en_configref_gws_ext_action_map_Config`
+* :ref:`server_admin_en_configref_gws_ext_action_printer_Config`
+* :ref:`server_admin_en_configref_gws_ext_action_project_Config`
+* :ref:`server_admin_en_configref_gws_ext_action_remoteadmin_Config`
+* :ref:`server_admin_en_configref_gws_ext_action_search_Config`
+
+.. _server_admin_en_configref_gws_types_ext_auth_provider_Config:
+
+AuthProviderConfig
+------------------
+
+
+
+
+*One of:*
+
+* :ref:`server_admin_en_configref_gws_ext_auth_provider_file_Config`
+* :ref:`server_admin_en_configref_gws_ext_auth_provider_ldap_Config`
+
+.. _server_admin_en_configref_gws_types_ext_db_provider_Config:
+
+DbProviderConfig
+----------------
+
+
+
+
+*One of:*
+
+* :ref:`server_admin_en_configref_gws_ext_db_provider_postgis_Config`
+
+.. _server_admin_en_configref_gws_types_ext_gis_layer_Config:
+
+LayerConfig
+-----------
+
+
+
+
+*One of:*
+
+* :ref:`server_admin_en_configref_gws_ext_gis_layer_box_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_layer_group_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_layer_leaf_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_layer_osm_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_layer_qgis_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_layer_tile_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_layer_tree_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_layer_vector_Config`
+
+.. _server_admin_en_configref_gws_log_Level:
+
+LogLevel
+--------
+
+
+
+
+*One of:*
+
+* "ALL"
+* "CRITICAL"
+* "DEBUG"
+* "ERROR"
+* "INFO"
+* "NOTSET"
+* "WARN"
+
+.. _server_admin_en_configref_gws_types_ext_search_provider_Config:
+
+SearchProviderConfig
+--------------------
+
+
+
+
+*One of:*
+
+* :ref:`server_admin_en_configref_gws_ext_search_provider_nominatim_Config`
+* :ref:`server_admin_en_configref_gws_ext_search_provider_qgis_postgis_Config`
+* :ref:`server_admin_en_configref_gws_ext_search_provider_qgis_wms_Config`
+* :ref:`server_admin_en_configref_gws_ext_search_provider_sql_Config`
+* :ref:`server_admin_en_configref_gws_ext_search_provider_wfs_Config`
+* :ref:`server_admin_en_configref_gws_ext_search_provider_wms_Config`
+
+.. _server_admin_en_configref_gws_types_ext_gis_source_Config:
+
+SourceConfig
+------------
+
+
+
+
+*One of:*
+
+* :ref:`server_admin_en_configref_gws_ext_gis_source_geojson_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_source_qgis_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_source_sql_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_source_tile_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_source_wms_Config`
+* :ref:`server_admin_en_configref_gws_ext_gis_source_wmts_Config`
+
+.. _server_admin_en_configref_gws_types_ext_template_Config:
+
+TemplateConfig
+--------------
+
+
+
+
+*One of:*
+
+* :ref:`server_admin_en_configref_gws_ext_template_html_Config`
+* :ref:`server_admin_en_configref_gws_ext_template_qgis_Config`

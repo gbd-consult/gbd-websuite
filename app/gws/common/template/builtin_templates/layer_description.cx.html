@@ -1,0 +1,45 @@
+@def info la
+    @with la.title as x
+        <p class="head">{x | html}</p>
+    @end
+    @with la.meta.abstract as x
+        <p class="text2">{x | html | nl2br}</p>
+    @end
+
+    ## @@TODO
+
+    @with la.legend as x
+        @if x.startswith('http://localhost')
+            @let x = '/_/cmd/mapHttpGetLegend/layerUid/' + la.uid
+        @end
+        <p class="legend"><img src="{x}" /></p>
+    @end
+
+    @with la.meta.url as x
+        <p class="metaurl"><a href="{x | url}" target="_blank" rel="noopener"></a></p>
+    @end
+@end
+
+
+@def subsection text
+    @with text
+        <div class="subsection">{text}</div>
+    @end
+@end
+
+@info layer
+
+@each sub_layers as sub
+    @subsection(info(sub))
+@end
+
+@let text
+    @with service.abstract as x
+        <p>{x | html | nl2br}</p>
+    @end
+    @with service.attribution as x
+        <p>{x}</p>
+    @end
+@end
+
+@subsection(text)

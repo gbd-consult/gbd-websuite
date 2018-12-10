@@ -1,0 +1,254 @@
+[
+    {
+        "args": [],
+        "command": "auth",
+        "doc": "Interactively test a login",
+        "kind": "clifunc",
+        "module": "gws.auth.cli",
+        "name": "test",
+        "uid": 1
+    },
+    {
+        "args": [],
+        "command": "auth",
+        "doc": "Logo ut all users and remove all active sessions",
+        "kind": "clifunc",
+        "module": "gws.auth.cli",
+        "name": "clear",
+        "uid": 2
+    },
+    {
+        "args": [
+            {
+                "doc": "configuration file path",
+                "name": "--path"
+            }
+        ],
+        "command": "config",
+        "doc": "Run a configuration file test",
+        "kind": "clifunc",
+        "module": "gws.config.cli",
+        "name": "test",
+        "uid": 427
+    },
+    {
+        "args": [
+            {
+                "doc": "configuration file path",
+                "name": "--path"
+            }
+        ],
+        "command": "config",
+        "doc": "Parse and prepare a config",
+        "kind": "clifunc",
+        "module": "gws.config.cli",
+        "name": "prepare",
+        "uid": 428
+    },
+    {
+        "args": [
+            {
+                "doc": "configuration file path",
+                "name": "--path"
+            },
+            {
+                "doc": "path to write the dump to",
+                "name": "--out"
+            }
+        ],
+        "command": "config",
+        "doc": "Dump the configuarion tree",
+        "kind": "clifunc",
+        "module": "gws.config.cli",
+        "name": "dump",
+        "uid": 429
+    },
+    {
+        "args": [
+            {
+                "doc": "path to the NAS zip archive",
+                "name": "--path"
+            }
+        ],
+        "command": "alkis",
+        "doc": "Preprocess the NAS data model files",
+        "kind": "clifunc",
+        "module": "gws.ext.action.alkis.cli",
+        "name": "parse",
+        "uid": 745
+    },
+    {
+        "args": [
+            {
+                "doc": "project unique ID",
+                "name": "--project"
+            }
+        ],
+        "command": "alkis",
+        "doc": "Create an internal ALKIS search index for a project",
+        "kind": "clifunc",
+        "module": "gws.ext.action.alkis.cli",
+        "name": "create_index",
+        "uid": 746
+    },
+    {
+        "args": [
+            {
+                "doc": "project unique ID",
+                "name": "--project"
+            }
+        ],
+        "command": "alkis",
+        "doc": "Check the status of the ALKIS search index",
+        "kind": "clifunc",
+        "module": "gws.ext.action.alkis.cli",
+        "name": "check_index",
+        "uid": 747
+    },
+    {
+        "args": [
+            {
+                "doc": "project unique ID",
+                "name": "--project"
+            }
+        ],
+        "command": "alkis",
+        "doc": "Remove the ALKIS search index",
+        "kind": "clifunc",
+        "module": "gws.ext.action.alkis.cli",
+        "name": "drop_index",
+        "uid": 748
+    },
+    {
+        "args": [],
+        "command": "auth",
+        "doc": "Encode a password for the authorization file",
+        "kind": "clifunc",
+        "module": "gws.ext.auth.provider.file.cli",
+        "name": "passwd",
+        "uid": 1050
+    },
+    {
+        "args": [
+            {
+                "doc": "comma separated list of layer IDs",
+                "name": "--layers"
+            }
+        ],
+        "command": "cache",
+        "doc": "Update the front (web) cache from the back cache",
+        "kind": "clifunc",
+        "module": "gws.gis.cache",
+        "name": "updateweb",
+        "uid": 1813
+    },
+    {
+        "args": [
+            {
+                "doc": "comma separated list of layer IDs",
+                "name": "--layers"
+            }
+        ],
+        "command": "cache",
+        "doc": "Display the cache status",
+        "kind": "clifunc",
+        "module": "gws.gis.cache",
+        "name": "status",
+        "uid": 1814
+    },
+    {
+        "args": [
+            {
+                "doc": "comma separated list of layer IDs",
+                "name": "--layers"
+            }
+        ],
+        "command": "cache",
+        "doc": "Drop the caches",
+        "kind": "clifunc",
+        "module": "gws.gis.cache",
+        "name": "drop",
+        "uid": 1815
+    },
+    {
+        "args": [
+            {
+                "doc": "comma separated list of layer IDs",
+                "name": "--layers"
+            },
+            {
+                "doc": "zoom level to build the cache for",
+                "name": "--level"
+            }
+        ],
+        "command": "cache",
+        "doc": "Start the cache seeding process",
+        "kind": "clifunc",
+        "module": "gws.gis.cache",
+        "name": "seed",
+        "uid": 1816
+    },
+    {
+        "args": [
+            {
+                "doc": "service type",
+                "name": "--type"
+            },
+            {
+                "doc": "service url or path",
+                "name": "--src"
+            }
+        ],
+        "command": "ows",
+        "doc": "Query the capabilities of a service",
+        "kind": "clifunc",
+        "module": "gws.ows.cli",
+        "name": "caps",
+        "uid": 2208
+    },
+    {
+        "args": [],
+        "command": "server",
+        "doc": "Start the server",
+        "kind": "clifunc",
+        "module": "gws.server.cli",
+        "name": "start",
+        "uid": 2281
+    },
+    {
+        "args": [],
+        "command": "server",
+        "doc": "Stop the server",
+        "kind": "clifunc",
+        "module": "gws.server.cli",
+        "name": "stop",
+        "uid": 2282
+    },
+    {
+        "args": [],
+        "command": "server",
+        "doc": "Reconfigure and gracefully reload the server",
+        "kind": "clifunc",
+        "module": "gws.server.cli",
+        "name": "reload",
+        "uid": 2283
+    },
+    {
+        "args": [],
+        "command": "server",
+        "doc": "Gracefully reload the server without reconfiguring",
+        "kind": "clifunc",
+        "module": "gws.server.cli",
+        "name": "reset",
+        "uid": 2284
+    },
+    {
+        "args": [],
+        "command": "server",
+        "doc": "Configure the server",
+        "kind": "clifunc",
+        "module": "gws.server.cli",
+        "name": "configure",
+        "uid": 2285
+    }
+]

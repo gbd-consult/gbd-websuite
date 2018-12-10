@@ -1,0 +1,43 @@
+# generic
+
+libgdal20
+libgeos-c1v5
+libproj12
+libssl-dev
+nginx
+python3-all-dev
+python3-pip
+python3-gdal
+rsyslog
+tzdata
+xvfb
+
+# ldap
+
+libldap2-dev
+libsasl2-dev
+
+# fonts
+
+libfreetype6-dev
+fonts-liberation
+
+# qgis
+
+libfcgi-dev
+libpq-dev
+libqca-qt5-2-dev
+libqca-qt5-2-plugins
+libqt5quickwidgets5
+libqt5serialport5
+libqt5webkit5
+libqwt-qt5-6
+libspatialindex4v5
+libzip4
+python3-pyqt5
+python3-pyqt5.qsci
+python3-pyqt5.qtsql
+python3-pyqt5.qtsvg
+python3-sip
+python3-sip-dev
+qt5keychain-dev

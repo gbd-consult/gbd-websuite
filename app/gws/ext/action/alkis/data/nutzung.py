@@ -1,0 +1,219 @@
+"""Interface for Objektbereich:Tatsächliche Nutzung"""
+
+import gws
+from gws.tools.console import ProgressIndicator
+from . import resolver
+from ..tools import indexer, connection
+
+parts_index = 'idx_nutzung_parts'
+all_index = 'idx_nutzung_all'
+
+MIN_AREA = 0.01
+
+
+def _collect_from_nutzung_tables(conn):
+    tables = conn.table_names(conn.data_schema)
+    data = []
+
+    for type_id, table, type in resolver.nutzung_tables:
+        if table not in tables:
+            continue
+
+        rs = conn.select_from_ax(table)
+
+        for r in rs:
+            if 'gml_id' not in r or 'wkb_geometry' not in r:
+                continue
+            a = resolver.attributes(conn, table, r)
+            k = resolver.nutzung_key(type_id, a) or {'key': type, 'key_id': type_id, 'key_label': 'Typ'}
+            a.update(k)
+            data.append({
+                'gml_id': r['gml_id'],
+                'type': type,
+                'type_id': type_id,
+                'geom': r['wkb_geometry'],
+                'attributes': indexer.as_json(a)
+            })
+    return data
+
+
+def _create_all_index(conn: connection.AlkisConnection):
+    data = _collect_from_nutzung_tables(conn)
+
+    with conn.transaction():
+        conn.create_index_table(all_index, f'''
+            id SERIAL PRIMARY KEY,
+            gml_id CHARACTER VARYING,
+            type CHARACTER VARYING,
+            type_id INTEGER,
+            attributes CHARACTER VARYING,
+            isvalid BOOLEAN,
+            geom geometry(GEOMETRY, {conn.srid})
+        ''')
+
+        conn.index_insert(all_index, data)
+
+        conn.create_index_index(all_index, 'geom', 'gist')
+        conn.create_index_index(all_index, 'gml_id', 'btree')
+
+    gws.log.info('nutzung: validating geometries')
+    conn.validate_index_geoms(all_index)
+
+
+def _delete_empty_areas(conn, col):
+    idx = conn.index_schema
+
+    cnt_all = conn.select_value(f'SELECT COUNT(*) FROM {idx}.{parts_index}')
+    cnt_nul = conn.select_value(f'SELECT COUNT(*) FROM {idx}.{parts_index} WHERE {col} < {MIN_AREA}')
+
+    gws.log.info(f'nutzung: {cnt_all} areas, {cnt_nul} empty')
+
+    if cnt_nul:
+        with conn.transaction():
+            conn.exec(f'DELETE FROM {idx}.{parts_index} WHERE area < {MIN_AREA}')
+
+
+def _create_fsx_index(conn: connection.AlkisConnection):
+    dat = conn.data_schema
+    idx = conn.index_schema
+
+    fs_temp = '_idx_nutzung_fs_temp'
+
+    with conn.transaction():
+        conn.create_index_table(fs_temp, f'''
+                id SERIAL PRIMARY KEY,
+                gml_id CHARACTER VARYING,
+                area DOUBLE PRECISION,
+                a_area DOUBLE PRECISION,
+                area_factor DOUBLE PRECISION,
+                isvalid BOOLEAN,
+                geom geometry(GEOMETRY, {conn.srid})
+        ''')
+
+        sel = conn.make_select_from_ax('ax_flurstueck', [
+            'gml_id',
+            'ST_Area(wkb_geometry)',
+            'amtlicheflaeche',
+            'wkb_geometry'
+        ])
+
+        conn.exec(f'INSERT INTO {idx}.{fs_temp}(gml_id,area,a_area,geom) ' + sel)
+
+        conn.create_index_index(fs_temp, 'geom', 'gist')
+        conn.create_index_index(fs_temp, 'gml_id', 'btree')
+
+    conn.validate_index_geoms(fs_temp)
+
+    with conn.transaction():
+        conn.create_index_table(parts_index, f'''
+                id SERIAL PRIMARY KEY,
+                fs_id CHARACTER VARYING,
+                nu_id CHARACTER VARYING,
+                type CHARACTER VARYING,
+                type_id INTEGER,
+                attributes CHARACTER VARYING,
+                area float,
+                a_area float,
+                fs_geom geometry(GEOMETRY, {conn.srid}),
+                nu_geom geometry(GEOMETRY, {conn.srid}),
+                part_geom geometry(GEOMETRY, {conn.srid})
+        ''')
+
+        cnt = conn.count(f'{idx}.{all_index}')
+        step = 1000
+
+        with ProgressIndicator('nutzung: search', cnt) as pi:
+            for n in range(0, cnt, step):
+                n1 = n + step
+                conn.exec(f'''
+                    INSERT INTO {idx}.{parts_index} 
+                            (fs_id, nu_id, type, type_id, attributes, fs_geom, nu_geom)
+                        SELECT
+                            fs.gml_id,
+                            nu.gml_id,
+                            nu.type,
+                            nu.type_id,
+                            nu.attributes,
+                            fs.geom,
+                            nu.geom
+                        FROM
+                            {idx}.{all_index} AS nu,
+                            {idx}.{fs_temp} AS fs
+                        WHERE
+                            {n} < nu.id AND nu.id <= {n1}
+                            AND ST_Intersects(nu.geom, fs.geom)
+                ''')
+                pi.update(step)
+
+    cnt = conn.select_value(f'SELECT MAX(id) + 1 FROM {idx}.{parts_index}')
+    step = 1000
+
+    with conn.transaction():
+        with ProgressIndicator('nutzung: intersections', cnt) as pi:
+            for n in range(0, cnt, step):
+                n1 = n + step
+                conn.exec(f'''
+                    UPDATE {idx}.{parts_index} AS nu
+                        SET part_geom = ST_Intersection(fs_geom, nu_geom)
+                        WHERE {n} < nu.id AND nu.id <= {n1}
+                ''')
+                pi.update(step)
+
+    with conn.transaction():
+        with ProgressIndicator('nutzung: areas', cnt) as pi:
+            for n in range(0, cnt, step):
+                n1 = n + step
+                conn.exec(f'''
+                    UPDATE {idx}.{parts_index} AS nu
+                        SET area = ST_Area(part_geom)
+                        WHERE {n} < nu.id AND nu.id <= {n1}
+                ''')
+                pi.update(step)
+
+    _delete_empty_areas(conn, 'area')
+
+    # compute "amtliche" nutzung areas
+    # see norbit/alkisimport/alkis-nutzung-und-klassifizierung.sql:445
+    # nu[a_area] = nu[area] * (fs[a_area] / fs[area])
+
+    gws.log.info('nutzung: correcting areas')
+
+    cnt = conn.select_value(f'SELECT MAX(id) + 1 FROM {idx}.{parts_index}')
+    step = 1000
+
+    with conn.transaction():
+        conn.exec(f'UPDATE {idx}.{fs_temp} SET area_factor = a_area / area')
+
+    with conn.transaction():
+        with ProgressIndicator('nutzung: correcting', cnt) as pi:
+            for n in range(0, cnt, step):
+                n1 = n + step
+                conn.exec(f'''
+                    UPDATE {idx}.{parts_index} AS nu
+                        SET a_area = nu.area * fs.area_factor
+                        FROM {idx}.{fs_temp} AS fs
+                        WHERE {n} < nu.id AND nu.id <= {n1}
+                            AND nu.fs_id = fs.gml_id
+                ''')
+                pi.update(step)
+
+    _delete_empty_areas(conn, 'a_area')
+
+    with conn.transaction():
+        conn.exec(f'DROP TABLE IF EXISTS {idx}.{fs_temp} CASCADE')
+
+
+def create_index(conn):
+    if not indexer.check_version(conn, all_index):
+        _create_all_index(conn)
+    if not indexer.check_version(conn, parts_index):
+        _create_fsx_index(conn)
+
+
+def index_ok(conn):
+    return indexer.check_version(conn, all_index) and indexer.check_version(conn, parts_index)
+
+
+def get_all(conn):
+    idx = conn.index_schema
+    return conn.select(f'SELECT * FROM {idx}.{all_index}')

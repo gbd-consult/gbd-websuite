@@ -1,0 +1,659 @@
+// helper file for changing cmake vars easily
+// generated with _BUILD/cmake -LAH ..
+// our overrides start with @
+
+// Install bindings to global python directory? (might need root)
+BINDINGS_GLOBAL_INSTALL:BOOL=FALSE
+
+// Path to a program.
+BISON_EXECUTABLE:FILEPATH=/usr/bin/bison
+
+// Build the testing tree.
+BUILD_TESTING:BOOL=ON
+@BUILD_TESTING:BOOL=OFF
+
+// Path to a program.
+BZRCOMMAND:FILEPATH=BZRCOMMAND-NOTFOUND
+
+// Path to a program.
+CMAKE_AR:FILEPATH=/usr/bin/ar
+
+// Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.
+CMAKE_BUILD_TYPE:STRING=
+@CMAKE_BUILD_TYPE:STRING=Debug
+
+// Enable/Disable color output during build.
+CMAKE_COLOR_MAKEFILE:BOOL=ON
+
+// CXX compiler
+CMAKE_CXX_COMPILER:FILEPATH=/usr/lib/ccache/clang++
+
+// LLVM archiver
+CMAKE_CXX_COMPILER_AR:FILEPATH=/usr/bin/llvm-ar-6.0
+
+// Generate index for LLVM archive
+CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/usr/bin/llvm-ranlib-6.0
+
+// Flags used by the compiler during all build types.
+CMAKE_CXX_FLAGS:STRING=
+
+// Flags used by the compiler during debug builds.
+CMAKE_CXX_FLAGS_DEBUG:STRING=-g
+
+// Flags used by the compiler during release builds for minimum size.
+CMAKE_CXX_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG
+
+// Flags used by the compiler during release builds.
+CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
+
+// Flags used by the compiler during release builds with debug info.
+CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
+
+// C compiler
+CMAKE_C_COMPILER:FILEPATH=/usr/lib/ccache/clang
+
+// LLVM archiver
+CMAKE_C_COMPILER_AR:FILEPATH=/usr/bin/llvm-ar-6.0
+
+// Generate index for LLVM archive
+CMAKE_C_COMPILER_RANLIB:FILEPATH=/usr/bin/llvm-ranlib-6.0
+
+// Flags used by the compiler during all build types.
+CMAKE_C_FLAGS:STRING=
+
+// Flags used by the compiler during debug builds.
+CMAKE_C_FLAGS_DEBUG:STRING=-g
+
+// Flags used by the compiler during release builds for minimum size.
+CMAKE_C_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG
+
+// Flags used by the compiler during release builds.
+CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
+
+// Flags used by the compiler during release builds with debug info.
+CMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
+
+// Flags used by the linker.
+CMAKE_EXE_LINKER_FLAGS:STRING=
+
+// Flags used by the linker during debug builds.
+CMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=
+
+// Flags used by the linker during release minsize builds.
+CMAKE_EXE_LINKER_FLAGS_MINSIZEREL:STRING=
+
+// Flags used by the linker during release builds.
+CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=
+
+// Flags used by the linker during Release with Debug Info builds.
+CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
+
+// Enable/Disable output of compile commands during generation.
+CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=OFF
+
+// Install path prefix, prepended onto install directories.
+CMAKE_INSTALL_PREFIX:PATH=/usr/local
+
+// Path to a program.
+CMAKE_LINKER:FILEPATH=/usr/bin/ld
+
+// Path to a program.
+CMAKE_MAKE_PROGRAM:FILEPATH=/usr/bin/make
+
+// Flags used by the linker during the creation of modules.
+CMAKE_MODULE_LINKER_FLAGS:STRING=
+
+// Flags used by the linker during debug builds.
+CMAKE_MODULE_LINKER_FLAGS_DEBUG:STRING=
+
+// Flags used by the linker during release minsize builds.
+CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL:STRING=
+
+// Flags used by the linker during release builds.
+CMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=
+
+// Flags used by the linker during Release with Debug Info builds.
+CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
+
+// Path to a program.
+CMAKE_NM:FILEPATH=/usr/bin/nm
+
+// Path to a program.
+CMAKE_OBJCOPY:FILEPATH=/usr/bin/objcopy
+
+// Path to a program.
+CMAKE_OBJDUMP:FILEPATH=/usr/bin/objdump
+
+// Path to a program.
+CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
+
+// Flags used by the linker during the creation of dll's.
+CMAKE_SHARED_LINKER_FLAGS:STRING=
+
+// Flags used by the linker during debug builds.
+CMAKE_SHARED_LINKER_FLAGS_DEBUG:STRING=
+
+// Flags used by the linker during release minsize builds.
+CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL:STRING=
+
+// Flags used by the linker during release builds.
+CMAKE_SHARED_LINKER_FLAGS_RELEASE:STRING=
+
+// Flags used by the linker during Release with Debug Info builds.
+CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO:STRING=
+
+// If set, runtime paths are not added when installing shared libraries, but are added when building.
+CMAKE_SKIP_INSTALL_RPATH:BOOL=NO
+
+// If set, runtime paths are not added when using shared libraries.
+CMAKE_SKIP_RPATH:BOOL=NO
+
+// Flags used by the linker during the creation of static libraries.
+CMAKE_STATIC_LINKER_FLAGS:STRING=
+
+// Flags used by the linker during debug builds.
+CMAKE_STATIC_LINKER_FLAGS_DEBUG:STRING=
+
+// Flags used by the linker during release minsize builds.
+CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL:STRING=
+
+// Flags used by the linker during release builds.
+CMAKE_STATIC_LINKER_FLAGS_RELEASE:STRING=
+
+// Flags used by the linker during Release with Debug Info builds.
+CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO:STRING=
+
+// Path to a program.
+CMAKE_STRIP:FILEPATH=/usr/bin/strip
+
+// If this value is on, makefiles will be generated without the .SILENT directive, and all commands will be echoed to the console during the make.  This is useful for debugging only. With Visual Studio IDE projects all commands are done without /nologo.
+CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
+
+// Path to program used to compress files for transfer to the dart server
+COMPRESSIONCOMMAND:FILEPATH=/bin/gzip
+
+// Path to the coverage program that CTest uses for performing coverage inspection
+COVERAGE_COMMAND:FILEPATH=/usr/bin/gcov
+
+// Extra command line flags to pass to the coverage tool
+COVERAGE_EXTRA_FLAGS:STRING=-l
+
+// Enable to build Debian packages
+CPACK_BINARY_DEB:BOOL=OFF
+
+// Enable to build FreeBSD packages
+CPACK_BINARY_FREEBSD:BOOL=OFF
+
+// Enable to build IFW packages
+CPACK_BINARY_IFW:BOOL=OFF
+
+// Enable to build NSIS packages
+CPACK_BINARY_NSIS:BOOL=OFF
+
+// Enable to build RPM packages
+CPACK_BINARY_RPM:BOOL=OFF
+
+// Enable to build STGZ packages
+CPACK_BINARY_STGZ:BOOL=ON
+
+// Enable to build TBZ2 packages
+CPACK_BINARY_TBZ2:BOOL=OFF
+
+// Enable to build TGZ packages
+CPACK_BINARY_TGZ:BOOL=ON
+
+// Enable to build TXZ packages
+CPACK_BINARY_TXZ:BOOL=OFF
+
+// Enable to build TZ packages
+CPACK_BINARY_TZ:BOOL=ON
+
+// Enable to build RPM source packages
+CPACK_SOURCE_RPM:BOOL=OFF
+
+// Enable to build TBZ2 source packages
+CPACK_SOURCE_TBZ2:BOOL=ON
+
+// Enable to build TGZ source packages
+CPACK_SOURCE_TGZ:BOOL=ON
+
+// Enable to build TXZ source packages
+CPACK_SOURCE_TXZ:BOOL=ON
+
+// Enable to build TZ source packages
+CPACK_SOURCE_TZ:BOOL=ON
+
+// Enable to build ZIP source packages
+CPACK_SOURCE_ZIP:BOOL=OFF
+
+// How many times to retry timed-out CTest submissions.
+CTEST_SUBMIT_RETRY_COUNT:STRING=3
+
+// How long to wait between timed-out CTest submissions.
+CTEST_SUBMIT_RETRY_DELAY:STRING=5
+
+// Path to a program.
+CVSCOMMAND:FILEPATH=CVSCOMMAND-NOTFOUND
+
+// Options passed to the cvs update command.
+CVS_UPDATE_OPTIONS:STRING=-d -A -P
+
+// Additional appended CXXFLAGS
+CXX_EXTRA_FLAGS:STRING=
+
+// Limit of reported errors, -1 reports all.
+DART_BUILD_ERROR_REPORT_LIMIT:BOOL=OFF
+
+// Limit of reported warnings, -1 reports all.
+DART_BUILD_WARNING_REPORT_LIMIT:BOOL=OFF
+
+// If you have Dart installed, where is it located?
+DART_ROOT:PATH=DART_ROOT-NOTFOUND
+
+// Maximum time allowed before CTest will kill the test.
+DART_TESTING_TIMEOUT:STRING=1500
+
+// Show the actual output of the build, or if off show a . for each 1024 bytes.
+DART_VERBOSE_BUILD:BOOL=OFF
+
+// Should Dart server send email when build errors are found in Continuous builds?
+DELIVER_CONTINUOUS_EMAIL:BOOL=Off
+
+// If set to true, it will disable deprecated functionality to prepare for the next generation of QGIS
+DISABLE_DEPRECATED:BOOL=FALSE
+
+// Perform coverage tests?
+ENABLE_COVERAGE:BOOL=FALSE
+
+// Enable QT ModelTest (not for production)
+ENABLE_MODELTEST:BOOL=FALSE
+
+// Enable MsSQL provider tests
+ENABLE_MSSQLTEST:BOOL=FALSE
+
+// Enable Oracle provider tests
+ENABLE_ORACLETEST:BOOL=FALSE
+
+// Enable PostgreSQL provider tests
+ENABLE_PGTEST:BOOL=FALSE
+
+// Build unit tests?
+ENABLE_TESTS:BOOL=TRUE
+@ENABLE_TESTS:BOOL=FALSE
+
+// Path to a file.
+EXPAT_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+EXPAT_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libexpat.so
+
+// Path to a program.
+FLEX_EXECUTABLE:FILEPATH=/usr/bin/flex
+
+// Path to a program.
+GDAL_CONFIG:FILEPATH=/usr/bin/gdal-config
+
+// preferred path to GDAL (gdal-config) from FWTools
+GDAL_CONFIG_PREFER_FWTOOLS_PATH:STRING=/bin_safe
+
+// preferred path to GDAL (gdal-config)
+GDAL_CONFIG_PREFER_PATH:STRING=/bin
+
+// Path to a file.
+GDAL_INCLUDE_DIR:PATH=/usr/include/gdal
+
+// Path to a library.
+GDAL_LIBRARY:FILEPATH=/usr/lib/libgdal.so
+
+// Generate coverage docs (requires lcov)?
+GENERATE_COVERAGE_DOCS:BOOL=FALSE
+
+// Path to a program.
+GEOS_CONFIG:FILEPATH=/usr/bin/geos-config
+
+// preferred path to GEOS (geos-config)
+GEOS_CONFIG_PREFER_PATH:STRING=/bin
+
+// Path to a file.
+GEOS_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+GEOS_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libgeos_c.so
+
+// INTERNAL
+GEOS_LIB_NAME_WITH_PREFIX:STRING=-lgeos_c
+
+// Path to a program.
+GITCOMMAND:FILEPATH=/usr/bin/git
+
+// Extra includes string used for GRASS7
+GRASS_EXTRA_INCLUDE_DIRS7:STRING=
+
+// Path to GRASS 7 include directory
+GRASS_INCLUDE_DIR7:PATH=/usr/lib/grass74/include
+
+// Path to GRASS 7 base directory
+GRASS_PREFIX7:PATH=/usr/lib/grass74
+
+// Path to a program.
+GSL_CONFIG:FILEPATH=/usr/bin/gsl-config
+
+// preferred path to GSL (gsl-config)
+GSL_CONFIG_PREFER_PATH:STRING=/bin
+
+// INTERNAL
+GSL_EXE_LINKER_FLAGS:STRING=-Wl,-rpath,
+
+// INTERNAL
+GSL_INCLUDE_DIR:STRING=/usr/include
+
+// Path to gunzip executable
+GUNZIPCOMMAND:FILEPATH=/bin/gunzip
+
+// Path to a program.
+HGCOMMAND:FILEPATH=HGCOMMAND-NOTFOUND
+
+// Path to java command, used by the Dart server to create html.
+JAVACOMMAND:FILEPATH=JAVACOMMAND-NOTFOUND
+
+// Path to a file.
+LIBZIP_CONF_INCLUDE_DIR:PATH=/usr/include/x86_64-linux-gnu
+
+// Path to a file.
+LIBZIP_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+LIBZIP_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libzip.so
+
+// Command to build the project
+MAKECOMMAND:STRING=/usr/bin/cmake --build . --config "${CTEST_CONFIGURATION_TYPE}" -- -i
+
+// Path to the memory checking command, used for memory error detection.
+MEMORYCHECK_COMMAND:FILEPATH=MEMORYCHECK_COMMAND-NOTFOUND
+
+// File that contains suppressions for the memory checker
+MEMORYCHECK_SUPPRESSIONS_FILE:FILEPATH=
+
+// Path to a program.
+P4COMMAND:FILEPATH=P4COMMAND-NOTFOUND
+
+// Determines if we should compile in pedantic mode.
+PEDANTIC:BOOL=TRUE
+@PEDANTIC:BOOL=FALSE
+
+// Path to POSTGRESQL base directory
+POSTGRESQL_PREFIX:PATH=
+
+// Path to a program.
+POSTGRES_CONFIG:FILEPATH=/usr/bin/pg_config
+
+// preferred path to PG (pg_config)
+POSTGRES_CONFIG_PREFER_PATH:STRING=/bin
+
+// INTERNAL
+POSTGRES_INCLUDE_DIR:STRING=/usr/include/postgresql
+
+// Path to a library.
+POSTGRES_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpq.so
+
+// Path to a file.
+PROJ_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+PROJ_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libproj.so
+
+// Path to a program.
+PYRCC_PROGRAM:FILEPATH=/usr/bin/pyrcc5
+
+// Path to a program.
+PYTHON_EXECUTABLE:FILEPATH=/usr/bin/python3
+
+// Directory holding the python.h include file
+PYTHON_INCLUDE_PATH:FILEPATH=/usr/include/python3.6m
+
+// Path to a library.
+PYTHON_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpython3.6m.so
+
+// Wrapper command for python tests (e.g. `timeout -sSIGSEGV 55s` to segfault after 55 seconds)
+PYTHON_TEST_WRAPPER:STRING=
+
+// Path to a program.
+PYUIC_PROGRAM:FILEPATH=/usr/bin/pyuic5
+
+// Path to a file.
+QCA_INCLUDE_DIR:PATH=/usr/include/Qca-qt5/QtCrypto
+
+// Path to a library.
+QCA_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libqca-qt5.so
+
+// Subdirectory where executables will be installed
+QGIS_BIN_SUBDIR:STRING=bin
+
+// Subdirectory where CGI executables will be installed
+QGIS_CGIBIN_SUBDIR:STRING=bin
+
+// Subdirectory where QGIS data will be installed
+QGIS_DATA_SUBDIR:STRING=share/qgis
+
+// Subdirectory where header files will be installed
+QGIS_INCLUDE_SUBDIR:STRING=include/qgis
+
+// Subdirectory where private executables will be installed
+QGIS_LIBEXEC_SUBDIR:STRING=lib/qgis
+
+// Subdirectory where libraries will be installed
+QGIS_LIB_SUBDIR:STRING=lib
+
+// Subdirectory where manual files will be installed
+QGIS_MANUAL_SUBDIR:STRING=man
+
+// Subdirectory where plugins will be installed
+QGIS_PLUGIN_SUBDIR:STRING=lib/qgis/plugins
+
+// Subdirectory where server modules will be installed
+QGIS_SERVER_MODULE_SUBDIR:STRING=lib/qgis/server
+
+// Path to a file.
+QSCINTILLA_INCLUDE_DIR:PATH=/usr/include/x86_64-linux-gnu/qt5
+
+// Path to a library.
+QSCINTILLA_LIBRARY:FILEPATH=/usr/lib/libqscintilla2_qt5.so
+
+// Path to a file.
+QSCI_SIP_DIR:PATH=/usr/share/sip/PyQt5
+
+// Path to a file.
+QTKEYCHAIN_INCLUDE_DIR:PATH=/usr/include/qt5keychain
+
+// Path to a library.
+QTKEYCHAIN_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libqt5keychain.so
+
+// URL for Qt docs
+QT_DOC_URL:STRING=http://doc.qt.io/qt-5/
+
+// Path to a program.
+QT_LRELEASE_EXECUTABLE:FILEPATH=/usr/bin/lrelease
+
+// Path to a file.
+QWT_INCLUDE_DIR:PATH=/usr/include/qwt
+
+// Path to a library.
+QWT_LIBRARY:FILEPATH=/usr/lib/libqwt-qt5.so
+
+// The directory containing a CMake configuration file for Qt5Concurrent.
+Qt5Concurrent_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Concurrent
+
+// The directory containing a CMake configuration file for Qt5Core.
+Qt5Core_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Core
+
+// The directory containing a CMake configuration file for Qt5Gui.
+Qt5Gui_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Gui
+
+// The directory containing a CMake configuration file for Qt5Network.
+Qt5Network_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Network
+
+// The directory containing a CMake configuration file for Qt5Positioning.
+Qt5Positioning_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Positioning
+
+// The directory containing a CMake configuration file for Qt5PrintSupport.
+Qt5PrintSupport_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5PrintSupport
+
+// The directory containing a CMake configuration file for Qt5Sql.
+Qt5Sql_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Sql
+
+// The directory containing a CMake configuration file for Qt5Svg.
+Qt5Svg_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Svg
+
+// The directory containing a CMake configuration file for Qt5Test.
+Qt5Test_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Test
+
+// The directory containing a CMake configuration file for Qt5UiTools.
+Qt5UiTools_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5UiTools
+
+// The directory containing a CMake configuration file for Qt5WebKitWidgets.
+Qt5WebKitWidgets_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5WebKitWidgets
+
+// The directory containing a CMake configuration file for Qt5WebKit.
+Qt5WebKit_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5WebKit
+
+// The directory containing a CMake configuration file for Qt5Widgets.
+Qt5Widgets_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Widgets
+
+// The directory containing a CMake configuration file for Qt5XmlPatterns.
+Qt5XmlPatterns_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5XmlPatterns
+
+// The directory containing a CMake configuration file for Qt5Xml.
+Qt5Xml_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Xml
+
+// Path to scp command, used by CTest for submitting results to a Dart server
+SCPCOMMAND:FILEPATH=/usr/bin/scp
+
+// Name of the computer/site where compile is being run
+SITE:STRING=2761f17883e2
+
+// Path to the SLURM sbatch executable
+SLURM_SBATCH_COMMAND:FILEPATH=SLURM_SBATCH_COMMAND-NOTFOUND
+
+// Path to the SLURM srun executable
+SLURM_SRUN_COMMAND:FILEPATH=SLURM_SRUN_COMMAND-NOTFOUND
+
+// Path to a file.
+SPATIALINDEX_INCLUDE_DIR:PATH=/usr/include/spatialindex
+
+// Path to a library.
+SPATIALINDEX_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libspatialindex.so
+
+// Path to a file.
+SPATIALITE_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+SPATIALITE_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libspatialite.so
+
+// Path to a file.
+SQLITE3_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+SQLITE3_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libsqlite3.so
+
+// Path to a program.
+SVNCOMMAND:FILEPATH=/usr/bin/svn
+
+// Path to a program.
+TXT2TAGS_EXECUTABLE:FILEPATH=/usr/bin/txt2tags
+
+// Determines whether QGIS 3D library should be built
+WITH_3D:BOOL=FALSE
+
+// Determines whether the QGIS API doxygen documentation should be built
+WITH_APIDOC:BOOL=FALSE
+
+// If you plan to contribute you should reindent with scripts/prepare-commit.sh (using 'our' astyle)
+WITH_ASTYLE:BOOL=FALSE
+
+// Determines whether python bindings should be built
+WITH_BINDINGS:BOOL=TRUE
+
+// Use Clang tidy
+WITH_CLANG_TIDY:BOOL=FALSE
+
+// Determines whether QGIS core should be built.
+WITH_CORE:BOOL=TRUE
+
+// Determines whether QGIS custom widgets for Qt Designer should be built
+WITH_CUSTOM_WIDGETS:BOOL=FALSE
+
+// Determines whether QGIS desktop should be built
+WITH_DESKTOP:BOOL=TRUE
+@WITH_DESKTOP:BOOL=FALSE
+
+// Determines whether GeoReferencer plugin should be built
+WITH_GEOREFERENCER:BOOL=TRUE
+@WITH_GEOREFERENCER:BOOL=FALSE
+
+// Determines whether Globe plugin should be built
+WITH_GLOBE:BOOL=FALSE
+
+// Determines whether GRASS 7 plugin should be built
+WITH_GRASS7:BOOL=TRUE
+@WITH_GRASS7:BOOL=FALSE
+
+// Determines whether QGIS GUI library (and everything built on top of it) should be built
+WITH_GUI:BOOL=TRUE
+
+// Use internal build of Qextserialport
+WITH_INTERNAL_QEXTSERIALPORT:BOOL=TRUE
+
+// Determines whether Oracle support should be built
+WITH_ORACLE:BOOL=FALSE
+
+// Determines whether POSTGRESQL support should be built
+WITH_POSTGRESQL:BOOL=TRUE
+
+// Determines whether Python modules in staged or installed locations are byte-compiled
+WITH_PY_COMPILE:BOOL=FALSE
+
+// Whether to generate PyQGIS QScintilla2 API file. (For devs) run 'make qsci-pap-src' in between QGIS build and install to regenerate .pap file in source tree for console auto-completion.
+WITH_QSCIAPI:BOOL=TRUE
+@WITH_QSCIAPI:BOOL=FALSE
+
+// Determines whether QSPATIALITE sql driver should be built
+WITH_QSPATIALITE:BOOL=FALSE
+
+// Determines if QtMobility related code should be build (for example internal GPS)
+WITH_QTMOBILITY:BOOL=FALSE
+
+// Enable QtWebkit support
+WITH_QTWEBKIT:BOOL=TRUE
+
+// Determines whether QwtPolar should be built
+WITH_QWTPOLAR:BOOL=FALSE
+
+// Determines whether QGIS server should be built
+WITH_SERVER:BOOL=FALSE
+@WITH_SERVER:BOOL=TRUE
+
+// Determines whether QGIS server support for python plugins should be built
+WITH_SERVER_PLUGINS:BOOL=TRUE
+
+// Stage-install core Python plugins to run from build directory? (utilities and console are always staged)
+WITH_STAGED_PLUGINS:BOOL=TRUE
+
+// Determines whether std::thread_local should be used
+WITH_THREAD_LOCAL:BOOL=TRUE
+
+// Determines whether PDF should be generate for the txt2tags documentation
+WITH_TXT2TAGS_PDF:BOOL=FALSE
+
+// Path to a file.
+_find_lib_python_py:FILEPATH=/QGIS3/QGIS/cmake/FindLibPython.py
+
+// Path to a file.
+_find_pyqt5_py:FILEPATH=/QGIS3/QGIS/cmake/FindPyQt5.py
+
+// Path to a file.
+_find_qsci_py:FILEPATH=/QGIS3/QGIS/cmake/FindQsci.py
+
+// Path to a file.
+_find_sip_py:FILEPATH=/QGIS3/QGIS/cmake/FindSIP.py
+
+

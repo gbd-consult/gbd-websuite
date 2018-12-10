@@ -1,0 +1,60 @@
+#!/bin/bash
+
+APP_DIR=/gws-app
+VAR_DIR=/gws-var
+
+MAIN=$APP_DIR/bin/_gws.py
+
+XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp'
+
+###########################################################################
+
+export LC_ALL=C.UTF-8
+export PYTHONPATH=$APP_DIR
+export PYTHONDONTWRITEBYTECODE=1
+
+###########################################################################
+
+ensure_xvfb() {
+    XVFB=/usr/bin/Xvfb
+
+    mkdir -p /tmp/xdg
+    #chown $GWS_USER:$GWS_USER /tmp/xdg
+    export XDG_RUNTIME_DIR=/tmp/xdg
+
+    export DISPLAY=:99
+
+    until start-stop-daemon --status --exec $XVFB; do
+        echo 'starting xvfb...'
+        start-stop-daemon --start --background --exec $XVFB -- $DISPLAY $XVFBARGS
+        sleep 0.5
+    done
+}
+
+###########################################################################
+
+SERVER_CMD=$VAR_DIR/server.sh
+
+if [ "$1" == "server" ]; then
+    ensure_xvfb
+
+    echo 'preparing...'
+
+    rm -f $SERVER_CMD
+    python $MAIN $@
+    [ $? -eq 0 ] || exit $?
+
+    echo 'ready to start...'
+    [ -f $SERVER_CMD ] && source $SERVER_CMD
+    exit $?
+fi
+
+if [ "$1" == "-p" ]; then
+    shift
+    SCRIPT=$1
+    shift
+    python $SCRIPT $@
+    exit $?
+fi
+
+python $MAIN $@

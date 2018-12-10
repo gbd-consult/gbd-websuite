@@ -1,0 +1,42 @@
+{
+    "name": "gws-client",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "dev": "NODE_ENV=development webpack --progress --color",
+        "dev-server": "NODE_ENV=development webpack-dev-server --progress --color",
+        "production": "NODE_ENV=production webpack --progress",
+        "docs": "rm -fr ./docs && typedoc ./src && node helpers/post-typedoc.js",
+        "msie11-polyfill": "curl -o msie11.polyfill.io.js 'https://cdn.polyfill.io/v2/polyfill.min.js?ua=Trident/7.0;%20rv:11.0&flags=gated'"
+    },
+    "author": "gbd-consult.de",
+    "license": "MIT",
+    "dependencies": {
+        "@types/lodash": "^4.14.116",
+        "@types/openlayers": "^4.6.11",
+        "@types/react": "^16.4.11",
+        "@types/react-dom": "^16.0.7",
+        "@types/react-redux": "^6.0.6",
+        "awesome-typescript-loader": "^5.2.0",
+        "axios": "^0.18.0",
+        "clean-webpack-plugin": "^0.1.19",
+        "deasync": "^0.1.13",
+        "lodash": "^4.17.10",
+        "material-design-icons": "^3.0.1",
+        "mime-types": "^2.1.19",
+        "openlayers": "^4.6.5",
+        "proj4": "^2.4.4",
+        "react": "^16.4.2",
+        "react-dom": "^16.4.2",
+        "react-redux": "^5.0.7",
+        "redux": "^4.0.0",
+        "source-map-loader": "^0.2.4",
+        "svgo": "^1.0.5",
+        "tinycolor2": "^1.4.1",
+        "typedoc": "^0.11.1",
+        "typescript": "^3.0.1",
+        "webpack": "^4.16.5",
+        "webpack-cli": "^2.1.5",
+        "webpack-dev-server": "^3.1.5"
+    }
+}

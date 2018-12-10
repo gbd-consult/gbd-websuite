@@ -1,0 +1,21 @@
+@if feature.category
+    <p class="head">{feature.category | html}</p>
+@end
+
+@if feature.title
+    <p class="head2">{feature.title | html}</p>
+@end
+
+<table><tbody>
+
+@each feature.attributes as name, value
+    @with value
+        <tr>
+            <th>{name | html}</th>
+            <td>{value | html | nl2br | linkify(target="_blank", cut=30)}</td>
+        </tr>
+    @end
+@end
+
+</tbody></table>
+

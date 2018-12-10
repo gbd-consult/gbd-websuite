@@ -1,0 +1,304 @@
+{
+    "access": [
+        {
+            "mode": ["read", "write", "execute"],
+            "role": ["all"],
+            "type": "allow"
+        }
+    ],
+    "actions": [
+        {
+            "type": "asset"
+        },
+        {
+            "type": "project"
+        },
+        {
+            "type": "map"
+        },
+        {
+            "type": "printer"
+        },
+        {
+            "type": "auth"
+        },
+        {
+            "type": "search"
+        }
+    ],
+    "client": {
+        "access": [
+            {
+                "role": ["everyone"],
+                "type": "allow"
+            }
+        ],
+        "elements": [
+            {
+                "tag": "Decoration.ScaleRuler"
+            },
+            {
+                "tag": "Decoration.Attribution"
+            },
+            {
+                "elements": [
+                    {
+                        "elements": [
+                            {
+                                "tag": "Infobar.ZoomOut"
+                            },
+                            {
+                                "tag": "Infobar.ZoomIn"
+                            },
+                            {
+                                "tag": "Infobar.ZoomReset"
+                            },
+                            {
+                                "tag": "Infobar.Position"
+                            },
+                            {
+                                "tag": "Infobar.Scale"
+                            },
+                            {
+                                "tag": "Infobar.Rotation"
+                            },
+                            {
+                                "tag": "Infobar.Loader"
+                            }
+                        ],
+                        "tag": "Infobar.LeftSide"
+                    },
+                    {
+                        "elements": [
+                            {
+                                "tag": "Infobar.Help"
+                            },
+                            {
+                                "options": {
+                                    "href": "https://www.gbd-consult.de/software/gbd-web-suite.html",
+                                    "target": "blank",
+                                    "title": "About"
+                                },
+                                "tag": "Infobar.Link"
+                            }
+                        ],
+                        "tag": "Infobar.RightSide"
+                    }
+                ],
+                "tag": "Infobar"
+            },
+            {
+                "elements": [
+                    {
+                        "elements": [
+                            {
+                                "tag": "Toolbar.Measure.Line"
+                            },
+                            {
+                                "tag": "Toolbar.Measure.Polygon"
+                            },
+                            {
+                                "tag": "Toolbar.Measure.Circle"
+                            },
+                            {
+                                "tag": "Toolbar.Measure.Clear"
+                            },
+                            {
+                                "tag": "Toolbar.Measure.Cancel"
+                            }
+                        ],
+                        "tag": "Toolbar.Group"
+                    },
+                    {
+                        "elements": [
+                            {
+                                "tag": "Toolbar.Identify.Click"
+                            },
+                            {
+                                "tag": "Toolbar.Identify.Hover"
+                            },
+                            {
+                                "tag": "Toolbar.Identify.Cancel"
+                            }
+                        ],
+                        "tag": "Toolbar.Group"
+                    },
+                    {
+                        "elements": [
+                            {
+                                "tag": "Toolbar.Print.Go"
+                            }
+                        ],
+                        "tag": "Toolbar.Group"
+                    },
+                    {
+                        "tag": "Toolbar.Search"
+                    }
+                ],
+                "tag": "Toolbar"
+            },
+            {
+                "elements": [
+                    {
+                        "tag": "Sidebar.Overview"
+                    },
+                    {
+                        "tag": "Sidebar.Layers"
+                    },
+                    {
+                        "tag": "Sidebar.Measure"
+                    },
+                    {
+                        "tag": "Sidebar.Search"
+                    }
+                ],
+                "tag": "Sidebar"
+            }
+        ],
+        "options": {
+            "infobarVisible": true,
+            "sidebarActiveTab": "Sidebar.Overview",
+            "sidebarVisible": true
+        },
+        "tag": "ui"
+    },
+    "projects": [
+        {
+            "description": {
+                "text": "<p class='head'>Düsseldorf</p><p>Düsseldorf is the capital and, after Cologne, second most populous city of the most populous German federal state  of North Rhine-Westphalia, as well as the seventh most populous city in Germany. At the confluence of the Rhine and its tributary Düssel, the city lies in the centre of both  the Rhine-Ruhr and the Rhineland Metropolitan Regions with the Cologne/Bonn urban area to its south  and the Ruhr to its north.  (Wikipedia)</p>",
+                "type": "html"
+            },
+            "locale": "en_CA",
+            "overviewMap": {
+                "crs": "EPSG:3857",
+                "extent": [
+                    -20026376,
+                    -20048966,
+                    20026376,
+                    20048966
+                ],
+                "layers": [
+                    {
+                        "clientOptions": {
+                            "visible": true
+                        },
+                        "type": "osm"
+                    }
+                ],
+                "zoom": {
+                    "scales": [450000000]
+                }
+            },
+            "map": {
+                "center": [
+                    756000,
+                    6660000
+                ],
+                "crs": "EPSG:3857",
+                "extent": [
+                    -20026376,
+                    -20048966,
+                    20026376,
+                    20048966
+                ],
+                "layers": [
+                    {
+                        "clientOptions": {
+                            "visible": true
+                        },
+                        "description": {
+                            "text": "<p class='head'>OpenStreetMap / Wikimedia Maps</p><p>&copy;  Wikimedia Maps</p> <p>MapData &copy; OpenStreetMap contributors</p>",
+                            "type": "html"
+                        },
+                        "meta": {
+                            "attribution": "Map Data &copy; OpenStreetMap contributors"
+                        },
+                        "title": "OpenStreetMap",
+                        "type": "osm"
+                    }
+                ],
+                "zoom": {
+                    "scales": [
+                        4000000,
+                        2000000,
+                        1000000,
+                        500000,
+                        250000,
+                        150000,
+                        70000,
+                        35000,
+                        15000,
+                        8000,
+                        4000,
+                        2000,
+                        1000
+                    ],
+                    "initScale": 250000
+                }
+            },
+            "printer": {
+                "templates": [
+                    {
+                        "path": "print.cx.html",
+                        "title": "Template",
+                        "type": "html",
+                        "dataModel": [
+                            {
+                                "name": "title",
+                                "title": "Map Title"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "search": {
+                "providers": [
+                    {
+                        "defaultContext": "view",
+                        "type": "nominatim"
+                    }
+                ]
+            },
+            "title": "Stadt Düsseldorf",
+            "uid": "default"
+        }
+    ],
+    "server": {
+        "logLevel": "DEBUG",
+        "mapproxy": {
+            "enabled": true,
+            "threads": 0,
+            "workers": 6
+        },
+        "qgis": {
+            "debug": 0,
+            "serverLogLevel": 0,
+            "workers": 4
+        },
+        "spool": {
+            "enabled": true,
+            "jobFrequency": 3,
+            "monitorFrequency": 5,
+            "threads": 0,
+            "workers": 4
+        },
+        "timeout": 20,
+        "web": {
+            "enabled": true,
+            "threads": 0,
+            "workers": 6
+        }
+    },
+    "timeZone": "Europe/Berlin",
+    "web": {
+        "sites": [
+            {
+                "host": "*",
+                "rewrite": [],
+                "root": {
+                    "dir": "/data/www-root"
+                }
+            }
+        ]
+    }
+}

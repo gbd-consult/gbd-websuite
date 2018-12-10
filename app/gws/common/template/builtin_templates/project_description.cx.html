@@ -1,0 +1,15 @@
+@with project.title as x
+    <p class="head">{x | html}</p>
+@end
+
+@with meta.abstract as x
+    <p>{x | html | nl2br}</p>
+@end
+
+@with meta.image as x
+    <p><img src="{x | url}" /></p>
+@end
+
+@with meta.url as x
+    <p><a href="{x | url}" target="_blank" rel="noopener">Metadata</a></p>
+@end

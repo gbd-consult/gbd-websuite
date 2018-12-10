@@ -1,0 +1,91 @@
+@def head(s)
+    <tr class="thead"><td colspan=2>{s | html}</td></tr>
+@end
+
+@def row(key, val)
+    @with val
+        <tr>
+            <th>{key | html | nl2br}</th>
+            <td>{val | html | nl2br}</td>
+        </tr>
+    @end
+@end
+
+@def area(v)
+    @if v:
+        @return v | '{:.1f}m²'
+    @end
+    @return '-'
+@end
+
+@let fs = attributes
+
+<p class="head2">Flurstück {fs.vollnummer}</p>
+
+
+<table>
+
+    <tbody>
+        @head 'Basisdaten'
+
+        @row 'Flurnummer', fs.flurnummer
+        @row 'Zähler', fs.zaehler
+        @row 'Nenner', fs.nenner
+        @row 'Fläche', fs.amtlicheflaeche | area
+
+        @row 'ges. Gebäudefläche', fs.gebaeude_area | area
+    </tbody>
+
+    <tbody>
+        @head 'Lage'
+
+        @row 'Gemeinde', fs.gemeinde
+        @row 'Gemarkung', fs.gemarkung
+        @each fs.lage as la
+            @row 'Adresse', la.strasse + ' ' + la.hausnummer
+        @end
+    </tbody>
+
+    @with fs.gebaeude as geb
+        <tbody>
+            @head 'Gebäudenachweis'
+
+            @each geb as g
+                @row g.gebaeudefunktion, g.area | area
+            @end
+        </tbody>
+    @end
+
+    @each fs.buchung as bs
+        <tbody>
+            @head 'Buchungssatz'
+
+            @row 'Buchungsart', bs.buchungsart
+            @row 'Anteil', bs.anteil
+            @row 'Buchungsblattnummer', bs.buchungsblatt.buchungsblattnummermitbuchstabenerweiterung
+        </tbody>
+
+        @each bs.eigentuemer as eg
+            @let val
+                {eg.person.vorname} {eg.person.nachnameoderfirma}
+                @with eg.person.anschrift as a
+                    {a.strasse} {a.hausnummer}
+                    {a.postleitzahlpostzustellung} {a.ort_post}
+                @end
+            @end
+            @row 'Eigentümer\n' + eg.anteil, val
+        @end
+    @end
+
+    @with fs.nutzung as nutzung
+        <tbody>
+            @head 'Nutzung'
+
+            @each nutzung as nu
+                @row nu.type, nu.a_area | area
+            @end
+        </tbody>
+    @end
+
+
+</table>
