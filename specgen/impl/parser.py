@@ -38,13 +38,13 @@ def _value(node, strict=True):
 
 
 def _mod_name(path):
-    path = path.split('.')[0]
-    p = path.split('/')
-    while p[0] != 'gws':
-        p.pop(0)
-    if p[-1].startswith('__init'):
-        p.pop()
-    return '.'.join(p)
+    # /home/xyz/gbd-websuite/app/gws/common/search/__init__.py => gws.common.search
+    m = re.search(r'/app/gws/([^.]+)', path)
+    if not m:
+        raise ValueError('cannot parse path %r' % path)
+    p = 'gws.' + m.group(1).replace('/', '.')
+    p = re.sub(r'.__init__$', '', p)
+    return p
 
 
 def _docstring(node):

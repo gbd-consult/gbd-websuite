@@ -25,10 +25,10 @@ spec:
 	$(PYTHON) $(BASE)/specgen/run.py
 
 client-dev: spec
-	pushd $(BASE)/client && npm run dev-server && popd
+	cd $(BASE)/client && npm run dev-server && cd $(PWD)
 
 client: spec
-	pushd $(BASE)/client && npm run production && popd
+	cd $(BASE)/client && npm run production && cd $(PWD)
 
 doc: spec
 	sphinx-build -b html $(SPHINXOPTS) "$(SPHINXBASE)" $(SPHINXBUILD)
@@ -37,10 +37,10 @@ doc-dev: spec
 	sphinx-autobuild -B -b html $(SPHINXOPTS) "$(SPHINXBASE)" $(SPHINXBUILD)
 
 image: client
-	$(PYTHON) $(BASE)/docker/build.py release $(IMAGE_NAME)
+	$(PYTHON) $(BASE)/docker/build.py release $(IMAGE_NAME) && cd $(PWD)
 
 image-debug: client
-	$(PYTHON) $(BASE)/docker/build.py debug $(IMAGE_NAME)
+	$(PYTHON) $(BASE)/docker/build.py debug $(IMAGE_NAME) && cd $(PWD)
 
 clean:
 	rm -rf $(BASE)/client/_build
