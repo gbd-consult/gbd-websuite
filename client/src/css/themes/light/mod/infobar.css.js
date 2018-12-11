@@ -125,8 +125,13 @@ module.exports = v => ({
         ...v.GOOGLE_SVG('action/help', v.INFOBAR_ICON_COLOR),
     },
 
-    '.modInfobarAboutButton': {
-        ...v.LOCAL_SVG('gbd-neg'),
+    '.uiIconButton.modInfobarAboutButton': {
+        width: 100,
+        height: v.CONTROL_SIZE,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center center',
+        backgroundSize: [100, 24],
+        ...v.LOCAL_SVG('gbd-neg-full'),
     }
 
 });
