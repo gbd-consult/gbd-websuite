@@ -42,8 +42,8 @@ def run(source_dir, out_dir, VERSION):
 
     decls, stub = typescript.generate(types, methods)
     _write('gws-server.api.ts', decls)
-    _write('gws-server.ts', stub)
-    _write('gws-server.json', json.dumps({'version': VERSION}))
+    _write('gws-server.base.ts', stub)
+    ###_write('gws-server.json', json.dumps({'version': VERSION}))
 
     cli_funcs = [p for p in objects if p['kind'] == 'clifunc']
     _write('cli.spec.json', _json(cli_funcs))

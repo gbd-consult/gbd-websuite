@@ -286,8 +286,8 @@ class _CliRefGenerator:
         return words[self.lang][s]
 
 
-def make_config_ref(lang, server_root, doc_root):
-    spec = server_root + '/app/spec/en/config.spec.json'
+def make_config_ref(lang, app_dir, doc_root):
+    spec = app_dir + '/spec/config.spec.json'
     page = 'configref'
     root_type = 'gws.common.application.Config'
 
@@ -301,8 +301,8 @@ def make_config_ref(lang, server_root, doc_root):
     _write_if_changed(out, text)
 
 
-def make_cli_ref(lang, server_root, doc_root):
-    spec = server_root + '/app/spec/en/cli.spec.json'
+def make_cli_ref(lang, app_dir, doc_root):
+    spec = app_dir + '/spec/cli.spec.json'
     page = 'cliref'
 
     with open(spec) as fp:

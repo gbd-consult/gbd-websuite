@@ -51,4 +51,4 @@ Also, hier sind Optionen, die Sie in Ihrem ``docker run`` Befehl anpassen müsse
 
 Wir haben ein Beispielskript ``server-sample. sh``, das Sie an Ihre Bedürfnisse anpassen können: 
 
-.. literalinclude:: /{SERVER_ROOT}/server-sample.sh
+.. literalinclude:: /{APP_DIR}/server-sample.sh

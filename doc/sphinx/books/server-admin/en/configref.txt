@@ -81,11 +81,13 @@ Flurstückssuche (cadaster parlcels search) action
    ~*db*~, ~``str``~, ~database (postgis) provider ID~, ~no~, ~~
    ~*eigentuemer*~, ~:ref:`server_admin_en_configref_gws_ext_action_alkis_EigentuemerConfig`~, ~access to the Eigentümer (eigentuemer) information~, ~no~, ~~
    ~*excludeGemarkung*~, ~[``str``...]~, ~Gemarkung (AU) IDs to exclude from search~, ~no~, ~~
+   ~*exportTemplate*~, ~:ref:`server_admin_en_configref_gws_types_ext_template_Config`~, ~template for Flurstueck export~, ~no~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~template for on-screen Flurstueck details~, ~no~, ~~
    ~*grundbuch*~, ~:ref:`server_admin_en_configref_gws_ext_action_alkis_GrundbuchConfig`~, ~access to the Grundbuch (register) information~, ~no~, ~~
    ~*indexSchema*~, ~``str``~, ~schema to store gws internal indexes, must be writable~, ~no~, ~"gws"~
    ~*limit*~, ~``int``~, ~search results limit~, ~no~, ~100~
    ~*printTemplate*~, ~:ref:`server_admin_en_configref_gws_types_ext_template_Config`~, ~template for printed Flurstueck details~, ~no~, ~~
+   ~*selectMode*~, ~``bool``~, ~select mode~, ~no~, ~false~
    ~*type*~, ~``str``~, ~"alkis"~, ~yes~, ~~
 
 .. _server_admin_en_configref_gws_ext_action_alkis_EigentuemerConfig:
@@ -1458,6 +1460,28 @@ TemplateConfig
    ~*title*~, ~``str``~, ~template title~, ~no~, ~~
    ~*type*~, ~``str``~, ~template type~, ~yes~, ~~
 
+.. _server_admin_en_configref_gws_ext_template_csv_Config:
+
+TemplateCsvConfig
+-----------------
+
+
+HTML template
+
+*Properties:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: name, type, , required, default
+
+   ~*dataModel*~, ~[:ref:`server_admin_en_configref_gws_types_AttributeConfig`...]~, ~user-editable template attributes~, ~no~, ~~
+   ~*path*~, ~``filepath``~, ~path to a template file~, ~no~, ~~
+   ~*qualityLevels*~, ~[:ref:`server_admin_en_configref_gws_types_TemplateQualityLevel`...]~, ~list of quality levels supported by the template~, ~no~, ~~
+   ~*text*~, ~``str``~, ~template content~, ~no~, ~~
+   ~*title*~, ~``str``~, ~template title~, ~no~, ~~
+   ~*type*~, ~``str``~, ~"csv"~, ~yes~, ~~
+
 .. _server_admin_en_configref_gws_ext_template_html_Config:
 
 TemplateHtmlConfig
@@ -1793,5 +1817,6 @@ TemplateConfig
 
 *One of:*
 
+* :ref:`server_admin_en_configref_gws_ext_template_csv_Config`
 * :ref:`server_admin_en_configref_gws_ext_template_html_Config`
 * :ref:`server_admin_en_configref_gws_ext_template_qgis_Config`

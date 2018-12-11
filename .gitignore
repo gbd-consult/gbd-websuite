@@ -12,9 +12,11 @@
 .idea
 .mypy*
 .pytest_cache
-/client/dist
+/doc/_build
+/client/_build
 /client/docs
 /client/node_modules
+/image/_build
 ___*
 __pycache__
 _autosummary

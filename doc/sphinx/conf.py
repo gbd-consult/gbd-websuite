@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 
+VERSION='0.0.9'
+
 project = 'GBD WebSuite'
 copyright = '2018, Geoinformatikbüro Dassau GmbH'
 author = 'Geoinformatikbüro Dassau GmbH'
-version = '0.0.8'
-release = '0.0.8'
+version = VERSION
+release = VERSION
 
 import os
 import sys
 import re
 
-# this assumes that gws-server and gws-client are cloned in the same dir as gws-docs
 
 DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
-SERVER_ROOT = os.path.abspath(DOC_ROOT + '../../../gws-server')
-CLIENT_ROOT = os.path.abspath(DOC_ROOT + '../../../gws-client')
+APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
 
-sys.path.insert(0, SERVER_ROOT + '/app')
+sys.path.insert(0, APP_DIR)
 sys.path.insert(0, DOC_ROOT)
 
 # noinspection PyUnresolvedReferences
@@ -75,8 +75,8 @@ def replace_tables(app, docname, source):
 
 
 def setup(app):
-    util.make_config_ref('en', SERVER_ROOT, DOC_ROOT)
-    util.make_cli_ref('en', SERVER_ROOT, DOC_ROOT)
+    util.make_config_ref('en', APP_DIR, DOC_ROOT)
+    util.make_cli_ref('en', APP_DIR, DOC_ROOT)
 
     app.add_stylesheet('extras.css')
     app.add_javascript('extras.js')

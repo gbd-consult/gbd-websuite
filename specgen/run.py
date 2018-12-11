@@ -3,25 +3,34 @@ import os
 import re
 
 
-def get_version(path):
+def inject_version(version, path):
     with open(path) as fp:
-        for s in fp:
-            m = re.search(r"VERSION\s*=\s*'(.+?)'", s)
-            if m:
-                return m.group(1)
+        t = fp.read()
+    t = re.sub(r'VERSION\s*=\s*.+', 'VERSION=%r' % version, t)
+    with open(path, 'w') as fp:
+        fp.write(t)
 
 
 if __name__ == '__main__':
 
     cdir = os.path.dirname(__file__)
-    VERSION = get_version(cdir + '/../app/gws/core/const.py')
+    base = os.path.abspath(cdir + '/..')
 
-    try:
-        source_dir = sys.argv[1]
-        out_dir = sys.argv[2]
-    except IndexError:
-        source_dir = os.path.abspath(cdir + '/../app/gws')
-        out_dir = os.path.abspath(cdir + '/../app/spec/en')
+    with open(cdir + '/../VERSION') as fp:
+        VERSION = fp.read().strip()
+
+    paths = [
+        base + '/app/gws/core/const.py',
+        base + '/app/server-sample.sh',
+        base + '/client/options.js',
+        base + '/doc/sphinx/conf.py',
+    ]
+
+    for path in paths:
+        inject_version(VERSION, path)
+
+    source_dir = os.path.abspath(base + '/app/gws')
+    out_dir = os.path.abspath(base + '/app/spec')
 
     sys.path.append(cdir)
     # noinspection PyUnresolvedReferences

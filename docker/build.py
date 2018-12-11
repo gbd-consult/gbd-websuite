@@ -54,46 +54,38 @@ def run(cmd):
 
 
 def load_const():
-    for s in lines_from(_f('{SOURCE_DIR}/app/gws/core/const.py')):
+    for s in lines_from(_f('{BASE_DIR}/app/gws/core/const.py')):
         exec(s)
     for k, v in locals().items():
         setattr(ENV, k, v)
 
 
 def prepare():
-    run("rm -fr {QGIS_DIR}")
     run("curl -L '{QGIS_URL}' -o {QGIS_DIR}.tar.gz")
     run("tar xzvf {QGIS_DIR}.tar.gz")
 
-    run("rm -fr {WKHTMLTOPDF_PATH}")
     run("curl -L '{WKHTMLTOPDF_URL}' -o {WKHTMLTOPDF_PATH}")
 
-    run("rm -fr {ALKISPLUGIN_DIR}")
     run("curl -L '{ALKISPLUGIN_URL}' -o {ALKISPLUGIN_DIR}.tar.gz")
     run("tar xzvf {ALKISPLUGIN_DIR}.tar.gz")
 
-    run("rm -fr {CLIENT_DIR}")
-    run("curl -L '{CLIENT_URL}' -o {CLIENT_DIR}.tar.gz")
-    run("tar xzvf {CLIENT_DIR}.tar.gz")
+    run("rsync -a --exclude-from='{BASE_DIR}/.gitignore' {BASE_DIR}/app .")
 
-    run("rm -fr app")
-    run("rsync -a --exclude-from='{SOURCE_DIR}/.gitignore' {SOURCE_DIR}/app .")
+    run("cp -r  {BASE_DIR}/data .")
 
-    run("rm -fr data")
-    run("cp -r  {SOURCE_DIR}/data .")
-
-    run("mv {CLIENT_DIR} data/www-root")
+    run("mkdir -p data/www-root/gws-client")
+    run("mv {BASE_DIR}/client/_build/* data/www-root/gws-client")
 
     with open('data/www-root/index.html') as fp:
         index_html = fp.read()
 
-    index_html = index_html.replace('{VERSION}', ENV.VERSION)
+    index_html = index_html.replace('{gws.version}', ENV.VERSION)
 
     with open('data/www-root/index.html', 'w') as fp:
         fp.write(index_html)
 
-    ENV.APTS = ' '.join(lines_from(_f('{SOURCE_DIR}/build/apt.lst')))
-    ENV.PIPS = ' '.join(lines_from(_f('{SOURCE_DIR}/build/pip.lst')))
+    ENV.APTS = ' '.join(lines_from(_f('{SCRIPT_DIR}/apt.lst')))
+    ENV.PIPS = ' '.join(lines_from(_f('{SCRIPT_DIR}/pip.lst')))
 
 
 def dockerfile():
@@ -143,10 +135,21 @@ def dockerfile():
 
 
 def main(argv):
-    ENV.BUILD_DIR = os.getcwd()
-    ENV.SOURCE_DIR = os.path.abspath(os.path.dirname(__file__) + '/..')
+    cd = os.path.dirname(__file__)
+
+    ENV.SCRIPT_DIR = os.path.abspath(cd)
+    ENV.BASE_DIR = os.path.abspath(cd + '/..')
+    ENV.BUILD_DIR = os.path.abspath(cd + '/_build')
+
+    run("rm -fr {BUILD_DIR}")
+    run("mkdir -p {BUILD_DIR}")
+
+    os.chdir(ENV.BUILD_DIR)
 
     load_const()
+
+    with open(ENV.BASE_DIR + '/VERSION') as fp:
+        ENV.VERSION = fp.read().strip()
 
     # MODE is debug or release
 
@@ -177,9 +180,6 @@ def main(argv):
 
     ENV.ALKISPLUGIN_URL = 'http://gws-files.gbd-consult.de/alkisplugin.tar.gz'
     ENV.ALKISPLUGIN_DIR = 'alkisplugin'
-
-    ENV.CLIENT_URL = _f('http://gws-files.gbd-consult.de/gws-client-{VERSION}.tar.gz')
-    ENV.CLIENT_DIR = 'gws-client'
 
     prepare()
 

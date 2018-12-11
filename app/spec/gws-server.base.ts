@@ -1,6 +1,6 @@
 /**
  * Gws Server Base Implementation
- * Version 0.0.8
+ * Version 0.0.9
  */
 
 import * as gws from './gws-server.api';

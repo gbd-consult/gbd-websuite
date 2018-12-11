@@ -1,0 +1,22 @@
+.system-message {
+    border: 2px solid red;
+    padding: 10px;
+    color: red;
+}
+
+.wy-table-responsive table td {
+    white-space: normal !important;
+}
+
+.wy-nav-content {
+    max-width: 100% !important;
+}
+
+body.nonav nav {
+    display: none;
+}
+
+body.nonav .wy-nav-content-wrap {
+    margin-left: 10px;
+
+}

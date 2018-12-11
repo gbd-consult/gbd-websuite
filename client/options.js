@@ -1,8 +1,10 @@
+VERSION='0.0.9'
+
 module.exports = {
-    version: require('./src/node_modules/gws/core/gws-server.json').version,
+    version: VERSION,
 
     appName: "gws-client",
-    dist: "dist",
+    dist: "_build",
     gwsServerUrl: "http://127.0.0.1:3333",
 
     vendors: [
