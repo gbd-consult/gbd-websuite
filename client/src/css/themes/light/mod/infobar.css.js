@@ -126,12 +126,12 @@ module.exports = v => ({
     },
 
     '.uiIconButton.modInfobarAboutButton': {
-        width: 100,
+        width: 120,
         height: v.CONTROL_SIZE,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center center',
-        backgroundSize: [100, 24],
-        ...v.LOCAL_SVG('gbd-neg-full'),
+        backgroundSize: [120, 60],
+        ...v.LOCAL_SVG('gbd_neg_name'),
     }
 
 });
