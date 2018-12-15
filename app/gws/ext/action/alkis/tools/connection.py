@@ -24,13 +24,11 @@ class AlkisConnection(Connection):
             return 0
         return int(m.group(1))
 
-    def drop_all(self):
-        for table in self.table_names(self.index_schema):
-            self.exec(f'DROP TABLE IF EXISTS {self.index_schema}.{table}')
-
     def create_index_table(self, table, sql):
         self.exec(f'DROP TABLE IF EXISTS {self.index_schema}.{table}')
         self.exec(f'CREATE TABLE {self.index_schema}.{table} ({sql})')
+
+    def mark_index_table(self, table):
         comment = 'Version:' + str(version.INDEX)
         self.exec(f'COMMENT ON TABLE {self.index_schema}.{table} IS %s', [comment])
 
@@ -41,6 +39,10 @@ class AlkisConnection(Connection):
 
     def index_insert(self, table, data, page_size=100):
         self.batch_insert(self.index_schema + '.' + table, data, page_size)
+
+    def drop_all(self):
+        for tab in self.table_names(self.index_schema):
+            self.exec(f'DROP TABLE IF EXISTS {self.index_schema}.{tab}')
 
     def validate_index_geoms(self, table):
         idx = self.index_schema

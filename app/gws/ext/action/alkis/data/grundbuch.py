@@ -58,8 +58,6 @@ def _all_person(conn):
 
 
 def _all_buchungsblatt(conn):
-    dat = conn.data_schema
-
     persons = _all_person(conn)
     blatts = {}
 
@@ -110,8 +108,6 @@ def _make_list(stellen, stelle, seen_ids):
 
 
 def _all_buchungsstelle(conn):
-    dat = conn.data_schema
-
     blatts = _all_buchungsblatt(conn)
     stellen = {}
 
@@ -165,13 +161,13 @@ def _all_buchungsstelle(conn):
 def _create_stelle_index(conn: connection.AlkisConnection):
     data = _all_buchungsstelle(conn)
 
-    with conn.transaction():
-        conn.create_index_table(stelle_index, f'''
-                id SERIAL PRIMARY KEY,
-                gml_id CHARACTER VARYING,
-                stellen CHARACTER VARYING
-        ''')
-        conn.index_insert(stelle_index, data)
+    conn.create_index_table(stelle_index, f'''
+            id SERIAL PRIMARY KEY,
+            gml_id CHARACTER VARYING,
+            stellen CHARACTER VARYING
+    ''')
+    conn.index_insert(stelle_index, data)
+    conn.mark_index_table(stelle_index)
 
 
 def create_index(conn):

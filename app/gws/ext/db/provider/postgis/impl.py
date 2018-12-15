@@ -19,6 +19,7 @@ class Connection:
     def __init__(self, params):
         self.params = params
         self.conn = None
+        self.itersize = params.get('itersize', 100)
 
     def __enter__(self):
         self.conn = psycopg2.connect(**self.params)
@@ -27,9 +28,10 @@ class Connection:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.conn.close()
+        self.conn = None
         return False
 
-    def _exec(self, cur, sql, params):
+    def _exec(self, cur, sql, params=None):
         try:
             return cur.execute(sql, params)
         except Error:
@@ -37,6 +39,27 @@ class Connection:
             for s in str(sql).splitlines():
                 gws.log.debug(s)
             raise
+
+    def server_select(self, sql, params=None):
+        uid = 'cur' + gws.random_string(32)
+        cnames = None
+
+        self.exec('BEGIN')
+        try:
+            with self.conn.cursor() as cur:
+                self._exec(cur, f'DECLARE {uid} CURSOR FOR {sql}', params)
+                while True:
+                    self._exec(cur, f'FETCH FORWARD {self.itersize} FROM {uid}')
+                    rs = cur.fetchall()
+                    if not rs:
+                        break
+                    if not cnames:
+                        cnames = [c.name for c in cur.description]
+                    for rec in rs:
+                        yield dict(zip(cnames, rec))
+        finally:
+            if self.conn:
+                self.exec('COMMIT')
 
     def select(self, sql, params=None):
         with self.conn.cursor() as cur:
@@ -75,50 +98,38 @@ class Connection:
             raise
 
     def crs_for_column(self, table, column):
-        table_schema, table = self.schema_and_table(table)
-        sql = f"SELECT Find_SRID('{table_schema}', '{table}', '{column}') AS n"
-        r = self.select_one(sql)
-        # @TODO do it right with auth_name!
+        schema, table = self.schema_and_table(table)
+        r = self.select_one(
+            'SELECT Find_SRID(%s, %s, %s) AS n',
+            [schema, table, column])
         return 'EPSG:%s' % r['n']
 
     def table_names(self, schema):
-        sql = '''
-            SELECT 
-                table_name 
-            FROM 
-                information_schema.tables 
-            WHERE table_schema = %s
-        '''
+        rs = self.select('''
+            SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = %s
+        ''', [schema])
 
-        rs = self.select(sql, [schema])
         return [r['table_name'] for r in rs]
 
     def columns(self, table):
         schema, table = self.schema_and_table(table)
+        rs = self.select('''
+            SELECT column_name, data_type 
+                FROM information_schema.columns 
+                WHERE table_schema = %s AND table_name = %s
+        ''', [schema, table])
 
-        sql = '''
-            SELECT 
-                column_name, data_type
-            FROM 
-                information_schema.columns 
-            WHERE 
-                table_schema = %s AND table_name = %s
-        '''
-
-        rs = self.select(sql, [schema, table])
         return {r['column_name']: r['data_type'] for r in rs}
 
     def insert_one(self, table, data):
         cols = data.keys()
-
         sql = 'INSERT INTO %s (%s) VALUES (%s)' % (
             self.quote_table(table),
-            ','.join(self.quote_column(c) for c in cols),
+            ','.join(self.quote_ident(c) for c in cols),
             ','.join('%s' for _ in cols),
         )
-
-        gws.p(sql, data)
-
         return self.exec(sql, [data[c] for c in cols])
 
     def batch_insert(self, table, data, page_size=100):
@@ -138,7 +149,7 @@ class Connection:
 
     def user_can(self, priv, table):
         s, tab = self.schema_and_table(table)
-        return self.select_value(f'''
+        return self.select_value('''
             SELECT COUNT(*) FROM information_schema.role_table_grants 
                 WHERE 
                     table_schema = %s
@@ -149,7 +160,7 @@ class Connection:
 
     def quote_table(self, table, schema=None):
         s, tab = self.schema_and_table(table)
-        return '"%s"."%s"' % (schema or s, tab)
+        return self.quote_ident(schema or s) + '.' + self.quote_ident(tab)
 
-    def quote_column(self, s):
-        return '"%s"' % s
+    def quote_ident(self, s):
+        return psycopg2.extensions.quote_ident(s, self.conn)

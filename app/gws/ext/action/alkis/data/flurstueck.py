@@ -290,61 +290,62 @@ def _create_main_index(conn: connection.AlkisConnection):
 
     gws.log.info('flurstueck: writing')
 
-    with conn.transaction():
-        conn.create_index_table(main_index, f'''
-            gml_id CHARACTER(16) NOT NULL,
+    conn.create_index_table(main_index, f'''
+        gml_id CHARACTER(16) NOT NULL,
 
-            land CHARACTER VARYING,
-            regierungsbezirk CHARACTER VARYING,
-            kreis CHARACTER VARYING,
-            gemeinde CHARACTER VARYING,
-            gemarkung_id CHARACTER VARYING,
-            gemarkung CHARACTER VARYING,
-            gemarkung_v CHARACTER VARYING,
-            anlass CHARACTER VARYING,
-            endet CHARACTER VARYING,
-            zeitpunktderentstehung CHARACTER VARYING,
-            amtlicheflaeche FLOAT,
-            flurnummer INTEGER,
-            zaehler INTEGER,
-            nenner CHARACTER VARYING,
-            flurstuecksfolge CHARACTER VARYING,
-            
-            zaehlernenner CHARACTER VARYING,
-            vollnummer CHARACTER VARYING,
-            
-            flurstueckskennzeichen CHARACTER(20),
+        land CHARACTER VARYING,
+        regierungsbezirk CHARACTER VARYING,
+        kreis CHARACTER VARYING,
+        gemeinde CHARACTER VARYING,
+        gemarkung_id CHARACTER VARYING,
+        gemarkung CHARACTER VARYING,
+        gemarkung_v CHARACTER VARYING,
+        anlass CHARACTER VARYING,
+        endet CHARACTER VARYING,
+        zeitpunktderentstehung CHARACTER VARYING,
+        amtlicheflaeche FLOAT,
+        flurnummer INTEGER,
+        zaehler INTEGER,
+        nenner CHARACTER VARYING,
+        flurstuecksfolge CHARACTER VARYING,
+        
+        zaehlernenner CHARACTER VARYING,
+        vollnummer CHARACTER VARYING,
+        
+        flurstueckskennzeichen CHARACTER(20),
 
-            lage CHARACTER VARYING,
-            c_lage INTEGER,
+        lage CHARACTER VARYING,
+        c_lage INTEGER,
 
-            gebaeude CHARACTER VARYING,
-            gebaeude_area FLOAT,
-            c_gebaeude INTEGER,
+        gebaeude CHARACTER VARYING,
+        gebaeude_area FLOAT,
+        c_gebaeude INTEGER,
 
-            buchung CHARACTER VARYING,
-            c_buchung INTEGER,
-            
-            bb_number CHARACTER VARYING,
+        buchung CHARACTER VARYING,
+        c_buchung INTEGER,
+        
+        bb_number CHARACTER VARYING,
 
-            nutzung CHARACTER VARYING,
-            c_nutzung INTEGER,
+        nutzung CHARACTER VARYING,
+        c_nutzung INTEGER,
 
-            geom geometry(GEOMETRY, {conn.srid}),
-            x FLOAT,
-            y FLOAT
-        ''')
-        conn.index_insert(main_index, data)
+        geom geometry(GEOMETRY, {conn.srid}),
+        x FLOAT,
+        y FLOAT
+    ''')
+    conn.index_insert(main_index, data)
 
     gws.log.info('flurstueck: writing names')
 
-    with conn.transaction():
-        conn.create_index_table(name_index, f'''
-            fs_id CHARACTER(16) NOT NULL,
-            vorname CHARACTER VARYING,
-            nachname CHARACTER VARYING
-        ''')
-        conn.index_insert(name_index, cache.name)
+    conn.create_index_table(name_index, f'''
+        fs_id CHARACTER(16) NOT NULL,
+        vorname CHARACTER VARYING,
+        nachname CHARACTER VARYING
+    ''')
+    conn.index_insert(name_index, cache.name)
+
+    conn.mark_index_table(main_index)
+    conn.mark_index_table(name_index)
 
     gws.log.info('flurstueck: done')
 
@@ -483,5 +484,3 @@ def find(conn: connection.AlkisConnection, query, limit):
         return gws.compact(fs)
 
     return count, [_unpack(fs) for fs in data]
-
-

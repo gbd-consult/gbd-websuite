@@ -251,16 +251,15 @@ def _create_props_index(conn):
             'property_value': value,
         })
 
-    with conn.transaction():
-        conn.create_index_table(props_index, '''
-            id SERIAL PRIMARY KEY,
-            table_name CHARACTER VARYING,
-            column_name CHARACTER VARYING,
-            property_key CHARACTER VARYING,
-            property_value CHARACTER VARYING
-        ''')
-        conn.index_insert(props_index, data)
-
+    conn.create_index_table(props_index, '''
+        id SERIAL PRIMARY KEY,
+        table_name CHARACTER VARYING,
+        column_name CHARACTER VARYING,
+        property_key CHARACTER VARYING,
+        property_value CHARACTER VARYING
+    ''')
+    conn.index_insert(props_index, data)
+    conn.mark_index_table(props_index)
 
 def _create_place_index(conn: connection.AlkisConnection):
     data = []
@@ -281,15 +280,15 @@ def _create_place_index(conn: connection.AlkisConnection):
 
             })
 
-    with conn.transaction():
-        conn.create_index_table(place_index, '''
-            id SERIAL PRIMARY KEY,
-            table_name CHARACTER VARYING,
-            place_key CHARACTER VARYING,
-            place_id CHARACTER VARYING,
-            place_name CHARACTER VARYING
-        ''')
-        conn.index_insert(place_index, data)
+    conn.create_index_table(place_index, '''
+        id SERIAL PRIMARY KEY,
+        table_name CHARACTER VARYING,
+        place_key CHARACTER VARYING,
+        place_id CHARACTER VARYING,
+        place_name CHARACTER VARYING
+    ''')
+    conn.index_insert(place_index, data)
+    conn.mark_index_table(place_index)
 
 
 def create_index(conn):

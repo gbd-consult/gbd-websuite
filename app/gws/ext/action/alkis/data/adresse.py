@@ -114,32 +114,29 @@ def _create_gebs_index(conn: connection.AlkisConnection):
 
     gws.log.info('gebaeude: copying')
 
-    with conn.transaction():
-        conn.create_index_table(fsx_temp, f'''
-                id SERIAL PRIMARY KEY,
-                gml_id CHARACTER VARYING,
-                isvalid BOOLEAN,
-                geom geometry(GEOMETRY, {conn.srid})
-        ''')
+    conn.create_index_table(fsx_temp, f'''
+        id SERIAL PRIMARY KEY,
+        gml_id CHARACTER VARYING,
+        isvalid BOOLEAN,
+        geom geometry(GEOMETRY, {conn.srid})
+    ''')
 
-        sql = conn.make_select_from_ax('ax_flurstueck', ['gml_id', 'wkb_geometry'])
-        conn.exec(f'''INSERT INTO {idx}.{fsx_temp} (gml_id, geom) ''' + sql)
+    sql = conn.make_select_from_ax('ax_flurstueck', ['gml_id', 'wkb_geometry'])
+    conn.exec(f'INSERT INTO {idx}.{fsx_temp} (gml_id, geom) {sql}')
 
     gebs = _collect_gebs(conn)
 
-    with conn.transaction():
-        conn.create_index_table(geb_temp, f'''
-                id SERIAL PRIMARY KEY,
-                gml_id CHARACTER VARYING,
-                attributes CHARACTER VARYING,
-                isvalid BOOLEAN,
-                geom geometry(GEOMETRY, {conn.srid})
-        ''')
-        conn.index_insert(geb_temp, gebs)
+    conn.create_index_table(geb_temp, f'''
+        id SERIAL PRIMARY KEY,
+        gml_id CHARACTER VARYING,
+        attributes CHARACTER VARYING,
+        isvalid BOOLEAN,
+        geom geometry(GEOMETRY, {conn.srid})
+    ''')
+    conn.index_insert(geb_temp, gebs)
 
-    with conn.transaction():
-        conn.create_index_index(fsx_temp, 'geom', 'gist')
-        conn.create_index_index(geb_temp, 'geom', 'gist')
+    conn.create_index_index(fsx_temp, 'geom', 'gist')
+    conn.create_index_index(geb_temp, 'geom', 'gist')
 
     gws.log.info('gebaeude: validating')
 
@@ -149,59 +146,58 @@ def _create_gebs_index(conn: connection.AlkisConnection):
     cnt = conn.count(f'{idx}.{geb_temp}')
     step = 1000
 
-    with conn.transaction():
-        conn.create_index_table(gebs_index, f'''
-                id SERIAL PRIMARY KEY,
-                gml_id CHARACTER VARYING,
-                fs_id CHARACTER VARYING,
-                attributes CHARACTER VARYING,
-                area FLOAT,
-                fs_geom geometry(GEOMETRY, {conn.srid}),
-                gb_geom geometry(GEOMETRY, {conn.srid})
-        ''')
+    conn.create_index_table(gebs_index, f'''
+        id SERIAL PRIMARY KEY,
+        gml_id CHARACTER VARYING,
+        fs_id CHARACTER VARYING,
+        attributes CHARACTER VARYING,
+        area FLOAT,
+        fs_geom geometry(GEOMETRY, {conn.srid}),
+        gb_geom geometry(GEOMETRY, {conn.srid})
+    ''')
 
-        with ProgressIndicator('gebaeude: search', cnt) as pi:
-            for n in range(0, cnt, step):
-                n1 = n + step
-                conn.exec(f'''
-                    INSERT INTO {idx}.{gebs_index} 
-                            (gml_id, fs_id, attributes, fs_geom, gb_geom)
-                        SELECT
-                            gb.gml_id,
-                            fs.gml_id,
-                            gb.attributes,
-                            fs.geom,
-                            gb.geom
-                        FROM
-                            {idx}.{geb_temp} AS gb,
-                            {idx}.{fsx_temp} AS fs
-                        WHERE
-                            {n} < gb.id AND gb.id <= {n1}
-                            AND ST_Intersects(gb.geom, fs.geom)
-                ''')
-                pi.update(step)
+    with ProgressIndicator('gebaeude: search', cnt) as pi:
+        for n in range(0, cnt, step):
+            n1 = n + step
+            conn.exec(f'''
+                INSERT INTO {idx}.{gebs_index} 
+                        (gml_id, fs_id, attributes, fs_geom, gb_geom)
+                    SELECT
+                        gb.gml_id,
+                        fs.gml_id,
+                        gb.attributes,
+                        fs.geom,
+                        gb.geom
+                    FROM
+                        {idx}.{geb_temp} AS gb,
+                        {idx}.{fsx_temp} AS fs
+                    WHERE
+                        {n} < gb.id AND gb.id <= {n1}
+                        AND ST_Intersects(gb.geom, fs.geom)
+            ''')
+            pi.update(step)
 
     cnt = conn.count(f'{idx}.{gebs_index}')
     step = 1000
 
-    with conn.transaction():
-        with ProgressIndicator('gebaeude: areas', cnt) as pi:
-            for n in range(0, cnt, step):
-                n1 = n + step
-                conn.exec(f'''
-                    UPDATE {idx}.{gebs_index}
-                        SET area = ST_Area(ST_Intersection(fs_geom, gb_geom))
-                        WHERE
-                            {n} < id AND id <= {n1}
-                ''')
-                pi.update(step)
+    with ProgressIndicator('gebaeude: areas', cnt) as pi:
+        for n in range(0, cnt, step):
+            n1 = n + step
+            conn.exec(f'''
+                UPDATE {idx}.{gebs_index}
+                    SET area = ST_Area(ST_Intersection(fs_geom, gb_geom))
+                    WHERE
+                        {n} < id AND id <= {n1}
+            ''')
+            pi.update(step)
 
     gws.log.info('gebaeude: cleaning up')
 
-    with conn.transaction():
-        conn.exec(f'DELETE FROM {idx}.{gebs_index} WHERE area < %s', [MIN_GEBAEUDE_AREA])
-        conn.exec(f'DROP TABLE {idx}.{fsx_temp} CASCADE')
-        conn.exec(f'DROP TABLE {idx}.{geb_temp} CASCADE')
+    conn.exec(f'DELETE FROM {idx}.{gebs_index} WHERE area < %s', [MIN_GEBAEUDE_AREA])
+    conn.exec(f'DROP TABLE {idx}.{fsx_temp} CASCADE')
+    conn.exec(f'DROP TABLE {idx}.{geb_temp} CASCADE')
+
+    conn.mark_index_table(gebs_index)
 
 
 def _create_addr_index(conn: connection.AlkisConnection):
@@ -356,37 +352,37 @@ def _create_addr_index(conn: connection.AlkisConnection):
 
     gws.log.info(f'adresse: writing ({len(la_buf)})')
 
-    with conn.transaction():
-        conn.create_index_table(addr_index, f'''
-            gml_id CHARACTER(16) NOT NULL,
-            fs_id  CHARACTER(16),
-    
-            land CHARACTER VARYING,
-            land_id CHARACTER VARYING,
-            regierungsbezirk CHARACTER VARYING,
-            regierungsbezirk_id CHARACTER VARYING,
-            kreis  CHARACTER VARYING,
-            kreis_id CHARACTER VARYING,
-            gemeinde CHARACTER VARYING,
-            gemeinde_id CHARACTER VARYING,
-            gemarkung  CHARACTER VARYING,
-            gemarkung_v  CHARACTER VARYING,
-            gemarkung_id CHARACTER VARYING,
-    
-            strasse CHARACTER VARYING,
-            strasse_k CHARACTER VARYING,
-            hausnummer CHARACTER VARYING,
-            hausnummer_n INTEGER,
-    
-            lage_id CHARACTER(16),
-            lage_schluesselgesamt  CHARACTER VARYING,
-    
-            x FLOAT,
-            y FLOAT,
-            xysrc  CHARACTER VARYING
-        ''')
+    conn.create_index_table(addr_index, f'''
+        gml_id CHARACTER(16) NOT NULL,
+        fs_id  CHARACTER(16),
 
-        conn.index_insert(addr_index, la_buf)
+        land CHARACTER VARYING,
+        land_id CHARACTER VARYING,
+        regierungsbezirk CHARACTER VARYING,
+        regierungsbezirk_id CHARACTER VARYING,
+        kreis  CHARACTER VARYING,
+        kreis_id CHARACTER VARYING,
+        gemeinde CHARACTER VARYING,
+        gemeinde_id CHARACTER VARYING,
+        gemarkung  CHARACTER VARYING,
+        gemarkung_v  CHARACTER VARYING,
+        gemarkung_id CHARACTER VARYING,
+
+        strasse CHARACTER VARYING,
+        strasse_k CHARACTER VARYING,
+        hausnummer CHARACTER VARYING,
+        hausnummer_n INTEGER,
+
+        lage_id CHARACTER(16),
+        lage_schluesselgesamt  CHARACTER VARYING,
+
+        x FLOAT,
+        y FLOAT,
+        xysrc  CHARACTER VARYING
+    ''')
+
+    conn.index_insert(addr_index, la_buf)
+    conn.mark_index_table(addr_index)
 
 
 def create_index(conn):
