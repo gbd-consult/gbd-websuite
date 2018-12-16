@@ -558,6 +558,20 @@
             ],
             "type": "object"
         },
+        "gws.ext.action.alkis.BuchungConfig": {
+            "doc": "access to the Grundbuch (register) information",
+            "name": "gws.ext.action.alkis.BuchungConfig",
+            "props": [
+                {
+                    "default": null,
+                    "doc": "access rights",
+                    "name": "access",
+                    "optional": false,
+                    "type": "gws.types.AccessRuleConfigList"
+                }
+            ],
+            "type": "object"
+        },
         "gws.ext.action.alkis.Config": {
             "doc": "Flurst\u00fcckssuche (cadaster parlcels search) action",
             "name": "gws.ext.action.alkis.Config",
@@ -568,6 +582,13 @@
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
+                },
+                {
+                    "default": null,
+                    "doc": "access to the Grundbuch (register) information",
+                    "name": "buchung",
+                    "optional": true,
+                    "type": "gws.ext.action.alkis.BuchungConfig"
                 },
                 {
                     "default": "public",
@@ -598,11 +619,11 @@
                     "type": "strList"
                 },
                 {
-                    "default": null,
-                    "doc": "template for Flurstueck export",
-                    "name": "exportTemplate",
+                    "default": false,
+                    "doc": "export function enabled",
+                    "name": "export",
                     "optional": true,
-                    "type": "gws.types.ext.template.Config"
+                    "type": "bool"
                 },
                 {
                     "default": null,
@@ -610,13 +631,6 @@
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
-                },
-                {
-                    "default": null,
-                    "doc": "access to the Grundbuch (register) information",
-                    "name": "grundbuch",
-                    "optional": true,
-                    "type": "gws.ext.action.alkis.GrundbuchConfig"
                 },
                 {
                     "default": "gws",
@@ -641,8 +655,8 @@
                 },
                 {
                     "default": false,
-                    "doc": "select mode",
-                    "name": "selectMode",
+                    "doc": "select mode enabled",
+                    "name": "select",
                     "optional": true,
                     "type": "bool"
                 },
@@ -687,20 +701,6 @@
                     "name": "logTable",
                     "optional": true,
                     "type": "str"
-                }
-            ],
-            "type": "object"
-        },
-        "gws.ext.action.alkis.GrundbuchConfig": {
-            "doc": "access to the Grundbuch (register) information",
-            "name": "gws.ext.action.alkis.GrundbuchConfig",
-            "props": [
-                {
-                    "default": null,
-                    "doc": "access rights",
-                    "name": "access",
-                    "optional": false,
-                    "type": "gws.types.AccessRuleConfigList"
                 }
             ],
             "type": "object"

@@ -12,9 +12,10 @@ import gws.common.printer.types
 import gws.tools.sheet
 import gws.tools.misc
 import gws.types as t
+import gws.tools.json2
 import gws.web
 from .data import index, flurstueck
-from .tools import connection, formatters
+from .tools import connection, export
 
 """
 log table:
@@ -50,7 +51,7 @@ class EigentuemerConfig:
     logTable: str = ''  #: data access protocol table name
 
 
-class GrundbuchConfig:
+class BuchungConfig:
     """access to the Grundbuch (register) information"""
 
     access: t.Access  #: access rights
@@ -64,7 +65,7 @@ class Config(t.WithTypeAndAccess):
     indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
 
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (eigentuemer) information
-    grundbuch: t.Optional[GrundbuchConfig]  #: access to the Grundbuch (register) information
+    buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
 
     excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (AU) IDs to exclude from search
 
@@ -72,9 +73,9 @@ class Config(t.WithTypeAndAccess):
 
     featureFormat: t.Optional[t.FormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
-    exportTemplate: t.Optional[t.ext.template.Config]  #: template for Flurstueck export
 
-    selectMode: bool = False  #: select mode
+    export: bool = False  #: export function enabled
+    select: bool = False  #: select mode enabled
 
 
 class Gemarkung(t.Data):
@@ -90,12 +91,12 @@ class FsSetupParams(t.Data):
 
 class FsSetupResponse(t.Response):
     withEigentuemer: bool
-    withGrundbuch: bool
-    controlMode: bool
-    selectMode: bool
+    withBuchung: bool
+    withExport: bool
+    withSelect: bool
+    withControl: bool
     gemarkungen: t.List[Gemarkung]
     printTemplate: t.TemplateProps
-    exportTemplate: t.Optional[t.TemplateProps]
 
 
 class FsStrassenParams(t.Data):
@@ -131,7 +132,7 @@ class FsPrintParams(FsQueryParams):
 
 
 class FsExportParams(FsQueryParams):
-    pass
+    groups: t.List[str]
 
 
 class FsDetailsParams(FsQueryParams):
@@ -226,13 +227,13 @@ class Object(gws.Object):
             'gws.ext.template',
             self.var('printTemplate', default=DEFAULT_PRINT_TEMPLATE))
 
-        self.export_template: t.TemplateObject = None
-        if self.var('exportTemplate'):
-            self.export_template = self.add_child(
-                'gws.ext.template',
-                self.var('exportTemplate'))
+        # self.export_template: t.TemplateObject = None
+        # if self.var('exportTemplate'):
+        #     self.export_template = self.add_child(
+        #         'gws.ext.template',
+        #         self.var('exportTemplate'))
 
-        self.grundbuch = self.var('grundbuch')
+        self.buchung = self.var('buchung')
 
         self.eigentuemer = self.var('eigentuemer')
         self.control_mode = False
@@ -257,16 +258,16 @@ class Object(gws.Object):
         with self._connect() as conn:
             return FsSetupResponse({
                 'withEigentuemer': self._can_read_eigentuemer(req),
-                'controlMode': self._can_read_eigentuemer(req) and self.control_mode,
-                'withGrundbuch': self._can_read_grundbuch(req),
-                'selectMode': self.var('selectMode'),
+                'withControl': self._can_read_eigentuemer(req) and self.control_mode,
+                'withBuchung': self._can_read_buchung(req),
+                'withExport': self.var('export'),
+                'withSelect': self.var('select'),
                 'gemarkungen': flurstueck.gemarkung_list(conn),
                 'printTemplate': self.print_template.props,
-                'exportTemplate': self.export_template.props if self.export_template else None
             })
 
     def api_fs_strassen(self, req, p: FsStrassenParams) -> FsStrassenResponse:
-        """Return a list of Strassen for the given gemarkungId"""
+        """Return a list of Strassen for the given Gemarkung"""
 
         self._precheck_request(req, p.projectUid)
 
@@ -306,7 +307,7 @@ class Object(gws.Object):
 
         self._precheck_request(req, p.projectUid)
 
-        if not self.export_template:
+        if not self.var('export'):
             raise gws.web.error.NotFound()
 
         _, features = self._fetch(req, p)
@@ -317,9 +318,13 @@ class Object(gws.Object):
         job_uid = gws.random_string(64)
         out_path = '/tmp/' + job_uid + 'fs.export.csv'
 
-        self.export_template.render(context={
-            'features': features
-        }, out_path=out_path)
+        # self.export_template.render(context={
+        #     'features': features
+        # }, out_path=out_path)
+        #
+
+        with open(out_path, 'w') as fp:
+            export.as_csv((f.attributes for f in features), p.groups, fp)
 
         job = gws.tools.job.create(
             uid=job_uid,
@@ -334,7 +339,7 @@ class Object(gws.Object):
         })
 
     def api_fs_print(self, req, p: FsPrintParams) -> gws.common.printer.types.PrinterResponse:
-        """Print a Flurstueck features"""
+        """Print Flurstueck features"""
 
         self._precheck_request(req, p.projectUid)
 
@@ -404,12 +409,12 @@ class Object(gws.Object):
             raise gws.web.error.BadRequest()
 
         allow_eigentuemer = eigentuemer_flag > 0
-        allow_grundbuch = self._can_read_grundbuch(req)
+        allow_buchung = self._can_read_buchung(req)
 
         if not allow_eigentuemer:
             del p.vorname
             del p.name
-        if not allow_grundbuch:
+        if not allow_buchung:
             del p.bblatt
 
         if p.get('shape'):
@@ -420,7 +425,7 @@ class Object(gws.Object):
         with self._connect() as conn:
             total, rs = flurstueck.find(conn, p, self.var('limit'))
             for rec in rs:
-                rec = self._remove_restricted_data(rec, allow_eigentuemer, allow_grundbuch)
+                rec = self._remove_restricted_data(rec, allow_eigentuemer, allow_buchung)
                 feature = gws.gis.feature.Feature({
                     'uid': rec['gml_id'],
                     'attributes': rec,
@@ -475,11 +480,11 @@ class Object(gws.Object):
         with self._connect() as conn:
             conn.insert_one(self.log_table, data)
 
-    def _remove_restricted_data(self, rec, allow_eigentuemer, allow_grundbuch):
+    def _remove_restricted_data(self, rec, allow_eigentuemer, allow_buchung):
         if allow_eigentuemer:
             return rec
 
-        if allow_grundbuch:
+        if allow_buchung:
             for b in rec.get('buchung', []):
                 b.pop('eigentuemer', None)
             return rec
@@ -504,9 +509,9 @@ class Object(gws.Object):
         gws.log.debug(f'_can_read_eigentuemer user={req.user.full_uid!r} res={b}')
         return b
 
-    def _can_read_grundbuch(self, req):
-        b = req.user.can_read(self.grundbuch)
-        gws.log.debug(f'_can_read_grundbuch user={req.user.full_uid!r} res={b}')
+    def _can_read_buchung(self, req):
+        b = req.user.can_read(self.buchung)
+        gws.log.debug(f'_can_read_buchung user={req.user.full_uid!r} res={b}')
         return b
 
     def _connect(self):

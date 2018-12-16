@@ -111,7 +111,8 @@ export interface AlkisFsDetailsResponse extends Response {
 
 /// 
 export interface AlkisFsExportParams extends AlkisFsQueryParams {
-
+    /// 
+    groups: strList;
 }
 
 /// 
@@ -235,6 +236,16 @@ export interface AlkisFsSetupParams {
     projectUid: string;
 }
 
+/// Gemarkung (Administative Unit) object
+export interface AlkisGemarkung {
+    /// name
+    name: string;
+    /// unique ID
+    uid: string;
+}
+
+export type AlkisGemarkungList = Array<AlkisGemarkung>;
+
 /// 
 export interface Attribute {
     /// 
@@ -273,32 +284,22 @@ export interface TemplateProps {
     uid: string;
 }
 
-/// Gemarkung (Administative Unit) object
-export interface AlkisGemarkung {
-    /// name
-    name: string;
-    /// unique ID
-    uid: string;
-}
-
-export type AlkisGemarkungList = Array<AlkisGemarkung>;
-
 /// 
 export interface AlkisFsSetupResponse extends Response {
-    /// 
-    controlMode: boolean;
-    /// 
-    exportTemplate?: TemplateProps;
     /// 
     gemarkungen: AlkisGemarkungList;
     /// 
     printTemplate: TemplateProps;
     /// 
-    selectMode: boolean;
+    withBuchung: boolean;
+    /// 
+    withControl: boolean;
     /// 
     withEigentuemer: boolean;
     /// 
-    withGrundbuch: boolean;
+    withExport: boolean;
+    /// 
+    withSelect: boolean;
 }
 
 /// 
@@ -693,7 +694,7 @@ export interface GwsServerApi {
     /// Export Flurstueck features
     alkisFsExport(p: AlkisFsExportParams): Promise<AlkisFsExportResponse>;
 
-    /// Print a Flurstueck features
+    /// Print Flurstueck features
     alkisFsPrint(p: AlkisFsPrintParams): Promise<PrinterResponse>;
 
     /// Perform a Flurstueck search
@@ -702,7 +703,7 @@ export interface GwsServerApi {
     /// Return project-specific Flurstueck-Search settings
     alkisFsSetup(p: AlkisFsSetupParams): Promise<AlkisFsSetupResponse>;
 
-    /// Return a list of Strassen for the given gemarkungId
+    /// Return a list of Strassen for the given Gemarkung
     alkisFsStrassen(p: AlkisFsStrassenParams): Promise<AlkisFsStrassenResponse>;
 
     /// Return an asset under the given path and project

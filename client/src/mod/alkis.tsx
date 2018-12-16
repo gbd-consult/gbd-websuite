@@ -10,8 +10,8 @@ const STRINGS = {
     formTitle: 'Flurstückssuche',
     infoTitle: "Informationen",
     selectionTitle: "Ablage",
+    exportTitle: "Export",
 
-    'export': 'Exportieren',
     print: 'Ausdrucken',
     highlight: 'Auf der Karte zeigen',
     selectAll: 'Alle auswählen',
@@ -39,10 +39,14 @@ const STRINGS = {
     vnum: "Kennzeichen",
     areaFrom: "Fläche von m\u00b2",
     areaTo: "bis m\u00b2",
+    bblatt: 'Buchungsblattnummer',
     wantEigentuemer: "Zugang zu Personendaten",
     controlInput: 'Abrufgrund',
+
     submitButton: "Suchen",
     resetButton: "Neu",
+    exportButton: "Exportieren",
+
     searchResults2: "Suchergebnisse ($1 von $2)",
     searchResults: "Suchergebnisse ($1)",
 
@@ -50,15 +54,27 @@ const STRINGS = {
 
 };
 
+const exportGroups = [
+    ['base', 'Basisdaten'],
+    ['lage', 'Lage'],
+    ['gebaeude', 'Gebäude'],
+    ['buchung', 'Buchungsblatt'],
+    ['eigentuemer', 'Eigentümer'],
+    ['nutzung', 'Nutzung'],
+];
+
 interface FsSearchProps extends gws.types.ViewProps {
     controller: AlkisController;
 
-    alkisFsTab: 'form' | 'list' | 'details' | 'error' | 'selection'
+    alkisFsTab: 'form' | 'list' | 'details' | 'error' | 'selection' | 'export'
 
     alkisFsSetup: gws.api.AlkisFsSetupResponse
 
     alkisFsLoading: boolean
     alkisFsError: string
+
+    alkisFsExportGroups: Array<string>
+    alkisFsExportFeatures: Array<gws.types.IMapFeature>
 
     alkisFsParams: gws.api.AlkisFsQueryParams
 
@@ -87,14 +103,13 @@ function featureIn(fs: Array<gws.types.IMapFeature>, f: gws.types.IMapFeature) {
 
 class ExportCell extends gws.View<FsSearchPropsWithFeatures> {
     render() {
-        if (!this.props.alkisFsSetup.exportTemplate || this.props.features.length === 0)
+        if (!this.props.alkisFsSetup.withExport || this.props.features.length === 0)
             return null;
         return <Cell>
             <gws.ui.IconButton
                 className="modAlkisExportButton"
-                whenTouched={() => this.props.controller.makeExport(this.props.features)}
-                tooltip={STRINGS.export}
-
+                whenTouched={() => this.props.controller.startExport(this.props.features)}
+                tooltip={STRINGS.exportTitle}
             />
         </Cell>;
     }
@@ -131,7 +146,7 @@ class HighlightCell extends gws.View<FsSearchPropsWithFeatures> {
 
 class SelectAllCell extends gws.View<FsSearchPropsWithFeatures> {
     render() {
-        if (!this.props.alkisFsSetup.selectMode)
+        if (!this.props.alkisFsSetup.withSelect)
             return null;
         return <Cell>
             <gws.ui.IconButton
@@ -146,7 +161,7 @@ class SelectAllCell extends gws.View<FsSearchPropsWithFeatures> {
 
 class ToggleSelectionCell extends gws.View<FsSearchPropsWithFeatures> {
     render() {
-        if (!this.props.alkisFsSetup.selectMode)
+        if (!this.props.alkisFsSetup.withSelect)
             return null;
 
         let cc = this.props.controller,
@@ -173,7 +188,7 @@ class ToggleSelectionCell extends gws.View<FsSearchPropsWithFeatures> {
 
 class GotoSelectionCell extends gws.View<FsSearchProps> {
     render() {
-        if (!this.props.alkisFsSetup.selectMode)
+        if (!this.props.alkisFsSetup.withSelect)
             return null;
 
         let sel = this.props.alkisFsSelection || [];
@@ -297,7 +312,7 @@ class SearchForm extends gws.View<FsSearchProps> {
         let nameShowMode = '';
 
         if (setup.withEigentuemer)
-            if (!setup.controlMode)
+            if (!setup.withControl)
                 nameShowMode = 'enabled';
             else if (this.props.alkisFsParams.wantEigentuemer)
                 nameShowMode = 'enabled';
@@ -381,7 +396,18 @@ class SearchForm extends gws.View<FsSearchProps> {
                     />
                 </Cell>
             </Row>
-            {setup.controlMode && <Row className='modAlkisControlToggle'>
+
+            {setup.withBuchung && <Row>
+                <Cell flex>
+                    <gws.ui.TextInput
+                        placeholder={STRINGS.bblatt}
+                        {...boundTo('bblatt')}
+                        withClear
+                    />
+                </Cell>
+            </Row>}
+
+            {setup.withControl && <Row className='modAlkisControlToggle'>
                 <Cell flex>
                     <gws.ui.Toggle
                         type="checkbox"
@@ -390,7 +416,7 @@ class SearchForm extends gws.View<FsSearchProps> {
                     />
                 </Cell>
             </Row>}
-            {setup.controlMode && this.props.alkisFsParams.wantEigentuemer && <Row>
+            {setup.withControl && this.props.alkisFsParams.wantEigentuemer && <Row>
                 <Cell flex>
                     <gws.ui.TextArea
                         {...boundTo('controlInput')}
@@ -526,7 +552,7 @@ class ListTab extends gws.View<FsSearchProps> {
             />
         ;
 
-        if (!this.props.alkisFsSetup.selectMode)
+        if (!this.props.alkisFsSetup.withSelect)
             rightIcon = null;
 
         return <sidebar.Tab>
@@ -658,6 +684,63 @@ class DetailsTab extends gws.View<FsSearchProps> {
     }
 }
 
+class ExportTab extends gws.View<FsSearchProps> {
+    render() {
+        let groups = this.props.alkisFsExportGroups;
+
+        let changed = (group, value) => this.props.controller.update({
+            alkisFsExportGroups: groups.filter(g => g !== group).concat(value ? [group] : [])
+        });
+
+        return <sidebar.Tab>
+            <sidebar.TabHeader>
+                <gws.ui.Title content={STRINGS.exportTitle}/>
+            </sidebar.TabHeader>
+            <sidebar.TabBody>
+                <div className="modAlkisFsDetailsTabContent">
+                    <Form>
+                        <Row>
+                            <Cell flex>
+                                {exportGroups.map(([group, name]) => {
+                                    if (group === 'buchung' && !this.props.alkisFsSetup.withBuchung)
+                                        return null;
+                                    if (group === 'eigentuemer' && !this.props.alkisFsSetup.withEigentuemer)
+                                        return null;
+                                    return <gws.ui.Toggle
+                                        key={group}
+                                        type="checkbox"
+                                        label={name}
+                                        value={groups.indexOf(group) >= 0}
+                                        whenChanged={value => changed(group, value)}
+                                    />
+                                })
+                                }
+                            </Cell>
+                        </Row>
+                        <Row>
+                            <Cell flex/>
+                            <Cell width={120}>
+                                <gws.ui.TextButton
+                                    primary
+                                    whenTouched={() => this.props.controller.submitExport(this.props.alkisFsExportFeatures)}
+                                >{STRINGS.exportButton}</gws.ui.TextButton>
+                            </Cell>
+                        </Row>
+                    </Form>
+                </div>
+            </sidebar.TabBody>
+            <sidebar.TabFooter>
+                <Bar2>
+                    <BackCell {...this.props} />
+                    <Cell flex/>
+                    <GotoSelectionCell {...this.props} />
+                </Bar2>
+            </sidebar.TabFooter>
+        </sidebar.Tab>
+
+    }
+}
+
 class SidebarTab extends gws.View<FsSearchProps> {
     render() {
         if (this.props.alkisFsLoading)
@@ -679,6 +762,9 @@ class SidebarTab extends gws.View<FsSearchProps> {
 
         if (tab === 'selection')
             return <SelectionTab {...this.props} />;
+
+        if (tab === 'export')
+            return <ExportTab {...this.props} />;
     }
 }
 
@@ -714,6 +800,8 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
             alkisFsParams: {
                 projectUid: this.app.project.uid
             },
+
+            alkisFsExportGroups: ['base'],
 
             alkisFsStrassen: [],
             alkisFsGemarkungen: this.setup.gemarkungen.map(g => ({
@@ -891,10 +979,19 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
         });
     }
 
-    async makeExport(fs: Array<gws.types.IMapFeature>) {
+    async startExport(fs: Array<gws.types.IMapFeature>) {
+        this.update({
+            alkisFsExportFeatures: fs
+        });
+        this.goTo('export')
+    }
+
+    async submitExport(fs: Array<gws.types.IMapFeature>) {
+        let groups = this.getValue('alkisFsExportGroups');
 
         let q = {
             ...this.paramsForFeatures(fs),
+            groups: exportGroups.map(grp => grp[0]).filter(g => groups.indexOf(g) >= 0),
         };
         let res = await this.app.server.alkisFsExport(q);
 
@@ -907,7 +1004,6 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
     }
 
     goTo(tab) {
-        console.log(this.history)
         this.history.push(this.getValue('alkisFsTab'));
         this.update({
             alkisFsTab: tab
@@ -942,6 +1038,8 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
                     'alkisFsSetup',
                     'alkisFsLoading',
                     'alkisFsError',
+                    'alkisFsExportGroups',
+                    'alkisFsExportFeatures',
                     'alkisFsParams',
                     'alkisFsStrassen',
                     'alkisFsGemarkungen',

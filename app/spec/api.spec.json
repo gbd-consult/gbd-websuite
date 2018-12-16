@@ -25,7 +25,7 @@
             "arg": "gws.ext.action.alkis.FsPrintParams",
             "category": "api",
             "cmd": "alkisFsPrint",
-            "doc": "Print a Flurstueck features",
+            "doc": "Print Flurstueck features",
             "method": "api_fs_print",
             "module": "gws.ext.action.alkis",
             "return": "gws.common.printer.types.PrinterResponse"
@@ -55,7 +55,7 @@
             "arg": "gws.ext.action.alkis.FsStrassenParams",
             "category": "api",
             "cmd": "alkisFsStrassen",
-            "doc": "Return a list of Strassen for the given gemarkungId",
+            "doc": "Return a list of Strassen for the given Gemarkung",
             "method": "api_fs_strassen",
             "module": "gws.ext.action.alkis",
             "return": "gws.ext.action.alkis.FsStrassenResponse"
@@ -958,6 +958,13 @@
                 {
                     "default": null,
                     "doc": "",
+                    "name": "groups",
+                    "optional": false,
+                    "type": "strList"
+                },
+                {
+                    "default": null,
+                    "doc": "",
                     "name": "hausnummer",
                     "optional": true,
                     "type": "str"
@@ -1308,23 +1315,9 @@
                 {
                     "default": null,
                     "doc": "",
-                    "name": "controlMode",
-                    "optional": false,
-                    "type": "bool"
-                },
-                {
-                    "default": null,
-                    "doc": "",
                     "name": "error",
                     "optional": true,
                     "type": "gws.types.ResponseError"
-                },
-                {
-                    "default": null,
-                    "doc": "",
-                    "name": "exportTemplate",
-                    "optional": true,
-                    "type": "gws.types.TemplateProps"
                 },
                 {
                     "default": null,
@@ -1343,7 +1336,14 @@
                 {
                     "default": null,
                     "doc": "",
-                    "name": "selectMode",
+                    "name": "withBuchung",
+                    "optional": false,
+                    "type": "bool"
+                },
+                {
+                    "default": null,
+                    "doc": "",
+                    "name": "withControl",
                     "optional": false,
                     "type": "bool"
                 },
@@ -1357,7 +1357,14 @@
                 {
                     "default": null,
                     "doc": "",
-                    "name": "withGrundbuch",
+                    "name": "withExport",
+                    "optional": false,
+                    "type": "bool"
+                },
+                {
+                    "default": null,
+                    "doc": "",
+                    "name": "withSelect",
                     "optional": false,
                     "type": "bool"
                 }

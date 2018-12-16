@@ -75,7 +75,7 @@
         "kind": "clifunc",
         "module": "gws.ext.action.alkis.cli",
         "name": "parse",
-        "uid": 745
+        "uid": 746
     },
     {
         "args": [
@@ -89,7 +89,7 @@
         "kind": "clifunc",
         "module": "gws.ext.action.alkis.cli",
         "name": "create_index",
-        "uid": 746
+        "uid": 747
     },
     {
         "args": [
@@ -103,7 +103,7 @@
         "kind": "clifunc",
         "module": "gws.ext.action.alkis.cli",
         "name": "check_index",
-        "uid": 747
+        "uid": 748
     },
     {
         "args": [
@@ -117,7 +117,7 @@
         "kind": "clifunc",
         "module": "gws.ext.action.alkis.cli",
         "name": "drop_index",
-        "uid": 748
+        "uid": 749
     },
     {
         "args": [],
@@ -126,7 +126,7 @@
         "kind": "clifunc",
         "module": "gws.ext.auth.provider.file.cli",
         "name": "passwd",
-        "uid": 1050
+        "uid": 1055
     },
     {
         "args": [
@@ -140,7 +140,7 @@
         "kind": "clifunc",
         "module": "gws.gis.cache",
         "name": "updateweb",
-        "uid": 1813
+        "uid": 1823
     },
     {
         "args": [
@@ -154,7 +154,7 @@
         "kind": "clifunc",
         "module": "gws.gis.cache",
         "name": "status",
-        "uid": 1814
+        "uid": 1824
     },
     {
         "args": [
@@ -168,7 +168,7 @@
         "kind": "clifunc",
         "module": "gws.gis.cache",
         "name": "drop",
-        "uid": 1815
+        "uid": 1825
     },
     {
         "args": [
@@ -186,7 +186,7 @@
         "kind": "clifunc",
         "module": "gws.gis.cache",
         "name": "seed",
-        "uid": 1816
+        "uid": 1826
     },
     {
         "args": [
@@ -204,7 +204,7 @@
         "kind": "clifunc",
         "module": "gws.ows.cli",
         "name": "caps",
-        "uid": 2208
+        "uid": 2218
     },
     {
         "args": [],
@@ -213,7 +213,7 @@
         "kind": "clifunc",
         "module": "gws.server.cli",
         "name": "start",
-        "uid": 2281
+        "uid": 2291
     },
     {
         "args": [],
@@ -222,7 +222,7 @@
         "kind": "clifunc",
         "module": "gws.server.cli",
         "name": "stop",
-        "uid": 2282
+        "uid": 2292
     },
     {
         "args": [],
@@ -231,7 +231,7 @@
         "kind": "clifunc",
         "module": "gws.server.cli",
         "name": "reload",
-        "uid": 2283
+        "uid": 2293
     },
     {
         "args": [],
@@ -240,7 +240,7 @@
         "kind": "clifunc",
         "module": "gws.server.cli",
         "name": "reset",
-        "uid": 2284
+        "uid": 2294
     },
     {
         "args": [],
@@ -249,6 +249,6 @@
         "kind": "clifunc",
         "module": "gws.server.cli",
         "name": "configure",
-        "uid": 2285
+        "uid": 2295
     }
 ]
