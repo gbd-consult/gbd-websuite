@@ -22,7 +22,7 @@ _common = {
     'ttf': 'application/x-font-ttf'
 }
 
-default_allowed = list(_common)
+default_allowed = list(_common.values())
 
 
 def get(key):
