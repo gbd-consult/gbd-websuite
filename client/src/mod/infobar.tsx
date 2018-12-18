@@ -62,20 +62,18 @@ class LoaderWidget extends gws.Controller {
 }
 
 interface ScaleProps extends gws.types.ViewProps {
+    controller: ScaleWidget;
     mapEditScale: number;
 }
 
 class ScaleView extends gws.View<ScaleProps> {
-    update(value) {
-        value = Number(value) || 1;
-        this.props.controller.map.setScale(value);
-    }
-
     render() {
+        let cc = this.props.controller;
+
         let n = gws.tools.asNumber(this.props.mapEditScale),
             res = this.props.controller.map.resolutions,
-            max = Math.max(...res.map(gws.tools.resolutionToScale)),
-            min = Math.min(...res.map(gws.tools.resolutionToScale));
+            max = Math.max(...res.map(gws.tools.res2scale)),
+            min = Math.min(...res.map(gws.tools.res2scale));
 
         return <div className="modInfobarWidget modInfobarScale">
             <Cell className="modInfobarLabel">{this.__('modInfobarScale')}</Cell>
@@ -84,14 +82,16 @@ class ScaleView extends gws.View<ScaleProps> {
                     minValue={min}
                     maxValue={max}
                     value={n}
-                    whenChanged={v => this.update(v)}
+                    whenChanged={v => cc.setValue(v, true)}
+                    whenInteractionStarted={() => cc.map.setInteracting(true)}
+                    whenInteractionStopped={() => cc.map.setInteracting(false)}
                 />
             </Cell>
             <Cell className="modInfobarScaleInput">
                 <gws.ui.TextInput
                     value={String(n)}
-                    whenChanged={v => this.props.controller.update({mapEditScale: v})}
-                    whenEntered={v => this.update(v)}
+                    whenChanged={v => cc.setValue(v, false)}
+                    whenEntered={v => cc.setValue(v, true)}
                 />
             </Cell>
         </div>
@@ -99,6 +99,17 @@ class ScaleView extends gws.View<ScaleProps> {
 }
 
 class ScaleWidget extends gws.Controller {
+    async init() {
+        this.app.whenChanged('mapScale', s => this.update({'mapEditScale': s}))
+    }
+
+    setValue(value, withMap) {
+        value = Number(value) || 1;
+        if (withMap)
+            this.map.setScale(value);
+        this.update({'mapEditScale': value})
+    }
+
     get defaultView() {
         return this.createElement(
             this.connect(ScaleView,
@@ -106,38 +117,8 @@ class ScaleWidget extends gws.Controller {
     }
 }
 
-interface ResolutionProps extends gws.types.ViewProps {
-    mapEditResolution: number;
-}
-
-class ResolutionView extends gws.View<ResolutionProps> {
-    update(value) {
-        value = Number(value) || 1;
-        this.props.controller.map.setResolution(value);
-    }
-
-    render() {
-        return <div className="modInfobarWidget modInfobarScale">
-            <Cell>
-                <gws.ui.TextInput
-                    value={String(this.props.mapEditResolution)}
-                    whenChanged={v => this.props.controller.update({mapEditResolution: v})}
-                    whenEntered={v => this.update(v)}
-                />
-            </Cell>
-        </div>
-    }
-}
-
-class ResolutionWidget extends gws.Controller {
-    get defaultView() {
-        return this.createElement(
-            this.connect(ResolutionView,
-                ['mapEditResolution']));
-    }
-}
-
 interface RotationProps extends gws.types.ViewProps {
+    controller: RotationWidget;
     mapEditAngle: number;
 }
 
@@ -147,6 +128,7 @@ class RotationView extends gws.View<RotationProps> {
     }
 
     render() {
+        let cc = this.props.controller;
         let n = gws.tools.asNumber(this.props.mapEditAngle);
 
         return <div className="modInfobarWidget modInfobarRotation">
@@ -156,14 +138,16 @@ class RotationView extends gws.View<RotationProps> {
                     minValue={0}
                     maxValue={360}
                     value={n}
-                    whenChanged={v => this.update(v)}
+                    whenChanged={v => cc.setValue(v, true)}
+                    whenInteractionStarted={() => cc.map.setInteracting(true)}
+                    whenInteractionStopped={() => cc.map.setInteracting(false)}
                 />
             </Cell>
             <Cell className="modInfobarRotationInput">
                 <gws.ui.TextInput
                     value={String(n)}
-                    whenChanged={v => this.props.controller.update({mapEditAngle: v})}
-                    whenEntered={v => this.update(v)}
+                    whenChanged={v => cc.setValue(v, false)}
+                    whenEntered={v => cc.setValue(v, true)}
                 />
             </Cell>
         </div>
@@ -171,6 +155,17 @@ class RotationView extends gws.View<RotationProps> {
 }
 
 class RotationWidget extends gws.Controller {
+    async init() {
+        this.app.whenChanged('mapAngle', s => this.update({'mapEditAngle': s}))
+    }
+
+    setValue(value, withMap) {
+        value = Number(value) || 0;
+        if (withMap)
+            this.map.setAngle(value);
+        this.update({'mapEditAngle': value})
+    }
+
     get defaultView() {
         return this.createElement(
             this.connect(RotationView,
@@ -181,10 +176,8 @@ class RotationWidget extends gws.Controller {
 class Spacer extends gws.Controller {
 
     get defaultView() {
-
         return <Cell flex/>;
     }
-
 }
 
 interface LinkProps extends gws.types.ViewProps {
@@ -293,7 +286,6 @@ export const tags = {
     'Infobar.Position': PositionWidget,
     'Infobar.Rotation': RotationWidget,
     'Infobar.Scale': ScaleWidget,
-    'Infobar.Resolution': ResolutionWidget,
     'Infobar.Loader': LoaderWidget,
     'Infobar.Spacer': Spacer,
 };

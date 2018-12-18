@@ -24,6 +24,7 @@ class Config(t.Config):
 class Props(t.Data):
     crs: str
     crsDef: t.Optional[str]
+    coordinatePrecision: int
     extent: t.Extent
     center: t.Point
     initResolution: float
@@ -80,9 +81,14 @@ class Object(gws.PublicObject, t.MapObject):
 
     @property
     def props(self):
+        proj = gws.gis.proj.as_proj(self.crs)
+        prec = 7
+        if proj.units == 'm':
+            prec = 0
         return {
-            'crs': self.crs,
-            'crsDef': gws.gis.proj.as_proj4text(self.crs),
+            'crs': proj.epsg,
+            'crsDef': proj.proj4text,
+            'coordinatePrecision': prec,
             'extent': self.extent,
             'center': self.center,
             'initResolution': self.init_resolution,

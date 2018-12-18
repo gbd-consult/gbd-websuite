@@ -50,7 +50,8 @@ class SidebarBody extends gws.View<ViewProps> {
             vs = map.viewState,
             ve = map.viewExtent;
 
-        let round = n => (Number(n) || 0).toFixed(COORDINATE_PRECISION);
+        let coord = n => map.formatCoordinate(Number(n) || 0);
+        let num = n => String(Math.floor(Number(n) || 0));
 
         let data = [
             {
@@ -62,31 +63,31 @@ class SidebarBody extends gws.View<ViewProps> {
                 name: 'extent',
                 title: this.__('modOverviewExtent'),
                 value: <div>
-                    {round(ve[0])}, {round(ve[1])}, {round(ve[2])}, {round(ve[3])}
+                    {coord(ve[0])}, {coord(ve[1])}, {coord(ve[2])}, {coord(ve[3])}
                 </div>
             },
             {
                 name: 'mapEditCenterX',
                 title: this.__('modOverviewCenterX'),
-                value: round(this.props.mapEditCenterX),
+                value: coord(this.props.mapEditCenterX),
                 editable: true,
             },
             {
                 name: 'mapEditCenterY',
                 title: this.__('modOverviewCenterY'),
-                value: round(this.props.mapEditCenterY),
+                value: coord(this.props.mapEditCenterY),
                 editable: true,
             },
             {
                 name: 'mapEditScale',
                 title: this.__('modOverviewScale'),
-                value: round(this.props.mapEditScale),
+                value: num(this.props.mapEditScale),
                 editable: true,
             },
             {
                 name: 'mapEditAngle',
                 title: this.__('modOverviewRotation'),
-                value: round(this.props.mapEditAngle),
+                value: num(this.props.mapEditAngle),
                 editable: true,
             },
 
@@ -147,8 +148,8 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
             this.initMap();
         }
 
-        this.whenChanged('mapUpdateCount', () => this.refresh());
-        this.whenChanged('windowSize', () => this.refresh());
+        this.app.whenChanged('mapUpdateCount', () => this.refresh());
+        this.app.whenChanged('windowSize', () => this.refresh());
     }
 
     setMapTarget(div) {
@@ -204,6 +205,15 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
     }
 
     refresh() {
+        let vs = this.map.viewState;
+
+        this.update({
+            'mapEditScale': vs.scale,
+            'mapEditAngle': vs.angle,
+            'mapEditCenterX': vs.centerX,
+            'mapEditCenterY': vs.centerY,
+        });
+
         if (this.oMap) {
             this.updateMap();
         }

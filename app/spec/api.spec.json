@@ -390,6 +390,13 @@
                 {
                     "default": null,
                     "doc": "",
+                    "name": "coordinatePrecision",
+                    "optional": false,
+                    "type": "int"
+                },
+                {
+                    "default": null,
+                    "doc": "",
                     "name": "crs",
                     "optional": false,
                     "type": "str"

@@ -584,6 +584,8 @@ export interface MapProps {
     /// 
     center: float2;
     /// 
+    coordinatePrecision: _int;
+    /// 
     crs: string;
     /// 
     crsDef?: string;
