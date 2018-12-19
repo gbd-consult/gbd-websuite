@@ -48,9 +48,32 @@ module.exports = v => ({
         ...v.GOOGLE_SVG('content/remove_circle_outline'),
     },
 
-    '.modAlkisSelectionButton': {
+
+    '.modAlkisGotoSelectionButton': {
         ...v.ICON('small'),
         ...v.GOOGLE_SVG('action/bookmark_border'),
+
+        '&.isDisabled': {
+            opacity: 0.5
+        }
+    },
+
+    '.modAlkisGotoFormButton': {
+        ...v.ICON('small'),
+        ...v.GOOGLE_SVG('communication/business'),
+
+        '&.isDisabled': {
+            opacity: 0.5
+        }
+    },
+
+    '.modAlkisGotoListButton': {
+        ...v.ICON('small'),
+        ...v.GOOGLE_SVG('action/reorder'),
+
+        '&.isDisabled': {
+            opacity: 0.5
+        }
     },
 
     '.modAlkisSelectionButtonDisabled': {

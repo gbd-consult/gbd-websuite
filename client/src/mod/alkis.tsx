@@ -12,12 +12,15 @@ const STRINGS = {
     selectionTitle: "Ablage",
     exportTitle: "Export",
 
+    gotoForm: 'Suche',
+    gotoList: 'Ergebnisse',
+    gotoSelection: 'Ablage',
+
     print: 'Ausdrucken',
     highlight: 'Auf der Karte zeigen',
     selectAll: 'Alle auswählen',
     unselect: 'Abwählen',
     select: 'Auswählen',
-    gotoSelection: 'Ablage',
     clearSelection: 'Ablage leeren',
     goBack: 'Zurück',
 
@@ -186,25 +189,58 @@ class ToggleSelectionCell extends gws.View<FsSearchPropsWithFeatures> {
     }
 }
 
+class GotoFormCell extends gws.View<FsSearchProps> {
+    render() {
+        let dis = this.props.alkisFsTab === 'form';
+        return <Cell>
+            <gws.ui.IconButton
+                {...gws.tools.cls('modAlkisGotoFormButton', dis && 'isDisabled')}
+                whenTouched={() =>  !dis && this.props.controller.goTo('form')}
+                tooltip={STRINGS.gotoForm}
+            />
+        </Cell>
+    }
+}
+
+class GotoListCell extends gws.View<FsSearchProps> {
+    render() {
+        let dis = this.props.alkisFsTab === 'list' || gws.tools.empty(this.props.alkisFsResults);
+        return <Cell>
+            <gws.ui.IconButton
+                {...gws.tools.cls('modAlkisGotoListButton', dis && 'isDisabled')}
+                whenTouched={() => !dis && this.props.controller.goTo('list')}
+                tooltip={STRINGS.gotoList}
+            />
+        </Cell>
+    }
+}
+
 class GotoSelectionCell extends gws.View<FsSearchProps> {
     render() {
         if (!this.props.alkisFsSetup.withSelect)
             return null;
 
+        let dis = gws.tools.empty(this.props.alkisFsSelection);
         let sel = this.props.alkisFsSelection || [];
-
-        if (!sel.length) {
-            return null;
-        }
 
         return <Cell>
             <gws.ui.IconButton
-                className="modAlkisSelectionButton"
-                badge={String(sel.length)}
-                whenTouched={() => this.props.controller.goTo('selection')}
+                {...gws.tools.cls('modAlkisGotoSelectionButton', dis && 'isDisabled')}
+                badge={sel.length ? String(sel.length) : null}
+                whenTouched={() => !dis && this.props.controller.goTo('selection')}
                 tooltip={STRINGS.gotoSelection}
             />
         </Cell>
+    }
+}
+
+class Navigation extends gws.View<FsSearchProps> {
+    render() {
+        return <React.Fragment>
+            <GotoFormCell {...this.props}/>
+            <GotoListCell {...this.props}/>
+            <GotoSelectionCell {...this.props}/>
+        </React.Fragment>
     }
 }
 
@@ -223,17 +259,17 @@ class ClearSelectionCell extends gws.View<FsSearchProps> {
     }
 }
 
-class BackCell extends gws.View<FsSearchProps> {
-    render() {
-        return <Cell>
-            <gws.ui.BackButton
-                whenTouched={() => this.props.controller.goBack()}
-                tooltip={STRINGS.goBack}
-
-            />
-        </Cell>
-    }
-}
+// class BackCell extends gws.View<FsSearchProps> {
+//     render() {
+//         return <Cell>
+//             <gws.ui.BackButton
+//                 whenTouched={() => this.props.controller.goBack()}
+//                 tooltip={STRINGS.goBack}
+//
+//             />
+//         </Cell>
+//     }
+// }
 
 class Bar2 extends React.PureComponent<{}> {
     render() {
@@ -274,7 +310,7 @@ class ErrorTab extends gws.View<FsSearchProps> {
             </sidebar.TabBody>
             <sidebar.TabFooter>
                 <Bar2>
-                    <BackCell {...this.props}/>
+                    <Navigation {...this.props}/>
                     <Cell flex/>
                     <GotoSelectionCell {...this.props}/>
                 </Bar2>
@@ -505,8 +541,8 @@ class FormTab extends gws.View<FsSearchProps> {
 
             <sidebar.TabFooter>
                 <Bar2>
+                    <Navigation {...this.props}/>
                     <Cell flex/>
-                    <GotoSelectionCell {...this.props}/>
                 </Bar2>
             </sidebar.TabFooter>
 
@@ -584,13 +620,12 @@ class ListTab extends gws.View<FsSearchProps> {
             </sidebar.TabBody>
             <sidebar.TabFooter>
                 <Bar2>
-                    <BackCell {...this.props} />
+                    <Navigation {...this.props}/>
                     <Cell flex/>
                     <HighlightCell {...this.props} features={features}/>
                     <SelectAllCell {...this.props} features={features}/>
                     <ExportCell {...this.props} features={features}/>
                     <PrintCell {...this.props} features={features}/>
-                    <GotoSelectionCell {...this.props} />
                 </Bar2>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -641,7 +676,7 @@ class SelectionTab extends gws.View<FsSearchProps> {
             </sidebar.TabBody>
             <sidebar.TabFooter>
                 <Bar2>
-                    <BackCell {...this.props} />
+                    <Navigation {...this.props}/>
                     <Cell flex/>
                     <HighlightCell {...this.props} features={features}/>
                     <ExportCell {...this.props} features={features}/>
@@ -673,11 +708,10 @@ class DetailsTab extends gws.View<FsSearchProps> {
             </sidebar.TabBody>
             <sidebar.TabFooter>
                 <Bar2>
-                    <BackCell {...this.props} />
+                    <Navigation {...this.props}/>
                     <Cell flex/>
                     <PrintCell {...this.props} features={[feature]}/>
                     <ToggleSelectionCell {...this.props} features={[feature]}/>
-                    <GotoSelectionCell {...this.props} />
                 </Bar2>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -732,9 +766,8 @@ class ExportTab extends gws.View<FsSearchProps> {
             </sidebar.TabBody>
             <sidebar.TabFooter>
                 <Bar2>
-                    <BackCell {...this.props} />
+                    <Navigation {...this.props}/>
                     <Cell flex/>
-                    <GotoSelectionCell {...this.props} />
                 </Bar2>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -1005,7 +1038,8 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
     }
 
     goTo(tab) {
-        this.history.push(this.getValue('alkisFsTab'));
+        if (this.history[this.history.length - 1] !== tab)
+            this.history.push(tab);
         this.update({
             alkisFsTab: tab
         })
@@ -1013,10 +1047,11 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
 
     goBack() {
         console.log(this.history)
-        let tab = this.history.pop() || 'form';
-        this.update({
-            alkisFsTab: tab
-        })
+        this.history.pop();
+        this.goTo(this.history.pop() || 'form')
+        // this.update({
+        //     alkisFsTab: tab
+        // })
     }
 
     get iconClass() {
