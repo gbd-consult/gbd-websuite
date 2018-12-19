@@ -5,162 +5,307 @@ import * as gws from 'gws';
 import * as toolbar from './toolbar';
 import * as sidebar from './sidebar';
 
-let {Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Measure';
-
-let EDITOR_HEIGHT = 90;
-
-function dimensions(geom: ol.geom.Geometry, projection: ol.proj.Projection) {
-    // @TODO: also provide point coordinates
-
-    let type = geom.getType();
-
-    if (type === 'LineString') {
-        return {
-            len: ol.Sphere.getLength(geom, {projection})
-        }
-    }
-
-    if (type === 'Polygon') {
-        let p = geom as ol.geom.Polygon;
-        return {
-            len: ol.Sphere.getLength(p.getLinearRing(0), {projection}),
-            area: ol.Sphere.getArea(p, {projection}),
-        }
-    }
-
-    if (type === 'Circle') {
-        let c = geom as ol.geom.Circle,
-            p = ol.geom.Polygon.fromCircle(c, 64, 0);
-
-        return {
-            ...dimensions(p, projection),
-            radius: c.getRadius(),
-        }
-    }
-
-    return {};
-}
-
-function formatLength(n) {
-    if (!n || n < 0.01)
-        return '';
-    if (n >= 1e3)
-        return (n / 1e3).toFixed(2) + ' km';
-    if (n > 1)
-        return n.toFixed(0) + ' m';
-    return n.toFixed(2) + ' m';
-}
-
-function formatArea(n) {
-    let sq = '\u00b2';
-
-    if (!n || n < 0.01)
-        return '';
-    if (n >= 1e5)
-        return (n / 1e6).toFixed(2) + ' km' + sq;
-    if (n > 1)
-        return n.toFixed(0) + ' m' + sq;
-    return n.toFixed(2) + ' m' + sq;
-}
-
-function formattedDimensions(geom: ol.geom.Geometry, projection: ol.proj.Projection) {
-    let d = dimensions(geom, projection);
-
-    return {
-        len: formatLength(d.len),
-        area: formatArea(d.area),
-        radius: formatLength(d.radius),
-    }
-}
 
 class MeasureLayer extends gws.map.layer.FeatureLayer {
 }
 
-class MeasureFeature extends gws.map.Feature {
+interface MeasureFeatureFormData {
+    x?: string
+    y?: string
+    w?: string
+    h?: string
+    radius?: string
+    labelTemplate: string
+}
+
+interface MeasureFeatureArgs extends gws.types.IMapFeatureArgs {
     labelTemplate: string;
-    titleTemplate: string;
-    title: string;
+    selectedStyle: gws.types.IMapStyle;
+    shapeType: string;
+}
 
-    constructor(map, args, titleTemplate, labelTemplate) {
-        super(map, args);
-        this.oFeature.getGeometry().on('change', () => this.update());
-        this.titleTemplate = titleTemplate;
-        this.labelTemplate = labelTemplate;
-        this.update();
+class MeasureFeature extends gws.map.Feature {
+    app: gws.types.IApplication;
+    labelTemplate: string;
+    selected: boolean;
+    selectedStyle: gws.types.IMapStyle;
+    shapeType: string;
+    cc: any;
+
+    get formData(): MeasureFeatureFormData {
+        let dims = this.computeDimensions(this.geometry, this.map.projection);
+        return {
+            x: this.formatCoordinate(dims.x),
+            y: this.formatCoordinate(dims.y),
+            radius: this.formatEditLength(dims.radius),
+            w: this.formatEditLength(dims.w),
+            h: this.formatEditLength(dims.h),
+            labelTemplate: this.labelTemplate
+        }
     }
 
-    update() {
-        let dims = formattedDimensions(
-            this.oFeature.getGeometry(),
-            this.map.projection);
+    constructor(app: gws.types.IApplication, args: MeasureFeatureArgs) {
+        super(app.map, args);
+        this.app = app;
+        this.selected = false;
+        this.labelTemplate = args.labelTemplate;
+        this.selectedStyle = args.selectedStyle;
+        this.shapeType = args.shapeType;
 
-        this.title = this.format(this.titleTemplate, dims);
+        this.oFeature.setStyle((oFeature, r) => {
+            let s = this.selected ? this.selectedStyle : this.style;
+            return s.apply(oFeature.getGeometry(), this.label, r);
+        });
+        this.geometry.on('change', e => this.onChange(e));
+        this.redraw();
+    }
+
+    onChange(e) {
+        this.redraw();
+    }
+
+    redraw() {
+        let master = this.app.controller(MASTER) as MeasureController;
+        let dims = this.computeDimensions(this.geometry, this.map.projection);
         this.setLabel(this.format(this.labelTemplate, dims));
-    }
-
-    setLabelTemplate(s) {
-        this.labelTemplate = s;
-        this.update();
-    }
-
-    setTitleTemplate(s) {
-        this.titleTemplate = s;
-        this.update();
+        master.featureUpdated(this);
     }
 
     protected format(text, dims) {
-        return (text || '').replace(/{(\w+)}/g, ($0, $1) => dims[$1] || '');
+        return (text || '').replace(/{(\w+)}/g, ($0, key) => this.formatDimensionElement(dims, key));
+    }
 
+    protected computeDimensions(geom, projection) {
+
+        let gt = geom.getType();
+
+        if (gt === 'Point') {
+            let g = geom as ol.geom.Point;
+            let c = g.getCoordinates();
+            return {
+                x: c[0],
+                y: c[1]
+            }
+        }
+
+        if (gt === 'LineString') {
+            return {
+                len: ol.Sphere.getLength(geom, {projection})
+            }
+        }
+
+        if (gt === 'Polygon') {
+            let g = geom as ol.geom.Polygon;
+            let r = g.getLinearRing(0);
+            let c: any = r.getCoordinates();
+            let d = {
+                len: ol.Sphere.getLength(r, {projection}),
+                area: ol.Sphere.getArea(g, {projection}),
+            };
+
+            if (this.shapeType === 'Box') {
+                return {
+                    ...d,
+                    x: c[0][0],
+                    y: c[0][1],
+                    w: Math.abs(c[1][0] - c[0][0]),
+                    h: Math.abs(c[2][1] - c[1][1]),
+                }
+            }
+            return d;
+        }
+
+        if (gt === 'Circle') {
+            let g = geom as ol.geom.Circle;
+            let p = ol.geom.Polygon.fromCircle(g, 64, 0);
+            let c = g.getCenter();
+
+            return {
+                ...this.computeDimensions(p, projection),
+                x: c[0],
+                y: c[1],
+                radius: g.getRadius(),
+            }
+        }
+
+        return {};
+    }
+
+    protected formatDimensionElement(dims: object, key: string) {
+        let n = dims[key];
+        if (!n)
+            return '';
+        switch (key) {
+            case 'area':
+                return this.formatArea(n);
+            case 'len':
+            case 'radius':
+            case 'w':
+            case 'h':
+                return this.formatLength(n);
+            case 'x':
+            case 'y':
+                return this.formatCoordinate(n);
+
+        }
+    }
+
+    protected formatLength(n) {
+        if (!n || n < 0.01)
+            return '';
+        if (n >= 1e3)
+            return (n / 1e3).toFixed(2) + ' km';
+        if (n > 1)
+            return n.toFixed(0) + ' m';
+        return n.toFixed(2) + ' m';
+    }
+
+    protected formatArea(n) {
+        let sq = '\u00b2';
+
+        if (!n || n < 0.01)
+            return '';
+        if (n >= 1e5)
+            return (n / 1e6).toFixed(2) + ' km' + sq;
+        if (n > 1)
+            return n.toFixed(0) + ' m' + sq;
+        return n.toFixed(2) + ' m' + sq;
+    }
+
+    protected formatCoordinate(n) {
+        return this.map.formatCoordinate(Number(n) || 0);
+    }
+
+    protected formatEditLength(n) {
+        return (Number(n) || 0).toFixed(0)
+    }
+
+    updateFromForm(ff: MeasureFeatureFormData) {
+        this.labelTemplate = ff.labelTemplate;
+
+        let t = this.shapeType;
+
+        if (t === 'Point') {
+            let g = this.geometry as ol.geom.Point;
+            g.setCoordinates([
+                Number(ff.x) || 0,
+                Number(ff.y) || 0,
+
+            ]);
+        }
+
+        if (t === 'Circle') {
+            let g = this.geometry as ol.geom.Circle;
+
+            g.setCenter([
+                Number(ff.x) || 0,
+                Number(ff.y) || 0,
+
+            ]);
+            g.setRadius(Number(ff.radius) || 1)
+        }
+
+        if (t === 'Box') {
+            let g = this.geometry as ol.geom.Polygon;
+            let x = Number(ff.x) || 0,
+                y = Number(ff.y) || 0,
+                w = Number(ff.w) || 100,
+                h = Number(ff.h) || 100;
+            let coords: any = [
+                [x, y],
+                [x + w, y],
+                [x + w, y + h],
+                [x, y + h],
+                [x, y],
+            ];
+            g.setCoordinates([coords])
+        }
+
+        this.geometry.changed();
     }
 
 }
 
 abstract class MeasureTool extends gws.Controller implements gws.types.ITool {
-    geometryType: string;
-    geometryName: string;
+    shapeType: string;
     cssSelector: string;
     defaultLabel: string;
 
     drawFeature: MeasureFeature;
+    newFeature: MeasureFeature;
 
     start() {
         let master = this.app.controller(MASTER) as MeasureController,
             layer = master.getOrCreateLayer(),
-            style = this.map.getStyleFromSelector(this.cssSelector);
+            style = this.map.getStyleFromSelector(this.cssSelector),
+            selectedStyle = this.map.getStyleFromSelector(this.cssSelector + 'Selected');
 
         console.log('MEASURE_START');
 
-        let draw = this.map.drawInteraction({
-            geometryType: this.geometryType,
-            style,
-            whenStarted: oFeature => {
-                this.drawFeature = new MeasureFeature(this.map, {oFeature, style},
-                    this.geometryName + ' (' + this.defaultLabel + ')',
-                    this.defaultLabel,
-                );
-            },
-            whenEnded: oFeature => {
-                let newFeature = new MeasureFeature(this.map, {geometry: oFeature.getGeometry(), style},
-                    this.geometryName + ' (' + this.defaultLabel + ')',
-                    this.defaultLabel,
-                );
-                layer.addFeature(newFeature);
-                master.selectFeature(newFeature, false);
+        this.newFeature = null;
+
+        let startDraw = oFeature => {
+
+            // if (this.newFeature)
+            //     layer.removeFeature(this.newFeature);
+
+            this.drawFeature = new MeasureFeature(master.app, {
+                oFeature,
+                shapeType: this.shapeType,
+                style,
+                labelTemplate: this.defaultLabel,
+                selectedStyle
+            });
+        };
+
+        let endDraw = oFeature => {
+
+            this.newFeature = new MeasureFeature(master.app, {
+                geometry: oFeature.getGeometry(),
+                shapeType: this.shapeType,
+                style,
+                labelTemplate: this.defaultLabel,
+                selectedStyle
+            });
+            layer.addFeature(this.newFeature);
+            master.selectFeature(this.newFeature, false);
+
+            this.app.stopTool(this.getValue('activeTool'))
+            this.update({
+                toolbarItem: null,
+            })
+
+        };
+
+        let startModify = oFeatures => {
+            if (oFeatures.length > 0) {
+                let fo = oFeatures[0]['_featureObj'];
+                if (fo)
+                    master.selectFeature(fo, false);
             }
-        });
+        };
+
+        let drawOpts: gws.types.DrawInteractionOptions = {
+            geometryType: this.shapeType,
+            style: selectedStyle,
+            whenStarted: startDraw,
+            whenEnded: endDraw
+        };
+
+        if (this.shapeType === 'Box') {
+            drawOpts.geometryType = 'Circle';
+            drawOpts.geometryFunction = ol.interaction.Draw.createBox();
+        }
+
+        let draw = this.map.drawInteraction(drawOpts);
 
         let modify = this.map.modifyInteraction({
-            style,
+            style: selectedStyle,
             source: layer.source,
-            whenStarted: oFeatures => {
-                if (oFeatures.length > 0) {
-                    let fo = oFeatures[0]['_featureObj'];
-                    if (fo)
-                        master.selectFeature(fo, false);
-                }
-            }
+            whenStarted: startModify,
         });
 
         this.map.setInteractions([
@@ -169,7 +314,7 @@ abstract class MeasureTool extends gws.Controller implements gws.types.ITool {
             'PinchZoom',
             'ZoomBox',
             draw,
-            modify,
+            //modify,
         ]);
     }
 
@@ -178,25 +323,43 @@ abstract class MeasureTool extends gws.Controller implements gws.types.ITool {
     }
 }
 
+class PointTool extends MeasureTool {
+    shapeType = 'Point';
+    cssSelector = '.modMeasurePoint';
+    defaultLabel = '{x}, {y}';
+}
+
 class LineTool extends MeasureTool {
-    geometryType = 'LineString';
-    geometryName = this.__('modMeasureLine');
+    shapeType = 'LineString';
     cssSelector = '.modMeasureLine';
     defaultLabel = '{len}';
 }
 
 class PolygonTool extends MeasureTool {
-    geometryType = 'Polygon';
-    geometryName = this.__('modMeasurePolygon');
+    shapeType = 'Polygon';
     cssSelector = '.modMeasurePolygon';
     defaultLabel = '{area}';
 }
 
 class CircleTool extends MeasureTool {
-    geometryType = 'Circle';
-    geometryName = this.__('modMeasureCircle');
+    shapeType = 'Circle';
     cssSelector = '.modMeasureCircle';
     defaultLabel = '{radius}';
+}
+
+class BoxTool extends MeasureTool {
+    shapeType = 'Box';
+    cssSelector = '.modMeasureBox';
+    defaultLabel = '{w} x {h}';
+}
+
+class PointButton extends toolbar.ToolButton {
+    className = 'modMeasurePointButton';
+    tool = 'Tool.Measure.Point';
+
+    get tooltip() {
+        return this.__('modMeasurePointButton');
+    }
 }
 
 class LineButton extends toolbar.ToolButton {
@@ -226,6 +389,15 @@ class CircleButton extends toolbar.ToolButton {
     }
 }
 
+class BoxButton extends toolbar.ToolButton {
+    className = 'modMeasureBoxButton';
+    tool = 'Tool.Measure.Box';
+
+    get tooltip() {
+        return this.__('modMeasureBoxButton');
+    }
+}
+
 class ClearButton extends toolbar.Button {
     className = 'modMeasureClearButton';
 
@@ -251,18 +423,14 @@ interface MeasureSidebarProps extends gws.types.ViewProps {
     controller: MeasureSidebarController;
     mapUpdateCount: number;
     measureSelectedFeature: MeasureFeature;
+    measureFeatureForm: MeasureFeatureFormData;
 }
 
-interface MeasureFeatureDetailsProps extends gws.types.ViewProps {
-    controller: MeasureSidebarController;
-    feature: MeasureFeature;
-}
-
-class MeasureFeatureDetailsToolbar extends gws.View<MeasureFeatureDetailsProps> {
+class MeasureFeatureDetailsToolbar extends gws.View<MeasureSidebarProps> {
     render() {
 
         let master = this.props.controller.app.controller(MASTER) as MeasureController;
-        let f = this.props.feature;
+        let f = this.props.measureSelectedFeature;
 
         return <Row>
             <Cell flex/>
@@ -284,7 +452,7 @@ class MeasureFeatureDetailsToolbar extends gws.View<MeasureFeatureDetailsProps> 
                 <gws.ui.IconButton
                     className="modMeasureFeatureDetailsCloseButton"
                     tooltip={this.__('modMeasureFeatureDetailsCloseButton')}
-                    whenTouched={() => master.unselectFeature(f)}
+                    whenTouched={() => master.unselectFeature()}
                 />
             </Cell>
         </Row>;
@@ -292,16 +460,120 @@ class MeasureFeatureDetailsToolbar extends gws.View<MeasureFeatureDetailsProps> 
     }
 }
 
-class MeasureFeatureDetails extends gws.View<MeasureFeatureDetailsProps> {
+class MeasureFeatureDetails extends gws.View<MeasureSidebarProps> {
     render() {
+        let master = this.props.controller.app.controller(MASTER) as MeasureController;
+        let f = this.props.measureSelectedFeature;
+        let ff = this.props.measureFeatureForm;
+
+        let changed = (key, val) => master.update({
+            measureFeatureForm: {
+                ...ff,
+                [key]: val
+            }
+        });
+
+        let submit = () => {
+            f.updateFromForm(this.props.measureFeatureForm);
+        };
+
+        let data = [];
+        let t = f.shapeType;
+
+        if (t === 'Point') {
+            data.push({
+                name: 'x',
+                title: this.__('modMeasureX'),
+                value: ff.x,
+                editable: true
+            });
+            data.push({
+                name: 'y',
+                title: this.__('modMeasureY'),
+                value: ff.y,
+                editable: true
+            });
+        }
+
+        if (t === 'Box') {
+            data.push({
+                name: 'x',
+                title: this.__('modMeasureX'),
+                value: ff.x,
+                editable: true
+            });
+            data.push({
+                name: 'y',
+                title: this.__('modMeasureY'),
+                value: ff.y,
+                editable: true
+            });
+            data.push({
+                name: 'w',
+                title: this.__('modMeasureWidth'),
+                value: ff.w,
+                editable: true
+            });
+            data.push({
+                name: 'h',
+                title: this.__('modMeasureHeight'),
+                value: ff.h,
+                editable: true
+            });
+        }
+
+        if (t === 'Circle') {
+            data.push({
+                name: 'x',
+                title: this.__('modMeasureX'),
+                value: ff.x,
+                editable: true
+            });
+            data.push({
+                name: 'y',
+                title: this.__('modMeasureY'),
+                value: ff.y,
+                editable: true
+            });
+            data.push({
+                name: 'radius',
+                title: this.__('modMeasureRaidus'),
+                value: ff.radius,
+                editable: true
+            });
+        }
+
+        data.push({
+            name: 'labelTemplate',
+            title: this.__('modMeasureLabelEdit'),
+            value: ff['labelTemplate'],
+            type: 'text',
+            editable: true
+        })
+
+        let form = <Form>
+            <Row>
+                <Cell flex>
+                    <gws.components.sheet.Editor
+                        data={data}
+                        whenChanged={changed}
+                        whenEntered={submit}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex/>
+                <Cell>
+                    <gws.ui.TextButton primary whenTouched={submit}>
+                        {this.__('modMeasureUpdateButton')}
+                    </gws.ui.TextButton>
+                </Cell>
+            </Row>
+        </Form>;
+
         return <div className="modMeasureFeatureDetails">
             <div className="modMeasureFeatureDetailsBody">
-                <gws.ui.TextArea
-                    label={this.__('modMeasureLabelEdit')}
-                    height={EDITOR_HEIGHT}
-                    value={this.props.feature.labelTemplate}
-                    whenChanged={value => this.props.feature.setLabelTemplate(value)}
-                />
+                {form}
                 <div className="uiHintText">
                     {this.__('modMeasureEditorHint')}
                 </div>
@@ -342,12 +614,12 @@ class MeasureSidebar extends gws.View<MeasureSidebarProps> {
 
                     item={(f: MeasureFeature) => <gws.ui.Link
                         whenTouched={() => master.selectFeature(f, true)}
-                        content={f.title}
+                        content={f.label}
                     />}
 
                     leftIcon={f => <gws.ui.IconButton
                         className="cmpFeatureZoomIcon"
-                        whenTouched={() => this.props.controller.update({
+                        whenTouched={() => master.update({
                             marker: {
                                 features: [f],
                                 mode: 'zoom draw fade',
@@ -358,7 +630,7 @@ class MeasureSidebar extends gws.View<MeasureSidebarProps> {
             </sidebar.TabBody>
 
             {selectedFeature && <sidebar.TabFooter>
-                <MeasureFeatureDetails {...this.props} feature={selectedFeature}/>
+                <MeasureFeatureDetails {...this.props} />
             </sidebar.TabFooter>}
 
 
@@ -378,7 +650,7 @@ class MeasureSidebarController extends gws.Controller implements gws.types.ISide
 
     get tabView() {
         return this.createElement(
-            this.connect(MeasureSidebar, ['mapUpdateCount', 'measureSelectedFeature']),
+            this.connect(MeasureSidebar, ['mapUpdateCount', 'measureSelectedFeature', 'measureFeatureForm']),
             {map: this.map}
         );
     }
@@ -399,9 +671,11 @@ class MeasureController extends gws.Controller {
 
     async init() {
 
+        await this.app.addTool('Tool.Measure.Point', this.app.createController(PointTool, this));
         await this.app.addTool('Tool.Measure.Line', this.app.createController(LineTool, this));
         await this.app.addTool('Tool.Measure.Polygon', this.app.createController(PolygonTool, this));
         await this.app.addTool('Tool.Measure.Circle', this.app.createController(CircleTool, this));
+        await this.app.addTool('Tool.Measure.Box', this.app.createController(BoxTool, this));
     }
 
     clear() {
@@ -410,31 +684,48 @@ class MeasureController extends gws.Controller {
         this.layer = null;
     }
 
-    selectFeature(f, highlight) {
-        if (highlight)
+    selectFeature(f: MeasureFeature, highlight) {
+        this.layer.features.forEach(f => (f as MeasureFeature).selected = false);
+        f.selected = true;
+
+        this.update({
+            measureSelectedFeature: f,
+            measureFeatureForm: f.formData,
+        });
+
+        if (highlight) {
             this.update({
-                measureSelectedFeature: f,
                 marker: {
                     features: [f],
-                    mode: 'pan draw fade',
+                    mode: 'pan',
                 }
             });
-        else
-            this.update({
-                measureSelectedFeature: f,
-            });
+            f.oFeature.changed();
+        } else {
+            f.redraw();
+        }
     }
 
-    unselectFeature(f) {
+    unselectFeature() {
+        this.layer.features.forEach(f => (f as MeasureFeature).selected = false);
         this.update({
-            measureSelectedFeature: null
+            measureSelectedFeature: null,
+            measureFeatureForm: {},
         });
+    }
+
+    featureUpdated(f) {
+        let sel = this.getValue('measureSelectedFeature');
+        if (f === sel)
+            this.update({
+                measureFeatureForm: f.formData,
+            });
     }
 
     removeFeature(f) {
         if (this.layer)
             this.layer.removeFeature(f);
-        this.update({measureSelectedFeature: null})
+        this.unselectFeature();
 
     }
 
@@ -473,9 +764,11 @@ class MeasureController extends gws.Controller {
 
 export const tags = {
     [MASTER]: MeasureController,
+    'Toolbar.Measure.Point': PointButton,
     'Toolbar.Measure.Line': LineButton,
     'Toolbar.Measure.Polygon': PolygonButton,
     'Toolbar.Measure.Circle': CircleButton,
+    'Toolbar.Measure.Box': BoxButton,
     'Toolbar.Measure.Clear': ClearButton,
     'Toolbar.Measure.Cancel': CancelButton,
     'Sidebar.Measure': MeasureSidebarController,

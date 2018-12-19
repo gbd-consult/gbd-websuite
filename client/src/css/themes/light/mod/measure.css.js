@@ -1,24 +1,68 @@
 module.exports = v => {
 
-    let baseColor = v.COLOR.gbdBlue;
+    let def = v.COLOR.blueGrey300,
+        sel = v.COLOR.blue500;
 
-    let common = {
-        stroke: baseColor,
+    let common = clr => ({
+        stroke: clr,
         strokeWidth: 2,
 
         labelFontSize: 11,
         labelFill: v.COLOR.white,
-        labelBackground: v.COLOR.darken(baseColor, 0.5),
+        labelBackground: v.COLOR.darken(clr, 0.5),
         labelPadding: 5,
+    });
+
+    let mark = clr => ({
+        mark: 'circle',
+        markFill: clr,
+        markSize: 10,
+    });
+
+    let fill = clr => ({
+        fill: v.COLOR.opacity(clr, 0.3)
+    });
+
+    let pointLabel = {
+        labelPlacement: 'end',
+        labelOffsetY: 20,
+
     };
 
-    let mark = {
-        mark: 'circle',
-        markFill: baseColor,
-        markSize: 10,
+    let lineLabel = {
+        labelPlacement: 'end',
+        labelOffsetY: 20,
     };
 
     return {
+
+        '.modMeasurePoint':
+            {...common(def), ...mark(def), ...pointLabel},
+        '.modMeasurePointSelected':
+            {...common(sel), ...mark(sel), ...pointLabel},
+
+        '.modMeasureLine':
+            {...common(def), ...mark(def), ...lineLabel},
+        '.modMeasureLineSelected':
+            {...common(sel), ...mark(sel), ...lineLabel},
+
+        '.modMeasurePolygon':
+            {...common(def), ...mark(def), ...fill(def)},
+        '.modMeasurePolygonSelected':
+            {...common(sel), ...mark(sel), ...fill(sel)},
+
+        '.modMeasureBox':
+            {...common(def), ...mark(def), ...fill(def)},
+        '.modMeasureBoxSelected':
+            {...common(sel), ...mark(sel), ...fill(sel)},
+
+        // @TODO: need marks on screen, but not on print
+
+        '.modMeasureCircle':
+            {...common(def), ...mark(def), ...fill(def)},
+        '.modMeasureCircleSelected':
+            {...common(sel), ...mark(sel), ...fill(sel)},
+
 
         '.modMeasureSidebarIcon': {
             ...v.GOOGLE_SVG('image/straighten', v.SIDEBAR_HEADER_COLOR)
@@ -52,30 +96,9 @@ module.exports = v => {
             ...v.GOOGLE_SVG('navigation/close', v.TEXT_COLOR),
         },
 
-
-        '.modMeasureLine': {
-            ...common,
-            ...mark,
-            labelPlacement: 'end',
-            labelOffsetY: -50,
-        },
-
-        '.modMeasurePolygon': {
-            ...common,
-            ...mark,
-            fill: v.COLOR.opacity(baseColor, 0.3),
-        },
-
-        '.modMeasureCircle': {
-            ...common,
-            // @TODO: need marks on screen, but not on print
-            ...mark,
-            fill: v.COLOR.opacity(baseColor, 0.3),
-        },
-
         '.modMeasureFeatureDetailsBody': {
             padding: [v.UNIT4],
 
-        }
+        },
     }
 };
