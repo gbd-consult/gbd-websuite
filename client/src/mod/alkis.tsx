@@ -467,6 +467,7 @@ class SearchToolbar extends gws.View<FsSearchProps> {
 
         let button = gt => <gws.ui.IconButton
             {...gws.tools.cls('modLensButton' + gt, gt === this.props.lensGeometryType && 'isActive')}
+            tooltip={this.props.controller.__('modLensButton' + gt)}
             whenTouched={() => clicked(gt)}
         />;
 
@@ -474,6 +475,7 @@ class SearchToolbar extends gws.View<FsSearchProps> {
             <Row>
                 <Cell flex/>
                 {button('Point')}
+                {button('Box')}
                 {button('LineString')}
                 {button('Polygon')}
                 {button('Circle')}
@@ -481,10 +483,9 @@ class SearchToolbar extends gws.View<FsSearchProps> {
                     <gws.ui.IconButton
                         className="modLensCancelButton"
                         whenTouched={() => cancel()}
+                        tooltip={this.props.controller.__('modLensButtonCancel')}
                     />
                 </Cell>
-
-
             </Row>
         </div>;
     }

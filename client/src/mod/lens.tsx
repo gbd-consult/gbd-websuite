@@ -29,7 +29,40 @@ class LensTool extends gws.Controller implements gws.types.ITool {
 
         console.log('LENS_START');
 
-        let draw = this.map.drawInteraction({
+        let drawEnded = oFeature => {
+            let geom = oFeature.getGeometry();
+
+            this.curFeature = new gws.map.Feature(this.map, {geometry: geom, style});
+            this.getLayer().addFeature(this.curFeature);
+
+            this.oOverlay = this.createOverlay();
+            this.positionOverlay();
+
+            let modify = this.map.modifyInteraction({
+                style,
+                features: new ol.Collection([this.curFeature.oFeature]),
+
+                whenEnded: () => {
+                    this.positionOverlay();
+                    this.changed();
+                }
+
+            });
+
+            this.changed();
+
+            this.map.setInteractions([
+                'DragPan',
+                draw,
+                //modify,
+                'MouseWheelZoom',
+                'PinchZoom',
+                'ZoomBox',
+            ]);
+
+        };
+
+        let drawOpts: gws.types.DrawInteractionOptions = {
             geometryType: this.geometryType,
             style,
 
@@ -37,39 +70,16 @@ class LensTool extends gws.Controller implements gws.types.ITool {
                 this.clear();
             },
 
-            whenEnded: oFeature => {
-                let geom = oFeature.getGeometry();
+            whenEnded: drawEnded
+        };
 
-                this.curFeature = new gws.map.Feature(this.map, {geometry: geom, style});
-                this.getLayer().addFeature(this.curFeature);
+        if (this.geometryType === 'Box') {
+            drawOpts.geometryType = 'Circle';
+            drawOpts.geometryFunction = ol.interaction.Draw.createBox();
+        }
 
-                this.oOverlay = this.createOverlay();
-                this.positionOverlay();
 
-                let modify = this.map.modifyInteraction({
-                    style,
-                    features: new ol.Collection([this.curFeature.oFeature]),
-
-                    whenEnded: () => {
-                        this.positionOverlay();
-                        this.changed();
-                    }
-
-                });
-
-                this.changed();
-
-                this.map.setInteractions([
-                    'DragPan',
-                    draw,
-                    modify,
-                    'MouseWheelZoom',
-                    'PinchZoom',
-                    'ZoomBox',
-                ]);
-
-            }
-        });
+        let draw = this.map.drawInteraction(drawOpts);
 
         this.map.setInteractions([
             'DragPan',
