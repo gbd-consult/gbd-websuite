@@ -126,7 +126,7 @@
                     {
                         "elements": [
                             {
-                                "tag": "Toolbar.Print.Go"
+                                "tag": "Toolbar.Print"
                             }
                         ],
                         "tag": "Toolbar.Group"

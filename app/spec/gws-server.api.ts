@@ -1,6 +1,6 @@
 /**
  * Gws Server API.
- * Version 0.0.9
+ * Version 0.0.10
  */
 
 type _int = number;

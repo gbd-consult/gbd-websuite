@@ -8,7 +8,7 @@
 #########################################################
 
 # gws version
-VERSION='0.0.9'
+VERSION='0.0.10'
 
 # server image
 IMAGE=gbdconsult/gws-server:${VERSION}
