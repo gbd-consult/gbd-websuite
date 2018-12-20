@@ -46,14 +46,6 @@ class Renderer:
             'items': []
         })
 
-        if inp.map_size_unit == 'px':
-            self.output.map_size_px = inp.map_size
-        if inp.map_size_unit == 'mm':
-            self.output.map_size_px = (
-                misc.mm2px(inp.map_size[0], inp.dpi),
-                misc.mm2px(inp.map_size[1], inp.dpi),
-            )
-
         # NB: items are top-to-bottom
 
         for n, item in enumerate(reversed(inp.items)):
@@ -81,8 +73,8 @@ class Renderer:
         if item.get('layer'):
             r = item.layer.render_bbox(
                 self.inp.bbox,
-                self.output.map_size_px[0],
-                self.output.map_size_px[1],
+                self.inp.map_size_px[0],
+                self.inp.map_size_px[1],
                 dpi=self.inp.dpi,
                 layers=item.sub_layers
             )
@@ -126,7 +118,7 @@ class Renderer:
                 'type': 'image',
                 'image_path': '',
             }))
-            self.composition = Composition(self.output.map_size_px)
+            self.composition = Composition(self.inp.map_size_px)
         self.composition.add_image(img, opacity)
 
     def _add_svg(self, svg):

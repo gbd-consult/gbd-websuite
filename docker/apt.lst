@@ -11,6 +11,7 @@ python3-gdal
 rsyslog
 tzdata
 xvfb
+ghostscript
 
 # ldap
 

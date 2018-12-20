@@ -101,3 +101,30 @@ def page_count(path):
     with open(path, 'rb') as fp:
         r = PyPDF2.PdfFileReader(fp)
         return r.getNumPages()
+
+
+def to_image(in_path, out_path, size, format):
+    if format == 'png':
+        device = 'png16m'
+    if format == 'jpeg' or format == 'jpg':
+        device = 'jpeg'
+
+    cmd = [
+        'gs',
+        '-q',
+        f'-dNOPAUSE',
+        f'-dBATCH',
+        f'-dDEVICEWIDTHPOINTS={size[0]}',
+        f'-dDEVICEHEIGHTPOINTS={size[1]}',
+        f'-dPDFFitPage=true',
+        f'-sDEVICE={device}',
+        f'-dTextAlphaBits=4',
+        f'-dGraphicsAlphaBits=4',
+        f'-sOutputFile={out_path}',
+        in_path,
+    ]
+
+    gws.log.debug(cmd)
+    sh.run(cmd, echo=False)
+
+    return out_path

@@ -27,8 +27,17 @@ module.exports = v => ({
         ...v.GOOGLE_SVG('action/print', v.TOOLBAR_BUTTON_COLOR)
     },
 
+    '.modSnapshotButton': {
+        ...v.GOOGLE_SVG('image/crop_original', v.TOOLBAR_BUTTON_COLOR)
+    },
+
     '.modPrintPreviewPrintButton': {
         ...v.OK_BUTTON('action/print'),
+        borderRadius: v.CONTROL_SIZE,
+    },
+
+    '.modPrintPreviewSnapshotButton': {
+        ...v.OK_BUTTON('image/crop_original'),
         borderRadius: v.CONTROL_SIZE,
     },
 

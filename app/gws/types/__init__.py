@@ -446,8 +446,7 @@ class MapRenderInput(Data):
     rotation: int
     scale: int
     dpi: int
-    map_size: Size
-    map_size_unit: str
+    map_size_px: Size
     items: List[MapRenderInputItem]
 
 
@@ -462,7 +461,6 @@ class MapRenderOutput(Data):
     dpi: int
     rotation: int
     scale: int
-    map_size_px: Size
     items: List[MapRenderOutputItem]
 
 

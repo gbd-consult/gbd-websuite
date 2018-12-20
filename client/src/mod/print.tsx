@@ -33,12 +33,12 @@ let allProps = [
     'printSnapshotHeight',
 ];
 
-interface GoButtonProps extends ViewProps {
-    controller: GoButton;
+interface PrintButtonProps extends ViewProps {
+    controller: PrintButton;
     toolbarItem: gws.types.IController;
 }
 
-class GoButtonView extends gws.View<GoButtonProps> {
+class PrintButtonView extends gws.View<PrintButtonProps> {
     render() {
         let active = this.props.toolbarItem === this.props.controller;
         return <gws.ui.IconButton
@@ -49,7 +49,7 @@ class GoButtonView extends gws.View<GoButtonProps> {
     }
 }
 
-class GoButton extends gws.Controller {
+class PrintButton extends gws.Controller {
     isToolbarButton = true;
     parent: toolbar.Group;
 
@@ -64,7 +64,7 @@ class GoButton extends gws.Controller {
 
     get defaultView() {
         return this.createElement(
-            this.connect(GoButtonView, [...allProps, 'toolbarItem']));
+            this.connect(PrintButtonView, [...allProps, 'toolbarItem']));
     }
 }
 
@@ -77,8 +77,8 @@ class SnapshotButtonView extends gws.View<SnapshotButtonProps> {
     render() {
         let active = this.props.toolbarItem === this.props.controller;
         return <gws.ui.IconButton
-            {...gws.tools.cls('modPrintButton', active && 'isActive')}
-            tooltip={this.__('modPrintButton')}
+            {...gws.tools.cls('modSnapshotButton', active && 'isActive')}
+            tooltip={this.__('modSnapshotButton')}
             whenTouched={() => this.props.controller.touched()}
         />;
     }
@@ -575,6 +575,18 @@ class PrinterController extends gws.Controller {
                 break;
 
             case gws.api.JobState.complete:
+                if (this.getValue('printSnapshotMode')) {
+                    let a = document.createElement('a');
+                    a.href = job.url;
+                    a.download = 'image.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    this.reset()
+                } else {
+                    this.update({printState: job.state});
+                }
+                break;
             case gws.api.JobState.error:
                 this.update({printState: job.state});
         }
@@ -601,6 +613,6 @@ class PrinterController extends gws.Controller {
 
 export const tags = {
     [MASTER]: PrinterController,
-    'Toolbar.Print': GoButton,
+    'Toolbar.Print': PrintButton,
     'Toolbar.Snapshot': SnapshotButton,
 };

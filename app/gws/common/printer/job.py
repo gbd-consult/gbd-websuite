@@ -92,13 +92,35 @@ class _Worker:
             self.template: t.TemplateObject = self.acquire('gws.ext.template', self.p.templateUid)
             # for draft printing (dpi=0), ensure that the client's canvas buffer and our image have the same dimensions
             self.render_input.dpi = self.template.dpi_for_quality(p.get('quality', 0)) or misc.OGC_SCREEN_PPI
-            self.render_input.map_size = self.template.map_size
-            self.render_input.map_size_unit = 'mm'
+            self.render_input.map_size_px = [
+                misc.mm2px(self.template.map_size[0], self.render_input.dpi),
+                misc.mm2px(self.template.map_size[1], self.render_input.dpi),
+            ]
         else:
+            # no template uid means we're printing just the map
+            # and map dimensions are given in p.mapWidth/p.mapHeight
+            # and p.quality == dpi
+
             self.template = None
-            self.render_input.dpi = p.quality
-            self.render_input.map_size = [p.mapWidth, p.mapHeight]
-            self.render_input.map_size_unit = 'px'
+            try:
+                q = int(p.quality)
+            except:
+                q = 0
+
+            if q > misc.OGC_SCREEN_PPI:
+                self.render_input.dpi = q
+
+                w = misc.px2mm(p.mapWidth, misc.OGC_SCREEN_PPI)
+                h = misc.px2mm(p.mapHeight, misc.OGC_SCREEN_PPI)
+
+                w = misc.mm2px(w, self.render_input.dpi)
+                h = misc.mm2px(h, self.render_input.dpi)
+            else:
+                self.render_input.dpi = misc.OGC_SCREEN_PPI
+                w = p.mapWidth
+                h = p.mapHeight
+
+            self.render_input.map_size_px = [w, h]
 
         self.common_render_items = self.prepare_render_items(p.items)
 
@@ -130,7 +152,7 @@ class _Worker:
 
     def run2(self):
 
-        section_pdfs = []
+        section_paths = []
         renderer = gws.gis.render.Renderer()
 
         self.check_job(otype='begin')
@@ -153,25 +175,25 @@ class _Worker:
                     out_path=f'{self.base_path}/sec-{n}.pdf',
                     format='pdf',
                 )
-                section_pdfs.append(tr.path)
+                section_paths.append(tr.path)
             else:
                 page_size = [
-                    misc.px2mm(self.render_input.map_size[0], misc.PDF_DPI),
-                    misc.px2mm(self.render_input.map_size[1], misc.PDF_DPI),
+                    misc.px2mm(self.render_input.map_size_px[0], self.render_input.dpi),
+                    misc.px2mm(self.render_input.map_size_px[1], self.render_input.dpi),
                 ]
                 path = gws.tools.pdf.render_html_with_map(
-                    html='@',
+                    html='<meta charset="UTF-8"/>@',
                     map_placeholder='@',
                     page_size=page_size,
                     margin=None,
                     map_render_output=renderer.output,
                     out_path=f'{self.base_path}/sec-{n}.pdf',
                 )
-                section_pdfs.append(path)
+                section_paths.append(path)
 
         self.check_job(otype='end')
 
-        comb_path = gws.tools.pdf.concat(section_pdfs, f'{self.base_path}/comb.pdf')
+        comb_path = gws.tools.pdf.concat(section_paths, f'{self.base_path}/comb.pdf')
 
         if self.template:
             ctx = gws.extend(self.sections[0].data, self.template_vars)
@@ -184,6 +206,14 @@ class _Worker:
             )
         else:
             res_path = comb_path
+
+        if self.format == 'png':
+            res_path = gws.tools.pdf.to_image(
+                in_path=res_path,
+                out_path=res_path + '.png',
+                size=self.render_input.map_size_px,
+                format='png'
+            )
 
         self.get_job().update(gws.tools.job.State.complete, result=res_path)
 
@@ -249,7 +279,9 @@ class _Worker:
         # @TODO assuming projection units are 'm'
         unit_per_mm = self.render_input.scale / 1000.0
 
-        w, h = self.render_input.map_size
+        w = misc.px2mm(self.render_input.map_size_px[0], self.render_input.dpi)
+        h = misc.px2mm(self.render_input.map_size_px[1], self.render_input.dpi)
+
         x, y = center
 
         return [
