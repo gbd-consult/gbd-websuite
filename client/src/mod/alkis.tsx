@@ -511,8 +511,8 @@ class SearchToolbar extends gws.View<FsSearchProps> {
             <Row>
                 <Cell flex/>
                 {button('Point')}
-                {button('Box')}
                 {button('LineString')}
+                {button('Box')}
                 {button('Polygon')}
                 {button('Circle')}
                 <Cell>
@@ -1105,4 +1105,3 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
 export const tags = {
     'Sidebar.Alkis': AlkisController,
 };
-
