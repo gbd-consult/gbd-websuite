@@ -46,6 +46,13 @@ module.exports = v => {
             },
         },
 
+        '.modLensButtonBox': {
+            ...v.LOCAL_SVG('g_box', norm),
+            '&.isActive': {
+                ...v.LOCAL_SVG('g_box', active),
+            },
+        },
+
         '.modLensButtonPolygon': {
             ...v.LOCAL_SVG('g_poly', norm),
             '&.isActive': {

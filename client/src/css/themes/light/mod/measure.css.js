@@ -68,12 +68,20 @@ module.exports = v => {
             ...v.GOOGLE_SVG('image/straighten', v.SIDEBAR_HEADER_COLOR)
         },
 
+        '.modMeasurePointButton': {
+            ...v.LOCAL_SVG('vector_point', v.TOOLBAR_BUTTON_COLOR)
+        },
+
         '.modMeasureLineButton': {
             ...v.LOCAL_SVG('vector_line', v.TOOLBAR_BUTTON_COLOR)
         },
 
-        '.modMeasurePolygonButton': {
+        '.modMeasureBoxButton': {
             ...v.LOCAL_SVG('baseline-texture-square-24px', v.TOOLBAR_BUTTON_COLOR)
+        },
+
+        '.modMeasurePolygonButton': {
+            ...v.LOCAL_SVG('vector_poly', v.TOOLBAR_BUTTON_COLOR)
         },
 
         '.modMeasureCircleButton': {

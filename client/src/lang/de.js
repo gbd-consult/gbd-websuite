@@ -67,8 +67,10 @@ module.exports = {
     modMeasureNoFeaturesWarning: 'Keine Messungen vorhanden.',
     modMeasureEditorHint: 'Platzhalter: {len}, {area}, {radius}',
 
+    modMeasurePointButton: 'Punkt setzen und mit Koordinaten markieren',
     modMeasureLineButton: 'Linie messen',
-    modMeasurePolygonButton: 'Fläche messen',
+    modMeasureBoxButton: 'rechteckige Fläche messen',
+    modMeasurePolygonButton: 'beliebige Fläche messen',
     modMeasureCircleButton: 'Kreis messen',
     modMeasureClearButton: 'Messdaten verwerfen',
     modMeasureLabelEdit: 'Beschriftung',
@@ -84,6 +86,13 @@ module.exports = {
     modSearchClearButton: 'Löschen',
     modSearchPlaceholder: 'Suchen',
     modAlkisTooltip: 'Flurstückssuche',
+
+    modLensButtonPoint: 'Flurstückauswahl mithilfe eines Punktes',
+    modLensButtonLineString: 'Flurstückauswahl mithilfe einer Linie',
+    modLensButtonBox: 'Flurstückauswahl mithilfe einer Box',
+    modLensButtonPolygon: 'Flurstückauswahl mithilfe eines Polygons',
+    modLensButtonCircle: 'Flurstückauswahl mithilfe eines Kreises',
+    modLensCancelButton: 'Flurstückauswahl beenden',
 
     modSelectAreaButton: 'Auswahl mithilfe selbstgezeichneter Fläche',
     modSelectPolygonButton: 'Auswahl mithilfe eines Polygons',
