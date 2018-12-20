@@ -49,6 +49,7 @@ export async function main() {
         locale: window['GWS_LOCALE'],
         tags: mods.reduce((o, m) => Object.assign(o, m.tags), {}),
         defaultHelpUrl: '',
+        defaultHomeUrl: '/',
         domNode
     };
 

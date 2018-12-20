@@ -3,11 +3,11 @@
 module.exports = v => ({
 
     '.uiIconButton.modZoomInfobarOutButton': {
-        ...v.GOOGLE_SVG('content/remove', v.INFOBAR_ICON_COLOR),
+        ...v.LOCAL_SVG('zoom_out', v.INFOBAR_ICON_COLOR),
     },
 
     '.uiIconButton.modZoomInfobarInButton': {
-        ...v.GOOGLE_SVG('content/add', v.INFOBAR_ICON_COLOR),
+        ...v.LOCAL_SVG('zoom_in', v.INFOBAR_ICON_COLOR),
     },
 
     '.uiIconButton.modZoomInfobarBoxButton': {
@@ -15,7 +15,7 @@ module.exports = v => ({
     },
 
     '.uiIconButton.modZoomInfobarResetButton': {
-        ...v.GOOGLE_SVG('action/home', v.INFOBAR_ICON_COLOR),
+        ...v.LOCAL_SVG('zoom_reset', v.INFOBAR_ICON_COLOR),
     },
 
     '.modZoomBox': {

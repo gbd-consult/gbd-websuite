@@ -191,7 +191,7 @@ class LinkView extends gws.View<LinkProps> {
     render() {
         return <div {...gws.tools.cls('modInfobarWidget', 'modInfobarLink', this.props.className)}>
             <a
-                onClick={() => this.props.controller.whenTouched()}>{this.props.title}</a>
+                onClick={() => this.props.controller.touched()}>{this.props.title}</a>
         </div>
     }
 }
@@ -201,18 +201,22 @@ class LinkButtonView extends gws.View<LinkProps> {
         return <gws.ui.IconButton
             className={this.props.className}
             tooltip={this.props.title}
-            whenTouched={() => this.props.controller.whenTouched()}
+            whenTouched={() => this.props.controller.touched()}
         />
     }
 }
 
 class LinkWidget extends gws.Controller {
 
-    whenTouched() {
+    touched() {
+        let url = this.options.href;
+
         if (this.options.target === 'frame')
-            this.update({dialogContent: <iframe src={this.options.href}/>});
+            this.update({dialogContent: <iframe src={url}/>});
+        else if (this.options.target === 'blank')
+            window.open(url);
         else
-            window.open(this.options.href);
+            location.href = url;
     }
 
     get defaultView() {
@@ -235,6 +239,19 @@ class HelpWidget extends LinkWidget {
     }
 }
 
+class HomeLinkWidget extends LinkWidget {
+
+    get defaultView() {
+        this.options = {
+            ...this.options,
+            href: this.getValue('homeUrl'),
+            title: this.__('modInfobarHomeLinkTitle'),
+            className: 'modInfobarHomeLinkButton',
+        };
+        return this.createElement(LinkButtonView, this.options);
+    }
+}
+
 const ABOUT_URL = 'https://www.gbd-consult.de/software/gbd-websuite.html';
 
 class AboutWidget extends LinkWidget {
@@ -243,6 +260,7 @@ class AboutWidget extends LinkWidget {
         this.options = {
             ...this.options,
             href: ABOUT_URL,
+            target: 'blank',
             title: this.__('modInfobarAboutTitle'),
             className: 'modInfobarAboutButton',
         };
@@ -286,6 +304,7 @@ export const tags = {
     'Infobar.Position': PositionWidget,
     'Infobar.Rotation': RotationWidget,
     'Infobar.Scale': ScaleWidget,
+    'Infobar.HomeLink': HomeLinkWidget,
     'Infobar.Loader': LoaderWidget,
     'Infobar.Spacer': Spacer,
 };

@@ -125,6 +125,10 @@ module.exports = v => ({
         ...v.GOOGLE_SVG('action/help', v.INFOBAR_ICON_COLOR),
     },
 
+    '.modInfobarHomeLinkButton': {
+        ...v.GOOGLE_SVG('action/home', v.INFOBAR_ICON_COLOR),
+    },
+
     '.uiIconButton.modInfobarAboutButton': {
         width: 120,
         height: v.CONTROL_SIZE,
