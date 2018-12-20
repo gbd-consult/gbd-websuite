@@ -950,9 +950,21 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
             marker: null,
         });
 
+        let quality = 0;
+        let level = this.setup.printTemplate.qualityLevels[quality];
+        let dpi = level ? level.dpi : 0;
+
+        let base = await this.map.printParams(null, dpi);
+        let printParams: gws.api.PrintParams = {
+            ...base,
+            templateUid: this.setup.printTemplate.uid,
+            quality
+        };
+
+
         let q = {
             ...this.paramsForFeatures(fs),
-            printParams: await this.map.printParams(null, this.setup.printTemplate, 0),
+            printParams,
             highlightStyle: this.map.getStyleFromSelector('.modMarkerShape').props,
         };
 

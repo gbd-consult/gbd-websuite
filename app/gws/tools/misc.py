@@ -53,6 +53,10 @@ def mm2px(x, ppi):
     return int((x * ppi) / MM_PER_IN)
 
 
+def px2mm(x, ppi):
+    return int((x / ppi) * MM_PER_IN)
+
+
 def mm2pt(x):
     return (x / MM_PER_IN) * PT_PER_IN
 

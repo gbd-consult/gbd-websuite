@@ -174,6 +174,10 @@ export interface PrintParams {
     /// 
     items: PrintItemList;
     /// 
+    mapHeight?: _int;
+    /// 
+    mapWidth?: _int;
+    /// 
     projectUid: string;
     /// 
     quality: _int;
@@ -182,7 +186,7 @@ export interface PrintParams {
     /// 
     scale: _int;
     /// 
-    sections: PrintSectionList;
+    sections?: PrintSectionList;
     /// 
     templateUid: string;
 }
@@ -744,11 +748,14 @@ export interface GwsServerApi {
     /// Cancel a print job
     printerCancel(p: PrinterQueryParams): Promise<PrinterResponse>;
 
+    /// Start a backround print job
+    printerPrint(p: PrintParams): Promise<PrinterResponse>;
+
     /// Query the print job status
     printerQuery(p: PrinterQueryParams): Promise<PrinterResponse>;
 
-    /// Start a backround print job
-    printerStart(p: PrintParams): Promise<PrinterResponse>;
+    /// Start a backround snapshot job
+    printerSnapshot(p: PrintParams): Promise<PrinterResponse>;
 
     /// Return the project configuration
     projectInfo(p: ProjectInfoParams): Promise<ProjectInfoResponse>;

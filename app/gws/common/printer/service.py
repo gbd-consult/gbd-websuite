@@ -30,7 +30,6 @@ def query_job(req, p: pt.PrinterQueryParams) -> pt.PrinterResponse:
         'progress': progress,
         'otype': job.otype or '',
         'oname': job.oname or '',
-        #'url': gws.SERVER_ENDPOINT + '?cmd=printerHttpGetResult&jobUid=' + job.uid,
         'url': gws.SERVER_ENDPOINT + '?cmd=assetHttpGetResult&jobUid=' + job.uid,
     })
 

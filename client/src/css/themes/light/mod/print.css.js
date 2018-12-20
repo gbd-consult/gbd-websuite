@@ -1,5 +1,3 @@
-
-
 module.exports = v => ({
     '.modPrintPreviewBox': {
         boxShadow: '0 0 0 4000px rgba(0, 0, 0, 0.5)',
@@ -11,6 +9,18 @@ module.exports = v => ({
         top: '50%',
         margin: 'auto',
         pointerEvents: 'none',
+    },
+
+    '.modPrintPreviewBoxHandle': {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        ...v.ICON('normal'),
+        ...v.LOCAL_SVG('move', v.COLOR.white),
+        borderRadius: v.BORDER_RADIUS,
+        border: '3px solid white',
+        backgroundColor: v.COLOR.blueGrey400,
+
     },
 
     '.modPrintButton': {
@@ -44,7 +54,6 @@ module.exports = v => ({
     '.modPrintProgressDialog .uiRow': {
         marginTop: v.UNIT4,
     },
-
 
 
 });

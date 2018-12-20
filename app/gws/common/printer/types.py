@@ -26,13 +26,15 @@ class PrintSection(t.Data):
 
 class PrintParams(t.Data):
     projectUid: str
-    templateUid: str
     items: t.List[PrintItem]
-    sections: t.List[PrintSection]
     rotation: int
-    quality: int
     scale: int
     format: t.Optional[str]
+    templateUid: str
+    sections: t.Optional[t.List[PrintSection]]
+    quality: int
+    mapWidth: t.Optional[int]
+    mapHeight: t.Optional[int]
 
 
 class PrinterQueryParams(t.Data):

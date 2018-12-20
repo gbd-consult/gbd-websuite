@@ -11,7 +11,7 @@ class Config(t.WithTypeAndAccess):
 
 class Object(gws.Object):
 
-    def api_start(self, req, p: pt.PrintParams) -> pt.PrinterResponse:
+    def api_print(self, req, p: pt.PrintParams) -> pt.PrinterResponse:
         """Start a backround print job"""
 
         req.require_project(p.projectUid)
@@ -20,6 +20,12 @@ class Object(gws.Object):
         for sec in p.sections:
             sec.data = _validate_data(sec.get('data'), template)
 
+        return service.start_job(req, p)
+
+    def api_snapshot(self, req, p: pt.PrintParams) -> pt.PrinterResponse:
+        """Start a backround snapshot job"""
+
+        req.require_project(p.projectUid)
         return service.start_job(req, p)
 
     def api_query(self, req, p: pt.PrinterQueryParams) -> pt.PrinterResponse:

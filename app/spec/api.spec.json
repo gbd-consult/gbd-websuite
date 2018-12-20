@@ -244,6 +244,16 @@
             "method": "http_get_result",
             "module": "gws.ext.action.printer"
         },
+        "printerPrint": {
+            "action": "printer",
+            "arg": "gws.common.printer.types.PrintParams",
+            "category": "api",
+            "cmd": "printerPrint",
+            "doc": "Start a backround print job",
+            "method": "api_print",
+            "module": "gws.ext.action.printer",
+            "return": "gws.common.printer.types.PrinterResponse"
+        },
         "printerQuery": {
             "action": "printer",
             "arg": "gws.common.printer.types.PrinterQueryParams",
@@ -254,13 +264,13 @@
             "module": "gws.ext.action.printer",
             "return": "gws.common.printer.types.PrinterResponse"
         },
-        "printerStart": {
+        "printerSnapshot": {
             "action": "printer",
             "arg": "gws.common.printer.types.PrintParams",
             "category": "api",
-            "cmd": "printerStart",
-            "doc": "Start a backround print job",
-            "method": "api_start",
+            "cmd": "printerSnapshot",
+            "doc": "Start a backround snapshot job",
+            "method": "api_snapshot",
             "module": "gws.ext.action.printer",
             "return": "gws.common.printer.types.PrinterResponse"
         },
@@ -575,6 +585,20 @@
                 {
                     "default": null,
                     "doc": "",
+                    "name": "mapHeight",
+                    "optional": true,
+                    "type": "int"
+                },
+                {
+                    "default": null,
+                    "doc": "",
+                    "name": "mapWidth",
+                    "optional": true,
+                    "type": "int"
+                },
+                {
+                    "default": null,
+                    "doc": "",
                     "name": "projectUid",
                     "optional": false,
                     "type": "str"
@@ -604,7 +628,7 @@
                     "default": null,
                     "doc": "",
                     "name": "sections",
-                    "optional": false,
+                    "optional": true,
                     "type": "gws.common.printer.types.PrintSectionList"
                 },
                 {

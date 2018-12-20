@@ -43,12 +43,16 @@ class Renderer:
             'dpi': inp.dpi,
             'rotation': inp.rotation,
             'scale': inp.scale,
-            'map_size_px': (
-                misc.mm2px(inp.map_size[0], inp.dpi),
-                misc.mm2px(inp.map_size[1], inp.dpi),
-            ),
             'items': []
         })
+
+        if inp.map_size_unit == 'px':
+            self.output.map_size_px = inp.map_size
+        if inp.map_size_unit == 'mm':
+            self.output.map_size_px = (
+                misc.mm2px(inp.map_size[0], inp.dpi),
+                misc.mm2px(inp.map_size[1], inp.dpi),
+            )
 
         # NB: items are top-to-bottom
 

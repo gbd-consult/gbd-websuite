@@ -447,6 +447,7 @@ class MapRenderInput(Data):
     scale: int
     dpi: int
     map_size: Size
+    map_size_unit: str
     items: List[MapRenderInputItem]
 
 

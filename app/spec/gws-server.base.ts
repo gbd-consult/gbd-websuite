@@ -26,8 +26,9 @@ export abstract class GwsServer implements gws.GwsServerApi {
     async mapRenderBbox(p: gws.MapRenderBboxParams): Promise<gws.HttpResponse> { return await this._call("mapRenderBbox", p) }
     async mapRenderXyz(p: gws.MapRenderXyzParams): Promise<gws.HttpResponse> { return await this._call("mapRenderXyz", p) }
     async printerCancel(p: gws.PrinterQueryParams): Promise<gws.PrinterResponse> { return await this._call("printerCancel", p) }
+    async printerPrint(p: gws.PrintParams): Promise<gws.PrinterResponse> { return await this._call("printerPrint", p) }
     async printerQuery(p: gws.PrinterQueryParams): Promise<gws.PrinterResponse> { return await this._call("printerQuery", p) }
-    async printerStart(p: gws.PrintParams): Promise<gws.PrinterResponse> { return await this._call("printerStart", p) }
+    async printerSnapshot(p: gws.PrintParams): Promise<gws.PrinterResponse> { return await this._call("printerSnapshot", p) }
     async projectInfo(p: gws.ProjectInfoParams): Promise<gws.ProjectInfoResponse> { return await this._call("projectInfo", p) }
     async remoteadminGetSpec(p: gws.RemoteadminGetSpecParams): Promise<gws.Response> { return await this._call("remoteadminGetSpec", p) }
     async remoteadminValidate(p: gws.RemoteadminValidateParams): Promise<gws.Response> { return await this._call("remoteadminValidate", p) }

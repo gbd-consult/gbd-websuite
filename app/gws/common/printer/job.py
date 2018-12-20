@@ -80,22 +80,25 @@ class _Worker:
 
         self.format = p.get('format') or 'pdf'
 
-        if self.format != 'pdf':
-            raise ValueError('we only support pdf printing')
-
         self.project: t.ProjectObject = self.acquire('gws.common.project', self.p.projectUid)
-        self.template: t.TemplateObject = self.acquire('gws.ext.template', self.p.templateUid)
-
-        # for draft printing (dpi=0), ensure that the client's canvas buffer and our image have the same dimensions
-        dpi = self.template.dpi_for_quality(p.get('quality', 0)) or misc.OGC_SCREEN_PPI
 
         self.render_input = t.MapRenderInput({
-            'dpi': dpi,
-            'map_size': self.template.map_size,
             'scale': self.p.scale,
             'rotation': self.p.rotation,
             'items': [],
         })
+
+        if self.p.templateUid:
+            self.template: t.TemplateObject = self.acquire('gws.ext.template', self.p.templateUid)
+            # for draft printing (dpi=0), ensure that the client's canvas buffer and our image have the same dimensions
+            self.render_input.dpi = self.template.dpi_for_quality(p.get('quality', 0)) or misc.OGC_SCREEN_PPI
+            self.render_input.map_size = self.template.map_size
+            self.render_input.map_size_unit = 'mm'
+        else:
+            self.template = None
+            self.render_input.dpi = p.quality
+            self.render_input.map_size = [p.mapWidth, p.mapHeight]
+            self.render_input.map_size_unit = 'px'
 
         self.common_render_items = self.prepare_render_items(p.items)
 
@@ -143,27 +146,44 @@ class _Worker:
 
             self.check_job(otype='page', oname=str(n))
 
-            tr = self.template.render(
-                context=gws.extend(sec.data, self.template_vars),
-                render_output=renderer.output,
-                out_path=f'{self.base_path}/sec-{n}.pdf',
-                format='pdf',
-            )
-            section_pdfs.append(tr.path)
+            if self.template:
+                tr = self.template.render(
+                    context=gws.extend(sec.data, self.template_vars),
+                    render_output=renderer.output,
+                    out_path=f'{self.base_path}/sec-{n}.pdf',
+                    format='pdf',
+                )
+                section_pdfs.append(tr.path)
+            else:
+                page_size = [
+                    misc.px2mm(self.render_input.map_size[0], misc.PDF_DPI),
+                    misc.px2mm(self.render_input.map_size[1], misc.PDF_DPI),
+                ]
+                path = gws.tools.pdf.render_html_with_map(
+                    html='@',
+                    map_placeholder='@',
+                    page_size=page_size,
+                    margin=None,
+                    map_render_output=renderer.output,
+                    out_path=f'{self.base_path}/sec-{n}.pdf',
+                )
+                section_pdfs.append(path)
 
         self.check_job(otype='end')
 
         comb_path = gws.tools.pdf.concat(section_pdfs, f'{self.base_path}/comb.pdf')
 
-        ctx = gws.extend(self.sections[0].data, self.template_vars)
-        ctx['page_count'] = gws.tools.pdf.page_count(comb_path)
-
-        res_path = self.template.add_headers_and_footers(
-            context=ctx,
-            in_path=comb_path,
-            out_path=f'{self.base_path}/res.pdf',
-            format='pdf',
-        )
+        if self.template:
+            ctx = gws.extend(self.sections[0].data, self.template_vars)
+            ctx['page_count'] = gws.tools.pdf.page_count(comb_path)
+            res_path = self.template.add_headers_and_footers(
+                context=ctx,
+                in_path=comb_path,
+                out_path=f'{self.base_path}/res.pdf',
+                format='pdf',
+            )
+        else:
+            res_path = comb_path
 
         self.get_job().update(gws.tools.job.State.complete, result=res_path)
 
