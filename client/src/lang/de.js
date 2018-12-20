@@ -74,7 +74,7 @@ module.exports = {
     modMeasureCircleButton: 'Kreis messen',
     modMeasureClearButton: 'Messdaten verwerfen',
     modMeasureLabelEdit: 'Beschriftung',
-    modMeasureUpdateButton: 'Update',
+    modMeasureUpdateButton: 'Aktualisieren',
 
     modMeasureFeatureDetailsSearchButton: 'Suchen',
     modMeasureFeatureDetailsRemoveButton: 'Entfernen',
