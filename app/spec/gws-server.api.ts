@@ -303,6 +303,8 @@ export interface AlkisFsSetupResponse extends Response {
     /// 
     withExport: boolean;
     /// 
+    withFlurnummer: boolean;
+    /// 
     withSelect: boolean;
 }
 

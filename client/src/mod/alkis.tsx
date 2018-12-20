@@ -39,7 +39,8 @@ const STRINGS = {
     gemarkung: "Gemarkung",
     strasse: "Straße",
     nr: "Nr",
-    vnum: "Kennzeichen",
+    vnum: "Zähler/Nenner",
+    vnumFlur: "Flur-Zähler/Nenner",
     areaFrom: "Fläche von m\u00b2",
     areaTo: "bis m\u00b2",
     bblatt: 'Buchungsblattnummer',
@@ -410,7 +411,7 @@ class SearchForm extends gws.View<FsSearchProps> {
             <Row>
                 <Cell flex>
                     <gws.ui.TextInput
-                        placeholder={STRINGS.vnum}
+                        placeholder={setup.withFlurnummer ? STRINGS.vnumFlur : STRINGS.vnum}
                         {...boundTo('vnum')}
                         withClear
                     />

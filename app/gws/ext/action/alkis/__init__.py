@@ -95,6 +95,7 @@ class FsSetupResponse(t.Response):
     withExport: bool
     withSelect: bool
     withControl: bool
+    withFlurnummer: bool
     gemarkungen: t.List[Gemarkung]
     printTemplate: t.TemplateProps
 
@@ -262,6 +263,7 @@ class Object(gws.Object):
                 'withBuchung': self._can_read_buchung(req),
                 'withExport': self.var('export'),
                 'withSelect': self.var('select'),
+                'withFlurnummer': flurstueck.has_flurnummer(conn),
                 'gemarkungen': flurstueck.gemarkung_list(conn),
                 'printTemplate': self.print_template.props,
             })

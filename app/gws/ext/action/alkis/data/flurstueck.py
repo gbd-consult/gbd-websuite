@@ -385,6 +385,15 @@ def strasse_list(conn, gemarkung_uid):
     return list(r['strasse'] for r in rs)
 
 
+def has_flurnummer(conn: connection.AlkisConnection):
+    n = conn.select_value(f'''
+        SELECT COUNT(*)
+        FROM {conn.index_schema}.{main_index}
+        WHERE flurnummer IS NOT NULL
+    ''')
+    return n > 0
+
+
 def find(conn: connection.AlkisConnection, query, limit):
     where = []
     parms = []
