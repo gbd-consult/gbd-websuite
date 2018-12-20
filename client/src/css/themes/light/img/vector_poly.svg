@@ -1,17 +1,17 @@
-<svg width="8.4667" height="8.4667" xmlns="http://www.w3.org/2000/svg">
- <metadata id="metadata1054">image/svg+xml</metadata>
+<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
 
+ <metadata id="metadata1054">image/svg+xmlimage/svg+xml</metadata>
  <g id="g1034">
-  <title>background</title>
-  <rect x="-1" y="-1" width="10.4667" height="10.4667" id="canvas_background" fill="none"/>
+  <title transform="translate(0,15.533300399780273) ">background</title>
+  <rect fill="none" id="canvas_background" height="26" width="26" y="-1" x="-1"/>
  </g>
- <g>
+ <g transform="matrix(2.8417752,0,0,2.8417752,-0.05351994,-0.020794) " id="g913">
   <title>Layer 1</title>
   <g id="g1622">
-   <path fill="none" stroke="#000000" stroke-width="0.84008" stroke-linecap="round" stroke-linejoin="round" id="svg_2" d="m7.5455,1.030001l-3.7627,0l-2.4926,1.286l-0.39691,3.1436l2.0639,2.1433l2.9372,-0.42866l1.6035,-2.4609l0.04761,-3.68334z"/>
-   <path fill="none" stroke="#000000" stroke-width="0.6" d="m7.5455,1.030001l-5.7405,5.4334" id="svg_5"/>
-   <path fill="none" stroke="#000000" stroke-width="0.6" d="m7.6684,3.220001c-1.4426,1.4426 -4.4964,4.2559 -4.4964,4.2559" id="svg_7"/>
-   <path fill="none" stroke="#000000" stroke-width="0.6" d="m5.1893,0.940001c-1.4226,1.4226 -4.434,4.1968 -4.434,4.1968" id="svg_8"/>
+   <path fill="none" stroke="#000000" stroke-width="0.84008" stroke-linecap="round" stroke-linejoin="round" d="m7.5455,1.03l-3.7627,0l-2.4926,1.286l-0.39691,3.1436l2.0639,2.1433l2.9372,-0.42866l1.6035,-2.4609l0.04761,-3.68334z" id="svg_2"/>
+   <path fill="none" stroke="#000000" stroke-width="0.6" id="svg_5" d="m7.5455,1.03l-5.7405,5.4334"/>
+   <path fill="none" stroke="#000000" stroke-width="0.6" id="svg_7" d="m7.6684,3.22c-1.4426,1.4426 -4.4964,4.2559 -4.4964,4.2559"/>
+   <path fill="none" stroke="#000000" stroke-width="0.6" id="svg_8" d="m5.1893,0.94c-1.4226,1.4226 -4.434,4.1968 -4.434,4.1968"/>
   </g>
  </g>
 </svg>
