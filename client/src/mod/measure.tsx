@@ -107,10 +107,11 @@ class MeasureFeature extends gws.map.Feature {
             };
 
             if (this.shapeType === 'Box') {
+                // NB: x,y = top left
                 return {
                     ...d,
                     x: c[0][0],
-                    y: c[0][1],
+                    y: c[3][1],
                     w: Math.abs(c[1][0] - c[0][0]),
                     h: Math.abs(c[2][1] - c[1][1]),
                 }
@@ -209,17 +210,18 @@ class MeasureFeature extends gws.map.Feature {
         }
 
         if (t === 'Box') {
+            // NB: x,y = top left
             let g = this.geometry as ol.geom.Polygon;
             let x = Number(ff.x) || 0,
                 y = Number(ff.y) || 0,
                 w = Number(ff.w) || 100,
                 h = Number(ff.h) || 100;
             let coords: any = [
-                [x, y],
+                [x, y - h],
+                [x + w, y - h],
                 [x + w, y],
-                [x + w, y + h],
-                [x, y + h],
                 [x, y],
+                [x, y - h],
             ];
             g.setCoordinates([coords])
         }

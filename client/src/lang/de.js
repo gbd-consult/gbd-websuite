@@ -73,7 +73,7 @@ module.exports = {
     modMeasureTitle: 'Messen & Finden',
     modMeasureSidebarTooltip: 'Messen & Finden',
     modMeasureNoFeaturesWarning: 'Keine Messungen vorhanden.',
-    modMeasureEditorHint: 'Platzhalter: {len}, {area}, {radius}',
+    modMeasureEditorHint: 'Platzhalter: {len}, {area}, {radius}, {x}, {y}, {w}, {h}',
 
     modMeasurePointButton: 'Punkt setzen und mit Koordinaten markieren',
     modMeasureLineButton: 'Linie messen',
