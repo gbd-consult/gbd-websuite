@@ -1,123 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="24"
-   height="24"
-   version="1.1"
-   id="svg890"
-   sodipodi:docname="g_poly.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
-  <defs
-     id="defs894" />
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1015"
-     id="namedview892"
-     showgrid="false"
-     inkscape:zoom="16.870277"
-     inkscape:cx="0.91588019"
-     inkscape:cy="5.9211012"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg890" />
-  <metadata
-     id="metadata1054">image/svg+xml<rdf:RDF>
-  <cc:Work
-     rdf:about="">
-    <dc:format>image/svg+xml</dc:format>
-    <dc:type
-       rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-    <dc:title></dc:title>
-  </cc:Work>
-</rdf:RDF>
-</metadata>
-  <g
-     id="g1034"
-     transform="translate(0,15.5333)">
-    <title
-       id="title874">background</title>
-    <rect
-       x="-1"
-       y="-1"
-       width="10.4667"
-       height="10.4667"
-       id="canvas_background"
-       style="fill:none" />
-  </g>
-  <g
-     id="g888"
-     transform="matrix(2.7562737,0,0,2.7562737,0.32889941,0.43425804)">
-    <title
-       id="title878">Layer 1</title>
-    <path
-       stroke-miterlimit="4"
-       d="M 7.5455,1.030001 H 3.7828 l -2.4926,1.286 -0.39691,3.1436 2.0639,2.1433 2.9372,-0.42866 1.6035,-2.4609 z"
-       id="svg_2"
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-width:0.83999997;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4" />
-    <circle
-       stroke-miterlimit="4"
-       cx="3.6633151"
-       cy="1.0404"
-       r="0.91467702"
-       id="circle893"
-       style="fill:#000000;stroke-width:0.83999997;stroke-miterlimit:4" />
-    <circle
-       stroke-miterlimit="4"
-       id="circle903"
-       r="0.91467702"
-       cy="2.533035"
-       cx="1.257427"
-       style="fill:#000000;stroke-width:0.83999997;stroke-miterlimit:4" />
-    <circle
-       stroke-miterlimit="4"
-       cx="1.079851"
-       cy="5.294065"
-       r="0.91467702"
-       id="circle905"
-       style="fill:#000000;stroke-width:0.83999997;stroke-miterlimit:4" />
-    <circle
-       stroke-miterlimit="4"
-       id="circle907"
-       r="0.91467702"
-       cy="7.44627"
-       cx="3.0458789"
-       style="fill:#000000;stroke-width:0.83999997;stroke-miterlimit:4" />
-    <circle
-       stroke-miterlimit="4"
-       cx="5.6506381"
-       cy="7.1164889"
-       r="0.91467702"
-       id="circle909"
-       style="fill:#000000;stroke-width:0.83999997;stroke-miterlimit:4" />
-    <circle
-       stroke-miterlimit="4"
-       id="circle911"
-       r="0.91467702"
-       cy="4.5796871"
-       cx="7.3883471"
-       style="fill:#000000;stroke-width:0.83999997;stroke-miterlimit:4" />
-    <circle
-       stroke-miterlimit="4"
-       cx="7.3883471"
-       cy="1.137785"
-       r="0.91467702"
-       id="circle913"
-       style="fill:#000000;stroke-width:0.83999997;stroke-miterlimit:4" />
-  </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
+<g>
+	<path d="M17.544,19.864H6.423L2.987,9.287l8.996-6.538l8.996,6.538L17.544,19.864z M8.028,17.655h7.912l2.443-7.524l-6.399-4.651
+		l-6.4,4.651L8.028,17.655z"/>
+</g>
+<circle cx="12.054" cy="4.489" r="2.65"/>
+<circle cx="19.184" cy="10.185" r="2.652"/>
+<circle cx="16.507" cy="18.446" r="2.648"/>
+<circle cx="4.534" cy="10.185" r="2.652"/>
+<circle cx="7.163" cy="18.446" r="2.648"/>
 </svg>

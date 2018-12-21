@@ -77,7 +77,7 @@ module.exports = v => {
         },
 
         '.modMeasureBoxButton': {
-            ...v.LOCAL_SVG('baseline-texture-square-24px', v.TOOLBAR_BUTTON_COLOR)
+            ...v.LOCAL_SVG('vector_box', v.TOOLBAR_BUTTON_COLOR)
         },
 
         '.modMeasurePolygonButton': {
@@ -85,7 +85,7 @@ module.exports = v => {
         },
 
         '.modMeasureCircleButton': {
-            ...v.LOCAL_SVG('baseline-circle-24px', v.TOOLBAR_BUTTON_COLOR)
+            ...v.LOCAL_SVG('vector_circle', v.TOOLBAR_BUTTON_COLOR)
         },
 
         '.modMeasureClearButton': {

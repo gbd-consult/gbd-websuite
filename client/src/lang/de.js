@@ -45,6 +45,8 @@ module.exports = {
     modPrintErrorDetails: '',
     modPrintTemplate: 'Druckvorlage',
     modPrintRotationWarning: 'Gedrehtes Drucken wird nicht unterstützt',
+    modPrintDpi: 'DPI',
+    modSnapshotButton: 'Als Raster exportieren',
 
     modLayersDetailsZoomButton: 'Auf den Layer zoomen',
     modLayersDetailsShowButton: 'Andere Layer verbergen',
@@ -93,7 +95,7 @@ module.exports = {
     modLensButtonBox: 'Flurstückauswahl mithilfe einer Box',
     modLensButtonPolygon: 'Flurstückauswahl mithilfe eines Polygons',
     modLensButtonCircle: 'Flurstückauswahl mithilfe eines Kreises',
-    modLensCancelButton: 'Flurstückauswahl beenden',
+    modLensButtonCancel: 'Flurstückauswahl beenden',
 
     modSelectAreaButton: 'Auswahl mithilfe selbstgezeichneter Fläche',
     modSelectPolygonButton: 'Auswahl mithilfe eines Polygons',
@@ -111,6 +113,7 @@ module.exports = {
     modZoomInfobarOutButton: 'Hinauszoomen',
     modZoomInfobarInButton: 'Hineinzoomen',
     modZoomInfobarResetButton: 'Ganzes Projekt anzeigen',
+    modInfobarHomeLinkTitle: 'Zur Startseite',
 
     modSidebarOpenButton: 'Menü',
     modSidebarCloseButton: 'Schließen',
