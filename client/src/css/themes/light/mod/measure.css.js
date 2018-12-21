@@ -56,12 +56,10 @@ module.exports = v => {
         '.modMeasureBoxSelected':
             {...common(sel), ...mark(sel), ...fill(sel)},
 
-        // @TODO: need marks on screen, but not on print
-
         '.modMeasureCircle':
-            {...common(def), ...mark(def), ...fill(def)},
+            {...common(def), ...fill(def)},
         '.modMeasureCircleSelected':
-            {...common(sel), ...mark(sel), ...fill(sel)},
+            {...common(sel), ...fill(sel)},
 
 
         '.modMeasureSidebarIcon': {

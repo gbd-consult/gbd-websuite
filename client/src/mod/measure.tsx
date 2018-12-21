@@ -59,8 +59,14 @@ class MeasureFeature extends gws.map.Feature {
             let s = this.selected ? this.selectedStyle : this.style;
             return s.apply(oFeature.getGeometry(), this.label, r);
         });
+        this.oFeature.on('change', e => this.onChange(e));
         this.geometry.on('change', e => this.onChange(e));
         this.redraw();
+    }
+
+    setSelected(sel) {
+        this.selected = sel;
+        this.oFeature.changed();
     }
 
     onChange(e) {
@@ -687,8 +693,8 @@ class MeasureController extends gws.Controller {
     }
 
     selectFeature(f: MeasureFeature, highlight) {
-        this.layer.features.forEach(f => (f as MeasureFeature).selected = false);
-        f.selected = true;
+        this.layer.features.forEach(f => (f as MeasureFeature).setSelected(false));
+        f.setSelected(true);
 
         this.update({
             measureSelectedFeature: f,
@@ -709,7 +715,7 @@ class MeasureController extends gws.Controller {
     }
 
     unselectFeature() {
-        this.layer.features.forEach(f => (f as MeasureFeature).selected = false);
+        this.layer.features.forEach(f => (f as MeasureFeature).setSelected(false));
         this.update({
             measureSelectedFeature: null,
             measureFeatureForm: {},
@@ -725,9 +731,9 @@ class MeasureController extends gws.Controller {
     }
 
     removeFeature(f) {
+        this.unselectFeature();
         if (this.layer)
             this.layer.removeFeature(f);
-        this.unselectFeature();
 
     }
 
