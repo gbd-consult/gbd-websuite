@@ -7,11 +7,6 @@ type _int = number;
 type _float = number;
 type _dict = {[k: string]: any};
 
-export type Extent = [_float, _float, _float, _float]
-export type Point = [_float, _float]
-export type Size = [_int, _int]
-
-
 export type strList = Array<string>;
 
 /// 
@@ -153,12 +148,12 @@ export interface PrintItem {
 
 export type PrintItemList = Array<PrintItem>;
 
-export type float2 = [_float, _float];
+export type Point = [_float, _float];
 
 /// 
 export interface PrintSection {
     /// 
-    center: float2;
+    center: Point;
     /// 
     data?: _dict;
     /// 
@@ -377,12 +372,12 @@ export interface MapDescribeLayerParams {
     layerUid: string;
 }
 
-export type float4 = [_float, _float, _float, _float];
+export type Extent = [_float, _float, _float, _float];
 
 /// 
 export interface MapGetFeaturesParams {
     /// 
-    bbox?: float4;
+    bbox?: Extent;
     /// 
     layerUid: string;
 }
@@ -396,7 +391,7 @@ export interface MapGetFeaturesResponse extends Response {
 /// 
 export interface MapRenderBboxParams {
     /// 
-    bbox: float4;
+    bbox: Extent;
     /// 
     dpi?: _int;
     /// 
@@ -523,7 +518,7 @@ export interface LayerBaseProps {
     /// 
     editable?: boolean;
     /// 
-    extent?: float4;
+    extent?: Extent;
     /// 
     meta: MetaData;
     /// 
@@ -588,7 +583,7 @@ export type LayerPropsList = Array<LayerProps>;
 /// 
 export interface MapProps {
     /// 
-    center: float2;
+    center: Point;
     /// 
     coordinatePrecision: _int;
     /// 
@@ -596,7 +591,7 @@ export interface MapProps {
     /// 
     crsDef?: string;
     /// 
-    extent: float4;
+    extent: Extent;
     /// 
     initResolution: _float;
     /// 
@@ -664,7 +659,7 @@ export interface RemoteadminValidateParams {
 /// 
 export interface SearchParams {
     /// 
-    bbox: float4;
+    bbox: Extent;
     /// 
     keyword?: string;
     /// 

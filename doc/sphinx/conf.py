@@ -12,7 +12,6 @@ import os
 import sys
 import re
 
-
 DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
 APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
 
@@ -63,20 +62,23 @@ def replace_tables(app, docname, source):
         cc = m.group(1).strip().split('\n')
         cc = ['   ' + s.strip() for s in cc]
 
-        return '\n'.join([
-            '.. csv-table::',
-            '   :delim: ~',
-            '   :widths: auto',
-            ''
-        ] + cc)
-
+        return '\n'.join(
+            [
+                '.. csv-table::',
+                '   :delim: ~',
+                '   :widths: auto',
+                ''
+            ] + cc)
 
     source[0] = re.sub(r'(?s)TABLE(.+?)/TABLE', _table, source[0])
 
 
 def setup(app):
     util.make_config_ref('en', APP_DIR, DOC_ROOT)
+    util.make_config_ref('de', APP_DIR, DOC_ROOT)
+
     util.make_cli_ref('en', APP_DIR, DOC_ROOT)
+    util.make_cli_ref('de', APP_DIR, DOC_ROOT)
 
     app.add_stylesheet('extras.css')
     app.add_javascript('extras.js')

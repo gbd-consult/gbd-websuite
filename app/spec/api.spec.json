@@ -316,26 +316,9 @@
         }
     },
     "types": {
-        "float2": {
-            "bases": [
-                "float",
-                "float"
-            ],
-            "name": "float2",
-            "type": "tuple"
-        },
-        "float4": {
-            "bases": [
-                "float",
-                "float",
-                "float",
-                "float"
-            ],
-            "name": "float4",
-            "type": "tuple"
-        },
         "floatList": {
             "base": "float",
+            "doc": "",
             "name": "floatList",
             "type": "list"
         },
@@ -383,6 +366,7 @@
         },
         "gws.common.client.PropsList": {
             "base": "gws.common.client.Props",
+            "doc": "",
             "name": "gws.common.client.PropsList",
             "type": "list"
         },
@@ -395,7 +379,7 @@
                     "doc": "",
                     "name": "center",
                     "optional": false,
-                    "type": "float2"
+                    "type": "gws.types.Point"
                 },
                 {
                     "default": null,
@@ -423,7 +407,7 @@
                     "doc": "",
                     "name": "extent",
                     "optional": false,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -500,6 +484,7 @@
         },
         "gws.common.printer.types.PrintFeaturePropsList": {
             "base": "gws.common.printer.types.PrintFeatureProps",
+            "doc": "",
             "name": "gws.common.printer.types.PrintFeaturePropsList",
             "type": "list"
         },
@@ -561,6 +546,7 @@
         },
         "gws.common.printer.types.PrintItemList": {
             "base": "gws.common.printer.types.PrintItem",
+            "doc": "",
             "name": "gws.common.printer.types.PrintItemList",
             "type": "list"
         },
@@ -650,7 +636,7 @@
                     "doc": "",
                     "name": "center",
                     "optional": false,
-                    "type": "float2"
+                    "type": "gws.types.Point"
                 },
                 {
                     "default": null,
@@ -671,6 +657,7 @@
         },
         "gws.common.printer.types.PrintSectionList": {
             "base": "gws.common.printer.types.PrintSection",
+            "doc": "",
             "name": "gws.common.printer.types.PrintSectionList",
             "type": "list"
         },
@@ -1474,6 +1461,7 @@
         },
         "gws.ext.action.alkis.GemarkungList": {
             "base": "gws.ext.action.alkis.Gemarkung",
+            "doc": "",
             "name": "gws.ext.action.alkis.GemarkungList",
             "type": "list"
         },
@@ -1584,7 +1572,7 @@
                     "doc": "",
                     "name": "bbox",
                     "optional": true,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -1626,7 +1614,7 @@
                     "doc": "",
                     "name": "bbox",
                     "optional": false,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -1794,7 +1782,7 @@
                     "doc": "",
                     "name": "bbox",
                     "optional": false,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": "",
@@ -1920,7 +1908,7 @@
                     "doc": "",
                     "name": "extent",
                     "optional": true,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -2004,7 +1992,7 @@
                     "doc": "",
                     "name": "extent",
                     "optional": true,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -2088,7 +2076,7 @@
                     "doc": "",
                     "name": "extent",
                     "optional": true,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -2165,7 +2153,7 @@
                     "doc": "",
                     "name": "extent",
                     "optional": true,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -2256,7 +2244,7 @@
                     "doc": "",
                     "name": "extent",
                     "optional": true,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -2354,7 +2342,7 @@
                     "doc": "",
                     "name": "extent",
                     "optional": true,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -2438,7 +2426,7 @@
                     "doc": "",
                     "name": "extent",
                     "optional": true,
-                    "type": "float4"
+                    "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
@@ -2542,6 +2530,7 @@
             "type": "object"
         },
         "gws.tools.job.State": {
+            "doc": "",
             "name": "gws.tools.job.State",
             "type": "enum",
             "values": {
@@ -2583,8 +2572,20 @@
         },
         "gws.types.AttributeList": {
             "base": "gws.types.Attribute",
+            "doc": "",
             "name": "gws.types.AttributeList",
             "type": "list"
+        },
+        "gws.types.Extent": {
+            "bases": [
+                "float",
+                "float",
+                "float",
+                "float"
+            ],
+            "doc": "extent coordinates [minx, miny, maxx, maxy]",
+            "name": "gws.types.Extent",
+            "type": "tuple"
         },
         "gws.types.FeatureProps": {
             "doc": "",
@@ -2651,6 +2652,7 @@
         },
         "gws.types.FeaturePropsList": {
             "base": "gws.types.FeatureProps",
+            "doc": "",
             "name": "gws.types.FeaturePropsList",
             "type": "list"
         },
@@ -2835,6 +2837,15 @@
             "props": [],
             "type": "object"
         },
+        "gws.types.Point": {
+            "bases": [
+                "float",
+                "float"
+            ],
+            "doc": "point coordinates [x, y]",
+            "name": "gws.types.Point",
+            "type": "tuple"
+        },
         "gws.types.Response": {
             "doc": "",
             "name": "gws.types.Response",
@@ -2970,6 +2981,7 @@
         },
         "gws.types.TemplatePropsList": {
             "base": "gws.types.TemplateProps",
+            "doc": "",
             "name": "gws.types.TemplatePropsList",
             "type": "list"
         },
@@ -2996,6 +3008,7 @@
         },
         "gws.types.TemplateQualityLevelList": {
             "base": "gws.types.TemplateQualityLevel",
+            "doc": "",
             "name": "gws.types.TemplateQualityLevelList",
             "type": "list"
         },
@@ -3008,11 +3021,13 @@
                 "gws.ext.gis.layer.tree.LayerProps",
                 "gws.ext.gis.layer.vector.LayerProps"
             ],
+            "doc": "",
             "name": "gws.types.ext.gis.layer.LayerProps",
             "type": "union"
         },
         "gws.types.ext.gis.layer.LayerPropsList": {
             "base": "gws.types.ext.gis.layer.LayerProps",
+            "doc": "",
             "name": "gws.types.ext.gis.layer.LayerPropsList",
             "type": "list"
         },
@@ -3024,6 +3039,7 @@
         },
         "strList": {
             "base": "str",
+            "doc": "",
             "name": "strList",
             "type": "list"
         }

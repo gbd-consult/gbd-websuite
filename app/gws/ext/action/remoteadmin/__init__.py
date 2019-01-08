@@ -68,9 +68,9 @@ class Object(gws.Object):
             raise gws.web.error.NotFound()
 
         spec = {
-            'config': gws.config.parser.load_spec('config'),
-            'api': gws.config.parser.load_spec('api'),
-            'cli': gws.config.parser.load_spec('cli'),
+            'config': gws.config.parser.load_spec('config', p.lang),
+            'api': gws.config.parser.load_spec('api', p.lang),
+            'cli': gws.config.parser.load_spec('cli', p.lang),
         }
 
         return t.Response({'spec': spec})

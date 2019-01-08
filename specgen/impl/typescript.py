@@ -13,11 +13,6 @@ type _int = number;
 type _float = number;
 type _dict = {[k: string]: any};
 
-export type Extent = [_float, _float, _float, _float]
-export type Point = [_float, _float]
-export type Size = [_int, _int]
-
-
 _decls_
 """
 

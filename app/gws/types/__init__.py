@@ -11,13 +11,13 @@ Tuple = typing.Tuple
 Union = typing.Union
 cast = typing.cast
 
-#: alias
+#: alias: extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
 
-#: alias
+#: alias: point coordinates [x, y]
 Point = Tuple[float, float]
 
-#: alias
+#: alias: size [width, height]
 Size = Tuple[float, float]
 
 Config = Data
@@ -130,7 +130,7 @@ class AccessRuleConfig(Config):
     role: List[str]  #: list of roles to which this rule applies
 
 
-#: alias
+#: alias:
 Access = List[AccessRuleConfig]
 
 

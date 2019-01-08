@@ -83,7 +83,7 @@
         "auth.test": {
             "args": [],
             "command": "auth",
-            "doc": "Interactively test a login",
+            "doc": "Interaktives Testen einer Anmeldung.",
             "kind": "clifunc",
             "module": "gws.auth.cli",
             "name": "auth.test",
@@ -235,7 +235,7 @@
         "server.reload": {
             "args": [],
             "command": "server",
-            "doc": "Reconfigure and gracefully reload the server",
+            "doc": "Konfigurieren Sie den Server neu und laden Sie ihn neu",
             "kind": "clifunc",
             "module": "gws.server.cli",
             "name": "server.reload",
@@ -245,7 +245,7 @@
         "server.reset": {
             "args": [],
             "command": "server",
-            "doc": "Gracefully reload the server without reconfiguring",
+            "doc": "Laden Sie den Server neu, ohne ihn neu zu konfigurieren",
             "kind": "clifunc",
             "module": "gws.server.cli",
             "name": "server.reset",
@@ -255,7 +255,7 @@
         "server.start": {
             "args": [],
             "command": "server",
-            "doc": "Start the server",
+            "doc": "Starten Sie den GBD WebSuite Server",
             "kind": "clifunc",
             "module": "gws.server.cli",
             "name": "server.start",
@@ -265,7 +265,7 @@
         "server.stop": {
             "args": [],
             "command": "server",
-            "doc": "Stop the server",
+            "doc": "Stoppen Sie den GBD WebSuite Server",
             "kind": "clifunc",
             "module": "gws.server.cli",
             "name": "server.stop",

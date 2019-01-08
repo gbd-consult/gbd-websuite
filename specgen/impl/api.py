@@ -3,13 +3,11 @@
 from . import spec
 
 
-def _category(p):
-    if p['name'].startswith('api'):
-        return 'api'
-    if p['name'].startswith('http_get'):
-        return 'get'
-    if p['name'].startswith('http_post'):
-        return 'post'
+def make_spec(objects, methods, flatten=True):
+    types = (
+            [m['arg'] for m in methods.values() if 'arg' in m] +
+            [m['return'] for m in methods.values() if 'return' in m])
+    return spec.generate(objects, types, flatten)
 
 
 def enum_methods(objects):
@@ -51,8 +49,14 @@ def enum_methods(objects):
     return ms
 
 
-def make_spec(objects, methods, keep_extends):
-    types = (
-            [m['arg'] for m in methods.values() if 'arg' in m] +
-            [m['return'] for m in methods.values() if 'return' in m])
-    return spec.generate(objects, types, keep_extends)
+
+
+
+def _category(p):
+    if p['name'].startswith('api'):
+        return 'api'
+    if p['name'].startswith('http_get'):
+        return 'get'
+    if p['name'].startswith('http_post'):
+        return 'post'
+

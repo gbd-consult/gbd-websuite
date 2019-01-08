@@ -1,11 +1,11 @@
 
-.. _server_admin_de_cliref_alkis_index:
+.. _server_admin_de_cliref_alkis_check-index:
 
-Alkis Index
-~~~~~~~~~~~
+alkis check-index
+~~~~~~~~~~~~~~~~~
 
 
-Erstellen Sie einen internen ALKIS-Suchindex für ein Projekt. 
+Check the status of the ALKIS search index
 
 *Optionen:*
 
@@ -13,16 +13,47 @@ Erstellen Sie einen internen ALKIS-Suchindex für ein Projekt.
    :quote: ~
    :widths: auto
 
-   ~``--force``~, ~force creating indexes~
    ~``--project``~, ~project unique ID~
 
-.. _server_admin_en_cliref_alkis_parse:
+.. _server_admin_de_cliref_alkis_create-index:
 
-Alkis Parse
+alkis create-index
+~~~~~~~~~~~~~~~~~~
+
+
+Create an internal ALKIS search index for a project
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--project``~, ~project unique ID~
+
+.. _server_admin_de_cliref_alkis_drop-index:
+
+alkis drop-index
+~~~~~~~~~~~~~~~~
+
+
+Remove the ALKIS search index
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--project``~, ~project unique ID~
+
+.. _server_admin_de_cliref_alkis_parse:
+
+alkis parse
 ~~~~~~~~~~~
 
 
-Vorverarbeitung der NAS-Datenmodelldateien. 
+Preprocess the NAS data model files
 
 *Optionen:*
 
@@ -32,37 +63,37 @@ Vorverarbeitung der NAS-Datenmodelldateien.
 
    ~``--path``~, ~path to the NAS zip archive~
 
-.. _server_admin_en_cliref_auth_clear:
+.. _server_admin_de_cliref_auth_clear:
 
-Auth clear
+auth clear
 ~~~~~~~~~~
 
 
-Logo ut all users and remove all active sessions.
+Logo ut all users and remove all active sessions
 
-.. _server_admin_en_cliref_auth_passwd:
+.. _server_admin_de_cliref_auth_passwd:
 
 auth passwd
 ~~~~~~~~~~~
 
 
-Kodieren Sie ein Passwort für die Autorisierungsdatei. 
+Encode a password for the authorization file
 
-.. _server_admin_en_cliref_auth_test:
+.. _server_admin_de_cliref_auth_test:
 
 auth test
 ~~~~~~~~~
 
 
-Interaktives Testen einer Anmeldung. 
+Interaktives Testen einer Anmeldung.
 
-.. _server_admin_en_cliref_cache_drop:
+.. _server_admin_de_cliref_cache_drop:
 
 cache drop
 ~~~~~~~~~~
 
 
-Drop the caches.
+Drop the caches
 
 *Optionen:*
 
@@ -72,13 +103,13 @@ Drop the caches.
 
    ~``--layers``~, ~comma separated list of layer IDs~
 
-.. _server_admin_en_cliref_cache_seed:
+.. _server_admin_de_cliref_cache_seed:
 
 cache seed
 ~~~~~~~~~~
 
 
-Starten Sie den Cache-Seeding-Prozess. 
+Start the cache seeding process
 
 *Optionen:*
 
@@ -89,13 +120,13 @@ Starten Sie den Cache-Seeding-Prozess.
    ~``--layers``~, ~comma separated list of layer IDs~
    ~``--level``~, ~zoom level to build the cache for~
 
-.. _server_admin_en_cliref_cache_status:
+.. _server_admin_de_cliref_cache_status:
 
 cache status
 ~~~~~~~~~~~~
 
 
-Zeigen Sie den Cache-Status an. 
+Display the cache status
 
 *Optionen:*
 
@@ -105,13 +136,13 @@ Zeigen Sie den Cache-Status an.
 
    ~``--layers``~, ~comma separated list of layer IDs~
 
-.. _server_admin_en_cliref_cache_updateweb:
+.. _server_admin_de_cliref_cache_updateweb:
 
 cache updateweb
 ~~~~~~~~~~~~~~~
 
 
-Aktualisieren Sie den vorderen (Web-)Cache aus dem hinteren Cache.
+Update the front (web) cache from the back cache
 
 *Optionen:*
 
@@ -121,13 +152,13 @@ Aktualisieren Sie den vorderen (Web-)Cache aus dem hinteren Cache.
 
    ~``--layers``~, ~comma separated list of layer IDs~
 
-.. _server_admin_en_cliref_config_dump:
+.. _server_admin_de_cliref_config_dump:
 
 config dump
 ~~~~~~~~~~~
 
 
-Dump den Konfigurationsbaum. 
+Dump the configuarion tree
 
 *Optionen:*
 
@@ -135,17 +166,32 @@ Dump den Konfigurationsbaum.
    :quote: ~
    :widths: auto
 
-   ~``--depth``~, ~max depth~
-   ~``--full``~, ~dump all values~
+   ~``--out``~, ~path to write the dump to~
    ~``--path``~, ~configuration file path~
 
-.. _server_admin_en_cliref_config_test:
+.. _server_admin_de_cliref_config_prepare:
+
+config prepare
+~~~~~~~~~~~~~~
+
+
+Parse and prepare a config
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--path``~, ~configuration file path~
+
+.. _server_admin_de_cliref_config_test:
 
 config test
 ~~~~~~~~~~~
 
 
-Run a configuration file test.
+Run a configuration file test
 
 *Optionen:*
 
@@ -155,13 +201,13 @@ Run a configuration file test.
 
    ~``--path``~, ~configuration file path~
 
-.. _server_admin_en_cliref_qgis_dump:
+.. _server_admin_de_cliref_ows_caps:
 
-QGIS dump
-~~~~~~~~~
+ows caps
+~~~~~~~~
 
 
-Dump die Struktur eines QGIS Projekts. 
+Query the capabilities of a service
 
 *Optionen:*
 
@@ -169,43 +215,45 @@ Dump die Struktur eines QGIS Projekts.
    :quote: ~
    :widths: auto
 
-   ~``--map``~, ~path to qgis project file~
+   ~``--src``~, ~service url or path~
+   ~``--type``~, ~service type~
 
-.. _server_admin_en_cliref_server_configure:
+.. _server_admin_de_cliref_server_configure:
 
-Serverkonfiguration
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Konfigurieren Sie den Server. 
-
-.. _server_admin_en_cliref_server_reload:
-
-Server reload
-~~~~~~~~~~~~~~~~~
-
-Konfigurieren Sie den Server neu und laden Sie ihn neu. 
-
-.. _server_admin_en_cliref_server_reset:
-
-Server reset
-~~~~~~~~~~~~
-
-
-Laden Sie den Server neu, ohne ihn neu zu konfigurieren. 
-
-.. _server_admin_en_cliref_server_start:
-
-Server starten
+server configure
 ~~~~~~~~~~~~~~~~
 
 
-Starten Sie den GBD WebSuite Server. 
+Configure the server
 
-.. _server_admin_en_cliref_server_stop:
+.. _server_admin_de_cliref_server_reload:
 
-Server stoppen
-~~~~~~~~~~~~~~~
+server reload
+~~~~~~~~~~~~~
 
 
-Stoppen Sie den GBD WebSuite Server.
+Konfigurieren Sie den Server neu und laden Sie ihn neu
+
+.. _server_admin_de_cliref_server_reset:
+
+server reset
+~~~~~~~~~~~~
+
+
+Laden Sie den Server neu, ohne ihn neu zu konfigurieren
+
+.. _server_admin_de_cliref_server_start:
+
+server start
+~~~~~~~~~~~~
+
+
+Starten Sie den GBD WebSuite Server
+
+.. _server_admin_de_cliref_server_stop:
+
+server stop
+~~~~~~~~~~~
+
+
+Stoppen Sie den GBD WebSuite Server

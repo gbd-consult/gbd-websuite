@@ -4,63 +4,27 @@ import ast
 import re
 import os
 
-_builtins = 'str', 'int', 'float', 'bool', 'list', 'dict'
-
 
 class Error(Exception):
     pass
 
 
-def _cls(node):
-    return node.__class__.__name__
+def parse(root_dir):
+    p = _Parser()
+    paths = _find_files(root_dir, 'py$')
+    # paths = [root_dir + '/types/__init__.py']
+
+    for path in paths:
+        try:
+            p.parse(path)
+        except Error as e:
+            raise Error(e.args[0], path, e.args[1].lineno)
+    return p.objects
 
 
-def _value(node, strict=True):
-    if node is None:
-        return None
-    cc = _cls(node)
-    if cc == 'Num':
-        return node.n
-    if cc == 'Str':
-        return node.s
-    if cc == 'NameConstant':
-        return node.value
-    if cc == 'List':
-        return [_value(e) for e in node.elts]
-    if cc == 'Dict':
-        return {
-            _value(k): _value(v)
-            for k, v in zip(node.keys, node.values)
-        }
-    if strict:
-        raise Error('unknown value type', node)
-    return None
+##
 
-
-def _mod_name(path):
-    # /home/xyz/gbd-websuite/app/gws/common/search/__init__.py => gws.common.search
-    m = re.search(r'/app/gws/([^.]+)', path)
-    if not m:
-        raise ValueError('cannot parse path %r' % path)
-    p = 'gws.' + m.group(1).replace('/', '.')
-    p = re.sub(r'.__init__$', '', p)
-    return p
-
-
-def _docstring(node):
-    try:
-        b = node.body[0]
-        if _cls(b) == 'Expr' and _cls(b.value) == 'Str':
-            return b.value.s.strip()
-    except:
-        pass
-    return ''
-
-
-def _nodes(tree, cls):
-    for node in ast.walk(tree):
-        if _cls(node) == cls:
-            yield node
+_builtins = 'str', 'int', 'float', 'bool', 'list', 'dict'
 
 
 class _Parser:
@@ -68,10 +32,6 @@ class _Parser:
     def __init__(self):
         self.objects = []
         self._uid = 0
-        self.imports = {}
-        self.mod_name = ''
-        self.path = ''
-        self.comments = {}
 
     def parse(self, path):
         self.imports = {}
@@ -82,6 +42,16 @@ class _Parser:
         with open(self.path) as fp:
             buf = fp.read()
 
+        self.extract_comments(buf)
+
+        tree = ast.parse(buf)
+
+        self.enum_aliases(tree)
+        self.enum_imports(tree)
+        self.enum_classes(tree)
+        self.enum_cli_functions(tree)
+
+    def extract_comments(self, buf):
         cmt = '#:'
 
         for n, ln in enumerate(buf.splitlines(), 1):
@@ -95,13 +65,6 @@ class _Parser:
             elif cmt in ln:
                 self.comments[n] = ln.split(cmt)[1].strip()
 
-        tree = ast.parse(buf)
-
-        self.enum_aliases(tree)
-        self.enum_imports(tree)
-        self.enum_classes(tree)
-        self.enum_cli_functions(tree)
-
     def enum_imports(self, tree):
         for node in _nodes(tree, 'Import'):
             for nn in node.names:
@@ -109,13 +72,15 @@ class _Parser:
                     self.imports[nn.asname] = nn.name
 
     def enum_aliases(self, tree):
+        mark = 'alias:'
         for node in _nodes(tree, 'Assign'):
-            if self.doc_for(node) == 'alias':
-                name = node.targets[0].id
+            doc = self.doc_for(node)
+            if doc.startswith(mark):
                 self.add({
                     'kind': 'alias',
                     'uid': self.uid(),
-                    'name': self.mod_name + '.' + name,
+                    'doc': doc[len(mark):].strip(),
+                    'name': self.mod_name + '.' + node.targets[0].id,
                     'type': self.typelist(node.value),
                 })
 
@@ -294,7 +259,7 @@ class _Parser:
         return self._uid
 
 
-def find_files(dirname, pattern):
+def _find_files(dirname, pattern):
     for fname in os.listdir(dirname):
         if fname.startswith('.'):
             continue
@@ -302,21 +267,60 @@ def find_files(dirname, pattern):
         path = os.path.join(dirname, fname)
 
         if os.path.isdir(path):
-            yield from find_files(path, pattern)
+            yield from _find_files(path, pattern)
             continue
 
         if re.search(pattern, fname):
             yield path
 
 
-def parse(root_dir):
-    p = _Parser()
-    paths = find_files(root_dir, 'py$')
-    # paths = [root_dir + '/types/__init__.py']
+def _cls(node):
+    return node.__class__.__name__
 
-    for path in paths:
-        try:
-            p.parse(path)
-        except Error as e:
-            raise Error(e.args[0], path, e.args[1].lineno)
-    return p.objects
+
+def _value(node, strict=True):
+    if node is None:
+        return None
+    cc = _cls(node)
+    if cc == 'Num':
+        return node.n
+    if cc == 'Str':
+        return node.s
+    if cc == 'NameConstant':
+        return node.value
+    if cc == 'List':
+        return [_value(e) for e in node.elts]
+    if cc == 'Dict':
+        return {
+            _value(k): _value(v)
+            for k, v in zip(node.keys, node.values)
+        }
+    if strict:
+        raise Error('unknown value type', node)
+    return None
+
+
+def _mod_name(path):
+    # /home/xyz/gbd-websuite/app/gws/common/search/__init__.py => gws.common.search
+    m = re.search(r'/app/gws/([^.]+)', path)
+    if not m:
+        raise ValueError('cannot parse path %r' % path)
+    p = 'gws.' + m.group(1).replace('/', '.')
+    p = re.sub(r'.__init__$', '', p)
+    return p
+
+
+def _docstring(node):
+    try:
+        b = node.body[0]
+        if _cls(b) == 'Expr' and _cls(b.value) == 'Str':
+            return b.value.s.strip()
+    except:
+        pass
+    return ''
+
+
+def _nodes(tree, cls):
+    for node in ast.walk(tree):
+        if _cls(node) == cls:
+            yield node

@@ -7,40 +7,40 @@
             "type": "list"
         },
         "gws.auth.types.Config": {
-            "doc": "authentication and authorization options",
+            "doc": "Authentifizierungs- und Autorisierungsoptionen",
             "name": "gws.auth.types.Config",
             "props": [
                 {
                     "default": {},
-                    "doc": "session cookie parameters",
+                    "doc": "Parameter für Sitzungscookies",
                     "name": "cookie",
                     "optional": true,
                     "type": "gws.auth.types.CookieConfig"
                 },
                 {
                     "default": true,
-                    "doc": "http authorization enabled",
+                    "doc": "HTTP-Autorisierung aktiviert",
                     "name": "httpEnabled",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": false,
-                    "doc": "http authorization via ssl only",
+                    "doc": "HTTP-Autorisierung nur über SSL",
                     "name": "httpsOnly",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "authorization providers",
+                    "doc": "Autorisierungsanbieter",
                     "name": "providers",
                     "optional": false,
                     "type": "gws.types.ext.auth.provider.ConfigList"
                 },
                 {
                     "default": {},
-                    "doc": "session configuration",
+                    "doc": "Sitzungskonfiguration",
                     "name": "session",
                     "optional": true,
                     "type": "gws.auth.types.SessionConfig"
@@ -49,19 +49,19 @@
             "type": "object"
         },
         "gws.auth.types.CookieConfig": {
-            "doc": "session cookie parameters",
+            "doc": "Parameter für Sitzungscookies",
             "name": "gws.auth.types.CookieConfig",
             "props": [
                 {
                     "default": "auth",
-                    "doc": "name for the cookie",
+                    "doc": "Name für den Cookie",
                     "name": "name",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "/",
-                    "doc": "cookie path",
+                    "doc": "Cookie-Pfad",
                     "name": "path",
                     "optional": true,
                     "type": "str"
@@ -70,26 +70,26 @@
             "type": "object"
         },
         "gws.auth.types.SessionConfig": {
-            "doc": "session configuration",
+            "doc": "Sitzungskonfiguration",
             "name": "gws.auth.types.SessionConfig",
             "props": [
                 {
                     "default": false,
-                    "doc": "refresh sessions automatically",
+                    "doc": "Sitzungen automatisch aktualisieren",
                     "name": "heartBeat",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": 1200,
-                    "doc": "session life time",
+                    "doc": "Sitzungslebenszeit",
                     "name": "lifeTime",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": "sqlite",
-                    "doc": "session storage engine",
+                    "doc": "Sitzungs-Speicher-Engine",
                     "name": "storage",
                     "optional": true,
                     "type": "str"
@@ -98,40 +98,40 @@
             "type": "object"
         },
         "gws.common.application.Config": {
-            "doc": "main gws application configuration",
+            "doc": "Hauptkonfiguration der GBD WebSuite",
             "name": "gws.common.application.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "default access mode",
+                    "doc": "Standardzugriffsmodus",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "available server actions",
+                    "doc": "verfuegbare Serveraktionen",
                     "name": "actions",
                     "optional": true,
                     "type": "gws.types.ext.action.ConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "authorization methods and options",
+                    "doc": "Autorisierungsmethoden und -optionen",
                     "name": "auth",
                     "optional": true,
                     "type": "gws.auth.types.Config"
                 },
                 {
                     "default": null,
-                    "doc": "gws client configuration",
+                    "doc": "GBD WebSuite Client Konfiguration",
                     "name": "client",
                     "optional": true,
                     "type": "gws.common.client.Config"
                 },
                 {
                     "default": null,
-                    "doc": "database configuration",
+                    "doc": "Datenbankkonfiguration",
                     "name": "db",
                     "optional": true,
                     "type": "gws.common.application.DbConfig"
@@ -145,56 +145,56 @@
                 },
                 {
                     "default": "en_CA",
-                    "doc": "default locale for all projects",
+                    "doc": "Standardsprache fuer alle Projekte",
                     "name": "locale",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "directories with additional projects",
+                    "doc": "Verzeichnisse mit zusaetzlichen Projekten",
                     "name": "projectDirs",
                     "optional": true,
                     "type": "gws.types.dirpathList"
                 },
                 {
                     "default": null,
-                    "doc": "additional project paths",
+                    "doc": "zusaetzliche Projektpfade",
                     "name": "projectPaths",
                     "optional": true,
                     "type": "gws.types.filepathList"
                 },
                 {
                     "default": null,
-                    "doc": "project configurations",
+                    "doc": "Projektkonfigurationen",
                     "name": "projects",
                     "optional": true,
                     "type": "gws.common.project.ConfigList"
                 },
                 {
                     "default": {},
-                    "doc": "configuration for seeding jobs",
+                    "doc": "Konfiguration für Seeding-Jobs",
                     "name": "seeding",
                     "optional": true,
                     "type": "gws.common.application.SeedingConfig"
                 },
                 {
                     "default": {},
-                    "doc": "server engine options",
+                    "doc": "Server Engine-Optionen",
                     "name": "server",
                     "optional": true,
                     "type": "gws.server.types.Config"
                 },
                 {
                     "default": "UTC",
-                    "doc": "timezone for this server",
+                    "doc": "Zeitzone für diesen Server",
                     "name": "timeZone",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": {},
-                    "doc": "webserver configuration",
+                    "doc": "Webserver-Konfiguration",
                     "name": "web",
                     "optional": true,
                     "type": "gws.web.types.Config"
@@ -203,7 +203,7 @@
             "type": "object"
         },
         "gws.common.application.DbConfig": {
-            "doc": "database configuration",
+            "doc": "Datenbankkonfiguration",
             "name": "gws.common.application.DbConfig",
             "props": [
                 {
@@ -217,19 +217,19 @@
             "type": "object"
         },
         "gws.common.application.SeedingConfig": {
-            "doc": "seeding options",
+            "doc": "Seeding-Optionen",
             "name": "gws.common.application.SeedingConfig",
             "props": [
                 {
                     "default": 1,
-                    "doc": "number of concurrent seeding jobs",
+                    "doc": "Anzahl gleichzeitiger Seeding-Jobs",
                     "name": "concurrency",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 600,
-                    "doc": "max. time for a seeding job",
+                    "doc": "max. Zeit für einen Seeding Job",
                     "name": "maxTime",
                     "optional": true,
                     "type": "gws.types.duration"
@@ -238,33 +238,33 @@
             "type": "object"
         },
         "gws.common.client.Config": {
-            "doc": "client UI element",
+            "doc": "Element der Client-Benutzeroberflaeche",
             "name": "gws.common.client.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "child elements of this element",
+                    "doc": "Kindelemente dieses Elements",
                     "name": "elements",
                     "optional": true,
                     "type": "gws.common.client.ConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "options for this element",
+                    "doc": "Optionen für dieses Element",
                     "name": "options",
                     "optional": true,
                     "type": "dict"
                 },
                 {
                     "default": null,
-                    "doc": "element tag",
+                    "doc": "Element-Tag",
                     "name": "tag",
                     "optional": false,
                     "type": "str"
@@ -279,68 +279,68 @@
             "type": "list"
         },
         "gws.common.map.Config": {
-            "doc": "map configuration",
+            "doc": "Kartenkonfiguration",
             "name": "gws.common.map.Config",
             "props": [
                 {
                     "default": {},
-                    "doc": "default cache",
+                    "doc": "Standardcache",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "map center",
+                    "doc": "Kartenmitte",
                     "name": "center",
                     "optional": true,
                     "type": "gws.types.Point"
                 },
                 {
                     "default": "EPSG:3857",
-                    "doc": "crs for this map",
+                    "doc": "KBS fuer diese Karte",
                     "name": "crs",
                     "optional": true,
                     "type": "gws.types.crsref"
                 },
                 {
                     "default": null,
-                    "doc": "map extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": false,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": {},
-                    "doc": "default grid configuration",
+                    "doc": "default Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
                 },
                 {
                     "default": null,
-                    "doc": "collection of layers for this map",
+                    "doc": "Sammlung von Layern fuer diese Karte",
                     "name": "layers",
                     "optional": false,
                     "type": "gws.types.ext.gis.layer.ConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "map title",
+                    "doc": "Kartentitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "unique id",
+                    "doc": "Eindeutige ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "map scales and resolutions",
+                    "doc": "Kartenmassstaebe und Aufloesungen",
                     "name": "zoom",
                     "optional": false,
                     "type": "gws.gis.zoom.Config"
@@ -363,54 +363,54 @@
             "type": "object"
         },
         "gws.common.project.Config": {
-            "doc": "project configuration",
+            "doc": "Projektkonfiguration",
             "name": "gws.common.project.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "project-specific actions",
+                    "doc": "projektspezifische Aktionen",
                     "name": "actions",
                     "optional": true,
                     "type": "gws.types.ext.action.ConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "project-specific assets options",
+                    "doc": "projektspezifische Anlagemoeglichkeiten",
                     "name": "assets",
                     "optional": true,
                     "type": "gws.types.DocumentRootConfig"
                 },
                 {
                     "default": null,
-                    "doc": "project-specific gws client configuration",
+                    "doc": "Projektspezifische GBD WebSuite Client Konfiguration",
                     "name": "client",
                     "optional": true,
                     "type": "gws.common.client.Config"
                 },
                 {
                     "default": null,
-                    "doc": "template for the project description",
+                    "doc": "Vorlage fuer die Projektbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": null,
-                    "doc": "Project locale",
+                    "doc": "Projektsprache",
                     "name": "locale",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "Map configuration",
+                    "doc": "Kartenkonfiguration",
                     "name": "map",
                     "optional": true,
                     "type": "gws.common.map.Config"
@@ -424,49 +424,49 @@
                 },
                 {
                     "default": false,
-                    "doc": "true if this is a multi-project template",
+                    "doc": "true, wenn dies eine Multiprojektvorlage ist",
                     "name": "multi",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "filename pattern for a multi-project template",
+                    "doc": "Dateinamensmuster für eine Multiprojektvorlage",
                     "name": "multiMatch",
                     "optional": true,
                     "type": "gws.types.regex"
                 },
                 {
                     "default": null,
-                    "doc": "Overview map configuration",
+                    "doc": "Uebersicht Kartenkonfiguration",
                     "name": "overviewMap",
                     "optional": true,
                     "type": "gws.common.map.Config"
                 },
                 {
                     "default": null,
-                    "doc": "printer configuration",
+                    "doc": "Druckkonfiguration",
                     "name": "printer",
                     "optional": true,
                     "type": "gws.common.printer.Config"
                 },
                 {
                     "default": null,
-                    "doc": "project-wide search configuration",
+                    "doc": "Projektweite Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": "",
-                    "doc": "project title",
+                    "doc": "Projekttitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "unique id",
+                    "doc": "Eindeutige ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
@@ -500,35 +500,35 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": "",
-                    "doc": "default spatial context ('view' or 'map')",
+                    "doc": "Standardmaeßiger raeumlicher Kontext",
                     "name": "defaultContext",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": "",
-                    "doc": "search results title",
+                    "doc": "Titel der Suchergebnisse",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -558,12 +558,12 @@
             "type": "object"
         },
         "gws.ext.action.alkis.Config": {
-            "doc": "Flurstückssuche (cadaster parlcels search) action",
+            "doc": "Flurstückssuche",
             "name": "gws.ext.action.alkis.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
@@ -577,14 +577,14 @@
                 },
                 {
                     "default": "public",
-                    "doc": "schema where ALKIS tables are stored, must be readable",
+                    "doc": "Schema, in dem ALKIS-Tabellen gespeichert sind, muss lesbar sein",
                     "name": "dataSchema",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "database (postgis) provider ID",
+                    "doc": "Datenbank (PostGIS) Provider-ID",
                     "name": "db",
                     "optional": true,
                     "type": "str"
@@ -598,7 +598,7 @@
                 },
                 {
                     "default": null,
-                    "doc": "Gemarkung (AU) IDs to exclude from search",
+                    "doc": "Gemarkung (AU) IDs, die von der Suche ausgeschlossen werden sollen",
                     "name": "excludeGemarkung",
                     "optional": true,
                     "type": "strList"
@@ -612,28 +612,28 @@
                 },
                 {
                     "default": null,
-                    "doc": "template for on-screen Flurstueck details",
+                    "doc": "Vorlage für Flurstück-Details auf dem Bildschirm",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": "gws",
-                    "doc": "schema to store gws internal indexes, must be writable",
+                    "doc": "Schema zum Speichern der internen Indizes der GBD WebSuite, muss beschreibbar sein",
                     "name": "indexSchema",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": 100,
-                    "doc": "search results limit",
+                    "doc": "Suchergebnisse begrenzen",
                     "name": "limit",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": null,
-                    "doc": "template for printed Flurstueck details",
+                    "doc": "Vorlage für gedruckte Flurstück-Details",
                     "name": "printTemplate",
                     "optional": true,
                     "type": "gws.types.ext.template.Config"
@@ -647,7 +647,7 @@
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -691,19 +691,19 @@
             "type": "object"
         },
         "gws.ext.action.asset.Config": {
-            "doc": "asset (dynamic html) action",
+            "doc": "Asset (dynamische HTML) Aktion)",
             "name": "gws.ext.action.asset.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -712,19 +712,19 @@
             "type": "object"
         },
         "gws.ext.action.auth.Config": {
-            "doc": "authorization action",
+            "doc": "Autorisierungsaktion",
             "name": "gws.ext.action.auth.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -738,14 +738,14 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -759,14 +759,14 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -775,19 +775,19 @@
             "type": "object"
         },
         "gws.ext.action.printer.Config": {
-            "doc": "print action",
+            "doc": "Druckaktion",
             "name": "gws.ext.action.printer.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -796,19 +796,19 @@
             "type": "object"
         },
         "gws.ext.action.project.Config": {
-            "doc": "project action",
+            "doc": "Projektaktion",
             "name": "gws.ext.action.project.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -817,19 +817,19 @@
             "type": "object"
         },
         "gws.ext.action.remoteadmin.Config": {
-            "doc": "remote administrator action",
+            "doc": "Remote-Administratoraktion",
             "name": "gws.ext.action.remoteadmin.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -838,12 +838,12 @@
             "type": "object"
         },
         "gws.ext.action.search.Config": {
-            "doc": "search action",
+            "doc": "Suchaktion",
             "name": "gws.ext.action.search.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
@@ -857,14 +857,14 @@
                 },
                 {
                     "default": 5,
-                    "doc": "pixel tolerance for geometry searches",
+                    "doc": "Pixeltoleranz für Geometriesuche",
                     "name": "pixelTolerance",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -873,19 +873,19 @@
             "type": "object"
         },
         "gws.ext.auth.provider.file.Config": {
-            "doc": "file-based authorization provider",
+            "doc": "dateibasierter Autorisierungsanbieter",
             "name": "gws.ext.auth.provider.file.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "path to the users json file",
+                    "doc": "Pfad zur JSON-Datei des Benutzers",
                     "name": "path",
                     "optional": false,
                     "type": "gws.types.filepath"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -894,61 +894,61 @@
             "type": "object"
         },
         "gws.ext.auth.provider.ldap.Config": {
-            "doc": "LDAP authorization provider",
+            "doc": "LDAP-Autorisierungsanbieter",
             "name": "gws.ext.auth.provider.ldap.Config",
             "props": [
                 {
                     "default": true,
-                    "doc": "true if the LDAP server is ActiveDirectory",
+                    "doc": "wahr, wenn der LDAP-Server Active Directory ist",
                     "name": "activeDirectory",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "bind DN",
+                    "doc": "BIND DN",
                     "name": "bindDN",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "bind password",
+                    "doc": "BIND Passwort",
                     "name": "bindPassword",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": "{dn}",
-                    "doc": "format for user's display name",
+                    "doc": "Format für den Anzeigenamen des Benutzers",
                     "name": "displayNameFormat",
                     "optional": true,
                     "type": "gws.types.formatstr"
                 },
                 {
                     "default": null,
-                    "doc": "map LDAP filters to roles",
+                    "doc": "LDAP-Filter zu Rollen zuordnen",
                     "name": "roles",
                     "optional": false,
                     "type": "gws.ext.auth.provider.ldap.RoleSpecList"
                 },
                 {
                     "default": 30,
-                    "doc": "LDAP server timeout",
+                    "doc": "LDAP-Server-Timeout",
                     "name": "timeout",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "LDAP server url \"ldap://host:port/baseDN?searchAttribute\"",
+                    "doc": "LDAP-Server-URL \"ldap://host:port/baseDN?searchAttribute\"",
                     "name": "url",
                     "optional": false,
                     "type": "str"
@@ -957,26 +957,26 @@
             "type": "object"
         },
         "gws.ext.auth.provider.ldap.RoleSpec": {
-            "doc": "map authorization roles to LDAP filters",
+            "doc": "Zuordnung von Autorisierungsrollen zu LDAP-Filtern",
             "name": "gws.ext.auth.provider.ldap.RoleSpec",
             "props": [
                 {
                     "default": null,
-                    "doc": "LDAP filter the account has to match",
+                    "doc": "LDAP-Filter, mit dem das Konto übereinstimmen muss",
                     "name": "matches",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "LDAP group the account has to be a member of",
+                    "doc": "LDAP-Gruppe, in der das Konto Mitglied sein muss",
                     "name": "memberOf",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "gws role name",
+                    "doc": "Name der GBD WebSuite Rolle",
                     "name": "role",
                     "optional": false,
                     "type": "str"
@@ -991,61 +991,61 @@
             "type": "list"
         },
         "gws.ext.db.provider.postgis.Config": {
-            "doc": "Postgis database provider",
+            "doc": "PostGIS-Datenbankanbieter",
             "name": "gws.ext.db.provider.postgis.Config",
             "props": [
                 {
                     "default": "",
-                    "doc": "database name",
+                    "doc": "Name der Datenbank",
                     "name": "database",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "localhost",
-                    "doc": "database host",
+                    "doc": "Datenbankhost",
                     "name": "host",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "password",
+                    "doc": "Passwort",
                     "name": "password",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": 5432,
-                    "doc": "database port",
+                    "doc": "Datenbankport",
                     "name": "port",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 0,
-                    "doc": "query timeout",
+                    "doc": "Abfragezeitüberschreitung",
                     "name": "timeout",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "unique id",
+                    "doc": "Eindeutige ID",
                     "name": "uid",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "username",
+                    "doc": "Benutzername",
                     "name": "user",
                     "optional": false,
                     "type": "str"
@@ -1054,61 +1054,61 @@
             "type": "object"
         },
         "gws.ext.gis.layer.box.Config": {
-            "doc": "box layer",
+            "doc": "Box-Layer",
             "name": "gws.ext.gis.layer.box.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -1122,63 +1122,63 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -1187,68 +1187,68 @@
             "type": "object"
         },
         "gws.ext.gis.layer.group.Config": {
-            "doc": "group layer",
+            "doc": "Gruppenlayer",
             "name": "gws.ext.gis.layer.group.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layers in this group",
+                    "doc": "Layer in dieser Gruppe",
                     "name": "layers",
                     "optional": false,
                     "type": "gws.types.ext.gis.layer.ConfigList"
@@ -1262,63 +1262,63 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -1327,61 +1327,61 @@
             "type": "object"
         },
         "gws.ext.gis.layer.leaf.Config": {
-            "doc": "leaf layer",
+            "doc": "Blattlayer",
             "name": "gws.ext.gis.layer.leaf.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -1395,70 +1395,70 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "this layer ID in the WMS service",
+                    "doc": "Diese Layer-ID im WMS-Dienst",
                     "name": "wmsName",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -1472,56 +1472,56 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -1535,63 +1535,63 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -1600,33 +1600,33 @@
             "type": "object"
         },
         "gws.ext.gis.layer.qgis.Config": {
-            "doc": "automatic QGIS layer",
+            "doc": "automatische QGIS-Layer",
             "name": "gws.ext.gis.layer.qgis.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
@@ -1647,28 +1647,28 @@
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -1682,14 +1682,14 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
@@ -1703,49 +1703,49 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -1754,61 +1754,61 @@
             "type": "object"
         },
         "gws.ext.gis.layer.tile.Config": {
-            "doc": "tile layer",
+            "doc": "Titel-Layer",
             "name": "gws.ext.gis.layer.tile.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -1822,63 +1822,63 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -1887,61 +1887,61 @@
             "type": "object"
         },
         "gws.ext.gis.layer.tree.Config": {
-            "doc": "tree layer",
+            "doc": "Tree-Layer",
             "name": "gws.ext.gis.layer.tree.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -1955,63 +1955,63 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -2020,68 +2020,68 @@
             "type": "object"
         },
         "gws.ext.gis.layer.vector.Config": {
-            "doc": "vector layer",
+            "doc": "Vector-Layer",
             "name": "gws.ext.gis.layer.vector.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": null,
-                    "doc": "style for features being edited",
+                    "doc": "Stil für zu bearbeitende Objekte",
                     "name": "editStyle",
                     "optional": true,
                     "type": "gws.types.StyleProps"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -2095,70 +2095,70 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "style for features",
+                    "doc": "Objektstil",
                     "name": "style",
                     "optional": true,
                     "type": "gws.types.StyleProps"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -2167,40 +2167,40 @@
             "type": "object"
         },
         "gws.ext.gis.source.geojson.Config": {
-            "doc": "GeoJson source",
+            "doc": "GeoJson Quelle",
             "name": "gws.ext.gis.source.geojson.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "CRS for this source",
+                    "doc": "KBS für diese Quelle",
                     "name": "crs",
                     "optional": true,
                     "type": "gws.types.crsref"
                 },
                 {
                     "default": null,
-                    "doc": "path to a geojson file",
+                    "doc": "Pfad zu einer Geojson-Datei",
                     "name": "path",
                     "optional": false,
                     "type": "gws.types.filepath"
                 },
                 {
                     "default": null,
-                    "doc": "text search attribute",
+                    "doc": "Textsuchattribut",
                     "name": "searchAttribute",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2209,33 +2209,33 @@
             "type": "object"
         },
         "gws.ext.gis.source.qgis.Config": {
-            "doc": "Qgis source",
+            "doc": "QGIS Quelle",
             "name": "gws.ext.gis.source.qgis.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "CRS for this source",
+                    "doc": "KBS für diese Quelle",
                     "name": "crs",
                     "optional": true,
                     "type": "gws.types.crsref"
                 },
                 {
                     "default": null,
-                    "doc": "extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "path to a qgs project file",
+                    "doc": "Pfad zu einer Qgs-Projektdatei",
                     "name": "path",
                     "optional": false,
                     "type": "gws.types.filepath"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2244,26 +2244,26 @@
             "type": "object"
         },
         "gws.ext.gis.source.sql.Config": {
-            "doc": "SQL source",
+            "doc": "SQL Quelle",
             "name": "gws.ext.gis.source.sql.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "db provider id",
+                    "doc": "Datenbank Provider-ID",
                     "name": "db",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "sql table configuration",
+                    "doc": "SQL-Tabellenkonfiguration",
                     "name": "table",
                     "optional": false,
                     "type": "gws.types.SqlTableConfig"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2272,40 +2272,40 @@
             "type": "object"
         },
         "gws.ext.gis.source.tile.Config": {
-            "doc": "tiled source",
+            "doc": "Tile Quelle",
             "name": "gws.ext.gis.source.tile.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "CRS for this source",
+                    "doc": "KBS für diese Quelle",
                     "name": "crs",
                     "optional": true,
                     "type": "gws.types.crsref"
                 },
                 {
                     "default": null,
-                    "doc": "extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "source grid configuration",
+                    "doc": "Quell-Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "source url, with {x}, {y} and {z} placeholders",
+                    "doc": "Quell-URL mit Platzhaltern {x}, {y} und {z}",
                     "name": "url",
                     "optional": false,
                     "type": "str"
@@ -2314,61 +2314,61 @@
             "type": "object"
         },
         "gws.ext.gis.source.wms.Config": {
-            "doc": "WMS source",
+            "doc": "WMS Quelle",
             "name": "gws.ext.gis.source.wms.Config",
             "props": [
                 {
                     "default": "1d",
-                    "doc": "max cache age for capabilities documents",
+                    "doc": "Maximales Cache-Alter für Capabilities-Dokumente",
                     "name": "capsCacheMaxAge",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": null,
-                    "doc": "CRS for this source",
+                    "doc": "KBS für diese Quelle",
                     "name": "crs",
                     "optional": true,
                     "type": "gws.types.crsref"
                 },
                 {
                     "default": null,
-                    "doc": "extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": 1,
-                    "doc": "max concurrent requests to this source",
+                    "doc": "Maximal gleichzeitige Anforderungen an diese Quelle",
                     "name": "maxRequests",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": null,
-                    "doc": "additional options",
+                    "doc": "Zusatzoptionen",
                     "name": "options",
                     "optional": true,
                     "type": "dict"
                 },
                 {
                     "default": null,
-                    "doc": "query string parameters",
+                    "doc": "Abfragezeichenfolgeparameter",
                     "name": "params",
                     "optional": true,
                     "type": "dict"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "service url",
+                    "doc": "Service-URL",
                     "name": "url",
                     "optional": false,
                     "type": "gws.types.url"
@@ -2377,68 +2377,68 @@
             "type": "object"
         },
         "gws.ext.gis.source.wmts.Config": {
-            "doc": "WMTS source",
+            "doc": "WMTS Quelle",
             "name": "gws.ext.gis.source.wmts.Config",
             "props": [
                 {
                     "default": "1d",
-                    "doc": "max cache age for capabilities documents",
+                    "doc": "Maximales Cache-Alter für Capabilities-Dokumente",
                     "name": "capsCacheMaxAge",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": null,
-                    "doc": "CRS for this source",
+                    "doc": "KBS für diese Quelle",
                     "name": "crs",
                     "optional": true,
                     "type": "gws.types.crsref"
                 },
                 {
                     "default": null,
-                    "doc": "extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": "image/jpeg",
-                    "doc": "image format",
+                    "doc": "Bildformat",
                     "name": "format",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "WMTS layer name",
+                    "doc": "WMTS Layername",
                     "name": "layer",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "additional options",
+                    "doc": "Zusatzoptionen",
                     "name": "options",
                     "optional": true,
                     "type": "dict"
                 },
                 {
                     "default": "",
-                    "doc": "image style",
+                    "doc": "Bildstil",
                     "name": "style",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "service url",
+                    "doc": "Service-URL",
                     "name": "url",
                     "optional": false,
                     "type": "gws.types.url"
@@ -2447,54 +2447,54 @@
             "type": "object"
         },
         "gws.ext.search.provider.nominatim.Config": {
-            "doc": "nominatim (OSM) search provider",
+            "doc": "nominatim (OSM) Suchanbieter",
             "name": "gws.ext.search.provider.nominatim.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "country to limit the search",
+                    "doc": "Land, um die Suche einzuschraenken",
                     "name": "country",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "default spatial context ('view' or 'map')",
+                    "doc": "Standardmaeßiger raeumlicher Kontext",
                     "name": "defaultContext",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "language to return the results in",
+                    "doc": "Sprache der Ergebnisseausgabe",
                     "name": "language",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "search results title",
+                    "doc": "Titel der Suchergebnisse",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2515,14 +2515,14 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": "",
-                    "doc": "default spatial context ('view' or 'map')",
+                    "doc": "Standardmaeßiger raeumlicher Kontext",
                     "name": "defaultContext",
                     "optional": true,
                     "type": "str"
@@ -2536,21 +2536,21 @@
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": "",
-                    "doc": "search results title",
+                    "doc": "Titel der Suchergebnisse",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2571,21 +2571,21 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": "",
-                    "doc": "default spatial context ('view' or 'map')",
+                    "doc": "Standardmaeßiger raeumlicher Kontext",
                     "name": "defaultContext",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
@@ -2606,14 +2606,14 @@
                 },
                 {
                     "default": "",
-                    "doc": "search results title",
+                    "doc": "Titel der Suchergebnisse",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2629,33 +2629,33 @@
             "type": "object"
         },
         "gws.ext.search.provider.sql.Config": {
-            "doc": "database-based search",
+            "doc": "Datenbankbasierte Suche",
             "name": "gws.ext.search.provider.sql.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "database provider uid",
+                    "doc": "Datenbankanbieter UID",
                     "name": "db",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "default spatial context ('view' or 'map')",
+                    "doc": "Standardmaeßiger raeumlicher Kontext",
                     "name": "defaultContext",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
@@ -2676,28 +2676,28 @@
                 },
                 {
                     "default": null,
-                    "doc": "sort expression",
+                    "doc": "Sortierausdruck",
                     "name": "sort",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "sql table configuration",
+                    "doc": "SQL-Tabellenkonfiguration",
                     "name": "table",
                     "optional": false,
                     "type": "gws.types.SqlTableConfig"
                 },
                 {
                     "default": "",
-                    "doc": "search results title",
+                    "doc": "Titel der Suchergebnisse",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2718,7 +2718,7 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
@@ -2746,14 +2746,14 @@
                 },
                 {
                     "default": "",
-                    "doc": "default spatial context ('view' or 'map')",
+                    "doc": "Standardmaeßiger raeumlicher Kontext",
                     "name": "defaultContext",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
@@ -2774,14 +2774,14 @@
                 },
                 {
                     "default": "",
-                    "doc": "search results title",
+                    "doc": "Titel der Suchergebnisse",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2804,12 +2804,12 @@
             "type": "object"
         },
         "gws.ext.search.provider.wms.Config": {
-            "doc": "WMS search",
+            "doc": "WMS-basierte Suche",
             "name": "gws.ext.search.provider.wms.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
@@ -2830,14 +2830,14 @@
                 },
                 {
                     "default": "",
-                    "doc": "default spatial context ('view' or 'map')",
+                    "doc": "Standardmaeßiger raeumlicher Kontext",
                     "name": "defaultContext",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
@@ -2858,14 +2858,14 @@
                 },
                 {
                     "default": "",
-                    "doc": "search results title",
+                    "doc": "Titel der Suchergebnisse",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2893,42 +2893,42 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "user-editable template attributes",
+                    "doc": "Vom Benutzer editierbare Vorlagenattribute",
                     "name": "dataModel",
                     "optional": true,
                     "type": "gws.types.AttributeConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "path to a template file",
+                    "doc": "Pfad zu einer Vorlagendatei",
                     "name": "path",
                     "optional": true,
                     "type": "gws.types.filepath"
                 },
                 {
                     "default": null,
-                    "doc": "list of quality levels supported by the template",
+                    "doc": "Liste der von der Vorlage unterstützten Qualitätsstufen",
                     "name": "qualityLevels",
                     "optional": true,
                     "type": "gws.types.TemplateQualityLevelList"
                 },
                 {
                     "default": "",
-                    "doc": "template content",
+                    "doc": "Vorlageninhalt",
                     "name": "text",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "template title",
+                    "doc": "Vorlagentitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "template type",
+                    "doc": "Vorlagentyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2937,47 +2937,47 @@
             "type": "object"
         },
         "gws.ext.template.html.Config": {
-            "doc": "HTML template",
+            "doc": "HTML Vorlage",
             "name": "gws.ext.template.html.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "user-editable template attributes",
+                    "doc": "Vom Benutzer editierbare Vorlagenattribute",
                     "name": "dataModel",
                     "optional": true,
                     "type": "gws.types.AttributeConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "path to a template file",
+                    "doc": "Pfad zu einer Vorlagendatei",
                     "name": "path",
                     "optional": true,
                     "type": "gws.types.filepath"
                 },
                 {
                     "default": null,
-                    "doc": "list of quality levels supported by the template",
+                    "doc": "Liste der von der Vorlage unterstützten Qualitätsstufen",
                     "name": "qualityLevels",
                     "optional": true,
                     "type": "gws.types.TemplateQualityLevelList"
                 },
                 {
                     "default": "",
-                    "doc": "template content",
+                    "doc": "Vorlageninhalt",
                     "name": "text",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "template title",
+                    "doc": "Vorlagentitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "template type",
+                    "doc": "Vorlagentyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -2986,12 +2986,12 @@
             "type": "object"
         },
         "gws.ext.template.qgis.Config": {
-            "doc": "Qgis print template",
+            "doc": "QGIS Drucktemplate",
             "name": "gws.ext.template.qgis.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "user-editable template attributes",
+                    "doc": "Vom Benutzer editierbare Vorlagenattribute",
                     "name": "dataModel",
                     "optional": true,
                     "type": "gws.types.AttributeConfigList"
@@ -3005,28 +3005,28 @@
                 },
                 {
                     "default": null,
-                    "doc": "list of quality levels supported by the template",
+                    "doc": "Liste der von der Vorlage unterstützten Qualitätsstufen",
                     "name": "qualityLevels",
                     "optional": true,
                     "type": "gws.types.TemplateQualityLevelList"
                 },
                 {
                     "default": "",
-                    "doc": "template content",
+                    "doc": "Vorlageninhalt",
                     "name": "text",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "template title",
+                    "doc": "Vorlagentitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "template type",
+                    "doc": "Vorlagentyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -3035,61 +3035,61 @@
             "type": "object"
         },
         "gws.gis.layer.BaseConfig": {
-            "doc": "map layer",
+            "doc": "Kartenlayer",
             "name": "gws.gis.layer.BaseConfig",
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -3103,63 +3103,63 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -3168,47 +3168,47 @@
             "type": "object"
         },
         "gws.gis.layer.ClientOptions": {
-            "doc": "client options for a layer",
+            "doc": "Client-Optionen für einen Layer",
             "name": "gws.gis.layer.ClientOptions",
             "props": [
                 {
                     "default": false,
-                    "doc": "only one of this layer's children is visible at a time",
+                    "doc": "Es ist jeweils nur eines der untergeordneten Elemente dieses Layers sichtbar",
                     "name": "exclusive",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": false,
-                    "doc": "the layer is expanded in the list view",
+                    "doc": "Der Layer wird in der Listenansicht erweitert",
                     "name": "expanded",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": true,
-                    "doc": "the layer is displayed in this list view",
+                    "doc": "Der Layer wird in dieser Listenansicht angezeigt",
                     "name": "listed",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": false,
-                    "doc": "the layer is intially selected",
+                    "doc": "Der Layer ist anfangs ausgewaehlt",
                     "name": "selected",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": false,
-                    "doc": "the layer is not listed, but its children are",
+                    "doc": "Der Layer wird nicht aufgelistet, seine untergeordneten Elemente jedoch",
                     "name": "unfolded",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": true,
-                    "doc": "the layer is intially visible",
+                    "doc": "Der Layer ist anfangs sichtbar",
                     "name": "visible",
                     "optional": true,
                     "type": "bool"
@@ -3222,56 +3222,56 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "cache configuration",
+                    "doc": "Cache-Konfiguration",
                     "name": "cache",
                     "optional": true,
                     "type": "gws.types.CacheConfig"
                 },
                 {
                     "default": null,
-                    "doc": "options for the layer display in the client",
+                    "doc": "Optionen für die Layeranzeige im Client",
                     "name": "clientOptions",
                     "optional": true,
                     "type": "gws.gis.layer.ClientOptions"
                 },
                 {
                     "default": null,
-                    "doc": "template for the layer description",
+                    "doc": "Vorlage für die Layerbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": false,
-                    "doc": "this layer is editable",
+                    "doc": "Dieser Layer kann bearbeitet werden",
                     "name": "editable",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": null,
-                    "doc": "layer extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "feature formatting options",
+                    "doc": "Objekt-Formatierungsoptionen",
                     "name": "featureFormat",
                     "optional": true,
                     "type": "gws.types.FormatConfig"
                 },
                 {
                     "default": null,
-                    "doc": "grid configuration",
+                    "doc": "Rasterkonfiguration",
                     "name": "grid",
                     "optional": true,
                     "type": "gws.types.GridConfig"
@@ -3285,63 +3285,63 @@
                 },
                 {
                     "default": null,
-                    "doc": "layer meta data",
+                    "doc": "Layermetadaten",
                     "name": "meta",
                     "optional": true,
                     "type": "gws.types.MetaConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer opacity",
+                    "doc": "Layertransparenz",
                     "name": "opacity",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "layer search configuration",
+                    "doc": "Layer-Suchkonfiguration",
                     "name": "search",
                     "optional": true,
                     "type": "gws.common.search.Config"
                 },
                 {
                     "default": null,
-                    "doc": "data source for the layer",
+                    "doc": "Datenquelle für den Layer",
                     "name": "source",
                     "optional": true,
                     "type": "gws.types.ext.gis.source.Config"
                 },
                 {
                     "default": null,
-                    "doc": "source layers to use",
+                    "doc": "Zu verwendende Quelllayer",
                     "name": "sourceLayers",
                     "optional": true,
                     "type": "gws.gis.source.LayerFilterConfig"
                 },
                 {
                     "default": null,
-                    "doc": "layer title",
+                    "doc": "Layertitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer unique id",
+                    "doc": "Eindeutige Layer-ID",
                     "name": "uid",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "layer resolutions and scales",
+                    "doc": "Layeraufloesungen und Massstaebe",
                     "name": "zoom",
                     "optional": true,
                     "type": "gws.gis.zoom.Config"
@@ -3355,21 +3355,21 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "CRS for this source",
+                    "doc": "KBS für diese Quelle",
                     "name": "crs",
                     "optional": true,
                     "type": "gws.types.crsref"
                 },
                 {
                     "default": null,
-                    "doc": "extent",
+                    "doc": "Layerausmasse",
                     "name": "extent",
                     "optional": true,
                     "type": "gws.types.Extent"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -3378,7 +3378,7 @@
             "type": "object"
         },
         "gws.gis.source.LayerFilterConfig": {
-            "doc": "Layer filter",
+            "doc": "Layerfilter",
             "name": "gws.gis.source.LayerFilterConfig",
             "props": [
                 {
@@ -3406,61 +3406,61 @@
             "type": "object"
         },
         "gws.gis.zoom.Config": {
-            "doc": "zoom and resolution configuation",
+            "doc": "Zoom- und Aufloesungskonfiguration",
             "name": "gws.gis.zoom.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "initial resolution",
+                    "doc": "Ausgangsaufloesung",
                     "name": "initResolution",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "initial scale",
+                    "doc": "Ausgangsmassstab",
                     "name": "initScale",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "maximal resolution",
+                    "doc": "maximale Aufloesung",
                     "name": "maxResolution",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "maximal scale",
+                    "doc": "maximaler Massstab",
                     "name": "maxScale",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "minimal resolution",
+                    "doc": "Minimale Aufloesung",
                     "name": "minResolution",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "minimal scale",
+                    "doc": "Minimaler Massstab",
                     "name": "minScale",
                     "optional": true,
                     "type": "float"
                 },
                 {
                     "default": null,
-                    "doc": "allowed resolutions",
+                    "doc": "Erlaubte Aufloesungen",
                     "name": "resolutions",
                     "optional": true,
                     "type": "floatList"
                 },
                 {
                     "default": null,
-                    "doc": "allowed scales",
+                    "doc": "Erlaubte Massstaebe",
                     "name": "scales",
                     "optional": true,
                     "type": "floatList"
@@ -3483,47 +3483,47 @@
             }
         },
         "gws.server.types.Config": {
-            "doc": "Server module configuation",
+            "doc": "Servermodul-Konfiguration",
             "name": "gws.server.types.Config",
             "props": [
                 {
                     "default": "INFO",
-                    "doc": "logging level",
+                    "doc": "Protokollierungsstufe",
                     "name": "logLevel",
                     "optional": true,
                     "type": "gws.log.Level"
                 },
                 {
                     "default": {},
-                    "doc": "bundled Mapproxy module",
+                    "doc": "gebuendeltes Mapproxy-Modul",
                     "name": "mapproxy",
                     "optional": true,
                     "type": "gws.server.types.MapproxyConfig"
                 },
                 {
                     "default": {},
-                    "doc": "bundled Qgis module",
+                    "doc": "gebuendeltes QGIS-Modul",
                     "name": "qgis",
                     "optional": true,
                     "type": "gws.server.types.QgisConfig"
                 },
                 {
                     "default": {},
-                    "doc": "spool server module",
+                    "doc": "Spool-Server-Modul",
                     "name": "spool",
                     "optional": true,
                     "type": "gws.server.types.SpoolConfig"
                 },
                 {
                     "default": 60,
-                    "doc": "server timeout",
+                    "doc": "Server-Timeout",
                     "name": "timeout",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": {},
-                    "doc": "web server module",
+                    "doc": "Webserver-Modul",
                     "name": "web",
                     "optional": true,
                     "type": "gws.server.types.WebConfig"
@@ -3532,12 +3532,12 @@
             "type": "object"
         },
         "gws.server.types.MapproxyConfig": {
-            "doc": "Mapproxy server module",
+            "doc": "Mapproxy-Server-Modul",
             "name": "gws.server.types.MapproxyConfig",
             "props": [
                 {
                     "default": true,
-                    "doc": "the module is enabled",
+                    "doc": "Das Modul ist aktiviert",
                     "name": "enabled",
                     "optional": true,
                     "type": "bool"
@@ -3558,14 +3558,14 @@
                 },
                 {
                     "default": 0,
-                    "doc": "number of threads for this module",
+                    "doc": "Anzahl der Threads fuer dieses Modul",
                     "name": "threads",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 4,
-                    "doc": "number of processes for this module",
+                    "doc": "Anzahl der Worker fuer dieses Modul",
                     "name": "workers",
                     "optional": true,
                     "type": "int"
@@ -3574,19 +3574,19 @@
             "type": "object"
         },
         "gws.server.types.QgisConfig": {
-            "doc": "Bundled QGIS server module",
+            "doc": "Enthaltenes QGIS-Servermodul",
             "name": "gws.server.types.QgisConfig",
             "props": [
                 {
                     "default": 0,
-                    "doc": "QGIS_DEBUG (env. variable)",
+                    "doc": "QGIS_DEBUG (Umgebungsvariable)",
                     "name": "debug",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": true,
-                    "doc": "the module is enabled",
+                    "doc": "Das Modul ist aktiviert",
                     "name": "enabled",
                     "optional": true,
                     "type": "bool"
@@ -3600,14 +3600,14 @@
                 },
                 {
                     "default": 4000,
-                    "doc": "MAX_CACHE_LAYERS (env. variable)",
+                    "doc": "MAX_CACHE_LAYERS (Umgebungsvariable)",
                     "name": "maxCacheLayers",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 6,
-                    "doc": "max concurrent requests to this server",
+                    "doc": "max gleichzeitige Requests an diesen Server",
                     "name": "maxRequests",
                     "optional": true,
                     "type": "int"
@@ -3621,35 +3621,35 @@
                 },
                 {
                     "default": null,
-                    "doc": "searchPathsForSVG (ini setting)",
+                    "doc": "searchPathsForSVG (Ini-Einstellung)",
                     "name": "searchPathsForSVG",
                     "optional": true,
                     "type": "gws.types.dirpathList"
                 },
                 {
                     "default": 10000000,
-                    "doc": "QGIS_SERVER_CACHE_SIZE (env. variable)",
+                    "doc": "QGIS_SERVER_CACHE_SIZE (Umgebungsvariable)",
                     "name": "serverCacheSize",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 2,
-                    "doc": "QGIS_SERVER_LOG_LEVEL (env. variable)",
+                    "doc": "QGIS_SERVER_LOG_LEVEL (Umgebungsvariable)",
                     "name": "serverLogLevel",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 0,
-                    "doc": "number of threads for this module",
+                    "doc": "Anzahl der Threads fuer dieses Modul",
                     "name": "threads",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 4,
-                    "doc": "number of processes for this module",
+                    "doc": "Anzahl der Worker fuer dieses Modul",
                     "name": "workers",
                     "optional": true,
                     "type": "int"
@@ -3658,40 +3658,40 @@
             "type": "object"
         },
         "gws.server.types.SpoolConfig": {
-            "doc": "Spool server module",
+            "doc": "Spool-Server-Modul",
             "name": "gws.server.types.SpoolConfig",
             "props": [
                 {
                     "default": true,
-                    "doc": "the module is enabled",
+                    "doc": "Das Modul ist aktiviert",
                     "name": "enabled",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": 3,
-                    "doc": "background jobs checking frequency",
+                    "doc": "Haeufigkeit von Hintergrundjobs",
                     "name": "jobFrequency",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": 30,
-                    "doc": "filesystem changes check frequency",
+                    "doc": "Dateisystemaenderungen ueberpruefen die Haeufigkeit",
                     "name": "monitorFrequency",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": 0,
-                    "doc": "number of threads for this module",
+                    "doc": "Anzahl der Threads fuer dieses Modul",
                     "name": "threads",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 4,
-                    "doc": "number of processes for this module",
+                    "doc": "Anzahl der Worker fuer dieses Modul",
                     "name": "workers",
                     "optional": true,
                     "type": "int"
@@ -3705,21 +3705,21 @@
             "props": [
                 {
                     "default": true,
-                    "doc": "the module is enabled",
+                    "doc": "Das Modul ist aktiviert",
                     "name": "enabled",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": 0,
-                    "doc": "number of threads for this module",
+                    "doc": "Anzahl der Threads fuer dieses Modul",
                     "name": "threads",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 4,
-                    "doc": "number of processes for this module",
+                    "doc": "Anzahl der Worker fuer dieses Modul",
                     "name": "workers",
                     "optional": true,
                     "type": "int"
@@ -3728,26 +3728,26 @@
             "type": "object"
         },
         "gws.server.types.WebConfig": {
-            "doc": "Web server module",
+            "doc": "Webserver-Modul",
             "name": "gws.server.types.WebConfig",
             "props": [
                 {
                     "default": true,
-                    "doc": "the module is enabled",
+                    "doc": "Das Modul ist aktiviert",
                     "name": "enabled",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": 0,
-                    "doc": "number of threads for this module",
+                    "doc": "Anzahl der Threads fuer dieses Modul",
                     "name": "threads",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 4,
-                    "doc": "number of processes for this module",
+                    "doc": "Anzahl der Worker fuer dieses Modul",
                     "name": "workers",
                     "optional": true,
                     "type": "int"
@@ -3772,7 +3772,7 @@
             "type": "list"
         },
         "gws.types.AccessRuleConfig": {
-            "doc": "access rights definition for authorization roles",
+            "doc": "Zugriffsrechte definition for authorization roles",
             "name": "gws.types.AccessRuleConfig",
             "props": [
                 {
@@ -3781,21 +3781,21 @@
                         "write",
                         "execute"
                     ],
-                    "doc": "access mode",
+                    "doc": "Zugriffsmodus",
                     "name": "mode",
                     "optional": true,
                     "type": "gws.types.AccessModeList"
                 },
                 {
                     "default": null,
-                    "doc": "list of roles to which this rule applies",
+                    "doc": "Liste der Rollen, fuer die diese Regel gilt",
                     "name": "role",
                     "optional": false,
                     "type": "strList"
                 },
                 {
                     "default": null,
-                    "doc": "access type (deny or allow)",
+                    "doc": "Zugriffstyp (deny oder allow)",
                     "name": "type",
                     "optional": false,
                     "type": "gws.types.AccessType"
@@ -3819,26 +3819,26 @@
             }
         },
         "gws.types.AttributeConfig": {
-            "doc": "attribute configuration",
+            "doc": "Attributkonfiguration",
             "name": "gws.types.AttributeConfig",
             "props": [
                 {
                     "default": "",
-                    "doc": "internal name",
+                    "doc": "Interner Name",
                     "name": "name",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "title",
+                    "doc": "Titel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "type",
+                    "doc": "Typ",
                     "name": "type",
                     "optional": true,
                     "type": "str"
@@ -3853,33 +3853,33 @@
             "type": "list"
         },
         "gws.types.CacheConfig": {
-            "doc": "map cache configuration",
+            "doc": "Karten Cache-Konfiguration",
             "name": "gws.types.CacheConfig",
             "props": [
                 {
                     "default": false,
-                    "doc": "cache is enabled",
+                    "doc": "Cache ist aktiviert",
                     "name": "enabled",
                     "optional": true,
                     "type": "bool"
                 },
                 {
                     "default": "1d",
-                    "doc": "cache max. age",
+                    "doc": "Cache max. Alter",
                     "name": "maxAge",
                     "optional": true,
                     "type": "gws.types.duration"
                 },
                 {
                     "default": 1,
-                    "doc": "max. zoom level to cache",
+                    "doc": "max. Zoomstufe zum Cachen",
                     "name": "maxLevel",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": {},
-                    "doc": "additional MapProxy cache options",
+                    "doc": "zusaetzliche MapProxy Cache-Optionen",
                     "name": "options",
                     "optional": true,
                     "type": "dict"
@@ -3894,26 +3894,26 @@
             "type": "object"
         },
         "gws.types.DocumentRootConfig": {
-            "doc": "assets base directory configuration",
+            "doc": "Asset-Basisverzeichniskonfiguration",
             "name": "gws.types.DocumentRootConfig",
             "props": [
                 {
                     "default": null,
-                    "doc": "allowed mime types",
+                    "doc": "erlaubte Mime-Typen",
                     "name": "allowMime",
                     "optional": true,
                     "type": "strList"
                 },
                 {
                     "default": null,
-                    "doc": "disallowed mime types (from the standard list)",
+                    "doc": "nicht erlaubte Mime-Typen (von Standardliste)",
                     "name": "denyMime",
                     "optional": true,
                     "type": "strList"
                 },
                 {
                     "default": null,
-                    "doc": "directory path",
+                    "doc": "Verzeichnispfad",
                     "name": "dir",
                     "optional": false,
                     "type": "gws.types.dirpath"
@@ -3933,47 +3933,47 @@
             "type": "tuple"
         },
         "gws.types.FormatConfig": {
-            "doc": "feature format",
+            "doc": "Objektformat",
             "name": "gws.types.FormatConfig",
             "props": [
                 {
                     "default": "",
-                    "doc": "feature category",
+                    "doc": "Objektkategorie",
                     "name": "category",
                     "optional": true,
                     "type": "gws.types.formatstr"
                 },
                 {
                     "default": null,
-                    "doc": "template for feature descriptions",
+                    "doc": "Vorlage fuer Objektbeschreibung",
                     "name": "description",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": "",
-                    "doc": "feature label on the map",
+                    "doc": "Objektbeschriftung in der Karte",
                     "name": "label",
                     "optional": true,
                     "type": "gws.types.formatstr"
                 },
                 {
                     "default": null,
-                    "doc": "attribute transformation rules",
+                    "doc": "Attributtransformationsregeln",
                     "name": "model",
                     "optional": true,
                     "type": "dict"
                 },
                 {
                     "default": null,
-                    "doc": "template for feature teasers (short descriptions)",
+                    "doc": "Vorlage fuer Objekt-Teaser (Kurzbeschreibungen)",
                     "name": "teaser",
                     "optional": true,
                     "type": "gws.types.TemplateConfig"
                 },
                 {
                     "default": "",
-                    "doc": "feature title",
+                    "doc": "Objekttitel",
                     "name": "title",
                     "optional": true,
                     "type": "gws.types.formatstr"
@@ -3982,40 +3982,40 @@
             "type": "object"
         },
         "gws.types.GridConfig": {
-            "doc": "grid configuration for tiled or cached map data",
+            "doc": "Rasterkonfiguration fuer gekachelte oder zwischengespeicherte Kartendaten",
             "name": "gws.types.GridConfig",
             "props": [
                 {
                     "default": 200,
-                    "doc": "pixel buffer",
+                    "doc": "Pixelpuffer",
                     "name": "metaBuffer",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": 4,
-                    "doc": "number of meta-tiles to fetch",
+                    "doc": "Anzahl der Meta-tiles zum Abrufen",
                     "name": "metaSize",
                     "optional": true,
                     "type": "int"
                 },
                 {
                     "default": {},
-                    "doc": "additional MapProxy grid options",
+                    "doc": "zusaetzliche MapProxy-Rasteroptionen",
                     "name": "options",
                     "optional": true,
                     "type": "dict"
                 },
                 {
                     "default": "nw",
-                    "doc": "position of the first tile (nw or sw)",
+                    "doc": "Position der ersten Kachel (nw oder sw)",
                     "name": "origin",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": 256,
-                    "doc": "tile size",
+                    "doc": "Kachelgroesse",
                     "name": "tileSize",
                     "optional": true,
                     "type": "int"
@@ -4096,33 +4096,33 @@
             "type": "tuple"
         },
         "gws.types.SqlTableConfig": {
-            "doc": "SQL database table",
+            "doc": "SQL Datenbanktabelle",
             "name": "gws.types.SqlTableConfig",
             "props": [
                 {
                     "default": null,
-                    "doc": "geometry column name",
+                    "doc": "Name der Geometriespalte",
                     "name": "geometryColumn",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "primary key column name",
+                    "doc": "Name der Primary-Key-Spalte",
                     "name": "keyColumn",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "table name",
+                    "doc": "Tabellenname",
                     "name": "name",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "column to be searched for",
+                    "doc": "Spalte, nach der gesucht werden soll",
                     "name": "searchColumn",
                     "optional": true,
                     "type": "str"
@@ -4131,26 +4131,26 @@
             "type": "object"
         },
         "gws.types.StyleProps": {
-            "doc": "Feature style",
+            "doc": "Objektstil",
             "name": "gws.types.StyleProps",
             "props": [
                 {
                     "default": null,
-                    "doc": "css rules",
+                    "doc": "CSS Regeln",
                     "name": "content",
                     "optional": true,
                     "type": "dict"
                 },
                 {
                     "default": null,
-                    "doc": "style type (\"css\")",
+                    "doc": "Stiltyp (\"css\")",
                     "name": "type",
                     "optional": false,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "raw style content",
+                    "doc": "reiner Stilinhalt",
                     "name": "value",
                     "optional": true,
                     "type": "str"
@@ -4164,42 +4164,42 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "user-editable template attributes",
+                    "doc": "Vom Benutzer editierbare Vorlagenattribute",
                     "name": "dataModel",
                     "optional": true,
                     "type": "gws.types.AttributeConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "path to a template file",
+                    "doc": "Pfad zu einer Vorlagendatei",
                     "name": "path",
                     "optional": true,
                     "type": "gws.types.filepath"
                 },
                 {
                     "default": null,
-                    "doc": "list of quality levels supported by the template",
+                    "doc": "Liste der von der Vorlage unterstützten Qualitätsstufen",
                     "name": "qualityLevels",
                     "optional": true,
                     "type": "gws.types.TemplateQualityLevelList"
                 },
                 {
                     "default": "",
-                    "doc": "template content",
+                    "doc": "Vorlageninhalt",
                     "name": "text",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": "",
-                    "doc": "template title",
+                    "doc": "Vorlagentitel",
                     "name": "title",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "template type",
+                    "doc": "Vorlagentyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -4208,19 +4208,19 @@
             "type": "object"
         },
         "gws.types.TemplateQualityLevel": {
-            "doc": "named quality level for templates",
+            "doc": "benannte Qualitaetsstufe fuer Vorlagen",
             "name": "gws.types.TemplateQualityLevel",
             "props": [
                 {
                     "default": null,
-                    "doc": "dpi value",
+                    "doc": "DPI-Wert",
                     "name": "dpi",
                     "optional": false,
                     "type": "int"
                 },
                 {
                     "default": "",
-                    "doc": "level name",
+                    "doc": "Levelname",
                     "name": "name",
                     "optional": true,
                     "type": "str"
@@ -4240,7 +4240,7 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -4254,14 +4254,14 @@
             "props": [
                 {
                     "default": null,
-                    "doc": "access rights",
+                    "doc": "Zugriffsrechte",
                     "name": "access",
                     "optional": true,
                     "type": "gws.types.AccessRuleConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "object type",
+                    "doc": "Objekttyp",
                     "name": "type",
                     "optional": false,
                     "type": "str"
@@ -4270,13 +4270,13 @@
             "type": "object"
         },
         "gws.types.crsref": {
-            "doc": "CRS code like \"EPSG:3857\"",
+            "doc": "KBS code wie \"EPSG:3857\"",
             "name": "gws.types.crsref",
             "props": [],
             "type": "object"
         },
         "gws.types.dirpath": {
-            "doc": "valid readable directory path on the server",
+            "doc": "gueltiger lesbarer Verzeichnispfad auf dem Server",
             "name": "gws.types.dirpath",
             "props": [],
             "type": "object"
@@ -4288,7 +4288,7 @@
             "type": "list"
         },
         "gws.types.duration": {
-            "doc": "string like \"1w 2d 3h 4m 5s\" or an int number of seconds",
+            "doc": "Zeichenfolge wie '1w 2d 3h 4m 5s' oder eine ganze Anzahl Sekunden",
             "name": "gws.types.duration",
             "props": [],
             "type": "object"
@@ -4414,7 +4414,7 @@
             "type": "list"
         },
         "gws.types.filepath": {
-            "doc": "valid readable file path on the server",
+            "doc": "gueltiger lesbarer Dateipfad auf dem Server",
             "name": "gws.types.filepath",
             "props": [],
             "type": "object"
@@ -4426,37 +4426,37 @@
             "type": "list"
         },
         "gws.types.formatstr": {
-            "doc": "string with {attribute} placeholders",
+            "doc": "Text mit {attribute} Platzhaltern",
             "name": "gws.types.formatstr",
             "props": [],
             "type": "object"
         },
         "gws.types.regex": {
-            "doc": "regular expression, as used in Python",
+            "doc": "regulaerer Ausdruck, wie er in Python verwendet wird",
             "name": "gws.types.regex",
             "props": [],
             "type": "object"
         },
         "gws.types.url": {
-            "doc": "http or https URL",
+            "doc": "http oder https URL",
             "name": "gws.types.url",
             "props": [],
             "type": "object"
         },
         "gws.web.types.Config": {
-            "doc": "web server configuration",
+            "doc": "Webserver-Konfiguration",
             "name": "gws.web.types.Config",
             "props": [
                 {
                     "default": null,
-                    "doc": "configured sites",
+                    "doc": "konfigurierte Sites",
                     "name": "sites",
                     "optional": true,
                     "type": "gws.web.types.SiteConfigList"
                 },
                 {
                     "default": null,
-                    "doc": "ssl configuration",
+                    "doc": "SSL-Konfiguration",
                     "name": "ssl",
                     "optional": true,
                     "type": "gws.web.types.SSLConfig"
@@ -4465,7 +4465,7 @@
             "type": "object"
         },
         "gws.web.types.CorsConfig": {
-            "doc": "CORS options",
+            "doc": "CORS-Optionen",
             "name": "gws.web.types.CorsConfig",
             "props": [
                 {
@@ -4500,26 +4500,26 @@
             "type": "object"
         },
         "gws.web.types.RewriteRule": {
-            "doc": "rewrite rule",
+            "doc": "rewrite Regeln",
             "name": "gws.web.types.RewriteRule",
             "props": [
                 {
                     "default": null,
-                    "doc": "expression to match the url against",
+                    "doc": "Ausdruck, gegen den die URL zu finden ist",
                     "name": "match",
                     "optional": false,
                     "type": "gws.types.regex"
                 },
                 {
                     "default": null,
-                    "doc": "additional options",
+                    "doc": "Zusatzoptionen",
                     "name": "options",
                     "optional": true,
                     "type": "dict"
                 },
                 {
                     "default": null,
-                    "doc": "target url with placeholders",
+                    "doc": "Ziel-URL mit Platzhaltern",
                     "name": "target",
                     "optional": false,
                     "type": "gws.types.formatstr"
@@ -4534,19 +4534,19 @@
             "type": "list"
         },
         "gws.web.types.SSLConfig": {
-            "doc": "SSL configuration",
+            "doc": "SSL Konfiguration",
             "name": "gws.web.types.SSLConfig",
             "props": [
                 {
                     "default": null,
-                    "doc": "crt file location",
+                    "doc": "Speicherort der CRT-Datei",
                     "name": "crt",
                     "optional": false,
                     "type": "gws.types.filepath"
                 },
                 {
                     "default": null,
-                    "doc": "key file location",
+                    "doc": "Speicherort der Schluesseldatei",
                     "name": "key",
                     "optional": false,
                     "type": "gws.types.filepath"
@@ -4555,40 +4555,40 @@
             "type": "object"
         },
         "gws.web.types.SiteConfig": {
-            "doc": "site (virtual host) configuration",
+            "doc": "Konfiguration der Site (virtueller Host)",
             "name": "gws.web.types.SiteConfig",
             "props": [
                 {
                     "default": null,
-                    "doc": "assets location and options",
+                    "doc": "Standort und Optionen der Assets",
                     "name": "assets",
                     "optional": true,
                     "type": "gws.types.DocumentRootConfig"
                 },
                 {
                     "default": null,
-                    "doc": "cors configuration",
+                    "doc": "CORS-Konfiguration",
                     "name": "cors",
                     "optional": true,
                     "type": "gws.web.types.CorsConfig"
                 },
                 {
                     "default": "*",
-                    "doc": "host name",
+                    "doc": "Hostname",
                     "name": "host",
                     "optional": true,
                     "type": "str"
                 },
                 {
                     "default": null,
-                    "doc": "rewrite rules",
+                    "doc": "rewrite Regeln",
                     "name": "rewrite",
                     "optional": true,
                     "type": "gws.web.types.RewriteRuleList"
                 },
                 {
                     "default": null,
-                    "doc": "document root location and options",
+                    "doc": "DocumentRoot Verzeichnis und Optionen",
                     "name": "root",
                     "optional": false,
                     "type": "gws.types.DocumentRootConfig"

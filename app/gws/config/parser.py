@@ -42,8 +42,15 @@ def _read2(path):
             return yaml.load(fp)
 
 
-def load_spec(kind):
-    with open(gws.APP_DIR + '/spec/' + kind + '.spec.json') as fp:
+def load_spec(kind, lang=None):
+    path = f'{gws.APP_DIR}/spec/{kind}.spec.json'
+
+    if lang and lang != 'en':
+        p = f'{gws.APP_DIR}/spec/{lang}.{kind}.spec.json'
+        if os.path.exists(p):
+            path = p
+
+    with open(path) as fp:
         return json.load(fp)
 
 

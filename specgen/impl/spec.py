@@ -1,12 +1,20 @@
 """Generate spec objects from parse's results"""
 
 
+def generate(objects, types, flatten=True):
+    g = _Generator(objects, flatten)
+    for tname in types:
+        g.run(tname)
+    return g.res
+
+
+
 class _Generator:
-    def __init__(self, objects, keep_extends):
+    def __init__(self, objects, flatten):
         self.open = set()
         self.res = {}
         self.objects = objects
-        self.keep_extends = keep_extends
+        self.flatten = flatten
 
     def run(self, tname):
         self.gen(tname)
@@ -25,10 +33,11 @@ class _Generator:
         self.open.remove(tname)
 
         if r:
-            if r['type'] == 'alias': # and not self.keep_extends:
+            if r['type'] == 'alias':
                 tname = r['target']
             else:
                 r['name'] = tname
+                r['doc'] = obj.get('doc', '')
                 self.res[tname] = r
 
         return tname
@@ -87,7 +96,6 @@ class _Generator:
 
         r = {
             'type': 'object',
-            'doc': obj.get('doc', ''),
         }
 
         extends = []
@@ -95,7 +103,7 @@ class _Generator:
         for sname in obj.get('supers', []):
             self.gen(sname)
             if sname in self.res:
-                if self.keep_extends:
+                if not self.flatten:
                     extends.append(sname)
                 else:
                     names = set(p['name'] for p in props)
@@ -110,8 +118,3 @@ class _Generator:
         return r
 
 
-def generate(objects, types, keep_extends=False):
-    g = _Generator(objects, keep_extends)
-    for tname in types:
-        g.run(tname)
-    return g.res

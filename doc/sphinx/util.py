@@ -1,6 +1,67 @@
 import re
 import json
 
+words = {
+    'en': {
+        'yes': 'yes',
+        'no': 'no',
+        'spec_types': 'Special types',
+        'obj_types': 'Object types',
+        'properties': 'Properties',
+        'one_of': 'One of',
+        'prop_name': 'name',
+        'prop_type': 'type',
+        'prop_required': 'required',
+        'prop_default': 'default',
+        'options': 'Options',
+    },
+    'de': {
+        'yes': 'ja',
+        'no': 'nein',
+        'spec_types': 'Spezial Typen',
+        'obj_types': 'Objekt Typen',
+        'properties': 'Eigenschaften',
+        'one_of': 'Einer von',
+        'prop_name': 'Name',
+        'prop_type': 'Typ',
+        'prop_required': 'erforderlich',
+        'prop_default': 'Defaultwert',
+        'options': 'Optionen',
+    },
+
+}
+
+
+def make_config_ref(lang, app_dir, doc_root):
+    page = 'configref'
+    root_type = 'gws.common.application.Config'
+
+    spec_path = app_dir + '/spec/' + ('' if lang == 'en' else lang + '.') + 'config.spec.json'
+
+    with open(spec_path) as fp:
+        spec = json.load(fp)
+
+    gen = _ConfigRefGenerator(lang, page, spec['types'], root_type)
+    text = gen.run()
+
+    out = doc_root + '/books/server-admin/' + lang + '/' + page + '.txt'
+    _write_if_changed(out, text)
+
+
+def make_cli_ref(lang, app_dir, doc_root):
+    page = 'cliref'
+    spec_path = app_dir + '/spec/' + ('' if lang == 'en' else lang + '.') + 'cli.spec.json'
+
+    with open(spec_path) as fp:
+        spec = json.load(fp)
+
+    gen = _CliRefGenerator(lang, page, spec['commands'])
+    text = gen.run()
+
+    out = doc_root + '/books/server-admin/' + lang + '/' + page + '.txt'
+    _write_if_changed(out, text)
+
+
 _pipe = ' | '.join
 _comma = ', '.join
 _nl = '\n'.join
@@ -105,22 +166,6 @@ def _write_if_changed(fname, text):
 
 primitives = "bool", "int", "str", "float", "float2", "float4", "dict",
 
-words = {
-    'en': {
-        'spec_types': 'Special types',
-        'obj_types': 'Object types',
-        'list_of': 'list of %s',
-        'properties': 'Properties',
-        'one_of': 'One of',
-        'prop_name': 'name',
-        'prop_type': 'type',
-        'prop_required': 'required',
-        'prop_default': 'default',
-        'options': 'Options',
-    },
-
-}
-
 
 class _ConfigRefGenerator:
 
@@ -168,6 +213,12 @@ class _ConfigRefGenerator:
                 t,
                 self.w('one_of') + ':',
                 _nl(sorted('* ' + _value(v) for v in t['values'])))
+
+        elif t['type'] == 'tuple':
+            self.obj_type(
+                t,
+                '',
+            )
 
         else:
             raise ValueError('unhandled type %s' % t['type'])
@@ -226,7 +277,7 @@ class _ConfigRefGenerator:
             _i(p['name']),
             self.ref(p['type']),
             lit or p.get('doc', ''),
-            'no' if p['optional'] else 'yes',
+            self.w('no') if p['optional'] else self.w('yes'),
             _value(p['default'])
         )
 
@@ -241,42 +292,45 @@ class _ConfigRefGenerator:
 
 
 class _CliRefGenerator:
-    def __init__(self, lang, page, funcs):
+    def __init__(self, lang, page, commands):
         self.book = 'server_admin'
         self.lang = lang
         self.page = page
-        self.funcs = funcs
+        self.commands = commands
 
     def run(self):
         out = {}
-        for f in self.funcs:
-            fname = f['command'] + ' ' + f['name'].replace('_', '-')
+
+        for c in self.commands.values():
+            fname = c['command'] + ' ' + c['subcommand'].replace('_', '-')
             t = [
                 '',
                 '.. _%s:' % self.label(fname),
                 '',
                 _h3(fname),
                 '',
-                f.get('doc', '')
+                c.get('doc', '')
             ]
-            if f['args']:
+            if c.get('args'):
                 t.extend([
                     '',
                     _i(self.w('options') + ':'),
                     '',
-                    self.args(f)
+                    self.args(c['args'])
                 ])
             out[fname] = _nl(t)
 
         return _nl(_sorted_values(out))
 
-    def args(self, f):
+    def args(self, args):
         rows = []
-        for a in sorted(f['args'], key=lambda a: a['name']):
+
+        for a in sorted(args, key=lambda a: a['name']):
             rows.append(_row(
                 _ee(a['name']),
                 a['doc'].replace('\n', ' ')
             ))
+
         return _table(None, rows)
 
     def label(self, fname):
@@ -284,32 +338,3 @@ class _CliRefGenerator:
 
     def w(self, s):
         return words[self.lang][s]
-
-
-def make_config_ref(lang, app_dir, doc_root):
-    spec = app_dir + '/spec/config.spec.json'
-    page = 'configref'
-    root_type = 'gws.common.application.Config'
-
-    with open(spec) as fp:
-        types = json.load(fp)['types']
-
-    gen = _ConfigRefGenerator(lang, page, types, root_type)
-    text = gen.run()
-
-    out = doc_root + '/books/server-admin/' + lang + '/' + page + '.txt'
-    _write_if_changed(out, text)
-
-
-def make_cli_ref(lang, app_dir, doc_root):
-    spec = app_dir + '/spec/cli.spec.json'
-    page = 'cliref'
-
-    with open(spec) as fp:
-        funcs = json.load(fp)
-
-    gen = _CliRefGenerator(lang, page, funcs)
-    text = gen.run()
-
-    out = doc_root + '/books/server-admin/' + lang + '/' + page + '.txt'
-    _write_if_changed(out, text)
