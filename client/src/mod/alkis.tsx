@@ -196,7 +196,7 @@ class GotoFormCell extends gws.View<FsSearchProps> {
         return <Cell>
             <gws.ui.IconButton
                 {...gws.tools.cls('modAlkisGotoFormButton', dis && 'isDisabled')}
-                whenTouched={() =>  !dis && this.props.controller.goTo('form')}
+                whenTouched={() => !dis && this.props.controller.goTo('form')}
                 tooltip={STRINGS.gotoForm}
             />
         </Cell>
@@ -329,12 +329,7 @@ class SearchForm extends gws.View<FsSearchProps> {
 
         let boundTo = param => ({
             value: this.props.alkisFsParams[param],
-            whenChanged: value => cc.update({
-                alkisFsParams: {
-                    ...this.props.alkisFsParams,
-                    [param]: value
-                }
-            }),
+            whenChanged: value => cc.updateFsParams({[param]: value}),
             whenEntered: submit
         });
 
@@ -481,25 +476,26 @@ class SearchForm extends gws.View<FsSearchProps> {
 
 class SearchToolbar extends gws.View<FsSearchProps> {
     render() {
+        let cc = this.props.controller;
 
         let submit = geom => {
-            this.props.alkisFsParams.shape = this.props.controller.map.geom2shape(geom);
-            this.props.controller.search();
+            cc.updateFsParams({shape: cc.map.geom2shape(geom)});
+            cc.search();
         };
 
         let clicked = geometryType => {
-            this.props.controller.update({
+            cc.update({
                 lensGeometryType: geometryType,
                 lensCallback: geom => submit(geom)
             })
         };
 
         let cancel = () => {
-            this.props.controller.update({
+            cc.updateFsParams({shape: null});
+            cc.update({
                 lensGeometryType: null,
                 lensCallback: null
             })
-            this.props.alkisFsParams.shape = null;
         };
 
         let button = gt => <gws.ui.IconButton
@@ -808,9 +804,13 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
     setup: gws.api.AlkisFsSetupResponse;
     history: Array<string>;
 
-    update(args) {
-        super.update(args)
-        console.log('UPDATE', args)
+    updateFsParams(obj) {
+        this.update({
+            alkisFsParams: {
+                ...this.getValue('alkisFsParams'),
+                ...obj
+            }
+        });
     }
 
     async init() {
@@ -863,14 +863,12 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
                 strassen = res.strassen.map(s => ({text: s, value: s}));
         }
 
-        let params = {
-            ...this.getValue('alkisFsParams'),
+        this.updateFsParams({
             gemarkungUid: value,
             strasse: ''
-        };
+        });
 
         this.update({
-            alkisFsParams: params,
             alkisFsStrassen: strassen
         });
     };
@@ -961,7 +959,6 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
             templateUid: this.setup.printTemplate.uid,
             quality
         };
-
 
         let q = {
             ...this.paramsForFeatures(fs),
@@ -1055,7 +1052,10 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
             this.history.push(tab);
         this.update({
             alkisFsTab: tab
-        })
+        });
+        if (tab === 'form') {
+            this.updateFsParams({controlInput: ''});
+        }
     }
 
     goBack() {

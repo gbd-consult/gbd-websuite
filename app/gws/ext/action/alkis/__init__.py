@@ -413,11 +413,7 @@ class Object(gws.Object):
         allow_eigentuemer = eigentuemer_flag > 0
         allow_buchung = self._can_read_buchung(req)
 
-        if not allow_eigentuemer:
-            del p.vorname
-            del p.name
-        if not allow_buchung:
-            del p.bblatt
+        p = self._remove_restricted_params(p, allow_eigentuemer, allow_buchung)
 
         if p.get('shape'):
             p.shape = gws.gis.shape.from_props(p.shape)
@@ -458,9 +454,17 @@ class Object(gws.Object):
 
         return 1
 
+    _log_eigentuemer_access_params = ['fsUids', 'bblatt', 'vorname', 'name']
+
     def _log_eigentuemer_access(self, req, p: FsQueryParams, check, total=0, features=None):
-        gws.log.debug('_log_eigentuemer_access', check, self.log_table)
         if not self.log_table:
+            gws.log.debug('_log_eigentuemer_access', check, 'no log table!')
+            return
+
+        has_relevant_params = any(p.get(s) for s in self._log_eigentuemer_access_params)
+
+        if check and not has_relevant_params:
+            gws.log.debug('_log_eigentuemer_access', check, 'no relevant params!')
             return
 
         fs_ids = ''
@@ -481,6 +485,17 @@ class Object(gws.Object):
 
         with self._connect() as conn:
             conn.insert_one(self.log_table, data)
+
+        gws.log.debug('_log_eigentuemer_access', check, 'ok')
+
+
+    def _remove_restricted_params(self, p: FsQueryParams, allow_eigentuemer, allow_buchung):
+        if not allow_eigentuemer:
+            del p.vorname
+            del p.name
+        if not allow_buchung:
+            del p.bblatt
+        return p
 
     def _remove_restricted_data(self, rec, allow_eigentuemer, allow_buchung):
         if allow_eigentuemer:
