@@ -48,8 +48,8 @@ let packageVendors = options => {
 
 //
 
-const js2cssDefaults = {
-    quoteProps: [
+const themeDefaults = {
+    customProps: [
         'label-anchor',
         'label-background',
         'label-fill',
@@ -78,16 +78,20 @@ const js2cssDefaults = {
     ],
 
     'unit': 'px',
-    'prefix': '.gws',
     'sort': true,
 
 };
 
 let compileTheme = themePath => {
-    // a theme is expected to export a nested array of rules (objects/functions) and an object of options
+    console.log('\n[theme] compiling' + themePath);
+
+    // a theme is expected to export a nested array of js2css rules (objects/functions) and an object of options
     let [rules, options] = require(themePath);
-    console.log('\n[j2css] compiling' + themePath);
-    return js2css.compile(rules, {...js2cssDefaults, ...options});
+
+    rules = {'.gws': rules};
+    options = {...themeDefaults, ...options};
+
+    return js2css.css(rules, options);
 };
 
 let generateThemes = options => {

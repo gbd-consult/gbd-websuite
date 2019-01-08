@@ -56,7 +56,7 @@ let config = {
 
     resolveLoader: {
         alias: {
-            js2css: helpers.absPath('./helpers/js2css-loader')
+            themeLoader: helpers.absPath('./helpers/theme-loader')
         }
     },
 
@@ -68,7 +68,7 @@ let config = {
             },
             {
                 test: /src\/css.*\.css\.js$/,
-                loader: 'js2css',
+                loader: 'themeLoader',
             },
         ]
     },

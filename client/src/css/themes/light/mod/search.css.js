@@ -37,7 +37,7 @@ module.exports = v => ({
 
     '.modSearchSideButton': {
         minWidth: v.CONTROL_SIZE,
-        maxidth: v.CONTROL_SIZE,
+        maxWidth: v.CONTROL_SIZE,
     },
 
     '.modSearchToolbarResults .modSearchResults': {

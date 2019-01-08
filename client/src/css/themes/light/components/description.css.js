@@ -16,7 +16,7 @@ module.exports = v => ({
                 textDecoration: 'none',
 
                 '&::before': {
-                    content: "metadata ▹"
+                    content: "'metadata ▹'"
                 }
             }
         },
