@@ -8,56 +8,63 @@ class ENV:
     VERSION = ''
 
 
-def _f(txt):
-    return re.sub(
-        r'{(\w+)}',
-        lambda m: str(getattr(ENV, m.group(1), m.group(0))),
-        txt)
+def main(argv):
+    init(argv)
+    prepare()
+    df = dockerfile()
+
+    with open(ENV.BUILD_DIR + '/dockerfile', 'wt') as fp:
+        fp.write(df)
+
+    run("docker build -f dockerfile -t {IMAGE_NAME} .")
 
 
-def lines(txt):
-    for s in txt.strip().splitlines():
-        s = s.strip()
-        if s and not s.startswith('#'):
-            yield s
+def init(argv):
+    cd = os.path.dirname(__file__)
 
+    ENV.SCRIPT_DIR = os.path.abspath(cd)
+    ENV.BASE_DIR = os.path.abspath(cd + '/..')
+    ENV.BUILD_DIR = os.path.abspath(cd + '/_build')
 
-def lines_from(path):
-    with open(path) as fp:
-        return lines(fp.read())
+    run("rm -fr {BUILD_DIR}")
+    run("mkdir -p {BUILD_DIR}")
 
+    os.chdir(ENV.BUILD_DIR)
 
-def run(cmd):
-    cmd = _f(cmd)
-    print('Running %s' % cmd)
-    args = {
-        'stdin': None,
-        'stdout': None,
-        'stderr': subprocess.STDOUT,
-        'shell': True,
-    }
+    load_const()
 
-    p = subprocess.Popen(cmd, **args)
-    out, _ = p.communicate()
-    rc = p.returncode
+    with open(ENV.BASE_DIR + '/VERSION') as fp:
+        ENV.VERSION = fp.read().strip()
 
-    if rc:
-        print('!' * 80)
-        print('Command failed: (code %d)' % rc)
-        print('Command: %s' % cmd)
-        print('Output:')
-        print(out)
-        print('exiting...')
-        sys.exit(1)
+    # MODE is debug or release
 
-    return out
+    ENV.MODE = 'release'
+    try:
+        ENV.MODE = argv[1]
+    except IndexError:
+        pass
 
+    if ENV.MODE == 'release':
+        ENV.IMAGE_NAME = _f('gbdconsult/gws-server:{VERSION}')
+    elif ENV.MODE == 'debug':
+        ENV.IMAGE_NAME = _f('gbdconsult/gws-server-debug:{VERSION}')
+    else:
+        print('invalid mode')
+        sys.exit(255)
+    try:
+        ENV.IMAGE_NAME = argv[2]
+    except IndexError:
+        pass
 
-def load_const():
-    for s in lines_from(_f('{BASE_DIR}/app/gws/core/const.py')):
-        exec(s)
-    for k, v in locals().items():
-        setattr(ENV, k, v)
+    ENV.QGIS_URL = _f('http://gws-files.gbd-consult.de/qgis-for-gws-3.4-bionic-{MODE}.tar.gz')
+    ENV.QGIS_DIR = 'qgis-for-gws'
+
+    # ENV.WKHTMLTOPDF_URL = 'https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb'
+    ENV.WKHTMLTOPDF_URL = 'http://gws-files.gbd-consult.de/wkhtmltox_0.12.5-1.bionic_amd64.deb'
+    ENV.WKHTMLTOPDF_PATH = 'wkhtmltox_0.12.5-1.bionic_amd64.deb'
+
+    ENV.ALKISPLUGIN_URL = 'http://gws-files.gbd-consult.de/alkisplugin.tar.gz'
+    ENV.ALKISPLUGIN_DIR = 'alkisplugin'
 
 
 def prepare():
@@ -134,59 +141,56 @@ def dockerfile():
     return '\n'.join(lines(_f(df)))
 
 
-def main(argv):
-    cd = os.path.dirname(__file__)
+def lines(txt):
+    for s in txt.strip().splitlines():
+        s = s.strip()
+        if s and not s.startswith('#'):
+            yield s
 
-    ENV.SCRIPT_DIR = os.path.abspath(cd)
-    ENV.BASE_DIR = os.path.abspath(cd + '/..')
-    ENV.BUILD_DIR = os.path.abspath(cd + '/_build')
 
-    run("rm -fr {BUILD_DIR}")
-    run("mkdir -p {BUILD_DIR}")
+def lines_from(path):
+    with open(path) as fp:
+        return lines(fp.read())
 
-    os.chdir(ENV.BUILD_DIR)
 
-    load_const()
+def run(cmd):
+    cmd = _f(cmd)
+    print('Running %s' % cmd)
+    args = {
+        'stdin': None,
+        'stdout': None,
+        'stderr': subprocess.STDOUT,
+        'shell': True,
+    }
 
-    with open(ENV.BASE_DIR + '/VERSION') as fp:
-        ENV.VERSION = fp.read().strip()
+    p = subprocess.Popen(cmd, **args)
+    out, _ = p.communicate()
+    rc = p.returncode
 
-    # MODE is debug or release
+    if rc:
+        print('!' * 80)
+        print('Command failed: (code %d)' % rc)
+        print('Command: %s' % cmd)
+        print('Output:')
+        print(out)
+        print('exiting...')
+        sys.exit(1)
 
-    ENV.MODE = 'release'
-    try:
-        ENV.MODE = argv[1]
-    except IndexError:
-        pass
+    return out
 
-    if ENV.MODE == 'release':
-        ENV.IMAGE_NAME = _f('gbdconsult/gws-server:{VERSION}')
-    elif ENV.MODE == 'debug':
-        ENV.IMAGE_NAME = _f('gbdconsult/gws-server-debug:{VERSION}')
-    else:
-        print('invalid mode')
-        sys.exit(255)
-    try:
-        ENV.IMAGE_NAME = argv[2]
-    except IndexError:
-        pass
 
-    ENV.QGIS_URL = _f('http://gws-files.gbd-consult.de/qgis-for-gws-3.4-bionic-{MODE}.tar.gz')
-    ENV.QGIS_DIR = 'qgis-for-gws'
+def load_const():
+    for s in lines_from(_f('{BASE_DIR}/app/gws/core/const.py')):
+        exec(s)
+    for k, v in locals().items():
+        setattr(ENV, k, v)
 
-    # ENV.WKHTMLTOPDF_URL = 'https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb'
-    ENV.WKHTMLTOPDF_URL = 'http://gws-files.gbd-consult.de/wkhtmltox_0.12.5-1.bionic_amd64.deb'
-    ENV.WKHTMLTOPDF_PATH = 'wkhtmltox_0.12.5-1.bionic_amd64.deb'
 
-    ENV.ALKISPLUGIN_URL = 'http://gws-files.gbd-consult.de/alkisplugin.tar.gz'
-    ENV.ALKISPLUGIN_DIR = 'alkisplugin'
-
-    prepare()
-
-    with open(ENV.BUILD_DIR + '/dockerfile', 'wt') as fp:
-        fp.write(dockerfile())
-
-    run("docker build -f dockerfile -t {IMAGE_NAME} .")
+def _f(txt):
+    return re.sub(
+        r'{(\w+)}',
+        lambda m: str(getattr(ENV, m.group(1), m.group(0))),
+        txt)
 
 
 if __name__ == '__main__':

@@ -30,7 +30,8 @@ if __name__ == '__main__':
         inject_version(VERSION, path)
 
     source_dir = os.path.abspath(base + '/app/gws')
-    out_dir = os.path.abspath(base + '/app/spec')
+    out_dir = os.path.abspath(base + '/app/spec/gen')
+    os.makedirs(out_dir, exist_ok=True)
 
     sys.path.append(cdir)
     # noinspection PyUnresolvedReferences

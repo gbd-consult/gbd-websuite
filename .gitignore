@@ -17,6 +17,8 @@
 /client/docs
 /client/node_modules
 /image/_build
+/app/web/gws-client
+/app/spec/gen
 ___*
 __pycache__
 _autosummary

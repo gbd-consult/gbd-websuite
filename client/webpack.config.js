@@ -74,6 +74,10 @@ let config = {
     },
 
     externals: helpers.vendorsExternals(options),
+
+    performance: {
+        hints: false
+    }
 };
 
 module.exports = config;

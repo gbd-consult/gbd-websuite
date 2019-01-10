@@ -36,7 +36,7 @@ def make_config_ref(lang, app_dir, doc_root):
     page = 'configref'
     root_type = 'gws.common.application.Config'
 
-    spec_path = app_dir + '/spec/' + ('' if lang == 'en' else lang + '.') + 'config.spec.json'
+    spec_path = app_dir + '/spec/gen' + ('' if lang == 'en' else lang + '.') + 'config.spec.json'
 
     with open(spec_path) as fp:
         spec = json.load(fp)
@@ -50,7 +50,7 @@ def make_config_ref(lang, app_dir, doc_root):
 
 def make_cli_ref(lang, app_dir, doc_root):
     page = 'cliref'
-    spec_path = app_dir + '/spec/' + ('' if lang == 'en' else lang + '.') + 'cli.spec.json'
+    spec_path = app_dir + '/spec/gen' + ('' if lang == 'en' else lang + '.') + 'cli.spec.json'
 
     with open(spec_path) as fp:
         spec = json.load(fp)

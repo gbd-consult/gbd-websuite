@@ -33,16 +33,15 @@ let packageVendors = options => {
     let fname = [];
 
     options.vendors.forEach(v => {
-        let version = pkg.dependencies[v.key].replace(/[^\d.]/g, '');
         buf.push(fs.readFileSync(absPath(v.path), 'utf8'));
-        fname.push(v.uid + version.replace(/\D/g, ''));
+        // let version = pkg.dependencies[v.key].replace(/[^\d.]/g, '');
+        // fname.push(v.uid + version.replace(/\D/g, ''));
     });
 
-    //let out = absPath(options.dist + '/gws-vendor-' + fname.join('') + '.js');
     let out = absPath(options.dist + '/gws-vendor-' + options.version + '.js');
+    let sep = '\n;;\n';
 
-    buf = ';;\n' + buf.join('\n;;\n') + '\n';
-    fs.writeFileSync(out, buf);
+    fs.writeFileSync(out, sep + buf.join(sep) + sep);
 
 };
 

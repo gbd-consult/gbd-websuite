@@ -28,7 +28,7 @@ _uwsgi_params = """
 def create(base_dir, pid_dir):
     def _write(p, s):
         p = base_dir + '/' + p
-        s = '\n'.join(x.strip() for x in s.splitlines())
+        s = '\n'.join(x.strip() for x in s.strip().splitlines())
         with open(p, 'wt') as fp:
             fp.write(s + '\n')
         return p
@@ -66,7 +66,7 @@ def create(base_dir, pid_dir):
 
     nginx_log = 'syslog:server=unix:/dev/log,nohostname,tag'
     nginx_log_level = 'info'
-    ## nginx_log_level = 'debug'
+    # nginx_log_level = 'debug'
 
     # be rude and reload 'em as fast as possible
     mercy = 5
@@ -255,6 +255,10 @@ def create(base_dir, pid_dir):
 
             {rewr}
             {roots}
+            
+            location /gws-client/ {{
+                root {gws.APP_DIR}/web;
+            }}
 
             location @cache {{
                 root {gws.WEB_CACHE_DIR};
@@ -272,6 +276,17 @@ def create(base_dir, pid_dir):
         ssl_key = gws.config.var('web.ssl.key')
 
         year = 3600 * 24 * 365
+
+        gzip = """
+            gzip on;
+            gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+        
+            # gzip_vary on;
+            # gzip_proxied any;
+            # gzip_comp_level 6;
+            # gzip_buffers 16 8k;
+            # gzip_http_version 1.1;
+        """
 
         if ssl_crt:
             frontends.append(f"""
@@ -294,6 +309,8 @@ def create(base_dir, pid_dir):
                     
                     ## add_header Strict-Transport-Security "max-age={year}; includeSubdomains";  
                     
+                    {gzip}
+
                     {web_common}
                 }}
             """)
@@ -304,14 +321,7 @@ def create(base_dir, pid_dir):
                     listen 80 default_server;
                     listen [::]:80 default_server;
     
-                    gzip on;
-                
-                    # gzip_vary on;
-                    # gzip_proxied any;
-                    # gzip_comp_level 6;
-                    # gzip_buffers 16 8k;
-                    # gzip_http_version 1.1;
-                    # gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+                    {gzip}
                     
                     {web_common}
                     
@@ -423,7 +433,7 @@ def create(base_dir, pid_dir):
             include /etc/nginx/mime.types;
             default_type application/octet-stream;
         
-            ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+            ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
             ssl_prefer_server_ciphers on;
         
             {frontends}

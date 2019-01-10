@@ -43,10 +43,10 @@ def _read2(path):
 
 
 def load_spec(kind, lang=None):
-    path = f'{gws.APP_DIR}/spec/{kind}.spec.json'
+    path = f'{gws.APP_DIR}/spec/gen/{kind}.spec.json'
 
     if lang and lang != 'en':
-        p = f'{gws.APP_DIR}/spec/{lang}.{kind}.spec.json'
+        p = f'{gws.APP_DIR}/spec/gen/{lang}.{kind}.spec.json'
         if os.path.exists(p):
             path = p
 

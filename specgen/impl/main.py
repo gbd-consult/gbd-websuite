@@ -30,7 +30,7 @@ def run(source_dir, out_dir, VERSION):
 
     def _merge_docs(spc, what, lang):
 
-        docfile = out_dir + '/lang/' + lang + '.' + what + '.doc.json'
+        docfile = out_dir + '/../lang/' + lang + '.' + what + '.doc.json'
         with open(docfile) as fp:
             docs = json.load(fp)
 
