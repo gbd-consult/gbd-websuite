@@ -21,8 +21,8 @@ help:
 	@echo "client-dev  - start the Client dev server"
 	@echo "doc         - build the Docs in doc/_build"
 	@echo "doc-dev     - start the Docs dev server"
-	@echo "image       - build the Docker Image (with opt. IMAGE=NAME=...)"
-	@echo "image-debug - build the debug Docker Image (with opt. IMAGE=NAME=...)"
+	@echo "image       - build the Docker Image (with optional IMAGE_NAME=...)"
+	@echo "image-debug - build the debug Docker Image (with optional IMAGE_NAME=...)"
 	@echo ""
 
 

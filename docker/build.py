@@ -5,7 +5,7 @@ import sys
 
 
 class ENV:
-    VERSION = ''
+    pass
 
 
 def main(argv):
@@ -36,6 +36,9 @@ def init(argv):
     with open(ENV.BASE_DIR + '/VERSION') as fp:
         ENV.VERSION = fp.read().strip()
 
+    v = ENV.VERSION.split('.')
+    ENV.SHORT_VERSION = v[0] + '.' + v[1]
+
     # MODE is debug or release
 
     ENV.MODE = 'release'
@@ -45,9 +48,9 @@ def init(argv):
         pass
 
     if ENV.MODE == 'release':
-        ENV.IMAGE_NAME = _f('gbdconsult/gws-server:{VERSION}')
+        ENV.IMAGE_NAME = _f('gbdconsult/gws-server:{SHORT_VERSION}')
     elif ENV.MODE == 'debug':
-        ENV.IMAGE_NAME = _f('gbdconsult/gws-server-debug:{VERSION}')
+        ENV.IMAGE_NAME = _f('gbdconsult/gws-server-debug:{SHORT_VERSION}')
     else:
         print('invalid mode')
         sys.exit(255)
@@ -76,19 +79,23 @@ def prepare():
     run("curl -L '{ALKISPLUGIN_URL}' -o {ALKISPLUGIN_DIR}.tar.gz")
     run("tar xzvf {ALKISPLUGIN_DIR}.tar.gz")
 
-    run("rsync -a --exclude-from='{BASE_DIR}/.gitignore' {BASE_DIR}/app .")
+    ignore = list(lines_from(ENV.BASE_DIR + '/.gitignore'))
+    # although these dirs are in .gitignore, we still need to sync them
+    ignore.remove('/app/spec/gen')
+    ignore.remove('/app/web/gws-client')
+    with open('/tmp/gws-ignore', 'w') as fp:
+        fp.write('\n'.join(ignore))
+
+    run("rsync -a --exclude-from='/tmp/gws-ignore' {BASE_DIR}/app .")
 
     run("cp -r  {BASE_DIR}/data .")
 
-    run("mkdir -p data/www-root/gws-client")
-    run("mv {BASE_DIR}/client/_build/* data/www-root/gws-client")
-
-    with open('data/www-root/index.html') as fp:
+    with open('data/web/index.html') as fp:
         index_html = fp.read()
 
     index_html = index_html.replace('{gws.version}', ENV.VERSION)
 
-    with open('data/www-root/index.html', 'w') as fp:
+    with open('data/web/index.html', 'w') as fp:
         fp.write(index_html)
 
     ENV.APTS = ' '.join(lines_from(_f('{SCRIPT_DIR}/apt.lst')))
@@ -115,7 +122,7 @@ def dockerfile():
 
     df = """
         FROM  ubuntu:18.04
-        LABEL Description="GWS Server" Vendor="gbd-consult.de" Version="{VERSION}"
+        LABEL Description="GWS Server" Vendor="gbd-consult.de" Version="{SHORT_VERSION}"
         
         COPY {WKHTMLTOPDF_PATH} /
         
@@ -139,18 +146,6 @@ def dockerfile():
     ENV.COMMANDS = ' \\\n && '.join(lines(_f(commands)))
 
     return '\n'.join(lines(_f(df)))
-
-
-def lines(txt):
-    for s in txt.strip().splitlines():
-        s = s.strip()
-        if s and not s.startswith('#'):
-            yield s
-
-
-def lines_from(path):
-    with open(path) as fp:
-        return lines(fp.read())
 
 
 def run(cmd):
@@ -184,6 +179,18 @@ def load_const():
         exec(s)
     for k, v in locals().items():
         setattr(ENV, k, v)
+
+
+def lines(txt):
+    for s in txt.strip().splitlines():
+        s = s.strip()
+        if s and not s.startswith('#'):
+            yield s
+
+
+def lines_from(path):
+    with open(path) as fp:
+        return lines(fp.read())
 
 
 def _f(txt):

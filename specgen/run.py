@@ -21,7 +21,6 @@ if __name__ == '__main__':
 
     paths = [
         base + '/app/gws/core/const.py',
-        base + '/app/server-sample.sh',
         base + '/client/options.js',
         base + '/doc/sphinx/conf.py',
     ]
