@@ -40,7 +40,11 @@ def parse(srv: t.ServiceInterface, xml):
     root_group = _tree(root.first('layer-tree-group'), map_layers)
     srv.layers = u.flatten_source_layers(root_group.layers)
 
-    crs = gws.get(srv.properties, 'spatialrefsys.projectcrs')
+    if srv.version.startswith('2'):
+        crs = gws.get(srv.properties, 'spatialrefsys.projectcrs')
+    if srv.version.startswith('3'):
+        crs = root.get_text('projectcrs.spatialrefsys.authid')
+
     srv.supported_crs = [crs]
 
 
