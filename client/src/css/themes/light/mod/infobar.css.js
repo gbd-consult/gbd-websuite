@@ -135,7 +135,7 @@ module.exports = v => ({
         height: v.CONTROL_SIZE,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center center',
-        backgroundSize: [30, 30],
+        backgroundSize: [20, 20],
         ...v.LOCAL_SVG('gws_logo'),
     }
 
