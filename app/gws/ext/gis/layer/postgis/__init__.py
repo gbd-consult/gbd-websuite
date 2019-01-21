@@ -20,8 +20,6 @@ class Object(gws.gis.layer.Vector):
         with self.db.connect() as conn:
             self.crs = conn.crs_for_column(self.table.name, self.table.geometryColumn)
             self.geometry_type = conn.geometry_type_for_column(self.table.name, self.table.geometryColumn)
-        gws.p(self.crs)
-        gws.p(self.geometry_type)
 
     @property
     def props(self) -> gws.gis.layer.VectorProps:

@@ -72,6 +72,10 @@ module.exports = v => {
             {...common(sel), ...mark(sel), ...fill(sel)},
 
 
+        '.modAnnotateUpdateButton': {
+            ...v.ROUND_OK_BUTTON()
+        },
+
         '.modAnnotateSidebarIcon': {
             ...v.GOOGLE_SVG('action/speaker_notes', v.SIDEBAR_HEADER_COLOR)
         },

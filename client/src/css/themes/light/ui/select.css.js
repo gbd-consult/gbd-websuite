@@ -14,7 +14,7 @@ module.exports = v => ({
         padding: [0, v.UNIT2, 0, v.UNIT2],
 
         '&::placeholder': {
-            color: v.BORDER_COLOR
+            color: v.PLACEHOLDER_COLOR
         }
     },
 

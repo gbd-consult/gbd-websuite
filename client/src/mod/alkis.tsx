@@ -56,6 +56,7 @@ const STRINGS = {
     controlInput: 'Abrufgrund',
 
     submitButton: "Suchen",
+    lensButton: "Räumliche Suche",
     resetButton: "Neu",
     exportButton: "Exportieren",
 
@@ -339,11 +340,6 @@ class SearchForm extends gws.View<FsSearchProps> {
         });
 
 
-        let clear = () => cc.update({
-            alkisFsParams: {},
-            marker: null,
-        });
-
         let nameShowMode = '';
 
         if (setup.withEigentuemer)
@@ -474,7 +470,7 @@ class SearchForm extends gws.View<FsSearchProps> {
                 <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
-                        tooltip={STRINGS.resetButton}
+                        tooltip={STRINGS.lensButton}
                         whenTouched={() => cc.startLens()}
                     />
                 </Cell>
@@ -482,7 +478,7 @@ class SearchForm extends gws.View<FsSearchProps> {
                     <gws.ui.IconButton
                         className="cmpButtonFormCancel"
                         tooltip={STRINGS.resetButton}
-                        whenTouched={clear}
+                        whenTouched={() => cc.reset()}
                     />
                 </Cell>
             </Row>
@@ -1040,9 +1036,18 @@ class AlkisController extends gws.Controller {
         this.update({
             alkisFsResultCount: 0,
             alkisFsResults: [],
+            marker: null,
         });
-
     }
+
+    reset() {
+        this.update({
+            alkisFsParams: {},
+        });
+        this.clearResults();
+        this.stopLens();
+    }
+
 
     async startExport(fs: Array<gws.types.IMapFeature>) {
         this.update({
