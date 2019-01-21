@@ -1,4 +1,4 @@
-VERSION='1.0.0'
+VERSION='1.0.2'
 
 APP_DIR = '/gws-app'
 VAR_DIR = '/gws-var'
