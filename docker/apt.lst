@@ -21,7 +21,7 @@ libsasl2-dev
 # fonts
 
 libfreetype6-dev
-fonts-liberation
+fonts-dejavu-core
 
 # qgis
 
