@@ -7,14 +7,17 @@ module.exports = v => ({
     '.modEditorPointButton': {
         ...v.GOOGLE_SVG('communication/call_made')
     },
-    '.modEditorModifyButton': {
-        ...v.GOOGLE_SVG('content/gesture')
+    '.modEditorEditButton': {
+        ...v.LOCAL_SVG('cursor', v.SECONDARY_BUTTON_COLOR)
     },
     '.modEditorDrawButton': {
-        ...v.GOOGLE_SVG('content/add_circle_outline')
+        ...v.GOOGLE_SVG('content/add_circle_outline', v.SECONDARY_BUTTON_COLOR)
     },
     '.modEditorEndButton': {
         ...v.GOOGLE_SVG('action/done')
+    },
+    '.modEditorSaveButton': {
+        ...v.ROUND_OK_BUTTON(),
     },
 
 });

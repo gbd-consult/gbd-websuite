@@ -57,10 +57,8 @@ module.exports = v => ({
         }
     },
 
-    '.modLayersLayer.isSelected': {
-        '.uiItemButton': {
-            color: v.HIGHLIGHT_COLOR,
-        },
+    '.modLayersDetails': {
+        borderTop: [1, 'solid', v.BORDER_COLOR],
     },
 
     '.modLayersDetailsBody': {
@@ -74,20 +72,32 @@ module.exports = v => ({
 
 
     '.modLayersDetailsZoomButton': {
-        ...v.LOCAL_SVG('baseline-zoom_out_map-24px', v.TEXT_COLOR),
+        ...v.LOCAL_SVG('baseline-zoom_out_map-24px', v.SECONDARY_BUTTON_COLOR),
 
     },
     '.modLayersDetailsShowButton': {
-        ...v.GOOGLE_SVG('action/visibility_off', v.TEXT_COLOR),
+        ...v.GOOGLE_SVG('action/visibility_off', v.SECONDARY_BUTTON_COLOR),
 
     },
     '.modLayersDetailsEditButton': {
-        ...v.GOOGLE_SVG('image/edit', v.TEXT_COLOR)
+        ...v.GOOGLE_SVG('image/edit', v.SECONDARY_BUTTON_COLOR)
 
     },
-    '.modLayersDetailsCloseButton': {
-        ...v.GOOGLE_SVG('navigation/close', v.TEXT_COLOR),
 
+    '.modLayersTitle': {
+        lineHeight: 1.3,
+        overflow: 'hidden',
+        '.uiRawButton': {
+            textAlign: 'left',
+        }
     },
+
+    '.modLayersLayer.isSelected': {
+        '.modLayersTitle': {
+            color: v.HIGHLIGHT_COLOR,
+        },
+    },
+
+
 
 });

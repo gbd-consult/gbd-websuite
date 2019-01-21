@@ -547,7 +547,13 @@ class LayerObject(ObjectInterface, MapView):
     def get_features(self, bbox):
         raise NotImplementedError
 
-    def modify_features(self, operation, feature_params):
+    def add_features(self, features: List['FeatureProps']):
+        raise NotImplementedError
+
+    def update_features(self, features: List['FeatureProps']):
+        raise NotImplementedError
+
+    def delete_features(self, features: List['FeatureProps']):
         raise NotImplementedError
 
     def search(self, provider: 'SearchProviderInterface', args: 'SearchArgs') -> List['FeatureInterface']:
@@ -564,7 +570,7 @@ class StyleProps(Data):
 
     type: str  #: style type ("css")
     content: Optional[dict]  #: css rules
-    value: Optional[str]  #: raw style content
+    text: Optional[str]  #: raw style content
 
 
 class FeatureProps(Data):
@@ -584,7 +590,7 @@ class FormatConfig(Config):
     description: Optional[TemplateConfig]  #: template for feature descriptions
     category: formatstr = ''  #: feature category
     label: formatstr = ''  #: feature label on the map
-    model: Optional[dict]  #: attribute transformation rules
+    dataModel: Optional[List[AttributeConfig]]  #: attribute metadata
     teaser: Optional[TemplateConfig]  #: template for feature teasers (short descriptions)
     title: formatstr = ''  #: feature title
 
@@ -593,7 +599,7 @@ class FormatInterface(ObjectInterface):
     description: TemplateObject
     category: str
     label: str
-    data_model: dict
+    data_model: List[AttributeConfig]
     teaser: TemplateObject
     title: str
 
@@ -724,6 +730,7 @@ class SelectArgs(Data):
     shape: Optional[ShapeInterface]
     sort: Optional[str]
     table: SqlTableConfig
+    ids: Optional[List[str]]
     extraWhere: Optional[str]
 
 

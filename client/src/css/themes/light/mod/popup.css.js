@@ -23,7 +23,7 @@ module.exports = v => ({
     '.modPopupCloseButton': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.CLOSE_SVG(v.TEXT_COLOR),
+            ...v.CLOSE_ICON(v.TEXT_COLOR),
         },
     },
 

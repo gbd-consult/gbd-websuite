@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
-import * as sidebar from './sidebar';
+import * as sidebar from './common/sidebar';
 
 let {Row, Cell} = gws.ui.Layout;
 
@@ -18,10 +18,10 @@ class Title extends gws.View<ViewProps> {
             this.props.controller.map.deselectAllLayers();
             await this.props.controller.map.selectLayer(this.props.layer);
         };
-        return <gws.ui.ItemButton
-            className="modLayersLayerTitle"
+        return <gws.ui.Button
+            className="modLayersTitle"
             whenTouched={click}
-        >{this.props.layer.title}</gws.ui.ItemButton>
+        >{this.props.layer.title}</gws.ui.Button>
 
     }
 }
@@ -101,8 +101,8 @@ class TreeNode extends gws.View<ViewProps> {
 class LayerDetailsToolbar extends gws.View<ViewProps> {
     render() {
         let layer = this.props.layer,
-            ctrl = this.props.controller,
-            map = ctrl.map;
+            cc = this.props.controller,
+            map = cc.map;
 
         let f = {
             zoom() {
@@ -113,7 +113,7 @@ class LayerDetailsToolbar extends gws.View<ViewProps> {
                 map.setLayerVisible(layer, true)
             },
             edit() {
-                ctrl.update({
+                cc.update({
                     editorLayer: layer,
                     sidebarActiveTab: 'Sidebar.Editor',
                 });
@@ -123,7 +123,14 @@ class LayerDetailsToolbar extends gws.View<ViewProps> {
             }
         };
 
-        return <Row>
+        return <sidebar.SecondaryToolbar>
+            <Cell>
+                        <gws.ui.IconButton
+                            className="modSidebarSecondaryClose"
+                    tooltip={this.__('modLayersDetailsCloseButton')}
+                    whenTouched={f.close}
+                />
+            </Cell>
             <Cell flex/>
             <Cell>
                 <gws.ui.IconButton
@@ -146,14 +153,7 @@ class LayerDetailsToolbar extends gws.View<ViewProps> {
                     whenTouched={f.edit}
                 />
             </Cell>}
-            <Cell>
-                <gws.ui.IconButton
-                    className="modLayersDetailsCloseButton"
-                    tooltip={this.__('modLayersDetailsCloseButton')}
-                    whenTouched={f.close}
-                />
-            </Cell>
-        </Row>;
+        </sidebar.SecondaryToolbar>;
 
     }
 }
@@ -166,9 +166,9 @@ class LayerDetails extends gws.View<ViewProps> {
                     <gws.ui.TextBlock className="cmpDescription" withHTML content={this.props.layer.description}/>
                 </div>
             </div>
-            <div className="modSidebarSecondaryToolbar">
-                <LayerDetailsToolbar {...this.props} />
-            </div>
+
+            <LayerDetailsToolbar {...this.props} />
+
         </div>
     }
 }

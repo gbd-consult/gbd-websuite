@@ -54,6 +54,7 @@ class Shape(t.ShapeInterface):
 
     def __init__(self, geo, crs):
         self.crs = gws.gis.proj.as_epsg(crs)
+        self.crs_code = self.crs.split(':')[1]
         self.geo = geo
 
     @property

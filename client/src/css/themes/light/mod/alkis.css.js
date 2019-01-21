@@ -14,9 +14,35 @@ module.exports = v => ({
         },
     },
 
-    '.modAlkisExportButton': {
-        ...v.LOCAL_SVG('download'),
+    '.modAlkisLoading': {
+        textAlign: 'center',
+        color: v.DISABLED_COLOR,
+        padding: [v.UNIT2 * 8, v.UNIT4, v.UNIT4, v.UNIT4],
+        lineHeight: 1.3,
     },
+
+
+    '.modAlkisSubmitButton': {
+        ...v.GOOGLE_SVG('action/search', v.BUTTON_COLOR),
+        backgroundColor: v.BUTTON_BACKGROUND,
+        borderRadius: v.BORDER_RADIUS,
+        '&.isActive': {
+            backgroundColor: v.PRIMARY_BACKGROUND,
+
+
+        }
+
+    },
+
+    '.modAlkisLensButton': {
+        ...v.LOCAL_SVG('search_lens', v.BUTTON_COLOR),
+        backgroundColor: v.BUTTON_BACKGROUND,
+        borderRadius: v.BORDER_RADIUS,
+        '&.isActive': {
+            backgroundColor: v.PRIMARY_BACKGROUND,
+        }
+    },
+
 
     '.uiIconButton.modAlkisFeatureSelectIcon': {
         ...v.ICON('small'),
@@ -28,53 +54,47 @@ module.exports = v => ({
         ...v.GOOGLE_SVG('content/remove_circle_outline', v.FOCUS_COLOR),
     },
 
+    '.modAlkisExportButton': {
+        ...v.LOCAL_SVG('baseline-save_alt-24px', v.SECONDARY_BUTTON_COLOR),
+    },
+
+
     '.modAlkisHighlightButton': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('image/center_focus_weak'),
+        ...v.GOOGLE_SVG('image/center_focus_weak', v.SECONDARY_BUTTON_COLOR),
     },
 
     '.modAlkisSelectButton': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('content/add_circle_outline'),
+        ...v.GOOGLE_SVG('content/add_circle_outline', v.SECONDARY_BUTTON_COLOR),
+    },
+
+    '.modAlkisPrintButton': {
+        ...v.GOOGLE_SVG('action/print', v.SECONDARY_BUTTON_COLOR),
     },
 
     '.modAlkisSelectAllButton': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('content/add_circle_outline'),
+        ...v.GOOGLE_SVG('content/add_circle_outline', v.SECONDARY_BUTTON_COLOR),
     },
 
     '.modAlkisUnselectButton': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('content/remove_circle_outline'),
+        ...v.GOOGLE_SVG('content/remove_circle_outline', v.SECONDARY_BUTTON_COLOR),
     },
 
-
     '.modAlkisGotoSelectionButton': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('action/bookmark_border'),
-
-        '&.isDisabled': {
-            opacity: 0.5
-        }
+        ...v.GOOGLE_SVG('action/bookmark_border', v.SECONDARY_BUTTON_COLOR),
     },
 
     '.modAlkisGotoFormButton': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('communication/business'),
-
-        '&.isDisabled': {
-            opacity: 0.5
-        }
+        ...v.GOOGLE_SVG('communication/business', v.SECONDARY_BUTTON_COLOR),
     },
 
     '.modAlkisGotoListButton': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('action/reorder'),
-
-        '&.isDisabled': {
-            opacity: 0.5
-        }
+        ...v.GOOGLE_SVG('action/reorder', v.SECONDARY_BUTTON_COLOR),
     },
+
+    '.modAlkisClearSelectionButton': {
+        ...v.GOOGLE_SVG('action/delete_forever', v.SECONDARY_BUTTON_COLOR),
+    },
+
 
     '.modAlkisSelectionButtonDisabled': {
         ...v.ICON('small'),
@@ -85,31 +105,5 @@ module.exports = v => ({
         fontSize: v.TINY_FONT_SIZE
     },
 
-    '.modAlkisClearSelectionButton': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('action/delete_forever'),
-    },
-
-    '.modAlkisEmptyTab': {
-        textAlign: 'center',
-        padding:
-            30,
-        lineHeight:
-            1.3,
-        color:
-        v.BORDER_COLOR,
-
-        'a':
-            {
-                display: 'block',
-                marginTop:
-                    30,
-                color:
-                v.FOCUS_COLOR,
-                cursor:
-                    'pointer',
-            }
-
-    }
 
 });

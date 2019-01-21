@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as gws from 'gws';
 
-import * as sidebar from './sidebar';
+import * as sidebar from './common/sidebar';
 
 interface AuthProps extends gws.types.ViewProps {
     controller: SidebarUserTab;

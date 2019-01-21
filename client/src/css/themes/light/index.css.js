@@ -37,7 +37,10 @@ v.EVEN_STRIPE_COLOR = v.COLOR.lighten(v.COLOR.blueGrey50, 4);
 v.PRIMARY_BACKGROUND = v.FOCUS_COLOR;
 v.PRIMARY_COLOR = v.COLOR.white;
 
-v.CANCEL_BACKGROUND = v.COLOR.opacity(v.COLOR.grey900, 0.6);
+v.BUTTON_BACKGROUND = v.COLOR.blueGrey200;
+v.BUTTON_COLOR = v.COLOR.white;
+
+v.CANCEL_BACKGROUND = v.COLOR.blueGrey200;
 v.CANCEL_COLOR = v.COLOR.grey50;
 
 v.SELECTED_ITEM_BACKGROUND = v.COLOR.blue50;
@@ -54,18 +57,14 @@ v.BORDER_RADIUS = v.UNIT * 8;
 v.TOOLBAR_HEIGHT = v.CONTROL_SIZE + v.UNIT4;
 v.TOOLBAR_BACKGROUND = 'transparent';
 v.TOOLBAR_BUTTON_COLOR = v.COLOR.white;
-v.TOOLBAR_BUTTON_BACKGROUND = v.CANCEL_BACKGROUND;
-v.TOOLBAR_ACTIVE_BUTTON_BACKGROUND = v.COLOR.gbdBlue;
+v.TOOLBAR_BUTTON_BACKGROUND = v.COLOR.blueGrey300;
 v.TOOLBAR_ACTIVE_BUTTON_COLOR = v.COLOR.white;
-v.TOOLBAR_CLOSE_BUTTON_BACKGROUND = v.CANCEL_BACKGROUND;
-v.TOOLBAR_CLOSE_BUTTON_COLOR = v.CANCEL_COLOR;
-v.TOOLBAR_SEARCH_BACKGROUND = v.COLOR.opacity(v.COLOR.white, 0.9);
-v.TOOLBAR_SEARCH_TEXT = v.COLOR.grey50;
-v.TOOLBAR_SEARCH_WIDTH = 250;
+v.TOOLBAR_ACTIVE_BUTTON_BACKGROUND = v.COLOR.gbdBlue;
 
-v.TOOLBAR_TEXT_COLOR = v.COLOR.grey100;
+v.ALTBAR_WIDTH = v.UNIT * 50;
 
-v.SIDEBAR_WIDTH = 350;
+v.SIDEBAR_WIDTH = v.UNIT * 90;
+v.SIDEBAR_POPUP_WIDTH = v.UNIT * 50;
 v.SIDEBAR_HEADER_COLOR = v.COLOR.white;
 v.SIDEBAR_HEADER_BACKGROUND = v.COLOR.gbdBlue;
 v.SIDEBAR_BODY_BACKGROUND = v.COLOR.white;
@@ -73,9 +72,15 @@ v.SIDEBAR_ACTIVE_BUTTON_BACKGROUND = v.COLOR.opacity('white', 0.3);
 v.SIDEBAR_OPEN_BUTTON_BACKGROUND = v.TOOLBAR_BUTTON_BACKGROUND;
 v.SIDEBAR_OPEN_BUTTON_COLOR = v.TOOLBAR_BUTTON_COLOR;
 
-v.SECONDARY_TOOLBAR_BACKGROUND = v.COLOR.blueGrey50,
+v.DRAWBOX_BACKGROUND = v.COLOR.white;
+v.DRAWBOX_BUTTON_COLOR = v.COLOR.blueGrey300;
+v.DRAWBOX_ACTIVE_BUTTON_COLOR = v.COLOR.blue300;
 
-    v.POPUP_BACKGROUND = v.COLOR.white;
+v.SECONDARY_TOOLBAR_BACKGROUND = v.COLOR.blueGrey50;
+v.SECONDARY_BUTTON_COLOR = v.COLOR.blue300;
+v.SECONDARY_BUTTON_ACTIVE_COLOR = v.COLOR.blueGrey500;
+
+v.POPUP_BACKGROUND = v.COLOR.white;
 v.POPUP_COLOR = v.COLOR.grey800;
 v.POPUP_WIDTH = 300;
 
@@ -105,7 +110,6 @@ v.PRINT_BOX_BORDER = v.COLOR.gbdBlue;
 
 v.ZOOM_BOX_COLOR = v.COLOR.gbdBlue;
 
-v.DRAW_CONTROLS_BACKGROUND = v.COLOR.opacity(v.COLOR.grey900, 0.7);
 
 
 //
@@ -133,23 +137,21 @@ v.LOCAL_SVG = (name, color = v.ICON_COLOR) => ({
     'backgroundImage': helpers.localIcon(`themes/light/img/${name}.svg`, {color, size: iconSize.normal})
 });
 
-v.CLOSE_SVG = (color = v.ICON_COLOR) =>
-    v.GOOGLE_SVG('navigation/close', color);
+v.CLOSE_ICON = (color = v.ICON_COLOR) => v.GOOGLE_SVG('navigation/close', color);
+v.BACK_ICON = (color = v.ICON_COLOR) => v.GOOGLE_SVG('navigation/chevron_left', color);
+v.OK_ICON = (color = v.ICON_COLOR) => v.GOOGLE_SVG('navigation/check', color);
 
-
-v.OK_BUTTON = icon => ({
-    ...v.ICON('normal'),
-    ...v.GOOGLE_SVG(icon, v.PRIMARY_COLOR),
+v.ROUND_OK_BUTTON = (icon) => ({
+    ...v.GOOGLE_SVG(icon || 'navigation/check', v.PRIMARY_COLOR),
     backgroundColor: v.PRIMARY_BACKGROUND,
+    borderRadius: v.BORDER_RADIUS,
 });
 
-
-v.CANCEL = icon => ({
-    ...v.ICON('normal'),
+v.ROUND_CLOSE_BUTTON = (icon) => ({
     ...v.GOOGLE_SVG(icon || 'navigation/close', v.CANCEL_COLOR),
     backgroundColor: v.CANCEL_BACKGROUND,
-});
-
+    borderRadius: v.BORDER_RADIUS,
+})
 
 v.IMAGE = (path) =>
     helpers.dataUrl(`src/css/themes/light/img/${path}`);
@@ -187,20 +189,22 @@ let rules = [
     require('./ui/select.css'),
     require('./ui/slider.css'),
 
+    require('./components/buttons.css'),
     require('./components/sheet.css'),
     require('./components/description.css'),
     require('./components/feature.css'),
 
     require('./mod/alkis.css'),
+    require('./mod/altbar.css'),
+    require('./mod/annotate.css'),
     require('./mod/decorations.css'),
-    require('./mod/drawcontrols.css'),
+    require('./mod/draw.css'),
     require('./mod/editor.css'),
     require('./mod/identify.css'),
     require('./mod/infobar.css'),
     require('./mod/layers.css'),
     require('./mod/lens.css'),
     require('./mod/marker.css'),
-    require('./mod/measure.css'),
     require('./mod/overview.css'),
     require('./mod/popup.css'),
     require('./mod/print.css'),

@@ -18,26 +18,24 @@ class EditResponse(t.Response):
     features: t.List[t.FeatureProps]
 
 
-def _do_edit(operation, req, p: EditParams):
-    layer = req.require('gws.ext.gis.layer', p.layerUid, 'write')
-    layer.modify_features(operation, p.features)
-
-
 class Object(gws.Object):
-    def api_add_features(self, req, p: EditParams) -> t.Response:
+    def api_add_features(self, req, p: EditParams) -> EditResponse:
         """Add features to the layer"""
 
-        _do_edit('add', req, p)
-        return t.Response()
+        layer = req.require('gws.ext.gis.layer', p.layerUid, 'write')
+        fs = layer.add_features(p.features)
+        return EditResponse({'features': [f.props for f in fs]})
 
-    def api_delete_features(self, req, p: EditParams) -> t.Response:
+    def api_delete_features(self, req, p: EditParams) -> EditResponse:
         """Delete features from the layer"""
 
-        _do_edit('delete', req, p)
-        return t.Response()
+        layer = req.require('gws.ext.gis.layer', p.layerUid, 'write')
+        fs = layer.delete_features(p.features)
+        return EditResponse({'features': [f.props for f in fs]})
 
-    def api_update_features(self, req, p: EditParams) -> t.Response:
+    def api_update_features(self, req, p: EditParams) -> EditResponse:
         """Update features on the layer"""
 
-        _do_edit('update', req, p)
-        return t.Response()
+        layer = req.require('gws.ext.gis.layer', p.layerUid, 'write')
+        fs = layer.update_features(p.features)
+        return EditResponse({'features': [f.props for f in fs]})

@@ -1,13 +1,21 @@
 module.exports = v => ({
-    '.uiDialogBackdrop': {
+    '.uiDialogBackdrop, .uiPopupBackdrop': {
         position: 'absolute',
         left: 0,
         top: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         zIndex: 4,
     },
+
+    '.uiDialogBackdrop': {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    },
+
+    '.uiPopupBackdrop': {
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    },
+
 
     '.uiDialog': {
         position: 'absolute',
@@ -23,11 +31,15 @@ module.exports = v => ({
         },
     },
 
+    '.uiPopup': {
+        position: 'absolute',
+    },
+
     '.uiDialogCloseButton': {
         position: 'absolute',
         right: v.UNIT2,
         top: v.UNIT2,
-        ...v.CLOSE_SVG(),
+        ...v.CLOSE_ICON(),
     },
 
     '.uiDialogContent': {
@@ -62,7 +74,7 @@ module.exports = v => ({
         right: v.UNIT2,
         top: v.UNIT2,
         ...v.ICON('small'),
-        ...v.CLOSE_SVG(v.BORDER_COLOR),
+        ...v.CLOSE_ICON(v.BORDER_COLOR),
     },
 
 

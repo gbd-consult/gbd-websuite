@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
-import * as sidebar from './sidebar';
+import * as sidebar from './common/sidebar';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
@@ -128,8 +128,10 @@ class SidebarBody extends gws.View<ViewProps> {
                 {this.mapInfoBlock()}
             </sidebar.TabBody>
 
-            {desc && <sidebar.TabFooter className="modOverviewTabFooter">
-                <gws.ui.TextBlock className="cmpDescription" withHTML content={desc}/>
+            {desc && <sidebar.TabFooter>
+                <div  className="modOverviewTabFooter">
+                    <gws.ui.TextBlock className="cmpDescription" withHTML content={desc}/>
+                </div>
             </sidebar.TabFooter>}
 
 

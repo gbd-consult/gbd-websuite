@@ -22,6 +22,7 @@ module.exports = v => ({
 
 
     '.modOverviewTabFooter': {
+        borderTop: [1, 'solid', v.BORDER_COLOR],
         padding: v.UNIT4,
     },
 

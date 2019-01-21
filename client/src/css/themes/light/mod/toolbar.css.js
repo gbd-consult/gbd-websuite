@@ -1,5 +1,3 @@
-
-
 module.exports = v => ({
 
     '.modToolbar': {
@@ -12,74 +10,51 @@ module.exports = v => ({
         position: 'absolute',
         top: v.UNIT2,
         right: v.UNIT2,
+    },
 
-        '.modToolbarItem': {
-        },
+    '&.withAltbar .modToolbar': {
+        right: v.ALTBAR_WIDTH + v.UNIT * 16,
+    },
 
-        '.modToolbarGroup': {
-            display: 'flex',
-            flexDirection: 'row',
-
-            '&.isActive': {
-                '.modToolbarItem': {
-                    display: 'block'
-                },
-            },
-
-            '&.isInactive': {
-                '.modToolbarItem': {
-                    display: 'none'
-                },
-            },
-
-            '&.isNormal': {
-                '.modToolbarItem': {
-                    display: 'none'
-                },
-                '.modToolbarItem.isLastUsed': {
-                    display: 'block'
-                },
-            },
-        },
-
-        '.modToolbarItem .uiIconButton': {
+    '.modToolbarItem': {
+        '.uiIconButton': {
             borderRadius: v.BORDER_RADIUS,
-            backgroundColor: v.TOOLBAR_BUTTON_BACKGROUND,
+            backgroundColor: v.COLOR.opacity(v.TOOLBAR_BUTTON_BACKGROUND, 0.8),
             marginLeft: v.UNIT2,
             ...v.TRANSITION('all'),
             '&.isActive': {
                 backgroundColor: v.TOOLBAR_ACTIVE_BUTTON_BACKGROUND,
             },
         },
+    },
 
-        '.uiIconButton.modToolbarCancelButton': {
-            backgroundColor: v.TOOLBAR_CLOSE_BUTTON_BACKGROUND,
-            ...v.LOCAL_SVG('double-arrow', v.TOOLBAR_CLOSE_BUTTON_COLOR)
+    '.modToolbarOverflowButton.uiIconButton': {
+        ...v.GOOGLE_SVG('navigation/more_horiz', v.TOOLBAR_BUTTON_COLOR),
+        '&.isActive': {
+            backgroundColor: v.TOOLBAR_BUTTON_BACKGROUND,
+            transform: 'rotate(90deg)',
 
         },
+    },
 
-        '.uiSelect': {
-            '.uiMenu, &.isUp .uiMenu': {
-                backgroundColor: v.TOOLBAR_BACKGROUND,
-                borderWidth: 0,
-                borderRadius: [v.UNIT4, v.UNIT4, 0, 0],
+    '.modToolbarOverflowPopup': {
+        top: v.UNIT4 + v.CONTROL_SIZE + v.UNIT4,
+        padding: [v.UNIT2, v.UNIT2, v.UNIT2, 0],
+        backgroundColor: v.COLOR.white,
+        right: v.UNIT2,
+        cursor: 'default',
+        userSelect: 'none',
 
-            },
-            '.uiRawInput': {
-                color: v.TOOLBAR_TEXT_COLOR,
-            },
-            '.uiMenuItem': {
-                color: v.TOOLBAR_TEXT_COLOR,
-                '&:hover': {
-                    backgroundColor: v.COLOR.black,
-                },
-            },
-            '.uiControlBox': {
-                borderWidth: 0,
 
-            }
+        '.uiCell': {
+            padding: v.UNIT2,
         },
 
+    },
 
-    }
+    '&.withAltbar .modToolbarOverflowPopup': {
+        right: v.ALTBAR_WIDTH + v.UNIT * 16,
+    },
+
+
 });

@@ -85,7 +85,7 @@ class MarkerController extends gws.Controller {
 
         // @TODO does this belong here?
 
-        let ww = this.getValue('mediaWidth');
+        let ww = this.getValue('appMediaWidth');
         if (ww === 'xsmall' || ww === 'small')
             this.update({sidebarVisible: false});
 

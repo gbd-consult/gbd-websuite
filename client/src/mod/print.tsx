@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
-import * as toolbar from './toolbar';
+import * as toolbar from './common/toolbar';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
@@ -33,75 +33,121 @@ let allProps = [
     'printSnapshotHeight',
 ];
 
-interface PrintButtonProps extends ViewProps {
-    controller: PrintButton;
-    toolbarItem: gws.types.IController;
-}
+// interface PrintButtonProps extends ViewProps {
+//     controller: PrintButton;
+//     toolbarItem: gws.types.IController;
+// }
+//
+// class PrintButtonView extends gws.View<PrintButtonProps> {
+//     render() {
+//         let active = this.props.toolbarItem === this.props.controller;
+//         return <gws.ui.IconButton
+//             {...gws.tools.cls('modPrintButton', active && 'isActive')}
+//             tooltip={this.__('modPrintButton')}
+//             whenTouched={() => this.props.controller.touched()}
+//         />;
+//     }
+// }
 
-class PrintButtonView extends gws.View<PrintButtonProps> {
-    render() {
-        let active = this.props.toolbarItem === this.props.controller;
-        return <gws.ui.IconButton
-            {...gws.tools.cls('modPrintButton', active && 'isActive')}
-            tooltip={this.__('modPrintButton')}
-            whenTouched={() => this.props.controller.touched()}
-        />;
-    }
-}
-
-class PrintButton extends gws.Controller {
-    isToolbarButton = true;
-    parent: toolbar.Group;
-
-    touched() {
+class PrintTool extends gws.Controller implements gws.types.ITool {
+    start() {
         let master = this.app.controller(MASTER) as PrinterController;
-        this.update({
-            toolbarGroup: this.parent,
-            toolbarItem: this,
-        });
         master.startPrintPreview()
     }
 
-    get defaultView() {
-        return this.createElement(
-            this.connect(PrintButtonView, [...allProps, 'toolbarItem']));
-    }
-}
-
-interface SnapshotButtonProps extends ViewProps {
-    controller: SnapshotButton;
-    toolbarItem: gws.types.IController;
-}
-
-class SnapshotButtonView extends gws.View<SnapshotButtonProps> {
-    render() {
-        let active = this.props.toolbarItem === this.props.controller;
-        return <gws.ui.IconButton
-            {...gws.tools.cls('modSnapshotButton', active && 'isActive')}
-            tooltip={this.__('modSnapshotButton')}
-            whenTouched={() => this.props.controller.touched()}
-        />;
-    }
-}
-
-class SnapshotButton extends gws.Controller {
-    isToolbarButton = true;
-    parent: toolbar.Group;
-
-    touched() {
+    stop() {
         let master = this.app.controller(MASTER) as PrinterController;
-        this.update({
-            toolbarGroup: this.parent,
-            toolbarItem: this,
-        });
+        master.reset();
+
+    }
+}
+class SnapshotTool extends gws.Controller implements gws.types.ITool {
+    start() {
+        let master = this.app.controller(MASTER) as PrinterController;
         master.startSnapshotPreview()
     }
 
-    get defaultView() {
-        return this.createElement(
-            this.connect(SnapshotButtonView, [...allProps, 'toolbarItem']));
+    stop() {
+        let master = this.app.controller(MASTER) as PrinterController;
+        master.reset();
     }
 }
+
+
+class PrintToolButton extends toolbar.Button {
+    className = 'modPrintButton';
+    tool = 'Tool.Print.Print';
+
+    get tooltip() {
+        return this.__('modPrintButton');
+    }
+}
+
+class SnapshotToolButton extends toolbar.Button {
+    className = 'modSnapshotButton';
+    tool = 'Tool.Print.Snapshot';
+
+    get tooltip() {
+        return this.__('modSnapshotButton');
+    }
+}
+
+
+
+
+// class PrintButton extends gws.Controller {
+//     isToolbarButton = true;
+//     parent: toolbar.Group;
+//
+//     touched() {
+//         let master = this.app.controller(MASTER) as PrinterController;
+//         this.update({
+//             toolbarGroup: this.parent,
+//             toolbarItem: this,
+//         });
+//         master.startPrintPreview()
+//     }
+//
+//     get defaultView() {
+//         return this.createElement(
+//             this.connect(PrintButtonView, [...allProps, 'toolbarItem']));
+//     }
+// }
+//
+// interface SnapshotButtonProps extends ViewProps {
+//     controller: SnapshotButton;
+//     toolbarItem: gws.types.IController;
+// }
+//
+// class SnapshotButtonView extends gws.View<SnapshotButtonProps> {
+//     render() {
+//         let active = this.props.toolbarItem === this.props.controller;
+//         return <gws.ui.IconButton
+//             {...gws.tools.cls('modSnapshotButton', active && 'isActive')}
+//             tooltip={this.__('modSnapshotButton')}
+//             whenTouched={() => this.props.controller.touched()}
+//         />;
+//     }
+// }
+//
+// class SnapshotButton extends gws.Controller {
+//     isToolbarButton = true;
+//     parent: toolbar.Group;
+//
+//     touched() {
+//         let master = this.app.controller(MASTER) as PrinterController;
+//         this.update({
+//             toolbarGroup: this.parent,
+//             toolbarItem: this,
+//         });
+//         master.startSnapshotPreview()
+//     }
+//
+//     get defaultView() {
+//         return this.createElement(
+//             this.connect(SnapshotButtonView, [...allProps, 'toolbarItem']));
+//     }
+// }
 
 interface PreviewBoxProps extends ViewProps {
     controller: PrinterController;
@@ -249,7 +295,7 @@ class PreviewBox extends gws.View<PreviewBoxProps> {
                     <Cell>
                         <gws.ui.IconButton
                             {...gws.tools.cls('modPrintPreviewCancelButton')}
-                            whenTouched={() => this.props.controller.reset()}
+                            whenTouched={() => this.props.controller.app.startTool('DefaultTool')}
                             tooltip={this.__('modPrintCancel')}
                         />
                     </Cell>
@@ -432,6 +478,9 @@ class PrinterController extends gws.Controller {
 
     async init() {
         await super.init();
+        await this.app.addTool('Tool.Print.Print', this.app.createController(PrintTool, this));
+        await this.app.addTool('Tool.Print.Snapshot', this.app.createController(SnapshotTool, this));
+
         this.whenChanged('printJob', job => this.jobUpdated(job));
     }
 
@@ -613,6 +662,6 @@ class PrinterController extends gws.Controller {
 
 export const tags = {
     [MASTER]: PrinterController,
-    'Toolbar.Print': PrintButton,
-    'Toolbar.Snapshot': SnapshotButton,
+    'Toolbar.Print': PrintToolButton,
+    'Toolbar.Snapshot': SnapshotToolButton,
 };

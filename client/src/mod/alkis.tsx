@@ -1,9 +1,17 @@
 import * as React from 'react';
 import * as gws from 'gws';
 
-import * as sidebar from './sidebar';
+import * as sidebar from './common/sidebar';
+import * as lens from './common/lens';
 
 let {Form, Row, Cell} = gws.ui.Layout;
+
+const MASTER = 'Shared.Alkis';
+
+
+function _master(view) {
+    return view.props.controller.app.controller(MASTER) as AlkisController;
+}
 
 const STRINGS = {
 
@@ -67,65 +75,83 @@ const exportGroups = [
     ['nutzung', 'Nutzung'],
 ];
 
+type AlkisFsTab = 'form' | 'list' | 'details' | 'error' | 'selection' | 'export';
+
 interface FsSearchProps extends gws.types.ViewProps {
     controller: AlkisController;
 
-    alkisFsTab: 'form' | 'list' | 'details' | 'error' | 'selection' | 'export'
+    alkisFsTab: AlkisFsTab;
 
-    alkisFsSetup: gws.api.AlkisFsSetupResponse
+    alkisFsSetup: gws.api.AlkisFsSetupResponse;
 
-    alkisFsLoading: boolean
-    alkisFsError: string
+    alkisFsLoading: boolean;
+    alkisFsError: string;
 
-    alkisFsExportGroups: Array<string>
-    alkisFsExportFeatures: Array<gws.types.IMapFeature>
+    alkisFsExportGroups: Array<string>;
+    alkisFsExportFeatures: Array<gws.types.IMapFeature>;
 
-    alkisFsParams: gws.api.AlkisFsQueryParams
+    alkisFsParams: gws.api.AlkisFsQueryParams;
 
-    alkisFsStrassen: Array<gws.ui.MenuItem>
-    alkisFsGemarkungen: Array<gws.ui.MenuItem>
+    alkisFsStrassen: Array<gws.ui.MenuItem>;
+    alkisFsGemarkungen: Array<gws.ui.MenuItem>;
 
-    alkisFsResults: Array<gws.types.IMapFeature>,
-    alkisFsResultCount: number,
+    alkisFsResults: Array<gws.types.IMapFeature>;
+    alkisFsResultCount: number;
 
-    alkisFsDetailsFeature: gws.types.IMapFeature,
-    alkisFsDetailsText: string,
+    alkisFsDetailsFeature: gws.types.IMapFeature;
+    alkisFsDetailsText: string;
 
-    alkisFsSelection: Array<gws.types.IMapFeature>,
+    alkisFsSelection: Array<gws.types.IMapFeature>;
 
-    lensGeometryType: string;
+    features?: Array<gws.types.IMapFeature>;
+    appActiveTool: string;
 
 }
 
-interface FsSearchPropsWithFeatures extends FsSearchProps {
-    features: Array<gws.types.IMapFeature>,
-}
+const FsSearchStoreKeys = [
+    'alkisFsTab',
+    'alkisFsSetup',
+    'alkisFsLoading',
+    'alkisFsError',
+    'alkisFsExportGroups',
+    'alkisFsExportFeatures',
+    'alkisFsParams',
+    'alkisFsStrassen',
+    'alkisFsGemarkungen',
+    'alkisFsResults',
+    'alkisFsResultCount',
+    'alkisFsDetailsFeature',
+    'alkisFsDetailsText',
+    'alkisFsSelection',
+    'appActiveTool',
+];
 
 function featureIn(fs: Array<gws.types.IMapFeature>, f: gws.types.IMapFeature) {
     return fs.some(g => g.uid === f.uid);
 }
 
-class ExportCell extends gws.View<FsSearchPropsWithFeatures> {
+class ExportCell extends gws.View<FsSearchProps> {
     render() {
         if (!this.props.alkisFsSetup.withExport || this.props.features.length === 0)
             return null;
         return <Cell>
             <gws.ui.IconButton
                 className="modAlkisExportButton"
-                whenTouched={() => this.props.controller.startExport(this.props.features)}
+                whenTouched={() => _master(this).startExport(this.props.features)}
                 tooltip={STRINGS.exportTitle}
             />
         </Cell>;
     }
 }
 
-class PrintCell extends gws.View<FsSearchPropsWithFeatures> {
+class PrintCell extends gws.View<FsSearchProps> {
     render() {
         if (!this.props.alkisFsSetup.printTemplate || this.props.features.length === 0)
             return null;
         return <Cell>
-            <gws.ui.PrintButton
-                whenTouched={() => this.props.controller.startPrint(this.props.features)}
+            <gws.ui.IconButton
+                className="modAlkisPrintButton"
+                whenTouched={() => _master(this).startPrint(this.props.features)}
                 tooltip={STRINGS.print}
 
             />
@@ -133,14 +159,14 @@ class PrintCell extends gws.View<FsSearchPropsWithFeatures> {
     }
 }
 
-class HighlightCell extends gws.View<FsSearchPropsWithFeatures> {
+class HighlightCell extends gws.View<FsSearchProps> {
     render() {
         if (!this.props.alkisFsSetup.printTemplate || this.props.features.length === 0)
             return null;
         return <Cell>
             <gws.ui.IconButton
                 className="modAlkisHighlightButton"
-                whenTouched={() => this.props.controller.highlightMany(this.props.features)}
+                whenTouched={() => _master(this).highlightMany(this.props.features)}
                 tooltip={STRINGS.highlight}
 
             />
@@ -148,14 +174,14 @@ class HighlightCell extends gws.View<FsSearchPropsWithFeatures> {
     }
 }
 
-class SelectAllCell extends gws.View<FsSearchPropsWithFeatures> {
+class SelectAllCell extends gws.View<FsSearchProps> {
     render() {
         if (!this.props.alkisFsSetup.withSelect)
             return null;
         return <Cell>
             <gws.ui.IconButton
                 className="modAlkisSelectAllButton"
-                whenTouched={() => this.props.controller.select(this.props.features)}
+                whenTouched={() => _master(this).select(this.props.features)}
                 tooltip={STRINGS.selectAll}
 
             />
@@ -163,19 +189,19 @@ class SelectAllCell extends gws.View<FsSearchPropsWithFeatures> {
     }
 }
 
-class ToggleSelectionCell extends gws.View<FsSearchPropsWithFeatures> {
+class ToggleSelectionCell extends gws.View<FsSearchProps> {
     render() {
         if (!this.props.alkisFsSetup.withSelect)
             return null;
 
-        let cc = this.props.controller,
+        let cc = _master(this),
             feature = this.props.features[0];
 
         if (cc.isSelected(feature))
             return <Cell>
                 <gws.ui.IconButton
                     className="modAlkisUnselectButton"
-                    whenTouched={() => this.props.controller.unselect([feature])}
+                    whenTouched={() => _master(this).unselect([feature])}
                     tooltip={STRINGS.unselect}
                 />
             </Cell>;
@@ -183,7 +209,7 @@ class ToggleSelectionCell extends gws.View<FsSearchPropsWithFeatures> {
             return <Cell>
                 <gws.ui.IconButton
                     className="modAlkisSelectButton"
-                    whenTouched={() => this.props.controller.select([feature])}
+                    whenTouched={() => _master(this).select([feature])}
                     tooltip={STRINGS.select}
                 />
             </Cell>;
@@ -192,11 +218,10 @@ class ToggleSelectionCell extends gws.View<FsSearchPropsWithFeatures> {
 
 class GotoFormCell extends gws.View<FsSearchProps> {
     render() {
-        let dis = this.props.alkisFsTab === 'form';
         return <Cell>
             <gws.ui.IconButton
-                {...gws.tools.cls('modAlkisGotoFormButton', dis && 'isDisabled')}
-                whenTouched={() => !dis && this.props.controller.goTo('form')}
+                {...gws.tools.cls('modAlkisGotoFormButton', this.props.alkisFsTab === 'form' && 'isActive')}
+                whenTouched={() => _master(this).goTo('form')}
                 tooltip={STRINGS.gotoForm}
             />
         </Cell>
@@ -205,11 +230,10 @@ class GotoFormCell extends gws.View<FsSearchProps> {
 
 class GotoListCell extends gws.View<FsSearchProps> {
     render() {
-        let dis = this.props.alkisFsTab === 'list' || gws.tools.empty(this.props.alkisFsResults);
         return <Cell>
             <gws.ui.IconButton
-                {...gws.tools.cls('modAlkisGotoListButton', dis && 'isDisabled')}
-                whenTouched={() => !dis && this.props.controller.goTo('list')}
+                {...gws.tools.cls('modAlkisGotoListButton', this.props.alkisFsTab === 'list' && 'isActive')}
+                whenTouched={() => _master(this).goTo('list')}
                 tooltip={STRINGS.gotoList}
             />
         </Cell>
@@ -221,14 +245,13 @@ class GotoSelectionCell extends gws.View<FsSearchProps> {
         if (!this.props.alkisFsSetup.withSelect)
             return null;
 
-        let dis = gws.tools.empty(this.props.alkisFsSelection);
         let sel = this.props.alkisFsSelection || [];
 
         return <Cell>
             <gws.ui.IconButton
-                {...gws.tools.cls('modAlkisGotoSelectionButton', dis && 'isDisabled')}
+                {...gws.tools.cls('modAlkisGotoSelectionButton', this.props.alkisFsTab === 'selection' && 'isActive')}
                 badge={sel.length ? String(sel.length) : null}
-                whenTouched={() => !dis && this.props.controller.goTo('selection')}
+                whenTouched={() => _master(this).goTo('selection')}
                 tooltip={STRINGS.gotoSelection}
             />
         </Cell>
@@ -253,28 +276,10 @@ class ClearSelectionCell extends gws.View<FsSearchProps> {
         return <Cell>
             <gws.ui.IconButton
                 className="modAlkisClearSelectionButton"
-                whenTouched={() => this.props.controller.clearSelection()}
+                whenTouched={() => _master(this).clearSelection()}
                 tooltip={STRINGS.clearSelection}
             />
         </Cell>
-    }
-}
-
-// class BackCell extends gws.View<FsSearchProps> {
-//     render() {
-//         return <Cell>
-//             <gws.ui.BackButton
-//                 whenTouched={() => this.props.controller.goBack()}
-//                 tooltip={STRINGS.goBack}
-//
-//             />
-//         </Cell>
-//     }
-// }
-
-class Bar2 extends React.PureComponent<{}> {
-    render() {
-        return <Row className="modSidebarSecondaryToolbar">{this.props.children}</Row>
     }
 }
 
@@ -285,7 +290,7 @@ class LoaderTab extends React.PureComponent<{}> {
                 <gws.ui.Title content={STRINGS.formTitle}/>
             </sidebar.TabHeader>
             <sidebar.TabBody>
-                <div className="modAlkisEmptyTab">
+                <div className="modAlkisLoading">
                     {STRINGS.loading}
                     <gws.ui.Loader/>
                 </div>
@@ -296,7 +301,7 @@ class LoaderTab extends React.PureComponent<{}> {
 
 class ErrorTab extends gws.View<FsSearchProps> {
     render() {
-        let cc = this.props.controller;
+        let cc = _master(this);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -310,11 +315,11 @@ class ErrorTab extends gws.View<FsSearchProps> {
                 </div>
             </sidebar.TabBody>
             <sidebar.TabFooter>
-                <Bar2>
+                <sidebar.SecondaryToolbar>
                     <Navigation {...this.props}/>
                     <Cell flex/>
                     <GotoSelectionCell {...this.props}/>
-                </Bar2>
+                </sidebar.SecondaryToolbar>
             </sidebar.TabFooter>
 
         </sidebar.Tab>
@@ -324,20 +329,18 @@ class ErrorTab extends gws.View<FsSearchProps> {
 class SearchForm extends gws.View<FsSearchProps> {
 
     render() {
-        let cc = this.props.controller,
+        let cc = _master(this),
             setup = this.props.alkisFsSetup;
 
         let boundTo = param => ({
             value: this.props.alkisFsParams[param],
             whenChanged: value => cc.updateFsParams({[param]: value}),
-            whenEntered: submit
+            whenEntered: () => cc.search()
         });
 
-        let submit = () => cc.search();
 
         let clear = () => cc.update({
             alkisFsParams: {},
-            lensGeometryType: null,
             marker: null,
         });
 
@@ -458,69 +461,32 @@ class SearchForm extends gws.View<FsSearchProps> {
             </Row>}
             <Row>
                 <Cell flex/>
-                <Cell width={80}>
-                    <gws.ui.TextButton
-                        primary
-                        whenTouched={submit}
-                    >{STRINGS.submitButton}</gws.ui.TextButton>
-                </Cell>
-                <Cell width={80}>
-                    <gws.ui.TextButton
-                        whenTouched={clear}
-                    >{STRINGS.resetButton}</gws.ui.TextButton>
-                </Cell>
-            </Row>
-        </Form>;
-    }
-}
-
-class SearchToolbar extends gws.View<FsSearchProps> {
-    render() {
-        let cc = this.props.controller;
-
-        let submit = geom => {
-            cc.updateFsParams({shape: cc.map.geom2shape(geom)});
-            cc.search();
-        };
-
-        let clicked = geometryType => {
-            cc.update({
-                lensGeometryType: geometryType,
-                lensCallback: geom => submit(geom)
-            })
-        };
-
-        let cancel = () => {
-            cc.updateFsParams({shape: null});
-            cc.update({
-                lensGeometryType: null,
-                lensCallback: null
-            })
-        };
-
-        let button = gt => <gws.ui.IconButton
-            {...gws.tools.cls('modLensButton' + gt, gt === this.props.lensGeometryType && 'isActive')}
-            tooltip={this.props.controller.__('modLensButton' + gt)}
-            whenTouched={() => clicked(gt)}
-        />;
-
-        return <div className="modAlkisLensToolbar">
-            <Row>
-                <Cell flex/>
-                {button('Point')}
-                {button('LineString')}
-                {button('Box')}
-                {button('Polygon')}
-                {button('Circle')}
                 <Cell>
                     <gws.ui.IconButton
-                        className="modLensCancelButton"
-                        whenTouched={() => cancel()}
-                        tooltip={this.props.controller.__('modLensButtonCancel')}
+                        {...gws.tools.cls('modAlkisSubmitButton', this.props.appActiveTool !== 'Tool.Alkis.Lens' && 'isActive')}
+                        tooltip={STRINGS.submitButton}
+                        whenTouched={() => {
+                            cc.stopLens();
+                            cc.search();
+                            }}
+                    />
+                </Cell>
+                <Cell>
+                    <gws.ui.IconButton
+                        {...gws.tools.cls('modAlkisLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
+                        tooltip={STRINGS.resetButton}
+                        whenTouched={() => cc.startLens()}
+                    />
+                </Cell>
+                <Cell>
+                    <gws.ui.IconButton
+                        className="cmpButtonFormCancel"
+                        tooltip={STRINGS.resetButton}
+                        whenTouched={clear}
                     />
                 </Cell>
             </Row>
-        </div>;
+        </Form>;
     }
 }
 
@@ -533,14 +499,12 @@ class FormTab extends gws.View<FsSearchProps> {
 
             <sidebar.TabBody>
                 <SearchForm {...this.props} />
-                <SearchToolbar {...this.props} />
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
-                <Bar2>
+                <sidebar.SecondaryToolbar>
                     <Navigation {...this.props}/>
-                    <Cell flex/>
-                </Bar2>
+                </sidebar.SecondaryToolbar>
             </sidebar.TabFooter>
 
 
@@ -565,9 +529,16 @@ class ListTab extends gws.View<FsSearchProps> {
     }
 
     render() {
-        let cc = this.props.controller,
-            features = this.props.alkisFsResults,
-            empty = features.length === 0;
+        let cc = _master(this);
+        let features = this.props.alkisFsResults;
+
+        if (gws.tools.empty(features)) {
+
+            return <sidebar.EmptyTab>
+                {STRINGS.notFound}
+                <a onClick={() => cc.goTo('form')}>{STRINGS.backToForm}</a>
+            </sidebar.EmptyTab>
+        }
 
         let leftIcon = f => <gws.ui.IconButton
             className="cmpFeatureZoomIcon"
@@ -595,35 +566,28 @@ class ListTab extends gws.View<FsSearchProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                {
-                    empty
-                        ? <div className='modAlkisEmptyTab'>
-                            {STRINGS.notFound}
-                            <a onClick={() => cc.goTo('form')}>{STRINGS.backToForm}</a>
-                        </div>
-
-                        : <gws.components.feature.List
-                            controller={cc}
-                            features={features}
-                            item={f => <gws.ui.Link
-                                whenTouched={() => cc.showDetails(f)}
-                                content={f.props.teaser}
-                            />}
-                            isSelected={f => cc.isSelected(f)}
-                            leftIcon={leftIcon}
-                            rightIcon={rightIcon}
-                        />
-                }
+                <gws.components.feature.List
+                    controller={cc}
+                    features={features}
+                    item={f => <gws.ui.Link
+                        whenTouched={() => cc.showDetails(f)}
+                        content={f.props.teaser}
+                    />}
+                    isSelected={f => cc.isSelected(f)}
+                    leftIcon={leftIcon}
+                    rightIcon={rightIcon}
+                />
             </sidebar.TabBody>
+
             <sidebar.TabFooter>
-                <Bar2>
+                <sidebar.SecondaryToolbar>
                     <Navigation {...this.props}/>
                     <Cell flex/>
                     <HighlightCell {...this.props} features={features}/>
                     <SelectAllCell {...this.props} features={features}/>
                     <ExportCell {...this.props} features={features}/>
                     <PrintCell {...this.props} features={features}/>
-                </Bar2>
+                </sidebar.SecondaryToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
     }
@@ -631,9 +595,16 @@ class ListTab extends gws.View<FsSearchProps> {
 
 class SelectionTab extends gws.View<FsSearchProps> {
     render() {
-        let cc = this.props.controller,
-            features = this.props.alkisFsSelection,
-            empty = features.length === 0;
+        let cc = _master(this),
+            features = this.props.alkisFsSelection;
+
+        if (gws.tools.empty(features)) {
+            return <sidebar.EmptyTab>
+                {STRINGS.noSelection}
+                <a onClick={() => cc.goTo('form')}>{STRINGS.backToForm}</a>
+            </sidebar.EmptyTab>;
+
+        }
 
         let leftIcon = f => <gws.ui.IconButton
             className="cmpFeatureZoomIcon"
@@ -651,35 +622,27 @@ class SelectionTab extends gws.View<FsSearchProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                {
-                    empty
+                <gws.components.feature.List
+                    controller={cc}
+                    features={features}
+                    item={f => <gws.ui.Link
+                        whenTouched={() => cc.showDetails(f)}
+                        content={f.props.teaser}
+                    />}
 
-                        ? <div className='modAlkisEmptyTab'>
-                            {STRINGS.noSelection}
-                        </div>
-
-                        : <gws.components.feature.List
-                            controller={cc}
-                            features={features}
-                            item={f => <gws.ui.Link
-                                whenTouched={() => cc.showDetails(f)}
-                                content={f.props.teaser}
-                            />}
-
-                            leftIcon={leftIcon}
-                            rightIcon={rightIcon}
-                        />
-                }
+                    leftIcon={leftIcon}
+                    rightIcon={rightIcon}
+                />
             </sidebar.TabBody>
             <sidebar.TabFooter>
-                <Bar2>
+                <sidebar.SecondaryToolbar>
                     <Navigation {...this.props}/>
                     <Cell flex/>
                     <HighlightCell {...this.props} features={features}/>
                     <ExportCell {...this.props} features={features}/>
                     <PrintCell {...this.props} features={features}/>
                     <ClearSelectionCell {...this.props} />
-                </Bar2>
+                </sidebar.SecondaryToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
     }
@@ -687,7 +650,7 @@ class SelectionTab extends gws.View<FsSearchProps> {
 
 class DetailsTab extends gws.View<FsSearchProps> {
     render() {
-        let cc = this.props.controller;
+        let cc = _master(this);
         let feature = this.props.alkisFsDetailsFeature;
 
         return <sidebar.Tab>
@@ -704,12 +667,12 @@ class DetailsTab extends gws.View<FsSearchProps> {
                 </div>
             </sidebar.TabBody>
             <sidebar.TabFooter>
-                <Bar2>
+                <sidebar.SecondaryToolbar>
                     <Navigation {...this.props}/>
                     <Cell flex/>
                     <PrintCell {...this.props} features={[feature]}/>
                     <ToggleSelectionCell {...this.props} features={[feature]}/>
-                </Bar2>
+                </sidebar.SecondaryToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
 
@@ -720,7 +683,7 @@ class ExportTab extends gws.View<FsSearchProps> {
     render() {
         let groups = this.props.alkisFsExportGroups;
 
-        let changed = (group, value) => this.props.controller.update({
+        let changed = (group, value) => _master(this).update({
             alkisFsExportGroups: groups.filter(g => g !== group).concat(value ? [group] : [])
         });
 
@@ -754,7 +717,7 @@ class ExportTab extends gws.View<FsSearchProps> {
                             <Cell width={120}>
                                 <gws.ui.TextButton
                                     primary
-                                    whenTouched={() => this.props.controller.submitExport(this.props.alkisFsExportFeatures)}
+                                    whenTouched={() => _master(this).submitExport(this.props.alkisFsExportFeatures)}
                                 >{STRINGS.exportButton}</gws.ui.TextButton>
                             </Cell>
                         </Row>
@@ -762,10 +725,9 @@ class ExportTab extends gws.View<FsSearchProps> {
                 </div>
             </sidebar.TabBody>
             <sidebar.TabFooter>
-                <Bar2>
+                <sidebar.SecondaryToolbar>
                     <Navigation {...this.props}/>
-                    <Cell flex/>
-                </Bar2>
+                </sidebar.SecondaryToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
 
@@ -799,8 +761,48 @@ class SidebarTab extends gws.View<FsSearchProps> {
     }
 }
 
-class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
+class AlkisLensTool extends lens.Tool {
+    get master() {
+        return this.app.controller(MASTER) as AlkisController;
 
+    }
+
+    async whenChanged(geom) {
+        console.log('MASTER', this.master)
+        this.master.updateFsParams({shape: this.map.geom2shape(geom)});
+        await this.master.search();
+    }
+
+    stop() {
+        super.stop();
+        this.master.updateFsParams({shape: null});
+    }
+}
+
+class AlkisSidebarController extends gws.Controller implements gws.types.ISidebarItem {
+    get iconClass() {
+        return 'modAlkisSidebarIcon';
+    }
+
+    get tooltip() {
+        return this.__('modAlkisTooltip');
+    }
+
+    get tabView() {
+        let master = this.app.controller(MASTER) as AlkisController;
+        if (!master.setup)
+            return <sidebar.EmptyTab>
+                {STRINGS.noData}
+            </sidebar.EmptyTab>;
+
+        return this.createElement(
+            this.connect(SidebarTab, FsSearchStoreKeys));
+    }
+
+}
+
+class AlkisController extends gws.Controller {
+    uid = MASTER;
     setup: gws.api.AlkisFsSetupResponse;
     history: Array<string>;
 
@@ -822,6 +824,9 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
             this.setup = null;
             return;
         }
+
+        await this.app.addTool('Tool.Alkis.Lens', this.app.createController(AlkisLensTool, this));
+
 
         this.setup = res;
         this.history = [];
@@ -873,6 +878,14 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
         });
     };
 
+    startLens() {
+        this.app.startTool('Tool.Alkis.Lens');
+    }
+
+    stopLens() {
+        this.app.stopTool('Tool.Alkis.Lens');
+    }
+
     async search() {
 
         this.update({alkisFsLoading: true});
@@ -909,7 +922,7 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
             }
         });
 
-        return this.goTo('list');
+        this.goTo('list');
     }
 
     paramsForFeatures(fs: Array<gws.types.IMapFeature>) {
@@ -1023,6 +1036,14 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
         });
     }
 
+    clearResults() {
+        this.update({
+            alkisFsResultCount: 0,
+            alkisFsResults: [],
+        });
+
+    }
+
     async startExport(fs: Array<gws.types.IMapFeature>) {
         this.update({
             alkisFsExportFeatures: fs
@@ -1058,51 +1079,9 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
         }
     }
 
-    goBack() {
-        console.log(this.history)
-        this.history.pop();
-        this.goTo(this.history.pop() || 'form')
-        // this.update({
-        //     alkisFsTab: tab
-        // })
-    }
-
-    get iconClass() {
-        return 'modAlkisSidebarIcon';
-    }
-
-    get tooltip() {
-        return this.__('modAlkisTooltip');
-    }
-
-    get tabView() {
-        if (!this.setup)
-            return <div className="modSidebarEmptyTab">
-                {STRINGS.noData}
-            </div>;
-
-        return this.createElement(
-            this.connect(SidebarTab, [
-                    'alkisFsTab',
-                    'alkisFsSetup',
-                    'alkisFsLoading',
-                    'alkisFsError',
-                    'alkisFsExportGroups',
-                    'alkisFsExportFeatures',
-                    'alkisFsParams',
-                    'alkisFsStrassen',
-                    'alkisFsGemarkungen',
-                    'alkisFsResults',
-                    'alkisFsResultCount',
-                    'alkisFsDetailsFeature',
-                    'alkisFsDetailsText',
-                    'alkisFsSelection',
-                    'lensGeometryType',
-                ]
-            ));
-    }
 }
 
 export const tags = {
-    'Sidebar.Alkis': AlkisController,
+    [MASTER]: AlkisController,
+    'Sidebar.Alkis': AlkisSidebarController,
 };

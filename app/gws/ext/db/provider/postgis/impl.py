@@ -6,6 +6,7 @@ import psycopg2.extras
 import psycopg2.sql
 
 import gws
+import gws.gis.shape
 
 # noinspection PyArgumentList
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
@@ -104,6 +105,18 @@ class Connection:
             [schema, table, column])
         return 'EPSG:%s' % r['n']
 
+    def geometry_type_for_column(self, table, column):
+        schema, table = self.schema_and_table(table)
+        r = self.select_one('''
+            SELECT type 
+            FROM geometry_columns 
+            WHERE 
+                f_table_schema = %s
+                AND f_table_name = %s 
+                AND f_geometry_column = %s    
+        ''', [schema, table, column])
+        return str(r['type']).upper()
+
     def table_names(self, schema):
         rs = self.select('''
             SELECT table_name 
@@ -123,20 +136,60 @@ class Connection:
 
         return {r['column_name']: r['data_type'] for r in rs}
 
-    def insert_one(self, table, data):
-        cols = data.keys()
-        sql = 'INSERT INTO %s (%s) VALUES (%s)' % (
-            self.quote_table(table),
-            ','.join(self.quote_ident(c) for c in cols),
-            ','.join('%s' for _ in cols),
-        )
-        return self.exec(sql, [data[c] for c in cols])
+    def insert_one(self, table, key_column, data):
+        fields = []
+        placeholders = []
+        values = []
+
+        for k, v in data.items():
+            fields.append(self.quote_ident(k))
+            if isinstance(v, (list, tuple)):
+                placeholders.append(v[0])
+                values.extend(v[1:])
+            else:
+                placeholders.append('%s')
+                values.append(v)
+
+        sql = f'''
+            INSERT INTO {self.quote_table(table)} 
+            ({_comma(fields)}) 
+            VALUES ({_comma(placeholders)})
+            RETURNING {self.quote_ident(key_column)}
+        '''
+
+        with self.conn.cursor() as cur:
+            self._exec(cur, sql, values)
+            return cur.fetchone()[0]
+
+    def update(self, table, key_column, key_value, data):
+        values = []
+        sets = []
+
+        for k, v in data.items():
+            if isinstance(v, (list, tuple)):
+                ph = v[0]
+                values.extend(v[1:])
+            else:
+                ph = '%s'
+                values.append(v)
+
+            sets.append(f'{self.quote_ident(k)}={ph}')
+
+        values.append(key_value)
+
+        sql = f'''
+            UPDATE {self.quote_table(table)} 
+            SET {_comma(sets)}
+            WHERE {self.quote_ident(key_column)}=%s
+        '''
+
+        return self.exec(sql, values)
 
     def batch_insert(self, table, data, page_size=100):
         all_cols = self.columns(table)
         cols = sorted(col for col in data[0] if col in all_cols)
-        template = '(' + ','.join(f'%({col})s' for col in cols) + ')'
-        cs = ','.join(cols)
+        template = '(' + _comma(f'%({col})s' for col in cols) + ')'
+        cs = _comma(cols)
         sql = f'INSERT INTO {self.quote_table(table)} ({cs}) VALUES %s'
 
         with self.conn.cursor() as cur:
@@ -164,3 +217,7 @@ class Connection:
 
     def quote_ident(self, s):
         return psycopg2.extensions.quote_ident(s, self.conn)
+
+
+def _comma(s):
+    return ','.join(s)

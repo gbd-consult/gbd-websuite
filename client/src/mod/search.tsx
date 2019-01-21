@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
-import * as sidebar from './sidebar';
+import * as sidebar from './common/sidebar';
 
 const MASTER = 'Shared.Search';
 
@@ -14,8 +14,18 @@ interface SearchViewProps extends gws.types.ViewProps {
     searchResults: Array<gws.types.IMapFeature>;
     searchWaiting: boolean;
     searchFailed: boolean;
+    searchbarVisible: boolean;
     master: SearchController;
 }
+
+const SearchStoreKeys = [
+    'searchInput',
+    'searchResults',
+    'searchWaiting',
+    'searchFailed',
+    'searchbarVisible',
+
+]
 
 class SearchResults extends gws.View<SearchViewProps> {
     render() {
@@ -68,19 +78,6 @@ class SearchBox extends gws.View<SearchViewProps> {
     }
 }
 
-class ToolbarView extends gws.View<SearchViewProps> {
-    render() {
-        return <React.Fragment>
-            <div className="modSearchToolbar">
-                <SearchBox {...this.props} />
-            </div>
-            <div className="modSearchToolbarResults">
-                <SearchResults {...this.props} />
-            </div>
-        </React.Fragment>
-    }
-}
-
 class SidebarView extends gws.View<SearchViewProps> {
     render() {
         return <sidebar.Tab className="modSearchSidebar">
@@ -96,11 +93,25 @@ class SidebarView extends gws.View<SearchViewProps> {
     }
 }
 
-class ToolbarSearch extends gws.Controller {
+class AltbarSearchView extends gws.View<SearchViewProps> {
+    render() {
+        return <React.Fragment>
+            <div className="modSearchAltbar">
+                <SearchBox {...this.props} />
+            </div>
+            <div className="modSearchAltbarResults">
+                <SearchResults {...this.props} />
+            </div>
+        </React.Fragment>
+    }
+}
+
+
+class AltbarSearch extends gws.Controller {
     get defaultView() {
         let master = this.app.controller(MASTER) as SearchController;
         return this.createElement(
-            this.connect(ToolbarView, ['searchInput', 'searchResults', 'searchWaiting', 'searchFailed']),
+            this.connect(AltbarSearchView, SearchStoreKeys),
             {master});
     }
 }
@@ -117,7 +128,7 @@ class SidebarSearch extends gws.Controller implements gws.types.ISidebarItem {
     get tabView() {
         let master = this.app.controller(MASTER) as SearchController;
         return this.createElement(
-            this.connect(SidebarView, ['searchInput', 'searchResults', 'searchWaiting', 'searchFailed']),
+            this.connect(SidebarView, SearchStoreKeys),
             {master});
     }
 }
@@ -140,6 +151,13 @@ class SearchController extends gws.Controller {
             this.timer = setTimeout(() => this.run(val), SEARCH_DEBOUNCE);
 
         });
+
+        this.whenChanged('appMediaWidth', v =>
+            this.update({
+                searchbarVisible: (v !== 'xsmall' && v !== 'small')
+            })
+        );
+
     }
 
     protected async run(val) {
@@ -197,6 +215,6 @@ class SearchController extends gws.Controller {
 export const tags = {
     [MASTER]: SearchController,
     'Sidebar.Search': SidebarSearch,
-    'Toolbar.Search': ToolbarSearch,
+    'Altbar.Search': AltbarSearch,
 };
 

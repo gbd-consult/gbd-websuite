@@ -33,26 +33,10 @@ module.exports = v => ({
     '.uiIconButton': {
         ...v.ICON('normal'),
     },
-
-    '.uiBackButton': {
-        ...v.GOOGLE_SVG('navigation/chevron_left'),
-    },
-
-    '.uiPrintButton': {
-        ...v.GOOGLE_SVG('action/print'),
-    },
-
-    '.uiItemButton': {
-        lineHeight: 1.3,
-        overflow: 'hidden',
-        '.uiRawButton': {
-            textAlign: 'left',
-        }
-    },
-
-    '.uiIconButton.isDisabled': {
-        opacity: 0.3,
-    },
+    //
+    // '.uiIconButton.isDisabled': {
+    //     opacity: 0.3,
+    // },
 
     '.uiButtonBadge': {
         position: 'absolute',
@@ -66,6 +50,7 @@ module.exports = v => ({
         backgroundColor: v.FOCUS_COLOR,
         textAlign: 'center',
         color: 'white',
+        pointerEvents: 'none',
     },
 
     '.uiDots': {
@@ -86,6 +71,6 @@ module.exports = v => ({
             },
 
         }
-    }
+    },
 
 });

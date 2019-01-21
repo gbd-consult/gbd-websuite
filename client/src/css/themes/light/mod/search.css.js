@@ -5,7 +5,7 @@ module.exports = v => ({
 
     '.modSearchClearButton.uiIconButton': {
         ...v.ICON('small'),
-        ...v.CLOSE_SVG(v.BORDER_COLOR),
+        ...v.CLOSE_ICON(v.BORDER_COLOR),
     },
 
     '.modSearchWaitButton.uiIconButton': {
@@ -24,14 +24,12 @@ module.exports = v => ({
         ...v.GOOGLE_SVG('action/search', v.BORDER_COLOR),
     },
 
-    '.modSearchToolbar': {
-        width: v.TOOLBAR_SEARCH_WIDTH + v.UNIT8,
+    '.modSearchAltbar': {
         borderRadius: v.BORDER_RADIUS,
-        backgroundColor: v.TOOLBAR_SEARCH_BACKGROUND,
-        margin: [0, v.UNIT4, 0, v.UNIT4],
+        backgroundColor: v.COLOR.white,
         //...v.SHADOW,
-        border: '1px solid ' + v.BORDER_COLOR,
-        zIndex: 1,
+        border: [1, 'solid', v.BORDER_COLOR],
+        //zIndex: 1,
 
     },
 
@@ -40,12 +38,11 @@ module.exports = v => ({
         maxWidth: v.CONTROL_SIZE,
     },
 
-    '.modSearchToolbarResults .modSearchResults': {
+    '.modSearchAltbarResults .modSearchResults': {
         position: 'absolute',
-        top: v.TOOLBAR_HEIGHT - v.UNIT2,
-        right: v.UNIT8,
+        left: v.UNIT4,
+        right: v.UNIT4,
         borderTopWidth: 0,
-        width: v.TOOLBAR_SEARCH_WIDTH,
         maxHeight: 300,
         ...v.SHADOW,
         overflow: 'auto',

@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
-import * as toolbar from './toolbar';
+import * as toolbar from './common/toolbar';
 
 abstract class BaseTool extends gws.Controller implements gws.types.ITool {
     abstract hoverMode;
@@ -89,7 +89,7 @@ class Master extends gws.Controller {
     // }
 }
 
-class ClickButton extends toolbar.ToolButton {
+class ClickButton extends toolbar.Button {
     className = 'modIdentifyClickButton';
     tool = 'Tool.Identify.Click';
 
@@ -99,7 +99,7 @@ class ClickButton extends toolbar.ToolButton {
 
 }
 
-class HoverButton extends toolbar.ToolButton {
+class HoverButton extends toolbar.Button {
     className = 'modIdentifyHoverButton';
     tool = 'Tool.Identify.Hover';
 
@@ -108,13 +108,8 @@ class HoverButton extends toolbar.ToolButton {
     }
 }
 
-class CancelButton extends toolbar.CancelButton {
-    tool = 'Tool.Identify.*';
-}
-
 export const tags = {
     'Shared.Identify': Master,
     'Toolbar.Identify.Click': ClickButton,
     'Toolbar.Identify.Hover': HoverButton,
-    'Toolbar.Identify.Cancel': CancelButton,
 };

@@ -57,6 +57,12 @@ class ProxiedConfig(BaseConfig):
     pass
 
 
+class VectorConfig(BaseConfig):
+    editStyle: t.Optional[t.StyleProps]  #: style for features being edited
+    style: t.Optional[t.StyleProps]  #: style for features
+    dataModel: t.Optional[t.List[t.AttributeConfig]]
+
+
 class BaseProps(t.Data):
     description: str = ''
     editable: t.Optional[bool]
@@ -68,6 +74,12 @@ class BaseProps(t.Data):
     title: str
     type: str
     uid: str
+
+
+class VectorProps(BaseProps):
+    style: t.Optional[t.StyleProps]
+    editStyle: t.Optional[t.StyleProps]
+    dataModel: t.Optional[t.List[t.AttributeConfig]]
 
 
 class Base(gws.PublicObject, t.LayerObject):
@@ -269,3 +281,19 @@ class Proxied(Base):
             'title': self.uid,
             'sources': [dst_cache]
         })
+
+
+class Vector(Base):
+    @property
+    def props(self):
+        return gws.extend(super().props, {
+            'style': self.var('style'),
+            'editStyle': self.var('editStyle'),
+            'dataModel': self.var('dataModel'),
+        })
+
+    def render_svg(self, bbox, dpi, scale, rotation, style):
+        features = self.get_features(bbox)
+        for f in features:
+            f.set_default_style(style)
+        return [f.to_svg(bbox, dpi, scale, rotation) for f in features]

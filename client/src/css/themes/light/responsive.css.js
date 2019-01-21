@@ -10,6 +10,15 @@ module.exports = v => ({
             width: v.SIDEBAR_WIDTH,
         }
     },
+
+    '.modSidebarOverflowPopup': {
+        right: v.UNIT4,
+        [v.MEDIA('small+')]: {
+            left: v.SIDEBAR_WIDTH - v.SIDEBAR_POPUP_WIDTH - v.UNIT4,
+            right: 'auto',
+        }
+    },
+
     '.modZoomInfobarBoxButton': {
         display: 'none',
         [v.MEDIA('large+')]: {
@@ -45,9 +54,22 @@ module.exports = v => ({
         }
     },
 
+    '.modDrawControlBox.isActive': {
+        left: 0,
+        top: 0,
+        right: 0,
+        [v.MEDIA('small+')]: {
+            left: 'auto',
+            width: 350,
+            right: v.UNIT4,
+            top: v.UNIT4,
+        }
+    },
+
+
     '.modSearchToolbar, .modSearchToolbarResults': {
         display: 'none',
-        [v.MEDIA('xlarge+')]: {
+        '.withSearchbar&': {
             display: 'block',
         }
     },
@@ -89,12 +111,12 @@ module.exports = v => ({
         },
     },
 
-    '.modSearchSidebarIcon, .modSearchSidebar': {
-        display: 'block',
-        [v.MEDIA('xlarge+')]: {
-            display: 'none',
-        }
-    },
+    // '.modSearchSidebarIcon, .modSearchSidebar': {
+    //     display: 'block',
+    //     [v.MEDIA('xlarge+')]: {
+    //         display: 'none',
+    //     }
+    // },
 
     '.modDecorationScaleRuler': {
         display: 'none',

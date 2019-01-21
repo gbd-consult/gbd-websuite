@@ -32,19 +32,11 @@ module.exports = v => ({
     },
 
     '.modPrintPreviewPrintButton': {
-        ...v.OK_BUTTON('action/print'),
-        borderRadius: v.CONTROL_SIZE,
+        ...v.ROUND_OK_BUTTON('action/print'),
     },
 
     '.modPrintPreviewSnapshotButton': {
-        ...v.OK_BUTTON('image/crop_original'),
-        borderRadius: v.CONTROL_SIZE,
-    },
-
-    '.modPrintPreviewCancelButton': {
-        ...v.CANCEL(),
-        borderRadius: v.CONTROL_SIZE,
-
+        ...v.ROUND_OK_BUTTON('image/crop_original'),
     },
 
     '.modPrintPreviewDialog': {
@@ -55,7 +47,7 @@ module.exports = v => ({
     },
 
     '&.withPrintPreview': {
-        '.modSidebar, .modPopup.isActive, .modToolbar, .modSidebarOpenButton': {
+        '.modSidebar, .modPopup, .modToolbar, .modSidebarOpenButton, .modAltbar': {
             display: 'none'
         },
     },

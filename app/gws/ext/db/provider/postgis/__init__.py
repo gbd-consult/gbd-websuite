@@ -68,7 +68,7 @@ class Object(gws.Object, t.DbProviderObject):
             kw = args.get('keyword')
             if kw and search_col:
                 kw = kw.lower().replace('%', '').replace('_', '')
-                where.append(f'"{search_col}" ILIKE %s')
+                where.append(f'{conn.quote_ident(search_col)} ILIKE %s')
                 parms.append('%' + kw + '%')
 
             crs = None
@@ -87,11 +87,17 @@ class Object(gws.Object, t.DbProviderObject):
                 parms.append(shape.wkb_hex)
                 parms.append(crs.split(':')[1])
 
-            if not where:
-                return []
+            ids = args.get('ids')
+            if ids:
+                ph = ','.join(['%s'] * len(ids))
+                where.append(f'{conn.quote_ident(key_col)} IN ({ph})')
+                parms.extend(ids)
 
             if args.get('extraWhere'):
                 where.append('(%s)' % args.extraWhere.replace('%', '%%'))
+
+            if not where:
+                return []
 
             where = ' AND '.join(where)
 
@@ -104,9 +110,9 @@ class Object(gws.Object, t.DbProviderObject):
 
             sql = f'SELECT * FROM {conn.quote_table(args.table.name)} WHERE {where} {sort} {limit}'
 
-            gws.log.debug(f'QUERY_START {sql} p={parms}')
+            gws.log.debug(f'SELECT_FEATURES_START {sql} p={parms}')
             recs = list(r for r in conn.select(sql, parms))
-            gws.log.debug(f'QUERY_END len={len(recs)}')
+            gws.log.debug(f'SELECT_FEATURES_END len={len(recs)}')
 
             features = []
 

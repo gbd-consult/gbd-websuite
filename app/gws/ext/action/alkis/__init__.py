@@ -484,7 +484,7 @@ class Object(gws.Object):
         }
 
         with self._connect() as conn:
-            conn.insert_one(self.log_table, data)
+            conn.insert_one(self.log_table, 'id', data)
 
         gws.log.debug('_log_eigentuemer_access', check, 'ok')
 

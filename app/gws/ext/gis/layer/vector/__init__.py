@@ -12,9 +12,8 @@ class Config(gws.gis.layer.BaseConfig):
     style: t.Optional[t.StyleProps]  #: style for features
 
 
-class LayerProps(gws.gis.layer.BaseProps):
-    style: t.Optional[t.StyleProps]
-    editStyle: t.Optional[t.StyleProps]
+class LayerProps(gws.gis.layer.VectorProps):
+    pass
 
 
 class Object(gws.gis.layer.Base):

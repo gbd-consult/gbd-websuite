@@ -101,7 +101,7 @@ class Feature(t.FeatureInterface):
             'geometry': geometry
         }
 
-    def apply_format(self, fmt):
+    def apply_format(self, fmt: t.FormatInterface):
         s = fmt.label
         if s:
             self.label = gws.tools.misc.format_placeholders(s, self.attributes)
@@ -122,9 +122,22 @@ class Feature(t.FeatureInterface):
         if s:
             self.teaser = s.render({'feature': self, 'attributes': self.attributes}).content
 
-        # @TODO data_model
+        s = fmt.data_model
+        if s:
+            self.attributes = self._validate_data(self.attributes, s)
 
         return self
+
+    def _validate_data(self, data, data_model):
+        # @TODO merge with printer
+        d = {}
+        for attr in data_model:
+            if attr.name in data:
+                # @TODO convert to type
+                d[attr.name] = gws.as_str(data[attr.name])
+
+        return d
+
 
     @property
     def props(self):

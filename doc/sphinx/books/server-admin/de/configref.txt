@@ -600,16 +600,16 @@ Box-Layer
    ~*cache*~, ~:ref:`server_admin_de_configref_gws_types_CacheConfig`~, ~Cache-Konfiguration~, ~nein~, ~~
    ~*clientOptions*~, ~:ref:`server_admin_de_configref_gws_gis_layer_ClientOptions`~, ~Optionen für die Layeranzeige im Client~, ~nein~, ~~
    ~*description*~, ~:ref:`server_admin_de_configref_gws_types_TemplateConfig`~, ~Vorlage für die Layerbeschreibung~, ~nein~, ~~
-   ~*display*~, ~``str``~, ~~, ~nein~, ~~
    ~*editable*~, ~``bool``~, ~Dieser Layer kann bearbeitet werden~, ~nein~, ~false~
    ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_de_configref_gws_types_FormatConfig`~, ~Objekt-Formatierungsoptionen~, ~nein~, ~~
    ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Rasterkonfiguration~, ~nein~, ~~
-   ~*layerFilter*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~nein~, ~~
    ~*legend*~, ~``url``~, ~legend url~, ~nein~, ~~
    ~*meta*~, ~:ref:`server_admin_de_configref_gws_types_MetaConfig`~, ~Layermetadaten~, ~nein~, ~~
    ~*opacity*~, ~``float``~, ~Layertransparenz~, ~nein~, ~~
    ~*search*~, ~:ref:`server_admin_de_configref_gws_common_search_Config`~, ~Layer-Suchkonfiguration~, ~nein~, ~~
+   ~*source*~, ~:ref:`server_admin_de_configref_gws_types_ext_gis_source_Config`~, ~Datenquelle für den Layer~, ~nein~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~Zu verwendende Quelllayer~, ~nein~, ~~
    ~*title*~, ~``str``~, ~Layertitel~, ~nein~, ~~
    ~*type*~, ~``str``~, ~"box"~, ~ja~, ~~
    ~*uid*~, ~``str``~, ~Eindeutige Layer-ID~, ~nein~, ~~
@@ -656,17 +656,17 @@ Gruppenlayer
    ~*cache*~, ~:ref:`server_admin_de_configref_gws_types_CacheConfig`~, ~Cache-Konfiguration~, ~nein~, ~~
    ~*clientOptions*~, ~:ref:`server_admin_de_configref_gws_gis_layer_ClientOptions`~, ~Optionen für die Layeranzeige im Client~, ~nein~, ~~
    ~*description*~, ~:ref:`server_admin_de_configref_gws_types_TemplateConfig`~, ~Vorlage für die Layerbeschreibung~, ~nein~, ~~
-   ~*display*~, ~``str``~, ~~, ~nein~, ~~
    ~*editable*~, ~``bool``~, ~Dieser Layer kann bearbeitet werden~, ~nein~, ~false~
    ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_de_configref_gws_types_FormatConfig`~, ~Objekt-Formatierungsoptionen~, ~nein~, ~~
    ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Rasterkonfiguration~, ~nein~, ~~
-   ~*layerFilter*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~nein~, ~~
    ~*layers*~, ~[:ref:`server_admin_de_configref_gws_types_ext_gis_layer_Config`...]~, ~Layer in dieser Gruppe~, ~ja~, ~~
    ~*legend*~, ~``url``~, ~legend url~, ~nein~, ~~
    ~*meta*~, ~:ref:`server_admin_de_configref_gws_types_MetaConfig`~, ~Layermetadaten~, ~nein~, ~~
    ~*opacity*~, ~``float``~, ~Layertransparenz~, ~nein~, ~~
    ~*search*~, ~:ref:`server_admin_de_configref_gws_common_search_Config`~, ~Layer-Suchkonfiguration~, ~nein~, ~~
+   ~*source*~, ~:ref:`server_admin_de_configref_gws_types_ext_gis_source_Config`~, ~Datenquelle für den Layer~, ~nein~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~Zu verwendende Quelllayer~, ~nein~, ~~
    ~*title*~, ~``str``~, ~Layertitel~, ~nein~, ~~
    ~*type*~, ~``str``~, ~"group"~, ~ja~, ~~
    ~*uid*~, ~``str``~, ~Eindeutige Layer-ID~, ~nein~, ~~
@@ -691,16 +691,16 @@ Blattlayer
    ~*cache*~, ~:ref:`server_admin_de_configref_gws_types_CacheConfig`~, ~Cache-Konfiguration~, ~nein~, ~~
    ~*clientOptions*~, ~:ref:`server_admin_de_configref_gws_gis_layer_ClientOptions`~, ~Optionen für die Layeranzeige im Client~, ~nein~, ~~
    ~*description*~, ~:ref:`server_admin_de_configref_gws_types_TemplateConfig`~, ~Vorlage für die Layerbeschreibung~, ~nein~, ~~
-   ~*display*~, ~``str``~, ~~, ~nein~, ~~
    ~*editable*~, ~``bool``~, ~Dieser Layer kann bearbeitet werden~, ~nein~, ~false~
    ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_de_configref_gws_types_FormatConfig`~, ~Objekt-Formatierungsoptionen~, ~nein~, ~~
    ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Rasterkonfiguration~, ~nein~, ~~
-   ~*layerFilter*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~nein~, ~~
    ~*legend*~, ~``url``~, ~legend url~, ~nein~, ~~
    ~*meta*~, ~:ref:`server_admin_de_configref_gws_types_MetaConfig`~, ~Layermetadaten~, ~nein~, ~~
    ~*opacity*~, ~``float``~, ~Layertransparenz~, ~nein~, ~~
    ~*search*~, ~:ref:`server_admin_de_configref_gws_common_search_Config`~, ~Layer-Suchkonfiguration~, ~nein~, ~~
+   ~*source*~, ~:ref:`server_admin_de_configref_gws_types_ext_gis_source_Config`~, ~Datenquelle für den Layer~, ~nein~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~Zu verwendende Quelllayer~, ~nein~, ~~
    ~*title*~, ~``str``~, ~Layertitel~, ~nein~, ~~
    ~*type*~, ~``str``~, ~"leaf"~, ~ja~, ~~
    ~*uid*~, ~``str``~, ~Eindeutige Layer-ID~, ~nein~, ~~
@@ -726,16 +726,16 @@ LayerOsmConfig
    ~*cache*~, ~:ref:`server_admin_de_configref_gws_types_CacheConfig`~, ~Cache-Konfiguration~, ~nein~, ~~
    ~*clientOptions*~, ~:ref:`server_admin_de_configref_gws_gis_layer_ClientOptions`~, ~Optionen für die Layeranzeige im Client~, ~nein~, ~~
    ~*description*~, ~:ref:`server_admin_de_configref_gws_types_TemplateConfig`~, ~Vorlage für die Layerbeschreibung~, ~nein~, ~~
-   ~*display*~, ~``str``~, ~~, ~nein~, ~~
    ~*editable*~, ~``bool``~, ~Dieser Layer kann bearbeitet werden~, ~nein~, ~false~
    ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_de_configref_gws_types_FormatConfig`~, ~Objekt-Formatierungsoptionen~, ~nein~, ~~
    ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Rasterkonfiguration~, ~nein~, ~~
-   ~*layerFilter*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~nein~, ~~
    ~*legend*~, ~``url``~, ~legend url~, ~nein~, ~~
    ~*meta*~, ~:ref:`server_admin_de_configref_gws_types_MetaConfig`~, ~Layermetadaten~, ~nein~, ~~
    ~*opacity*~, ~``float``~, ~Layertransparenz~, ~nein~, ~~
    ~*search*~, ~:ref:`server_admin_de_configref_gws_common_search_Config`~, ~Layer-Suchkonfiguration~, ~nein~, ~~
+   ~*source*~, ~:ref:`server_admin_de_configref_gws_types_ext_gis_source_Config`~, ~Datenquelle für den Layer~, ~nein~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~Zu verwendende Quelllayer~, ~nein~, ~~
    ~*title*~, ~``str``~, ~Layertitel~, ~nein~, ~~
    ~*type*~, ~``str``~, ~"osm"~, ~ja~, ~~
    ~*uid*~, ~``str``~, ~Eindeutige Layer-ID~, ~nein~, ~~
@@ -762,17 +762,17 @@ automatische QGIS-Layer
    ~*description*~, ~:ref:`server_admin_de_configref_gws_types_TemplateConfig`~, ~Vorlage für die Layerbeschreibung~, ~nein~, ~~
    ~*directRender*~, ~[``str``...]~, ~QGIS providers that should be rendered directly~, ~nein~, ~~
    ~*directSearch*~, ~[``str``...]~, ~QGIS providers that should be searched directly~, ~nein~, ~~
-   ~*display*~, ~``str``~, ~~, ~nein~, ~~
    ~*editable*~, ~``bool``~, ~Dieser Layer kann bearbeitet werden~, ~nein~, ~false~
    ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_de_configref_gws_types_FormatConfig`~, ~Objekt-Formatierungsoptionen~, ~nein~, ~~
    ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Rasterkonfiguration~, ~nein~, ~~
-   ~*layerFilter*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~nein~, ~~
    ~*legend*~, ~``url``~, ~legend url~, ~nein~, ~~
    ~*meta*~, ~:ref:`server_admin_de_configref_gws_types_MetaConfig`~, ~Layermetadaten~, ~nein~, ~~
    ~*opacity*~, ~``float``~, ~Layertransparenz~, ~nein~, ~~
    ~*path*~, ~``filepath``~, ~path to a qgs project file~, ~ja~, ~~
    ~*search*~, ~:ref:`server_admin_de_configref_gws_common_search_Config`~, ~Layer-Suchkonfiguration~, ~nein~, ~~
+   ~*source*~, ~:ref:`server_admin_de_configref_gws_types_ext_gis_source_Config`~, ~Datenquelle für den Layer~, ~nein~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~Zu verwendende Quelllayer~, ~nein~, ~~
    ~*title*~, ~``str``~, ~Layertitel~, ~nein~, ~~
    ~*type*~, ~``str``~, ~"qgis"~, ~ja~, ~~
    ~*uid*~, ~``str``~, ~Eindeutige Layer-ID~, ~nein~, ~~
@@ -797,16 +797,16 @@ Titel-Layer
    ~*cache*~, ~:ref:`server_admin_de_configref_gws_types_CacheConfig`~, ~Cache-Konfiguration~, ~nein~, ~~
    ~*clientOptions*~, ~:ref:`server_admin_de_configref_gws_gis_layer_ClientOptions`~, ~Optionen für die Layeranzeige im Client~, ~nein~, ~~
    ~*description*~, ~:ref:`server_admin_de_configref_gws_types_TemplateConfig`~, ~Vorlage für die Layerbeschreibung~, ~nein~, ~~
-   ~*display*~, ~``str``~, ~~, ~nein~, ~~
    ~*editable*~, ~``bool``~, ~Dieser Layer kann bearbeitet werden~, ~nein~, ~false~
    ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_de_configref_gws_types_FormatConfig`~, ~Objekt-Formatierungsoptionen~, ~nein~, ~~
    ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Rasterkonfiguration~, ~nein~, ~~
-   ~*layerFilter*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~nein~, ~~
    ~*legend*~, ~``url``~, ~legend url~, ~nein~, ~~
    ~*meta*~, ~:ref:`server_admin_de_configref_gws_types_MetaConfig`~, ~Layermetadaten~, ~nein~, ~~
    ~*opacity*~, ~``float``~, ~Layertransparenz~, ~nein~, ~~
    ~*search*~, ~:ref:`server_admin_de_configref_gws_common_search_Config`~, ~Layer-Suchkonfiguration~, ~nein~, ~~
+   ~*source*~, ~:ref:`server_admin_de_configref_gws_types_ext_gis_source_Config`~, ~Datenquelle für den Layer~, ~nein~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~Zu verwendende Quelllayer~, ~nein~, ~~
    ~*title*~, ~``str``~, ~Layertitel~, ~nein~, ~~
    ~*type*~, ~``str``~, ~"tile"~, ~ja~, ~~
    ~*uid*~, ~``str``~, ~Eindeutige Layer-ID~, ~nein~, ~~
@@ -831,16 +831,16 @@ Tree-Layer
    ~*cache*~, ~:ref:`server_admin_de_configref_gws_types_CacheConfig`~, ~Cache-Konfiguration~, ~nein~, ~~
    ~*clientOptions*~, ~:ref:`server_admin_de_configref_gws_gis_layer_ClientOptions`~, ~Optionen für die Layeranzeige im Client~, ~nein~, ~~
    ~*description*~, ~:ref:`server_admin_de_configref_gws_types_TemplateConfig`~, ~Vorlage für die Layerbeschreibung~, ~nein~, ~~
-   ~*display*~, ~``str``~, ~~, ~nein~, ~~
    ~*editable*~, ~``bool``~, ~Dieser Layer kann bearbeitet werden~, ~nein~, ~false~
    ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_de_configref_gws_types_FormatConfig`~, ~Objekt-Formatierungsoptionen~, ~nein~, ~~
    ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Rasterkonfiguration~, ~nein~, ~~
-   ~*layerFilter*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~nein~, ~~
    ~*legend*~, ~``url``~, ~legend url~, ~nein~, ~~
    ~*meta*~, ~:ref:`server_admin_de_configref_gws_types_MetaConfig`~, ~Layermetadaten~, ~nein~, ~~
    ~*opacity*~, ~``float``~, ~Layertransparenz~, ~nein~, ~~
    ~*search*~, ~:ref:`server_admin_de_configref_gws_common_search_Config`~, ~Layer-Suchkonfiguration~, ~nein~, ~~
+   ~*source*~, ~:ref:`server_admin_de_configref_gws_types_ext_gis_source_Config`~, ~Datenquelle für den Layer~, ~nein~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~Zu verwendende Quelllayer~, ~nein~, ~~
    ~*title*~, ~``str``~, ~Layertitel~, ~nein~, ~~
    ~*type*~, ~``str``~, ~"tree"~, ~ja~, ~~
    ~*uid*~, ~``str``~, ~Eindeutige Layer-ID~, ~nein~, ~~
@@ -865,46 +865,22 @@ Vector-Layer
    ~*cache*~, ~:ref:`server_admin_de_configref_gws_types_CacheConfig`~, ~Cache-Konfiguration~, ~nein~, ~~
    ~*clientOptions*~, ~:ref:`server_admin_de_configref_gws_gis_layer_ClientOptions`~, ~Optionen für die Layeranzeige im Client~, ~nein~, ~~
    ~*description*~, ~:ref:`server_admin_de_configref_gws_types_TemplateConfig`~, ~Vorlage für die Layerbeschreibung~, ~nein~, ~~
-   ~*display*~, ~``str``~, ~~, ~nein~, ~~
    ~*editStyle*~, ~:ref:`server_admin_de_configref_gws_types_StyleProps`~, ~Stil für zu bearbeitende Objekte~, ~nein~, ~~
    ~*editable*~, ~``bool``~, ~Dieser Layer kann bearbeitet werden~, ~nein~, ~false~
    ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
    ~*featureFormat*~, ~:ref:`server_admin_de_configref_gws_types_FormatConfig`~, ~Objekt-Formatierungsoptionen~, ~nein~, ~~
    ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Rasterkonfiguration~, ~nein~, ~~
-   ~*layerFilter*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~source layers to use~, ~nein~, ~~
    ~*legend*~, ~``url``~, ~legend url~, ~nein~, ~~
    ~*meta*~, ~:ref:`server_admin_de_configref_gws_types_MetaConfig`~, ~Layermetadaten~, ~nein~, ~~
    ~*opacity*~, ~``float``~, ~Layertransparenz~, ~nein~, ~~
    ~*search*~, ~:ref:`server_admin_de_configref_gws_common_search_Config`~, ~Layer-Suchkonfiguration~, ~nein~, ~~
+   ~*source*~, ~:ref:`server_admin_de_configref_gws_types_ext_gis_source_Config`~, ~Datenquelle für den Layer~, ~nein~, ~~
+   ~*sourceLayers*~, ~:ref:`server_admin_de_configref_gws_gis_source_LayerFilterConfig`~, ~Zu verwendende Quelllayer~, ~nein~, ~~
    ~*style*~, ~:ref:`server_admin_de_configref_gws_types_StyleProps`~, ~Objektstil~, ~nein~, ~~
    ~*title*~, ~``str``~, ~Layertitel~, ~nein~, ~~
    ~*type*~, ~``str``~, ~"vector"~, ~ja~, ~~
    ~*uid*~, ~``str``~, ~Eindeutige Layer-ID~, ~nein~, ~~
    ~*zoom*~, ~:ref:`server_admin_de_configref_gws_gis_zoom_Config`~, ~Layeraufloesungen und Massstaebe~, ~nein~, ~~
-
-.. _server_admin_de_configref_gws_ext_gis_layer_wms_Config:
-
-LayerWmsConfig
---------------
-
-
-WMS source
-
-*Eigenschaften:*
-
-.. csv-table::
-   :quote: ~
-   :widths: auto
-   :header: Name, Typ, , erforderlich, Defaultwert
-
-   ~*capsCacheMaxAge*~, ~``duration``~, ~max cache age for capabilities documents~, ~nein~, ~"1d"~
-   ~*crs*~, ~``crsref``~, ~KBS für diese Quelle~, ~nein~, ~~
-   ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
-   ~*maxRequests*~, ~``int``~, ~max concurrent requests to this source~, ~nein~, ~1~
-   ~*options*~, ~``dict``~, ~additional options~, ~nein~, ~~
-   ~*params*~, ~``dict``~, ~query string parameters~, ~nein~, ~~
-   ~*type*~, ~``str``~, ~"wms"~, ~ja~, ~~
-   ~*url*~, ~``url``~, ~service url~, ~ja~, ~~
 
 .. _server_admin_de_configref_gws_common_map_Config:
 
@@ -1292,6 +1268,27 @@ Webserver-Modul
    ~*threads*~, ~``int``~, ~Anzahl der Threads fuer dieses Modul~, ~nein~, ~0~
    ~*workers*~, ~``int``~, ~Anzahl der Worker fuer dieses Modul~, ~nein~, ~4~
 
+.. _server_admin_de_configref_gws_ext_gis_source_geojson_Config:
+
+SourceGeojsonConfig
+-------------------
+
+
+GeoJson Quelle
+
+*Eigenschaften:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: Name, Typ, , erforderlich, Defaultwert
+
+   ~*access*~, ~[:ref:`server_admin_de_configref_gws_types_AccessRuleConfig`...]~, ~Zugriffsrechte~, ~nein~, ~~
+   ~*crs*~, ~``crsref``~, ~KBS für diese Quelle~, ~nein~, ~~
+   ~*path*~, ~``filepath``~, ~Pfad zu einer Geojson-Datei~, ~ja~, ~~
+   ~*searchAttribute*~, ~``str``~, ~Textsuchattribut~, ~nein~, ~~
+   ~*type*~, ~``str``~, ~"geojson"~, ~ja~, ~~
+
 .. _server_admin_de_configref_gws_gis_source_LayerFilterConfig:
 
 SourceLayerFilterConfig
@@ -1310,6 +1307,115 @@ Layerfilter
    ~*level*~, ~``int``~, ~~, ~nein~, ~0~
    ~*names*~, ~[``str``...]~, ~~, ~nein~, ~~
    ~*pattern*~, ~``regex``~, ~~, ~nein~, ~~
+
+.. _server_admin_de_configref_gws_ext_gis_source_qgis_Config:
+
+SourceQgisConfig
+----------------
+
+
+QGIS Quelle
+
+*Eigenschaften:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: Name, Typ, , erforderlich, Defaultwert
+
+   ~*crs*~, ~``crsref``~, ~KBS für diese Quelle~, ~nein~, ~~
+   ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
+   ~*path*~, ~``filepath``~, ~Pfad zu einer Qgs-Projektdatei~, ~ja~, ~~
+   ~*type*~, ~``str``~, ~"qgis"~, ~ja~, ~~
+
+.. _server_admin_de_configref_gws_ext_gis_source_sql_Config:
+
+SourceSqlConfig
+---------------
+
+
+SQL Quelle
+
+*Eigenschaften:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: Name, Typ, , erforderlich, Defaultwert
+
+   ~*db*~, ~``str``~, ~Datenbank Provider-ID~, ~ja~, ~~
+   ~*table*~, ~:ref:`server_admin_de_configref_gws_types_SqlTableConfig`~, ~SQL-Tabellenkonfiguration~, ~ja~, ~~
+   ~*type*~, ~``str``~, ~"sql"~, ~ja~, ~~
+
+.. _server_admin_de_configref_gws_ext_gis_source_tile_Config:
+
+SourceTileConfig
+----------------
+
+
+Tile Quelle
+
+*Eigenschaften:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: Name, Typ, , erforderlich, Defaultwert
+
+   ~*crs*~, ~``crsref``~, ~KBS für diese Quelle~, ~nein~, ~~
+   ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
+   ~*grid*~, ~:ref:`server_admin_de_configref_gws_types_GridConfig`~, ~Quell-Rasterkonfiguration~, ~nein~, ~~
+   ~*type*~, ~``str``~, ~"tile"~, ~ja~, ~~
+   ~*url*~, ~``str``~, ~Quell-URL mit Platzhaltern {x}, {y} und {z}~, ~ja~, ~~
+
+.. _server_admin_de_configref_gws_ext_gis_source_wms_Config:
+
+SourceWmsConfig
+---------------
+
+
+WMS Quelle
+
+*Eigenschaften:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: Name, Typ, , erforderlich, Defaultwert
+
+   ~*capsCacheMaxAge*~, ~``duration``~, ~Maximales Cache-Alter für Capabilities-Dokumente~, ~nein~, ~"1d"~
+   ~*crs*~, ~``crsref``~, ~KBS für diese Quelle~, ~nein~, ~~
+   ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
+   ~*maxRequests*~, ~``int``~, ~Maximal gleichzeitige Anforderungen an diese Quelle~, ~nein~, ~1~
+   ~*options*~, ~``dict``~, ~Zusatzoptionen~, ~nein~, ~~
+   ~*params*~, ~``dict``~, ~Abfragezeichenfolgeparameter~, ~nein~, ~~
+   ~*type*~, ~``str``~, ~"wms"~, ~ja~, ~~
+   ~*url*~, ~``url``~, ~Service-URL~, ~ja~, ~~
+
+.. _server_admin_de_configref_gws_ext_gis_source_wmts_Config:
+
+SourceWmtsConfig
+----------------
+
+
+WMTS Quelle
+
+*Eigenschaften:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+   :header: Name, Typ, , erforderlich, Defaultwert
+
+   ~*capsCacheMaxAge*~, ~``duration``~, ~Maximales Cache-Alter für Capabilities-Dokumente~, ~nein~, ~"1d"~
+   ~*crs*~, ~``crsref``~, ~KBS für diese Quelle~, ~nein~, ~~
+   ~*extent*~, ~:ref:`server_admin_de_configref_gws_types_Extent`~, ~Layerausmasse~, ~nein~, ~~
+   ~*format*~, ~``str``~, ~Bildformat~, ~nein~, ~"image/jpeg"~
+   ~*layer*~, ~``str``~, ~WMTS Layername~, ~nein~, ~~
+   ~*options*~, ~``dict``~, ~Zusatzoptionen~, ~nein~, ~~
+   ~*style*~, ~``str``~, ~Bildstil~, ~nein~, ~~
+   ~*type*~, ~``str``~, ~"wmts"~, ~ja~, ~~
+   ~*url*~, ~``url``~, ~Service-URL~, ~ja~, ~~
 
 .. _server_admin_de_configref_gws_types_SqlTableConfig:
 
@@ -1666,7 +1772,6 @@ LayerConfig
 * :ref:`server_admin_de_configref_gws_ext_gis_layer_tile_Config`
 * :ref:`server_admin_de_configref_gws_ext_gis_layer_tree_Config`
 * :ref:`server_admin_de_configref_gws_ext_gis_layer_vector_Config`
-* :ref:`server_admin_de_configref_gws_ext_gis_layer_wms_Config`
 
 .. _server_admin_de_configref_gws_log_Level:
 
@@ -1702,6 +1807,23 @@ SearchProviderConfig
 * :ref:`server_admin_de_configref_gws_ext_search_provider_sql_Config`
 * :ref:`server_admin_de_configref_gws_ext_search_provider_wfs_Config`
 * :ref:`server_admin_de_configref_gws_ext_search_provider_wms_Config`
+
+.. _server_admin_de_configref_gws_types_ext_gis_source_Config:
+
+SourceConfig
+------------
+
+
+
+
+*Einer von:*
+
+* :ref:`server_admin_de_configref_gws_ext_gis_source_geojson_Config`
+* :ref:`server_admin_de_configref_gws_ext_gis_source_qgis_Config`
+* :ref:`server_admin_de_configref_gws_ext_gis_source_sql_Config`
+* :ref:`server_admin_de_configref_gws_ext_gis_source_tile_Config`
+* :ref:`server_admin_de_configref_gws_ext_gis_source_wms_Config`
+* :ref:`server_admin_de_configref_gws_ext_gis_source_wmts_Config`
 
 .. _server_admin_de_configref_gws_types_ext_template_Config:
 
