@@ -4,9 +4,6 @@ module.exports = v => ({
         flex: 1,
         color: v.TEXT_COLOR,
         padding: [0, v.UNIT2, 0, v.UNIT2],
-        '&::placeholder': {
-            color: v.PLACEHOLDER_COLOR
-        }
     },
 
     '.uiTextArea textarea.uiRawTextArea': {
@@ -15,9 +12,6 @@ module.exports = v => ({
         padding: v.UNIT2,
         resize: 'none',
         lineHeight: '120%',
-        '&::placeholder': {
-            color: v.PLACEHOLDER_COLOR
-        }
     },
 
     '.uiInput, .uiTextArea': {

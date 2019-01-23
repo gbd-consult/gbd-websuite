@@ -3,6 +3,10 @@
 
 module.exports = v => ({
 
+    '*::placeholder, *::-webkit-input-placeholder, *::-moz-placeholder': {
+        color: v.PLACEHOLDER_COLOR,
+    },
+
     '.uiError': {
         color: v.ERROR_COLOR,
         lineHeight: 1.3,
