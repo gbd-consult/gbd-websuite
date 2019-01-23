@@ -201,6 +201,8 @@ class LensController extends gws.Controller implements gws.types.IController {
         this.currTool = null;
         this.map.removeLayer(this.layer);
         this.removeOverlay();
+        this.map.setExtraInteractions([]);
+
     }
 
     run() {
@@ -295,33 +297,25 @@ class LensController extends gws.Controller implements gws.types.IController {
     overlayMoveTouched(evt) {
         if (!this.feature)
             return;
-        this.map.lockInteractions()
-        trackMouse(
-            evt,
-            evt => this.dragAnchor(evt),
-            evt => {
-                this.map.unlockInteractions()
-                this.run()
 
-            }
-        )
+        gws.tools.trackDrag({
+            map: this.map,
+            whenMoved: px => {
+                let a = this.oOverlay.getPosition(),
+                    b = this.map.oMap.getCoordinateFromPixel(px);
 
-    }
+                let geom = this.feature.geometry as ol.geom.SimpleGeometry;
 
-    dragAnchor(evt) {
-        let a = this.oOverlay.getPosition(),
-            b = this.map.oMap.getCoordinateFromPixel([evt.x, evt.y]);
+                geom.translate(
+                    b[0] - a[0],
+                    b[1] - a[1],
+                );
 
-        let geom = this.feature.geometry as ol.geom.SimpleGeometry;
+                this.positionOverlay();
 
-        geom.translate(
-            b[0] - a[0],
-            b[1] - a[1],
-        );
-
-        this.positionOverlay();
-
-        //this.oOverlay.setPosition(b);
+            },
+            whenEnded: () => this.run()
+        })
     }
 
     positionOverlay() {

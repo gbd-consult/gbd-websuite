@@ -61,6 +61,7 @@ class PrintTool extends gws.Controller implements gws.types.ITool {
 
     }
 }
+
 class SnapshotTool extends gws.Controller implements gws.types.ITool {
     start() {
         let master = this.app.controller(MASTER) as PrinterController;
@@ -72,7 +73,6 @@ class SnapshotTool extends gws.Controller implements gws.types.ITool {
         master.reset();
     }
 }
-
 
 class PrintToolButton extends toolbar.Button {
     className = 'modPrintButton';
@@ -91,9 +91,6 @@ class SnapshotToolButton extends toolbar.Button {
         return this.__('modSnapshotButton');
     }
 }
-
-
-
 
 // class PrintButton extends gws.Controller {
 //     isToolbarButton = true;
@@ -305,34 +302,22 @@ class PreviewBox extends gws.View<PreviewBoxProps> {
         </div>
     }
 
-    dragHandlers = {
-        mousemove: e => this.dragMove(e),
-        mouseup: e => this.dragUp(e),
-    };
+    handleTouched() {
 
-    dragDown(e: any) {
-        let doc = this.boxRef.current.ownerDocument;
-        doc.addEventListener('mousemove', this.dragHandlers.mousemove);
-        doc.addEventListener('mouseup', this.dragHandlers.mouseup);
-    }
+        gws.tools.trackDrag({
+            map: this.props.controller.map,
+            whenMoved: px => {
+                let sz = this.props.controller.map.oMap.getSize();
+                let w = Math.max(50, 2 * Math.abs(px[0] - (sz[0] >> 1)));
+                let h = Math.max(50, 2 * Math.abs(px[1] - (sz[1] >> 1)))
 
-    dragMove(e: any) {
-        let w = window.innerWidth >> 1;
-        let h = window.innerHeight >> 1;
+                this.props.controller.update({
+                    printSnapshotWidth: w,
+                    printSnapshotHeight: h,
+                });
 
-        w = Math.max(50, 2 * Math.abs(e.clientX - w))
-        h = Math.max(50, 2 * Math.abs(e.clientY - h))
-
-        this.props.controller.update({
-            printSnapshotWidth: w,
-            printSnapshotHeight: h,
-        });
-    }
-
-    dragUp(e: any) {
-        let doc = this.boxRef.current.ownerDocument;
-        doc.removeEventListener('mousemove', this.dragHandlers.mousemove);
-        doc.removeEventListener('mouseup', this.dragHandlers.mouseup);
+            },
+        })
     }
 
     render() {
@@ -377,7 +362,7 @@ class PreviewBox extends gws.View<PreviewBoxProps> {
                     marginTop: -(h >> 1) - (handleSize >> 1),
 
                 }}
-                onMouseDown={e => this.dragDown(e)}
+                onMouseDown={() => this.handleTouched()}
             />
             }
 

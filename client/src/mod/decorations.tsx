@@ -12,7 +12,7 @@ interface ScaleRulerViewProps extends gws.types.ViewProps {
 class ScaleRulerView extends gws.View<ScaleRulerViewProps> {
 
     round(m) {
-        let s = Math.pow(10, Math.floor(Math.log10(m))),
+        let s = Math.pow(10, Math.floor(Math.log(m) * Math.LOG10E)),
             t = Math.floor(m / s);
         if (t > 5)
             t = 5;
