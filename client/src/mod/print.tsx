@@ -291,7 +291,7 @@ class PreviewBox extends gws.View<PreviewBoxProps> {
                     </Cell>
                     <Cell>
                         <gws.ui.IconButton
-                            {...gws.tools.cls('modPrintPreviewCancelButton')}
+                            className="cmpButtonFormCancel"
                             whenTouched={() => this.props.controller.app.startTool('DefaultTool')}
                             tooltip={this.__('modPrintCancel')}
                         />
