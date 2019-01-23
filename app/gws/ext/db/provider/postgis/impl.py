@@ -185,12 +185,14 @@ class Connection:
 
         return self.exec(sql, values)
 
-    def batch_insert(self, table, data, page_size=100):
+    def batch_insert(self, table, data, on_conflict=None, page_size=100):
         all_cols = self.columns(table)
         cols = sorted(col for col in data[0] if col in all_cols)
         template = '(' + _comma(f'%({col})s' for col in cols) + ')'
         cs = _comma(cols)
         sql = f'INSERT INTO {self.quote_table(table)} ({cs}) VALUES %s'
+        if on_conflict:
+            sql += f' ON CONFLICT {on_conflict}'
 
         with self.conn.cursor() as cur:
             return psycopg2.extras.execute_values(cur, sql, data, template, page_size)

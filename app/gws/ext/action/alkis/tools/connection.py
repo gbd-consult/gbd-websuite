@@ -38,7 +38,7 @@ class AlkisConnection(Connection):
         self.exec(f'CREATE INDEX {name} ON {self.index_schema}.{table} USING {kind}({columns})')
 
     def index_insert(self, table, data, page_size=100):
-        self.batch_insert(self.index_schema + '.' + table, data, page_size)
+        self.batch_insert(self.index_schema + '.' + table, data, on_conflict='DO NOTHING', page_size=page_size)
 
     def drop_all(self):
         for tab in self.table_names(self.index_schema):

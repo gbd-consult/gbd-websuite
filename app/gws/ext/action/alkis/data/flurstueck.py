@@ -291,7 +291,7 @@ def _create_main_index(conn: connection.AlkisConnection):
     gws.log.info('flurstueck: writing')
 
     conn.create_index_table(main_index, f'''
-        gml_id CHARACTER(16) NOT NULL,
+        gml_id CHARACTER(16) NOT NULL PRIMARY KEY,
 
         land CHARACTER VARYING,
         regierungsbezirk CHARACTER VARYING,
