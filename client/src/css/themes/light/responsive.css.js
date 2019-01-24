@@ -19,20 +19,6 @@ module.exports = v => ({
         }
     },
 
-    '.modZoomInfobarBoxButton': {
-        display: 'none',
-        [v.MEDIA('large+')]: {
-            display: 'block'
-        }
-    },
-
-    '.modIdentifyHoverButton': {
-        display: 'none',
-        [v.MEDIA('medium+')]: {
-            display: 'block'
-        }
-    },
-
     '.modInfobarWidget': {
         '&.modInfobarRotation, &.modInfobarPosition, &.modInfobarScale': {
             display: 'none',

@@ -88,7 +88,7 @@ class DrawTool extends draw.Tool {
     }
 
     get style() {
-        return this.master.style;
+        return this.master.editStyle;
     }
 
     whenStarted(shapeType, oFeature) {
@@ -137,6 +137,7 @@ class LensController extends gws.Controller implements gws.types.IController {
     oOverlay: ol.Overlay;
     overlayRef: React.RefObject<HTMLDivElement>;
     style: gws.types.IMapStyle;
+    editStyle: gws.types.IMapStyle;
 
 
     // get mapOverlayView() {
@@ -155,6 +156,7 @@ class LensController extends gws.Controller implements gws.types.IController {
     async init() {
         this.overlayRef = React.createRef();
         this.style = this.map.getStyleFromSelector('.modLensFeature');
+        this.editStyle = this.map.getStyleFromSelector('.modLensFeatureEdit');
 
         await this.app.addTool('Tool.Lens', this.app.createController(Tool, this));
         await this.app.addTool('Tool.Lens.Draw', this.drawTool = this.app.createController(DrawTool, this));
@@ -225,7 +227,9 @@ class LensController extends gws.Controller implements gws.types.IController {
 
 
     createOverlay() {
-// https://github.com/openlayers/openlayers/issues/6948
+        // https://github.com/openlayers/openlayers/issues/6948
+        // there's a problem in OL with react events in overlays
+        // so let's do it the old way
 
         let div = document.createElement('div');
 
@@ -241,6 +245,10 @@ class LensController extends gws.Controller implements gws.types.IController {
         buttons[1].className = 'modLensOverlayAnchorButton';
         buttons[2].className = 'modLensOverlayCancelButton';
 
+        buttons[0].title = this.__('modLensOverlayDrawButton');
+        buttons[1].title = this.__('modLensOverlayAnchorButton');
+        buttons[2].title = this.__('modLensOverlayCancelButton');
+
         buttons[0].addEventListener('click', evt => this.overlayDrawTouched(evt))
         buttons[1].addEventListener('mousedown', evt => this.overlayMoveTouched(evt))
         buttons[2].addEventListener('click', evt => this.overlayCloseTouched(evt))
@@ -252,6 +260,7 @@ class LensController extends gws.Controller implements gws.types.IController {
             stopEvent: true,
             positioning: 'center-center',
         });
+
         this.map.oMap.addOverlay(this.oOverlay);
         this.positionOverlay();
     }
@@ -269,16 +278,13 @@ class LensController extends gws.Controller implements gws.types.IController {
 
     overlayDrawTouched(evt) {
         this.toolName = this.currTool.uid;
-        //this.app.startTool('Tool.Lens.Draw');
         this.drawTool.start();
-
     }
 
     removeOverlay() {
         if (this.oOverlay)
             this.map.oMap.removeOverlay(this.oOverlay);
         this.oOverlay = null;
-
     }
 
     drawEnded() {

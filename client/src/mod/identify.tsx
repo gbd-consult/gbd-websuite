@@ -74,19 +74,6 @@ class Master extends gws.Controller {
         await this.app.addTool('Tool.Identify.Click', this.app.createController(ClickTool, this));
         await this.app.addTool('Tool.Identify.Hover', this.app.createController(HoverTool, this));
     }
-
-    // async init() {
-    //     let cc;
-    //     await this.app.addTool('Tool.Identify.Click', cc = this.app.createController(ClickTool, this));
-    //     await this.app.addTool('Tool.Identify.Hover', this.app.createController(HoverTool, this));
-    //
-    //     setTimeout(() => {
-    //         cc.run({
-    //             coordinate: [343249.625, 5686278]
-    //         })
-    //
-    //     }, 100)
-    // }
 }
 
 class ClickButton extends toolbar.Button {

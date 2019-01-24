@@ -74,6 +74,7 @@ export class Tool extends gws.Controller implements gws.types.ITool {
     }
 
     stop() {
+        this.oFeatureCollection = null;
         this.whenUnselected();
     }
 

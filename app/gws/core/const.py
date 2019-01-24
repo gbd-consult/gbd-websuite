@@ -12,7 +12,7 @@ MISC_DIR = '/gws-var/misc'
 CONFIG_DIR = '/gws-var/config'
 SERVER_DIR = '/gws-var/server'
 
-PRINT_DIR = '/tmp/print'
+PRINT_DIR = '/gws-var/print'
 
 GWS_USER = 'gws'
 GWS_UID = 1000

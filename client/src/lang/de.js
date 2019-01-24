@@ -37,11 +37,28 @@ module.exports = {
     modAnnotatePolygon: 'Polygon',
     modAnnotateCircle: 'Kreis',
 
-	modAnnotateHeight: 'Höhe',
-	modAnnotateRaidus: 'Radius',
-	modAnnotateWidth: 'Breite',
-	modAnnotateX: 'X',
-	modAnnotateY: 'Y',
+    modAnnotateHeight: 'Höhe',
+    modAnnotateRaidus: 'Radius',
+    modAnnotateWidth: 'Breite',
+    modAnnotateX: 'X',
+    modAnnotateY: 'Y',
+
+    modAnnotateTitle: 'Annotieren',
+    modAnnotateDraw: 'Annotieren',
+    modAnnotateSidebarTooltip: 'Annotieren',
+    modAnnotateEditorHint: 'Platzhalter: {len}, {area}, {radius}, {x}, {y}, {w}, {h}',
+
+    modAnnotateLabelEdit: 'Beschriftung',
+
+    modAnnotatePointButton: 'Punkt setzen und mit Koordinaten markieren',
+    modAnnotateClearButton: 'Alle löschen',
+    modAnnotateRemoveButton: 'Entfernen',
+    modAnnotateUpdateButton: 'Aktualisieren',
+    modAnnotateCloseButton: 'Schließen',
+    modAnnotateEditButton: 'Bearbeiten',
+    modAnnotateDrawButton: 'Neu',
+    modAnnotateLensButton: 'Räumliche Suche',
+    modAnnotateNotFound: 'Keine Annotationen vorhanden',
 
     modPrintButton: 'Drucken',
     modPrintPrinting: 'Drucken',
@@ -70,27 +87,6 @@ module.exports = {
     modToolbarDrawOk: 'Änderungen speichern',
     modToolbarDrawCancel: 'Änderungen verwerfen',
 
-    modAnnotateTitle: 'Annotieren',
-    modAnnotateSidebarTooltip: 'Annotieren',
-    modAnnotateEditorHint: 'Platzhalter: {len}, {area}, {radius}, {x}, {y}, {w}, {h}',
-
-    modAnnotatePointButton: 'Punkt setzen und mit Koordinaten markieren',
-    modAnnotateLineButton: 'Linie messen',
-    modAnnotateBoxButton: 'rechteckige Fläche messen',
-    modAnnotatePolygonButton: 'beliebige Fläche messen',
-    modAnnotateCircleButton: 'Kreis messen',
-    modAnnotateClearButton: 'Messdaten verwerfen',
-    modAnnotateLabelEdit: 'Beschriftung',
-    modAnnotateUpdateButton: 'Aktualisieren',
-
-    modAnnotateFeatureDetailsSearchButton: 'Suchen',
-    modAnnotateFeatureDetailsRemoveButton: 'Entfernen',
-    modAnnotateFeatureDetailsCloseButton: 'Schließen',
-
-    modAnnotateModify: 'Annotation bearbeiten',
-    modAnnotateDraw: 'Annotation erstellen',
-    modAnnotateLens: 'Räumliche Suche',
-
     modOverviewTitle: 'Übersicht',
     modOverviewTooltip: 'Übersicht',
 
@@ -102,12 +98,9 @@ module.exports = {
     modLens: 'Räumliche Suche',
     modLensButton: 'Räumliche Suche',
 
-    modLensButtonPoint: 'Flurstückauswahl mithilfe eines Punktes',
-    modLensButtonLineString: 'Flurstückauswahl mithilfe einer Linie',
-    modLensButtonBox: 'Flurstückauswahl mithilfe einer Box',
-    modLensButtonPolygon: 'Flurstückauswahl mithilfe eines Polygons',
-    modLensButtonCircle: 'Flurstückauswahl mithilfe eines Kreises',
-    modLensButtonCancel: 'Flurstückauswahl beenden',
+    modLensOverlayDrawButton: 'Zeichnen',
+    modLensOverlayAnchorButton: 'Verschieben',
+    modLensOverlayCancelButton: 'Schließen',
 
     modSelectAreaButton: 'Auswahl mithilfe selbstgezeichneter Fläche',
     modSelectPolygonButton: 'Auswahl mithilfe eines Polygons',
@@ -132,7 +125,7 @@ module.exports = {
 
     modFeatureNoTitle: 'Objekt',
 
-    modOverviewProjection:	'KBS',
+    modOverviewProjection: 'KBS',
     modOverviewExtent: 'Ausmaß',
     modOverviewCenterX: 'Mitte-X',
     modOverviewCenterY: 'Mitte-Y',
@@ -143,5 +136,13 @@ module.exports = {
     modInfobarHelpTitle: 'Hilfe',
     modInfobarAboutTitle: 'Über...',
 
+    modDrawPointButton: 'Punkt',
+    modDrawLineButton: 'Linie',
+    modDrawBoxButton: 'Box',
+    modDrawPolygonButton: 'Polygon',
+    modDrawCircleButton: 'Kreis',
+
+    modDrawOkButton: 'Zeichnen abschließen',
+    modDrawCancelButton: 'Zeichnen abbrechen',
 
 };

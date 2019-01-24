@@ -124,13 +124,6 @@ class LayerDetailsToolbar extends gws.View<ViewProps> {
         };
 
         return <sidebar.SecondaryToolbar>
-            <Cell>
-                        <gws.ui.IconButton
-                            className="modSidebarSecondaryClose"
-                    tooltip={this.__('modLayersDetailsCloseButton')}
-                    whenTouched={f.close}
-                />
-            </Cell>
             <Cell flex/>
             <Cell>
                 <gws.ui.IconButton
@@ -153,6 +146,13 @@ class LayerDetailsToolbar extends gws.View<ViewProps> {
                     whenTouched={f.edit}
                 />
             </Cell>}
+            <Cell>
+                <gws.ui.IconButton
+                    className="modSidebarSecondaryClose"
+                    tooltip={this.__('modLayersDetailsCloseButton')}
+                    whenTouched={f.close}
+                />
+            </Cell>
         </sidebar.SecondaryToolbar>;
 
     }

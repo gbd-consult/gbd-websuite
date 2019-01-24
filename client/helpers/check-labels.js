@@ -16,8 +16,6 @@ function main() {
 
     let lang = require(path.resolve(__dirname, '../src/lang'));
 
-    labels
-
     Object.keys(lang).forEach(locale => {
         console.log('Locale: ' + locale);
         let missing = [...labels].filter(la => !lang[locale][la]);

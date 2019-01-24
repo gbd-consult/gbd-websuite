@@ -27,10 +27,7 @@ module.exports = v => ({
     '.modSearchAltbar': {
         borderRadius: v.BORDER_RADIUS,
         backgroundColor: v.COLOR.white,
-        //...v.SHADOW,
         border: [1, 'solid', v.BORDER_COLOR],
-        //zIndex: 1,
-
     },
 
     '.modSearchSideButton': {

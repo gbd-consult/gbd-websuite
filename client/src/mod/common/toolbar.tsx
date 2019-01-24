@@ -88,7 +88,7 @@ export abstract class Button extends gws.Controller implements gws.types.IToolba
 
     whenTouched() {
         if (this.tool)
-            this.app.startTool(this.tool);
+            this.app.toggleTool(this.tool);
     }
 }
 
@@ -105,7 +105,7 @@ class ToolbarView extends gws.View<ToolbarProps> {
         return <div className="modToolbar">
             {front.map(cc => <div className='modToolbarItem' key={cc.uid}>{cc.defaultView}</div>)}
 
-            {rest.length && <div className='modToolbarItem'>
+            {rest.length > 0 && <div className='modToolbarItem'>
                 <gws.ui.IconButton
                     {...gws.tools.cls('modToolbarOverflowButton', expanded && 'isActive')}
                     tooltip={'...'}
@@ -130,7 +130,7 @@ class ToolbarOverflowView extends gws.View<ToolbarProps> {
             front = items.slice(0, size),
             rest = items.slice(size);
 
-        if (!rest.length || !expanded)
+        if (rest.length === 0 || !expanded)
             return null;
 
         return <gws.ui.Popup

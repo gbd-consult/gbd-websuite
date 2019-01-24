@@ -9,6 +9,7 @@ module.exports = v => ({
         backgroundColor: v.SIDEBAR_BODY_BACKGROUND,
         display: 'flex',
         flexDirection: 'column',
+        zIndex: 3,
         ...v.SHADOW,
         ...v.TRANSITION('left'),
     },

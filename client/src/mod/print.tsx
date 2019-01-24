@@ -21,7 +21,7 @@ interface ViewProps extends gws.types.ViewProps {
     printSnapshotHeight: number;
 }
 
-let allProps = [
+let PrintStoreKeys = [
     'printJob',
     'printQuality',
     'printState',
@@ -33,22 +33,6 @@ let allProps = [
     'printSnapshotHeight',
 ];
 
-// interface PrintButtonProps extends ViewProps {
-//     controller: PrintButton;
-//     toolbarItem: gws.types.IController;
-// }
-//
-// class PrintButtonView extends gws.View<PrintButtonProps> {
-//     render() {
-//         let active = this.props.toolbarItem === this.props.controller;
-//         return <gws.ui.IconButton
-//             {...gws.tools.cls('modPrintButton', active && 'isActive')}
-//             tooltip={this.__('modPrintButton')}
-//             whenTouched={() => this.props.controller.touched()}
-//         />;
-//     }
-// }
-
 class PrintTool extends gws.Controller implements gws.types.ITool {
     start() {
         let master = this.app.controller(MASTER) as PrinterController;
@@ -58,7 +42,6 @@ class PrintTool extends gws.Controller implements gws.types.ITool {
     stop() {
         let master = this.app.controller(MASTER) as PrinterController;
         master.reset();
-
     }
 }
 
@@ -91,60 +74,6 @@ class SnapshotToolButton extends toolbar.Button {
         return this.__('modSnapshotButton');
     }
 }
-
-// class PrintButton extends gws.Controller {
-//     isToolbarButton = true;
-//     parent: toolbar.Group;
-//
-//     touched() {
-//         let master = this.app.controller(MASTER) as PrinterController;
-//         this.update({
-//             toolbarGroup: this.parent,
-//             toolbarItem: this,
-//         });
-//         master.startPrintPreview()
-//     }
-//
-//     get defaultView() {
-//         return this.createElement(
-//             this.connect(PrintButtonView, [...allProps, 'toolbarItem']));
-//     }
-// }
-//
-// interface SnapshotButtonProps extends ViewProps {
-//     controller: SnapshotButton;
-//     toolbarItem: gws.types.IController;
-// }
-//
-// class SnapshotButtonView extends gws.View<SnapshotButtonProps> {
-//     render() {
-//         let active = this.props.toolbarItem === this.props.controller;
-//         return <gws.ui.IconButton
-//             {...gws.tools.cls('modSnapshotButton', active && 'isActive')}
-//             tooltip={this.__('modSnapshotButton')}
-//             whenTouched={() => this.props.controller.touched()}
-//         />;
-//     }
-// }
-//
-// class SnapshotButton extends gws.Controller {
-//     isToolbarButton = true;
-//     parent: toolbar.Group;
-//
-//     touched() {
-//         let master = this.app.controller(MASTER) as PrinterController;
-//         this.update({
-//             toolbarGroup: this.parent,
-//             toolbarItem: this,
-//         });
-//         master.startSnapshotPreview()
-//     }
-//
-//     get defaultView() {
-//         return this.createElement(
-//             this.connect(SnapshotButtonView, [...allProps, 'toolbarItem']));
-//     }
-// }
 
 interface PreviewBoxProps extends ViewProps {
     controller: PrinterController;
@@ -411,16 +340,16 @@ class PrintDialog extends gws.View<PrintDialogProps> {
             </gws.ui.Dialog>;
         }
 
-        let reset = () => this.props.controller.reset();
+        let stop = () => this.props.controller.stop();
 
         if (ps === 'complete') {
-            return <gws.ui.Dialog className="modPrintResultDialog" whenClosed={reset}>
+            return <gws.ui.Dialog className="modPrintResultDialog" whenClosed={stop}>
                 <iframe src={job.url}/>
             </gws.ui.Dialog>;
         }
 
         if (ps === 'error') {
-            return <gws.ui.Dialog className="modPrintProgressDialog" whenClosed={reset}>
+            return <gws.ui.Dialog className="modPrintProgressDialog" whenClosed={stop}>
                 <gws.ui.Error
                     text={this.__('modPrintError')}
                 />
@@ -449,12 +378,12 @@ class PrinterController extends gws.Controller {
 
     get mapOverlayView() {
         return this.createElement(
-            this.connect(PreviewBox, allProps));
+            this.connect(PreviewBox, PrintStoreKeys));
     }
 
     get appOverlayView() {
         return this.createElement(
-            this.connect(PrintDialog, allProps));
+            this.connect(PrintDialog, PrintStoreKeys));
     }
 
     get activeJob() {
@@ -473,11 +402,14 @@ class PrinterController extends gws.Controller {
         this.update({
             printJob: null,
             printState: null,
-            toolbarGroup: null,
             toolbarItem: null,
         });
         clearTimeout(this.jobTimer);
         this.jobTimer = 0;
+    }
+
+    stop() {
+        this.app.stopTool('Tool.Print.*');
     }
 
     startPrintPreview() {
@@ -575,9 +507,7 @@ class PrinterController extends gws.Controller {
         let job = this.activeJob,
             jobUid = job ? job.jobUid : null;
 
-        this.reset();
-        console.log('PRINT CANCEL');
-
+        this.stop();
         await this.sendCancel(jobUid);
     }
 
@@ -605,7 +535,7 @@ class PrinterController extends gws.Controller {
                 break;
 
             case gws.api.JobState.cancel:
-                this.reset();
+                this.stop();
                 break;
 
             case gws.api.JobState.complete:
@@ -616,7 +546,7 @@ class PrinterController extends gws.Controller {
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
-                    this.reset()
+                    this.stop()
                 } else {
                     this.update({printState: job.state});
                 }

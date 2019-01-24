@@ -163,9 +163,11 @@ export class AnnotateController extends gws.Controller implements AnnotateContro
     }
 
     removeFeature(f) {
+        this.app.stopTool('Tool.Annotate.*');
         this.unselectFeature();
         this.layer.removeFeature(f);
-        this.map.changed();
+        if (this.layer.features.length > 0)
+            this.app.startTool('Tool.Annotate.Edit');
 
     }
 

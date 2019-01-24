@@ -181,16 +181,6 @@ class FeatureDetails extends gws.View<AnnotateSidebarProps> {
 
             <sidebar.TabFooter>
                 <sidebar.SecondaryToolbar>
-                    <Cell>
-                        <gws.ui.IconButton
-                            className="modSidebarSecondaryClose"
-                            tooltip={this.__('modAnnotateCloseButton')}
-                            whenTouched={() => {
-                                master.unselectFeature();
-                                master.app.stopTool('Tool.Annotate.Edit');
-                            }}
-                        />
-                    </Cell>
                     <Cell flex/>
                     <Cell>
                         <gws.ui.IconButton
@@ -204,6 +194,16 @@ class FeatureDetails extends gws.View<AnnotateSidebarProps> {
                             className="modAnnotateRemoveButton"
                             tooltip={this.__('modAnnotateRemoveButton')}
                             whenTouched={() => master.removeFeature(selectedFeature)}
+                        />
+                    </Cell>
+                    <Cell>
+                        <gws.ui.IconButton
+                            className="modSidebarSecondaryClose"
+                            tooltip={this.__('modAnnotateCloseButton')}
+                            whenTouched={() => {
+                                master.unselectFeature();
+                                master.app.stopTool('Tool.Annotate.Edit');
+                            }}
                         />
                     </Cell>
 
