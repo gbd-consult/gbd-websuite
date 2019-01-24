@@ -121,14 +121,13 @@ class Header extends gws.View<SidebarProps> {
                 {front.map(it =>
                     <HeaderButton key={it.tag} {...this.props} item={it}/>
                 )}
-                <gws.ui.IconButton
+                {rest.length > 0  && <gws.ui.IconButton
                     {...gws.tools.cls('modSidebarOverflowButton', expanded && 'isActive')}
                     tooltip={'...'}
                     whenTouched={() => this.props.controller.update({
                         sidebarOverflowExpanded: !expanded
                     })}
-                />
-
+                />}
             </Row>
         </div>
     }
@@ -144,7 +143,7 @@ class SidebarOverflowView extends gws.View<SidebarProps> {
             front = items.slice(0, size),
             rest = items.slice(size);
 
-        if (!rest.length || !expanded)
+        if (rest.length === 0 || !expanded)
             return null;
 
         return <gws.ui.Popup
