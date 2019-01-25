@@ -52,7 +52,6 @@ def parse_main(path):
 
     for pc, prj_path in prj_configs:
         if pc.get('multi'):
-            pc.pop('multi')
             cfg.projects.extend(_parse_multi_project(pc, prj_path))
         else:
             cfg.projects.append(parse(pc, 'gws.common.project.Config', path))
@@ -107,14 +106,11 @@ def _validator():
 
 
 def _parse_multi_project(cfg, path):
-    mm = cfg.pop('multiMatch', None)
-    if not mm:
-        raise error.ParseError('"multiMatch" is required for "multi" projects', path, '', '')
-
-    m = re.match(r'^/([\w-]+/)*', mm)
-    if m:
-        # absolute multiMatch like /foo/bar.*/baz? - try to extract the base path
-        dirname = m.group(0)
+    mm = cfg.pop('multi')
+    pfx = re.match(r'^/([\w-]+/)*', mm)
+    if pfx:
+        # absolute multi match like /foo/bar.*/baz? - try to extract the base path
+        dirname = pfx.group(0)
         if dirname == '/':
             raise error.ParseError('"multiMatch" cannot be root', path, '', mm)
     else:
