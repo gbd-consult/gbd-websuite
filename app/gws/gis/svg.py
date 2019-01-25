@@ -8,7 +8,6 @@ import gws
 import gws.tools.misc as misc
 
 DEFAULT_FONT_SIZE = 10
-DEFAULT_FONT_FAMILY = 'LiberationSans'
 DEFAULT_MARK_SIZE = 10
 
 
@@ -179,27 +178,11 @@ def _marker(uid, css):
 def _map_font(css):
     # @TODO: allow for more fonts and customize the mapping
 
-    # f = css.get('label-font-family', '').lower()
-    # if 'monospace' in f:
-    #     f = 'LiberationMono'
-    # elif 'narrow' in f:
-    #     f = 'LiberationSansNarrow'
-    # elif 'sans-serif' in f:
-    #     f = 'LiberationSans'
-    # elif 'serif' in f:
-    #     f = 'LiberationSerif'
-    # else:
-    #     f = 'LiberationSans'
-    f = DEFAULT_FONT_FAMILY
-
-    s = ''
+    DEFAULT_FONT = 'DejaVuSans'
 
     if css.get('label-font-weight') == 'bold':
-        s += 'Bold'
-    if css.get('label-font-style') == 'italic':
-        s += 'Italic'
-
-    return f + '-' + (s or 'Regular')
+        return DEFAULT_FONT + '-Bold'
+    return DEFAULT_FONT
 
 
 def _text(cx, cy, label, css):
