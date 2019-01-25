@@ -81,6 +81,7 @@ class FeatureList extends gws.View<EditorViewProps> {
     render() {
         let master = this.props.controller.app.controller(MASTER) as EditorController;
         let layer = this.props.editorLayer;
+        console.log(layer.features[0])
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -94,7 +95,7 @@ class FeatureList extends gws.View<EditorViewProps> {
 
                     item={(f) => <gws.ui.Link
                         whenTouched={() => master.selectFeature(f, true)}
-                        content={f.props.title}
+                        content={master.featureTitle(f)}
                     />}
 
                     leftIcon={f => <gws.ui.IconButton
@@ -107,13 +108,6 @@ class FeatureList extends gws.View<EditorViewProps> {
 
             <sidebar.TabFooter>
                 <sidebar.SecondaryToolbar>
-                    <Cell>
-                        <gws.ui.IconButton
-                            className="modSidebarSecondaryClose"
-                            tooltip={this.__('modEditorEndButton')}
-                            whenTouched={() => master.endEditing()}
-                        />
-                    </Cell>
                     <Cell flex/>
                     <Cell>
                         <gws.ui.IconButton
@@ -127,6 +121,13 @@ class FeatureList extends gws.View<EditorViewProps> {
                             {...gws.tools.cls('modEditorDrawButton', this.props.appActiveTool === 'Tool.Editor.Draw' && 'isActive')}
                             tooltip={this.__('modEditorDrawButton')}
                             whenTouched={() => master.startTool('Tool.Editor.Draw')}
+                        />
+                    </Cell>
+                    <Cell>
+                        <gws.ui.IconButton
+                            className="modSidebarSecondaryClose"
+                            tooltip={this.__('modEditorEndButton')}
+                            whenTouched={() => master.endEditing()}
                         />
                     </Cell>
 
@@ -145,13 +146,9 @@ class FeatureDetails extends gws.View<EditorViewProps> {
 
         let changed = (k, v) => data.map(attr => attr.name === k ? {...attr, value: v} : attr);
 
-        let title = feature.props.title;
-        if (!title)
-            title = this.__('modEditorObject') + feature.uid;
-
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={title}/>
+                <gws.ui.Title content={master.featureTitle(feature)}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -175,13 +172,13 @@ class FeatureDetails extends gws.View<EditorViewProps> {
 
             <sidebar.TabFooter>
                 <sidebar.SecondaryToolbar>
+                    <Cell flex/>
                     <Cell>
                         <gws.ui.IconButton
                             className="modSidebarSecondaryClose"
                             whenTouched={() => master.unselectFeature()}
                         />
                     </Cell>
-                    <Cell flex/>
                 </sidebar.SecondaryToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -347,6 +344,10 @@ class EditorController extends gws.Controller {
             type: a.type,
             editable: true,
         }))
+    }
+
+    featureTitle(f: gws.types.IMapFeature) {
+        return f.props.title || (this.__('modEditorObjectName') + f.uid);
     }
 
     startTool(name) {

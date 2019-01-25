@@ -588,20 +588,29 @@ class FormatConfig(Config):
     """feature format"""
 
     description: Optional[TemplateConfig]  #: template for feature descriptions
-    category: formatstr = ''  #: feature category
-    label: formatstr = ''  #: feature label on the map
+    category: Optional[TemplateConfig]  #: feature category
+    label: Optional[TemplateConfig]  #: feature label on the map
     dataModel: Optional[List[AttributeConfig]]  #: attribute metadata
     teaser: Optional[TemplateConfig]  #: template for feature teasers (short descriptions)
-    title: formatstr = ''  #: feature title
+    title: Optional[TemplateConfig]  #: feature title
 
 
 class FormatInterface(ObjectInterface):
+    category: TemplateObject
     description: TemplateObject
-    category: str
-    label: str
-    data_model: List[AttributeConfig]
+    label: TemplateObject
     teaser: TemplateObject
-    title: str
+    title: TemplateObject
+
+    data_model: List[Attribute]
+
+    def apply(self, feature: 'FeatureInterface'):
+        """Format a feature."""
+        raise NotImplementedError
+
+    def apply_data_model(self, d: dict, data_model: List[Attribute]):
+        """Convert data."""
+        raise NotImplementedError
 
 
 class FeatureInterface:

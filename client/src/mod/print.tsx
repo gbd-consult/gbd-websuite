@@ -410,6 +410,7 @@ class PrinterController extends gws.Controller {
 
     stop() {
         this.app.stopTool('Tool.Print.*');
+        this.reset();
     }
 
     startPrintPreview() {

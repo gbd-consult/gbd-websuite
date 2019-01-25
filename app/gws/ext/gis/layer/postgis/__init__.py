@@ -13,9 +13,17 @@ class Config(gws.gis.layer.VectorConfig):
 class Object(gws.gis.layer.Vector):
     def configure(self):
         super().configure()
-        self.db: t.DbProviderObject = self.root.find('gws.ext.db.provider', self.var('db'))
+
+        self.db: t.DbProviderObject = None
+        s = self.var('db')
+        if s:
+            self.db = self.root.find('gws.ext.db.provider', s)
+        else:
+            self.db = self.root.find_first('gws.ext.db.provider')
+
         if not self.db:
             raise gws.Error(f'{self.uid}: db provider not found')
+
         self.table = self.var('table')
         with self.db.connect() as conn:
             self.crs = conn.crs_for_column(self.table.name, self.table.geometryColumn)

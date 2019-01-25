@@ -9,7 +9,6 @@ import gws.gis.feature
 import gws.gis.shape
 import gws.common.printer.service
 import gws.common.printer.types
-import gws.tools.sheet
 import gws.tools.misc
 import gws.types as t
 import gws.tools.json2

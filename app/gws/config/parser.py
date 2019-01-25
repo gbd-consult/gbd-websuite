@@ -112,12 +112,12 @@ def _parse_multi_project(cfg, path):
         # absolute multi match like /foo/bar.*/baz? - try to extract the base path
         dirname = pfx.group(0)
         if dirname == '/':
-            raise error.ParseError('"multiMatch" cannot be root', path, '', mm)
+            raise error.ParseError('multi-project: pattern cannot be root', path, '', mm)
     else:
         dirname = os.path.dirname(path)
 
     if not os.path.isdir(dirname):
-        raise error.ParseError('"multiMatch" directory {dirname!} not found', path, '', mm)
+        raise error.ParseError(f'multi-project: {dirname!r} not found', path, '', mm)
 
     res = []
 
@@ -130,9 +130,12 @@ def _parse_multi_project(cfg, path):
         res.append(parse(dct, 'gws.common.project.Config', path))
 
     if not res:
-        gws.log.warn(f'no files found for the multi project "{path}"')
+        gws.log.warn(f'multi-project: no files found for {mm!r}')
 
     return res
+
+
+_multi_placeholder_re = r'{{(.+?)}}'
 
 
 def _deep_format(x, a):
@@ -141,7 +144,5 @@ def _deep_format(x, a):
     if isinstance(x, list):
         return [_deep_format(v, a) for v in x]
     if isinstance(x, str):
-        return misc.format_placeholders(x, a)
+        return re.sub(_multi_placeholder_re, lambda m: a.get(m.group(1), m.group(0)), x)
     return x
-
-

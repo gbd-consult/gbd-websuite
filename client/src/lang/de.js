@@ -13,6 +13,13 @@ module.exports = {
     modLayersTooltip: 'Layerübersicht',
     modEditorTooltip: 'Editieren',
 
+    modEditorDrawButton: 'Neues Objekt',
+	modEditorEditButton: 'Auswählen',
+	modEditorEndButton: 'Beenden',
+	modEditorNoLayer: 'Keine Layers zum Editieren ausgewählt',
+	modEditorObjectName: 'Objekt',
+	modEditorSave: 'Speichern',
+
     modUserTooltip: 'Anmeldung',
     modUserLoginButton: 'Einloggen',
     modUserLogoutButton: 'Ausloggen',
