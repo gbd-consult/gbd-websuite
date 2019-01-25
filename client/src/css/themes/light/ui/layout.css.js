@@ -35,7 +35,9 @@ module.exports = v => ({
                 marginLeft: 0,
             },
             '.uiInput input.uiRawInput': {
-                width: '100%'
+                width: '100%',
+                minWidth: '100%',
+                maxWidth: '100%',
             },
         }
     }
