@@ -1,4 +1,5 @@
 import re
+import math
 import urllib.parse
 
 import gws
@@ -86,7 +87,7 @@ def _properties(el):
         return el.text.lower() == 'true'
 
     if et == 'double':
-        return float(el.text or '0')
+        return _float(el.text)
 
 
 def _tree(el, map_layers):
@@ -144,17 +145,17 @@ def _map_layer(el):
     e = el.first('extent')
     if e:
         sl.extents[crs] = [
-            float(e.get_text('extent.xmin') or 0),
-            float(e.get_text('extent.ymin') or 0),
-            float(e.get_text('extent.xmax') or 0),
-            float(e.get_text('extent.ymax') or 0),
+            _float(e.get_text('xmin')),
+            _float(e.get_text('ymin')),
+            _float(e.get_text('xmax')),
+            _float(e.get_text('ymax')),
         ]
 
     if el.attr('hasScaleBasedVisibilityFlag') == '1':
-        a = float(el.attr('minimumscale', 0))
-        z = float(el.attr('maximumscale', 0))
+        a = _float(el.attr('minimumscale'))
+        z = _float(el.attr('maximumscale'))
 
-        if z:
+        if z > a:
             sl.scale_range = [a, z]
 
     prov = el.get_text('provider').lower()
@@ -169,7 +170,7 @@ def _map_layer(el):
 
     s = el.get_text('layerOpacity')
     if s:
-        sl.opacity = float(s)
+        sl.opacity = _float(s)
 
     return sl
 
@@ -419,3 +420,13 @@ def _parse_datasource_uri(uri):
 
 def _lower_attrs(el):
     return {k.lower(): v for k, v in el.attr_dict.items()}
+
+
+def _float(s):
+    try:
+        x = float(s)
+    except:
+        return 0
+    if math.isnan(x) or math.isinf(x):
+        return 0
+    return x
