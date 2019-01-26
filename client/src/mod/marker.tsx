@@ -39,7 +39,7 @@ class MarkerController extends gws.Controller {
             "Circle": sh
         };
 
-        this.whenChanged('marker', content => this.show(content));
+        this.app.whenChanged('marker', content => this.show(content));
     }
 
     show(content) {

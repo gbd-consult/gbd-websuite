@@ -14,7 +14,6 @@ interface SearchViewProps extends gws.types.ViewProps {
     searchResults: Array<gws.types.IMapFeature>;
     searchWaiting: boolean;
     searchFailed: boolean;
-    searchbarVisible: boolean;
     master: SearchController;
 }
 
@@ -23,7 +22,6 @@ const SearchStoreKeys = [
     'searchResults',
     'searchWaiting',
     'searchFailed',
-    'searchbarVisible',
 
 ]
 
@@ -138,7 +136,7 @@ class SearchController extends gws.Controller {
     timer = null;
 
     async init() {
-        this.whenChanged('searchInput', val => {
+        this.app.whenChanged('searchInput', val => {
             clearTimeout(this.timer);
 
             val = val.trim();
@@ -151,12 +149,6 @@ class SearchController extends gws.Controller {
             this.timer = setTimeout(() => this.run(val), SEARCH_DEBOUNCE);
 
         });
-
-        this.whenChanged('appMediaWidth', v =>
-            this.update({
-                searchbarVisible: (v !== 'xsmall' && v !== 'small')
-            })
-        );
 
     }
 

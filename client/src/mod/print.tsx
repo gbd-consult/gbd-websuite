@@ -395,7 +395,7 @@ class PrinterController extends gws.Controller {
         await this.app.addTool('Tool.Print.Print', this.app.createController(PrintTool, this));
         await this.app.addTool('Tool.Print.Snapshot', this.app.createController(SnapshotTool, this));
 
-        this.whenChanged('printJob', job => this.jobUpdated(job));
+        this.app.whenChanged('printJob', job => this.jobUpdated(job));
     }
 
     reset() {

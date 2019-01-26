@@ -31,7 +31,6 @@ let config = {
         before: function (app, server) {
             // localhost:8080/project/whatever => index.html
             app.get('/project/*', function (req, res, next) {
-                console.log('before', req.url)
                 res.sendFile(helpers.absPath('./index.html'));
             });
         },

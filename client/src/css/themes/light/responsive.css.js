@@ -52,14 +52,6 @@ module.exports = v => ({
         }
     },
 
-
-    '.modSearchToolbar, .modSearchToolbarResults': {
-        display: 'none',
-        '.withSearchbar&': {
-            display: 'block',
-        }
-    },
-
     '.modPopup': {
         left: 0,
         right: 0,

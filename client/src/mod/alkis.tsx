@@ -853,7 +853,7 @@ class AlkisController extends gws.Controller {
             alkisFsSelection: [],
         });
 
-        gws.tools.nextTick(() => this.urlSearch());
+        this.app.whenLoaded(() => this.urlSearch());
     }
 
     async whenGemarkungChanged(value) {

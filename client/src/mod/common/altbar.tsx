@@ -24,7 +24,7 @@ class AltbarController extends gws.Controller {
     }
 
     async init() {
-        this.whenChanged('appMediaWidth', v =>
+        this.app.whenChanged('appMediaWidth', v =>
             this.update({
                 altbarVisible: (v === 'large' || v === 'xlarge')
             })

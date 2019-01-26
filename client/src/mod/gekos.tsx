@@ -106,6 +106,19 @@ class GekosDialog extends gws.View<GekosViewProps> {
 class GekosController extends gws.Controller {
     async init() {
         await this.app.addTool('Tool.Gekos', this.app.createController(GekosTool, this));
+
+        this.app.whenLoaded(() => {
+            let url = this.app.urlParams[URL_PARAM_NAME];
+
+            if (url) {
+                this.app.startTool('Tool.Gekos');
+            } else {
+                // @TODO
+                let tb = this.app.controllerByTag('Toolbar');
+                tb.children = tb.children.slice(1);
+            }
+        })
+
     }
 
     get appOverlayView() {
@@ -129,7 +142,7 @@ class GekosController extends gws.Controller {
 
 }
 
-class ClickButton extends toolbar.Button {
+class GekosButton extends toolbar.Button {
     className = 'modGekosButton';
     tool = 'Tool.Gekos';
 
@@ -137,9 +150,10 @@ class ClickButton extends toolbar.Button {
         return STRINGS.tooltip;
     }
 
+
 }
 
 export const tags = {
     'Shared.Gekos': GekosController,
-    'Toolbar.Gekos': ClickButton,
+    'Toolbar.Gekos': GekosButton,
 };
