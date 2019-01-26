@@ -184,6 +184,9 @@ class LensController extends gws.Controller implements gws.types.IController {
 
         let geom = this.getValue('lensGeometry') || this.defaultGeometry;
 
+        let extent = geom.getExtent();
+        this.map.setCenter(ol.extent.getCenter(extent), true);
+
         this.createFeature(geom);
         this.createOverlay();
         this.layer.show();
