@@ -394,3 +394,53 @@ def create_index(conn):
 
 def index_ok(conn):
     return indexer.check_version(conn, gebs_index) and indexer.check_version(conn, addr_index)
+
+
+_DEFAULT_LIMIT = 100
+
+
+def find(conn: connection.AlkisConnection, query, limit=None):
+    where = []
+    parms = []
+
+    query = {
+        k: v
+        for k, v in vars(query).items()
+        if v not in (None, '')
+    }
+
+    for k, v in query.items():
+
+        if k in ('land', 'regierungsbezirk', 'kreis', 'gemeinde', 'gemarkung'):
+            where.append('AD.' + k + ' = %s')
+            parms.append(v)
+
+        elif k in ('landUid', 'regierungsbezirkUid', 'kreisUid', 'gemeindeUid', 'gemarkungUid'):
+            where.append('AD.' + (k.replace('Uid', '_id')) + ' = %s')
+            parms.append(v)
+
+        elif k == 'strasse':
+            where.append('AD.strasse_k = %s')
+            parms.append(street_name_key(v))
+
+            hnr = query.get('hausnummer')
+
+            if hnr == '*':
+                where.append('AD.hausnummer IS NOT NULL')
+            elif hnr:
+                where.append('AD.hausnummer = %s')
+                parms.append(normalize_hausnummer(hnr))
+
+    where = ('WHERE ' + ' AND '.join(where)) if where else ''
+    limit = 'LIMIT %d' % (limit or _DEFAULT_LIMIT)
+    tables = f'{conn.index_schema}.{addr_index} AS AD'
+
+    count_sql = f'SELECT COUNT(DISTINCT AD.*) FROM {tables} {where}'
+    count = conn.select_value(count_sql, parms)
+
+    data_sql = f'SELECT DISTINCT AD.* FROM {tables} {where} {limit}'
+    gws.log.debug(f'sql={data_sql!r} parms={parms!r}')
+
+    data = conn.select(data_sql, parms)
+
+    return count, list(data)

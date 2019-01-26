@@ -146,6 +146,8 @@ class ToolbarOverflowView extends gws.View<ToolbarProps> {
 }
 
 class ToolbarController extends gws.Controller {
+    uid: 'Toolbar'
+
     get size() {
         return this.options.size || 3;
     }

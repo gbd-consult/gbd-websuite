@@ -37,6 +37,10 @@ def from_bbox(bbox, crs):
     return Shape(shapely.geometry.box(*bbox), crs)
 
 
+def from_xy(x, y, crs):
+    return Shape(shapely.geometry.Point(x, y), crs)
+
+
 _DEFAULT_POINT_BUFFER_RESOLUTION = 6
 
 

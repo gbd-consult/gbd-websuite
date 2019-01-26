@@ -20,15 +20,15 @@ module.exports = v => ({
     '.uiDialog': {
         position: 'absolute',
         backgroundColor: v.COLOR.white,
-        padding: [
-            v.UNIT4,
-            v.UNIT4,
-            v.UNIT4,
-            v.UNIT4,
-        ],
+        padding: v.UNIT4,
         '&.withCloseButton': {
             paddingTop: v.CONTROL_SIZE + v.UNIT2,
         },
+        '.uiTitle': {
+            textAlign: 'center',
+            fontSize: v.NORMAL_FONT_SIZE,
+
+        }
     },
 
     '.uiPopup': {

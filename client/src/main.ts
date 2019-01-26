@@ -13,6 +13,7 @@ let mods = [
     require('./mod/annotate'),
     require('./mod/decorations'),
     require('./mod/editor'),
+    require('./mod/gekos'),
     require('./mod/identify'),
     require('./mod/infobar'),
     require('./mod/layers'),

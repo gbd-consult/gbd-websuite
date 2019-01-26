@@ -8,7 +8,6 @@ let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Alkis';
 
-
 function _master(view) {
     return view.props.controller.app.controller(MASTER) as AlkisController;
 }
@@ -67,7 +66,7 @@ const STRINGS = {
 
 };
 
-const exportGroups = [
+const EXPORT_GROUPS = [
     ['base', 'Basisdaten'],
     ['lage', 'Lage'],
     ['gebaeude', 'Gebäude'],
@@ -75,6 +74,14 @@ const exportGroups = [
     ['eigentuemer', 'Eigentümer'],
     ['nutzung', 'Nutzung'],
 ];
+
+const URL_PARAMS = {
+    'alkisGemarkung': 'gemarkungUid',
+    'alkisFlurnummer': 'flurnummer',
+    'alkisZaehler': 'zaehler',
+    'alkisNenner': 'nenner',
+    'alkisFlurstuecksfolge': 'flurstuecksfolge',
+};
 
 type AlkisFsTab = 'form' | 'list' | 'details' | 'error' | 'selection' | 'export';
 
@@ -339,7 +346,6 @@ class SearchForm extends gws.View<FsSearchProps> {
             whenEntered: () => cc.search()
         });
 
-
         let nameShowMode = '';
 
         if (setup.withEigentuemer)
@@ -464,7 +470,7 @@ class SearchForm extends gws.View<FsSearchProps> {
                         whenTouched={() => {
                             cc.stopLens();
                             cc.search();
-                            }}
+                        }}
                     />
                 </Cell>
                 <Cell>
@@ -692,7 +698,7 @@ class ExportTab extends gws.View<FsSearchProps> {
                     <Form>
                         <Row>
                             <Cell flex>
-                                {exportGroups.map(([group, name]) => {
+                                {EXPORT_GROUPS.map(([group, name]) => {
                                     if (group === 'buchung' && !this.props.alkisFsSetup.withBuchung)
                                         return null;
                                     if (group === 'eigentuemer' && !this.props.alkisFsSetup.withEigentuemer)
@@ -823,7 +829,6 @@ class AlkisController extends gws.Controller {
 
         await this.app.addTool('Tool.Alkis.Lens', this.app.createController(AlkisLensTool, this));
 
-
         this.setup = res;
         this.history = [];
 
@@ -833,9 +838,7 @@ class AlkisController extends gws.Controller {
             alkisFsTab: 'form',
             alkisFsLoading: false,
 
-            alkisFsParams: {
-                projectUid: this.app.project.uid
-            },
+            alkisFsParams: {},
 
             alkisFsExportGroups: ['base'],
 
@@ -849,6 +852,8 @@ class AlkisController extends gws.Controller {
             alkisFsDetailsResponse: null,
             alkisFsSelection: [],
         });
+
+        gws.tools.nextTick(() => this.urlSearch());
     }
 
     async whenGemarkungChanged(value) {
@@ -919,6 +924,40 @@ class AlkisController extends gws.Controller {
         });
 
         this.goTo('list');
+    }
+
+    async urlSearch() {
+        let params = {};
+
+        gws.tools.entries(this.app.urlParams).forEach(e => {
+            let k = URL_PARAMS[e[0]];
+            if (k)
+                params[k] = e[1];
+        });
+
+        if (gws.tools.empty(params))
+            return false;
+
+        let res = await this.app.server.alkisFsSearch({
+            ...params,
+            projectUid: this.app.project.uid
+        });
+
+        if (res.error) {
+            return false;
+        }
+
+        let features = this.map.readFeatures(res.features);
+
+        console.log('urlSearch', params, features.length)
+
+        if (features.length > 0)
+            this.update({
+                marker: {
+                    features: [features[0]],
+                    mode: 'draw zoom',
+                }
+            });
     }
 
     paramsForFeatures(fs: Array<gws.types.IMapFeature>) {
@@ -1048,7 +1087,6 @@ class AlkisController extends gws.Controller {
         this.stopLens();
     }
 
-
     async startExport(fs: Array<gws.types.IMapFeature>) {
         this.update({
             alkisFsExportFeatures: fs
@@ -1061,7 +1099,7 @@ class AlkisController extends gws.Controller {
 
         let q = {
             ...this.paramsForFeatures(fs),
-            groups: exportGroups.map(grp => grp[0]).filter(g => groups.indexOf(g) >= 0),
+            groups: EXPORT_GROUPS.map(grp => grp[0]).filter(g => groups.indexOf(g) >= 0),
         };
         let res = await this.app.server.alkisFsExport(q);
 

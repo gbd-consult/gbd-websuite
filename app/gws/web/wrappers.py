@@ -57,13 +57,15 @@ class Request(werkzeug.wrappers.Request):
             return self.environ['gws.rewrite_route']
 
         if self.method == 'GET':
+            args = {k: v for k, v in self.args.items()}
+
             # the server only understands requests to /_/...
             # the params can be given as query string or encoded in path
             # like _/cmd/command/layer/la/x/12/y/34 etc
             if self.path == gws.SERVER_ENDPOINT:
-                return self.args
+                return args
             if self.path.startswith(gws.SERVER_ENDPOINT):
-                return gws.extend(_params_from_path(self.path), self.args)
+                return gws.extend(_params_from_path(self.path), args)
             gws.log.error('invalid request path', self.path)
             return None
 

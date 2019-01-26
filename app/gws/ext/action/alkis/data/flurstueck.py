@@ -63,6 +63,17 @@ _vnum_re = r'''^(?x)
 '''
 
 
+def _add_vnum_param(key, val, where, parms):
+    if val:
+        where.append(f'FS.' + key + ' = %s')
+        if key in ('flurnummer', 'zaehler'):
+            parms.append(int(val))
+        elif key == 'flurstuecksfolge':
+            parms.append('%02d' % int(val))
+        else:
+            parms.append(val)
+
+
 def _parse_vnum(s, where, parms):
     m = re.match(_vnum_re, re.sub(r'\s+', '', s))
     if not m:
@@ -74,14 +85,7 @@ def _parse_vnum(s, where, parms):
     # flurstuecksfolge|character varying
 
     for k, v in m.groupdict().items():
-        if v:
-            where.append(f'FS.' + k + ' = %s')
-            if k in ('flurnummer', 'zaehler'):
-                parms.append(int(v))
-            elif k == 'flurstuecksfolge':
-                parms.append('%02d' % int(v))
-            else:
-                parms.append(v)
+        _add_vnum_param(k, v, where, parms)
 
     return True
 
@@ -394,7 +398,10 @@ def has_flurnummer(conn: connection.AlkisConnection):
     return n > 0
 
 
-def find(conn: connection.AlkisConnection, query, limit):
+_DEFAULT_LIMIT = 100
+
+
+def find(conn: connection.AlkisConnection, query, limit=None):
     where = []
     parms = []
 
@@ -468,6 +475,9 @@ def find(conn: connection.AlkisConnection, query, limit):
                 gws.log.warn('invalid vnum', v)
                 return 0, []
 
+        elif k in ('flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge'):
+            _add_vnum_param(k, v, where, parms)
+
         elif k == 'fsUids':
             where.append('FS.gml_id IN (' + ','.join(['%s'] * len(v)) + ')')
             parms.extend(v)
@@ -477,7 +487,7 @@ def find(conn: connection.AlkisConnection, query, limit):
         for k, v in tables.items())
 
     where = ('WHERE ' + ' AND '.join(where)) if where else ''
-    limit = 'LIMIT %d' % (int(limit) or 100)
+    limit = 'LIMIT %d' % (limit or _DEFAULT_LIMIT)
 
     count_sql = f'SELECT COUNT(DISTINCT FS.*) FROM {tables} {where}'
     count = conn.select_value(count_sql, parms)

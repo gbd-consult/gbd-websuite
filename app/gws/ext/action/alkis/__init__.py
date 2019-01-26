@@ -13,7 +13,7 @@ import gws.tools.misc
 import gws.types as t
 import gws.tools.json2
 import gws.web
-from .data import index, flurstueck
+from .data import index, adresse, flurstueck
 from .tools import connection, export
 
 """
@@ -123,6 +123,10 @@ class FsQueryParams(t.Data):
     strasse: t.Optional[str]
     vorname: t.Optional[str]
     vnum: t.Optional[str]
+    flurnummer: t.Optional[str]
+    zaehler: t.Optional[str]
+    nenner: t.Optional[str]
+    flurstuecksfolge: t.Optional[str]
     shape: t.Optional[t.ShapeProps]
 
 
@@ -383,6 +387,16 @@ class Object(gws.Object):
         with self._connect() as conn:
             return index.ok(conn)
 
+    def find_fs(self, query: t.Data, target_crs, allow_eigentuemer=False, allow_buchung=False, limit=None):
+        # public api method for other ext's
+
+        return self._find(query, target_crs, allow_eigentuemer, allow_buchung, limit)
+
+    def find_address(self, query: t.Data, target_crs, limit=None):
+        # public api method for other ext's
+
+        return self._find_address(query, target_crs, limit)
+
     def _precheck_request(self, req, project_uid):
         req.require_project(project_uid)
         if not self.has_index:
@@ -400,27 +414,38 @@ class Object(gws.Object):
 
         return total, sorted(fprops, key=lambda p: p.title)
 
-    def _fetch(self, req, p: FsQueryParams):
-        project = req.require_project(p.projectUid)
+    def _fetch(self, req, query: FsQueryParams):
+        project = req.require_project(query.projectUid)
         target_crs = project.map.var('crs')
 
-        eigentuemer_flag = self._eigentuemer_flag(req, p)
+        eigentuemer_flag = self._eigentuemer_flag(req, query)
         if eigentuemer_flag < 0:
-            self._log_eigentuemer_access(req, p, check=False)
+            self._log_eigentuemer_access(req, query, check=False)
             raise gws.web.error.BadRequest()
 
         allow_eigentuemer = eigentuemer_flag > 0
         allow_buchung = self._can_read_buchung(req)
 
-        p = self._remove_restricted_params(p, allow_eigentuemer, allow_buchung)
+        query = self._remove_restricted_params(query, allow_eigentuemer, allow_buchung)
 
-        if p.get('shape'):
-            p.shape = gws.gis.shape.from_props(p.shape)
+        if query.get('shape'):
+            query.shape = gws.gis.shape.from_props(query.shape)
 
+        total, features = self._find(query, target_crs, allow_eigentuemer, allow_buchung, self.var('limit'))
+
+        gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} total={total!r} len={len(features)}')
+        gws.p(query)
+
+        if allow_eigentuemer:
+            self._log_eigentuemer_access(req, query, check=True, total=total, features=features)
+
+        return total, features
+
+    def _find(self, query: t.Data, target_crs, allow_eigentuemer, allow_buchung, limit):
         features = []
 
         with self._connect() as conn:
-            total, rs = flurstueck.find(conn, p, self.var('limit'))
+            total, rs = flurstueck.find(conn, query, limit)
             for rec in rs:
                 rec = self._remove_restricted_data(rec, allow_eigentuemer, allow_buchung)
                 feature = gws.gis.feature.Feature({
@@ -430,11 +455,20 @@ class Object(gws.Object):
                 })
                 features.append(feature.transform(target_crs))
 
-        gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} total={total!r} len={len(features)}')
-        gws.p(p)
+        return total, features
 
-        if allow_eigentuemer:
-            self._log_eigentuemer_access(req, p, check=True, total=total, features=features)
+    def _find_address(self, query: t.Data, target_crs, limit):
+        features = []
+
+        with self._connect() as conn:
+            total, rs = adresse.find(conn, query, limit)
+            for rec in rs:
+                feature = gws.gis.feature.Feature({
+                    'uid': rec['gml_id'],
+                    'attributes': rec,
+                    'shape': gws.gis.shape.from_xy(rec['x'], rec['y'], self.crs)
+                })
+                features.append(feature.transform(target_crs))
 
         return total, features
 
@@ -486,7 +520,6 @@ class Object(gws.Object):
             conn.insert_one(self.log_table, 'id', data)
 
         gws.log.debug('_log_eigentuemer_access', check, 'ok')
-
 
     def _remove_restricted_params(self, p: FsQueryParams, allow_eigentuemer, allow_buchung):
         if not allow_eigentuemer:

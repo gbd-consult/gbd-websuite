@@ -82,13 +82,22 @@ def inspect(arg, max_depth=1, all_props=False):
         yield s
 
 
-def p(arg, d=None, all=None, lines=None):
-    if lines:
-        for s in enumerate(str(arg).split('\n'), 1):
-            log.debug('%06d:%s' % s, extra={'skip_frames': 1})
-    else:
-        for s in inspect(arg, max_depth=d, all_props=all):
+def p(*args, **kwargs):
+    sep = '-' * 60
+
+    if 'lines' in kwargs:
+        for arg in args:
+            for s in enumerate(str(arg).split('\n'), 1):
+                log.debug('%06d:%s' % s, extra={'skip_frames': 1})
+            log.debug(sep, extra={'skip_frames': 1})
+        return
+
+    max_depth = kwargs.get('d', 3)
+    all_props = kwargs.get('all', False)
+    for arg in args:
+        for s in inspect(arg, max_depth=max_depth, all_props=all_props):
             log.debug(s, extra={'skip_frames': 1})
+        log.debug(sep, extra={'skip_frames': 1})
 
 
 _timers = {}

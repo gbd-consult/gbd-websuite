@@ -94,15 +94,11 @@ module.exports = v => ({
             '&.modPrintProgressDialog': {
                 ...v.CENTER_BOX(400, 160),
             },
+            '&.modGekosDialog': {
+                ...v.CENTER_BOX(250, 250),
+            },
         },
     },
-
-    // '.modSearchSidebarIcon, .modSearchSidebar': {
-    //     display: 'block',
-    //     [v.MEDIA('xlarge+')]: {
-    //         display: 'none',
-    //     }
-    // },
 
     '.modDecorationScaleRuler': {
         display: 'none',

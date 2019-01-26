@@ -28,13 +28,16 @@ let config = {
         host: '0.0.0.0',
         port: 8080,
         disableHostCheck: true,
+        before: function (app, server) {
+            // localhost:8080/project/whatever => index.html
+            app.get('/project/*', function (req, res, next) {
+                console.log('before', req.url)
+                res.sendFile(helpers.absPath('./index.html'));
+            });
+        },
         proxy: [{
-            context: path => {
-                // proxy everything, except /, .js,  and /abcd (which is normally a project start page)
-                let local = !!path.match(/(^\/$)|(\.js$)|(^\/[a-z]\w*$)/);
-                //console.log('PROXY', path, local);
-                return !local;
-            },
+            // proxy everything, except / and .js
+            context: path => !path.match(/(^\/$)|(\.js$)/),
             target: options.gwsServerUrl
         }]
     },
