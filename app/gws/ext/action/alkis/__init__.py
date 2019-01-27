@@ -60,7 +60,7 @@ class Config(t.WithTypeAndAccess):
     """Flurstückssuche (cadaster parlcels search) action"""
 
     db: t.Optional[str]  #: database (postgis) provider ID
-    dataSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
+    alkisSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
     indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
 
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (eigentuemer) information
@@ -200,7 +200,7 @@ class Object(gws.Object):
         self.connect_args = {
             'params': prov.connect_params,
             'index_schema': self.var('indexSchema'),
-            'data_schema': self.var('dataSchema'),
+            'data_schema': self.var('alkisSchema'),
             'crs': self.crs,
             'exclude_gemarkung': self.var('excludeGemarkung')
         }
@@ -577,5 +577,5 @@ class Object(gws.Object):
     def _get_alkis_crs(self, prov):
         with prov.connect() as conn:
             return conn.crs_for_column(
-                self.var('dataSchema') + '.ax_flurstueck',
+                self.var('alkisSchema') + '.ax_flurstueck',
                 'wkb_geometry')

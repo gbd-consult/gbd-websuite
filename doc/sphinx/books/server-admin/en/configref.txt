@@ -95,7 +95,7 @@ Flurstückssuche (cadaster parlcels search) action
 
    ~*access*~, ~[:ref:`server_admin_en_configref_gws_types_AccessRuleConfig`...]~, ~access rights~, ~no~, ~~
    ~*buchung*~, ~:ref:`server_admin_en_configref_gws_ext_action_alkis_BuchungConfig`~, ~access to the Grundbuch (register) information~, ~no~, ~~
-   ~*dataSchema*~, ~``str``~, ~schema where ALKIS tables are stored, must be readable~, ~no~, ~"public"~
+   ~*alkisSchema*~, ~``str``~, ~schema where ALKIS tables are stored, must be readable~, ~no~, ~"public"~
    ~*db*~, ~``str``~, ~database (postgis) provider ID~, ~no~, ~~
    ~*eigentuemer*~, ~:ref:`server_admin_en_configref_gws_ext_action_alkis_EigentuemerConfig`~, ~access to the Eigentümer (eigentuemer) information~, ~no~, ~~
    ~*excludeGemarkung*~, ~[``str``...]~, ~Gemarkung (AU) IDs to exclude from search~, ~no~, ~~

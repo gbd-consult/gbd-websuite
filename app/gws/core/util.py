@@ -93,6 +93,13 @@ def is_empty(x):
     return False
 
 
+def as_int(x):
+    try:
+        return int(x)
+    except:
+        return 0
+
+
 def as_str(x, encodings=None):
     if isinstance(x, str):
         return x

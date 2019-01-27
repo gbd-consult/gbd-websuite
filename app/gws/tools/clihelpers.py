@@ -1,4 +1,6 @@
 import contextlib
+import os
+import getpass
 
 import argh
 
@@ -143,3 +145,12 @@ def dump_json(x):
     t = _prop_tree(x, [])
     j = json2.to_string(t, pretty=True)
     print(j)
+
+
+def database_credentials():
+    if 'PGUSER' in os.environ and 'PGPASSWORD' in os.environ:
+        return os.environ['PGUSER'], os.environ['PGPASSWORD']
+
+    user = input('DB username: ')
+    password = getpass.getpass('DB password: ')
+    return user, password

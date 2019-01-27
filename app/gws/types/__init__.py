@@ -604,7 +604,7 @@ class FormatInterface(ObjectInterface):
 
     data_model: List[Attribute]
 
-    def apply(self, feature: 'FeatureInterface'):
+    def apply(self, feature: 'FeatureInterface', context: dict = None):
         """Format a feature."""
         raise NotImplementedError
 
@@ -637,7 +637,7 @@ class FeatureInterface:
     def to_geojs(self):
         raise NotImplementedError
 
-    def apply_format(self, fmt: FormatInterface):
+    def apply_format(self, fmt: FormatInterface, context: dict = None):
         raise NotImplementedError
 
 
@@ -748,8 +748,8 @@ class DbProviderObject(ObjectInterface):
     error: type
     connect_params: dict
 
-    def connect(self):
+    def connect(self, extra_connect_params: dict = None):
         raise NotImplementedError
 
-    def select(self, args: SelectArgs) -> List[FeatureInterface]:
+    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List[FeatureInterface]:
         raise NotImplementedError

@@ -200,6 +200,7 @@ let rules = [
     require('./mod/annotate.css'),
     require('./mod/decorations.css'),
     require('./mod/draw.css'),
+    require('./mod/dprocon.css'),
     require('./mod/editor.css'),
     require('./mod/gekos.css'),
     require('./mod/identify.css'),

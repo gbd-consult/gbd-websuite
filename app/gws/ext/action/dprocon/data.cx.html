@@ -1,0 +1,10 @@
+<p class="head">{title}</p>
+
+<table>
+@each attributes as k, v
+    <tr>
+        <td>{k | html}</td>
+        <td align=right>{v | html}</td>
+    </tr>
+@end
+</table>

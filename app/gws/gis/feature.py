@@ -101,9 +101,9 @@ class Feature(t.FeatureInterface):
             'geometry': geometry
         }
 
-    def apply_format(self, fmt: t.FormatInterface):
+    def apply_format(self, fmt: t.FormatInterface, context: dict = None):
         if fmt:
-            fmt.apply(self)
+            fmt.apply(self, context)
 
     @property
     def props(self):

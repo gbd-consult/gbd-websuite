@@ -95,7 +95,7 @@ Flurstückssuche
 
    ~*access*~, ~[:ref:`server_admin_de_configref_gws_types_AccessRuleConfig`...]~, ~Zugriffsrechte~, ~nein~, ~~
    ~*buchung*~, ~:ref:`server_admin_de_configref_gws_ext_action_alkis_BuchungConfig`~, ~access to the Grundbuch (register) information~, ~nein~, ~~
-   ~*dataSchema*~, ~``str``~, ~Schema, in dem ALKIS-Tabellen gespeichert sind, muss lesbar sein~, ~nein~, ~"public"~
+   ~*alkisSchema*~, ~``str``~, ~Schema, in dem ALKIS-Tabellen gespeichert sind, muss lesbar sein~, ~nein~, ~"public"~
    ~*db*~, ~``str``~, ~Datenbank (PostGIS) Provider-ID~, ~nein~, ~~
    ~*eigentuemer*~, ~:ref:`server_admin_de_configref_gws_ext_action_alkis_EigentuemerConfig`~, ~access to the Eigentümer (eigentuemer) information~, ~nein~, ~~
    ~*excludeGemarkung*~, ~[``str``...]~, ~Gemarkung (AU) IDs, die von der Suche ausgeschlossen werden sollen~, ~nein~, ~~

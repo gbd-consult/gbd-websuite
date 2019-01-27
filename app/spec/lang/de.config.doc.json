@@ -78,7 +78,7 @@
     "gws.common.search.provider.Config:type": "Objekttyp",
     "gws.ext.action.alkis.Config": "Flurstückssuche",
     "gws.ext.action.alkis.Config:access": "Zugriffsrechte",
-    "gws.ext.action.alkis.Config:dataSchema": "Schema, in dem ALKIS-Tabellen gespeichert sind, muss lesbar sein",
+    "gws.ext.action.alkis.Config:alkisSchema": "Schema, in dem ALKIS-Tabellen gespeichert sind, muss lesbar sein",
     "gws.ext.action.alkis.Config:db": "Datenbank (PostGIS) Provider-ID",
     "gws.ext.action.alkis.Config:eigentuemerAccess": "Zugriff auf die Eigentümer-Informationen",
     "gws.ext.action.alkis.Config:excludeGemarkung": "Gemarkung (AU) IDs, die von der Suche ausgeschlossen werden sollen",

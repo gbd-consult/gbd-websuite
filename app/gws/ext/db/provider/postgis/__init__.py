@@ -22,6 +22,7 @@ class Config(t.WithType):
 
 PING_TIMEOUT = 5
 
+
 class Object(gws.Object, t.DbProviderObject):
     conn = None
     error = Error
@@ -37,8 +38,8 @@ class Object(gws.Object, t.DbProviderObject):
             params['options'] = '-c statement_timeout=%d' % (timeout * 1000)
         return params
 
-    def connect(self):
-        return Connection(self.connect_params)
+    def connect(self, extra_connect_params=None):
+        return Connection(gws.extend(self.connect_params, extra_connect_params))
 
     def configure(self):
         super().configure()
@@ -54,9 +55,9 @@ class Object(gws.Object, t.DbProviderObject):
 
         gws.get_global(f'db_ping_{self.uid}', ping)
 
-    def select(self, args: t.SelectArgs):
+    def select(self, args: t.SelectArgs, extra_connect_params=None):
 
-        with self.connect() as conn:
+        with self.connect(extra_connect_params) as conn:
 
             where = []
             parms = []

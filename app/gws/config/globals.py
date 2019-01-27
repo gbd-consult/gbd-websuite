@@ -18,6 +18,10 @@ def find(klass, uid) -> t.ObjectInterface:
     return root().find(klass, uid)
 
 
+def find_first(klass) -> t.ObjectInterface:
+    return root().find_first(klass)
+
+
 def find_all(klass) -> t.List[t.ObjectInterface]:
     return root().find_all(klass)
 

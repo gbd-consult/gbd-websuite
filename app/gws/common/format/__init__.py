@@ -31,11 +31,12 @@ class Object(gws.PublicObject, t.FormatInterface):
 
         self.data_model = self.var('dataModel')
 
-    def apply(self, feature: t.FeatureInterface):
+    def apply(self, feature: t.FeatureInterface, context: dict = None):
         for key in _TPL_KEYS:
             tpl = getattr(self, key, None)
             if tpl:
-                res = tpl.render({'feature': feature, 'attributes': feature.attributes}).content
+                ctx = gws.extend({'feature': feature, 'attributes': feature.attributes}, context)
+                res = tpl.render(ctx).content
                 setattr(feature, key, res)
 
         dm = self.data_model

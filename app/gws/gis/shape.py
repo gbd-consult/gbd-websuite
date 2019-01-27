@@ -2,6 +2,7 @@ import shapely.geometry
 import shapely.wkb
 import shapely.wkt
 import shapely.wkt
+import shapely.ops
 
 import gws
 import gws.gis.proj
@@ -39,6 +40,14 @@ def from_bbox(bbox, crs):
 
 def from_xy(x, y, crs):
     return Shape(shapely.geometry.Point(x, y), crs)
+
+
+def union(shapes):
+    shapes = list(shapes)
+    crs = shapes[0].crs
+    shapes = [s.transform(crs) for s in shapes]
+    geo = shapely.ops.unary_union([s.geo for s in shapes])
+    return Shape(geo, crs)
 
 
 _DEFAULT_POINT_BUFFER_RESOLUTION = 6

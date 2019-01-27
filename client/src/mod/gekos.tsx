@@ -137,7 +137,7 @@ class GekosController extends gws.Controller {
         if (!url.match(/\?$/))
             url += '&';
 
-        location.href = `${url}x=${x}&y=${y}`;
+        this.app.navigate(`${url}x=${x}&y=${y}`);
     }
 
 }
