@@ -105,22 +105,21 @@ let generateThemes = options => {
 //
 
 
-let copyMsiePolyfill = options => {
-        let msie = 'msie11.polyfill.io.js';
-        fs.copyFileSync(absPath(msie), options.dist + '/' + msie);
+let copyAssets = options => {
 
+    // msie polyfill
+    let msie = 'msie11.polyfill.io.js';
+    fs.copyFileSync(absPath(msie), options.dist + '/' + msie);
 
-};
-
-//
-
-
-let copyHelpFiles = options => {
+    // help files
     let dir = absPath('src/help');
     fs.readdirSync(dir).forEach(fn => fs.copyFileSync(
         dir + '/' + fn, options.dist + '/help_' + fn));
-};
 
+    // start script
+    let start = absPath('src/gws-start.js');
+    fs.copyFileSync(start, options.dist + '/gws-start-' + options.version + '.js');
+};
 
 //
 
@@ -135,10 +134,8 @@ ConfigPlugin.prototype.apply = function (compiler) {
         compiler.hooks.done.tap('ConfigPlugin', () => {
             packageVendors(this.options);
             generateThemes(this.options);
-            copyHelpFiles(this.options);
-            copyMsiePolyfill(this.options);
+            copyAssets(this.options);
         });
-        //compiler.hooks.done.tap('ConfigPlugin', () => generateThemes(this.options));
     }
 };
 
