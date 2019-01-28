@@ -231,12 +231,6 @@ class Object(gws.Object):
             'gws.ext.template',
             self.var('printTemplate', default=DEFAULT_PRINT_TEMPLATE))
 
-        # self.export_template: t.TemplateObject = None
-        # if self.var('exportTemplate'):
-        #     self.export_template = self.add_child(
-        #         'gws.ext.template',
-        #         self.var('exportTemplate'))
-
         self.buchung = self.var('buchung')
 
         self.eigentuemer = self.var('eigentuemer')
@@ -323,13 +317,7 @@ class Object(gws.Object):
         job_uid = gws.random_string(64)
         out_path = '/tmp/' + job_uid + 'fs.export.csv'
 
-        # self.export_template.render(context={
-        #     'features': features
-        # }, out_path=out_path)
-        #
-
-        with open(out_path, 'w') as fp:
-            export.as_csv((f.attributes for f in features), p.groups, fp)
+        export.as_csv(self, (f.attributes for f in features), p.groups, out_path)
 
         job = gws.tools.job.create(
             uid=job_uid,

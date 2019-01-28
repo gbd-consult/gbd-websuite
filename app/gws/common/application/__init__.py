@@ -7,6 +7,7 @@ import gws.auth.types
 import gws.config
 import gws.common.client
 import gws.common.project
+import gws.common.csv
 import gws.types as t
 import gws.server.types
 import gws.tools.misc as misc
@@ -45,6 +46,7 @@ class Config(t.Config):
     timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
     web: t.Optional[gws.web.types.Config] = {}  #: webserver configuration
     fonts: t.Optional[t.dirpath]  #: directory with the custom fonts
+    csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
 
 
 class Object(gws.Object):
@@ -88,6 +90,8 @@ class Object(gws.Object):
         cc = self.var('client')
         if cc:
             self.client = self.add_child(gws.common.client.Object, cc)
+
+        self.add_child(gws.common.csv.Object, self.var('csv'))
 
 
 def _is_remote_admin_enabled():

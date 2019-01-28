@@ -1,5 +1,5 @@
 import itertools
-import time
+import gws.common.csv
 
 import gws
 
@@ -106,7 +106,7 @@ _groups = {
         # 'nutzung.key_id',
         # 'nutzung.key_label',
         'nutzung.type',
-        #'nutzung.type_id',
+        # 'nutzung.type_id',
     ]
 }
 
@@ -147,22 +147,24 @@ _headers = {
 }
 
 
-def as_csv(fs_list, groups, fp):
+def as_csv(obj, fs_list, groups, path):
     # make keys from groups
 
     keys = []
     for g in groups:
         keys.extend(_groups[g])
 
-    # headers
-
-    _write_row((_headers.get(k, k) for k in keys), fp)
+    headers = [_headers.get(k, k) for k in keys]
+    rows = []
 
     for fs in fs_list:
-        fs_as_csv(fs, keys, fp)
+        fs_as_csv(fs, keys, rows)
+
+    csv: gws.common.csv.Object = obj.root.find_first('gws.common.csv')
+    csv.write(path, headers, rows)
 
 
-def fs_as_csv(fs, keys, fp):
+def fs_as_csv(fs, keys, rows):
     flat = _flatten(fs)
 
     # keep keys we need
@@ -180,7 +182,7 @@ def fs_as_csv(fs, keys, fp):
     # no lists, write a single row
 
     if not lst:
-        _write_flat(flat, keys, fp)
+        _write_flat(flat, keys, rows)
         return
 
     # create a row for each combination of list indexes
@@ -193,7 +195,7 @@ def fs_as_csv(fs, keys, fp):
             for f in flat
             if _indexes_match(f, lst.keys(), lst_indexes)
         ]
-        _write_flat(matching, keys, fp)
+        _write_flat(matching, keys, rows)
 
 
 def _flatten(fs):
@@ -259,22 +261,8 @@ def _indexes_match(flat_elem, lst_keys, lst_indexes):
     return True
 
 
-def _field(s):
-    if isinstance(s, str):
-        s = s.replace('"', '""')
-        return '"' + s + '"'
-    if isinstance(s, float):
-        return '%.2f' % s
-    return '' if s is None else str(s)
-
-
-def _write_row(values, fp):
-    r = ','.join(_field(v) for v in values)
-    fp.write(r + '\r\n')
-
-
-def _write_flat(flat, keys, fp):
+def _write_flat(flat, keys, rows):
     r = {}
     for path, pos, val in flat:
         r[path] = val
-    _write_row((r.get(k) for k in keys), fp)
+    rows.append([r.get(k) for k in keys])
