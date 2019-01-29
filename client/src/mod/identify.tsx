@@ -8,26 +8,18 @@ abstract class BaseTool extends gws.Controller implements gws.types.ITool {
     abstract hoverMode;
 
     async run(evt) {
-        let center = evt.coordinate,
-            params = await this.map.searchParams('', new ol.geom.Point(center)),
-            res = await this.app.server.searchFindFeatures(params);
-
-        if (res.error) {
-            console.log('SEARCH_ERROR', res);
-            return [];
-        }
-
-        let features = this.map.readFeatures(res.features);
+        let pt = new ol.geom.Point(evt.coordinate),
+            features = await this.map.searchForFeatures({geometry: pt});
 
         features.forEach(f => {
             if (!f.geometry)
-                f.setGeometry(new ol.geom.Point(center));
+                f.setGeometry(pt);
         });
 
         if (features.length) {
             this.update({
                 marker: {
-                    features,
+                    features: [features[0]],
                     mode: 'draw',
                 },
                 popupContent: <gws.components.feature.PopupList controller={this} features={features}/>

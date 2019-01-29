@@ -4,6 +4,7 @@ import gws.gis.feature
 import gws.gis.proj
 import gws.gis.shape
 import gws.tools.json2
+import gws.tools.misc as misc
 import gws.types as t
 from .impl import Connection, Error
 
@@ -127,7 +128,7 @@ class Object(gws.Object, t.DbProviderObject):
                 pk = (rec.get(key_col) if key_col else None) or gws.random_string(16)
 
                 features.append(gws.gis.feature.Feature({
-                    'uid': '.'.join([self.uid, args.table.name, str(pk)]),
+                    'uid': misc.sha256(args.table.name) + '_' + str(pk),
                     'attributes': rec,
                     'shape': shape
                 }))

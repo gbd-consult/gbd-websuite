@@ -109,6 +109,7 @@ class Feature(t.FeatureInterface):
     def props(self):
         return t.FeatureProps({
             'attributes': self.attributes or {},
+            'category': self.category,
             'description': self.description,
             'label': self.label,
             'shape': self.shape.props if self.shape else None,

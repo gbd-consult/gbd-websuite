@@ -35,10 +35,22 @@ module.exports = v => ({
     },
 
 
-    '.cmpFeatureZoomIcon': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('image/center_focus_weak', v.FOCUS_COLOR),
-    },
+    '.uiIconButton': {
 
+        '&.cmpFeatureZoomIcon': {
+            ...v.ICON('normal'),
+            ...v.GOOGLE_SVG('image/center_focus_weak', v.FOCUS_COLOR),
+        },
+
+        '&.cmpFeatureSelectIcon': {
+            ...v.ICON('small'),
+            ...v.GOOGLE_SVG('content/add_circle_outline', v.FOCUS_COLOR),
+        },
+
+        '&.cmpFeatureUnselectIcon': {
+            ...v.ICON('small'),
+            ...v.GOOGLE_SVG('content/remove_circle_outline', v.FOCUS_COLOR),
+        },
+    }
 
 });

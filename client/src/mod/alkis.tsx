@@ -56,6 +56,7 @@ const STRINGS = {
 
     submitButton: "Suchen",
     lensButton: "Räumliche Suche",
+    selectionSearchButton: "in der Auswahl Suchen",
     resetButton: "Neu",
     exportButton: "Exportieren",
 
@@ -475,6 +476,13 @@ class SearchForm extends gws.View<FsSearchProps> {
                 </Cell>
                 <Cell>
                     <gws.ui.IconButton
+                        {...gws.tools.cls('modAlkisSelectionButton')}
+                        tooltip={STRINGS.selectionSearchButton}
+                        whenTouched={() => cc.selectionSearch()}
+                    />
+                </Cell>
+                <Cell>
+                    <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
                         tooltip={STRINGS.lensButton}
                         whenTouched={() => cc.startLens()}
@@ -769,15 +777,18 @@ class AlkisLensTool extends lens.Tool {
 
     }
 
+    get style() {
+        return this.map.getStyleFromSelector('.modAlkisLensFeature');
+    }
+
     async whenChanged(geom) {
-        console.log('MASTER', this.master)
-        this.master.updateFsParams({shape: this.map.geom2shape(geom)});
+        this.master.updateFsParams({shapes: [this.map.geom2shape(geom)]});
         await this.master.search();
     }
 
     stop() {
         super.stop();
-        this.master.updateFsParams({shape: null});
+        this.master.updateFsParams({shapes: null});
     }
 }
 
@@ -878,6 +889,29 @@ class AlkisController extends gws.Controller {
             alkisFsStrassen: strassen
         });
     };
+
+    selectionSearch() {
+        let geoms = this.selectionGeometries();
+        if (geoms) {
+            this.updateFsParams({shapes: geoms.map(g => this.map.geom2shape(g))});
+            this.search();
+        }
+    }
+
+    selectionGeometries() {
+        let sel = this.getValue('selectFeatures') as Array<gws.types.IMapFeature>;
+
+        if (sel)
+            return sel.map(f => f.geometry);
+
+        let m = this.getValue('marker');
+        if (m && m.features) {
+            let gs = gws.tools.compact(m.features.map((f: gws.types.IMapFeature) => f.geometry));
+            if (gs.length > 0) {
+                return gs
+            }
+        }
+    }
 
     startLens() {
         this.app.startTool('Tool.Alkis.Lens');

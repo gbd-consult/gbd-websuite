@@ -59,19 +59,17 @@ class DproconController extends gws.Controller {
     }
 
     async run() {
-        let marker = this.getValue('marker');
+        let sel = this.getValue('selectFeatures') as Array<gws.types.IMapFeature>;
 
-        if (!marker || !marker.features)
-            return;
+        if (sel) {
+            let res = await this.app.server.dproconConnect({
+                projectUid: this.app.project.uid,
+                shapes: sel.map(f => f.shape),
+            });
 
-        let shapes = marker.features.map((f: gws.types.IMapFeature) => f.shape);
-        let res = await this.app.server.dproconConnect({
-            projectUid: this.app.project.uid,
-            shapes
-        });
-
-        if (res.url) {
-            this.app.navigate(res.url);
+            if (res.url) {
+                this.app.navigate(res.url);
+            }
         }
     }
 

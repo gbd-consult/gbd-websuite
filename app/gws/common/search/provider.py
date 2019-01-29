@@ -27,8 +27,8 @@ class Object(gws.PublicObject, t.SearchProviderInterface):
         self.title = self.var('title', default='')
 
     def context_shape(self, args: t.SearchArgs):
-        if args.get('shape'):
-            return args.shape
+        if args.get('shapes'):
+            return gws.gis.shape.union(args.get('shapes'))
         ctx = self.var('defaultContext')
         if ctx == 'view' and args.get('bbox'):
             return gws.gis.shape.from_bbox(args.bbox, args.crs)

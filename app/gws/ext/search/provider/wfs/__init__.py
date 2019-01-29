@@ -3,6 +3,7 @@ import gws.common.search.provider
 import gws.ows.wfs
 import gws.types as t
 import gws.ows.util
+import gws.gis.shape
 
 
 class Config(gws.common.search.provider.Config):
@@ -38,12 +39,12 @@ class Object(gws.common.search.provider.Object):
     def can_run(self, args):
         return (
             'GetFeature' in self.service.operations
-            and args.shape
+            and args.shapes
             and not args.keyword
         )
 
     def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
-        shape = args.shape
+        shape = gws.gis.shape.union(args.shapes)
         if shape.type == 'Point':
             shape = shape.tolerance_buffer(args.get('tolerance'))
 

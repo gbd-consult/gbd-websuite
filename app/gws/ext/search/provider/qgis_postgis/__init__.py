@@ -48,12 +48,12 @@ class Object(gws.common.search.provider.Object):
 
     def can_run(self, args):
         # qgis-pg is for spatial searches only
-        return args.shape and not args.keyword
+        return args.shapes and not args.keyword
 
     def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
         return self.db.select(t.SelectArgs({
             'table': self.table,
-            'shape': args.shape,
+            'shape': self.context_shape(args),
             'limit': args.limit,
             'tolerance': args.tolerance,
             'extraWhere': self.extra_where,

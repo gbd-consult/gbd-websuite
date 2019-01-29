@@ -40,6 +40,14 @@ const lensPropsKeys = [
 
 export class Tool extends gws.Controller implements gws.types.ITool {
 
+    get style() {
+        return this.map.getStyleFromSelector('.modLensFeature');
+    }
+
+    get editStyle() {
+        return this.map.getStyleFromSelector('.modLensFeatureEdit');
+    }
+
     start() {
         let master = this.app.controller(MASTER) as LensController;
         master.start(this);
@@ -50,16 +58,8 @@ export class Tool extends gws.Controller implements gws.types.ITool {
         master.stop(this);
     }
 
-    async whenChanged(geom) {
-        let params = await this.map.searchParams('', geom),
-            res = await this.app.server.searchFindFeatures(params);
-
-        if (res.error) {
-            console.log('SEARCH_ERROR', res);
-            return;
-        }
-
-        let features = this.map.readFeatures(res.features);
+    async whenChanged(geometry) {
+        let features = await this.map.searchForFeatures({geometry});
 
         if (features.length) {
             this.update({
@@ -79,16 +79,11 @@ export class Tool extends gws.Controller implements gws.types.ITool {
         }
     }
 
-
 }
 
 class DrawTool extends draw.Tool {
     get master() {
         return this.app.controller(MASTER) as LensController;
-    }
-
-    get style() {
-        return this.master.editStyle;
     }
 
     whenStarted(shapeType, oFeature) {
@@ -106,27 +101,6 @@ class DrawTool extends draw.Tool {
     }
 }
 
-function trackMouse(evt: React.MouseEvent, onMove, onUp) {
-
-    let move = evt => {
-        onMove(evt);
-        evt.preventDefault();
-        evt.stopPropagation();
-    };
-
-    let up = evt => {
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', up);
-        onUp(evt);
-    }
-
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
-
-    //move(evt.nativeEvent)
-
-}
-
 class LensController extends gws.Controller implements gws.types.IController {
     uid = MASTER;
 
@@ -136,14 +110,6 @@ class LensController extends gws.Controller implements gws.types.IController {
     layer: LensLayer;
     oOverlay: ol.Overlay;
     overlayRef: React.RefObject<HTMLDivElement>;
-    style: gws.types.IMapStyle;
-    editStyle: gws.types.IMapStyle;
-
-
-    // get mapOverlayView() {
-    //     return this.createElement(
-    //         this.connect(LensOverlayView, lensPropsKeys))
-    // }
 
     get feature(): gws.types.IMapFeature {
         if (!this.layer)
@@ -155,9 +121,6 @@ class LensController extends gws.Controller implements gws.types.IController {
 
     async init() {
         this.overlayRef = React.createRef();
-        this.style = this.map.getStyleFromSelector('.modLensFeature');
-        this.editStyle = this.map.getStyleFromSelector('.modLensFeatureEdit');
-
         await this.app.addTool('Tool.Lens', this.app.createController(Tool, this));
         await this.app.addTool('Tool.Lens.Draw', this.drawTool = this.app.createController(DrawTool, this));
     }
@@ -174,13 +137,15 @@ class LensController extends gws.Controller implements gws.types.IController {
 
     }
 
-    start(tool) {
+    start(tool: Tool) {
         this.currTool = tool;
 
         this.layer = this.map.addServiceLayer(new LensLayer(this.map, {
             uid: '_lens',
-            style: this.style,
+            style: tool.style,
         }));
+
+        this.drawTool.style = tool.editStyle;
 
         let geom = this.getValue('lensGeometry') || this.defaultGeometry;
 
@@ -225,9 +190,7 @@ class LensController extends gws.Controller implements gws.types.IController {
         console.log('LENS_RUN', this.feature.geometry)
 
         this.currTool.whenChanged(geom);
-
     }
-
 
     createOverlay() {
         // https://github.com/openlayers/openlayers/issues/6948

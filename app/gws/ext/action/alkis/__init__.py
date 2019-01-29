@@ -127,7 +127,7 @@ class FsQueryParams(t.Data):
     zaehler: t.Optional[str]
     nenner: t.Optional[str]
     flurstuecksfolge: t.Optional[str]
-    shape: t.Optional[t.ShapeProps]
+    shapes: t.Optional[t.List[t.ShapeProps]]
 
 
 class FsPrintParams(FsQueryParams):
@@ -416,8 +416,10 @@ class Object(gws.Object):
 
         query = self._remove_restricted_params(query, allow_eigentuemer, allow_buchung)
 
-        if query.get('shape'):
-            query.shape = gws.gis.shape.from_props(query.shape)
+        if query.get('shapes'):
+            shape = gws.gis.shape.union(gws.gis.shape.from_props(s) for s in query.get('shapes'))
+            if shape:
+                query.shape = shape
 
         total, features = self._find(query, target_crs, allow_eigentuemer, allow_buchung, self.var('limit'))
 

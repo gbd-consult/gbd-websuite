@@ -1,39 +1,22 @@
-
-
 module.exports = v => ({
 
     '.modSelectToolbarButton': {
-        ...v.LOCAL_SVG('zoom_rectangle')
+        ...v.LOCAL_SVG('select', v.TOOLBAR_BUTTON_COLOR)
     },
 
     '.modSelectFeature': {
-        stroke: v.COLOR.gbdBlue,
+        stroke: v.COLOR.orange100,
         strokeWidth: 3,
-        strokeDasharray: '4, 4',
-    },
-    '.modSelectDraw': {
-        stroke: v.COLOR.gbdBlue,
-        strokeWidth: 3,
-        strokeDasharray: '4, 4',
+        strokeDasharray: "5,5",
         mark: 'circle',
-        markSize: 8,
-        markFill: v.COLOR.gbdBlue,
+        markFill: v.COLOR.orange300,
+        markSize: 10,
+        fill: v.COLOR.opacity(v.COLOR.orange500, 0.3),
     },
 
-    '.modSelectAreaButton': {
-        ...v.LOCAL_SVG('select-polygon-24px', v.TOOLBAR_BUTTON_COLOR)
+    '.modSelectSidebarIcon': {
+        ...v.LOCAL_SVG('select', v.SIDEBAR_HEADER_COLOR)
     },
 
-    '.modSelectPointButton': {
-        ...v.LOCAL_SVG('baseline-select-24px', v.TOOLBAR_BUTTON_COLOR)
-    },
-
-    '.modSelectPolygonButton': {
-        ...v.LOCAL_SVG('select_add_polygon-24px', v.TOOLBAR_BUTTON_COLOR)
-    },
-
-    '.modSelectDropButton': {
-        ...v.GOOGLE_SVG('content/delete_sweep', v.TOOLBAR_BUTTON_COLOR)
-    },
 
 });

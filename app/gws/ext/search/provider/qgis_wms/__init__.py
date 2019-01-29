@@ -28,15 +28,15 @@ class Object(gws.common.search.provider.Object):
 
     def can_run(self, args):
         return (
-            args.shape
-            and args.shape.type == 'Point'
+            args.shapes
+            and args.shapes[0].type == 'Point'
             and not args.keyword
         )
 
     def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
         qgis_crs = self.service.supported_crs[0]
 
-        shape = args.shape
+        shape = args.shapes[0]
         if args.crs != qgis_crs:
             shape = shape.transform(qgis_crs)
 

@@ -152,18 +152,10 @@ class SearchController extends gws.Controller {
 
     }
 
-    protected async run(val) {
+    protected async run(keyword) {
         this.update({searchWaiting: true, searchFailed: false});
 
-        let params = await this.map.searchParams(val, null);
-        let res = await this.app.server.searchFindFeatures(params);
-
-        if (res.error) {
-            console.log('SEARCH_ERROR', res);
-            return [];
-        }
-
-        let features = this.map.readFeatures(res.features);
+        let features = await this.map.searchForFeatures({keyword});
 
         this.update({
             searchWaiting: false,

@@ -21,6 +21,7 @@ let mods = [
     require('./mod/marker'),
     require('./mod/misc'),
     require('./mod/print'),
+    require('./mod/select'),
     require('./mod/search'),
     require('./mod/overview'),
     require('./mod/uidemo'),

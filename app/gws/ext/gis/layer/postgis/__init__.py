@@ -29,6 +29,11 @@ class Object(gws.gis.layer.Vector):
             self.crs = conn.crs_for_column(self.table.name, self.table.geometryColumn)
             self.geometry_type = conn.geometry_type_for_column(self.table.name, self.table.geometryColumn)
 
+        self.add_child('gws.ext.search.provider.sql', t.Config({
+            'db': self.db.uid,
+            'table': self.table,
+        }))
+
     @property
     def props(self) -> gws.gis.layer.VectorProps:
         return gws.extend(super().props, {

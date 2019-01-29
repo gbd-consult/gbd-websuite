@@ -575,6 +575,7 @@ class StyleProps(Data):
 
 class FeatureProps(Data):
     attributes: Optional[dict]
+    category: str = ''
     description: str = ''
     label: str = ''
     shape: Optional[ShapeProps]
@@ -664,7 +665,7 @@ class SearchArgs(Data):
     tolerance: int
     project: ProjectObject
     resolution: float
-    shape: Optional[ShapeInterface]
+    shapes: List[ShapeInterface]
 
 
 class SearchProviderInterface(ObjectInterface):

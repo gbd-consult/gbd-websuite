@@ -152,4 +152,9 @@ module.exports = {
     modDrawOkButton: 'Zeichnen abschließen',
     modDrawCancelButton: 'Zeichnen abbrechen',
 
+    modSelectToolbarButton: 'Auswählen',
+    modSelectTitle: 'Auswahl',
+    modSelectNoObjects: 'keine Objekte ausgewählt',
+
+
 };

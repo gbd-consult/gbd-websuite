@@ -43,11 +43,33 @@ module.exports = v => ({
         }
     },
 
+    '.modAlkisSelectionButton': {
+        ...v.LOCAL_SVG('search_selection', v.BUTTON_COLOR),
+        backgroundColor: v.BUTTON_BACKGROUND,
+        borderRadius: v.BORDER_RADIUS,
+        '&.isActive': {
+            backgroundColor: v.PRIMARY_BACKGROUND,
+        }
+    },
+
+    '.modAlkisLensFeature': {
+        stroke: v.COLOR.cyan100,
+        strokeWidth: 3,
+        strokeDasharray: "5,5",
+        mark: 'circle',
+        markFill: v.COLOR.cyan300,
+        markSize: 10,
+        fill: v.COLOR.opacity(v.COLOR.cyan500, 0.3),
+    },
+
+
+
 
     '.uiIconButton.modAlkisFeatureSelectIcon': {
         ...v.ICON('small'),
         ...v.GOOGLE_SVG('content/add_circle_outline', v.FOCUS_COLOR),
     },
+
 
     '.uiIconButton.modAlkisFeatureUnselectIcon': {
         ...v.ICON('small'),

@@ -43,7 +43,15 @@ def from_xy(x, y, crs):
 
 
 def union(shapes):
+    if not shapes:
+        return None
+
     shapes = list(shapes)
+    if len(shapes) == 0:
+        return None
+    if len(shapes) == 1:
+        return shapes[0]
+
     crs = shapes[0].crs
     shapes = [s.transform(crs) for s in shapes]
     geo = shapely.ops.unary_union([s.geo for s in shapes])

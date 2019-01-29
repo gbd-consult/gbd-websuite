@@ -29,7 +29,7 @@ class Params(t.Data):
     limit: int = 0
     projectUid: str
     resolution: float
-    shape: t.Optional[t.ShapeProps]
+    shapes: t.Optional[t.List[t.ShapeProps]]
     withAttributes: bool = True
     withDescription: bool = True
     withGeometry: bool = True
@@ -62,7 +62,7 @@ class Object(gws.Object):
             'project': project,
             'resolution': p.resolution,
             'tolerance': self.pixel_tolerance * p.resolution,
-            'shape': gws.gis.shape.from_props(p.shape) if p.get('shape') else None,
+            'shapes': [gws.gis.shape.from_props(s) for s in p.get('shapes', [])]
         })
 
         # layer-provider-feature triples
@@ -85,8 +85,13 @@ class Object(gws.Object):
 
         total = len(lpf)
         fprops = []
+        uids = set()
 
         for layer, prov, f in lpf[:limit]:
+            if f.uid in uids:
+                continue
+            uids.add(f.uid)
+
             f.provider = prov
             f.layer = layer
 

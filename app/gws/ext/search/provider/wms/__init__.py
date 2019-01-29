@@ -43,13 +43,14 @@ class Object(gws.common.search.provider.Object):
     def can_run(self, args):
         return (
             'GetFeatureInfo' in self.service.operations
-            and args.shape
-            and args.shape.type == 'Point'
+            and args.shapes
+            and args.shapes[0].type == 'Point'
             and not args.keyword
         )
 
     def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
-        crs, shape = gws.ows.util.crs_and_shape(args.crs, self.service.supported_crs, args.shape)
+        shape = args.shapes[0]
+        crs, shape = gws.ows.util.crs_and_shape(args.crs, self.service.supported_crs, shape)
         axis = gws.ows.util.axis_for(self.axis, 'WMS', self.service.version, crs)
 
         fa = t.FindFeaturesArgs({

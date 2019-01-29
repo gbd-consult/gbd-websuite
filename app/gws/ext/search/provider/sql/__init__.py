@@ -34,9 +34,9 @@ class Object(gws.common.search.provider.Object):
     def can_run(self, args):
         if self.keyword_required and not args.keyword:
             return False
-        if self.geometry_required and not args.shape:
+        if self.geometry_required and not args.shapes:
             return False
-        return args.keyword or args.shape
+        return args.keyword or args.shapes
 
     def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
 
