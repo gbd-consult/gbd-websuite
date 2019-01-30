@@ -185,19 +185,29 @@ class FeatureDetails extends gws.View<EditorViewProps> {
     }
 }
 
+class LayerList extends gws.View<EditorViewProps> {
+    render() {
+        // @TODO list of editable layers
+        return <sidebar.EmptyTab>
+            {this.__('modEditorNoLayer')}
+        </sidebar.EmptyTab>;
+
+    }
+
+}
+
 class EditorSidebar extends gws.View<EditorViewProps> {
     render() {
         if (!this.props.editorLayer) {
-            // @TODO list of editable layers
-            return <sidebar.EmptyTab>
-                {this.__('modEditorNoLayer')}
-            </sidebar.EmptyTab>;
+            return <LayerList {...this.props} />;
         }
 
-        if (this.props.editorFeature)
-            return <FeatureDetails {...this.props} />;
+        if (!this.props.editorFeature) {
+            return <FeatureList {...this.props} />;
+        }
 
-        return <FeatureList {...this.props} />;
+        return <FeatureDetails {...this.props} />;
+
     }
 }
 

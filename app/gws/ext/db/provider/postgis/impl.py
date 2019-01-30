@@ -4,6 +4,7 @@ import psycopg2
 import psycopg2.extensions
 import psycopg2.extras
 import psycopg2.sql
+import psycopg2.pool
 
 import gws
 import gws.gis.shape
@@ -23,14 +24,19 @@ class Connection:
         self.itersize = params.get('itersize', 100)
 
     def __enter__(self):
-        self.conn = psycopg2.connect(**self.params)
+        pool_key = 'psycopg2.pool' + _dict_hash(self.params)
+        self.pool: psycopg2.pool.ThreadedConnectionPool = gws.get_global(pool_key, self._connection_pool)
+        self.conn = self.pool.getconn()
         self.conn.autocommit = True
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.conn.close()
-        self.conn = None
+        self.pool.putconn(self.conn)
         return False
+
+    def _connection_pool(self):
+        gws.log.info(f'connection pool created')
+        return psycopg2.pool.ThreadedConnectionPool(1, 20, **self.params)
 
     def _exec(self, cur, sql, params=None):
         try:
@@ -223,3 +229,10 @@ class Connection:
 
 def _comma(s):
     return ','.join(s)
+
+
+def _dict_hash(d):
+    s = ''
+    for k, v in sorted(d.items()):
+        s += f'{k}={v} '
+    return s

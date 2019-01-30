@@ -30,7 +30,9 @@ class Object(gws.Object, t.DbProviderObject):
 
     @property
     def connect_params(self):
-        params = {}
+        params = {
+            'application_name': 'gws',
+        }
         for p in 'host', 'port', 'user', 'password', 'database':
             params[p] = self.var(p)
         timeout = self.var('timeout')
