@@ -19,8 +19,7 @@ class Config(t.Config):
     locale: t.Optional[str]  #: Project locale
     map: t.Optional[gws.common.map.Config]  #: Map configuration
     meta: t.Optional[t.MetaConfig]  #: project metadata
-    multi: bool = False  #: true if this is a multi-project template
-    multiMatch: t.Optional[t.regex]  #: filename pattern for a multi-project template
+    multi: t.Optional[t.regex]  #: filename pattern for a multi-project template
     overviewMap: t.Optional[gws.common.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.common.printer.Config]  #: printer configuration
     search: t.Optional[gws.common.search.Config]  #: project-wide search configuration
