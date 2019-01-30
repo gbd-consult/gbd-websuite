@@ -130,7 +130,7 @@ module.exports = {
     modOverviewExtent: 'Ausmaß',
     modOverviewCenterX: 'Mitte-X',
     modOverviewCenterY: 'Mitte-Y',
-    modOverviewScale: 'Maßtab',
+    modOverviewScale: 'Maßstab',
     modOverviewRotation: 'Rotation',
     modOverviewUpdateButton: 'Aktualisieren',
 
