@@ -544,12 +544,12 @@ class Object(gws.Object):
         return False
 
     def _can_read_eigentuemer(self, req):
-        b = req.user.can_read(self.eigentuemer)
+        b = req.user.can_use(self.eigentuemer)
         gws.log.debug(f'_can_read_eigentuemer user={req.user.full_uid!r} res={b}')
         return b
 
     def _can_read_buchung(self, req):
-        b = req.user.can_read(self.buchung)
+        b = req.user.can_use(self.buchung)
         gws.log.debug(f'_can_read_buchung user={req.user.full_uid!r} res={b}')
         return b
 

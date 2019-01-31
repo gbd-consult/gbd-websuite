@@ -11,7 +11,7 @@ module.exports = {
     appErrorBackHome: 'back to home page',
 
     modLayersTooltip: 'layers',
-    modEditorTooltip: 'edit',
+    modEditTooltip: 'edit',
 
     modUserTooltip: 'user',
     modUserLoginButton: 'login',

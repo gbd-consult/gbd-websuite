@@ -82,8 +82,18 @@ class Object(gws.Object):
             gws.log.info('REMOTE_ADMIN: enabled')
             actions.append(t.Data({'type': 'remoteadmin'}))
 
+        action_hub = self.add_child(gws.Object, t.Config({
+            'uid': 'action_hub',
+            'access': [
+                t.Config({
+                    'type': 'allow',
+                    'role': 'all'
+                })
+            ]
+        }))
+
         for p in actions:
-            a = self.add_child('gws.ext.action', p)
+            a = action_hub.add_child('gws.ext.action', p)
             # global actions must have uid=type, see web.actions
             a.uid = p.type
 

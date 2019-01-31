@@ -32,22 +32,22 @@ class AuthRequest(wrappers.Request):
             raise ValueError('no auth!')
         return self._user
 
-    def require(self, klass, uid, verb='read'):
+    def require(self, klass, uid):
         node = gws.config.find(klass, uid)
         if not node:
             gws.log.error('require: not found', klass, uid)
             raise error.NotFound()
-        if not self.user.can(verb, node):
+        if not self.user.can_use(node):
             gws.log.error('require: denied', klass, uid)
             raise error.Forbidden()
         return node
 
-    def require_project(self, uid, verb='read'):
-        return self.require('gws.common.project', uid, verb)
+    def require_project(self, uid):
+        return self.require('gws.common.project', uid)
 
-    def acquire(self, klass, uid, verb='read'):
+    def acquire(self, klass, uid):
         node = gws.config.find(klass, uid)
-        if node and self.user.can(verb, node):
+        if node and self.user.can_use(node):
             return node
 
     def logged_in(self, user):

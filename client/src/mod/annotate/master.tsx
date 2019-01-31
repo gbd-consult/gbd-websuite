@@ -4,7 +4,7 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 
 import * as toolbar from '../common/toolbar';
-import * as edit from '../common/edit';
+import * as modify from '../common/modify';
 import * as draw from '../common/draw';
 
 import * as types from './types';
@@ -39,17 +39,17 @@ class AnnotateDrawTool extends draw.Tool {
         let f = this.drawFeature;
         this.master.layer.addFeature(f);
         this.master.selectFeature(f, false);
-        this.master.app.startTool('Tool.Annotate.Edit')
+        this.master.app.startTool('Tool.Annotate.Modify')
 
     }
 
     whenCancelled() {
-        this.master.app.startTool('Tool.Annotate.Edit')
+        this.master.app.startTool('Tool.Annotate.Modify')
     }
 
 }
 
-class AnnotateEditTool extends edit.Tool {
+class AnnotateModifyTool extends modify.Tool {
     get master() {
         return this.app.controller(types.MASTER) as AnnotateController;
     }
@@ -87,10 +87,10 @@ export class AnnotateDrawToolbarButton extends toolbar.Button {
 export class AnnotateController extends gws.Controller implements AnnotateController {
     uid = types.MASTER;
     layer: AnnotateLayer;
-    editTool: AnnotateEditTool;
+    modifyTool: AnnotateModifyTool;
 
     async init() {
-        await this.app.addTool('Tool.Annotate.Edit', this.editTool = this.app.createController(AnnotateEditTool, this));
+        await this.app.addTool('Tool.Annotate.Modify', this.modifyTool = this.app.createController(AnnotateModifyTool, this));
         await this.app.addTool('Tool.Annotate.Draw', this.app.createController(AnnotateDrawTool, this));
         this.layer = this.map.addServiceLayer(new AnnotateLayer(this.map, {
             uid: '_annotate',
@@ -167,7 +167,7 @@ export class AnnotateController extends gws.Controller implements AnnotateContro
         this.unselectFeature();
         this.layer.removeFeature(f);
         if (this.layer.features.length > 0)
-            this.app.startTool('Tool.Annotate.Edit');
+            this.app.startTool('Tool.Annotate.Modify');
 
     }
 

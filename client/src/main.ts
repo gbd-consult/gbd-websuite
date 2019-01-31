@@ -5,7 +5,7 @@ import * as gws from 'gws';
 let mods = [
     require('./mod/common/altbar'),
     require('./mod/common/draw'),
-    require('./mod/common/edit'),
+    require('./mod/common/modify'),
     require('./mod/common/lens'),
     require('./mod/common/toolbar'),
     require('./mod/common/sidebar'),
@@ -13,7 +13,7 @@ let mods = [
     require('./mod/annotate'),
     require('./mod/decorations'),
     require('./mod/dprocon'),
-    require('./mod/editor'),
+    require('./mod/edit'),
     require('./mod/gekos'),
     require('./mod/identify'),
     require('./mod/infobar'),

@@ -103,7 +103,7 @@ def _projects_for_user(user):
     ps = [
         p
         for p in gws.config.find_all('gws.common.project')
-        if user.can_read(p)
+        if user.can_use(p)
     ]
     return sorted(ps, key=lambda p: p.title)
 

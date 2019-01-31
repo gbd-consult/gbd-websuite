@@ -114,8 +114,9 @@ class LayerDetailsToolbar extends gws.View<ViewProps> {
             },
             edit() {
                 cc.update({
-                    editorLayer: layer,
-                    sidebarActiveTab: 'Sidebar.Editor',
+                    editLayer: layer,
+                    editFeature: null,
+                    sidebarActiveTab: 'Sidebar.Edit',
                 });
             },
             close() {
@@ -139,7 +140,7 @@ class LayerDetailsToolbar extends gws.View<ViewProps> {
                     whenTouched={f.show}
                 />
             </Cell>
-            {layer.editable && <Cell>
+            {layer.editAccess && <Cell>
                 <gws.ui.IconButton
                     className="modLayersDetailsEditButton"
                     tooltip={this.__('modLayersDetailsEditButton')}
@@ -206,7 +207,7 @@ class SidebarLayersController extends gws.Controller implements gws.types.ISideb
         let la = this.app.store.getValue('mapSelectedLayer');
         if (la && la.config.editable) {
             this.update({
-                editorLayer: la,
+                editLayer: la,
                 sidebarActiveTab: 'Sidebar.Editor',
             })
         }

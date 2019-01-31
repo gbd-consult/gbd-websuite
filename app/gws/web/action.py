@@ -52,7 +52,7 @@ def handle(req):
         gws.log.error('handler not found', cmd)
         raise error.NotFound()
 
-    if not req.user.can('execute', obj):
+    if not req.user.can_use(obj):
         gws.log.error('permission denied', cmd)
         raise error.Forbidden()
 

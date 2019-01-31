@@ -61,6 +61,10 @@ def as_epsg(p):
     return _check(p).epsg
 
 
+def as_srid(p):
+    return _check(p).srid
+
+
 def as_proj4text(p):
     return _check(p).proj4text
 
@@ -147,7 +151,6 @@ _aliases = {
 
 
 def parse(p):
-
     if isinstance(p, int):
         return 'srid', p
 
@@ -161,7 +164,6 @@ def parse(p):
 
     if p in _aliases:
         return 'other', _aliases[p]
-
 
     for k, r in _res.items():
         m = re.match(r, p)

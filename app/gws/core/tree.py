@@ -127,7 +127,7 @@ class RootObject(Object):
 
 class PublicObject(Object):
     def props_for(self, user):
-        if not user.can_read(self):
+        if not user.can_use(self):
             return None
         return _make_props(self.props, user)
 

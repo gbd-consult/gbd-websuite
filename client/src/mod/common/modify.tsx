@@ -9,7 +9,8 @@ export class Tool extends gws.Controller implements gws.types.ITool {
     snap: boolean = true;
 
     get editStyle(): gws.types.IMapStyle {
-        return this.layer ? this.layer.editStyle : null;
+        return null;
+        //return this.layer ? this.layer.editStyle : null;
     }
 
     whenSelected(f: gws.types.IMapFeature) {

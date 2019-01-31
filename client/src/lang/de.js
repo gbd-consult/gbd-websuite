@@ -11,14 +11,15 @@ module.exports = {
     appErrorBackHome: 'Zur Startseite',
 
     modLayersTooltip: 'Layerübersicht',
-    modEditorTooltip: 'Editieren',
 
-    modEditorDrawButton: 'Neues Objekt',
-	modEditorEditButton: 'Auswählen',
-	modEditorEndButton: 'Beenden',
-	modEditorNoLayer: 'Keine Layers zum Editieren ausgewählt',
-	modEditorObjectName: 'Objekt',
-	modEditorSave: 'Speichern',
+    modEditTooltip: 'Editieren',
+    modEditTitle: 'Editieren',
+    modEditDrawButton: 'Neues Objekt',
+	modEditModifyButton: 'Bearbeiten',
+	modEditEndButton: 'Beenden',
+	modEditNoLayer: 'Keine Layers zum Editieren ausgewählt',
+	modEditNewObjectName: 'Unbenannt',
+	modEditSave: 'Speichern',
 
     modUserTooltip: 'Anmeldung',
     modUserLoginButton: 'Einloggen',

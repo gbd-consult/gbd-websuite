@@ -32,13 +32,17 @@ _default_client_opts = ClientOptions({
 })
 
 
+class LayerEditConfig(t.Config):
+    access: t.Access
+
+
 class BaseConfig(t.WithTypeAndAccess):
     """map layer"""
 
     cache: t.Optional[t.CacheConfig]  #: cache configuration
     clientOptions: t.Optional[ClientOptions]  #: options for the layer display in the client
     description: t.Optional[t.TemplateConfig]  #: template for the layer description
-    editable: t.Optional[bool] = False  #: this layer is editable
+    edit: t.Optional[LayerEditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     featureFormat: t.Optional[t.FormatConfig]  #: feature formatting options
     grid: t.Optional[t.GridConfig]  #: grid configuration
@@ -65,7 +69,7 @@ class VectorConfig(BaseConfig):
 
 class BaseProps(t.Data):
     description: str = ''
-    editable: t.Optional[bool]
+    editAccess: t.Optional[t.List[str]]
     extent: t.Optional[t.Extent]
     meta: t.MetaData
     opacity: t.Optional[float]
@@ -174,11 +178,21 @@ class Base(gws.PublicObject, t.LayerObject):
             )
         return t.cast(t.MapView, self.parent).extent
 
+    def edit_access(self, user):
+        # @TODO granular edit access
+
+        e = self.var('edit')
+        if not e:
+            return None
+
+        e.parent = self
+        if user.can_use(e):
+            return ['all']
+
     @property
     def props(self):
 
         return gws.compact({
-            'editable': False,
             'meta': self.meta,
             'opacity': self.opacity,
             'options': self.var('clientOptions', default=_default_client_opts),
@@ -201,7 +215,7 @@ class Base(gws.PublicObject, t.LayerObject):
     def props_for(self, user):
         p = super().props_for(user)
         if p:
-            p['editable'] = self.var('editable') and user.can('write', self)
+            p['editAccess'] = self.edit_access(user)
         return p
 
     def mapproxy_config(self, mc, options=None):

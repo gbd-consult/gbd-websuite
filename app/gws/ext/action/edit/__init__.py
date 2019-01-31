@@ -1,5 +1,6 @@
 import gws.gis.feature
 import gws.tools.json2
+import gws.web
 
 import gws.types as t
 
@@ -22,20 +23,23 @@ class Object(gws.Object):
     def api_add_features(self, req, p: EditParams) -> EditResponse:
         """Add features to the layer"""
 
-        layer = req.require('gws.ext.gis.layer', p.layerUid, 'write')
+        layer = req.require('gws.ext.gis.layer', p.layerUid)
         fs = layer.add_features(p.features)
         return EditResponse({'features': [f.props for f in fs]})
 
     def api_delete_features(self, req, p: EditParams) -> EditResponse:
         """Delete features from the layer"""
 
-        layer = req.require('gws.ext.gis.layer', p.layerUid, 'write')
+        layer = req.require('gws.ext.gis.layer', p.layerUid)
         fs = layer.delete_features(p.features)
         return EditResponse({'features': [f.props for f in fs]})
 
     def api_update_features(self, req, p: EditParams) -> EditResponse:
         """Update features on the layer"""
 
-        layer = req.require('gws.ext.gis.layer', p.layerUid, 'write')
+        layer: t.LayerObject = req.require('gws.ext.gis.layer', p.layerUid)
+        if not layer.edit_access(req.user):
+            raise gws.web.error.Forbidden()
+
         fs = layer.update_features(p.features)
         return EditResponse({'features': [f.props for f in fs]})

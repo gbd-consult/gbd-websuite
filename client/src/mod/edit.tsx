@@ -4,35 +4,35 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 import * as sidebar from './common/sidebar';
 
-import * as edit from './common/edit';
+import * as modify from './common/modify';
 import * as draw from './common/draw';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
-interface EditorViewProps extends gws.types.ViewProps {
-    editorLayer: gws.types.IMapFeatureLayer;
-    editorFeatures: Array<gws.types.IMapFeature>;
-    editorFeature: gws.types.IMapFeature;
-    editorData: Array<gws.components.sheet.Attribute>;
+interface EditViewProps extends gws.types.ViewProps {
+    editLayer: gws.types.IMapFeatureLayer;
+    editFeatures: Array<gws.types.IMapFeature>;
+    editFeature: gws.types.IMapFeature;
+    editData: Array<gws.components.sheet.Attribute>;
     mapUpdateCount: number;
     appActiveTool: string;
 }
 
-const EditorStoreKeys = [
-    'editorLayer',
-    'editorFeatures',
-    'editorFeature',
-    'editorData',
+const EditStoreKeys = [
+    'editLayer',
+    'editFeatures',
+    'editFeature',
+    'editData',
     'mapUpdateCount',
     'appActiveTool',
 ];
 
-const MASTER = 'Shared.Editor';
+const MASTER = 'Shared.Edit';
 
-class EditorEditTool extends edit.Tool {
+class EditModifyTool extends modify.Tool {
 
     get master() {
-        return this.app.controller(MASTER) as EditorController;
+        return this.app.controller(MASTER) as EditController;
     }
 
     get layer() {
@@ -53,7 +53,7 @@ class EditorEditTool extends edit.Tool {
 
     start() {
         super.start();
-        let f = this.master.getValue('editorFeature');
+        let f = this.master.getValue('editFeature');
         if (f)
             this.selectFeature(f);
 
@@ -61,27 +61,26 @@ class EditorEditTool extends edit.Tool {
 
 }
 
-class EditorDrawTool extends draw.Tool {
+class EditDrawTool extends draw.Tool {
     get master() {
-        return this.app.controller(MASTER) as EditorController;
+        return this.app.controller(MASTER) as EditController;
     }
 
     async whenEnded(shapeType, oFeature) {
-        console.log('EditorDrawTool.whenEnded', oFeature)
+        console.log('EditDrawTool.whenEnded', oFeature)
         await this.master.addFeature(oFeature);
-        this.master.app.startTool('Tool.Editor.Edit')
+        this.master.app.startTool('Tool.Edit.Modify')
     }
 
     whenCancelled() {
-        this.master.app.startTool('Tool.Editor.Edit')
+        this.master.app.startTool('Tool.Edit.Modify')
     }
 }
 
-class FeatureList extends gws.View<EditorViewProps> {
+class FeatureList extends gws.View<EditViewProps> {
     render() {
-        let master = this.props.controller.app.controller(MASTER) as EditorController;
-        let layer = this.props.editorLayer;
-        console.log(layer.features[0])
+        let master = this.props.controller.app.controller(MASTER) as EditController;
+        let layer = this.props.editLayer;
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -111,22 +110,22 @@ class FeatureList extends gws.View<EditorViewProps> {
                     <Cell flex/>
                     <Cell>
                         <gws.ui.IconButton
-                            {...gws.tools.cls('modEditorEditButton', this.props.appActiveTool === 'Tool.Editor.Edit' && 'isActive')}
-                            tooltip={this.__('modEditorEditButton')}
-                            whenTouched={() => master.startTool('Tool.Editor.Edit')}
+                            {...gws.tools.cls('modEditModifyButton', this.props.appActiveTool === 'Tool.Edit.Modify' && 'isActive')}
+                            tooltip={this.__('modEditModifyButton')}
+                            whenTouched={() => master.startTool('Tool.Edit.Modify')}
                         />
                     </Cell>
                     <Cell>
                         <gws.ui.IconButton
-                            {...gws.tools.cls('modEditorDrawButton', this.props.appActiveTool === 'Tool.Editor.Draw' && 'isActive')}
-                            tooltip={this.__('modEditorDrawButton')}
-                            whenTouched={() => master.startTool('Tool.Editor.Draw')}
+                            {...gws.tools.cls('modEditDrawButton', this.props.appActiveTool === 'Tool.Edit.Draw' && 'isActive')}
+                            tooltip={this.__('modEditDrawButton')}
+                            whenTouched={() => master.startTool('Tool.Edit.Draw')}
                         />
                     </Cell>
                     <Cell>
                         <gws.ui.IconButton
                             className="modSidebarSecondaryClose"
-                            tooltip={this.__('modEditorEndButton')}
+                            tooltip={this.__('modEditEndButton')}
                             whenTouched={() => master.endEditing()}
                         />
                     </Cell>
@@ -138,11 +137,11 @@ class FeatureList extends gws.View<EditorViewProps> {
     }
 }
 
-class FeatureDetails extends gws.View<EditorViewProps> {
+class FeatureDetails extends gws.View<EditViewProps> {
     render() {
-        let master = this.props.controller.app.controller(MASTER) as EditorController;
-        let feature = this.props.editorFeature;
-        let data = this.props.editorData;
+        let master = this.props.controller.app.controller(MASTER) as EditController;
+        let feature = this.props.editFeature;
+        let data = this.props.editData;
 
         let changed = (k, v) => data.map(attr => attr.name === k ? {...attr, value: v} : attr);
 
@@ -153,17 +152,17 @@ class FeatureDetails extends gws.View<EditorViewProps> {
 
             <sidebar.TabBody>
                 <gws.components.sheet.Editor
-                    data={this.props.editorData}
+                    data={this.props.editData}
                     whenChanged={(name, value) => master.update({
-                        editorData: changed(name, value)
+                        editData: changed(name, value)
                     })}
                 />
                 <Row>
                     <Cell flex/>
                     <Cell>
                         <gws.ui.IconButton
-                            className="modEditorSaveButton"
-                            tooltip={this.__('modEditorSave')}
+                            className="modEditSaveButton"
+                            tooltip={this.__('modEditSave')}
                             whenTouched={() => master.saveForm(feature, data)}
                         />
                     </Cell>
@@ -185,24 +184,47 @@ class FeatureDetails extends gws.View<EditorViewProps> {
     }
 }
 
-class LayerList extends gws.View<EditorViewProps> {
+class LayerList extends gws.View<EditViewProps> {
     render() {
-        // @TODO list of editable layers
-        return <sidebar.EmptyTab>
-            {this.__('modEditorNoLayer')}
-        </sidebar.EmptyTab>;
+        let master = this.props.controller.app.controller(MASTER) as EditController;
+
+        let ls = this.props.controller.map.editableLayers();
+
+        if (gws.tools.empty(ls)) {
+            return <sidebar.EmptyTab>
+                {this.__('modEditNoLayer')}
+            </sidebar.EmptyTab>;
+        }
+
+        return <sidebar.Tab>
+            <sidebar.TabHeader>
+                <gws.ui.Title content={this.__('modEditTitle')}/>
+            </sidebar.TabHeader>
+
+            <sidebar.TabBody>
+                {ls.map(la => <Row key={la.uid} className='modEditLayerListItem'>
+                    <Cell>
+                        <gws.ui.Link
+                            whenTouched={() => master.update({editLayer: la})}
+                            content={la.title}
+                        />
+
+                    </Cell>
+                </Row>)}
+            </sidebar.TabBody>
+        </sidebar.Tab>
 
     }
 
 }
 
-class EditorSidebar extends gws.View<EditorViewProps> {
+class EditSidebar extends gws.View<EditViewProps> {
     render() {
-        if (!this.props.editorLayer) {
+        if (!this.props.editLayer) {
             return <LayerList {...this.props} />;
         }
 
-        if (!this.props.editorFeature) {
+        if (!this.props.editFeature) {
             return <FeatureList {...this.props} />;
         }
 
@@ -211,33 +233,33 @@ class EditorSidebar extends gws.View<EditorViewProps> {
     }
 }
 
-class EditorSidebarController extends gws.Controller implements gws.types.ISidebarItem {
+class EditSidebarController extends gws.Controller implements gws.types.ISidebarItem {
     get iconClass() {
-        return 'modEditorSidebarIcon';
+        return 'modEditSidebarIcon';
     }
 
     get tooltip() {
-        return this.__('modEditorTooltip');
+        return this.__('modEditTooltip');
     }
 
     get tabView() {
         return this.createElement(
-            this.connect(EditorSidebar, EditorStoreKeys)
+            this.connect(EditSidebar, EditStoreKeys)
         );
     }
 
 }
 
-class EditorController extends gws.Controller {
+class EditController extends gws.Controller {
     uid = MASTER;
 
     async init() {
-        await this.app.addTool('Tool.Editor.Edit', this.app.createController(EditorEditTool, this));
-        await this.app.addTool('Tool.Editor.Draw', this.app.createController(EditorDrawTool, this));
+        await this.app.addTool('Tool.Edit.Modify', this.app.createController(EditModifyTool, this));
+        await this.app.addTool('Tool.Edit.Draw', this.app.createController(EditDrawTool, this));
     }
 
     get layer(): gws.types.IMapFeatureLayer {
-        return this.app.store.getValue('editorLayer');
+        return this.app.store.getValue('editLayer');
     }
 
     async saveGeometry(f) {
@@ -312,16 +334,20 @@ class EditorController extends gws.Controller {
         }
 
         this.update({
-            editorFeature: f,
-            editorData: this.featureData(f)
-        })
+            editFeature: f,
+            editData: this.featureData(f)
+        });
+
+        if (this.getValue('appActiveTool') !== 'Tool.Edit.Modify')
+            this.app.startTool('Tool.Edit.Modify')
+
     }
 
     unselectFeature() {
         this.layer.features.forEach(f => f.setStyle(null));
         this.update({
-            editorFeature: null,
-            editorData: null
+            editFeature: null,
+            editData: null
         })
     }
 
@@ -357,7 +383,7 @@ class EditorController extends gws.Controller {
     }
 
     featureTitle(f: gws.types.IMapFeature) {
-        return f.props.title || (this.__('modEditorObjectName') + f.uid);
+        return f.props.title || (this.__('modEditNewObjectName'));
     }
 
     startTool(name) {
@@ -371,15 +397,15 @@ class EditorController extends gws.Controller {
 
     endEditing() {
         this.update({
-            editorLayer: null,
-            editorFeature: null,
-            editorData: null,
+            editLayer: null,
+            editFeature: null,
+            editData: null,
         })
     }
 
 }
 
 export const tags = {
-    'Shared.Editor': EditorController,
-    'Sidebar.Editor': EditorSidebarController,
+    'Shared.Edit': EditController,
+    'Sidebar.Edit': EditSidebarController,
 };

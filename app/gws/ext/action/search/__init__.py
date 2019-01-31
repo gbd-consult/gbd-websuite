@@ -125,7 +125,7 @@ class Object(gws.Object):
         gws.log.debug(
             'SEARCH_BEGIN: prov=%r layer=%r limit=%d' % (gws.get(prov, 'uid'), gws.get(layer, 'uid'), args.limit))
 
-        if not req.user.can('execute', prov):
+        if not req.user.can_use(prov):
             gws.log.debug('SEARCH_END: NO_ACCESS')
             return []
 

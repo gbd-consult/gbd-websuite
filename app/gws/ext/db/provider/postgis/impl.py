@@ -191,6 +191,19 @@ class Connection:
 
         return self.exec(sql, values)
 
+    def delete_many(self, table, key_column, key_values):
+        values = list(key_values)
+        if not values:
+            return
+
+        placeholders = _comma('%s' for _ in values)
+        sql = f'''
+            DELETE FROM {self.quote_table(table)} 
+            WHERE {self.quote_ident(key_column)} IN ({placeholders})
+        '''
+
+        return self.exec(sql, values)
+
     def batch_insert(self, table, data, on_conflict=None, page_size=100):
         all_cols = self.columns(table)
         cols = sorted(col for col in data[0] if col in all_cols)

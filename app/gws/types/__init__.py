@@ -116,18 +116,11 @@ class AccessType(Enum):
     deny = 'deny'
 
 
-class AccessMode(Enum):
-    read = 'read'
-    write = 'write'
-    execute = 'execute'
-
-
 class AccessRuleConfig(Config):
     """access rights definition for authorization roles"""
 
     type: AccessType  #: access type (deny or allow)
-    mode: List[AccessMode] = ['read', 'write', 'execute']  #: access mode
-    role: List[str]  #: list of roles to which this rule applies
+    role: str  #: a roles to which this rule applies
 
 
 #: alias:
@@ -547,6 +540,9 @@ class LayerObject(ObjectInterface, MapView):
     def get_features(self, bbox):
         raise NotImplementedError
 
+    def edit_access(self, user: 'AuthUserInterface'):
+        raise NotImplementedError
+
     def add_features(self, features: List['FeatureProps']):
         raise NotImplementedError
 
@@ -711,16 +707,7 @@ class AuthUserInterface:
     def attribute(self, key, default=''):
         raise NotImplementedError
 
-    def can_read(self, obj: ObjectInterface) -> bool:
-        raise NotImplementedError
-
-    def can_write(self, obj: ObjectInterface) -> bool:
-        raise NotImplementedError
-
-    def can_execute(self, obj: ObjectInterface) -> bool:
-        raise NotImplementedError
-
-    def can(self, mode, obj: ObjectInterface) -> bool:
+    def can_use(self, obj: ObjectInterface) -> bool:
         raise NotImplementedError
 
 
@@ -753,4 +740,13 @@ class DbProviderObject(ObjectInterface):
         raise NotImplementedError
 
     def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List[FeatureInterface]:
+        raise NotImplementedError
+
+    def insert(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
+        raise NotImplementedError
+
+    def update(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
+        raise NotImplementedError
+
+    def delete(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
         raise NotImplementedError

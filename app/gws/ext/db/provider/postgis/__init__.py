@@ -3,6 +3,7 @@ import gws.config
 import gws.gis.feature
 import gws.gis.proj
 import gws.gis.shape
+import gws.gis.proj
 import gws.tools.json2
 import gws.tools.misc as misc
 import gws.types as t
@@ -57,6 +58,20 @@ class Object(gws.Object, t.DbProviderObject):
                 raise gws.Error(f'cannot open db connection "{self.uid}"', e.args[0]) from e
 
         gws.get_global(f'db_ping_{self.uid}', ping)
+
+    def geometry_props(self, table: t.SqlTableConfig):
+        col = gws.get(table, 'geometryColumn')
+        if not col:
+            return [None, None]
+
+        def props():
+            with self.connect() as conn:
+                return [
+                    conn.crs_for_column(table.name, col),
+                    conn.geometry_type_for_column(table.name, col)
+                ]
+
+        return gws.get_global('geometry_props.' + table.name + '.' + col, props)
 
     def select(self, args: t.SelectArgs, extra_connect_params=None):
 
@@ -136,3 +151,50 @@ class Object(gws.Object, t.DbProviderObject):
                 }))
 
             return features
+
+    def update(self, table: t.SqlTableConfig, recs: t.List[dict]):
+        ids = []
+        self._prepare_for_update(table, recs)
+
+        with self.connect() as conn:
+            with conn.transaction():
+                for rec in recs:
+                    id = rec.pop(table.keyColumn)
+                    conn.update(table.name, table.keyColumn, id, rec)
+                    ids.append(id)
+
+        return ids
+
+    def insert(self, table: t.SqlTableConfig, recs: t.List[dict]):
+        ids = []
+        self._prepare_for_update(table, recs)
+
+        with self.connect() as conn:
+            with conn.transaction():
+                for rec in recs:
+                    ids.append(conn.insert_one(table.name, table.keyColumn, rec))
+
+        return ids
+
+    def delete(self, table: t.SqlTableConfig, recs: t.List[dict]):
+        ids = [rec.pop(table.keyColumn) for rec in recs]
+
+        with self.connect() as conn:
+            with conn.transaction():
+                conn.delete_many(table.name, table.keyColumn, ids)
+
+        return ids
+
+    def _prepare_for_update(self, table, recs):
+        crs, geometry_type = self.geometry_props(table)
+        srid = gws.gis.proj.as_srid(crs) if crs else None
+
+        geom_col = gws.get(table, 'geometryColumn')
+        for rec in recs:
+            if geom_col in rec and crs:
+                shape = rec[geom_col]
+                shape.transform(crs)
+                ph = 'ST_SetSRID(%s::geometry,%s)'
+                if geometry_type.startswith('MULTI'):
+                    ph = f'ST_Multi({ph})'
+                rec[geom_col] = [ph, shape.wkb_hex, srid]

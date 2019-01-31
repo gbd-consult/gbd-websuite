@@ -201,7 +201,7 @@ let rules = [
     require('./mod/decorations.css'),
     require('./mod/draw.css'),
     require('./mod/dprocon.css'),
-    require('./mod/editor.css'),
+    require('./mod/edit.css'),
     require('./mod/gekos.css'),
     require('./mod/identify.css'),
     require('./mod/infobar.css'),

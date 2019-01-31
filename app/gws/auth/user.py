@@ -23,7 +23,7 @@ _aliases = [
 ADMIN_ROLE_NAME = 'admin'
 
 
-def _check_permissions(who, obj, roles, mode):
+def _can_use(who, obj, roles):
     if ADMIN_ROLE_NAME in roles:
         return True
 
@@ -36,12 +36,15 @@ def _check_permissions(who, obj, roles, mode):
     cur = obj
     while cur:
         access = gws.get(cur, 'access')
+        
         if access:
-            for p in access:
-                if mode in p.mode and any(r in p.role for r in roles):
-                    gws.log.debug(
-                        f'PERMS: query: obj={obj!r} roles={roles!r} mode={mode!r}, found: {vars(p)} in {cur!r}')
-                    return p.type == 'allow'
+            for a in access:
+                for role in roles:
+                    if role == a.role:
+                        gws.log.debug(
+                            f'PERMS: query: obj={obj!r} roles={roles!r} found: {a.role}:{a.type} in {cur!r}')
+                        return a.type == 'allow'
+        
         cur = gws.get(cur, 'parent')
 
     gws.log.debug('PERMS: NOT found')
@@ -52,17 +55,8 @@ class Role:
     def __init__(self, name):
         self.name = name
 
-    def can_read(self, obj):
-        return self.can('read', obj)
-
-    def can_write(self, obj):
-        return self.can('write', obj)
-
-    def can_execute(self, obj):
-        return self.can('execute', obj)
-
-    def can(self, mode, obj):
-        return _check_permissions(self, obj, [self.name], mode)
+    def can_use(self, obj):
+        return _can_use(self, obj, [self.name])
 
 
 class User(gws.PublicObject, t.AuthUserInterface):
@@ -117,17 +111,8 @@ class User(gws.PublicObject, t.AuthUserInterface):
     def attribute(self, key, default=''):
         return self.attributes.get(key, default)
 
-    def can_read(self, obj):
-        return self.can('read', obj)
-
-    def can_write(self, obj):
-        return self.can('write', obj)
-
-    def can_execute(self, obj):
-        return self.can('execute', obj)
-
-    def can(self, mode, obj):
-        return _check_permissions(self, obj, self.roles, mode)
+    def can_use(self, obj):
+        return _can_use(self, obj, self.roles)
 
     @property
     def props(self):
@@ -141,14 +126,14 @@ class Guest(User):
 
 
 class System(User):
-    def can(self, mode, obj):
-        gws.log.debug(f'PERMS: sys_allow : obj={obj!r} mode={mode!r}')
+    def can_use(self, obj):
+        gws.log.debug(f'PERMS: sys_allow : obj={obj!r}')
         return True
 
 
 class Nobody(User):
-    def can(self, mode, obj):
-        gws.log.debug(f'PERMS: sys_deny : obj={obj!r} mode={mode!r}')
+    def can_use(self, obj):
+        gws.log.debug(f'PERMS: sys_deny : obj={obj!r}')
         return False
 
 
