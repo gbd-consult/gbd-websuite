@@ -7,21 +7,27 @@ DEFAULT_CMD = 'assetHttpGetPath'
 
 
 def _action_handler(project_uid, action_type):
-    if project_uid:
-        # try to find a project-specific action
-        # NB: the project must set the uid to project_uid.action_type
-        uid = project_uid + '.' + action_type
-        action = gws.config.find('gws.ext.action', uid)
-        if action:
-            gws.log.debug(f'action: using local: {uid}')
-            return action
+    root = gws.config.root()
 
-    action = gws.config.find('gws.ext.action', action_type)
+    if project_uid:
+        project = root.find('gws.common.project', project_uid)
+        if project:
+            action = project.action(action_type)
+            if action:
+                gws.log.debug(f'action: found project: {project_uid} {action_type}')
+                return action
+            else:
+                gws.log.debug(f'action: PROJECT ACTION NOT FOUND: {project_uid} {action_type}')
+        else:
+            gws.log.debug(f'action: PROJECT NOT FOUND: {project_uid}')
+
+    app = root.find_first('gws.common.application')
+    action = app.action(action_type)
     if action:
-        gws.log.debug(f'action: using global: {action_type}')
+        gws.log.debug(f'action: found global: {action_type}')
         return action
 
-    gws.log.debug(f'action: not found: {action_type}')
+    gws.log.debug(f'action: NOT FOUND: {project_uid} {action_type}')
 
 
 def handle(req):
@@ -46,18 +52,18 @@ def handle(req):
     gws.log.debug(f'DISPATCH a={action_type} m={method_name}')
 
     project_uid = arg.get('projectUid') if arg else req.param('projectUid')
-    obj = _action_handler(project_uid, action_type)
+    action = _action_handler(project_uid, action_type)
 
-    if not obj:
+    if not action:
         gws.log.error('handler not found', cmd)
         raise error.NotFound()
 
-    if not req.user.can_use(obj):
+    if not req.user.can_use(action):
         gws.log.error('permission denied', cmd)
         raise error.Forbidden()
 
     # method_name does exist on action (action.validate ensures that)
-    r = getattr(obj, method_name)(req, arg)
+    r = getattr(action, method_name)(req, arg)
 
     # now, r is a types.Response object
     if r is None:

@@ -23,31 +23,43 @@ _aliases = [
 ADMIN_ROLE_NAME = 'admin'
 
 
-def _can_use(who, obj, roles):
+def _check_access(obj, cur, roles):
+    access = gws.get(cur, 'access')
+
+    if not access:
+        return
+
+    for a in access:
+        if a.role in roles:
+            gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: {a.role}:{a.type} in {_repr(cur)}')
+            return a.type == 'allow'
+
+
+def _can_use(who, obj, roles, parent):
     if ADMIN_ROLE_NAME in roles:
+        gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: ADMIN_ROLE_NAME')
         return True
 
     if not obj:
+        gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r}: empty')
         return False
 
     if obj == who:
         return True
 
-    cur = obj
+    c = _check_access(obj, obj, roles)
+    if c is not None:
+        return c
+
+    cur = parent or gws.get(obj, 'parent')
+
     while cur:
-        access = gws.get(cur, 'access')
-        
-        if access:
-            for a in access:
-                for role in roles:
-                    if role == a.role:
-                        gws.log.debug(
-                            f'PERMS: query: obj={obj!r} roles={roles!r} found: {a.role}:{a.type} in {cur!r}')
-                        return a.type == 'allow'
-        
+        c = _check_access(obj, cur, roles)
+        if c is not None:
+            return c
         cur = gws.get(cur, 'parent')
 
-    gws.log.debug('PERMS: NOT found')
+    gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r}: not found')
     return False
 
 
@@ -55,8 +67,8 @@ class Role:
     def __init__(self, name):
         self.name = name
 
-    def can_use(self, obj):
-        return _can_use(self, obj, [self.name])
+    def can_use(self, obj, parent=None):
+        return _can_use(self, obj, [self.name], parent)
 
 
 class User(gws.PublicObject, t.AuthUserInterface):
@@ -111,8 +123,8 @@ class User(gws.PublicObject, t.AuthUserInterface):
     def attribute(self, key, default=''):
         return self.attributes.get(key, default)
 
-    def can_use(self, obj):
-        return _can_use(self, obj, self.roles)
+    def can_use(self, obj, parent=None):
+        return _can_use(self, obj, self.roles, parent)
 
     @property
     def props(self):
@@ -126,14 +138,14 @@ class Guest(User):
 
 
 class System(User):
-    def can_use(self, obj):
-        gws.log.debug(f'PERMS: sys_allow : obj={obj!r}')
+    def can_use(self, obj, parent=None):
+        gws.log.debug(f'PERMS: sys_allow : obj={_repr(obj)}')
         return True
 
 
 class Nobody(User):
-    def can_use(self, obj):
-        gws.log.debug(f'PERMS: sys_deny : obj={obj!r}')
+    def can_use(self, obj, parent=None):
+        gws.log.debug(f'PERMS: sys_deny : obj={_repr(obj)}')
         return False
 
 
@@ -147,3 +159,9 @@ class ValidUser(User):
         return {
             'displayName': self.display_name
         }
+
+
+def _repr(obj):
+    if not obj:
+        return repr(obj)
+    return repr(gws.get(obj, 'uid') or obj)

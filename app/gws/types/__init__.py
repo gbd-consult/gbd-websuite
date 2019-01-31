@@ -707,7 +707,7 @@ class AuthUserInterface:
     def attribute(self, key, default=''):
         raise NotImplementedError
 
-    def can_use(self, obj: ObjectInterface) -> bool:
+    def can_use(self, obj, parent=None) -> bool:
         raise NotImplementedError
 
 

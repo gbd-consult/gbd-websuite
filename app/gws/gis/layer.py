@@ -181,12 +181,7 @@ class Base(gws.PublicObject, t.LayerObject):
     def edit_access(self, user):
         # @TODO granular edit access
 
-        e = self.var('edit')
-        if not e:
-            return None
-
-        e.parent = self
-        if user.can_use(e):
+        if user.can_use(self.var('edit'), parent=self):
             return ['all']
 
     @property

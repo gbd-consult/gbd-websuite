@@ -4,7 +4,7 @@ import gws
 import gws.auth.api
 import gws.auth.provider
 import gws.auth.types
-import gws.config
+import gws.common.api
 import gws.common.client
 import gws.common.project
 import gws.common.csv
@@ -33,7 +33,7 @@ class Config(t.Config):
     """main gws application configuration"""
 
     access: t.Optional[t.Access]  #: default access mode
-    actions: t.Optional[t.List[t.ext.action.Config]]  #: available server actions
+    api: t.Optional[gws.common.api.Config]  #: system-wide server actions
     auth: t.Optional[gws.auth.types.Config]  #: authorization methods and options
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
     db: t.Optional[DbConfig]  #: database configuration
@@ -77,31 +77,24 @@ class Object(gws.Object):
         for p in self.var('projects'):
             self.add_child(gws.common.project.Object, p)
 
-        actions = self.var('actions', default=[])
+        p = self.var('api') or t.Data({'actions': []})
+
         if _is_remote_admin_enabled():
             gws.log.info('REMOTE_ADMIN: enabled')
-            actions.append(t.Data({'type': 'remoteadmin'}))
+            p.actions.append(t.Data({'type': 'remoteadmin'}))
 
-        action_hub = self.add_child(gws.Object, t.Config({
-            'uid': 'action_hub',
-            'access': [
-                t.Config({
-                    'type': 'allow',
-                    'role': 'all'
-                })
-            ]
-        }))
+        self.api = self.add_child(gws.common.api.Object, p)
 
-        for p in actions:
-            a = action_hub.add_child('gws.ext.action', p)
-            # global actions must have uid=type, see web.actions
-            a.uid = p.type
-
-        cc = self.var('client')
-        if cc:
-            self.client = self.add_child(gws.common.client.Object, cc)
+        p = self.var('client')
+        if p:
+            self.client = self.add_child(gws.common.client.Object, p)
 
         self.add_child(gws.common.csv.Object, self.var('csv'))
+
+    def action(self, action_type):
+        if not self.api:
+            return None
+        return self.api.actions.get(action_type)
 
 
 def _is_remote_admin_enabled():
@@ -123,3 +116,10 @@ def _install_fonts(source_dir):
             sh.run(['cp', '-v', p, target_dir], echo=True)
 
     sh.run(['fc-cache', '-fv'], echo=True)
+
+
+def _allow_all_wrapper(app, uid):
+    return app.add_child(gws.Object, t.Config({
+        'uid': uid,
+
+    }))

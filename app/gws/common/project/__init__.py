@@ -1,18 +1,25 @@
+import gws.common.api
 import gws.common.client
 import gws.common.map
 import gws.common.printer
 import gws.common.search
 import gws.common.template
-import gws.config
 import gws.gis
 import gws.types as t
+
+
+class ApiConfig(t.Config):
+    """project-specific server actions"""
+
+    access: t.Optional[t.Access]  #: default access mode
+    actions: t.Optional[t.List[t.ext.action.Config]]  #: available actions
 
 
 class Config(t.Config):
     """project configuration"""
 
     access: t.Optional[t.Access]  #: access rights
-    actions: t.Optional[t.List[t.ext.action.Config]]  #: project-specific actions
+    api: t.Optional[gws.common.api.Config]  #: project-specific actions
     assets: t.Optional[t.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.common.client.Config]  #: project-specific gws client configuration
     description: t.Optional[t.TemplateConfig]  #: template for the project description
@@ -73,22 +80,26 @@ class Object(gws.PublicObject, t.ProjectObject):
         if p:
             self.printer = self.add_child(gws.common.printer.Object, p)
 
-        p = self.var('client')
-        if p:
-            self.client = self.add_child(gws.common.client.Object, p)
-
         self.description_template = self.add_child(
             'gws.ext.template',
             self.var('description') or gws.common.template.builtin_config('project_description')
         )
 
-        for p in self.var('actions', []):
-            a = self.add_child('gws.ext.action', p)
-            # project-specific actions must have the project id, see web.actions
-            a.uid = self.uid + '.' + p.type
-
         for p in self.var('search.providers', default=[]):
             self.add_child('gws.ext.search.provider', p)
+
+        p = self.var('api')
+        if p:
+            self.api = self.add_child(gws.common.api.Object, p)
+
+        p = self.var('client')
+        if p:
+            self.client = self.add_child(gws.common.client.Object, p)
+
+    def action(self, action_type):
+        if not self.api:
+            return None
+        return self.api.actions.get(action_type)
 
     def configure_meta(self):
         # @TODO merge with layer
