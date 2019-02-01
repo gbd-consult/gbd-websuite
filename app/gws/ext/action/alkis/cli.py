@@ -70,10 +70,12 @@ def _alkis_action(project):
     else:
         loc = gws.config.find_all('gws.common.application')[0]
 
-    for a in loc.get_children('gws.ext.action.alkis'):
-        return a
+    a = loc.action('alkis')
+    if not a:
+        gws.log.error('ALKIS action not configured')
+        return
 
-    gws.log.error('ALKIS action not configured')
+    return a
 
 
 def _get_credentials():

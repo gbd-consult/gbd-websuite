@@ -76,7 +76,9 @@ class Object(gws.PublicObject, t.MapObject):
         for p in self.var('layers'):
             try:
                 self.layers.append(self.add_child('gws.ext.gis.layer', p))
-            except Exception:
+            except Exception as e:
+                uid = gws.get(p, 'uid')
+                gws.log.error(f'FAILED LAYER: map={self.uid!r} layer={uid!r} error={e!r}')
                 gws.log.exception()
 
     @property

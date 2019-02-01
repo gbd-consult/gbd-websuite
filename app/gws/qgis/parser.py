@@ -299,10 +299,13 @@ def _data_source(provider, source):
     if provider == 'wfs':
         params = _parse_datasource_uri(source)
         url = params.pop('url', '')
-        tn = params.pop('typename', '')
+        if not url:
+            return {}
+        p = gws.tools.net.parse_url(url)
+        typename = params.pop('typename', '') or p['params'].get('typename')
         return {
             'url': url,
-            'typeName': tn,
+            'typeName': typename,
             'params': params
         }
 
@@ -348,9 +351,12 @@ def _parse_url_with_qs(url):
 
 def _parse_datasource_uri(uri):
     # see QGIS/src/core/qgsdatasourceuri.cpp... ;(
+    #
     # the format appears to be key = value pairs, where value can be quoted and c-escaped
     # 'table=' is special, is can be table="foo" or table="foo"."bar" or table="foo"."bar" (geom)
     # 'sql=' is special too and can contain whatever, it's always the last one
+    #
+    # alternatively, a datasource can be an url
 
     value_re = r'''(?x)
         " (?: \\. | [^"])* " |
@@ -412,6 +418,9 @@ def _parse_datasource_uri(uri):
                 # just param=val
                 v, u = _cut(u, value_re)
                 r[key] = _value(v)
+
+    if uri.startswith(('http://', 'https://')):
+        return {'url': uri}
 
     rec = {}
     _parse(uri, rec)
