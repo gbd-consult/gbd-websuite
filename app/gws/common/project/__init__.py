@@ -89,8 +89,7 @@ class Object(gws.PublicObject, t.ProjectObject):
             self.add_child('gws.ext.search.provider', p)
 
         p = self.var('api')
-        if p:
-            self.api = self.add_child(gws.common.api.Object, p)
+        self.api = self.add_child(gws.common.api.Object, p) if p else None
 
         p = self.var('client')
         if p:

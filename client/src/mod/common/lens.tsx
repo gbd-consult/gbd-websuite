@@ -64,7 +64,7 @@ export class Tool extends gws.Controller implements gws.types.ITool {
         if (features.length) {
             this.update({
                 marker: {
-                    features,
+                    features: [features[0]],
                     mode: 'draw',
                 },
                 popupContent: <gws.components.feature.PopupList controller={this} features={features}/>

@@ -23,28 +23,42 @@ module.exports = v => ({
     '.modPopupCloseButton': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.CLOSE_ICON(v.TEXT_COLOR),
+            ...v.CLOSE_ICON(v.POPUP_BUTTON_COLOR),
         },
     },
 
     '.modPopupZoomButton': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.GOOGLE_SVG('image/center_focus_weak', v.TEXT_COLOR),
+            ...v.GOOGLE_SVG('image/center_focus_weak', v.POPUP_BUTTON_COLOR),
+        },
+    },
+
+    '.modPopupLensButton': {
+        '&.uiIconButton': {
+            ...v.ICON('medium'),
+            ...v.LOCAL_SVG('search_lens', v.POPUP_BUTTON_COLOR),
+        },
+    },
+
+    '.modPopupSelectButton': {
+        '&.uiIconButton': {
+            ...v.ICON('medium'),
+            ...v.LOCAL_SVG('select', v.POPUP_BUTTON_COLOR),
         },
     },
 
     '.modPopupPagerBack': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.GOOGLE_SVG('navigation/chevron_left', v.TEXT_COLOR),
+            ...v.GOOGLE_SVG('navigation/chevron_left', v.POPUP_BUTTON_COLOR),
         },
     },
 
     '.modPopupPagerForward': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.GOOGLE_SVG('navigation/chevron_right', v.TEXT_COLOR),
+            ...v.GOOGLE_SVG('navigation/chevron_right', v.POPUP_BUTTON_COLOR),
         },
     },
 
@@ -67,7 +81,7 @@ module.exports = v => ({
     },
 
     '.modPopupFooter': {
-        padding: [0, v.UNIT4, 0, v.UNIT2],
+        padding: [0, v.UNIT4, 0, v.UNIT8],
         // borderTopWidth: 1,
         // borderTopStyle: 'solid',
         // borderTopColor: v.BORDER_COLOR,

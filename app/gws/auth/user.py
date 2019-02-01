@@ -36,13 +36,13 @@ def _check_access(obj, cur, roles):
 
 
 def _can_use(who, obj, roles, parent):
-    if ADMIN_ROLE_NAME in roles:
-        gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: ADMIN_ROLE_NAME')
-        return True
-
     if not obj:
         gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r}: empty')
         return False
+
+    if ADMIN_ROLE_NAME in roles:
+        gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: ADMIN_ROLE_NAME')
+        return True
 
     if obj == who:
         return True

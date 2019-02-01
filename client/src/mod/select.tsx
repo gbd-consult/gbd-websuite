@@ -116,6 +116,14 @@ class SelectController extends gws.Controller {
 
     async init() {
         await this.app.addTool('Tool.Select', this.app.createController(SelectTool, this));
+
+        this.whenChanged('selectAddFeature', f => {
+            if (f) {
+                this.addFeature(f);
+                this.update({selectAddFeature: null})
+
+            }
+        });
     }
 
     async select(center: ol.Coordinate, extend: boolean) {
@@ -123,6 +131,11 @@ class SelectController extends gws.Controller {
 
         if (gws.tools.empty(features))
             return;
+
+        this.addFeature(features[0], extend);
+    }
+
+    addFeature(feature, extend = true) {
 
         if (!this.layer) {
             this.layer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
@@ -134,7 +147,7 @@ class SelectController extends gws.Controller {
         if (!extend)
             this.layer.clear();
 
-        this.layer.addFeatures([features[0]]);
+        this.layer.addFeatures([feature]);
         this.update({
             selectFeatures: this.layer.features
         });

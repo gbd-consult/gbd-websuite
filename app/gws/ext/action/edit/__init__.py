@@ -11,6 +11,7 @@ class Config(t.WithTypeAndAccess):
 
 
 class EditParams(t.Data):
+    projectUid: str
     layerUid: str
     features: t.List[t.FeatureProps]
 

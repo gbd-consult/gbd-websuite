@@ -270,6 +270,7 @@ class EditController extends gws.Controller {
         };
 
         let res = await this.app.server.editUpdateFeatures({
+            projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [props]
         });
@@ -293,6 +294,7 @@ class EditController extends gws.Controller {
         };
 
         let res = await this.app.server.editUpdateFeatures({
+            projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [props]
         });
@@ -310,6 +312,7 @@ class EditController extends gws.Controller {
         };
 
         let res = await this.app.server.editAddFeatures({
+            projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [props]
 
@@ -344,7 +347,8 @@ class EditController extends gws.Controller {
     }
 
     unselectFeature() {
-        this.layer.features.forEach(f => f.setStyle(null));
+        if(this.layer)
+            this.layer.features.forEach(f => f.setStyle(null));
         this.update({
             editFeature: null,
             editData: null
@@ -391,16 +395,13 @@ class EditController extends gws.Controller {
         this.app.startTool(this.tool = name);
     }
 
-    stopTool() {
-        this.app.stopTool(this.tool);
-    }
-
     endEditing() {
+        this.app.stopTool('Tool.Edit.*');
         this.update({
             editLayer: null,
             editFeature: null,
             editData: null,
-        })
+        });
     }
 
 }

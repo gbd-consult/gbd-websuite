@@ -23,7 +23,7 @@ module.exports = v => ({
     },
 
     '.modLensOverlay': {
-        backgroundColor: v.COLOR.blueGrey800,
+        backgroundColor: v.COLOR.opacity(v.COLOR.blueGrey800, 0.6),
         borderRadius: v.UNIT8,
 
         'div': {

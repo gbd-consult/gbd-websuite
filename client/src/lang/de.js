@@ -122,6 +122,8 @@ module.exports = {
     modPopupCloseButton: 'Schließen',
     modPopupPagerForward: 'Weiter',
     modPopupPagerBack: 'Zurück',
+	modPopupLensButton: 'Räumliche Suche',
+	modPopupSelectButton: 'Auswählen',
 
     modZoomInfobarOutButton: 'Hinauszoomen',
     modZoomInfobarInButton: 'Hineinzoomen',
