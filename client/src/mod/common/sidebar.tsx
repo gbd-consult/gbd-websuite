@@ -185,6 +185,13 @@ class SidebarView extends gws.View<SidebarProps> {
 }
 
 class SidebarController extends gws.Controller {
+    async init() {
+        await super.init();
+        this.app.whenChanged('windowSize', () => this.update({
+            sidebarOverflowExpanded: false
+        }));
+    }
+
     get size() {
         return this.options.size || 3;
     }
@@ -270,7 +277,7 @@ export class AuxButton extends React.PureComponent<AuxButtonProps> {
 }
 
 interface AuxCloseButtonProps {
-    tooltip: string;
+    tooltip?: string;
     whenTouched: () => void;
 }
 

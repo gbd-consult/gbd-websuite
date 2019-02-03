@@ -10,22 +10,4 @@ module.exports = v => ({
 
     },
 
-    '.uiIconButton': {
-
-        '&.cmpFeatureZoomIcon': {
-            ...v.ICON('normal'),
-            ...v.SVG('google:image/center_focus_weak', v.FOCUS_COLOR),
-        },
-
-        '&.cmpFeatureSelectIcon': {
-            ...v.ICON('small'),
-            ...v.SVG('google:content/add_circle_outline', v.FOCUS_COLOR),
-        },
-
-        '&.cmpFeatureUnselectIcon': {
-            ...v.ICON('small'),
-            ...v.SVG('google:content/remove_circle_outline', v.FOCUS_COLOR),
-        },
-    }
-
 });

@@ -121,12 +121,8 @@ class SelectController extends gws.Controller {
     async init() {
         await this.app.addTool('Tool.Select', this.app.createController(SelectTool, this));
 
-        this.whenChanged('selectAddFeature', f => {
-            if (f) {
-                this.addFeature(f);
-                this.update({selectAddFeature: null})
-
-            }
+        this.app.whenCalled('selectFeature', args => {
+            this.addFeature(args.feature);
         });
     }
 

@@ -106,6 +106,14 @@ class LensController extends gws.Controller implements gws.types.IController {
         this.overlayRef = React.createRef();
         await this.app.addTool('Tool.Lens', this.app.createController(Tool, this));
         await this.app.addTool('Tool.Lens.Draw', this.drawTool = this.app.createController(DrawTool, this));
+
+        this.app.whenCalled('lensStartFromFeature', args => {
+            this.update({
+                lensGeometry: args.feature.geometry.clone(),
+            });
+            this.app.startTool('Tool.Lens');
+        });
+
     }
 
     DEFAULT_GEOM_SIZE = 100;

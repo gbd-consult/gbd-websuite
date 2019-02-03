@@ -28,7 +28,7 @@ const STRINGS = {
 
     print: 'Ausdrucken',
     highlight: 'Auf der Karte zeigen',
-    selectAll: 'Alle auswählen',
+    selectAll: 'Alle zur Ablage',
     unselect: 'Abwählen',
     select: 'Auswählen',
     clearSelection: 'Ablage leeren',
@@ -644,8 +644,16 @@ class AlkisDetailsTab extends gws.View<AlkisViewProps> {
                 <sidebar.AuxToolbar>
                     <AlkisNavigation {...this.props}/>
                     <Cell flex/>
+
                     <AlkisPrintAuxButton {...this.props} features={[feature]}/>
                     <AlkisToggleAuxButton {...this.props} features={[feature]}/>
+                    <Cell>
+                        <gws.components.feature.TaskButton
+                            controller={this.props.controller}
+                            feature={feature}
+                            source="alkis"
+                        />
+                    </Cell>
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
 

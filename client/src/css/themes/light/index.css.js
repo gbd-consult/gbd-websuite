@@ -270,6 +270,7 @@ let rules = [
     require('./mod/search.css'),
     require('./mod/select.css'),
     require('./mod/sidebar.css'),
+    require('./mod/task.css'),
     require('./mod/toolbar.css'),
     require('./mod/user.css'),
     require('./mod/zoom.css'),

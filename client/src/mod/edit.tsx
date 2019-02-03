@@ -171,10 +171,11 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                 <sidebar.AuxToolbar>
                     <Cell flex/>
                     <Cell>
-                        <gws.ui.IconButton
-                            className="modSidebarSecondaryClose"
-                        />
+                        <gws.components.feature.TaskButton controller={this.props.controller} feature={feature}/>
                     </Cell>
+                    <sidebar.AuxCloseButton
+                        whenTouched={() => master.unselectFeature()}
+                    />
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>

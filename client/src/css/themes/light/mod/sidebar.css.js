@@ -104,6 +104,11 @@ module.exports = v => ({
         '.modSidebarAuxCloseButton': {
             ...v.SIDEBAR_AUX_BUTTON(v.CLOSE_ICON),
         },
+        '.cmpFeatureTaskButton': {
+            ...v.SIDEBAR_AUX_BUTTON('google:action/settings'),
+        },
+
+
     },
 
     '.modSidebarTabBody, .modSidebarEmptyTabBody': {

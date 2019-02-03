@@ -17,49 +17,31 @@ module.exports = v => ({
 
     },
 
-    '.withSidebar .modInfobox': {
+    '.withSidebar .modInfobox': {},
+
+
+    '.modInfoboxFooter': {
+        padding: [0, v.UNIT4, 0, v.UNIT4],
+        '.uiIconButton': {
+            ...v.ICON('small'),
+        }
     },
 
-    '.modInfoboxCloseButton': {
-        '&.uiIconButton': {
-            ...v.ICON('medium'),
-            ...v.SVG(v.CLOSE_ICON, v.INFOBOX_BUTTON_COLOR),
-        },
+    '.modInfoboxCloseButton.uiIconButton': {
+        ...v.SVG(v.CLOSE_ICON, v.INFOBOX_BUTTON_COLOR),
     },
 
-    '.modInfoboxZoomButton': {
-        '&.uiIconButton': {
-            ...v.ICON('medium'),
-            ...v.SVG('google:image/center_focus_weak', v.INFOBOX_BUTTON_COLOR),
-        },
+    '.modInfoboxPagerBack.uiIconButton': {
+        ...v.SVG('google:navigation/chevron_left', v.INFOBOX_BUTTON_COLOR),
     },
 
-    '.modInfoboxLensButton': {
-        '&.uiIconButton': {
-            ...v.ICON('medium'),
-            ...v.SVG('search_lens', v.INFOBOX_BUTTON_COLOR),
-        },
+    '.modInfoboxPagerForward.uiIconButton': {
+        ...v.SVG('google:navigation/chevron_right', v.INFOBOX_BUTTON_COLOR),
     },
 
-    '.modInfoboxSelectButton': {
-        '&.uiIconButton': {
-            ...v.ICON('medium'),
-            ...v.SVG('select', v.INFOBOX_BUTTON_COLOR),
-        },
-    },
+    '.modInfobox .cmpFeatureTaskButton': {
+        ...v.SVG('google:action/settings', v.INFOBOX_BUTTON_COLOR),
 
-    '.modInfoboxPagerBack': {
-        '&.uiIconButton': {
-            ...v.ICON('medium'),
-            ...v.SVG('google:navigation/chevron_left', v.INFOBOX_BUTTON_COLOR),
-        },
-    },
-
-    '.modInfoboxPagerForward': {
-        '&.uiIconButton': {
-            ...v.ICON('medium'),
-            ...v.SVG('google:navigation/chevron_right', v.INFOBOX_BUTTON_COLOR),
-        },
     },
 
     '.modInfoboxPagerText': {
@@ -79,13 +61,4 @@ module.exports = v => ({
         overflow: 'auto',
         padding: v.UNIT8,
     },
-
-    '.modInfoboxFooter': {
-        padding: [0, v.UNIT4, 0, v.UNIT8],
-        // borderTopWidth: 1,
-        // borderTopStyle: 'solid',
-        // borderTopColor: v.BORDER_COLOR,
-
-
-    }
 });

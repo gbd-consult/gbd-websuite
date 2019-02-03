@@ -276,27 +276,11 @@ class AnnotateDrawTool extends draw.Tool {
     drawFeature: AnnotateFeature;
 
     whenStarted(shapeType, oFeature) {
-        let master = _master(this),
-            sel = '.modAnnotate' + shapeType,
-            style = master.map.getStyleFromSelector(sel),
-            selectedStyle = master.map.getStyleFromSelector(sel + 'Selected');
-
-        this.drawFeature = new AnnotateFeature(_master(this), {
-            shapeType,
-            oFeature,
-            style,
-            selectedStyle,
-            labelTemplate: defaultLabelTemplates[shapeType],
-        });
+        this.drawFeature = _master(this).newFeature(shapeType, oFeature);
     }
 
     whenEnded() {
-        let master = _master(this),
-            f = this.drawFeature;
-        master.layer.addFeature(f);
-        master.selectFeature(f, false);
-        master.app.startTool('Tool.Annotate.Modify')
-
+        _master(this).addAndFocus(this.drawFeature);
     }
 
     whenCancelled() {
@@ -398,7 +382,7 @@ class AnnotateFeatureDetailsForm extends gws.View<AnnotateViewProps> {
                     },
                     {
                         name: 'radius',
-                        title: this.__('modAnnotateRaidus'),
+                        title: this.__('modAnnotateRadius'),
                         value: ff.radius,
                         editable: true
                     }];
@@ -478,7 +462,7 @@ class AnnotateFeatureDetails extends gws.View<AnnotateViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('modAnnotateTitle')}/>
+                <gws.ui.Title content={this.__('modAnnotateSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -488,11 +472,14 @@ class AnnotateFeatureDetails extends gws.View<AnnotateViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell flex/>
-                    <sidebar.AuxButton
-                        {...gws.tools.cls('modAnnotateLensAuxButton')}
-                        tooltip={this.props.controller.__('modAnnotateLensAuxButton')}
-                        whenTouched={() => master.startLens()}
-                    />
+                    <Cell>
+                        <gws.components.feature.TaskButton
+                            controller={this.props.controller}
+                            feature={selectedFeature}
+                            source="annotate"
+                        />
+                    </Cell>
+
                     <sidebar.AuxButton
                         className="modAnnotateRemoveAuxButton"
                         tooltip={this.__('modAnnotateRemoveAuxButton')}
@@ -607,11 +594,23 @@ class AnnotateController extends gws.Controller {
     modifyTool: AnnotateModifyTool;
 
     async init() {
+        await super.init();
+
         await this.app.addTool('Tool.Annotate.Modify', this.modifyTool = this.app.createController(AnnotateModifyTool, this));
         await this.app.addTool('Tool.Annotate.Draw', this.app.createController(AnnotateDrawTool, this));
         this.layer = this.map.addServiceLayer(new AnnotateLayer(this.map, {
             uid: '_annotate',
         }));
+
+        this.app.whenCalled('annotateFromFeature', args => {
+            let f = this.newFromFeature(args.feature);
+
+            if (f) {
+                this.addAndFocus(f);
+                this.update({sidebarActiveTab: 'Sidebar.Annotate'})
+            }
+        });
+
     }
 
     startLens() {
@@ -629,6 +628,38 @@ class AnnotateController extends gws.Controller {
         if (this.layer)
             this.map.removeLayer(this.layer);
         this.layer = null;
+    }
+
+    newFeature(shapeType, oFeature?: ol.Feature) {
+        let
+            sel = '.modAnnotate' + shapeType,
+            style = this.map.getStyleFromSelector(sel),
+            selectedStyle = this.map.getStyleFromSelector(sel + 'Selected');
+
+        return new AnnotateFeature(_master(this), {
+            shapeType,
+            oFeature,
+            style,
+            selectedStyle,
+            labelTemplate: defaultLabelTemplates[shapeType],
+        });
+
+    }
+
+    addAndFocus(f: gws.types.IMapFeature) {
+        this.layer.addFeature(f);
+        this.selectFeature(f, false);
+        this.app.startTool('Tool.Annotate.Modify')
+
+    }
+
+    newFromFeature(f: gws.types.IMapFeature) {
+        let geometry = f.geometry;
+
+        if (geometry) {
+            let oFeature = new ol.Feature({geometry: geometry['clone']()});
+            return this.newFeature(geometry.getType(), oFeature);
+        }
     }
 
     selectFeature(f, highlight) {
@@ -661,15 +692,6 @@ class AnnotateController extends gws.Controller {
             annotateSelectedFeature: null,
             annotateFormData: {},
         });
-    }
-
-    zoomFeature(f) {
-        this.update({
-            marker: {
-                features: [f],
-                mode: 'zoom draw fade',
-            }
-        })
     }
 
     featureUpdated(f) {

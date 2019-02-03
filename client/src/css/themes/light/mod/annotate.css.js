@@ -73,11 +73,11 @@ module.exports = v => {
 
 
         '.modAnnotateSidebarIcon': {
-            ...v.SVG('google:action/speaker_notes', v.SIDEBAR_HEADER_COLOR)
+            ...v.SIDEBAR_ICON('annotate')
         },
 
         '.modAnnotateDrawToolbarButton': {
-            ...v.TOOLBAR_BUTTON('google:action/speaker_notes')
+            ...v.TOOLBAR_BUTTON('annotate')
         },
 
         '.modAnnotateEditAuxButton': {
