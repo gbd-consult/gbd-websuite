@@ -154,6 +154,24 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
         this.app.whenChanged('windowSize', () => this.refresh());
     }
 
+    iconClass = 'modOverviewSidebarIcon';
+
+    get tooltip() {
+        return this.__('modOverviewSidebarTitle');
+    }
+
+    get tabView() {
+        return this.createElement(
+            this.connect(SidebarBody, [
+                'mapUpdateCount',
+                'mapEditScale',
+                'mapEditAngle',
+                'mapEditCenterX',
+                'mapEditCenterY',
+            ]),
+        );
+    }
+
     setMapTarget(div) {
         if (this.oMap) {
             this.oMap.setTarget(div);
@@ -250,25 +268,6 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
         }
     }
 
-    get iconClass() {
-        return 'modOverviewSidebarIcon'
-    }
-
-    get tooltip() {
-        return this.__('modOverviewTooltip');
-    }
-
-    get tabView() {
-        return this.createElement(
-            this.connect(SidebarBody, [
-                'mapUpdateCount',
-                'mapEditScale',
-                'mapEditAngle',
-                'mapEditCenterX',
-                'mapEditCenterY',
-            ]),
-        );
-    }
 
 }
 

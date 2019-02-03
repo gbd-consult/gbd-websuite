@@ -1,18 +1,23 @@
 module.exports = v => ({
     '.modAlkisSidebarIcon': {
-        ...v.GOOGLE_SVG('communication/business', v.SIDEBAR_HEADER_COLOR)
+        ...v.SVG('google:communication/business', v.SIDEBAR_HEADER_COLOR)
     },
 
-    '.modAlkisLensToolbar': {
-        marginTop: 40,
-        borderTopWidth: 1,
-        borderStyle: 'solid',
-        borderColor: v.BORDER_COLOR,
-
-        '.uiIconButton': {
-            ...v.ICON('normal'),
-        },
+    '.modAlkisSearchSubmitButton': {
+        ...v.ROUND_FORM_BUTTON(v.SEARCH_ICON)
     },
+
+    '.modAlkisSearchLensButton': {
+        ...v.ROUND_FORM_BUTTON('search_lens')
+    },
+
+    '.modAlkisSearchSelectionButton': {
+        ...v.ROUND_FORM_BUTTON('search_selection')
+    },
+    '.modAlkisSearchCancelButton': {
+        ...v.ROUND_FORM_BUTTON(v.CLOSE_ICON)
+    },
+
 
     '.modAlkisLoading': {
         textAlign: 'center',
@@ -21,36 +26,6 @@ module.exports = v => ({
         lineHeight: 1.3,
     },
 
-
-    '.modAlkisSubmitButton': {
-        ...v.GOOGLE_SVG('action/search', v.BUTTON_COLOR),
-        backgroundColor: v.BUTTON_BACKGROUND,
-        borderRadius: v.BORDER_RADIUS,
-        '&.isActive': {
-            backgroundColor: v.PRIMARY_BACKGROUND,
-
-
-        }
-
-    },
-
-    '.modAlkisLensButton': {
-        ...v.LOCAL_SVG('search_lens', v.BUTTON_COLOR),
-        backgroundColor: v.BUTTON_BACKGROUND,
-        borderRadius: v.BORDER_RADIUS,
-        '&.isActive': {
-            backgroundColor: v.PRIMARY_BACKGROUND,
-        }
-    },
-
-    '.modAlkisSelectionButton': {
-        ...v.LOCAL_SVG('search_selection', v.BUTTON_COLOR),
-        backgroundColor: v.BUTTON_BACKGROUND,
-        borderRadius: v.BORDER_RADIUS,
-        '&.isActive': {
-            backgroundColor: v.PRIMARY_BACKGROUND,
-        }
-    },
 
     '.modAlkisLensFeature': {
         stroke: v.COLOR.cyan100,
@@ -63,69 +38,22 @@ module.exports = v => ({
     },
 
 
+    '.modAlkisExportAuxButton': {...v.SIDEBAR_AUX_BUTTON('baseline-save_alt-24px')},
+    '.modAlkisPrintAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/print')},
+    '.modAlkisHighlightAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.ZOOM_ICON)},
+    '.modAlkisSelectAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')},
+    '.modAlkisUnselectAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/remove_circle_outline')},
+    '.modAlkisFormAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.SEARCH_ICON)},
+    '.modAlkisListAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/reorder')},
+    '.modAlkisSelectionAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/bookmark_border')},
+    '.modAlkisClearAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')},
 
-
-    '.uiIconButton.modAlkisFeatureSelectIcon': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('content/add_circle_outline', v.FOCUS_COLOR),
+    '.uiIconButton.modAlkisSelectListButton': {
+        ...v.LIST_BUTTON('google:content/add_circle_outline')
     },
 
-
-    '.uiIconButton.modAlkisFeatureUnselectIcon': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('content/remove_circle_outline', v.FOCUS_COLOR),
+    '.uiIconButton.modAlkisUnselectListButton': {
+        ...v.LIST_BUTTON('google:content/remove_circle_outline')
     },
-
-    '.modAlkisExportButton': {
-        ...v.LOCAL_SVG('baseline-save_alt-24px', v.SECONDARY_BUTTON_COLOR),
-    },
-
-
-    '.modAlkisHighlightButton': {
-        ...v.GOOGLE_SVG('image/center_focus_weak', v.SECONDARY_BUTTON_COLOR),
-    },
-
-    '.modAlkisSelectButton': {
-        ...v.GOOGLE_SVG('content/add_circle_outline', v.SECONDARY_BUTTON_COLOR),
-    },
-
-    '.modAlkisPrintButton': {
-        ...v.GOOGLE_SVG('action/print', v.SECONDARY_BUTTON_COLOR),
-    },
-
-    '.modAlkisSelectAllButton': {
-        ...v.GOOGLE_SVG('content/add_circle_outline', v.SECONDARY_BUTTON_COLOR),
-    },
-
-    '.modAlkisUnselectButton': {
-        ...v.GOOGLE_SVG('content/remove_circle_outline', v.SECONDARY_BUTTON_COLOR),
-    },
-
-    '.modAlkisGotoSelectionButton': {
-        ...v.GOOGLE_SVG('action/bookmark_border', v.SECONDARY_BUTTON_COLOR),
-    },
-
-    '.modAlkisGotoFormButton': {
-        ...v.GOOGLE_SVG('communication/business', v.SECONDARY_BUTTON_COLOR),
-    },
-
-    '.modAlkisGotoListButton': {
-        ...v.GOOGLE_SVG('action/reorder', v.SECONDARY_BUTTON_COLOR),
-    },
-
-    '.modAlkisClearSelectionButton': {
-        ...v.GOOGLE_SVG('action/delete_forever', v.SECONDARY_BUTTON_COLOR),
-    },
-
-
-    '.modAlkisSelectionButtonDisabled': {
-        ...v.ICON('small'),
-        ...v.GOOGLE_SVG('editor/format_align_justify', v.BORDER_COLOR),
-    },
-
-    '.modAlkisSelectionButtonText': {
-        fontSize: v.TINY_FONT_SIZE
-    },
-
 
 });

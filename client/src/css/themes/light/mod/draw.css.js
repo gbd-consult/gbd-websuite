@@ -1,9 +1,9 @@
 module.exports = v => {
 
     let button = icon => ({
-        ...v.LOCAL_SVG(icon, v.DRAWBOX_BUTTON_COLOR),
+        ...v.SVG(icon, v.DRAWBOX_BUTTON_COLOR),
         '&.isActive': {
-            ...v.LOCAL_SVG(icon, v.DRAWBOX_ACTIVE_BUTTON_COLOR),
+            ...v.SVG(icon, v.DRAWBOX_ACTIVE_BUTTON_COLOR),
         },
     })
 
@@ -11,7 +11,7 @@ module.exports = v => {
         '.modDrawControlBox': {
             position: 'absolute',
             padding: v.UNIT4,
-            backgroundColor: v.POPUP_BACKGROUND,
+            backgroundColor: v.INFOBOX_BACKGROUND,
             top: '-100%',
             ...v.SHADOW,
             ...v.TRANSITION('top'),

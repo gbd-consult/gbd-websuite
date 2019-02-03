@@ -32,7 +32,7 @@ module.exports = v => ({
 
     '.modSidebarCloseButton': {
         opacity: 0.85,
-        ...v.CLOSE_ICON(v.SIDEBAR_HEADER_COLOR),
+        ...v.SVG(v.CLOSE_ICON, v.SIDEBAR_HEADER_COLOR),
     },
 
     '.modSidebarOpenButton': {
@@ -41,7 +41,7 @@ module.exports = v => ({
         top: v.UNIT4,
         backgroundColor: v.SIDEBAR_OPEN_BUTTON_BACKGROUND,
         borderRadius: v.BORDER_RADIUS,
-        ...v.GOOGLE_SVG('navigation/menu', v.SIDEBAR_OPEN_BUTTON_COLOR),
+        ...v.SVG('google:navigation/menu', v.SIDEBAR_OPEN_BUTTON_COLOR),
     },
 
 
@@ -66,7 +66,7 @@ module.exports = v => ({
         flexDirection: 'column',
     },
 
-    '.modSidebarEmptyTab': {
+    '.modSidebarEmptyTab, .modSidebarEmptyTabBody': {
         textAlign: 'center',
         color: v.DISABLED_COLOR,
         padding: [v.UNIT2 * 8, v.UNIT4, v.UNIT4, v.UNIT4],
@@ -94,34 +94,26 @@ module.exports = v => ({
 
     },
 
-    '.modSidebarSecondaryToolbar': {
-        backgroundColor: v.SECONDARY_TOOLBAR_BACKGROUND,
+    '.modSidebarAuxToolbar': {
+        backgroundColor: v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
         paddingRight: v.UNIT2,
 
         '.uiIconButton': {
-            ...v.ICON('medium'),
-            borderRadius: v.BORDER_RADIUS,
-            filter: 'saturate(0) brightness(0.8)',
+            ...v.ICON('small'),
         },
-        '.uiIconButton.isActive': {
-            filter: 'none',
-        },
-        '.modSidebarSecondaryBack': {
-            ...v.BACK_ICON(v.SECONDARY_BUTTON_COLOR),
-        },
-        '.modSidebarSecondaryClose': {
-            ...v.CLOSE_ICON(v.SECONDARY_BUTTON_COLOR),
+        '.modSidebarAuxCloseButton': {
+            ...v.SIDEBAR_AUX_BUTTON(v.CLOSE_ICON),
         },
     },
 
-    '.modSidebarTabBody': {
+    '.modSidebarTabBody, .modSidebarEmptyTabBody': {
         flex: 1,
         overflow: 'auto',
         padding: v.UNIT4,
     },
 
     '.modSidebarOverflowButton.uiIconButton': {
-        ...v.GOOGLE_SVG('navigation/more_horiz', v.TOOLBAR_BUTTON_COLOR),
+        ...v.SVG('google:navigation/more_horiz', v.TOOLBAR_BUTTON_COLOR),
         ...v.TRANSITION(),
         '&.isActive': {
             transform: 'rotate(90deg)',

@@ -97,10 +97,10 @@ module.exports = {
     modIdentifyClickButton: 'identify',
     modIdentifyHoverButton: 'live identify',
 
-    modPopupZoomButton: 'zoom to object',
-    modPopupCloseButton: 'close',
-    modPopupPagerForward: 'next',
-    modPopupPagerBack: 'previous',
+    modInfoboxZoomButton: 'zoom to object',
+    modInfoboxCloseButton: 'close',
+    modInfoboxPagerForward: 'next',
+    modInfoboxPagerBack: 'previous',
 
     modZoomInfobarOutButton: 'zoom out',
     modZoomInfobarInButton: 'zoom in',

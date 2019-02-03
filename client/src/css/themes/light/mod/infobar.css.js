@@ -121,11 +121,11 @@ module.exports = v => ({
     },
 
     '.modInfobarHelpButton': {
-        ...v.GOOGLE_SVG('action/help', v.INFOBAR_ICON_COLOR),
+        ...v.SVG('google:action/help', v.INFOBAR_ICON_COLOR),
     },
 
     '.modInfobarHomeLinkButton': {
-        ...v.GOOGLE_SVG('action/home', v.INFOBAR_ICON_COLOR),
+        ...v.SVG('google:action/home', v.INFOBAR_ICON_COLOR),
     },
 
     '.uiIconButton.modInfobarAboutButton': {
@@ -135,7 +135,7 @@ module.exports = v => ({
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center center',
         backgroundSize: [20, 20],
-        ...v.LOCAL_SVG('gws_logo'),
+        ...v.SVG('gws_logo'),
     }
 
 });

@@ -1,11 +1,11 @@
 module.exports = v => ({
     '.modSearchSidebarIcon': {
-        ...v.GOOGLE_SVG('action/search', v.SIDEBAR_HEADER_COLOR)
+        ...v.SVG('google:action/search', v.SIDEBAR_HEADER_COLOR)
     },
 
     '.modSearchClearButton.uiIconButton': {
         ...v.ICON('small'),
-        ...v.CLOSE_ICON(v.BORDER_COLOR),
+        ...v.SVG(v.CLOSE_ICON, v.BORDER_COLOR),
     },
 
     '.modSearchWaitButton.uiIconButton': {
@@ -21,7 +21,7 @@ module.exports = v => ({
 
     '.modSearchIcon': {
         ...v.ICON('normal'),
-        ...v.GOOGLE_SVG('action/search', v.BORDER_COLOR),
+        ...v.SVG(v.SEARCH_ICON, v.BORDER_COLOR),
     },
 
     '.modSearchAltbar': {

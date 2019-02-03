@@ -5,49 +5,64 @@ import * as gws from 'gws';
 let {Row, Cell} = gws.ui.Layout;
 
 interface ToolbarProps extends gws.types.ViewProps {
-    size: number;
     toolbarOverflowExpanded: boolean;
-}
-
-interface ButtonProps extends gws.types.ViewProps {
     appActiveTool: string;
-    className: string;
-    tooltip: string;
-    whenTouched: any;
-    tool: string;
+    appToolbarState: object;
 }
 
-class ButtonView extends gws.View<ButtonProps> {
+interface ToolbarButtonProps extends ToolbarProps {
+    iconClass: string;
+    isOverflow: boolean;
+    tool: string;
+    tooltip: string;
+    whenTouched: () => void;
+}
+
+const ToolbarElementStoreKeys = [
+    'toolbarOverflowExpanded',
+    'appActiveTool',
+    'appToolbarState'
+];
+
+interface ToolbarContainerProps extends gws.types.ViewProps {
+    toolbarSize: number;
+    toolbarOverflowExpanded: boolean;
+    isOverflow: boolean;
+}
+
+const ToolbarContainerStoreKeys = [
+    'toolbarSize',
+    'toolbarOverflowExpanded',
+];
+
+class ButtonView extends gws.View<ToolbarButtonProps> {
     get active() {
         return this.props.tool && this.props.appActiveTool === this.props.tool;
     }
 
-    render() {
-        return <gws.ui.IconButton
-            {...gws.tools.cls(this.props.className, this.active && 'isActive')}
-            tooltip={this.props.tooltip}
-            whenTouched={this.props.whenTouched}
-        />;
+    get disabled() {
+        return this.props.appToolbarState[this.props.controller.tag] === 'disabled';
     }
-}
 
-class ButtonPopupView extends ButtonView {
     render() {
+        let touched = () => this.disabled ? null : this.props.whenTouched(),
+            cls = gws.tools.cls(this.props.iconClass, this.active && 'isActive', this.disabled && 'isDisabled');
+
+        let btn = <gws.ui.IconButton
+            {...cls}
+            tooltip={this.props.tooltip}
+            whenTouched={touched}
+        />;
+
+        if (!this.props.isOverflow)
+            return btn;
+
         return <Row className={this.active ? 'isActive' : ''}>
+            <Cell>{btn}</Cell>
             <Cell>
-                <gws.ui.IconButton
-                    {...gws.tools.cls(this.props.className)}
-                    tooltip={this.props.tooltip}
-                    whenTouched={this.props.whenTouched}
-                />
-            </Cell>
-            <Cell>
-                <gws.ui.Touchable
-                    whenTouched={this.props.whenTouched}
-                >
+                <gws.ui.Touchable whenTouched={touched}>
                     {this.props.tooltip}
                 </gws.ui.Touchable>
-
             </Cell>
         </Row>;
     }
@@ -55,12 +70,32 @@ class ButtonPopupView extends ButtonView {
 
 export abstract class Button extends gws.Controller implements gws.types.IToolbarItem {
     abstract tooltip;
-    abstract className;
+    abstract iconClass;
     tool = '';
 
-    get buttonProps() {
+    get overflowView() {
+        return this.createElement(
+            this.connect(ButtonView, ToolbarElementStoreKeys),
+            this.buttonProps(true),
+        );
+    }
+
+    get barView() {
+        return this.createElement(
+            this.connect(ButtonView, ToolbarElementStoreKeys),
+            this.buttonProps(false),
+        );
+    }
+
+    whenTouched() {
+        if (this.tool)
+            this.app.toggleTool(this.tool);
+    }
+
+    protected buttonProps(isOverflow) {
         return {
-            className: this.className,
+            isOverflow,
+            iconClass: this.iconClass,
             whenTouched: () => {
                 this.update({
                     toolbarOverflowExpanded: false
@@ -71,39 +106,34 @@ export abstract class Button extends gws.Controller implements gws.types.IToolba
             tool: this.tool,
         }
     }
-
-    get popupView() {
-        return this.createElement(
-            this.connect(ButtonPopupView, ['appActiveTool']),
-            this.buttonProps,
-        );
-    }
-
-    get defaultView() {
-        return this.createElement(
-            this.connect(ButtonView, ['appActiveTool']),
-            this.buttonProps,
-        );
-    }
-
-    whenTouched() {
-        if (this.tool)
-            this.app.toggleTool(this.tool);
-    }
 }
 
-class ToolbarView extends gws.View<ToolbarProps> {
+class ToolbarContainerView extends gws.View<ToolbarContainerProps> {
 
     render() {
-        let size = this.props.size;
+        let size = this.props.toolbarSize;
 
         let expanded = this.props.toolbarOverflowExpanded,
             items = this.props.controller.children as Array<gws.types.IToolbarItem>,
             front = items.slice(0, size),
             rest = items.slice(size);
 
+        if (this.props.isOverflow) {
+            if (rest.length === 0 || !expanded)
+                return null;
+
+            return <gws.ui.Popup
+                className="modToolbarOverflowPopup"
+                whenClosed={() => this.props.controller.update({
+                    toolbarOverflowExpanded: false
+                })}
+            >
+                {rest.map(cc => <div className='modToolbarItem' key={cc.uid}>{cc.overflowView}</div>)}
+            </gws.ui.Popup>
+        }
+
         return <div className="modToolbar">
-            {front.map(cc => <div className='modToolbarItem' key={cc.uid}>{cc.defaultView}</div>)}
+            {front.map(cc => <div className='modToolbarItem' key={cc.uid}>{cc.barView}</div>)}
 
             {rest.length > 0 && <div className='modToolbarItem'>
                 <gws.ui.IconButton
@@ -117,52 +147,33 @@ class ToolbarView extends gws.View<ToolbarProps> {
 
         </div>
     }
-
 }
 
-class ToolbarOverflowView extends gws.View<ToolbarProps> {
-
-    render() {
-        let size = this.props.size;
-
-        let expanded = this.props.toolbarOverflowExpanded,
-            items = this.props.controller.children as Array<gws.types.IToolbarItem>,
-            front = items.slice(0, size),
-            rest = items.slice(size);
-
-        if (rest.length === 0 || !expanded)
-            return null;
-
-        return <gws.ui.Popup
-            className="modToolbarOverflowPopup"
-            whenClosed={() => this.props.controller.update({
-                toolbarOverflowExpanded: false
-
-            })}
-        >
-            {rest.map(cc => <div className='modToolbarItem' key={cc.uid}>{cc.popupView}</div>)}
-        </gws.ui.Popup>
-    }
-}
 
 class ToolbarController extends gws.Controller {
-    uid: 'Toolbar'
+    uid: 'Toolbar';
 
-    get size() {
-        return this.options.size || 3;
+    async init() {
+        await super.init();
+        this.update({
+            toolbarSize: this.options.size || 3
+        });
+        this.app.whenChanged('windowSize', () => this.update({
+            toolbarOverflowExpanded: false
+        }));
     }
-    
+
     get defaultView() {
         return this.createElement(
-            this.connect(ToolbarView, ['toolbarOverflowExpanded']),
-            {size: this.size}
+            this.connect(ToolbarContainerView, ToolbarContainerStoreKeys),
+            {isOverflow: false}
         );
     }
 
     get appOverlayView() {
         return this.createElement(
-            this.connect(ToolbarOverflowView, ['toolbarOverflowExpanded']),
-            {size: this.size}
+            this.connect(ToolbarContainerView, ToolbarContainerStoreKeys),
+            {isOverflow: true}
         );
     }
 

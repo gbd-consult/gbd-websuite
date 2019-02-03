@@ -16,38 +16,38 @@ module.exports = v => ({
         left: '50%',
         top: '50%',
         ...v.ICON('normal'),
-        ...v.LOCAL_SVG('move', v.COLOR.white),
+        ...v.SVG('move', v.COLOR.white),
         borderRadius: v.BORDER_RADIUS,
         border: '3px solid white',
         backgroundColor: v.COLOR.blueGrey400,
 
     },
 
-    '.modPrintButton': {
-        ...v.GOOGLE_SVG('action/print', v.TOOLBAR_BUTTON_COLOR)
+    '.modPrintPrintToolbarButton': {
+        ...v.TOOLBAR_BUTTON('google:action/print')
     },
 
-    '.modSnapshotButton': {
-        ...v.GOOGLE_SVG('image/crop_original', v.TOOLBAR_BUTTON_COLOR)
+    '.modPrintSnapshotToolbarButton': {
+        ...v.TOOLBAR_BUTTON('google:image/crop_original')
     },
 
     '.modPrintPreviewPrintButton': {
-        ...v.ROUND_OK_BUTTON('action/print'),
+        ...v.ROUND_OK_BUTTON('google:action/print'),
     },
 
     '.modPrintPreviewSnapshotButton': {
-        ...v.ROUND_OK_BUTTON('image/crop_original'),
+        ...v.ROUND_OK_BUTTON('google:image/crop_original'),
     },
 
     '.modPrintPreviewDialog': {
         position: 'absolute',
         padding: v.UNIT4,
-        backgroundColor: v.POPUP_BACKGROUND,
+        backgroundColor: v.INFOBOX_BACKGROUND,
         ...v.SHADOW,
     },
 
     '&.withPrintPreview': {
-        '.modSidebar, .modPopup, .modToolbar, .modSidebarOpenButton, .modAltbar': {
+        '.modSidebar, .modInfobox, .modToolbar, .modSidebarOpenButton, .modAltbar': {
             display: 'none'
         },
     },

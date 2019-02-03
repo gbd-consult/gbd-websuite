@@ -1,60 +1,69 @@
 module.exports = v => ({
-    '.modLayersSidebarIcon': {
-        ...v.GOOGLE_SVG('maps/layers', v.SIDEBAR_HEADER_COLOR)
+    '.modLayersSidebar': {
+        ...v.SIDEBAR_ICON('google:maps/layers')
     },
 
-    '.modLayersChildren': {
-        paddingLeft: 20
-    },
-
-
-    '.modLayersLayer': {
+    '.modLayersTreeRow': {
         ...v.TRANSITION('background-color'),
 
         '&:hover': {
             backgroundColor: v.HOVER_COLOR,
         },
 
-        '.modLayersLayerTitle': {
+        '.modLayersTreeTitle': {
             opacity: 0.6,
+            lineHeight: 1.3,
+            overflow: 'hidden',
+            '.uiRawButton': {
+                textAlign: 'left',
+            }
         },
 
         '.uiIconButton': {
             opacity: 0.6,
             ...v.ICON('small'),
-            ...v.TRANSITION('all'),
-        }
+            ...v.TRANSITION(),
+        },
+
+        '&.isSelected': {
+            '.modLayersTreeTitle': {
+                color: v.HIGHLIGHT_COLOR,
+            },
+        },
+
+        '&.isVisible': {
+            '.modLayersTreeTitle': {
+                opacity: 1,
+            },
+            '.uiIconButton': {
+                opacity: 1,
+            }
+        },
+    },
+
+    '.modLayersTreeChildren': {
+        paddingLeft: 20
     },
 
     '.modLayersExpandButton': {
-        ...v.GOOGLE_SVG('navigation/chevron_right', v.TEXT_COLOR),
+        ...v.SVG('google:navigation/chevron_right', v.TEXT_COLOR),
     },
 
     '.modLayersCollapseButton': {
-        ...v.GOOGLE_SVG('navigation/chevron_right', v.TEXT_COLOR),
+        ...v.SVG('google:navigation/chevron_right', v.TEXT_COLOR),
         transform: 'rotate(90deg)',
     },
 
-    '.modLayersLayerButton': {
-        ...v.GOOGLE_SVG('image/crop_7_5', v.TEXT_COLOR),
+    '.modLayersLeafButton': {
+        ...v.SVG('google:image/crop_7_5', v.TEXT_COLOR),
     },
 
     '.modLayersHideButton': {
-        ...v.GOOGLE_SVG('action/visibility', v.FOCUS_COLOR),
+        ...v.SVG('google:action/visibility', v.FOCUS_COLOR),
     },
 
     '.modLayersShowButton': {
-        ...v.GOOGLE_SVG('action/visibility_off', v.FOCUS_COLOR),
-    },
-
-    '.modLayersLayer.visible': {
-        '.modLayersLayerTitle': {
-            opacity: 1,
-        },
-        '.uiIconButton': {
-            opacity: 1,
-            ...v.TRANSITION('all'),
-        }
+        ...v.SVG('google:action/visibility_off', v.FOCUS_COLOR),
     },
 
     '.modLayersDetails': {
@@ -70,34 +79,15 @@ module.exports = v => ({
         padding: v.UNIT4,
     },
 
-
-    '.modLayersDetailsZoomButton': {
-        ...v.LOCAL_SVG('baseline-zoom_out_map-24px', v.SECONDARY_BUTTON_COLOR),
-
+    '.modLayersZoomAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('baseline-zoom_out_map-24px')
     },
-    '.modLayersDetailsShowButton': {
-        ...v.GOOGLE_SVG('action/visibility_off', v.SECONDARY_BUTTON_COLOR),
-
+    '.modLayersShowAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:action/visibility_off')
     },
-    '.modLayersDetailsEditButton': {
-        ...v.GOOGLE_SVG('image/edit', v.SECONDARY_BUTTON_COLOR)
-
+    '.modLayersEditAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:image/edit')
     },
-
-    '.modLayersTitle': {
-        lineHeight: 1.3,
-        overflow: 'hidden',
-        '.uiRawButton': {
-            textAlign: 'left',
-        }
-    },
-
-    '.modLayersLayer.isSelected': {
-        '.modLayersTitle': {
-            color: v.HIGHLIGHT_COLOR,
-        },
-    },
-
 
 
 });

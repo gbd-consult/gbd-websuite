@@ -32,7 +32,7 @@ module.exports = v => ({
 
     '.uiSelect .uiSelectToggleButton': {
         ...v.ICON('small'),
-        ...v.GOOGLE_SVG('navigation/chevron_right', v.BORDER_COLOR),
+        ...v.SVG('google:navigation/chevron_right', v.BORDER_COLOR),
         ...v.TRANSITION(),
         transform: 'rotate(90deg)',
     },

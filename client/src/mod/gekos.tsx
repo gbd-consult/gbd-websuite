@@ -21,7 +21,6 @@ interface GekosViewProps extends gws.types.ViewProps {
 }
 
 const GekosStoreKeys = [
-
     'gekosX',
     'gekosY',
     'gekosDialogActive',
@@ -67,13 +66,14 @@ class GekosDialog extends gws.View<GekosViewProps> {
             },
         ];
 
-        return <gws.ui.Dialog className="modGekosDialog">
+        let close = () => this.props.controller.update({gekosDialogActive: false});
+
+        return <gws.ui.Dialog
+            className="modGekosDialog"
+            title={STRINGS.confirmText}
+            whenClosed={close}
+        >
             <Form>
-                <Row>
-                    <Cell flex>
-                        <gws.ui.Title content={STRINGS.confirmText}/>
-                    </Cell>
-                </Row>
                 <Row>
                     <Cell flex>
                         <gws.components.sheet.Editor
@@ -94,7 +94,7 @@ class GekosDialog extends gws.View<GekosViewProps> {
                     <Cell>
                         <gws.ui.IconButton
                             className="cmpButtonFormCancel"
-                            whenTouched={() => this.props.controller.update({'gekosDialogActive': false})}
+                            whenTouched={close}
                         />
                     </Cell>
                 </Row>
@@ -142,8 +142,8 @@ class GekosController extends gws.Controller {
 
 }
 
-class GekosButton extends toolbar.Button {
-    className = 'modGekosButton';
+class GekosToolbarButton extends toolbar.Button {
+    iconClass = 'modGekosToolbarButton';
     tool = 'Tool.Gekos';
 
     get tooltip() {
@@ -155,5 +155,5 @@ class GekosButton extends toolbar.Button {
 
 export const tags = {
     'Shared.Gekos': GekosController,
-    'Toolbar.Gekos': GekosButton,
+    'Toolbar.Gekos': GekosToolbarButton,
 };

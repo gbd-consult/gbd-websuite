@@ -33,7 +33,7 @@ class SearchResults extends gws.View<SearchViewProps> {
             <gws.components.feature.List
                 controller={this.props.controller}
                 features={this.props.searchResults}
-                item={f => <gws.ui.TextBlock
+                content={f => <gws.ui.TextBlock
                     className="modSearchResultsFeatureText"
                     withHTML
                     whenTouched={() => this.props.master.zoomTo(f)}
@@ -66,7 +66,7 @@ class SearchBox extends gws.View<SearchViewProps> {
                 <Cell flex>
                     <gws.ui.TextInput
                         value={this.props.searchInput}
-                        placeholder={this.label('modSearchPlaceholder')}
+                        placeholder={this.__('modSearchPlaceholder')}
                         whenChanged={val => this.props.master.changed(val)}
                     />
                 </Cell>

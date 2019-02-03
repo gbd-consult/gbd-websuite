@@ -13,33 +13,51 @@ module.exports = v => ({
     },
 
     '.uiPopupBackdrop': {
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+
+        '.uiPopup': {
+            ...v.TRANSITION(),
+            opacity: 0,
+        },
+
+        '&.isActive': {
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            '.uiPopup': {
+                opacity: 1,
+            }
+        },
     },
 
 
     '.uiDialog': {
         position: 'absolute',
         backgroundColor: v.COLOR.white,
-        padding: v.UNIT4,
+        padding: v.UNIT8,
+
         '&.withCloseButton': {
             paddingTop: v.CONTROL_SIZE + v.UNIT2,
         },
-        '.uiTitle': {
-            textAlign: 'center',
-            fontSize: v.NORMAL_FONT_SIZE,
+        '&.withTitle.withCloseButton': {
+            paddingTop: v.UNIT8,
+        },
+    },
 
-        }
+    '.uiDialogTitle': {
+        fontSize: v.BIG_FONT_SIZE,
+        lineHeight: 1.2,
+        paddingRight: v.CONTROL_SIZE,
+        marginBottom: v.UNIT4,
     },
 
     '.uiPopup': {
         position: 'absolute',
     },
 
-    '.uiDialogCloseButton': {
+    '.uiIconButton.uiDialogCloseButton': {
         position: 'absolute',
-        right: v.UNIT2,
-        top: v.UNIT2,
-        ...v.CLOSE_ICON(),
+        right: 0,
+        top: 0,
+        ...v.ICON('medium'),
+        ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
     },
 
     '.uiDialogContent': {
@@ -47,7 +65,7 @@ module.exports = v => ({
         height: '100%',
         position: 'relative',
         overflow: 'hidden',
-	    '-webkit-overflow-scrolling': 'touch',
+        '-webkit-overflow-scrolling': 'touch',
         'iframe': {
             width: '100%',
             height: '95%',
@@ -74,7 +92,7 @@ module.exports = v => ({
         right: v.UNIT2,
         top: v.UNIT2,
         ...v.ICON('small'),
-        ...v.CLOSE_ICON(v.BORDER_COLOR),
+        ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
     },
 
 

@@ -5,28 +5,33 @@ import * as sidebar from './common/sidebar';
 
 let {Row, Cell} = gws.ui.Layout;
 
-interface ViewProps extends gws.types.ViewProps {
-    controller: SidebarLayersController;
+interface LayersViewProps extends gws.types.ViewProps {
+    controller: LayersSidebar;
     mapUpdateCount: number;
     mapSelectedLayer?: gws.types.IMapLayer;
     layer?: gws.types.IMapLayer;
 }
 
-class Title extends gws.View<ViewProps> {
+const LayersStoreKeys = [
+    'mapUpdateCount',
+    'mapSelectedLayer'
+];
+
+class LayersTreeTitle extends gws.View<LayersViewProps> {
     render() {
         let click = async () => {
             this.props.controller.map.deselectAllLayers();
             await this.props.controller.map.selectLayer(this.props.layer);
         };
         return <gws.ui.Button
-            className="modLayersTitle"
+            className="modLayersTreeTitle"
             whenTouched={click}
         >{this.props.layer.title}</gws.ui.Button>
 
     }
 }
 
-class ToggleVisibleButton extends gws.View<ViewProps> {
+class LayersVisibleButton extends gws.View<LayersViewProps> {
     render() {
         let layer = this.props.layer,
             cls = layer.visible ? 'modLayersHideButton' : 'modLayersShowButton',
@@ -40,7 +45,7 @@ class ToggleVisibleButton extends gws.View<ViewProps> {
     }
 }
 
-class ToggleExpandButton extends gws.View<ViewProps> {
+class LayersExpandButton extends gws.View<LayersViewProps> {
     render() {
         let layer = this.props.layer,
             cls = layer.expanded ? 'modLayersCollapseButton' : 'modLayersExpandButton',
@@ -54,51 +59,57 @@ class ToggleExpandButton extends gws.View<ViewProps> {
     }
 }
 
-let _childNodes = (layer: gws.types.IMapLayer, props) => {
+class LayersLeafButton extends gws.View<LayersViewProps> {
+    render() {
+        return <gws.ui.IconButton
+            className='modLayersLeafButton'
+            tooltip={this.__('modLayersLeafButton')}
+        />;
+    }
+}
+
+let _layerTree = (layer: gws.types.IMapLayer, props) => {
     let cc = [];
 
     layer.children.forEach(la => {
         if (!la.shouldList)
             return;
         if (la.unfolded)
-            cc.push(..._childNodes(la, props));
+            cc.push(..._layerTree(la, props));
         else
-            cc.push(<TreeNode key={la.uid} {...props} layer={la}/>)
+            cc.push(<LayersTreeNode key={la.uid} {...props} layer={la}/>)
     });
 
     return cc.length ? cc : null;
 };
 
-class TreeNode extends gws.View<ViewProps> {
+class LayersTreeNode extends gws.View<LayersViewProps> {
     render() {
 
         let layer = this.props.layer,
-            children = _childNodes(layer, this.props);
+            children = _layerTree(layer, this.props);
 
-        return <div className="modLayersContainer">
-            <Row {...gws.tools.cls('modLayersLayer', layer.visible && 'visible', layer.selected && 'isSelected')}>
+        return <div className="modLayersTreeNode">
+            <Row {...gws.tools.cls('modLayersTreeRow', layer.visible && 'isVisible', layer.selected && 'isSelected')}>
                 <Cell>
                     {children
-                        ? <ToggleExpandButton {...this.props}  />
-                        : <gws.ui.IconButton
-                            className="modLayersLayerButton"
-                            tooltip={this.__('modLayersLayerButton')}
-                        />
+                        ? <LayersExpandButton {...this.props}  />
+                        : <LayersLeafButton {...this.props}  />
                     }
                 </Cell>
                 <Cell flex>
-                    <Title {...this.props} />
+                    <LayersTreeTitle {...this.props} />
                 </Cell>
                 <Cell>
-                    <ToggleVisibleButton {...this.props} />
+                    <LayersVisibleButton {...this.props} />
                 </Cell>
             </Row>
-            {children && layer.expanded && <div className="modLayersChildren">{children}</div>}
+            {children && layer.expanded && <div className="modLayersTreeChildren">{children}</div>}
         </div>
     }
 }
 
-class LayerDetailsToolbar extends gws.View<ViewProps> {
+class LayerSidebarDetails extends gws.View<LayersViewProps> {
     render() {
         let layer = this.props.layer,
             cc = this.props.controller,
@@ -124,113 +135,76 @@ class LayerDetailsToolbar extends gws.View<ViewProps> {
             }
         };
 
-        return <sidebar.SecondaryToolbar>
-            <Cell flex/>
-            <Cell>
-                <gws.ui.IconButton
-                    className="modLayersDetailsZoomButton"
-                    tooltip={this.__('modLayersDetailsZoomButton')}
-                    whenTouched={f.zoom}
-                />
-            </Cell>
-            <Cell>
-                <gws.ui.IconButton
-                    className="modLayersDetailsShowButton"
-                    tooltip={this.__('modLayersDetailsShowButton')}
-                    whenTouched={f.show}
-                />
-            </Cell>
-            {layer.editAccess && <Cell>
-                <gws.ui.IconButton
-                    className="modLayersDetailsEditButton"
-                    tooltip={this.__('modLayersDetailsEditButton')}
-                    whenTouched={f.edit}
-                />
-            </Cell>}
-            <Cell>
-                <gws.ui.IconButton
-                    className="modSidebarSecondaryClose"
-                    tooltip={this.__('modLayersDetailsCloseButton')}
-                    whenTouched={f.close}
-                />
-            </Cell>
-        </sidebar.SecondaryToolbar>;
-
-    }
-}
-
-class LayerDetails extends gws.View<ViewProps> {
-    render() {
         return <div className="modLayersDetails">
             <div className="modLayersDetailsBody">
                 <div className="modLayersDetailsBodyContent">
-                    <gws.ui.TextBlock className="cmpDescription" withHTML content={this.props.layer.description}/>
+                    <gws.components.Description content={this.props.layer.description}/>
                 </div>
             </div>
 
-            <LayerDetailsToolbar {...this.props} />
-
+            <sidebar.AuxToolbar>
+                <Cell flex/>
+                <sidebar.AuxButton
+                    className="modLayersZoomAuxButton"
+                    tooltip={this.__('modLayersZoomAuxButton')}
+                    whenTouched={f.zoom}
+                />
+                <sidebar.AuxButton
+                    className="modLayersShowAuxButton"
+                    tooltip={this.__('modLayersShowAuxButton')}
+                    whenTouched={f.show}
+                />
+                {layer.editAccess && <sidebar.AuxButton
+                    className="modLayersEditAuxButton"
+                    tooltip={this.__('modLayersEditAuxButton')}
+                    whenTouched={f.edit}
+                />}
+                <sidebar.AuxCloseButton
+                    tooltip={this.__('modLayersCloseAuxButton')}
+                    whenTouched={f.close}
+                />
+            </sidebar.AuxToolbar>
         </div>
     }
 }
 
-class SidebarBody extends gws.View<ViewProps> {
+class LayersSidebarView extends gws.View<LayersViewProps> {
     render() {
-        let selectedLayer = this.props['mapSelectedLayer'];
+        let sel = this.props.mapSelectedLayer;
 
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('modLayersTitle')}/>
+                <gws.ui.Title content={this.__('modLayersSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                {_childNodes(this.props.controller.map.root, this.props)}
+                {_layerTree(this.props.controller.map.root, this.props)}
             </sidebar.TabBody>
 
-            {selectedLayer && <sidebar.TabFooter>
-                <LayerDetails {...this.props} layer={selectedLayer}/>
+            {sel && <sidebar.TabFooter>
+                <LayerSidebarDetails {...this.props} layer={sel}/>
             </sidebar.TabFooter>}
         </sidebar.Tab>
     }
 }
 
-class SidebarLayersController extends gws.Controller implements gws.types.ISidebarItem {
-
-    selectLayer(layer) {
-        this.update({
-            selectedLayer: layer
-        })
-    }
-
-    editSelected() {
-        let la = this.app.store.getValue('mapSelectedLayer');
-        if (la && la.config.editable) {
-            this.update({
-                editLayer: la,
-                sidebarActiveTab: 'Sidebar.Editor',
-            })
-        }
-    }
-
-    get iconClass() {
-        return 'modLayersSidebarIcon'
-    }
+class LayersSidebar extends gws.Controller implements gws.types.ISidebarItem {
+    iconClass = 'modLayersSidebar';
 
     get tooltip() {
-        return this.__('modLayersTooltip');
+        return this.__('modLayersSidebarTitle');
     }
 
     get tabView() {
         return this.createElement(
-            this.connect(SidebarBody, ['mapUpdateCount', 'mapSelectedLayer']),
+            this.connect(LayersSidebarView, LayersStoreKeys),
             {map: this.map}
         );
     }
-
 }
 
 export const tags = {
-    'Sidebar.Layers': SidebarLayersController
+    'Sidebar.Layers': LayersSidebar
 };
 

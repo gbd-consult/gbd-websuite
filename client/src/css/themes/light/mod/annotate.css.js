@@ -72,38 +72,33 @@ module.exports = v => {
             {...common(sel), ...mark(sel), ...fill(sel)},
 
 
-        '.modAnnotateUpdateButton': {
-            ...v.ROUND_OK_BUTTON()
-        },
-
         '.modAnnotateSidebarIcon': {
-            ...v.GOOGLE_SVG('action/speaker_notes', v.SIDEBAR_HEADER_COLOR)
+            ...v.SVG('google:action/speaker_notes', v.SIDEBAR_HEADER_COLOR)
         },
 
         '.modAnnotateDrawToolbarButton': {
-            ...v.GOOGLE_SVG('action/speaker_notes', v.TOOLBAR_BUTTON_COLOR)
+            ...v.TOOLBAR_BUTTON('google:action/speaker_notes')
         },
 
-
-        '.modAnnotateEditButton': {
-            ...v.LOCAL_SVG('cursor', v.SECONDARY_BUTTON_COLOR),
+        '.modAnnotateEditAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('cursor')
         },
 
-        '.modAnnotateDrawButton': {
-            ...v.GOOGLE_SVG('content/add_circle_outline', v.SECONDARY_BUTTON_COLOR),
+        '.modAnnotateDrawAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('google:content/gesture'),
         },
 
-        '.modAnnotateClearButton': {
-            ...v.GOOGLE_SVG('action/delete_forever', v.SECONDARY_BUTTON_COLOR),
+        '.modAnnotateClearAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever'),
 
         },
 
-        '.modAnnotateLensButton': {
-            ...v.LOCAL_SVG('search_lens', v.SECONDARY_BUTTON_COLOR),
+        '.modAnnotateLensAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('search_lens'),
         },
 
-        '.modAnnotateRemoveButton': {
-            ...v.GOOGLE_SVG('action/delete', v.SECONDARY_BUTTON_COLOR),
+        '.modAnnotateRemoveAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('google:action/delete'),
         },
 
 

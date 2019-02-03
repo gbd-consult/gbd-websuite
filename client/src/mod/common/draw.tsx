@@ -55,6 +55,7 @@ export class Tool extends gws.Controller implements gws.types.ITool {
 class DrawBox extends gws.View<DrawProps> {
 
     render() {
+        let cc = this.props.controller;
 
         console.log('DrawBox', this.props.drawMode)
 
@@ -63,23 +64,23 @@ class DrawBox extends gws.View<DrawProps> {
 
         let shapeType = this.props.drawShapeType || DEFAULT_SHAPE_TYPE
 
-        let button = st => {
+        let button = (type, cls, tooltip) => {
             return <Cell>
                 <gws.ui.IconButton
-                    {...gws.tools.cls('modDraw' + st + 'Button', st === shapeType && 'isActive')}
-                    tooltip={this.props.controller.__('modDraw' + st + 'Button')}
-                    whenTouched={() => this.props.controller.setShapeType(st)}
+                    {...gws.tools.cls(cls, type === shapeType && 'isActive')}
+                    tooltip={tooltip}
+                    whenTouched={() => cc.setShapeType(type)}
                 />
             </Cell>
         };
 
         return <div className="modDrawControlBox isActive">
             <Row>
-                {button('Point')}
-                {button('Line')}
-                {button('Box')}
-                {button('Polygon')}
-                {button('Circle')}
+                {button('Point', 'modDrawPointButton', cc.__('modDrawPointButton'))}
+                {button('Line', 'modDrawLineButton', cc.__('modDrawLineButton'))}
+                {button('Box', 'modDrawBoxButton', cc.__('modDrawBoxButton'))}
+                {button('Polygon', 'modDrawPolygonButton', cc.__('modDrawPolygonButton'))}
+                {button('Circle', 'modDrawCircleButton', cc.__('modDrawCircleButton'))}
                 <Cell flex/>
                 <Cell>
                     <gws.ui.IconButton

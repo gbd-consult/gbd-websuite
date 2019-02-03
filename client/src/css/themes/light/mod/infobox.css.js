@@ -1,8 +1,8 @@
 module.exports = v => ({
-    '.modPopup': {
+    '.modInfobox': {
         zIndex: 2,
         position: 'absolute',
-        background: v.POPUP_BACKGROUND,
+        background: v.INFOBOX_BACKGROUND,
         display: 'flex',
         opacity: 0,
 
@@ -17,70 +17,70 @@ module.exports = v => ({
 
     },
 
-    '.withSidebar .modPopup': {
+    '.withSidebar .modInfobox': {
     },
 
-    '.modPopupCloseButton': {
+    '.modInfoboxCloseButton': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.CLOSE_ICON(v.POPUP_BUTTON_COLOR),
+            ...v.SVG(v.CLOSE_ICON, v.INFOBOX_BUTTON_COLOR),
         },
     },
 
-    '.modPopupZoomButton': {
+    '.modInfoboxZoomButton': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.GOOGLE_SVG('image/center_focus_weak', v.POPUP_BUTTON_COLOR),
+            ...v.SVG('google:image/center_focus_weak', v.INFOBOX_BUTTON_COLOR),
         },
     },
 
-    '.modPopupLensButton': {
+    '.modInfoboxLensButton': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.LOCAL_SVG('search_lens', v.POPUP_BUTTON_COLOR),
+            ...v.SVG('search_lens', v.INFOBOX_BUTTON_COLOR),
         },
     },
 
-    '.modPopupSelectButton': {
+    '.modInfoboxSelectButton': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.LOCAL_SVG('select', v.POPUP_BUTTON_COLOR),
+            ...v.SVG('select', v.INFOBOX_BUTTON_COLOR),
         },
     },
 
-    '.modPopupPagerBack': {
+    '.modInfoboxPagerBack': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.GOOGLE_SVG('navigation/chevron_left', v.POPUP_BUTTON_COLOR),
+            ...v.SVG('google:navigation/chevron_left', v.INFOBOX_BUTTON_COLOR),
         },
     },
 
-    '.modPopupPagerForward': {
+    '.modInfoboxPagerForward': {
         '&.uiIconButton': {
             ...v.ICON('medium'),
-            ...v.GOOGLE_SVG('navigation/chevron_right', v.POPUP_BUTTON_COLOR),
+            ...v.SVG('google:navigation/chevron_right', v.INFOBOX_BUTTON_COLOR),
         },
     },
 
-    '.modPopupPagerText': {
+    '.modInfoboxPagerText': {
         fontSize: v.SMALL_FONT_SIZE,
     },
 
 
-    '.modPopupContent': {
+    '.modInfoboxContent': {
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
     },
 
-    '.modPopupBody': {
+    '.modInfoboxBody': {
         flex: 1,
         overflow: 'auto',
         padding: v.UNIT8,
     },
 
-    '.modPopupFooter': {
+    '.modInfoboxFooter': {
         padding: [0, v.UNIT4, 0, v.UNIT8],
         // borderTopWidth: 1,
         // borderTopStyle: 'solid',

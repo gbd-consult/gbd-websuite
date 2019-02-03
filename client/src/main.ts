@@ -3,10 +3,10 @@ import * as ReactDOM from 'react-dom';
 import * as gws from 'gws';
 
 let mods = [
-    require('./mod/common/altbar'),
     require('./mod/common/draw'),
     require('./mod/common/modify'),
     require('./mod/common/lens'),
+    require('./mod/common/misc'),
     require('./mod/common/toolbar'),
     require('./mod/common/sidebar'),
     require('./mod/alkis'),
@@ -19,12 +19,10 @@ let mods = [
     require('./mod/infobar'),
     require('./mod/layers'),
     require('./mod/marker'),
-    require('./mod/misc'),
     require('./mod/print'),
     require('./mod/select'),
     require('./mod/search'),
     require('./mod/overview'),
-    require('./mod/uidemo'),
     require('./mod/user'),
     require('./mod/zoom'),
 ];

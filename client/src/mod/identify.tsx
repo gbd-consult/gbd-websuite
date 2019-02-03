@@ -4,7 +4,7 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 import * as toolbar from './common/toolbar';
 
-abstract class BaseTool extends gws.Controller implements gws.types.ITool {
+abstract class IdentifyTool extends gws.Controller implements gws.types.ITool {
     abstract hoverMode;
 
     async run(evt) {
@@ -22,14 +22,14 @@ abstract class BaseTool extends gws.Controller implements gws.types.ITool {
                     features: [features[0]],
                     mode: 'draw',
                 },
-                popupContent: <gws.components.feature.PopupList controller={this} features={features}/>
+                infoboxContent: <gws.components.feature.InfoList controller={this} features={features}/>
             });
         } else {
             this.update({
                 marker: {
                     features: null,
                 },
-                popupContent: null
+                infoboxContent: null
             });
         }
     }
@@ -53,42 +53,42 @@ abstract class BaseTool extends gws.Controller implements gws.types.ITool {
 
 }
 
-class ClickTool extends BaseTool {
+class IdentifyClickTool extends IdentifyTool {
     hoverMode = 'shift';
 }
 
-class HoverTool extends BaseTool {
+class IdentifyHoverTool extends IdentifyTool {
     hoverMode = 'always';
 }
 
-class Master extends gws.Controller {
+class IdentifyController extends gws.Controller {
     async init() {
-        await this.app.addTool('Tool.Identify.Click', this.app.createController(ClickTool, this));
-        await this.app.addTool('Tool.Identify.Hover', this.app.createController(HoverTool, this));
+        await this.app.addTool('Tool.Identify.Click', this.app.createController(IdentifyClickTool, this));
+        await this.app.addTool('Tool.Identify.Hover', this.app.createController(IdentifyHoverTool, this));
     }
 }
 
-class ClickButton extends toolbar.Button {
-    className = 'modIdentifyClickButton';
+class IdentifyClickToolbarButton extends toolbar.Button {
+    iconClass = 'modIdentifyClickToolbarButton';
     tool = 'Tool.Identify.Click';
 
     get tooltip() {
-        return this.__('modIdentifyClickButton');
+        return this.__('modIdentifyClickToolbarButton');
     }
 
 }
 
-class HoverButton extends toolbar.Button {
-    className = 'modIdentifyHoverButton';
+class IdentifyHoverToolbarButton extends toolbar.Button {
+    iconClass = 'modIdentifyHoverToolbarButton';
     tool = 'Tool.Identify.Hover';
 
     get tooltip() {
-        return this.__('modIdentifyHoverButton');
+        return this.__('modIdentifyHoverToolbarButton');
     }
 }
 
 export const tags = {
-    'Shared.Identify': Master,
-    'Toolbar.Identify.Click': ClickButton,
-    'Toolbar.Identify.Hover': HoverButton,
+    'Shared.Identify': IdentifyController,
+    'Toolbar.Identify.Click': IdentifyClickToolbarButton,
+    'Toolbar.Identify.Hover': IdentifyHoverToolbarButton,
 };

@@ -1,7 +1,15 @@
 module.exports = v => ({
 
+    '.modSelectSidebarIcon': {
+        ...v.SIDEBAR_ICON('select')
+    },
+
     '.modSelectToolbarButton': {
-        ...v.LOCAL_SVG('select', v.TOOLBAR_BUTTON_COLOR)
+        ...v.TOOLBAR_BUTTON('select')
+    },
+
+    '.modSelectUnselectListButton': {
+        ...v.LIST_BUTTON('google:content/remove_circle_outline')
     },
 
     '.modSelectFeature': {
@@ -14,9 +22,6 @@ module.exports = v => ({
         fill: v.COLOR.opacity(v.COLOR.orange500, 0.3),
     },
 
-    '.modSelectSidebarIcon': {
-        ...v.LOCAL_SVG('select', v.SIDEBAR_HEADER_COLOR)
-    },
 
 
 });

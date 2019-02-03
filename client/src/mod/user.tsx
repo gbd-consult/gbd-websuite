@@ -113,6 +113,19 @@ class SidebarTab extends gws.View<AuthProps> {
 
 class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
 
+    iconClass = 'modUserSidebarIcon';
+
+    get tooltip() {
+        return this.__('modUserSidebarTitle');
+    }
+
+    get tabView() {
+        return this.createElement(
+            this.connect(SidebarTab, ['authUsername', 'authPassword', 'authError']),
+            {user: this.getValue('user')}
+        );
+    }
+
     async doLogin() {
         let res = await this.app.server.authLogin({
             username: this.getValue('authUsername') as string,
@@ -131,20 +144,6 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
         this.app.reload();
     }
 
-    get iconClass() {
-        return 'modUserSidebarIcon';
-    }
-
-    get tooltip() {
-        return this.__('modUserTooltip');
-    }
-
-    get tabView() {
-        return this.createElement(
-            this.connect(SidebarTab, ['authUsername', 'authPassword', 'authError']),
-            {user: this.getValue('user')}
-        );
-    }
 
 }
 

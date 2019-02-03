@@ -33,20 +33,20 @@ module.exports = v => ({
     },
 
     '.modLensOverlayAnchorButton': {
-        ...v.LOCAL_SVG('move', v.COLOR.white),
+        ...v.SVG('move', v.COLOR.white),
     },
 
     '.modLensOverlayDrawButton': {
-        ...v.GOOGLE_SVG('content/create', v.COLOR.white),
+        ...v.SVG('google:content/create', v.COLOR.white),
     },
 
     '.modLensOverlayCancelButton': {
-        ...v.GOOGLE_SVG('content/clear', v.COLOR.white),
+        ...v.SVG('google:content/clear', v.COLOR.white),
     },
 
 
-    '.modLensButton': {
-        ...v.LOCAL_SVG('search_lens', v.TOOLBAR_BUTTON_COLOR)
+    '.modLensToolbarButton': {
+        ...v.TOOLBAR_BUTTON('search_lens')
     }
 
 });

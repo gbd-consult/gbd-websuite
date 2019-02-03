@@ -121,7 +121,7 @@ class Header extends gws.View<SidebarProps> {
                 {front.map(it =>
                     <HeaderButton key={it.tag} {...this.props} item={it}/>
                 )}
-                {rest.length > 0  && <gws.ui.IconButton
+                {rest.length > 0 && <gws.ui.IconButton
                     {...gws.tools.cls('modSidebarOverflowButton', expanded && 'isActive')}
                     tooltip={'...'}
                     whenTouched={() => this.props.controller.update({
@@ -249,13 +249,52 @@ export class TabBody extends _TabItem {
     className = "modSidebarTabBody";
 }
 
-export class SecondaryToolbar extends _TabItem {
-    className = "uiRow modSidebarSecondaryToolbar";
+export class AuxToolbar extends _TabItem {
+    className = "uiRow modSidebarAuxToolbar";
+}
+
+interface AuxButtonProps {
+    className: string;
+    tooltip: string;
+    whenTouched: () => void;
+    badge?: string,
+
+}
+
+export class AuxButton extends React.PureComponent<AuxButtonProps> {
+    render() {
+        return <Cell>
+            <gws.ui.IconButton {...this.props}/>
+        </Cell>
+    }
+}
+
+interface AuxCloseButtonProps {
+    tooltip: string;
+    whenTouched: () => void;
+}
+
+export class AuxCloseButton extends React.PureComponent<AuxCloseButtonProps> {
+    render() {
+        return <Cell>
+            <gws.ui.IconButton
+                className='modSidebarAuxCloseButton'
+                tooltip={this.props.tooltip}
+                whenTouched={this.props.whenTouched}
+            />
+        </Cell>
+    }
 }
 
 export class EmptyTab extends React.PureComponent<{}> {
     render() {
         return <div className="modSidebarEmptyTab">{this.props.children}</div>;
+    }
+}
+
+export class EmptyTabBody extends React.PureComponent<{}> {
+    render() {
+        return <div className="modSidebarEmptyTabBody">{this.props.children}</div>;
     }
 }
 

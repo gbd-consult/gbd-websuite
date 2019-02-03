@@ -3,7 +3,7 @@
 module.exports = v => ({
 
     '.modUserSidebarIcon': {
-        ...v.GOOGLE_SVG('social/person', v.SIDEBAR_HEADER_COLOR)
+        ...v.SVG('google:social/person', v.SIDEBAR_HEADER_COLOR)
     },
 
 });

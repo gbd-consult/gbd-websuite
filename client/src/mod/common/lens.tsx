@@ -9,34 +9,14 @@ import * as toolbar from '../common/toolbar';
 
 const MASTER = 'Shared.Lens';
 
+let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as LensController;
+
 class LensLayer extends gws.map.layer.FeatureLayer {
     get printItem() {
         return null;
     }
 
 }
-
-class LensToolbarButton extends toolbar.Button {
-    className = 'modLensButton';
-    tool = 'Tool.Lens';
-
-    get tooltip() {
-        return this.__('modLensButton');
-    }
-}
-
-interface LensProps {
-    controller: LensController;
-    lensShapeSelector: boolean;
-    lensOverlayPosition: ol.Coordinate;
-    appActiveTool: string;
-}
-
-const lensPropsKeys = [
-    'lensShapeSelector',
-    'appActiveTool',
-    'lensOverlayPosition'
-];
 
 export class Tool extends gws.Controller implements gws.types.ITool {
 
@@ -49,13 +29,11 @@ export class Tool extends gws.Controller implements gws.types.ITool {
     }
 
     start() {
-        let master = this.app.controller(MASTER) as LensController;
-        master.start(this);
+        _master(this).start(this);
     }
 
     stop() {
-        let master = this.app.controller(MASTER) as LensController;
-        master.stop(this);
+        _master(this).stop(this);
     }
 
     async whenChanged(geometry) {
@@ -67,14 +45,14 @@ export class Tool extends gws.Controller implements gws.types.ITool {
                     features: [features[0]],
                     mode: 'draw',
                 },
-                popupContent: <gws.components.feature.PopupList controller={this} features={features}/>
+                infoboxContent: <gws.components.feature.InfoList controller={this} features={features}/>
             });
         } else {
             this.update({
                 marker: {
                     features: null,
                 },
-                popupContent: null
+                infoboxContent: null
             });
         }
     }
@@ -82,22 +60,27 @@ export class Tool extends gws.Controller implements gws.types.ITool {
 }
 
 class DrawTool extends draw.Tool {
-    get master() {
-        return this.app.controller(MASTER) as LensController;
-    }
-
     whenStarted(shapeType, oFeature) {
     }
 
     whenEnded(shapeType, oFeature) {
-        this.master.update({
+        _master(this).update({
             lensGeometry: oFeature.getGeometry()
         })
-        this.master.drawEnded();
+        _master(this).drawEnded();
     }
 
     whenCancelled() {
-        this.master.drawEnded();
+        _master(this).drawEnded();
+    }
+}
+
+class LensToolbarButton extends toolbar.Button {
+    iconClass = 'modLensToolbarButton';
+    tool = 'Tool.Lens';
+
+    get tooltip() {
+        return this.__('modLensToolbarButton');
     }
 }
 

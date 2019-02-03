@@ -2,7 +2,7 @@ module.exports = v => ({
 
     '&.msie': {
 
-        '.modPopup.isActive': {
+        '.modInfobox.isActive': {
             width: 350,
             maxWidth: 350,
             minWidth: 350,

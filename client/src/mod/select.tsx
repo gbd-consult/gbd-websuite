@@ -8,6 +8,11 @@ import * as sidebar from './common/sidebar';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
+const MASTER = 'Shared.Select';
+
+let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as SelectController;
+
+
 interface SelectViewProps extends gws.types.ViewProps {
     selectFeatures: Array<gws.types.IMapFeature>;
 }
@@ -16,26 +21,18 @@ const SelectStoreKeys = [
     'selectFeatures',
 ];
 
-const MASTER = 'Shared.Select';
-
 class SelectTool extends gws.Controller implements gws.types.ITool {
 
     async run(evt: ol.MapBrowserPointerEvent) {
-        let master = this.app.controller(MASTER) as SelectController;
         let extend = !evt.originalEvent['altKey'];
-        master.select(evt.coordinate, extend);
+        await _master(this).select(evt.coordinate, extend);
     }
 
     start() {
-
-        this.map.setInteractions([
+        this.map.setExtraInteractions([
             this.map.pointerInteraction({
                 whenTouched: evt => this.run(evt),
             }),
-            'DragPan',
-            'MouseWheelZoom',
-            'PinchZoom',
-            'ZoomBox',
         ]);
     }
 
@@ -44,40 +41,36 @@ class SelectTool extends gws.Controller implements gws.types.ITool {
 
 }
 
-class SelectSidebar extends gws.View<SelectViewProps> {
+class SelectSidebarView extends gws.View<SelectViewProps> {
     render() {
 
-        let master = this.props.controller.app.controller(MASTER) as SelectController;
+        let master = _master(this.props.controller);
 
         if (gws.tools.empty(this.props.selectFeatures)) {
             return <sidebar.EmptyTab>
                 {this.__('modSelectNoObjects')}
             </sidebar.EmptyTab>
-
         }
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('modSelectTitle')}/>
+                <gws.ui.Title content={this.__('modSelectSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
                 <gws.components.feature.List
-                    controller={master}
+                    controller={this.props.controller}
                     features={this.props.selectFeatures}
 
-                    item={(f) => <gws.ui.Link
+                    content={(f) => <gws.ui.Link
                         whenTouched={() => master.focusFeature(f)}
                         content={master.featureTitle(f)}
                     />}
 
-                    leftIcon={f => <gws.ui.IconButton
-                        className="cmpFeatureZoomIcon"
-                        whenTouched={() => master.zoomFeature(f)}
-                    />}
+                    withZoom
 
-                    rightIcon={f => <gws.ui.IconButton
-                        className="cmpFeatureUnselectIcon"
+                    rightButton={f => <gws.components.list.Button
+                        className="modSelectUnselectListButton"
                         whenTouched={() => master.removeFeature(f)}
                     />}
                 />
@@ -85,30 +78,41 @@ class SelectSidebar extends gws.View<SelectViewProps> {
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
-                <sidebar.SecondaryToolbar>
+                <sidebar.AuxToolbar>
                     <Cell flex/>
-                </sidebar.SecondaryToolbar>
+                </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
     }
 }
 
-class SelectSidebarController extends gws.Controller implements gws.types.ISidebarItem {
-    get iconClass() {
-        return 'modSelectSidebarIcon';
-    }
+class SelectSidebar extends gws.Controller implements gws.types.ISidebarItem {
+    iconClass = 'modSelectSidebarIcon';
 
     get tooltip() {
-        return this.__('modSelectTitle');
+        return this.__('modSelectSidebarTitle');
     }
 
     get tabView() {
         return this.createElement(
-            this.connect(SelectSidebar, SelectStoreKeys)
+            this.connect(SelectSidebarView, SelectStoreKeys)
         );
     }
 
 }
+
+class SelectToolbarButton extends toolbar.Button {
+    iconClass = 'modSelectToolbarButton';
+    tool = 'Tool.Select';
+
+    get tooltip() {
+        return this.__('modSelectToolbarButton');
+    }
+
+}
+
+
+
 
 class SelectController extends gws.Controller {
     uid = MASTER;
@@ -177,7 +181,7 @@ class SelectController extends gws.Controller {
                 features: [f],
                 mode: 'draw',
             },
-            popupContent: <gws.components.feature.PopupList controller={this} features={[f]}/>
+            infoboxContent: <gws.components.feature.InfoList controller={this} features={[f]}/>
         });
 
     }
@@ -192,18 +196,8 @@ class SelectController extends gws.Controller {
 
 }
 
-class SelectToolbarButton extends toolbar.Button {
-    className = 'modSelectToolbarButton';
-    tool = 'Tool.Select';
-
-    get tooltip() {
-        return this.__('modSelectToolbarButton');
-    }
-
-}
-
 export const tags = {
     [MASTER]: SelectController,
     'Toolbar.Select': SelectToolbarButton,
-    'Sidebar.Select': SelectSidebarController,
+    'Sidebar.Select': SelectSidebar,
 };

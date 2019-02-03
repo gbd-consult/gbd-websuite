@@ -1,13 +1,13 @@
 let svgs = [
-    'toggle/check_box_outline_blank',
-    'toggle/check_box',
-    'toggle/radio_button_unchecked',
-    'toggle/radio_button_checked',
+    'google:toggle/check_box_outline_blank',
+    'google:toggle/check_box',
+    'google:toggle/radio_button_unchecked',
+    'google:toggle/radio_button_checked',
 ];
 
 let svg = (v, n, focus) => ({
     'button': {
-        ...v.GOOGLE_SVG(svgs[n], focus ? v.FOCUS_COLOR : v.TEXT_COLOR)
+        ...v.SVG(svgs[n], focus ? v.FOCUS_COLOR : v.TEXT_COLOR)
     }
 })
 

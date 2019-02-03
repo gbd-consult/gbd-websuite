@@ -6,10 +6,15 @@ import * as toolbar from './common/toolbar';
 let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Printer';
+
+let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as PrintController;
+
+
 const JOB_POLL_INTERVAL = 2000;
 const DEFAULT_SNAPSHOT_SIZE = 300;
 
-interface ViewProps extends gws.types.ViewProps {
+interface PrintViewProps extends gws.types.ViewProps {
+    controller: PrintController;
     printJob?: gws.api.PrinterResponse;
     printQuality: string;
     printState?: 'preview' | 'printing' | 'error' | 'complete';
@@ -21,7 +26,7 @@ interface ViewProps extends gws.types.ViewProps {
     printSnapshotHeight: number;
 }
 
-let PrintStoreKeys = [
+const PrintStoreKeys = [
     'printJob',
     'printQuality',
     'printState',
@@ -35,51 +40,43 @@ let PrintStoreKeys = [
 
 class PrintTool extends gws.Controller implements gws.types.ITool {
     start() {
-        let master = this.app.controller(MASTER) as PrinterController;
-        master.startPrintPreview()
+        _master(this).startPrintPreview()
     }
 
     stop() {
-        let master = this.app.controller(MASTER) as PrinterController;
-        master.reset();
+        _master(this).reset();
     }
 }
 
 class SnapshotTool extends gws.Controller implements gws.types.ITool {
     start() {
-        let master = this.app.controller(MASTER) as PrinterController;
-        master.startSnapshotPreview()
+        _master(this).startSnapshotPreview()
     }
 
     stop() {
-        let master = this.app.controller(MASTER) as PrinterController;
-        master.reset();
+        _master(this).reset();
     }
 }
 
-class PrintToolButton extends toolbar.Button {
-    className = 'modPrintButton';
+class PrintPrintToolbarButton extends toolbar.Button {
+    iconClass = 'modPrintPrintToolbarButton';
     tool = 'Tool.Print.Print';
 
     get tooltip() {
-        return this.__('modPrintButton');
+        return this.__('modPrintPrintToolbarButton');
     }
 }
 
-class SnapshotToolButton extends toolbar.Button {
-    className = 'modSnapshotButton';
+class PrintSnapshotToolbarButton extends toolbar.Button {
+    iconClass = 'modPrintSnapshotToolbarButton';
     tool = 'Tool.Print.Snapshot';
 
     get tooltip() {
-        return this.__('modSnapshotButton');
+        return this.__('modPrintSnapshotToolbarButton');
     }
 }
 
-interface PreviewBoxProps extends ViewProps {
-    controller: PrinterController;
-}
-
-class PreviewBox extends gws.View<PreviewBoxProps> {
+class PrintPreviewBox extends gws.View<PrintViewProps> {
 
     boxRef: React.RefObject<HTMLDivElement>;
 
@@ -200,12 +197,12 @@ class PreviewBox extends gws.View<PreviewBoxProps> {
             ? <gws.ui.IconButton
                 {...gws.tools.cls('modPrintPreviewSnapshotButton')}
                 whenTouched={() => this.props.controller.startSnapshot()}
-                tooltip={this.__('modSnapshotButton')}
+                tooltip={this.__('modPrintPreviewSnapshotButton')}
             />
             : <gws.ui.IconButton
                 {...gws.tools.cls('modPrintPreviewPrintButton')}
                 whenTouched={() => this.props.controller.startPrinting()}
-                tooltip={this.__('modPrintButton')}
+                tooltip={this.__('modPrintPreviewPrintButton')}
             />;
 
         return <div className="modPrintPreviewDialog">
@@ -302,11 +299,7 @@ class PreviewBox extends gws.View<PreviewBoxProps> {
 
 }
 
-interface PrintDialogProps extends ViewProps {
-    controller: PrinterController;
-}
-
-class PrintDialog extends gws.View<PrintDialogProps> {
+class PrintDialog extends gws.View<PrintViewProps> {
 
     label(job) {
         let s = this.__('modPrintPrinting');
@@ -360,7 +353,7 @@ class PrintDialog extends gws.View<PrintDialogProps> {
     }
 }
 
-class PrinterController extends gws.Controller {
+class PrintController extends gws.Controller {
     uid = MASTER;
     jobTimer: any = null;
     previewBox: HTMLDivElement;
@@ -378,7 +371,7 @@ class PrinterController extends gws.Controller {
 
     get mapOverlayView() {
         return this.createElement(
-            this.connect(PreviewBox, PrintStoreKeys));
+            this.connect(PrintPreviewBox, PrintStoreKeys));
     }
 
     get appOverlayView() {
@@ -577,7 +570,7 @@ class PrinterController extends gws.Controller {
 }
 
 export const tags = {
-    [MASTER]: PrinterController,
-    'Toolbar.Print': PrintToolButton,
-    'Toolbar.Snapshot': SnapshotToolButton,
+    [MASTER]: PrintController,
+    'Toolbar.Print': PrintPrintToolbarButton,
+    'Toolbar.Snapshot': PrintSnapshotToolbarButton,
 };

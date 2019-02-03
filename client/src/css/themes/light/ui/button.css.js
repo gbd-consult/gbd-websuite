@@ -57,7 +57,7 @@ module.exports = v => ({
         display: 'flex',
         justifyContent: 'center',
         '.uiDot': {
-            ...v.LOCAL_SVG('dot', v.BORDER_COLOR),
+            ...v.SVG('dot', v.BORDER_COLOR),
             backgroundPosition: 'center center',
             backgroundRepeat: 'no-repeat',
             backgroundSize: [16, 16],
@@ -66,7 +66,7 @@ module.exports = v => ({
 
             '&.isActive': {
 
-                ...v.LOCAL_SVG('dot', v.FOCUS_COLOR),
+                ...v.SVG('dot', v.FOCUS_COLOR),
 
             },
 

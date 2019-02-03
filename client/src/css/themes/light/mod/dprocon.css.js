@@ -1,8 +1,6 @@
-
-
 module.exports = v => ({
-    '.modDproconButton': {
-        ...v.LOCAL_SVG('dprocon', v.TOOLBAR_BUTTON_COLOR)
+    '.modDproconToolbarButton': {
+        ...v.TOOLBAR_BUTTON('dprocon')
     },
 
 });

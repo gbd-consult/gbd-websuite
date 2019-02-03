@@ -3,19 +3,19 @@
 module.exports = v => ({
 
     '.uiIconButton.modZoomInfobarOutButton': {
-        ...v.LOCAL_SVG('zoom_out', v.INFOBAR_ICON_COLOR),
+        ...v.SVG('zoom_out', v.INFOBAR_ICON_COLOR),
     },
 
     '.uiIconButton.modZoomInfobarInButton': {
-        ...v.LOCAL_SVG('zoom_in', v.INFOBAR_ICON_COLOR),
+        ...v.SVG('zoom_in', v.INFOBAR_ICON_COLOR),
     },
 
     '.uiIconButton.modZoomInfobarBoxButton': {
-        ...v.LOCAL_SVG('zoom_rectangle', v.INFOBAR_ICON_COLOR),
+        ...v.SVG('zoom_rectangle', v.INFOBAR_ICON_COLOR),
     },
 
     '.uiIconButton.modZoomInfobarResetButton': {
-        ...v.LOCAL_SVG('zoom_reset', v.INFOBAR_ICON_COLOR),
+        ...v.SVG('zoom_reset', v.INFOBAR_ICON_COLOR),
     },
 
     '.modZoomBox': {

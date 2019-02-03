@@ -39,7 +39,7 @@ v.PRIMARY_BACKGROUND = v.FOCUS_COLOR;
 v.PRIMARY_COLOR = v.COLOR.white;
 
 v.BUTTON_BACKGROUND = v.COLOR.blueGrey200;
-v.BUTTON_COLOR = v.COLOR.white;
+v.BUTTON_COLOR = v.COLOR.blueGrey500;
 
 v.CANCEL_BACKGROUND = v.COLOR.blueGrey200;
 v.CANCEL_COLOR = v.COLOR.grey50;
@@ -62,6 +62,18 @@ v.TOOLBAR_BUTTON_BACKGROUND = v.COLOR.blueGrey300;
 v.TOOLBAR_ACTIVE_BUTTON_COLOR = v.COLOR.white;
 v.TOOLBAR_ACTIVE_BUTTON_BACKGROUND = v.COLOR.gbdBlue;
 
+v.TOOLBAR_BUTTON = img => ({
+    ...v.SVG(img, v.TOOLBAR_BUTTON_COLOR),
+    backgroundColor: v.COLOR.opacity(v.TOOLBAR_BUTTON_BACKGROUND, 0.8),
+    '&.isActive': {
+        backgroundColor: v.TOOLBAR_ACTIVE_BUTTON_BACKGROUND,
+    },
+    '&.isDisabled': {
+        backgroundColor: v.COLOR.opacity(v.TOOLBAR_BUTTON_BACKGROUND, 0.3),
+    },
+});
+
+
 v.ALTBAR_WIDTH = v.UNIT * 50;
 
 v.SIDEBAR_WIDTH = v.UNIT * 90;
@@ -73,18 +85,35 @@ v.SIDEBAR_ACTIVE_BUTTON_BACKGROUND = v.COLOR.opacity('white', 0.3);
 v.SIDEBAR_OPEN_BUTTON_BACKGROUND = v.TOOLBAR_BUTTON_BACKGROUND;
 v.SIDEBAR_OPEN_BUTTON_COLOR = v.TOOLBAR_BUTTON_COLOR;
 
+v.SIDEBAR_ICON = (img) => ({
+    ...v.SVG(img, v.SIDEBAR_HEADER_COLOR)
+});
+
+v.SIDEBAR_AUX_TOOLBAR_BACKGROUND = v.COLOR.blueGrey50;
+v.SIDEBAR_AUX_BUTTON_COLOR = v.COLOR.blueGrey500;
+v.SIDEBAR_AUX_BUTTON_ACTIVE_COLOR = v.COLOR.blue300;
+
+v.SIDEBAR_AUX_BUTTON = img => ({
+    ...v.SVG(img, v.SIDEBAR_AUX_BUTTON_COLOR),
+
+    '&.isActive': {
+        ...v.SVG(img, v.SIDEBAR_AUX_BUTTON_ACTIVE_COLOR),
+    },
+    '&.isDisabled': {
+        opacity: 0.5,
+    },
+});
+
+
 v.DRAWBOX_BACKGROUND = v.COLOR.white;
 v.DRAWBOX_BUTTON_COLOR = v.COLOR.blueGrey300;
 v.DRAWBOX_ACTIVE_BUTTON_COLOR = v.COLOR.blue300;
 
-v.SECONDARY_TOOLBAR_BACKGROUND = v.COLOR.blueGrey50;
-v.SECONDARY_BUTTON_COLOR = v.COLOR.blue300;
-v.SECONDARY_BUTTON_ACTIVE_COLOR = v.COLOR.blueGrey500;
 
-v.POPUP_BACKGROUND = v.COLOR.white;
-v.POPUP_COLOR = v.COLOR.grey800;
-v.POPUP_BUTTON_COLOR = v.COLOR.blueGrey500;
-v.POPUP_WIDTH = 300;
+v.INFOBOX_BACKGROUND = v.COLOR.white;
+v.INFOBOX_COLOR = v.COLOR.grey800;
+v.INFOBOX_BUTTON_COLOR = v.COLOR.blueGrey500;
+v.INFOBOX_WIDTH = 300;
 
 
 v.INFOBAR_HEIGHT = v.CONTROL_SIZE;
@@ -113,7 +142,6 @@ v.PRINT_BOX_BORDER = v.COLOR.gbdBlue;
 v.ZOOM_BOX_COLOR = v.COLOR.gbdBlue;
 
 
-
 //
 
 let iconSize = {
@@ -131,26 +159,52 @@ v.ICON = (size = 'normal') => ({
     backgroundSize: [iconSize[size], iconSize[size]],
 });
 
-v.GOOGLE_SVG = (name, color = v.ICON_COLOR) => ({
-    'backgroundImage': helpers.googleIcon(name, {color, size: iconSize.normal})
+v.SVG = (name, color = v.ICON_COLOR) => {
+    let m = name.match(/^google:(.+)$/),
+        opts = {color, size: iconSize.normal},
+        img = m
+            ? helpers.googleIcon(m[1], opts)
+            : helpers.localIcon(`themes/light/img/${name}.svg`, opts);
+    return {'backgroundImage': img}
+};
+
+v.LIST_ITEM_COLOR = v.TEXT_COLOR;
+v.LIST_BUTTON_COLOR = v.FOCUS_COLOR;
+
+v.LIST_BUTTON = img => v.SVG(img, v.LIST_BUTTON_COLOR);
+
+
+
+v.CLOSE_ICON = 'google:navigation/close';
+v.BACK_ICON = 'google:navigation/chevron_left';
+v.CHECK_ICON = 'google:navigation/check';
+v.ZOOM_ICON = 'google:image/center_focus_weak';
+v.SEARCH_ICON = 'google:action/search';
+
+
+v.FORM_BUTTON_BACKGROUND = v.COLOR.blueGrey200;
+v.FORM_PRIMARY_BUTTON_BACKGROUND = v.FOCUS_COLOR;
+v.FORM_BUTTON_COLOR = v.COLOR.white;
+
+
+v.ROUND_FORM_BUTTON = img => ({
+    ...v.SVG(img, v.FORM_BUTTON_COLOR),
+    backgroundColor: v.FORM_BUTTON_BACKGROUND,
+    borderRadius: v.BORDER_RADIUS,
+    '&.isActive': {
+        backgroundColor: v.FORM_PRIMARY_BUTTON_BACKGROUND,
+    }
 });
 
-v.LOCAL_SVG = (name, color = v.ICON_COLOR) => ({
-    'backgroundImage': helpers.localIcon(`themes/light/img/${name}.svg`, {color, size: iconSize.normal})
-});
-
-v.CLOSE_ICON = (color = v.ICON_COLOR) => v.GOOGLE_SVG('navigation/close', color);
-v.BACK_ICON = (color = v.ICON_COLOR) => v.GOOGLE_SVG('navigation/chevron_left', color);
-v.OK_ICON = (color = v.ICON_COLOR) => v.GOOGLE_SVG('navigation/check', color);
 
 v.ROUND_OK_BUTTON = (icon) => ({
-    ...v.GOOGLE_SVG(icon || 'navigation/check', v.PRIMARY_COLOR),
+    ...v.SVG(icon || 'google:navigation/check', v.PRIMARY_COLOR),
     backgroundColor: v.PRIMARY_BACKGROUND,
     borderRadius: v.BORDER_RADIUS,
 });
 
 v.ROUND_CLOSE_BUTTON = (icon) => ({
-    ...v.GOOGLE_SVG(icon || 'navigation/close', v.CANCEL_COLOR),
+    ...v.SVG(icon || 'google:navigation/close', v.CANCEL_COLOR),
     backgroundColor: v.CANCEL_BACKGROUND,
     borderRadius: v.BORDER_RADIUS,
 })
@@ -194,6 +248,7 @@ let rules = [
     require('./components/buttons.css'),
     require('./components/sheet.css'),
     require('./components/description.css'),
+    require('./components/list.css'),
     require('./components/feature.css'),
 
     require('./mod/alkis.css'),
@@ -210,7 +265,7 @@ let rules = [
     require('./mod/lens.css'),
     require('./mod/marker.css'),
     require('./mod/overview.css'),
-    require('./mod/popup.css'),
+    require('./mod/infobox.css'),
     require('./mod/print.css'),
     require('./mod/search.css'),
     require('./mod/select.css'),

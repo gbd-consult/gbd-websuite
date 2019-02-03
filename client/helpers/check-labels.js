@@ -2,25 +2,29 @@ let path = require('path');
 let fs = require('fs');
 let helpers = require('./index');
 
-function extractLabels(txt, labels) {
-    let callRe = /\.__\(['"](.+?)['"]\)/g;
-    String(txt).replace(callRe, ($0, $1) => labels.add($1));
+let callRe = /\.__\(['"](.+?)['"]\)/g;
+
+function diff(a, b) {
+    return [...a].filter(x => !b.has(x)).sort();
 }
 
 function main() {
-    let labels = new Set();
+    let used = new Set();
 
-    helpers.allFiles(path.resolve(__dirname, '../src')).forEach(p =>
-        extractLabels(fs.readFileSync(p), labels)
-    );
+    helpers.allFiles(path.resolve(__dirname, '../src')).forEach(p => {
+        let txt = fs.readFileSync(p);
+        String(txt).replace(callRe, ($0, $1) => used.add($1));
+    });
 
     let lang = require(path.resolve(__dirname, '../src/lang'));
 
     Object.keys(lang).forEach(locale => {
         console.log('Locale: ' + locale);
-        let missing = [...labels].filter(la => !lang[locale][la]);
-        missing.sort().forEach(la => console.log('\tmissing: ' + la))
 
+        let defined = new Set(Object.keys(lang[locale]));
+
+        diff(used, defined).forEach(la => console.log('\tmissing: ' + la));
+        diff(defined, used).forEach(la => console.log('\tunused : ' + la));
     })
 }
 

@@ -52,7 +52,7 @@ module.exports = v => ({
         }
     },
 
-    '.modPopup': {
+    '.modInfobox': {
         left: 0,
         right: 0,
         bottom: '-100%',
@@ -63,7 +63,7 @@ module.exports = v => ({
         }
     },
 
-    '.modPopup.isActive': {
+    '.modInfobox.isActive': {
         bottom: v.INFOBAR_HEIGHT,
         // [v.MEDIA('small+')]: {
         //     bottom: v.INFOBAR_HEIGHT + v.UNIT * 6,
@@ -84,10 +84,10 @@ module.exports = v => ({
             ...v.CENTER_BOX(800, 600),
 
             '&.modPrintProgressDialog': {
-                ...v.CENTER_BOX(400, 160),
+                ...v.CENTER_BOX(400, 190),
             },
             '&.modGekosDialog': {
-                ...v.CENTER_BOX(250, 250),
+                ...v.CENTER_BOX(280, 280),
             },
         },
     },

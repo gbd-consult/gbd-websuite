@@ -127,15 +127,15 @@ These helpers retun objects, so they must be used with the spread operator ``...
 
 
         '.mySelector': {
-            ...v.GOOGLE_SVG('image/straighten', 'blue')
+            ...v.SVG('google:image/straighten', 'blue')
 
-- ``v.LOCAL_SVG(filename, color)``
+- ``v.SVG(filename, color)``
 
     Sets ``backgroundImage`` to an svg icon placed in ``themes/light/img``. Example ::
 
 
         '.mySelector': {
-            ...v.LOCAL_SVG('zoom_rectangle', 'cyan')
+            ...v.SVG('zoom_rectangle', 'cyan')
 
 
 - ``v.TRANSITION(property)``

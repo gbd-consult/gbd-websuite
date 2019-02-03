@@ -47,7 +47,7 @@ module.exports = v => ({
     //
     '.uiInputClearButton': {
         ...v.ICON('tiny'),
-        ...v.CLOSE_ICON(v.BORDER_COLOR),
+        ...v.SVG(v.CLOSE_ICON, v.BORDER_COLOR),
     },
     '.uiInputClearButtonHidden': {
         ...v.ICON('tiny'),

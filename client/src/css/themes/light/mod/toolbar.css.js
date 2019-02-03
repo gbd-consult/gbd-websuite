@@ -6,10 +6,9 @@ module.exports = v => ({
         borderRadius: [v.BORDER_RADIUS, 0, 0, v.BORDER_RADIUS],
         display: 'flex',
         flexDirection: 'row',
-        padding: [v.UNIT2, 0, v.UNIT2, v.UNIT2],
         position: 'absolute',
-        top: v.UNIT2,
-        right: v.UNIT2,
+        top: v.UNIT4,
+        right: v.UNIT4,
     },
 
     '&.withAltbar .modToolbar': {
@@ -18,39 +17,48 @@ module.exports = v => ({
 
     '.modToolbarItem': {
         '.uiIconButton': {
-            borderRadius: v.BORDER_RADIUS,
-            backgroundColor: v.COLOR.opacity(v.TOOLBAR_BUTTON_BACKGROUND, 0.8),
             marginLeft: v.UNIT2,
+            borderRadius: v.BORDER_RADIUS,
             ...v.TRANSITION('all'),
-            '&.isActive': {
-                backgroundColor: v.TOOLBAR_ACTIVE_BUTTON_BACKGROUND,
-            },
         },
     },
 
-    '.modToolbarOverflowButton.uiIconButton': {
-        ...v.GOOGLE_SVG('navigation/more_horiz', v.TOOLBAR_BUTTON_COLOR),
+    '.modToolbarOverflowButton': {
+        ...v.TOOLBAR_BUTTON('google:navigation/more_horiz'),
         '&.isActive': {
-            backgroundColor: v.TOOLBAR_BUTTON_BACKGROUND,
             transform: 'rotate(90deg)',
-
         },
     },
+
 
     '.modToolbarOverflowPopup': {
         top: v.UNIT4 + v.CONTROL_SIZE + v.UNIT4,
-        padding: [v.UNIT2, v.UNIT2, v.UNIT2, 0],
+        padding: [v.UNIT4, v.UNIT8, v.UNIT4, v.UNIT2],
         backgroundColor: v.COLOR.white,
-        right: v.UNIT2,
+        right: v.UNIT4,
+        marginRight: -2,
         cursor: 'default',
         userSelect: 'none',
-
-
         '.uiCell': {
             padding: v.UNIT2,
         },
 
     },
+
+    '.modToolbarOverflowPopup:after': {
+        content: "''",
+        position: 'absolute',
+        top: 0,
+        right: 14,
+        width: 0,
+        height: 0,
+        border: [8, 'solid', 'transparent'],
+        borderBottomColor: v.COLOR.white,
+        borderTop: 0,
+        marginLeft: -8,
+        marginTop: -8,
+    },
+
 
     '&.withAltbar .modToolbarOverflowPopup': {
         right: v.ALTBAR_WIDTH + v.UNIT * 16,
