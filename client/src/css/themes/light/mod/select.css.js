@@ -22,6 +22,17 @@ module.exports = v => ({
         fill: v.COLOR.opacity(v.COLOR.orange500, 0.3),
     },
 
+    '.modSelectSaveAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:content/save')
+    },
+
+    '.modSelectLoadAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:file/folder_open')
+    },
+
+    '.modSelectClearAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')
+    },
 
 
 });

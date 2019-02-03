@@ -38,7 +38,7 @@ module.exports = v => ({
     },
 
 
-    '.modAlkisExportAuxButton': {...v.SIDEBAR_AUX_BUTTON('baseline-save_alt-24px')},
+    '.modAlkisExportAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:image/grid_on')},
     '.modAlkisPrintAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/print')},
     '.modAlkisHighlightAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.ZOOM_ICON)},
     '.modAlkisSelectAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')},

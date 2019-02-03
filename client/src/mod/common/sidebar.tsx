@@ -264,7 +264,8 @@ interface AuxButtonProps {
     className: string;
     tooltip: string;
     whenTouched: () => void;
-    badge?: string,
+    disabled?: boolean;
+    badge?: string;
 
 }
 
