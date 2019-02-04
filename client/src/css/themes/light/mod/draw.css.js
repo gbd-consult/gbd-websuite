@@ -20,6 +20,9 @@ module.exports = v => {
             //     ...v.ICON('medium')
             // },
 
+            '.cmpButtonFormOk': {
+                marginLeft: v.UNIT4,
+            },
             '.cmpButtonFormCancel': {
                 marginLeft: v.UNIT4,
             }

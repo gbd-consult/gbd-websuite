@@ -15,8 +15,9 @@ module.exports = v => ({
     '.modEditDrawAuxButton': {
         ...v.SIDEBAR_AUX_BUTTON('google:content/gesture')
     },
-
-
+    '.modEditRemoveAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:action/delete')
+    },
 
     '.modEditEndButton': {
         ...v.SVG('google:action/done')

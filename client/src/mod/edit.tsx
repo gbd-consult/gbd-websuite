@@ -20,7 +20,7 @@ function _master(obj: any) {
 
 interface EditViewProps extends gws.types.ViewProps {
     editLayer: gws.types.IMapFeatureLayer;
-    editFeatures: Array<gws.types.IMapFeature>;
+    editUpdateCount: number;
     editFeature: gws.types.IMapFeature;
     editData: Array<gws.components.sheet.Attribute>;
     mapUpdateCount: number;
@@ -29,12 +29,23 @@ interface EditViewProps extends gws.types.ViewProps {
 
 const EditStoreKeys = [
     'editLayer',
-    'editFeatures',
+    'editUpdateCount',
     'editFeature',
     'editData',
     'mapUpdateCount',
     'appActiveTool',
 ];
+
+const ENABLED_SHAPES_BY_TYPE = {
+    'GEOMETRY': null,
+    'POINT': ['Point'],
+    'LINESTRING': ['Line'],
+    'POLYGON': ['Polygon', 'Circle', 'Box'],
+    'MULTIPOINT': ['Point'],
+    'MULTILINESTRING': ['Line'],
+    'MULTIPOLYGON': ['Polygon', 'Circle', 'Box'],
+    'GEOMETRYCOLLECTION': null,
+};
 
 class EditModifyTool extends modify.Tool {
 
@@ -71,6 +82,13 @@ class EditDrawTool extends draw.Tool {
         _master(this).app.startTool('Tool.Edit.Modify')
     }
 
+    enabledShapes() {
+        let la = _master(this).layer;
+        if (!la)
+            return null;
+        return ENABLED_SHAPES_BY_TYPE[la.geometryType.toUpperCase()];
+    }
+
     whenCancelled() {
         _master(this).app.startTool('Tool.Edit.Modify')
     }
@@ -80,6 +98,8 @@ class EditFeatureListTab extends gws.View<EditViewProps> {
     render() {
         let master = _master(this);
         let layer = this.props.editLayer;
+
+        console.log('EditFeatureListTab', layer.features)
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -173,6 +193,11 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                     <Cell>
                         <gws.components.feature.TaskButton controller={this.props.controller} feature={feature}/>
                     </Cell>
+                    <sidebar.AuxButton
+                        {...gws.tools.cls('modEditRemoveAuxButton')}
+                        tooltip={this.__('modEditRemoveAuxButton')}
+                        whenTouched={() => master.removeFeature(feature)}
+                    />
                     <sidebar.AuxCloseButton
                         whenTouched={() => master.unselectFeature()}
                     />
@@ -265,6 +290,11 @@ class EditController extends gws.Controller {
         return this.app.store.getValue('editLayer');
     }
 
+    update(args) {
+        args['editUpdateCount'] = (this.getValue('editUpdateCount') || 0) + 1;
+        super.update(args);
+    }
+
     async saveGeometry(f) {
         let props = {
             attributes: {},
@@ -324,8 +354,26 @@ class EditController extends gws.Controller {
         let fs = this.map.readFeatures(res.features);
         this.layer.addFeatures(fs);
         this.selectFeature(fs[0], false);
+    }
+
+    async removeFeature(f) {
+        let res = await this.app.server.editDeleteFeatures({
+            projectUid: this.app.project.uid,
+            layerUid: this.layer.uid,
+            features: [f.props]
+        });
+
+        this.layer.removeFeature(f);
+        this.unselectFeature();
+
+        // @TODO we need to restart the tool...
+        if (this.getValue('appActiveTool') === 'Tool.Edit.Modify') {
+            this.app.startTool('Tool.Edit.Modify')
+        }
 
     }
+
+
 
     tool = '';
 
@@ -355,16 +403,7 @@ class EditController extends gws.Controller {
         this.update({
             editFeature: null,
             editData: null
-        })
-    }
-
-    zoomFeature(f) {
-        this.update({
-            marker: {
-                features: [f],
-                mode: 'zoom draw fade',
-            }
-        })
+        });
     }
 
     featureData(f: gws.types.IMapFeature): Array<gws.components.sheet.Attribute> {

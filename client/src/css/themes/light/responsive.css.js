@@ -46,7 +46,6 @@ module.exports = v => ({
         right: 0,
         [v.MEDIA('small+')]: {
             left: 'auto',
-            width: 350,
             right: v.UNIT4,
             top: v.UNIT4,
         }

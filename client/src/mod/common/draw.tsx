@@ -7,23 +7,17 @@ let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Draw';
 
-export interface DrawCallback {
-    whenStarted: (shapeType: string, oFeature: ol.Feature) => void;
-    whenEnded: (shapeType: string, oFeature: ol.Feature) => void;
-    whenCancelled: () => void;
-}
-
 interface DrawProps extends gws.types.ViewProps {
     controller: DrawController;
-    drawShapeType: string;
-    drawCallback: DrawCallback;
+    drawCurrentShape: string;
+    drawEnabledShapes?: Array<string>;
     drawStyle?: gws.types.IMapStyle;
     drawMode: boolean;
 }
 
 const DrawPropsKeys = [
-    'drawShapeType',
-    'drawCallback',
+    'drawCurrentShape',
+    'drawEnabledShapes',
     'drawStyle',
     'drawMode',
 
@@ -31,6 +25,13 @@ const DrawPropsKeys = [
 
 const DEFAULT_SHAPE_TYPE = 'Polygon';
 
+const SHAPE_TYPES = [
+    'Point',
+    'Line',
+    'Box',
+    'Polygon',
+    'Circle',
+];
 
 export class Tool extends gws.Controller implements gws.types.ITool {
     style: gws.types.IMapStyle;
@@ -45,62 +46,67 @@ export class Tool extends gws.Controller implements gws.types.ITool {
         master.stop();
     }
 
-    whenStarted(shapeType, oFeature) {}
-    whenEnded(shapeType, oFeature) {}
-    whenCancelled() {}
+    enabledShapes() {
+        return null;
+    }
 
+    whenStarted(shapeType, oFeature) {
+    }
+
+    whenEnded(shapeType, oFeature) {
+    }
+
+    whenCancelled() {
+    }
 
 }
 
 class DrawBox extends gws.View<DrawProps> {
 
     render() {
-        let cc = this.props.controller;
-
-        console.log('DrawBox', this.props.drawMode)
+        let master = this.props.controller.app.controller(MASTER) as DrawController;
 
         if (!this.props.drawMode)
             return <div className="modDrawControlBox"/>;
 
-        let shapeType = this.props.drawShapeType || DEFAULT_SHAPE_TYPE
+        let shapeType = this.props.drawCurrentShape || DEFAULT_SHAPE_TYPE
 
         let button = (type, cls, tooltip) => {
             return <Cell>
                 <gws.ui.IconButton
                     {...gws.tools.cls(cls, type === shapeType && 'isActive')}
                     tooltip={tooltip}
-                    whenTouched={() => cc.setShapeType(type)}
+                    whenTouched={() => master.setShapeType(type)}
                 />
             </Cell>
         };
 
         return <div className="modDrawControlBox isActive">
             <Row>
-                {button('Point', 'modDrawPointButton', cc.__('modDrawPointButton'))}
-                {button('Line', 'modDrawLineButton', cc.__('modDrawLineButton'))}
-                {button('Box', 'modDrawBoxButton', cc.__('modDrawBoxButton'))}
-                {button('Polygon', 'modDrawPolygonButton', cc.__('modDrawPolygonButton'))}
-                {button('Circle', 'modDrawCircleButton', cc.__('modDrawCircleButton'))}
+                {master.shapeTypeEnabled('Point') && button('Point', 'modDrawPointButton', master.__('modDrawPointButton'))}
+                {master.shapeTypeEnabled('Line') && button('Line', 'modDrawLineButton', master.__('modDrawLineButton'))}
+                {master.shapeTypeEnabled('Box') && button('Box', 'modDrawBoxButton', master.__('modDrawBoxButton'))}
+                {master.shapeTypeEnabled('Polygon') && button('Polygon', 'modDrawPolygonButton', master.__('modDrawPolygonButton'))}
+                {master.shapeTypeEnabled('Circle') && button('Circle', 'modDrawCircleButton', master.__('modDrawCircleButton'))}
                 <Cell flex/>
                 <Cell>
                     <gws.ui.IconButton
                         className="cmpButtonFormOk"
                         tooltip={this.props.controller.__('modDrawOkButton')}
-                        whenTouched={() => this.props.controller.commit()}
+                        whenTouched={() => master.commit()}
                     />
                 </Cell>
                 <Cell>
                     <gws.ui.IconButton
                         className="cmpButtonFormCancel"
                         tooltip={this.props.controller.__('modDrawCancelButton')}
-                        whenTouched={() => this.props.controller.cancel()}
+                        whenTouched={() => master.cancel()}
                     />
                 </Cell>
             </Row>
         </div>;
     }
 }
-
 
 class DrawController extends gws.Controller {
     uid = MASTER;
@@ -115,9 +121,24 @@ class DrawController extends gws.Controller {
     }
 
     get shapeType() {
-        return this.getValue('drawShapeType') || DEFAULT_SHAPE_TYPE;
+        let st = this.getValue('drawCurrentShape') || DEFAULT_SHAPE_TYPE;
+        if (this.shapeTypeEnabled(st))
+            return st;
+        let sts = SHAPE_TYPES.filter(t => this.shapeTypeEnabled(t));
+        if (sts.length)
+            return sts[0];
+        console.warn('no shape type enabled!');
+        return DEFAULT_SHAPE_TYPE;
     }
 
+    shapeTypeEnabled(st) {
+        if (!this.currTool)
+            return false;
+        let enabled = this.currTool.enabledShapes();
+        if (!enabled)
+            return true;
+        return enabled.some(t => t.toLowerCase() === st.toLowerCase());
+    }
 
     start(tool) {
         this.currTool = tool;
@@ -155,7 +176,7 @@ class DrawController extends gws.Controller {
 
         this.update({
             drawMode: true,
-            drawShapeType: shapeType
+            drawCurrentShape: shapeType
         });
 
     }
@@ -196,24 +217,9 @@ class DrawController extends gws.Controller {
 
     setShapeType(s) {
         this.update({
-            drawShapeType: s
+            drawCurrentShape: s
         });
         this.startDrawing();
-    }
-
-    turnOff() {
-        this.update({
-            drawMode: false
-        });
-
-    }
-
-    invokeCallback(key, ...args) {
-        let cb = this.getValue('drawCallback');
-
-        if (cb && cb[key])
-            cb[key](...args);
-
     }
 
 }

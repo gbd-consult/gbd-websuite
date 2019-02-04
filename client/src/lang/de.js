@@ -45,6 +45,7 @@ module.exports = {
     modEditModifyButton: 'Bearbeiten',
     modEditNewObjectName: 'Unbenannt',
     modEditNoLayer: 'Keine Layers zum Editieren ausgewählt',
+    modEditRemoveAuxButton: 'Objekt löschen',
     modEditSave: 'Speichern',
     modEditSidebarTitle: 'Editieren',
     modEditTitle: 'Editieren',

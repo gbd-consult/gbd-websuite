@@ -40,6 +40,7 @@ class Object(gws.gis.layer.Vector):
     def props(self) -> gws.gis.layer.VectorProps:
         return gws.extend(super().props, {
             'type': 'vector',
+            'geometryType': self.geometry_type.upper(),
         })
 
     def get_features(self, bbox):

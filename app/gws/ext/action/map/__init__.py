@@ -120,8 +120,9 @@ class Object(gws.Object):
     def api_get_features(self, req, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
 
-        layer = req.require('gws.ext.gis.layer', p.layerUid)
-        features = layer.get_features(p.get('bbox'))
+        layer: t.LayerObject = req.require('gws.ext.gis.layer', p.layerUid)
+        bbox = p.get('bbox') or layer.map.extent
+        features = layer.get_features(bbox)
         return GetFeaturesResponse({
             'features': [f.props for f in features]
         })

@@ -82,6 +82,7 @@ class BaseProps(t.Data):
 
 class VectorProps(BaseProps):
     style: t.Optional[t.StyleProps]
+    geometryType: str
     editStyle: t.Optional[t.StyleProps]
     dataModel: t.Optional[t.List[t.AttributeConfig]]
 
