@@ -1,14 +1,12 @@
-import getpass
-import os
+import time
 
 from argh import arg
-import time
+
 import gws
 import gws.config
 import gws.config.loader
-import gws.tools.json2
 import gws.tools.clihelpers as clihelpers
-
+import gws.tools.json2
 from .tools import nas
 
 COMMAND = 'alkis'

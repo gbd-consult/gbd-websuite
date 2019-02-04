@@ -141,7 +141,8 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
 
     async doLogout() {
         await this.app.server.authLogout({});
-        this.app.reload();
+        // @TODO control where to redirect in backend
+        this.app.navigate('/');
     }
 
 

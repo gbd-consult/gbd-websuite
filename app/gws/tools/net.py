@@ -72,7 +72,7 @@ def parse_url(url):
             p['fnbody'], _, p['ext'] = p['filename'].partition('.')
 
     if p['query']:
-        p['qs'] = urllib.parse.parse_qs(p.pop('query'))
+        p['qs'] = urllib.parse.parse_qs(p['query'])
         r = {k: v[0] for k, v in p['qs'].items()}
     else:
         r = {}

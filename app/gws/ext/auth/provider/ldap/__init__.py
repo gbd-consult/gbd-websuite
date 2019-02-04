@@ -7,40 +7,41 @@ import gws
 import gws.auth.provider
 import gws.auth.error
 import gws.auth.user
+import gws.tools.net
 import gws.tools.misc as misc
 
 import gws.types as t
 
 # https://support.microsoft.com/en-us/help/305144
 
-MS_SCRIPT = 0x0001
-MS_ACCOUNTDISABLE = 0x0002
-MS_HOMEDIR_REQUIRED = 0x0008
-MS_LOCKOUT = 0x0010
-MS_PASSWD_NOTREQD = 0x0020
-MS_PASSWD_CANT_CHANGE = 0x0040
-MS_ENCRYPTED_TEXT_PWD_ALLOWED = 0x0080
-MS_TEMP_DUPLICATE_ACCOUNT = 0x0100
-MS_NORMAL_ACCOUNT = 0x0200
-MS_INTERDOMAIN_TRUST_ACCOUNT = 0x0800
-MS_WORKSTATION_TRUST_ACCOUNT = 0x1000
-MS_SERVER_TRUST_ACCOUNT = 0x2000
-MS_DONT_EXPIRE_PASSWORD = 0x10000
-MS_MNS_LOGON_ACCOUNT = 0x20000
-MS_SMARTCARD_REQUIRED = 0x40000
-MS_TRUSTED_FOR_DELEGATION = 0x80000
-MS_NOT_DELEGATED = 0x100000
-MS_USE_DES_KEY_ONLY = 0x200000
-MS_DONT_REQ_PREAUTH = 0x400000
-MS_PASSWORD_EXPIRED = 0x800000
-MS_TRUSTED_TO_AUTH_FOR_DELEGATION = 0x1000000
-MS_PARTIAL_SECRETS_ACCOUNT = 0x04000000
+_MS_SCRIPT = 0x0001
+_MS_ACCOUNTDISABLE = 0x0002
+_MS_HOMEDIR_REQUIRED = 0x0008
+_MS_LOCKOUT = 0x0010
+_MS_PASSWD_NOTREQD = 0x0020
+_MS_PASSWD_CANT_CHANGE = 0x0040
+_MS_ENCRYPTED_TEXT_PWD_ALLOWED = 0x0080
+_MS_TEMP_DUPLICATE_ACCOUNT = 0x0100
+_MS_NORMAL_ACCOUNT = 0x0200
+_MS_INTERDOMAIN_TRUST_ACCOUNT = 0x0800
+_MS_WORKSTATION_TRUST_ACCOUNT = 0x1000
+_MS_SERVER_TRUST_ACCOUNT = 0x2000
+_MS_DONT_EXPIRE_PASSWORD = 0x10000
+_MS_MNS_LOGON_ACCOUNT = 0x20000
+_MS_SMARTCARD_REQUIRED = 0x40000
+_MS_TRUSTED_FOR_DELEGATION = 0x80000
+_MS_NOT_DELEGATED = 0x100000
+_MS_USE_DES_KEY_ONLY = 0x200000
+_MS_DONT_REQ_PREAUTH = 0x400000
+_MS_PASSWORD_EXPIRED = 0x800000
+_MS_TRUSTED_TO_AUTH_FOR_DELEGATION = 0x1000000
+_MS_PARTIAL_SECRETS_ACCOUNT = 0x04000000
 
 
-class RoleSpec(t.Data):
+class UserSpec(t.Data):
     """map authorization roles to LDAP filters"""
 
-    role: str  #: gws role name
+    roles: t.List[str]  #: gws role names
     matches: t.Optional[str]  #: LDAP filter the account has to match
     memberOf: t.Optional[str]  #: LDAP group the account has to be a member of
 
@@ -52,45 +53,26 @@ class Config(t.WithType):
     bindDN: str  #: bind DN
     bindPassword: str  #: bind password
     displayNameFormat: t.formatstr = '{dn}'  #: format for user's display name
-    roles: t.List[RoleSpec]  #: map LDAP filters to roles
+    users: t.List[UserSpec]  #: map LDAP filters to gws roles
     timeout: t.duration = 30  #: LDAP server timeout
     url: str  #: LDAP server url "ldap://host:port/baseDN?searchAttribute"
 
 
-def _as_dict(dn, data):
-    d = {'dn': dn}
-    for k, v in data.items():
-        if not v:
-            continue
-        if not isinstance(v, list):
-            v = [v]
-        v = [gws.as_str(s) for s in v]
-        d[k] = v[0] if len(v) == 1 else v
-    return d
-
-
-def _is_member_of(group_data, user_dn):
-    for key in 'member', 'members', 'uniqueMember':
-        if key in group_data and user_dn in group_data[key]:
-            return True
-
-
 class Object(gws.auth.provider.Object):
-    server = ''
-    base = ''
-    loginProp = ''
-
     def configure(self):
         super().configure()
 
-        p = urllib.parse.urlparse(self.var('url'))
-        self.server = 'ldap://' + p.netloc
-        self.base = p.path.strip('/')
-        self.loginProp = p.query
+        # the URL is a simplified form of https://httpd.apache.org/docs/2.4/mod/mod_authnz_ldap.html#authldapurl
+
+        p = gws.tools.net.parse_url(self.var('url'))
+
+        self.server = 'ldap://' + p['netloc']
+        self.base_dn = p['path'].strip('/')
+        self.login_attr = p['query']
 
         try:
             with self._connection():
-                gws.log.info(f'LDAP connection "{self.uid}" is fine')
+                gws.log.info(f'LDAP connection "{self.uid!r}" is fine')
         except Exception as e:
             raise ValueError('LDAP error: %s' % e.__class__.__name__, *e.args)
 
@@ -100,7 +82,7 @@ class Object(gws.auth.provider.Object):
             return None
 
         with self._connection() as ld:
-            user_data = self._find_user(ld, {self.loginProp: login})
+            user_data = self._find_user(ld, {self.login_attr: login})
             if not user_data:
                 gws.log.warn('user not found, continue')
                 return None
@@ -108,7 +90,7 @@ class Object(gws.auth.provider.Object):
             # check for AD disabled accounts
             uac = str(user_data.get('userAccountControl', ''))
             if uac and uac.isdigit():
-                if int(uac) & MS_ACCOUNTDISABLE:
+                if int(uac) & _MS_ACCOUNTDISABLE:
                     gws.log.warn('ACCOUNTDISABLE on, FAIL')
                     raise gws.auth.error.AccessDenied()
 
@@ -125,7 +107,7 @@ class Object(gws.auth.provider.Object):
 
     def get_user(self, user_uid):
         with self._connection() as ld:
-            user_data = self._find_user(ld, {self.loginProp: user_uid})
+            user_data = self._find_user(ld, {self.login_attr: user_uid})
 
             if not user_data:
                 return None
@@ -152,7 +134,7 @@ class Object(gws.auth.provider.Object):
             ld.unbind_s()
 
     def _search(self, ld, flt):
-        ls = ld.search_s(self.base, ldap.SCOPE_SUBTREE, flt)
+        ls = ld.search_s(self.base_dn, ldap.SCOPE_SUBTREE, flt)
         if not ls:
             return
         for dn, data in ls:
@@ -173,21 +155,21 @@ class Object(gws.auth.provider.Object):
 
     def _find_roles(self, ld, user_data):
         user_dn = user_data['dn']
+        roles = set()
 
-        for r in self.var('roles'):
+        for u in self.var('users'):
 
-            if r.get('matches'):
-                for dn, data in self._search(ld, r.matches):
+            if u.get('matches'):
+                for dn, data in self._search(ld, u.matches):
                     if dn == user_dn:
-                        yield r.role
+                        roles.update(u.roles)
 
-            elif r.get('memberOf'):
-                for dn, data in self._search(ld, r.memberOf):
+            elif u.get('memberOf'):
+                for dn, data in self._search(ld, u.memberOf):
                     if _is_member_of(_as_dict(dn, data), user_dn):
-                        yield r.role
+                        roles.update(u.roles)
 
-            else:
-                yield r.role
+        return roles
 
     def _make_user(self, ld, user_data):
         if 'displayName' not in user_data and self.var('displayNameFormat'):
@@ -195,9 +177,26 @@ class Object(gws.auth.provider.Object):
                 self.var('displayNameFormat'),
                 user_data)
 
-        roles = set(self._find_roles(ld, user_data))
         return self.root.create(gws.auth.user.ValidUser).init_from_source(
             provider=self,
-            uid=user_data[self.loginProp],
-            roles=roles,
+            uid=user_data[self.login_attr],
+            roles=self._find_roles(ld, user_data),
             attributes=user_data)
+
+
+def _as_dict(dn, data):
+    d = {'dn': dn}
+    for k, v in data.items():
+        if not v:
+            continue
+        if not isinstance(v, list):
+            v = [v]
+        v = [gws.as_str(s) for s in v]
+        d[k] = v[0] if len(v) == 1 else v
+    return d
+
+
+def _is_member_of(group_data, user_dn):
+    for key in 'member', 'members', 'uniqueMember':
+        if key in group_data and user_dn in group_data[key]:
+            return True
