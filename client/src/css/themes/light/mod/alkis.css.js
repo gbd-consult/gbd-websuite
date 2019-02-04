@@ -47,6 +47,8 @@ module.exports = v => ({
     '.modAlkisListAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/reorder')},
     '.modAlkisSelectionAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/bookmark_border')},
     '.modAlkisClearAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')},
+    '.modAlkisLoadAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:file/folder_open')},
+    '.modAlkisSaveAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/save')},
 
     '.uiIconButton.modAlkisSelectListButton': {
         ...v.LIST_BUTTON('google:content/add_circle_outline')

@@ -91,6 +91,9 @@ module.exports = v => ({
             },
             '&.modSelectDialog': {
                 ...v.CENTER_BOX(300, 200),
+            },
+            '&.modAlkisSelectDialog': {
+                ...v.CENTER_BOX(300, 200),
             }
         },
     },

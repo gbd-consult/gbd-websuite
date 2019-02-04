@@ -10,6 +10,7 @@ import gws.gis.shape
 import gws.common.printer.service
 import gws.common.printer.types
 import gws.tools.misc
+import gws.tools.storage
 import gws.types as t
 import gws.tools.json2
 import gws.web
@@ -154,6 +155,33 @@ class FsDetailsResponse(t.Response):
 
 class FsExportResponse(t.Response):
     url: str
+
+
+class FsSaveSelectionParams(t.Data):
+    projectUid: str
+    name: str
+    fsUids: t.List[str]
+
+
+class FsSaveSelectionResponse(t.Response):
+    names: t.List[str]
+
+
+class FsLoadSelectionParams(t.Data):
+    projectUid: str
+    name: str
+
+
+class FsLoadSelectionResponse(t.Response):
+    features: t.List[t.FeatureProps]
+
+
+class FsGetSaveNamesParams(t.Data):
+    projectUid: str
+
+
+class FsGetSaveNamesResponse(t.Response):
+    names: t.List[str]
 
 
 _cwd = os.path.dirname(__file__)
@@ -362,6 +390,35 @@ class Object(gws.Object):
             }))
 
         return gws.common.printer.service.start_job(req, pp)
+
+    def api_fs_save_selection(self, req, p: FsSaveSelectionParams) -> FsSaveSelectionResponse:
+        self._precheck_request(req, p.projectUid)
+
+        gws.tools.storage.put('alkis', p.name, req.user.full_uid, p.fsUids)
+        names = gws.tools.storage.get_names('alkis', req.user.full_uid)
+        return FsSaveSelectionResponse({
+            'names': names
+        })
+
+    def api_fs_load_selection(self, req, p: FsLoadSelectionParams) -> FsLoadSelectionResponse:
+        self._precheck_request(req, p.projectUid)
+
+        query = FsQueryParams({
+            'projectUid': p.projectUid,
+            'fsUids': gws.tools.storage.get('alkis', p.name, req.user.full_uid)
+        })
+
+        total, fs = self._fetch_and_format(req, query, self.short_feature_format)
+
+        return FsLoadSelectionResponse({
+            'features': sorted(fs, key=lambda p: p.title)
+        })
+
+    def api_fs_get_save_names(self, req, p: FsGetSaveNamesParams) -> FsGetSaveNamesResponse:
+        names = gws.tools.storage.get_names('alkis', req.user.full_uid)
+        return FsGetSaveNamesResponse({
+            'names': names
+        })
 
     def index_create(self, user, password):
         with self._connect_for_write(user, password) as conn:

@@ -36,83 +36,50 @@ class SelectDialog extends gws.View<SelectViewProps> {
             return null;
 
         let close = () => this.props.controller.update({selectDialogMode: null});
-        let updateName = v => this.props.controller.update({selectSaveName: v});
+        let update = v => this.props.controller.update({selectSaveName: v});
+
+        let title, submit, control;
 
         if (mode === 'save') {
-
-            return <gws.ui.Dialog
-                className="modSelectDialog"
-                title={this.__('modSelectSaveDialogTitle')}
-                whenClosed={close}
-            >
-                <Form>
-                    <Row>
-                        <Cell flex>
-                            <gws.ui.TextInput
-                                value={this.props.selectSaveName}
-                                whenChanged={updateName}
-                                whenEntered={() => this.props.controller.saveSelection()}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell flex/>
-                        <Cell>
-                            <gws.ui.IconButton
-                                className="cmpButtonFormOk"
-                                whenTouched={() => this.props.controller.saveSelection()}
-                            />
-                        </Cell>
-                        <Cell>
-                            <gws.ui.IconButton
-                                className="cmpButtonFormCancel"
-                                whenTouched={close}
-                            />
-                        </Cell>
-                    </Row>
-                </Form>
-            </gws.ui.Dialog>;
+            title = this.__('modSelectSaveDialogTitle');
+            submit = () => this.props.controller.saveSelection();
+            control = <gws.ui.TextInput
+                value={this.props.selectSaveName}
+                whenChanged={update}
+                whenEntered={submit}
+            />;
         }
 
         if (mode === 'load') {
+            title = this.__('modSelectLoadDialogTitle');
+            submit = () => this.props.controller.loadSelection();
+            control = <gws.ui.Select
+                value={this.props.selectSaveName}
+                items={this.props.selectSaveNames.map(s => ({
+                    text: s,
+                    value: s
 
-            return <gws.ui.Dialog
-                className="modSelectDialog"
-                title={this.__('modSelectLoadDialogTitle')}
-                whenClosed={close}
-            >
-                <Form>
-                    <Row>
-                        <Cell flex>
-                            <gws.ui.Select
-                                value={this.props.selectSaveName}
-                                items={this.props.selectSaveNames.map(s => ({
-                                    text: s,
-                                    value: s
-
-                                }))}
-                                whenChanged={updateName}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell flex/>
-                        <Cell>
-                            <gws.ui.IconButton
-                                className="cmpButtonFormOk"
-                                whenTouched={() => this.props.controller.loadSelection()}
-                            />
-                        </Cell>
-                        <Cell>
-                            <gws.ui.IconButton
-                                className="cmpButtonFormCancel"
-                                whenTouched={close}
-                            />
-                        </Cell>
-                    </Row>
-                </Form>
-            </gws.ui.Dialog>;
+                }))}
+                whenChanged={update}
+            />;
         }
+
+        return <gws.ui.Dialog className="modSelectDialog" title={title} whenClosed={close}>
+            <Form>
+                <Row>
+                    <Cell flex>{control}</Cell>
+                </Row>
+                <Row>
+                    <Cell flex/>
+                    <Cell>
+                        <gws.ui.IconButton className="cmpButtonFormOk" whenTouched={submit}/>
+                    </Cell>
+                    <Cell>
+                        <gws.ui.IconButton className="cmpButtonFormCancel" whenTouched={close}/>
+                    </Cell>
+                </Row>
+            </Form>
+        </gws.ui.Dialog>;
     }
 }
 
@@ -299,10 +266,9 @@ class SelectController extends gws.Controller {
     }
 
     async saveSelection() {
-        let name = this.getValue('selectSaveName');
-
         let res = await this.app.server.selectSaveFeatures({
-            name,
+            projectUid: this.app.project.uid,
+            name: this.getValue('selectSaveName'),
             features: this.getValue('selectFeatures').map(f => f.props)
         });
 
@@ -310,7 +276,6 @@ class SelectController extends gws.Controller {
             this.update({
                 selectSaveNames: res.names
             });
-
         }
 
         this.update({
@@ -319,10 +284,9 @@ class SelectController extends gws.Controller {
     }
 
     async loadSelection() {
-        let name = this.getValue('selectSaveName');
-
         let res = await this.app.server.selectLoadFeatures({
-            name
+            projectUid: this.app.project.uid,
+            name: this.getValue('selectSaveName'),
         });
 
         if (res.features) {
@@ -336,7 +300,9 @@ class SelectController extends gws.Controller {
     }
 
     async getSaveNames() {
-        let res = await this.app.server.selectGetSaveNames({});
+        let res = await this.app.server.selectGetSaveNames({
+            projectUid: this.app.project.uid,
+        });
         this.update({
             selectSaveNames: res.names || []
         })
