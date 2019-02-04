@@ -104,7 +104,7 @@ module.exports = {
     modPrintTemplate: 'Druckvorlage',
     modSearchClearButton: 'Löschen',
     modSearchPlaceholder: 'Suchen',
-    modSearchTooltip: 'Suche',
+    modSearchSidebarTitle: 'Suche',
     modSelectAreaButton: 'Auswahl mithilfe selbstgezeichneter Fläche',
     modSelectClearAuxButton: 'Alle löschen',
     modSelectDropButton: 'Auswahl verwerfen',

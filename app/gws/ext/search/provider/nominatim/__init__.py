@@ -1,7 +1,5 @@
 # http://wiki.openstreetmap.org/wiki/Nominatim
 
-import os
-
 import gws
 import gws.config
 import gws.gis.feature
@@ -18,7 +16,16 @@ NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 DEFAULT_FEATURE_FORMAT = t.FormatConfig({
     'teaser': t.TemplateConfig({
         'type': 'html',
-        'path': os.path.dirname(__file__) + '/feature_teaser.cx.html'
+        'text': '''
+            <p class="head">{feature.attributes.name | html}</p>
+        '''
+    }),
+    'description': t.TemplateConfig({
+        'type': 'html',
+        'text': '''
+            <p class="head">{feature.attributes.name | html}</p>
+            <p class="text">{feature.attributes.content | html}</p>
+        '''
     }),
 })
 
@@ -84,7 +91,7 @@ class Object(gws.common.search.provider.Object):
                 'shape': sh
             }))
 
-        return features
+        return sorted(features, key=lambda f: f.attributes['name'])
 
 
 def _query(params):

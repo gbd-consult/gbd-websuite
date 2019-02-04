@@ -62,7 +62,7 @@ class Object(gws.Object):
             'project': project,
             'resolution': p.resolution,
             'tolerance': self.pixel_tolerance * p.resolution,
-            'shapes': [gws.gis.shape.from_props(s) for s in p.get('shapes', [])]
+            'shapes': [gws.gis.shape.from_props(s) for s in p.shapes] if p.get('shapes') else []
         })
 
         # layer-provider-feature triples

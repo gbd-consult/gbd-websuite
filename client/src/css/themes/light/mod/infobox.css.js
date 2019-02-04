@@ -60,5 +60,9 @@ module.exports = v => ({
         flex: 1,
         overflow: 'auto',
         padding: v.UNIT8,
+
+        '.cmpDescription .text': {
+            maxWidth: 300,
+        },
     },
 });

@@ -1,6 +1,6 @@
 module.exports = v => ({
     '.modSearchSidebarIcon': {
-        ...v.SVG('google:action/search', v.SIDEBAR_HEADER_COLOR)
+        ...v.SIDEBAR_ICON('google:action/search')
     },
 
     '.modSearchClearButton.uiIconButton': {
@@ -41,11 +41,12 @@ module.exports = v => ({
         right: v.UNIT4,
         borderTopWidth: 0,
         maxHeight: 300,
-        ...v.SHADOW,
         overflow: 'auto',
-        '.cmpFeatureListContent': {
-            padding: v.UNIT4,
-        }
+        ...v.SHADOW,
+    },
+
+    '.modSearchResults .cmpListContent': {
+        padding: v.UNIT4,
     },
 
     '.modSearchSidebar': {
@@ -54,14 +55,11 @@ module.exports = v => ({
         }
     },
 
-    '.modSearchResultsFeatureTitle': {
-        fontWeight: 700,
-        margin: [v.UNIT, 0, v.UNIT, 0],
-    },
-
     '.modSearchResultsFeatureText': {
-        fontSize: v.SMALL_FONT_SIZE,
-        cursor: 'pointer',
+        '.head': {
+            color: v.FOCUS_COLOR,
+            cursor: 'pointer',
+        },
     },
 
 });

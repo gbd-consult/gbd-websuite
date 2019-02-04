@@ -5,6 +5,13 @@ import * as sidebar from './common/sidebar';
 
 const MASTER = 'Shared.Search';
 
+function _master(obj: any) {
+    if (obj.app)
+        return obj.app.controller(MASTER) as SearchController;
+    if (obj.props)
+        return obj.props.controller.app.controller(MASTER) as SearchController;
+}
+
 let {Row, Cell} = gws.ui.Layout;
 
 const SEARCH_DEBOUNCE = 1000;
@@ -14,7 +21,6 @@ interface SearchViewProps extends gws.types.ViewProps {
     searchResults: Array<gws.types.IMapFeature>;
     searchWaiting: boolean;
     searchFailed: boolean;
-    master: SearchController;
 }
 
 const SearchStoreKeys = [
@@ -22,8 +28,7 @@ const SearchStoreKeys = [
     'searchResults',
     'searchWaiting',
     'searchFailed',
-
-]
+];
 
 class SearchResults extends gws.View<SearchViewProps> {
     render() {
@@ -36,7 +41,7 @@ class SearchResults extends gws.View<SearchViewProps> {
                 content={f => <gws.ui.TextBlock
                     className="modSearchResultsFeatureText"
                     withHTML
-                    whenTouched={() => this.props.master.zoomTo(f)}
+                    whenTouched={() => _master(this).show(f)}
                     content={f.props.teaser}
                 />}
             />
@@ -55,7 +60,7 @@ class SearchBox extends gws.View<SearchViewProps> {
             return <gws.ui.IconButton
                 className="modSearchClearButton"
                 tooltip={this.__('modSearchClearButton')}
-                whenTouched={() => this.props.master.clear()}
+                whenTouched={() => _master(this).clear()}
             />
     }
 
@@ -67,7 +72,7 @@ class SearchBox extends gws.View<SearchViewProps> {
                     <gws.ui.TextInput
                         value={this.props.searchInput}
                         placeholder={this.__('modSearchPlaceholder')}
-                        whenChanged={val => this.props.master.changed(val)}
+                        whenChanged={val => _master(this).changed(val)}
                     />
                 </Cell>
                 <Cell className='modSearchSideButton'>{this.sideButton()}</Cell>
@@ -76,7 +81,7 @@ class SearchBox extends gws.View<SearchViewProps> {
     }
 }
 
-class SidebarView extends gws.View<SearchViewProps> {
+class SearchSidebarView extends gws.View<SearchViewProps> {
     render() {
         return <sidebar.Tab className="modSearchSidebar">
 
@@ -91,7 +96,7 @@ class SidebarView extends gws.View<SearchViewProps> {
     }
 }
 
-class AltbarSearchView extends gws.View<SearchViewProps> {
+class SearchAltbarView extends gws.View<SearchViewProps> {
     render() {
         return <React.Fragment>
             <div className="modSearchAltbar">
@@ -104,30 +109,23 @@ class AltbarSearchView extends gws.View<SearchViewProps> {
     }
 }
 
-
-class AltbarSearch extends gws.Controller {
+class SearchAltbar extends gws.Controller {
     get defaultView() {
-        let master = this.app.controller(MASTER) as SearchController;
         return this.createElement(
-            this.connect(AltbarSearchView, SearchStoreKeys),
-            {master});
+            this.connect(SearchAltbarView, SearchStoreKeys));
     }
 }
 
-class SidebarSearch extends gws.Controller implements gws.types.ISidebarItem {
-    get iconClass() {
-        return 'modSearchSidebarIcon'
-    }
+class SearchSidebar extends gws.Controller implements gws.types.ISidebarItem {
+    iconClass = 'modSearchSidebarIcon';
 
     get tooltip() {
-        return this.__('modSearchTooltip');
+        return this.__('modSearchSidebarTitle');
     }
 
     get tabView() {
-        let master = this.app.controller(MASTER) as SearchController;
         return this.createElement(
-            this.connect(SidebarView, SearchStoreKeys),
-            {master});
+            this.connect(SearchSidebarView, SearchStoreKeys));
     }
 }
 
@@ -153,7 +151,10 @@ class SearchController extends gws.Controller {
     }
 
     protected async run(keyword) {
-        this.update({searchWaiting: true, searchFailed: false});
+        this.update({
+            searchWaiting: true,
+            searchFailed: false
+        });
 
         let features = await this.map.searchForFeatures({keyword});
 
@@ -171,7 +172,9 @@ class SearchController extends gws.Controller {
     }
 
     changed(value) {
-        this.update({searchInput: value});
+        this.update({
+            searchInput: value
+        });
     }
 
     clear() {
@@ -184,12 +187,14 @@ class SearchController extends gws.Controller {
         });
     }
 
-    zoomTo(f) {
+    show(f) {
         this.update({
             marker: {
                 features: [f],
                 mode: 'pan draw',
-            }
+            },
+            infoboxContent: <gws.components.feature.InfoList controller={this} features={[f]}/>
+
         });
 
     }
@@ -198,7 +203,7 @@ class SearchController extends gws.Controller {
 
 export const tags = {
     [MASTER]: SearchController,
-    'Sidebar.Search': SidebarSearch,
-    'Altbar.Search': AltbarSearch,
+    'Sidebar.Search': SearchSidebar,
+    'Altbar.Search': SearchAltbar,
 };
 
