@@ -497,13 +497,8 @@ class AnnotateFeatureList extends gws.View<AnnotateViewProps> {
         let master = _master(this.props.controller),
             layer = master.layer,
             selectedFeature = this.props.annotateSelectedFeature,
-            features = layer ? layer.features : null;
-
-        if (gws.tools.empty(features)) {
-            return <sidebar.EmptyTab>
-                {this.__('modAnnotateNotFound')}
-            </sidebar.EmptyTab>;
-        }
+            features = layer ? layer.features : null,
+            hasFeatures = !gws.tools.empty(features);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -511,21 +506,26 @@ class AnnotateFeatureList extends gws.View<AnnotateViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <gws.components.feature.List
-                    controller={master}
-                    features={features}
-                    isSelected={f => f === selectedFeature}
+                {hasFeatures
+                    ? <gws.components.feature.List
+                        controller={master}
+                        features={features}
+                        isSelected={f => f === selectedFeature}
 
-                    content={(f: AnnotateFeature) => <gws.ui.Link
-                        whenTouched={() => {
-                            master.selectFeature(f, true);
-                            master.app.startTool('Tool.Annotate.Modify')
-                        }}
-                        content={f.label}
-                    />}
+                        content={(f: AnnotateFeature) => <gws.ui.Link
+                            whenTouched={() => {
+                                master.selectFeature(f, true);
+                                master.app.startTool('Tool.Annotate.Modify')
+                            }}
+                            content={f.label}
+                        />}
 
-                    withZoom
-                />
+                        withZoom
+                    />
+                    : <sidebar.EmptyTabBody>
+                        {this.__('modAnnotateNotFound')}
+                    </sidebar.EmptyTabBody>
+                }
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
@@ -534,6 +534,7 @@ class AnnotateFeatureList extends gws.View<AnnotateViewProps> {
                     <sidebar.AuxButton
                         {...gws.tools.cls('modAnnotateEditAuxButton', this.props.appActiveTool === 'Tool.Annotate.Modify' && 'isActive')}
                         tooltip={this.__('modAnnotateEditAuxButton')}
+                        disabled={!hasFeatures}
                         whenTouched={() => master.app.startTool('Tool.Annotate.Modify')}
                     />
                     <sidebar.AuxButton
@@ -544,6 +545,7 @@ class AnnotateFeatureList extends gws.View<AnnotateViewProps> {
                     <sidebar.AuxButton
                         {...gws.tools.cls('modAnnotateClearAuxButton')}
                         tooltip={this.props.controller.__('modAnnotateClearAuxButton')}
+                        disabled={!hasFeatures}
                         whenTouched={() => master.clear()}
                     />
                 </sidebar.AuxToolbar>
