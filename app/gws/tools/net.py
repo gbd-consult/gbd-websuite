@@ -175,15 +175,14 @@ def http_request(url, **kwargs) -> requests.Response:
         try:
             resp.raise_for_status()
         except requests.RequestException as e:
-            gws.log.debug(f'REQUEST_FAILED: htto url={url!r}')
+            gws.log.debug(f'REQUEST_FAILED: http url={url!r}')
             raise HTTPError(resp.status_code, resp.text)
 
     # some guys serve utf8 content without a header,
     # in which case requests thinks it's ISO-8859-1
     # (see http://docs.python-requests.org/en/master/user/advanced/#encodings)
     #
-    # 'apparent_encoding' is not always reliable, see e.g
-    # https://geodienste.sachsen.de/wms_geosn_webatlas-sn/guest
+    # 'apparent_encoding' is not always reliable
     #
     # therefore we just assume that when there's no headers, it's utf8
     # @TODO check if it really is!

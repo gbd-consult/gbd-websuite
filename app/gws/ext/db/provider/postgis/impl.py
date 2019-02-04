@@ -35,7 +35,7 @@ class Connection:
         return False
 
     def _connection_pool(self):
-        gws.log.info(f'connection pool created')
+        gws.log.debug(f'connection pool created')
         return psycopg2.pool.ThreadedConnectionPool(1, 20, **self.params)
 
     def _exec(self, cur, sql, params=None):
@@ -208,8 +208,9 @@ class Connection:
         all_cols = self.columns(table)
         cols = sorted(col for col in data[0] if col in all_cols)
         template = '(' + _comma(f'%({col})s' for col in cols) + ')'
-        cs = _comma(cols)
-        sql = f'INSERT INTO {self.quote_table(table)} ({cs}) VALUES %s'
+        colnames = _comma(self.quote_ident(s) for s in cols)
+
+        sql = f'INSERT INTO {self.quote_table(table)} ({colnames}) VALUES %s'
         if on_conflict:
             sql += f' ON CONFLICT {on_conflict}'
 

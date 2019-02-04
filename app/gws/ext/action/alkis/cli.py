@@ -7,6 +7,8 @@ import gws
 import gws.config
 import gws.config.loader
 import gws.tools.json2
+import gws.tools.clihelpers as clihelpers
+
 from .tools import nas
 
 COMMAND = 'alkis'
@@ -28,9 +30,9 @@ def parse(path=None):
 def create_index(project=None):
     """Create an internal ALKIS search index for a project"""
 
-    a = _alkis_action(project)
+    a = clihelpers.find_action('alkis', project)
     if a:
-        user, password = _get_credentials()
+        user, password = clihelpers.database_credentials()
         t = time.time()
         a.index_create(user, password)
         t = time.time() - t
@@ -41,47 +43,19 @@ def create_index(project=None):
 def check_index(project=None):
     """Check the status of the ALKIS search index"""
 
-    a = _alkis_action(project)
+    a = clihelpers.find_action('alkis', project)
     if a:
         if a.index_ok():
-            gws.log.info(f'ALKIS indexes in {project} are ok')
+            gws.log.info(f'ALKIS indexes are ok')
         else:
-            gws.log.info(f'ALKIS indexes in {project} are NOT ok')
+            gws.log.info(f'ALKIS indexes are NOT ok')
 
 
 @arg('--project', help='project unique ID')
 def drop_index(project=None):
     """Remove the ALKIS search index"""
 
-    a = _alkis_action(project)
+    a = clihelpers.find_action('alkis', project)
     if a:
-        user, password = _get_credentials()
+        user, password = clihelpers.database_credentials()
         a.index_drop(user, password)
-
-
-def _alkis_action(project):
-    gws.config.loader.load()
-
-    if project:
-        loc = gws.config.find('gws.common.project', gws.as_uid(project))
-        if not loc:
-            gws.log.error('project not found')
-            return
-    else:
-        loc = gws.config.find_all('gws.common.application')[0]
-
-    a = loc.action('alkis')
-    if not a:
-        gws.log.error('ALKIS action not configured')
-        return
-
-    return a
-
-
-def _get_credentials():
-    if 'PGUSER' in os.environ and 'PGPASSWORD' in os.environ:
-        return os.environ['PGUSER'], os.environ['PGPASSWORD']
-
-    user = input('DB Username: ')
-    password = getpass.getpass('Password   : ')
-    return user, password

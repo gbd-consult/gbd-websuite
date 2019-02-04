@@ -4,6 +4,7 @@ import getpass
 
 import argh
 
+import gws.config.loader
 import gws.config.error
 import gws.gis.mpx.config
 import gws.tools.json2 as json2
@@ -154,3 +155,22 @@ def database_credentials():
     user = input('DB username: ')
     password = getpass.getpass('DB password: ')
     return user, password
+
+
+def find_action(name, project_uid=None):
+    gws.config.loader.load()
+
+    if not project_uid:
+        loc = gws.config.find_first('gws.common.application')
+    else:
+        loc = gws.config.find('gws.common.project', gws.as_uid(project_uid))
+        if not loc:
+            gws.log.error(f'project {project_uid!r} not found')
+            return
+
+    a = loc.action(name)
+    if not a:
+        gws.log.error(f'{name!r} action not configured')
+        return
+
+    return a
