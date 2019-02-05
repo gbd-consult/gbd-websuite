@@ -656,12 +656,36 @@ class AnnotateController extends gws.Controller {
     }
 
     newFromFeature(f: gws.types.IMapFeature) {
-        let geometry = f.geometry;
+        let geometry = this.singleGeometry(f.geometry);
 
         if (geometry) {
             let oFeature = new ol.Feature({geometry: geometry['clone']()});
-            return this.newFeature(geometry.getType(), oFeature);
+            let shapeType = geometry.getType();
+            if (shapeType === 'LineString')
+                shapeType = 'Line';
+            return this.newFeature(shapeType, oFeature);
         }
+    }
+
+    singleGeometry(geom) {
+        if (!geom)
+            return null;
+
+        let gt = geom.getType();
+
+        if (gt === 'MultiPolygon') {
+            return (geom as ol.geom.MultiPolygon).getPolygon(0);
+        }
+        if (gt === 'MultiLineString') {
+            return (geom as ol.geom.MultiLineString).getLineString(0);
+        }
+
+        if (gt === 'MultiPoint') {
+            return (geom as ol.geom.MultiPoint).getPoint(0);
+        }
+
+        return geom;
+
     }
 
     selectFeature(f, highlight) {
