@@ -17,6 +17,7 @@ class Object(gws.gis.source.Base, t.SourceObject):
         self.service: gws.qgis.Service = None
         self.url = ''
         self.path = ''
+        self.is_qgis = True
 
     def configure(self):
         super().configure()

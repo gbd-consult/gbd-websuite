@@ -18,9 +18,13 @@ class Object(gws.gis.layer.Proxied):
         super().__init__()
         self.source_layers: t.List[t.SourceLayer] = []
         self.source_layer_names: t.List[str] = []
+        self.is_qgis = False
+        self.has_no_cache_variant = False
 
     def configure(self):
         super().configure()
+        if getattr(self.source, 'is_qgis', None):
+            self.is_qgis = True
 
         # filter source layers
         slf = self.var('sourceLayers')
@@ -44,6 +48,13 @@ class Object(gws.gis.layer.Proxied):
                 'title': self.uid,
                 'sources': [source]
             })
+
+        if self.is_qgis:
+            mc.layer(self, {
+                'title': self.uid + '_NOCACHE',
+                'sources': [source]
+            }, uid=self.uid + '_NOCACHE')
+            self.has_no_cache_variant = True
 
         return super().mapproxy_config(mc, gws.defaults(options, source=source))
 

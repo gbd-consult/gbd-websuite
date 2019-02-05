@@ -92,6 +92,7 @@ class Base(gws.PublicObject, t.LayerObject):
         self.crs = ''
 
         self.legend = ''
+        self.has_no_cache_variant = False
 
     def configure(self):
         super().configure()
@@ -214,10 +215,13 @@ class Base(gws.PublicObject, t.LayerObject):
 class Proxied(Base):
     def render_bbox(self, bbox, width, height, **client_params):
         forward = {}
+        uid = self.uid
         if 'dpi' in client_params:
             forward['DPI__gws'] = client_params['dpi']
+            if self.has_no_cache_variant:
+                uid += '_NOCACHE'
         return mpx.wms_request(
-            self.uid,
+            uid,
             bbox,
             width,
             height,

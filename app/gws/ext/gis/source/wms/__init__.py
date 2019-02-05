@@ -45,7 +45,7 @@ class Object(gws.gis.source.Base, t.SourceObject):
         return mc.source(self, gws.compact({
             'type': 'wms',
             'supported_srs': [self.crs],
-            'forward_req_params': ['LAYERS__gws', 'DPI__gws'],
+            ## 'forward_req_params': ['LAYERS__gws', 'DPI__gws'],
             'concurrent_requests': self.var('maxRequests'),
             'req': req
         }))
