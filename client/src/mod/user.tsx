@@ -128,7 +128,7 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
 
     async doLogout() {
         await this.app.server.authLogout({});
-        this.app.reload();
+        location.href = '/';
     }
 
     get iconClass() {
