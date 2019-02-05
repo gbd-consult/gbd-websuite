@@ -128,6 +128,12 @@ class Object(gws.Object):
             gws.log.debug(f'SEARCH_END: N_A')
             return []
 
-        res = prov.run(layer, args)
+        try:
+            res = prov.run(layer, args)
+        except Exception:
+            gws.log.exception()
+            gws.log.debug('SEARCH_FAILED')
+            return []
+
         gws.log.debug('SEARCH_END')
         return res
