@@ -6,30 +6,6 @@ from . import error
 DEFAULT_CMD = 'assetHttpGetPath'
 
 
-def _action_handler(project_uid, action_type):
-    root = gws.config.root()
-
-    if project_uid:
-        project = root.find('gws.common.project', project_uid)
-        if project:
-            action = project.action(action_type)
-            if action:
-                gws.log.debug(f'action: found project: {project_uid} {action_type}')
-                return action
-            else:
-                gws.log.debug(f'action: PROJECT ACTION NOT FOUND: {project_uid} {action_type}')
-        else:
-            gws.log.debug(f'action: PROJECT NOT FOUND: {project_uid}')
-
-    app = root.find_first('gws.common.application')
-    action = app.action(action_type)
-    if action:
-        gws.log.debug(f'action: found global: {action_type}')
-        return action
-
-    gws.log.debug(f'action: NOT FOUND: {project_uid} {action_type}')
-
-
 def handle(req):
     cmd = req.param('cmd', DEFAULT_CMD)
 
@@ -52,7 +28,8 @@ def handle(req):
     gws.log.debug(f'DISPATCH a={action_type} m={method_name}')
 
     project_uid = arg.get('projectUid') if arg else req.param('projectUid')
-    action = _action_handler(project_uid, action_type)
+    app = gws.config.root().find_first('gws.common.application')
+    action = app.find_action(action_type, project_uid)
 
     if not action:
         gws.log.error('handler not found', cmd)

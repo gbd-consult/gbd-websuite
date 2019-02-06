@@ -47,7 +47,7 @@ module.exports = v => ({
     },
 
     '&.withPrintPreview': {
-        '.modSidebar, .modInfobox, .modToolbar, .modSidebarOpenButton, .modAltbar': {
+        '.modSidebar, .cmpInfobox, .modToolbar, .modSidebarOpenButton, .modAltbar': {
             display: 'none'
         },
     },

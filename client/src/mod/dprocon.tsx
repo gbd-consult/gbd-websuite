@@ -17,8 +17,6 @@ class DproconController extends gws.Controller {
                     requestId: p
                 });
 
-                console.log(res);
-
                 if (res.feature) {
                     let features = [this.map.readFeature(res.feature)];
                     this.update({

@@ -430,6 +430,8 @@ def find(conn: connection.AlkisConnection, query, limit=None):
             elif hnr:
                 where.append('AD.hausnummer = %s')
                 parms.append(normalize_hausnummer(hnr))
+            elif query.get('hausnummerNotNull'):
+                where.append('AD.hausnummer IS NOT NULL')
 
     where = ('WHERE ' + ' AND '.join(where)) if where else ''
     limit = 'LIMIT %d' % (limit or _DEFAULT_LIMIT)

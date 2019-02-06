@@ -157,20 +157,13 @@ def database_credentials():
     return user, password
 
 
-def find_action(name, project_uid=None):
+def find_action(action_type, project_uid=None):
     gws.config.loader.load()
 
-    if not project_uid:
-        loc = gws.config.find_first('gws.common.application')
-    else:
-        loc = gws.config.find('gws.common.project', gws.as_uid(project_uid))
-        if not loc:
-            gws.log.error(f'project {project_uid!r} not found')
-            return
+    app = gws.config.find_first('gws.common.application')
+    action = app.find_action(action_type, project_uid)
 
-    a = loc.action(name)
-    if not a:
-        gws.log.error(f'{name!r} action not configured')
-        return
+    if not action:
+        gws.log.error(f'{action_type!r} action not configured')
 
-    return a
+    return action

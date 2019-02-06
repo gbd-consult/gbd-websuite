@@ -41,7 +41,7 @@ interface InfoboxProps extends gws.types.ViewProps {
 
 class InfoboxView extends gws.View<InfoboxProps> {
     render() {
-        return <div {...gws.tools.cls('modInfobox', this.props.infoboxContent && 'isActive')}>
+        return <div {...gws.tools.cls('cmpInfobox', this.props.infoboxContent && 'isActive')}>
             {this.props.infoboxContent || null}
         </div>;
     }

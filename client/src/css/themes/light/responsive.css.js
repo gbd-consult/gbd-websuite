@@ -51,7 +51,7 @@ module.exports = v => ({
         }
     },
 
-    '.modInfobox': {
+    '.cmpInfobox': {
         left: 0,
         right: 0,
         bottom: '-100%',
@@ -62,7 +62,7 @@ module.exports = v => ({
         }
     },
 
-    '.modInfobox.isActive': {
+    '.cmpInfobox.isActive': {
         bottom: v.INFOBAR_HEIGHT,
         // [v.MEDIA('small+')]: {
         //     bottom: v.INFOBAR_HEIGHT + v.UNIT * 6,

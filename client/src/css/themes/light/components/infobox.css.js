@@ -1,5 +1,5 @@
 module.exports = v => ({
-    '.modInfobox': {
+    '.cmpInfobox': {
         zIndex: 2,
         position: 'absolute',
         background: v.INFOBOX_BACKGROUND,
@@ -17,46 +17,46 @@ module.exports = v => ({
 
     },
 
-    '.withSidebar .modInfobox': {},
+    '.withSidebar .cmpInfobox': {},
 
 
-    '.modInfoboxFooter': {
+    '.cmpInfoboxFooter': {
         padding: [0, v.UNIT4, 0, v.UNIT4],
         '.uiIconButton': {
             ...v.ICON('small'),
         }
     },
 
-    '.modInfoboxCloseButton.uiIconButton': {
+    '.cmpInfoboxCloseButton.uiIconButton': {
         ...v.SVG(v.CLOSE_ICON, v.INFOBOX_BUTTON_COLOR),
     },
 
-    '.modInfoboxPagerBack.uiIconButton': {
+    '.cmpInfoboxPagerBack.uiIconButton': {
         ...v.SVG('google:navigation/chevron_left', v.INFOBOX_BUTTON_COLOR),
     },
 
-    '.modInfoboxPagerForward.uiIconButton': {
+    '.cmpInfoboxPagerForward.uiIconButton': {
         ...v.SVG('google:navigation/chevron_right', v.INFOBOX_BUTTON_COLOR),
     },
 
-    '.modInfobox .cmpFeatureTaskButton': {
+    '.cmpInfobox .cmpFeatureTaskButton': {
         ...v.SVG('google:action/settings', v.INFOBOX_BUTTON_COLOR),
 
     },
 
-    '.modInfoboxPagerText': {
+    '.cmpInfoboxPagerText': {
         fontSize: v.SMALL_FONT_SIZE,
     },
 
 
-    '.modInfoboxContent': {
+    '.cmpInfoboxContent': {
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
     },
 
-    '.modInfoboxBody': {
+    '.cmpInfoboxBody': {
         flex: 1,
         overflow: 'auto',
         padding: v.UNIT8,

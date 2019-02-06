@@ -64,6 +64,17 @@ def compact(src):
     return [v for v in src if v is not None]
 
 
+def popattr(obj, attr):
+    """Get and remove an attribute from an object."""
+
+    v = getattr(obj, attr, None)
+    try:
+        delattr(obj, attr)
+    except AttributeError:
+        pass
+    return v
+
+
 def strip(src):
     """Remove empty stuff from a nested dict/list structure"""
 

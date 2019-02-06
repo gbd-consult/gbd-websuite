@@ -91,10 +91,20 @@ class Object(gws.Object):
 
         self.add_child(gws.common.csv.Object, self.var('csv'))
 
-    def action(self, action_type):
-        if not self.api:
-            return None
-        return self.api.actions.get(action_type)
+    def find_action(self, action_type, project_uid=None):
+
+        action = None
+
+        if project_uid:
+            project = self.find('gws.common.project', project_uid)
+            if project:
+                action = project.api.actions.get(action_type) if project.api else None
+
+        if not action:
+            action = self.api.actions.get(action_type) if self.api else None
+
+        gws.log.debug(f'find_action {action_type!r} prj={project_uid!r} found={action.uid if action else 0}')
+        return action
 
 
 def _is_remote_admin_enabled():

@@ -95,11 +95,6 @@ class Object(gws.PublicObject, t.ProjectObject):
         if p:
             self.client = self.add_child(gws.common.client.Object, p)
 
-    def action(self, action_type):
-        if not self.api:
-            return None
-        return self.api.actions.get(action_type)
-
     def configure_meta(self):
         # @TODO merge with layer
         m = self.var('meta') or t.MetaData()

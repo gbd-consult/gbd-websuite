@@ -250,6 +250,7 @@ let rules = [
     require('./components/description.css'),
     require('./components/list.css'),
     require('./components/feature.css'),
+    require('./components/infobox.css'),
 
     require('./mod/alkis.css'),
     require('./mod/altbar.css'),
@@ -265,7 +266,6 @@ let rules = [
     require('./mod/lens.css'),
     require('./mod/marker.css'),
     require('./mod/overview.css'),
-    require('./mod/infobox.css'),
     require('./mod/print.css'),
     require('./mod/search.css'),
     require('./mod/select.css'),

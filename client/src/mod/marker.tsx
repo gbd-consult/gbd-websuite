@@ -40,6 +40,37 @@ class MarkerController extends gws.Controller {
         };
 
         this.app.whenChanged('marker', content => this.show(content));
+
+        this.app.whenLoaded(async () => {
+            let x = Number(this.app.urlParams['x']),
+                y = Number(this.app.urlParams['y']),
+                z = Number(this.app.urlParams['z']);
+
+            if(x && y) {
+                this.showXYZ(x, y, z);
+            }
+        });
+    }
+
+    showXYZ(x, y, z) {
+        let geometry = new ol.geom.Point([x, y]),
+        f = new gws.map.Feature(this.map, {geometry}),
+            mode = '';
+
+        if(z) {
+            this.map.setScale(z);
+            mode = 'draw pan';
+        } else {
+            mode = 'draw zoom';
+        }
+        this.update({
+            marker: {
+                features: [f],
+                mode
+            },
+            infoboxContent: <gws.components.Infobox controller={this}><p>{x}, {y}</p></gws.components.Infobox>
+        })
+
     }
 
     show(content) {
@@ -68,7 +99,7 @@ class MarkerController extends gws.Controller {
         if (!geoms.length)
             return;
 
-        if (mode.draw)
+        if (mode.draw || mode.fade)
             this.draw(geoms);
 
         let extent = this.extent(geoms);

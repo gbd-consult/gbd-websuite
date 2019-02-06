@@ -1,4 +1,4 @@
-import time
+"""Interface with GekoS-Bau software."""
 
 import gws
 import gws.auth.api
@@ -11,7 +11,40 @@ import gws.gis.proj
 
 import gws.types as t
 
+import gws.ext.action.alkis
+
 from . import request
+
+"""
+
+    see https://www.gekos.de/
+    
+    GekoS settings for gws (Verfahrensadministration/GIS Schnittstelle)
+    
+    base address:
+    
+        GIS-URL-Base  = http://my-server
+
+    client-side call, handled in the client:
+    
+        GIS-URL-ShowXY  = /project/my-project/?x=<x>&y=<y>&z=my-scale-value
+        
+    client-side call, handled in the client and by the alkis ext:
+    
+        GIS-URL-ShowFs = /project/my-project/?alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
+        
+    client-side call, handled in the client:
+        
+        GIS-URL-GetXYFromMap = /project/my-project?&x=<x>&y=<y>&gekosUrl=<returl>
+    
+    callback urls, handled here
+            
+        GIS-URL-GetXYFromFs   = /_/?cmd=gekosHttpGetXy&alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
+        GIS-URL-GetXYFromGrd  = /_/?cmd=gekosHttpGetXy&alkisAd=<str>_<hnr><hnralpha>_<plz>_<ort>_<bishnr><bishnralpha>
+
+    NB: the order of placeholders must match _COMBINED_FS_PARAMS and _COMBINED_AD_PARAMS in ext.action.alkis
+
+"""
 
 
 class PositionConfig(t.Config):
@@ -48,59 +81,35 @@ class Object(gws.Object):
         if not self.db:
             raise gws.Error(f'{self.uid}: db provider not found')
 
-    def http_get_xy_from_fs(self, req, p) -> t.HttpResponse:
-        # ?cmd=gekosHttpGetXyFromFs&gemarkungUid=<gem>&flurnummer=<flur>&zaehler=<zaehler>&nenner=<nenner>&flurstuecksfolge=<folge>
-        # httpResponse mode, s. spec page 19
+    def http_get_xy(self, req, p) -> t.HttpResponse:
+        project_uid = req.params.get('projectUid')
 
-        query = gws.pick(req.params, [
-            'gemarkungUid',
-            'flurnummer',
-            'zaehler',
-            'nenner',
-            'flurstuecksfolge',
-        ])
+        if project_uid:
+            req.require_project(project_uid)
 
-        # '0' values should be NULLs
-        query = {k: None if v == '0' else v for k, v in query.items()}
+        alkis_fs = gws.get(req.params, 'alkisFs')
+        alkis_ad = gws.get(req.params, 'alkisAd')
 
-        gws.p('http_get_xy_from_fs', req.params)
+        alkis = self.find_first('gws.common.application').find_action('alkis', project_uid)
 
-        if not query:
-            gws.log.warn('gekos: bad request')
+        if alkis_fs:
+            query = gws.ext.action.alkis.FsQueryParams({
+                'alkisFs': alkis_fs
+            })
+            total, features = alkis.find_fs(query, self.crs, allow_eigentuemer=False, allow_buchung=False, limit=1)
+
+        elif alkis_ad:
+            query = gws.ext.action.alkis.FsAddressQueryParams({
+                'alkisAd': alkis_ad,
+                'hausnummerNotNull': True,
+            })
+            total, features = alkis.find_address(query, self.crs, limit=1)
+        else:
+            gws.log.warn(f'gekos: bad request {req.params!r}')
             return _text('error:')
-
-        alkis = self.root.find_first('gws.ext.action.alkis')
-        total, features = alkis.find_fs(t.Data(query), self.crs, limit=1)
 
         if total == 0:
-            gws.log.warn('gekos: not found')
-            return _text('error:')
-
-        return _text_xy(features[0])
-
-    def http_get_xy_from_grd(self, req, p) -> t.HttpResponse:
-        # ?cmd=gekosHttpGetXyFromGrd&gemeinde=<gem>&strasse=<strasse>&hausnummer=<hausnummer>
-        # httpResponse mode, s. spec page 19
-
-        query = gws.pick(req.params, [
-            'gemeinde',
-            'strasse',
-            'hausnummer',
-        ])
-
-        if not query:
-            gws.log.warn('gekos: bad request')
-            return _text('error:')
-
-        # if no hnr is given, only select locations that have one
-        if 'hausnummer' not in query or query['hausnummer'] == '0':
-            query['hausnummer'] = '*'
-
-        alkis = self.root.find_first('gws.ext.action.alkis')
-        total, features = alkis.find_address(t.Data(query), self.crs, limit=1)
-
-        if total == 0:
-            gws.log.warn('gekos: not found')
+            gws.log.warn(f'gekos: not found {req.params!r}')
             return _text('error:')
 
         return _text_xy(features[0])

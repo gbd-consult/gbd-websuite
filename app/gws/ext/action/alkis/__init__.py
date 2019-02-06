@@ -109,6 +109,12 @@ class FsStrassenResponse(t.Response):
     strassen: t.List[str]
 
 
+_COMBINED_FS_PARAMS = ['landUid', 'gemarkungUid', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge']
+_COMBINED_AD_PARAMS = ['strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnummer']
+
+_COMBINED_PARAMS_DELIM = '_'
+
+
 class FsQueryParams(t.Data):
     projectUid: str
     wantEigentuemer: t.Optional[bool]
@@ -129,6 +135,29 @@ class FsQueryParams(t.Data):
     nenner: t.Optional[str]
     flurstuecksfolge: t.Optional[str]
     shapes: t.Optional[t.List[t.ShapeProps]]
+
+    # combined fs search param (_COMBINED_FS_PARAMS joined by '_')
+    alkisFs: t.Optional[str]
+    # combined address search param (_COMBINED_AD_PARAMS joined by '_')
+    alkisAd: t.Optional[str]
+
+class FsAddressQueryParams(t.Data):
+    land: t.Optional[str]
+    regierungsbezirk: t.Optional[str]
+    kreis: t.Optional[str]
+    gemeinde: t.Optional[str]
+    gemarkung: t.Optional[str]
+    landUid: t.Optional[str]
+    regierungsbezirkUid: t.Optional[str]
+    kreisUid: t.Optional[str]
+    gemeindeUid: t.Optional[str]
+    gemarkungUid: t.Optional[str]
+    strasse: t.Optional[str]
+    hausnummer: t.Optional[str]
+    bisHausnummer: t.Optional[str]
+    hausnummerNotNull: t.Optional[bool]
+
+    alkisAd: t.Optional[str]
 
 
 class FsPrintParams(FsQueryParams):
@@ -432,12 +461,12 @@ class Object(gws.Object):
         with self._connect() as conn:
             return index.ok(conn)
 
-    def find_fs(self, query: t.Data, target_crs, allow_eigentuemer=False, allow_buchung=False, limit=None):
+    def find_fs(self, query: FsQueryParams, target_crs, allow_eigentuemer=False, allow_buchung=False, limit=None):
         # public api method for other ext's
 
         return self._find(query, target_crs, allow_eigentuemer, allow_buchung, limit)
 
-    def find_address(self, query: t.Data, target_crs, limit=None):
+    def find_address(self, query: FsAddressQueryParams, target_crs, limit=None):
         # public api method for other ext's
 
         return self._find_address(query, target_crs, limit)
@@ -447,9 +476,9 @@ class Object(gws.Object):
         if not self.has_index:
             raise gws.web.error.NotFound()
 
-    def _fetch_and_format(self, req, p: FsQueryParams, fmt: t.FormatInterface):
+    def _fetch_and_format(self, req, query: FsQueryParams, fmt: t.FormatInterface):
         fprops = []
-        total, features = self._fetch(req, p)
+        total, features = self._fetch(req, query)
 
         for feature in features:
             feature.apply_format(fmt)
@@ -471,8 +500,6 @@ class Object(gws.Object):
         allow_eigentuemer = eigentuemer_flag > 0
         allow_buchung = self._can_read_buchung(req)
 
-        query = self._remove_restricted_params(query, allow_eigentuemer, allow_buchung)
-
         if query.get('shapes'):
             shape = gws.gis.shape.union(gws.gis.shape.from_props(s) for s in query.get('shapes'))
             if shape:
@@ -488,8 +515,11 @@ class Object(gws.Object):
 
         return total, features
 
-    def _find(self, query: t.Data, target_crs, allow_eigentuemer, allow_buchung, limit):
+    def _find(self, query: FsQueryParams, target_crs, allow_eigentuemer, allow_buchung, limit):
         features = []
+
+        query = self._expand_combined_params(query)
+        query = self._remove_restricted_params(query, allow_eigentuemer, allow_buchung)
 
         with self._connect() as conn:
             total, rs = flurstueck.find(conn, query, limit)
@@ -504,8 +534,10 @@ class Object(gws.Object):
 
         return total, features
 
-    def _find_address(self, query: t.Data, target_crs, limit):
+    def _find_address(self, query: FsAddressQueryParams, target_crs, limit):
         features = []
+
+        query = self._expand_combined_params(query)
 
         with self._connect() as conn:
             total, rs = adresse.find(conn, query, limit)
@@ -568,13 +600,32 @@ class Object(gws.Object):
 
         gws.log.debug('_log_eigentuemer_access', check, 'ok')
 
-    def _remove_restricted_params(self, p: FsQueryParams, allow_eigentuemer, allow_buchung):
+    def _expand_combined_params(self, query):
+        s = gws.get(query, 'alkisFs')
+        if s:
+            self._expand_combined_params2(query, s, _COMBINED_FS_PARAMS)
+
+        s = gws.get(query, 'alkisAd')
+        if s:
+            self._expand_combined_params2(query, s, _COMBINED_AD_PARAMS)
+
+        return query
+
+    def _expand_combined_params2(self, query: FsQueryParams, value, fields):
+        vs = value.split(_COMBINED_PARAMS_DELIM)
+
+        for field in fields:
+            if vs and vs[0] != '0':
+                setattr(query, field, vs[0])
+            vs = vs[1:]
+
+    def _remove_restricted_params(self, query: FsQueryParams, allow_eigentuemer, allow_buchung):
         if not allow_eigentuemer:
-            del p.vorname
-            del p.name
+            gws.popattr(query, 'vorname')
+            gws.popattr(query, 'name')
         if not allow_buchung:
-            del p.bblatt
-        return p
+            gws.popattr(query, 'bblatt')
+        return query
 
     def _remove_restricted_data(self, rec, allow_eigentuemer, allow_buchung):
         if allow_eigentuemer:

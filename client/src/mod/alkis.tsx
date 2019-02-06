@@ -861,8 +861,6 @@ class AlkisSelectDialog extends gws.View<AlkisViewProps> {
     }
 }
 
-
-
 class AlkisController extends gws.Controller {
     uid = MASTER;
     setup: gws.api.AlkisFsSetupResponse;
@@ -925,7 +923,6 @@ class AlkisController extends gws.Controller {
         return this.createElement(
             this.connect(AlkisSelectDialog, AlkisStoreKeys));
     }
-
 
     async whenGemarkungChanged(value) {
         let strassen = [];
@@ -1029,37 +1026,62 @@ class AlkisController extends gws.Controller {
     }
 
     async urlSearch() {
-        let params = {};
+        let p = this.app.urlParams['alkisFs'];
 
-        gws.tools.entries(this.app.urlParams).forEach(e => {
-            let k = URL_PARAMS[e[0]];
-            if (k)
-                params[k] = e[1];
-        });
+        if (p) {
+            let res = await this.app.server.alkisFsSearch({
+                projectUid: this.app.project.uid,
+                alkisFs: p,
+            });
 
-        if (gws.tools.empty(params))
-            return false;
+            if (res.error) {
+                return false;
+            }
 
-        let res = await this.app.server.alkisFsSearch({
-            ...params,
-            projectUid: this.app.project.uid
-        });
+            let features = this.map.readFeatures(res.features);
 
-        if (res.error) {
-            return false;
+            if (features.length > 0)
+                this.update({
+                    marker: {
+                        features: [features[0]],
+                        mode: 'draw zoom',
+                    },
+                    infoboxContent: <gws.components.Infobox controller={this}>{features[0].props.teaser}</gws.components.Infobox>,
+                });
+
         }
 
-        let features = this.map.readFeatures(res.features);
-
-        console.log('urlSearch', params, features.length)
-
-        if (features.length > 0)
-            this.update({
-                marker: {
-                    features: [features[0]],
-                    mode: 'draw zoom',
-                }
-            });
+        // let params = {};
+        //
+        // gws.tools.entries(this.app.urlParams).forEach(e => {
+        //     let k = URL_PARAMS[e[0]];
+        //     if (k)
+        //         params[k] = e[1];
+        // });
+        //
+        // if (gws.tools.empty(params))
+        //     return false;
+        //
+        // let res = await this.app.server.alkisFsSearch({
+        //     ...params,
+        //     projectUid: this.app.project.uid
+        // });
+        //
+        // if (res.error) {
+        //     return false;
+        // }
+        //
+        // let features = this.map.readFeatures(res.features);
+        //
+        // console.log('urlSearch', params, features.length)
+        //
+        // if (features.length > 0)
+        //     this.update({
+        //         marker: {
+        //             features: [features[0]],
+        //             mode: 'draw zoom',
+        //         }
+        //     });
     }
 
     paramsForFeatures(fs: Array<gws.types.IMapFeature>) {

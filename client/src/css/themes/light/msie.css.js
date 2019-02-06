@@ -2,7 +2,7 @@ module.exports = v => ({
 
     '&.msie': {
 
-        '.modInfobox.isActive': {
+        '.cmpInfobox.isActive': {
             width: 350,
             maxWidth: 350,
             minWidth: 350,
