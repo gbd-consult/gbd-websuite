@@ -1,3 +1,4 @@
+import re
 import time
 import os
 
@@ -10,18 +11,30 @@ import gws.tools.date
 import gws.gis.feature
 import gws.gis.shape
 import gws.gis.layer
+import gws.gis.proj
 
 import gws.types as t
 
-dprocon_index = 'dprocon_house'
-dprocon_log = 'dprocon_log'
+_INDEX_TABLE_NAME = 'dprocon_house'
+_LOG_TABLE_NAME = 'dprocon_log'
 
 _cwd = os.path.dirname(__file__)
 
 _DEFAULT_FORMAT = t.FormatConfig({
     'description': t.TemplateConfig({
         'type': 'html',
-        'path': _cwd + '/data.cx.html'
+        'text': '''
+            <p class="head">{title}</p>
+            
+            <table>
+            @each attributes as k, v
+                <tr>
+                    <td>{k | html}</td>
+                    <td align=right>{v | html}</td>
+                </tr>
+            @end
+            </table>
+        '''
     })
 })
 
@@ -33,12 +46,13 @@ class Config(t.WithTypeAndAccess):
     requestUrl: t.url
     crs: t.crsref = ''
 
-    schema: str
-    requestTable: str
-    dataTable: str
+    requestTable: t.SqlTableConfig  #: table to store outgoing requests
+    dataTable: t.SqlTableConfig  #: table to store consolidated results
+    dataTablePattern: str  #: pattern for result tables to consolidate
 
     cacheTime: t.duration = '24h'
-    title: str = ''
+    infoTitle: str = ''
+
     indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
     alkisSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
 
@@ -74,19 +88,19 @@ class Object(gws.Object):
 
         # @TODO find crs from alkis
         self.crs = self.var('crs', parent=True)
-        self.srid = int(self.crs.split(':')[1])
+        self.srid = gws.gis.proj.as_srid(self.crs)
 
-        self.data_schema = self.var('schema')
         self.request_table = self.var('requestTable')
         self.data_table = self.var('dataTable')
 
         self.feature_format = self.create_object('gws.common.format', _DEFAULT_FORMAT)
 
     def api_connect(self, req, p: ConnectParams) -> ConnectResponse:
-        project = req.require_project(p.projectUid)
+        req.require_project(p.projectUid)
+
         shape = gws.gis.shape.union(gws.gis.shape.from_props(s) for s in p.shapes)
 
-        request_id = self._connect(shape)
+        request_id = self._new_request(shape)
         if not request_id:
             raise gws.web.error.NotFound()
 
@@ -98,15 +112,10 @@ class Object(gws.Object):
         })
 
     def api_get_data(self, req, p: GetDataParams) -> GetDataResponse:
-        project = req.require_project(p.projectUid)
-        request_id = p.requestId
 
-        with self.db.connect() as conn:
-            geom = conn.select_value(f'''
-                SELECT selection 
-                FROM {self.data_schema}.{self.request_table} 
-                WHERE request_id=%s
-            ''', [request_id])
+        req.require_project(p.projectUid)
+        request_id = p.requestId
+        geom = self._selection_for_request(request_id)
 
         if not geom:
             gws.log.info(f'request {request_id!r} not found')
@@ -122,7 +131,7 @@ class Object(gws.Object):
             'shape': shape,
         })
 
-        f.apply_format(self.feature_format, {'title': self.var('title')})
+        f.apply_format(self.feature_format, {'title': self.var('infoTitle')})
 
         return GetDataResponse({
             'feature': f.props
@@ -149,12 +158,12 @@ class Object(gws.Object):
         'bezirk'
     ]
 
-    def create_index(self, user, password):
-        with self.db.connect({'user': user, 'password': password}) as conn:
-            index_table = conn.quote_table(dprocon_index, self.var('indexSchema'))
-            ds = self.var('alkisSchema')
-
-            df = ','.join(k + ' ' + v for k, v in self._data_fields.items())
+    def setup(self):
+        with self.db.connect() as conn:
+            request_table = conn.quote_table(self.request_table.name)
+            data_fields = ','.join(k + ' ' + v for k, v in self._data_fields.items())
+            index_table = conn.quote_table(_INDEX_TABLE_NAME, self.var('indexSchema'))
+            alkis_schema = self.var('alkisSchema')
 
             sql = [
                 f'''
@@ -163,7 +172,7 @@ class Object(gws.Object):
                 f'''
                     CREATE TABLE {index_table} (
                         gml_id CHARACTER(16) NOT NULL,
-                        {df},
+                        {data_fields},
                         geom geometry(POINT, {self.srid})
                     )
                 ''',
@@ -183,9 +192,9 @@ class Object(gws.Object):
                             ST_Y(p.wkb_geometry) AS y,
                             p.wkb_geometry AS geom
                         FROM
-                            "{ds}".ax_lagebezeichnungmithausnummer AS h,
-                            "{ds}".ax_lagebezeichnungkatalogeintrag AS c,
-                            "{ds}".ap_pto AS p
+                            "{alkis_schema}".ax_lagebezeichnungmithausnummer AS h,
+                            "{alkis_schema}".ax_lagebezeichnungkatalogeintrag AS c,
+                            "{alkis_schema}".ap_pto AS p
                         WHERE
                             p.art = 'HNR'
                             AND h.gml_id = ANY (p.dientzurdarstellungvon)
@@ -199,7 +208,7 @@ class Object(gws.Object):
                 ''',
                 f'''
                     CREATE INDEX geom_index ON {index_table} USING GIST(geom)
-                '''
+                ''',
             ]
 
             with conn.transaction():
@@ -209,40 +218,13 @@ class Object(gws.Object):
             cnt = conn.select_value(f'SELECT COUNT(*) FROM {index_table}')
             print('index ok, ', cnt, 'entries')
 
-    def create_tables(self, user, password):
-        with self.db.connect({'user': user, 'password': password}) as conn:
-            request_table = self.data_schema + '.' + self.request_table
+    def _new_request(self, shape):
+        self._prepare_request_table()
 
-            df = ','.join(k + ' ' + v for k, v in self._data_fields.items())
-
-            sql = [
-                f'''
-                    DROP TABLE IF EXISTS {request_table} CASCADE
-                ''',
-                f'''
-                    CREATE TABLE IF NOT EXISTS {request_table} ( 
-                        id SERIAL PRIMARY KEY,
-                        request_id CHARACTER VARYING,
-                        
-                        {df},
-                        
-                        selection geometry(GEOMETRY,{self.srid}) NOT NULL,
-                        ts TIMESTAMP WITH TIME ZONE
-                    )
-                '''
-            ]
-
-            with conn.transaction():
-                for s in sql:
-                    conn.exec(s)
-
-            print('setup ok')
-
-    def _connect(self, shape):
         features = self.db.select(t.SelectArgs({
             'shape': shape,
             'table': t.SqlTableConfig({
-                'name': self.var('indexSchema') + '.' + dprocon_index,
+                'name': self.var('indexSchema') + '.' + _INDEX_TABLE_NAME,
                 'geometryColumn': 'geom'
             })
         }))
@@ -262,18 +244,9 @@ class Object(gws.Object):
             d['ts'] = ts
             data.append(d)
 
-        secs = self.var('cacheTime')
-        request_table = self.data_schema + '.' + self.request_table
-
         with self.db.connect() as conn:
-            with conn.transaction():
-                conn.exec(f'''
-                    DELETE 
-                    FROM {request_table} 
-                    WHERE ts < CURRENT_DATE - INTERVAL '{secs} seconds' 
-                ''')
-                for d in data:
-                    conn.insert_one(request_table, 'id', d)
+            for d in data:
+                conn.insert_one(self.request_table.name, 'id', d)
 
         # tab = log_table()
         # db.run(_f('''INSERT INTO {tab}(request_id,selection,ts)
@@ -281,6 +254,37 @@ class Object(gws.Object):
         # '''), [request_id, json.dumps(wkts), util.now()])
 
         return request_id
+
+    def _prepare_request_table(self):
+        with self.db.connect() as conn:
+            request_table = conn.quote_table(self.request_table.name)
+            data_fields = ','.join(k + ' ' + v for k, v in self._data_fields.items())
+
+            # ensure the requests table
+            conn.exec(f'''
+                CREATE TABLE IF NOT EXISTS {request_table} ( 
+                    id SERIAL PRIMARY KEY,
+                    request_id CHARACTER VARYING,
+                    {data_fields},
+                    selection geometry(GEOMETRY, {self.srid}) NOT NULL,
+                    ts TIMESTAMP WITH TIME ZONE
+                )
+            ''')
+
+            # clean up obsolete request records
+            conn.exec(f'''
+                DELETE FROM {request_table} 
+                WHERE ts < CURRENT_DATE - INTERVAL '%s seconds' 
+            ''', [self.var('cacheTime')])
+
+    def _selection_for_request(self, request_id):
+        with self.db.connect() as conn:
+            tab = conn.quote_table(self.request_table.name)
+            return conn.select_value(f'''
+                SELECT selection 
+                FROM {tab} 
+                WHERE request_id=%s
+            ''', [request_id])
 
     def _populate_data_table(self):
         # collect data from various dprocon-tables into a single data table
@@ -290,31 +294,24 @@ class Object(gws.Object):
         data = []
 
         with self.db.connect() as conn:
+            data_schema, data_name = conn.schema_and_table(self.data_table.name)
 
-            rs = conn.select(f'''
-                SELECT table_name 
-                    FROM INFORMATION_SCHEMA.COLUMNS 
-                    WHERE column_name='request_id' AND table_schema=%s
-            ''', [self.data_schema])
-
-            tables = [r['table_name'] for r in rs]
-
-            for tab in tables:
-                if tab in (self.request_table, self.data_table):
+            for tab in conn.table_names(data_schema):
+                if not re.search(self.var('dataTablePattern'), tab):
                     continue
 
                 cols = ','.join(
                     c
-                    for c in conn.columns(self.data_schema + '.' + tab)
+                    for c in conn.columns(data_schema + '.' + tab)
                     if c not in exclude_fields)
 
                 if not cols:
                     continue
 
                 sql = f'''
-                    SELECT request_id, {cols} 
-                    FROM {self.data_schema}.{tab}
-                    WHERE request_id::text != '0'    
+                    SELECT request_id, {cols}
+                    FROM {data_schema}.{tab}
+                    WHERE request_id::text != '0'
                 '''
 
                 for r in conn.server_select(sql):
@@ -327,30 +324,33 @@ class Object(gws.Object):
                                 'value': v
                             })
 
-            tmp_data_table = self.data_schema + '.' + self.data_table + str(_rand_id())
+            tmp = self.data_table.name + str(_rand_id())
 
             conn.exec(f'''
-                CREATE TABLE IF NOT EXISTS {tmp_data_table} ( 
+                CREATE TABLE IF NOT EXISTS {conn.quote_table(tmp)} ( 
                     table_name CHARACTER VARYING,
                     request_id CHARACTER VARYING,
                     field CHARACTER VARYING,
-                    value BIGINT
-                )
+                    value BIGINT)
             ''')
 
             if data:
-                conn.batch_insert(tmp_data_table, data)
+                conn.batch_insert(tmp, data)
 
-            dt = self.data_schema + '.' + self.data_table
-            conn.exec(f'''DROP TABLE IF EXISTS {dt} CASCADE''')
-            conn.exec(f'''ALTER TABLE {tmp_data_table} RENAME TO {self.data_table}''')
+            conn.exec(f'''DROP TABLE IF EXISTS {conn.quote_table(self.data_table.name)} CASCADE''')
+            conn.exec(f'''ALTER TABLE {conn.quote_table(tmp)} RENAME TO {data_name}''')
 
     def _select_data(self, request_id):
-        dt = self.data_schema + '.' + self.data_table
         d = {}
 
         with self.db.connect() as conn:
-            for r in conn.select(f'''SELECT * FROM {dt} WHERE request_id=%s''', [request_id]):
+            rs = conn.select(f'''
+                SELECT * 
+                FROM {conn.quote_table(self.data_table.name)} 
+                WHERE request_id=%s
+            ''', [request_id])
+
+            for r in rs:
                 f, v = r['field'], r['value']
                 if isinstance(v, int):
                     d[f] = d.get(f, 0) + v
