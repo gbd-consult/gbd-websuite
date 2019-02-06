@@ -50,6 +50,7 @@ module.exports = {
     modEditSidebarTitle: 'Editieren',
     modEditTitle: 'Editieren',
     modEditTooltip: 'Editieren',
+    modEditError: 'Die Daten konnten nicht gespeichert werden.',
     modFeatureNoTitle: 'Objekt',
     modIdentifyClickToolbarButton: 'Identifizieren',
     modIdentifyHoverToolbarButton: 'Kartenhinweise anzeigen',

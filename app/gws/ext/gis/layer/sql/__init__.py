@@ -57,7 +57,7 @@ class Object(gws.gis.layer.Vector):
         recs = []
 
         for f in features:
-            rec = f.attributes or {}
+            rec = _noempty(f.attributes)
             if gws.get(f, 'shape'):
                 rec[self.var('table').geometryColumn] = gws.gis.shape.from_props(f.shape)
             rec[self.var('table').keyColumn] = self._get_id(f)
@@ -70,7 +70,7 @@ class Object(gws.gis.layer.Vector):
         recs = []
 
         for f in features:
-            rec = f.attributes or {}
+            rec = _noempty(f.attributes)
             if gws.get(f, 'shape'):
                 rec[self.var('table').geometryColumn] = gws.gis.shape.from_props(f.shape)
             recs.append(rec)
@@ -111,3 +111,9 @@ class Object(gws.gis.layer.Vector):
 
     def _get_id(self, f):
         return f.uid.split('_')[1]
+
+
+def _noempty(d):
+    if not d:
+        return {}
+    return {k: v for k, v in d.items() if v != ''}

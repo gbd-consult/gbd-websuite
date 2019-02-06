@@ -10,6 +10,11 @@ module.exports = v => ({
     '.uiError': {
         color: v.ERROR_COLOR,
         lineHeight: 1.3,
+        transition: 'opacity 2s ease-out',
+    },
+
+    '.uiError.isHidden': {
+        opacity: 0,
     },
 
     '.uiErrorLongText': {

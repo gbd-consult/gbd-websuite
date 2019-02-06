@@ -23,6 +23,7 @@ interface EditViewProps extends gws.types.ViewProps {
     editUpdateCount: number;
     editFeature: gws.types.IMapFeature;
     editData: Array<gws.components.sheet.Attribute>;
+    editError: boolean;
     mapUpdateCount: number;
     appActiveTool: string;
 }
@@ -32,6 +33,7 @@ const EditStoreKeys = [
     'editUpdateCount',
     'editFeature',
     'editData',
+    'editError',
     'mapUpdateCount',
     'appActiveTool',
 ];
@@ -184,6 +186,11 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                             />
                         </Cell>
                     </Row>
+                    {this.props.editError && <Row>
+                        <Cell flex>
+                            <gws.ui.Error fade text={this.__('modEditError')}/>
+                        </Cell>
+                    </Row>}
                 </Form>
             </sidebar.TabBody>
 
@@ -326,11 +333,18 @@ class EditController extends gws.Controller {
             shape: f.shape
         };
 
+        this.update({editError: false});
+
         let res = await this.app.server.editUpdateFeatures({
             projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [props]
         });
+
+        if (res.error) {
+            this.update({editError: true});
+            return;
+        }
 
         let fs = this.map.readFeatures(res.features);
         this.layer.addFeatures(fs);
@@ -344,12 +358,19 @@ class EditController extends gws.Controller {
             shape: f.shape
         };
 
+        this.update({editError: false});
+
         let res = await this.app.server.editAddFeatures({
             projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [props]
 
         });
+
+        if (res.error) {
+            this.update({editError: true});
+            return;
+        }
 
         let fs = this.map.readFeatures(res.features);
         this.layer.addFeatures(fs);
@@ -372,8 +393,6 @@ class EditController extends gws.Controller {
         }
 
     }
-
-
 
     tool = '';
 
