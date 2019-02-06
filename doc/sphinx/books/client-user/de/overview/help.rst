@@ -31,7 +31,7 @@ Symbol				               Funktion
 |info|				Objektidentifikation
 |print|				Drucken
 |mouse|				Kartenhinweis anzeigen
-|continue|			weiter 
+|continue|			weiter
 |back|				zurück
 |delete|			löschen
 |back1|				Untermenü schließen
@@ -49,7 +49,8 @@ Symbol				               Funktion
 ==========================   ==============================
 |menu|				Menü ausklappen
 |cancel|			Menü einklappen
-|layers|			Layer
+|uebersicht|			Projektübersicht
+|layers|			Layerübersicht
 |showother| 			Unterlayer aufklappen
 |showlayer|			Layer anzeigen
 |hidelayer| 			Layer ausschalten
@@ -120,7 +121,7 @@ Symbol				               Funktion
    :width: 30em
  .. |showother| image:: ../../../images/baseline-chevron_right-24px.svg
    :width: 30em
- .. |alkis| image:: ../../../images/baseline-searchingbuilding-24px.svg
+ .. |alkis| image:: ../../../images/sharp-business-24px.svg
    :width: 30em
  .. |authorization| image:: ../../../images/baseline-person-24px.svg
    :width: 30em
@@ -131,6 +132,8 @@ Symbol				               Funktion
  .. |cancel| image:: ../../../images/baseline-close-24px.svg
    :width: 30em
  .. |zoom_layer| image:: ../../../images/baseline-zoom_out_map-24px.svg
+   :width: 30em
+ .. |uebersicht| image:: ../../../images/map-24px.svg
    :width: 30em
 
 
@@ -149,5 +152,3 @@ Symbol				               Funktion
       :width: 10em
  .. |xy| image:: ../../../images/xy.png
       :width: 7em
-
-
