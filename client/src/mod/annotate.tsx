@@ -627,9 +627,8 @@ class AnnotateController extends gws.Controller {
     }
 
     clear() {
-        if (this.layer)
-            this.map.removeLayer(this.layer);
-        this.layer = null;
+        this.app.stopTool('Tool.Annotate.*');
+        this.layer.clear();
     }
 
     newFeature(shapeType, oFeature?: ol.Feature) {
