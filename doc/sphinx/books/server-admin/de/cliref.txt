@@ -69,7 +69,7 @@ auth clear
 ~~~~~~~~~~
 
 
-Logo ut all users and remove all active sessions
+Logout all users and remove all active sessions
 
 .. _server_admin_de_cliref_auth_passwd:
 
@@ -86,6 +86,15 @@ auth test
 
 
 Interaktives Testen einer Anmeldung.
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--login``~, ~login~
+   ~``--password``~, ~password~
 
 .. _server_admin_de_cliref_cache_drop:
 
@@ -200,6 +209,38 @@ Run a configuration file test
    :widths: auto
 
    ~``--path``~, ~configuration file path~
+
+.. _server_admin_de_cliref_dprocon_create-index:
+
+dprocon create-index
+~~~~~~~~~~~~~~~~~~~~
+
+
+Create Dprocon index tables
+
+.. _server_admin_de_cliref_dprocon_setup:
+
+dprocon setup
+~~~~~~~~~~~~~
+
+
+Initialize Dprocon helper tables
+
+.. _server_admin_de_cliref_gekos_load:
+
+gekos load
+~~~~~~~~~~
+
+
+Load the data from Gekos-Online into a postgis table
+
+*Optionen:*
+
+.. csv-table::
+   :quote: ~
+   :widths: auto
+
+   ~``--project``~, ~project unique ID~
 
 .. _server_admin_de_cliref_ows_caps:
 
