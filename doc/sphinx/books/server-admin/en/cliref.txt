@@ -210,21 +210,13 @@ Run a configuration file test
 
    ~``--path``~, ~configuration file path~
 
-.. _server_admin_en_cliref_dprocon_create-index:
-
-dprocon create-index
-~~~~~~~~~~~~~~~~~~~~
-
-
-Create Dprocon index tables
-
 .. _server_admin_en_cliref_dprocon_setup:
 
 dprocon setup
 ~~~~~~~~~~~~~
 
 
-Initialize Dprocon helper tables
+Create Dprocon index tables
 
 .. _server_admin_en_cliref_gekos_load:
 

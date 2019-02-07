@@ -182,13 +182,13 @@ dprocon action
    ~*alkisSchema*~, ~``str``~, ~schema where ALKIS tables are stored, must be readable~, ~no~, ~"public"~
    ~*cacheTime*~, ~``duration``~, ~~, ~no~, ~"24h"~
    ~*crs*~, ~``crsref``~, ~~, ~no~, ~~
-   ~*dataTable*~, ~``str``~, ~~, ~yes~, ~~
+   ~*dataTable*~, ~:ref:`server_admin_en_configref_gws_types_SqlTableConfig`~, ~table to store consolidated results~, ~yes~, ~~
+   ~*dataTablePattern*~, ~``str``~, ~pattern for result tables to consolidate~, ~yes~, ~~
    ~*db*~, ~``str``~, ~~, ~no~, ~~
    ~*indexSchema*~, ~``str``~, ~schema to store gws internal indexes, must be writable~, ~no~, ~"gws"~
-   ~*requestTable*~, ~``str``~, ~~, ~yes~, ~~
+   ~*infoTitle*~, ~``str``~, ~~, ~no~, ~~
+   ~*requestTable*~, ~:ref:`server_admin_en_configref_gws_types_SqlTableConfig`~, ~table to store outgoing requests~, ~yes~, ~~
    ~*requestUrl*~, ~``url``~, ~~, ~yes~, ~~
-   ~*schema*~, ~``str``~, ~~, ~yes~, ~~
-   ~*title*~, ~``str``~, ~~, ~no~, ~~
    ~*type*~, ~``str``~, ~"dprocon"~, ~yes~, ~~
 
 .. _server_admin_en_configref_gws_ext_action_edit_Config:
