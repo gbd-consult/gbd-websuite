@@ -5,16 +5,16 @@ Das **Messentool** kann über das Icon |distance| in der Werkzeugleiste aktivier
 
 
 **Distanz-** |distance|,
-**Flächenmessung** |area|
-und **Kreis messen** |measurecircle|
+**Fläche messung** |area|
+und **Kreisfläche messen** |measurecircle|
 
 
-Bei der **Distanzmessung** wird mit der rechte Maustaste auf die Karte ein Startpunkt gesetzt und mit jedem weiteren Klick wird ein Punkt gesetzt. Mit einem Doppelklick wird der Endpunkt gesetzt und die Länge der Strecke angezeigt. Des weiteren kann man auch über die Symbole unten rechts bestätigen |savedraw|
+Bei der **Distanzmessung** wird mit der rechten Maustaste auf die Karte ein Startpunkt gesetzt und mit jedem weiteren Klick wird ein Punkt gesetzt. Mit einem Doppelklick wird der Endpunkt gesetzt und die Länge der Strecke angezeigt. Des weiteren kann man auch über die Symbole unten rechts bestätigen |savedraw|
 oder abbrechen |canceldraw|
-. Mit dem |delete| Symbol kann man die erstellte Linie wieder löschen und
-|back1| das Menü verlassen. 
+. Mit dem |delete| Symbol kann man die erstellte Linie wieder löschen und mit
+|back1| das Menü verlassen.
 
-Bei einer **Flächenberechnung** wird bei einem Mausklick ein Punkt erzeugt, dieser ergibt nach mindestens drei Punkten eine Fläche. Die Fläche kann soviele Punkte haben wie gewünscht. Mit einem Doppelklick wird die Berechnung gestoppt und die Gesamtflächengröße angezeigt, sowie mit einem Klick auf dieses Symbol |savedraw|. 
+Bei der **Flächenberechnung** wird bei einem Mausklick ein Punkt erzeugt. Dieser ergibt nach mindestens drei Punkten eine Fläche. Die Fläche kann so viele Punkte haben wie gewünscht. Mit einem Doppelklick wird die Berechnung gestoppt und die Gesamtflächengröße angezeigt, sowie mit einem Klick auf dieses Symbol |savedraw|.
 
 Bei einer **Kreisberechnung** wird zuerst ein Punkt mit einem Klick in die Karte gesetzt, dies ist der Kreismittelpunkt, mit einem zweiten Klick um den Kreis, wird der Radius festgelegt. Es wird nun ein Kreis und der Radius wird in Meter angezeigt. Der Radius kann noch nachträglich verändert werden, mit einem ziehen auf die äußere Linie.
 

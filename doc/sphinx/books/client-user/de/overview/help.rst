@@ -27,7 +27,7 @@ Symbol				               Funktion
 |canceldraw|			Abbrechen
 |distance| 			Linien messen
 |area|				Flächen messen
-|measure_circle| 		Kreises messen
+|measure_circle| 		Kreisflächen messen
 |info|				Objektidentifikation
 |print|				Drucken
 |mouse|				Kartenhinweis anzeigen
@@ -39,8 +39,8 @@ Symbol				               Funktion
 
 .. note:: Mehr über die einzelnen Funktionen finden sie unter: :doc:`Werkzeugleiste <../toolbox/mapfunction>`
 
-Menü
-####
+Menüleiste
+##########
 
 .. _table_attribute_2:
 
@@ -52,15 +52,17 @@ Symbol				               Funktion
 |uebersicht|			Projektübersicht
 |layers|			Layerübersicht
 |showother| 			Unterlayer aufklappen
+|showless| 			Unterlayer zuklappen
 |showlayer|			Layer anzeigen
 |hidelayer| 			Layer ausschalten
-|authorization|			Anmelden
+|zoom_layer| 			Zoom auf gesamten Layer
+|messen| 			    Messen & Finden
 |search|			Suche
 |alkis|				Flurstückssuche
-|zoom_layer| 			Zoom auf gesamten Layer
+|authorization|			Anmelden
 ==========================   ==============================
 
-.. note:: Mehr über die einzelnen Funktionen finden sie unter: :doc:`Menü <../menu/menu>`
+.. note:: Mehr über die einzelnen Funktionen finden sie unter: :doc:`Menüleiste <../menu/menu>`
 
 Statusleiste
 ############
@@ -134,6 +136,10 @@ Symbol				               Funktion
  .. |zoom_layer| image:: ../../../images/baseline-zoom_out_map-24px.svg
    :width: 30em
  .. |uebersicht| image:: ../../../images/map-24px.svg
+   :width: 30em
+ .. |messen| image:: ../../../images/baseline-straighten-24px.svg
+   :width: 30em
+ .. |showless| image:: ../../../images/baseline-expand_more-24px.svg
    :width: 30em
 
 

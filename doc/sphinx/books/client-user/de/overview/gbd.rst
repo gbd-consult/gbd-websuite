@@ -1,9 +1,9 @@
-Geoinformatikbüro Dassau GmbH  
+Geoinformatikbüro Dassau GmbH
 ==============================
 
-Die **Geoinformatikbüro Dassau GmbH** ist seit mehr als 10 Jahren an der Entwicklung von Open Source Software beteiligt. Wir setzen diese erfolgreich in GIS- und WebGIS-Projekten sowie Geodateninfrastrukturen (GDI) in Deutschland und darüber hinaus bei unseren Kunden ein.
+Die **Geoinformatikbüro Dassau GmbH** ist seit mehr als 10 Jahren an der Entwicklung von Open Source Software beteiligt. Wir setzen diese Erfahrung erfolgreich in GIS- und WebGIS-Projekten, sowie in Geodateninfrastrukturen (GDI) in Deutschland und darüber hinaus, bei unseren Kunden ein.
 
-Auf Basis unserer Expertise bieten wir umfassende Unterstützung in den Bereichen:
+Auf Basis unserer Expertise bieten wir umfassende Unterstützung in den folgenden Bereichen an:
 
 * Beratung und Konzeption
 * Schulung und Workshop
@@ -11,7 +11,7 @@ Auf Basis unserer Expertise bieten wir umfassende Unterstützung in den Bereiche
 * Softwaredesign und -entwicklung
 * Wartung und Support
 
-Unsere Kernkompetenz liegt auf der Software QGIS Desktop, QGIS Server, QGIS Web Client, GRASS GIS und PostgreSQL/POSTGIS und der von uns entwickelten GBD WebSuite.
+Unsere Kernkompetenz liegt im Umgang mit der Software QGIS Desktop, QGIS Server, QGIS Web Client, GRASS GIS und PostgreSQL/POSTGIS und der von uns entwickelten GBD WebSuite.
 
 
  .. _figure_GBD:
@@ -23,6 +23,5 @@ Unsere Kernkompetenz liegt auf der Software QGIS Desktop, QGIS Server, QGIS Web 
    :align: center
 
 
-Weitere Information über das Unternehmen finden Sie auf der : 
+Weitere Information über das Unternehmen finden Sie auf der
 `GBD Homepage <https://www.gbd-consult.de/home>`_.
-
