@@ -52,7 +52,7 @@ module.exports = {
     modEditTooltip: 'Editieren',
     modEditError: 'Die Daten konnten nicht gespeichert werden.',
     modFeatureNoTitle: 'Objekt',
-    modIdentifyClickToolbarButton: 'Anzeigen',
+    modIdentifyClickToolbarButton: 'Abfragen',
     modIdentifyHoverToolbarButton: 'Anzeigen',
     modInfobarAboutTitle: 'Über...',
     modInfobarHelpTitle: 'Hilfe',
