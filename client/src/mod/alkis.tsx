@@ -20,13 +20,13 @@ const STRINGS = {
     formTitle: 'Flurstückssuche',
     infoTitle: "Informationen",
     selectionTitle: "Ablage",
-    exportTitle: "Export",
+    exportTitle: "Export CSV",
 
     gotoForm: 'Suche',
     gotoList: 'Ergebnisse',
     gotoSelection: 'Ablage',
 
-    print: 'Ausdrucken',
+    print: 'Ducken',
     highlight: 'Auf der Karte zeigen',
     selectAll: 'Alle zur Ablage',
     unselect: 'Abwählen',
@@ -45,7 +45,7 @@ const STRINGS = {
     noSelection: 'Die Ablage ist leer',
 
     errorGeneric: 'Es ist ein Fehler aufgetreten.',
-    errorControl: 'Validierung fehlgeschlagen.  Bitte überprüfen Sie Ihre Angaben.',
+    errorControl: 'Validierung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben.',
 
     vorname: "Vorname",
     nachname: "Nachname",
