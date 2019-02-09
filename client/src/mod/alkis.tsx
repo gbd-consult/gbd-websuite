@@ -1,4 +1,6 @@
 import * as React from 'react';
+import * as ol from 'openlayers';
+
 import * as gws from 'gws';
 
 import * as sidebar from './common/sidebar';
@@ -62,6 +64,7 @@ const STRINGS = {
 
     submitButton: "Suchen",
     lensButton: "Räumliche Suche",
+    pickButton: "Flurstücke direkt auswählen",
     selectionSearchButton: "in der Auswahl Suchen",
     resetButton: "Neu",
     exportButton: "Exportieren",
@@ -81,14 +84,6 @@ const EXPORT_GROUPS = [
     ['eigentuemer', 'Eigentümer'],
     ['nutzung', 'Nutzung'],
 ];
-
-const URL_PARAMS = {
-    'alkisGemarkung': 'gemarkungUid',
-    'alkisFlurnummer': 'flurnummer',
-    'alkisZaehler': 'zaehler',
-    'alkisNenner': 'nenner',
-    'alkisFlurstuecksfolge': 'flurstuecksfolge',
-};
 
 type AlkisAlkisTabName = 'form' | 'list' | 'details' | 'error' | 'selection' | 'export';
 
@@ -480,7 +475,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                 <Cell flex/>
                 <Cell>
                     <gws.ui.IconButton
-                        {...gws.tools.cls('modAlkisSearchSubmitButton', this.props.appActiveTool !== 'Tool.Alkis.Lens' && 'isActive')}
+                        {...gws.tools.cls('modAlkisSearchSubmitButton')}
                         tooltip={STRINGS.submitButton}
                         whenTouched={() => master.formSearch()}
                     />
@@ -497,6 +492,13 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                         {...gws.tools.cls('modAlkisSearchLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
                         tooltip={STRINGS.lensButton}
                         whenTouched={() => master.startLens()}
+                    />
+                </Cell>
+                <Cell>
+                    <gws.ui.IconButton
+                        {...gws.tools.cls('modAlkisPickButton', this.props.appActiveTool === 'Tool.Alkis.Pick' && 'isActive')}
+                        tooltip={STRINGS.pickButton}
+                        whenTouched={() => master.startPick()}
                     />
                 </Cell>
                 <Cell>
@@ -803,6 +805,20 @@ class AlkisLensTool extends lens.Tool {
     }
 }
 
+class AlkisPickTool extends gws.Controller implements gws.types.ITool {
+    start() {
+        this.map.setExtraInteractions([
+            this.map.pointerInteraction({
+                whenTouched: evt => _master(this).pickTouched(evt.coordinate),
+            }),
+        ]);
+    }
+
+    stop() {
+
+    }
+}
+
 class AlkisSelectDialog extends gws.View<AlkisViewProps> {
 
     render() {
@@ -886,6 +902,7 @@ class AlkisController extends gws.Controller {
         }
 
         await this.app.addTool('Tool.Alkis.Lens', this.app.createController(AlkisLensTool, this));
+        await this.app.addTool('Tool.Alkis.Pick', this.app.createController(AlkisPickTool, this));
 
         this.setup = res;
         this.history = [];
@@ -971,7 +988,7 @@ class AlkisController extends gws.Controller {
     }
 
     formSearch() {
-        this.stopLens();
+        this.stopTools();
         this.search();
     }
 
@@ -979,8 +996,40 @@ class AlkisController extends gws.Controller {
         this.app.startTool('Tool.Alkis.Lens');
     }
 
-    stopLens() {
-        this.app.stopTool('Tool.Alkis.Lens');
+    stopTools() {
+        this.app.stopTool('Tool.Alkis.*');
+    }
+
+    startPick() {
+        this.app.startTool('Tool.Alkis.Pick');
+    }
+
+    async pickTouched(coord: ol.Coordinate) {
+        let pt = new ol.geom.Point(coord);
+
+
+        let res = await this.app.server.alkisFsSearch({
+            shapes: [this.map.geom2shape(pt)],
+            projectUid: this.app.project.uid
+        });
+
+        if (res.error) {
+            return;
+        }
+
+        let features = this.map.readFeatures(res.features);
+
+        this.update({
+            marker: {
+                features,
+                mode: 'draw fade',
+            }
+        });
+
+        this.select(features);
+
+        this.goTo('selection');
+
     }
 
     async search(params?: object) {
@@ -1050,38 +1099,6 @@ class AlkisController extends gws.Controller {
                 });
 
         }
-
-        // let params = {};
-        //
-        // gws.tools.entries(this.app.urlParams).forEach(e => {
-        //     let k = URL_PARAMS[e[0]];
-        //     if (k)
-        //         params[k] = e[1];
-        // });
-        //
-        // if (gws.tools.empty(params))
-        //     return false;
-        //
-        // let res = await this.app.server.alkisFsSearch({
-        //     ...params,
-        //     projectUid: this.app.project.uid
-        // });
-        //
-        // if (res.error) {
-        //     return false;
-        // }
-        //
-        // let features = this.map.readFeatures(res.features);
-        //
-        // console.log('urlSearch', params, features.length)
-        //
-        // if (features.length > 0)
-        //     this.update({
-        //         marker: {
-        //             features: [features[0]],
-        //             mode: 'draw zoom',
-        //         }
-        //     });
     }
 
     paramsForFeatures(fs: Array<gws.types.IMapFeature>) {
@@ -1263,7 +1280,7 @@ class AlkisController extends gws.Controller {
             alkisFsParams: {},
         });
         this.clearResults();
-        this.stopLens();
+        this.stopTools();
     }
 
     async startExport(fs: Array<gws.types.IMapFeature>) {
