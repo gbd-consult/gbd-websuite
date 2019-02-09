@@ -182,32 +182,16 @@ v.ZOOM_ICON = 'google:image/center_focus_weak';
 v.SEARCH_ICON = 'google:action/search';
 
 
-v.FORM_BUTTON_BACKGROUND = v.COLOR.blueGrey200;
-v.FORM_PRIMARY_BUTTON_BACKGROUND = v.FOCUS_COLOR;
-v.FORM_BUTTON_COLOR = v.COLOR.white;
 
-
-v.ROUND_FORM_BUTTON = img => ({
-    ...v.SVG(img, v.FORM_BUTTON_COLOR),
-    backgroundColor: v.FORM_BUTTON_BACKGROUND,
+v.FORM_BUTTON = (img, primary = false) => ({
+    ...v.SVG(img, v.COLOR.white),
+    backgroundColor: primary ? v.FOCUS_COLOR : v.COLOR.blueGrey200,
     borderRadius: v.BORDER_RADIUS,
     '&.isActive': {
-        backgroundColor: v.FORM_PRIMARY_BUTTON_BACKGROUND,
+        backgroundColor: v.FOCUS_COLOR,
     }
 });
 
-
-v.ROUND_OK_BUTTON = (icon) => ({
-    ...v.SVG(icon || 'google:navigation/check', v.PRIMARY_COLOR),
-    backgroundColor: v.PRIMARY_BACKGROUND,
-    borderRadius: v.BORDER_RADIUS,
-});
-
-v.ROUND_CLOSE_BUTTON = (icon) => ({
-    ...v.SVG(icon || 'google:navigation/close', v.CANCEL_COLOR),
-    backgroundColor: v.CANCEL_BACKGROUND,
-    borderRadius: v.BORDER_RADIUS,
-})
 
 v.IMAGE = (path) =>
     helpers.dataUrl(`src/css/themes/light/img/${path}`);

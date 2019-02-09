@@ -4,18 +4,22 @@ module.exports = v => ({
     },
 
     '.modAlkisSearchSubmitButton': {
-        ...v.ROUND_FORM_BUTTON(v.SEARCH_ICON)
+        ...v.FORM_BUTTON(v.SEARCH_ICON)
     },
 
     '.modAlkisSearchLensButton': {
-        ...v.ROUND_FORM_BUTTON('search_lens')
+        ...v.FORM_BUTTON('search_lens')
+    },
+
+    '.modAlkisPickButton': {
+        ...v.FORM_BUTTON('select')
     },
 
     '.modAlkisSearchSelectionButton': {
-        ...v.ROUND_FORM_BUTTON('search_selection')
+        ...v.FORM_BUTTON('search_selection')
     },
     '.modAlkisSearchCancelButton': {
-        ...v.ROUND_FORM_BUTTON(v.CLOSE_ICON)
+        ...v.FORM_BUTTON(v.CLOSE_ICON)
     },
 
 

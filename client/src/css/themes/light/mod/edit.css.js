@@ -23,10 +23,10 @@ module.exports = v => ({
         ...v.SVG('google:action/done')
     },
     '.modEditSaveButton': {
-        ...v.ROUND_OK_BUTTON(),
+        ...v.FORM_BUTTON(v.CHECK_ICON, true),
     },
     '.modEditCancelButton': {
-        ...v.ROUND_CLOSE_BUTTON(),
+        ...v.FORM_BUTTON(v.CLOSE_ICON),
     },
 
 });
