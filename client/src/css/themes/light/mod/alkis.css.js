@@ -11,6 +11,10 @@ module.exports = v => ({
         ...v.ROUND_FORM_BUTTON('search_lens')
     },
 
+    '.modAlkisPickButton': {
+        ...v.ROUND_FORM_BUTTON('select')
+    },
+
     '.modAlkisSearchSelectionButton': {
         ...v.ROUND_FORM_BUTTON('search_selection')
     },
@@ -50,12 +54,31 @@ module.exports = v => ({
     '.modAlkisLoadAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:file/folder_open')},
     '.modAlkisSaveAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/save')},
 
-    '.uiIconButton.modAlkisSelectListButton': {
+    '.modAlkisSelectListButton.uiIconButton': {
         ...v.LIST_BUTTON('google:content/add_circle_outline')
     },
 
-    '.uiIconButton.modAlkisUnselectListButton': {
+    '.modAlkisUnselectListButton.uiIconButton': {
         ...v.LIST_BUTTON('google:content/remove_circle_outline')
     },
 
+    '.modAlkisSelectFeature': {
+        stroke: v.COLOR.cyan100,
+        strokeWidth: 3,
+        strokeDasharray: "5,5",
+
+        fill: v.COLOR.opacity(v.COLOR.cyan600, 0.5),
+
+        mark: 'circle',
+        markFill: v.COLOR.cyan300,
+        markSize: 15,
+        markStroke: v.COLOR.cyan600,
+        markStrokeWidth: 5,
+
+        markApply: 'point,line',
+
+    },
+    
+    
+    
 });

@@ -56,7 +56,7 @@ module.exports = v => ({
         position: 'absolute',
         right: 0,
         top: 0,
-        ...v.ICON('medium'),
+        ...v.ICON_SIZE('medium'),
         ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
     },
 
@@ -91,7 +91,7 @@ module.exports = v => ({
         position: 'absolute',
         right: v.UNIT2,
         top: v.UNIT2,
-        ...v.ICON('small'),
+        ...v.ICON_SIZE('small'),
         ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
     },
 

@@ -10,7 +10,7 @@ module.exports = v => ({
             fontSize: v.SMALL_FONT_SIZE,
         },
         '.uiIconButton': {
-            ...v.ICON('small')
+            ...v.ICON_SIZE('small')
         },
 
     },

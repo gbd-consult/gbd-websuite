@@ -99,7 +99,7 @@ module.exports = v => ({
         paddingRight: v.UNIT2,
 
         '.uiIconButton': {
-            ...v.ICON('small'),
+            ...v.ICON_SIZE('small'),
         },
         '.modSidebarAuxCloseButton': {
             ...v.SIDEBAR_AUX_BUTTON(v.CLOSE_ICON),

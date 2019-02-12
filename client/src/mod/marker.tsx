@@ -20,24 +20,11 @@ class MarkerLayer extends gws.map.layer.FeatureLayer {
 }
 
 class MarkerController extends gws.Controller {
-    layer: MarkerLayer = null;
-    styles: {[t in ol.geom.GeometryType]: gws.types.IMapStyle} = null;
+    layer: MarkerLayer;
+    style: gws.types.IMapStyle;
 
     async init() {
-        let sh = this.map.getStyleFromSelector('.modMarkerShape'),
-            pt = this.map.getStyleFromSelector('.modMarkerPoint');
-
-        this.styles = {
-            "Point": pt,
-            "LineString": sh,
-            "LinearRing": sh,
-            "Polygon": sh,
-            "MultiPoint": pt,
-            "MultiLineString": sh,
-            "MultiPolygon": sh,
-            "GeometryCollection": sh,
-            "Circle": sh
-        };
+        this.style = this.map.getStyleFromSelector('.modMarkerFeature');
 
         this.app.whenChanged('marker', content => this.show(content));
 
@@ -140,7 +127,7 @@ class MarkerController extends gws.Controller {
 
         if(g) {
             args.geometry = g;
-            args.style = this.styles[g.getType()];
+            args.style = this.style;
         };
 
         return new gws.map.Feature(this.map, args);

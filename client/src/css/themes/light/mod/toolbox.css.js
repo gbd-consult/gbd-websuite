@@ -53,7 +53,7 @@ module.exports = v => ({
 
     '.modToolboxContentFooter': {
         '.uiIconButton': {
-            ...v.ICON('medium'),
+            ...v.ICON_SIZE('medium'),
 
         }
     },

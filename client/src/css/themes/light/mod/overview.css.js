@@ -28,7 +28,7 @@ module.exports = v => ({
 
 
     '.modOverviewUpdateButton': {
-        ...v.ICON(),
+        ...v.ICON_SIZE(),
         backgroundColor: v.PRIMARY_BACKGROUND,
         borderRadius: v.BORDER_RADIUS,
         ...v.SVG('google:navigation/check', v.PRIMARY_COLOR)

@@ -23,7 +23,7 @@ module.exports = v => ({
     '.cmpInfoboxFooter': {
         padding: [0, v.UNIT4, 0, v.UNIT4],
         '.uiIconButton': {
-            ...v.ICON('small'),
+            ...v.ICON_SIZE('small'),
         }
     },
 

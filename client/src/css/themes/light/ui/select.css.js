@@ -31,7 +31,8 @@ module.exports = v => ({
     },
 
     '.uiSelect .uiSelectToggleButton': {
-        ...v.ICON('small'),
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('small'),
         ...v.SVG('google:navigation/chevron_right', v.BORDER_COLOR),
         ...v.TRANSITION(),
         transform: 'rotate(90deg)',

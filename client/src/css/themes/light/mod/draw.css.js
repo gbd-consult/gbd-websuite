@@ -17,7 +17,7 @@ module.exports = v => {
             ...v.TRANSITION('top'),
 
             '.uiIconButton': {
-                ...v.ICON('medium')
+                ...v.ICON_SIZE('medium')
             },
 
             '.cmpButtonFormOk': {

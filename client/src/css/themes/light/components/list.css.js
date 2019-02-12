@@ -7,7 +7,7 @@ module.exports = v => ({
 
     '.cmpListButton': {
         '.uiIconButton': {
-            ...v.ICON('small'),
+            ...v.ICON_SIZE('small'),
         }
     },
 

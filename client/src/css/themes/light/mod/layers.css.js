@@ -21,7 +21,7 @@ module.exports = v => ({
 
         '.uiIconButton': {
             opacity: 0.6,
-            ...v.ICON('small'),
+            ...v.ICON_SIZE('small'),
             ...v.TRANSITION(),
         },
 

@@ -44,7 +44,9 @@ class LoaderView extends gws.View<LoaderProps> {
 
         return <div {...gws.tools.cls('modInfobarWidget', 'modInfobarLoader', rc && 'isActive')}>
             <Row>
-                <Cell className='modInfobarLoaderIcon'/>
+                <Cell>
+                    <gws.ui.IconButton  className='modInfobarLoaderIcon'/>
+                </Cell>
                 {rc > LOADER_PROGRESS_MIN && <Cell width={bars * 2}>
                     {gws.tools.range(bars).map(n => <div className='modInfobarLoaderBar' key={n}/>)}
                 </Cell>}

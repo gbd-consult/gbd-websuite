@@ -4,12 +4,12 @@ module.exports = v => ({
     },
 
     '.modSearchClearButton.uiIconButton': {
-        ...v.ICON('small'),
+        ...v.ICON_SIZE('small'),
         ...v.SVG(v.CLOSE_ICON, v.BORDER_COLOR),
     },
 
     '.modSearchWaitButton.uiIconButton': {
-        ...v.ICON('small'),
+        ...v.ICON_SIZE('small'),
         backgroundImage: v.IMAGE('ajax.gif'),
     },
 
@@ -19,8 +19,8 @@ module.exports = v => ({
         },
     },
 
-    '.modSearchIcon': {
-        ...v.ICON('normal'),
+    '.modSearchIcon.uiIconButton': {
+        ...v.ICON_SIZE('normal'),
         ...v.SVG(v.SEARCH_ICON, v.BORDER_COLOR),
     },
 

@@ -15,7 +15,7 @@ module.exports = v => ({
         position: 'absolute',
         left: '50%',
         top: '50%',
-        ...v.ICON('normal'),
+        ...v.ICON_SIZE('normal'),
         ...v.SVG('move', v.COLOR.white),
         borderRadius: v.BORDER_RADIUS,
         border: '3px solid white',

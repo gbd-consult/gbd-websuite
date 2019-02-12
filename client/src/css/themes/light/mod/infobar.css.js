@@ -58,7 +58,7 @@ module.exports = v => ({
 
 
         '.uiIconButton': {
-            ...v.ICON('medium'),
+            ...v.ICON_SIZE('medium'),
             opacity: 0.6,
             '&:hover': {
                 opacity: 1,
@@ -94,8 +94,8 @@ module.exports = v => ({
         width: 60,
     },
 
-    '.modInfobarLoaderIcon': {
-        ...v.ICON('small'),
+    '.modInfobarLoaderIcon.uiIconButton': {
+        ...v.ICON_SIZE('small'),
         backgroundImage: v.IMAGE('ajax.gif'),
     },
 

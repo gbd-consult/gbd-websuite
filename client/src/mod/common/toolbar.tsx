@@ -155,9 +155,6 @@ class ToolbarController extends gws.Controller {
 
     async init() {
         await super.init();
-        this.update({
-            toolbarSize: this.options.size || 3
-        });
         this.app.whenChanged('windowSize', () => this.update({
             toolbarOverflowExpanded: false
         }));

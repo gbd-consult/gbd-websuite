@@ -27,7 +27,7 @@ module.exports = v => ({
         borderRadius: v.UNIT8,
 
         'div': {
-            ...v.ICON('small'),
+            ...v.ICON_SIZE('small'),
             display: 'inline-block',
         }
     },

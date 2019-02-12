@@ -16,10 +16,17 @@ module.exports = v => ({
         stroke: v.COLOR.orange100,
         strokeWidth: 3,
         strokeDasharray: "5,5",
+
+        fill: v.COLOR.opacity(v.COLOR.orange600, 0.5),
+
         mark: 'circle',
         markFill: v.COLOR.orange300,
-        markSize: 10,
-        fill: v.COLOR.opacity(v.COLOR.orange500, 0.3),
+        markSize: 15,
+        markStroke: v.COLOR.orange600,
+        markStrokeWidth: 5,
+
+        markApply: 'point,line',
+
     },
 
     '.modSelectSaveAuxButton': {

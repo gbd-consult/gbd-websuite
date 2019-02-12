@@ -67,7 +67,9 @@ class SearchBox extends gws.View<SearchViewProps> {
     render() {
         return <div className="modSearchBox">
             <Row>
-                <Cell className='modSearchIcon'/>
+                <Cell>
+                    <gws.ui.IconButton className='modSearchIcon'/>
+                </Cell>
                 <Cell flex>
                     <gws.ui.TextInput
                         value={this.props.searchInput}

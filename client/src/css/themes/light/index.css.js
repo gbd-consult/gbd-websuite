@@ -25,7 +25,7 @@ v.CONTROL_SIZE = v.UNIT * 10;
 v.TEXT_COLOR = v.COLOR.blueGrey800;
 v.LIGHT_TEXT_COLOR = v.COLOR.blueGrey500;
 v.ICON_COLOR = v.COLOR.blueGrey600;
-v.PLACEHOLDER_COLOR = v.COLOR.blueGrey300;
+v.PLACEHOLDER_COLOR = v.COLOR.blueGrey100;
 v.BORDER_COLOR = v.COLOR.blueGrey100;
 v.DISABLED_COLOR = v.COLOR.blueGrey100;
 v.ERROR_COLOR = v.COLOR.red600;
@@ -63,7 +63,7 @@ v.TOOLBAR_ACTIVE_BUTTON_COLOR = v.COLOR.white;
 v.TOOLBAR_ACTIVE_BUTTON_BACKGROUND = v.COLOR.gbdBlue;
 
 v.TOOLBAR_BUTTON = img => ({
-    ...v.ICON('normal'),
+    ...v.ICON_SIZE('normal'),
     ...v.SVG(img, v.TOOLBAR_BUTTON_COLOR),
     backgroundColor: v.COLOR.opacity(v.TOOLBAR_BUTTON_BACKGROUND, 0.8),
     '&.isActive': {
@@ -75,13 +75,12 @@ v.TOOLBAR_BUTTON = img => ({
 });
 
 v.TOOLBOX_ICON = img => ({
-    ...v.ICON('normal'),
+    ...v.ICON_SIZE('normal'),
     ...v.SVG(img, v.COLOR.blueGrey400),
     //backgroundColor: v.COLOR.blueGrey50,
     // borderRadius: v.BORDER_RADIUS,
 
 });
-
 
 
 v.ALTBAR_WIDTH = v.UNIT * 50;
@@ -96,7 +95,7 @@ v.SIDEBAR_OPEN_BUTTON_BACKGROUND = v.TOOLBAR_BUTTON_BACKGROUND;
 v.SIDEBAR_OPEN_BUTTON_COLOR = v.TOOLBAR_BUTTON_COLOR;
 
 v.SIDEBAR_ICON = (img) => ({
-    ...v.ICON('normal'),
+    ...v.ICON_SIZE('normal'),
     ...v.SVG(img, v.SIDEBAR_HEADER_COLOR)
 });
 
@@ -167,9 +166,17 @@ let iconSize = {
     tiny: 14
 };
 
-v.ICON = (size = 'normal') => ({
+v.ICON_BUTTON = () => ({
+    width: v.CONTROL_SIZE,
+    height: v.CONTROL_SIZE,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center center',
+});
+
+v.ICON_SIZE = (size = 'normal') => ({
     backgroundSize: [iconSize[size], iconSize[size]],
 });
+
 
 v.SVG = (name, color = v.ICON_COLOR) => {
     let m = name.match(/^google:(.+)$/),
@@ -183,8 +190,10 @@ v.SVG = (name, color = v.ICON_COLOR) => {
 v.LIST_ITEM_COLOR = v.TEXT_COLOR;
 v.LIST_BUTTON_COLOR = v.FOCUS_COLOR;
 
-v.LIST_BUTTON = img => v.SVG(img, v.LIST_BUTTON_COLOR);
-
+v.LIST_BUTTON = img => ({
+    ...v.ICON_SIZE('small'),
+    ...v.SVG(img, v.LIST_BUTTON_COLOR)
+});
 
 
 v.CLOSE_ICON = 'google:navigation/close';
@@ -200,6 +209,7 @@ v.FORM_BUTTON_COLOR = v.COLOR.white;
 
 
 v.ROUND_FORM_BUTTON = img => ({
+    ...v.ICON_SIZE('normal'),
     ...v.SVG(img, v.FORM_BUTTON_COLOR),
     backgroundColor: v.FORM_BUTTON_BACKGROUND,
     borderRadius: v.BORDER_RADIUS,
