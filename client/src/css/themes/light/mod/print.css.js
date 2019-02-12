@@ -32,11 +32,11 @@ module.exports = v => ({
     },
 
     '.modPrintPreviewPrintButton': {
-        ...v.FORM_BUTTON('google:action/print', true),
+        ...v.ROUND_OK_BUTTON('google:action/print'),
     },
 
     '.modPrintPreviewSnapshotButton': {
-        ...v.FORM_BUTTON('google:image/crop_original', true),
+        ...v.ROUND_OK_BUTTON('google:image/crop_original'),
     },
 
     '.modPrintPreviewDialog': {

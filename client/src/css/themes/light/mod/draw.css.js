@@ -16,9 +16,9 @@ module.exports = v => {
             ...v.SHADOW,
             ...v.TRANSITION('top'),
 
-            // '.uiButton': {
-            //     ...v.ICON('medium')
-            // },
+            '.uiIconButton': {
+                ...v.ICON('medium')
+            },
 
             '.cmpButtonFormOk': {
                 marginLeft: v.UNIT4,

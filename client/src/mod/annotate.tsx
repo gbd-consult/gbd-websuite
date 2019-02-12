@@ -598,8 +598,6 @@ class AnnotateController extends gws.Controller {
     async init() {
         await super.init();
 
-        await this.app.addTool('Tool.Annotate.Modify', this.modifyTool = this.app.createController(AnnotateModifyTool, this));
-        await this.app.addTool('Tool.Annotate.Draw', this.app.createController(AnnotateDrawTool, this));
         this.layer = this.map.addServiceLayer(new AnnotateLayer(this.map, {
             uid: '_annotate',
         }));
@@ -742,5 +740,7 @@ export const tags = {
     [MASTER]: AnnotateController,
     'Sidebar.Annotate': AnnotateSidebar,
     'Toolbar.Annotate.Draw': AnnotateDrawToolbarButton,
+    'Tool.Annotate.Modify': AnnotateModifyTool,
+    'Tool.Annotate.Draw': AnnotateDrawTool,
 
 };

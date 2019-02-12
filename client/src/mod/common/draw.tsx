@@ -3,6 +3,8 @@ import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 
+import * as toolbox from '../common/toolbox';
+
 let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Draw';
@@ -33,8 +35,46 @@ const SHAPE_TYPES = [
     'Circle',
 ];
 
-export class Tool extends gws.Controller implements gws.types.ITool {
+export class Tool extends gws.Tool {
     style: gws.types.IMapStyle;
+
+    get toolboxView() {
+        let master = this.app.controller(MASTER) as DrawController;
+        let shapeType = this.getValue('drawCurrentShape') || DEFAULT_SHAPE_TYPE
+
+        let button = (type, cls, tooltip) => {
+            return <Cell>
+                <gws.ui.IconButton
+                    {...gws.tools.cls(cls, type === shapeType && 'isActive')}
+                    tooltip={tooltip}
+                    whenTouched={() => master.setShapeType(type)}
+                />
+            </Cell>
+        };
+
+        let buttons = [
+            master.shapeTypeEnabled('Point') && button('Point', 'modDrawPointButton', master.__('modDrawPointButton')),
+            master.shapeTypeEnabled('Line') && button('Line', 'modDrawLineButton', master.__('modDrawLineButton')),
+            master.shapeTypeEnabled('Box') && button('Box', 'modDrawBoxButton', master.__('modDrawBoxButton')),
+            master.shapeTypeEnabled('Polygon') && button('Polygon', 'modDrawPolygonButton', master.__('modDrawPolygonButton')),
+            master.shapeTypeEnabled('Circle') && button('Circle', 'modDrawCircleButton', master.__('modDrawCircleButton')),
+        ];
+
+        buttons.push(<gws.ui.IconButton
+                className="modToolboxCancelButton"
+                tooltip={this.__('modDrawCancelButton')}
+                whenTouched={() => master.cancel()}
+            />
+        );
+
+        return <toolbox.Content
+            controller={this}
+            iconClass="modIdentifyClickToolboxIcon"
+            title={this.__('modIdentifyClickToolboxTitle')}
+            hint={this.__('modIdentifyClickToolboxHint')}
+            buttons={buttons}
+        />
+    }
 
     start() {
         let master = this.app.controller(MASTER) as DrawController;

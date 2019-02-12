@@ -31,7 +31,10 @@ module.exports = v => ({
     },
 
     '.uiIconButton': {
-        ...v.ICON('normal'),
+        width: v.CONTROL_SIZE,
+        height: v.CONTROL_SIZE,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center center',
     },
     //
     // '.uiIconButton.isDisabled': {

@@ -9,7 +9,6 @@ const MASTER = 'Shared.Printer';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as PrintController;
 
-
 const JOB_POLL_INTERVAL = 2000;
 const DEFAULT_SNAPSHOT_SIZE = 300;
 
@@ -38,7 +37,7 @@ const PrintStoreKeys = [
     'printSnapshotHeight',
 ];
 
-class PrintTool extends gws.Controller implements gws.types.ITool {
+class PrintTool extends gws.Tool {
     start() {
         _master(this).startPrintPreview()
     }
@@ -48,7 +47,7 @@ class PrintTool extends gws.Controller implements gws.types.ITool {
     }
 }
 
-class SnapshotTool extends gws.Controller implements gws.types.ITool {
+class SnapshotTool extends gws.Tool {
     start() {
         _master(this).startSnapshotPreview()
     }
@@ -218,7 +217,7 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
                     <Cell>
                         <gws.ui.IconButton
                             className="cmpButtonFormCancel"
-                            whenTouched={() => this.props.controller.app.startTool('DefaultTool')}
+                            whenTouched={() => this.props.controller.app.startTool('Tool.Default')}
                             tooltip={this.__('modPrintCancel')}
                         />
                     </Cell>
@@ -385,9 +384,6 @@ class PrintController extends gws.Controller {
 
     async init() {
         await super.init();
-        await this.app.addTool('Tool.Print.Print', this.app.createController(PrintTool, this));
-        await this.app.addTool('Tool.Print.Snapshot', this.app.createController(SnapshotTool, this));
-
         this.app.whenChanged('printJob', job => this.jobUpdated(job));
     }
 
@@ -573,4 +569,6 @@ export const tags = {
     [MASTER]: PrintController,
     'Toolbar.Print': PrintPrintToolbarButton,
     'Toolbar.Snapshot': PrintSnapshotToolbarButton,
+    'Tool.Print.Print': PrintTool,
+    'Tool.Print.Snapshot': SnapshotTool,
 };

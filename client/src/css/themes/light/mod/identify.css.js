@@ -6,4 +6,12 @@ module.exports = v => ({
     '.modIdentifyHoverToolbarButton': {
         ...v.TOOLBAR_BUTTON('google:hardware/mouse')
     },
+
+    '.modIdentifyClickToolboxIcon': {
+        ...v.TOOLBOX_ICON('google:action/info')
+    },
+
+    '.modIdentifyHoverToolboxIcon': {
+        ...v.TOOLBOX_ICON('google:hardware/mouse')
+    },
 });

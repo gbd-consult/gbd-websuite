@@ -26,7 +26,7 @@ const GekosStoreKeys = [
     'gekosDialogActive',
 ];
 
-class GekosTool extends gws.Controller implements gws.types.ITool {
+class GekosTool extends gws.Tool {
     start() {
         this.map.setExtraInteractions([
             this.map.pointerInteraction({
@@ -105,8 +105,6 @@ class GekosDialog extends gws.View<GekosViewProps> {
 
 class GekosController extends gws.Controller {
     async init() {
-        await this.app.addTool('Tool.Gekos', this.app.createController(GekosTool, this));
-
         this.app.whenLoaded(() => {
             let url = this.app.urlParams[URL_PARAM_NAME];
 
@@ -150,10 +148,10 @@ class GekosToolbarButton extends toolbar.Button {
         return STRINGS.tooltip;
     }
 
-
 }
 
 export const tags = {
     'Shared.Gekos': GekosController,
     'Toolbar.Gekos': GekosToolbarButton,
+    'Tool.Gekos': GekosTool,
 };

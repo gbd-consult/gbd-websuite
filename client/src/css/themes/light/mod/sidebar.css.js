@@ -11,7 +11,7 @@ module.exports = v => ({
         flexDirection: 'column',
         zIndex: 3,
         ...v.SHADOW,
-        ...v.TRANSITION('left'),
+        ...v.TRANSITION('left', 'padding-bottom'),
     },
 
     '.modSidebarHeaderButton': {

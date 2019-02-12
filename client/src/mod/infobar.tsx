@@ -268,22 +268,22 @@ class AboutWidget extends LinkWidget {
     }
 }
 
-class LeftSide extends gws.Controller {
-
-    get defaultView() {
-        return <React.Fragment>
-            {this.renderChildren()}
-            <Cell flex/>
-        </React.Fragment>
-    }
-}
-
-class RightSide extends gws.Controller {
-
-    get defaultView() {
-        return this.renderChildren();
-    }
-}
+// class LeftSide extends gws.Controller {
+//
+//     get defaultView() {
+//         return <React.Fragment>
+//             {this.renderChildren()}
+//             <Cell flex/>
+//         </React.Fragment>
+//     }
+// }
+//
+// class RightSide extends gws.Controller {
+//
+//     get defaultView() {
+//         return this.renderChildren();
+//     }
+// }
 
 class InfobarController extends gws.Controller {
 
@@ -296,8 +296,8 @@ class InfobarController extends gws.Controller {
 
 export const tags = {
     'Infobar': InfobarController,
-    'Infobar.LeftSide': LeftSide,
-    'Infobar.RightSide': RightSide,
+    // 'Infobar.LeftSide': LeftSide,
+    // 'Infobar.RightSide': RightSide,
     'Infobar.Link': LinkWidget,
     'Infobar.Help': HelpWidget,
     'Infobar.About': AboutWidget,

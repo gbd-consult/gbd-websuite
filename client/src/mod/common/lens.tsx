@@ -1,11 +1,11 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 
 import * as draw from '../common/draw';
 import * as toolbar from '../common/toolbar';
+import * as toolbox from '../common/toolbox';
 
 const MASTER = 'Shared.Lens';
 
@@ -18,7 +18,24 @@ class LensLayer extends gws.map.layer.FeatureLayer {
 
 }
 
-export class Tool extends gws.Controller implements gws.types.ITool {
+export class LensTool extends gws.Tool {
+
+    get toolboxView() {
+        return <toolbox.Content
+            controller={this}
+            iconClass="modIdentifyClickToolboxIcon"
+            title={this.__('modIdentifyClickToolboxTitle')}
+            hint={this.__('modIdentifyClickToolboxHint')}
+            buttons={[
+                <gws.ui.IconButton
+                    className="modToolboxCancelButton"
+                    tooltip={this.__('modDrawCancelButton')}
+                    whenTouched={() => _master(this).overlayDrawTouched(null)}
+                />,
+
+            ]}
+        />
+    }
 
     get style() {
         return this.map.getStyleFromSelector('.modLensFeature');
@@ -29,7 +46,7 @@ export class Tool extends gws.Controller implements gws.types.ITool {
     }
 
     start() {
-        _master(this).start(this);
+        _master(this).start(this.tag);
     }
 
     stop() {
@@ -59,7 +76,7 @@ export class Tool extends gws.Controller implements gws.types.ITool {
 
 }
 
-class DrawTool extends draw.Tool {
+class LensDrawTool extends draw.Tool {
     whenStarted(shapeType, oFeature) {
     }
 
@@ -87,9 +104,7 @@ class LensToolbarButton extends toolbar.Button {
 class LensController extends gws.Controller implements gws.types.IController {
     uid = MASTER;
 
-    currTool: Tool;
-    drawTool: DrawTool;
-    toolName: string;
+    toolTag: string;
     layer: LensLayer;
     oOverlay: ol.Overlay;
     overlayRef: React.RefObject<HTMLDivElement>;
@@ -99,13 +114,14 @@ class LensController extends gws.Controller implements gws.types.IController {
             return null;
         let fs = this.layer.features;
         return fs.length ? fs[0] : null;
+    }
 
+    get tool(): LensTool {
+        return this.app.tool(this.toolTag) as LensTool;
     }
 
     async init() {
         this.overlayRef = React.createRef();
-        await this.app.addTool('Tool.Lens', this.app.createController(Tool, this));
-        await this.app.addTool('Tool.Lens.Draw', this.drawTool = this.app.createController(DrawTool, this));
 
         this.app.whenCalled('lensStartFromFeature', args => {
             this.update({
@@ -128,15 +144,13 @@ class LensController extends gws.Controller implements gws.types.IController {
 
     }
 
-    start(tool: Tool) {
-        this.currTool = tool;
+    start(tag: string) {
+        this.toolTag = tag;
 
         this.layer = this.map.addServiceLayer(new LensLayer(this.map, {
             uid: '_lens',
-            style: tool.style,
+            style: this.tool.style,
         }));
-
-        this.drawTool.style = tool.editStyle;
 
         let geom = this.getValue('lensGeometry') || this.defaultGeometry;
 
@@ -159,7 +173,6 @@ class LensController extends gws.Controller implements gws.types.IController {
     }
 
     stop(tool) {
-        this.currTool = null;
         this.map.removeLayer(this.layer);
         this.removeOverlay();
         this.map.setExtraInteractions([]);
@@ -180,7 +193,7 @@ class LensController extends gws.Controller implements gws.types.IController {
 
         console.log('LENS_RUN', this.feature.geometry)
 
-        this.currTool.whenChanged(geom);
+        this.tool.whenChanged(geom);
     }
 
     createOverlay() {
@@ -198,9 +211,9 @@ class LensController extends gws.Controller implements gws.types.IController {
 
         div.className = 'modLensOverlay';
 
-        buttons[0].className = 'modLensOverlayDrawButton';
-        buttons[1].className = 'modLensOverlayAnchorButton';
-        buttons[2].className = 'modLensOverlayCancelButton';
+        buttons[0].className = 'uiIconButton modLensOverlayDrawButton';
+        buttons[1].className = 'uiIconButton modLensOverlayAnchorButton';
+        buttons[2].className = 'uiIconButton modLensOverlayCancelButton';
 
         buttons[0].title = this.__('modLensOverlayDrawButton');
         buttons[1].title = this.__('modLensOverlayAnchorButton');
@@ -230,12 +243,13 @@ class LensController extends gws.Controller implements gws.types.IController {
     }
 
     overlayCloseTouched(evt) {
-        this.app.startTool('DefaultTool');
+        this.app.startTool('Tool.Default');
     }
 
     overlayDrawTouched(evt) {
-        this.toolName = this.currTool.uid;
-        this.drawTool.start();
+        let drawTool = this.app.tool('Tool.Lens.Draw') as LensDrawTool;
+        drawTool.style = this.tool.editStyle;
+        this.app.startTool('Tool.Lens.Draw');
     }
 
     removeOverlay() {
@@ -245,10 +259,9 @@ class LensController extends gws.Controller implements gws.types.IController {
     }
 
     drawEnded() {
-        this.drawTool.stop();
-        let ct = this.currTool;
-        this.stop(ct);
-        this.start(ct);
+        //this.drawTool.stop();
+        this.app.stopTool('Tool.Lens.Draw');
+        this.app.startTool(this.toolTag);
     }
 
     clear() {
@@ -294,4 +307,6 @@ class LensController extends gws.Controller implements gws.types.IController {
 export const tags = {
     [MASTER]: LensController,
     'Toolbar.Lens': LensToolbarButton,
+    'Tool.Lens': LensTool,
+    'Tool.Lens.Draw': LensDrawTool,
 };

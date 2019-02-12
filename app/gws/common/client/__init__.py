@@ -2,32 +2,47 @@ import gws
 import gws.types as t
 
 
-class Config(t.Config):
-    """client UI element"""
+class ElementConfig(t.Config):
+    """GWS client UI element configuration"""
 
     access: t.Optional[t.Access]  #: access rights
     tag: str  #: element tag
-    options: t.Optional[dict]  #: options for this element
-    elements: t.Optional[t.List['Config']]  #: child elements of this element
+
+
+class Config(t.Config):
+    """GWS client configuration"""
+
+    access: t.Optional[t.Access]  #: access rights
+    options: t.Optional[dict]  #: client options
+    elements: t.Optional[t.List[ElementConfig]]  #: client UI elements
+
+
+class ElementProps(t.Data):
+    tag: str
 
 
 class Props(t.Data):
-    tag: str
     options: t.Optional[dict]
-    elements: t.Optional[t.List['Props']]
+    elements: t.Optional[t.List[ElementProps]]
+
+
+class Element(gws.PublicObject):
+    @property
+    def props(self):
+        return {
+            'tag': self.var('tag'),
+        }
 
 
 class Object(gws.PublicObject):
     def configure(self):
         super().configure()
         for c in self.var('elements', []):
-            self.add_child(Object, c)
+            self.add_child(Element, c)
 
     @property
     def props(self):
-        els = self.get_children(Object)
         return {
-            'tag': self.var('tag'),
             'options': self.var('options'),
-            'elements': els or None,
+            'elements': self.children,
         }

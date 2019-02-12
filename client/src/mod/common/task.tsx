@@ -196,7 +196,7 @@ class TaskController extends gws.Controller {
 }
 
 export const tags = {
-    'Tasks': TaskController,
+    'Task': TaskController,
     'Task.Lens': TaskLens,
     'Task.Zoom': TaskZoom,
     'Task.Annotate': TaskAnnotate,

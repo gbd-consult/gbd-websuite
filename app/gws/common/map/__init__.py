@@ -13,6 +13,7 @@ class Config(t.Config):
     crs: t.Optional[t.crsref] = 'EPSG:3857'  #: crs for this map
     extent: t.Extent  #: map extent
     layers: t.List[t.ext.layer.Config]  #: collection of layers for this map
+    title: str = ''  #: map title
     uid: t.Optional[str]  #: unique id
     zoom: gws.gis.zoom.Config  #: map scales and resolutions
 

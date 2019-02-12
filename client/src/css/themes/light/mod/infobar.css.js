@@ -11,6 +11,7 @@ module.exports = v => ({
         fontSize: v.SMALL_FONT_SIZE,
         padding: [0, v.UNIT2, 0, 0],
         backgroundColor: v.INFOBAR_BACKGROUND,
+        zIndex: 5,
 
         '*': {
             fontSize: v.SMALL_FONT_SIZE,

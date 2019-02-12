@@ -54,6 +54,9 @@ module.exports = {
     modFeatureNoTitle: 'Objekt',
     modIdentifyClickToolbarButton: 'Abfragen',
     modIdentifyHoverToolbarButton: 'Anzeigen',
+    modIdentifyClickToolboxTitle: 'Abfragen',
+    modIdentifyClickToolboxHint: 'Zum Abfragen, einen Punkt auf der Karte klicken. Zum Abfragen, einen Punkt auf der Karte klicken',
+
     modInfobarAboutTitle: 'Über...',
     modInfobarHelpTitle: 'Hilfe',
     modInfobarHomeLinkTitle: 'Zur Startseite',

@@ -3,7 +3,7 @@ import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 
-export class Tool extends gws.Controller implements gws.types.ITool {
+export class Tool extends gws.Tool {
     layer: gws.types.IMapFeatureLayer;
     oFeatureCollection: ol.Collection<ol.Feature>;
     snap: boolean = true;

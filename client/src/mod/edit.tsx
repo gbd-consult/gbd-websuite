@@ -288,11 +288,6 @@ class EditSidebar extends gws.Controller implements gws.types.ISidebarItem {
 class EditController extends gws.Controller {
     uid = MASTER;
 
-    async init() {
-        await this.app.addTool('Tool.Edit.Modify', this.app.createController(EditModifyTool, this));
-        await this.app.addTool('Tool.Edit.Draw', this.app.createController(EditDrawTool, this));
-    }
-
     get layer(): gws.types.IMapFeatureLayer {
         return this.app.store.getValue('editLayer');
     }
@@ -470,4 +465,6 @@ class EditController extends gws.Controller {
 export const tags = {
     'Shared.Edit': EditController,
     'Sidebar.Edit': EditSidebar,
+    'Tool.Edit.Modify': EditModifyTool,
+    'Tool.Edit.Draw': EditDrawTool,
 };

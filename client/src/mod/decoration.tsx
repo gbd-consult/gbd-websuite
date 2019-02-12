@@ -76,7 +76,17 @@ class Attribution extends gws.Controller {
     }
 }
 
+class DecorationController extends gws.Controller {
+    get defaultView() {
+        return this.renderChildren();
+    }
+
+
+
+}
+
 export const tags = {
+    'Decoration': DecorationController,
     'Decoration.ScaleRuler': ScaleRuler,
     'Decoration.Attribution': Attribution,
 };

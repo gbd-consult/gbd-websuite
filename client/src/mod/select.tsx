@@ -83,7 +83,7 @@ class SelectDialog extends gws.View<SelectViewProps> {
     }
 }
 
-class SelectTool extends gws.Controller implements gws.types.ITool {
+class SelectTool extends gws.Tool {
 
     async run(evt: ol.MapBrowserPointerEvent) {
         let extend = !evt.originalEvent['altKey'];
@@ -198,10 +198,7 @@ class SelectController extends gws.Controller {
     layer: gws.types.IMapFeatureLayer;
 
     async init() {
-        await this.app.addTool('Tool.Select', this.app.createController(SelectTool, this));
-
         await this.getSaveNames();
-
         this.app.whenCalled('selectFeature', args => {
             this.addFeature(args.feature);
         });
@@ -333,4 +330,5 @@ export const tags = {
     [MASTER]: SelectController,
     'Toolbar.Select': SelectToolbarButton,
     'Sidebar.Select': SelectSidebar,
+    'Tool.Select': SelectTool,
 };

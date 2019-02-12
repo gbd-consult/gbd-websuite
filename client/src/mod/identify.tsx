@@ -3,8 +3,9 @@ import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 import * as toolbar from './common/toolbar';
+import * as toolbox from './common/toolbox';
 
-abstract class IdentifyTool extends gws.Controller implements gws.types.ITool {
+abstract class IdentifyTool extends gws.Tool {
     abstract hoverMode;
 
     async run(evt) {
@@ -55,17 +56,32 @@ abstract class IdentifyTool extends gws.Controller implements gws.types.ITool {
 
 class IdentifyClickTool extends IdentifyTool {
     hoverMode = 'shift';
+
+    get toolboxView() {
+        return <toolbox.Content
+            controller={this}
+            iconClass="modIdentifyClickToolboxIcon"
+            title={this.__('modIdentifyClickToolboxTitle')}
+            hint={this.__('modIdentifyClickToolboxHint')}
+        />
+    }
 }
 
 class IdentifyHoverTool extends IdentifyTool {
     hoverMode = 'always';
+
+    get toolboxView() {
+        return <toolbox.Content
+            controller={this}
+            iconClass="modIdentifyClickToolboxIcon"
+            title={this.__('modIdentifyClickToolboxTitle')}
+            hint={this.__('modIdentifyClickToolboxHint')}
+        />
+    }
+
 }
 
 class IdentifyController extends gws.Controller {
-    async init() {
-        await this.app.addTool('Tool.Identify.Click', this.app.createController(IdentifyClickTool, this));
-        await this.app.addTool('Tool.Identify.Hover', this.app.createController(IdentifyHoverTool, this));
-    }
 }
 
 class IdentifyClickToolbarButton extends toolbar.Button {
@@ -91,4 +107,6 @@ export const tags = {
     'Shared.Identify': IdentifyController,
     'Toolbar.Identify.Click': IdentifyClickToolbarButton,
     'Toolbar.Identify.Hover': IdentifyHoverToolbarButton,
+    'Tool.Identify.Click': IdentifyClickTool,
+    'Tool.Identify.Hover': IdentifyHoverTool,
 };

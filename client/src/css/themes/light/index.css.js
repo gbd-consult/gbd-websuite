@@ -63,6 +63,7 @@ v.TOOLBAR_ACTIVE_BUTTON_COLOR = v.COLOR.white;
 v.TOOLBAR_ACTIVE_BUTTON_BACKGROUND = v.COLOR.gbdBlue;
 
 v.TOOLBAR_BUTTON = img => ({
+    ...v.ICON('normal'),
     ...v.SVG(img, v.TOOLBAR_BUTTON_COLOR),
     backgroundColor: v.COLOR.opacity(v.TOOLBAR_BUTTON_BACKGROUND, 0.8),
     '&.isActive': {
@@ -72,6 +73,15 @@ v.TOOLBAR_BUTTON = img => ({
         backgroundColor: v.COLOR.opacity(v.TOOLBAR_BUTTON_BACKGROUND, 0.3),
     },
 });
+
+v.TOOLBOX_ICON = img => ({
+    ...v.ICON('normal'),
+    ...v.SVG(img, v.COLOR.blueGrey400),
+    //backgroundColor: v.COLOR.blueGrey50,
+    // borderRadius: v.BORDER_RADIUS,
+
+});
+
 
 
 v.ALTBAR_WIDTH = v.UNIT * 50;
@@ -86,6 +96,7 @@ v.SIDEBAR_OPEN_BUTTON_BACKGROUND = v.TOOLBAR_BUTTON_BACKGROUND;
 v.SIDEBAR_OPEN_BUTTON_COLOR = v.TOOLBAR_BUTTON_COLOR;
 
 v.SIDEBAR_ICON = (img) => ({
+    ...v.ICON('normal'),
     ...v.SVG(img, v.SIDEBAR_HEADER_COLOR)
 });
 
@@ -118,7 +129,7 @@ v.INFOBOX_WIDTH = 300;
 
 v.INFOBAR_HEIGHT = v.CONTROL_SIZE;
 v.INFOBAR_LABEL_COLOR = v.COLOR.white;
-v.INFOBAR_BACKGROUND = v.COLOR.opacity(v.COLOR.grey900, 0.8);
+v.INFOBAR_BACKGROUND = v.COLOR.blueGrey700;
 v.INFOBAR_INPUT_COLOR = v.COLOR.white;
 v.INFOBAR_SLIDER_COLOR = v.COLOR.blueGrey400;
 v.INFOBAR_HANDLE_COLOR = v.COLOR.gbdBlue;
@@ -139,6 +150,11 @@ v.PROGRESS_INNER_COLOR = v.COLOR.blueGrey300;
 v.PRINT_BOX_BORDER = v.COLOR.gbdBlue;
 
 
+v.TOOLBOX_BACKGROUND = v.INFOBAR_BACKGROUND;
+v.TOOLBOX_TEXT_COLOR = v.COLOR.blueGrey400;
+v.TOOLBOX_HEIGHT = 120;
+
+
 v.ZOOM_BOX_COLOR = v.COLOR.gbdBlue;
 
 
@@ -152,10 +168,6 @@ let iconSize = {
 };
 
 v.ICON = (size = 'normal') => ({
-    width: v.CONTROL_SIZE,
-    height: v.CONTROL_SIZE,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center center',
     backgroundSize: [iconSize[size], iconSize[size]],
 });
 
@@ -182,23 +194,40 @@ v.ZOOM_ICON = 'google:image/center_focus_weak';
 v.SEARCH_ICON = 'google:action/search';
 
 
+v.FORM_BUTTON_BACKGROUND = v.COLOR.blueGrey200;
+v.FORM_PRIMARY_BUTTON_BACKGROUND = v.FOCUS_COLOR;
+v.FORM_BUTTON_COLOR = v.COLOR.white;
 
-v.FORM_BUTTON = (img, primary = false) => ({
-    ...v.SVG(img, v.COLOR.white),
-    backgroundColor: primary ? v.FOCUS_COLOR : v.COLOR.blueGrey200,
+
+v.ROUND_FORM_BUTTON = img => ({
+    ...v.SVG(img, v.FORM_BUTTON_COLOR),
+    backgroundColor: v.FORM_BUTTON_BACKGROUND,
     borderRadius: v.BORDER_RADIUS,
     '&.isActive': {
-        backgroundColor: v.FOCUS_COLOR,
+        backgroundColor: v.FORM_PRIMARY_BUTTON_BACKGROUND,
     }
 });
 
 
+v.ROUND_OK_BUTTON = (icon) => ({
+    ...v.SVG(icon || 'google:navigation/check', v.PRIMARY_COLOR),
+    backgroundColor: v.PRIMARY_BACKGROUND,
+    borderRadius: v.BORDER_RADIUS,
+});
+
+v.ROUND_CLOSE_BUTTON = (icon) => ({
+    ...v.SVG(icon || 'google:navigation/close', v.CANCEL_COLOR),
+    backgroundColor: v.CANCEL_BACKGROUND,
+    borderRadius: v.BORDER_RADIUS,
+});
+
 v.IMAGE = (path) =>
     helpers.dataUrl(`src/css/themes/light/img/${path}`);
 
-v.TRANSITION = prop => ({
-    transition: (prop || 'all') + ' 0.5s ease-in-out',
-    //transition: 'unset'
+v.TRANSITION = (...props) => ({
+    transition: (props.length ? props : ['all'])
+        .map(p => p + ' 0.3s ease-in-out')
+        .join(',')
 });
 
 v.SHADOW = {
@@ -239,7 +268,7 @@ let rules = [
     require('./mod/alkis.css'),
     require('./mod/altbar.css'),
     require('./mod/annotate.css'),
-    require('./mod/decorations.css'),
+    require('./mod/decoration.css'),
     require('./mod/draw.css'),
     require('./mod/dprocon.css'),
     require('./mod/edit.css'),
@@ -256,6 +285,7 @@ let rules = [
     require('./mod/sidebar.css'),
     require('./mod/task.css'),
     require('./mod/toolbar.css'),
+    require('./mod/toolbox.css'),
     require('./mod/user.css'),
     require('./mod/zoom.css'),
 
