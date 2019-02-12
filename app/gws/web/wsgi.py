@@ -3,8 +3,30 @@
 import gws
 import gws.config.loader
 import gws.web
-import gws.web.env
 import gws.web.action
+
+import gws.types as t
+
+_no_site = t.Data({
+    'host': '*'
+})
+
+
+def _site(environ, sites):
+    h = environ.get('HTTP_HOST', '').lower().split(':')[0].strip()
+
+    if not sites:
+        return _no_site
+
+    for s in sites:
+        if s.host.lower() == h:
+            return s
+    for s in sites:
+        if s.host == '*':
+            return s
+
+    gws.log.error('unknown host', h)
+    raise gws.web.error.NotFound()
 
 
 def _with_cors_headers(cors, res):
@@ -19,10 +41,10 @@ def _with_cors_headers(cors, res):
     return res
 
 
-def _handle_request(environ):
-    env = gws.web.env.prepare(environ)
+def _handle_request(config_root, environ):
+    environ['gws.site'] = _site(environ, config_root.application.web_sites)
 
-    req = gws.web.AuthRequest(env)
+    req = gws.web.AuthRequest(environ)
     if req.params is None:
         raise gws.web.error.NotFound()
 
@@ -37,7 +59,7 @@ def _handle_request(environ):
 
     # gws.p('REQUEST', {'user': req.user, 'params': req.params})
 
-    res = gws.web.action.handle(req)
+    res = gws.web.action.handle(config_root, req)
 
     req.auth_commit(res)
 
@@ -48,8 +70,9 @@ def _handle_request(environ):
 
 
 def application(environ, start_response):
+    config_root = gws.config.root()
     try:
-        res = _handle_request(environ)
+        res = _handle_request(config_root, environ)
         return res(environ, start_response)
     except gws.web.error.HTTPException as e:
         return e(environ, start_response)

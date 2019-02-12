@@ -6,7 +6,7 @@ from . import error
 DEFAULT_CMD = 'assetHttpGetPath'
 
 
-def handle(req):
+def handle(config_root, req):
     cmd = req.param('cmd', DEFAULT_CMD)
 
     # @TODO: add HEAD
@@ -20,7 +20,7 @@ def handle(req):
         raise error.MethodNotAllowed()
 
     try:
-        action_type, method_name, arg = gws.config.root().validate_action(category, cmd, req.params.get('params'))
+        action_type, method_name, arg = config_root.validate_action(category, cmd, req.params.get('params'))
     except gws.config.Error as e:
         gws.log.error('ACTION ERROR', e)
         raise error.BadRequest()
@@ -28,8 +28,7 @@ def handle(req):
     gws.log.debug(f'DISPATCH a={action_type} m={method_name}')
 
     project_uid = arg.get('projectUid') if arg else req.param('projectUid')
-    app = gws.config.root().find_first('gws.common.application')
-    action = app.find_action(action_type, project_uid)
+    action = config_root.application.find_action(action_type, project_uid)
 
     if not action:
         gws.log.error('handler not found', cmd)

@@ -70,9 +70,15 @@ class Config(t.Config):
 
 
 class Object(gws.Object):
-    version = gws.VERSION
-    qgis_version = ''
-    client = None
+    def __init__(self):
+        super().__init__()
+
+        self.api: gws.common.api.Object = None
+        self.client: gws.common.client.Object = None
+        self.qgis_version = ''
+        self.version = gws.VERSION
+        self.web_sites: t.List[gws.web.types.SiteConfig] = []
+        self.web_ssl: gws.web.types.SSLConfig = None
 
     def configure(self):
         super().configure()
@@ -85,7 +91,7 @@ class Object(gws.Object):
 
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
 
-        #_install_fonts(self.var('fonts'))
+        _install_fonts(self.var('fonts'))
 
         gws.auth.api.init()
 
@@ -111,6 +117,11 @@ class Object(gws.Object):
         if p:
             self.client = self.add_child(gws.common.client.Object, p)
 
+        p = self.var('web')
+        if p:
+            self.web_sites = p.sites
+            self.web_ssl = p.ssl
+
         self.add_child(gws.common.csv.Object, self.var('csv'))
 
     def find_action(self, action_type, project_uid=None):
@@ -125,7 +136,7 @@ class Object(gws.Object):
         if not action:
             action = self.api.actions.get(action_type) if self.api else None
 
-        gws.log.debug(f'find_action {action_type!r} prj={project_uid!r} found={action.uid if action else 0}')
+        gws.log.debug(f'find_action {action_type!r} prj={project_uid!r} found={action.uid if action else None}')
         return action
 
 
@@ -148,10 +159,3 @@ def _install_fonts(source_dir):
             sh.run(['cp', '-v', p, target_dir], echo=True)
 
     sh.run(['fc-cache', '-fv'], echo=True)
-
-
-def _allow_all_wrapper(app, uid):
-    return app.add_child(gws.Object, t.Config({
-        'uid': uid,
-
-    }))
