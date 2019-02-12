@@ -1,6 +1,6 @@
 import re
 
-from gws.ext.db.provider.postgis import Connection
+from gws.ext.db.provider.postgres import Connection
 from ..data import version
 
 

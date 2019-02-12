@@ -87,3 +87,28 @@ class Service(gws.Object, t.ServiceInterface):
 
         text = gws.ows.request.get_text(self.url, service='WMS', request='GetFeatureInfo', params=p)
         return gws.ows.response.parse(text, crs=self.supported_crs[0])
+
+    def get_legend(self, layers):
+        # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
+
+        params = {
+            'MAP': self.path,
+            'LAYER': layers,
+            'FORMAT': 'image/png',
+            'STYLE': '',
+            'VERSION': '1.1.1',
+            'BOXSPACE': 0,
+            'SYMBOLSPACE': 0,
+            'LAYERTITLE': 'false',
+            # 'RULELABEL': 'false',
+        }
+
+        resp = gws.ows.request.get(
+            self.url,
+            service='WMS',
+            request='GetLegendGraphic',
+            params=params)
+
+        return resp.content
+
+

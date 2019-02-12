@@ -11,7 +11,7 @@ import gws.types
 import gws.types.spec
 import gws.tools.misc as misc
 
-from . import error
+from . import error, spec
 
 config_path_pattern = r'\bconfig\.(py|json|yaml)$'
 config_function_name = 'config'
@@ -21,7 +21,7 @@ def parse(dct, klass, path=''):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
-        return _validator().get(dct, klass, path)
+        return spec.config_validator().get(dct, klass, path)
     except gws.types.spec.Error as e:
         raise error.ParseError(*e.args)
 
@@ -82,27 +82,6 @@ def _read2(path):
     if path.endswith('.yaml'):
         with open(path, encoding='utf8') as fp:
             return yaml.load(fp)
-
-
-def load_spec(kind, lang=None):
-    path = f'{gws.APP_DIR}/spec/gen/{kind}.spec.json'
-
-    if lang and lang != 'en':
-        p = f'{gws.APP_DIR}/spec/gen/{lang}.{kind}.spec.json'
-        if os.path.exists(p):
-            path = p
-
-    with open(path) as fp:
-        return json.load(fp)
-
-
-def _init_validator():
-    spec = load_spec('config')
-    return gws.types.spec.Validator(spec['types'], strict=True)
-
-
-def _validator():
-    return gws.get_global('config_validator', _init_validator)
 
 
 def _parse_multi_project(cfg, path):

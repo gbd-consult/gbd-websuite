@@ -237,7 +237,7 @@ class _Worker:
             ii.layer = None
 
             if item.get('layerUid'):
-                ii.layer = self.acquire('gws.ext.gis.layer', item.layerUid)
+                ii.layer = self.acquire('gws.ext.layer', item.layerUid)
                 if not ii.layer:
                     continue
 

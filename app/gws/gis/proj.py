@@ -229,5 +229,5 @@ class _Proj:
 def _check(p):
     prj = as_proj(p)
     if not prj:
-        raise ValueError('proj: invalid CRS {p!r}')
+        raise ValueError(f'proj: invalid CRS {p!r}')
     return prj

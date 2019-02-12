@@ -64,6 +64,11 @@ def _layer(el):
     oo.matrix_ids = [e.get_text('TileMatrixSet') for e in el.all('TileMatrixSetLink')]
     oo.format = el.get_text('Format')
 
+    oo.resource_urls = {
+        rs.attr('resourceType'): rs.attr('template')
+        for rs in el.all('ResourceURL')
+    }
+
     return oo
 
 

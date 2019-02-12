@@ -1,7 +1,6 @@
 import gws
 import gws.types as t
 
-import gws.gis.cache
 import gws.gis.proj
 import gws.gis.zoom
 import gws.gis.layer
@@ -10,13 +9,10 @@ import gws.gis.layer
 class Config(t.Config):
     """map configuration"""
 
-    cache: t.CacheConfig = {}  #: default cache
     center: t.Optional[t.Point]  #: map center
     crs: t.Optional[t.crsref] = 'EPSG:3857'  #: crs for this map
     extent: t.Extent  #: map extent
-    grid: t.GridConfig = {}  #: default grid configuration
-    layers: t.List[t.ext.gis.layer.Config]  #: collection of layers for this map
-    title: t.Optional[str]  #: map title
+    layers: t.List[t.ext.layer.Config]  #: collection of layers for this map
     uid: t.Optional[str]  #: unique id
     zoom: gws.gis.zoom.Config  #: map scales and resolutions
 
@@ -28,9 +24,9 @@ class Props(t.Data):
     extent: t.Extent
     center: t.Point
     initResolution: float
-    layers: t.List[t.ext.gis.layer.LayerProps]
+    layers: t.List[gws.gis.layer.Props]
     resolutions: t.List[float]
-    title: str
+    title: str = ''
 
 
 class Object(gws.PublicObject, t.MapObject):
@@ -52,12 +48,7 @@ class Object(gws.PublicObject, t.MapObject):
             self.uid = p.uid + '.' + self.uid
 
         self.crs = self.var('crs')
-        if not self.crs:
-            raise ValueError('map requires a CRS')
-
         self.extent = self.var('extent')
-        if not self.extent:
-            raise ValueError('map requires an extent')
 
         self.center = self.var('center')
         if not self.center:
@@ -70,16 +61,7 @@ class Object(gws.PublicObject, t.MapObject):
         self.resolutions = gws.gis.zoom.effective_resolutions(zoom)
         self.init_resolution = gws.gis.zoom.init_resolution(zoom, self.resolutions)
 
-        if not self.resolutions:
-            raise ValueError('no resolutions for the map')
-
-        for p in self.var('layers'):
-            try:
-                self.layers.append(self.add_child('gws.ext.gis.layer', p))
-            except Exception as e:
-                uid = gws.get(p, 'uid')
-                gws.log.error(f'FAILED LAYER: map={self.uid!r} layer={uid!r} error={e!r}')
-                gws.log.exception()
+        self.layers = gws.gis.layer.add_layers_to_object(self, self.var('layers'))
 
     @property
     def props(self):

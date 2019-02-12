@@ -1,22 +1,18 @@
 @def info la
-    @with la.title as x
-        <p class="head">{x | html}</p>
-    @end
-    @with la.meta.abstract as x
-        <p class="text2">{x | html | nl2br}</p>
+    @with la.title
+        <p class="head">{la.title | html}</p>
     @end
 
-    ## @@TODO
-
-    @with la.legend as x
-        @if x.startswith('http://localhost')
-            @let x = '/_/cmd/mapHttpGetLegend/layerUid/' + la.uid
-        @end
-        <p class="legend"><img src="{x}" /></p>
+    @with la.meta.abstract
+        <p class="text2">{la.meta.abstract | html | nl2br}</p>
     @end
 
-    @with la.meta.url as x
-        <p class="metaurl"><a href="{x | url}" target="_blank" rel="noopener"></a></p>
+    @if la.has_legend
+        <p class="legend"><img src="{gws.endpoint}?cmd=mapHttpGetLegend&amp;layerUid={la.uid}" /></p>
+    @end
+
+    @with la.meta.url
+        <p class="metaurl"><a href="{la.meta.url | url}" target="_blank" rel="noopener"></a></p>
     @end
 @end
 
@@ -33,13 +29,13 @@
     @subsection(info(sub))
 @end
 
-@let text
-    @with service.abstract as x
-        <p>{x | html | nl2br}</p>
+@let service_info
+    @with service.abstract
+        <p>{service.abstract | html | nl2br}</p>
     @end
-    @with service.attribution as x
-        <p>{x}</p>
+    @with service.attribution
+        <p>{service.attribution}</p>
     @end
 @end
 
-@subsection(text)
+@subsection(service_info)

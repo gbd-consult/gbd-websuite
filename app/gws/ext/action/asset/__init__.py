@@ -54,7 +54,7 @@ class Object(gws.Object):
         project_uid = p.get('projectUid')
         if project_uid:
             project = req.require_project(project_uid)
-            project_assets_config = project.var('assets', parent=True)
+            project_assets_config = project.var('assets')
 
         spath = str(p.get('path') or '')
         rpath = None
@@ -133,7 +133,4 @@ def _default_template_context(req, project):
         'projects': _projects_for_user(req.user),
         'request': req,
         'user': req.user,
-        'gws': {
-            'version': gws.VERSION,
-        }
     }

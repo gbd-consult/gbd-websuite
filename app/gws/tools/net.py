@@ -161,6 +161,7 @@ def http_request(url, **kwargs) -> requests.Response:
     kwargs['timeout'] = timeout
 
     lax = kwargs.pop('lax', False)
+    ts = time.time()
 
     try:
         resp = requests.request(method, url, **kwargs)
@@ -190,7 +191,8 @@ def http_request(url, **kwargs) -> requests.Response:
     enc = _get_encoding_from_headers(resp.headers)
     resp.encoding = enc or 'utf-8'
 
-    gws.log.debug(f'REQUEST_DONE: code={resp.status_code} len={len(resp.content)}')
+    ts = time.time() - ts
+    gws.log.debug(f'REQUEST_DONE: code={resp.status_code} len={len(resp.content)} time={ts:.3f}')
 
     if cache_path:
         _store_cache(resp, cache_path)

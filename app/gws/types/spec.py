@@ -64,6 +64,7 @@ class Validator:
         if tname in self.handlers:
             # noinspection PyUnresolvedReferences
             return self.handlers[tname](val, None)
+        #print('*** get', tname, val)
         t = self.types[tname]
         return self.handlers[t['type']](val, t)
 
@@ -151,19 +152,29 @@ class Validator:
         return self._get(v2, p['type'])
 
     def _union(self, val, t):
-        if 'type' in val:
-            b = self._union_match(t['bases'], val['type'])
+        tname = val.get('type')
+
+        if tname:
+            b = self._union_match(t['bases'], tname)
             if b:
                 return self._get(val, b)
 
-        err = []
-        for b in t['bases']:
-            try:
-                return self._get(val, b)
-            except Error as e:
-                err.append(e)
+        return self.error('ERR_BAD_TYPE', 'invalid type', tname)
 
-        raise err[0]
+
+        # if 'type' in val:
+        #     b = self._union_match(t['bases'], val['type'])
+        #     if b:
+        #         return self._get(val, b)
+        #
+        # err = []
+        # for b in t['bases']:
+        #     try:
+        #         return self._get(val, b)
+        #     except Error as e:
+        #         err.append(e)
+        #
+        # raise err[0]
 
     def _union_match(self, bases, tname):
         for b in bases:

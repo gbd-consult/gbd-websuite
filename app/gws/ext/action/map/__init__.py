@@ -59,7 +59,7 @@ class Config(t.WithTypeAndAccess):
 #
 #
 # def _render_legend(req, layer_uid):
-#     layer: t.LayerObject = req.require('gws.ext.gis.layer', layer_uid)
+#     layer: t.LayerObject = req.require('gws.ext.layer', layer_uid)
 #     img = layer.render_legend()
 #
 #     return t.HttpResponse({
@@ -73,7 +73,7 @@ class Object(gws.Object):
     def api_render_bbox(self, req, p: RenderBboxParams) -> t.HttpResponse:
         """Render a part of the map inside a bounding box"""
 
-        layer: t.LayerObject = req.require('gws.ext.gis.layer', p.layerUid)
+        layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
 
         cp = {}
         if p.layers:
@@ -97,7 +97,7 @@ class Object(gws.Object):
     def api_render_xyz(self, req, p: RenderXyzParams) -> t.HttpResponse:
         """Render an XYZ tile"""
 
-        layer = req.require('gws.ext.gis.layer', p.layerUid)
+        layer = req.require('gws.ext.layer', p.layerUid)
 
         ts = time.time()
         img = layer.render_xyz(p.x, p.y, p.z)
@@ -111,16 +111,16 @@ class Object(gws.Object):
         })
 
     def api_describe_layer(self, req, p: DescribeLayerParams) -> t.HttpResponse:
-        layer = req.require('gws.ext.gis.layer', p.layerUid)
+        layer = req.require('gws.ext.layer', p.layerUid)
         return t.HttpResponse({
             'mimeType': 'text/html',
-            'content': layer.description()
+            'content': layer.description
         })
 
     def api_get_features(self, req, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
 
-        layer: t.LayerObject = req.require('gws.ext.gis.layer', p.layerUid)
+        layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
         bbox = p.get('bbox') or layer.map.extent
         features = layer.get_features(bbox)
         return GetFeaturesResponse({
@@ -161,42 +161,9 @@ class Object(gws.Object):
 
     def http_get_legend(self, req, p):
         ps = {k.lower(): v for k, v in req.params.items()}
-        layer = req.require('gws.ext.gis.layer', ps.get('layeruid'))
-        if layer.legend:
-            resp = gws.tools.net.http_request(layer.legend)
+        layer = req.require('gws.ext.layer', ps.get('layeruid'))
+        if layer.has_legend:
             return t.HttpResponse({
                 'mimeType': 'image/png',
-                'content': resp.content
-        })
-
-
-
-    def http_get_qgis_legend(self, req, p):
-        ps = {k.lower(): v for k, v in req.params.items()}
-
-
-        # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
-
-        ps = {
-            'MAP': ps['map'],
-            'LAYER': ps['layer'],
-            'FORMAT': 'image/png',
-            'REQUEST': 'GetLegendGraphic',
-            'SERVICE': 'WMS',
-            'STYLE': '',
-            'VERSION': '1.1.1',
-            'BOXSPACE': 0,
-            'SYMBOLSPACE': 0,
-            'LAYERTITLE': 'false',
-            # 'RULELABEL': 'false',
-        }
-
-        url = 'http://%s:%s' % (
-            gws.config.var('server.qgis.host'),
-            gws.config.var('server.qgis.port'))
-
-        resp = gws.tools.net.http_request(url, params=ps)
-        return t.HttpResponse({
-            'mimeType': 'image/png',
-            'content': resp.content
+                'content': layer.render_legend()
         })

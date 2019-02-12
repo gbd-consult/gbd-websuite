@@ -116,7 +116,7 @@ def _status_for_cache(cc, mc, files):
 
 
 def _cached_layers(mc, layers):
-    for layer in gws.config.find_all('gws.ext.gis.layer'):
+    for layer in gws.config.find_all('gws.ext.layer'):
         cc = _cache_for_layer(layer, mc)
         if not cc:
             continue
@@ -127,7 +127,7 @@ def _cached_layers(mc, layers):
 
 def _cache_for_layer(layer, mc):
     for name, cc in mc['caches'].items():
-        if name.startswith('cache_' + layer.uid) and name.endswith('_dst') and not cc['disable_storage']:
+        if name.startswith('cache_' + layer.uid) and name.endswith('_FRONT') and not cc['disable_storage']:
             return gws.extend(cc, {
                 'name': name,
                 'grid': mc['grids'][cc['grids'][0]],

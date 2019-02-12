@@ -19,34 +19,18 @@ def axis_for(axis, service_name, service_version, crs):
     return 'xy'
 
 
-def crs_for_object(obj, supported_crs):
-    crs = _crs_for_object(obj, supported_crs)
-    gws.log.info(f'using {crs!r} for {obj.uid!r}')
-    return crs
+def best_crs(target_crs, supported_crs):
+    for crs in supported_crs:
+        if gws.gis.proj.equal(crs, target_crs):
+            return target_crs
 
+    for crs in supported_crs:
+        p = gws.gis.proj.as_proj(crs)
+        if p and not p.is_latlong:
+            gws.log.info(f'best_crs: using {p.epsg!r} for {target_crs!r}')
+            return p.epsg
 
-def _crs_for_object(obj, supported_crs):
-    if not supported_crs:
-        raise gws.config.LoadError(f'no supported_crs')
-
-    # must have this
-
-    crs = obj.var('crs')
-    if crs:
-        cf = gws.gis.proj.find(crs, supported_crs)
-        if cf:
-            return cf
-        raise gws.config.LoadError(f'CRS {crs!r} not found in {supported_crs!r}')
-
-    # nice to have this
-
-    crs = obj.var('crs', parent=True)
-    if crs:
-        cf = gws.gis.proj.find(crs, supported_crs)
-        if cf:
-            return cf
-
-    return supported_crs[0]
+    raise ValueError(f'no match for {target_crs!r} in {supported_crs!r}')
 
 
 def crs_and_shape(request_crs, supported_crs, shape):

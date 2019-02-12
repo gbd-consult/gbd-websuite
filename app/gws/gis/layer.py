@@ -1,13 +1,14 @@
 import gws
+import gws.config.parser
 import gws.common.format
 import gws.common.search
 import gws.common.template
-import gws.gis.cache
 import gws.gis.feature
 import gws.gis.mpx as mpx
 import gws.gis.proj
 import gws.gis.source
 import gws.gis.zoom
+import gws.ows.request
 import gws.types as t
 
 import gws.tools.net
@@ -24,36 +25,51 @@ class ClientOptions(t.Data):
     exclusive: t.Optional[bool] = False  #: only one of this layer's children is visible at a time
 
 
-_default_client_opts = ClientOptions({
-    'visible': True,
-    'expanded': False,
-    'listed': True,
-    'selected': False,
-})
-
-
-class LayerEditConfig(t.Config):
+class EditConfig(t.Config):
     access: t.Access
+
+
+class LegendConfig(t.Config):
+    enabled: bool = True
+    url: t.Optional[t.url]
+
+
+class CacheConfig(t.Config):
+    """layer cache configuration"""
+
+    enabled: bool = False  #: cache is enabled
+    maxAge: t.duration = '1d'  #: cache max. age
+    maxLevel: int = 1  #: max. zoom level to cache
+    options: dict = {}  #: additional MapProxy cache options
+
+
+class GridConfig(t.Config):
+    """grid configuration for tiled or cached map data"""
+
+    origin: str = 'nw'  #: position of the first tile (nw or sw)
+    tileSize: int = 256  #: tile size
+    metaSize: int = 4  #: number of meta-tiles to fetch
+    metaBuffer: int = 200  #: pixel buffer
+    options: dict = {}  #: additional MapProxy grid options
 
 
 class BaseConfig(t.WithTypeAndAccess):
     """map layer"""
 
-    cache: t.Optional[t.CacheConfig]  #: cache configuration
-    clientOptions: t.Optional[ClientOptions]  #: options for the layer display in the client
+    cache: CacheConfig = {}  #: cache configuration
+    clientOptions: ClientOptions = {}  #: options for the layer display in the client
     description: t.Optional[t.TemplateConfig]  #: template for the layer description
-    edit: t.Optional[LayerEditConfig]  #: editing permissions
+    display: str = ''  #: layer display mode ('box', 'tile', 'client')
+    edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     featureFormat: t.Optional[t.FormatConfig]  #: feature formatting options
-    grid: t.Optional[t.GridConfig]  #: grid configuration
-    legend: t.Optional[t.url]  #: legend url
-    meta: t.Optional[t.MetaConfig]  #: layer meta data
-    opacity: t.Optional[float]  #: layer opacity
-    search: t.Optional[gws.common.search.Config]  #: layer search configuration
-    source: t.Optional[t.ext.gis.source.Config]  #: data source for the layer
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
-    title: t.Optional[str]  #: layer title
-    uid: t.Optional[str]  #: layer unique id
+    grid: GridConfig = {}  #: grid configuration
+    legend: LegendConfig = {}  #: legend configuration
+    meta: t.MetaConfig = {}  #: layer meta data
+    opacity: float = 1  #: layer opacity
+    search: gws.common.search.Config = {}  #: layer search configuration
+    title: str  #: layer title
+    uid: str = ''  #: layer unique id
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
@@ -67,36 +83,39 @@ class VectorConfig(BaseConfig):
     dataModel: t.Optional[t.List[t.AttributeConfig]]
 
 
-class BaseProps(t.Data):
+class Props(t.Data):
+    dataModel: t.Optional[t.List[t.AttributeConfig]]
     description: str = ''
     editAccess: t.Optional[t.List[str]]
+    editStyle: t.Optional[t.StyleProps]
     extent: t.Optional[t.Extent]
+    geometryType: str = ''
+    layers: t.Optional[t.List['Props']]
     meta: t.MetaData
     opacity: t.Optional[float]
     options: ClientOptions
     resolutions: t.Optional[t.List[float]]
-    title: str
+    style: t.Optional[t.StyleProps]
+    tileSize: int = 0
+    title: str = ''
     type: str
     uid: str
-
-
-class VectorProps(BaseProps):
-    style: t.Optional[t.StyleProps]
-    geometryType: str
-    editStyle: t.Optional[t.StyleProps]
-    dataModel: t.Optional[t.List[t.AttributeConfig]]
+    url: str = ''
 
 
 class Base(gws.PublicObject, t.LayerObject):
     def __init__(self):
         super().__init__()
 
-        self.cache = None
-        self.grid = None
+        self.display = ''
+
+        self.cache: CacheConfig = None
+        self.has_cache = False
+        self.cache_uid = None
+        self.grid: GridConfig = None
+
         self.map = None
         self.meta = None
-        self.opacity = None
-        self.source = None
 
         self.description_template = None
         self.feature_format = None
@@ -106,27 +125,42 @@ class Base(gws.PublicObject, t.LayerObject):
 
         self.resolutions = []
         self.extent = []
-        self.crs = ''
 
-        self.legend = ''
+        self.has_legend = False
+        self.legend_url = None
+
+        self.opacity = None
+        self.client_options = None
 
     def configure(self):
         super().configure()
 
-        if self.var('source'):
-            self.source = self.add_child('gws.ext.gis.source', self.var('source'))
+        self.meta = self.var('meta')
+        # title at the top level config preferred
+        if self.var('title'):
+            self.meta.title = self.var('title')
+        self.title = self.meta.title
 
-        self.meta = self.configure_meta()
         self.uid = self.var('uid') or gws.as_uid(self.title)
 
         self.map = self.get_closest('gws.common.map')
         if self.map:
             self.uid = self.map.uid + '.' + self.uid
 
-        self.cache = self.var('cache', parent=True)
-        self.grid = self.var('grid', parent=True)
-        self.legend = self.var('legend')
-        self.opacity = self.var('opacity', parent=True)
+        self.display = self.var('display')
+
+        self.cache = self.var('cache')
+        self.cache_uid = gws.as_uid(self.uid)
+        self.has_cache = self.cache and self.cache.enabled
+
+        self.grid = self.var('grid')
+
+        p = self.var('legend')
+        self.legend_url = p.url
+        self.has_legend = p.enabled and p.url
+
+        self.opacity = self.var('opacity')
+        self.client_options = self.var('clientOptions')
 
         p = self.var('description')
         if p:
@@ -150,34 +184,14 @@ class Base(gws.PublicObject, t.LayerObject):
 
         self.resolutions = gws.gis.zoom.effective_resolutions(
             self.var('zoom'),
-            t.cast(t.MapView, self.parent).resolutions)
+            self.map.resolutions)
 
-        self.crs = self.map.crs
-        self.extent = self.configure_extent()
+        self.extent = self.var('extent', parent=True)
 
-        for p in self.var('search.providers', default=[]):
-            self.add_child('gws.ext.search.provider', p)
-
-    def configure_meta(self):
-        m = self.var('meta') or t.MetaData()
-        # title at the top level config preferred
-        if self.var('title'):
-            m.title = self.var('title')
-        self.title = m.title
-        return m
-
-    def configure_extent(self):
-        e = self.var('extent')
-        if e:
-            return e
-
-        if self.source and self.source.extent:
-            return gws.gis.proj.transform_bbox(
-                self.source.extent,
-                self.source.crs,
-                self.crs
-            )
-        return t.cast(t.MapView, self.parent).extent
+        p = self.var('search')
+        if p.enabled and p.providers:
+            for cfg in p.providers:
+                self.add_child('gws.ext.search.provider', cfg)
 
     def edit_access(self, user):
         # @TODO granular edit access
@@ -188,24 +202,38 @@ class Base(gws.PublicObject, t.LayerObject):
     @property
     def props(self):
 
-        return gws.compact({
+        p = gws.compact({
             'meta': self.meta,
             'opacity': self.opacity,
-            'options': self.var('clientOptions', default=_default_client_opts),
+            'options': self.client_options,
             # @TODO: dont write those if equal to parent
             'extent': self.extent,
             'resolutions': self.resolutions,
             'title': self.title,
-            'type': self.klass.split('.')[-1],
             'uid': self.uid,
-            'description': self.description(),
+            'description': self.description,
         })
 
-    def description(self, options=None):
-        ctx = gws.defaults(options, {
+        if self.display == 'tile':
+            p = gws.extend(p, {
+                'type': 'tile',
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetXyz/layerUid/' + self.uid + '/z/{z}/x/{x}/y/{y}/t.png',
+                'tileSize': self.grid.tileSize,
+            })
+
+        if self.display == 'box':
+            p = gws.extend(p, {
+                'type': 'box',
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
+            })
+
+        return p
+
+    @property
+    def description(self):
+        ctx = {
             'layer': self,
-            'service': self.source.service_metadata() if self.source else ''
-        })
+        }
         return self.description_template.render(ctx).content
 
     def props_for(self, user):
@@ -214,7 +242,7 @@ class Base(gws.PublicObject, t.LayerObject):
             p['editAccess'] = self.edit_access(user)
         return p
 
-    def mapproxy_config(self, mc, options=None):
+    def mapproxy_config(self, mc):
         pass
 
     def render_bbox(self, bbox, width, height, **client_params):
@@ -226,6 +254,10 @@ class Base(gws.PublicObject, t.LayerObject):
     def render_svg(self, bbox, dpi, scale, rotation, style):
         return None
 
+    def render_legend(self):
+        if self.legend_url:
+            return gws.ows.request.raw_get(self.legend_url).content
+
     def get_features(self, bbox):
         return []
 
@@ -235,62 +267,114 @@ class Base(gws.PublicObject, t.LayerObject):
 
 class Proxied(Base):
     def render_bbox(self, bbox, width, height, **client_params):
-        forward = {}
-        if 'dpi' in client_params:
-            forward['DPI__gws'] = client_params['dpi']
-        return mpx.wms_request(
-            self.uid,
-            bbox,
-            width,
-            height,
-            self.crs,
-            forward)
+        cache_uid = self.cache_uid
+        if not self.has_cache:
+            cache_uid += '_NOCACHE'
+        return gws.gis.mpx.wms_request(cache_uid, bbox, width, height, self.map.crs)
 
     def render_xyz(self, x, y, z):
-        return mpx.wmts_request(self.uid, x, y, z, self.grid.tileSize)
+        return gws.gis.mpx.wmts_request(
+            self.cache_uid,
+            x, y, z,
+            tile_matrix='grid_' + self.cache_uid + '_FRONT',
+            tile_size=self.grid.tileSize)
 
-    def mapproxy_config(self, mc, options=None):
-        source = gws.get(options, 'source') or self.source.mapproxy_config(mc)
+    """
+        Mapproxy config is done in two steps
+        
+        1. first, configure the source. For box layers, this is a normal WMS source. 
+        For tiled layers, we use the 'double cache' technique, see
+    
+        https://mapproxy.org/docs/nightly/configuration_examples.html#create-wms-from-existing-tile-server
+        https://mapproxy.org/docs/1.11.0/configuration_examples.html#reprojecting-tiles
+    
+        Basically, the source is wrapped in a no-store BACK cache, which is then given to the front mpx layer
+        
+        2. then, configure the layer. Create the FRONT cache, which is store or no-store, depending on the cache setting.
+        Also, configure the _NOCACHE variant for the layer, which skips the DST cache
+    """
 
-        # configure the "destination" grid and cache for this source
-        # (which can be a raw source or a source cache)
+    def mapproxy_layer_config(self, mc, source):
 
-        res = self.resolutions  # [:self.cache.maxLevel] ??? doesn't work
+        mc.layer(self.cache_uid + '_NOCACHE', {
+            'sources': [source]
+        })
+
+        res = [r for r in self.resolutions if r]
         if len(res) < 2:
-            res = [self.resolutions[0], self.resolutions[0]]
+            res = [res[0], res[0]]
 
-        dst_grid_config = gws.compact({
+        front_grid_config = gws.compact({
             'origin': self.grid.origin,
             'tile_size': [self.grid.tileSize, self.grid.tileSize],
             'res': res,
-            'srs': self.crs,
+            'srs': self.map.crs,
             'bbox': self.extent,
         })
-        dst_grid_config = gws.extend(dst_grid_config, self.grid.options)
-        dst_grid = mc.grid(self, dst_grid_config, self.uid + '_dst')
 
-        dst_cache_options = {
+        front_grid = mc.grid(self.cache_uid + '_FRONT', gws.extend(front_grid_config, self.grid.options))
+
+        front_cache_options = {
             'type': 'file',
             'directory_layout': 'mp'
         }
-        dst_cache_options = gws.extend(dst_cache_options, self.cache.options)
 
-        dst_cache_config = {
+        front_cache_config = {
             'sources': [source],
-            'grids': [dst_grid],
-            'cache': dst_cache_options,
+            'grids': [front_grid],
+            'cache': gws.extend(front_cache_options, self.cache.options),
             'meta_size': [self.grid.metaSize, self.grid.metaSize],
             'meta_buffer': self.grid.metaBuffer,
-            'disable_storage': not self.cache.enabled,
+            'disable_storage': not self.has_cache,
             'minimize_meta_requests': True,
         }
 
-        dst_cache = mc.cache(self, dst_cache_config, self.uid + '_dst')
+        front_cache = mc.cache(self.cache_uid + '_FRONT', front_cache_config)
 
-        return mc.layer(self, {
-            'title': self.uid,
-            'sources': [dst_cache]
+        mc.layer(self.cache_uid, {
+            'sources': [front_cache]
         })
+
+    def mapproxy_back_cache_config(self, mc, url, src_grid_config):
+        grid = mc.grid(self.cache_uid + '_BACK', src_grid_config)
+
+        source = mc.source(self.cache_uid, {
+            'type': 'tile',
+            'url': url,
+            'grid': grid,
+        })
+
+        src_cache_options = {
+            'type': 'file',
+            'directory_layout': 'mp'
+        }
+
+        src_cache_config = gws.compact({
+            'sources': [source],
+            'grids': [grid],
+            'cache': src_cache_options,
+            'disable_storage': True,
+            'meta_size': [1, 1],
+            'meta_buffer': 0,
+            'minimize_meta_requests': True,
+        })
+
+        return mc.cache(self.cache_uid + '_BACK', src_cache_config)
+
+
+class ProxiedTile(Proxied):
+
+    def configure(self):
+        super().configure()
+
+        self.display = self.var('display', default='tile')
+
+        # force no meta for tiled layers, otherwise MP keeps requested the same tile multiple times
+
+        self.grid = t.Config(gws.extend(self.grid, {
+            'metaSize': 1,
+            'metaBuffer': 0,
+        }))
 
 
 class Vector(Base):
@@ -307,3 +391,15 @@ class Vector(Base):
         for f in features:
             f.set_default_style(style)
         return [f.to_svg(bbox, dpi, scale, rotation) for f in features]
+
+
+def add_layers_to_object(obj, layer_configs):
+    ls = []
+    for p in layer_configs:
+        try:
+            ls.append(obj.add_child('gws.ext.layer', p))
+        except Exception as e:
+            uid = gws.get(p, 'uid')
+            gws.log.error(f'FAILED LAYER: map={obj.uid!r} layer={uid!r} error={e!r}')
+            gws.log.exception()
+    return ls

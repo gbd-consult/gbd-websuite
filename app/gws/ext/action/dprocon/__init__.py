@@ -87,7 +87,7 @@ class Object(gws.Object):
             self.db = self.root.find_first('gws.ext.db.provider')
 
         # @TODO find crs from alkis
-        self.crs = self.var('crs', parent=True)
+        self.crs = self.var('crs')
         self.srid = gws.gis.proj.as_srid(self.crs)
 
         self.request_table = self.var('requestTable')

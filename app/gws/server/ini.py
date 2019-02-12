@@ -36,8 +36,6 @@ def create(base_dir, pid_dir):
     commands = []
     frontends = []
 
-    main_log = gws.config.var('server.log')
-
     # NB it should be possible to have QGIS running somewhere else
     # so, if 'host' is not localhost, don't start QGIS here
     qgis_enabled = gws.config.var('server.qgis.enabled') and gws.config.var('server.qgis.host') == 'localhost'
@@ -117,9 +115,6 @@ def create(base_dir, pid_dir):
         
         *.* /dev/stdout
     """
-
-    if main_log:
-        syslog_conf += f'*.*;kern.none {main_log}'
 
     path = _write('syslog.conf', syslog_conf)
     commands.append(f'rsyslogd -i {pid_dir}/rsyslogd.pid -f {path}')

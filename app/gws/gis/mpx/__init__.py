@@ -46,7 +46,7 @@ def _call(service, params):
         return
 
 
-def wms_request(layer_uid, bbox, width, height, crs, forward):
+def wms_request(layer_uid, bbox, width, height, crs, forward=None):
     args = {
         'bbox': bbox,
         'width': width,
@@ -60,11 +60,12 @@ def wms_request(layer_uid, bbox, width, height, crs, forward):
         'styles': '',
         'layers': layer_uid
     }
-    args.update(forward)
+    if forward:
+        args.update(forward)
     return _call('wms', args) or _error_image(width, height)
 
 
-def wmts_request(source_uid, x, y, z, tile_size):
+def wmts_request(source_uid, x, y, z, tile_matrix, tile_size):
     args = {
         'tilecol': x,
         'tilerow': y,
@@ -73,7 +74,7 @@ def wmts_request(source_uid, x, y, z, tile_size):
         'request': 'GetTile',
         'version': '1.0.0',
         'format': 'image/png',
-        'tilematrixset': 'grid_' + source_uid + '_dst',
+        'tilematrixset': tile_matrix,
         'style': 'default',
         'layer': source_uid
     }

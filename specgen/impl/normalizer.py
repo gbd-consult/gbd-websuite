@@ -43,7 +43,7 @@ def _unions_from_exts(objects):
 
     for c in objects:
         if c['kind'] == 'object' and c['name'].startswith('gws.ext'):
-            # gws.ext.gis.layer.vector.Config -> gws.types.ext.gis.layer.Config
+            # gws.ext.layer.vector.Config -> gws.types.ext.layer.Config
             t = c['name'].split('.')
             tname = 'gws.types.' + '.'.join(t[1:-2] + [t[-1]])
             if tname not in ls:

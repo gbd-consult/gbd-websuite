@@ -219,6 +219,11 @@ class Object(gws.common.template.Object):
     def _render_html(self, text, context):
         errors = []
 
+        context['gws'] = {
+            'version': gws.VERSION,
+            'endpoint': gws.SERVER_ENDPOINT,
+        }
+
         content = gws.tools.cx.render(text, context, errors, path=self.path or '<string>')
         for e in errors:
             gws.log.debug('TEMPLATE: ' + e)

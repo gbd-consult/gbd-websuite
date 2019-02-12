@@ -65,7 +65,7 @@ class Object(gws.common.search.provider.Object):
         })
 
         gws.log.debug(f'WMS_QUERY: START')
-        gws.p(fa, 2)
+        gws.p(fa)
 
         fs = self.service.find_features(fa)
 

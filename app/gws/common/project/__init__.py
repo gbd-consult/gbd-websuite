@@ -25,11 +25,11 @@ class Config(t.Config):
     description: t.Optional[t.TemplateConfig]  #: template for the project description
     locale: t.Optional[str]  #: Project locale
     map: t.Optional[gws.common.map.Config]  #: Map configuration
-    meta: t.Optional[t.MetaConfig]  #: project metadata
-    multiMatch: t.Optional[t.regex]  #: filename pattern for a multi-project template
+    meta: t.Optional[t.MetaConfig] = {}  #: project metadata
+    multi: t.Optional[t.regex]  #: filename pattern for a multi-project template
     overviewMap: t.Optional[gws.common.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.common.printer.Config]  #: printer configuration
-    search: t.Optional[gws.common.search.Config]  #: project-wide search configuration
+    search: t.Optional[gws.common.search.Config]  = {} #: project-wide search configuration
     title: str = ''  #: project title
     uid: t.Optional[str]  #: unique id
 
@@ -50,19 +50,25 @@ class Object(gws.PublicObject, t.ProjectObject):
     def __init__(self):
         super().__init__()
 
+        self.api: gws.common.api.Object = None
         self.client: gws.common.client.Object = None
+        self.description_template: t.TemplateObject = None
         self.locale = ''
         self.map: gws.common.map.Object = None
+        self.meta: t.MetaData = {}
         self.overview_map: gws.common.map.Object = None
         self.printer: gws.common.printer.Object = None
-        self.description_template: t.TemplateObject = None
         self.title = ''
-        self.meta: t.MetaData = {}
 
     def configure(self):
         super().configure()
 
-        self.meta = self.configure_meta()
+        self.meta = self.var('meta')
+        # title at the top level config preferred
+        if self.var('title'):
+            self.meta.title = self.var('title')
+        self.title = self.meta.title
+
         self.uid = self.var('uid') or gws.as_uid(self.title)
 
         self.locale = self.var('locale', parent=True)
@@ -85,8 +91,10 @@ class Object(gws.PublicObject, t.ProjectObject):
             self.var('description') or gws.common.template.builtin_config('project_description')
         )
 
-        for p in self.var('search.providers', default=[]):
-            self.add_child('gws.ext.search.provider', p)
+        search = self.var('search')
+        if search.enabled and search.providers:
+            for p in search.providers:
+                self.add_child('gws.ext.search.provider', p)
 
         p = self.var('api')
         self.api = self.add_child(gws.common.api.Object, p) if p else None
@@ -95,20 +103,12 @@ class Object(gws.PublicObject, t.ProjectObject):
         if p:
             self.client = self.add_child(gws.common.client.Object, p)
 
-    def configure_meta(self):
-        # @TODO merge with layer
-        m = self.var('meta') or t.MetaData()
-        # title at the top level config preferred
-        if self.var('title'):
-            m.title = self.var('title')
-        self.title = m.title
-        return m
-
-    def description(self, options=None):
-        ctx = gws.defaults(options, {
+    @property
+    def description(self):
+        ctx = {
             'project': self,
             'meta': self.meta,
-        })
+        }
         return self.description_template.render(ctx).content
 
     @property
@@ -117,7 +117,7 @@ class Object(gws.PublicObject, t.ProjectObject):
 
         return gws.compact({
             'client': cc,
-            'description': self.description(),
+            'description': self.description,
             'map': self.map,
             'meta': self.meta,
             'overviewMap': self.overview_map,

@@ -51,7 +51,7 @@ class Object(gws.Object):
         """Perform a search"""
 
         project = req.require_project(p.projectUid)
-        layers = gws.compact(req.acquire('gws.ext.gis.layer', uid) for uid in p.layerUids)
+        layers = gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids)
         limit = min(p.limit, self.limit) if p.limit else self.limit
 
         args = t.SearchArgs({
@@ -88,9 +88,11 @@ class Object(gws.Object):
         uids = set()
 
         for layer, prov, f in lpf[:limit]:
-            if f.uid in uids:
-                continue
-            uids.add(f.uid)
+            # @TODO: we cannot ensure unique ids across all possible sources...
+            #
+            # if f.uid in uids:
+            #     continue
+            # uids.add(f.uid)
 
             f.provider = prov
             f.layer = layer

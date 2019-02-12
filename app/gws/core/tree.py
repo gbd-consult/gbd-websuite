@@ -14,6 +14,7 @@ class Object(t.ObjectInterface):
 
         self.access = None
         self.klass = _class_name(self.__class__)
+        self.defaults = None
 
     def is_a(self, klass):
         if isinstance(klass, type):

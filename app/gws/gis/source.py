@@ -16,9 +16,9 @@ class BaseConfig(t.Config):
 class LayerFilterConfig(t.Config):
     """Layer filter"""
 
-    level: int = 0
-    names: t.Optional[t.List[str]]
-    pattern: t.regex = ''
+    level: int = 0  #: use layers at this level
+    names: t.Optional[t.List[str]]  #: use these layer names
+    pattern: t.regex = ''  #: match a pattern against the layer full path
 
 
 class LayerFilter(t.Data):
@@ -60,11 +60,11 @@ class Base(gws.Object, t.SourceObject):
 
 
 def filter_layers(layers: t.List[t.SourceLayer], slf: LayerFilter) -> t.List[t.SourceLayer]:
-    return [
-        sl
-        for sl in layers
-        if _layer_matches(sl, slf)
-    ]
+    return [sl for sl in layers if _layer_matches(sl, slf)]
+
+
+def filter_image_layers(layers: t.List[t.SourceLayer], slf: LayerFilter) -> t.List[t.SourceLayer]:
+    return [sl for sl in filter_layers(layers, slf) if sl.is_image]
 
 
 def _layer_matches(layer: t.SourceLayer, slf: LayerFilter):

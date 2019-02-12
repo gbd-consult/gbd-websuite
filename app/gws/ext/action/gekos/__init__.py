@@ -69,7 +69,7 @@ class Config(t.WithTypeAndAccess):
 class Object(gws.Object):
     def configure(self):
         super().configure()
-        self.crs = self.var('crs', parent=True)
+        self.crs = self.var('crs')
 
         self.db: t.DbProviderObject = None
         s = self.var('db')
@@ -115,9 +115,9 @@ class Object(gws.Object):
         return _text_xy(features[0])
 
     def load_data(self):
-        """Load gekos data into a postgis table."""
+        """Load gekos data into a postgres table."""
 
-        # @TODO typing, the db provider here is specifically postgis
+        # @TODO typing, the db provider here is specifically postgres
         # @TODO the whole WKT business is because we don't support EWKB and cannot use batch_insert of geoms
 
         features = self._get_data_from_gekos()

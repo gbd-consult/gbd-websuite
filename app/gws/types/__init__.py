@@ -58,17 +58,9 @@ class ext:
             class Config(Config):
                 pass
 
-    class gis:
-        class layer:
-            class Config(Config):
-                pass
-
-            class LayerProps(Data):
-                pass
-
-        class source:
-            class Config(Config):
-                pass
+    class layer:
+        class Config(Config):
+            pass
 
     class search:
         class provider:
@@ -159,25 +151,6 @@ class DocumentRootConfig(Config):
     dir: dirpath  #: directory path
     allowMime: Optional[List[str]]  #: allowed mime types
     denyMime: Optional[List[str]]  #: disallowed mime types (from the standard list)
-
-
-class CacheConfig(Config):
-    """map cache configuration"""
-
-    enabled: bool = False  #: cache is enabled
-    maxAge: duration = '1d'  #: cache max. age
-    maxLevel: int = 1  #: max. zoom level to cache
-    options: dict = {}  #: additional MapProxy cache options
-
-
-class GridConfig(Config):
-    """grid configuration for tiled or cached map data"""
-
-    origin: str = 'nw'  #: position of the first tile (nw or sw)
-    tileSize: int = 256  #: tile size
-    metaSize: int = 4  #: number of meta-tiles to fetch
-    metaBuffer: int = 200  #: pixel buffer
-    options: dict = {}  #: additional MapProxy grid options
 
 
 class ShapeInterface:
@@ -330,6 +303,7 @@ class SourceLayer:
         self.scale_range: List[float] = []
         self.styles: List[SourceStyle] = []
         self.legend = ''
+        self.resource_urls = {}
 
         self.a_path = ''
         self.a_uid = ''
@@ -359,7 +333,7 @@ class ObjectInterface:
     parent: 'ObjectInterface'
     root: 'ObjectInterface'
     uid: str
-    props: dict
+    props: Data
 
     def is_a(self, klass):
         raise NotImplementedError
@@ -503,26 +477,19 @@ class MapView:
     resolutions: List[float]
 
 
-class LayerProps(Data):
-    pass
-
-
 # noinspection PyAbstractClass
 class LayerObject(ObjectInterface, MapView):
-    cache: CacheConfig
     description_template: TemplateObject
     feature_format: 'FormatInterface'
-    grid: GridConfig
-    legend: url
+    has_legend: bool
     map: 'MapObject'
     meta: MetaData
     opacity: float
     parent: MapView
-    props: LayerProps
-    source: SourceObject
     title: str
+    description: str
 
-    def mapproxy_config(self, mc, options=None):
+    def mapproxy_config(self, mc):
         raise NotImplementedError
 
     def render_bbox(self, bbox, width, height, **client_params):
@@ -534,7 +501,7 @@ class LayerObject(ObjectInterface, MapView):
     def render_svg(self, bbox, dpi, scale, rotation, style):
         raise NotImplementedError
 
-    def description(self, options=None) -> str:
+    def render_legend(self):
         raise NotImplementedError
 
     def get_features(self, bbox):

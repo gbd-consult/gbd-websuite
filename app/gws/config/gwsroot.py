@@ -3,7 +3,7 @@ import gws.types.spec
 import gws.common.application
 import gws.server.monitor
 
-from . import parser, error
+from . import parser, error, spec
 
 
 class Object(gws.core.tree.RootObject):
@@ -20,9 +20,8 @@ class Object(gws.core.tree.RootObject):
 
         self.monitor = self.add_child(gws.server.monitor.Object, {})
         self.application = self.add_child(gws.common.application.Object, self.config)
-        spec = parser.load_spec('api')
-        self.action_commands = spec['methods']
-        self.action_validator = gws.types.spec.Validator(spec['types'])
+        self.action_commands = spec.action_commands()
+        self.action_validator = spec.action_validator()
 
     def validate_action(self, category, cmd, arg):
         if cmd not in self.action_commands:

@@ -60,7 +60,7 @@ class BuchungConfig:
 class Config(t.WithTypeAndAccess):
     """Flurstückssuche (cadaster parlcels search) action"""
 
-    db: t.Optional[str]  #: database (postgis) provider ID
+    db: t.Optional[str]  #: database provider ID
     alkisSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
     indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
 

@@ -14,6 +14,25 @@ import gws.tools.misc as misc
 import gws.tools.shell as sh
 import gws.web.types
 import gws.qgis.server
+import gws.gis.layer
+import gws.gis.zoom
+import gws.common.search
+
+
+class LayerDefaults(t.Config):
+    crs: t.crsref = 'EPSG:3857'
+    cache: gws.gis.layer.CacheConfig = {}
+    grid: gws.gis.layer.GridConfig = {}
+    clientOptions: gws.gis.layer.ClientOptions = {}
+    opacity: float = 1
+    legend: gws.gis.layer.LegendConfig = {}
+    zoom: t.Optional[gws.gis.zoom.Config]
+    extent: t.Optional[t.Extent]
+    search: t.Optional[gws.common.search.Config] = {}
+
+
+class Defaults(t.Config):
+    layer: LayerDefaults = {}
 
 
 class DbConfig(t.Config):
@@ -36,17 +55,18 @@ class Config(t.Config):
     api: t.Optional[gws.common.api.Config]  #: system-wide server actions
     auth: t.Optional[gws.auth.types.Config]  #: authorization methods and options
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
+    csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
     db: t.Optional[DbConfig]  #: database configuration
+    defaults: Defaults = {}  #: default configuration options
+    fonts: t.Optional[t.dirpath]  #: directory with the custom fonts
     locale: t.Optional[str] = 'en_CA'  #: default locale for all projects
-    seeding: SeedingConfig = {}  #: configuration for seeding jobs
-    projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations
     projectDirs: t.Optional[t.List[t.dirpath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[t.filepath]]  #: additional project paths
+    projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations
+    seeding: SeedingConfig = {}  #: configuration for seeding jobs
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
     timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
     web: t.Optional[gws.web.types.Config] = {}  #: webserver configuration
-    fonts: t.Optional[t.dirpath]  #: directory with the custom fonts
-    csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
 
 
 class Object(gws.Object):
@@ -57,13 +77,15 @@ class Object(gws.Object):
     def configure(self):
         super().configure()
 
-        self.uid = ''
+        self.defaults = self.var('defaults')
+
+        self.uid = 'APP'
 
         self.qgis_version = gws.qgis.server.version()
 
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
 
-        _install_fonts(self.var('fonts'))
+        #_install_fonts(self.var('fonts'))
 
         gws.auth.api.init()
 

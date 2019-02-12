@@ -9,3 +9,6 @@ class Data:
 
     def as_dict(self):
         return vars(self)
+
+    def __repr__(self):
+        return repr(vars(self))
