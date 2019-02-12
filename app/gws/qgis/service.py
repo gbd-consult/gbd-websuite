@@ -88,9 +88,9 @@ class Service(gws.Object, t.ServiceInterface):
         text = gws.ows.request.get_text(self.url, service='WMS', request='GetFeatureInfo', params=p)
         return gws.ows.response.parse(text, crs=self.supported_crs[0])
 
-    def get_legend(self, layers):
+    def get_legend(self, source_layers):
         # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
-
+        layers = ','.join(sl.name for sl in source_layers)
         params = {
             'MAP': self.path,
             'LAYER': layers,
@@ -110,5 +110,3 @@ class Service(gws.Object, t.ServiceInterface):
             params=params)
 
         return resp.content
-
-

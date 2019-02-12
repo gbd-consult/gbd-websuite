@@ -74,7 +74,7 @@ class Object(gws.gis.layer.Proxied):
     def render_legend(self):
         if self.legend_url:
             return super().render_legend()
-        return self.service.get_legend(sl.name for sl in self.source_layers)
+        return self.service.get_legend(self.source_layers)
 
     def mapproxy_config(self, mc, options=None):
 

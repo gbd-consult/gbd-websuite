@@ -55,7 +55,9 @@ class Object(gws.gis.layer.Base):
         self.layers = gws.gis.layer.add_layers_to_object(self, top_cfg.layers)
 
     def render_legend(self):
-        return self.service.get_legend(sl.name for sl in self.source_layers)
+        if self.legend_url:
+            return super().render_legend()
+        return self.service.get_legend(self.source_layers)
 
     @property
     def props(self):

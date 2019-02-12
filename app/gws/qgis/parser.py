@@ -28,47 +28,48 @@ def parse(srv: t.ServiceInterface, xml):
     for n, cc in enumerate(srv.print_templates):
         cc.index = n
 
-    map_layers = _map_layers(root)
-
-    disabled_layers = set(gws.get(srv.properties, 'identify.disabledlayers', []))
-    use_layer_ids = gws.get(srv.properties, 'wmsuselayerids')
-
-    for sl in map_layers.values():
-        sl.is_queryable = sl.meta.name not in disabled_layers
-        sl.title = sl.meta.title
-        sl.name = sl.meta.name if use_layer_ids else sl.title
+    map_layers = _map_layers(root, srv.properties)
 
     root_group = _tree(root.first('layer-tree-group'), map_layers)
     srv.layers = u.flatten_source_layers(root_group.layers)
 
-    if srv.version.startswith('2'):
-        crs = gws.get(srv.properties, 'spatialrefsys.projectcrs')
-    if srv.version.startswith('3'):
-        crs = root.get_text('projectcrs.spatialrefsys.authid')
+    crs = None
 
-    srv.supported_crs = [crs]
+    if srv.version.startswith('2'):
+        crs = _pval(srv.properties, 'SpatialRefSys.ProjectCrs')
+    if srv.version.startswith('3'):
+        crs = root.get_text('projectCrs.spatialrefsys.authid')
+
+    if crs:
+        srv.supported_crs = [crs]
 
 
 def _project_meta_from_props(props):
     m = t.MetaData()
 
-    m.abstract = gws.get(props, 'wmsserviceabstract')
-    m.attribution = gws.get(props, 'copyrightlabel.label')
-    m.keywords = gws.get(props, 'wmskeywordlist')
-    m.title = gws.get(props, 'wmsservicetitle')
+    m.abstract = _pval(props, 'WMSServiceAbstract')
+    m.attribution = _pval(props, 'CopyrightLabel.Label')
+    m.keywords = _pval(props, 'WMSKeywordList')
+    m.title = _pval(props, 'WMSServiceTitle')
 
     m.contact = t.MetaContact()
 
-    m.contact.email = gws.get(props, 'wmscontactmail')
-    m.contact.organization = gws.get(props, 'wmscontactorganization')
-    m.contact.person = gws.get(props, 'wmscontactperson')
-    m.contact.phone = gws.get(props, 'wmscontactphone')
-    m.contact.position = gws.get(props, 'wmscontactposition')
+    m.contact.email = _pval(props, 'WMSContactMail')
+    m.contact.organization = _pval(props, 'WMSContactOrganization')
+    m.contact.person = _pval(props, 'WMSContactPerson')
+    m.contact.phone = _pval(props, 'WMSContactPhone')
+    m.contact.position = _pval(props, 'WMSContactPosition')
 
     return m
 
 
+def _pval(props, key):
+    return gws.get(props, key.lower())
+
+
 def _properties(el):
+    # NB: property keys converted to lowercase, cased args to _pval are just for readability
+
     et = el.attr('type')
 
     if not et:
@@ -118,12 +119,41 @@ def _tree(el, map_layers):
             return sl
 
 
-def _map_layers(root):
-    ls = {}
+def _map_layers(root, props):
+    disabled_layers = set(_pval(props, 'Identify.disabledLayers') or [])
+    no_wms_layers = set(_pval(props, 'WMSRestrictedLayers') or [])
+    use_layer_ids = _pval(props, 'WMSUseLayerIDs')
+
+    map_layers = {}
+
     for el in root.all('projectlayers.maplayer'):
         sl = _map_layer(el)
-        ls[sl.meta.name] = sl
-    return ls
+
+        if not sl:
+            continue
+
+        # no_wms_layers always contains titles, not ids (=names)
+
+        if sl.meta.title in no_wms_layers:
+            continue
+
+        # ggis2: non-queryable layers are on the identify.disabledlayers list
+        # ggis3: non-queryable layers have <flags><Identifiable>0
+
+        s = el.get_text('flags.Identifiable')
+        if s == '1':
+            sl.is_queryable = True
+        elif s == '0':
+            sl.is_queryable = False
+        else:
+            sl.is_queryable = sl.meta.name not in disabled_layers
+
+        sl.title = sl.meta.title
+        sl.name = sl.meta.name if use_layer_ids else sl.title
+
+        map_layers[sl.meta.name] = sl
+
+    return map_layers
 
 
 def _map_layer(el):
@@ -152,9 +182,9 @@ def _map_layer(el):
         ]
 
     if el.attr('hasScaleBasedVisibilityFlag') == '1':
-        a = _float(el.attr('minimumscale'))
-        z = _float(el.attr('maximumscale'))
-
+        # sic! these are called min-max in qgis2 and max-min in qgis3
+        a = _float(el.attr('minimumScale') or el.attr('maxScale'))
+        z = _float(el.attr('maximumScale') or el.attr('minScale'))
         if z > a:
             sl.scale_range = [a, z]
 
