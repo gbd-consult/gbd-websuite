@@ -27,6 +27,7 @@ class Config(gws.gis.layer.ProxiedConfig):
     """Tile layer"""
 
     display: str = 'tile'
+    maxRequests: int = 1  #: max concurrent requests to this source
     service: t.Optional[ServiceConfig] = {}  #: service information
     url: t.url  #: rest url with placeholders {x}, {y} and {z}
 

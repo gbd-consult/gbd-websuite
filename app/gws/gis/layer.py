@@ -342,6 +342,7 @@ class Proxied(Base):
             'type': 'tile',
             'url': url,
             'grid': grid,
+            'concurrent_requests': self.var('maxRequests', default=0)
         })
 
         src_cache_options = {
