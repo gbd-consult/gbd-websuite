@@ -19,37 +19,21 @@ import gws.gis.zoom
 import gws.common.search
 
 
-class LayerDefaults(t.Config):
-    crs: t.crsref = 'EPSG:3857'
-    cache: gws.gis.layer.CacheConfig = {}
-    grid: gws.gis.layer.GridConfig = {}
-    clientOptions: gws.gis.layer.ClientOptions = {}
-    opacity: float = 1
-    legend: gws.gis.layer.LegendConfig = {}
-    zoom: t.Optional[gws.gis.zoom.Config]
-    extent: t.Optional[t.Extent]
-    search: t.Optional[gws.common.search.Config] = {}
-
-
-class Defaults(t.Config):
-    layer: LayerDefaults = {}
-
-
 class DbConfig(t.Config):
-    """database configuration"""
+    """Database configuration"""
 
     providers: t.List[t.ext.db.provider.Config]
 
 
 class SeedingConfig(t.Config):
-    """seeding options"""
+    """Seeding options"""
 
     maxTime: t.duration = 600  #: max. time for a seeding job
     concurrency: int = 1  #: number of concurrent seeding jobs
 
 
 class Config(t.Config):
-    """main gws application configuration"""
+    """Application configuration"""
 
     access: t.Optional[t.Access]  #: default access mode
     api: t.Optional[gws.common.api.Config]  #: system-wide server actions
@@ -57,7 +41,6 @@ class Config(t.Config):
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
     csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
     db: t.Optional[DbConfig]  #: database configuration
-    defaults: Defaults = {}  #: default configuration options
     fonts: t.Optional[t.dirpath]  #: directory with the custom fonts
     locale: t.Optional[str] = 'en_CA'  #: default locale for all projects
     projectDirs: t.Optional[t.List[t.dirpath]]  #: directories with additional projects

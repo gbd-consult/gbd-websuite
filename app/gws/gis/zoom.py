@@ -4,7 +4,7 @@ import gws.types as t
 
 
 class Config(t.Config):
-    """zoom and resolution configuation"""
+    """Zoom levels and resolutions"""
 
     resolutions: t.Optional[t.List[float]]  #: allowed resolutions
     initResolution: t.Optional[float]  #: initial resolution

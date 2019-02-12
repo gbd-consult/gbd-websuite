@@ -41,7 +41,7 @@ grant usage on <name>_id_seq to <user>
 
 
 class EigentuemerConfig:
-    """access to the Eigentümer (eigentuemer) information"""
+    """Access to the Eigentümer (owner) information"""
 
     access: t.Access  #: access rights
 
@@ -52,7 +52,7 @@ class EigentuemerConfig:
 
 
 class BuchungConfig:
-    """access to the Grundbuch (register) information"""
+    """Access to the Grundbuch (register) information"""
 
     access: t.Access  #: access rights
 
@@ -64,7 +64,7 @@ class Config(t.WithTypeAndAccess):
     alkisSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
     indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
 
-    eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (eigentuemer) information
+    eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
     buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
 
     excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (AU) IDs to exclude from search

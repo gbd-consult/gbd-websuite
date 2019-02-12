@@ -6,7 +6,7 @@ import gws.types as t
 
 
 class Config(t.WithTypeAndAccess):
-    """feature edit action"""
+    """Feature edit action"""
     pass
 
 

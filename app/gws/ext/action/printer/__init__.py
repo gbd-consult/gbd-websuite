@@ -5,7 +5,7 @@ import gws.types as t
 
 
 class Config(t.WithTypeAndAccess):
-    """print action"""
+    """Print action"""
     pass
 
 

@@ -41,7 +41,7 @@ class GetFeaturesResponse(t.Response):
 
 
 class Config(t.WithTypeAndAccess):
-    """map rendering action"""
+    """Map rendering action"""
     pass
 
 

@@ -3,7 +3,7 @@ import gws.types as t
 
 
 class Config(gws.common.search.provider.Config):
-    """database-based search"""
+    """Database-based search"""
 
     db: t.Optional[str]  #: database provider uid
     table: t.SqlTableConfig  #: sql table configuration

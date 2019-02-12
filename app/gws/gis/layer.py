@@ -15,7 +15,7 @@ import gws.tools.net
 
 
 class ClientOptions(t.Data):
-    """client options for a layer"""
+    """Client options for a layer"""
 
     expanded: t.Optional[bool] = False  #: the layer is expanded in the list view
     listed: t.Optional[bool] = True  #: the layer is displayed in this list view
@@ -35,7 +35,7 @@ class LegendConfig(t.Config):
 
 
 class CacheConfig(t.Config):
-    """layer cache configuration"""
+    """Cache configuration"""
 
     enabled: bool = False  #: cache is enabled
     maxAge: t.duration = '1d'  #: cache max. age
@@ -44,7 +44,7 @@ class CacheConfig(t.Config):
 
 
 class GridConfig(t.Config):
-    """grid configuration for tiled or cached map data"""
+    """Grid configuration for caches and tiled data"""
 
     origin: str = 'nw'  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
@@ -54,7 +54,7 @@ class GridConfig(t.Config):
 
 
 class BaseConfig(t.WithTypeAndAccess):
-    """map layer"""
+    """Layer"""
 
     cache: CacheConfig = {}  #: cache configuration
     clientOptions: ClientOptions = {}  #: options for the layer display in the client

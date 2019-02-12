@@ -10,7 +10,7 @@ import gws.ows.util
 
 
 class Config(gws.gis.layer.ProxiedConfig):
-    """automatic QGIS layer"""
+    """Automatic QGIS layer"""
 
     directRender: t.Optional[t.List[str]]  #: QGIS providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS providers that should be searched directly

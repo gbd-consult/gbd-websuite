@@ -55,7 +55,7 @@ class PositionConfig(t.Config):
 
 
 class Config(t.WithTypeAndAccess):
-    """gekos action"""
+    """GekoS action"""
 
     url: t.url
     crs: t.crsref = ''

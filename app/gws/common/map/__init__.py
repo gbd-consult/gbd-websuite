@@ -7,7 +7,7 @@ import gws.gis.layer
 
 
 class Config(t.Config):
-    """map configuration"""
+    """Map configuration"""
 
     center: t.Optional[t.Point]  #: map center
     crs: t.Optional[t.crsref] = 'EPSG:3857'  #: crs for this map

@@ -9,14 +9,14 @@ import gws.types as t
 
 
 class ApiConfig(t.Config):
-    """project-specific server actions"""
+    """Project-specific server actions"""
 
     access: t.Optional[t.Access]  #: default access mode
     actions: t.Optional[t.List[t.ext.action.Config]]  #: available actions
 
 
 class Config(t.Config):
-    """project configuration"""
+    """Project configuration"""
 
     access: t.Optional[t.Access]  #: access rights
     api: t.Optional[gws.common.api.Config]  #: project-specific actions

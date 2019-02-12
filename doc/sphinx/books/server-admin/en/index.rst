@@ -30,7 +30,6 @@ Documentation for system administrators who configure the GBD WebSuite Server.
     features.rst
     configref.rst
     cliref.rst
-    apiref.rst
 
 
 

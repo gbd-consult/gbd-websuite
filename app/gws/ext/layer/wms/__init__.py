@@ -12,7 +12,7 @@ import gws.tools.misc as misc
 
 
 class Config(gws.gis.layer.ProxiedConfig):
-    """wms layer"""
+    """WMS layer"""
 
     capsCacheMaxAge: t.duration = '1d'  #: max cache age for capabilities documents
     display: str = 'box'

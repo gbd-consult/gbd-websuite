@@ -35,7 +35,7 @@ class GetSaveNamesResponse(t.Response):
 
 
 class Config(t.WithTypeAndAccess):
-    """select action"""
+    """Select action"""
     pass
 
 

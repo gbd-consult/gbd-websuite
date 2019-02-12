@@ -12,7 +12,7 @@ import gws.common.template
 
 
 class Config(t.WithTypeAndAccess):
-    """asset (dynamic html) action"""
+    """Asset generation action"""
     pass
 
 

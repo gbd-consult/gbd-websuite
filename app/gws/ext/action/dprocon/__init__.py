@@ -40,7 +40,7 @@ _DEFAULT_FORMAT = t.FormatConfig({
 
 
 class Config(t.WithTypeAndAccess):
-    """dprocon action"""
+    """D-Procon action"""
 
     db: str = ''
     requestUrl: t.url

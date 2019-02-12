@@ -224,7 +224,7 @@ gekos load
 ~~~~~~~~~~
 
 
-Load the data from Gekos-Online into a postgis table
+Load the data from Gekos-Online into a postgres table
 
 *Optionen:*
 

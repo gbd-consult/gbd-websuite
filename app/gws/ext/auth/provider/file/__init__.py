@@ -11,7 +11,7 @@ import gws.types as t
 
 
 class Config(t.WithType):
-    """file-based authorization provider"""
+    """File-based authorization provider"""
 
     path: t.filepath  #: path to the users json file
 

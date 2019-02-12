@@ -8,7 +8,7 @@ import gws.types as t
 
 
 class Config(t.WithTypeAndAccess):
-    """remote administrator action"""
+    """Remote administration action"""
     pass
 
 

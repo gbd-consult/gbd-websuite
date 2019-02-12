@@ -3,7 +3,7 @@ import gws.types as t
 
 
 class Config(t.Config):
-    """csv export configuration"""
+    """CSV export settings"""
 
     decimal: str = '.'
     delimiter: str = ','  #: field delimiter

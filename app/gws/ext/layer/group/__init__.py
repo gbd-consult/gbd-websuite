@@ -3,10 +3,9 @@ import gws.gis.layer
 
 
 class Config(gws.gis.layer.BaseConfig):
-    """group layer"""
+    """Group layer"""
 
-    #: layers in this group
-    layers: t.List[t.ext.layer.Config]
+    layers: t.List[t.ext.layer.Config]  #: layers in this group
 
 
 class Object(gws.gis.layer.Base):

@@ -31,7 +31,7 @@ DEFAULT_FEATURE_FORMAT = t.FormatConfig({
 
 
 class Config(gws.common.search.provider.Config):
-    """nominatim (OSM) search provider"""
+    """Nominatim (OSM) search provider"""
 
     country: t.Optional[str]  #: country to limit the search
     language: t.Optional[str]  #: language to return the results in

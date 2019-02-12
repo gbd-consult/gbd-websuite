@@ -9,7 +9,7 @@ class SSLConfig(t.Config):
 
 
 class RewriteRule(t.Data):
-    """rewrite rule"""
+    """Rewrite rule"""
 
     match: t.regex  #: expression to match the url against
     target: t.formatstr  #: target url with placeholders
@@ -26,7 +26,7 @@ class CorsConfig(t.Config):
 
 
 class SiteConfig(t.Config):
-    """site (virtual host) configuration"""
+    """Site (virtual host) configuration"""
 
     host: str = '*'  #: host name
     rewrite: t.Optional[t.List[RewriteRule]]  #: rewrite rules
@@ -36,7 +36,7 @@ class SiteConfig(t.Config):
 
 
 class Config(t.Config):
-    """web server configuration"""
+    """Web server configuration"""
 
     sites: t.Optional[t.List[SiteConfig]]  #: configured sites
     ssl: t.Optional[SSLConfig]  #: ssl configuration

@@ -8,3 +8,4 @@ Documentation for developers who want to extend the GBD WebSuite Client.
 
     l10n.rst
     css.rst
+    apiref.rst

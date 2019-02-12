@@ -11,13 +11,13 @@ Tuple = typing.Tuple
 Union = typing.Union
 cast = typing.cast
 
-#: alias: extent coordinates [minx, miny, maxx, maxy]
+#: alias: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
 
-#: alias: point coordinates [x, y]
+#: alias: Point coordinates [x, y]
 Point = Tuple[float, float]
 
-#: alias: size [width, height]
+#: alias: Size [width, height]
 Size = Tuple[float, float]
 
 Config = Data
@@ -69,27 +69,27 @@ class ext:
 
 
 class filepath:
-    """valid readable file path on the server"""
+    """Valid readable file path on the server"""
     pass
 
 
 class dirpath:
-    """valid readable directory path on the server"""
+    """Valid readable directory path on the server"""
     pass
 
 
 class duration:
-    """string like "1w 2d 3h 4m 5s" or an int number of seconds"""
+    """String like "1w 2d 3h 4m 5s" or a number of seconds"""
     pass
 
 
 class regex:
-    """regular expression, as used in Python"""
+    """Regular expression, as used in Python"""
     pass
 
 
 class formatstr:
-    """string with {attribute} placeholders"""
+    """String with {attribute} placeholders"""
     pass
 
 
@@ -99,7 +99,7 @@ class crsref:
 
 
 class url:
-    """http or https URL"""
+    """An http or https URL"""
     pass
 
 
@@ -109,7 +109,7 @@ class AccessType(Enum):
 
 
 class AccessRuleConfig(Config):
-    """access rights definition for authorization roles"""
+    """Access rights definition for authorization roles"""
 
     type: AccessType  #: access type (deny or allow)
     role: str  #: a roles to which this rule applies
@@ -146,7 +146,7 @@ class WithTypeAndAccess(WithType):
 
 
 class DocumentRootConfig(Config):
-    """assets base directory configuration"""
+    """Base directory for assets"""
 
     dir: dirpath  #: directory path
     allowMime: Optional[List[str]]  #: allowed mime types
@@ -194,7 +194,7 @@ class MetaData(Data):
 
 
 class MetaConfig(Config):
-    """object metadata configuration"""
+    """Object metadata configuration"""
 
     abstract: str = ''  #: object abstract description
     attribution: str = ''  #: attribution (copyright) string
@@ -313,7 +313,7 @@ class SourceLayer:
 #####
 
 class AttributeConfig(Config):
-    """attribute configuration"""
+    """Attribute configuration"""
 
     title: str = ''  #: title
     name: str = ''  #: internal name
@@ -367,7 +367,7 @@ class ObjectInterface:
 
 
 class TemplateQualityLevel(Data):
-    """named quality level for templates"""
+    """Quality level for a template"""
 
     name: str = ''  #: level name
     dpi: int  #: dpi value
@@ -549,7 +549,7 @@ class FeatureProps(Data):
 
 
 class FormatConfig(Config):
-    """feature format"""
+    """Feature format"""
 
     description: Optional[TemplateConfig]  #: template for feature descriptions
     category: Optional[TemplateConfig]  #: feature category

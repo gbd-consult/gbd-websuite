@@ -6,7 +6,7 @@ import gws.auth.user
 
 
 class Config(t.WithTypeAndAccess):
-    """authorization action"""
+    """Authorization action"""
     pass
 
 

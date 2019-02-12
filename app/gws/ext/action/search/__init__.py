@@ -11,7 +11,8 @@ MAX_LIMIT = 1000
 
 
 class Config(t.WithTypeAndAccess):
-    """search action"""
+    """Search action"""
+
     limit: int = 1000  #: search results limit
     pixelTolerance: int = 5  #: pixel tolerance for geometry searches
 
