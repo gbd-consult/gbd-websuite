@@ -1,0 +1,13 @@
+GBD WebSuite is provided as a docker image. It is based on Ubuntu and 
+contains the following third-party software:
+
+* apt modules from this list: 
+  https://github.com/gbd-consult/gbd-websuite/blob/master/docker/apt.lst
+* wkhtmltox module installed manually from ubuntu .deb package
+* python pip modules from this list: 
+  https://github.com/gbd-consult/gbd-websuite/blob/master/docker/pip.lst
+* QGIS libraries that are built from the QGIS source code:
+  https://github.com/qgis/QGIS.
+* SVG icons from the ALKIS-Plugin for QGIS: 
+  https://github.com/norBIT/alkisplugin
+
