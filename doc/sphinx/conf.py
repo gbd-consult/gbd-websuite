@@ -3,7 +3,7 @@
 VERSION='2.3.0'
 
 project = 'GBD WebSuite'
-copyright = '2018, Geoinformatikbüro Dassau GmbH'
+copyright = '2019, Geoinformatikbüro Dassau GmbH'
 author = 'Geoinformatikbüro Dassau GmbH'
 version = VERSION
 release = VERSION

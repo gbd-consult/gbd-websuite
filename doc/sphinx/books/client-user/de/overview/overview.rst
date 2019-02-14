@@ -8,6 +8,5 @@ Die GBD WebSuite ist eine webbasierte Open Source GIS Plattform. Sie beinhaltet 
     :maxdepth: 2
 
     function.rst
-    help.rst 
     gbd.rst
 
