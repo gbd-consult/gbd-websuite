@@ -3,6 +3,8 @@ import gws.tools.xml3
 
 from . import error
 
+_ows_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionReport'
+
 
 def raw_get(url, **kwargs):
     # the reason to use lax is that we want an exception text from the server
@@ -13,12 +15,20 @@ def raw_get(url, **kwargs):
     resp = gws.tools.net.http_request(url, **kwargs)
     status = resp.status_code
 
-    _check_ows_error(resp.text)
+    # check for an ows error (no matter what status code says)
+    # we can get big image responses here, so be careful and don't blindly decode them
+
+    if resp.content.startswith(b'<') or 'xml' in resp.content_type:
+        text = str(resp.content[:1024], encoding='utf8', errors='ignore').lower()
+        for e in _ows_error_strings:
+            if e.lower() in text:
+                raise error.Error(resp.text[:1024])
 
     if status != 200:
-        resp.raise_for_status()
+        raise error.Error(f'HTTP error: {resp.status_code!r}')
 
     return resp
+
 
 def get(url, service, request, **kwargs):
     """Get a raw service response"""
@@ -38,13 +48,3 @@ def get(url, service, request, **kwargs):
 def get_text(url, service, request, **kwargs):
     resp = get(url, service, request, **kwargs)
     return resp.text
-
-
-_ows_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionReport'
-
-
-def _check_ows_error(text):
-    s = text[:2048].lower()
-    for e in _ows_error_strings:
-        if e.lower() in s:
-            raise error.Error(text.strip())

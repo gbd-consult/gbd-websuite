@@ -448,29 +448,6 @@ class TemplateObject(ObjectInterface):
         raise NotImplementedError
 
 
-# noinspection PyAbstractClass
-class SourceObject(ObjectInterface):
-    crs: crsref
-    extent: Extent
-    layers: List[SourceLayer]
-    service: ServiceInterface
-
-    def mapproxy_config(self, mc, options=None):
-        raise NotImplementedError
-
-    def service_metadata(self) -> ServiceMetaData:
-        raise NotImplementedError
-
-    def layer_metadata(self, layer_name: str) -> MetaData:
-        raise NotImplementedError
-
-    def get_features(self, keyword: str, shape: ShapeInterface, sort: str, limit: int):
-        raise NotImplementedError
-
-    def modify_features(self, operation, feature_params):
-        raise NotImplementedError
-
-
 class MapView:
     crs: crsref
     extent: Extent
@@ -504,7 +481,7 @@ class LayerObject(ObjectInterface, MapView):
     def render_legend(self):
         raise NotImplementedError
 
-    def get_features(self, bbox):
+    def get_features(self, bbox, limit):
         raise NotImplementedError
 
     def edit_access(self, user: 'AuthUserInterface'):

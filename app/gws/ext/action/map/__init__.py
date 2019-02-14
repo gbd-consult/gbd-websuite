@@ -13,11 +13,11 @@ import gws.types as t
 
 class RenderBboxParams(t.Data):
     bbox: t.Extent
-    width: int
-    height: int
-    layerUid: str
-    layers: t.Optional[t.List[str]]
     dpi: t.Optional[int]
+    height: int
+    layers: t.Optional[t.List[str]]
+    layerUid: str
+    width: int
 
 
 class RenderXyzParams(t.Data):
@@ -27,6 +27,10 @@ class RenderXyzParams(t.Data):
     z: int
 
 
+class RenderLegendParams(t.Data):
+    layerUid: str
+
+
 class DescribeLayerParams(t.Data):
     layerUid: str
 
@@ -34,6 +38,8 @@ class DescribeLayerParams(t.Data):
 class GetFeaturesParams(t.Data):
     bbox: t.Optional[t.Extent]
     layerUid: str
+    resolution: t.Optional[float]
+    limit: int = 0
 
 
 class GetFeaturesResponse(t.Response):
@@ -45,27 +51,10 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-# # @TODO return empty images for unsupported layers
-#
-# def _store_in_front_cache(layer_uid, x, y, z, img):
-#     # @TODO: merge with ext/layer/tile/url
-#     dir = f'_/cmd/mapHttpGetXyz/layer/{layer_uid}/z/{z}/x/{x}/y/{y}'
-#     dir = misc.ensure_dir(dir, gws.WEB_CACHE_DIR)
-#     with open(dir + '/t.png', 'wb') as fp:
-#         fp.write(img)
-#
-#
-# # def _render_xyz(req, layer_uid, x, y, z):
-#
-#
-# def _render_legend(req, layer_uid):
-#     layer: t.LayerObject = req.require('gws.ext.layer', layer_uid)
-#     img = layer.render_legend()
-#
-#     return t.HttpResponse({
-#         'mimeType': 'image/png',
-#         'content': img
-#     })
+_GET_FEATURES_LIMIT = 255
+
+# https://commons.wikimedia.org/wiki/File:1x1.png
+_1x1_PNG = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x01\x03\x00\x00\x00%\xdbV\xca\x00\x00\x00\x03PLTE\x00\x00\x00\xa7z=\xda\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\nIDAT\x08\xd7c`\x00\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82'
 
 
 class Object(gws.Object):
@@ -84,7 +73,13 @@ class Object(gws.Object):
         bbox = [round(n, 2) for n in p.bbox]
 
         ts = time.time()
-        img = layer.render_bbox(bbox, p.width, p.height, **cp)
+
+        try:
+            img = layer.render_bbox(bbox, p.width, p.height, **cp)
+        except:
+            gws.log.exception()
+            img = _1x1_PNG
+
         ts = time.time() - ts
 
         gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(bbox), ts))
@@ -100,10 +95,35 @@ class Object(gws.Object):
         layer = req.require('gws.ext.layer', p.layerUid)
 
         ts = time.time()
-        img = layer.render_xyz(p.x, p.y, p.z)
+
+        try:
+            img = layer.render_xyz(p.x, p.y, p.z)
+        except:
+            gws.log.exception()
+            img = _1x1_PNG
+
         ts = time.time() - ts
 
         gws.log.debug('RENDER_PROFILE: %s - %s %s %s - %.2f' % (p.layerUid, p.x, p.y, p.z, ts))
+
+        return t.HttpResponse({
+            'mimeType': 'image/png',
+            'content': img
+        })
+
+    def api_render_legend(self, req, p: RenderLegendParams) -> t.HttpResponse:
+        """Render a legend for a layer"""
+
+        layer = req.require('gws.ext.layer', p.layerUid)
+
+        if not layer.has_legend:
+            raise gws.web.error.NotFound()
+
+        try:
+            img = layer.render_legend()
+        except:
+            gws.log.exception()
+            img = _1x1_PNG
 
         return t.HttpResponse({
             'mimeType': 'image/png',
@@ -122,7 +142,9 @@ class Object(gws.Object):
 
         layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
         bbox = p.get('bbox') or layer.map.extent
-        features = layer.get_features(bbox)
+        limit = min(_GET_FEATURES_LIMIT, p.get('limit') or _GET_FEATURES_LIMIT)
+        features = layer.get_features(bbox, limit)
+
         return GetFeaturesResponse({
             'features': [f.props for f in features]
         })
@@ -161,9 +183,9 @@ class Object(gws.Object):
 
     def http_get_legend(self, req, p):
         ps = {k.lower(): v for k, v in req.params.items()}
-        layer = req.require('gws.ext.layer', ps.get('layeruid'))
-        if layer.has_legend:
-            return t.HttpResponse({
-                'mimeType': 'image/png',
-                'content': layer.render_legend()
+
+        p = RenderLegendParams({
+            'layerUid': ps.get('layeruid')
         })
+
+        return self.api_render_legend(req, p)

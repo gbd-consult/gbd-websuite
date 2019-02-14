@@ -43,12 +43,13 @@ class Object(gws.gis.layer.Vector):
             'geometryType': self.geometry_type.upper(),
         })
 
-    def get_features(self, bbox):
+    def get_features(self, bbox, limit=0):
         shape = gws.gis.shape.from_bbox(bbox, self.crs)
 
         fs = self.db.select(t.SelectArgs({
             'table': self.var('table'),
             'shape': shape,
+            'limit': limit,
         }))
 
         return self._format_features(fs)
@@ -90,7 +91,7 @@ class Object(gws.gis.layer.Vector):
         return []
 
     def render_svg(self, bbox, dpi, scale, rotation, style):
-        features = self.get_features(bbox)
+        features = self.get_features(bbox, limit=3)
         for f in features:
             f.set_default_style(style)
         return [f.to_svg(bbox, dpi, scale, rotation) for f in features]

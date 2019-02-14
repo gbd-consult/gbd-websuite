@@ -30,6 +30,7 @@ class Object(gws.gis.layer.Proxied):
         self.url = ''
         self.service: gws.ows.wms.Service = None
         self.source_layers: t.List[t.SourceLayer] = []
+        self.source_legend_urls = []
 
     def configure(self):
         super().configure()
@@ -45,9 +46,7 @@ class Object(gws.gis.layer.Proxied):
         self.cache_uid = misc.sha256(self.url + ' ' + ' '.join(sorted(sl.name for sl in self.source_layers)))
         self._add_default_search()
 
-        # if no legend.url is given, use an auto legend
-        legend_urls = gws.compact(sl.legend for sl in self.source_layers)
-        self.has_legend = self.var('legend.enabled') and (self.legend_url or not gws.is_empty(legend_urls))
+        self._add_legend()
 
     def mapproxy_config(self, mc, options=None):
         req = gws.extend({
@@ -78,15 +77,7 @@ class Object(gws.gis.layer.Proxied):
     def render_legend(self):
         if self.legend_url:
             return super().render_legend()
-
-        urls = gws.compact(sl.legend for sl in self.source_layers)
-        if not urls:
-            return
-
-        if len(urls) == 1:
-            return gws.ows.request.raw_get(urls[0]).content
-
-        return gws.gis.legend.combine_legends(urls)
+        return gws.gis.legend.combine_legends(self.source_legend_urls)
 
     def _add_default_search(self):
         p = self.var('search')
@@ -102,6 +93,34 @@ class Object(gws.gis.layer.Proxied):
             'url': self.url,
             'layers': [sl.name for sl in qs]
         }))
+
+    def _add_legend(self):
+        self.has_legend = False
+
+        if not self.var('legend.enabled'):
+            return
+
+        url = self.var('legend.url')
+        if url:
+            self.has_legend = True
+            self.legend_url = url
+            return
+
+        # if no legend.url is given, use an auto legend
+
+        urls = [sl.legend for sl in self.source_layers if sl.legend]
+        if not urls:
+            return
+
+        if len(urls) == 1:
+            self.has_legend = True
+            self.legend_url = urls[0]
+            return
+
+        # see render_legend
+
+        self.source_legend_urls = urls
+        self.has_legend = True
 
     # def configure_extent(self):
     #     e = self.var('extent')

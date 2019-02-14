@@ -28,10 +28,6 @@ class Timeout(Error):
     pass
 
 
-class OgcServiceError(Error):
-    pass
-
-
 _parse_url_keys = (
     'dir',
     'ext',
@@ -131,7 +127,75 @@ def add_params(url, params):
 # @TODO locking for caches
 
 
-def http_request(url, **kwargs) -> requests.Response:
+class Response:
+    def __init__(self, resp: requests.Response):
+        self.status_code = resp.status_code
+        self.content = resp.content
+        self.content_type, self.content_type_encoding = self._parse_content_type(resp.headers)
+        self._text = None
+
+    @property
+    def text(self):
+        if self._text is None:
+            self._text = self._get_text()
+        return self._text
+
+    def _get_text(self):
+
+        if self.content_type_encoding:
+            try:
+                return str(self.content, encoding=self.content_type_encoding, errors='strict')
+            except UnicodeDecodeError:
+                pass
+
+        # some guys serve utf8 content without a header, in which case requests thinks it's ISO-8859-1
+        # (see http://docs.python-requests.org/en/master/user/advanced/#encodings)
+        #
+        # 'apparent_encoding' is not always reliable
+        #
+        # therefore when there's no header, we try utf8 first, and then ISO-8859-1
+
+        try:
+            return str(self.content, encoding='utf8', errors='strict')
+        except UnicodeDecodeError:
+            pass
+
+        try:
+            return str(self.content, encoding='ISO-8859-1', errors='strict')
+        except UnicodeDecodeError:
+            pass
+
+        # both failed, do utf8 with replace
+
+        gws.log.warn(f'decode failed')
+        return str(self.content, encoding='utf8', errors='replace')
+
+    def _parse_content_type(self, headers):
+        # copied from requests.utils.get_encoding_from_headers, but with no ISO-8859-1 default
+
+        content_type = headers.get('content-type')
+
+        if not content_type:
+            # https://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.2.1
+            return 'application/octet-stream', None
+
+        ctype, params = cgi.parse_header(content_type)
+        if 'charset' not in params:
+            return ctype, None
+
+        enc = params['charset'].strip("'\"")
+
+        # make sure this is a valid python encoding
+        try:
+            str(b'.', encoding=enc, errors='strict')
+        except LookupError:
+            gws.log.warn(f'invalid content-type encoding {enc!r}')
+            return ctype, None
+
+        return ctype, enc
+
+
+def http_request(url, **kwargs) -> Response:
     if 'params' in kwargs:
         url = add_params(url, kwargs.pop('params'))
     cache_path = None
@@ -179,52 +243,15 @@ def http_request(url, **kwargs) -> requests.Response:
             gws.log.debug(f'REQUEST_FAILED: http url={url!r}')
             raise HTTPError(resp.status_code, resp.text)
 
-    # some guys serve utf8 content without a header,
-    # in which case requests thinks it's ISO-8859-1
-    # (see http://docs.python-requests.org/en/master/user/advanced/#encodings)
-    #
-    # 'apparent_encoding' is not always reliable
-    #
-    # therefore we just assume that when there's no headers, it's utf8
-    # @TODO check if it really is!
-
-    enc = _get_encoding_from_headers(resp.headers)
-    resp.encoding = enc or 'utf-8'
-
     ts = time.time() - ts
     gws.log.debug(f'REQUEST_DONE: code={resp.status_code} len={len(resp.content)} time={ts:.3f}')
 
+    r = Response(resp)
+
     if cache_path:
-        _store_cache(resp, cache_path)
+        _store_cache(r, cache_path)
 
-    return resp
-
-
-_ogc_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionReport'
-
-
-def ogc_request(url, params=None, max_age=0):
-    """Query a raw service response"""
-
-    params = params or {}
-
-    # some guys accept only uppercase params
-    # params = {k.upper(): v for k, v in params.items()}
-
-    # the reason to use lax is that we want an exception text from the server
-    # even if the status != 200
-
-    resp = http_request(url, params=params, lax=True, max_age=max_age)
-    status = resp.status_code
-    text = resp.text
-
-    if any(p in text for p in _ogc_error_strings):
-        raise OgcServiceError(text.strip())
-
-    if status != 200:
-        resp.raise_for_status()
-
-    return text
+    return r
 
 
 def _cache_path(url):
@@ -253,24 +280,8 @@ def _file_age(path):
 def _store_cache(resp, path):
     with open(path, 'wb') as fp:
         pickle.dump(resp, fp)
-    with open(path + '.txt', 'wt') as fp:
-        fp.write(resp.text)
 
 
 def _read_cache(path):
     with open(path, 'rb') as fp:
         return pickle.load(fp)
-
-
-# copied from requests.utils, but with no ISO-8859-1 default
-
-def _get_encoding_from_headers(headers):
-    content_type = headers.get('content-type')
-
-    if not content_type:
-        return None
-
-    content_type, params = cgi.parse_header(content_type)
-
-    if 'charset' in params:
-        return params['charset'].strip("'\"")

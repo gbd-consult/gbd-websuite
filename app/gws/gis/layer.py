@@ -81,6 +81,7 @@ class VectorConfig(BaseConfig):
     editStyle: t.Optional[t.StyleProps]  #: style for features being edited
     style: t.Optional[t.StyleProps]  #: style for features
     dataModel: t.Optional[t.List[t.AttributeConfig]]
+    loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
 
 
 class Props(t.Data):
@@ -91,6 +92,7 @@ class Props(t.Data):
     extent: t.Optional[t.Extent]
     geometryType: str = ''
     layers: t.Optional[t.List['Props']]
+    loadingStrategy: t.Optional[str]
     meta: t.MetaData
     opacity: t.Optional[float]
     options: ClientOptions
@@ -258,7 +260,7 @@ class Base(gws.PublicObject, t.LayerObject):
         if self.legend_url:
             return gws.ows.request.raw_get(self.legend_url).content
 
-    def get_features(self, bbox):
+    def get_features(self, bbox, limit=0):
         return []
 
     def modify_features(self, operation, feature_params):
@@ -382,9 +384,10 @@ class Vector(Base):
     @property
     def props(self):
         return gws.extend(super().props, {
-            'style': self.var('style'),
-            'editStyle': self.var('editStyle'),
             'dataModel': self.var('dataModel'),
+            'editStyle': self.var('editStyle'),
+            'loadingStrategy': self.var('loadingStrategy'),
+            'style': self.var('style'),
         })
 
     def render_svg(self, bbox, dpi, scale, rotation, style):

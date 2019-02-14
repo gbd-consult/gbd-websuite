@@ -30,14 +30,11 @@ def _call(service, params):
 
     try:
         resp = gws.tools.net.http_request(url, params=params)
-        if resp.headers['content-type'].startswith('image'):
+        if resp.content_type.startswith('image'):
             return resp.content
         text = resp.text
         if 'Exception' in text:
-            m = re.search(r'[^<>]+(?=</ServiceException>|</ows:ExceptionText>)', text)
-            if m:
-                text = m.group(0)
-        raise ServiceException(text)
+            raise ServiceException(text)
     except gws.tools.net.Error as e:
         gws.log.error('mapproxy http error', e)
         return
