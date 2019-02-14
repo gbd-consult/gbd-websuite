@@ -34,10 +34,7 @@ module.exports = v => ({
     '.modAlkisLensFeature': {
         stroke: v.COLOR.cyan100,
         strokeWidth: 3,
-        strokeDasharray: "5,5",
-        mark: 'circle',
-        markFill: v.COLOR.cyan300,
-        markSize: 10,
+        strokeDasharray: '5,5',
         fill: v.COLOR.opacity(v.COLOR.cyan500, 0.3),
     },
 
@@ -74,9 +71,6 @@ module.exports = v => ({
         markSize: 15,
         markStroke: v.COLOR.cyan600,
         markStrokeWidth: 5,
-
-        markApply: 'point,line',
-
     },
     
     

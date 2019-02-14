@@ -74,7 +74,8 @@ const themeDefaults = {
         'mark-stroke-linejoin',
         'mark-stroke-miterlimit',
         'mark-stroke-width',
-        'mark-apply',
+
+        'point-size',
     ],
 
     'unit': 'px',

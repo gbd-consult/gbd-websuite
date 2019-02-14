@@ -34,12 +34,6 @@ module.exports = v => {
         labelOffsetY: 20,
     };
 
-    let norm = v.COLOR.blueGrey500;
-    let active = v.COLOR.blue300;
-
-    let baseColor = v.COLOR.blueGrey500;
-
-
     return {
 
         '.modAnnotatePoint':
