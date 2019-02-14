@@ -13,11 +13,11 @@ Beim Digitalisieren kann man zwischen Punkt|newpoint|
 oder Flächen |newpolygon|
 wählen. Die Element werden durch einen Klick in die Karte hinzugefügt. Nach einer Benennung des Objektes kann das Element mit dem Symbol |labelon| die Beschriftung angeschaltet werden oder abgeschaltet |labeloff|
 . Des Weiteren kann man digitalisierte Objekte auswählen |selectedit|
-oder Punkte zu einem Objekt hinzufügen. 
+oder Punkte zu einem Objekt hinzufügen.
 
-==========================   =========================    
-Symbol                        Funktion     
-==========================   =========================    
+==========================   =========================
+Symbol                        Funktion
+==========================   =========================
 |newpoint|			Punkte erstellen
 |newline|			Linien erstellen
 |newpolygon|			Flächen erstellen
@@ -29,7 +29,7 @@ Symbol                        Funktion
 |editstyl|			Stil/Farbe bearbeiten
 |labelon|			Beschriftung an
 |labeloff|			Beschriftung aus
-==========================   ========================= 
+==========================   =========================
 
 
  .. |newpoint| image:: ../../../images/points-24px.svg
@@ -39,7 +39,7 @@ Symbol                        Funktion
  .. |newpolygon| image:: ../../../images/polygon-create-24px.svg
    :width: 30em
  .. |edit| image:: ../../../images/baseline-create-24px.svg
-   :width: 30em 
+   :width: 30em
  .. |labelon| image:: ../../../images/baseline-text_format-24px.svg
    :width: 30em
  .. |attribut| image:: ../../../images/baseline-add_box-24px.svg
@@ -55,6 +55,4 @@ Symbol                        Funktion
  .. |labeloff| image:: ../../../images/text-cancel-24px.svg
    :width: 30em
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
-   :width: 30em 
-
-
+   :width: 30em

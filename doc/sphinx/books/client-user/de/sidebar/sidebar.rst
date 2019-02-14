@@ -9,3 +9,6 @@ Statusleiste
     scale.rst
     coordinates.rst
     turn.rst
+    home.rst
+    help.rst
+    gbdinfo.rst

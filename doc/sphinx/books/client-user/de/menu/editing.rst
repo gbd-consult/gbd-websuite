@@ -1,13 +1,11 @@
 Editieren
 =========
 
-Über das Menüfeld |menu|
-in der linken oberen Ecke gelangt man zur Anmeldung. Über das Icon |authorization|
-gelangt man auf das Anmeldefenster und wird nach Benutzername und Passwort gefragt. Projekt- und Benutzer individuell werden nun bestimmte Funktionen eingeschaltet
-
+In der Menüleiste |menu| ist ebenfalls der Unterpunkt |edit| Editieren zu finden.
+Unter diesem Menüpunkt ist es möglich, verschiedene Objekte auszuwählen und zu editieren. Es können Attribute wie Adresse, Bezeichnung, Name und id bearbeitet werden.
 
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
- .. |authorization| image:: ../../../images/baseline-person-24px.svg
+ .. |edit| image:: ../../../images/sharp-edit-24px.svg
    :width: 30em

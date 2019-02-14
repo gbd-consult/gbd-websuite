@@ -2,7 +2,7 @@ Kartenelemente
 ==============
 
 
-Unter dem Icon Layers |layers| im der Menüleiste
+Unter dem Icon Layers |layers| in der Menüleiste
 können Sie die Sichtbarkeit der einzelnen Layer ein- oder ausschalten und verschiedene weitere Funktionen nutzen.
 Die Layer sind in Projektgebieten oder anderen Überordnern gesammelt, sie werden mit einem Klick auf den Pfeil links neben dem Layernamen geöffnet |showother| und können auch wieder geschlossen werden
 |hideother|
@@ -12,10 +12,8 @@ Man kann sowohl einzelne Teile der Layer Deaktivieren, als auch einen ganzen Ord
 In manchen Karten werden bestimmte Layer erst ab einem entsprechenden Maßstab angezeigt, diese werden auch dann erst zur Layerauswahl hinzugefügt.
 
 Mit einem Klick auf den Namen von einem Layer, öffnet sich unterhalb ein kleines Fenster, in dem bestimmte Informationen angezeigt werden.
-Unter den Infos kann man auf den ausgewählten Layer zoomen |zoom_layer|, die anderen Layer automatisch ausschalten
-|hidelayer|
-oder die Layerdetails schließen.
-|cancel|
+Unter den Infos am unteren Fensterrand kann man auf den ausgewählten Layer zoomen |zoom_layer|, die anderen Layer verbergen |off_layer| oder die Layerdetails über das Icon |cancel| schließen.
+
 
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
@@ -33,4 +31,6 @@ oder die Layerdetails schließen.
  .. |cancel| image:: ../../../images/baseline-close-24px.svg
    :width: 30em
  .. |zoom_layer| image:: ../../../images/baseline-zoom_out_map-24px.svg
+   :width: 30em
+ .. |off_layer| image:: ../../../images/sharp-layers_clear-24px.svg
    :width: 30em
