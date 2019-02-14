@@ -90,6 +90,15 @@ def prepare():
 
     run("cp -r  {BASE_DIR}/data .")
 
+    documents = [
+        'NOTICE',
+        'NOTICE_DOCKER',
+        'README.md',
+        'VERSION',
+    ]
+    for doc in documents:
+        run("cp {BASE_DIR}/" + doc + " ./app")
+
     with open('data/web/index.html') as fp:
         index_html = fp.read()
 

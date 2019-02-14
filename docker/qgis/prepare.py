@@ -7,12 +7,15 @@ with open(os.path.dirname(os.path.realpath(__file__)) + '/vars.txt') as fp:
             vars.append('-D %s' % s[1:].strip())
 
 with open('configure.sh', 'wt') as fp:
+    fp.write('#!/usr/bin/env bash\n')
     fp.write('cmake \\\n')
     for v in vars:
         fp.write('\t%s \\\n' % v)
     fp.write('..\n')
 
-package = """
+package = """\
+#!/usr/bin/env bash
+
 ARC=qgis-for-gws
 
 rm -fr ${ARC}
@@ -36,6 +39,9 @@ cp -vr ../resources/server ${ARC}/usr/share/qgis/resources
 
 # svg's
 cp -vr  ../images/svg ${ARC}/usr/share/qgis
+
+# license
+cp ../COPYING ${ARC}/usr/lib
     
 # delete lib symlinks
 find ${ARC} -type l -exec rm -vfr {} \\;

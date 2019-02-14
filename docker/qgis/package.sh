@@ -23,6 +23,9 @@ cp -vr ../resources/server ${ARC}/usr/share/qgis/resources
 
 # svg's
 cp -vr  ../images/svg ${ARC}/usr/share/qgis
+
+# license
+cp ../COPYING ${ARC}/usr/lib
     
 # delete lib symlinks
 find ${ARC} -type l -exec rm -vfr {} \;
