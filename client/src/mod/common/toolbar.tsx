@@ -138,7 +138,7 @@ class ToolbarContainerView extends gws.View<ToolbarContainerProps> {
             {rest.length > 0 && <div className='modToolbarItem'>
                 <gws.ui.IconButton
                     {...gws.tools.cls('modToolbarOverflowButton', expanded && 'isActive')}
-                    tooltip={'...'}
+                    tooltip={this.__('modToolbarOverflowButton')}
                     whenTouched={() => this.props.controller.update({
                         toolbarOverflowExpanded: !expanded
                     })}

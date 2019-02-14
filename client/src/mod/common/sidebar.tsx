@@ -123,7 +123,7 @@ class Header extends gws.View<SidebarProps> {
                 )}
                 {rest.length > 0 && <gws.ui.IconButton
                     {...gws.tools.cls('modSidebarOverflowButton', expanded && 'isActive')}
-                    tooltip={'...'}
+                    tooltip={this.__('modSidebarOverflowButton')}
                     whenTouched={() => this.props.controller.update({
                         sidebarOverflowExpanded: !expanded
                     })}
