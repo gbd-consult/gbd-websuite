@@ -287,7 +287,7 @@ def create(base_dir, pid_dir):
             frontends.append(f"""
                 server {{
                     listen 80 default_server;
-                    listen [::]:80 default_server;
+                    # listen [::]:80 default_server;
                     
                     server_name gws;
                     return  301 https://$host$request_uri;
@@ -295,7 +295,7 @@ def create(base_dir, pid_dir):
 
                 server {{
                     listen 443 ssl default_server;
-                    listen [::]:443 ssl default_server;
+                    # listen [::]:443 ssl default_server;
                     
                     server_name gws;
     
@@ -314,7 +314,7 @@ def create(base_dir, pid_dir):
             frontends.append(f"""
                 server {{
                     listen 80 default_server;
-                    listen [::]:80 default_server;
+                    # listen [::]:80 default_server;
     
                     {gzip}
                     
