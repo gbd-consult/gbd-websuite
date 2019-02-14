@@ -8,7 +8,7 @@ module.exports = v => ({
 
         ...v.TRANSITION('all'),
         ...v.SHADOW,
-        maxHeight: '65%',
+        maxHeight: '45%',
         minHeight: 90,
 
         '&.isActive': {

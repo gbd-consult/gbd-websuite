@@ -187,7 +187,8 @@ class SearchController extends gws.Controller {
             marker: {
                 features: [f],
                 mode: 'pan draw',
-            }
+            },
+            popupContent: <gws.components.feature.PopupList controller={this} features={[f]}/>
         });
 
     }
