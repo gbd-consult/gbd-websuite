@@ -149,12 +149,18 @@ class ToolbarContainerView extends gws.View<ToolbarContainerProps> {
     }
 }
 
-
 class ToolbarController extends gws.Controller {
     uid: 'Toolbar';
 
     async init() {
         await super.init();
+
+        this.app.whenCalled('setToolbarActiveButton', btn => {
+            let cc = this.app.controllerByTag(btn) as gws.types.IToolbarItem;
+            if (cc)
+                cc.whenTouched();
+        });
+
         this.app.whenChanged('windowSize', () => this.update({
             toolbarOverflowExpanded: false
         }));
