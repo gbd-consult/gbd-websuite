@@ -951,6 +951,7 @@ SQL-based layer
    ~*featureFormat*~, ~:ref:`server_admin_en_configref_gws_types_FormatConfig`~, ~feature formatting options~, ~no~, ~~
    ~*grid*~, ~:ref:`server_admin_en_configref_gws_gis_layer_GridConfig`~, ~grid configuration~, ~no~, ~~
    ~*legend*~, ~:ref:`server_admin_en_configref_gws_gis_layer_LegendConfig`~, ~legend configuration~, ~no~, ~~
+   ~*loadingStrategy*~, ~``str``~, ~loading strategy for features ('all', 'bbox')~, ~no~, ~"all"~
    ~*meta*~, ~:ref:`server_admin_en_configref_gws_types_MetaConfig`~, ~layer meta data~, ~no~, ~~
    ~*opacity*~, ~``float``~, ~layer opacity~, ~no~, ~1~
    ~*search*~, ~:ref:`server_admin_en_configref_gws_common_search_Config`~, ~layer search configuration~, ~no~, ~~
