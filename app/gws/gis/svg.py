@@ -9,6 +9,7 @@ import gws.tools.misc as misc
 
 DEFAULT_FONT_SIZE = 10
 DEFAULT_MARK_SIZE = 10
+DEFAULT_POINT_SIZE = 10
 
 
 def _to_pixel(geo, bbox, dpi, scale):
@@ -68,6 +69,9 @@ _all_props = (
     # 'stroke-linejoin',
     # 'stroke-miterlimit',
     'stroke-width',
+
+    'point-size',
+
 )
 
 _color_patterns = (
@@ -186,6 +190,8 @@ def _map_font(css):
 
 
 def _text(cx, cy, label, css):
+    # @TODO label positioning needs more work
+
     font_name = _map_font(css)
     font_size = _as_px(css.get('label-font-size')) or DEFAULT_FONT_SIZE
     font = ImageFont.truetype(font=font_name, size=font_size)
@@ -317,6 +323,12 @@ def draw(geo, label, style, bbox, dpi, scale, rotation):
 
     if mark:
         attrs['marker-start'] = attrs['marker-mid'] = attrs['marker-end'] = f'url(#{mark_id})'
+
+    if geo.type in ('Point', 'MultiPoint'):
+        attrs['r'] = _as_px(css.get('point-size') or DEFAULT_POINT_SIZE) // 2
+
+    if geo.type in ('LineString', 'MultiLineString'):
+        attrs['fill'] = 'none'
 
     g = svgis.draw.geometry(shapely.geometry.mapping(geo), **gws.compact(attrs))
     return mark + g + text

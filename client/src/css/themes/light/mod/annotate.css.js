@@ -4,6 +4,8 @@ module.exports = v => {
         sel = v.COLOR.blue600;
 
     let common = clr => ({
+        fill: v.COLOR.opacity(clr, 0.3),
+
         stroke: clr,
         strokeWidth: 1,
 
@@ -11,6 +13,8 @@ module.exports = v => {
         labelFill: v.COLOR.white,
         labelBackground: v.COLOR.darken(clr, 0.5),
         labelPadding: 5,
+
+        pointSize: 10,
     });
 
     let mark = clr => ({
@@ -19,14 +23,9 @@ module.exports = v => {
         markSize: 10,
     });
 
-    let fill = clr => ({
-        fill: v.COLOR.opacity(clr, 0.3)
-    });
-
     let pointLabel = {
         labelPlacement: 'end',
         labelOffsetY: 20,
-
     };
 
     let lineLabel = {
@@ -36,34 +35,23 @@ module.exports = v => {
 
     return {
 
-        '.modAnnotatePoint':
-            {...common(def), ...mark(def), ...pointLabel},
-        '.modAnnotatePointSelected':
-            {...common(sel), ...mark(sel), ...pointLabel},
+        '.modAnnotatePoint': {...common(def), ...pointLabel},
+        '.modAnnotatePointSelected': {...common(sel), ...mark(sel), ...pointLabel},
 
-        '.modAnnotateLine':
-            {...common(def), ...lineLabel},
-        '.modAnnotateLineSelected':
-            {...common(sel), ...mark(sel), ...lineLabel},
+        '.modAnnotateLine': {...common(def), ...lineLabel},
+        '.modAnnotateLineSelected': {...common(sel), ...mark(sel), ...lineLabel},
 
-        '.modAnnotatePolygon':
-            {...common(def), ...fill(def)},
-        '.modAnnotatePolygonSelected':
-            {...common(sel), ...mark(sel), ...fill(sel)},
+        '.modAnnotatePolygon': common(def),
+        '.modAnnotatePolygonSelected': {...common(sel), ...mark(sel)},
 
-        '.modAnnotateBox':
-            {...common(def), ...fill(def)},
-        '.modAnnotateBoxSelected':
-            {...common(sel), ...mark(sel), ...fill(sel)},
+        '.modAnnotateBox': common(def),
+        '.modAnnotateBoxSelected': {...common(sel), ...mark(sel)},
 
-        '.modAnnotateCircle':
-            {...common(def), ...fill(def)},
-        '.modAnnotateCircleSelected':
-            {...common(sel), ...fill(sel)},
+        '.modAnnotateCircle': common(def),
+        '.modAnnotateCircleSelected': {...common(sel), ...mark(sel)},
 
 
-        '.modAnnotateDraw':
-            {...common(sel), ...mark(sel), ...fill(sel)},
+        '.modAnnotateDraw': {...common(sel), ...mark(sel)},
 
 
         '.modAnnotateSidebarIcon': {
