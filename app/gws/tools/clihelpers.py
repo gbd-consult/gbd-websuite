@@ -167,3 +167,42 @@ def find_action(action_type, project_uid=None):
         gws.log.error(f'{action_type!r} action not configured')
 
     return action
+
+
+def text_table(data, header=None):
+    """Format a list of dicts as a text-mode table."""
+
+    data = list(data)
+
+    if not data:
+        return ''
+
+    header = header or sorted(data[0].keys())
+    widths = [len(h) for h in header]
+
+    for d in data:
+        widths = [
+            max(a, b)
+            for a, b in zip(
+                widths,
+                [len(str(d.get(h, ''))) for h in header]
+            )
+        ]
+
+    def field(n, v):
+        if isinstance(v, (int, float)):
+            return str(v).rjust(widths[n])
+        return str(v).ljust(widths[n])
+
+    def make_row(a):
+        return ' | '.join(a)
+
+    rows = []
+
+    rows.append(make_row(field(n, h) for n, h in enumerate(header)))
+    rows.append('-' * len(rows[0]))
+
+    for d in data:
+        rows.append(make_row(field(n, d.get(h, '')) for n, h in enumerate(header)))
+
+    return '\n'.join(rows)

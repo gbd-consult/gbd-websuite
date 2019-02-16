@@ -5,6 +5,7 @@ import gws.gis.layer
 import gws.types as t
 import gws.gis.source
 import gws.tools.misc
+import gws.tools.json2
 
 _EPSG_3857_EXTENT = [
     -20037508.34,
@@ -23,16 +24,15 @@ class ServiceConfig:
     tileSize: int = 256  #: tile size
 
 
-class Config(gws.gis.layer.ProxiedConfig):
+class Config(gws.gis.layer.ImageTileConfig):
     """Tile layer"""
 
-    display: str = 'tile'
-    maxRequests: int = 1  #: max concurrent requests to this source
-    service: t.Optional[ServiceConfig] = {}  #: service information
+    maxRequests: int = 0  #: max concurrent requests to this source
+    service: t.Optional[ServiceConfig] = {}  #: service configuration
     url: t.url  #: rest url with placeholders {x}, {y} and {z}
 
 
-class Object(gws.gis.layer.ProxiedTile):
+class Object(gws.gis.layer.ImageTile):
     def __init__(self):
         super().__init__()
 
@@ -51,8 +51,6 @@ class Object(gws.gis.layer.ProxiedTile):
             else:
                 raise gws.Error(r'service extent required for crs {self.service.crs!r}')
 
-        self.cache_uid = gws.tools.misc.sha256(self.url)
-
     def mapproxy_config(self, mc, options=None):
         # we use {x} like in Ol, mapproxy wants %(x)s
         url = re.sub(
@@ -60,13 +58,13 @@ class Object(gws.gis.layer.ProxiedTile):
             r'%(\1)s',
             self.url)
 
-        src_grid_config = gws.compact({
+        grid_uid = mc.grid(gws.compact({
             'origin': self.service.origin,
             'bbox': self.service.extent,
             # 'res': res,
             'srs': self.service.crs,
             'tile_size': [self.service.tileSize, self.service.tileSize],
-        })
+        }))
 
-        src = self.mapproxy_back_cache_config(mc, url, src_grid_config)
+        src = self.mapproxy_back_cache_config(mc, url, grid_uid)
         self.mapproxy_layer_config(mc, src)

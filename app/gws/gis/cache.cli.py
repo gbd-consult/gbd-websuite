@@ -4,22 +4,11 @@ import gws
 import gws.config
 import gws.config.loader
 import gws.tools.misc as misc
+import gws.tools.clihelpers as clihelpers
 import gws.gis.cache
 import gws.types as t
 
 COMMAND = 'cache'
-
-
-@arg('--layers', help='comma separated list of layer IDs')
-def updateweb(layers=None):
-    """Update the front (web) cache from the back cache"""
-
-    gws.config.loader.load()
-
-    if layers:
-        layers = _as_list(layers)
-
-    fs = gws.gis.cache.updateweb(layers)
 
 
 @arg('--layers', help='comma separated list of layer IDs')
@@ -33,13 +22,26 @@ def status(layers=None):
 
     st = gws.gis.cache.status(layers)
 
+    if not st:
+        print('no cached layers found')
+        return
+
+    data = []
+
     for la_uid, rs in sorted(st.items()):
+        data.append({'layer': la_uid})
         for r in rs:
-            r['la'] = la_uid
-            r['total'] = r['maxx'] * r['maxy']
-            r['percent'] = int(100 * (r['num_files'] / r['total']))
-            gws.log.info('layer={la} z={z} ({res}) {maxx}x{maxy}={total:,} cached={num_files} ({percent}%)'.format(**r))
-        gws.log.info('-' * 40)
+            data.append({
+                'zoom': r['z'],
+                'scale': round(misc.res2scale(r['res'])),
+                'grid': str(r['maxx']) + 'x' + str(r['maxy']),
+                'total': r['maxx'] * r['maxy'],
+                'cached': r['num_files'],
+                '%%': int(100 * (r['num_files'] / (r['maxx'] * r['maxy']))),
+            })
+
+    print('\nCACHE STATUS\n')
+    print(clihelpers.text_table(data, ['layer', 'zoom', 'scale', 'grid', 'total', 'cached', '%%']))
 
 
 @arg('--layers', help='comma separated list of layer IDs')
@@ -52,33 +54,36 @@ def drop(layers=None):
     gws.gis.cache.drop(layers)
 
 
-_lockfile = gws.CONFIG_DIR + '/mapproxy.seed.lock'
+_SEED_LOCKFILE = gws.CONFIG_DIR + '/mapproxy.seed.lock'
 
 
 @arg('--layers', help='comma separated list of layer IDs')
-@arg('--level', help='zoom level to build the cache for')
-def seed(layers=None, level=None):
+@arg('--levels', help='zoom levels to build the cache for')
+def seed(layers=None, levels=None):
     """Start the cache seeding process"""
 
     gws.config.loader.load()
 
-    with misc.lock(_lockfile) as ok:
+    if layers:
+        layers = _as_list(layers)
+
+    if levels:
+        levels = [int(x) for x in _as_list(levels)]
+
+    with misc.lock(_SEED_LOCKFILE) as ok:
         if not ok:
             gws.log.info('seed already running')
             return
-
-        if layers:
-            layers = _as_list(layers)
 
         max_time = gws.config.var('seeding.maxTime')
         concurrency = gws.config.var('seeding.concurrency')
         ts = time.time()
 
-        gws.log.info(f'START SEEDING (maxTime={max_time}), ^C ANYTIME TO CANCEL...')
-        ok = gws.gis.cache.seed(layers, max_time, concurrency, level)
-        gws.log.info('=' * 40)
-        gws.log.info('TIME: %.1f sec' % (time.time() - ts))
-        gws.log.info(f'SEEDING COMPLETE' if ok else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
+        print(f'\nSTART SEEDING (maxTime={max_time} concurrency={concurrency}), ^C ANYTIME TO CANCEL...\n')
+        done = gws.gis.cache.seed(layers, max_time, concurrency, levels)
+        print('=' * 40)
+        print('TIME: %.1f sec' % (time.time() - ts))
+        print(f'SEEDING COMPLETE' if done else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
 
 
 def _as_list(s):

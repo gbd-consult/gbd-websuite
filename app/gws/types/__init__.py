@@ -456,13 +456,14 @@ class MapView:
 
 # noinspection PyAbstractClass
 class LayerObject(ObjectInterface, MapView):
-    description_template: TemplateObject
-    feature_format: 'FormatInterface'
     has_legend: bool
+    has_cache: bool
+    is_public: bool
+
     map: 'MapObject'
     meta: MetaData
     opacity: float
-    parent: MapView
+
     title: str
     description: str
 

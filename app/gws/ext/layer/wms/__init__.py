@@ -1,28 +1,28 @@
 import gws
-import gws.types as t
 import gws.gis.layer
-import gws.gis.source
 import gws.gis.legend
-import gws.ows.wms
+import gws.gis.proj
+import gws.gis.source
+import gws.gis.zoom
 import gws.ows.request
 import gws.ows.util
-import gws.gis.proj
-import gws.gis.mpx
-import gws.tools.misc as misc
+import gws.ows.wms
+import gws.tools.json2
+import gws.types as t
 
 
-class Config(gws.gis.layer.ProxiedConfig):
+class Config(gws.gis.layer.ImageConfig):
     """WMS layer"""
 
     capsCacheMaxAge: t.duration = '1d'  #: max cache age for capabilities documents
-    display: str = 'box'
-    maxRequests: int = 1  #: max concurrent requests to this source
+    maxRequests: int = 0  #: max concurrent requests to this source
     params: t.Optional[dict]  #: query string parameters
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayerOder: gws.gis.source.LayerOrder = 'topDown'  #: order of layers in the GetCapabilities document
     url: t.url  #: service url
 
 
-class Object(gws.gis.layer.Proxied):
+class Object(gws.gis.layer.Image):
     def __init__(self):
         super().__init__()
 
@@ -36,33 +36,45 @@ class Object(gws.gis.layer.Proxied):
         super().configure()
 
         self.url = self.var('url')
+
         self.service = gws.ows.util.shared_service('WMS', self, self.config)
         self.source_crs = gws.ows.util.best_crs(self.map.crs, self.service.supported_crs)
-        self.source_layers = gws.gis.source.filter_image_layers(self.service.layers, self.var('sourceLayers'))
 
+        self.source_layers = gws.gis.source.filter_layers(
+            self.service.layers,
+            self.var('sourceLayers'),
+            image_only=True)
         if not self.source_layers:
             raise gws.Error(f'no layers found in {self.uid!r}')
 
-        self.cache_uid = misc.sha256(self.url + ' ' + ' '.join(sorted(sl.name for sl in self.source_layers)))
-        self._add_default_search()
+        if not self.var('zoom'):
+            zoom = gws.gis.zoom.config_from_source_layers(self.source_layers)
+            if zoom:
+                self.resolutions = gws.gis.zoom.resolutions_from_config(
+                    zoom, self.resolutions)
 
+        self._add_default_search()
         self._add_legend()
 
     def mapproxy_config(self, mc, options=None):
+        layers = [sl.name for sl in self.source_layers]
+        if self.var('sourceLayerOder') == 'topDown':
+            layers = reversed(layers)
+
         req = gws.extend({
             'url': self.service.operations['GetMap'].get_url,
             'transparent': True,
-            'layers': ','.join(sl.name for sl in self.source_layers)
+            'layers': ','.join(layers)
         }, self.var('params'))
 
-        src = mc.source(self.cache_uid, gws.compact({
+        source_uid = mc.source(gws.compact({
             'type': 'wms',
             'supported_srs': [self.source_crs],
             'concurrent_requests': self.var('maxRequests'),
             'req': req
         }))
 
-        self.mapproxy_layer_config(mc, src)
+        self.mapproxy_layer_config(mc, source_uid)
 
     @property
     def description(self):
@@ -71,7 +83,6 @@ class Object(gws.gis.layer.Proxied):
             'service': self.service.meta,
             'sub_layers': self.source_layers
         }
-
         return self.description_template.render(context).content
 
     def render_legend(self):
@@ -84,14 +95,11 @@ class Object(gws.gis.layer.Proxied):
         if not p.enabled or p.providers:
             return
 
-        qs = [sl for sl in self.source_layers if sl.is_queryable]
-        if not qs:
-            return
-
         self.add_child('gws.ext.search.provider', t.Data({
             'type': 'wms',
             'url': self.url,
-            'layers': [sl.name for sl in qs]
+            'params': self.var('params'),
+            'sourceLayers': self.var('sourceLayers'),
         }))
 
     def _add_legend(self):

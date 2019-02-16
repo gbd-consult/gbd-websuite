@@ -45,7 +45,7 @@ def to_string(x, pretty=False):
 
 
 def to_hash(x):
-    s = to_string(x)
+    s = to_string(x, pretty=True)
     return hashlib.sha256(s.encode('utf8')).hexdigest()
 
 

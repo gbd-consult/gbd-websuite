@@ -9,7 +9,7 @@ import gws.types as t
 import gws.ows.util
 
 
-class Config(gws.gis.layer.ProxiedConfig):
+class Config(gws.gis.layer.ImageConfig):
     """Automatic QGIS layer"""
 
     directRender: t.Optional[t.List[str]]  #: QGIS providers that should be rendered directly
@@ -145,13 +145,13 @@ class Object(gws.gis.layer.Base):
 
         opts = ds['options']
 
-        return {
+        return gws.compact({
             'type': 'wmts',
             'url': ds['url'].split('?')[0],
-            'layer': ds['layers'][0],
-            'format': opts.get('format', 'image/jpeg'),
-            'style': opts.get('styles', 'default'),
-        }
+            'sourceLayer': ds['layers'][0],
+            'format': opts.get('format'),
+            'style': opts.get('styles'),
+        })
 
     def _qgis_based_layer(self, sl: t.SourceLayer):
         return {
@@ -180,18 +180,19 @@ class Object(gws.gis.layer.Base):
         return {
             'type': 'qgiswms',
             'path': self.path,
-            'layers': [sl.name],
+            'sourceLayers': {
+                'names': [sl.name]
+            }
         }
 
     def _wms_search_provider(self, sl, ds):
-        # @TODO: check if the remote layer is queriable
         return {
             'type': 'wms',
             'url': ds['url'],
             'params': ds['params'],
-            'layers': ds['layers'],
-            # @TODO
-            # 'capsCacheMaxAge'
+            'sourceLayers': {
+                'names': ds['layers'],
+            }
         }
 
     def _postgres_search_provider(self, sl, ds):
@@ -209,7 +210,9 @@ class Object(gws.gis.layer.Base):
             'url': ds['url'],
         }
         if gws.get(ds, 'typeName'):
-            cfg['layers'] = [ds['typeName']]
+            cfg['sourceLayers'] = {
+                'names': [ds['typeName']]
+            }
         c = gws.get(ds, 'params.InvertAxisOrientation')
         if c == '1':
             cfg['axis'] = 'yx'

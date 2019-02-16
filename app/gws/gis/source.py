@@ -3,6 +3,27 @@ import re
 import gws
 import gws.types as t
 
+"""
+
+NB: layer order
+our configuration lists layers top-to-bottom,
+this also applies by default to WMS caps (like in qgis)
+
+the order of GetMap is bottomUp:
+
+> A WMS shall render the requested layers by drawing the leftmost in the list bottommost, 
+> the next one over that, and so on.
+
+http://portal.opengeospatial.org/files/?artifact_id=14416
+section 7.3.3.3 
+
+"""
+
+
+class LayerOrder(t.Enum):
+    topDown = 'topDown'
+    bottomUp = 'bottomUp'
+
 
 class LayerFilterConfig(t.Config):
     """Layer filter"""
@@ -18,21 +39,27 @@ class LayerFilter(t.Data):
     pattern: str
 
 
-def filter_layers(layers: t.List[t.SourceLayer], slf: LayerFilter) -> t.List[t.SourceLayer]:
-    return [sl for sl in layers if _layer_matches(sl, slf)]
+def filter_layers(
+        layers: t.List[t.SourceLayer],
+        slf: LayerFilter,
+        image_only=False,
+        queryable_only=False) -> t.List[t.SourceLayer]:
+    if slf:
+        s = gws.get(slf, 'level')
+        if s:
+            layers = [sl for sl in layers if sl.a_level == s]
 
+        s = gws.get(slf, 'names')
+        if s:
+            layers = [sl for sl in layers if sl.name in s]
 
-def filter_image_layers(layers: t.List[t.SourceLayer], slf: LayerFilter) -> t.List[t.SourceLayer]:
-    return [sl for sl in filter_layers(layers, slf) if sl.is_image]
+        s = gws.get(slf, 'pattern')
+        if s:
+            layers = [sl for sl in layers if re.search(s, sl.a_path)]
 
+    if image_only:
+        layers = [sl for sl in layers if sl.is_image]
+    if queryable_only:
+        layers = [sl for sl in layers if sl.is_queryable]
 
-def _layer_matches(layer: t.SourceLayer, slf: LayerFilter):
-    if not slf:
-        return True
-    if slf.names and layer.name not in slf.names:
-        return False
-    if slf.level and layer.a_level != slf.level:
-        return False
-    if slf.pattern and not re.search(slf.pattern, layer.a_path):
-        return False
-    return True
+    return layers

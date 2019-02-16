@@ -6,6 +6,7 @@ import gws.qgis
 import gws.gis.shape
 import gws.common.search.provider
 import gws.tools.net
+import gws.gis.source
 import gws.types as t
 
 
@@ -13,24 +14,34 @@ class Config(gws.common.search.provider.Config):
     """Qgis/WMS automatic search provider"""
 
     path: t.filepath  #: project path
-    layers: t.List[str]  #: layers to query
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
 
 
 class Object(gws.common.search.provider.Object):
     def __init__(self):
         super().__init__()
+
         self.service: gws.qgis.Service = None
-        self.crs = ''
+        self.source_layers: t.List[t.SourceLayer] = []
 
     def configure(self):
         super().configure()
+
         self.service = gws.qgis.shared_service(self, self.config)
+        self.source_layers = gws.gis.source.filter_layers(
+            self.service.layers,
+            self.var('sourceLayers'),
+            queryable_only=True)
+
+        # don't raise any errors here, because it would make parent configuration harder
+        # see also layer/wms
 
     def can_run(self, args):
         return (
-            args.shapes
-            and args.shapes[0].type == 'Point'
-            and not args.keyword
+                self.source_layers
+                and args.shapes
+                and args.shapes[0].type == 'Point'
+                and not args.keyword
         )
 
     def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
@@ -43,7 +54,7 @@ class Object(gws.common.search.provider.Object):
         fa = t.FindFeaturesArgs({
             'bbox': shape.bounds,
             'count': args.limit,
-            'layers': self.var('layers'),
+            'layers': [sl.name for sl in self.source_layers],
             'point': [shape.geo.x, shape.geo.y],
             'resolution': args.resolution,
         })

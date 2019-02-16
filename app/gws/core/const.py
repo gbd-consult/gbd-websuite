@@ -4,7 +4,7 @@ APP_DIR = '/gws-app'
 VAR_DIR = '/gws-var'
 
 MAPPROXY_CACHE_DIR = '/gws-var/cache/mpx'
-WEB_CACHE_DIR = '/gws-var/cache/web'
+WEB_CACHE_DIR = '/tmp/webcache'
 OBJECT_CACHE_DIR = '/gws-var/cache/object'
 NET_CACHE_DIR = '/gws-var/cache/net'
 LOG_DIR = '/gws-var/log'

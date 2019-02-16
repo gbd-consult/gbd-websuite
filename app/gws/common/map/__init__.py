@@ -59,7 +59,7 @@ class Object(gws.PublicObject, t.MapObject):
             ]
 
         zoom = self.var('zoom')
-        self.resolutions = gws.gis.zoom.effective_resolutions(zoom)
+        self.resolutions = gws.gis.zoom.resolutions_from_config(zoom)
         self.init_resolution = gws.gis.zoom.init_resolution(zoom, self.resolutions)
 
         self.layers = gws.gis.layer.add_layers_to_object(self, self.var('layers'))

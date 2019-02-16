@@ -3,6 +3,7 @@ import gws.config.parser
 import gws.common.format
 import gws.common.search
 import gws.common.template
+import gws.auth.api
 import gws.gis.feature
 import gws.gis.mpx as mpx
 import gws.gis.proj
@@ -38,9 +39,8 @@ class CacheConfig(t.Config):
     """Cache configuration"""
 
     enabled: bool = False  #: cache is enabled
-    maxAge: t.duration = '1d'  #: cache max. age
+    maxAge: t.duration = '30d'  #: cache max. age
     maxLevel: int = 1  #: max. zoom level to cache
-    options: dict = {}  #: additional MapProxy cache options
 
 
 class GridConfig(t.Config):
@@ -48,22 +48,32 @@ class GridConfig(t.Config):
 
     origin: str = 'nw'  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
-    metaSize: int = 4  #: number of meta-tiles to fetch
-    metaBuffer: int = 200  #: pixel buffer
-    options: dict = {}  #: additional MapProxy grid options
+    metaSize: int = 0  #: number of meta-tiles to fetch
+    metaBuffer: int = 0  #: pixel buffer
+
+
+class ImageFormat(t.Enum):
+    """Image format"""
+
+    png8 = 'png8'  #: png 8-bit
+    png24 = 'png24'  #: png 24-bit
+
+
+class DisplayMode(t.Enum):
+    """Layer display mode"""
+
+    box = 'box'  #: display a layer as one big image (WMS-alike)
+    tile = 'tile'  #: display a layer in a tile grid
 
 
 class BaseConfig(t.WithTypeAndAccess):
     """Layer"""
 
-    cache: CacheConfig = {}  #: cache configuration
     clientOptions: ClientOptions = {}  #: options for the layer display in the client
     description: t.Optional[t.TemplateConfig]  #: template for the layer description
-    display: str = ''  #: layer display mode ('box', 'tile', 'client')
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     featureFormat: t.Optional[t.FormatConfig]  #: feature formatting options
-    grid: GridConfig = {}  #: grid configuration
     legend: LegendConfig = {}  #: legend configuration
     meta: t.MetaConfig = {}  #: layer meta data
     opacity: float = 1  #: layer opacity
@@ -73,8 +83,15 @@ class BaseConfig(t.WithTypeAndAccess):
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
-class ProxiedConfig(BaseConfig):
-    pass
+class ImageConfig(BaseConfig):
+    cache: CacheConfig = {}  #: cache configuration
+    display: DisplayMode = 'box'  #: layer display mode
+    grid: GridConfig = {}  #: grid configuration
+    imageFormat: ImageFormat = 'png8'  #: image format
+
+
+class ImageTileConfig(ImageConfig):
+    display: DisplayMode = 'tile'  #: layer display mode
 
 
 class VectorConfig(BaseConfig):
@@ -110,19 +127,16 @@ class Base(gws.PublicObject, t.LayerObject):
         super().__init__()
 
         self.display = ''
+        self.is_public = False
 
-        self.cache: CacheConfig = None
         self.has_cache = False
-        self.cache_uid = None
-        self.grid: GridConfig = None
 
         self.map = None
         self.meta = None
 
-        self.description_template = None
-        self.feature_format = None
+        self.description_template: t.TemplateObject = None
+        self.feature_format: t.FormatInterface = None
 
-        self.template = None
         self.title = None
 
         self.resolutions = []
@@ -149,13 +163,7 @@ class Base(gws.PublicObject, t.LayerObject):
         if self.map:
             self.uid = self.map.uid + '.' + self.uid
 
-        self.display = self.var('display')
-
-        self.cache = self.var('cache')
-        self.cache_uid = gws.as_uid(self.uid)
-        self.has_cache = self.cache and self.cache.enabled
-
-        self.grid = self.var('grid')
+        self.is_public = gws.auth.api.role('all').can_use(self)
 
         p = self.var('legend')
         self.legend_url = p.url
@@ -184,11 +192,11 @@ class Base(gws.PublicObject, t.LayerObject):
                 gws.common.template.builtin_config('feature_format')
             )
 
-        self.resolutions = gws.gis.zoom.effective_resolutions(
+        self.resolutions = gws.gis.zoom.resolutions_from_config(
             self.var('zoom'),
             self.map.resolutions)
 
-        self.extent = self.var('extent', parent=True)
+        self.extent = self.var('extent') or self.map.extent
 
         p = self.var('search')
         if p.enabled and p.providers:
@@ -203,33 +211,16 @@ class Base(gws.PublicObject, t.LayerObject):
 
     @property
     def props(self):
-
-        p = gws.compact({
+        return gws.compact({
             'meta': self.meta,
             'opacity': self.opacity,
             'options': self.client_options,
-            # @TODO: dont write those if equal to parent
-            'extent': self.extent,
-            'resolutions': self.resolutions,
+            'extent': self.extent if self.extent != self.map.extent else None,
+            'resolutions': self.resolutions if self.resolutions != self.map.resolutions else None,
             'title': self.title,
             'uid': self.uid,
             'description': self.description,
         })
-
-        if self.display == 'tile':
-            p = gws.extend(p, {
-                'type': 'tile',
-                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetXyz/layerUid/' + self.uid + '/z/{z}/x/{x}/y/{y}/t.png',
-                'tileSize': self.grid.tileSize,
-            })
-
-        if self.display == 'box':
-            p = gws.extend(p, {
-                'type': 'box',
-                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
-            })
-
-        return p
 
     @property
     def description(self):
@@ -267,18 +258,41 @@ class Base(gws.PublicObject, t.LayerObject):
         pass
 
 
-class Proxied(Base):
+class Image(Base):
+    def __init__(self):
+        super().__init__()
+
+        self.display = ''
+        self.image_format = ''
+
+        self.cache: CacheConfig = None
+        self.grid: GridConfig = None
+
+        self.cache_uid = None
+        self.grid_uid = None
+
+    def configure(self):
+        super().configure()
+
+        self.image_format = self.var('imageFormat')
+        self.display = self.var('display')
+
+        self.cache = self.var('cache')
+        self.has_cache = self.cache and self.cache.enabled
+
+        self.grid = self.var('grid')
+
     def render_bbox(self, bbox, width, height, **client_params):
-        cache_uid = self.cache_uid
+        uid = self.uid
         if not self.has_cache:
-            cache_uid += '_NOCACHE'
-        return gws.gis.mpx.wms_request(cache_uid, bbox, width, height, self.map.crs)
+            uid += '_NOCACHE'
+        return gws.gis.mpx.wms_request(uid, bbox, width, height, self.map.crs)
 
     def render_xyz(self, x, y, z):
         return gws.gis.mpx.wmts_request(
-            self.cache_uid,
+            self.uid,
             x, y, z,
-            tile_matrix='grid_' + self.cache_uid + '_FRONT',
+            tile_matrix=self.grid_uid,
             tile_size=self.grid.tileSize)
 
     """
@@ -296,88 +310,99 @@ class Proxied(Base):
         Also, configure the _NOCACHE variant for the layer, which skips the DST cache
     """
 
-    def mapproxy_layer_config(self, mc, source):
+    def mapproxy_layer_config(self, mc, source_uid):
 
-        mc.layer(self.cache_uid + '_NOCACHE', {
-            'sources': [source]
+        mc.layer({
+            'name': self.uid + '_NOCACHE',
+            'sources': [source_uid]
         })
 
         res = [r for r in self.resolutions if r]
         if len(res) < 2:
             res = [res[0], res[0]]
 
-        front_grid_config = gws.compact({
+        self.grid_uid = mc.grid(gws.compact({
             'origin': self.grid.origin,
             'tile_size': [self.grid.tileSize, self.grid.tileSize],
             'res': res,
             'srs': self.map.crs,
             'bbox': self.extent,
-        })
+        }))
 
-        front_grid = mc.grid(self.cache_uid + '_FRONT', gws.extend(front_grid_config, self.grid.options))
-
-        front_cache_options = {
-            'type': 'file',
-            'directory_layout': 'mp'
-        }
+        meta_size = self.grid.metaSize or 4
 
         front_cache_config = {
-            'sources': [source],
-            'grids': [front_grid],
-            'cache': gws.extend(front_cache_options, self.cache.options),
-            'meta_size': [self.grid.metaSize, self.grid.metaSize],
+            'sources': [source_uid],
+            'grids': [self.grid_uid],
+            'cache': {
+                'type': 'file',
+                'directory_layout': 'mp'
+            },
+            'meta_size': [meta_size, meta_size],
             'meta_buffer': self.grid.metaBuffer,
             'disable_storage': not self.has_cache,
             'minimize_meta_requests': True,
+            'format': self.image_format,
         }
 
-        front_cache = mc.cache(self.cache_uid + '_FRONT', front_cache_config)
+        self.cache_uid = mc.cache(front_cache_config)
 
-        mc.layer(self.cache_uid, {
-            'sources': [front_cache]
+        mc.layer({
+            'name': self.uid,
+            'sources': [self.cache_uid]
         })
 
-    def mapproxy_back_cache_config(self, mc, url, src_grid_config):
-        grid = mc.grid(self.cache_uid + '_BACK', src_grid_config)
-
-        source = mc.source(self.cache_uid, {
+    def mapproxy_back_cache_config(self, mc, url, grid_uid):
+        source_uid = mc.source({
             'type': 'tile',
             'url': url,
-            'grid': grid,
+            'grid': grid_uid,
             'concurrent_requests': self.var('maxRequests', default=0)
         })
 
-        src_cache_options = {
-            'type': 'file',
-            'directory_layout': 'mp'
-        }
-
-        src_cache_config = gws.compact({
-            'sources': [source],
-            'grids': [grid],
-            'cache': src_cache_options,
+        return mc.cache(gws.compact({
+            'sources': [source_uid],
+            'grids': [grid_uid],
+            'cache': {
+                'type': 'file',
+                'directory_layout': 'mp'
+            },
             'disable_storage': True,
-            'meta_size': [1, 1],
-            'meta_buffer': 0,
-            'minimize_meta_requests': True,
-        })
+            # 'meta_size': [1, 1],
+            # 'meta_buffer': 0,
+            # 'minimize_meta_requests': True,
+        }))
 
-        return mc.cache(self.cache_uid + '_BACK', src_cache_config)
+    @property
+    def props(self):
+        p = super().props
+
+        if self.display == 'tile':
+            return gws.extend(p, {
+                'type': 'tile',
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetXyz/layerUid/' + self.uid + '/z/{z}/x/{x}/y/{y}/t.png',
+                'tileSize': self.grid.tileSize,
+            })
+
+        if self.display == 'box':
+            return gws.extend(p, {
+                'type': 'box',
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
+            })
 
 
-class ProxiedTile(Proxied):
-
+class ImageTile(Image):
     def configure(self):
         super().configure()
 
-        self.display = self.var('display', default='tile')
+        # with meta=1 MP will request the same tile multiple times
+        # meta=4 is more efficient, however, meta=1 yields the first tile faster
+        # which is crucial when browsing non-cached low resoltions
+        # so, let's use 1 as default, overridable in the config
+        #
+        # @TODO make MP cache network requests
 
-        # force no meta for tiled layers, otherwise MP keeps requested the same tile multiple times
-
-        self.grid = t.Config(gws.extend(self.grid, {
-            'metaSize': 1,
-            'metaBuffer': 0,
-        }))
+        self.grid.metaSize = self.grid.metaSize or 1
 
 
 class Vector(Base):

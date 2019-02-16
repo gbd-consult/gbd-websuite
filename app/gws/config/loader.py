@@ -65,7 +65,7 @@ def store(path=None):
 def load(path=None):
     path = path or DEFAULT_STORE_PATH
     try:
-        gws.log.info(f'loading config from "{path}"')
+        gws.log.debug(f'loading config from "{path}"')
         with open(path, 'rb') as fp:
             r = pickle.load(fp)
         gws.set_global('_tree_root', r)

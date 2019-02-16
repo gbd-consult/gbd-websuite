@@ -7,6 +7,8 @@ import gws.config
 import gws.tools.net
 import gws.gis.feature
 import gws.gis.layer
+import gws.gis.cache
+import gws.tools.misc
 
 import gws.types as t
 
@@ -80,9 +82,7 @@ class Object(gws.Object):
             gws.log.exception()
             img = _1x1_PNG
 
-        ts = time.time() - ts
-
-        gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(bbox), ts))
+        gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(bbox), time.time() - ts))
 
         return t.HttpResponse({
             'mimeType': 'image/png',
@@ -95,20 +95,24 @@ class Object(gws.Object):
         layer = req.require('gws.ext.layer', p.layerUid)
 
         ts = time.time()
+        img = None
 
         try:
             img = layer.render_xyz(p.x, p.y, p.z)
         except:
             gws.log.exception()
-            img = _1x1_PNG
 
-        ts = time.time() - ts
+        gws.log.debug('RENDER_PROFILE: %s - %s %s %s - %.2f' % (p.layerUid, p.x, p.y, p.z, time.time() - ts))
 
-        gws.log.debug('RENDER_PROFILE: %s - %s %s %s - %.2f' % (p.layerUid, p.x, p.y, p.z, ts))
+        # for public tiled layers, write tiles to the web cache
+        # so they will be subsequently served directly by nginx
+
+        if img and layer.is_public and layer.has_cache:
+            gws.gis.cache.store_in_web_cache(layer, p.x, p.y, p.z, img)
 
         return t.HttpResponse({
             'mimeType': 'image/png',
-            'content': img
+            'content': img or _1x1_PNG
         })
 
     def api_render_legend(self, req, p: RenderLegendParams) -> t.HttpResponse:

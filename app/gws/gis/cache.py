@@ -12,6 +12,8 @@ import gws.tools.misc as misc
 import gws.tools.shell as sh
 from .mpx import config
 
+import gws.types as t
+
 
 def status(layers=None):
     mc = config.create()
@@ -24,12 +26,12 @@ def status(layers=None):
     return st
 
 
-def seed(layers=None, max_time=None, concurrency=1, level=None):
+def seed(layers=None, max_time=None, concurrency=1, levels=None):
     mc = config.create()
     seeds = {}
 
     for layer, cc in _cached_layers(mc, layers):
-        seeds[layer.uid] = _seed_config(layer, cc, level)
+        seeds[layer.cache_uid] = _seed_config(layer, cc, levels)
 
     if not seeds:
         return False
@@ -68,20 +70,32 @@ def drop(layers=None):
             gws.log.info(f'removed {dirname}')
 
 
-def updateweb(layers):
-    cmd = ['rm', '-fr', gws.WEB_CACHE_DIR + '/_']
-    sh.run(cmd, echo=True)
+def store_in_web_cache(layer: t.LayerObject, x, y, z, img):
+    dirname = gws.WEB_CACHE_DIR + f'/_/cmd/mapHttpGetXyz/layerUid/{layer.uid}/z/{z}/x/{x}/y/{y}'
+    tmp = gws.random_string(64)
+    try:
+        os.makedirs(dirname, 0o755, exist_ok=True)
+        with open(dirname + '/' + tmp, 'wb') as fp:
+            fp.write(img)
+        os.rename(dirname + '/' + tmp, dirname + '/t.png')
+    except OSError:
+        gws.log.warn(f'store_in_web_cache FAILED dir={dirname}')
 
-    files = _get_files()
-    mc = config.create()
-    for layer, cc in _cached_layers(mc, layers):
-        dirname = _dirname_for_cache(cc)
-        for f in files:
-            if f.startswith(dirname):
-                x, y, z = _path_to_xyz(f)
-                symlink_dir = gws.WEB_CACHE_DIR + f'/_/cmd/mapHttpGetXyz/layer/{layer.uid}/z/{z}/x/{x}/y/{y}'
-                os.makedirs(symlink_dir, 0o755, exist_ok=True)
-                os.symlink(f, symlink_dir + '/t.png')
+
+# def updateweb(layers):
+#     cmd = ['rm', '-fr', gws.WEB_CACHE_DIR + '/_']
+#     sh.run(cmd, echo=True)
+#
+#     files = _get_files()
+#     mc = config.create()
+#     for layer, cc in _cached_layers(mc, layers):
+#         dirname = _dirname_for_cache(cc)
+#         for f in files:
+#             if f.startswith(dirname):
+#                 x, y, z = _path_to_xyz(f)
+#                 symlink_dir = gws.WEB_CACHE_DIR + f'/_/cmd/mapHttpGetXyz/layer/{layer.uid}/z/{z}/x/{x}/y/{y}'
+#                 os.makedirs(symlink_dir, 0o755, exist_ok=True)
+#                 os.symlink(f, symlink_dir + '/t.png')
 
 
 def _path_to_xyz(path):
@@ -127,7 +141,7 @@ def _cached_layers(mc, layers):
 
 def _cache_for_layer(layer, mc):
     for name, cc in mc['caches'].items():
-        if name.startswith('cache_' + layer.uid) and name.endswith('_FRONT') and not cc['disable_storage']:
+        if layer.has_cache and name == layer.cache_uid and not cc['disable_storage']:
             return gws.extend(cc, {
                 'name': name,
                 'grid': mc['grids'][cc['grids'][0]],
@@ -135,18 +149,13 @@ def _cache_for_layer(layer, mc):
             })
 
 
-def _seed_config(layer, cc, level):
+def _seed_config(layer, cc, levels):
     ts = datetime.datetime.now() - datetime.timedelta(seconds=layer.cache.maxAge)
-
-    if level is None:
-        la, lz = 0, layer.cache.maxLevel
-    else:
-        la = lz = int(level)
 
     return {
         'caches': [cc['name']],
         'grids': cc['grids'],
-        'levels': {'from': la, 'to': lz},
+        'levels': levels or list(range(layer.cache.maxLevel)),
         'refresh_before': {
             'time': ts.strftime("%Y-%m-%dT%H:%M:%S")
         }
@@ -170,6 +179,4 @@ def _calc_grids(grid):
 
 
 def _get_files():
-    # find /gws-var/cache/mpx  -type f -printf '%p %T@\n'
-
     return list(misc.find_files(gws.MAPPROXY_CACHE_DIR))

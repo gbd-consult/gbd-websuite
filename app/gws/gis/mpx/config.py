@@ -4,6 +4,7 @@ from mapproxy.wsgiapp import make_wsgi_app
 import gws
 import gws.config
 import gws.tools.shell as sh
+import gws.tools.json2
 
 
 # import gws.gis.proj
@@ -36,8 +37,8 @@ class _Config:
         self.globals = {
             'cache': {
                 'base_dir': gws.MAPPROXY_CACHE_DIR,
-                'lock_dir': '/tmp/locks_' + gws.random_string(16),
-                'tile_lock_dir': '/tmp/tile_locks_' + gws.random_string(16),
+                'lock_dir': '/tmp/mpx/locks_' + gws.random_string(16),
+                'tile_lock_dir': '/tmp/mpx/tile_locks_' + gws.random_string(16),
                 'concurrent_tile_creators': 4,
 
             },
@@ -45,23 +46,44 @@ class _Config:
                 'resampling_method': 'bicubic',
                 'stretch_factor': 1.15,
                 'max_shrink_factor': 4.0,
-                'paletted': False,
+
                 'formats': {
-                    'image/png': {
-                        'mode': 'RGBA',
+                    'png8': {
+                        'format': 'image/png',
+                        'mode': 'P',
+                        'colors': 256,
                         'transparent': True,
+                        'resampling_method': 'bicubic',
+                    },
+                    'png24': {
+                        'format': 'image/png',
+                        'mode': 'RGBA',
+                        'colors': 0,
+                        'transparent': True,
+                        'resampling_method': 'bicubic',
                     }
+
                 }
+
+                # 'paletted': False,
+                # 'formats': {
+                #     'image/png': {
+                #         'mode': 'RGBA',
+                #         'colors': 0,
+                #         'transparent': True,
+                #         'resampling_method': 'bicubic',
+                #     }
+                # }
             }
         }
 
         self.cfg = {}
 
-    def _add(self, kind, uid, c):
+    def _add(self, kind, c):
         # mpx doesn't like tuples
         if 'bbox' in c and isinstance(c['bbox'], tuple):
             c['bbox'] = list(c['bbox'])
-        uid = '%s_%s' % (kind, uid)
+        uid = kind + '_' + gws.tools.json2.to_hash(c)
         self.cfg[uid] = {'kind': kind, 'c': c}
         return uid
 
@@ -70,21 +92,19 @@ class _Config:
             if v['kind'] == kind:
                 yield k, v['c']
 
+    def cache(self, c):
+        return self._add('cache', c)
 
+    def source(self, c):
+        return self._add('source', c)
 
-    def cache(self, uid, c):
-        return self._add('cache', uid, c)
-
-    def source(self, uid, c):
-        return self._add('source', uid, c)
-
-    def grid(self, uid, c):
+    def grid(self, c):
         # self._transform_bbox(c)
-        return self._add('grid', uid, c)
+        return self._add('grid', c)
 
-    def layer(self, uid, c):
-        self._add('layer', uid, gws.extend(c, {'name': uid, 'title': ''}))
-        return uid
+    def layer(self, c):
+        c['title'] = ''
+        return self._add('layer', c)
 
     def as_dict(self):
         d = {
@@ -102,8 +122,6 @@ class _Config:
         d['layers'] = sorted(d['layers'].values(), key=lambda x: x['name'])
 
         return d
-
-
 
 
 def create():

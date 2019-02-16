@@ -28,33 +28,39 @@ class DateFormatter:
     def __init__(self, locale):
         self.locale = locale
 
-    def _run(self, d, fmt):
+    def format(self, fmt, d=None):
         d = babel.dates.parse_date(d, self.locale) if d else datetime.datetime.now()
         return babel.dates.format_date(d, locale=self.locale, format=fmt)
 
-    def short(self, d=None):
-        return self._run(d, 'short')
+    @property
+    def short(self):
+        return self.format('short')
 
-    def medium(self, d=None):
-        return self._run(d, 'medium')
+    @property
+    def medium(self):
+        return self.format('medium')
 
-    def long(self, d=None):
-        return self._run(d, 'long')
+    @property
+    def long(self):
+        return self.format('medium')
 
 
 class TimeFormatter:
     def __init__(self, locale):
         self.locale = locale
 
-    def _run(self, d, fmt):
+    def format(self, fmt, d=None):
         d = babel.dates.parse_time(d, self.locale) if d else datetime.datetime.now()
         return babel.dates.format_time(d, locale=self.locale, format=fmt)
 
-    def short(self, d=None):
-        return self._run(d, 'short')
+    @property
+    def short(self):
+        return self.format('short')
 
-    def medium(self, d=None):
-        return self._run(d, 'medium')
+    @property
+    def medium(self):
+        return self.format('medium')
 
-    def long(self, d=None):
-        return self._run(d, 'long')
+    @property
+    def long(self):
+        return self.format('medium')

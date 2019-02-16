@@ -19,7 +19,7 @@ class Config(t.Config):
     maxScale: t.Optional[float]  #: maximal scale
 
 
-def effective_resolutions(cfg, parent_resolultions=None):
+def resolutions_from_config(cfg, parent_resolultions=None):
     # see also https://mapproxy.org/docs/1.11.0/configuration.html#res and below
 
     res = _explicit_resolutions(cfg) or parent_resolultions
@@ -35,6 +35,24 @@ def effective_resolutions(cfg, parent_resolultions=None):
         res = [x for x in res if x <= z]
 
     return sorted(res, reverse=True)
+
+
+def config_from_source_layers(source_layers: t.List[t.SourceLayer]):
+    min_scale = max_scale = None
+    for sl in source_layers:
+        if sl.scale_range:
+            min_scale = min(sl.scale_range[0], min_scale or 1e20)
+            max_scale = max(sl.scale_range[1], max_scale or 0)
+
+    zoom = {}
+
+    if min_scale is not None:
+        zoom['minScale'] = min_scale
+
+    if max_scale is not None:
+        zoom['maxScale'] = max_scale
+
+    return t.Data(zoom) if zoom else None
 
 
 def init_resolution(cfg, resolutions):
