@@ -2,7 +2,7 @@ import gws.tools.password
 import gws.tools.json2
 import gws.web
 import gws.types.spec
-import gws.config.parser
+import gws.config.spec
 
 import gws.types as t
 
@@ -46,11 +46,11 @@ class Object(gws.Object):
             raise gws.web.error.Forbidden()
         gws.log.info('REMOTE_ADMIN: password accepted')
 
-        spec = gws.config.parser.load_spec('config')
+        spec = gws.config.spec.load('config')
         val = Checker(spec['types'], strict=True)
 
         try:
-            val.get(p.config, 'gws.common.application.Config', 'PP')
+            val.get(p.config, 'gws.common.application.Config')
         except CheckerError as e:
             r = gws.extend({'ok': False}, e.args[0])
             return t.Response(r)
@@ -68,9 +68,9 @@ class Object(gws.Object):
             raise gws.web.error.NotFound()
 
         spec = {
-            'config': gws.config.parser.load_spec('config', p.lang),
-            'api': gws.config.parser.load_spec('api', p.lang),
-            'cli': gws.config.parser.load_spec('cli', p.lang),
+            'config': gws.config.spec.load('config', p.lang),
+            'api': gws.config.spec.load('api', p.lang),
+            'cli': gws.config.spec.load('cli', p.lang),
         }
 
         return t.Response({'spec': spec})
