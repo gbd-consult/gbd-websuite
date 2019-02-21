@@ -9,4 +9,3 @@ Die GBD WebSuite ist eine webbasierte Open Source GIS Plattform. Sie beinhaltet 
 
     function.rst
     gbd.rst
-

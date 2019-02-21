@@ -127,7 +127,7 @@ Start the cache seeding process
    :widths: auto
 
    ~``--layers``~, ~comma separated list of layer IDs~
-   ~``--level``~, ~zoom level to build the cache for~
+   ~``--levels``~, ~zoom levels to build the cache for~
 
 .. _server_admin_de_cliref_cache_status:
 
@@ -136,22 +136,6 @@ cache status
 
 
 Display the cache status
-
-*Optionen:*
-
-.. csv-table::
-   :quote: ~
-   :widths: auto
-
-   ~``--layers``~, ~comma separated list of layer IDs~
-
-.. _server_admin_de_cliref_cache_updateweb:
-
-cache updateweb
-~~~~~~~~~~~~~~~
-
-
-Update the front (web) cache from the back cache
 
 *Optionen:*
 
