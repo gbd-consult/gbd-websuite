@@ -8,6 +8,6 @@ Anleitungen für GBD WebSuite Client Nutzer.
     :maxdepth: 2
 
     overview/overview.rst
-    toolbox/mapfunction.rst
-    menu/menu.rst
     sidebar/sidebar.rst
+    toolbox/mapfunction.rst
+    infobar/infobar.rst
