@@ -279,6 +279,7 @@ let rules = [
     require('./mod/altbar.css'),
     require('./mod/annotate.css'),
     require('./mod/decoration.css'),
+    require('./mod/dimension.css'),
     require('./mod/draw.css'),
     require('./mod/dprocon.css'),
     require('./mod/edit.css'),

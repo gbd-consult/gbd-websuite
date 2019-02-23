@@ -38,7 +38,7 @@ const SHAPE_TYPES = [
 export class Tool extends gws.Tool {
     style: gws.types.IMapStyle;
 
-    get toolboxView() {
+    get _toolboxView() {
         let master = this.app.controller(MASTER) as DrawController;
         let shapeType = this.getValue('drawCurrentShape') || DEFAULT_SHAPE_TYPE
 

@@ -143,4 +143,24 @@ module.exports = {
     modZoomInfobarInButton: 'Hineinzoomen',
     modZoomInfobarOutButton: 'Hinauszoomen',
     modZoomInfobarResetButton: 'Ganzes Projekt anzeigen',
+
+
+	modDimensionArcButton: 'Kreisbogen',
+	modDimensionCancelButton: 'Abbrechen',
+	modDimensionCircleButton: 'Kreis',
+	modDimensionClearAuxButton: 'Alle löschen',
+	modDimensionDrawCommitButton: 'Bestätigen',
+	modDimensionLineButton: 'Linie',
+	modDimensionLoadAuxButton: 'Laden',
+	modDimensionLoadDialogTitle: 'Laden',
+	modDimensionModifyButton: 'Bearbeiten',
+	modDimensionNoObjects: 'keine Objekte vorhanden',
+	modDimensionRemoveButton: 'Löschen',
+	modDimensionSaveAuxButton: 'Speichern',
+	modDimensionSaveDialogTitle: 'Speichern',
+	modDimensionSidebarTitle: 'Bemaßung',
+	modDimensionToolbarButton: 'Bemaßung',
+
+
+
 };

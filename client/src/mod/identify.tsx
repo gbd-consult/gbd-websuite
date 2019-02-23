@@ -57,7 +57,7 @@ abstract class IdentifyTool extends gws.Tool {
 class IdentifyClickTool extends IdentifyTool {
     hoverMode = 'shift';
 
-    get toolboxView() {
+    get _toolboxView() {
         return <toolbox.Content
             controller={this}
             iconClass="modIdentifyClickToolboxIcon"
@@ -70,7 +70,7 @@ class IdentifyClickTool extends IdentifyTool {
 class IdentifyHoverTool extends IdentifyTool {
     hoverMode = 'always';
 
-    get toolboxView() {
+    get _toolboxView() {
         return <toolbox.Content
             controller={this}
             iconClass="modIdentifyClickToolboxIcon"

@@ -14,6 +14,7 @@ let mods = [
     require('./mod/alkis'),
     require('./mod/annotate'),
     require('./mod/decoration'),
+    require('./mod/dimension'),
     require('./mod/dprocon'),
     require('./mod/edit'),
     require('./mod/gekos'),

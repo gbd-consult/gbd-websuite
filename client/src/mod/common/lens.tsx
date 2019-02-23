@@ -20,7 +20,7 @@ class LensLayer extends gws.map.layer.FeatureLayer {
 
 export class LensTool extends gws.Tool {
 
-    get toolboxView() {
+    get _toolboxView() {
         return <toolbox.Content
             controller={this}
             iconClass="modIdentifyClickToolboxIcon"

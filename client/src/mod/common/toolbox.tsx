@@ -13,15 +13,30 @@ const ToolboxStoreKeys = [
 ];
 
 interface ToolboxViewProps extends gws.types.ViewProps {
-    iconClass: string;
-    title: string;
-    hint: string;
+    iconClass?: string;
+    title?: string;
+    hint?: string;
     buttons?: Array<React.ReactElement<any>>;
 }
 
-
 export class Content extends gws.View<ToolboxViewProps> {
     render() {
+        return <div className="modToolboxContent">
+            <Row className="modToolboxContentFooter">
+                <Cell flex/>
+                {this.props.buttons && this.props.buttons.map((b, n) => <Cell key={n}>{b}</Cell>)}
+                <Cell>
+                    <gws.ui.IconButton
+                        className="modToolboxCancelButton"
+                        tooltip={this.props.controller.__('modDrawCancelButton')}
+                        whenTouched={() => this.props.controller.app.stopTool('')}
+                    />
+                </Cell>
+            </Row>
+
+        </div>;
+
+        /*
         return <div className="modToolboxContent">
             <Row className="modToolboxContentHeader">
                 <Cell>
@@ -37,7 +52,7 @@ export class Content extends gws.View<ToolboxViewProps> {
 
             <Row className="modToolboxContentFooter">
                 <Cell flex/>
-                {this.props.buttons}
+                {this.props.buttons && this.props.buttons.map((b, n) => <Cell key={n}>{b}</Cell>)}
                 <Cell>
                     <gws.ui.IconButton
                         className="modToolboxCancelButton"
@@ -47,38 +62,29 @@ export class Content extends gws.View<ToolboxViewProps> {
                 </Cell>
             </Row>
         </div>
+        */
     }
 }
 
-
-
-
 class ToolboxView extends gws.View<ToolboxProps> {
     render() {
-        // let view = this.props.controller.app.tool('Tool.Identify.Click').toolboxView;
-        //
-        // return <div className="modToolbox isActive">{view}</div>;
-
         let view = this.props.controller.app.activeTool.toolboxView;
 
-        if(!view)
+        if (!view)
             return <div className="modToolbox"/>;
 
         return <div className="modToolbox isActive">{view}</div>;
 
-
-
     }
 }
-
 
 class ToolboxController extends gws.Controller {
     uid: 'Toolbox';
 
-    // get appOverlayView() {
-    //     return this.createElement(
-    //         this.connect(ToolboxView, ToolboxStoreKeys));
-    // }
+    get appOverlayView() {
+        return this.createElement(
+            this.connect(ToolboxView, ToolboxStoreKeys));
+    }
 
 }
 

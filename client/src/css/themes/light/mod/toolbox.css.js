@@ -1,44 +1,40 @@
 module.exports = v => ({
 
 
-    '.modToolbox': {
-        position: 'absolute',
-        padding: [0, v.UNIT2, 0, v.UNIT2],
-        backgroundColor: v.TOOLBOX_BACKGROUND,
-        borderBottom: [1, 'solid', v.BORDER_COLOR],
-        //bottom: -v.TOOLBOX_HEIGHT,
-        ...v.TRANSITION('bottom'),
-        maxHeight: v.TOOLBOX_HEIGHT,
-        minHeight: v.TOOLBOX_HEIGHT,
-        zIndex: 4,
+        '.modToolbox': {
+            position: 'absolute',
+            padding: v.UNIT4,
+            backgroundColor: v.INFOBOX_BACKGROUND,
+            opacity: 0,
+            ...v.SHADOW,
+            ...v.TRANSITION('opacity'),
 
+            '.uiIconButton': {
+                ...v.ICON_SIZE('medium')
+            },
+
+            '.cmpButtonFormOk': {
+                marginLeft: v.UNIT4,
+            },
+            '.cmpButtonFormCancel': {
+                marginLeft: v.UNIT4,
+            }
+
+        },
+
+    '.modToolbox.isActive': {
+            opacity: 1,
         left: 0,
+        top: 0,
         right: 0,
-
         [v.MEDIA('small+')]: {
-            // left: '50%',
             left: 'auto',
-            right: v.UNIT8,
-            top: -v.INFOBAR_HEIGHT,
-            //marginLeft: -v.SIDEBAR_WIDTH / 2,
-            width: v.SIDEBAR_WIDTH,
-        },
-
-
-
-        '&.isActive': {
-           top: v.UNIT8,
-        },
-
-        '.cmpButtonFormOk': {
-            marginLeft: v.UNIT4,
-        },
-
-        '.cmpButtonFormCancel': {
-            marginLeft: v.UNIT4,
+            right: v.UNIT4,
+            top: v.UNIT8,
         }
-
     },
+
+
 
     // '&.withToolbox .modSidebar': {
     //     paddingBottom: v.TOOLBOX_HEIGHT,
