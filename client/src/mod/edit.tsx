@@ -311,7 +311,7 @@ class EditController extends gws.Controller {
         });
 
         let fs = this.map.readFeatures(res.features);
-        this.layer.addFeatures(fs);
+        this.layer.replaceFeatures(fs);
         this.selectFeature(fs[0], false);
     }
 
@@ -342,7 +342,7 @@ class EditController extends gws.Controller {
         }
 
         let fs = this.map.readFeatures(res.features);
-        this.layer.addFeatures(fs);
+        this.layer.replaceFeatures(fs);
         this.selectFeature(fs[0], false);
     }
 
