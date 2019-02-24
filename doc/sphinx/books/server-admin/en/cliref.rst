@@ -1,5 +1,4 @@
 Command line tools reference
 ============================
 
-.. include:: cliref.txt
-
+.. include:: /{DOC_ROOT}/gen/en.cliref.txt

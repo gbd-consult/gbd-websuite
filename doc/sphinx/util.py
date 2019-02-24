@@ -44,7 +44,7 @@ def make_config_ref(lang, app_dir, doc_root):
     gen = _ConfigRefGenerator(lang, page, spec['types'], root_type)
     text = gen.run()
 
-    out = doc_root + '/books/server-admin/' + lang + '/' + page + '.txt'
+    out = doc_root + '/gen/' + lang + '.' + page + '.txt'
     _write_if_changed(out, text)
 
 
@@ -58,7 +58,7 @@ def make_cli_ref(lang, app_dir, doc_root):
     gen = _CliRefGenerator(lang, page, spec['commands'])
     text = gen.run()
 
-    out = doc_root + '/books/server-admin/' + lang + '/' + page + '.txt'
+    out = doc_root + '/gen/' + lang + '.' + page + '.txt'
     _write_if_changed(out, text)
 
 

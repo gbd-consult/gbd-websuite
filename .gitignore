@@ -16,6 +16,7 @@
 /client/_docs
 /client/node_modules
 /doc/_build
+/doc/sphinx/gen
 /docker/_build
 ___*
 __pycache__

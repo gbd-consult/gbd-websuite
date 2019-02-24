@@ -1,5 +1,5 @@
 Referenz der Kommandozeilen-Tools 
 =================================
 
-.. include:: cliref.txt
+.. include:: /{DOC_ROOT}/gen/de.cliref.txt
 

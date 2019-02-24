@@ -25,5 +25,5 @@ Special types
 The values of these types are strings and numbers assoicated with a special semantics.
 
 
-.. include:: configref.txt
+.. include:: /{DOC_ROOT}/gen/en.configref.txt
 
