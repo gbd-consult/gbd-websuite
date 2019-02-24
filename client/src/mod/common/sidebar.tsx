@@ -188,16 +188,23 @@ class SidebarView extends gws.View<SidebarProps> {
 class SidebarController extends gws.Controller {
     async init() {
         await super.init();
+
         this.app.whenChanged('windowSize', () => this.update({
             sidebarOverflowExpanded: false
         }));
-        if (this.getValue('appMediaWidth') === 'xsmall')
+
+        this.app.whenCalled('setSidebarActiveTab', args => this.setActiveTab(args.tab));
+
+        if (this.getValue('appMediaWidth') === 'xsmall') {
             this.setVisible(false)
+        }
+
+
     }
 
-    setActiveTab(type) {
+    setActiveTab(tab) {
         this.update({
-            sidebarActiveTab: type,
+            sidebarActiveTab: tab,
             sidebarOverflowExpanded: false,
         })
     }

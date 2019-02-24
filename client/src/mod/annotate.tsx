@@ -275,6 +275,11 @@ class AnnotateLayer extends gws.map.layer.FeatureLayer {
 class AnnotateDrawTool extends draw.Tool {
     drawFeature: AnnotateFeature;
 
+    start() {
+        super.start();
+        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Annotate'});
+    }
+
     whenStarted(shapeType, oFeature) {
         this.drawFeature = _master(this).newFeature(shapeType, oFeature);
     }
@@ -296,6 +301,8 @@ class AnnotateModifyTool extends modify.Tool {
 
     start() {
         super.start();
+        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Annotate'});
+
         let f = this.getValue('annotateSelectedFeature');
         if (f)
             this.selectFeature(f);

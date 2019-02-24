@@ -317,6 +317,10 @@ abstract class DimensionTool extends gws.Tool {
         />
     }
 
+    start() {
+        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Dimension'});
+    }
+
 }
 
 class DimensionDrawTool extends DimensionTool {
@@ -380,6 +384,8 @@ class DimensionDrawTool extends DimensionTool {
     }
 
     start() {
+        super.start();
+
         this.ixDraw = this.map.drawInteraction({
             shapeType: 'LineString',
             style: this.map.getStyleFromSelector('.modDimensionFeature'),
@@ -420,6 +426,8 @@ class DimensionModifyTool extends DimensionTool {
     }
 
     start() {
+        super.start();
+
         this.oFeatureCollection = new ol.Collection<ol.Feature>();
 
         this.select();

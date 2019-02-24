@@ -91,6 +91,7 @@ class SelectTool extends gws.Tool {
     }
 
     start() {
+        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Select'});
         this.map.prependInteractions([
             this.map.pointerInteraction({
                 whenTouched: evt => this.run(evt),
