@@ -37,15 +37,11 @@ abstract class IdentifyTool extends gws.Tool {
 
     start() {
 
-        this.map.setInteractions([
+        this.map.prependInteractions([
             this.map.pointerInteraction({
                 whenTouched: evt => this.run(evt),
                 hover: this.hoverMode
             }),
-            'DragPan',
-            'MouseWheelZoom',
-            'PinchZoom',
-            'ZoomBox',
         ]);
     }
 

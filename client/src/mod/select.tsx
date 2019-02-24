@@ -91,7 +91,7 @@ class SelectTool extends gws.Tool {
     }
 
     start() {
-        this.map.setExtraInteractions([
+        this.map.prependInteractions([
             this.map.pointerInteraction({
                 whenTouched: evt => this.run(evt),
             }),

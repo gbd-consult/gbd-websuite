@@ -70,7 +70,7 @@ export class Tool extends gws.Tool {
                 layer: this.layer
             }));
 
-        this.map.setExtraInteractions(ixs);
+        this.map.appendInteractions(ixs);
 
     }
 

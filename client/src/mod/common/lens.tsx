@@ -166,7 +166,7 @@ class LensController extends gws.Controller implements gws.types.IController {
             whenEnded: () => this.run()
         });
 
-        this.map.setExtraInteractions([ixModify]);
+        this.map.appendInteractions([ixModify]);
 
         this.run()
 
@@ -175,7 +175,7 @@ class LensController extends gws.Controller implements gws.types.IController {
     stop(tool) {
         this.map.removeLayer(this.layer);
         this.removeOverlay();
-        this.map.setExtraInteractions([]);
+        this.map.resetInteractions();
 
     }
 

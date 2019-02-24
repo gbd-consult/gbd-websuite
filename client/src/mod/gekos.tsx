@@ -28,7 +28,7 @@ const GekosStoreKeys = [
 
 class GekosTool extends gws.Tool {
     start() {
-        this.map.setExtraInteractions([
+        this.map.prependInteractions([
             this.map.pointerInteraction({
                 whenTouched: evt => this.update({
                     gekosX: this.map.formatCoordinate(evt.coordinate[0]),

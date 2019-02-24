@@ -807,7 +807,7 @@ class AlkisLensTool extends lens.LensTool {
 
 class AlkisPickTool extends gws.Tool {
     start() {
-        this.map.setExtraInteractions([
+        this.map.prependInteractions([
             this.map.pointerInteraction({
                 whenTouched: evt => _master(this).pickTouched(evt.coordinate),
             }),

@@ -212,7 +212,7 @@ class DrawController extends gws.Controller {
             },
         });
 
-        this.map.setExtraInteractions([this.oInteraction]);
+        this.map.appendInteractions([this.oInteraction]);
 
         this.update({
             drawMode: true,

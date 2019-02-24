@@ -387,7 +387,7 @@ class DimensionDrawTool extends DimensionTool {
             whenEnded: () => this.drawEnded(),
         });
 
-        this.map.setExtraInteractions([
+        this.map.appendInteractions([
             this.ixDraw,
             _master(this).snapInteraction()
         ]);
@@ -451,7 +451,7 @@ class DimensionModifyTool extends DimensionTool {
             }
         });
 
-        this.map.setExtraInteractions([
+        this.map.appendInteractions([
             ixSelect, ixModify, _master(this).snapInteraction()
         ]);
 
