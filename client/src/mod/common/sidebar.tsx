@@ -7,13 +7,14 @@ interface SidebarProps extends gws.types.ViewProps {
     sidebarActiveTab: string;
     sidebarVisible: boolean;
     sidebarOverflowExpanded: boolean;
-    size: number;
+    sidebarSize: number;
 }
 
 const SidebarStoreKeys = [
     'sidebarActiveTab',
     'sidebarVisible',
     'sidebarOverflowExpanded',
+    'sidebarSize',
 ];
 
 let {Row, Cell} = gws.ui.Layout;
@@ -105,7 +106,7 @@ class PopupHeaderButton extends gws.View<ButtonProps> {
 
 class Header extends gws.View<SidebarProps> {
     render() {
-        let size = this.props.size;
+        let size = this.props.sidebarSize;
 
         let expanded = this.props.sidebarOverflowExpanded,
             items = this.props.controller.children,
@@ -136,7 +137,7 @@ class Header extends gws.View<SidebarProps> {
 class SidebarOverflowView extends gws.View<SidebarProps> {
 
     render() {
-        let size = this.props.size;
+        let size = this.props.sidebarSize;
 
         let expanded = this.props.sidebarOverflowExpanded,
             items = this.props.controller.children,
@@ -190,10 +191,8 @@ class SidebarController extends gws.Controller {
         this.app.whenChanged('windowSize', () => this.update({
             sidebarOverflowExpanded: false
         }));
-    }
-
-    get size() {
-        return this.options.size || 3;
+        if (this.getValue('appMediaWidth') === 'xsmall')
+            this.setVisible(false)
     }
 
     setActiveTab(type) {
@@ -209,15 +208,13 @@ class SidebarController extends gws.Controller {
 
     get defaultView() {
         return this.createElement(
-            this.connect(SidebarView, SidebarStoreKeys),
-            {size: this.size}
+            this.connect(SidebarView, SidebarStoreKeys)
         );
     }
 
     get appOverlayView() {
         return this.createElement(
-            this.connect(SidebarOverflowView, SidebarStoreKeys),
-            {size: this.size}
+            this.connect(SidebarOverflowView, SidebarStoreKeys)
         );
     }
 
