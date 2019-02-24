@@ -1,106 +1,68 @@
 Authorization
 =============
 
-GBD WebSuite authorization is role-based, with pluggable authorization providers. When the user logs in, the user credentials are passed to all configured providers in turn. If a provider accepts the credentials, it returns a list of roles for this user.
-
-When the user requests an object, the server checks if any of the user's roles has sufficient permissions to read the object, write to it (e.g. when editing) or execute it (e.g. a server action). If there are no explicit permissions on the object level, its parent object is checked and so on. To perform these checks, the server reads ``access`` rules of each object being requested.
+GBD WebSuite authorization is role-based, with pluggable authorization providers. Each user in the system has a list of accociated roles. The access to specific objects is based on user's roles.
 
 
 Access rules
 ------------
 
-``access`` is a list of ``AccessRule`` objects. Each ``AccessRule`` contains
+Some types of the objects in the configuration can have ``access`` configurations attached to them:
+
+- main application
+- server action
+- project
+- map
+- layer
+
+Additionally, some actions define internal ``access`` blocks for specific commands.
+
+An ``access`` block is a list of ``AccessRule`` objects. Each ``AccessRule`` contains
 
 - the ``type`` of the rule - "allow" or "deny",
-- the ``mode`` - "read", "write", "execute" or a combination thereof,
-- the list of ``role`` names the rule applies to
+- the ``role`` name this rule applies to
 
-
-Using ``access`` rules, the permissions check algorithm can be described formally as follows ::
-
-
-    ## The user U requests a permission mode P (e.g. "read") for an object O
-
-    let currentObject = O
-    let userRoles = "roles" of the user U
-
-    loop
-
-        if currentObject has property "access"
-
-            ## Check explicit access rules:
-
-            for each Rule in currentObject.access
-                if (Rule.roles contains any of userRoles) and (Rule.mode contains P)
-                    if Rule.type is "allow", return Access Granted
-                    if Rule.type is "deny",  return Access Denied
-                end if
-            end for
-
-        end if
-
-        ## At this point, the currentObject either has no "access" rules,
-        ## or none of these rules match user's roles.
-        ## Check the parent object if it exists
-
-        if currentObject has a "parent"
-            let currentObject = currentObject.parent
-            continue loop
-        end if
-
-        ## At this point, we've reached the root object
-        ## and still haven't found any matching rule.
-        ## Use the default rule, which is "Deny all requests"
-
-        return Access Denied
-
-    end loop
-
+When the user requests an object, the server checks the access rules defined in this object against the list of the user's roles. If any role has been found, the access is granted or denied, depending on the rule, otherwise the parent object is checked, until the root of the object hierarchy is reached, in which case the access is denied.
 
 Roles
 -----
 
-There are some predefined roles that have special meaning in GBD WebSuite:
+A ``role`` is just an identifier and can be freely choosen. There are a few predefined roles that have special meaning in GBD WebSuite:
 
 TABLE
    *guest* ~ Not logged-in user
    *user* ~ Any logged-in user
-   *everyone* ~ All users, logged-in and guests
+   *all* ~ All users, logged-in and guests
    *admin* ~ Administrator. Users that have this role are automatically granted access to all resources
 /TABLE
-
-Othewise, you can use arbitrary role names, but they must be valid identifers (i.e. start with a latin letter and only contain letters, digits and underscores).
 
 
 Authorization strategies
 ------------------------
 
-Since access rules are inherited, the first thing you have to configure is the root ``access`` list. If your projects are mostly public (or when you don't need any authorization at all), you can grant ``read`` and ``write`` to "everyone" ::
+Since access rules are inherited, the first thing you have to configure is the root ``access`` block. If your projects are mostly public (or when you don't need any authorization at all), you can grant access to "all" in the topmost config ::
 
     ## in the main config:
 
     "access": [
         {
             "type": "allow",
-            "mode": ["read", "write"],
-            "role": ["everyone"]
+            "role": "all"
         }
     ]
 
-Now, if you need to restrict access to some object, e.g. a project, you need two access rules: one to allow a specific role, and one to deny "everyone" ::
+Now, if you need to restrict access to some object, e.g. a project, you need two access rules: one to allow a specific role, and one to deny "all" ::
 
     ## in the project config:
 
     "access": [
         {
             "type": "allow",
-            "mode": ["read", "write"],
-            "role": ["members"]
+            "role": "member"
         },
         {
             "type": "deny",
-            "mode": ["read", "write"],
-            "role": ["everyone"]
+            "role": "all"
         }
     ]
 
@@ -111,8 +73,7 @@ On the other side, if most of your projects require a login, it's easier to star
     "access": [
         {
             "type": "deny",
-            "mode": ["read", "write"],
-            "role": ["everyone"]
+            "role": "all"
         }
     ]
 
@@ -123,16 +84,17 @@ and then explicitly allow access to specific objects ::
     "access": [
         {
             "type": "allow",
-            "mode": ["read", "write"],
-            "role": ["members"]
+            "role": "member"
         }
     ]
-
-Usually, there's no need to configure ``execute`` rights specifically, but if you decide to do so, pay attention that at least ``asset`` and ``auth`` actions are executable by everyone, otherwise your users wouldn't even be able to login!
 
 
 Authorization providers
 -----------------------
+
+
+When the user logs in, their credentials are passed to all configured providers in turn. If some provider accepts the credentials, it is supposed to return a list of roles for this user.
+
 
 file
 ~~~~
@@ -174,20 +136,20 @@ The ldap provider can authorize users against an ActiveDirectory or an OpenLDAP 
 
         ## map filters to roles:
 
-        "roles": [
+        "users": [
 
-            ## LDAP user "euler" has the GWS role "moderators":
+            ## LDAP user "newton" possesses the GWS role "moderator" and "member":
 
             {
-                "matches": "(&(cn=euler))",
-                "role": "moderators"
+                "matches": "(&(cn=newton))",
+                "roles": ["moderator", "member"]
             },
 
-            ## all members of the LDAP group "mathematicians" have the GWS role "members":
+            ## all members of the LDAP group "mathematicians" possess the GWS role "member":
 
             {
                 "memberOf": "(&(ou=mathematicians))",
-                "role": "members"
+                "roles": ["member"]
             }
         ]
     }

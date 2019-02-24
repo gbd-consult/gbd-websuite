@@ -1,33 +1,41 @@
-Feature transformations
-=======================
+Features
+========
 
-To ensure a smooth user experience, GBD WebSuite provides tools to transform and reformat feature data from different sources. When the GBD WebSuite client displays a feature, it looks for the following attributes, and, in case they are present, shows a nicely formatted feature info box:
+GBD WebSuite provides tools to transform and reformat feature data from different sources. These tools are configured in ``featureFormat`` options for layers and search providers.
+
+When the GBD WebSuite client displays a feature, it looks for the following attributes, and, in case they are present, shows them in a feature info box:
 
 TABLE
     *title* ~ Feature title
-    *shortText* ~ Brief description of the feature
-    *longText* ~ Detailed description
-    *imageUrl* ~ Illustration for the feature
+    *teaser* ~ Brief description of the feature
+    *description* ~ Detailed description
     *label* ~ Map label for the feature
+    *category* ~ Feature category
 /TABLE
 
-If a format value starts with a ``<``, the client will display it in the HTML format.
+In the configuration, you can provide a ``TemplateConfig`` object for each of these properties to create custom HTML or text output.
 
-You can use the ``meta`` option to reformat differently structured features to achieve the unified look. For example, consider a layer "Stores" based on a WMS source that provides feaure data in the following format ::
+
+For example, consider a layer "Stores" based on a WMS source that provides this feature data ::
 
     name    - store name
     owner   - owner's name
     address - street address
     photo   - a filename of the store image
 
-For this layer, the ``meta`` option could be like this (note the html usage) ::
+We can reformat it as follows ::
 
-    "meta": {
-        "format": {
-            "title": "Store {name}",
-            "shortText": "<p>This store is run by <em>{owner}</em>. The address of the store is <strong>{address}</strong></p>",
-            "imageUrl": "{photo}"
+    "featureFormat": {
+        "title": {
+            "type": "html",
+            "text": "<h1>{attributes.name}</h1>"
+        },
+        "teaser": {
+            "type": "html",
+            "text": "<p>Store {attributes.name} (owner {attributes.owner})</p>"
+        },
+        "description": {
+            "type": "html",
+            "text": "<p>{attributes.name} <img src={attributes.photo}/> <b>{attributes.address}</b> </p>"
         }
     }
-
-Apart from layers, ``meta`` configurations can be also added to search providers, in order to reformat search results (see :doc:`search).

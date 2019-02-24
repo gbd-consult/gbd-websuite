@@ -6,7 +6,7 @@ GBD WebSuite offers dedicated support for `QGIS <https://qgis.org>`_, a free and
 Our QGIS module allows you to
 
 - display complete QGIS projects (``.qgs``) as *layers* in your GWS project (see :doc:`layers`)
-- use QGIS projects (``.qgs``) as *sources* for your image layers (see :doc:`sources`)
+- embed specific QGIS layers into your GWS projects
 - use QGIS templates for printing (see :doc:`print`)
 
 In the server configuation (:doc:`server`) there are a few options that set the values of QGIS environment variables. Refer to the QGIS documentation for their specific meaning:
@@ -18,5 +18,5 @@ TABLE
 *serverLogLevel* ~ QGIS_SERVER_LOG_LEVEL
 /TABLE
 
-The ``searchPathsForSVG`` option tells where to find svg images used in your QGIS projects and print templates. If you use non-standard images, just add a directory path for them to this setting.
+The ``searchPathsForSVG`` option tells where to find svg images used in your QGIS projects and print templates. If you use non-standard SVG images, just add a directory path for them to this setting.
  

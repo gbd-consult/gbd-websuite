@@ -31,5 +31,10 @@ Provides direct search in SQL (PostGIS) tables. You need to specify the DB provi
 wms
 ~~~
 
-Implements ``GetFeatureInfo`` requests for WMS sources.
+Implements ``GetFeatureInfo`` requests for WMS sources. You need to provide the WMS service url. It's also possible to restrict the search to specific layers.
+
+wfs
+~~~
+
+Implements ``GetFeatureInfo`` requests for WFS sources. You need to provide the WFS service url. It's also possible to restrict the search to specific layers (or "types").
 

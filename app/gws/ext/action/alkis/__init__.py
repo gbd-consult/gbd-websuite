@@ -218,7 +218,7 @@ _cwd = os.path.dirname(__file__)
 DEFAULT_FORMAT = t.FormatConfig({
     'teaser': t.TemplateConfig({
         'type': 'html',
-        'path': _cwd + '/templates/feature_teaser.cx.html'
+        'path': _cwd + '/templates/teaser.cx.html'
     }),
     'description': t.TemplateConfig({
         'type': 'html',

@@ -32,11 +32,10 @@ A *map* is basically a collection of *layers* (see :doc:`layers`). A map configu
 Multi-projects
 --------------
 
-A project configuration can also serve as a template for multiple projects. To set up a template, set ``multi`` to ``true`` and provide a regular expression in ``multiMatch``. The server enumerates all files on the server that match that expression, and creates a project config for each file by replacing regex placeholders ``{$n}`` in other options' values. For example, this template will enumerate all QGIS projects in ``/data/qgis-maps`` and create a project with a qgis layer for each map found ::
+A project configuration can also serve as a template for multiple projects. To set up a template, provide a regular expression in the ``multi`` option. The server enumerates all files on the server that match that expression, and creates a project config for each file by replacing regex placeholders ``{$n}`` in other options' values. For example, this template will enumerate all QGIS projects in ``/data/qgis-maps`` and create a project with a qgis layer for each map found ::
 
 
-        "multi": True,
-        "multiMatch": "/data/qgis-maps/(.+?).qgs$",
+        "multi": "/data/qgis-maps/(.+?).qgs$",
         "title": "Project {$1}",
         "map": {
             "layers": [
@@ -50,12 +49,4 @@ A project configuration can also serve as a template for multiple projects. To s
                 },
             ]
         }
-
-
-
-
-
-
-
-
 

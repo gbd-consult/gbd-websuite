@@ -12,13 +12,13 @@ Example of the locale configuration ::
     "locale": "de_DE",
     "timeZone": "Europe/Berlin"
 
-For ``mako`` templates, we provide locale-aware ``date`` and ``time`` objects, with methods ``long``, ``medium`` and ``short``. Output  examples for the locale ``de_DE``:
+In the templates, we provide locale-aware ``date`` and ``time`` objects, with properties ``long``, ``medium`` and ``short``. Output  examples for the locale ``de_DE``:
 
 TABLE
-    ``date.short()`` ~ 08.12.18
-    ``date.medium()`` ~ 08.12.2018
-    ``date.long()`` ~ 8\. Dezember 2018
-    ``time.short()`` ~ 19:35
-    ``time.medium()`` ~ 19:35:59
-    ``time.long()`` ~ 19:35:59 +0000
+    ``date.short`` ~ 08.12.18
+    ``date.medium`` ~ 08.12.2018
+    ``date.long`` ~ 8\. December 2018
+    ``time.short`` ~ 19:35
+    ``time.medium`` ~ 19:35:59
+    ``time.long`` ~ 19:35:59 +0000
 /TABLE

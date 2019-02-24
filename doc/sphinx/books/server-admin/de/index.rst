@@ -23,11 +23,12 @@ Dokumentation für GBD WebSuite Server Administatoren (Deutsch).
     web.rst
     projects.rst
     layers.rst
-    sources.rst
     print.rst
     cache.rst
     features.rst
+    alkis.rst
+    gekos.rst
+    dprocon.rst
     configref.rst
     cliref.rst
-    apiref.rst
 

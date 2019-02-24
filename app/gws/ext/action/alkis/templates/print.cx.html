@@ -1,4 +1,45 @@
-<meta charset="utf8"/>
+<html>
 
-<MAP/>
-@include data.cx.html
+<gws:page width="297" height="210"/>
+
+<meta charset="utf8"/>
+<style>
+    body {
+        padding: 10mm;
+        margin: 0;
+    }
+
+    #map {
+        width: 150mm;
+        height: 100mm;
+        border: 1mm dotted magenta;
+        position: relative;
+        margin-right: 10mm;
+    }
+
+    td {
+        padding: 3mm;
+    }
+
+
+</style>
+
+<body>
+<h1>{title}</h1>
+<table>
+    <tr valign="top">
+        <td>
+            <div id="map">
+                <gws:map width="150" height="100"/>
+            </div>
+        </td>
+        <td>
+            @include data.cx.html
+        </td>
+    </tr>
+</table>
+
+</body>
+
+</html>
+

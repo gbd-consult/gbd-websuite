@@ -48,22 +48,22 @@ from . import request
 
 
 class PositionConfig(t.Config):
-    offsetX: int
-    offsetY: int
-    distance: int = 0
-    angle: int = 0
+    offsetX: int  #: x-offset for points
+    offsetY: int  #: y-offset for points
+    distance: int = 0  #: radius for points repelling
+    angle: int = 0  #: angle for points repelling
 
 
 class Config(t.WithTypeAndAccess):
     """GekoS action"""
 
-    url: t.url
-    crs: t.crsref = ''
-    params: dict
-    instances: t.Optional[t.List[str]]
+    crs: t.crsref = ''  #: CRS for gekos data
     db: t.Optional[str]  #: database provider uid
-    table: t.SqlTableConfig  #: sql table configuration
+    instances: t.Optional[t.List[str]]  #: gek-online instances
+    params: dict  #: additional parameters for gek-online calls
     position: t.Optional[PositionConfig]  #: position correction for points
+    table: t.SqlTableConfig  #: sql table configuration
+    url: t.url  #: gek-online base url
 
 
 class Object(gws.Object):

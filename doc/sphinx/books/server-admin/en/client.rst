@@ -6,16 +6,12 @@ Although GBD WebSuite can work as an ordinary webserver, its primary purpose is 
 UI Configuration
 ----------------
 
-Each GBD WebSuite project, as well as the main application, can have the ``client`` configuration, which provides various options for the client and describes its UI layout, so that you can turn specific UI elements on and off on a per-project basis.
+Each GBD WebSuite project, as well as the main application, can have the ``client`` configuration, which provides various options for the client and describes its UI layout, so that you can turn specific UI elements on and off on a per-project basis. Additionally, you can add ``access`` blocks to specific elements to turn them on and off for specific users only.
 
 Example of the client configuration ::
 
 
     {
-
-        ## root UI element:
-
-        "tag": "ui",
 
         "options": {
             ## active sidebar tab is "Layers"
@@ -32,98 +28,38 @@ Example of the client configuration ::
 
             ## map decoration elements:
 
-            { "tag": "Decoration.ScaleRuler"},
-            { "tag": "Decoration.Attribution"},
+            {"tag": "Decoration.ScaleRuler"},
+            {"tag": "Decoration.Attribution"},
 
             ## infobar (normally, at the bottom of the screen)
 
-            {
-                "tag": "Infobar",
-                "elements": [
-                    {
-                        ## on the left side of the infobar, display zoom tools:
+            {"tag": "Infobar.ZoomOut"},
+            {"tag": "Infobar.ZoomIn"},
+            {"tag": "Infobar.ZoomReset"},
+            {"tag": "Infobar.Position"},
+            {"tag": "Infobar.Scale"},
+            {"tag": "Infobar.Loader"},
+            {"tag": "Infobar.Spacer"},
+            {"tag": "Infobar.HomeLink"},
+            {"tag": "Infobar.Help"},
+            {"tag": "Infobar.About"},
 
-                        "tag": "Infobar.LeftSide",
-                        "elements": [
-                            {"tag": "Infobar.ZoomOut"},
-                            {"tag": "Infobar.ZoomIn"},
-                            {"tag": "Infobar.ZoomBox"},
-                            {"tag": "Infobar.ZoomReset"},
-                        ]
-                    },
-                    {
+            ## client toolbar
 
-                        ## on the right side of the infobar, display the "about" link, which opens in a pop-over frame:
+            {"tag": "Toolbar.Identify.Click"},
+            {"tag": "Toolbar.Lens"},
+            {"tag": "Toolbar.Annotate.Draw"},
+            {"tag": "Toolbar.Print"},
+            {"tag": "Toolbar.Snapshot"},
 
-                        "tag": "Infobar.RightSide",
-                        "elements": [
-                            {
-                                "tag": "Infobar.Link",
-                                "options": {
-                                    "title": "About",
-                                    "href": "https://example.org/about",
-                                    "target": "frame"
-                                }
-                            },
-                        ]
-                    },
+            ## sidebar
 
-                ]
-            },
-
-            ## toolbar (normally, at the top right)
-
-            {
-                "tag": "Toolbar",
-                "elements": [
-
-                    ## display measure tools in the toolbar
-
-                    {
-                        "tag": "Toolbar.Group",
-                        "elements": [
-                            {"tag": "Toolbar.Measure.Line"},
-                            {"tag": "Toolbar.Measure.Polygon"},
-                            {"tag": "Toolbar.Measure.Circle"},
-                            {"tag": "Toolbar.Measure.Clear"},
-                            {"tag": "Toolbar.Measure.Cancel"},
-                        ]
-                    },
-
-
-                    ## display the print button in the toolbar
-
-                    {
-                        "tag": "Toolbar.Group",
-                        "elements": [
-                            {"tag": "Toolbar.Print.Go"},
-                        ]
-                    },
-
-                    ## display the search box in the toolbar
-
-                    {"tag": "Toolbar.Search"},
-                ]
-            },
-
-            ## sidebar (normally, at the top left)
-
-            {
-                "tag": "Sidebar",
-                "elements": [
-
-                    ## display the Layers tab
-                    {"tag": "Sidebar.Layers"},
-
-                    ## display the Search tab
-                    {"tag": "Sidebar.Search"},
-
-                    ## display the User and Login tab
-                    {"tag": "Sidebar.User"},
-                ]
-            }
+            {"tag": "Sidebar.Layers"},
+            {"tag": "Sidebar.Search"},
+            {"tag": "Sidebar.Overview"},
+            {"tag": "Sidebar.Annotate"},
+            {"tag": "Sidebar.User"}
         ]
-    }
 
 
 Layer flags

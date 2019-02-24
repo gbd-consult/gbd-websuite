@@ -15,9 +15,15 @@ Template types
 html
 ~~~~
 
-A html print template is a ``mako`` template which contains the ``{MAP}`` placeholder which will be replaced by the actual map image when printing.
+A html print template is an html template which contains the following helper tags:
 
-QGIS
+TABLE
+``<gws:page width="297" height="210" margin="5 5 5 5"/>`` ~ page size and margins (in mm)
+``<gws:map width="150" height="150"/>`` ~ will be replaced by the generated map image
+/TABLE
+
+
+qgis
 ~~~~
 
-A QGIS template is a print composition from a QGIS ``qgs`` map. If there are multiple compositions, you can use ``compositionIndex`` or ``compositionName`` to identify the composition to use. Since maps in GWS are rendered separately, both template and map backgrounds in the composition must be set to None (transparent).
+A QGIS template is a print composition from a QGIS project file. If there are multiple compositions, you can use ``compositionIndex`` or ``compositionName`` to identify the composition to use. Since maps in GWS are rendered separately, both template and map backgrounds in the composition must be set to None (transparent).

@@ -7,17 +7,17 @@ Requests and urls
 Once launched, GBD WebSuite listens on ports ``80/443`` and processes ``GET`` and ``POST`` requests. Like a conventional webserver, GWS can serve static content, like html pages or images, but its main purpose is to provide dynamic map imagery and data. For dynamic requests, there's a single endpoint (url), namely the ``_`` (underscore). All requests to this endpoint are expected to contain the command (``cmd``) parameter.
 Additionally, all ``POST`` requests must be in JSON format.
 
-Here a few examples of requests GBD WebSuite can handle ::
+Here a few examples of requests GBD WebSuite can handle:
 
-    ## ordinary web request
+Staic web requests ::
 
     http://maps.my-server.com/images/smile.jpg
 
-    ## dynamic GET request (e.g. map imagery)
+Dynamic GET requests (e.g. map imagery) ::
 
     http://maps.my-server.com/_?cmd=mapHttpGetBbox&layer=london.metro&width=100&height=200&bbox=10,20,30,40
 
-    ## dynamic POST request (e.g. search)
+Dynamic POST request (e.g. search) ::
 
     {
         "cmd":"searchRun",
@@ -56,7 +56,7 @@ The set of commands (``cmd`` in the above examples) is not fixed and is freely c
 Maps, layers and sources
 ------------------------
 
-Every GBD WebSuite projects contains at least one *map*, which is a collection of *layers*. There are different types of layers (for example, "box", or "tile"). You can configure access rights, view properties (like an extent) and the metadata for the whole map and for each layer individually. Most layers are also bound to *source* objects, which tell the server where the geodata comes from. A layer configuration typically contains instructions for the server how to transform the source data, for example
+Every GBD WebSuite projects contains at least one *map*, which is a collection of *layers*. There are different types of layers (for example, "wms", or "tile"). You can configure access rights, view properties (like an extent) and the metadata for the whole map and for each layer individually. A layer configuration typically contains instructions for the server how to transform the source data, for example
 
 - reproject the data
 - convert the imagery from WMS into tiles and vice versa
@@ -89,7 +89,7 @@ GBD WebSuite supports several configuration formats:
 
 - json, in which case the config file name must end with ``config.json``
 - yaml (``config.yaml``). We use json in these docs, but you can always use yaml with the same structure if you like it more
-- python (``config.py``). Complex, repetitve or highly dynamic configurations can be also written in straight python. Your python script must contain a function called ``config()`` returning a ``dict`` with the same structure as JSON. Note that your config module is executed inside the container, so it must be compatible with Python 3.6.
+- python (``config.py``). Complex, repetitve or highly dynamic configurations can be also written in straight python. Your python config script must contain a function called ``config()`` returning a ``dict`` with the same structure as JSON. Note that your config module is executed inside the container, so it must be compatible with Python 3.6.
 
 Configuration starts with the main config file (``GWS_CONFIG``), which can include other config files for projects and project groups. Once all files are read and parsed, all configured objects are assembled into a large "tree", with the ``Application`` object being the root node. Here's an example of such a tree ::
 

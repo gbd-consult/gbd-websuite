@@ -24,7 +24,6 @@ Documentation for system administrators who configure the GBD WebSuite Server.
     web.rst
     projects.rst
     layers.rst
-    sources.rst
     print.rst
     cache.rst
     features.rst

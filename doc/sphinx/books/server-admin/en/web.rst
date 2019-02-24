@@ -14,13 +14,13 @@ There are two types of web content: *static* resources and *assets*. Static reso
 Use-cases for static files are:
 
 - plain, public html pages
-- javascript and css files (including the GBD WebSuite Client material)
+- javascript and css files
 - static images
 
 Use-cases for assets are:
 
 - any resource that requires authorization
-- template-based html pages (GBD WebSuite uses `mako <https:--www.makotemplates.org/>`_ for templating)
+- template-based html pages
 - project-specific resources
 
 GBD WebSuite only serves resources with known mime-types (determined by the file extension), the default set is ::
@@ -114,15 +114,46 @@ Project assets
 
 Each GBD WebSuite project can have its own assets root configured. When the GBD WebSuite client requests an asset without a project uid, like ::
 
-    http://example.org/_?cmd=assetHttpGetPath&path=somepage.mako
+    http://example.org/_?cmd=assetHttpGetPath&path=somepage.html
 
 then the asset is looked for in the site assets directory. If a request comes with a project uid ::
 
-    http://example.org/_?cmd=assetHttpGetPath&projectUid=myproject&path=somepage.mako
+    http://example.org/_?cmd=assetHttpGetPath&projectUid=myproject&path=somepage.html
 
 then the asset is first looked for in project assets, if it's not found, the site assets directory is used as a fallback.
 
+HTML Templates
+--------------
 
 
+Gws uses its own templating engine, which supports the following basic commands:
 
+TABLE
+   ``@if <condition> ... @end`` ~ Check a condition
+   ``@each <object> as <key>, <value> ... @end`` ~ Iterate a key-value object
+   ``@include <path>`` ~ Include another template
+/TABLE
+
+Property values can be inserted with an ``{object.property}`` construct, with optional filters, e.g. ``{{object.property | html}}``.
+
+Here's an example of a feature formatting template ::
+
+    @if feature.category
+        <p class="head">{feature.category | html}</p>
+    @end
+
+    @if feature.title
+        <p class="head2">{feature.title | html}</p>
+    @end
+
+    <table><tbody>
+
+        @each feature.attributes as name, value
+            <tr>
+                <th>{name | html}</th>
+                <td>{value | html | nl2br | linkify(target="_blank", cut=30)}</td>
+            </tr>
+        @end
+
+    </tbody></table>
 
