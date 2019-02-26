@@ -1,3 +1,4 @@
+import os
 import re
 import json
 
@@ -160,6 +161,7 @@ def _write_if_changed(fname, text):
         pass
 
     if text != curr:
+        os.makedirs(os.path.dirname(fname), exist_ok=True)
         with open(fname, 'wt') as fp:
             fp.write(text)
 
