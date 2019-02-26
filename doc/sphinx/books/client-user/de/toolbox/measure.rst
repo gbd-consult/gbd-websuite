@@ -1,5 +1,5 @@
-Messen
-======
+Markieren & Messen
+==================
 
 Das **Messentool** kann über das Icon |distance| in der Werkzeugleiste aktiviert werden, nach dem aktivieren durch einen Klick stehen drei verschiedene Werkzeuge zur Verfügung:
 
