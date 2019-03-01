@@ -1,3 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-  <path d="M22.5 9.01l-1.2-1.2-2.14 2.14V4.5h-1.7v6.65H7.75l2.13-2.14-1.2-1.2-2.14 2.14V4.5h-1.7v7.15L1.5 14.99l1.2 1.2 2.14-2.14v5.45h1.7v-6.65h9.71l-2.13 2.14 1.2 1.2 2.14-2.14v5.45h1.7v-7.15l3.34-3.34z"/>
-</svg>
+<svg id="bemassung-1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><title>gbd-icon-bemassung</title><polygon points="20.67 12 15.35 8 15.35 10.67 8.65 10.67 8.65 8 3.33 12 8.65 16 8.65 13.33 15.35 13.33 15.35 16 20.67 12"/><rect y="2.67" width="2.67" height="18.67"/><path d="M21.33,2.67V21.33H24V2.67Z"/></svg>
