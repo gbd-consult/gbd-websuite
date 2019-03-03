@@ -32,6 +32,12 @@ class SeedingConfig(t.Config):
     concurrency: int = 1  #: number of concurrent seeding jobs
 
 
+class FontConfig(t.Config):
+    """Fonts configuration."""
+
+    dir: t.dirpath  #: directory with custom fonts
+
+
 class Config(t.Config):
     """Application configuration"""
 
@@ -41,7 +47,7 @@ class Config(t.Config):
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
     csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
     db: t.Optional[DbConfig]  #: database configuration
-    fonts: t.Optional[t.dirpath]  #: directory with the custom fonts
+    fonts: t.Optional[FontConfig]  #: fonts configuration
     locale: t.Optional[str] = 'en_CA'  #: default locale for all projects
     projectDirs: t.Optional[t.List[t.dirpath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[t.filepath]]  #: additional project paths
@@ -74,7 +80,7 @@ class Object(gws.Object):
 
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
 
-        _install_fonts(self.var('fonts'))
+        _install_fonts(self.var('fonts.dir'))
 
         gws.auth.api.init()
 
