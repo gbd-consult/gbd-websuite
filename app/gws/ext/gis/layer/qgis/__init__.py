@@ -171,7 +171,8 @@ class Object(gws.gis.layer.Base):
             'BOXSPACE': 0,
             'SYMBOLSPACE': 0,
             'LAYERTITLE': 'false',
-            # 'RULELABEL': 'false',
+            'LAYERFONTFAMILY': 'DejaVuSans',
+            'ITEMFONTFAMILY': 'DejaVuSans',
         }
 
         legend = gws.tools.net.add_params(self.service.url, ps)

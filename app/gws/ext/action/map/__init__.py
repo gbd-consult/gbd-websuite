@@ -187,7 +187,8 @@ class Object(gws.Object):
             'BOXSPACE': 0,
             'SYMBOLSPACE': 0,
             'LAYERTITLE': 'false',
-            # 'RULELABEL': 'false',
+            'LAYERFONTFAMILY': 'DejaVuSans',
+            'ITEMFONTFAMILY': 'DejaVuSans',
         }
 
         url = 'http://%s:%s' % (
