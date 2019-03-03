@@ -4,6 +4,7 @@ from io import BytesIO
 import gws
 import gws.gis.layer
 import gws.gis.feature
+import gws.gis.svg
 import gws.tools.misc as misc
 import gws.types as t
 
@@ -59,6 +60,7 @@ class Renderer:
             self._try_bitmap(item)
             self._try_bbox(item)
             self._try_svg(item)
+            self._try_svg_fragment(item)
             self._try_features(item)
         except Exception:
             # swallow exceptions so that we still can render if some layer fails
@@ -94,6 +96,13 @@ class Renderer:
                 item.get('style'))
             if r:
                 self._add_svg(r)
+
+    def _try_svg_fragment(self, item):
+        if item.get('svg_fragment'):
+            self._add_svg([
+                gws.gis.svg.convert_fragment(
+                    item.get('svg_fragment'), self.inp.bbox, misc.PDF_DPI, self.inp.scale, self.inp.rotation)
+            ])
 
     def _try_features(self, item):
         fs = item.get('features')

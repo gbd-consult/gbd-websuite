@@ -48,36 +48,7 @@ let packageVendors = options => {
 //
 
 const themeDefaults = {
-    customProps: [
-        'label-anchor',
-        'label-background',
-        'label-fill',
-        'label-font-family',
-        'label-font-size',
-        'label-font-style',
-        'label-font-weight',
-        'label-line-height',
-        'label-offset-x',
-        'label-offset-y',
-        'label-padding',
-        'label-placement',
-        'label-min-resolution',
-        'label-max-resolution',
-
-        'mark',
-        'mark-fill',
-        'mark-size',
-        'mark-stroke',
-        'mark-stroke-dasharray',
-        'mark-stroke-dashoffset',
-        'mark-stroke-linecap',
-        'mark-stroke-linejoin',
-        'mark-stroke-miterlimit',
-        'mark-stroke-width',
-
-        'point-size',
-    ],
-
+    customProps: require('./custom-css-props'),
     'unit': 'px',
     'sort': true,
 

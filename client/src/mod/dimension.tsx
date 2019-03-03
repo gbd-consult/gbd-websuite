@@ -14,245 +14,557 @@ const MASTER = 'Shared.Dimension';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as DimensionController;
 
-class DimensionFeature extends gws.map.Feature {
+function dist(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+}
+
+function rotate(x0, y0, x, y, a) {
+    return [
+        x0 + ((x - x0) * Math.cos(a) - (y - y0) * Math.sin(a)),
+        y0 + ((x - x0) * Math.sin(a) + (y - y0) * Math.cos(a)),
+    ]
+}
+
+function vpush(ary, x) {
+    ary.push(x);
+    return ary.length - 1;
+}
+
+class DimensionPoint {
+    model: DimensionModel;
+    index: number;
+    coordinate: ol.Coordinate;
+    used: number;
+    isSelected = false;
+    isControl = false;
+
+    constructor(model, coordinate) {
+        this.model = model;
+        this.coordinate = coordinate;
+    }
+
+    get pixel() {
+        return this.model.map.oMap.getPixelFromCoordinate(this.coordinate)
+    }
+
+}
+
+class DimensionElement {
+    model: DimensionModel;
+    type: string;
+    dimPoints: Array<DimensionPoint>;
+    controlPoint: DimensionPoint;
     isSelected: boolean;
+    text: string;
 
-    get dimType() {
-        return this.props.attributes.dimType;
+    constructor(model, type, dimPoints) {
+        this.model = model;
+        this.type = type;
+        this.dimPoints = dimPoints;
+        this.text = '';
     }
 
-    get title() {
-        let coords = (this.geometry as ol.geom.MultiPoint).getCoordinates();
-        return this.map.formatCoordinate(coords[0][0]) + ', ' + this.map.formatCoordinate(coords[0][1])
+    get label() {
+        let dim = '';
+
+        if (this.type === 'Line') {
+            dim = this.model.formatLength(this.dimPoints[0], this.dimPoints[1])
+        }
+
+        return (dim + ' ' + this.text).trim();
     }
 
-    toPx(coord) {
-        try {
-            let [x, y] = this.map.oMap.getPixelFromCoordinate(coord);
-            return [x | 0, y | 0];
-        } catch (e) {
-            return [0, 0];
+    draw(fragmentPoints) {
+        if (this.type === 'Line') {
+            return this.drawLine(fragmentPoints)
+        }
+        return '';
+    }
+
+    hasPoint(p) {
+        return this.dimPoints.indexOf(p) >= 0 || this.controlPoint === p;
+    }
+
+    createControlPoint() {
+        if (this.type === 'Line') {
+            let [x1, y1] = this.dimPoints[0].coordinate;
+            let [x2, y2] = this.dimPoints[1].coordinate;
+
+            let cx = x1 + (x2 - x1) / 2;
+            let cy = y1 + (y2 - y1) / 2;
+
+            this.controlPoint = this.model.addPoint([cx, cy]);
+            this.controlPoint.isControl = true;
         }
     }
 
-    asSVG() {
-        let coords = (this.geometry as ol.geom.LineString).getCoordinates();
-        let buf = coords.map(c => this.anchor(c));
+    drawLine(fragmentPoints) {
+        let [x1, y1] = this.dimPoints[0].coordinate,
+            [x2, y2] = this.dimPoints[1].coordinate,
+            [xc, yc] = this.controlPoint.coordinate;
 
-        switch (this.props.attributes.dimType) {
-            case 'Line':
-                for (let n = 0; n < coords.length - 1; n++)
-                    buf.push(this.segment(coords[n], coords[n + 1]));
-                break;
-            case 'Arc':
-                for (let n = 0; n < coords.length - 2; n += 2)
-                    buf.push(this.arc(coords[n], coords[n + 1], coords[n + 2]))
-                break;
-            case 'Circle':
-                for (let n = 0; n < coords.length - 1; n += 2)
-                    buf.push(this.circle(coords[n], coords[n + 1]))
-                break;
+        let dx = (x2 - x1);
+        let dy = (y2 - y1);
 
-        }
+        if (dx === 0 && dy === 0)
+            return '';
 
-        return buf.map(x => x.trim()).filter(Boolean).join('\n');
-    }
+        if (dx === 0)
+            dx = 0.01;
 
-    segment(p1, p2) {
-        let [x1, y1] = this.toPx(p1),
-            [x2, y2] = this.toPx(p2);
+        let a = Math.atan(dy / dx);
 
-        let mx = Math.min(x1, x2) + (Math.abs(x1 - x2) >> 1);
-        let my = Math.min(y1, y2) + (Math.abs(y1 - y2) >> 1);
+        [xc, yc] = rotate(x1, y1, xc, yc, -a);
+        [x2, y2] = rotate(x1, y1, x2, y2, -a);
 
-        let phi = gws.tools.rad2deg(Math.atan((y2 - y1) / (x2 - x1)));
+        let adeg = -a / (Math.PI / 180)
 
-        let length = formatMeters(this.geoDist(p1, p2));
+        let h = yc - y1;
 
-        let buf = `<line                 
+        let _bl = vpush(fragmentPoints, [x1, y1]);
+        let _tl = vpush(fragmentPoints, [x1, y1 + h]);
+        let _br = vpush(fragmentPoints, [x2, y2]);
+        let _tr = vpush(fragmentPoints, [x2, y2 + h]);
+        let _la = vpush(fragmentPoints, [xc, yc]);
+
+        let buf = '';
+
+        buf += `
+            <g transform="rotate(${adeg},<<${_bl} 0 0>>,<<${_bl} 1 0>>)">
+        `;
+
+        let lny = -(parseInt(this.model.styles['.modDimensionDimLine'].values['offset-y']) || 0);
+        let lay = -(parseInt(this.model.styles['.modDimensionDimLabel'].values['offset-y']) || 0);
+
+        lay += lny;
+
+        buf += `<line
             class="modDimensionDimLine"
-            x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" 
+            marker-start='url(#lineStart)'
+            marker-end='url(#lineEnd)'
+            x1="<<${_tl} 0 0>>"
+            y1="<<${_tl} 1 ${lny}>>"
+            x2="<<${_tr} 0 0>>"
+            y2="<<${_tr} 1 ${lny}>>"
         />`;
 
-        if (length && !isNaN(phi) && dist(x1, y1, x2, y2) > 50) {
-            buf += `<text 
-                class="modDimensionDimLabel"
-                x="${mx}" y="${my - 5}" 
-                text-anchor="middle" 
-                transform="rotate(${phi},${mx},${my})">
-                ${length}
-            </text>`;
+        buf += `<line
+            class="modDimensionDimPlumb"
+            x1="<<${_bl} 0 0>>"
+            y1="<<${_bl} 1 0>>"
+            x2="<<${_tl} 0 0>>"
+            y2="<<${_tl} 1 ${lny}>>"
+        />`;
+
+        buf += `<line
+            class="modDimensionDimPlumb"
+            x1="<<${_br} 0 0>>"
+            y1="<<${_br} 1 0>>"
+            x2="<<${_tr} 0 0>>"
+            y2="<<${_tr} 1 ${lny}>>"
+        />`;
+
+        let minx = Math.min(x1, x2);
+        let maxx = Math.max(x1, x2);
+        let anchor = 'middle';
+
+        if (xc < minx) {
+            let _ex = vpush(fragmentPoints, [minx, yc]);
+            buf += `<line
+                class="modDimensionDimLine"
+                x1="<<${_la} 0 0>>"
+                y1="<<${_la} 1 ${lny}>>"
+                x2="<<${_ex} 0 0>>"
+                y2="<<${_ex} 1 ${lny}>>"
+            />`;
+            anchor = 'start';
         }
+
+        if (xc > maxx) {
+            let _ex = vpush(fragmentPoints, [maxx, yc]);
+            buf += `<line
+                class="modDimensionDimLine"
+                x1="<<${_la} 0 0>>"
+                y1="<<${_la} 1 ${lny}>>"
+                x2="<<${_ex} 0 0>>"
+                y2="<<${_ex} 1 ${lny}>>"
+            />`;
+            anchor = 'end';
+        }
+
+        buf += `<text 
+            text-anchor="${anchor}" 
+            class="modDimensionDimLabel"
+            x="<<${_la} 0 0>>"
+            y="<<${_la} 1 ${lay}>>"
+            >
+            ${this.label}</text>
+
+        `;
+
+        buf += '</g>';
 
         return buf;
     }
+}
 
-    arc(p1, p2, p3) {
-        // maths based on https://stackoverflow.com/a/43825818/989121
+const DimenstionStyles = [
+    '.modDimensionDimLine',
+    '.modDimensionDimPlumb',
+    '.modDimensionDimLabel',
+    '.modDimensionDimArrow',
+    '.modDimensionDimCross',
+]
 
-        let [x1, y1] = this.toPx(p1);
-        let [x2, y2] = this.toPx(p2);
-        let [x3, y3] = this.toPx(p3);
+class DimensionModel {
+    points: Array<DimensionPoint>;
+    elements: Array<DimensionElement>;
+    draftCoordinates: Array<ol.Coordinate>;
+    draftType: string;
+    map: gws.types.IMapManager;
+    pixelTolerance = 20;
+    index = 0;
+    isInteractive: boolean;
+    svgDefs: string;
+    styles: gws.types.Dict;
 
-        let a = dist(x1, y1, x3, y3);
-        let b = dist(x1, y1, x2, y2);
-        let c = dist(x3, y3, x2, y2);
+    constructor(map) {
+        this.map = map;
+        this.points = [];
+        this.elements = [];
+        this.svgDefs = this.drawDefs();
 
-        // arc angle - cosine theorem
-        // |12|^2 + |23|^2 - |12|^2 =  2cos(phi)
+        this.styles = {};
 
-        let cos = (b * b + c * c - a * a) / (2 * b * c);
-
-        if (Math.abs(cos) >= 1)
-            return '';
-
-        // arc radius - sine theorem
-        // a / 2sin(phi) = r
-
-        let phi = Math.acos(cos);
-        let r = (a / (2 * Math.sin(phi))) | 0;
-
-        // large arc flag = 1 if phi < 90
-        let large = phi > (Math.PI / 2) ? 0 : 1;
-
-        // sweep flag = 1 if p2 if below the line p1-p3
-        let sweep = ((x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1)) > 0 ? 0 : 1;
-
-        let p = `M${x1} ${y1} A ${r} ${r} 0 ${large} ${sweep} ${x3} ${y3}`;
-
-        let color = this.isSelected ? '#ff0000' : '#000000';
-
-        let radius = formatMeters(this.geoDist(p1, p3) / (2 * Math.sin(phi)));
-
-        return `
-            <path
-                class="modDimensionDimLine"
-                d="${p}" 
-                stroke="${color}" 
-            />
-            <path
-                class="modDimensionDimGuide"
-                d="M${x2} ${y2} L${x2 + 50} ${y2 - 50} L${x2 + 100} ${y2 - 50}"
-            />
-            <text
-                class="modDimensionDimLabel"
-                x="${x2 + 50}"
-                y="${y2 - 50 - 5}"
-                >R ${radius}</text>
-
-
-        `;
-    }
-
-    circle(p1, p2) {
-        let [x1, y1] = this.toPx(p1);
-        let [x2, y2] = this.toPx(p2);
-
-        let r = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)) | 0;
-
-        let radius = formatMeters(this.geoDist(p1, p2));
-
-        return `
-            <circle 
-                class="modDimensionDimLine"
-                cx="${x1}" cy="${y1}" r="${r}"
-            />
-            <path
-                class="modDimensionDimGuide"
-                d="M${x1} ${y1} L${x1 + 50} ${y1 - 50} L${x1 + 100} ${y1 - 50}"
-            />
-            <text
-                class="modDimensionDimLabel"
-                x="${x1 + 50}"
-                y="${y1 - 50 - 5}"
-                >R ${radius}m</text>
-            
-        `;
+        DimenstionStyles.forEach(sel => {
+            let s = this.map.getStyleFromSelector(sel);
+            this.styles[sel] = {
+                source: s ? s.source : '',
+                values: s ? s.values : '',
+            }
+        });
 
     }
 
-    anchor(p) {
-        let [x, y] = this.toPx(p);
-        let size = 4;
+    serialize() {
+        this.points.forEach((p, n) => p.index = n);
 
-        return `
-            <line 
-                class="modDimensionDimMark"
-                x1="${x - size}" 
-                y1="${y - size}" 
-                x2="${x + size}" 
-                y2="${y + size}"
-            />
-            <line 
-                class="modDimensionDimMark"
-                x1="${x - size}" 
-                y1="${y + size}" 
-                x2="${x + size}" 
-                y2="${y - size}"
-            />
-        `;
+        return {
+            points: this.points.map(p => p.coordinate),
+            elements: this.elements.map(e => ({
+                type: e.type,
+                dimPoints: e.dimPoints.map(p => p.index),
+                controlPoint: e.controlPoint.index,
+                text: e.text,
+            }))
+
+        }
+    }
+
+    deserialize(d) {
+        this.points = d.points.map(s => new DimensionPoint(this, s));
+        this.elements = d.elements.map(s => {
+            let e = new DimensionElement(this, s.type, s.dimPoints.map(n => this.points[n]));
+            e.text = s.text || '';
+            e.controlPoint = this.points[s.controlPoint];
+            e.controlPoint.isControl = true;
+            return e;
+        });
+        this.changed();
+    }
+
+    changed() {
+        this.map.changed();
+    }
+
+    setInteractive(interactive) {
+        this.isInteractive = interactive;
+        this.changed();
+    }
+
+    selectPoint(point, add = false) {
+        if (!add)
+            this.unselectAll();
+        if (point)
+            point.isSelected = true;
+        this.changed();
+    }
+
+    get selectedPoints() {
+        return this.points.filter(p => p.isSelected);
+    }
+
+    unselectAll() {
+        this.points.forEach(p => p.isSelected = false);
+    }
+
+    movePoint(p: DimensionPoint, c: ol.Coordinate) {
+        p.coordinate = c;
+        this.changed();
+    }
+
+    setDraft(type, coordinates = null) {
+        this.draftType = type;
+        this.draftCoordinates = coordinates;
+        this.changed();
+    }
+
+    removePoints(points: Array<DimensionPoint>) {
+        points.forEach(p => this.elements = this.elements.filter(e => !e.hasPoint(p)));
+        this.cleanupPoints();
+        this.changed();
+    }
+
+    removeElement(element: DimensionElement) {
+        this.elements = this.elements.filter(e => e !== element);
+        this.cleanupPoints();
+        this.changed();
+    }
+
+    cleanupPoints() {
+        this.points.forEach(p => p.used = 0);
+        this.elements.forEach(e => {
+            e.dimPoints.forEach(p => p.used++);
+            e.controlPoint.used++;
+        });
+        this.points = this.points.filter(p => p.used > 0);
+    }
+
+    addPoint(coordinate) {
+        let p = gws.tools.find(this.points, q => q.coordinate[0] === coordinate[0] && q.coordinate[1] === coordinate[1]);
+        if (p)
+            return p;
+        p = new DimensionPoint(this, coordinate);
+        this.points.push(p);
+        this.changed();
+        return p;
+    }
+
+    addElement(type, dimPoints) {
+        let e = new DimensionElement(this, type, dimPoints);
+        e.isSelected = false;
+        e.createControlPoint();
+        this.elements.push(e)
+        this.changed();
+    }
+
+    pointAt(pixel) {
+        let pts = [];
+
+        this.points.forEach(p => {
+            let d = dist(p.pixel[0], p.pixel[1], pixel[0], pixel[1]);
+            if (d < this.pixelTolerance)
+                pts.push([d, p])
+        });
+
+        if (!pts.length)
+            return null;
+
+        pts.sort((a, b) => b[0] - a[0]);
+        return pts[0][1];
     }
 
     geoDist(p1, p2) {
         return ol.Sphere.getLength(
-            new ol.geom.LineString([p1, p2]),
+            new ol.geom.LineString([p1.coordinate, p2.coordinate]),
             {projection: this.map.projection});
 
     }
 
-}
-
-function dist(x1, y1, x2, y2) {
-    return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)) | 0;
-}
-
-function formatMeters(n) {
-    if (!n || n < 0.01)
-        return '';
-    return n.toFixed(2) + ' m';
-
-}
-
-class DimensionLayer extends gws.map.layer.FeatureLayer {
-
-    get selectedFeature(): DimensionFeature {
-        let fs = this.features.filter(f => f.isSelected);
-        return fs.length ? fs[0] : null;
+    formatLength(p1, p2) {
+        let n = this.geoDist(p1, p2);
+        if (!n || n < 0.01)
+            return '';
+        return n.toFixed(2) + ' m';
 
     }
 
-    asSVG() {
+    toPx(coordinate: ol.Coordinate) {
+        try {
+            return this.map.oMap.getPixelFromCoordinate(coordinate)
+        } catch (e) {
+            return [-1, -1];
+        }
+    }
+
+    drawDraft() {
+        let buf = [];
+        let r = this.pixelTolerance >> 1;
+
+        if (this.draftType === 'Line') {
+            let [x1, y1] = this.toPx(this.draftCoordinates[0]);
+            let [x2, y2] = this.toPx(this.draftCoordinates[1]);
+
+            if (x1 >= 0) {
+                buf.push(`<circle class="modDimensionDraftPoint" cx="${x1}" cy="${y1}" r="${r}" />`);
+            }
+            if (x2 >= 0) {
+                buf.push(`<circle class="modDimensionDraftPoint" cx="${x2}" cy="${y2}" r="${r}" />`);
+            }
+            if (x1 >= 0 && x2 >= 0) {
+                buf.push(`<line class="modDimensionDraftLine" 
+                    x1=${x1}
+                    y1=${y1}
+                    x2=${x2}
+                    y2=${y2}
+                />`);
+            }
+        }
+        return buf.join('');
+
+    }
+
+    drawPoint(p) {
+        let cls = 'modDimensionPoint';
+
+        if (p.isSelected)
+            cls = 'modDimensionSelectedPoint';
+        else if (p.isControl)
+            cls = 'modDimensionControlPoint';
+
+        let [x, y] = this.toPx(p.coordinate);
+        let r = this.pixelTolerance >> 1;
+
+        return `<circle class="${cls}" cx="${x}" cy="${y}" r="${r}" />`;
+    }
+
+    drawDefs() {
+        let buf = [];
+
+        let lineStyle = this.map.getStyleFromSelector('.modDimensionDimLine');
+
+        if (lineStyle && lineStyle.values['mark'] === 'arrow') {
+
+            let style = this.map.getStyleFromSelector('.modDimensionDimArrow');
+
+            let w = style ? parseInt(style.values['width']) : 0;
+            let h = style ? parseInt(style.values['height']) : 0;
+
+            w = w || 12;
+            h = h || 8;
+
+            buf.push(`
+                <marker 
+                    id="lineStart" 
+                    markerWidth="${w}" 
+                    markerHeight="${h}" 
+                    refX="0" 
+                    refY="${h >> 1}" 
+                    orient="auto" 
+                    markerUnits="userSpaceOnUse">
+                    <path
+                        class="modDimensionDimArrow"
+                        d="M0,${h >> 1} L${w},0 L${w},${h} Z"/>
+                </marker>
+                <marker 
+                    id="lineEnd" 
+                    markerWidth="${w}" 
+                    markerHeight="${h}"
+                    refX="${w}" 
+                    refY="${h >> 1}"
+                    orient="auto" 
+                    markerUnits="userSpaceOnUse">
+                    <path
+                        class="modDimensionDimArrow"
+                        d="M0,0 L0,${h} L${w},${h >> 1} Z" />
+                </marker>
+            `);
+        }
+
+        if (lineStyle && lineStyle.values['mark'] === 'cross') {
+
+            let style = this.map.getStyleFromSelector('.modDimensionDimCross');
+
+            let h = style ? parseInt(style.values['height']) : 0;
+
+            h = h || 10;
+
+            let m = `
+                markerWidth="${h}" 
+                markerHeight="${h}" 
+                refX="${h >> 1}" 
+                refY="${h >> 1}" 
+                orient="auto" 
+                markerUnits="userSpaceOnUse">
+                <path
+                    class="modDimensionDimCross"
+                    d="M${h},0 L0,${h} "/>
+                <path
+                    class="modDimensionDimCross"
+                    d="M${h >> 1},0 L${h >> 1},${h} "/>
+            `;
+
+            buf.push(`<marker id="lineStart" ${m}</marker>`);
+            buf.push(`<marker id="lineEnd" ${m}</marker>`);
+
+        }
+
+        return '<defs>' + buf.join('') + '</defs>';
+
+    }
+
+    draw() {
         let mapSize = this.map.oMap.getSize();
 
         if (!mapSize)
             return '';
 
-        let w = mapSize[0];
-        let h = mapSize[1];
+        let frag = this.fragment();
 
-        let elems = this.features.map(el => el.asSVG())
+        let xy = frag.points.map(c => this.toPx(c));
 
-        if (elems.length === 0)
-            return '';
+        frag.svg = frag.svg.replace(/<<(\S+) (\S+) (\S+)>>/g, ($0, $1, $2, $3) => {
+            let px = xy[Number($1)]
+            return String(px[Number($2)] + Number($3))
+        });
 
-        let svg = `
-            <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        let points = this.isInteractive ? this.points.map(p => this.drawPoint(p)).join('') : '';
+
+        let draft = this.drawDraft();
+
+        return `<svg width="${mapSize[0]}" height="${mapSize[1]}" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            ${this.svgDefs}
+            ${points}
+            ${frag.svg}
+            ${draft}
+        </svg>`;
+    }
+
+    fragment(): gws.api.SvgFragment {
+        let fragmentPoints = [];
+        let elements = this.elements.map(e => e.draw(fragmentPoints)).join('');
+
+        return {
+            points: fragmentPoints,
+            svg: `${this.svgDefs}${elements}`
+        }
+    }
+
+    printFragment() {
+        let css = gws.tools.entries(this.styles).map(([sel, s]) =>
+            sel + ' {\n' + s['source'] + '\n}'
+        ).join('\n');
+
+        let frag = this.fragment();
+        frag.svg = `
+            <style>${css}</style>${frag.svg}
         `;
 
-        svg += gws.tools.compact(elems).join('\n');
-        svg += '</svg>'
-
-        return svg;
+        return frag;
     }
 
-    selectFeature(f: DimensionFeature) {
-        f.isSelected = true;
-        this.source.changed();
-    }
+}
 
-    unselectAll() {
-        this.features.forEach(f => f.isSelected = false);
-        this.source.changed();
+class DimensionLayer extends gws.map.layer.FeatureLayer {
+    master: DimensionController;
+
+    get printItem() {
+        return {
+            features: [],
+            style: null,
+            printAsVector: true,
+            svgFragment: this.master.model.printFragment(),
+        };
     }
 
 }
@@ -261,6 +573,10 @@ abstract class DimensionTool extends gws.Tool {
 
     get layer(): DimensionLayer {
         return _master(this).layer;
+    }
+
+    get model(): DimensionModel {
+        return _master(this).model;
     }
 
     get toolboxView() {
@@ -273,7 +589,7 @@ abstract class DimensionTool extends gws.Tool {
             <gws.ui.IconButton
                 {...gws.tools.cls('modDimensionModifyButton', at === 'Tool.Dimension.Modify' && 'isActive')}
                 tooltip={this.__('modDimensionModifyButton')}
-                whenTouched={() => master.startEdit()}
+                whenTouched={() => master.startModify()}
             />,
             <gws.ui.IconButton
                 {...gws.tools.cls('modDimensionLineButton', at === 'Tool.Dimension.Line' && 'isActive')}
@@ -281,35 +597,11 @@ abstract class DimensionTool extends gws.Tool {
                 whenTouched={() => master.startDraw('Line')}
             />,
             <gws.ui.IconButton
-                {...gws.tools.cls('modDimensionArcButton', at === 'Tool.Dimension.Arc' && 'isActive')}
-                tooltip={this.__('modDimensionArcButton')}
-                whenTouched={() => master.startDraw('Arc')}
-            />,
-            <gws.ui.IconButton
-                {...gws.tools.cls('modDimensionCircleButton', at === 'Tool.Dimension.Circle' && 'isActive')}
-                tooltip={this.__('modDimensionCircleButton')}
-                whenTouched={() => master.startDraw('Circle')}
-            />,
-            <gws.ui.IconButton
                 className="modDimensionRemoveButton"
                 tooltip={this.__('modDimensionRemoveButton')}
-                whenTouched={() => master.removeSelected()}
+                whenTouched={() => master.removePoints()}
             />,
         ];
-
-        /*
-            <gws.ui.IconButton
-                className="modDimensionDrawCommitButton"
-                tooltip={this.__('modDimensionDrawCommitButton')}
-                whenTouched={() => master.app.call('drawCommit')}
-            />,
-            <gws.ui.IconButton
-                className="modDimensionDrawEndButton"
-                tooltip={this.__('modDimensionCancelButton')}
-                whenTouched={() => master.app.call('drawCancel')}
-            />,
-
-         */
 
         return <toolbox.Content
             controller={this}
@@ -319,176 +611,158 @@ abstract class DimensionTool extends gws.Tool {
 
     start() {
         this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Dimension'});
-    }
-
-}
-
-class DimensionDrawTool extends DimensionTool {
-    state: string;
-    dimType: string;
-    ixDraw: any;
-    draftFeature: DimensionFeature;
-
-    async init() {
-        await super.init();
-        this.app.whenCalled('drawCommit', () => {
-            if (this.state === 'draw') {
-                this.ixDraw.finishDrawing()
-            }
-        });
-        this.app.whenCalled('drawCancel', () => {
-            if (this.state === 'draw') {
-                this.state = 'cancel';
-                this.ixDraw.finishDrawing()
-            }
-        });
-    }
-
-    drawStarted(oFeatures) {
-        this.layer.unselectAll();
-
-        this.draftFeature = new DimensionFeature(this.map, {
-            props: {attributes: {dimType: this.dimType}},
-            oFeature: oFeatures[0],
-        });
-
-        this.draftFeature.oFeature.on('change', () => {
-            let geom = this.draftFeature.geometry as ol.geom.LineString;
-            let coords = geom.getCoordinates();
-            if (this.dimType === 'Circle' && coords.length > 2)
-                geom.setCoordinates([coords[0], coords[coords.length - 1]]);
-            if (this.dimType === 'Arc' && coords.length > 3)
-                geom.setCoordinates([coords[0], coords[1], coords[coords.length - 1]]);
-        });
-
-        _master(this).layer.addFeature(this.draftFeature)
-
-        this.state = 'draw';
-    }
-
-    drawEnded() {
-        let master = _master(this);
-        let coords = (this.draftFeature.geometry as ol.geom.LineString).getCoordinates();
-
-        _master(this).layer.removeFeature(this.draftFeature)
-
-        if (this.state === 'draw') {
-            master.addFeature(this.dimType, coords, null);
-            _master(this).whenDrawEnded()
-
-        } else {
-            _master(this).whenDrawCanceled()
-        }
-
-        this.state = '';
-    }
-
-    start() {
-        super.start();
-
-        this.ixDraw = this.map.drawInteraction({
-            shapeType: 'LineString',
-            style: this.map.getStyleFromSelector('.modDimensionFeature'),
-            whenStarted: oFeatures => this.drawStarted(oFeatures),
-            whenEnded: () => this.drawEnded(),
-        });
-
-        this.map.appendInteractions([
-            this.ixDraw,
-            _master(this).snapInteraction()
-        ]);
-    }
-
-}
-
-class DimensionLineTool extends DimensionDrawTool {
-    dimType = 'Line'
-}
-
-class DimensionArcTool extends DimensionDrawTool {
-    dimType = 'Arc'
-}
-
-class DimensionCircleTool extends DimensionDrawTool {
-    dimType = 'Circle'
-}
-
-class DimensionModifyTool extends DimensionTool {
-    oFeatureCollection: ol.Collection<ol.Feature>;
-
-    select() {
-        this.oFeatureCollection.clear();
-
-        let sel = this.layer.selectedFeature;
-        if (sel) {
-            this.oFeatureCollection.push(sel.oFeature);
-        }
-    }
-
-    start() {
-        super.start();
-
-        this.oFeatureCollection = new ol.Collection<ol.Feature>();
-
-        this.select();
-
-        let ixSelect = this.map.selectInteraction({
-            layer: this.layer,
-            style: this.map.getStyleFromSelector('.modDimensionSelectedFeature'),
-            whenSelected: oFeatures => {
-                this.layer.unselectAll();
-
-                if (oFeatures[0] && oFeatures[0]['_gwsFeature']) {
-                    this.layer.selectFeature(oFeatures[0]['_gwsFeature']);
-                    this.select();
-                    //this.whenSelected(f);
-                } else {
-                    this.oFeatureCollection.clear();
-                    //this.whenUnselected();
-                }
-            }
-        });
-
-        let ixModify = this.map.modifyInteraction({
-            features: this.oFeatureCollection,
-            style: this.map.getStyleFromSelector('.modDimensionSelectedFeature'),
-            allowDelete: () => this.layer.selectedFeature.dimType === 'Line',
-            allowInsert: () => this.layer.selectedFeature.dimType === 'Line',
-            whenEnded: oFeatures => {
-                //_master(this).commitEdit()
-            }
-        });
-
-        this.map.appendInteractions([
-            ixSelect, ixModify, _master(this).snapInteraction()
-        ]);
-
-    }
-
-    whenSelected(f) {
-        //_master(this).selectFeature(f, false);
-    }
-
-    whenUnselected() {
-        //_master(this).unselectFeature()
+        this.model.setInteractive(true);
     }
 
     stop() {
-        super.stop()
+        this.model.setInteractive(false);
     }
+
+}
+
+class DimensionLineTool extends DimensionTool {
+    lastPoint: DimensionPoint;
+
+    start() {
+        super.start();
+
+        this.model.unselectAll();
+        this.lastPoint = null;
+
+        // @TODO: join mode
+        // let sel = this.model.selectedPoints;
+        // this.lastPoint = sel.length > 0 ? sel[0] : null;
+
+        let ixPointer = new ol.interaction.Pointer({
+            handleEvent: e => this.handleEvent(e),
+        });
+
+        this.map.appendInteractions([
+            ixPointer,
+            _master(this).snapInteraction(),
+        ]);
+
+    }
+
+    handleEvent(e: ol.MapBrowserEvent) {
+        if (e.type === 'dblclick') {
+            this.finishDrawing();
+            return
+        }
+
+        if (e.type === 'click') {
+            this.addPoint(e);
+            return;
+        }
+
+        if (e.type === 'pointermove') {
+            let coord = [];
+
+            if (this.lastPoint)
+                coord.push(this.lastPoint.coordinate);
+            coord.push(e.coordinate);
+
+            this.model.setDraft('Line', coord);
+        }
+
+        return true;
+    }
+
+    addPoint(e) {
+        this.model.setDraft(null);
+
+        if (this.lastPoint) {
+            let c = this.lastPoint.coordinate;
+            if (c[0] === e.coordinate[0] && c[1] === e.coordinate[1]) {
+                return;
+            }
+        }
+
+        let point = this.model.addPoint(e.coordinate);
+
+        if (this.lastPoint) {
+            this.model.addElement('Line', [this.lastPoint, point])
+        }
+
+        this.lastPoint = point;
+    }
+
+    finishDrawing() {
+        this.model.setDraft(null);
+        _master(this).startModify();
+    }
+
+}
+
+class DimensionModifyTool extends DimensionTool {
+
+    point: DimensionPoint;
+    ixSnap: ol.interaction.Snap;
+
+    start() {
+        super.start();
+
+        let ixPointer = new ol.interaction.Pointer({
+            handleEvent: e => this.handleEvent(e),
+        });
+
+        this.ixSnap = _master(this).snapInteraction();
+        this.map.appendInteractions([ixPointer, this.ixSnap]);
+    }
+
+    handleEvent(e: ol.MapBrowserEvent) {
+        if (e.type === 'pointerdown') {
+            let p = this.model.pointAt(e.pixel);
+
+            if (p) {
+                this.model.selectPoint(p);
+                this.ixSnap.setActive(!p.isControl);
+                console.log('A', p.isControl)
+                this.point = p;
+            } else {
+                this.model.selectPoint(null);
+                this.point = null;
+            }
+        }
+
+        if (e.type === 'dblclick') {
+            if (this.point && this.point.isControl) {
+                let element = gws.tools.find(this.model.elements, e => e.controlPoint === this.point);
+                _master(this).selectElement(element);
+            }
+            return false;
+        }
+
+        if (e.type === 'pointerdrag') {
+            if (this.point) {
+                this.model.movePoint(this.point, e.coordinate);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }
 
 class DimensionController extends gws.Controller {
     uid = MASTER;
     layer: DimensionLayer;
     oOverlay: ol.Overlay;
-    options: gws.api.DimensionOptionsResponse;
+    options: gws.api.DimensionOptionsResponse = {layerUids: [], pixelTolerance: 10};
+    model: DimensionModel;
+    targetUpdateCount = 0;
+    snapUpdateCount = 0;
 
     async init() {
+        this.model = new DimensionModel(this.map);
+
         this.layer = this.map.addServiceLayer(new DimensionLayer(this.map, {
-            uid: '_dimensionPoint',
-            style: this.map.getStyleFromSelector('.modDimensionFeature')
+            uid: '_dimension',
         }));
+
+        this.layer.master = this;
+
         this.oOverlay = new ol.Overlay({
             element: document.createElement('div'),
             stopEvent: false,
@@ -496,17 +770,24 @@ class DimensionController extends gws.Controller {
 
         this.map.oMap.addOverlay(this.oOverlay);
 
-        this.app.whenChanged('mapRawUpdateCount', () => this.updateOverlay())
-
-        this.layer.oLayer.getSource().on('change', () => {
-            this.updateOverlay()
-        });
-
         await this.loadFileNames()
 
         this.options = await this.app.server.dimensionOptions({
             projectUid: this.app.project.uid,
         });
+
+        this.model.pixelTolerance = this.options.pixelTolerance || 10;
+
+        this.app.whenChanged('mapRawUpdateCount', () => {
+            this.updateOverlay();
+            this.checkUpdateSnapInteraction();
+        });
+
+        this.options.layerUids.forEach(uid => {
+            this.app.whenChanged('mapLayerUpdateCount_' + uid, () => {
+                this.targetUpdateCount++;
+            })
+        })
     }
 
     async loadFileNames() {
@@ -520,80 +801,59 @@ class DimensionController extends gws.Controller {
 
     }
 
-    snapInteraction() {
-        let layer = this.map.getLayer(this.options.layerUid) || this.layer;
+    snapFeatures: ol.Collection<ol.Feature>;
 
+    snapInteraction() {
+        this.snapFeatures = new ol.Collection<ol.Feature>();
+        this.updateSnapInteraction();
         return this.map.snapInteraction({
-            layer: layer as gws.types.IMapFeatureLayer,
-            tolerance: this.options.tolerance || 10,
+            features: this.snapFeatures,
+            tolerance: this.model.pixelTolerance,
         })
     }
 
+    checkUpdateSnapInteraction() {
+        if (this.model.isInteractive && this.targetUpdateCount > this.snapUpdateCount) {
+            this.updateSnapInteraction();
+            this.snapUpdateCount = this.targetUpdateCount;
+        }
+    }
+
+    updateSnapInteraction() {
+        if (this.snapFeatures && this.options.layerUids) {
+            this.snapFeatures.clear();
+            this.options.layerUids.forEach(uid => {
+                let la = (this.map.getLayer(uid) as gws.types.IMapFeatureLayer);
+                if (la)
+                    this.snapFeatures.extend(la.features.map(f => f.oFeature));
+            });
+        }
+    }
+
     updateOverlay() {
-        let coord = this.map.oMap.getCoordinateFromPixel([0, 0])
-        this.oOverlay.setPosition(coord);
-        this.oOverlay.getElement().innerHTML = this.layer.asSVG();
+        let coordinate = this.map.oMap.getCoordinateFromPixel([0, 0])
+        this.oOverlay.setPosition(coordinate);
+        this.oOverlay.getElement().innerHTML = this.model.draw();
     }
 
     startDraw(dimType) {
         this.app.startTool('Tool.Dimension.' + dimType)
     }
 
-    startEdit() {
+    startModify() {
         this.app.startTool('Tool.Dimension.Modify')
 
     }
 
-    whenDrawEnded() {
-        this.startEdit();
+    removePoints() {
+        this.model.removePoints(this.model.selectedPoints)
     }
 
-    whenDrawCanceled() {
-        this.startEdit();
-    }
-
-    removeSelected() {
-        let f = this.layer.selectedFeature;
-        if (f) {
-            this.removeFeature(f);
-        }
-    }
-
-    removeFeature(f) {
-        this.layer.removeFeature(f);
-        this.startEdit();
+    selectElement(element?: DimensionElement) {
         this.update({
-            'dimensionFeatures': this.layer.features,
-        })
-    }
-
-    focusFeature(f) {
-        this.layer.unselectAll();
-        this.layer.selectFeature(f);
-        this.update({
-            marker: {
-                features: [f],
-                mode: 'zoom'
-            }
+            dimensionSelectedElement: element,
+            dimensionSelectedText: element ? element.text : '',
         });
-        this.startEdit();
-    }
-
-    addFeature(dimType, coords, uid) {
-        uid = uid || 'd' + Number(new Date());
-
-        let geometry = (dimType === 'Line') ? new ol.geom.LineString(coords) : new ol.geom.MultiPoint(coords);
-
-        this.layer.addFeature(new DimensionFeature(this.map, {
-            props: {uid, attributes: {dimType}},
-            geometry,
-        }));
-
-        this.update({
-            'dimensionFeatures': this.layer.features,
-        });
-
-        this.updateOverlay();
 
     }
 
@@ -601,10 +861,7 @@ class DimensionController extends gws.Controller {
         let res = await this.app.server.dimensionFileWrite({
             projectUid: this.app.project.uid,
             fileName: this.getValue('dimensionFileName'),
-            features: this.layer.features.map(f => ({
-                ...f.props,
-                shape: f.shape,
-            }))
+            model: this.model.serialize()
         });
 
         await this.loadFileNames();
@@ -620,20 +877,20 @@ class DimensionController extends gws.Controller {
             fileName: this.getValue('dimensionFileName'),
         });
 
-        if (res.features) {
-            this.layer.clear();
-            this.map.readFeatures(res.features).forEach(f => this.addFeature(
-                f.props.attributes.dimType,
-                (f.geometry as ol.geom.LineString).getCoordinates(),
-                f.uid
-            ));
+        if (res.model) {
+            this.model.deserialize(res.model)
         }
 
         this.update({
             dimensionDialogMode: null,
         });
+    }
 
-        this.updateOverlay()
+    clear() {
+        this.model.elements = [];
+        this.model.points = [];
+        this.selectElement(null);
+        this.model.changed();
     }
 
     get appOverlayView() {
@@ -645,27 +902,127 @@ class DimensionController extends gws.Controller {
 
 interface DimensionViewProps extends gws.types.ViewProps {
     controller: DimensionController;
-    dimensionFeatures: string;
+    dimensionSelectedElement: DimensionElement;
+    dimensionSelectedText: string;
     dimensionDialogMode: string;
     dimensionFileName: string;
     dimensionFileNames: Array<string>;
 }
 
 const DimensionStoreKeys = [
-    'dimensionFeatures',
+    'dimensionSelectedElement',
+    'dimensionSelectedText',
     'dimensionDialogMode',
     'dimensionFileName',
     'dimensionFileNames',
     'mapUpdateCount',
 ];
 
+class DimensionElementList extends gws.components.list.List<DimensionElement> {
+
+}
+
 class DimensionSidebarView extends gws.View<DimensionViewProps> {
     render() {
 
-        let master = _master(this.props.controller);
+        let master = _master(this.props.controller),
+            model = master.model;
 
-        let features = master.layer.features;
-        let hasFeatures = !gws.tools.empty(features);
+        let zoom = (e, mode) => {
+            let geometry = new ol.geom.Circle(e.controlPoint.coordinate, 20)
+            let f = master.map.newFeature({geometry});
+            this.props.controller.update({
+                marker: {
+                    features: [f],
+                    mode
+                }
+            });
+        };
+
+        let focus = e => {
+            zoom(e, 'pan fade');
+            master.selectElement(e);
+        };
+
+        let remove = e => {
+            model.removeElement(e)
+        };
+
+        let changed = (key, val) => master.update({dimensionSelectedText: val});
+
+        let submit = () => {
+            let e = master.getValue('dimensionSelectedElement');
+            if (e)
+                e.text = master.getValue('dimensionSelectedText');
+            model.changed();
+        };
+
+        let body;
+
+        if (this.props.dimensionSelectedElement) {
+            let formData = [{
+                name: 'text',
+                title: this.__('modDimensionElementText'),
+                value: this.props.dimensionSelectedText,
+                type: 'text',
+                editable: true
+            }];
+
+            body = <div className="modAnnotateFeatureDetails">
+                <Form>
+                    <Row>
+                        <Cell flex>
+                            <gws.components.sheet.Editor
+                                data={formData}
+                                whenChanged={changed}
+                                whenEntered={submit}
+                            />
+                        </Cell>
+                    </Row>
+                    <Row>
+                        <Cell flex/>
+                        <Cell>
+                            <gws.ui.IconButton
+                                className="cmpButtonFormOk"
+                                tooltip={this.props.controller.__('modAnnotateSaveButton')}
+                                whenTouched={submit}
+                            />
+                        </Cell>
+                        <Cell>
+                            <gws.ui.IconButton
+                                className="cmpButtonFormCancel"
+                                whenTouched={() => {
+                                    master.selectElement(null);
+                                }}
+                            />
+                        </Cell>
+                    </Row>
+                </Form>
+            </div>
+        } else if (!gws.tools.empty(model.elements)) {
+            body = <DimensionElementList
+                controller={this.props.controller}
+                items={model.elements}
+
+                content={e => <gws.ui.Link
+                    whenTouched={() => focus(e)}
+                    content={e.label}
+                />}
+
+                leftButton={e => <gws.components.list.Button
+                    className="cmpListZoomListButton"
+                    whenTouched={() => zoom(e, 'zoom fade')}/>}
+
+                rightButton={e => <gws.components.list.Button
+                    className="modSelectUnselectListButton"
+                    whenTouched={() => remove(e)}
+                />}
+            />
+        } else {
+            body = <sidebar.EmptyTabBody>
+                {this.__('modDimensionNoObjects')}
+            </sidebar.EmptyTabBody>
+        }
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -673,28 +1030,7 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                {hasFeatures
-                    ? <gws.components.feature.List
-                        controller={this.props.controller}
-                        features={features}
-
-                        content={(f) => <gws.ui.Link
-                            whenTouched={() => master.focusFeature(f)}
-                            content={(f as DimensionFeature).title}
-                        />}
-
-                        withZoom
-
-                        rightButton={f => <gws.components.list.Button
-                            className="modSelectUnselectListButton"
-                            whenTouched={() => master.removeFeature(f)}
-                        />}
-                    />
-                    : <sidebar.EmptyTabBody>
-                        {this.__('modDimensionNoObjects')}
-
-                    </sidebar.EmptyTabBody>
-                }
+                {body}
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
@@ -713,7 +1049,7 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
                     <sidebar.AuxButton
                         className="modSelectClearAuxButton"
                         tooltip={this.__('modDimensionClearAuxButton')}
-                        whenTouched={() => master.layer.clear()}
+                        whenTouched={() => master.clear()}
                     />
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
@@ -809,7 +1145,5 @@ export const tags = {
     'Toolbar.Dimension': DimensionToolbarButton,
     'Tool.Dimension.Modify': DimensionModifyTool,
     'Tool.Dimension.Line': DimensionLineTool,
-    'Tool.Dimension.Arc': DimensionArcTool,
-    'Tool.Dimension.Circle': DimensionCircleTool,
 
 };

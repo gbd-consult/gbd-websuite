@@ -256,6 +256,8 @@ class _Worker:
             ii.opacity = item.get('opacity') or 1
             ii.style = item.get('style')
 
+            ii.svg_fragment = item.get('svgFragment')
+
             render_items.append(ii)
 
         return render_items

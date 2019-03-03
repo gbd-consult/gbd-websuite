@@ -7,7 +7,7 @@ import gws.types as t
 class FileWriteParams(t.Data):
     projectUid: str
     fileName: str
-    features: t.List[t.FeatureProps]
+    model: dict
 
 
 class FileWriteResponse(t.Response):
@@ -21,7 +21,7 @@ class FileReadParams(t.Data):
 
 class FileReadResponse(t.Response):
     fileName: str
-    features: t.List[t.FeatureProps]
+    model: dict
 
 
 class FileListParams(t.Data):
@@ -37,14 +37,14 @@ class OptionsParams(t.Data):
 
 
 class OptionsResponse(t.Response):
-    layerUid: str
-    tolerance: int
+    layerUids: t.Optional[t.List[str]]
+    pixelTolerance: int = 10
 
 
 class Config(t.WithTypeAndAccess):
     """Dimension action"""
-    layer: t.Optional[str]  #: target layer uid
-    tolerance: int = 10  #: pixel tolerance
+    layers: t.Optional[t.List[str]]  #: target layer uids
+    pixelTolerance: int = 10  #: pixel tolerance
 
 
 _FILE_DIRECTORY = 'dimension'
@@ -56,26 +56,26 @@ class Object(gws.Object):
         req.require_project(p.projectUid)
 
         return OptionsResponse({
-            'layerUid': self.var('layer'),
-            'tolerance': self.var('tolerance'),
+            'layerUids': self.var('layers') or [],
+            'pixelTolerance': self.var('pixelTolerance'),
 
         })
 
     def api_file_write(self, req, p: FileWriteParams) -> FileWriteResponse:
         req.require_project(p.projectUid)
 
-        gws.tools.storage.put(_FILE_DIRECTORY, p.fileName, req.user.full_uid, p.features)
+        gws.tools.storage.put(_FILE_DIRECTORY, p.fileName, req.user.full_uid, p.model)
 
         return FileWriteResponse()
 
     def api_file_read(self, req, p: FileReadParams) -> FileReadResponse:
         req.require_project(p.projectUid)
 
-        fs = gws.tools.storage.get(_FILE_DIRECTORY, p.fileName, req.user.full_uid)
+        model = gws.tools.storage.get(_FILE_DIRECTORY, p.fileName, req.user.full_uid)
 
         return FileReadResponse({
             'fileName': p.fileName,
-            'features': fs
+            'model': model
         })
 
     def api_file_list(self, req, p: FileListParams) -> FileListResponse:

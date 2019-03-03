@@ -160,7 +160,7 @@ module.exports = {
 	modDimensionSaveDialogTitle: 'Speichern',
 	modDimensionSidebarTitle: 'Bemaßung',
 	modDimensionToolbarButton: 'Bemaßung',
-
+    modDimensionElementText: 'Beschriftung',
 
 
 };

@@ -397,6 +397,11 @@ class TemplateRenderOutput(Data):
     path: str
 
 
+class SvgFragment:
+    points: List[Point]
+    svg: str
+
+
 class MapRenderInputItem(Data):
     bitmap: str
     features: List['FeatureInterface']
@@ -405,6 +410,7 @@ class MapRenderInputItem(Data):
     opacity: float
     print_as_vector: bool
     style: 'StyleProps'
+    svg_fragment: dict
 
 
 class MapRenderInput(Data):

@@ -5,7 +5,9 @@ module.exports = v => {
         '&.isActive': {
             ...v.SVG(icon, v.DRAWBOX_ACTIVE_BUTTON_COLOR),
         },
-    })
+    });
+
+    const BASE_COLOR = v.COLOR.lightBlue900;
 
     return {
 
@@ -17,23 +19,6 @@ module.exports = v => {
             ...v.SIDEBAR_ICON('google:image/straighten')
         },
 
-        '.modDimensionFeature': {
-            mark: 'circle',
-            markFill: v.COLOR.opacity(v.COLOR.pink100, 0.3),
-            markSize: 30,
-        },
-        '.modDimensionSelectedFeature': {
-
-
-            mark: 'circle',
-            markFill: v.COLOR.pink700,
-            markSize: 20,
-            markStroke: v.COLOR.pink100,
-            markStrokeWidth: 5,
-
-
-        },
-
         '.modDimensionModifyButton': button('cursor'),
         '.modDimensionLineButton': button('dim_line'),
         '.modDimensionArcButton': button('dim_arc'),
@@ -41,50 +26,82 @@ module.exports = v => {
         '.modDimensionRemoveButton': button('google:action/delete'),
 
 
-        '.modDimensionDimLabel': {
-            fontSize: 12,
-            fill: v.COLOR.lightBlue800,
-            userSelect: 'none',
+
+
+        '.modDimensionFeature': {
+            pointSize: 20,
+            fill: v.COLOR.opacity(v.COLOR.pink100, 0.3),
+        },
+
+
+        '.modDimensionPoint': {
+            fill: v.COLOR.opacity(v.COLOR.orange500, 0.6),
+        },
+
+
+        '.modDimensionControlPoint': {
+            fill: v.COLOR.opacity(v.COLOR.lightGreen500, 0.6),
+        },
+
+        '.modDimensionSelectedPoint': {
+            fill: v.COLOR.opacity(v.COLOR.pink100, 0.6),
+            stroke: v.COLOR.pink300,
+            strokeWidth: 5,
+        },
+
+        '.modDimensionDraftPoint': {
+            fill: 'transparent',
+            stroke: v.COLOR.pink500,
+            strokeWidth: 2,
+            strokeDasharray: '3,3',
+        },
+
+
+        '.modDimensionDraftLine': {
+            stroke: v.COLOR.pink500,
+            strokeWidth: 2,
+            strokeDasharray: '3,3',
         },
 
         '.modDimensionDimLine': {
             strokeWidth: 2,
-            stroke: v.COLOR.lightBlue800,
+            stroke: BASE_COLOR,
             fill: 'transparent',
+            mark: 'cross',
+            offsetY: 20,
         },
 
-        '.modDimensionDimGuide': {
-            strokeDasharray: '3,3',
+        '.modDimensionDimPlumb': {
             strokeWidth: 1,
-            stroke: v.COLOR.lightBlue800,
+            stroke: BASE_COLOR,
             fill: 'transparent',
         },
 
-        '.modDimensionDimMark': {
-            strokeWidth: 4,
-            stroke: v.COLOR.lightBlue700,
+        '.modDimensionDimLabel': {
+            fontSize: 12,
+            fill: BASE_COLOR,
+            userSelect: 'none',
+            offsetY: 5,
+        },
+
+        '.modDimensionDimArrow': {
+            fill: BASE_COLOR,
+            strokeWidth: 2,
+            stroke: BASE_COLOR,
+            width: 16,
+            height: 10,
+        },
+
+        '.modDimensionDimCross': {
+            strokeWidth: 1,
+            stroke: BASE_COLOR,
             fill: 'transparent',
+            height: 10,
         },
 
 
-        /*
-                        }
-                        .dim {
-                            stroke: #006FB8;
-                            stroke-width: 2;
-                        }
-                        .add {
-                            stroke: #006FB8;
-                            stroke-width: 1;
-                        }
-                    </style>
 
 
-
-
-
-
-         */
 
     }
 }

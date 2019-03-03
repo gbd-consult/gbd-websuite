@@ -16,6 +16,7 @@ class PrintItem(t.Data):
     opacity: t.Optional[float]
     printAsVector: t.Optional[bool]
     style: t.Optional[t.StyleProps]
+    svgFragment: t.Optional[t.SvgFragment]
 
 
 class PrintSection(t.Data):

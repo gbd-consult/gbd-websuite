@@ -12,6 +12,38 @@ DEFAULT_MARK_SIZE = 10
 DEFAULT_POINT_SIZE = 10
 
 
+def convert_fragment(svg_fragment, bbox, dpi, scale, rotation):
+    def trans(x, y):
+        cx = x - bbox[0]
+        cy = bbox[3] - y
+
+        cx /= scale
+        cy /= scale
+
+        cx = misc.mm2px(cx * 1000, dpi)
+        cy = misc.mm2px(cy * 1000, dpi)
+
+        return cx, cy
+
+    def repl(m):
+        pt = points[int(m.group(1))]
+        n = pt[int(m.group(2))]
+        n += int(m.group(3))
+        return str(n)
+
+    """
+        svg fragments contain point array (coordinates)
+        and an svg string, with <<...>> placeholders
+        which are <<point-number  0=x,1=y  offset>>
+    """
+
+    points = [trans(x, y) for x, y in svg_fragment.points]
+
+    svg = re.sub(r'<<(\S+) (\S+) (\S+)>>', repl, svg_fragment.svg)
+
+    return svg
+
+
 def _to_pixel(geo, bbox, dpi, scale):
     def trans(x, y):
         cx = x - bbox[0]

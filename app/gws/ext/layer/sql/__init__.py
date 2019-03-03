@@ -91,7 +91,7 @@ class Object(gws.gis.layer.Vector):
         return []
 
     def render_svg(self, bbox, dpi, scale, rotation, style):
-        features = self.get_features(bbox, limit=3)
+        features = self.get_features(bbox)
         for f in features:
             f.set_default_style(style)
         return [f.to_svg(bbox, dpi, scale, rotation) for f in features]
