@@ -18,6 +18,31 @@ def shared_service(obj, cfg):
     }))
 
 
+# see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
+
+_LEGEND_DEFAULTS = {
+    'BOXSPACE': 2,
+    'LAYERSPACE': 4,
+    'LAYERTITLESPACE': 4,
+    'SYMBOLSPACE': 2,
+    'ICONLABELSPACE': 2,
+    'SYMBOLWIDTH': 8,
+    'SYMBOLHEIGHT': 8,
+    'LAYERFONTFAMILY': 'DejaVuSans',
+    'LAYERFONTBOLD': 'true',
+    'LAYERFONTSIZE': 9,
+    'LAYERFONTITALIC': 'false',
+    'LAYERFONTCOLOR': '#000000',
+    'ITEMFONTFAMILY': 'DejaVuSans',
+    'ITEMFONTBOLD': 'false',
+    'ITEMFONTSIZE': 9,
+    'ITEMFONTITALIC': 'false',
+    'ITEMFONTCOLOR': '#000000',
+    'LAYERTITLE': 'true',
+    'RULELABEL': 'true',
+}
+
+
 class Service(gws.Object, t.ServiceInterface):
     def __init__(self):
         super().__init__()
@@ -26,9 +51,12 @@ class Service(gws.Object, t.ServiceInterface):
         self.extent: t.Extent = ''
         self.path = ''
         self.properties: t.Dict = {}
+        self.legend_params = {}
 
     def configure(self):
         super().configure()
+
+        self.legend_params = gws.extend(_LEGEND_DEFAULTS, self.root.var('server.qgis.legend'))
 
         self.path = self.var('path')
         self.url = 'http://%s:%s' % (
@@ -89,19 +117,14 @@ class Service(gws.Object, t.ServiceInterface):
         return gws.ows.response.parse(text, crs=self.supported_crs[0])
 
     def get_legend(self, source_layers):
-        # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
         layers = ','.join(sl.name for sl in source_layers)
-        params = {
+        params = gws.extend(self.legend_params, {
             'MAP': self.path,
             'LAYER': layers,
             'FORMAT': 'image/png',
             'STYLE': '',
             'VERSION': '1.1.1',
-            'BOXSPACE': 0,
-            'SYMBOLSPACE': 0,
-            'LAYERTITLE': 'false',
-            # 'RULELABEL': 'false',
-        }
+        })
 
         resp = gws.ows.request.get(
             self.url,

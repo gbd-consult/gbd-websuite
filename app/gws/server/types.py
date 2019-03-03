@@ -39,6 +39,7 @@ class QgisConfig(SrvConfig):
     serverCacheSize: int = 10000000  #: QGIS_SERVER_CACHE_SIZE (env. variable)
     maxCacheLayers: int = 4000  #: MAX_CACHE_LAYERS (env. variable)
     searchPathsForSVG: t.Optional[t.List[t.dirpath]]  #: searchPathsForSVG (ini setting)
+    legend: t.Optional[dict]  #: default legend settings
 
 
 class Config(t.Config):

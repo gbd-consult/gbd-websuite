@@ -45,7 +45,7 @@ def environ(cfg):
     # it's all a bit blurry, but the server appears to read 'ini' from OPTIONS_DIR
     # while the app uses a profile
     # NB: for some reason, the profile path will be profiles/profiles/default (sic!)
-    # ok, let's the make them point to the same file
+    # ok, let's make them point to the same file
 
     profile_dir = misc.ensure_dir('profiles/profiles/default', base_dir)
     ini_dir = misc.ensure_dir('QGIS', profile_dir)
