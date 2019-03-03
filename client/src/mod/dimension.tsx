@@ -717,7 +717,6 @@ class DimensionModifyTool extends DimensionTool {
             if (p) {
                 this.model.selectPoint(p);
                 this.ixSnap.setActive(!p.isControl);
-                console.log('A', p.isControl)
                 this.point = p;
             } else {
                 this.model.selectPoint(null);

@@ -67,8 +67,8 @@ module.exports = v => {
             strokeWidth: 2,
             stroke: BASE_COLOR,
             fill: 'transparent',
-            mark: 'cross',
-            offsetY: 20,
+            mark: 'arrow',
+            offsetY: 0,
         },
 
         '.modDimensionDimPlumb': {
@@ -88,8 +88,8 @@ module.exports = v => {
             fill: BASE_COLOR,
             strokeWidth: 2,
             stroke: BASE_COLOR,
-            width: 16,
-            height: 10,
+            width: 12,
+            height: 8,
         },
 
         '.modDimensionDimCross': {
