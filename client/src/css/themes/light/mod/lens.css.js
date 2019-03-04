@@ -46,7 +46,7 @@ module.exports = v => ({
 
 
     '.modLensToolbarButton': {
-        ...v.TOOLBAR_BUTTON('gbd-icon-raeumliche-suche-01')
+        ...v.TOOLBAR_BUTTON('spatialsearch')
     }
 
 });
