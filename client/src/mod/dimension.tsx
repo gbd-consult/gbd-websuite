@@ -754,7 +754,17 @@ class DimensionController extends gws.Controller {
     snapUpdateCount = 0;
 
     async init() {
+        let res = await this.app.server.dimensionOptions({
+            projectUid: this.app.project.uid,
+        });
+
+        if (res.error)
+            return;
+
+        this.options = res;
         this.model = new DimensionModel(this.map);
+
+        this.model.pixelTolerance = this.options.pixelTolerance || 10;
 
         this.layer = this.map.addServiceLayer(new DimensionLayer(this.map, {
             uid: '_dimension',
@@ -769,13 +779,7 @@ class DimensionController extends gws.Controller {
 
         this.map.oMap.addOverlay(this.oOverlay);
 
-        await this.loadFileNames()
-
-        this.options = await this.app.server.dimensionOptions({
-            projectUid: this.app.project.uid,
-        });
-
-        this.model.pixelTolerance = this.options.pixelTolerance || 10;
+        await this.loadFileNames();
 
         this.app.whenChanged('mapRawUpdateCount', () => {
             this.updateOverlay();
