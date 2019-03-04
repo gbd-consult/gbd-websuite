@@ -21,6 +21,7 @@ module.exports = v => ({
         },
 
         'button': {
+            ...v.ICON_BUTTON(),
             ...v.ICON_SIZE('medium'),
             backgroundColor: 'transparent',
             outline: 'none',
