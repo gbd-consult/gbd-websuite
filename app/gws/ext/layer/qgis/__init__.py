@@ -73,7 +73,7 @@ class Object(gws.gis.layer.Base):
             return
 
         la = gws.extend(la, {
-            'uid': sl.name,
+            'uid': gws.as_uid(sl.name),
             'title': sl.title,
             'clientOptions': {
                 'visible': sl.is_visible,
@@ -226,6 +226,6 @@ class Object(gws.gis.layer.Base):
         return {
             'type': 'group',
             'title': sl.title,
-            'uid': sl.name,
+            'uid': gws.as_uid(sl.name),
             'layers': layers
         }
