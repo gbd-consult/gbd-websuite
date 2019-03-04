@@ -1,7 +1,7 @@
 module.exports = v => ({
 
     '.modOverviewSidebarIcon': {
-        ...v.SVG('google:maps/map', v.SIDEBAR_HEADER_COLOR)
+        ...v.SIDEBAR_ICON('google:maps/map', v.SIDEBAR_HEADER_COLOR)
     },
 
     '.modOverviewMap': {

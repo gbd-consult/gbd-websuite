@@ -55,11 +55,11 @@ module.exports = v => {
 
 
         '.modAnnotateSidebarIcon': {
-            ...v.SIDEBAR_ICON('annotate')
+            ...v.SIDEBAR_ICON('markandmeasure')
         },
 
         '.modAnnotateDrawToolbarButton': {
-            ...v.TOOLBAR_BUTTON('annotate')
+            ...v.TOOLBAR_BUTTON('markandmeasure')
         },
 
         '.modAnnotateEditAuxButton': {

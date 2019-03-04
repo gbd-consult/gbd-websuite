@@ -12,11 +12,11 @@ module.exports = v => {
     return {
 
         '.modDimensionToolbarButton': {
-            ...v.TOOLBAR_BUTTON('google:image/straighten')
+            ...v.TOOLBAR_BUTTON('dimension')
         },
 
         '.modDimensionSidebarIcon': {
-            ...v.SIDEBAR_ICON('google:image/straighten')
+            ...v.SIDEBAR_ICON('dimension')
         },
 
         '.modDimensionModifyButton': button('cursor'),
