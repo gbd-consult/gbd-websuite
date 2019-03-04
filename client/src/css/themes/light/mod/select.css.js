@@ -1,11 +1,11 @@
 module.exports = v => ({
 
     '.modSelectSidebarIcon': {
-        ...v.SIDEBAR_ICON('select')
+        ...v.SIDEBAR_ICON('gbd-icon-auswahl-01')
     },
 
     '.modSelectToolbarButton': {
-        ...v.TOOLBAR_BUTTON('select')
+        ...v.TOOLBAR_BUTTON('gbd-icon-auswahl-01')
     },
 
     '.modSelectUnselectListButton': {

@@ -1,6 +1,6 @@
 module.exports = v => ({
     '.modIdentifyClickToolbarButton': {
-        ...v.TOOLBAR_BUTTON('google:action/info')
+        ...v.TOOLBAR_BUTTON('gbd-icon-anzeigen-01')
     },
 
     '.modIdentifyHoverToolbarButton': {

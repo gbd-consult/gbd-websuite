@@ -1,6 +1,7 @@
 module.exports = v => ({
     '.modAlkisSidebarIcon': {
-        ...v.SVG('google:communication/business', v.SIDEBAR_HEADER_COLOR)
+        //...v.SVG('google:communication/business', v.SIDEBAR_HEADER_COLOR)
+        ...v.ROUND_FORM_BUTTON('gbd-icon-flurstuecksuche-02')
     },
 
     '.modAlkisSearchSubmitButton': {
@@ -72,7 +73,7 @@ module.exports = v => ({
         markStroke: v.COLOR.cyan600,
         markStrokeWidth: 5,
     },
-    
-    
-    
+
+
+
 });
