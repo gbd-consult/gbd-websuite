@@ -101,6 +101,7 @@ class Object(gws.PublicObject, t.ProjectObject):
 
         p = self.var('client')
         if p:
+            p.parentClient = self.parent.var('client')
             self.client = self.add_child(gws.common.client.Object, p)
 
     @property
