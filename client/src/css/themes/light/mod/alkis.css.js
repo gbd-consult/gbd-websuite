@@ -1,7 +1,6 @@
 module.exports = v => ({
     '.modAlkisSidebarIcon': {
-        //...v.SVG('google:communication/business', v.SIDEBAR_HEADER_COLOR)
-        ...v.ROUND_FORM_BUTTON('gbd-icon-flurstuecksuche-02')
+        ...v.ROUND_FORM_BUTTON('searchparcel')
     },
 
     '.modAlkisSearchSubmitButton': {

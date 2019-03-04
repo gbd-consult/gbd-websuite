@@ -24,11 +24,11 @@ module.exports = v => ({
     },
 
     '.modPrintPrintToolbarButton': {
-        ...v.TOOLBAR_BUTTON('gbd-icon-ablage-oeffnen-04')
+        ...v.TOOLBAR_BUTTON('print')
     },
 
     '.modPrintSnapshotToolbarButton': {
-        ...v.TOOLBAR_BUTTON('gbd-icon-markieren-messen-01')
+        ...v.TOOLBAR_BUTTON('snapshot')
     },
 
     '.modPrintPreviewPrintButton': {

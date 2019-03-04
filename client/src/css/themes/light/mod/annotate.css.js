@@ -55,11 +55,11 @@ module.exports = v => {
 
 
         '.modAnnotateSidebarIcon': {
-            ...v.SIDEBAR_ICON('gbd-icon-bemassung-02')
+            ...v.SIDEBAR_ICON('markandmeasure')
         },
 
         '.modAnnotateDrawToolbarButton': {
-            ...v.TOOLBAR_BUTTON('gbd-icon-bemassung-02')
+            ...v.TOOLBAR_BUTTON('markandmeasure')
         },
 
         '.modAnnotateEditAuxButton': {

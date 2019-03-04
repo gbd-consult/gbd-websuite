@@ -1,10 +1,10 @@
 module.exports = v => ({
     '.modIdentifyClickToolbarButton': {
-        ...v.TOOLBAR_BUTTON('gbd-icon-anzeigen-01')
+        ...v.TOOLBAR_BUTTON('identify')
     },
 
     '.modIdentifyHoverToolbarButton': {
-        ...v.TOOLBAR_BUTTON('google:hardware/mouse')
+        ...v.TOOLBAR_BUTTON('identifyhover')
     },
 
     '.modIdentifyClickToolboxIcon': {
