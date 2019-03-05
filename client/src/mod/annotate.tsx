@@ -545,11 +545,6 @@ class AnnotateFeatureList extends gws.View<AnnotateViewProps> {
                         whenTouched={() => master.app.startTool('Tool.Annotate.Modify')}
                     />
                     <sidebar.AuxButton
-                        {...gws.tools.cls('modAnnotateDrawAuxButton', this.props.appActiveTool === 'Tool.Annotate.Draw' && 'isActive')}
-                        tooltip={this.__('modAnnotateDrawAuxButton')}
-                        whenTouched={() => master.app.startTool('Tool.Annotate.Draw')}
-                    />
-                    <sidebar.AuxButton
                         {...gws.tools.cls('modAnnotateClearAuxButton')}
                         tooltip={this.props.controller.__('modAnnotateClearAuxButton')}
                         disabled={!hasFeatures}
