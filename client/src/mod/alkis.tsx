@@ -22,13 +22,13 @@ const STRINGS = {
     formTitle: 'Flurstückssuche',
     infoTitle: "Informationen",
     selectionTitle: "Ablage",
-    exportTitle: "Export CSV",
+    exportTitle: "Als CSV exportieren",
 
     gotoForm: 'Suche',
     gotoList: 'Ergebnisse',
     gotoSelection: 'Ablage',
 
-    print: 'Ducken',
+    print: 'Drucken',
     highlight: 'Auf der Karte zeigen',
     selectAll: 'Alle zur Ablage',
     unselect: 'Abwählen',

@@ -63,14 +63,8 @@ module.exports = v => ({
         stroke: v.COLOR.cyan100,
         strokeWidth: 3,
         strokeDasharray: "5,5",
-
         fill: v.COLOR.opacity(v.COLOR.cyan600, 0.5),
 
-        mark: 'circle',
-        markFill: v.COLOR.cyan300,
-        markSize: 15,
-        markStroke: v.COLOR.cyan600,
-        markStrokeWidth: 5,
     },
 
 
