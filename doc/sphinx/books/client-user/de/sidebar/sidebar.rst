@@ -9,6 +9,7 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen im Menü.
     project_overview.rst
     map_element.rst
     select.rst
+    dimensions.rst
     cadastral_unit_searching.rst
     marking.rst
     editing.rst

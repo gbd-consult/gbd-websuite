@@ -1,8 +1,8 @@
 Suche
 =====
 
-Anhand der Menüleiste |menu| gelangt man über das Icon |search| zur ``Suche``.
-Hier ist es möglich, nach Namen von Straßen, Schulen, Krankenhäusern, Geschäften und ähnlichem zu suchen.
+Des Weiteren gelangt man anhand der Menüleiste |menu| zur |search| ``Suche``.
+Hier ist es möglich nach Namen von Straßen, Schulen, Krankenhäusern, Geschäften und ähnlichem zu suchen.
 
 
 

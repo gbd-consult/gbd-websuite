@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="5 9 2 12 5 15"/>
-    <polyline points="9 5 12 2 15 5"/>
-    <polyline points="15 19 12 22 9 19"/>
-    <polyline points="19 9 22 12 19 15"/>
-    <line x1="2" y1="12" x2="22" y2="12"/>
-    <line x1="12" y1="2" x2="12" y2="22"/>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="24px" height="24px" viewBox="0.5 48.5 24 24" enable-background="new 0.5 48.5 24 24" xml:space="preserve">
+<polygon points="21.054,60.465 17.588,56.731 17.588,59.131 12.254,59.131 6.92,59.131 6.92,56.731 3.454,60.465 6.92,64.198 
+	6.92,61.799 12.254,61.799 17.588,61.799 17.588,64.198 "/>
+<polygon points="13.588,60.465 13.588,60.465 13.588,55.131 15.987,55.131 12.254,51.665 8.521,55.131 10.92,55.131 10.92,60.465 
+	10.92,60.465 10.92,65.799 8.521,65.799 12.254,69.265 15.987,65.799 13.588,65.799 "/>
 </svg>

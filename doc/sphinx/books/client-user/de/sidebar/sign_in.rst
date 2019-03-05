@@ -1,8 +1,7 @@
 Anmeldung
 =========
 
-Über das Icon |authorization| in der Menüleiste |menu| gelangt man zum ``Anmeldefenster``
-und wird nach Benutzername und Passwort gefragt. Abhängig von Projekt und Benutzer können individuell bestimmte Funktionen freigeschaltet werden.
+Die |authorization| ``Anmeldung`` ist ebenfalls über die |menu| Menüleiste zu erreichen. Hier findet eine Abfrage von Benutzername und Passwort statt. Abhängig von Projekt und Benutzer, können individuell bestimmte Funktionen freigeschaltet werden.
 
 
 

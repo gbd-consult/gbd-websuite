@@ -7,7 +7,7 @@ Markierungen
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
- .. |marking| image:: ../../../images/sharp-speaker_notes-24px.svg
+ .. |marking| image:: ../../../images/gbd-icon-markieren-messen-01.svg
    :width: 30em
  .. |select_marking| image:: ../../../images/cursor.svg
    :width: 30em

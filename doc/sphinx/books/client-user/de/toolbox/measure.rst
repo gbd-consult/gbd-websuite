@@ -1,12 +1,11 @@
 Markieren & Messen
 ==================
 
-Das ``Markieren & Messen`` Tool kann über das Icon |distance| in der Werkzeugleiste aktiviert werden, nach dem aktivieren durch einen Klick stehen drei verschiedene Werkzeuge zur Verfügung:
-
+Nach dem aktivieren des |measure| ``Markieren & Messen``-Werkzeuges, stehen drei verschiedene Werkzeuge zur Verfügung:
 
 **Distanz-** |distance|,
-**Fläche messung** |area|
-und **Kreisfläche messen** |measurecircle|
+**Flächen-** |area|
+und **Kreisflächenmessung** |measurecircle|
 
 
 Bei der **Distanzmessung** wird mit der rechten Maustaste auf die Karte ein Startpunkt gesetzt und mit jedem weiteren Klick wird ein Punkt gesetzt. Mit einem Doppelklick wird der Endpunkt gesetzt und die Länge der Strecke angezeigt. Des weiteren kann man auch über die Symbole unten rechts bestätigen |savedraw|
@@ -22,7 +21,7 @@ Mit einem Klick auf das Symbol |back1| wird die Option Messen geschlossen, die E
 |delete|
 
 
- .. |measure| image:: ../../../images/baseline-straighten-24px.svg
+ .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
    :width: 30em
  .. |area| image:: ../../../images/baseline-texture1-24px.svg
    :width: 30em
