@@ -66,10 +66,6 @@ module.exports = v => {
             ...v.SIDEBAR_AUX_BUTTON('cursor')
         },
 
-        '.modAnnotateDrawAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON('google:content/gesture'),
-        },
-
         '.modAnnotateClearAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever'),
 
