@@ -31,13 +31,13 @@ module.exports = v => ({
 
 
     '.modTaskLens': {
-        ...v.SVG('search_lens', v.BUTTON_COLOR)
+        ...v.SVG('spatialsearch', v.BUTTON_COLOR)
     },
     '.modTaskZoom': {
         ...v.SVG(v.ZOOM_ICON, v.BUTTON_COLOR)
     },
     '.modTaskAnnotate': {
-        ...v.SVG('annotate', v.BUTTON_COLOR)
+        ...v.SVG('markandmeasure', v.BUTTON_COLOR)
     },
     '.modTaskSelect': {
         ...v.SVG('select', v.BUTTON_COLOR)

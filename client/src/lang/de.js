@@ -124,7 +124,7 @@ module.exports = {
     modSidebarCloseButton: 'Schließen',
     modSidebarOpenButton: 'Menü',
     modSidebarOverflowButton: 'Weiteres',
-    modTaskAnnotate: 'Annotieren',
+    modTaskAnnotate: 'Markieren und Messen',
     modTaskLens: 'Räumliche Suche',
     modTaskSelect: 'Auswählen',
     modTaskZoom: 'Hinzoomen',

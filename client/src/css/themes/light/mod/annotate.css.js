@@ -76,7 +76,7 @@ module.exports = v => {
         },
 
         '.modAnnotateLensAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON('search_lens'),
+            ...v.SIDEBAR_AUX_BUTTON('spatialsearch'),
         },
 
         '.modAnnotateRemoveAuxButton': {
