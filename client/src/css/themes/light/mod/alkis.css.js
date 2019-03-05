@@ -8,7 +8,7 @@ module.exports = v => ({
     },
 
     '.modAlkisSearchLensButton': {
-        ...v.ROUND_FORM_BUTTON('search_lens')
+        ...v.ROUND_FORM_BUTTON('spatialsearch')
     },
 
     '.modAlkisPickButton': {
@@ -48,7 +48,7 @@ module.exports = v => ({
     '.modAlkisListAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/reorder')},
     '.modAlkisSelectionAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/bookmark_border')},
     '.modAlkisClearAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')},
-    '.modAlkisLoadAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:file/folder_open')},
+    '.modAlkisLoadAuxButton': {...v.SIDEBAR_AUX_BUTTON('open')},
     '.modAlkisSaveAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/save')},
 
     '.modAlkisSelectListButton.uiIconButton': {

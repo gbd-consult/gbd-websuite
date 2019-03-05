@@ -66,7 +66,7 @@ const STRINGS = {
     lensButton: "Räumliche Suche",
     pickButton: "Flurstücke direkt auswählen",
     selectionSearchButton: "in der Auswahl Suchen",
-    resetButton: "Neu",
+    resetButton: "Neue Anfrage",
     exportButton: "Exportieren",
 
     searchResults2: "Suchergebnisse ($1 von $2)",
