@@ -17,65 +17,6 @@ function _master(obj: any) {
         return obj.props.controller.app.controller(MASTER) as AlkisController;
 }
 
-const STRINGS = {
-
-    formTitle: 'Flurstückssuche',
-    infoTitle: "Informationen",
-    selectionTitle: "Ablage",
-    exportTitle: "Als CSV exportieren",
-
-    gotoForm: 'Suche',
-    gotoList: 'Ergebnisse',
-    gotoSelection: 'Ablage',
-
-    print: 'Drucken',
-    highlight: 'Auf der Karte zeigen',
-    selectAll: 'Alle zur Ablage',
-    unselect: 'Abwählen',
-    select: 'Auswählen',
-    clearSelection: 'Ablage leeren',
-    goBack: 'Zurück',
-
-    loadSelection: 'Ablage laden',
-    saveSelection: 'Ablage speichern',
-
-    loading: 'Daten werden geladen...',
-    backToForm: 'Zurück zum Formular',
-
-    noData: 'Flurstücksinformationen konnten nicht gefunden werden',
-    notFound: 'Zu Ihrer Suche wurden keine Ergebnisse gefunden.',
-    noSelection: 'Die Ablage ist leer',
-
-    errorGeneric: 'Es ist ein Fehler aufgetreten.',
-    errorControl: 'Validierung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben.',
-
-    vorname: "Vorname",
-    nachname: "Nachname",
-    gemarkung: "Gemarkung",
-    strasse: "Straße",
-    nr: "Nr",
-    vnum: "Zähler/Nenner",
-    vnumFlur: "Flur-Zähler/Nenner",
-    areaFrom: "Fläche von m\u00b2",
-    areaTo: "bis m\u00b2",
-    bblatt: 'Buchungsblattnummer',
-    wantEigentuemer: "Zugang zu Personendaten",
-    controlInput: 'Abrufgrund',
-
-    submitButton: "Suchen",
-    lensButton: "Räumliche Suche",
-    pickButton: "Flurstücke direkt auswählen",
-    selectionSearchButton: "in der Auswahl Suchen",
-    resetButton: "Neue Anfrage",
-    exportButton: "Exportieren",
-
-    searchResults2: "Suchergebnisse ($1 von $2)",
-    searchResults: "Suchergebnisse ($1)",
-
-    exportPath: 'fsinfo.csv',
-
-};
-
 const EXPORT_GROUPS = [
     ['base', 'Basisdaten'],
     ['lage', 'Lage'],
@@ -84,6 +25,8 @@ const EXPORT_GROUPS = [
     ['eigentuemer', 'Eigentümer'],
     ['nutzung', 'Nutzung'],
 ];
+
+const EXPORT_PATH = 'fs_info.csv';
 
 type AlkisAlkisTabName = 'form' | 'list' | 'details' | 'error' | 'selection' | 'export';
 
@@ -162,7 +105,7 @@ class AlkisExportAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             className="modAlkisExportAuxButton"
             whenTouched={() => _master(this).startExport(this.props.features)}
-            tooltip={STRINGS.exportTitle}
+            tooltip={_master(this).STRINGS.exportTitle}
         />;
     }
 }
@@ -174,7 +117,7 @@ class AlkisPrintAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             className="modAlkisPrintAuxButton"
             whenTouched={() => _master(this).startPrint(this.props.features)}
-            tooltip={STRINGS.print}
+            tooltip={_master(this).STRINGS.print}
         />;
     }
 }
@@ -184,7 +127,7 @@ class AlkisSaveAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             className="modAlkisSaveAuxButton"
             whenTouched={() => _master(this).saveSelection()}
-            tooltip={STRINGS.saveSelection}
+            tooltip={_master(this).STRINGS.saveSelection}
         />;
     }
 }
@@ -194,7 +137,7 @@ class AlkisLoadAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             className="modAlkisLoadAuxButton"
             whenTouched={() => _master(this).loadSelection()}
-            tooltip={STRINGS.loadSelection}
+            tooltip={_master(this).STRINGS.loadSelection}
         />;
     }
 }
@@ -206,7 +149,7 @@ class AlkisHighlightAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             className="modAlkisHighlightAuxButton"
             whenTouched={() => _master(this).highlightMany(this.props.features)}
-            tooltip={STRINGS.highlight}
+            tooltip={_master(this).STRINGS.highlight}
         />
     }
 }
@@ -218,7 +161,7 @@ class AlkisSelectAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             className="modAlkisSelectAuxButton"
             whenTouched={() => _master(this).select(this.props.features)}
-            tooltip={STRINGS.selectAll}
+            tooltip={_master(this).STRINGS.selectAll}
         />
     }
 }
@@ -235,13 +178,13 @@ class AlkisToggleAuxButton extends gws.View<AlkisViewProps> {
             return <sidebar.AuxButton
                 className="modAlkisUnselectAuxButton"
                 whenTouched={() => master.unselect([feature])}
-                tooltip={STRINGS.unselect}
+                tooltip={_master(this).STRINGS.unselect}
             />
         else
             return <sidebar.AuxButton
                 className="modAlkisSelectAuxButton"
                 whenTouched={() => master.select([feature])}
-                tooltip={STRINGS.select}
+                tooltip={_master(this).STRINGS.select}
             />
     }
 }
@@ -251,7 +194,7 @@ class AlkisFormAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             {...gws.tools.cls('modAlkisFormAuxButton', this.props.alkisTab === 'form' && 'isActive')}
             whenTouched={() => _master(this).goTo('form')}
-            tooltip={STRINGS.gotoForm}
+            tooltip={_master(this).STRINGS.gotoForm}
         />
     }
 }
@@ -261,7 +204,7 @@ class AlkisListAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             {...gws.tools.cls('modAlkisListAuxButton', this.props.alkisTab === 'list' && 'isActive')}
             whenTouched={() => _master(this).goTo('list')}
-            tooltip={STRINGS.gotoList}
+            tooltip={_master(this).STRINGS.gotoList}
         />
     }
 }
@@ -277,7 +220,7 @@ class AlkisSelectionAuxButton extends gws.View<AlkisViewProps> {
             {...gws.tools.cls('modAlkisSelectionAuxButton', this.props.alkisTab === 'selection' && 'isActive')}
             badge={sel.length ? String(sel.length) : null}
             whenTouched={() => _master(this).goTo('selection')}
-            tooltip={STRINGS.gotoSelection}
+            tooltip={_master(this).STRINGS.gotoSelection}
         />
     }
 }
@@ -290,7 +233,7 @@ class AlkisClearAuxButton extends gws.View<AlkisViewProps> {
         return <sidebar.AuxButton
             className="modAlkisClearAuxButton"
             whenTouched={() => _master(this).clearSelection()}
-            tooltip={STRINGS.clearSelection}
+            tooltip={_master(this).STRINGS.clearSelection}
         />
     }
 }
@@ -305,15 +248,15 @@ class AlkisNavigation extends gws.View<AlkisViewProps> {
     }
 }
 
-class AlkisLoaderTab extends React.PureComponent<{}> {
+class AlkisLoaderTab extends gws.View<AlkisViewProps> {
     render() {
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={STRINGS.formTitle}/>
+                <gws.ui.Title content={_master(this).STRINGS.formTitle}/>
             </sidebar.TabHeader>
             <sidebar.TabBody>
                 <div className="modAlkisLoading">
-                    {STRINGS.loading}
+                    {_master(this).STRINGS.loading}
                     <gws.ui.Loader/>
                 </div>
             </sidebar.TabBody>
@@ -325,13 +268,13 @@ class AlkisMessageTab extends gws.View<AlkisMessageViewProps> {
     render() {
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={STRINGS.formTitle}/>
+                <gws.ui.Title content={_master(this).STRINGS.formTitle}/>
             </sidebar.TabHeader>
 
             <sidebar.EmptyTabBody>
                 {this.props.error && <gws.ui.Error text={this.props.error}/>}
                 {this.props.message && <gws.ui.Text content={this.props.message}/>}
-                {this.props.withFormLink && <a onClick={() => _master(this).goTo('form')}>{STRINGS.backToForm}</a>}
+                {this.props.withFormLink && <a onClick={() => _master(this).goTo('form')}>{_master(this).STRINGS.backToForm}</a>}
             </sidebar.EmptyTabBody>
 
             <sidebar.TabFooter>
@@ -370,7 +313,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             {nameShowMode && <Row>
                 <Cell flex>
                     <gws.ui.TextInput
-                        placeholder={STRINGS.vorname}
+                        placeholder={_master(this).STRINGS.vorname}
                         disabled={nameShowMode === 'disabled'}
                         {...boundTo('vorname')}
                         withClear
@@ -380,7 +323,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             {nameShowMode && <Row>
                 <Cell flex>
                     <gws.ui.TextInput
-                        placeholder={STRINGS.nachname}
+                        placeholder={_master(this).STRINGS.nachname}
                         disabled={nameShowMode === 'disabled'}
                         {...boundTo('name')}
                         withClear
@@ -391,7 +334,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             <Row>
                 <Cell flex>
                     <gws.ui.Select
-                        placeholder={STRINGS.gemarkung}
+                        placeholder={_master(this).STRINGS.gemarkung}
                         items={this.props.alkisFsGemarkungen}
                         value={this.props.alkisFsParams.gemarkungUid}
                         whenChanged={value => master.whenGemarkungChanged(value)}
@@ -403,7 +346,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             <Row>
                 <Cell flex>
                     <gws.ui.Select
-                        placeholder={STRINGS.strasse}
+                        placeholder={_master(this).STRINGS.strasse}
                         items={this.props.alkisFsStrassen}
                         {...boundTo('strasse')}
                         withSearch
@@ -412,7 +355,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                 </Cell>
                 <Cell width={90}>
                     <gws.ui.TextInput
-                        placeholder={STRINGS.nr}
+                        placeholder={_master(this).STRINGS.nr}
                         {...boundTo('hausnummer')}
                         withClear
                     />
@@ -421,7 +364,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             <Row>
                 <Cell flex>
                     <gws.ui.TextInput
-                        placeholder={setup.withFlurnummer ? STRINGS.vnumFlur : STRINGS.vnum}
+                        placeholder={setup.withFlurnummer ? _master(this).STRINGS.vnumFlur : _master(this).STRINGS.vnum}
                         {...boundTo('vnum')}
                         withClear
                     />
@@ -430,14 +373,14 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             <Row>
                 <Cell flex>
                     <gws.ui.TextInput
-                        placeholder={STRINGS.areaFrom}
+                        placeholder={_master(this).STRINGS.areaFrom}
                         {...boundTo('flaecheVon')}
                         withClear
                     />
                 </Cell>
                 <Cell flex>
                     <gws.ui.TextInput
-                        placeholder={STRINGS.areaTo}
+                        placeholder={_master(this).STRINGS.areaTo}
                         {...boundTo('flaecheBis')}
                         withClear
                     />
@@ -447,7 +390,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             {setup.withBuchung && <Row>
                 <Cell flex>
                     <gws.ui.TextInput
-                        placeholder={STRINGS.bblatt}
+                        placeholder={_master(this).STRINGS.bblatt}
                         {...boundTo('bblatt')}
                         withClear
                     />
@@ -459,7 +402,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                     <gws.ui.Toggle
                         type="checkbox"
                         {...boundTo('wantEigentuemer')}
-                        label={STRINGS.wantEigentuemer}
+                        label={_master(this).STRINGS.wantEigentuemer}
                     />
                 </Cell>
             </Row>}
@@ -467,7 +410,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                 <Cell flex>
                     <gws.ui.TextArea
                         {...boundTo('controlInput')}
-                        placeholder={STRINGS.controlInput}
+                        placeholder={_master(this).STRINGS.controlInput}
                     />
                 </Cell>
             </Row>}
@@ -476,35 +419,35 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                 <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchSubmitButton')}
-                        tooltip={STRINGS.submitButton}
+                        tooltip={_master(this).STRINGS.submitButton}
                         whenTouched={() => master.formSearch()}
                     />
                 </Cell>
                 <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchSelectionButton')}
-                        tooltip={STRINGS.selectionSearchButton}
+                        tooltip={_master(this).STRINGS.selectionSearchButton}
                         whenTouched={() => master.selectionSearch()}
                     />
                 </Cell>
                 <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
-                        tooltip={STRINGS.lensButton}
+                        tooltip={_master(this).STRINGS.lensButton}
                         whenTouched={() => master.startLens()}
                     />
                 </Cell>
                 <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisPickButton', this.props.appActiveTool === 'Tool.Alkis.Pick' && 'isActive')}
-                        tooltip={STRINGS.pickButton}
+                        tooltip={_master(this).STRINGS.pickButton}
                         whenTouched={() => master.startPick()}
                     />
                 </Cell>
                 <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchCancelButton')}
-                        tooltip={STRINGS.resetButton}
+                        tooltip={_master(this).STRINGS.resetButton}
                         whenTouched={() => master.reset()}
                     />
                 </Cell>
@@ -517,7 +460,7 @@ class AlkisFormTab extends gws.View<AlkisViewProps> {
     render() {
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={STRINGS.formTitle}/>
+                <gws.ui.Title content={_master(this).STRINGS.formTitle}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -579,9 +522,9 @@ class AlkisListTab extends gws.View<AlkisViewProps> {
             disp = this.props.alkisFsResults.length;
 
         if (!disp)
-            return STRINGS.formTitle;
+            return _master(this).STRINGS.formTitle;
 
-        let s = (total > disp) ? STRINGS.searchResults2 : STRINGS.searchResults;
+        let s = (total > disp) ? _master(this).STRINGS.searchResults2 : _master(this).STRINGS.searchResults;
 
         s = s.replace(/\$1/g, String(disp));
         s = s.replace(/\$2/g, String(total));
@@ -595,7 +538,7 @@ class AlkisListTab extends gws.View<AlkisViewProps> {
         if (gws.tools.empty(features)) {
             return <AlkisMessageTab
                 {...this.props}
-                message={STRINGS.notFound}
+                message={_master(this).STRINGS.notFound}
                 withFormLink={true}
             />;
         }
@@ -629,13 +572,13 @@ class AlkisSelectionTab extends gws.View<AlkisViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={STRINGS.selectionTitle}/>
+                <gws.ui.Title content={_master(this).STRINGS.selectionTitle}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
                 {hasFeatures
                     ? <AlkisFeatureList {...this.props} features={features} showSelection={false}/>
-                    : <sidebar.EmptyTabBody>{STRINGS.noSelection}</sidebar.EmptyTabBody>
+                    : <sidebar.EmptyTabBody>{_master(this).STRINGS.noSelection}</sidebar.EmptyTabBody>
                 }
             </sidebar.TabBody>
 
@@ -661,7 +604,7 @@ class AlkisDetailsTab extends gws.View<AlkisViewProps> {
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
-                <gws.ui.Title content={STRINGS.infoTitle}/>
+                <gws.ui.Title content={_master(this).STRINGS.infoTitle}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -699,7 +642,7 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={STRINGS.exportTitle}/>
+                <gws.ui.Title content={_master(this).STRINGS.exportTitle}/>
             </sidebar.TabHeader>
             <sidebar.TabBody>
                 <div className="modAlkisAlkisFsDetailsTabContent">
@@ -728,7 +671,7 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
                                 <gws.ui.TextButton
                                     primary
                                     whenTouched={() => _master(this).submitExport(this.props.alkisFsExportFeatures)}
-                                >{STRINGS.exportButton}</gws.ui.TextButton>
+                                >{_master(this).STRINGS.exportButton}</gws.ui.TextButton>
                             </Cell>
                         </Row>
                     </Form>
@@ -747,7 +690,7 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
 class AlkisSidebarView extends gws.View<AlkisViewProps> {
     render() {
         if (this.props.alkisFsLoading)
-            return <AlkisLoaderTab/>;
+            return <AlkisLoaderTab {...this.props}/>;
 
         let tab = this.props.alkisTab;
 
@@ -781,7 +724,7 @@ class AlkisSidebar extends gws.Controller implements gws.types.ISidebarItem {
     get tabView() {
         if (!_master(this).setup)
             return <sidebar.EmptyTab>
-                {STRINGS.noData}
+                {_master(this).STRINGS.noData}
             </sidebar.EmptyTab>;
 
         return this.createElement(
@@ -835,7 +778,7 @@ class AlkisSelectDialog extends gws.View<AlkisViewProps> {
         let title, submit, control;
 
         if (mode === 'save') {
-            title = STRINGS.saveSelection;
+            title = _master(this).STRINGS.saveSelection;
             submit = () => cc.saveSelection2();
             control = <gws.ui.TextInput
                 value={this.props.alkisFsSaveName}
@@ -845,7 +788,7 @@ class AlkisSelectDialog extends gws.View<AlkisViewProps> {
         }
 
         if (mode === 'load') {
-            title = STRINGS.loadSelection;
+            title = _master(this).STRINGS.loadSelection;
             submit = () => cc.loadSelection2();
             control = <gws.ui.Select
                 value={this.props.alkisFsSaveName}
@@ -883,6 +826,8 @@ class AlkisController extends gws.Controller {
     history: Array<string>;
     selectionLayer: gws.types.IMapFeatureLayer;
 
+    STRINGS = null;
+
     updateFsParams(obj) {
         this.update({
             alkisFsParams: {
@@ -893,6 +838,65 @@ class AlkisController extends gws.Controller {
     }
 
     async init() {
+
+        this.STRINGS = {
+
+            formTitle: 'Flurstückssuche',
+            infoTitle: "Informationen",
+            selectionTitle: "Ablage",
+            exportTitle: "Als CSV exportieren",
+
+            gotoForm: 'Suche',
+            gotoList: 'Ergebnisse',
+            gotoSelection: 'Ablage',
+
+            print: 'Drucken',
+            highlight: 'Auf der Karte zeigen',
+            selectAll: 'Alle zur Ablage',
+            unselect: 'Abwählen',
+            select: 'Auswählen',
+            clearSelection: 'Ablage leeren',
+            goBack: 'Zurück',
+
+            loadSelection: 'Ablage laden',
+            saveSelection: 'Ablage speichern',
+
+            loading: 'Daten werden geladen...',
+            backToForm: 'Zurück zum Formular',
+
+            noData: 'Flurstücksinformationen konnten nicht gefunden werden',
+            notFound: 'Zu Ihrer Suche wurden keine Ergebnisse gefunden.',
+            noSelection: 'Die Ablage ist leer',
+
+            errorGeneric: 'Es ist ein Fehler aufgetreten.',
+            errorControl: 'Validierung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben.',
+
+            vorname: "Vorname",
+            nachname: "Nachname",
+            gemarkung: "Gemarkung",
+            strasse: "Straße",
+            nr: "Nr",
+            vnum: "Zähler/Nenner",
+            vnumFlur: "Flur-Zähler/Nenner",
+            areaFrom: "Fläche von m\u00b2",
+            areaTo: "bis m\u00b2",
+            bblatt: 'Buchungsblattnummer',
+            wantEigentuemer: "Zugang zu Personendaten",
+            controlInput: 'Abrufgrund',
+
+            submitButton: "Suchen",
+            lensButton: "Räumliche Suche",
+            pickButton: "Flurstücke direkt auswählen",
+            selectionSearchButton: "in der Auswahl Suchen",
+            resetButton: "Neue Anfrage",
+            exportButton: "Exportieren",
+
+            searchResults2: "Suchergebnisse ($1 von $2)",
+            searchResults: "Suchergebnisse ($1)",
+
+
+        };
+
         let res = await this.app.server.alkisFsSetup({
             projectUid: this.app.project.uid
         });
@@ -1035,10 +1039,10 @@ class AlkisController extends gws.Controller {
         this.update({alkisFsLoading: false});
 
         if (res.error) {
-            let msg = STRINGS.errorGeneric;
+            let msg = this.STRINGS.errorGeneric;
 
             if (res.error.status === 400) {
-                msg = STRINGS.errorControl
+                msg = this.STRINGS.errorControl
             }
 
             this.update({
@@ -1303,7 +1307,7 @@ class AlkisController extends gws.Controller {
 
         let a = document.createElement('a');
         a.href = res.url;
-        a.download = STRINGS.exportPath;
+        a.download = EXPORT_PATH;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
