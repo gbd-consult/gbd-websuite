@@ -6,6 +6,6 @@ Durch klicken der linken Maustaste auf den Punkt im Maßstabsregler, kann der Ma
 
 Der Maßstabsregler wird nur ab einer bestimmten Bildschirmgröße angezeigt aber zum Beispiel nicht auf einem mobilen Endgerät.
 
- .. figure:: ../../../images/massstab.png
+ .. figure:: ../../../screenshots/massstab.png
    :align: center
    :width: 11em
