@@ -84,14 +84,29 @@ let copyAssets = options => {
     let msie = 'msie11.polyfill.io.js';
     fs.copyFileSync(absPath(msie), options.dist + '/' + msie);
 
-    // help files
-    let dir = absPath('src/help');
-    fs.readdirSync(dir).forEach(fn => fs.copyFileSync(
-        dir + '/' + fn, options.dist + '/help_' + fn));
-
     // start script
     let start = absPath('src/gws-start.js');
     fs.copyFileSync(start, options.dist + '/gws-start-' + options.version + '.js');
+};
+
+//
+
+let compileHelp = options => {
+
+    // replace icon refs in help files
+
+    let dir = absPath('src/help');
+
+    fs.readdirSync(dir).forEach(fn => {
+        let text = fs.readFileSync(dir + '/' + fn, 'utf8');
+
+        text = text.replace(/{ICON(.+?)}/g, ($0, $1) => {
+            let svg = absPath('src/css/themes/light/img/' + $1.trim() + '.svg');
+            return fs.readFileSync(svg, 'utf8');
+        });
+
+        fs.writeFileSync(options.dist + '/help_' + fn, text);
+    });
 };
 
 //
@@ -108,6 +123,7 @@ ConfigPlugin.prototype.apply = function (compiler) {
             packageVendors(this.options);
             generateThemes(this.options);
             copyAssets(this.options);
+            compileHelp(this.options);
         });
     }
 };
