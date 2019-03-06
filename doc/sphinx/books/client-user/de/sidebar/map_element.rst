@@ -5,7 +5,7 @@ Kartenelemente
 Unter dem Menüpunkt |layers| ``Layer`` in der Menüleiste,
 können Sie die Sichtbarkeit der einzelnen Layer ein- oder ausschalten und verschiedene weitere Funktionen nutzen.
 Die Layer sind in Projektgebieten oder anderen Überordnern gesammelt. Diese werden über den Pfeil links neben dem Layernamen geöffnet |showother| und können über das Icon |hideother| wieder geschlossen werden.
-Das Ein- oder Ausschalten erfolgt über einen Klick auf das Augen-Symbol. Erscheint neben dem Layer das Symbol |showlayer| ist dieser sichtbar, erscheint das Symbol |hidelayer| ist er nicht sichtbar.
+Das Ein- oder Ausschalten erfolgt über einen Klick auf das Augen-Symbol. Erscheint neben dem Layer das |showlayer| Symbol ist dieser sichtbar, erscheint das Symbol |hidelayer| ist er nicht sichtbar.
 
 Man kann sowohl einzelne Teile der Layer ausblenden, wie auch ganze Überordner.
 In manchen Karten werden bestimmte Layer erst ab einem entsprechenden Maßstab angezeigt, diese werden auch dann erst zur Layerauswahl hinzugefügt.
