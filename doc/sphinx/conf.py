@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import os
+import sys
+import re
+
+DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
+APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
+
 VERSION='2.3.3'
 
 project = 'GBD WebSuite'
@@ -8,12 +15,6 @@ author = 'Geoinformatikbüro Dassau GmbH'
 version = VERSION
 release = VERSION
 
-import os
-import sys
-import re
-
-DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
-APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
 
 sys.path.insert(0, APP_DIR)
 sys.path.insert(0, DOC_ROOT)

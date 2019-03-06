@@ -141,6 +141,7 @@ class FsQueryParams(t.Data):
     # combined address search param (_COMBINED_AD_PARAMS joined by '_')
     alkisAd: t.Optional[str]
 
+
 class FsAddressQueryParams(t.Data):
     land: t.Optional[str]
     regierungsbezirk: t.Optional[str]
@@ -216,9 +217,13 @@ class FsGetSaveNamesResponse(t.Response):
 _cwd = os.path.dirname(__file__)
 
 DEFAULT_FORMAT = t.FormatConfig({
+    'title': t.TemplateConfig({
+        'type': 'html',
+        'text': '{attributes.vollnummer}'
+    }),
     'teaser': t.TemplateConfig({
         'type': 'html',
-        'path': _cwd + '/templates/teaser.cx.html'
+        'text': 'Flurstück {attributes.vollnummer}'
     }),
     'description': t.TemplateConfig({
         'type': 'html',
@@ -271,17 +276,20 @@ class Object(gws.Object):
         if not self.has_index:
             return
 
-        fmt = self.var('featureFormat', default=DEFAULT_FORMAT)
+        fmt = self.var('featureFormat') or t.FormatConfig()
+        for f in 'title', 'teaser', 'description':
+            if not fmt.get(f):
+                setattr(fmt, f, DEFAULT_FORMAT.get(f))
 
         self.short_feature_format = self.add_child('gws.common.format', t.Config({
-            'title': fmt.get('title'),
-            'teaser': fmt.get('teaser')
+            'title': fmt.title,
+            'teaser': fmt.teaser,
         }))
 
         self.long_feature_format = self.add_child('gws.common.format', t.Config({
-            'title': fmt.get('title'),
-            'teaser': fmt.get('teaser'),
-            'description': fmt.get('description'),
+            'title': fmt.title,
+            'teaser': fmt.teaser,
+            'description': fmt.description,
         }))
 
         self.print_template: t.TemplateObject = self.add_child(

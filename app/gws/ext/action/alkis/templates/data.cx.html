@@ -1,5 +1,8 @@
-@def head(s)
-    <tr class="thead"><td colspan=2>{s | html}</td></tr>
+@block group(rows, title)
+    <tbody>
+        <tr class="thead"><td colspan=2>{title | html}</td></tr>
+        {rows}
+    </tbody>
 @end
 
 @def row(key, val)
@@ -22,69 +25,57 @@
 
 <p class="head2">Flurstück {fs.vollnummer}</p>
 
-
 <table>
 
-    <tbody>
-        @head 'Basisdaten'
-
+    @group 'Basisdaten'
         @row 'Flurnummer', fs.flurnummer
         @row 'Zähler', fs.zaehler
         @row 'Nenner', fs.nenner
         @row 'Fläche', fs.amtlicheflaeche | area
-
         @row 'ges. Gebäudefläche', fs.gebaeude_area | area
-    </tbody>
+    @end
 
-    <tbody>
-        @head 'Lage'
-
+    @group 'Lage'
         @row 'Gemeinde', fs.gemeinde
         @row 'Gemarkung', fs.gemarkung
         @each fs.lage as la
             @row 'Adresse', la.strasse + ' ' + la.hausnummer
         @end
-    </tbody>
+    @end
 
     @with fs.gebaeude as geb
-        <tbody>
-            @head 'Gebäudenachweis'
-
+        @group 'Gebäudenachweis'
             @each geb as g
                 @row g.gebaeudefunktion, g.area | area
             @end
-        </tbody>
+        @end
     @end
 
     @each fs.buchung as bs
-        <tbody>
-            @head 'Buchungssatz'
-
+        @group 'Buchungssatz'
             @row 'Buchungsart', bs.buchungsart
             @row 'Anteil', bs.anteil
             @row 'Buchungsblattnummer', bs.buchungsblatt.buchungsblattnummermitbuchstabenerweiterung
-        </tbody>
 
-        @each bs.eigentuemer as eg
-            @let val
-                {eg.person.vorname} {eg.person.nachnameoderfirma}
-                @with eg.person.anschrift as a
-                    {a.strasse} {a.hausnummer}
-                    {a.postleitzahlpostzustellung} {a.ort_post}
+            @each bs.eigentuemer as eg
+                @let val
+                    {eg.person.vorname} {eg.person.nachnameoderfirma}
+                    @with eg.person.anschrift as a
+                        {a.strasse} {a.hausnummer}
+                        {a.postleitzahlpostzustellung} {a.ort_post}
+                    @end
                 @end
+                @row 'Eigentümer\n' + eg.anteil, val
             @end
-            @row 'Eigentümer\n' + eg.anteil, val
         @end
     @end
 
     @with fs.nutzung as nutzung
-        <tbody>
-            @head 'Nutzung'
-
+        @group 'Nutzung'
             @each nutzung as nu
                 @row nu.type, nu.a_area | area
             @end
-        </tbody>
+        @end
     @end
 
 
