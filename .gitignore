@@ -7,6 +7,7 @@
 ._*
 .cache
 .DS_Store
+.directory
 .idea
 .mypy*
 .pytest_cache
