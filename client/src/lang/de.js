@@ -90,7 +90,7 @@ module.exports = {
     modOverviewExtent: 'Ausmaß',
     modOverviewProjection: 'KBS',
     modOverviewRotation: 'Rotation',
-    modOverviewScale: 'Maßtab',
+    modOverviewScale: 'Maßstab',
     modOverviewSidebarTitle: 'Projektübersicht',
     modOverviewUpdateButton: 'Aktualisieren',
     modPrintButton: 'Drucken',
