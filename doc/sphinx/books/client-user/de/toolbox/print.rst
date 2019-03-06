@@ -4,10 +4,10 @@ Drucken
 
 Über das |print| ``Drucken``-Werkzeug auf der rechten Seite, wird eine PDF generiert, die sowohl gespeichert, als auch ausgedruckt werden kann.
 
-Beim Aktivieren der Druckfunktion öffnet sich auf der Karte ein Kartenrahmen, der den Auswahlbereich symbolisiert. Dieser kann beliebig verschoben werden. Mit der linken Maustaste und dem Mausrad kann die entsprechende Zoomstufe eingestellt werde. 
+Beim Aktivieren der Druckfunktion öffnet sich auf der Karte ein Kartenrahmen, der den Auswahlbereich symbolisiert. Dieser kann beliebig verschoben werden. Mit der linken Maustaste und dem Mausrad kann die entsprechende Zoomstufe eingestellt werde.
 
 
- .. figure:: ../../../images/print1.png
+ .. figure:: ../../../screenshots/print1.png
    :align: center
 
 Zusätzlich zu dem Kartenrahmen öffnet sich ein Dialog indem man die Druckauflösung und die Ausrichtung der Druckvorlage einstellen kann. Wird das Drucksymbol |print|
