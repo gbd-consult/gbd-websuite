@@ -6,6 +6,17 @@ from ..tools import indexer, connection
 
 stelle_index = 'idx_grundbuch_stelle'
 
+"""
+ALKIS relations:
+
+ax_flurstueck     --- [istGebucht]        ---> ax_buchungsstelle
+ax_buchungsstelle --- [istBestandteilVon] ---> ax_buchungsblatt
+ax_namensnummer   --- [istBestandteilVon] ---> ax_buchungsblatt
+ax_namensnummer   --- [benennt]           ---> ax_person
+ax_person         --- [hat]               ---> ax_anschrift
+
+"""
+
 
 def _anteil(r):
     if r['nenner'] is None:
