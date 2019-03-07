@@ -1,7 +1,7 @@
 Introduction
 ============
 
-GBD WebSuite is an application webserver with emphasis on geodata processing.
+The ** GBD WebSuite ** is a web-based open source GIS platform for geodata processing. It includes the GBD WebSuite Server and GBD WebSuite Client, which are characterized in addition to the classic WebGIS functionality by the modular and efficient integration of external applications and new functionalities, to enable extensive configurations. The core libraries of client and server are designed slim. The whole architecture is plugin based. The QGIS integration is also implemented as a plugin, which communicates natively with QGIS.
 
 GBD WebSuite as a web server:
 

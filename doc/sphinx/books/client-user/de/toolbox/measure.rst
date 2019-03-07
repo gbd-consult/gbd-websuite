@@ -20,6 +20,8 @@ Bei einer **Kreisberechnung** wird zuerst ein Punkt mit einem Klick in die Karte
 Mit einem Klick auf das Symbol |back1| wird die Option Messen geschlossen, die Elemente bleiben dabei enthalten, außer sie wurden vorher gelöscht.
 |delete|
 
+Wie bei anderen Werkzeugen auch kann dieses Werkzeug individuell angepasst werden. Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren. Auch falls die Messungen lieber in Kilometer oder ähnlichem erstellt werden sollen, kann dies angepasst werden.
+
 
  .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
    :width: 30em

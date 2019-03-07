@@ -10,6 +10,8 @@ und |zoomout| vorgenommen werden.
 
 Als weitere Steuerfunktion kann über das Icon |zoommap|, auf die Ausdehnung der gesamten Karte heraus gezoomt werden.
 
+Falls diese Navigationshilfen nicht gewünscht sind oder sich anders verhalten sollen, können auch diese verändert und angepasst werden. 
+
 
  .. |zoomin| image:: ../../../images/zoom-24.svg
    :width: 30em

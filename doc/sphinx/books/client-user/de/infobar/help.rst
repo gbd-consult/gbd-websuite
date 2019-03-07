@@ -3,5 +3,8 @@ Hilfe
 
 Über dieses Icon |help| gelangen Sie zur ``Kurzanleitung`` der GBD Websuite.
 
+Falls nicht benötigt, können auch diese Informationen deaktiviert oder anders palziert werden.
+
+
  .. |help| image:: ../../../images/sharp-help-24px.svg
   :width: 30em
