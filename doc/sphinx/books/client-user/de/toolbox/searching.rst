@@ -7,7 +7,7 @@ Wenn man auf das |geo_search| Icon klickt öffnet sich das ``Räumliche Suche`` 
 Die gezeichnete Geometrie kann nach belieben verschoben werden. Klicken Sie dafür auf das |navi| Symbol und halten Sie Maustaste gerdrückt. Nun können Sie die Geometrie verschieben. Durch klicken
 auf das |cancel| Symbol wird das Werkzeug beendet.
 
- .. |geo_search| image:: ../../../images/baseline-search-24px.svg
+ .. |geo_search| image:: ../../../images/gbd-icon-raeumliche-suche-01.svg
    :width: 30em
  .. |edit| image:: ../../../images/sharp-edit-24px.svg
    :width: 30em

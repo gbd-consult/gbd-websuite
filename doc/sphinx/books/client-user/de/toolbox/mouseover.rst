@@ -14,7 +14,7 @@ Wenn mehrere Objekte markiert wurden, kann man √ºber die vor |continue| und zur√
 
 
 
- .. |mouseover| image:: ../../../images/baseline-mouse-24px.svg
+ .. |mouseover| image:: ../../../images/gbd-icon-anzeige-01.svg
    :width: 30em
  .. |continue| image:: ../../../images/baseline-chevron_right-24px.svg
    :width: 30em

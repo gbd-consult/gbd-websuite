@@ -12,7 +12,7 @@ Wenn mehrere Objekte markiert wurden, kann man √ºber die vor |continue| und zur√
 
 
 
- .. |info| image:: ../../../images/baseline-info-24px.svg
+ .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
    :width: 30em
  .. |continue| image:: ../../../images/baseline-chevron_right-24px.svg
    :width: 30em

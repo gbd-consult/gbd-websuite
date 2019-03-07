@@ -11,7 +11,7 @@ import gws.gis.render
 import gws.tools.misc as misc
 import gws.tools.pdf
 import gws.types as t
-import gws.tools.cx
+import gws.tools.chartreux
 import gws.common.template
 
 
@@ -224,9 +224,15 @@ class Object(gws.common.template.Object):
             'endpoint': gws.SERVER_ENDPOINT,
         }
 
-        content = gws.tools.cx.render(text, context, errors, path=self.path or '<string>')
-        for e in errors:
-            gws.log.debug('TEMPLATE: ' + e)
+        content = gws.tools.chartreux.render_text(
+            text,
+            context,
+            errors=errors,
+            silent=True,
+            path=self.path or '<string>'
+        )
+        # for e in errors:
+        #     gws.log.debug('TEMPLATE: ' + e)
 
         return content
 
