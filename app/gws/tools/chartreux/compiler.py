@@ -21,18 +21,15 @@ ERROR_IDENT = 'invalid identifier'
 ERROR_EOF = 'unexpected end of file'
 ERROR_DEF = 'function definition error'
 ERROR_FILE = 'file not found'
-ERROR_LET = 'invalid let syntax'
 ERROR_NOT_SUPPORTED = 'syntax not supported'
 ERROR_ARG_NOT_SUPPORTED = 'argument syntax not supported'
 ERROR_FILTER = 'invalid or unknown filter'
 
 _DEFAULT_OPTIONS = {
-    'command': '@',
-    'comment': '##',
     'filter': None,
     'globals': [],
     'name': 'render',
-    'path': '<string>',
+    'path': '',
     'silent': False,
 }
 
@@ -82,7 +79,7 @@ def translate_path(path, **options):
 
 class Source:
     def __init__(self, text, path):
-        self.lines = text.splitlines(keepends=True) or ['']
+        self.lines = text.splitlines() or ['']
         self.maxline = len(self.lines)
         self.lineno = 0
         self.path = path
@@ -98,7 +95,6 @@ class Parser:
     def __init__(self, compiler):
         self.cc = compiler
         self.source = []
-        self.indents = [0]
 
     def add_source(self, text, path):
         self.source.append(Source(text, path))
@@ -120,38 +116,31 @@ class Parser:
 
             return None
 
+    command_symbol = '@'
+    comment_symbol = '##'
+
     command_re = r'^(\w+)(.*)'
 
     text_command = '\x00'
 
     def parse_line(self, ln):
-        cmd = self.cc.option('command')
-
         if ln is None:
             return 'eof', ''
 
         sl = ln.strip()
 
-        comment = self.cc.option('comment')
-        if comment and sl.startswith(comment):
+        if sl.startswith(self.comment_symbol):
             return None, ''
 
-        if not sl.startswith(cmd):
-            return self.text_command, _dedent(ln, self.indents[-1])
+        if not sl.startswith(self.command_symbol):
+            return self.text_command, ln
 
         m = re.search(self.command_re, sl[1:])
         if not m:
-            return self.text_command, _dedent(ln, self.indents[-1])
+            return self.text_command, ln
 
+        # self.cc.code.remove_newline()
         cmd = m.group(1).lower()
-
-        if cmd == 'end':
-            self.indents.pop()
-        else:
-            self.indents.append(_get_indent(ln))
-
-
-
 
         # NB: the final : in commands is optional
         arg = m.group(2).lstrip().rstrip(' :')
@@ -412,24 +401,14 @@ class Command:
         if cmd in self.cc.scope:
             return self.user_line_command(cmd, arg)
 
-        # a command can be defined in a template base class
-
-        base = self.cc.option('base')
-        if base:
-            handler = getattr(base, 'command_' + cmd, None)
-            if handler:
-                # NB: command methods are static
-                handler(base, self.cc, arg)
-                return
-
-        # finally, check if we have a command defined right here
+        # built-in command
 
         handler = getattr(self, 'command_' + cmd, None)
         if handler:
             handler(arg)
             return
 
-        # nothing could be found :(
+        # nothing found :(
 
         self.cc.error(ERROR_COMMAND, cmd)
 
@@ -691,7 +670,7 @@ class Command:
 
         m = re.search(self.let_re, arg)
         if not m:
-            return self.cc.error(ERROR_LET)
+            return self.cc.error(ERROR_IDENT)
 
         name, expr = m.groups()
         expr = expr.strip()
@@ -840,7 +819,7 @@ class Code:
     def __init__(self, compiler):
         self.cc = compiler
         self.buf = []
-        self.textbuf = ''
+        self.textbuf = []
         self.context_vars = set()
 
     def _emit(self, s):
@@ -850,8 +829,8 @@ class Code:
 
     def _flushbuf(self):
         if self.textbuf:
-            self._emit(_f('print({})', repr(self.textbuf)))
-            self.textbuf = ''
+            self._emit(_f('print({})', repr(''.join(self.textbuf))))
+            self.textbuf = []
 
     def add(self, s):
         self._flushbuf()
@@ -864,7 +843,11 @@ class Code:
         self.add('END')
 
     def string(self, s):
-        self.textbuf += s
+        self.textbuf.append(s)
+
+    def remove_newline(self):
+        if self.textbuf and self.textbuf[-1].endswith('\n'):
+            self.textbuf[-1] = self.textbuf[-1][:-1]
 
     def raw_try_block(self, body, fallback, exc_var=None):
         exc_var = exc_var or self.cc.new_var()
@@ -1074,7 +1057,7 @@ def _source_location(code, lineno):
     path = '?'
     line = '?'
 
-    for n, ln in enumerate(code.splitlines(), 1):
+    for n, ln in enumerate(code.splitlines(keepends=True), 1):
         if n >= lineno:
             break
         m = re.search(r'_PATH =(.+)', ln)

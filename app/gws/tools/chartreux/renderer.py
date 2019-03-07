@@ -17,8 +17,6 @@ def render(
 def render_text(
         text,
         context=None,
-        command='@',
-        comment='##',
         errors=None,
         filter=None,
         globals=None,
@@ -29,8 +27,6 @@ def render_text(
 ):
     template = compiler.compile(
         text,
-        command=command,
-        comment=comment,
         filter=filter,
         globals=globals,
         name=name,
@@ -48,8 +44,6 @@ def render_text(
 def render_path(
         path,
         context=None,
-        command='@',
-        comment='##',
         errors=None,
         filter=None,
         globals=None,
@@ -62,8 +56,6 @@ def render_path(
     return render_text(
         source,
         context=context,
-        command=command,
-        comment=comment,
         errors=errors,
         filter=filter,
         globals=globals,
