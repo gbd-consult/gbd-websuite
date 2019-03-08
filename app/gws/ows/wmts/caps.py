@@ -23,7 +23,7 @@ def parse(srv: t.ServiceInterface, xml):
     srv.operations = u.get_operations(el.first('OperationsMetadata'))
     srv.version = el.attr('version')
 
-    srv.layers = [_layer(e) for e in el.all('Contents.Layer')]
+    srv.layers = u.flatten_source_layers(_layer(e) for e in el.all('Contents.Layer'))
 
     tms_all = {}
     for e in el.all('Contents.TileMatrixSet'):

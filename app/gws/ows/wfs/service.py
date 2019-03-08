@@ -45,12 +45,13 @@ class Service(gws.Object, t.ServiceInterface):
     def find_features(self, args: t.FindFeaturesArgs):
 
         p = {}
+        invert_axis = args.get('axis') == 'yx'
 
-        b = args.bbox
-        if args.axis == 'yx':
-            b = [b[1], b[0], b[3], b[2]]
-
-        p['BBOX'] = b
+        b = args.get('bbox')
+        if b:
+            if invert_axis:
+                b = [b[1], b[0], b[3], b[2]]
+            p['BBOX'] = b
 
         p['TYPENAMES' if self.version >= '2.0.0' else 'TYPENAME'] = args.layers
 
@@ -60,9 +61,9 @@ class Service(gws.Object, t.ServiceInterface):
         p['SRSNAME'] = args.crs
         p['VERSION'] = self.version
 
-        p = gws.extend(p, args.params)
+        p = gws.extend(p, args.get('params'))
 
         url = self.operations['GetFeature'].get_url
         text = gws.ows.request.get_text(url, service='WFS', request='GetFeature', params=p)
 
-        return gws.ows.response.parse(text, invert_axis=args.axis == 'yx')
+        return gws.ows.response.parse(text, invert_axis=invert_axis)

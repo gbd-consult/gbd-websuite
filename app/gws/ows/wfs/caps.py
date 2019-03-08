@@ -22,8 +22,7 @@ def parse(srv: t.ServiceInterface, xml):
         u.one_of(el, 'OperationsMetadata', 'Capability'))
 
     srv.version = el.attr('version')
-
-    srv.layers = [_feature_type(e) for e in el.all('FeatureTypeList.FeatureType')]
+    srv.layers = u.flatten_source_layers(_feature_type(e) for e in el.all('FeatureTypeList.FeatureType'))
     srv.supported_crs = u.crs_from_layers(srv.layers)
 
 

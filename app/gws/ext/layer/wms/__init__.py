@@ -8,42 +8,69 @@ import gws.ows.request
 import gws.ows.util
 import gws.ows.wms
 import gws.tools.json2
+import gws.common.search.provider
+
 import gws.types as t
 
+"""
 
-class Config(gws.gis.layer.ImageConfig):
+NB: layer order
+our configuration lists layers top-to-bottom,
+this also applies by default to WMS caps (like in qgis)
+
+for servers with bottom-up caps, set capsLayersBottomUp=True 
+
+the order of GetMap is always bottomUp:
+
+> A WMS shall render the requested layers by drawing the leftmost in the list bottommost, 
+> the next one over that, and so on.
+
+http://portal.opengeospatial.org/files/?artifact_id=14416
+section 7.3.3.3 
+
+"""
+
+class WmsServiceConfig(t.Config):
+    capsCacheMaxAge: t.duration = '1d'  #: max cache age for capabilities documents
+    invertAxis: t.Optional[t.List[t.crsref]]  #: projections that have an inverted axis (yx)
+    maxRequests: int = 0  #: max concurrent requests to this source
+    capsLayersBottomUp: bool = False #: layers are listed from bottom to top in the GetCapabilities document
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    url: t.url  #: service url
+
+
+def configure_wms(target: gws.PublicObject, **filter_args):
+    target.url = target.var('url')
+
+    target.service = gws.ows.util.shared_service('WMS', target, target.config)
+    target.invert_axis = target.var('invertAxis')
+    target.source_layers = gws.gis.source.filter_layers(
+        target.service.layers,
+        target.var('sourceLayers'),
+        **filter_args)
+
+
+class Config(gws.gis.layer.ImageConfig, WmsServiceConfig):
     """WMS layer"""
 
-    capsCacheMaxAge: t.duration = '1d'  #: max cache age for capabilities documents
-    maxRequests: int = 0  #: max concurrent requests to this source
-    params: t.Optional[dict]  #: query string parameters
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
-    sourceLayerOder: gws.gis.source.LayerOrder = 'topDown'  #: order of layers in the GetCapabilities document
-    url: t.url  #: service url
+    getMapParams: t.Optional[dict]  #: additional parameters for GetMap requests
 
 
 class Object(gws.gis.layer.Image):
     def __init__(self):
         super().__init__()
 
-        self.source_crs = ''
-        self.url = ''
+        self.invert_axis = []
         self.service: gws.ows.wms.Service = None
         self.source_layers: t.List[t.SourceLayer] = []
         self.source_legend_urls = []
+        self.url = ''
 
     def configure(self):
         super().configure()
 
-        self.url = self.var('url')
+        configure_wms(self, image_only=True)
 
-        self.service = gws.ows.util.shared_service('WMS', self, self.config)
-        self.source_crs = gws.ows.util.best_crs(self.map.crs, self.service.supported_crs)
-
-        self.source_layers = gws.gis.source.filter_layers(
-            self.service.layers,
-            self.var('sourceLayers'),
-            image_only=True)
         if not self.source_layers:
             raise gws.Error(f'no layers found in {self.uid!r}')
 
@@ -58,18 +85,20 @@ class Object(gws.gis.layer.Image):
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.source_layers]
-        if self.var('sourceLayerOder') == 'topDown':
+        if not self.var('capsLayersBottomUp'):
             layers = reversed(layers)
+
+        crs = gws.ows.util.best_crs(self.map.crs, self.service.supported_crs)
 
         req = gws.extend({
             'url': self.service.operations['GetMap'].get_url,
             'transparent': True,
             'layers': ','.join(layers)
-        }, self.var('params'))
+        }, self.var('getMapParams'))
 
         source_uid = mc.source(gws.compact({
             'type': 'wms',
-            'supported_srs': [self.source_crs],
+            'supported_srs': [crs],
             'concurrent_requests': self.var('maxRequests'),
             'req': req
         }))
@@ -95,12 +124,23 @@ class Object(gws.gis.layer.Image):
         if not p.enabled or p.providers:
             return
 
-        self.add_child('gws.ext.search.provider', t.Data({
-            'type': 'wms',
-            'url': self.url,
-            'params': self.var('params'),
-            'sourceLayers': self.var('sourceLayers'),
-        }))
+        cfg = {
+            'type': 'wms'
+        }
+
+        cfg_keys = [
+            'capsCacheMaxAge',
+            'invertAxis',
+            'maxRequests',
+            'bottomUpLayers',
+            'sourceLayers',
+            'url',
+        ]
+
+        for key in cfg_keys:
+            cfg[key] = self.var(key)
+
+        self.add_child('gws.ext.search.provider', t.Config(gws.compact(cfg)))
 
     def _add_legend(self):
         self.has_legend = False
@@ -142,3 +182,58 @@ class Object(gws.gis.layer.Image):
     #             self.crs
     #         )
     #     return t.cast(t.MapView, self.parent).extent
+
+
+class SearchConfig(gws.common.search.provider.Config, WmsServiceConfig):
+    pass
+
+
+class SearchObject(gws.common.search.provider.Object):
+    def __init__(self):
+        super().__init__()
+
+        self.invert_axis = []
+        self.service: gws.ows.wms.Service = None
+        self.source_layers: t.List[t.SourceLayer] = []
+        self.url = ''
+
+    def configure(self):
+        super().configure()
+        configure_wms(self, queryable_only=True)
+
+    def can_run(self, args):
+        return (
+                self.source_layers
+                and 'GetFeatureInfo' in self.service.operations
+                and args.shapes
+                and args.shapes[0].type == 'Point'
+                and not args.keyword
+        )
+
+    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
+        shape = args.shapes[0]
+        crs, shape = gws.ows.util.crs_and_shape(args.crs, self.service.supported_crs, shape)
+        axis = gws.ows.util.best_axis(args.crs, self.invert_axis, 'WMS', self.service.version)
+
+        fa = t.FindFeaturesArgs({
+            'axis': axis,
+            'bbox': '',
+            'count': args.limit,
+            'crs': crs,
+            'layers': [sl.name for sl in self.source_layers],
+            'params': self.var('params'),
+            'point': [shape.geo.x, shape.geo.y],
+            'resolution': args.resolution,
+        })
+
+        gws.log.debug(f'WMS_QUERY: START')
+        gws.p(fa)
+
+        fs = self.service.find_features(fa)
+
+        if fs is None:
+            gws.log.debug('WMS_QUERY: NOT_PARSED')
+            return []
+
+        gws.log.debug(f'WMS_QUERY: FOUND {len(fs)}')
+        return fs

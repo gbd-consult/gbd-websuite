@@ -6,16 +6,16 @@ import gws.tools.misc as misc
 from . import wms, wfs, wmts
 
 
-# p = self.var('invertAxis')
-# if p is None:
-#     # https://docs.geoserver.org/latest/en/user/services/wfs/basics.html#wfs-basics-axis
-#     p = self.service.default_crs.startswith('urn') and self.service.version >= '1.1.0'
-# self.service.has_inverted_axis = p
+def best_axis(crs, inverted_axis_crs_list, service_name, service_version):
+    # inverted_axis_crs_list - list of EPSG crs'es which are known to have an inverted axis for this service
+    # crs - crs we're going to use with the service
 
+    proj = gws.gis.proj.as_proj(crs)
+    if inverted_axis_crs_list and proj.epsg in inverted_axis_crs_list:
+        return 'yx'
 
-def axis_for(axis, service_name, service_version, crs):
-    if axis:
-        return axis
+    # @TODO some logic to guess the axis, based on crs, service_name and service_version
+    # see https://docs.geoserver.org/latest/en/user/services/wfs/basics.html#wfs-basics-axis
     return 'xy'
 
 

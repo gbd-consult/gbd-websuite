@@ -3,27 +3,6 @@ import re
 import gws
 import gws.types as t
 
-"""
-
-NB: layer order
-our configuration lists layers top-to-bottom,
-this also applies by default to WMS caps (like in qgis)
-
-the order of GetMap is bottomUp:
-
-> A WMS shall render the requested layers by drawing the leftmost in the list bottommost, 
-> the next one over that, and so on.
-
-http://portal.opengeospatial.org/files/?artifact_id=14416
-section 7.3.3.3 
-
-"""
-
-
-class LayerOrder(t.Enum):
-    topDown = 'topDown'
-    bottomUp = 'bottomUp'
-
 
 class LayerFilterConfig(t.Config):
     """Layer filter"""

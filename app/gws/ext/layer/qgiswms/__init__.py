@@ -17,7 +17,6 @@ class Config(gws.gis.layer.ImageConfig):
     path: t.filepath  #: qgis project path
     display: str = 'box'
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
-    sourceLayerOder: gws.gis.source.LayerOrder = 'topDown'  #: order of layers in the GetCapabilities document
 
 
 class Object(gws.gis.layer.Image):
@@ -83,8 +82,8 @@ class Object(gws.gis.layer.Image):
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.source_layers]
-        if self.var('sourceLayerOder') == 'topDown':
-            layers = reversed(layers)
+        # NB: qgis caps layers are always top-down
+        layers = reversed(layers)
 
         source = mc.source({
             'type': 'wms',

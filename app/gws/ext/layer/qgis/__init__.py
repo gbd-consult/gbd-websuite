@@ -133,7 +133,7 @@ class Object(gws.gis.layer.Base):
                 'names': ds['layers']
             },
             'url': ds['url'],
-            'params': ds['params'],
+            'getMapParams': ds['params'],
         }
 
     def _wmts_based_layer(self, sl: t.SourceLayer):
@@ -189,7 +189,6 @@ class Object(gws.gis.layer.Base):
         return {
             'type': 'wms',
             'url': ds['url'],
-            'params': ds['params'],
             'sourceLayers': {
                 'names': ds['layers'],
             }
@@ -213,9 +212,10 @@ class Object(gws.gis.layer.Base):
             cfg['sourceLayers'] = {
                 'names': [ds['typeName']]
             }
-        c = gws.get(ds, 'params.InvertAxisOrientation')
-        if c == '1':
-            cfg['axis'] = 'yx'
+        crs = gws.get(ds, 'params.srsname')
+        inv = gws.get(ds, 'params.InvertAxisOrientation')
+        if inv == '1' and crs:
+            cfg['invertAxis'] = [crs]
 
         return cfg
 

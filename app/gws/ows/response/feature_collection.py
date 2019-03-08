@@ -1,11 +1,8 @@
-import re
-
 import gdal
 
 import gws
 import gws.gis.feature
 import gws.gis.shape
-import gws.ows.types
 
 
 def parse(s, first_el, **kwargs):
@@ -15,10 +12,13 @@ def parse(s, first_el, **kwargs):
     tmp = '/vsimem/' + gws.random_string(64) + '.xml'
     gdal.FileFromMemBuffer(tmp, s)
 
-    ds = gdal.OpenEx(tmp, open_options=[
-        'SWAP_COORDINATES=%s' % ('YES' if kwargs.get('invert_axis') else 'NO'),
-        'DOWNLOAD_SCHEMA=NO'
-    ])
+    ds = gdal.OpenEx(
+        tmp,
+        allowed_drivers=['gml'],
+        open_options=[
+            'SWAP_COORDINATES=%s' % ('YES' if kwargs.get('invert_axis') else 'NO'),
+            'DOWNLOAD_SCHEMA=NO'
+        ])
 
     if not ds:
         gws.log.error('gdal.gml driver failed')
