@@ -132,7 +132,7 @@ class Object(gws.gis.layer.Base):
             'sourceLayers': {
                 'names': ds['layers']
             },
-            'url': ds['url'],
+            'url': self._make_wms_url(ds['url'], ds['params']),
             'getMapParams': ds['params'],
         }
 
@@ -188,7 +188,7 @@ class Object(gws.gis.layer.Base):
     def _wms_search_provider(self, sl, ds):
         return {
             'type': 'wms',
-            'url': ds['url'],
+            'url': self._make_wms_url(ds['url'], ds['params']),
             'sourceLayers': {
                 'names': ds['layers'],
             }
@@ -229,3 +229,29 @@ class Object(gws.gis.layer.Base):
             'uid': gws.as_uid(sl.name),
             'layers': layers
         }
+
+    def _make_wms_url(self, url, params):
+        # a wms url can be like "server?service=WMS....&bbox=.... &some-non-std-param=...
+        # we need to keep non-std params for caps requests
+
+        _std_params = {
+            'service',
+            'version',
+            'request',
+            'layers',
+            'styles',
+            'srs',
+            'crs',
+            'bbox',
+            'width',
+            'height',
+            'format',
+            'transparent',
+            'bgcolor',
+            'exceptions',
+            'time',
+            'sld',
+            'sld_body',
+        }
+        p = {k: v for k, v in params.items() if k.lower() not in _std_params}
+        return gws.tools.net.add_params(url, p)
