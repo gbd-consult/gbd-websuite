@@ -5,7 +5,7 @@ Funktionalität
 ..............
 
 
-Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis von Plugins zur Verfügung gestellt werden und sich fortlaufend erweitern:
+Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis von Plugins zur Verfügung gestellt werden und sich fortlaufend erweitern. Diese Plugins können nach Wunsch angeordnet und designed werden, sowie zur GBD WebSuite hinzugefügt oder entfernt werden:
 
 * QGIS und QGIS Server Integration als Plugin, welches nativ mit QGIS kommuniziert.
 * Integration von Hintergrundkarten
@@ -17,10 +17,10 @@ Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis
 * Schnittstelle zur Fachanwendung D-ProCon (Demographie)
 * Schnittstelle zur Fachanwendung GeKoS Online (E-Government)
 * Schnittstellen zu anderen GIS (Mapnik, ArcGIS)
+* Beschriftung mit Bemaßung von Strecken
 * Konfigurierbare Suchmaschinen (Nominatim, ALKIS-Adressen und PostGIS)
 * Drucken von Zeichnungen, die im GBD WebSuite Client erzeugt werden
 * Caching von Getmap und GetPrint Anfragen
-
 
 
 GBD WebSuite Server und Client

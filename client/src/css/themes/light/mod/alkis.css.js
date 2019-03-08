@@ -42,7 +42,7 @@ module.exports = v => ({
     '.modAlkisExportAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:image/grid_on')},
     '.modAlkisPrintAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/print')},
     '.modAlkisHighlightAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.ZOOM_ICON)},
-    '.modAlkisSelectAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')},
+    '.modAlkisSelectAuxButton': {...v.SIDEBAR_AUX_BUTTON('stacker_all')},
     '.modAlkisUnselectAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/remove_circle_outline')},
     '.modAlkisFormAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.SEARCH_ICON)},
     '.modAlkisListAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/reorder')},

@@ -1,9 +1,15 @@
 D-ProCon
 ========
 
-Über das |dpro| ``D-Procon``-Werkzeug können von Ihnen definierte Raumauszüge an die Firma Sisterhenn IT Consulting weitergeleitet werden.
+Über das |dpro| ``D-Procon``-Werkzeug können statistische Analysen durchgeführt werden. Es kann auf Wunsch  eingebunden oder ausgetragen werden, sowie an eine beliebige Stelle in der Werkzeugleiste plaziert werden. Die Nutzung ist jedoch nur möglich, wenn Sie im Besitz einer D-ProCon Lizenz sind, da es ein proprietäres Programm ist.
 
- Sie können die Raumauszüge mit dem ``Messen und Markieren`` Werkzeug in Form von Punkten, Linien, Kreisen oder Polygonen erstellen. Diese Auszüge werden dann zu statistischen Zwecken an das D-Procon Tool weitergeleitet.So können Prognosen und Analysen zur demografischen Entwicklung erstellt werden.
+Das ``D-Procon``-Werkzeug verarbeitet auf ALKIS basierte Adressdaten. Diese Adressdaten werden durch die Auswahl von Objekten selektiert. Sie können ein vorhandenes Objekt, wie zum Beispiel ein Flurstück oder einen Stadtteil sowie ein durch die ``Räumliche Suche`` selbst erstelltes Objekt, verwenden.
+
+Das Tool untersucht diese Objekte auf besagte ALKIS Adressdaten. Anhand derer werden statistische Prognosen erstellt, welche Informationen über die demografische Entwicklung bereit stellen.
+
+Für ausführliche Informationen schauen Sie gerne auch unter: https://www.sisterhenn-it.de/d-procon-2/
+
+Natürlich kann auch dieses Werkzeug deaktiviert und ander splaziert werden.
 
  .. |dpro| image:: ../../../images/gbd-icon-d-procon-02.svg
    :width: 30em
