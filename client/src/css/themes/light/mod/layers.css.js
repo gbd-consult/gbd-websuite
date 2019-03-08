@@ -80,7 +80,7 @@ module.exports = v => ({
     },
 
     '.modLayersZoomAuxButton': {
-        ...v.SIDEBAR_AUX_BUTTON('baseline-zoom_out_map-24px')
+        ...v.SIDEBAR_AUX_BUTTON('zoom_layer')
     },
     '.modLayersShowAuxButton': {
         ...v.SIDEBAR_AUX_BUTTON('google:maps/layers_clear')
