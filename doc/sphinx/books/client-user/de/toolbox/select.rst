@@ -5,6 +5,8 @@ Auswählen
 
 Am unteren Fensterrand befinden sich eine Reihe von Funktionen für speziell diesen Menüpunkt. Zum einen ist es möglich die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|, sowie die Auswahl zu löschen |delete_marking|.
 
+Auf Wunsch kann das ``Auswählen``-Werkzeug und der dazu gehörige Menüpunkt deaktiviert werden. Es wäre zum Beispiel auch möglich, dass mit diesem Werkzeug nur Objekte von gewissen Layern ausgewählt werden können.
+
 
  .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
    :width: 30em

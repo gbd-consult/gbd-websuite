@@ -8,7 +8,7 @@ Bestimmte Sachdaten können in der Karte abgefragt werden. Dies ist möglich üb
 Wenn mehrere Objekte markiert wurden, kann man über die vor |continue| und zurück
 |back| Symbole die einzelnen Informationen anzeigen lassen. Des Weiteren kann man, über das |options| Icon, die Auswahl der Objekte auch auf andere Werkzeuge wie dem ``Auswählen``, ``Räumliche Suche`` und ``Annotieren`` Werkzeug übertragen, sowie über das ``Hinzoomen`` Werkzeug fokussiert werden. Über das Icon |cancel| ist es möglich die Information zu schließen.
 
-
+Wie alle Werkzeuge kann auch dieses deaktiviert oder anders plaziert werden. 
 
 
 
