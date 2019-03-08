@@ -34,11 +34,6 @@ module.exports = v => ({
             '&:first-child': {
                 marginLeft: 0,
             },
-            '.uiInput input.uiRawInput': {
-                width: '100%',
-                minWidth: '100%',
-                maxWidth: '100%',
-            },
         }
     }
 });

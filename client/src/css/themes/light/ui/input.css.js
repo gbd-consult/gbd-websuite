@@ -32,28 +32,13 @@ module.exports = v => ({
 
     },
 
-
-
-    // '.uiInput .uiControlBox': {
-    //     borderWidth: 1,
-    //     borderStyle: 'solid',
-    //     borderColor: v.BORDER_COLOR,
-    //     ...v.TRANSITION(),
-    // },
-    //
-    // '.uiInput.hasFocus .uiControlBox': {
-    //     borderColor: v.FOCUS_COLOR,
-    // },
-    //
     '.uiInputClearButton': {
         ...v.ICON_BUTTON(),
         ...v.ICON_SIZE('tiny'),
         ...v.SVG(v.CLOSE_ICON, v.BORDER_COLOR),
-    },
-    '.uiInputClearButtonHidden': {
-        ...v.ICON_BUTTON(),
-        ...v.ICON_SIZE('tiny'),
-        visibility: 'hidden',
+        '&.isHidden': {
+            visibility: 'hidden',
+        }
     },
 
 });

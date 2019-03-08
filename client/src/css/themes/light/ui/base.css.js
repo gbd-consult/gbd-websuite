@@ -10,6 +10,7 @@ module.exports = v => ({
         margin: 0,
         padding: 0,
         height: '100%',
+        minWidth: 0,
         width: '100%',
         fontSize: '100%',
         font: 'inherit',
