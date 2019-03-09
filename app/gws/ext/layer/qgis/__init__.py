@@ -118,6 +118,9 @@ class Object(gws.gis.layer.Base):
                 'enabled': False
             }
 
+        la['cache'] = self.var('cache')
+        la['grid'] = self.var('grid')
+
         return la
 
     def _wms_based_layer(self, sl: t.SourceLayer):
@@ -163,6 +166,9 @@ class Object(gws.gis.layer.Base):
         }
 
     def _layer_search_provider(self, sl: t.SourceLayer):
+        if not self.var('search.enabled'):
+            return None
+
         ds = sl.data_source
         prov = ds['provider']
 

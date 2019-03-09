@@ -20,7 +20,7 @@ module.exports = v => ({
         },
 
         '.uiIconButton': {
-            opacity: 0.6,
+            opacity: 0.4,
             ...v.ICON_SIZE('small'),
             ...v.TRANSITION(),
         },
@@ -58,13 +58,37 @@ module.exports = v => ({
         ...v.SVG('google:image/crop_7_5', v.TEXT_COLOR),
     },
 
-    '.modLayersHideButton': {
-        ...v.SVG('google:action/visibility', v.FOCUS_COLOR),
-    },
+    '.modLayersCheckButton': {
+        ...v.SVG('google:action/visibility_off', v.TEXT_COLOR),
+    } ,
 
-    '.modLayersShowButton': {
+    '.modLayersCheckButton.isChecked': {
+        ...v.SVG('google:action/visibility', v.TEXT_COLOR),
+    } ,
+
+    '.modLayersCheckButton.isExclusive': {
+        ...v.SVG('google:toggle/radio_button_unchecked', v.TEXT_COLOR),
+    } ,
+
+    '.modLayersCheckButton.isExclusive.isChecked': {
+        ...v.SVG('google:toggle/radio_button_checked', v.TEXT_COLOR),
+    } ,
+
+    '.modLayersCheckButton.isVisible': {
         ...v.SVG('google:action/visibility_off', v.FOCUS_COLOR),
-    },
+    } ,
+
+    '.modLayersCheckButton.isChecked.isVisible': {
+        ...v.SVG('google:action/visibility', v.FOCUS_COLOR),
+    } ,
+
+    '.modLayersCheckButton.isExclusive.isVisible': {
+        ...v.SVG('google:toggle/radio_button_unchecked', v.FOCUS_COLOR),
+    } ,
+
+    '.modLayersCheckButton.isExclusive.isChecked.isVisible': {
+        ...v.SVG('google:toggle/radio_button_checked', v.FOCUS_COLOR),
+    } ,
 
     '.modLayersDetails': {
         borderTop: [1, 'solid', v.BORDER_COLOR],
