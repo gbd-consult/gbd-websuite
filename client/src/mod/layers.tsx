@@ -156,11 +156,6 @@ class LayerSidebarDetails extends gws.View<LayersViewProps> {
                     tooltip={this.__('modLayersZoomAuxButton')}
                     whenTouched={f.zoom}
                 />
-                <sidebar.AuxButton
-                    className="modLayersShowAuxButton"
-                    tooltip={this.__('modLayersShowAuxButton')}
-                    whenTouched={f.show}
-                />
                 {layer.editAccess && <sidebar.AuxButton
                     className="modLayersEditAuxButton"
                     tooltip={this.__('modLayersEditAuxButton')}
