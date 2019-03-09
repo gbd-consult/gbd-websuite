@@ -31,16 +31,23 @@ class LayersTreeTitle extends gws.View<LayersViewProps> {
     }
 }
 
-class LayersVisibleButton extends gws.View<LayersViewProps> {
+class LayersCheckButton extends gws.View<LayersViewProps> {
     render() {
         let layer = this.props.layer,
-            cls = layer.visible ? 'modLayersHideButton' : 'modLayersShowButton',
-            fn = () => this.props.controller.map.setLayerVisible(layer, !layer.visible);
+            isExclusive = layer.parent && layer.parent.exclusive,
+            isChecked = layer.checked;
+
+        let cls = gws.tools.cls(
+            'modLayersCheckButton',
+            layer.visible && 'isVisible',
+            isExclusive && 'isExclusive',
+            isChecked && 'isChecked'
+        );
 
         return <gws.ui.IconButton
-            className={cls}
-            tooltip={this.__('modLayersVisibleButton')}
-            whenTouched={fn}
+            {...cls}
+            tooltip={this.__('modLayersCheckButton')}
+            whenTouched={() => this.props.controller.map.setLayerChecked(layer, !(layer.visible && layer.checked))}
         />;
     }
 }
@@ -101,7 +108,7 @@ class LayersTreeNode extends gws.View<LayersViewProps> {
                     <LayersTreeTitle {...this.props} />
                 </Cell>
                 <Cell>
-                    <LayersVisibleButton {...this.props} />
+                    <LayersCheckButton {...this.props} />
                 </Cell>
             </Row>
             {children && layer.expanded && <div className="modLayersTreeChildren">{children}</div>}
@@ -121,7 +128,7 @@ class LayerSidebarDetails extends gws.View<LayersViewProps> {
             },
             show() {
                 map.hideAllLayers();
-                map.setLayerVisible(layer, true)
+                map.setLayerChecked(layer, true)
             },
             edit() {
                 cc.update({
