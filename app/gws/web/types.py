@@ -12,7 +12,7 @@ class RewriteRule(t.Data):
     """Rewrite rule"""
 
     match: t.regex  #: expression to match the url against
-    target: t.formatstr  #: target url with placeholders
+    target: str  #: target url with placeholders
     options: t.Optional[dict]  #: additional options
 
 
@@ -30,6 +30,8 @@ class SiteConfig(t.Config):
 
     host: str = '*'  #: host name
     rewrite: t.Optional[t.List[RewriteRule]]  #: rewrite rules
+    reversedBase: str = ''  #: reversed base address
+    reversedRewrite: t.Optional[t.List[RewriteRule]]  #: reversed rewrite rules
     cors: t.Optional[CorsConfig]  #: cors configuration
     root: t.DocumentRootConfig  #: document root location and options
     assets: t.Optional[t.DocumentRootConfig]  #: assets location and options

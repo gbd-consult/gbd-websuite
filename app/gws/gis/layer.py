@@ -131,6 +131,8 @@ class Base(gws.PublicObject, t.LayerObject):
 
         self.has_cache = False
 
+        self.layers = []
+
         self.map = None
         self.meta = None
 
@@ -257,6 +259,9 @@ class Base(gws.PublicObject, t.LayerObject):
     def modify_features(self, operation, feature_params):
         pass
 
+    def is_enabled_for_service(self, service):
+        return False
+
 
 class Image(Base):
     def __init__(self):
@@ -294,6 +299,9 @@ class Image(Base):
             x, y, z,
             tile_matrix=self.grid_uid,
             tile_size=self.grid.tileSize)
+
+    def is_enabled_for_service(self, service):
+        return service == 'wms'
 
     """
         Mapproxy config is done in two steps
