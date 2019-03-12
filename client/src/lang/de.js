@@ -79,6 +79,7 @@ module.exports = {
     modLayersShowAuxButton: 'Andere Layer verbergen',
     modLayersSidebarTitle: 'Layer',
     modLayersVisibleButton: 'Layersichtbarkeit ändern',
+    modLayersCheckButton: 'Layersichtbarkeit ändern',
     modLayersZoomAuxButton: 'Auf den Layer zoomen',
     modLens: 'Räumliche Suche',
     modLensOverlayAnchorButton: 'Verschieben',
