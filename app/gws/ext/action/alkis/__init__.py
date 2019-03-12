@@ -98,6 +98,7 @@ class FsSetupResponse(t.Response):
     withFlurnummer: bool
     gemarkungen: t.List[Gemarkung]
     printTemplate: t.TemplateProps
+    limit: int
 
 
 class FsStrassenParams(t.Data):
@@ -276,6 +277,8 @@ class Object(gws.Object):
         if not self.has_index:
             return
 
+        self.limit = int(self.var('limit'))
+
         fmt = self.var('featureFormat') or t.FormatConfig()
         for f in 'title', 'teaser', 'description':
             if not fmt.get(f):
@@ -328,6 +331,7 @@ class Object(gws.Object):
                 'withFlurnummer': flurstueck.has_flurnummer(conn),
                 'gemarkungen': flurstueck.gemarkung_list(conn),
                 'printTemplate': self.print_template.props,
+                'limit': self.limit,
             })
 
     def api_fs_strassen(self, req, p: FsStrassenParams) -> FsStrassenResponse:
@@ -346,6 +350,9 @@ class Object(gws.Object):
         self._precheck_request(req, p.projectUid)
 
         total, fs = self._fetch_and_format(req, p, self.short_feature_format)
+
+        if total > self.limit:
+            raise gws.web.error.Conflict()
 
         return FsSearchResponse({
             'total': total,
@@ -513,7 +520,7 @@ class Object(gws.Object):
             if shape:
                 query.shape = shape
 
-        total, features = self._find(query, target_crs, allow_eigentuemer, allow_buchung, self.var('limit'))
+        total, features = self._find(query, target_crs, allow_eigentuemer, allow_buchung, self.limit)
 
         gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} total={total!r} len={len(features)}')
         gws.p(query)

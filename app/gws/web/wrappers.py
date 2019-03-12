@@ -1,10 +1,43 @@
+import re
+
 import werkzeug.wrappers
 from werkzeug.utils import cached_property
 
 import gws
+import gws.tools.net
 import gws.tools.json2 as json2
+import gws.types as t
 
 from . import error
+
+
+def _find_site(host, sites):
+    if not sites:
+        return t.Data({
+            'host': '*'
+        })
+
+    for s in sites:
+        if s.host.lower() == host:
+            return s
+    for s in sites:
+        if s.host == '*':
+            return s
+
+    gws.log.error('unknown host', host)
+    raise gws.web.error.NotFound()
+
+
+def add_site(environ, sites):
+    host = environ.get('HTTP_HOST', '').lower().split(':')[0].strip()
+    s = _find_site(host, sites)
+    s = t.Data(vars(s))
+    if not s.get('reversedBase'):
+        s.reversedBase = environ['wsgi.url_scheme'] + '://' + environ['HTTP_HOST']
+    if not s.get('reversedRewrite'):
+        s.reversedRewrite = []
+    environ['gws.site'] = s
+    return environ
 
 
 class Response(werkzeug.wrappers.Response):
@@ -77,6 +110,17 @@ class Request(werkzeug.wrappers.Request):
 
     def param(self, key, default=None):
         return self.params.get(key, default)
+
+    def reversed_url(self, query_string):
+        if self.site.get('reversedRewrite'):
+            for rule in self.site.get('reversedRewrite'):
+                m = re.match(rule.match, query_string)
+                if m:
+                    t = rule.target.replace('$', '\\')
+                    s = re.sub(rule.match, t, query_string)
+                    return self.site.reversedBase + s
+
+        return self.site.reversedBase + gws.SERVER_ENDPOINT + '?' + query_string
 
 
 def _params_from_path(path):

@@ -4,13 +4,16 @@
 # and all stuff we really don't care about
 
 
-import re
 import typing
 import xml.parsers.expat
 
 
 class Error(Exception):
     pass
+
+
+def string(tag, content=None, attributes=None):
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + _string(tag, content, attributes)
 
 
 class Attribute:
@@ -314,3 +317,33 @@ _errors = {
     36: 'XML_ERROR_FINISHED',
     37: 'XML_ERROR_SUSPEND_PE',
 }
+
+
+def _string(tag=None, content=None, attributes=None):
+    if not tag:
+        return ''
+
+    a = ''
+    if attributes:
+        a = ' '.join(f'{k}="{_encode(v)}"' for k, v in attributes.items() if v)
+
+    oc = '<' + tag
+    if a:
+        oc += ' ' + a
+    cc = '</' + tag + '>'
+
+    if content:
+        if isinstance(content, str):
+            return oc + '>' + _encode(content) + cc
+        return oc + '>' + ''.join(_string(*c) for c in content) + cc
+
+    return oc + '/>'
+
+
+def _encode(v):
+    v = str(v).strip()
+    v = v.replace("&", "&amp;")
+    v = v.replace(">", "&gt;")
+    v = v.replace("<", "&lt;")
+    v = v.replace('"', "&quot;")
+    return v

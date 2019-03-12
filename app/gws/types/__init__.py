@@ -465,6 +465,7 @@ class LayerObject(ObjectInterface, MapView):
     has_legend: bool
     has_cache: bool
     is_public: bool
+    layers: List['LayerObject']
 
     map: 'MapObject'
     meta: MetaData
@@ -504,6 +505,9 @@ class LayerObject(ObjectInterface, MapView):
         raise NotImplementedError
 
     def search(self, provider: 'SearchProviderInterface', args: 'SearchArgs') -> List['FeatureInterface']:
+        raise NotImplementedError
+
+    def is_enabled_for_service(self, service: str) -> bool:
         raise NotImplementedError
 
 

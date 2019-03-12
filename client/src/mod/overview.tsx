@@ -16,10 +16,10 @@ interface ViewProps extends gws.types.ViewProps {
 
 }
 
-// @TODO: should be configurable in the project
-const COORDINATE_PRECISION = 0;
-
 const POINTER_DEBOUNCE = 800;
+const MIN_MAP_HEIGHT = 100;
+const MAX_MAP_HEIGHT = 300;
+const MIN_BOX_SIZE = 10;
 
 
 class SidebarBody extends gws.View<ViewProps> {
@@ -140,13 +140,17 @@ class SidebarBody extends gws.View<ViewProps> {
 }
 
 class SidebarOverviewController extends gws.Controller implements gws.types.ISidebarItem {
+    overviewMap: gws.types.IMapManager;
     oMap: ol.Map = null;
     oProjection: ol.proj.Projection;
     oOverlay: ol.Overlay;
 
     async init() {
         await super.init();
-        if (this.app.overviewMap) {
+
+        if (this.app.project.overviewMap) {
+            this.overviewMap = new gws.MapManager(this, false);
+            await this.overviewMap.init(this.app.project.overviewMap, {});
             this.initMap();
         }
 
@@ -174,13 +178,19 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
 
     setMapTarget(div) {
         if (this.oMap) {
+            let e = this.app.project.overviewMap.extent;
+            let f = ol.extent.getWidth(e) / ol.extent.getHeight(e);
+            let h = gws.tools.clamp(div.offsetWidth / f, MIN_MAP_HEIGHT, MAX_MAP_HEIGHT);
+
+            div.style.height = (h | 0) + 'px';
+
             this.oMap.setTarget(div);
             this.refresh();
         }
     }
 
     initMap() {
-        let m = this.app.overviewMap.oMap;
+        let m = this.overviewMap.oMap;
 
         m.addInteraction(new ol.interaction.Pointer({
             handleDownEvent: e => this.handleMouseEvent(e),
@@ -260,15 +270,12 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
 
             let el = this.oOverlay.getElement() as HTMLDivElement;
 
+            res = Math.max(MIN_BOX_SIZE / size[0], res)
+
             el.style.width = (size[0] * res) + 'px';
             el.style.height = (size[1] * res) + 'px';
-
-            return;
-
         }
     }
-
-
 }
 
 export const tags = {

@@ -2,31 +2,29 @@
 
 import gws
 import gws.config.loader
-import gws.web
+
 import gws.web.action
-
-import gws.types as t
-
-_no_site = t.Data({
-    'host': '*'
-})
+import gws.web.error
+import gws.web.auth
+import gws.web.wrappers
 
 
-def _site(environ, sites):
-    h = environ.get('HTTP_HOST', '').lower().split(':')[0].strip()
+def application(environ, start_response):
+    config_root = gws.config.root()
+    try:
+        res = _handle_request(config_root, environ)
+        return res(environ, start_response)
+    except gws.web.error.HTTPException as e:
+        return e(environ, start_response)
+    except:
+        gws.log.exception()
+        return gws.web.error.InternalServerError()(environ, start_response)
 
-    if not sites:
-        return _no_site
 
-    for s in sites:
-        if s.host.lower() == h:
-            return s
-    for s in sites:
-        if s.host == '*':
-            return s
+gws.config.loader.load()
 
-    gws.log.error('unknown host', h)
-    raise gws.web.error.NotFound()
+
+##
 
 
 def _with_cors_headers(cors, res):
@@ -42,9 +40,7 @@ def _with_cors_headers(cors, res):
 
 
 def _handle_request(config_root, environ):
-    environ['gws.site'] = _site(environ, config_root.application.web_sites)
-
-    req = gws.web.AuthRequest(environ)
+    req = gws.web.auth.AuthRequest(gws.web.wrappers.add_site(environ, config_root.application.web_sites))
     if req.params is None:
         raise gws.web.error.NotFound()
 
@@ -67,18 +63,3 @@ def _handle_request(config_root, environ):
         res = _with_cors_headers(cors, res)
 
     return res
-
-
-def application(environ, start_response):
-    config_root = gws.config.root()
-    try:
-        res = _handle_request(config_root, environ)
-        return res(environ, start_response)
-    except gws.web.error.HTTPException as e:
-        return e(environ, start_response)
-    except:
-        gws.log.exception()
-        return gws.web.error.InternalServerError()(environ, start_response)
-
-
-gws.config.loader.load()

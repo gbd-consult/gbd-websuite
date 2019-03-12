@@ -79,7 +79,7 @@ def translate_path(path, **options):
 
 class Source:
     def __init__(self, text, path):
-        self.lines = text.splitlines() or ['']
+        self.lines = text.splitlines(keepends=True) or ['']
         self.maxline = len(self.lines)
         self.lineno = 0
         self.path = path
@@ -1057,7 +1057,7 @@ def _source_location(code, lineno):
     path = '?'
     line = '?'
 
-    for n, ln in enumerate(code.splitlines(keepends=True), 1):
+    for n, ln in enumerate(code.splitlines(), 1):
         if n >= lineno:
             break
         m = re.search(r'_PATH =(.+)', ln)
