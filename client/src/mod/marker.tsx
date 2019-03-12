@@ -4,7 +4,7 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 
 const FADE_DURATION = 1500;
-const ZOOM_BUFFER = 100;
+const ZOOM_BUFFER = 150;
 
 interface IMarkerContent {
     features: Array<gws.types.IMapFeature>;
@@ -89,10 +89,10 @@ class MarkerController extends gws.Controller {
         if (mode.draw || mode.fade)
             this.draw(geoms);
 
-        let extent = this.extent(geoms);
+        let extent = (new  ol.geom.GeometryCollection(geoms)).getExtent();
 
         if (mode.zoom) {
-            this.map.setViewExtent(extent, !mode.noanimate);
+            this.map.setViewExtent(extent, !mode.noanimate, ZOOM_BUFFER);
         } else if (mode.pan) {
             this.map.setCenter(ol.extent.getCenter(extent), !mode.noanimate);
         }
@@ -131,17 +131,6 @@ class MarkerController extends gws.Controller {
         };
 
         return new gws.map.Feature(this.map, args);
-    }
-
-    extent(geoms) {
-        // @TODO this must be quite inefficient
-
-        let src = new ol.source.Vector({
-            features: geoms.map(g => new ol.Feature(g))
-        });
-        let ext = src.getExtent();
-        return ol.extent.buffer(ext, ZOOM_BUFFER);
-
     }
 
 }
