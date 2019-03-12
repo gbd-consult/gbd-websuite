@@ -10,6 +10,7 @@ class Config(t.Config):
     """Map configuration"""
 
     center: t.Optional[t.Point]  #: map center
+    coordinatePrecision: t.Optional[int] #: precision for coordinates
     crs: t.Optional[t.crsref] = 'EPSG:3857'  #: crs for this map
     extent: t.Extent  #: map extent
     layers: t.List[t.ext.layer.Config]  #: collection of layers for this map
@@ -67,9 +68,9 @@ class Object(gws.PublicObject, t.MapObject):
     @property
     def props(self):
         proj = gws.gis.proj.as_proj(self.crs)
-        prec = 7
-        if proj.units == 'm':
-            prec = 0
+        prec = self.var('coordinatePrecision')
+        if prec is None:
+            prec = 0 if proj.units == 'm' else 7
         return {
             'crs': proj.epsg,
             'crsDef': proj.proj4text,

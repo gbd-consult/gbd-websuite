@@ -185,6 +185,7 @@ module.exports = {
     modAlkis_noSelection: 'Die Ablage ist leer',
     modAlkis_errorGeneric: 'Es ist ein Fehler aufgetreten.',
     modAlkis_errorControl: 'Validierung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben.',
+    modAlkis_errorTooMany: 'Mehr als $1 Flurstücke gefunden. Suche bitte genauer spezifizieren.',
     modAlkis_vorname: "Vorname",
     modAlkis_nachname: "Nachname",
     modAlkis_gemarkung: "Gemarkung",
