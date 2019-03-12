@@ -250,7 +250,7 @@ function formatTemplate(feature: AnnotateFeature, text, dims) {
         if (n >= 1e3)
             return (n / 1e3).toFixed(2) + ' km';
         if (n > 1)
-            return n.toFixed(0) + ' m';
+            return n.toFixed(2) + ' m';
         return n.toFixed(2) + ' m';
     }
 
@@ -262,7 +262,7 @@ function formatTemplate(feature: AnnotateFeature, text, dims) {
         if (n >= 1e5)
             return (n / 1e6).toFixed(2) + ' km' + sq;
         if (n > 1)
-            return n.toFixed(0) + ' m' + sq;
+            return n.toFixed(2) + ' m' + sq;
         return n.toFixed(2) + ' m' + sq;
     }
 
