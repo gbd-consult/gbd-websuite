@@ -70,7 +70,7 @@ class Object(gws.PublicObject, t.MapObject):
         proj = gws.gis.proj.as_proj(self.crs)
         prec = self.var('coordinatePrecision')
         if prec is None:
-            prec = 3 if proj.units == 'm' else 7
+            prec = 0 if proj.units == 'm' else 7
         return {
             'crs': proj.epsg,
             'crsDef': proj.proj4text,
