@@ -864,6 +864,7 @@ class AlkisController extends gws.Controller {
             noSelection: this.__('modAlkis_noSelection'),
             errorGeneric: this.__('modAlkis_errorGeneric'),
             errorControl: this.__('modAlkis_errorControl'),
+            errorTooMany: this.__('modAlkis_errorTooMany'),
             vorname: this.__('modAlkis_vorname'),
             nachname: this.__('modAlkis_nachname'),
             gemarkung: this.__('modAlkis_gemarkung'),
@@ -1032,6 +1033,10 @@ class AlkisController extends gws.Controller {
 
             if (res.error.status === 400) {
                 msg = this.STRINGS.errorControl
+            }
+
+            if (res.error.status === 409) {
+                msg = this.STRINGS.errorTooMany.replace(/\$1/g, this.getValue('alkisFsSetup').limit);
             }
 
             this.update({
