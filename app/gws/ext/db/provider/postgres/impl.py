@@ -24,14 +24,16 @@ class Connection:
         self.itersize = params.get('itersize', 100)
 
     def __enter__(self):
-        pool_key = 'psycopg2.pool' + _dict_hash(self.params)
-        self.pool: psycopg2.pool.ThreadedConnectionPool = gws.get_global(pool_key, self._connection_pool)
-        self.conn = self.pool.getconn()
+        # pool_key = 'psycopg2.pool' + _dict_hash(self.params)
+        # self.pool: psycopg2.pool.ThreadedConnectionPool = gws.get_global(pool_key, self._connection_pool)
+        # self.conn = self.pool.getconn()
+        self.conn = psycopg2.connect(**self.params)
         self.conn.autocommit = True
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.pool.putconn(self.conn)
+        # self.pool.putconn(self.conn)
+        self.conn.close()
         return False
 
     def _connection_pool(self):
