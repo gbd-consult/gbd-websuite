@@ -14,7 +14,6 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen der Werkzeugleiste
     mouseover.rst
     searching.rst
     dprocon.rst
-    gkos.rst
     dimensions.rst
     measure.rst
     print.rst
