@@ -238,6 +238,16 @@ class AlkisClearAuxButton extends gws.View<AlkisViewProps> {
     }
 }
 
+class AlkisResetAuxButton extends gws.View<AlkisViewProps> {
+    render() {
+        return <sidebar.AuxButton
+            className="modAlkisResetAuxButton"
+            whenTouched={() => _master(this).reset()}
+            tooltip={_master(this).STRINGS.resetButton}
+        />
+    }
+}
+
 class AlkisNavigation extends gws.View<AlkisViewProps> {
     render() {
         return <React.Fragment>
@@ -274,7 +284,8 @@ class AlkisMessageTab extends gws.View<AlkisMessageViewProps> {
             <sidebar.EmptyTabBody>
                 {this.props.error && <gws.ui.Error text={this.props.error}/>}
                 {this.props.message && <gws.ui.Text content={this.props.message}/>}
-                {this.props.withFormLink && <a onClick={() => _master(this).goTo('form')}>{_master(this).STRINGS.backToForm}</a>}
+                {this.props.withFormLink &&
+                <a onClick={() => _master(this).goTo('form')}>{_master(this).STRINGS.backToForm}</a>}
             </sidebar.EmptyTabBody>
 
             <sidebar.TabFooter>
@@ -446,7 +457,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                 </Cell>
                 <Cell>
                     <gws.ui.IconButton
-                        {...gws.tools.cls('modAlkisSearchCancelButton')}
+                        {...gws.tools.cls('modAlkisSearchResetButton')}
                         tooltip={_master(this).STRINGS.resetButton}
                         whenTouched={() => master.reset()}
                     />
@@ -559,6 +570,7 @@ class AlkisListTab extends gws.View<AlkisViewProps> {
                     <AlkisSelectAuxButton {...this.props} features={features}/>
                     <AlkisExportAuxButton {...this.props} features={features}/>
                     <AlkisPrintAuxButton {...this.props} features={features}/>
+                    <AlkisResetAuxButton {...this.props} features={features}/>
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -734,11 +746,9 @@ class AlkisSidebar extends gws.Controller implements gws.types.ISidebarItem {
 }
 
 class AlkisLensTool extends lens.LensTool {
-    get style() {
-        return this.map.getStyleFromSelector('.modAlkisLensFeature');
-    }
+    title = this.__('modAlkisLensTitle');
 
-    async whenChanged(geom) {
+    async runSearch(geom) {
         await _master(this).search({shapes: [this.map.geom2shape(geom)]});
     }
 
@@ -841,50 +851,50 @@ class AlkisController extends gws.Controller {
 
         this.STRINGS = {
 
-            formTitle: this.__('modAlkis_formTitle'),
-            infoTitle: this.__('modAlkis_infoTitle'),
-            selectionTitle: this.__('modAlkis_selectionTitle'),
-            exportTitle: this.__('modAlkis_exportTitle'),
-            gotoForm: this.__('modAlkis_gotoForm'),
-            gotoList: this.__('modAlkis_gotoList'),
-            gotoSelection: this.__('modAlkis_gotoSelection'),
-            print: this.__('modAlkis_print'),
-            highlight: this.__('modAlkis_highlight'),
-            selectAll: this.__('modAlkis_selectAll'),
-            unselect: this.__('modAlkis_unselect'),
-            select: this.__('modAlkis_select'),
-            clearSelection: this.__('modAlkis_clearSelection'),
-            goBack: this.__('modAlkis_goBack'),
-            loadSelection: this.__('modAlkis_loadSelection'),
-            saveSelection: this.__('modAlkis_saveSelection'),
-            loading: this.__('modAlkis_loading'),
-            backToForm: this.__('modAlkis_backToForm'),
-            noData: this.__('modAlkis_noData'),
-            notFound: this.__('modAlkis_notFound'),
-            noSelection: this.__('modAlkis_noSelection'),
-            errorGeneric: this.__('modAlkis_errorGeneric'),
-            errorControl: this.__('modAlkis_errorControl'),
-            errorTooMany: this.__('modAlkis_errorTooMany'),
-            vorname: this.__('modAlkis_vorname'),
-            nachname: this.__('modAlkis_nachname'),
-            gemarkung: this.__('modAlkis_gemarkung'),
-            strasse: this.__('modAlkis_strasse'),
-            nr: this.__('modAlkis_nr'),
-            vnum: this.__('modAlkis_vnum'),
-            vnumFlur: this.__('modAlkis_vnumFlur'),
-            areaFrom: this.__('modAlkis_areaFrom'),
-            areaTo: this.__('modAlkis_areaTo'),
-            bblatt: this.__('modAlkis_bblatt'),
-            wantEigentuemer: this.__('modAlkis_wantEigentuemer'),
-            controlInput: this.__('modAlkis_controlInput'),
-            submitButton: this.__('modAlkis_submitButton'),
-            lensButton: this.__('modAlkis_lensButton'),
-            pickButton: this.__('modAlkis_pickButton'),
-            selectionSearchButton: this.__('modAlkis_selectionSearchButton'),
-            resetButton: this.__('modAlkis_resetButton'),
-            exportButton: this.__('modAlkis_exportButton'),
-            searchResults2: this.__('modAlkis_searchResults2'),
-            searchResults: this.__('modAlkis_searchResults'),
+            formTitle: this.__('modAlkisFormTitle'),
+            infoTitle: this.__('modAlkisInfoTitle'),
+            selectionTitle: this.__('modAlkisSelectionTitle'),
+            exportTitle: this.__('modAlkisExportTitle'),
+            gotoForm: this.__('modAlkisGotoForm'),
+            gotoList: this.__('modAlkisGotoList'),
+            gotoSelection: this.__('modAlkisGotoSelection'),
+            print: this.__('modAlkisPrint'),
+            highlight: this.__('modAlkisHighlight'),
+            selectAll: this.__('modAlkisSelectAll'),
+            unselect: this.__('modAlkisUnselect'),
+            select: this.__('modAlkisSelect'),
+            clearSelection: this.__('modAlkisClearSelection'),
+            goBack: this.__('modAlkisGoBack'),
+            loadSelection: this.__('modAlkisLoadSelection'),
+            saveSelection: this.__('modAlkisSaveSelection'),
+            loading: this.__('modAlkisLoading'),
+            backToForm: this.__('modAlkisBackToForm'),
+            noData: this.__('modAlkisNoData'),
+            notFound: this.__('modAlkisNotFound'),
+            noSelection: this.__('modAlkisNoSelection'),
+            errorGeneric: this.__('modAlkisErrorGeneric'),
+            errorControl: this.__('modAlkisErrorControl'),
+            errorTooMany: this.__('modAlkisErrorTooMany'),
+            vorname: this.__('modAlkisVorname'),
+            nachname: this.__('modAlkisNachname'),
+            gemarkung: this.__('modAlkisGemarkung'),
+            strasse: this.__('modAlkisStrasse'),
+            nr: this.__('modAlkisNr'),
+            vnum: this.__('modAlkisVnum'),
+            vnumFlur: this.__('modAlkisVnumFlur'),
+            areaFrom: this.__('modAlkisAreaFrom'),
+            areaTo: this.__('modAlkisAreaTo'),
+            bblatt: this.__('modAlkisBblatt'),
+            wantEigentuemer: this.__('modAlkisWantEigentuemer'),
+            controlInput: this.__('modAlkisControlInput'),
+            submitButton: this.__('modAlkisSubmitButton'),
+            lensButton: this.__('modAlkisLensButton'),
+            pickButton: this.__('modAlkisPickButton'),
+            selectionSearchButton: this.__('modAlkisSelectionSearchButton'),
+            resetButton: this.__('modAlkisResetButton'),
+            exportButton: this.__('modAlkisExportButton'),
+            searchResults2: this.__('modAlkisSearchResults2'),
+            searchResults: this.__('modAlkisSearchResults'),
         };
 
         let res = await this.app.server.alkisFsSetup({
@@ -1053,8 +1063,9 @@ class AlkisController extends gws.Controller {
             alkisFsResultCount: res.total,
             marker: {
                 features,
-                mode: 'pan draw',
-            }
+                mode: 'zoom draw',
+            },
+            infoboxContent: null
         });
 
         this.goTo('list');
@@ -1281,6 +1292,7 @@ class AlkisController extends gws.Controller {
         });
         this.clearResults();
         this.stopTools();
+        this.goTo('form')
     }
 
     async startExport(fs: Array<gws.types.IMapFeature>) {

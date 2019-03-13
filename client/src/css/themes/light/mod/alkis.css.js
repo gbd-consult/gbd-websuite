@@ -18,8 +18,8 @@ module.exports = v => ({
     '.modAlkisSearchSelectionButton': {
         ...v.ROUND_FORM_BUTTON('search_selection')
     },
-    '.modAlkisSearchCancelButton': {
-        ...v.ROUND_FORM_BUTTON(v.CLOSE_ICON)
+    '.modAlkisSearchResetButton': {
+        ...v.ROUND_FORM_BUTTON('google:content/delete_sweep')
     },
 
 
@@ -50,6 +50,7 @@ module.exports = v => ({
     '.modAlkisClearAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')},
     '.modAlkisLoadAuxButton': {...v.SIDEBAR_AUX_BUTTON('open')},
     '.modAlkisSaveAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/save')},
+    '.modAlkisResetAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/delete_sweep')},
 
     '.modAlkisSelectListButton.uiIconButton': {
         ...v.LIST_BUTTON('google:content/add_circle_outline')

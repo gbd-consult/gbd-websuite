@@ -22,6 +22,11 @@ interface ToolboxViewProps extends gws.types.ViewProps {
 export class Content extends gws.View<ToolboxViewProps> {
     render() {
         return <div className="modToolboxContent">
+            <Row className="modToolboxContentHeader">
+                <Cell>
+                    <div className="modToolboxContentTitle">{this.props.title}</div>
+                </Cell>
+            </Row>
             <Row className="modToolboxContentFooter">
                 <Cell flex/>
                 {this.props.buttons && this.props.buttons.map((b, n) => <Cell key={n}>{b}</Cell>)}

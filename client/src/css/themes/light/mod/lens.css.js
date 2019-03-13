@@ -1,7 +1,7 @@
 module.exports = v => ({
 
     '.modLensFeature': {
-        stroke: v.COLOR.blueGrey100,
+        stroke: v.COLOR.blueGrey800,
         strokeWidth: 3,
         strokeDasharray: "5,5",
         mark: 'circle',
@@ -23,8 +23,8 @@ module.exports = v => ({
     },
 
     '.modLensOverlay': {
-        backgroundColor: v.COLOR.opacity(v.COLOR.blueGrey800, 0.6),
-        borderRadius: v.UNIT8,
+        backgroundColor: v.COLOR.opacity(v.COLOR.blueGrey900, 0.7),
+        borderRadius: v.CONTROL_SIZE,
 
         'div': {
             ...v.ICON_SIZE('small'),

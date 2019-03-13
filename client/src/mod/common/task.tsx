@@ -39,7 +39,9 @@ class TaskLens extends gws.Controller implements ITaskItem {
     }
 
     whenTouched(ctx) {
-        this.app.call('lensStartFromFeature', {feature: ctx.feature});
+        // let tool = this.app.controllerByTag('Tool.Lens');
+        // if(tool)
+        //     this.app.call('lensStartFromFeature', {feature: ctx.feature});
     }
 }
 

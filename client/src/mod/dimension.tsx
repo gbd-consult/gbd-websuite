@@ -604,6 +604,7 @@ abstract class DimensionTool extends gws.Tool {
         ];
 
         return <toolbox.Content
+            title={this.__('modDimension')}
             controller={this}
             buttons={buttons}
         />
