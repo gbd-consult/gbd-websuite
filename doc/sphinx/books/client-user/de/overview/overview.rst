@@ -7,7 +7,7 @@ GBD WebSuite als Web Server:
 
   *  kann statische Inhalte und Vorlagen bereitstellen
   *  unterstützt multi-site Konfigurationen, url routing und rewriting
-  *  unterstützt verschiendene Anmelde- und Authorationsmechanismen (file system, database, LDAP) und fine-grained permissions
+  *  unterstützt verschiedene Anmelde- und Autorisierungsmechanismen (File System, Datenbank, LDAP) und fein abgestimmte Rechtevergaben
 
 
 GBD WebSuite als Geo Server:
@@ -15,7 +15,7 @@ GBD WebSuite als Geo Server:
   *  kombiniert unterschiedliche Quellen (WMS, Tile Server und Datenbanken) in einer Karte
   *  direkte Einbindung von QGIS Projekten
   *  Rasterdaten können gecached, reprojektiert und skaliert werden
-  *  Vektordaten können verarbeitet und gerendert werden (PostGIS, shapefile, json)
+  *  Vektordaten können verarbeitet und gerendert werden (PostGIS, Shapefile, Json)
   *  ermöglicht die Integration von OGC Diensten (WMS, WMTS, WFS)
 
 
@@ -30,9 +30,3 @@ GBD WebSuite ist programmiert mit Hilfe von Open Source Software, wie:
   *  MapProxy
   *  uWSGI
   *  NGINX
-
-.. toctree::
-    :maxdepth: 2
-
-    function.rst
-    gbd.rst

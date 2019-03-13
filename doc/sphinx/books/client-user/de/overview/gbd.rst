@@ -24,4 +24,4 @@ Unsere Kernkompetenz liegt im Umgang mit der Software QGIS Desktop, QGIS Server,
 
 
 Weitere Information über das Unternehmen finden Sie auf der
-`GBD Homepage <https://www.gbd-consult.de/home>`_.
+`Geoinformatikbüro Dassau GmbH Homepage <https://www.gbd-consult.de/home>`_.
