@@ -75,7 +75,17 @@ def _add_vnum_param(key, val, where, parms):
 
 
 def _parse_vnum(s, where, parms):
-    m = re.match(_vnum_re, re.sub(r'\s+', '', s))
+    s = re.sub(r'\s+', '', s)
+
+    # search by gml_id
+
+    if s.startswith('DE'):
+        _add_vnum_param('gml_id', s, where, parms)
+        return True
+
+    # search by flur-zahler/nenner
+
+    m = re.match(_vnum_re, s)
     if not m:
         return False
 
