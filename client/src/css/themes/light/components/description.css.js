@@ -77,7 +77,6 @@ module.exports = v => ({
             textAlign: 'left',
             lineHeight: '120%',
             overflowWrap: 'break-word',
-            wordBreak: 'break-all',
         },
 
         'th': {
