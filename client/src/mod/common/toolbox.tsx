@@ -33,7 +33,7 @@ export class Content extends gws.View<ToolboxViewProps> {
                 <Cell>
                     <gws.ui.IconButton
                         className="modToolboxCancelButton"
-                        tooltip={this.props.controller.__('modDrawCancelButton')}
+                        tooltip={this.props.controller.__('cmpToolCancelButton')}
                         whenTouched={() => this.props.controller.app.stopTool('')}
                     />
                 </Cell>

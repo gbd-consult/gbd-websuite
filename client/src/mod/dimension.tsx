@@ -279,6 +279,7 @@ class DimensionModel {
 
     setInteractive(interactive) {
         this.isInteractive = interactive;
+        this.setDraft(null);
         this.changed();
     }
 
@@ -690,7 +691,7 @@ class DimensionLineTool extends DimensionTool {
 
     finishDrawing() {
         this.model.setDraft(null);
-        _master(this).startModify();
+        _master(this).startDraw('Line');
     }
 
 }
@@ -1078,7 +1079,7 @@ class DimensionSidebar extends gws.Controller implements gws.types.ISidebarItem 
 
 class DimensionToolbarButton extends toolbar.Button {
     iconClass = 'modDimensionToolbarButton';
-    tool = 'Tool.Dimension.Modify';
+    tool = 'Tool.Dimension.Line';
 
     get tooltip() {
         return this.__('modDimensionToolbarButton');
