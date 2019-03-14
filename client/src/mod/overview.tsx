@@ -149,7 +149,7 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
         await super.init();
 
         if (this.app.project.overviewMap) {
-            this.overviewMap = new gws.MapManager(this, false);
+            this.overviewMap = new gws.MapManager(this.app, false);
             await this.overviewMap.init(this.app.project.overviewMap, {});
             this.initMap();
         }
@@ -185,6 +185,10 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
             div.style.height = (h | 0) + 'px';
 
             this.oMap.setTarget(div);
+
+            // overview map always fits the extent
+            this.oMap.getView().fit(e, {constrainResolution: false})
+
             this.refresh();
         }
     }

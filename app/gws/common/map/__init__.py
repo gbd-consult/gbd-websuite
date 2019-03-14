@@ -16,7 +16,7 @@ class Config(t.Config):
     layers: t.List[t.ext.layer.Config]  #: collection of layers for this map
     title: str = ''  #: map title
     uid: t.Optional[str]  #: unique id
-    zoom: gws.gis.zoom.Config  #: map scales and resolutions
+    zoom: t.Optional[gws.gis.zoom.Config]  #: map scales and resolutions
 
 
 class Props(t.Data):
@@ -59,9 +59,13 @@ class Object(gws.PublicObject, t.MapObject):
                 round(self.extent[1] + (self.extent[3] - self.extent[1]) / 2),
             ]
 
+        self.resolutions = [1000, 1]
+        self.init_resolution = 1000
+
         zoom = self.var('zoom')
-        self.resolutions = gws.gis.zoom.resolutions_from_config(zoom)
-        self.init_resolution = gws.gis.zoom.init_resolution(zoom, self.resolutions)
+        if zoom:
+            self.resolutions = gws.gis.zoom.resolutions_from_config(zoom)
+            self.init_resolution = gws.gis.zoom.init_resolution(zoom, self.resolutions)
 
         self.layers = gws.gis.layer.add_layers_to_object(self, self.var('layers'))
 
