@@ -57,6 +57,16 @@ class BuchungConfig:
     access: t.Access  #: access rights
 
 
+class UiConfig:
+    """UI configuration."""
+
+    export: bool = False  #: export function enabled
+    select: bool = False  #: select mode enabled
+    pick: bool = False  #: pick mode enabled
+    searchSelection: bool = False  #: search in selection enabled
+    searchSpatial: bool = False  #: spatial search enabled
+
+
 class Config(t.WithTypeAndAccess):
     """Flurstückssuche (cadaster parlcels search) action"""
 
@@ -74,8 +84,7 @@ class Config(t.WithTypeAndAccess):
     featureFormat: t.Optional[t.FormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
 
-    export: bool = False  #: export function enabled
-    select: bool = False  #: select mode enabled
+    ui: t.Optional[UiConfig] #: ui options
 
 
 class Gemarkung(t.Data):
@@ -92,13 +101,17 @@ class FsSetupParams(t.Data):
 class FsSetupResponse(t.Response):
     withEigentuemer: bool
     withBuchung: bool
-    withExport: bool
-    withSelect: bool
     withControl: bool
     withFlurnummer: bool
     gemarkungen: t.List[Gemarkung]
     printTemplate: t.TemplateProps
     limit: int
+
+    uiExport: bool
+    uiSelect: bool
+    uiPick: bool
+    uiSearchSelection: bool
+    uiSearchSpatial: bool
 
 
 class FsStrassenParams(t.Data):
@@ -326,12 +339,15 @@ class Object(gws.Object):
                 'withEigentuemer': self._can_read_eigentuemer(req),
                 'withControl': self._can_read_eigentuemer(req) and self.control_mode,
                 'withBuchung': self._can_read_buchung(req),
-                'withExport': self.var('export'),
-                'withSelect': self.var('select'),
                 'withFlurnummer': flurstueck.has_flurnummer(conn),
                 'gemarkungen': flurstueck.gemarkung_list(conn),
                 'printTemplate': self.print_template.props,
                 'limit': self.limit,
+                'uiExport': self.var('ui.export'),
+                'uiSelect': self.var('ui.select'),
+                'uiPick': self.var('ui.pick'),
+                'uiSearchSelection': self.var('ui.searchSelection'),
+                'uiSearchSpatial': self.var('ui.searchSpatial'),
             })
 
     def api_fs_strassen(self, req, p: FsStrassenParams) -> FsStrassenResponse:
