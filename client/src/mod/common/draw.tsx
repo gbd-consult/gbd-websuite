@@ -9,6 +9,8 @@ let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Draw';
 
+let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as DrawController;
+
 interface DrawProps extends gws.types.ViewProps {
     controller: DrawController;
     drawCurrentShape: string;
@@ -17,7 +19,7 @@ interface DrawProps extends gws.types.ViewProps {
     drawMode: boolean;
 }
 
-const DrawPropsKeys = [
+const DrawStoreKeys = [
     'drawCurrentShape',
     'drawEnabledShapes',
     'drawStyle',
@@ -35,12 +37,10 @@ const SHAPE_TYPES = [
     'Circle',
 ];
 
-export class Tool extends gws.Tool {
-    style: gws.types.IMapStyle;
-
-    get _toolboxView() {
-        let master = this.app.controller(MASTER) as DrawController;
-        let shapeType = this.getValue('drawCurrentShape') || DEFAULT_SHAPE_TYPE
+class DrawToolboxView extends gws.View<DrawProps> {
+    render() {
+        let master = _master(this.props.controller) as DrawController;
+        let shapeType = master.getValue('drawCurrentShape') || DEFAULT_SHAPE_TYPE
 
         let button = (type, cls, tooltip) => {
             return <Cell>
@@ -60,20 +60,39 @@ export class Tool extends gws.Tool {
             master.shapeTypeEnabled('Circle') && button('Circle', 'modDrawCircleButton', master.__('modDrawCircleButton')),
         ];
 
-        buttons.push(<gws.ui.IconButton
-                className="modToolboxCancelButton"
-                tooltip={this.__('modDrawCancelButton')}
-                whenTouched={() => master.cancel()}
-            />
-        );
+        // if (this.props.drawMode) {
+        //     buttons.push(
+        //         <gws.ui.IconButton
+        //             className="modDrawOkButton"
+        //             tooltip={this.props.controller.__('modDrawOkButton')}
+        //             whenTouched={() => master.commit()}
+        //         />
+        //     )
+        //     buttons.push(
+        //         <gws.ui.IconButton
+        //             className="modDrawCancelButton"
+        //             tooltip={this.props.controller.__('modDrawCancelButton')}
+        //             whenTouched={() => master.cancel()}
+        //         />
+        //     )
+        // }
 
         return <toolbox.Content
-            controller={this}
-            iconClass="modIdentifyClickToolboxIcon"
-            title={this.__('modIdentifyClickToolboxTitle')}
-            hint={this.__('modIdentifyClickToolboxHint')}
+            controller={master}
+            title={this.__('modDrawToolboxTitle')}
             buttons={buttons}
         />
+
+    }
+}
+
+export class Tool extends gws.Tool {
+    style: gws.types.IMapStyle;
+
+    get toolboxView() {
+        return this.createElement(
+            this.connect(DrawToolboxView, DrawStoreKeys)
+        );
     }
 
     start() {
@@ -155,10 +174,10 @@ class DrawController extends gws.Controller {
     state: string;
     currTool: Tool;
 
-    get appOverlayView() {
-        return this.createElement(
-            this.connect(DrawBox, DrawPropsKeys));
-    }
+    // get appOverlayView() {
+    //     return this.createElement(
+    //         this.connect(DrawBox, DrawStoreKeys));
+    // }
 
     get shapeType() {
         let st = this.getValue('drawCurrentShape') || DEFAULT_SHAPE_TYPE;

@@ -35,6 +35,9 @@ module.exports = v => {
         '.modDrawPolygonButton': button('g_poly'),
         '.modDrawCircleButton': button('g_circle'),
 
+        '.modDrawOkButton': button('google:navigation/check'),
+        '.modDrawCancelButton': button('google:content/undo'),
+
         '.modDrawModifyHandle': {
             mark: 'circle',
             markFill: v.COLOR.pink700,

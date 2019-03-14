@@ -30,6 +30,7 @@ module.exports = {
     modAnnotateX: 'X',
     modAnnotateY: 'Y',
     modDproconToolbarButton: 'Demografie',
+    modDrawToolboxTitle: 'Zeichnen',
     modDrawBoxButton: 'Rechteck',
     modDrawCancelButton: 'Zeichnen abbrechen',
     modDrawCircleButton: 'Kreis',
