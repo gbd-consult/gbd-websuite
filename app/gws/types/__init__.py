@@ -67,6 +67,10 @@ class ext:
             class Config(Config):
                 pass
 
+    class storage:
+        class Config(Config):
+            pass
+
 
 class filepath:
     """Valid readable file path on the server"""
@@ -704,4 +708,20 @@ class DbProviderObject(ObjectInterface):
         raise NotImplementedError
 
     def delete(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
+        raise NotImplementedError
+
+
+class StorageEntry(Data):
+    category: str
+    name: str
+
+
+class StorageInterface(ObjectInterface):
+    def read(self, entry: StorageEntry, user: AuthUserInterface) -> dict:
+        raise NotImplementedError
+
+    def write(self, entry: StorageEntry, user: AuthUserInterface, data: dict) -> str:
+        raise NotImplementedError
+
+    def dir(self, user: AuthUserInterface) -> List[StorageEntry]:
         raise NotImplementedError

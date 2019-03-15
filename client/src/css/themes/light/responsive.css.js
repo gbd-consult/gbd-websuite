@@ -88,9 +88,6 @@ module.exports = v => ({
             '&.modGekosDialog': {
                 ...v.CENTER_BOX(300, 280),
             },
-            '&.modSelectDialog': {
-                ...v.CENTER_BOX(300, 200),
-            },
             '&.modAlkisSelectDialog': {
                 ...v.CENTER_BOX(300, 200),
             }

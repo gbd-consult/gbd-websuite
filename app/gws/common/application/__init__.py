@@ -54,6 +54,7 @@ class Config(t.Config):
     projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations
     seeding: SeedingConfig = {}  #: configuration for seeding jobs
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
+    storage: t.Optional[t.ext.storage.Config]  #: storage configuration
     timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
     web: t.Optional[gws.web.types.Config] = {}  #: webserver configuration
 
@@ -65,6 +66,7 @@ class Object(gws.Object):
         self.api: gws.common.api.Object = None
         self.client: gws.common.client.Object = None
         self.qgis_version = ''
+        self.storage: t.StorageInterface = None
         self.version = gws.VERSION
         self.web_sites: t.List[gws.web.types.SiteConfig] = []
         self.web_ssl: gws.web.types.SSLConfig = None
@@ -112,6 +114,9 @@ class Object(gws.Object):
             self.web_ssl = p.ssl
 
         self.add_child(gws.common.csv.Object, self.var('csv'))
+
+        p = self.var('storage') or {'type': 'sqlite'}
+        self.storage = self.add_child('gws.ext.storage', p)
 
     def find_action(self, action_type, project_uid=None):
 

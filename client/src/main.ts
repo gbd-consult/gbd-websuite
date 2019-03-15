@@ -9,6 +9,7 @@ let mods = [
     require('./mod/common/misc'),
     require('./mod/common/toolbar'),
     require('./mod/common/sidebar'),
+    require('./mod/common/storage'),
     require('./mod/common/task'),
     require('./mod/common/toolbox'),
     require('./mod/alkis'),

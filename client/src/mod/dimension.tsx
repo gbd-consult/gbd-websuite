@@ -6,13 +6,27 @@ import * as gws from 'gws';
 import * as sidebar from './common/sidebar';
 import * as toolbar from './common/toolbar';
 import * as toolbox from './common/toolbox';
-import * as draw from './common/draw';
+import * as storage from './common/storage';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Dimension';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as DimensionController;
+
+interface DimensionViewProps extends gws.types.ViewProps {
+    controller: DimensionController;
+    dimensionSelectedElement: DimensionElement;
+    dimensionSelectedText: string;
+}
+
+const DimensionStoreKeys = [
+    'dimensionSelectedElement',
+    'dimensionSelectedText',
+    'mapUpdateCount',
+];
+
+const STORAGE_CATEGORY = 'dimension.model';
 
 function dist(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
@@ -781,8 +795,6 @@ class DimensionController extends gws.Controller {
 
         this.map.oMap.addOverlay(this.oOverlay);
 
-        await this.loadFileNames();
-
         this.app.whenChanged('mapRawUpdateCount', () => {
             this.updateOverlay();
             this.checkUpdateSnapInteraction();
@@ -793,17 +805,6 @@ class DimensionController extends gws.Controller {
                 this.targetUpdateCount++;
             })
         })
-    }
-
-    async loadFileNames() {
-        let res = await this.app.server.dimensionFileList({
-            projectUid: this.app.project.uid,
-        });
-
-        this.update({
-            dimensionFileNames: res.fileNames,
-        });
-
     }
 
     snapFeatures: ol.Collection<ol.Feature>;
@@ -862,35 +863,6 @@ class DimensionController extends gws.Controller {
 
     }
 
-    async save() {
-        let res = await this.app.server.dimensionFileWrite({
-            projectUid: this.app.project.uid,
-            fileName: this.getValue('dimensionFileName'),
-            model: this.model.serialize()
-        });
-
-        await this.loadFileNames();
-
-        this.update({
-            dimensionDialogMode: null,
-        });
-    }
-
-    async load() {
-        let res = await this.app.server.dimensionFileRead({
-            projectUid: this.app.project.uid,
-            fileName: this.getValue('dimensionFileName'),
-        });
-
-        if (res.model) {
-            this.model.deserialize(res.model)
-        }
-
-        this.update({
-            dimensionDialogMode: null,
-        });
-    }
-
     clear() {
         this.model.elements = [];
         this.model.points = [];
@@ -898,30 +870,7 @@ class DimensionController extends gws.Controller {
         this.model.changed();
     }
 
-    get appOverlayView() {
-        return this.createElement(
-            this.connect(DimensionDialog, DimensionStoreKeys));
-    }
-
 }
-
-interface DimensionViewProps extends gws.types.ViewProps {
-    controller: DimensionController;
-    dimensionSelectedElement: DimensionElement;
-    dimensionSelectedText: string;
-    dimensionDialogMode: string;
-    dimensionFileName: string;
-    dimensionFileNames: Array<string>;
-}
-
-const DimensionStoreKeys = [
-    'dimensionSelectedElement',
-    'dimensionSelectedText',
-    'dimensionDialogMode',
-    'dimensionFileName',
-    'dimensionFileNames',
-    'mapUpdateCount',
-];
 
 class DimensionElementList extends gws.components.list.List<DimensionElement> {
 
@@ -961,6 +910,8 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
                 e.text = master.getValue('dimensionSelectedText');
             model.changed();
         };
+
+        let hasElements = !gws.tools.empty(model.elements);
 
         let body;
 
@@ -1004,7 +955,7 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
                     </Row>
                 </Form>
             </div>
-        } else if (!gws.tools.empty(model.elements)) {
+        } else if (hasElements) {
             body = <DimensionElementList
                 controller={this.props.controller}
                 items={model.elements}
@@ -1041,21 +992,21 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell flex/>
-                    <sidebar.AuxButton
-                        className="modSelectSaveAuxButton"
-                        tooltip={this.__('modDimensionSaveAuxButton')}
-                        whenTouched={() => master.update({dimensionDialogMode: 'save'})}
+                    <storage.ReadAuxButton
+                        controller={this.props.controller}
+                        category={STORAGE_CATEGORY}
+                        whenDone={data => master.model.deserialize(data)}
                     />
-                    <sidebar.AuxButton
-                        className="modSelectLoadAuxButton"
-                        tooltip={this.__('modDimensionLoadAuxButton')}
-                        whenTouched={() => master.update({dimensionDialogMode: 'load'})}
-                    />
-                    <sidebar.AuxButton
+                    {hasElements && <storage.WriteAuxButton
+                        controller={this.props.controller}
+                        category={STORAGE_CATEGORY}
+                        data={master.model.serialize()}
+                    />}
+                    {hasElements && <sidebar.AuxButton
                         className="modSelectClearAuxButton"
                         tooltip={this.__('modDimensionClearAuxButton')}
                         whenTouched={() => master.clear()}
-                    />
+                    />}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -1085,62 +1036,6 @@ class DimensionToolbarButton extends toolbar.Button {
         return this.__('modDimensionToolbarButton');
     }
 
-}
-
-class DimensionDialog extends gws.View<DimensionViewProps> {
-
-    render() {
-        let mode = this.props.dimensionDialogMode;
-
-        if (!mode)
-            return null;
-
-        let close = () => this.props.controller.update({dimensionDialogMode: null});
-        let update = v => this.props.controller.update({dimensionFileName: v});
-
-        let title, submit, control;
-
-        if (mode === 'save') {
-            title = this.__('modDimensionSaveDialogTitle');
-            submit = () => this.props.controller.save();
-            control = <gws.ui.TextInput
-                value={this.props.dimensionFileName}
-                whenChanged={update}
-                whenEntered={submit}
-            />;
-        }
-
-        if (mode === 'load') {
-            title = this.__('modDimensionLoadDialogTitle');
-            submit = () => this.props.controller.load();
-            control = <gws.ui.Select
-                value={this.props.dimensionFileName}
-                items={this.props.dimensionFileNames.map(s => ({
-                    text: s,
-                    value: s
-
-                }))}
-                whenChanged={update}
-            />;
-        }
-
-        return <gws.ui.Dialog className="modSelectDialog" title={title} whenClosed={close}>
-            <Form>
-                <Row>
-                    <Cell flex>{control}</Cell>
-                </Row>
-                <Row>
-                    <Cell flex/>
-                    <Cell>
-                        <gws.ui.IconButton className="cmpButtonFormOk" whenTouched={submit}/>
-                    </Cell>
-                    <Cell>
-                        <gws.ui.IconButton className="cmpButtonFormCancel" whenTouched={close}/>
-                    </Cell>
-                </Row>
-            </Form>
-        </gws.ui.Dialog>;
-    }
 }
 
 export const tags = {

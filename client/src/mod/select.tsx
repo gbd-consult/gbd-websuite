@@ -5,83 +5,25 @@ import * as gws from 'gws';
 import * as toolbar from './common/toolbar';
 
 import * as sidebar from './common/sidebar';
+import * as storage from './common/storage';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Select';
+
+const STORAGE_CATEGORY = 'select.features';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as SelectController;
 
 interface SelectViewProps extends gws.types.ViewProps {
     controller: SelectController;
     selectFeatures: Array<gws.types.IMapFeature>;
-    selectDialogMode: string;
-    selectSaveName: string;
-    selectSaveNames: Array<string>;
 }
 
 const SelectStoreKeys = [
     'selectFeatures',
-    'selectDialogMode',
-    'selectSaveName',
-    'selectSaveNames',
 ];
 
-class SelectDialog extends gws.View<SelectViewProps> {
-
-    render() {
-        let mode = this.props.selectDialogMode;
-
-        if (!mode)
-            return null;
-
-        let close = () => this.props.controller.update({selectDialogMode: null});
-        let update = v => this.props.controller.update({selectSaveName: v});
-
-        let title, submit, control;
-
-        if (mode === 'save') {
-            title = this.__('modSelectSaveDialogTitle');
-            submit = () => this.props.controller.saveSelection();
-            control = <gws.ui.TextInput
-                value={this.props.selectSaveName}
-                whenChanged={update}
-                whenEntered={submit}
-            />;
-        }
-
-        if (mode === 'load') {
-            title = this.__('modSelectLoadDialogTitle');
-            submit = () => this.props.controller.loadSelection();
-            control = <gws.ui.Select
-                value={this.props.selectSaveName}
-                items={this.props.selectSaveNames.map(s => ({
-                    text: s,
-                    value: s
-
-                }))}
-                whenChanged={update}
-            />;
-        }
-
-        return <gws.ui.Dialog className="modSelectDialog" title={title} whenClosed={close}>
-            <Form>
-                <Row>
-                    <Cell flex>{control}</Cell>
-                </Row>
-                <Row>
-                    <Cell flex/>
-                    <Cell>
-                        <gws.ui.IconButton className="cmpButtonFormOk" whenTouched={submit}/>
-                    </Cell>
-                    <Cell>
-                        <gws.ui.IconButton className="cmpButtonFormCancel" whenTouched={close}/>
-                    </Cell>
-                </Row>
-            </Form>
-        </gws.ui.Dialog>;
-    }
-}
 
 class SelectTool extends gws.Tool {
 
@@ -110,7 +52,6 @@ class SelectSidebarView extends gws.View<SelectViewProps> {
         let master = _master(this.props.controller);
 
         let hasSelection = !gws.tools.empty(this.props.selectFeatures);
-        let hasSaveNames = !gws.tools.empty(this.props.selectSaveNames);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -145,24 +86,22 @@ class SelectSidebarView extends gws.View<SelectViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell flex/>
-                    <sidebar.AuxButton
-                        className="modSelectSaveAuxButton"
-                        tooltip={this.__('modSelectSaveAuxButton')}
-                        disabled={!hasSelection}
-                        whenTouched={() => master.update({selectDialogMode: 'save'})}
+                    <storage.ReadAuxButton
+                        controller={this.props.controller}
+                        category={STORAGE_CATEGORY}
+                        whenDone={data => master.loadFeatures(data.features)}
                     />
-                    <sidebar.AuxButton
-                        className="modSelectLoadAuxButton"
-                        tooltip={this.__('modSelectLoadAuxButton')}
-                        disabled={!hasSaveNames}
-                        whenTouched={() => master.update({selectDialogMode: 'load'})}
-                    />
-                    <sidebar.AuxButton
+                    {hasSelection && <storage.WriteAuxButton
+                        controller={this.props.controller}
+                        category={STORAGE_CATEGORY}
+                        data={{features: this.props.selectFeatures.map(f => f.props)}}
+                    />}
+                    {hasSelection && <sidebar.AuxButton
                         className="modSelectClearAuxButton"
                         tooltip={this.__('modSelectClearAuxButton')}
                         disabled={!hasSelection}
-                        whenTouched={() => master.clearSelection()}
-                    />
+                        whenTouched={() => master.clear()}
+                    />}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -199,15 +138,12 @@ class SelectController extends gws.Controller {
     layer: gws.types.IMapFeatureLayer;
 
     async init() {
-        await this.getSaveNames();
+        this.update({
+            selectFeatures: []
+        });
         this.app.whenCalled('selectFeature', args => {
             this.addFeature(args.feature);
         });
-    }
-
-    get appOverlayView() {
-        return this.createElement(
-            this.connect(SelectDialog, SelectStoreKeys));
     }
 
     async select(center: ol.Coordinate, extend: boolean) {
@@ -263,48 +199,9 @@ class SelectController extends gws.Controller {
         });
     }
 
-    async saveSelection() {
-        let res = await this.app.server.selectSaveFeatures({
-            projectUid: this.app.project.uid,
-            name: this.getValue('selectSaveName'),
-            features: this.getValue('selectFeatures').map(f => f.props)
-        });
-
-        if (res) {
-            this.update({
-                selectSaveNames: res.names
-            });
-        }
-
-        this.update({
-            selectDialogMode: null,
-        });
-    }
-
-    async loadSelection() {
-        let res = await this.app.server.selectLoadFeatures({
-            projectUid: this.app.project.uid,
-            name: this.getValue('selectSaveName'),
-        });
-
-        if (res.features) {
-            this.clearSelection();
-            this.map.readFeatures(res.features).forEach(f => this.addFeature(f));
-        }
-
-        this.update({
-            selectDialogMode: null,
-        });
-    }
-
-    async getSaveNames() {
-        let res = await this.app.server.selectGetSaveNames({
-            projectUid: this.app.project.uid,
-        });
-        this.update({
-            selectSaveNames: res.names || []
-        })
-
+    loadFeatures(fs) {
+        this.clear();
+        this.map.readFeatures(fs).forEach(f => this.addFeature(f));
     }
 
     removeFeature(f) {
@@ -314,13 +211,13 @@ class SelectController extends gws.Controller {
         });
     }
 
-    clearSelection() {
+    clear() {
         if (this.layer)
             this.map.removeLayer(this.layer);
         this.layer = null;
 
         this.update({
-            selectFeatures: null
+            selectFeatures: []
         });
 
     }

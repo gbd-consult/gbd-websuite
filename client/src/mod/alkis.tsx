@@ -3,8 +3,11 @@ import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 
-import * as sidebar from './common/sidebar';
 import * as lens from './common/lens';
+import * as sidebar from './common/sidebar';
+import * as storage from './common/storage';
+
+const STORAGE_CATEGORY = 'alkis.features';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
@@ -39,7 +42,6 @@ interface AlkisViewProps extends gws.types.ViewProps {
 
     alkisFsLoading: boolean;
     alkisFsError: string;
-    alkisFsDialogMode: string;
 
     alkisFsExportGroups: Array<string>;
     alkisFsExportFeatures: Array<gws.types.IMapFeature>;
@@ -56,9 +58,6 @@ interface AlkisViewProps extends gws.types.ViewProps {
     alkisFsDetailsText: string;
 
     alkisFsSelection: Array<gws.types.IMapFeature>;
-
-    alkisFsSaveName: string;
-    alkisFsSaveNames: Array<string>;
 
     appActiveTool: string;
 
@@ -78,7 +77,6 @@ const AlkisStoreKeys = [
     'alkisFsSetup',
     'alkisFsLoading',
     'alkisFsError',
-    'alkisFsDialogMode',
     'alkisFsExportGroups',
     'alkisFsExportFeatures',
     'alkisFsParams',
@@ -89,8 +87,6 @@ const AlkisStoreKeys = [
     'alkisFsDetailsFeature',
     'alkisFsDetailsText',
     'alkisFsSelection',
-    'alkisFsSaveName',
-    'alkisFsSaveNames',
     'appActiveTool',
 ];
 
@@ -118,26 +114,6 @@ class AlkisPrintAuxButton extends gws.View<AlkisViewProps> {
             className="modAlkisPrintAuxButton"
             whenTouched={() => _master(this).startPrint(this.props.features)}
             tooltip={_master(this).STRINGS.print}
-        />;
-    }
-}
-
-class AlkisSaveAuxButton extends gws.View<AlkisViewProps> {
-    render() {
-        return <sidebar.AuxButton
-            className="modAlkisSaveAuxButton"
-            whenTouched={() => _master(this).saveSelection()}
-            tooltip={_master(this).STRINGS.saveSelection}
-        />;
-    }
-}
-
-class AlkisLoadAuxButton extends gws.View<AlkisViewProps> {
-    render() {
-        return <sidebar.AuxButton
-            className="modAlkisLoadAuxButton"
-            whenTouched={() => _master(this).loadSelection()}
-            tooltip={_master(this).STRINGS.loadSelection}
         />;
     }
 }
@@ -579,6 +555,7 @@ class AlkisListTab extends gws.View<AlkisViewProps> {
 
 class AlkisSelectionTab extends gws.View<AlkisViewProps> {
     render() {
+        let master = _master(this);
         let features = this.props.alkisFsSelection;
         let hasFeatures = !gws.tools.empty(features);
 
@@ -598,8 +575,16 @@ class AlkisSelectionTab extends gws.View<AlkisViewProps> {
                 <sidebar.AuxToolbar>
                     <AlkisNavigation {...this.props}/>
                     <Cell flex/>
-                    {hasFeatures && <AlkisSaveAuxButton {...this.props} features={features}/>}
-                    <AlkisLoadAuxButton {...this.props} features={features}/>
+                    <storage.ReadAuxButton
+                        controller={this.props.controller}
+                        category={STORAGE_CATEGORY}
+                        whenDone={data => master.loadSelection(data.features)}
+                    />
+                    {hasFeatures && <storage.WriteAuxButton
+                        controller={this.props.controller}
+                        category={STORAGE_CATEGORY}
+                        data={{features: this.props.alkisFsSelection.map(f => f.props)}}
+                    />}
                     {hasFeatures && <AlkisClearAuxButton {...this.props} />}
                     {hasFeatures && <AlkisExportAuxButton {...this.props} features={features}/>}
                     {hasFeatures && <AlkisPrintAuxButton {...this.props} features={features}/>}
@@ -772,64 +757,6 @@ class AlkisPickTool extends gws.Tool {
     }
 }
 
-class AlkisSelectDialog extends gws.View<AlkisViewProps> {
-
-    render() {
-        let mode = this.props.alkisFsDialogMode;
-
-        if (!mode)
-            return null;
-
-        let cc = this.props.controller;
-
-        let close = () => cc.update({alkisFsDialogMode: null});
-        let update = v => cc.update({alkisFsSaveName: v});
-
-        let title, submit, control;
-
-        if (mode === 'save') {
-            title = _master(this).STRINGS.saveSelection;
-            submit = () => cc.saveSelection2();
-            control = <gws.ui.TextInput
-                value={this.props.alkisFsSaveName}
-                whenChanged={update}
-                whenEntered={submit}
-            />;
-        }
-
-        if (mode === 'load') {
-            title = _master(this).STRINGS.loadSelection;
-            submit = () => cc.loadSelection2();
-            control = <gws.ui.Select
-                value={this.props.alkisFsSaveName}
-                items={this.props.alkisFsSaveNames.map(s => ({
-                    text: s,
-                    value: s
-
-                }))}
-                whenChanged={update}
-            />;
-        }
-
-        return <gws.ui.Dialog className="modAlkisSelectDialog" title={title} whenClosed={close}>
-            <Form>
-                <Row>
-                    <Cell flex>{control}</Cell>
-                </Row>
-                <Row>
-                    <Cell flex/>
-                    <Cell>
-                        <gws.ui.IconButton className="cmpButtonFormOk" whenTouched={submit}/>
-                    </Cell>
-                    <Cell>
-                        <gws.ui.IconButton className="cmpButtonFormCancel" whenTouched={close}/>
-                    </Cell>
-                </Row>
-            </Form>
-        </gws.ui.Dialog>;
-    }
-}
-
 class AlkisController extends gws.Controller {
     uid = MASTER;
     setup: gws.api.AlkisFsSetupResponse;
@@ -929,18 +856,9 @@ class AlkisController extends gws.Controller {
             alkisFsDetailsResponse: null,
             alkisFsSelection: [],
 
-            alkisFsSaveName: '',
-            alkisFsSaveNames: [],
         });
 
-        await this.getSaveNames();
-
         this.app.whenLoaded(() => this.urlSearch());
-    }
-
-    get appOverlayView() {
-        return this.createElement(
-            this.connect(AlkisSelectDialog, AlkisStoreKeys));
     }
 
     async whenGemarkungChanged(value) {
@@ -1214,68 +1132,17 @@ class AlkisController extends gws.Controller {
         this.selectionLayer.addFeatures(this.getValue('alkisFsSelection'));
     }
 
-    saveSelection() {
-        this.update({
-            alkisFsDialogMode: 'save'
-        })
-    }
-
-    async saveSelection2() {
-        let res = await this.app.server.alkisFsSaveSelection({
-            projectUid: this.app.project.uid,
-            name: this.getValue('alkisFsSaveName'),
-            fsUids: this.getValue('alkisFsSelection').map(f => f.uid)
-        });
-
-        if (res) {
-            this.update({
-                alkisFsSaveNames: res.names
-            });
-        }
-
-        this.update({
-            alkisFsDialogMode: null,
-        });
-    }
-
-    loadSelection() {
-        this.update({
-            alkisFsDialogMode: 'load'
-        })
-    }
-
-    async loadSelection2() {
-        let res = await this.app.server.alkisFsLoadSelection({
-            projectUid: this.app.project.uid,
-            name: this.getValue('alkisFsSaveName'),
-        });
-
-        if (res.features) {
-            this.update({
-                alkisFsSelection: this.map.readFeatures(res.features)
-            });
-        }
-
-        this.update({
-            alkisFsDialogMode: null,
-        });
-    }
-
-    async getSaveNames() {
-        let res = await this.app.server.alkisFsGetSaveNames({
-            projectUid: this.app.project.uid,
-        });
-        this.update({
-            alkisFsSaveNames: res.names || []
-        })
-
+    loadSelection(fs) {
+        this.clearSelection();
+        this.select(this.map.readFeatures(fs));
     }
 
     clearSelection() {
         this.update({
             alkisFsSelection: []
         });
-        this.map.removeLayer(this.selectionLayer)
+        this.map.removeLayer(this.selectionLayer);
+        this.selectionLayer = null;
     }
 
     clearResults() {

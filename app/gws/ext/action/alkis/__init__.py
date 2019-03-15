@@ -10,7 +10,6 @@ import gws.gis.shape
 import gws.common.printer.service
 import gws.common.printer.types
 import gws.tools.misc
-import gws.tools.storage
 import gws.types as t
 import gws.tools.json2
 import gws.web
@@ -201,33 +200,6 @@ class FsExportResponse(t.Response):
     url: str
 
 
-class FsSaveSelectionParams(t.Data):
-    projectUid: str
-    name: str
-    fsUids: t.List[str]
-
-
-class FsSaveSelectionResponse(t.Response):
-    names: t.List[str]
-
-
-class FsLoadSelectionParams(t.Data):
-    projectUid: str
-    name: str
-
-
-class FsLoadSelectionResponse(t.Response):
-    features: t.List[t.FeatureProps]
-
-
-class FsGetSaveNamesParams(t.Data):
-    projectUid: str
-
-
-class FsGetSaveNamesResponse(t.Response):
-    names: t.List[str]
-
-
 _cwd = os.path.dirname(__file__)
 
 DEFAULT_FORMAT = t.FormatConfig({
@@ -264,17 +236,14 @@ class Object(gws.Object):
     def configure(self):
         super().configure()
 
-        prov_uid = self.var('db')
-        if prov_uid:
-            prov = self.root.find('gws.ext.db.provider', prov_uid)
-        else:
-            prov = self.root.find_first('gws.ext.db.provider')
+        p = self.var('db')
+        db = self.root.find('gws.ext.db.provider', p) if p else self.root.find_first('gws.ext.db.provider.postgres')
 
-        self.crs = self._get_alkis_crs(prov)
+        self.crs = self._get_alkis_crs(db)
         self.has_index = False
 
         self.connect_args = {
-            'params': prov.connect_params,
+            'params': db.connect_params,
             'index_schema': self.var('indexSchema'),
             'data_schema': self.var('alkisSchema'),
             'crs': self.crs,
@@ -282,10 +251,10 @@ class Object(gws.Object):
         }
 
         if self.index_ok():
-            gws.log.info(f'ALKIS indexes in "{prov.uid}" are fine')
+            gws.log.info(f'ALKIS indexes in "{db.uid}" are fine')
             self.has_index = True
         else:
-            gws.log.warn(f'ALKIS indexes in "{prov.uid}" are not ok, please reindex')
+            gws.log.warn(f'ALKIS indexes in "{db.uid}" are not ok, please reindex')
 
         if not self.has_index:
             return
@@ -451,35 +420,6 @@ class Object(gws.Object):
 
         return gws.common.printer.service.start_job(req, pp)
 
-    def api_fs_save_selection(self, req, p: FsSaveSelectionParams) -> FsSaveSelectionResponse:
-        self._precheck_request(req, p.projectUid)
-
-        gws.tools.storage.put('alkis', p.name, req.user.full_uid, p.fsUids)
-        names = gws.tools.storage.get_names('alkis', req.user.full_uid)
-        return FsSaveSelectionResponse({
-            'names': names
-        })
-
-    def api_fs_load_selection(self, req, p: FsLoadSelectionParams) -> FsLoadSelectionResponse:
-        self._precheck_request(req, p.projectUid)
-
-        query = FsQueryParams({
-            'projectUid': p.projectUid,
-            'fsUids': gws.tools.storage.get('alkis', p.name, req.user.full_uid)
-        })
-
-        total, fs = self._fetch_and_format(req, query, self.short_feature_format)
-
-        return FsLoadSelectionResponse({
-            'features': sorted(fs, key=lambda p: p.title)
-        })
-
-    def api_fs_get_save_names(self, req, p: FsGetSaveNamesParams) -> FsGetSaveNamesResponse:
-        names = gws.tools.storage.get_names('alkis', req.user.full_uid)
-        return FsGetSaveNamesResponse({
-            'names': names
-        })
-
     def index_create(self, user, password):
         with self._connect_for_write(user, password) as conn:
             index.create(conn, read_user=self.connect_args['params']['user'])
@@ -538,8 +478,7 @@ class Object(gws.Object):
 
         total, features = self._find(query, target_crs, allow_eigentuemer, allow_buchung, self.limit)
 
-        gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} total={total!r} len={len(features)}')
-        gws.p(query)
+        gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} query={query!r} total={total!r} len={len(features)}')
 
         if allow_eigentuemer:
             self._log_eigentuemer_access(req, query, check=True, total=total, features=features)
@@ -703,8 +642,8 @@ class Object(gws.Object):
         connect_args = gws.extend(self.connect_args, {'params': params})
         return connection.AlkisConnection(**connect_args)
 
-    def _get_alkis_crs(self, prov):
-        with prov.connect() as conn:
+    def _get_alkis_crs(self, db):
+        with db.connect() as conn:
             return conn.crs_for_column(
                 self.var('alkisSchema') + '.ax_flurstueck',
                 'wkb_geometry')

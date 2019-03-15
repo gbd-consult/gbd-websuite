@@ -96,6 +96,10 @@ class Connection:
         with self.conn.cursor() as cur:
             return self._exec(cur, sql, params)
 
+    def execute(self, sql, params=None):
+        with self.conn.cursor() as cur:
+            return self._exec(cur, sql, params)
+
     @contextmanager
     def transaction(self):
         self.exec('BEGIN')

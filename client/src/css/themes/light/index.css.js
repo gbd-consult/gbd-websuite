@@ -294,6 +294,7 @@ let rules = [
     require('./mod/search.css'),
     require('./mod/select.css'),
     require('./mod/sidebar.css'),
+    require('./mod/storage.css'),
     require('./mod/task.css'),
     require('./mod/toolbar.css'),
     require('./mod/toolbox.css'),
