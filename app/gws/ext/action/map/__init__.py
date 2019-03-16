@@ -9,6 +9,7 @@ import gws.gis.feature
 import gws.gis.layer
 import gws.gis.cache
 import gws.tools.misc
+import gws.tools.json2
 
 import gws.types as t
 
@@ -184,6 +185,29 @@ class Object(gws.Object):
             raise gws.web.error.BadRequest()
 
         return self.api_render_xyz(req, p)
+
+    def http_get_features(self, req, p) -> t.HttpResponse:
+        ps = {k.lower(): v for k, v in req.params.items()}
+
+        try:
+            p = GetFeaturesParams({
+                'layerUid': ps.get('layeruid')
+            })
+            if 'bbox' in ps:
+                p.bbox = [float(x) for x in gws.as_list(ps.get('bbox'))]
+            if 'resolution' in ps:
+                p.resolution = float(ps.get('resolution'))
+        except ValueError:
+            raise gws.web.error.BadRequest()
+
+        res = self.api_get_features(req, p)
+
+        return t.HttpResponse({
+            'mimeType': 'application/json',
+            'content': gws.tools.json2.to_string(res)
+        })
+
+
 
     def http_get_legend(self, req, p):
         ps = {k.lower(): v for k, v in req.params.items()}

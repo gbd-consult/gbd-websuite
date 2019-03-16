@@ -421,6 +421,7 @@ class Vector(Base):
             'editStyle': self.var('editStyle'),
             'loadingStrategy': self.var('loadingStrategy'),
             'style': self.var('style'),
+            'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetFeatures/layerUid/' + self.uid,
         })
 
     def render_svg(self, bbox, dpi, scale, rotation, style):
