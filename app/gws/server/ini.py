@@ -217,26 +217,26 @@ def create(base_dir, pid_dir):
         path = _write('uwsgi_web.ini', ini)
         commands.append(f'uwsgi --ini {path}')
 
-        # @TODO multisites
         roots = ''
-        for ws in gws.config.var('web.sites'):
-            rewr = ''
-            for r in ws.get('rewrite', []):
-                if not r.target.startswith('/'):
-                    r.target = '/' + r.target
-                rewr += f"""
-                    rewrite {r.match} {r.target} last; 
-                """
+        rewr = ''
+
+        app = gws.config.root().application
+        for site in app.web_sites:
+            for r in site.rewrite_rules:
+                rewr += f'rewrite {r.match} {r.target} last;\n'
+
+            d = site.static_root.dir
             roots += f"""
                 location =/ {{
-                    root {ws.root.dir};
+                    root {d};
                     index index.html;
                 }}
                 location / {{
-                    root {ws.root.dir};
+                    root {d};
                     try_files $uri @cache;
                 }}
             """
+            # @TODO multisites
             break
 
         web_common = f"""
@@ -253,6 +253,7 @@ def create(base_dir, pid_dir):
             
             location /gws-client/ {{
                 root {gws.APP_DIR}/web;
+                try_files $uri @app;
             }}
 
             location @cache {{

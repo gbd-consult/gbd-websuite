@@ -44,29 +44,28 @@ class Object(gws.Object):
             'content': content
         })
 
-
     def _serve_path(self, req, p):
-        site_assets_config = req.site.get('assets')
+        site_assets = req.site.assets_root
 
         project = None
-        project_assets_config = None
+        project_assets = None
 
         project_uid = p.get('projectUid')
         if project_uid:
             project = req.require_project(project_uid)
-            project_assets_config = project.var('assets')
+            project_assets = project.assets_root
 
         spath = str(p.get('path') or '')
         rpath = None
 
-        if project_assets_config:
-            rpath = _abs_path(spath, project_assets_config.dir)
-        if not rpath and site_assets_config:
-            rpath = _abs_path(spath, site_assets_config.dir)
+        if project_assets:
+            rpath = _abs_path(spath, project_assets.dir)
+        if not rpath and site_assets:
+            rpath = _abs_path(spath, site_assets.dir)
         if not rpath:
             raise gws.web.error.NotFound()
 
-        gws.log.info(f'serving "{rpath}" for "{spath}"')
+        gws.log.info(f'serving {rpath!r} for {spath!r}')
 
         template_type = gws.common.template.type_from_path(rpath)
         if template_type:

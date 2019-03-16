@@ -11,46 +11,17 @@ import gws.types as t
 from . import error
 
 
-def _find_site(host, sites):
-    if not sites:
-        return t.Data({
-            'host': '*'
-        })
-
-    for s in sites:
-        if s.host.lower() == host:
-            return s
-    for s in sites:
-        if s.host == '*':
-            return s
-
-    gws.log.error('unknown host', host)
-    raise gws.web.error.NotFound()
-
-
-def add_site(environ, sites):
-    host = environ.get('HTTP_HOST', '').lower().split(':')[0].strip()
-    s = _find_site(host, sites)
-    s = t.Data(vars(s))
-    if not s.get('reversedBase'):
-        s.reversedBase = environ['wsgi.url_scheme'] + '://' + environ['HTTP_HOST']
-    if not s.get('reversedRewrite'):
-        s.reversedRewrite = []
-    environ['gws.site'] = s
-    return environ
-
-
 class Response(werkzeug.wrappers.Response):
     environ = []
 
     def html(self, s):
-        return self.__class__(s, headers=self.headers, content_type='text/html')
+        return self.content(s, mimetype='text/html')
 
     def json(self, s):
-        return self.__class__(json2.to_string(s, pretty=True), headers=self.headers, content_type='application/json')
+        return self.content(json2.to_string(s, pretty=True), mimetype='application/json')
 
-    def content(self, s, content_type):
-        return self.__class__(s, headers=self.headers, content_type=content_type)
+    def content(self, s, mimetype, status=200):
+        return self.__class__(s, headers=self.headers, mimetype=mimetype, status=status)
 
 
 class Request(werkzeug.wrappers.Request):
@@ -80,15 +51,8 @@ class Request(werkzeug.wrappers.Request):
     def site(self):
         return self.environ['gws.site']
 
-    @property
-    def was_rewritten(self):
-        return 'gws.rewrite_route' in self.environ
-
     @cached_property
     def params(self):
-        if self.was_rewritten:
-            return self.environ['gws.rewrite_route']
-
         if self.method == 'GET':
             args = {k: v for k, v in self.args.items()}
 

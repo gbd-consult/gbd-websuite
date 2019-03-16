@@ -6,17 +6,19 @@ import gws.auth.provider
 import gws.auth.types
 import gws.common.api
 import gws.common.client
-import gws.common.project
 import gws.common.csv
-import gws.types as t
-import gws.server.types
-import gws.tools.misc as misc
-import gws.tools.shell as sh
-import gws.web.types
-import gws.qgis.server
+import gws.common.project
+import gws.common.search
+import gws.common.template
 import gws.gis.layer
 import gws.gis.zoom
-import gws.common.search
+import gws.qgis.server
+import gws.server.types
+import gws.tools.misc as misc
+import gws.tools.shell
+import gws.web.site
+
+import gws.types as t
 
 
 class DbConfig(t.Config):
@@ -38,6 +40,20 @@ class FontConfig(t.Config):
     dir: t.dirpath  #: directory with custom fonts
 
 
+class SSLConfig(t.Config):
+    """SSL configuration"""
+
+    crt: t.filepath  #: crt file location
+    key: t.filepath  #: key file location
+
+
+class WebConfig(t.Config):
+    """Web server configuration"""
+
+    sites: t.Optional[t.List[gws.web.site.Config]]  #: configured sites
+    ssl: t.Optional[SSLConfig]  #: ssl configuration
+
+
 class Config(t.Config):
     """Application configuration"""
 
@@ -56,7 +72,7 @@ class Config(t.Config):
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
     storage: t.Optional[t.ext.storage.Config]  #: storage configuration
     timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
-    web: t.Optional[gws.web.types.Config] = {}  #: webserver configuration
+    web: t.Optional[WebConfig] = {}  #: webserver configuration
 
 
 class Object(gws.Object):
@@ -68,8 +84,7 @@ class Object(gws.Object):
         self.qgis_version = ''
         self.storage: t.StorageInterface = None
         self.version = gws.VERSION
-        self.web_sites: t.List[gws.web.types.SiteConfig] = []
-        self.web_ssl: gws.web.types.SSLConfig = None
+        self.web_sites: t.List[gws.web.site.Object] = []
 
     def configure(self):
         super().configure()
@@ -108,10 +123,13 @@ class Object(gws.Object):
         if p:
             self.client = self.add_child(gws.common.client.Object, p)
 
-        p = self.var('web')
-        if p:
-            self.web_sites = p.sites
-            self.web_ssl = p.ssl
+        p = self.var('web') or t.Data({
+            'sites': [
+                t.Data({'host': '*'})
+            ]
+        })
+        for s in p.get('sites'):
+            self.web_sites.append(self.create_object('gws.web.site', s))
 
         self.add_child(gws.common.csv.Object, self.var('csv'))
 
@@ -148,8 +166,8 @@ def _install_fonts(source_dir):
 
     if source_dir:
         target_dir = '/usr/local/share/fonts'
-        sh.run(['mkdir', '-p', target_dir], echo=True)
+        gws.tools.shell.run(['mkdir', '-p', target_dir], echo=True)
         for p in misc.find_files(source_dir):
-            sh.run(['cp', '-v', p, target_dir], echo=True)
+            gws.tools.shell.run(['cp', '-v', p, target_dir], echo=True)
 
-    sh.run(['fc-cache', '-fv'], echo=True)
+    gws.tools.shell.run(['fc-cache', '-fv'], echo=True)

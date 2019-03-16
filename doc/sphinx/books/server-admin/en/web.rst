@@ -35,13 +35,13 @@ Rewrite rules
 Assets are handled by the server command ``assetHttpGetPath``, which accepts the ``path`` parameter, and, optionally, a project unique id, so the final URL would be like this ::
 
 
-    http://example.org/_?cmd=assetHttpGetPath&projectUid=myproject&path=somepage.mako
+    http://example.org/_?cmd=assetHttpGetPath&projectUid=myproject&path=somepage.html
 
 The following rewrite rule ::
 
     {
         "match": "^/([a-z]+)/([a-z]+)$",
-        "target": "_?cmd=assetHttpGetPath&projectUid=$1&path=$2.mako"
+        "target": "_?cmd=assetHttpGetPath&projectUid=$1&path=$2.html"
     }
 
 
@@ -56,13 +56,12 @@ The ``match`` is a reqular expression and the ``target`` is the final URL with `
 Website configuration
 ---------------------
 
-A website configuration must include a hostname (hostname ``*`` marks the default site), document root and assets configurations, and, optionally, a set of URL rewriting rules ::
+A website configuration must include a hostname (hostname ``*`` marks the default site), document root and assets configurations, error page template, and, optionally, a set of URL rewriting rules. ::
 
 
     {
 
         ## hostname
-
 
         "host": "example.org",
 
@@ -70,9 +69,9 @@ A website configuration must include a hostname (hostname ``*`` marks the defaul
 
         "root": {
 
-            ## absolute path to the root directory
+            ## absolute container path to the root directory
 
-            "dir": "/example/www-root",
+            "dir": "/data/www-root",
 
             ## allowed file extensions(in addition to the default list)
 
@@ -88,10 +87,17 @@ A website configuration must include a hostname (hostname ``*`` marks the defaul
 
         "assets": {
 
-            ## absolute path to the site assets directory
+            ## absolute container path to the site assets directory
 
-            "dir": "/example/www-assets",
+            "dir": "/data/www-assets",
 
+        },
+
+        ## error page template
+
+        "errorPage": {
+            "type": "html",
+            "path": "/data/error/template.html"
         },
 
         ## rewrite rules
@@ -100,13 +106,14 @@ A website configuration must include a hostname (hostname ``*`` marks the defaul
 
             {
                 "match": "^/$",
-                "target": "_?cmd=assetHttpGetPath&path=root-page.mako"
+                "target": "_?cmd=assetHttpGetPath&path=root-page.html"
             },
             {
                 "match": "^/hello/([a-z]+)$",
-                "target": "_?cmd=assetHttpGetPath&projectUid=hello_project&path=$1.mako"
+                "target": "_?cmd=assetHttpGetPath&projectUid=hello_project&path=$1.html"
             }
         ]
+
 
 
 Project assets
@@ -157,3 +164,19 @@ Here's an example of a feature formatting template ::
 
     </tbody></table>
 
+
+Error page template
+-------------------
+
+An error page template has access to the error code in the ``error`` variable. You can the ``@if`` command to provide different content, depending on the error ::
+
+
+    <h1>Error!</h1>
+
+    @if error == 404
+        Resource not found
+    @elif error == 403
+        Access denied
+    @else
+        Error {error} has occured
+    @end

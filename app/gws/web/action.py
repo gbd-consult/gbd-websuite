@@ -10,7 +10,7 @@ def handle(config_root, req):
     cmd = req.param('cmd', DEFAULT_CMD)
 
     # @TODO: add HEAD
-    if req.is_json or req.was_rewritten:
+    if req.is_json:
         category = 'api'
     elif req.method == 'GET':
         category = 'get'

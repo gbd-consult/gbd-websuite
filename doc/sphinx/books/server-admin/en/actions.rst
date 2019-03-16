@@ -15,5 +15,3 @@ TABLE
 *project* ~ returns project description and configuration data
 *search* ~ handles searching (see :doc:`search`)
 /TABLE
-
-We maintain the complete list of commands, their arguments and return values as a TypeScript interface file, see :doc:`apiref`.

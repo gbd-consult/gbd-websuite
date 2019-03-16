@@ -4,7 +4,8 @@ import gws.common.map
 import gws.common.printer
 import gws.common.search
 import gws.common.template
-import gws.gis
+import gws.web.site
+
 import gws.types as t
 
 
@@ -29,7 +30,7 @@ class Config(t.Config):
     multi: t.Optional[t.regex]  #: filename pattern for a multi-project template
     overviewMap: t.Optional[gws.common.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.common.printer.Config]  #: printer configuration
-    search: t.Optional[gws.common.search.Config]  = {} #: project-wide search configuration
+    search: t.Optional[gws.common.search.Config] = {}  #: project-wide search configuration
     title: str = ''  #: project title
     uid: t.Optional[str]  #: unique id
 
@@ -51,6 +52,7 @@ class Object(gws.PublicObject, t.ProjectObject):
         super().__init__()
 
         self.api: gws.common.api.Object = None
+        self.assets_root: t.DocumentRootConfig = None
         self.client: gws.common.client.Object = None
         self.description_template: t.TemplateObject = None
         self.locale = ''
@@ -103,6 +105,8 @@ class Object(gws.PublicObject, t.ProjectObject):
         if p:
             p.parentClient = self.parent.var('client')
             self.client = self.add_child(gws.common.client.Object, p)
+
+        self.assets_root = self.var('assets')
 
     @property
     def description(self):
