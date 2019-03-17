@@ -205,3 +205,7 @@ class Runtime(BaseRuntime):
     @classmethod
     def filter_lines(cls, val):
         return str(val).splitlines()
+
+    @classmethod
+    def filter_sort(cls, val):
+        return sorted(val)

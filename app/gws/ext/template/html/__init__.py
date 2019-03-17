@@ -217,7 +217,6 @@ class Object(gws.common.template.Object):
         '''
 
     def _render_html(self, text, context):
-        errors = []
 
         context['gws'] = {
             'version': gws.VERSION,
@@ -227,12 +226,9 @@ class Object(gws.common.template.Object):
         content = gws.tools.chartreux.render_text(
             text,
             context,
-            errors=errors,
             silent=True,
             path=self.path or '<string>'
         )
-        # for e in errors:
-        #     gws.log.debug('TEMPLATE: ' + e)
 
         return content
 

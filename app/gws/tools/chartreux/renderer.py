@@ -4,22 +4,18 @@ from . import compiler, runtime as rt
 def render(
         template,
         context=None,
-        errors=None,
+        warn=None,
         runtime=None,
 ):
-    err = []
-    out = template(runtime or rt.Runtime, context, err)
-    if errors is not None:
-        errors.extend(err)
-    return out
+    return template(runtime or rt.Runtime, context, warn)
 
 
 def render_text(
         text,
         context=None,
-        errors=None,
+        warn=None,
         filter=None,
-        globals=None,
+        extern=None,
         name='render',
         path=None,
         runtime=None,
@@ -28,7 +24,7 @@ def render_text(
     template = compiler.compile(
         text,
         filter=filter,
-        globals=globals,
+        extern=extern,
         name=name,
         path=path,
         silent=silent,
@@ -36,7 +32,7 @@ def render_text(
     return render(
         template,
         context=context,
-        errors=errors,
+        warn=warn,
         runtime=runtime,
     )
 
@@ -44,9 +40,9 @@ def render_text(
 def render_path(
         path,
         context=None,
-        errors=None,
+        warn=None,
         filter=None,
-        globals=None,
+        extern=None,
         name='render',
         runtime=None,
         silent=False,
@@ -56,9 +52,9 @@ def render_path(
     return render_text(
         source,
         context=context,
-        errors=errors,
+        warn=warn,
         filter=filter,
-        globals=globals,
+        extern=extern,
         name=name,
         path=path,
         runtime=runtime,

@@ -139,7 +139,6 @@ class Parser:
         if not m:
             return self.text_command, ln
 
-        # self.cc.code.remove_newline()
         cmd = m.group(1).lower()
 
         # NB: the final : in commands is optional
@@ -243,7 +242,7 @@ class Expression:
             return self.walk(n.body)
 
         if t == 'Attribute':
-            if self.is_extern(n.value):
+            if self.is_global(n.value):
                 return _f('{}.{}', self.walk(n.value), n.attr)
             return self.make_getter(self.walk(n.value), n.attr)
 
@@ -253,9 +252,7 @@ class Expression:
             return self.walk(n.value)
 
         if t == 'Name':
-            if self.is_local(n):
-                return n.id
-            if self.is_extern(n) or self.is_local(n):
+            if self.is_global(n) or self.is_local(n):
                 return n.id
             return self.make_context_getter(n.id)
 
@@ -353,12 +350,12 @@ class Expression:
             return self.cc.error(ERROR_NOT_SUPPORTED, t)
         return self._operators[t]
 
-    def is_extern(self, n):
+    def is_global(self, n):
         t = _cname(n)
         if t == 'Attribute':
-            return self.is_extern(n.value)
+            return self.is_global(n.value)
         if t == 'Subscript':
-            return self.is_extern(n.value)
+            return self.is_global(n.value)
         if t == 'Name':
             return n.id in self.cc.globals
         return False
@@ -475,7 +472,7 @@ class Command:
         self.cc.code.add(_f('if {}:', v))
 
     def command_if(self, arg):
-        # @if cond ...stuff... @elif cond ...stuff... @else ...stuff... @end
+        # @if cond ...flow... @elif cond ...flow... @else ...flow... @end
 
         """
             we need 'if' conditions to be statements, so we transform this
@@ -555,14 +552,22 @@ class Command:
             if t == 'Name':
                 names.append(a.id)
                 signature.append(a.id)
+            elif t == 'Starred':
+                names.append(a.value.id)
+                signature.append(_f('*{}', a.value.id))
             else:
                 return self.cc.error(ERROR_ARG_NOT_SUPPORTED, t)
 
         for a in node.keywords:
             t = _cname(a)
             if t == 'keyword':
-                names.append(a.arg)
-                signature.append(_f('{}={}', a.arg, self.cc.expression.parse_ast(a.value)))
+                if a.arg:
+                    names.append(a.arg)
+                    signature.append(_f('{}={}', a.arg, self.cc.expression.parse_ast(a.value)))
+                else:
+                    names.append(a.value.id)
+                    signature.append(_f('**{}', a.value.id))
+
             else:
                 return self.cc.error(ERROR_ARG_NOT_SUPPORTED, t)
 
@@ -652,7 +657,7 @@ class Command:
         self.cc.code.try_block(_reindent(buf), 'pass')
 
     def command_quote(self, arg):
-        # @quote label ...stuff... @end label
+        # @quote label ...flow... @end label
 
         label = arg
         while True:
@@ -666,7 +671,7 @@ class Command:
 
     def command_let(self, arg):
         # @let var = expression ('=' is optional)
-        # @let var ...stuff... @end
+        # @let var ...flow... @end
 
         m = re.search(self.let_re, arg)
         if not m:
@@ -775,13 +780,13 @@ class Command:
     with_re = r'(?x) (.+?) \b as \s+ (\w+)$'
 
     def command_with(self, arg):
-        # @with expr as var ...stuff... @end
-
-        name = self.cc.new_var()
+        # @with expr as var ...flow... @end
 
         m = re.search(self.with_re, arg)
         if m:
             arg, name = m.groups()
+        else:
+            name = self.cc.new_var()
 
         e = self.cc.expression.parse(arg)
 
@@ -845,10 +850,6 @@ class Code:
     def string(self, s):
         self.textbuf.append(s)
 
-    def remove_newline(self):
-        if self.textbuf and self.textbuf[-1].endswith('\n'):
-            self.textbuf[-1] = self.textbuf[-1][:-1]
-
     def raw_try_block(self, body, fallback, exc_var=None):
         exc_var = exc_var or self.cc.new_var()
         self.add('try:')
@@ -892,7 +893,7 @@ class Code:
         def w(lev, s):
             rs.append((' ' * (indent * lev)) + s)
 
-        w(0, _f('def {}(_RT, _CONTEXT, _ERRORS=None):', self.cc.option('name')))
+        w(0, _f('def {}(_RT, _CONTEXT, _WARN=None):', self.cc.option('name')))
 
         if not self.buf:
             w(1, 'return ""')
@@ -922,8 +923,8 @@ class Code:
         w(2, 'return "{} in {}:{}".format(name, repr(_PATH), _LINE)')
 
         w(1, 'def _ERR(e):')
-        w(2, 'if _ERRORS is not None:')
-        w(3, '_ERRORS.append(_ERRMSG(e))')
+        w(2, 'if _WARN:')
+        w(3, '_WARN(_ERRMSG(e))')
 
         exc = self.cc.new_var()
 
