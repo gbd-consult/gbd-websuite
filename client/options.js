@@ -1,7 +1,5 @@
-VERSION='2.3.4'
-
 module.exports = {
-    version: VERSION,
+    version: require('fs').readFileSync(__dirname + '/../VERSION', 'utf8').trim(),
 
     appName: "gws-client",
     dist: "_build",

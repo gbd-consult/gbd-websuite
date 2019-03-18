@@ -7,14 +7,13 @@ import re
 DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
 APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
 
-VERSION='2.3.4'
+VERSION = open(DOC_ROOT + '/../../VERSION').read().strip()
 
 project = 'GBD WebSuite'
 copyright = '2019, Geoinformatikbüro Dassau GmbH'
 author = 'Geoinformatikbüro Dassau GmbH'
 version = VERSION
 release = VERSION
-
 
 sys.path.insert(0, APP_DIR)
 sys.path.insert(0, DOC_ROOT)
