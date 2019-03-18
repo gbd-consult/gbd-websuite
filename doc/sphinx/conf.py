@@ -7,7 +7,7 @@ import re
 DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
 APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
 
-VERSION='2.3.3'
+VERSION='2.3.4'
 
 project = 'GBD WebSuite'
 copyright = '2019, Geoinformatikbüro Dassau GmbH'
