@@ -10,7 +10,19 @@ module.exports = v => ({
         ...v.TRANSITION('opacity'),
 
         '.uiIconButton': {
-            ...v.ICON_SIZE('medium')
+            ...v.ICON_SIZE('medium'),
+            ...v.TRANSITION(),
+
+            backgroundColor: v.INFOBOX_BACKGROUND,
+
+            borderWidth: 1,
+            borderStyle: 'dotted',
+            borderColor: 'transparent',
+            borderRadius: v.CONTROL_SIZE,
+
+            '&:hover': {
+                borderColor: v.DRAWBOX_ACTIVE_BUTTON_COLOR,
+            }
         },
 
         '.cmpButtonFormOk': {
