@@ -99,6 +99,10 @@ class DimensionElement {
         return this.dimPoints.indexOf(p) >= 0 || this.controlPoint === p;
     }
 
+    get coordinates(): Array<ol.Coordinate> {
+        return [this.controlPoint].concat(this.dimPoints).map(p => p.coordinate);
+    }
+
     createControlPoint() {
         if (this.type === 'Line') {
             let [x1, y1] = this.dimPoints[0].coordinate;
@@ -258,6 +262,10 @@ class DimensionModel {
             }
         });
 
+    }
+
+    get empty() {
+        return this.elements.length === 0 && !this.draftType;
     }
 
     serialize() {
@@ -519,6 +527,9 @@ class DimensionModel {
     }
 
     draw() {
+        if (this.empty)
+            return '';
+
         let mapSize = this.map.oMap.getSize();
 
         if (!mapSize)
@@ -660,15 +671,20 @@ class DimensionLineTool extends DimensionTool {
 
     }
 
+    stop() {
+        super.stop();
+        this.finishDrawing();
+    }
+
     handleEvent(e: ol.MapBrowserEvent) {
         if (e.type === 'dblclick') {
-            this.finishDrawing();
-            return
+            _master(this).startDraw('Line');
+            return false;
         }
 
         if (e.type === 'click') {
             this.addPoint(e);
-            return;
+            return false;
         }
 
         if (e.type === 'pointermove') {
@@ -679,6 +695,7 @@ class DimensionLineTool extends DimensionTool {
             coord.push(e.coordinate);
 
             this.model.setDraft('Line', coord);
+            return false;
         }
 
         return true;
@@ -705,7 +722,7 @@ class DimensionLineTool extends DimensionTool {
 
     finishDrawing() {
         this.model.setDraft(null);
-        _master(this).startDraw('Line');
+        this.model.cleanupPoints();
     }
 
 }
@@ -788,13 +805,6 @@ class DimensionController extends gws.Controller {
 
         this.layer.master = this;
 
-        this.oOverlay = new ol.Overlay({
-            element: document.createElement('div'),
-            stopEvent: false,
-        });
-
-        this.map.oMap.addOverlay(this.oOverlay);
-
         this.app.whenChanged('mapRawUpdateCount', () => {
             this.updateOverlay();
             this.checkUpdateSnapInteraction();
@@ -837,9 +847,28 @@ class DimensionController extends gws.Controller {
     }
 
     updateOverlay() {
-        let coordinate = this.map.oMap.getCoordinateFromPixel([0, 0])
+        let svg = this.model.draw();
+
+        if (!svg && !this.oOverlay) {
+            return;
+        }
+
+        if (!this.oOverlay) {
+            this.oOverlay = new ol.Overlay({
+                element: document.createElement('div'),
+                stopEvent: false,
+            });
+
+            // old firefoxes have problems unless this is set
+            (this.oOverlay.getElement() as HTMLDivElement).style.pointerEvents = 'none';
+
+            this.map.oMap.addOverlay(this.oOverlay);
+        }
+
+        let coordinate = this.map.oMap.getCoordinateFromPixel([0, 0]);
         this.oOverlay.setPosition(coordinate);
-        this.oOverlay.getElement().innerHTML = this.model.draw();
+
+        this.oOverlay.getElement().innerHTML = svg;
     }
 
     startDraw(dimType) {
@@ -882,9 +911,10 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
         let master = _master(this.props.controller),
             model = master.model;
 
-        let zoom = (e, mode) => {
-            let geometry = new ol.geom.Circle(e.controlPoint.coordinate, 20)
-            let f = master.map.newFeature({geometry});
+        let zoom = (e: DimensionElement, mode) => {
+            let f = master.map.newFeature({
+                geometry: new ol.geom.MultiPoint(e.coordinates)
+            });
             this.props.controller.update({
                 marker: {
                     features: [f],
@@ -893,12 +923,12 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
             });
         };
 
-        let focus = e => {
+        let focus = (e: DimensionElement) => {
             zoom(e, 'pan fade');
             master.selectElement(e);
         };
 
-        let remove = e => {
+        let remove = (e: DimensionElement) => {
             model.removeElement(e)
         };
 
