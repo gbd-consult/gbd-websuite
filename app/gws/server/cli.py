@@ -1,3 +1,4 @@
+from argh import arg
 from . import control
 
 COMMAND = 'server'
@@ -25,6 +26,13 @@ def reset():
     """Gracefully reload the server without reconfiguring"""
 
     control.reset()
+
+
+@arg('--module', help='server module to reset')
+def reset(module=None):
+    """Gracefully reload the server without reconfiguring"""
+
+    control.reset(module)
 
 
 def configure():

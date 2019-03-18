@@ -52,12 +52,12 @@ def reload():
     _reload(True)
 
 
-def reset():
-    _reload(False)
+def reset(module):
+    _reload(False, module)
 
 
-def reload_uwsgi(name):
-    pattern = f'({name}).uwsgi.pid'
+def reload_uwsgi(module):
+    pattern = f'({module}).uwsgi.pid'
     for p in misc.find_files(pid_dir, pattern):
         gws.log.info(f'reloading {p}...')
         sh.run(['uwsgi', '--reload', p])
@@ -72,17 +72,17 @@ def configure():
     return cfg
 
 
-def _reload(c):
+def _reload(reconfigure, module=None):
     if not _is_running('uwsgi'):
         gws.log.info('server not running, starting...')
         return start()
 
-    if c:
+    if reconfigure:
         configure()
 
-    for p in misc.find_files(pid_dir, 'uwsgi'):
-        gws.log.info(f'reloading {p}...')
-        sh.run(['uwsgi', '--reload', p])
+    for m in ('qgis', 'mapproxy', 'web'):
+        if not module or m == module:
+            reload_uwsgi(m)
 
 
 def _kill(pidfile):
