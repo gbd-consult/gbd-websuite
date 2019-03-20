@@ -4,23 +4,23 @@ D-ProCon Integration
 Gbd Websuite kann mit dem System "D-ProCon" von Firma Sisterhenn (https://www.sisterhenn-it.de) integriert werden. Dafür muss eine Aktion vom Typ ``dprocon`` im Abschnitt ``actions`` eingetragen werden. Es gibt folgende Konfigurationsoptionen:
 
 TABLE
-``db`` ~ Datenbank provider
-``requestUrl`` ~ D-ProCon Aufruf Url
-``crs`` ~ KBS für ALKIS Data
-``requestTable`` ~ Datenbank Tabelle für Anfragen
-``dataTable`` ~ Datenbank Tabelle für Ergebnisse
-``dataTablePattern`` ~ Pattern für die von D-ProCon angelegten Ergebnis-Tabellen
-``cacheTime`` ~ Cache Laufzeit für Ergebnisse
-``infoTitle`` ~ Title für das Informationsfenster
-``indexSchema`` ~ ALKIS Indexschema
-``alkisSchema`` ~ ALKIS Datenschema
+*alkisSchema* ~ ALKIS Datenschema
+*cacheTime* ~ Cache Laufzeit für Ergebnisse
+*crs* ~ KBS für ALKIS Data
+*dataTable* ~ Datenbank Tabelle für Ergebnisse
+*dataTablePattern* ~ Pattern für die von D-ProCon angelegten Ergebnis-Tabellen
+*db* ~ Datenbank provider
+*indexSchema* ~ ALKIS Indexschema
+*infoTitle* ~ Title für das Informationsfenster
+*requestTable* ~ Datenbank Tabelle für Anfragen
+*requestUrl* ~ D-ProCon Aufruf Url
 /TABLE
 
 GWS -> D-ProCon Anbindung
 -------------------------
 
 Der Nutzer wählt auf der Karte einen Bereich aus, und klickt den D-ProCon Button.
-Die Auswahl wird an GbdServer gesendet. Der Server führt eine räumliche Anfrage aus
+Die Auswahl wird an GWS Server gesendet. Der Server führt eine räumliche Anfrage aus
 und ermittelt die Punkte (Häuser) die sich in der Auswahl befinden. Die Punkte werden
 in die Postgis Tabelle ``request`` geschrieben, im folgenden Format:
 

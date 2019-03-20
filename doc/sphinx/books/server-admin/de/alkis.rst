@@ -4,18 +4,28 @@ ALKIS Integration
 Gbd Websuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Unter anderem, steht ein Plugin für Flurstückssuche zur Verfügung. Die Konfiguration erfolgt im Abschnitt ``actions``, Typ ``alkis``. Folgende Optionen sind verfügbar:
 
 TABLE
-    *db* ~ Datenbank-Provider ID
     *alkisSchema* ~ Postgis Schema wo die ALKIS Daten liegen
-    *indexSchema* ~ Postgis Schema wo die Indexes geschrieben werden
-    *eigentuemer* ~ Zugang zu Eigentümerdaten (z.B. Name, Adresse)
     *buchung* ~ Zugang zu Grundbuchung Daten (z.B. Blattnummer)
+    *db* ~ Datenbank-Provider ID
+    *eigentuemer* ~ Zugang zu Eigentümerdaten (z.B. Name, Adresse)
     *excludeGemarkung* ~ Liste von Gemarkungen, die aus der Suche ausgeschlossen werden müssen
-    *limit* ~ Anzahl von Ergebnissen
     *featureFormat* ~ Formatierung von Flurstücksdaten
+    *indexSchema* ~ Postgis Schema wo die Indexes geschrieben werden
+    *limit* ~ Anzahl von Ergebnissen
     *printTemplate* ~ Druckvorlage für Flurstücksdaten
+    *ui* ~ Einstellungen der Benutzeroberfläche
+/TABLE
+
+Einstellungen der Benutzeroberfläche sind wie folgt:
+
+TABLE
     *export* ~ CSV-Export Funktion aktivieren
+    *pick* ~ Funktion "Flurstück direkt auswahlen" aktivieren
+    *searchSelection* ~ Funktion "In der Auswahl suchen" aktivieren
+    *searchSpatial* ~ Räumliche Suche aktivieren
     *select* ~ Auswahl-Funktion aktivieren
 /TABLE
+
 
 Indizierung
 -----------
