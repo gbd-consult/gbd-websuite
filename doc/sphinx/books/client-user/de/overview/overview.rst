@@ -30,3 +30,12 @@ GBD WebSuite ist programmiert mit Hilfe von Open Source Software, wie:
   *  MapProxy
   *  uWSGI
   *  NGINX
+
+
+========================================================================================================================================================================================
+
+.. toctree::
+    :maxdepth: 2
+
+    function.rst
+    gbd.rst

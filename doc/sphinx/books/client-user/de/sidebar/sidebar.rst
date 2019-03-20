@@ -15,5 +15,3 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen im Menü. Dank der
     editing.rst
     sign_in.rst
     search.rst
-
-.. note:: Bei mobilen Geräten wird die Suche nicht in der Werkzeugleiste, sondern im Menü angezeigt, genaue Informationen finden Sie hier: :doc:`Suche <../toolbox/searching>`
