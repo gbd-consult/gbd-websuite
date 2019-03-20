@@ -139,6 +139,7 @@ class NoParams(Data):
 class HttpResponse(Data):
     mimeType: str
     content: str
+    status: int
 
 
 class WithType(Config):
@@ -468,6 +469,7 @@ class MapView:
 class LayerObject(ObjectInterface, MapView):
     has_legend: bool
     has_cache: bool
+    has_search: bool
     is_public: bool
     layers: List['LayerObject']
 
@@ -601,6 +603,7 @@ class FeatureInterface:
 class MapObject(ObjectInterface, MapView):
     init_resolution: float
     layers: List[LayerObject]
+    coordinatePrecision: int
 
 
 # noinspection PyAbstractClass
@@ -621,6 +624,7 @@ class SearchArgs(Data):
     project: ProjectObject
     resolution: float
     shapes: List[ShapeInterface]
+    feature_format: FormatInterface
 
 
 class SearchProviderInterface(ObjectInterface):

@@ -150,6 +150,10 @@ class Base(gws.PublicObject, t.LayerObject):
         self.opacity = None
         self.client_options = None
 
+    @property
+    def has_search(self):
+        return len(self.get_children('gws.ext.search.provider')) > 0
+
     def configure(self):
         super().configure()
 

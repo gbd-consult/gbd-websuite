@@ -40,6 +40,7 @@ class Object(gws.PublicObject, t.MapObject):
         self.init_resolution = 0
         self.resolutions = []
         self.layers: t.List[t.LayerObject] = []
+        self.coordinate_precision = 0
 
     def configure(self):
         super().configure()
@@ -69,16 +70,18 @@ class Object(gws.PublicObject, t.MapObject):
 
         self.layers = gws.gis.layer.add_layers_to_object(self, self.var('layers'))
 
+        proj = gws.gis.proj.as_proj(self.crs)
+        self.coordinate_precision = self.var('coordinatePrecision')
+        if self.coordinate_precision is None:
+            self.coordinate_precision = 2 if proj.units == 'm' else 7
+
     @property
     def props(self):
         proj = gws.gis.proj.as_proj(self.crs)
-        prec = self.var('coordinatePrecision')
-        if prec is None:
-            prec = 0 if proj.units == 'm' else 7
         return {
             'crs': proj.epsg,
             'crsDef': proj.proj4text,
-            'coordinatePrecision': prec,
+            'coordinatePrecision': self.coordinate_precision,
             'extent': self.extent,
             'center': self.center,
             'initResolution': self.init_resolution,

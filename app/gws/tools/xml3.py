@@ -12,8 +12,45 @@ class Error(Exception):
     pass
 
 
-def string(tag, content=None, attributes=None):
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + _string(tag, content, attributes)
+def tag(name, *args):
+    return name, args
+
+
+def string(t):
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + _string(t)
+
+
+def _string(t):
+    name, args = t
+
+    nodes = []
+    atts = ''
+
+    for a in args:
+        if not a:
+            continue
+        if isinstance(a, str):
+            nodes.append(_encode(a))
+        elif isinstance(a, tuple):
+            nodes.append(_string(a))
+        else:
+            atts = [f'{k}="{_encode(v)}"' for k, v in a.items() if v is not None]
+
+    otag = name
+    if atts:
+        otag += ' ' + ' '.join(atts)
+    if nodes:
+        return '<' + otag + '>' + ''.join(nodes) + '</' + name + '>'
+    return '<' + otag + '/>'
+
+
+def _encode(v):
+    v = str(v).strip()
+    v = v.replace("&", "&amp;")
+    v = v.replace(">", "&gt;")
+    v = v.replace("<", "&lt;")
+    v = v.replace('"', "&quot;")
+    return v
 
 
 class Attribute:
@@ -318,32 +355,24 @@ _errors = {
     37: 'XML_ERROR_SUSPEND_PE',
 }
 
-
-def _string(tag=None, content=None, attributes=None):
-    if not tag:
-        return ''
-
-    a = ''
-    if attributes:
-        a = ' '.join(f'{k}="{_encode(v)}"' for k, v in attributes.items() if v)
-
-    oc = '<' + tag
-    if a:
-        oc += ' ' + a
-    cc = '</' + tag + '>'
-
-    if content:
-        if isinstance(content, str):
-            return oc + '>' + _encode(content) + cc
-        return oc + '>' + ''.join(_string(*c) for c in content) + cc
-
-    return oc + '/>'
-
-
-def _encode(v):
-    v = str(v).strip()
-    v = v.replace("&", "&amp;")
-    v = v.replace(">", "&gt;")
-    v = v.replace("<", "&lt;")
-    v = v.replace('"', "&quot;")
-    return v
+# def _string(tag=None, content=None, attributes=None):
+#     if not tag:
+#         return ''
+#
+#     a = ''
+#     if attributes:
+#         a = ' '.join(f'{k}="{_encode(v)}"' for k, v in attributes.items() if v is not None)
+#
+#     oc = '<' + tag
+#     if a:
+#         oc += ' ' + a
+#     cc = '</' + tag + '>'
+#
+#     if content:
+#         if isinstance(content, str):
+#             return oc + '>' + _encode(content) + cc
+#         return oc + '>' + ''.join(_string(*c) for c in content) + cc
+#
+#     return oc + '/>'
+#
+#

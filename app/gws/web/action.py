@@ -50,4 +50,4 @@ def handle(config_root, req):
         return req.response.json(r)
 
     # not a json request, it must be types.HttpResponse
-    return req.response.content(r.content, r.mimeType)
+    return req.response.content(r.content, r.mimeType, r.get('status', 200))

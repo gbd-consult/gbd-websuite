@@ -72,19 +72,14 @@ class Request(werkzeug.wrappers.Request):
         if self.method == 'POST':
             return self.form
 
+    def env(self, key, default=None):
+        return self.environ.get(key, default)
+
     def param(self, key, default=None):
         return self.params.get(key, default)
 
     def reversed_url(self, query_string):
-        if self.site.get('reversedRewrite'):
-            for rule in self.site.get('reversedRewrite'):
-                m = re.match(rule.match, query_string)
-                if m:
-                    t = rule.target.replace('$', '\\')
-                    s = re.sub(rule.match, t, query_string)
-                    return self.site.reversedBase + s
-
-        return self.site.reversedBase + gws.SERVER_ENDPOINT + '?' + query_string
+        return self.site.reversed_rewrite(self, query_string)
 
 
 def _params_from_path(path):

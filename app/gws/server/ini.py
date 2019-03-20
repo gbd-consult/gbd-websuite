@@ -273,9 +273,12 @@ def create(base_dir, pid_dir):
 
         year = 3600 * 24 * 365
 
+        # NB don't include xml (some WMS clients don't understand gzip)
+        # text/xml application/xml application/xml+rss
+
         gzip = """
             gzip on;
-            gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+            gzip_types text/plain text/css application/json application/javascript text/javascript;
         
             # gzip_vary on;
             # gzip_proxied any;

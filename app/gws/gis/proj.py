@@ -128,8 +128,8 @@ def find(crs, crs_list):
 _formats = {
     'epsg': 'EPSG:%d',
     'http': 'http://www.opengis.net/gml/srs/epsg.xml#%d',
-    'urnx': 'urn:x-ogc:def:crs:epsg:%d',
-    'urn': 'urn:ogc:def:crs:epsg::%d',
+    'urnx': 'urn:x-ogc:def:crs:EPSG:%d',
+    'urn': 'urn:ogc:def:crs:EPSG::%d',
 }
 
 _res = {
@@ -144,7 +144,7 @@ _res = {
 _aliases = {
     'crs:84': 4326,
     'crs84': 4326,
-    'urn:ogc:def:crs:OGC:1.3:CRS84': 4326,
+    'urn:ogc:def:crs:ogc:1.3:crs84': 4326,
     'wgs84': 4326,
     'epsg:900913': 3857,
 }

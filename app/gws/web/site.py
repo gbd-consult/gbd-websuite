@@ -1,3 +1,5 @@
+import re
+
 import gws
 import gws.common.template
 import gws.types as t
@@ -27,7 +29,7 @@ class Config(t.Config):
     cors: t.Optional[CorsConfig]  #: cors configuration
     errorPage: t.Optional[t.TemplateConfig]  #: error page template
     host: str = '*'  #: host name
-    reversedBase: str = ''  #: reversed base address
+    reversedUrl: str = ''  #: base url for reversed addresses
     reversedRewrite: t.Optional[t.List[RewriteRule]]  #: reversed rewrite rules
     rewrite: t.Optional[t.List[RewriteRule]]  #: rewrite rules
     root: t.DocumentRootConfig  #: document root location and options
@@ -41,7 +43,10 @@ class Object(gws.PublicObject):
         self.static_root: t.DocumentRootConfig = None
         self.assets_root: t.DocumentRootConfig = None
         self.rewrite_rules = []
+        self.reversed_rewrite_rules = []
+        self.reversed_url = ''
         self.cors = None
+        self.ssl = False
 
     def configure(self):
         super().configure()
@@ -52,8 +57,21 @@ class Object(gws.PublicObject):
 
         self.rewrite_rules = self.var('rewrite', default=[])
         for r in self.rewrite_rules:
-            if not r.target.startswith('/'):
+            # if a bare query string is given, prepend the endpoint
+            if re.match(r'^\w+=', r.target):
+                r.target = gws.SERVER_ENDPOINT + '?' + r.target
+            # ensure rewriting from root
+            elif not r.target.startswith('/') and not re.match(r'^https?:', r.target):
                 r.target = '/' + r.target
+
+        self.reversed_rewrite_rules = self.var('reversedRewrite', default=[])
+        for r in self.reversed_rewrite_rules:
+            # we use nginx syntax $1, need python's \1
+            r.target = r.target.replace('$', '\\')
+
+        p = self.var('reversedUrl')
+        if p:
+            self.reversed_url = p
 
         p = self.var('errorPage')
         if p:
@@ -63,14 +81,14 @@ class Object(gws.PublicObject):
         if p and p.get('enabled'):
             self.cors = p
 
-    # reversedBase: str = ''  #: reversed base address
-    # reversedRewrite: t.Optional[t.List[RewriteRule]]  #: reversed rewrite rules
-    # cors: t.Optional[CorsConfig]  #: cors configuration
-    # root: DocumentRootConfig  #: document root location and options
-    # assets: t.Optional[DocumentRootConfig]  #: assets location and options
-    # errorPage: t.Optional[t.TemplateConfig]  #: error page template
-
-    # if not s.get('reversedBase'):
-    #     s.reversedBase = environ['wsgi.url_scheme'] + '://' + environ['HTTP_HOST']
-    # if not s.get('reversedRewrite'):
-    #     s.reversedRewrite = []
+    def reversed_rewrite(self, req, query_string):
+        proto = 'https' if self.ssl else 'http'
+        base = self.reversed_url or (proto + '://' + req.env('HTTP_HOST'))
+        for rule in self.reversed_rewrite_rules:
+            m = re.match(rule.match, query_string)
+            if m:
+                s = re.sub(rule.match, rule.target, query_string)
+                if not re.match(r'^https?:', s):
+                    s = base + s
+                return s
+        return base + gws.SERVER_ENDPOINT + '?' + query_string

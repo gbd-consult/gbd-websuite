@@ -123,13 +123,19 @@ class Object(gws.Object):
         if p:
             self.client = self.add_child(gws.common.client.Object, p)
 
-        p = self.var('web') or t.Data({
-            'sites': [
-                t.Data({'host': '*'})
-            ]
-        })
-        for s in p.get('sites'):
-            self.web_sites.append(self.create_object('gws.web.site', s))
+        p = self.var('web.sites')
+        if not p:
+            p = [t.Data({
+                'sites': [
+                    t.Data({'host': '*'})
+                ]
+            })]
+
+        for s in p:
+            if self.var('web.ssl'):
+                s.ssl = True
+            site = self.create_object('gws.web.site', s)
+            self.web_sites.append(site)
 
         self.add_child(gws.common.csv.Object, self.var('csv'))
 

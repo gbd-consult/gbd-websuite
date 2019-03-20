@@ -4,6 +4,7 @@ import gws.gis.shape
 import gws.gis.feature
 import gws.tools.json2
 import gws.common.template
+import gws.common.search.runner
 
 import gws.types as t
 
@@ -19,7 +20,6 @@ class Config(t.WithTypeAndAccess):
 
 class Response(t.Response):
     features: t.List[t.FeatureProps]
-    total: int
 
 
 class Params(t.Data):
@@ -52,96 +52,47 @@ class Object(gws.Object):
         """Perform a search"""
 
         project = req.require_project(p.projectUid)
-        layers = gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids)
-        limit = min(p.limit, self.limit) if p.limit else self.limit
 
         args = t.SearchArgs({
             'bbox': p.bbox,
             'crs': project.map.crs,
+            'feature_format': self.feature_format,
             'keyword': (p.keyword or '').strip(),
-            'layers': layers,
+            'layers': gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids),
+            'limit': min(p.limit, self.limit) if p.limit else self.limit,
             'project': project,
             'resolution': p.resolution,
+            'shapes': [gws.gis.shape.from_props(s) for s in p.shapes] if p.get('shapes') else [],
             'tolerance': self.pixel_tolerance * p.resolution,
-            'shapes': [gws.gis.shape.from_props(s) for s in p.shapes] if p.get('shapes') else []
         })
 
-        # layer-provider-feature triples
-        lpf = []
-
-        for prov in project.get_children('gws.ext.search.provider'):
-            args.limit = limit - len(lpf)
-            if args.limit <= 0:
-                break
-            for f in self.do_search(req, None, prov, args):
-                lpf.append((None, prov, f))
-
-        for layer in layers:
-            args.limit = limit - len(lpf)
-            if args.limit <= 0:
-                break
-            for prov in layer.get_children('gws.ext.search.provider'):
-                for f in self.do_search(req, layer, prov, args):
-                    lpf.append((layer, prov, f))
-
-        total = len(lpf)
+        features = gws.common.search.runner.run(req, args)
         fprops = []
-        uids = set()
 
-        for layer, prov, f in lpf[:limit]:
-            # @TODO: we cannot ensure unique ids across all possible sources...
-            #
-            # if f.uid in uids:
-            #     continue
-            # uids.add(f.uid)
+        for f in features:
+            if f.provider and f.provider.title:
+                f.category = f.provider.title
+            elif f.layer and f.layer.title:
+                f.category = f.layer.title
 
-            f.provider = prov
-            f.layer = layer
-
-            f.transform(project.map.crs)
-
-            s = prov.title
-            if not s and layer:
-                s = layer.title
-            if s:
-                f.category = s
-
-            fmt = prov.feature_format
-            if not fmt and layer:
-                fmt = layer.feature_format
-            if not fmt:
+            fmt = None
+            if f.provider:
+                fmt = f.provider.feature_format
+            if not fmt and f.layer:
+                fmt = f.layer.feature_format
+            if not fmt and self.feature_format:
                 fmt = self.feature_format
 
-            f.apply_format(fmt)
+            if fmt:
+                f.apply_format(fmt)
 
             p = f.props
+
+            # security! raw attributes must not be exposed to the client
             delattr(p, 'attributes')
 
             fprops.append(p)
 
         return Response({
             'features': fprops,
-            'total': total,
         })
-
-    def do_search(self, req, layer, prov: t.SearchProviderInterface, args: t.SearchArgs):
-        gws.log.debug(
-            'SEARCH_BEGIN: prov=%r layer=%r limit=%d' % (gws.get(prov, 'uid'), gws.get(layer, 'uid'), args.limit))
-
-        if not req.user.can_use(prov):
-            gws.log.debug('SEARCH_END: NO_ACCESS')
-            return []
-
-        if not prov.can_run(args):
-            gws.log.debug(f'SEARCH_END: N_A')
-            return []
-
-        try:
-            res = prov.run(layer, args)
-        except Exception:
-            gws.log.exception()
-            gws.log.debug('SEARCH_FAILED')
-            return []
-
-        gws.log.debug('SEARCH_END')
-        return res
