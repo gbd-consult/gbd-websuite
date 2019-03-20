@@ -363,9 +363,6 @@ class Object(gws.Object):
 
         self._precheck_request(req, p.projectUid)
 
-        if not self.var('export'):
-            raise gws.web.error.NotFound()
-
         _, features = self._fetch(req, p)
 
         if not features:
