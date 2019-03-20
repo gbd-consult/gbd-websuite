@@ -414,6 +414,8 @@ class AnnotateFeatureDetailsForm extends gws.View<AnnotateViewProps> {
 
         let submit = () => {
             f.updateFromForm(this.props.annotateFormData);
+            master.unselectFeature();
+            master.app.stopTool('Tool.Annotate.Modify');
         };
 
         let data = this.formAttributes(f, ff);
@@ -525,6 +527,11 @@ class AnnotateFeatureList extends gws.View<AnnotateViewProps> {
                                 master.app.startTool('Tool.Annotate.Modify')
                             }}
                             content={f.label}
+                        />}
+
+                        rightButton={f => <gws.components.list.Button
+                            className="modSelectUnselectListButton"
+                            whenTouched={() => master.removeFeature(f)}
                         />}
 
                         withZoom
