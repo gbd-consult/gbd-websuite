@@ -57,7 +57,7 @@ class BuchungConfig:
 
 
 class UiConfig:
-    """UI configuration."""
+    """Flurstückssuche UI configuration."""
 
     export: bool = False  #: export function enabled
     select: bool = False  #: select mode enabled

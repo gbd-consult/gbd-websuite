@@ -246,7 +246,7 @@ class Object(gws.Object):
 
         with self.db.connect() as conn:
             for d in data:
-                conn.insert_one(self.request_table.name, 'id', d)
+                conn.insert_one(self.request_table.name, 'request_id', d)
 
         # tab = log_table()
         # db.run(_f('''INSERT INTO {tab}(request_id,selection,ts)
