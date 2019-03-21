@@ -75,7 +75,7 @@ class BaseConfig(t.WithTypeAndAccess):
     extent: t.Optional[t.Extent]  #: layer extent
     featureFormat: t.Optional[t.FormatConfig]  #: feature formatting options
     legend: LegendConfig = {}  #: legend configuration
-    meta: t.MetaConfig = {}  #: layer meta data
+    meta: t.Optional[t.MetaConfig]  #: layer meta data
     opacity: float = 1  #: layer opacity
     search: gws.common.search.Config = {}  #: layer search configuration
     title: str  #: layer title
@@ -157,10 +157,18 @@ class Base(gws.PublicObject, t.LayerObject):
     def configure(self):
         super().configure()
 
-        self.meta = self.var('meta')
-        # title at the top level config preferred
-        if self.var('title'):
-            self.meta.title = self.var('title')
+        m = self.var('meta')
+        title = self.var('title')
+        if m:
+            self.meta = m
+            # title at the top level config preferred
+            if title:
+                self.meta.title = title
+        else:
+            self.meta = t.MetaData({
+                'title': title
+            })
+
         self.title = self.meta.title
 
         self.uid = self.var('uid') or gws.as_uid(self.title)
@@ -445,3 +453,11 @@ def add_layers_to_object(obj, layer_configs):
             gws.log.error(f'FAILED LAYER: map={obj.uid!r} layer={uid!r} error={e!r}')
             gws.log.exception()
     return ls
+
+
+def add_meta_from_source_layers(obj):
+    if obj.var('meta'):
+        return
+    sl = getattr(obj, 'source_layers', [])
+    if sl and len(sl) == 1:
+        obj.meta = sl[0].meta

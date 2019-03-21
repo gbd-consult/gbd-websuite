@@ -8,6 +8,8 @@ import gws.gis.zoom
 import gws.ows.request
 import gws.ows.util
 import gws.qgis
+import gws.server.monitor
+
 import gws.types as t
 
 
@@ -33,6 +35,8 @@ class Object(gws.gis.layer.Image):
 
         self.path = self.var('path')
         self.service = gws.qgis.shared_service(self, self.config)
+        gws.server.monitor.add_path(self.path)
+
         self.source_crs = gws.ows.util.best_crs(self.map.crs, self.service.supported_crs)
 
         self.source_layers = gws.gis.source.filter_layers(
@@ -52,6 +56,8 @@ class Object(gws.gis.layer.Image):
 
         # if no legend.url is given, use an auto legend
         self.has_legend = self.var('legend.enabled')
+
+        gws.gis.layer.add_meta_from_source_layers(self)
 
     def render_bbox(self, bbox, width, height, **client_params):
         forward = {}

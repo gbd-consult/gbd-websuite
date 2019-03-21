@@ -167,6 +167,18 @@ def _map_layer(el):
     sl.meta.name = el.get_text('id')
     sl.meta.url = el.get_text('metadataUrl')
 
+    if el.get('resourceMetadata'):
+        sl.meta.abstract = el.get_text('resourceMetadata.abstract')
+        sl.meta.abstract = el.get_text('resourceMetadata.abstract')
+
+        d = gws.compact({
+            k: el.get_text('resourceMetadata.contact.' + k)
+            for k in ('name', 'organization', 'position', 'voice', 'fax', 'email', 'role')
+        })
+
+        if d:
+            sl.meta.contact = t.MetaContact(d)
+
     crs = el.get_text('srs.spatialrefsys.authid')
 
     sl.supported_crs = [crs]

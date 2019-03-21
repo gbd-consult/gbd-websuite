@@ -3,10 +3,11 @@ import gws.config
 import gws.config.parser
 import gws.gis.layer
 import gws.gis.source
+import gws.ows.util
 import gws.qgis
+import gws.server.monitor
 import gws.tools.net
 import gws.types as t
-import gws.ows.util
 
 
 class Config(gws.gis.layer.ImageConfig):
@@ -34,6 +35,7 @@ class Object(gws.gis.layer.Base):
 
         self.path = self.var('path')
         self.service = gws.qgis.shared_service(self, self.config)
+        gws.server.monitor.add_path(self.path)
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))
