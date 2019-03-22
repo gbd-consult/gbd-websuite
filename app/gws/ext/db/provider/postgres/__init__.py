@@ -1,3 +1,5 @@
+import re
+
 import gws
 import gws.config
 import gws.gis.feature
@@ -122,8 +124,12 @@ class Object(gws.Object, t.DbProviderObject):
 
             sort = limit = ''
 
-            if args.get('sort'):
-                sort = 'ORDER BY %s' % args.get('sort')
+            p = args.get('sort')
+            if p:
+                if re.match(r'^\w+$', p):
+                    p = conn.quote_ident(p)
+                sort = 'ORDER BY %s' % p
+
             if args.get('limit'):
                 limit = 'LIMIT %d' % args.get('limit')
 
