@@ -45,9 +45,10 @@ class QgisConfig(SrvConfig):
 class Config(t.Config):
     """Server module configuation"""
 
+    autoRun: str = ''  #: shell command to run before server start
+    logLevel: gws.log.Level = 'INFO'  #: logging level
     mapproxy: MapproxyConfig = {}  #: bundled Mapproxy module
     qgis: QgisConfig = {}  #: bundled Qgis module
     spool: SpoolConfig = {}  #: spool server module
-    web: WebConfig = {}  #: web server module
-    logLevel: gws.log.Level = 'INFO'  #: logging level
     timeout: t.duration = 60  #: server timeout
+    web: WebConfig = {}  #: web server module

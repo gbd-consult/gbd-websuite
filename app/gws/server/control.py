@@ -27,7 +27,14 @@ def start():
 
     commands = ini.create(gws.SERVER_DIR, pid_dir)
 
+    s = cfg.get('server').get('autoRun')
+    if s:
+        commands.insert(0, s)
+
     with open(commands_path, 'wt') as fp:
+        fp.write('echo "----------------------------------------------------------"\n')
+        fp.write('echo "SERVER START"\n')
+        fp.write('echo "----------------------------------------------------------"\n')
         fp.write('\n'.join(commands))
 
 
