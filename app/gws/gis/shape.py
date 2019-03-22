@@ -42,6 +42,22 @@ def from_xy(x, y, crs):
     return Shape(shapely.geometry.Point(x, y), crs)
 
 
+def merge_extents(exts):
+    ex = [1e20, 1e20, 0, 0]
+    for e in exts:
+        minx = min(e[0], e[2])
+        maxx = max(e[0], e[2])
+        miny = min(e[1], e[3])
+        maxy = max(e[1], e[3])
+        ex = [
+            min(ex[0], minx),
+            min(ex[1], miny),
+            max(ex[2], maxx),
+            max(ex[3], maxy)
+        ]
+    return ex
+
+
 def union(shapes):
     if not shapes:
         return None

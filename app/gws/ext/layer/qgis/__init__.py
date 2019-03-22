@@ -106,6 +106,9 @@ class Object(gws.gis.layer.Base):
             gws.log.warn(f'directRender not supported for {prov!r}')
             la = self._qgis_based_layer(sl)
 
+        la['cache'] = self.var('cache')
+        la['grid'] = self.var('grid')
+
         if not sl.is_queryable:
             return la
 
@@ -120,8 +123,6 @@ class Object(gws.gis.layer.Base):
                 'enabled': False
             }
 
-        la['cache'] = self.var('cache')
-        la['grid'] = self.var('grid')
 
         return la
 

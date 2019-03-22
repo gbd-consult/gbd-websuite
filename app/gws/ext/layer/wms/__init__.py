@@ -2,6 +2,7 @@ import gws
 import gws.gis.layer
 import gws.gis.legend
 import gws.gis.proj
+import gws.gis.shape
 import gws.gis.source
 import gws.gis.zoom
 import gws.ows.request
@@ -30,11 +31,12 @@ section 7.3.3.3
 
 """
 
+
 class WmsServiceConfig(t.Config):
     capsCacheMaxAge: t.duration = '1d'  #: max cache age for capabilities documents
     invertAxis: t.Optional[t.List[t.crsref]]  #: projections that have an inverted axis (yx)
     maxRequests: int = 0  #: max concurrent requests to this source
-    capsLayersBottomUp: bool = False #: layers are listed from bottom to top in the GetCapabilities document
+    capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
     url: t.url  #: service url
 
@@ -48,6 +50,17 @@ def configure_wms(target: gws.PublicObject, **filter_args):
         target.service.layers,
         target.var('sourceLayers'),
         **filter_args)
+
+    if not target.var('extent'):
+        source_extents = []
+        for sl in target.source_layers:
+            if sl.extents:
+                for crs, ext in sl.extents.items():
+                    source_extents.append(gws.gis.proj.transform_bbox(ext, crs, target.map.crs))
+                    gws.log.debug(f'extent {ext!r} for {sl.a_uid!r}')
+                    break
+        if source_extents:
+            target.extent = gws.gis.shape.merge_extents(source_extents)
 
 
 class Config(gws.gis.layer.ImageConfig, WmsServiceConfig):
@@ -169,19 +182,6 @@ class Object(gws.gis.layer.Image):
 
         self.source_legend_urls = urls
         self.has_legend = True
-
-    # def configure_extent(self):
-    #     e = self.var('extent')
-    #     if e:
-    #         return e
-    #
-    #     if self.source and self.source.extent:
-    #         return gws.gis.proj.transform_bbox(
-    #             self.source.extent,
-    #             self.source.crs,
-    #             self.crs
-    #         )
-    #     return t.cast(t.MapView, self.parent).extent
 
 
 class SearchConfig(gws.common.search.provider.Config, WmsServiceConfig):
