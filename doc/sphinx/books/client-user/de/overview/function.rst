@@ -5,28 +5,29 @@ Funktionalität
 ..............
 
 
-Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis von Plugins zur Verfügung gestellt werden und sich fortlaufend erweitern. Diese Plugins können nach Wunsch angeordnet und designed werden, sowie zur GBD WebSuite hinzugefügt oder entfernt werden:
+Die **GBD WebSuite** bietet eine Vielzahl an Funktionalität, welche auf Basis von Plugins zur Verfügung gestellt und flexibel konfiguriert werden kann. Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebung angepasst oder in diese integriert werden. Die aktuelle Funktionalität umfasst:
 
-* QGIS und QGIS Server Integration als Plugin, welches nativ mit QGIS kommuniziert.
-* Integration von Hintergrundkarten
-* Abfragen und Darstellen per Klick und Mouseover für WMS
-* Auswahl und Abfrage von WFS
-* Authentifizierung (LDAP und PostgreSQl)
-* Digitalisieren von Punkten, Linien und Flächen
-* ALKIS Integration, sowie Suche von und Beauskunftung über Flurstücken
-* Schnittstelle zur Fachanwendung D-ProCon (Demographie)
-* Schnittstelle zur Fachanwendung GeKoS Online (E-Government)
-* Schnittstellen zu anderen GIS (Mapnik, ArcGIS)
-* Beschriftung mit Bemaßung von Strecken
-* Konfigurierbare Suchmaschinen (Nominatim, ALKIS-Adressen und PostGIS)
-* Drucken von Zeichnungen, die im GBD WebSuite Client erzeugt werden
+* QGIS und QGIS Server Integration
 * Caching von Getmap und GetPrint Anfragen
+* Einbinden von Hintergunddiensten
+* Objektabfragen per Klick oder Mouseover
+* Räumliche Suche von Objekten in der Karte
+* Markieren und Messen in der Karte
+* Bemaßung von Segmentlängen in der Karte
+* Benutzer-Authentifizierung (LDAP-, Postgres- und Datei-basiert)
+* Editieren von Punkten, Linien und Flächen
+* ALKIS Integration (Flurstücksuche, Beauskunftung und Druck)
+* Konfigurierbare Suche (Nominatim, ALKIS-Adressen und Postgres)
+* Schnittstelle zur Fachanwendung D-ProCon (Demographische Analysen)
+* Schnittstelle zur Fachanwendung GekoS Online (E-Government)
+* Drucken in unterschiedlicher Auflösung inklusive redlining
+* Screenshots erstellen im PNG-Format
 
 
 GBD WebSuite Server und Client
 ..............................
 
-Der **GBD WebSuite Server** basiert auf Python mit Support für PyQGIS und weiteren GIS Bibliotheken. Er läuft in einem WSGI Container hinter einem Caching Nginx Proxy.
+Der **GBD WebSuite Server** basiert auf Python mit Support für PyQGIS und weiteren GIS Bibliotheken. Er läuft in einem WSGI Container hinter einem Caching NGINX Proxy.
 
 Der **GBD WebSuite Client** basiert auf React JS und verwendet als Kartenbibliothek OpenLayers. Er besitzt ein responsive Design, das sich jeweils auf die Bildschirmauflösung des Clients einstellt. Um ein optimales Zusammenspiel mit OpenLayers zu erreichen und um die Erweiterung, Wartung und Pflege zu optimieren wurde ein UI Framework implementiert. Die UI Bibliothek wird über einen Abstraktionslayer angesprochen, sodass diese aktualisiert oder ersetzt werden kann, ohne den Kern der Plattform zu beeinflussen.
 
