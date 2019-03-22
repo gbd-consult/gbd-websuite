@@ -14,10 +14,10 @@ module.exports = v => ({
     },
 
     '.modOverviewBox': {
-        borderWidth: 3,
+        borderWidth: 1,
         borderStyle: 'solid',
-        borderColor: v.COLOR.blue200,
-        boxShadow: '0 0 0 4000px rgba(240, 240, 240, 0.5)',
+        borderColor: v.COLOR.blueGrey200,
+        boxShadow: '0 0 0 4000px ' + v.COLOR.opacity(v.COLOR.blueGrey50, 0.7),
         minWidth: 20,
         minHeight: 20,
 

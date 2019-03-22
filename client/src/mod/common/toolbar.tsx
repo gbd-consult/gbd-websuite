@@ -111,7 +111,7 @@ export abstract class Button extends gws.Controller implements gws.types.IToolba
 class ToolbarContainerView extends gws.View<ToolbarContainerProps> {
 
     render() {
-        let size = this.props.toolbarSize;
+        let size = this.props.toolbarSize || 999;
 
         let expanded = this.props.toolbarOverflowExpanded,
             items = this.props.controller.children as Array<gws.types.IToolbarItem>,

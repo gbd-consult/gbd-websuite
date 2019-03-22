@@ -33,18 +33,25 @@ class MarkerController extends gws.Controller {
                 y = Number(this.app.urlParams['y']),
                 z = Number(this.app.urlParams['z']);
 
-            if(x && y) {
+            if (x && y) {
                 this.showXYZ(x, y, z);
+                return;
             }
+
+            let bbox = this.app.urlParams['bbox'];
+            if (bbox) {
+                this.showBbox(bbox.split(',').map(Number), z)
+            }
+
         });
     }
 
     showXYZ(x, y, z) {
         let geometry = new ol.geom.Point([x, y]),
-        f = new gws.map.Feature(this.map, {geometry}),
+            f = new gws.map.Feature(this.map, {geometry}),
             mode = '';
 
-        if(z) {
+        if (z) {
             this.map.setScale(z);
             mode = 'draw pan';
         } else {
@@ -57,7 +64,26 @@ class MarkerController extends gws.Controller {
             },
             infoboxContent: <gws.components.Infobox controller={this}><p>{x}, {y}</p></gws.components.Infobox>
         })
+    }
 
+    showBbox(extent, z) {
+        let geometry = ol.geom.Polygon.fromExtent(extent),
+            f = new gws.map.Feature(this.map, {geometry}),
+            mode = '';
+
+        if (z) {
+            this.map.setScale(z);
+            mode = 'draw pan';
+        } else {
+            mode = 'draw zoom';
+        }
+        this.update({
+            marker: {
+                features: [f],
+                mode
+            },
+            infoboxContent: <gws.components.Infobox controller={this}><p>{extent.join(', ')}</p></gws.components.Infobox>
+        })
     }
 
     show(content) {
@@ -89,7 +115,7 @@ class MarkerController extends gws.Controller {
         if (mode.draw || mode.fade)
             this.draw(geoms);
 
-        let extent = (new  ol.geom.GeometryCollection(geoms)).getExtent();
+        let extent = (new ol.geom.GeometryCollection(geoms)).getExtent();
 
         if (mode.zoom) {
             this.map.setViewExtent(extent, !mode.noanimate, ZOOM_BUFFER);
@@ -125,10 +151,11 @@ class MarkerController extends gws.Controller {
     makeFeature(g: ol.geom.Geometry) {
         let args: gws.types.IMapFeatureArgs = {};
 
-        if(g) {
+        if (g) {
             args.geometry = g;
             args.style = this.style;
-        };
+        }
+        ;
 
         return new gws.map.Feature(this.map, args);
     }

@@ -56,9 +56,15 @@ module.exports = v => ({
     },
 
     '.modSearchResultsFeatureText': {
-        '.head': {
+        'p.head': {
             color: v.FOCUS_COLOR,
             cursor: 'pointer',
+            fontSize: v.NORMAL_FONT_SIZE,
+            marginBottom: v.UNIT,
+        },
+        'p': {
+            fontSize: v.SMALL_FONT_SIZE,
+            lineHeight: '120%'
         },
     },
 

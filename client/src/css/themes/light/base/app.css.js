@@ -32,6 +32,7 @@ module.exports = v => ({
         right: 0,
         bottom: 0,
         backgroundColor: v.COLOR.mapBackground,
+        backgroundImage: v.IMAGE('map-background.png'),
     },
 
     '.appFatalError': {
@@ -49,3 +50,4 @@ module.exports = v => ({
     },
 
 });
+

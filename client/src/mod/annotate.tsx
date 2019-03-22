@@ -157,18 +157,22 @@ class AnnotateFeature extends gws.map.Feature {
 
 function computeDimensions(shapeType, geom, projection) {
 
+    let extent = geom.getExtent();
+
     if (shapeType === 'Point') {
         let g = geom as ol.geom.Point;
         let c = g.getCoordinates();
         return {
             x: c[0],
-            y: c[1]
+            y: c[1],
+            extent,
         }
     }
 
     if (shapeType === 'Line') {
         return {
-            len: ol.Sphere.getLength(geom, {projection})
+            len: ol.Sphere.getLength(geom, {projection}),
+            extent,
         }
     }
 
@@ -178,6 +182,7 @@ function computeDimensions(shapeType, geom, projection) {
         return {
             len: ol.Sphere.getLength(r, {projection}),
             area: ol.Sphere.getArea(g, {projection}),
+            extent,
         };
     }
 
@@ -195,6 +200,7 @@ function computeDimensions(shapeType, geom, projection) {
             y: c[3][1],
             w: Math.abs(c[1][0] - c[0][0]),
             h: Math.abs(c[2][1] - c[1][1]),
+            extent,
         }
     }
 
@@ -208,6 +214,7 @@ function computeDimensions(shapeType, geom, projection) {
             x: c[0],
             y: c[1],
             radius: g.getRadius(),
+            extent,
         }
     }
 
@@ -240,6 +247,8 @@ function formatTemplate(feature: AnnotateFeature, text, dims) {
             case 'x':
             case 'y':
                 return formatCoordinate(feature, n);
+            case 'extent':
+                return n.map(c => formatCoordinate(feature, c)).join(', ')
 
         }
     }

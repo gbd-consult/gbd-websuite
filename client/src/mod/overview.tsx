@@ -32,7 +32,7 @@ class SidebarBody extends gws.View<ViewProps> {
 
     componentDidMount() {
         if (this.mapRef.current)
-            this.props.controller.setMapTarget(this.mapRef.current);
+            this.props.controller.mounted(this.mapRef.current);
     }
 
     submit() {
@@ -124,12 +124,12 @@ class SidebarBody extends gws.View<ViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                {this.props.controller.oMap && <div className="modOverviewMap" ref={this.mapRef}/>}
+                {this.props.controller.overviewMap && <div className="modOverviewMap" ref={this.mapRef}/>}
                 {this.mapInfoBlock()}
             </sidebar.TabBody>
 
             {desc && <sidebar.TabFooter>
-                <div  className="modOverviewTabFooter">
+                <div className="modOverviewTabFooter">
                     <gws.ui.TextBlock className="cmpDescription" withHTML content={desc}/>
                 </div>
             </sidebar.TabFooter>}
@@ -151,7 +151,6 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
         if (this.app.project.overviewMap) {
             this.overviewMap = new gws.MapManager(this.app, false);
             await this.overviewMap.init(this.app.project.overviewMap, {});
-            this.initMap();
         }
 
         this.app.whenChanged('mapUpdateCount', () => this.refresh());
@@ -176,31 +175,43 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
         );
     }
 
+    mounted(div) {
+        if (!this.overviewMap)
+            return;
+
+        if (!this.oMap)
+            this.initMap();
+
+        this.setMapTarget(div);
+    }
+
     setMapTarget(div) {
-        if (this.oMap) {
-            let e = this.app.project.overviewMap.extent;
-            let f = ol.extent.getWidth(e) / ol.extent.getHeight(e);
-            let h = gws.tools.clamp(div.offsetWidth / f, MIN_MAP_HEIGHT, MAX_MAP_HEIGHT);
 
-            div.style.height = (h | 0) + 'px';
+        let e = this.app.project.overviewMap.extent;
+        let f = ol.extent.getWidth(e) / ol.extent.getHeight(e);
+        let h = gws.tools.clamp(div.offsetWidth / f, MIN_MAP_HEIGHT, MAX_MAP_HEIGHT);
 
-            this.oMap.setTarget(div);
+        div.style.height = (h | 0) + 'px';
 
-            // overview map always fits the extent
-            this.oMap.getView().fit(e, {constrainResolution: false})
+        this.oMap.setTarget(div);
 
-            this.refresh();
-        }
+        // overview map always fits the extent
+        // @TODO: if we don't specify the resolution in the backend, we can't cache it!
+        // so stick with a backend resolution for now (which is easy to compute as extentWidth/pixelWidth)
+        // this.oMap.getView().fit(e, {constrainResolution: false})
     }
 
     initMap() {
-        let m = this.overviewMap.oMap;
 
-        m.addInteraction(new ol.interaction.Pointer({
+        this.oMap = this.overviewMap.oMap;
+
+        this.oMap.addInteraction(new ol.interaction.Pointer({
             handleDownEvent: e => this.handleMouseEvent(e),
             handleDragEvent: e => this.handleMouseEvent(e),
 
         }));
+
+        this.oProjection = this.oMap.getView().getProjection();
 
         let d = document.createElement('div');
         d.className = 'modOverviewBox';
@@ -211,10 +222,10 @@ class SidebarOverviewController extends gws.Controller implements gws.types.ISid
             positioning: 'center-center',
         });
 
-        m.addOverlay(this.oOverlay);
+        this.oMap.addOverlay(this.oOverlay);
 
-        this.oMap = m;
-        this.oProjection = m.getView().getProjection();
+        this.refresh();
+
     }
 
     mouseTimer: any = 0;

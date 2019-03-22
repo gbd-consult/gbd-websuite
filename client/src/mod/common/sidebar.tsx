@@ -106,7 +106,7 @@ class PopupHeaderButton extends gws.View<ButtonProps> {
 
 class Header extends gws.View<SidebarProps> {
     render() {
-        let size = this.props.sidebarSize;
+        let size = this.props.sidebarSize || 999;
 
         let expanded = this.props.sidebarOverflowExpanded,
             items = this.props.controller.children,
@@ -137,7 +137,7 @@ class Header extends gws.View<SidebarProps> {
 class SidebarOverflowView extends gws.View<SidebarProps> {
 
     render() {
-        let size = this.props.sidebarSize;
+        let size = this.props.sidebarSize || 999;
 
         let expanded = this.props.sidebarOverflowExpanded,
             items = this.props.controller.children,
