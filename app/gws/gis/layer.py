@@ -171,11 +171,11 @@ class Base(gws.PublicObject, t.LayerObject):
 
         self.title = self.meta.title
 
-        self.uid = self.var('uid') or gws.as_uid(self.title)
-
+        uid = self.var('uid') or gws.as_uid(self.title)
         self.map = self.get_closest('gws.common.map')
         if self.map:
-            self.uid = self.map.uid + '.' + self.uid
+            uid = self.map.uid + '.' + uid
+        self.set_uid(uid)
 
         self.is_public = gws.auth.api.role('all').can_use(self)
 

@@ -3,6 +3,8 @@ import importlib
 from . import util, error, log
 import gws.types as t
 
+_uids = set()
+
 
 class Object(t.ObjectInterface):
     def __init__(self):
@@ -23,9 +25,33 @@ class Object(t.ObjectInterface):
             return True
         return self.klass.startswith(klass + '.')
 
+    def set_uid(self, uid):
+        with util.global_lock:
+            n = 0
+            u = uid
+            while uid in _uids:
+                n += 1
+                uid = u + str(n)
+            print('####', uid, _uids)
+            _uids.add(uid)
+
+            self.uid = uid
+
+    def set_auto_uid(self):
+        u = self.var('uid')
+        if u:
+            return self.set_uid(u)
+        u = self.var('title')
+        if u:
+            return self.set_uid(util.as_uid(u))
+        u = self.klass.replace('.', '_')
+        return self.set_uid(u)
+
     def initialize(self, cfg):
         self.config = cfg
-        self.uid = _get_uid(cfg, self.klass)
+
+        self.set_auto_uid()
+
         self.access = self.var('access')
         try:
             log.debug(f'configure: {self.klass} uid={self.uid}')
@@ -161,25 +187,6 @@ def _class_name(s):
     if name == 'Object':
         return mod
     return mod + '.' + name
-
-
-_object_count = 0
-
-
-def _get_uid(cfg, klass):
-    global _object_count
-
-    u = cfg.get('uid')
-    if u:
-        return util.as_uid(u)
-
-    u = cfg.get('title')
-    if u:
-        return util.as_uid(u)
-
-    u = cfg.get('type')
-    _object_count += 1
-    return str(klass).replace('.', '_') + '_' + str(_object_count)
 
 
 def _exc_name_for_error(e):

@@ -91,7 +91,7 @@ class Object(gws.Object):
 
         self.defaults = self.var('defaults')
 
-        self.uid = 'APP'
+        self.set_uid('APP')
 
         self.qgis_version = gws.qgis.server.version()
 

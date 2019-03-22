@@ -45,10 +45,11 @@ class Object(gws.PublicObject, t.MapObject):
     def configure(self):
         super().configure()
 
-        self.uid = self.var('uid') or 'map'
+        uid = self.var('uid') or 'map'
         p = self.get_closest('gws.common.project')
         if p:
-            self.uid = p.uid + '.' + self.uid
+            uid = p.uid + '.' + uid
+        self.set_uid(uid)
 
         self.crs = self.var('crs')
         self.extent = self.var('extent')

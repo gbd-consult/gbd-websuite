@@ -40,7 +40,7 @@ class Object(gws.common.template.Object):
         if not self.template:
             raise ValueError('print template not found')
 
-        self.uid = '%s_%d' % (misc.sha256(self.path), self.template.index)
+        self.set_uid('%s_%d' % (misc.sha256(self.path), self.template.index))
         self.title = self.template.title
 
         self.page_size = self._page_size()

@@ -71,8 +71,6 @@ class Object(gws.PublicObject, t.ProjectObject):
             self.meta.title = self.var('title')
         self.title = self.meta.title
 
-        self.uid = self.var('uid') or gws.as_uid(self.title)
-
         self.locale = self.var('locale', parent=True)
 
         p = self.var('map')
