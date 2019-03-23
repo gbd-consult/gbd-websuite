@@ -36,7 +36,8 @@ module.exports = v => {
         '.modDrawCircleButton': button('g_circle'),
 
         '.modDrawOkButton': button('google:navigation/check'),
-        '.modDrawCancelButton': button('google:content/undo'),
+        '.modDrawCancelButton': button('google:content/block'),
+
 
         '.modDrawModifyHandle': {
             mark: 'circle',

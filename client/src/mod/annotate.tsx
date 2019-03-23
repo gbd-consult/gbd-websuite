@@ -284,6 +284,10 @@ class AnnotateLayer extends gws.map.layer.FeatureLayer {
 class AnnotateDrawTool extends draw.Tool {
     drawFeature: AnnotateFeature;
 
+    get title() {
+        return this.__('modAnnotateSidebarTitle')
+    }
+
     start() {
         super.start();
         this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Annotate'});

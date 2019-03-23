@@ -99,6 +99,10 @@ class DimensionElement {
         return this.dimPoints.indexOf(p) >= 0 || this.controlPoint === p;
     }
 
+    hasSelectedPoints() {
+        return this.dimPoints.some(p => p.isSelected) || this.controlPoint.isSelected;
+    }
+
     get coordinates(): Array<ol.Coordinate> {
         return [this.controlPoint].concat(this.dimPoints).map(p => p.coordinate);
     }
@@ -911,6 +915,9 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
         let master = _master(this.props.controller),
             model = master.model;
 
+        let selectedElement = master.getValue('dimensionSelectedElement');
+
+
         let zoom = (e: DimensionElement, mode) => {
             let f = master.map.newFeature({
                 geometry: new ol.geom.MultiPoint(e.coordinates)
@@ -935,17 +942,17 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
         let changed = (key, val) => master.update({dimensionSelectedText: val});
 
         let submit = () => {
-            let e = master.getValue('dimensionSelectedElement');
-            if (e)
-                e.text = master.getValue('dimensionSelectedText');
+            if (selectedElement)
+                selectedElement.text = master.getValue('dimensionSelectedText');
             model.changed();
+            master.selectElement(null)
         };
 
         let hasElements = !gws.tools.empty(model.elements);
 
         let body;
 
-        if (this.props.dimensionSelectedElement) {
+        if (selectedElement) {
             let formData = [{
                 name: 'text',
                 title: this.__('modDimensionElementText'),
@@ -989,6 +996,8 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
             body = <DimensionElementList
                 controller={this.props.controller}
                 items={model.elements}
+
+                isSelected={e => e.hasSelectedPoints()}
 
                 content={e => <gws.ui.Link
                     whenTouched={() => focus(e)}
