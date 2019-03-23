@@ -32,9 +32,7 @@ class Object(t.ObjectInterface):
             while uid in _uids:
                 n += 1
                 uid = u + str(n)
-            print('####', uid, _uids)
             _uids.add(uid)
-
             self.uid = uid
 
     def set_auto_uid(self):

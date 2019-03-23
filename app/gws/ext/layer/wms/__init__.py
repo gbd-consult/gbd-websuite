@@ -57,7 +57,6 @@ def configure_wms(target: gws.PublicObject, **filter_args):
             if sl.extents:
                 for crs, ext in sl.extents.items():
                     source_extents.append(gws.gis.proj.transform_bbox(ext, crs, target.map.crs))
-                    gws.log.debug(f'extent {ext!r} for {sl.a_uid!r}')
                     break
         if source_extents:
             target.extent = gws.gis.shape.merge_extents(source_extents)

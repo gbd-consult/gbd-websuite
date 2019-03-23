@@ -31,7 +31,7 @@ def _check_access(obj, cur, roles):
 
     for a in access:
         if a.role in roles:
-            gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: {a.role}:{a.type} in {_repr(cur)}')
+            # gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: {a.role}:{a.type} in {_repr(cur)}')
             return a.type == 'allow'
 
 
