@@ -1,8 +1,10 @@
 Auswahl
 =======
 
-Anhand der Menüleiste |menu|
-gelangt man über das Icon |select| ``Auswahl`` zum entsprechenden Menüpunkt. Alternativ öffnet sich dieses Menüfenster auch automatisch, sobald das ``Auswählen``-Werkzeug aktiviert wird. Das Werkzeug sowie der dazu gehörige Menüpunkt können auf Wunsch auch ausgetragen oder nur gewissen Nutzern zur Verfügung gestellt werden.
+Die Ebene |select| ``Auswahl`` der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das Werkzeug |select|  ``Auswählen`` im Kartenfenster erfasst werden. Die Ebene wird automatisch angezeigt, wenn das ``Auswählen``-Werkzeug aktiviert wird.
+
+ .. figure:: ../../../screenshots/Select.png
+   :align: center
 
 Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit der ``Auswählen``-Funktion, aus der Werkzeugleiste ausgewählt wurden. So können Sie in diesem Menüpunkt eine Übersicht gewinnen, über die Objekte die Sie zuvor ausgewählt haben. Diese Objekte können über das |delete| Icon aus der Auswahl entfernt werden oder über das |fokus| Icon fokusiert werden, indem auf das gewählte Objekt hineingezoomt wird.
 

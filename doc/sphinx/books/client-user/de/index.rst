@@ -1,7 +1,7 @@
 GBD WebSuite Client Benutzerhandbuch
 ====================================
 
-Anleitungen für GBD WebSuite Client Nutzer.
+Anleitungen für GBD WebSuite Client Nutzer
 
 
 .. toctree::
