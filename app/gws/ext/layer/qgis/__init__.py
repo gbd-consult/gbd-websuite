@@ -35,6 +35,8 @@ class Object(gws.gis.layer.Base):
 
         self.path = self.var('path')
         self.service = gws.qgis.shared_service(self, self.config)
+        self.use_meta(self.var('meta') or self.service.meta)
+
         gws.server.monitor.add_path(self.path)
 
         self.direct_render = set(self.var('directRender', default=[]))
@@ -122,7 +124,6 @@ class Object(gws.gis.layer.Base):
             la['search'] = {
                 'enabled': False
             }
-
 
         return la
 

@@ -78,7 +78,7 @@ class BaseConfig(t.WithTypeAndAccess):
     meta: t.Optional[t.MetaConfig]  #: layer meta data
     opacity: float = 1  #: layer opacity
     search: gws.common.search.Config = {}  #: layer search configuration
-    title: str  #: layer title
+    title: str = ''  #: layer title
     uid: str = ''  #: layer unique id
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
@@ -154,29 +154,29 @@ class Base(gws.PublicObject, t.LayerObject):
     def has_search(self):
         return len(self.get_children('gws.ext.search.provider')) > 0
 
-    def configure(self):
-        super().configure()
-
-        m = self.var('meta')
+    def use_meta(self, meta):
         title = self.var('title')
-        if m:
-            self.meta = m
+        if meta:
             # title at the top level config preferred
             if title:
-                self.meta.title = title
+                meta.title = title
+            self.meta = meta
         else:
             self.meta = t.MetaData({
                 'title': title
             })
-
         self.title = self.meta.title
 
-        uid = self.var('uid') or gws.as_uid(self.title)
+        uid = self.var('uid') or gws.as_uid(self.title) or 'layer'
         self.map = self.get_closest('gws.common.map')
         if self.map:
             uid = self.map.uid + '.' + uid
         self.set_uid(uid)
 
+    def configure(self):
+        super().configure()
+
+        self.use_meta(self.var('meta'))
         self.is_public = gws.auth.api.role('all').can_use(self)
 
         p = self.var('legend')

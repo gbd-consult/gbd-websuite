@@ -45,22 +45,30 @@ def parse(srv: t.ServiceInterface, xml):
 
 
 def _project_meta_from_props(props):
-    m = t.MetaData()
+    p = gws.strip({
+        'abstract': _pval(props, 'WMSServiceAbstract'),
+        'attribution': _pval(props, 'CopyrightLabel.Label'),
+        'keywords': _pval(props, 'WMSKeywordList'),
+        'title': _pval(props, 'WMSServiceTitle'),
+    })
 
-    m.abstract = _pval(props, 'WMSServiceAbstract')
-    m.attribution = _pval(props, 'CopyrightLabel.Label')
-    m.keywords = _pval(props, 'WMSKeywordList')
-    m.title = _pval(props, 'WMSServiceTitle')
+    if not p:
+        return
 
-    m.contact = t.MetaContact()
+    meta = t.MetaData(p)
 
-    m.contact.email = _pval(props, 'WMSContactMail')
-    m.contact.organization = _pval(props, 'WMSContactOrganization')
-    m.contact.person = _pval(props, 'WMSContactPerson')
-    m.contact.phone = _pval(props, 'WMSContactPhone')
-    m.contact.position = _pval(props, 'WMSContactPosition')
+    p = gws.strip({
+        'email': _pval(props, 'WMSContactMail'),
+        'organization': _pval(props, 'WMSContactOrganization'),
+        'person': _pval(props, 'WMSContactPerson'),
+        'phone': _pval(props, 'WMSContactPhone'),
+        'position': _pval(props, 'WMSContactPosition'),
 
-    return m
+    })
+    if p:
+        meta.contact = t.MetaContact(p)
+
+    return meta
 
 
 def _pval(props, key):
@@ -73,13 +81,13 @@ def _properties(el):
     et = el.attr('type')
 
     if not et:
-        return {e.name.lower(): _properties(e) for e in el.all()}
+        return gws.strip({e.name.lower(): _properties(e) for e in el.all()})
 
     if et == 'int':
         return int(el.text or '0')
 
     if et == 'QStringList':
-        return [e.text for e in el.all()]
+        return gws.strip([e.text for e in el.all()])
 
     if et == 'QString':
         return el.text
@@ -156,28 +164,34 @@ def _map_layers(root, props):
     return map_layers
 
 
+def _layer_meta(el):
+    p = gws.strip({
+        'abstract': el.get_text('resourceMetadata.abstract'),
+        'keywords': gws.compact(e.text for e in el.all('keywordList.value')),
+        'title': el.get_text('layername'),
+        'name': el.get_text('id'),
+        'url': el.get_text('metadataUrl'),
+    })
+    if not p:
+        return
+
+    meta = t.MetaData(p)
+
+    p = gws.strip({
+        k: el.get_text('resourceMetadata.contact.' + k)
+        for k in ('name', 'organization', 'position', 'voice', 'fax', 'email', 'role')
+    })
+
+    if p:
+        meta.contact = t.MetaContact(p)
+
+    return meta
+
+
 def _map_layer(el):
     sl = types.SourceLayer()
 
-    sl.meta = t.MetaData()
-
-    sl.meta.abstract = el.get_text('abstract')
-    sl.meta.keywords = gws.compact(e.text for e in el.all('keywordList.value'))
-    sl.meta.title = el.get_text('layername')
-    sl.meta.name = el.get_text('id')
-    sl.meta.url = el.get_text('metadataUrl')
-
-    if el.get('resourceMetadata'):
-        sl.meta.abstract = el.get_text('resourceMetadata.abstract')
-        sl.meta.abstract = el.get_text('resourceMetadata.abstract')
-
-        d = gws.compact({
-            k: el.get_text('resourceMetadata.contact.' + k)
-            for k in ('name', 'organization', 'position', 'voice', 'fax', 'email', 'role')
-        })
-
-        if d:
-            sl.meta.contact = t.MetaContact(d)
+    sl.meta = _layer_meta(el)
 
     crs = el.get_text('srs.spatialrefsys.authid')
 
