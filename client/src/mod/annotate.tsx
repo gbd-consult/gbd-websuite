@@ -285,7 +285,7 @@ class AnnotateDrawTool extends draw.Tool {
     drawFeature: AnnotateFeature;
 
     get title() {
-        return this.__('modAnnotateSidebarTitle')
+        return this.__('modAnnotateDrawToolbarButton')
     }
 
     start() {
