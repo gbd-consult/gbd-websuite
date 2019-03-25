@@ -23,7 +23,8 @@ Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit ein
 Mit einem Klick auf das Symbol |back1| wird die Option Messen geschlossen, die Elemente bleiben dabei enthalten, außer sie wurden vorher gelöscht.
 |delete|
 
-Wie bei anderen Werkzeugen auch kann dieses Werkzeug individuell angepasst werden. Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren. Falls die Messungen lieber in Kilometer oder ähnlichem erstellt werden sollen, kann auch dies angepasst werden.
+.. note::
+ Wie bei anderen Werkzeugen auch kann dieses Werkzeug individuell angepasst werden. Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren. Falls die Messungen lieber in Kilometer oder ähnlichem erstellt werden sollen, kann auch dies angepasst werden.
 
 
  .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg

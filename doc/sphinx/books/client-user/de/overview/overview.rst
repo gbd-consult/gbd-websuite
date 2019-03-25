@@ -13,7 +13,7 @@ Die GBD WebSuite als **Geo Server**:
 
   *  kombiniert unterschiedliche Quellen (WMS, Tile Server und Datenbanken) in einer Karte
   *  ermöglicht das direkte Einbindung von QGIS Projekten
-  *  bietet Cachen, Reprojizieren und Resampling von Rasterdaten 
+  *  bietet Cachen, Reprojizieren und Resampling von Rasterdaten
   *  erlaubt das direkte Verarbeiten und Rendern von Vektordaten (PostGIS, Shapefile, JSON)
   *  ermöglicht die Integration von OGC Diensten (WMS, WMTS, WFS)
 
@@ -25,10 +25,8 @@ Die GBD WebSuite als **Applikations Server**:
 Die GBD WebSuite wird als Docker Image bereitgestellt und kann plattformunabhängig in IT-Infrastrukturen integriert werden. Sie kombiniert die Funktionalität zahlreicher Open Source Software, wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
 
 
-========================================================================================================================================================================================
-
 .. toctree::
-    :maxdepth: 2
+   :maxdepth: 2
 
-    function.rst
-    gbd.rst
+   function.rst
+   gbd.rst

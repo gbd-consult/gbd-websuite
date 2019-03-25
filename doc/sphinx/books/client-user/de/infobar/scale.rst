@@ -6,7 +6,8 @@ Durch klicken der linken Maustaste auf den Punkt im Maßstabsregler, kann der Ma
 
 Der Maßstabsregler wird nur ab einer bestimmten Bildschirmgröße angezeigt aber zum Beispiel nicht auf einem mobilen Endgerät.
 
-Falls der Maßstab nie oder wo anders angezeigt werden soll, kann dies nach belieben umgesetzt werden. 
+.. note::
+ Falls der Maßstab nie oder wo anders angezeigt werden soll, kann dies nach belieben umgesetzt werden.
 
  .. figure:: ../../../screenshots/massstab.png
    :align: center
