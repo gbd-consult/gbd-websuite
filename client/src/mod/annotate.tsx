@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
+import * as measure from 'gws/map/measure';
 
 import * as sidebar from './common/sidebar';
 import * as toolbar from './common/toolbar';
@@ -155,13 +156,11 @@ class AnnotateFeature extends gws.map.Feature {
 
 }
 
-function computeDimensions(shapeType, geom, projection) {
-
+function computeDimensionsWithMode(shapeType, geom, projection, mode) {
     let extent = geom.getExtent();
 
     if (shapeType === 'Point') {
-        let g = geom as ol.geom.Point;
-        let c = g.getCoordinates();
+        let c = (geom as ol.geom.Point).getCoordinates();
         return {
             x: c[0],
             y: c[1],
@@ -171,46 +170,41 @@ function computeDimensions(shapeType, geom, projection) {
 
     if (shapeType === 'Line') {
         return {
-            len: ol.Sphere.getLength(geom, {projection}),
+            len: measure.length(geom, projection, mode),
             extent,
         }
     }
 
     if (shapeType === 'Polygon') {
-        let g = geom as ol.geom.Polygon;
-        let r = g.getLinearRing(0);
         return {
-            len: ol.Sphere.getLength(r, {projection}),
-            area: ol.Sphere.getArea(g, {projection}),
+            len: measure.length(geom, projection, mode),
+            area: measure.area(geom, projection, mode),
             extent,
         };
     }
 
     if (shapeType === 'Box') {
 
-        let g = geom as ol.geom.Polygon;
-        let r = g.getLinearRing(0);
-        let c: any = r.getCoordinates();
+        let c = (geom as ol.geom.Polygon).getLinearRing(0).getCoordinates();
 
         // NB: x,y = top left
         return {
-            len: ol.Sphere.getLength(r, {projection}),
-            area: ol.Sphere.getArea(g, {projection}),
+            len: measure.length(geom, projection, mode),
+            area: measure.area(geom, projection, mode),
             x: c[0][0],
             y: c[3][1],
-            w: Math.abs(c[1][0] - c[0][0]),
-            h: Math.abs(c[2][1] - c[1][1]),
+            w: measure.distance(c[0], c[1], projection, mode),
+            h: measure.distance(c[1], c[2], projection, mode),
             extent,
         }
     }
 
     if (shapeType === 'Circle') {
         let g = geom as ol.geom.Circle;
-        let p = ol.geom.Polygon.fromCircle(g, 64, 0);
         let c = g.getCenter();
 
         return {
-            ...computeDimensions('Polygon', p, projection),
+            ...computeDimensions('Polygon', ol.geom.Polygon.fromCircle(g, 64, 0), projection),
             x: c[0],
             y: c[1],
             radius: g.getRadius(),
@@ -219,6 +213,10 @@ function computeDimensions(shapeType, geom, projection) {
     }
 
     return {};
+}
+
+function computeDimensions(shapeType, geom, projection) {
+    return computeDimensionsWithMode(shapeType, geom, projection, measure.ELLIPSOID)
 }
 
 function formatLengthForEdit(n) {
@@ -476,6 +474,26 @@ class AnnotateFeatureDetailsForm extends gws.View<AnnotateViewProps> {
     }
 }
 
+function debugFeature(shapeType, geom, projection) {
+    let fmt = new ol.format.WKT();
+
+    let wkt = 'SRID=' + projection.getCode().split(':')[1] + ';' + fmt.writeGeometry(geom);
+    let dims = [
+        computeDimensionsWithMode(shapeType, geom, projection, measure.CARTESIAN),
+        computeDimensionsWithMode(shapeType, geom, projection, measure.SPHERE),
+        computeDimensionsWithMode(shapeType, geom, projection, measure.ELLIPSOID),
+    ];
+
+    return <pre>
+        {wkt.replace(/,/g, ',\n')}
+        <br/><br/>
+        <h6>cartesian:</h6>{JSON.stringify(dims[0], null, 4)}<br/><br/>
+        <h6>sphere   :</h6>{JSON.stringify(dims[1], null, 4)}<br/><br/>
+        <h6>ellipsoid:</h6>{JSON.stringify(dims[2], null, 4)}
+    </pre>;
+
+}
+
 class AnnotateFeatureDetails extends gws.View<AnnotateViewProps> {
     render() {
         let master = _master(this.props.controller),
@@ -489,6 +507,7 @@ class AnnotateFeatureDetails extends gws.View<AnnotateViewProps> {
 
             <sidebar.TabBody>
                 <AnnotateFeatureDetailsForm {...this.props} />
+                {selectedFeature.labelTemplate.indexOf('debug') > 0 && debugFeature(selectedFeature.shapeType, selectedFeature.geometry, selectedFeature.map.projection)}
             </sidebar.TabBody>
 
             <sidebar.TabFooter>

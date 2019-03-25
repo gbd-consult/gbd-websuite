@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
+import * as measure from 'gws/map/measure';
 
 import * as sidebar from './common/sidebar';
 import * as toolbar from './common/toolbar';
@@ -392,9 +393,7 @@ class DimensionModel {
     }
 
     geoDist(p1, p2) {
-        return ol.Sphere.getLength(
-            new ol.geom.LineString([p1.coordinate, p2.coordinate]),
-            {projection: this.map.projection});
+        return measure.distance(p1.coordinate, p2.coordinate, this.map.projection, measure.ELLIPSOID)
 
     }
 

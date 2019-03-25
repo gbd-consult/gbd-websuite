@@ -53,6 +53,12 @@ module.exports = {
             "name": "proj4",
             "path": "./node_modules/proj4/dist/proj4.js",
             "uid": "j"
+        },
+        {
+            "key": "geographiclib",
+            "name": "GeographicLib",
+            "path": "./node_modules/geographiclib/geographiclib.min.js",
+            "uid": "g"
         }
     ],
 

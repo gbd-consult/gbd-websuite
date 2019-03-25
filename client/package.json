@@ -22,6 +22,7 @@
         "axios": "^0.18.0",
         "clean-webpack-plugin": "^0.1.19",
         "deasync": "^0.1.13",
+        "geographiclib": "^1.49.0",
         "lodash": "^4.17.10",
         "material-design-icons": "^3.0.1",
         "mime-types": "^2.1.19",
