@@ -2,7 +2,7 @@ Flurstückssuche
 ===============
 
 In der Menüleiste |menu|
-findet man außerdem die |cadastralunit| ``Flurstückssuche``. Wählt man diesen Menüpunkt, öffnen sich Suchfelder, die nun ausgefüllt werden müssen. Nach dem Anklicken des Suchbuttons, wird das entsprechende Flurstück in der Karte angezeigt. Auf Wunsch kann diese Funktion für manche oder alle Nutzer deaktiviert werden. Außerdem ist eine andere Anordnung möglich.
+findet man außerdem die |cadastralunit| ``Flurstückssuche``. Wählt man diesen Menüpunkt, öffnen sich Suchfelder, die nun ausgefüllt werden müssen. Nach dem Anklicken des Suchbuttons, wird das entsprechende Flurstück in der Karte angezeigt.
 
 .. figure:: ../../../screenshots/Flurstückssuche.png
   :align: center
@@ -12,7 +12,8 @@ Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden |
 
 Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
 
-
+.. note::
+ Auf Wunsch kann diese Funktion für manche oder alle Nutzer deaktiviert werden. Außerdem ist eine andere Anordnung möglich.
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
@@ -26,7 +27,7 @@ Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen d
    :width: 30em
  .. |add| image:: ../../../images/sharp-control_point-24px.svg
    :width: 30em
- .. |addall| image:: ../../../images/gbd-icon-alle-ablage-05.svg
+ .. |addall| image:: ../../../images/gbd-icon-alle-ablage-01.svg
    :width: 30em
  .. |delete| image:: ../../../images/sharp-remove_circle_outline-24px.svg
    :width: 30em

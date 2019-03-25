@@ -14,9 +14,8 @@ Es ist möglich ganze Layergruppen oder einzelne darin enthaltene Karten anzuzei
 
 Mit einem Klick auf den Layernamen, öffnet sich unterhalb ein kleines Fenster, in dem wenn vorhanden die Legende des Layers, dazugehörige Metadaten oder auch Copyright Einträge angezeigt werden können. Unter den Informationen befinden sich zwei Werkzeuge, mit denen man auf die Gesamtausdehnung des ausgewählten Layer zoomen |zoom_layer| oder die Legende und Metadaten über das Icon |cancel| schließen kann.
 
-**Bemerkung**
-
-Die Möglichkeiten zur Konfiguration der Anordnung von Karten im |layers| ``Layer`` Menü sind sehr umfangreich. Durch die Integration der QGIS Darstellung in die GBD WebSuite kann z.B. die Layerstruktur aus einem oder mehreren QGIS Projekten untereinander und mit anderen Datenquellen kombiniert, zusammengefasst oder übernommen werden. Im Zusammenspiel mit dem Rechtemanagement ist es zusätzlich möglich, dass verschiedene Nutzer unterschiedliche Layer und/oder andere Layerinhalte sehen.
+.. note::
+ Die Möglichkeiten zur Konfiguration der Anordnung von Karten im |layers| ``Layer`` Menü sind sehr umfangreich. Durch die Integration der QGIS Darstellung in die GBD WebSuite kann z.B. die Layerstruktur aus einem oder mehreren QGIS Projekten untereinander und mit anderen Datenquellen kombiniert, zusammengefasst oder übernommen werden. Im Zusammenspiel mit dem Rechtemanagement ist es zusätzlich möglich, dass verschiedene Nutzer unterschiedliche Layer und/oder andere Layerinhalte sehen.
 
 
 

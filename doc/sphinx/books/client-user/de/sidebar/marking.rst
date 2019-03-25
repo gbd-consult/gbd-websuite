@@ -9,10 +9,8 @@ Markierungen
 Mit Hilfe des Werkzeuges |select_marking| ``Bearbeiten`` können erstellte Markierungen in der Karte angewählt und danach bearbeitet werden.
 Zuletzt ist es möglich, über das Werkzeug |delete_marking| ``Alle löschen`` die Markierung der Objekte aufzuheben.
 
-.. figure:: ../../../screenshots/Markierungen_2.png
-  :align: center
-
-All diese Funktionen können auf Wunsch auch deaktiviert oder nur gewissen Nutzern zur Verfügung gestellt werden.
+.. note::
+ All diese Funktionen können auf Wunsch auch deaktiviert oder nur gewissen Nutzern zur Verfügung gestellt werden.
 
 
 

@@ -14,7 +14,8 @@ Zusätzlich zu dem Kartenrahmen öffnet sich ein Dialog indem man die Druckaufl�
 noch einmal gedrückt, öffnet sich die PDF und über das Abbruch Symbol
 |cancel|, wird der ganze Vorgang geschlossen.
 
-Falls nicht benötigt, kann auch dieses Werkzeug deaktiviert oder anders palziert werden. 
+.. note::
+ Falls nicht benötigt, kann auch dieses Werkzeug deaktiviert oder anders palziert werden.
 
 
  .. |print| image:: ../../../images/baseline-print-24px.svg

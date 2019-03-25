@@ -10,7 +10,8 @@ Desweiteren können dem Nutzer Basisdaten des Projekts, wie ein Titel, das Koord
 
 Anhand der Werte Mitte-X und Mitte-Y kann die Koordinate des Mittelpunktes der aktuellen Kartenausdehnung abgelesen und angepasst werden. So ist es möglich, durch die Eingabe von Koordinaten und Maßstab zu einem gewünschten Ausschnitt oder einem gesuchten Punkt zu navigieren. Fügen Sie Ihre gewünschten Daten ein und klicken Sie auf ``Aktualisieren`` um die Eingaben an die Hauptkarte zu übergeben.
 
-Wenn gewünscht, kann dieser Ebene auch weitere freie Text- oder Bildinformation hinzugefügt werden. Die Möglichkeiten der Konfiguration und Nutzung sind sehr flexibel.
+.. note::
+ Wenn gewünscht, kann dieser Ebene auch weitere freie Text- oder Bildinformation hinzugefügt werden. Die Möglichkeiten der Konfiguration und Nutzung sind sehr flexibel.
 
   .. |menu| image:: ../../../images/baseline-menu-24px.svg
     :width: 30em

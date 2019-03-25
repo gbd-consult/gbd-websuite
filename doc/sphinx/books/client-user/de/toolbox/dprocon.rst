@@ -9,7 +9,8 @@ Das Tool untersucht diese Objekte auf besagte ALKIS Adressdaten. Anhand derer we
 
 Für ausführliche Informationen schauen Sie gerne auch unter: https://www.sisterhenn-it.de/d-procon-2/
 
-Natürlich kann auch dieses Werkzeug deaktiviert und ander splaziert werden.
+.. note::
+ Natürlich kann auch dieses Werkzeug deaktiviert und anders plaziert werden.
 
  .. |dpro| image:: ../../../images/gbd-icon-d-procon-02.svg
    :width: 30em
