@@ -6,6 +6,7 @@ import gws.auth.api
 import gws.auth.error
 import gws.auth.session
 import gws.config.loader
+import gws.tools.password
 
 COMMAND = 'auth'
 
@@ -16,28 +17,23 @@ def test(login=None, password=None):
     """Interactively test a login"""
 
     gws.config.loader.load()
-    num_tries = 1 if (login and password) else 999
 
-    while num_tries > 0:
-        num_tries -= 1
+    login = login or input('Username: ')
+    password = password or getpass.getpass('Password: ')
 
-        login = login or input('Username: ')
-        password = password or getpass.getpass('Password: ')
+    try:
+        user = gws.auth.api.authenticate_user(login, password)
+    except gws.auth.error.WrongPassword:
+        print('wrong password!')
+        return
 
-        try:
-            user = gws.auth.api.authenticate_user(login, password)
-        except gws.auth.error.WrongPassword:
-            print('wrong password!')
-            continue
+    if user is None:
+        print('login not found!')
+        return
 
-        if user is None:
-            print('login not found!')
-            continue
-
-        print('logged in!')
-        print(f'User display name: {user.display_name}')
-        print(f'Roles: {user.roles}')
-        break
+    print('logged in!')
+    print(f'User display name: {user.display_name}')
+    print(f'Roles: {user.roles}')
 
 
 def clear():
@@ -45,3 +41,24 @@ def clear():
 
     man = gws.auth.session.Manager()
     man.delete_all()
+
+
+@arg('--path', help='where to store the password')
+def passwd(path=None):
+    """Encode a password for the authorization file"""
+
+    while True:
+        p1 = getpass.getpass('Password: ')
+        p2 = getpass.getpass('Repeat  : ')
+
+        if p1 != p2:
+            print('passwords do not match')
+            continue
+
+        p = gws.tools.password.encode(p1)
+        if path:
+            with open(path, 'wt') as fp:
+                fp.write(p + '\n')
+        else:
+            print(p)
+        break

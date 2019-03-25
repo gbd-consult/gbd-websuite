@@ -113,10 +113,6 @@ class Object(gws.Object):
 
         p = self.var('api') or t.Data({'actions': []})
 
-        if _is_remote_admin_enabled():
-            gws.log.info('REMOTE_ADMIN: enabled')
-            p.actions.append(t.Data({'type': 'remoteadmin'}))
-
         self.api = self.add_child(gws.common.api.Object, p)
 
         p = self.var('client')
@@ -156,15 +152,6 @@ class Object(gws.Object):
 
         gws.log.debug(f'find_action {action_type!r} prj={project_uid!r} found={action.uid if action else None}')
         return action
-
-
-def _is_remote_admin_enabled():
-    try:
-        with open(gws.REMOTE_ADMIN_PASSWD_FILE) as fp:
-            p = fp.read().strip()
-            return len(p) > 0
-    except:
-        return False
 
 
 def _install_fonts(source_dir):
