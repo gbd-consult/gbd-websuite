@@ -6,7 +6,7 @@ Punktes auf der Rotationsskala eingestellt werden.
 
 Der Rotationsregler wird nur ab einer bestimmten Bildschirmgröße angezeigt und zum Beispiel nicht auf einem mobilen Endgerät. Rotierte Karten können außerdem nicht gedruckt werden.
 
-.. figure:: ../../../screenshots/rotation.png
+.. figure:: ../../../screenshots/de/client-user/rotation.png
   :align: center
   :width: 10em
 

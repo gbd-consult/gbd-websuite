@@ -4,7 +4,7 @@ Kartenelemente
 
 In der Menüebene |layers| ``Layer`` werden die Karten des WebGIS Projekts angezeigt. Sie können die Sichtbarkeit der einzelnen Layer ein- oder ausschalten. Wenn für bestimmte Layer eine maßstabbezogen Darstellung konfiguriert ist, erscheinen diese erst, wenn der entsprechende Kartenmaßstab vorliegt.
 
-.. figure:: ../../../screenshots/Layer.png
+.. figure:: ../../../screenshots/de/client-user/layer.png
   :align: center
 
 Layer können auch in Gruppen zusammengefasst werden. Diese werden über den Pfeil links neben dem Gruppennamen geöffnet |showother| und können über das Icon |hideother| wieder geschlossen werden.
