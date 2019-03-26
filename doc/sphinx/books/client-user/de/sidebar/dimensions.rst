@@ -6,7 +6,7 @@ Das ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Strecken, durch das Zei
 .. figure:: ../../../screenshots/de/client-user/dimensions_menue.png
   :align: center
 
-Unter den Objekten finden Sie Optionen die sich auf alle gelisteten Objekte beziehen. So können Sie die Auswahl aller Objekte |save| speichern, eine gespeicherte Auswahl |load| laden oder alle gelisteten Objekte auf einmal |delete_marking| löschen.
+Unter den Objekten finden Sie Optionen, die sich auf alle gelisteten Objekte beziehen. So können Sie die Auswahl aller Objekte |save| speichern, eine gespeicherte Auswahl |load| laden oder alle gelisteten Objekte auf einmal |delete_marking| löschen.
 
 .. note::
  Wie alle Werkzeuge kann auch dieses, optional eingebaut oder deaktiviert werden. Die Anordnung im Menü sowie auf dem Bildschirm ist dabei flexibel.
