@@ -25,6 +25,7 @@ fonts-dejavu-core
 
 # qgis
 
+libexiv2-dev
 libfcgi-dev
 libpq-dev
 libqca-qt5-2-dev
@@ -35,6 +36,7 @@ libqt5webkit5
 libqwt-qt5-6
 libspatialindex4v5
 libzip4
+ocl-icd-opencl-dev
 python3-pyqt5
 python3-pyqt5.qsci
 python3-pyqt5.qtsql
