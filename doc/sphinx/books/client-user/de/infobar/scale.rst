@@ -9,6 +9,6 @@ Der Maßstabsregler wird nur ab einer bestimmten Bildschirmgröße angezeigt abe
 .. note::
  Falls der Maßstab nie oder wo anders angezeigt werden soll, kann dies nach belieben umgesetzt werden.
 
- .. figure:: ../../../screenshots/massstab.png
+ .. figure:: ../../../screenshots/de/client-user/massstab.png
    :align: center
    :width: 11em

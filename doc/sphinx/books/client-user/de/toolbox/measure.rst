@@ -9,6 +9,9 @@ Nach dem aktivieren des |measure| ``Markieren & Messen``-Werkzeuges, stehen fün
 **Polygon-** |polygon|,
 und **Kreisflächenmessung** |measurecircle|
 
+.. figure:: ../../../screenshots/de/client-user/marking_tool.png
+  :align: center
+
 Die |point| **Punktmarkierung** dient lediglich dem Markierungszweck. Ein Messen ist heir nicht möglich. Aktivieren Sie das Werkzeug und klicken Sie mitr der linken Maustaste auf einen Punkt in der Karte. Dieser wird standardmäßig mit der X- und Y-Koordinate beschriftet. Sie können die Beschriftung beliebig anpassen, in dem sich automatisch öffnenden Beschriftungsfeld in der Menüleiste.
 
 Bei der |distance| **Distanzmessung** wird mit der linken Maustaste auf die Karte ein Startpunkt gesetzt und mit jedem weiteren Klick ein weiterer Punkt gesetzt. Mit einem Doppelklick wird der Endpunkt gesetzt und die Länge der Strecke angezeigt. Des weiteren kann man auch über die Symbole unten rechts bestätigen |savedraw|
