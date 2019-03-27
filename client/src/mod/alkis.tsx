@@ -575,6 +575,8 @@ class AlkisSelectionTab extends gws.View<AlkisViewProps> {
                 <sidebar.AuxToolbar>
                     <AlkisNavigation {...this.props}/>
                     <Cell flex/>
+                    {hasFeatures && <AlkisExportAuxButton {...this.props} features={features}/>}
+                    {hasFeatures && <AlkisPrintAuxButton {...this.props} features={features}/>}
                     <storage.ReadAuxButton
                         controller={this.props.controller}
                         category={STORAGE_CATEGORY}
@@ -586,8 +588,6 @@ class AlkisSelectionTab extends gws.View<AlkisViewProps> {
                         data={{features: this.props.alkisFsSelection.map(f => f.props)}}
                     />}
                     {hasFeatures && <AlkisClearAuxButton {...this.props} />}
-                    {hasFeatures && <AlkisExportAuxButton {...this.props} features={features}/>}
-                    {hasFeatures && <AlkisPrintAuxButton {...this.props} features={features}/>}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -1129,6 +1129,7 @@ class AlkisController extends gws.Controller {
             alkisFsSelection: sel.filter(f => !featureIn(fs, f))
         });
 
+        this.selectionLayer.clear();
         this.selectionLayer.addFeatures(this.getValue('alkisFsSelection'));
     }
 
