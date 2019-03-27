@@ -59,7 +59,7 @@ def init(argv):
     except IndexError:
         pass
 
-    ENV.QGIS_URL = _f('http://gws-files.gbd-consult.de/qgis-for-gws-3.4-bionic-{MODE}.tar.gz')
+    ENV.QGIS_URL = _f('http://gws-files.gbd-consult.de/qgis-for-gws-3.6-bionic-{MODE}.tar.gz')
     ENV.QGIS_DIR = 'qgis-for-gws'
 
     # ENV.WKHTMLTOPDF_URL = 'https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb'

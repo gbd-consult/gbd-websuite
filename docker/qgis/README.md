@@ -5,7 +5,7 @@ Prerequisites: git, docker, python.
 Clone the specific QGIS version:
 
 ```
-git clone -b release-3_4 --single-branch https://github.com/qgis/QGIS
+git clone -b release-3_6 --single-branch https://github.com/qgis/QGIS
 ```
 
 Create a directory for your build in the qgis source tree:
@@ -25,25 +25,25 @@ cp /var/work/gws-server/build/qgis/package.sh _BUILD
 
 Review `configure.sh` and edit cmake variables therein if necessary. 
 
-Create a docker image based on QGIS dockerfile with build dependencies and tag it as e.g. `my-qgis-build`:
+Create a docker image based on QGIS dockerfile with build dependencies and tag it as e.g. `qgis-build-3.6`:
 
 ```
 cd .docker
-docker build -f qgis3-build-deps.dockerfile -t my-qgis-build .
+docker build -f qgis3-build-deps.dockerfile -t qgis-build-3.6 .
 ```
 
 Run the docker image and bind your `QGIS` directory:
 
 ```
 cd ..
-docker run --mount type=bind,src=`pwd`,dst=/QGIS -it my-qgis-build bash
+docker run --mount type=bind,src=`pwd`,dst=/QGIS -it qgis-build-3.6 bash
 ```
 
-Once in the container, chdir to the build dir and run `configure.sh`:
+Once in the container, chdir to the build dir and run `configure.sh Debug` or `configure.sh Release` to build a debug or a release version respectively:
 
 ```
 cd /QGIS/_BUILD
-bash configure.sh
+bash configure.sh Debug
 ```
 
 If dependency packages are missing in the build container, you can check here:
@@ -66,5 +66,5 @@ This will create the directory `_BUILD/qgis-for-gws`, which you can copy to the 
 You can also archive the directory for later reuse, for example:
 
 ```
-tar czvf qgis-for-gws-3.4-bionic-debug.tar.gz qgis-for-gws
+tar czvf qgis-for-gws-3.6-bionic-debug.tar.gz qgis-for-gws
 ```
