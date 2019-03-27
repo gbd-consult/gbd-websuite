@@ -198,6 +198,7 @@ class SearchObject(gws.common.search.provider.Object):
 
     def configure(self):
         super().configure()
+        self.map = self.get_closest('gws.common.map')
         configure_wms(self, queryable_only=True)
 
     def can_run(self, args):
