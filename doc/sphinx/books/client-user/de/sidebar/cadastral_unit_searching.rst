@@ -3,20 +3,6 @@ Flurstückssuche
 
 In der Menüleiste |menu| findet man unter dem Icon die |cadastralunit| ``Flurstückssuche`` mit amtliche ALKIS-Daten. Um einen genauen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
 
-**Inhalt der Seite:**
-
-    :ref:`Starten der Flurstueckssuche`
-
-    :ref:`Anzeigen der Ergebnisse`
-
-    :ref:`Arbeiten mit der Ablage`
-
-    :ref:`Arbeiten mit der Räumlichen Suche`
-
-    :ref:`Auswahl eines Flurstücks in der Karte`
-
-.. _Starten der Flurstueckssuche:
-
 Starten der Flurstückssuche
 ---------------------------
 
@@ -26,51 +12,47 @@ Die Flurstückssuche wird über das Icon |search| gestartet.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
 
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| **Feld**               | **Beispiel**                    | **Optionen**                                                     |
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| Vorname                | Max                             |                                                                  |
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| Nachname               | Mustermann                      |                                                                  |
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| Gemarkung              | Albshausen (Rauschenberg)       | Drop-Down-Menü, Auto-Vervollständigung                           |
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| Straße                 | Am Bingel                       | Auto-Vervollständigung bei zuvoriger Eingabe der Gemarkung       |
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| Nummer                 | 2b                              | Eingabe von Zahlen und Buschstaben möglich                       |
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| Flur-Zähler/Nenner     | 6-30/6                          | Syntax: <Flur>-<Zähler>/<Nenner>                                 |
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| Fläche                 | 30 bis 50 m²                    | Eingabe von Zahlen                                               |
-+------------------------+---------------------------------+------------------------------------------------------------------+
-| Buchungsblattnummer    | 0013658                         | Eingabe von Zahlen und Buchstaben                                |
-+------------------------+---------------------------------+------------------------------------------------------------------+
++------------------------+---------------------------------+
+| **Feld**               | **Beispiel**                    |
++------------------------+---------------------------------+
+| Vorname                | Max                             |
++------------------------+---------------------------------+
+| Nachname               | Mustermann                      |
++------------------------+---------------------------------+
+| Gemarkung              | Albshausen (Rauschenberg)       |
++------------------------+---------------------------------+
+| Straße                 | Am Bingel                       |
++------------------------+---------------------------------+
+| Nummer                 | 2b                              |
++------------------------+---------------------------------+
+| Flur-Zähler/Nenner     | 6-30/6                          |
++------------------------+---------------------------------+
+| Fläche                 | 30 bis 50 m²                    |
++------------------------+---------------------------------+
+| Buchungsblattnummer    | 0013658                         |
++------------------------+---------------------------------+
 
-.. hint::
+.. note::
     Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten:
-    **<Flur>-<Zähler>/<Nenner>**.
-    Optional kann auch nach den einzelnen Bestandteilen *<Flur>*, *<Zähler>* oder *<Nenner>* gesucht werden.
+    **Flur-Zähler/Nenner**.
+    Optional kann auch nach den einzelnen Bestandteilen *Flur*, *Zähler* oder *Nenner* gesucht werden.
 
-
-.. _Anzeigen der Ergebnisse:
 
 Anzeigen der Ergebnisse
 -----------------------
 
-.. hint::
- Bei der Ausgabe der Ergebnisse ist zu beachten, dass die Ergebnissspalte maximal 100 Ergebnissen ausgeben kann.
+.. note::
+ Bei der Ausgabe der Ergebnisse ist zu beachten, dass die Ergebnissspalte maximal 100 Ergebnissen ausgibt. Grund: Es wird eine weitere Spezifizierung erwartet.
 
 Nach dem Anklicken des Suchbuttons |search| unten links, werden die Ergenisse in der Karte und im Ergebnisfenster |results| ``Ergebnisse`` der Sidebar angezeigt.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_2.png
 
-Über den Klick auf den Ergebnistext *Flurstück <Flur>-<Zähler>/<Nenner>* eines Flurstücks gelangen Sie zu den Flurstücksinformationen. Diese bestehen aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung.
+Über den Klick auf den Ergebnistext *Flurstück* eines Eintrags gelangen Sie zu den Flurstücksinformationen. Diese bestehen aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
 
 .. Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden |fokus| Symbol fokusiert werden. Außerdem ist es möglich über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage zu entfernen. Oder über das |addall| Icon ebenfalls in der Leiste am unteren Fensterrand ``Alle zur Ablage`` hinzufügen.  So können Sie in der |tab| ``Ablage`` , welche ebenfalls am unteren Fensterrand der ``Flurstückssuche`` zu finden ist, eine Sammlung gesuchter Flurstücke anlegen und diese |save| ``Speichern``, |load| ``Laden``, |csv| als CSV-Datei exportieren oder |print| ``Drucken``.
-
-.. _Arbeiten mit der Ablage:
 
 Arbeiten mit der Ablage
 -----------------------
@@ -104,14 +86,12 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 
 .. Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
 
-.. _Arbeiten mit der Räumlichen Suche:
 
 Arbeiten mit der räumlichen Suche
 ---------------------------------
 
 Beschreibung folgt.
 
-.. _Auswahl eines Flurstücks in der Karte:
 
 Auswahl eines Flurstücks in der Karte
 -------------------------------------
