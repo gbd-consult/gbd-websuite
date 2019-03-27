@@ -9,13 +9,13 @@ Unter diesem Menüpunkt ist es möglich, verschiedene Objekte auszuwählen und z
  :align: center
 
 
-Als nächstes muss das gewünschte Objekt ausgewählt werden. Es kann über das |fokus| Icon neben dem Objekt, fokussiert werden. Auch hier befinden sich wieder hilfreiche Werkzeuge am unteren Fensterrand. Über das Icon |cancel| ``Beenden`` können Sie zum vorherigen Fenster gelangen. Außerdem kann hier das Werkzeug ``Zeichnen`` |new_editing| oder das Werkzeug ``Bearbeiten`` |select_editing| angewählt werden. Mit diesem Werkzeug ist es möglich, die zu editieren gewünschten Objekte in der Karte auszuwählen. Das ``Zeichnen`` Werkzeug bietet noch weitere Möglichkeiten. Hier ist es möglich, je nachdem welcher Layertyp vorhanden ist, neue Punkte, Linien oder Polygone hinzuzufügen.
+Als nächstes muss das gewünschte Objekt ausgewählt werden. Es kann über das |fokus| Icon neben dem Objekt, fokussiert werden. Auch hier befinden sich wieder hilfreiche Werkzeuge am unteren Fensterrand. Über das Icon |cancel| ``Beenden`` können Sie zum vorherigen Fenster gelangen. Außerdem kann hier das Werkzeug ``Zeichnen`` |new_editing| oder das Werkzeug ``Bearbeiten`` |select_editing| angewählt werden. Mit dem ``Bearbeiten`` Werkzeug ist es möglich, die zu editieren gewünschten Objekte in der Karte auszuwählen. Das ``Zeichnen`` Werkzeug bietet noch weitere Möglichkeiten. Hier ist es möglich, je nachdem welcher Layertyp vorhanden ist, neue Punkte, Linien oder Polygone hinzuzufügen.
 
 .. figure:: ../../../screenshots/de/client-user/editing_2.png
  :align: center
 
 
-Wenn ein Objekt ausgewählt ist, können Attribute wie zum Beispiel id, Name, Bezeichnung und Adresse bearbeitet werden. Über das Werkzeug ``Aufgaben`` kann man zu  einem Objekt ``Hinzoomen``.  Desweiteren können die vorher erstellten Objekte in den anderen Menüpunkten wie ``Räumliche Suche``, ``Markieren und Messen`` oder ``Auswahl`` verwendet werden. Über das |delete_editing| Icon ist es möglich ein Objekt zu löschen und über das |cancel| Icon kommt man wieder ins vorherige Menü.
+Wenn ein Objekt ausgewählt ist, können Attribute wie zum Beispiel id, Name, Bezeichnung und Adresse bearbeitet werden. Über das Menü |settings| ``Aufgaben`` können weitere Funktionen ausgewählt werden. Man kann zu einem Objekt ``Hinzoomen``.  Desweiteren können die vorher erstellten Objekte für die Funktionen ``Räumliche Suche``, ``Markieren und Messen`` oder ``Auswahl`` verwendet werden. Über das |delete_editing| Icon ist es möglich ein Objekt zu löschen und über das |cancel| Icon kommt man wieder ins vorherige Menü.
 
 .. figure:: ../../../screenshots/de/client-user/editing_3.png
   :align: center
@@ -36,4 +36,6 @@ Wenn ein Objekt ausgewählt ist, können Attribute wie zum Beispiel id, Name, Be
  .. |cancel| image:: ../../../images/baseline-close-24px.svg
    :width: 30em
  .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
+   :width: 30em
+ .. |settings| image:: ../../../images/round-settings-24px.svg
    :width: 30em

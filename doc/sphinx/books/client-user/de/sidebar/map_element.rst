@@ -2,7 +2,7 @@ Layer
 =====
 
 
-In der Menüebene |layers| ``Layer`` werden die Karten des WebGIS Projekts angezeigt. Sie können die Sichtbarkeit der einzelnen Layer ein- oder ausschalten. Wenn für bestimmte Layer eine maßstabbezogen Darstellung konfiguriert ist, erscheinen diese erst, wenn der entsprechende Kartenmaßstab vorliegt.
+In der Menüebene |layers| ``Layer`` werden die Karten des WebGIS Projekts angezeigt. Sie können die Sichtbarkeit der einzelnen Layer ein- oder ausschalten. Wenn für bestimmte Layer eine maßstabbezogen Darstellung konfiguriert ist, erscheinen diese erst wenn der entsprechende Kartenmaßstab erreicht wurde.
 
 .. figure:: ../../../screenshots/de/client-user/layer.png
   :align: center
@@ -12,10 +12,10 @@ Das Anzeigen oder Ausblenden eines Layers erfolgt über einen Klick auf das Auge
 
 Es ist möglich ganze Layergruppen oder einzelne darin enthaltene Karten anzuzeigen oder ausblenden.
 
-Mit einem Klick auf den Layernamen, öffnet sich unterhalb ein kleines Fenster, in dem wenn vorhanden die Legende des Layers, dazugehörige Metadaten oder auch Copyright Einträge angezeigt werden können. Unter den Informationen befinden sich zwei Werkzeuge, mit denen man auf die Gesamtausdehnung des ausgewählten Layer zoomen |zoom_layer| oder die Legende und Metadaten über das Icon |cancel| schließen kann.
+Mit einem Klick auf den Layernamen, öffnet sich unterhalb ein kleines Fenster. Wenn vorhanden können hier die Legende des Layers, andere dazugehörige Metadaten oder auch Copyright Einträge angezeigt werden. Unter den Informationen befinden sich zwei Werkzeuge. Mit dem einen ist es möglich auf die Gesamtausdehnung des gewählten Layers zu zoomen |zoom_layer|. Mit dem anderen kann die Legende und die Metadaten über das |cancel| Icon geschlossen werden.
 
 .. note::
- Die Möglichkeiten zur Konfiguration der Anordnung von Karten im |layers| ``Layer`` Menü sind sehr umfangreich. Durch die Integration der QGIS Darstellung in die GBD WebSuite kann z.B. die Layerstruktur aus einem oder mehreren QGIS Projekten untereinander und mit anderen Datenquellen kombiniert, zusammengefasst oder übernommen werden. Im Zusammenspiel mit dem Rechtemanagement ist es zusätzlich möglich, dass verschiedene Nutzer unterschiedliche Layer und/oder andere Layerinhalte sehen.
+ Die Möglichkeiten zur Konfiguration von Karten im |layers| ``Layer``-Menü sind sehr umfangreich. Durch die Integration von QGIS in die GBD WebSuite kann z.B. die Layerstruktur aus einem oder mehreren QGIS Projekten mit anderen Datenquellen kombiniert, zusammengefasst oder übernommen werden. Im Zusammenspiel mit dem Rechtemanagement ist es zusätzlich möglich, dass verschiedene Nutzer unterschiedliche Layer und/oder andere Layerinhalte sehen.
 
 
 

@@ -6,7 +6,7 @@ Die **Geoinformatikbüro Dassau GmbH** ist seit mehr als 10 Jahren an der Entwic
 Auf Basis unserer Expertise bieten wir umfassende Unterstützung in den Bereichen GIS und GDI. Dazu gehört:
 
 * Beratung und Konzeption
-* Schulung und Workshop
+* Schulung und Workshops
 * Datenverarbeitung und Fernerkundung
 * Softwaredesign und -entwicklung
 * Wartung und Support
