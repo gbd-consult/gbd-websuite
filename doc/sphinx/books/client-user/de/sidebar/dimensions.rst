@@ -1,7 +1,7 @@
 Bemaßung
 ========
 
-Das ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Strecken, durch das Zeichnen von Linien und beschriftet diese. Wenn Sie mit Hilfe des Werkzeuges |dimensions| ``Bemaßung`` (siehe unter Werkzeugleiste -> Bemaßung) ein Objekte gezeichnet haben, tauchen diese im Menü |dimensions| ``Bemaßung`` auf. Hier findet eine Auflistung aller gezeichneten Bemaßungen statt. Durch klicken auf das |fokus| Icon wird auf das spezielle Objekt gezoomt und durch klicken auf das |delete| Icon wird dieses eine Objekt gelöscht.
+Das ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Strecken. Dazu werden Linien gezeichnet welche automatisch beschriftet werden. Wenn Sie mit Hilfe des Werkzeuges |dimensions| ``Bemaßung`` (siehe Werkzeugleiste -> Bemaßung) ein Objekte gezeichnet haben, tauchen diese im Menü |dimensions| ``Bemaßung`` auf. Hier findet eine Auflistung aller gezeichneten Bemaßungen statt. Durch klicken auf das |fokus| Icon wird auf das spezielle Objekt gezoomt und durch klicken auf das |delete| Icon wird dieses Objekt gelöscht.
 
 .. figure:: ../../../screenshots/de/client-user/dimensions_menue.png
   :align: center
@@ -10,6 +10,8 @@ Unter den Objekten finden Sie Optionen, die sich auf alle gelisteten Objekte bez
 
 .. note::
  Wie alle Werkzeuge kann auch dieses, optional eingebaut oder deaktiviert werden. Die Anordnung im Menü sowie auf dem Bildschirm ist dabei flexibel.
+
+
 
 
  .. |dimensions| image:: ../../../images/gbd-icon-bemassung-02.svg
