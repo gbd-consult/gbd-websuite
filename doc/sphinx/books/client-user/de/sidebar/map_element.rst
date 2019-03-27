@@ -1,5 +1,5 @@
-Kartenelemente
-==============
+Layer
+=====
 
 
 In der Menüebene |layers| ``Layer`` werden die Karten des WebGIS Projekts angezeigt. Sie können die Sichtbarkeit der einzelnen Layer ein- oder ausschalten. Wenn für bestimmte Layer eine maßstabbezogen Darstellung konfiguriert ist, erscheinen diese erst, wenn der entsprechende Kartenmaßstab vorliegt.

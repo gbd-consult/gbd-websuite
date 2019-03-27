@@ -4,6 +4,9 @@ Suche
 Des Weiteren gelangt man anhand der Menüleiste |menu| zur |search| ``Suche``.
 Hier ist es möglich nach Namen von Straßen, Schulen, Krankenhäusern, Geschäften und ähnlichem zu suchen.
 
+.. figure:: ../../../screenshots/de/client-user/search_menue.png
+  :align: center
+
 .. note::
  Wenn gewünscht kann die Suche deaktiviert werden. Außerdem wäre es auch möglich, dass die Suche anstatt in der Menüleiste prominent und dauerhaft auf der Karte zu sehen ist. Auch die Informationen innerhalb derer die Suche läuf, können definiert werden.
 
