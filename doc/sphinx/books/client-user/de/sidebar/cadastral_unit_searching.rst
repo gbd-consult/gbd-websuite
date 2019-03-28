@@ -6,7 +6,7 @@ In der Menüleiste |menu| findet man unter dem  |cadastralunit| Icon die ``Flurs
 Starten der Flurstückssuche
 ---------------------------
 
-Öffnet man die Flurstückssuche über die Menüleiste, öffnet sich als erstes das unten zu sehende Fenster. Hier stehen verschiedene Suchfelder zur Auswahl, welche auf verschiedene Weisen verwendet werden können. Zum einen ist es möglich nach einem speziellen Flurstück zu suchen, indem die individuellen Daten eingegeben werden. Zum anderen ist es möglich diese Felder wie eine Art Filter zu verwenden. Allerdings ist zu beachten, dass für die Suche nach einer bestimmten Straße, zuvor die Gemarkung ausgewählt werden muss.
+Öffnet man die Flurstückssuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl, welche auf verschiedene Weisen verwendet werden können. Zum einen ist es möglich nach einem speziellen Flurstück zu suchen, indem die individuellen Daten eingegeben werden. Zum anderen können die Felder als Filter zu verwendet werden.
 
 Die Flurstückssuche wird über das Icon |search| gestartet.
 
@@ -36,6 +36,8 @@ Die Flurstückssuche wird über das Icon |search| gestartet.
     Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten:
     **Flur-Zähler/Nenner**.
     Optional kann auch nach den einzelnen Bestandteilen *Flur*, *Zähler* oder *Nenner* gesucht werden.
+
+    Für die Suche nach einer bestimmten Straße, ist zuvor die Gemarkung auszuwählen.
 
 
 Anzeigen der Ergebnisse
