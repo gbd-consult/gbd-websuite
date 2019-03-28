@@ -1,16 +1,16 @@
 Auswahl
 =======
 
-Die Ebene |select| ``Auswahl`` der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das Werkzeug |select|  ``Auswählen`` im Kartenfenster erfasst werden. Die Ebene wird automatisch angezeigt, wenn das ``Auswählen``-Werkzeug aktiviert wird.
+Die Ebene |select| ``Auswahl`` in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select|  ``Auswählen``-Werkzeug im Kartenfenster erfasst werden. Die Ebene wird automatisch angezeigt, wenn das ``Auswählen``-Werkzeug aktiviert wird.
 
  .. figure:: ../../../screenshots/de/client-user/select.png
    :align: center
 
-Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit der ``Auswählen``-Funktion, aus der Werkzeugleiste ausgewählt wurden. So können Sie in diesem Menüpunkt eine Übersicht gewinnen, über die Objekte die Sie zuvor ausgewählt haben. Diese Objekte können über das |delete| Icon aus der Auswahl entfernt werden oder über das |fokus| Icon fokusiert werden, indem auf das gewählte Objekt hineingezoomt wird.
+Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit dem ``Auswählen``-Werkzeug ausgewählt wurden. So können Sie in diesem Menüpunkt eine Übersicht, über die von Ihnen ausgewählten Objekte, gewinnen. Diese Objekte können über das |delete| Icon aus der Auswahl entfernt werden oder über das |fokus| Icon fokusiert werden.
 
-Am unteren Fensterrand befinden sich erneut eine Reihe von Funktionen für speziell diesen Menüpunkt. Zum einen ist es möglich die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|, sowie die Auswahl zu löschen |delete_marking|.
+Am unteren Fensterrand befinden sich erneut eine Reihe von Funktionen für speziell dieses Menü. Zum einen ist es möglich die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|, sowie die Auswahl zu löschen |delete_marking|.
 
-Wenn ein Objekt ausgewählt wird, erscheint am unteren rechten Bildschirmrand ein Informationsfenster. In diesem Informationsfenster sind verschiendene Informationen über dieses Objekt abzulesen. Außerdem können hier über das Symbol weitere Funktionen ausgewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Annotieren`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
+Wenn ein Objekt ausgewählt wird, erscheint am unteren Bildschirmrand ein Informationsfenster. In diesem Fenster sind verschiedene Informationen über dieses Objekt abzulesen. Außerdem können hier über das |settings| Symbol weitere Funktionen ausgewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Annotieren`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
 
 
 
@@ -28,4 +28,6 @@ Wenn ein Objekt ausgewählt wird, erscheint am unteren rechten Bildschirmrand ei
  .. |load| image:: ../../../images/gbd-icon-ablage-oeffnen-01.svg
    :width: 30em
  .. |delete_marking| image:: ../../../images/sharp-delete_forever-24px.svg
+   :width: 30em
+ .. |settings| image:: ../../../images/round-settings-24px.svg
    :width: 30em

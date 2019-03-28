@@ -1,7 +1,7 @@
 Räumliche Suche
 ===============
 
-Das |geo_search| ``Räumliche Suche``-Werkzeug ist ebenfalls in der Werkzeugleiste anwählbar. Sie ermöglicht es geometrische Formen zu erstellen, mit Hilfe der verschiedene Objekt ausgewählt werden können. So ist es zum Beispiel möglich Punkte, Linien, Kreise oder Polygone zu erstellen. Diese können beliebig auf der Karte verschoben werden, um so verschiedene Bereiche zu analysieren.
+Das |geo_search| ``Räumliche Suche``-Werkzeug ist ebenfalls in der Werkzeugleiste anwählbar. Es ermöglicht die Erstellung geometrischer Formen, mit Hilfe derer verschiedene Objekt ausgewählt werden können. So ist es zum Beispiel möglich Punkte, Linien, Kreise oder Polygone zu erstellen. Diese können beliebig auf der Karte verschoben werden, um so verschiedene Bereiche zu analysieren. Welche Objekte ausgewählt werden, definiert man unter dem Menüpunkt ``Layer``. Den nur die Objekte aus dem gewählten Layer werden selektiert.
 
 .. figure:: ../../../screenshots/de/client-user/search.png
   :align: center
