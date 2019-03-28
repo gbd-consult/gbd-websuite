@@ -1,7 +1,7 @@
 Zurück zur Startseite
 =====================
 
-Durch klicken auf das |home| Icon gelangen Sie zurück zur ``Startseite``.
+Durch klicken auf |home| gelangen Sie zurück zur ``Startseite``.
 
 
 

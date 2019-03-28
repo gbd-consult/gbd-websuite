@@ -11,8 +11,7 @@ in der linken unteren Ecke fügt man eine neue Ebene hinzu, diese kann man nun b
 Beim Digitalisieren kann man zwischen Punkt|newpoint|
 , Linien |newline|
 oder Flächen |newpolygon|
-wählen. Die Element werden durch einen Klick in die Karte hinzugefügt. Nach einer Benennung des Objektes kann das Element mit dem Symbol |labelon| die Beschriftung angeschaltet werden oder abgeschaltet |labeloff|
-. Des Weiteren kann man digitalisierte Objekte auswählen |selectedit|
+wählen. Die Element werden durch einen Klick in die Karte hinzugefügt. Nach einer Benennung des Objektes kann über |labelon| die Beschriftung angeschaltet oder abgeschaltet werden |labeloff|. Des Weiteren kann man digitalisierte Objekte auswählen |selectedit|
 oder Punkte zu einem Objekt hinzufügen.
 
 ==========================   =========================

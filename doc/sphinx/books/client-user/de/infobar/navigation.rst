@@ -2,8 +2,8 @@ Zoomen
 ======
 
 
-Die Navigation kann über die Maus gesteuert. Mit der linken Maustaste oder dem gedrückten Mausrad, kann die Karte bewegt werden.
-Zum Zoomen wird das Mausrad genutzt. Zum vergrößern wird das Mausrad nach vorne und zum verkleinern nach hinten gedreht.
+Die Navigation kann über die Maus gesteuert werden. Mit der linken Maustaste oder dem gedrückten Mausrad, kann die Karte bewegt werden.
+Zum Zoomen wird das Mausrad genutzt. Zum Vergrößern wird das Mausrad nach vorne und zum Verkleinern nach hinten gedreht.
 Des Weiteren kann das Zoomen durch die Navigationsbutton |zoomin|
 und |zoomout| vorgenommen werden.
 

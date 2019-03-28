@@ -1,14 +1,13 @@
 Räumliche Suche
 ===============
 
-Das |geo_search| ``Räumliche Suche``-Werkzeug ist ebenfalls in der Werkzeugleiste anwählbar. Es ermöglicht die Erstellung geometrischer Formen, mit Hilfe derer verschiedene Objekt ausgewählt werden können. So ist es zum Beispiel möglich Punkte, Linien, Kreise oder Polygone zu erstellen. Diese können beliebig auf der Karte verschoben werden, um so verschiedene Bereiche zu analysieren. Welche Objekte ausgewählt werden, definiert man unter dem Menüpunkt ``Layer``. Den nur die Objekte aus dem gewählten Layer werden selektiert.
+Das |geo_search| ``Räumliche Suche``-Werkzeug ist ebenfalls in der Werkzeugleiste anwählbar. Es ermöglicht die Erstellung geometrischer Formen, mit Hilfe derer verschiedene Objekt ausgewählt werden können. So ist es zum Beispiel möglich Punkte, Linien, Kreise oder Polygone zu erstellen. Diese können beliebig auf der Karte verschoben werden, um so verschiedene Bereiche zu selektieren. Welche Objekte ausgewählt werden, definiert man unter dem Menüpunkt ``Layer``. Den nur die Objekte aus dem gewählten Layer werden selektiert.
 
 .. figure:: ../../../screenshots/de/client-user/search.png
   :align: center
 
-Wenn man auf das |geo_search| Icon klickt öffnet sich das ``Räumliche Suche`` Werkzeug. Es ist ein Kreis zu sehen in dem sich 3 Symbole befinden. Über das |edit| Symbol ist es möglich, auszuwählen welche Geomtrie Sie gerne zeichen möchten. Es öffnet sich oben rechts eine Leiste, in der Sie zwischen den verschiedenen Geometrien wählen können. Wählen Sie Ihre gewünschte Geometrie und starten Sie durch ein Klicken mit der linken Maustaste auf den zu analysierenden Bereich der Karte. Mit einem Doppelklick der linken Maustaste beenden Sie Bearbeitung der Geometrie.
-Die gezeichnete Geometrie kann nach belieben verschoben werden. Klicken Sie dafür auf das |navi| Symbol und halten Sie Maustaste gerdrückt. Nun können Sie die Geometrie verschieben. Durch klicken
-auf das |cancel| Symbol wird das Werkzeug beendet.
+Über |geo_search| in der Werkzeugleiste öffnet sich das ``Räumliche Suche``-Werkzeug. Nun muss zuerst ausgewählt werden, welche Geometrie Sie gerne zeichnen möchten. Dies ist in der   sich oben rechts öffnenden Leiste möglich, in der Sie zwischen den verschiedenen Geometrien wählen können. Wählen Sie Ihre gewünschte Geometrie und starten Sie durch ein Klicken mit der linken Maustaste auf den zu selektierenden Bereich der Karte. Mit einem Doppelklick der linken Maustaste beenden Sie die Bearbeitung der Geometrie. Die gezeichnete Geometrie kann nach belieben verschoben werden. Klicken Sie dafür auf |navi| und halten Sie Maustaste gerdrückt. Nun können Sie die Geometrie verschieben. Durch klicken
+auf |cancel| wird das Werkzeug beendet.
 
 .. note::
  Die räumliche Suche kann auf Wunsch deaktiviert oder wo anders angeordnet werden. Einzelne Funktionen wie die Suche per Punkt, Linie, Rechteck, Fläche oder Kreis können seperat aktiviert oder deaktiviert werden.

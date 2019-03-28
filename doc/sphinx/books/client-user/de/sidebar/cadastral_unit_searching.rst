@@ -1,7 +1,7 @@
 Flurstückssuche
 ===============
 
-In der Menüleiste |menu| findet man unter dem  |cadastralunit| Icon die ``Flurstückssuche``, welche auf amtlichen ALKIS-Daten beruht. Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
+In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstückssuche``, welche auf amtlichen ALKIS-Daten beruht. Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
 
 Starten der Flurstückssuche
 ---------------------------
@@ -90,6 +90,23 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 
 .. Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt.
 
+Exportieren
+^^^^^^^^^^^
+ Exportieren als CSV
+
+ .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
+
+ Exportieren von Screenshot
+
+
+
+ Exportieren zum Drucken
+
+Save
+ .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search_print_save.png
+
+load
+ .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search_print_load.png
 
 Arbeiten mit der räumlichen Suche
 ---------------------------------
