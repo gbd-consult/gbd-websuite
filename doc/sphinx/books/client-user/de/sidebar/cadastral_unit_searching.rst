@@ -91,6 +91,8 @@ Exportieren
 ^^^^^^^^^^^
  Exportieren als CSV
 
+Wählen Sie die gewünschten Daten der Flurstücke die mit exportiert werden sollen und klicken Sie auf ``Exportieren``
+
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
 
 
@@ -98,16 +100,21 @@ Exportieren
    Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen.
 
 
- Exportieren von Screenshot
 
+Exportieren zum Drucken
 
-
- Exportieren zum Drucken
+Sobald |print| gedrückt wird startet der Druck. Dies bedeutet dass der Kartenausschnitt vorher gewählt werden muss.
 
 Save
+
+Vergeben Sie einen gewünschten Namen und bestätigen Sie durch Klicken auf das Häckchen.
+
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
 
 Load
+
+Wählen Sie eine vorhande Datei und laden Sie diese ein durch Klicken auf das Häckchen.
+
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_load.png
 
 .. note::
