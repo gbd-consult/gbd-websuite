@@ -34,10 +34,7 @@ Die Flurstückssuche wird über das Icon |search| gestartet.
 
 .. note::
     Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten:
-    **Flur-Zähler/Nenner**.
-    Optional kann auch nach den einzelnen Bestandteilen *Flur*, *Zähler* oder *Nenner* gesucht werden.
-
-    Für die Suche nach einer bestimmten Straße, ist zuvor die Gemarkung auszuwählen.
+    **Flur-Zähler/Nenner**. Optional kann auch nach den einzelnen Bestandteilen *Flur*, *Zähler* oder *Nenner* gesucht werden. Für die Suche nach einer bestimmten Straße, ist zuvor die Gemarkung auszuwählen.
 
 
 Anzeigen der Ergebnisse
@@ -96,6 +93,11 @@ Exportieren
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
 
+
+ .. note::
+   Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen.
+
+
  Exportieren von Screenshot
 
 
@@ -103,22 +105,28 @@ Exportieren
  Exportieren zum Drucken
 
 Save
- .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search_print_save.png
+ .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
 
-load
- .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search_print_load.png
+Load
+ .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_load.png
+
+.. note::
+  Das Speichern geschieht in einer SQLite Datei.
 
 Arbeiten mit der räumlichen Suche
 ---------------------------------
 
 Mit Hilfe des Werkzeuges ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln. Es öffnet sich in der Toolbar die Leiste für die Räumliche Suche, mit dem Verweis, dass nun in den Flurstücken gesucht wird. Wählen Sie hier das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine Linie und schließen Sie diese mit einem Doppelklick ab. Anschließend werden Ihnen die Flurstücke in den Ergebnissen aufgelistet, welche von der Linie geschnitten werden. Auf dem Screenshot unten sieht man ein mögliches Ergebnis.
 
-.. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
+ .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
 
 Auswahl eines Flurstücks in der Karte
 -------------------------------------
 
-Das Werkzeug ``Àuswahl eines Flurstücks in der Karte`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Maus gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
+Das Werkzeug ``Auswahl eines Flurstücks in der Karte`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
+
+ .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
+
 
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
@@ -149,6 +157,8 @@ Das Werkzeug ``Àuswahl eines Flurstücks in der Karte`` ermöglicht die Selekti
    :width: 30em
 
 
+.. Protokollierter Zugang zu Personendaten
+.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. Zum einbehalten der Datenschutzrechte gibt es folgendes Werkzeug in der Flurstücksuche. Wenn jemand nach personenbezogenen Daten wie Vorname und Name sucht, muss das Häckchen bei  ``Zugang zu Personendaten`` gesetzt werden. Es öffnet sich ein Fenster in dem ein firmeninternes Aktenzeichen vergeben werden muss. Dieses Aktenzeichen verifiziert den Erhalt der personenbezogenen Daten. Außerdem wird jede Anfrag in einer PostGIS Datei abgelegt, sodass jede Anfrage protokolliert und somit kontrolliert werden kann.
 
-.. .. note::
-    Auf Wunsch kann diese Funktion für manche oder alle Nutzer deaktiviert werden. Außerdem ist eine andere Anordnung möglich.
+.. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_search_data_rights.png

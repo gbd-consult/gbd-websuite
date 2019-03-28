@@ -16,11 +16,13 @@ noch einmal gedrückt, öffnet sich die PDF und per |cancel| wird der ganze Vorg
 .. note::
  Beachten Sie dass gedrehte Karten weder gedruckt weden können, noch ein Screenshot von gemacht werden kann.
 
- .. figure:: ../../../screenshots/de/client-user/print_2.png
-   :align: center
-
 
  .. |print| image:: ../../../images/baseline-print-24px.svg
    :width: 30em
  .. |cancel| image:: ../../../images/baseline-cancel-24px.svg
    :width: 30em
+
+
+.. .. figure:: ../../../screenshots/de/client-user/print_2.png
+      :scale: 60%
+      :align: center
