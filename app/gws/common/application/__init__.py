@@ -75,6 +75,14 @@ class Config(t.Config):
     web: t.Optional[WebConfig] = {}  #: webserver configuration
 
 
+_default_site = t.Data({
+    'host': '*',
+    'root': t.Data({
+        'dir': '/data/web',
+    })
+})
+
+
 class Object(gws.Object):
     def __init__(self):
         super().__init__()
@@ -119,14 +127,7 @@ class Object(gws.Object):
         if p:
             self.client = self.add_child(gws.common.client.Object, p)
 
-        p = self.var('web.sites')
-        if not p:
-            p = [t.Data({
-                'sites': [
-                    t.Data({'host': '*'})
-                ]
-            })]
-
+        p = self.var('web.sites') or [_default_site]
         for s in p:
             if self.var('web.ssl'):
                 s.ssl = True

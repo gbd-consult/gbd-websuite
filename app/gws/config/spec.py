@@ -13,7 +13,7 @@ def load(kind, lang=None):
         if os.path.exists(p):
             path = p
 
-    with open(path) as fp:
+    with open(path, encoding='utf8') as fp:
         return json.load(fp)
 
 

@@ -170,8 +170,9 @@ class Object(gws.gis.layer.Base):
         }
 
     def _layer_search_provider(self, sl: t.SourceLayer):
-        if not self.var('search.enabled'):
-            return None
+        p = self.var('search')
+        if not p.enabled or p.providers:
+            return
 
         ds = sl.data_source
         prov = ds['provider']
