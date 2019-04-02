@@ -180,3 +180,30 @@ An error page template has access to the error code in the ``error`` variable. Y
     @else
         Error {error} has occured
     @end
+
+SSL configuration
+-----------------
+
+SSL can configured under ``web.ssl``. You have to provide paths (as visible in the container) to your certificate bundle and the private key. SSL configuration is applied to the whole server, not to individually configured sites. With SSL, your ``web`` configuration would look like this ::
+
+    "web": {
+        "sites": [
+            {
+                "host": "..."
+                // site configuration as described above
+            },
+            {
+                "host": "..."
+                // another site configuration
+            }
+            ...
+        ],
+        "ssl": {
+            "crt": "/path/to/your-certificate-bundle.crt",
+            "key": "/path/to/your-private-key.crt"
+        }
+    }
+
+If your certificate consist of separate files (e.g. domain certificate, intermediate and root certificates) you can create the bundle by concatenating them together ::
+
+    cat domain.crt intermediate.crt root.crt > bundle.crt
