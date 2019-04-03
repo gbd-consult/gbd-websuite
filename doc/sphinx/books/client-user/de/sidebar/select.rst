@@ -1,7 +1,7 @@
 Auswahl
 =======
 
-Die Ebene |select| ``Auswahl`` in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select|  ``Auswählen``-Werkzeug im Kartenfenster erfasst werden. Die Ebene wird automatisch angezeigt, wenn das ``Auswählen``-Werkzeug aktiviert wird.
+Die Ebene |select| ``Auswahl`` in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select|  ``Auswählen``-Werkzeug im Kartenfenster erfasst werden. Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
 
  .. figure:: ../../../screenshots/de/client-user/select.png
    :align: center
