@@ -23,13 +23,17 @@ class AltbarController extends gws.Controller {
             this.connect(AltbarView, ['altbarVisible']));
     }
 
-    async init() {
-        this.app.whenChanged('appMediaWidth', v =>
-            this.update({
-                altbarVisible: (v === 'large' || v === 'xlarge')
-            })
-        );
+    updateVisible() {
+        let v = this.getValue('appMediaWidth');
+        this.update({
+            altbarVisible: (v === 'large' || v === 'xlarge')
+        })
+    }
 
+    async init() {
+        await super.init();
+        this.updateVisible();
+        this.app.whenChanged('appMediaWidth', v => this.updateVisible());
     }
 }
 
