@@ -10,11 +10,11 @@ Beim Aktivieren der Druckfunktion öffnet sich auf der Karte ein Kartenrahmen, d
  .. figure:: ../../../screenshots/de/client-user/print1.png
    :align: center
 
-Zusätzlich zu dem Kartenrahmen öffnet sich ein Dialog, indem man die Druckauflösung und die Ausrichtung der Druckvorlage einstellen kann. Wird das Drucksymbol |print|
-noch einmal gedrückt, öffnet sich die PDF und per |cancel| wird der ganze Vorgang geschlossen.
+Zusätzlich zu dem Kartenrahmen öffnet sich ein Dialog, in dem die Ausrichtung der Druckvorlage sowie die Druckauflösung eingestellt werden können. Wird das Drucksymbol |print|
+erneut gedrückt, öffnet sich die PDF und per |cancel| wird der ganze Vorgang geschlossen.
 
 .. note::
- Beachten Sie dass gedrehte Karten weder gedruckt weden können, noch ein Screenshot von gemacht werden kann.
+ Beachten Sie, dass gedrehte Karten weder gedruckt, noch ein Screenshot von diesen gemacht werden kann.
 
 
  .. |print| image:: ../../../images/baseline-print-24px.svg

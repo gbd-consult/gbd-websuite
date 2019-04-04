@@ -8,7 +8,7 @@ Hier ist es möglich nach Namen von Straßen, Schulen, Krankenhäusern, Geschäf
   :align: center
 
 .. note::
- Wenn gewünscht kann die Suche deaktiviert werden. Außerdem wäre es auch möglich, dass die Suche anstatt in der Menüleiste prominent und dauerhaft auf der Karte zu sehen ist. Auch die Informationen innerhalb derer die Suche läuf, können definiert werden.
+ Wenn gewünscht kann die Suche deaktiviert werden. Außerdem ist es möglich, dass die Suche anstatt in der Menüleiste, prominent auf der Karte zu sehen ist. Optional können Suchparameter definiert werden.
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em

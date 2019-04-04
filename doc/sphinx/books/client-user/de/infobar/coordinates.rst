@@ -2,7 +2,7 @@ Koordinaten
 ===========
 
 
-In der Statusleiste befindet sich in der linken unteren Ecke die ``Koordinatenanzeige``. Die Koordinaten werden nur ab einer bestimmten Bildschirmgröße angezeigt und zum Beispiel nicht auf einem mobilen Endgerät.
+In der Statusleiste befindet sich außerem die ``Koordinatenanzeige``. Die Koordinaten werden nur ab einer bestimmten Bildschirmgröße angezeigt.
 
 .. figure:: ../../../screenshots/de/client-user/xy.png
   :align: center

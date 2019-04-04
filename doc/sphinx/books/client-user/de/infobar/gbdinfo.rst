@@ -1,10 +1,10 @@
 GBD Informationen
 =================
 
-Hier |gbd| können ``Informationen`` über die Geoinformatikbüro Dassau GmbH und über die GBD Websuite gefunden werden.
+Über |gbd| ``Informationen`` können Sie auf die WebSite der Geoinformatikbüro Dassau GmbH und der GBD WebSuite gelangen.
 
 .. note::
- Auch hier können bisherige Anpassungsmöglichkeiten angewendet werden. Es wäre kein Problem einen weiteren solcher Buttons einzupflegen mit der von Ihnen gewünschten Verlinkung.
+ Auch hier können bisherige Anpassungsmöglichkeiten angewendet werden. Es ist möglich, einen weiteren Button mit der von Ihnen gewünschten Verlinkung, einzupflegen.
 
  .. |gbd| image:: ../../../images/gws_logo.svg
   :width: 30em
