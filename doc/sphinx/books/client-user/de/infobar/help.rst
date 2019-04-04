@@ -4,7 +4,7 @@ Hilfe
 Über dieses Icon |help| gelangen Sie zur ``Kurzanleitung`` der GBD Websuite.
 
 .. note::
- Falls nicht benötigt, können auch diese Informationen deaktiviert oder anders palziert werden.
+ Falls nicht benötigt, können auch diese Informationen deaktiviert oder anders plaziert werden.
 
 
  .. |help| image:: ../../../images/sharp-help-24px.svg

@@ -1,12 +1,12 @@
 Bemaßung
 ========
 
-Das |dimensions| ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen durch das Zeichen von Linien. Die gezeichneten Linien werden automatisch mit den Streckenlängen beschriftet. Wenn Sie das Tool aktiviert haben, öffnet sich, unter der Werkzeugleiste, eine Leiste mit verschiedenen Symbolen.
+Das |dimensions| ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen durch das Zeichen von Linien, ähnlich einer technischen Bemaßung. Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet. Wenn Sie das Tool aktiviert haben, öffnet sich unter der Werkzeugleiste ein Feld mit verschiedenen Optionen.
 
 .. figure:: ../../../screenshots/de/client-user/dimensions_tool.png
   :align: center
 
-Über das |arrow| Icon können die gezeichneten Objekte verschoben und bearbeitet werden. Wenn man an den äußere Stützpunkten klickt kann diese verschieben wenn man auf den grünen Punkt in der Mitte klickt, kann die ganze Strecke verschobene werden. Über das |trash| Icon kann der Stützpunkt oder die gesamte Strecke gelöscht werden. Um ein Objekt zu zeichnen muss das |line| Icon ausgewählt werden. Bei dem Zeichnen einer Linie wird die Länge der einzelnen Strecken als Beschriftung angelegt. Das Tool schließen Sie über das |cancel| Icon.
+Über |arrow| können die gezeichneten Objekte verschoben und bearbeitet werden. Mit Hilfe der gelb markierten Stützpunkte |1| kann die Bemaßung versetzt werden. Durch Klicken auf den grünen Hilfspunkt |2|, kann sowohl die Bemaßung als auch die Beschriftung auf der Linie verschoben werden. Um ein Objekt zu zeichnen ist dies über |line| möglich. Bei dem Zeichnen einer Linie wird die Länge der einzelnen Strecken als Beschriftung angelegt. Über |trash| kann die ausgewählte Strecke gelöscht werden. Das Tool schließen Sie per |cancel|.
 
 .. figure:: ../../../screenshots/de/client-user/Bemassung_Beispiel_de.png
   :align: center
@@ -27,6 +27,9 @@ Das |dimensions| ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenl�
    :width: 30em
  .. |trash| image:: ../../../images/baseline-delete-24px.svg
    :width: 30em
-
+ .. |1| image:: ../../../images/gws_digits-01.svg
+   :width: 35em
+ .. |2| image:: ../../../images/gws_digits-02.svg
+   :width: 35em
 
 .. Wenn das ``Bemaßung``-Werkzeug generell nicht gewünscht ist, kann es aber auch entfernt bzw. deaktiviert werden.

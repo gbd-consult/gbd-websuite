@@ -27,6 +27,7 @@ Documentation for system administrators who configure the GBD WebSuite Server.
     print.rst
     cache.rst
     features.rst
+    styles.rst
     remoteadmin.rst
     configref.rst
     cliref.rst

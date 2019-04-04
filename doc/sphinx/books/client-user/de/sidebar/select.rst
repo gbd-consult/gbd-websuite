@@ -1,16 +1,18 @@
 Auswahl
 =======
 
-Die Ebene |select| ``Auswahl`` in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select|  ``Auswählen``-Werkzeug im Kartenfenster erfasst werden. Die Ebene wird automatisch angezeigt, wenn das ``Auswählen``-Werkzeug aktiviert wird.
+Die Ebene |select| ``Auswahl`` in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select|  ``Auswählen``-Werkzeug im Kartenfenster erfasst werden. Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
 
  .. figure:: ../../../screenshots/de/client-user/select.png
    :align: center
 
-Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit dem ``Auswählen``-Werkzeug ausgewählt wurden. So können Sie in diesem Menüpunkt eine Übersicht, über die von Ihnen ausgewählten Objekte, gewinnen. Diese Objekte können über das |delete| Icon aus der Auswahl entfernt werden oder über das |fokus| Icon fokusiert werden.
+Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit dem ``Auswählen``-Werkzeug ausgewählt wurden. So können Sie in diesem Menüpunkt eine Übersicht, über die von Ihnen ausgewählten Objekte, gewinnen. Diese Objekte können über |fokus| fokusiert werden oder über das |delete| Icon aus der Auswahl entfernt werden.
 
-Am unteren Fensterrand befinden sich erneut eine Reihe von Funktionen für speziell dieses Menü. Zum einen ist es möglich die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|, sowie die Auswahl zu löschen |delete_marking|.
+.. Am unteren Fensterrand befinden sich erneut eine Reihe von Funktionen für speziell dieses Menü. Zum einen ist es möglich die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|,
 
-Wenn ein Objekt ausgewählt wird, erscheint am unteren Bildschirmrand ein Informationsfenster. In diesem Fenster sind verschiedene Informationen über dieses Objekt abzulesen. Außerdem können hier über das |settings| Symbol weitere Funktionen ausgewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Annotieren`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
+Über |delete_marking| am unteren Rand des Menüs können Sie die Auswahl löschen.
+
+Wenn ein Objekt ausgewählt wird, erscheint rechts unten im Kartenfenster ein Informationsfenster. In diesem Fenster sind verschiedene Informationen über dieses Objekt abzulesen. Außerdem können hier über |settings| weitere Funktionen ausgewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Annotieren`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
 
 
 

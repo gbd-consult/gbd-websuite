@@ -25,7 +25,6 @@ module.exports = v => ({
     },
 
     '.modSearchAltbar': {
-        borderRadius: v.BORDER_RADIUS,
         backgroundColor: v.COLOR.white,
         border: [1, 'solid', v.BORDER_COLOR],
     },
@@ -37,11 +36,12 @@ module.exports = v => ({
 
     '.modSearchAltbarResults .modSearchResults': {
         position: 'absolute',
-        left: v.UNIT4,
-        right: v.UNIT4,
+        left: 0,
+        right: 0,
         borderTopWidth: 0,
         maxHeight: 300,
         overflow: 'auto',
+        overflowX: 'hidden',
         ...v.SHADOW,
     },
 
@@ -56,6 +56,7 @@ module.exports = v => ({
     },
 
     '.modSearchResultsFeatureText': {
+        position: 'relative',
         'p.head': {
             color: v.FOCUS_COLOR,
             cursor: 'pointer',

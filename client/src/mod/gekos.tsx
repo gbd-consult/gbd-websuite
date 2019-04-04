@@ -114,6 +114,7 @@ class GekosController extends gws.Controller {
                 // @TODO
                 let tb = this.app.controllerByTag('Toolbar');
                 tb.children = tb.children.filter(c => c.tag !== 'Toolbar.Gekos');
+                this.updateObject('appToolbarState', {gekos: false})
             }
         })
 

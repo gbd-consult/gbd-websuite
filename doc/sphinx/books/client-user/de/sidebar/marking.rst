@@ -1,7 +1,7 @@
 Markierungen
 ============
 
-Über die Menüleiste |menu| gelangt man zu dem Menüpunkt |marking| ``Markierungen``. Die Objekte, die man mit Hilfe des ``Markieren und Messen``-Werkzeuges erzeugt hat, werden hier aufgelistet. Über das |delete| Icon können Sie das gezeichnete Objekt direkt löschen oder über das |fokus| Icon zu dem gezeichneten Objekt hineinzoomen.
+Über die Menüleiste |menu| gelangt man zu dem Menüpunkt |marking| ``Markierungen``. Die Objekte, die man mit Hilfe des ``Markieren und Messen``-Werkzeuges erzeugt hat, werden hier aufgelistet. Über |fokus| kann man zu dem gezeichneten Objekt hineinzoomen, über |delete| können Sie das gezeichnete Objekt direkt löschen.
 
 .. figure:: ../../../screenshots/de/client-user/marking.png
   :align: center
@@ -11,8 +11,11 @@ Wenn ein Objekt neu gezeichnet oder im Menü ``Markierungen`` ausgewählt wurde,
 .. figure:: ../../../screenshots/de/client-user/marking_2.png
   :align: center
 
+.. note::
+  Die Beschriftung in der Markierung ändert sich automatisch von Meter in Kilometer, wenn die Linie/Fläche lang/groß genug ist. 
+
 Mit Hilfe des Werkzeuges |select_marking| ``Bearbeiten`` können erstellte Markierungen in der Karte angewählt und danach bearbeitet werden.
-Zuletzt ist es möglich, über das Werkzeug |delete_marking| ``Alle löschen`` die Markierung der Objekte aufzuheben.
+Über das Werkzeug |delete_marking| ``Alle löschen`` ist es möglich die Markierung der Objekte aufzuheben.
 
 .. note::
  All diese Funktionen können auf Wunsch auch deaktiviert oder nur gewissen Nutzern zur Verfügung gestellt werden.

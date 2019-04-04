@@ -33,6 +33,7 @@ interface ToolbarContainerProps extends gws.types.ViewProps {
 const ToolbarContainerStoreKeys = [
     'toolbarSize',
     'toolbarOverflowExpanded',
+    'appToolbarState'
 ];
 
 class ButtonView extends gws.View<ToolbarButtonProps> {
