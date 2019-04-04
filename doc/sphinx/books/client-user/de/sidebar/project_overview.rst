@@ -6,7 +6,7 @@ Im |menu| ``Menü`` finden Sie die Ebene |project| ``Projektübersicht``. Diese 
 .. figure:: ../../../screenshots/de/client-user/project_overview_map.png
   :align: center
 
-Desweiteren können dem Nutzer Basisdaten des Projekts, wie ein Titel, das Koordinatenbezugssystem oder die Ausmaße des Projektes vermittelt werden.
+Des Weiteren können dem Nutzer Basisdaten des Projekts, wie ein Titel, das Koordinatenbezugssystem oder die Ausmaße des Projektes vermittelt werden.
 
 Anhand der Werte Mitte-X und Mitte-Y kann die Koordinate des Mittelpunktes der aktuellen Kartenausdehnung abgelesen und angepasst werden. So ist es möglich, durch die Eingabe von Koordinaten und Maßstab zu einem gewünschten Ausschnitt oder einem gesuchten Punkt zu navigieren. Fügen Sie Ihre gewünschten Daten ein und klicken Sie auf ``Aktualisieren`` um die Eingaben an die Hauptkarte zu übergeben.
 

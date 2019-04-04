@@ -6,11 +6,15 @@ In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstückssuch
 Starten der Flurstückssuche
 ---------------------------
 
-Öffnet man die Flurstückssuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl, welche auf verschiedene Weisen verwendet werden können. Zum einen ist es möglich nach einem speziellen Flurstück zu suchen, indem die individuellen Daten eingegeben werden. Zum anderen können die Felder als Filter zu verwendet werden.
+Öffnet man die Flurstückssuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl, welche auf verschiedene Weisen verwendet werden können. Zum einen ist es möglich nach einem speziellen Flurstück zu suchen, indem die individuellen Daten eingegeben werden. Zum anderen können die Felder als Filter verwendet werden.
 
-Die Flurstückssuche wird über das Icon |search| gestartet.
+Die Flurstückssuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
+
+
+Beschreibung der Felder
+-----------------------
 
 +------------------------+---------------------------------+
 | **Feld**               | **Beispiel**                    |
@@ -47,7 +51,7 @@ Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Er
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_2.png
 
-Über den Klick auf den Ergebnistext *Flurstück* eines Eintrags gelangen Sie zu den Flurstücksinformationen. Diese bestehen aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstückssuche.
+Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese bestehen aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstückssuche.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
 
@@ -84,38 +88,41 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 +------------------------+--------------------------------------------------------------------------------------+
 | |print|                | Drucken der in der Ablage befindlichen Flurstücke, Ausgabe im Format PDF             |
 +------------------------+--------------------------------------------------------------------------------------+
+| |delete_shelf|         | Leeren der Ablage                                                                    |
++------------------------+--------------------------------------------------------------------------------------+
 
 .. Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt.
 
 Exportieren
 ^^^^^^^^^^^
- Exportieren als CSV
 
-Wählen Sie die gewünschten Daten der Flurstücke die mit exportiert werden sollen und klicken Sie auf ``Exportieren``
+**Exportieren als CSV**
 
- .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
+Wählen Sie die gewünschten Daten für den Export aus und klicken Sie auf ``Exportieren``.
 
+.. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
 
- .. note::
+.. note::
    Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen.
 
 
+**Exportieren als Druck**
 
-Exportieren zum Drucken
-
-Sobald |print| gedrückt wird startet der Druck. Dies bedeutet dass der Kartenausschnitt vorher gewählt werden muss.
+Sobald |print| gedrückt wird, startet der Druck. Dies bedeutet dass der Kartenausschnitt vorher gewählt werden muss.
 
 Save
+^^^^
 
 Vergeben Sie einen gewünschten Namen und bestätigen Sie durch Klicken auf das Häckchen.
 
- .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
+.. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
 
 Load
+^^^^
 
-Wählen Sie eine vorhande Datei und laden Sie diese ein durch Klicken auf das Häckchen.
+Wählen Sie eine vorhande Datei und laden Sie diese durch Klicken auf das Häckchen.
 
- .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_load.png
+.. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_load.png
 
 .. note::
   Das Speichern geschieht in einer SQLite Datei.
@@ -123,14 +130,18 @@ Wählen Sie eine vorhande Datei und laden Sie diese ein durch Klicken auf das H�
 Arbeiten mit der räumlichen Suche
 ---------------------------------
 
-Mit Hilfe des Werkzeuges ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln. Es öffnet sich in der Toolbar die Leiste für die Räumliche Suche, mit dem Verweis, dass nun in den Flurstücken gesucht wird. Wählen Sie hier das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine Linie und schließen Sie diese mit einem Doppelklick ab. Anschließend werden Ihnen die Flurstücke in den Ergebnissen aufgelistet, welche von der Linie geschnitten werden. Auf dem Screenshot unten sieht man ein mögliches Ergebnis.
+Mit Hilfe des Werkzeuges |spatial_search| ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln. Es öffnet sich in der Toolbar die Leiste für die Räumliche Suche, mit dem Verweis, dass nun in den Flurstücken gesucht wird.
+
+**Beispiel: Auswahl Flurstücke durch Linie**
+
+Wählen Sie das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine Linie und schließen Sie diese mit einem Doppelklick ab. Anschließend werden Ihnen die Flurstücke in den Ergebnissen aufgelistet, welche von der Linie geschnitten werden. Auf dem Screenshot unten sieht man ein mögliches Ergebnis.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
 
 Auswahl eines Flurstücks in der Karte
 -------------------------------------
 
-Das Werkzeug ``Auswahl eines Flurstücks in der Karte`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
+Das Werkzeug |select| ``Auswahl eines Flurstücks in der Karte`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
 
@@ -162,7 +173,14 @@ Das Werkzeug ``Auswahl eines Flurstücks in der Karte`` ermöglicht die Selektie
    :width: 30em
  .. |search| image:: ../../../images/baseline-search-24px.svg
    :width: 30em
-
+ .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
+   :width: 30em
+ .. |spatial_search| image:: ../../../images/gbd-icon-raeumliche-suche-01.svg
+   :width: 30em
+ .. |delete_shelf| image:: ../../../images/sharp-delete_forever-24px.svg
+   :width: 30em
+ .. |new_search|  image:: ../../../images/baseline-delete_sweep-24px.svg
+   :width: 30em
 
 .. Protokollierter Zugang zu Personendaten
 .. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

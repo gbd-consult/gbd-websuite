@@ -25,6 +25,28 @@ Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit ein
 
 Zu jedem Objekt stehen die bekannten Werkzeuge ``Hinzoomen`` und ``Räumliche Suche`` zur Verfügung. Per |delete| kann das jeweilige Objekt gelöscht werden.
 
+
++------------------------+---------------------------------+
+| **Feld**               | **Erläuterung**                 |
++------------------------+---------------------------------+
+| {len}                  |                                 |
++------------------------+---------------------------------+
+| {area}                 | gibt die Fläche an              |
++------------------------+---------------------------------+
+| {radius}               | gibt den Radius an              |
++------------------------+---------------------------------+
+| {x}                    | gibt die X-Koordinate an        |
++------------------------+---------------------------------+
+| {y}                    | gibt die Y-Koordinate an        |
++------------------------+---------------------------------+
+| {w}                    | gibt die Breite an              |
++------------------------+---------------------------------+
+| {h}                    | gibt die Höhe                   |
++------------------------+---------------------------------+
+
+
+
+
 .. note::
  Wie bei anderen Werkzeugen auch kann dieses Werkzeug individuell angepasst werden. Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren. Falls die Messungen lieber in Kilometer oder ähnlichem erstellt werden sollen, kann auch dies angepasst werden.
 
