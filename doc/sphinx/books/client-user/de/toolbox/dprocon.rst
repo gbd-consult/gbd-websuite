@@ -16,7 +16,7 @@ Voraussetzung für das Ergebnis ist die Vorauswahl der fachlichen Thematik in D-
   :align: center
   :width: 800px
 
-Starten Sie nun mit einem Klick auf das |dpro| ``D-Procon`` in der Werkzeugleiste die Suche. Im Hintergrund findet nun ein Abgleich mit den bestehenden Daten in der D-ProCon-Datenbank statt. Die Fachdaten, innerhalb des zuvor ausgewählten Objektes werden nun Ihnen als Suchergebnis in D-ProCon direkt angezeigt. Über das Attributfenster erhalten Sie nähere Informationen zu den Suchergebnissen.
+Starten Sie nun mit einem Klick auf das |dpro| ``D-Procon`` in der Werkzeugleiste die Suche |1|. Im Hintergrund findet nun ein Abgleich mit den bestehenden Daten in der D-ProCon-Datenbank statt. Die Fachdaten, innerhalb des zuvor ausgewählten Objektes werden nun Ihnen als Suchergebnis in D-ProCon direkt angezeigt. Über das Attributfenster erhalten Sie nähere Informationen zu den Suchergebnissen.
 
 .. figure:: ../../../screenshots/de/client-user/DProCon/DProCon_03.png
   :align: center
@@ -42,3 +42,5 @@ Für ausführliche Informationen schauen Sie gerne auch unter: https://www.siste
    :width: 30em
  .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
     :width: 30em
+ .. |1| image:: ../../../images/gws_digits-01.svg
+    :width: 35em
