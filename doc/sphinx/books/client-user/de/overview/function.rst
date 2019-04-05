@@ -38,9 +38,21 @@ Aufbau/Layout der GBD WebSuite
 
 Im folgenden wird kurz der Aufbau erklärt. Die hier definierten Begriffe werden Sie die restliche Dokumentation begleiten.
 
+Die GBD WebSuite besteht aus der Kopfzeile |1|, der Werkzeugleiste |2|, dem Menü |3|, dem Kartenfenster |4| sowie der Statusleiste |5|.
+
 .. figure:: ../../../screenshots/de/client-user/Overview_WebSuite.png
   :align: center
 
+ .. |1| image:: ../../../images/gws_digits-01.svg
+    :width: 30em
+ .. |2| image:: ../../../images/gws_digits-02.svg
+    :width: 30em
+ .. |3| image:: ../../../images/gws_digits-03.svg
+    :width: 30em
+ .. |4| image:: ../../../images/gws_digits-04.svg
+    :width: 30em
+ .. |5| image:: ../../../images/gws_digits-05.svg
+    :width: 30em
 
 .. GBD WebSuite Namenskonventionen
 .. .................................
