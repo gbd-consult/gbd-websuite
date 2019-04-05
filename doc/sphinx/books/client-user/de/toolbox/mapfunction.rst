@@ -17,6 +17,7 @@ Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst
     mouseover.rst
     searching.rst
     dprocon.rst
+    gkos.rst
     dimensions.rst
     measure.rst
     print.rst
