@@ -33,15 +33,36 @@ Der **GBD WebSuite Client** basiert auf React JS und verwendet als Kartenbibliot
 
 Da nahezu alle Server- und Client-Funktionalitäten Plugin-basiert sind, können sehr kleine, angepasste Tools für bestimmte Installationen und Zwecke bereitgestellt werden. Selbst die Integration von QGIS Funktionalitäten ist als Plugin realisiert. Dabei besteht die Möglichkeit, dass QGIS Desktop Benutzer über ein Plugin, Anpassungen an der Konfiguration von Server und Client vornehmen können.
 
-Aufbau/Layout der GBD WebSuite
+
+Aufbau der GBD WebSuite
 ..............................
 
-Im folgenden wird kurz der Aufbau erklärt. Die hier definierten Begriffe werden Sie die restliche Dokumentation begleiten.
+Im folgenden werden die einzelnen Elemente der GBD WebSuite erläutert. Die hier definierten Begriffe werden Sie die restliche Dokumentation begleiten.
 
-Die GBD WebSuite besteht aus der Kopfzeile |1|, der Werkzeugleiste |2|, dem Menü |3|, dem Kartenfenster |4| sowie der Statusleiste |5|.
+
++-------------------+-------------------+
+| |1|               | Kopfzeile         |
++-------------------+-------------------+
+| |2|               | Werkzeugleiste    |
++-------------------+-------------------+
+| |3|               | Menü              |
++-------------------+-------------------+
+| |4|               | Kartenfenster     |
++-------------------+-------------------+
+| |5|               | Statusleiste      |
++-------------------+-------------------+
+
+
+
 
 .. figure:: ../../../screenshots/de/client-user/Overview_WebSuite.png
   :align: center
+
+
+.. GBD WebSuite Namenskonventionen
+.. .................................
+
+.. Die GBD WebSuite ist eine WebGIS Anwendung. Demzufolge verwendet diese für die Darstellung von Daten in der Karte WebGIS Layer und WebGIS Gruppen. Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine Übersicht von verwendeten Abkürzungen.
 
  .. |1| image:: ../../../images/gws_digits-01.svg
     :width: 30em
@@ -53,8 +74,3 @@ Die GBD WebSuite besteht aus der Kopfzeile |1|, der Werkzeugleiste |2|, dem Men�
     :width: 30em
  .. |5| image:: ../../../images/gws_digits-05.svg
     :width: 30em
-
-.. GBD WebSuite Namenskonventionen
-.. .................................
-
-.. Die GBD WebSuite ist eine WebGIS Anwendung. Demzufolge verwendet diese für die Darstellung von Daten in der Karte WebGIS Layer und WebGIS Gruppen. Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine Übersicht von verwendeten Abkürzungen.
