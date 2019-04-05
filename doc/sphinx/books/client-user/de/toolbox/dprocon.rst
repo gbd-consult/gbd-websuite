@@ -7,6 +7,27 @@ Das ``D-Procon``-Werkzeug verarbeitet auf ALKIS basierte Adressdaten. Diese Adre
 
 Das Tool untersucht diese Objekte auf besagte ALKIS Adressdaten. Anhand derer werden statistische Prognosen erstellt, welche Informationen über die demografische Entwicklung bereit stellen.
 
+
+.. figure:: ../../../screenshots/de/client-user/DProCon_01.png
+  :align: center
+
+
+.. figure:: ../../../screenshots/de/client-user/DProCon_02.png
+  :align: center
+
+.. figure:: ../../../screenshots/de/client-user/DProCon_03.png
+  :align: center
+
+.. figure:: ../../../screenshots/de/client-user/DProCon_04.png
+  :align: center
+
+.. figure:: ../../../screenshots/de/client-user/DProCon_05.png
+  :align: center
+
+.. figure:: ../../../screenshots/de/client-user/DProCon_06.png
+  :align: center
+
+
 Für ausführliche Informationen schauen Sie gerne auch unter: https://www.sisterhenn-it.de/d-procon-2/
 
 .. note::

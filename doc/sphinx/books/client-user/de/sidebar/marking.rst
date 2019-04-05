@@ -12,9 +12,13 @@ Wenn ein Objekt neu gezeichnet oder im Menü ``Markierungen`` ausgewählt wurde,
   :align: center
 
 .. note::
-  Die Beschriftung in der Markierung ändert sich automatisch von Meter in Kilometer, wenn die Linie/Fläche lang/groß genug ist. 
+  Die Beschriftung in der Markierung ändert sich automatisch von Meter in Kilometer, wenn die Linie/Fläche lang/groß genug ist.
 
-Mit Hilfe des Werkzeuges |select_marking| ``Bearbeiten`` können erstellte Markierungen in der Karte angewählt und danach bearbeitet werden.
+Mit Hilfe des Werkzeuges |select_marking| ``Bearbeiten`` können erstellte Markierungen in der Karte angewählt und danach bearbeitet werden. Bewegen Sie dazu den Mauscursor auf den Rand der gezeichneten Fläche oder Linie. Ein roter Punkt taucht auf. Klicken Sie auf diesen Punkt und bewegen ihn. Nun können Sie die Form verändern und neue Stützpunkt einpflegen.
+
+.. figure:: ../../../screenshots/de/client-user/marking_tool_advanced.png
+  :align: center
+
 Über das Werkzeug |delete_marking| ``Alle löschen`` ist es möglich die Markierung der Objekte aufzuheben.
 
 .. note::
