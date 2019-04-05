@@ -1,32 +1,35 @@
 D-ProCon
 ========
 
-Über das |dpro| ``D-Procon``-Werkzeug können statistische Analysen durchgeführt werden. Die Nutzung ist jedoch nur möglich, wenn Sie im Besitz einer D-ProCon Lizenz sind, da es ein proprietäres Programm ist.
+Über das |dpro| ``D-Procon``-Werkzeug können statistische Analysen durchgeführt mit der proprietären Software D-ProCon durchgeführt werden.
 
-Das ``D-Procon``-Werkzeug verarbeitet auf ALKIS basierte Adressdaten. Diese Adressdaten werden durch die Auswahl von Objekten selektiert. Sie können ein vorhandenes Objekt, wie zum Beispiel ein Flurstück oder einen Stadtteil sowie ein durch die ``Räumliche Suche`` selbst erstelltes Objekt, verwenden.
+Das ``D-Procon``-Werkzeug verarbeitet auf ALKIS basierte Adressdaten. Diese Adressdaten werden durch die Auswahl von Objekten selektiert. Sie können ein vorhandenes Objekt, wie zum Beispiel ein Flurstück oder einen Stadtteil sowie ein durch die ``Räumliche Suche`` selbst erstelltes Objekt für die Suche verwenden. Der GBD WebSuite Client ist direkt in D-ProCon integriert, was die Interaktion der Programme erheblich vereinfacht.
 
-Das Tool untersucht diese Objekte auf besagte ALKIS Adressdaten. Anhand derer werden statistische Prognosen erstellt, welche Informationen über die demografische Entwicklung bereit stellen.
+Zur Vereinfachung beschränken wir uns im untenstehenden Abschnitt auf das Arbeiten mit der Fachschale Demografie. Ziel ist das Erstellen von statistischen Prognosen, welche Informationen über die demografische Entwicklung bereit stellen.
 
+Abrufen von Daten mit der GBD WebSuite
+--------------------------------------
 
-.. figure:: ../../../screenshots/de/client-user/DProCon_01.png
+Voraussetzung für das Ergebnis ist die Vorauswahl der fachlichen Thematik in D-ProCon. Wählen Sie in der GBD WebSuite mithilfe der Tools |select| ``Auswählen`` ein Objekt, welches Sie für die Suche benutzen wollen. Oder definieren Sie mithilfe der |geo_search| ``Räumliche Suche`` ein eigenes Objekt für die Suche.
+
+.. figure:: ../../../screenshots/de/client-user/DProCon/DProCon_01_Select.png
   :align: center
+  :width: 800px
 
+Starten Sie nun mit einem Klick auf das |dpro| ``D-Procon`` in der Werkzeugleiste die Suche. Im Hintergrund findet nun ein Abgleich mit den bestehenden Daten in der D-ProCon-Datenbank statt. Die Fachdaten, innerhalb des zuvor ausgewählten Objektes werden nun Ihnen als Suchergebnis in D-ProCon direkt angezeigt. Über das Attributfenster erhalten Sie nähere Informationen zu den Suchergebnissen.
 
-.. figure:: ../../../screenshots/de/client-user/DProCon_02.png
+.. figure:: ../../../screenshots/de/client-user/DProCon/DProCon_03.png
   :align: center
+  :width: 1000px
 
-.. figure:: ../../../screenshots/de/client-user/DProCon_03.png
+Zudem ist es möglich, die Fachdaten aus D-ProCon über QGIS dauerhaft in den Client der GBD WebSuite zu integrieren.
+
+.. figure:: ../../../screenshots/de/client-user/DProCon/DProCon_05.png
   :align: center
+  :width: 1000px
 
-.. figure:: ../../../screenshots/de/client-user/DProCon_04.png
-  :align: center
-
-.. figure:: ../../../screenshots/de/client-user/DProCon_05.png
-  :align: center
-
-.. figure:: ../../../screenshots/de/client-user/DProCon_06.png
-  :align: center
-
+Ausführliche Informationen
+--------------------------
 
 Für ausführliche Informationen schauen Sie gerne auch unter: https://www.sisterhenn-it.de/d-procon-2/
 
@@ -35,3 +38,7 @@ Für ausführliche Informationen schauen Sie gerne auch unter: https://www.siste
 
  .. |dpro| image:: ../../../images/gbd-icon-d-procon-02.svg
    :width: 30em
+ .. |geo_search| image:: ../../../images/gbd-icon-raeumliche-suche-01.svg
+   :width: 30em
+ .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
+    :width: 30em
