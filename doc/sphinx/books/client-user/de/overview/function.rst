@@ -36,7 +36,9 @@ Da nahezu alle Server- und Client-Funktionalitäten Plugin-basiert sind, können
 Aufbau/Layout der GBD WebSuite
 ..............................
 
-.. figure:: ../../../screenshots/de/client-user/Rechteck_Zoom.png
+Im folgenden wird kurz der Aufbau erklärt. Die hier definierten Begriffe werden Sie die restliche Dokumentation begleiten.
+
+.. figure:: ../../../screenshots/de/client-user/Overview_WebSuite.png
   :align: center
 
 
