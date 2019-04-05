@@ -65,12 +65,12 @@ Im folgenden werden die einzelnen Elemente der GBD WebSuite erläutert. Die hier
 .. Die GBD WebSuite ist eine WebGIS Anwendung. Demzufolge verwendet diese für die Darstellung von Daten in der Karte WebGIS Layer und WebGIS Gruppen. Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine Übersicht von verwendeten Abkürzungen.
 
  .. |1| image:: ../../../images/gws_digits-01.svg
-    :width: 30em
+    :width: 35em
  .. |2| image:: ../../../images/gws_digits-02.svg
-    :width: 30em
+    :width: 35em
  .. |3| image:: ../../../images/gws_digits-03.svg
-    :width: 30em
+    :width: 35em
  .. |4| image:: ../../../images/gws_digits-04.svg
-    :width: 30em
+    :width: 35em
  .. |5| image:: ../../../images/gws_digits-05.svg
-    :width: 30em
+    :width: 35em
