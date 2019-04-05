@@ -72,7 +72,7 @@ module.exports = {
     cmpInfoboxSelectButton: 'Auswählen',
     cmpInfoboxZoomButton: 'Zu ausgewähltem Objekt zoomen',
     cmpToolCancelButton: 'Beenden',
-    modLayersCloseAuxButton: 'Layerdetails schließen',
+    modLayersCloseAuxButton: 'Layerlegende schließen',
     modLayersCollapseButton: 'Unterebenen',
     modLayersEditAuxButton: 'Layer editieren',
     modLayersExpandButton: 'Unterebenen',

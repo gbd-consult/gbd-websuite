@@ -5,7 +5,7 @@ module.exports = v => ({
     },
 
     '.modStorageReadAuxButton': {
-        ...v.SIDEBAR_AUX_BUTTON('google:file/folder_open')
+        ...v.SIDEBAR_AUX_BUTTON('open')
     },
 
     '.uiDialog.modStorageDialog': {
