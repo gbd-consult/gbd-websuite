@@ -33,31 +33,14 @@ Der **GBD WebSuite Client** basiert auf React JS und verwendet als Kartenbibliot
 
 Da nahezu alle Server- und Client-Funktionalitäten Plugin-basiert sind, können sehr kleine, angepasste Tools für bestimmte Installationen und Zwecke bereitgestellt werden. Selbst die Integration von QGIS Funktionalitäten ist als Plugin realisiert. Dabei besteht die Möglichkeit, dass QGIS Desktop Benutzer über ein Plugin, Anpassungen an der Konfiguration von Server und Client vornehmen können.
 
+Aufbau/Layout der GBD WebSuite
+..............................
+
+.. figure:: ../../../screenshots/de/client-user/Rechteck_Zoom.png
+  :align: center
+
+
 .. GBD WebSuite Namenskonventionen
-...............................
+.. .................................
 
 .. Die GBD WebSuite ist eine WebGIS Anwendung. Demzufolge verwendet diese für die Darstellung von Daten in der Karte WebGIS Layer und WebGIS Gruppen. Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine Übersicht von verwendeten Abkürzungen.
-
-.. +------------------------+--------------------------------------------------------------------------------------+
-| **Abkürzung**          | **Bedeutung**                                                                         |
-+------------------------+--------------------------------------------------------------------------------------+
-| |fokus|                | Zoomen auf das entsprechende Flurstück                                               |
-+------------------------+--------------------------------------------------------------------------------------+
-| |add|                  | ein Objekt zur Ablage hinzufügen                                                     |
-+------------------------+--------------------------------------------------------------------------------------+
-| |delete|               | ein Objekt aus der Ablage entfernen                                                  |
-+------------------------+--------------------------------------------------------------------------------------+
-| |addall|               | alle gewählten Objekte zur Ablage hinzufügen                                         |
-+------------------------+--------------------------------------------------------------------------------------+
-| |tab|                  | Ablage der ausgewählten Flurstücke                                                   |
-+------------------------+--------------------------------------------------------------------------------------+
-| |save|                 | Speichern der in der Ablage befindlichen Flurstücke                                  |
-+------------------------+--------------------------------------------------------------------------------------+
-| |load|                 | Öffnen von zuvor gespeicherten Ablagen von Flurstücken                               |
-+------------------------+--------------------------------------------------------------------------------------+
-| |csv|                  | Die in der Ablage befindlichen Flurstücke werden als CSV exportiert                  |
-+------------------------+--------------------------------------------------------------------------------------+
-| |print|                | Drucken der in der Ablage befindlichen Flurstücke, Ausgabe im Format PDF             |
-+------------------------+--------------------------------------------------------------------------------------+
-| |delete_shelf|         | Leeren der Ablage                                                                    |
-+------------------------+--------------------------------------------------------------------------------------+
