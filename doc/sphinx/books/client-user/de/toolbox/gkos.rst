@@ -1,7 +1,7 @@
 GeKoS
 =====
 
-Das |gkos| ``GeKoS``-Werkzeug in der Toolbar stellt eine Schnittstelle zur proprietären Software GeKoS - Software für Kommunen dar. Mithilfe von GeKoS werden verschiedene Verfahren verwaltet. Eine Übersicht zeigt die untenstehende Tabelle. Für eine vereinfachende Beschreibung beschränken wir uns untenstehend auf die Anwendung Baugenehmigung.
+Das |gkos| ``GeKoS``-Werkzeug in der Toolbar stellt eine Schnittstelle zur proprietären Software GeKoS - Software für Kommunen dar. Mithilfe von GeKoS werden verschiedene Verfahren verwaltet. Eine Übersicht zeigt die untenstehende Tabelle. Für eine vereinfachende Beschreibung beschränken wir uns auf die Anwendung Baugenehmigung.
 
 +------------------------------+-----------------------------------------------+
 | **Fachschale**               | **Anwendung**                                 |
@@ -37,7 +37,7 @@ Ebenso kann der andere Weg gewählt werden. Navigieren Sie dazu in der GBD WebSu
 .. figure:: ../../../screenshots/de/client-user/GeKoS/GeKoS_GWS.png
     :align: center
 
-Nun öffnet sich ein Dialog, der Ihnen die Koordinaten zeigt, die an GeKoS übermittelt werden. Im Hintergrund findet nun ein Abgleich mit den bestehenden Flurstücken in der GeKoS-Datenbank statt. Das Flurstück, welches über die Koordinaten angesprochen werden kann, wird Ihnen als Suchergebnis in GeKoS direkt als Ergebnis angezeigt.
+Nun öffnet sich ein Dialog, der Ihnen die Koordinaten zeigt, die an GeKoS übermittelt werden. Im Hintergrund findet nun ein Abgleich mit den bestehenden Flurstücken in der GeKoS-Datenbank statt. Das Flurstück, welches über die Koordinaten angesprochen werden kann, wird Ihnen als Suchergebnis in GeKoS direkt angezeigt.
 
 .. figure:: ../../../screenshots/de/client-user/GeKoS/GeKoS_coordinates.png
   :align: center
