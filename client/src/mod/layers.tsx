@@ -40,6 +40,23 @@ class ToggleVisibleButton extends gws.View<ViewProps> {
     }
 }
 
+class ToggleVisibleGroupButton extends gws.View<ViewProps> {
+    render() {
+        let layer = this.props.layer,
+            cls = layer.visible ? 'modLayersHideButton' : 'modLayersShowButton',
+            fn = () => this.props.controller.map.setLayerVisible(layer, !layer.visible);
+
+        if (layer.visible)
+            return <gws.ui.IconButton
+                className={cls}
+                tooltip={this.__('modLayersVisibleButton')}
+                whenTouched={fn}
+            />;
+
+        return null;
+    }
+}
+
 class ToggleExpandButton extends gws.View<ViewProps> {
     render() {
         let layer = this.props.layer,
@@ -90,7 +107,10 @@ class TreeNode extends gws.View<ViewProps> {
                     <Title {...this.props} />
                 </Cell>
                 <Cell>
-                    <ToggleVisibleButton {...this.props} />
+                    {children
+                        ? <ToggleVisibleGroupButton {...this.props} />
+                        : <ToggleVisibleButton {...this.props} />
+                    }
                 </Cell>
             </Row>
             {children && layer.expanded && <div className="modLayersChildren">{children}</div>}
