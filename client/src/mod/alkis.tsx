@@ -910,6 +910,11 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
             }
         });
 
+        if (features.length === 1) {
+            await this.showDetails(features[0], false);
+            return;
+        }
+
         return this.goTo('list');
     }
 
@@ -924,20 +929,17 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
 
     }
 
-    async showDetails(f: gws.types.IMapFeature) {
+    async showDetails(f: gws.types.IMapFeature, highlight = true) {
         let q = this.paramsForFeatures([f]);
         let res = await this.app.server.alkisFsDetails(q);
         let feature = this.map.readFeature(res.feature);
 
         if (f) {
-            this.highlight(f);
+            if (highlight)
+                this.highlight(f);
 
             this.update({
                 alkisFsDetailsFeature: feature,
-                marker: {
-                    features: [feature],
-                    mode: 'zoom draw'
-                }
             });
 
             this.goTo('details');
