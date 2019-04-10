@@ -337,6 +337,7 @@ class SearchForm extends gws.View<FsSearchProps> {
 
         let clear = () => cc.update({
             alkisFsParams: {},
+            alkisFsStrassen: [],
             lensGeometryType: null,
             marker: null,
         });
