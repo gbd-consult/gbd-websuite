@@ -13,12 +13,12 @@ MIN_GEBAEUDE_AREA = 0.5
 
 
 def normalize_hausnummer(hn):
-    # it's always "13 a" in alkis, but we allow 13a
+    # "12 a" -> "12a"
     m = re.match(r'(\d+)(\D*)', str(hn).strip())
     if not m:
         return None
     if m.group(2):
-        return m.group(1) + ' ' + m.group(2).strip()
+        return m.group(1) + m.group(2).strip()
     return m.group(1)
 
 
@@ -237,7 +237,7 @@ def _create_addr_index(conn: connection.AlkisConnection):
 
             for hnr in 'hausnummer', 'pseudonummer', 'laufendenummer':
                 if r.get(hnr):
-                    r['hausnummer'] = r[hnr]
+                    r['hausnummer'] = normalize_hausnummer(r[hnr])
                     r['hausnummer_type'] = hnr
                     break
 
