@@ -252,7 +252,7 @@ class HomeLinkWidget extends LinkWidget {
     }
 }
 
-const ABOUT_URL = 'https://www.gbd-consult.de/software/gbd-websuite.html';
+const ABOUT_URL = 'https://gws.gbd-consult.de/';
 
 class AboutWidget extends LinkWidget {
 
