@@ -25,25 +25,26 @@ Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit ein
 .. note::
   Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| ``Räumliche Suche`` zur Verfügung. Über die Symbole in der Werkzeugleiste können Sie die Zeichnung bestätigen |savedraw| oder abbrechen |canceldraw|. Außerdem kann jedes Objekt nachträglich angepasst werden. Wählen Sie dazu das Objekt im Menü ``Markierungen`` an. Nun können Sie neue Stützpunkt vergeben. Bei der Kreisflächenmessung kann der Radius angepasst werden. Mit |delete| kann man die erstellte Linie wieder löschen. Per |delete| kann das jeweilige Objekt gelöscht werden.
 
-**Mögliche Felder für die Markierung**
+**Mögliche Ausdrücke für die Markierung**
 
-+------------------------+---------------------------------+
-| **Feld**               | **Erläuterung**                 |
-+------------------------+---------------------------------+
-| {len}                  | gibt die Länge einer Linie an   |
-+------------------------+---------------------------------+
-| {area}                 | gibt die Fläche an              |
-+------------------------+---------------------------------+
-| {radius}               | gibt den Radius an              |
-+------------------------+---------------------------------+
-| {x}                    | gibt die X-Koordinate an        |
-+------------------------+---------------------------------+
-| {y}                    | gibt die Y-Koordinate an        |
-+------------------------+---------------------------------+
-| {w}                    | gibt die Breite an              |
-+------------------------+---------------------------------+
-| {h}                    | gibt die Höhe                   |
-+------------------------+---------------------------------+
++------------------------+---------------------------------+------------------+
+| **Feld**               | **Erläuterung**                 | **Geometrietyp** |
++------------------------+---------------------------------+------------------+
++------------------------+---------------------------------+------------------+
+| {len}                  | gibt die Länge einer Linie an   | Linie            |
++------------------------+---------------------------------+------------------+
+| {area}                 | gibt die Fläche an              | Fläche           |
++------------------------+---------------------------------+------------------+
+| {radius}               | gibt den Radius an              | Fläche           |
++------------------------+---------------------------------+------------------+
+| {x}                    | gibt die X-Koordinate an        | Punkt            |
++------------------------+---------------------------------+------------------+
+| {y}                    | gibt die Y-Koordinate an        | Punkt            |
++------------------------+---------------------------------+------------------+
+| {w}                    | gibt die Breite an              | Fläche           |
++------------------------+---------------------------------+------------------+
+| {h}                    | gibt die Höhe                   | Fläche           |
++------------------------+---------------------------------+------------------+
 
 
 

@@ -1,7 +1,7 @@
 Server Aktionen
 ================
 
-Die GBD WebSuite unterstützt viele verschiedene Befehle. In Ihrer Anwendungs- und Projektkonfiguration können Sie entscheiden, welche Sie in Ihrer speziellen Installation verwenden möchten. Jede Aktionskonfiguration benötigt mindestens die Eigenschaft ``type`` (das erste Wort des Befehlsnamens, z. B. für den Befehl ``mapRenderXyz``, der Typ ist ``map``), und optional einen ``access`` Block (siehe :doc:`auth`), der angibt, welche Rollen die Berechtigung haben, diesen Aktionstyp *auszuführen*. Einige Aktionen erfordern zusätzliche Optionen.
+Die GBD WebSuite unterstützt viele verschiedene Befehle. In Ihrer Anwendungs- und Projektkonfiguration können Sie entscheiden, welche Sie in Ihrer Installation verwenden möchten. Jede Aktionskonfiguration benötigt mindestens die Eigenschaft ``type`` (das erste Wort des Befehlsnamens, z. B. für den Befehl ``mapRenderXyz``, der Typ ist ``map``), und optional einen ``access`` Block (siehe :doc:`auth`). Dieser gibt an, welche Rollen die Berechtigung haben, diesen Aktionstyp *auszuführen*. Einige Aktionen erfordern zusätzliche Optionen.
 
 Hier ein kurzer Überblick über die unterstützten Aktionen (siehe :doc:`configref` für Details zur Konfiguration).
 
@@ -16,4 +16,4 @@ TABLE
 *search* ~ behandelt die Suche (siehe :doc:`search`)
 /TABLE
 
-Wir pflegen die komplette Liste der Befehle, deren Argumente und Rückgabewerte als TypeScript-Schnittstellen-Datei, siehe :doc:`apiref`. 
+Wir pflegen die komplette Liste der Befehle, deren Argumente und Rückgabewerte als TypeScript-Schnittstellen-Datei, siehe :doc:`apiref`.

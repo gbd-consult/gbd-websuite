@@ -3,10 +3,10 @@ Autorisierung
 
 Die Autorisierung der GBD WebSuite ist rollenbasiert. Das bedeutet, dass den einzelnen Benutzern verschiedene Berechtigungen zugeteilt werden können. Wenn sich der Benutzer anmeldet, werden seine Referenzen nacheinander an alle konfigurierten Provider weitergegeben. Wenn ein Provider die Referenzen akzeptiert, gibt er eine Liste der Rollen für diesen Benutzer zurück.
 
-Wenn der Benutzer ein Objekt anfordert, prüft der Server, welche Berechtigungen dem Benutzer zugeteilt sind. Anhand dieser Berechtigungen werden dem Nutzer dann verschiedene Funktionen wie zum Beispiel das Lesen, Schreiben (z. B. beim Bearbeiten) oder Auszuführen (z. B. eine Serveraktion) zur Verfügung gestellt. Wenn es keine expliziten Berechtigungen auf der gewählten Objektebene gibt, wird das übergeordnete Objekt geprüft und so weiter. Um diese Prüfungen durchzuführen, liest der Server die ``access``-Datei jedes angeforderten Objekts.
+Wenn der Benutzer ein Objekt anfordert, prüft der Server, welche Berechtigungen dem Benutzer zugeteilt sind. Anhand dieser Berechtigungen werden dem Nutzer dann verschiedene Funktionen wie zum Beispiel das Lesen, Schreiben (z. B. beim Bearbeiten) oder Auszuführen (z. B. eine Serveraktion) zur Verfügung gestellt. Wenn es keine expliziten Berechtigungen auf der gewählten Objektebene gibt, wird das übergeordnete Objekt geprüft dann das nächst übergeordnete Objekt und so weiter. Um diese Prüfungen durchzuführen, liest der Server die ``access``-Datei jedes angeforderten Objekts.
 
-Zugangsreglungen
-----------------
+Zugangsregelungen
+-----------------
 
 
 ``access`` ist eine Liste von ``AccessRule`` Objekten. Jede ``AccessRule`` enthält
@@ -59,7 +59,7 @@ Mit Hilfe der ``access``-Regeln kann der Algorithmus zur Prüfung der Berechtigu
 Rollen
 ----------
 
-Es gibt einige vordefinierte Rollen, die in der GWS eine besondere Bedeutung haben:
+Es gibt einige vordefinierte Rollen, die in der GBD WebSuite eine besondere Bedeutung haben:
 
 TABLE
    *guest* ~ Nicht eingeloggter Benutzer
@@ -68,7 +68,7 @@ TABLE
    *admin* ~ Administrator und Benutzer die diese Rolle haben, erhalten automatisch Zugriff auf alle Ressourcen
 /TABLE
 
-Andernfalls können Sie beliebige Rollennamen vergeben. Beim Erstellen dieser Rollennamen müssen Sie jedoch auf die Schriftweise achten. Der Name muss mit einem lateinischen Buchstaben beginnen und darf nur Buchstaben, Ziffern und Unterstriche aber keine Leerzeichen enthalten.
+Andernfalls können Sie beliebige Rollennamen vergeben. Beim Erstellen dieser Rollennamen müssen Sie jedoch auf die Schreibweise achten. Der Name muss mit einem lateinischen Buchstaben beginnen und darf nur Buchstaben, Ziffern und Unterstriche aber keine Leerzeichen enthalten.
 
 
 Berechtigungsstrategien
@@ -106,7 +106,7 @@ Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen
         }
     ]
 
-Wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen::
+Wenn die meisten Ihrer Projekte zum Beispiel ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen::
 
     ## in der Hauptkonfiguration:
 
@@ -139,7 +139,7 @@ Berechtigungsanbieter
 Datei
 ~~~~~~~
 
-Der Dateianbieter verwendet eine einfache Json-Datei, um Autorisierungsdaten zu speichern. Die Json-Datei ist nur ein Array von "user"-Objekten ::
+Der Datenanbieter verwendet eine einfache Json-Datei, um Autorisierungsdaten zu speichern. Die Json-Datei ist nur ein Array von "user"-Objekten ::
 
 
     [
@@ -154,13 +154,13 @@ Der Dateianbieter verwendet eine einfache Json-Datei, um Autorisierungsdaten zu 
         }
     }
 
-Der Name und der Speicherort der Datei ist Ihnen überlassen. Geben Sie einfach ihren absoluten Pfad in der Konfiguration an, um das verschlüsselte Passwort zu generieren. Verwenden Sie dazu den Befehl ``auth passwd``.
+Der Name und der Speicherort der Datei ist Ihnen überlassen. Geben Sie einfach ihren absoluten Pfad in der Konfiguration an. Dann wird automatisch das verschlüsselte Passwort generiert. Verwenden Sie dazu den Befehl ``auth passwd``.
 
 
-Ldap
+LDAP
 ~~~~
 
-Der ldap-Provider kann Benutzer für ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um die LDAP-Filter auf die GBD WebSuite Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys. com` bereitgestellten LDAP-Testservers.  `<http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server>`_ ::
+Der LDAP-Provider kann Benutzer für ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um die LDAP-Filter auf die GBD WebSuite Rollennamen anzuwenden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys. com` bereitgestellten LDAP-Testservers.  `<http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server>`_ ::
 
     {
         "type": "ldap",

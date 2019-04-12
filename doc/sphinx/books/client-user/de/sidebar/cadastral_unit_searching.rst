@@ -13,8 +13,8 @@ Die Flurstückssuche wird über das Icon |search| ``Suche`` gestartet. Eine neue
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
 
 
-Beschreibung der Felder
------------------------
+Beschreibung der Ausdrücke
+--------------------------
 
 +------------------------+---------------------------------+
 | **Feld**               | **Beispiel**                    |
@@ -59,8 +59,8 @@ Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinfo
 
 .. Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden |fokus| Symbol fokussiert werden. Außerdem ist es möglich über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage zu entfernen. Oder über das |addall| Icon ebenfalls in der Leiste am unteren Fensterrand ``Alle zur Ablage`` hinzufügen.  So können Sie in der |tab| ``Ablage`` , welche ebenfalls am unteren Fensterrand der ``Flurstückssuche`` zu finden ist, eine Sammlung gesuchter Flurstücke anlegen und diese |save| ``Speichern``, |load| ``Laden``, |csv| als CSV-Datei exportieren oder |print| ``Drucken``.
 
-Arbeiten mit der Ablage
------------------------
+Arbeiten mit den Feldern
+------------------------
 
 .. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_3.png
   :align: center
@@ -103,7 +103,7 @@ Wählen Sie die gewünschten Daten für den Export aus und klicken Sie auf ``Exp
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
 
 .. note::
-   Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen.
+   Eine CSV-Datei ist eine minmalisierte Excel-Datei, welche Komma separiert ist und im Zusammenhang mit Webdiensten häufig verwendet wird. Je nach Auswahl der Exportkriterien, kann es zur mehrfach Auflistung eines Objektes kommen.
 
 
 **Exportieren als Druck**
@@ -113,22 +113,23 @@ Sobald |print| gedrückt wird, startet der Druck. Dies bedeutet dass der Kartena
 Save
 ^^^^
 
-Vergeben Sie einen gewünschten Namen und bestätigen Sie durch Klicken auf das Häckchen.
+Sie können die Ablagen mit den von Ihnen gewählten Objekten über |save| abspeichern. Vergeben Sie einen gewünschten Namen und bestätigen Sie durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
 
 Load
 ^^^^
 
-Wählen Sie eine vorhande Datei und laden Sie diese durch Klicken auf das Häckchen.
+Sie können gespeicherte Ablagen über |load| laden. Wählen Sie die gewünschte Datei und Klicken Sie auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_load.png
 
 .. note::
   Das Speichern geschieht in einer SQLite Datei.
 
-Arbeiten mit der räumlichen Suche
----------------------------------
+
+Flurstücke über räumliche Suche finden
+--------------------------------------
 
 Mit Hilfe des Werkzeuges |spatial_search| ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln. Es öffnet sich in der Toolbar die Leiste für die Räumliche Suche, mit dem Verweis, dass nun in den Flurstücken gesucht wird.
 
@@ -138,10 +139,14 @@ Wählen Sie das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine 
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
 
+.. note::
+  Falls zuvor Werte für die Suche eingetragen wurden, greift die räumliche Suche ausschließlich auf diese gefillterten Ergebnisse. Wenn das finden von Flurstücken ausschließlich durch die räumliche Suche stattfinden soll, müssen Sie sicher stellen, dass in der Flurstückssuche kein Feld ausgefüllt und somit alle Filter deaktiviert sind. Das Speichern geschieht in einer SQLite Datei.
+
+
 Auswahl eines Flurstücks in der Karte
 -------------------------------------
 
-Das Werkzeug |select| ``Auswahl eines Flurstücks in der Karte`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
+Das Werkzeug |select| ``Auswahl eines Flurstücks in der Karte`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen. Diese werden direkt in der Ablage und nicht in den Suchergebnissen gelistet.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
 

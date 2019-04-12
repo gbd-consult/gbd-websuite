@@ -1,7 +1,7 @@
 Screenshot
 ==========
 
-Bei Aktivierung des |screenshot| ``Screenshot``-Werkzeuges öffnet sich ein Rechteck auf der Karte. Dieses kann mit der linken Maustaste frei verschoben werden. Wählen Sie den gewünschten Ausschnitt und vergeben Sie anschließend den DPI Wert.
+Bei Aktivierung des |screenshot| ``Screenshot``-Werkzeuges öffnet sich ein Rechteck auf der Karte. Dieses kann durch verschieben der Karte beliebig platziert werden. Halten Sie dazu die linke Maustaste auf die Karte gedrückt und verschieben Sie diese so. Außerdem können Sie die Ausmaße des Screenshots über |navi| genauer bestimmen. Wählen Sie den gewünschten Ausschnitt, vergeben Sie den DPI Wert und klicken Sie auf |screenshot|.
 
 .. figure:: ../../../screenshots/de/client-user/screenshot.png
   :align: center
@@ -19,4 +19,6 @@ Sie sollten am besten einen Wert zwischen 70 und 300 DPI auswählen um eine gute
  .. |screenshot| image:: ../../../images/outline-insert_photo-24px.svg
    :width: 30em
  .. |cancel| image:: ../../../images/baseline-close-24px.svg
+   :width: 30em
+ .. |navi| image:: ../../../images/Feather-core-move.svg
    :width: 30em

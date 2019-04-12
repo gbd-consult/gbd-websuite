@@ -2,7 +2,7 @@ Layer
 =====
 
 
-In der Menüebene |layers| ``Layer`` werden die Layer des Projekts angezeigt. Sie können die Sichtbarkeit ein- oder ausschalten. Wenn für bestimmte Layer eine maßstabsbezogene Darstellung konfiguriert ist, erscheinen diese erst wenn der entsprechende Kartenmaßstab erreicht wurde.
+In der Menüebene |layers| ``Layer`` werden die Layer des Projekts angezeigt. Sie können die Sichtbarkeit ein- oder ausschalten. Wenn für bestimmte Layer eine maßstabsbezogene Darstellung konfiguriert ist, erscheinen diese erst wenn der entsprechende Kartenmaßstab erreicht wurde. Um einen Layer zu aktivieren muss auf den jeweiligen Layernamen geklickt werden. Sobald der Layer aktiviert ist, wird der Layername in blau gezeichnet und es öffnet sich die Layerlegende.
 
 .. figure:: ../../../screenshots/de/client-user/layer.png
   :align: center

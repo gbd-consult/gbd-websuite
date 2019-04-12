@@ -1,16 +1,16 @@
 ALKIS Integration
 =================
 
-Gbd Websuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Unter anderem, steht ein Plugin für Flurstückssuche zur Verfügung. Die Konfiguration erfolgt im Abschnitt ``actions``, Typ ``alkis``. Folgende Optionen sind verfügbar:
+Die GBD WebSuite kann auf Daten aus dem amtlichen Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Unter anderem steht ein Plugin zur Flurstückssuche zur Verfügung. Die Konfiguration erfolgt im Abschnitt ``actions``, Typ ``alkis``. Folgende Optionen sind hier verfügbar:
 
 TABLE
-    *alkisSchema* ~ Postgis Schema wo die ALKIS Daten liegen
-    *buchung* ~ Zugang zu Grundbuchung Daten (z.B. Blattnummer)
+    *alkisSchema* ~ PostGIS Schema wo die ALKIS Daten hinterlegt sind
+    *buchung* ~ Zugang zu Grundbuch Daten (z.B. Blattnummer)
     *db* ~ Datenbank-Provider ID
     *eigentuemer* ~ Zugang zu Eigentümerdaten (z.B. Name, Adresse)
     *excludeGemarkung* ~ Liste von Gemarkungen, die aus der Suche ausgeschlossen werden müssen
     *featureFormat* ~ Formatierung von Flurstücksdaten
-    *indexSchema* ~ Postgis Schema wo die Indexes geschrieben werden
+    *indexSchema* ~ PostGIS Schema wo die Indexe geschrieben werden
     *limit* ~ Anzahl von Ergebnissen
     *printTemplate* ~ Druckvorlage für Flurstücksdaten
     *ui* ~ Einstellungen der Benutzeroberfläche
@@ -30,7 +30,7 @@ TABLE
 Indizierung
 -----------
 
-Bevor die ALKIS Daten für die Flurstückssuche verwendet werden können, müssen sie für Gws speziell indiziert werden. Dies erfoglt mit folgenden Kommandozeilen Befehlen ::
+Bevor die ALKIS Daten für die Flurstückssuche verwendet werden können, müssen sie für die GBD WebSuite speziell indiziert werden. Dies ist mit folgenden Kommandozeilen Befehlen möglich ::
 
 
     ## gws Indizien löschen
@@ -53,11 +53,11 @@ Es sind folgende Standardvorlagen im Plugin vorhanden
 
 TABLE
 teaser.cx.html ~ Vorlage für die Beschriftung in der Ergebnissliste
-data.cx.html ~ Flurstücksdetails Vorlage
+data.cx.html ~ Flurstückdetails Vorlage
 print.cx.html ~ Druckvorlage
 /TABLE
 
-Diese Vorlagen sind unter https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws/ext/action/alkis/templates zu finden. Für die Anpassung einer Vorlage ist es empfohlen eine Kopie der Standardvorlage anzulegen und die ``featureFormat`` Option entsprechend anzupassen, z.B. ::
+Diese Vorlagen sind unter https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws/ext/action/alkis/templates zu finden. Für die Anpassung einer Vorlage ist es zu empfehlen eine Kopie der Standardvorlage anzulegen und die ``featureFormat`` Option entsprechend anzupassen, z.B. ::
 
 
     "featureFormat": {
@@ -71,7 +71,7 @@ Diese Vorlagen sind unter https://github.com/gbd-consult/gbd-websuite/tree/maste
 Zugang zu Eigentümerdaten
 -------------------------
 
-Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann das Kontrolmodus (``controlMode``) aktiviert werden, wobei alle Zugriffe auf Eigentümerdaten auf Plausibilität geprüft und protokolliert werden. Eine Beispielkonfiguration kann wie folgt aussehen ::
+Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann der Kontrolmodus (``controlMode``) aktiviert werden, wobei alle Zugriffe auf Eigentümerdaten auf Plausibilität geprüft und protokolliert werden. Eine Beispielkonfiguration kann wie folgt aussehen ::
 
     "eigentuemer": {
 
@@ -98,7 +98,7 @@ Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutze
         "logTable": "eigen_log"
     }
 
-Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgender Struktur ::
+Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgenden Struktur ::
 
     CREATE TABLE .... (
         id SERIAL PRIMARY KEY,
@@ -112,6 +112,3 @@ Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgender Struktur 
         fs_count INTEGER,
         fs_ids VARCHAR(255)
     )
-
-
-
