@@ -4,6 +4,9 @@ Drucken
 
 Über das |print| ``Drucken``-Werkzeug wird eine PDF generiert, die sowohl gespeichert, als auch ausgedruckt werden kann.
 
+.. figure:: ../../../screenshots/de/client-user/print2.png
+  :align: center
+
 Beim Aktivieren der Druckfunktion öffnet sich auf der Karte ein Kartenrahmen, der den zu druckenden Auswahlbereich symbolisiert. Dieser kann beliebig verschoben werden. Mit der linken Maustaste und dem Mausrad kann der entsprechende Ausschnitt und die Zoomstufe eingestellt werden.
 
 

@@ -1,9 +1,9 @@
 Autorisierung
 =============
 
-Die GBD WebSuite Autorisierung ist rollenbasiert, mit steckbaren Berechtigungsanbietern. Wenn sich der Benutzer anmeldet, werden seine Credentials nacheinander an alle konfigurierten Provider weitergegeben, wenn ein Provider die Credentials akzeptiert, gibt er eine Liste der Rollen für diesen Benutzer zurück. 
+Die Autorisierung der GBD WebSuite ist rollenbasiert. Das bedeutet, dass den einzelnen Benutzern verschiedene Berechtigungen zugeteilt werden können. Wenn sich der Benutzer anmeldet, werden seine Referenzen nacheinander an alle konfigurierten Provider weitergegeben. Wenn ein Provider die Referenzen akzeptiert, gibt er eine Liste der Rollen für diesen Benutzer zurück.
 
-Wenn der Benutzer ein Objekt anfordert, prüft der Server, ob eine der Rollen des Benutzers über ausreichende Berechtigungen verfügt, um das Objekt zu lesen, zu schreiben (z. B. beim Bearbeiten) oder auszuführen (z. B. eine Serveraktion). Wenn es keine expliziten Berechtigungen auf Objektebene gibt, wird das übergeordnete Objekt geprüft und so weiter. Um diese Prüfungen durchzuführen, liest der Server die ``access`` jedes angeforderten Objekts.  
+Wenn der Benutzer ein Objekt anfordert, prüft der Server, welche Berechtigungen dem Benutzer zugeteilt sind. Anhand dieser Berechtigungen werden dem Nutzer dann verschiedene Funktionen wie zum Beispiel das Lesen, Schreiben (z. B. beim Bearbeiten) oder Auszuführen (z. B. eine Serveraktion) zur Verfügung gestellt. Wenn es keine expliziten Berechtigungen auf der gewählten Objektebene gibt, wird das übergeordnete Objekt geprüft und so weiter. Um diese Prüfungen durchzuführen, liest der Server die ``access``-Datei jedes angeforderten Objekts.
 
 Zugangsreglungen
 ----------------
@@ -11,15 +11,15 @@ Zugangsreglungen
 
 ``access`` ist eine Liste von ``AccessRule`` Objekten. Jede ``AccessRule`` enthält
 
-- der ``type`` der Regel - "erlauben" oder "verweigern",
-- der ``mode`` - "lesen", "schreiben", "ausführen" oder eine Kombination davon,
+- den ``type`` der Regel - "erlauben" oder "verweigern",
+- den ``mode`` - "lesen", "schreiben", "ausführen" oder eine Kombination daraus,
 - die Liste der ``role`` Namen, auf die sich die Regel bezieht
 
 
-Mit Hilfe der ``access``-Regeln kann der Berechtigungsprüfungsalgorithmus formal wie folgt beschrieben werden::
+Mit Hilfe der ``access``-Regeln kann der Algorithmus zur Prüfung der Berechtigungen, formal wie folgt beschrieben werden::
 
 
-    ## Der Benutzer U fordert einen Berechtigungsmodus P (z. B. "lesen") für ein Objekt O
+    ## Der Benutzer U fordert einen Berechtigungsmodus P (z. B. "lesen") für ein Objekt O an:
 
     let currentObject = O
     let userRoles = "roles" of the user U
@@ -48,7 +48,7 @@ Mit Hilfe der ``access``-Regeln kann der Berechtigungsprüfungsalgorithmus forma
             continue loop
         end if
 
-        ## An diesem Punkt haben wir das Wurzelobjekt erreicht.
+        ## An diesem Punkt haben wir das Wurzelobjekt erreicht
         ## und haben immer noch keine passende Regel gefunden.
         ## Verwenden Sie die Standardregel "Alle Anfragen ablehnen".
 
@@ -59,22 +59,22 @@ Mit Hilfe der ``access``-Regeln kann der Berechtigungsprüfungsalgorithmus forma
 Rollen
 ----------
 
-Es gibt einige vordefinierte Rollen, die in GWS eine besondere Bedeutung haben:
+Es gibt einige vordefinierte Rollen, die in der GWS eine besondere Bedeutung haben:
 
 TABLE
    *guest* ~ Nicht eingeloggter Benutzer
    *user* ~ Jeder eingeloggter Benutzer
    *everyone* ~ Alle Benutzer, eingeloggt und Gäste
-   *admin* ~ Administrator. Benutzer die diese Rolle haben, erhalten automatisch Zugriff auf alle Ressourcen
+   *admin* ~ Administrator und Benutzer die diese Rolle haben, erhalten automatisch Zugriff auf alle Ressourcen
 /TABLE
 
-Andernfalls können Sie beliebige Rollennamen verwenden, aber sie müssen gültige Bezeichnungen sein (d. h. mit einem lateinischen Buchstaben beginnen und nur Buchstaben, Ziffern und Unterstriche enthalten). 
+Andernfalls können Sie beliebige Rollennamen vergeben. Beim Erstellen dieser Rollennamen müssen Sie jedoch auf die Schriftweise achten. Der Name muss mit einem lateinischen Buchstaben beginnen und darf nur Buchstaben, Ziffern und Unterstriche aber keine Leerzeichen enthalten.
 
 
 Berechtigungsstrategien
 ------------------------
 
-Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``access`` konfigurieren. Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie ``read`` und ``write`` an "everyone" vergeben:: 
+Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``access`` konfigurieren. Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie ``read`` und ``write`` an "everyone" vergeben::
 
 
     ## in der Hauptkonfiguration:
@@ -89,7 +89,7 @@ Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``ac
 
 
 
-Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen, benötigen Sie zwei Zugriffsregeln: eine, um eine bestimmte Rolle zuzulassen, und eine, um "alle" zu verwehren:: 
+Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen, benötigen Sie zwei Zugriffsregeln. Die erste, um eine bestimmte Rolle zuzulassen. Die zweite, um "alle" zu verwehren::
 
     ## in the project config:
 
@@ -106,9 +106,9 @@ Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen
         }
     ]
 
-Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen:: 
+Wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen::
 
-    ## in der Hauptkonfiguration: 
+    ## in der Hauptkonfiguration:
 
     "access": [
         {
@@ -118,7 +118,7 @@ Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist 
         }
     ]
 
-und erlauben dann explizit den Zugriff auf bestimmte Objekte ::
+Dann erlauben Sie explizit den Zugriff auf bestimmte Objekte ::
 
     # in der Projektkonfigurationsdatei:
 
@@ -130,7 +130,7 @@ und erlauben dann explizit den Zugriff auf bestimmte Objekte ::
         }
     ]
 
-Normalerweise ist es nicht notwendig, ``execute`` Rechte speziell zu konfigurieren, aber wenn Sie sich dazu entschließen, sollten Sie darauf achten, dass zumindest ``asset`` und ``auth`` Aktionen von jedem ausführbar sind, andernfalls könnten sich Ihre Benutzer nicht einmal anmelden!
+Normalerweise ist es nicht notwendig, ``execute`` Rechte speziell zu konfigurieren. Wenn Sie sich jedoch dazu entschließen, sollten Sie darauf achten, dass zumindest ``asset`` und ``auth`` Aktionen von jedem ausführbar sind. Andernfalls könnten sich Ihre Benutzer nicht einmal anmelden!
 
 
 Berechtigungsanbieter
@@ -139,7 +139,7 @@ Berechtigungsanbieter
 Datei
 ~~~~~~~
 
-Der Dateianbieter verwendet eine einfache Json-Datei, um Autorisierungsdaten zu speichern. Der json ist nur ein Array von "user"-Objekten ::
+Der Dateianbieter verwendet eine einfache Json-Datei, um Autorisierungsdaten zu speichern. Die Json-Datei ist nur ein Array von "user"-Objekten ::
 
 
     [
@@ -154,13 +154,13 @@ Der Dateianbieter verwendet eine einfache Json-Datei, um Autorisierungsdaten zu 
         }
     }
 
-Der Name und der Speicherort der Datei ist Ihnen überlassen, geben Sie einfach ihren absoluten Pfad in der Konfiguration an. Um das verschlüsselte Passwort zu generieren, verwenden Sie den Befehl ``auth passwd``.
+Der Name und der Speicherort der Datei ist Ihnen überlassen. Geben Sie einfach ihren absoluten Pfad in der Konfiguration an, um das verschlüsselte Passwort zu generieren. Verwenden Sie dazu den Befehl ``auth passwd``.
 
 
 Ldap
 ~~~~
 
-Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys. com bereitgestellten LDAP-Testservers.  <http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server>`_ ::
+Der ldap-Provider kann Benutzer für ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um die LDAP-Filter auf die GBD WebSuite Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys. com` bereitgestellten LDAP-Testservers.  `<http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server>`_ ::
 
     {
         "type": "ldap",
@@ -169,23 +169,23 @@ Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Se
 
         "url": "ldap://ldap.forumsys.com:389/dc=example,dc=com?uid",
 
-        ## Anmeldeinformationen, um sich an den Server zu binden: 
+        ## Anmeldeinformationen, um sich an den Server zu binden:
 
         "bindDN": "cn=read-only-admin,dc=example,dc=com",
         "bindPassword": "password",
 
-        ## Filter auf Rollen abbilden: 
+        ## Filter auf Rollen abbilden:
 
         "roles": [
 
-            ## LDAP-Benutzer "euler" hat die GBD WebSuite Rolle "Moderatoren": 
+            ## LDAP-Benutzer "euler" hat die GBD WebSuite Rolle "Moderatoren":
 
             {
                 "matches": "(&(cn=euler))",
                 "role": "moderators"
             },
 
-            ## alle Mitglieder der LDAP-Gruppe "Mathematiker" haben die GBD WebSuite Rolle "Mitglieder": 
+            ## alle Mitglieder der LDAP-Gruppe "Mathematiker" haben die GBD WebSuite Rolle "Mitglieder":
 
             {
                 "memberOf": "(&(ou=mathematicians))",
@@ -193,4 +193,3 @@ Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Se
             }
         ]
     }
-

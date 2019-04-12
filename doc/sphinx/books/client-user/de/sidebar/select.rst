@@ -1,12 +1,13 @@
 Auswahl
 =======
 
-Die Ebene |select| ``Auswahl`` in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select|  ``Auswählen``-Werkzeug im Kartenfenster erfasst werden. Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
-
- .. figure:: ../../../screenshots/de/client-user/select.png
-   :align: center
+Die Ebene |select| ``Auswahl`` |2| in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select|  ``Auswählen``-Werkzeug |1| im Kartenfenster erfasst werden. Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
 
 Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit dem ``Auswählen``-Werkzeug ausgewählt wurden. So können Sie in diesem Menüpunkt eine Übersicht, über die von Ihnen ausgewählten Objekte, gewinnen. Diese Objekte können über |fokus| fokusiert werden oder über das |delete| Icon aus der Auswahl entfernt werden.
+
+
+.. figure:: ../../../screenshots/de/client-user/select.png
+  :align: center
 
 .. Am unteren Fensterrand befinden sich erneut eine Reihe von Funktionen für speziell dieses Menü. Zum einen ist es möglich die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|,
 
@@ -33,3 +34,7 @@ Wenn ein Objekt ausgewählt wird, erscheint rechts unten im Kartenfenster ein In
    :width: 30em
  .. |settings| image:: ../../../images/round-settings-24px.svg
    :width: 30em
+ .. |1| image:: ../../../images/gws_digits-01.svg
+   :width: 35em
+ .. |2| image:: ../../../images/gws_digits-02.svg
+   :width: 35em
