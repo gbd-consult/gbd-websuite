@@ -118,6 +118,24 @@ class Runtime(BaseRuntime):
         return str(val)
 
     @classmethod
+    def filter_xml(cls, val):
+        val = str(val)
+        val = val.replace('&', '&amp;')
+        val = val.replace('<', '&lt;')
+        val = val.replace('>', '&gt;')
+        return val
+
+    @classmethod
+    def filter_xmlquote(cls, val):
+        val = str(val)
+        val = val.replace('&', '&amp;')
+        val = val.replace('<', '&lt;')
+        val = val.replace('>', '&gt;')
+        val = val.replace('"', '&quot;')
+        val = val.replace('\'', '&apos;')
+        return val
+
+    @classmethod
     def filter_html(cls, val):
         return html.escape(str(val))
 

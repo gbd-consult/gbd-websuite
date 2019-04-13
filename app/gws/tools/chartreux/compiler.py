@@ -186,7 +186,7 @@ class Expression:
 
     def __init__(self, compiler):
         self.cc = compiler
-        self.default_filter = self._get_default_filter()
+        self.default_filter = [None, None]
 
     def _ast(self, arg):
         try:
@@ -194,23 +194,24 @@ class Expression:
         except SyntaxError:
             return self.cc.error(ERROR_SYNTAX)
 
-    def _get_default_filter(self):
+    def get_default_filter(self):
         f = self.cc.option('filter')
         if not f:
             return
 
-        n = self._ast(f)
-        if _cname(n) == 'Expression':
-            return n.body
+        if f != self.default_filter[0]:
+            n = self._ast(f)
+            self.default_filter = [f, n.body if _cname(n) == 'Expression' else n]
 
-        return f
+        return self.default_filter[1]
 
     def parse(self, arg, with_default_filter=False):
         n = self._ast(arg)
         has_filter = _cname(n.body) == 'BinOp' and _cname(n.body.op) == 'BitOr'
+        flt = self.get_default_filter()
 
-        if with_default_filter and self.default_filter and not has_filter:
-            return self.make_filter(n, self.default_filter)
+        if with_default_filter and flt and not has_filter:
+            return self.make_filter(n, flt)
 
         return self.walk(n)
 

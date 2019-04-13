@@ -52,82 +52,14 @@ class WmsWriter:
         self.params = params
 
     def getcapabilities(self):
-        return util.xml_response(tag(
-            'WMS_Capabilities',
-            self.caps_service(),
-            self.caps_capability(),
-            {
-                'version': VERSION,
-                'xmlns': 'http://www.opengis.net/wms',
-                'xmlns:xlink': 'http://www.w3.org/1999/xlink',
-                'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-                'xsi:schemaLocation': 'http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd',
-            }
-        ))
+        context = {
+            'project': self.project,
+            'writer': self,
+            'service_endpoint': self.req.reversed_url(f'cmd=owsHttpGet&projectUid={self.project.uid}')
 
-    def caps_service(self):
-        return tag(
-            'Service',
-            tag('Name', 'WMS'),
-            tag('Title', self.project.title),
-            tag('Abstract', self.project.meta.abstract),
-        )
-
-    def caps_capability(self):
-        return tag(
-            'Capability',
-            self.caps_request_tag(),
-            tag('Exception', tag('Format', 'XML')),
-            self.caps_top_layer(),
-        )
-
-    def caps_request_tag(self):
-        url = self.req.reversed_url(f'cmd=owsHttpGet&projectUid={self.project.uid}')
-
-        link = tag('DCPType', tag('HTTP', tag('Get', tag('OnlineResource', {
-            'xmlns:xlink': 'http://www.w3.org/1999/xlink',
-            'xlink:type': 'simple',
-            'xlink:href': url
-        }))))
-
-        return tag(
-            'Request',
-            tag('GetCapabilities', tag('Format', 'text/xml'), link),
-            tag('GetMap', tag('Format', 'image/png'), link),
-            tag('GetFeatureInfo', tag('Format', 'application/vnd.ogc.gml'), link),
-        )
-
-    def caps_top_layer(self):
-        map = self.project.map
-        return tag(
-            'Layer',
-            tag('Name', self.project.uid),
-            tag('Title', self.project.title),
-            tag('CRS', map.crs),
-            _geographic_bounding_box(map.extent, map.crs),
-            _bounding_box(map.extent, map.crs),
-            *gws.compact(self.caps_layer(la) for la in map.layers)
-        )
-
-    def caps_layer(self, layer: t.LayerObject):
-        sub_layers = []
-
-        if layer.layers:
-            sub_layers = gws.compact(self.caps_layer(la) for la in layer.layers)
-            if not sub_layers:
-                return
-        elif not layer.is_enabled_for_service('wms'):
-            return
-
-        return tag(
-            'Layer',
-            {'queryable': 1 if layer.has_search else 0},
-            tag('Name', layer.uid),
-            tag('Title', layer.title),
-            tag('Abstract', layer.meta.abstract),
-            tag('CRS', layer.map.crs),
-            *sub_layers
-        )
+        }
+        out = self.action.wms_caps_template.render(context)
+        return util.xml_response(out.content)
 
     ##
 
@@ -142,7 +74,7 @@ class WmsWriter:
 
         layers = []
         for layer_uid in layer_uids:
-            layers.extend(self.collect_wms_layers(layer_uid))
+            layers.extend(self.layer_list(layer_uid))
 
         if not layers:
             raise gws.web.error.NotFound()
@@ -178,20 +110,6 @@ class WmsWriter:
             'content': img
         })
 
-    def collect_wms_layers(self, layer_uid):
-        la = self.req.require('gws.ext.layer', layer_uid)
-
-        if la and la.layers:
-            ls = []
-            for sub in la.layers:
-                ls.extend(self.collect_wms_layers(sub.uid))
-            return ls
-
-        if la.is_enabled_for_service('wms'):
-            return [la]
-
-        return []
-
     ##
 
     def getfeatureinfo(self):
@@ -208,7 +126,7 @@ class WmsWriter:
 
         layers = []
         for layer_uid in layer_uids:
-            layers.extend(self.collect_wms_layers(layer_uid))
+            layers.extend(self.layer_list(layer_uid))
 
         if not layers:
             raise gws.web.error.NotFound()
@@ -269,37 +187,53 @@ class WmsWriter:
                 gws.ows.gml.shape_to_tag(f.shape, precision=self.project.map.coordinate_precision)))
         return tag('wfs:member', tag(f.category, {'gml:id': f.uid}, *props))
 
+    ##
 
-def _geographic_bounding_box(extent, crs):
-    e = gws.gis.proj.transform_bbox(extent, crs, 'EPSG:4326')
-    return tag(
-        'EX_GeographicBoundingBox',
-        tag('westBoundLongitude', '%.3f' % e[0]),
-        tag('eastBoundLongitude', '%.3f' % e[2]),
-        tag('southBoundLatitude', '%.3f' % e[1]),
-        tag('northBoundLatitude', '%.3f' % e[3]),
-    )
+    def layer_list(self, layer_uid):
+        layer = self.req.require('gws.ext.layer', layer_uid)
 
+        if not layer:
+            return []
 
-def _bounding_box(extent, crs):
-    return tag('BoundingBox', {
-        'CRS': crs,
-        'minx': extent[0],
-        'miny': extent[1],
-        'maxx': extent[2],
-        'maxy': extent[3],
-    })
+        if layer.layers:
+            ls = []
+            for la in layer.layers:
+                ls.extend(self.layer_list(la.uid))
+            return ls
 
+        if layer.is_enabled_for_service('wms'):
+            return [layer]
 
-def _keyword_tag(self, keywords):
-    if keywords:
-        return {
-            'tag': 'KeywordList',
-            'children': [
-                {'tag': 'Keyword', 'text': k}
-                for k in keywords
-            ]
-        }
+        return []
+
+    def layer_tree(self, layer_uid):
+        layer = self.req.require('gws.ext.layer', layer_uid)
+
+        if not layer:
+            return
+
+        if layer.layers:
+            sub = gws.compact(self.layer_tree(la.uid) for la in layer.layers)
+            if not sub:
+                return
+            return {
+                'layer': layer,
+                'queryable': '0',
+                'sub': sub
+            }
+
+        if layer.is_enabled_for_service('wms'):
+            return {
+                'layer': layer,
+                'queryable': '1' if layer.has_search else '0',
+                'sub': []
+            }
+
+    def project_layer_tree(self):
+        return gws.compact(self.layer_tree(la.uid) for la in self.project.map.layers)
+
+    def extent_to_4326(self, extent):
+        return gws.gis.proj.transform_bbox(extent, self.project.map.crs, 'EPSG:4326')
 
 
 def _as_ident(s):

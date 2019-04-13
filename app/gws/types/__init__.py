@@ -173,6 +173,7 @@ class ShapeInterface:
 
 
 class MetaContact(Data):
+    address: str = ''
     area: str = ''
     city: str = ''
     country: str = ''
@@ -198,11 +199,28 @@ class MetaData(Data):
     url: url = ''
 
 
+class MetaContactConfig(Config):
+    """Object metadata configuration"""
+
+    address: str = ''
+    area: str = ''
+    city: str = ''
+    country: str = ''
+    email: str = ''
+    fax: str = ''
+    organization: str = ''
+    person: str = ''
+    phone: str = ''
+    position: str = ''
+    zip: str = ''
+
+
 class MetaConfig(Config):
     """Object metadata configuration"""
 
     abstract: str = ''  #: object abstract description
     attribution: str = ''  #: attribution (copyright) string
+    contact: Optional[MetaContactConfig]  #: contact information
     image: url = ''  #: image (logo) url
     images: dict = {}  #: further images
     keywords: List[str] = []  #: keywords

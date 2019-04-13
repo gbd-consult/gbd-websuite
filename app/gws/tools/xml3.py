@@ -17,7 +17,9 @@ def tag(name, *args):
 
 
 def string(t):
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + _string(t)
+    if isinstance(t, str):
+        return t
+    return '<?xml version="1.0" encoding="UTF-8"?>' + _string(t)
 
 
 def _string(t):

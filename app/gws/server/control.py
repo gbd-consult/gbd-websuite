@@ -59,7 +59,7 @@ def reload():
     _reload(True)
 
 
-def reset(module):
+def reset(module=None):
     _reload(False, module)
 
 
