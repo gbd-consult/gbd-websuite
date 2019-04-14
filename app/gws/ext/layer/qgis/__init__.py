@@ -58,6 +58,8 @@ class Object(gws.gis.layer.Base):
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
         self.layers = gws.gis.layer.add_layers_to_object(self, top_cfg.layers)
 
+        self.configure_extent(gws.gis.layer.extent_from_source_layers(self))
+
     def render_legend(self):
         if self.legend_url:
             return super().render_legend()

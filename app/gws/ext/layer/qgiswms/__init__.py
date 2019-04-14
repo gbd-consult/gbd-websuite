@@ -3,13 +3,14 @@ import gws.common.search
 import gws.config
 import gws.gis.layer
 import gws.gis.mpx
+import gws.gis.shape
 import gws.gis.source
 import gws.gis.zoom
+import gws.gis.proj
 import gws.ows.request
 import gws.ows.util
 import gws.qgis
 import gws.server.monitor
-
 import gws.types as t
 
 
@@ -57,7 +58,10 @@ class Object(gws.gis.layer.Image):
         # if no legend.url is given, use an auto legend
         self.has_legend = self.var('legend.enabled')
 
-        gws.gis.layer.add_meta_from_source_layers(self)
+        if not self.var('meta'):
+            self.meta = gws.gis.layer.meta_from_source_layers(self)
+
+        self.configure_extent(gws.gis.layer.extent_from_source_layers(self))
 
     def render_bbox(self, bbox, width, height, **client_params):
         forward = {}

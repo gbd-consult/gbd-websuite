@@ -13,6 +13,7 @@ class Config(t.Config):
     coordinatePrecision: t.Optional[int] #: precision for coordinates
     crs: t.Optional[t.crsref] = 'EPSG:3857'  #: crs for this map
     extent: t.Extent  #: map extent
+    extentBuffer: t.Optional[int]  #: extent buffer
     layers: t.List[t.ext.layer.Config]  #: collection of layers for this map
     title: str = ''  #: map title
     uid: t.Optional[str]  #: unique id

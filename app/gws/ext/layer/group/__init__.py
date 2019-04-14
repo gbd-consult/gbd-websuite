@@ -1,5 +1,6 @@
 import gws.types as t
 import gws.gis.layer
+import gws.gis.shape
 
 
 class Config(gws.gis.layer.BaseConfig):
@@ -11,7 +12,9 @@ class Config(gws.gis.layer.BaseConfig):
 class Object(gws.gis.layer.Base):
     def configure(self):
         super().configure()
+
         self.layers = gws.gis.layer.add_layers_to_object(self, self.var('layers'))
+        self.configure_extent(gws.gis.shape.merge_extents(la.extent for la in self.layers))
 
     @property
     def props(self):

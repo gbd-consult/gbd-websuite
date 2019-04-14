@@ -7,6 +7,7 @@ import gws.auth.api
 import gws.gis.feature
 import gws.gis.mpx as mpx
 import gws.gis.proj
+import gws.gis.shape
 import gws.gis.source
 import gws.gis.zoom
 import gws.ows.request
@@ -73,6 +74,7 @@ class BaseConfig(t.WithTypeAndAccess):
     description: t.Optional[t.TemplateConfig]  #: template for the layer description
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
+    extentBuffer: t.Optional[int]  #: extent buffer
     featureFormat: t.Optional[t.FormatConfig]  #: feature formatting options
     legend: LegendConfig = {}  #: legend configuration
     meta: t.Optional[t.MetaConfig]  #: layer meta data
@@ -216,6 +218,18 @@ class Base(gws.PublicObject, t.LayerObject):
         if p.enabled and p.providers:
             for cfg in p.providers:
                 self.add_child('gws.ext.search.provider', cfg)
+
+    def configure_extent(self, ext):
+        if self.var('extent'):
+            self.extent = self.var('extent')
+            return
+        if not ext:
+            self.extent = self.map.extent
+            return
+        buf = self.var('extentBuffer', parent=True)
+        if buf:
+            ext = gws.gis.shape.buffer_extent(ext, buf)
+        self.extent = gws.gis.shape.constrain_extent(ext, self.map.extent)
 
     def edit_access(self, user):
         # @TODO granular edit access
@@ -455,9 +469,18 @@ def add_layers_to_object(obj, layer_configs):
     return ls
 
 
-def add_meta_from_source_layers(obj):
-    if obj.var('meta'):
-        return
-    sl = getattr(obj, 'source_layers', [])
+def meta_from_source_layers(layer):
+    sl = getattr(layer, 'source_layers', [])
     if sl and len(sl) == 1:
-        obj.meta = sl[0].meta
+        return sl[0].meta
+
+
+def extent_from_source_layers(layer):
+    source_extents = []
+    for sl in layer.source_layers:
+        if sl.extents:
+            for crs, ext in sl.extents.items():
+                source_extents.append(gws.gis.proj.transform_bbox(ext, crs, layer.map.crs))
+                break
+    if source_extents:
+        return gws.gis.shape.merge_extents(source_extents)

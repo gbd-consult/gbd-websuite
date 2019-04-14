@@ -116,6 +116,8 @@ class LayersTreeNode extends gws.View<LayersViewProps> {
     }
 }
 
+const ZOOM_EXTENT_PADDING = 50;
+
 class LayerSidebarDetails extends gws.View<LayersViewProps> {
     render() {
         let layer = this.props.layer,
@@ -124,7 +126,8 @@ class LayerSidebarDetails extends gws.View<LayersViewProps> {
 
         let f = {
             zoom() {
-                map.setViewExtent(layer.extent, true)
+                console.log('ZOOM_TO_LAYER', layer.uid, layer.extent);
+                map.setViewExtent(layer.extent, true, ZOOM_EXTENT_PADDING);
             },
             show() {
                 map.hideAllLayers();

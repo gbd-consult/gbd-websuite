@@ -51,16 +51,6 @@ def configure_wms(target: gws.PublicObject, **filter_args):
         target.var('sourceLayers'),
         **filter_args)
 
-    if not target.var('extent'):
-        source_extents = []
-        for sl in target.source_layers:
-            if sl.extents:
-                for crs, ext in sl.extents.items():
-                    source_extents.append(gws.gis.proj.transform_bbox(ext, crs, target.map.crs))
-                    break
-        if source_extents:
-            target.extent = gws.gis.shape.merge_extents(source_extents)
-
 
 class Config(gws.gis.layer.ImageConfig, WmsServiceConfig):
     """WMS layer"""
@@ -94,6 +84,8 @@ class Object(gws.gis.layer.Image):
 
         self._add_default_search()
         self._add_legend()
+
+        self.configure_extent(gws.gis.layer.extent_from_source_layers(self))
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.source_layers]

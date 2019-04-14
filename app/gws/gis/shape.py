@@ -43,6 +43,10 @@ def from_xy(x, y, crs):
 
 
 def merge_extents(exts):
+    exts = list(exts)
+    if not exts:
+        return
+
     ex = [1e20, 1e20, 0, 0]
     for e in exts:
         minx = min(e[0], e[2])
@@ -56,6 +60,24 @@ def merge_extents(exts):
             max(ex[3], maxy)
         ]
     return ex
+
+
+def constrain_extent(a, b):
+    return [
+        max(a[0], b[0]),
+        max(a[1], b[1]),
+        min(a[2], b[2]),
+        min(a[3], b[3]),
+    ]
+
+
+def buffer_extent(e, buf):
+    return [
+        e[0] - buf,
+        e[1] - buf,
+        e[2] + buf,
+        e[3] + buf,
+    ]
 
 
 def union(shapes):
