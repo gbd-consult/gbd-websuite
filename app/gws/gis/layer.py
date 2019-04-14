@@ -229,7 +229,7 @@ class Base(gws.PublicObject, t.LayerObject):
         buf = self.var('extentBuffer', parent=True)
         if buf:
             ext = gws.gis.shape.buffer_extent(ext, buf)
-        self.extent = gws.gis.shape.constrain_extent(ext, self.map.extent)
+        self.extent = ext
 
     def edit_access(self, user):
         # @TODO granular edit access
