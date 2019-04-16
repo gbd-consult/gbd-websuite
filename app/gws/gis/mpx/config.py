@@ -39,7 +39,7 @@ class _Config:
                 'base_dir': gws.MAPPROXY_CACHE_DIR,
                 'lock_dir': '/tmp/mpx/locks_' + gws.random_string(16),
                 'tile_lock_dir': '/tmp/mpx/tile_locks_' + gws.random_string(16),
-                'concurrent_tile_creators': 4,
+                'concurrent_tile_creators': 1,
 
             },
             'image': {
