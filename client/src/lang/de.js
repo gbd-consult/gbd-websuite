@@ -190,7 +190,7 @@ module.exports = {
     modAlkisErrorControl: 'Validierung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben.',
     modAlkisErrorTooMany: 'Mehr als $1 Flurstücke gefunden. Suche bitte genauer spezifizieren.',
     modAlkisVorname: "Vorname",
-    modAlkisNachname: "Nachname",
+    modAlkisNachname: "Nachname/Institution/Firma",
     modAlkisGemarkung: "Gemarkung",
     modAlkisStrasse: "Straße",
     modAlkisNr: "Nr",

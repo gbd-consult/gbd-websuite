@@ -418,13 +418,23 @@ def find(conn: connection.AlkisConnection, query, limit=None):
     tables = {
         'FS': main_index
     }
-    order = []
 
     query = {
         k: v
         for k, v in vars(query).items()
         if v not in (None, '')
     }
+
+    if not query:
+        #
+        return 0, []
+
+    if query.get('vorname') and not query.get('name'):
+        #
+        return 0, []
+
+    def _prepare_for_like(v):
+        return v.lower().replace('%', '').replace('_', '') + '%'
 
     for k, v in query.items():
 
@@ -453,12 +463,12 @@ def find(conn: connection.AlkisConnection, query, limit=None):
         elif k == 'name':
             tables['NA'] = name_index
             where.append('NA.fs_id = FS.gml_id')
-            where.append('NA.nachname = %s')
-            parms.append(v)
+            where.append('NA.nachname ILIKE %s')
+            parms.append(_prepare_for_like(v))
 
             if query.get('vorname'):
-                where.append('NA.vorname = %s')
-                parms.append(query.get('vorname'))
+                where.append('NA.vorname ILIKE %s')
+                parms.append(_prepare_for_like(query.get('vorname')))
 
         elif k == 'flaecheVon':
             where.append('FS.amtlicheflaeche >= %s')
