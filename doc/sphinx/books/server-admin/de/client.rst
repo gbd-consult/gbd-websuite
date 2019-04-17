@@ -1,14 +1,14 @@
 GBD WebSuite Client
 ===================
 
-Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Hauptzweck, zusammen mit einem "reichen" Javascript-Client verwendet zu werden, der in der Lage ist, dynamische Web-Maps wie OpenLayers of Leaflet anzuzeigen. Wir bieten einen solchen Client als Teil der GBD WebSuite an und stellen einige Optionen in der Serverkonfiguration zur Verfügung, um unseren Client gezielt zu unterstützen.
+Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Hauptzweck, zusammen mit einem "reichen" Javascript-Client verwendet zu werden. Dieser ist in der Lage, dynamische Web-Maps wie OpenLayers von Leaflet anzuzeigen. Wir bieten einen solchen Client als Teil der GBD WebSuite an und stellen einige Optionen in der Serverkonfiguration vor, um unseren Client besser zu verstehen.
 
 UI-Konfiguration
 ----------------
 
-Jedes GBD WebSuite Projekt, wie auch die Hauptanwendung, kann die ``client`` Konfiguration haben, die verschiedene Optionen für den Client enthält und dessen UI-Layout beschreibt, so dass Sie bestimmte UI-Elemente pro Projekt ein- und ausschalten können.
+Jedes GBD WebSuite Projekt, wie auch die Hauptanwendung, beitzt die ``client`` Konfiguration. Diese enthält verschiedene Optionen für den Client und beschreibt dessen UI-Layout. So können Sie bestimmte UI-Elemente für jedes Projekt individuell ein- und ausschalten.
 
-Beispiel für die Client-Konfiguration :: 
+Beispiel für die Client-Konfiguration ::
 
 
     {
@@ -30,18 +30,18 @@ Beispiel für die Client-Konfiguration ::
 
         "elements": [
 
-            ## Kartendekorationselemente: 
+            ## Kartendekorationselemente:
 
             { "tag": "Decoration.ScaleRuler"},
             { "tag": "Decoration.Attribution"},
 
-            ## Infoleiste (normalerweise am unteren Bildschirmrand) 
+            ## Infoleiste (normalerweise am unteren Bildschirmrand)
 
             {
                 "tag": "Infobar",
                 "elements": [
                     {
-                        ## auf der linken Seite der Infoleiste, Zoom-Werkzeuge anzeigen: 
+                        ## auf der linken Seite der Infoleiste, Zoom-Werkzeuge anzeigen:
 
                         "tag": "Infobar.LeftSide",
                         "elements": [
@@ -53,7 +53,7 @@ Beispiel für die Client-Konfiguration ::
                     },
                     {
 
-                        ## auf der rechten Seite der Infoleiste den "About"-Link anzeigen, der sich in einem Pop-Over-Frame öffnet: 
+                        ## auf der rechten Seite der Infoleiste den "About"-Link anzeigen, der sich in einem Pop-Over-Frame öffnet:
 
                         "tag": "Infobar.RightSide",
                         "elements": [
@@ -71,7 +71,7 @@ Beispiel für die Client-Konfiguration ::
                 ]
             },
 
-            ## Symbolleiste (normalerweise oben rechts) 
+            ## Symbolleiste (normalerweise oben rechts)
 
             {
                 "tag": "Toolbar",
@@ -106,7 +106,7 @@ Beispiel für die Client-Konfiguration ::
                 ]
             },
 
-            ## Sidebar (normalerweise oben links) 
+            ## Sidebar (normalerweise oben links)
 
             {
                 "tag": "Sidebar",
@@ -129,4 +129,4 @@ Beispiel für die Client-Konfiguration ::
 Layer flags
 -----------
 
-Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll. Siehe :ref:`server_admin_en_configref_gws_gis_layer_ClientOptions` für Details. 
+Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll. Siehe :ref:`server_admin_en_configref_gws_gis_layer_ClientOptions` für Details.

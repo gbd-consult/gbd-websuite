@@ -6,7 +6,7 @@ Being a docker application, GBD WebSuite doesn't require any installation per se
 Directories
 -----------
 
-GBD WebSuite requires some directories to be mounted from your host machine to exchange data with the outside world.
+GBD WebSuite requires some directories to be mounted from your host machine to set the data public.
 
 - one or more "data" directories. This is where you store your configuration and data. The server never writes to these directories, so it's a good idea to mount them readonly. These directories can be mounted to arbitrary locations in the container (we use ``/data`` by default).
 - the "var" directory where the server stores its own persistent data like caches and session data. It should be mounted to ``/gws-var`` in the container.
@@ -51,4 +51,3 @@ So, here are options you need to customize in your ``docker run`` command:
 We have a sample script ``server-sample.sh`` , which you can customize to your needs:
 
 .. literalinclude:: /{APP_DIR}/server-sample.sh
-

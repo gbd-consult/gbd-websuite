@@ -1,7 +1,7 @@
 ALKIS Integration
 =================
 
-Die GBD WebSuite kann auf Daten aus dem amtlichen Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Unter anderem steht ein Plugin zur Flurstückssuche zur Verfügung. Die Konfiguration erfolgt im Abschnitt ``actions``, Typ ``alkis``. Folgende Optionen sind hier verfügbar:
+Die GBD WebSuite kann auf Daten aus dem amtlichen Liegenschaftskatasterinformationssystem (ALKIS) zugreifen und diese durchsuchen und bearbeiten. Unter anderem steht ein Plugin zur Flurstückssuche zur Verfügung. Die Konfiguration erfolgt im Abschnitt ``actions``, Typ ``alkis``. Folgende Optionen sind hier verfügbar:
 
 TABLE
     *alkisSchema* ~ PostGIS Schema wo die ALKIS Daten hinterlegt sind
@@ -49,11 +49,11 @@ Diese Befehle müssen nach jeder ALKIS-Aktualisierung erneut ausgeführt werden.
 Vorlagen
 --------
 
-Es sind folgende Standardvorlagen im Plugin vorhanden
+Es sind folgende Standardvorlagen im Plugin vorhanden:
 
 TABLE
 teaser.cx.html ~ Vorlage für die Beschriftung in der Ergebnissliste
-data.cx.html ~ Flurstückdetails Vorlage
+data.cx.html ~ Vorlage für die Flurstückdetails
 print.cx.html ~ Druckvorlage
 /TABLE
 
@@ -71,7 +71,7 @@ Diese Vorlagen sind unter https://github.com/gbd-consult/gbd-websuite/tree/maste
 Zugang zu Eigentümerdaten
 -------------------------
 
-Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann der Kontrolmodus (``controlMode``) aktiviert werden, wobei alle Zugriffe auf Eigentümerdaten auf Plausibilität geprüft und protokolliert werden. Eine Beispielkonfiguration kann wie folgt aussehen ::
+Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann der Kontrolmodus (``controlMode``) aktiviert werden, wobei alle Zugriffe, auf Eigentümerdaten, auf Plausibilität geprüft und protokolliert werden. Eine Beispielkonfiguration kann wie folgt aussehen ::
 
     "eigentuemer": {
 
@@ -98,7 +98,7 @@ Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutze
         "logTable": "eigen_log"
     }
 
-Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgenden Struktur ::
+Die Protokoll-Tabelle muss mit der folgenden Struktur, im System vorhanden sein ::
 
     CREATE TABLE .... (
         id SERIAL PRIMARY KEY,

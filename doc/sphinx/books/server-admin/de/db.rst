@@ -2,13 +2,13 @@ Database
 =========
 
 
-Die GBD WebSuite kann Geodaten aus Datenbanken beziehen, entweder indirekt über QGIS und WMS/WMTS-Anbieter oder durch direkte Anbindung an eine Datenbank. Im letzteren Fall müssen Sie die Datenbankverbindungen in der Hauptanwendung config konfigurieren.
+Die GBD WebSuite kann Geodaten aus Datenbanken beziehen. Entweder indirekt über QGIS und WMS/WMTS-Anbieter oder durch die direkte Anbindung an eine Datenbank. Im letzteren Fall müssen Sie die Datenbankverbindungen in der Hauptkonfiguration einstellen.
 
-Zur Zeit unterstützen wir nur PostgreSQL/PostGIS Datenbanken. Wir planen, Sqlite/SpatiaLite, MySQL und MongoDB später hinzuzufügen.
+Zur Zeit unterstützt die GBD WebSuite PostgreSQL/PostGIS Datenbanken. Die Unterstützung von SQLite/SpatiaLite, MySQL und MongoDB Datenbanken folgt in naher Zukunft.
 
 Beispiel einer PostGIS-Provider-Konfiguration ::
 
-    ## in der Hauptkonfiguration: 
+    ## in der Hauptkonfiguration:
 
     "db": {
         "providers" [
@@ -25,9 +25,9 @@ Beispiel einer PostGIS-Provider-Konfiguration ::
     }
 
 
-Wenn Sie mehrere Credentials auf dem gleichen Server haben, müssen Sie diese als verschiedene Anbieter konfigurieren.
+Wenn Sie mehrere Referenzen auf dem gleichen Server haben, müssen Sie diese als verschiedene Anbieter konfigurieren und jedem seine eigene ID zuweisen.
 
-An anderer Stelle, wenn für Ihre Konfiguration eine Datenbankverbindung erforderlich ist, geben Sie einfach die eindeutige ID des Anbieters an. Beispiel für eine SQL-Suchkonfiguration:: 
+Wenn in der weiteren Konfiguration eine Datenbankverbindung erforderlich ist, muss lediglich die eindeutige ID des Anbieters angegeben werden. Beispiel für eine SQL-Suchkonfiguration::
 
         ## Suchkonfiguration
 
@@ -38,4 +38,4 @@ An anderer Stelle, wenn für Ihre Konfiguration eine Datenbankverbindung erforde
         }
 
 
-Da GWS in einem Container läuft, können Sie nicht ``localhost`` als Hostname verwenden, auch wenn Ihr DB-Server auf derselben physischen Maschine läuft. Stattdessen sollte die IP-Adresse des Docker-Hosts wie ``172. 17. 0. 1`` verwendet werden (der genaue Wert hängt von den Einstellungen Ihres Docker-Netzwerks ab). Aus Gründen der Portabilität ist es empfehlenswert, es mit ``--add-host`` zu aliasieren.
+Da die GBD WebSuite in einem Container läuft, können Sie nicht ``localhost`` als Hostname verwenden, unabhängig davon ob Ihr DB-Server auf der selben physischen Maschine läuft. Stattdessen sollte die IP-Adresse des Docker-Hosts wie zum Beispiel ``172. 17. 0. 1`` verwendet werden (der genaue Wert hängt von den Einstellungen Ihres Docker-Netzwerks ab). Aus Gründen der Portabilität ist es empfehlenswert, es mit ``--add-host`` zu aliasieren.

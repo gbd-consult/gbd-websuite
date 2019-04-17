@@ -1,7 +1,7 @@
-Benutzung der Befehlsliste
-==========================
+Benutzung der Kommandozeile
+===========================
 
-Sobald der GBD WebSuite Server gestartet ist, können Sie das Kommandozeilen-Tool (CLI) verwenden, um ihn zu steuern. ``gws`` läuft innerhalb des Containers, also wird es mit ``docker exec`` aufgerufen::
+Sobald der GBD WebSuite Server gestartet ist, können Sie zur Steuerung das Kommandozeilen-Tool (CLI) verwenden. Innerhalb des Containers läuft ``gws``, welches mit ``docker exec`` aufgerufen wird::
 
     docker exec -it my-gws-container gws -h
 
@@ -23,6 +23,3 @@ zum Beispiel ::
 
 
 Siehe :doc:`cliref` für die Liste aller verfügbaren Befehle und Unterbefehle
-
-
-

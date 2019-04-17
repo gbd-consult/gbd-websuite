@@ -1,7 +1,7 @@
 Feature Transformation
 =======================
 
-Um ein reibungsloses Benutzererlebnis zu gewährleisten, bietet die GBD WebSuite verschiedene Werkzeuge zur Transformation und Neuformatierung von Feature-Daten aus verschiedenen Quellen. Wenn der GBD WebSuite Client ein Feature anzeigt, sucht er nach den folgenden Attributen und zeigt, falls diese vorhanden sind, eine schön formatierte Feature-Info-Box an:
+Um ein reibungsloses Benutzererlebnis zu gewährleisten, bietet die GBD WebSuite verschiedene Werkzeuge zur Transformation und Neuformatierung von Feature-Daten aus verschiedenen Quellen an. Wenn der GBD WebSuite Client ein Feature anzeigt, sucht er nach den folgenden Attributen und zeigt, falls diese vorhanden sind, eine ordentlich formatierte Feature-Info-Box an:
 
 TABLE
     *title* ~ Feature-Titel
@@ -13,14 +13,14 @@ TABLE
 
 Wenn ein Formatwert mit einem ``<`` beginnt, zeigt der GBD WebSuite Client ihn im HTML-Format an.
 
-Sie können die Option ``meta`` verwenden, um unterschiedlich strukturierte Features neu zu formatieren, um ein einheitliches Aussehen zu erreichen. Betrachten wir zum Beispiel einen Layer "Stores", der auf einer WMS-Quelle basiert, die Feaure-Daten in folgendem Format liefert::
+Sie können die Option ``meta`` verwenden, wodurch unterschiedlich strukturierte Features neu  formatiert werden können, um ein einheitliches Aussehen zu erreichen. Betrachten wir zum Beispiel einen Layer "Stores", der auf einer WMS-Quelle basiert, die Feaure-Daten in folgendem Format liefert::
 
-    name    -  Geschäftsname
+    name    - Geschäftsname
     owner   - Name des Eigentümers
     address - Straße und Hausnummer
     photo   - ein Dateiname des Speicherbildes
 
-Für diese Ebene könnte die Option ``meta`` wie folgt aussehen (beachten Sie die Verwendung von html):: 
+Für diese Ebene könnte die Option ``meta`` wie folgt aussehen (beachten Sie die Verwendung von html)::
 
     "meta": {
         "format": {
@@ -30,4 +30,4 @@ Für diese Ebene könnte die Option ``meta`` wie folgt aussehen (beachten Sie di
         }
     }
 
-Neben Ebenen können auch ``meta``-Konfigurationen zu Suchanbietern hinzugefügt werden, um Suchergebnisse neu zu formatieren (siehe :doc:`search`). 
+Neben Ebenen können auch ``meta``-Konfigurationen zu Suchanbietern hinzugefügt werden, um Suchergebnisse neu zu formatieren (siehe :doc:`search`).
