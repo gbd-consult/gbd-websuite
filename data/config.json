@@ -1,38 +1,33 @@
 {
     "access": [
         {
-            "mode": ["read", "write", "execute"],
-            "role": ["all"],
+            "role": "all",
             "type": "allow"
         }
     ],
-    "actions": [
-        {
-            "type": "asset"
-        },
-        {
-            "type": "project"
-        },
-        {
-            "type": "map"
-        },
-        {
-            "type": "printer"
-        },
-        {
-            "type": "auth"
-        },
-        {
-            "type": "search"
-        }
-    ],
-    "client": {
-        "access": [
+    "api": {
+        "actions": [
             {
-                "role": ["everyone"],
-                "type": "allow"
+                "type": "asset"
+            },
+            {
+                "type": "project"
+            },
+            {
+                "type": "map"
+            },
+            {
+                "type": "printer"
+            },
+            {
+                "type": "auth"
+            },
+            {
+                "type": "search"
             }
-        ],
+        ]
+    },
+    "client": {
         "elements": [
             {
                 "tag": "Decoration.ScaleRuler"
@@ -41,126 +36,71 @@
                 "tag": "Decoration.Attribution"
             },
             {
-                "elements": [
-                    {
-                        "elements": [
-                            {
-                                "tag": "Infobar.ZoomOut"
-                            },
-                            {
-                                "tag": "Infobar.ZoomIn"
-                            },
-                            {
-                                "tag": "Infobar.ZoomReset"
-                            },
-                            {
-                                "tag": "Infobar.Position"
-                            },
-                            {
-                                "tag": "Infobar.Scale"
-                            },
-                            {
-                                "tag": "Infobar.Rotation"
-                            },
-                            {
-                                "tag": "Infobar.Loader"
-                            }
-                        ],
-                        "tag": "Infobar.LeftSide"
-                    },
-                    {
-                        "elements": [
-                            {
-                                "tag": "Infobar.Help"
-                            },
-                            {
-                                "options": {
-                                    "href": "https://www.gbd-consult.de/software/gbd-web-suite.html",
-                                    "target": "blank",
-                                    "title": "About"
-                                },
-                                "tag": "Infobar.Link"
-                            }
-                        ],
-                        "tag": "Infobar.RightSide"
-                    }
-                ],
-                "tag": "Infobar"
+                "tag": "Task.Annotate"
             },
             {
-                "elements": [
-                    {
-                        "elements": [
-                            {
-                                "tag": "Toolbar.Measure.Line"
-                            },
-                            {
-                                "tag": "Toolbar.Measure.Polygon"
-                            },
-                            {
-                                "tag": "Toolbar.Measure.Circle"
-                            },
-                            {
-                                "tag": "Toolbar.Measure.Clear"
-                            },
-                            {
-                                "tag": "Toolbar.Measure.Cancel"
-                            }
-                        ],
-                        "tag": "Toolbar.Group"
-                    },
-                    {
-                        "elements": [
-                            {
-                                "tag": "Toolbar.Identify.Click"
-                            },
-                            {
-                                "tag": "Toolbar.Identify.Hover"
-                            },
-                            {
-                                "tag": "Toolbar.Identify.Cancel"
-                            }
-                        ],
-                        "tag": "Toolbar.Group"
-                    },
-                    {
-                        "elements": [
-                            {
-                                "tag": "Toolbar.Print"
-                            }
-                        ],
-                        "tag": "Toolbar.Group"
-                    },
-                    {
-                        "tag": "Toolbar.Search"
-                    }
-                ],
-                "tag": "Toolbar"
+                "tag": "Task.Zoom"
             },
             {
-                "elements": [
-                    {
-                        "tag": "Sidebar.Overview"
-                    },
-                    {
-                        "tag": "Sidebar.Layers"
-                    },
-                    {
-                        "tag": "Sidebar.Measure"
-                    },
-                    {
-                        "tag": "Sidebar.Search"
-                    }
-                ],
-                "tag": "Sidebar"
+                "tag": "Infobar.ZoomOut"
+            },
+            {
+                "tag": "Infobar.ZoomIn"
+            },
+            {
+                "tag": "Infobar.ZoomReset"
+            },
+            {
+                "tag": "Infobar.Position"
+            },
+            {
+                "tag": "Infobar.Scale"
+            },
+            {
+                "tag": "Infobar.Loader"
+            },
+            {
+                "tag": "Infobar.Spacer"
+            },
+            {
+                "tag": "Infobar.HomeLink"
+            },
+            {
+                "tag": "Infobar.Help"
+            },
+            {
+                "tag": "Infobar.About"
+            },
+            {
+                "tag": "Toolbar.Identify.Click"
+            },
+            {
+                "tag": "Toolbar.Annotate.Draw"
+            },
+            {
+                "tag": "Toolbar.Print"
+            },
+            {
+                "tag": "Toolbar.Snapshot"
+            },
+            {
+                "tag": "Sidebar.Overview"
+            },
+            {
+                "tag": "Sidebar.Layers"
+            },
+            {
+                "tag": "Sidebar.Search"
+            },
+            {
+                "tag": "Sidebar.Annotate"
             }
         ],
         "options": {
             "infobarVisible": true,
             "sidebarActiveTab": "Sidebar.Overview",
             "sidebarVisible": true
-        },
-        "tag": "ui"
+        }
     },
     "projects": [
         {
@@ -296,7 +236,7 @@
                 "host": "*",
                 "rewrite": [],
                 "root": {
-                    "dir": "/data/www-root"
+                    "dir": "/data/web"
                 }
             }
         ]
