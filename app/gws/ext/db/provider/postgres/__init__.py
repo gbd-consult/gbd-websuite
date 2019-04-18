@@ -144,9 +144,9 @@ class Object(gws.Object, t.DbProviderObject):
             for rec in recs:
                 shape = None
                 if geom_col:
-                    shape = gws.gis.shape.from_wkb(
-                        rec.pop(geom_col),
-                        crs)
+                    g = rec.pop(geom_col, None)
+                    if g:
+                        shape = gws.gis.shape.from_wkb(g, crs)
 
                 pk = (rec.get(key_col) if key_col else None) or gws.random_string(16)
 
