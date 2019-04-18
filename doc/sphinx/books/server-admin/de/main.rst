@@ -1,7 +1,7 @@
 Hauptkonfigurationsdatei
 ------------------------
 
-Die Hauptkonfigurationsdatei ist in die folgenden Abschnitte unterteilt, die weiter unten im Detail beschrieben werden:
+Die Hauptkonfigurationsdatei ist in die folgenden Abschnitte unterteilt, welche im Laufe der Dokumentation ausführlich beschrieben werden:
 
 TABLE
     *actions* ~  Server-Aktionen (:doc:`actions`)

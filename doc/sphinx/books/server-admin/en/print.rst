@@ -26,4 +26,4 @@ TABLE
 qgis
 ~~~~
 
-A QGIS template is a print composition from a QGIS project file. If there are multiple compositions, you can use ``compositionIndex`` or ``compositionName`` to identify the composition to use. Since maps in GWS are rendered separately, both template and map backgrounds in the composition must be set to None (transparent).
+A QGIS template is a print composition from a QGIS project file. If there are multiple compositions, you can use ``compositionIndex`` or ``compositionName`` to identify the composition to use. Since maps in GWS are rendered separately, both template and map backgrounds in the composition must be set to ``None`` (transparent).

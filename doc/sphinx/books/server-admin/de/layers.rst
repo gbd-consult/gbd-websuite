@@ -1,14 +1,14 @@
 Layer
 ======
 
-Ein *layer* in einem GBD WebSuite Projekt wird durch seinen ``type`` identifiziert, zusätzlich haben Layer die folgenden Eigenschaften (wenn nicht explizit konfiguriert, wird er von der übergeordneten Ebene oder von der Map geerbt):
+Ein *Layer* in einem GBD WebSuite Projekt wird durch seinen ``type`` identifiziert. Zusätzlich haben die Layer folgenden Eigenschaften (wenn nicht explizit konfiguriert, werden die Eigenschaften von der übergeordneten Ebene oder Map geerbt):
 
-* ``source`` - wo die Ebene ihre Geodaten herbekommt (siehe :doc:`sources`)
+* ``source`` - die Quelle wo die Ebene ihre Geodaten herbekommt (siehe :doc:`sources`)
 * ``view`` - räumliche Eigenschaften der Ebene (Umfang, erlaubte Auflösungen oder Skalen für diese Ebene)
 * ``cache`` und ``grid`` - beeinflussen das Layer-Caching (siehe :doc:`cache`)
 * ``clientOptions`` - Optionen für den GBD WebSuite Client (siehe :doc:`client`)
 * ``attribute`` - Layer-Metadaten (z. B. Attribution)
-* ``meta`` - Transfomationsregeln für Features (siehe :doc:`features`) 
+* ``meta`` - Transfomationsregeln für Features (siehe :doc:`features`)
 
 Layer Typen
 -------------
@@ -16,7 +16,7 @@ Layer Typen
 Box
 ~~~
 
-Eine Box-Schicht ist vergleichbar mit einer konventionellen WMS-Schicht. Es wird mit den WMS-Parametern ``bbox``, ``width`` und ``height`` abgefragt und gibt ein ``png`` Bild zurück.
+Eine Box-Schicht ist vergleichbar mit einer konventionellen WMS-Schicht. Es wird mit den WMS-Parametern ``bbox``, ``width`` und ``height`` abgefragt und liefert ein ``png`` Bild.
 
 Kachel
 ~~~~~~

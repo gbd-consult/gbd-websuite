@@ -8,12 +8,12 @@ Die GBD WebSuite betreibt intern mehrere Servermodule:
 - das ``qgis`` Modul, das den gebündelten QGIS Server betreibt und QGIS Projekte und Layer rendert
 - das ``spool`` Modul, das den Druck und andere Hintergrundaufgaben übernimmt.
 
-Jedes Modul kann deaktiviert werden, wenn es nicht benötigt wird (z. B. wenn Sie keine QGIS-Projekte verwenden, brauchen Sie den QGIS-Server nicht auszuführen). Sie können auch die Anzahl der Arbeiter (ungefähr, CPU-Kerne) und Threads konfigurieren, die jedes Modul verwenden darf. Standardmäßig sind die Werte ``4`` und ``0``, die optimalen Werte hängen von der Konfiguration Ihres Zielsystems ab.
+Jedes Modul kann deaktiviert werden, wenn es nicht benötigt wird (z. B. wenn Sie keine QGIS-Projekte verwenden, brauchen Sie den QGIS-Server nicht auszuführen). Sie können auch die Anzahl der Arbeiter, CPU-Kerne und Threads konfigurieren, welche das jeweilige Modul verwenden dürfen. Standardmäßig stehen die Werte auf ``4`` und ``0``. Die optimalen Werte hängen von der Konfiguration Ihres Zielsystems ab.
 
-Für Hochlast-Workflows ist es auch möglich, verschiedene Module auf verschiedenen physikalischen Maschinen zu betreiben. Beispielsweise können Sie eine GWS-Installation einrichten, die nur das Mapproxy-Modul, eine weitere für den QGIS-Server und eine weitere für das Frontend-Web-Modul ausführt. In diesem Fall können Sie für Mapproxy und QGIS in der Web-Konfiguration ``host`` and ``port`` angeben, so dass diese über das Netzwerk abgefragt werden können.
+Für sehr leistungsfordernde Workflows ist es auch möglich, verschiedene Module auf verschiedenen physikalischen Maschinen zu betreiben. Beispielsweise können Sie eine GWS-Installation einrichten, die nur das Mapproxy-Modul zur Verfügung gestellt wird, eine weitere für den QGIS-Server und eine weitere damit das Frontend-Web-Modul ausgeführt wird. In diesem Fall können Sie für Mapproxy und QGIS in der Web-Konfiguration ``host`` und ``port`` angeben, so dass diese über das Netzwerk abgefragt werden können.
 
 
 Aufbereitungsserver
 --------------------
 
-Das Spoolmodul enthält einen *Monitor*, der das Dateisystem überwacht, die Änderungen in Ihren Projekten und Konfigurationen überprüft und ggf. einen Hot-Reload des Servers durchführt. Sie können Intervalle für diese Prüfungen konfigurieren, es wird empfohlen, das Monitorintervall auf mindestens 30 Sekunden einzustellen, da Dateisystemprüfungen ressourcenintensiv sind.
+Das Spoolmodul enthält einen *Monitor*, der das Dateisystem überwacht, die Änderungen in Ihren Projekten und Konfigurationen überprüft und ggf. einen Hot-Reload des Servers durchführt. Sie können Intervalle für diese Prüfungen konfigurieren. Es wird empfohlen, das Monitorintervall auf mindestens 30 Sekunden einzustellen, da Dateisystemprüfungen ressourcenintensiv sind.

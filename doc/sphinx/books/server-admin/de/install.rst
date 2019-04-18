@@ -15,12 +15,12 @@ Die GBD WebSuite benötigt einige Verzeichnisse, die von Ihrem Host-Rechner eing
 Port
 -----
 
-Die GBD WebSuite greift auf die Ports "80" und "443" zu. Sie können diese Ports für alles verwenden was Sie Testen wollen., und auf echte ``80/443`` in der Produktion.
+Zum Testen können Sie beliebige Ports verwenden. Für die konkrete Konfiguration müssen die Ports ``80``, ``443`` und ``5432`` verwendet werden. Der Port ``80`` ist für die http Kommunkation veranwortlich und der Port ``443`` für die https Kommunkation. Der Port ``5432`` wird für die PostGIS SQL verwendet. Wenn Sie also eine PostGIS Datenbank verwenden muss diese über den Port ``5432`` mit der GBD WebSuite kommunizieren.
 
 Hauptkonfiguration
 ------------------
 
-Die GBD WebSuite erwartet ihre Hauptkonfiguration in ``/data/config. json``. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable ``GWS_CONFIG`` auf den Pfad Ihrer Hauptkonfiguration.
+Die GBD WebSuite erwartet ihre Hauptkonfiguration in der ``/data/config.json`` Datei. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable ``GWS_CONFIG`` auf den Pfad Ihrer Hauptkonfiguration.
 
 Externe Rechner
 ---------------
@@ -30,7 +30,7 @@ Wenn Ihr GBD WebSuite Container externe Verbindungen benötigt (höchstwahrschei
 Einstiegspunkt
 --------------
 
-Die GBD WebSuite hat einen einzigen Einstiegspunkt, ein Shell-Skript namens ``gws``. Um den Server zu starten und zu stoppen, möchten Sie einen von diesen ::
+Die GBD WebSuite hat einen Einstiegspunkt in Form von einem Shell-Skript namens ``gws``. Um den Server zu starten und zu stoppen, müssen die folgenden Ausdrücke verwendet werden ::
 
     gws server start
     gws server stop
@@ -40,7 +40,7 @@ Die GBD WebSuite hat einen einzigen Einstiegspunkt, ein Shell-Skript namens ``gw
 Alles zusammensetzen
 -----------------------
 
-Also, hier sind Optionen, die Sie in Ihrem ``docker run`` Befehl anpassen müssen:
+Diese Optionen müssen Sie in Ihrem ``docker run`` Befehl konfigurieren:
 
 - eine oder mehrere "Daten"-Einbinden
 - eine "var"-Einbinden
@@ -49,6 +49,6 @@ Also, hier sind Optionen, die Sie in Ihrem ``docker run`` Befehl anpassen müsse
 - Konfigurationspfad
 - externe Hosts
 
-Wir haben ein Beispielskript ``server-sample. sh``, das Sie an Ihre Bedürfnisse anpassen können:
+Wir haben ein Beispielskript ``server-sample. sh``, welches Sie an Ihre Bedürfnisse anpassen können:
 
 .. literalinclude:: /{APP_DIR}/server-sample.sh

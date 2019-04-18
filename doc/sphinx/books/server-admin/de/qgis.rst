@@ -1,7 +1,7 @@
 QGIS Support
 ============
 
-Die GBD WebSuite bietet dedizierten Support für `QGIS <https://qgis.org>`_, ein kostenloses und quelloffenes geografisches Informationssystem. Die Unterstützung ist optional und kann abgeschaltet werden, wenn Sie QGIS nicht verwenden.
+Die GBD WebSuite unterstützt und supportet `QGIS <https://qgis.org>`_, ein kostenloses und quelloffenes geografisches Informationssystem. Die Unterstützung ist optional und kann abgeschaltet werden, wenn Sie QGIS nicht verwenden.
 
 Mit unserem QGIS-Modul können Sie
 
@@ -19,5 +19,4 @@ TABLE
 /TABLE
 
 
-Die Option ``searchPathsForSVG`` sagt Ihnen, wo Sie svg-Bilder in Ihren QGIS-Karten und Druckvorlagen finden. Wenn Sie nicht standardmäßige Bilder verwenden, fügen Sie einfach einen Verzeichnispfad für sie zu dieser Einstellung hinzu.
-
+Die Option ``searchPathsForSVG`` sagt Ihnen, wo Sie die verwendeten SVG-Bilder in Ihren QGIS-Karten und Druckvorlagen finden. Wenn Sie nicht standardmäßige Bilder verwenden, fügen Sie einfach einen Verzeichnispfad, für die von Ihnen verwendeten SVG-Bilder, zu dieser Einstellung hinzu.

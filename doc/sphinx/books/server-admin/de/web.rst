@@ -3,13 +3,13 @@ Web Server
 
 Web-Inhalte (HTML-Dateien, Bilder, Downloads) werden in der GBD WebSuite von dem integrierten NGINX, einem schnellen und zuverlässigen Web-Server, verarbeitet.
 
-Sie können mehrere *Sites* ("virtuelle Hosts") in einer einzigen GBD WebSuite Installation konfigurieren, jeder mit seinem eigenen Hostnamen und Dokumentenstamm.
+Sie können mehrere *sites* ("virtuelle Hosts") in einer einzigen GBD WebSuite Installation konfigurieren, jeder mit seinem eigenen Hostnamen und Dokumentenstamm.
 
 
 Statische Dateien und Assets
-------------------------------
+----------------------------
 
-Es gibt zwei Arten von Webinhalten: *statische* Ressourcen und *Vermögenswerte*. Statische Ressourcen werden in einem Web-Root-Ordner abgelegt und ohne jegliche Bearbeitung bereitgestellt. Assets sind Ressourcen, die serverseitig verarbeitet werden müssen, bevor sie dem GBD WebSuite Client zur Verfügung gestellt werden können.
+Es gibt zwei Arten von Webinhalten: *statische* Ressourcen und *Assets*. Statische Ressourcen werden in einem Web-Root-Ordner abgelegt und ohne jegliche Bearbeitung bereitgestellt. Assets sind Ressourcen, die vom Server verarbeitet werden müssen, bevor sie dem GBD WebSuite Client zur Verfügung gestellt werden können.
 
 Anwendungsfälle für statische Dateien sind:
 
@@ -17,7 +17,7 @@ Anwendungsfälle für statische Dateien sind:
 - Javascript- und CSS-Dateien (einschließlich des GBD WebSuite Client Materials)
 - statische Bilder
 
-Anwendungsfälle für Vermögenswerte sind:
+Anwendungsfälle für Assets sind:
 
 - jede Ressource, die einer Autorisierung bedarf
 - Template-basierte HTML-Seiten (Die GBD WebSuite verwendet `mako <https:--www.makotemplates.org/>`_ für das Templating)
@@ -27,16 +27,16 @@ Die GBD WebSuite bedient nur Ressourcen mit bekannten Mime-Typen (bestimmt durch
 
     .css .csv .gif .html .jpeg .jpg .js .json .pdf .png .svg .ttf .xml .zip
 
-Sie können diese Liste pro Seite oder pro Projekt neu definieren
+Sie können diese Liste pro Seite oder pro Projekt neu definieren.
 
 Rewrite-Regeln
-----------------
+--------------
 
-Assets werden vom Serverbefehl ``assetHttpGetPath`` behandelt, der den Parameter ``path`` akzeptiert, und optional eine eindeutige Projekt-ID, so dass die endgültige URL wie folgt lautet::
+Assets werden vom Serverbefehl ``assetHttpGetPath`` behandelt, der den Parameter ``path`` akzeptiert, und optional eine eindeutige Projekt-ID vergibt. Daraus folgt, dass die endgültige URL wie folgt lautet::
 
     http://example.org/_?cmd=assetHttpGetPath&path=somepage.mako
 
-Die folgende Rewrite-Regel :: 
+Die folgende Rewrite-Regel ::
 
     {
         "match": "^/([a-z]+)/([a-z]+)$",
@@ -53,7 +53,7 @@ Das ``match`` ist ein erforderlicher Ausdruck und das ``target`` ist die endgül
 Website-Konfiguration
 -----------------------------
 
-Eine Website-Konfiguration muss einen Hostnamen (Hostname ``*`` markiert die Standard-Site), eine Root- und Asset-Konfiguration sowie optional eine Reihe von URL-Rewriting-Regeln enthalten ::
+Eine Website-Konfiguration muss einen Hostnamen (Hostname ``*`` markiert die Standard-Site), eine Root- und Asset-Konfiguration, sowie optional eine Reihe von URL-Rewriting-Regeln enthalten ::
 
 
     {
@@ -71,11 +71,11 @@ Eine Website-Konfiguration muss einen Hostnamen (Hostname ``*`` markiert die Sta
 
             "dir": "/example/www-root",
 
-            ## erlaubte Dateierweiterungen (zusätzlich zur Standardliste) 
+            ## erlaubte Dateierweiterungen (zusätzlich zur Standardliste)
 
             "allowMime": [".xls", ".doc"],
 
-            ## deaktivierte Dateierweiterungen (aus der Standardliste) 
+            ## deaktivierte Dateierweiterungen (aus der Standardliste)
 
             "denyMime": [".xml", ".json"],
 
@@ -113,8 +113,8 @@ Jedes GBD WebSuite Projekt kann seine eigene Asset-Root-Konfiguration haben. Wen
 
     http://example.org/_?cmd=assetHttpGetPath&path=somepage.mako
 
-dann wird das Asset im Site-Asset-Verzeichnis gesucht. Wenn ein Auftrag mit einem Projekt uid ::
+wird das Asset im Site-Asset-Verzeichnis gesucht. Wenn ein Auftrag mit einer Projekt uid angefordert wird::
 
     http://example.org/_?cmd=assetHttpGetPath&projectUid=myproject&path=somepage.mako
 
-dann wird das Asset zuerst in den Projekt-Assets gesucht, wenn es nicht gefunden wird, wird das Site-Asset-Verzeichnis als Fallback verwendet.
+dann wird das Asset zuerst in den Projekt-Assets gesucht. Wenn es nicht gefunden wird, wird das Site-Asset-Verzeichnis als Alternative verwendet.
