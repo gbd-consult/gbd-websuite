@@ -8,14 +8,14 @@ The top-level configuration is of type **ApplicationConfig**.
 Basic types
 -----------
 
-Fundamental data types, as used in the Python language::
+Fundamental data types, as used in the Python language:
 
 TABLE
-   ``str`` ~ String, must be in the UTF-8 encoding
-   ``bool`` ~ Boolean true or false
-   ``int`` ~ Integer number
-   ``float`` ~ Floating-point number
-   ``dict`` ~ Generic key-value object
+   ``str`` ~String, must be in the UTF-8 encoding
+   ``bool`` ~Boolean true or false
+   ``int`` ~Integer number
+   ``float`` ~Floating-point number
+   ``dict`` ~Generic key-value object
    [``T``...] ~ List (array) of elements of type ``T``
 /TABLE
 

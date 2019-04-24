@@ -17,7 +17,7 @@ TABLE
 /TABLE
 
 GBD WebSuite -> D-ProCon Anbindung
--------------------------
+----------------------------------
 
 Der Nutzer wählt auf der Karte einen Bereich aus und klickt auf den D-ProCon Button.
 Die Auswahl wird an den GBD WebSuite Server gesendet. Der Server führt eine räumliche Anfrage aus und ermittelt die Punkte (Häuser) die sich in der Auswahl befinden. Die Punkte werden in die Postgis Tabelle ``request`` geschrieben, im folgenden Format:
@@ -32,7 +32,7 @@ Danach wird D-ProCon,, mit der Angabe der ID, in einem neuen Fenster geöffnet.
 
 
 D-ProCon -> GBD WebSuite Anbindung
--------------------------
+----------------------------------
 
 Die D-ProCon Ergebnisse werden in Datenbanktabellen bzw Views geschrieben. Diese Tabellen können eine beliebige Struktur haben. Die Anforderung der GBD WebSuite ist lediglich, dass diese Tabellen eine Spalte ``request_id`` enthalten, die der Abfrage-ID entspricht und dass der Name der Tabelle dem ``dataTablePattern`` entspricht.
 

@@ -38,7 +38,7 @@ For vector layers, like ``sql`` or ``geojson`` layers, you can place your css ru
             }
         }
 
-Alternatively, you can include the rules in your projecr-related CSS file (see :doc:`projects`), and set ``text`` to the CSS selector ::
+Alternatively, you can include the rules in your project-related CSS file (see :doc:`projects`), and set ``text`` to the CSS selector ::
 
     // In your css file
 
@@ -88,5 +88,3 @@ TABLE
 ``.gws .modDimensionDimArrow``~an arrow at the end of the main line
 ``.gws .modDimensionDimLabel``~dimension label
 /TABLE
-
-
