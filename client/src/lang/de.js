@@ -62,7 +62,7 @@ module.exports = {
     modInfobarHelpTitle: 'Hilfe',
     modInfobarHomeLinkTitle: 'Zur Startseite',
     modInfobarLink: 'Hilfe',
-    modInfobarPosition: 'E,N',
+    modInfobarPosition: 'Koordinate',
     modInfobarRotation: 'Rotation',
     modInfobarScale: 'Maßstab',
     cmpInfoboxCloseButton: 'Schließen',
