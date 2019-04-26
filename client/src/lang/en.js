@@ -24,7 +24,7 @@ module.exports = {
 
     modInfobarRotation: 'Rotation',
     modInfobarScale: 'Scale',
-    modInfobarPosition: 'XY',
+    modInfobarPosition: 'E,N',
     modInfobarLink: 'Help',
 
     modMeasureLength: 'length',
