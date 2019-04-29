@@ -68,6 +68,7 @@ class Object(gws.Object):
             raise gws.web.error.NotFound()
 
         spec = {
+            'version': gws.VERSION,
             'config': gws.config.spec.load('config', p.lang),
             'api': gws.config.spec.load('api', p.lang),
             'cli': gws.config.spec.load('cli', p.lang),
