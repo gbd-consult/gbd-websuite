@@ -89,6 +89,9 @@ class User(gws.PublicObject, t.AuthUserInterface):
     def full_uid(self):
         return json2.to_string([self.provider.uid, self.uid])
 
+    def has_role(self, role):
+        return role in self.roles
+
     def init_from_source(self, provider, uid, roles=None, attributes=None):
         attributes = dict(attributes) if attributes else {}
 
