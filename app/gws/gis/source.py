@@ -42,3 +42,11 @@ def filter_layers(
         layers = [sl for sl in layers if sl.is_queryable]
 
     return layers
+
+
+def image_layers(sl: t.SourceLayer) -> t.List[t.SourceLayer]:
+    if sl.is_image:
+        return [sl]
+    if sl.layers:
+        return [s for sub in sl.layers for s in image_layers(sub)]
+    return []

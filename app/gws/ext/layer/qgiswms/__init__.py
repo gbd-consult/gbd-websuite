@@ -42,8 +42,7 @@ class Object(gws.gis.layer.Image):
 
         self.source_layers = gws.gis.source.filter_layers(
             self.service.layers,
-            self.var('sourceLayers'),
-            image_only=True)
+            self.var('sourceLayers'))
         if not self.source_layers:
             raise gws.Error(f'no layers found in {self.uid!r}')
 

@@ -67,6 +67,13 @@ class DisplayMode(t.Enum):
     tile = 'tile'  #: display a layer in a tile grid
 
 
+class FlattenConfig(t.Config):
+    """Flatten the layer hierarchy."""
+
+    level: int  #: flatten level
+    useGroups: bool = False  #: use group names (true) or image layer names (false)
+
+
 class BaseConfig(t.WithTypeAndAccess):
     """Layer"""
 

@@ -16,7 +16,8 @@ class Config(gws.gis.layer.ImageConfig):
     directRender: t.Optional[t.List[str]]  #: QGIS providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS providers that should be searched directly
     path: t.filepath  #: path to a qgs project file
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use as roots
+    flatten: t.Optional[gws.gis.layer.FlattenConfig]  #: flatten the layer hierarchy
 
 
 class Object(gws.gis.layer.Base):
@@ -29,6 +30,7 @@ class Object(gws.gis.layer.Base):
         self.layers: t.List[t.LayerObject] = []
         self.service: gws.qgis.Service = None
         self.path = ''
+        self.flatten = None
 
     def configure(self):
         super().configure()
@@ -45,7 +47,9 @@ class Object(gws.gis.layer.Base):
         slf = self.var('sourceLayers') or t.Data({'names': [], 'pattern': '', 'level': 1})
         self.source_layers = gws.gis.source.filter_layers(self.service.layers, slf)
 
-        layer_cfgs = gws.compact(self._layer(sl) for sl in self.source_layers)
+        self.flatten = self.var('flatten')
+
+        layer_cfgs = gws.compact(self._layer(sl, depth=1) for sl in self.source_layers)
         if gws.is_empty(layer_cfgs):
             raise gws.Error(f'no source layers in {self.uid!r}')
 
@@ -72,8 +76,15 @@ class Object(gws.gis.layer.Base):
             'layers': self.layers,
         })
 
-    def _layer(self, sl: t.SourceLayer):
-        la = self._group_layer(sl) if sl.is_group else self._image_layer(sl)
+    def _layer(self, sl: t.SourceLayer, depth: int):
+        if sl.is_group:
+            # NB use the absolute level to compute flatness, could also use relative (=depth)
+            if self.flatten and sl.a_level >= self.flatten.level:
+                la = self._flat_group_layer(sl)
+            else:
+                la = self._group_layer(sl, depth)
+        else:
+            la = self._image_layer(sl)
 
         if not la:
             return
@@ -171,6 +182,23 @@ class Object(gws.gis.layer.Base):
             'path': self.path,
         }
 
+    def _flat_group_layer(self, sl: t.SourceLayer):
+        if self.flatten.useGroups:
+            names = [sl.name]
+        else:
+            ls = gws.gis.source.image_layers(sl)
+            if not ls:
+                return
+            names = [s.name for s in ls]
+
+        return {
+            'type': 'qgiswms',
+            'sourceLayers': {
+                'names': names
+            },
+            'path': self.path,
+        }
+
     def _layer_search_provider(self, sl: t.SourceLayer):
         p = self.var('search')
         if not p.enabled or p.providers:
@@ -232,8 +260,8 @@ class Object(gws.gis.layer.Base):
 
         return cfg
 
-    def _group_layer(self, sl: t.SourceLayer):
-        layers = gws.compact(self._layer(la) for la in sl.layers)
+    def _group_layer(self, sl: t.SourceLayer, depth: int):
+        layers = gws.compact(self._layer(la, depth + 1) for la in sl.layers)
         if not layers:
             return
         return {
