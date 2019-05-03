@@ -191,13 +191,18 @@ class Object(gws.gis.layer.Base):
                 return
             names = [s.name for s in ls]
 
-        return {
+        la = {
             'type': 'qgiswms',
             'sourceLayers': {
                 'names': names
             },
             'path': self.path,
         }
+
+        la['cache'] = self.var('cache')
+        la['grid'] = self.var('grid')
+
+        return la
 
     def _layer_search_provider(self, sl: t.SourceLayer):
         p = self.var('search')
