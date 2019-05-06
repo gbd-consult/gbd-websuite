@@ -44,3 +44,9 @@ python3-pyqt5.qtsvg
 python3-sip
 python3-sip-dev
 qt5keychain-dev
+
+# ms sql
+
+libqt5sql5-odbc
+freetds-dev
+tdsodbc

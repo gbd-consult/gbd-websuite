@@ -120,6 +120,7 @@ def dockerfile():
         apt-get install -y software-properties-common
         apt-get update
         DEBIAN_FRONTEND=noninteractive apt-get install -y {APTS}
+        cp /usr/share/tdsodbc/odbcinst.ini /etc
         apt install -y ./{WKHTMLTOPDF_PATH}
         rm -f ./{WKHTMLTOPDF_PATH}
         pip3 install --no-cache-dir {PIPS}
