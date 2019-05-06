@@ -211,6 +211,8 @@ class Connection:
         return self.exec(sql, values)
 
     def batch_insert(self, table, data, on_conflict=None, page_size=100):
+        if not data:
+            return
         all_cols = self.columns(table)
         cols = sorted(col for col in data[0] if col in all_cols)
         template = '(' + _comma(f'%({col})s' for col in cols) + ')'
