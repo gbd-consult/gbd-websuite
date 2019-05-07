@@ -94,9 +94,12 @@ def _reload(reconfigure, module=None):
 
 def _kill(pidfile):
     gws.log.info(f'stopping {pidfile}...')
-    with open(pidfile, 'rt') as fp:
-        pid = fp.read().strip()
-    sh.run(['kill', '-INT', pid])
+    try:
+        with open(pidfile, 'rt') as fp:
+            pid = fp.read().strip()
+        sh.run(['kill', '-INT', pid])
+    except Exception as e:
+        gws.log.exception()
 
 
 def _is_running(s):
