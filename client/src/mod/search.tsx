@@ -193,7 +193,7 @@ class SearchController extends gws.Controller {
         this.update({
             marker: {
                 features: [f],
-                mode: 'pan draw',
+                mode: 'zoom draw',
             },
             infoboxContent: <gws.components.feature.InfoList controller={this} features={[f]}/>
 
