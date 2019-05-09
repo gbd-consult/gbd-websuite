@@ -15,7 +15,7 @@ Als nächstes muss das gewünschte Objekt ausgewählt werden. Es kann über |fok
  :align: center
 
 
-Wenn ein Objekt ausgewählt ist, können Attribute wie zum Beispiel id, Name, Bezeichnung und Adresse bearbeitet werden. Über das Menü |settings| ``Aufgaben`` können weitere Funktionen ausgewählt werden. Man kann zu einem Objekt ``Hinzoomen``.  Desweiteren können die vorher erstellten Objekte für die Funktionen ``Räumliche Suche``, ``Markieren und Messen`` oder ``Auswahl`` verwendet werden. Über |delete_editing| ist es möglich ein Objekt zu löschen und über |cancel| kommt man wieder ins vorherige Menü.
+Wenn ein Objekt ausgewählt ist, können Attribute wie zum Beispiel id, Name, Bezeichnung und Adresse bearbeitet werden. Über das Menü |settings| ``Aufgaben`` können weitere Funktionen ausgewählt werden. Man kann zu einem Objekt ``Hinzoomen``.  Desweiteren können die vorher erstellten Objekte für die Funktionen :ref:`Markieren und Messen <MM>`, :ref:`Räumliche Suche <RS>` und :ref:`Auswählen <AW>` verwendet werden. Über |delete_editing| ist es möglich ein Objekt zu löschen und über |cancel| kommt man wieder ins vorherige Menü.
 
 .. figure:: ../../../screenshots/de/client-user/editing_3.png
   :align: center

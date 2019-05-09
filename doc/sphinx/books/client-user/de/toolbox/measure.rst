@@ -1,3 +1,5 @@
+.. _MM:
+
 Markieren & Messen
 ==================
 
@@ -23,7 +25,7 @@ Bei der |polygon| **Polygonflächenmessung** kann durch das Setzen mehrerer Punk
 Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit einem Klick in die Karte gesetzt, dies ist der Kreismittelpunkt. Mit einem zweiten Klick um den Kreis, wird der Radius festgelegt. Es wird nun ein Kreis gezeichnet, welcher mit dem Radius in Metern beschriftet wird. Der Radius sowie die Beschriftung können nachträglich verändert werden. Hierzu nutzen Sie das entsprechende Feld in dem sich geöffneten Menüfenster.
 
 .. note::
-  Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| ``Räumliche Suche`` zur Verfügung. Über die Symbole in der Werkzeugleiste können Sie die Zeichnung bestätigen |savedraw| oder abbrechen |canceldraw|. Außerdem kann jedes Objekt nachträglich angepasst werden. Wählen Sie dazu das Objekt im Menü ``Markierungen`` an. Nun können Sie neue Stützpunkt vergeben. Bei der Kreisflächenmessung kann der Radius angepasst werden. Mit |delete| kann man die erstellte Linie wieder löschen. Per |delete| kann das jeweilige Objekt gelöscht werden.
+  Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| :ref:`Räumliche Suche <RS>` zur Verfügung. Über die Symbole in der Werkzeugleiste können Sie die Zeichnung bestätigen |savedraw| oder abbrechen |canceldraw|. Außerdem kann jedes Objekt nachträglich angepasst werden. Wählen Sie dazu das Objekt im Menü :ref:`Markierungen <MM>` an. Nun können Sie neue Stützpunkt vergeben. Bei der Kreisflächenmessung kann der Radius angepasst werden. Mit |delete| kann man die erstellte Linie wieder löschen. Per |delete| kann das jeweilige Objekt gelöscht werden.
 
 **Mögliche Ausdrücke für die Markierung**
 

@@ -1,9 +1,11 @@
+.. _AF:
+
 Abfragen
 ========
 
 Bestimmte Sachdaten können in der Karte abgefragt werden. Dies ist möglich über das |info| ``Abfragen``-Werkzeug. Ein Objekt in der Karte wird mit der linken Maustaste angewählt. Das gewählte Objekt wird markiert und es öffnet sich ein Pop-up-Fenster im Kartenfenster, wo verschiedene Informationen zu dem markierten Objekt angezeigt werden.
 
-Bestimmte Sachdaten können in der Karte abgefragt werden. Aus welchen Daten gewählt wird, muss vorher durch die Auswahl der Karte unter ``Layer`` festgelegt werden. Es gibt verschiedene Möglichkeiten die Auswahl genauer zu definieren.
+Bestimmte Sachdaten können in der Karte abgefragt werden. Aus welchen Daten gewählt wird, muss vorher durch die Auswahl der Karte unter :ref:`Layer <LY>` festgelegt werden. Es gibt verschiedene Möglichkeiten die Auswahl genauer zu definieren.
 Durch die Auswahl eines übergeordneten Layers, greift die Abfrage auf alle darunter liegenden Layer zu.
 
 .. figure:: ../../../screenshots/de/client-user/mouseover_identification_1.png
@@ -14,7 +16,7 @@ Alternativ kann der unterste Layer in einer Layerstruktur gewählt werden, wodur
 .. figure:: ../../../screenshots/de/client-user/mouseover_identification_2.png
   :align: center
 
-Wenn mehrere Objekte markiert wurden, kann man über |continue| und |back| die einzelnen Informationen anzeigen lassen. Des Weiteren kann man über |options| die Auswahl der Objekte auch auf andere Werkzeuge, wie dem ``Auswählen``, ``Räumliche Suche`` und ``Annotieren`` Werkzeug, übertragen. Zusätzlich ist es möglich, über das ``Hinzoomen``-Werkzeug die einzelnen Objekte zu fokussieren. Über |cancel| schließen Sie das Pop-up-Fenster.
+Wenn mehrere Objekte markiert wurden, kann man über |continue| und |back| die einzelnen Informationen anzeigen lassen. Des Weiteren kann man über |options|, die Auswahl der Objekte auch auf andere Werkzeuge, wie dem :ref:`Auswählen <AW>`, :ref:`Räumliche Suche <RS>` und :ref:`Markieren und Messen <MM>` Werkzeug übertragen. Zusätzlich ist es möglich, über das ``Hinzoomen``-Werkzeug die einzelnen Objekte zu fokussieren. Über |cancel| schließen Sie das Pop-up-Fenster.
 
 .. note::
  Wie alle Werkzeuge kann auch dieses deaktiviert oder anders plaziert werden.

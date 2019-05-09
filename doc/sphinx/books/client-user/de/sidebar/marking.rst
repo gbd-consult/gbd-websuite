@@ -1,7 +1,9 @@
+.. _MK:
+
 Markierungen
 ============
 
-Über die Menüleiste |menu| gelangt man zu dem Menüpunkt |marking| ``Markierungen``. Die Objekte, die man mit Hilfe des ``Markieren und Messen``-Werkzeuges erzeugt hat, werden hier aufgelistet. Über |fokus| kann man zu dem gezeichneten Objekt hineinzoomen, über |delete| können Sie das gezeichnete Objekt direkt löschen.
+Über die Menüleiste |menu| gelangt man zu dem Menüpunkt |marking| ``Markierungen``. Die Objekte, die man mit Hilfe des :ref:`Markieren und Messen-Werkzeuges  <MM>` erzeugt hat, werden hier aufgelistet. Über |fokus| kann man zu dem gezeichneten Objekt hineinzoomen, über |delete| können Sie das gezeichnete Objekt direkt löschen.
 
 .. figure:: ../../../screenshots/de/client-user/marking.png
   :align: center

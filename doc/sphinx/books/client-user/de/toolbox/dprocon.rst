@@ -3,14 +3,14 @@ D-ProCon
 
 Über das |dpro| ``D-Procon``-Werkzeug können statistische Analysen mit der proprietären Software D-ProCon durchgeführt werden.
 
-Das ``D-Procon``-Werkzeug verarbeitet auf ALKIS basierte Adressdaten. Diese Adressdaten werden durch die Auswahl von Objekten selektiert. Sie können ein vorhandenes Objekt, wie zum Beispiel ein Flurstück oder einen Stadtteil über ``Auswählen`` sowie ein durch die ``Räumliche Suche`` selbst erstelltes Objekt für die Suche verwenden. Der GBD WebSuite Client ist direkt in D-ProCon integriert, was die Interaktion der Programme erheblich vereinfacht.
+Das ``D-Procon``-Werkzeug verarbeitet auf ALKIS basierte Adressdaten. Diese Adressdaten werden durch die Auswahl von Objekten selektiert. Sie können ein vorhandenes Objekt, wie zum Beispiel ein Flurstück oder einen Stadtteil über das :ref:`Auswählen-Werkzeug <AW>` sowie ein durch die :ref:`Räumliche Suche <RS>` selbst erstelltes Objekt für die Suche verwenden. Der GBD WebSuite Client ist direkt in D-ProCon integriert, was die Interaktion der Programme erheblich vereinfacht.
 
 Zur Vereinfachung beschränken wir uns im untenstehenden Abschnitt auf das Arbeiten mit der Fachschale Demografie. Ziel ist das Erstellen von statistischen Prognosen, welche Informationen über die demografische Entwicklung bereit stellen.
 
 Abrufen von Daten mit der GBD WebSuite
 --------------------------------------
 
-Voraussetzung für das Ergebnis ist die Vorauswahl der fachlichen Thematik in D-ProCon. Wählen Sie in der GBD WebSuite mithilfe des Tools |select| ``Auswählen`` ein Objekt, welches Sie für die Suche benutzen wollen. Oder definieren Sie mithilfe der |geo_search| ``Räumliche Suche`` ein eigenes Objekt für die Suche.
+Voraussetzung für das Ergebnis ist die Vorauswahl der fachlichen Thematik in D-ProCon. Wählen Sie in der GBD WebSuite mithilfe des |select| :ref:`Auswählen-Werkzeug <AW>` ein Objekt, welches Sie für die Suche benutzen wollen. Oder definieren Sie mithilfe der |geo_search| :ref:`Räumliche Suche <RS>` ein eigenes Objekt für die Suche.
 
 .. figure:: ../../../screenshots/de/client-user/DProCon/DProCon_01_Select.png
   :align: center

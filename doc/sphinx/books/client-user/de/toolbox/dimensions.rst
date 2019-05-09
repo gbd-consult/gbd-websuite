@@ -1,7 +1,10 @@
+.. _BMW:
+
 Bemaßung
 ========
 
-Das |dimensions| ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen durch das Zeichen von Linien, ähnlich einer technischen Bemaßung. Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet. Wenn Sie das Tool aktiviert haben, öffnet sich unter der Werkzeugleiste ein Feld mit verschiedenen Optionen.
+
+Das |dimensions| ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen durch das Zeichen von Linien, ähnlich einer technischen Bemaßung. Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet und im :ref:`Bemaßung <BMW2>` Menü aufgelistet. Wenn Sie das Tool aktiviert haben, öffnet sich unter der Werkzeugleiste ein Feld mit verschiedenen Optionen.
 
 .. figure:: ../../../screenshots/de/client-user/dimensions_tool.png
   :align: center

@@ -1,7 +1,9 @@
+.. _AW:
+
 Auswählen
 =========
 
-Über das |select| ``Auswählen``-Werkzeug können Objekte in der Karte ausgewählt werden. Aktivieren Sie das Werkzeug indem Sie auf |select| klicken. Nun öffnet sich automatisch das dazu gehörige Fenster ``Auswahl`` in der Menüleiste. Dort werden alle Objekte, egal ob Punkt, Linie, Kreis oder Polygon aufgelistet und können weiter bearbeitet werden.
+Über das |select| ``Auswählen``-Werkzeug können Objekte in der Karte ausgewählt werden. Aktivieren Sie das Werkzeug indem Sie auf |select| klicken. Nun öffnet sich automatisch das dazu gehörige Fenster :ref:`Auswahl <AW2>` in der Menüleiste. Dort werden alle Objekte, egal ob Punkt, Linie, Kreis oder Polygon aufgelistet und können weiter bearbeitet werden.
 
 Am unteren Fensterrand befinden sich eine Reihe von Funktionen für speziell diesen Menüpunkt. Zum einen ist es möglich die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|, sowie die Auswahl zu löschen |delete_marking|.
 

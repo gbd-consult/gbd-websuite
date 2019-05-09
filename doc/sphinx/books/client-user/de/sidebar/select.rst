@@ -1,7 +1,9 @@
+.. _AW2:
+
 Auswahl
 =======
 
-Die Ebene |select| ``Auswahl`` |2| in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select|  ``Auswählen``-Werkzeug |1| im Kartenfenster erfasst werden. Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
+Die Ebene |select| ``Auswahl`` |2| in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select| :ref:`Auswählen-Werkzeug <AW>` |1| im Kartenfenster erfasst werden. Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
 
 Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit dem ``Auswählen``-Werkzeug ausgewählt wurden. So können Sie in diesem Menüpunkt eine Übersicht, über die von Ihnen ausgewählten Objekte, gewinnen. Diese Objekte können über |fokus| fokusiert werden oder über das |delete| Icon aus der Auswahl entfernt werden.
 
@@ -13,8 +15,7 @@ Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit dem ``Auswäh
 
 Über |delete_marking| am unteren Rand des Menüs können Sie die Auswahl löschen.
 
-Wenn ein Objekt ausgewählt wird, erscheint rechts unten im Kartenfenster ein Informationsfenster. In diesem Fenster sind verschiedene Informationen über dieses Objekt abzulesen. Außerdem können hier über |settings| weitere Funktionen ausgewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Annotieren`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
-
+Wenn ein Objekt ausgewählt wird, erscheint rechts unten im Kartenfenster ein Informationsfenster. In diesem Fenster sind verschiedene Informationen über dieses Objekt abzulesen. Außerdem können hier über |settings| weitere Funktionen ausgewählt werden. Die Erklärung für die Funktionen :ref:`Räumliche Suche <RS>` und :ref:`Markieren und Messen <MM>` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen :ref:`Auswählen <AW>`, -Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
 
 
 

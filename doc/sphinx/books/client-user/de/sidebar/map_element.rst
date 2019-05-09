@@ -1,3 +1,5 @@
+.. _LY:
+
 Layer
 =====
 
@@ -13,7 +15,7 @@ Das Anzeigen oder Ausblenden eines Layers oder einer Layergruppe erfolgt über e
 Mit einem Klick auf den Layernamen öffnet sich die Layerlegende. Hier können die Legende des Layers, die dazugehörigen Metadaten sowie auch Copyright Einträge angezeigt werden. Unter der Layerlegende befinden sich zwei Werkzeuge. Mit |zoom_layer| ``Auf den Layer zoomen`` ist es möglich auf die Gesamtausdehnung des gewählten Layers zu zoomen. Über |cancel| ``Layerlegende schließen`` kann die Layerlegende geschlossen werden.
 
 .. note::
-Die Möglichkeiten an Konfigurationen im |layers| ``Layer``-Menü sind sehr umfangreich. Durch die Integration von QGIS in die GBD WebSuite kann z.B. die Layerstruktur aus einem oder mehreren QGIS Projekten mit anderen Datenquellen kombiniert, zusammengefasst und übernommen werden. Im Zusammenspiel mit dem Rechtemanagement ist es zusätzlich möglich, dass verschiedene Nutzer unterschiedliche Layer sehen.
+ Die Möglichkeiten an Konfigurationen im |layers| ``Layer``-Menü sind sehr umfangreich. Durch die Integration von QGIS in die GBD WebSuite kann z.B. die Layerstruktur aus einem oder mehreren QGIS Projekten mit anderen Datenquellen kombiniert, zusammengefasst und übernommen werden. Im Zusammenspiel mit dem Rechtemanagement ist es zusätzlich möglich, dass verschiedene Nutzer unterschiedliche Layer sehen.
 
 
 

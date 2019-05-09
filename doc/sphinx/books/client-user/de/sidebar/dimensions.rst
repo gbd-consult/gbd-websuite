@@ -1,7 +1,9 @@
+.. _BMW2:
+
 Bemaßung
 ========
 
-Das ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Strecken. Dazu werden Linien gezeichnet und automatisch beschriftet. Wenn Sie mit Hilfe des Werkzeuges |dimensions| ``Bemaßung`` Objekte gezeichnet haben, tauchen diese im Menü |dimensions| ``Bemaßung`` auf. Hier findet eine Auflistung aller gezeichneten Bemaßungen statt. Durch klicken auf |fokus| wird auf das spezielle Objekt gezoomt und durch klicken auf |delete| wird dieses Objekt gelöscht.
+Das :ref:`Bemaßung-Werkzeug <BMW>` ermöglicht die Erfassung von Strecken. Dazu werden Linien gezeichnet und automatisch beschriftet. Wenn Sie mit Hilfe des Werkzeuges |dimensions| ``Bemaßung`` Objekte gezeichnet haben, tauchen diese im Menü |dimensions| ``Bemaßung`` auf. Hier findet eine Auflistung aller gezeichneten Bemaßungen statt. Durch klicken auf |fokus| wird auf das spezielle Objekt gezoomt und durch klicken auf |delete| wird dieses Objekt gelöscht.
 
 .. figure:: ../../../screenshots/de/client-user/dimensions_menue.png
   :align: center
