@@ -140,7 +140,7 @@ Wählen Sie das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
 
 .. note::
-  Falls zuvor Werte für die Suche eingetragen wurden, greift die räumliche Suche ausschließlich auf diese gefillterten Ergebnisse. Wenn das finden von Flurstücken ausschließlich durch die räumliche Suche stattfinden soll, müssen Sie sicher stellen, dass in der Flurstückssuche kein Feld ausgefüllt und somit alle Filter deaktiviert sind. Das Speichern geschieht in einer SQLite Datei.
+  Falls zuvor Werte für die Suche eingetragen wurden, greift die räumliche Suche ausschließlich auf diese gefillterten Ergebnisse zu. Wenn das finden von Flurstücken ausschließlich durch die räumliche Suche stattfinden soll, müssen Sie sicher stellen, dass in der Flurstückssuche kein Feld ausgefüllt und somit alle Filter deaktiviert sind. Das Speichern geschieht in einer SQLite Datei.
 
 
 Auswahl eines Flurstücks in der Karte
