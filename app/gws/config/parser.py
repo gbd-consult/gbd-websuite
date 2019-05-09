@@ -100,10 +100,12 @@ def _parse_multi_project(cfg, path):
 
     res = []
 
-    for p in misc.find_files(dirname, mm):
+    for index, p in enumerate(sorted(misc.find_files(dirname, mm))):
         gws.log.info(f'multi-project: found {p!r}')
         m = re.search(mm, p)
         args = {'$' + str(n): s for n, s in enumerate(m.groups(), 1)}
+        args['$0'] = p
+        args['index'] = str(index)
         args.update(misc.parse_path(p))
         dct = _deep_format(cfg, args)
         res.append(parse(dct, 'gws.common.project.Config', path))

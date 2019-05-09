@@ -51,23 +51,29 @@ A *map* is basically a collection of *layers* (see :doc:`layers`). A map configu
 Multi-projects
 --------------
 
-A project configuration can also serve as a template for multiple projects. To set up a template, provide a regular expression in the ``multi`` option. The server enumerates all files on the server that match that expression, and creates a project config for each file by replacing regex placeholders ``{$n}`` in other options' values. For example, this template will enumerate all QGIS projects in ``/data/qgis-maps`` and create a project with a qgis layer for each map found ::
+A project configuration can also serve as a template for multiple projects. To set up a template, provide a regular expression in the ``multi`` option. The server enumerates all files on the server that match that expression, and creates a project config for each file found by replacing placeholders in other options' values. The placeholders are in the form ``{{$<number>}}`` where the number indicates a capturing group in the ``multi`` regex. ``{{$0}}`` is replaced with the complete path matched.
 
+For example, this template will enumerate all QGIS projects in ``/data/qgis-maps`` and create a project with a qgis layer for each ``.qgs`` file, using the file name as a project title ::
 
         "multi": "/data/qgis-maps/(.+?).qgs$",
-        "title": "Project {$1}",
+        "title": "Project {{$1}}",
         "map": {
             "layers": [
                 {
                     "type": "qgis",
-                    "title": "{$1}",
-                    "source": {
-                        "type": "qgis",
-                        "map": "{$0}"
-                    },
-                },
+                    "path": "{{$0}}"
+                }
             ]
         }
+
+In addition to regex placeholders, following placeholders are supported
+
+TABLE
+``{{path}}`` ~ full path of the current file
+``{{dirname}}`` ~ directory name of the current file
+``{{filename}}`` ~ file name of the current file
+``{{index}}`` ~ index of the current file in the list
+/TABLE
 
 
 Project HTML page
