@@ -99,9 +99,6 @@
     "gws.ext.action.alkis.Config:type": "Objekttyp",
     "gws.ext.action.alkis.Config:ui": "ui Optionen",
     "gws.ext.action.alkis.EigentuemerConfig": "Zugriff auf die Eigentümerinformationen",
-
-FIXME
-
     "gws.ext.action.alkis.EigentuemerConfig:access": "access rights",
     "gws.ext.action.alkis.EigentuemerConfig:controlMode": "restricted mode enabled",
     "gws.ext.action.alkis.EigentuemerConfig:controlRules": "list of regular expression for the restricted input control",
@@ -112,9 +109,6 @@ FIXME
     "gws.ext.action.alkis.UiConfig:searchSelection": "search in selection enabled",
     "gws.ext.action.alkis.UiConfig:searchSpatial": "spatial search enabled",
     "gws.ext.action.alkis.UiConfig:select": "select mode enabled",
-
-FIXME
-
     "gws.ext.action.asset.Config": "Asset (dynamische HTML) Aktion)",
     "gws.ext.action.asset.Config:access": "Zugriffsrechte",
     "gws.ext.action.asset.Config:type": "Objekttyp",
