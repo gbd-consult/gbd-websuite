@@ -190,9 +190,9 @@ class WmsWriter:
     ##
 
     def layer_list(self, layer_uid):
-        layer = self.req.require('gws.ext.layer', layer_uid)
+        layer = self.req.acquire('gws.ext.layer', layer_uid)
 
-        if not layer:
+        if not layer or not layer.is_enabled_for_service('wms'):
             return []
 
         if layer.layers:
@@ -201,36 +201,34 @@ class WmsWriter:
                 ls.extend(self.layer_list(la.uid))
             return ls
 
-        if layer.is_enabled_for_service('wms'):
-            return [layer]
-
-        return []
+        return [layer]
 
     def layer_tree(self, layer_uid):
-        layer = self.req.require('gws.ext.layer', layer_uid)
+        layer: t.LayerObject = self.req.acquire('gws.ext.layer', layer_uid)
 
-        if not layer:
+        if not layer or not layer.is_enabled_for_service('wms'):
             return
+
+        sub = []
 
         if layer.layers:
             sub = gws.compact(self.layer_tree(la.uid) for la in layer.layers)
             if not sub:
                 return
-            return {
-                'layer': layer,
-                'queryable': '0',
-                'sub': sub
-            }
 
-        if layer.is_enabled_for_service('wms'):
-            return {
-                'layer': layer,
-                'queryable': '1' if layer.has_search else '0',
-                'sub': []
-            }
+        res = [misc.res2scale(r) for r in layer.resolutions]
+
+        return {
+            'layer': layer,
+            'queryable': '1' if layer.has_search else '0',
+            'min_scale': min(res),
+            'max_scale': max(res),
+            'sub': list(reversed(sub)),  # NB: WMS is bottom-first, our layers are top-first
+        }
 
     def project_layer_tree(self):
-        return gws.compact(self.layer_tree(la.uid) for la in self.project.map.layers)
+        sub = gws.compact(self.layer_tree(la.uid) for la in self.project.map.layers)
+        return list(reversed(sub))
 
     def extent_to_4326(self, extent):
         return gws.gis.proj.transform_bbox(extent, self.project.map.crs, 'EPSG:4326')

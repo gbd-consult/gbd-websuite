@@ -293,6 +293,7 @@ class Base(gws.PublicObject, t.LayerObject):
         pass
 
     def is_enabled_for_service(self, service):
+        # @TODO should be configurable
         return False
 
 

@@ -32,6 +32,12 @@
         <Abstract>{node.layer.meta.abstract}</Abstract>
         <CRS>{project.map.crs}</CRS>
 
+        @geographic_bounding_box(node.layer.extent)
+        @bounding_box(node.layer.extent)
+
+        <MinScaleDenominator>{node.min_scale}</MinScaleDenominator>
+        <MaxScaleDenominator>{node.max_scale}</MaxScaleDenominator>
+
         @each node.sub as sub_node
             @layer_caps sub_node
         @end
@@ -117,18 +123,9 @@
             <Format>XML</Format>
         </Exception>
 
-        <Layer>
-            <Name>{project.uid}</Name>
-            <Title>{project.title}</Title>
-            <CRS>{project.map.crs}</CRS>
-
-            @geographic_bounding_box(project.map.extent)
-            @bounding_box(project.map.extent)
-
-            @each writer.project_layer_tree() as node
-                @layer_caps node
-            @end
-        </Layer>
+        @each writer.project_layer_tree() as node
+            @layer_caps node
+        @end
 
     </Capability>
 </WMS_Capabilities>
