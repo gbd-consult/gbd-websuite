@@ -31,7 +31,7 @@ class Object(gws.gis.layer.Proxied):
         ls = [la for la in gws.gis.source.filter_layers(self.source.layers, slf)]
 
         # additonaly to the filter, ensure only image layers
-        ls = [la for la in ls if la.is_image]
+        # ls = [la for la in ls if la.is_image]
 
         if not ls:
             raise ValueError(f'no layers found in {self.uid!r}')
