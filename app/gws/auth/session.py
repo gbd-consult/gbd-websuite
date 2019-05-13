@@ -30,6 +30,9 @@ class Manager:
     def _session_object(self, rec):
         if rec:
             prov: t.AuthProviderInterface = gws.config.find('gws.ext.auth.provider', rec['provider_uid'])
+            if not prov:
+                gws.log.error(f'auth provider not found: {rec!r}')
+                return
             user = prov.unmarshal_user(rec['user_uid'], rec['str_user'])
             data = json2.from_string(rec['str_data'])
             return Session(rec, user, data)
