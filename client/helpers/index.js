@@ -111,15 +111,42 @@ let copyAssets = options => {
     let msie = 'msie11.polyfill.io.js';
     fs.copyFileSync(absPath(msie), options.dist + '/' + msie);
 
-    // help files
-    let dir = absPath('src/help');
-    fs.readdirSync(dir).forEach(fn => fs.copyFileSync(
-        dir + '/' + fn, options.dist + '/help_' + fn));
-
     // start script
     let start = absPath('src/gws-start.js');
     fs.copyFileSync(start, options.dist + '/gws-start-' + options.version + '.js');
 };
+
+//
+
+let compileHelp = options => {
+
+    // replace icon refs in help files
+
+    let dir = absPath('src/help');
+
+    fs.readdirSync(dir).forEach(fn => {
+        let text = fs.readFileSync(dir + '/' + fn, 'utf8');
+
+        text = text.replace(/{ICON(.+?)}/g, ($0, $1) => {
+            let pth;
+
+            $1 = $1.trim();
+
+            if($1 === '8') return '';
+
+            let m = $1.match(/google:(\w+)\W+(\w+)/);
+            if(m) {
+                pth = `node_modules/material-design-icons/${m[1]}/svg/production/ic_${m[2]}_24px.svg`;
+            } else {
+                pth = absPath('src/css/themes/light/img/' + $1 + '.svg');
+            }
+            return fs.readFileSync(pth, 'utf8');
+        });
+
+        fs.writeFileSync(options.dist + '/help_' + fn, text);
+    });
+};
+
 
 //
 
@@ -135,6 +162,7 @@ ConfigPlugin.prototype.apply = function (compiler) {
             packageVendors(this.options);
             generateThemes(this.options);
             copyAssets(this.options);
+            compileHelp(this.options);
         });
     }
 };
