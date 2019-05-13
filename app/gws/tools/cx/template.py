@@ -121,22 +121,22 @@ class Base:
 
     def iter1(self, x):
         if isinstance(x, dict):
-            return sorted(x.keys())
+            return x.keys()
         if isinstance(x, (list, tuple)):
             return x
         try:
-            return sorted(vars(x).keys())
+            return vars(x).keys()
         except:
             pass
         return [k for k in x]
 
     def iter2(self, x):
         if isinstance(x, dict):
-            return sorted(x.items())
+            return x.items()
         if isinstance(x, (list, tuple)):
             return list(enumerate(x))
         try:
-            return sorted(vars(x).items())
+            return vars(x).items()
         except:
             pass
         return [(k, v) for k, v in x]
