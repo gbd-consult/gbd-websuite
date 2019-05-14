@@ -105,6 +105,10 @@ class Object(gws.gis.layer.Base):
                 'maxScale': sl.scale_range[1],
             }
 
+        ff = self.var('featureFormat')
+        if ff:
+            la['featureFormat'] = ff
+
         return gws.compact(la)
 
     def _image_layer(self, sl: t.SourceLayer):
