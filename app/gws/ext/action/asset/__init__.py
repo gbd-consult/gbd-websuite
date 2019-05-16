@@ -130,7 +130,7 @@ def _abs_path(path, basedir):
 def _default_template_context(req, project):
     return {
         'project': project,
-        'projects': _projects_for_user(req.user),
+        'projects': {p.uid: p for p in _projects_for_user(req.user)},
         'request': req,
         'user': req.user,
         'gws': {
