@@ -424,6 +424,7 @@ class Object(gws.Object):
             total, rs = flurstueck.find(conn, p, self.var('limit'))
             for rec in rs:
                 rec = self._remove_restricted_data(rec, allow_eigentuemer, allow_buchung)
+                rec['is_guest_user'] = req.user.is_guest
                 feature = gws.gis.feature.Feature({
                     'uid': rec['gml_id'],
                     'attributes': rec,
