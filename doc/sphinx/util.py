@@ -25,7 +25,7 @@ words = {
         'one_of': 'Einer von',
         'prop_name': 'Name',
         'prop_type': 'Typ',
-        'prop_required': 'erforderlich',
+        'prop_required': 'Erforderlich',
         'prop_default': 'Defaultwert',
         'options': 'Optionen',
     },
