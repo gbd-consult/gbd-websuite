@@ -7,6 +7,8 @@ Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst
     :maxdepth: 2
 
     navigation.rst
+    navigatehistory.rst
+    url.rst
     scale.rst
     coordinates.rst
     turn.rst

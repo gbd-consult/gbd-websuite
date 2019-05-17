@@ -1,7 +1,7 @@
 Anmeldung
 =========
 
-Die |authorization| ``Anmeldung`` ist ebenfalls über die |menu| Menüleiste zu erreichen.
+Die |authorization| ``Anmeldung`` ist ebenfalls über die |menu| Menüleiste zu erreichen. Diese Anmeldung kann per Json-Datei oder per LDAP konfiguriert werden.
 
 .. figure:: ../../../screenshots/de/client-user/sign_in.png
   :align: center
