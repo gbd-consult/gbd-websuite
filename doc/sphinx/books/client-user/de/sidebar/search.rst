@@ -2,7 +2,7 @@ Suche
 =====
 
 Des Weiteren gelangt man anhand der Menüleiste |menu| zur |search| ``Suche``.
-Hier ist es möglich nach verschiedenen Parametern zu suchen. Das hängt ganz von den Inhalten der jeweiligen Layer ab. Die Suche läuft im Hintergrund der GBD WebSuite ab und kombiniert die Schnittstellen von mehreren Suchen. Die Schnittstelle zur Openstreetmap-Nominatim-Suche, ermöglicht es OSM Daten zu durchsuchen. Die SQL-Suche sucht in Spalten von Datenbanken und die WMS-Suche in externen Dienste. So kann zum Beispiel nach Straßen und Schulen gesucht werden, aber auch nach Boden- oder Klimawerten. Das kommt ganz darauf an, welche Layer mit welchen Parametern in der GBD WebSuite eingeladen sind.
+Die Suche läuft im Hintergrund der GBD WebSuite ab und bietet mehrere kombinierbare Möglichkeiten. Unterstützt wird je nach Konfiguration die Suche auf Basis von OpenStreetMap Daten mittels "Nominatim", die Suche nach Inhalten aus PostgreSQL Tabellen bzw. Attributdaten von Layern, die in der GBD WebSuite dargestellt werden oder die GetFeatureInfo Anfrage an integrierte WMS Dienste.
 
 .. figure:: ../../../screenshots/de/client-user/search_menue.png
   :align: center
