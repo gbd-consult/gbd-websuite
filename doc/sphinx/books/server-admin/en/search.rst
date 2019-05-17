@@ -22,7 +22,7 @@ Interface to `Nominatim <https://nominatim.openstreetmap.org//>`_, the OSM searc
 sql
 ~~~
 
-Provides direct search in SQL (PostGIS) tables. You need to specify the DB provider to use (see :doc:`db`) and the table to search. The table configuration is the table name (optionally, with a schema) and at least one of the following two columns:
+Provides direct search in SQL (PostGIS) tables. You need to specify the DB provider to use (see :doc:`db`) and the column of a table to search. If you want to search in two or more columns, a view is used to proceed it. The table configuration is the table name (optionally, with a schema) and at least one of the following two columns:
 
 - ``searchColumn`` is where to search for the ``keyword``. If not configured, the keyword will be ignored
 - ``geometryColumn`` is used to spatially restrict the search. If not configured, the ``shape`` parameter will be ignored
@@ -37,4 +37,3 @@ wfs
 ~~~
 
 Implements ``GetFeatureInfo`` requests for WFS sources. You need to provide the WFS service url. It's also possible to restrict the search to specific layers (or "types").
-
