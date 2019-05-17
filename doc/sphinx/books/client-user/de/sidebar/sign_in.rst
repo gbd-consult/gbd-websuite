@@ -7,7 +7,7 @@ Die |authorization| ``Anmeldung`` ist ebenfalls über die |menu| Menüleiste zu 
   :align: center
 
 .. note::
- Abhängig vom angemeldeten Benutzer, können individuell Funktionalität, Projekte oder auch Datenzugriffe freigeschaltet werden. So ist es zum Beispiel möglich, im Rahmen der Flurstücksuche Informationen zu Eigentümern oder die Bereitstellung zur Anbindung an eine bestimmte, integrierte Fachanwendung nur für festgelete Benutzer oder Benutzergruppen festzulegen.
+ Abhängig vom angemeldeten Benutzer, können individuell Funktionalität, Projekte oder auch Datenzugriffe freigeschaltet werden. So ist es zum Beispiel möglich, im Rahmen der Flurstücksuche Informationen zu Eigentümern oder die Bereitstellung zur Anbindung an eine bestimmte, integrierte Fachanwendung nur für bestimmte Benutzer oder Benutzergruppen bereitzustellen.
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
