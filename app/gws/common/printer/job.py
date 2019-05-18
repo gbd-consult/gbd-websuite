@@ -90,6 +90,8 @@ class _Worker:
 
         if self.p.templateUid:
             self.template: t.TemplateObject = self.acquire('gws.ext.template', self.p.templateUid)
+            if not self.template:
+                raise ValueError(f'cannot find template uid={self.p.templateUid}')
             # for draft printing (dpi=0), ensure that the client's canvas buffer and our image have the same dimensions
             self.render_input.dpi = self.template.dpi_for_quality(p.get('quality', 0)) or misc.OGC_SCREEN_PPI
             self.render_input.map_size_px = [
