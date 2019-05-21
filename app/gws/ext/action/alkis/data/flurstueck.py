@@ -63,6 +63,17 @@ _vnum_re = r'''^(?x)
 '''
 
 
+def _add_vnum_param(key, val, where, parms):
+    if val:
+        where.append(f'FS.' + key + ' = %s')
+        if key in ('flurnummer', 'zaehler'):
+            parms.append(int(val))
+        elif key == 'flurstuecksfolge':
+            parms.append('%02d' % int(val))
+        else:
+            parms.append(val)
+
+
 def _parse_vnum(s, where, parms):
     m = re.match(_vnum_re, re.sub(r'\s+', '', s))
     if not m:
@@ -467,6 +478,9 @@ def find(conn: connection.AlkisConnection, query, limit):
             if not ok:
                 gws.log.warn('invalid vnum', v)
                 return 0, []
+
+        elif k in ('flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge'):
+            _add_vnum_param(k, v, where, parms)
 
         elif k == 'fsUids':
             where.append('FS.gml_id IN (' + ','.join(['%s'] * len(v)) + ')')
