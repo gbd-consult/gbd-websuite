@@ -849,6 +849,35 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
             alkisFsDetailsResponse: null,
             alkisFsSelection: [],
         });
+
+        this.app.whenLoaded(() => this.urlSearch());
+
+    }
+
+    async urlSearch() {
+        let m = String(location.href).match(/alkisFs=([\d_]+)/);
+
+        if (m) {
+            let res = await this.app.server.alkisFsSearch({
+                projectUid: this.app.project.uid,
+                alkisFs: m[1],
+            });
+
+            if (res.error) {
+                return false;
+            }
+
+            let features = this.map.readFeatures(res.features);
+
+            if (features.length > 0)
+                this.update({
+                    marker: {
+                        features: [features[0]],
+                        mode: 'draw zoom',
+                    },
+                });
+
+        }
     }
 
     async whenGemarkungChanged(value) {

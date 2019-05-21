@@ -109,6 +109,11 @@ class FsStrassenResponse(t.Response):
     strassen: t.List[str]
 
 
+_COMBINED_FS_PARAMS = ['landUid', 'gemarkungUid', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge']
+_COMBINED_AD_PARAMS = ['strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnummer']
+
+_COMBINED_PARAMS_DELIM = '_'
+
 class FsQueryParams(t.Data):
     projectUid: str
     wantEigentuemer: t.Optional[bool]
@@ -125,6 +130,9 @@ class FsQueryParams(t.Data):
     vorname: t.Optional[str]
     vnum: t.Optional[str]
     shape: t.Optional[t.ShapeProps]
+
+    # combined fs search param (_COMBINED_FS_PARAMS joined by '_')
+    alkisFs: t.Optional[str]
 
 
 class FsPrintParams(FsQueryParams):
@@ -413,6 +421,8 @@ class Object(gws.Object):
         allow_eigentuemer = eigentuemer_flag > 0
         allow_buchung = self._can_read_buchung(req)
 
+        p = self._expand_combined_params(p)
+
         p = self._remove_restricted_params(p, allow_eigentuemer, allow_buchung)
 
         if p.get('shape'):
@@ -439,6 +449,21 @@ class Object(gws.Object):
             self._log_eigentuemer_access(req, p, check=True, total=total, features=features)
 
         return total, features
+
+    def _expand_combined_params(self, query):
+        s = gws.get(query, 'alkisFs')
+        if s:
+            self._expand_combined_params2(query, s, _COMBINED_FS_PARAMS)
+
+        return query
+
+    def _expand_combined_params2(self, query: FsQueryParams, value, fields):
+        vs = value.split(_COMBINED_PARAMS_DELIM)
+
+        for field in fields:
+            if vs and vs[0] != '0':
+                setattr(query, field, vs[0])
+            vs = vs[1:]
 
     def _eigentuemer_flag(self, req, p: FsQueryParams):
         if not self._can_read_eigentuemer(req):
