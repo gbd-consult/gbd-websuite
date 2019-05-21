@@ -110,21 +110,22 @@ def _projects_for_user(user):
 
 def _abs_path(path, basedir):
     gws.log.debug(f'trying {path!r} in {basedir!r}')
-    p = path.lstrip('/')
-    if p.endswith('/'):
-        p = p[:-1]
+    p = path.strip('/')
 
     if p.startswith('.') or '/.' in p:
-        gws.log.error(f'invalid path={path!r}')
+        gws.log.error(f'dotted path={path!r}')
         return None
 
     p = os.path.abspath(os.path.join(basedir, p))
-    if os.path.isfile(p):
-        gws.log.debug(f'{path} => {p}')
-        return p
+    if not os.path.isfile(p):
+        gws.log.error(f'not a file path={path!r}')
+        return None
 
-    gws.log.info(f'file not found path={path!r}')
-    return None
+    if not p.startswith(basedir):
+        gws.log.error(f'invalid path={path!r}')
+        return None
+
+    return p
 
 
 def _default_template_context(req, project):
