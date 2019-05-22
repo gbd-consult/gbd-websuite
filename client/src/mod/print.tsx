@@ -403,6 +403,7 @@ class PrintController extends gws.Controller {
     }
 
     startPrintPreview() {
+        this.map.resetInteractions();
         return this.update({
             printState: 'preview',
             printSnapshotMode: false,
@@ -410,6 +411,7 @@ class PrintController extends gws.Controller {
     }
 
     startSnapshotPreview() {
+        this.map.resetInteractions();
         return this.update({
             printState: 'preview',
             printSnapshotMode: true,
