@@ -220,7 +220,7 @@ function computeDimensions(shapeType, geom, projection) {
 }
 
 function formatLengthForEdit(n) {
-    return (Number(n) || 0).toFixed(0)
+    return (Number(n) || 0).toFixed(2);
 }
 
 function formatCoordinate(feature: AnnotateFeature, n) {
