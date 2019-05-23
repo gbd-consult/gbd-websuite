@@ -10,6 +10,7 @@ Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis
 * QGIS und QGIS Server Integration
 * Caching von Getmap und GetPrint Anfragen
 * Einbinden von Hintergrunddiensten
+* Einbinden von zuvor gelayouteten QGIS-Projekten
 * Objektabfragen per Klick oder Mouseover
 * Räumliche Suche von Objekten in der Karte
 * Markieren und Messen in der Karte

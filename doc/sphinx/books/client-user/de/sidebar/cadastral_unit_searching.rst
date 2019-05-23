@@ -151,6 +151,12 @@ Das Werkzeug |select| ``Auswahl eines Flurstücks in der Karte`` ermöglicht die
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
 
 
+Zugang zu Personaldaten per Vorgangscode
+----------------------------------------
+
+Der Zugang zu sensiblen Daten, wie zum Beispiel Personaldaten oder Grundbucheinträgen, ist durch einen Login gesichert. Das bedeutet, dass bevor man auf diese Daten zugreifen kann, man sich zuerst einloggen muss. Dafür benötigt man einen eingetragen Benutzeraccount und einen sogenannten Vorgangscode. Der Benutzeraccount ist eine Grundvorraussetzung um sich einzuloggen. Um auf manche Projekte beziehungsweise Daten zugreifen zu können, ist zusätzlich ein Vorgangscode erforderlich. Mit Hilfe dieses Codes findet eine zusätzliche Abfrage statt, ob Sie berechtigt sind auf diese Daten zuzugreifen. Es ist auch möglich dass dieser Code sich während eines Projektes ändert und man nur bis zu einem bestimmten Status des Projekts, berechtigt ist drauf zuzugreifen. Über die Logins per Vorgangscode findet eine Historisierung statt, wodurch jeder Zeit kontrolliert werden kann, welcher Benutzeraccount mit welchem Vorgangscode sich eingeloggt hat.
+
+
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
