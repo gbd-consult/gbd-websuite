@@ -39,7 +39,7 @@ class Object(gws.gis.source.Base, t.SourceObject):
         req = gws.extend({
             'url': self.service.operations['GetMap'].get_url,
             'transparent': True,
-            'layers': ','.join(layer_names)
+            'layers': ','.join(n for n in layer_names if n)
         }, self.var('params'))
 
         return mc.source(self, gws.compact({
