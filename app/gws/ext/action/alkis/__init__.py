@@ -31,7 +31,7 @@ create table <name> (
     control_input varchar(255),
     control_result integer,
     fs_count integer,
-    fs_ids varchar(255)
+    fs_ids text
 )
 
 grant insert on <name> to <user>
