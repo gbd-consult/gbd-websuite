@@ -40,7 +40,7 @@ def _check_permissions(who, obj, roles, mode):
             for p in access:
                 if mode in p.mode and any(r in p.role for r in roles):
                     gws.log.debug(
-                        f'PERMS: query: obj={obj!r} roles={roles!r} mode={mode!r}, found: {vars(p)} in {cur!r}')
+                        f'PERMS: query: obj={_repr(obj)} roles={roles!r} mode={mode!r}, found: {vars(p)} in {_repr(cur)}')
                     return p.type == 'allow'
         cur = gws.get(cur, 'parent')
 
@@ -142,13 +142,13 @@ class Guest(User):
 
 class System(User):
     def can(self, mode, obj):
-        gws.log.debug(f'PERMS: sys_allow : obj={obj!r} mode={mode!r}')
+        gws.log.debug(f'PERMS: sys_allow : obj={_repr(obj)} mode={mode!r}')
         return True
 
 
 class Nobody(User):
     def can(self, mode, obj):
-        gws.log.debug(f'PERMS: sys_deny : obj={obj!r} mode={mode!r}')
+        gws.log.debug(f'PERMS: sys_deny : obj={_repr(obj)} mode={mode!r}')
         return False
 
 
@@ -162,3 +162,8 @@ class ValidUser(User):
         return {
             'displayName': self.display_name
         }
+
+def _repr(obj):
+    if not obj:
+        return repr(obj)
+    return repr(gws.get(obj, 'uid') or obj)
