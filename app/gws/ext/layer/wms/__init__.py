@@ -82,6 +82,9 @@ class Object(gws.gis.layer.Image):
                 self.resolutions = gws.gis.zoom.resolutions_from_config(
                     zoom, self.resolutions)
 
+        if not self.resolutions:
+            raise gws.Error(f'no resolutions in {self.uid!r}')
+
         self._add_default_search()
         self._add_legend()
 
