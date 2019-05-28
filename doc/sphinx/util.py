@@ -142,6 +142,7 @@ def _table(headers, rows):
         '.. csv-table::',
         ___ + ':quote: ~',
         ___ + ':widths: auto',
+        ___ + ':align: left',
     ]
     if headers:
         thead.append(___ + ':header: ' + _comma(headers))

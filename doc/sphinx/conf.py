@@ -67,6 +67,7 @@ def replace_tables(app, docname, source):
                 '.. csv-table::',
                 '   :delim: ~',
                 '   :widths: auto',
+                '   :align: left',
                 ''
             ] + cc)
 
