@@ -1,6 +1,6 @@
 // helper file for changing cmake vars easily
 // generated with _BUILD/cmake -LAH ..
-// our overrides start with @
+// our overrides marked with @
 
 // Install bindings to global python directory? (might need root)
 BINDINGS_GLOBAL_INSTALL:BOOL=FALSE
@@ -9,8 +9,7 @@ BINDINGS_GLOBAL_INSTALL:BOOL=FALSE
 BISON_EXECUTABLE:FILEPATH=/usr/bin/bison
 
 // Build the testing tree.
-BUILD_TESTING:BOOL=ON
-@BUILD_TESTING:BOOL=OFF
+BUILD_TESTING:BOOL=ON @OFF
 
 // Path to a program.
 BZRCOMMAND:FILEPATH=BZRCOMMAND-NOTFOUND
@@ -19,8 +18,7 @@ BZRCOMMAND:FILEPATH=BZRCOMMAND-NOTFOUND
 CMAKE_AR:FILEPATH=/usr/bin/ar
 
 // Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.
-CMAKE_BUILD_TYPE:STRING=
-@CMAKE_BUILD_TYPE:STRING=$1
+CMAKE_BUILD_TYPE:STRING= @$1
 
 // Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -278,8 +276,7 @@ ENABLE_ORACLETEST:BOOL=FALSE
 ENABLE_PGTEST:BOOL=FALSE
 
 // Build unit tests?
-ENABLE_TESTS:BOOL=TRUE
-@ENABLE_TESTS:BOOL=FALSE
+ENABLE_TESTS:BOOL=TRUE @FALSE
 
 // Path to a file.
 EXPAT_INCLUDE_DIR:PATH=/usr/include
@@ -378,8 +375,7 @@ MEMORYCHECK_SUPPRESSIONS_FILE:FILEPATH=
 P4COMMAND:FILEPATH=P4COMMAND-NOTFOUND
 
 // Determines if we should compile in pedantic mode.
-PEDANTIC:BOOL=TRUE
-@PEDANTIC:BOOL=FALSE
+PEDANTIC:BOOL=TRUE @FALSE
 
 // Path to POSTGRESQL base directory
 POSTGRESQL_PREFIX:PATH=
@@ -583,25 +579,28 @@ WITH_CORE:BOOL=TRUE
 WITH_CUSTOM_WIDGETS:BOOL=FALSE
 
 // Determines whether QGIS desktop should be built
-WITH_DESKTOP:BOOL=TRUE
-@WITH_DESKTOP:BOOL=FALSE
+WITH_DESKTOP:BOOL=TRUE @FALSE
 
 // Determines whether GeoReferencer plugin should be built
-WITH_GEOREFERENCER:BOOL=TRUE
-@WITH_GEOREFERENCER:BOOL=FALSE
+WITH_GEOREFERENCER:BOOL=TRUE @FALSE
 
 // Determines whether Globe plugin should be built
 WITH_GLOBE:BOOL=FALSE
 
 // Determines whether GRASS 7 plugin should be built
-WITH_GRASS7:BOOL=TRUE
-@WITH_GRASS7:BOOL=FALSE
+WITH_GRASS7:BOOL=TRUE @FALSE
 
 // Determines whether QGIS GUI library (and everything built on top of it) should be built
 WITH_GUI:BOOL=TRUE
 
-// Use internal build of Qextserialport
-WITH_INTERNAL_QEXTSERIALPORT:BOOL=TRUE
+// Determines whether MDAL support should be built
+WITH_INTERNAL_MDAL:BOOL=TRUE
+
+// Download and locally include source of o2 library
+WITH_INTERNAL_O2:BOOL=ON
+
+// Build OAuth2 authentication method plugin
+WITH_OAUTH2_PLUGIN:BOOL=TRUE
 
 // Determines whether Oracle support should be built
 WITH_ORACLE:BOOL=FALSE
@@ -613,11 +612,10 @@ WITH_POSTGRESQL:BOOL=TRUE
 WITH_PY_COMPILE:BOOL=FALSE
 
 // Whether to generate PyQGIS QScintilla2 API file. (For devs) run 'make qsci-pap-src' in between QGIS build and install to regenerate .pap file in source tree for console auto-completion.
-WITH_QSCIAPI:BOOL=TRUE
-@WITH_QSCIAPI:BOOL=FALSE
+WITH_QSCIAPI:BOOL=TRUE @FALSE
 
 // Determines whether QSPATIALITE sql driver should be built
-WITH_QSPATIALITE:BOOL=FALSE
+WITH_QSPATIALITE:BOOL=FALSE @TRUE
 
 // Determines if QtMobility related code should be build (for example internal GPS)
 WITH_QTMOBILITY:BOOL=FALSE
@@ -625,12 +623,14 @@ WITH_QTMOBILITY:BOOL=FALSE
 // Enable QtWebkit support
 WITH_QTWEBKIT:BOOL=TRUE
 
+// Determines whether QGIS Quick library should be built
+WITH_QUICK:BOOL=FALSE
+
 // Determines whether QwtPolar should be built
 WITH_QWTPOLAR:BOOL=FALSE
 
 // Determines whether QGIS server should be built
-WITH_SERVER:BOOL=FALSE
-@WITH_SERVER:BOOL=TRUE
+WITH_SERVER:BOOL=FALSE @TRUE
 
 // Determines whether QGIS server support for python plugins should be built
 WITH_SERVER_PLUGINS:BOOL=TRUE
@@ -645,15 +645,13 @@ WITH_THREAD_LOCAL:BOOL=TRUE
 WITH_TXT2TAGS_PDF:BOOL=FALSE
 
 // Path to a file.
-_find_lib_python_py:FILEPATH=/QGIS3/QGIS/cmake/FindLibPython.py
+_find_lib_python_py:FILEPATH=/QGIS/cmake/FindLibPython.py
 
 // Path to a file.
-_find_pyqt5_py:FILEPATH=/QGIS3/QGIS/cmake/FindPyQt5.py
+_find_pyqt5_py:FILEPATH=/QGIS/cmake/FindPyQt5.py
 
 // Path to a file.
-_find_qsci_py:FILEPATH=/QGIS3/QGIS/cmake/FindQsci.py
+_find_qsci_py:FILEPATH=/QGIS/cmake/FindQsci.py
 
 // Path to a file.
-_find_sip_py:FILEPATH=/QGIS3/QGIS/cmake/FindSIP.py
-
-
+_find_sip_py:FILEPATH=/QGIS/cmake/FindSIP.py

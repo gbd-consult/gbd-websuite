@@ -1,12 +1,15 @@
 import os.path
+import re
 vars = []
+wd = os.path.dirname(os.path.realpath(__file__))
 
-with open(os.path.dirname(os.path.realpath(__file__)) + '/vars.txt') as fp:
+with open(wd + '/vars.txt') as fp:
     for s in fp:
-        if s.startswith('@'):
-            vars.append('-D %s' % s[1:].strip())
+        m = re.match(r'(.+?)=(.*?)@(.+)', s)
+        if m:
+            vars.append('-D %s=%s' % (m.group(1).strip(), m.group(3).strip()))
 
-with open('configure.sh', 'wt') as fp:
+with open(wd + '/gws-configure.sh', 'wt') as fp:
     fp.write('#!/usr/bin/env bash\n')
     fp.write('cmake \\\n')
     for v in vars:
@@ -50,5 +53,5 @@ find ${ARC} -type l -exec rm -vfr {} \\;
 find ${ARC} -depth -name __pycache__ -exec rm -vfr {} \\;
 """
 
-with open('package.sh', 'wt') as fp:
+with open(wd + '/gws-package.sh', 'wt') as fp:
     fp.write(package)

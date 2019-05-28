@@ -26,7 +26,7 @@ def init(argv):
     ENV.BASE_DIR = os.path.abspath(cd + '/..')
     ENV.BUILD_DIR = os.path.abspath(cd + '/_build')
 
-    ENV.QGIS_VERSION = '3.4'
+    ENV.QGIS_VERSION = '3.4.8'
 
     run("rm -fr {BUILD_DIR}")
     run("mkdir -p {BUILD_DIR}")
