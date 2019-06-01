@@ -54,12 +54,14 @@ class WmsWriter:
     def getcapabilities(self):
         context = {
             'project': self.project,
-            'writer': self,
+            #'writer': self,
+            'layer_tree': self.layer_tree(),
             'service_endpoint': self.req.reversed_url(f'cmd=owsHttpGet&projectUid={self.project.uid}')
 
         }
-        out = self.action.wms_caps_template.render(context)
-        return util.xml_response(out.content)
+        tpl = self.action.templates.get('wmsGetCapabilities')
+        out = tpl.render(context)
+        return util.xml_response(out.content.strip())
 
     ##
 
@@ -203,7 +205,7 @@ class WmsWriter:
 
         return [layer]
 
-    def layer_tree(self, layer_uid):
+    def layer_subtree(self, layer_uid):
         layer: t.LayerObject = self.req.acquire('gws.ext.layer', layer_uid)
 
         if not layer or not layer.is_enabled_for_service('wms'):
@@ -212,26 +214,27 @@ class WmsWriter:
         sub = []
 
         if layer.layers:
-            sub = gws.compact(self.layer_tree(la.uid) for la in layer.layers)
+            sub = gws.compact(self.layer_subtree(la.uid) for la in layer.layers)
             if not sub:
                 return
 
         res = [misc.res2scale(r) for r in layer.resolutions]
+        crs = layer.map.crs
 
         return {
             'layer': layer,
-            'queryable': '1' if layer.has_search else '0',
+            'extent': layer.extent,
+            'epsg4326extent': gws.gis.proj.transform_bbox(layer.extent, crs, 'EPSG:4326'),
+            'crs': crs,
+            'queryable': layer.has_search or any(s['queryable'] for s in sub),
             'min_scale': min(res),
             'max_scale': max(res),
-            'sub': list(reversed(sub)),  # NB: WMS is bottom-first, our layers are top-first
+            'sub_nodes': list(reversed(sub)),  # NB: WMS is bottom-first, our layers are top-first
         }
 
-    def project_layer_tree(self):
-        sub = gws.compact(self.layer_tree(la.uid) for la in self.project.map.layers)
+    def layer_tree(self):
+        sub = gws.compact(self.layer_subtree(la.uid) for la in self.project.map.layers)
         return list(reversed(sub))
-
-    def extent_to_4326(self, extent):
-        return gws.gis.proj.transform_bbox(extent, self.project.map.crs, 'EPSG:4326')
 
 
 def _as_ident(s):

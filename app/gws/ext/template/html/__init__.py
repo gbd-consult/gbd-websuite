@@ -227,7 +227,8 @@ class Object(gws.common.template.Object):
             text,
             context,
             silent=True,
-            path=self.path or '<string>'
+            path=self.path or '<string>',
+            warn=lambda e: gws.log.warn('TEMPLATE', e)
         )
 
         return content

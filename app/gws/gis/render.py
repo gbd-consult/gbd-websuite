@@ -11,7 +11,7 @@ import gws.types as t
 
 class Composition:
     def __init__(self, size_px):
-        self.image = Image.new('RGBA', size_px, 'white')
+        self.image = Image.new('RGBA', size_px, color=0)
 
     def add_image(self, img: Image.Image, opacity=1):
         img = img.convert('RGBA')

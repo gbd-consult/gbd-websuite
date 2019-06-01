@@ -40,6 +40,11 @@ def run(req, args: t.SearchArgs):
     for layer, prov, f in lpf[:total_limit]:
         f.provider = prov
         f.layer = layer
+        if not f.category:
+            if prov and prov.title:
+                f.category = prov.title
+            elif layer and layer.title:
+                f.category = layer.title
         f.transform(args.crs)
         features.append(f)
 

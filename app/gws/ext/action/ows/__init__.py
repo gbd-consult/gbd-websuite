@@ -7,9 +7,14 @@ import gws.types as t
 from . import wms
 
 
+class TemplatesConfig:
+    wmsGetCapabilities: t.Optional[t.TemplateConfig]  ## template for the WMS capabilities document
+
+
 class Config(t.WithTypeAndAccess):
     """OWS server action"""
-    pass
+
+    templates: t.Optional[TemplatesConfig]  ## OWS templates
 
 
 class Object(gws.Object):
@@ -17,17 +22,22 @@ class Object(gws.Object):
     def configure(self):
         super().configure()
 
-        p = self.var('templates.wms.GetCapabilities')
+        self.templates = t.Data()
+
+        self.templates.wmsGetCapabilities = self.init_template('wmsGetCapabilities')
+
+    def init_template(self, name):
+        p = self.var('templates.' + name)
         if p:
-            self.wms_caps_template = self.create_object('gws.ext.template', p)
-        else:
-            self.wms_caps_template = self.create_shared_object(
-                'gws.ext.template',
-                'wms_caps_template',
-                {
-                    'type': 'html',
-                    'path': os.path.dirname(__file__) + '/templates/wms_getcapabilities.cx.xml'
-                })
+            return self.create_object('gws.ext.template', p)
+
+        return self.create_shared_object(
+            'gws.ext.template',
+            'generic_' + name,
+            {
+                'type': 'html',
+                'path': os.path.dirname(__file__) + f'/templates/{name}.cx'
+            })
 
     def http_get(self, req, p) -> t.HttpResponse:
         ps = {k.lower(): v for k, v in req.params.items()}

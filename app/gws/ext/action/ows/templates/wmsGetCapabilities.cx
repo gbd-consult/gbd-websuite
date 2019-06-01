@@ -1,0 +1,33 @@
+@include /gws-app/gws/ext/action/ows/templates/wms.cx
+
+@def layer_capabilities(node)
+    <Layer {layer_attributes(node)}>
+
+        @layer_common_properties node
+
+        @layer_spatial_properties node
+
+        @each node.sub_nodes as sub_node
+            @layer_capabilities sub_node
+        @end
+
+    </Layer>
+@end
+
+<?xml version="1.0" encoding="UTF-8"?>
+<WMS_Capabilities version="1.3.0" {namespaces()}>
+
+    <Service>
+        <Name>WMS</Name>
+        <Title>{project.title}</Title>
+        @project_meta_data
+    </Service>
+
+    <Capability>
+        @request_capabilities
+        @each layer_tree as node
+            @layer_capabilities node
+        @end
+    </Capability>
+
+</WMS_Capabilities>

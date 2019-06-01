@@ -29,14 +29,17 @@ def _string(t):
     atts = ''
 
     for a in args:
-        if not a:
+        if isinstance(a, (list, tuple)):
+            if a:
+                nodes.append(_string(a))
             continue
-        if isinstance(a, str):
+        if isinstance(a, dict):
+            if a:
+                atts = [f'{k}="{_encode(v)}"' for k, v in a.items() if v is not None]
+            continue
+        a = str(a)
+        if a:
             nodes.append(_encode(a))
-        elif isinstance(a, tuple):
-            nodes.append(_string(a))
-        else:
-            atts = [f'{k}="{_encode(v)}"' for k, v in a.items() if v is not None]
 
     otag = name
     if atts:

@@ -70,11 +70,6 @@ class Object(gws.Object):
         fprops = []
 
         for f in features:
-            if f.provider and f.provider.title:
-                f.category = f.provider.title
-            elif f.layer and f.layer.title:
-                f.category = f.layer.title
-
             fmt = None
             if f.provider:
                 fmt = f.provider.feature_format

@@ -76,6 +76,9 @@ class Object(gws.gis.layer.Base):
             'layers': self.layers,
         })
 
+    def is_enabled_for_service(self, service):
+        return service == 'wms'
+
     def _layer(self, sl: t.SourceLayer, depth: int):
         if sl.is_group:
             # NB use the absolute level to compute flatness, could also use relative (=depth)
