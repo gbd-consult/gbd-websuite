@@ -17,6 +17,9 @@ tag = gws.tools.xml3.tag
 VERSION = '1.3.0'
 MAX_LIMIT = 100
 
+# https://commons.wikimedia.org/wiki/File:1x1.png
+_1x1_PNG = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x01\x03\x00\x00\x00%\xdbV\xca\x00\x00\x00\x03PLTE\x00\x00\x00\xa7z=\xda\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\nIDAT\x08\xd7c`\x00\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82'
+
 
 def request(action, req, params):
     try:
@@ -34,6 +37,8 @@ def request(action, req, params):
             return writer.getmap()
         if r == 'getfeatureinfo':
             return writer.getfeatureinfo()
+        if r == 'getlegendgraphic':
+            return writer.getlegendgraphic()
 
         raise gws.web.error.NotFound()
 
@@ -54,7 +59,7 @@ class WmsWriter:
     def getcapabilities(self):
         context = {
             'project': self.project,
-            #'writer': self,
+            # 'writer': self,
             'layer_tree': self.layer_tree(),
             'service_endpoint': self.req.reversed_url(f'cmd=owsHttpGet&projectUid={self.project.uid}')
 
@@ -106,6 +111,32 @@ class WmsWriter:
             img = fp.read()
 
         gws.tools.shell.unlink(renderer.output.items[0].image_path)
+
+        return t.HttpResponse({
+            'mimeType': 'image/png',
+            'content': img
+        })
+
+    ##
+
+    def getlegendgraphic(self):
+        # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
+        # @TODO currently only support 'layer'
+        try:
+            layer_uid = self.params.get('layer')
+        except:
+            raise gws.web.error.BadRequest()
+
+        layer = self.req.acquire('gws.ext.layer', layer_uid)
+
+        if not layer or not layer.is_enabled_for_service('wms'):
+            raise gws.web.error.NotFound()
+
+        try:
+            img = layer.render_legend()
+        except:
+            gws.log.exception()
+            img = _1x1_PNG
 
         return t.HttpResponse({
             'mimeType': 'image/png',
