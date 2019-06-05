@@ -442,7 +442,7 @@ class PrintController extends gws.Controller {
             ]
         };
 
-        await this.startJob(this.app.server.printerPrint(params));
+        await this.startJob(this.app.server.printerPrint(params, {binary: true}));
     }
 
     async startSnapshot() {
@@ -470,7 +470,7 @@ class PrintController extends gws.Controller {
             ]
         };
 
-        await this.startJob(this.app.server.printerSnapshot(params));
+        await this.startJob(this.app.server.printerSnapshot(params, {binary: true}));
 
     }
 

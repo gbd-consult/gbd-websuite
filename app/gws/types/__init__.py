@@ -443,6 +443,7 @@ class MapRenderInput(Data):
     scale: int
     dpi: int
     map_size_px: Size
+    background_color: int
     items: List[MapRenderInputItem]
 
 

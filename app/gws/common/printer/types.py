@@ -8,8 +8,16 @@ class PrintFeatureProps(t.Data):
     style: t.Optional[t.StyleProps]
 
 
+class PrintBitmapItem:
+    data: t.Optional[bytes]
+    mode: t.Optional[str]
+    width: t.Optional[int]
+    height: t.Optional[int]
+    url: t.Optional[str]
+
+
 class PrintItem(t.Data):
-    bitmap: t.Optional[str]
+    bitmap: t.Optional[PrintBitmapItem]
     features: t.Optional[t.List[PrintFeatureProps]]
     subLayers: t.Optional[t.List[str]]
     layerUid: t.Optional[str]

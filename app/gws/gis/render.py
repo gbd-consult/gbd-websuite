@@ -10,8 +10,8 @@ import gws.types as t
 
 
 class Composition:
-    def __init__(self, size_px):
-        self.image = Image.new('RGBA', size_px, color=0)
+    def __init__(self, size_px, color):
+        self.image = Image.new('RGBA', size_px, color)
 
     def add_image(self, img: Image.Image, opacity=1):
         img = img.convert('RGBA')
@@ -127,7 +127,7 @@ class Renderer:
                 'type': 'image',
                 'image_path': '',
             }))
-            self.composition = Composition(self.inp.map_size_px)
+            self.composition = Composition(self.inp.map_size_px, self.inp.background_color)
         self.composition.add_image(img, opacity)
 
     def _add_svg(self, svg):

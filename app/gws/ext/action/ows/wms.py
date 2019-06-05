@@ -93,6 +93,7 @@ class WmsWriter:
             'scale': misc.res2scale((bbox[2] - bbox[0]) / px_width),
             'dpi': 0,
             'map_size_px': [px_width, px_height],
+            'background_color': 0,
             'items': [],
         })
 

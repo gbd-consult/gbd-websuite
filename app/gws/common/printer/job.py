@@ -1,5 +1,6 @@
 import base64
 import pickle
+from PIL import Image
 
 import gws
 import gws.config
@@ -70,6 +71,7 @@ def _worker(job):
     w = _Worker(job_uid, base_path, req_data['params'], req_data['user'])
     w.run()
 
+_PAPER_COLOR = 'white'
 
 class _Worker:
     def __init__(self, job_uid, base_path, p: pt.PrintParams, user: t.AuthUserInterface):
@@ -86,6 +88,7 @@ class _Worker:
             'scale': self.p.scale,
             'rotation': self.p.rotation,
             'items': [],
+            'background_color': _PAPER_COLOR,
         })
 
         if self.p.templateUid:
@@ -244,7 +247,7 @@ class _Worker:
                     continue
 
             if item.get('bitmap'):
-                ii.bitmap = self.prepare_bitmap(item.bitmap, f'{self.base_path}/bitmap-{n}.png')
+                ii.bitmap = self.prepare_bitmap(item, f'{self.base_path}/bitmap-{n}.png')
 
             if item.get('features'):
                 ii.features = []
@@ -264,20 +267,26 @@ class _Worker:
 
         return render_items
 
-    # @TODO fix bitmaps
-    # bitmaps are a problem at the moment, because we turn them into json,
-    # thus increasing uploads by 30%. There must be a way for the client to
-    # upload binary bitmaps directly (along or prior to a json request)
+    def prepare_bitmap(self, item, out_path):
+        bmp = item.bitmap
 
-    def prepare_bitmap(self, bdata, out_path):
-        data_png = 'data:image/png;base64,'
-        if bdata.startswith(data_png):
-            bdata = bdata[len(data_png):]
-            bdata = bdata.encode('utf8')
-            bdata = base64.decodebytes(bdata)
-            with open(out_path, 'wb') as fp:
-                fp.write(bdata)
+        if bmp.get('data'):
+            if bmp.mode not in ('RGBA', 'RGB'):
+                raise ValueError('invalid bitmap mode')
+            img = Image.frombytes(bmp.mode, (bmp.width, bmp.height), bmp.data)
+            img.save(out_path)
             return out_path
+
+        if bmp.get('url'):
+            bdata = bmp.url
+            data_png = 'data:image/png;base64,'
+            if bdata.startswith(data_png):
+                bdata = bdata[len(data_png):]
+                bdata = bdata.encode('utf8')
+                bdata = base64.decodebytes(bdata)
+                with open(out_path, 'wb') as fp:
+                    fp.write(bdata)
+                return out_path
 
     def compute_bbox(self, center: t.Point):
         # @TODO assuming projection units are 'm'
