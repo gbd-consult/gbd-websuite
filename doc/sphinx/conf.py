@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-VERSION='1.0.15'
+VERSION='1.0.16'
 
 project = 'GBD WebSuite'
 copyright = '2018, Geoinformatikbüro Dassau GmbH'

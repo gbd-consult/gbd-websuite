@@ -52,6 +52,7 @@ class Manager:
         return self._session_object(rec)
 
     def create_for(self, user):
+        store.cleanup(gws.config.var('auth.session.lifeTime'))
         uid = store.create(
             user.provider.uid,
             user.uid,
