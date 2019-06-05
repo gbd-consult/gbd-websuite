@@ -21,8 +21,6 @@ def normalize(objects):
 ##
 
 
-_builtins = 'str', 'int', 'float', 'bool', 'list', 'dict'
-
 
 def _check_optional(objects):
     # eliminate Optional types and set 'optional' flags respectively

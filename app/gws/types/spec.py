@@ -38,6 +38,7 @@ class Validator:
             'list': self._list,
             'object': self._object,
             'str': self._str,
+            'bytes': self._bytes,
             'tuple': self._tuple,
             'union': self._union,
 
@@ -73,6 +74,12 @@ class Validator:
             return _to_string(val)
         except:
             self.error('ERR_MUST_BE_STRING', 'must be a string', val)
+
+    def _bytes(self, val, t):
+        try:
+            return bytes(val)
+        except:
+            self.error('ERR_MUST_BE_BYTES', 'must be a byte buffer', val)
 
     def _int(self, val, t):
         try:

@@ -59,6 +59,12 @@ module.exports = {
             "name": "GeographicLib",
             "path": "./node_modules/geographiclib/geographiclib.min.js",
             "uid": "g"
+        },
+        {
+            "key": "msgpack",
+            "name": "@ygoe/msgpack",
+            "path": "./node_modules/@ygoe/msgpack/msgpack.min.js",
+            "uid": "mp"
         }
     ],
 

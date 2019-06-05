@@ -11,6 +11,7 @@ _decls_template = """
 
 type _int = number;
 type _float = number;
+type _bytes = any;
 type _dict = {[k: string]: any};
 
 _decls_
@@ -25,7 +26,7 @@ _stub_template = """
 import * as gws from './gws-server.api';
 
 export abstract class GwsServer implements gws.GwsServerApi {
-\tabstract async _call(cmd, p): Promise<any>;
+\tabstract async _call(cmd, p, options): Promise<any>;
 
 _methods_
 } 
@@ -80,7 +81,7 @@ class _Generator:
         ms = []
         for m in self.methods:
             ms.append(
-                '\t/// %s\n\t%s(p: %s): Promise<%s>;'
+                '\t/// %s\n\t%s(p: %s, options?: any): Promise<%s>;'
                 % (m['doc'], m['cmd'], _short(m['arg']), _short(m['return'])))
         self.decls.append(
             'export interface GwsServerApi {\n%s\n}'
@@ -89,7 +90,7 @@ class _Generator:
         ms = []
         for m in self.methods:
             ms.append(
-                '\tasync %s(p: gws.%s): Promise<gws.%s> { return await this._call("%s", p) }'
+                '\tasync %s(p: gws.%s, options?: any): Promise<gws.%s> { return await this._call("%s", p, options) }'
                 % (m['cmd'], _short(m['arg']), _short(m['return']), m['cmd']))
 
         return (

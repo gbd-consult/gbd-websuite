@@ -5,22 +5,44 @@ from werkzeug.utils import cached_property
 
 import gws
 import gws.tools.net
-import gws.tools.json2 as json2
+import gws.tools.json2
+import gws.tools.umsgpack
 import gws.types as t
 
 from . import error
 
+_JSON = 1
+_MSGPACK = 2
+
+_struct_mime = {
+    _JSON: 'application/json',
+    _MSGPACK: 'application/msgpack',
+}
+
 
 class Response(werkzeug.wrappers.Response):
     environ = []
+    request = None
 
-    def html(self, s):
-        return self.content(s, mimetype='text/html')
+    def html(self, s, status=200):
+        return self.raw(s, mimetype='text/html', status=status)
 
-    def json(self, s):
-        return self.content(json2.to_string(s, pretty=True), mimetype='application/json')
+    def struct(self, s, status=200):
+        acc = self.request.wants_struct
+        if not acc:
+            raise ValueError('empty struct type')
 
-    def content(self, s, mimetype, status=200):
+        data = ''
+
+        if acc == _JSON:
+            data = gws.tools.json2.to_string(s, pretty=True)
+        if acc == _MSGPACK:
+            data = gws.tools.umsgpack.dumps(s, default=gws.as_dict)
+
+
+        return self.raw(data, mimetype=_struct_mime[acc], status=status)
+
+    def raw(self, s, mimetype, status=200):
         return self.__class__(s, headers=self.headers, mimetype=mimetype, status=status)
 
 
@@ -31,19 +53,47 @@ class Request(werkzeug.wrappers.Request):
     def response(self):
         r = Response()
         r.environ = self.environ
+        r.request = self
         return r
 
     @cached_property
-    def is_json(self):
-        return self.method == 'POST' and self.headers.get('content-type', '').startswith('application/json')
+    def _is_json(self):
+        h = self.headers.get('content-type', '').lower()
+        return self.method == 'POST' and h.startswith(_struct_mime[_JSON])
 
     @cached_property
-    def json(self):
-        if self.is_json:
+    def _is_msgpack(self):
+        h = self.headers.get('content-type', '').lower()
+        return self.method == 'POST' and h.startswith(_struct_mime[_MSGPACK])
+
+    @cached_property
+    def has_struct(self):
+        return self._is_json or self._is_msgpack
+
+    @cached_property
+    def wants_struct(self):
+        h = self.headers.get('accept', '').lower()
+        if _struct_mime[_MSGPACK] in h:
+            return _MSGPACK
+        if _struct_mime[_JSON] in h:
+            return _JSON
+        if self._is_msgpack:
+            return _MSGPACK
+        if self._is_json:
+            return _JSON
+
+    def _decode_struct(self):
+        if self._is_json:
             try:
-                return json2.from_string(self.data)
-            except json2.Error:
+                return gws.tools.json2.from_string(self.data)
+            except gws.tools.json2.Error:
                 gws.log.error('malformed json request')
+                raise error.BadRequest()
+        if self._is_msgpack:
+            try:
+                return gws.tools.umsgpack.loads(self.data)
+            except (TypeError, gws.tools.umsgpack.UnpackException):
+                gws.log.error('malformed msgpack request')
                 raise error.BadRequest()
         return {}
 
@@ -53,6 +103,9 @@ class Request(werkzeug.wrappers.Request):
 
     @cached_property
     def params(self):
+        if self.has_struct:
+            return self._decode_struct()
+
         if self.method == 'GET':
             args = {k: v for k, v in self.args.items()}
 
@@ -65,9 +118,6 @@ class Request(werkzeug.wrappers.Request):
                 return gws.extend(_params_from_path(self.path), args)
             gws.log.error('invalid request path', self.path)
             return None
-
-        if self.is_json:
-            return self.json
 
         if self.method == 'POST':
             return self.form

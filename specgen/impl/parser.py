@@ -24,7 +24,7 @@ def parse(root_dir):
 
 ##
 
-_builtins = 'str', 'int', 'float', 'bool', 'list', 'dict'
+_builtins = 'str', 'int', 'float', 'bool', 'list', 'dict', 'bytes'
 
 
 class _Parser:

@@ -58,11 +58,10 @@ def _handle_request2(config_root, req):
 def _handle_error(config_root, req, err):
     # @TODO: image errors
 
-    if req.is_json:
-        return req.response.content(
-            '{"error":{"status":%d,"info":""}}' % err.code,
-            'application/json',
-            err.code)
+    if req.wants_struct:
+        return req.response.struct(
+            {'error': {'status': err.code, 'info': ''}},
+            status=err.code)
 
     if not req.site.error_page:
         return err
@@ -73,7 +72,7 @@ def _handle_error(config_root, req, err):
             'error': err.code
         }
         out = req.site.error_page.render(context)
-        return req.response.content(out.content, out.mimeType, err.code)
+        return req.response.raw(out.content, out.mimeType, err.code)
     except:
         gws.log.exception()
         return gws.web.error.InternalServerError()

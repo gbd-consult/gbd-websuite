@@ -10,7 +10,7 @@ def handle(config_root, req):
     cmd = req.param('cmd', DEFAULT_CMD)
 
     # @TODO: add HEAD
-    if req.is_json:
+    if req.has_struct:
         category = 'api'
     elif req.method == 'GET':
         category = 'get'
@@ -46,8 +46,8 @@ def handle(config_root, req):
         gws.log.error('action not handled', cmd)
         raise error.NotFound()
 
-    if req.is_json:
-        return req.response.json(r)
+    if req.wants_struct:
+        return req.response.struct(r)
 
-    # not a json request, it must be types.HttpResponse
-    return req.response.content(r.content, r.mimeType, r.get('status', 200))
+    # not a struct request, it must be types.HttpResponse
+    return req.response.raw(r.content, r.mimeType, r.get('status', 200))
