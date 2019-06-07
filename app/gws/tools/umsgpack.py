@@ -555,7 +555,7 @@ def _pack3(obj, fp, **options):
 
     #@@gws
     elif options.get("default"):
-        _pack3(options.get("default")(obj), fp, **{k:v for k, v in options.items() if k != "default"})
+        _pack3(options.get("default")(obj), fp, **options)
     #@@gws
 
     else:
