@@ -2,7 +2,7 @@ import gws
 import gws.types as t
 
 
-class OptionsParams(t.Data):
+class OptionsParams(t.Params):
     projectUid: str
 
 

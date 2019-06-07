@@ -57,7 +57,7 @@ class Config(t.WithTypeAndAccess):
     alkisSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
 
 
-class ConnectParams(t.Data):
+class ConnectParams(t.Params):
     projectUid: str
     shapes: t.List[t.ShapeProps]
 
@@ -66,7 +66,7 @@ class ConnectResponse(t.Response):
     url: str
 
 
-class GetDataParams(t.Data):
+class GetDataParams(t.Params):
     projectUid: str
     requestId: str
 

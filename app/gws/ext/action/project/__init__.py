@@ -8,7 +8,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class InfoParams(t.Data):
+class InfoParams(t.Params):
     projectUid: str
 
 

@@ -93,7 +93,7 @@ class Gemarkung(t.Data):
     uid: str  #: unique ID
 
 
-class FsSetupParams(t.Data):
+class FsSetupParams(t.Params):
     projectUid: str
 
 
@@ -113,7 +113,7 @@ class FsSetupResponse(t.Response):
     uiSearchSpatial: bool
 
 
-class FsStrassenParams(t.Data):
+class FsStrassenParams(t.Params):
     projectUid: str
     gemarkungUid: str
 
@@ -128,7 +128,7 @@ _COMBINED_AD_PARAMS = ['strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnumme
 _COMBINED_PARAMS_DELIM = '_'
 
 
-class FsQueryParams(t.Data):
+class FsQueryParams(t.Params):
     projectUid: str
     wantEigentuemer: t.Optional[bool]
     controlInput: t.Optional[str]
@@ -155,7 +155,7 @@ class FsQueryParams(t.Data):
     alkisAd: t.Optional[str]
 
 
-class FsAddressQueryParams(t.Data):
+class FsAddressQueryParams(t.Params):
     land: t.Optional[str]
     regierungsbezirk: t.Optional[str]
     kreis: t.Optional[str]

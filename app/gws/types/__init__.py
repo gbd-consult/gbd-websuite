@@ -23,6 +23,10 @@ Size = Tuple[float, float]
 Config = Data
 
 
+class Params(Data):
+    pass
+
+
 # NB: we cannot use the standard Enum, because after "class Color(Enum): RED = 1"
 # the value of Color.RED is like {'_value_': 1, '_name_': 'RED', '__objclass__': etc}
 # and we need it to be 1, literally (that's what we'll get from the client)

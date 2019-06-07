@@ -16,7 +16,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class AssetParams(t.Data):
+class AssetParams(t.Params):
     path: str
     projectUid: t.Optional[str]
 

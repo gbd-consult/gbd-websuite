@@ -14,7 +14,7 @@ import gws.tools.json2
 import gws.types as t
 
 
-class RenderBboxParams(t.Data):
+class RenderBboxParams(t.Params):
     bbox: t.Extent
     dpi: t.Optional[int]
     height: int
@@ -23,22 +23,22 @@ class RenderBboxParams(t.Data):
     width: int
 
 
-class RenderXyzParams(t.Data):
+class RenderXyzParams(t.Params):
     layerUid: str
     x: int
     y: int
     z: int
 
 
-class RenderLegendParams(t.Data):
+class RenderLegendParams(t.Params):
     layerUid: str
 
 
-class DescribeLayerParams(t.Data):
+class DescribeLayerParams(t.Params):
     layerUid: str
 
 
-class GetFeaturesParams(t.Data):
+class GetFeaturesParams(t.Params):
     bbox: t.Optional[t.Extent]
     layerUid: str
     resolution: t.Optional[float]

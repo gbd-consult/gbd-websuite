@@ -14,7 +14,7 @@ class Response(t.Response):
     user: gws.auth.user.Props
 
 
-class AuthLoginParams(t.Data):
+class AuthLoginParams(t.Params):
     username: str
     password: str
 

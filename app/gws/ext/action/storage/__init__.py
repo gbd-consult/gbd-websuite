@@ -4,7 +4,7 @@ import gws.web.error
 import gws.types as t
 
 
-class WriteParams(t.Data):
+class WriteParams(t.Params):
     entry: t.StorageEntry
     data: dict
 
@@ -13,7 +13,7 @@ class WriteResponse(t.Response):
     entry: t.StorageEntry
 
 
-class ReadParams(t.Data):
+class ReadParams(t.Params):
     entry: t.StorageEntry
 
 
@@ -22,7 +22,7 @@ class ReadResponse(t.Response):
     data: dict
 
 
-class DirParams(t.Data):
+class DirParams(t.Params):
     pass
 
 

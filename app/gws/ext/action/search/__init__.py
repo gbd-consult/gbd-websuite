@@ -22,7 +22,7 @@ class Response(t.Response):
     features: t.List[t.FeatureProps]
 
 
-class Params(t.Data):
+class Params(t.Params):
     bbox: t.Extent
     keyword: str = ''
     layerUids: t.List[str]

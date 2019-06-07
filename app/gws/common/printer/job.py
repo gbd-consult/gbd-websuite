@@ -14,7 +14,7 @@ import gws.gis.render
 import gws.gis.feature
 
 
-class PreparedPrintParams(t.Data):
+class PreparedPrintParams(t.Params):
     job_uid: str
     base_path: str
     centers: t.List[t.Point]

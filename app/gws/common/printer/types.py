@@ -33,7 +33,7 @@ class PrintSection(t.Data):
     items: t.Optional[t.List[PrintItem]]
 
 
-class PrintParams(t.Data):
+class PrintParams(t.Params):
     projectUid: str
     items: t.List[PrintItem]
     rotation: int
@@ -46,7 +46,7 @@ class PrintParams(t.Data):
     mapHeight: t.Optional[int]
 
 
-class PrinterQueryParams(t.Data):
+class PrinterQueryParams(t.Params):
     jobUid: str
 
 

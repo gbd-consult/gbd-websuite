@@ -12,12 +12,12 @@ class Config(t.WithTypeAndAccess):
     passwordFile: str = '/gws-var/.remoteadmin'  #: path to the password file
 
 
-class ValidateParams(t.Data):
+class ValidateParams(t.Params):
     password: str
     config: dict
 
 
-class GetSpecParams(t.Data):
+class GetSpecParams(t.Params):
     password: str
     lang: str
 
