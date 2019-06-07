@@ -83,6 +83,8 @@ class Config(t.WithTypeAndAccess):
     featureFormat: t.Optional[t.FormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
 
+    disableApi: bool = False #: disable external access to this extension
+
     ui: t.Optional[UiConfig] #: ui options
 
 
@@ -298,6 +300,10 @@ class Object(gws.Object):
                 if not conn.user_can('INSERT', self.log_table):
                     raise ValueError(f'no INSERT acccess to {self.log_table!r}')
 
+        self.disableApi = self.var('disableApi')
+        if self.disableApi:
+            gws.log.info(f'Alkis API disabled for {self.uid!r}')
+
     def api_fs_setup(self, req, p: FsSetupParams) -> FsSetupResponse:
         """Return project-specific Flurstueck-Search settings"""
 
@@ -440,6 +446,8 @@ class Object(gws.Object):
         return self._find_address(query, target_crs, limit)
 
     def _precheck_request(self, req, project_uid):
+        if self.disableApi:
+            raise gws.web.error.Forbidden()
         req.require_project(project_uid)
         if not self.has_index:
             raise gws.web.error.NotFound()
