@@ -19,6 +19,7 @@ let mods = [
     require('./mod/dprocon'),
     require('./mod/edit'),
     require('./mod/gekos'),
+    require('./mod/georisks'),
     require('./mod/identify'),
     require('./mod/infobar'),
     require('./mod/layers'),
