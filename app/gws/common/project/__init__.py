@@ -36,6 +36,7 @@ class Config(t.Config):
 
 
 class Props(t.Data):
+    actions: dict
     client: gws.common.client.Props
     description: str = ''
     locale: str
@@ -47,7 +48,7 @@ class Props(t.Data):
     uid: str
 
 
-class Object(gws.PublicObject, t.ProjectObject):
+class Object(gws.Object, t.ProjectObject):
     def __init__(self):
         super().__init__()
 
@@ -116,10 +117,15 @@ class Object(gws.PublicObject, t.ProjectObject):
 
     @property
     def props(self):
-        cc = self.client or getattr(self.parent, 'client', None)
+        client = self.client or getattr(self.parent, 'client', None)
+        actions = gws.extend(
+            {},
+            self.root.application.api.actions,
+            self.api.actions if self.api else {})
 
         return gws.compact({
-            'client': cc,
+            'client': client,
+            'actions': actions,
             'description': self.description,
             'map': self.map,
             'meta': self.meta,
