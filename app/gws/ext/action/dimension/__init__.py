@@ -17,7 +17,7 @@ class Config(t.WithTypeAndAccess):
     pixelTolerance: int = 10  #: pixel tolerance
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
 
     def api_options(self, req, p: OptionsParams) -> OptionsResponse:
         req.require_project(p.projectUid)

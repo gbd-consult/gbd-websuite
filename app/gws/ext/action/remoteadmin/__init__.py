@@ -38,7 +38,12 @@ class Checker(gws.types.spec.Validator):
         })
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
+    @property
+    def props(self):
+        # no client props for this action
+        return None
+
     def api_validate(self, req, p: ValidateParams) -> t.Response:
         """Validate configuration"""
 

@@ -35,7 +35,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
 
     @property
     def storage(self) -> t.StorageInterface:

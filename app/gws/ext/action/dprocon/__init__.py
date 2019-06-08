@@ -75,7 +75,7 @@ class GetDataResponse(t.Data):
     feature: t.FeatureProps
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
     def configure(self):
         super().configure()
 

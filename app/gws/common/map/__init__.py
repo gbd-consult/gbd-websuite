@@ -32,7 +32,7 @@ class Props(t.Data):
     title: str = ''
 
 
-class Object(gws.PublicObject, t.MapObject):
+class Object(gws.Object, t.MapObject):
     def __init__(self):
         super().__init__()
         self.crs = ''

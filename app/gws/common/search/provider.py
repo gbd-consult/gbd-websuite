@@ -11,7 +11,7 @@ class Config(t.WithTypeAndAccess):
     uid: str = ''  #: unique ID
 
 
-class Object(gws.PublicObject, t.SearchProviderInterface):
+class Object(gws.Object, t.SearchProviderInterface):
     def __init__(self):
         super().__init__()
         self.feature_format: t.FormatInterface = None

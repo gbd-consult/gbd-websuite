@@ -21,7 +21,8 @@ class AssetParams(t.Params):
     projectUid: t.Optional[str]
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
+
     def api_get(self, req, p: AssetParams) -> t.HttpResponse:
         """Return an asset under the given path and project"""
         return self._serve_path(req, p)

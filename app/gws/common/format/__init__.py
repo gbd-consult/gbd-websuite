@@ -10,7 +10,7 @@ _TPL_KEYS = [
 ]
 
 
-class Object(gws.PublicObject, t.FormatInterface):
+class Object(gws.Object, t.FormatInterface):
     def __init__(self):
         super().__init__()
         self.data_model = {}

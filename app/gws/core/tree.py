@@ -117,6 +117,15 @@ class Object(t.ObjectInterface):
     def find(self, klass, uid):
         return _find(self.root.all_objects, klass, uid)
 
+    def props_for(self, user):
+        if not user.can_use(self):
+            return None
+        return _make_props(self.props, user)
+
+    @property
+    def props(self):
+        return None
+
 
 class RootObject(Object):
     def __init__(self):
@@ -150,15 +159,10 @@ class RootObject(Object):
         return oo
 
 
-class PublicObject(Object):
-    def props_for(self, user):
-        if not user.can_use(self):
-            return None
-        return _make_props(self.props, user)
-
+class ActionObject(Object):
     @property
     def props(self):
-        return None
+        return {'enabled': True}
 
 
 def _find(nodes, klass, uid):
@@ -227,7 +231,7 @@ def _make_props(obj, user):
         p = {k: _make_props(v, user) for k, v in obj.items()}
         return {k: v for k, v in p.items() if v is not None}
 
-    if isinstance(obj, PublicObject):
+    if isinstance(obj, Object):
         return obj.props_for(user)
 
     return obj

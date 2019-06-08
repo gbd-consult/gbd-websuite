@@ -392,6 +392,9 @@ class ObjectInterface:
     def find(self, klass, uid) -> List['ObjectInterface']:
         raise NotImplementedError
 
+    def props_for(self, user: 'AuthUserInterface') -> dict:
+        raise NotImplementedError
+
 
 class TemplateQualityLevel(Data):
     """Quality level for a template"""
@@ -701,7 +704,7 @@ class SqlTableConfig(Config):
     """SQL database table"""
 
     geometryColumn: Optional[str]  #: geometry column name
-    keyColumn: Optional[str]  #: primary key column name
+    keyColumn: str = 'id'  #: primary key column name
     name: str  #: table name
     searchColumn: Optional[str]  #: column to be searched for
 

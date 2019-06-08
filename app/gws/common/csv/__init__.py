@@ -11,7 +11,7 @@ class Config(t.Config):
     quote: str = '"'  #: quote sign
 
 
-class Object(gws.PublicObject):
+class Object(gws.Object):
     def configure(self):
         super().configure()
 

@@ -71,7 +71,7 @@ class Role:
         return _can_use(self, obj, [self.name], parent)
 
 
-class User(gws.PublicObject, t.AuthUserInterface):
+class User(gws.Object, t.AuthUserInterface):
     attributes = {}
     provider = None
     roles = None

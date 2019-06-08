@@ -35,7 +35,7 @@ class Config(t.Config):
     root: t.DocumentRootConfig  #: document root location and options
 
 
-class Object(gws.PublicObject):
+class Object(gws.Object):
     def __init__(self):
         super().__init__()
         self.host = ''

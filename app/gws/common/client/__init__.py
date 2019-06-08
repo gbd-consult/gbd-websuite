@@ -30,7 +30,7 @@ class Props(t.Data):
     elements: t.Optional[t.List[ElementProps]]
 
 
-class Element(gws.PublicObject):
+class Element(gws.Object):
     @property
     def props(self):
         return {
@@ -38,7 +38,7 @@ class Element(gws.PublicObject):
         }
 
 
-class Object(gws.PublicObject):
+class Object(gws.Object):
     def configure(self):
         super().configure()
 

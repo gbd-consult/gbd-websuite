@@ -10,7 +10,7 @@ class Props(t.Data):
     templates: t.List[t.TemplateProps]
 
 
-class Object(gws.PublicObject):
+class Object(gws.Object):
     templates = []
 
     def configure(self):

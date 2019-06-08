@@ -20,7 +20,7 @@ class EditResponse(t.Response):
     features: t.List[t.FeatureProps]
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
     def api_add_features(self, req, p: EditParams) -> EditResponse:
         """Add features to the layer"""
 

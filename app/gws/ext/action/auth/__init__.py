@@ -23,7 +23,7 @@ def _feedback(req: gws.web.AuthRequest):
     return Response({'user': req.user.props_for(req.user)})
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
 
     def api_check(self, req, p: t.NoParams) -> Response:
         """Check the authorization status"""

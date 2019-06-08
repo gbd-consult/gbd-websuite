@@ -36,7 +36,7 @@ class Params(t.Params):
     withGeometry: bool = True
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
     def configure(self):
         super().configure()
 

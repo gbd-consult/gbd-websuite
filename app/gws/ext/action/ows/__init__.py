@@ -17,7 +17,11 @@ class Config(t.WithTypeAndAccess):
     templates: t.Optional[TemplatesConfig]  ## OWS templates
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
+    @property
+    def props(self):
+        # no client props for this action
+        return None
 
     def configure(self):
         super().configure()

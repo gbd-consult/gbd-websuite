@@ -17,7 +17,7 @@ class InfoResponse(t.Response):
     user: t.Optional[gws.auth.user.Props]
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
     def api_info(self, req, p: InfoParams) -> InfoResponse:
         """Return the project configuration"""
 

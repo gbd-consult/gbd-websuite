@@ -131,7 +131,7 @@ class Props(t.Data):
     url: str = ''
 
 
-class Base(gws.PublicObject, t.LayerObject):
+class Base(gws.Object, t.LayerObject):
     def __init__(self):
         super().__init__()
 

@@ -66,7 +66,7 @@ class Config(t.WithTypeAndAccess):
     url: t.url  #: gek-online base url
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
     def configure(self):
         super().configure()
         self.crs = self.var('crs')

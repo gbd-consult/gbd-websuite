@@ -41,7 +41,7 @@ class WmsServiceConfig(t.Config):
     url: t.url  #: service url
 
 
-def configure_wms(target: gws.PublicObject, **filter_args):
+def configure_wms(target: gws.Object, **filter_args):
     target.url = target.var('url')
 
     target.service = gws.ows.util.shared_service('WMS', target, target.config)

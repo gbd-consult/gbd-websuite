@@ -9,7 +9,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class Object(gws.Object):
+class Object(gws.ActionObject):
 
     def api_print(self, req, p: pt.PrintParams) -> pt.PrinterResponse:
         """Start a backround print job"""

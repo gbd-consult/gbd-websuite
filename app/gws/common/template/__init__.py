@@ -4,7 +4,7 @@ import gws.types as t
 
 
 # noinspection PyAbstractClass
-class Object(gws.PublicObject, t.TemplateObject):
+class Object(gws.Object, t.TemplateObject):
     def __init__(self):
         super().__init__()
         self.data_model = []
