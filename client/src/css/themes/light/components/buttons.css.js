@@ -14,6 +14,10 @@ module.exports = v => ({
         backgroundColor: v.PRIMARY_BACKGROUND,
         borderRadius: v.BORDER_RADIUS,
 
+        '&.isDisabled': {
+            opacity: 0.3
+        }
+
     },
 
 });

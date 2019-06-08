@@ -41,4 +41,27 @@ module.exports = v => ({
         }
     },
 
+    '.uiFileInputButton': {
+        ...v.ICON_BUTTON(),
+        ...v.SVG('google:editor/attach_file'),
+    },
+
+    '.uiFileInput.hasFiles': {
+
+        '.uiFileInputButton': {
+            ...v.SVG('google:editor/attach_file', v.FOCUS_COLOR),
+        }
+    },
+
+    '.uiFileInput': {
+        display: 'flex',
+        alignItems: 'center',
+    },
+
+    '.uiFileInputList': {
+        fontSize: v.SMALL_FONT_SIZE,
+
+    }
+
+
 });

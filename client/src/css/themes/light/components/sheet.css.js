@@ -11,7 +11,7 @@ module.exports = v => ({
         },
 
         'td, th': {
-            verticalAlign: 'center',
+            verticalAlign: 'middle',
             paddingTop: v.UNIT2,
             paddingBottom: v.UNIT2,
             //fontSize: v.SMALL_FONT_SIZE,
