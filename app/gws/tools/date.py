@@ -1,5 +1,6 @@
 import re
 import datetime
+import time
 import babel.dates
 from . import shell
 
@@ -22,6 +23,10 @@ def now():
 
 def now_iso():
     return to_iso(now())
+
+
+def utime():
+    return time.time()
 
 
 class DateFormatter:
