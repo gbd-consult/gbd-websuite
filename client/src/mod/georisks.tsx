@@ -113,10 +113,8 @@ class GeorisksDialog extends gws.View<GeorisksViewProps> {
         switch (mode) {
             case 'loading':
                 return <div className="modGeorisksFormPadding">
-                    <p>Loading</p>
-                    <p>
-                        <gws.ui.Loader/>
-                    </p>
+                    <p>{this.__('modGeorisksDialogLoading')}</p>
+                    <gws.ui.Loader/>
                 </div>;
 
             case 'success':
@@ -143,6 +141,12 @@ class GeorisksDialog extends gws.View<GeorisksViewProps> {
                 title={this.__('modGeorisksReportDialogTitle')}
                 whenClosed={() => this.close()}
             >{this.form()}</gws.ui.Dialog>
+        }
+
+        if (mode === 'loading') {
+            return <gws.ui.Dialog
+                className='modGeorisksSmallDialog'
+            >{this.message(mode)}</gws.ui.Dialog>
         }
 
         return <gws.ui.Dialog
@@ -231,10 +235,9 @@ class GeorisksController extends gws.Controller {
     }
 
     async init() {
-        this.app.whenLoaded(() => {
-            this.app.startTool('Tool.Georisks.Click');
-        })
-
+        // this.app.whenLoaded(() => {
+        //     this.app.startTool('Tool.Georisks.Click');
+        // })
     }
 
     get appOverlayView() {
@@ -282,7 +285,7 @@ class GeorisksController extends gws.Controller {
             files = await Promise.all(fs.map(readFile));
         }
 
-        let params: gws.api.GeorisksReportParams = {
+        let params: gws.api.GeorisksCreateReportParams = {
             shape: this.map.geom2shape(new ol.geom.Point([
                 this.getValue('georisksX'),
                 this.getValue('georisksY')
@@ -293,7 +296,7 @@ class GeorisksController extends gws.Controller {
             files
         };
 
-        let res = await this.app.server.georisksReport(params, {binary: true});
+        let res = await this.app.server.georisksCreateReport(params, {binary: true});
 
         this.update({georisksDialogMode: res.error ? 'error' : 'success'});
     }

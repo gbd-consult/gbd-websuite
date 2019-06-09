@@ -1,5 +1,6 @@
 module.exports = v => ({
     '.uiLoader': {
+        ...v.ICON_BUTTON(),
         ...v.ICON_SIZE('small'),
         width: '100%',
         backgroundImage: v.IMAGE('ajax.gif'),

@@ -1,6 +1,10 @@
+import warnings
+
+from PIL import Image
+from io import BytesIO
+
 import gws
 import gws.web
-import gws.tools.password
 import gws.tools.date
 
 import gws.types as t
@@ -11,9 +15,14 @@ import gws.types as t
 
 class Config(t.WithTypeAndAccess):
     """Georisks action"""
+
     db: t.Optional[str]  #: database provider uid
-    reportsTable: t.SqlTableConfig  #: sql table configuration
-    privacyPolicyLink: str  #: link to a privacy policy document
+    reportsTable: t.SqlTableConfig  #: configuration for the reports table
+    privacyPolicyLink: t.Optional[str]  #: url of the privacy policy document
+    minImageBytes: int = 500 #: min image size in bytes
+    maxImageBytes: int = 5e7 #: max image size in bytes
+    maxImageSize: int = 1000 #: max image size in pixels
+    imageQuality: int = 75 #: jpeg quality level
 
 
 class ReportFile:
@@ -21,17 +30,48 @@ class ReportFile:
     content: bytes  #: file content as a byte array
 
 
-class ReportParams(t.Params):
-    """Params for the report action"""
+class CreateReportParams(t.Params):
+    """Params for the createReport action"""
 
     shape: t.ShapeProps  #: spatial shape of the report
     name: str  #: user name
     message: str  #: user message
     files: t.List[ReportFile]  #: attached files
+    projectUid: t.Optional[str]  #: project uid
 
 
-class ReportResponse(t.Response):
-    reportUid: int
+class CreateReportResponse(t.Response):
+    """Response of the createReport action."""
+
+    reportUid: int  #: id of the created report
+
+
+class ReportStatusParams(t.Params):
+    """Params for the reportStatus action"""
+
+    reportUids: t.List[int]  #: uids to query
+    projectUid: t.Optional[str]  #: project uid
+
+
+class ReportStatus(t.Enum):
+    new = 0  #: new report
+    process = 1  #: the report is being processed
+    approved = 2  #: the report is approved
+    rejected = 3  #: the report is rejected
+    error = 99  #: error processing report
+
+
+class ReportStatusElement:
+    """Status of a single report."""
+
+    reportUid: int  #: report id
+    status: ReportStatus  #: status value
+    reason: str #: report status reason
+    date: str #: ISO-formatted status change date
+
+
+class ReportStatusResponse(t.Response):
+    statusList: t.List[ReportStatus]
 
 
 class Object(gws.ActionObject):
@@ -52,15 +92,91 @@ class Object(gws.ActionObject):
         self.db = self.root.find('gws.ext.db.provider', p) if p else self.root.find_first(
             'gws.ext.db.provider.postgres')
 
-    def api_report(self, req, p: ReportParams) -> ReportResponse:
+    def api_create_report(self, req, p: CreateReportParams) -> CreateReportResponse:
         """Upload a new report"""
 
+        try:
+            img, w, h = self._check_image(p.files[0].content)
+        except Exception:
+            gws.log.exception()
+            raise gws.web.error.BadRequest()
+
         rec = {
-            'name': p.name,
-            'message': p.message,
-            'image': p.files[0].content,
+            'name': p.name.strip(),
+            'message': p.message.strip(),
+            'image': img,
+            'image_width': w,
+            'image_height': h,
+            'status': ReportStatus.new,
+            'time_created': gws.tools.date.now_iso(),
+            'time_updated': gws.tools.date.now_iso(),
         }
+
         uid = self.db.insert(self.var('reportsTable'), [rec])
-        return ReportResponse({
-            'reportUid': uid
+
+        # self.export_reports('/gws-var/geo-reports')
+
+        return CreateReportResponse({
+            'reportUid': uid[0]
         })
+
+    def api_report_status(self, req, p: ReportStatusParams) -> ReportStatusResponse:
+        """Query the status of the reports"""
+
+        tbl = self.var('reportsTable').name
+        ls = []
+
+        with self.db.connect() as conn:
+            rs = conn.select(f'SELECT id,status,status_reason,time_updated FROM {tbl} WHERE id = ANY(%s)', [p.reportUids])
+            for r in rs:
+                ls.append({
+                    'reportUid': r['id'],
+                    'status': r['status'],
+                    'reason': r['status_reason'],
+                    'date': gws.tools.date.to_iso(r['time_updated']),
+                })
+
+        return ReportStatusResponse({
+            'statusList': ls
+        })
+
+    def export_reports(self, base_dir):
+        """Export all reports as html to the directory."""
+
+        html = []
+        tbl = self.var('reportsTable').name
+
+        with self.db.connect() as conn:
+            rs = conn.select(f'SELECT * FROM {tbl} ORDER BY id')
+
+            for rec in rs:
+                fname = f"img_{rec['id']:05d}.jpg"
+                with open(base_dir + '/' + fname, 'wb') as fp:
+                    fp.write(rec['image'])
+                for k, v in sorted(rec.items()):
+                    if k != 'image':
+                        html.append(f'{k}={v}<br>')
+                html.append(f'<img src="{fname}"/><br>')
+                html.append('<hr>')
+
+        with open(base_dir + '/index.html', 'w') as fp:
+            fp.write('\n'.join(html))
+
+    def _check_image(self, buf):
+        siz = len(buf)
+        # if siz < self.var('minImageBytes'):
+        #     raise ValueError('image too small')
+        # if siz > self.var('maxImageBytes'):
+        #     raise ValueError('image too big')
+
+        warnings.simplefilter('error', Image.DecompressionBombWarning)
+
+        img = Image.open(BytesIO(buf))
+
+        s = self.var('maxImageSize')
+        if img.width > s or img.height > s:
+            img.thumbnail((s, s))
+
+        out = BytesIO()
+        img.save(out, format='JPEG', quality=self.var('imageQuality'))
+        return out.getvalue(), img.width, img.height

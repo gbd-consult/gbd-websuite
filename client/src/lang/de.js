@@ -224,6 +224,8 @@ module.exports = {
     modGeorisksReportFormMessage: 'Meldung',
     modGeorisksReportFormFiles: 'Bild',
     modGeorisksReportPrivacyLink: 'Ich stimme der $Datenschutzerklärung$ zu',
+
+    modGeorisksDialogLoading: 'Daten werden geladen',
     modGeorisksDialogSuccess: 'Daten wurden gespeichert',
     modGeorisksDialogError: 'Es ist ein Fehler aufgetreten',
 
