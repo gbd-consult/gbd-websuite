@@ -13,6 +13,22 @@ import gws.types as t
 # actions for the Georisks app
 # see http://elbe-labe-georisiko.eu
 
+_REPORTS_TABLE = """
+    CREATE TABLE gws_reports
+    (
+        id SERIAL NOT NULL PRIMARY KEY,
+        name VARCHAR(254),
+        message VARCHAR(254),
+        image BYTEA,
+        image_height INT,
+        image_width INT,
+        status INT,
+        status_reason VARCHAR(254),
+        time_created TIMESTAMP WITH TIME ZONE,
+        time_updated TIMESTAMP WITH TIME ZONE
+    )
+"""
+
 class Config(t.WithTypeAndAccess):
     """Georisks action"""
 
@@ -108,16 +124,17 @@ class Object(gws.ActionObject):
             'image_width': w,
             'image_height': h,
             'status': ReportStatus.new,
-            'time_created': gws.tools.date.now_iso(),
-            'time_updated': gws.tools.date.now_iso(),
+            'status_reason': '',
+            'time_created': ['current_timestamp'],
+            'time_updated': ['current_timestamp'],
         }
 
-        uid = self.db.insert(self.var('reportsTable'), [rec])
+        uid = self.db.insert(self.var('reportsTable'), [rec])[0]
 
         # self.export_reports('/gws-var/geo-reports')
 
         return CreateReportResponse({
-            'reportUid': uid[0]
+            'reportUid': uid
         })
 
     def api_report_status(self, req, p: ReportStatusParams) -> ReportStatusResponse:
@@ -127,13 +144,22 @@ class Object(gws.ActionObject):
         ls = []
 
         with self.db.connect() as conn:
-            rs = conn.select(f'SELECT id,status,status_reason,time_updated FROM {tbl} WHERE id = ANY(%s)', [p.reportUids])
+            rs = conn.select(f"""
+                SELECT 
+                    id,
+                    status,
+                    status_reason,
+                    time_updated
+                FROM {tbl} WHERE id = ANY(%s)
+            """, [p.reportUids])
+
+
             for r in rs:
                 ls.append({
                     'reportUid': r['id'],
                     'status': r['status'],
                     'reason': r['status_reason'],
-                    'date': gws.tools.date.to_iso(r['time_updated']),
+                    'date': gws.tools.date.to_isotz(r['time_updated']),
                 })
 
         return ReportStatusResponse({

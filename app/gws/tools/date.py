@@ -16,6 +16,9 @@ def set_system_time_zone(tz):
 def to_iso(d):
     return d.strftime("%Y-%m-%d %H:%M:%S")
 
+def to_isotz(d):
+    return d.strftime("%Y-%m-%d %H:%M:%S%z")
+
 
 def now():
     return datetime.datetime.now()
