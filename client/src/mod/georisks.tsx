@@ -292,7 +292,6 @@ class GeorisksController extends gws.Controller {
             ])),
             name: this.getValue('georisksFormName'),
             message: this.getValue('georisksFormMessage'),
-            projectUid: this.app.project.uid,
             files
         };
 

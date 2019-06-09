@@ -28,7 +28,6 @@ class Params(t.Params):
     layerUids: t.List[str]
     pixelTolerance: int = 10
     limit: int = 0
-    projectUid: str
     resolution: float
     shapes: t.Optional[t.List[t.ShapeProps]]
     withAttributes: bool = True

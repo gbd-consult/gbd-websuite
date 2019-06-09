@@ -825,7 +825,6 @@ class AlkisController extends gws.Controller {
         };
 
         let res = await this.app.server.alkisFsSetup({
-            projectUid: this.app.project.uid
         });
 
         if (res.error) {
@@ -866,7 +865,6 @@ class AlkisController extends gws.Controller {
 
         if (value) {
             let res = await this.app.server.alkisFsStrassen({
-                projectUid: this.app.project.uid,
                 gemarkungUid: value,
             });
 
@@ -929,7 +927,6 @@ class AlkisController extends gws.Controller {
 
         let res = await this.app.server.alkisFsSearch({
             shapes: [this.map.geom2shape(pt)],
-            projectUid: this.app.project.uid
         });
 
         if (res.error) {
@@ -951,7 +948,6 @@ class AlkisController extends gws.Controller {
 
         let res = await this.app.server.alkisFsSearch({
             ...this.getValue('alkisFsParams'),
-            projectUid: this.app.project.uid
         });
 
         this.update({alkisFsLoading: false});
@@ -994,7 +990,6 @@ class AlkisController extends gws.Controller {
 
         if (p) {
             let res = await this.app.server.alkisFsSearch({
-                projectUid: this.app.project.uid,
                 alkisFs: p,
             });
 
@@ -1020,7 +1015,6 @@ class AlkisController extends gws.Controller {
     paramsForFeatures(fs: Array<gws.types.IMapFeature>) {
         let queryParams: gws.api.AlkisFsQueryParams = this.getValue('alkisFsParams');
         return {
-            projectUid: this.app.project.uid,
             wantEigentuemer: queryParams.wantEigentuemer,
             controlInput: queryParams.controlInput,
             fsUids: fs.map(f => f.uid),

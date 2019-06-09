@@ -24,7 +24,8 @@ Config = Data
 
 
 class Params(Data):
-    pass
+    projectUid: Optional[str]  #: project uid
+    locale: Optional[str]  #: locale for this request
 
 
 # NB: we cannot use the standard Enum, because after "class Color(Enum): RED = 1"
@@ -636,7 +637,7 @@ class MapObject(ObjectInterface, MapView):
 class ProjectObject(ObjectInterface):
     map: MapObject
     title: str
-    locale: str
+    locales: List[str]
     meta: MetaData
 
 

@@ -3,7 +3,7 @@ import gws.types as t
 
 
 class OptionsParams(t.Params):
-    projectUid: str
+    pass
 
 
 class OptionsResponse(t.Response):

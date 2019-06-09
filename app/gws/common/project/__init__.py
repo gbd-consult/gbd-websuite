@@ -24,7 +24,7 @@ class Config(t.Config):
     assets: t.Optional[t.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.common.client.Config]  #: project-specific gws client configuration
     description: t.Optional[t.TemplateConfig]  #: template for the project description
-    locale: t.Optional[str]  #: Project locale
+    locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.common.map.Config]  #: Map configuration
     meta: t.Optional[t.MetaConfig] = {}  #: project metadata
     multi: t.Optional[t.regex]  #: filename pattern for a multi-project template
@@ -39,7 +39,7 @@ class Props(t.Data):
     actions: dict
     client: gws.common.client.Props
     description: str = ''
-    locale: str
+    locales: t.List[str]
     map: gws.common.map.Props
     meta: t.MetaData
     overviewMap: gws.common.map.Props = None
@@ -56,7 +56,7 @@ class Object(gws.Object, t.ProjectObject):
         self.assets_root: t.DocumentRootConfig = None
         self.client: gws.common.client.Object = None
         self.description_template: t.TemplateObject = None
-        self.locale = ''
+        self.locales = []
         self.map: gws.common.map.Object = None
         self.meta: t.MetaData = {}
         self.overview_map: gws.common.map.Object = None
@@ -72,7 +72,7 @@ class Object(gws.Object, t.ProjectObject):
             self.meta.title = self.var('title')
         self.title = self.meta.title
 
-        self.locale = self.var('locale', parent=True)
+        self.locales = self.var('locales', parent=True, default=['en_CA'])
 
         p = self.var('map')
         if p:

@@ -64,7 +64,7 @@ class Config(t.Config):
     csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
     db: t.Optional[DbConfig]  #: database configuration
     fonts: t.Optional[FontConfig]  #: fonts configuration
-    locale: t.Optional[str] = 'en_CA'  #: default locale for all projects
+    locales: t.Optional[t.List[str]] #: default locales for all projects
     projectDirs: t.Optional[t.List[t.dirpath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[t.filepath]]  #: additional project paths
     projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations

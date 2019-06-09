@@ -96,7 +96,7 @@ class Gemarkung(t.Data):
 
 
 class FsSetupParams(t.Params):
-    projectUid: str
+    pass
 
 
 class FsSetupResponse(t.Response):
@@ -116,7 +116,6 @@ class FsSetupResponse(t.Response):
 
 
 class FsStrassenParams(t.Params):
-    projectUid: str
     gemarkungUid: str
 
 
@@ -131,7 +130,6 @@ _COMBINED_PARAMS_DELIM = '_'
 
 
 class FsQueryParams(t.Params):
-    projectUid: str
     wantEigentuemer: t.Optional[bool]
     controlInput: t.Optional[str]
     fsUids: t.Optional[t.List[str]]
@@ -402,6 +400,8 @@ class Object(gws.Object):
             raise gws.web.error.NotFound()
 
         pp = p.printParams
+        pp.projectUid = p.projectUid
+        pp.locale = p.locale
         pp.templateUid = self.print_template.uid
         pp.sections = []
 

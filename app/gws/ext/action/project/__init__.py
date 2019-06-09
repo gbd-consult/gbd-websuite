@@ -9,7 +9,7 @@ class Config(t.WithTypeAndAccess):
 
 
 class InfoParams(t.Params):
-    projectUid: str
+    pass
 
 
 class InfoResponse(t.Response):

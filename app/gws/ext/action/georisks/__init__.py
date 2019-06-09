@@ -55,7 +55,6 @@ class CreateReportParams(t.Params):
     name: str  #: user name
     message: str  #: user message
     files: t.List[ReportFile]  #: attached files
-    projectUid: t.Optional[str]  #: project uid
 
 
 class CreateReportResponse(t.Response):
@@ -68,7 +67,6 @@ class ReportStatusParams(t.Params):
     """Params for the reportStatus action"""
 
     reportUids: t.List[int]  #: uids to query
-    projectUid: t.Optional[str]  #: project uid
 
 
 class ReportStatus(t.Enum):

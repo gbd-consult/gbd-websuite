@@ -18,7 +18,6 @@ class Config(t.WithTypeAndAccess):
 
 class AssetParams(t.Params):
     path: str
-    projectUid: t.Optional[str]
 
 
 class Object(gws.ActionObject):
@@ -74,7 +73,9 @@ class Object(gws.ActionObject):
                 'type': template_type,
                 'path': rpath
             }))
-            tr = tpl.render(_default_template_context(req, project))
+            context = _default_template_context(req, project)
+            context['params'] = p
+            tr = tpl.render(context)
             # @TODO handle path
             return t.HttpResponse({
                 'mimeType': tr.mimeType,

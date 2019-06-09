@@ -14,19 +14,6 @@ import gws.gis.render
 import gws.gis.feature
 
 
-class PreparedPrintParams(t.Params):
-    job_uid: str
-    base_path: str
-    centers: t.List[t.Point]
-    datas: t.List[dict]
-    dpi: float
-    format: str
-    project: t.ProjectObject
-    render_input: t.MapRenderInput
-    template: t.TemplateObject
-    user: t.AuthUserInterface
-
-
 class PreparedSection(t.Data):
     center: t.Point
     data: dict
@@ -84,6 +71,10 @@ class _Worker:
 
         self.project: t.ProjectObject = self.acquire('gws.common.project', self.p.projectUid)
 
+        self.locale = p.get('locale') or ''
+        if self.locale not in self.project.locales:
+            self.locale = self.project.locales[0]
+
         self.render_input = t.MapRenderInput({
             'scale': self.p.scale,
             'rotation': self.p.rotation,
@@ -136,8 +127,10 @@ class _Worker:
             'user': self.user,
             'scale': self.render_input.scale,
             'rotation': self.render_input.rotation,
-            'date': gws.tools.date.DateFormatter(self.project.locale),
-            'time': gws.tools.date.TimeFormatter(self.project.locale),
+            'locale': self.locale,
+            'lang': self.locale.split('_')[0],
+            'date': gws.tools.date.DateFormatter(self.locale),
+            'time': gws.tools.date.TimeFormatter(self.locale),
         }
 
         nsec = len(self.sections)

@@ -791,7 +791,6 @@ class DimensionController extends gws.Controller {
 
     async init() {
         let res = await this.app.server.dimensionOptions({
-            projectUid: this.app.project.uid,
         });
 
         if (res.error)

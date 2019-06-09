@@ -34,7 +34,6 @@ class PrintSection(t.Data):
 
 
 class PrintParams(t.Params):
-    projectUid: str
     items: t.List[PrintItem]
     rotation: int
     scale: int

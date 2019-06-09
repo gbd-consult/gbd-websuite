@@ -5,8 +5,19 @@ style.type = 'text/css';
 document.body.appendChild(style);
 
 window['GWS_SERVER_URL'] = '/_';
-window['GWS_PROJECT_UID'] = String(location).match(/project\/(\w+)/)[1] || 'default';
-window['GWS_LOCALE'] = 'de_DE';
+
+let loc = String(location), m;
+
+if (m = loc.match(/project\/([a-z][a-z]_[A-Z][A-Z])\/(\w+)/)) {
+    window['GWS_LOCALE'] = m[1];
+    window['GWS_PROJECT_UID'] = m[2];
+} else if (m = loc.match(/project\/(\w+)/)) {
+    window['GWS_LOCALE'] = 'de_DE';
+    window['GWS_PROJECT_UID'] = m[1];
+} else {
+    window['GWS_LOCALE'] = 'de_DE';
+    window['GWS_PROJECT_UID'] = 'default';
+}
 
 import {main} from './main';
 

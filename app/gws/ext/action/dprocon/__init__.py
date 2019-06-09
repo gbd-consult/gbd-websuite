@@ -58,7 +58,6 @@ class Config(t.WithTypeAndAccess):
 
 
 class ConnectParams(t.Params):
-    projectUid: str
     shapes: t.List[t.ShapeProps]
 
 
@@ -67,7 +66,6 @@ class ConnectResponse(t.Response):
 
 
 class GetDataParams(t.Params):
-    projectUid: str
     requestId: str
 
 

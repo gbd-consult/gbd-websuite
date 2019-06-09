@@ -13,7 +13,6 @@ class DproconController extends gws.Controller {
 
             if (p) {
                 let res = await this.app.server.dproconGetData({
-                    projectUid: this.app.project.uid,
                     requestId: p
                 });
 
@@ -51,7 +50,6 @@ class DproconToolbarButton extends toolbar.Button {
 
         if (sel) {
             let res = await this.app.server.dproconConnect({
-                projectUid: this.app.project.uid,
                 shapes: sel.map(f => f.shape),
             });
 

@@ -305,7 +305,6 @@ class EditController extends gws.Controller {
         };
 
         let res = await this.app.server.editUpdateFeatures({
-            projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [props]
         });
@@ -331,7 +330,6 @@ class EditController extends gws.Controller {
         this.update({editError: false});
 
         let res = await this.app.server.editUpdateFeatures({
-            projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [props]
         });
@@ -356,7 +354,6 @@ class EditController extends gws.Controller {
         this.update({editError: false});
 
         let res = await this.app.server.editAddFeatures({
-            projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [props]
 
@@ -374,7 +371,6 @@ class EditController extends gws.Controller {
 
     async removeFeature(f) {
         let res = await this.app.server.editDeleteFeatures({
-            projectUid: this.app.project.uid,
             layerUid: this.layer.uid,
             features: [f.props]
         });

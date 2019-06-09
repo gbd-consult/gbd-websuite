@@ -108,7 +108,6 @@
                 "text": "<p class='head'>Düsseldorf</p><p>Düsseldorf is the capital and, after Cologne, second most populous city of the most populous German federal state  of North Rhine-Westphalia, as well as the seventh most populous city in Germany. At the confluence of the Rhine and its tributary Düssel, the city lies in the centre of both  the Rhine-Ruhr and the Rhineland Metropolitan Regions with the Cologne/Bonn urban area to its south  and the Ruhr to its north.  (Wikipedia)</p>",
                 "type": "html"
             },
-            "locale": "en_CA",
             "overviewMap": {
                 "crs": "EPSG:3857",
                 "extent": [
