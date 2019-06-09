@@ -6,9 +6,9 @@ from io import BytesIO
 import gws
 import gws.web
 import gws.tools.date
+import gws.gis.shape
 
 import gws.types as t
-
 
 # actions for the Georisks app
 # see http://elbe-labe-georisiko.eu
@@ -22,6 +22,7 @@ _REPORTS_TABLE = """
         image BYTEA,
         image_height INT,
         image_width INT,
+        geom geometry(Point,25833),
         status INT,
         status_reason VARCHAR(254),
         time_created TIMESTAMP WITH TIME ZONE,
@@ -29,16 +30,17 @@ _REPORTS_TABLE = """
     )
 """
 
+
 class Config(t.WithTypeAndAccess):
     """Georisks action"""
 
     db: t.Optional[str]  #: database provider uid
     reportsTable: t.SqlTableConfig  #: configuration for the reports table
     privacyPolicyLink: t.Optional[str]  #: url of the privacy policy document
-    minImageBytes: int = 500 #: min image size in bytes
-    maxImageBytes: int = 5e7 #: max image size in bytes
-    maxImageSize: int = 1000 #: max image size in pixels
-    imageQuality: int = 75 #: jpeg quality level
+    minImageBytes: int = 500  #: min image size in bytes
+    maxImageBytes: int = 5e7  #: max image size in bytes
+    maxImageSize: int = 1000  #: max image size in pixels
+    imageQuality: int = 75  #: jpeg quality level
 
 
 class ReportFile:
@@ -70,24 +72,24 @@ class ReportStatusParams(t.Params):
 
 
 class ReportStatus(t.Enum):
-    new = 0  #: new report
+    open = 0  #: new report
     process = 1  #: the report is being processed
     approved = 2  #: the report is approved
     rejected = 3  #: the report is rejected
     error = 99  #: error processing report
 
 
-class ReportStatusElement:
+class ReportStatusItem:
     """Status of a single report."""
 
     reportUid: int  #: report id
     status: ReportStatus  #: status value
-    reason: str #: report status reason
-    date: str #: ISO-formatted status change date
+    reason: str  #: report status reason
+    date: str  #: ISO-formatted status change date
 
 
 class ReportStatusResponse(t.Response):
-    statusList: t.List[ReportStatus]
+    items: t.List[ReportStatusItem]
 
 
 class Object(gws.ActionObject):
@@ -123,7 +125,8 @@ class Object(gws.ActionObject):
             'image': img,
             'image_width': w,
             'image_height': h,
-            'status': ReportStatus.new,
+            'geom': gws.gis.shape.from_props(p.shape),
+            'status': ReportStatus.open,
             'status_reason': '',
             'time_created': ['current_timestamp'],
             'time_updated': ['current_timestamp'],
@@ -140,7 +143,7 @@ class Object(gws.ActionObject):
     def api_report_status(self, req, p: ReportStatusParams) -> ReportStatusResponse:
         """Query the status of the reports"""
 
-        tbl = self.var('reportsTable').name
+        tbl = self.var('reportsTable')
         ls = []
 
         with self.db.connect() as conn:
@@ -150,9 +153,8 @@ class Object(gws.ActionObject):
                     status,
                     status_reason,
                     time_updated
-                FROM {tbl} WHERE id = ANY(%s)
+                FROM {tbl.name} WHERE id = ANY(%s)
             """, [p.reportUids])
-
 
             for r in rs:
                 ls.append({
@@ -163,7 +165,7 @@ class Object(gws.ActionObject):
                 })
 
         return ReportStatusResponse({
-            'statusList': ls
+            'items': ls
         })
 
     def export_reports(self, base_dir):

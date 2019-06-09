@@ -192,19 +192,21 @@ class Object(gws.Object, t.DbProviderObject):
         return ids
 
     def _prepare_for_update(self, table, recs):
+        geom_col = gws.get(table, 'geometryColumn')
+        if not geom_col:
+            return
+
         crs, geometry_type = self.geometry_props(table)
         srid = gws.gis.proj.as_srid(crs) if crs else None
 
         # @TODO: support EWKB directly
 
-        geom_col = gws.get(table, 'geometryColumn')
-        if geom_col:
-            for rec in recs:
-                if geom_col in rec:
-                    geom_val = rec[geom_col]
-                    if isinstance(geom_val, gws.gis.shape.Shape) and crs:
-                        geom_val.transform(crs)
-                        ph = 'ST_SetSRID(%s::geometry,%s)'
-                        if geometry_type.startswith('MULTI'):
-                            ph = f'ST_Multi({ph})'
-                        rec[geom_col] = [ph, geom_val.wkb_hex, srid]
+        for rec in recs:
+            if geom_col in rec:
+                geom_val = rec[geom_col]
+                if isinstance(geom_val, gws.gis.shape.Shape) and crs:
+                    geom_val = geom_val.transform(crs)
+                    ph = 'ST_SetSRID(%s::geometry,%s)'
+                    if geometry_type.startswith('MULTI'):
+                        ph = f'ST_Multi({ph})'
+                    rec[geom_col] = [ph, geom_val.wkb_hex, srid]
