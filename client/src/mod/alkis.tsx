@@ -940,7 +940,7 @@ class AlkisController extends gws.Controller implements gws.types.ISidebarItem {
         });
 
         if (features.length === 1) {
-            await this.showDetails(features[0], false);
+            await this.showDetails(features[0], true);
             return;
         }
 
