@@ -1,3 +1,5 @@
+import math
+
 import gws
 import gws.config.parser
 import gws.common.format
@@ -227,16 +229,19 @@ class Base(gws.PublicObject, t.LayerObject):
                 self.add_child('gws.ext.search.provider', cfg)
 
     def configure_extent(self, ext):
+        self.extent = self.calc_extent(ext)
+        if not all(math.isfinite(p) for p in self.extent):
+            raise gws.Error(f'invalid extent {self.extent} in {self.uid!r}')
+
+    def calc_extent(self, ext):
         if self.var('extent'):
-            self.extent = self.var('extent')
-            return
+            return self.var('extent')
         if not ext:
-            self.extent = self.map.extent
-            return
+            return self.map.extent
         buf = self.var('extentBuffer', parent=True)
         if buf:
             ext = gws.gis.shape.buffer_extent(ext, buf)
-        self.extent = ext
+        return ext
 
     def edit_access(self, user):
         # @TODO granular edit access
