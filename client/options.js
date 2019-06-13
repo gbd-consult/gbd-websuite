@@ -1,4 +1,4 @@
-VERSION='1.0.17'
+VERSION='1.0.18'
 
 module.exports = {
     version: VERSION,
