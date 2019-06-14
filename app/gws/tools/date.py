@@ -16,8 +16,15 @@ def set_system_time_zone(tz):
 def to_iso(d):
     return d.strftime("%Y-%m-%d %H:%M:%S")
 
+
 def to_isotz(d):
+    if not d.tzinfo:
+        return d.strftime("%Y-%m-%d %H:%M:%S+0000")
     return d.strftime("%Y-%m-%d %H:%M:%S%z")
+
+
+def utc_from_timestamp(s):
+    return datetime.datetime.fromtimestamp(s, tz=datetime.timezone.utc)
 
 
 def now():

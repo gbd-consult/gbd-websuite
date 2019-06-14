@@ -7,14 +7,18 @@ import gws
 import gws.web
 import gws.tools.date
 import gws.gis.shape
+import gws.tools.net
+import gws.tools.misc
 
 import gws.types as t
+
+from . import aartelink
 
 # actions for the Georisks app
 # see http://elbe-labe-georisiko.eu
 
-_REPORTS_TABLE = """
-    CREATE TABLE gws_reports
+_DB_TABLES = """
+    CREATE TABLE gws_report
     (
         id SERIAL NOT NULL PRIMARY KEY,
         name VARCHAR(254),
@@ -27,7 +31,31 @@ _REPORTS_TABLE = """
         status_reason VARCHAR(254),
         time_created TIMESTAMP WITH TIME ZONE,
         time_updated TIMESTAMP WITH TIME ZONE
-    )
+    );
+
+    CREATE TABLE gws_aartelink_message
+    (
+        id SERIAL NOT NULL PRIMARY KEY,
+        customer_id VARCHAR(254),
+        system_id VARCHAR(254),
+        device_id VARCHAR(254),
+        name VARCHAR(254),
+        value VARCHAR(254),
+        unit  VARCHAR(254),
+        time_created TIMESTAMP WITH TIME ZONE
+    );
+    
+    CREATE TABLE gws_aartelink_alarm
+    (
+        id SERIAL NOT NULL PRIMARY KEY,
+        customer_id VARCHAR(254),
+        system_id VARCHAR(254),
+        device_id VARCHAR(254),
+        type VARCHAR(254),
+        message TEXT,
+        time_created TIMESTAMP WITH TIME ZONE
+    );
+    
 """
 
 
@@ -35,12 +63,14 @@ class Config(t.WithTypeAndAccess):
     """Georisks action"""
 
     db: t.Optional[str]  #: database provider uid
-    reportsTable: t.SqlTableConfig  #: configuration for the reports table
     privacyPolicyLink: t.Optional[str]  #: url of the privacy policy document
-    minImageBytes: int = 500  #: min image size in bytes
-    maxImageBytes: int = 5e7  #: max image size in bytes
-    maxImageSize: int = 1000  #: max image size in pixels
-    imageQuality: int = 75  #: jpeg quality level
+
+    reportMinImageBytes: int = 500  #: min image size in bytes
+    reportMaxImageBytes: int = 5e6  #: max image size in bytes
+    reportMaxImageSize: int = 1000  #: max image size in pixels
+    reportImageQuality: int = 75  #: jpeg quality level
+
+    aarteLinkSystemKey: str  #: systemKey for the aarteLink connector
 
 
 class ReportFile:
@@ -90,7 +120,16 @@ class ReportStatusResponse(t.Response):
     items: t.List[ReportStatusItem]
 
 
+class AartelinkResponse(t.Response):
+    ok: bool
+
+
 class Object(gws.ActionObject):
+    REPORT_TABLE_NAME = 'gws_report'
+    MESSAGE_TABLE_NAME = 'gws_aartelink_message'
+    ALARM_TABLE_NAME = 'gws_aartelink_alarm'
+
+
     @property
     def props(self):
         return {
@@ -130,9 +169,13 @@ class Object(gws.ActionObject):
             'time_updated': ['current_timestamp'],
         }
 
-        uid = self.db.insert(self.var('reportsTable'), [rec])[0]
+        tbl = t.SqlTableConfig({
+            'name': self.REPORT_TABLE_NAME,
+            'keyColumn': 'id',
+            'geometryColumn': 'geom'
+        })
 
-        # self.export_reports('/gws-var/geo-reports')
+        uid = self.db.insert(tbl, [rec])[0]
 
         return CreateReportResponse({
             'reportUid': uid
@@ -141,7 +184,6 @@ class Object(gws.ActionObject):
     def api_report_status(self, req, p: ReportStatusParams) -> ReportStatusResponse:
         """Query the status of the reports"""
 
-        tbl = self.var('reportsTable')
         ls = []
 
         with self.db.connect() as conn:
@@ -151,7 +193,7 @@ class Object(gws.ActionObject):
                     status,
                     status_reason,
                     time_updated
-                FROM {tbl.name} WHERE id = ANY(%s)
+                FROM {self.REPORT_TABLE_NAME} WHERE id = ANY(%s)
             """, [p.reportUids])
 
             for r in rs:
@@ -170,10 +212,10 @@ class Object(gws.ActionObject):
         """Export all reports as html to the directory."""
 
         html = []
-        tbl = self.var('reportsTable').name
+        n = 0
 
         with self.db.connect() as conn:
-            rs = conn.select(f'SELECT * FROM {tbl} ORDER BY id')
+            rs = conn.select(f'SELECT *, ST_AsText(geom) AS wkt FROM {self.REPORT_TABLE_NAME} ORDER BY id')
 
             for rec in rs:
                 fname = f"img_{rec['id']:05d}.jpg"
@@ -184,25 +226,42 @@ class Object(gws.ActionObject):
                         html.append(f'{k}={v}<br>')
                 html.append(f'<img src="{fname}"/><br>')
                 html.append('<hr>')
+                n += 1
 
         with open(base_dir + '/index.html', 'w') as fp:
             fp.write('\n'.join(html))
 
+        return n
+
     def _check_image(self, buf):
         siz = len(buf)
-        # if siz < self.var('minImageBytes'):
-        #     raise ValueError('image too small')
-        # if siz > self.var('maxImageBytes'):
-        #     raise ValueError('image too big')
+
+        if siz < self.var('reportMinImageBytes'):
+            raise ValueError('image too small')
+        if siz > self.var('reportMaxImageBytes'):
+            raise ValueError('image too big')
 
         warnings.simplefilter('error', Image.DecompressionBombWarning)
 
         img = Image.open(BytesIO(buf))
 
-        s = self.var('maxImageSize')
+        s = self.var('reportMaxImageSize')
         if img.width > s or img.height > s:
             img.thumbnail((s, s))
 
         out = BytesIO()
-        img.save(out, format='JPEG', quality=self.var('imageQuality'))
+        img.save(out, format='JPEG', quality=self.var('reportImageQuality'))
         return out.getvalue(), img.width, img.height
+
+    def http_get_aartelink(self, req, p) -> AartelinkResponse:
+        """Endpoint for EASD/AarteLink callbacks."""
+
+        try:
+            aartelink.handle(self, req)
+        except (ValueError, IndexError):
+            gws.log.exception()
+            raise gws.web.error.NotAcceptable()
+
+        return AartelinkResponse({
+            'ok': True
+        })

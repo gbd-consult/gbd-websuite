@@ -1,6 +1,6 @@
 module.exports = v => ({
     '.modGeorisksToolbarButton': {
-        ...v.TOOLBAR_BUTTON('google:action/pan_tool')
+        ...v.TOOLBAR_BUTTON('outline-report_problem-24px')
     },
     '.modGeorisksFormPadding': {
         textAlign: 'center',

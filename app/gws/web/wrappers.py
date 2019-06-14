@@ -28,17 +28,13 @@ class Response(werkzeug.wrappers.Response):
         return self.raw(s, mimetype='text/html', status=status)
 
     def struct(self, s, status=200):
-        acc = self.request.wants_struct
-        if not acc:
-            raise ValueError('empty struct type')
-
+        acc = self.request.wants_struct or _JSON
         data = ''
 
         if acc == _JSON:
             data = gws.tools.json2.to_string(s, pretty=True)
         if acc == _MSGPACK:
             data = gws.tools.umsgpack.dumps(s, default=gws.as_dict)
-
 
         return self.raw(data, mimetype=_struct_mime[acc], status=status)
 

@@ -148,6 +148,10 @@ def sha256(s):
     return hashlib.sha256(gws.as_bytes(s)).hexdigest()
 
 
+def md5(s):
+    return hashlib.md5(gws.as_bytes(s)).hexdigest()
+
+
 def load_source(path, name):
     # see https://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3
     loader = importlib.machinery.SourceFileLoader(name, path)

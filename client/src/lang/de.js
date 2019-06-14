@@ -219,6 +219,8 @@ module.exports = {
     modStorageErrorAccess: 'Zugriff verweigert',
     modStorageErrorGeneric: 'Es ist ein Fehler aufgetreten',
 
+    modGeorisksToolbarButton: 'Georisiko melden',
+
     modGeorisksReportDialogTitle: 'Georisiko melden',
     modGeorisksReportFormName: 'Ihr Name',
     modGeorisksReportFormMessage: 'Meldung',

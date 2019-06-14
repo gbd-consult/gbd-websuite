@@ -1,5 +1,6 @@
 import gws
 import gws.config
+import gws.types as t
 
 from . import error
 
@@ -46,8 +47,7 @@ def handle(config_root, req):
         gws.log.error('action not handled', cmd)
         raise error.NotFound()
 
-    if req.wants_struct:
-        return req.response.struct(r)
+    if isinstance(r, t.HttpResponse):
+        return req.response.raw(r.content, r.mimeType, r.get('status', 200))
 
-    # not a struct request, it must be types.HttpResponse
-    return req.response.raw(r.content, r.mimeType, r.get('status', 200))
+    return req.response.struct(r)

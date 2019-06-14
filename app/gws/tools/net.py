@@ -5,7 +5,6 @@ import pickle
 import re
 import time
 import urllib.parse
-import urllib.parse
 
 import requests
 import requests.structures
@@ -47,6 +46,14 @@ _parse_url_keys = (
 )
 
 
+def quote(s, safe='/'):
+    return urllib.parse.quote(s, safe)
+
+
+def unquote(s):
+    return urllib.parse.unquote(s)
+
+
 def parse_url(url):
     p = {k: '' for k in _parse_url_keys}
 
@@ -76,8 +83,8 @@ def parse_url(url):
     p['params'] = requests.structures.CaseInsensitiveDict(r)
 
     if p['username']:
-        p['username'] = urllib.parse.unquote(p['username'])
-        p['password'] = urllib.parse.unquote(p.get('password', ''))
+        p['username'] = unquote(p['username'])
+        p['password'] = unquote(p.get('password', ''))
 
     return p
 
@@ -92,9 +99,9 @@ def make_url(p):
         s += '//'
 
     if p.get('username'):
-        s += urllib.parse.quote(p.get('username'))
+        s += quote(p.get('username'))
         s += ':'
-        s += urllib.parse.quote(p.get('password', ''))
+        s += quote(p.get('password', ''))
         s += '@'
 
     s += p['hostname']

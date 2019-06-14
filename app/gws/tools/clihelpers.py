@@ -157,16 +157,20 @@ def database_credentials():
     return user, password
 
 
-def find_action(action_type, project_uid=None):
+def find_action(action_type, project_uid=None, fail=True):
     gws.config.loader.load()
 
     app = gws.config.find_first('gws.common.application')
     action = app.find_action(action_type, project_uid)
 
-    if not action:
-        gws.log.error(f'{action_type!r} action not configured')
+    if action:
+        return action
 
-    return action
+    msg = f'{action_type!r} action not configured'
+    if fail:
+        raise ValueError(msg)
+
+    gws.log.warn(msg)
 
 
 def text_table(data, header=None):
