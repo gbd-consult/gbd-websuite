@@ -14,6 +14,7 @@ class Config(t.WithType):
     """file-based authorization provider"""
 
     path: t.filepath  #: path to the users json file
+    uid: t.Optional[str]  #: unique id
 
 
 class Object(gws.auth.provider.Object):

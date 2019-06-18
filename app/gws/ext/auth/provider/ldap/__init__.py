@@ -55,6 +55,7 @@ class Config(t.WithType):
     roles: t.List[RoleSpec]  #: map LDAP filters to roles
     timeout: t.duration = 30  #: LDAP server timeout
     url: str  #: LDAP server url "ldap://host:port/baseDN?searchAttribute"
+    uid: t.Optional[str]  #: unique id
 
 
 def _as_dict(dn, data):
