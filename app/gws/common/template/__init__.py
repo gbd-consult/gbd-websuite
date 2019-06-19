@@ -13,9 +13,11 @@ class Object(gws.PublicObject, t.TemplateObject):
     def configure(self):
         super().configure()
         self.data_model = self.var('dataModel', default=[])
-        global _uid
-        _uid += 1
-        self.uid += '_' + str(_uid)
+
+        if not self.var('uid'):
+            global _uid
+            _uid += 1
+            self.uid += '_' + str(_uid)
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')
