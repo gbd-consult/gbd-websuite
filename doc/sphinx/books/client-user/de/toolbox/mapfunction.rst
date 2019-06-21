@@ -20,5 +20,6 @@ Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst
     gkos.rst
     dimensions.rst
     measure.rst
+    report.rst
     print.rst
     screenshot.rst
