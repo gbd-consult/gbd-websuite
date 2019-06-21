@@ -129,7 +129,6 @@ class Object(gws.ActionObject):
     MESSAGE_TABLE_NAME = 'gws_aartelink_message'
     ALARM_TABLE_NAME = 'gws_aartelink_alarm'
 
-
     @property
     def props(self):
         return {
@@ -206,6 +205,18 @@ class Object(gws.ActionObject):
 
         return ReportStatusResponse({
             'items': ls
+        })
+
+    def http_get_report_image(self, req, p) -> t.HttpResponse:
+        with self.db.connect() as conn:
+            r = conn.select_one(
+                f"SELECT image FROM {self.REPORT_TABLE_NAME} WHERE id = %s",
+                [req.params.get('reportUid')])
+        if not r:
+            raise gws.web.error.NotFound()
+        return t.HttpResponse({
+            'mimeType': 'image/jpeg',
+            'content': r['image']
         })
 
     def export_reports(self, base_dir):
