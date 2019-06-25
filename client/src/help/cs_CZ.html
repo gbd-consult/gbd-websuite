@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hilfe</title>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+<style>
+    * {
+        color: #37474f;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    h1, h2, h3 {
+        font-weight: normal;
+    }
+
+    p, td, th {
+        font-size: 14px;
+        line-height: 120%;
+
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        padding: 5px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    td:last-child {
+        width: 100%;
+    }
+
+    th {
+        text-align: left;
+        background-color: #0086c9;
+        color: white;
+    }
+
+    .note {
+        margin: 10px 0;
+        padding: 5px;
+        background-color: #bbdefb;
+        font-size: 12px;
+    }
+
+</style>
+
+<h1>Stručný-návod k GBD WebSuite</h1>
+
+<p>GBD WebSuite je webová platforma Open Source GIS. Zahrnuje GBD WebSuite Server a GBD WebSuite
+Klient a vyznačuje se kromě klasické funkce WebGIS především externím použitím, 
+modulární a efektivní integrací nových funkcí a umožněním rozsáhlé konfigurace.
+Jádra seznamů klienta a serveru jsou udržovány ve zúžené formě. Celá stavba je založena na pluginech. Integrace QGIS 
+je také implementována jako plugin, který přirozeně komunikuje s QGIS.</p>
+
+<h2>Podrobná nápověda pro GBD WebSuite</h2>
+
+<p>Podrobnou nápovědu pro použití GBD WebSuite naleznete zde:
+    <a href="http://gws-files.gbd-consult.de/docs/2.3/" target="_blank">Podrobná nápověda pro GBD WebSuite</a></p>
+
+<h2>Přehled ovládacích prvků v GBD WebSuite</h2>
+
+<h3>Lišta nástrojů</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M15.223 12.155l-6.445-4.92 1.052 7.776 1.534-1.94 2.177 3.695 1.209-.711-2.093-3.553 2.566-.347zM12 24c-.409 0-.814-.021-1.213-.061l.316-3.199c.608.062 1.239.06 1.843-.006l.345 3.196c-.424.047-.854.07-1.291.07zm-3.673-.575c-.799-.257-1.572-.601-2.295-1.018l1.6-2.788c.529.307 1.093.557 1.679.746l-.984 3.06zm7.413-.023l-1-3.054c.583-.192 1.146-.445 1.677-.755l1.613 2.778c-.723.424-1.494.772-2.29 1.031zM4 20.938c-.622-.56-1.188-1.185-1.684-1.861l2.586-1.901c.363.496.78.955 1.236 1.365L4 20.938zm16.056-.048L17.9 18.506c.457-.416.869-.876 1.227-1.372l2.601 1.884c-.489.677-1.052 1.306-1.672 1.872zM1.054 16.904C.71 16.137.446 15.333.27 14.512l3.135-.677c.129.601.322 1.188.574 1.748l-2.925 1.321zm21.921-.063l-2.929-1.309c.246-.557.437-1.144.562-1.746l3.141.656c-.175.829-.435 1.635-.774 2.399zM.396 12.005L0 12.003c0-.876.087-1.717.258-2.533l3.139.665c-.126.598-.19 1.215-.19 1.834l-2.811.036zm20.398-.055c-.001-.616-.067-1.232-.194-1.834l3.136-.669c.176.82.264 1.66.265 2.499l-3.207.004zM3.963 8.384l-2.93-1.308c.34-.765.762-1.499 1.255-2.178L4.883 6.79c-.362.497-.671 1.034-.92 1.594zm16.068-.014c-.251-.561-.562-1.096-.923-1.593l2.59-1.896c.493.678.917 1.409 1.26 2.174L20.031 8.37zM6.114 5.419L3.966 3.031c.623-.563 1.304-1.061 2.026-1.48l1.607 2.783c-.529.307-1.028.672-1.485 1.085zm11.761-.01c-.459-.413-.96-.777-1.488-1.083l1.603-2.785c.722.417 1.405.914 2.028 1.477l-2.143 2.391zm-8.6-1.826L8.282.525c.795-.26 1.621-.436 2.454-.523l.336 3.198c-.611.064-1.215.194-1.797.383zm5.433-.005c-.581-.189-1.186-.317-1.796-.379L13.241 0c.834.086 1.659.26 2.455.519l-.988 3.059z"/>
+          </svg>
+        </td>
+        <td>Vybrat</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M13.2 8.4h-2.4V6h2.4zm0 9.6h-2.4v-7.2h2.4zM12 24A12 12 0 1 0 0 12a12 12 0 0 0 12 12zm0-21.6A9.6 9.6 0 1 1 2.4 12 9.6 9.6 0 0 1 12 2.4z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Dotázat</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M12 24a12.1 12.1 0 0 1-1.21-.06l.31-3.2a8.8 8.8 0 0 0 1.85 0l.34 3.2A10.91 10.91 0 0 1 12 24zm-3.67-.58a11.81 11.81 0 0 1-2.3-1l1.6-2.79a7.87 7.87 0 0 0 1.68.74zm7.41 0l-1-3a8.75 8.75 0 0 0 1.68-.76L18 22.37a11.22 11.22 0 0 1-2.26 1.03zM4 20.94a12.33 12.33 0 0 1-1.68-1.86l2.58-1.9a8.86 8.86 0 0 0 1.24 1.36zm16.06-.05l-2.16-2.38a8.93 8.93 0 0 0 1.23-1.38l2.6 1.87a12.84 12.84 0 0 1-1.67 1.89zm-19-4a12.37 12.37 0 0 1-.78-2.39l3.13-.68A8.76 8.76 0 0 0 4 15.58zM23 16.84l-2.92-1.31a9.54 9.54 0 0 0 .56-1.74l3.14.65a12.25 12.25 0 0 1-.78 2.4zM.4 12H0a12.41 12.41 0 0 1 .26-2.53l3.14.67A8.55 8.55 0 0 0 3.21 12zm20.39 0a8.61 8.61 0 0 0-.19-1.83l3.14-.67A12.34 12.34 0 0 1 24 12zM4 8.38l-3-1.3A11.55 11.55 0 0 1 2.29 4.9l2.59 1.89A9 9 0 0 0 4 8.38zm16-.01a8.66 8.66 0 0 0-.92-1.59l2.59-1.9A12.74 12.74 0 0 1 23 7.06zM6.11 5.42L4 3a12.18 12.18 0 0 1 2-1.45l1.6 2.78a9.33 9.33 0 0 0-1.49 1.09zm11.76 0a8.62 8.62 0 0 0-1.48-1.08L18 1.54A12.69 12.69 0 0 1 20 3zm-8.6-1.84L8.28.52A12.1 12.1 0 0 1 10.74 0l.33 3.2a8.61 8.61 0 0 0-1.8.38zm5.44 0a8.48 8.48 0 0 0-1.8-.38l.33-3.2a12.25 12.25 0 0 1 2.46.52zM10.8 6h2.4v2.4h-2.4zM10.8 10.8h2.4V18h-2.4z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Zobrazit</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M20.78 8.26h-.05l-7-5.1a1.72 1.72 0 0 0-3.44 0l-7 5.1A1.73 1.73 0 0 0 1.5 10a1.7 1.7 0 0 0 .81 1.45L5 19.85a1.72 1.72 0 1 0 3 1.77h8a1.72 1.72 0 1 0 3-1.77l2.72-8.41A1.7 1.7 0 0 0 22.5 10a1.73 1.73 0 0 0-1.72-1.74zM17 19.14a1.77 1.77 0 0 0-.65.38H7.66a1.77 1.77 0 0 0-.66-.38l-2.56-7.93A1.72 1.72 0 0 0 5 10a3.16 3.16 0 0 0 0-.32l6.59-4.8a1.54 1.54 0 0 0 1 0l6.59 4.8a3.16 3.16 0 0 0 0 .32 1.72 1.72 0 0 0 .51 1.22z"/>
+            <path d="M16.21 15.72L14.45 14a3.68 3.68 0 0 0 .47-1.77 3.72 3.72 0 1 0-3.72 3.71 3.6 3.6 0 0 0 1.8-.49l1.76 1.76a1.05 1.05 0 0 0 1.49 0 1.06 1.06 0 0 0-.04-1.49zm-5-1.91a1.62 1.62 0 1 1 1.62-1.61.5.5 0 0 1 0 .12 1.61 1.61 0 0 1-1.48 1.48z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Prostorové hledání</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+  <path fill="none" d="M0 0h24v24H0z"/>
+</svg>
+        </td>
+        <td>Zakreslit</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox=".5 48.5 24 24" width="24" height="24">
+            <path d="M21.054 60.465l-3.466-3.734v2.4H6.92v-2.4l-3.466 3.734 3.466 3.733v-2.399h10.668v2.399z"/>
+            <path d="M13.588 60.465v-5.334h2.399l-3.733-3.466-3.733 3.466h2.399v10.668H8.521l3.733 3.466 3.733-3.466h-2.399z"/>
+          </svg>
+        </td>
+        <td>Posunutí nákresu</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path fill="none" d="M0 0h24v24H0z"/>
+                <path d="M9.7117255 15.233967l-2.9032853-2.903286-.9677627.967761 3.871048 3.87105L18.00683 8.8743876l-.967762-.9677622z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            </svg>
+        <td>Potvrzení nákresu</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M17 15.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            </svg>
+        </td>
+        <td>Přerušit kreslení</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M20.67 12l-5.32-4v2.67h-6.7V8l-5.32 4 5.32 4v-2.67h6.7V16l5.32-4zM0 2.67h2.67v18.67H0zM21.33 2.67v18.66H24V2.67z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Kótování</td>
+    </tr>
+    <tr>
+        <td>
+          <?xml version="1.0"?>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24px" height="24px">
+              <path d="M7,2l12,11.2l-5.8,0.5l3.3,7.3l-2.2,1l-3.2-7.4L7,18.5V2"/>
+          </svg>
+        </td>
+        <td>Upravit</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M4.761 10.75h15.584v2.559H4.761z"/>
+            <circle cx="19.763" cy="12.087" r="2.907"/>
+            <circle cx="4.761" cy="11.971" r="2.907"/>
+          </svg>
+        </td>
+        <td>Zakreslit vzdálenost</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            <path d="M0 0h24v24H0z" fill="none"/>
+          </svg>
+        </td>
+        <td>Smazat</td>
+    </tr>
+    <tr>
+        <td>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+  <path d="M0 0h24v24H0z" fill="none"/></svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Přerušit kreslení</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M1.5 9.73h17.06V7.11H1.5zm0-7.87v2.62h21V1.86zm19.09 10.5H3.41a1.92 1.92 0 0 0-1.91 1.91v6a1.92 1.92 0 0 0 1.91 1.91h17.18a1.92 1.92 0 0 0 1.91-1.91v-6a1.92 1.92 0 0 0-1.91-1.91zm0 7.87H3.41v-6h1.91v3.82h1.91v-3.78h1.91v3.82h1.91v-3.82H13v3.82h1.91v-3.82h1.91v3.82h1.91v-3.82h1.91z"/>
+          </svg>
+        </td>
+        <td>Označení a měření</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+            <circle cx="12.5" cy="60.5" r="4"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Označit bod</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+            <circle cx="19.104" cy="54.46" r="3"/>
+            <circle cx="6.461" cy="66.606" r="3"/>
+            <path d="M6.1 65.403l11.4-11.4 1.812 1.811-11.4 11.4z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Označit nebo změřit linii</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+            <circle cx="19.104" cy="54.46" r="3"/>
+            <circle cx="6.296" cy="54.295" r="3"/>
+            <circle cx="18.773" cy="66.358" r="3"/>
+            <circle cx="6.461" cy="66.606" r="3"/>
+            <path d="M5.063 52.548h2.562V68.67H5.063zM17.706 52.465h2.562v16.122h-2.562z"/>
+            <path d="M4.978 52.801H21.1v2.562H4.978zM5.061 65.443h16.122v2.562H5.061z"/>
+          </svg>
+        </td>
+        <td>Označit nebo změřit pravoúhlé plochy</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M17.544 19.864H6.423L2.987 9.287l8.996-6.538 8.996 6.538-3.435 10.577zm-9.516-2.209h7.912l2.443-7.524-6.399-4.651-6.4 4.651 2.444 7.524z"/>
+            <circle cx="12.054" cy="4.489" r="2.65"/>
+            <circle cx="19.184" cy="10.185" r="2.652"/>
+            <circle cx="16.507" cy="18.446" r="2.648"/>
+            <circle cx="4.534" cy="10.185" r="2.652"/>
+            <circle cx="7.163" cy="18.446" r="2.648"/>
+          </svg>
+        </td>
+        <td>Označit nebo změřit víceúhelné plochy</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M12.216 2.156c-5.527 0-10.009 4.481-10.009 10.009 0 5.528 4.481 10.01 10.009 10.01s10.009-4.481 10.009-10.01c0-5.528-4.482-10.009-10.009-10.009zm0 18.075a8.065 8.065 0 0 1-8.065-8.066 8.065 8.065 0 0 1 16.13 0 8.065 8.065 0 0 1-8.065 8.066z"/>
+            <circle cx="12.216" cy="12.165" r="2.907"/>
+          </svg>
+        </td>
+        <td>Označit nebo změřit kruhové plochy</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/>
+                <path fill="none" d="M0 0h24v24H0z"/>
+            </svg>
+        </td>
+        <td>Smazat</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Dále</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+                <path fill="none" d="M0 0h24v24H0V0z"/>
+            </svg>
+        </td>
+        <td>Zpět</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path fill="none" d="M0 0h24v24H0z"/>
+            <path d="M5 15H3v4c0 1.1.9 2 2 2h4v-2H5v-4zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2V5zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2zm0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+          </svg>
+        </td>
+        <td>Přiblížit vybraný objekt</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path fill="none" d="M0 0h24v24H0z"/>
+            <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Výběr z dalších nabídek</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M12 0A12 12 0 0 0 .18 9.93 12.65 12.65 0 0 0 0 11.68h1.52v.67H0a12.51 12.51 0 0 0 .18 1.74A12 12 0 1 0 12 0zM1.75 12a1.5 1.5 0 1 1 1.5 1.5 1.5 1.5 0 0 1-1.5-1.5zM12 21.6a9.61 9.61 0 0 1-9.36-7.51h1.7a7.94 7.94 0 1 0 0-4.16H2.62A9.6 9.6 0 1 1 12 21.6zM4.86 11.23l2.83-.87.2.63-2.83.87zM16 10.65l.58.32-1.9 3.76-.58-.32zm-.39-1.42a1.5 1.5 0 1 1 1.5 1.5 1.5 1.5 0 0 1-1.52-1.5zm-.54 6.93a1.5 1.5 0 1 1-1.5-1.5 1.5 1.5 0 0 1 1.48 1.5zm-2.7-1.35l-2.26-3.12.56-.36 2.26 3.12zm-2.94-3.28a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1-1.5 1.5z"/>
+          </svg>
+        </td>
+        <td>Výběr předat na D-ProCon</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M24 12v-.34a.66.66 0 0 1 0 .14c0 .07 0 .14-.07.22a1 1 0 0 1 .08.31C24 12.22 24 12.11 24 12zm-3.35-8.3l-1.17 1.15a4 4 0 0 0-2.36-.74 8.71 8.71 0 0 0-4.89 2.48 3 3 0 0 0-1 1.68 2.73 2.73 0 0 0 1 1.73c2.39 1.44 7.74.11 9.24 0 0 0 2.16-.09 2.49 1.16a11.91 11.91 0 0 0-3.31-7.46zm.57 12.58a50.74 50.74 0 0 1-14.91 6.29A12 12 0 0 0 24 12.84c-.41 1.89-2.78 3.44-2.78 3.44z"/>
+            <path d="M3.76 20.71c4.82-.77 11.15-2.34 15.89-5.58a8.68 8.68 0 0 0 2.56-2.32c-.87-1.11-4.74.29-4.74.29a18.89 18.89 0 0 1-3.94.59 4.76 4.76 0 0 1-3.39-1.25 2.33 2.33 0 0 1-.48-2c-.22-1.09.21-3 3.81-6.27a10 10 0 0 1 4.86-2.35A12 12 0 0 0 3.76 20.71z"/>
+          </svg>
+        </td>
+        <td>Výběr předat na GeKoS</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Tisk</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path fill="none" d="M0 0h24v24H0z"/>
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/>
+          </svg>
+        </td>
+        <td>Screenshot</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Zavřít</td>
+    </tr>
+</table>
+
+<div class="note">
+    Více k jednotlivým funkcím naleznete zde:
+    <a href="http://gws.gbd-consult.de/docs/books/client-user/de/toolbox/mapfunction.html">Lišta nástrojů</a>
+</div>
+<h3>Menu</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+      <tr>
+          <td>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                  <path d="M0 0h24v24H0z" fill="none"/>
+                  <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+              </svg>
+          </td>
+          <td>Rozevření menu</td>
+      </tr>
+      <tr>
+          <td BGCOLOR="#f2f2f2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                  <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                  <path d="M0 0h24v24H0z" fill="none"/>
+              </svg>
+          </td>
+          <td BGCOLOR="#f2f2f2">Přehled projektu</td>
+      </tr>
+    <tr>
+     <td BGCOLOR="#f2f2f2">
+         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+             <path d="M0 0h24v24H0z" fill="none"/>
+             <path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/>
+         </svg>
+     </td>
+     <td BGCOLOR="#f2f2f2">Vrstva</td>
+ </tr>
+ <tr>
+     <td BGCOLOR="#f2f2f2">
+         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+             <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+             <path d="M0 0h24v24H0z" fill="none"/>
+         </svg>
+     </td>
+     <td BGCOLOR="#f2f2f2">Hledání</td>
+ </tr>
+ <tr>
+     <td BGCOLOR="#f2f2f2">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+         <path fill="none" d="M0 0h24v24H0z"/>
+         <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+       </svg>
+     </td>
+     <td BGCOLOR="#f2f2f2">Další</td>
+ </tr>
+ <tr>
+     <td BGCOLOR="#f2f2f2">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+         <path d="M15.223 12.155l-6.445-4.92 1.052 7.776 1.534-1.94 2.177 3.695 1.209-.711-2.093-3.553 2.566-.347zM12 24c-.409 0-.814-.021-1.213-.061l.316-3.199c.608.062 1.239.06 1.843-.006l.345 3.196c-.424.047-.854.07-1.291.07zm-3.673-.575c-.799-.257-1.572-.601-2.295-1.018l1.6-2.788c.529.307 1.093.557 1.679.746l-.984 3.06zm7.413-.023l-1-3.054c.583-.192 1.146-.445 1.677-.755l1.613 2.778c-.723.424-1.494.772-2.29 1.031zM4 20.938c-.622-.56-1.188-1.185-1.684-1.861l2.586-1.901c.363.496.78.955 1.236 1.365L4 20.938zm16.056-.048L17.9 18.506c.457-.416.869-.876 1.227-1.372l2.601 1.884c-.489.677-1.052 1.306-1.672 1.872zM1.054 16.904C.71 16.137.446 15.333.27 14.512l3.135-.677c.129.601.322 1.188.574 1.748l-2.925 1.321zm21.921-.063l-2.929-1.309c.246-.557.437-1.144.562-1.746l3.141.656c-.175.829-.435 1.635-.774 2.399zM.396 12.005L0 12.003c0-.876.087-1.717.258-2.533l3.139.665c-.126.598-.19 1.215-.19 1.834l-2.811.036zm20.398-.055c-.001-.616-.067-1.232-.194-1.834l3.136-.669c.176.82.264 1.66.265 2.499l-3.207.004zM3.963 8.384l-2.93-1.308c.34-.765.762-1.499 1.255-2.178L4.883 6.79c-.362.497-.671 1.034-.92 1.594zm16.068-.014c-.251-.561-.562-1.096-.923-1.593l2.59-1.896c.493.678.917 1.409 1.26 2.174L20.031 8.37zM6.114 5.419L3.966 3.031c.623-.563 1.304-1.061 2.026-1.48l1.607 2.783c-.529.307-1.028.672-1.485 1.085zm11.761-.01c-.459-.413-.96-.777-1.488-1.083l1.603-2.785c.722.417 1.405.914 2.028 1.477l-2.143 2.391zm-8.6-1.826L8.282.525c.795-.26 1.621-.436 2.454-.523l.336 3.198c-.611.064-1.215.194-1.797.383zm5.433-.005c-.581-.189-1.186-.317-1.796-.379L13.241 0c.834.086 1.659.26 2.455.519l-.988 3.059z"/>
+       </svg>
+     <td BGCOLOR="#f2f2f2">Výběr</td>
+ </tr>
+ <tr>
+     <td BGCOLOR="#f2f2f2">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+         <path d="M9.35 20.5H8.17v-1.36a7.86 7.86 0 0 1 0-8.87v-2.1h2.1A7.85 7.85 0 0 1 14.7 6.8a8.69 8.69 0 0 1 .89 0 7.65 7.65 0 0 1 3.52 1.32h1.39v1.2a8 8 0 0 1 2 4.12V1.5h-21v21h12a7.82 7.82 0 0 1-4.15-2zm8.15-17h3v3h-3zm-4.67 0h3v3h-3zm-4.66 0h3v3h-3zm-1.67 17h-3v-3h3zm0-4.67h-3v-3h3zm0-4.66h-3v-3h3zm0-4.67h-3v-3h3z"/>
+         <path d="M19.26 17.57a5.38 5.38 0 0 0-3.94-8.23 4.3 4.3 0 0 0-.62 0 5.4 5.4 0 0 0 0 10.8 5.27 5.27 0 0 0 2.86-.84l2.9 2.89a1.2 1.2 0 0 0 1.7-1.7zm-4.56.13a3 3 0 1 1 3-3 3 3 0 0 1-3 3z"/>
+       </svg>
+     </td>
+     <td BGCOLOR="#f2f2f2">Hledání pozemku</td>
+ </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M1.5 9.73h17.06V7.11H1.5zm0-7.87v2.62h21V1.86zm19.09 10.5H3.41a1.92 1.92 0 0 0-1.91 1.91v6a1.92 1.92 0 0 0 1.91 1.91h17.18a1.92 1.92 0 0 0 1.91-1.91v-6a1.92 1.92 0 0 0-1.91-1.91zm0 7.87H3.41v-6h1.91v3.82h1.91v-3.78h1.91v3.82h1.91v-3.82H13v3.82h1.91v-3.82h1.91v3.82h1.91v-3.82h1.91z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Vyznačení</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M20.67 12l-5.32-4v2.67h-6.7V8l-5.32 4 5.32 4v-2.67h6.7V16l5.32-4zM0 2.67h2.67v18.67H0zM21.33 2.67v18.66H24V2.67z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Kótování</td>
+    </tr>
+    <tr>
+        <td>
+          <svg width="24" height="24">
+            <path fill="none" d="M0 0h24v24H0V0z"/>
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34l-3.75-3.75-2.53 2.54 3.75 3.75 2.53-2.54z"/>
+          </svg>
+        </td>
+        <td>Editovat</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Přihlášení</td>
+    </tr>
+  </div>
+</table>
+
+  <h3>Záložka: Přehled projektu</h3>
+
+  <table>
+      <tr>
+          <th>Symbol</th>
+          <th>Funkce</th>
+      </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Přehled projektu</td>
+     </div>
+    </tr>
+  </table>
+
+    <h3>Záložka: Vrstva</h3>
+
+    <table>
+        <tr>
+            <th>Symbol</th>
+            <th>Funkce</th>
+        </tr>
+       <tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Vrstva</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Rozevřít podvrstvu</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
+              <path d="M0 0h24v24H0z" fill="none"/>
+          </svg>
+        </td>
+        <td>Zavřít podvrstvu</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            </svg>
+        </td>
+        <td>Zobrazit vrstvu</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"/>
+                <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+            </svg>
+        </td>
+        <td>Skrýt vrstvu</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24">
+                <defs>
+                    <path id="a" d="M0 0h24v24H0z"/>
+                </defs>
+                <clipPath id="b">
+                    <use xlink:href="#a" overflow="visible"/>
+                </clipPath>
+                <path clip-path="url(#b)"
+                      d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/>
+                <path clip-path="url(#b)" fill="none" d="M0 0h24v24H0z"/>
+            </svg>
+        </td>
+        <td>Přiblížit na vrtsvu</td>
+    </tr>
+    <tr>
+        <td>
+          <svg width="24" height="24">
+  <path fill="none" d="M0 0h24v24H0V0z"/>
+  <path d="M21 9l-9-7-2.59 2.02 7.87 7.87zm0 5.07l-1.63-1.27-.67.52 1.43 1.43zM3.41.86L2 2.27l4.22 4.22L3 9l9 7 2.1-1.63 1.42 1.42-3.53 2.75-7.37-5.73L3 14.07l9 7 4.95-3.85L20.73 21l1.41-1.41z"/>
+          </svg>
+        </td>
+        <td>Ostatní vrstvy skrýt</td>
+    </tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+        </td>
+        <td>Zavřít detaily vrstvy</td>
+    </tr>
+</table>
+
+<h3>Záložka: Výběr</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M15.223 12.155l-6.445-4.92 1.052 7.776 1.534-1.94 2.177 3.695 1.209-.711-2.093-3.553 2.566-.347zM12 24c-.409 0-.814-.021-1.213-.061l.316-3.199c.608.062 1.239.06 1.843-.006l.345 3.196c-.424.047-.854.07-1.291.07zm-3.673-.575c-.799-.257-1.572-.601-2.295-1.018l1.6-2.788c.529.307 1.093.557 1.679.746l-.984 3.06zm7.413-.023l-1-3.054c.583-.192 1.146-.445 1.677-.755l1.613 2.778c-.723.424-1.494.772-2.29 1.031zM4 20.938c-.622-.56-1.188-1.185-1.684-1.861l2.586-1.901c.363.496.78.955 1.236 1.365L4 20.938zm16.056-.048L17.9 18.506c.457-.416.869-.876 1.227-1.372l2.601 1.884c-.489.677-1.052 1.306-1.672 1.872zM1.054 16.904C.71 16.137.446 15.333.27 14.512l3.135-.677c.129.601.322 1.188.574 1.748l-2.925 1.321zm21.921-.063l-2.929-1.309c.246-.557.437-1.144.562-1.746l3.141.656c-.175.829-.435 1.635-.774 2.399zM.396 12.005L0 12.003c0-.876.087-1.717.258-2.533l3.139.665c-.126.598-.19 1.215-.19 1.834l-2.811.036zm20.398-.055c-.001-.616-.067-1.232-.194-1.834l3.136-.669c.176.82.264 1.66.265 2.499l-3.207.004zM3.963 8.384l-2.93-1.308c.34-.765.762-1.499 1.255-2.178L4.883 6.79c-.362.497-.671 1.034-.92 1.594zm16.068-.014c-.251-.561-.562-1.096-.923-1.593l2.59-1.896c.493.678.917 1.409 1.26 2.174L20.031 8.37zM6.114 5.419L3.966 3.031c.623-.563 1.304-1.061 2.026-1.48l1.607 2.783c-.529.307-1.028.672-1.485 1.085zm11.761-.01c-.459-.413-.96-.777-1.488-1.083l1.603-2.785c.722.417 1.405.914 2.028 1.477l-2.143 2.391zm-8.6-1.826L8.282.525c.795-.26 1.621-.436 2.454-.523l.336 3.198c-.611.064-1.215.194-1.797.383zm5.433-.005c-.581-.189-1.186-.317-1.796-.379L13.241 0c.834.086 1.659.26 2.455.519l-.988 3.059z"/>
+          </svg>
+        <td BGCOLOR="#f2f2f2">Výběr</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24px"
+          	 height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
+          <g id="Bounding_Boxes">
+          	<g id="ui_x5F_spec_x5F_header_copy_3">
+          	</g>
+          	<path fill="none" d="M0,0h24v24H0V0z"/>
+          </g>
+          <g id="Sharp">
+          	<g id="ui_x5F_spec_x5F_header_copy_2">
+          	</g>
+          	<path d="M5,15H3v6h6v-2H5V15z M5,5h4V3H3v6h2V5z M21,3h-6v2h4v4h2V3z M19,19h-4v2h6v-6h-2V19z M12,8c-2.21,0-4,1.79-4,4s1.79,4,4,4
+          		s4-1.79,4-4S14.21,8,12,8z M12,14c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S13.1,14,12,14z"/>
+          </g>
+          </svg>
+
+        </td>
+        <td BGCOLOR="#f2f2f2">Přiblížit výběr</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <path fill="none" d="M0 0h24v24H0V0z"/>
+  <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+</svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Zrušit výběr</td>
+    </tr>
+     <tr>
+         <td BGCOLOR="#f2f2f2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+          <path fill="none" d="M0 0h24v24H0V0z"/>
+          <path d="M17 3H3v18h18V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+        </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Uložit výběr</td>
+     </tr>
+     <tr>
+         <td BGCOLOR="#f2f2f2">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+             <path d="M20.4 5.7H12l-1.48-1.48A2.11 2.11 0 0 0 9 3.6H3.6a2.08 2.08 0 0 0-2.09 2.1v12.6a2.09 2.09 0 0 0 2.1 2.1H20.4a2.1 2.1 0 0 0 2.1-2.1V7.8a2.11 2.11 0 0 0-2.1-2.1zm-2.1 8.4h-2.1v2.1a1 1 0 0 1-2.1 0v-2.1H12a1 1 0 0 1 0-2.1h2.1V9.9a1 1 0 1 1 2.1 0V12h2.1a1 1 0 0 1 0 2.1z"/>
+           </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Nahrát výběr</td>
+     </tr>
+     <tr>
+         <td>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                 <path fill="none" d="M0 0h24v24H0V0z"/>
+                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/>
+                 <path fill="none" d="M0 0h24v24H0z"/>
+             </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Smazat výběr</td>
+     </tr>
+     <tr>
+</table>
+
+<h3>Záložka: Hledání pozemku</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+   <tr>
+     <tr>
+         <td BGCOLOR="#f2f2f2">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+             <path d="M9.35 20.5H8.17v-1.36a7.86 7.86 0 0 1 0-8.87v-2.1h2.1A7.85 7.85 0 0 1 14.7 6.8a8.69 8.69 0 0 1 .89 0 7.65 7.65 0 0 1 3.52 1.32h1.39v1.2a8 8 0 0 1 2 4.12V1.5h-21v21h12a7.82 7.82 0 0 1-4.15-2zm8.15-17h3v3h-3zm-4.67 0h3v3h-3zm-4.66 0h3v3h-3zm-1.67 17h-3v-3h3zm0-4.67h-3v-3h3zm0-4.66h-3v-3h3zm0-4.67h-3v-3h3z"/>
+             <path d="M19.26 17.57a5.38 5.38 0 0 0-3.94-8.23 4.3 4.3 0 0 0-.62 0 5.4 5.4 0 0 0 0 10.8 5.27 5.27 0 0 0 2.86-.84l2.9 2.89a1.2 1.2 0 0 0 1.7-1.7zm-4.56.13a3 3 0 1 1 3-3 3 3 0 0 1-3 3z"/>
+           </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Hledání pozemku</td>
+     </tr>
+     <tr>
+         <td>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+                 <circle cx="12.5" cy="60.5" r="4"/>
+             </svg>
+         </td>
+         <td>Výběr pozemku jako bod</td>
+     </tr>
+     <tr>
+         <td>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+                 <circle cx="19.104" cy="54.46" r="3"/>
+                 <circle cx="6.461" cy="66.606" r="3"/>
+                 <path d="M6.1000083 65.4031493L17.5005816 54.002576l1.8115902 1.8115902L7.9115985 67.2147395z"/>
+             </svg>
+         </td>
+         <td>Výběr pozemku jako linie</td>
+     </tr>
+     <tr>
+         <td>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+                 <circle cx="19.104" cy="54.46" r="3"/>
+                 <circle cx="6.296" cy="54.295" r="3"/>
+                 <circle cx="18.773" cy="66.358" r="3"/>
+                 <circle cx="6.461" cy="66.606" r="3"/>
+                 <path d="M5.063 52.548h2.562V68.67H5.063zM17.706 52.465h2.562v16.122h-2.562z"/>
+                 <path d="M4.978 52.801H21.1v2.562H4.978zM5.061 65.443h16.122v2.562H5.061z"/>
+             </svg>
+         </td>
+         <td>Výběr pozemku jako pravoúhelník</td>
+     </tr>
+     <tr>
+         <td>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0.5 48.5 24 24">
+                 <circle cx="12.5" cy="60.5" r="3"/>
+                 <path d="M12.5 51.5c-4.975 0-9 4.031-9 9s4.025 9 9 9c4.966 0 9-4.031 9-9s-4.034-9-9-9zm0 15.687c-3.696 0-6.687-2.995-6.687-6.687s2.99-6.687 6.687-6.687c3.689 0 6.687 2.995 6.687 6.687s-2.998 6.687-6.687 6.687z"/>
+             </svg>
+         </td>
+         <td>Výběr pozemku jako kruh</td>
+     </tr>
+     <tr>
+         <td>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                 <path d="M0 0h24v24H0z" fill="none"/>
+             </svg>
+         </td>
+         <td>Ukončit výběr pozemku</td>
+     </tr>
+     <tr>
+         <td BGCOLOR="#f2f2f2">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                 <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                 <path d="M0 0h24v24H0z" fill="none"/>
+             </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Kolonka hledání</td>
+     </tr>
+     <tr>
+         <td BGCOLOR="#f2f2f2">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <path fill="none" d="M0 0h24v24H0V0z"/>
+  <path d="M3 15h18v-2H3v2zm0 4h18v-2H3v2zm0-8h18V9H3v2zm0-6v2h18V5H3z"/>
+</svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Kolonka výsledků</td>
+     </tr>
+     <tr>
+         <td BGCOLOR="#f2f2f2">
+           <svg width="24" height="24">
+             <path fill="none" d="M0 0h24v24H0V0z"/>
+             <path d="M19 3H5v18l7-3 7 3V3zm-2 15l-5-2.18L7 18V5h10v13z"/>
+           </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Kolonka archívu</td>
+     </tr>
+     <tr>
+         <td BGCOLOR="#f2f2f2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+          <path fill="none" d="M0 0h24v24H0V0z"/>
+          <path d="M17 3H3v18h18V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+        </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Uložit archív</td>
+     </tr>
+     <tr>
+         <td BGCOLOR="#f2f2f2">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+             <path d="M20.4 5.7H12l-1.48-1.48A2.11 2.11 0 0 0 9 3.6H3.6a2.08 2.08 0 0 0-2.09 2.1v12.6a2.09 2.09 0 0 0 2.1 2.1H20.4a2.1 2.1 0 0 0 2.1-2.1V7.8a2.11 2.11 0 0 0-2.1-2.1zm-2.1 8.4h-2.1v2.1a1 1 0 0 1-2.1 0v-2.1H12a1 1 0 0 1 0-2.1h2.1V9.9a1 1 0 1 1 2.1 0V12h2.1a1 1 0 0 1 0 2.1z"/>
+           </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Nahrát archív</td>
+     </tr>
+     <tr>
+         <td>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                 <path fill="none" d="M0 0h24v24H0V0z"/>
+                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/>
+                 <path fill="none" d="M0 0h24v24H0z"/>
+             </svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Vymazat archív</td>
+     </tr>
+     <tr>
+         <td>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <path fill="none" d="M0 0h24v24H0V0z"/>
+  <path d="M22 2H2v20h20V2zM8 20H4v-4h4v4zm0-6H4v-4h4v4zm0-6H4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4z"/>
+</svg>
+         </td>
+         <td BGCOLOR="#f2f2f2">Exportovat archív jako CSV</td>
+     </tr>
+     <tr>
+         <td>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                 <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+                 <path d="M0 0h24v24H0z" fill="none"/>
+             </svg>
+         </td>
+         <td>Tisknout archív</td>
+     </tr>
+   </tr>
+</table>
+
+<div class="note">
+    Více k jednotlivým funkcím naleznete zde: <a
+        href="http://gws.gbd-consult.de/docs/books/client-user/de/menu/menu.html">Menu</a>
+</div>
+
+<h3>Záložka: Označení</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M1.5 9.73h17.06V7.11H1.5zm0-7.87v2.62h21V1.86zm19.09 10.5H3.41a1.92 1.92 0 0 0-1.91 1.91v6a1.92 1.92 0 0 0 1.91 1.91h17.18a1.92 1.92 0 0 0 1.91-1.91v-6a1.92 1.92 0 0 0-1.91-1.91zm0 7.87H3.41v-6h1.91v3.82h1.91v-3.78h1.91v3.82h1.91v-3.82H13v3.82h1.91v-3.82h1.91v3.82h1.91v-3.82h1.91z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Označení</td>
+    </tr>
+    <tr>
+        <td>
+          <?xml version="1.0"?>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24px" height="24px">
+              <path d="M7,2l12,11.2l-5.8,0.5l3.3,7.3l-2.2,1l-3.2-7.4L7,18.5V2"/>
+          </svg>
+        </td>
+        <td>Upravit</td>
+    </tr>
+    <tr>
+        <td>
+          <svg width="24" height="24">
+            <path fill="none" d="M0 0h24v24H0V0z"/>
+            <path d="M4.59 6.89c.7-.71 1.4-1.35 1.71-1.22.5.2 0 1.03-.3 1.52-.25.42-2.86 3.89-2.86 6.31 0 1.28.48 2.34 1.34 2.98.75.56 1.74.73 2.64.46 1.07-.31 1.95-1.4 3.06-2.77 1.21-1.49 2.83-3.44 4.08-3.44 1.63 0 1.65 1.01 1.76 1.79-3.78.64-5.38 3.67-5.38 5.37 0 1.7 1.44 3.09 3.21 3.09 1.63 0 4.29-1.33 4.69-6.1H21v-2.5h-2.47c-.15-1.65-1.09-4.2-4.03-4.2-2.25 0-4.18 1.91-4.94 2.84-.58.73-2.06 2.48-2.29 2.72-.25.3-.68.84-1.11.84-.45 0-.72-.83-.36-1.92.35-1.09 1.4-2.86 1.85-3.52.78-1.14 1.3-1.92 1.3-3.28C8.95 3.69 7.31 3 6.44 3 5.12 3 3.97 4 3.72 4.25c-.36.36-.66.66-.88.93l1.75 1.71zm9.29 11.66c-.31 0-.74-.26-.74-.72 0-.6.73-2.2 2.87-2.76-.3 2.69-1.43 3.48-2.13 3.48z"/>
+          </svg>
+        </td>
+        <td>Nové</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path fill="none" d="M0 0h24v24H0V0z"/>
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/>
+                <path fill="none" d="M0 0h24v24H0z"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Vše vymazat</td>
+    </tr>
+
+</table>
+
+
+<h3>Záložka: Kótování</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M20.67 12l-5.32-4v2.67h-6.7V8l-5.32 4 5.32 4v-2.67h6.7V16l5.32-4zM0 2.67h2.67v18.67H0zM21.33 2.67v18.66H24V2.67z"/>
+          </svg>
+        </td>
+        <td>Kótování</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+         <path fill="none" d="M0 0h24v24H0V0z"/>
+         <path d="M17 3H3v18h18V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+       </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Uložit</td>
+    </tr>
+    <tr>
+        <td BGCOLOR="#f2f2f2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M20.4 5.7H12l-1.48-1.48A2.11 2.11 0 0 0 9 3.6H3.6a2.08 2.08 0 0 0-2.09 2.1v12.6a2.09 2.09 0 0 0 2.1 2.1H20.4a2.1 2.1 0 0 0 2.1-2.1V7.8a2.11 2.11 0 0 0-2.1-2.1zm-2.1 8.4h-2.1v2.1a1 1 0 0 1-2.1 0v-2.1H12a1 1 0 0 1 0-2.1h2.1V9.9a1 1 0 1 1 2.1 0V12h2.1a1 1 0 0 1 0 2.1z"/>
+          </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Nahrát</td>
+    </tr>
+    <tr>
+        <td>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                <path fill="none" d="M0 0h24v24H0V0z"/>
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/>
+                <path fill="none" d="M0 0h24v24H0z"/>
+            </svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Smazat</td>
+    </tr>
+    <tr>
+</table>
+
+
+<h3>Záložka: Editace</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+        <td>
+          <svg width="24" height="24">
+            <path fill="none" d="M0 0h24v24H0V0z"/>
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34l-3.75-3.75-2.53 2.54 3.75 3.75 2.53-2.54z"/>
+          </svg>
+
+        </td>
+        <td>Editovat</td>
+    </tr>
+    <tr>
+        <td>
+          <?xml version="1.0"?>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24px" height="24px">
+              <path d="M7,2l12,11.2l-5.8,0.5l3.3,7.3l-2.2,1l-3.2-7.4L7,18.5V2"/>
+          </svg>
+        </td>
+        <td>Upravit</td>
+    </tr>
+    <tr>
+        <td>
+          <svg width="24" height="24">
+            <path fill="none" d="M0 0h24v24H0V0z"/>
+            <path d="M4.59 6.89c.7-.71 1.4-1.35 1.71-1.22.5.2 0 1.03-.3 1.52-.25.42-2.86 3.89-2.86 6.31 0 1.28.48 2.34 1.34 2.98.75.56 1.74.73 2.64.46 1.07-.31 1.95-1.4 3.06-2.77 1.21-1.49 2.83-3.44 4.08-3.44 1.63 0 1.65 1.01 1.76 1.79-3.78.64-5.38 3.67-5.38 5.37 0 1.7 1.44 3.09 3.21 3.09 1.63 0 4.29-1.33 4.69-6.1H21v-2.5h-2.47c-.15-1.65-1.09-4.2-4.03-4.2-2.25 0-4.18 1.91-4.94 2.84-.58.73-2.06 2.48-2.29 2.72-.25.3-.68.84-1.11.84-.45 0-.72-.83-.36-1.92.35-1.09 1.4-2.86 1.85-3.52.78-1.14 1.3-1.92 1.3-3.28C8.95 3.69 7.31 3 6.44 3 5.12 3 3.97 4 3.72 4.25c-.36.36-.66.66-.88.93l1.75 1.71zm9.29 11.66c-.31 0-.74-.26-.74-.72 0-.6.73-2.2 2.87-2.76-.3 2.69-1.43 3.48-2.13 3.48z"/>
+          </svg>
+        </td>
+        <td>Zakreslit</td>
+    </tr>
+    <tr>
+        <td>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+  <path d="M0 0h24v24H0z" fill="none"/></svg>
+        </td>
+        <td BGCOLOR="#f2f2f2">Ukončit</td>
+    </tr>
+</table>
+
+
+<h3>Záložka: Přihlášení</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+        <td>
+          <svg width="24" height="24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            <path fill="none" d="M0 0h24v24H0z"/>
+          </svg>
+        </td>
+        <td>Přihlášení</td>
+    </tr>
+
+</table>
+
+<h3>Záložka: Hledání</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+        <td>
+          <svg width="24" height="24">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            <path fill="none" d="M0 0h24v24H0z"/>
+          </svg>
+        </td>
+        <td>Hledání</td>
+    </tr>
+
+</table>
+
+
+<h3>Záložka stavu</h3>
+
+<table>
+    <tr>
+        <th>Symbol</th>
+        <th>Funkce</th>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M15 11h-2V9c0-.552-.448-1-1-1s-1 .448-1 1v2H9c-.552 0-1 .448-1 1s.448 1 1 1h2v2c0 .552.448 1 1 1s1-.448 1-1v-2h2c.552 0 1-.448 1-1s-.448-1-1-1zM4 8c.552 0 1-.448 1-1V5h2c.552 0 1-.448 1-1s-.448-1-1-1H4c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1zM20 16c-.552 0-1 .448-1 1v2h-2c-.552 0-1 .448-1 1s.448 1 1 1h3c.552 0 1-.448 1-1v-3c0-.552-.448-1-1-1zM7 19H5v-2c0-.552-.448-1-1-1s-1 .448-1 1v3c0 .552.448 1 1 1h3c.552 0 1-.448 1-1s-.448-1-1-1zM20 3h-3c-.552 0-1 .448-1 1s.448 1 1 1h2v2c0 .552.448 1 1 1s1-.448 1-1V4c0-.552-.448-1-1-1z"/>
+          </svg>
+        </td>
+        <td>Přiblížit</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M15 11H9c-.552 0-1 .448-1 1s.448 1 1 1h6c.552 0 1-.448 1-1s-.448-1-1-1zM4 8c.552 0 1-.448 1-1V5h2c.552 0 1-.448 1-1s-.448-1-1-1H4c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1zM20 16c-.552 0-1 .448-1 1v2h-2c-.552 0-1 .448-1 1s.448 1 1 1h3c.552 0 1-.448 1-1v-3c0-.552-.448-1-1-1zM7 19H5v-2c0-.552-.448-1-1-1s-1 .448-1 1v3c0 .552.448 1 1 1h3c.552 0 1-.448 1-1s-.448-1-1-1zM20 3h-3c-.552 0-1 .448-1 1s.448 1 1 1h2v2c0 .552.448 1 1 1s1-.448 1-1V4c0-.552-.448-1-1-1z"/>
+          </svg>
+        </td>
+        <td>Oddálit</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M4 8c.552 0 1-.448 1-1V5h2c.552 0 1-.448 1-1s-.448-1-1-1H4c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1zM20 16c-.552 0-1 .448-1 1v2h-2c-.552 0-1 .448-1 1s.448 1 1 1h3c.552 0 1-.448 1-1v-3c0-.552-.448-1-1-1zM7 19H5v-2c0-.552-.448-1-1-1s-1 .448-1 1v3c0 .552.448 1 1 1h3c.552 0 1-.448 1-1s-.448-1-1-1zM20 3h-3c-.552 0-1 .448-1 1s.448 1 1 1h2v2c0 .552.448 1 1 1s1-.448 1-1V4c0-.552-.448-1-1-1zM16 11.5c-.552 0-1 .448-1 1 0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3c.006 0 .012-.004.018-.004v1.619c0 .229.262.36.445.223l3.388-2.541c.198-.148.198-.445 0-.594l-3.388-2.541c-.184-.138-.445-.007-.445.223v1.619c-.006 0-.012-.004-.018-.004-2.757 0-5 2.243-5 5s2.243 5 5 5 5-2.243 5-5c0-.552-.448-1-1-1z"/>
+          </svg>
+        </td>
+        <td>Zobrazit celý projekt</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            <path fill="none" d="M0 0h24v24H0z"/>
+          </svg>
+        </td>
+        <td>Zpět na úvodní stránku</td>
+    </tr>
+    <tr>
+        <td>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <path fill="none" d="M0 0h24v24H0z"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+          </svg>
+        </td>
+        <td>Nápověda</td>
+    </tr>
+    <tr>
+        <td>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 22.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 141.7 141.7" style="enable-background:new 0 0 141.7 141.7;" xml:space="preserve" width="24" height="24">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_2_);fill:#006FB8;}
+	.st1{clip-path:url(#SVGID_4_);fill:#84AC2B;}
+	.st2{clip-path:url(#SVGID_4_);fill:none;stroke:#FFFFFF;stroke-width:5.565;}
+	.st3{fill:#84AC2B;}
+	.st4{clip-path:url(#SVGID_6_);fill:none;stroke:#FFFFFF;stroke-width:5.565;}
+	.st5{fill:none;stroke:#FFFFFF;stroke-width:5.565;}
+</style>
+<g>
+	<defs>
+		<rect id="SVGID_1_" x="4.6" y="4.6" width="132.5" height="132.5"/>
+	</defs>
+	<clipPath id="SVGID_2_">
+		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+	</clipPath>
+	<path class="st0" d="M4.6,4.6v90.4c0,0,0,42.1,42.1,42.1h90.4V4.6H4.6z"/>
+</g>
+<g>
+	<defs>
+		<path id="SVGID_3_" d="M4.6,4.6v90.4c0,0,0,42.1,42.1,42.1h90.4V4.6H4.6z"/>
+	</defs>
+	<clipPath id="SVGID_4_">
+		<use xlink:href="#SVGID_3_"  style="overflow:visible;"/>
+	</clipPath>
+	<path class="st1" d="M116.8,94.5c40.5,0,73.3-32.8,73.3-73.3c0-40.5-32.8-73.3-73.3-73.3S43.5-19.3,43.5,21.1
+		C43.5,61.6,76.4,94.5,116.8,94.5"/>
+	<circle class="st2" cx="116.8" cy="21.1" r="73.3"/>
+</g>
+<polygon class="st3" points="35.3,46.2 73.9,24 112,46.5 112,92.3 73.7,113.5 35,91.8 "/>
+<polygon class="st3" points="35.2,46.6 35.2,47 73.5,68.8 112,46.5 111.6,46.3 "/>
+<g>
+	<defs>
+		<polygon id="SVGID_5_" points="35.3,46.2 35,91.8 73.7,113.5 112,92.3 112,46.5 73.9,24 		"/>
+	</defs>
+	<clipPath id="SVGID_6_">
+		<use xlink:href="#SVGID_5_"  style="overflow:visible;"/>
+	</clipPath>
+	<polyline class="st4" points="34.6,46.6 73.5,68.8 112.4,46.3 	"/>
+	<line class="st4" x1="73.5" y1="69.2" x2="73.5" y2="114"/>
+</g>
+<polygon class="st5" points="35.3,46.2 73.9,24 112,46.5 112,92.3 73.7,113.5 35,91.8 "/>
+</svg>
+
+        </td>
+        <td>Informace o Geoinformatikbüro Dassau GmbH a o GBD WebSuite</td>
+    </tr>
+</table>
+
+<div class="note">
+    Více k jednotlivým funkcím naleznete zde: <a
+        href="http://gws.gbd-consult.de/docs/books/client-user/de/sidebar/sidebar.html">Záložka stavu</a>
+</div>
+
+<p><small>
+    &copy; Copyright 2017-2019, Geoinformatikbüro Dassau GmbH.
+</small></p>
+
+</body>
+</html>
