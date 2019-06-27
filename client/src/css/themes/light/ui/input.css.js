@@ -60,6 +60,9 @@ module.exports = v => ({
 
     '.uiFileInputList': {
         fontSize: v.SMALL_FONT_SIZE,
+        p: {
+            marginBottom: v.UNIT,
+        }
 
     }
 

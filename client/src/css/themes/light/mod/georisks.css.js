@@ -9,8 +9,19 @@ module.exports = v => ({
 
     '.uiDialog.modGeorisksDialog': {
         [v.MEDIA('large+')]: {
-            ...v.CENTER_BOX(500, 500),
+            ...v.CENTER_BOX(600, 700),
         },
+        '.cmpPropertySheet th': {
+            width: 150,
+        },
+        '.cmpPropertySheet td b': {
+            fontSize: v.SMALL_FONT_SIZE,
+            paddingLeft: v.UNIT2,
+        },
+
+        '.uiToggle': {
+            display: 'inline-block',
+        }
     },
 
     '.uiDialog.modGeorisksSmallDialog': {

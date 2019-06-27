@@ -17,15 +17,30 @@ from . import aartelink
 # actions for the Georisks app
 # see http://elbe-labe-georisiko.eu
 
+_MAX_IMAGES = 5
+
 _DB_TABLES = """
     CREATE TABLE gws_report
     (
         id SERIAL NOT NULL PRIMARY KEY,
-        name VARCHAR(254),
+        category VARCHAR(254),
+        volume VARCHAR(254),
+        height VARCHAR(254),
+        kind VARCHAR(254),
         message VARCHAR(254),
-        image BYTEA,
-        image_height INT,
-        image_width INT,
+        
+        danger_street BOOLEAN,
+        danger_rail BOOLEAN,
+        danger_way BOOLEAN,
+        danger_house BOOLEAN,
+        danger_object BOOLEAN,
+        danger_person BOOLEAN,
+        
+        image1 BYTEA,
+        image2 BYTEA,
+        image3 BYTEA,
+        image4 BYTEA,
+        image5 BYTEA,
         geom geometry(Point,25833),
         status INT,
         status_reason VARCHAR(254),
@@ -33,6 +48,19 @@ _DB_TABLES = """
         time_updated TIMESTAMP WITH TIME ZONE
     );
 
+    CREATE TABLE gws_aartelink_device
+    (
+        id VARCHAR(254,
+        name VARCHAR(254),
+        state VARCHAR(254),
+        errorlevel INT,
+        errorlevelname VARCHAR(254),
+        type VARCHAR(254),
+        typename VARCHAR(254),
+        geom geometry(Point,25833),
+        time_created TIMESTAMP WITH TIME ZONE
+    );
+    
     CREATE TABLE gws_aartelink_message
     (
         id SERIAL NOT NULL PRIMARY KEY,
@@ -58,19 +86,34 @@ _DB_TABLES = """
     
 """
 
+_DANGERS = ['street', 'rail', 'way', 'house', 'object', 'person']
+
+class AarteLinkConfig(t.Config):
+    """AarteLink system configuration"""
+
+    systemKey: str  #: systemKey for the aarteLink connector
+    serviceUrl: str  #: service url
+    serviceLogin: str  #: service login
+    servicePassword: str  #: service password
+
+
+class ReportConfig(t.Config):
+    """Configuration for the report function"""
+
+    privacyPolicyLink: t.Optional[str]  #: url of the privacy policy document
+    minImageBytes: int = 500  #: min image size in bytes
+    maxImageBytes: int = 5e6  #: max image size in bytes
+    maxImageSize: int = 1000  #: max image size in pixels
+    imageQuality: int = 75  #: jpeg quality level
+
 
 class Config(t.WithTypeAndAccess):
     """Georisks action"""
 
     db: t.Optional[str]  #: database provider uid
-    privacyPolicyLink: t.Optional[str]  #: url of the privacy policy document
 
-    reportMinImageBytes: int = 500  #: min image size in bytes
-    reportMaxImageBytes: int = 5e6  #: max image size in bytes
-    reportMaxImageSize: int = 1000  #: max image size in pixels
-    reportImageQuality: int = 75  #: jpeg quality level
-
-    aarteLinkSystemKey: str  #: systemKey for the aarteLink connector
+    report: ReportConfig  #: report function config
+    aarteLink: AarteLinkConfig  #: AarteLink system configuration
 
 
 class ReportFile:
@@ -82,9 +125,13 @@ class CreateReportParams(t.Params):
     """Params for the createReport action"""
 
     shape: t.ShapeProps  #: spatial shape of the report
-    name: str  #: user name
-    message: str  #: user message
-    files: t.List[ReportFile]  #: attached files
+    category: str
+    volume: str = ''
+    height: str = ''
+    kind: str = ''
+    dangers: str = ''
+    message: str = ''  #: user message
+    files: t.Optional[t.List[ReportFile]]  #: attached files
 
 
 class CreateReportResponse(t.Response):
@@ -128,11 +175,12 @@ class Object(gws.ActionObject):
     REPORT_TABLE_NAME = 'gws_report'
     MESSAGE_TABLE_NAME = 'gws_aartelink_message'
     ALARM_TABLE_NAME = 'gws_aartelink_alarm'
+    DEVICE_TABLE_NAME = 'gws_aartelink_device'
 
     @property
     def props(self):
         return {
-            'privacyPolicyLink': self.var('privacyPolicyLink')
+            'privacyPolicyLink': self.var('report.privacyPolicyLink')
         }
 
     def __init__(self):
@@ -149,24 +197,33 @@ class Object(gws.ActionObject):
     def api_create_report(self, req, p: CreateReportParams) -> CreateReportResponse:
         """Upload a new report"""
 
-        try:
-            img, w, h = self._check_image(p.files[0].content)
-        except Exception:
-            gws.log.exception()
-            raise gws.web.error.BadRequest()
-
         rec = {
-            'name': p.name.strip(),
             'message': p.message.strip(),
-            'image': img,
-            'image_width': w,
-            'image_height': h,
             'geom': gws.gis.shape.from_props(p.shape),
+            'category': p.category,
+            'volume': p.volume,
+            'height': p.height,
+            'kind': p.kind,
             'status': ReportStatus.open,
             'status_reason': '',
             'time_created': ['current_timestamp'],
             'time_updated': ['current_timestamp'],
         }
+
+        for n, f in enumerate(p.files, 1):
+            if n > _MAX_IMAGES:
+                continue
+            try:
+                img, w, h = self._check_image(f.content)
+            except Exception:
+                gws.log.exception()
+                raise gws.web.error.BadRequest()
+            rec[f'image{n}'] = img
+
+
+        ds = gws.as_list(p.dangers)
+        for d in _DANGERS:
+            rec[f'danger_{d}'] = d in ds
 
         tbl = t.SqlTableConfig({
             'name': self.REPORT_TABLE_NAME,
@@ -223,45 +280,50 @@ class Object(gws.ActionObject):
         """Export all reports as html to the directory."""
 
         html = []
-        n = 0
+        cnt = 0
 
         with self.db.connect() as conn:
             rs = conn.select(f'SELECT *, ST_AsText(geom) AS wkt FROM {self.REPORT_TABLE_NAME} ORDER BY id')
 
             for rec in rs:
-                fname = f"img_{rec['id']:05d}.jpg"
-                with open(base_dir + '/' + fname, 'wb') as fp:
-                    fp.write(rec['image'])
                 for k, v in sorted(rec.items()):
-                    if k != 'image':
+                    if not k.startswith('image'):
                         html.append(f'{k}={v}<br>')
-                html.append(f'<img src="{fname}"/><br>')
+
+                for n in range(1, _MAX_IMAGES + 1):
+                    img = rec.get(f'image{n}')
+                    if img:
+                        fname = f"img_{rec['id']:05d}_{n}.jpg"
+                        with open(base_dir + '/' + fname, 'wb') as fp:
+                            fp.write(img)
+                        html.append(f'<img src="{fname}"/><br>')
+
                 html.append('<hr>')
-                n += 1
+                cnt += 1
 
         with open(base_dir + '/index.html', 'w') as fp:
             fp.write('\n'.join(html))
 
-        return n
+        return cnt
 
     def _check_image(self, buf):
         siz = len(buf)
 
-        if siz < self.var('reportMinImageBytes'):
+        if siz < self.var('report.minImageBytes'):
             raise ValueError('image too small')
-        if siz > self.var('reportMaxImageBytes'):
+        if siz > self.var('report.maxImageBytes'):
             raise ValueError('image too big')
 
         warnings.simplefilter('error', Image.DecompressionBombWarning)
 
         img = Image.open(BytesIO(buf))
 
-        s = self.var('reportMaxImageSize')
+        s = self.var('report.maxImageSize')
         if img.width > s or img.height > s:
             img.thumbnail((s, s))
 
         out = BytesIO()
-        img.save(out, format='JPEG', quality=self.var('reportImageQuality'))
+        img.save(out, format='JPEG', quality=self.var('report.imageQuality'))
         return out.getvalue(), img.width, img.height
 
     def http_get_aartelink(self, req, p) -> AartelinkResponse:
@@ -273,6 +335,12 @@ class Object(gws.ActionObject):
             gws.log.exception()
             raise gws.web.error.NotAcceptable()
 
+        # update the devices table
+        aartelink.service_request(self)
+
         return AartelinkResponse({
             'ok': True
         })
+
+    def aartelink_service(self):
+        aartelink.service_request(self)

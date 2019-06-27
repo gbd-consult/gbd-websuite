@@ -169,6 +169,8 @@ let iconSize = {
 v.ICON_BUTTON = () => ({
     width: v.CONTROL_SIZE,
     height: v.CONTROL_SIZE,
+    minWidth: v.CONTROL_SIZE,
+    minHeight: v.CONTROL_SIZE,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center center',
 });

@@ -11,21 +11,291 @@ interface GeorisksViewProps extends gws.types.ViewProps {
     georisksX: string;
     georisksY: string;
     georisksDialogMode: string;
-    georisksFormName: string;
+
+    georisksFormCategory: string;
+    georisksFormVolume: string;
+    georisksFormHeight: string;
+
+    georisksFormKind_hangrutschung: string;
+    georisksFormKind_mure: string;
+
+    georisksFormDanger_street: boolean,
+    georisksFormDanger_rail: boolean,
+    georisksFormDanger_way: boolean,
+    georisksFormDanger_house: boolean,
+    georisksFormDanger_object: boolean,
+    georisksFormDanger_person: boolean,
+
     georisksFormMessage: string;
     georisksFormFiles: FileList;
+
     georisksFormPrivacyAccept: boolean;
+
 }
 
 const GeorisksStoreKeys = [
     'georisksDialogMode',
     'georisksX',
     'georisksY',
-    'georisksFormName',
+
+    'georisksFormCategory',
+    'georisksFormVolume',
+    'georisksFormHeight',
+
+    'georisksFormKind_hangrutschung',
+    'georisksFormKind_mure',
+
+    'georisksFormDanger_street',
+    'georisksFormDanger_rail',
+    'georisksFormDanger_way',
+    'georisksFormDanger_house',
+    'georisksFormDanger_object',
+    'georisksFormDanger_person',
+
     'georisksFormMessage',
     'georisksFormFiles',
+
     'georisksFormPrivacyAccept',
 ];
+
+const MAX_FILES = 5;
+
+const validationRules = [
+    {category: /./, key: 'georisksFormCategory', type: 'string', minLen: 1},
+    {category: /./, key: 'georisksFormMessage', type: 'string', minLen: 1},
+    {category: /./, key: 'georisksFormFiles', type: 'fileList', minLen: 1, maxLen: MAX_FILES, maxTotalSize: 1e6},
+    {category: /./, key: 'georisksFormPrivacyAccept', type: 'true'},
+    {category: /blockschlag|grossblockschlag|felssturz/, key: 'georisksFormVolume', type: 'string', minLen: 1},
+    {category: /hangrutschung/, key: 'georisksFormKind_hangrutschung', type: 'string', minLen: 1},
+    {category: /mure/, key: 'georisksFormKind_mure', type: 'string', minLen: 1},
+];
+
+const DANGERS = ['street', 'rail', 'way', 'house', 'object', 'person'];
+
+class GeorisksForm extends gws.View<GeorisksViewProps> {
+    render() {
+        let menu = {
+
+            category: [
+                {
+                    value: 'steinschlag',
+                    text: this.__('modGeorisksReportFormCat_steinschlag')
+                },
+                {
+                    value: 'blockschlag',
+                    text: this.__('modGeorisksReportFormCat_blockschlag')
+                },
+                {
+                    value: 'grossblockschlag',
+                    text: this.__('modGeorisksReportFormCat_grossblockschlag')
+                },
+                {
+                    value: 'felssturz',
+                    text: this.__('modGeorisksReportFormCat_felssturz')
+                },
+                {
+                    value: 'hangrutschung',
+                    text: this.__('modGeorisksReportFormCat_hangrutschung')
+                },
+                {
+                    value: 'mure',
+                    text: this.__('modGeorisksReportFormCat_mure')
+                },
+            ],
+
+            volume_blockschlag: [
+                {
+                    value: '1-5',
+                    text: this.__('modGeorisksReportFormVol_1'),
+                },
+                {
+                    value: '5-10',
+                    text: this.__('modGeorisksReportFormVol_5'),
+                },
+            ],
+
+            volume_grossblockschlag: [
+                {
+                    value: '1-5',
+                    text: this.__('modGeorisksReportFormVol_1'),
+                },
+                {
+                    value: '5-10',
+                    text: this.__('modGeorisksReportFormVol_5'),
+                },
+            ],
+
+            volume_felssturz: [
+                {
+                    text: this.__('modGeorisksReportFormVol_10'),
+                    value: '10-100',
+                },
+                {
+                    text: this.__('modGeorisksReportFormVol_100'),
+                    value: '100-1000',
+                },
+                {
+                    text: this.__('modGeorisksReportFormVol_1000'),
+                    value: '1000-10000',
+                },
+                {
+                    text: this.__('modGeorisksReportFormVol_10000'),
+                    value: '10000-',
+                },
+            ],
+
+            kind_hangrutschung: [
+
+                {
+                    text: this.__('modGeorisksReportFormKind_allgemein'),
+                    value: 'allgemein',
+                },
+                {
+                    text: this.__('modGeorisksReportFormKind_tief'),
+                    value: 'tief',
+                },
+                {
+                    text: this.__('modGeorisksReportFormKind_flach'),
+                    value: 'flach',
+                },
+            ],
+
+            kind_mure: [
+
+                {
+                    text: this.__('modGeorisksReportFormKind_schutt'),
+                    value: 'schutt',
+                },
+                {
+                    text: this.__('modGeorisksReportFormKind_block'),
+                    value: 'block',
+                },
+                {
+                    text: this.__('modGeorisksReportFormKind_murgang'),
+                    value: 'murgang',
+                },
+            ],
+
+            height: [
+                {
+                    text: '5',
+                    value: '5',
+                },
+                {
+                    text: '10',
+                    value: '10',
+                },
+                {
+                    text: '15',
+                    value: '15',
+                },
+            ],
+
+        }
+
+        let cat = this.props.georisksFormCategory || '';
+
+        let select = (prop, items, combo = false) => <gws.ui.Select
+            items={items}
+            value={this.props[prop]}
+            withCombo={combo}
+            whenChanged={v => whenChanged(prop, v)}
+        />;
+
+        let whenChanged = (name, v) => {
+            this.props.controller.update({[name]: v});
+        }
+
+        return <table className="cmpPropertySheet">
+            <tbody>
+            <tr>
+                <th>{this.__('modGeorisksReportFormLabelEvent')}</th>
+                <td colSpan={2}>{select('georisksFormCategory', menu.category)}</td>
+            </tr>
+            {
+                cat === 'blockschlag' &&
+                <tr>
+                    <th>{this.__('modGeorisksReportFormLabelVolume')}</th>
+                    <td>{select('georisksFormVolume', menu.volume_blockschlag)}</td>
+                    <td><b>m³</b></td>
+                </tr>
+
+            }
+            {
+                cat === 'grossblockschlag' &&
+                <tr>
+                    <th>{this.__('modGeorisksReportFormLabelVolume')}</th>
+                    <td>{select('georisksFormVolume', menu.volume_grossblockschlag)}</td>
+                    <td><b>m³</b></td>
+                </tr>
+            }
+            {
+                cat === 'felssturz' &&
+                <tr>
+                    <th>{this.__('modGeorisksReportFormLabelVolume')}</th>
+                    <td>{select('georisksFormVolume', menu.volume_felssturz)}</td>
+                    <td><b>m³</b></td>
+                </tr>
+            }
+            {
+                cat.match(/^(steinschlag|blockschlag|grossblockschlag|felssturz)$/) &&
+                <tr>
+                    <th>{this.__('modGeorisksReportFormLabelHeight')}</th>
+                    <td>{select('georisksFormHeight', menu.height, true)}</td>
+                    <td><b>m</b></td>
+                </tr>
+            }
+            {
+                cat === 'hangrutschung' &&
+                <tr>
+                    <th>{this.__('modGeorisksReportFormLabelKind')}</th>
+                    <td colSpan={2}>{select('georisksFormKind_hangrutschung', menu.kind_hangrutschung)}</td>
+                </tr>
+            }
+            {
+                cat === 'mure' &&
+                <tr>
+                    <th>{this.__('modGeorisksReportFormLabelKind')}</th>
+                    <td colSpan={2}>{select('georisksFormKind_mure', menu.kind_mure)}</td>
+                </tr>
+            }
+            <tr>
+                <th>{this.__('modGeorisksReportFormLabelDanger')}</th>
+                <td colSpan={2}>
+                    {DANGERS.map(d => <gws.ui.Toggle
+                        type="checkbox"
+                        label={this.__('modGeorisksReportFormDanger_' + d)}
+                        value={this.props['georisksFormDanger_' + d]}
+                        whenChanged={v => whenChanged('georisksFormDanger_' + d, v)}
+                    />)}
+                </td>
+            </tr>
+            <tr>
+                <th>{this.__('modGeorisksReportFormLabelMessage')}</th>
+                <td colSpan={2}>
+                    <gws.ui.TextArea
+                        height={100}
+                        value={this.props.georisksFormMessage}
+                        whenChanged={v => whenChanged('georisksFormMessage', v)}
+                    />
+                </td>
+            </tr>
+            <tr>
+                <th>{this.__('modGeorisksReportFormLabelFiles')}</th>
+                <td colSpan={2}>
+                    <gws.ui.FileInput
+                        accept="image/jpeg"
+                        multiple={true}
+                        value={this.props.georisksFormFiles}
+                        whenChanged={v => whenChanged('georisksFormFiles', v)}
+                    />
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    }
+}
 
 class GeorisksDialog extends gws.View<GeorisksViewProps> {
 
@@ -34,30 +304,6 @@ class GeorisksDialog extends gws.View<GeorisksViewProps> {
     }
 
     form() {
-        let data = [
-            {
-                name: 'georisksFormName',
-                title: this.__('modGeorisksReportFormName'),
-                value: this.props.georisksFormName,
-                editable: true,
-            },
-            {
-                name: 'georisksFormMessage',
-                title: this.__('modGeorisksReportFormMessage'),
-                type: 'text',
-                value: this.props.georisksFormMessage,
-                editable: true,
-            },
-            {
-                name: 'georisksFormFiles',
-                title: this.__('modGeorisksReportFormFiles'),
-                type: 'file',
-                value: this.props.georisksFormFiles,
-                editable: true,
-                accept: 'image/jpeg',
-                mutlitple: true,
-            },
-        ];
 
         let privacyText = () => {
             // must be like "I have read $the policy$ and accept it"
@@ -73,12 +319,7 @@ class GeorisksDialog extends gws.View<GeorisksViewProps> {
 
         return <Form>
             <Row>
-                <Cell flex>
-                    <gws.components.sheet.Editor
-                        data={data}
-                        whenChanged={(k, v) => this.props.controller.update({[k]: v})}
-                    />
-                </Cell>
+                <GeorisksForm {...this.props} />
             </Row>
             <Row>
                 <Cell>
@@ -182,16 +423,18 @@ class GeorisksClickTool extends gws.Tool {
 }
 
 interface ValidationRule {
+    key: string;
     type: string;
     minLen?: number;
     maxLen?: number;
 
 }
 
-function isValid(cc: gws.Controller, value: any, rule: ValidationRule): boolean {
-    let t = rule['type'];
+function isValid(cc: gws.Controller, rule: ValidationRule): boolean {
+    let value = cc.getValue(rule.key);
+    let t = rule.type;
 
-    let len = (v) => {
+    let checkLength = (v) => {
         if (rule.minLen && v.length < rule.minLen)
             return false;
         if (rule.maxLen && v.length > rule.maxLen)
@@ -200,7 +443,7 @@ function isValid(cc: gws.Controller, value: any, rule: ValidationRule): boolean 
     };
 
     if (t === 'string') {
-        return len((value ? String(value) : '').trim());
+        return checkLength((value ? String(value) : '').trim());
     }
 
     if (t === 'true') {
@@ -208,12 +451,12 @@ function isValid(cc: gws.Controller, value: any, rule: ValidationRule): boolean 
     }
 
     if (t === 'fileList') {
-        return len(value || []);
+        return checkLength(value || []);
     }
 }
 
-function validateStoreValues(cc: gws.Controller, rules: { [k: string]: ValidationRule }) {
-    return Object.keys(rules).every(k => isValid(cc, cc.getValue(k), rules[k]));
+function validateStoreValues(cc: gws.Controller, rules: Array<ValidationRule>) {
+    return rules.every(rule => isValid(cc, rule));
 }
 
 class GeorisksToolbarButton extends toolbar.Button {
@@ -236,8 +479,11 @@ class GeorisksController extends gws.Controller {
 
     async init() {
         // this.app.whenLoaded(() => {
-        //     this.app.startTool('Tool.Georisks.Click');
+        //     this.update({
+        //         georisksDialogMode: 'open',
+        //     })
         // })
+
     }
 
     get appOverlayView() {
@@ -246,13 +492,12 @@ class GeorisksController extends gws.Controller {
     }
 
     reportFormIsValid() {
-        let rules = {
-            georisksFormName: {type: 'string', minLen: 1},
-            georisksFormMessage: {type: 'string', minLen: 1},
-            georisksFormFiles: {type: 'fileList', minLen: 1, maxLen: 1, maxTotalSize: 1e6},
-            georisksFormPrivacyAccept: {type: 'true'}
-        };
+        let cat = this.getValue('georisksFormCategory');
 
+        if (!cat)
+            return false;
+
+        let rules = validationRules.filter(rule => rule.category.test(cat));
         return validateStoreValues(this, rules);
     }
 
@@ -285,13 +530,20 @@ class GeorisksController extends gws.Controller {
             files = await Promise.all(fs.map(readFile));
         }
 
+        let cat = this.getValue('georisksFormCategory');
+
         let params: gws.api.GeorisksCreateReportParams = {
             shape: this.map.geom2shape(new ol.geom.Point([
                 this.getValue('georisksX'),
                 this.getValue('georisksY')
             ])),
-            name: this.getValue('georisksFormName'),
+
+            category: this.getValue('georisksFormCategory'),
+            volume: this.getValue('georisksFormVolume'),
+            height: this.getValue('georisksFormHeight'),
+            kind: this.getValue('georisksFormKind_' + cat) || '',
             message: this.getValue('georisksFormMessage'),
+            dangers: DANGERS.filter(d => this.getValue('georisksFormDanger_' + d)).join(),
             files
         };
 

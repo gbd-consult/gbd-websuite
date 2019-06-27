@@ -4,9 +4,73 @@ import gws
 import gws.tools.misc
 import gws.tools.date
 import gws.tools.net
+import gws.tools.json2
+import gws.gis.shape
+
+import gws.types as t
 
 _DEVICE_STATE_VERB = 'receiveDeviceState'
 _ALARM_MESSAGE_VERB = 'receiveAlarmMessage'
+
+
+def service_request(action):
+    url = action.var('aarteLink.serviceUrl') + '/' + 'overview'
+    auth = (action.var('aarteLink.serviceLogin'), action.var('aarteLink.servicePassword'))
+    resp = gws.tools.net.http_request(url, auth=auth)
+    r = gws.tools.json2.from_string(resp.text)
+
+    # "version": 1,
+    # "timestamp": 1561541113,
+    # "time": "2019-06-26T11:25:13+02:00",
+    # "messageType": "system_overview",
+    # "data": {
+    #     "version": 1,
+    #     "customerId": ...,
+    #     "systemId": "...",
+    #     "name": "...",
+    #     "comAddr": "...",
+    #     "devices": {
+    #         "...": {
+    #             "name": ...,
+    #             "serial": "...",
+    #             "state": "...",
+    #             "errorLevel": 0,
+    #             "errorLevelName": "...",
+    #             "type": "...",
+    #             "typeName": "...",
+    #             "location": "...",
+
+    recs = []
+
+    for id, dev in r['data']['devices'].items():
+        rec = {
+            'id': id,
+            'name': dev.get('name', ''),
+            'state': dev.get('state', ''),
+            'errorlevel': int(dev.get('errorLevel', 0)),
+            'errorlevelname': dev.get('errorLevelName', ''),
+            'type': dev.get('type', ''),
+            'typename': dev.get('typeName', ''),
+        }
+        if dev.get('location'):
+            x, y = dev.get('location').split(':')
+            rec['geom'] = gws.gis.shape.from_geometry({
+                'type': 'Point',
+                'coordinates': [float(x), float(y)]
+            }, 'EPSG:4326')
+
+        recs.append(rec)
+
+    with action.db.connect() as conn:
+        conn.exec(f'TRUNCATE TABLE {action.DEVICE_TABLE_NAME}')
+
+    tbl = t.SqlTableConfig({
+        'name': action.DEVICE_TABLE_NAME,
+        'keyColumn': 'id',
+        'geometryColumn': 'geom'
+    })
+
+    action.db.insert(tbl, recs)
 
 
 def handle(action, req):
@@ -126,7 +190,7 @@ def _save_alarm_message(action, r):
 
 
 def _validate_checksum(action, r, *keys):
-    system_key = action.var('aarteLinkSystemKey', default='')
+    system_key = action.var('aarteLink.systemKey', default='')
 
     h = system_key + ''.join(r[k] for k in keys)
 
