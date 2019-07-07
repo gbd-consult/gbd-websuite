@@ -954,8 +954,6 @@ class AlkisController extends gws.Controller {
             projectUid: this.app.project.uid
         });
 
-        this.update({alkisFsLoading: false});
-
         if (res.error) {
             let msg = this.STRINGS.errorGeneric;
 
@@ -971,6 +969,7 @@ class AlkisController extends gws.Controller {
                 alkisFsError: msg,
             });
 
+            this.update({alkisFsLoading: false});
             return this.goTo('error');
         }
 
@@ -986,7 +985,13 @@ class AlkisController extends gws.Controller {
             infoboxContent: null
         });
 
-        this.goTo('list');
+        if (features.length === 1) {
+            await this.showDetails(features[0], false);
+        } else {
+            this.goTo('list');
+        }
+
+        this.update({alkisFsLoading: false});
     }
 
     async urlSearch() {
@@ -1028,18 +1033,17 @@ class AlkisController extends gws.Controller {
 
     }
 
-    async showDetails(f: gws.types.IMapFeature) {
+    async showDetails(f: gws.types.IMapFeature, highlight = true) {
         let q = this.paramsForFeatures([f]);
         let res = await this.app.server.alkisFsDetails(q);
         let feature = this.map.readFeature(res.feature);
 
         if (f) {
+            if (highlight)
+                this.highlight(f);
+
             this.update({
                 alkisFsDetailsFeature: feature,
-                marker: {
-                    features: [feature],
-                    mode: 'zoom draw'
-                }
             });
 
             this.goTo('details');
