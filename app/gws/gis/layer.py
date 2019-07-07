@@ -487,13 +487,22 @@ def meta_from_source_layers(layer):
     if sl and len(sl) == 1:
         return sl[0].meta
 
+def best_source_layer_extent(sl: t.SourceLayer, map_crs):
+    for crs, ext in sl.extents.items():
+        if crs == map_crs:
+            return crs, ext
+    for crs, ext in sl.extents.items():
+        if gws.gis.proj.equal(crs, 'EPSG:4326'):
+            return crs, ext
+    for crs, ext in sl.extents.items():
+        return crs, ext
+
 
 def extent_from_source_layers(layer):
     source_extents = []
     for sl in layer.source_layers:
         if sl.extents:
-            for crs, ext in sl.extents.items():
-                source_extents.append(gws.gis.proj.transform_bbox(ext, crs, layer.map.crs))
-                break
+            crs, ext = best_source_layer_extent(sl, layer.map.crs)
+            source_extents.append(gws.gis.proj.transform_bbox(ext, crs, layer.map.crs))
     if source_extents:
         return gws.gis.shape.merge_extents(source_extents)
