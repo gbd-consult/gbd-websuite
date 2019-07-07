@@ -1157,6 +1157,7 @@ class AlkisController extends gws.Controller {
     reset() {
         this.update({
             alkisFsParams: {},
+            alkisFsStrassen: [],
         });
         this.clearResults();
         this.stopTools();
