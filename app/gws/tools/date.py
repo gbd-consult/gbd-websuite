@@ -24,6 +24,10 @@ def now_iso():
     return to_iso(now())
 
 
+def from_timestamp(ts):
+    return datetime.datetime.fromtimestamp(ts)
+
+
 class DateFormatter:
     def __init__(self, locale):
         self.locale = locale

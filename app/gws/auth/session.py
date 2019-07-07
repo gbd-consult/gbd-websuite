@@ -52,12 +52,15 @@ class Manager:
         return self._session_object(rec)
 
     def create_for(self, user):
-        store.cleanup(gws.config.var('auth.session.lifeTime'))
+        self.cleanup()
         uid = store.create(
             user.provider.uid,
             user.uid,
             user.provider.marshal_user(user))
         return self._session_object(store.find(uid))
+
+    def cleanup(self):
+        store.cleanup(gws.config.var('auth.session.lifeTime'))
 
     def delete(self, sess):
         store.delete(sess.uid)
@@ -68,3 +71,13 @@ class Manager:
 
     def delete_all(self):
         store.drop()
+
+    def get_all(self):
+        return [{
+            'user_uid': r['user_uid'],
+            'created': r['created'],
+            'updated': r['updated'],
+        } for r in store.get_all()]
+
+    def count(self):
+        return store.count()
