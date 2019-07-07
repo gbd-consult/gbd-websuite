@@ -35,13 +35,15 @@ class LayersCheckButton extends gws.View<LayersViewProps> {
     render() {
         let layer = this.props.layer,
             isExclusive = layer.parent && layer.parent.exclusive,
-            isChecked = layer.checked;
+            isChecked = layer.checked,
+            isGroup = !gws.tools.empty(layer.children);
 
         let cls = gws.tools.cls(
             'modLayersCheckButton',
             layer.visible && 'isVisible',
             isExclusive && 'isExclusive',
-            isChecked && 'isChecked'
+            isChecked && 'isChecked',
+            isGroup && 'isGroup',
         );
 
         return <gws.ui.IconButton
