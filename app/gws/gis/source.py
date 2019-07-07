@@ -8,7 +8,7 @@ class LayerFilterConfig(t.Config):
     """Layer filter"""
 
     level: int = 0  #: use layers at this level
-    names: t.Optional[t.List[str]]  #: use these layer names
+    names: t.Optional[t.List[str]]  #: use these layer names (top-to-bottom order)
     pattern: t.regex = ''  #: match a pattern against the layer full path
 
 
@@ -23,6 +23,7 @@ def filter_layers(
         slf: LayerFilter,
         image_only=False,
         queryable_only=False) -> t.List[t.SourceLayer]:
+
     if slf:
         s = gws.get(slf, 'level')
         if s:
@@ -30,7 +31,15 @@ def filter_layers(
 
         s = gws.get(slf, 'names')
         if s:
-            layers = [sl for sl in layers if sl.name in s]
+            # NB: if 'names' is given, maintain the given order, which is expected to be top-to-bottom
+            # see note in ext/layers/wms
+            layers2 = []
+            for name in s:
+                for sl in layers:
+                    if sl.name == name:
+                        layers2.append(sl)
+                        break
+            layers = layers2
 
         s = gws.get(slf, 'pattern')
         if s:
