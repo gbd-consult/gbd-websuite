@@ -71,7 +71,7 @@ class Object(gws.gis.layer.Image):
     def configure(self):
         super().configure()
 
-        configure_wms(self, image_only=True)
+        configure_wms(self)
 
         if not self.source_layers:
             raise gws.Error(f'no layers found in {self.uid!r}')
