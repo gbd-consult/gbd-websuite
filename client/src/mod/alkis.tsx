@@ -294,7 +294,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             else if (this.props.alkisFsParams.wantEigentuemer)
                 nameShowMode = 'enabled';
             else
-                nameShowMode = 'disabled';
+                nameShowMode = '';
 
         return <Form>
             {nameShowMode && <Row>
