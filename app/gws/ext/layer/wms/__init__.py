@@ -91,7 +91,7 @@ class Object(gws.gis.layer.Image):
         self.configure_extent(gws.gis.layer.extent_from_source_layers(self))
 
     def mapproxy_config(self, mc, options=None):
-        layers = [sl.name for sl in self.source_layers]
+        layers = [sl.name for sl in self.source_layers if sl.name]
         if not self.var('capsLayersBottomUp'):
             layers = reversed(layers)
 

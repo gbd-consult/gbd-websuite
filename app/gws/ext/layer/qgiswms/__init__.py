@@ -90,7 +90,7 @@ class Object(gws.gis.layer.Image):
         return self.service.get_legend(self.source_layers)
 
     def mapproxy_config(self, mc, options=None):
-        layers = [sl.name for sl in self.source_layers]
+        layers = [sl.name for sl in self.source_layers if sl.name]
         # NB: qgis caps layers are always top-down
         layers = reversed(layers)
 
