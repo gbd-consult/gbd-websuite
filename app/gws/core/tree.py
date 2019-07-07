@@ -26,6 +26,9 @@ class Object(t.ObjectInterface):
         return self.klass.startswith(klass + '.')
 
     def set_uid(self, uid):
+        if self.uid == uid:
+            return
+
         with util.global_lock:
             n = 0
             u = uid
