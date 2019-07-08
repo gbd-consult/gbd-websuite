@@ -1074,7 +1074,8 @@ class AlkisController extends gws.Controller {
         };
 
         this.update({
-            printJob: await this.app.server.alkisFsPrint(q)
+            printJob: await this.app.server.alkisFsPrint(q),
+            printSnapshotMode: false,
         });
     }
 
