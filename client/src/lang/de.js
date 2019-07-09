@@ -128,6 +128,7 @@ module.exports = {
     modSidebarOpenButton: 'Menü',
     modSidebarOverflowButton: 'Weiteres',
     modTaskAnnotate: 'Markieren und Messen',
+    modTaskSearch: 'Räumliche Suche',
     modTaskLens: 'Räumliche Suche',
     modTaskSelect: 'Auswählen',
     modTaskZoom: 'Hinzoomen',

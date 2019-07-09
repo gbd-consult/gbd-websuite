@@ -68,6 +68,44 @@ class TaskZoom extends gws.Controller implements ITaskItem {
     }
 }
 
+class TaskSearch extends gws.Controller implements ITaskItem {
+    iconClass = 'modTaskSearch';
+
+    get tooltip() {
+        return this.__('modTaskSearch')
+    }
+
+    active(ctx) {
+        return !!ctx.feature;
+    }
+
+    whenTouched(ctx) {
+        if (ctx.feature)
+            this.runSearch(ctx.feature.geometry);
+    }
+
+    async runSearch(geometry) {
+        let features = await this.map.searchForFeatures({geometry});
+
+        if (features.length) {
+            this.update({
+                marker: {
+                    features,
+                    mode: 'draw',
+                },
+                infoboxContent: <gws.components.feature.InfoList controller={this} features={features}/>
+            });
+        } else {
+            this.update({
+                marker: {
+                    features: null,
+                },
+                infoboxContent: null
+            });
+        }
+    }
+}
+
 class TaskAnnotate extends gws.Controller implements ITaskItem {
     iconClass = 'modTaskAnnotate';
 
@@ -203,6 +241,7 @@ export const tags = {
     'Task.Zoom': TaskZoom,
     'Task.Annotate': TaskAnnotate,
     'Task.Select': TaskSelect,
+    'Task.Search': TaskSearch,
 };
 
 
