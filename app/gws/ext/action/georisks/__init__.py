@@ -88,6 +88,7 @@ _DB_TABLES = """
 
 _DANGERS = ['street', 'rail', 'way', 'house', 'object', 'person']
 
+
 class AarteLinkConfig(t.Config):
     """AarteLink system configuration"""
 
@@ -129,7 +130,7 @@ class CreateReportParams(t.Params):
     volume: str = ''
     height: str = ''
     kind: str = ''
-    dangers: str = ''
+    dangers: t.List[str]
     message: str = ''  #: user message
     files: t.Optional[t.List[ReportFile]]  #: attached files
 
@@ -160,11 +161,33 @@ class ReportStatusItem:
     reportUid: int  #: report id
     status: ReportStatus  #: status value
     reason: str  #: report status reason
-    date: str  #: ISO-formatted status change date
+    date: str  #: ISO-formatted change date
+
+
+class ReportListItem:
+    """Details of a single report."""
+
+    reportUid: int  #: report id
+
+    shape: t.ShapeProps  #: spatial shape of the report
+    shape4326: t.ShapeProps  #: spatial shape of the report in the EPSG:4326 crs
+
+    category: str
+    volume: str
+    height: str
+    kind: str
+    message: str
+    dangers: t.List[str]
+    images: t.List[str]
+    date: str  #: ISO-formatted change date
 
 
 class ReportStatusResponse(t.Response):
     items: t.List[ReportStatusItem]
+
+
+class ReportListResponse(t.Response):
+    items: t.List[ReportListItem]
 
 
 class AartelinkResponse(t.Response):
@@ -186,6 +209,7 @@ class Object(gws.ActionObject):
     def __init__(self):
         super().__init__()
         self.db: t.DbProviderObject = None
+        self.crs = None
 
     def configure(self):
         super().configure()
@@ -193,6 +217,8 @@ class Object(gws.ActionObject):
         p = self.var('db')
         self.db = self.root.find('gws.ext.db.provider', p) if p else self.root.find_first(
             'gws.ext.db.provider.postgres')
+        with self.db.connect() as conn:
+            self.crs = conn.crs_for_column(self.REPORT_TABLE_NAME, 'geom')
 
     def api_create_report(self, req, p: CreateReportParams) -> CreateReportResponse:
         """Upload a new report"""
@@ -219,7 +245,6 @@ class Object(gws.ActionObject):
                 gws.log.exception()
                 raise gws.web.error.BadRequest()
             rec[f'image{n}'] = img
-
 
         ds = gws.as_list(p.dangers)
         for d in _DANGERS:
@@ -264,16 +289,61 @@ class Object(gws.ActionObject):
             'items': ls
         })
 
+    def api_report_list(self, req, p: t.NoParams) -> ReportListResponse:
+        """Return all approved reports"""
+
+        ls = []
+
+        with self.db.connect() as conn:
+            rs = conn.select(f"""
+                SELECT * FROM {self.REPORT_TABLE_NAME} 
+                WHERE STATUS=%s
+                ORDER BY time_created ASC
+            """, [ReportStatus.approved])
+
+            for r in rs:
+                shape = gws.gis.shape.from_wkb(r['geom'], self.crs)
+
+                ls.append({
+                    'shape': shape.props,
+                    'shape4326': shape.transform('EPSG:4326').props,
+                    'reportUid': r['id'],
+                    'category': r['category'],
+                    'volume': r['volume'],
+                    'height': r['height'],
+                    'kind': r['kind'],
+                    'message': r['message'],
+                    'images': gws.compact(self._image_url(req, r, n) for n in range(1, _MAX_IMAGES + 1)),
+                    'dangers': [d for d in _DANGERS if r.get(f'danger_{d}')],
+                    'date': gws.tools.date.to_isotz(r['time_updated']),
+                })
+
+            return ReportListResponse({
+                'items': ls
+            })
+
+    def _image_url(self, req, r, n):
+        if r.get(f'image{n}'):
+            return req.reversed_url(f"cmd=georisksHttpGetReportImage&reportUid={r['id']}&image={n}")
+
     def http_get_report_image(self, req, p) -> t.HttpResponse:
+        # params are reportUid, image (1.._MAX_IMAGES)
+
+        image = gws.as_int(req.params.get('image')) or 1
+        if not (1 <= image <= _MAX_IMAGES):
+            raise gws.web.error.NotFound()
+
+        fld = f'image{image}'
+
         with self.db.connect() as conn:
             r = conn.select_one(
-                f"SELECT image FROM {self.REPORT_TABLE_NAME} WHERE id = %s",
+                f"SELECT {fld} FROM {self.REPORT_TABLE_NAME} WHERE id = %s",
                 [req.params.get('reportUid')])
         if not r:
             raise gws.web.error.NotFound()
         return t.HttpResponse({
             'mimeType': 'image/jpeg',
-            'content': r['image']
+            'content': r[fld]
         })
 
     def export_reports(self, base_dir):

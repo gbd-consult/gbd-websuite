@@ -543,7 +543,7 @@ class GeorisksController extends gws.Controller {
             height: this.getValue('georisksFormHeight'),
             kind: this.getValue('georisksFormKind_' + cat) || '',
             message: this.getValue('georisksFormMessage'),
-            dangers: DANGERS.filter(d => this.getValue('georisksFormDanger_' + d)).join(),
+            dangers: DANGERS.filter(d => this.getValue('georisksFormDanger_' + d)),
             files
         };
 

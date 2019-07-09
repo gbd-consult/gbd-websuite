@@ -10,6 +10,7 @@ from . import log
 
 _noexpand = {
     "<type 'datetime.datetime'>",
+    "<class 'memoryview'>",
 }
 
 
