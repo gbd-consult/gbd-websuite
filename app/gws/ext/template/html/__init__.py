@@ -32,6 +32,10 @@ class ParsedTemplate(t.Data):
 class Object(gws.common.template.Object):
     map_placeholder = '__map__'
 
+    @property
+    def auto_uid(self):
+        return None
+
     def configure(self):
         super().configure()
 

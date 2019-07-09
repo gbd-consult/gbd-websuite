@@ -43,6 +43,10 @@ class Object(gws.PublicObject, t.MapObject):
         self.layers: t.List[t.LayerObject] = []
         self.coordinate_precision = 0
 
+    @property
+    def auto_uid(self):
+        return None
+
     def configure(self):
         super().configure()
 

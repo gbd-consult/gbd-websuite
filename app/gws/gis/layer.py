@@ -184,6 +184,10 @@ class Base(gws.PublicObject, t.LayerObject):
             uid = self.map.uid + '.' + uid
         self.set_uid(uid)
 
+    @property
+    def auto_uid(self):
+        return None
+
     def configure(self):
         super().configure()
 

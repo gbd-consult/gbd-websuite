@@ -94,6 +94,10 @@ class Object(gws.Object):
         self.version = gws.VERSION
         self.web_sites: t.List[gws.web.site.Object] = []
 
+    @property
+    def auto_uid(self):
+        return None
+
     def configure(self):
         super().configure()
 

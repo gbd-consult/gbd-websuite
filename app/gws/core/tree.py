@@ -38,20 +38,22 @@ class Object(t.ObjectInterface):
             _uids.add(uid)
             self.uid = uid
 
-    def set_auto_uid(self):
+    @property
+    def auto_uid(self):
         u = self.var('uid')
         if u:
-            return self.set_uid(u)
+            return u
         u = self.var('title')
         if u:
-            return self.set_uid(util.as_uid(u))
-        u = self.klass.replace('.', '_')
-        return self.set_uid(u)
+            return util.as_uid(u)
+        return self.klass.replace('.', '_')
 
     def initialize(self, cfg):
         self.config = cfg
 
-        self.set_auto_uid()
+        uid = self.auto_uid
+        if uid:
+            self.set_uid(uid)
 
         self.access = self.var('access')
         try:

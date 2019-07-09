@@ -31,6 +31,10 @@ class Object(gws.common.template.Object):
         self.template: gws.qgis.PrintTemplate = None
         self.service: gws.qgis.Service = None
 
+    @property
+    def auto_uid(self):
+        return None
+
     def configure(self):
         super().configure()
 
