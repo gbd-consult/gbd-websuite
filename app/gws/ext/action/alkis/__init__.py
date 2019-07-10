@@ -481,7 +481,9 @@ class Object(gws.Object):
             if shape:
                 query.shape = shape
 
-        total, features = self._find(req, query, target_crs, allow_eigentuemer, allow_buchung, self.limit)
+        total, features = self._find(query, target_crs, allow_eigentuemer, allow_buchung, self.limit)
+        for f in features:
+            f.attributes['is_guest_user'] = req.user.is_guest
 
         gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} query={query!r} total={total!r} len={len(features)}')
 
@@ -490,7 +492,7 @@ class Object(gws.Object):
 
         return total, features
 
-    def _find(self, req, query: FsQueryParams, target_crs, allow_eigentuemer, allow_buchung, limit):
+    def _find(self, query: FsQueryParams, target_crs, allow_eigentuemer, allow_buchung, limit):
         features = []
 
         query = self._expand_combined_params(query)
@@ -500,7 +502,6 @@ class Object(gws.Object):
             total, rs = flurstueck.find(conn, query, limit)
             for rec in rs:
                 rec = self._remove_restricted_data(rec, allow_eigentuemer, allow_buchung)
-                rec['is_guest_user'] = req.user.is_guest
                 feature = gws.gis.feature.Feature({
                     'uid': rec['gml_id'],
                     'attributes': rec,
