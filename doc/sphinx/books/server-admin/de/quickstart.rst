@@ -1,7 +1,7 @@
 Schnellstart
 ============
 
-Im folgenden wird gezeigt wie Sie den GBD WebSuite Server zum ersten Mal starten und Ihr erstes Projekt einrichten.
+Hiermit starten Sie den GBD WebSuite Server zum ersten Mal und richten Ihr erstes Projekt ein. 
 
 **Schritt 1**. Stellen Sie sicher, dass `docker <https://www.docker.com>`_ installiert ist und funktioniert.
 
@@ -9,17 +9,17 @@ Im folgenden wird gezeigt wie Sie den GBD WebSuite Server zum ersten Mal starten
 
     docker run -it -p 3333:80 --name my-gws-container gbdconsult/gws-server:latest
 
-Dies führt den GBD WebSuite Server auf dem Port ``3333`` unter dem Namen ``my-gws-container`` aus (zögern Sie nicht, einen anderen Namen und/oder Port zu verwenden).
-Bei einigen Setups benötigen Sie möglicherweise Root-Rechte (``sudo``), um dies ausführen zu können.
+Ersetzen Sie 'latest' mit dem Versionsnummer (z.B.: 3.4), den Sie von dockerhub installieren wollen. Dies führt den GBD WebSuite Server auf dem Port ``3333`` unter dem Namen ``my-gws-container`` aus (zögern Sie nicht, einen anderen Namen und/oder Port zu verwenden).
+Bei einigen Setups benötigen Sie möglicherweise Root-Rechte (``sudo``), um dies ausführen zu können. Sie sollten das Serverprotokoll auf Ihrem Terminal sehen.
 
-Wenn alles in Ordnung ist, sollten Sie das Server-Log auf Ihrem Terminal sehen. Gehen Sie in Ihrem Browser auf `<http://localhost:3333>`_. Es wird die Server-Startseite und unser Beispielprojekt gezeigt.
+Wenn alles in Ordnung ist, sollten Sie das Server-Log auf Ihrem Terminal sehen. Gehen Sie in Ihrem Browser auf `<http://localhost:3333>`_. Es wird die Server-Startseite und unser Beispielprojekt gezeigt. 
 
 Stoppen Sie nun den Server mit Control-C und entfernen Sie den Container ::
 
     docker rm my-gws-container
 
-**Schritt 3**. Erstellen Sie nun ein Verzeichnis ``hello`` irgendwo auf Ihrer Festplatte (z. B. ``/var/work/hello``).
-Erstellen Sie in diesem Verzeichnis eine Datei namens ``config. json`` mit folgendem Inhalt ::
+**Schritt 3**. Erstellen Sie ein Verzeichnis ``hello`` irgendwo auf Ihrer Festplatte (z. B. ``/var/work/hello``).
+Erstellen Sie in diesem Verzeichnis eine Datei namens ``config.json`` mit folgendem Inhalt ::
 
 
     {
@@ -45,4 +45,6 @@ Erstellen Sie in diesem Verzeichnis eine Datei namens ``config. json`` mit folge
 
     docker run -it -p 3333:80 --name my-gws-container --mount type=bind,src=/var/work/hello,dst=/data/projects/hello gbdconsult/gws-server:latest
 
-Navigieren Sie zu ``http://localhost:3333/hello <http://localhost:3333/hello>``. Sie sollten eine OpenStreetMap Karte von Düsseldorf sehen, wo der Geburtsort der GBD WebSuite liegt.
+Navigieren Sie zu ``http://localhost:3333/hello <http://localhost:3333/hello>``. Sie sollten die OpenStreetMap von Düsseldorf sehen, der Geburtsort der GBD WebSuite. 
+
+
