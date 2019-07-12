@@ -64,6 +64,7 @@ class UiConfig:
     pick: bool = False  #: pick mode enabled
     searchSelection: bool = False  #: search in selection enabled
     searchSpatial: bool = False  #: spatial search enabled
+    gemarkungListMode: str = 'combined'  #  combined = "gemarkung(gemeinde)", plain = only "gemarkung"
 
 
 class Config(t.WithTypeAndAccess):
@@ -315,7 +316,7 @@ class Object(gws.Object):
                 'withControl': self._can_read_eigentuemer(req) and self.control_mode,
                 'withBuchung': self._can_read_buchung(req),
                 'withFlurnummer': flurstueck.has_flurnummer(conn),
-                'gemarkungen': flurstueck.gemarkung_list(conn),
+                'gemarkungen': flurstueck.gemarkung_list(conn, self.var('ui.gemarkungListMode')),
                 'printTemplate': self.print_template.props,
                 'limit': self.limit,
                 'uiExport': self.var('ui.export'),

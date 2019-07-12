@@ -373,16 +373,19 @@ def index_ok(conn):
     return indexer.check_version(conn, main_index)
 
 
-def gemarkung_list(conn):
+def gemarkung_list(conn, mode):
     rs = conn.select(f'''
         SELECT DISTINCT gemarkung_id, gemarkung, gemeinde
         FROM {conn.index_schema}.{main_index}
     ''')
     ls = []
     for r in rs:
+        name = r['gemarkung']
+        if mode == 'combined':
+            name = '%s (%s)' % (r['gemarkung'], r['gemeinde'].replace('Stadt ', ''))
         ls.append({
             'uid': r['gemarkung_id'],
-            'name': '%s (%s)' % (r['gemarkung'], r['gemeinde'].replace('Stadt ', ''))
+            'name': name
         })
 
     return sorted(ls, key=lambda x: x['name'])
