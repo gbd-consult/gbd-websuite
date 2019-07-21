@@ -60,3 +60,9 @@ def unlink(path):
     except OSError:
         pass
 
+
+def file_mtime(path):
+    try:
+        return os.stat(path).st_mtime
+    except OSError:
+        return 0

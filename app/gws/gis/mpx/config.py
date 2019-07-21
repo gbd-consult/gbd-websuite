@@ -81,9 +81,19 @@ class _Config:
 
     def _add(self, kind, c):
         # mpx doesn't like tuples
-        if 'bbox' in c and isinstance(c['bbox'], tuple):
-            c['bbox'] = list(c['bbox'])
+        for k, v in c.items():
+            if isinstance(v, tuple):
+                c[k] = list(v)
+
         uid = kind + '_' + gws.tools.json2.to_hash(c)
+
+        # clients might add their hash params starting with '$'
+        c = {
+            k: v
+            for k, v in c.items()
+            if not k.startswith('$')
+        }
+
         self.cfg[uid] = {'kind': kind, 'c': c}
         return uid
 

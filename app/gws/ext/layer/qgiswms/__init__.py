@@ -11,6 +11,7 @@ import gws.ows.request
 import gws.ows.util
 import gws.qgis
 import gws.server.monitor
+import gws.tools.shell
 import gws.types as t
 
 
@@ -104,7 +105,10 @@ class Object(gws.gis.layer.Image):
                 'map': self.path,
                 'layers': ','.join(layers),
                 'transparent': True,
-            }
+            },
+            # add the mtime to the config, so that the source and cache ids
+            # in the mpx config are recalculated when the file changes
+            '$hash': gws.tools.shell.file_mtime(self.path)
         })
 
         self.mapproxy_layer_config(mc, source)
