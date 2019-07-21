@@ -26,11 +26,16 @@ def status(layers=None):
         print('no cached layers found')
         return
 
-    data = []
+    for la_uid, info in sorted(st.items()):
+        print()
+        print(f"CACHE : {info['cache_uid']}")
+        print(f"LAYER : {', '.join(info['layer_uids'])}")
+        print(f"CONFIG: {repr(info['config'])}")
+        print()
 
-    for la_uid, rs in sorted(st.items()):
-        data.append({'layer': la_uid})
-        for r in rs:
+        data = []
+
+        for r in info['counts']:
             data.append({
                 'zoom': r['z'],
                 'scale': round(misc.res2scale(r['res'])),
@@ -39,14 +44,29 @@ def status(layers=None):
                 'cached': r['num_files'],
                 '%%': int(100 * (r['num_files'] / (r['maxx'] * r['maxy']))),
             })
+        print(clihelpers.text_table(data, ['zoom', 'scale', 'grid', 'total', 'cached', '%%']))
 
-    print('\nCACHE STATUS\n')
-    print(clihelpers.text_table(data, ['layer', 'zoom', 'scale', 'grid', 'total', 'cached', '%%']))
+    print()
+
+    u = gws.gis.cache.dangling_dirs()
+    if u:
+        print(f'{len(u)} DANGLING DIRECTORIES:')
+        print()
+        print('\n'.join(u))
+
+    print()
+
+
+def clean():
+    """Clean up the cache."""
+
+    gws.config.loader.load()
+    gws.gis.cache.clean()
 
 
 @arg('--layers', help='comma separated list of layer IDs')
 def drop(layers=None):
-    """Drop the caches"""
+    """Drop caches for specific or all layers."""
 
     gws.config.loader.load()
     if layers:

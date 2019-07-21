@@ -10,27 +10,66 @@ import gws
 import gws.config
 import gws.tools.misc as misc
 import gws.tools.shell as sh
-from .mpx import config
+import gws.gis.mpx.config
 
 import gws.types as t
 
 
-def status(layers=None):
-    mc = config.create()
+def status(layer_uids=None):
+    mc = gws.gis.mpx.config.create()
     files = _get_files()
+
     st = {}
 
-    for layer, cc in _cached_layers(mc, layers):
-        st[layer.uid] = _status_for_cache(cc, mc, files)
+    for layer, cc in _cached_layers(mc):
+        uid = cc['name']
+        if uid not in st:
+            st[uid] = {
+                'cache_uid': uid,
+                'layer_uids': [layer.uid],
+                'config': vars(layer.cache) if layer.cache else {},
+                'mpx_config': cc,
+                'counts': _file_counts_by_zoom_level(cc, mc, files)
+            }
+        else:
+            st[uid]['layer_uids'].append(layer.uid)
+            st[uid]['layer_uids'].sort()
 
-    return st
+    if not layer_uids:
+        return st
+
+    return {
+        k: v
+        for k, v in st.items()
+        if any(uid in v['layer_uids'] for uid in layer_uids)
+    }
 
 
-def seed(layers=None, max_time=None, concurrency=1, levels=None):
-    mc = config.create()
+def dangling_dirs():
+    mc = gws.gis.mpx.config.create()
+    used = {
+        cc['name']
+        for layer, cc in _cached_layers(mc)
+    }
+    return [
+        d
+        for d in _get_dirs()
+        if not any(d.startswith(u) for u in used)
+    ]
+
+
+def clean():
+    ds = []
+    for d in dangling_dirs():
+        _remove_dir(gws.MAPPROXY_CACHE_DIR + '/' + d)
+    return len(ds)
+
+
+def seed(layer_uids=None, max_time=None, concurrency=1, levels=None):
+    mc = gws.gis.mpx.config.create()
     seeds = {}
 
-    for layer, cc in _cached_layers(mc, layers):
+    for layer, cc in _cached_layers(mc, layer_uids):
         seeds[layer.cache_uid] = _seed_config(layer, cc, levels)
 
     if not seeds:
@@ -60,14 +99,13 @@ def seed(layers=None, max_time=None, concurrency=1, levels=None):
     return True
 
 
-def drop(layers=None):
-    mc = config.create()
-    for layer, cc in _cached_layers(mc, layers):
+def drop(layer_uids=None):
+    mc = gws.gis.mpx.config.create()
+
+    for layer, cc in _cached_layers(mc, layer_uids):
         dirname = _dirname_for_cache(cc)
         if os.path.isdir(dirname):
-            cmd = ['rm', '-fr', dirname]
-            sh.run(cmd, echo=True)
-            gws.log.info(f'removed {dirname}')
+            _remove_dir(dirname)
 
 
 def store_in_web_cache(layer: t.LayerObject, x, y, z, img):
@@ -80,22 +118,6 @@ def store_in_web_cache(layer: t.LayerObject, x, y, z, img):
         os.rename(dirname + '/' + tmp, dirname + '/t.png')
     except OSError:
         gws.log.warn(f'store_in_web_cache FAILED dir={dirname}')
-
-
-# def updateweb(layers):
-#     cmd = ['rm', '-fr', gws.WEB_CACHE_DIR + '/_']
-#     sh.run(cmd, echo=True)
-#
-#     files = _get_files()
-#     mc = config.create()
-#     for layer, cc in _cached_layers(mc, layers):
-#         dirname = _dirname_for_cache(cc)
-#         for f in files:
-#             if f.startswith(dirname):
-#                 x, y, z = _path_to_xyz(f)
-#                 symlink_dir = gws.WEB_CACHE_DIR + f'/_/cmd/mapHttpGetXyz/layer/{layer.uid}/z/{z}/x/{x}/y/{y}'
-#                 os.makedirs(symlink_dir, 0o755, exist_ok=True)
-#                 os.symlink(f, symlink_dir + '/t.png')
 
 
 def _path_to_xyz(path):
@@ -112,7 +134,7 @@ def _dirname_for_cache(cc):
     return gws.MAPPROXY_CACHE_DIR + '/' + cc['name'] + '_' + cc['grid']['srs'].replace(':', '')
 
 
-def _status_for_cache(cc, mc, files):
+def _file_counts_by_zoom_level(cc, mc, files):
     file_counts = collections.defaultdict(int)
     dirname = _dirname_for_cache(cc)
     for f in files:
@@ -129,12 +151,12 @@ def _status_for_cache(cc, mc, files):
     return out
 
 
-def _cached_layers(mc, layers):
+def _cached_layers(mc, layer_uids=None):
     for layer in gws.config.find_all('gws.ext.layer'):
         cc = _cache_for_layer(layer, mc)
         if not cc:
             continue
-        if layers and layer.uid not in layers:
+        if layer_uids and layer.uid not in layer_uids:
             continue
         yield layer, cc
 
@@ -180,3 +202,22 @@ def _calc_grids(grid):
 
 def _get_files():
     return list(misc.find_files(gws.MAPPROXY_CACHE_DIR))
+
+
+def _get_dirs():
+    ls = []
+
+    for fname in os.listdir(gws.MAPPROXY_CACHE_DIR):
+        if fname.startswith('.'):
+            continue
+        path = os.path.join(gws.MAPPROXY_CACHE_DIR, fname)
+        if os.path.isdir(path):
+            ls.append(fname)
+
+    return ls
+
+
+def _remove_dir(dirname):
+    cmd = ['rm', '-fr', dirname]
+    sh.run(cmd, echo=True)
+    gws.log.info(f'removed {dirname}')
