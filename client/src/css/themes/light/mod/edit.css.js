@@ -13,7 +13,7 @@ module.exports = v => ({
         ...v.SIDEBAR_AUX_BUTTON('cursor')
     },
     '.modEditDrawAuxButton': {
-        ...v.SIDEBAR_AUX_BUTTON('google:content/gesture')
+        ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')
     },
     '.modEditRemoveAuxButton': {
         ...v.SIDEBAR_AUX_BUTTON('google:action/delete')
