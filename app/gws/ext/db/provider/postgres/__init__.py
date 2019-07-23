@@ -110,6 +110,8 @@ class Object(gws.Object, t.DbProviderObject):
 
             ids = args.get('ids')
             if ids:
+                if not key_col:
+                    return []
                 ph = ','.join(['%s'] * len(ids))
                 where.append(f'{conn.quote_ident(key_col)} IN ({ph})')
                 parms.extend(ids)
