@@ -1,6 +1,6 @@
 module.exports = v => ({
     '.modGeorisksToolbarButton': {
-        ...v.TOOLBAR_BUTTON('outline-report_problem-24px')
+        ...v.TOOLBAR_BUTTON('georisk')
     },
     '.modGeorisksFormPadding': {
         textAlign: 'center',
