@@ -102,8 +102,7 @@ class ReportConfig(t.Config):
     """Configuration for the report function"""
 
     privacyPolicyLink: t.Optional[str]  #: url of the privacy policy document
-    minImageBytes: int = 500  #: min image size in bytes
-    maxImageBytes: int = 5e6  #: max image size in bytes
+    maxImageLength: int = 5  #: max image size in megabytes
     maxImageSize: int = 1000  #: max image size in pixels
     imageQuality: int = 75  #: jpeg quality level
 
@@ -379,10 +378,8 @@ class Object(gws.ActionObject):
     def _check_image(self, buf):
         siz = len(buf)
 
-        if siz < self.var('report.minImageBytes'):
-            raise ValueError('image too small')
-        if siz > self.var('report.maxImageBytes'):
-            raise ValueError('image too big')
+        if siz / (1024.0 * 1024.0) > self.var('report.maxImageLength'):
+            raise ValueError(f'image too big, bytes={siz}')
 
         warnings.simplefilter('error', Image.DecompressionBombWarning)
 
