@@ -239,12 +239,15 @@ def create(base_dir, pid_dir):
             # @TODO multisites
             break
 
+        # this is in MB
+        max_body_size = gws.config.var('server.web.maxRequestLength')
+
         web_common = f"""
             error_log {nginx_log}=NGINX_WEB {nginx_log_level};
             access_log {nginx_log}=NGINX_WEB apm;
             rewrite_log on;
         
-            client_max_body_size 120m;
+            client_max_body_size {max_body_size}m;
         
             # @TODO: optimize, disallow _ rewriting
 

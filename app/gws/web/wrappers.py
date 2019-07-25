@@ -43,7 +43,8 @@ class Response(werkzeug.wrappers.Response):
 
 
 class Request(werkzeug.wrappers.Request):
-    max_content_length = 1024 * 1024 * 4
+    # the actual limit is set in the nginx conf (see server/ini)
+    max_content_length = 1024 * 1024 * 1024
 
     @property
     def response(self):

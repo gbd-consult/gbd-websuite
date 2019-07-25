@@ -17,6 +17,7 @@ class SpoolConfig(SrvConfig):
 
 class WebConfig(SrvConfig):
     """Web server module"""
+    maxRequestLength: int = 10  #: max request length in megabytes
     pass
 
 
