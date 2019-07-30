@@ -1,6 +1,9 @@
 import re
 
 import gws
+import gws.gis.proj
+import gws.gis.shape
+
 import gws.types as t
 
 
@@ -23,7 +26,6 @@ def filter_layers(
         slf: LayerFilter,
         image_only=False,
         queryable_only=False) -> t.List[t.SourceLayer]:
-
     if slf:
         s = gws.get(slf, 'level')
         if s:
@@ -59,3 +61,24 @@ def image_layers(sl: t.SourceLayer) -> t.List[t.SourceLayer]:
     if sl.layers:
         return [s for sub in sl.layers for s in image_layers(sub)]
     return []
+
+
+def best_source_layer_extent(sl: t.SourceLayer, map_crs):
+    for crs, ext in sl.extents.items():
+        if crs == map_crs:
+            return crs, ext
+    for crs, ext in sl.extents.items():
+        if gws.gis.proj.equal(crs, 'EPSG:4326'):
+            return crs, ext
+    for crs, ext in sl.extents.items():
+        return crs, ext
+
+
+def extent_from_layers(sls: t.List[t.SourceLayer], map_crs):
+    source_extents = []
+    for sl in sls:
+        if sl.extents:
+            crs, ext = best_source_layer_extent(sl, map_crs)
+            source_extents.append(gws.gis.proj.transform_bbox(ext, crs, map_crs))
+    if source_extents:
+        return gws.gis.shape.merge_extents(source_extents)

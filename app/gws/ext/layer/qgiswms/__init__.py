@@ -61,7 +61,7 @@ class Object(gws.gis.layer.Image):
         if not self.var('meta'):
             self.meta = gws.gis.layer.meta_from_source_layers(self)
 
-        self.configure_extent(gws.gis.layer.extent_from_source_layers(self))
+        self.configure_extent(gws.gis.source.extent_from_layers(self.source_layers, self.map.crs))
 
     def render_bbox(self, bbox, width, height, **client_params):
         forward = {}

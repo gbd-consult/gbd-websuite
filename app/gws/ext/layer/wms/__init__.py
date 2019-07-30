@@ -88,7 +88,7 @@ class Object(gws.gis.layer.Image):
         self._add_default_search()
         self._add_legend()
 
-        self.configure_extent(gws.gis.layer.extent_from_source_layers(self))
+        self.configure_extent(gws.gis.source.extent_from_layers(self.source_layers, self.map.crs))
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.source_layers if sl.name]
