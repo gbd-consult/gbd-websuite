@@ -28,9 +28,11 @@ def status(layers=None):
 
     for la_uid, info in sorted(st.items()):
         print()
-        print(f"CACHE : {info['cache_uid']}")
-        print(f"LAYER : {', '.join(info['layer_uids'])}")
-        print(f"CONFIG: {repr(info['config'])}")
+        print(f"CACHE  : {info['cache_uid']}")
+        print(f"CONFIG : {repr(info['config'])}")
+        print(f"LAYER  :")
+        for uid in info['layer_uids']:
+            print(f"    {uid}")
         print()
 
         data = []
@@ -47,10 +49,11 @@ def status(layers=None):
         print(clihelpers.text_table(data, ['zoom', 'scale', 'grid', 'total', 'cached', '%%']))
 
     print()
+    print()
 
     u = gws.gis.cache.dangling_dirs()
     if u:
-        print(f'{len(u)} DANGLING DIRECTORIES:')
+        print(f'{len(u)} DANGLING CACHES:')
         print()
         print('\n'.join(u))
 

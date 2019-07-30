@@ -27,7 +27,7 @@ def best_crs(target_crs, supported_crs):
     for crs in supported_crs:
         p = gws.gis.proj.as_proj(crs)
         if p and not p.is_latlong:
-            gws.log.info(f'best_crs: using {p.epsg!r} for {target_crs!r}')
+            gws.log.debug(f'best_crs: using {p.epsg!r} for {target_crs!r}')
             return p.epsg
 
     raise ValueError(f'no match for {target_crs!r} in {supported_crs!r}')

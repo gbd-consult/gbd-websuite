@@ -45,7 +45,7 @@ def to_string(x, pretty=False):
 
 
 def to_hash(x):
-    s = to_string(x, pretty=True)
+    s = json.dumps(x, default=gws.as_dict, sort_keys=True)
     return hashlib.sha256(s.encode('utf8')).hexdigest()
 
 

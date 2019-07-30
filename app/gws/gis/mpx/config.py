@@ -7,18 +7,6 @@ import gws.tools.shell as sh
 import gws.tools.json2
 
 
-# import gws.gis.proj
-
-# def _transform_bbox(self, c):
-#     # prevent mp from transforming the same bbox over and over again
-#
-#     if 'bbox' in c:
-#         src_crs = c.get('bbox_srs') or c.get('srs')
-#         dst_crs = 'EPSG:4326'
-#         c['bbox'] = list(gws.gis.proj.transform_bbox(c['bbox'], src_crs, dst_crs))
-#         c['bbox_srs'] = dst_crs
-
-
 class _Config:
     def __init__(self):
         self.c = 0
@@ -64,16 +52,6 @@ class _Config:
                     }
 
                 }
-
-                # 'paletted': False,
-                # 'formats': {
-                #     'image/png': {
-                #         'mode': 'RGBA',
-                #         'colors': 0,
-                #         'transparent': True,
-                #         'resampling_method': 'bicubic',
-                #     }
-                # }
             }
         }
 
