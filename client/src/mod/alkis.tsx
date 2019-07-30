@@ -1092,7 +1092,7 @@ class AlkisController extends gws.Controller {
         this.update({
             marker: {
                 features: [f],
-                mode: 'zoom draw fade'
+                mode: 'zoom draw'
             }
         })
     }
