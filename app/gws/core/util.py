@@ -1,3 +1,4 @@
+import re
 import random
 import threading
 import os
@@ -104,8 +105,6 @@ def is_empty(x):
     return False
 
 
-
-
 def as_int(x):
     try:
         return int(x)
@@ -157,9 +156,18 @@ def as_dict(x):
     return {}
 
 
+_uid_de_trans = {
+    ord('ä'): 'ae',
+    ord('ö'): 'oe',
+    ord('ü'): 'ue',
+    ord('ß'): 'ss',
+}
+
+
 def as_uid(x):
     x = as_str(x).lower().strip().translate(_uid_de_trans)
-    return ''.join(c if c in _uid_safe else '_' for c in x)
+    x = re.sub(r'[^a-z0-9]+', '_', x)
+    return x.strip('_')
 
 
 def as_query_string(x):
@@ -296,15 +304,6 @@ def _map_rec(src, fn):
 
     return _map_rec(s2, fn)
 
-
-_uid_de_trans = {
-    ord('ä'): 'ae',
-    ord('ö'): 'oe',
-    ord('ü'): 'ue',
-    ord('ß'): 'ss',
-}
-
-_uid_safe = 'abcdefghijklmnopqrstuvwxyz0123456789_'
 
 _qs_safe = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-'
 _qs_map = {
