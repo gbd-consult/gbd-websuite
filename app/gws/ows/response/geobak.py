@@ -1,3 +1,5 @@
+import re
+
 import gws.tools.xml3
 import gws.gis.shape
 import gws.gis.feature
@@ -20,6 +22,9 @@ import gws.gis.feature
 def parse(s, first_el, **kwargs):
     if 'geobak_20' not in first_el.namespaces:
         return None
+
+    # some services have bare &'s in xml
+    s = re.sub(r'&(?![#\w])', '', s)
 
     el = gws.tools.xml3.from_string(s)
     fs = []
