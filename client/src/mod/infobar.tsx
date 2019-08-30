@@ -45,7 +45,7 @@ class LoaderView extends gws.View<LoaderProps> {
         return <div {...gws.tools.cls('modInfobarWidget', 'modInfobarLoader', rc && 'isActive')}>
             <Row>
                 <Cell>
-                    <gws.ui.IconButton  className='modInfobarLoaderIcon'/>
+                    <gws.ui.IconButton className='modInfobarLoaderIcon'/>
                 </Cell>
                 {rc > LOADER_PROGRESS_MIN && <Cell width={bars * 2}>
                     {gws.tools.range(bars).map(n => <div className='modInfobarLoaderBar' key={n}/>)}
@@ -65,15 +65,14 @@ class LoaderWidget extends gws.Controller {
 
 interface ScaleProps extends gws.types.ViewProps {
     controller: ScaleWidget;
-    mapEditScale: number;
+    mapEditScale: string;
 }
 
 class ScaleView extends gws.View<ScaleProps> {
     render() {
         let cc = this.props.controller;
 
-        let n = gws.tools.asNumber(this.props.mapEditScale),
-            res = this.props.controller.map.resolutions,
+        let res = this.props.controller.map.resolutions,
             max = Math.max(...res.map(gws.tools.res2scale)),
             min = Math.min(...res.map(gws.tools.res2scale));
 
@@ -83,17 +82,17 @@ class ScaleView extends gws.View<ScaleProps> {
                 <gws.ui.Slider
                     minValue={min}
                     maxValue={max}
-                    value={n}
-                    whenChanged={v => cc.setValue(v, true)}
+                    value={gws.tools.asNumber(this.props.mapEditScale)}
+                    whenChanged={v => cc.setValue(v)}
                     whenInteractionStarted={() => cc.map.setInteracting(true)}
                     whenInteractionStopped={() => cc.map.setInteracting(false)}
                 />
             </Cell>
             <Cell className="modInfobarScaleInput">
                 <gws.ui.TextInput
-                    value={String(n)}
-                    whenChanged={v => cc.setValue(v, false)}
-                    whenEntered={v => cc.setValue(v, true)}
+                    value={this.props.mapEditScale}
+                    whenChanged={v => cc.updateValue(v)}
+                    whenEntered={v => cc.setValue(v)}
                 />
             </Cell>
         </div>
@@ -105,11 +104,14 @@ class ScaleWidget extends gws.Controller {
         this.app.whenChanged('mapScale', s => this.update({'mapEditScale': s}))
     }
 
-    setValue(value, withMap) {
-        value = Number(value) || 1;
-        if (withMap)
-            this.map.setScale(value);
-        this.update({'mapEditScale': value})
+    updateValue(value) {
+        value = String(value).replace(/\D/g, '');
+        this.update({mapEditScale: value});
+    }
+
+    setValue(value) {
+        this.map.setScale(Number(value) || 1);
+        this.update({'mapEditScale': String(this.map.viewState.scale)})
     }
 
     get defaultView() {

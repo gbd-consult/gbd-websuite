@@ -51,7 +51,7 @@ class SidebarBody extends gws.View<ViewProps> {
             ve = map.viewExtent;
 
         let coord = n => map.formatCoordinate(Number(n) || 0);
-        let num = n => String(Math.floor(Number(n) || 0));
+        let num = n => n; //String(Math.floor(Number(n) || 0));
 
         let data = [
             {
