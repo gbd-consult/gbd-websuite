@@ -292,8 +292,12 @@ class Base(gws.PublicObject, t.LayerObject):
         return None
 
     def render_legend(self):
-        if self.has_legend:
-            return gws.ows.request.raw_get(self.legend_url).content
+        if not self.has_legend:
+            return
+        if self.legend_url.startswith('/'):
+            with open(self.legend_url, 'rb') as fp:
+                return fp.read()
+        return gws.ows.request.raw_get(self.legend_url).content
 
     def get_features(self, bbox, limit=0):
         return []
