@@ -105,13 +105,14 @@ class ScaleWidget extends gws.Controller {
     }
 
     updateValue(value) {
-        value = String(value).replace(/\D/g, '');
-        this.update({mapEditScale: value});
+        let v = String(value).replace(/\D/g, '');
+        this.update({mapEditScale: String(v)});
     }
 
     setValue(value) {
-        this.map.setScale(Number(value) || 1);
-        this.update({'mapEditScale': String(this.map.viewState.scale)})
+        let v = this.map.constrainScale(Number(value) || 1);
+        this.map.setScale(v);
+        this.update({mapEditScale: String(v)})
     }
 
     get defaultView() {
