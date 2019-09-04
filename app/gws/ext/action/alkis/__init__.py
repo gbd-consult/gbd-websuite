@@ -64,7 +64,8 @@ class UiConfig:
     pick: bool = False  #: pick mode enabled
     searchSelection: bool = False  #: search in selection enabled
     searchSpatial: bool = False  #: spatial search enabled
-    gemarkungListMode: str = 'combined'  #  combined = "gemarkung(gemeinde)", plain = only "gemarkung"
+    gemarkungListMode: str = 'combined'  #: combined = "gemarkung(gemeinde)", plain = only "gemarkung"
+    autoSpatialSearch: bool = False  #: activate spatial search after submit
 
 
 class Config(t.WithTypeAndAccess):
@@ -114,7 +115,7 @@ class FsSetupResponse(t.Response):
     uiPick: bool
     uiSearchSelection: bool
     uiSearchSpatial: bool
-
+    uiAutoSpatialSearch: bool
 
 class FsStrassenParams(t.Data):
     projectUid: str
@@ -323,7 +324,7 @@ class Object(gws.Object):
                 'uiSelect': self.var('ui.select'),
                 'uiPick': self.var('ui.pick'),
                 'uiSearchSelection': self.var('ui.searchSelection'),
-                'uiSearchSpatial': self.var('ui.searchSpatial'),
+                'uiAutoSpatialSearch': self.var('ui.autoSpatialSearch'),
             })
 
     def api_fs_strassen(self, req, p: FsStrassenParams) -> FsStrassenResponse:

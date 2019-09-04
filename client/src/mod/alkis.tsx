@@ -910,6 +910,8 @@ class AlkisController extends gws.Controller {
     formSearch() {
         this.stopTools();
         this.search();
+        if (this.setup.uiAutoSpatialSearch)
+            this.startLens();
     }
 
     startLens() {
