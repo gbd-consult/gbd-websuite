@@ -106,9 +106,9 @@ class Object(gws.gis.layer.Image):
                 'layers': ','.join(layers),
                 'transparent': True,
             },
-            # add the mtime to the config, so that the source and cache ids
+            # add the file checksum to the config, so that the source and cache ids
             # in the mpx config are recalculated when the file changes
-            '$hash': gws.tools.shell.file_mtime(self.path)
+            '$hash': gws.tools.shell.file_checksum(self.path)
         })
 
         self.mapproxy_layer_config(mc, source)
