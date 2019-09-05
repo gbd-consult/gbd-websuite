@@ -324,6 +324,7 @@ class Object(gws.Object):
                 'uiSelect': self.var('ui.select'),
                 'uiPick': self.var('ui.pick'),
                 'uiSearchSelection': self.var('ui.searchSelection'),
+                'uiSearchSpatial': self.var('ui.searchSpatial'),
                 'uiAutoSpatialSearch': self.var('ui.autoSpatialSearch'),
             })
 
