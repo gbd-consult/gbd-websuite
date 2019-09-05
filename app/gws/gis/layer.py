@@ -42,7 +42,7 @@ class CacheConfig(t.Config):
     """Cache configuration"""
 
     enabled: bool = False  #: cache is enabled
-    maxAge: t.duration = '30d'  #: cache max. age
+    maxAge: t.duration = '7d'  #: cache max. age
     maxLevel: int = 1  #: max. zoom level to cache
 
 
@@ -184,6 +184,10 @@ class Base(gws.Object, t.LayerObject):
             uid = self.map.uid + '.' + uid
         self.set_uid(uid)
 
+    @property
+    def auto_uid(self):
+        return None
+
     def configure(self):
         super().configure()
 
@@ -228,20 +232,20 @@ class Base(gws.Object, t.LayerObject):
             for cfg in p.providers:
                 self.add_child('gws.ext.search.provider', cfg)
 
-    def configure_extent(self, ext):
-        self.extent = self.calc_extent(ext)
+    def configure_extent(self, default_extent):
+        self.extent = self.calc_extent(default_extent)
         if not all(math.isfinite(p) for p in self.extent):
             raise gws.Error(f'invalid extent {self.extent} in {self.uid!r}')
 
-    def calc_extent(self, ext):
+    def calc_extent(self, default_extent):
         if self.var('extent'):
             return self.var('extent')
-        if not ext:
+        if not default_extent:
             return self.map.extent
         buf = self.var('extentBuffer', parent=True)
         if buf:
-            ext = gws.gis.shape.buffer_extent(ext, buf)
-        return ext
+            return gws.gis.shape.buffer_extent(default_extent, buf)
+        return default_extent
 
     def edit_access(self, user):
         # @TODO granular edit access
@@ -288,8 +292,12 @@ class Base(gws.Object, t.LayerObject):
         return None
 
     def render_legend(self):
-        if self.has_legend:
-            return gws.ows.request.raw_get(self.legend_url).content
+        if not self.has_legend:
+            return
+        if self.legend_url.startswith('/'):
+            with open(self.legend_url, 'rb') as fp:
+                return fp.read()
+        return gws.ows.request.raw_get(self.legend_url).content
 
     def get_features(self, bbox, limit=0):
         return []
@@ -415,6 +423,8 @@ class Image(Base):
                 'directory_layout': 'mp'
             },
             'disable_storage': True,
+            'format': self.image_format,
+
             # 'meta_size': [1, 1],
             # 'meta_buffer': 0,
             # 'minimize_meta_requests': True,

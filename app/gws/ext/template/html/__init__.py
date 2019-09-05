@@ -32,6 +32,10 @@ class ParsedTemplate(t.Data):
 class Object(gws.common.template.Object):
     map_placeholder = '__map__'
 
+    @property
+    def auto_uid(self):
+        return None
+
     def configure(self):
         super().configure()
 
@@ -39,6 +43,9 @@ class Object(gws.common.template.Object):
         self.parsed_time = 0
         self.path = self.var('path')
         self.text = self.var('text')
+
+        uid = self.var('uid') or (misc.sha256(self.path) if self.path else self.klass.replace('.', '_'))
+        self.set_uid(uid)
 
         self._parse()
 

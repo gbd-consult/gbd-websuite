@@ -31,6 +31,10 @@ class Object(gws.common.template.Object):
         self.template: gws.qgis.PrintTemplate = None
         self.service: gws.qgis.Service = None
 
+    @property
+    def auto_uid(self):
+        return None
+
     def configure(self):
         super().configure()
 
@@ -40,7 +44,8 @@ class Object(gws.common.template.Object):
         if not self.template:
             raise ValueError('print template not found')
 
-        self.set_uid('%s_%d' % (misc.sha256(self.path), self.template.index))
+        uid = self.var('uid') or '%s_%d' % (misc.sha256(self.path), self.template.index)
+        self.set_uid(uid)
         self.title = self.template.title
 
         self.page_size = self._page_size()

@@ -37,7 +37,7 @@ def delete_all():
 
 def count():
     with _db() as db:
-        return db.execute('SELECT COUNT(*) FROM sess').fetchone()
+        return db.execute('SELECT COUNT(*) FROM sess').fetchone()[0]
 
 
 def cleanup(lifetime):
@@ -99,3 +99,10 @@ def delete(uid):
 def drop():
     gws.tools.shell.unlink(DB_PATH)
     init()
+
+def get_all():
+    rs = []
+    with _db() as db:
+        for r in db.execute('SELECT * FROM sess ORDER BY updated'):
+            rs.append(dict(r))
+    return rs

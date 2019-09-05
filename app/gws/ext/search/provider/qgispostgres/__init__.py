@@ -42,7 +42,6 @@ class Object(gws.common.search.provider.Object):
 
         self.table = t.SqlTableConfig({
             'geometryColumn': ds['geometryColumn'],
-            'keyColumn': ds['key'],
             'name': ds['table'],
         })
 

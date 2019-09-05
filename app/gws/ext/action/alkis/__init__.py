@@ -64,6 +64,8 @@ class UiConfig:
     pick: bool = False  #: pick mode enabled
     searchSelection: bool = False  #: search in selection enabled
     searchSpatial: bool = False  #: spatial search enabled
+    gemarkungListMode: str = 'combined'  #: combined = "gemarkung(gemeinde)", plain = only "gemarkung"
+    autoSpatialSearch: bool = False  #: activate spatial search after submit
 
 
 class Config(t.WithTypeAndAccess):
@@ -113,7 +115,7 @@ class FsSetupResponse(t.Response):
     uiPick: bool
     uiSearchSelection: bool
     uiSearchSpatial: bool
-
+    uiAutoSpatialSearch: bool
 
 class FsStrassenParams(t.Params):
     gemarkungUid: str
@@ -313,14 +315,14 @@ class Object(gws.Object):
                 'withControl': self._can_read_eigentuemer(req) and self.control_mode,
                 'withBuchung': self._can_read_buchung(req),
                 'withFlurnummer': flurstueck.has_flurnummer(conn),
-                'gemarkungen': flurstueck.gemarkung_list(conn),
+                'gemarkungen': flurstueck.gemarkung_list(conn, self.var('ui.gemarkungListMode')),
                 'printTemplate': self.print_template.props,
                 'limit': self.limit,
                 'uiExport': self.var('ui.export'),
                 'uiSelect': self.var('ui.select'),
                 'uiPick': self.var('ui.pick'),
                 'uiSearchSelection': self.var('ui.searchSelection'),
-                'uiSearchSpatial': self.var('ui.searchSpatial'),
+                'uiAutoSpatialSearch': self.var('ui.autoSpatialSearch'),
             })
 
     def api_fs_strassen(self, req, p: FsStrassenParams) -> FsStrassenResponse:
@@ -482,6 +484,8 @@ class Object(gws.Object):
                 query.shape = shape
 
         total, features = self._find(query, target_crs, allow_eigentuemer, allow_buchung, self.limit)
+        for f in features:
+            f.attributes['is_guest_user'] = req.user.is_guest
 
         gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} query={query!r} total={total!r} len={len(features)}')
 

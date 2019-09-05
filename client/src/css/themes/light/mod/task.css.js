@@ -36,6 +36,9 @@ module.exports = v => ({
     '.modTaskZoom': {
         ...v.SVG(v.ZOOM_ICON, v.BUTTON_COLOR)
     },
+    '.modTaskSearch': {
+        ...v.SVG('spatialsearch', v.BUTTON_COLOR)
+    },
     '.modTaskAnnotate': {
         ...v.SVG('markandmeasure', v.BUTTON_COLOR)
     },

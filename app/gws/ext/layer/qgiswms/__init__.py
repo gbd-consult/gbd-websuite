@@ -11,6 +11,7 @@ import gws.ows.request
 import gws.ows.util
 import gws.qgis
 import gws.server.monitor
+import gws.tools.shell
 import gws.types as t
 
 
@@ -60,7 +61,7 @@ class Object(gws.gis.layer.Image):
         if not self.var('meta'):
             self.meta = gws.gis.layer.meta_from_source_layers(self)
 
-        self.configure_extent(gws.gis.layer.extent_from_source_layers(self))
+        self.configure_extent(gws.gis.source.extent_from_layers(self.source_layers, self.map.crs))
 
     def render_bbox(self, bbox, width, height, **client_params):
         forward = {}
@@ -90,7 +91,7 @@ class Object(gws.gis.layer.Image):
         return self.service.get_legend(self.source_layers)
 
     def mapproxy_config(self, mc, options=None):
-        layers = [sl.name for sl in self.source_layers]
+        layers = [sl.name for sl in self.source_layers if sl.name]
         # NB: qgis caps layers are always top-down
         layers = reversed(layers)
 
@@ -104,7 +105,10 @@ class Object(gws.gis.layer.Image):
                 'map': self.path,
                 'layers': ','.join(layers),
                 'transparent': True,
-            }
+            },
+            # add the file checksum to the config, so that the source and cache ids
+            # in the mpx config are recalculated when the file changes
+            '$hash': gws.tools.shell.file_checksum(self.path)
         })
 
         self.mapproxy_layer_config(mc, source)

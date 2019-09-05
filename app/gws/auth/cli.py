@@ -6,6 +6,8 @@ import gws.auth.api
 import gws.auth.error
 import gws.auth.session
 import gws.config.loader
+import gws.tools.clihelpers
+import gws.tools.date as dt
 import gws.tools.password
 
 COMMAND = 'auth'
@@ -62,3 +64,21 @@ def passwd(path=None):
         else:
             print(p)
         break
+
+
+def sessions():
+    """Print currently active sessions"""
+
+    gws.config.loader.load()
+    man = gws.auth.session.Manager()
+
+    rs = [{
+        'user': r['user_uid'],
+        'login': dt.to_iso(dt.from_timestamp(r['created'])),
+        'activity': dt.to_iso(dt.from_timestamp(r['updated'])),
+        'duration': r['updated'] - r['created']
+    } for r in man.get_all()]
+
+    print(f'{len(rs)} active sessions\n')
+    print(gws.tools.clihelpers.text_table(rs, header=('user', 'login', 'activity', 'duration')))
+    print('\n')

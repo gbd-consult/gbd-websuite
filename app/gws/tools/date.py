@@ -35,6 +35,10 @@ def now_iso():
     return to_iso(now())
 
 
+def from_timestamp(ts):
+    return datetime.datetime.fromtimestamp(ts)
+
+
 def utime():
     return time.time()
 

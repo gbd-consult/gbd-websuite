@@ -110,6 +110,8 @@ class Object(gws.Object, t.DbProviderObject):
 
             ids = args.get('ids')
             if ids:
+                if not key_col:
+                    return []
                 ph = ','.join(['%s'] * len(ids))
                 where.append(f'{conn.quote_ident(key_col)} IN ({ph})')
                 parms.extend(ids)
@@ -178,7 +180,7 @@ class Object(gws.Object, t.DbProviderObject):
         with self.connect() as conn:
             with conn.transaction():
                 for rec in recs:
-                    ids.append(conn.insert_one(table.name, table.keyColumn, rec))
+                    ids.append(conn.insert_one(table.name, table.keyColumn, rec, with_id=True))
 
         return ids
 

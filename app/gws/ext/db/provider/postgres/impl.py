@@ -112,10 +112,15 @@ class Connection:
 
     def crs_for_column(self, table, column):
         schema, table = self.schema_and_table(table)
-        r = self.select_one(
-            'SELECT Find_SRID(%s, %s, %s) AS n',
-            [schema, table, column])
-        return 'EPSG:%s' % r['n']
+        try:
+            r = self.select_one(
+                'SELECT Find_SRID(%s, %s, %s) AS n',
+                [schema, table, column])
+            return 'EPSG:%s' % r['n']
+        except Error:
+            gws.log.error(f'crs_for_column({schema}, {table}, {column}) FAILED')
+            raise
+
 
     def geometry_type_for_column(self, table, column):
         schema, table = self.schema_and_table(table)
@@ -148,7 +153,7 @@ class Connection:
 
         return {r['column_name']: r['data_type'] for r in rs}
 
-    def insert_one(self, table, key_column, data):
+    def insert_one(self, table, key_column, data, with_id=False):
         fields = []
         placeholders = []
         values = []
@@ -166,12 +171,15 @@ class Connection:
             INSERT INTO {self.quote_table(table)} 
             ({_comma(fields)}) 
             VALUES ({_comma(placeholders)})
-            RETURNING {self.quote_ident(key_column)}
         '''
+
+        if with_id:
+            sql += f"RETURNING {self.quote_ident(key_column)}"
 
         with self.conn.cursor() as cur:
             self._exec(cur, sql, values)
-            return cur.fetchone()[0]
+            if with_id:
+                return cur.fetchone()[0]
 
     def update(self, table, key_column, key_value, data):
         values = []

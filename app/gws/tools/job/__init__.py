@@ -84,6 +84,9 @@ def get(uid):
     if rec:
         return Job(rec)
 
+def remove(uid):
+    storage.remove(uid)
+
 
 def get_for(user, uid):
     job = get(uid)

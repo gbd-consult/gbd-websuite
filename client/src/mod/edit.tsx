@@ -81,7 +81,6 @@ class EditDrawTool extends draw.Tool {
     async whenEnded(shapeType, oFeature) {
         console.log('EditDrawTool.whenEnded', oFeature)
         await _master(this).addFeature(oFeature);
-        _master(this).app.startTool('Tool.Edit.Modify')
     }
 
     enabledShapes() {
@@ -100,8 +99,6 @@ class EditFeatureListTab extends gws.View<EditViewProps> {
     render() {
         let master = _master(this);
         let layer = this.props.editLayer;
-
-        console.log('EditFeatureListTab', layer.features)
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -341,7 +338,7 @@ class EditController extends gws.Controller {
 
         let fs = this.map.readFeatures(res.features);
         this.layer.replaceFeatures(fs);
-        this.selectFeature(fs[0], false);
+        this.unselectFeature();
     }
 
     async addFeature(oFeature: ol.Feature) {

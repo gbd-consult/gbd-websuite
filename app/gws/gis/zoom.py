@@ -39,10 +39,13 @@ def resolutions_from_config(cfg, parent_resolultions=None):
 
 def config_from_source_layers(source_layers: t.List[t.SourceLayer]):
     min_scale = max_scale = None
+
     for sl in source_layers:
-        if sl.scale_range:
-            min_scale = min(sl.scale_range[0], min_scale or 1e20)
-            max_scale = max(sl.scale_range[1], max_scale or 0)
+        # if one of the layers has no scale range, the whole group has no range
+        if not sl.scale_range:
+            return None
+        min_scale = min(sl.scale_range[0], min_scale or 1e20)
+        max_scale = max(sl.scale_range[1], max_scale or 0)
 
     zoom = {}
 

@@ -306,7 +306,7 @@ def _points(geo):
         return [p for g in geo.geoms for p in _points(g)]
 
 
-def _label_position(geo, css):
+def _label_position(geo, css, extra_y_offset=0):
     placement = _as_enum(css.get('label-placement'), 'start', 'middle', 'end')
     if placement == 'start':
         x, y = _points(geo)[0]
@@ -317,12 +317,12 @@ def _label_position(geo, css):
         x, y = c.x, c.y
     return (
         round(x) + (_as_px(css.get('label-offset-x')) or 0),
-        round(y) + (_as_px(css.get('label-offset-y')) or 0),
+        round(y) + ((_as_px(css.get('label-offset-y')) or 0) + extra_y_offset),
     )
 
 
-def _label(geo, label, css):
-    cx, cy = _label_position(geo, css)
+def _label(geo, label, css, extra_y_offset=0):
+    cx, cy = _label_position(geo, css, extra_y_offset)
     return _text(cx, cy, label, css)
 
 
@@ -344,8 +344,15 @@ def draw(geo, label, style, bbox, dpi, scale, rotation):
         mark_id = '_M' + gws.random_string(8)
         mark = _marker(mark_id, css)
 
+    extra_y_offset = 0
+
+    if geo.type == 'Point':
+        extra_y_offset = 12
+    if geo.type == 'LineString':
+        extra_y_offset = 6
+
     if label:
-        text = _label(geo, label, css)
+        text = _label(geo, label, css, extra_y_offset)
 
     attrs = {
         'precision': 0

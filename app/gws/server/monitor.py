@@ -14,6 +14,7 @@ try:
 except:
     pass
 
+
 # monitor data is saved in the config, so the monitor must be a gws.Object
 
 class Object(gws.Object):
@@ -41,6 +42,9 @@ def add_path(path):
         raise ValueError(f'{path!r} is not a file')
 
 
+_lockfile = '/tmp/monitor.lock'
+
+
 def start():
     # @TODO: use file monitor
     # actually, we should be using uwsgi.add_file_monitor here, however I keep having problems
@@ -53,6 +57,11 @@ def start():
     for s in _m().watch_files:
         gws.log.info(f'MONITOR: watching file {s!r}...')
 
+    try:
+        os.unlink(_lockfile)
+    except OSError:
+        pass
+
     _poll()
 
     freq = gws.config.var('server.spool.monitorFrequency')
@@ -60,9 +69,6 @@ def start():
     uwsgi.register_signal(42, 'worker1', _worker)
     uwsgi.add_timer(42, freq)
     gws.log.info(f'MONITOR: started, frequency={freq}')
-
-
-_lockfile = '/tmp/monitor.lock'
 
 
 def _worker(signo):
@@ -84,13 +90,11 @@ def _worker(signo):
         gws.log.info('MONITOR: begin reload')
 
         if not _reload():
-            gws.log.info('MONITOR: reload failed')
             return
 
-        # @TODO: check when reload complete
-        time.sleep(30)
-        _poll()
-        gws.log.info('MONITOR: end reload')
+    # finally, reload ourselves
+    gws.log.info(f'MONITOR: bye bye')
+    control.reload_uwsgi('spool')
 
 
 def _reload():
@@ -105,12 +109,12 @@ def _reload():
         control.reload_uwsgi('qgis')
         control.reload_uwsgi('mapproxy')
         control.reload_uwsgi('web')
+        return True
     except Exception:
         gws.log.error('MONITOR: reload error')
         gws.log.exception()
         return False
 
-    return True
 
 
 def _prepare():

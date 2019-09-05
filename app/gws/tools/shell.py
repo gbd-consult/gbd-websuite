@@ -2,7 +2,7 @@
 
 import subprocess
 import os
-import time
+import hashlib
 
 import gws
 
@@ -60,3 +60,17 @@ def unlink(path):
     except OSError:
         pass
 
+
+def file_mtime(path):
+    try:
+        return os.stat(path).st_mtime
+    except OSError:
+        return 0
+
+
+def file_checksum(path):
+    try:
+        with open(path, 'rb') as fp:
+            return hashlib.sha256(fp.read()).hexdigest()
+    except OSError:
+        return '0'

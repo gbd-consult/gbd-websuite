@@ -411,6 +411,7 @@ class TemplateConfig(Config):
     path: Optional[filepath]  #: path to a template file
     text: str = ''  #: template content
     title: str = ''  #: template title
+    uid: str = ''  #: unique id
 
 
 class TemplateProps(Data):

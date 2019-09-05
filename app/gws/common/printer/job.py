@@ -1,3 +1,5 @@
+import os
+import time
 import base64
 import pickle
 from PIL import Image
@@ -8,6 +10,7 @@ import gws.types as t
 import gws.tools.job
 import gws.tools.misc as misc
 import gws.tools.pdf
+import gws.tools.shell
 import gws.common.printer.types as pt
 import gws.tools.date
 import gws.gis.render
@@ -25,6 +28,8 @@ class PrematureTermination(Exception):
 
 
 def create(req, params: pt.PrintParams):
+    cleanup()
+
     job_uid = gws.random_string(64)
     base_path = gws.PRINT_DIR + '/' + job_uid
     misc.ensure_dir(base_path)
@@ -43,6 +48,21 @@ def create(req, params: pt.PrintParams):
         user_uid=req.user.full_uid,
         worker=__name__ + '._worker',
         args='')
+
+
+# remove jobs older than that
+
+_lifetime = 3600 * 1
+
+
+def cleanup():
+    for p in os.listdir(gws.PRINT_DIR):
+        d = gws.PRINT_DIR + '/' + p
+        age = int(time.time() - gws.tools.shell.file_mtime(d))
+        if age > _lifetime:
+            gws.tools.shell.run(['rm', '-fr', d])
+            gws.tools.job.remove(p)
+            gws.log.debug(f'cleaned up job {p} age={age}')
 
 
 def _worker(job):
