@@ -96,7 +96,7 @@ function featureIn(fs: Array<gws.types.IMapFeature>, f: gws.types.IMapFeature) {
 
 class AlkisExportAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.uiExport || this.props.features.length === 0)
+        if (!this.props.alkisFsSetup.ui.useExport || this.props.features.length === 0)
             return null;
         return <sidebar.AuxButton
             className="modAlkisExportAuxButton"
@@ -132,7 +132,7 @@ class AlkisHighlightAuxButton extends gws.View<AlkisViewProps> {
 
 class AlkisSelectAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.uiSelect)
+        if (!this.props.alkisFsSetup.ui.useSelect)
             return null;
         return <sidebar.AuxButton
             className="modAlkisSelectAuxButton"
@@ -144,7 +144,7 @@ class AlkisSelectAuxButton extends gws.View<AlkisViewProps> {
 
 class AlkisToggleAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.uiSelect)
+        if (!this.props.alkisFsSetup.ui.useSelect)
             return null;
 
         let master = _master(this),
@@ -187,7 +187,7 @@ class AlkisListAuxButton extends gws.View<AlkisViewProps> {
 
 class AlkisSelectionAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.uiSelect)
+        if (!this.props.alkisFsSetup.ui.useSelect)
             return null;
 
         let sel = this.props.alkisFsSelection || [];
@@ -410,21 +410,21 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                         whenTouched={() => master.formSearch()}
                     />
                 </Cell>
-                {setup.uiSearchSelection && <Cell>
+                {setup.ui.searchSelection && <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchSelectionButton')}
                         tooltip={_master(this).STRINGS.selectionSearchButton}
                         whenTouched={() => master.selectionSearch()}
                     />
                 </Cell>}
-                {setup.uiSearchSpatial && <Cell>
+                {setup.ui.searchSpatial && <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
                         tooltip={_master(this).STRINGS.lensButton}
                         whenTouched={() => master.startLens()}
                     />
                 </Cell>}
-                {setup.uiPick && <Cell>
+                {setup.ui.usePick && <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisPickButton', this.props.appActiveTool === 'Tool.Alkis.Pick' && 'isActive')}
                         tooltip={_master(this).STRINGS.pickButton}
@@ -482,7 +482,7 @@ class AlkisFeatureList extends gws.View<AlkisViewProps> {
             />
         ;
 
-        if (!this.props.alkisFsSetup.uiSelect)
+        if (!this.props.alkisFsSetup.ui.useSelect)
             rightButton = null;
 
         let content = f => <gws.ui.Link
@@ -908,7 +908,7 @@ class AlkisController extends gws.Controller {
     formSearch() {
         this.stopTools();
         this.search();
-        if (this.setup.uiAutoSpatialSearch)
+        if (this.setup.ui.autoSpatialSearch)
             this.startLens();
     }
 

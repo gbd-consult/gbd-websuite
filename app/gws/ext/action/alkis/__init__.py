@@ -59,9 +59,9 @@ class BuchungConfig:
 class UiConfig:
     """Flurstückssuche UI configuration."""
 
-    export: bool = False  #: export function enabled
-    select: bool = False  #: select mode enabled
-    pick: bool = False  #: pick mode enabled
+    useExport: bool = False  #: export function enabled
+    useSelect: bool = False  #: select mode enabled
+    usePick: bool = False  #: pick mode enabled
     searchSelection: bool = False  #: search in selection enabled
     searchSpatial: bool = False  #: spatial search enabled
     gemarkungListMode: str = 'combined'  #: combined = "gemarkung(gemeinde)", plain = only "gemarkung"
@@ -85,9 +85,9 @@ class Config(t.WithTypeAndAccess):
     featureFormat: t.Optional[t.FormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
 
-    disableApi: bool = False #: disable external access to this extension
+    disableApi: bool = False  #: disable external access to this extension
 
-    ui: t.Optional[UiConfig] #: ui options
+    ui: t.Optional[UiConfig]  #: ui options
 
 
 class Gemarkung(t.Data):
@@ -109,13 +109,8 @@ class FsSetupResponse(t.Response):
     gemarkungen: t.List[Gemarkung]
     printTemplate: t.TemplateProps
     limit: int
+    ui: UiConfig
 
-    uiExport: bool
-    uiSelect: bool
-    uiPick: bool
-    uiSearchSelection: bool
-    uiSearchSpatial: bool
-    uiAutoSpatialSearch: bool
 
 class FsStrassenParams(t.Params):
     gemarkungUid: str
@@ -318,11 +313,7 @@ class Object(gws.Object):
                 'gemarkungen': flurstueck.gemarkung_list(conn, self.var('ui.gemarkungListMode')),
                 'printTemplate': self.print_template.props,
                 'limit': self.limit,
-                'uiExport': self.var('ui.export'),
-                'uiSelect': self.var('ui.select'),
-                'uiPick': self.var('ui.pick'),
-                'uiSearchSelection': self.var('ui.searchSelection'),
-                'uiAutoSpatialSearch': self.var('ui.autoSpatialSearch'),
+                'ui': self.var('ui'),
             })
 
     def api_fs_strassen(self, req, p: FsStrassenParams) -> FsStrassenResponse:
@@ -487,7 +478,8 @@ class Object(gws.Object):
         for f in features:
             f.attributes['is_guest_user'] = req.user.is_guest
 
-        gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} query={query!r} total={total!r} len={len(features)}')
+        gws.log.debug(
+            f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} query={query!r} total={total!r} len={len(features)}')
 
         if allow_eigentuemer:
             self._log_eigentuemer_access(req, query, check=True, total=total, features=features)
