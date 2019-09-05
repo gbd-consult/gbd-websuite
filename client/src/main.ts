@@ -48,17 +48,26 @@ export async function main() {
         domNode.className = 'gws msie';
     }
 
+    let glob = window;
+
     let options = {
-        serverUrl: window['GWS_SERVER_URL'],
-        projectUid: window['GWS_PROJECT_UID'],
+        serverUrl: glob['GWS_SERVER_URL'],
+        projectUid: glob['GWS_PROJECT_UID'],
         cssBreakpoints: require('./css/node_modules/breakpoints'),
         labels: require('./lang'),
-        locale: window['GWS_LOCALE'],
+        locale: glob['GWS_LOCALE'],
         tags: mods.reduce((o, m) => Object.assign(o, m.tags), {}),
         defaultHelpUrl: '',
         defaultHomeUrl: '/',
         domNode
     };
+
+    if (glob['GWS_LABELS']) {
+        for (let loc in glob['GWS_LABELS']) {
+            if (options.labels.hasOwnProperty(loc))
+                Object.assign(options.labels[loc], glob['GWS_LABELS'][loc]);
+        }
+    }
 
     // NB assuming our script to be called gws-client-whatever.js
 
