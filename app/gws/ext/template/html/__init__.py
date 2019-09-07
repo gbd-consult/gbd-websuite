@@ -230,12 +230,15 @@ class Object(gws.common.template.Object):
             'endpoint': gws.SERVER_ENDPOINT,
         }
 
-        content = gws.tools.chartreux.render_text(
+        def err(e, path, line):
+            gws.log.warn(f'TEMPLATE: {e} at {path!r}:{line}')
+
+        content = gws.tools.chartreux.render(
             text,
             context,
             silent=True,
             path=self.path or '<string>',
-            warn=lambda e: gws.log.warn('TEMPLATE', e)
+            error=err
         )
 
         return content

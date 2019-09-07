@@ -26,9 +26,11 @@ ERROR_ARG_NOT_SUPPORTED = 'argument syntax not supported'
 ERROR_FILTER = 'invalid or unknown filter'
 
 _DEFAULT_OPTIONS = {
+    'command': '@',
+    'comment': '#',
     'filter': None,
     'globals': [],
-    'name': 'render',
+    'name': '_RENDER',
     'path': '',
     'silent': False,
 }
@@ -37,19 +39,10 @@ _DEFAULT_OPTIONS = {
 ##
 
 def compile(text, **options):
-    fname = '_RENDER'
-    options['name'] = fname
-
     cc = Compiler(options)
     python = cc.run(text)
-
-    try:
-        locs = {}
-        exec(python, {}, locs)
-        return locs[fname]
-    except SyntaxError as e:
-        loc = _source_location(python, e.lineno - 1)
-        _error(ERROR_SYNTAX, loc[0], loc[1], e.msg)
+    locs = _eval(python)
+    return locs[cc.option('name')]
 
 
 def compile_path(path, **options):
@@ -60,19 +53,23 @@ def compile_path(path, **options):
 def translate(text, **options):
     cc = Compiler(options)
     python = cc.run(text)
-
-    try:
-        exec(python, {})
-    except SyntaxError as e:
-        loc = _source_location(python, e.lineno - 1)
-        _error(ERROR_SYNTAX, loc[0], loc[1], e.msg)
-
+    _eval(python)
     return python
 
 
 def translate_path(path, **options):
     options['path'] = path
     return translate(_read(path), **options)
+
+
+def _eval(python):
+    try:
+        locs = {}
+        exec(python, {}, locs)
+        return locs
+    except SyntaxError as exc:
+        loc = _source_location(python, exc.lineno - 1)
+        _error(ERROR_SYNTAX, loc[0], loc[1], exc.msg)
 
 
 ##
@@ -116,9 +113,6 @@ class Parser:
 
             return None
 
-    command_symbol = '@'
-    comment_symbol = '##'
-
     command_re = r'^(\w+)(.*)'
 
     text_command = '\x00'
@@ -129,10 +123,10 @@ class Parser:
 
         sl = ln.strip()
 
-        if sl.startswith(self.comment_symbol):
+        if sl.startswith(self.cc.option('comment')):
             return None, ''
 
-        if not sl.startswith(self.command_symbol):
+        if not sl.startswith(self.cc.option('command')):
             return self.text_command, ln
 
         m = re.search(self.command_re, sl[1:])
@@ -182,6 +176,8 @@ class Expression:
         'LtE': '<=',
         'Eq': '==',
         'NotEq': '!=',
+        'In': 'in',
+        'NotIn': 'not in',
     }
 
     def __init__(self, compiler):
@@ -266,6 +262,9 @@ class Expression:
             return '**' + e
         if t == 'Starred':
             return _f('*{}', self.walk(n.value))
+
+        if t == 'IfExp':
+            return _f('({}) if ({}) else ({})', self.walk(n.body), self.walk(n.test), self.walk(n.orelse))
 
         if t == 'BinOp':
             if _cname(n.op) == 'BitOr':
@@ -372,11 +371,11 @@ class Expression:
         return False
 
     def make_getter(self, var, prop):
-        return _f('_GET({},{})', var, repr(prop))
+        return _f('_GET({},{},__POS__)', var, repr(prop))
 
     def make_context_getter(self, var):
         self.cc.code.add_context_var(var)
-        return _f('_GETCONTEXT({})', repr(var))
+        return _f('_GETCONTEXT({},__POS__)', repr(var))
 
 
 class Command:
@@ -419,11 +418,11 @@ class Command:
         self.cc.code.add(_f('{} = _POPBUF()', v))
         args = self.cc.expression.parse_args(arg)
         args.insert(0, v)
-        self.cc.code.try_block(_f('print({}({}))', cmd, _comma(args)))
+        self.cc.code.try_block(_f('_PRINT({}({}))', cmd, _comma(args)))
 
     def user_line_command(self, cmd, arg):
         args = self.cc.expression.parse_args(arg)
-        self.cc.code.try_block(_f('print({}({}))', cmd, _comma(args)))
+        self.cc.code.try_block(_f('_PRINT({}({}))', cmd, _comma(args)))
 
     interpolation_re = r'''(?x) 
         { (?=\S)
@@ -444,7 +443,7 @@ class Command:
         for m, val in _findany(self.interpolation_re, s):
             if m:
                 e = self.cc.expression.parse(val[1:-1], with_default_filter=True)
-                self.cc.code.try_block(_f('print({})', e))
+                self.cc.code.try_block(_f('_PRINT({})', e))
             else:
                 self.cc.code.string(val)
 
@@ -538,7 +537,7 @@ class Command:
     def command_return(self, arg):
         # @return expr
 
-        e = self.cc.expression.parse(arg)
+        e = self.cc.expression.parse(arg) if arg else 'None'
         self.cc.code.add(_f('return {}', e))
 
     def parse_def_args(self, args):
@@ -583,12 +582,12 @@ class Command:
 
         name, args = m.groups()
         self.cc.scope.add(name)
-        self.cc.frames.append(self.cc.scope)
-        self.cc.scope = set(self.cc.scope)
+        self.cc.push_scope()
 
         arg_names, signature = self.parse_def_args(args)
         self.cc.scope.update(arg_names)
 
+        snt = self.cc.new_var()
         fun = self.cc.new_var()
         res = self.cc.new_var()
         buf = self.cc.new_var()
@@ -596,34 +595,38 @@ class Command:
         # def's are wrapped in push/popbuf to allow explicit @return's
         #
         # def userfunc(args):
+        #     snt = object()
         #     def fun()
         #         ...
         #         [@return ...]
         #         ...
+        #         return snt
         #
         #     PUSHBUF
         #     res = fun()
         #     buf = POPBUF
-        #     return buf if res is None else res
+        #     return buf if res == snt else res
         #
 
         self.cc.code.add(_f('def {}({}):', name, signature))
         self.cc.code.begin()
 
+        self.cc.code.add(_f('{} = object()', snt))
+
         self.cc.code.add(_f('def {}():', fun))
         self.cc.code.begin()
 
         self.cc.parser.parse_until('end')
-        self.cc.code.add('pass')
+        self.cc.code.add(_f('return {}', snt))
         self.cc.code.end()
 
         self.cc.code.add('_PUSHBUF()')
         self.cc.code.add(_f('{} = {}()', res, fun))
         self.cc.code.add(_f('{} = _POPBUF()', buf))
-        self.cc.code.add(_f('return {} if {} is None else {}', buf, res, res))
+        self.cc.code.add(_f('return {} if {} == {} else {}', buf, res, snt, res))
         self.cc.code.end()
 
-        self.cc.scope = self.cc.frames.pop()
+        self.cc.pop_scope()
 
         return name
 
@@ -655,7 +658,7 @@ class Command:
                     return self.cc.error(ERROR_EOF)
                 buf.append(ln.rstrip())
 
-        self.cc.code.try_block(_reindent(buf), 'pass')
+        self.cc.code.try_block(_dedent(buf), 'pass')
 
     def command_quote(self, arg):
         # @quote label ...flow... @end label
@@ -835,7 +838,7 @@ class Code:
 
     def _flushbuf(self):
         if self.textbuf:
-            self._emit(_f('print({})', repr(''.join(self.textbuf))))
+            self._emit(_f('_PRINT({})', repr(''.join(self.textbuf))))
             self.textbuf = []
 
     def add(self, s):
@@ -876,7 +879,7 @@ class Code:
         exc = self.cc.new_var()
 
         fallback = _as_list(fallback or [])
-        fallback.insert(0, _f('_ERR({})', exc))
+        fallback.insert(0, _f('_ERR({},__POS__)', exc))
 
         self.raw_try_block(body, fallback, exc)
 
@@ -889,103 +892,95 @@ class Code:
         self._flushbuf()
 
         rs = []
-        indent = self.python_indent
+
+        pos = {
+            'path': None,
+            'line': None,
+        }
+
+        paths = []
+
+        def indent(lev):
+            return ' ' * (self.python_indent * lev)
 
         def w(lev, s):
-            rs.append((' ' * (indent * lev)) + s)
+            if '__POS__' in s:
+                s = s.replace('__POS__', _f('({},{})', paths.index(pos['path']), pos['line']))
+            rs.append(indent(lev) + s)
 
-        w(0, _f('def {}(_RT, _CONTEXT, _WARN=None):', self.cc.option('name')))
+        def wcode(lev, code):
+            for s in _dedent(code.splitlines()):
+                w(lev, s)
+
+        def linemark(path, line):
+            if path != pos['path'] or line != pos['line']:
+                if path not in paths:
+                    paths.append(path)
+                pos['path'] = path
+                pos['line'] = line
+                w(0, _f('## {}:{}', pos['path'], pos['line']))
+
+        w(0, _f('def {}(_RUNTIME, _CONTEXT, _ERROR=None):', self.cc.option('name')))
 
         if not self.buf:
             w(1, 'return ""')
             return '\n'.join(rs)
 
-        curpath, curline, _ = self.buf[0]
+        linemark(self.buf[0][0], self.buf[0][1])
 
-        w(1, _f('_PATH = {}', repr(curpath)))
-        w(1, _f('_LINE = {}', repr(curline)))
+        wcode(1, """
+            _PATHS = __PATHS__
+            _RT = _RUNTIME()
+            _PUSHBUF = _RT.pushbuf
+            _POPBUF = _RT.popbuf
+            _PRINT = _RT.prints
+            print = _RT.printa 
 
-        w(1, '_BUF = []')
-        w(1, 'def _PUSHBUF():')
-        w(2, '_BUF.append([])')
-
-        w(1, 'def _POPBUF():')
-        w(2, 'b = _BUF.pop()')
-        w(2, 'try:')
-        w(3, 'return "".join(b)')
-        w(2, 'except TypeError:')
-        w(3, 'return "".join(str(s) for s in b if s is not None)')
-
-        w(1, 'def _ERRMSG(e):')
-        w(2, 'try:')
-        w(3, 'name = e.__class__.__name__')
-        w(2, 'except:')
-        w(3, 'name = repr(e)')
-        w(2, 'return "{} in {}:{}".format(name, repr(_PATH), _LINE)')
-
-        w(1, 'def _ERR(e):')
-        w(2, 'if _WARN:')
-        w(3, '_WARN(_ERRMSG(e))')
-
-        exc = self.cc.new_var()
+            def _ERR(exc, pos=None):
+                if _ERROR:
+                    _ERROR(exc, _PATHS[pos[0]] if pos else None, pos[1] if pos else None)
+        """)
 
         if self.cc.is_silent:
-            w(1, 'def _GET(obj, prop):')
-            w(2, 'try:')
-            w(3, 'return _RT.get(obj, prop)')
-            w(2, _f('except Exception as {}:', exc))
-            w(3, _f('_ERR({})', exc))
-            w(3, 'return _RT.undef')
+            exc = self.cc.new_var()
+            wcode(1, _f("""
+                def _GET(obj, prop, pos):
+                    try:
+                        return _RT.get(obj, prop)
+                    except Exception as {}:
+                        _ERR({}, pos)
+                        return _RT.undef
+                
+                def _GETCONTEXT(prop, pos):
+                    try:
+                        return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]
+                    except Exception as {}:
+                        _ERR({}, pos)
+                        return _RT.undef
+            """, exc, exc, exc, exc))
         else:
-            w(1, '_GET = _RT.get')
-
-        if self.cc.is_silent:
-            w(1, 'def _GETCONTEXT(prop):')
-            w(2, 'try:')
-            w(3, 'return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]')
-            w(2, _f('except Exception as {}:', exc))
-            w(3, _f('_ERR({})', exc))
-            w(3, 'return _RT.undef')
-        else:
-            w(1, 'def _GETCONTEXT(prop):')
-            w(2, 'return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]')
+            wcode(1, """
+                def _GET(obj, prop, pos):            
+                    return _RT.get(obj, prop)
+                def _GETCONTEXT(prop, pos):                    
+                    return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]            
+            """)
 
         w(1, 'try:')
 
-        vs = self.cc.new_var()
-
-        w(2, _f('{} = {}', vs, sorted(self.context_vars)))
-        w(2, _f('_CONTEXT, _GLOBALS = _RT.prepare(_CONTEXT, {})', vs))
-
+        w(2, _f('_CONTEXT, _GLOBALS = _RT.prepare(_CONTEXT, {})', sorted(self.context_vars)))
         w(2, '_PUSHBUF()')
-        w(2, 'print = _BUF[-1].append')
 
         level = 2
 
-        for path, lineno, op in self.buf:
-            if path != curpath:
-                w(level, _f('_PATH = {}', repr(path)))
-                curpath = path
-
-            if lineno != curline:
-                w(level, _f('_LINE = {}', lineno))
-                curline = lineno
-
-            if not op:
-                continue
-
+        for path, line, op in self.buf:
+            linemark(path, line)
             if op == 'BEGIN':
                 level += 1
-                continue
-
-            if op == 'END':
+            elif op == 'END':
                 level -= 1
-                continue
-
-            w(level, op)
-
-            if '_PUSHBUF' in op or '_POPBUF' in op:
-                w(level, 'print = _BUF[-1].append')
+            elif op:
+                w(level, op)
 
         exc = self.cc.new_var()
 
@@ -993,12 +988,15 @@ class Code:
         w(1, _f('except Exception as {}:', exc))
 
         if self.cc.is_silent:
-            w(2, _f('_ERR({})', exc))
+            w(2, _f('_ERR({}, __POS__)', exc))
             w(2, 'return ""')
         else:
-            w(2, _f('raise _RT.error_class(_ERRMSG({}))', exc))
+            w(2, _f('raise'))
 
-        return '\n'.join(rs)
+        rs = '\n'.join(rs)
+        rs = rs.replace('__PATHS__', repr(paths))  # see above
+
+        return rs
 
 
 class Compiler:
@@ -1037,6 +1035,13 @@ class Compiler:
         self.num_vars += 1
         return '_' + str(self.num_vars)
 
+    def push_scope(self):
+        self.frames.append(self.scope)
+        self.scope = set(self.scope)
+
+    def pop_scope(self):
+        self.scope = self.frames.pop()
+
     @property
     def is_silent(self):
         return self.option('silent')
@@ -1052,7 +1057,7 @@ def _error(msg, path, line, *args):
             code = k
     if args:
         msg += ' (' + ' '.join(repr(x) for x in args) + ')'
-    raise Error(code, msg, path, line)
+    raise Error(code, msg, path, line) from None
 
 
 def _source_location(code, lineno):
@@ -1062,12 +1067,10 @@ def _source_location(code, lineno):
     for n, ln in enumerate(code.splitlines(), 1):
         if n >= lineno:
             break
-        m = re.search(r'_PATH =(.+)', ln)
+        m = re.search(r'## (.*?):(\d+)', ln)
         if m:
-            path = eval(m.group(1))
-        m = re.search(r'_LINE =(.+)', ln)
-        if m:
-            line = eval(m.group(1))
+            path = m.group(1)
+            line = m.group(2)
 
     return path, line
 
@@ -1088,19 +1091,12 @@ def _get_indent(s):
     return len(s) - len(s.lstrip())
 
 
-def _dedent(s, size):
-    if size > 0:
-        return re.sub(r'^[ \t]{' + str(size) + '}', '', s)
-    return s
-
-
-def _reindent(buf):
+def _dedent(buf):
     minlen = 1e20
 
     for ln in buf:
         if ln.strip():
             minlen = min(minlen, _get_indent(ln))
-
     return [x[minlen:] for x in buf]
 
 

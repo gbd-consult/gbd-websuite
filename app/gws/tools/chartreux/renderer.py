@@ -1,62 +1,74 @@
 from . import compiler, runtime as rt
 
 
-def render(
+def call(
         template,
         context=None,
         runtime=None,
-        warn=None,
+        error=None,
 ):
-    return template(runtime or rt.Runtime, context, warn)
+    return template(runtime or rt.Runtime, context, error)
 
 
-def render_text(
+def render(
         text,
+
         context=None,
+        error=None,
+        runtime=None,
+
+        command=None,
+        comment=None,
         filter=None,
         globals=None,
-        name='render',
+        name=None,
         path=None,
-        runtime=None,
         silent=False,
-        warn=None,
 ):
     template = compiler.compile(
         text,
+        command=command,
+        comment=comment,
         filter=filter,
         globals=globals,
         name=name,
         path=path,
         silent=silent,
     )
-    return render(
+    return call(
         template,
         context=context,
         runtime=runtime,
-        warn=warn,
+        error=error,
     )
 
 
 def render_path(
         path,
+
         context=None,
+        error=None,
+        runtime=None,
+
+        command=None,
+        comment=None,
         filter=None,
         globals=None,
-        name='render',
-        runtime=None,
+        name=None,
         silent=False,
-        warn=None,
 ):
-    with open(path) as fp:
-        source = fp.read()
-    return render_text(
-        source,
-        context=context,
+    template = compiler.compile_path(
+        path,
+        command=command,
+        comment=comment,
         filter=filter,
         globals=globals,
         name=name,
-        path=path,
-        runtime=runtime,
         silent=silent,
-        warn=warn,
+    )
+    return call(
+        template,
+        context=context,
+        runtime=runtime,
+        error=error,
     )

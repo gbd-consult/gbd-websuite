@@ -12,21 +12,21 @@ class Error(ValueError):
 
 
 class _Undef(str):
-    def get(cls, key):
-        return cls
+    def get(self, key):
+        return self
 
-    def __getitem__(cls, item):
-        return cls
+    def __getitem__(self, item):
+        return self
 
-    def __getattr__(cls, item):
-        return cls
+    def __getattr__(self, item):
+        return self
 
     def __bool__(self):
         return False
 
 
 class _Formatter(string.Formatter):
-    def format_field(cls, val, spec):
+    def format_field(self, val, spec):
         if spec:
             s = spec[-1]
             if s in 'bcdoxXn':
@@ -39,13 +39,15 @@ class _Formatter(string.Formatter):
 
 
 class BaseRuntime:
-    """Basic template"""
+    """Basic runtime."""
 
     undef = _Undef()
     error_class = Error
 
-    @classmethod
-    def prepare(cls, context, context_vars):
+    def __init__(self):
+        self.buf = []
+
+    def prepare(self, context, context_vars):
         if not context:
             context = {}
         elif not isinstance(context, dict):
@@ -56,17 +58,14 @@ class BaseRuntime:
 
         return context, vars(builtins)
 
-
-    @classmethod
-    def get(cls, obj, prop):
+    def get(self, obj, prop):
         try:
             return obj[prop]
         except:
             pass
         return getattr(obj, prop)
 
-    @classmethod
-    def iter1(cls, x):
+    def iter1(self, x):
         if isinstance(x, (dict, list, tuple, set)):
             return x
         try:
@@ -75,8 +74,7 @@ class BaseRuntime:
             pass
         return vars(x).keys()
 
-    @classmethod
-    def iter2(cls, x):
+    def iter2(self, x):
         if isinstance(x, dict):
             return x.items()
         if isinstance(x, (list, tuple, set)):
@@ -87,46 +85,55 @@ class BaseRuntime:
             pass
         return vars(x).items()
 
-    @classmethod
-    def isempty(cls, x):
+    def isempty(self, x):
         if isinstance(x, str):
             return len(x.strip()) == 0
         if isinstance(x, (int, float)):
             return False
         return not bool(x)
 
+    def pushbuf(self):
+        self.buf.append([])
+
+    def popbuf(self):
+        b = self.buf.pop()
+        try:
+            return "".join(b)
+        except TypeError:
+            return "".join(str(s) for s in b if s is not None)
+
+    def prints(self, s):
+        self.buf[-1].append(s)
+
+    def printa(self, *a):
+        self.buf[-1].extend(a)
+
 
 class Runtime(BaseRuntime):
-    """Basic template with some useful filters"""
+    """Basic runtime with default filters"""
 
     formatter = _Formatter()
 
-    @classmethod
-    def filter_raw(cls, val):
+    def filter_raw(self, val):
         return val
 
-    @classmethod
-    def filter_as_int(cls, val):
+    def filter_as_int(self, val):
         return int(val)
 
-    @classmethod
-    def filter_as_float(cls, val):
+    def filter_as_float(self, val):
         return float(val)
 
-    @classmethod
-    def filter_as_str(cls, val):
+    def filter_as_str(self, val):
         return str(val)
 
-    @classmethod
-    def filter_xml(cls, val):
+    def filter_xml(self, val):
         val = str(val)
         val = val.replace('&', '&amp;')
         val = val.replace('<', '&lt;')
         val = val.replace('>', '&gt;')
         return val
 
-    @classmethod
-    def filter_xmlquote(cls, val):
+    def filter_xmlquote(self, val):
         val = str(val)
         val = val.replace('&', '&amp;')
         val = val.replace('<', '&lt;')
@@ -135,95 +142,96 @@ class Runtime(BaseRuntime):
         val = val.replace('\'', '&apos;')
         return val
 
-    @classmethod
-    def filter_html(cls, val):
+    def filter_html(self, val):
         return html.escape(str(val))
 
-    @classmethod
-    def filter_h(cls, val):
+    def filter_h(self, val):
         return html.escape(str(val))
 
-    @classmethod
-    def filter_unhtml(cls, val):
+    def filter_unhtml(self, val):
         return html.unescape(str(val))
 
-    @classmethod
-    def filter_nl2br(cls, val):
+    def filter_nl2br(self, val):
         return str(val).replace('\n', '<br/>')
 
-    @classmethod
-    def filter_url(cls, val):
+    def filter_url(self, val):
         # @TODO
         return str(val)
 
-    @classmethod
-    def filter_strip(cls, val):
+    def filter_strip(self, val):
         return str(val).strip()
 
-    @classmethod
-    def filter_upper(cls, val):
+    def filter_upper(self, val):
         return str(val).upper()
 
-    @classmethod
-    def filter_lower(cls, val):
+    def filter_lower(self, val):
         return str(val).lower()
 
-    # @TODO need a better expr
-    linkify_re = r'https?://\S+[\w/]'
+    # based on: https://daringfireball.net/2010/07/improved_regex_for_matching_urls
+    linkify_re = r'''(?xi)
+        \b
+        (
+            https?://
+            |
+            www\d?\.
+        )
+        (
+            [^\s()<>{}\[\]]
+            |
+            \( [^\s()]+ \)
+        )+
+        (
+            \( [^\s()]+ \)
+            |
+            [^\s`!()\[\]{};:'".,<>?«»“”‘’]
+        )
+    '''
 
-    @classmethod
-    def filter_linkify(cls, val, target=None, cut=None, ellipsis=None):
+
+    def filter_linkify(self, val, target=None, rel=None, cut=None, ellipsis=None):
         def _repl(m):
             url = m.group(0)
 
-            attr = 'href="{}"'.format(cls.filter_url(url))
+            attr = 'href="{}"'.format(self.filter_url(url))
             if target:
                 attr += ' target="{}"'.format(target)
-                if target == '_blank':
-                    attr += ' rel="noopener noreferrer"'
+            if rel:
+                attr += ' rel="{}"'.format(rel)
 
             text = url
             if cut:
-                text = cls.filter_cut(text, cut, ellipsis)
+                text = self.filter_cut(text, cut, ellipsis)
 
-            return f'<a {attr}>{cls.filter_html(text)}</a>'
+            return f'<a {attr}>{self.filter_html(text)}</a>'
 
-        return re.sub(cls.linkify_re, _repl, str(val))
+        return re.sub(self.linkify_re, _repl, str(val))
 
-    @classmethod
-    def filter_format(cls, val, fmt):
-        return cls.formatter.format(fmt, val)
+    def filter_format(self, val, fmt):
+        return self.formatter.format(fmt, val)
 
-    @classmethod
-    def filter_cut(cls, val, n, ellipsis=None):
+    def filter_cut(self, val, n, ellipsis=None):
         val = str(val)
         if len(val) <= n:
             return val
         return val[:n] + (ellipsis or '')
 
-    @classmethod
-    def filter_json(cls, val, pretty=False):
+    def filter_json(self, val, pretty=False):
         # NB: allow objects to be dumped
         if not pretty:
             return json.dumps(val, default=vars)
         return json.dumps(val, default=vars, indent=4, sort_keys=True)
 
-    @classmethod
-    def filter_slice(cls, val, a, b):
+    def filter_slice(self, val, a, b):
         return val[a:b]
 
-    @classmethod
-    def filter_join(cls, val, delim=', '):
+    def filter_join(self, val, delim=', '):
         return str(delim).join(str(x) for x in val)
 
-    @classmethod
-    def filter_split(cls, val, delim=None):
+    def filter_split(self, val, delim=None):
         return str(val).split(delim)
 
-    @classmethod
-    def filter_lines(cls, val):
+    def filter_lines(self, val):
         return str(val).splitlines()
 
-    @classmethod
-    def filter_sort(cls, val):
+    def filter_sort(self, val):
         return sorted(val)
