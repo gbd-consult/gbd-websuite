@@ -377,6 +377,7 @@ def gemarkung_list(conn, mode):
     rs = conn.select(f'''
         SELECT DISTINCT gemarkung_id, gemarkung, gemeinde
         FROM {conn.index_schema}.{main_index}
+        WHERE gemarkung_id IS NOT NULL
     ''')
     ls = []
     for r in rs:

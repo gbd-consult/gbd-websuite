@@ -121,7 +121,6 @@ class Connection:
             gws.log.error(f'crs_for_column({schema}, {table}, {column}) FAILED')
             raise
 
-
     def geometry_type_for_column(self, table, column):
         schema, table = self.schema_and_table(table)
         r = self.select_one('''
@@ -222,16 +221,25 @@ class Connection:
         if not data:
             return
         all_cols = self.columns(table)
-        cols = sorted(col for col in data[0] if col in all_cols)
-        template = '(' + _comma(f'%({col})s' for col in cols) + ')'
-        colnames = _comma(self.quote_ident(s) for s in cols)
+
+        cols = set()
+        for d in data:
+            cols.update(d)
+        cols = sorted(c for c in cols if c in all_cols)
+
+        template = '(' + _comma('%s' for _ in cols) + ')'
+        colnames = _comma(self.quote_ident(c) for c in cols)
 
         sql = f'INSERT INTO {self.quote_table(table)} ({colnames}) VALUES %s'
         if on_conflict:
             sql += f' ON CONFLICT {on_conflict}'
 
+        def seq():
+            for d in data:
+                yield [d.get(c) for c in cols]
+
         with self.conn.cursor() as cur:
-            return psycopg2.extras.execute_values(cur, sql, data, template, page_size)
+            return psycopg2.extras.execute_values(cur, sql, seq(), template, page_size)
 
     def schema_and_table(self, table):
         if '.' in table:
