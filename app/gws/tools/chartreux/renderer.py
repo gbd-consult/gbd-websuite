@@ -17,8 +17,7 @@ def render(
         error=None,
         runtime=None,
 
-        command=None,
-        comment=None,
+        syntax=None,
         filter=None,
         globals=None,
         name=None,
@@ -27,8 +26,7 @@ def render(
 ):
     template = compiler.compile(
         text,
-        command=command,
-        comment=comment,
+        syntax=syntax,
         filter=filter,
         globals=globals,
         name=name,
@@ -50,8 +48,7 @@ def render_path(
         error=None,
         runtime=None,
 
-        command=None,
-        comment=None,
+        syntax=None,
         filter=None,
         globals=None,
         name=None,
@@ -59,8 +56,7 @@ def render_path(
 ):
     template = compiler.compile_path(
         path,
-        command=command,
-        comment=comment,
+        syntax=syntax,
         filter=filter,
         globals=globals,
         name=name,

@@ -6,6 +6,7 @@ import gws.server.monitor
 from . import parser, error, globals, gwsroot
 
 DEFAULT_CONFIG_PATHS = [
+    '/data/config.cx',
     '/data/config.json',
     '/data/config.yaml',
     '/data/config.py',

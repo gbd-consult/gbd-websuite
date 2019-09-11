@@ -16,6 +16,7 @@ class Error(ValueError):
 
 
 ERROR_SYNTAX = 'syntax error'
+ERROR_BLOCK_MULTI_LET = 'cannot assign a block'
 ERROR_COMMAND = 'unknown command'
 ERROR_IDENT = 'invalid identifier'
 ERROR_EOF = 'unexpected end of file'
@@ -26,8 +27,12 @@ ERROR_ARG_NOT_SUPPORTED = 'argument syntax not supported'
 ERROR_FILTER = 'invalid or unknown filter'
 
 _DEFAULT_OPTIONS = {
-    'command': '@',
-    'comment': '#',
+    'syntax': {
+        'command': r'^\s*@(\w+)(.*)',
+        'comment': r'^\s*#',
+        'start': r'{(?=\S)',
+        'end': r'}',
+    },
     'filter': None,
     'globals': [],
     'name': '_RENDER',
@@ -113,9 +118,10 @@ class Parser:
 
             return None
 
-    command_re = r'^(\w+)(.*)'
-
     text_command = '\x00'
+
+    command_re = None
+    comment_re = None
 
     def parse_line(self, ln):
         if ln is None:
@@ -123,17 +129,18 @@ class Parser:
 
         sl = ln.strip()
 
-        if sl.startswith(self.cc.option('comment')):
+        if not self.command_re:
+            self.command_re = re.compile(self.cc.option('syntax')['command'])
+            self.comment_re = re.compile(self.cc.option('syntax')['comment'])
+
+        if re.match(self.comment_re, ln):
             return None, ''
 
-        if not sl.startswith(self.cc.option('command')):
-            return self.text_command, ln
-
-        m = re.search(self.command_re, sl[1:])
+        m = re.match(self.command_re, ln)
         if not m:
             return self.text_command, ln
 
-        cmd = m.group(1).lower()
+        cmd = m.group(1)
 
         # NB: the final : in commands is optional
         arg = m.group(2).lstrip().rstrip(' :')
@@ -424,25 +431,32 @@ class Command:
         args = self.cc.expression.parse_args(arg)
         self.cc.code.try_block(_f('_PRINT({}({}))', cmd, _comma(args)))
 
-    interpolation_re = r'''(?x) 
-        { (?=\S)
-            (
-                " (\\. | [^"])* "
-                |
-                ' (\\. | [^'])* '
-                |
-                [^'"{}]
-            )+
-        } 
-    '''
+    interpolation_re = None
 
     def text_command(self, arg):
         # just a chunk of text, possibly with interpolation
         s = arg
 
+        if not self.interpolation_re:
+            start = self.cc.option('syntax')['start']
+            end = self.cc.option('syntax')['end']
+            self.interpolation_re = re.compile(fr'''(?x)
+                {start}
+                (
+                    (
+                        " (\\. | [^"])* "
+                        |
+                        ' (\\. | [^'])* '
+                        |
+                        [^'"]
+                    )+?
+                )
+                {end} 
+            ''')
+
         for m, val in _findany(self.interpolation_re, s):
             if m:
-                e = self.cc.expression.parse(val[1:-1], with_default_filter=True)
+                e = self.cc.expression.parse(m.group(1), with_default_filter=True)
                 self.cc.code.try_block(_f('_PRINT({})', e))
             else:
                 self.cc.code.string(val)
@@ -671,7 +685,7 @@ class Command:
                 break
             self.cc.code.string(ln)
 
-    let_re = r'^(\w+)(.*)$'
+    let_re = r'^([\w+, ]+)(.*)$'
 
     def command_let(self, arg):
         # @let var = expression ('=' is optional)
@@ -681,19 +695,23 @@ class Command:
         if not m:
             return self.cc.error(ERROR_IDENT)
 
-        name, expr = m.groups()
+        names, expr = m.groups()
+        names = [x.strip() for x in names.replace(',', ' ').split()]
         expr = expr.strip()
-        self.cc.scope.add(name)
+        for n in names:
+            self.cc.scope.add(n)
 
         if expr:
             if expr.startswith('='):
                 expr = expr[1:]
             e = self.cc.expression.parse(expr)
-            self.cc.code.add(_f('{} = {}', name, e))
+            self.cc.code.add(_f('{} = {}', _comma(names), e))
         else:
+            if len(names) > 1:
+                return self.cc.error(ERROR_BLOCK_MULTI_LET)
             self.cc.code.add('_PUSHBUF()')
             self.cc.parser.parse_until('end')
-            self.cc.code.add(_f('{} = _POPBUF()', name))
+            self.cc.code.add(_f('{} = _POPBUF()', _comma(names)))
 
     def command_var(self, arg):
         # @var var, var,...
@@ -1001,10 +1019,9 @@ class Code:
 
 class Compiler:
     def __init__(self, options):
-        self.options = dict(_DEFAULT_OPTIONS)
-        for k, v in options.items():
-            if v is not None:
-                self.options[k] = v
+        self.options = _merge(_DEFAULT_OPTIONS, options)
+        if options:
+            self.options['syntax'] = _merge(_DEFAULT_OPTIONS['syntax'], options.get('syntax'))
 
     def run(self, text):
         self.parser = Parser(self)
@@ -1122,6 +1139,16 @@ def _as_list(s):
     if isinstance(s, (list, tuple)):
         return list(s)
     return [s]
+
+
+def _merge(a, b):
+    a = dict(a)
+    if not b:
+        return a
+    for k, v in b.items():
+        if v is not None:
+            a[k] = v
+    return a
 
 
 _comma = ', '.join

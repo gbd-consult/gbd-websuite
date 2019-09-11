@@ -9,7 +9,9 @@ import yaml
 import gws
 import gws.types
 import gws.types.spec
-import gws.tools.misc as misc
+import gws.tools.misc
+import gws.tools.chartreux
+import gws.tools.slon
 
 from . import error, spec
 
@@ -29,7 +31,10 @@ def parse(dct, klass, path=''):
 def parse_main(path):
     """Read and parse the main config file"""
 
-    dct = _read(path)
+    dct = _read(path) or {}
+
+    with open(gws.VAR_DIR + '/config.parsed.json', 'wt') as fp:
+        json.dump(dct, fp, indent=4, ensure_ascii=False)
 
     prj_configs = []
     for pc in dct.pop('projects', []):
@@ -39,7 +44,7 @@ def parse_main(path):
 
     prj_paths = cfg.get('projectPaths') or []
     for dirname in cfg.get('projectDirs') or []:
-        prj_paths.extend(misc.find_files(dirname, config_path_pattern))
+        prj_paths.extend(gws.tools.misc.find_files(dirname, config_path_pattern))
 
     for prj_path in sorted(set(prj_paths)):
         pcs = _read(prj_path)
@@ -71,7 +76,7 @@ def _read(path):
 def _read2(path):
     if path.endswith('.py'):
         mod_name = 'gws.cfg.' + gws.as_uid(path)
-        mod = misc.load_source(path, mod_name)
+        mod = gws.tools.misc.load_source(path, mod_name)
         fn = getattr(mod, config_function_name)
         return fn()
 
@@ -82,6 +87,44 @@ def _read2(path):
     if path.endswith('.yaml'):
         with open(path, encoding='utf8') as fp:
             return yaml.load(fp)
+
+    if path.endswith('.cx'):
+        return _parse_cx_config(path)
+
+
+def _parse_cx_config(path):
+    try:
+        src = gws.tools.chartreux.render_path(
+            path,
+            context={},
+            syntax={'start': '{{', 'end': '}}'},
+            silent=False
+        )
+    except gws.tools.chartreux.compiler.Error as e:
+        with open(e.path) as fp:
+            _display_syntax_error(fp.read(), e.message, e.line)
+        raise ValueError('syntax error')
+
+    try:
+        return gws.tools.slon.loads(src, as_object=True)
+    except gws.tools.slon.DecodeError as e:
+        _display_syntax_error(src, e.args[0], e.args[1])
+        raise ValueError('syntax error')
+
+
+def _display_syntax_error(src, message, line, context=10):
+    gws.log.error('CONFIGURATION SYNTAX ERROR')
+    gws.log.error(message)
+    gws.log.error('-' * 40)
+    for n, t in enumerate(src.splitlines(), 1):
+        if n < line - context:
+            continue
+        if n > line + context:
+            break
+        t = str(n) + ': ' + t
+        if n == line:
+            t = '>>>' + t
+        gws.log.error(t)
 
 
 def _parse_multi_project(cfg, path):
@@ -100,13 +143,13 @@ def _parse_multi_project(cfg, path):
 
     res = []
 
-    for index, p in enumerate(sorted(misc.find_files(dirname, mm))):
+    for index, p in enumerate(sorted(gws.tools.misc.find_files(dirname, mm))):
         gws.log.info(f'multi-project: found {p!r}')
         m = re.search(mm, p)
         args = {'$' + str(n): s for n, s in enumerate(m.groups(), 1)}
         args['$0'] = p
         args['index'] = str(index)
-        args.update(misc.parse_path(p))
+        args.update(gws.tools.misc.parse_path(p))
         dct = _deep_format(cfg, args)
         res.append(parse(dct, 'gws.common.project.Config', path))
 
