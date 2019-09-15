@@ -238,6 +238,7 @@ class Object(gws.common.template.Object):
             context,
             silent=True,
             path=self.path or '<string>',
+            syntax={'comment': r'^\s*##'},
             error=err
         )
 
