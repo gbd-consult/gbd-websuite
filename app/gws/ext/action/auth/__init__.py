@@ -14,9 +14,17 @@ class Response(t.Response):
     user: gws.auth.user.Props
 
 
-class AuthLoginParams(t.Params):
+class LoginParams(t.Params):
     username: str
     password: str
+
+
+class LogoutParams(t.Params):
+    pass
+
+
+class CheckParams(t.Params):
+    pass
 
 
 def _feedback(req: gws.web.AuthRequest):
@@ -25,12 +33,12 @@ def _feedback(req: gws.web.AuthRequest):
 
 class Object(gws.ActionObject):
 
-    def api_check(self, req, p: t.NoParams) -> Response:
+    def api_check(self, req, p: CheckParams) -> Response:
         """Check the authorization status"""
 
         return _feedback(req)
 
-    def api_login(self, req, p: AuthLoginParams) -> Response:
+    def api_login(self, req, p: LoginParams) -> Response:
         """Perform a login"""
 
         if not req.user.is_guest:
@@ -48,7 +56,7 @@ class Object(gws.ActionObject):
         req.logged_in(user)
         return _feedback(req)
 
-    def api_logout(self, req, p: t.NoParams) -> Response:
+    def api_logout(self, req, p: LogoutParams) -> Response:
         """Perform a logout"""
 
         req.logged_out()
