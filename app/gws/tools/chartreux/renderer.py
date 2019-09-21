@@ -22,7 +22,6 @@ def render(
         globals=None,
         name=None,
         path=None,
-        silent=False,
 ):
     template = compiler.compile(
         text,
@@ -31,7 +30,6 @@ def render(
         globals=globals,
         name=name,
         path=path,
-        silent=silent,
     )
     return call(
         template,
@@ -52,7 +50,6 @@ def render_path(
         filter=None,
         globals=None,
         name=None,
-        silent=False,
 ):
     template = compiler.compile_path(
         path,
@@ -60,7 +57,6 @@ def render_path(
         filter=filter,
         globals=globals,
         name=name,
-        silent=silent,
     )
     return call(
         template,

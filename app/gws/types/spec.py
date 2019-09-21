@@ -53,8 +53,8 @@ class Validator:
 
     def error(self, code, msg, val):
         val = repr(val)
-        if len(val) > 200:
-            val = val[:200] + '...'
+        if len(val) > 600:
+            val = val[:600] + '...'
         raise Error(code + ': ' + msg, self.path, '.'.join(str(k) for k in self.keys), val)
 
     def get(self, val, tname, path=''):
@@ -129,6 +129,9 @@ class Validator:
         return Data(res)
 
     def _value(self, p, val):
+        if not hasattr(val, 'get'):
+            return self.error('ERR_UNEXPECTED', 'unexpected value', val)
+
         v2 = val.get(p['name'])
         df = p['default']
 
@@ -159,6 +162,9 @@ class Validator:
         return self._get(v2, p['type'])
 
     def _union(self, val, t):
+        if not hasattr(val, 'get'):
+            return self.error('ERR_UNEXPECTED', 'unexpected value', val)
+
         tname = val.get('type')
 
         if tname:

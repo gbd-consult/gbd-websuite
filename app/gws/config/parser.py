@@ -40,6 +40,7 @@ def parse_main(path):
     for pc in dct.pop('projects', []):
         prj_configs.append([pc, path])
 
+    gws.log.info('parsing main configuration...')
     cfg = parse(dct, 'gws.common.application.Config', path)
 
     prj_paths = cfg.get('projectPaths') or []
@@ -56,6 +57,11 @@ def parse_main(path):
     cfg.projects = []
 
     for pc, prj_path in prj_configs:
+        try:
+            uid = pc.get('uid') or pc.get('title')
+        except:
+            uid = 'unknown'
+        gws.log.info(f'parsing project {uid!r}...')
         if pc.get('multi'):
             cfg.projects.extend(_parse_multi_project(pc, prj_path))
         else:
@@ -94,16 +100,24 @@ def _read2(path):
 
 def _parse_cx_config(path):
     try:
-        src = gws.tools.chartreux.render_path(
+        tpl = gws.tools.chartreux.compile_path(
             path,
-            context={},
             syntax={'start': '{{', 'end': '}}'},
-            silent=False
         )
     except gws.tools.chartreux.compiler.Error as e:
         with open(e.path) as fp:
             _display_syntax_error(fp.read(), e.message, e.line)
         raise ValueError('syntax error')
+
+    def err(exc, path, line):
+        with open(path) as fp:
+            _display_syntax_error(fp.read(), repr(exc), line)
+        raise ValueError('syntax error')
+
+    src = gws.tools.chartreux.call(
+        tpl,
+        context={'true': True, 'false': False},
+        error=err)
 
     try:
         return gws.tools.slon.loads(src, as_object=True)

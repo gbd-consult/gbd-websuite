@@ -29,7 +29,7 @@ ERROR_FILTER = 'invalid or unknown filter'
 _DEFAULT_OPTIONS = {
     'syntax': {
         'command': r'^\s*@(\w+)(.*)',
-        'comment': r'^\s*#',
+        'comment': r'^\s*##',
         'start': r'{(?=\S)',
         'end': r'}',
     },
@@ -37,7 +37,6 @@ _DEFAULT_OPTIONS = {
     'globals': [],
     'name': '_RENDER',
     'path': '',
-    'silent': False,
 }
 
 
@@ -440,8 +439,8 @@ class Command:
         if not self.interpolation_re:
             start = self.cc.option('syntax')['start']
             end = self.cc.option('syntax')['end']
-            self.interpolation_re = re.compile(fr'''(?x)
-                {start}
+            self.interpolation_re = re.compile(_f(r'''(?x)
+                {}
                 (
                     (
                         " (\\. | [^"])* "
@@ -451,8 +450,8 @@ class Command:
                         [^'"]
                     )+?
                 )
-                {end} 
-            ''')
+                {} 
+            ''', start, end))
 
         for m, val in _findany(self.interpolation_re, s):
             if m:
@@ -685,10 +684,18 @@ class Command:
                 break
             self.cc.code.string(ln)
 
-    let_re = r'^([\w+, ]+)(.*)$'
+    let_re = r'''(?x)
+        ^
+            (
+                (?: \w+\s*,\s*) *
+                \w+
+            )
+            (.*)
+        $
+    '''
 
     def command_let(self, arg):
-        # @let var = expression ('=' is optional)
+        # @let var = expression
         # @let var ...flow... @end
 
         m = re.search(self.let_re, arg)
@@ -812,7 +819,7 @@ class Command:
 
         e = self.cc.expression.parse(arg)
 
-        # NB this try-except does not depend on the silent mode
+        # NB 'with' argument never throws
 
         self.cc.code.raw_try_block(
             _f('{} = {}', name, e),
@@ -889,11 +896,6 @@ class Code:
         if not body:
             return
 
-        if not self.cc.is_silent:
-            for ln in _as_list(body):
-                self.add(ln)
-            return
-
         exc = self.cc.new_var()
 
         fallback = _as_list(fallback or [])
@@ -946,43 +948,40 @@ class Code:
 
         linemark(self.buf[0][0], self.buf[0][1])
 
-        wcode(1, """
+        wcode(1, '''
             _PATHS = __PATHS__
             _RT = _RUNTIME()
             _PUSHBUF = _RT.pushbuf
             _POPBUF = _RT.popbuf
             _PRINT = _RT.prints
+            _HAS_EXC = [False]
             print = _RT.printa 
 
             def _ERR(exc, pos=None):
                 if _ERROR:
-                    _ERROR(exc, _PATHS[pos[0]] if pos else None, pos[1] if pos else None)
-        """)
+                    try:
+                        _ERROR(exc, _PATHS[pos[0]] if pos else None, pos[1] if pos else None)
+                    except:
+                        _HAS_EXC[0] = True
+                        raise
+                else:
+                    _HAS_EXC[0] = True
+                    raise exc
 
-        if self.cc.is_silent:
-            exc = self.cc.new_var()
-            wcode(1, _f("""
-                def _GET(obj, prop, pos):
-                    try:
-                        return _RT.get(obj, prop)
-                    except Exception as {}:
-                        _ERR({}, pos)
-                        return _RT.undef
-                
-                def _GETCONTEXT(prop, pos):
-                    try:
-                        return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]
-                    except Exception as {}:
-                        _ERR({}, pos)
-                        return _RT.undef
-            """, exc, exc, exc, exc))
-        else:
-            wcode(1, """
-                def _GET(obj, prop, pos):            
+            def _GET(obj, prop, pos):
+                try:
                     return _RT.get(obj, prop)
-                def _GETCONTEXT(prop, pos):                    
-                    return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]            
-            """)
+                except Exception as _EXC:
+                    _ERR(_EXC, pos)
+                    return _RT.undef
+            
+            def _GETCONTEXT(prop, pos):
+                try:
+                    return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]
+                except Exception as _EXC:
+                    _ERR(_EXC, pos)
+                    return _RT.undef
+        ''')
 
         w(1, 'try:')
 
@@ -1000,16 +999,15 @@ class Code:
             elif op:
                 w(level, op)
 
-        exc = self.cc.new_var()
-
         w(2, 'return _POPBUF()')
-        w(1, _f('except Exception as {}:', exc))
 
-        if self.cc.is_silent:
-            w(2, _f('_ERR({}, __POS__)', exc))
-            w(2, 'return ""')
-        else:
-            w(2, _f('raise'))
+        wcode(1, '''
+            except Exception as _EXC:
+                if _HAS_EXC[0]:
+                    raise
+                else:
+                    _ERR(_EXC, __POS__)
+        ''')
 
         rs = '\n'.join(rs)
         rs = rs.replace('__PATHS__', repr(paths))  # see above
@@ -1058,10 +1056,6 @@ class Compiler:
 
     def pop_scope(self):
         self.scope = self.frames.pop()
-
-    @property
-    def is_silent(self):
-        return self.option('silent')
 
 
 ##

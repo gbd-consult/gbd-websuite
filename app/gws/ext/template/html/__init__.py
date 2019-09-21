@@ -236,9 +236,7 @@ class Object(gws.common.template.Object):
         content = gws.tools.chartreux.render(
             text,
             context,
-            silent=True,
             path=self.path or '<string>',
-            syntax={'comment': r'^\s*##'},
             error=err
         )
 

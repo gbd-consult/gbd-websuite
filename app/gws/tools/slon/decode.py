@@ -69,7 +69,7 @@ class Decoder:
 
         if t == T_BOOL:
             self.pop()
-            return s.lower() in ('true', 'on', 'yes', 'y')
+            return s.lower() in ('true', 'on', 'yes')
 
         if t == T_NUMBER:
             self.pop()
@@ -185,7 +185,7 @@ class Decoder:
         o = {'r': obj}
         k = 'r'
 
-        key = re.sub(r'\+([^.]+)', r'\1.+', key)
+        key = key.replace('+', '.+')
         key = key.split('.')
 
         for s in key:
@@ -282,7 +282,7 @@ _tokens = [
     [T_STRD_1, _rc(r'(?s)"(\\.|[^"])*"')],
     [T_STRS_3, _rc(r"(?s)'{3}.*?'{3}")],
     [T_STRS_1, _rc(r"(?s)'[^']*'")],
-    [T_BOOL, _rc(r"(?i)\b(true|false|yes|no|y|n|on|off)\b")],
+    [T_BOOL, _rc(r"(?i)\b(true|false|yes|no|on|off)\b")],
     [T_NULL, _rc(r"\bnull\b")],
     [T_SPEC, _rc(r"[\[\]{},=:]")],
     [T_RAW, _rc(r"""[^\s\[\]{},=:"'#/]+""")],
@@ -357,9 +357,9 @@ def _unescape(s):
         e = s[sp + 1]
 
         if e == 'u':
-            c, surrogate = _unescape_unicode_4(s, sp)
+            c, is_surrogate = _unescape_unicode_4(s, sp)
             out += c
-            pos = sp + (12 if surrogate else 6)
+            pos = sp + (12 if is_surrogate else 6)
 
         elif e == 'U':
             out += chr(_codepoint(s, sp + 2, 8))
