@@ -23,5 +23,13 @@ module.exports = v => ({
 
     },
 
+    '.uiMenuItemLevel1': {
+        fontWeight: 800
+    },
+
+    '.uiMenuItemLevel2': {
+        paddingLeft: v.UNIT8,
+    },
+
 
 });

@@ -310,10 +310,14 @@ def _create_main_index(conn: connection.AlkisConnection):
         land CHARACTER VARYING,
         regierungsbezirk CHARACTER VARYING,
         kreis CHARACTER VARYING,
+        
+        gemeinde_id CHARACTER VARYING,
         gemeinde CHARACTER VARYING,
+        
         gemarkung_id CHARACTER VARYING,
         gemarkung CHARACTER VARYING,
         gemarkung_v CHARACTER VARYING,
+        
         anlass CHARACTER VARYING,
         endet CHARACTER VARYING,
         zeitpunktderentstehung CHARACTER VARYING,
@@ -373,32 +377,33 @@ def index_ok(conn):
     return indexer.check_version(conn, main_index)
 
 
-def gemarkung_list(conn, mode):
+def gemarkung_list(conn):
     rs = conn.select(f'''
-        SELECT DISTINCT gemarkung_id, gemarkung, gemeinde
+        SELECT DISTINCT gemarkung_id as "gemarkungUid", gemarkung, gemeinde_id as "gemeindeUid", gemeinde
         FROM {conn.index_schema}.{main_index}
         WHERE gemarkung_id IS NOT NULL
     ''')
-    ls = []
-    for r in rs:
-        name = r['gemarkung']
-        if mode == 'combined':
-            name = '%s (%s)' % (r['gemarkung'], r['gemeinde'].replace('Stadt ', ''))
-        ls.append({
-            'uid': r['gemarkung_id'],
-            'name': name
-        })
-
-    return sorted(ls, key=lambda x: x['name'])
+    return list(rs)
 
 
-def strasse_list(conn, gemarkung_uid):
+def strasse_list(conn, query):
+    query = _query_to_dict(query)
+
+    if 'gemeindeUid' in query:
+        where = 'gemeinde_id=%s'
+        parms = [query['gemeindeUid']]
+    elif 'gemarkungUid' in query:
+        where = 'gemarkung_id=%s'
+        parms = [query['gemarkungUid']]
+    else:
+        return []
+
     rs = conn.select(f'''
         SELECT DISTINCT strasse
         FROM {conn.index_schema}.{adresse.addr_index}
-        WHERE strasse NOT IN ('ohne Lage') AND gemarkung_id=%s
+        WHERE strasse NOT IN ('ohne Lage') AND {where}
         ORDER BY strasse
-    ''', [gemarkung_uid])
+    ''', parms)
 
     return list(r['strasse'] for r in rs)
 
@@ -423,11 +428,7 @@ def find(conn: connection.AlkisConnection, query, limit=None):
         'FS': main_index
     }
 
-    query = {
-        k: v
-        for k, v in vars(query).items()
-        if v not in (None, '')
-    }
+    query = _query_to_dict(query)
 
     if not query:
         #
@@ -444,6 +445,10 @@ def find(conn: connection.AlkisConnection, query, limit=None):
 
         if k == 'gemarkungUid':
             where.append('FS.gemarkung_id = %s')
+            parms.append(v)
+
+        if k == 'gemeindeUid':
+            where.append('FS.gemeinde_id = %s')
             parms.append(v)
 
         elif k == 'strasse':
@@ -527,3 +532,11 @@ def find(conn: connection.AlkisConnection, query, limit=None):
         return gws.compact(fs)
 
     return count, [_unpack(fs) for fs in data]
+
+
+def _query_to_dict(query):
+    return {
+        k: v
+        for k, v in vars(query).items()
+        if v not in (None, '')
+    }

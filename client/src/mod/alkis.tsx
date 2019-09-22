@@ -323,7 +323,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                     <gws.ui.Select
                         placeholder={_master(this).STRINGS.gemarkung}
                         items={this.props.alkisFsGemarkungen}
-                        value={this.props.alkisFsParams.gemarkungUid}
+                        value={this.props.alkisFsParams.gemarkungOrGemeindeUid}
                         whenChanged={value => master.whenGemarkungChanged(value)}
                         withSearch
                         withClear
@@ -824,8 +824,7 @@ class AlkisController extends gws.Controller {
             searchResults: this.__('modAlkisSearchResults'),
         };
 
-        let res = await this.app.server.alkisFsSetup({
-        });
+        let res = await this.app.server.alkisFsSetup({});
 
         if (res.error) {
             this.setup = null;
@@ -846,10 +845,7 @@ class AlkisController extends gws.Controller {
             alkisFsExportGroups: ['base'],
 
             alkisFsStrassen: [],
-            alkisFsGemarkungen: this.setup.gemarkungen.map(g => ({
-                text: g.name,
-                value: g.uid,
-            })),
+            alkisFsGemarkungen: this.makeGemarkungList(),
 
             alkisFsSearchResponse: null,
             alkisFsDetailsResponse: null,
@@ -860,12 +856,65 @@ class AlkisController extends gws.Controller {
         this.app.whenLoaded(() => this.urlSearch());
     }
 
+    makeGemarkungList(): Array<gws.ui.MenuItem> {
+        let sort = a => a.sort((x, y) => x.text.localeCompare(y.text));
+        let gs = this.setup.gemarkungen;
+
+        switch (this.setup.ui.gemarkungListMode) {
+
+            case 'plain':
+                return sort(gs.map(g => ({
+                    text: g.gemarkung,
+                    value: 'gemarkung:' + g.gemarkungUid,
+                })));
+
+            case 'combined':
+                return sort(gs.map(g => ({
+                    text: g.gemarkung + ' (' + g.gemeinde
+                        .replace(/^Stadt\s+/, '')
+                        .replace(/\(.+/, '')
+                        .trim()
+                    + ')',
+                    value: 'gemarkung:' + g.gemarkungUid,
+                })));
+
+            case 'tree':
+                let gemeinde = {};
+
+                gs.forEach(g => gemeinde[g.gemeindeUid] = {
+                    text: g.gemeinde,
+                    uid: g.gemeindeUid,
+                    item: {
+                        text: g.gemeinde,
+                        value: 'gemeinde:' + g.gemeindeUid,
+                        level: 1,
+                    }
+                });
+
+                let a = [];
+
+                sort(Object.values(gemeinde)).forEach(gem => {
+                    a.push(gem.item, ...sort(gs
+                        .filter(g => g.gemeindeUid === gem.uid)
+                        .map(g => ({
+                                text: g.gemarkung,
+                                value: 'gemarkung:' + g.gemarkungUid,
+                                level: 2,
+                            })
+                        )));
+                });
+
+                return a;
+        }
+
+    }
+
     async whenGemarkungChanged(value) {
         let strassen = [];
 
         if (value) {
             let res = await this.app.server.alkisFsStrassen({
-                gemarkungUid: value,
+                gemarkungOrGemeindeUid: value,
             });
 
             if (!res.error)
@@ -873,7 +922,7 @@ class AlkisController extends gws.Controller {
         }
 
         this.updateFsParams({
-            gemarkungUid: value,
+            gemarkungOrGemeindeUid: value,
             strasse: ''
         });
 

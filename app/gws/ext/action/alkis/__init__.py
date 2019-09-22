@@ -64,7 +64,7 @@ class UiConfig:
     usePick: bool = False  #: pick mode enabled
     searchSelection: bool = False  #: search in selection enabled
     searchSpatial: bool = False  #: spatial search enabled
-    gemarkungListMode: str = 'combined'  #: combined = "gemarkung(gemeinde)", plain = only "gemarkung"
+    gemarkungListMode: str = 'combined'  #: plain = only "gemarkung", combined = "gemarkung(gemeinde)", tree = "gemeinde", then "gemarkung"
     autoSpatialSearch: bool = False  #: activate spatial search after submit
 
 
@@ -90,11 +90,13 @@ class Config(t.WithTypeAndAccess):
     ui: t.Optional[UiConfig]  #: ui options
 
 
-class Gemarkung(t.Data):
+class FsGemarkung(t.Data):
     """Gemarkung (Administative Unit) object"""
 
-    name: str  #: name
-    uid: str  #: unique ID
+    gemarkung: str  #: Gemarkung name
+    gemarkungUid: str  #: Gemarkung uid
+    gemeinde: str  #: Gemeinde name
+    gemeindeUid: str  #: Gemeinde uid
 
 
 class FsSetupParams(t.Params):
@@ -106,14 +108,16 @@ class FsSetupResponse(t.Response):
     withBuchung: bool
     withControl: bool
     withFlurnummer: bool
-    gemarkungen: t.List[Gemarkung]
+    gemarkungen: t.List[FsGemarkung]
     printTemplate: t.TemplateProps
     limit: int
     ui: UiConfig
 
 
 class FsStrassenParams(t.Params):
-    gemarkungUid: str
+    gemarkungUid: t.Optional[str]
+    gemeindeUid: t.Optional[str]
+    gemarkungOrGemeindeUid: t.Optional[str]
 
 
 class FsStrassenResponse(t.Response):
@@ -135,6 +139,8 @@ class FsQueryParams(t.Params):
     flaecheBis: t.Optional[str]
     flaecheVon: t.Optional[str]
     gemarkungUid: t.Optional[str]
+    gemeindeUid: t.Optional[str]
+    gemarkungOrGemeindeUid: t.Optional[str]
     hausnummer: t.Optional[str]
     name: t.Optional[str]
     strasse: t.Optional[str]
@@ -161,8 +167,9 @@ class FsAddressQueryParams(t.Params):
     landUid: t.Optional[str]
     regierungsbezirkUid: t.Optional[str]
     kreisUid: t.Optional[str]
-    gemeindeUid: t.Optional[str]
     gemarkungUid: t.Optional[str]
+    gemeindeUid: t.Optional[str]
+    gemarkungOrGemeindeUid: t.Optional[str]
     strasse: t.Optional[str]
     hausnummer: t.Optional[str]
     bisHausnummer: t.Optional[str]
@@ -310,7 +317,7 @@ class Object(gws.Object):
                 'withControl': self._can_read_eigentuemer(req) and self.control_mode,
                 'withBuchung': self._can_read_buchung(req),
                 'withFlurnummer': flurstueck.has_flurnummer(conn),
-                'gemarkungen': flurstueck.gemarkung_list(conn, self.var('ui.gemarkungListMode')),
+                'gemarkungen': flurstueck.gemarkung_list(conn),
                 'printTemplate': self.print_template.props,
                 'limit': self.limit,
                 'ui': self.var('ui'),
@@ -320,16 +327,18 @@ class Object(gws.Object):
         """Return a list of Strassen for the given Gemarkung"""
 
         self._precheck_request(req, p.projectUid)
+        self._set_gemeinde_or_gemarkung(p)
 
         with self._connect() as conn:
             return FsStrassenResponse({
-                'strassen': flurstueck.strasse_list(conn, p.gemarkungUid),
+                'strassen': flurstueck.strasse_list(conn, p),
             })
 
     def api_fs_search(self, req, p: FsQueryParams) -> FsSearchResponse:
         """Perform a Flurstueck search"""
 
         self._precheck_request(req, p.projectUid)
+        self._set_gemeinde_or_gemarkung(p)
 
         total, fs = self._fetch_and_format(req, p, self.short_feature_format)
 
@@ -444,6 +453,16 @@ class Object(gws.Object):
         req.require_project(project_uid)
         if not self.has_index:
             raise gws.web.error.NotFound()
+
+    def _set_gemeinde_or_gemarkung(self, query):
+        uid = query.get('gemarkungOrGemeindeUid')
+        if uid:
+            del query.gemarkungOrGemeindeUid
+            uid = uid.split(':')
+            if len(uid) == 2 and uid[0] == 'gemeinde':
+                query.gemeindeUid = uid[1]
+            if len(uid) == 2 and uid[0] == 'gemarkung':
+                query.gemarkungUid = uid[1]
 
     def _fetch_and_format(self, req, query: FsQueryParams, fmt: t.FormatInterface):
         fprops = []
