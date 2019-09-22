@@ -90,6 +90,7 @@ GBD WebSuite supports several configuration formats:
 - json, in which case the config file name must end with ``config.json``
 - yaml (``config.yaml``). We use json in these docs, but you can always use yaml with the same structure if you like it more
 - python (``config.py``). Complex, repetitve or highly dynamic configurations can be also written in straight python. Your python config script must contain a function called ``config()`` returning a ``dict`` with the same structure as JSON. Note that your config module is executed inside the container, so it must be compatible with Python 3.6.
+- template (``config.cx``). A json template with additional template tags. See :doc:`templating` for details
 
 Configuration starts with the main config file (``GWS_CONFIG``), which can include other config files for projects and project groups. Once all files are read and parsed, all configured objects are assembled into a large "tree", with the ``Application`` object being the root node. Here's an example of such a tree ::
 

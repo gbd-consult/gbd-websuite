@@ -1,7 +1,7 @@
 Internationalization and localization
 =====================================
 
-GBD WebSuite server and client are language- and locale-independent, all language settings are configurable. In the main configuration, we have the default ``locale`` and ``timeZone`` options, additonally, you can set the locale for each project individually.
+GBD WebSuite server and client are language- and locale-independent, all language settings are configurable. In the main configuration, we have the default ``locales`` and ``timeZone`` options, additonally, you can set the locale for each project individually.
 
 All requests to the GBD WebSuite server and all server responses are encoded as ``UTF-8``. We do not support other encodings.
 
@@ -9,7 +9,7 @@ Example of the locale configuration ::
 
     ## in the main config:
 
-    "locale": "de_DE",
+    "locales": ["de_DE", "en_US"]
     "timeZone": "Europe/Berlin"
 
 In the templates, we provide locale-aware ``date`` and ``time`` objects, with properties ``long``, ``medium`` and ``short``. Output  examples for the locale ``de_DE``:

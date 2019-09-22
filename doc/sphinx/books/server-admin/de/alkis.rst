@@ -19,11 +19,13 @@ TABLE
 Einstellungen der Benutzeroberfläche sind wie folgt:
 
 TABLE
-    *export* ~ CSV-Export Funktion aktivieren
-    *pick* ~ Funktion "Flurstück direkt auswahlen" aktivieren
+    *autoSpatialSearch* ~ Räumliche Suche nach dem Absenden des Formulars aktivieren
+    *gemarkungListMode* ~ Darstellung der Gemarkungsliste: ``"plain"`` = nur Gemarkungen, ``"combined"`` = "Gemarkung (Gemeinde)", ``"tree"`` = Baumansicht mit Gemeinden und Gemarkungen
     *searchSelection* ~ Funktion "In der Auswahl suchen" aktivieren
     *searchSpatial* ~ Räumliche Suche aktivieren
-    *select* ~ Auswahl-Funktion aktivieren
+    *useExport* ~ CSV-Export Funktion aktivieren
+    *usePick* ~ Funktion "Flurstück direkt auswahlen" aktivieren
+    *useSelect* ~ Auswahl-Funktion aktivieren
 /TABLE
 
 
@@ -110,7 +112,7 @@ Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgender Struktur 
         control_input VARCHAR(255),
         control_result INTEGER,
         fs_count INTEGER,
-        fs_ids VARCHAR(255)
+        fs_ids TEXT
     )
 
 
