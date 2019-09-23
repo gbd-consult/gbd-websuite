@@ -193,6 +193,7 @@ module.exports = {
     modAlkisVorname: "Vorname",
     modAlkisNachname: "Nachname/Institution/Firma",
     modAlkisGemarkung: "Gemarkung",
+    modAlkisGemeindeGemarkung: "Gemeinde / Gemarkung",
     modAlkisStrasse: "Straße",
     modAlkisNr: "Nr",
     modAlkisVnum: "Zähler/Nenner",

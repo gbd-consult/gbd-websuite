@@ -832,6 +832,12 @@ class AlkisController extends gws.Controller {
         }
 
         this.setup = res;
+
+        if (this.setup.ui.gemarkungListMode === 'tree') {
+            this.STRINGS.gemarkung = this.__('modAlkisGemeindeGemarkung')
+        }
+
+
         this.history = [];
 
         this.update({

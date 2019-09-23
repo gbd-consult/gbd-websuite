@@ -31,7 +31,7 @@ Refer to the `templating engine documentation <https://github.com/gebrkn/chartre
 Configuration templates
 -----------------------
 
-Configuration templates (``config.cx``) are similar to html templates and share the same set of programming constructs. An important difference is that variables must be enclosed in *two* braces: ``{{...}}``. A configruation template is supposed to be in the JSON format, additionally, the "shorcut" JSON syntax can be used (`documentation <https://github.com/gebrkn/slon>`_).
+Configuration templates (``config.cx``) are similar to html templates and share the same set of programming constructs. An important difference is that variables must be enclosed in *two* braces: ``{{...}}``. A configruation template is supposed to be in the JSON format, additionally, the "shortcut" JSON syntax can be used (`documentation <https://github.com/gebrkn/slon>`_).
 
 Example of a configuration template ::
 
