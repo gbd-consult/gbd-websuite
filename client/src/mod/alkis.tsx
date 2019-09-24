@@ -837,7 +837,6 @@ class AlkisController extends gws.Controller {
             this.STRINGS.gemarkung = this.__('modAlkisGemeindeGemarkung')
         }
 
-
         this.history = [];
 
         this.update({
@@ -1048,30 +1047,39 @@ class AlkisController extends gws.Controller {
     }
 
     async urlSearch() {
-        let p = this.app.urlParams['alkisFs'];
+        let p, params = null;
 
+        p = this.app.urlParams['alkisFs'];
         if (p) {
-            let res = await this.app.server.alkisFsSearch({
-                alkisFs: p,
+            params = {alkisFs: p};
+        }
+
+        p = this.app.urlParams['alkisAd'];
+        if (p) {
+            params = {alkisAd: p};
+        }
+
+        if (!params)
+            return;
+
+        let res = await this.app.server.alkisFsSearch(params);
+
+        if (res.error) {
+            return false;
+        }
+
+        let features = this.map.readFeatures(res.features);
+
+        if (features.length > 0)
+            this.update({
+                marker: {
+                    features: [features[0]],
+                    mode: 'draw zoom',
+                },
+                infoboxContent: <gws.components.Infobox
+                    controller={this}>{features[0].props.teaser}</gws.components.Infobox>,
             });
 
-            if (res.error) {
-                return false;
-            }
-
-            let features = this.map.readFeatures(res.features);
-
-            if (features.length > 0)
-                this.update({
-                    marker: {
-                        features: [features[0]],
-                        mode: 'draw zoom',
-                    },
-                    infoboxContent: <gws.components.Infobox
-                        controller={this}>{features[0].props.teaser}</gws.components.Infobox>,
-                });
-
-        }
     }
 
     paramsForFeatures(fs: Array<gws.types.IMapFeature>) {
