@@ -204,6 +204,18 @@ class FsExportResponse(t.Response):
     url: str
 
 
+class GeocoderParams(t.Data):
+    gemeinde: str
+    gemarkung: str
+    strasse: str
+    hausnummer: str
+    crs: t.crsref
+
+
+class GeocoderResponse(t.Response):
+    coordinates: t.List[t.Point]
+
+
 _cwd = os.path.dirname(__file__)
 
 DEFAULT_FORMAT = t.FormatConfig({
@@ -424,6 +436,34 @@ class Object(gws.Object):
             }))
 
         return gws.common.printer.service.start_job(req, pp)
+
+    def api_geocoder(self, req, p: GeocoderParams) -> GeocoderResponse:
+
+        # NB don't check disableApi here
+        if not self.has_index:
+            raise gws.web.error.NotFound()
+
+        query = FsAddressQueryParams({
+            'gemeinde': p.gemeinde,
+            'gemarkung': p.gemarkung,
+            'strasse': p.strasse,
+            'hausnummer': p.hausnummer
+        })
+
+        target_crs = p.crs
+        total, features = self._find_address(query, target_crs, limit=1)
+
+        for feature in features:
+            c = [
+                round(feature.shape.geo.x, 2),
+                round(feature.shape.geo.y, 2)
+            ]
+            return GeocoderResponse({
+                'coordinate': c
+            })
+
+        raise gws.web.error.NotFound()
+
 
     def index_create(self, user, password):
         with self._connect_for_write(user, password) as conn:
