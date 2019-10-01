@@ -291,6 +291,7 @@ let rules = [
     require('./mod/infobar.css'),
     require('./mod/layers.css'),
     require('./mod/lens.css'),
+    require('./mod/location.css'),
     require('./mod/marker.css'),
     require('./mod/overview.css'),
     require('./mod/print.css'),

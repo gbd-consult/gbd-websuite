@@ -23,6 +23,7 @@ let mods = [
     require('./mod/identify'),
     require('./mod/infobar'),
     require('./mod/layers'),
+    require('./mod/location'),
     require('./mod/marker'),
     require('./mod/print'),
     require('./mod/select'),

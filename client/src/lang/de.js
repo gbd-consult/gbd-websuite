@@ -267,4 +267,8 @@ module.exports = {
     modGeorisksReportFormDanger_object: 'Schutzwürdige Objekte',
     modGeorisksReportFormDanger_person: 'Personenschaden',
 
+    modLocationToolbarButton: 'Mein Standort',
+    modLocationHeader: 'Standort:',
+    modLocationErrorMessage: 'Standortdaten sind nicht verfügbar',
+
 };
