@@ -20,26 +20,12 @@ class LocationDialog extends gws.View<LocationViewProps> {
         let close = () => this.props.controller.update({locationDialogActive: false});
 
         return <gws.ui.Dialog
-            className="modLocationDialog"
+            className='modLocationErrorDialog'
             whenClosed={close}
         >
-            <Form>
-                <Row>
-                    <Cell flex>
-                        <gws.ui.TextBlock content={this.__('modLocationErrorMessage')}/>
-                    </Cell>
-                </Row>
-                <Row>
-                    <Cell flex/>
-                    <Cell>
-                        <gws.ui.IconButton
-                            className="cmpButtonFormOk"
-                            whenTouched={close}
-                        />
-                    </Cell>
-                </Row>
-            </Form>
-        </gws.ui.Dialog>;
+            <gws.ui.TextBlock content={this.__('modLocationErrorMessage')}/>
+        </gws.ui.Dialog>
+
     }
 }
 
