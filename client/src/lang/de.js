@@ -269,6 +269,7 @@ module.exports = {
 
     modLocationToolbarButton: 'Mein Standort',
     modLocationHeader: 'Standort:',
-    modLocationErrorMessage: 'Standortdaten sind nicht verfügbar',
+    modLocationErrorNoLocation: 'Standortdaten sind nicht verfügbar',
+    modLocationErrorTooFar: 'Ihr Standort liegt außerhalb des Kartenbereichs',
 
 };

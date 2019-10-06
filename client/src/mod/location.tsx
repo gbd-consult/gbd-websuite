@@ -4,26 +4,21 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 import * as toolbar from './common/toolbar';
 
-let {Form, Row, Cell} = gws.ui.Layout;
-
 interface LocationViewProps extends gws.types.ViewProps {
     controller: LocationController;
-    locationDialogActive: boolean;
+    locationErrorMessage: string | null;
 }
 
 class LocationDialog extends gws.View<LocationViewProps> {
 
     render() {
-        if (!this.props.locationDialogActive)
+        if (!this.props.locationErrorMessage)
             return null;
 
-        let close = () => this.props.controller.update({locationDialogActive: false});
+        let close = () => this.props.controller.update({locationErrorMessage: null});
 
-        return <gws.ui.Dialog
-            className='modLocationErrorDialog'
-            whenClosed={close}
-        >
-            <gws.ui.TextBlock content={this.__('modLocationErrorMessage')}/>
+        return <gws.ui.Dialog className='modLocationErrorDialog' whenClosed={close}>
+            <gws.ui.TextBlock content={this.props.locationErrorMessage}/>
         </gws.ui.Dialog>
 
     }
@@ -36,7 +31,7 @@ class LocationController extends gws.Controller {
 
     get appOverlayView() {
         return this.createElement(
-            this.connect(LocationDialog, ['locationDialogActive']));
+            this.connect(LocationDialog, ['locationErrorMessage']));
     }
 
     run() {
@@ -64,7 +59,12 @@ class LocationController extends gws.Controller {
             this.map.projection,
         );
 
-        console.log('Position', pos, xy);
+        if (!ol.extent.containsCoordinate(this.map.extent, xy)) {
+            this.update({
+                locationErrorMessage: this.__('modLocationErrorTooFar')
+            });
+            return;
+        }
 
         let geometry = new ol.geom.Point(xy),
             f = new gws.map.Feature(this.map, {geometry}),
@@ -89,7 +89,7 @@ class LocationController extends gws.Controller {
     protected error(err: PositionError) {
         console.log('PositionError', err);
         this.update({
-            locationDialogActive: true
+            locationErrorMessage: this.__('modLocationErrorNoLocation')
         })
     }
 }
