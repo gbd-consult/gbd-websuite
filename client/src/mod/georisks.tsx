@@ -16,6 +16,7 @@ interface GeorisksViewProps extends gws.types.ViewProps {
     georisksFormVolume: string;
     georisksFormHeight: string;
 
+    georisksFormKind_veraenderung: string;
     georisksFormKind_hangrutschung: string;
     georisksFormKind_mure: string;
 
@@ -42,6 +43,7 @@ const GeorisksStoreKeys = [
     'georisksFormVolume',
     'georisksFormHeight',
 
+    'georisksFormKind_veraenderung',
     'georisksFormKind_hangrutschung',
     'georisksFormKind_mure',
 
@@ -66,134 +68,136 @@ const validationRules = [
     {category: /./, key: 'georisksFormFiles', type: 'fileList', minLen: 1, maxLen: MAX_FILES, maxTotalSize: 1e6},
     {category: /./, key: 'georisksFormPrivacyAccept', type: 'true'},
     {category: /blockschlag|grossblockschlag|felssturz/, key: 'georisksFormVolume', type: 'string', minLen: 1},
+    {category: /veraenderung/, key: 'georisksFormKind_veraenderung', type: 'string', minLen: 1},
     {category: /hangrutschung/, key: 'georisksFormKind_hangrutschung', type: 'string', minLen: 1},
     {category: /mure/, key: 'georisksFormKind_mure', type: 'string', minLen: 1},
 ];
 
 const DANGERS = ['street', 'rail', 'way', 'house', 'object', 'person'];
 
+function formFields(cc) {
+
+    let height = () => [
+        {value: '5', text: '5'},
+        {value: '10', text: '10'},
+        {value: '15', text: '15'},
+        {value: '20', text: '20'},
+        {value: '25', text: '25'},
+        {value: '30', text: '30'},
+        {value: '40', text: '40'},
+        {value: '40+', text: '> 40'},
+    ];
+
+    return [
+        {
+            value: 'steinschlag',
+            text: cc.__('modGeorisksReportFormCat_steinschlag'),
+            fields: [
+                {
+                    type: 'height', prop: 'georisksFormHeight', values: height(),
+                }
+            ]
+        },
+        {
+            value: 'blockschlag',
+            text: cc.__('modGeorisksReportFormCat_blockschlag'),
+            fields: [
+                {
+                    type: 'volume', prop: 'georisksFormVolume', values: [
+                        {value: '1-5', text: cc.__('modGeorisksReportFormVol_1')},
+                        {value: '5-10', text: cc.__('modGeorisksReportFormVol_5')},
+                    ]
+                },
+                {
+                    type: 'height', prop: 'georisksFormHeight', values: height(),
+                }
+            ]
+        },
+        {
+            value: 'grossblockschlag',
+            text: cc.__('modGeorisksReportFormCat_grossblockschlag'),
+            fields: [
+                {
+                    type: 'volume', prop: 'georisksFormVolume', values: [
+                        {value: '1-5', text: cc.__('modGeorisksReportFormVol_1')},
+                        {value: '5-10', text: cc.__('modGeorisksReportFormVol_5')},
+                    ]
+                },
+                {
+                    type: 'height', prop: 'georisksFormHeight', values: height(),
+                }
+            ]
+        },
+        {
+            value: 'felssturz',
+            text: cc.__('modGeorisksReportFormCat_felssturz'),
+            fields: [
+                {
+                    type: 'volume', prop: 'georisksFormVolume', values: [
+                        {value: '10-100', text: cc.__('modGeorisksReportFormVol_10')},
+                        {value: '100-1000', text: cc.__('modGeorisksReportFormVol_100')},
+                        {value: '1000-10000', text: cc.__('modGeorisksReportFormVol_1000')},
+                        {value: '10000-', text: cc.__('modGeorisksReportFormVol_10000')},
+                    ]
+                },
+                {
+                    type: 'height', prop: 'georisksFormHeight', values: height(),
+                }
+            ]
+        },
+        {
+            value: 'veraenderung',
+            text: cc.__('modGeorisksReportFormCat_veraenderung'),
+            fields: [
+                {
+                    type: 'kind', prop: 'georisksFormKind_veraenderung', values: [
+                        {value: 'lagegeaendert', text: cc.__('modGeorisksReportFormKind_lagegeaendert')},
+                        {value: 'neuerisse', text: cc.__('modGeorisksReportFormKind_neuerisse')},
+                        {value: 'risseweiter', text: cc.__('modGeorisksReportFormKind_risseweiter')},
+                        {value: 'risselaenger', text: cc.__('modGeorisksReportFormKind_risselaenger')},
+                    ]
+                },
+                {
+                    type: 'height', prop: 'georisksFormHeight', values: height(),
+                }
+            ]
+        },
+        {
+            value: 'hangrutschung',
+            text: cc.__('modGeorisksReportFormCat_hangrutschung'),
+            fields: [
+                {
+                    type: 'kind', prop: 'georisksFormKind_hangrutschung', values: [
+
+                        {value: 'allgemein', text: cc.__('modGeorisksReportFormKind_allgemein')},
+                        {value: 'tief', text: cc.__('modGeorisksReportFormKind_tief')},
+                        {value: 'flach', text: cc.__('modGeorisksReportFormKind_flach')},
+                    ]
+                }
+            ]
+        },
+        {
+            value: 'mure',
+            text: cc.__('modGeorisksReportFormCat_mure'),
+            fields: [
+                {
+                    type: 'kind', prop: 'georisksFormKind_mure', values: [
+                        {value: 'geroell', text: cc.__('modGeorisksReportFormKind_geroell')},
+                        {value: 'schlamm', text: cc.__('modGeorisksReportFormKind_geroell')},
+                    ]
+                }
+            ]
+        },
+    ]
+}
+
 class GeorisksForm extends gws.View<GeorisksViewProps> {
     render() {
-        let menu = {
-
-            category: [
-                {
-                    value: 'steinschlag',
-                    text: this.__('modGeorisksReportFormCat_steinschlag')
-                },
-                {
-                    value: 'blockschlag',
-                    text: this.__('modGeorisksReportFormCat_blockschlag')
-                },
-                {
-                    value: 'grossblockschlag',
-                    text: this.__('modGeorisksReportFormCat_grossblockschlag')
-                },
-                {
-                    value: 'felssturz',
-                    text: this.__('modGeorisksReportFormCat_felssturz')
-                },
-                {
-                    value: 'hangrutschung',
-                    text: this.__('modGeorisksReportFormCat_hangrutschung')
-                },
-                {
-                    value: 'mure',
-                    text: this.__('modGeorisksReportFormCat_mure')
-                },
-            ],
-
-            volume_blockschlag: [
-                {
-                    value: '1-5',
-                    text: this.__('modGeorisksReportFormVol_1'),
-                },
-                {
-                    value: '5-10',
-                    text: this.__('modGeorisksReportFormVol_5'),
-                },
-            ],
-
-            volume_grossblockschlag: [
-                {
-                    value: '1-5',
-                    text: this.__('modGeorisksReportFormVol_1'),
-                },
-                {
-                    value: '5-10',
-                    text: this.__('modGeorisksReportFormVol_5'),
-                },
-            ],
-
-            volume_felssturz: [
-                {
-                    text: this.__('modGeorisksReportFormVol_10'),
-                    value: '10-100',
-                },
-                {
-                    text: this.__('modGeorisksReportFormVol_100'),
-                    value: '100-1000',
-                },
-                {
-                    text: this.__('modGeorisksReportFormVol_1000'),
-                    value: '1000-10000',
-                },
-                {
-                    text: this.__('modGeorisksReportFormVol_10000'),
-                    value: '10000-',
-                },
-            ],
-
-            kind_hangrutschung: [
-
-                {
-                    text: this.__('modGeorisksReportFormKind_allgemein'),
-                    value: 'allgemein',
-                },
-                {
-                    text: this.__('modGeorisksReportFormKind_tief'),
-                    value: 'tief',
-                },
-                {
-                    text: this.__('modGeorisksReportFormKind_flach'),
-                    value: 'flach',
-                },
-            ],
-
-            kind_mure: [
-
-                {
-                    text: this.__('modGeorisksReportFormKind_schutt'),
-                    value: 'schutt',
-                },
-                {
-                    text: this.__('modGeorisksReportFormKind_block'),
-                    value: 'block',
-                },
-                {
-                    text: this.__('modGeorisksReportFormKind_murgang'),
-                    value: 'murgang',
-                },
-            ],
-
-            height: [
-                {
-                    text: '5',
-                    value: '5',
-                },
-                {
-                    text: '10',
-                    value: '10',
-                },
-                {
-                    text: '15',
-                    value: '15',
-                },
-            ],
-
-        }
 
         let cat = this.props.georisksFormCategory || '';
+
+        let allFields = formFields(this),
+            catFields = allFields.find(f => f.value === cat);
 
         let select = (prop, items, combo = false) => <gws.ui.Select
             items={items}
@@ -204,65 +208,47 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
 
         let whenChanged = (name, v) => {
             this.props.controller.update({[name]: v});
-        }
+        };
+
+        let rowForField = (key, cat, cf) => {
+            if (cf.type === 'volume') {
+                return <tr key={key}>
+                    <th>{this.__('modGeorisksReportFormLabelVolume')}</th>
+                    <td>{select(cf.prop, cf.values)}</td>
+                    <td><b>m³</b></td>
+                </tr>
+            }
+
+            if (cf.type === 'kind') {
+                return <tr key={key}>
+                    <th>{this.__('modGeorisksReportFormLabelKind')}</th>
+                    <td>{select(cf.prop, cf.values)}</td>
+                </tr>
+            }
+
+            if (cf.type === 'height') {
+                return <tr key={key}>
+                    <th>{this.__('modGeorisksReportFormLabelHeight')}</th>
+                    <td>{select(cf.prop, cf.values, true)}</td>
+                    <td><b>m</b></td>
+                </tr>
+            }
+        };
 
         return <table className="cmpPropertySheet">
             <tbody>
             <tr>
                 <th>{this.__('modGeorisksReportFormLabelEvent')}</th>
-                <td colSpan={2}>{select('georisksFormCategory', menu.category)}</td>
+                <td colSpan={2}>{select('georisksFormCategory', allFields)}</td>
             </tr>
-            {
-                cat === 'blockschlag' &&
-                <tr>
-                    <th>{this.__('modGeorisksReportFormLabelVolume')}</th>
-                    <td>{select('georisksFormVolume', menu.volume_blockschlag)}</td>
-                    <td><b>m³</b></td>
-                </tr>
 
-            }
-            {
-                cat === 'grossblockschlag' &&
-                <tr>
-                    <th>{this.__('modGeorisksReportFormLabelVolume')}</th>
-                    <td>{select('georisksFormVolume', menu.volume_grossblockschlag)}</td>
-                    <td><b>m³</b></td>
-                </tr>
-            }
-            {
-                cat === 'felssturz' &&
-                <tr>
-                    <th>{this.__('modGeorisksReportFormLabelVolume')}</th>
-                    <td>{select('georisksFormVolume', menu.volume_felssturz)}</td>
-                    <td><b>m³</b></td>
-                </tr>
-            }
-            {
-                cat.match(/^(steinschlag|blockschlag|grossblockschlag|felssturz)$/) &&
-                <tr>
-                    <th>{this.__('modGeorisksReportFormLabelHeight')}</th>
-                    <td>{select('georisksFormHeight', menu.height, true)}</td>
-                    <td><b>m</b></td>
-                </tr>
-            }
-            {
-                cat === 'hangrutschung' &&
-                <tr>
-                    <th>{this.__('modGeorisksReportFormLabelKind')}</th>
-                    <td colSpan={2}>{select('georisksFormKind_hangrutschung', menu.kind_hangrutschung)}</td>
-                </tr>
-            }
-            {
-                cat === 'mure' &&
-                <tr>
-                    <th>{this.__('modGeorisksReportFormLabelKind')}</th>
-                    <td colSpan={2}>{select('georisksFormKind_mure', menu.kind_mure)}</td>
-                </tr>
-            }
+            {catFields && catFields.fields.map((cf, n) => rowForField(n, cat, cf))}
+
             <tr>
                 <th>{this.__('modGeorisksReportFormLabelDanger')}</th>
                 <td colSpan={2}>
-                    {DANGERS.map(d => <gws.ui.Toggle
+                    {DANGERS.map((d, n) => <gws.ui.Toggle
+                        key={n}
                         type="checkbox"
                         label={this.__('modGeorisksReportFormDanger_' + d)}
                         value={this.props['georisksFormDanger_' + d]}
@@ -291,7 +277,6 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
                     />
                 </td>
             </tr>
-
             </tbody>
         </table>
     }
