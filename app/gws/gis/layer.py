@@ -76,6 +76,10 @@ class FlattenConfig(t.Config):
     useGroups: bool = False  #: use group names (true) or image layer names (false)
 
 
+class ServicesConfig(t.Config):
+    wmsEnabled: bool = True  #: enable this layer for the WMS service
+
+
 class BaseConfig(t.WithTypeAndAccess):
     """Layer"""
 
@@ -89,6 +93,7 @@ class BaseConfig(t.WithTypeAndAccess):
     meta: t.Optional[t.MetaConfig]  #: layer meta data
     opacity: float = 1  #: layer opacity
     search: gws.common.search.Config = {}  #: layer search configuration
+    services: ServicesConfig = {}  #: OWS services options
     title: str = ''  #: layer title
     uid: str = ''  #: layer unique id
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
@@ -306,8 +311,8 @@ class Base(gws.Object, t.LayerObject):
         pass
 
     def is_enabled_for_service(self, service):
-        # @TODO should be configurable
-        return False
+        srv = self.var('services')
+        return srv.get(service + 'Enabled')
 
 
 class Image(Base):
@@ -348,7 +353,7 @@ class Image(Base):
             tile_size=self.grid.tileSize)
 
     def is_enabled_for_service(self, service):
-        return service == 'wms'
+        return service == 'wms' and super().is_enabled_for_service(service)
 
     """
         Mapproxy config is done in two steps

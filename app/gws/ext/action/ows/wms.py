@@ -130,7 +130,7 @@ class WmsWriter:
 
         layer = self.req.acquire('gws.ext.layer', layer_uid)
 
-        if not layer or not layer.is_enabled_for_service('wms'):
+        if not self.check_enabled(layer):
             raise gws.web.error.NotFound()
 
         try:
@@ -226,7 +226,7 @@ class WmsWriter:
     def layer_list(self, layer_uid):
         layer = self.req.acquire('gws.ext.layer', layer_uid)
 
-        if not layer or not layer.is_enabled_for_service('wms'):
+        if not self.check_enabled(layer):
             return []
 
         if layer.layers:
@@ -240,7 +240,7 @@ class WmsWriter:
     def layer_subtree(self, layer_uid):
         layer: t.LayerObject = self.req.acquire('gws.ext.layer', layer_uid)
 
-        if not layer or not layer.is_enabled_for_service('wms'):
+        if not self.check_enabled(layer):
             return
 
         sub = []
@@ -267,6 +267,11 @@ class WmsWriter:
     def layer_tree(self):
         sub = gws.compact(self.layer_subtree(la.uid) for la in self.project.map.layers)
         return list(reversed(sub))
+
+    def check_enabled(self, layer):
+        ok = layer and layer.is_enabled_for_service('wms')
+        gws.log.debug(f'check_enabled: {layer.uid!r}={ok}')
+        return ok
 
 
 def _as_ident(s):
