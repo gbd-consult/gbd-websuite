@@ -6,6 +6,7 @@
 
 import typing
 import xml.parsers.expat
+import re
 
 
 class Error(Exception):
@@ -16,9 +17,9 @@ def tag(name, *args):
     return name, args
 
 
-def string(t):
+def string(t, compress=False):
     if isinstance(t, str):
-        return t
+        return _compress(t) if compress else t
     return '<?xml version="1.0" encoding="UTF-8"?>' + _string(t)
 
 
@@ -56,6 +57,14 @@ def _encode(v):
     v = v.replace("<", "&lt;")
     v = v.replace('"', "&quot;")
     return v
+
+
+def _compress(s):
+    s = re.sub(r'\s+', ' ', s)
+    s = s.replace('> <', '><')
+    s = s.replace(' >', '>')
+    s = s.replace(' />', '/>')
+    return s
 
 
 class Attribute:
@@ -359,25 +368,3 @@ _errors = {
     36: 'XML_ERROR_FINISHED',
     37: 'XML_ERROR_SUSPEND_PE',
 }
-
-# def _string(tag=None, content=None, attributes=None):
-#     if not tag:
-#         return ''
-#
-#     a = ''
-#     if attributes:
-#         a = ' '.join(f'{k}="{_encode(v)}"' for k, v in attributes.items() if v is not None)
-#
-#     oc = '<' + tag
-#     if a:
-#         oc += ' ' + a
-#     cc = '</' + tag + '>'
-#
-#     if content:
-#         if isinstance(content, str):
-#             return oc + '>' + _encode(content) + cc
-#         return oc + '>' + ''.join(_string(*c) for c in content) + cc
-#
-#     return oc + '/>'
-#
-#

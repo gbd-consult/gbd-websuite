@@ -4,11 +4,12 @@ import gws
 import gws.web.error
 import gws.types as t
 
-from . import wms
+from . import wms, wfs
 
 
 class TemplatesConfig:
     wmsGetCapabilities: t.Optional[t.TemplateConfig]  ## template for the WMS capabilities document
+    wfsGetCapabilities: t.Optional[t.TemplateConfig]  ## template for the WFS capabilities document
 
 
 class Config(t.WithTypeAndAccess):
@@ -29,6 +30,7 @@ class Object(gws.ActionObject):
         self.templates = t.Data()
 
         self.templates.wmsGetCapabilities = self.init_template('wmsGetCapabilities')
+        self.templates.wfsGetCapabilities = self.init_template('wfsGetCapabilities')
 
     def init_template(self, name):
         p = self.var('templates.' + name)
@@ -48,4 +50,6 @@ class Object(gws.ActionObject):
         service = ps.get('service', '').lower()
         if service == 'wms':
             return wms.request(self, req, ps)
+        if service == 'wfs':
+            return wfs.request(self, req, ps)
         raise gws.web.error.NotFound()

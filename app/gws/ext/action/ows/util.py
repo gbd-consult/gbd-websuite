@@ -9,7 +9,7 @@ tag = gws.tools.xml3.tag
 def xml_response(tag, status=200):
     return t.HttpResponse({
         'mimeType': 'text/xml',
-        'content': gws.tools.xml3.string(tag),
+        'content': gws.tools.xml3.string(tag, compress=True),
         'status': status,
     })
 

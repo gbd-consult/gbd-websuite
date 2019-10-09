@@ -1,33 +1,50 @@
 @include /gws-app/gws/ext/action/ows/templates/wms.cx
 
-@def layer_capabilities(node)
-    <Layer {layer_attributes(node)}>
-
-        @layer_common_properties node
-
-        @layer_spatial_properties node
-
-        @each node.sub_nodes as sub_node
-            @layer_capabilities sub_node
-        @end
-
-    </Layer>
-@end
 
 <?xml version="1.0" encoding="UTF-8"?>
-<WMS_Capabilities version="1.3.0" {namespaces()}>
+
+<WMS_Capabilities version="1.3.0"
+    {default_namespaces()}
+    {inspire_namespaces()}
+>
 
     <Service>
         <Name>WMS</Name>
         <Title>{project.title}</Title>
-        @project_meta_data
+
+        @with project.meta as meta
+            <Abstract>{meta.abstract}</Abstract>
+            <KeywordList>
+                @each meta.keywords as kw
+                    <Keyword>{kw}</Keyword>
+                @end
+            </KeywordList>
+        @end
+
+        @with project.meta.contact as co
+            <ContactInformation>
+                <ContactPersonPrimary>
+                    <ContactPerson>{co.person}</ContactPerson>
+                    <ContactOrganization>{co.organization}</ContactOrganization>
+                </ContactPersonPrimary>
+                <ContactPosition>{co.position}</ContactPosition>
+                <ContactAddress>
+                    <AddressType>postal</AddressType>
+                    <Address>{co.address}</Address>
+                    <City>{co.city}</City>
+                    <StateOrProvince>{co.area}</StateOrProvince>
+                    <PostCode>{co.zip}</PostCode>
+                    <Country>{co.country}</Country>
+                </ContactAddress>
+                <ContactVoiceTelephone>{co.phone}</ContactVoiceTelephone>
+                <ContactElectronicMailAddress>{co.email}</ContactElectronicMailAddress>
+            </ContactInformation>
+        @end
     </Service>
 
     <Capability>
         @request_capabilities
-        @each layer_tree as node
-            @layer_capabilities node
-        @end
+        @layer_capabilities layer_tree
     </Capability>
 
 </WMS_Capabilities>
