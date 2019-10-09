@@ -204,11 +204,18 @@ class FsExportResponse(t.Response):
     url: str
 
 
+class GeocoderAddress(t.Data):
+    gemeinde: str = ''
+    gemarkung: str = ''
+    strasse: str = ''
+    hausnummer: str = ''
+
+
+_GEOCODER_ADDR_KEYS = 'gemeinde', 'gemarkung', 'strasse', 'hausnummer'
+
+
 class GeocoderParams(t.Data):
-    gemeinde: str
-    gemarkung: str
-    strasse: str
-    hausnummer: str
+    adressen: t.List[GeocoderAddress]
     crs: t.crsref
 
 
@@ -443,27 +450,32 @@ class Object(gws.Object):
         if not self.has_index:
             raise gws.web.error.NotFound()
 
-        query = FsAddressQueryParams({
-            'gemeinde': p.gemeinde,
-            'gemarkung': p.gemarkung,
-            'strasse': p.strasse,
-            'hausnummer': p.hausnummer
-        })
-
         target_crs = p.crs
-        total, features = self._find_address(query, target_crs, limit=1)
+        cs = []
 
-        for feature in features:
-            c = [
-                round(feature.shape.geo.x, 2),
-                round(feature.shape.geo.y, 2)
-            ]
-            return GeocoderResponse({
-                'coordinate': c
-            })
+        for ad in p.adressen:
+            q = {k: ad.get(k) for k in _GEOCODER_ADDR_KEYS if ad.get(k)}
 
-        raise gws.web.error.NotFound()
+            if not q:
+                cs.append(None)
+                continue
 
+            total, features = self._find_address(FsAddressQueryParams(q), target_crs, limit=1)
+
+            if not total:
+                cs.append(None)
+                continue
+
+            for feature in features:
+                cs.append([
+                    round(feature.shape.geo.x, 2),
+                    round(feature.shape.geo.y, 2)
+                ])
+                break
+
+        return GeocoderResponse({
+            'coordinates': cs
+        })
 
     def index_create(self, user, password):
         with self._connect_for_write(user, password) as conn:
