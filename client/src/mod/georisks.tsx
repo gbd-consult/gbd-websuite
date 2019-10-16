@@ -28,6 +28,7 @@ interface GeorisksViewProps extends gws.types.ViewProps {
     georisksFormDanger_person: boolean,
 
     georisksFormMessage: string;
+    georisksFormDate: string;
     georisksFormFiles: FileList;
 
     georisksFormPrivacyAccept: boolean;
@@ -55,6 +56,7 @@ const GeorisksStoreKeys = [
     'georisksFormDanger_person',
 
     'georisksFormMessage',
+    'georisksFormDate',
     'georisksFormFiles',
 
     'georisksFormPrivacyAccept',
@@ -65,7 +67,8 @@ const MAX_FILES = 5;
 const validationRules = [
     {category: /./, key: 'georisksFormCategory', type: 'string', minLen: 1},
     {category: /./, key: 'georisksFormMessage', type: 'string', minLen: 1},
-    {category: /./, key: 'georisksFormFiles', type: 'fileList', minLen: 1, maxLen: MAX_FILES, maxTotalSize: 1e6},
+    {category: /./, key: 'georisksFormDate', type: 'string', minLen: 1},
+    {category: /./, key: 'georisksFormFiles', type: 'fileList', minLen: 0, maxLen: MAX_FILES, maxTotalSize: 1e6},
     {category: /./, key: 'georisksFormPrivacyAccept', type: 'true'},
     {category: /blockschlag|grossblockschlag|felssturz/, key: 'georisksFormVolume', type: 'string', minLen: 1},
     {category: /veraenderung/, key: 'georisksFormKind_veraenderung', type: 'string', minLen: 1},
@@ -183,13 +186,15 @@ function formFields(cc) {
                 {
                     type: 'kind', prop: 'georisksFormKind_mure', values: [
                         {value: 'geroell', text: cc.__('modGeorisksReportFormKind_geroell')},
-                        {value: 'schlamm', text: cc.__('modGeorisksReportFormKind_geroell')},
+                        {value: 'schlamm', text: cc.__('modGeorisksReportFormKind_schlamm')},
                     ]
                 }
             ]
         },
     ]
 }
+
+const STAR = <span className="uiRequiredStar">*</span>;
 
 class GeorisksForm extends gws.View<GeorisksViewProps> {
     render() {
@@ -201,7 +206,7 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
 
         let select = (prop, items, combo = false) => <gws.ui.Select
             items={items}
-            value={this.props[prop]}
+            value={this.props[prop] || ''}
             withCombo={combo}
             whenChanged={v => whenChanged(prop, v)}
         />;
@@ -213,7 +218,7 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
         let rowForField = (key, cat, cf) => {
             if (cf.type === 'volume') {
                 return <tr key={key}>
-                    <th>{this.__('modGeorisksReportFormLabelVolume')}</th>
+                    <th>{this.__('modGeorisksReportFormLabelVolume')}{STAR}</th>
                     <td>{select(cf.prop, cf.values)}</td>
                     <td><b>m³</b></td>
                 </tr>
@@ -221,14 +226,14 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
 
             if (cf.type === 'kind') {
                 return <tr key={key}>
-                    <th>{this.__('modGeorisksReportFormLabelKind')}</th>
+                    <th>{this.__('modGeorisksReportFormLabelKind')}{STAR}</th>
                     <td>{select(cf.prop, cf.values)}</td>
                 </tr>
             }
 
             if (cf.type === 'height') {
                 return <tr key={key}>
-                    <th>{this.__('modGeorisksReportFormLabelHeight')}</th>
+                    <th>{this.__('modGeorisksReportFormLabelHeight')}{STAR}</th>
                     <td>{select(cf.prop, cf.values, true)}</td>
                     <td><b>m</b></td>
                 </tr>
@@ -238,14 +243,14 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
         return <table className="cmpPropertySheet">
             <tbody>
             <tr>
-                <th>{this.__('modGeorisksReportFormLabelEvent')}</th>
+                <th>{this.__('modGeorisksReportFormLabelEvent')}{STAR}</th>
                 <td colSpan={2}>{select('georisksFormCategory', allFields)}</td>
             </tr>
 
             {catFields && catFields.fields.map((cf, n) => rowForField(n, cat, cf))}
 
             <tr>
-                <th>{this.__('modGeorisksReportFormLabelDanger')}</th>
+                <th>{this.__('modGeorisksReportFormLabelDanger')}{STAR}</th>
                 <td colSpan={2}>
                     {DANGERS.map((d, n) => <gws.ui.Toggle
                         key={n}
@@ -257,12 +262,21 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
                 </td>
             </tr>
             <tr>
-                <th>{this.__('modGeorisksReportFormLabelMessage')}</th>
+                <th>{this.__('modGeorisksReportFormLabelMessage')}{STAR}</th>
                 <td colSpan={2}>
                     <gws.ui.TextArea
                         height={100}
                         value={this.props.georisksFormMessage}
                         whenChanged={v => whenChanged('georisksFormMessage', v)}
+                    />
+                </td>
+            </tr>
+            <tr>
+                <th>{this.__('modGeorisksReportFormLabelDate')}{STAR}</th>
+                <td colSpan={2}>
+                    <gws.ui.DateInput
+                        value={this.props.georisksFormDate}
+                        whenChanged={v => whenChanged('georisksFormDate', v)}
                     />
                 </td>
             </tr>
@@ -463,11 +477,11 @@ class GeorisksController extends gws.Controller {
     }
 
     async init() {
-        // this.app.whenLoaded(() => {
-        //     this.update({
-        //         georisksDialogMode: 'open',
-        //     })
-        // })
+        this.app.whenLoaded(() => {
+            this.update({
+                georisksFormDate: new Date().toISOString().slice(0, 10)
+            })
+        })
 
     }
 
@@ -528,6 +542,7 @@ class GeorisksController extends gws.Controller {
             height: this.getValue('georisksFormHeight'),
             kind: this.getValue('georisksFormKind_' + cat) || '',
             message: this.getValue('georisksFormMessage'),
+            date: this.getValue('georisksFormDate'),
             dangers: DANGERS.filter(d => this.getValue('georisksFormDanger_' + d)),
             files
         };

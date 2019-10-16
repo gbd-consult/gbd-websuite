@@ -233,6 +233,7 @@ module.exports = {
 	modGeorisksReportFormLabelMessage: 'Meldung',
 	modGeorisksReportFormLabelName: 'Ihr Name',
     modGeorisksReportFormLabelVolume: 'Volumen',
+    modGeorisksReportFormLabelDate: 'Datum',
 
     modGeorisksReportPrivacyLink: 'Ich stimme der $Datenschutzerklärung$ zu',
 

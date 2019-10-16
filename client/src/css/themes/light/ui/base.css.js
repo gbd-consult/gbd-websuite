@@ -68,7 +68,10 @@ module.exports = v => ({
         height: '100%',
     },
 
-
+    '.uiRequiredStar': {
+        fontSize: 16,
+        paddingLeft: 3,
+    }
 
 
 });

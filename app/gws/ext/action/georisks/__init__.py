@@ -41,8 +41,11 @@ _DB_TABLES = """
         image3 BYTEA,
         image4 BYTEA,
         image5 BYTEA,
+        
         geom geometry(Point,25833),
+        event_date TIMESTAMP WITH TIME ZONE,
         status INT,
+        
         status_reason VARCHAR(254),
         time_created TIMESTAMP WITH TIME ZONE,
         time_updated TIMESTAMP WITH TIME ZONE
@@ -131,6 +134,7 @@ class CreateReportParams(t.Params):
     kind: str = ''
     dangers: t.List[str]
     message: str = ''  #: user message
+    date: str  #: event date
     files: t.Optional[t.List[ReportFile]]  #: attached files
 
 
@@ -231,6 +235,7 @@ class Object(gws.ActionObject):
             'kind': p.kind,
             'status': ReportStatus.open,
             'status_reason': '',
+            'event_date': p.date,
             'time_created': ['current_timestamp'],
             'time_updated': ['current_timestamp'],
         }

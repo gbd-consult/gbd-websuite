@@ -231,6 +231,7 @@ module.exports = {
 	modGeorisksReportFormLabelMessage: 'Hlášení',
 	modGeorisksReportFormLabelName: 'Vaše jméno',
     modGeorisksReportFormLabelVolume: 'Přesunutý objem',
+    modGeorisksReportFormLabelDate: 'Datum',
 
     modGeorisksReportPrivacyLink: 'Souhlasím s $ochranou osobních dat$',
 
