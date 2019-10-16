@@ -238,7 +238,7 @@ module.exports = {
     modGeorisksReportPrivacyLink: 'Ich stimme der $Datenschutzerklärung$ zu',
 
     modGeorisksDialogLoading: 'Daten werden geladen',
-    modGeorisksDialogSuccess: 'Daten wurden gespeichert',
+    modGeorisksDialogSuccess: 'Vielen Dank für Ihre Unterstützung. Ihre Daten wurden gespeichert und werden nun geprüft.',
     modGeorisksDialogError: 'Es ist ein Fehler aufgetreten',
 
 	modGeorisksReportFormCat_steinschlag: 'Steinschlag (Blockgröße bis 0,5 m)',

@@ -236,7 +236,7 @@ module.exports = {
     modGeorisksReportPrivacyLink: 'Souhlasím s $ochranou osobních dat$',
 
     modGeorisksDialogLoading: 'Data byla nahrána',
-    modGeorisksDialogSuccess: 'Data byla uložena',
+    modGeorisksDialogSuccess: 'Děkujeme za vaši podporu. Vaše data byla uložena a budou zkontrolována.',
     modGeorisksDialogError: 'Nastala chyba',
 
 	modGeorisksReportFormCat_steinschlag: 'Padání kamení (velikost bloku do 0,5 m)',
