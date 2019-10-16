@@ -307,7 +307,7 @@ class GeorisksDialog extends gws.View<GeorisksViewProps> {
         let privacyText = () => {
             // must be like "I have read $the policy$ and accept it"
             let t = this.__('modGeorisksReportPrivacyLink').split('$');
-            let h = this.app.actions['georisks']['privacyPolicyLink'];
+            let h = this.app.actions['georisks']['privacyPolicyLink'][this.app.locale];
             return <Cell flex>
                 {t[0]}
                 <gws.ui.Link href={h} target="_blank" content={t[1]}/>

@@ -104,7 +104,7 @@ class AarteLinkConfig(t.Config):
 class ReportConfig(t.Config):
     """Configuration for the report function"""
 
-    privacyPolicyLink: t.Optional[str]  #: url of the privacy policy document
+    privacyPolicyLink: t.Optional[dict]  #: url of the privacy policy document
     maxImageLength: int = 5  #: max image size in megabytes
     maxImageSize: int = 1000  #: max image size in pixels
     imageQuality: int = 75  #: jpeg quality level
