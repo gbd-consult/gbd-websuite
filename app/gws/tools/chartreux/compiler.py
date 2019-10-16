@@ -34,6 +34,7 @@ _DEFAULT_OPTIONS = {
         'end': r'}',
     },
     'filter': None,
+    'finder': None,
     'globals': [],
     'name': '_RENDER',
     'path': '',
@@ -437,21 +438,23 @@ class Command:
         s = arg
 
         if not self.interpolation_re:
-            start = self.cc.option('syntax')['start']
-            end = self.cc.option('syntax')['end']
-            self.interpolation_re = re.compile(_f(r'''(?x)
-                {}
-                (
+            self.interpolation_re = re.compile(_f(
+                r'''(?x)
+                    {}
                     (
-                        " (\\. | [^"])* "
-                        |
-                        ' (\\. | [^'])* '
-                        |
-                        [^'"]
-                    )+?
-                )
-                {} 
-            ''', start, end))
+                        (
+                            " (\\. | [^"])* "
+                            |
+                            ' (\\. | [^'])* '
+                            |
+                            [^'"]
+                        )+?
+                    )
+                    {} 
+                ''',
+                self.cc.option('syntax')['start'],
+                self.cc.option('syntax')['end']
+            ))
 
         for m, val in _findany(self.interpolation_re, s):
             if m:
@@ -673,16 +676,23 @@ class Command:
 
         self.cc.code.try_block(_dedent(buf), 'pass')
 
-    def command_quote(self, arg):
-        # @quote label ...flow... @end label
-
+    def parse_quote(self, arg, emit=True):
         label = arg
         while True:
             ln = self.cc.parser.read_line()
             cmd, arg = self.cc.parser.parse_line(ln)
             if cmd == 'end' and arg == label:
                 break
-            self.cc.code.string(ln)
+            if emit:
+                self.cc.code.string(ln)
+
+    def command_quote(self, arg):
+        # @quote label ...flow... @end label
+        self.parse_quote(arg, emit=True)
+
+    def command_skip(self, arg):
+        # @skip label ...flow... @end label
+        self.parse_quote(arg, emit=False)
 
     let_re = r'''(?x)
         ^
@@ -844,8 +854,10 @@ class Command:
     def command_include(self, arg):
         # @include path
 
-        path = _relpath(self.cc.parser.current_source.path, arg.strip())
-        self.cc.parser.add_source(_read(path, self.cc), path)
+        fn = self.cc.option('finder') or _relpath
+        path = fn(self.cc.parser.current_source.path, arg.strip())
+        if path:
+            self.cc.parser.add_source(_read(path, self.cc), path)
 
 
 class Code:
