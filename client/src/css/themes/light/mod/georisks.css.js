@@ -8,7 +8,7 @@ module.exports = v => ({
     },
 
     '.uiDialog.modGeorisksDialog': {
-        [v.MEDIA('large+')]: {
+        [v.MEDIA('medium+')]: {
             ...v.CENTER_BOX(600, 700),
         },
         '.cmpPropertySheet th': {

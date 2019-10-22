@@ -29,7 +29,35 @@ module.exports = v => ({
 
         },
 
-    }
+    },
+
+    '.cmpSheetRow': {
+        width: '100%',
+        margin: [0, 0, v.UNIT4, 0],
+        '&:last-child': {
+            margin: [0, 0, 0, 0],
+        },
+        [v.MEDIA('medium+')]: {
+            display: 'flex',
+            alignItems: 'center',
+        }
+    },
+
+    '.cmpSheetLabel': {
+        fontWeight: 'bold',
+        marginBottom: v.UNIT4,
+        [v.MEDIA('medium+')]: {
+            display: 'inline-block',
+            width: v.UNIT * 40,
+            overflow: 'hidden',
+
+        }
+
+
+    },
+    '.cmpSheetControl': {
+        flex: 1
+    },
 
 
 });
