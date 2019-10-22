@@ -27,25 +27,71 @@ module.exports = v => ({
         },
     },
 
-
     '.uiDialog': {
         position: 'absolute',
         backgroundColor: v.COLOR.white,
-        padding: v.UNIT8,
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: v.INFOBAR_HEIGHT,
 
-        '&.withCloseButton': {
-            paddingTop: v.CONTROL_SIZE + v.UNIT2,
-        },
-        '&.withTitle.withCloseButton': {
-            paddingTop: v.UNIT8,
+        [v.MEDIA('medium+')]: {
+            left: '50%',
+            top: '50%',
+            margin: 'auto',
+            ...v.SHADOW,
+
+            '&.modPrintProgressDialog': {
+                ...v.CENTER_BOX(400, 190),
+            },
+            '&.modGekosDialog': {
+                ...v.CENTER_BOX(300, 280),
+            },
+            '&.modAlkisSelectDialog': {
+                ...v.CENTER_BOX(300, 200),
+            }
         },
     },
+
+
+    '.uiDialogContent': {
+        position: 'absolute',
+        overflow: 'auto',
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: v.UNIT4,
+        '-webkit-overflow-scrolling': 'touch',
+        padding: v.UNIT4,
+
+        [v.MEDIA('medium+')]: {
+            overflow: 'hidden',
+            padding: v.UNIT8,
+
+        },
+
+        'iframe': {
+            width: '100%',
+            height: '95%',
+        }
+    },
+
+    '.uiDialog.withCloseButton .uiDialogContent': {
+        top: v.CONTROL_SIZE + v.UNIT2,
+    },
+    '.uiDialog.withTitle.withCloseButton .uiDialogContent': {
+        top: v.UNIT8,
+    },
+
 
     '.uiDialogTitle': {
         fontSize: v.BIG_FONT_SIZE,
         lineHeight: 1.2,
-        paddingRight: v.CONTROL_SIZE,
-        marginBottom: v.UNIT4,
+        padding: [v.UNIT4, v.CONTROL_SIZE, 0, v.UNIT4],
+        [v.MEDIA('medium+')]: {
+            padding: [v.UNIT8, v.CONTROL_SIZE, 0, v.UNIT8],
+        },
+
     },
 
     '.uiPopup': {
@@ -58,18 +104,6 @@ module.exports = v => ({
         top: 0,
         ...v.ICON_SIZE('medium'),
         ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
-    },
-
-    '.uiDialogContent': {
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        //overflow: 'hidden',
-        '-webkit-overflow-scrolling': 'touch',
-        'iframe': {
-            width: '100%',
-            height: '95%',
-        }
     },
 
     '.uiPanel': {

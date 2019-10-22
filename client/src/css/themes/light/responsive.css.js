@@ -69,30 +69,6 @@ module.exports = v => ({
         // }
     },
 
-    '.uiDialog': {
-        left: 0,
-        top: 0,
-        width: '100%',
-        height: '100%',
-
-        [v.MEDIA('large+')]: {
-            left: '50%',
-            top: '50%',
-            margin: 'auto',
-            ...v.SHADOW,
-            ...v.CENTER_BOX(800, 600),
-
-            '&.modPrintProgressDialog': {
-                ...v.CENTER_BOX(400, 190),
-            },
-            '&.modGekosDialog': {
-                ...v.CENTER_BOX(300, 280),
-            },
-            '&.modAlkisSelectDialog': {
-                ...v.CENTER_BOX(300, 200),
-            }
-        },
-    },
 
     '.modDecorationScaleRuler': {
         display: 'none',

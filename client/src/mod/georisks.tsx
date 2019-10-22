@@ -194,7 +194,7 @@ function formFields(cc) {
     ]
 }
 
-const STAR = <span className="uiRequiredStar">*</span>;
+const STAR = '' //<span className="uiRequiredStar">*</span>;
 
 class GeorisksForm extends gws.View<GeorisksViewProps> {
     render() {
@@ -217,41 +217,56 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
 
         let rowForField = (key, cat, cf) => {
             if (cf.type === 'volume') {
-                return <tr key={key}>
-                    <th>{this.__('modGeorisksReportFormLabelVolume')}{STAR}</th>
-                    <td>{select(cf.prop, cf.values)}</td>
-                    <td><b>m³</b></td>
-                </tr>
+                return <div className="cmpSheetRow" key={key}>
+                    <div className="cmpSheetLabel">
+                        {this.__('modGeorisksReportFormLabelVolume')}{STAR} (m³)
+                    </div>
+                    <div className="cmpSheetControl">
+                        {select(cf.prop, cf.values)}
+                    </div>
+                </div>
             }
 
             if (cf.type === 'kind') {
-                return <tr key={key}>
-                    <th>{this.__('modGeorisksReportFormLabelKind')}{STAR}</th>
-                    <td>{select(cf.prop, cf.values)}</td>
-                </tr>
+                return <div className="cmpSheetRow" key={key}>
+                    <div className="cmpSheetLabel">
+                        {this.__('modGeorisksReportFormLabelKind')}{STAR}
+                    </div>
+                    <div className="cmpSheetControl">
+                        {select(cf.prop, cf.values)}
+                    </div>
+                </div>
             }
 
             if (cf.type === 'height') {
-                return <tr key={key}>
-                    <th>{this.__('modGeorisksReportFormLabelHeight')}{STAR}</th>
-                    <td>{select(cf.prop, cf.values, true)}</td>
-                    <td><b>m</b></td>
-                </tr>
+                return <div className="cmpSheetRow" key={key}>
+                    <div className="cmpSheetLabel">
+                        {this.__('modGeorisksReportFormLabelHeight')}{STAR} (m)
+                    </div>
+                    <div className="cmpSheetControl">
+                        {select(cf.prop, cf.values, true)}
+                    </div>
+                </div>
             }
         };
 
-        return <table className="cmpPropertySheet">
-            <tbody>
-            <tr>
-                <th>{this.__('modGeorisksReportFormLabelEvent')}{STAR}</th>
-                <td colSpan={2}>{select('georisksFormCategory', allFields)}</td>
-            </tr>
+        return <div className="cmpSheet">
+            <div className="cmpSheetRow">
+                <div className="cmpSheetLabel">
+                    {this.__('modGeorisksReportFormLabelEvent')}{STAR}
+                </div>
+                <div className="cmpSheetControl">
+                    {select('georisksFormCategory', allFields)}
+                </div>
+            </div>
 
             {catFields && catFields.fields.map((cf, n) => rowForField(n, cat, cf))}
 
-            <tr>
-                <th>{this.__('modGeorisksReportFormLabelDanger')}{STAR}</th>
-                <td colSpan={2}>
+            <div className="cmpSheetRow">
+                <div className="cmpSheetLabel">
+                    {this.__('modGeorisksReportFormLabelDanger')}{STAR}
+                </div>
+                <div className="cmpSheetControl">
                     {DANGERS.map((d, n) => <gws.ui.Toggle
                         key={n}
                         type="checkbox"
@@ -259,40 +274,48 @@ class GeorisksForm extends gws.View<GeorisksViewProps> {
                         value={this.props['georisksFormDanger_' + d]}
                         whenChanged={v => whenChanged('georisksFormDanger_' + d, v)}
                     />)}
-                </td>
-            </tr>
-            <tr>
-                <th>{this.__('modGeorisksReportFormLabelMessage')}{STAR}</th>
-                <td colSpan={2}>
+                </div>
+            </div>
+
+            <div className="cmpSheetRow">
+                <div className="cmpSheetLabel">
+                    {this.__('modGeorisksReportFormLabelMessage')}{STAR}
+                </div>
+                <div className="cmpSheetControl">
                     <gws.ui.TextArea
                         height={100}
                         value={this.props.georisksFormMessage}
                         whenChanged={v => whenChanged('georisksFormMessage', v)}
                     />
-                </td>
-            </tr>
-            <tr>
-                <th>{this.__('modGeorisksReportFormLabelDate')}{STAR}</th>
-                <td colSpan={2}>
+                </div>
+            </div>
+
+            <div className="cmpSheetRow">
+                <div className="cmpSheetLabel">
+                    {this.__('modGeorisksReportFormLabelDate')}{STAR}
+                </div>
+                <div className="cmpSheetControl">
                     <gws.ui.DateInput
                         value={this.props.georisksFormDate}
                         whenChanged={v => whenChanged('georisksFormDate', v)}
                     />
-                </td>
-            </tr>
-            <tr>
-                <th>{this.__('modGeorisksReportFormLabelFiles')}</th>
-                <td colSpan={2}>
+                </div>
+            </div>
+
+            <div className="cmpSheetRow">
+                <div className="cmpSheetLabel">
+                    {this.__('modGeorisksReportFormLabelFiles')}
+                </div>
+                <div className="cmpSheetControl">
                     <gws.ui.FileInput
                         accept="image/jpeg"
                         multiple={true}
                         value={this.props.georisksFormFiles}
                         whenChanged={v => whenChanged('georisksFormFiles', v)}
                     />
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                </div>
+            </div>
+        </div>
     }
 }
 
@@ -479,7 +502,7 @@ class GeorisksController extends gws.Controller {
     async init() {
         this.app.whenLoaded(() => {
             this.update({
-                georisksFormDate: new Date().toISOString().slice(0, 10)
+                georisksFormDate: new Date().toISOString().slice(0, 10),
             })
         })
 
