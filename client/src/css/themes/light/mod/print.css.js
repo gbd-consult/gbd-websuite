@@ -36,6 +36,12 @@ module.exports = v => ({
         ...v.ROUND_OK_BUTTON('google:action/print'),
     },
 
+    '.uiDialog.modPrintResultDialog': {
+        [v.MEDIA('medium+')]: {
+            ...v.CENTER_BOX(760, 600),
+        },
+    },
+
     '.modPrintPreviewSnapshotButton': {
         ...v.ROUND_OK_BUTTON('google:image/crop_original'),
     },
