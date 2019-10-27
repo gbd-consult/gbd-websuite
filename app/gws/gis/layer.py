@@ -76,8 +76,8 @@ class FlattenConfig(t.Config):
     useGroups: bool = False  #: use group names (true) or image layer names (false)
 
 
-class ServicesConfig(t.Config):
-    wmsEnabled: bool = True  #: enable this layer for the WMS service
+class OwsConfig(t.Config):
+    services: t.List[t.ext.ows.service.Config]
 
 
 class BaseConfig(t.WithTypeAndAccess):
@@ -93,9 +93,10 @@ class BaseConfig(t.WithTypeAndAccess):
     meta: t.Optional[t.MetaConfig]  #: layer meta data
     opacity: float = 1  #: layer opacity
     search: gws.common.search.Config = {}  #: layer search configuration
-    services: ServicesConfig = {}  #: OWS services options
+    ows: t.Optional[OwsConfig]  #: OWS services options
     title: str = ''  #: layer title
     uid: str = ''  #: layer unique id
+    owsName: str = '' #: layer name for ows services
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
@@ -166,6 +167,15 @@ class Base(gws.Object, t.LayerObject):
         self.opacity = None
         self.client_options = None
 
+        self.services = []
+
+    @property
+    def data_model(self):
+        d = self.var('dataModel')
+        if d:
+            return d
+        return []
+
     @property
     def has_search(self):
         return len(self.get_children('gws.ext.search.provider')) > 0
@@ -198,6 +208,8 @@ class Base(gws.Object, t.LayerObject):
 
         self.use_meta(self.var('meta'))
         self.is_public = gws.auth.api.role('all').can_use(self)
+
+        self.ows_name = self.var('owsName') or self.uid.split('.')[-1]
 
         p = self.var('legend')
         self.legend_url = p.url
@@ -236,6 +248,10 @@ class Base(gws.Object, t.LayerObject):
         if p.enabled and p.providers:
             for cfg in p.providers:
                 self.add_child('gws.ext.search.provider', cfg)
+
+        p = self.var('ows.services', default=[])
+        for cfg in p:
+            self.add_child('gws.ext.ows.service', cfg)
 
     def configure_extent(self, default_extent):
         self.extent = self.calc_extent(default_extent)
@@ -310,9 +326,11 @@ class Base(gws.Object, t.LayerObject):
     def modify_features(self, operation, feature_params):
         pass
 
-    def is_enabled_for_service(self, service):
-        srv = self.var('services')
-        return srv.get(service + 'Enabled')
+    def has_ows(self, kind):
+        for s in self.get_children('gws.ext.ows.service'):
+            if s.kind == kind:
+                return s.enabled
+        return True
 
 
 class Image(Base):
@@ -352,8 +370,8 @@ class Image(Base):
             tile_matrix=self.grid_uid,
             tile_size=self.grid.tileSize)
 
-    def is_enabled_for_service(self, service):
-        return service == 'wms' and super().is_enabled_for_service(service)
+    def has_ows(self, kind):
+        return kind == 'wms' and super().has_ows(kind)
 
     """
         Mapproxy config is done in two steps
@@ -471,7 +489,7 @@ class Vector(Base):
     @property
     def props(self):
         return gws.extend(super().props, {
-            'dataModel': self.var('dataModel'),
+            'dataModel': self.data_model,
             'editStyle': self.var('editStyle'),
             'loadingStrategy': self.var('loadingStrategy'),
             'style': self.var('style'),
@@ -483,6 +501,9 @@ class Vector(Base):
         for f in features:
             f.set_default_style(style)
         return [f.to_svg(bbox, dpi, scale, rotation) for f in features]
+
+    def has_ows(self, kind):
+        return kind == 'wfs' and super().has_ows(kind)
 
 
 def add_layers_to_object(obj, layer_configs):

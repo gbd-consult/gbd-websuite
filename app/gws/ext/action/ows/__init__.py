@@ -1,21 +1,15 @@
 import os
 
 import gws
+import gws.common.ows.service
 import gws.web.error
 import gws.types as t
-
-from . import wms, wfs
-
-
-class TemplatesConfig:
-    wmsGetCapabilities: t.Optional[t.TemplateConfig]  ## template for the WMS capabilities document
-    wfsGetCapabilities: t.Optional[t.TemplateConfig]  ## template for the WFS capabilities document
-
 
 class Config(t.WithTypeAndAccess):
     """OWS server action"""
 
-    templates: t.Optional[TemplatesConfig]  ## OWS templates
+    services: t.Optional[t.List[t.ext.ows.service.Config]]  #: services configuration
+
 
 
 class Object(gws.ActionObject):
@@ -24,32 +18,35 @@ class Object(gws.ActionObject):
         # no client props for this action
         return None
 
+    def __init__(self):
+        super().__init__()
+        self.services: t.List[gws.common.ows.service.Object] = []
+
     def configure(self):
         super().configure()
+        self.services = []
 
-        self.templates = t.Data()
+        for p in self.var('services', default=[]):
+            self.services.append(self.add_child('gws.ext.ows.service', p))
 
-        self.templates.wmsGetCapabilities = self.init_template('wmsGetCapabilities')
-        self.templates.wfsGetCapabilities = self.init_template('wfsGetCapabilities')
+    def http_get(self, req, _) -> t.HttpResponse:
+        service = self._find_service(req)
+        if not service:
+            raise gws.web.error.NotFound()
 
-    def init_template(self, name):
-        p = self.var('templates.' + name)
-        if p:
-            return self.create_object('gws.ext.template', p)
+        if not req.user.can_use(service):
+            return service.error_response(403)
 
-        return self.create_shared_object(
-            'gws.ext.template',
-            'generic_' + name,
-            {
-                'type': 'html',
-                'path': os.path.dirname(__file__) + f'/templates/{name}.cx'
-            })
+        try:
+            return service.handle(req)
+        except gws.web.error.HTTPException as err:
+            return service.error_response(err.code)
+        except:
+            gws.log.exception()
+            return service.error_response(500)
 
-    def http_get(self, req, p) -> t.HttpResponse:
-        ps = {k.lower(): v for k, v in req.params.items()}
-        service = ps.get('service', '').lower()
-        if service == 'wms':
-            return wms.request(self, req, ps)
-        if service == 'wfs':
-            return wfs.request(self, req, ps)
-        raise gws.web.error.NotFound()
+
+    def _find_service(self, req):
+        for service in self.services:
+            if service.can_handle(req):
+                return service

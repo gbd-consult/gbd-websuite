@@ -56,10 +56,6 @@ class Config(t.WithTypeAndAccess):
 
 _GET_FEATURES_LIMIT = 0
 
-# https://commons.wikimedia.org/wiki/File:1x1.png
-_1x1_PNG = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x01\x03\x00\x00\x00%\xdbV\xca\x00\x00\x00\x03PLTE\x00\x00\x00\xa7z=\xda\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\nIDAT\x08\xd7c`\x00\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82'
-
-
 class Object(gws.ActionObject):
 
     def api_render_bbox(self, req, p: RenderBboxParams) -> t.HttpResponse:
@@ -81,7 +77,7 @@ class Object(gws.ActionObject):
             img = layer.render_bbox(bbox, p.width, p.height, **cp)
         except:
             gws.log.exception()
-            img = _1x1_PNG
+            img = gws.tools.misc.Pixels.png8
 
         gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(bbox), time.time() - ts))
 
@@ -113,7 +109,7 @@ class Object(gws.ActionObject):
 
         return t.HttpResponse({
             'mimeType': 'image/png',
-            'content': img or _1x1_PNG
+            'content': img or gws.tools.misc.Pixels.png8
         })
 
     def api_render_legend(self, req, p: RenderLegendParams) -> t.HttpResponse:

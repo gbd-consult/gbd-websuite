@@ -1,0 +1,33 @@
+@include /gws-app/gws/common/ows/service/templates/common.cx
+
+<xsd:schema
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:gml="http://www.opengis.net/gml"
+
+        xmlns:{namespace}="{namespace_uri}"
+
+        elementFormDefault="qualified"
+        targetNamespace="{namespace_uri}">
+
+    <xsd:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"/>
+
+    @each layer_node_list as node
+        <xsd:complexType name="{node.layer.ows_name}Type">
+            <xsd:complexContent>
+                <xsd:extension base="gml:AbstractFeatureType">
+                    <xsd:sequence>
+                        @each node.attributes as attr
+                            <xsd:element maxOccurs="1" minOccurs="0" name="{attr.title}" nillable="true" type="{attr.xml_type}"/>
+                        @end
+                    </xsd:sequence>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+
+        <xsd:element
+            name="{node.layer.ows_name}"
+            substitutionGroup="gml:_Feature"
+            type="{namespace}:{node.layer.ows_name}Type" />
+    @end
+
+</xsd:schema>

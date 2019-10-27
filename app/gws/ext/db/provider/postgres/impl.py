@@ -8,6 +8,7 @@ import psycopg2.pool
 
 import gws
 import gws.gis.shape
+import gws.types as t
 
 # noinspection PyArgumentList
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
@@ -15,6 +16,47 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 Error = psycopg2.Error
+
+# http://initd.org/psycopg/docs/usage.html?highlight=smallint#adaptation-of-python-values-to-sql-types
+
+_type_map = {
+    'array': t.AttributeType.list,
+    'bigint': t.AttributeType.int,
+    'int8': t.AttributeType.int,
+    'bigserial': t.AttributeType.int,
+    'serial8': t.AttributeType.int,
+    'bit': t.AttributeType.int,
+    'boolean': t.AttributeType.bool,
+    'bool': t.AttributeType.bool,
+    'bytea': t.AttributeType.bytes,
+    'character': t.AttributeType.str,
+    'char': t.AttributeType.str,
+    'character varying': t.AttributeType.str,
+    'varchar': t.AttributeType.str,
+    'date': t.AttributeType.date,
+    'geometry': t.AttributeType.geometry,
+    'double precision': t.AttributeType.float,
+    'float8': t.AttributeType.float,
+    'integer': t.AttributeType.int,
+    'int': t.AttributeType.int,
+    'int4': t.AttributeType.int,
+    'money': t.AttributeType.float,
+    'numeric': t.AttributeType.float,
+    'decimal': t.AttributeType.float,
+    'real': t.AttributeType.float,
+    'float4': t.AttributeType.float,
+    'smallint': t.AttributeType.int,
+    'int2': t.AttributeType.int,
+    'smallserial': t.AttributeType.int,
+    'serial2': t.AttributeType.int,
+    'serial': t.AttributeType.int,
+    'serial4': t.AttributeType.int,
+    'text': t.AttributeType.str,
+    'time': t.AttributeType.time,
+    'timetz': t.AttributeType.time,
+    'timestamp': t.AttributeType.datetime,
+    'timestamptz': t.AttributeType.datetime,
+}
 
 
 class Connection:
@@ -142,15 +184,57 @@ class Connection:
 
         return [r['table_name'] for r in rs]
 
-    def columns(self, table):
+    def geometry_columns(self, table):
         schema, table = self.schema_and_table(table)
         rs = self.select('''
-            SELECT column_name, data_type 
-                FROM information_schema.columns 
-                WHERE table_schema = %s AND table_name = %s
+            SELECT f_geometry_column, srid, type 
+            FROM geometry_columns
+            WHERE 
+                f_table_schema = %s
+                AND f_table_name = %s 
         ''', [schema, table])
 
-        return {r['column_name']: r['data_type'] for r in rs}
+        cols = {}
+
+        for r in rs:
+            cols[r['f_geometry_column']] = {
+                'type': r['type'].lower(),
+                'srid': r['srid']
+            }
+
+        return cols
+
+    def columns(self, table):
+        schema, tab = self.schema_and_table(table)
+
+        rs = self.select('''
+            SELECT column_name, data_type, udt_name 
+                FROM information_schema.columns 
+                WHERE table_schema = %s AND table_name = %s
+        ''', [schema, tab])
+
+        cols = {}
+
+        for r in rs:
+            dt = (r['udt_name'] if r['data_type'] == 'USER-DEFINED' else r['data_type']).lower()
+            cols[r['column_name']] = {
+                'type': _type_map.get(dt, 'str'),
+                'native_type': dt.lower(),
+            }
+
+        if any(c['type'] == 'geometry' for c in cols.values()):
+            gc = {}
+            try:
+                gc = self.geometry_columns(table)
+            except Error:
+                gws.log.error(f'cannot get geometry_columns for {table!r}')
+            for col, r in gc.items():
+                if col in cols:
+                    cols[col]['type'] += ':' + r['type']
+                    cols[col]['geometry_type'] = r['type']
+                    cols[col]['srid'] = r['srid']
+
+        return cols
 
     def insert_one(self, table, key_column, data, with_id=False):
         fields = []

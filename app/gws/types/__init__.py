@@ -76,6 +76,11 @@ class ext:
         class Config(Config):
             pass
 
+    class ows:
+        class service:
+            class Config(Config):
+                pass
+
 
 class filepath:
     """Valid readable file path on the server"""
@@ -340,12 +345,38 @@ class SourceLayer:
 
 #####
 
+class AttributeType(Enum):
+    bool = 'bool'
+    bytes = 'bytes'
+    date = 'date'
+    datetime = 'datetime'
+    float = 'float'
+    geometry = 'geometry'
+    int = 'int'
+    list = 'list'
+    str = 'str'
+    time = 'time'
+
+    geoCurve = 'geometry:curve'
+    geoGeomcollection = 'geometry:geomcollection'
+    geoGeometry = 'geometry:geometry'
+    geoLinestring = 'geometry:linestring'
+    geoMulticurve = 'geometry:multicurve'
+    geoMultilinestring = 'geometry:multilinestring'
+    geoMultipoint = 'geometry:multipoint'
+    geoMultipolygon = 'geometry:multipolygon'
+    geoMultisurface = 'geometry:multisurface'
+    geoPoint = 'geometry:point'
+    geoPolygon = 'geometry:polygon'
+    geoPolyhedralsurface = 'geometry:polyhedralsurface'
+    geoSurface = 'geometry:surface'
+
 class AttributeConfig(Config):
     """Attribute configuration"""
 
     title: str = ''  #: title
     name: str = ''  #: internal name
-    type: str = ''  #: type
+    type: AttributeType = ''  #: type
 
 
 class Attribute(Data):
@@ -508,6 +539,8 @@ class LayerObject(ObjectInterface, MapView):
     title: str
     description: str
 
+    data_model: List[Attribute]
+
     def mapproxy_config(self, mc):
         raise NotImplementedError
 
@@ -541,7 +574,7 @@ class LayerObject(ObjectInterface, MapView):
     def search(self, provider: 'SearchProviderInterface', args: 'SearchArgs') -> List['FeatureInterface']:
         raise NotImplementedError
 
-    def is_enabled_for_service(self, service: str) -> bool:
+    def has_ows(self, kind: str) -> bool:
         raise NotImplementedError
 
 
@@ -740,6 +773,9 @@ class DbProviderObject(ObjectInterface):
         raise NotImplementedError
 
     def delete(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
+        raise NotImplementedError
+
+    def describe(self, table: SqlTableConfig) -> List[Attribute]:
         raise NotImplementedError
 
 

@@ -119,11 +119,20 @@ class Request(werkzeug.wrappers.Request):
         if self.method == 'POST':
             return self.form
 
+    @cached_property
+    def kparams(self):
+        if self.method != 'GET':
+            return {}
+        return {k.lower(): v for k, v in self.params.items()}
+
     def env(self, key, default=None):
         return self.environ.get(key, default)
 
     def param(self, key, default=None):
         return self.params.get(key, default)
+
+    def kparam(self, key, default=None):
+        return self.kparams.get(key.lower(), default)
 
     def reversed_url(self, query_string):
         return self.site.reversed_rewrite(self, query_string)

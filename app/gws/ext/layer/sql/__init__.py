@@ -96,6 +96,14 @@ class Object(gws.gis.layer.Vector):
             f.set_default_style(style)
         return [f.to_svg(bbox, dpi, scale, rotation) for f in features]
 
+    @property
+    def data_model(self):
+        d = self.var('dataModel')
+        if d:
+            return d
+        return self.db.describe(self.table)
+
+
     def _get_by_ids(self, ids):
         fs = self.db.select(t.SelectArgs({
             'table': self.var('table'),

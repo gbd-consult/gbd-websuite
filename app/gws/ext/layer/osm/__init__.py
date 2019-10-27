@@ -12,3 +12,6 @@ class Object(gws.gis.layer.Base):
         return gws.extend(super().props, {
             'type': 'osm',
         })
+
+    def has_ows(self, kind):
+        return False

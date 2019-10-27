@@ -212,3 +212,19 @@ class Object(gws.Object, t.DbProviderObject):
                     if geometry_type.startswith('MULTI'):
                         ph = f'ST_Multi({ph})'
                     rec[geom_col] = [ph, geom_val.wkb_hex, srid]
+
+
+
+    def describe(self, table: t.SqlTableConfig):
+        with self.connect() as conn:
+            cols = conn.columns(table.name)
+        ls = []
+        for name, r in cols.items():
+            ls.append(t.Attribute({
+                'title': name,
+                'name': name,
+                'type': r['type'],
+            }))
+        return ls
+
+

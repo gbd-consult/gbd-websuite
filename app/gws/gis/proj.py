@@ -77,8 +77,12 @@ def as_urnx(p):
     return _check(p).urnx
 
 
-def as_http(p):
-    return _check(p).http
+def as_url(p):
+    return _check(p).url
+
+
+def as_uri(p):
+    return _check(p).uri
 
 
 def transform_xy(x, y, src, dst):
@@ -125,16 +129,29 @@ def find(crs, crs_list):
 
 ##
 
+# https://docs.geoserver.org/stable/en/user/services/wfs/webadmin.html
+
+
+# OGC HTTP URL — http://www.opengis.net/gml/srs/epsg.xml#XXX
+# OGC Experimental URN - urn:x-ogc:def:crs:EPSG:XXXX (e.g. urn:x-ogc:def:crs:EPSG:4326).
+#     This format was the original GML 3 SRS convention.
+# OGC URN — (WFS 1.1.1 only) urn:ogc:def:crs:EPSG::XXXX (e.g urn:ogc:def:crs:EPSG::4326).
+#     This is the revised GML 3 SRS convention, and is the default for GML 3.2
+# OGC HTTP URI - http://www.opengis.net/def/crs/EPSG/0/XXXX
+
+
 _formats = {
     'epsg': 'EPSG:%d',
-    'http': 'http://www.opengis.net/gml/srs/epsg.xml#%d',
+    'url': 'http://www.opengis.net/gml/srs/epsg.xml#%d',
+    'uri': 'http://www.opengis.net/def/crs/epsg/0/%d',
     'urnx': 'urn:x-ogc:def:crs:EPSG:%d',
     'urn': 'urn:ogc:def:crs:EPSG::%d',
 }
 
 _res = {
     'epsg': r'^epsg:(\d+)$',
-    'http': r'^http://www.opengis.net/gml/srs/epsg.xml#(\d+)$',
+    'url': r'^http://www.opengis.net/gml/srs/epsg.xml#(\d+)$',
+    'uri': 'http://www.opengis.net/def/crs/epsg/0/(\d+)$',
     'urnx': r'^urn:x-ogc:def:crs:epsg:(\d+)$',
     'urn': r'^urn:ogc:def:crs:epsg::(\d+)$',
 }
@@ -221,7 +238,8 @@ class _Proj:
         self.epsg = _formats['epsg'] % srid
         self.urn = _formats['urn'] % srid
         self.urnx = _formats['urnx'] % srid
-        self.http = _formats['http'] % srid
+        self.url = _formats['url'] % srid
+        self.uri = _formats['uri'] % srid
 
         self.py = pyproj.Proj(init=self.epsg)
 

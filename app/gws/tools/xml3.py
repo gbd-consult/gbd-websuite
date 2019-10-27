@@ -17,10 +17,19 @@ def tag(name, *args):
     return name, args
 
 
-def string(t, compress=False):
+def as_string(t, compress=False):
     if isinstance(t, str):
-        return _compress(t) if compress else t
-    return '<?xml version="1.0" encoding="UTF-8"?>' + _string(t)
+        return _compress(t) if compress else t.strip()
+    return _string(t)
+
+
+def encode(v):
+    v = str(v).strip()
+    v = v.replace("&", "&amp;")
+    v = v.replace(">", "&gt;")
+    v = v.replace("<", "&lt;")
+    v = v.replace('"', "&quot;")
+    return v
 
 
 def _string(t):
@@ -36,11 +45,11 @@ def _string(t):
             continue
         if isinstance(a, dict):
             if a:
-                atts = [f'{k}="{_encode(v)}"' for k, v in a.items() if v is not None]
+                atts = [f'{k}="{encode(v)}"' for k, v in a.items() if v is not None]
             continue
         a = str(a)
         if a:
-            nodes.append(_encode(a))
+            nodes.append(encode(a))
 
     otag = name
     if atts:
@@ -50,17 +59,8 @@ def _string(t):
     return '<' + otag + '/>'
 
 
-def _encode(v):
-    v = str(v).strip()
-    v = v.replace("&", "&amp;")
-    v = v.replace(">", "&gt;")
-    v = v.replace("<", "&lt;")
-    v = v.replace('"', "&quot;")
-    return v
-
-
 def _compress(s):
-    s = re.sub(r'\s+', ' ', s)
+    s = re.sub(r'\s+', ' ', s.strip())
     s = s.replace('> <', '><')
     s = s.replace(' >', '>')
     s = s.replace(' />', '/>')

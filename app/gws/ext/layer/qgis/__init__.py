@@ -76,9 +76,9 @@ class Object(gws.gis.layer.Base):
             'layers': self.layers,
         })
 
-    def is_enabled_for_service(self, service):
-        return (super().is_enabled_for_service(service)
-                and any(la.is_enabled_for_service(service) for la in self.layers))
+    def has_ows(self, kind):
+        return (super().has_ows(kind)
+                and any(la.has_ows(kind) for la in self.layers))
 
     def _layer(self, sl: t.SourceLayer, depth: int):
         if sl.is_group:

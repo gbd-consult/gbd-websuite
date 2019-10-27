@@ -1,0 +1,67 @@
+@include /gws-app/gws/common/ows/service/templates/common.cx
+
+<WFS_Capabilities
+        version="2.0.2"
+        xmlns="http://www.opengis.net/wfs/2.0"
+        xmlns:gml="http://www.opengis.net/gml/3.2"
+        xmlns:fes="http://www.opengis.net/fes/2.0"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:ows="http://www.opengis.net/ows/1.1"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+        xmlns:{namespace}="{namespace_uri}"
+
+        xsi:schemaLocation="http://www.opengis.net/wfs/2.0
+                        http://schemas.opengis.net/wfs/2.0/wfs.xsd
+                        http://www.opengis.net/ows/1.1
+                        http://schemas.opengis.net/ows/1.1.0/owsAll.xsd">
+
+    <ows:ServiceIdentification>
+        <ows:Title>{project.title}</ows:Title>
+
+        @with project.meta as meta
+            <ows:Abstract>{meta.abstract}</ows:Abstract>
+            <ows:Keywords>
+                @each meta.keywords as kw
+                    <ows:Keyword>{kw}</ows:Keyword>
+                @end
+            </ows:Keywords>
+        @end
+
+        <ows:ServiceType>WFS</ows:ServiceType>
+        <ows:ServiceTypeVersion>2.0</ows:ServiceTypeVersion>
+        <ows:Fees>NONE</ows:Fees>
+        <ows:AccessConstraints>NONE</ows:AccessConstraints>
+    </ows:ServiceIdentification>
+
+    <ows:ServiceProvider>
+        @with project.meta.contact as co
+            <ows:IndividualName>{co.person}</ows:IndividualName>
+            <ows:PositionName>{co.position}</ows:PositionName>
+            <ows:ContactInfo>
+                <ows:Phone>
+                    <ows:Voice>{co.phone}</ows:Voice>
+                </ows:Phone>
+                <ows:Address>
+                    <ows:DeliveryPoint>{co.address}</ows:DeliveryPoint>
+                    <ows:City>{co.city}</ows:City>
+                    <ows:AdministrativeArea>{co.area}</ows:AdministrativeArea>
+                    <ows:PostalCode>{co.zip}</ows:PostalCode>
+                    <ows:Country>{co.country}</ows:Country>
+                    <ows:ElectronicMailAddress>{co.email}</ows:ElectronicMailAddress>
+                </ows:Address>
+                <ows:OnlineResource xlink:href="{co.url}"/>
+            </ows:ContactInfo>
+        @end
+    </ows:ServiceProvider>
+
+    @wfs_basic_operations
+
+    <FeatureTypeList>
+        @each layer_node_list as node
+            @wfs_feature_type node
+        @end
+    </FeatureTypeList>
+
+</WFS_Capabilities>

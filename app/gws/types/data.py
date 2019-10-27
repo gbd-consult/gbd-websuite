@@ -4,6 +4,9 @@ class Data:
             for k, v in d.items():
                 setattr(self, str(k), v)
 
+    def set(self, k, value):
+        return setattr(self, k, value)
+
     def get(self, k, default=None):
         return getattr(self, k, default)
 
