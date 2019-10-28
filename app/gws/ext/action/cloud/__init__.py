@@ -48,7 +48,6 @@ class Map(t.Data):
 
     type: MapType  #: map type
     source: Source  #: map source code (e.g. a QGIS project)
-    content: t.Optional[bytes]  #: binary file content
     layerUids: t.Optional[t.List[str]]  #: layer ids to use in the cloud
     data: t.Optional[t.List[DataSet]]  #: data for the map
     assets: t.Optional[t.List[Asset]]  #: map assets
