@@ -50,7 +50,7 @@ will transform this URL into simply ::
     http://example.org/myproject/somepage
 
 
-The ``match`` is a reqular expression and the ``target`` is the final URL with ``{$n}`` placeholders, corresponding to capture groups in the regex. If the target starts with a scheme (e.g. ``http://``), the server performs a redirect instead of rewriting.
+The ``match`` is a regular expression and the ``target`` is the final URL with ``{$n}`` placeholders, corresponding to capture groups in the regex. If the target starts with a scheme (e.g. ``http://``), the server performs a redirect instead of rewriting.
 
 
 Website configuration

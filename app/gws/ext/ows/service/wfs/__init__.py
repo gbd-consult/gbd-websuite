@@ -96,13 +96,13 @@ class Object(gws.common.ows.service.Object):
         nodes = self._nodes_from_type_names(req, project)
 
         for node in nodes:
-            node.attributes = []
+            node.schema = []
             for a in node.layer.data_model:
                 xtype = _ATTR_TYPE_TO_XML.get(a.type)
                 if xtype:
-                    node.attributes.append({
-                        'title': 'geometry' if a.type.startswith('geo') else a.title,
-                        'xml_type': xtype
+                    node.schema.append({
+                        'name': 'geometry' if a.type.startswith('geo') else gws.as_uid(a.title),
+                        'type': xtype
                     })
 
         return self.render_template(req, project, 'describeFeatureType', {

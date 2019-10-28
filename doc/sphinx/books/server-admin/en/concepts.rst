@@ -5,11 +5,11 @@ Requests and urls
 -----------------
 
 Once launched, GBD WebSuite listens on ports ``80/443`` and processes ``GET`` and ``POST`` requests. Like a conventional webserver, GWS can serve static content, like html pages or images, but its main purpose is to provide dynamic map imagery and data. For dynamic requests, there's a single endpoint (url), namely the ``_`` (underscore). All requests to this endpoint are expected to contain the command (``cmd``) parameter.
-Additionally, all ``POST`` requests must be in JSON format.
+All ``POST`` requests must be in the JSON format.
 
 Here a few examples of requests GBD WebSuite can handle:
 
-Staic web requests ::
+Static web requests ::
 
     http://maps.my-server.com/images/smile.jpg
 
@@ -79,7 +79,7 @@ TABLE
    print templates ~ Various print template formats
 /TABLE
 
-Pluggable objects in the configuration are identifed by their ``type`` property.
+Pluggable objects in the configuration are identified by their ``type`` property.
 
 
 Configuration files and objects

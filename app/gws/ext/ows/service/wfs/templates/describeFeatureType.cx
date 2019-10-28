@@ -16,8 +16,14 @@
             <xsd:complexContent>
                 <xsd:extension base="gml:AbstractFeatureType">
                     <xsd:sequence>
-                        @each node.attributes as attr
-                            <xsd:element maxOccurs="1" minOccurs="0" name="{attr.title}" nillable="true" type="{attr.xml_type}"/>
+                        @each node.schema as attr
+                            <xsd:element
+                                maxOccurs="1"
+                                minOccurs="0"
+                                nillable="true"
+                                name="{attr.name}"
+                                type="{attr.type}"
+                            />
                         @end
                     </xsd:sequence>
                 </xsd:extension>

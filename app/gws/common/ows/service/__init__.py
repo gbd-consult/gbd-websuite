@@ -111,7 +111,8 @@ class Object(gws.Object):
     def feature_node(self, project, feature):
         gs = None
         if feature.shape:
-            gs = gws.tools.xml3.as_string(gws.ows.gml.shape_to_tag(feature.shape, precision=project.map.coordinate_precision))
+            gs = gws.tools.xml3.as_string(
+                gws.ows.gml.shape_to_tag(feature.shape, precision=project.map.coordinate_precision))
 
         return t.Data({
             'feature': feature,

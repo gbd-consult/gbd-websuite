@@ -21,6 +21,7 @@ Documentation for system administrators who configure the GBD WebSuite Server.
     search.rst
     server.rst
     qgis.rst
+    ows.rst
     templating.rst
     web.rst
     projects.rst
