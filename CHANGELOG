@@ -2,10 +2,16 @@ Version 4.0
 --------------------------------------------
 
 - support for multi-language projects
-- binary protocol for the client-server comminication, support for file uploads
+- binary protocol for the client-server communication, support for file uploads
 - lots of bug fixes and improvements
 
 Version 4.1
 --------------------------------------------
 
 - support for template-based ('cx') configurations
+- function "My Location" in the client
+
+Version 5.0
+--------------------------------------------
+
+- WMS and WFS server
