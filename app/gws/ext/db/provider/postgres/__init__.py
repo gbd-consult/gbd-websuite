@@ -20,11 +20,9 @@ class Config(t.WithType):
     password: str  #: password
     port: int = 5432  #: database port
     timeout: t.duration = 0  #: query timeout
+    connectTimeout: t.duration = 0  #: connection timeout
     uid: str  #: unique id
     user: str  #: username
-
-
-PING_TIMEOUT = 5
 
 
 class Object(gws.Object, t.DbProviderObject):
@@ -38,10 +36,13 @@ class Object(gws.Object, t.DbProviderObject):
         }
         for p in 'host', 'port', 'user', 'password', 'database':
             params[p] = self.var(p)
-        timeout = self.var('timeout')
-        if timeout:
+        t = self.var('connectTimeout')
+        if t:
+            params['connect_timeout'] = t
+        t = self.var('timeout')
+        if t:
             # statement_timeout is in ms
-            params['options'] = '-c statement_timeout=%d' % (timeout * 1000)
+            params['options'] = '-c statement_timeout={t * 1000}'
         return params
 
     def connect(self, extra_connect_params=None):
@@ -51,10 +52,8 @@ class Object(gws.Object, t.DbProviderObject):
         super().configure()
 
         def ping():
-            p = self.connect_params
-            p['connect_timeout'] = PING_TIMEOUT
             try:
-                with Connection(p):
+                with Connection(self.connect_params):
                     gws.log.info(f'db connection "{self.uid}": ok')
             except Error as e:
                 raise gws.Error(f'cannot open db connection "{self.uid}"', e.args[0]) from e
