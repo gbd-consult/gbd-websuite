@@ -86,16 +86,23 @@ _groups = {
 
     'eigentuemer': [
         'buchung.eigentuemer.gml_id',
+        'buchung.eigentuemer.anteil',
+        'buchung.eigentuemer.eigentuemerart',
+        'buchung.eigentuemer.eigentuemerart_id',
         'buchung.eigentuemer.laufendenummernachdin1421',
-        'buchung.eigentuemer.person.anschrift.gml_id',
+
         'buchung.eigentuemer.person.gml_id',
+        'buchung.eigentuemer.person.akademischergrad',
+        'buchung.eigentuemer.person.anrede',
         'buchung.eigentuemer.person.vorname',
         'buchung.eigentuemer.person.nachnameoderfirma',
         'buchung.eigentuemer.person.geburtsdatum',
-        'buchung.eigentuemer.person.anschrift.strasse',
+
+        'buchung.eigentuemer.person.anschrift.gml_id',
         'buchung.eigentuemer.person.anschrift.hausnummer',
-        'buchung.eigentuemer.person.anschrift.postleitzahlpostzustellung',
         'buchung.eigentuemer.person.anschrift.ort_post',
+        'buchung.eigentuemer.person.anschrift.postleitzahlpostzustellung',
+        'buchung.eigentuemer.person.anschrift.strasse',
     ],
 
     'nutzung': [
