@@ -68,6 +68,10 @@ class UiConfig:
     autoSpatialSearch: bool = False  #: activate spatial search after submit
 
 
+class CSVExportConfig(t.Config):
+    dataModel: t.List[dict]
+
+
 class Config(t.WithTypeAndAccess):
     """Flurstückssuche (cadaster parlcels search) action"""
 
@@ -85,9 +89,11 @@ class Config(t.WithTypeAndAccess):
     featureFormat: t.Optional[t.FormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
 
-    disableApi: bool = False #: disable external access to this extension
+    disableApi: bool = False  #: disable external access to this extension
 
-    ui: t.Optional[UiConfig] #: ui options
+    ui: t.Optional[UiConfig]  #: ui options
+
+    csvExport: t.Optional[CSVExportConfig]
 
 
 class Gemarkung(t.Data):
@@ -116,6 +122,7 @@ class FsSetupResponse(t.Response):
     uiSearchSelection: bool
     uiSearchSpatial: bool
     uiAutoSpatialSearch: bool
+
 
 class FsStrassenParams(t.Data):
     projectUid: str
@@ -380,7 +387,9 @@ class Object(gws.Object):
         job_uid = gws.random_string(64)
         out_path = '/tmp/' + job_uid + 'fs.export.csv'
 
-        export.as_csv(self, (f.attributes for f in features), p.groups, out_path)
+        headers = self.var('csvExport.dataModel')
+
+        export.as_csv(self, (f.attributes for f in features), p.groups, out_path, headers=headers)
 
         job = gws.tools.job.create(
             uid=job_uid,
@@ -488,7 +497,8 @@ class Object(gws.Object):
         for f in features:
             f.attributes['is_guest_user'] = req.user.is_guest
 
-        gws.log.debug(f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} query={query!r} total={total!r} len={len(features)}')
+        gws.log.debug(
+            f'FS_SEARCH eigentuemer_flag={eigentuemer_flag} query={query!r} total={total!r} len={len(features)}')
 
         if allow_eigentuemer:
             self._log_eigentuemer_access(req, query, check=True, total=total, features=features)

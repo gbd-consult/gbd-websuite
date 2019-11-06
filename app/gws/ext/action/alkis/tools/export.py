@@ -1,7 +1,8 @@
+import re
 import itertools
-import gws.common.csv
 
 import gws
+import gws.common.csv
 
 """
 A fs structure, as created by our indexer, is deeply nested.
@@ -18,76 +19,76 @@ We flatten it first, creating a list 'some.nested.key, list positions, value'
 
 _groups = {
     'base': [
-        # 'gml_id',
-        # 'land',
-        # 'regierungsbezirk',
-        # 'kreis',
+        'gml_id',
+        'land',
+        'regierungsbezirk',
+        'kreis',
         'gemeinde',
         'gemarkung_id',
         'gemarkung',
-        # 'anlass',
-        # 'endet',
-        # 'zeitpunktderentstehung',
+        'anlass',
+        'endet',
+        'zeitpunktderentstehung',
         'flurnummer',
         'zaehler',
         'nenner',
         'flurstuecksfolge',
         'amtlicheflaeche',
-        # 'zaehlernenner',
-        # 'vollnummer',
-        # 'flurstueckskennzeichen',
+        'zaehlernenner',
+        'vollnummer',
+        'flurstueckskennzeichen',
         'x',
         'y',
 
     ],
     'lage': [
-        # 'lage.gemarkung',
-        # 'lage.gemarkung_id',
-        # 'lage.gemeinde',
-        # 'lage.gemeinde_id',
-        # 'lage.gml_id',
-        # 'lage.kreis',
-        # 'lage.kreis_id',
-        # 'lage.lage_id',
-        # 'lage.lage_schluesselgesamt',
-        # 'lage.land',
-        # 'lage.land_id',
-        # 'lage.regierungsbezirk',
-        # 'lage.regierungsbezirk_id',
+        'lage.gemarkung',
+        'lage.gemarkung_id',
+        'lage.gemeinde',
+        'lage.gemeinde_id',
+        'lage.gml_id',
+        'lage.kreis',
+        'lage.kreis_id',
+        'lage.lage_id',
+        'lage.lage_schluesselgesamt',
+        'lage.land',
+        'lage.land_id',
+        'lage.regierungsbezirk',
+        'lage.regierungsbezirk_id',
         'lage.strasse',
         'lage.hausnummer',
-        # 'lage.x',
-        # 'lage.xysrc',
-        # 'lage.y',
+        'lage.x',
+        'lage.xysrc',
+        'lage.y',
     ],
     'gebaeude': [
         'gebaeude.area',
         'gebaeude.gebaeudefunktion',
-        # 'gebaeude.gebaeudefunktion_id',
-        # 'gebaeude.gml_id',
+        'gebaeude.gebaeudefunktion_id',
+        'gebaeude.gml_id',
     ],
     'buchung': [
-        # 'buchung.beginnt',
+        'buchung.beginnt',
         'buchung.buchungsart',
-        # 'buchung.buchungsart_id',
-        # 'buchung.buchungsblatt.bezirk',
-        # 'buchung.buchungsblatt.bezirk_id',
+        'buchung.buchungsart_id',
+        'buchung.buchungsblatt.bezirk',
+        'buchung.buchungsblatt.bezirk_id',
         'buchung.buchungsblatt.blattart',
-        # 'buchung.buchungsblatt.blattart_id',
+        'buchung.buchungsblatt.blattart_id',
         'buchung.buchungsblatt.buchungsblattkennzeichen',
         'buchung.buchungsblatt.buchungsblattnummermitbuchstabenerweiterung',
-        # 'buchung.buchungsblatt.gml_id',
-        # 'buchung.buchungsblatt.land',
-        # 'buchung.buchungsblatt.land_id',
-        # 'buchung.gml_id',
+        'buchung.buchungsblatt.gml_id',
+        'buchung.buchungsblatt.land',
+        'buchung.buchungsblatt.land_id',
+        'buchung.gml_id',
         'buchung.laufendenummer',
     ],
 
     'eigentuemer': [
-        # 'buchung.eigentuemer.gml_id',
-        # 'buchung.eigentuemer.laufendenummernachdin1421',
-        # 'buchung.eigentuemer.person.anschrift.gml_id',
-        # 'buchung.eigentuemer.person.gml_id',
+        'buchung.eigentuemer.gml_id',
+        'buchung.eigentuemer.laufendenummernachdin1421',
+        'buchung.eigentuemer.person.anschrift.gml_id',
+        'buchung.eigentuemer.person.gml_id',
         'buchung.eigentuemer.person.vorname',
         'buchung.eigentuemer.person.nachnameoderfirma',
         'buchung.eigentuemer.person.geburtsdatum',
@@ -99,14 +100,14 @@ _groups = {
 
     'nutzung': [
         'nutzung.a_area',
-        # 'nutzung.area',
-        # 'nutzung.count',
-        # 'nutzung.gml_id',
-        # 'nutzung.key',
-        # 'nutzung.key_id',
-        # 'nutzung.key_label',
+        'nutzung.area',
+        'nutzung.count',
+        'nutzung.gml_id',
+        'nutzung.key',
+        'nutzung.key_id',
+        'nutzung.key_label',
         'nutzung.type',
-        # 'nutzung.type_id',
+        'nutzung.type_id',
     ]
 }
 
@@ -147,21 +148,42 @@ _headers = {
 }
 
 
-def as_csv(obj, fs_list, groups, path):
-    # make keys from groups
-
+def as_csv(obj, fs_list, groups, path, headers=None):
     keys = []
     for g in groups:
         keys.extend(_groups[g])
 
-    headers = [_headers.get(k, k) for k in keys]
     rows = []
 
     for fs in fs_list:
         fs_as_csv(fs, keys, rows)
 
+    if headers:
+        headers = [h for h in headers if h['source'] in keys]
+        csv_rows = []
+        for r in rows:
+            r = dict(zip(keys, r))
+            rf = []
+            for h in headers:
+                if 'value' in h:
+                    v = h['value']
+                    if '{' in v:
+                        v = re.sub(r'{(.+?)}', lambda m: r.get(m.group(1), ''), v)
+                    rf.append(v)
+                else:
+                    rf.append(r[h['source']])
+            csv_rows.append(rf)
+        csv_headers = [h['title'] for h in headers]
+    else:
+        use_keys = [k for k in _headers if k in keys]
+        csv_headers = [_headers[k] for k in use_keys]
+        csv_rows = []
+        for r in rows:
+            r = dict(zip(keys, r))
+            csv_rows.append([r.get(k) for k in use_keys])
+
     csv: gws.common.csv.Object = obj.root.find_first('gws.common.csv')
-    csv.write(path, headers, rows)
+    csv.write(path, csv_headers, csv_rows)
 
 
 def fs_as_csv(fs, keys, rows):
