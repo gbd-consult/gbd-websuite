@@ -1,25 +1,11 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
-<wfs:FeatureCollection
-        version="2.0"
-        xmlns="http://www.opengis.net/wfs"
-        xmlns:wfs="http://www.opengis.net/wfs/2.0"
-        xmlns:gml="http://www.opengis.net/gml/3.2"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:{namespace}="{namespace_uri}"
-        xsi:schemaLocation="http://www.opengis.net/wfs/2.0 http://schemas.opengis.net/wfs/2.0/wfs.xsd">
+@tag wfs:FeatureCollection
+    @a version="2.0"
+    @namespaces
 
-    @each feature_nodes as node
-        <wfs:member>
-            <{namespace}:{node.feature.layer.ows_name} gml:id="{node.feature.uid}">
-                @each node.attributes as name, val
-                    <{namespace}:{name}>{val}</{namespace}:{name}>
-                @end
-                @with node.gml_shape
-                    <{namespace}:geometry>{node.gml_shape | raw}</{namespace}:geometry>
-                @end
-            </{namespace}:{node.feature.layer.ows_name}>
-        </wfs:member>
+    @each feature_tags as tag
+        @insert {tag}
     @end
 
-</wfs:FeatureCollection>
+@end

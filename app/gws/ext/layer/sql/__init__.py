@@ -28,8 +28,10 @@ class Object(gws.gis.layer.Vector):
 
         self.table = self.var('table')
         with self.db.connect() as conn:
-            self.crs = conn.crs_for_column(self.table.name, self.table.geometryColumn)
-            self.geometry_type = conn.geometry_type_for_column(self.table.name, self.table.geometryColumn)
+            gc = conn.geometry_columns(self.table.name).get(self.table.geometryColumn)
+            if gc:
+                self.crs = gc['crs']
+                self.geometry_type = gc['type']
 
         self.add_child('gws.ext.search.provider.sql', t.Config({
             'db': self.db.uid,
@@ -101,8 +103,17 @@ class Object(gws.gis.layer.Vector):
         d = self.var('dataModel')
         if d:
             return d
-        return self.db.describe(self.table)
-
+        d = []
+        for name, r in self.db.columns(self.table).items():
+            if r['type'] == t.AttributeType.geometry:
+                continue
+            d.append(t.AttributeConfig({
+                'title': name,
+                'name': name,
+                'source': name,
+                'type': r['type'],
+            }))
+        return d
 
     def _get_by_ids(self, ids):
         fs = self.db.select(t.SelectArgs({

@@ -357,32 +357,35 @@ class AttributeType(Enum):
     str = 'str'
     time = 'time'
 
-    geoCurve = 'geometry:curve'
-    geoGeomcollection = 'geometry:geomcollection'
-    geoGeometry = 'geometry:geometry'
-    geoLinestring = 'geometry:linestring'
-    geoMulticurve = 'geometry:multicurve'
-    geoMultilinestring = 'geometry:multilinestring'
-    geoMultipoint = 'geometry:multipoint'
-    geoMultipolygon = 'geometry:multipolygon'
-    geoMultisurface = 'geometry:multisurface'
-    geoPoint = 'geometry:point'
-    geoPolygon = 'geometry:polygon'
-    geoPolyhedralsurface = 'geometry:polyhedralsurface'
-    geoSurface = 'geometry:surface'
+    geoCurve = 'curve'
+    geoGeomcollection = 'geomcollection'
+    geoGeometry = 'geometry'
+    geoLinestring = 'linestring'
+    geoMulticurve = 'multicurve'
+    geoMultilinestring = 'multilinestring'
+    geoMultipoint = 'multipoint'
+    geoMultipolygon = 'multipolygon'
+    geoMultisurface = 'multisurface'
+    geoPoint = 'point'
+    geoPolygon = 'polygon'
+    geoPolyhedralsurface = 'polyhedralsurface'
+    geoSurface = 'surface'
 
 class AttributeConfig(Config):
     """Attribute configuration"""
 
     title: str = ''  #: title
     name: str = ''  #: internal name
-    type: AttributeType = ''  #: type
+    value: str = '' #: computed value
+    source: str = '' #: source attribute
+    type: Optional[AttributeType]  #: type
 
 
 class Attribute(Data):
     title: str = ''
     name: str = ''
     type: str = ''
+    value: str = ''
 
 
 class ObjectInterface:

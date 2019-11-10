@@ -168,6 +168,7 @@ class Base(gws.Object, t.LayerObject):
         self.client_options = None
 
         self.services = []
+        self.geometry_type = None
 
     @property
     def data_model(self):

@@ -1,140 +1,142 @@
 ## helper functions for ows templates
 
-<?xml version="1.0" encoding="UTF-8"?>
-
-@def wms_default_url
-    <DCPType><HTTP><Get>
-        <OnlineResource xlink:type="simple" xlink:href="{service_endpoint}"/>
-    </Get></HTTP></DCPType>
-@end
 
 @def ows_default_url
-    <ows:DCP><ows:HTTP><ows:Get xlink:href="{service_endpoint}"/></ows:HTTP></ows:DCP>
+    @t ows:DCP/ows:HTTP/ows:Get xlink:href={service_endpoint}
+@end
+
+@def feature_ns(s):
+    @if ':' in s or not feature_namespace:
+        @return s
+    @end
+    @return feature_namespace + ':' + s
+@end
+
+## wms
+
+@def wms_default_url
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={service_endpoint}
 @end
 
 @def wms_request_capabilities
-    <Request>
-        <GetCapabilities>
-            <Format>text/xml</Format>
+    @tag Request
+        @tag GetCapabilities
+            @t Format text/xml
             @wms_default_url
-        </GetCapabilities>
-        <GetMap>
-            <Format>image/png</Format>
+        @end
+        @tag GetMap
+            @t Format image/png
             @wms_default_url
-        </GetMap>
-        <GetFeatureInfo>
-            <Format>application/vnd.ogc.gml</Format>
+        @end            
+        @tag GetFeatureInfo
+            @t Format application/vnd.ogc.gml
             @wms_default_url
-        </GetFeatureInfo>
-        <sld:GetLegendGraphic>
-            <Format>image/png</Format>
+        @end            
+        @tag sld:GetLegendGraphic
+            @t Format image/png
             @wms_default_url
-        </sld:GetLegendGraphic>
-    </Request>
-    <Exception>
-        <Format>XML</Format>
-    </Exception>
+        @end
+    @end
+    @t Exception/Format XML
 @end
 
-@def wms_layer_caps node
-    <Layer queryable="{1 if node.has_search else 0}">
 
-        <Name>{node.layer.ows_name}</Name>
-        <Title>{node.layer.title}</Title>
+@def _wms_layer_caps node
+    @tag Layer queryable="{1 if node.has_search else 0}"
+
+        @t Name {feature_ns(node.tag_name)}
+        @t Title {node.layer.title}
 
         @with node.layer.meta.abstract as a
-            <Abstract>{a}</Abstract>
+            @t Abstract {a}
         @end
 
-        <CRS>{node.proj.epsg}</CRS>
+        @t CRS {node.proj.epsg}
 
-        <EX_GeographicBoundingBox>
-            <westBoundLongitude>{node.lonlat_extent[0]}</westBoundLongitude>
-            <eastBoundLongitude>{node.lonlat_extent[2]}</eastBoundLongitude>
-            <southBoundLatitude>{node.lonlat_extent[1]}</southBoundLatitude>
-            <northBoundLatitude>{node.lonlat_extent[3]}</northBoundLatitude>
-        </EX_GeographicBoundingBox>
+        @tag EX_GeographicBoundingBox
+            @t westBoundLongitude {node.lonlat_extent[0]}
+            @t eastBoundLongitude {node.lonlat_extent[2]}
+            @t southBoundLatitude {node.lonlat_extent[1]}
+            @t northBoundLatitude {node.lonlat_extent[3]}
+        @end
 
-        <BoundingBox
-                CRS="{node.proj.epsg}"
-                minx="{node.extent[0]}"
-                miny="{node.extent[1]}"
-                maxx="{node.extent[2]}"
-                maxy="{node.extent[3]}"
-        />
+        @t BoundingBox CRS="{node.proj.epsg}" minx="{node.extent[0]}" miny="{node.extent[1]}" maxx="{node.extent[2]}" maxy="{node.extent[3]}"
 
-        <MinScaleDenominator>{node.min_scale | as_int}</MinScaleDenominator>
-        <MaxScaleDenominator>{node.max_scale | as_int}</MaxScaleDenominator>
+        @t MinScaleDenominator {node.min_scale | as_int}
+        @t MaxScaleDenominator {node.max_scale | as_int}
 
         @each reversed(node.sub_nodes) as sub_node
-            @wms_layer_caps sub_node
+            @_wms_layer_caps sub_node
         @end
-
-    </Layer>
+    @end
 @end
 
+## NB: WMS is bottom-first, our layers are top-first
+
 @def wms_layer_capabilities layer_node_tree
-
-    ## NB: WMS is bottom-first, our layers are top-first
-
     @each reversed(layer_node_tree) as node
-        @wms_layer_caps node
+        @_wms_layer_caps node
     @end
 @end
 
 
+
+## wfs
+
 @def wfs_feature_type node
-    <FeatureType>
-        <Name>{namespace}:{node.layer.ows_name}</Name>
-        <Title>{node.layer.title}</Title>
+    @tag FeatureType
+        @t Name {feature_ns(node.tag_name)}
+        @t Title {node.layer.title}
         @with node.layer.meta
-            <Abstract>{node.layer.meta.abstract}</Abstract>
+            @t Abstract {node.layer.meta.abstract}
         @end
-        <DefaultSRS>{node.proj.urn}</DefaultSRS>
-    </FeatureType>
+        @t DefaultSRS {node.proj.urn}
+        @tag ows:WGS84BoundingBox
+            @t ows:LowerCorner {node.lonlat_extent[0]} {node.lonlat_extent[1]}
+            @t ows:UpperCorner {node.lonlat_extent[2]} {node.lonlat_extent[3]}
+        @end
+    @end
 @end
 
 
 @def wfs_constraint ns, name, value
-    <{ns}:Constraint name="{name}">
-        <ows:NoValues/>
-        <ows:DefaultValue>{value | as_str | upper}</ows:DefaultValue>
-    </{ns}:Constraint>
+    @tag {ns}:Constraint name={name}
+        @t ows:NoValues
+        @t ows:DefaultValue {value | as_str | upper}
+    @end
 @end
 
 
 @def wfs_basic_operations default_count=1000
-    <ows:OperationsMetadata>
-        <ows:Operation name="GetCapabilities">
-            @ows_default_url
-            <ows:Parameter name="AcceptVersions">
-                <ows:AllowedValues>
-                    <ows:Value>2.0.2</ows:Value>
-                    <ows:Value>2.0.1</ows:Value>
-                    <ows:Value>2.0.0</ows:Value>
-                    <ows:Value>1.1.0</ows:Value>
-                    <ows:Value>1.0.0</ows:Value>
-                </ows:AllowedValues>
-            </ows:Parameter>
-        </ows:Operation>
+    @tag ows:OperationsMetadata
+        @tag ows:Operation name="GetCapabilities"
 
-        <ows:Operation name="DescribeFeatureType">
             @ows_default_url
-        </ows:Operation>
 
-        <ows:Operation name="GetFeature">
+            @tag ows:Parameter name="AcceptVersions"
+                @tag ows:AllowedValues
+                    @t ows:Value 2.0.2
+                    @t ows:Value 2.0.1
+                    @t ows:Value 2.0.0
+                @end
+            @end
+        @end
+
+        @tag ows:Operation name="DescribeFeatureType"
             @ows_default_url
-        </ows:Operation>
+        @end
 
-        <ows:Parameter name="version">
-            <ows:AllowedValues>
-                <ows:Value>2.0.2</ows:Value>
-                <ows:Value>2.0.1</ows:Value>
-                <ows:Value>2.0.0</ows:Value>
-                <ows:Value>1.1.0</ows:Value>
-                <ows:Value>1.0.0</ows:Value>
-            </ows:AllowedValues>
-        </ows:Parameter>
+        @tag ows:Operation name="GetFeature"
+            @ows_default_url
+        @end
+
+        @tag ows:Parameter name="version"
+            @tag ows:AllowedValues
+                @t ows:Value2.0.2
+                @t ows:Value2.0.1
+                @t ows:Value2.0.0
+            @end
+        @end
 
         @wfs_constraint "ows", "ImplementsBasicWFS", True
         @wfs_constraint "ows", "KVPEncoding", True
@@ -152,21 +154,20 @@
         @wfs_constraint "ows", "ImplementsFeatureVersioning", False
         @wfs_constraint "ows", "ManageStoredQueries", False
 
-        <ows:Constraint name="CountDefault">
-            <ows:NoValues/>
-            <ows:DefaultValue>{default_count}</ows:DefaultValue>
-        </ows:Constraint>
+        @tag ows:Constraint name="CountDefault"
+            @t ows:NoValues
+            @t ows:DefaultValue{default_count}
+        @end
 
-        <ows:Constraint name="QueryExpressions">
-            <ows:AllowedValues>
-                <ows:Value>wfs:StoredQuery</ows:Value>
-            </ows:AllowedValues>
-        </ows:Constraint>
+        @tag ows:Constraint name="QueryExpressions"
+            @tag ows:AllowedValues
+                @t ows:Value wfs:StoredQuery
+            @end
+        @end
+    @end
 
-    </ows:OperationsMetadata>
-
-    <fes:Filter_Capabilities>
-        <fes:Conformance>
+    @tag fes:Filter_Capabilities
+        @tag fes:Conformance
             @wfs_constraint "fes", "ImplementsQuery", True
             @wfs_constraint "fes", "ImplementsMinSpatialFilter", True
 
@@ -180,19 +181,13 @@
             @wfs_constraint "fes", "ImplementsVersionNav", False
             @wfs_constraint "fes", "ImplementsSorting", False
             @wfs_constraint "fes", "ImplementsExtendedOperators", False
-        </fes:Conformance>
+        @end
 
-        <fes:Id_Capabilities>
-            <fes:ResourceIdentifier name="fes:ResourceId"/>
-        </fes:Id_Capabilities>
+        @t fes:Id_Capabilities/fes:ResourceIdentifier name="fes:ResourceId"
 
-        <fes:Spatial_Capabilities>
-            <fes:GeometryOperands>
-                <fes:GeometryOperand name="gml:Envelope"/>
-            </fes:GeometryOperands>
-            <fes:SpatialOperators>
-                <fes:SpatialOperator name="BBOX"/>
-            </fes:SpatialOperators>
-        </fes:Spatial_Capabilities>
-    </fes:Filter_Capabilities>
+        @tag fes:Spatial_Capabilities
+            @t fes:GeometryOperands/fes:GeometryOperand name="gml:Envelope"
+            @t fes:SpatialOperators/fes:SpatialOperator name="BBOX"
+        @end
+    @end
 @end

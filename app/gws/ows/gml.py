@@ -4,10 +4,11 @@ import gws
 import gws.gis.proj
 import gws.gis.feature
 import gws.gis.shape
-import gws.tools.xml3
 import gws.types as t
 
-tag = gws.tools.xml3.tag
+
+def tag(*args):
+    return args
 
 
 def shape_to_tag(s: t.ShapeInterface, precision=0, invert_axis=False):

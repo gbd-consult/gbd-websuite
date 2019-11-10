@@ -1,39 +1,34 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
-<xsd:schema
-        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-        xmlns:gml="http://www.opengis.net/gml"
+@tag xsd:schema
+    @namespaces
+    @a elementFormDefault="qualified"
+    @a targetNamespace="{namespaces[feature_namespace]}"
 
-        xmlns:{namespace}="{namespace_uri}"
-
-        elementFormDefault="qualified"
-        targetNamespace="{namespace_uri}">
-
-    <xsd:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"/>
+    @t xsd:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"
 
     @each layer_node_list as node
-        <xsd:complexType name="{node.layer.ows_name}Type">
-            <xsd:complexContent>
-                <xsd:extension base="gml:AbstractFeatureType">
-                    <xsd:sequence>
-                        @each node.schema as attr
-                            <xsd:element
-                                maxOccurs="1"
-                                minOccurs="0"
-                                nillable="true"
-                                name="{attr.name}"
-                                type="{attr.type}"
-                            />
+        @tag xsd:complexType name="{node.tag_name}Type"
+            @tag xsd:complexContent
+                @tag xsd:extension base="gml:AbstractFeatureType"
+                    @tag xsd:sequence
+                        @each node.feature_schema as attr
+                            @tag xsd:element
+                                @a maxOccurs="1"
+                                @a minOccurs="0"
+                                @a nillable="true"
+                                @a name="{attr.name}"
+                                @a type="{attr.type}"
+                            @end
                         @end
-                    </xsd:sequence>
-                </xsd:extension>
-            </xsd:complexContent>
-        </xsd:complexType>
+                    @end
+                @end
+            @end
+        @end
 
-        <xsd:element
-            name="{node.layer.ows_name}"
-            substitutionGroup="gml:_Feature"
-            type="{namespace}:{node.layer.ows_name}Type" />
+        @tag xsd:element name="{feature_ns(node.tag_name)}"
+            @a substitutionGroup="gml:Feature"
+            @a type="{feature_ns(node.tag_name)}Type"
+        @end
     @end
-
-</xsd:schema>
+@end

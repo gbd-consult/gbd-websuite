@@ -43,8 +43,6 @@ class Object(gws.Object):
         self.static_root: t.DocumentRootConfig = None
         self.assets_root: t.DocumentRootConfig = None
         self.rewrite_rules = []
-        self.reversed_rewrite_rules = []
-        self.reversed_url = ''
         self.cors = None
         self.ssl = False
 
@@ -69,10 +67,6 @@ class Object(gws.Object):
             # we use nginx syntax $1, need python's \1
             r.target = r.target.replace('$', '\\')
 
-        p = self.var('reversedUrl')
-        if p:
-            self.reversed_url = p
-
         p = self.var('errorPage')
         if p:
             self.error_page = self.create_object('gws.ext.template', p)
@@ -80,15 +74,3 @@ class Object(gws.Object):
         p = self.var('cors')
         if p and p.get('enabled'):
             self.cors = p
-
-    def reversed_rewrite(self, req, query_string):
-        proto = 'https' if self.ssl else 'http'
-        base = self.reversed_url or (proto + '://' + req.env('HTTP_HOST'))
-        for rule in self.reversed_rewrite_rules:
-            m = re.match(rule.match, query_string)
-            if m:
-                s = re.sub(rule.match, rule.target, query_string)
-                if not re.match(r'^https?:', s):
-                    s = base + s
-                return s
-        return base + gws.SERVER_ENDPOINT + '?' + query_string

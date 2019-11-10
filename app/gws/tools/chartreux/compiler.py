@@ -38,7 +38,12 @@ _DEFAULT_OPTIONS = {
     'globals': [],
     'name': '_RENDER',
     'path': '',
+    'strip': False,
+    'commands': None,
 }
+
+_COMMAND_RAW = 0x01
+_COMMAND_BLOCK = 0x02
 
 
 ##
@@ -97,6 +102,7 @@ class Parser:
     def __init__(self, compiler):
         self.cc = compiler
         self.source = []
+        self.block_start = []
 
     def add_source(self, text, path):
         self.source.append(Source(text, path))
@@ -127,8 +133,6 @@ class Parser:
         if ln is None:
             return 'eof', ''
 
-        sl = ln.strip()
-
         if not self.command_re:
             self.command_re = re.compile(self.cc.option('syntax')['command'])
             self.comment_re = re.compile(self.cc.option('syntax')['comment'])
@@ -147,6 +151,11 @@ class Parser:
         return cmd, arg
 
     def parse_until(self, *terminators):
+        self.block_start.append((
+            self.current_source.path,
+            self.current_source.lineno
+        ))
+
         while True:
             ln = self.read_line()
             cmd, arg = self.parse_line(ln)
@@ -155,9 +164,11 @@ class Parser:
                 continue
 
             if cmd == 'eof' and 'eof' not in terminators:
-                self.cc.error(ERROR_EOF)
+                pos = self.block_start.pop()
+                self.cc.error(ERROR_EOF, ['start', pos[0], pos[1]])
 
             if cmd in terminators:
+                self.block_start.pop()
                 return cmd, arg
 
             self.cc.command.process(cmd, arg)
@@ -395,15 +406,17 @@ class Command:
         if cmd == self.cc.parser.text_command:
             return self.text_command(arg)
 
-        # do we have a block with this name?
+        # is this an template-defined command?
 
-        if cmd in self.cc.blocks:
-            return self.user_block_command(cmd, arg)
+        if cmd in self.cc.user_commands:
+            return self.user_command(cmd, arg, self.cc.user_commands[cmd])
 
-        # scoped function name => line command
+        # is this an extension command?
 
-        if cmd in self.cc.scope:
-            return self.user_line_command(cmd, arg)
+        handler = getattr(self.cc.option('commands'), 'command_' + cmd, None)
+        if handler:
+            handler(self.cc, arg)
+            return
 
         # built-in command
 
@@ -418,25 +431,9 @@ class Command:
 
     #
 
-    def user_block_command(self, cmd, arg):
-        v = self.cc.new_var()
-        self.cc.code.add('_PUSHBUF()')
-        self.cc.parser.parse_until('end')
-        self.cc.code.add(_f('{} = _POPBUF()', v))
-        args = self.cc.expression.parse_args(arg)
-        args.insert(0, v)
-        self.cc.code.try_block(_f('_PRINT({}({}))', cmd, _comma(args)))
-
-    def user_line_command(self, cmd, arg):
-        args = self.cc.expression.parse_args(arg)
-        self.cc.code.try_block(_f('_PRINT({}({}))', cmd, _comma(args)))
-
     interpolation_re = None
 
-    def text_command(self, arg):
-        # just a chunk of text, possibly with interpolation
-        s = arg
-
+    def parse_interpolations(self, s, with_default_filter=True):
         if not self.interpolation_re:
             self.interpolation_re = re.compile(_f(
                 r'''(?x)
@@ -458,8 +455,28 @@ class Command:
 
         for m, val in _findany(self.interpolation_re, s):
             if m:
-                e = self.cc.expression.parse(m.group(1), with_default_filter=True)
-                self.cc.code.try_block(_f('_PRINT({})', e))
+                e = self.cc.expression.parse(m.group(1), with_default_filter=with_default_filter)
+                yield True, e
+            else:
+                yield False, val
+
+    def user_command(self, cmd, arg, flags):
+        args = self.cc.expression.parse_args(arg)
+
+        if flags & _COMMAND_BLOCK:
+            v = self.cc.new_var()
+            self.cc.code.add('_PUSHBUF()')
+            self.cc.parser.parse_until('end')
+            self.cc.code.add(_f('{} = _POPBUF()', v))
+            args.insert(0, v)
+            self.cc.code.try_block(_f('_PRINT({}({}))', cmd, _comma(args)))
+        else:
+            self.cc.code.try_block(_f('_PRINT({}({}))', cmd, _comma(args)))
+
+    def text_command(self, arg):
+        for m, val in self.parse_interpolations(arg, with_default_filter=True):
+            if m:
+                self.cc.code.try_block(_f('_PRINT({})', val))
             else:
                 self.cc.code.string(val)
 
@@ -591,7 +608,7 @@ class Command:
 
     func_def_re = r'^(\w+)(.*)$'
 
-    def parse_def_body(self, arg):
+    def parse_def_body(self, arg, flags):
         m = re.search(self.func_def_re, arg)
         if not m:
             self.cc.error(ERROR_DEF)
@@ -599,6 +616,8 @@ class Command:
         name, args = m.groups()
         self.cc.scope.add(name)
         self.cc.push_scope()
+
+        self.cc.user_commands[name] = flags
 
         arg_names, signature = self.parse_def_args(args)
         self.cc.scope.update(arg_names)
@@ -648,14 +667,11 @@ class Command:
 
     def command_def(self, arg):
         # @def name args ...body... @end
-
-        self.parse_def_body(arg)
+        self.parse_def_body(arg, 0)
 
     def command_block(self, arg):
         # @block name args ...body... @end
-
-        name = self.parse_def_body(arg)
-        self.cc.blocks.add(name)
+        self.parse_def_body(arg, _COMMAND_BLOCK)
 
     def command_code(self, arg):
         # @code python-expression
@@ -875,8 +891,15 @@ class Code:
 
     def _flushbuf(self):
         if self.textbuf:
-            self._emit(_f('_PRINT({})', repr(''.join(self.textbuf))))
+            s = ''.join(self.textbuf)
             self.textbuf = []
+
+            if self.cc.option('strip'):
+                s = s.strip()
+                if not s:
+                    return
+
+            self._emit(_f('_PRINT({})', repr(s)))
 
     def add(self, s):
         self._flushbuf()
@@ -952,7 +975,7 @@ class Code:
                 pos['line'] = line
                 w(0, _f('## {}:{}', pos['path'], pos['line']))
 
-        w(0, _f('def {}(_RUNTIME, _CONTEXT, _ERROR=None):', self.cc.option('name')))
+        w(0, _f('def {}(_RT, _CONTEXT, _ERROR=None):', self.cc.option('name')))
 
         if not self.buf:
             w(1, 'return ""')
@@ -962,7 +985,6 @@ class Code:
 
         wcode(1, '''
             _PATHS = __PATHS__
-            _RT = _RUNTIME()
             _PUSHBUF = _RT.pushbuf
             _POPBUF = _RT.popbuf
             _PRINT = _RT.prints
@@ -1042,7 +1064,7 @@ class Compiler:
         self.globals = set(self.option('globals', []))
 
         self.scope = set()
-        self.blocks = set()
+        self.user_commands = {}
         self.frames = []
 
         self.num_vars = 0

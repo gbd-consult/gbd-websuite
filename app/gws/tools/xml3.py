@@ -5,22 +5,20 @@
 
 
 import typing
+import collections
 import xml.parsers.expat
-import re
 
 
 class Error(Exception):
     pass
 
 
-def tag(name, *args):
-    return name, args
+def tag(*args):
+    return args
 
 
-def as_string(t, compress=False):
-    if isinstance(t, str):
-        return _compress(t) if compress else t.strip()
-    return _string(t)
+def as_string(t):
+    return t if isinstance(t, str) else _string(t)
 
 
 def encode(v):
@@ -32,39 +30,39 @@ def encode(v):
     return v
 
 
-def _string(t):
-    name, args = t
+def _string(elems):
+    name = ''
+
+    elems = iter(elems)
+    for e in elems:
+        name = e
+        break
 
     nodes = []
-    atts = ''
+    atts = collections.OrderedDict()
 
-    for a in args:
-        if isinstance(a, (list, tuple)):
-            if a:
-                nodes.append(_string(a))
+    for e in elems:
+        if isinstance(e, (list, tuple)):
+            if e:
+                nodes.append(_string(e))
             continue
-        if isinstance(a, dict):
-            if a:
-                atts = [f'{k}="{encode(v)}"' for k, v in a.items() if v is not None]
+        if isinstance(e, dict):
+            atts.update(e)
             continue
-        a = str(a)
-        if a:
-            nodes.append(encode(a))
+        if e is not None:
+            e = str(e)
+            if e:
+                nodes.append(encode(e))
 
-    otag = name
+    res = name
+
     if atts:
-        otag += ' ' + ' '.join(atts)
+        atts = [f'{k}="{encode(v)}"' for k, v in atts.items() if v is not None]
+    if atts:
+        res += ' ' + ' '.join(atts)
     if nodes:
-        return '<' + otag + '>' + ''.join(nodes) + '</' + name + '>'
-    return '<' + otag + '/>'
-
-
-def _compress(s):
-    s = re.sub(r'\s+', ' ', s.strip())
-    s = s.replace('> <', '><')
-    s = s.replace(' >', '>')
-    s = s.replace(' />', '/>')
-    return s
+        return '<' + res + '>' + ''.join(nodes) + '</' + name + '>'
+    return '<' + res + '/>'
 
 
 class Attribute:

@@ -199,7 +199,7 @@ class Connection:
         for r in rs:
             cols[r['f_geometry_column']] = {
                 'type': r['type'].lower(),
-                'srid': r['srid']
+                'crs': 'EPSG:%s' % r['srid']
             }
 
         return cols
@@ -218,21 +218,10 @@ class Connection:
         for r in rs:
             dt = (r['udt_name'] if r['data_type'] == 'USER-DEFINED' else r['data_type']).lower()
             cols[r['column_name']] = {
+                'name': r['column_name'],
                 'type': _type_map.get(dt, 'str'),
                 'native_type': dt.lower(),
             }
-
-        if any(c['type'] == 'geometry' for c in cols.values()):
-            gc = {}
-            try:
-                gc = self.geometry_columns(table)
-            except Error:
-                gws.log.error(f'cannot get geometry_columns for {table!r}')
-            for col, r in gc.items():
-                if col in cols:
-                    cols[col]['type'] += ':' + r['type']
-                    cols[col]['geometry_type'] = r['type']
-                    cols[col]['srid'] = r['srid']
 
         return cols
 

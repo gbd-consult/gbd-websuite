@@ -197,7 +197,7 @@ _lock = threading.RLock()
 
 
 def as_proj(p):
-    if isinstance(p, _Proj):
+    if isinstance(p, Proj):
         return p
     if p in _cache:
         return _cache[p]
@@ -225,10 +225,10 @@ def _load_proj(p):
         gws.log.warn(f'proj: cannot find {p!r}')
         return
 
-    return _Proj(srid, r[1], r[2], r[3])
+    return Proj(srid, r[1], r[2], r[3])
 
 
-class _Proj:
+class Proj:
     def __init__(self, srid, proj4text, units, is_latlong):
         self.srid = srid
         self.proj4text = proj4text

@@ -7,7 +7,7 @@ def call(
         runtime=None,
         error=None,
 ):
-    return template(runtime or rt.Runtime, context, error)
+    return template(runtime or rt.DefaultRuntime, context, error)
 
 
 def render(
@@ -22,7 +22,9 @@ def render(
         globals=None,
         name=None,
         path=None,
+        strip=None,
         syntax=None,
+        commands=None,
 ):
     template = compiler.compile(
         text,
@@ -31,7 +33,9 @@ def render(
         globals=globals,
         name=name,
         path=path,
+        strip=strip,
         syntax=syntax,
+        commands=commands,
     )
     return call(
         template,
@@ -52,7 +56,9 @@ def render_path(
         finder=None,
         globals=None,
         name=None,
+        strip=None,
         syntax=None,
+        commands=None,
 ):
     template = compiler.compile_path(
         path,
@@ -60,7 +66,9 @@ def render_path(
         finder=finder,
         globals=globals,
         name=name,
+        strip=strip,
         syntax=syntax,
+        commands=commands,
     )
     return call(
         template,

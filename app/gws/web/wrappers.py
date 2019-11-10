@@ -134,9 +134,6 @@ class Request(werkzeug.wrappers.Request):
     def kparam(self, key, default=None):
         return self.kparams.get(key.lower(), default)
 
-    def reversed_url(self, query_string):
-        return self.site.reversed_rewrite(self, query_string)
-
 
 def _params_from_path(path):
     path = path.split('/')

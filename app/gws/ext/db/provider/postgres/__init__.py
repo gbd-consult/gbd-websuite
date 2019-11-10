@@ -215,16 +215,6 @@ class Object(gws.Object, t.DbProviderObject):
 
 
 
-    def describe(self, table: t.SqlTableConfig):
+    def columns(self, table: t.SqlTableConfig):
         with self.connect() as conn:
-            cols = conn.columns(table.name)
-        ls = []
-        for name, r in cols.items():
-            ls.append(t.Attribute({
-                'title': name,
-                'name': name,
-                'type': r['type'],
-            }))
-        return ls
-
-
+            return conn.columns(table.name)

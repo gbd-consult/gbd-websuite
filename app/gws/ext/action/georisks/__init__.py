@@ -328,7 +328,7 @@ class Object(gws.ActionObject):
 
     def _image_url(self, req, r, n):
         if r.get(f'image{n}'):
-            return req.reversed_url(f"cmd=georisksHttpGetReportImage&reportUid={r['id']}&image={n}")
+            return f"/_/cmd/georisksHttpGetReportImage/reportUid/{r['id']}/image/{n}.png"
 
     def http_get_report_image(self, req, p) -> t.HttpResponse:
         # params are reportUid, image (1.._MAX_IMAGES)
