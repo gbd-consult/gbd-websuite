@@ -5,11 +5,11 @@ import gws.common.ows.service
 import gws.web.error
 import gws.types as t
 
+
 class Config(t.WithTypeAndAccess):
     """OWS server action"""
 
     services: t.Optional[t.List[t.ext.ows.service.Config]]  #: services configuration
-
 
 
 class Object(gws.ActionObject):
@@ -29,10 +29,15 @@ class Object(gws.ActionObject):
         for p in self.var('services', default=[]):
             self.services.append(self.add_child('gws.ext.ows.service', p))
 
-    def http_get(self, req, _) -> t.HttpResponse:
+    def http(self, req, _) -> t.HttpResponse:
+        gws.p(req.params)
+        gws.p(req.post_data)
+
         service = self._find_service(req)
         if not service:
             raise gws.web.error.NotFound()
+
+        gws.log.debug(f'found service={service.uid}')
 
         if not req.user.can_use(service):
             return service.error_response(403)
@@ -44,7 +49,6 @@ class Object(gws.ActionObject):
         except:
             gws.log.exception()
             return service.error_response(500)
-
 
     def _find_service(self, req):
         for service in self.services:

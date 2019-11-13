@@ -9,12 +9,16 @@ import gws.common.search.runner
 import gws.types as t
 import gws.web
 
-STANDARD_NAMESPACES = {
+NAMESPACES = {
+    'csw': "http://www.opengis.net/cat/csw/2.0.2",
+    'dc': "http://purl.org/dc/elements/1.1/",
+    'dct': "http://purl.org/dc/terms/",
     'fes': "http://www.opengis.net/fes/2.0",
     'gmd': "http://www.isotc211.org/2005/gmd",
     'gml': "http://www.opengis.net/gml/3.2",
+    'ogc': "http://www.opengis.net/ogc",
     'ows': "http://www.opengis.net/ows/1.1",
-    'rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    'rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns",
     'sld': "http://www.opengis.net/sld",
     'wfs': "http://www.opengis.net/wfs/2.0",
     'wms': "http://www.opengis.net/wms",
@@ -62,6 +66,7 @@ class RequestData(t.Data):
     req: gws.web.AuthRequest
     project: t.ProjectObject
     service: 'Object'
+    xml: gws.tools.xml3.Element = None
 
 
 class LayerCapsNode(t.Data):
@@ -88,11 +93,12 @@ class Object(gws.Object):
 
     def __init__(self):
         super().__init__()
+        self.base_path = ''
+        self.feature_namespace = ''
+        self.namespaces = gws.extend({}, NAMESPACES)
+        self.service_type = ''
         self.templates = {}
         self.version = ''
-        self.feature_namespace = ''
-        self.service_type = ''
-        self.namespaces = STANDARD_NAMESPACES
 
     def configure(self):
         super().configure()
@@ -101,9 +107,7 @@ class Object(gws.Object):
 
         if self.var('featureNamespace'):
             self.feature_namespace = self.var('featureNamespace')
-            self.namespaces = gws.extend(STANDARD_NAMESPACES, {
-                self.feature_namespace: self.var('featureNamespaceUri')
-            })
+            self.namespaces[self.feature_namespace] = self.var('featureNamespaceUri')
 
     def can_handle(self, req) -> bool:
         return req.kparam('service', '').lower() == self.service_type
@@ -112,37 +116,39 @@ class Object(gws.Object):
         return xml_error_response(self.version, status, f'Error {status}')
 
     def handle(self, req) -> t.HttpResponse:
-        return self.dispatch(
-            req,
-            req.require_project(req.param('projectUid')),
-            req.kparam('request', '').lower())
-
-    def dispatch(self, req, project, request_param):
-        h = getattr(self, 'handle_' + request_param, None)
-        if not h:
-            raise gws.web.error.NotFound()
-        rdata = t.Data({
+        rd = RequestData({
             'req': req,
-            'project': project,
+            'project': req.require_project(req.param('projectUid')),
             'service': self,
         })
-        return h(rdata)
+        return self.dispatch(rd, req.kparam('request', '').lower())
 
-    def configure_template(self, name, base_path):
+    def dispatch(self, rd: RequestData, request_param):
+        h = getattr(self, 'handle_' + request_param, None)
+        if not h:
+            gws.log.debug(f'request={request_param!r} not found')
+            raise gws.web.error.NotFound()
+        return h(rd)
+
+    def configure_template(self, name, type='xml'):
         p = self.var('templates.' + name)
         if p:
             return self.create_object('gws.ext.template', p)
 
-        return self.create_shared_object('gws.ext.template', base_path + name, {
-            'type': 'xml',
-            'path': base_path + f'/templates/{name}.cx'
+        name = name.replace('.', '/')
+        return self.create_shared_object('gws.ext.template', self.base_path + name, {
+            'type': type,
+            'path': self.base_path + f'/templates/{name}.cx'
         })
 
     def is_layer_enabled(self, layer):
         return layer and layer.has_ows(self.service_type)
 
     def service_endpoint(self, rd: RequestData):
-        return f'/_/cmd/owsHttpGet/projectUid/{rd.project.uid}'
+        u = '/_/cmd/owsHttp'
+        if rd.project:
+            u += f'/projectUid/{rd.project.uid}'
+        return u
 
     def render_template(self, rd: RequestData, template, context, format=None):
         context = gws.defaults(context, {
@@ -198,7 +204,6 @@ def feature_node_list(rd: RequestData, features):
 
 
 def render_feature_nodes(rd: RequestData, nodes, container_template_name):
-
     tags = []
     used_namespaces = set()
 
@@ -208,12 +213,10 @@ def render_feature_nodes(rd: RequestData, nodes, container_template_name):
         used_namespaces.update(ns)
         tags.append(tag)
 
-
     return xml_response(rd.service.render_template(rd, container_template_name, {
         'feature_tags': tags,
         'used_namespaces': used_namespaces,
     }))
-
 
 
 def xml_error_response(version, status, description):
@@ -282,7 +285,7 @@ def _feature_node(rd: RequestData, feature: t.FeatureInterface):
 
     atts = feature.attributes or {}
 
-    la= feature.layer
+    la = feature.layer
     dm = la.data_model if la else None
     atts = gws.common.datamodel.apply(dm, atts)
     name = la.ows_name if la else 'feature'

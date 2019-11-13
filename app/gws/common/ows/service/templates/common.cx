@@ -5,6 +5,26 @@
     @t ows:DCP/ows:HTTP/ows:Get xlink:href={service_endpoint}
 @end
 
+@def ows_service_provider project
+    @tag ows:ServiceProvider
+        @with project.meta.contact as co
+            @t ows:IndividualName {co.person}
+            @t ows:PositionName {co.position}
+            @t ows:ContactInfo/ows:Phone/ows:Voice {co.phone}
+
+            @tag ows:Address
+                @t ows:DeliveryPoint {co.address}
+                @t ows:City {co.city}
+                @t ows:AdministrativeArea {co.area}
+                @t ows:PostalCode {co.zip}
+                @t ows:Country {co.country}
+                @t ows:ElectronicMailAddress {co.email}
+            @end
+            @t ows:OnlineResource xlink:href="{co.url}"
+        @end
+    @end
+@end
+
 @def feature_ns(s):
     @if ':' in s or not feature_namespace:
         @return s
@@ -12,182 +32,5 @@
     @return feature_namespace + ':' + s
 @end
 
-## wms
-
-@def wms_default_url
-    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={service_endpoint}
-@end
-
-@def wms_request_capabilities
-    @tag Request
-        @tag GetCapabilities
-            @t Format text/xml
-            @wms_default_url
-        @end
-        @tag GetMap
-            @t Format image/png
-            @wms_default_url
-        @end            
-        @tag GetFeatureInfo
-            @t Format application/vnd.ogc.gml
-            @wms_default_url
-        @end            
-        @tag sld:GetLegendGraphic
-            @t Format image/png
-            @wms_default_url
-        @end
-    @end
-    @t Exception/Format XML
-@end
-
-
-@def _wms_layer_caps node
-    @tag Layer queryable="{1 if node.has_search else 0}"
-
-        @t Name {feature_ns(node.tag_name)}
-        @t Title {node.layer.title}
-
-        @with node.layer.meta.abstract as a
-            @t Abstract {a}
-        @end
-
-        @t CRS {node.proj.epsg}
-
-        @tag EX_GeographicBoundingBox
-            @t westBoundLongitude {node.lonlat_extent[0]}
-            @t eastBoundLongitude {node.lonlat_extent[2]}
-            @t southBoundLatitude {node.lonlat_extent[1]}
-            @t northBoundLatitude {node.lonlat_extent[3]}
-        @end
-
-        @t BoundingBox CRS="{node.proj.epsg}" minx="{node.extent[0]}" miny="{node.extent[1]}" maxx="{node.extent[2]}" maxy="{node.extent[3]}"
-
-        @t MinScaleDenominator {node.min_scale | as_int}
-        @t MaxScaleDenominator {node.max_scale | as_int}
-
-        @each reversed(node.sub_nodes) as sub_node
-            @_wms_layer_caps sub_node
-        @end
-    @end
-@end
-
-## NB: WMS is bottom-first, our layers are top-first
-
-@def wms_layer_capabilities layer_node_tree
-    @each reversed(layer_node_tree) as node
-        @_wms_layer_caps node
-    @end
-@end
-
-
-
-## wfs
-
-@def wfs_feature_type node
-    @tag FeatureType
-        @t Name {feature_ns(node.tag_name)}
-        @t Title {node.layer.title}
-        @with node.layer.meta
-            @t Abstract {node.layer.meta.abstract}
-        @end
-        @t DefaultSRS {node.proj.urn}
-        @tag ows:WGS84BoundingBox
-            @t ows:LowerCorner {node.lonlat_extent[0]} {node.lonlat_extent[1]}
-            @t ows:UpperCorner {node.lonlat_extent[2]} {node.lonlat_extent[3]}
-        @end
-    @end
-@end
-
-
-@def wfs_constraint ns, name, value
-    @tag {ns}:Constraint name={name}
-        @t ows:NoValues
-        @t ows:DefaultValue {value | as_str | upper}
-    @end
-@end
-
-
-@def wfs_basic_operations default_count=1000
-    @tag ows:OperationsMetadata
-        @tag ows:Operation name="GetCapabilities"
-
-            @ows_default_url
-
-            @tag ows:Parameter name="AcceptVersions"
-                @tag ows:AllowedValues
-                    @t ows:Value 2.0.2
-                    @t ows:Value 2.0.1
-                    @t ows:Value 2.0.0
-                @end
-            @end
-        @end
-
-        @tag ows:Operation name="DescribeFeatureType"
-            @ows_default_url
-        @end
-
-        @tag ows:Operation name="GetFeature"
-            @ows_default_url
-        @end
-
-        @tag ows:Parameter name="version"
-            @tag ows:AllowedValues
-                @t ows:Value2.0.2
-                @t ows:Value2.0.1
-                @t ows:Value2.0.0
-            @end
-        @end
-
-        @wfs_constraint "ows", "ImplementsBasicWFS", True
-        @wfs_constraint "ows", "KVPEncoding", True
-
-        @wfs_constraint "ows", "ImplementsTransactionalWFS", False
-        @wfs_constraint "ows", "ImplementsLockingWFS", False
-        @wfs_constraint "ows", "XMLEncoding", False
-        @wfs_constraint "ows", "SOAPEncoding", False
-        @wfs_constraint "ows", "ImplementsInheritance", False
-        @wfs_constraint "ows", "ImplementsRemoteResolve", False
-        @wfs_constraint "ows", "ImplementsResultPaging", False
-        @wfs_constraint "ows", "ImplementsStandardJoins", False
-        @wfs_constraint "ows", "ImplementsSpatialJoins", False
-        @wfs_constraint "ows", "ImplementsTemporalJoins", False
-        @wfs_constraint "ows", "ImplementsFeatureVersioning", False
-        @wfs_constraint "ows", "ManageStoredQueries", False
-
-        @tag ows:Constraint name="CountDefault"
-            @t ows:NoValues
-            @t ows:DefaultValue{default_count}
-        @end
-
-        @tag ows:Constraint name="QueryExpressions"
-            @tag ows:AllowedValues
-                @t ows:Value wfs:StoredQuery
-            @end
-        @end
-    @end
-
-    @tag fes:Filter_Capabilities
-        @tag fes:Conformance
-            @wfs_constraint "fes", "ImplementsQuery", True
-            @wfs_constraint "fes", "ImplementsMinSpatialFilter", True
-
-            @wfs_constraint "fes", "ImplementsAdHocQuery", False
-            @wfs_constraint "fes", "ImplementsFunctions", False
-            @wfs_constraint "fes", "ImplementsMinStandardFilter", False
-            @wfs_constraint "fes", "ImplementsStandardFilter", False
-            @wfs_constraint "fes", "ImplementsSpatialFilter", False
-            @wfs_constraint "fes", "ImplementsMinTemporalFilter", False
-            @wfs_constraint "fes", "ImplementsTemporalFilter", False
-            @wfs_constraint "fes", "ImplementsVersionNav", False
-            @wfs_constraint "fes", "ImplementsSorting", False
-            @wfs_constraint "fes", "ImplementsExtendedOperators", False
-        @end
-
-        @t fes:Id_Capabilities/fes:ResourceIdentifier name="fes:ResourceId"
-
-        @tag fes:Spatial_Capabilities
-            @t fes:GeometryOperands/fes:GeometryOperand name="gml:Envelope"
-            @t fes:SpatialOperators/fes:SpatialOperator name="BBOX"
-        @end
-    @end
-@end
+@include wms.cx
+@include wfs.cx

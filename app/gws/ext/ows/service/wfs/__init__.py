@@ -1,5 +1,3 @@
-import os
-
 import gws
 import gws.common.datamodel
 import gws.common.ows.service
@@ -15,7 +13,6 @@ import gws.web.error
 import gws.types as t
 
 import gws.common.ows.service as ows
-
 
 
 class TemplatesConfig(t.Config):
@@ -38,6 +35,10 @@ MAX_LIMIT = 100
 
 
 class Object(ows.Object):
+    def __init__(self):
+        super().__init__()
+        self.base_path = gws.dirname(__file__)
+
     def configure(self):
         super().configure()
 
@@ -45,9 +46,7 @@ class Object(ows.Object):
         self.version = VERSION
 
         for tpl in 'getCapabilities', 'describeFeatureType', 'getFeature', 'feature':
-            self.templates[tpl] = self.configure_template(
-                tpl,
-                os.path.dirname(__file__))
+            self.templates[tpl] = self.configure_template(tpl)
 
     def handle_getcapabilities(self, rd: ows.RequestData):
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {
@@ -76,7 +75,6 @@ class Object(ows.Object):
                     'name': 'geometry',
                     'type': ows.ATTR_TYPE_TO_XML.get(gtype)
                 })
-
 
         return ows.xml_response(self.render_template(rd, 'describeFeatureType', {
             'layer_node_list': nodes,

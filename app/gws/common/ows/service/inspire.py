@@ -363,3 +363,5 @@ NAMESPACES = {
         'https://inspire.ec.europa.eu/schemas/wfd/0.0/WaterFrameworkDirective.xsd'
     ),
 }
+
+NAMESPACES['inspire_common'] = NAMESPACES['common']

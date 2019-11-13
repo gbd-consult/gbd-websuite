@@ -1,0 +1,77 @@
+## helper functions for wms
+
+@def wms_default_url
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={service_endpoint}
+@end
+
+@def wms_request_capabilities
+    @tag Request
+        @tag GetCapabilities
+            @t Format text/xml
+            @wms_default_url
+        @end
+        @tag GetMap
+            @t Format image/png
+            @wms_default_url
+        @end
+        @tag GetFeatureInfo
+            @t Format application/vnd.ogc.gml
+            @wms_default_url
+        @end
+        @tag sld:GetLegendGraphic
+            @t Format image/png
+            @wms_default_url
+        @end
+    @end
+    @t Exception/Format XML
+@end
+
+@def wms_basic_layer_capabilities node
+    @t CRS {node.proj.epsg}
+
+    @tag EX_GeographicBoundingBox
+        @t westBoundLongitude {node.lonlat_extent[0]}
+        @t eastBoundLongitude {node.lonlat_extent[2]}
+        @t southBoundLatitude {node.lonlat_extent[1]}
+        @t northBoundLatitude {node.lonlat_extent[3]}
+    @end
+
+    @t BoundingBox CRS="{node.proj.epsg}" minx="{node.extent[0]}" miny="{node.extent[1]}" maxx="{node.extent[2]}" maxy="{node.extent[3]}"
+
+    @t MinScaleDenominator {node.min_scale | as_int}
+    @t MaxScaleDenominator {node.max_scale | as_int}
+@end
+
+
+@def wms_project_metadata
+    @with project.meta as meta
+        @t Abstract {meta.abstract}
+        @tag KeywordList
+            @each meta.keywords as kw
+                @t Keyword {kw}
+            @end
+        @end
+    @end
+@end
+
+@def wms_contact_metadata
+    @with project.meta.contact as co
+        @tag ContactInformation
+            @tag ContactPersonPrimary
+                @t ContactPerson {co.person}
+                @t ContactOrganization {co.organization}
+            @end
+            @t ContactPosition {co.position}
+            @tag ContactAddress
+                @t AddressType postal
+                @t Address {co.address}
+                @t City {co.city}
+                @t StateOrProvince {co.area}
+                @t PostCode {co.zip}
+                @t Country {co.country}
+            @end
+            @t ContactVoiceTelephone {co.phone}
+            @t ContactElectronicMailAddress {co.email}
+        @end
+    @end
+@end

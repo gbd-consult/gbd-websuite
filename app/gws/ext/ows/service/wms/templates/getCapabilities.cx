@@ -1,5 +1,22 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
+
+@def layer_caps node
+    @tag Layer queryable="{1 if node.has_search else 0}"
+
+        @t Name {node.tag_name}
+        @t Title {node.layer.title}
+        @t Abstract {node.layer.meta.abstract}
+
+        @wms_basic_layer_capabilities node
+
+        @each reversed(node.sub_nodes) as sub_node
+            @layer_caps sub_node
+        @end
+    @end
+@end
+
+
 @tag WMS_Capabilities
     @a version={service_version}
     @a xmlns="http://www.opengis.net/wms"
@@ -9,39 +26,17 @@
         @t Name WMS
         @t Title {project.title}
 
-        @with project.meta as meta
-            @t Abstract {meta.abstract}
-            @tag KeywordList
-                @each meta.keywords as kw
-                    @t Keyword {kw}
-                @end
-            @end
-        @end
+        @wms_project_metadata
+        @wms_contact_metadata
 
-        @with project.meta.contact as co
-            @tag ContactInformation
-                @tag ContactPersonPrimary
-                    @t ContactPerson {co.person}
-                    @t ContactOrganization {co.organization}
-                @end
-                @t ContactPosition {co.position}
-                @tag ContactAddress
-                    @t AddressType postal
-                    @t Address {co.address}
-                    @t City {co.city}
-                    @t StateOrProvince {co.area}
-                    @t PostCode {co.zip}
-                    @t Country {co.country}
-                @end
-                @t ContactVoiceTelephone {co.phone}
-                @t ContactElectronicMailAddress {co.email}
-            @end
-        @end
     @end
 
     @tag Capability
         @wms_request_capabilities
-        @wms_layer_capabilities layer_node_tree
+
+        @each reversed(layer_node_tree) as node
+            @layer_caps node
+        @end
     @end
 @end
 

@@ -1,5 +1,3 @@
-import os
-
 import gws
 import gws.common.search.runner
 import gws.common.ows.service
@@ -46,24 +44,17 @@ class Object(ows.Object):
         super().__init__()
         self.version = VERSION
         self.service_type = 'wfs'
-        self.namespaces = gws.extend({}, ows.STANDARD_NAMESPACES, inspire.NAMESPACES)
+        self.namespaces = gws.extend({}, ows.NAMESPACES, inspire.NAMESPACES)
+        self.base_path = gws.dirname(__file__)
 
     def configure(self):
 
         for tpl in 'getCapabilities', 'getFeature':
-            self.templates[tpl] = self.configure_template(
-                tpl,
-                os.path.dirname(__file__))
-
-        base_path = os.path.dirname(__file__)
+            self.templates[tpl] = self.configure_template(tpl)
 
         for th in inspire.THEMES:
             ns, tag = th.split(':')
-            self.templates[th] = self.create_shared_object(
-                'gws.ext.template', base_path + ns + tag, {
-                    'type': 'xml',
-                    'path': f'{base_path}/templates/{ns}/{tag}.cx'
-                })
+            self.templates[th] = self.configure_template(ns + '.' + tag)
 
     def can_handle(self, req) -> bool:
         return req.kparam('service', '').lower() == 'wfs' and req.kparam('inspire', '').lower() == 'true'

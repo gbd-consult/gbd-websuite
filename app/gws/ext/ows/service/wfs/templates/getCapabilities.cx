@@ -23,23 +23,7 @@
         @t ows:AccessConstraints NONE
     @end
 
-    @tag ows:ServiceProvider
-        @with project.meta.contact as co
-            @t ows:IndividualName {co.person}
-            @t ows:PositionName {co.position}
-            @t ows:ContactInfo/ows:Phone/ows:Voice {co.phone}
-                
-            @tag ows:Address
-                @t ows:DeliveryPoint {co.address}
-                @t ows:City {co.city}
-                @t ows:AdministrativeArea {co.area}
-                @t ows:PostalCode {co.zip}
-                @t ows:Country {co.country}
-                @t ows:ElectronicMailAddress {co.email}
-            @end
-            @t ows:OnlineResource xlink:href="{co.url}"
-        @end
-    @end
+    @ows_service_provider project
 
     @wfs_basic_operations
 

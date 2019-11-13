@@ -1,6 +1,3 @@
-import re
-import os
-
 import gws
 import gws.common.search.runner
 import gws.gis.proj
@@ -34,6 +31,10 @@ MAX_LIMIT = 100
 
 
 class Object(ows.Object):
+    def __init__(self):
+        super().__init__()
+        self.base_path = gws.dirname(__file__)
+
     def configure(self):
         super().configure()
 
@@ -41,9 +42,7 @@ class Object(ows.Object):
         self.version = VERSION
 
         for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
-            self.templates[tpl] = self.configure_template(
-                tpl,
-                os.path.dirname(__file__))
+            self.templates[tpl] = self.configure_template(tpl)
 
     def handle_getcapabilities(self, rd: ows.RequestData):
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {
