@@ -9,6 +9,7 @@ OWSLib
 Pillow
 psutil
 psycopg2-binary
+pycountry
 PyPDF2
 pytest
 python-ldap

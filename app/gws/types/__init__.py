@@ -231,9 +231,11 @@ class MetaConfig(Config):
     abstract: str = ''  #: object abstract description
     attribution: str = ''  #: attribution (copyright) string
     contact: Optional[MetaContactConfig]  #: contact information
+    date: str = ''  #: modification date
     image: url = ''  #: image (logo) url
     images: dict = {}  #: further images
     keywords: List[str] = []  #: keywords
+    language: str = ''  #: object language
     name: str = ''  #: object internal name
     title: str = ''  #: object title
     url: url = ''  #: object metadata url
@@ -371,13 +373,14 @@ class AttributeType(Enum):
     geoPolyhedralsurface = 'polyhedralsurface'
     geoSurface = 'surface'
 
+
 class AttributeConfig(Config):
     """Attribute configuration"""
 
     title: str = ''  #: title
     name: str = ''  #: internal name
-    value: str = '' #: computed value
-    source: str = '' #: source attribute
+    value: str = ''  #: computed value
+    source: str = ''  #: source attribute
     type: Optional[AttributeType]  #: type
 
 

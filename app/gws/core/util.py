@@ -206,6 +206,10 @@ def random_string(length):
     return ''.join(r.choice(a) for _ in range(length))
 
 
+def dirname(p):
+    return os.path.dirname(p)
+
+
 class cached_property:
     def __init__(self, fn):
         self._fn = fn

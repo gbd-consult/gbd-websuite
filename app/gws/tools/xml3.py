@@ -98,7 +98,7 @@ class Element:
     def get(self, path, default=None):
         return self._get(path) or default
 
-    def all(self, path=None):
+    def all(self, path=None) -> typing.List['Element']:
         if not path:
             return self.children
 
@@ -110,7 +110,7 @@ class Element:
 
         return []
 
-    def first(self, path=None, default=None):
+    def first(self, path=None, default=None) -> 'Element':
         if not path:
             if self.children:
                 return self.children[0]
@@ -122,7 +122,7 @@ class Element:
 
         return default
 
-    def get_text(self, path):
+    def get_text(self, path) -> str:
         e = self.get(path)
         if not e:
             return ''
