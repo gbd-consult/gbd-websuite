@@ -1,0 +1,18 @@
+@tag csw:GetRecordsResponse
+    @a version={service_version}
+    @namespaces
+
+	@t csw:SearchStatus timestamp={results.timestamp}
+
+	@tag csw:SearchResults
+	    @a elementSet=full
+	    @a nextRecord={results.next}
+	    @a numberOfRecordsMatched={results.count_total}
+	    @a numberOfRecordsReturned={results.count_return}
+	    @a recordSchema="http://www.opengis.net/cat/csw/2.0.2"
+
+        @each record_tags as tag
+            @insert {tag}
+        @end
+    @end
+@end

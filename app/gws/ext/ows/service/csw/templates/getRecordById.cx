@@ -1,0 +1,8 @@
+@tag csw:GetRecordByIdResponse
+    @a version={service_version}
+    @namespaces
+
+    @each record_tags as tag
+        @insert {tag}
+    @end
+@end

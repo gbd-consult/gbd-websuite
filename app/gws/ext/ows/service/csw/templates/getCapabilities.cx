@@ -1,0 +1,150 @@
+@include /gws-app/gws/common/ows/service/templates/common.cx
+
+@tag csw:Capabilities
+    @namespaces
+
+    @tag ows:ServiceIdentification
+        @t ows:Title {service_meta.title}
+        @t ows:Abstract {service_meta.abstract}
+        @tag ows:Keywords
+            @t ows:Keyword CS-W
+            @t ows:Keyword ISO19119
+            @t ows:Keyword ISO19115
+            @t ows:Keyword Catalog Service
+            @t ows:Type theme
+        @end
+        @t ows:ServiceType CSW
+        @t ows:ServiceTypeVersion {service_version}
+        @t ows:Fees NONE
+        @t ows:AccessConstraints NONE
+    @end
+
+    @ows_service_provider service
+
+    @tag ows:OperationsMetadata
+
+        @tag ows:Operation name="GetCapabilities"
+            @ows_default_url
+        @end
+
+        @tag ows:Operation name="GetRecords"
+            @tag ows:DCP/ows:HTTP
+               @t ows:Get xlink:href={service_endpoint}
+               @t ows:Post xlink:href={service_endpoint}
+            @end
+            @tag ows:Parameter name="typeName"
+                @t ows:Value csw:Record
+            @end
+            @tag ows:Parameter name="outputFormat"
+                @t ows:Value text/xml
+            @end
+            @tag ows:Parameter name="outputSchema"
+                @t ows:Value http://www.opengis.net/cat/csw/2.0.2
+            @end
+            @tag ows:Parameter name="resultType"
+                @t ows:Value results
+            @end
+            @tag ows:Parameter name="ElementSetName"
+                @t ows:Value full
+            @end
+            @tag ows:Parameter name="CONSTRAINTLANGUAGE"
+                @t ows:Value Filter
+            @end
+            @tag ows:Parameter name="version"
+                @t ows:Value {service_version}
+            @end
+        @end
+
+        @tag ows:Operation name="DescribeRecord"
+            @ows_default_url
+            @tag ows:Parameter name="typeName"
+                @t ows:Value gmd:MD_Metadata
+            @end
+            @tag ows:Parameter name="outputFormat"
+                @t ows:Value application/xml
+            @end
+            @tag ows:Parameter name="schemaLanguage"
+                @t ows:Value http://www.w3.org/XML/Schema
+            @end
+        @end
+
+        @tag ows:Constraint name="IsoProfiles"
+            @t ows:Value http://www.isotc211.org/2005/gmd
+        @end
+
+        @tag inspire_ds:ExtendedCapabilities
+            @tag inspire_common:ResourceLocator
+                @tag inspire_common:URL
+                    http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF
+                @end
+                @t inspire_common:MediaType application/pdf
+            @end
+            @t inspire_common:ResourceType service
+            @tag inspire_common:TemporalReference
+                @t inspire_common:DateOfPublication 2013-04-03
+            @end
+            @tag inspire_common:Conformity
+                @tag inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng"
+                    @tag inspire_common:Title
+                        COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the
+                        European Parliament and of the Council as regards interoperability of spatial data sets and services
+                    @end
+                    @t inspire_common:DateOfPublication 2010-12-08
+                    @t inspire_common:URI OJ:L:2010:323:0011:0102:EN:PDF
+                    @tag inspire_common:ResourceLocator
+                        @tag inspire_common:URL
+                            http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF
+                        @end
+                        @t inspire_common:MediaType application/pdf
+                    @end
+                @end
+            @end
+
+            @tag inspire_common:MetadataPointOfContact
+                @t inspire_common:OrganisationName {service_meta.contact.organization}
+                @t inspire_common:EmailAddress {service_meta.contact.email}
+            @end
+
+            @t inspire_common:MetadataDate {service_meta.date}
+            @t inspire_common:SpatialDataServiceType discovery
+
+            @tag inspire_common:MandatoryKeyword
+                @t inspire_common:KeywordValue humanCatalogueViewer
+            @end
+
+            @tag inspire_common:SupportedLanguages
+                @tag inspire_common:DefaultLanguage
+                    @t inspire_common:Language {service_meta.language_bibliographic}
+                @end
+                @tag inspire_common:SupportedLanguage
+                    @t inspire_common:Language {service_meta.language_bibliographic}
+                @end
+            @end
+
+            @tag inspire_common:ResponseLanguage
+                @t inspire_common:Language {service_meta.language_bibliographic}
+            @end
+        @end
+    @end
+
+    @tag ogc:Filter_Capabilities
+        @tag ogc:Spatial_Capabilities
+            @tag ogc:Spatial_Operators
+                @t ogc:BBOX
+            @end
+        @end
+        @tag ogc:Scalar_Capabilities
+            @t ogc:Logical_Operators
+            @tag ogc:Comparison_Operators
+                @t ogc:Simple_Comparisons
+                @t ogc:Like
+                @t ogc:Between
+                @t ogc:NullCheck
+            @end
+            @tag ogc:Arithmetic_Operators
+                @t ogc:Simple_Arithmetic
+            @end
+        @end
+    @end
+
+@end

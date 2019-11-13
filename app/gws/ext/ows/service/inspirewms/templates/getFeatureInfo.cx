@@ -1,0 +1,1 @@
+@include /gws-app/gws/ext/ows/service/wfs/templates/getFeature.cx
