@@ -53,15 +53,23 @@ class Request(werkzeug.wrappers.Request):
         r.request = self
         return r
 
+    @property
+    def is_get(self):
+        return self.method == 'GET'
+
+    @property
+    def is_post(self):
+        return self.method == 'POST'
+
     @cached_property
     def _is_json(self):
         h = self.headers.get('content-type', '').lower()
-        return self.method == 'POST' and h.startswith(_struct_mime[_JSON])
+        return self.is_post and h.startswith(_struct_mime[_JSON])
 
     @cached_property
     def _is_msgpack(self):
         h = self.headers.get('content-type', '').lower()
-        return self.method == 'POST' and h.startswith(_struct_mime[_MSGPACK])
+        return self.is_post and h.startswith(_struct_mime[_MSGPACK])
 
     @cached_property
     def has_struct(self):
@@ -103,26 +111,33 @@ class Request(werkzeug.wrappers.Request):
         if self.has_struct:
             return self._decode_struct()
 
-        if self.method == 'GET':
-            args = {k: v for k, v in self.args.items()}
+        args = {k: v for k, v in self.args.items()}
 
-            # the server only understands requests to /_/...
-            # the params can be given as query string or encoded in path
-            # like _/cmd/command/layer/la/x/12/y/34 etc
-            if self.path == gws.SERVER_ENDPOINT:
-                return args
-            if self.path.startswith(gws.SERVER_ENDPOINT):
-                return gws.extend(_params_from_path(self.path), args)
-            gws.log.error('invalid request path', self.path)
+        # the server only understands requests to /_/...
+        # the params can be given as query string or encoded in path
+        # like _/cmd/command/layer/la/x/12/y/34 etc
+        if self.path == gws.SERVER_ENDPOINT:
+            return args
+        if self.path.startswith(gws.SERVER_ENDPOINT):
+            return gws.extend(_params_from_path(self.path), args)
+        gws.log.error('invalid request path', self.path)
+        return None
+
+    @cached_property
+    def post_data(self):
+        if not self.is_post:
             return None
 
-        if self.method == 'POST':
-            return self.form
+        charset = self.headers.get('charset', 'utf-8')
+        data = self.get_data()
+        try:
+            return data.decode(encoding=charset, errors='strict')
+        except UnicodeDecodeError:
+            gws.log.error('data decoding error')
+            return None
 
     @cached_property
     def kparams(self):
-        if self.method != 'GET':
-            return {}
         return {k.lower(): v for k, v in self.params.items()}
 
     def env(self, key, default=None):

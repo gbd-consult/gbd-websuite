@@ -13,10 +13,10 @@ def handle(config_root, req):
     # @TODO: add HEAD
     if req.has_struct:
         category = 'api'
-    elif req.method == 'GET':
-        category = 'get'
-    elif req.method == 'POST':
-        category = 'post'
+    elif req.is_get:
+        category = 'http_get'
+    elif req.is_post:
+        category = 'http_post'
     else:
         raise error.MethodNotAllowed()
 

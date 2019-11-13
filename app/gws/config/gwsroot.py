@@ -27,7 +27,11 @@ class Object(gws.core.tree.RootObject):
             raise error.DispatchError('not found', cmd)
 
         cc = self.action_commands[cmd]
-        if cc['category'] != category:
+
+        cat = cc['category']
+        if cat == 'http' and category.startswith('http'):
+            cat = category
+        if category != cat:
             raise error.DispatchError('wrong command category', category)
 
         if category == 'api':

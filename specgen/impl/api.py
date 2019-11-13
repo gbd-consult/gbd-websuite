@@ -56,7 +56,9 @@ def _category(p):
     if p['name'].startswith('api'):
         return 'api'
     if p['name'].startswith('http_get'):
-        return 'get'
+        return 'http_get'
     if p['name'].startswith('http_post'):
-        return 'post'
+        return 'http_post'
+    if p['name'].startswith('http'):
+        return 'http'
 
