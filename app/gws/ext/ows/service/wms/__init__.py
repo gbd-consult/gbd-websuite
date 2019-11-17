@@ -33,16 +33,16 @@ MAX_LIMIT = 100
 class Object(ows.Object):
     def __init__(self):
         super().__init__()
-        self.base_path = gws.dirname(__file__)
+
+        self.service_class = 'wms'
+        self.service_type = 'wms'
+        self.version = VERSION
 
     def configure(self):
         super().configure()
 
-        self.service_type = 'wms'
-        self.version = VERSION
-
         for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
-            self.templates[tpl] = self.configure_template(tpl)
+            self.templates[tpl] = self.configure_template(tpl, 'wms/templates')
 
     def handle_getcapabilities(self, rd: ows.RequestData):
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {
@@ -109,47 +109,51 @@ class Object(ows.Object):
         })
 
     def handle_getfeatureinfo(self, rd: ows.RequestData):
-        try:
-            bbox = [float(n) for n in rd.req.kparam('bbox').split(',')]
-            px_width = int(rd.req.kparam('width'))
-            px_height = int(rd.req.kparam('height'))
-            limit = int(rd.req.kparam('feature_count', '1'))
-            i = int(rd.req.kparam('i'))
-            j = int(rd.req.kparam('j'))
-        except:
-            raise gws.web.error.BadRequest()
-
-        nodes = ows.layer_nodes_from_request_params(rd, 'query_layers')
-        if not nodes:
-            raise gws.web.error.NotFound()
-
-        xres = (bbox[2] - bbox[0]) / px_width
-        yres = (bbox[3] - bbox[1]) / px_height
-        x = bbox[0] + (i * xres)
-        y = bbox[3] - (j * yres)
-
-        point = gws.gis.shape.from_props(t.ShapeProps({
-            'crs': rd.project.map.crs,
-            'geometry': {
-                'type': 'Point',
-                'coordinates': [x, y]
-            }}
-        ))
-
-        pixel_tolerance = 10
-
-        args = t.SearchArgs({
-            'bbox': bbox,
-            'crs': rd.project.map.crs,
-            'project': None,
-            'keyword': None,
-            'layers': [n.layer for n in nodes],
-            'limit': min(limit, MAX_LIMIT),
-            'resolution': xres,
-            'shapes': [point],
-            'tolerance': pixel_tolerance * xres,
-        })
-
-        features = gws.common.search.runner.run(rd.req, args)
+        features = find_features(rd)
         nodes = ows.feature_node_list(rd, features)
         return ows.render_feature_nodes(rd, nodes, 'getFeatureInfo')
+
+
+def find_features(rd: ows.RequestData):
+    try:
+        bbox = [float(n) for n in rd.req.kparam('bbox').split(',')]
+        px_width = int(rd.req.kparam('width'))
+        px_height = int(rd.req.kparam('height'))
+        limit = int(rd.req.kparam('feature_count', '1'))
+        i = int(rd.req.kparam('i'))
+        j = int(rd.req.kparam('j'))
+    except:
+        raise gws.web.error.BadRequest()
+
+    nodes = ows.layer_nodes_from_request_params(rd, 'query_layers')
+    if not nodes:
+        raise gws.web.error.NotFound()
+
+    xres = (bbox[2] - bbox[0]) / px_width
+    yres = (bbox[3] - bbox[1]) / px_height
+    x = bbox[0] + (i * xres)
+    y = bbox[3] - (j * yres)
+
+    point = gws.gis.shape.from_props(t.ShapeProps({
+        'crs': rd.project.map.crs,
+        'geometry': {
+            'type': 'Point',
+            'coordinates': [x, y]
+        }}
+    ))
+
+    pixel_tolerance = 10
+
+    args = t.SearchArgs({
+        'bbox': bbox,
+        'crs': rd.project.map.crs,
+        'project': None,
+        'keyword': None,
+        'layers': [n.layer for n in nodes],
+        'limit': min(limit, MAX_LIMIT),
+        'resolution': xres,
+        'shapes': [point],
+        'tolerance': pixel_tolerance * xres,
+    })
+
+    return gws.common.search.runner.run(rd.req, args)

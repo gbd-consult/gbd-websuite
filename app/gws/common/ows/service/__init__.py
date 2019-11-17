@@ -5,21 +5,50 @@ import gws.tools.xml3
 import gws.gis.proj
 import gws.ows.gml
 import gws.common.datamodel
+import gws.common.metadata
 import gws.common.search.runner
 import gws.types as t
 import gws.web
 
 NAMESPACES = {
-    'csw': "http://www.opengis.net/cat/csw/2.0.2",
-    'dc': "http://purl.org/dc/elements/1.1/",
-    'dct': "http://purl.org/dc/terms/",
+    'csw': (
+        "http://www.opengis.net/cat/csw/2.0.2",
+        "http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd"
+    ),
+    'dc': (
+        "http://purl.org/dc/elements/1.1/",
+        "https://www.dublincore.org/schemas/xmls/qdc/2008/02/11/dc.xsd",
+    ),
+    'dcm': (
+        "http://purl.org/dc/dcmitype/",
+        "http://dublincore.org/schemas/xmls/qdc/2008/02/11/dcmitype.xsd"
+    ),
+    'dct': (
+        "http://purl.org/dc/terms/",
+        "https://www.dublincore.org/schemas/xmls/qdc/2008/02/11/dcterms.xsd"
+    ),
     'fes': "http://www.opengis.net/fes/2.0",
-    'gmd': "http://www.isotc211.org/2005/gmd",
-    'gml': "http://www.opengis.net/gml/3.2",
+    'gco': (
+        "http://www.isotc211.org/2005/gco",
+        "https://www.isotc211.org/2005/gco/gco.xsd"
+    ),
+    'gmd': (
+        "http://www.isotc211.org/2005/gmd",
+        "https://www.isotc211.org/2005/gmd/gmd.xsd"
+    ),
+    'gml': (
+        "http://www.opengis.net/gml/3.2",
+        "http://schemas.opengis.net/gml/3.2.1/gml.xsd"
+    ),
+    'gmx': (
+        "http://www.isotc211.org/2005/gmx",
+        "https://www.isotc211.org/2005/gmx/gmx.xsd"
+    ),
     'ogc': "http://www.opengis.net/ogc",
     'ows': "http://www.opengis.net/ows/1.1",
     'rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns",
     'sld': "http://www.opengis.net/sld",
+    'srv': "http://www.isotc211.org/2005/srv",
     'wfs': "http://www.opengis.net/wfs/2.0",
     'wms': "http://www.opengis.net/wms",
     'xlink': "http://www.w3.org/1999/xlink",
@@ -60,6 +89,7 @@ class Config(t.WithTypeAndAccess):
     enabled: bool = True
     featureNamespace: str = 'gws'  #: feature namespace name
     featureNamespaceUri: str = 'https://gws.gbd-consult.de'  #: feature namespace uri
+    meta: t.Optional[t.MetaData] #: service metadata
 
 
 class RequestData(t.Data):
@@ -93,9 +123,10 @@ class Object(gws.Object):
 
     def __init__(self):
         super().__init__()
-        self.base_path = ''
         self.feature_namespace = ''
+        self.meta = None
         self.namespaces = gws.extend({}, NAMESPACES)
+        self.service_class = ''
         self.service_type = ''
         self.templates = {}
         self.version = ''
@@ -103,14 +134,15 @@ class Object(gws.Object):
     def configure(self):
         super().configure()
 
-        self.service_type = self.var('type')
+        if self.var('meta'):
+            self.meta = gws.common.metadata.read(self.var('meta'))
 
         if self.var('featureNamespace'):
             self.feature_namespace = self.var('featureNamespace')
             self.namespaces[self.feature_namespace] = self.var('featureNamespaceUri')
 
     def can_handle(self, req) -> bool:
-        return req.kparam('service', '').lower() == self.service_type
+        return req.kparam('srv', '').lower() == self.service_class
 
     def error_response(self, status):
         return xml_error_response(self.version, status, f'Error {status}')
@@ -130,34 +162,47 @@ class Object(gws.Object):
             raise gws.web.error.NotFound()
         return h(rd)
 
-    def configure_template(self, name, type='xml'):
+    def configure_template(self, name, path, type='xml'):
         p = self.var('templates.' + name)
         if p:
             return self.create_object('gws.ext.template', p)
 
-        name = name.replace('.', '/')
-        return self.create_shared_object('gws.ext.template', self.base_path + name, {
+        if not path.startswith('/'):
+            path = gws.APP_DIR + '/gws/ext/ows/service/' + path.strip('/') + '/' + name + '.cx'
+
+        return self.create_shared_object('gws.ext.template', path, {
             'type': type,
-            'path': self.base_path + f'/templates/{name}.cx'
+            'path': path
         })
 
     def is_layer_enabled(self, layer):
         return layer and layer.has_ows(self.service_type)
 
     def service_endpoint(self, rd: RequestData):
-        u = '/_/cmd/owsHttp'
+        u = gws.SERVER_ENDPOINT + '/cmd/owsHttp/srv/' + self.service_class
         if rd.project:
             u += f'/projectUid/{rd.project.uid}'
         return u
 
     def render_template(self, rd: RequestData, template, context, format=None):
-        context = gws.defaults(context, {
+
+        def rewrite_url(url, **query):
+            url = rd.req.rewritten_url(url)
+            if query:
+                url += '?' + gws.as_query_string(query)
+            return url
+
+        context = gws.extend({
             'project': rd.project,
+            'meta': self.meta or (rd.project.meta if rd.project else {}),
+            'rewrite_url': rewrite_url,
             'feature_namespace': self.feature_namespace,
             'namespaces': self.namespaces,
-            'service_version': self.version,
-            'service_endpoint': self.service_endpoint(rd),
-        })
+            'service': {
+                'version': self.version,
+                'endpoint': self.service_endpoint(rd),
+            }
+        }, context)
         return self.templates[template].render(context, format=format).content
 
 
@@ -217,6 +262,10 @@ def render_feature_nodes(rd: RequestData, nodes, container_template_name):
         'feature_tags': tags,
         'used_namespaces': used_namespaces,
     }))
+
+
+def lonlat_extent(extent, crs):
+    return ['%.3f1' % c for c in gws.gis.proj.transform_bbox(extent, crs, 'EPSG:4326')]
 
 
 def xml_error_response(version, status, description):

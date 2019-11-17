@@ -6,7 +6,9 @@ import gws.gis.source
 import gws.ows.util
 import gws.qgis
 import gws.server.monitor
+import gws.common.metadata
 import gws.tools.net
+
 import gws.types as t
 
 
@@ -37,7 +39,7 @@ class Object(gws.gis.layer.Base):
 
         self.path = self.var('path')
         self.service = gws.qgis.shared_service(self, self.config)
-        self.use_meta(self.var('meta') or self.service.meta)
+        self.use_meta(gws.common.metadata.read(self.var('meta') or self.service.meta))
 
         gws.server.monitor.add_path(self.path)
 

@@ -1,17 +1,20 @@
 import gws
+
 import gws.common.search
 import gws.config
 import gws.gis.layer
 import gws.gis.mpx
+import gws.gis.proj
 import gws.gis.shape
 import gws.gis.source
 import gws.gis.zoom
-import gws.gis.proj
 import gws.ows.request
 import gws.ows.util
 import gws.qgis
 import gws.server.monitor
+import gws.common.metadata
 import gws.tools.shell
+
 import gws.types as t
 
 
@@ -59,7 +62,7 @@ class Object(gws.gis.layer.Image):
         self.has_legend = self.var('legend.enabled')
 
         if not self.var('meta'):
-            self.meta = gws.gis.layer.meta_from_source_layers(self)
+            self.meta = gws.common.metadata.read(gws.gis.layer.meta_from_source_layers(self))
 
         self.configure_extent(gws.gis.source.extent_from_layers(self.source_layers, self.map.crs))
 

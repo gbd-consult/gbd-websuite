@@ -2,6 +2,7 @@ import gws
 import gws.common.ows.service as ows
 import gws.common.ows.service.inspire as inspire
 import gws.ext.ows.service.wms as wms
+import gws.ext.ows.service.inspirewfs as inspirewfs
 
 
 class Config(wms.Config):
@@ -9,20 +10,24 @@ class Config(wms.Config):
 
     pass
 
+
 class Object(wms.Object):
     def __init__(self):
         super().__init__()
+
+        self.service_class = 'inspirewms'
+        self.service_type = 'wms'
+        self.version = wms.VERSION
+
         self.namespaces = gws.extend({}, ows.NAMESPACES, inspire.NAMESPACES)
-        self.base_path = gws.dirname(__file__)
 
     def configure(self):
         super().configure()
 
-    def can_handle(self, req) -> bool:
-        return req.kparam('service', '').lower() == 'wms' and req.kparam('inspire', '').lower() == 'true'
+        for tpl in 'getCapabilities', 'getFeatureInfo':
+            self.templates[tpl] = self.configure_template(tpl, 'inspirewms/templates')
+        inspirewfs.configure_inspire_templates(self)
 
-    def handle_getcapabilities(self, rd: ows.RequestData):
-        return ows.xml_response(self.render_template(rd, 'getCapabilities', {
-            'layer_node_tree': ows.layer_node_tree(rd),
-            'project_csw_url': self.service_endpoint(rd) + '/service/csw'
-        }))
+    def handle_getfeatureinfo(self, rd: ows.RequestData):
+        features = wms.find_features(rd)
+        return inspirewfs.render_inspire_features(rd, features, 'getFeatureInfo')

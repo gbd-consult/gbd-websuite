@@ -1,8 +1,36 @@
 ## helper functions for wms
 
 @def wms_default_url
-    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={service_endpoint}
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={rewrite_url(service.endpoint)}
 @end
+
+@def wms_meta_url(meta)
+    @if meta.isoUid
+        @tag MetadataURL type="ISO19115:2003"
+            @t Format application/xml
+            @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url('_/cmd/owsHttp/srv/isometa', id=meta.isoUid)}"
+        @end
+    @elif meta.url
+        @tag MetadataURL
+            @t Format application/xml
+            @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url(meta.url)}"
+        @end
+    @end
+@end
+
+@def wms_inspire_extended_capabilities(meta)
+    @tag inspire_vs:ExtendedCapabilities
+        @wms_meta_url meta
+        @tag inspire_common:SupportedLanguages
+            @t inspire_common:DefaultLanguage/inspire_common:Language {meta.language3}
+        @end
+        @tag inspire_common:ResponseLanguage
+            @t inspire_common:Language {meta.language3}
+        @end
+    @end
+@end
+
+
 
 @def wms_request_capabilities
     @tag Request
@@ -42,20 +70,35 @@
     @t MaxScaleDenominator {node.max_scale | as_int}
 @end
 
+@def wms_layer_capabilities node
+    @tag Layer queryable="{1 if node.has_search else 0}"
 
-@def wms_project_metadata
-    @with project.meta as meta
-        @t Abstract {meta.abstract}
-        @tag KeywordList
-            @each meta.keywords as kw
-                @t Keyword {kw}
-            @end
+        @t Name {feature_ns(node.tag_name)}
+        @t Title {node.layer.title}
+        @t Abstract {node.layer.meta.abstract}
+
+        @wms_meta_url node.layer.meta
+        @wms_basic_layer_capabilities node
+
+        @each reversed(node.sub_nodes) as sub_node
+            @wms_layer_capabilities sub_node
         @end
     @end
 @end
 
+
+@def wms_service_metadata
+    @t Abstract {meta.abstract}
+    @tag KeywordList
+        @each meta.keywords as kw
+            @t Keyword {kw}
+        @end
+    @end
+    @wms_meta_url meta
+@end
+
 @def wms_contact_metadata
-    @with project.meta.contact as co
+    @with meta.contact as co
         @tag ContactInformation
             @tag ContactPersonPrimary
                 @t ContactPerson {co.person}

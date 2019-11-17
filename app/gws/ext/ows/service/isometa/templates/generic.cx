@@ -1,0 +1,167 @@
+@include /gws-app/gws/common/ows/service/templates/common.cx
+
+@def scope_code(code)
+    @tag gmd:MD_ScopeCode
+        @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ScopeCode"
+        @a codeListValue={code}
+    @end
+@end
+
+@def publication_date(d)
+    @tag gmd:date/gmd:CI_Date
+        @t gmd:date/gco:Date {d}
+        @tag gmd:dateType/gmd:CI_DateTypeCode
+            @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode"
+            @a codeListValue="publication"
+        @end
+    @end
+@end
+
+@def contact(co, role='pointOfContact')
+    @tag gmd:CI_ResponsibleParty
+        @t gmd:organisationName/gco:CharacterString {co.organization}
+        @tag gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address
+            @t gmd:deliveryPoint/gco:CharacterString {co.address}
+            @t gmd:city/gco:CharacterString {co.city}
+            @t gmd:administrativeArea/gco:CharacterString {co.area}
+            @t gmd:postalCode/gco:CharacterString {co.zip}
+            @t gmd:country/gco:CharacterString {co.country}
+            @t gmd:electronicMailAddress/gco:CharacterString {co.email}
+        @end
+        @tag gmd:role/gmd:CI_RoleCode
+            @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_RoleCode"
+            @a codeListValue={role}
+        @end
+    @end
+@end
+
+@def bounding_box(ext)
+    @tag gmd:EX_GeographicBoundingBox
+        @t gmd:westBoundLongitude/gco:Decimal {ext[0]}
+        @t gmd:eastBoundLongitude/gco:Decimal {ext[2]}
+        @t gmd:southBoundLatitude/gco:Decimal {ext[1]}
+        @t gmd:northBoundLatitude/gco:Decimal {ext[3]}
+    @end
+@end
+
+@def identification
+    @tag gmd:citation/gmd:CI_Citation
+        @t gmd:title/gco:CharacterString {mw.title}
+        @publication_date mw.pubDate
+        @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {mw.isoUid}
+    @end
+
+    @t gmd:abstract/gco:CharacterString {mw.abstract}
+
+    @tag gmd:pointOfContact
+        @contact mw.contact
+    @end
+
+    @if mw.inspireTheme
+        @tag gmd:descriptiveKeywords/gmd:MD_Keywords
+            @t gmd:keyword/gmx:Anchor xlink:href="http://inspire.ec.europa.eu/theme/{mw.inspireTheme}" {mw.inspireThemeName}
+            @tag gmd:type/gmd:MD_KeywordTypeCode
+                @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode"
+                @a codeListValue="theme"
+            @end
+            @tag gmd:thesaurusName/gmd:CI_Citation
+                @t gmd:title/gmx:Anchor xlink:href="http://www.eionet.europa.eu/gemet/inspire_themes" GEMET - INSPIRE themes, version 1.0
+                @publication_date '2008-06-01'
+            @end
+        @end
+    @end
+
+    @tag gmd:descriptiveKeywords/gmd:MD_Keywords
+        @each mw.keywords as kw
+            @t gmd:keyword/gco:CharacterString {kw}
+        @end
+    @end
+
+    @tag gmd:resourceConstraints/gmd:MD_Constraints
+        @t gmd:useLimitation/gco:CharacterString {mw.accessConstraints}
+    @end
+
+    @tag gmd:spatialRepresentationType/gmd:MD_SpatialRepresentationTypeCode
+        @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_SpatialRepresentationTypeCode"
+        @a codeListValue={mw.isoProps.spatialType}
+    @end
+
+    @t gmd:spatialResolution/gmd:MD_Resolution/gmd:equivalentScale/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer {mw.resolution}
+    @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="{mw.language3}"
+    @t gmd:topicCategory/gmd:MD_TopicCategoryCode {mw.isoCategory}
+
+    @tag gmd:extent/gmd:EX_Extent/gmd:geographicElement
+        @bounding_box mw.lonlat_extent
+    @end
+@end
+
+@def distributionInfo
+    @tag gmd:transferOptions/gmd:MD_DigitalTransferOptions
+        @each mw.links as link
+            @tag gmd:onLine/gmd:CI_OnlineResource
+                @t gmd:linkage/gmd:URL {rewrite_url(link.url)}
+                @tag gmd:function/gmd:CI_OnLineFunctionCode
+                    @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_OnLineFunctionCode"
+                    @a codeListValue={link.function}
+                @end
+            @end
+        @end
+    @end
+@end
+
+@def dataQualityInfo
+    @tag gmd:scope/gmd:DQ_Scope/gmd:level
+        @scope_code mw.isoScope
+    @end
+    @if mw.inspireTheme
+        @tag gmd:report/gmd:DQ_DomainConsistency
+            @tag gmd:measureIdentification/gmd:RS_Identifier
+                @t gmd:code/gco:CharacterString Conformity_001
+                @t gmd:codeSpace/gco:CharacterString INSPIRE
+            @end
+            @tag gmd:result/gmd:DQ_ConformanceResult
+                @tag gmd:specification/gmd:CI_Citation
+                    @t gmd:title/gco:CharacterString COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
+                    @publication_date '2010-12-08'
+                @end
+                @t gmd:explanation/gco:CharacterString {mw.inspireProps.qualityExplanation}
+                @t gmd:pass/gco:Boolean {mw.inspireProps.qualityPass}
+            @end
+        @end
+    @end
+    @tag gmd:lineage/gmd:LI_Lineage
+        @t gmd:statement/gco:CharacterString {mw.inspireProps.qualityLineage}
+    @end
+@end
+
+@tag gmd:MD_Metadata
+    @namespaces
+
+    @t gmd:fileIdentifier/gco:CharacterString {mw.isoUid}
+    @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue={mw.language3}
+
+    @tag gmd:hierarchyLevel
+        @scope_code mw.isoScope
+    @end
+
+    @tag gmd:contact
+        @contact mw.contact
+    @end
+
+    @t gmd:dateStamp/gco:DateTime {mw.pubDate}
+    @t gmd:metadataStandardName/gco:CharacterString ISO19115
+    @t gmd:metadataStandardVersion/gco:CharacterString 2003/Cor.1:2006
+    @t gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString {mw.proj.uri}
+
+    @tag gmd:identificationInfo/gmd:MD_DataIdentification
+        @identification
+    @end
+
+    @tag gmd:distributionInfo/gmd:MD_Distribution
+        @distributionInfo
+    @end
+
+    @tag gmd:dataQualityInfo/gmd:DQ_DataQuality
+        @dataQualityInfo
+    @end
+@end

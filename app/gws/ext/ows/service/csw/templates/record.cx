@@ -14,7 +14,7 @@
     @t dct:abstract {record.meta.abstract}
     @t dct:modified {record.meta.date}
     @t dc:date {record.meta.date}
-    @t dc:language {record.meta.language_bibliographic}
+    @t dc:language {record.meta.language3}
 
     @with record.lonlat_extent as e
         @tag ows:WGS84BoundingBox

@@ -1,1 +1,39 @@
-@include /gws-app/gws/ext/ows/service/wfs/templates/getCapabilities.cx
+@include /gws-app/gws/common/ows/service/templates/common.cx
+
+@tag WFS_Capabilities
+    @a version={service.version}
+    @a xmlns="http://www.opengis.net/wfs/2.0"
+    @namespaces
+
+    @tag ows:ServiceIdentification
+        @t ows:Title {meta.title}
+
+        @t ows:Abstract {meta.abstract}
+        @tag ows:Keywords
+            @each meta.keywords as kw
+                @t ows:Keyword {kw}
+            @end
+        @end
+
+        @t ows:ServiceType WFS
+        @t ows:ServiceTypeVersion 2.0
+        @t ows:Fees {meta.fees}
+        @t ows:AccessConstraints {meta.accessConstraints}
+
+        @inspire_extended_capabilities meta
+
+    @end
+
+    @ows_service_provider meta
+
+    @wfs_basic_operations
+
+    @tag FeatureTypeList
+        @each layer_node_list as node
+            @wfs_feature_type node
+        @end
+    @end
+@end
+
+
+

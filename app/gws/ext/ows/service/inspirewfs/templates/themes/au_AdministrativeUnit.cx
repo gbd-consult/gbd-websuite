@@ -1,11 +1,7 @@
-@def unpopulated(tag)
-    <{tag} xsi:nil="true" nilReason="other:unpopulated"/>
-@end
-
 @tag wfs:member
-    @tag au:AdministrativeUnit gml:id="auAdministrativeBoundary.{node.feature.uid}"
+    @tag au:AdministrativeUnit gml:id="{project.isoUid}.{node.feature.uid}"
         
-        @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" TODO
+        @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" {project.isoUid}.{node.feature.uid}
 
         @tag au:geometry 
             @insert {node.shape_tag}
@@ -31,21 +27,15 @@
         @end
 
         @t au:nationalCode
-
         @t au:nationalLevel xlink:href="http://inspire.ec.europa.eu/codelist/AdministrativeHierarchyLevel/6thOrder"
-
         @t au:nationalLevelName/gmd:LocalisedCharacterString Kommunales Gebiet
-
         @t au:country/gmd:Country codeList="http://inspire.ec.europa.eu/codelist/CountryCode" codeListValue="DE" DE
-
         @t au:residenceOfAuthority nilReason="other:unpopulated" xsi:nil="true"
         @t au:beginLifespanVersion 2018-10-16T10:55:55Z
 
         @with node.attributes['au:upperLevelUnit'] as a
             @t au:upperLevelUnit xlink:href="#AdministrativeUnit_{a.value}"
         @end
-
-        @t au:boundary xsi:nil="true"
 
     @end
 @end

@@ -1,19 +1,17 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
 @tag WFS_Capabilities
-    @a version={service_version}
+    @a version={service.version}
     @a xmlns="http://www.opengis.net/wfs/2.0"
     @namespaces
 
     @tag ows:ServiceIdentification
-        @t ows:Title {project.title}
+        @t ows:Title {meta.title}
 
-        @with project.meta as meta
-            @t ows:Abstract {meta.abstract}
-            @tag ows:Keywords
-                @each meta.keywords as kw
-                    @t ows:Keyword {kw}
-                @end
+        @t ows:Abstract {meta.abstract}
+        @tag ows:Keywords
+            @each meta.keywords as kw
+                @t ows:Keyword {kw}
             @end
         @end
 
@@ -23,7 +21,7 @@
         @t ows:AccessConstraints NONE
     @end
 
-    @ows_service_provider project
+    @ows_service_provider meta
 
     @wfs_basic_operations
 

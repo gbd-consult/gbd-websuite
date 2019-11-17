@@ -112,7 +112,7 @@ class Object(t.ObjectInterface):
                 return self.parent
             return self.parent.get_closest(klass)
 
-    def find_all(self, klass):
+    def find_all(self, klass=None):
         return list(_find_all(self.root.all_objects, klass))
 
     def find_first(self, klass):
@@ -179,9 +179,12 @@ def _find(nodes, klass, uid):
 
 
 def _find_all(nodes, klass):
-    for obj in nodes:
-        if obj.is_a(klass):
-            yield obj
+    if not klass:
+        yield from nodes
+    else:
+        for obj in nodes:
+            if obj.is_a(klass):
+                yield obj
 
 
 def _class_name(s):

@@ -14,7 +14,7 @@
             @t ows:Type theme
         @end
         @t ows:ServiceType CSW
-        @t ows:ServiceTypeVersion {service_version}
+        @t ows:ServiceTypeVersion {service.version}
         @t ows:Fees NONE
         @t ows:AccessConstraints NONE
     @end
@@ -29,8 +29,8 @@
 
         @tag ows:Operation name="GetRecords"
             @tag ows:DCP/ows:HTTP
-               @t ows:Get xlink:href={service_endpoint}
-               @t ows:Post xlink:href={service_endpoint}
+               @t ows:Get xlink:href={rewrite_url(service.endpoint)}
+               @t ows:Post xlink:href={rewrite_url(service.endpoint)}
             @end
             @tag ows:Parameter name="typeName"
                 @t ows:Value csw:Record
@@ -51,7 +51,7 @@
                 @t ows:Value Filter
             @end
             @tag ows:Parameter name="version"
-                @t ows:Value {service_version}
+                @t ows:Value {service.version}
             @end
         @end
 
@@ -85,10 +85,7 @@
             @end
             @tag inspire_common:Conformity
                 @tag inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng"
-                    @tag inspire_common:Title
-                        COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the
-                        European Parliament and of the Council as regards interoperability of spatial data sets and services
-                    @end
+                    @t inspire_common:Title COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
                     @t inspire_common:DateOfPublication 2010-12-08
                     @t inspire_common:URI OJ:L:2010:323:0011:0102:EN:PDF
                     @tag inspire_common:ResourceLocator
@@ -114,15 +111,15 @@
 
             @tag inspire_common:SupportedLanguages
                 @tag inspire_common:DefaultLanguage
-                    @t inspire_common:Language {service_meta.language_bibliographic}
+                    @t inspire_common:Language {service_meta.language3}
                 @end
                 @tag inspire_common:SupportedLanguage
-                    @t inspire_common:Language {service_meta.language_bibliographic}
+                    @t inspire_common:Language {service_meta.language3}
                 @end
             @end
 
             @tag inspire_common:ResponseLanguage
-                @t inspire_common:Language {service_meta.language_bibliographic}
+                @t inspire_common:Language {service_meta.language3}
             @end
         @end
     @end

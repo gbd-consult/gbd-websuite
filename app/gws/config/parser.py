@@ -119,6 +119,9 @@ def _parse_cx_config(path):
         context={'true': True, 'false': False},
         error=err)
 
+    with open(gws.VAR_DIR + '/config.parsed.slon', 'wt') as fp:
+        fp.write(src)
+
     try:
         return gws.tools.slon.loads(src, as_object=True)
     except gws.tools.slon.DecodeError as e:

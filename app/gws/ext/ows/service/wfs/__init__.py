@@ -37,16 +37,16 @@ MAX_LIMIT = 100
 class Object(ows.Object):
     def __init__(self):
         super().__init__()
-        self.base_path = gws.dirname(__file__)
+
+        self.service_class = 'wfs'
+        self.service_type = 'wfs'
+        self.version = VERSION
 
     def configure(self):
         super().configure()
 
-        self.service_type = 'wfs'
-        self.version = VERSION
-
         for tpl in 'getCapabilities', 'describeFeatureType', 'getFeature', 'feature':
-            self.templates[tpl] = self.configure_template(tpl)
+            self.templates[tpl] = self.configure_template(tpl, 'wfs/templates')
 
     def handle_getcapabilities(self, rd: ows.RequestData):
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {
@@ -62,7 +62,7 @@ class Object(ows.Object):
             dm = node.layer.data_model
             node.feature_schema = []
             for a in dm:
-                xtype = ows.ATTR_TYPE_TO_XML.get(a.type)
+                xtype = ows.ATTR_TYPE_TO_XML.get(a.type or 'str')
                 if xtype:
                     node.feature_schema.append({
                         'name': a.name,

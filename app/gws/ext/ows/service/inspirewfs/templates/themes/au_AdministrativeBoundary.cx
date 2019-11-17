@@ -1,8 +1,4 @@
-@def unpopulated(tag)
-    @t {tag} xsi:nil="true" nilReason="other:unpopulated" 
-@end
-
-@tag wfs:member 
+@tag wfs:member
     @tag au:AdministrativeBoundary gml:id="auAdministrativeBoundary.{node.feature.uid}" 
         
         @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" TODO
@@ -19,7 +15,6 @@
             @end
         @end
         
-
         @with node.attributes['au:country'] as a
             @tag au:country 
                 @tag gmd:Country
@@ -28,8 +23,6 @@
                     {a.value}
                 @end
             @end
-        @else
-            @unpopulated 'au:country'
         @end
 
         @with node.attributes['au:administrativeHierarchyLevel'] as a
@@ -37,32 +30,22 @@
                 @a xlink:href="http://inspire.ec.europa.eu/codelist/AdministrativeHierarchyLevel/{a.value}"
                 @a xlink:title="{a.value}"
             @end 
-        @else
-            @unpopulated 'au:nationalLevel'
         @end
 
         @with node.attributes['au:legalStatus'] as a
             @t au:legalStatus {a.value}
-        @else
-            @unpopulated 'au:legalStatus'
         @end
 
         @with node.attributes['au:technicalStatus'] as a
             @t au:technicalStatus {a.value}
-        @else
-            @unpopulated 'au:technicalStatus'
         @end
 
         @with node.attributes['au:beginLifespanVersion'] as a
             @t au:beginLifespanVersion {a.value}
-        @else
-            @unpopulated 'au:beginLifespanVersion'
         @end
 
         @with node.attributes['au:endLifespanVersion'] as a
             @t au:endLifespanVersion {a.value}
-        @else
-            @unpopulated 'au:endLifespanVersion'
         @end
     @end
 @end

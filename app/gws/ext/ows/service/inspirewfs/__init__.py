@@ -42,25 +42,18 @@ MAX_LIMIT = 100
 class Object(ows.Object):
     def __init__(self):
         super().__init__()
-        self.version = VERSION
+
+        self.service_class = 'inspirewfs'
         self.service_type = 'wfs'
+        self.version = VERSION
+
         self.namespaces = gws.extend({}, ows.NAMESPACES, inspire.NAMESPACES)
-        self.base_path = gws.dirname(__file__)
 
     def configure(self):
 
         for tpl in 'getCapabilities', 'getFeature':
-            self.templates[tpl] = self.configure_template(tpl)
-
-        for th in inspire.THEMES:
-            ns, tag = th.split(':')
-            self.templates[th] = self.configure_template(ns + '.' + tag)
-
-    def can_handle(self, req) -> bool:
-        return req.kparam('service', '').lower() == 'wfs' and req.kparam('inspire', '').lower() == 'true'
-
-    def service_endpoint(self, rd: ows.RequestData):
-        return f'/_/cmd/owsHttpGet/projectUid/{rd.project.uid}/inspire/true'
+            self.templates[tpl] = self.configure_template(tpl, 'inspirewfs/templates')
+        configure_inspire_templates(self)
 
     def handle_getcapabilities(self, rd: ows.RequestData):
         nodes = inspire_nodes(ows.layer_node_list(rd))
@@ -112,11 +105,20 @@ class Object(ows.Object):
         })
 
         features = gws.common.search.runner.run(rd.req, args)
-        nodes = inspire_nodes(ows.feature_node_list(rd, features))
-        for n in nodes:
-            n.template_name = n.tag_name
-        return ows.render_feature_nodes(rd, nodes, 'getFeature')
+        return render_inspire_features(rd, features, 'getFeature')
 
 
 def inspire_nodes(nodes):
-    return [n for n in nodes if n.tag_name in inspire.THEMES]
+    return [n for n in nodes if n.tag_name in inspire.TAGS]
+
+
+def configure_inspire_templates(service):
+    for tag in inspire.TAGS:
+        service.templates[tag] = service.configure_template(tag.replace(':', '_'), 'inspirewfs/templates/themes')
+
+
+def render_inspire_features(rd: ows.RequestData, features, container_template):
+    nodes = inspire_nodes(ows.feature_node_list(rd, features))
+    for n in nodes:
+        n.template_name = n.tag_name
+    return ows.render_feature_nodes(rd, nodes, container_template)

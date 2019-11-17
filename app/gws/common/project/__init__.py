@@ -4,6 +4,7 @@ import gws.common.map
 import gws.common.printer
 import gws.common.search
 import gws.common.template
+import gws.common.metadata
 import gws.web.site
 
 import gws.types as t
@@ -26,7 +27,7 @@ class Config(t.Config):
     description: t.Optional[t.TemplateConfig]  #: template for the project description
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.common.map.Config]  #: Map configuration
-    meta: t.Optional[t.MetaConfig] = {}  #: project metadata
+    meta: t.Optional[t.MetaData] = {}  #: project metadata
     multi: t.Optional[t.regex]  #: filename pattern for a multi-project template
     overviewMap: t.Optional[gws.common.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.common.printer.Config]  #: printer configuration
@@ -66,7 +67,7 @@ class Object(gws.Object, t.ProjectObject):
     def configure(self):
         super().configure()
 
-        self.meta = self.var('meta')
+        self.meta = gws.common.metadata.read(self.var('meta'))
         # title at the top level config preferred
         if self.var('title'):
             self.meta.title = self.var('title')

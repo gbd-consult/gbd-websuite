@@ -1,4 +1,5 @@
 import gws
+
 import gws.common.datamodel
 import gws.common.ows.service
 import gws.common.search.runner
@@ -7,7 +8,7 @@ import gws.gis.render
 import gws.gis.shape
 import gws.ows.gml
 import gws.tools.date
-import gws.tools.country
+import gws.common.metadata
 import gws.tools.xml3
 import gws.web.error
 
@@ -33,7 +34,7 @@ class RecordConfig(t.Config):
     """Describes a Record in the CSW catalog"""
 
     uid: str
-    meta: t.Optional[t.MetaConfig]  #: record meta data
+    meta: t.Optional[t.MetaData]  #: record meta data
     extent: t.Optional[t.Extent]
     links: t.Optional[t.List[LinkConfig]]
     crs: t.Optional[t.crsref]  #: record CRS
@@ -43,7 +44,7 @@ class Config(gws.common.ows.service.Config):
     """CSW Service configuration"""
 
     templates: t.Optional[TemplatesConfig]  #: service templates
-    meta: t.Optional[t.MetaConfig]  #: service meta data
+    meta: t.Optional[t.MetaData]  #: service meta data
     crs: t.crsref  #: default CRS for all records
     records: t.List[RecordConfig]
 
@@ -55,29 +56,29 @@ MAX_LIMIT = 100
 class Object(ows.Object):
     def __init__(self):
         super().__init__()
+
+        self.service_class = 'csw'
+        self.service_type = 'csw'
+        self.version = VERSION
+
         self.namespaces = gws.extend({}, ows.NAMESPACES, inspire.NAMESPACES)
-        self.base_path = gws.dirname(__file__)
 
     def configure(self):
         super().configure()
 
-        self.service_type = 'csw'
-        self.version = VERSION
-
         for tpl in 'getCapabilities', 'getRecords', 'getRecordById', 'record':
-            self.templates[tpl] = self.configure_template(tpl)
+            self.templates[tpl] = self.configure_template(tpl, 'csw/templates')
 
-        self.templates['describeRecord'] = self.configure_template('describeRecord', type='text')
+        self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates', type='text')
 
-        self.meta = self.var('meta')
+        self.meta = gws.common.metadata.read(self.var('meta'))
         self.crs = self.var('crs')
-        self.meta.language_bibliographic = gws.tools.country.bibliographic_name(language=self.meta.language)
 
         self.records = [self._prepare_record(r) for r in self.var('records')]
 
     def can_handle(self, req) -> bool:
         if req.is_get:
-            return req.kparam('service', '').lower() == self.service_type
+            return req.kparam('srv', '').lower() == self.service_class
         if req.is_post:
             # @TODO
             return 'csw' in req.post_data
@@ -141,12 +142,11 @@ class Object(ows.Object):
 
     def _prepare_record(self, rec):
         rec.meta.language = rec.meta.language or self.meta.language
-        rec.meta.language_bibliographic = gws.tools.country.bibliographic_name(language=rec.meta.language)
-
+        rec.meta.language3 = rec.meta.language3 or self.meta.language3
         rec.crs = rec.crs or self.crs
 
         if rec.extent:
-            rec.lonlat_extent = ['%.3f1' % c for c in gws.gis.proj.transform_bbox(rec.extent, rec.crs, 'EPSG:4326')]
+            rec.lonlat_extent = ows.lonlat_extent(rec.extent, rec.crs)
 
         for s in rec.links:
             if s.type.lower() in ('wms', 'wfs'):

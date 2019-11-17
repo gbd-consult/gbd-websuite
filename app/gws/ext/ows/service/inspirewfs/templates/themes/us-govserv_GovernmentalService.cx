@@ -1,0 +1,25 @@
+@tag wfs:member
+    @tag us-govserv:GovernmentalService gml:id="{node.attributes.isoUid.value}"
+        @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" {node.attributes.isoUid.value}
+
+        @tag us-govserv:inspireId/base:Identifier
+            @t base:localId {node.attributes.localUid.value}
+            @t base:namespace ES-GLR
+        @end
+
+        @t gml:name {node.attributes.name.value}
+
+        @tag us-govserv:pointOfContact/base2:Contact
+            @t base2:address {node.attributes.address.value}
+            @t base2:electronicMailAddress {node.attributes.email.value}
+            @t base2:telephoneFacsimile {node.attributes.fax.value}
+            @t base2:telephoneVoice {node.attributes.phone.value}
+        @end
+
+        @tag us-govserv:serviceLocation/us-govserv:ServiceLocationType/us-govserv:serviceLocationByGeometry
+            @insert {node.shape_tag}
+        @end
+
+        @t us-govserv:serviceType xlink:href="http://inspire.ec.europa.eu/codelist/ServiceTypeValue/{node.attributes.serviceType.value}"
+    @end
+@end

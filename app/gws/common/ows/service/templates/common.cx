@@ -1,13 +1,12 @@
 ## helper functions for ows templates
 
-
 @def ows_default_url
-    @t ows:DCP/ows:HTTP/ows:Get xlink:href={service_endpoint}
+    @t ows:DCP/ows:HTTP/ows:Get xlink:href={rewrite_url(service.endpoint)}
 @end
 
-@def ows_service_provider project
+@def ows_service_provider(meta)
     @tag ows:ServiceProvider
-        @with project.meta.contact as co
+        @with meta.contact as co
             @t ows:IndividualName {co.person}
             @t ows:PositionName {co.position}
             @t ows:ContactInfo/ows:Phone/ows:Voice {co.phone}

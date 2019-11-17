@@ -1,5 +1,5 @@
 @tag csw:GetRecordsResponse
-    @a version={service_version}
+    @a version={service.version}
     @namespaces
 
 	@t csw:SearchStatus timestamp={results.timestamp}

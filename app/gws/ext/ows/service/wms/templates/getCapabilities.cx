@@ -1,33 +1,17 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
-
-@def layer_caps node
-    @tag Layer queryable="{1 if node.has_search else 0}"
-
-        @t Name {node.tag_name}
-        @t Title {node.layer.title}
-        @t Abstract {node.layer.meta.abstract}
-
-        @wms_basic_layer_capabilities node
-
-        @each reversed(node.sub_nodes) as sub_node
-            @layer_caps sub_node
-        @end
-    @end
-@end
-
-
 @tag WMS_Capabilities
-    @a version={service_version}
+    @a version={service.version}
     @a xmlns="http://www.opengis.net/wms"
     @namespaces
 
     @tag Service
         @t Name WMS
-        @t Title {project.title}
+        @t Title {meta.title}
 
-        @wms_project_metadata
+        @wms_service_metadata
         @wms_contact_metadata
+        @wms_inspire_extended_capabilities meta
 
     @end
 
@@ -35,7 +19,7 @@
         @wms_request_capabilities
 
         @each reversed(layer_node_tree) as node
-            @layer_caps node
+            @wms_layer_capabilities node
         @end
     @end
 @end
