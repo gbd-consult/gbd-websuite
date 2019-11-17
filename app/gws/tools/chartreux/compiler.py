@@ -42,8 +42,7 @@ _DEFAULT_OPTIONS = {
     'commands': None,
 }
 
-_COMMAND_RAW = 0x01
-_COMMAND_BLOCK = 0x02
+_COMMAND_BLOCK = 0x01
 
 
 ##

@@ -187,6 +187,7 @@ class Runtime(BaseRuntime):
         )
     '''
 
+
     def filter_linkify(self, val, target=None, rel=None, cut=None, ellipsis=None):
         def _repl(m):
             url = m.group(0)
@@ -234,6 +235,3 @@ class Runtime(BaseRuntime):
 
     def filter_sort(self, val):
         return sorted(val)
-
-
-DefaultRuntime = Runtime()

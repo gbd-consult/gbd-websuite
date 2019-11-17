@@ -53,13 +53,15 @@ def quote(s, safe='/'):
 def unquote(s):
     return urllib.parse.unquote(s)
 
+def is_abs_url(url):
+    return re.match(r'^([a-z]+:|)//', url)
 
 def parse_url(url):
     p = {k: '' for k in _parse_url_keys}
 
     # NB force an absolute url
 
-    if not re.match(r'^([a-z]+:|)//', url):
+    if not is_abs_url(url):
         url = '//' + url
 
     res = urllib.parse.urlsplit(url)

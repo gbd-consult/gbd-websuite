@@ -81,16 +81,16 @@ class Decoder:
 
         if t == T_STRD_1:
             self.pop()
-            return self.decode_string(s[1:-1], p, rich=True, squeeze=True)
+            return self.decode_string(s[1:-1], p, rich=True)
         if t == T_STRD_3:
             self.pop()
-            return self.decode_string(s[3:-3], p, rich=True, dedent=True)
+            return self.decode_string(s[3:-3], p, rich=True, ml=True)
         if t == T_STRS_1:
             self.pop()
-            return self.decode_string(s[1:-1], p, squeeze=True)
+            return self.decode_string(s[1:-1], p)
         if t == T_STRS_3:
             self.pop()
-            return self.decode_string(s[3:-3], p, dedent=True)
+            return self.decode_string(s[3:-3], p, ml=True)
 
         if t == T_RAW:
             self.pop()
@@ -117,12 +117,15 @@ class Decoder:
         except ValueError:
             self.error(Error.INVALID_NUMBER, p)
 
-    def decode_string(self, s, p, rich=False, squeeze=False, dedent=False):
-        if '\n' in s:
-            if squeeze:
-                s = re.sub(r'\s+', ' ', s.strip())
-            elif dedent:
+    def decode_string(self, s, p, rich=False, ml=False):
+        if not s:
+            return s
+
+        if ml:
+            if s[0] in ' \t\r\n':
                 s = _dedent(s)
+            else:
+                s = re.sub(r'\s+', ' ', s.strip())
 
         if not rich:
             return s
@@ -279,9 +282,9 @@ _tokens = [
     [T_HEXNUM, _rc(r"(?i)0x[A-F0-9_]+")],
     [T_NUMBER, _rc(r"[+-]?[\d_]+(\.[\d_]+)?([eE][+-]?[\d_]+)?")],
     [T_STRD_3, _rc(r'(?s)"{3}(\\.|.)*?"{3}')],
-    [T_STRD_1, _rc(r'(?s)"(\\.|[^"])*"')],
+    [T_STRD_1, _rc(r'(?s)"(\\.|[^"\r\n])*"')],
     [T_STRS_3, _rc(r"(?s)'{3}.*?'{3}")],
-    [T_STRS_1, _rc(r"(?s)'[^']*'")],
+    [T_STRS_1, _rc(r"(?s)'[^'\r\n]*'")],
     [T_BOOL, _rc(r"(?i)\b(true|false|yes|no|on|off)\b")],
     [T_NULL, _rc(r"\bnull\b")],
     [T_SPEC, _rc(r"[\[\]{},=:]")],
