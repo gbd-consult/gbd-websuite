@@ -149,6 +149,11 @@ class Request(werkzeug.wrappers.Request):
     def kparam(self, key, default=None):
         return self.kparams.get(key.lower(), default)
 
+    def rewritten_url(self, url):
+        u = self.site.rewritten_url(self, url)
+        gws.log.debug(f'reversed rewrite {url!r}=>{u!r}')
+        return u
+
 
 def _params_from_path(path):
     path = path.split('/')

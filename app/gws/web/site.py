@@ -2,6 +2,7 @@ import re
 
 import gws
 import gws.common.template
+import gws.tools.net
 import gws.types as t
 
 
@@ -55,15 +56,13 @@ class Object(gws.Object):
 
         self.rewrite_rules = self.var('rewrite', default=[])
         for r in self.rewrite_rules:
-            # if a bare query string is given, prepend the endpoint
-            if re.match(r'^\w+=', r.target):
-                r.target = gws.SERVER_ENDPOINT + '?' + r.target
-            # ensure rewriting from root
-            elif not r.target.startswith('/') and not re.match(r'^https?:', r.target):
-                r.target = '/' + r.target
+            if not gws.tools.net.is_abs_url(r.target):
+                # ensure rewriting from root
+                r.target = '/' + r.target.lstrip('/')
 
         self.reversed_rewrite_rules = self.var('reversedRewrite', default=[])
         for r in self.reversed_rewrite_rules:
+            r.match = r.match.strip('/')
             # we use nginx syntax $1, need python's \1
             r.target = r.target.replace('$', '\\')
 
@@ -74,3 +73,32 @@ class Object(gws.Object):
         p = self.var('cors')
         if p and p.get('enabled'):
             self.cors = p
+
+        p = self.var('errorPage')
+        if p:
+            self.error_page = self.create_object('gws.ext.template', p)
+
+        p = self.var('cors')
+        if p and p.get('enabled'):
+            self.cors = p
+
+    def rewritten_url(self, req, url):
+        if gws.tools.net.is_abs_url(url):
+            return url
+
+        proto = 'https' if self.ssl else 'http'
+        host = req.env('HTTP_HOST') if self.host == '*' else self.host
+        base = proto + '://' + host
+
+        u = url.lstrip('/')
+
+        for rule in self.reversed_rewrite_rules:
+            m = re.match(rule.match, u)
+            if m:
+                s = re.sub(rule.match, rule.target, u)
+                if gws.tools.net.is_abs_url(s):
+                    return s
+                return base + s
+
+        return base + '/' + u
+
