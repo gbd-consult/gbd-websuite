@@ -48,6 +48,7 @@ class Validator:
             'gws.types.formatstr': self._formatstr,
             'gws.types.regex': self._regex,
             'gws.types.crsref': self._crsref,
+            'gws.types.date': self._date,
             'gws.types.url': self._url,
         }
 
@@ -172,7 +173,7 @@ class Validator:
             if b:
                 return self._get(val, b)
 
-        return self.error('ERR_BAD_TYPE', 'invalid type', tname)
+        return self.error('ERR_BAD_TYPE', 'expected one of %s' % ', '.join(t['bases']), val)
 
 
         # if 'type' in val:
@@ -263,6 +264,10 @@ class Validator:
 
     def _crsref(self, val, t):
         # @TODO: crs validation
+        return self._str(val, t)
+
+    def _date(self, val, t):
+        # @TODO: date validation
         return self._str(val, t)
 
     def _url(self, val, t):

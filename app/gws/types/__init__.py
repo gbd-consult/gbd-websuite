@@ -112,6 +112,11 @@ class crsref:
     pass
 
 
+class date:
+    """ISO date like "2019-01-30" """
+    pass
+
+
 class url:
     """An http or https URL"""
     pass
@@ -183,6 +188,8 @@ class ShapeInterface:
 
 
 class MetaContact(Data):
+    """Contact metadata configuration"""
+
     address: str = ''
     area: str = ''
     city: str = ''
@@ -194,57 +201,48 @@ class MetaContact(Data):
     phone: str = ''
     position: str = ''
     zip: str = ''
-
-
-class MetaData(Data):
-    abstract: str = ''
-    access_constraints: str = ''
-    attribution: str = ''
-    contact: MetaContact = {}
-    fees: str = ''
-    image: url = ''
-    keywords: List[str] = []
-    name: str = ''
-    title: str = ''
     url: url = ''
 
 
-class MetaContactConfig(Config):
-    """Object metadata configuration"""
+class MetaLink(Data):
+    """Object link configuration"""
 
-    address: str = ''
-    area: str = ''
-    city: str = ''
-    country: str = ''
-    email: str = ''
-    fax: str = ''
-    organization: str = ''
-    person: str = ''
-    phone: str = ''
-    position: str = ''
-    zip: str = ''
+    url: url
+    function: str = ''  #: ISO-19115 function, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#CI_OnLineFunctionCode
 
 
-class MetaConfig(Config):
+class MetaData(Data):
     """Object metadata configuration"""
 
     abstract: str = ''  #: object abstract description
     attribution: str = ''  #: attribution (copyright) string
-    contact: Optional[MetaContactConfig]  #: contact information
-    date: str = ''  #: modification date
-    image: url = ''  #: image (logo) url
-    images: dict = {}  #: further images
     keywords: List[str] = []  #: keywords
     language: str = ''  #: object language
     name: str = ''  #: object internal name
     title: str = ''  #: object title
-    url: url = ''  #: object metadata url
 
-
-class ServiceMetaData(MetaData):
-    contact: MetaContact
-    access_constraints: str = ''
+    accessConstraints: str = ''
     fees: str = ''
+
+    isoUid: str = ''  #: ISO-19115 identifier
+    isoCategory: str = ''  #: ISO-19115 category, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_TopicCategoryCode
+    isoScope: str = ''  #: ISO-19115 scope, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_ScopeCode
+    isoProps: dict = {}  #: ISO-19115 properties
+
+    inspireTheme: str = ''  #: INSPIRE theme shortcut, e.g. "au"
+    inspireProps: dict = {}  #: INSPIRE  properties
+
+    contact: Optional[MetaContact]  #: contact information
+
+    pubDate: date = ''  #: publication date
+    modDate: date = ''  #: modification date
+
+    image: url = ''  #: image (logo) url
+    images: dict = {}  #: further images
+
+    url: url = ''  #: object metadata url
+    links: List[MetaLink] = []  #: additional links
+
 
 
 class ServiceOperation:
@@ -421,7 +419,7 @@ class ObjectInterface:
     def get_closest(self, klass) -> 'ObjectInterface':
         raise NotImplementedError
 
-    def find_all(self, klass) -> 'ObjectInterface':
+    def find_all(self, klass=None) -> 'ObjectInterface':
         raise NotImplementedError
 
     def find_first(self, klass) -> 'ObjectInterface':

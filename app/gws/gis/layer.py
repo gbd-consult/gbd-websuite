@@ -1,11 +1,12 @@
 import math
 
 import gws
-import gws.config.parser
+
+import gws.auth.api
 import gws.common.format
 import gws.common.search
 import gws.common.template
-import gws.auth.api
+import gws.config.parser
 import gws.gis.feature
 import gws.gis.mpx as mpx
 import gws.gis.proj
@@ -13,9 +14,11 @@ import gws.gis.shape
 import gws.gis.source
 import gws.gis.zoom
 import gws.ows.request
+import gws.common.metadata
+import gws.tools.net
+
 import gws.types as t
 
-import gws.tools.net
 
 
 class ClientOptions(t.Data):
@@ -84,13 +87,14 @@ class BaseConfig(t.WithTypeAndAccess):
     """Layer"""
 
     clientOptions: ClientOptions = {}  #: options for the layer display in the client
+    dataModel: t.Optional[t.List[t.AttributeConfig]] #: layer data model
     description: t.Optional[t.TemplateConfig]  #: template for the layer description
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
     featureFormat: t.Optional[t.FormatConfig]  #: feature formatting options
     legend: LegendConfig = {}  #: legend configuration
-    meta: t.Optional[t.MetaConfig]  #: layer meta data
+    meta: t.Optional[t.MetaData]  #: layer meta data
     opacity: float = 1  #: layer opacity
     search: gws.common.search.Config = {}  #: layer search configuration
     ows: t.Optional[OwsConfig]  #: OWS services options
@@ -114,7 +118,6 @@ class ImageTileConfig(ImageConfig):
 class VectorConfig(BaseConfig):
     editStyle: t.Optional[t.StyleProps]  #: style for features being edited
     style: t.Optional[t.StyleProps]  #: style for features
-    dataModel: t.Optional[t.List[t.AttributeConfig]]
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
 
 
@@ -160,6 +163,7 @@ class Base(gws.Object, t.LayerObject):
 
         self.resolutions = []
         self.extent = []
+        self.crs = ''
 
         self.has_legend = False
         self.legend_url = None
@@ -207,7 +211,7 @@ class Base(gws.Object, t.LayerObject):
     def configure(self):
         super().configure()
 
-        self.use_meta(self.var('meta'))
+        self.use_meta(gws.common.metadata.read(self.var('meta')))
         self.is_public = gws.auth.api.role('all').can_use(self)
 
         self.ows_name = self.var('owsName') or self.uid.split('.')[-1]
@@ -243,6 +247,7 @@ class Base(gws.Object, t.LayerObject):
             self.var('zoom'),
             self.map.resolutions)
 
+        self.crs = self.var('crs') or self.map.crs
         self.extent = self.var('extent') or self.map.extent
 
         p = self.var('search')
