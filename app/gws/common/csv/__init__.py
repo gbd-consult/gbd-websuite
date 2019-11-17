@@ -9,6 +9,7 @@ class Config(t.Config):
     delimiter: str = ','  #: field delimiter
     encoding: str = 'utf8'  #: encoding for CSV files
     quote: str = '"'  #: quote sign
+    quoteAll: bool = False #: quote all fields
 
 
 class Object(gws.PublicObject):
@@ -19,6 +20,7 @@ class Object(gws.PublicObject):
         self.delimiter = self.var('delimiter')
         self.encoding = self.var('encoding')
         self.quote = self.var('quote')
+        self.quote_all = self.var('quoteAll')
 
     def write(self, path, headers, rows):
         with open(path, 'wb') as fp:
@@ -33,15 +35,20 @@ class Object(gws.PublicObject):
         fp.write(b)
 
     def _field(self, s):
+        if s is None:
+            s = ''
 
-        if isinstance(s, str):
-            q = self.quote
-            s = s.replace(q, q + q)
-            return q + s + q
+        if self.quote_all:
+            s = str(s)
 
         if isinstance(s, float):
             s = str('%.2f' % s)
             s = s.replace('.', self.decimal)
             return s
 
-        return '' if s is None else str(s)
+        if isinstance(s, int):
+            return str(s)
+
+        q = self.quote
+        s = str(s).replace(q, q + q)
+        return q + s + q
