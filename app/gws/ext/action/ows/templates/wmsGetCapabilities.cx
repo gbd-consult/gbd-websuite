@@ -5,13 +5,11 @@
 
 <WMS_Capabilities version="1.3.0"
     {default_namespaces()}
-    {inspire_namespaces()}
 >
 
     <Service>
         <Name>WMS</Name>
         <Title>{project.title}</Title>
-
         @with project.meta as meta
             <Abstract>{meta.abstract}</Abstract>
             <KeywordList>
@@ -20,7 +18,11 @@
                 @end
             </KeywordList>
         @end
-
+        <OnlineResource
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            xlink:type="simple"
+            xlink:href="{service_endpoint}"
+        />
         @with project.meta.contact as co
             <ContactInformation>
                 <ContactPersonPrimary>

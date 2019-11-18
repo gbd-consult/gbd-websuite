@@ -266,12 +266,11 @@ class WmsWriter:
 
     def layer_tree(self):
         sub = gws.compact(self.layer_subtree(la.uid) for la in self.project.map.layers)
-        return list(reversed(sub))
+        sub = list(reversed(sub))
+        return sub[:1]
 
     def check_enabled(self, layer):
-        ok = layer and layer.is_enabled_for_service('wms')
-        gws.log.debug(f'check_enabled: {layer.uid!r}={ok}')
-        return ok
+        return layer and layer.is_enabled_for_service('wms')
 
 
 def _as_ident(s):
