@@ -28,15 +28,9 @@ class XMLRuntime(gws.tools.chartreux.runtime.Runtime):
         self.tags = [[]]
         self.ns = []
         self.last_tag = None
-        self.used_namespaces = set()
         self.namespaces_node = None
 
-    def add_ns(self, name):
-        if ':' in name:
-            self.used_namespaces.add(name.split(':')[0])
-
     def push_tag(self, name):
-        self.add_ns(name)
         tag = [name]
         self.tags[-1].append(tag)
         self.tags.append(tag)
@@ -49,7 +43,6 @@ class XMLRuntime(gws.tools.chartreux.runtime.Runtime):
         tag.append(val)
 
     def set_attr(self, name, val):
-        self.add_ns(name)
         tag = self.tags[-1]
         tag.append({name: val})
 
@@ -179,14 +172,15 @@ class Object(gws.common.template.Object):
         self.set_uid(uid)
 
     def render(self, context, render_output=None, out_path=None, format=None):
-        namespaces_node, used_namespaces, last_tag = self._render_as_tag(context)
+        namespaces_node, last_tag = self._render_as_tag(context)
 
         if namespaces_node:
-            used_namespaces.update(context.get('used_namespaces', []))
-            self._insert_namespaces(namespaces_node, used_namespaces, context.get('namespaces', {}))
+            nsdict = self._collect_namespaces(iter(last_tag), {})
+            nsdict.update(context.get('local_namespaces', {}))
+            self._insert_namespaces(namespaces_node, nsdict, context.get('all_namespaces', {}))
 
         if format == 'tag':
-            return t.Data({'content': (used_namespaces, last_tag)})
+            return t.Data({'content': last_tag})
 
         xml = gws.tools.xml3.as_string(last_tag)
         if not xml.startswith('<?'):
@@ -223,27 +217,49 @@ class Object(gws.common.template.Object):
             commands=rc,
         )
 
-        return rt.namespaces_node, rt.used_namespaces, rt.last_tag
+        return rt.namespaces_node, rt.last_tag
 
-    def _insert_namespaces(self, target_node, used_namespaces, all_namespaces):
+    # @TODO: move this to the compiler
+    def _collect_namespaces(self, tag_iter, nsdict):
+        for el in tag_iter:
+            n = el.find(':')
+            if n > 0:
+                nsdict.setdefault(el[:n], False)
+            break
+
+        for el in tag_iter:
+            if isinstance(el, (list, tuple)):
+                self._collect_namespaces(iter(el), nsdict)
+            elif isinstance(el, dict):
+                for key in el:
+                    n = key.find(':')
+                    if n > 0:
+                        nsdict.setdefault(key[:n], False)
+
+        return nsdict
+
+    def _insert_namespaces(self, target_node, nsdict, all_namespaces):
+        atts = {}
         schemas = []
 
-        for id in sorted(used_namespaces):
-            ns = all_namespaces.get(id)
+        for id, ns in sorted(nsdict.items()):
+            ns = ns or all_namespaces.get(id)
             if not ns:
                 gws.log.warn(f'unknown namespace {id!r}')
                 continue
             if isinstance(ns, str):
-                uri = ns
-                schema = None
+                uri, schema = ns, None
             else:
                 uri, schema = ns
-            target_node.append({f'xmlns:{id}': uri})
+            atts['xmlns:' + id] = uri
             if schema:
                 schemas.append(uri)
                 schemas.append(schema)
 
+        if atts:
+            target_node.append(atts)
+
         if schemas:
-            if 'xsi' not in used_namespaces:
+            if 'xsi' not in nsdict:
                 target_node.append({'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance'})
             target_node.append({'xsi:schemaLocation': ' '.join(schemas)})

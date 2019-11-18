@@ -1,6 +1,6 @@
 @tag wfs:member
-    @tag us-govserv:GovernmentalService gml:id="{node.attributes.isoUid.value}"
-        @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" {node.attributes.isoUid.value}
+    @tag us-govserv:GovernmentalService gml:id="{node.attributes.iso.uid.value}"
+        @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" {node.attributes.iso.uid.value}
 
         @tag us-govserv:inspireId/base:Identifier
             @t base:localId {node.attributes.localUid.value}
@@ -16,10 +16,10 @@
             @t base2:telephoneVoice {node.attributes.phone.value}
         @end
 
+        @t us-govserv:serviceType xlink:href="http://inspire.ec.europa.eu/codelist/ServiceTypeValue/{node.attributes.serviceType.value}"
+
         @tag us-govserv:serviceLocation/us-govserv:ServiceLocationType/us-govserv:serviceLocationByGeometry
             @insert {node.shape_tag}
         @end
-
-        @t us-govserv:serviceType xlink:href="http://inspire.ec.europa.eu/codelist/ServiceTypeValue/{node.attributes.serviceType.value}"
     @end
 @end

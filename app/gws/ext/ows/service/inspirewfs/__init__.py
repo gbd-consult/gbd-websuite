@@ -47,9 +47,8 @@ class Object(ows.Object):
         self.service_type = 'wfs'
         self.version = VERSION
 
-        self.namespaces = gws.extend({}, ows.NAMESPACES, inspire.NAMESPACES)
-
     def configure(self):
+        super().configure()
 
         for tpl in 'getCapabilities', 'getFeature':
             self.templates[tpl] = self.configure_template(tpl, 'inspirewfs/templates')

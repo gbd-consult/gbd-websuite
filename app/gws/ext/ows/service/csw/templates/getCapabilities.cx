@@ -4,8 +4,8 @@
     @namespaces
 
     @tag ows:ServiceIdentification
-        @t ows:Title {service_meta.title}
-        @t ows:Abstract {service_meta.abstract}
+        @t ows:Title {meta.title}
+        @t ows:Abstract {meta.abstract}
         @tag ows:Keywords
             @t ows:Keyword CS-W
             @t ows:Keyword ISO19119
@@ -15,11 +15,11 @@
         @end
         @t ows:ServiceType CSW
         @t ows:ServiceTypeVersion {service.version}
-        @t ows:Fees NONE
-        @t ows:AccessConstraints NONE
+        @t ows:Fees {meta.fees}
+        @t ows:AccessConstraints {meta.accessConstraints}
     @end
 
-    @ows_service_provider service
+    @ows_service_provider
 
     @tag ows:OperationsMetadata
 
@@ -72,56 +72,8 @@
             @t ows:Value http://www.isotc211.org/2005/gmd
         @end
 
-        @tag inspire_ds:ExtendedCapabilities
-            @tag inspire_common:ResourceLocator
-                @tag inspire_common:URL
-                    http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF
-                @end
-                @t inspire_common:MediaType application/pdf
-            @end
-            @t inspire_common:ResourceType service
-            @tag inspire_common:TemporalReference
-                @t inspire_common:DateOfPublication 2013-04-03
-            @end
-            @tag inspire_common:Conformity
-                @tag inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng"
-                    @t inspire_common:Title COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
-                    @t inspire_common:DateOfPublication 2010-12-08
-                    @t inspire_common:URI OJ:L:2010:323:0011:0102:EN:PDF
-                    @tag inspire_common:ResourceLocator
-                        @tag inspire_common:URL
-                            http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF
-                        @end
-                        @t inspire_common:MediaType application/pdf
-                    @end
-                @end
-            @end
+        @inspire_extended_capabilities
 
-            @tag inspire_common:MetadataPointOfContact
-                @t inspire_common:OrganisationName {service_meta.contact.organization}
-                @t inspire_common:EmailAddress {service_meta.contact.email}
-            @end
-
-            @t inspire_common:MetadataDate {service_meta.date}
-            @t inspire_common:SpatialDataServiceType discovery
-
-            @tag inspire_common:MandatoryKeyword
-                @t inspire_common:KeywordValue humanCatalogueViewer
-            @end
-
-            @tag inspire_common:SupportedLanguages
-                @tag inspire_common:DefaultLanguage
-                    @t inspire_common:Language {service_meta.language3}
-                @end
-                @tag inspire_common:SupportedLanguage
-                    @t inspire_common:Language {service_meta.language3}
-                @end
-            @end
-
-            @tag inspire_common:ResponseLanguage
-                @t inspire_common:Language {service_meta.language3}
-            @end
-        @end
     @end
 
     @tag ogc:Filter_Capabilities

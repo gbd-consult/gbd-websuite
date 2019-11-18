@@ -3,11 +3,7 @@
         
         @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" TODO
 
-        @tag au:geometry 
-            @insert {node.shape_tag}
-        @end
-        
-        @tag au:inspireId 
+        @tag au:inspireId
             @tag base:Identifier 
                 @t base:localId TODO
                 @t base:namespace TODO
@@ -46,6 +42,10 @@
 
         @with node.attributes['au:endLifespanVersion'] as a
             @t au:endLifespanVersion {a.value}
+        @end
+
+        @tag au:geometry
+            @insert {node.shape_tag}
         @end
     @end
 @end

@@ -1,22 +1,22 @@
 @tag csw:Record
-    @t dc:identifier {record.uid}
-    @t dc:title {record.meta.title}
-    @t dc:type dataset
+    @t dc:identifier {meta.iso.uid}
+    @t dc:title {meta.title}
+    @t dc:type {meta.iso.scope}
 
-    @each record.meta.keywords as kw
+    @each meta.keywords as kw
         @t dc:subject {kw}
     @end
 
-    @each record.links as link
+    @each links as link
         @t dct:references scheme="{link.scheme}" {link.href}
     @end
 
-    @t dct:abstract {record.meta.abstract}
-    @t dct:modified {record.meta.date}
-    @t dc:date {record.meta.date}
-    @t dc:language {record.meta.language3}
+    @t dct:abstract {meta.abstract}
+    @t dct:modified {meta.modDate}
+    @t dc:date {meta.pubDate}
+    @t dc:language {meta.language3}
 
-    @with record.lonlat_extent as e
+    @with meta.lonlat_extent as e
         @tag ows:WGS84BoundingBox
             @t ows:LowerCorner {e[0]} {e[1]}
             @t ows:UpperCorner {e[2]} {e[3]}

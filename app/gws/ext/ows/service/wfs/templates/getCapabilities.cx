@@ -1,4 +1,5 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
+@include common.cx
 
 @tag WFS_Capabilities
     @a version={service.version}
@@ -7,7 +8,6 @@
 
     @tag ows:ServiceIdentification
         @t ows:Title {meta.title}
-
         @t ows:Abstract {meta.abstract}
         @tag ows:Keywords
             @each meta.keywords as kw
@@ -16,14 +16,26 @@
         @end
 
         @t ows:ServiceType WFS
-        @t ows:ServiceTypeVersion 2.0
-        @t ows:Fees NONE
-        @t ows:AccessConstraints NONE
+        @t ows:ServiceTypeVersion {service.version}
+        @t ows:Fees {meta.fees}
+        @t ows:AccessConstraints {meta.accessConstraints}
     @end
 
-    @ows_service_provider meta
+    @ows_service_provider
 
-    @wfs_basic_operations
+    @tag ows:OperationsMetadata
+        @wfs_basic_operations
+
+        @if meta.inspire.theme
+            @tag ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities
+                @inspire_extended_capabilities
+            @end
+        @end
+    @end
+
+    @tag fes:Filter_Capabilities
+        @wfs_basic_filter_capabilities
+    @end
 
     @tag FeatureTypeList
         @each layer_node_list as node

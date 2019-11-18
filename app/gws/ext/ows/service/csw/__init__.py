@@ -25,28 +25,10 @@ class TemplatesConfig(t.Config):
     getRecords: t.Optional[t.TemplateConfig]  #: xml template for the CSW getRecords document
 
 
-class LinkConfig(t.Config):
-    type: str
-    href: str
-
-
-class RecordConfig(t.Config):
-    """Describes a Record in the CSW catalog"""
-
-    uid: str
-    meta: t.Optional[t.MetaData]  #: record meta data
-    extent: t.Optional[t.Extent]
-    links: t.Optional[t.List[LinkConfig]]
-    crs: t.Optional[t.crsref]  #: record CRS
-
-
 class Config(gws.common.ows.service.Config):
     """CSW Service configuration"""
 
     templates: t.Optional[TemplatesConfig]  #: service templates
-    meta: t.Optional[t.MetaData]  #: service meta data
-    crs: t.crsref  #: default CRS for all records
-    records: t.List[RecordConfig]
 
 
 VERSION = '2.0.2'
@@ -61,7 +43,7 @@ class Object(ows.Object):
         self.service_type = 'csw'
         self.version = VERSION
 
-        self.namespaces = gws.extend({}, ows.NAMESPACES, inspire.NAMESPACES)
+        self.metas = None
 
     def configure(self):
         super().configure()
@@ -71,10 +53,14 @@ class Object(ows.Object):
 
         self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates', type='text')
 
-        self.meta = gws.common.metadata.read(self.var('meta'))
-        self.crs = self.var('crs')
+        self.meta.inspire = gws.extend({
+            'mandatoryKeyword': 'humanCatalogueViewer',
+            'spatialDataServiceType': 'discovery',
+        }, self.meta.inspire)
 
-        self.records = [self._prepare_record(r) for r in self.var('records')]
+        self.meta.iso = gws.extend({
+            'scope': 'dataset',
+        }, self.meta.iso)
 
     def can_handle(self, req) -> bool:
         if req.is_get:
@@ -84,6 +70,9 @@ class Object(ows.Object):
             return 'csw' in req.post_data
 
     def handle(self, req) -> t.HttpResponse:
+        if self.metas is None:
+            self.metas = ows.collect_metadata(self)
+
         rd = ows.RequestData({
             'req': req,
             'project': None,
@@ -102,9 +91,7 @@ class Object(ows.Object):
         return self.dispatch(rd, request_param.lower())
 
     def handle_getcapabilities(self, rd: ows.RequestData):
-        return ows.xml_response(self.render_template(rd, 'getCapabilities', {
-            'service_meta': self.meta,
-        }))
+        return ows.xml_response(self.render_template(rd, 'getCapabilities', {}))
 
     def handle_describerecord(self, rd: ows.RequestData):
         return ows.xml_response(self.render_template(rd, 'describeRecord', {}))
@@ -119,55 +106,30 @@ class Object(ows.Object):
             'count_return': len(records),
         }
 
-        tags, used_namespaces = self._render_records(rd, records)
-
         return ows.xml_response(rd.service.render_template(rd, 'getRecords', {
-            'record_tags': tags,
+            'record_tags': self._render_records(rd, records),
             'results': results,
-            'service_meta': self.meta,
-            'used_namespaces': used_namespaces,
         }))
 
     def handle_getrecordbyid(self, rd: ows.RequestData):
-        id = rd.req.kparam('id')
-        records = [r for r in self.records if r.uid == id]
-
-        tags, used_namespaces = self._render_records(rd, records)
+        record = self.metas.get(rd.req.kparam('id'))
+        if not record:
+            raise gws.web.error.NotFound()
 
         return ows.xml_response(rd.service.render_template(rd, 'getRecordById', {
-            'record_tags': tags,
-            'service_meta': self.meta,
-            'used_namespaces': used_namespaces,
+            'record_tags': self._render_records(rd, [record]),
         }))
-
-    def _prepare_record(self, rec):
-        rec.meta.language = rec.meta.language or self.meta.language
-        rec.meta.language3 = rec.meta.language3 or self.meta.language3
-        rec.crs = rec.crs or self.crs
-
-        if rec.extent:
-            rec.lonlat_extent = ows.lonlat_extent(rec.extent, rec.crs)
-
-        for s in rec.links:
-            if s.type.lower() in ('wms', 'wfs'):
-                s.scheme = 'OGC:' + s.type.upper()
-
-        return rec
 
     def _find_records(self, rd):
         # @TODO filters
-        return self.records
+        return self.metas.values()
 
     def _render_records(self, rd, records):
         tags = []
-        used_namespaces = set()
 
         for record in records:
-            ns, tag = self.render_template(rd, 'record', {
-                'service_meta': self.meta,
-                'record': record,
-            }, format='tag')
-            used_namespaces.update(ns)
-            tags.append(tag)
+            tags.append(self.render_template(rd, 'record', {
+                'meta': record,
+            }, format='tag'))
 
-        return tags, used_namespaces
+        return tags

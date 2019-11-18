@@ -18,6 +18,7 @@ class Error(ValueError):
 ERROR_SYNTAX = 'syntax error'
 ERROR_BLOCK_MULTI_LET = 'cannot assign a block'
 ERROR_COMMAND = 'unknown command'
+ERROR_END = 'unexpected "end"'
 ERROR_IDENT = 'invalid identifier'
 ERROR_EOF = 'unexpected end of file'
 ERROR_DEF = 'function definition error'
@@ -426,7 +427,10 @@ class Command:
 
         # nothing found :(
 
-        self.cc.error(ERROR_COMMAND, cmd)
+        if cmd == 'end':
+            self.cc.error(ERROR_END)
+        else:
+            self.cc.error(ERROR_COMMAND, cmd)
 
     #
 

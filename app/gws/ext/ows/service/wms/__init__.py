@@ -46,7 +46,7 @@ class Object(ows.Object):
 
     def handle_getcapabilities(self, rd: ows.RequestData):
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {
-            'layer_node_tree': ows.layer_node_tree(rd),
+            'layer_node_root': ows.layer_node_root(rd),
         }))
 
     def handle_getmap(self, rd: ows.RequestData):

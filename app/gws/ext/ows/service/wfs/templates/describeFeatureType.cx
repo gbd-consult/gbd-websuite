@@ -3,7 +3,7 @@
 @tag xsd:schema
     @namespaces
     @a elementFormDefault="qualified"
-    @a targetNamespace="{namespaces[feature_namespace]}"
+    @a targetNamespace="{feature_namespace_uri}"
 
     @t xsd:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"
 

@@ -19,8 +19,6 @@ class Object(wms.Object):
         self.service_type = 'wms'
         self.version = wms.VERSION
 
-        self.namespaces = gws.extend({}, ows.NAMESPACES, inspire.NAMESPACES)
-
     def configure(self):
         super().configure()
 

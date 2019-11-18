@@ -224,13 +224,13 @@ class MetaData(Data):
     accessConstraints: str = ''
     fees: str = ''
 
-    isoUid: str = ''  #: ISO-19115 identifier
-    isoCategory: str = ''  #: ISO-19115 category, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_TopicCategoryCode
-    isoScope: str = ''  #: ISO-19115 scope, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_ScopeCode
-    isoProps: dict = {}  #: ISO-19115 properties
+    # uid: str = ''  #: ISO-19115 identifier
+    # category: str = ''  #: ISO-19115 category, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_TopicCategoryCode
+    # scope: str = ''  #: ISO-19115 scope, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_ScopeCode
+    iso: dict = {}  #: ISO-19115 properties
 
-    inspireTheme: str = ''  #: INSPIRE theme shortcut, e.g. "au"
-    inspireProps: dict = {}  #: INSPIRE  properties
+    # theme: str = ''  #: INSPIRE theme shortcut, e.g. "au"
+    inspire: dict = {}  #: INSPIRE  properties
 
     contact: Optional[MetaContact]  #: contact information
 

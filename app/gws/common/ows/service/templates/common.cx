@@ -4,7 +4,7 @@
     @t ows:DCP/ows:HTTP/ows:Get xlink:href={rewrite_url(service.endpoint)}
 @end
 
-@def ows_service_provider(meta)
+@def ows_service_provider
     @tag ows:ServiceProvider
         @with meta.contact as co
             @t ows:IndividualName {co.person}
@@ -31,5 +31,42 @@
     @return feature_namespace + ':' + s
 @end
 
-@include wms.cx
-@include wfs.cx
+@def inspire_extended_capabilities
+    @tag inspire_common:ResourceLocator
+        @tag inspire_common:URL
+            @with meta.iso.uid
+                {rewrite_url('_/cmd/owsHttp/srv/isometa/id', meta.iso.uid)}
+            @else
+                {rewrite_url(meta.url)}
+            @end
+        @end
+        @t inspire_common:MediaType text/xml
+    @end
+
+    @t inspire_common:ResourceType {meta.inspire.resourceType}
+    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.pubDate}
+
+    @tag inspire_common:Conformity
+        @tag inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng"
+            @t inspire_common:Title COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
+            @t inspire_common:DateOfPublication 2010-12-08
+        @end
+        @t inspire_common:Degree {meta.inspire.degreeOfConformity}
+    @end
+
+    @tag inspire_common:MetadataPointOfContact
+        @t inspire_common:OrganisationName {meta.contact.organization}
+        @t inspire_common:EmailAddress {meta.contact.email}
+    @end
+
+    @t inspire_common:SpatialDataServiceType {meta.inspire.spatialDataServiceType}
+    @t inspire_common:MandatoryKeyword/inspire_common:KeywordValue {meta.inspire.mandatoryKeyword}
+
+    @tag inspire_common:SupportedLanguages
+        @t inspire_common:DefaultLanguage/inspire_common:Language {meta.language3}
+        @t inspire_common:SupportedLanguage/inspire_common:Language {meta.language3}
+    @end
+
+    @t inspire_common:ResponseLanguage/inspire_common:Language {meta.language3}
+@end
+

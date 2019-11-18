@@ -4,13 +4,27 @@
     @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={rewrite_url(service.endpoint)}
 @end
 
+@def wms_service_metadata
+    @t Abstract {meta.abstract}
+    @tag KeywordList
+        @each meta.keywords as kw
+            @t Keyword {kw}
+        @end
+    @end
+    @with meta.iso.uid
+        @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url('_/cmd/owsHttp/srv/isometa/id', meta.iso.uid)}"
+    @else
+        @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url(meta.url)}"
+    @end
+@end
+
 @def wms_meta_url(meta)
-    @if meta.isoUid
+    @with  meta.iso.uid
         @tag MetadataURL type="ISO19115:2003"
             @t Format application/xml
-            @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url('_/cmd/owsHttp/srv/isometa', id=meta.isoUid)}"
+            @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url('_/cmd/owsHttp/srv/isometa', id=meta.iso.uid)}"
         @end
-    @elif meta.url
+    @else
         @tag MetadataURL
             @t Format application/xml
             @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url(meta.url)}"
@@ -18,19 +32,27 @@
     @end
 @end
 
-@def wms_inspire_extended_capabilities(meta)
-    @tag inspire_vs:ExtendedCapabilities
-        @wms_meta_url meta
-        @tag inspire_common:SupportedLanguages
-            @t inspire_common:DefaultLanguage/inspire_common:Language {meta.language3}
-        @end
-        @tag inspire_common:ResponseLanguage
-            @t inspire_common:Language {meta.language3}
+@def wms_contact_metadata
+    @with meta.contact as co
+        @tag ContactInformation
+            @tag ContactPersonPrimary
+                @t ContactPerson {co.person}
+                @t ContactOrganization {co.organization}
+            @end
+            @t ContactPosition {co.position}
+            @tag ContactAddress
+                @t AddressType postal
+                @t Address {co.address}
+                @t City {co.city}
+                @t StateOrProvince {co.area}
+                @t PostCode {co.zip}
+                @t Country {co.country}
+            @end
+            @t ContactVoiceTelephone {co.phone}
+            @t ContactElectronicMailAddress {co.email}
         @end
     @end
 @end
-
-
 
 @def wms_request_capabilities
     @tag Request
@@ -54,7 +76,7 @@
     @t Exception/Format XML
 @end
 
-@def wms_basic_layer_capabilities node
+@def wms_basic_layer_capabilities(node)
     @t CRS {node.proj.epsg}
 
     @tag EX_GeographicBoundingBox
@@ -70,51 +92,18 @@
     @t MaxScaleDenominator {node.max_scale | as_int}
 @end
 
-@def wms_layer_capabilities node
+@def wms_layer_capabilities(node)
     @tag Layer queryable="{1 if node.has_search else 0}"
 
         @t Name {feature_ns(node.tag_name)}
-        @t Title {node.layer.title}
-        @t Abstract {node.layer.meta.abstract}
+        @t Title {node.title}
+        @t Abstract {node.meta.abstract}
 
-        @wms_meta_url node.layer.meta
+        @wms_meta_url node.meta
         @wms_basic_layer_capabilities node
 
         @each reversed(node.sub_nodes) as sub_node
             @wms_layer_capabilities sub_node
-        @end
-    @end
-@end
-
-
-@def wms_service_metadata
-    @t Abstract {meta.abstract}
-    @tag KeywordList
-        @each meta.keywords as kw
-            @t Keyword {kw}
-        @end
-    @end
-    @wms_meta_url meta
-@end
-
-@def wms_contact_metadata
-    @with meta.contact as co
-        @tag ContactInformation
-            @tag ContactPersonPrimary
-                @t ContactPerson {co.person}
-                @t ContactOrganization {co.organization}
-            @end
-            @t ContactPosition {co.position}
-            @tag ContactAddress
-                @t AddressType postal
-                @t Address {co.address}
-                @t City {co.city}
-                @t StateOrProvince {co.area}
-                @t PostCode {co.zip}
-                @t Country {co.country}
-            @end
-            @t ContactVoiceTelephone {co.phone}
-            @t ContactElectronicMailAddress {co.email}
         @end
     @end
 @end

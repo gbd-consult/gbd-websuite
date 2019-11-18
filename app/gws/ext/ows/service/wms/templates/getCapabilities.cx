@@ -1,4 +1,5 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
+@include common.cx
 
 @tag WMS_Capabilities
     @a version={service.version}
@@ -8,19 +9,20 @@
     @tag Service
         @t Name WMS
         @t Title {meta.title}
-
         @wms_service_metadata
         @wms_contact_metadata
-        @wms_inspire_extended_capabilities meta
-
     @end
 
     @tag Capability
         @wms_request_capabilities
 
-        @each reversed(layer_node_tree) as node
-            @wms_layer_capabilities node
+        @if meta.inspire.theme
+            @tag inspire_vs:ExtendedCapabilities
+                @inspire_extended_capabilities
+            @end
         @end
+
+        @wms_layer_capabilities layer_node_root
     @end
 @end
 

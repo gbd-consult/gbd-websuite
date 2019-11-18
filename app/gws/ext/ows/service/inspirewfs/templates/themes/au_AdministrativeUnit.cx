@@ -1,11 +1,7 @@
 @tag wfs:member
-    @tag au:AdministrativeUnit gml:id="{project.isoUid}.{node.feature.uid}"
+    @tag au:AdministrativeUnit gml:id="{project.iso.uid}.{node.feature.uid}"
         
-        @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" {project.isoUid}.{node.feature.uid}
-
-        @tag au:geometry 
-            @insert {node.shape_tag}
-        @end
+        @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" {project.iso.uid}.{node.feature.uid}
 
         @with node.attributes['au:name'] as a
             @tag au:name/gn:GeographicalName
@@ -37,5 +33,8 @@
             @t au:upperLevelUnit xlink:href="#AdministrativeUnit_{a.value}"
         @end
 
+        @tag au:geometry
+            @insert {node.shape_tag}
+        @end
     @end
 @end
