@@ -155,6 +155,19 @@ _headers = {
 }
 
 
+def _format_value(val, rec):
+    def repl(m):
+        ref = m.group(1)
+        if ref.endswith('[0]'):
+            v = rec.get(ref[:-3]) or ''
+            return v[:1]
+        return rec.get(ref, '')
+
+    if '{' not in val:
+        return val
+
+    return re.sub(r'{(.+?)}', repl, val)
+
 def as_csv(obj, fs_list, groups, path, headers=None):
     keys = []
     for g in groups:
@@ -173,10 +186,7 @@ def as_csv(obj, fs_list, groups, path, headers=None):
             rf = []
             for h in headers:
                 if 'value' in h:
-                    v = h['value']
-                    if '{' in v:
-                        v = re.sub(r'{(.+?)}', lambda m: r.get(m.group(1), ''), v)
-                    rf.append(v)
+                    rf.append(_format_value(h['value'], r))
                 else:
                     rf.append(r[h['source']])
             csv_rows.append(rf)
