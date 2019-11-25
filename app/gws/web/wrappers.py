@@ -149,9 +149,9 @@ class Request(werkzeug.wrappers.Request):
     def kparam(self, key, default=None):
         return self.kparams.get(key.lower(), default)
 
-    def rewritten_url(self, url):
-        u = self.site.rewritten_url(self, url)
-        gws.log.debug(f'reversed rewrite {url!r}=>{u!r}')
+    def url_for(self, url):
+        u = self.site.url_for(self, url)
+        gws.log.debug(f'url_for: {url!r}=>{u!r}')
         return u
 
 

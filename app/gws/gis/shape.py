@@ -80,6 +80,10 @@ def buffer_extent(e, buf):
     ]
 
 
+def extents_intersect(a, b):
+    return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
+
+
 def union(shapes):
     if not shapes:
         return None

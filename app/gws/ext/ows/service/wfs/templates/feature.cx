@@ -1,12 +1,10 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
-@tag wfs:member
-    @tag {feature_ns(node.tag_name)} gml:id="{node.feature.uid}"
-        @each node.attributes.values() as a
-            @t {feature_ns(a.name)} {a.value}
-        @end
-        @tag {feature_ns('geometry')}
-            @insert {node.shape_tag}
-        @end
+@tag {feature_ns(node.tag_name)} gml:id="{node.feature.uid}"
+    @each node.attributes.values() as a
+        @t {feature_ns(a.name)} {a.value}
+    @end
+    @tag {feature_ns('geometry')}
+        @insert {node.shape_tag}
     @end
 @end

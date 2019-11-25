@@ -1,35 +1,7 @@
 ## helper functions for wms
 
 @def wms_default_url
-    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={rewrite_url(service.endpoint)}
-@end
-
-@def wms_service_metadata
-    @t Abstract {meta.abstract}
-    @tag KeywordList
-        @each meta.keywords as kw
-            @t Keyword {kw}
-        @end
-    @end
-    @with meta.iso.uid
-        @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url('_/cmd/owsHttp/srv/isometa/id', meta.iso.uid)}"
-    @else
-        @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url(meta.url)}"
-    @end
-@end
-
-@def wms_meta_url(meta)
-    @with  meta.iso.uid
-        @tag MetadataURL type="ISO19115:2003"
-            @t Format application/xml
-            @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url('_/cmd/owsHttp/srv/isometa', id=meta.iso.uid)}"
-        @end
-    @else
-        @tag MetadataURL
-            @t Format application/xml
-            @t OnlineResource xlink:type="simple" xlink:href="{rewrite_url(meta.url)}"
-        @end
-    @end
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={url_for(service.url)}
 @end
 
 @def wms_contact_metadata
@@ -54,6 +26,40 @@
     @end
 @end
 
+@def wms_service_metadata
+    @t Abstract {meta.abstract}
+    @tag KeywordList
+        @each meta.keywords as kw
+            @t Keyword {kw}
+        @end
+    @end
+    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url)}"
+
+    @wms_contact_metadata
+
+    @with meta.fees
+        @t Fees {meta.fees}
+    @end
+    @with meta.accessConstraints
+        @t AccessConstraints {meta.accessConstraints}
+    @end
+@end
+
+@def wms_meta_url(meta)
+    @if meta.iso.uid
+        @tag MetadataURL type="ISO19115:2003"
+            @t Format application/xml
+            @t OnlineResource xlink:type="simple" xlink:href="{csw_meta_url(meta.iso.uid)}"
+        @end
+    @elif meta.url
+        @tag MetadataURL
+            @t Format application/xml
+            @t OnlineResource xlink:type="simple" xlink:href="{url_for(meta.url)}"
+        @end
+    @end
+@end
+
+
 @def wms_request_capabilities
     @tag Request
         @tag GetCapabilities
@@ -76,22 +82,6 @@
     @t Exception/Format XML
 @end
 
-@def wms_basic_layer_capabilities(node)
-    @t CRS {node.proj.epsg}
-
-    @tag EX_GeographicBoundingBox
-        @t westBoundLongitude {node.lonlat_extent[0]}
-        @t eastBoundLongitude {node.lonlat_extent[2]}
-        @t southBoundLatitude {node.lonlat_extent[1]}
-        @t northBoundLatitude {node.lonlat_extent[3]}
-    @end
-
-    @t BoundingBox CRS="{node.proj.epsg}" minx="{node.extent[0]}" miny="{node.extent[1]}" maxx="{node.extent[2]}" maxy="{node.extent[3]}"
-
-    @t MinScaleDenominator {node.min_scale | as_int}
-    @t MaxScaleDenominator {node.max_scale | as_int}
-@end
-
 @def wms_layer_capabilities(node)
     @tag Layer queryable="{1 if node.has_search else 0}"
 
@@ -99,8 +89,33 @@
         @t Title {node.title}
         @t Abstract {node.meta.abstract}
 
+        @t CRS {node.proj.epsg}
+
+        @tag EX_GeographicBoundingBox
+            @t westBoundLongitude {node.lonlat_extent[0]}
+            @t eastBoundLongitude {node.lonlat_extent[2]}
+            @t southBoundLatitude {node.lonlat_extent[1]}
+            @t northBoundLatitude {node.lonlat_extent[3]}
+        @end
+
+        @t BoundingBox CRS="{node.proj.epsg}" minx="{node.extent[0]}" miny="{node.extent[1]}" maxx="{node.extent[2]}" maxy="{node.extent[3]}"
+
+        @with node.meta.attribution
+            @t Attribution/Title {node.meta.attribution}
+        @end
+
         @wms_meta_url node.meta
-        @wms_basic_layer_capabilities node
+
+        @if node.layer.has_legend
+            @tag Style/LegendURL
+                @t Format image/png
+                @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + feature_ns(node.tag_name)}"
+            @end
+        @end
+
+        @t MinScaleDenominator {node.min_scale | as_int}
+        @t MaxScaleDenominator {node.max_scale | as_int}
+
 
         @each reversed(node.sub_nodes) as sub_node
             @wms_layer_capabilities sub_node

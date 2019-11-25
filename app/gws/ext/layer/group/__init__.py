@@ -16,9 +16,9 @@ class Object(gws.gis.layer.Base):
         self.layers = gws.gis.layer.add_layers_to_object(self, self.var('layers'))
         self.configure_extent(gws.gis.shape.merge_extents(la.extent for la in self.layers))
 
-    def has_ows(self, kind):
-        return (super().has_ows(kind)
-                and any(la.has_ows(kind) for la in self.layers))
+    def ows_enabled(self, service):
+        return (super().ows_enabled(service)
+                and any(la.ows_enabled(service) for la in self.layers))
 
     @property
     def props(self):

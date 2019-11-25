@@ -6,6 +6,16 @@ import gws.types as t
 _uids = set()
 
 
+def _new_uid(uid):
+    n = 0
+    u = uid
+    while u in _uids:
+        n += 1
+        u = uid + str(n)
+    _uids.add(u)
+    return u
+
+
 class Object(t.ObjectInterface):
     def __init__(self):
         self.children = []
@@ -26,17 +36,9 @@ class Object(t.ObjectInterface):
         return self.klass.startswith(klass + '.')
 
     def set_uid(self, uid):
-        if self.uid == uid:
-            return
-
         with util.global_lock:
-            n = 0
-            u = uid
-            while uid in _uids:
-                n += 1
-                uid = u + str(n)
-            _uids.add(uid)
-            self.uid = uid
+            if self.uid != uid:
+                self.uid = _new_uid(uid)
 
     @property
     def auto_uid(self):

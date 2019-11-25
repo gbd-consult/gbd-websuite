@@ -49,6 +49,8 @@ class Object(gws.Object):
 
     def configure(self):
         super().configure()
+
+        self.ssl = self.var('ssl')
         self.host = self.var('host', default='*')
 
         self.static_root = self.var('root')
@@ -82,7 +84,7 @@ class Object(gws.Object):
         if p and p.get('enabled'):
             self.cors = p
 
-    def rewritten_url(self, req, url):
+    def url_for(self, req, url):
         if gws.tools.net.is_abs_url(url):
             return url
 

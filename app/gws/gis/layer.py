@@ -80,7 +80,9 @@ class FlattenConfig(t.Config):
 
 
 class OwsConfig(t.Config):
-    services: t.List[t.ext.ows.service.Config]
+    name: str = '' #: layer name for ows services
+    servicesEnabled: t.Optional[t.List[str]] #: services enabled for this layer
+    servicesDisabled: t.Optional[t.List[str]] #: services disabled for this layer
 
 
 class BaseConfig(t.WithTypeAndAccess):
@@ -100,7 +102,6 @@ class BaseConfig(t.WithTypeAndAccess):
     ows: t.Optional[OwsConfig]  #: OWS services options
     title: str = ''  #: layer title
     uid: str = ''  #: layer unique id
-    owsName: str = '' #: layer name for ows services
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
@@ -214,7 +215,7 @@ class Base(gws.Object, t.LayerObject):
         self.use_meta(gws.common.metadata.read(self.var('meta')))
         self.is_public = gws.auth.api.role('all').can_use(self)
 
-        self.ows_name = self.var('owsName') or self.uid.split('.')[-1]
+        self.ows_name = self.var('ows.name') or self.uid.split('.')[-1]
 
         p = self.var('legend')
         self.legend_url = p.url
@@ -255,9 +256,8 @@ class Base(gws.Object, t.LayerObject):
             for cfg in p.providers:
                 self.add_child('gws.ext.search.provider', cfg)
 
-        p = self.var('ows.services', default=[])
-        for cfg in p:
-            self.add_child('gws.ext.ows.service', cfg)
+        self.ows_services_enabled = set(self.var('ows.servicesEnabled', default=[]))
+        self.ows_services_disabled = set(self.var('ows.servicesDisabled', default=[]))
 
     def configure_extent(self, default_extent):
         self.extent = self.calc_extent(default_extent)
@@ -332,10 +332,11 @@ class Base(gws.Object, t.LayerObject):
     def modify_features(self, operation, feature_params):
         pass
 
-    def has_ows(self, kind):
-        for s in self.get_children('gws.ext.ows.service'):
-            if s.kind == kind:
-                return s.enabled
+    def ows_enabled(self, service):
+        if service.name in self.ows_services_disabled:
+            return False
+        if self.ows_services_enabled:
+            return service.name in self.ows_services_enabled
         return True
 
 
@@ -376,8 +377,8 @@ class Image(Base):
             tile_matrix=self.grid_uid,
             tile_size=self.grid.tileSize)
 
-    def has_ows(self, kind):
-        return kind == 'wms' and super().has_ows(kind)
+    def ows_enabled(self, service):
+        return super().ows_enabled(service) and service.type == 'wms'
 
     """
         Mapproxy config is done in two steps
@@ -508,8 +509,8 @@ class Vector(Base):
             f.set_default_style(style)
         return [f.to_svg(bbox, dpi, scale, rotation) for f in features]
 
-    def has_ows(self, kind):
-        return kind == 'wfs' and super().has_ows(kind)
+    def ows_enabled(self, service):
+        return super().ows_enabled(service) and service.type == 'wfs'
 
 
 def add_layers_to_object(obj, layer_configs):

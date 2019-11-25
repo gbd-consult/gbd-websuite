@@ -13,21 +13,13 @@ import gws.web.error
 import gws.types as t
 
 import gws.common.ows.service as ows
-
-
-class TemplatesConfig(t.Config):
-    """WFS service templates"""
-
-    getCapabilities: t.Optional[t.TemplateConfig]  #: xml template for the WFS capabilities document
-    describeFeatureType: t.Optional[t.TemplateConfig]  #: xml template for the WFS DescribeFeatureType document
-    getFeature: t.Optional[t.TemplateConfig]  #: xml template for the WFS GetFeature document
-    feature: t.Optional[t.TemplateConfig]  #: xml template for a WFS feature
+import gws.common.ows.service.inspire as inspire
 
 
 class Config(gws.common.ows.service.Config):
     """WFS Service configuration"""
 
-    templates: t.Optional[TemplatesConfig]  #: service templates
+    pass
 
 
 VERSION = '2.0'
@@ -38,9 +30,16 @@ class Object(ows.Object):
     def __init__(self):
         super().__init__()
 
-        self.service_class = 'wfs'
-        self.service_type = 'wfs'
+        self.type = 'wfs'
         self.version = VERSION
+
+    @property
+    def service_link(self):
+        return t.MetaLink({
+            'url': self.service_url,
+            'scheme': 'OGC:WFS',
+            'function': 'download'
+        })
 
     def configure(self):
         super().configure()
@@ -49,32 +48,42 @@ class Object(ows.Object):
             self.templates[tpl] = self.configure_template(tpl, 'wfs/templates')
 
     def handle_getcapabilities(self, rd: ows.RequestData):
+        nodes = ows.layer_node_list(rd)
+        if self.use_inspire_data:
+            nodes = ows.inspire_nodes(nodes)
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {
-            'layer_node_list': ows.layer_node_list(rd),
+            'layer_node_list': nodes,
         }))
 
     def handle_describefeaturetype(self, rd: ows.RequestData):
         nodes = ows.layer_nodes_from_request_params(rd, 'typeName', 'typeNames')
+        if self.use_inspire_data:
+            nodes = ows.inspire_nodes(nodes)
         if not nodes:
             raise gws.web.error.NotFound()
 
-        for node in nodes:
-            dm = node.layer.data_model
-            node.feature_schema = []
-            for a in dm:
-                xtype = ows.ATTR_TYPE_TO_XML.get(a.type or 'str')
-                if xtype:
-                    node.feature_schema.append({
-                        'name': a.name,
-                        'type': xtype
-                    })
 
-            gtype = node.layer.geometry_type
-            if gtype:
-                node.feature_schema.append({
-                    'name': 'geometry',
-                    'type': ows.ATTR_TYPE_TO_XML.get(gtype)
-                })
+        if self.use_inspire_data:
+            # @TODO inspiure schemas
+            pass
+        else:
+            for node in nodes:
+                dm = node.layer.data_model
+                node.feature_schema = []
+                for a in dm:
+                    xtype = ows.ATTR_TYPE_TO_XML.get(a.type or 'str')
+                    if xtype:
+                        node.feature_schema.append({
+                            'name': a.name,
+                            'type': xtype
+                        })
+
+                gtype = node.layer.geometry_type
+                if gtype:
+                    node.feature_schema.append({
+                        'name': 'geometry',
+                        'type': ows.ATTR_TYPE_TO_XML.get(gtype)
+                    })
 
         return ows.xml_response(self.render_template(rd, 'describeFeatureType', {
             'layer_node_list': nodes,
@@ -82,6 +91,8 @@ class Object(ows.Object):
 
     def handle_getfeature(self, rd: ows.RequestData):
         nodes = ows.layer_nodes_from_request_params(rd, 'typeName', 'typeNames')
+        if self.use_inspire_data:
+            nodes = ows.inspire_nodes(nodes)
         if not nodes:
             raise gws.web.error.NotFound()
 
@@ -105,4 +116,4 @@ class Object(ows.Object):
 
         features = gws.common.search.runner.run(rd.req, args)
         nodes = ows.feature_node_list(rd, features)
-        return ows.render_feature_nodes(rd, nodes, 'getFeature')
+        return self.render_feature_nodes(rd, nodes, 'getFeature')

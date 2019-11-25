@@ -7,15 +7,26 @@ import gws.ows.request
 import gws.types as t
 
 
-def combine_legends(urls: t.List[str]):
-    images = []
+def combine_legend_urls(urls: t.List[str]):
+    content = []
     for url in urls:
         try:
             resp = gws.ows.request.raw_get(url)
-            images.append(Image.open(BytesIO(resp.content)))
+            content.append(resp.content)
         except:
             gws.log.exception()
             continue
+
+    if not content:
+        return
+
+    return combine_legends(content)
+
+
+def combine_legends(content: t.List[bytes]):
+    images = []
+    for c in content:
+        images.append(Image.open(BytesIO(c)))
 
     if not images:
         return

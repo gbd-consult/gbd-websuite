@@ -14,16 +14,9 @@ import gws.types as t
 import gws.common.ows.service as ows
 
 
-class TemplatesConfig(t.Config):
-    getCapabilities: t.Optional[t.TemplateConfig]  #: xml template for the WMS capabilities document
-    getFeatureInfo: t.Optional[t.TemplateConfig]  #: xml template for the WMS GetFeatureInfo response
-    feature: t.Optional[t.TemplateConfig]  #: xml template for a WMS feature
-
-
 class Config(gws.common.ows.service.Config):
     """WMS Service configuration"""
-
-    templates: t.Optional[TemplatesConfig]  #: service templates
+    pass
 
 
 VERSION = '1.3.0'
@@ -34,9 +27,16 @@ class Object(ows.Object):
     def __init__(self):
         super().__init__()
 
-        self.service_class = 'wms'
-        self.service_type = 'wms'
+        self.type = 'wms'
         self.version = VERSION
+
+    @property
+    def service_link(self):
+        return t.MetaLink({
+            'url': self.service_url,
+            'scheme': 'OGC:WMS',
+            'function': 'search'
+        })
 
     def configure(self):
         super().configure()
@@ -45,8 +45,12 @@ class Object(ows.Object):
             self.templates[tpl] = self.configure_template(tpl, 'wms/templates')
 
     def handle_getcapabilities(self, rd: ows.RequestData):
+        root = ows.layer_node_root(rd)
+        if not root:
+            raise gws.web.error.NotFound()
+
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {
-            'layer_node_root': ows.layer_node_root(rd),
+            'layer_node_root': root,
         }))
 
     def handle_getmap(self, rd: ows.RequestData):
@@ -111,7 +115,7 @@ class Object(ows.Object):
     def handle_getfeatureinfo(self, rd: ows.RequestData):
         features = find_features(rd)
         nodes = ows.feature_node_list(rd, features)
-        return ows.render_feature_nodes(rd, nodes, 'getFeatureInfo')
+        return self.render_feature_nodes(rd, nodes, 'getFeatureInfo')
 
 
 def find_features(rd: ows.RequestData):

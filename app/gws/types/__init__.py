@@ -207,7 +207,8 @@ class MetaContact(Data):
 class MetaLink(Data):
     """Object link configuration"""
 
-    url: url
+    scheme: str = '' #: link scheme
+    url: url  #: link url
     function: str = ''  #: ISO-19115 function, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#CI_OnLineFunctionCode
 
 
@@ -241,8 +242,8 @@ class MetaData(Data):
     images: dict = {}  #: further images
 
     url: url = ''  #: object metadata url
+    serviceUrl: url = '' #: object service url
     links: List[MetaLink] = []  #: additional links
-
 
 
 class ServiceOperation:
@@ -578,7 +579,7 @@ class LayerObject(ObjectInterface, MapView):
     def search(self, provider: 'SearchProviderInterface', args: 'SearchArgs') -> List['FeatureInterface']:
         raise NotImplementedError
 
-    def has_ows(self, kind: str) -> bool:
+    def ows_enabled(self, service: 'OwsServiceInterface') -> bool:
         raise NotImplementedError
 
 
@@ -634,6 +635,12 @@ class FormatInterface(ObjectInterface):
     def apply_data_model(self, d: dict, data_model: List[Attribute]):
         """Convert data."""
         raise NotImplementedError
+
+class OwsServiceInterface:
+    name: str
+    type: str
+    meta: MetaData
+    version: str
 
 
 class FeatureInterface:

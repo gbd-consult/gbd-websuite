@@ -1,25 +1,62 @@
 ## helper functions for ows templates
 
-@def ows_default_url
-    @t ows:DCP/ows:HTTP/ows:Get xlink:href={rewrite_url(service.endpoint)}
+@def ows_service_url(get=True, post=False)
+    @tag ows:DCP/ows:HTTP
+        @if get
+            @t ows:Get xlink:href={url_for(service.url)}
+        @end
+        @if post
+            @t ows:Post xlink:href={url_for(service.url)}
+        @end
+    @end
+@end
+
+
+@def ows_service_identification
+    @tag ows:ServiceIdentification
+        @t ows:Title {meta.title}
+        @t ows:Abstract {meta.abstract}
+        @tag ows:Keywords
+            @each meta.keywords as kw
+                @t ows:Keyword {kw}
+            @end
+        @end
+
+        @t ows:ServiceType {service.type}
+        @t ows:ServiceTypeVersion {service.version}
+
+        @t ows:Fees {meta.fees}
+        @t ows:AccessConstraints {meta.accessConstraints}
+    @end
 @end
 
 @def ows_service_provider
     @tag ows:ServiceProvider
         @with meta.contact as co
-            @t ows:IndividualName {co.person}
-            @t ows:PositionName {co.position}
-            @t ows:ContactInfo/ows:Phone/ows:Voice {co.phone}
+            @t ows:ProviderName {co.uid}
+            @t ows:ProviderSite xlink:href="{co.url}"
+            @tag ows:ServiceContact
+                @t ows:IndividualName {co.person}
+                @t ows:PositionName {co.position}
 
-            @tag ows:Address
-                @t ows:DeliveryPoint {co.address}
-                @t ows:City {co.city}
-                @t ows:AdministrativeArea {co.area}
-                @t ows:PostalCode {co.zip}
-                @t ows:Country {co.country}
-                @t ows:ElectronicMailAddress {co.email}
+                @tag ows:ContactInfo
+                    @tag ows:Phone
+                        @t ows:Voice {co.phone}
+                        @t ows:Facsimile {co.fax}
+                    @end
+                    @tag ows:Address
+                        @t ows:DeliveryPoint {co.address}
+                        @t ows:City {co.city}
+                        @t ows:AdministrativeArea {co.area}
+                        @t ows:PostalCode {co.zip}
+                        @t ows:Country {co.country}
+                        @t ows:ElectronicMailAddress {co.email}
+                    @end
+                    @t ows:OnlineResource xlink:href="{co.url}"
+                @end
+
+                @t ows:Role {co.role}
             @end
-            @t ows:OnlineResource xlink:href="{co.url}"
         @end
     @end
 @end
@@ -35,9 +72,9 @@
     @tag inspire_common:ResourceLocator
         @tag inspire_common:URL
             @with meta.iso.uid
-                {rewrite_url('_/cmd/owsHttp/srv/isometa/id', meta.iso.uid)}
+                {csw_meta_url(meta.iso.uid)}
             @else
-                {rewrite_url(meta.url)}
+                {url_for(meta.url)}
             @end
         @end
         @t inspire_common:MediaType text/xml

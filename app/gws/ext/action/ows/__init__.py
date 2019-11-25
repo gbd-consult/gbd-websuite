@@ -51,6 +51,7 @@ class Object(gws.ActionObject):
             return service.error_response(500)
 
     def _find_service(self, req):
+        s = req.param('serviceName')
         for service in self.services:
-            if service.can_handle(req):
+            if service.name == s:
                 return service

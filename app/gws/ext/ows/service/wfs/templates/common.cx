@@ -23,7 +23,7 @@
 @def wfs_basic_operations default_count=1000
     @tag ows:Operation name="GetCapabilities"
 
-        @ows_default_url
+        @ows_service_url
 
         @tag ows:Parameter name="AcceptVersions"
             @tag ows:AllowedValues
@@ -35,11 +35,11 @@
     @end
 
     @tag ows:Operation name="DescribeFeatureType"
-        @ows_default_url
+        @ows_service_url
     @end
 
     @tag ows:Operation name="GetFeature"
-        @ows_default_url
+        @ows_service_url
     @end
 
     @tag ows:Parameter name="version"

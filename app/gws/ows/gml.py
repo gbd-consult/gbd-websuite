@@ -4,11 +4,35 @@ import gws
 import gws.gis.proj
 import gws.gis.feature
 import gws.gis.shape
+import gws.tools.xml3
 import gws.types as t
 
 
 def tag(*args):
     return args
+
+
+def envelope_to_extent(el: gws.tools.xml3.Element) -> t.Extent:
+    crs = el.attr('srsName') or 4326
+    prj = gws.gis.proj.as_proj(crs)
+    if not prj:
+        return None, None
+
+    def pair(s):
+        s = s.split()
+        return float(s[0]), float(s[1])
+
+    try:
+        x1, y1 = pair(el.get_text('LowerCorner'))
+        x2, y2 = pair(el.get_text('UpperCorner'))
+        return prj.epsg, [
+            min(x1, x2),
+            min(y1, y2),
+            max(x1, x2),
+            max(y1, y2),
+        ]
+    except (IndexError, TypeError):
+        return None, None
 
 
 def shape_to_tag(s: t.ShapeInterface, precision=0, invert_axis=False):

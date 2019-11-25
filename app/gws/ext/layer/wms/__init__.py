@@ -124,7 +124,7 @@ class Object(gws.gis.layer.Image):
     def render_legend(self):
         if self.legend_url:
             return super().render_legend()
-        return gws.gis.legend.combine_legends(self.source_legend_urls)
+        return gws.gis.legend.combine_legend_urls(self.source_legend_urls)
 
     def _add_default_search(self):
         p = self.var('search')

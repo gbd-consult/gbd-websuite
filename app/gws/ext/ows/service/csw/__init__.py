@@ -17,18 +17,13 @@ import gws.types as t
 import gws.common.ows.service as ows
 import gws.common.ows.service.inspire as inspire
 
-
-class TemplatesConfig(t.Config):
-    """CSW service templates"""
-
-    getCapabilities: t.Optional[t.TemplateConfig]  #: xml template for the CSW capabilities document
-    getRecords: t.Optional[t.TemplateConfig]  #: xml template for the CSW getRecords document
+from . import filter
 
 
 class Config(gws.common.ows.service.Config):
     """CSW Service configuration"""
 
-    templates: t.Optional[TemplatesConfig]  #: service templates
+    profile: str = 'ISO'  #: ISO or DCMI profile
 
 
 VERSION = '2.0.2'
@@ -39,16 +34,22 @@ class Object(ows.Object):
     def __init__(self):
         super().__init__()
 
-        self.service_class = 'csw'
-        self.service_type = 'csw'
+        self.type = 'csw'
         self.version = VERSION
 
-        self.metas = None
+        self.records = None
+        self.index = None
+
+        self.record_template = ''
+        self.profile = ''
 
     def configure(self):
         super().configure()
 
-        for tpl in 'getCapabilities', 'getRecords', 'getRecordById', 'record':
+        self.profile = self.var('profile')
+        self.record_template = 'record' + self.profile
+
+        for tpl in 'getCapabilities', 'getRecords', 'getRecordById', 'recordISO', 'recordDCMI':
             self.templates[tpl] = self.configure_template(tpl, 'csw/templates')
 
         self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates', type='text')
@@ -62,16 +63,9 @@ class Object(ows.Object):
             'scope': 'dataset',
         }, self.meta.iso)
 
-    def can_handle(self, req) -> bool:
-        if req.is_get:
-            return req.kparam('srv', '').lower() == self.service_class
-        if req.is_post:
-            # @TODO
-            return 'csw' in req.post_data
-
     def handle(self, req) -> t.HttpResponse:
-        if self.metas is None:
-            self.metas = ows.collect_metadata(self)
+        if self.records is None:
+            self._load_records()
 
         rd = ows.RequestData({
             'req': req,
@@ -112,23 +106,46 @@ class Object(ows.Object):
         }))
 
     def handle_getrecordbyid(self, rd: ows.RequestData):
-        record = self.metas.get(rd.req.kparam('id'))
-        if not record:
-            raise gws.web.error.NotFound()
+        uid = rd.req.kparam('id')
+        record = self.records.get(gws.as_uid(uid))
 
         return ows.xml_response(rd.service.render_template(rd, 'getRecordById', {
-            'record_tags': self._render_records(rd, [record]),
+            'record_tags': self._render_records(rd, [record]) if record else [],
         }))
 
+    def _load_records(self):
+        metas = ows.collect_iso_metadata(self)
+
+        self.records = {}
+        self.index = []
+
+        for uid, meta in metas.items():
+            rec = t.Data(gws.as_dict(meta))
+            rec.index = len(self.records) + 1
+            self.records[uid] = rec
+
+        for rec in self.records.values():
+            for f in 'abstract', 'title':
+                s = rec.get(f)
+                if s:
+                    self.index.append((f, s, s.lower(), rec.index))
+            for s in rec.keywords:
+                self.index.append(('subject', s, s.lower(), rec.index))
+
+
     def _find_records(self, rd):
-        # @TODO filters
-        return self.metas.values()
+        recs = self.records.values()
+        flt = rd.xml.first('Query.Constraint.Filter') if rd.xml else None
+        if not flt:
+            return recs
+        f = filter.Filter(self.index)
+        return f.apply(flt.first(), recs)
 
     def _render_records(self, rd, records):
         tags = []
 
         for record in records:
-            tags.append(self.render_template(rd, 'record', {
+            tags.append(self.render_template(rd, self.record_template, {
                 'meta': record,
             }, format='tag'))
 

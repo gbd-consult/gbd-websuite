@@ -8,7 +8,7 @@
     @end
 
     @if la.has_legend
-        <p class="legend"><img src="{gws.endpoint}?cmd=mapHttpGetLegend&amp;layerUid={la.uid}" /></p>
+        <p class="legend"><img src="{gws.endpoint}/cmd/mapHttpGetLegend/layerUid/{la.uid}" /></p>
     @end
 
     @with la.meta.url
@@ -32,9 +32,6 @@
 @let service_info
     @with service.abstract
         <p>{service.abstract | html | nl2br}</p>
-    @end
-    @with service.attribution
-        <p>{service.attribution}</p>
     @end
 @end
 

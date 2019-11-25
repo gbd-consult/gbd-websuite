@@ -7,8 +7,8 @@
         @t dc:subject {kw}
     @end
 
-    @each links as link
-        @t dct:references scheme="{link.scheme}" {link.href}
+    @each meta.links as link
+        @t dct:references scheme="{link.scheme}" {url_for(link.url)}
     @end
 
     @t dct:abstract {meta.abstract}
@@ -17,7 +17,7 @@
     @t dc:language {meta.language3}
 
     @with meta.lonlat_extent as e
-        @tag ows:WGS84BoundingBox
+        @tag ows:BoundingBox
             @t ows:LowerCorner {e[0]} {e[1]}
             @t ows:UpperCorner {e[2]} {e[3]}
         @end

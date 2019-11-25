@@ -6,27 +6,13 @@
     @a xmlns="http://www.opengis.net/wfs/2.0"
     @namespaces
 
-    @tag ows:ServiceIdentification
-        @t ows:Title {meta.title}
-        @t ows:Abstract {meta.abstract}
-        @tag ows:Keywords
-            @each meta.keywords as kw
-                @t ows:Keyword {kw}
-            @end
-        @end
-
-        @t ows:ServiceType WFS
-        @t ows:ServiceTypeVersion {service.version}
-        @t ows:Fees {meta.fees}
-        @t ows:AccessConstraints {meta.accessConstraints}
-    @end
-
+    @ows_service_identification
     @ows_service_provider
 
     @tag ows:OperationsMetadata
         @wfs_basic_operations
 
-        @if meta.inspire.theme
+        @if use_inspire_meta
             @tag ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities
                 @inspire_extended_capabilities
             @end

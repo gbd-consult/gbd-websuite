@@ -10,13 +10,12 @@
         @t Name WMS
         @t Title {meta.title}
         @wms_service_metadata
-        @wms_contact_metadata
     @end
 
     @tag Capability
         @wms_request_capabilities
 
-        @if meta.inspire.theme
+        @if use_inspire_meta
             @tag inspire_vs:ExtendedCapabilities
                 @inspire_extended_capabilities
             @end

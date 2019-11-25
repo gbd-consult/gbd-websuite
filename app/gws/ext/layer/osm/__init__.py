@@ -13,5 +13,5 @@ class Object(gws.gis.layer.Base):
             'type': 'osm',
         })
 
-    def has_ows(self, kind):
+    def ows_enabled(self, service):
         return False

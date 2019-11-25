@@ -1,7 +1,7 @@
 OWS Services
 ============
 
-GBD WebSuite can act as an OWS (OGC Web Services) server. You can freely configure these services for each project and each layer separately.
+GBD WebSuite can act as an OWS (OGC Web Services) server. You can freely configure these services for each project.
 
 
 Supported services
@@ -23,6 +23,23 @@ WFS is implemented according to the version 2.0 specification. The WFS service p
 - `ImplementsBasicWFS`
 - `KVPEncoding`
 - `ImplementsResultPaging`
+
+inspirewms
+~~~
+
+inspirewfs
+~~~
+
+meta
+~~~
+
+ISO19115 metadata service
+
+
+csw
+~~~
+
+
 
 Application and project configuration
 -------------------------------------
@@ -54,18 +71,9 @@ Most of the time, the suitable service type is inferred from the layer type, e.g
     {
         "type": "qgis",
         "title": "My qgis project",
-        "owsName": "qgis_for_wms",
         "ows": {
-            "services": [
-                {
-                    "type": "wms",
-                    "enabled": true
-                },
-                {
-                    "type": "wfs",
-                    "enabled": false
-                }
-            ]
+            "name": "myFeature",
+            "servicesEnabled": ["wms", "wfs"]
         }
     }
 

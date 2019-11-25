@@ -1,0 +1,42 @@
+@include common.cx
+
+@tag plu:SpatialPlan gml:id="{node.attributes.localUid.value}"
+    @inspire_id node, 'plu'
+
+    @tag plu:extent
+        @insert {node.shape_tag}
+    @end
+
+    @t plu:beginLifespanVersion {node.attributes.beginLifespanVersion.value}
+    @t plu:officialTitle {node.attributes.officialTitle.value}
+    @t plu:levelOfSpatialPlan xlink:href="http://inspire.ec.europa.eu/codelist/LevelOfSpatialPlanValue/{node.attributes.levelOfSpatialPlan.value}"
+    @t plu:endLifespanVersion {node.attributes.endLifespanVersion.value}
+    @t plu:validFrom {node.attributes.validFrom.value}
+    @t plu:validTo {node.attributes.validTo.value}
+    @t plu:alternativeTitle {node.attributes.alternativeTitle.value}
+    @t plu:planTypeName {node.attributes.planTypeName.value}
+    @t plu:processStepGeneral xlink:href="http://inspire.ec.europa.eu/codelist/ProcessStepGeneralValue/{node.attributes.processStepGeneral.value}"
+    @t plu:backgroundMap {node.attributes.backgroundMap.value}
+
+    @each node.attributes.ordinance as o
+        @tag plu:ordinance/plu:OrdinanceValue
+            @t plu:ordinanceDate {o.date}
+            @t plu:ordinanceReference {o.reference}
+        @end
+    @end
+
+    @each node.attributes.officialDocument as o
+        ## -> plu:OfficialDocumentation
+        @t plu:officialDocument xlink:href="{o.url}"
+    @end
+
+    @each node.attributes.member as o
+        ## -> plu:ZoningElement
+        @t plu:member xlink:href="{o.url}"
+    @end
+
+    @each node.attributes.restriction as o
+        ## -> plu:SupplementaryRegulation
+        @t plu:member xlink:href="{o.url}"
+    @end
+@end

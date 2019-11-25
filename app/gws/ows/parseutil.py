@@ -36,6 +36,7 @@ def get_meta(el):
     d = {
         'abstract': compact_ws(el.get_text('Abstract')),
         'access_constraints': check_none(el.get_text('AccessConstraints')),
+        'attribution': compact_ws(el.get_text('Attribution.Title')),
         'fees': check_none(el.get_text('Fees')),
         'keywords': text_list(el, 'Keywords.Keyword') or text_list(el, 'KeywordList.Keyword'),
         'name': compact_ws(el.get_text('Name') or el.get_text('Identifier')),

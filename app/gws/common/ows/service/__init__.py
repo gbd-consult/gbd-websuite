@@ -41,11 +41,19 @@ ATTR_TYPE_TO_XML = {
 }
 
 
+class UseInspireConfig(t.Config):
+    meta: bool = False  #: enable INSPIRE metadata for this service
+    data: bool = False  #: enable INSPIRE data models for this service
+
+
 class Config(t.WithTypeAndAccess):
     enabled: bool = True
     featureNamespace: str = 'gws'  #: feature namespace name
     featureNamespaceUri: str = 'http://gws.gbd-consult.de'  #: feature namespace uri
     meta: t.Optional[t.MetaData]  #: service metadata
+    name: str = ''  #: service name
+    templates: t.Optional[t.List[t.TemplateConfig]]  #: service XML templates
+    useInspire: t.Optional[UseInspireConfig]  #: INSPIRE configuration
 
 
 class RequestData(t.Data):
@@ -83,22 +91,38 @@ class FeatureNode(t.Data):
 _NAMESPACES = gws.extend({}, const.NAMESPACES, inspire.NAMESPACES)
 
 
-class Object(gws.Object):
+class Object(t.OwsServiceInterface, gws.Object):
     """Generic OWS Service."""
 
     def __init__(self):
         super().__init__()
         self.feature_namespace = ''
-        self.meta = None
+        self.meta = t.MetaData()
         self.namespaces = _NAMESPACES
         self.local_namespaces = {}
-        self.service_class = ''
-        self.service_type = ''
+        self.name = ''
+        self.type = ''
         self.templates = {}
         self.version = ''
+        self.use_inspire_meta = False
+        self.use_inspire_data = False
+
+    @property
+    def service_url(self):
+        u = gws.SERVER_ENDPOINT + '/cmd/owsHttp/serviceName/' + self.name
+        prj = self.get_closest('gws.common.project')
+        if prj:
+            u += f'/projectUid/{prj.uid}'
+        return u
+
+    @property
+    def service_link(self):
+        return None
 
     def configure(self):
         super().configure()
+
+        self.name = self.var('name') or self.type
 
         if self.var('meta'):
             self.meta = gws.common.metadata.read(self.var('meta'))
@@ -113,12 +137,41 @@ class Object(gws.Object):
                 'scope': 'service'
             }, self.meta.iso)
 
+            self.meta.serviceUrl = self.meta.serviceUrl or self.service_url
+
+            ls = []
+
+            if self.service_link:
+                ls.append(self.service_link)
+
+            self.meta.links = ls + self.meta.links
+
         if self.var('featureNamespace'):
             self.feature_namespace = self.var('featureNamespace')
             self.local_namespaces[self.feature_namespace] = self.var('featureNamespaceUri')
 
-    def can_handle(self, req) -> bool:
-        return req.kparam('srv', '').lower() == self.service_class
+        self.use_inspire_meta = self.var('useInspire.meta')
+        self.use_inspire_data = self.var('useInspire.data')
+
+        if self.use_inspire_data:
+            self.configure_inspire_templates()
+
+    def configure_template(self, name, path, type='xml'):
+        for tpl in self.var('templates', default=[]):
+            if tpl.title == name:
+                return self.create_object('gws.ext.template', tpl)
+
+        if not path.startswith('/'):
+            path = gws.APP_DIR + '/gws/ext/ows/service/' + path.strip('/') + '/' + name + '.cx'
+
+        return self.create_shared_object('gws.ext.template', path, {
+            'type': type,
+            'path': path
+        })
+
+    def configure_inspire_templates(self):
+        for tag in inspire.TAGS:
+            self.templates[tag] = self.configure_template(tag.replace(':', '_'), 'wfs/templates/inspire')
 
     def error_response(self, status):
         return xml_error_response(self.version, status, f'Error {status}')
@@ -138,49 +191,43 @@ class Object(gws.Object):
             raise gws.web.error.NotFound()
         return h(rd)
 
-    def configure_template(self, name, path, type='xml'):
-        p = self.var('templates.' + name)
-        if p:
-            return self.create_object('gws.ext.template', p)
-
-        if not path.startswith('/'):
-            path = gws.APP_DIR + '/gws/ext/ows/service/' + path.strip('/') + '/' + name + '.cx'
-
-        return self.create_shared_object('gws.ext.template', path, {
-            'type': type,
-            'path': path
-        })
-
     def is_layer_enabled(self, layer):
-        return layer and layer.has_ows(self.service_type)
-
-    def service_endpoint(self, rd: RequestData):
-        u = gws.SERVER_ENDPOINT + '/cmd/owsHttp/srv/' + self.service_class
-        if rd.project:
-            u += f'/projectUid/{rd.project.uid}'
-        return u
+        return layer and layer.ows_enabled(self)
 
     def render_template(self, rd: RequestData, template, context, format=None):
 
-        def rewrite_url(url, *parts):
-            if parts:
-                url = url.rstrip('/') + '/' + '/'.join(gws.as_uid(p) for p in parts)
-            return rd.req.rewritten_url(url)
+        def csw_meta_url(uid):
+            return rd.req.url_for(
+                gws.SERVER_ENDPOINT + '/cmd/owsHttp/serviceName/csw/request/GetRecordById/id/' + gws.as_uid(uid))
 
         context = gws.extend({
             'project': rd.project,
             'meta': self.meta or (rd.project.meta if rd.project else {}),
-            'rewrite_url': rewrite_url,
+            'use_inspire_meta': self.use_inspire_meta,
+            'url_for': rd.req.url_for,
+            'csw_meta_url': csw_meta_url,
             'feature_namespace': self.feature_namespace,
             'feature_namespace_uri': self.local_namespaces[self.feature_namespace],
             'all_namespaces': self.namespaces,
             'local_namespaces': self.local_namespaces,
             'service': {
+                'type': self.type.upper(),
                 'version': self.version,
-                'endpoint': self.service_endpoint(rd),
+                'url': self.service_url,
             }
         }, context)
         return self.templates[template].render(context, format=format).content
+
+    def render_feature_nodes(self, rd: RequestData, nodes, container_template_name):
+        tags = []
+
+        for node in nodes:
+            template_name = node.tag_name if node.tag_name in self.templates else 'feature'
+            tags.append(self.render_template(rd, template_name, {'node': node}, format='tag'))
+
+        return xml_response(self.render_template(rd, container_template_name, {
+            'feature_tags': tags,
+        }))
 
 
 def layer_node_root(rd: RequestData) -> t.List[LayerCapsNode]:
@@ -221,30 +268,26 @@ def layer_nodes_from_request_params(rd: RequestData, *params):
         else:
             ows_names.add(s)
 
-    nodes = layer_node_list(rd)
-    nodes = [n for n in nodes if n.tag_name in ows_names]
+    all_nodes = []
+    for node in _layer_node_roots(rd):
+        if node.tag_name in ows_names:
+            _layer_node_sublist(rd, node, all_nodes)
+        else:
+            _layer_node_sublist_selected(rd, node, all_nodes, ows_names)
 
-    return nodes
+    return all_nodes
+
+
+def inspire_nodes(nodes):
+    return [n for n in nodes if n.tag_name in inspire.TAGS]
 
 
 def feature_node_list(rd: RequestData, features):
     return [_feature_node(rd, f) for f in features]
 
 
-def render_feature_nodes(rd: RequestData, nodes, container_template_name):
-    tags = []
-
-    for node in nodes:
-        template_name = node.get('template_name') or 'feature'
-        tags.append(rd.service.render_template(rd, template_name, {'node': node}, format='tag'))
-
-    return xml_response(rd.service.render_template(rd, container_template_name, {
-        'feature_tags': tags,
-    }))
-
-
 def lonlat_extent(extent, crs):
-    return ['%.3f1' % c for c in gws.gis.proj.transform_bbox(extent, crs, 'EPSG:4326')]
+    return [round(c, 4) for c in gws.gis.proj.transform_bbox(extent, crs, 'EPSG:4326')]
 
 
 def xml_error_response(version, status, description):
@@ -264,7 +307,7 @@ def xml_response(content, status=200):
     })
 
 
-def collect_metadata(service):
+def collect_iso_metadata(service):
     rs = {}
 
     for obj in service.find_all():
@@ -341,6 +384,18 @@ def _layer_node_sublist(rd: RequestData, node, all_nodes):
         _layer_node_sublist(rd, n, all_nodes)
 
 
+def _layer_node_sublist_selected(rd: RequestData, node, all_nodes, tag_names):
+    if node.tag_name in tag_names:
+        if not node.sub_nodes:
+            all_nodes.append(node)
+            return
+        for n in node.sub_nodes:
+            _layer_node_sublist(rd, n, all_nodes)
+    elif node.sub_nodes:
+        for n in node.sub_nodes:
+            _layer_node_sublist_selected(rd, n, all_nodes, tag_names)
+
+
 def _layer_node(rd: RequestData, layer, sub_nodes=None) -> LayerCapsNode:
     res = [gws.tools.misc.res2scale(r) for r in layer.resolutions]
     crs = layer.map.crs
@@ -378,5 +433,5 @@ def _feature_node(rd: RequestData, feature: t.FeatureInterface):
         'feature': feature,
         'shape_tag': gs,
         'tag_name': name,
-        'attributes': atts
+        'attributes': atts,
     })

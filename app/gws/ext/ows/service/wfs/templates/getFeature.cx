@@ -5,7 +5,9 @@
     @namespaces
 
     @each feature_tags as tag
-        @insert {tag}
+        @tag wfs:member
+            @insert {tag}
+        @end
     @end
 
 @end

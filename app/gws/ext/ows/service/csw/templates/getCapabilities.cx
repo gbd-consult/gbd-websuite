@@ -1,37 +1,21 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
 @tag csw:Capabilities
+    @a version={service.version}
     @namespaces
 
-    @tag ows:ServiceIdentification
-        @t ows:Title {meta.title}
-        @t ows:Abstract {meta.abstract}
-        @tag ows:Keywords
-            @t ows:Keyword CS-W
-            @t ows:Keyword ISO19119
-            @t ows:Keyword ISO19115
-            @t ows:Keyword Catalog Service
-            @t ows:Type theme
-        @end
-        @t ows:ServiceType CSW
-        @t ows:ServiceTypeVersion {service.version}
-        @t ows:Fees {meta.fees}
-        @t ows:AccessConstraints {meta.accessConstraints}
-    @end
-
+    @ows_service_identification
     @ows_service_provider
 
     @tag ows:OperationsMetadata
 
         @tag ows:Operation name="GetCapabilities"
-            @ows_default_url
+            @ows_service_url
         @end
 
         @tag ows:Operation name="GetRecords"
-            @tag ows:DCP/ows:HTTP
-               @t ows:Get xlink:href={rewrite_url(service.endpoint)}
-               @t ows:Post xlink:href={rewrite_url(service.endpoint)}
-            @end
+            @ows_service_url post=True
+
             @tag ows:Parameter name="typeName"
                 @t ows:Value csw:Record
             @end
@@ -56,7 +40,8 @@
         @end
 
         @tag ows:Operation name="DescribeRecord"
-            @ows_default_url
+            @ows_service_url
+
             @tag ows:Parameter name="typeName"
                 @t ows:Value gmd:MD_Metadata
             @end
@@ -72,7 +57,9 @@
             @t ows:Value http://www.isotc211.org/2005/gmd
         @end
 
-        @inspire_extended_capabilities
+        @tag inspire_vs:ExtendedCapabilities
+            @inspire_extended_capabilities
+        @end
 
     @end
 

@@ -10,7 +10,10 @@ TAGS = {
         'fax': 'str',
         'phone': 'str',
         'serviceType': ('select', 'http://inspire.ec.europa.eu/codelist/ServiceTypeValue')
-    }
+    },
+    'plu:SpatialPlan': {
+        # @TODO
+    },
 }
 
 NAMESPACES = {

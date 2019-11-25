@@ -46,20 +46,20 @@
 
 @def identification
     @tag gmd:citation/gmd:CI_Citation
-        @t gmd:title/gco:CharacterString {mw.title}
-        @publication_date mw.pubDate
-        @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {mw.iso.uid}
+        @t gmd:title/gco:CharacterString {meta.title}
+        @publication_date meta.pubDate
+        @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.iso.uid}
     @end
 
-    @t gmd:abstract/gco:CharacterString {mw.abstract}
+    @t gmd:abstract/gco:CharacterString {meta.abstract}
 
     @tag gmd:pointOfContact
-        @contact mw.contact
+        @contact meta.contact
     @end
 
-    @if mw.inspire.theme
+    @if meta.inspire.theme
         @tag gmd:descriptiveKeywords/gmd:MD_Keywords
-            @t gmd:keyword/gmx:Anchor xlink:href="http://inspire.ec.europa.eu/theme/{mw.inspire.theme}" {mw.inspire.themeName}
+            @t gmd:keyword/gmx:Anchor xlink:href="http://inspire.ec.europa.eu/theme/{meta.inspire.theme}" {meta.inspire.themeName}
             @tag gmd:type/gmd:MD_KeywordTypeCode
                 @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode"
                 @a codeListValue="theme"
@@ -72,34 +72,34 @@
     @end
 
     @tag gmd:descriptiveKeywords/gmd:MD_Keywords
-        @each mw.keywords as kw
+        @each meta.keywords as kw
             @t gmd:keyword/gco:CharacterString {kw}
         @end
     @end
 
     @tag gmd:resourceConstraints/gmd:MD_Constraints
-        @t gmd:useLimitation/gco:CharacterString {mw.accessConstraints}
+        @t gmd:useLimitation/gco:CharacterString {meta.accessConstraints}
     @end
 
     @tag gmd:spatialRepresentationType/gmd:MD_SpatialRepresentationTypeCode
         @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_SpatialRepresentationTypeCode"
-        @a codeListValue={mw.iso.spatialType}
+        @a codeListValue={meta.iso.spatialType}
     @end
 
-    @t gmd:spatialResolution/gmd:MD_Resolution/gmd:equivalentScale/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer {mw.resolution}
-    @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="{mw.language3}"
-    @t gmd:topicCategory/gmd:MD_TopicCategoryCode {mw.iso.category}
+    @t gmd:spatialResolution/gmd:MD_Resolution/gmd:equivalentScale/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer {meta.resolution}
+    @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="{meta.language3}"
+    @t gmd:topicCategory/gmd:MD_TopicCategoryCode {meta.iso.category}
 
     @tag gmd:extent/gmd:EX_Extent/gmd:geographicElement
-        @bounding_box mw.lonlat_extent
+        @bounding_box meta.lonlat_extent
     @end
 @end
 
 @def distributionInfo
     @tag gmd:transferOptions/gmd:MD_DigitalTransferOptions
-        @each mw.links as link
+        @each meta.links as link
             @tag gmd:onLine/gmd:CI_OnlineResource
-                @t gmd:linkage/gmd:URL {rewrite_url(link.url)}
+                @t gmd:linkage/gmd:URL {url_for(link.url)}
                 @tag gmd:function/gmd:CI_OnLineFunctionCode
                     @a codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_OnLineFunctionCode"
                     @a codeListValue={link.function}
@@ -111,9 +111,9 @@
 
 @def dataQualityInfo
     @tag gmd:scope/gmd:DQ_Scope/gmd:level
-        @scope_code mw.iso.scope
+        @scope_code meta.iso.scope
     @end
-    @if mw.inspire.theme
+    @if meta.inspire.theme
         @tag gmd:report/gmd:DQ_DomainConsistency
             @tag gmd:measureIdentification/gmd:RS_Identifier
                 @t gmd:code/gco:CharacterString Conformity_001
@@ -124,34 +124,34 @@
                     @t gmd:title/gco:CharacterString COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
                     @publication_date '2010-12-08'
                 @end
-                @t gmd:explanation/gco:CharacterString {mw.inspire.qualityExplanation}
-                @t gmd:pass/gco:Boolean {mw.inspire.qualityPass}
+                @t gmd:explanation/gco:CharacterString {meta.inspire.qualityExplanation}
+                @t gmd:pass/gco:Boolean {meta.inspire.qualityPass}
             @end
         @end
     @end
     @tag gmd:lineage/gmd:LI_Lineage
-        @t gmd:statement/gco:CharacterString {mw.inspire.qualityLineage}
+        @t gmd:statement/gco:CharacterString {meta.inspire.qualityLineage}
     @end
 @end
 
 @tag gmd:MD_Metadata
     @namespaces
 
-    @t gmd:fileIdentifier/gco:CharacterString {mw.iso.uid}
-    @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue={mw.language3}
+    @t gmd:fileIdentifier/gco:CharacterString {meta.iso.uid}
+    @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue={meta.language3}
 
     @tag gmd:hierarchyLevel
-        @scope_code mw.iso.scope
+        @scope_code meta.iso.scope
     @end
 
     @tag gmd:contact
-        @contact mw.contact
+        @contact meta.contact
     @end
 
-    @t gmd:dateStamp/gco:DateTime {mw.pubDate}
+    @t gmd:dateStamp/gco:DateTime {meta.pubDate}
     @t gmd:metadataStandardName/gco:CharacterString ISO19115
     @t gmd:metadataStandardVersion/gco:CharacterString 2003/Cor.1:2006
-    @t gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString {mw.proj.uri}
+    @t gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString {meta.proj.uri}
 
     @tag gmd:identificationInfo/gmd:MD_DataIdentification
         @identification
