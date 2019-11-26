@@ -48,6 +48,6 @@ def handle(config_root, req):
         raise error.NotFound()
 
     if isinstance(r, t.HttpResponse):
-        return req.response.raw(r.content, r.mimeType, r.get('status', 200))
+        return req.response.http(r)
 
     return req.response.struct(r)

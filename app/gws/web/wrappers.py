@@ -1,7 +1,7 @@
 import re
 
 import werkzeug.wrappers
-from werkzeug.utils import cached_property
+from werkzeug.utils import cached_property, redirect
 
 import gws
 import gws.tools.net
@@ -26,6 +26,12 @@ class Response(werkzeug.wrappers.Response):
 
     def html(self, s, status=200):
         return self.raw(s, mimetype='text/html', status=status)
+
+    def http(self, r: t.HttpResponse):
+        loc = r.get('location')
+        if loc:
+            return redirect(r.location)
+        return self.raw(r.content, r.mimeType, r.get('status', 200))
 
     def struct(self, s, status=200):
         acc = self.request.wants_struct or _JSON

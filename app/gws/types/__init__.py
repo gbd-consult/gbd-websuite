@@ -145,6 +145,7 @@ class HttpResponse(Data):
     mimeType: str
     content: str
     status: int
+    location: url = ''
 
 
 class WithType(Config):

@@ -75,12 +75,14 @@ class Object(gws.ActionObject):
             }))
             context = _default_template_context(req, project)
             context['params'] = p
+            context['response'] = t.HttpResponse()
+
             tr = tpl.render(context)
-            # @TODO handle path
-            return t.HttpResponse({
-                'mimeType': tr.mimeType,
-                'content': tr.content
-            })
+
+            context['response'].mimeType = tr.mimeType
+            context['response'].content = tr.content
+
+            return context['response']
 
         mt = gws.tools.mime.for_path(rpath)
 
