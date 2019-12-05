@@ -64,7 +64,7 @@ class Config(t.Config):
     csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
     db: t.Optional[DbConfig]  #: database configuration
     fonts: t.Optional[FontConfig]  #: fonts configuration
-    locales: t.Optional[t.List[str]] #: default locales for all projects
+    locales: t.Optional[t.List[str]]  #: default locales for all projects
     projectDirs: t.Optional[t.List[t.dirpath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[t.filepath]]  #: additional project paths
     projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations
@@ -109,7 +109,9 @@ class Object(gws.Object):
 
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
 
-        _install_fonts(self.var('fonts.dir'))
+        s = self.var('fonts.dir')
+        if s:
+            _install_fonts(s)
 
         gws.auth.api.init()
 
@@ -162,10 +164,9 @@ class Object(gws.Object):
 def _install_fonts(source_dir):
     gws.log.info('checking fonts...')
 
-    if source_dir:
-        target_dir = '/usr/local/share/fonts'
-        gws.tools.shell.run(['mkdir', '-p', target_dir], echo=True)
-        for p in misc.find_files(source_dir):
-            gws.tools.shell.run(['cp', '-v', p, target_dir], echo=True)
+    target_dir = '/usr/local/share/fonts'
+    gws.tools.shell.run(['mkdir', '-p', target_dir], echo=True)
+    for p in misc.find_files(source_dir):
+        gws.tools.shell.run(['cp', '-v', p, target_dir], echo=True)
 
     gws.tools.shell.run(['fc-cache', '-fv'], echo=True)

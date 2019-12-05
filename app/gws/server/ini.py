@@ -1,8 +1,12 @@
 import os
 import gws
+import pwd
+import grp
 
 import gws.config
 import gws.qgis.server
+import gws.tools.misc
+import gws.tools.shell
 
 MAPPROXY_YAML_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
 
@@ -25,7 +29,7 @@ _uwsgi_params = """
 """
 
 
-def create(base_dir, pid_dir):
+def create(cfg, base_dir, pid_dir):
     def _write(p, s):
         p = base_dir + '/' + p
         s = '\n'.join(x.strip() for x in s.strip().splitlines())
@@ -33,91 +37,125 @@ def create(base_dir, pid_dir):
             fp.write(s + '\n')
         return p
 
+    for p in gws.tools.misc.find_files(base_dir, '(conf|ini)$'):
+        gws.tools.shell.unlink(p)
+
     commands = []
     frontends = []
 
+    in_container = gws.tools.misc.running_in_container()
+
+    rsyslogd_enabled = in_container
+
     # NB it should be possible to have QGIS running somewhere else
     # so, if 'host' is not localhost, don't start QGIS here
-    qgis_enabled = gws.config.var('server.qgis.enabled') and gws.config.var('server.qgis.host') == 'localhost'
-    qgis_port = gws.config.var('server.qgis.port')
-    qgis_workers = gws.config.var('server.qgis.workers')
-    qgis_threads = gws.config.var('server.qgis.threads')
-    qgis_socket = '/tmp/uwsgi.qgis.sock'
+    qgis_enabled = gws.get(cfg, 'server.qgis.enabled') and gws.get(cfg, 'server.qgis.host') == 'localhost'
+    qgis_port = gws.get(cfg, 'server.qgis.port')
+    qgis_workers = gws.get(cfg, 'server.qgis.workers')
+    qgis_threads = gws.get(cfg, 'server.qgis.threads')
+    qgis_socket = gws.TMP_DIR + '/uwsgi.qgis.sock'
 
-    web_enabled = gws.config.var('server.web.enabled')
-    web_workers = gws.config.var('server.web.workers')
-    web_threads = gws.config.var('server.web.threads')
-    web_socket = '/tmp/uwsgi.web.sock'
+    web_enabled = gws.get(cfg, 'server.web.enabled')
+    web_workers = gws.get(cfg, 'server.web.workers')
+    web_threads = gws.get(cfg, 'server.web.threads')
+    web_socket = gws.TMP_DIR + '/uwsgi.web.sock'
 
-    spool_enabled = gws.config.var('server.spool.enabled')
-    spool_workers = gws.config.var('server.spool.workers')
-    spool_threads = gws.config.var('server.spool.threads')
-    spool_socket = '/tmp/uwsgi.spoler.sock'
-    spool_dir = '/tmp/spool'
-    spool_freq = gws.config.var('server.spool.jobFrequency')
+    spool_enabled = gws.get(cfg, 'server.spool.enabled')
+    spool_workers = gws.get(cfg, 'server.spool.workers')
+    spool_threads = gws.get(cfg, 'server.spool.threads')
+    spool_socket = gws.TMP_DIR + '/uwsgi.spooler.sock'
+    spool_dir = gws.SPOOL_DIR
+    spool_freq = gws.get(cfg, 'server.spool.jobFrequency')
 
-    mapproxy_enabled = gws.config.var('server.mapproxy.enabled') and os.path.exists(MAPPROXY_YAML_PATH)
-    mapproxy_port = gws.config.var('server.mapproxy.port')
-    mapproxy_workers = gws.config.var('server.mapproxy.workers')
-    mapproxy_threads = gws.config.var('server.mapproxy.threads')
-    mapproxy_socket = '/tmp/uwsgi.mapproxy.sock'
+    mapproxy_enabled = gws.get(cfg, 'server.mapproxy.enabled') and os.path.exists(MAPPROXY_YAML_PATH)
+    mapproxy_port = gws.get(cfg, 'server.mapproxy.port')
+    mapproxy_workers = gws.get(cfg, 'server.mapproxy.workers')
+    mapproxy_threads = gws.get(cfg, 'server.mapproxy.threads')
+    mapproxy_socket = gws.TMP_DIR + '/uwsgi.mapproxy.sock'
 
-    nginx_log = 'syslog:server=unix:/dev/log,nohostname,tag'
+    log = gws.get(cfg, 'server.log') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
+
     nginx_log_level = 'info'
     # nginx_log_level = 'debug'
+
+    if log == 'syslog':
+        nginx_log = 'syslog:server=unix:/dev/log,nohostname,tag'
+
+        nginx_main_log = f'{nginx_log}=NGINX_MAIN'
+        nginx_qgis_log = f'{nginx_log}=NGINX_QGIS'
+        nginx_web_log = f'{nginx_log}=NGINX_WEB'
+
+        uwsgi_qgis_log = 'daemonize=true\nlogger=syslog:QGIS,local6'
+        uwsgi_web_log = 'daemonize=true\nlogger=syslog:WEB,local6'
+        uwsgi_mapproxy_log = 'daemonize=true\nlogger=syslog:MAPPROXY,local6'
+        uwsgi_spool_log = 'daemonize=true\nlogger=syslog:SPOOL,local6'
+
+    else:
+        nginx_main_log = nginx_qgis_log = nginx_web_log = log
+        uwsgi_qgis_log = uwsgi_web_log = uwsgi_mapproxy_log = uwsgi_spool_log = f'daemonize={log}'
 
     # be rude and reload 'em as fast as possible
     mercy = 5
 
     # @TODO: do we need more granular timeout configuration?
-    qgis_timeout = gws.config.var('server.timeout')
+    qgis_timeout = gws.get(cfg, 'server.timeout')
     qgis_front_timeout = qgis_timeout + 10
     mapproxy_timeout = qgis_front_timeout + 10
     web_timeout = mapproxy_timeout + 10
     web_front_timeout = web_timeout + 10
     spool_timeout = 120
 
+    stdenv = '\n'.join(
+        f'env = {k}={v}'
+        for k, v in os.environ.items()
+        if k.startswith('GWS_')
+    )
+    
+    stdenv += f'\nTMP={gws.TMP_DIR}'
+    stdenv += f'\nTEMP={gws.TMP_DIR}'
+
     # rsyslogd
     # ---------------------------------------------------------
 
-    #  based on /etc/rsyslog.conf
-    syslog_conf = f"""
-        ##
-        
-        module(
-            load="imuxsock"
-            SysSock.UsePIDFromSystem="on"
-        )
+    if rsyslogd_enabled:
+        #  based on /etc/rsyslog.conf
+        syslog_conf = f"""
+            ##
+            
+            module(
+                load="imuxsock"
+                SysSock.UsePIDFromSystem="on"
+            )
+    
+            module(
+                load="imklog" 
+                PermitNonKernelFacility="on"
+            )
+            
+            template(name="gws" type="list") {{
+                property(name="timestamp" dateFormat="rfc3339")
+                constant(value=" ")
+                property(name="syslogtag")
+                constant(value=" ")
+                property(name="msg" spifno1stsp="on" )
+                property(name="msg" droplastlf="on" )
+                constant(value="\\n")
+            }}
+    
+            module(
+                load="builtin:omfile" 
+                Template="gws"
+            )
+    
+    
+            # *.*;kern.none /dev/stdout
+            # kern.*	      -/var/log/kern.log
+            
+            *.* /dev/stdout
+        """
 
-        module(
-            load="imklog" 
-            PermitNonKernelFacility="on"
-        )
-        
-        template(name="gws" type="list") {{
-            property(name="timestamp" dateFormat="rfc3339")
-            constant(value=" ")
-            property(name="syslogtag")
-            constant(value=" ")
-            property(name="msg" spifno1stsp="on" )
-            property(name="msg" droplastlf="on" )
-            constant(value="\\n")
-        }}
-
-        module(
-            load="builtin:omfile" 
-            Template="gws"
-        )
-
-
-        # *.*;kern.none /dev/stdout
-        # kern.*	      -/var/log/kern.log
-        
-        *.* /dev/stdout
-    """
-
-    path = _write('syslog.conf', syslog_conf)
-    commands.append(f'rsyslogd -i {pid_dir}/rsyslogd.pid -f {path}')
+        path = _write('syslog.conf', syslog_conf)
+        commands.append(f'rsyslogd -i {pid_dir}/rsyslogd.pid -f {path}')
 
     # qgis
     # ---------------------------------------------------------
@@ -134,12 +172,11 @@ def create(base_dir, pid_dir):
         srv = gws.qgis.server.EXEC_PATH
         ini = f"""
             [uwsgi]
+            uid = {gws.UID}
+            gid = {gws.GID}
             chmod-socket = 777
-            daemonize = true
             fastcgi-socket = {qgis_socket}
-            # harakiri = {qgis_timeout}
-            # harakiri-verbose = true
-            logger = syslog:QGIS,local6
+            {uwsgi_qgis_log}
             master = true
             pidfile = {pid_dir}/qgis.uwsgi.pid
             processes = {qgis_workers}
@@ -148,9 +185,9 @@ def create(base_dir, pid_dir):
             vacuum = true
             worker-exec = {srv}
             worker-reload-mercy = {mercy}
+            {stdenv}
         """
 
-        cfg = gws.config.var('server.qgis')
         for k, v in gws.qgis.server.environ(cfg).items():
             ini += f'env = {k}={v}\n'
 
@@ -162,8 +199,8 @@ def create(base_dir, pid_dir):
                 listen {qgis_port};
             
                 server_name qgis;
-                error_log {nginx_log}=NGINX_QGIS {nginx_log_level};
-                access_log {nginx_log}=NGINX_QGIS;
+                error_log {nginx_qgis_log} {nginx_log_level};
+                access_log {nginx_qgis_log};
                 rewrite_log on;
             
                 location / {{
@@ -194,13 +231,14 @@ def create(base_dir, pid_dir):
     if web_enabled:
         ini = f"""
             [uwsgi]
+            uid = {gws.UID}
+            gid = {gws.GID}
             buffer-size = 65535 
             chmod-socket = 777
-            daemonize = true
             die-on-term = true
             harakiri = {web_timeout}
             harakiri-verbose = true
-            logger = syslog:WEB,local6
+            {uwsgi_web_log}
             pidfile = {pid_dir}/web.uwsgi.pid
             post-buffering = 65535
             processes = {web_workers}
@@ -212,6 +250,7 @@ def create(base_dir, pid_dir):
             vacuum = true
             worker-reload-mercy = {mercy}
             wsgi-file = {gws.APP_DIR}/gws/web/wsgi.py
+            {stdenv}
         """
 
         path = _write('uwsgi_web.ini', ini)
@@ -240,11 +279,11 @@ def create(base_dir, pid_dir):
             break
 
         # this is in MB
-        max_body_size = gws.config.var('server.web.maxRequestLength')
+        max_body_size = gws.get(cfg, 'server.web.maxRequestLength')
 
         web_common = f"""
-            error_log {nginx_log}=NGINX_WEB {nginx_log_level};
-            access_log {nginx_log}=NGINX_WEB apm;
+            error_log {nginx_web_log} {nginx_log_level};
+            access_log {nginx_web_log} apm;
             rewrite_log on;
         
             client_max_body_size {max_body_size}m;
@@ -271,10 +310,13 @@ def create(base_dir, pid_dir):
             }}
         """
 
-        ssl_crt = gws.config.var('web.ssl.crt')
-        ssl_key = gws.config.var('web.ssl.key')
+        ssl_crt = gws.get(cfg, 'web.ssl.crt')
+        ssl_key = gws.get(cfg, 'web.ssl.key')
 
-        year = 3600 * 24 * 365
+        ssl_hsts = ''
+        s = gws.get(cfg, 'web.ssl.hsts')
+        if s:
+            ssl_hsts = f'add_header Strict-Transport-Security "max-age={s}; includeSubdomains";'
 
         # NB don't include xml (some WMS clients don't understand gzip)
         # text/xml application/xml application/xml+rss
@@ -294,25 +336,19 @@ def create(base_dir, pid_dir):
             frontends.append(f"""
                 server {{
                     listen 80 default_server;
-                    # listen [::]:80 default_server;
-                    
                     server_name gws;
-                    return  301 https://$host$request_uri;
+                    return 301 https://$host$request_uri;
                 }}
 
                 server {{
                     listen 443 ssl default_server;
-                    # listen [::]:443 ssl default_server;
-                    
                     server_name gws;
     
                     ssl_certificate     {ssl_crt};
                     ssl_certificate_key {ssl_key};
-                    
-                    ## add_header Strict-Transport-Security "max-age={year}; includeSubdomains";  
-                    
-                    {gzip}
+                    {ssl_hsts}
 
+                    {gzip}
                     {web_common}
                 }}
             """)
@@ -321,10 +357,8 @@ def create(base_dir, pid_dir):
             frontends.append(f"""
                 server {{
                     listen 80 default_server;
-                    # listen [::]:80 default_server;
-    
+                    server_name gws;
                     {gzip}
-                    
                     {web_common}
                     
                 }}
@@ -338,14 +372,15 @@ def create(base_dir, pid_dir):
     if mapproxy_enabled:
         ini = f"""
             [uwsgi]
+            uid = {gws.UID}
+            gid = {gws.GID}
             chmod-socket = 777
-            daemonize = true
             die-on-term = true
             harakiri = {mapproxy_timeout}
             harakiri-verbose = true
             http = :{mapproxy_port}
             http-to = {mapproxy_socket}
-            logger = syslog:MAPPROXY,local6
+            {uwsgi_mapproxy_log}
             pidfile = {pid_dir}/mapproxy.uwsgi.pid
             post-buffering = 65535
             processes = {mapproxy_workers}
@@ -357,6 +392,7 @@ def create(base_dir, pid_dir):
             worker-reload-mercy = {mercy}
             wsgi-disable-file-wrapper = true
             wsgi-file = {gws.APP_DIR}/gws/gis/mpx/wsgi.py
+            {stdenv}
         """
 
         path = _write('uwsgi_mapproxy.ini', ini)
@@ -368,12 +404,13 @@ def create(base_dir, pid_dir):
     if spool_enabled:
         ini = f"""
             [uwsgi]
+            uid = {gws.UID}
+            gid = {gws.GID}
             chmod-socket = 777
-            daemonize = true
             die-on-term = true
             harakiri = {spool_timeout}
             harakiri-verbose = true
-            logger = syslog:SPOOL,local6
+            {uwsgi_spool_log}
             master = true
             pidfile = {pid_dir}/spool.uwsgi.pid
             post-buffering = 65535
@@ -387,6 +424,7 @@ def create(base_dir, pid_dir):
             vacuum = true
             worker-reload-mercy = {mercy}
             wsgi-file = {gws.APP_DIR}/gws/server/spool_wsgi.py
+            {stdenv}
         """
 
         path = _write('uwsgi_spool.ini', ini)
@@ -399,17 +437,24 @@ def create(base_dir, pid_dir):
 
     # log_format: https://www.nginx.com/blog/using-nginx-logging-for-application-performance-monitoring/
 
+    u = pwd.getpwuid(gws.UID).pw_name
+    g = grp.getgrgid(gws.GID).gr_name
+
+    daemon = 'daemon off;' if in_container else ''
+
     nginx_conf = f"""
         worker_processes auto;
         pid {pid_dir}/nginx.pid;
+        user {u} {g};
         
         events {{
             worker_connections 768;
             # multi_accept on;
         }}
         
-        daemon off;
-        error_log {nginx_log}=NGINX_MAIN {nginx_log_level};
+        {daemon}
+
+        error_log {nginx_main_log} {nginx_log_level};
         
         http {{
             log_format apm '$remote_addr'
@@ -424,7 +469,7 @@ def create(base_dir, pid_dir):
                            ' upstream_header_time=$upstream_header_time';
             
 
-            access_log {nginx_log}=NGINX_MAIN;
+            access_log {nginx_main_log};
         
             sendfile on;
             tcp_nopush on;

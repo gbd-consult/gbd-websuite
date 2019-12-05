@@ -15,15 +15,16 @@ def _make_ini(cfg):
     ini = ''
 
     paths = []
-    if cfg.searchPathsForSVG:
-        paths.extend(cfg.searchPathsForSVG)
+    s = gws.get(cfg, 'server.qgis.searchPathsForSVG')
+    if s:
+        paths.extend(s)
     paths.extend(SVG_SEARCH_PATHS)
     ini += f'''
         [svg]
         searchPathsForSVG={','.join(paths)}        
     '''
 
-    proxy = os.environ.get('HTTPS_PROXY') or os.environ.get('HTTP_PROXY')
+    proxy = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
     if proxy:
         p = gws.tools.net.parse_url(proxy)
         ini += f'''
@@ -40,18 +41,23 @@ def _make_ini(cfg):
 
 
 def environ(cfg):
-    base_dir = misc.ensure_dir('/tmp/qqq')
+    base_dir = misc.ensure_dir(gws.TMP_DIR + '/qqq')
 
     # it's all a bit blurry, but the server appears to read 'ini' from OPTIONS_DIR
     # while the app uses a profile
     # NB: for some reason, the profile path will be profiles/profiles/default (sic!)
-    # ok, let's make them point to the same file
 
-    profile_dir = misc.ensure_dir('profiles/profiles/default', base_dir)
-    ini_dir = misc.ensure_dir('QGIS', profile_dir)
+    misc.ensure_dir('profiles', base_dir)
+    misc.ensure_dir('profiles/default', base_dir)
+    misc.ensure_dir('profiles/default/QGIS', base_dir)
+    misc.ensure_dir('profiles/profiles', base_dir)
+    misc.ensure_dir('profiles/profiles/default', base_dir)
+    misc.ensure_dir('profiles/profiles/default/QGIS', base_dir)
 
     ini = _make_ini(cfg)
-    with open(ini_dir + '/QGIS3.ini', 'wt') as fp:
+    with open(base_dir + '/profiles/default/QGIS/QGIS3.ini', 'wt') as fp:
+        fp.write(ini)
+    with open(base_dir + '/profiles/profiles/default/QGIS/QGIS3.ini', 'wt') as fp:
         fp.write(ini)
 
     # server options, as documented on
@@ -60,11 +66,11 @@ def environ(cfg):
     server_env = {
         # not used here 'QGIS_PLUGINPATH': '',
         # not used here 'QGIS_SERVER_LOG_FILE': '',
-        'MAX_CACHE_LAYERS': cfg.maxCacheLayers,
-        'QGIS_OPTIONS_PATH': profile_dir,
+        'MAX_CACHE_LAYERS': gws.get(cfg, 'server.qgis.maxCacheLayers'),
+        'QGIS_OPTIONS_PATH': base_dir + '/profiles/profiles/default',
         'QGIS_SERVER_CACHE_DIRECTORY': misc.ensure_dir('servercache', base_dir),
-        'QGIS_SERVER_CACHE_SIZE': cfg.serverCacheSize,
-        'QGIS_SERVER_LOG_LEVEL': cfg.serverLogLevel,
+        'QGIS_SERVER_CACHE_SIZE': gws.get(cfg, 'server.qgis.serverCacheSize'),
+        'QGIS_SERVER_LOG_LEVEL': gws.get(cfg, 'server.qgis.serverLogLevel'),
         # 'QGIS_SERVER_MAX_THREADS': 4,
         # 'QGIS_SERVER_PARALLEL_RENDERING': 'false',
     }
@@ -73,7 +79,7 @@ def environ(cfg):
 
     qgis_env = {
         'QGIS_PREFIX_PATH': '/usr',
-        'QGIS_DEBUG': cfg.debug,
+        'QGIS_DEBUG': gws.get(cfg, 'server.qgis.debug'),
         # 'QGIS_GLOBAL_SETTINGS_FILE': '/global_settings.ini',
         'QGIS_CUSTOM_CONFIG_PATH': base_dir
     }

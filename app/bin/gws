@@ -1,28 +1,39 @@
 #!/bin/bash
 
-APP_DIR=/gws-app
-VAR_DIR=/gws-var
+GWS_APP_DIR=${GWS_APP_DIR:-/gws-app}
+GWS_VAR_DIR=${GWS_VAR_DIR:-/gws-var}
+GWS_TMP_DIR=${GWS_TMP_DIR:-/tmp/gws}
+GWS_UID=${GWS_UID:-1000}
+GWS_GID=${GWS_GID:-1000}
 
-MAIN=$APP_DIR/bin/_gws.py
+PYTHON=python3
 
+MAIN=$GWS_APP_DIR/bin/_gws.py
+
+XVFB=/usr/bin/Xvfb
 XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp'
 
-###########################################################################
+SERVER_CMD=$GWS_VAR_DIR/server.sh
 
+export DISPLAY=:99
 export LC_ALL=C.UTF-8
-export PYTHONPATH=$APP_DIR
+export PYTHONPATH=$GWS_APP_DIR
 export PYTHONDONTWRITEBYTECODE=1
+export XDG_RUNTIME_DIR=$GWS_TMP_DIR/xdg
+
+export GWS_APP_DIR
+export GWS_VAR_DIR
+export GWS_TMP_DIR
+export GWS_UID
+export GWS_GID
+
 
 ###########################################################################
 
 ensure_xvfb() {
-    XVFB=/usr/bin/Xvfb
 
-    mkdir -p /tmp/xdg
-    #chown $GWS_USER:$GWS_USER /tmp/xdg
-    export XDG_RUNTIME_DIR=/tmp/xdg
-
-    export DISPLAY=:99
+    mkdir -p $XDG_RUNTIME_DIR
+    chown $GWS_UID:$GWS_GID $XDG_RUNTIME_DIR
 
     until start-stop-daemon --status --exec $XVFB; do
         echo 'starting xvfb...'
@@ -31,20 +42,23 @@ ensure_xvfb() {
     done
 }
 
-###########################################################################
+mkdir -p $GWS_TMP_DIR
+chown $GWS_UID:$GWS_GID $GWS_TMP_DIR
+chmod 1777 $GWS_TMP_DIR
 
-SERVER_CMD=$VAR_DIR/server.sh
+mkdir -p $GWS_VAR_DIR
+chown $GWS_UID:$GWS_GID $GWS_VAR_DIR
+chmod 750 $GWS_VAR_DIR
+
 
 if [ "$1" == "server" ]; then
     ensure_xvfb
 
-    echo 'preparing...'
-
     rm -f $SERVER_CMD
-    python $MAIN $@
+
+    $PYTHON $MAIN "$@"
     [ $? -eq 0 ] || exit $?
 
-    echo 'ready to start...'
     [ -f $SERVER_CMD ] && source $SERVER_CMD
     exit $?
 fi
@@ -53,8 +67,8 @@ if [ "$1" == "-p" ]; then
     shift
     SCRIPT=$1
     shift
-    python $SCRIPT $@
+    $PYTHON $SCRIPT "$@"
     exit $?
 fi
 
-python $MAIN $@
+$PYTHON $MAIN "$@"

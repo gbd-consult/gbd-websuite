@@ -33,7 +33,7 @@ def parse_main(path):
 
     dct = _read(path) or {}
 
-    with open(gws.VAR_DIR + '/config.parsed.json', 'wt') as fp:
+    with open(gws.VAR_DIR + '/config/config.parsed.json', 'wt') as fp:
         json.dump(dct, fp, indent=4, ensure_ascii=False)
 
     prj_configs = []
@@ -119,7 +119,7 @@ def _parse_cx_config(path):
         context={'true': True, 'false': False},
         error=err)
 
-    with open(gws.VAR_DIR + '/config.parsed.slon', 'wt') as fp:
+    with open(gws.VAR_DIR + '/config/config.parsed.slon', 'wt') as fp:
         fp.write(src)
 
     try:

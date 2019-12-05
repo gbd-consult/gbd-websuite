@@ -1,7 +1,5 @@
 import time
 
-import psutil
-
 import gws
 import gws.config.loader
 import gws.gis.mpx.config
@@ -13,7 +11,7 @@ import gws.types
 from . import ini
 
 commands_path = gws.VAR_DIR + '/server.sh'
-pid_dir = misc.ensure_dir('pids', '/tmp')
+pid_dir = misc.ensure_dir('pids', gws.TMP_DIR)
 
 
 def start():
@@ -25,9 +23,9 @@ def start():
     for p in misc.find_files(gws.SERVER_DIR, '.*'):
         sh.unlink(p)
 
-    commands = ini.create(gws.SERVER_DIR, pid_dir)
+    commands = ini.create(cfg, gws.SERVER_DIR, pid_dir)
 
-    s = cfg.get('server').get('autoRun')
+    s = gws.get(cfg, 'server.autoRun')
     if s:
         commands.insert(0, s)
 
@@ -39,20 +37,22 @@ def start():
 
 
 def stop():
-    for p in misc.find_files(pid_dir, 'uwsgi'):
-        _kill(p)
-    for p in misc.find_files(pid_dir, 'nginx'):
-        _kill(p)
+    _stop('uwsgi')
+    _stop('nginx')
+    _stop('qgis_mapserv.fcgi')
 
-    time.sleep(1)
 
-    while _is_running('uwsgi'):
-        gws.log.info('waiting for uwsgi to quit...')
-        time.sleep(1)
+def _stop(proc_name):
+    _kill_name(proc_name, 'INT')
 
-    while _is_running('nginx'):
-        gws.log.info('waiting for nginx to quit...')
-        time.sleep(1)
+    for _ in range(10):
+        time.sleep(2)
+        if _kill_name(proc_name, 'KILL'):
+            return
+
+    pids = sh.pids_of(proc_name)
+    if pids:
+        raise ValueError(f'failed to stop {proc_name} pids={pids!r}')
 
 
 def reload():
@@ -80,7 +80,8 @@ def configure():
 
 
 def _reload(reconfigure, module=None):
-    if not _is_running('uwsgi'):
+    pid = sh.pids_of('uwsgi')
+    if not pid:
         gws.log.info('server not running, starting...')
         return start()
 
@@ -92,18 +93,11 @@ def _reload(reconfigure, module=None):
             reload_uwsgi(m)
 
 
-def _kill(pidfile):
-    gws.log.info(f'stopping {pidfile}...')
-    try:
-        with open(pidfile, 'rt') as fp:
-            pid = fp.read().strip()
-        sh.run(['kill', '-INT', pid])
-    except Exception as e:
-        gws.log.exception()
-
-
-def _is_running(s):
-    for proc in psutil.process_iter():
-        cmd = str(proc.cmdline()).lower()
-        if s in cmd:
-            return True
+def _kill_name(proc_name, sig_name):
+    pids = sh.pids_of(proc_name)
+    if not pids:
+        return True
+    for pid in pids:
+        gws.log.info(f'stopping {proc_name} pid={pid}')
+        sh.kill_pid(pid, sig_name)
+    return False

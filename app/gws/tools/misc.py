@@ -1,4 +1,4 @@
-import json
+import pwd
 import importlib
 import importlib.machinery
 import importlib.util
@@ -126,8 +126,24 @@ def find_files(dirname, pattern=None):
 def ensure_dir(path, base=None, mode=0o755):
     if base:
         path = os.path.join(base, path)
-    os.makedirs(path, mode, exist_ok=True)
+    ps = []
+    for c in path.split('/'):
+        ps.append(c)
+        pth = '/'.join(ps)
+        if not pth:
+            continue
+        if not os.path.isdir(pth):
+            os.mkdir(pth, mode)
+    os.chown(path, gws.UID, gws.GID)
     return path
+
+
+def running_in_container():
+    # see install/build.py
+    try:
+        return os.path.isfile('/.GWS_IN_CONTAINER')
+    except:
+        return False
 
 
 def parse_path(path):
@@ -254,7 +270,6 @@ class lock:
                 os.unlink(self.path)
             except OSError:
                 pass
-
 
 
 # empty image files

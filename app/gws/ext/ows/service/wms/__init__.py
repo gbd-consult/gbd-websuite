@@ -66,7 +66,7 @@ class Object(ows.Object):
             raise gws.web.error.NotFound()
 
         render_input = t.MapRenderInput({
-            'out_path': '/tmp/wms_' + gws.random_string(64) + '.png',
+            'out_path': gws.TMP_DIR + '/wms_' + gws.random_string(64) + '.png',
             'bbox': bbox,
             'rotation': 0,
             'scale': gws.tools.misc.res2scale((bbox[2] - bbox[0]) / px_width),

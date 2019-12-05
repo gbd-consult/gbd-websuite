@@ -15,6 +15,7 @@ misc.ensure_dir(gws.LOG_DIR)
 misc.ensure_dir(gws.MISC_DIR)
 misc.ensure_dir(gws.PRINT_DIR)
 misc.ensure_dir(gws.SERVER_DIR)
+misc.ensure_dir(gws.SPOOL_DIR)
 
 
 def dispatch(argv):

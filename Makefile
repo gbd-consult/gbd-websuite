@@ -46,13 +46,13 @@ doc: spec
 doc-dev: spec
 	sphinx-autobuild -B -b html $(SPHINXOPTS) "$(SPHINXBASE)" $(SPHINXBUILD)
 
-image: client
-	$(PYTHON) $(BASE)docker/build.py release $(IMAGE_NAME) && cd $(CWD)
+image:
+	$(PYTHON) $(BASE)install/build.py docker release $(IMAGE_NAME) && cd $(CWD)
 
-image-debug: client
-	$(PYTHON) $(BASE)docker/build.py debug $(IMAGE_NAME) && cd $(CWD)
+image-debug:
+	$(PYTHON) $(BASE)install/build.py docker debug $(IMAGE_NAME) && cd $(CWD)
 
 clean:
 	rm -rf $(BASE)client/_build
 	rm -rf $(BASE)doc/_build
-	rm -rf $(BASE)docker/_build
+	rm -rf $(BASE)install/_build

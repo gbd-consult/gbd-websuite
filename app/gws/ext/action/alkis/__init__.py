@@ -394,7 +394,7 @@ class Object(gws.Object):
             raise gws.web.error.NotFound()
 
         job_uid = gws.random_string(64)
-        out_path = '/tmp/' + job_uid + 'fs.export.csv'
+        out_path = f'{gws.TMP_DIR}/{job_uid}fs.export.csv'
 
         export.as_csv(self, (f.attributes for f in features), p.groups, out_path)
 

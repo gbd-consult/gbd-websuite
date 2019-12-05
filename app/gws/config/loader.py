@@ -16,7 +16,7 @@ DEFAULT_STORE_PATH = gws.CONFIG_DIR + '/config.pickle'
 
 
 def real_config_path(config_path=None):
-    p = config_path or os.environ.get('GWS_CONFIG')
+    p = config_path or os.getenv('GWS_CONFIG')
     if p:
         return p
     for p in DEFAULT_CONFIG_PATHS:
