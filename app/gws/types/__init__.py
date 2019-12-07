@@ -1,15 +1,8 @@
-import typing
+from typing import Optional, List, Dict, Tuple, Union, cast
 
 import shapely.geometry
 
 from .data import Data
-
-Optional = typing.Optional
-List = typing.List
-Dict = typing.Dict
-Tuple = typing.Tuple
-Union = typing.Union
-cast = typing.cast
 
 #: alias: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
@@ -611,12 +604,12 @@ class FeatureProps(Data):
 class FormatConfig(Config):
     """Feature format"""
 
-    description: Optional[TemplateConfig]  #: template for feature descriptions
-    category: Optional[TemplateConfig]  #: feature category
-    label: Optional[TemplateConfig]  #: feature label on the map
+    description: Optional[ext.template.Config]  #: template for feature descriptions
+    category: Optional[ext.template.Config]  #: feature category
+    label: Optional[ext.template.Config]  #: feature label on the map
     dataModel: Optional[List[AttributeConfig]]  #: attribute metadata
-    teaser: Optional[TemplateConfig]  #: template for feature teasers (short descriptions)
-    title: Optional[TemplateConfig]  #: feature title
+    teaser: Optional[ext.template.Config]  #: template for feature teasers (short descriptions)
+    title: Optional[ext.template.Config]  #: feature title
 
 
 class FormatInterface(ObjectInterface):

@@ -1,4 +1,9 @@
 {
+    "cli:auth.test": "Interaktives Testen einer Anmeldung.",
+    "cli:server.reload": "Konfigurieren Sie den Server neu und laden Sie ihn neu",
+    "cli:server.reset": "Laden Sie den Server neu, ohne ihn neu zu konfigurieren",
+    "cli:server.start": "Starten Sie den GBD WebSuite Server",
+    "cli:server.stop": "Stoppen Sie den GBD WebSuite Server",
     "floatList": "",
     "gws.auth.types.Config": "Authentifizierungs- und Autorisierungsoptionen",
     "gws.auth.types.Config:cookie": "Parameter für Sitzungscookies",

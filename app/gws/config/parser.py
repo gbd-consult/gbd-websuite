@@ -19,11 +19,11 @@ config_path_pattern = r'\bconfig\.(py|json|yaml)$'
 config_function_name = 'config'
 
 
-def parse(dct, klass, path=''):
+def parse(dct, type_name, source_path=''):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
-        return spec.config_validator().get(dct, klass, path)
+        return spec.validator().read_value(dct, type_name, source_path)
     except gws.types.spec.Error as e:
         raise error.ParseError(*e.args)
 

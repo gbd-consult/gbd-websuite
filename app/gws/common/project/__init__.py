@@ -24,7 +24,7 @@ class Config(t.Config):
     api: t.Optional[gws.common.api.Config]  #: project-specific actions
     assets: t.Optional[t.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.common.client.Config]  #: project-specific gws client configuration
-    description: t.Optional[t.TemplateConfig]  #: template for the project description
+    description: t.Optional[t.ext.template.Config]  #: template for the project description
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.common.map.Config]  #: Map configuration
     meta: t.Optional[t.MetaData] = {}  #: project metadata

@@ -52,7 +52,7 @@ class Config(t.WithTypeAndAccess):
     featureNamespaceUri: str = 'http://gws.gbd-consult.de'  #: feature namespace uri
     meta: t.Optional[t.MetaData]  #: service metadata
     name: str = ''  #: service name
-    templates: t.Optional[t.List[t.TemplateConfig]]  #: service XML templates
+    templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     useInspire: t.Optional[UseInspireConfig]  #: INSPIRE configuration
 
 

@@ -38,7 +38,7 @@ class Object(gws.ActionObject):
 
         return service.cancel_job(req, p)
 
-    def http_get_result(self, req, p) -> t.HttpResponse:
+    def http_get_result(self, req, p: pt.PrinterQueryParams) -> t.HttpResponse:
         return service.job_result(req, p)
 
 

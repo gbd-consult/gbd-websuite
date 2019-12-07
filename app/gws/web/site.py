@@ -28,7 +28,7 @@ class Config(t.Config):
 
     assets: t.Optional[t.DocumentRootConfig]  #: assets location and options
     cors: t.Optional[CorsConfig]  #: cors configuration
-    errorPage: t.Optional[t.TemplateConfig]  #: error page template
+    errorPage: t.Optional[t.ext.template.Config]  #: error page template
     host: str = '*'  #: host name
     reversedUrl: str = ''  #: base url for reversed addresses
     reversedRewrite: t.Optional[t.List[RewriteRule]]  #: reversed rewrite rules
@@ -103,4 +103,3 @@ class Object(gws.Object):
                 return base + s
 
         return base + '/' + u
-

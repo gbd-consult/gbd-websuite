@@ -43,8 +43,8 @@ def cancel_job(req, p: pt.PrinterQueryParams) -> pt.PrinterResponse:
     })
 
 
-def job_result(req, p) -> t.HttpResponse:
-    job = _get_job(req, req.param('jobUid'))
+def job_result(req, p: pt.PrinterQueryParams) -> t.HttpResponse:
+    job = _get_job(req, p.jobUid)
     if job.state != gws.tools.job.State.complete:
         raise gws.web.error.NotFound()
     with open(job.result, 'rb') as fp:

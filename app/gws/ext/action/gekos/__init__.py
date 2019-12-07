@@ -47,6 +47,11 @@ from . import request
 """
 
 
+class GetXYParams(t.Params):
+    alkisFs: str = ''
+    alkisAd: str = ''
+
+
 class PositionConfig(t.Config):
     offsetX: int  #: x-offset for points
     offsetY: int  #: y-offset for points
@@ -81,26 +86,23 @@ class Object(gws.ActionObject):
         if not self.db:
             raise gws.Error(f'{self.uid}: db provider not found')
 
-    def http_get_xy(self, req, p) -> t.HttpResponse:
-        project_uid = req.params.get('projectUid')
+    def http_get_xy(self, req, p: GetXYParams) -> t.HttpResponse:
+        project_uid = p.projectUid
 
         if project_uid:
             req.require_project(project_uid)
 
-        alkis_fs = gws.get(req.params, 'alkisFs')
-        alkis_ad = gws.get(req.params, 'alkisAd')
-
         alkis = self.find_first('gws.common.application').find_action('alkis', project_uid)
 
-        if alkis_fs:
+        if p.alkisFs:
             query = gws.ext.action.alkis.FsQueryParams({
-                'alkisFs': alkis_fs
+                'alkisFs': p.alkisFs
             })
             total, features = alkis.find_fs(query, self.crs, allow_eigentuemer=False, allow_buchung=False, limit=1)
 
-        elif alkis_ad:
+        elif p.alkisAd:
             query = gws.ext.action.alkis.FsAddressQueryParams({
-                'alkisAd': alkis_ad,
+                'alkisAd': p.alkisAd,
                 'hausnummerNotNull': True,
             })
             total, features = alkis.find_address(query, self.crs, limit=1)

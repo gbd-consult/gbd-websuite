@@ -31,7 +31,6 @@ if __name__ == '__main__':
     os.makedirs(out_dir, exist_ok=True)
 
     sys.path.append(cdir)
-    # noinspection PyUnresolvedReferences
     import impl.main
 
     impl.main.run(source_dir, out_dir, VERSION)

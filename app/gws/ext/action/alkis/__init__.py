@@ -91,7 +91,7 @@ class Config(t.WithTypeAndAccess):
 
 
 class FsGemarkung(t.Data):
-    """Gemarkung (Administative Unit) object"""
+    """Gemarkung (Administrative Unit) object"""
 
     gemarkung: str  #: Gemarkung name
     gemarkungUid: str  #: Gemarkung uid

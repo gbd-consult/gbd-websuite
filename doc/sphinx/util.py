@@ -33,32 +33,25 @@ words = {
 }
 
 
+def load_spec(lang, app_dir):
+    spec_path = app_dir + '/spec/gen/' + ('' if lang == 'en' else lang + '.') + 'spec.json'
+
+    with open(spec_path) as fp:
+        return json.load(fp)
+
 def make_config_ref(lang, app_dir, doc_root):
     page = 'configref'
     root_type = 'gws.common.application.Config'
-
-    spec_path = app_dir + '/spec/gen/' + ('' if lang == 'en' else lang + '.') + 'config.spec.json'
-
-    with open(spec_path) as fp:
-        spec = json.load(fp)
-
-    gen = _ConfigRefGenerator(lang, page, spec['types'], root_type)
+    gen = _ConfigRefGenerator(lang, page, load_spec(lang, app_dir), root_type)
     text = gen.run()
-
     out = doc_root + '/gen/' + lang + '.' + page + '.txt'
     _write_if_changed(out, text)
 
 
 def make_cli_ref(lang, app_dir, doc_root):
     page = 'cliref'
-    spec_path = app_dir + '/spec/gen/' + ('' if lang == 'en' else lang + '.') + 'cli.spec.json'
-
-    with open(spec_path) as fp:
-        spec = json.load(fp)
-
-    gen = _CliRefGenerator(lang, page, spec['commands'])
+    gen = _CliRefGenerator(lang, page, load_spec(lang, app_dir))
     text = gen.run()
-
     out = doc_root + '/gen/' + lang + '.' + page + '.txt'
     _write_if_changed(out, text)
 
@@ -172,11 +165,11 @@ primitives = "bool", "int", "str", "float", "float2", "float4", "dict",
 
 class _ConfigRefGenerator:
 
-    def __init__(self, lang, page, types, root_type):
+    def __init__(self, lang, page, spec, root_type):
         self.book = 'server_admin'
         self.lang = lang
         self.page = page
-        self.types = types
+        self.spec = spec
         self.root_type = root_type
         self.queue = [root_type]
         self.done = set(primitives)
@@ -187,7 +180,7 @@ class _ConfigRefGenerator:
         while self.queue:
             tname = self.queue.pop(0)
             if tname not in self.done:
-                self.format_type(self.types[tname])
+                self.format_type(self.spec[tname])
                 self.done.add(tname)
 
         return _nl([
@@ -205,7 +198,7 @@ class _ConfigRefGenerator:
             else:
                 self.obj_type(t, self.w('properties') + ':', self.props(t))
 
-        elif t['type'] == 'union':
+        elif t['type'] == 'typeunion':
             self.obj_type(
                 t,
                 self.w('one_of') + ':',
@@ -295,16 +288,19 @@ class _ConfigRefGenerator:
 
 
 class _CliRefGenerator:
-    def __init__(self, lang, page, commands):
+    def __init__(self, lang, page, spec):
         self.book = 'server_admin'
         self.lang = lang
         self.page = page
-        self.commands = commands
+        self.spec = spec
 
     def run(self):
         out = {}
 
-        for c in self.commands.values():
+        for k, c in self.spec.items():
+            if not k.startswith('cli:'):
+                continue
+
             fname = c['command'] + ' ' + c['subcommand'].replace('_', '-')
             t = [
                 '',

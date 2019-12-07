@@ -16,25 +16,28 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class AssetParams(t.Params):
+class GetPathParams(t.Params):
     path: str
+
+class GetResultParams(t.Params):
+    jobUid: str
 
 
 class Object(gws.ActionObject):
 
-    def api_get(self, req, p: AssetParams) -> t.HttpResponse:
+    def api_get(self, req, p: GetPathParams) -> t.HttpResponse:
         """Return an asset under the given path and project"""
         return self._serve_path(req, p)
 
-    def http_get_path(self, req, _) -> t.HttpResponse:
-        return self._serve_path(req, req.params)
+    def http_get_path(self, req, p: GetPathParams) -> t.HttpResponse:
+        return self._serve_path(req, p)
 
     def http_get_download(self, req, p) -> t.HttpResponse:
         # @TODO
         pass
 
-    def http_get_result(self, req, _) -> t.HttpResponse:
-        job = gws.tools.job.get_for(req.user, req.param('jobUid'))
+    def http_get_result(self, req, p: GetResultParams) -> t.HttpResponse:
+        job = gws.tools.job.get_for(req.user, p.jobUid)
         if not job or job.state != gws.tools.job.State.complete:
             raise gws.web.error.NotFound()
         with open(job.result, 'rb') as fp:

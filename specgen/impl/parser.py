@@ -1,4 +1,4 @@
-"""Parse py source files and create a list of objects of interest"""
+"""Parse py source files and create a list of units of interest"""
 
 import ast
 import re
@@ -10,36 +10,35 @@ class Error(Exception):
 
 
 def parse(root_dir):
-    p = _Parser()
     paths = _find_files(root_dir, 'py$')
-    # paths = [root_dir + '/types/__init__.py']
+    units = []
 
     for path in paths:
         try:
-            p.parse(path)
+            units.extend(_Parser().parse(path))
         except Error as e:
             raise Error(e.args[0], path, e.args[1].lineno)
-    return p.objects
+    return units
 
 
 ##
 
 _builtins = 'str', 'int', 'float', 'bool', 'list', 'dict', 'bytes'
 
+from .base import Unit
+
 
 class _Parser:
-
     def __init__(self):
-        self.objects = []
-        self._uid = 0
+        self.imports = {}
+        self.mod_name = ''
+        self.comments = {}
+        self.units = []
 
     def parse(self, path):
-        self.imports = {}
         self.mod_name = _mod_name(path)
-        self.path = path
-        self.comments = {}
 
-        with open(self.path) as fp:
+        with open(path) as fp:
             buf = fp.read()
 
         self.extract_comments(buf)
@@ -50,6 +49,8 @@ class _Parser:
         self.enum_imports(tree)
         self.enum_classes(tree)
         self.enum_cli_functions(tree)
+
+        return self.units
 
     def extract_comments(self, buf):
         cmt = '#:'
@@ -76,28 +77,24 @@ class _Parser:
         for node in _nodes(tree, 'Assign'):
             doc = self.doc_for(node)
             if doc.startswith(mark):
-                self.add({
-                    'kind': 'alias',
-                    'uid': self.uid(),
-                    'doc': doc[len(mark):].strip(),
-                    'name': self.mod_name + '.' + node.targets[0].id,
-                    'type': self.typelist(node.value),
-                })
+                self.add(
+                    'alias',
+                    name=self.mod_name + '.' + node.targets[0].id,
+                    doc=doc[len(mark):].strip(),
+                    types=self.type_decl_to_type_list(node.value),
+                )
 
     def enum_classes(self, tree):
         for node in _nodes(tree, 'ClassDef'):
-            uid = self.uid()
+            class_uid = self.add(
+                'class',
+                name=self.mod_name + '.' + node.name,
+                doc=_docstring(node),
+                supers=[self.qname(b) for b in node.bases],
+            )
 
             for b in node.body:
-                self.member(b, uid)
-
-            self.add({
-                'kind': 'object',
-                'uid': uid,
-                'doc': _docstring(node),
-                'name': self.mod_name + '.' + node.name,
-                'supers': [self.qname(b) for b in node.bases],
-            })
+                self.member(b, class_uid)
 
     def enum_cli_functions(self, tree):
         cli_command = None
@@ -113,61 +110,52 @@ class _Parser:
                 if _cls(b) == 'FunctionDef' and cli_command:
                     self.cli_function(b, cli_command)
 
-    def member(self, node, cuid):
-        cc = _cls(node)
-
-        if cc == 'Assign':
-            self.add({
-                'kind': 'assign_prop',
-                'uid': self.uid(),
-                'parent_uid': cuid,
-                'name': node.targets[0].id,
-                'type': 'void',
-                'default': _value(node.value, strict=False),
-                'doc': self.doc_for(node),
-            })
+    def member(self, node, class_uid):
+        if _cls(node) == 'Assign':
+            self.add(
+                'valueprop',
+                name=node.targets[0].id,
+                doc=self.doc_for(node),
+                parent=class_uid,
+                default=_value(node.value, strict=False),
+            )
             return
 
-        if cc == 'AnnAssign':
-            self.add({
-                'kind': 'prop',
-                'uid': self.uid(),
-                'parent_uid': cuid,
-                'name': node.target.id,
-                'type': self.typelist(node.annotation),
-                'default': _value(node.value),
-                'doc': self.doc_for(node),
-            })
+        if _cls(node) == 'AnnAssign':
+            self.add(
+                'prop',
+                name=node.target.id,
+                doc=self.doc_for(node),
+                parent=class_uid,
+                types=self.type_decl_to_type_list(node.annotation),
+                default=_value(node.value),
+            )
             return
 
-        if cc == 'FunctionDef':
+        if _cls(node) == 'FunctionDef':
 
-            uid = self.uid()
+            method_uid = self.add(
+                'method',
+                name=node.name,
+                doc=_docstring(node),
+                parent=class_uid,
+            )
 
             for a in node.args.args:
-                self.add({
-                    'kind': 'arg',
-                    'uid': self.uid(),
-                    'parent_uid': uid,
-                    'name': a.arg,
-                    'type': self.typelist(a.annotation)
-                })
+                # NB it's important to add arguments in order, see spec/_method_spec
+                self.add(
+                    'argument',
+                    name=a.arg,
+                    parent=method_uid,
+                    types=self.type_decl_to_type_list(a.annotation)
+                )
 
-            self.add({
-                'kind': 'return',
-                'uid': self.uid(),
-                'parent_uid': uid,
-                'name': '',
-                'type': self.typelist(node.returns)
-            })
-
-            self.add({
-                'kind': 'method',
-                'uid': uid,
-                'parent_uid': cuid,
-                'name': node.name,
-                'doc': _docstring(node),
-            })
+            self.add(
+                'return',
+                name='',
+                parent=method_uid,
+                types=self.type_decl_to_type_list(node.returns)
+            )
 
     def cli_function(self, node, cli_command):
         if node.name.startswith('_'):
@@ -179,65 +167,65 @@ class _Parser:
             if _cls(d) == 'Call':
                 name = getattr(d.func, 'id', None) or getattr(d.func, 'attr', None)
                 if name == 'arg':
-                    a = {'name': d.args[0].s, 'doc': ''}
+                    a = Unit(name=d.args[0].s)
                     for kw in d.keywords:
                         if kw.arg == 'help':
-                            a['doc'] = kw.value.s
+                            a.doc = kw.value.s
                             break
                     args.append(a)
 
-        self.add({
-            'kind': 'clifunc',
-            'uid': self.uid(),
-            'doc': _docstring(node),
-            'name': node.name,
-            'command': cli_command,
-            'args': args,
-        })
+        self.add(
+            'clifunc',
+            name=node.name,
+            doc=_docstring(node),
+            command=cli_command,
+            args=args,
+        )
 
-    def qname_inner(self, node):
-        cc = _cls(node)
-
-        if cc == 'Name':
+    def node_name(self, node):
+        if _cls(node) == 'Name':
             name = node.id
             if name in self.imports:
                 return self.imports[name]
             return name
 
-        if cc == 'Attribute':
-            return self.qname_inner(node.value) + '.' + node.attr
+        if _cls(node) == 'Attribute':
+            return self.node_name(node.value) + '.' + node.attr
 
-        if cc == 'Str':
+        if _cls(node) == 'Str':
             return node.s
 
         raise Error('unknown name node', node)
 
     def qname(self, node):
-        name = self.qname_inner(node)
-        if '.' in name or name in _builtins:
+        name = self.node_name(node)
+        if name in _builtins:
+            return name
+        if '.' in name:
+            if name.startswith('ext.'):
+                name = 'gws.types.' + name
             return name
         return self.mod_name + '.' + name
 
-    def typelist(self, node):
+    def type_decl_to_type_list(self, node):
+        # here, node is a type declaration (an alias or an annotation)
         if node is None:
-            return 'void'
+            return ['void']
 
-        cc = _cls(node)
-
-        # if cc == 'Str':
-        #     return [node.s]
-
-        if cc in ('Str', 'Name', 'Attribute'):
+        # foo: SomeType
+        if _cls(node) in ('Str', 'Name', 'Attribute'):
             return [self.qname(node)]
 
-        if cc == 'Subscript':
-            return [self.qname(node.value)] + self.typelist(node.slice.value)
+        # foo: List[SomeType]
+        if _cls(node) == 'Subscript':
+            return [self.qname(node.value)] + self.type_decl_to_type_list(node.slice.value)
 
-        if cc == 'Tuple':
+        # foo: [SomeType, SomeType]
+        if _cls(node) == 'Tuple':
             # @TODO tuples/unions of compound types
             els = []
             for e in node.elts:
-                t = self.typelist(e)
+                t = self.type_decl_to_type_list(e)
                 if len(t) > 1:
                     raise Error('unsupported tuple type', node)
                 els.append(t[0])
@@ -245,18 +233,19 @@ class _Parser:
 
         raise Error('unsupported type', node)
 
-    def add(self, d):
-        d['module'] = self.mod_name
-        self.objects.append(d)
+    def add(self, kind, **kwargs):
+        kwargs.update({
+            'kind': kind,
+            'module': self.mod_name
+        })
+        unit = Unit(**kwargs)
+        self.units.append(unit)
+        return unit.uid
 
     def doc_for(self, node):
         if node.lineno in self.comments:
             return self.comments[node.lineno]
         return ''
-
-    def uid(self):
-        self._uid += 1
-        return self._uid
 
 
 def _find_files(dirname, pattern):
@@ -272,10 +261,6 @@ def _find_files(dirname, pattern):
 
         if re.search(pattern, fname):
             yield path
-
-
-def _cls(node):
-    return node.__class__.__name__
 
 
 def _value(node, strict=True):
@@ -324,3 +309,7 @@ def _nodes(tree, cls):
     for node in ast.walk(tree):
         if _cls(node) == cls:
             yield node
+
+
+def _cls(node):
+    return node.__class__.__name__

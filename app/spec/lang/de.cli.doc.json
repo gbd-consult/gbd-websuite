@@ -1,7 +1,0 @@
-{
-    "auth.test": "Interaktives Testen einer Anmeldung.",
-    "server.reload": "Konfigurieren Sie den Server neu und laden Sie ihn neu",
-    "server.reset": "Laden Sie den Server neu, ohne ihn neu zu konfigurieren",
-    "server.start": "Starten Sie den GBD WebSuite Server",
-    "server.stop": "Stoppen Sie den GBD WebSuite Server"
-}

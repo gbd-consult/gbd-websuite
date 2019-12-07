@@ -56,6 +56,7 @@ class Config(t.WithTypeAndAccess):
 
 _GET_FEATURES_LIMIT = 0
 
+
 class Object(gws.ActionObject):
 
     def api_render_bbox(self, req, p: RenderBboxParams) -> t.HttpResponse:
@@ -124,7 +125,7 @@ class Object(gws.ActionObject):
             img = layer.render_legend()
         except:
             gws.log.exception()
-            img = _1x1_PNG
+            img = gws.tools.misc.Pixels.png8
 
         return t.HttpResponse({
             'mimeType': 'image/png',
@@ -150,66 +151,18 @@ class Object(gws.ActionObject):
             'features': [f.props for f in features]
         })
 
-    def http_get_bbox(self, req, p) -> t.HttpResponse:
-        ps = {k.lower(): v for k, v in req.params.items()}
-
-        try:
-            p = RenderBboxParams({
-                'bbox': [float(x) for x in gws.as_list(ps.get('bbox', ''))],
-                'dpi': ps.get('dpi'),
-                'height': int(ps.get('height')),
-                'layers': gws.as_list(ps.get('layers')),
-                'layerUid': ps.get('layeruid'),
-                'width': int(ps.get('width')),
-            })
-        except ValueError:
-            raise gws.web.error.BadRequest()
-
+    def http_get_bbox(self, req, p: RenderBboxParams) -> t.HttpResponse:
         return self.api_render_bbox(req, p)
 
-    def http_get_xyz(self, req, p) -> t.HttpResponse:
-        ps = {k.lower(): v for k, v in req.params.items()}
-
-        try:
-            p = RenderXyzParams({
-                'x': int(ps.get('x')),
-                'y': int(ps.get('y')),
-                'z': int(ps.get('z')),
-                'layerUid': ps.get('layeruid')
-            })
-        except ValueError:
-            raise gws.web.error.BadRequest()
-
+    def http_get_xyz(self, req, p: RenderXyzParams) -> t.HttpResponse:
         return self.api_render_xyz(req, p)
 
-    def http_get_features(self, req, p) -> t.HttpResponse:
-        ps = {k.lower(): v for k, v in req.params.items()}
-
-        try:
-            p = GetFeaturesParams({
-                'layerUid': ps.get('layeruid')
-            })
-            if 'bbox' in ps:
-                p.bbox = [float(x) for x in gws.as_list(ps.get('bbox'))]
-            if 'resolution' in ps:
-                p.resolution = float(ps.get('resolution'))
-        except ValueError:
-            raise gws.web.error.BadRequest()
-
+    def http_get_features(self, req, p: GetFeaturesParams) -> t.HttpResponse:
         res = self.api_get_features(req, p)
-
         return t.HttpResponse({
             'mimeType': 'application/json',
             'content': gws.tools.json2.to_string(res)
         })
 
-
-
-    def http_get_legend(self, req, p):
-        ps = {k.lower(): v for k, v in req.params.items()}
-
-        p = RenderLegendParams({
-            'layerUid': ps.get('layeruid')
-        })
-
+    def http_get_legend(self, req, p: RenderLegendParams) -> t.HttpResponse:
         return self.api_render_legend(req, p)

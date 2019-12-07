@@ -1,187 +1,172 @@
 """Perform certain normalizations on the parse's results"""
 
 
-def normalize(objects):
-    _check_optional(objects)
+def normalize(units):
+    _check_optional(units)
+    _type_unions_from_exts(units)
 
-    _unions_from_exts(objects)
+    _list_kinds(units)
+    _enum_kinds(units)
+    _union_kinds(units)
+    _tuple_kinds(units)
 
-    _list_kinds(objects)
-    _enum_kinds(objects)
-    _union_kinds(objects)
-    _tuple_kinds(objects)
+    _clean_types(units)
+    _clean_global_refs(units)
+    _clean_supers(units)
 
-    _clean_types(objects)
-    _clean_global_refs(objects)
-    _clean_supers(objects)
-
-    return objects
+    return units
 
 
 ##
 
+from .base import Unit
 
 
-def _check_optional(objects):
+def _check_optional(units):
     # eliminate Optional types and set 'optional' flags respectively
 
-    for c in objects:
-        if 'type' in c:
-            if c['type'][0].endswith('Optional'):
-                c['optional'] = True
-                c['type'] = c['type'][1:]
-            else:
-                c['optional'] = c.get('default') is not None
+    for u in units:
+        if u.types and u.types[0].endswith('Optional'):
+            u.optional = True
+            u.types = u.types[1:]
+        else:
+            u.optional = u.default is not None
 
 
-def _unions_from_exts(objects):
-    # join different gws.ext types into unions
+def _type_unions_from_exts(units):
+    # create "type"-based discriminated unions from gws.ext... types
 
     ls = {}
 
-    for c in objects:
-        if c['kind'] == 'object' and c['name'].startswith('gws.ext'):
+    for u in units:
+        if u.kind == 'class' and u.name.startswith('gws.ext'):
             # gws.ext.layer.vector.Config -> gws.types.ext.layer.Config
-            t = c['name'].split('.')
-            tname = 'gws.types.' + '.'.join(t[1:-2] + [t[-1]])
-            if tname not in ls:
-                ls[tname] = set()
-            ls[tname].add(c['name'])
+            t = u.name.split('.')
+            union_name = 'gws.types.' + '.'.join(t[1:-2] + [t[-1]])
+            if union_name not in ls:
+                ls[union_name] = set()
+            ls[union_name].add(u.name)
 
-    for tname, typenames in ls.items():
-        objects.append({
-            'kind': 'union',
-            'name': tname,
-            'bases': sorted(list(typenames))
-        })
+    for union_name, types in ls.items():
+        units.append(Unit(
+            kind='typeunion',
+            name=union_name,
+            bases=sorted(types)
+        ))
 
 
-def _list_kinds(objects):
+def _list_kinds(units):
     # create explicit 'list' kinds from List types: List[Foo] => FooList
 
     ls = {}
 
-    for c in objects:
-        if 'type' in c and c['type'][0].endswith('List'):
+    for u in units:
+        if u.types and u.types[0].endswith('List'):
             # @TODO list of lists
-            _, base = c['type']
+            _, base = u.types
             tname = base + 'List'
-            ls[tname] = {
-                'kind': 'list',
-                'name': tname,
-                'bases': [base]
-            }
-            c['type'] = tname
+            u.types = [tname]
+            ls[tname] = Unit(
+                kind='list',
+                name=tname,
+                bases=[base]
+            )
 
-    objects.extend(ls.values())
+    units.extend(ls.values())
 
 
-def _enum_kinds(objects):
+def _enum_kinds(units):
     # replace 'Enum' descendants with 'enum' kinds
 
-    def is_enum(c):
-        return any(s.endswith('Enum') for s in c.get('supers', []))
+    def is_enum(u):
+        return any(s.endswith('Enum') for s in u.supers)
 
     def get_values(parent_uid):
-        values = {}
-        for p in objects:
-            if p['kind'] == 'assign_prop' and p['parent_uid'] == parent_uid:
-                values[p['name']] = p['default']
-        return values
+        return {
+            u.name: u.default
+            for u in units
+            if u.kind == 'valueprop' and u.parent == parent_uid
+        }
 
-    for c in objects:
-        if c['kind'] == 'object' and is_enum(c):
-            c['kind'] = 'enum'
-            c['values'] = get_values(c['uid'])
+    for u in units:
+        if u.kind == 'class' and is_enum(u):
+            u.kind = 'enum'
+            u.values = get_values(u.uid)
 
 
-def _union_kinds(objects):
+def _union_kinds(units):
     # create explicit 'union' kinds for Union types
 
     ls = {}
 
-    for c in objects:
-        if 'type' in c and c['type'][0].endswith('Union'):
-            # [Union, tuple, [base, base...]]
-            bases = c['type'][2]
+    for u in units:
+        if u.types and u.types[0].endswith('Union'):
+            # u.types is like [Union, tuple, [base, base...]]
+            bases = sorted(u.types[2])
             tname = _tuple_name(bases)
-            ls[tname] = {
-                'kind': 'union',
-                'name': tname,
-                'bases': bases
-            }
-            c['type'] = tname
+            ls[tname] = Unit(
+                kind='union',
+                name=tname,
+                bases=bases
+            )
+            u.types = [tname]
 
-    objects.extend(ls.values())
+    units.extend(ls.values())
 
 
-def _tuple_kinds(objects):
+def _tuple_kinds(units):
     # replace Tuple types with 'tuple' kinds
 
-    ls = {}
-
-    for c in objects:
-        if 'type' in c and c['type'][0].lower().endswith('tuple'):
-            # [tuple, [base, base...]]
+    for u in units:
+        if u.types and u.types[0].lower().endswith('tuple'):
+            # u.types is [tuple, [base, base...]]
             # or ['gws.types.Tuple', 'tuple', [base, base...]]
 
-            bases = c['type'][1]
+            bases = u.types[1]
             if bases == 'tuple':
-                bases = c['type'][2]
+                bases = u.types[2]
 
-            c['kind'] = 'tuple'
-            c['bases'] = bases
-            del c['type']
-
-    objects.extend(ls.values())
+            u.kind = 'tuple'
+            u.bases = bases
+            u.types = []
 
 
-def _clean_supers(objects):
-    # remove unparsed superclasses
+def _clean_types(units):
+    # ensure all u.types are reduced to a single member
 
-    def is_object(name):
-        return any(p['name'] == name for p in objects)
-
-    for c in objects:
-        ls = []
-        for s in c.pop('supers', []):
-            if is_object(s):
-                ls.append(s)
-        if ls:
-            c['supers'] = ls
+    for u in units:
+        if len(u.types) > 1:
+            raise ValueError('mixed type list', vars(u))
+        u.type = u.types[0] if u.types else ''
 
 
-def _clean_types(objects):
-    # ensure there are no multi-types anymore
-
-    for c in objects:
-        if 'type' in c and isinstance(c['type'], list):
-            if len(c['type']) == 1:
-                c['type'] = c['type'][0]
-            else:
-                raise ValueError('mixed type list', c)
-
-
-def _clean_global_refs(objects):
-    # remove 'core' part from global objects
+def _clean_global_refs(units):
+    # remove 'core' part from global units
 
     def clean(s):
+        x = s
         if '.' not in s:
             return s
-        s = [a for a in s.split('.') if a not in ('core',)]
+        s = [a for a in s.split('.') if a != 'core']
         return '.'.join(s)
 
-    for c in objects:
-        c['name'] = clean(c['name'])
-        if c.get('supers'):
-            c['supers'] = [clean(s) for s in c['supers']]
-        if c.get('type'):
-            c['type'] = clean(c['type'])
-        if c.get('bases'):
-            c['bases'] = [clean(b) for b in c['bases']]
+    for u in units:
+        u.name = clean(u.name)
+        u.supers = [clean(s) for s in u.supers]
+        u.bases = [clean(s) for s in u.bases]
+        u.type = clean(u.type)
+
+
+def _clean_supers(units):
+    # remove unparsed superclasses
+
+    names = set(u.name for u in units)
+
+    for u in units:
+        u.supers = [s for s in u.supers if s in names]
 
 
 def _tuple_name(bases):
     if len(set(bases)) == 1:
         return '%s%d' % (bases[0], len(bases))
-    return '_'.join(bases).replace('.', '')
+    return '_or_'.join(bases).replace('.', '_')
