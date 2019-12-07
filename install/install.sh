@@ -36,6 +36,8 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y libgdal20 libgeos-c1v5 libproj
 cp /usr/share/tdsodbc/odbcinst.ini /etc
 
 
+apt install -y curl
+
 check
 
 cd $INSTALL_DIR/install

@@ -223,6 +223,8 @@ def install_script():
         
         {APT_INSTALL}
         
+        apt install -y curl
+        
         check
 
         cd $INSTALL_DIR/install
