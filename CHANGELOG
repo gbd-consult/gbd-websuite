@@ -15,3 +15,8 @@ Version 5.0
 --------------------------------------------
 
 - WMS and WFS server
+
+Version 5.1
+--------------------------------------------
+
+- experimental non-docker installation
