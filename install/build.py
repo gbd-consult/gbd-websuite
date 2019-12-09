@@ -190,6 +190,9 @@ def docker_file():
 
 
 def install_script():
+    ENV.APT_INSTALL += '\n apt install -y curl'
+    ENV.APT_INSTALL = ' \\\n && '.join(lines(ENV.APT_INSTALL))
+
     cmds = """
         #!/usr/bin/env bash    
         
@@ -209,7 +212,9 @@ def install_script():
         
         INSTALL_DIR=${1:-/var/gws}
         USER=${2:-www-data}
-        GROUP=${3:-www-data}
+        GROUP=$(id -gn $USER)
+        GWS_UID=$(id -u $USER)
+        GWS_GID=$(id -g $USER)
         
         mkdir -p $INSTALL_DIR
         mkdir -p $INSTALL_DIR/gws-server
@@ -222,8 +227,6 @@ def install_script():
         banner "INSTALLING APT PACKAGES"
         
         {APT_INSTALL}
-        
-        apt install -y curl
         
         check
 
@@ -272,13 +275,13 @@ def install_script():
             INSTALL_DIR=$INSTALL_DIR
             RELEASE={SHORT_VERSION}
             
-            cd \$INSTALL_DIR
-            rm -f gws-\$RELEASE.tar.gz
-            curl -s -O http://gws-files.gbd-consult.de/gws-\$RELEASE.tar.gz
-            rm -rf gws-server.bak
-            mv -f gws-server gws-server.bak
-            tar -xzf gws-\$RELEASE.tar.gz --no-same-owner
-            echo "version \$(cat \$INSTALL_DIR/gws-server/VERSION) ok"
+            cd \$INSTALL_DIR \\\\
+            && rm -f gws-\$RELEASE.tar.gz \\\\
+            && curl -s -O http://gws-files.gbd-consult.de/gws-\$RELEASE.tar.gz \\\\
+            && rm -rf gws-server.bak \\\\
+            && mv -f gws-server gws-server.bak \\\\
+            && tar -xzf gws-\$RELEASE.tar.gz --no-same-owner \\\\
+            && echo "version \$(cat \$INSTALL_DIR/gws-server/VERSION) ok" 
         EOF
         
         cat > gws <<EOF
@@ -288,8 +291,8 @@ def install_script():
             export GWS_VAR_DIR=$INSTALL_DIR/gws-var
             export GWS_TMP_DIR=/tmp/gws
             export GWS_CONFIG=$INSTALL_DIR/data/config.json
-            export GWS_UID=\$(id -u $USER)
-            export GWS_GID=\$(id -g $GROUP)
+            export GWS_UID=$GWS_UID
+            export GWS_GID=$GWS_GID
             
             source \$GWS_APP_DIR/bin/gws "\$@"
         EOF
@@ -307,13 +310,12 @@ def install_script():
         
         curl -sL '{WELCOME_URL}' -o welcome.tar.gz \\
             && tar -xzf welcome.tar.gz --no-same-owner \\
-            && rm -f welcome.tar.gz
-            
-        chown -R $USER:$GROUP $INSTALL_DIR/data  
+            && rm -f welcome.tar.gz \\
+            && chown -R $USER:$GROUP $INSTALL_DIR/data  
+        
         check
         
         banner "GWS INSTALLED"
-        banner "RUN '$INSTALL_DIR/gws server -h' FOR HELP"
     """
 
     return dedent(_f(cmds))

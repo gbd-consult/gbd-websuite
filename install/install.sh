@@ -16,7 +16,9 @@ fi
 
 INSTALL_DIR=${1:-/var/gws}
 USER=${2:-www-data}
-GROUP=${3:-www-data}
+GROUP=$(id -gn $USER)
+GWS_UID=$(id -u $USER)
+GWS_GID=$(id -g $USER)
 
 mkdir -p $INSTALL_DIR
 mkdir -p $INSTALL_DIR/gws-server
@@ -28,15 +30,12 @@ chown -Rf $USER:$GROUP $INSTALL_DIR/data
 
 banner "INSTALLING APT PACKAGES"
 
-
-apt-get update
-apt-get install -y software-properties-common
-apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y libgdal20 libgeos-c1v5 libproj12 libssl-dev nginx python3-all-dev python3-pip python3-gdal rsyslog tzdata xvfb ghostscript libldap2-dev libsasl2-dev libfreetype6-dev fonts-dejavu-core libexiv2-dev libfcgi-dev libpq-dev libqca-qt5-2-dev libqca-qt5-2-plugins libqt5quickwidgets5 libqt5serialport5 libqt5sql5-mysql libqt5sql5-sqlite libqt5webkit5 libqwt-qt5-6 libspatialindex4v5 libzip4 ocl-icd-opencl-dev python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtsql python3-pyqt5.qtsvg python3-sip python3-sip-dev qt5keychain-dev libqt5sql5-odbc freetds-dev tdsodbc
-cp /usr/share/tdsodbc/odbcinst.ini /etc
-
-
-apt install -y curl
+apt-get update \
+&& apt-get install -y software-properties-common \
+&& apt-get update \
+&& DEBIAN_FRONTEND=noninteractive apt-get install -y libgdal20 libgeos-c1v5 libproj12 libssl-dev nginx python3-all-dev python3-pip python3-gdal rsyslog tzdata xvfb ghostscript libldap2-dev libsasl2-dev libfreetype6-dev fonts-dejavu-core libexiv2-dev libfcgi-dev libpq-dev libqca-qt5-2-dev libqca-qt5-2-plugins libqt5quickwidgets5 libqt5serialport5 libqt5sql5-mysql libqt5sql5-sqlite libqt5webkit5 libqwt-qt5-6 libspatialindex4v5 libzip4 ocl-icd-opencl-dev python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtsql python3-pyqt5.qtsvg python3-sip python3-sip-dev qt5keychain-dev libqt5sql5-odbc freetds-dev tdsodbc \
+&& cp /usr/share/tdsodbc/odbcinst.ini /etc \
+&& apt install -y curl
 
 check
 
@@ -85,13 +84,13 @@ echo "Updating gws..."
 INSTALL_DIR=$INSTALL_DIR
 RELEASE=5.1
 
-cd \$INSTALL_DIR
-rm -f gws-\$RELEASE.tar.gz
-curl -s -O http://gws-files.gbd-consult.de/gws-\$RELEASE.tar.gz
-rm -rf gws-server.bak
-mv -f gws-server gws-server.bak
-tar -xzf gws-\$RELEASE.tar.gz --no-same-owner
-echo "version \$(cat \$INSTALL_DIR/gws-server/VERSION) ok"
+cd \$INSTALL_DIR \\
+&& rm -f gws-\$RELEASE.tar.gz \\
+&& curl -s -O http://gws-files.gbd-consult.de/gws-\$RELEASE.tar.gz \\
+&& rm -rf gws-server.bak \\
+&& mv -f gws-server gws-server.bak \\
+&& tar -xzf gws-\$RELEASE.tar.gz --no-same-owner \\
+&& echo "version \$(cat \$INSTALL_DIR/gws-server/VERSION) ok"
 EOF
 
 cat > gws <<EOF
@@ -101,8 +100,8 @@ export GWS_APP_DIR=$INSTALL_DIR/gws-server/app
 export GWS_VAR_DIR=$INSTALL_DIR/gws-var
 export GWS_TMP_DIR=/tmp/gws
 export GWS_CONFIG=$INSTALL_DIR/data/config.json
-export GWS_UID=\$(id -u $USER)
-export GWS_GID=\$(id -g $GROUP)
+export GWS_UID=$GWS_UID
+export GWS_GID=$GWS_GID
 
 source \$GWS_APP_DIR/bin/gws "\$@"
 EOF
@@ -120,10 +119,9 @@ banner "INSTALLING THE DEMO PROJECT"
 
 curl -sL 'http://gws-files.gbd-consult.de/gws-welcome-5.1.tar.gz' -o welcome.tar.gz \
 && tar -xzf welcome.tar.gz --no-same-owner \
-&& rm -f welcome.tar.gz
+&& rm -f welcome.tar.gz \
+&& chown -R $USER:$GROUP $INSTALL_DIR/data
 
-chown -R $USER:$GROUP $INSTALL_DIR/data
 check
 
 banner "GWS INSTALLED"
-banner "RUN '$INSTALL_DIR/gws server -h' FOR HELP"

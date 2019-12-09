@@ -9,9 +9,19 @@ See http://gws-files.gbd-consult.de/docs/latest/books/server-admin/en/quickstart
 For Debian/Ubuntu systems we also provide an experimental install script (`install/install.sh`):
 
 ```
-sudo -H install.sh <gws install dir> <gws user> <gws group>
+sudo -H bash install.sh [gws install dir] [gws run user]
 ```
 
-The installation directory defaults to `/var/gws` and the user/group to `www-data`.
+The installation directory defaults to `/var/gws` and the user to `www-data`.
 
-The script installs _lots_ of stuff, use a throwaway VM to experiment with it.
+The script installs _lots_ of stuff, use a throwaway VM to test it. To run the server, use the `gws` script in the install dir:
+
+```
+sudo /var/gws/gws server start
+```
+
+The installation is configured to run our demo project, once your own project is ready, edit the startup script and change `GWS_CONFIG`:
+
+```
+GWS_CONFIG=/path/to/my/project/config.json
+```
