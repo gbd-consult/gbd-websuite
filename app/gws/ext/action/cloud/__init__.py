@@ -3,6 +3,7 @@ from lxml import etree
 
 import gws
 import gws.config
+import gws.config.parser
 import gws.server
 import gws.web.error
 import gws.tools.mime
@@ -137,10 +138,13 @@ class Object(gws.ActionObject):
             tpl = fp.read()
 
         config = re.sub(r'"{{(\w+)}}"', lambda m: gws.tools.json2.to_string(tpl_vars[m.group(1)]), tpl)
-        cfg_path = f'{CLOUD_CONFIG_DIR}/{project_full_uid}.config.json'
+        config = gws.tools.json2.from_string(config)
 
-        with open(cfg_path, 'w') as fp:
-            fp.write(config)
+        # parse the config before saving, if this fails, then it fails
+        gws.config.parser.parse(config, 'gws.common.project.Config')
+
+        cfg_path = f'{CLOUD_CONFIG_DIR}/{project_full_uid}.config.json'
+        gws.tools.json2.to_path(cfg_path, config, pretty=True)
 
         gws.log.debug(f'added project {project_full_uid!r}')
 
