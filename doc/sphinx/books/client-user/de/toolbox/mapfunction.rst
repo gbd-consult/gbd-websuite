@@ -12,6 +12,7 @@ Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst
 .. toctree::
     :maxdepth: 2
 
+    location.rst
     select.rst
     object_identification.rst
     mouseover.rst
