@@ -25,18 +25,18 @@ class GetResultParams(t.Params):
 
 class Object(gws.ActionObject):
 
-    def api_get(self, req, p: GetPathParams) -> t.HttpResponse:
+    def api_get(self, req: gws.web.AuthRequest, p: GetPathParams) -> t.HttpResponse:
         """Return an asset under the given path and project"""
         return self._serve_path(req, p)
 
-    def http_get_path(self, req, p: GetPathParams) -> t.HttpResponse:
+    def http_get_path(self, req: gws.web.AuthRequest, p: GetPathParams) -> t.HttpResponse:
         return self._serve_path(req, p)
 
-    def http_get_download(self, req, p) -> t.HttpResponse:
+    def http_get_download(self, req: gws.web.AuthRequest, p) -> t.HttpResponse:
         # @TODO
         pass
 
-    def http_get_result(self, req, p: GetResultParams) -> t.HttpResponse:
+    def http_get_result(self, req: gws.web.AuthRequest, p: GetResultParams) -> t.HttpResponse:
         job = gws.tools.job.get_for(req.user, p.jobUid)
         if not job or job.state != gws.tools.job.State.complete:
             raise gws.web.error.NotFound()
@@ -47,7 +47,7 @@ class Object(gws.ActionObject):
             'content': content
         })
 
-    def _serve_path(self, req, p):
+    def _serve_path(self, req: gws.web.AuthRequest, p):
         site_assets = req.site.assets_root
 
         project = None

@@ -40,21 +40,23 @@ class Object(gws.Object):
     def __init__(self):
         super().__init__()
         self.host = ''
+        self.ssl = False
         self.error_page: gws.common.template.Object = None
         self.static_root: t.DocumentRootConfig = None
         self.assets_root: t.DocumentRootConfig = None
         self.rewrite_rules = []
-        self.cors = None
-        self.ssl = False
+        self.reversed_rewrite_rules = []
+        self.cors: CorsConfig = None
 
     def configure(self):
         super().configure()
 
-        self.ssl = self.var('ssl')
         self.host = self.var('host', default='*')
-
         self.static_root = self.var('root')
         self.assets_root = self.var('assets')
+
+        # config.ssl is populated in the application init
+        self.ssl = self.var('ssl')
 
         self.rewrite_rules = self.var('rewrite', default=[])
         for r in self.rewrite_rules:
@@ -67,14 +69,6 @@ class Object(gws.Object):
             r.match = r.match.strip('/')
             # we use nginx syntax $1, need python's \1
             r.target = r.target.replace('$', '\\')
-
-        p = self.var('errorPage')
-        if p:
-            self.error_page = self.create_object('gws.ext.template', p)
-
-        p = self.var('cors')
-        if p and p.get('enabled'):
-            self.cors = p
 
         p = self.var('errorPage')
         if p:

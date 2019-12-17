@@ -59,7 +59,7 @@ _GET_FEATURES_LIMIT = 0
 
 class Object(gws.ActionObject):
 
-    def api_render_bbox(self, req, p: RenderBboxParams) -> t.HttpResponse:
+    def api_render_bbox(self, req: gws.web.AuthRequest, p: RenderBboxParams) -> t.HttpResponse:
         """Render a part of the map inside a bounding box"""
 
         layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
@@ -87,7 +87,7 @@ class Object(gws.ActionObject):
             'content': img
         })
 
-    def api_render_xyz(self, req, p: RenderXyzParams) -> t.HttpResponse:
+    def api_render_xyz(self, req: gws.web.AuthRequest, p: RenderXyzParams) -> t.HttpResponse:
         """Render an XYZ tile"""
 
         layer = req.require('gws.ext.layer', p.layerUid)
@@ -113,7 +113,7 @@ class Object(gws.ActionObject):
             'content': img or gws.tools.misc.Pixels.png8
         })
 
-    def api_render_legend(self, req, p: RenderLegendParams) -> t.HttpResponse:
+    def api_render_legend(self, req: gws.web.AuthRequest, p: RenderLegendParams) -> t.HttpResponse:
         """Render a legend for a layer"""
 
         layer = req.require('gws.ext.layer', p.layerUid)
@@ -132,14 +132,14 @@ class Object(gws.ActionObject):
             'content': img
         })
 
-    def api_describe_layer(self, req, p: DescribeLayerParams) -> t.HttpResponse:
+    def api_describe_layer(self, req: gws.web.AuthRequest, p: DescribeLayerParams) -> t.HttpResponse:
         layer = req.require('gws.ext.layer', p.layerUid)
         return t.HttpResponse({
             'mimeType': 'text/html',
             'content': layer.description
         })
 
-    def api_get_features(self, req, p: GetFeaturesParams) -> GetFeaturesResponse:
+    def api_get_features(self, req: gws.web.AuthRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
 
         layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
@@ -151,18 +151,18 @@ class Object(gws.ActionObject):
             'features': [f.props for f in features]
         })
 
-    def http_get_bbox(self, req, p: RenderBboxParams) -> t.HttpResponse:
+    def http_get_bbox(self, req: gws.web.AuthRequest, p: RenderBboxParams) -> t.HttpResponse:
         return self.api_render_bbox(req, p)
 
-    def http_get_xyz(self, req, p: RenderXyzParams) -> t.HttpResponse:
+    def http_get_xyz(self, req: gws.web.AuthRequest, p: RenderXyzParams) -> t.HttpResponse:
         return self.api_render_xyz(req, p)
 
-    def http_get_features(self, req, p: GetFeaturesParams) -> t.HttpResponse:
+    def http_get_features(self, req: gws.web.AuthRequest, p: GetFeaturesParams) -> t.HttpResponse:
         res = self.api_get_features(req, p)
         return t.HttpResponse({
             'mimeType': 'application/json',
             'content': gws.tools.json2.to_string(res)
         })
 
-    def http_get_legend(self, req, p: RenderLegendParams) -> t.HttpResponse:
+    def http_get_legend(self, req: gws.web.AuthRequest, p: RenderLegendParams) -> t.HttpResponse:
         return self.api_render_legend(req, p)

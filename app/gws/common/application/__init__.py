@@ -135,10 +135,8 @@ class Object(gws.Object):
 
         p = self.var('web.sites') or [_default_site]
         for s in p:
-            if self.var('web.ssl'):
-                s.ssl = True
-            site = self.create_object('gws.web.site', s)
-            self.web_sites.append(site)
+            s.ssl = True if self.var('web.ssl') else False
+            self.web_sites.append(self.create_object('gws.web.site', s))
 
         self.add_child(gws.common.csv.Object, self.var('csv'))
 

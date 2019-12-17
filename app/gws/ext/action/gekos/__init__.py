@@ -86,7 +86,7 @@ class Object(gws.ActionObject):
         if not self.db:
             raise gws.Error(f'{self.uid}: db provider not found')
 
-    def http_get_xy(self, req, p: GetXYParams) -> t.HttpResponse:
+    def http_get_xy(self, req: gws.web.AuthRequest, p: GetXYParams) -> t.HttpResponse:
         project_uid = p.projectUid
 
         if project_uid:
@@ -140,8 +140,8 @@ class Object(gws.ActionObject):
         features = []
 
         for instance in self.var('instances', default=['none']):
-            req = request.GekosRequest(options, instance, cache_lifetime=0)
-            fs = req.run()
+            gr = request.GekosRequest(options, instance, cache_lifetime=0)
+            fs = gr.run()
             gws.log.info(f'loaded {len(fs)} records from {instance!r}')
             features.extend(fs)
 

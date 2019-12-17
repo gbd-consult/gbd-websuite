@@ -38,7 +38,7 @@ class Object(gws.auth.provider.Object):
                 return self._make_user(rec)
 
     def _make_user(self, rec):
-        return self.root.create(gws.auth.user.ValidUser).init_from_source(
+        return gws.auth.user.ValidUser().init_from_source(
             provider=self,
             uid=rec['login'],
             roles=rec.get('roles', []),

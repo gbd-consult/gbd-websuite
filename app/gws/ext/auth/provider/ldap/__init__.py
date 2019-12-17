@@ -74,7 +74,7 @@ class Object(gws.auth.provider.Object):
             with self._connection():
                 gws.log.info(f'LDAP connection "{self.uid!r}" is fine')
         except Exception as e:
-            raise ValueError('LDAP error: %s' % e.__class__.__name__, *e.args)
+            raise ValueError(f'LDAP error: {e.__class__.__name__}', *e.args)
 
     def authenticate_user(self, login, password, **args):
         if not password.strip():
@@ -177,7 +177,7 @@ class Object(gws.auth.provider.Object):
                 self.var('displayNameFormat'),
                 user_data)
 
-        return self.root.create(gws.auth.user.ValidUser).init_from_source(
+        return gws.auth.user.ValidUser().init_from_source(
             provider=self,
             uid=user_data[self.login_attr],
             roles=self._find_roles(ld, user_data),

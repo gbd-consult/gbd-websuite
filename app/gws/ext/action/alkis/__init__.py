@@ -325,7 +325,7 @@ class Object(gws.Object):
         if self.disableApi:
             gws.log.info(f'Alkis API disabled for {self.uid!r}')
 
-    def api_fs_setup(self, req, p: FsSetupParams) -> FsSetupResponse:
+    def api_fs_setup(self, req: gws.web.AuthRequest, p: FsSetupParams) -> FsSetupResponse:
         """Return project-specific Flurstueck-Search settings"""
 
         self._precheck_request(req, p.projectUid)
@@ -342,7 +342,7 @@ class Object(gws.Object):
                 'ui': self.var('ui'),
             })
 
-    def api_fs_strassen(self, req, p: FsStrassenParams) -> FsStrassenResponse:
+    def api_fs_strassen(self, req: gws.web.AuthRequest, p: FsStrassenParams) -> FsStrassenResponse:
         """Return a list of Strassen for the given Gemarkung"""
 
         self._precheck_request(req, p.projectUid)
@@ -353,7 +353,7 @@ class Object(gws.Object):
                 'strassen': flurstueck.strasse_list(conn, p),
             })
 
-    def api_fs_search(self, req, p: FsQueryParams) -> FsSearchResponse:
+    def api_fs_search(self, req: gws.web.AuthRequest, p: FsQueryParams) -> FsSearchResponse:
         """Perform a Flurstueck search"""
 
         self._precheck_request(req, p.projectUid)
@@ -369,7 +369,7 @@ class Object(gws.Object):
             'features': sorted(fs, key=lambda p: p.title)
         })
 
-    def api_fs_details(self, req, p: FsDetailsParams) -> FsDetailsResponse:
+    def api_fs_details(self, req: gws.web.AuthRequest, p: FsDetailsParams) -> FsDetailsResponse:
         """Return a Flurstueck feature with details"""
 
         self._precheck_request(req, p.projectUid)
@@ -383,7 +383,7 @@ class Object(gws.Object):
             'feature': fs[0],
         })
 
-    def api_fs_export(self, req, p: FsExportParams) -> FsExportResponse:
+    def api_fs_export(self, req: gws.web.AuthRequest, p: FsExportParams) -> FsExportResponse:
         """Export Flurstueck features"""
 
         self._precheck_request(req, p.projectUid)
@@ -410,7 +410,7 @@ class Object(gws.Object):
             'url': gws.SERVER_ENDPOINT + '?cmd=assetHttpGetResult&jobUid=' + job_uid,
         })
 
-    def api_fs_print(self, req, p: FsPrintParams) -> gws.common.printer.types.PrinterResponse:
+    def api_fs_print(self, req: gws.web.AuthRequest, p: FsPrintParams) -> gws.common.printer.types.PrinterResponse:
         """Print Flurstueck features"""
 
         self._precheck_request(req, p.projectUid)
@@ -444,7 +444,7 @@ class Object(gws.Object):
 
         return gws.common.printer.service.start_job(req, pp)
 
-    def api_geocoder(self, req, p: GeocoderParams) -> GeocoderResponse:
+    def api_geocoder(self, req: gws.web.AuthRequest, p: GeocoderParams) -> GeocoderResponse:
 
         # NB don't check disableApi here
         if not self.has_index:
@@ -499,7 +499,7 @@ class Object(gws.Object):
 
         return self._find_address(query, target_crs, limit)
 
-    def _precheck_request(self, req, project_uid):
+    def _precheck_request(self, req: gws.web.AuthRequest, project_uid):
         if self.disableApi:
             raise gws.web.error.Forbidden()
         req.require_project(project_uid)
@@ -593,7 +593,7 @@ class Object(gws.Object):
 
         return total, features
 
-    def _eigentuemer_flag(self, req, p: FsQueryParams):
+    def _eigentuemer_flag(self, req: gws.web.AuthRequest, p: FsQueryParams):
         if not self._can_read_eigentuemer(req):
             return 0
         if not self.control_mode:
@@ -610,7 +610,7 @@ class Object(gws.Object):
 
     _log_eigentuemer_access_params = ['fsUids', 'bblatt', 'vorname', 'name']
 
-    def _log_eigentuemer_access(self, req, p: FsQueryParams, check, total=0, features=None):
+    def _log_eigentuemer_access(self, req: gws.web.AuthRequest, p: FsQueryParams, check, total=0, features=None):
         if not self.log_table:
             gws.log.debug('_log_eigentuemer_access', check, 'no log table!')
             return
@@ -628,7 +628,7 @@ class Object(gws.Object):
         data = {
             'app_name': 'gws',
             'date_time': gws.tools.date.now_iso(),
-            'ip': req.environ.get('REMOTE_ADDR', ''),
+            'ip': req.env('REMOTE_ADDR', ''),
             'login': req.user.uid,
             'user_name': req.user.display_name,
             'control_input': (p.controlInput or '').strip(),

@@ -20,63 +20,60 @@ _struct_mime = {
 }
 
 
-class Response(werkzeug.wrappers.Response):
-    environ = []
-    request = None
+Response = werkzeug.wrappers.Response
 
-    def html(self, s, status=200):
-        return self.raw(s, mimetype='text/html', status=status)
+class Request:
+    def __init__(self, config_root, environ, site):
+        self.wz = werkzeug.wrappers.Request(environ)
+        # the actual limit is set in the nginx conf (see server/ini)
+        self.wz.max_content_length = 1024 * 1024 * 1024
+        self.config_root = config_root
+        self.site = site
+        self.method = self.wz.method
+        self.headers = self.wz.headers
 
-    def struct(self, s, status=200):
-        acc = self.request.wants_struct or _JSON
-        data = ''
+    def response(self, content, mimetype, status=200):
+        return Response(
+            content,
+            mimetype=mimetype,
+            status=status)
 
-        if acc == _JSON:
-            data = gws.tools.json2.to_string(s, pretty=True)
-        if acc == _MSGPACK:
-            data = gws.tools.umsgpack.dumps(s, default=gws.as_dict)
+    def struct_response(self, data, status=200):
+        typ = self.expected_struct or _JSON
 
-        return self.raw(data, mimetype=_struct_mime[acc], status=status)
+        if typ == _JSON:
+            content = gws.tools.json2.to_string(data, pretty=True)
+        elif typ == _MSGPACK:
+            content = gws.tools.umsgpack.dumps(data, default=gws.as_dict)
+        else:
+            raise ValueError('invalid struct type')
 
-    def raw(self, s, mimetype, status=200):
-        return self.__class__(s, headers=self.headers, mimetype=mimetype, status=status)
-
-
-class Request(werkzeug.wrappers.Request):
-    # the actual limit is set in the nginx conf (see server/ini)
-    max_content_length = 1024 * 1024 * 1024
-
-    @property
-    def response(self):
-        r = Response()
-        r.environ = self.environ
-        r.request = self
-        return r
+        return self.response(content, _struct_mime[typ], status)
 
     @property
-    def is_get(self):
-        return self.method == 'GET'
+    def environ(self):
+        return self.wz.environ
 
     @property
-    def is_post(self):
-        return self.method == 'POST'
+    def cookies(self):
+        return self.wz.cookies
 
     @cached_property
     def _is_json(self):
         h = self.headers.get('content-type', '').lower()
-        return self.is_post and h.startswith(_struct_mime[_JSON])
+        return self.method == 'POST' and h.startswith(_struct_mime[_JSON])
 
     @cached_property
     def _is_msgpack(self):
         h = self.headers.get('content-type', '').lower()
-        return self.is_post and h.startswith(_struct_mime[_MSGPACK])
+        return self.method == 'POST' and h.startswith(_struct_mime[_MSGPACK])
 
     @cached_property
     def has_struct(self):
         return self._is_json or self._is_msgpack
 
     @cached_property
-    def wants_struct(self):
+    def expected_struct(self):
         h = self.headers.get('accept', '').lower()
         if _struct_mime[_MSGPACK] in h:
             return _MSGPACK
@@ -87,53 +84,57 @@ class Request(werkzeug.wrappers.Request):
         if self._is_json:
             return _JSON
 
+    @property
+    def data(self):
+        return self.wz.get_data(as_text=False, parse_form_data=False)
+
     def _decode_struct(self):
         if self._is_json:
             try:
-                return gws.tools.json2.from_string(self.data)
-            except gws.tools.json2.Error:
+                s = self.data.decode(encoding='utf-8', errors='strict')
+                return gws.tools.json2.from_string(s)
+            except (UnicodeDecodeError, gws.tools.json2.Error):
                 gws.log.error('malformed json request')
                 raise error.BadRequest()
+
         if self._is_msgpack:
             try:
                 return gws.tools.umsgpack.loads(self.data)
             except (TypeError, gws.tools.umsgpack.UnpackException):
                 gws.log.error('malformed msgpack request')
                 raise error.BadRequest()
-        return {}
 
-    @cached_property
-    def site(self):
-        return self.environ['gws.site']
+        return {}
 
     @cached_property
     def params(self):
         if self.has_struct:
             return self._decode_struct()
 
-        args = {k: v for k, v in self.args.items()}
+        args = {k: v for k, v in self.wz.args.items()}
+        path = self.wz.path
 
         # the server only understands requests to /_/...
-        # the params can be given as query string or encoded in path
+        # the params can be given as query string or encoded in the path
         # like _/cmd/command/layer/la/x/12/y/34 etc
-        if self.path == gws.SERVER_ENDPOINT:
+
+        if path == gws.SERVER_ENDPOINT:
             return args
-        if self.path.startswith(gws.SERVER_ENDPOINT):
-            return gws.extend(_params_from_path(self.path), args)
-        gws.log.error('invalid request path', self.path)
+        if path.startswith(gws.SERVER_ENDPOINT):
+            return gws.extend(_params_from_path(path), args)
+        gws.log.error(f'invalid request path: {path!r}')
         return None
 
     @cached_property
     def post_data(self):
-        if not self.is_post:
+        if self.method != 'POST':
             return None
 
         charset = self.headers.get('charset', 'utf-8')
-        data = self.get_data()
         try:
-            return data.decode(encoding=charset, errors='strict')
+            return self.data.decode(encoding=charset, errors='strict')
         except UnicodeDecodeError:
-            gws.log.error('data decoding error')
+            gws.log.error('post data decoding error')
             return None
 
     @cached_property
@@ -141,7 +142,7 @@ class Request(werkzeug.wrappers.Request):
         return {k.lower(): v for k, v in self.params.items()}
 
     def env(self, key, default=None):
-        return self.environ.get(key, default)
+        return self.wz.environ.get(key, default)
 
     def param(self, key, default=None):
         return self.params.get(key, default)

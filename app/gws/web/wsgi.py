@@ -3,15 +3,11 @@
 import gws
 import gws.common.template
 import gws.config.loader
-import gws.web.auth
-import gws.web.error
-import gws.web.wrappers
+import gws.web
 
 import gws.types as t
 
 gws.config.loader.load()
-
-DEFAULT_CMD = 'assetHttpGetPath'
 
 
 def application(environ, start_response):
@@ -21,11 +17,12 @@ def application(environ, start_response):
 
 ##
 
+_DEFAULT_CMD = 'assetHttpGetPath'
+
 
 def _handle_request(environ):
     root = gws.config.root()
-    environ['gws.site'] = _find_site(environ, root)
-    req = gws.web.auth.AuthRequest(environ)
+    req = gws.web.AuthRequest(root, environ, _find_site(environ, root))
     try:
         return _handle_request2(root, req)
     except gws.web.error.HTTPException as err:
@@ -35,14 +32,14 @@ def _handle_request(environ):
         return _handle_error(root, req, gws.web.error.InternalServerError())
 
 
-def _handle_request2(root, req):
+def _handle_request2(root, req: gws.web.AuthRequest) -> gws.web.Response:
     if req.params is None:
         raise gws.web.error.NotFound()
 
     cors = req.site.cors
 
     if cors and req.method == 'OPTIONS':
-        return _with_cors_headers(cors, req.response)
+        return _with_cors_headers(cors, req.response('', 'text/plain'))
 
     req.auth_begin()
 
@@ -61,8 +58,8 @@ def _handle_request2(root, req):
 def _handle_error(root, req, err):
     # @TODO: image errors
 
-    if req.wants_struct:
-        return req.response.struct(
+    if req.expected_struct:
+        return req.struct_response(
             {'error': {'status': err.code, 'info': ''}},
             status=err.code)
 
@@ -70,26 +67,25 @@ def _handle_error(root, req, err):
         return err
 
     try:
-        context = {
+        r = req.site.error_page.render({
             'request': req,
             'error': err.code
-        }
-        out = req.site.error_page.render(context)
-        return req.response.raw(out.content, out.mimeType, err.code)
+        })
+        return req.response(r.content, r.mimeType, err.code)
     except:
         gws.log.exception()
         return gws.web.error.InternalServerError()
 
 
 def _handle_action(root, req):
-    cmd = req.param('cmd', DEFAULT_CMD)
+    cmd = req.param('cmd', _DEFAULT_CMD)
 
     # @TODO: add HEAD
     if req.has_struct:
         category = 'api'
-    elif req.is_get:
+    elif req.method == 'GET':
         category = 'http_get'
-    elif req.is_post:
+    elif req.method == 'POST':
         category = 'http_post'
     else:
         raise gws.web.error.MethodNotAllowed()
@@ -126,12 +122,12 @@ def _handle_action(root, req):
         raise gws.web.error.NotFound()
 
     if isinstance(r, t.HttpResponse):
-        return req.response.raw(r.content, r.mimeType, r.get('status', 200))
+        return req.response(r.content, r.mimeType, r.get('status', 200))
 
-    return req.response.struct(r)
+    return req.struct_response(r)
 
 
-def _with_cors_headers(cors, res):
+def _with_cors_headers(cors, res: gws.web.Response):
     if cors.get('allowOrigin'):
         res.headers.add('Access-Control-Allow-Origin', cors.get('allowOrigin'))
     if cors.get('allowCredentials'):

@@ -87,7 +87,7 @@ class Object(gws.ActionObject):
         self.db = self.root.find('gws.ext.db.provider', p) if p else self.root.find_first(
             'gws.ext.db.provider.postgres')
 
-    def api_create_project(self, req, p: CreateProjectParams) -> CreateProjectResponse:
+    def api_create_project(self, req: gws.web.AuthRequest, p: CreateProjectParams) -> CreateProjectResponse:
         # debug
         with open(gws.VAR_DIR + '/cloud-input.json', 'w') as fp:
             fp.write(gws.tools.json2.to_string(p, pretty=True))

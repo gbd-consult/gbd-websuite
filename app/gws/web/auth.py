@@ -1,39 +1,38 @@
+import werkzeug.wrappers
+
 import gws
-import gws.auth.session as session
-import gws.config
+import gws.auth.session
+import gws.auth.api
 import gws.types as t
 from . import wrappers, error
 
 # @TODO skip updates if heartBeat is enabled
 
-DELETED = object()
-
-
-def _session_manager():
-    return gws.get_global('auth.session_manager', session.Manager)
-
-
-def _get_guest_user():
-    p: t.AuthProviderInterface = gws.config.find('gws.ext.auth.provider', 'system')
-    return p.get_user('guest')
-
-
-def _guest_user():
-    return gws.get_global('auth.guest_user', _get_guest_user)
+_DELETED = object()
 
 
 class AuthRequest(wrappers.Request):
     _session = None
     _user = None
 
+    def __init__(self, config_root, environ, site):
+        super().__init__(config_root, environ, site)
+
+        self.header_name = None
+        s = self.config_root.var('auth.header')
+        if s:
+            self.header_name = 'HTTP_' + s.upper().replace('-', '_')
+
+        self.cookie_name = self.config_root.var('auth.cookie.name')
+
     @property
     def user(self):
         if not self._user:
-            raise ValueError('no auth!')
+            raise ValueError('auth_begin not called')
         return self._user
 
     def require(self, klass, uid):
-        node = gws.config.find(klass, uid)
+        node = self.config_root.find(klass, uid)
         if not node:
             gws.log.error('require: not found', klass, uid)
             raise error.NotFound()
@@ -46,85 +45,106 @@ class AuthRequest(wrappers.Request):
         return self.require('gws.common.project', uid)
 
     def acquire(self, klass, uid):
-        node = gws.config.find(klass, uid)
+        node = self.config_root.find(klass, uid)
         if node and self.user.can_use(node):
             return node
 
-    def logged_in(self, user):
+    def login(self, username, password):
+        if not self.user.is_guest:
+            gws.log.error('login while logged-in')
+            raise gws.web.error.Forbidden()
+
+        try:
+            user = gws.auth.api.authenticate_user(username, password)
+        except gws.auth.api.Error as err:
+            raise error.Forbidden() from err
+
+        if not user:
+            raise error.Forbidden()
+
         self._stop_session()
-        self._session = _session_manager().create_for(user)
+        self._session = self._session_manager.create_for(user)
         self._user = user
 
-    def logged_out(self):
+    def logout(self):
         self._stop_session()
-        self._user = _guest_user()
-
-    def _session_id(self):
-        # @TODO secure
-
-        if gws.config.var('auth.header'):
-            s = 'HTTP_' + gws.config.var('auth.header').upper().replace('-', '_')
-            if s in self.environ:
-                return self.environ[s]
-
-        if gws.config.var('auth.cookie'):
-            s = gws.config.var('auth.cookie.name')
-            if s in self.cookies:
-                return self.cookies[s]
+        self._user = self._guest_user
 
     def auth_begin(self):
         self._session = self._init_session()
-        if self._session and self._session is not DELETED:
+        if self._session and self._session is not _DELETED:
             self._user = self._session.user
         else:
-            self._user = _guest_user()
+            self._user = self._guest_user
 
-    def auth_commit(self, res):
+    def auth_commit(self, res: werkzeug.wrappers.Response):
         if not self._session:
             return
 
-        cookie = None
-        if gws.config.var('auth.cookie'):
-            cookie = gws.config.var('auth.cookie.name')
-
-        if self._session is DELETED:
-            if cookie:
+        if self._session is _DELETED:
+            if self.cookie_name:
                 gws.log.info('session cookie=deleted')
-                res.delete_cookie(cookie)
+                res.delete_cookie(self.cookie_name)
             return
 
-        _session_manager().update(self._session)
+        self._session_manager.update(self._session)
 
-        if cookie:
+        if self.cookie_name:
             gws.log.info('session cookie=', self._session.uid)
             res.set_cookie(
-                cookie,
+                self.cookie_name,
                 value=self._session.uid,
-                **self._cookie_options()
+                **self._cookie_options
             )
 
     def _init_session(self):
-        sid = self._session_id()
+        sid = self._session_id
         if not sid:
             return
 
         gws.log.debug('found sid', sid)
-        sess = _session_manager().find(sid)
+        sess = self._session_manager.find(sid)
         if not sess:
             gws.log.info('no session for sid', sid)
-            return DELETED
+            return _DELETED
 
         return sess
 
+    @property
+    def _session_id(self):
+        # @TODO secure
+
+        if self.header_name in self.environ:
+            return self.environ[self.header_name]
+
+        if self.cookie_name in self.cookies:
+            return self.cookies[self.cookie_name]
+
     def _stop_session(self):
-        if self._session and self._session is not DELETED:
-            _session_manager().delete(self._session)
-            self._session = DELETED
+        if self._session and self._session is not _DELETED:
+            self._session_manager.delete(self._session)
+            self._session = _DELETED
         else:
             self._session = None
 
+    @property
     def _cookie_options(self):
-        d = {'path': gws.config.var('auth.session.cookie.path', default='/'), 'httponly': True}
-        # domain=str(gws.config.get('auth.session.cookie.domain')),
-        # secure=gws.config.get('auth.session.httpsOnly'),
+        d = {
+            'path': self.config_root.var('auth.session.cookie.path', default='/'),
+            'httponly': True
+        }
+        # domain=str(self.config_root.get('auth.session.cookie.domain')),
+        # secure=self.config_root.get('auth.session.httpsOnly'),
         return d
+
+    @property
+    def _session_manager(self):
+        return gws.get_global('auth.session_manager', gws.auth.session.Manager)
+
+    @property
+    def _guest_user(self):
+        def get():
+            p: t.AuthProviderInterface = self.config_root.find('gws.ext.auth.provider', 'system')
+            return p.get_user('guest')
+
+        return gws.get_global('auth.guest_user', get)

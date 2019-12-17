@@ -47,7 +47,7 @@ class Object(gws.ActionObject):
             gws.common.template.builtin_config('feature_format')
         )
 
-    def api_find_features(self, req, p: Params) -> Response:
+    def api_find_features(self, req: gws.web.AuthRequest, p: Params) -> Response:
         """Perform a search"""
 
         project = req.require_project(p.projectUid)

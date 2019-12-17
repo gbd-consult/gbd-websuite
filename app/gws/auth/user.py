@@ -3,64 +3,9 @@ import gws.config
 import gws.tools.json2 as json2
 import gws.types as t
 
-# https://tools.ietf.org/html/rfc4519
 
-_aliases = [
-    ('c', 'countryName'),
-    ('cn', 'commonName'),
-    ('dc', 'domainComponent'),
-    ('l', 'localityName'),
-    ('o', 'organizationName'),
-    ('ou', 'organizationalUnitName'),
-    ('sn', 'surname'),
-    ('st', 'stateOrProvinceName'),
-    ('street', 'streetAddress'),
-
-    # non-standard
-    ('login', 'userPrincipalName'),
-]
-
-ADMIN_ROLE_NAME = 'admin'
-
-
-def _check_access(obj, cur, roles):
-    access = gws.get(cur, 'access')
-
-    if not access:
-        return
-
-    for a in access:
-        if a.role in roles:
-            # gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: {a.role}:{a.type} in {_repr(cur)}')
-            return a.type == 'allow'
-
-
-def _can_use(who, obj, roles, parent):
-    if not obj:
-        gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r}: empty')
-        return False
-
-    if ADMIN_ROLE_NAME in roles:
-        gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: ADMIN_ROLE_NAME')
-        return True
-
-    if obj == who:
-        return True
-
-    c = _check_access(obj, obj, roles)
-    if c is not None:
-        return c
-
-    cur = parent or gws.get(obj, 'parent')
-
-    while cur:
-        c = _check_access(obj, cur, roles)
-        if c is not None:
-            return c
-        cur = gws.get(cur, 'parent')
-
-    gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r}: not found')
-    return False
+class Props(t.Data):
+    displayName: str
 
 
 class Role:
@@ -71,7 +16,7 @@ class Role:
         return _can_use(self, obj, [self.name], parent)
 
 
-class User(gws.Object, t.AuthUserInterface):
+class User(t.AuthUserInterface):
     attributes = {}
     provider = None
     roles = None
@@ -109,8 +54,8 @@ class User(gws.Object, t.AuthUserInterface):
         attributes['guest'] = self.is_guest
 
         roles = list(roles) if roles else []
-        roles.append('guest' if self.is_guest else 'user')
-        roles.append('all')
+        roles.append(_ROLE_GUEST if self.is_guest else _ROLE_USER)
+        roles.append(_ROLE_ALL)
 
         return self.init_from_cache(provider, uid, roles, attributes)
 
@@ -152,16 +97,75 @@ class Nobody(User):
         return False
 
 
-class Props(t.Data):
-    displayName: str
-
-
 class ValidUser(User):
     @property
     def props(self):
         return {
             'displayName': self.display_name
         }
+
+
+# https://tools.ietf.org/html/rfc4519
+
+_aliases = [
+    ('c', 'countryName'),
+    ('cn', 'commonName'),
+    ('dc', 'domainComponent'),
+    ('l', 'localityName'),
+    ('o', 'organizationName'),
+    ('ou', 'organizationalUnitName'),
+    ('sn', 'surname'),
+    ('st', 'stateOrProvinceName'),
+    ('street', 'streetAddress'),
+
+    # non-standard
+    ('login', 'userPrincipalName'),
+]
+
+_ROLE_ADMIN = 'admin'
+_ROLE_USER = 'user'
+_ROLE_GUEST = 'guest'
+_ROLE_ALL = 'all'
+
+
+def _check_access(obj, cur, roles):
+    access = gws.get(cur, 'access')
+
+    if not access:
+        return
+
+    for a in access:
+        if a.role in roles:
+            # gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: {a.role}:{a.type} in {_repr(cur)}')
+            return a.type == 'allow'
+
+
+def _can_use(who, obj, roles, parent):
+    if not obj:
+        gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r}: empty')
+        return False
+
+    if _ROLE_ADMIN in roles:
+        gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r} found: _ROLE_ADMIN')
+        return True
+
+    if obj == who:
+        return True
+
+    c = _check_access(obj, obj, roles)
+    if c is not None:
+        return c
+
+    cur = parent or gws.get(obj, 'parent')
+
+    while cur:
+        c = _check_access(obj, cur, roles)
+        if c is not None:
+            return c
+        cur = gws.get(cur, 'parent')
+
+    gws.log.debug(f'PERMS: query: obj={_repr(obj)} roles={roles!r}: not found')
+    return False
 
 
 def _repr(obj):

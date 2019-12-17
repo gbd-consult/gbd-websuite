@@ -144,7 +144,7 @@ class NoParams(Data):
     pass
 
 
-class HttpResponse(Data):
+class HttpResponse(Response):
     mimeType: str
     content: str
     status: int
@@ -200,7 +200,7 @@ class MetaContact(Data):
 class MetaLink(Data):
     """Object link configuration"""
 
-    scheme: str = '' #: link scheme
+    scheme: str = ''  #: link scheme
     url: url  #: link url
     function: str = ''  #: ISO-19115 function, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#CI_OnLineFunctionCode
 
@@ -235,7 +235,7 @@ class MetaData(Data):
     images: dict = {}  #: further images
 
     url: url = ''  #: object metadata url
-    serviceUrl: url = '' #: object service url
+    serviceUrl: url = ''  #: object service url
     links: List[MetaLink] = []  #: additional links
 
 
@@ -628,6 +628,7 @@ class FormatInterface(ObjectInterface):
     def apply_data_model(self, d: dict, data_model: List[Attribute]):
         """Convert data."""
         raise NotImplementedError
+
 
 class OwsServiceInterface:
     name: str

@@ -75,7 +75,7 @@ class Object(ows.Object):
 
         request_param = req.kparam('request', '')
 
-        if req.is_post:
+        if req.method == 'POST':
             try:
                 rd.xml = gws.tools.xml3.from_string(req.post_data)
             except gws.tools.xml3.Error:
