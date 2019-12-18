@@ -18,4 +18,4 @@ Dies kann passieren wenn in der WebSuite nur ein kleiner Ausschnitt eines Gebiet
  Außerdem könnte eine Aufzeichnung der Bewegungen erstellt werden. So könnten zum Beispiel Tiere, welche mit GPS-Sendern markiert wurden, verfolgt und beobachtet werden.
 
 
- .. |location| image:: ../../../images/gbd-icon-auswahl-01.svg
+ .. |location| image:: ../../../images/gps_fixed-24px.svg
