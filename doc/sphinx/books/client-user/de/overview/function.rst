@@ -33,13 +33,11 @@ Der **GBD WebSuite Client** basiert auf React JS und verwendet als Kartenbibliot
 
 Da nahezu alle Server- und Client-Funktionalitäten Plugin-basiert sind, können sehr kleine, angepasste Tools für bestimmte Installationen und Zwecke bereitgestellt werden. Selbst die Integration von QGIS Funktionalitäten ist als Plugin realisiert. Dabei besteht die Möglichkeit, dass QGIS Desktop Benutzer über ein Plugin, Anpassungen an der Konfiguration von Server und Client vornehmen können.
 
-.. GBD WebSuite Namenskonventionen
-...............................
 
-.. Die GBD WebSuite ist eine WebGIS Anwendung. Demzufolge verwendet diese für die Darstellung von Daten in der Karte WebGIS Layer und WebGIS Gruppen. Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine Übersicht von verwendeten Abkürzungen.
+Die GBD WebSuite ist eine WebGIS Anwendung. Demzufolge verwendet diese für die Darstellung von Daten in der Karte WebGIS Layer und WebGIS Gruppen. Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine Übersicht von verwendeten Abkürzungen.
 
-.. +------------------------+--------------------------------------------------------------------------------------+
-| **Abkürzung**          | **Bedeutung**                                                                         |
++------------------------+--------------------------------------------------------------------------------------+
+| **Abkürzung**          | **Bedeutung**                                                                        |
 +------------------------+--------------------------------------------------------------------------------------+
 | |fokus|                | Zoomen auf das entsprechende Flurstück                                               |
 +------------------------+--------------------------------------------------------------------------------------+
