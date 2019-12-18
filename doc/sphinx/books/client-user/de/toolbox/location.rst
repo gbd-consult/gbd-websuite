@@ -2,7 +2,7 @@ Mein Standort
 =============
 
 Über die |location| ``Mein Standort``-Funktion können sie zu Ihrem aktuellen Standort springen. Sobald Sie den Button anklicken, zoomt die Karte zu Ihrem aktuellen Standort.
-Mit der Genauigkeit von circa 3 Meter wird ein Punkt gesetzt, welcher Ihrer Position entsprechen sollte. Zusätzlich wird die Koordinate des Punktes angegeben.
+Mit der Genauigkeit von einigen Metern wird ein Punkt in der Karte angezeigt, welcher Ihrer Position entsprechen sollte. Zusätzlich wird die Koordinate des Punktes angegeben.
 
 Falls Sie eine Fehlermeldung erhalten kann dies verschiedene Gründe haben.
 
