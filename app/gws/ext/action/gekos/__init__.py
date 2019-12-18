@@ -6,7 +6,7 @@ import gws.web
 import gws.config
 import gws.tools.net
 import gws.gis.feature
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.proj
 
 import gws.types as t

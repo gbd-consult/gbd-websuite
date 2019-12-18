@@ -2,7 +2,7 @@ import os
 
 import gws
 import gws.common.ows.service
-import gws.web.error
+import gws.web
 import gws.types as t
 
 
@@ -29,7 +29,7 @@ class Object(gws.ActionObject):
         for p in self.var('services', default=[]):
             self.services.append(self.add_child('gws.ext.ows.service', p))
 
-    def http(self, req, _) -> t.HttpResponse:
+    def http(self, req: gws.web.AuthRequest, _) -> t.HttpResponse:
         gws.p(req.params)
         gws.p(req.post_data)
 

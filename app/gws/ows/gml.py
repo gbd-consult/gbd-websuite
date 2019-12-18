@@ -12,7 +12,7 @@ def tag(*args):
     return args
 
 
-def envelope_to_extent(el: gws.tools.xml3.Element) -> t.Extent:
+def envelope_to_extent(el: gws.tools.xml3.Element):
     crs = el.attr('srsName') or 4326
     prj = gws.gis.proj.as_proj(crs)
     if not prj:

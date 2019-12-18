@@ -1,18 +1,18 @@
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.shape
 import gws.tools.misc as misc
 
 import gws.types as t
 
 
-class Config(gws.gis.layer.VectorConfig):
+class Config(gws.common.layer.VectorConfig):
     """SQL-based layer"""
 
     db: t.Optional[str]  #: database provider uid
     table: t.SqlTableConfig  #: sql table configuration
 
 
-class Object(gws.gis.layer.Vector):
+class Object(gws.common.layer.Vector):
     def configure(self):
         super().configure()
 

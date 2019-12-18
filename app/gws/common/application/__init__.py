@@ -10,7 +10,7 @@ import gws.common.csv
 import gws.common.project
 import gws.common.search
 import gws.common.template
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.zoom
 import gws.qgis.server
 import gws.server.types

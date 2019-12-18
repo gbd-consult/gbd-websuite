@@ -2,7 +2,7 @@ import gws
 
 import gws.common.search
 import gws.config
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.mpx
 import gws.gis.proj
 import gws.gis.shape
@@ -18,7 +18,7 @@ import gws.tools.shell
 import gws.types as t
 
 
-class Config(gws.gis.layer.ImageConfig):
+class Config(gws.common.layer.ImageConfig):
     """WMS layer from a Qgis project"""
 
     path: t.filepath  #: qgis project path
@@ -26,7 +26,7 @@ class Config(gws.gis.layer.ImageConfig):
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
 
 
-class Object(gws.gis.layer.Image):
+class Object(gws.common.layer.Image):
     def __init__(self):
         super().__init__()
 
@@ -62,7 +62,7 @@ class Object(gws.gis.layer.Image):
         self.has_legend = self.var('legend.enabled')
 
         if not self.var('meta'):
-            self.meta = gws.common.metadata.read(gws.gis.layer.meta_from_source_layers(self))
+            self.meta = gws.common.metadata.read(gws.common.layer.meta_from_source_layers(self))
 
         self.configure_extent(gws.gis.source.extent_from_layers(self.source_layers, self.map.crs))
 

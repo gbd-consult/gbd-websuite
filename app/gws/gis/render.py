@@ -2,7 +2,7 @@ from PIL import Image
 from io import BytesIO
 
 import gws
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.feature
 import gws.gis.svg
 import gws.tools.misc as misc

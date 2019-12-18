@@ -3,7 +3,7 @@ import gws.types as t
 
 import gws.gis.proj
 import gws.gis.zoom
-import gws.gis.layer
+import gws.common.layer
 
 
 class Config(t.Config):
@@ -27,7 +27,7 @@ class Props(t.Data):
     extent: t.Extent
     center: t.Point
     initResolution: float
-    layers: t.List[gws.gis.layer.Props]
+    layers: t.List[gws.common.layer.Props]
     resolutions: t.List[float]
     title: str = ''
 
@@ -74,7 +74,7 @@ class Object(gws.Object, t.MapObject):
             self.resolutions = gws.gis.zoom.resolutions_from_config(zoom)
             self.init_resolution = gws.gis.zoom.init_resolution(zoom, self.resolutions)
 
-        self.layers = gws.gis.layer.add_layers_to_object(self, self.var('layers'))
+        self.layers = gws.common.layer.add_layers_to_object(self, self.var('layers'))
 
         proj = gws.gis.proj.as_proj(self.crs)
         self.coordinate_precision = self.var('coordinatePrecision')

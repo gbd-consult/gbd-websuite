@@ -10,7 +10,7 @@ import gws.tools.net
 import gws.tools.date
 import gws.gis.feature
 import gws.gis.shape
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.proj
 
 import gws.types as t

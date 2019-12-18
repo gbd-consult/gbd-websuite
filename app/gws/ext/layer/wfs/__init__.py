@@ -1,5 +1,5 @@
 import gws
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.proj
 import gws.gis.shape
 import gws.gis.source
@@ -18,12 +18,12 @@ class WfsServiceConfig(t.Config):
     url: t.url  #: service url
 
 
-class Config(gws.gis.layer.VectorConfig, WfsServiceConfig):
+class Config(gws.common.layer.VectorConfig, WfsServiceConfig):
     """WFS layer"""
     pass
 
 
-class Object(gws.gis.layer.Vector):
+class Object(gws.common.layer.Vector):
     def __init__(self):
         super().__init__()
 

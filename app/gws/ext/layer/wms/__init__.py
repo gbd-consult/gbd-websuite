@@ -1,5 +1,5 @@
 import gws
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.legend
 import gws.gis.proj
 import gws.gis.shape
@@ -52,13 +52,13 @@ def configure_wms(target: gws.Object, **filter_args):
         **filter_args)
 
 
-class Config(gws.gis.layer.ImageConfig, WmsServiceConfig):
+class Config(gws.common.layer.ImageConfig, WmsServiceConfig):
     """WMS layer"""
 
     getMapParams: t.Optional[dict]  #: additional parameters for GetMap requests
 
 
-class Object(gws.gis.layer.Image):
+class Object(gws.common.layer.Image):
     def __init__(self):
         super().__init__()
 

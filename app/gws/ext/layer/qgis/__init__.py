@@ -1,7 +1,7 @@
 import gws
 import gws.config
 import gws.config.parser
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.source
 import gws.ows.util
 import gws.qgis
@@ -12,17 +12,17 @@ import gws.tools.net
 import gws.types as t
 
 
-class Config(gws.gis.layer.ImageConfig):
+class Config(gws.common.layer.ImageConfig):
     """Automatic QGIS layer"""
 
     directRender: t.Optional[t.List[str]]  #: QGIS providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS providers that should be searched directly
     path: t.filepath  #: path to a qgs project file
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use as roots
-    flatten: t.Optional[gws.gis.layer.FlattenConfig]  #: flatten the layer hierarchy
+    flatten: t.Optional[gws.common.layer.FlattenConfig]  #: flatten the layer hierarchy
 
 
-class Object(gws.gis.layer.Base):
+class Object(gws.common.layer.Base):
     def __init__(self):
         super().__init__()
         self.path = ''
@@ -62,7 +62,7 @@ class Object(gws.gis.layer.Base):
         }
 
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
-        self.layers = gws.gis.layer.add_layers_to_object(self, top_cfg.layers)
+        self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
 
         self.configure_extent(gws.gis.source.extent_from_layers(self.source_layers, self.map.crs))
 

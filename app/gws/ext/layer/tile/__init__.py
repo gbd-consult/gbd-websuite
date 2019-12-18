@@ -1,7 +1,7 @@
 import re
 
 import gws
-import gws.gis.layer
+import gws.common.layer
 import gws.types as t
 import gws.gis.source
 import gws.tools.misc
@@ -24,7 +24,7 @@ class ServiceConfig:
     tileSize: int = 256  #: tile size
 
 
-class Config(gws.gis.layer.ImageTileConfig):
+class Config(gws.common.layer.ImageTileConfig):
     """Tile layer"""
 
     maxRequests: int = 0  #: max concurrent requests to this source
@@ -32,7 +32,7 @@ class Config(gws.gis.layer.ImageTileConfig):
     url: t.url  #: rest url with placeholders {x}, {y} and {z}
 
 
-class Object(gws.gis.layer.ImageTile):
+class Object(gws.common.layer.ImageTile):
     def __init__(self):
         super().__init__()
 

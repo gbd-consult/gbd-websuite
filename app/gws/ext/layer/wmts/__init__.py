@@ -1,6 +1,6 @@
 import gws
 import gws.types as t
-import gws.gis.layer
+import gws.common.layer
 import gws.gis.source
 import gws.gis.legend
 import gws.ows.wmts
@@ -12,7 +12,7 @@ import gws.tools.json2
 import gws.tools.misc as misc
 
 
-class Config(gws.gis.layer.ImageTileConfig):
+class Config(gws.common.layer.ImageTileConfig):
     """WMTS layer"""
 
     capsCacheMaxAge: t.duration = '1d'  #: max cache age for capabilities documents
@@ -23,7 +23,7 @@ class Config(gws.gis.layer.ImageTileConfig):
     url: t.url  #: service url
 
 
-class Object(gws.gis.layer.ImageTile):
+class Object(gws.common.layer.ImageTile):
     def __init__(self):
         super().__init__()
 
