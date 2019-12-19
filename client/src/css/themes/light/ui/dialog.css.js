@@ -40,6 +40,7 @@ module.exports = v => ({
             top: '50%',
             margin: 'auto',
             ...v.SHADOW,
+            ...v.CENTER_BOX(800, 600),
 
             '&.modPrintProgressDialog': {
                 ...v.CENTER_BOX(400, 190),
