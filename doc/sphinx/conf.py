@@ -30,6 +30,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'sphinx.ext.autosectionlabel',
 ]
 
 templates_path = ['_templates']

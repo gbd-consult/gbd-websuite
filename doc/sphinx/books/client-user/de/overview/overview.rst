@@ -29,5 +29,5 @@ Die GBD WebSuite wird als Docker Image bereitgestellt und kann plattformunabhän
    :maxdepth: 2
 
    function.rst
-
+   help.rst
    gbd.rst
