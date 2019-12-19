@@ -123,7 +123,7 @@ ConfigPlugin.prototype.apply = function (compiler) {
             packageVendors(this.options);
             generateThemes(this.options);
             copyAssets(this.options);
-            compileHelp(this.options);
+            //compileHelp(this.options);
         });
     }
 };

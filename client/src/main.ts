@@ -70,16 +70,7 @@ export async function main() {
         }
     }
 
-    // NB assuming our script to be called gws-client-whatever.js
-
-    let scripts = document.getElementsByTagName('script');
-    if (scripts) {
-        for (let i = 0; i < scripts.length; i++) {
-            let m = (scripts[i].src || '').match(/^(.+?)gws-client[^\/]+$/);
-            if (m)
-                options.defaultHelpUrl = m[1] + 'help_' + options.locale + '.html';
-        }
-    }
+    options.defaultHelpUrl = 'https://gws.gbd-consult.de/doc/4.1/help_de.html';
 
     let app = await gws.Application.create(options);
     if (app) {
