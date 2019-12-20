@@ -10,7 +10,7 @@ APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
 VERSION = open(DOC_ROOT + '/../../VERSION').read().strip()
 
 project = 'GBD WebSuite'
-copyright = '2017-2019, Geoinformatikbüro Dassau GmbH'
+copyright = '2017-2020, Geoinformatikbüro Dassau GmbH'
 author = 'Geoinformatikbüro Dassau GmbH'
 version = VERSION
 release = VERSION
