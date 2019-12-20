@@ -1,5 +1,5 @@
-Kurzanleitung
-=============
+Funktionsübersicht
+==================
 
 Die Kurz-Anleitung der GBD WebSuite.
 
@@ -55,11 +55,11 @@ Werkzeugleiste:
 +------------------------+-----------------------------------------+
 |      |fokus|           |    Zu ausgewählten Objekt zoomen        |
 +------------------------+-----------------------------------------+
-|      |trash|           |    Auswahl weiterer Aktionen            |
+|      |several|         |    Auswahl weiterer Aktionen            |
 +------------------------+-----------------------------------------+
 |      |dpro|            |    Auswahl an D-ProCon übermittlen      |
 +------------------------+-----------------------------------------+
-|      |gkos|            |    Auswahl an D-GeKos übermittlen       |
+|      |gkos|            |    Auswahl an GeKos übermittlen         |
 +------------------------+-----------------------------------------+
 |      |print|           |    Drucken                              |
 +------------------------+-----------------------------------------+
@@ -182,13 +182,13 @@ Menüleiste: Flurstückssuche
 Menüleiste: Markierungen
 
 +------------------------+-----------------------------------------+
-|      |marking|         |    Markierungen                         |
+|      |measure|         |    Markierungen                         |
 +------------------------+-----------------------------------------+
 |      |edit|            |    Bearbeiten                           |
 +------------------------+-----------------------------------------+
-|      |new|             |    Neu                                  |
+|      |delete|          |   Markierung Löschen                    |
 +------------------------+-----------------------------------------+
-|      |delete_marking|  |    Alle löschen                         |
+|      |trash|           |    Alle löschen                         |
 +------------------------+-----------------------------------------+
 
 
