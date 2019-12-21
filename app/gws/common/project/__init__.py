@@ -38,13 +38,13 @@ class Config(t.Config):
 
 class Props(t.Data):
     actions: dict
-    client: gws.common.client.Props
-    description: str = ''
+    client: t.Optional[gws.common.client.Props]
+    description: str
     locales: t.List[str]
     map: gws.common.map.Props
     meta: t.MetaData
-    overviewMap: gws.common.map.Props = None
-    printer: gws.common.printer.Props = None
+    overviewMap: gws.common.map.Props
+    printer: gws.common.printer.Props
     title: str
     uid: str
 
@@ -124,7 +124,7 @@ class Object(gws.Object, t.ProjectObject):
             self.root.application.api.actions,
             self.api.actions if self.api else {})
 
-        return gws.compact({
+        return Props({
             'client': client,
             'actions': actions,
             'description': self.description,

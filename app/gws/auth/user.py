@@ -76,7 +76,7 @@ class User(t.AuthUser):
 
     @property
     def props(self):
-        return None
+        return t.Props()
 
 
 class Guest(User):
@@ -100,9 +100,9 @@ class Nobody(User):
 class ValidUser(User):
     @property
     def props(self):
-        return {
+        return t.AuthUserProps({
             'displayName': self.display_name
-        }
+        })
 
 
 # https://tools.ietf.org/html/rfc4519

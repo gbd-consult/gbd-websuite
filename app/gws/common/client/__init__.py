@@ -33,9 +33,9 @@ class Props(t.Data):
 class Element(gws.Object):
     @property
     def props(self):
-        return {
+        return ElementProps({
             'tag': self.var('tag'),
-        }
+        })
 
 
 class Object(gws.Object, t.ClientObject):
@@ -85,10 +85,10 @@ class Object(gws.Object, t.ClientObject):
 
     @property
     def props(self):
-        return {
+        return Props({
             'options': self.options,
             'elements': self.children,
-        }
+        })
 
 
 def _find_element(elements, tag):

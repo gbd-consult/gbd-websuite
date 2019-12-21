@@ -22,6 +22,6 @@ class Object(gws.Object):
 
     @property
     def props(self):
-        return {
+        return Props({
             'templates': self.templates,
-        }
+        })

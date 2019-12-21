@@ -72,7 +72,7 @@ class Object(gws.common.layer.Base):
 
     @property
     def props(self):
-        return gws.extend(super().props, {
+        return super().props.extend({
             'type': 'group',
             'layers': self.layers,
         })

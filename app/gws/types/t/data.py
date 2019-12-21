@@ -19,6 +19,16 @@ class Data:
     def as_dict(self):
         return vars(self)
 
+    def extend(self, *args):
+        d = {}
+        for a in args:
+            if not isinstance(a, dict):
+                a = a.as_dict() if hasattr(a, 'as_dict') else None
+            if a:
+                d.update(a)
+        vars(self).update(d)
+        return self
+
     def __repr__(self):
         return repr(vars(self))
 

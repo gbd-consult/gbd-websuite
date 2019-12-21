@@ -43,7 +43,7 @@ class Object(gws.common.layer.Vector):
 
     @property
     def props(self):
-        return gws.extend(super().props, {
+        return super().props.extend({
             'type': 'vector',
             ##'geometryType': self.geometry_type.upper(),
         })

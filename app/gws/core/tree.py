@@ -131,7 +131,7 @@ class Object(t.Object):
 
     @property
     def props(self):
-        return None
+        return t.Props()
 
 
 class RootBase(Object):
@@ -160,7 +160,7 @@ class RootBase(Object):
 class ActionObject(Object):
     @property
     def props(self):
-        return {'enabled': True}
+        return t.Props()
 
 
 def _load_class(klass):
@@ -236,12 +236,23 @@ def _object_name_for_error(x):
 
 def _make_props(obj, user):
     if isinstance(obj, list):
-        p = [_make_props(v, user) for v in obj]
-        return [v for v in p if v is not None]
+        ls = []
+        for v in obj:
+            v = _make_props(v, user)
+            if v is not None:
+                ls.append(v)
+        return ls
+
+    if isinstance(obj, t.Data):
+        obj = obj.as_dict()
 
     if isinstance(obj, dict):
-        p = {k: _make_props(v, user) for k, v in obj.items()}
-        return {k: v for k, v in p.items() if v is not None}
+        ls = {}
+        for k, v in obj.items():
+            v = _make_props(v, user)
+            if v is not None:
+                ls[k] = v
+        return t.Props(ls)
 
     if isinstance(obj, Object):
         return obj.props_for(user)

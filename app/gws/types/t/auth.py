@@ -37,4 +37,7 @@ class AuthUser:
         pass
 
     def can_use(self, obj: 'Object', parent: 'Object' = None) -> bool:
-        return False
+        pass
+
+class AuthUserProps(Props):
+    displayName: str

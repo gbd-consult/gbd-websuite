@@ -126,10 +126,10 @@ class Shape(t.Shape):
 
     @property
     def props(self):
-        return {
+        return t.ShapeProps({
             'crs': self.crs,
             'geometry': shapely.geometry.mapping(self.geo),
-        }
+        })
 
     @property
     def wkb(self):

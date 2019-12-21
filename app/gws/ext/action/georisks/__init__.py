@@ -119,6 +119,10 @@ class Config(t.WithTypeAndAccess):
     aarteLink: AarteLinkConfig  #: AarteLink system configuration
 
 
+class Props(t.Props):
+    privacyPolicyLink: str
+
+
 class ReportFile:
     """A file attached to a report."""
     content: bytes  #: file content as a byte array
@@ -208,9 +212,9 @@ class Object(gws.ActionObject):
 
     @property
     def props(self):
-        return {
+        return Props({
             'privacyPolicyLink': self.var('report.privacyPolicyLink')
-        }
+        })
 
     def configure(self):
         super().configure()

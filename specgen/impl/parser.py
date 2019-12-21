@@ -16,8 +16,8 @@ def parse(root_dir):
     for path in paths:
         try:
             units.extend(_Parser().parse(path))
-        except Error as e:
-            raise Error(e.args[0], path, e.args[1].lineno)
+        except Exception as e:
+            raise Error(f'parse error in {path}') from e
     return units
 
 

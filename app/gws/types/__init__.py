@@ -98,6 +98,16 @@ class Data:
     def as_dict(self):
         return vars(self)
 
+    def extend(self, *args):
+        d = {}
+        for a in args:
+            if not isinstance(a, dict):
+                a = a.as_dict() if hasattr(a, 'as_dict') else None
+            if a:
+                d.update(a)
+        vars(self).update(d)
+        return self
+
     def __repr__(self):
         return repr(vars(self))
 
@@ -110,8 +120,6 @@ class Config(Data):
 class Props(Data):
     """Properties base type"""
     pass
-
-# type: ignore
 
 ### Basic tree node object.
 
@@ -177,9 +185,7 @@ class RootObject(Object):
         pass
 
 
-# type: ignore
-
-# ### Access rules and configs.
+### Access rules and configs.
 
 
 
@@ -302,7 +308,10 @@ class AuthUser:
         pass
 
     def can_use(self, obj: 'Object', parent: 'Object' = None) -> bool:
-        return False
+        pass
+
+class AuthUserProps(Props):
+    displayName: str
 
 # type: ignore
 
@@ -373,7 +382,7 @@ class SqlProviderObject(Object):
 
     def describe(self, table: SqlTableConfig) -> List['Attribute']:
         pass
-
+    
 # type: ignore
 
 ### Dummy classes to support extension typing.
@@ -425,8 +434,6 @@ class ext:
         class service:
             class Config:
                 pass
-
-# type: ignore
 
 ### Shapes and features.
 
@@ -496,8 +503,6 @@ class Feature:
 
     def apply_format(self, fmt: 'FormatObject', context: dict = None):
         pass
-# type: ignore
-
 ### Maps and layers
 
 
@@ -585,8 +590,6 @@ class ProjectObject(Object):
     locales: List[str]
     meta: 'MetaData'
 
-# type: ignore
-
 ### Metadata.
 
 
@@ -651,8 +654,6 @@ class MetaData(Data):
     links: List[MetaLink] = []  #: additional links
 
 
-# type: ignore
-
 ### Miscellaneous types.
 
 
@@ -666,8 +667,6 @@ class DocumentRootConfig(Config):
     denyMime: Optional[List[str]]  #: disallowed mime types (from the standard list)
 
 
-
-# type: ignore
 
 ### OWS providers and services.
 
@@ -747,8 +746,6 @@ class OwsServiceObject(Object):
         self.meta: 'MetaData' = None
         self.type: str = ''
         self.version: str = ''
-
-# type: ignore
 
 ### Request params and responses.
 
@@ -835,8 +832,6 @@ class Request:
     def auth_commit(self, res: werkzeug.wrappers.Response):
         pass
 
-# type: ignore
-
 ### Search
 
 
@@ -886,8 +881,6 @@ class SearchProviderObject(Object):
     def context_shape(self, args: SearchArguments):
         pass
 
-# type: ignore
-
 ### Styles
 
 
@@ -906,8 +899,6 @@ class StyleConfig(Config):
     type: str  #: style type ("css")
     content: Optional[dict]  #: css rules
     text: Optional[str]  #: raw style content
-
-# type: ignore
 
 ### Templates, renderers and formats.
 
@@ -1034,9 +1025,7 @@ class FormatObject(Object):
         """Format a feature."""
         pass
 
-# type: ignore
-
-# ### Application
+### Application
 
 
 

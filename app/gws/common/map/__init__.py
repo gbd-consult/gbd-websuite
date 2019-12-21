@@ -84,7 +84,7 @@ class Object(gws.Object, t.MapObject):
     @property
     def props(self):
         proj = gws.gis.proj.as_proj(self.crs)
-        return {
+        return Props({
             'crs': proj.epsg,
             'crsDef': proj.proj4text,
             'coordinatePrecision': self.coordinate_precision,
@@ -94,4 +94,4 @@ class Object(gws.Object, t.MapObject):
             'layers': self.layers,
             'resolutions': self.resolutions,
             'title': self.var('titie'),
-        }
+        })

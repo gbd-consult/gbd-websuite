@@ -11,11 +11,6 @@ class Config(t.WithTypeAndAccess):
 
 
 class Object(gws.ActionObject):
-    @property
-    def props(self):
-        # no client props for this action
-        return None
-
     def __init__(self):
         super().__init__()
         self.services: t.List[gws.common.ows.service.Object] = []

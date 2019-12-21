@@ -21,7 +21,7 @@ class Object(gws.Object, t.TemplateObject):
 
     @property
     def props(self):
-        return {
+        return t.TemplateProps({
             'uid': self.uid,
             'title': self.var('title'),
             'qualityLevels': self.var('qualityLevels', default=[]),
@@ -30,7 +30,7 @@ class Object(gws.Object, t.TemplateObject):
             'mapHeight': self.map_size[1],
             'pageWidth': self.page_size[0],
             'pageHeight': self.page_size[1],
-        }
+        })
 
 
 # @TODO template types should be configurable

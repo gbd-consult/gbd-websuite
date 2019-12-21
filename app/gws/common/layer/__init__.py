@@ -283,7 +283,7 @@ class Base(gws.Object, t.LayerObject):
 
     @property
     def props(self):
-        return gws.compact({
+        return Props({
             'meta': self.meta,
             'opacity': self.opacity,
             'options': self.client_options,
@@ -463,17 +463,15 @@ class Image(Base):
 
     @property
     def props(self):
-        p = super().props
-
         if self.display == 'tile':
-            return gws.extend(p, {
+            return super().props.extend({
                 'type': 'tile',
                 'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetXyz/layerUid/' + self.uid + '/z/{z}/x/{x}/y/{y}/t.png',
                 'tileSize': self.grid.tileSize,
             })
 
         if self.display == 'box':
-            return gws.extend(p, {
+            return super().props.extend({
                 'type': 'box',
                 'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
             })
@@ -496,7 +494,7 @@ class ImageTile(Image):
 class Vector(Base):
     @property
     def props(self):
-        return gws.extend(super().props, {
+        return super().props.extend({
             'dataModel': self.data_model,
             'editStyle': self.var('editStyle'),
             'loadingStrategy': self.var('loadingStrategy'),
