@@ -5,7 +5,7 @@ import gws.common.search.runner
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
-import gws.ows.gml
+import gws.gis.gml
 import gws.tools.shell
 import gws.tools.xml3
 import gws.web.error
@@ -13,7 +13,6 @@ import gws.web.error
 import gws.types as t
 
 import gws.common.ows.service as ows
-import gws.common.ows.service.inspire as inspire
 
 
 class Config(gws.common.ows.service.Config):
@@ -104,7 +103,7 @@ class Object(ows.Object):
         except:
             raise gws.web.error.BadRequest()
 
-        args = t.SearchArgs({
+        args = t.SearchArguments({
             'shapes': [gws.gis.shape.from_bbox(bbox, rd.project.map.crs)],
             'crs': rd.project.map.crs,
             'project': None,

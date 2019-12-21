@@ -19,7 +19,7 @@ class ServiceConfig:
     """Tile service configuration"""
 
     extent: t.Optional[t.Extent]  #: service extent
-    crs: t.crsref = 'EPSG:3857'  #: service CRS
+    crs: t.Crs = 'EPSG:3857'  #: service CRS
     origin: str = 'nw'  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
 
@@ -29,7 +29,7 @@ class Config(gws.common.layer.ImageTileConfig):
 
     maxRequests: int = 0  #: max concurrent requests to this source
     service: t.Optional[ServiceConfig] = {}  #: service configuration
-    url: t.url  #: rest url with placeholders {x}, {y} and {z}
+    url: t.Url  #: rest url with placeholders {x}, {y} and {z}
 
 
 class Object(gws.common.layer.ImageTile):

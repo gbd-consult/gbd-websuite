@@ -1,9 +1,6 @@
-import gws
-import gws.auth.api
+import gws.auth.user
 import gws.web
 import gws.types as t
-import gws.auth.user
-
 
 class Config(t.WithTypeAndAccess):
     """Authorization action"""

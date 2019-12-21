@@ -1,6 +1,6 @@
 import gws
 import gws.tools.xml3
-import gws.ows.gml
+import gws.gis.gml
 import gws.gis.proj
 import gws.gis.shape
 
@@ -27,7 +27,7 @@ class Filter:
         return [r for r in recs if r.index in ns]
 
     def _bbox(self, flt, recs):
-        crs, ext = gws.ows.gml.envelope_to_extent(flt.first('Envelope'))
+        crs, ext = gws.gis.gml.envelope_to_extent(flt.first('Envelope'))
         if not ext:
             return []
 

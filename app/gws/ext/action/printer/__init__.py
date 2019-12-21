@@ -1,4 +1,5 @@
 import gws
+import gws.web
 import gws.common.printer.service as service
 import gws.common.printer.types as pt
 import gws.types as t

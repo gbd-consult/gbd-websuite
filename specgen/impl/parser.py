@@ -71,6 +71,12 @@ class _Parser:
             for nn in node.names:
                 if nn.asname:
                     self.imports[nn.asname] = nn.name
+        for node in _nodes(tree, 'ImportFrom'):
+            m = '.'.join(self.mod_name.split('.')[:-node.level])
+            if node.module:
+                m += '.' + node.module
+            for nn in node.names:
+                self.imports[nn.asname or nn.name] = m + '.' + nn.name
 
     def enum_aliases(self, tree):
         mark = 'alias:'

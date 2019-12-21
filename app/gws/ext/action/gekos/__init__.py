@@ -62,21 +62,22 @@ class PositionConfig(t.Config):
 class Config(t.WithTypeAndAccess):
     """GekoS action"""
 
-    crs: t.crsref = ''  #: CRS for gekos data
+    crs: t.Crs = ''  #: CRS for gekos data
     db: t.Optional[str]  #: database provider uid
     instances: t.Optional[t.List[str]]  #: gek-online instances
     params: dict  #: additional parameters for gek-online calls
     position: t.Optional[PositionConfig]  #: position correction for points
     table: t.SqlTableConfig  #: sql table configuration
-    url: t.url  #: gek-online base url
+    url: t.Url  #: gek-online base url
 
 
 class Object(gws.ActionObject):
+    db: t.SqlProviderObject
+
     def configure(self):
         super().configure()
         self.crs = self.var('crs')
 
-        self.db: t.DbProviderObject = None
         s = self.var('db')
         if s:
             self.db = self.root.find('gws.ext.db.provider', s)

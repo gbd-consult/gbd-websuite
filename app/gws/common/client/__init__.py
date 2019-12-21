@@ -38,7 +38,7 @@ class Element(gws.Object):
         }
 
 
-class Object(gws.Object):
+class Object(gws.Object, t.ClientObject):
     def configure(self):
         super().configure()
 

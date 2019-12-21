@@ -1,4 +1,3 @@
-import gws.types as t
 import gws.common.layer
 
 

@@ -3,7 +3,7 @@ import gws.common.search.runner
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
-import gws.ows.gml
+import gws.gis.gml
 import gws.tools.misc as misc
 import gws.tools.shell
 import gws.tools.xml3
@@ -148,7 +148,7 @@ def find_features(rd: ows.RequestData):
 
     pixel_tolerance = 10
 
-    args = t.SearchArgs({
+    args = t.SearchArguments({
         'bbox': bbox,
         'crs': rd.project.map.crs,
         'project': None,

@@ -6,7 +6,7 @@ import gws.common.search.runner
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
-import gws.ows.gml
+import gws.gis.gml
 import gws.tools.date
 import gws.common.metadata
 import gws.tools.xml3
@@ -15,7 +15,6 @@ import gws.web.error
 import gws.types as t
 
 import gws.common.ows.service as ows
-import gws.common.ows.service.inspire as inspire
 
 from . import filter
 

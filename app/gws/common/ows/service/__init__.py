@@ -3,7 +3,7 @@ import gws.web.error
 import gws.tools.misc
 import gws.tools.xml3
 import gws.gis.proj
-import gws.ows.gml
+import gws.gis.gml
 import gws.common.datamodel
 import gws.common.metadata
 import gws.common.search.runner
@@ -82,7 +82,7 @@ class LayerCapsNode(t.Data):
 
 
 class FeatureNode(t.Data):
-    feature: t.FeatureInterface
+    feature: t.Feature
     shape_tag: ''
     tag_name: ''
     attributes: t.List[t.Attribute]
@@ -91,7 +91,7 @@ class FeatureNode(t.Data):
 _NAMESPACES = gws.extend({}, const.NAMESPACES, inspire.NAMESPACES)
 
 
-class Object(t.OwsServiceInterface, gws.Object):
+class Object(gws.Object, t.OwsServiceObject):
     """Generic OWS Service."""
 
     def __init__(self):
@@ -321,7 +321,7 @@ def collect_iso_metadata(service):
     return rs
 
 
-def _configure_metadata(obj: t.ObjectInterface):
+def _configure_metadata(obj: gws.Object):
     m: t.MetaData = gws.common.metadata.read(obj.meta)
 
     if obj.is_a('gws.common.project'):
@@ -417,10 +417,10 @@ def _layer_node(rd: RequestData, layer, sub_nodes=None) -> LayerCapsNode:
     })
 
 
-def _feature_node(rd: RequestData, feature: t.FeatureInterface):
+def _feature_node(rd: RequestData, feature: t.Feature):
     gs = None
     if feature.shape:
-        gs = gws.ows.gml.shape_to_tag(feature.shape, precision=rd.project.map.coordinate_precision)
+        gs = gws.gis.gml.shape_to_tag(feature.shape, precision=rd.project.map.coordinate_precision)
 
     atts = feature.attributes or {}
 

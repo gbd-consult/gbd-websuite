@@ -43,14 +43,14 @@ class Config(t.WithTypeAndAccess):
     """D-Procon action"""
 
     db: str = ''
-    requestUrl: t.url
-    crs: t.crsref = ''
+    requestUrl: t.Url
+    crs: t.Crs = ''
 
     requestTable: t.SqlTableConfig  #: table to store outgoing requests
     dataTable: t.SqlTableConfig  #: table to store consolidated results
     dataTablePattern: str  #: pattern for result tables to consolidate
 
-    cacheTime: t.duration = '24h'
+    cacheTime: t.Duration = '24h'
     infoTitle: str = ''
 
     indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
@@ -74,11 +74,14 @@ class GetDataResponse(t.Data):
 
 
 class Object(gws.ActionObject):
+    def __init__(self):
+        super().__init__()
+        self.db: t.SqlProviderObject = None
+        
     def configure(self):
         super().configure()
 
         s = self.var('db')
-        self.db: t.DbProviderObject = None
         if s:
             self.db = self.root.find('gws.ext.db.provider', s)
         else:

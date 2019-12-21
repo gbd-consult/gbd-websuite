@@ -2,7 +2,6 @@ import importlib
 import gws
 import gws.config
 import gws.auth.api
-import gws.tools.json2 as json2
 import gws.types as t
 
 from . import storage
@@ -46,7 +45,7 @@ class Error(gws.Error):
 # def _decode(a):
 #     if isinstance(a, dict):
 #         if '$user' in a:
-#             prov: t.AuthProviderInterface = gws.config.find('gws.ext.auth.provider', a['provider_uid'])
+#             prov: t.AuthProviderObject = gws.config.find('gws.ext.auth.provider', a['provider_uid'])
 #             return prov.unmarshal_user(a['user_uid'], a['str_user'])
 #         if '$object' in a:
 #             return gws.config.find(*a['$object'])

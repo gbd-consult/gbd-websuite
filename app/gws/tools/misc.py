@@ -1,4 +1,3 @@
-import pwd
 import importlib
 import importlib.machinery
 import importlib.util

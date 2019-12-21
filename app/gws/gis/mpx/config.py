@@ -6,6 +6,7 @@ import gws.config
 import gws.tools.shell as sh
 import gws.tools.json2
 
+import gws.types as t
 
 class _Config:
     def __init__(self):
@@ -115,13 +116,15 @@ class _Config:
 def create():
     mc = _Config()
 
-    for r in gws.config.find_all('gws.ext.layer'):
+    r: t.LayerObject
+    for r  in gws.config.find_all('gws.ext.layer'):
         r.mapproxy_config(mc)
 
     cfg = mc.as_dict()
     if not cfg['layers']:
         return
 
+    map: t.MapObject
     crs = set(map.crs for map in gws.config.find_all('gws.common.map'))
     cfg['services']['wms']['srs'] = sorted(crs)
 

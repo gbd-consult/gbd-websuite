@@ -9,6 +9,7 @@ import gws.gis.feature
 import gws.gis.shape
 import gws.common.printer.service
 import gws.common.printer.types
+import gws.ext.db.provider.postgres
 import gws.tools.misc
 import gws.types as t
 import gws.tools.json2
@@ -216,7 +217,7 @@ _GEOCODER_ADDR_KEYS = 'gemeinde', 'gemarkung', 'strasse', 'hausnummer'
 
 class GeocoderParams(t.Data):
     adressen: t.List[GeocoderAddress]
-    crs: t.crsref
+    crs: t.Crs
 
 
 class GeocoderResponse(t.Response):
@@ -256,14 +257,31 @@ DEFAULT_PRINT_TEMPLATE = t.TemplateConfig({
 
 
 class Object(gws.Object):
+    def __init__(self):
+        super().__init__()
+        self.crs = ''
+        self.has_index = False
+        self.limit = 0
+        self.short_feature_format: t.FormatObject = None
+        self.long_feature_format: t.FormatObject = None
+        self.print_template: t.TemplateObject = None
+        self.eigentuemer: EigentuemerConfig = None
+        self.control_mode = False
+        self.log_table = ''
+        self.buchung: BuchungConfig = None
+        self.disableApi = False
+        self.connect_args = {}
+        self.control_rules = []
+
+
     def configure(self):
         super().configure()
 
         p = self.var('db')
-        db = self.root.find('gws.ext.db.provider', p) if p else self.root.find_first('gws.ext.db.provider.postgres')
+        db: gws.ext.db.provider.postgres.Object = self.root.find(
+            'gws.ext.db.provider', p) if p else self.root.find_first('gws.ext.db.provider.postgres')
 
         self.crs = self._get_alkis_crs(db)
-        self.has_index = False
 
         self.connect_args = {
             'params': db.connect_params,
@@ -300,7 +318,7 @@ class Object(gws.Object):
             'description': fmt.description,
         }))
 
-        self.print_template: t.TemplateObject = self.add_child(
+        self.print_template = self.add_child(
             'gws.ext.template',
             self.var('printTemplate', default=DEFAULT_PRINT_TEMPLATE))
 
@@ -516,7 +534,7 @@ class Object(gws.Object):
             if len(uid) == 2 and uid[0] == 'gemarkung':
                 query.gemarkungUid = uid[1]
 
-    def _fetch_and_format(self, req, query: FsQueryParams, fmt: t.FormatInterface):
+    def _fetch_and_format(self, req, query: FsQueryParams, fmt: t.FormatObject):
         fprops = []
         total, features = self._fetch(req, query)
 

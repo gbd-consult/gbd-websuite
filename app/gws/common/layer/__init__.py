@@ -13,7 +13,8 @@ import gws.gis.proj
 import gws.gis.shape
 import gws.gis.source
 import gws.gis.zoom
-import gws.ows.request
+import gws.common.ows.provider
+import gws.gis.ows
 import gws.common.metadata
 import gws.tools.net
 
@@ -38,14 +39,14 @@ class EditConfig(t.Config):
 
 class LegendConfig(t.Config):
     enabled: bool = True
-    url: t.Optional[t.url]
+    url: t.Optional[t.Url]
 
 
 class CacheConfig(t.Config):
     """Cache configuration"""
 
     enabled: bool = False  #: cache is enabled
-    maxAge: t.duration = '7d'  #: cache max. age
+    maxAge: t.Duration = '7d'  #: cache max. age
     maxLevel: int = 1  #: max. zoom level to cache
 
 
@@ -158,7 +159,7 @@ class Base(gws.Object, t.LayerObject):
         self.meta = None
 
         self.description_template: t.TemplateObject = None
-        self.feature_format: t.FormatInterface = None
+        self.feature_format: t.FormatObject = None
 
         self.title = None
 
@@ -303,7 +304,7 @@ class Base(gws.Object, t.LayerObject):
     def props_for(self, user):
         p = super().props_for(user)
         if p:
-            p['editAccess'] = self.edit_access(user)
+            p.editAccess = self.edit_access(user)
         return p
 
     def mapproxy_config(self, mc):
@@ -324,7 +325,7 @@ class Base(gws.Object, t.LayerObject):
         if self.legend_url.startswith('/'):
             with open(self.legend_url, 'rb') as fp:
                 return fp.read()
-        return gws.ows.request.raw_get(self.legend_url).content
+        return gws.gis.ows.request.raw_get(self.legend_url).content
 
     def get_features(self, bbox, limit=0):
         return []
@@ -522,6 +523,7 @@ def add_layers_to_object(obj, layer_configs):
             uid = gws.get(p, 'uid')
             gws.log.error(f'FAILED LAYER: map={obj.uid!r} layer={uid!r} error={e!r}')
             gws.log.exception()
+            raise
     return ls
 
 

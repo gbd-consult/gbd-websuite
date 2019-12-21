@@ -160,7 +160,7 @@ def database_credentials():
 def find_action(action_type, project_uid=None, fail=True):
     gws.config.loader.load()
 
-    app = gws.config.find_first('gws.common.application')
+    app = gws.config.root().application
     action = app.find_action(action_type, project_uid)
 
     if action:

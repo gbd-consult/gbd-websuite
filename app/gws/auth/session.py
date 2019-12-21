@@ -29,7 +29,7 @@ class Session:
 class Manager:
     def _session_object(self, rec):
         if rec:
-            prov: t.AuthProviderInterface = gws.config.find('gws.ext.auth.provider', rec['provider_uid'])
+            prov: t.AuthProviderObject = gws.config.find('gws.ext.auth.provider', rec['provider_uid'])
             if not prov:
                 gws.log.error(f'auth provider not found: {rec!r}')
                 return

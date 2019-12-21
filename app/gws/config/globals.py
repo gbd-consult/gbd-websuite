@@ -14,15 +14,15 @@ def app_data():
     return root().app_data
 
 
-def find(klass, uid) -> t.ObjectInterface:
+def find(klass, uid) -> t.List[t.Object]:
     return root().find(klass, uid)
 
 
-def find_first(klass) -> t.ObjectInterface:
+def find_first(klass) -> t.Object:
     return root().find_first(klass)
 
 
-def find_all(klass=None) -> t.List[t.ObjectInterface]:
+def find_all(klass=None) -> t.List[t.Object]:
     return root().find_all(klass)
 
 

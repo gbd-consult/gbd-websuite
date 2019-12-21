@@ -10,7 +10,7 @@ _TPL_KEYS = [
 ]
 
 
-class Object(gws.Object, t.FormatInterface):
+class Object(gws.Object, t.FormatObject):
     def __init__(self):
         super().__init__()
         self.data_model = {}
@@ -31,7 +31,7 @@ class Object(gws.Object, t.FormatInterface):
 
         self.data_model = self.var('dataModel')
 
-    def apply(self, feature: t.FeatureInterface, context: dict = None):
+    def apply(self, feature: t.FormatObject, context: dict = None):
         ctx = gws.extend(
             {'feature': feature, 'attributes': feature.attributes},
             context,
@@ -51,7 +51,7 @@ class Object(gws.Object, t.FormatInterface):
     def apply_data_model(self, data, data_model):
         # @TODO merge with printer
         d = {}
-        for attr in data_model:
+        for attr in data_model.attributes:
             if attr.name in data:
                 # @TODO convert to type
                 d[attr.name] = gws.as_str(data[attr.name])

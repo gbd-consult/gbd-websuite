@@ -2,7 +2,6 @@ import gws
 import gws.types as t
 import gws.gis.shape
 import gws.gis.svg
-import gws.tools.misc as misc
 
 
 def from_geojs(js, crs):
@@ -38,7 +37,7 @@ def from_props(p: t.FeatureProps):
     })
 
 
-class Feature(t.FeatureInterface):
+class Feature(t.Feature):
     def __init__(self, args):
         self.attributes = {}
         self.description = ''
@@ -55,7 +54,7 @@ class Feature(t.FeatureInterface):
 
         s = args.get('shape')
         if s:
-            if isinstance(s, t.ShapeInterface):
+            if isinstance(s, t.Shape):
                 self.shape = s
             elif s.get('geometry'):
                 self.shape = gws.gis.shape.from_props(s)
@@ -101,7 +100,7 @@ class Feature(t.FeatureInterface):
             'geometry': geometry
         }
 
-    def apply_format(self, fmt: t.FormatInterface, context: dict = None):
+    def apply_format(self, fmt: t.FormatObject, context: dict = None):
         if fmt:
             fmt.apply(self, context)
 

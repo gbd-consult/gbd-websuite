@@ -1,11 +1,12 @@
 import gws.core.tree
 import gws.types.spec
 import gws.server.monitor
+import gws.types as t
 
 from . import error, spec
 
 
-class Object(gws.core.tree.RootObject):
+class Object(gws.core.tree.RootBase, t.RootObject):
     def __init__(self):
         super().__init__()
         self.application = None

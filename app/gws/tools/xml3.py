@@ -272,7 +272,7 @@ class _Handler(_BaseHandler):
         try:
             self.p.Parse(s, True)
         except xml.parsers.expat.ExpatError as e:
-            raise Error(_errors[e.code], self.p.ErrorLineNumber, self.p.ErrorColumnNumber)
+            raise Error(_errors[getattr(e, 'code')], self.p.ErrorLineNumber, self.p.ErrorColumnNumber)
 
         for root in self.stack[0].children:
             return root

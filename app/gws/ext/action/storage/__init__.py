@@ -38,7 +38,7 @@ class Config(t.WithTypeAndAccess):
 class Object(gws.ActionObject):
 
     @property
-    def storage(self) -> t.StorageInterface:
+    def storage(self) -> t.StorageObject:
         return self.root.application.storage
 
     def api_write(self, req: gws.web.AuthRequest, p: WriteParams) -> WriteResponse:

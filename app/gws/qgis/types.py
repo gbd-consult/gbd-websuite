@@ -5,6 +5,7 @@ class PrintTemplateElement:
     def __init__(self):
         self.tag = ''
         self.attrs = {}
+        self.type = ''
         # more auto props....
 
 
@@ -16,12 +17,13 @@ class PrintTemplate:
         self.elements: t.List[PrintTemplateElement] = []
 
 
-class WmsService(t.Service):
-    def __init__(self):
-        self.type = 'QGIS/WMS'
-        self.path = ''
-        self.version = '1.3.0'  # as of QGIS 3.4
-
-
 class SourceLayer(t.SourceLayer):
     pass
+
+
+class ProviderObject(t.OwsProviderObject):
+    extent: t.Extent
+    legend_params: dict
+    path: str
+    print_templates: t.List[PrintTemplate]
+    properties: dict

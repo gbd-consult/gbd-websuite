@@ -6,42 +6,42 @@ import gws
 import gws.types as t
 import gws.tools.xml3
 import gws.tools.net
-import gws.ows.parseutil as u
+import gws.common.ows.provider.parseutil as u
 
 from . import types
 
 _bigval = 1e10
 
 
-def parse(srv: t.ServiceInterface, xml):
+def parse(prov: types.ProviderObject, xml):
     root = gws.tools.xml3.from_string(xml)
 
-    srv.properties = _properties(root.first('properties'))
-    srv.meta = _project_meta_from_props(srv.properties)
-    srv.version = root.attr('version', '').split('-')[0]
+    prov.properties = _properties(root.first('properties'))
+    prov.meta = _project_meta_from_props(prov.properties)
+    prov.version = root.attr('version', '').split('-')[0]
 
-    if srv.version.startswith('2'):
-        srv.print_templates = _print_v2(root)
-    if srv.version.startswith('3'):
-        srv.print_templates = _print_v3(root)
+    if prov.version.startswith('2'):
+        prov.print_templates = _print_v2(root)
+    if prov.version.startswith('3'):
+        prov.print_templates = _print_v3(root)
 
-    for n, cc in enumerate(srv.print_templates):
+    for n, cc in enumerate(prov.print_templates):
         cc.index = n
 
-    map_layers = _map_layers(root, srv.properties)
+    map_layers = _map_layers(root, prov.properties)
 
     root_group = _tree(root.first('layer-tree-group'), map_layers)
-    srv.layers = u.flatten_source_layers(root_group.layers)
+    prov.source_layers = u.flatten_source_layers(root_group.layers)
 
     crs = None
 
-    if srv.version.startswith('2'):
-        crs = _pval(srv.properties, 'SpatialRefSys.ProjectCrs')
-    if srv.version.startswith('3'):
+    if prov.version.startswith('2'):
+        crs = _pval(prov.properties, 'SpatialRefSys.ProjectCrs')
+    if prov.version.startswith('3'):
         crs = root.get_text('projectCrs.spatialrefsys.authid')
 
     if crs:
-        srv.supported_crs = [crs]
+        prov.supported_crs = [crs]
 
 
 def _project_meta_from_props(props):

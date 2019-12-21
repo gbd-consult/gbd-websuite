@@ -1,5 +1,3 @@
-import re
-
 import werkzeug.wrappers
 from werkzeug.utils import cached_property
 
@@ -23,11 +21,11 @@ _struct_mime = {
 Response = werkzeug.wrappers.Response
 
 class Request:
-    def __init__(self, config_root, environ, site):
+    def __init__(self, root: t.RootObject, environ: dict, site: t.WebSiteObject):
         self.wz = werkzeug.wrappers.Request(environ)
         # the actual limit is set in the nginx conf (see server/ini)
         self.wz.max_content_length = 1024 * 1024 * 1024
-        self.config_root = config_root
+        self.root = root
         self.site = site
         self.method = self.wz.method
         self.headers = self.wz.headers

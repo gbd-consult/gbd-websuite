@@ -12,7 +12,7 @@ class LayerFilterConfig(t.Config):
 
     level: int = 0  #: use layers at this level
     names: t.Optional[t.List[str]]  #: use these layer names (top-to-bottom order)
-    pattern: t.regex = ''  #: match a pattern against the layer full path
+    pattern: t.Regex = ''  #: match a pattern against the layer full path
 
 
 class LayerFilter(t.Data):

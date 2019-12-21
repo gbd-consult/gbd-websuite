@@ -47,7 +47,7 @@ class Object(gws.common.search.provider.Object):
     def can_run(self, args):
         return bool(args.keyword)
 
-    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
+    def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
         params = {
             'q': args.keyword,
             'addressdetails': 1,

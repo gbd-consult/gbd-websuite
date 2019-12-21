@@ -6,6 +6,7 @@ import gws.gis.feature
 import gws.gis.proj
 import gws.gis.shape
 import gws.gis.proj
+import gws.common.db.provider.sql
 import gws.tools.json2
 import gws.tools.misc as misc
 import gws.types as t
@@ -19,7 +20,7 @@ class Config(t.WithType):
     host: str = 'localhost'  #: database host
     password: str  #: password
     port: int = 5432  #: database port
-    timeout: t.duration = 0  #: query timeout
+    timeout: t.Duration = 0  #: query timeout
     uid: str  #: unique id
     user: str  #: username
 
@@ -27,7 +28,7 @@ class Config(t.WithType):
 PING_TIMEOUT = 5
 
 
-class Object(gws.Object, t.DbProviderObject):
+class Object(gws.common.db.provider.sql.Object):
     conn = None
     error = Error
 

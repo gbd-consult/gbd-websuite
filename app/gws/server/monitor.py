@@ -1,5 +1,4 @@
 import os
-import time
 
 import gws
 import gws.core.tree

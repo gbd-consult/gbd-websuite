@@ -11,8 +11,8 @@ class SrvConfig(t.Config):
 class SpoolConfig(SrvConfig):
     """Spool server module"""
 
-    jobFrequency: t.duration = 3  #: background jobs checking frequency
-    monitorFrequency: t.duration = 30  #: filesystem changes check frequency
+    jobFrequency: t.Duration = 3  #: background jobs checking frequency
+    monitorFrequency: t.Duration = 30  #: filesystem changes check frequency
 
 
 class WebConfig(SrvConfig):
@@ -39,7 +39,7 @@ class QgisConfig(SrvConfig):
     serverLogLevel: int = 2  #: QGIS_SERVER_LOG_LEVEL (env. variable)
     serverCacheSize: int = 10000000  #: QGIS_SERVER_CACHE_SIZE (env. variable)
     maxCacheLayers: int = 4000  #: MAX_CACHE_LAYERS (env. variable)
-    searchPathsForSVG: t.Optional[t.List[t.dirpath]]  #: searchPathsForSVG (ini setting)
+    searchPathsForSVG: t.Optional[t.List[t.DirPath]]  #: searchPathsForSVG (ini setting)
     legend: t.Optional[dict]  #: default legend settings
 
 
@@ -52,5 +52,5 @@ class Config(t.Config):
     mapproxy: MapproxyConfig = {}  #: bundled Mapproxy module
     qgis: QgisConfig = {}  #: bundled Qgis module
     spool: SpoolConfig = {}  #: spool server module
-    timeout: t.duration = 60  #: server timeout
+    timeout: t.Duration = 60  #: server timeout
     web: WebConfig = {}  #: web server module

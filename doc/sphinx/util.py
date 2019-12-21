@@ -114,7 +114,7 @@ _exclude_mods = 'gws', 'types', 'ext', 'common', 'gis'
 
 def _spec_type(tname):
     # a "spec" type like "filepath"?
-    m = re.search(r'\.([a-z]\w*)$', tname)
+    m = re.search(r'\.([A-Z]\w*)$', tname)
     return m.group(1) if m else None
 
 

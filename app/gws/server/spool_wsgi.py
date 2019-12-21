@@ -1,4 +1,3 @@
-import gws
 import gws.config.loader
 import gws.server.monitor
 import gws

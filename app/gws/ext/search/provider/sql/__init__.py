@@ -15,7 +15,7 @@ class Config(gws.common.search.provider.Config):
 class Object(gws.common.search.provider.Object):
     def __init__(self):
         super().__init__()
-        self.db: t.DbProviderObject = None
+        self.db: t.SqlProviderObject = None
         self.keyword_required = False
         self.geometry_required = False
 
@@ -38,7 +38,7 @@ class Object(gws.common.search.provider.Object):
             return False
         return args.keyword or args.shapes
 
-    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.FeatureInterface]:
+    def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
 
         tab = self.var('table')
 

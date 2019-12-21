@@ -3,7 +3,7 @@
 import os
 import re
 import gws.tools.misc as misc
-from .data import Data
+from .t.data import Data
 
 
 class Error(Exception):
@@ -142,7 +142,7 @@ def _read_typeunion(rd, val, spec):
         if base:
             return rd.read(val, base)
 
-    return rd.error('ERR_BAD_TYPE', 'expected %r' % ' or '.join(spec['bases']), val)
+    return rd.error('ERR_BAD_TYPE', 'expected %r, found %r' % (' or '.join(spec['bases']), type_name), val)
 
 
 def _read_union(rd, val, spec):
@@ -270,7 +270,7 @@ def _property_value(rd, prop_val, spec):
 
     # @TODO we don't have literals for now
     #
-    # if spec['type'] == 'gws.types.literal':
+    # if spec['type'] == 'gws.types.Literal':
     #     # if literal, the value must be exactly spec[default]
     #     if prop_val != default:
     #         return rd.error('ERR_BAD_LITERAL', 'expected %r' % default, prop_val)
@@ -317,13 +317,13 @@ _HANDLERS = {
     'typeunion': _read_typeunion,
     'union': _read_union,
 
-    'gws.types.crsref': _read_crsref,
-    'gws.types.date': _read_date,
-    'gws.types.dirpath': _read_dirpath,
-    'gws.types.duration': _read_duration,
-    'gws.types.filepath': _read_filepath,
-    'gws.types.formatstr': _read_formatstr,
-    'gws.types.regex': _read_regex,
-    'gws.types.url': _read_url,
+    'gws.types.Crs': _read_crsref,
+    'gws.types.Date': _read_date,
+    'gws.types.DirPath': _read_dirpath,
+    'gws.types.Duration': _read_duration,
+    'gws.types.FilePath': _read_filepath,
+    'gws.types.FormatStr': _read_formatstr,
+    'gws.types.Regex': _read_regex,
+    'gws.types.Url': _read_url,
 
 }

@@ -11,6 +11,7 @@ import gws.config
 import gws.tools.misc as misc
 import gws.tools.shell as sh
 import gws.gis.mpx.config
+import gws.common.layer
 
 import gws.types as t
 
@@ -21,6 +22,7 @@ def status(layer_uids=None):
 
     st = {}
 
+    layer: gws.common.layer.Image
     for layer, cc in _cached_layers(mc):
         uid = cc['name']
         if uid not in st:
@@ -69,6 +71,7 @@ def seed(layer_uids=None, max_time=None, concurrency=1, levels=None):
     mc = gws.gis.mpx.config.create()
     seeds = {}
 
+    layer: gws.common.layer.Image
     for layer, cc in _cached_layers(mc, layer_uids):
         seeds[layer.cache_uid] = _seed_config(layer, cc, levels)
 
@@ -153,7 +156,7 @@ def _file_counts_by_zoom_level(cc, mc, files):
 
 def _cached_layers(mc, layer_uids=None):
     for layer in gws.config.find_all('gws.ext.layer'):
-        cc = _cache_for_layer(layer, mc)
+        cc = _cache_for_layer(t.cast(gws.common.layer.Image, layer), mc)
         if not cc:
             continue
         if layer_uids and layer.uid not in layer_uids:
@@ -161,7 +164,7 @@ def _cached_layers(mc, layer_uids=None):
         yield layer, cc
 
 
-def _cache_for_layer(layer, mc):
+def _cache_for_layer(layer: gws.common.layer.Image, mc):
     for name, cc in mc['caches'].items():
         if layer.has_cache and name == layer.cache_uid and not cc['disable_storage']:
             return gws.extend(cc, {

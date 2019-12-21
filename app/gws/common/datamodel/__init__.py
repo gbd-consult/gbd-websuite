@@ -18,7 +18,7 @@ _py_type_to_attr_type = {
 }
 
 
-def apply(data_model: t.List[t.AttributeConfig], atts: t.Dict) -> t.Dict[str, t.Attribute]:
+def apply(data_model: t.DataModel, atts: t.Dict) -> t.Dict[str, t.Attribute]:
     if not data_model:
         return {name: t.Attribute({
             'name': name,
@@ -29,7 +29,7 @@ def apply(data_model: t.List[t.AttributeConfig], atts: t.Dict) -> t.Dict[str, t.
 
     ls = {}
 
-    for ac in data_model:
+    for ac in data_model.attributes:
         # @TODO type conversion
         a = t.Attribute({
             'title': ac.get('title') or ac.get('name'),
@@ -42,7 +42,7 @@ def apply(data_model: t.List[t.AttributeConfig], atts: t.Dict) -> t.Dict[str, t.
     return ls
 
 
-def _apply_attr(ac: t.AttributeConfig, atts):
+def _apply_attr(ac: t.Attribute, atts):
     s = ac.get('value')
     if s:
         if '{' not in s:

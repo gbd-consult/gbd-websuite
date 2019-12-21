@@ -76,13 +76,13 @@ QGIS layers display whole qgis projects as a single group in the GWS layer tree.
     }
 
 
-qgiswms
+qgisflat
 ~~~~~~~
 
 QGIS/WMS layers display individual layers from a Qgis project as a single flat image ::
 
     {
-        "type": "qgiswms",
+        "type": "qgisflat",
         "title": "My qgis project",
         "path": "/data/path/to/my-project.qgis",
         "sourceLayers": [

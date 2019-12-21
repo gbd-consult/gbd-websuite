@@ -77,7 +77,7 @@ def _handle_error(root, req, err):
         return gws.web.error.InternalServerError()
 
 
-def _handle_action(root, req):
+def _handle_action(root: t.RootObject, req):
     cmd = req.param('cmd', _DEFAULT_CMD)
 
     # @TODO: add HEAD

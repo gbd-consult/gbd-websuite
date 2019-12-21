@@ -1,5 +1,6 @@
 import gws.auth.user
 import gws.common.project
+import gws.web
 import gws.types as t
 
 

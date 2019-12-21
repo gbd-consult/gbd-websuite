@@ -11,7 +11,7 @@ class CookieConfig(t.Config):
 class SessionConfig(t.Config):
     """Session configuration"""
 
-    lifeTime: t.duration = 1200  #: session life time
+    lifeTime: t.Duration = 1200  #: session life time
     heartBeat: bool = False  #: refresh sessions automatically
     storage: str = 'sqlite'  #: session storage engine
 

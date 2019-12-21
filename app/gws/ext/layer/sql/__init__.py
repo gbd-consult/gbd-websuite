@@ -13,10 +13,11 @@ class Config(gws.common.layer.VectorConfig):
 
 
 class Object(gws.common.layer.Vector):
+    db: t.SqlProviderObject
+
     def configure(self):
         super().configure()
 
-        self.db: t.DbProviderObject = None
         s = self.var('db')
         if s:
             self.db = self.root.find('gws.ext.db.provider', s)

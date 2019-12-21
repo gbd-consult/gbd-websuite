@@ -1,24 +1,12 @@
+# noinspection PyUnresolvedReferences
 from typing import Optional, List, Dict, Tuple, Union, cast
 
-import shapely.geometry
+# type: ignore
 
-from .data import Data
+### Basic types
 
-#: alias: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
-Extent = Tuple[float, float, float, float]
+# noinspection PyUnresolvedReferences
 
-#: alias: Point coordinates [x, y]
-Point = Tuple[float, float]
-
-#: alias: Size [width, height]
-Size = Tuple[float, float]
-
-Config = Data
-
-
-class Params(Data):
-    projectUid: Optional[str]  #: project uid
-    locale: Optional[str]  #: locale for this request
 
 
 # NB: we cannot use the standard Enum, because after "class Color(Enum): RED = 1"
@@ -29,90 +17,172 @@ class Enum:
     pass
 
 
-class literal:
+#: alias: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
+Extent = Tuple[float, float, float, float]
+
+#: alias: Point coordinates [x, y]
+Point = Tuple[float, float]
+
+#: alias: Size [width, height]
+Size = Tuple[float, float]
+
+
+class Axis(Enum):
+    xy = 'xy'
+    yx = 'yx'
+
+
+### semantic primitive types
+
+class Literal(str):
     pass
 
 
-# dummy classes to support extension typing
-class ext:
-    class action:
-        class Config(Config):
-            pass
-
-    class auth:
-        class provider:
-            class Config(Config):
-                pass
-
-    class template:
-        class Config(Config):
-            pass
-
-        class Props(Data):
-            pass
-
-    class db:
-        class provider:
-            class Config(Config):
-                pass
-
-    class layer:
-        class Config(Config):
-            pass
-
-    class search:
-        class provider:
-            class Config(Config):
-                pass
-
-    class storage:
-        class Config(Config):
-            pass
-
-    class ows:
-        class service:
-            class Config(Config):
-                pass
-
-
-class filepath:
+class FilePath(str):
     """Valid readable file path on the server"""
     pass
 
 
-class dirpath:
+class DirPath(str):
     """Valid readable directory path on the server"""
     pass
 
 
-class duration:
+class Duration(str):
     """String like "1w 2d 3h 4m 5s" or a number of seconds"""
     pass
 
 
-class regex:
+class Regex(str):
     """Regular expression, as used in Python"""
     pass
 
 
-class formatstr:
+class FormatStr(str):
     """String with {attribute} placeholders"""
     pass
 
 
-class crsref:
+class Crs(str):
     """CRS code like "EPSG:3857" """
     pass
 
 
-class date:
+class Date(str):
     """ISO date like "2019-01-30" """
     pass
 
 
-class url:
+class Url(str):
     """An http or https URL"""
     pass
+
+# type: ignore
+
+### Data objects
+
+class Data:
+    """Data object."""
+
+    def __init__(self, d=None):
+        if d:
+            for k, v in d.items():
+                setattr(self, str(k), v)
+
+    def set(self, k, value):
+        return setattr(self, k, value)
+
+    def get(self, k, default=None):
+        return getattr(self, k, default)
+
+    def as_dict(self):
+        return vars(self)
+
+    def __repr__(self):
+        return repr(vars(self))
+
+
+class Config(Data):
+    """Configuration base type"""
+    pass
+
+
+class Props(Data):
+    """Properties base type"""
+    pass
+
+# type: ignore
+
+### Basic tree node object.
+
+
+
+
+
+
+
+class Object:
+    children: List['Object']
+    config: Config
+    klass: str
+    parent: 'Object'
+    root: 'Object'
+    uid: str
+    props: Props
+
+    def is_a(self, klass):
+        pass
+
+    def initialize(self, cfg):
+        pass
+
+    def configure(self):
+        pass
+
+    def var(self, key, default=None, parent=False):
+        pass
+
+    def add_child(self, klass, cfg):
+        pass
+
+    def get_children(self, klass) -> List['Object']:
+        pass
+
+    def get_closest(self, klass) -> 'Object':
+        pass
+
+    def find_all(self, klass=None) -> List['Object']:
+        pass
+
+    def find_first(self, klass) -> 'Object':
+        pass
+
+    def find(self, klass, uid) -> List['Object']:
+        pass
+
+    def props_for(self, user: 'AuthUser') -> Props:
+        pass
+
+
+class RootObject(Object):
+    application: 'ApplicationObject'
+    all_types: dict
+    all_objects: List['Object']
+    shared_objects: dict
+
+    def create(self, klass, cfg=None) -> 'Object':
+        pass
+
+    def validate_action(self, category: str, cmd: str, payload: dict) -> Tuple[str, str, dict]:
+        pass
+
+
+# type: ignore
+
+# ### Access rules and configs.
+
+
+
 
 
 class AccessType(Enum):
@@ -131,25 +201,6 @@ class AccessRuleConfig(Config):
 Access = List[AccessRuleConfig]
 
 
-class ResponseError(Data):
-    status: int
-    info: str
-
-
-class Response(Data):
-    error: Optional[ResponseError]
-
-
-class NoParams(Data):
-    pass
-
-
-class HttpResponse(Response):
-    mimeType: str
-    content: str
-    status: int
-
-
 class WithType(Config):
     type: str  #: object type
 
@@ -157,187 +208,13 @@ class WithType(Config):
 class WithTypeAndAccess(WithType):
     access: Optional[Access]  #: access rights
 
+# type: ignore
 
-class DocumentRootConfig(Config):
-    """Base directory for assets"""
-
-    dir: dirpath  #: directory path
-    allowMime: Optional[List[str]]  #: allowed mime types
-    denyMime: Optional[List[str]]  #: disallowed mime types (from the standard list)
+### Attributes and data models.
 
 
-class ShapeInterface:
-    crs: crsref
-    geo: shapely.geometry.base.BaseGeometry
-    props: dict
-    type: str
-    wkb: str
-    wkb_hex: str
-    wkt: str
-    bounds: Extent
-
-    def transform(self, to_crs):
-        raise NotImplementedError
 
 
-class MetaContact(Data):
-    """Contact metadata configuration"""
-
-    address: str = ''
-    area: str = ''
-    city: str = ''
-    country: str = ''
-    email: str = ''
-    fax: str = ''
-    organization: str = ''
-    person: str = ''
-    phone: str = ''
-    position: str = ''
-    zip: str = ''
-    url: url = ''
-
-
-class MetaLink(Data):
-    """Object link configuration"""
-
-    scheme: str = ''  #: link scheme
-    url: url  #: link url
-    function: str = ''  #: ISO-19115 function, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#CI_OnLineFunctionCode
-
-
-class MetaData(Data):
-    """Object metadata configuration"""
-
-    abstract: str = ''  #: object abstract description
-    attribution: str = ''  #: attribution (copyright) string
-    keywords: List[str] = []  #: keywords
-    language: str = ''  #: object language
-    name: str = ''  #: object internal name
-    title: str = ''  #: object title
-
-    accessConstraints: str = ''
-    fees: str = ''
-
-    # uid: str = ''  #: ISO-19115 identifier
-    # category: str = ''  #: ISO-19115 category, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_TopicCategoryCode
-    # scope: str = ''  #: ISO-19115 scope, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_ScopeCode
-    iso: dict = {}  #: ISO-19115 properties
-
-    # theme: str = ''  #: INSPIRE theme shortcut, e.g. "au"
-    inspire: dict = {}  #: INSPIRE  properties
-
-    contact: Optional[MetaContact]  #: contact information
-
-    pubDate: date = ''  #: publication date
-    modDate: date = ''  #: modification date
-
-    image: url = ''  #: image (logo) url
-    images: dict = {}  #: further images
-
-    url: url = ''  #: object metadata url
-    serviceUrl: url = ''  #: object service url
-    links: List[MetaLink] = []  #: additional links
-
-
-class ServiceOperation:
-    def __init__(self):
-        self.name = ''
-        self.formats: List[str] = []
-        self.get_url: url = ''
-        self.post_url: url = ''
-        self.parameters: dict = {}
-
-
-class ServiceQuery:
-    crs: str
-    max_age: str
-    params: Dict
-    request: str
-    service: 'ServiceInterface'
-    url: str
-    version: str
-
-    def run(self) -> str:
-        raise NotImplementedError
-
-
-class FindFeaturesArgs(Data):
-    axis: str
-    bbox: Extent
-    count: int
-    crs: crsref
-    layers: List[str]
-    params: Dict
-    point: Point
-    resolution: float
-
-
-class ServiceInterface:
-    type: str
-    layers: List['SourceLayer']
-    meta: MetaData
-    # @TODO should be Dict[str, ServiceOperation]
-    operations: dict
-    supported_crs: List[crsref]
-    url: str
-    version: str
-
-    def find_features(self, args: FindFeaturesArgs) -> List['FeatureInterface']:
-        raise NotImplementedError
-
-
-class Service:
-    type: str
-    layers: List['SourceLayer']
-    meta: MetaData
-    # @TODO should be Dict[str, ServiceOperation]
-    operations: dict
-    supported_crs: List[crsref]
-    url: str
-    version: str
-
-    def find_features(self, args: FindFeaturesArgs) -> List['FeatureInterface']:
-        raise NotImplementedError
-
-
-class SourceStyle:
-    def __init__(self):
-        self.is_default = False
-        self.legend: url = ''
-        self.meta = MetaData()
-
-
-class SourceLayer:
-    def __init__(self):
-        self.data_source = {}
-
-        self.supported_crs: List[crsref] = []
-        self.extents: Dict[crsref, Extent] = {}
-
-        self.is_expanded = False
-        self.is_group = False
-        self.is_image = False
-        self.is_queryable = False
-        self.is_visible = False
-
-        self.layers: List['SourceLayer'] = []
-
-        self.meta = MetaData()
-        self.name = ''
-        self.title = ''
-
-        self.opacity = 1
-        self.scale_range: List[float] = []
-        self.styles: List[SourceStyle] = []
-        self.legend = ''
-        self.resource_urls = {}
-
-        self.a_path = ''
-        self.a_uid = ''
-        self.a_level = 0
-
-
-#####
 
 class AttributeType(Enum):
     bool = 'bool'
@@ -383,47 +260,665 @@ class Attribute(Data):
     value: str = ''
 
 
-class ObjectInterface:
-    children: List['ObjectInterface']
-    config: object
-    klass: str
-    parent: 'ObjectInterface'
-    root: 'ObjectInterface'
+class DataModel:
+    attributes: List[Attribute]
+
+# type: ignore
+
+### Authorization provider and user
+
+
+
+
+
+
+class AuthProviderObject(Object):
+    def authenticate_user(self, login: str, password: str, **kw) -> 'AuthUser':
+        pass
+
+    def get_user(self, user_uid: str) -> 'AuthUser':
+        pass
+
+    def unmarshal_user(self, user_uid: str, s: str) -> 'AuthUser':
+        pass
+
+    def marshal_user(self, user: 'AuthUser') -> str:
+        pass
+
+
+class AuthUser:
+    display_name: str
+    props: Props
+    is_guest: bool
+    full_uid: str
+
+    def init_from_source(self, provider: AuthProviderObject, uid: str, roles: List[str] = None, attributes: dict = None):
+        pass
+
+    def init_from_cache(self, provider: AuthProviderObject, uid: str, roles: List[str], attributes: dict):
+        pass
+
+    def attribute(self, key, default=''):
+        pass
+
+    def can_use(self, obj: 'Object', parent: 'Object' = None) -> bool:
+        return False
+
+# type: ignore
+
+### Database-related.
+
+
+
+
+
+
+
+
+
+class SqlTableConfig(Config):
+    """SQL database table"""
+
+    geometryColumn: Optional[str]  #: geometry column name
+    keyColumn: str = 'id'  #: primary key column name
+    name: str  #: table name
+    searchColumn: Optional[str]  #: column to be searched for
+
+
+class SelectArgs(Data):
+    keyword: Optional[str]
+    limit: Optional[int]
+    tolerance: Optional[float]
+    shape: Optional['Shape']
+    sort: Optional[str]
+    table: SqlTableConfig
+    ids: Optional[List[str]]
+    extraWhere: Optional[str]
+
+
+class StorageEntry(Data):
+    category: str
+    name: str
+
+
+class StorageObject(Object):
+    def read(self, entry: StorageEntry, user: 'AuthUser') -> dict:
+        return {}
+
+    def write(self, entry: StorageEntry, user: 'AuthUser', data: dict) -> str:
+        return ''
+
+    def dir(self, user: 'AuthUser') -> List[StorageEntry]:
+        return []
+
+
+class SqlProviderObject(Object):
+    error: type
+    connect_params: dict
+
+    def connect(self, extra_connect_params: dict = None):
+        pass
+
+    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List['Feature']:
+        pass
+
+    def insert(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
+        pass
+
+    def update(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
+        pass
+
+    def delete(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
+        pass
+
+    def describe(self, table: SqlTableConfig) -> List['Attribute']:
+        pass
+
+# type: ignore
+
+### Dummy classes to support extension typing.
+
+
+class ext:
+    class action:
+        class Config:
+            pass
+
+    class auth:
+        class provider:
+            class Config:
+                pass
+
+    class template:
+        class Config:
+            pass
+
+        class Props:
+            pass
+
+    class db:
+        class provider:
+            class Config:
+                pass
+
+    class layer:
+        class Config:
+            pass
+
+        class Props:
+            pass
+
+    class search:
+        class provider:
+            class Config:
+                pass
+
+    class storage:
+        class Config:
+            pass
+
+    class ows:
+        class provider:
+            class Config:
+                pass
+
+        class service:
+            class Config:
+                pass
+
+# type: ignore
+
+### Shapes and features.
+
+
+
+
+
+
+import shapely.geometry.base
+
+class ShapeProps(Props):
+    geometry: dict
+    crs: str
+
+
+
+class Shape:
+    crs: Crs
+    geo: shapely.geometry.base.BaseGeometry
+    props: dict
+    type: str
+    wkb: str
+    wkb_hex: str
+    wkt: str
+    bounds: Extent
+
+    def transform(self, to_crs):
+        pass
+
+
+class FeatureProps(Data):
+    attributes: Optional[dict]
+    category: str = ''
+    description: str = ''
+    label: str = ''
+    shape: Optional['ShapeProps']
+    style: Optional['StyleProps']
+    teaser: str = ''
+    title: str = ''
+    uid: Optional[str]
+
+
+class Feature:
+    attributes: dict
+    description: str
+    category: str
+    label: str
+    props: 'FeatureProps'
+    shape: 'Shape'
+    shape_props: 'ShapeProps'
+    style: 'StyleProps'
+    teaser: str
+    title: str
     uid: str
-    props: Data
 
-    def is_a(self, klass):
-        raise NotImplementedError
+    def transform(self, to_crs):
+        """Transform the feature to another CRS"""
+        pass
 
-    def initialize(self, cfg):
-        raise NotImplementedError
+    def to_svg(self, bbox, dpi, scale, rotation):
+        """Render the feature as SVG"""
+        pass
 
-    def configure(self):
-        raise NotImplementedError
+    def to_geojson(self):
+        """Render the feature as GeoJSON"""
+        pass
 
-    def var(self, key, default=None, parent=False):
-        raise NotImplementedError
+    def apply_format(self, fmt: 'FormatObject', context: dict = None):
+        pass
+# type: ignore
 
-    def add_child(self, klass, cfg):
-        raise NotImplementedError
+### Maps and layers
 
-    def get_children(self, klass) -> List['ObjectInterface']:
-        raise NotImplementedError
 
-    def get_closest(self, klass) -> 'ObjectInterface':
-        raise NotImplementedError
 
-    def find_all(self, klass=None) -> 'ObjectInterface':
-        raise NotImplementedError
 
-    def find_first(self, klass) -> 'ObjectInterface':
-        raise NotImplementedError
 
-    def find(self, klass, uid) -> List['ObjectInterface']:
-        raise NotImplementedError
 
-    def props_for(self, user: 'AuthUserInterface') -> dict:
-        raise NotImplementedError
+
+
+
+
+
+
+class LayerObject(Object):
+    has_legend: bool
+    has_cache: bool
+    has_search: bool
+    is_public: bool
+    layers: List['LayerObject']
+
+    map: 'MapObject'
+    meta: 'MetaData'
+    opacity: float
+
+    title: str
+    description: str
+
+    crs: Crs
+    extent: Extent
+    resolutions: List[float]
+
+    data_model: DataModel
+    feature_format: 'FormatObject'
+
+
+    def mapproxy_config(self, mc):
+        pass
+
+    def render_bbox(self, bbox, width, height, **client_params):
+        pass
+
+    def render_xyz(self, x, y, z):
+        pass
+
+    def render_svg(self, bbox, dpi, scale, rotation, style):
+        pass
+
+    def render_legend(self):
+        pass
+
+    def get_features(self, bbox, limit) -> List[Feature]:
+        return []
+
+    def edit_access(self, user: 'AuthUser'):
+        pass
+
+    def add_features(self, features: List['FeatureProps']):
+        pass
+
+    def update_features(self, features: List['FeatureProps']):
+        pass
+
+    def delete_features(self, features: List['FeatureProps']):
+        pass
+
+    def search(self, provider: 'SearchProviderObject', args: 'SearchArguments') -> List['SearchResult']:
+        return []
+
+    def ows_enabled(self, service: 'OwsServiceObject') -> bool:
+        return False
+
+
+class MapObject(Object):
+    init_resolution: float
+    layers: List['LayerObject']
+    coordinatePrecision: int
+    crs: Crs
+    extent: Extent
+    resolutions: List[float]
+    coordinate_precision: int
+
+class ProjectObject(Object):
+    map: MapObject
+    title: str
+    locales: List[str]
+    meta: 'MetaData'
+
+# type: ignore
+
+### Metadata.
+
+
+
+
+class MetaContact(Data):
+    """Contact metadata configuration"""
+
+    address: str = ''
+    area: str = ''
+    city: str = ''
+    country: str = ''
+    email: str = ''
+    fax: str = ''
+    organization: str = ''
+    person: str = ''
+    phone: str = ''
+    position: str = ''
+    zip: str = ''
+    url: Url = ''
+
+
+class MetaLink(Data):
+    """Object link configuration"""
+
+    scheme: str = ''  #: link scheme
+    url: Url  #: link url
+    function: str = ''  #: ISO-19115 function, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#CI_OnLineFunctionCode
+
+
+class MetaData(Data):
+    """Object metadata configuration"""
+
+    abstract: str = ''  #: object abstract description
+    attribution: str = ''  #: attribution (copyright) string
+    keywords: List[str] = []  #: keywords
+    language: str = ''  #: object language
+    name: str = ''  #: object internal name
+    title: str = ''  #: object title
+
+    accessConstraints: str = ''
+    fees: str = ''
+
+    # uid: str = ''  #: ISO-19115 identifier
+    # category: str = ''  #: ISO-19115 category, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_TopicCategoryCode
+    # scope: str = ''  #: ISO-19115 scope, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_ScopeCode
+    iso: dict = {}  #: ISO-19115 properties
+
+    # theme: str = ''  #: INSPIRE theme shortcut, e.g. "au"
+    inspire: dict = {}  #: INSPIRE  properties
+
+    contact: Optional[MetaContact]  #: contact information
+
+    pubDate: Date = ''  #: publication date
+    modDate: Date = ''  #: modification date
+
+    image: Url = ''  #: image (logo) url
+    images: dict = {}  #: further images
+
+    url: Url = ''  #: object metadata url
+    serviceUrl: Url = ''  #: object service url
+    links: List[MetaLink] = []  #: additional links
+
+
+# type: ignore
+
+### Miscellaneous types.
+
+
+
+
+class DocumentRootConfig(Config):
+    """Base directory for assets"""
+
+    dir: DirPath  #: directory path
+    allowMime: Optional[List[str]]  #: allowed mime types
+    denyMime: Optional[List[str]]  #: disallowed mime types (from the standard list)
+
+
+
+# type: ignore
+
+### OWS providers and services.
+
+
+
+
+
+
+
+
+class SourceStyle:
+    def __init__(self):
+        self.is_default = False
+        self.legend: Url = ''
+        self.meta = MetaData()
+
+
+class SourceLayer:
+    def __init__(self):
+        self.data_source = {}
+
+        self.supported_crs: List[Crs] = []
+        self.extents: Dict[Crs, Extent] = {}
+
+        self.is_expanded = False
+        self.is_group = False
+        self.is_image = False
+        self.is_queryable = False
+        self.is_visible = False
+
+        self.layers: List['SourceLayer'] = []
+
+        self.meta = MetaData()
+        self.name = ''
+        self.title = ''
+
+        self.opacity = 1
+        self.scale_range: List[float] = []
+        self.styles: List[SourceStyle] = []
+        self.legend = ''
+        self.resource_urls = {}
+
+        self.a_path = ''
+        self.a_uid = ''
+        self.a_level = 0
+
+
+class OwsOperation:
+    def __init__(self):
+        self.name = ''
+        self.formats: List[str] = []
+        self.get_url: Url = ''
+        self.post_url: Url = ''
+        self.parameters: dict = {}
+
+
+class OwsProviderObject(Object):
+    meta: 'MetaData'
+    operations: List[OwsOperation]
+    source_layers: List[SourceLayer]
+    supported_crs: List[Crs]
+    type: str
+    url: Url
+    version: str
+
+    def find_features(self, args: 'SearchArguments') -> List[Feature]:
+        pass
+
+    def operation(self, name: str) -> OwsOperation:
+        pass
+
+
+class OwsServiceObject(Object):
+    def __init__(self):
+        super().__init__()
+        self.name: str = ''
+        self.meta: 'MetaData' = None
+        self.type: str = ''
+        self.version: str = ''
+
+# type: ignore
+
+### Request params and responses.
+
+
+
+
+
+
+
+import werkzeug.wrappers
+
+
+class Params(Data):
+    projectUid: Optional[str]  #: project uid
+    locale: Optional[str]  #: locale for this request
+
+
+class NoParams(Data):
+    pass
+
+
+class ResponseError(Data):
+    status: int
+    info: str
+
+
+class Response(Data):
+    error: Optional[ResponseError]
+
+
+class HttpResponse(Response):
+    mimeType: str
+    content: str
+    status: int
+
+
+class Request:
+    environ: dict
+    cookies: dict
+    has_struct: bool
+    expected_struct: str
+    data: bytes
+    params: dict
+    kparams: dict
+    post_data: str
+    user: 'AuthUser'
+
+    def response(self, content, mimetype: str, status=200) -> werkzeug.wrappers.Response:
+        pass
+
+    def struct_response(self, data, status=200) -> werkzeug.wrappers.Response:
+        pass
+
+    def env(self, key: str, default=None) -> str:
+        pass
+
+    def param(self, key: str, default=None) -> str:
+        pass
+
+    def kparam(self, key: str, default=None) -> str:
+        pass
+
+    def url_for(self, url: str) -> str:
+        pass
+
+    def require(self, klass: str, uid: str) -> Object:
+        pass
+
+    def require_project(self, uid: str) -> 'ProjectObject':
+        pass
+
+    def acquire(self, klass: str, uid: str) -> Object:
+        pass
+
+    def login(self, username: str, password: str):
+        pass
+
+    def logout(self):
+        pass
+
+    def auth_begin(self):
+        pass
+
+    def auth_commit(self, res: werkzeug.wrappers.Response):
+        pass
+
+# type: ignore
+
+### Search
+
+
+
+
+
+
+
+
+
+class SearchArguments(Data):
+    axis: str
+    bbox: Extent
+    count: int
+    crs: Crs
+    feature_format: 'FormatObject'
+    keyword: Optional[str]
+    layers: List['LayerObject']
+    limit: int
+    params: dict
+    point: Point
+    project: 'ProjectObject'
+    resolution: float
+    shapes: List['Shape']
+    tolerance: int
+
+
+class SearchResult(Data):
+    feature: 'Feature'
+    layer: 'LayerObject'
+    provider: 'SearchProviderObject'
+
+
+class SearchProviderObject(Object):
+    feature_format: 'FormatObject'
+    geometry_required: bool
+    keyword_required: bool
+    title: str
+    type: str
+
+    def can_run(self, args: SearchArguments) -> bool:
+        return False
+
+    def run(self, layer: Optional['LayerObject'], args: SearchArguments) -> List['Feature']:
+        return []
+
+    def context_shape(self, args: SearchArguments):
+        pass
+
+# type: ignore
+
+### Styles
+
+
+
+
+
+class StyleProps(Props):
+    type: str
+    content: Optional[dict]
+    text: Optional[str]
+
+
+class StyleConfig(Config):
+    """Feature style"""
+
+    type: str  #: style type ("css")
+    content: Optional[dict]  #: css rules
+    text: Optional[str]  #: raw style content
+
+# type: ignore
+
+### Templates, renderers and formats.
+
+
+
+
+
+
+
+
+
 
 
 class TemplateQualityLevel(Data):
@@ -436,20 +931,20 @@ class TemplateQualityLevel(Data):
 class TemplateConfig(Config):
     type: str  #: template type
     qualityLevels: Optional[List[TemplateQualityLevel]]  #: list of quality levels supported by the template
-    dataModel: Optional[List[AttributeConfig]]  #: user-editable template attributes
-    path: Optional[filepath]  #: path to a template file
+    dataModel: Optional[DataModel]  #: user-editable template attributes
+    path: Optional[FilePath]  #: path to a template file
     text: str = ''  #: template content
     title: str = ''  #: template title
     uid: str = ''  #: unique id
 
 
-class TemplateProps(Data):
+class TemplateProps(Props):
     uid: str
     title: str
     qualityLevels: List[TemplateQualityLevel]
     mapHeight: int
     mapWidth: int
-    dataModel: List[Attribute]
+    dataModel: DataModel
 
 
 class TemplateRenderOutput(Data):
@@ -465,7 +960,7 @@ class SvgFragment:
 
 class MapRenderInputItem(Data):
     bitmap: str
-    features: List['FeatureInterface']
+    features: List['Feature']
     layer: 'LayerObject'
     sub_layers: List[str]
     opacity: float
@@ -499,106 +994,20 @@ class MapRenderOutput(Data):
     items: List[MapRenderOutputItem]
 
 
-# noinspection PyAbstractClass
-class TemplateObject(ObjectInterface):
-    data_model: List[Attribute]
+class TemplateObject(Object):
+    data_model: DataModel
     map_size: List[int]
     page_size: List[int]
 
     def dpi_for_quality(self, quality: int) -> int:
-        raise NotImplementedError
+        pass
 
     def render(self, context: dict, render_output: MapRenderOutput = None,
                out_path: str = None, format: str = None) -> TemplateRenderOutput:
-        raise NotImplementedError
+        pass
 
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:
-        raise NotImplementedError
-
-
-class MapView:
-    crs: crsref
-    extent: Extent
-    resolutions: List[float]
-
-
-# noinspection PyAbstractClass
-class LayerObject(ObjectInterface, MapView):
-    has_legend: bool
-    has_cache: bool
-    has_search: bool
-    is_public: bool
-    layers: List['LayerObject']
-
-    map: 'MapObject'
-    meta: MetaData
-    opacity: float
-
-    title: str
-    description: str
-
-    data_model: List[Attribute]
-
-    def mapproxy_config(self, mc):
-        raise NotImplementedError
-
-    def render_bbox(self, bbox, width, height, **client_params):
-        raise NotImplementedError
-
-    def render_xyz(self, x, y, z):
-        raise NotImplementedError
-
-    def render_svg(self, bbox, dpi, scale, rotation, style):
-        raise NotImplementedError
-
-    def render_legend(self):
-        raise NotImplementedError
-
-    def get_features(self, bbox, limit):
-        raise NotImplementedError
-
-    def edit_access(self, user: 'AuthUserInterface'):
-        raise NotImplementedError
-
-    def add_features(self, features: List['FeatureProps']):
-        raise NotImplementedError
-
-    def update_features(self, features: List['FeatureProps']):
-        raise NotImplementedError
-
-    def delete_features(self, features: List['FeatureProps']):
-        raise NotImplementedError
-
-    def search(self, provider: 'SearchProviderInterface', args: 'SearchArgs') -> List['FeatureInterface']:
-        raise NotImplementedError
-
-    def ows_enabled(self, service: 'OwsServiceInterface') -> bool:
-        raise NotImplementedError
-
-
-class ShapeProps(Data):
-    geometry: dict
-    crs: str
-
-
-class StyleProps(Data):
-    """Feature style"""
-
-    type: str  #: style type ("css")
-    content: Optional[dict]  #: css rules
-    text: Optional[str]  #: raw style content
-
-
-class FeatureProps(Data):
-    attributes: Optional[dict]
-    category: str = ''
-    description: str = ''
-    label: str = ''
-    shape: Optional[ShapeProps]
-    style: Optional[StyleProps]
-    teaser: str = ''
-    title: str = ''
-    uid: Optional[str]
+        pass
 
 
 class FormatConfig(Config):
@@ -607,194 +1016,79 @@ class FormatConfig(Config):
     description: Optional[ext.template.Config]  #: template for feature descriptions
     category: Optional[ext.template.Config]  #: feature category
     label: Optional[ext.template.Config]  #: feature label on the map
-    dataModel: Optional[List[AttributeConfig]]  #: attribute metadata
+    dataModel: Optional[DataModel]  #: attribute metadata
     teaser: Optional[ext.template.Config]  #: template for feature teasers (short descriptions)
     title: Optional[ext.template.Config]  #: feature title
 
 
-class FormatInterface(ObjectInterface):
+class FormatObject(Object):
     category: TemplateObject
     description: TemplateObject
     label: TemplateObject
     teaser: TemplateObject
     title: TemplateObject
 
-    data_model: List[Attribute]
+    data_model: DataModel
 
-    def apply(self, feature: 'FeatureInterface', context: dict = None):
+    def apply(self, feature: 'Feature', context: dict = None):
         """Format a feature."""
-        raise NotImplementedError
+        pass
 
-    def apply_data_model(self, d: dict, data_model: List[Attribute]):
-        """Convert data."""
-        raise NotImplementedError
+# type: ignore
+
+# ### Application
 
 
-class OwsServiceInterface:
-    name: str
-    type: str
-    meta: MetaData
+
+
+
+
+
+
+
+class ApiObject(Object):
+    actions: dict
+
+
+class ClientObject(Object):
+    pass
+
+
+class CorsConfig(Config):
+    enabled: bool = False
+    allowOrigin: str = '*'
+    allowCredentials: bool = False
+    allowHeaders: Optional[List[str]]
+
+
+class RewriteRule(Config):
+    match: Regex  #: expression to match the url against
+    target: str  #: target url with placeholders
+    options: Optional[dict]  #: additional options
+
+
+class WebSiteObject(Object):
+    host: str
+    ssl: bool
+    error_page: 'TemplateObject'
+    static_root: 'DocumentRootConfig'
+    assets_root: 'DocumentRootConfig'
+    rewrite_rules: List[RewriteRule]
+    reversed_rewrite_rules: List[RewriteRule]
+    cors: CorsConfig
+
+    def url_for(self, req, url: str) -> str:
+        pass
+
+
+class ApplicationObject(Object):
+    api: ApiObject
+    client: ClientObject
+    qgis_version: str
+    storage: 'StorageObject'
     version: str
+    web_sites: List[WebSiteObject]
 
+    def find_action(self, action_type: str, project_uid=None) -> Object:
+        pass
 
-class FeatureInterface:
-    attributes: dict
-    description: str
-    category: str
-    label: str
-    props: FeatureProps
-    shape: ShapeInterface
-    shape_props: ShapeProps
-    source: ObjectInterface
-    style: StyleProps
-    teaser: str
-    title: str
-    uid: str
-
-    def transform(self, to_crs):
-        """Transform the feature to another CRS"""
-        raise NotImplementedError
-
-    def to_svg(self, bbox, dpi, scale, rotation):
-        raise NotImplementedError
-
-    def to_geojs(self):
-        raise NotImplementedError
-
-    def apply_format(self, fmt: FormatInterface, context: dict = None):
-        raise NotImplementedError
-
-
-# noinspection PyAbstractClass
-class MapObject(ObjectInterface, MapView):
-    init_resolution: float
-    layers: List[LayerObject]
-    coordinatePrecision: int
-
-
-# noinspection PyAbstractClass
-class ProjectObject(ObjectInterface):
-    map: MapObject
-    title: str
-    locales: List[str]
-    meta: MetaData
-
-
-class SearchArgs(Data):
-    bbox: Extent
-    crs: crsref
-    keyword: Optional[str]
-    layers: List[LayerObject]
-    limit: int
-    tolerance: int
-    project: ProjectObject
-    resolution: float
-    shapes: List[ShapeInterface]
-    feature_format: FormatInterface
-
-
-class SearchProviderInterface(ObjectInterface):
-    type: str
-    feature_format: FormatInterface
-    title: str
-    keyword_required: bool
-    geometry_required: bool
-
-    def can_run(self, args: SearchArgs) -> bool:
-        raise NotImplementedError
-
-    def run(self, layer: LayerObject, args: SearchArgs) -> List[FeatureInterface]:
-        raise NotImplementedError
-
-
-class AuthProviderInterface:
-    def authenticate_user(self, login: str, password: str, **kw) -> 'AuthUserInterface':
-        raise NotImplementedError()
-
-    def get_user(self, user_uid: str) -> 'AuthUserInterface':
-        raise NotImplementedError()
-
-    def unmarshal_user(self, user_uid: str, s: str) -> 'AuthUserInterface':
-        raise NotImplementedError()
-
-    def marshal_user(self, user: 'AuthUserInterface') -> str:
-        raise NotImplementedError()
-
-
-class AuthUserInterface:
-    display_name: str
-    props: dict
-    is_guest: bool
-    full_uid: str
-
-    def init_from_source(self, provider: AuthProviderInterface, uid, roles=None, attributes=None):
-        raise NotImplementedError
-
-    def init_from_cache(self, provider: AuthProviderInterface, uid: str, roles: List[str], attributes: dict):
-        raise NotImplementedError
-
-    def attribute(self, key, default=''):
-        raise NotImplementedError
-
-    def can_use(self, obj, parent=None) -> bool:
-        raise NotImplementedError
-
-
-class SqlTableConfig(Config):
-    """SQL database table"""
-
-    geometryColumn: Optional[str]  #: geometry column name
-    keyColumn: str = 'id'  #: primary key column name
-    name: str  #: table name
-    searchColumn: Optional[str]  #: column to be searched for
-
-
-class SelectArgs(Data):
-    keyword: Optional[str]
-    limit: Optional[int]
-    tolerance: Optional[float]
-    shape: Optional[ShapeInterface]
-    sort: Optional[str]
-    table: SqlTableConfig
-    ids: Optional[List[str]]
-    extraWhere: Optional[str]
-
-
-# noinspection PyAbstractClass
-class DbProviderObject(ObjectInterface):
-    error: type
-    connect_params: dict
-
-    def connect(self, extra_connect_params: dict = None):
-        raise NotImplementedError
-
-    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List[FeatureInterface]:
-        raise NotImplementedError
-
-    def insert(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        raise NotImplementedError
-
-    def update(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        raise NotImplementedError
-
-    def delete(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        raise NotImplementedError
-
-    def describe(self, table: SqlTableConfig) -> List[Attribute]:
-        raise NotImplementedError
-
-
-class StorageEntry(Data):
-    category: str
-    name: str
-
-
-class StorageInterface(ObjectInterface):
-    def read(self, entry: StorageEntry, user: AuthUserInterface) -> dict:
-        raise NotImplementedError
-
-    def write(self, entry: StorageEntry, user: AuthUserInterface, data: dict) -> str:
-        raise NotImplementedError
-
-    def dir(self, user: AuthUserInterface) -> List[StorageEntry]:
-        raise NotImplementedError

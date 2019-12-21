@@ -1,4 +1,4 @@
-import gws
+import gws.web
 import gws.types as t
 
 

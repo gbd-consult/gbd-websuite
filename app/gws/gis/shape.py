@@ -111,7 +111,7 @@ def buffer_point(sh, tolerance, resolution=_DEFAULT_POINT_BUFFER_RESOLUTION):
     return Shape(sh.geo.buffer(tolerance, resolution), sh.crs)
 
 
-class Shape(t.ShapeInterface):
+class Shape(t.Shape):
     crs = ''
     geo = None
 

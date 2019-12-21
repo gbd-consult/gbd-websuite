@@ -16,12 +16,12 @@ def _new_uid(uid):
     return u
 
 
-class Object(t.ObjectInterface):
+class Object(t.Object):
     def __init__(self):
         self.children = []
         self.config = None
         self.parent = None
-        self.root: 'RootObject' = None
+        self.root: t.RootObject = None
         self.uid = ''
 
         self.access = None
@@ -134,7 +134,7 @@ class Object(t.ObjectInterface):
         return None
 
 
-class RootObject(Object):
+class RootBase(Object):
     def __init__(self):
         super().__init__()
         self.all_types = {}
@@ -142,34 +142,36 @@ class RootObject(Object):
         self.shared_objects = {}
         self.root = self
 
-    def load_class(self, klass):
-        try:
-            mod = importlib.import_module(klass)
-        except Exception as e:
-            raise error.Error('import of %r failed' % klass) from e
-        try:
-            return mod.Object
-        except Exception as e:
-            raise error.Error('object not found in %r' % klass) from e
-
     def create(self, klass, cfg=None):
-        if isinstance(klass, type):
-            oo = klass()
-        else:
-            if cfg and cfg.get('type'):
-                klass += '.' + cfg.get('type')
-            if klass not in self.all_types:
-                self.all_types[klass] = self.load_class(klass)
-            oo = self.all_types[klass]()
-
+        oo = self._create(klass, cfg)
         oo.root = self
         return oo
+
+    def _create(self, klass, cfg):
+        if isinstance(klass, type):
+            return klass()
+        if cfg and cfg.get('type'):
+            klass += '.' + cfg.get('type')
+        if klass not in self.all_types:
+            self.all_types[klass] = _load_class(klass)
+        return self.all_types[klass]()
 
 
 class ActionObject(Object):
     @property
     def props(self):
         return {'enabled': True}
+
+
+def _load_class(klass):
+    try:
+        mod = importlib.import_module(klass)
+    except Exception as e:
+        raise error.Error(f'import of {klass!r} failed') from e
+    try:
+        return mod.Object
+    except Exception as e:
+        raise error.Error(f'object not found in {klass!r}') from e
 
 
 def _find(nodes, klass, uid):

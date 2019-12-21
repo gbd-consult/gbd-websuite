@@ -80,6 +80,7 @@ CLOUD_CONFIG_DIR = CLOUD_DIR + '/configs'
 
 
 class Object(gws.ActionObject):
+    db: t.SqlProviderObject
 
     def configure(self):
         super().configure()

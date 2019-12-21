@@ -3,7 +3,7 @@ from io import BytesIO
 from PIL import Image
 
 import gws
-import gws.ows.request
+import gws.gis.ows.request
 import gws.types as t
 
 
@@ -11,7 +11,7 @@ def combine_legend_urls(urls: t.List[str]):
     content = []
     for url in urls:
         try:
-            resp = gws.ows.request.raw_get(url)
+            resp = gws.gis.ows.request.raw_get(url)
             content.append(resp.content)
         except:
             gws.log.exception()
@@ -31,10 +31,10 @@ def combine_legends(content: t.List[bytes]):
     if not images:
         return
 
-    return _combine_vertially(images)
+    return _combine_vertically(images)
 
 
-def _combine_vertially(images):
+def _combine_vertically(images):
     ws = [img.size[0] for img in images]
     hs = [img.size[1] for img in images]
 

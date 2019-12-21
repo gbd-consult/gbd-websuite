@@ -1,5 +1,4 @@
 import io
-import re
 
 from PIL import Image
 

@@ -1,6 +1,6 @@
 import os
 import json
-from . import normalizer, parser, spec, typescript
+from . import normalizer, parser, spec, typescript, maketypes
 
 
 def run(source_dir, out_dir, version):
@@ -18,6 +18,8 @@ class _Runner:
         self.units = []
 
     def run(self):
+        maketypes.run(self.source_dir)
+
         try:
             self.units = parser.parse(self.source_dir)
         except parser.Error as e:

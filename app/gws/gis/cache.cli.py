@@ -6,7 +6,6 @@ import gws.config.loader
 import gws.tools.misc as misc
 import gws.tools.clihelpers as clihelpers
 import gws.gis.cache
-import gws.types as t
 
 COMMAND = 'cache'
 

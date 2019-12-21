@@ -1,5 +1,3 @@
-import os
-
 import gws
 import gws.common.ows.service
 import gws.web

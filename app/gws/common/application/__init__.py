@@ -2,7 +2,6 @@
 
 import gws
 import gws.auth.api
-import gws.auth.provider
 import gws.auth.types
 import gws.common.api
 import gws.common.client
@@ -30,21 +29,21 @@ class DbConfig(t.Config):
 class SeedingConfig(t.Config):
     """Seeding options"""
 
-    maxTime: t.duration = 600  #: max. time for a seeding job
+    maxTime: t.Duration = 600  #: max. time for a seeding job
     concurrency: int = 1  #: number of concurrent seeding jobs
 
 
 class FontConfig(t.Config):
     """Fonts configuration."""
 
-    dir: t.dirpath  #: directory with custom fonts
+    dir: t.DirPath  #: directory with custom fonts
 
 
 class SSLConfig(t.Config):
     """SSL configuration"""
 
-    crt: t.filepath  #: crt file location
-    key: t.filepath  #: key file location
+    crt: t.FilePath  #: crt file location
+    key: t.FilePath  #: key file location
 
 
 class WebConfig(t.Config):
@@ -65,8 +64,8 @@ class Config(t.Config):
     db: t.Optional[DbConfig]  #: database configuration
     fonts: t.Optional[FontConfig]  #: fonts configuration
     locales: t.Optional[t.List[str]]  #: default locales for all projects
-    projectDirs: t.Optional[t.List[t.dirpath]]  #: directories with additional projects
-    projectPaths: t.Optional[t.List[t.filepath]]  #: additional project paths
+    projectDirs: t.Optional[t.List[t.DirPath]]  #: directories with additional projects
+    projectPaths: t.Optional[t.List[t.FilePath]]  #: additional project paths
     projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations
     seeding: SeedingConfig = {}  #: configuration for seeding jobs
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
@@ -90,7 +89,7 @@ class Object(gws.Object):
         self.api: gws.common.api.Object = None
         self.client: gws.common.client.Object = None
         self.qgis_version = ''
-        self.storage: t.StorageInterface = None
+        self.storage: t.StorageObject = None
         self.version = gws.VERSION
         self.web_sites: t.List[gws.web.site.Object] = []
 
@@ -117,7 +116,7 @@ class Object(gws.Object):
 
         for p in self.var('auth.providers', default=[]):
             self.add_child('gws.ext.auth.provider', p)
-        self.add_child('gws.ext.auth.provider', t.Data({'type': 'system', 'uid': 'system'}))
+        self.add_child('gws.ext.auth.provider', t.Data({'type': 'system'}))
 
         for p in self.var('db.providers', default=[]):
             self.add_child('gws.ext.db.provider', p)

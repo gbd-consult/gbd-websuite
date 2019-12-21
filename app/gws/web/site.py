@@ -5,38 +5,20 @@ import gws.common.template
 import gws.tools.net
 import gws.types as t
 
-
-class RewriteRule(t.Data):
-    """Rewrite rule"""
-
-    match: t.regex  #: expression to match the url against
-    target: str  #: target url with placeholders
-    options: t.Optional[dict]  #: additional options
-
-
-class CorsConfig(t.Config):
-    """CORS options"""
-
-    enabled: bool = False
-    allowOrigin: str = '*'
-    allowCredentials: bool = False
-    allowHeaders: t.Optional[t.List[str]]
-
-
 class Config(t.Config):
     """Site (virtual host) configuration"""
 
     assets: t.Optional[t.DocumentRootConfig]  #: assets location and options
-    cors: t.Optional[CorsConfig]  #: cors configuration
+    cors: t.Optional[t.CorsConfig]  #: cors configuration
     errorPage: t.Optional[t.ext.template.Config]  #: error page template
     host: str = '*'  #: host name
     reversedUrl: str = ''  #: base url for reversed addresses
-    reversedRewrite: t.Optional[t.List[RewriteRule]]  #: reversed rewrite rules
-    rewrite: t.Optional[t.List[RewriteRule]]  #: rewrite rules
+    reversedRewrite: t.Optional[t.List[t.RewriteRule]]  #: reversed rewrite rules
+    rewrite: t.Optional[t.List[t.RewriteRule]]  #: rewrite rules
     root: t.DocumentRootConfig  #: document root location and options
 
 
-class Object(gws.Object):
+class Object(gws.Object, t.WebSiteObject):
     def __init__(self):
         super().__init__()
         self.host = ''
@@ -46,7 +28,7 @@ class Object(gws.Object):
         self.assets_root: t.DocumentRootConfig = None
         self.rewrite_rules = []
         self.reversed_rewrite_rules = []
-        self.cors: CorsConfig = None
+        self.cors: t.CorsConfig = None
 
     def configure(self):
         super().configure()

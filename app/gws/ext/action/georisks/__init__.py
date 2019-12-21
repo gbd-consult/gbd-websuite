@@ -203,16 +203,14 @@ class Object(gws.ActionObject):
     ALARM_TABLE_NAME = 'gws_aartelink_alarm'
     DEVICE_TABLE_NAME = 'gws_aartelink_device'
 
+    db: t.SqlProviderObject
+    crs: str
+
     @property
     def props(self):
         return {
             'privacyPolicyLink': self.var('report.privacyPolicyLink')
         }
-
-    def __init__(self):
-        super().__init__()
-        self.db: t.DbProviderObject = None
-        self.crs = None
 
     def configure(self):
         super().configure()

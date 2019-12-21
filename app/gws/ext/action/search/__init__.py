@@ -36,6 +36,12 @@ class Params(t.Params):
 
 
 class Object(gws.ActionObject):
+    def __init__(self):
+        super().__init__()
+        self.limit: int = 0
+        self.pixel_tolerance: int = 0
+        self.feature_format: t.FormatObject = None
+
     def configure(self):
         super().configure()
 
@@ -52,7 +58,7 @@ class Object(gws.ActionObject):
 
         project = req.require_project(p.projectUid)
 
-        args = t.SearchArgs({
+        args = t.SearchArguments({
             'bbox': p.bbox,
             'crs': project.map.crs,
             'feature_format': self.feature_format,
@@ -65,28 +71,28 @@ class Object(gws.ActionObject):
             'tolerance': self.pixel_tolerance * p.resolution,
         })
 
-        features = gws.common.search.runner.run(req, args)
-        fprops = []
+        results = gws.common.search.runner.run(req, args)
+        ps = []
 
-        for f in features:
+        for r in results:
             fmt = None
-            if f.provider:
-                fmt = f.provider.feature_format
-            if not fmt and f.layer:
-                fmt = f.layer.feature_format
+            if r.provider:
+                fmt = r.provider.feature_format
+            if not fmt and r.layer:
+                fmt = r.layer.feature_format
             if not fmt and self.feature_format:
                 fmt = self.feature_format
 
             if fmt:
-                f.apply_format(fmt)
+                r.feature.apply_format(fmt)
 
-            p = f.props
+            props = r.feature.props
 
             # security! raw attributes must not be exposed to the client
-            delattr(p, 'attributes')
+            delattr(props, 'attributes')
 
-            fprops.append(p)
+            ps.append(props)
 
         return Response({
-            'features': fprops,
+            'features': ps,
         })

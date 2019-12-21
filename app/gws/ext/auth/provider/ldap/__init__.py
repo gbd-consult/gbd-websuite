@@ -1,10 +1,9 @@
 import ldap
 import ldap.filter
-import urllib.parse
 import contextlib
 
 import gws
-import gws.auth.provider
+import gws.common.auth.provider
 import gws.auth.error
 import gws.auth.user
 import gws.tools.net
@@ -52,13 +51,13 @@ class Config(t.WithType):
     activeDirectory: bool = True  #: true if the LDAP server is ActiveDirectory
     bindDN: str  #: bind DN
     bindPassword: str  #: bind password
-    displayNameFormat: t.formatstr = '{dn}'  #: format for user's display name
+    displayNameFormat: t.FormatStr = '{dn}'  #: format for user's display name
     users: t.List[UserSpec]  #: map LDAP filters to gws roles
-    timeout: t.duration = 30  #: LDAP server timeout
+    timeout: t.Duration = 30  #: LDAP server timeout
     url: str  #: LDAP server url "ldap://host:port/baseDN?searchAttribute"
 
 
-class Object(gws.auth.provider.Object):
+class Object(gws.common.auth.provider.Object):
     def configure(self):
         super().configure()
 

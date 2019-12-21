@@ -16,7 +16,7 @@ class Role:
         return _can_use(self, obj, [self.name], parent)
 
 
-class User(t.AuthUserInterface):
+class User(t.AuthUser):
     attributes = {}
     provider = None
     roles = None

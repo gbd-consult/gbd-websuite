@@ -11,11 +11,14 @@ class Config(t.WithTypeAndAccess):
     uid: str = ''  #: unique ID
 
 
-class Object(gws.Object, t.SearchProviderInterface):
+class Object(gws.Object, t.SearchProviderObject):
     def __init__(self):
         super().__init__()
-        self.feature_format: t.FormatInterface = None
-        self.title = ''
+        self.feature_format: t.FormatObject = None
+        self.geometry_required: bool = False
+        self.keyword_required: bool = False
+        self.title: str = ''
+        self.type: str = ''
 
     def configure(self):
         super().configure()
@@ -26,7 +29,7 @@ class Object(gws.Object, t.SearchProviderInterface):
 
         self.title = self.var('title', default='')
 
-    def context_shape(self, args: t.SearchArgs):
+    def context_shape(self, args: t.SearchArguments):
         if args.get('shapes'):
             return gws.gis.shape.union(args.get('shapes'))
         ctx = self.var('defaultContext')

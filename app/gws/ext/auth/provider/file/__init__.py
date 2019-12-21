@@ -4,7 +4,7 @@ import json
 
 import gws
 import gws.auth.error
-import gws.auth.provider
+import gws.common.auth.provider
 import gws.auth.user
 import gws.tools.password
 import gws.types as t
@@ -13,10 +13,10 @@ import gws.types as t
 class Config(t.WithType):
     """File-based authorization provider"""
 
-    path: t.filepath  #: path to the users json file
+    path: t.FilePath  #: path to the users json file
 
 
-class Object(gws.auth.provider.Object):
+class Object(gws.common.auth.provider.Object):
     def authenticate_user(self, login, password, **args):
         db = _read(self.var('path'))
 

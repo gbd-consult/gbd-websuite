@@ -9,7 +9,7 @@ class Config(t.Config):
     actions: t.Optional[t.List[t.ext.action.Config]]  #: available actions
 
 
-class Object(gws.Object):
+class Object(gws.Object, t.ApiObject):
     def configure(self):
         super().configure()
 

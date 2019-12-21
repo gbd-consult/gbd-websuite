@@ -1,8 +1,6 @@
 """CX templates for XML."""
 
 import re
-import time
-import os
 
 import gws
 import gws.tools.mime

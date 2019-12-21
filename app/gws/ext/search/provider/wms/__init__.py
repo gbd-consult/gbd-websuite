@@ -1,10 +1,8 @@
-import gws.ext.layer.wms
+import gws.ext.ows.provider.wms.search
 
-
-class Config(gws.ext.layer.wms.SearchConfig):
+class Config(gws.ext.ows.provider.wms.search.Config):
     """WMS search"""
     pass
 
-
-class Object(gws.ext.layer.wms.SearchObject):
+class Object(gws.ext.ows.provider.wms.search.Object):
     pass
