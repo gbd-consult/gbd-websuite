@@ -29,7 +29,7 @@ class Session:
 class Manager:
     def _session_object(self, rec):
         if rec:
-            prov: t.AuthProviderObject = gws.config.find('gws.ext.auth.provider', rec['provider_uid'])
+            prov: t.AuthProviderObject = gws.config.root().find('gws.ext.auth.provider', rec['provider_uid'])
             if not prov:
                 gws.log.error(f'auth provider not found: {rec!r}')
                 return
@@ -43,7 +43,7 @@ class Manager:
             return
 
         td = int(time.time()) - rec['updated']
-        if td > gws.config.var('auth.session.lifeTime'):
+        if td > gws.config.root().var('auth.session.lifeTime'):
             gws.log.info(f'session uid={uid!r} EXPIRED time={td!r}')
             store.delete(uid)
             return
@@ -60,7 +60,7 @@ class Manager:
         return self._session_object(store.find(uid))
 
     def cleanup(self):
-        store.cleanup(gws.config.var('auth.session.lifeTime'))
+        store.cleanup(gws.config.root().var('auth.session.lifeTime'))
 
     def delete(self, sess):
         store.delete(sess.uid)

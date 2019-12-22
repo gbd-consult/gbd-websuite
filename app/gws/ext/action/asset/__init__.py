@@ -106,7 +106,7 @@ class Object(gws.ActionObject):
 def _projects_for_user(user):
     ps = [
         p
-        for p in gws.config.find_all('gws.common.project')
+        for p in gws.config.root().find_all('gws.common.project')
         if user.can_use(p)
     ]
     return sorted(ps, key=lambda p: p.title)

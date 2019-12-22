@@ -3,6 +3,9 @@ import pickle
 
 import gws
 import gws.server.monitor
+
+import gws.types as t
+
 from . import parser, error, globals, gwsroot
 
 DEFAULT_CONFIG_PATHS = [
@@ -24,11 +27,11 @@ def real_config_path(config_path=None):
             return p
 
 
-def parse_and_activate(path=None):
+def parse_and_activate(path=None) -> t.RootObject:
     path = real_config_path(path)
     gws.log.info(f'using config "{path}"...')
     cfg = parser.parse_main(path)
-    activate(cfg)
+    root = activate(cfg)
 
     project_pattern = f'({parser.config_path_pattern})|(\\.qgs$)'
 
@@ -39,14 +42,14 @@ def parse_and_activate(path=None):
     for d in cfg.get('projectDirs') or []:
         gws.server.monitor.add_directory(d, project_pattern)
 
-    return cfg
+    return root
 
 
-def activate(cfg):
+def activate(cfg) -> t.RootObject:
     try:
-        # @TODO get rid of the global root altogether
-        r = gws.set_global('_tree_root', gwsroot.Object())
-        r.initialize(cfg)
+        root = gws.set_global('_tree_root', gwsroot.Object())
+        root.initialize(cfg)
+        return root
     except error.ParseError:
         raise
     except Exception as e:
@@ -63,7 +66,7 @@ def store(path=None):
         raise error.LoadError('unable to store configuration')
 
 
-def load(path=None):
+def load(path=None) -> t.RootObject:
     path = path or DEFAULT_STORE_PATH
     try:
         gws.log.debug(f'loading config from "{path}"')

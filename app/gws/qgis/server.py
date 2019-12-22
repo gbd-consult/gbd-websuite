@@ -7,15 +7,17 @@ import gws.tools.misc as misc
 import gws.tools.shell as sh
 import gws.tools.net
 
+import gws.types as t
+
 EXEC_PATH = '/usr/bin/qgis_mapserv.fcgi'
 SVG_SEARCH_PATHS = ['/usr/share/qgis/svg', '/usr/share/alkisplugin/svg']
 
 
-def _make_ini(cfg):
+def _make_ini(root):
     ini = ''
 
     paths = []
-    s = gws.get(cfg, 'server.qgis.searchPathsForSVG')
+    s = root.var('server.qgis.searchPathsForSVG')
     if s:
         paths.extend(s)
     paths.extend(SVG_SEARCH_PATHS)
@@ -40,7 +42,7 @@ def _make_ini(cfg):
     return '\n'.join(x.strip() for x in ini.splitlines())
 
 
-def environ(cfg):
+def environ(root: t.RootObject):
     base_dir = misc.ensure_dir(gws.TMP_DIR + '/qqq')
 
     # it's all a bit blurry, but the server appears to read 'ini' from OPTIONS_DIR
@@ -54,7 +56,7 @@ def environ(cfg):
     misc.ensure_dir('profiles/profiles/default', base_dir)
     misc.ensure_dir('profiles/profiles/default/QGIS', base_dir)
 
-    ini = _make_ini(cfg)
+    ini = _make_ini(root)
     with open(base_dir + '/profiles/default/QGIS/QGIS3.ini', 'wt') as fp:
         fp.write(ini)
     with open(base_dir + '/profiles/profiles/default/QGIS/QGIS3.ini', 'wt') as fp:
@@ -66,11 +68,11 @@ def environ(cfg):
     server_env = {
         # not used here 'QGIS_PLUGINPATH': '',
         # not used here 'QGIS_SERVER_LOG_FILE': '',
-        'MAX_CACHE_LAYERS': gws.get(cfg, 'server.qgis.maxCacheLayers'),
+        'MAX_CACHE_LAYERS': root.var('server.qgis.maxCacheLayers'),
         'QGIS_OPTIONS_PATH': base_dir + '/profiles/profiles/default',
         'QGIS_SERVER_CACHE_DIRECTORY': misc.ensure_dir('servercache', base_dir),
-        'QGIS_SERVER_CACHE_SIZE': gws.get(cfg, 'server.qgis.serverCacheSize'),
-        'QGIS_SERVER_LOG_LEVEL': gws.get(cfg, 'server.qgis.serverLogLevel'),
+        'QGIS_SERVER_CACHE_SIZE': root.var('server.qgis.serverCacheSize'),
+        'QGIS_SERVER_LOG_LEVEL': root.var('server.qgis.serverLogLevel'),
         # 'QGIS_SERVER_MAX_THREADS': 4,
         # 'QGIS_SERVER_PARALLEL_RENDERING': 'false',
     }
@@ -79,7 +81,7 @@ def environ(cfg):
 
     qgis_env = {
         'QGIS_PREFIX_PATH': '/usr',
-        'QGIS_DEBUG': gws.get(cfg, 'server.qgis.debug'),
+        'QGIS_DEBUG': root.var('server.qgis.debug'),
         # 'QGIS_GLOBAL_SETTINGS_FILE': '/global_settings.ini',
         'QGIS_CUSTOM_CONFIG_PATH': base_dir
     }

@@ -63,7 +63,7 @@ def start():
 
     _poll()
 
-    freq = gws.config.var('server.spool.monitorFrequency')
+    freq = gws.config.root().var('server.spool.monitorFrequency')
     # only one worker is allowed to do that
     uwsgi.register_signal(42, 'worker1', _worker)
     uwsgi.add_timer(42, freq)

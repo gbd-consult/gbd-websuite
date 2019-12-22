@@ -155,7 +155,7 @@ def _file_counts_by_zoom_level(cc, mc, files):
 
 
 def _cached_layers(mc, layer_uids=None):
-    for layer in gws.config.find_all('gws.ext.layer'):
+    for layer in gws.config.root().find_all('gws.ext.layer'):
         cc = _cache_for_layer(t.cast(gws.common.layer.Image, layer), mc)
         if not cc:
             continue

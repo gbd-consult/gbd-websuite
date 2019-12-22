@@ -317,7 +317,7 @@ class _Worker:
         ]
 
     def acquire(self, klass, uid):
-        obj = gws.config.find(klass, uid)
+        obj = gws.config.root().find(klass, uid)
         if obj and self.user.can_use(obj):
             return obj
 

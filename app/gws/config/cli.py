@@ -14,7 +14,7 @@ def test(path=None):
     """Run a configuration file test"""
 
     gws.config.loader.parse_and_activate(path)
-    if gws.config.var('server.mapproxy.enabled'):
+    if gws.config.root().var('server.mapproxy.enabled'):
         gws.gis.mpx.config.create_and_save('/tmp/mapproxy-check')
     gws.log.info('CONFIGURATION OK')
 

@@ -17,15 +17,15 @@ pid_dir = misc.ensure_dir('pids', gws.TMP_DIR)
 def start():
     stop()
 
-    cfg = configure()
-    gws.tools.date.set_system_time_zone(cfg.get('timeZone'))
+    root = configure()
+    gws.tools.date.set_system_time_zone(root.var('timeZone'))
 
     for p in misc.find_files(gws.SERVER_DIR, '.*'):
         sh.unlink(p)
 
-    commands = ini.create(cfg, gws.SERVER_DIR, pid_dir)
+    commands = ini.create(root, gws.SERVER_DIR, pid_dir)
 
-    s = gws.get(cfg, 'server.autoRun')
+    s = root.var('server.autoRun')
     if s:
         commands.insert(0, s)
 
@@ -46,7 +46,7 @@ def _stop(proc_name):
     _kill_name(proc_name, 'INT')
 
     for _ in range(10):
-        time.sleep(2)
+        time.sleep(5)
         if _kill_name(proc_name, 'KILL'):
             return
 
@@ -71,12 +71,12 @@ def reload_uwsgi(module):
 
 
 def configure():
-    cfg = gws.config.loader.parse_and_activate()
-    if gws.config.var('server.mapproxy.enabled'):
-        gws.gis.mpx.config.create_and_save(ini.MAPPROXY_YAML_PATH)
+    root = gws.config.loader.parse_and_activate()
+    if root.var('server.mapproxy.enabled'):
+        gws.gis.mpx.config.create_and_save(root, ini.MAPPROXY_YAML_PATH)
     gws.config.loader.store()
     gws.log.info('CONFIGURATION OK')
-    return cfg
+    return root
 
 
 def _reload(reconfigure, module=None):

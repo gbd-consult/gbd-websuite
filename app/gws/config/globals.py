@@ -8,23 +8,3 @@ def root() -> gwsroot.Object:
         raise error.LoadError('no configuration root found')
 
     return gws.get_global('_tree_root', _err)
-
-
-def app_data():
-    return root().app_data
-
-
-def find(klass, uid) -> t.List[t.Object]:
-    return root().find(klass, uid)
-
-
-def find_first(klass) -> t.Object:
-    return root().find_first(klass)
-
-
-def find_all(klass=None) -> t.List[t.Object]:
-    return root().find_all(klass)
-
-
-def var(key=None, default=None):
-    return root().var(key, default)

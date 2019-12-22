@@ -19,49 +19,6 @@ class State(t.Enum):
 class Error(gws.Error):
     pass
 
-
-# @TODO: merge with sessions serializer
-
-# def _encode(a):
-#     if isinstance(a, dict):
-#         return {k: _encode(v) for k, v in a.items()}
-#     if isinstance(a, list):
-#         return [_encode(v) for v in a]
-#     if isinstance(a, gws.auth.api.User):
-#         prov = a.provider
-#         return {
-#             '$user': True,
-#             'provider_uid': prov.uid,
-#             'user_uid': a.uid,
-#             'str_user': prov.marshal_user(a),
-#         }
-#     if isinstance(a, gws.Object):
-#         return {'$object': [a.klass, a.uid]}
-#     if isinstance(a, t.Data):
-#         return {'$data': [a.__class__.__name__, _encode(vars(a))]}
-#     return a
-#
-#
-# def _decode(a):
-#     if isinstance(a, dict):
-#         if '$user' in a:
-#             prov: t.AuthProviderObject = gws.config.find('gws.ext.auth.provider', a['provider_uid'])
-#             return prov.unmarshal_user(a['user_uid'], a['str_user'])
-#         if '$object' in a:
-#             return gws.config.find(*a['$object'])
-#         if '$data' in a:
-#             cls, v = a['$data']
-#             # since all Data classes are just dicts, it's safe to use Data here
-#             # instead of the specific class (really?)
-#             return t.Data(_decode(v))
-#         return {k: _decode(v) for k, v in a.items()}
-#
-#     if isinstance(a, list):
-#         return [_decode(v) for v in a]
-#
-#     return a
-
-
 def create(uid, user_uid, worker, args=None):
     gws.log.debug('creating job', worker, user_uid)
     storage.create(uid)

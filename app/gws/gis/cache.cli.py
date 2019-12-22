@@ -97,8 +97,8 @@ def seed(layers=None, levels=None):
             gws.log.info('seed already running')
             return
 
-        max_time = gws.config.var('seeding.maxTime')
-        concurrency = gws.config.var('seeding.concurrency')
+        max_time = gws.config.root().var('seeding.maxTime')
+        concurrency = gws.config.root().var('seeding.concurrency')
         ts = time.time()
 
         print(f'\nSTART SEEDING (maxTime={max_time} concurrency={concurrency}), ^C ANYTIME TO CANCEL...\n')

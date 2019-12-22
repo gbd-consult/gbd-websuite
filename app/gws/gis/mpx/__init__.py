@@ -22,8 +22,8 @@ class ServiceException(Exception):
 
 def _call(service, params):
     url = 'http://%s:%s/%s' % (
-        gws.config.var('server.mapproxy.host'),
-        gws.config.var('server.mapproxy.port'),
+        gws.config.root().var('server.mapproxy.host'),
+        gws.config.root().var('server.mapproxy.port'),
         service
     )
 

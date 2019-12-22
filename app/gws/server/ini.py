@@ -8,6 +8,8 @@ import gws.qgis.server
 import gws.tools.misc
 import gws.tools.shell
 
+import gws.types as t
+
 MAPPROXY_YAML_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
 
 # https://uwsgi-docs.readthedocs.io/en/latest/Nginx.html
@@ -29,7 +31,7 @@ _uwsgi_params = """
 """
 
 
-def create(cfg, base_dir, pid_dir):
+def create(root: t.RootObject, base_dir, pid_dir):
     def _write(p, s):
         p = base_dir + '/' + p
         s = '\n'.join(x.strip() for x in s.strip().splitlines())
@@ -49,31 +51,31 @@ def create(cfg, base_dir, pid_dir):
 
     # NB it should be possible to have QGIS running somewhere else
     # so, if 'host' is not localhost, don't start QGIS here
-    qgis_enabled = gws.get(cfg, 'server.qgis.enabled') and gws.get(cfg, 'server.qgis.host') == 'localhost'
-    qgis_port = gws.get(cfg, 'server.qgis.port')
-    qgis_workers = gws.get(cfg, 'server.qgis.workers')
-    qgis_threads = gws.get(cfg, 'server.qgis.threads')
+    qgis_enabled = root.var('server.qgis.enabled') and root.var('server.qgis.host') == 'localhost'
+    qgis_port = root.var('server.qgis.port')
+    qgis_workers = root.var('server.qgis.workers')
+    qgis_threads = root.var('server.qgis.threads')
     qgis_socket = gws.TMP_DIR + '/uwsgi.qgis.sock'
 
-    web_enabled = gws.get(cfg, 'server.web.enabled')
-    web_workers = gws.get(cfg, 'server.web.workers')
-    web_threads = gws.get(cfg, 'server.web.threads')
+    web_enabled = root.var('server.web.enabled')
+    web_workers = root.var('server.web.workers')
+    web_threads = root.var('server.web.threads')
     web_socket = gws.TMP_DIR + '/uwsgi.web.sock'
 
-    spool_enabled = gws.get(cfg, 'server.spool.enabled')
-    spool_workers = gws.get(cfg, 'server.spool.workers')
-    spool_threads = gws.get(cfg, 'server.spool.threads')
+    spool_enabled = root.var('server.spool.enabled')
+    spool_workers = root.var('server.spool.workers')
+    spool_threads = root.var('server.spool.threads')
     spool_socket = gws.TMP_DIR + '/uwsgi.spooler.sock'
     spool_dir = gws.SPOOL_DIR
-    spool_freq = gws.get(cfg, 'server.spool.jobFrequency')
+    spool_freq = root.var('server.spool.jobFrequency')
 
-    mapproxy_enabled = gws.get(cfg, 'server.mapproxy.enabled') and os.path.exists(MAPPROXY_YAML_PATH)
-    mapproxy_port = gws.get(cfg, 'server.mapproxy.port')
-    mapproxy_workers = gws.get(cfg, 'server.mapproxy.workers')
-    mapproxy_threads = gws.get(cfg, 'server.mapproxy.threads')
+    mapproxy_enabled = root.var('server.mapproxy.enabled') and os.path.exists(MAPPROXY_YAML_PATH)
+    mapproxy_port = root.var('server.mapproxy.port')
+    mapproxy_workers = root.var('server.mapproxy.workers')
+    mapproxy_threads = root.var('server.mapproxy.threads')
     mapproxy_socket = gws.TMP_DIR + '/uwsgi.mapproxy.sock'
 
-    log = gws.get(cfg, 'server.log') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
+    log = root.var('server.log') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
 
     nginx_log_level = 'info'
     # nginx_log_level = 'debug'
@@ -98,7 +100,7 @@ def create(cfg, base_dir, pid_dir):
     mercy = 5
 
     # @TODO: do we need more granular timeout configuration?
-    qgis_timeout = gws.get(cfg, 'server.timeout')
+    qgis_timeout = root.var('server.timeout')
     qgis_front_timeout = qgis_timeout + 10
     mapproxy_timeout = qgis_front_timeout + 10
     web_timeout = mapproxy_timeout + 10
@@ -188,7 +190,7 @@ def create(cfg, base_dir, pid_dir):
             {stdenv}
         """
 
-        for k, v in gws.qgis.server.environ(cfg).items():
+        for k, v in gws.qgis.server.environ(root).items():
             ini += f'env = {k}={v}\n'
 
         path = _write('uwsgi_qgis.ini', ini)
@@ -279,7 +281,7 @@ def create(cfg, base_dir, pid_dir):
             break
 
         # this is in MB
-        max_body_size = gws.get(cfg, 'server.web.maxRequestLength')
+        max_body_size = root.var('server.web.maxRequestLength')
 
         web_common = f"""
             error_log {nginx_web_log} {nginx_log_level};
@@ -310,11 +312,11 @@ def create(cfg, base_dir, pid_dir):
             }}
         """
 
-        ssl_crt = gws.get(cfg, 'web.ssl.crt')
-        ssl_key = gws.get(cfg, 'web.ssl.key')
+        ssl_crt = root.var('web.ssl.crt')
+        ssl_key = root.var('web.ssl.key')
 
         ssl_hsts = ''
-        s = gws.get(cfg, 'web.ssl.hsts')
+        s = root.var('web.ssl.hsts')
         if s:
             ssl_hsts = f'add_header Strict-Transport-Security "max-age={s}; includeSubdomains";'
 

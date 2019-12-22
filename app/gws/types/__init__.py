@@ -165,7 +165,7 @@ class Object:
     def find_first(self, klass) -> 'Object':
         pass
 
-    def find(self, klass, uid) -> List['Object']:
+    def find(self, klass, uid) -> 'Object':
         pass
 
     def props_for(self, user: 'AuthUser') -> Props:
