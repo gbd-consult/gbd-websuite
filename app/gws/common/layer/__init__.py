@@ -90,7 +90,7 @@ class BaseConfig(t.WithTypeAndAccess):
     """Layer"""
 
     clientOptions: ClientOptions = {}  #: options for the layer display in the client
-    dataModel: t.Optional[t.List[t.AttributeConfig]] #: layer data model
+    dataModel: t.Optional[t.DataModelConfig] #: layer data model
     description: t.Optional[t.ext.template.Config]  #: template for the layer description
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
@@ -124,7 +124,7 @@ class VectorConfig(BaseConfig):
 
 
 class Props(t.Data):
-    dataModel: t.Optional[t.List[t.AttributeConfig]]
+    dataModel: t.Optional[t.DataModel]
     description: str = ''
     editAccess: t.Optional[t.List[str]]
     editStyle: t.Optional[t.StyleProps]
@@ -181,7 +181,7 @@ class Base(gws.Object, t.LayerObject):
         d = self.var('dataModel')
         if d:
             return d
-        return []
+        return t.DataModel()
 
     @property
     def has_search(self):

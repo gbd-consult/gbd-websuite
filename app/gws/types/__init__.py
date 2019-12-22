@@ -252,22 +252,27 @@ class AttributeType(Enum):
 class AttributeConfig(Config):
     """Attribute configuration"""
 
-    title: str = ''  #: title
     name: str = ''  #: internal name
-    value: str = ''  #: computed value
     source: str = ''  #: source attribute
-    type: Optional[AttributeType]  #: type
+    title: str = ''  #: display title
+    type: AttributeType = 'str'  #: type
+    value: FormatStr = ''  #: computed value
 
 
 class Attribute(Data):
+    name: str
     title: str = ''
-    name: str = ''
-    type: str = ''
-    value: str = ''
+    type: str = 'str'
+    value: str
 
 
 class DataModel:
     attributes: List[Attribute]
+
+
+class DataModelConfig(Config):
+    """Data model configuration."""
+    attributes: List[AttributeConfig]
 
 # type: ignore
 
@@ -922,7 +927,7 @@ class TemplateQualityLevel(Data):
 class TemplateConfig(Config):
     type: str  #: template type
     qualityLevels: Optional[List[TemplateQualityLevel]]  #: list of quality levels supported by the template
-    dataModel: Optional[DataModel]  #: user-editable template attributes
+    dataModel: Optional[DataModelConfig]  #: user-editable template attributes
     path: Optional[FilePath]  #: path to a template file
     text: str = ''  #: template content
     title: str = ''  #: template title
@@ -1000,6 +1005,9 @@ class TemplateObject(Object):
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:
         pass
 
+    def normalize_user_data(self, data: dict) -> dict:
+        pass
+
 
 class FormatConfig(Config):
     """Feature format"""
@@ -1007,7 +1015,6 @@ class FormatConfig(Config):
     description: Optional[ext.template.Config]  #: template for feature descriptions
     category: Optional[ext.template.Config]  #: feature category
     label: Optional[ext.template.Config]  #: feature label on the map
-    dataModel: Optional[DataModel]  #: attribute metadata
     teaser: Optional[ext.template.Config]  #: template for feature teasers (short descriptions)
     title: Optional[ext.template.Config]  #: feature title
 
@@ -1018,8 +1025,6 @@ class FormatObject(Object):
     label: TemplateObject
     teaser: TemplateObject
     title: TemplateObject
-
-    data_model: DataModel
 
     def apply(self, feature: 'Feature', context: dict = None):
         """Format a feature."""

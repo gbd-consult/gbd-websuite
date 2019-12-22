@@ -1,17 +1,13 @@
 import os
 import gws
+import gws.common.datamodel
 import gws.types as t
 
 
-# noinspection PyAbstractClass
 class Object(gws.Object, t.TemplateObject):
-    def __init__(self):
-        super().__init__()
-        self.data_model = []
-
     def configure(self):
         super().configure()
-        self.data_model = self.var('dataModel', default=[])
+        self.data_model = self.var('dataModel')
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')
@@ -31,6 +27,11 @@ class Object(gws.Object, t.TemplateObject):
             'pageWidth': self.page_size[0],
             'pageHeight': self.page_size[1],
         })
+
+    def normalize_user_data(self, data: dict) -> dict:
+        if not data or not self.data_model:
+            return {}
+        return gws.common.datamodel.apply(self.data_model, data)
 
 
 # @TODO template types should be configurable

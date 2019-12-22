@@ -137,7 +137,7 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
         let tpl = this.props.controller.selectedTemplate;
 
         if (tpl && tpl.dataModel) {
-            tpl.dataModel.forEach(attr => data.push({
+            tpl.dataModel.attributes.forEach(attr => data.push({
                 name: attr.name,
                 title: attr.title || attr.name,
                 value: pd[attr.name] || '',
@@ -429,6 +429,7 @@ class PrintController extends gws.Controller {
         );
 
         let vs = this.map.viewState;
+        let attributes = Object.entries(this.getValue('printData') || {}).map(([name, value]) => ({name, value: String(value)}));
 
         params = {
             ...params,
@@ -437,7 +438,7 @@ class PrintController extends gws.Controller {
             sections: [
                 {
                     center: [vs.centerX, vs.centerY] as gws.api.Point,
-                    data: this.getValue('printData') || {}
+                    attributes
                 }
             ]
         };
@@ -465,7 +466,6 @@ class PrintController extends gws.Controller {
             sections: [
                 {
                     center: [vs.centerX, vs.centerY] as gws.api.Point,
-                    data: {}
                 }
             ]
         };

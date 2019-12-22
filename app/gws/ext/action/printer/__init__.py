@@ -1,4 +1,3 @@
-import gws
 import gws.web
 import gws.common.printer.service as service
 import gws.common.printer.types as pt
@@ -16,10 +15,10 @@ class Object(gws.ActionObject):
         """Start a backround print job"""
 
         req.require_project(p.projectUid)
-        template = req.require('gws.ext.template', p.templateUid)
+        tpl: t.TemplateObject = req.require('gws.ext.template', p.templateUid)
 
         for sec in p.sections:
-            sec.data = _validate_data(sec.get('data'), template)
+            sec.data = tpl.normalize_user_data(sec.get('data'))
 
         return service.start_job(req, p)
 
@@ -41,16 +40,3 @@ class Object(gws.ActionObject):
 
     def http_get_result(self, req: gws.web.AuthRequest, p: pt.PrinterQueryParams) -> t.HttpResponse:
         return service.job_result(req, p)
-
-
-def _validate_data(data, template):
-    if not data or not template.data_model:
-        return {}
-
-    d = {}
-    for attr in template.data_model:
-        if attr.name in data:
-            # @TODO convert to type
-            d[attr.name] = gws.as_str(data[attr.name])
-
-    return d

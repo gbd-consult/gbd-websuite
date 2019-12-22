@@ -238,9 +238,8 @@ class _Worker:
     def prepare_section(self, sec: pt.PrintSection):
         s = PreparedSection()
 
-        # NB: user data is supposed to be validated according to the model in frontend
         s.center = sec.center
-        s.data = sec.get('data') or {}
+        s.data = {a.name: a.value for a in sec.get('attributes', [])}
         s.items = self.prepare_render_items(sec.get('items') or [])
 
         return s

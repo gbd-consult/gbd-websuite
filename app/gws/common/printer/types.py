@@ -29,7 +29,7 @@ class PrintItem(t.Data):
 
 class PrintSection(t.Data):
     center: t.Point
-    data: t.Optional[dict]
+    attributes: t.Optional[t.List[t.Attribute]]
     items: t.Optional[t.List[PrintItem]]
 
 

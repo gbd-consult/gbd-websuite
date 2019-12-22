@@ -2,7 +2,7 @@
 
 ### Attributes and data models.
 
-from .base import List, Optional, Enum
+from .base import List, Enum, FormatStr
 from .data import Data, Config
 
 
@@ -36,19 +36,24 @@ class AttributeType(Enum):
 class AttributeConfig(Config):
     """Attribute configuration"""
 
-    title: str = ''  #: title
     name: str = ''  #: internal name
-    value: str = ''  #: computed value
     source: str = ''  #: source attribute
-    type: Optional[AttributeType]  #: type
+    title: str = ''  #: display title
+    type: AttributeType = 'str'  #: type
+    value: FormatStr = ''  #: computed value
 
 
 class Attribute(Data):
+    name: str
     title: str = ''
-    name: str = ''
-    type: str = ''
-    value: str = ''
+    type: str = 'str'
+    value: str
 
 
 class DataModel:
     attributes: List[Attribute]
+
+
+class DataModelConfig(Config):
+    """Data model configuration."""
+    attributes: List[AttributeConfig]
