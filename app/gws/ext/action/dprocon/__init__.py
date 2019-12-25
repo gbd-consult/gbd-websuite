@@ -126,7 +126,7 @@ class Object(gws.ActionObject):
         atts = self._select_data(request_id)
         shape = gws.gis.shape.from_wkb(geom, self.crs)
 
-        f = gws.gis.feature.Feature({
+        f = gws.gis.feature.new({
             'uid': 'dprocon_%s' % request_id,
             'attributes': atts,
             'shape': shape,

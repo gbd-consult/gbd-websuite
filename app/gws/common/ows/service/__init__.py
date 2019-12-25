@@ -230,7 +230,7 @@ class Object(gws.Object, t.OwsServiceObject):
         }))
 
 
-def layer_node_root(rd: RequestData) -> t.List[LayerCapsNode]:
+def layer_node_root(rd: RequestData) -> LayerCapsNode:
     roots = _layer_node_roots(rd)
     if not roots:
         return
@@ -282,8 +282,23 @@ def inspire_nodes(nodes):
     return [n for n in nodes if n.tag_name in inspire.TAGS]
 
 
-def feature_node_list(rd: RequestData, results: t.List[t.SearchResult]):
-    return [_feature_node(rd, r) for r in results]
+def feature_node_list(rd: RequestData, features: t.List[t.Feature]):
+
+    def node(f: t.Feature):
+        gs = None
+        if f.shape:
+            gs = gws.gis.gml.shape_to_tag(f.shape, precision=rd.project.map.coordinate_precision)
+
+        f.convert()
+
+        return FeatureNode({
+            'feature': f,
+            'shape_tag': gs,
+            'tag_name': f.layer.ows_name if f.layer else 'feature',
+            'attributes': f.attributes,
+        })
+
+    return [node(f) for f in features]
 
 
 def lonlat_extent(extent, crs):
@@ -417,21 +432,3 @@ def _layer_node(rd: RequestData, layer, sub_nodes=None) -> LayerCapsNode:
     })
 
 
-def _feature_node(rd: RequestData, result: t.SearchResult):
-    gs = None
-    if result.feature.shape:
-        gs = gws.gis.gml.shape_to_tag(result.feature.shape, precision=rd.project.map.coordinate_precision)
-
-    atts = feature.attributes or {}
-
-    la = feature.layer
-    dm = la.data_model if la else None
-    atts = gws.common.datamodel.apply(dm, atts)
-    name = la.ows_name if la else 'feature'
-
-    return FeatureNode({
-        'feature': feature,
-        'shape_tag': gs,
-        'tag_name': name,
-        'attributes': atts,
-    })

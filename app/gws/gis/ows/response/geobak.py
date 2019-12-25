@@ -36,7 +36,7 @@ def parse(s, first_el, **kwargs):
                 a.get_text('Name').strip(): a.get_text('Wert').strip()
                 for a in ds.all('Attribut')
             }
-            fs.append(gws.gis.feature.Feature({
+            fs.append(gws.gis.feature.new({
                 'category': layer_name,
                 'attributes': atts
             }))

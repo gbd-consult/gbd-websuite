@@ -17,7 +17,7 @@ def parse(s, first_el, **kwargs):
     fs = []
 
     for item in el.all('Fields'):
-        fs.append(gws.gis.feature.Feature({
+        fs.append(gws.gis.feature.new({
             'attributes': item.attr_dict
         }))
 

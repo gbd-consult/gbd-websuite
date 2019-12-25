@@ -231,7 +231,7 @@ class Object(gws.common.template.Object):
         }
 
         def err(e, path, line):
-            gws.log.warn(f'TEMPLATE: {e} at {path!r}:{line}')
+            gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
         content = gws.tools.chartreux.render(
             text,

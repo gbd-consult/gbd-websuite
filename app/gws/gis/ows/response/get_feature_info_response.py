@@ -29,7 +29,7 @@ def parse(s, first_el, **kwargs):
             if 'geometry' in atts:
                 shape = gws.gis.shape.from_wkt(atts.pop('geometry'), kwargs.get('crs'))
 
-            fs.append(gws.gis.feature.Feature({
+            fs.append(gws.gis.feature.new({
                 'uid': atts.get('uid') or feature.attr('id'),
                 'category': layer.attr('name', ''),
                 'shape': shape,

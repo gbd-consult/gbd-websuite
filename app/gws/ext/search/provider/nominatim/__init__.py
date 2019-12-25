@@ -83,7 +83,7 @@ class Object(gws.common.search.provider.Object):
                 continue
 
             rec = _normalize(rec)
-            f = gws.gis.feature.Feature({
+            f = gws.gis.feature.new({
                 'uid': rec.get('place_id'),
                 'attributes': rec,
                 'shape': sh

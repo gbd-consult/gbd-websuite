@@ -264,7 +264,7 @@ class _Worker:
             if item.get('features'):
                 ii.features = []
                 for f in item.features:
-                    f = gws.gis.feature.Feature(f)
+                    f = gws.gis.feature.new(f)
                     if f.shape:
                         ii.features.append(f)
 

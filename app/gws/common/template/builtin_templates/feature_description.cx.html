@@ -1,18 +1,18 @@
-@if feature.category
-    <p class="head">{feature.category | html}</p>
+@if feature.elements.category
+    <p class="head">{feature.elements.category | html}</p>
 @end
 
-@if feature.title
-    <p class="head2">{feature.title | html}</p>
+@if feature.elements.title
+    <p class="head2">{feature.elements.title | html}</p>
 @end
 
 <table><tbody>
 
-@each feature.attributes as name, value
-    @with value
+@each feature.attributes as a
+    @with a.value
         <tr>
-            <th>{name | html}</th>
-            <td>{value | html | nl2br | linkify(target="_blank", cut=30)}</td>
+            <th>{a.name | html}</th>
+            <td>{a.value | html | nl2br | linkify(target="_blank", cut=30)}</td>
         </tr>
     @end
 @end

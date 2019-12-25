@@ -29,6 +29,15 @@ def from_props(p: t.FeatureProps):
     )
 
 
+def new(args: dict):
+    uid = args.pop('uid', None)
+    attributes = args.pop('attributes', None)
+    shape = args.pop('shape', None)
+    style = args.pop('style', None)
+    elements = args
+    return Feature(uid, attributes, elements, shape, style)
+
+
 class Feature(t.Feature):
     def __init__(self, uid=None, attributes=None, elements=None, shape=None, style=None):
         self.uid = uid
@@ -102,14 +111,16 @@ class Feature(t.Feature):
 
         convertor = convertor or self.convertor or self.layer
 
-        if convertor.data_model:
-            self.attributes = convertor.data_model.apply(self.attributes)
+        if convertor:
+            if convertor.data_model:
+                self.attributes = convertor.data_model.apply(self.attributes)
 
-        if convertor.feature_format:
-            ctx = gws.extend(
-                {'feature': self, 'layer': self.layer},
-                {a.name: a.value for a in self.attributes})
-            self.elements = convertor.feature_format.apply(ctx)
+            if convertor.feature_format:
+                ctx = gws.extend(
+                    {'feature': self, 'layer': self.layer},
+                    {a.name: a.value for a in self.attributes},
+                    self.elements)
+                self.elements = gws.extend(self.elements, convertor.feature_format.apply(ctx))
 
         return self
 

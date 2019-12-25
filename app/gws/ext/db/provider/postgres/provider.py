@@ -204,11 +204,11 @@ class Object(gws.common.db.provider.sql.Object):
         if not uid:
             uid = gws.random_string(16)
 
-        return gws.gis.feature.Feature(
-            uid=uid,
-            attributes=rec,
-            shape=shape
-        )
+        return gws.gis.feature.new({
+            'uid': uid,
+            'attributes': rec,
+            'shape': shape,
+        })
 
     def _get_by_uids(self, table, uids):
         return self.select(t.SelectArgs({
