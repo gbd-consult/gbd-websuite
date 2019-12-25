@@ -85,7 +85,7 @@ class AnnotateFeature extends gws.map.Feature {
         this.selectedStyle = args.selectedStyle;
         this.shapeType = args.shapeType;
 
-        this.oFeature.setStyle((oFeature, r) => {
+        this.oFeature.setStyle((oFeature: ol.Feature, r) => {
             let s = this.selected ? this.selectedStyle : this.style;
             return s.apply(oFeature.getGeometry(), this.label, r);
         });

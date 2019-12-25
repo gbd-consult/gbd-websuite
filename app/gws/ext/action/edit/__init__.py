@@ -23,23 +23,23 @@ class Object(gws.ActionObject):
     def api_add_features(self, req: gws.web.AuthRequest, p: EditParams) -> EditResponse:
         """Add features to the layer"""
 
-        layer = req.require('gws.ext.layer', p.layerUid)
-        fs = layer.add_features(p.features)
-        return EditResponse({'features': [f.props for f in fs]})
+        return self._handle('insert', req, p)
 
     def api_delete_features(self, req: gws.web.AuthRequest, p: EditParams) -> EditResponse:
         """Delete features from the layer"""
 
-        layer = req.require('gws.ext.layer', p.layerUid)
-        fs = layer.delete_features(p.features)
-        return EditResponse({'features': [f.props for f in fs]})
+        return self._handle('delete', req, p)
 
     def api_update_features(self, req: gws.web.AuthRequest, p: EditParams) -> EditResponse:
         """Update features on the layer"""
 
-        layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
+        return self._handle('update', req, p)
+
+    def _handle(self, op, req, p):
+        layer = req.require('gws.ext.layer', p.layerUid)
         if not layer.edit_access(req.user):
             raise gws.web.error.Forbidden()
 
-        fs = layer.update_features(p.features)
-        return EditResponse({'features': [f.props for f in fs]})
+        fs = layer.edit_operation(op, p.features)
+
+        return EditResponse({'features': [f.convert().props for f in fs]})

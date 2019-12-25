@@ -83,7 +83,7 @@ class Config(t.WithTypeAndAccess):
 
     limit: int = 100  #: search results limit
 
-    featureFormat: t.Optional[t.FormatConfig]  #: template for on-screen Flurstueck details
+    featureFormat: t.Optional[t.FeatureFormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
 
     disableApi: bool = False  #: disable external access to this extension
@@ -226,7 +226,7 @@ class GeocoderResponse(t.Response):
 
 _cwd = os.path.dirname(__file__)
 
-DEFAULT_FORMAT = t.FormatConfig({
+DEFAULT_FORMAT = t.FeatureFormatConfig({
     'title': t.TemplateConfig({
         'type': 'html',
         'text': '{attributes.vollnummer}'
@@ -262,7 +262,7 @@ class Object(gws.Object):
         self.crs = ''
         self.has_index = False
         self.limit = 0
-        self.short_feature_format: t.FormatObject = None
+        self.short_feature_format: t.FormatObject= None
         self.long_feature_format: t.FormatObject = None
         self.print_template: t.TemplateObject = None
         self.eigentuemer: EigentuemerConfig = None
@@ -302,7 +302,7 @@ class Object(gws.Object):
 
         self.limit = int(self.var('limit'))
 
-        fmt = self.var('featureFormat') or t.FormatConfig()
+        fmt = self.var('featureFormat') or t.FeatureFormatConfig()
         for f in 'title', 'teaser', 'description':
             if not fmt.get(f):
                 setattr(fmt, f, DEFAULT_FORMAT.get(f))

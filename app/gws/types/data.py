@@ -1,5 +1,3 @@
-# type: ignore
-
 ### Data objects
 
 class Data:
@@ -35,7 +33,8 @@ class Data:
 
 class Config(Data):
     """Configuration base type"""
-    pass
+
+    uid: str = ''  #: unique ID
 
 
 class Props(Data):

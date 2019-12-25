@@ -113,8 +113,8 @@ class Object(ows.Object):
         })
 
     def handle_getfeatureinfo(self, rd: ows.RequestData):
-        features = find_features(rd)
-        nodes = ows.feature_node_list(rd, features)
+        results = find_features(rd)
+        nodes = ows.feature_node_list(rd, results)
         return self.render_feature_nodes(rd, nodes, 'getFeatureInfo')
 
 

@@ -18,7 +18,7 @@ class Object(gws.ActionObject):
         tpl: t.TemplateObject = req.require('gws.ext.template', p.templateUid)
 
         for sec in p.sections:
-            sec.data = tpl.normalize_user_data(sec.get('data'))
+            sec.attributes = tpl.normalize_user_data(sec.get('attributes'))
 
         return service.start_job(req, p)
 

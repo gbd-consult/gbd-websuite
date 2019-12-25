@@ -42,7 +42,7 @@ class SearchResults extends gws.View<SearchViewProps> {
                     className="modSearchResultsFeatureText"
                     withHTML
                     whenTouched={() => _master(this).show(f)}
-                    content={f.props.teaser}
+                    content={f.elements.teaser}
                 />}
             />
         </div>;

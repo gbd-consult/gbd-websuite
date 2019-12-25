@@ -1,8 +1,9 @@
 ### Search
 
 from .base import List, Optional, Point, Extent, Crs
-from .data import Data
+from ..data import Data
 from .object import Object
+from .attribute import DataModelObject
 from .template import FormatObject
 from .map import LayerObject, ProjectObject
 from .feature import Feature, Shape
@@ -25,24 +26,17 @@ class SearchArguments(Data):
     tolerance: int
 
 
-class SearchResult(Data):
-    feature: 'Feature'
-    layer: 'LayerObject'
-    provider: 'SearchProviderObject'
-
-
 class SearchProviderObject(Object):
-    feature_format: 'FormatObject'
     geometry_required: bool
     keyword_required: bool
-    title: str
-    type: str
+    data_model: 'DataModelObject'
+    feature_format: 'FormatObject'
 
     def can_run(self, args: SearchArguments) -> bool:
-        return False
+        pass
 
     def run(self, layer: Optional['LayerObject'], args: SearchArguments) -> List['Feature']:
-        return []
+        pass
 
     def context_shape(self, args: SearchArguments):
         pass

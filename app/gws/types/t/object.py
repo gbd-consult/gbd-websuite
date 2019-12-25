@@ -1,7 +1,7 @@
 ### Basic tree node object.
 
 from .base import List, Tuple
-from .data import Config, Props
+from ..data import Config, Props
 from .auth import AuthUser
 from .application import ApplicationObject
 
@@ -11,7 +11,7 @@ class Object:
     config: Config
     klass: str
     parent: 'Object'
-    root: 'Object'
+    root: 'RootObject'
     uid: str
     props: Props
 
@@ -22,6 +22,12 @@ class Object:
         pass
 
     def configure(self):
+        pass
+
+    def create_object(self, klass, cfg, parent=None) -> 'Object':
+        pass
+
+    def create_shared_object(self, klass, uid, cfg) -> 'Object':
         pass
 
     def var(self, key, default=None, parent=False):

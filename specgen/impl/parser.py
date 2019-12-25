@@ -9,8 +9,7 @@ class Error(Exception):
     pass
 
 
-def parse(root_dir):
-    paths = _find_files(root_dir, 'py$')
+def parse(paths):
     units = []
 
     for path in paths:
@@ -34,9 +33,11 @@ class _Parser:
         self.mod_name = ''
         self.comments = {}
         self.units = []
+        self.is_init = False
 
     def parse(self, path):
         self.mod_name = _mod_name(path)
+        self.is_init = path.endswith('__init__.py')
 
         with open(path) as fp:
             buf = fp.read()
@@ -71,8 +72,18 @@ class _Parser:
             for nn in node.names:
                 if nn.asname:
                     self.imports[nn.asname] = nn.name
+
         for node in _nodes(tree, 'ImportFrom'):
-            m = '.'.join(self.mod_name.split('.')[:-node.level])
+            if not node.level:
+                for nn in node.names:
+                    self.imports[nn.asname or nn.name] = node.module + '.' + nn.name
+            m = self.mod_name.split('.')
+            lev = node.level
+            if self.is_init:
+                lev -= 1
+            if lev:
+                m = m[:-lev]
+            m = '.'.join(m)
             if node.module:
                 m += '.' + node.module
             for nn in node.names:
@@ -222,9 +233,13 @@ class _Parser:
         if _cls(node) in ('Str', 'Name', 'Attribute'):
             return [self.qname(node)]
 
-        # foo: List[SomeType]
+        # foo: List[SomeType] => [List, [SomeType]]
+        # foo: Dict[A, B] => [Dict, [A, B]]
         if _cls(node) == 'Subscript':
-            return [self.qname(node.value)] + self.type_decl_to_type_list(node.slice.value)
+            s = self.type_decl_to_type_list(node.slice.value)
+            if s[0] == 'tuple':
+                s = s[1]
+            return [self.qname(node.value), s]
 
         # foo: [SomeType, SomeType]
         if _cls(node) == 'Tuple':
@@ -252,21 +267,6 @@ class _Parser:
         if node.lineno in self.comments:
             return self.comments[node.lineno]
         return ''
-
-
-def _find_files(dirname, pattern):
-    for fname in os.listdir(dirname):
-        if fname.startswith('.'):
-            continue
-
-        path = os.path.join(dirname, fname)
-
-        if os.path.isdir(path):
-            yield from _find_files(path, pattern)
-            continue
-
-        if re.search(pattern, fname):
-            yield path
 
 
 def _value(node, strict=True):

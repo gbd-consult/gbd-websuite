@@ -20,7 +20,7 @@ _LOG_TABLE_NAME = 'dprocon_log'
 
 _cwd = os.path.dirname(__file__)
 
-_DEFAULT_FORMAT = t.FormatConfig({
+_DEFAULT_FORMAT = t.FeatureFormatConfig({
     'description': t.TemplateConfig({
         'type': 'html',
         'text': '''

@@ -1,5 +1,9 @@
 import gws.common.search.provider
+import gws.common.db
+
 import gws.types as t
+
+from . import provider, util
 
 
 class Config(gws.common.search.provider.Config):
@@ -15,21 +19,15 @@ class Config(gws.common.search.provider.Config):
 class Object(gws.common.search.provider.Object):
     def __init__(self):
         super().__init__()
-        self.db: t.SqlProviderObject = None
-        self.keyword_required = False
-        self.geometry_required = False
+        self.provider: provider.Object = None
+        self.table: t.SqlTable = None
 
     def configure(self):
         super().configure()
 
-        prov_uid = self.var('db')
-        if prov_uid:
-            self.db = self.root.find('gws.ext.db.provider', prov_uid)
-        else:
-            self.db = self.root.find_first('gws.ext.db.provider')
+        self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
+        self.table = util.configure_table(self, self.provider)
 
-        self.keyword_required = self.var('keywordRequired')
-        self.geometry_required = self.var('geometryRequired')
 
     def can_run(self, args):
         if self.keyword_required and not args.keyword:
@@ -40,21 +38,11 @@ class Object(gws.common.search.provider.Object):
 
     def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
 
-        tab = self.var('table')
-
-        fs = self.db.select(t.SelectArgs({
-            'table': tab,
+        return self.provider.select(t.SelectArgs({
+            'table': self.table,
             'keyword': args.keyword,
             'shape': self.context_shape(args),
             'sort': self.var('sort'),
             'limit': args.limit,
             'tolerance': args.tolerance,
         }))
-
-        sc = tab.get('searchColumn')
-
-        for f in fs:
-            f.category = self.var('title')
-            f.title = f.attributes.get(sc)
-
-        return fs

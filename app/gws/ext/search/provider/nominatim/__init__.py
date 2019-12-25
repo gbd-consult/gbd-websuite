@@ -13,7 +13,7 @@ import gws.types as t
 NOMINATIM_CRS = 'epsg:4326'
 NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 
-DEFAULT_FEATURE_FORMAT = t.FormatConfig({
+DEFAULT_FEATURE_FORMAT = t.FeatureFormatConfig({
     'teaser': t.TemplateConfig({
         'type': 'html',
         'text': '''
@@ -40,9 +40,7 @@ class Config(gws.common.search.provider.Config):
 class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
-
-        if not self.feature_format:
-            self.feature_format = self.create_object('gws.common.format', DEFAULT_FEATURE_FORMAT)
+        self.feature_format = self.create_object('gws.common.format', DEFAULT_FEATURE_FORMAT)
 
     def can_run(self, args):
         return bool(args.keyword)
@@ -85,13 +83,14 @@ class Object(gws.common.search.provider.Object):
                 continue
 
             rec = _normalize(rec)
-            features.append(gws.gis.feature.Feature({
+            f = gws.gis.feature.Feature({
                 'uid': rec.get('place_id'),
                 'attributes': rec,
                 'shape': sh
-            }))
+            })
+            features.append(f.apply_format(self.feature_format))
 
-        return sorted(features, key=lambda f: f.attributes['name'])
+        return features
 
 
 def _query(params):

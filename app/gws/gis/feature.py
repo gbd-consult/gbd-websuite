@@ -4,66 +4,60 @@ import gws.gis.shape
 import gws.gis.svg
 
 
-def from_geojs(js, crs):
-    return Feature({
-        'attributes': js.get('properties'),
-        'shape': gws.gis.shape.from_geometry(js['geometry'], crs),
-    })
+def from_geojson(js, crs, key_column='id'):
+    atts = {}
+    uid = ''
+    for k, v in js.get('properties', {}).items():
+        if k == key_column:
+            uid = v
+        else:
+            atts[k] = v
 
-
-def from_attributes(attrs):
-    return Feature({
-        'attributes': attrs,
-    })
+    return Feature(
+        uid=uid,
+        attributes=atts,
+        shape=gws.gis.shape.from_geometry(js['geometry'], crs),
+    )
 
 
 def from_props(p: t.FeatureProps):
-    sh = None
-    if p.get('shape'):
-        sh = gws.gis.shape.from_props(p.get('shape'))
-
-    style = None
-    if p.get('style'):
-        style = p.get('style')
-        if isinstance(style, dict):
-            style = t.StyleProps(style)
-
-    return Feature({
-        'uid': p.get('uid'),
-        'attributes': p.get('attributes'),
-        'label': p.get('label'),
-        'shape': sh,
-        'style': style
-    })
+    return Feature(
+        uid=p.get('uid'),
+        attributes=p.get('attributes'),
+        shape=p.get('shape'),
+        style=p.get('style'),
+    )
 
 
 class Feature(t.Feature):
-    def __init__(self, args):
-        self.attributes = {}
-        self.description = ''
-        self.category = ''
-        self.label = ''
+    def __init__(self, uid=None, attributes=None, elements=None, shape=None, style=None):
+        self.uid = uid
+        self.elements = elements or {}
+        self.convertor = None
+        self.layer = None
+
+        self.attributes = []
+        if attributes:
+            if isinstance(attributes, dict):
+                self.attributes = [t.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
+            elif isinstance(attributes, (list, tuple)):
+                for a in attributes:
+                    if not isinstance(a, t.Data):
+                        a = t.Attribute(a)
+                    self.attributes.append(a)
+
         self.shape = None
+        if shape:
+            if isinstance(shape, t.Shape):
+                self.shape = shape
+            elif shape.get('geometry'):
+                self.shape = gws.gis.shape.from_props(shape)
+
         self.style = None
-        self.teaser = ''
-        self.title = ''
-        self.uid = ''
-
-        for k, v in gws.as_dict(args).items():
-            setattr(self, k, v)
-
-        s = args.get('shape')
-        if s:
-            if isinstance(s, t.Shape):
-                self.shape = s
-            elif s.get('geometry'):
-                self.shape = gws.gis.shape.from_props(s)
-
-        s = args.get('style')
-        if s:
-            if isinstance(s, dict):
-                s = t.StyleProps(s)
-            self.style = s
+        if style:
+            if isinstance(style, dict):
+                style = t.StyleProps(style)
+            self.style = style
 
     def transform(self, to_crs):
         if self.shape:
@@ -82,7 +76,7 @@ class Feature(t.Feature):
             return ''
         return gws.gis.svg.draw(
             self.shape.geo,
-            self.label,
+            self.elements.get('label', ''),
             self.style,
             bbox,
             dpi,
@@ -90,30 +84,42 @@ class Feature(t.Feature):
             rotation
         )
 
-    def to_geojs(self):
+    def to_geojson(self):
         geometry = None
         if self.shape:
             geometry = self.shape.props['geometry']
+        props = {a.name: a.value for a in self.attributes}
+        props['id'] = self.uid
         return {
             'type': 'Feature',
-            'properties': self.attributes,
+            'properties': props,
             'geometry': geometry
         }
 
-    def apply_format(self, fmt: t.FormatObject, context: dict = None):
-        if fmt:
-            fmt.apply(self, context)
+    def convert(self, target_crs: t.Crs = None, convertor: t.FeatureConvertor = None) -> 'Feature':
+        if self.shape and target_crs:
+            self.shape = self.shape.transform(target_crs)
+
+        convertor = convertor or self.convertor or self.layer
+
+        if convertor.data_model:
+            self.attributes = convertor.data_model.apply(self.attributes)
+
+        if convertor.feature_format:
+            ctx = gws.extend(
+                {'feature': self, 'layer': self.layer},
+                {a.name: a.value for a in self.attributes})
+            self.elements = convertor.feature_format.apply(ctx)
+
+        return self
 
     @property
     def props(self):
         return t.FeatureProps({
-            'attributes': self.attributes or {},
-            'category': self.category,
-            'description': self.description,
-            'label': self.label,
+            'uid': self.uid,
+            'attributes': self.attributes,
             'shape': self.shape.props if self.shape else None,
             'style': self.style,
-            'teaser': self.teaser,
-            'title': self.title,
-            'uid': self.uid,
+            'elements': self.elements,
+            'layerUid': self.layer.uid if self.layer else None,
         })

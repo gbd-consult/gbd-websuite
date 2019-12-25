@@ -18,35 +18,43 @@ _py_type_to_attr_type = {
 }
 
 
-def apply(data_model: t.DataModel, atts: dict) -> t.List[t.Attribute]:
-    if not data_model:
-        return [t.Attribute({
-            'name': name,
-            'title': name,
-            'value': value,
-            'type': _py_type_to_attr_type.get(type(value)) or t.AttributeType.str,
-        }) for name, value in atts.items()]
+class Object(gws.Object, t.DataModelObject):
+    def configure(self):
+        super().configure()
+        self.rules = self.var('rules')
 
-    ls = []
+    @property
+    def props(self):
+        return t.DataModelProps({
+            'rules': self.rules
+        })
 
-    for ac in data_model.attributes:
-        # @TODO type conversion
-        ls.append(t.Attribute({
-            'title': ac.get('title') or ac.get('name'),
-            'name': ac.get('name') or gws.as_uid(ac.get('title', '')),
-            'value': _apply_attr(ac, atts),
-            'type': ac.get('type') or t.AttributeType.str
-        }))
+    def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
 
-    return ls
+        out = []
+        att_map = {a.name: a.value for a in atts}
 
+        for rule in self.rules:
+            # @TODO type conversion
+            out.append(t.Attribute({
+                'title': rule.get('title') or rule.get('name'),
+                'name': rule.get('name') or gws.as_uid(rule.get('title', '')),
+                'value': self._apply_rule(rule, att_map),
+                'type': rule.get('type') or t.AttributeType.str
+            }))
 
-def _apply_attr(ac: t.Attribute, atts):
-    s = ac.get('value')
-    if s:
-        if '{' not in s:
+        return out
+
+    def _apply_rule(self, rule: t.DataModelRule, att_map):
+        s = rule.get('value')
+        if s is not None:
             return s
-        return gws.tools.misc.format_placeholders(s, atts)
-
-    s = ac.get('source')
-    return atts.get(s)
+        s = rule.get('source')
+        if s:
+            return att_map.get(s)
+        s = rule.get('format')
+        if s:
+            if '{' not in s:
+                return s
+            return gws.tools.misc.format_placeholders(s, att_map)
+        return ''

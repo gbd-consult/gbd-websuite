@@ -6,28 +6,29 @@ import gws.types as t
 
 class Config(t.WithTypeAndAccess):
     defaultContext: str = ''  #: default spatial context ('view' or 'map')
-    featureFormat: t.Optional[t.FormatConfig]  #: feature formatting options
-    title: str = ''  #: search results title
-    uid: str = ''  #: unique ID
+    featureFormat: t.Optional[t.FeatureFormatConfig]  #: feature formatting options
+    dataModel: t.Optional[t.DataModelConfig]  #: feature data model
 
 
 class Object(gws.Object, t.SearchProviderObject):
     def __init__(self):
         super().__init__()
-        self.feature_format: t.FormatObject = None
         self.geometry_required: bool = False
         self.keyword_required: bool = False
-        self.title: str = ''
-        self.type: str = ''
 
     def configure(self):
         super().configure()
 
         p = self.var('featureFormat')
         if p:
-            self.feature_format = self.create_object('gws.common.format', p)
+            self.feature_format = self.add_child('gws.common.format', p)
 
-        self.title = self.var('title', default='')
+        p = self.var('dataModel')
+        if p:
+            self.data_model = self.add_child('gws.common.datamodel', p)
+
+        self.keyword_required = self.var('keywordRequired')
+        self.geometry_required = self.var('geometryRequired')
 
     def context_shape(self, args: t.SearchArguments):
         if args.get('shapes'):

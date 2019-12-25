@@ -3,7 +3,7 @@
 ### Authorization provider and user
 
 from .base import List
-from .data import Props
+from ..data import Props
 from .object import Object
 
 

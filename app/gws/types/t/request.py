@@ -1,7 +1,7 @@
 ### Request params and responses.
 
 from .base import Optional
-from .data import Data
+from ..data import Data
 from .auth import AuthUser
 from .object import Object
 from .map import ProjectObject

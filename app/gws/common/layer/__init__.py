@@ -21,7 +21,6 @@ import gws.tools.net
 import gws.types as t
 
 
-
 class ClientOptions(t.Data):
     """Client options for a layer"""
 
@@ -81,21 +80,21 @@ class FlattenConfig(t.Config):
 
 
 class OwsConfig(t.Config):
-    name: str = '' #: layer name for ows services
-    servicesEnabled: t.Optional[t.List[str]] #: services enabled for this layer
-    servicesDisabled: t.Optional[t.List[str]] #: services disabled for this layer
+    name: str = ''  #: layer name for ows services
+    servicesEnabled: t.Optional[t.List[str]]  #: services enabled for this layer
+    servicesDisabled: t.Optional[t.List[str]]  #: services disabled for this layer
 
 
 class BaseConfig(t.WithTypeAndAccess):
     """Layer"""
 
     clientOptions: ClientOptions = {}  #: options for the layer display in the client
-    dataModel: t.Optional[t.DataModelConfig] #: layer data model
+    dataModel: t.Optional[t.DataModelConfig]  #: layer data model
     description: t.Optional[t.ext.template.Config]  #: template for the layer description
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    featureFormat: t.Optional[t.FormatConfig]  #: feature formatting options
+    featureFormat: t.Optional[t.FeatureFormatConfig]  #: feature formatting options
     legend: LegendConfig = {}  #: legend configuration
     meta: t.Optional[t.MetaData]  #: layer meta data
     opacity: float = 1  #: layer opacity
@@ -119,12 +118,12 @@ class ImageTileConfig(ImageConfig):
 
 class VectorConfig(BaseConfig):
     editStyle: t.Optional[t.StyleProps]  #: style for features being edited
+    editDataModel: t.Optional[t.DataModelConfig] #: data model for input data
     style: t.Optional[t.StyleProps]  #: style for features
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
 
 
 class Props(t.Data):
-    dataModel: t.Optional[t.DataModel]
     description: str = ''
     editAccess: t.Optional[t.List[str]]
     editStyle: t.Optional[t.StyleProps]
@@ -144,7 +143,7 @@ class Props(t.Data):
     url: str = ''
 
 
-class Base(gws.Object, t.LayerObject):
+class Base(t.LayerObject, gws.Object):
     def __init__(self):
         super().__init__()
 
@@ -160,6 +159,7 @@ class Base(gws.Object, t.LayerObject):
 
         self.description_template: t.TemplateObject = None
         self.feature_format: t.FormatObject = None
+        self.data_model: t.DataModelObject = None
 
         self.title = None
 
@@ -176,12 +176,6 @@ class Base(gws.Object, t.LayerObject):
         self.services = []
         self.geometry_type = None
 
-    @property
-    def data_model(self):
-        d = self.var('dataModel')
-        if d:
-            return d
-        return t.DataModel()
 
     @property
     def has_search(self):
@@ -257,6 +251,10 @@ class Base(gws.Object, t.LayerObject):
             for cfg in p.providers:
                 self.add_child('gws.ext.search.provider', cfg)
 
+        p = self.var('dataModel')
+        if p:
+            self.data_model = self.add_child('gws.common.datamodel', p)
+
         self.ows_services_enabled = set(self.var('ows.servicesEnabled', default=[]))
         self.ows_services_disabled = set(self.var('ows.servicesDisabled', default=[]))
 
@@ -326,12 +324,6 @@ class Base(gws.Object, t.LayerObject):
             with open(self.legend_url, 'rb') as fp:
                 return fp.read()
         return gws.gis.ows.request.raw_get(self.legend_url).content
-
-    def get_features(self, bbox, limit=0):
-        return []
-
-    def modify_features(self, operation, feature_params):
-        pass
 
     def ows_enabled(self, service):
         if service.name in self.ows_services_disabled:
@@ -492,13 +484,24 @@ class ImageTile(Image):
 
 
 class Vector(Base):
+    def __init__(self):
+        super().__init__()
+        self.edit_data_model: t.DataModelObject = None
+
+    def configure(self):
+        super().configure()
+
+        p = self.var('editDataModel')
+        if p:
+            self.edit_data_model = self.add_child('gws.common.datamodel', p)
+
+
     @property
     def props(self):
         return super().props.extend({
-            'dataModel': self.data_model,
-            'editStyle': self.var('editStyle'),
             'loadingStrategy': self.var('loadingStrategy'),
             'style': self.var('style'),
+            'editStyle': self.var('editStyle'),
             'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetFeatures/layerUid/' + self.uid,
         })
 

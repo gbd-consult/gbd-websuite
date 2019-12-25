@@ -131,8 +131,8 @@ class Connection:
         r = self.select_one(sql, params)
         return list(r.values())[0] if r else None
 
-    def count(self, table):
-        return self.select_value(f'SELECT COUNT(*) FROM {self.quote_table(table)}')
+    def count(self, table_name):
+        return self.select_value(f'SELECT COUNT(*) FROM {self.quote_table(table_name)}')
 
     def exec(self, sql, params=None):
         with self.conn.cursor() as cur:
@@ -152,29 +152,6 @@ class Connection:
             self.exec('ROLLBACK')
             raise
 
-    def crs_for_column(self, table, column):
-        schema, table = self.schema_and_table(table)
-        try:
-            r = self.select_one(
-                'SELECT Find_SRID(%s, %s, %s) AS n',
-                [schema, table, column])
-            return 'EPSG:%s' % r['n']
-        except Error:
-            gws.log.error(f'crs_for_column({schema}, {table}, {column}) FAILED')
-            raise
-
-    def geometry_type_for_column(self, table, column):
-        schema, table = self.schema_and_table(table)
-        r = self.select_one('''
-            SELECT type 
-            FROM geometry_columns 
-            WHERE 
-                f_table_schema = %s
-                AND f_table_name = %s 
-                AND f_geometry_column = %s    
-        ''', [schema, table, column])
-        return str(r['type']).upper()
-
     def table_names(self, schema):
         rs = self.select('''
             SELECT table_name 
@@ -184,28 +161,33 @@ class Connection:
 
         return [r['table_name'] for r in rs]
 
-    def geometry_columns(self, table):
-        schema, table = self.schema_and_table(table)
+    def columns(self, table_name):
+        schema, tab = self.schema_and_table(table_name)
+
+        # NB: assume postgis installed and working
+
         rs = self.select('''
             SELECT f_geometry_column, srid, type 
             FROM geometry_columns
-            WHERE 
-                f_table_schema = %s
-                AND f_table_name = %s 
-        ''', [schema, table])
+            WHERE f_table_schema = %s AND f_table_name = %s 
+        ''', [schema, tab])
 
-        cols = {}
-
-        for r in rs:
-            cols[r['f_geometry_column']] = {
+        geom_cols = {
+            r['f_geometry_column']: {
                 'type': r['type'].lower(),
                 'crs': 'EPSG:%s' % r['srid']
             }
+            for r in rs
+        }
 
-        return cols
+        rs = self.select('''
+            SELECT ccu.column_name AS name
+            FROM information_schema.table_constraints AS tc
+            JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
+            WHERE tc.table_schema = %s AND tc.table_name = %s
+        ''', [schema, tab])
 
-    def columns(self, table):
-        schema, tab = self.schema_and_table(table)
+        key_cols = set(r['name'] for r in rs)
 
         rs = self.select('''
             SELECT column_name, data_type, udt_name 
@@ -213,24 +195,34 @@ class Connection:
                 WHERE table_schema = %s AND table_name = %s
         ''', [schema, tab])
 
-        cols = {}
+        cols = []
 
         for r in rs:
-            dt = (r['udt_name'] if r['data_type'] == 'USER-DEFINED' else r['data_type']).lower()
-            cols[r['column_name']] = {
-                'name': r['column_name'],
-                'type': _type_map.get(dt, 'str'),
-                'native_type': dt.lower(),
+            name = r['column_name']
+            col = {
+                'name': name,
+                'is_key': name in key_cols,
             }
+            if name in geom_cols:
+                col['crs'] = geom_cols[name]['crs']
+                col['native_type'] = geom_cols[name]['type']
+                col['type'] = col['native_type']
+                col['is_geometry'] = True
+            else:
+                col['native_type'] = (r['udt_name'] if r['data_type'].upper() == 'USER-DEFINED' else r['data_type']).lower()
+                col['type'] = _type_map.get(col['native_type'], 'str')
+                col['is_geometry'] = False
+
+            cols.append(col)
 
         return cols
 
-    def insert_one(self, table, key_column, data, with_id=False):
+    def insert_one(self, table_name, key_column, rec: dict, with_id=False):
         fields = []
         placeholders = []
         values = []
 
-        for k, v in data.items():
+        for k, v in rec.items():
             fields.append(self.quote_ident(k))
             if isinstance(v, (list, tuple)):
                 placeholders.append(v[0])
@@ -240,7 +232,7 @@ class Connection:
                 values.append(v)
 
         sql = f'''
-            INSERT INTO {self.quote_table(table)} 
+            INSERT INTO {self.quote_table(table_name)} 
             ({_comma(fields)}) 
             VALUES ({_comma(placeholders)})
         '''
@@ -253,11 +245,15 @@ class Connection:
             if with_id:
                 return cur.fetchone()[0]
 
-    def update(self, table, key_column, key_value, data):
+    def update(self, table_name, key_column, rec: dict):
         values = []
         sets = []
+        uid = None
 
-        for k, v in data.items():
+        for k, v in rec.items():
+            if k == key_column:
+                uid = v
+                continue
             if isinstance(v, (list, tuple)):
                 ph = v[0]
                 values.extend(v[1:])
@@ -267,60 +263,63 @@ class Connection:
 
             sets.append(f'{self.quote_ident(k)}={ph}')
 
-        values.append(key_value)
+        if uid is None:
+            raise Error(f'no primary key found for update')
+
+        values.append(uid)
 
         sql = f'''
-            UPDATE {self.quote_table(table)} 
+            UPDATE {self.quote_table(table_name)} 
             SET {_comma(sets)}
             WHERE {self.quote_ident(key_column)}=%s
         '''
 
         return self.exec(sql, values)
 
-    def delete_many(self, table, key_column, key_values):
-        values = list(key_values)
+    def delete_many(self, table_name, key_column, uids):
+        values = list(uids)
         if not values:
             return
 
         placeholders = _comma('%s' for _ in values)
         sql = f'''
-            DELETE FROM {self.quote_table(table)} 
+            DELETE FROM {self.quote_table(table_name)} 
             WHERE {self.quote_ident(key_column)} IN ({placeholders})
         '''
 
         return self.exec(sql, values)
 
-    def batch_insert(self, table, data, on_conflict=None, page_size=100):
-        if not data:
+    def batch_insert(self, table_name, recs, on_conflict=None, page_size=100):
+        if not recs:
             return
-        all_cols = self.columns(table)
+        all_cols = self.columns(table_name)
 
         cols = set()
-        for d in data:
-            cols.update(d)
+        for rec in recs:
+            cols.update(rec)
         cols = sorted(c for c in cols if c in all_cols)
 
         template = '(' + _comma('%s' for _ in cols) + ')'
         colnames = _comma(self.quote_ident(c) for c in cols)
 
-        sql = f'INSERT INTO {self.quote_table(table)} ({colnames}) VALUES %s'
+        sql = f'INSERT INTO {self.quote_table(table_name)} ({colnames}) VALUES %s'
         if on_conflict:
             sql += f' ON CONFLICT {on_conflict}'
 
         def seq():
-            for d in data:
-                yield [d.get(c) for c in cols]
+            for rec in recs:
+                yield [rec.get(c) for c in cols]
 
         with self.conn.cursor() as cur:
             return psycopg2.extras.execute_values(cur, sql, seq(), template, page_size)
 
-    def schema_and_table(self, table):
-        if '.' in table:
-            return table.split('.', 1)
-        return 'public', table
+    def schema_and_table(self, table_name):
+        if '.' in table_name:
+            return table_name.split('.', 1)
+        return 'public', table_name
 
-    def user_can(self, priv, table):
-        s, tab = self.schema_and_table(table)
+    def user_can(self, privilege, table_name):
+        schema, tab = self.schema_and_table(table_name)
         return self.select_value('''
             SELECT COUNT(*) FROM information_schema.role_table_grants 
                 WHERE 
@@ -328,10 +327,10 @@ class Connection:
                     AND table_name = %s
                     AND grantee = %s
                     AND privilege_type = %s 
-        ''', [s, tab, self.params['user'], priv])
+        ''', [schema, tab, self.params['user'], privilege])
 
-    def quote_table(self, table, schema=None):
-        s, tab = self.schema_and_table(table)
+    def quote_table(self, table_name, schema=None):
+        s, tab = self.schema_and_table(table_name)
         return self.quote_ident(schema or s) + '.' + self.quote_ident(tab)
 
     def quote_ident(self, s):

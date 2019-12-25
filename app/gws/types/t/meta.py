@@ -1,7 +1,7 @@
 ### Metadata.
 
 from .base import List, Optional, Date, Url
-from .data import Data
+from ..data import Data
 
 class MetaContact(Data):
     """Contact metadata configuration"""

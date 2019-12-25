@@ -487,7 +487,7 @@ class AlkisFeatureList extends gws.View<AlkisViewProps> {
 
         let content = f => <gws.ui.Link
             whenTouched={() => master.showDetails(f)}
-            content={f.props.teaser}
+            content={f.elements.teaser}
         />;
 
         return <gws.components.feature.List
@@ -605,7 +605,7 @@ class AlkisDetailsTab extends gws.View<AlkisViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <gws.components.Description content={feature.props.description}/>
+                <gws.components.Description content={feature.elements.description}/>
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
@@ -1077,7 +1077,7 @@ class AlkisController extends gws.Controller {
                     mode: 'draw zoom',
                 },
                 infoboxContent: <gws.components.Infobox
-                    controller={this}>{features[0].props.teaser}</gws.components.Infobox>,
+                    controller={this}>{features[0].elements.teaser}</gws.components.Infobox>,
             });
 
     }

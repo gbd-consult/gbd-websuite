@@ -182,10 +182,10 @@ class SelectController extends gws.Controller {
     }
 
     featureTitle(feature: gws.types.IMapFeature) {
-        if (feature.props.title)
-            return feature.props.title;
-        if (feature.props.category)
-            return feature.props.category;
+        if (feature.elements.title)
+            return feature.elements.title;
+        if (feature.elements.category)
+            return feature.elements.category;
         return "...";
     }
 

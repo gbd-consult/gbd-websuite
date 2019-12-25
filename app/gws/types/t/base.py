@@ -3,7 +3,7 @@
 ### Basic types
 
 # noinspection PyUnresolvedReferences
-from typing import Optional, List, Dict, Tuple, Union, cast
+from typing import Optional, List, Dict, Tuple, Union, Any, cast
 
 
 # NB: we cannot use the standard Enum, because after "class Color(Enum): RED = 1"

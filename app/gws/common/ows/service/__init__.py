@@ -282,8 +282,8 @@ def inspire_nodes(nodes):
     return [n for n in nodes if n.tag_name in inspire.TAGS]
 
 
-def feature_node_list(rd: RequestData, features):
-    return [_feature_node(rd, f) for f in features]
+def feature_node_list(rd: RequestData, results: t.List[t.SearchResult]):
+    return [_feature_node(rd, r) for r in results]
 
 
 def lonlat_extent(extent, crs):
@@ -417,10 +417,10 @@ def _layer_node(rd: RequestData, layer, sub_nodes=None) -> LayerCapsNode:
     })
 
 
-def _feature_node(rd: RequestData, feature: t.Feature):
+def _feature_node(rd: RequestData, result: t.SearchResult):
     gs = None
-    if feature.shape:
-        gs = gws.gis.gml.shape_to_tag(feature.shape, precision=rd.project.map.coordinate_precision)
+    if result.feature.shape:
+        gs = gws.gis.gml.shape_to_tag(result.feature.shape, precision=rd.project.map.coordinate_precision)
 
     atts = feature.attributes or {}
 

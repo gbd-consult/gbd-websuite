@@ -54,6 +54,9 @@ class _Generator:
         if tname == 'bool':
             return 'boolean'
 
+        if tname.endswith('.Any'):
+            return 'any'
+
         if tname not in self.types:
             return '_' + tname
 
@@ -72,8 +75,13 @@ class _Generator:
                 % (t.doc, name, ' extends ' + ext if ext else '', props))
 
         elif t.type == 'list':
-            b = self.gen(t.base)
+            b = self.gen(t.bases[0])
             self.ifaces.append('export type %s = Array<%s>;' % (name, b))
+
+        elif t.type == 'dict':
+            k = self.gen(t.bases[0])
+            v = self.gen(t.bases[1])
+            self.ifaces.append('export type %s = {[key: %s]: %s};' % (name, k, v))
 
         elif t.type == 'tuple':
             b = _comma(self.gen(b) for b in t.bases)

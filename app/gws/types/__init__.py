@@ -1,5 +1,7 @@
 # noinspection PyUnresolvedReferences
-from typing import Optional, List, Dict, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
+# noinspection PyUnresolvedReferences
+from .data import Data, Config, Props
 
 # type: ignore
 
@@ -77,50 +79,6 @@ class Url(str):
     """An http or https URL"""
     pass
 
-# type: ignore
-
-### Data objects
-
-class Data:
-    """Data object."""
-
-    def __init__(self, d=None):
-        if d:
-            for k, v in d.items():
-                setattr(self, str(k), v)
-
-    def set(self, k, value):
-        return setattr(self, k, value)
-
-    def get(self, k, default=None):
-        return getattr(self, k, default)
-
-    def as_dict(self):
-        return vars(self)
-
-    def extend(self, *args):
-        d = {}
-        for a in args:
-            if not isinstance(a, dict):
-                a = a.as_dict() if hasattr(a, 'as_dict') else None
-            if a:
-                d.update(a)
-        vars(self).update(d)
-        return self
-
-    def __repr__(self):
-        return repr(vars(self))
-
-
-class Config(Data):
-    """Configuration base type"""
-    pass
-
-
-class Props(Data):
-    """Properties base type"""
-    pass
-
 ### Basic tree node object.
 
 
@@ -134,7 +92,7 @@ class Object:
     config: Config
     klass: str
     parent: 'Object'
-    root: 'Object'
+    root: 'RootObject'
     uid: str
     props: Props
 
@@ -145,6 +103,12 @@ class Object:
         pass
 
     def configure(self):
+        pass
+
+    def create_object(self, klass, cfg, parent=None) -> 'Object':
+        pass
+
+    def create_shared_object(self, klass, uid, cfg) -> 'Object':
         pass
 
     def var(self, key, default=None, parent=False):
@@ -184,6 +148,58 @@ class RootObject(Object):
     def validate_action(self, category: str, cmd: str, payload: dict) -> Tuple[str, str, dict]:
         pass
 
+# type: ignore
+
+### Dummy classes to support extension typing.
+
+
+class ext:
+    class action:
+        class Config:
+            pass
+
+    class auth:
+        class provider:
+            class Config:
+                pass
+
+    class template:
+        class Config:
+            pass
+
+        class Props:
+            pass
+
+    class db:
+        class provider:
+            class Config:
+                pass
+
+    class layer:
+        class Config:
+            pass
+
+        class Props:
+            pass
+
+    class search:
+        class provider:
+            class Config:
+                pass
+
+    class storage:
+        class Config:
+            pass
+
+    class ows:
+        class provider:
+            class Config:
+                pass
+
+        class service:
+            class Config:
+                pass
+
 
 ### Access rules and configs.
 
@@ -222,6 +238,7 @@ class WithTypeAndAccess(WithType):
 
 
 
+
 class AttributeType(Enum):
     bool = 'bool'
     bytes = 'bytes'
@@ -249,30 +266,39 @@ class AttributeType(Enum):
     geoSurface = 'surface'
 
 
-class AttributeConfig(Config):
-    """Attribute configuration"""
-
-    name: str = ''  #: internal name
-    source: str = ''  #: source attribute
-    title: str = ''  #: display title
-    type: AttributeType = 'str'  #: type
-    value: FormatStr = ''  #: computed value
-
-
 class Attribute(Data):
     name: str
     title: str = ''
-    type: str = 'str'
-    value: str
+    type: AttributeType = 'str'
+    value: Any = None
 
 
-class DataModel:
-    attributes: List[Attribute]
+class DataModelRule(Data):
+    """Attribute conversion rule"""
+
+    name: str = ''  #: target attribute name
+    value: Optional[str]  #: constant value
+    source: str = ''  #: source attribute
+    title: str = ''  #: target attribute display title
+    type: AttributeType = 'str'  #: target attribute type
+    format: FormatStr = ''  #: attribute formatter
+    expression: str = ''  #: attribute formatter
 
 
 class DataModelConfig(Config):
-    """Data model configuration."""
-    attributes: List[AttributeConfig]
+    """Data model."""
+    rules: List[DataModelRule]
+
+
+class DataModelProps(Props):
+    rules: List[DataModelRule]
+
+
+class DataModelObject(Object):
+    rules: List[DataModelRule]
+
+    def apply(self, atts: List['Attribute']) -> List['Attribute']:
+        pass
 
 # type: ignore
 
@@ -333,10 +359,19 @@ class AuthUserProps(Props):
 class SqlTableConfig(Config):
     """SQL database table"""
 
-    geometryColumn: Optional[str]  #: geometry column name
-    keyColumn: str = 'id'  #: primary key column name
     name: str  #: table name
+    geometryColumn: Optional[str]  #: geometry column name
+    keyColumn: Optional[str]  #: primary key column name
     searchColumn: Optional[str]  #: column to be searched for
+
+
+class SqlTable(Data):
+    name: str
+    key_column: str = ''
+    search_column: str = ''
+    geometry_column: str = ''
+    geometry_type: str = ''
+    geometry_crs: Crs = ''
 
 
 class SelectArgs(Data):
@@ -345,9 +380,40 @@ class SelectArgs(Data):
     tolerance: Optional[float]
     shape: Optional['Shape']
     sort: Optional[str]
-    table: SqlTableConfig
-    ids: Optional[List[str]]
+    table: SqlTable
+    uids: Optional[List[str]]
     extraWhere: Optional[str]
+
+
+class SqlTableColumn(Data):
+    name: str
+    type: 'AttributeType'
+    native_type: str
+    crs: Crs
+    is_key: bool
+    is_geometry: bool
+
+
+#: alias:
+SqlTableDescription = Dict[str, SqlTableColumn]
+
+
+class DbProviderObject(Object):
+    pass
+
+
+class SqlProviderObject(DbProviderObject):
+    error: type
+    connect_params: dict
+
+    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List['Feature']:
+        pass
+
+    def edit_operation(self, operation: str, table: SqlTable, features: List['Feature']) -> List['Feature']:
+        pass
+
+    def describe(self, table: SqlTable) -> SqlTableDescription:
+        pass
 
 
 class StorageEntry(Data):
@@ -365,82 +431,9 @@ class StorageObject(Object):
     def dir(self, user: 'AuthUser') -> List[StorageEntry]:
         return []
 
-
-class SqlProviderObject(Object):
-    error: type
-    connect_params: dict
-
-    def connect(self, extra_connect_params: dict = None):
-        pass
-
-    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List['Feature']:
-        pass
-
-    def insert(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        pass
-
-    def update(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        pass
-
-    def delete(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        pass
-
-    def describe(self, table: SqlTableConfig) -> List['Attribute']:
-        pass
-    
-# type: ignore
-
-### Dummy classes to support extension typing.
-
-
-class ext:
-    class action:
-        class Config:
-            pass
-
-    class auth:
-        class provider:
-            class Config:
-                pass
-
-    class template:
-        class Config:
-            pass
-
-        class Props:
-            pass
-
-    class db:
-        class provider:
-            class Config:
-                pass
-
-    class layer:
-        class Config:
-            pass
-
-        class Props:
-            pass
-
-    class search:
-        class provider:
-            class Config:
-                pass
-
-    class storage:
-        class Config:
-            pass
-
-    class ows:
-        class provider:
-            class Config:
-                pass
-
-        class service:
-            class Config:
-                pass
-
 ### Shapes and features.
+
+
 
 
 
@@ -449,10 +442,10 @@ class ext:
 
 import shapely.geometry.base
 
+
 class ShapeProps(Props):
     geometry: dict
     crs: str
-
 
 
 class Shape:
@@ -470,28 +463,28 @@ class Shape:
 
 
 class FeatureProps(Data):
-    attributes: Optional[dict]
-    category: str = ''
-    description: str = ''
-    label: str = ''
+    uid: str = ''
+    attributes: List['Attribute'] = ''
+    elements: dict = {}
+    layerUid: str = ''
     shape: Optional['ShapeProps']
     style: Optional['StyleProps']
-    teaser: str = ''
-    title: str = ''
-    uid: Optional[str]
+
+
+class FeatureConvertor:
+    feature_format: 'FormatObject'
+    data_model: 'DataModelObject'
 
 
 class Feature:
-    attributes: dict
-    description: str
-    category: str
-    label: str
+    attributes: List['Attribute']
+    elements: dict
+    convertor: FeatureConvertor
+    layer: 'LayerObject'
     props: 'FeatureProps'
     shape: 'Shape'
     shape_props: 'ShapeProps'
     style: 'StyleProps'
-    teaser: str
-    title: str
     uid: str
 
     def transform(self, to_crs):
@@ -506,10 +499,13 @@ class Feature:
         """Render the feature as GeoJSON"""
         pass
 
-    def apply_format(self, fmt: 'FormatObject', context: dict = None):
+    def set_default_style(self, style):
         pass
-### Maps and layers
 
+    def convert(self, target_crs: Crs, convertor: 'FeatureConvertor' = None) -> 'Feature':
+        pass
+
+### Maps and layers
 
 
 
@@ -539,9 +535,8 @@ class LayerObject(Object):
     extent: Extent
     resolutions: List[float]
 
-    data_model: DataModel
+    data_model: 'DataModelObject'
     feature_format: 'FormatObject'
-
 
     def mapproxy_config(self, mc):
         pass
@@ -558,22 +553,13 @@ class LayerObject(Object):
     def render_legend(self):
         pass
 
-    def get_features(self, bbox, limit) -> List[Feature]:
+    def get_features(self, bbox, limit) -> List['Feature']:
         return []
 
     def edit_access(self, user: 'AuthUser'):
         pass
 
-    def add_features(self, features: List['FeatureProps']):
-        pass
-
-    def update_features(self, features: List['FeatureProps']):
-        pass
-
-    def delete_features(self, features: List['FeatureProps']):
-        pass
-
-    def search(self, provider: 'SearchProviderObject', args: 'SearchArguments') -> List['SearchResult']:
+    def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['Feature']:
         return []
 
     def ows_enabled(self, service: 'OwsServiceObject') -> bool:
@@ -588,6 +574,7 @@ class MapObject(Object):
     extent: Extent
     resolutions: List[float]
     coordinate_precision: int
+
 
 class ProjectObject(Object):
     map: MapObject
@@ -847,6 +834,7 @@ class Request:
 
 
 
+
 class SearchArguments(Data):
     axis: str
     bbox: Extent
@@ -864,24 +852,17 @@ class SearchArguments(Data):
     tolerance: int
 
 
-class SearchResult(Data):
-    feature: 'Feature'
-    layer: 'LayerObject'
-    provider: 'SearchProviderObject'
-
-
 class SearchProviderObject(Object):
-    feature_format: 'FormatObject'
     geometry_required: bool
     keyword_required: bool
-    title: str
-    type: str
+    data_model: 'DataModelObject'
+    feature_format: 'FormatObject'
 
     def can_run(self, args: SearchArguments) -> bool:
-        return False
+        pass
 
     def run(self, layer: Optional['LayerObject'], args: SearchArguments) -> List['Feature']:
-        return []
+        pass
 
     def context_shape(self, args: SearchArguments):
         pass
@@ -940,7 +921,7 @@ class TemplateProps(Props):
     qualityLevels: List[TemplateQualityLevel]
     mapHeight: int
     mapWidth: int
-    dataModel: DataModel
+    dataModel: 'DataModelProps'
 
 
 class TemplateRenderOutput(Data):
@@ -991,25 +972,24 @@ class MapRenderOutput(Data):
 
 
 class TemplateObject(Object):
-    data_model: DataModel
+    data_model: 'DataModelObject'
     map_size: List[int]
     page_size: List[int]
 
     def dpi_for_quality(self, quality: int) -> int:
         pass
 
-    def render(self, context: dict, render_output: MapRenderOutput = None,
-               out_path: str = None, format: str = None) -> TemplateRenderOutput:
+    def render(self, context: dict, render_output: MapRenderOutput = None, out_path: str = None, format: str = None) -> TemplateRenderOutput:
         pass
 
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:
         pass
 
-    def normalize_user_data(self, data: dict) -> dict:
+    def normalize_user_data(self, attributes: List['Attribute']) -> List['Attribute']:
         pass
 
 
-class FormatConfig(Config):
+class FeatureFormatConfig(Config):
     """Feature format"""
 
     description: Optional[ext.template.Config]  #: template for feature descriptions
@@ -1019,16 +999,18 @@ class FormatConfig(Config):
     title: Optional[ext.template.Config]  #: feature title
 
 
-class FormatObject(Object):
-    category: TemplateObject
-    description: TemplateObject
-    label: TemplateObject
-    teaser: TemplateObject
-    title: TemplateObject
+class LayerFormatConfig(Config):
+    """Layer format"""
 
-    def apply(self, feature: 'Feature', context: dict = None):
-        """Format a feature."""
+    description: Optional[ext.template.Config]  #: template for the layer description
+
+
+class FormatObject(Object):
+    templates: Dict[str, TemplateObject]
+
+    def apply(self, context: dict) -> dict:
         pass
+
 
 ### Application
 

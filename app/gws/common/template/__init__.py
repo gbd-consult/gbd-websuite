@@ -7,7 +7,7 @@ import gws.types as t
 class Object(gws.Object, t.TemplateObject):
     def configure(self):
         super().configure()
-        self.data_model = self.var('dataModel')
+        self.data_model = self.add_child('gws.common.datamodel', self.var('dataModel'))
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')
@@ -31,7 +31,7 @@ class Object(gws.Object, t.TemplateObject):
     def normalize_user_data(self, data: dict) -> dict:
         if not data or not self.data_model:
             return {}
-        return gws.common.datamodel.apply(self.data_model, data)
+        return self.data_model.apply(data)
 
 
 # @TODO template types should be configurable
@@ -69,7 +69,7 @@ def builtin_config(name):
     # @TODO: do not hardcode template type
 
     if name == 'feature_format':
-        return t.FormatConfig({
+        return t.FeatureFormatConfig({
             'description': builtin_config('feature_description'),
             'teaser': builtin_config('feature_teaser')
         })

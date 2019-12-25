@@ -1,33 +1,21 @@
 import gws
 import gws.types as t
 
-_TPL_KEYS = [
-    'category',
-    'description',
-    'label',
-    'teaser',
-    'title',
-]
-
 
 class Object(gws.Object, t.FormatObject):
+    def __init__(self):
+        super().__init__()
+        self.templates = {}
+
     def configure(self):
         super().configure()
 
-        for key in _TPL_KEYS:
-            p = self.var(key)
+        for key, p in self.config.as_dict().items():
             if p:
-                setattr(self, key, self.add_child('gws.ext.template', p))
+                self.templates[key] = self.add_child('gws.ext.template', p)
 
-    def apply(self, feature: t.Feature, context: dict = None):
-        ctx = gws.extend(
-            {'feature': feature, 'attributes': feature.attributes},
-            context,
-            feature.attributes)
-        for key in _TPL_KEYS:
-            tpl = getattr(self, key, None)
-            if tpl:
-                res = tpl.render(dict(ctx)).content
-                setattr(feature, key, res)
-
-        return self
+    def apply(self, context: dict) -> dict:
+        res = {}
+        for key, tpl in self.templates.items():
+            res[key] = tpl.render(dict(context)).content
+        return res

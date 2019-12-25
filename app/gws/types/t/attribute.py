@@ -2,8 +2,9 @@
 
 ### Attributes and data models.
 
-from .base import List, Enum, FormatStr
-from .data import Data, Config
+from .base import Any, List, Optional, Enum, FormatStr
+from ..data import Data, Config, Props
+from .object import Object
 
 
 class AttributeType(Enum):
@@ -33,27 +34,36 @@ class AttributeType(Enum):
     geoSurface = 'surface'
 
 
-class AttributeConfig(Config):
-    """Attribute configuration"""
-
-    name: str = ''  #: internal name
-    source: str = ''  #: source attribute
-    title: str = ''  #: display title
-    type: AttributeType = 'str'  #: type
-    value: FormatStr = ''  #: computed value
-
-
 class Attribute(Data):
     name: str
     title: str = ''
-    type: str = 'str'
-    value: str
+    type: AttributeType = 'str'
+    value: Any = None
 
 
-class DataModel:
-    attributes: List[Attribute]
+class DataModelRule(Data):
+    """Attribute conversion rule"""
+
+    name: str = ''  #: target attribute name
+    value: Optional[str]  #: constant value
+    source: str = ''  #: source attribute
+    title: str = ''  #: target attribute display title
+    type: AttributeType = 'str'  #: target attribute type
+    format: FormatStr = ''  #: attribute formatter
+    expression: str = ''  #: attribute formatter
 
 
 class DataModelConfig(Config):
-    """Data model configuration."""
-    attributes: List[AttributeConfig]
+    """Data model."""
+    rules: List[DataModelRule]
+
+
+class DataModelProps(Props):
+    rules: List[DataModelRule]
+
+
+class DataModelObject(Object):
+    rules: List[DataModelRule]
+
+    def apply(self, atts: List['Attribute']) -> List['Attribute']:
+        pass

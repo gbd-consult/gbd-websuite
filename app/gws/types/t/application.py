@@ -1,7 +1,7 @@
 ### Application
 
 from .base import Optional, List, Regex
-from .data import Config
+from ..data import Config
 from .db import StorageObject
 from .object import Object
 from .template import TemplateObject

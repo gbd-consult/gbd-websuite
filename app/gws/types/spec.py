@@ -3,7 +3,7 @@
 import os
 import re
 import gws.tools.misc as misc
-from .t.data import Data
+from .data import Data
 
 
 class Error(Exception):
@@ -45,7 +45,10 @@ class _Reader:
         return self.handlers[s['type']](self, val, s)
 
 
-## type handlers    
+## type handlers
+
+def _read_any(rd, val, spec):
+    return val
 
 def _read_bool(rd, val, spec):
     if rd.strict:
@@ -160,7 +163,7 @@ def _read_list(rd, val, spec):
     for n, v in enumerate(val):
         rd.keys.append(n)
         try:
-            res.append(rd.read(v, spec['base']))
+            res.append(rd.read(v, spec['bases'][0]))
         finally:
             rd.keys.pop()
 
@@ -304,6 +307,7 @@ def _to_string(x):
 ##
 
 _HANDLERS = {
+    'any': _read_any,
     'bool': _read_bool,
     'bytes': _read_bytes,
     'dict': _read_dict,

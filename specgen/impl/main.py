@@ -1,3 +1,4 @@
+import re
 import os
 import json
 from . import normalizer, parser, spec, typescript, maketypes
@@ -20,18 +21,22 @@ class _Runner:
     def run(self):
         maketypes.run(self.source_dir)
 
+        paths = _find_files(self.source_dir, 'py$')
+        paths = [p for p in paths if 'types/t' not in p]
+
         try:
-            self.units = parser.parse(self.source_dir)
+            self.units = parser.parse(paths)
         except parser.Error as e:
             print('PARSE ERROR: %s' % e.args[0])
-            print('File "%s", line %s' % (e.args[1], e.args[2]))
             print('-' * 40)
             raise
 
+        # for p in sorted(p.name for p in self.units):
+        #     print(p)
+        # print(_json(self.units))
 
         self.units = normalizer.normalize(self.units)
 
-        ## print(_json(self.units))
 
         config_root = 'gws.common.application.Config'
         all_methods = spec.for_methods(self.units)
@@ -117,3 +122,18 @@ def _arg_and_return_spec(units, method_specs, flatten):
 
 def _json(r):
     return json.dumps(r, indent=4, sort_keys=True, ensure_ascii=False, default=vars)
+
+
+def _find_files(dirname, pattern):
+    for fname in os.listdir(dirname):
+        if fname.startswith('.'):
+            continue
+
+        path = os.path.join(dirname, fname)
+
+        if os.path.isdir(path):
+            yield from _find_files(path, pattern)
+            continue
+
+        if re.search(pattern, fname):
+            yield path

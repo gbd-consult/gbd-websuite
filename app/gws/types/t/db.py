@@ -2,21 +2,30 @@
 
 ### Database-related.
 
-from .base import Optional, List
-from .data import Config, Data
+from .base import Optional, List, Dict, Crs
+from ..data import Config, Data
 from .auth import AuthUser
 from .object import Object
 from .feature import Shape, Feature
-from .attribute import Attribute
+from .attribute import Attribute, AttributeType
 
 
 class SqlTableConfig(Config):
     """SQL database table"""
 
-    geometryColumn: Optional[str]  #: geometry column name
-    keyColumn: str = 'id'  #: primary key column name
     name: str  #: table name
+    geometryColumn: Optional[str]  #: geometry column name
+    keyColumn: Optional[str]  #: primary key column name
     searchColumn: Optional[str]  #: column to be searched for
+
+
+class SqlTable(Data):
+    name: str
+    key_column: str = ''
+    search_column: str = ''
+    geometry_column: str = ''
+    geometry_type: str = ''
+    geometry_crs: Crs = ''
 
 
 class SelectArgs(Data):
@@ -25,9 +34,40 @@ class SelectArgs(Data):
     tolerance: Optional[float]
     shape: Optional['Shape']
     sort: Optional[str]
-    table: SqlTableConfig
-    ids: Optional[List[str]]
+    table: SqlTable
+    uids: Optional[List[str]]
     extraWhere: Optional[str]
+
+
+class SqlTableColumn(Data):
+    name: str
+    type: 'AttributeType'
+    native_type: str
+    crs: Crs
+    is_key: bool
+    is_geometry: bool
+
+
+#: alias:
+SqlTableDescription = Dict[str, SqlTableColumn]
+
+
+class DbProviderObject(Object):
+    pass
+
+
+class SqlProviderObject(DbProviderObject):
+    error: type
+    connect_params: dict
+
+    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List['Feature']:
+        pass
+
+    def edit_operation(self, operation: str, table: SqlTable, features: List['Feature']) -> List['Feature']:
+        pass
+
+    def describe(self, table: SqlTable) -> SqlTableDescription:
+        pass
 
 
 class StorageEntry(Data):
@@ -44,27 +84,3 @@ class StorageObject(Object):
 
     def dir(self, user: 'AuthUser') -> List[StorageEntry]:
         return []
-
-
-class SqlProviderObject(Object):
-    error: type
-    connect_params: dict
-
-    def connect(self, extra_connect_params: dict = None):
-        pass
-
-    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List['Feature']:
-        pass
-
-    def insert(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        pass
-
-    def update(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        pass
-
-    def delete(self, table: SqlTableConfig, recs: List[dict]) -> List[str]:
-        pass
-
-    def describe(self, table: SqlTableConfig) -> List['Attribute']:
-        pass
-    

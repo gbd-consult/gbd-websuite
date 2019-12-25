@@ -55,7 +55,6 @@ class TypeSpec(Spec):
     def __init__(self, **kwargs):
         super().__init__()
 
-        self.base = ''
         self.bases = []
         self.values = []
         self.target = ''

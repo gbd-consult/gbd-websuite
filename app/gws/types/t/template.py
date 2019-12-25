@@ -1,8 +1,8 @@
 ### Templates, renderers and formats.
 
-from .base import List, Optional, Point, Extent, Size, FilePath
-from .data import Config, Data, Props
-from .attribute import DataModel, DataModelConfig
+from .base import List, Optional, Dict, Point, Extent, Size, FilePath
+from ..data import Config, Data, Props
+from .attribute import Attribute, DataModelObject, DataModelConfig, DataModelProps
 from .object import Object
 from .ext import ext
 from .feature import Feature
@@ -33,7 +33,7 @@ class TemplateProps(Props):
     qualityLevels: List[TemplateQualityLevel]
     mapHeight: int
     mapWidth: int
-    dataModel: DataModel
+    dataModel: 'DataModelProps'
 
 
 class TemplateRenderOutput(Data):
@@ -84,25 +84,24 @@ class MapRenderOutput(Data):
 
 
 class TemplateObject(Object):
-    data_model: DataModel
+    data_model: 'DataModelObject'
     map_size: List[int]
     page_size: List[int]
 
     def dpi_for_quality(self, quality: int) -> int:
         pass
 
-    def render(self, context: dict, render_output: MapRenderOutput = None,
-               out_path: str = None, format: str = None) -> TemplateRenderOutput:
+    def render(self, context: dict, render_output: MapRenderOutput = None, out_path: str = None, format: str = None) -> TemplateRenderOutput:
         pass
 
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:
         pass
 
-    def normalize_user_data(self, data: dict) -> dict:
+    def normalize_user_data(self, attributes: List['Attribute']) -> List['Attribute']:
         pass
 
 
-class FormatConfig(Config):
+class FeatureFormatConfig(Config):
     """Feature format"""
 
     description: Optional[ext.template.Config]  #: template for feature descriptions
@@ -112,13 +111,15 @@ class FormatConfig(Config):
     title: Optional[ext.template.Config]  #: feature title
 
 
-class FormatObject(Object):
-    category: TemplateObject
-    description: TemplateObject
-    label: TemplateObject
-    teaser: TemplateObject
-    title: TemplateObject
+class LayerFormatConfig(Config):
+    """Layer format"""
 
-    def apply(self, feature: 'Feature', context: dict = None):
-        """Format a feature."""
+    description: Optional[ext.template.Config]  #: template for the layer description
+
+
+class FormatObject(Object):
+    templates: Dict[str, TemplateObject]
+
+    def apply(self, context: dict) -> dict:
         pass
+

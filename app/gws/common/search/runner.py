@@ -8,51 +8,35 @@ class _LimitExceeded(Exception):
     pass
 
 
-def run(req, args: t.SearchArguments) -> t.List[t.SearchResult]:
-    # layer-provider-feature triples
-    lpf = []
-
+def run(req, args: t.SearchArguments) -> t.List[t.Feature]:
     total_limit = args.limit
-    used_layers = set()
+    used_layer_ids = set()
+    features: t.List[t.Feature] = []
+    prov: provider.Object
 
     try:
         if args.layers:
             for layer in args.layers:
-                used_layers.add(layer.uid)
+                used_layer_ids.add(layer.uid)
                 for prov in layer.get_children('gws.ext.search.provider'):
-                    _run(req, layer, t.cast(provider.Object, prov), args, total_limit, lpf)
+                    _run(req, layer, prov, args, total_limit, features)
 
             for layer in args.layers:
                 for par in _parents(layer):
-                    if par.uid not in used_layers:
-                        used_layers.add(par.uid)
+                    if par.uid not in used_layer_ids:
+                        used_layer_ids.add(par.uid)
                         gws.log.debug(f'search parent={par.uid} for={layer.uid}')
                         for prov in par.get_children('gws.ext.search.provider'):
-                            _run(req, par, t.cast(provider.Object, prov), args, total_limit, lpf)
+                            _run(req, par, prov, args, total_limit, features)
 
         if args.project:
             for prov in args.project.get_children('gws.ext.search.provider'):
-                _run(req, None, t.cast(provider.Object, prov), args, total_limit, lpf)
+                _run(req, None, prov, args, total_limit, features)
 
     except _LimitExceeded:
         pass
 
-    results = []
-
-    for layer, prov, feature in lpf[:total_limit]:
-        if not feature.category:
-            if prov and prov.title:
-                feature.category = prov.title
-            elif layer and layer.title:
-                feature.category = layer.title
-        feature.transform(args.crs)
-        results.append(t.SearchResult({
-            'feature': feature,
-            'provider': prov,
-            'layer': layer
-        }))
-
-    return results
+    return features[:total_limit]
 
 
 def _parents(layer):
@@ -64,8 +48,8 @@ def _parents(layer):
     return ps
 
 
-def _run(req, layer, prov: provider.Object, args: t.SearchArguments, total_limit, lpf):
-    args.limit = total_limit - len(lpf)
+def _run(req, layer, prov: provider.Object, args: t.SearchArguments, total_limit, features):
+    args.limit = total_limit - len(features)
     if args.limit <= 0:
         raise _LimitExceeded()
 
@@ -81,13 +65,16 @@ def _run(req, layer, prov: provider.Object, args: t.SearchArguments, total_limit
         return
 
     try:
-        features = prov.run(layer, args) or []
+        fs = prov.run(layer, args) or []
     except Exception:
         gws.log.exception()
         gws.log.debug('SEARCH_FAILED')
         return
 
-    for f in features:
-        lpf.append((layer, prov, f))
+    for f in fs:
+        f.layer = layer
+        f.convertor = layer or prov
 
-    gws.log.debug('SEARCH_END, found=%r', len(features))
+    gws.log.debug('SEARCH_END, found=%r', len(fs))
+
+    features.extend(fs)

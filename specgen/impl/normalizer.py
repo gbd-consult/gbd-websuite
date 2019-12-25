@@ -5,10 +5,12 @@ def normalize(units):
     _check_optional(units)
     _type_unions_from_exts(units)
 
+    _any_kinds(units)
     _list_kinds(units)
     _enum_kinds(units)
     _union_kinds(units)
     _tuple_kinds(units)
+    _dict_kinds(units)
 
     _clean_types(units)
     _clean_global_refs(units)
@@ -27,8 +29,9 @@ def _check_optional(units):
 
     for u in units:
         if u.types and u.types[0].endswith('Optional'):
+            # u.types is [Optional, [SomeType]]
             u.optional = True
-            u.types = u.types[1:]
+            u.types = u.types[1]
         else:
             u.optional = u.default is not None
 
@@ -55,6 +58,22 @@ def _type_unions_from_exts(units):
         ))
 
 
+def _any_kinds(units):
+    # create 'any' kinds from typing.Any
+
+    ls = {}
+
+    for u in units:
+        if u.types and u.types[0].endswith('Any'):
+            tname = u.types[0]
+            ls[tname] = Unit(
+                kind='any',
+                name=tname,
+            )
+
+    units.extend(ls.values())
+
+
 def _list_kinds(units):
     # create explicit 'list' kinds from List types: List[Foo] => FooList
 
@@ -62,14 +81,16 @@ def _list_kinds(units):
 
     for u in units:
         if u.types and u.types[0].endswith('List'):
-            # @TODO list of lists
-            _, base = u.types
-            tname = base + 'List'
+            # u.type is [List, [SomeType]]
+            items = u.types[1]
+            if len(items) > 1:
+                raise ValueError('non-uniform list found', vars(u))
+            tname = items[0] + 'List'
             u.types = [tname]
             ls[tname] = Unit(
                 kind='list',
                 name=tname,
-                bases=[base]
+                bases=[items[0]]
             )
 
     units.extend(ls.values())
@@ -101,13 +122,13 @@ def _union_kinds(units):
 
     for u in units:
         if u.types and u.types[0].endswith('Union'):
-            # u.types is like [Union, tuple, [base, base...]]
-            bases = sorted(u.types[2])
-            tname = _tuple_name(bases)
+            # u.types is like [Union, [item, item...]]
+            items = sorted(set(u.types[1]))
+            tname = _tuple_name(items)
             ls[tname] = Unit(
                 kind='union',
                 name=tname,
-                bases=bases
+                bases=items
             )
             u.types = [tname]
 
@@ -119,15 +140,20 @@ def _tuple_kinds(units):
 
     for u in units:
         if u.types and u.types[0].lower().endswith('tuple'):
-            # u.types is [tuple, [base, base...]]
-            # or ['gws.types.Tuple', 'tuple', [base, base...]]
-
-            bases = u.types[1]
-            if bases == 'tuple':
-                bases = u.types[2]
-
+            # u.types is [tuple, [item, item...]]
             u.kind = 'tuple'
-            u.bases = bases
+            u.bases = u.types[1]
+            u.types = []
+
+
+def _dict_kinds(units):
+    # replace Dict types with 'dict' kinds
+
+    for u in units:
+        if u.types and u.types[0].endswith('Dict'):
+            # u.types is ['gws.types.Dict', [key, val]]
+            u.kind = 'dict'
+            u.bases = u.types[1]
             u.types = []
 
 
@@ -136,7 +162,7 @@ def _clean_types(units):
 
     for u in units:
         if len(u.types) > 1:
-            raise ValueError('mixed type list', vars(u))
+            raise ValueError('invalid type', vars(u))
         u.type = u.types[0] if u.types else ''
 
 
@@ -144,7 +170,6 @@ def _clean_global_refs(units):
     # remove 'core' part from global units
 
     def clean(s):
-        x = s
         if '.' not in s:
             return s
         s = [a for a in s.split('.') if a != 'core']

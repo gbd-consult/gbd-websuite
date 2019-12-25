@@ -1,7 +1,7 @@
 ### Miscellaneous types.
 
 from .base import List, Optional, DirPath
-from .data import Config
+from ..data import Config
 
 class DocumentRootConfig(Config):
     """Base directory for assets"""

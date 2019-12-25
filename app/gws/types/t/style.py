@@ -1,7 +1,7 @@
 ### Styles
 
 from .base import Optional
-from .data import Config, Props
+from ..data import Config, Props
 
 
 class StyleProps(Props):

@@ -148,7 +148,7 @@ class Object(gws.ActionObject):
         features = layer.get_features(bbox, limit)
 
         return GetFeaturesResponse({
-            'features': [f.props for f in features]
+            'features': [f.convert(target_crs=layer.map.crs).props for f in features],
         })
 
     def http_get_bbox(self, req: gws.web.AuthRequest, p: RenderBboxParams) -> t.HttpResponse:

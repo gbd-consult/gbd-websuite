@@ -40,18 +40,12 @@ class Object(gws.ActionObject):
         super().__init__()
         self.limit: int = 0
         self.pixel_tolerance: int = 0
-        self.feature_format: t.FormatObject = None
 
     def configure(self):
         super().configure()
 
         self.limit = self.var('limit')
         self.pixel_tolerance = self.var('pixelTolerance')
-        self.feature_format = self.create_shared_object(
-            'gws.common.format',
-            'default_feature_description',
-            gws.common.template.builtin_config('feature_format')
-        )
 
     def api_find_features(self, req: gws.web.AuthRequest, p: Params) -> Response:
         """Perform a search"""
@@ -61,7 +55,6 @@ class Object(gws.ActionObject):
         args = t.SearchArguments({
             'bbox': p.bbox,
             'crs': project.map.crs,
-            'feature_format': self.feature_format,
             'keyword': (p.keyword or '').strip(),
             'layers': gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids),
             'limit': min(p.limit, self.limit) if p.limit else self.limit,
@@ -71,28 +64,8 @@ class Object(gws.ActionObject):
             'tolerance': self.pixel_tolerance * p.resolution,
         })
 
-        results = gws.common.search.runner.run(req, args)
-        ps = []
-
-        for r in results:
-            fmt = None
-            if r.provider:
-                fmt = r.provider.feature_format
-            if not fmt and r.layer:
-                fmt = r.layer.feature_format
-            if not fmt and self.feature_format:
-                fmt = self.feature_format
-
-            if fmt:
-                r.feature.apply_format(fmt)
-
-            props = r.feature.props
-
-            # security! raw attributes must not be exposed to the client
-            delattr(props, 'attributes')
-
-            ps.append(props)
+        features = gws.common.search.runner.run(req, args)
 
         return Response({
-            'features': ps,
+            'features': [f.convert(target_crs=args.crs).props for f in features],
         })

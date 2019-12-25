@@ -137,12 +137,12 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
         let tpl = this.props.controller.selectedTemplate;
 
         if (tpl && tpl.dataModel) {
-            tpl.dataModel.attributes.forEach(attr => data.push({
-                name: attr.name,
-                title: attr.title || attr.name,
-                value: pd[attr.name] || '',
+            tpl.dataModel.rules.forEach(r => data.push({
+                name: r.name,
+                title: r.title || r.name,
+                value: pd[r.name] || '',
                 editable: true,
-                type: attr.type,
+                type: r.type,
             }));
         }
 

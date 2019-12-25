@@ -296,7 +296,7 @@ class EditController extends gws.Controller {
 
     async saveGeometry(f) {
         let props = {
-            attributes: {},
+            attributes: [],
             uid: f.uid,
             shape: f.shape
         };
@@ -312,11 +312,7 @@ class EditController extends gws.Controller {
     }
 
     async saveForm(f: gws.types.IMapFeature, data: Array<gws.components.sheet.Attribute>) {
-        let attributes = {};
-
-        data.forEach(attr =>
-            attributes [attr.name] = attr.value
-        );
+        let attributes = data.map(a => ({name: a.name, value: a.value}));
 
         let props = {
             attributes,
@@ -414,29 +410,16 @@ class EditController extends gws.Controller {
     }
 
     featureData(f: gws.types.IMapFeature): Array<gws.components.sheet.Attribute> {
-        let dataModel = this.layer.dataModel,
-            atts = f.props.attributes;
-
-        if (!dataModel) {
-            return Object.keys(atts).map(k => ({
-                name: k,
-                title: k,
-                value: gws.tools.strNoEmpty(atts[k]),
-                editable: true,
-            }));
-        }
-
-        return dataModel.map(a => ({
+        return f.attributes.map(a => ({
             name: a.name,
-            title: a.title,
-            value: (a.name in atts) ? atts[a.name] : '',
-            type: a.type,
+            title: a.title || a.name,
+            value: gws.tools.strNoEmpty(a.value),
             editable: true,
-        }))
+        }));
     }
 
     featureTitle(f: gws.types.IMapFeature) {
-        return f.props.title || (this.__('modEditNewObjectName'));
+        return f.elements.title || (this.__('modEditNewObjectName'));
     }
 
     startTool(name) {

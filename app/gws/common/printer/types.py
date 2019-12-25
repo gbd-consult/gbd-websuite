@@ -2,12 +2,6 @@ import gws.types as t
 import gws.tools.job
 
 
-class PrintFeatureProps(t.Data):
-    label: str = ''
-    shape: t.Optional[t.ShapeProps]
-    style: t.Optional[t.StyleProps]
-
-
 class PrintBitmapItem:
     data: t.Optional[bytes]
     mode: t.Optional[str]
@@ -18,7 +12,7 @@ class PrintBitmapItem:
 
 class PrintItem(t.Data):
     bitmap: t.Optional[PrintBitmapItem]
-    features: t.Optional[t.List[PrintFeatureProps]]
+    features: t.Optional[t.List[t.FeatureProps]]
     subLayers: t.Optional[t.List[str]]
     layerUid: t.Optional[str]
     opacity: t.Optional[float]

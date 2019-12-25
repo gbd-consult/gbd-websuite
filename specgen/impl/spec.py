@@ -87,6 +87,11 @@ class _TypeGenerator:
         if u.kind == 'class':
             return self.klass(u)
 
+        if u.kind == 'any':
+            return TypeSpec(
+                type='any',
+            )
+
         if u.kind == 'union':
             return TypeSpec(
                 type='union',
@@ -102,13 +107,19 @@ class _TypeGenerator:
         if u.kind == 'list':
             return TypeSpec(
                 type='list',
-                base=self.gen(u.bases[0])
+                bases=[self.gen(u.bases[0])]
+            )
+
+        if u.kind == 'dict':
+            return TypeSpec(
+                type='dict',
+                bases=[self.gen(t) for t in u.bases]
             )
 
         if u.kind == 'tuple':
             return TypeSpec(
                 type='tuple',
-                bases=u.bases,
+                bases=[self.gen(t) for t in u.bases]
             )
 
         if u.kind == 'enum':

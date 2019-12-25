@@ -1,7 +1,7 @@
 ### Access rules and configs.
 
 from .base import List, Enum, Optional
-from .data import Config
+from ..data import Config
 
 
 class AccessType(Enum):
