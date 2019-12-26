@@ -34,16 +34,16 @@ def configure_table(target: t.Object, prov: provider.Object) -> t.SqlTable:
     return table
 
 
-def configure_auto_data_model(target: t.Object, prov: provider.Object, table: t.SqlTable) -> t.DataModelObject:
+def configure_auto_data_model(target: t.Object, prov: provider.Object, table: t.SqlTable) -> t.ModelObject:
     rules = []
     for name, col in prov.describe(table).items():
         if col.is_geometry or col.is_key:
             continue
-        rules.append(t.DataModelRule({
+        rules.append(t.ModelRule({
             'title': name,
             'name': name,
             'source': name,
             'type': col.type,
         }))
-    cfg = t.DataModelConfig({'rules': rules})
-    return t.cast(t.DataModelObject, target.create_object('gws.common.datamodel', cfg))
+    cfg = t.ModelConfig({'rules': rules})
+    return t.cast(t.ModelObject, target.create_object('gws.common.model', cfg))

@@ -89,7 +89,7 @@ class BaseConfig(t.WithTypeAndAccess):
     """Layer"""
 
     clientOptions: ClientOptions = {}  #: options for the layer display in the client
-    dataModel: t.Optional[t.DataModelConfig]  #: layer data model
+    dataModel: t.Optional[t.ModelConfig]  #: layer data model
     description: t.Optional[t.ext.template.Config]  #: template for the layer description
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
@@ -118,7 +118,7 @@ class ImageTileConfig(ImageConfig):
 
 class VectorConfig(BaseConfig):
     editStyle: t.Optional[t.StyleProps]  #: style for features being edited
-    editDataModel: t.Optional[t.DataModelConfig] #: data model for input data
+    editDataModel: t.Optional[t.ModelConfig] #: data model for input data
     style: t.Optional[t.StyleProps]  #: style for features
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
 
@@ -159,7 +159,7 @@ class Base(t.LayerObject, gws.Object):
 
         self.description_template: t.TemplateObject = None
         self.feature_format: t.FormatObject = None
-        self.data_model: t.DataModelObject = None
+        self.data_model: t.ModelObject = None
 
         self.title = None
 
@@ -253,7 +253,7 @@ class Base(t.LayerObject, gws.Object):
 
         p = self.var('dataModel')
         if p:
-            self.data_model = self.add_child('gws.common.datamodel', p)
+            self.data_model = self.add_child('gws.common.model', p)
 
         self.ows_services_enabled = set(self.var('ows.servicesEnabled', default=[]))
         self.ows_services_disabled = set(self.var('ows.servicesDisabled', default=[]))
@@ -486,14 +486,14 @@ class ImageTile(Image):
 class Vector(Base):
     def __init__(self):
         super().__init__()
-        self.edit_data_model: t.DataModelObject = None
+        self.edit_data_model: t.ModelObject = None
 
     def configure(self):
         super().configure()
 
         p = self.var('editDataModel')
         if p:
-            self.edit_data_model = self.add_child('gws.common.datamodel', p)
+            self.edit_data_model = self.add_child('gws.common.model', p)
 
 
     @property

@@ -3,7 +3,7 @@
 from .base import Optional, List, Extent, Crs
 from ..data import Data, Props
 from .style import StyleProps
-from .attribute import Attribute, DataModelObject
+from .attribute import Attribute, ModelObject
 from .template import FormatObject
 from .map import LayerObject
 
@@ -40,7 +40,7 @@ class FeatureProps(Data):
 
 class FeatureConvertor:
     feature_format: 'FormatObject'
-    data_model: 'DataModelObject'
+    data_model: 'ModelObject'
 
 
 class Feature:

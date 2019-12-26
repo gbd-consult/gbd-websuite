@@ -3,7 +3,7 @@
 from .base import List, Optional, Point, Extent, Crs
 from ..data import Data
 from .object import Object
-from .attribute import DataModelObject
+from .attribute import ModelObject
 from .template import FormatObject
 from .map import LayerObject, ProjectObject
 from .feature import Feature, Shape
@@ -29,7 +29,7 @@ class SearchArguments(Data):
 class SearchProviderObject(Object):
     geometry_required: bool
     keyword_required: bool
-    data_model: 'DataModelObject'
+    data_model: 'ModelObject'
     feature_format: 'FormatObject'
 
     def can_run(self, args: SearchArguments) -> bool:

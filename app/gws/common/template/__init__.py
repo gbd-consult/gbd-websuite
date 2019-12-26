@@ -1,13 +1,13 @@
 import os
 import gws
-import gws.common.datamodel
+import gws.common.model
 import gws.types as t
 
 
 class Object(gws.Object, t.TemplateObject):
     def configure(self):
         super().configure()
-        self.data_model = self.add_child('gws.common.datamodel', self.var('dataModel'))
+        self.data_model = self.add_child('gws.common.model', self.var('dataModel'))
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')

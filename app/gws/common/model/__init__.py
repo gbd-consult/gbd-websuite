@@ -18,14 +18,14 @@ _py_type_to_attr_type = {
 }
 
 
-class Object(gws.Object, t.DataModelObject):
+class Object(gws.Object, t.ModelObject):
     def configure(self):
         super().configure()
         self.rules = self.var('rules')
 
     @property
     def props(self):
-        return t.DataModelProps({
+        return t.ModelProps({
             'rules': self.rules
         })
 
@@ -45,7 +45,7 @@ class Object(gws.Object, t.DataModelObject):
 
         return out
 
-    def _apply_rule(self, rule: t.DataModelRule, att_map):
+    def _apply_rule(self, rule: t.ModelRule, att_map):
         s = rule.get('value')
         if s is not None:
             return s

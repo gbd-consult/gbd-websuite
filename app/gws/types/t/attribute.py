@@ -41,7 +41,7 @@ class Attribute(Data):
     value: Any = None
 
 
-class DataModelRule(Data):
+class ModelRule(Data):
     """Attribute conversion rule"""
 
     name: str = ''  #: target attribute name
@@ -53,17 +53,17 @@ class DataModelRule(Data):
     expression: str = ''  #: attribute formatter
 
 
-class DataModelConfig(Config):
+class ModelConfig(Config):
     """Data model."""
-    rules: List[DataModelRule]
+    rules: List[ModelRule]
 
 
-class DataModelProps(Props):
-    rules: List[DataModelRule]
+class ModelProps(Props):
+    rules: List[ModelRule]
 
 
-class DataModelObject(Object):
-    rules: List[DataModelRule]
+class ModelObject(Object):
+    rules: List[ModelRule]
 
     def apply(self, atts: List['Attribute']) -> List['Attribute']:
         pass

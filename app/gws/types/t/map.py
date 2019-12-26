@@ -2,7 +2,7 @@
 
 from .base import List, Extent, Crs
 from .auth import AuthUser
-from .attribute import DataModelObject
+from .attribute import ModelObject
 from .object import Object
 from .meta import MetaData
 from .feature import Feature, FeatureProps
@@ -28,7 +28,7 @@ class LayerObject(Object):
     extent: Extent
     resolutions: List[float]
 
-    data_model: 'DataModelObject'
+    data_model: 'ModelObject'
     feature_format: 'FormatObject'
 
     def mapproxy_config(self, mc):

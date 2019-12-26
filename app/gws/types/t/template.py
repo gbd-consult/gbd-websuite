@@ -2,7 +2,7 @@
 
 from .base import List, Optional, Dict, Point, Extent, Size, FilePath
 from ..data import Config, Data, Props
-from .attribute import Attribute, DataModelObject, DataModelConfig, DataModelProps
+from .attribute import Attribute, ModelObject, ModelConfig, ModelProps
 from .object import Object
 from .ext import ext
 from .feature import Feature
@@ -20,7 +20,7 @@ class TemplateQualityLevel(Data):
 class TemplateConfig(Config):
     type: str  #: template type
     qualityLevels: Optional[List[TemplateQualityLevel]]  #: list of quality levels supported by the template
-    dataModel: Optional[DataModelConfig]  #: user-editable template attributes
+    dataModel: Optional[ModelConfig]  #: user-editable template attributes
     path: Optional[FilePath]  #: path to a template file
     text: str = ''  #: template content
     title: str = ''  #: template title
@@ -33,7 +33,7 @@ class TemplateProps(Props):
     qualityLevels: List[TemplateQualityLevel]
     mapHeight: int
     mapWidth: int
-    dataModel: 'DataModelProps'
+    dataModel: 'ModelProps'
 
 
 class TemplateRenderOutput(Data):
@@ -84,7 +84,7 @@ class MapRenderOutput(Data):
 
 
 class TemplateObject(Object):
-    data_model: 'DataModelObject'
+    data_model: 'ModelObject'
     map_size: List[int]
     page_size: List[int]
 

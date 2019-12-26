@@ -273,7 +273,7 @@ class Attribute(Data):
     value: Any = None
 
 
-class DataModelRule(Data):
+class ModelRule(Data):
     """Attribute conversion rule"""
 
     name: str = ''  #: target attribute name
@@ -285,17 +285,17 @@ class DataModelRule(Data):
     expression: str = ''  #: attribute formatter
 
 
-class DataModelConfig(Config):
+class ModelConfig(Config):
     """Data model."""
-    rules: List[DataModelRule]
+    rules: List[ModelRule]
 
 
-class DataModelProps(Props):
-    rules: List[DataModelRule]
+class ModelProps(Props):
+    rules: List[ModelRule]
 
 
-class DataModelObject(Object):
-    rules: List[DataModelRule]
+class ModelObject(Object):
+    rules: List[ModelRule]
 
     def apply(self, atts: List['Attribute']) -> List['Attribute']:
         pass
@@ -473,7 +473,7 @@ class FeatureProps(Data):
 
 class FeatureConvertor:
     feature_format: 'FormatObject'
-    data_model: 'DataModelObject'
+    data_model: 'ModelObject'
 
 
 class Feature:
@@ -535,7 +535,7 @@ class LayerObject(Object):
     extent: Extent
     resolutions: List[float]
 
-    data_model: 'DataModelObject'
+    data_model: 'ModelObject'
     feature_format: 'FormatObject'
 
     def mapproxy_config(self, mc):
@@ -855,7 +855,7 @@ class SearchArguments(Data):
 class SearchProviderObject(Object):
     geometry_required: bool
     keyword_required: bool
-    data_model: 'DataModelObject'
+    data_model: 'ModelObject'
     feature_format: 'FormatObject'
 
     def can_run(self, args: SearchArguments) -> bool:
@@ -908,7 +908,7 @@ class TemplateQualityLevel(Data):
 class TemplateConfig(Config):
     type: str  #: template type
     qualityLevels: Optional[List[TemplateQualityLevel]]  #: list of quality levels supported by the template
-    dataModel: Optional[DataModelConfig]  #: user-editable template attributes
+    dataModel: Optional[ModelConfig]  #: user-editable template attributes
     path: Optional[FilePath]  #: path to a template file
     text: str = ''  #: template content
     title: str = ''  #: template title
@@ -921,7 +921,7 @@ class TemplateProps(Props):
     qualityLevels: List[TemplateQualityLevel]
     mapHeight: int
     mapWidth: int
-    dataModel: 'DataModelProps'
+    dataModel: 'ModelProps'
 
 
 class TemplateRenderOutput(Data):
@@ -972,7 +972,7 @@ class MapRenderOutput(Data):
 
 
 class TemplateObject(Object):
-    data_model: 'DataModelObject'
+    data_model: 'ModelObject'
     map_size: List[int]
     page_size: List[int]
 

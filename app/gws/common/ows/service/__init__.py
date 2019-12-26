@@ -4,7 +4,7 @@ import gws.tools.misc
 import gws.tools.xml3
 import gws.gis.proj
 import gws.gis.gml
-import gws.common.datamodel
+import gws.common.model
 import gws.common.metadata
 import gws.common.search.runner
 import gws.types as t

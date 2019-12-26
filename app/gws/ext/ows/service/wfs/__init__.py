@@ -1,5 +1,5 @@
 import gws
-import gws.common.datamodel
+import gws.common.model
 import gws.common.ows.service
 import gws.common.search.runner
 import gws.gis.proj

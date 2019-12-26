@@ -7,7 +7,7 @@ import gws.types as t
 class Config(t.WithTypeAndAccess):
     defaultContext: str = ''  #: default spatial context ('view' or 'map')
     featureFormat: t.Optional[t.FeatureFormatConfig]  #: feature formatting options
-    dataModel: t.Optional[t.DataModelConfig]  #: feature data model
+    dataModel: t.Optional[t.ModelConfig]  #: feature data model
 
 
 class Object(gws.Object, t.SearchProviderObject):
@@ -25,7 +25,7 @@ class Object(gws.Object, t.SearchProviderObject):
 
         p = self.var('dataModel')
         if p:
-            self.data_model = self.add_child('gws.common.datamodel', p)
+            self.data_model = self.add_child('gws.common.model', p)
 
         self.keyword_required = self.var('keywordRequired')
         self.geometry_required = self.var('geometryRequired')
