@@ -43,7 +43,8 @@ def stop():
 
 
 def _stop(proc_name):
-    _kill_name(proc_name, 'INT')
+    if _kill_name(proc_name, 'INT'):
+        return
 
     for _ in range(10):
         time.sleep(5)

@@ -19,24 +19,7 @@ misc.ensure_dir(gws.SPOOL_DIR)
 
 COMMANDS = {}
 
-import gws.auth.cli
-import gws.config.cli
-import gws.ext.action.alkis.cli
-import gws.ext.action.dprocon.cli
-import gws.ext.action.gekos.cli
-import gws.ext.action.georisks.cli
-import gws.gis.cache_cli
-import gws.server.cli
-
-COMMANDS['alkis'] = [gws.ext.action.alkis.cli.check_index, gws.ext.action.alkis.cli.create_index, gws.ext.action.alkis.cli.drop_index, gws.ext.action.alkis.cli.parse]
-COMMANDS['auth'] = [gws.auth.cli.clear, gws.auth.cli.passwd, gws.auth.cli.sessions, gws.auth.cli.test]
-COMMANDS['cache'] = [gws.gis.cache_cli.clean, gws.gis.cache_cli.drop, gws.gis.cache_cli.seed, gws.gis.cache_cli.status]
-COMMANDS['config'] = [gws.config.cli.dump, gws.config.cli.prepare, gws.config.cli.test]
-COMMANDS['dprocon'] = [gws.ext.action.dprocon.cli.setup]
-COMMANDS['gekos'] = [gws.ext.action.gekos.cli.load]
-COMMANDS['georisks'] = [gws.ext.action.georisks.cli.aartelink, gws.ext.action.georisks.cli.export]
-COMMANDS['server'] = [gws.server.cli.configure, gws.server.cli.reload, gws.server.cli.reset, gws.server.cli.start, gws.server.cli.stop]
-
+#@COMMANDS
 
 
 def dispatch(argv):

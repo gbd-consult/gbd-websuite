@@ -31,12 +31,9 @@ class _Runner:
             print('-' * 40)
             raise
 
-        # for p in sorted(p.name for p in self.units):
-        #     print(p)
         # print(_json(self.units))
 
         self.units = normalizer.normalize(self.units)
-
 
         config_root = 'gws.common.application.Config'
         all_methods = spec.for_methods(self.units)
@@ -58,6 +55,10 @@ class _Runner:
         specs.update({'cli:' + k: v for k, v in cli_funcs.items()})
 
         self.write_specs(specs)
+
+        # main cli script
+
+        _make_cli_main(cli_funcs, self.source_dir + '/../bin/_gws.in.py')
 
         # extract docstrings for translations and merge existing translations
 
@@ -137,3 +138,33 @@ def _find_files(dirname, pattern):
 
         if re.search(pattern, fname):
             yield path
+
+
+def _make_cli_main(cli_funcs, path):
+    cmds = {}
+    mods = set()
+
+    for p in cli_funcs.values():
+        if p.command not in cmds:
+            cmds[p.command] = []
+        cmds[p.command].append(p.module + '.' + p.subcommand)
+        mods.add(p.module)
+
+    py = []
+
+    for m in sorted(mods):
+        py.append(f'import {m}')
+    py.append('')
+
+    for cmd, fns in sorted(cmds.items()):
+        py.append('COMMANDS[%r] = [%s]' % (cmd, ', '.join(sorted(fns))))
+    py.append('')
+
+    with open(path) as fp:
+        text = fp.read()
+
+    text = text.replace('#@COMMANDS', '\n'.join(py))
+
+    path = path.replace('.in', '')
+    with open(path, 'w') as fp:
+        fp.write(text)
