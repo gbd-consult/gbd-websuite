@@ -14,10 +14,19 @@ commands_path = gws.VAR_DIR + '/server.sh'
 pid_dir = misc.ensure_dir('pids', gws.TMP_DIR)
 
 
-def start():
+def configure(config_path=None):
+    root = gws.config.loader.parse_and_activate(config_path)
+    if root.var('server.mapproxy.enabled'):
+        gws.gis.mpx.config.create_and_save(root, ini.MAPPROXY_YAML_PATH)
+    gws.config.loader.store()
+    gws.log.info('CONFIGURATION OK')
+    return root
+
+
+def start(config_path=None):
     stop()
 
-    root = configure()
+    root = configure(config_path)
     gws.tools.date.set_system_time_zone(root.var('timeZone'))
 
     for p in misc.find_files(gws.SERVER_DIR, '.*'):
@@ -56,12 +65,12 @@ def _stop(proc_name):
         raise ValueError(f'failed to stop {proc_name} pids={pids!r}')
 
 
-def reload():
-    _reload(True)
+def reload(config_path=None):
+    _reload(True, config_path)
 
 
 def reset(module=None):
-    _reload(False, module)
+    _reload(False, None, module)
 
 
 def reload_uwsgi(module):
@@ -71,23 +80,14 @@ def reload_uwsgi(module):
         sh.run(['uwsgi', '--reload', p])
 
 
-def configure():
-    root = gws.config.loader.parse_and_activate()
-    if root.var('server.mapproxy.enabled'):
-        gws.gis.mpx.config.create_and_save(root, ini.MAPPROXY_YAML_PATH)
-    gws.config.loader.store()
-    gws.log.info('CONFIGURATION OK')
-    return root
-
-
-def _reload(reconfigure, module=None):
+def _reload(reconfigure, config_path, module=None):
     pid = sh.pids_of('uwsgi')
     if not pid:
         gws.log.info('server not running, starting...')
-        return start()
+        return start(config_path)
 
     if reconfigure:
-        configure()
+        configure(config_path)
 
     for m in ('qgis', 'mapproxy', 'web'):
         if not module or m == module:

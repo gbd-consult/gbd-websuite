@@ -16,10 +16,11 @@ def stop():
     control.stop()
 
 
-def reload():
+@arg('--path', help='configuration file')
+def reload(path=None):
     """Reconfigure and gracefully reload the server"""
 
-    control.reload()
+    control.reload(path)
 
 
 def reset():
