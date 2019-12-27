@@ -20,3 +20,9 @@ Version 5.1
 --------------------------------------------
 
 - experimental non-docker installation
+
+Version 5.2
+--------------------------------------------
+
+- server-side rendering of vector layers
+

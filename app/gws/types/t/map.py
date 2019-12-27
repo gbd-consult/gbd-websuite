@@ -1,6 +1,6 @@
 ### Maps and layers
 
-from .base import List, Extent, Crs
+from .base import List, Extent, Point, Size, Crs
 from .auth import AuthUser
 from .attribute import ModelObject
 from .object import Object
@@ -8,6 +8,8 @@ from .meta import MetaData
 from .feature import Feature, FeatureProps
 from .ows import OwsServiceObject
 from .template import FormatObject
+from .render import RenderView
+from .style import Style
 
 
 class LayerObject(Object):
@@ -29,21 +31,29 @@ class LayerObject(Object):
     resolutions: List[float]
 
     data_model: 'ModelObject'
+    edit_data_model: 'ModelObject'
     feature_format: 'FormatObject'
+
+    can_render_svg: bool = False
+    can_render_bbox: bool = False
+    can_render_xyz: bool = False
+
+    style: 'Style'
+    edit_style: 'Style'
 
     def mapproxy_config(self, mc):
         pass
 
-    def render_bbox(self, bbox, width, height, **client_params):
+    def render_bbox(self, view: 'RenderView', client_params: dict = None) -> bytes:
         pass
 
-    def render_xyz(self, x, y, z):
+    def render_xyz(self, x, y, z) -> bytes:
         pass
 
-    def render_svg(self, bbox, dpi, scale, rotation, style):
+    def render_svg(self, view: 'RenderView', style: 'Style' = None) -> List[str]:
         pass
 
-    def render_legend(self):
+    def render_legend(self) -> bytes:
         pass
 
     def get_features(self, bbox, limit) -> List['Feature']:

@@ -1,5 +1,5 @@
 import gws
-import gws.tools.misc as misc
+import gws.tools.units as units
 import gws.types as t
 
 
@@ -72,7 +72,7 @@ def _explicit_resolutions(cfg):
 
     ls = gws.get(cfg, 'scales')
     if ls:
-        return [misc.scale2res(x) for x in ls]
+        return [units.scale2res(x) for x in ls]
 
 
 def _res_or_scale(cfg, r, s):
@@ -81,4 +81,4 @@ def _res_or_scale(cfg, r, s):
         return x
     x = gws.get(cfg, s)
     if x:
-        return misc.scale2res(x)
+        return units.scale2res(x)

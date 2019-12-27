@@ -2,12 +2,15 @@ import math
 
 import gws
 
+import gws.tools.misc
 import gws.auth.api
 import gws.common.format
+import gws.common.style
 import gws.common.search
 import gws.common.template
 import gws.config.parser
 import gws.gis.feature
+import gws.gis.svg
 import gws.gis.mpx as mpx
 import gws.gis.proj
 import gws.gis.shape
@@ -70,6 +73,7 @@ class DisplayMode(t.Enum):
 
     box = 'box'  #: display a layer as one big image (WMS-alike)
     tile = 'tile'  #: display a layer in a tile grid
+    client = 'client'  #: draw a layer in the client
 
 
 class FlattenConfig(t.Config):
@@ -91,6 +95,7 @@ class BaseConfig(t.WithTypeAndAccess):
     clientOptions: ClientOptions = {}  #: options for the layer display in the client
     dataModel: t.Optional[t.ModelConfig]  #: layer data model
     description: t.Optional[t.ext.template.Config]  #: template for the layer description
+    display: DisplayMode = 'box'  #: layer display mode
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
@@ -107,7 +112,6 @@ class BaseConfig(t.WithTypeAndAccess):
 
 class ImageConfig(BaseConfig):
     cache: CacheConfig = {}  #: cache configuration
-    display: DisplayMode = 'box'  #: layer display mode
     grid: GridConfig = {}  #: grid configuration
     imageFormat: ImageFormat = 'png8'  #: image format
 
@@ -117,8 +121,10 @@ class ImageTileConfig(ImageConfig):
 
 
 class VectorConfig(BaseConfig):
+    display: DisplayMode = 'client'  #: layer display mode
+
     editStyle: t.Optional[t.StyleProps]  #: style for features being edited
-    editDataModel: t.Optional[t.ModelConfig] #: data model for input data
+    editDataModel: t.Optional[t.ModelConfig]  #: data model for the input data
     style: t.Optional[t.StyleProps]  #: style for features
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
 
@@ -148,9 +154,17 @@ class Base(t.LayerObject, gws.Object):
         super().__init__()
 
         self.display = ''
+        self.image_format = ''
+
         self.is_public = False
 
         self.has_cache = False
+
+        self.cache: CacheConfig = None
+        self.grid: GridConfig = None
+
+        self.cache_uid = None
+        self.grid_uid = None
 
         self.layers = []
 
@@ -176,6 +190,13 @@ class Base(t.LayerObject, gws.Object):
         self.services = []
         self.geometry_type = None
 
+        self.style: t.Style = None
+        self.edit_style: t.Style = None
+        self.edit_data_model: t.ModelObject = None
+
+        self.can_render_bbox = False
+        self.can_render_xyz = False
+        self.can_render_svg = False
 
     @property
     def has_search(self):
@@ -255,8 +276,28 @@ class Base(t.LayerObject, gws.Object):
         if p:
             self.data_model = self.add_child('gws.common.model', p)
 
+        self.image_format = self.var('imageFormat')
+        self.display = self.var('display')
+
         self.ows_services_enabled = set(self.var('ows.servicesEnabled', default=[]))
         self.ows_services_disabled = set(self.var('ows.servicesDisabled', default=[]))
+
+        p = self.var('editDataModel')
+        if p:
+            self.edit_data_model = self.add_child('gws.common.model', p)
+
+        p = self.var('style')
+        if p:
+            self.style = gws.common.style.from_config(p)
+
+        p = self.var('editStyle')
+        if p:
+            self.edit_style = gws.common.style.from_config(p)
+
+        self.cache = self.var('cache')
+        self.has_cache = self.cache and self.cache.enabled
+
+        self.grid = self.var('grid')
 
     def configure_extent(self, default_extent):
         self.extent = self.calc_extent(default_extent)
@@ -308,13 +349,13 @@ class Base(t.LayerObject, gws.Object):
     def mapproxy_config(self, mc):
         pass
 
-    def render_bbox(self, bbox, width, height, **client_params):
+    def render_bbox(self, rv: t.RenderView, client_params=None):
         return None
 
     def render_xyz(self, x, y, z):
         return None
 
-    def render_svg(self, bbox, dpi, scale, rotation, style):
+    def render_svg(self, rv: t.RenderView, style=None):
         return None
 
     def render_legend(self):
@@ -337,31 +378,14 @@ class Image(Base):
     def __init__(self):
         super().__init__()
 
-        self.display = ''
-        self.image_format = ''
+        self.can_render_bbox = True
+        self.can_render_xyz = True
 
-        self.cache: CacheConfig = None
-        self.grid: GridConfig = None
-
-        self.cache_uid = None
-        self.grid_uid = None
-
-    def configure(self):
-        super().configure()
-
-        self.image_format = self.var('imageFormat')
-        self.display = self.var('display')
-
-        self.cache = self.var('cache')
-        self.has_cache = self.cache and self.cache.enabled
-
-        self.grid = self.var('grid')
-
-    def render_bbox(self, bbox, width, height, **client_params):
+    def render_bbox(self, rv, client_params=None):
         uid = self.uid
         if not self.has_cache:
             uid += '_NOCACHE'
-        return gws.gis.mpx.wms_request(uid, bbox, width, height, self.map.crs)
+        return gws.gis.mpx.wms_request(uid, rv.bbox, rv.size_px[0], rv.size_px[1], self.map.crs)
 
     def render_xyz(self, x, y, z):
         return gws.gis.mpx.wmts_request(
@@ -447,10 +471,6 @@ class Image(Base):
             },
             'disable_storage': True,
             'format': self.image_format,
-
-            # 'meta_size': [1, 1],
-            # 'meta_buffer': 0,
-            # 'minimize_meta_requests': True,
         }))
 
     @property
@@ -486,30 +506,35 @@ class ImageTile(Image):
 class Vector(Base):
     def __init__(self):
         super().__init__()
-        self.edit_data_model: t.ModelObject = None
 
-    def configure(self):
-        super().configure()
-
-        p = self.var('editDataModel')
-        if p:
-            self.edit_data_model = self.add_child('gws.common.model', p)
-
+        self.can_render_bbox = True
+        self.can_render_svg = True
 
     @property
     def props(self):
+        if self.display == 'box':
+            return super().props.extend({
+                'type': 'box',
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
+            })
+
         return super().props.extend({
+            'type': 'vector',
             'loadingStrategy': self.var('loadingStrategy'),
-            'style': self.var('style'),
-            'editStyle': self.var('editStyle'),
+            'style': self.style,
+            'editStyle': self.edit_style,
             'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetFeatures/layerUid/' + self.uid,
         })
 
-    def render_svg(self, bbox, dpi, scale, rotation, style):
-        features = self.get_features(bbox)
+    def render_bbox(self, rv, client_params=None):
+        elements = self.render_svg(rv)
+        return gws.gis.svg.to_png(elements, size=rv.size_px)
+
+    def render_svg(self, rv, style=None):
+        features = self.get_features(rv.bbox)
         for f in features:
-            f.set_default_style(style)
-        return [f.to_svg(bbox, dpi, scale, rotation) for f in features]
+            f.convert()
+        return [f.to_svg(rv, style or self.style) for f in features]
 
     def ows_enabled(self, service):
         return super().ows_enabled(service) and service.type == 'wfs'
@@ -524,7 +549,6 @@ def add_layers_to_object(obj, layer_configs):
             uid = gws.get(p, 'uid')
             gws.log.error(f'FAILED LAYER: map={obj.uid!r} layer={uid!r} error={e!r}')
             gws.log.exception()
-            raise
     return ls
 
 

@@ -6,7 +6,7 @@ import gws.gis.util
 import gws.gis.proj
 import gws.gis.mpx
 import gws.tools.json2
-import gws.tools.misc as misc
+import gws.tools.units as units
 
 import gws.types as t
 
@@ -54,7 +54,7 @@ class Object(gws.common.layer.ImageTile):
     def mapproxy_config(self, mc):
         m0 = self.matrix_set.matrices[0]
         res = [
-            misc.scale2res(m.scale)
+            units.scale2res(m.scale)
             for m in self.matrix_set.matrices
         ]
 

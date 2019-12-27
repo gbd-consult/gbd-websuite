@@ -1,13 +1,11 @@
-### Templates, renderers and formats.
+### Templates and formats.
 
 from .base import List, Optional, Dict, Point, Extent, Size, FilePath
 from ..data import Config, Data, Props
 from .attribute import Attribute, ModelObject, ModelConfig, ModelProps
 from .object import Object
 from .ext import ext
-from .feature import Feature
-from .map import LayerObject
-from .style import StyleProps
+from .render import RenderOutput
 
 
 class TemplateQualityLevel(Data):
@@ -36,51 +34,10 @@ class TemplateProps(Props):
     dataModel: 'ModelProps'
 
 
-class TemplateRenderOutput(Data):
-    mimeType: str
+class TemplateOutput(Data):
+    mime: str
     content: str
     path: str
-
-
-class SvgFragment:
-    points: List[Point]
-    svg: str
-
-
-class MapRenderInputItem(Data):
-    bitmap: str
-    features: List['Feature']
-    layer: 'LayerObject'
-    sub_layers: List[str]
-    opacity: float
-    print_as_vector: bool
-    style: 'StyleProps'
-    svg_fragment: dict
-
-
-class MapRenderInput(Data):
-    out_path: str
-    bbox: Extent
-    rotation: int
-    scale: int
-    dpi: int
-    map_size_px: Size
-    background_color: int
-    items: List[MapRenderInputItem]
-
-
-class MapRenderOutputItem(Data):
-    type: str
-    image_path: str = ''
-    svg_elements: List[str] = []
-
-
-class MapRenderOutput(Data):
-    bbox: Extent
-    dpi: int
-    rotation: int
-    scale: int
-    items: List[MapRenderOutputItem]
 
 
 class TemplateObject(Object):
@@ -91,7 +48,7 @@ class TemplateObject(Object):
     def dpi_for_quality(self, quality: int) -> int:
         pass
 
-    def render(self, context: dict, render_output: MapRenderOutput = None, out_path: str = None, format: str = None) -> TemplateRenderOutput:
+    def render(self, context: dict, render_output: 'RenderOutput' = None, out_path: str = None, format: str = None) -> TemplateOutput:
         pass
 
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:

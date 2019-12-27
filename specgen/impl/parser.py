@@ -277,6 +277,8 @@ def _value(node, strict=True):
         return node.n
     if cc == 'Str':
         return node.s
+    if cc == 'Bytes':
+        return node.s
     if cc == 'NameConstant':
         return node.value
     if cc == 'List':

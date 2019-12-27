@@ -348,7 +348,7 @@ class Object(gws.ActionObject):
         if not r:
             raise gws.web.error.NotFound()
         return t.HttpResponse({
-            'mimeType': 'image/jpeg',
+            'mime': 'image/jpeg',
             'content': r[fld]
         })
 

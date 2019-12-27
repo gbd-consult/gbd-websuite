@@ -2,7 +2,7 @@ import gws.types as t
 import gws.tools.job
 
 
-class PrintBitmapItem:
+class PrintBitmap(t.Data):
     data: t.Optional[bytes]
     mode: t.Optional[str]
     width: t.Optional[int]
@@ -11,7 +11,7 @@ class PrintBitmapItem:
 
 
 class PrintItem(t.Data):
-    bitmap: t.Optional[PrintBitmapItem]
+    bitmap: t.Optional[PrintBitmap]
     features: t.Optional[t.List[t.FeatureProps]]
     subLayers: t.Optional[t.List[str]]
     layerUid: t.Optional[str]

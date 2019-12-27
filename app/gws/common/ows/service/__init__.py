@@ -1,6 +1,6 @@
 import gws
 import gws.web.error
-import gws.tools.misc
+import gws.tools.units as units
 import gws.tools.xml3
 import gws.gis.proj
 import gws.gis.gml
@@ -316,7 +316,7 @@ def xml_error_response(version, status, description):
 
 def xml_response(content, status=200):
     return t.HttpResponse({
-        'mimeType': 'text/xml',
+        'mime': 'text/xml',
         'content': gws.tools.xml3.as_string(content),
         'status': status,
     })
@@ -351,7 +351,7 @@ def _configure_metadata(obj: gws.Object):
     if la:
         m.proj = gws.gis.proj.as_proj(la.crs)
         m.lonlat_extent = lonlat_extent(la.extent, la.crs)
-        m.resolution = int(min(gws.tools.misc.res2scale(r) for r in la.resolutions))
+        m.resolution = int(min(units.res2scale(r) for r in la.resolutions))
 
     if gws.get(m, 'inspire.theme'):
         m.inspire['themeName'] = inspire.theme_name(m.inspire['theme'], m.language)
@@ -412,7 +412,7 @@ def _layer_node_sublist_selected(rd: RequestData, node, all_nodes, tag_names):
 
 
 def _layer_node(rd: RequestData, layer, sub_nodes=None) -> LayerCapsNode:
-    res = [gws.tools.misc.res2scale(r) for r in layer.resolutions]
+    res = [units.res2scale(r) for r in layer.resolutions]
     crs = layer.map.crs
     sub_nodes = sub_nodes or []
 

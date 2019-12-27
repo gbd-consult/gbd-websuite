@@ -5,6 +5,8 @@ from ..data import Data, Props
 from .style import StyleProps
 from .attribute import Attribute, ModelObject
 from .template import FormatObject
+from .render import RenderView
+from .style import Style
 from .map import LayerObject
 
 import shapely.geometry.base
@@ -58,7 +60,7 @@ class Feature:
         """Transform the feature to another CRS"""
         pass
 
-    def to_svg(self, bbox, dpi, scale, rotation):
+    def to_svg(self, rv: 'RenderView', style: 'Style' = None):
         """Render the feature as SVG"""
         pass
 

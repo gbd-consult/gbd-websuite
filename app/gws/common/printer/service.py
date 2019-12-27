@@ -50,7 +50,7 @@ def job_result(req, p: pt.PrinterQueryParams) -> t.HttpResponse:
     with open(job.result, 'rb') as fp:
         pdf = fp.read()
     return t.HttpResponse({
-        'mimeType': 'application/pdf',
+        'mime': 'application/pdf',
         'content': pdf
     })
 

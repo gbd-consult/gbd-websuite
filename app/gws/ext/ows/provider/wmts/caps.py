@@ -2,7 +2,7 @@ import gws
 import gws.common.ows.provider.parseutil as u
 import gws.tools.net
 import gws.tools.xml3
-import gws.tools.misc as misc
+import gws.tools.units as units
 import gws.types as t
 
 from . import types
@@ -108,7 +108,7 @@ def _tile_matrix(el):
 # see http://portal.opengeospatial.org/files/?artifact_id=35326 page 8
 
 def _extent_for_matrix(m: types.TileMatrix):
-    res = misc.scale2res(m.scale)
+    res = units.scale2res(m.scale)
 
     return [
         m.x,

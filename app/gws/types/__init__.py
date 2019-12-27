@@ -440,6 +440,8 @@ class StorageObject(Object):
 
 
 
+
+
 import shapely.geometry.base
 
 
@@ -491,7 +493,7 @@ class Feature:
         """Transform the feature to another CRS"""
         pass
 
-    def to_svg(self, bbox, dpi, scale, rotation):
+    def to_svg(self, rv: 'RenderView', style: 'Style' = None):
         """Render the feature as SVG"""
         pass
 
@@ -506,6 +508,8 @@ class Feature:
         pass
 
 ### Maps and layers
+
+
 
 
 
@@ -536,21 +540,29 @@ class LayerObject(Object):
     resolutions: List[float]
 
     data_model: 'ModelObject'
+    edit_data_model: 'ModelObject'
     feature_format: 'FormatObject'
+
+    can_render_svg: bool = False
+    can_render_bbox: bool = False
+    can_render_xyz: bool = False
+
+    style: 'Style'
+    edit_style: 'Style'
 
     def mapproxy_config(self, mc):
         pass
 
-    def render_bbox(self, bbox, width, height, **client_params):
+    def render_bbox(self, view: 'RenderView', client_params: dict = None) -> bytes:
         pass
 
-    def render_xyz(self, x, y, z):
+    def render_xyz(self, x, y, z) -> bytes:
         pass
 
-    def render_svg(self, bbox, dpi, scale, rotation, style):
+    def render_svg(self, view: 'RenderView', style: 'Style' = None) -> List[str]:
         pass
 
-    def render_legend(self):
+    def render_legend(self) -> bytes:
         pass
 
     def get_features(self, bbox, limit) -> List['Feature']:
@@ -769,7 +781,7 @@ class Response(Data):
 
 
 class HttpResponse(Response):
-    mimeType: str
+    mime: str
     content: str
     status: int
 
@@ -886,9 +898,84 @@ class StyleConfig(Config):
     content: Optional[dict]  #: css rules
     text: Optional[str]  #: raw style content
 
-### Templates, renderers and formats.
+
+class Style(Data):
+    type: str
+    content: Optional[dict]
+    text: Optional[str]
+    props: 'StyleProps'
+
+## Map renderer
 
 
+
+
+
+
+
+import PIL.Image
+
+
+class SvgFragment:
+    points: List[Point]
+    svg: str
+
+
+class RenderView(Data):
+    bbox: Extent
+    center: Point
+    dpi: int
+    rotation: int
+    scale: int
+    size_mm: Size
+    size_px: Size
+
+
+class RenderInputItemType(Enum):
+    image = 'image'
+    features = 'features'
+    fragment = 'fragment'
+    svg_layer = 'svg_layer'
+    bbox_layer = 'bbox_layer'
+
+
+class RenderInputItem(Data):
+    type: str = ''
+    image: PIL.Image.Image = None
+    features: List['Feature']
+    layer: 'LayerObject' = None
+    sub_layers: List[str] = []
+    opacity: float = None
+    print_as_vector: bool = None
+    style: 'Style' = None
+    fragment: 'SvgFragment' = None
+    dpi: int = None
+
+
+class RenderInput(Data):
+    view: 'RenderView'
+    background_color: int
+    items: List[RenderInputItem]
+
+
+class RenderOutputItemType(Enum):
+    image = 'image'
+    path = 'path'
+    svg = 'svg'
+
+
+class RenderOutputItem(Data):
+    type: str
+    image: PIL.Image.Image
+    path: str = ''
+    elements: List[str] = []
+
+
+class RenderOutput(Data):
+    view: 'RenderView'
+    items: List[RenderOutputItem]
+
+### Templates and formats.
 
 
 
@@ -924,51 +1011,10 @@ class TemplateProps(Props):
     dataModel: 'ModelProps'
 
 
-class TemplateRenderOutput(Data):
-    mimeType: str
+class TemplateOutput(Data):
+    mime: str
     content: str
     path: str
-
-
-class SvgFragment:
-    points: List[Point]
-    svg: str
-
-
-class MapRenderInputItem(Data):
-    bitmap: str
-    features: List['Feature']
-    layer: 'LayerObject'
-    sub_layers: List[str]
-    opacity: float
-    print_as_vector: bool
-    style: 'StyleProps'
-    svg_fragment: dict
-
-
-class MapRenderInput(Data):
-    out_path: str
-    bbox: Extent
-    rotation: int
-    scale: int
-    dpi: int
-    map_size_px: Size
-    background_color: int
-    items: List[MapRenderInputItem]
-
-
-class MapRenderOutputItem(Data):
-    type: str
-    image_path: str = ''
-    svg_elements: List[str] = []
-
-
-class MapRenderOutput(Data):
-    bbox: Extent
-    dpi: int
-    rotation: int
-    scale: int
-    items: List[MapRenderOutputItem]
 
 
 class TemplateObject(Object):
@@ -979,7 +1025,7 @@ class TemplateObject(Object):
     def dpi_for_quality(self, quality: int) -> int:
         pass
 
-    def render(self, context: dict, render_output: MapRenderOutput = None, out_path: str = None, format: str = None) -> TemplateRenderOutput:
+    def render(self, context: dict, render_output: 'RenderOutput' = None, out_path: str = None, format: str = None) -> TemplateOutput:
         pass
 
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:

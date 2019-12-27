@@ -80,17 +80,20 @@ class Feature(t.Feature):
             style = t.StyleProps(style)
         self.style = style
 
-    def to_svg(self, bbox, dpi, scale, rotation):
+    def to_svg(self, rv: t.RenderView, style: t.Style = None):
         if not self.shape:
             return ''
+        style = self.style or style
+        if not style and self.layer:
+            style = self.layer.style
         return gws.gis.svg.draw(
             self.shape.geo,
             self.elements.get('label', ''),
-            self.style,
-            bbox,
-            dpi,
-            scale,
-            rotation
+            style,
+            rv.bbox,
+            rv.dpi,
+            rv.scale,
+            rv.rotation
         )
 
     def to_geojson(self):

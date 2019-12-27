@@ -4,6 +4,7 @@ import gws
 import gws.config
 import gws.config.loader
 import gws.tools.misc as misc
+import gws.tools.units as units
 import gws.tools.clihelpers as clihelpers
 import gws.gis.cache
 
@@ -39,7 +40,7 @@ def status(layers=None):
         for r in info['counts']:
             data.append({
                 'zoom': r['z'],
-                'scale': round(misc.res2scale(r['res'])),
+                'scale': round(units.res2scale(r['res'])),
                 'grid': str(r['maxx']) + 'x' + str(r['maxy']),
                 'total': r['maxx'] * r['maxy'],
                 'cached': r['num_files'],

@@ -6,6 +6,7 @@ import gws
 import gws.common.template
 import gws.tools.mime
 import gws.tools.misc
+import gws.tools.units as units
 import gws.tools.net
 import gws.tools.pdf
 
@@ -114,7 +115,7 @@ class Object(gws.common.template.Object):
         context['qgis_temp_path'] = base + '.qgs'
         return context
 
-    def render(self, context, render_output: t.MapRenderOutput = None, out_path=None, format=None):
+    def render(self, context, render_output: t.RenderOutput = None, out_path=None, format=None):
 
         # rewrite the project and replace variables within
         # @TODO fails if there are relative paths in the project
@@ -172,7 +173,7 @@ class Object(gws.common.template.Object):
 
         map_path = gws.tools.pdf.render_html_with_map(
             html=map_html,
-            map_render_output=render_output,
+            render_output=render_output,
             map_placeholder='@@@',
             page_size=self.page_size,
             margin=None,
@@ -183,8 +184,8 @@ class Object(gws.common.template.Object):
         # NB: qgis is ABOVE our map, so the qgis template/map must be transparent!
 
         out_path = gws.tools.pdf.merge(map_path, qgis_path, out_path)
-        return t.TemplateRenderOutput({
-            'mimeType': gws.tools.mime.get('pdf'),
+        return t.TemplateOutput({
+            'mime': gws.tools.mime.get('pdf'),
             'path': out_path
         })
 
@@ -203,8 +204,8 @@ def _num_pair(s):
 
 
 def _parse_size(size):
-    w, uw = gws.tools.misc.parse_unit(size[0], 'mm')
-    h, uh = gws.tools.misc.parse_unit(size[1], 'mm')
+    w, uw = gws.tools.units.parse(size[0], 'mm')
+    h, uh = gws.tools.units.parse(size[1], 'mm')
     # @TODO inches etc
     return int(w), int(h)
 

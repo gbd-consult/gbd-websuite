@@ -65,7 +65,7 @@ class Object(gws.common.layer.Image):
 
         self.configure_extent(gws.gis.source.extent_from_layers(self.source_layers, self.map.crs))
 
-    def render_bbox(self, bbox, width, height, **client_params):
+    def render_bbox(self, rv: t.RenderView, client_params=None):
         forward = {}
 
         cache_uid = self.uid
@@ -73,17 +73,15 @@ class Object(gws.common.layer.Image):
         if not self.has_cache:
             cache_uid = self.uid + '_NOCACHE'
 
-        if 'dpi' in client_params:
-            dpi = gws.as_int(client_params['dpi'])
-            if dpi > 90:
-                forward['DPI__gws'] = str(dpi)
-                cache_uid = self.uid + '_NOCACHE'
+        if rv.dpi > 90:
+            forward['DPI__gws'] = str(rv.dpi)
+            cache_uid = self.uid + '_NOCACHE'
 
         return gws.gis.mpx.wms_request(
             cache_uid,
-            bbox,
-            width,
-            height,
+            rv.bbox,
+            rv.size_px[0],
+            rv.size_px[1],
             self.map.crs,
             forward)
 

@@ -209,7 +209,7 @@ class Object(gws.ActionObject):
 
 def _text(s):
     return t.HttpResponse({
-        'mimeType': 'text/plain',
+        'mime': 'text/plain',
         'content': s
     })
 

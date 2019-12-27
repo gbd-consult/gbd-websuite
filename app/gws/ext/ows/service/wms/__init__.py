@@ -65,11 +65,11 @@ class Object(ows.Object):
         if not nodes:
             raise gws.web.error.NotFound()
 
-        render_input = t.MapRenderInput({
+        render_input = t.RenderInput({
             'out_path': gws.TMP_DIR + '/wms_' + gws.random_string(64) + '.png',
             'bbox': bbox,
             'rotation': 0,
-            'scale': gws.tools.misc.res2scale((bbox[2] - bbox[0]) / px_width),
+            'scale': units.res2scale((bbox[2] - bbox[0]) / px_width),
             'dpi': 0,
             'map_size_px': [px_width, px_height],
             'background_color': 0,
@@ -77,7 +77,7 @@ class Object(ows.Object):
         })
 
         for node in nodes:
-            item = t.MapRenderInputItem({
+            item = t.RenderInputItem({
                 'layer': node.layer,
                 'sub_layers': []
             })
@@ -87,13 +87,13 @@ class Object(ows.Object):
         for _ in renderer.run(render_input):
             pass
 
-        with open(renderer.output.items[0].image_path, 'rb') as fp:
+        with open(renderer.output.items[0].path, 'rb') as fp:
             img = fp.read()
 
-        gws.tools.shell.unlink(renderer.output.items[0].image_path)
+        gws.tools.shell.unlink(renderer.output.items[0].path)
 
         return t.HttpResponse({
-            'mimeType': 'image/png',
+            'mime': 'image/png',
             'content': img
         })
 
@@ -108,7 +108,7 @@ class Object(ows.Object):
         img = nodes[0].layer.render_legend()
 
         return t.HttpResponse({
-            'mimeType': 'image/png',
+            'mime': 'image/png',
             'content': img or gws.tools.misc.Pixels.png8
         })
 

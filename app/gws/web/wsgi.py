@@ -71,7 +71,7 @@ def _handle_error(root, req, err):
             'request': req,
             'error': err.code
         })
-        return req.response(r.content, r.mimeType, err.code)
+        return req.response(r.content, r.mime, err.code)
     except:
         gws.log.exception()
         return gws.web.error.InternalServerError()
@@ -122,7 +122,7 @@ def _handle_action(root: t.RootObject, req):
         raise gws.web.error.NotFound()
 
     if isinstance(r, t.HttpResponse):
-        return req.response(r.content, r.mimeType, r.get('status', 200))
+        return req.response(r.content, r.mime, r.get('status', 200))
 
     return req.struct_response(r)
 

@@ -2,14 +2,16 @@ import time
 
 import gws
 import gws.auth.api
-import gws.web
-import gws.config
-import gws.tools.net
-import gws.gis.feature
 import gws.common.layer
+import gws.config
 import gws.gis.cache
-import gws.tools.misc
+import gws.gis.feature
+import gws.gis.render
 import gws.tools.json2
+import gws.tools.misc
+import gws.tools.net
+import gws.tools.units as units
+import gws.web
 
 import gws.types as t
 
@@ -64,26 +66,30 @@ class Object(gws.ActionObject):
 
         layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
 
-        cp = {}
+        client_params = {}
         if p.layers:
-            cp['layers'] = p.layers
-        if p.dpi:
-            cp['dpi'] = p.dpi
+            client_params['layers'] = p.layers
 
-        bbox = [round(n, 2) for n in p.bbox]
+        rv = gws.gis.render.view_from_bbox(
+            p.bbox,
+            out_size=(p.width, p.height),
+            out_size_unit='px',
+            dpi=p.dpi or units.OGC_SCREEN_PPI,
+            rotation=0
+        )
 
         ts = time.time()
 
         try:
-            img = layer.render_bbox(bbox, p.width, p.height, **cp)
+            img = layer.render_bbox(rv, client_params)
         except:
             gws.log.exception()
             img = gws.tools.misc.Pixels.png8
 
-        gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(bbox), time.time() - ts))
+        gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(rv), time.time() - ts))
 
         return t.HttpResponse({
-            'mimeType': 'image/png',
+            'mime': 'image/png',
             'content': img
         })
 
@@ -109,7 +115,7 @@ class Object(gws.ActionObject):
             gws.gis.cache.store_in_web_cache(layer, p.x, p.y, p.z, img)
 
         return t.HttpResponse({
-            'mimeType': 'image/png',
+            'mime': 'image/png',
             'content': img or gws.tools.misc.Pixels.png8
         })
 
@@ -128,14 +134,14 @@ class Object(gws.ActionObject):
             img = gws.tools.misc.Pixels.png8
 
         return t.HttpResponse({
-            'mimeType': 'image/png',
+            'mime': 'image/png',
             'content': img
         })
 
     def api_describe_layer(self, req: gws.web.AuthRequest, p: DescribeLayerParams) -> t.HttpResponse:
         layer = req.require('gws.ext.layer', p.layerUid)
         return t.HttpResponse({
-            'mimeType': 'text/html',
+            'mime': 'text/html',
             'content': layer.description
         })
 
@@ -160,7 +166,7 @@ class Object(gws.ActionObject):
     def http_get_features(self, req: gws.web.AuthRequest, p: GetFeaturesParams) -> t.HttpResponse:
         res = self.api_get_features(req, p)
         return t.HttpResponse({
-            'mimeType': 'application/json',
+            'mime': 'application/json',
             'content': gws.tools.json2.to_string(res)
         })
 

@@ -12,6 +12,7 @@ rsyslog
 tzdata
 xvfb
 ghostscript
+libmagickwand-dev
 
 # ldap
 

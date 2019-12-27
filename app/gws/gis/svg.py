@@ -3,25 +3,28 @@ import shapely.ops
 import shapely.geometry
 import svgis
 from PIL import ImageFont
+import wand.image
 
 import gws
-import gws.tools.misc as misc
+import gws.tools.units as units
+
+import gws.types as t
 
 DEFAULT_FONT_SIZE = 10
 DEFAULT_MARK_SIZE = 10
 DEFAULT_POINT_SIZE = 10
 
 
-def convert_fragment(svg_fragment, bbox, dpi, scale, rotation):
+def convert_fragment(svg_fragment, rv: t.RenderView):
     def trans(x, y):
-        cx = x - bbox[0]
-        cy = bbox[3] - y
+        cx = x - rv.bbox[0]
+        cy = rv.bbox[3] - y
 
-        cx /= scale
-        cy /= scale
+        cx /= rv.scale
+        cy /= rv.scale
 
-        cx = misc.mm2px(cx * 1000, dpi)
-        cy = misc.mm2px(cy * 1000, dpi)
+        cx = units.mm2px(cx * 1000, rv.dpi)
+        cy = units.mm2px(cy * 1000, rv.dpi)
 
         return cx, cy
 
@@ -52,8 +55,8 @@ def _to_pixel(geo, bbox, dpi, scale):
         cx /= scale
         cy /= scale
 
-        cx = misc.mm2px(cx * 1000, dpi)
-        cy = misc.mm2px(cy * 1000, dpi)
+        cx = units.mm2px(cx * 1000, dpi)
+        cy = units.mm2px(cy * 1000, dpi)
 
         return cx, cy
 
@@ -371,3 +374,11 @@ def draw(geo, label, style, bbox, dpi, scale, rotation):
 
     g = svgis.draw.geometry(shapely.geometry.mapping(geo), **gws.compact(attrs))
     return mark + g + text
+
+
+def to_png(elements, size: t.Size):
+    elements = '\n'.join(elements)
+    svg = f'<svg version="1.1" xmlns="http://www.w3.org/2000/svg">{elements}</svg>'
+
+    with wand.image.Image(blob=svg.encode('utf8'), format='svg', background='None', width=size[0], height=size[1]) as image:
+        return image.make_blob('png')

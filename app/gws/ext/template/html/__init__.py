@@ -70,28 +70,28 @@ class Object(gws.common.template.Object):
 
             out_path = gws.tools.pdf.render_html_with_map(
                 html=html,
-                map_render_output=render_output,
+                render_output=render_output,
                 map_placeholder=self.map_placeholder,
                 page_size=self.parsed.page_size,
                 margin=self.parsed.margin,
                 out_path=out_path
             )
 
-            return t.TemplateRenderOutput({
-                'mimeType': gws.tools.mime.get('pdf'),
+            return t.TemplateOutput({
+                'mime': gws.tools.mime.get('pdf'),
                 'path': out_path
             })
 
         if out_path:
             with open(out_path, 'wt') as fp:
                 fp.write(html)
-            return t.TemplateRenderOutput({
-                'mimeType': gws.tools.mime.get('html'),
+            return t.TemplateOutput({
+                'mime': gws.tools.mime.get('html'),
                 'path': out_path
             })
 
-        return t.TemplateRenderOutput({
-            'mimeType': gws.tools.mime.get('html'),
+        return t.TemplateOutput({
+            'mime': gws.tools.mime.get('html'),
             'content': html
         })
 

@@ -42,16 +42,8 @@ class Object(gws.common.layer.Vector):
     @property
     def props(self):
         return super().props.extend({
-            'type': 'vector',
             'geometryType': self.table.geometry_type.upper(),
         })
-
-    def render_svg(self, bbox, dpi, scale, rotation, style):
-        features = self.get_features(bbox)
-        for f in features:
-            f.convert()
-            f.set_default_style(style)
-        return [f.to_svg(bbox, dpi, scale, rotation) for f in features]
 
     def get_features(self, bbox, limit=0) -> t.List[t.Feature]:
         shape = gws.gis.shape.from_bbox(bbox, self.crs)

@@ -28,7 +28,7 @@ class Response(Data):
 
 
 class HttpResponse(Response):
-    mimeType: str
+    mime: str
     content: str
     status: int
 

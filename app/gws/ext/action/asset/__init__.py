@@ -43,7 +43,7 @@ class Object(gws.ActionObject):
         with open(job.result, 'rb') as fp:
             content = fp.read()
         return t.HttpResponse({
-            'mimeType': gws.tools.mime.for_path(job.result),
+            'mime': gws.tools.mime.for_path(job.result),
             'content': content
         })
 
@@ -81,7 +81,7 @@ class Object(gws.ActionObject):
             tr = tpl.render(context)
             # @TODO handle path
             return t.HttpResponse({
-                'mimeType': tr.mimeType,
+                'mime': tr.mime,
                 'content': tr.content
             })
 
@@ -98,7 +98,7 @@ class Object(gws.ActionObject):
         with open(rpath, 'rb') as fp:
             s = fp.read()
         return t.HttpResponse({
-            'mimeType': mt,
+            'mime': mt,
             'content': s
         })
 

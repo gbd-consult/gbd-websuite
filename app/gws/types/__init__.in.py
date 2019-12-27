@@ -19,5 +19,6 @@ from .data import Data, Config, Props
 # @include t/request
 # @include t/search
 # @include t/style
+# @include t/render
 # @include t/template
 # @include t/application
