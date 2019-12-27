@@ -10,8 +10,8 @@ import gws.tools.shell as sh
 import gws.types
 from . import ini
 
-commands_path = gws.VAR_DIR + '/server.sh'
-pid_dir = misc.ensure_dir('pids', gws.TMP_DIR)
+_START_SCRIPT = gws.VAR_DIR + '/server.sh'
+_PID_DIR = misc.ensure_dir('pids', gws.TMP_DIR)
 
 
 def configure(config_path=None):
@@ -32,13 +32,13 @@ def start(config_path=None):
     for p in misc.find_files(gws.SERVER_DIR, '.*'):
         sh.unlink(p)
 
-    commands = ini.create(root, gws.SERVER_DIR, pid_dir)
+    commands = ini.create(root, gws.SERVER_DIR, _PID_DIR)
 
     s = root.var('server.autoRun')
     if s:
         commands.insert(0, s)
 
-    with open(commands_path, 'wt') as fp:
+    with open(_START_SCRIPT, 'wt') as fp:
         fp.write('echo "----------------------------------------------------------"\n')
         fp.write('echo "SERVER START"\n')
         fp.write('echo "----------------------------------------------------------"\n')
@@ -49,6 +49,7 @@ def stop():
     _stop('uwsgi')
     _stop('nginx')
     _stop('qgis_mapserv.fcgi')
+    _stop('rsyslogd')
 
 
 def _stop(proc_name):
@@ -56,9 +57,9 @@ def _stop(proc_name):
         return
 
     for _ in range(10):
-        time.sleep(5)
         if _kill_name(proc_name, 'KILL'):
             return
+        time.sleep(5)
 
     pids = sh.pids_of(proc_name)
     if pids:
@@ -75,7 +76,7 @@ def reset(module=None):
 
 def reload_uwsgi(module):
     pattern = f'({module}).uwsgi.pid'
-    for p in misc.find_files(pid_dir, pattern):
+    for p in misc.find_files(_PID_DIR, pattern):
         gws.log.info(f'reloading {p}...')
         sh.run(['uwsgi', '--reload', p])
 
@@ -84,7 +85,8 @@ def _reload(reconfigure, config_path, module=None):
     pid = sh.pids_of('uwsgi')
     if not pid:
         gws.log.info('server not running, starting...')
-        return start(config_path)
+        start(config_path)
+        return
 
     if reconfigure:
         configure(config_path)

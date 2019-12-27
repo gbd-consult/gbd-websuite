@@ -4,10 +4,11 @@ from . import control
 COMMAND = 'server'
 
 
-def start():
-    """Start the server"""
+@arg('--cfg', help='configuration file')
+def start(cfg=None):
+    """Create the server start script."""
 
-    control.start()
+    control.start(cfg)
 
 
 def stop():
@@ -16,17 +17,11 @@ def stop():
     control.stop()
 
 
-@arg('--path', help='configuration file')
-def reload(path=None):
+@arg('--cfg', help='configuration file')
+def reload(cfg=None):
     """Reconfigure and gracefully reload the server"""
 
-    control.reload(path)
-
-
-def reset():
-    """Gracefully reload the server without reconfiguring"""
-
-    control.reset()
+    control.reload(cfg)
 
 
 @arg('--module', help='server module to reset')
@@ -36,7 +31,8 @@ def reset(module=None):
     control.reset(module)
 
 
-def configure():
+@arg('--cfg', help='configuration file')
+def configure(cfg=None):
     """Configure the server"""
 
-    control.configure()
+    control.configure(cfg)
