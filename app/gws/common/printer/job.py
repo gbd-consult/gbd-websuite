@@ -130,8 +130,6 @@ class _Worker:
             self.render_view.size_mm = units.px2mm_2((p.mapWidth, p.mapHeight), units.OGC_SCREEN_PPI)
             self.render_view.size_px = units.mm2px_2(self.render_view.size_mm, self.render_view.dpi)
 
-        gws.p(self.render_view)
-
         self.common_render_items = self.prepare_render_items(p.items)
 
         self.sections: t.List[PreparedSection] = [self.prepare_section(sec) for sec in p.sections]

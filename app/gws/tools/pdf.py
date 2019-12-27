@@ -15,7 +15,6 @@ def render_html_with_map(html, page_size, margin, out_path, render_output: t.Ren
 
     for r in render_output.items:
         if r.type == t.RenderOutputItemType.image:
-            gws.p(r.image)
             path = dir + '/' + gws.random_string(64) + '.png'
             r.image.save(path, 'png')
             map_html.append(f'<img style="{css}" src="{path}"/>')
