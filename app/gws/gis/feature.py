@@ -42,7 +42,7 @@ def new(args: dict):
 
 class Feature(t.Feature):
     def __init__(self, uid=None, attributes=None, elements=None, shape=None, style=None):
-        if uid and _COMBINED_UID_DELIMITER in uid:
+        if isinstance(uid, str) and _COMBINED_UID_DELIMITER in uid:
             uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
 
         self.uid = uid
