@@ -78,7 +78,7 @@ class Object(gws.common.ows.provider.Object):
         p = gws.extend(p, args.params)
 
         text = gws.gis.ows.request.get_text(op.get_url, service='WMS', request='GetFeatureInfo', params=p)
-        return gws.gis.ows.response.parse(text, crs=args.crs)
+        return gws.gis.ows.formats.read(text, crs=args.crs)
 
     @gws.cached_property
     def _info_format(self):

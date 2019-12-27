@@ -21,7 +21,7 @@ text_formats = [
 ]
 
 
-def parse(s, **kwargs) -> t.List[t.Feature]:
+def read(s, **kwargs) -> t.List[t.Feature]:
     first_el = gws.tools.xml3.peek(s)
 
     if first_el:

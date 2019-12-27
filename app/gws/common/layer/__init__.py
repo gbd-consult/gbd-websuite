@@ -103,8 +103,8 @@ class BaseConfig(t.WithTypeAndAccess):
     legend: LegendConfig = {}  #: legend configuration
     meta: t.Optional[t.MetaData]  #: layer meta data
     opacity: float = 1  #: layer opacity
-    search: gws.common.search.Config = {}  #: layer search configuration
     ows: t.Optional[OwsConfig]  #: OWS services options
+    search: gws.common.search.Config = {}  #: layer search configuration
     title: str = ''  #: layer title
     uid: str = ''  #: layer unique id
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
@@ -122,11 +122,10 @@ class ImageTileConfig(ImageConfig):
 
 class VectorConfig(BaseConfig):
     display: DisplayMode = 'client'  #: layer display mode
-
+    editDataModel: t.Optional[t.ModelConfig]  #: data model for input data
     editStyle: t.Optional[t.StyleProps]  #: style for features being edited
-    editDataModel: t.Optional[t.ModelConfig]  #: data model for the input data
-    style: t.Optional[t.StyleProps]  #: style for features
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
+    style: t.Optional[t.StyleProps]  #: style for features
 
 
 class Props(t.Data):
@@ -525,6 +524,10 @@ class Vector(Base):
             'editStyle': self.edit_style,
             'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetFeatures/layerUid/' + self.uid,
         })
+
+    def connect_feature(self, feature: t.Feature) -> t.Feature:
+        feature.layer = self
+        return feature
 
     def render_bbox(self, rv, client_params=None):
         elements = self.render_svg(rv)

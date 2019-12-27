@@ -119,7 +119,7 @@ class Object(gws.common.ows.provider.Object, types.ProviderObject):
         p = gws.extend(p, args.get('params'))
 
         text = gws.gis.ows.request.get_text(self.url, service='WMS', request='GetFeatureInfo', params=p)
-        return gws.gis.ows.response.parse(text, crs=self.supported_crs[0])
+        return gws.gis.ows.formats.read(text, crs=self.supported_crs[0])
 
     def get_legend(self, source_layers):
         layers = ','.join(sl.name for sl in source_layers)

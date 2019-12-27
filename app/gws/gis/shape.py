@@ -9,15 +9,15 @@ import gws.gis.proj
 import gws.types as t
 
 
-def from_wkt(wkt, crs):
+def from_wkt(wkt, crs) -> 'Shape':
     return Shape(shapely.wkt.loads(wkt), crs)
 
 
-def from_wkb(wkb, crs, hex=True):
+def from_wkb(wkb, crs, hex=True) -> 'Shape':
     return Shape(shapely.wkb.loads(wkb, hex), crs)
 
 
-def from_geometry(geometry, crs):
+def from_geometry(geometry, crs) -> 'Shape':
     if geometry.get('type') == 'Circle':
         geo = shapely.geometry.Point(geometry.get('center'))
         geo = geo.buffer(geometry.get('radius'), 6)
@@ -28,17 +28,17 @@ def from_geometry(geometry, crs):
         crs)
 
 
-def from_props(props: t.ShapeProps):
+def from_props(props: t.ShapeProps) -> 'Shape':
     return from_geometry(
         props.get('geometry'),
         props.get('crs'))
 
 
-def from_bbox(bbox, crs):
+def from_bbox(bbox, crs) -> 'Shape':
     return Shape(shapely.geometry.box(*bbox), crs)
 
 
-def from_xy(x, y, crs):
+def from_xy(x, y, crs) -> 'Shape':
     return Shape(shapely.geometry.Point(x, y), crs)
 
 
@@ -113,7 +113,7 @@ def buffer_point(sh, tolerance, resolution=_DEFAULT_POINT_BUFFER_RESOLUTION):
 
 class Shape(t.Shape):
     crs = ''
-    geo = None
+    geo: shapely.geometry.base.BaseGeometry = None
 
     def __init__(self, geo, crs):
         self.crs = gws.gis.proj.as_epsg(crs)

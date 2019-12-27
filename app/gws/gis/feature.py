@@ -3,6 +3,8 @@ import gws.types as t
 import gws.gis.shape
 import gws.gis.svg
 
+_COMBINED_UID_DELIMITER = '___'
+
 
 def from_geojson(js, crs, key_column='id'):
     atts = {}
@@ -40,7 +42,11 @@ def new(args: dict):
 
 class Feature(t.Feature):
     def __init__(self, uid=None, attributes=None, elements=None, shape=None, style=None):
+        if uid and _COMBINED_UID_DELIMITER in uid:
+            uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
+
         self.uid = uid
+
         self.elements = elements or {}
         self.convertor = None
         self.layer = None
@@ -129,8 +135,11 @@ class Feature(t.Feature):
 
     @property
     def props(self):
+        uid = self.uid or ''
+        if self.layer:
+            uid = self.layer.uid + _COMBINED_UID_DELIMITER + uid
         return t.FeatureProps({
-            'uid': self.uid,
+            'uid': uid,
             'attributes': self.attributes,
             'shape': self.shape.props if self.shape else None,
             'style': self.style,

@@ -8,8 +8,6 @@ import gws.types as t
 
 from . import provider, util
 
-_UID_DELIMITER = '__'
-
 
 class Config(gws.common.layer.VectorConfig):
     """SQL-based layer"""
@@ -54,25 +52,16 @@ class Object(gws.common.layer.Vector):
             'limit': limit,
         }))
 
-        return self._set_layer(fs)
+        return [self.connect_feature(f) for f in fs]
 
     def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.Feature]:
         features = []
 
         for p in feature_props:
-            if p.uid and _UID_DELIMITER in p.uid:
-                p.uid = p.uid.split(_UID_DELIMITER)[-1]
-
             if p.attributes and self.edit_data_model:
                 p.attributes = self.edit_data_model.apply(p.attributes)
 
             features.append(gws.gis.feature.from_props(p))
 
         fs = self.provider.edit_operation(operation, self.table, features)
-        return self._set_layer(fs)
-
-    def _set_layer(self, fs):
-        for f in fs:
-            f.layer = self
-            f.uid = misc.sha256(self.uid) + _UID_DELIMITER + str(f.uid)
-        return fs
+        return [self.connect_feature(f) for f in fs]

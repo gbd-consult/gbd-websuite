@@ -68,4 +68,4 @@ class Object(gws.common.ows.provider.Object):
 
         url = self.operation('GetFeature').get_url
         text = gws.gis.ows.request.get_text(url, service='WFS', request='GetFeature', params=p)
-        return gws.gis.ows.response.parse(text, invert_axis=invert_axis)
+        return gws.gis.ows.formats.read(text, invert_axis=invert_axis)
