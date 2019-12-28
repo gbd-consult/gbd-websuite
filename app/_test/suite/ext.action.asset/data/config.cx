@@ -1,0 +1,25 @@
+server.mapproxy.enabled false
+server.qgis.enabled false
+server.spool.enabled false
+
+access+ { role "all" type "allow" }
+
+api.actions+ { type "asset" }
+
+projects+ {
+    uid "allow_std_mime"
+    assets.dir "/data/assets"
+}
+
+projects+ {
+    uid "allow_only_pdf"
+    assets.dir "/data/assets"
+    assets.allowMime ["application/pdf", "application/foo"]
+}
+
+projects+ {
+    uid "allow_all_but_pdf"
+    assets.dir "/data/assets"
+    assets.denyMime ["application/pdf", "application/foo"]
+}
+
