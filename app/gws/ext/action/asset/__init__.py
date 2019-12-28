@@ -1,14 +1,15 @@
 import os
 
 import gws
+import gws.common.template
 import gws.config
 import gws.server
-import gws.web.error
-import gws.tools.mime
 import gws.tools.job
+import gws.tools.mime
+import gws.tools.misc
+import gws.web.error
 
 import gws.types as t
-import gws.common.template
 
 
 class Config(t.WithTypeAndAccess):
@@ -18,6 +19,7 @@ class Config(t.WithTypeAndAccess):
 
 class GetPathParams(t.Params):
     path: str
+
 
 class GetResultParams(t.Params):
     jobUid: str
@@ -33,8 +35,7 @@ class Object(gws.ActionObject):
         return self._serve_path(req, p)
 
     def http_get_download(self, req: gws.web.AuthRequest, p) -> t.HttpResponse:
-        # @TODO
-        pass
+        return self._serve_path(req, p, True)
 
     def http_get_result(self, req: gws.web.AuthRequest, p: GetResultParams) -> t.HttpResponse:
         job = gws.tools.job.get_for(req.user, p.jobUid)
@@ -47,7 +48,11 @@ class Object(gws.ActionObject):
             'content': content
         })
 
-    def _serve_path(self, req: gws.web.AuthRequest, p):
+    def _serve_path(self, req: gws.web.AuthRequest, p: GetPathParams, as_attachment=False):
+        spath = str(p.get('path') or '')
+        if not spath:
+            raise gws.web.error.NotFound()
+
         site_assets = req.site.assets_root
 
         project = None
@@ -58,7 +63,6 @@ class Object(gws.ActionObject):
             project = req.require_project(project_uid)
             project_assets = project.assets_root
 
-        spath = str(p.get('path') or '')
         rpath = None
 
         if project_assets:
@@ -68,38 +72,46 @@ class Object(gws.ActionObject):
         if not rpath:
             raise gws.web.error.NotFound()
 
-        gws.log.info(f'serving {rpath!r} for {spath!r}')
+        if not as_attachment:
 
-        template_type = gws.common.template.type_from_path(rpath)
-        if template_type:
-            tpl = self.create_shared_object('gws.ext.template', rpath, t.Config({
-                'type': template_type,
-                'path': rpath
-            }))
-            context = _default_template_context(req, project)
-            context['params'] = p
-            tr = tpl.render(context)
-            # @TODO handle path
-            return t.HttpResponse({
-                'mime': tr.mime,
-                'content': tr.content
-            })
+            template_type = gws.common.template.type_from_path(rpath)
+
+            if template_type:
+                tpl = self.create_shared_object('gws.ext.template', rpath, t.Config({
+                    'type': template_type,
+                    'path': rpath
+                }))
+
+                context = gws.extend(
+                    _default_template_context(req, project),
+                    params=p)
+
+                tr = tpl.render(context)
+
+                return t.HttpResponse({
+                    'mime': tr.mime,
+                    'content': tr.content
+                })
 
         mt = gws.tools.mime.for_path(rpath)
 
-        # @TODO check project mime types config
-
-        if mt not in gws.tools.mime.default_allowed:
+        if not _valid_mime_type(mt, project_assets, site_assets):
             gws.log.error(f'invalid mime path={rpath!r} mt={mt!r}')
+            # NB: pretend the file doesn't exist
             raise gws.web.error.NotFound()
 
-            # @TODO optimize streaming
+        gws.log.info(f'serving {rpath!r} for {spath!r}')
 
-        with open(rpath, 'rb') as fp:
-            s = fp.read()
-        return t.HttpResponse({
+        attachment_name = None
+
+        if as_attachment:
+            p = gws.tools.misc.parse_path(spath)
+            attachment_name = p['name'] + '.' + gws.tools.mime.extension(mt)
+
+        return t.FileResponse({
             'mime': mt,
-            'content': s
+            'path': rpath,
+            'attachment_name': attachment_name,
         })
 
 
@@ -139,3 +151,17 @@ def _default_template_context(req, project):
         'request': req,
         'user': req.user,
     }
+
+
+def _valid_mime_type(mt, project_assets, site_assets):
+    if project_assets and project_assets.allowMime:
+        return mt in project_assets.allowMime
+    if site_assets and site_assets.allowMime:
+        return mt in site_assets.allowMime
+    if mt not in gws.tools.mime.default_allowed:
+        return False
+    if project_assets and project_assets.denyMime:
+        return mt not in project_assets.denyMime
+    if site_assets and site_assets.denyMime:
+        return mt not in site_assets.denyMime
+    return True

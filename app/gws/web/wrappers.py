@@ -1,5 +1,8 @@
+import os
+
 import werkzeug.wrappers
 from werkzeug.utils import cached_property
+from werkzeug.wsgi import wrap_file
 
 import gws
 import gws.tools.net
@@ -17,8 +20,8 @@ _struct_mime = {
     _MSGPACK: 'application/msgpack',
 }
 
-
 Response = werkzeug.wrappers.Response
+
 
 class Request:
     def __init__(self, root: t.RootObject, environ: dict, site: t.WebSiteObject):
@@ -34,7 +37,24 @@ class Request:
         return Response(
             content,
             mimetype=mimetype,
-            status=status)
+            status=status
+        )
+
+    def file_response(self, path, mimetype, status=200, attachment_name=None):
+        headers = {
+            'Content-Length': os.path.getsize(path)
+        }
+        if attachment_name:
+            headers['Content-Disposition'] = f'attachment; filename="{attachment_name}"'
+
+        fp = wrap_file(self.environ, open(path, 'rb'))
+        return Response(
+            fp,
+            mimetype=mimetype,
+            status=status,
+            headers=headers,
+            direct_passthrough=True
+        )
 
     def struct_response(self, data, status=200):
         typ = self.expected_struct or _JSON

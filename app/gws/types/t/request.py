@@ -33,6 +33,13 @@ class HttpResponse(Response):
     status: int
 
 
+class FileResponse(Response):
+    mime: str
+    path: str
+    status: int
+    attachment_name: str
+
+
 class Request:
     environ: dict
     cookies: dict

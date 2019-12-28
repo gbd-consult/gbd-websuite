@@ -124,6 +124,9 @@ def _handle_action(root: t.RootObject, req):
     if isinstance(r, t.HttpResponse):
         return req.response(r.content, r.mime, r.get('status', 200))
 
+    if isinstance(r, t.FileResponse):
+        return req.file_response(r.path, r.mime, r.get('status', 200), r.get('attachment_name'))
+
     return req.struct_response(r)
 
 
