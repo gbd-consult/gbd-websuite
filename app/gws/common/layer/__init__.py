@@ -264,7 +264,6 @@ class Base(t.LayerObject, gws.Object):
             self.map.resolutions)
 
         self.crs = self.var('crs') or self.map.crs
-        self.extent = self.var('extent') or self.map.extent
 
         p = self.var('search')
         if p.enabled and p.providers:
@@ -297,21 +296,6 @@ class Base(t.LayerObject, gws.Object):
         self.has_cache = self.cache and self.cache.enabled
 
         self.grid = self.var('grid')
-
-    def configure_extent(self, default_extent):
-        self.extent = self.calc_extent(default_extent)
-        if not all(math.isfinite(p) for p in self.extent):
-            raise gws.Error(f'invalid extent {self.extent} in {self.uid!r}')
-
-    def calc_extent(self, default_extent):
-        if self.var('extent'):
-            return self.var('extent')
-        if not default_extent:
-            return self.map.extent
-        buf = self.var('extentBuffer', parent=True)
-        if buf:
-            return gws.gis.shape.buffer_extent(default_extent, buf)
-        return default_extent
 
     def edit_access(self, user):
         # @TODO granular edit access
@@ -569,4 +553,4 @@ def extent_from_source_layers(layer):
                 source_extents.append(gws.gis.proj.transform_bbox(ext, crs, layer.map.crs))
                 break
     if source_extents:
-        return gws.gis.shape.merge_extents(source_extents)
+        return gws.gis.extent.merge(source_extents)

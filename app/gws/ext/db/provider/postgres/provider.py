@@ -31,7 +31,6 @@ PING_TIMEOUT = 5
 
 
 class Object(gws.common.db.provider.sql.Object):
-    conn = None
     error = driver.Error
 
     @property
@@ -64,19 +63,13 @@ class Object(gws.common.db.provider.sql.Object):
 
         gws.get_global(f'db_ping_{self.uid}', ping)
 
-    def geometry_props(self, table: t.SqlTableConfig):
-        col = gws.get(table, 'geometryColumn')
-        if not col:
-            return [None, None]
-
-        def props():
+    def describe(self, table) -> t.SqlTableDescription:
+        def f():
             with self.connect() as conn:
-                return [
-                    conn.crs_for_column(table.name, col),
-                    conn.geometry_type_for_column(table.name, col)
-                ]
+                return {c['name']: t.SqlTableColumn(c) for c in conn.columns(table.name)}
 
-        return gws.get_global('geometry_props.' + table.name + '.' + col, props)
+        key = 'gws.ext.provider.postgres.describe.' + table.name
+        return gws.get_global(key, f)
 
     def select(self, args: t.SelectArgs, extra_connect_params=None) -> t.List[t.Feature]:
 
@@ -216,10 +209,3 @@ class Object(gws.common.db.provider.sql.Object):
             'uids': list(uids),
         }))
 
-    def describe(self, table) -> t.SqlTableDescription:
-        def f():
-            with self.connect() as conn:
-                return {c['name']: t.SqlTableColumn(c) for c in conn.columns(table.name)}
-
-        key = 'gws.ext.provider.postgres.describe.' + table.name
-        return gws.get_global(key, f)

@@ -2,7 +2,7 @@ import re
 
 import gws
 import gws.gis.proj
-import gws.gis.shape
+import gws.gis.extent
 
 import gws.types as t
 
@@ -75,10 +75,12 @@ def best_source_layer_extent(sl: t.SourceLayer, map_crs):
 
 
 def extent_from_layers(sls: t.List[t.SourceLayer], map_crs):
-    source_extents = []
+    exts = []
     for sl in sls:
         if sl.extents:
             crs, ext = best_source_layer_extent(sl, map_crs)
-            source_extents.append(gws.gis.proj.transform_bbox(ext, crs, map_crs))
-    if source_extents:
-        return gws.gis.shape.merge_extents(source_extents)
+            ext = gws.gis.extent.valid(ext)
+            if ext:
+                exts.append(gws.gis.proj.transform_bbox(ext, crs, map_crs))
+    if exts:
+        return gws.gis.extent.merge(exts)

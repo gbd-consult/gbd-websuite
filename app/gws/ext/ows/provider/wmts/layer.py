@@ -49,7 +49,10 @@ class Object(gws.common.layer.ImageTile):
             self.legend_url = self.source_layer.legend
 
         self.has_legend = self.var('legend.enabled') and bool(self.legend_url)
-        self.configure_extent(gws.gis.source.extent_from_layers([self.source_layer], self.map.crs))
+
+    @property
+    def own_extent(self):
+        return gws.gis.source.extent_from_layers([self.source_layer], self.map.crs)
 
     def mapproxy_config(self, mc):
         m0 = self.matrix_set.matrices[0]

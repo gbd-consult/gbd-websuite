@@ -537,6 +537,7 @@ class LayerObject(Object):
 
     crs: Crs
     extent: Extent
+    own_extent: Extent
     resolutions: List[float]
 
     data_model: 'ModelObject'

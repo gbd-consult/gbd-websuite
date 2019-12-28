@@ -13,6 +13,7 @@ import gws.types as t
 
 from . import provider
 
+
 class Config(gws.common.layer.ImageConfig):
     """QGIS Project layer"""
 
@@ -63,7 +64,9 @@ class Object(gws.common.layer.Base):
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
         self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
 
-        self.configure_extent(gws.gis.source.extent_from_layers(self.source_layers, self.map.crs))
+    @property
+    def own_extent(self):
+        return gws.gis.source.extent_from_layers(self.source_layers, self.map.crs)
 
     def render_legend(self):
         if self.legend_url:

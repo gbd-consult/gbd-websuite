@@ -1,3 +1,5 @@
+import math
+
 import shapely.geometry
 import shapely.wkb
 import shapely.wkt
@@ -40,48 +42,6 @@ def from_bbox(bbox, crs) -> 'Shape':
 
 def from_xy(x, y, crs) -> 'Shape':
     return Shape(shapely.geometry.Point(x, y), crs)
-
-
-def merge_extents(exts):
-    exts = list(exts)
-    if not exts:
-        return
-
-    ex = [1e20, 1e20, 0, 0]
-    for e in exts:
-        minx = min(e[0], e[2])
-        maxx = max(e[0], e[2])
-        miny = min(e[1], e[3])
-        maxy = max(e[1], e[3])
-        ex = [
-            min(ex[0], minx),
-            min(ex[1], miny),
-            max(ex[2], maxx),
-            max(ex[3], maxy)
-        ]
-    return ex
-
-
-def constrain_extent(a, b):
-    return [
-        max(a[0], b[0]),
-        max(a[1], b[1]),
-        min(a[2], b[2]),
-        min(a[3], b[3]),
-    ]
-
-
-def buffer_extent(e, buf):
-    return [
-        e[0] - buf,
-        e[1] - buf,
-        e[2] + buf,
-        e[3] + buf,
-    ]
-
-
-def extents_intersect(a, b):
-    return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
 
 
 def union(shapes):

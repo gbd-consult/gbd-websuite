@@ -142,6 +142,12 @@ class Connection:
         with self.conn.cursor() as cur:
             return self._exec(cur, sql, params)
 
+    def execute_many(self, *pairs):
+        with self.conn.cursor() as cur:
+            for p in pairs:
+                sql, params = p[0], p[1] if len(p) > 1 else None
+                self._exec(cur, sql, params)
+
     @contextmanager
     def transaction(self):
         self.exec('BEGIN')

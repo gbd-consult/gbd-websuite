@@ -23,7 +23,7 @@ class Response(t.Response):
 
 
 class Params(t.Params):
-    bbox: t.Extent
+    bbox: t.Optional[t.Extent]
     keyword: str = ''
     layerUids: t.List[str]
     pixelTolerance: int = 10
@@ -53,7 +53,7 @@ class Object(gws.ActionObject):
         project = req.require_project(p.projectUid)
 
         args = t.SearchArguments({
-            'bbox': p.bbox,
+            'bbox': p.bbox or project.map.extent,
             'crs': project.map.crs,
             'keyword': (p.keyword or '').strip(),
             'layers': gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids),

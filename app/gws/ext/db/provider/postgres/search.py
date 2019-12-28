@@ -12,8 +12,6 @@ class Config(gws.common.search.provider.Config):
     db: t.Optional[str]  #: database provider uid
     table: t.SqlTableConfig  #: sql table configuration
     sort: t.Optional[str]  #: sort expression
-    geometryRequired: bool = False
-    keywordRequired: bool = False
 
 
 class Object(gws.common.search.provider.Object):
@@ -28,13 +26,6 @@ class Object(gws.common.search.provider.Object):
         self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
         self.table = util.configure_table(self, self.provider)
 
-
-    def can_run(self, args):
-        if self.keyword_required and not args.keyword:
-            return False
-        if self.geometry_required and not args.shapes:
-            return False
-        return args.keyword or args.shapes
 
     def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
 

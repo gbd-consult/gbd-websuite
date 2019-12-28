@@ -8,6 +8,8 @@ class Config(t.WithTypeAndAccess):
     defaultContext: str = ''  #: default spatial context ('view' or 'map')
     featureFormat: t.Optional[t.FeatureFormatConfig]  #: feature formatting options
     dataModel: t.Optional[t.ModelConfig]  #: feature data model
+    geometryRequired: bool = False
+    keywordRequired: bool = False
 
 
 class Object(gws.Object, t.SearchProviderObject):
@@ -29,6 +31,13 @@ class Object(gws.Object, t.SearchProviderObject):
 
         self.keyword_required = self.var('keywordRequired')
         self.geometry_required = self.var('geometryRequired')
+
+    def can_run(self, args: t.SearchArguments):
+        if self.keyword_required and not args.keyword:
+            return False
+        if self.geometry_required and not args.shapes:
+            return False
+        return args.keyword or args.shapes
 
     def context_shape(self, args: t.SearchArguments):
         if args.get('shapes'):

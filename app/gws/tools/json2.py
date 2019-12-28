@@ -1,3 +1,4 @@
+import datetime
 import json
 import hashlib
 import gws
@@ -12,8 +13,8 @@ def from_path(path):
         with open(path, 'rb') as fp:
             s = fp.read()
             return json.loads(s.decode('utf8'))
-    except Exception:
-        raise Error()
+    except Exception as e:
+        raise Error() from e
 
 
 def from_string(s):
@@ -21,8 +22,8 @@ def from_string(s):
         return {}
     try:
         return json.loads(s)
-    except Exception:
-        raise Error()
+    except Exception as e:
+        raise Error() from e
 
 
 def to_path(path, x, pretty=False):
@@ -37,14 +38,14 @@ def to_path(path, x, pretty=False):
 def to_string(x, pretty=False):
     try:
         if pretty:
-            return json.dumps(x, default=gws.as_dict, indent=4, sort_keys=True)
-        return json.dumps(x, default=gws.as_dict)
+            return json.dumps(x, default=_json_default, indent=4, sort_keys=True)
+        return json.dumps(x, default=_json_default)
     except Exception as e:
-        raise Error()
+        raise Error() from e
 
 
 def to_hash(x):
-    s = json.dumps(x, default=gws.as_dict, sort_keys=True)
+    s = json.dumps(x, default=_json_default, sort_keys=True)
     return hashlib.sha256(s.encode('utf8')).hexdigest()
 
 
@@ -98,3 +99,9 @@ def to_tagged_dict(x):
 
 def to_tagged_string(x, pretty=False):
     return to_string(to_tagged_dict(x), pretty)
+
+
+def _json_default(x):
+    if hasattr(x, 'as_dict'):
+        return x.as_dict()
+    return str(x)
