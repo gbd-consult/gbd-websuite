@@ -4,12 +4,16 @@ import gws.types as t
 import gws.auth.user
 
 
-class Object(gws.Object, t.AuthProviderObject):
-    def unmarshal_user(self, user_uid, s):
-        s = gws.tools.json2.from_string(s)
+#:stub AuthProviderObject
+class Object(gws.Object):
+    def get_user(self, user_uid: str) -> t.User:
+        pass
+
+    def unmarshal_user(self, user_uid: str, json: str) -> t.User:
+        s = gws.tools.json2.from_string(json)
         return gws.auth.user.ValidUser().init_from_cache(self, user_uid, s['roles'], s['attributes'])
 
-    def marshal_user(self, u):
+    def marshal_user(self, user: t.User) -> str:
         return gws.tools.json2.to_string({
             'roles': list(u.roles),
             'attributes': u.attributes

@@ -87,7 +87,7 @@ _PAPER_COLOR = 'white'
 
 
 class _Worker:
-    def __init__(self, job_uid, base_path, p: pt.PrintParams, user: t.AuthUser):
+    def __init__(self, job_uid, base_path, p: pt.PrintParams, user: t.User):
         self.job_uid = job_uid
         self.base_path = base_path
         self.p = p

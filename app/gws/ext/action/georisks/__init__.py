@@ -225,7 +225,7 @@ class Object(gws.ActionObject):
         with self.db.connect() as conn:
             self.crs = conn.crs_for_column(self.REPORT_TABLE_NAME, 'geom')
 
-    def api_create_report(self, req: gws.web.AuthRequest, p: CreateReportParams) -> CreateReportResponse:
+    def api_create_report(self, req: t.WebRequest, p: CreateReportParams) -> CreateReportResponse:
         """Upload a new report"""
 
         rec = {
@@ -268,7 +268,7 @@ class Object(gws.ActionObject):
             'reportUid': uid
         })
 
-    def api_report_status(self, req: gws.web.AuthRequest, p: ReportStatusParams) -> ReportStatusResponse:
+    def api_report_status(self, req: t.WebRequest, p: ReportStatusParams) -> ReportStatusResponse:
         """Query the status of the reports"""
 
         ls = []
@@ -295,7 +295,7 @@ class Object(gws.ActionObject):
             'items': ls
         })
 
-    def api_report_list(self, req: gws.web.AuthRequest, p: t.NoParams) -> ReportListResponse:
+    def api_report_list(self, req: t.WebRequest, p: t.NoParams) -> ReportListResponse:
         """Return all approved reports"""
 
         ls = []
@@ -332,7 +332,7 @@ class Object(gws.ActionObject):
         if r.get(f'image{n}'):
             return f"/_/cmd/georisksHttpGetReportImage/reportUid/{r['id']}/image/{n}.png"
 
-    def http_get_report_image(self, req: gws.web.AuthRequest, p) -> t.HttpResponse:
+    def http_get_report_image(self, req: t.WebRequest, p) -> t.HttpResponse:
         # params are reportUid, image (1.._MAX_IMAGES)
 
         image = gws.as_int(req.params.get('image')) or 1
@@ -400,7 +400,7 @@ class Object(gws.ActionObject):
         img.save(out, format='JPEG', quality=self.var('report.imageQuality'))
         return out.getvalue(), img.width, img.height
 
-    def http_get_aartelink(self, req: gws.web.AuthRequest, p) -> AartelinkResponse:
+    def http_get_aartelink(self, req: t.WebRequest, p) -> AartelinkResponse:
         """Endpoint for EASD/AarteLink callbacks."""
 
         try:

@@ -32,7 +32,7 @@ class Object(gws.common.search.provider.Object):
                 and not args.keyword
         )
 
-    def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
+    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
         shape = gws.gis.shape.union(args.shapes)
         if shape.type == 'Point':
             shape = shape.tolerance_buffer(args.get('tolerance'))

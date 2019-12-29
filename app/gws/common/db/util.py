@@ -2,9 +2,9 @@ import gws
 import gws.types as t
 
 
-def require_provider(obj: t.Object, klass='gws.ext.db.provider') -> t.DbProviderObject:
+def require_provider(obj: t.Object, klass='gws.ext.db.provider') -> t.SqlProviderObject:
     s = obj.var('db')
-    prov: t.DbProviderObject
+    prov: t.SqlProviderObject
     if s:
         prov = obj.root.find('gws.ext.db.provider', s)
     else:

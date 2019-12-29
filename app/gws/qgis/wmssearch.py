@@ -45,7 +45,7 @@ class Object(gws.common.search.provider.Object):
                 and not args.keyword
         )
 
-    def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
+    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
         qgis_crs = self.provider.supported_crs[0]
 
         shape = args.shapes[0]
@@ -54,7 +54,7 @@ class Object(gws.common.search.provider.Object):
 
         geo = t.cast(shapely.geometry.point.Point, shape.geo)
 
-        args = t.SearchArguments({
+        args = t.SearchArgs({
             'bbox': shape.bounds,
             'count': args.limit,
             'layers': [sl.name for sl in self.source_layers],

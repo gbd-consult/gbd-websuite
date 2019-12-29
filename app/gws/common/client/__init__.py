@@ -38,7 +38,8 @@ class Element(gws.Object):
         })
 
 
-class Object(gws.Object, t.ClientObject):
+#:stub ClientObject
+class Object(gws.Object):
     def configure(self):
         super().configure()
 

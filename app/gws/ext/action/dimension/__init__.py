@@ -19,7 +19,7 @@ class Config(t.WithTypeAndAccess):
 
 class Object(gws.ActionObject):
 
-    def api_options(self, req: gws.web.AuthRequest, p: OptionsParams) -> OptionsResponse:
+    def api_options(self, req: t.WebRequest, p: OptionsParams) -> OptionsResponse:
         req.require_project(p.projectUid)
 
         return OptionsResponse({

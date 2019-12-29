@@ -11,7 +11,8 @@ def from_config(p: t.StyleConfig) -> t.Style:
     return from_props(p)
 
 
-class Style(t.Style):
+#:stub Style
+class Style:
     def __init__(self, type, content):
         super().__init__()
         self.type = type

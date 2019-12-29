@@ -35,13 +35,13 @@ class Object(gws.common.search.provider.Object):
                 and not args.keyword
         )
 
-    def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
+    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
         shape = args.shapes[0]
         crs = gws.gis.util.best_crs(args.crs, self.provider.supported_crs)
         shape = shape.transform(crs)
         axis = gws.gis.util.best_axis(args.crs, self.invert_axis_crs, 'WMS', self.provider.version)
 
-        fa = t.SearchArguments({
+        fa = t.SearchArgs({
             'axis': axis,
             'bbox': '',
             'count': args.limit,

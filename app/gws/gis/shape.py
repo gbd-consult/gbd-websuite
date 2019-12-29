@@ -71,48 +71,46 @@ def buffer_point(sh, tolerance, resolution=_DEFAULT_POINT_BUFFER_RESOLUTION):
     return Shape(sh.geo.buffer(tolerance, resolution), sh.crs)
 
 
-class Shape(t.Shape):
-    crs = ''
-    geo: shapely.geometry.base.BaseGeometry = None
-
+#:stub Shape
+class Shape:
     def __init__(self, geo, crs):
-        self.crs = gws.gis.proj.as_epsg(crs)
-        self.crs_code = self.crs.split(':')[1]
-        self.geo = geo
+        self.crs: t.Crs = gws.gis.proj.as_epsg(crs)
+        self.crs_code: str = self.crs.split(':')[1]
+        self.geo: shapely.geometry.base.BaseGeometry  = geo
 
     @property
-    def type(self):
+    def type(self) -> str:
         return self.geo.type
 
     @property
-    def props(self):
+    def props(self) -> t.ShapeProps:
         return t.ShapeProps({
             'crs': self.crs,
             'geometry': shapely.geometry.mapping(self.geo),
         })
 
     @property
-    def wkb(self):
+    def wkb(self) -> str:
         return self.geo.wkb
 
     @property
-    def wkb_hex(self):
+    def wkb_hex(self) -> str:
         return self.geo.wkb_hex
 
     @property
-    def wkt(self):
+    def wkt(self) -> str:
         return self.geo.wkt
 
     @property
-    def bounds(self):
+    def bounds(self) -> t.Extent:
         return self.geo.bounds
 
-    def tolerance_buffer(self, tolerance, resolution=_DEFAULT_POINT_BUFFER_RESOLUTION):
+    def tolerance_buffer(self, tolerance, resolution=None) -> t.Shape:
         if not tolerance:
             return self
-        return Shape(self.geo.buffer(tolerance, resolution), self.crs)
+        return Shape(self.geo.buffer(tolerance, resolution or _DEFAULT_POINT_BUFFER_RESOLUTION), self.crs)
 
-    def transform(self, to_crs):
+    def transform(self, to_crs) -> t.Shape:
         if gws.gis.proj.equal(to_crs, self.crs):
             return self
         return Shape(

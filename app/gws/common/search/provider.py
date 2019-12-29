@@ -12,7 +12,8 @@ class Config(t.WithTypeAndAccess):
     keywordRequired: bool = False
 
 
-class Object(gws.Object, t.SearchProviderObject):
+#:stub SearchProviderObject
+class Object(gws.Object):
     def __init__(self):
         super().__init__()
         self.geometry_required: bool = False
@@ -32,14 +33,14 @@ class Object(gws.Object, t.SearchProviderObject):
         self.keyword_required = self.var('keywordRequired')
         self.geometry_required = self.var('geometryRequired')
 
-    def can_run(self, args: t.SearchArguments):
+    def can_run(self, args: t.SearchArgs):
         if self.keyword_required and not args.keyword:
             return False
         if self.geometry_required and not args.shapes:
             return False
         return args.keyword or args.shapes
 
-    def context_shape(self, args: t.SearchArguments):
+    def context_shape(self, args: t.SearchArgs):
         if args.get('shapes'):
             return gws.gis.shape.union(args.get('shapes'))
         ctx = self.var('defaultContext')

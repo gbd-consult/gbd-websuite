@@ -27,17 +27,17 @@ class GetResultParams(t.Params):
 
 class Object(gws.ActionObject):
 
-    def api_get(self, req: gws.web.AuthRequest, p: GetPathParams) -> t.HttpResponse:
+    def api_get(self, req: t.WebRequest, p: GetPathParams) -> t.HttpResponse:
         """Return an asset under the given path and project"""
         return self._serve_path(req, p)
 
-    def http_get_path(self, req: gws.web.AuthRequest, p: GetPathParams) -> t.HttpResponse:
+    def http_get_path(self, req: t.WebRequest, p: GetPathParams) -> t.HttpResponse:
         return self._serve_path(req, p)
 
-    def http_get_download(self, req: gws.web.AuthRequest, p) -> t.HttpResponse:
+    def http_get_download(self, req: t.WebRequest, p) -> t.HttpResponse:
         return self._serve_path(req, p, True)
 
-    def http_get_result(self, req: gws.web.AuthRequest, p: GetResultParams) -> t.HttpResponse:
+    def http_get_result(self, req: t.WebRequest, p: GetResultParams) -> t.HttpResponse:
         job = gws.tools.job.get_for(req.user, p.jobUid)
         if not job or job.state != gws.tools.job.State.complete:
             raise gws.web.error.NotFound()
@@ -48,7 +48,7 @@ class Object(gws.ActionObject):
             'content': content
         })
 
-    def _serve_path(self, req: gws.web.AuthRequest, p: GetPathParams, as_attachment=False):
+    def _serve_path(self, req: t.WebRequest, p: GetPathParams, as_attachment=False):
         spath = str(p.get('path') or '')
         if not spath:
             raise gws.web.error.NotFound()

@@ -12,7 +12,7 @@ class Object(gws.common.auth.provider.Object):
         return None
 
     def get_user(self, user_uid):
-        user: t.AuthUser = None
+        user: t.User = None
         if user_uid == 'guest':
             user = self.root.create(gws.auth.user.Guest)
             return user.init_from_source(self, uid='guest')

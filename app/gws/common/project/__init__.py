@@ -49,19 +49,20 @@ class Props(t.Data):
     uid: str
 
 
-class Object(gws.Object, t.ProjectObject):
+#:stub ProjectObject
+class Object(gws.Object):
     def __init__(self):
         super().__init__()
 
-        self.api: gws.common.api.Object = None
+        self.api: t.ApiObject = None
         self.assets_root: t.DocumentRootConfig = None
-        self.client: gws.common.client.Object = None
+        self.client: t.ClientObject = None
         self.description_template: t.TemplateObject = None
         self.locales = []
-        self.map: gws.common.map.Object = None
+        self.map: t.MapObject = None
         self.meta: t.MetaData = {}
-        self.overview_map: gws.common.map.Object = None
-        self.printer: gws.common.printer.Object = None
+        self.overview_map: t.MapObject = None
+        self.printer: t.PrinterObject = None
         self.title = ''
 
     def configure(self):

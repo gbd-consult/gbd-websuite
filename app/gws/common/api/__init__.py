@@ -9,11 +9,14 @@ class Config(t.Config):
     actions: t.Optional[t.List[t.ext.action.Config]]  #: available actions
 
 
-class Object(gws.Object, t.ApiObject):
+#:stub ApiObject
+class Object(gws.Object):
+    def __init__(self):
+        super().__init__()
+        self.actions = {}
+
     def configure(self):
         super().configure()
-
-        self.actions = {}
 
         for p in self.var('actions', []):
             a = self.add_child('gws.ext.action', p)

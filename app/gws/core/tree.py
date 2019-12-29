@@ -15,8 +15,8 @@ def _new_uid(uid):
     _uids.add(u)
     return u
 
-
-class Object(t.Object):
+#:stub Object
+class Object:
     def __init__(self):
         self.children = []
         self.config = None
@@ -41,7 +41,7 @@ class Object(t.Object):
                 self.uid = _new_uid(uid)
 
     @property
-    def auto_uid(self):
+    def auto_uid(self) -> str:
         u = self.var('uid')
         if u:
             return u
@@ -130,10 +130,10 @@ class Object(t.Object):
         return _make_props(self.props, user)
 
     @property
-    def props(self):
-        return t.Props()
+    def props(self) -> t.Props:
+        pass
 
-
+#:stub
 class RootBase(Object):
     def __init__(self):
         super().__init__()

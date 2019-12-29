@@ -79,77 +79,6 @@ class Url(str):
     """An http or https URL"""
     pass
 
-### Basic tree node object.
-
-
-
-
-
-
-
-class Object:
-    children: List['Object']
-    config: Config
-    klass: str
-    parent: 'Object'
-    root: 'RootObject'
-    uid: str
-    props: Props
-
-    def is_a(self, klass):
-        pass
-
-    def initialize(self, cfg):
-        pass
-
-    def configure(self):
-        pass
-
-    def create_object(self, klass, cfg, parent=None) -> 'Object':
-        pass
-
-    def create_shared_object(self, klass, uid, cfg) -> 'Object':
-        pass
-
-    def var(self, key, default=None, parent=False):
-        pass
-
-    def add_child(self, klass, cfg):
-        pass
-
-    def get_children(self, klass) -> List['Object']:
-        pass
-
-    def get_closest(self, klass) -> 'Object':
-        pass
-
-    def find_all(self, klass=None) -> List['Object']:
-        pass
-
-    def find_first(self, klass) -> 'Object':
-        pass
-
-    def find(self, klass, uid) -> 'Object':
-        pass
-
-    def props_for(self, user: 'AuthUser') -> Props:
-        pass
-
-
-class RootObject(Object):
-    application: 'ApplicationObject'
-    all_types: dict
-    all_objects: List['Object']
-    shared_objects: dict
-
-    def create(self, klass, cfg=None) -> 'Object':
-        pass
-
-    def validate_action(self, category: str, cmd: str, payload: dict) -> Tuple[str, str, dict]:
-        pass
-
-# type: ignore
-
 ### Dummy classes to support extension typing.
 
 
@@ -230,10 +159,7 @@ class WithType(Config):
 class WithTypeAndAccess(WithType):
     access: Optional[Access]  #: access rights
 
-# type: ignore
-
 ### Attributes and data models.
-
 
 
 
@@ -294,61 +220,7 @@ class ModelProps(Props):
     rules: List[ModelRule]
 
 
-class ModelObject(Object):
-    rules: List[ModelRule]
-
-    def apply(self, atts: List['Attribute']) -> List['Attribute']:
-        pass
-
-# type: ignore
-
-### Authorization provider and user
-
-
-
-
-
-
-class AuthProviderObject(Object):
-    def authenticate_user(self, login: str, password: str, **kw) -> 'AuthUser':
-        pass
-
-    def get_user(self, user_uid: str) -> 'AuthUser':
-        pass
-
-    def unmarshal_user(self, user_uid: str, s: str) -> 'AuthUser':
-        pass
-
-    def marshal_user(self, user: 'AuthUser') -> str:
-        pass
-
-
-class AuthUser:
-    display_name: str
-    props: Props
-    is_guest: bool
-    full_uid: str
-
-    def init_from_source(self, provider: AuthProviderObject, uid: str, roles: List[str] = None, attributes: dict = None):
-        pass
-
-    def init_from_cache(self, provider: AuthProviderObject, uid: str, roles: List[str], attributes: dict):
-        pass
-
-    def attribute(self, key, default=''):
-        pass
-
-    def can_use(self, obj: 'Object', parent: 'Object' = None) -> bool:
-        pass
-
-class AuthUserProps(Props):
-    displayName: str
-
-# type: ignore
-
 ### Database-related.
-
-
 
 
 
@@ -398,44 +270,11 @@ class SqlTableColumn(Data):
 SqlTableDescription = Dict[str, SqlTableColumn]
 
 
-class DbProviderObject(Object):
-    pass
-
-
-class SqlProviderObject(DbProviderObject):
-    error: type
-    connect_params: dict
-
-    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List['Feature']:
-        pass
-
-    def edit_operation(self, operation: str, table: SqlTable, features: List['Feature']) -> List['Feature']:
-        pass
-
-    def describe(self, table: SqlTable) -> SqlTableDescription:
-        pass
-
-
 class StorageEntry(Data):
     category: str
     name: str
 
-
-class StorageObject(Object):
-    def read(self, entry: StorageEntry, user: 'AuthUser') -> dict:
-        return {}
-
-    def write(self, entry: StorageEntry, user: 'AuthUser', data: dict) -> str:
-        return ''
-
-    def dir(self, user: 'AuthUser') -> List[StorageEntry]:
-        return []
-
 ### Shapes and features.
-
-
-
-
 
 
 
@@ -450,20 +289,6 @@ class ShapeProps(Props):
     crs: str
 
 
-class Shape:
-    crs: Crs
-    geo: shapely.geometry.base.BaseGeometry
-    props: dict
-    type: str
-    wkb: str
-    wkb_hex: str
-    wkt: str
-    bounds: Extent
-
-    def transform(self, to_crs):
-        pass
-
-
 class FeatureProps(Data):
     uid: str = ''
     attributes: List['Attribute'] = ''
@@ -471,129 +296,6 @@ class FeatureProps(Data):
     layerUid: str = ''
     shape: Optional['ShapeProps']
     style: Optional['StyleProps']
-
-
-class FeatureConvertor:
-    feature_format: 'FormatObject'
-    data_model: 'ModelObject'
-
-
-class Feature:
-    attributes: List['Attribute']
-    elements: dict
-    convertor: FeatureConvertor
-    layer: 'LayerObject'
-    props: 'FeatureProps'
-    shape: 'Shape'
-    shape_props: 'ShapeProps'
-    style: 'StyleProps'
-    uid: str
-
-    def transform(self, to_crs):
-        """Transform the feature to another CRS"""
-        pass
-
-    def to_svg(self, rv: 'RenderView', style: 'Style' = None):
-        """Render the feature as SVG"""
-        pass
-
-    def to_geojson(self):
-        """Render the feature as GeoJSON"""
-        pass
-
-    def set_default_style(self, style):
-        pass
-
-    def convert(self, target_crs: Crs, convertor: 'FeatureConvertor' = None) -> 'Feature':
-        pass
-
-### Maps and layers
-
-
-
-
-
-
-
-
-
-
-
-
-
-class LayerObject(Object):
-    has_legend: bool
-    has_cache: bool
-    has_search: bool
-    is_public: bool
-    layers: List['LayerObject']
-
-    map: 'MapObject'
-    meta: 'MetaData'
-    opacity: float
-
-    title: str
-    description: str
-
-    crs: Crs
-    extent: Extent
-    own_extent: Extent
-    resolutions: List[float]
-
-    data_model: 'ModelObject'
-    edit_data_model: 'ModelObject'
-    feature_format: 'FormatObject'
-
-    can_render_svg: bool = False
-    can_render_bbox: bool = False
-    can_render_xyz: bool = False
-
-    style: 'Style'
-    edit_style: 'Style'
-
-    def mapproxy_config(self, mc):
-        pass
-
-    def render_bbox(self, view: 'RenderView', client_params: dict = None) -> bytes:
-        pass
-
-    def render_xyz(self, x, y, z) -> bytes:
-        pass
-
-    def render_svg(self, view: 'RenderView', style: 'Style' = None) -> List[str]:
-        pass
-
-    def render_legend(self) -> bytes:
-        pass
-
-    def get_features(self, bbox, limit) -> List['Feature']:
-        return []
-
-    def edit_access(self, user: 'AuthUser'):
-        pass
-
-    def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['Feature']:
-        return []
-
-    def ows_enabled(self, service: 'OwsServiceObject') -> bool:
-        return False
-
-
-class MapObject(Object):
-    init_resolution: float
-    layers: List['LayerObject']
-    coordinatePrecision: int
-    crs: Crs
-    extent: Extent
-    resolutions: List[float]
-    coordinate_precision: int
-
-
-class ProjectObject(Object):
-    map: MapObject
-    title: str
-    locales: List[str]
-    meta: 'MetaData'
 
 ### Metadata.
 
@@ -678,47 +380,6 @@ class DocumentRootConfig(Config):
 
 
 
-
-
-
-
-class SourceStyle:
-    def __init__(self):
-        self.is_default = False
-        self.legend: Url = ''
-        self.meta = MetaData()
-
-
-class SourceLayer:
-    def __init__(self):
-        self.data_source = {}
-
-        self.supported_crs: List[Crs] = []
-        self.extents: Dict[Crs, Extent] = {}
-
-        self.is_expanded = False
-        self.is_group = False
-        self.is_image = False
-        self.is_queryable = False
-        self.is_visible = False
-
-        self.layers: List['SourceLayer'] = []
-
-        self.meta = MetaData()
-        self.name = ''
-        self.title = ''
-
-        self.opacity = 1
-        self.scale_range: List[float] = []
-        self.styles: List[SourceStyle] = []
-        self.legend = ''
-        self.resource_urls = {}
-
-        self.a_path = ''
-        self.a_uid = ''
-        self.a_level = 0
-
-
 class OwsOperation:
     def __init__(self):
         self.name = ''
@@ -727,40 +388,10 @@ class OwsOperation:
         self.post_url: Url = ''
         self.parameters: dict = {}
 
-
-class OwsProviderObject(Object):
-    meta: 'MetaData'
-    operations: List[OwsOperation]
-    source_layers: List[SourceLayer]
-    supported_crs: List[Crs]
-    type: str
-    url: Url
-    version: str
-
-    def find_features(self, args: 'SearchArguments') -> List[Feature]:
-        pass
-
-    def operation(self, name: str) -> OwsOperation:
-        pass
-
-
-class OwsServiceObject(Object):
-    def __init__(self):
-        super().__init__()
-        self.name: str = ''
-        self.meta: 'MetaData' = None
-        self.type: str = ''
-        self.version: str = ''
-
 ### Request params and responses.
 
 
 
-
-
-
-
-import werkzeug.wrappers
 
 
 class Params(Data):
@@ -793,69 +424,13 @@ class FileResponse(Response):
     status: int
     attachment_name: str
 
-
-class Request:
-    environ: dict
-    cookies: dict
-    has_struct: bool
-    expected_struct: str
-    data: bytes
-    params: dict
-    kparams: dict
-    post_data: str
-    user: 'AuthUser'
-
-    def response(self, content, mimetype: str, status=200) -> werkzeug.wrappers.Response:
-        pass
-
-    def struct_response(self, data, status=200) -> werkzeug.wrappers.Response:
-        pass
-
-    def env(self, key: str, default=None) -> str:
-        pass
-
-    def param(self, key: str, default=None) -> str:
-        pass
-
-    def kparam(self, key: str, default=None) -> str:
-        pass
-
-    def url_for(self, url: str) -> str:
-        pass
-
-    def require(self, klass: str, uid: str) -> Object:
-        pass
-
-    def require_project(self, uid: str) -> 'ProjectObject':
-        pass
-
-    def acquire(self, klass: str, uid: str) -> Object:
-        pass
-
-    def login(self, username: str, password: str):
-        pass
-
-    def logout(self):
-        pass
-
-    def auth_begin(self):
-        pass
-
-    def auth_commit(self, res: werkzeug.wrappers.Response):
-        pass
-
 ### Search
 
 
 
 
 
-
-
-
-
-
-class SearchArguments(Data):
+class SearchArgs(Data):
     axis: str
     bbox: Extent
     count: int
@@ -871,21 +446,6 @@ class SearchArguments(Data):
     shapes: List['Shape']
     tolerance: int
 
-
-class SearchProviderObject(Object):
-    geometry_required: bool
-    keyword_required: bool
-    data_model: 'ModelObject'
-    feature_format: 'FormatObject'
-
-    def can_run(self, args: SearchArguments) -> bool:
-        pass
-
-    def run(self, layer: Optional['LayerObject'], args: SearchArguments) -> List['Feature']:
-        pass
-
-    def context_shape(self, args: SearchArguments):
-        pass
 
 ### Styles
 
@@ -906,16 +466,7 @@ class StyleConfig(Config):
     content: Optional[dict]  #: css rules
     text: Optional[str]  #: raw style content
 
-
-class Style(Data):
-    type: str
-    content: Optional[dict]
-    text: Optional[str]
-    props: 'StyleProps'
-
 ## Map renderer
-
-
 
 
 
@@ -1025,24 +576,6 @@ class TemplateOutput(Data):
     path: str
 
 
-class TemplateObject(Object):
-    data_model: 'ModelObject'
-    map_size: List[int]
-    page_size: List[int]
-
-    def dpi_for_quality(self, quality: int) -> int:
-        pass
-
-    def render(self, context: dict, render_output: 'RenderOutput' = None, out_path: str = None, format: str = None) -> TemplateOutput:
-        pass
-
-    def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:
-        pass
-
-    def normalize_user_data(self, attributes: List['Attribute']) -> List['Attribute']:
-        pass
-
-
 class FeatureFormatConfig(Config):
     """Feature format"""
 
@@ -1059,29 +592,11 @@ class LayerFormatConfig(Config):
     description: Optional[ext.template.Config]  #: template for the layer description
 
 
-class FormatObject(Object):
-    templates: Dict[str, TemplateObject]
-
-    def apply(self, context: dict) -> dict:
-        pass
-
 
 ### Application
 
 
 
-
-
-
-
-
-
-class ApiObject(Object):
-    actions: dict
-
-
-class ClientObject(Object):
-    pass
 
 
 class CorsConfig(Config):
@@ -1096,29 +611,291 @@ class RewriteRule(Config):
     target: str  #: target url with placeholders
     options: Optional[dict]  #: additional options
 
+class BaseWebRequest:
+    cookies : dict
+    data : Optional[bytes]
+    environ : dict
+    input_struct_type : int
+    kparams : dict
+    output_struct_type : int
+    params : dict
+    text_data : Optional[str]
+    def env(self, key: str, default: str = None) -> str: pass
+    def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> 'WebResponse': pass
+    def kparam(self, key: str, default: str = None) -> str: pass
+    def param(self, key: str, default: str = None) -> str: pass
+    def response(self, content: str, mimetype: str, status: int = 200) -> 'WebResponse': pass
+    def struct_response(self, data: 'Response', status: int = 200) -> 'WebResponse': pass
+    def url_for(self, url: 'Url') -> 'Url': pass
 
-class WebSiteObject(Object):
-    host: str
-    ssl: bool
-    error_page: 'TemplateObject'
-    static_root: 'DocumentRootConfig'
-    assets_root: 'DocumentRootConfig'
-    rewrite_rules: List[RewriteRule]
-    reversed_rewrite_rules: List[RewriteRule]
-    cors: CorsConfig
+class Feature:
+    attributes : List[Attribute]
+    convertor : 'FeatureConvertor'
+    elements : dict
+    layer : 'LayerObject'
+    props : 'FeatureProps'
+    shape : 'Shape'
+    style : 'Style'
+    uid : str
+    def convert(self, target_crs: 'Crs' = None, convertor: 'FeatureConvertor' = None) -> 'Feature': pass
+    def set_default_style(self, style): pass
+    def to_geojson(self): pass
+    def to_svg(self, rv: 'RenderView', style: 'Style' = None): pass
+    def transform(self, to_crs): pass
 
-    def url_for(self, req, url: str) -> str:
-        pass
+class FeatureConvertor:
+    data_model : 'ModelObject'
+    feature_format : 'FormatObject'
 
+class Object:
+    auto_uid : str
+    children : list
+    props : Props
+    root : 'RootObject'
+    uid : str
+    def add_child(self, klass, cfg): pass
+    def configure(self): pass
+    def create_object(self, klass, cfg, parent=None): pass
+    def create_shared_object(self, klass, uid, cfg): pass
+    def find(self, klass, uid): pass
+    def find_all(self, klass=None): pass
+    def find_first(self, klass): pass
+    def get_children(self, klass): pass
+    def get_closest(self, klass): pass
+    def initialize(self, cfg): pass
+    def is_a(self, klass): pass
+    def props_for(self, user): pass
+    def set_uid(self, uid): pass
+    def var(self, key, default=None, parent=False): pass
+
+class Role:
+    def can_use(self, obj, parent=None): pass
+
+class Shape:
+    bounds : 'Extent'
+    crs : 'Crs'
+    crs_code : str
+    geo : shapely.geometry.base.BaseGeometry
+    props : 'ShapeProps'
+    type : str
+    wkb : str
+    wkb_hex : str
+    wkt : str
+    def tolerance_buffer(self, tolerance, resolution=None) -> 'Shape': pass
+    def transform(self, to_crs) -> 'Shape': pass
+
+class SourceLayer:
+    a_level : int
+    a_path : str
+    a_uid : str
+    data_source : dict
+    extents : Dict['Crs', 'Extent']
+    is_expanded : bool
+    is_group : bool
+    is_image : bool
+    is_queryable : bool
+    is_visible : bool
+    layers : List['SourceLayer']
+    legend : str
+    meta : 'MetaData'
+    name : str
+    opacity : int
+    resource_urls : dict
+    scale_range : List[float]
+    styles : List['SourceStyle']
+    supported_crs : List['Crs']
+    title : str
+
+class SourceStyle:
+    is_default : bool
+    legend : 'Url'
+    meta : 'MetaData'
+
+class Style:
+    pass
+
+class User:
+    attributes : dict
+    display_name : str
+    full_uid : str
+    is_guest : bool
+    provider : 'AuthProviderObject'
+    roles : List[str]
+    uid : str
+    def attribute(self, key: str, default: str = '') -> str: pass
+    def can_use(self, obj: Object, parent: Object = None) -> bool: pass
+    def has_role(self, role: str) -> bool: pass
+    def init_from_cache(self, provider, uid, roles, attributes) -> 'User': pass
+    def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'User': pass
+
+class WebResponse:
+    pass
+
+class ApiObject(Object):
+    actions : dict
 
 class ApplicationObject(Object):
-    api: ApiObject
-    client: ClientObject
-    qgis_version: str
-    storage: 'StorageObject'
-    version: str
-    web_sites: List[WebSiteObject]
+    api : 'ApiObject'
+    client : 'ClientObject'
+    qgis_version : str
+    storage : 'StorageObject'
+    web_sites : List['WebSiteObject']
+    def find_action(self, action_type, project_uid=None): pass
 
-    def find_action(self, action_type: str, project_uid=None) -> Object:
-        pass
+class AuthProviderObject(Object):
+    def get_user(self, user_uid: str) -> 'User': pass
+    def marshal_user(self, user: 'User') -> str: pass
+    def unmarshal_user(self, user_uid: str, json: str) -> 'User': pass
 
+class ClientObject(Object):
+    pass
+
+class FormatObject(Object):
+    templates : dict
+    def apply(self, context: dict) -> dict: pass
+
+class LayerObject(Object):
+    cache : 'CacheConfig'
+    can_render_bbox : bool
+    can_render_svg : bool
+    can_render_xyz : bool
+    crs : str
+    data_model : 'ModelObject'
+    description_template : 'TemplateObject'
+    display : str
+    edit_data_model : 'ModelObject'
+    edit_style : 'Style'
+    extent : list
+    feature_format : 'FormatObject'
+    grid : 'GridConfig'
+    has_cache : bool
+    has_legend : bool
+    image_format : str
+    is_public : bool
+    layers : list
+    resolutions : list
+    services : list
+    style : 'Style'
+    def edit_access(self, user): pass
+    def mapproxy_config(self, mc): pass
+    def ows_enabled(self, service): pass
+    def render_bbox(self, rv: 'RenderView', client_params=None): pass
+    def render_legend(self): pass
+    def render_svg(self, rv: 'RenderView', style=None): pass
+    def render_xyz(self, x, y, z): pass
+    def use_meta(self, meta): pass
+
+class MapObject(Object):
+    center : list
+    coordinate_precision : int
+    crs : str
+    extent : list
+    init_resolution : int
+    layers : List['LayerObject']
+    resolutions : list
+
+class ModelObject(Object):
+    rules : List['ModelRule']
+    def apply(self, atts: List[Attribute]) -> List[Attribute]: pass
+    def apply_to_dict(self, d: dict) -> List[Attribute]: pass
+
+class OwsProviderObject(Object):
+    meta : 'MetaData'
+    operations : List['OwsOperation']
+    source_layers : List['SourceLayer']
+    supported_crs : List['Crs']
+    type : str
+    url : 'Url'
+    version : str
+    def find_features(self, args: 'SearchArgs') -> List['Feature']: pass
+    def operation(self, name: str) -> 'OwsOperation': pass
+
+class OwsServiceObject(Object):
+    feature_namespace : str
+    local_namespaces : dict
+    name : str
+    templates : dict
+    type : str
+    use_inspire_data : bool
+    use_inspire_meta : bool
+    version : str
+    def configure_inspire_templates(self): pass
+    def configure_template(self, name, path, type='xml'): pass
+    def dispatch(self, rd: 'RequestData', request_param): pass
+    def error_response(self, status): pass
+    def handle(self, req) -> 'HttpResponse': pass
+    def is_layer_enabled(self, layer): pass
+    def render_feature_nodes(self, rd: 'RequestData', nodes, container_template_name): pass
+    def render_template(self, rd: 'RequestData', template, context, format=None): pass
+
+class PrinterObject(Object):
+    templates : List['TemplateObject']
+
+class ProjectObject(Object):
+    api : 'ApiObject'
+    assets_root : 'DocumentRootConfig'
+    client : 'ClientObject'
+    description_template : 'TemplateObject'
+    locales : list
+    map : 'MapObject'
+    meta : 'MetaData'
+    overview_map : 'MapObject'
+    printer : 'PrinterObject'
+    title : str
+
+class RootBase(Object):
+    all_objects : list
+    all_types : dict
+    shared_objects : dict
+    def create(self, klass, cfg=None): pass
+
+class SearchProviderObject(Object):
+    geometry_required : bool
+    keyword_required : bool
+    def can_run(self, args: 'SearchArgs'): pass
+    def context_shape(self, args: 'SearchArgs'): pass
+
+class SqlProviderObject(Object):
+    def describe(self, table: 'SqlTable') -> 'SqlTableDescription': pass
+    def edit_operation(self, operation: str, table: 'SqlTable', features: List['Feature']) -> List['Feature']: pass
+    def select(self, args: 'SelectArgs', extra_connect_params: dict = None) -> List['Feature']: pass
+
+class StorageObject(Object):
+    def can_read(self, r, user): pass
+    def can_write(self, r, user): pass
+    def dir(self, user): pass
+    def read(self, entry, user): pass
+    def write(self, entry, user, data): pass
+
+class TemplateObject(Object):
+    data_model : 'ModelObject'
+    map_size : 'Size'
+    page_size : 'Size'
+    def dpi_for_quality(self, quality): pass
+    def normalize_user_data(self, d: dict) -> List[Attribute]: pass
+
+class WebRequest(BaseWebRequest):
+    user : 'User'
+    def acquire(self, klass: str, uid: str) -> Object: pass
+    def auth_begin(self): pass
+    def auth_commit(self, res): pass
+    def login(self, username: str, password: str): pass
+    def logout(self): pass
+    def require(self, klass: str, uid: str) -> Object: pass
+    def require_project(self, uid: str) -> 'ProjectObject': pass
+
+class WebSiteObject(Object):
+    assets_root : 'DocumentRootConfig'
+    cors : 'CorsConfig'
+    error_page : 'TemplateObject'
+    host : str
+    reversed_rewrite_rules : list
+    rewrite_rules : list
+    ssl : bool
+    static_root : 'DocumentRootConfig'
+    def url_for(self, req, url): pass
+
+class RootObject(RootBase):
+    application : 'ApplicationObject'
+    def configure(self): pass
+    def validate_action(self, category, cmd, payload): pass

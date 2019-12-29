@@ -1,5 +1,3 @@
-# type: ignore
-
 ### Dummy classes to support extension typing.
 
 

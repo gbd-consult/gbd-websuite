@@ -22,7 +22,7 @@ class Object(gws.ActionObject):
         for p in self.var('services', default=[]):
             self.services.append(self.add_child('gws.ext.ows.service', p))
 
-    def http(self, req: gws.web.AuthRequest, _) -> t.HttpResponse:
+    def http(self, req: t.WebRequest, _) -> t.HttpResponse:
         gws.p(req.params)
         gws.p(req.post_data)
 

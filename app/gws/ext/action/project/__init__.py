@@ -19,7 +19,7 @@ class InfoResponse(t.Response):
 
 
 class Object(gws.ActionObject):
-    def api_info(self, req: gws.web.AuthRequest, p: InfoParams) -> InfoResponse:
+    def api_info(self, req: t.WebRequest, p: InfoParams) -> InfoResponse:
         """Return the project configuration"""
 
         project = req.require_project(p.projectUid)

@@ -3,7 +3,9 @@
 import gws
 import gws.common.template
 import gws.config.loader
-import gws.web
+import gws.web.auth
+import gws.web.error
+import gws.web.wrappers
 
 import gws.types as t
 
@@ -22,7 +24,7 @@ _DEFAULT_CMD = 'assetHttpGetPath'
 
 def _handle_request(environ):
     root = gws.config.root()
-    req = gws.web.AuthRequest(root, environ, _find_site(environ, root))
+    req = gws.web.auth.WebRequest(root, environ, _find_site(environ, root))
     try:
         return _handle_request2(root, req)
     except gws.web.error.HTTPException as err:
@@ -32,7 +34,7 @@ def _handle_request(environ):
         return _handle_error(root, req, gws.web.error.InternalServerError())
 
 
-def _handle_request2(root, req: gws.web.AuthRequest) -> gws.web.Response:
+def _handle_request2(root, req) -> gws.web.wrappers.WebResponse:
     if req.params is None:
         raise gws.web.error.NotFound()
 
@@ -58,7 +60,7 @@ def _handle_request2(root, req: gws.web.AuthRequest) -> gws.web.Response:
 def _handle_error(root, req, err):
     # @TODO: image errors
 
-    if req.expected_struct:
+    if req.output_struct_type:
         return req.struct_response(
             {'error': {'status': err.code, 'info': ''}},
             status=err.code)
@@ -81,7 +83,7 @@ def _handle_action(root: t.RootObject, req):
     cmd = req.param('cmd', _DEFAULT_CMD)
 
     # @TODO: add HEAD
-    if req.has_struct:
+    if req.input_struct_type:
         category = 'api'
     elif req.method == 'GET':
         category = 'http_get'
@@ -130,7 +132,7 @@ def _handle_action(root: t.RootObject, req):
     return req.struct_response(r)
 
 
-def _with_cors_headers(cors, res: gws.web.Response):
+def _with_cors_headers(cors, res):
     if cors.get('allowOrigin'):
         res.headers.add('Access-Control-Allow-Origin', cors.get('allowOrigin'))
     if cors.get('allowCredentials'):

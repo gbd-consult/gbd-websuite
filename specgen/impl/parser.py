@@ -2,7 +2,6 @@
 
 import ast
 import re
-import os
 
 
 class Error(Exception):
@@ -11,61 +10,67 @@ class Error(Exception):
 
 def parse(paths):
     units = []
+    parser = _Parser()
 
     for path in paths:
         try:
-            units.extend(_Parser().parse(path))
+            units.extend(parser.parse(path))
         except Exception as e:
             raise Error(f'parse error in {path}') from e
-    return units
+    return units, parser.stubs
 
 
 ##
 
 _builtins = 'str', 'int', 'float', 'bool', 'list', 'dict', 'bytes'
 
-from .base import Unit
+from .base import Unit, Stub
 
 
 class _Parser:
     def __init__(self):
-        self.imports = {}
-        self.mod_name = ''
-        self.comments = {}
-        self.units = []
-        self.is_init = False
+        self.stubs = {}
 
     def parse(self, path):
         self.mod_name = _mod_name(path)
         self.is_init = path.endswith('__init__.py')
 
         with open(path) as fp:
-            buf = fp.read()
+            self.buf = fp.read()
+            self.lines = self.buf.splitlines()
+            self.lines.insert(0, '')  # make it 1-based
 
-        self.extract_comments(buf)
+        self.docs = self.extract_docs()
 
-        tree = ast.parse(buf)
+        self.imports = {}
+        self.units = []
+
+        tree = ast.parse(self.buf)
 
         self.enum_aliases(tree)
         self.enum_imports(tree)
         self.enum_classes(tree)
+        self.enum_stubs(tree)
         self.enum_cli_functions(tree)
 
         return self.units
 
-    def extract_comments(self, buf):
+    def extract_docs(self):
         cmt = '#:'
+        ds = {}
 
-        for n, ln in enumerate(buf.splitlines(), 1):
+        for n, ln in enumerate(self.lines):
             ln = ln.strip()
 
-            # comments can be place before the prop like "#: blah <nl>foo"
+            # comments can be placed before the prop like "#: blah <nl>foo"
             # or inline like "foo #: blah"
 
             if ln.startswith(cmt):
-                self.comments[n + 1] = ln[len(cmt):].strip()
+                ds[n + 1] = ln[len(cmt):].strip()
             elif cmt in ln:
-                self.comments[n] = ln.split(cmt)[1].strip()
+                ds[n] = ln.split(cmt)[1].strip()
+
+        return ds
 
     def enum_imports(self, tree):
         for node in _nodes(tree, 'Import'):
@@ -112,6 +117,14 @@ class _Parser:
 
             for b in node.body:
                 self.member(b, class_uid)
+
+    def enum_stubs(self, tree):
+        mark = 'stub'
+        for node in _nodes(tree, 'ClassDef'):
+            doc = self.doc_for(node)
+            if doc.startswith(mark):
+                name = doc[len(mark):].strip()
+                self.stub(node, name or node.name)
 
     def enum_cli_functions(self, tree):
         cli_command = None
@@ -199,6 +212,60 @@ class _Parser:
             args=args,
         )
 
+    def stub(self, node, name):
+        if name in self.stubs:
+            raise ValueError('stub %r already declared' % name)
+        stub = Stub(name, self.mod_name + '.' + node.name)
+        stub.bases = [self.node_name(b) for b in node.bases]
+        for m in node.body:
+            self.stub_member(m, stub)
+        self.stubs[stub.name] = stub
+
+    def stub_member(self, node, stub, with_funcs=True):
+
+        def _attr_name(n):
+            # expect Name(id='prop') or Attribute(value=Name(id='self'), attr='foo')
+            if _cls(n) == 'Name':
+                return n.id
+            if _cls(n) == 'Attribute' and _cls(n.value) == 'Name' and n.value.id == 'self' and isinstance(n.attr, str):
+                return n.attr
+
+        line = self.lines[node.lineno]
+
+        if _cls(node) == 'Assign':
+            name = _attr_name(node.targets[0])
+            if name and not name.startswith('_'):
+                val = _value(node.value, strict=False)
+                if val is not None:
+                    stub.members[name] = ['p', None, type(val).__name__, line.strip()]
+            return
+
+        if _cls(node) == 'AnnAssign':
+            name = _attr_name(node.target)
+            if name and not name.startswith('_'):
+                stub.members[name] = ['p', None, node.annotation, line.strip()]
+            return
+
+        if with_funcs and _cls(node) == 'FunctionDef':
+            if node.name == '__init__':
+                for b in node.body:
+                    self.stub_member(b, stub, with_funcs=False)
+                return
+
+            if node.name.startswith('_'):
+                return
+
+            if not node.decorator_list:
+                stub.members[node.name] = ['m', node.args, node.returns, line.strip()]
+                return
+
+            line = self.lines[node.lineno + 1]  # @TODO assuming a single decorator
+            if node.decorator_list[0].id in ('property', 'cached_property'):
+                if node.returns:
+                    stub.members[node.name] = ['p', None, node.returns, line.strip()]
+                return
+            stub.members[node.name] = ['m', node.args, node.returns, line.strip()]
+
     def node_name(self, node):
         if _cls(node) == 'Name':
             name = node.id
@@ -264,8 +331,8 @@ class _Parser:
         return unit.uid
 
     def doc_for(self, node):
-        if node.lineno in self.comments:
-            return self.comments[node.lineno]
+        if node.lineno in self.docs:
+            return self.docs[node.lineno]
         return ''
 
 

@@ -20,17 +20,17 @@ class EditResponse(t.Response):
 
 
 class Object(gws.ActionObject):
-    def api_add_features(self, req: gws.web.AuthRequest, p: EditParams) -> EditResponse:
+    def api_add_features(self, req: t.WebRequest, p: EditParams) -> EditResponse:
         """Add features to the layer"""
 
         return self._handle('insert', req, p)
 
-    def api_delete_features(self, req: gws.web.AuthRequest, p: EditParams) -> EditResponse:
+    def api_delete_features(self, req: t.WebRequest, p: EditParams) -> EditResponse:
         """Delete features from the layer"""
 
         return self._handle('delete', req, p)
 
-    def api_update_features(self, req: gws.web.AuthRequest, p: EditParams) -> EditResponse:
+    def api_update_features(self, req: t.WebRequest, p: EditParams) -> EditResponse:
         """Update features on the layer"""
 
         return self._handle('update', req, p)

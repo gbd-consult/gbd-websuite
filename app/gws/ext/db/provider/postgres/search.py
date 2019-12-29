@@ -27,7 +27,7 @@ class Object(gws.common.search.provider.Object):
         self.table = util.configure_table(self, self.provider)
 
 
-    def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
+    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
 
         return self.provider.select(t.SelectArgs({
             'table': self.table,

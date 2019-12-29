@@ -148,7 +148,7 @@ def find_features(rd: ows.RequestData):
 
     pixel_tolerance = 10
 
-    args = t.SearchArguments({
+    args = t.SearchArgs({
         'bbox': bbox,
         'crs': rd.project.map.crs,
         'project': None,

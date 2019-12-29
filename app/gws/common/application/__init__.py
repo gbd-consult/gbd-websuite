@@ -82,16 +82,17 @@ _default_site = t.Data({
 })
 
 
+#:stub ApplicationObject
 class Object(gws.Object):
     def __init__(self):
         super().__init__()
 
-        self.api: gws.common.api.Object = None
-        self.client: gws.common.client.Object = None
+        self.api: t.ApiObject = None
+        self.client: t.ClientObject = None
         self.qgis_version = ''
         self.storage: t.StorageObject = None
         self.version = gws.VERSION
-        self.web_sites: t.List[gws.web.site.Object] = []
+        self.web_sites: t.List[t.WebSiteObject] = []
 
     @property
     def auto_uid(self):

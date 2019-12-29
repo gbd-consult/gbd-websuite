@@ -32,8 +32,8 @@ class Props(t.Data):
     resolutions: t.List[float]
     title: str = ''
 
-
-class Object(gws.Object, t.MapObject):
+#:stub MapObject
+class Object(gws.Object):
     def __init__(self):
         super().__init__()
         self.crs = ''

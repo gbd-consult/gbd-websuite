@@ -5,6 +5,7 @@ import gws.common.template
 import gws.tools.net
 import gws.types as t
 
+
 class Config(t.Config):
     """Site (virtual host) configuration"""
 
@@ -18,12 +19,13 @@ class Config(t.Config):
     root: t.DocumentRootConfig  #: document root location and options
 
 
-class Object(gws.Object, t.WebSiteObject):
+#:stub WebSiteObject
+class Object(gws.Object):
     def __init__(self):
         super().__init__()
         self.host = ''
         self.ssl = False
-        self.error_page: gws.common.template.Object = None
+        self.error_page: t.TemplateObject = None
         self.static_root: t.DocumentRootConfig = None
         self.assets_root: t.DocumentRootConfig = None
         self.rewrite_rules = []

@@ -57,7 +57,7 @@ class Config(t.WithTypeAndAccess):
 
 
 class RequestData(t.Data):
-    req: gws.web.AuthRequest
+    req: t.WebRequest
     project: t.ProjectObject
     service: 'Object'
     xml: gws.tools.xml3.Element = None
@@ -91,7 +91,8 @@ class FeatureNode(t.Data):
 _NAMESPACES = gws.extend({}, const.NAMESPACES, inspire.NAMESPACES)
 
 
-class Object(gws.Object, t.OwsServiceObject):
+#:stub OwsServiceObject
+class Object(gws.Object):
     """Generic OWS Service."""
 
     def __init__(self):
@@ -283,7 +284,6 @@ def inspire_nodes(nodes):
 
 
 def feature_node_list(rd: RequestData, features: t.List[t.Feature]):
-
     def node(f: t.Feature):
         gs = None
         if f.shape:
@@ -430,5 +430,3 @@ def _layer_node(rd: RequestData, layer, sub_nodes=None) -> LayerCapsNode:
         'proj': gws.gis.proj.as_proj(crs),
         'sub_nodes': sub_nodes,
     })
-
-

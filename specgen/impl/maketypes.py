@@ -2,8 +2,9 @@
 
 import re
 
+from . import makestubs
 
-def run(source_dir):
+def run(source_dir, stubs):
     d = source_dir + '/types'
     src_path = d + '/__init__.in.py'
     dst_path = d + '/__init__.py'
@@ -12,6 +13,8 @@ def run(source_dir):
         src = fp.read()
 
     dst = re.sub(r'#\s*@include(.+)', lambda m: _include(d, m.group(1)), src)
+
+    dst += makestubs.run(stubs)
 
     with open(dst_path, 'w') as fp:
         fp.write(dst)

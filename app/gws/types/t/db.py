@@ -1,13 +1,9 @@
-# type: ignore
-
 ### Database-related.
 
 from .base import Optional, List, Dict, Crs
 from ..data import Config, Data
-from .auth import AuthUser
-from .object import Object
-from .feature import Shape, Feature
-from .attribute import Attribute, AttributeType
+from .feature import Shape
+from .attribute import AttributeType
 
 
 class SqlTableConfig(Config):
@@ -52,35 +48,6 @@ class SqlTableColumn(Data):
 SqlTableDescription = Dict[str, SqlTableColumn]
 
 
-class DbProviderObject(Object):
-    pass
-
-
-class SqlProviderObject(DbProviderObject):
-    error: type
-    connect_params: dict
-
-    def select(self, args: SelectArgs, extra_connect_params: dict = None) -> List['Feature']:
-        pass
-
-    def edit_operation(self, operation: str, table: SqlTable, features: List['Feature']) -> List['Feature']:
-        pass
-
-    def describe(self, table: SqlTable) -> SqlTableDescription:
-        pass
-
-
 class StorageEntry(Data):
     category: str
     name: str
-
-
-class StorageObject(Object):
-    def read(self, entry: StorageEntry, user: 'AuthUser') -> dict:
-        return {}
-
-    def write(self, entry: StorageEntry, user: 'AuthUser', data: dict) -> str:
-        return ''
-
-    def dir(self, user: 'AuthUser') -> List[StorageEntry]:
-        return []

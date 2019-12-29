@@ -8,6 +8,7 @@ class Props(t.Data):
     displayName: str
 
 
+#:stub Role
 class Role:
     def __init__(self, name):
         self.name = name
@@ -16,28 +17,34 @@ class Role:
         return _can_use(self, obj, [self.name], parent)
 
 
-class User(t.AuthUser):
-    attributes = {}
-    provider = None
-    roles = None
-    uid = ''
+#:stub User
+class User:
+    def __init__(self):
+        self.attributes = {}
+        self.provider: t.AuthProviderObject = None
+        self.roles: t.List[str] = []
+        self.uid = ''
 
     @property
-    def display_name(self):
+    def props(self):
+        return Props()
+
+    @property
+    def display_name(self) -> str:
         return self.attributes.get('displayName')
 
     @property
-    def is_guest(self):
+    def is_guest(self) -> bool:
         return False
 
     @property
-    def full_uid(self):
+    def full_uid(self) -> str:
         return json2.to_string([self.provider.uid, self.uid])
 
-    def has_role(self, role):
+    def has_role(self, role: str) -> bool:
         return role in self.roles
 
-    def init_from_source(self, provider, uid, roles=None, attributes=None):
+    def init_from_source(self, provider, uid, roles=None, attributes=None) -> t.User:
         attributes = dict(attributes) if attributes else {}
 
         for a, b in _aliases:
@@ -59,7 +66,7 @@ class User(t.AuthUser):
 
         return self.init_from_cache(provider, uid, roles, attributes)
 
-    def init_from_cache(self, provider, uid, roles, attributes):
+    def init_from_cache(self, provider, uid, roles, attributes) -> t.User:
         self.attributes = attributes
         self.provider = provider
         self.roles = set(roles)
@@ -68,15 +75,11 @@ class User(t.AuthUser):
         gws.log.info(f'inited user: prov={provider.uid!r} uid={uid!r} roles={roles!r}')
         return self
 
-    def attribute(self, key, default=''):
+    def attribute(self, key: str, default: str = '') -> str:
         return self.attributes.get(key, default)
 
-    def can_use(self, obj, parent=None):
+    def can_use(self, obj: t.Object, parent: t.Object = None) -> bool:
         return _can_use(self, obj, self.roles, parent)
-
-    @property
-    def props(self):
-        return t.Props()
 
 
 class Guest(User):
@@ -100,7 +103,7 @@ class Nobody(User):
 class ValidUser(User):
     @property
     def props(self):
-        return t.AuthUserProps({
+        return Props({
             'displayName': self.display_name
         })
 

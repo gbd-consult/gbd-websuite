@@ -117,7 +117,7 @@ class CliFunctionSpec(Spec):
         super().__init__()
 
         self.args = []
-        self.command =  ''
+        self.command = ''
         self.module = ''
         self.subcommand = ''
 
@@ -125,3 +125,22 @@ class CliFunctionSpec(Spec):
             setattr(self, k, v)
 
         self.type = 'clifunc'
+
+
+class Stub:
+    """Class stub."""
+
+    def __init__(self, name, class_name):
+        self.name = name
+        self.class_name = class_name
+        self.bases = []
+        self.checked = False
+        # a stub member is
+        #   [p, None, type str or annotation node, source_line] = property
+        #   [m, args annotation node, return annotation node, source_line] = method
+        self.members = {}
+
+    def dump(self):
+        print('STUB: %s %s <= %s' % (self.name, self.bases, self.class_name))
+        for k, v in self.members.items():
+            print('\t', k, '=', repr(v))

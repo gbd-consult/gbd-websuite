@@ -25,7 +25,7 @@ class Object(gws.Object):
 
 
 def _m() -> Object:
-    return gws.config.root().monitor
+    return gws.config.root()._monitor
 
 
 def add_directory(path, pattern):

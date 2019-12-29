@@ -2,14 +2,9 @@
 
 from .base import List, Optional, Point, Extent, Crs
 from ..data import Data
-from .object import Object
-from .attribute import ModelObject
-from .template import FormatObject
-from .map import LayerObject, ProjectObject
-from .feature import Feature, Shape
 
 
-class SearchArguments(Data):
+class SearchArgs(Data):
     axis: str
     bbox: Extent
     count: int
@@ -25,18 +20,3 @@ class SearchArguments(Data):
     shapes: List['Shape']
     tolerance: int
 
-
-class SearchProviderObject(Object):
-    geometry_required: bool
-    keyword_required: bool
-    data_model: 'ModelObject'
-    feature_format: 'FormatObject'
-
-    def can_run(self, args: SearchArguments) -> bool:
-        pass
-
-    def run(self, layer: Optional['LayerObject'], args: SearchArguments) -> List['Feature']:
-        pass
-
-    def context_shape(self, args: SearchArguments):
-        pass

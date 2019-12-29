@@ -8,7 +8,7 @@ class _LimitExceeded(Exception):
     pass
 
 
-def run(req, args: t.SearchArguments) -> t.List[t.Feature]:
+def run(req, args: t.SearchArgs) -> t.List[t.Feature]:
     total_limit = args.limit
     used_layer_ids = set()
     features: t.List[t.Feature] = []
@@ -48,7 +48,7 @@ def _parents(layer):
     return ps
 
 
-def _run(req, layer, prov: provider.Object, args: t.SearchArguments, total_limit, features):
+def _run(req, layer, prov: provider.Object, args: t.SearchArgs, total_limit, features):
     args.limit = total_limit - len(features)
     if args.limit <= 0:
         raise _LimitExceeded()

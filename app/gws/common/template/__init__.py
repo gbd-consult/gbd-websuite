@@ -4,16 +4,11 @@ import gws.common.model
 import gws.types as t
 
 
-class Object(gws.Object, t.TemplateObject):
-    def configure(self):
-        super().configure()
-        self.data_model = self.add_child('gws.common.model', self.var('dataModel'))
-
-    def dpi_for_quality(self, quality):
-        q = self.var('qualityLevels')
-        if q and quality < len(q):
-            return q[quality].dpi
-        return 0
+#:stub TemplateObject
+class Object(gws.Object):
+    def __init__(self):
+        super().__init__()
+        self.data_model: t.ModelObject = None
 
     @property
     def props(self):
@@ -28,10 +23,28 @@ class Object(gws.Object, t.TemplateObject):
             'pageHeight': self.page_size[1],
         })
 
-    def normalize_user_data(self, data: dict) -> dict:
-        if not data or not self.data_model:
-            return {}
-        return self.data_model.apply(data)
+    @property
+    def map_size(self) -> t.Size:
+        return []
+
+    @property
+    def page_size(self) -> t.Size:
+        return []
+
+    def configure(self):
+        super().configure()
+        self.data_model = self.add_child('gws.common.model', self.var('dataModel'))
+
+    def dpi_for_quality(self, quality):
+        q = self.var('qualityLevels')
+        if q and quality < len(q):
+            return q[quality].dpi
+        return 0
+
+    def normalize_user_data(self, d: dict) -> t.List[t.Attribute]:
+        if not d or not self.data_model:
+            return []
+        return self.data_model.apply_to_dict(d)
 
 
 # @TODO template types should be configurable

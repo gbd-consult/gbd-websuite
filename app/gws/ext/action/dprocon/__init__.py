@@ -96,7 +96,7 @@ class Object(gws.ActionObject):
 
         self.feature_format = self.create_object('gws.common.format', _DEFAULT_FORMAT)
 
-    def api_connect(self, req: gws.web.AuthRequest, p: ConnectParams) -> ConnectResponse:
+    def api_connect(self, req: t.WebRequest, p: ConnectParams) -> ConnectResponse:
         req.require_project(p.projectUid)
 
         shape = gws.gis.shape.union(gws.gis.shape.from_props(s) for s in p.shapes)
@@ -112,7 +112,7 @@ class Object(gws.ActionObject):
             'url': url
         })
 
-    def api_get_data(self, req: gws.web.AuthRequest, p: GetDataParams) -> GetDataResponse:
+    def api_get_data(self, req: t.WebRequest, p: GetDataParams) -> GetDataResponse:
 
         req.require_project(p.projectUid)
         request_id = p.requestId

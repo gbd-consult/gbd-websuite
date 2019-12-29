@@ -26,7 +26,7 @@ def find_features(obj, bbox, target_crs, limit) -> t.List[t.Feature]:
 
     axis = gws.gis.util.best_axis(provider_crs, obj.invert_axis_crs, 'WFS', obj.provider.version)
 
-    args = t.SearchArguments({
+    args = t.SearchArgs({
         'axis': axis,
         'bbox': bbox,
         'count': limit,

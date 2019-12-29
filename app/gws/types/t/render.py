@@ -2,8 +2,6 @@
 
 from .base import List, Enum, Point, Size, Extent
 from ..data import Data
-from .feature import Feature
-from .map import LayerObject
 from .style import Style
 
 import PIL.Image

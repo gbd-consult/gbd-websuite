@@ -47,12 +47,12 @@ class Object(gws.ActionObject):
         self.limit = self.var('limit')
         self.pixel_tolerance = self.var('pixelTolerance')
 
-    def api_find_features(self, req: gws.web.AuthRequest, p: Params) -> Response:
+    def api_find_features(self, req: t.WebRequest, p: Params) -> Response:
         """Perform a search"""
 
         project = req.require_project(p.projectUid)
 
-        args = t.SearchArguments({
+        args = t.SearchArgs({
             'bbox': p.bbox or project.map.extent,
             'crs': project.map.crs,
             'keyword': (p.keyword or '').strip(),

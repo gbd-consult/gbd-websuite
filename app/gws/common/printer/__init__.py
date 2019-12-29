@@ -10,8 +10,11 @@ class Props(t.Data):
     templates: t.List[t.TemplateProps]
 
 
+#:stub PrinterObject
 class Object(gws.Object):
-    templates = []
+    def __init__(self):
+        super().__init__()
+        self.templates: t.List[t.TemplateObject] = []
 
     def configure(self):
         super().configure()
@@ -21,7 +24,7 @@ class Object(gws.Object):
         ]
 
     @property
-    def props(self):
+    def props(self) -> Props:
         return Props({
             'templates': self.templates,
         })

@@ -43,7 +43,7 @@ class Object(gws.common.search.provider.Object):
         self.feature_format = self.create_object('gws.common.format', DEFAULT_FEATURE_FORMAT)
         self.keyword_required = True
 
-    def run(self, layer: t.LayerObject, args: t.SearchArguments) -> t.List[t.Feature]:
+    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
         params = {
             'q': args.keyword,
             'addressdetails': 1,

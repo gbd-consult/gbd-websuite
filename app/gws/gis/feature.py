@@ -40,39 +40,38 @@ def new(args: dict):
     return Feature(uid, attributes, elements, shape, style)
 
 
-class Feature(t.Feature):
+#:stub
+class FeatureConvertor:
+    feature_format: t.FormatObject
+    data_model: t.ModelObject
+
+
+#:stub
+class Feature:
     def __init__(self, uid=None, attributes=None, elements=None, shape=None, style=None):
-        if isinstance(uid, str) and _COMBINED_UID_DELIMITER in uid:
-            uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
+        self.attributes: t.List[t.Attribute] = []
+        self.elements: dict = {}
+        self.convertor: FeatureConvertor = None
+        self.layer: t.LayerObject = None
+        self.shape: t.Shape = None
+        self.style: t.Style = None
+        self.uid: str = ''
 
-        self.uid = uid
+        self._init(uid, attributes, elements, shape, style)
 
-        self.elements = elements or {}
-        self.convertor = None
-        self.layer = None
-
-        self.attributes = []
-        if attributes:
-            if isinstance(attributes, dict):
-                self.attributes = [t.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
-            elif isinstance(attributes, (list, tuple)):
-                for a in attributes:
-                    if not isinstance(a, t.Data):
-                        a = t.Attribute(a)
-                    self.attributes.append(a)
-
-        self.shape = None
-        if shape:
-            if isinstance(shape, t.Shape):
-                self.shape = shape
-            elif shape.get('geometry'):
-                self.shape = gws.gis.shape.from_props(shape)
-
-        self.style = None
-        if style:
-            if isinstance(style, dict):
-                style = t.StyleProps(style)
-            self.style = style
+    @property
+    def props(self) -> t.FeatureProps:
+        uid = self.uid or ''
+        if self.layer:
+            uid = self.layer.uid + _COMBINED_UID_DELIMITER + uid
+        return t.FeatureProps({
+            'uid': uid,
+            'attributes': self.attributes,
+            'shape': self.shape.props if self.shape else None,
+            'style': self.style,
+            'elements': self.elements,
+            'layerUid': self.layer.uid if self.layer else None,
+        })
 
     def transform(self, to_crs):
         if self.shape:
@@ -133,16 +132,35 @@ class Feature(t.Feature):
 
         return self
 
-    @property
-    def props(self):
-        uid = self.uid or ''
-        if self.layer:
-            uid = self.layer.uid + _COMBINED_UID_DELIMITER + uid
-        return t.FeatureProps({
-            'uid': uid,
-            'attributes': self.attributes,
-            'shape': self.shape.props if self.shape else None,
-            'style': self.style,
-            'elements': self.elements,
-            'layerUid': self.layer.uid if self.layer else None,
-        })
+    def _init(self, uid, attributes, elements, shape, style):
+        if isinstance(uid, str) and _COMBINED_UID_DELIMITER in uid:
+            uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
+
+        self.uid = uid
+
+        self.elements = elements or {}
+        self.convertor = None
+        self.layer = None
+
+        self.attributes = []
+        if attributes:
+            if isinstance(attributes, dict):
+                self.attributes = [t.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
+            elif isinstance(attributes, (list, tuple)):
+                for a in attributes:
+                    if not isinstance(a, t.Data):
+                        a = t.Attribute(a)
+                    self.attributes.append(a)
+
+        self.shape = None
+        if shape:
+            if isinstance(shape, t.Shape):
+                self.shape = shape
+            elif shape.get('geometry'):
+                self.shape = gws.gis.shape.from_props(shape)
+
+        self.style = None
+        if style:
+            if isinstance(style, dict):
+                style = t.StyleProps(style)
+            self.style = style

@@ -18,7 +18,12 @@ _py_type_to_attr_type = {
 }
 
 
-class Object(gws.Object, t.ModelObject):
+#:stub ModelObject
+class Object(gws.Object):
+    def __init__(self):
+        super().__init__()
+        self.rules: t.List[t.ModelRule] = []
+
     def configure(self):
         super().configure()
         self.rules = self.var('rules')
@@ -29,21 +34,22 @@ class Object(gws.Object, t.ModelObject):
             'rules': self.rules
         })
 
-    def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
-
+    def apply_to_dict(self, d: dict) -> t.List[t.Attribute]:
         out = []
-        att_map = {a.name: a.value for a in atts}
 
         for rule in self.rules:
             # @TODO type conversion
             out.append(t.Attribute({
                 'title': rule.get('title') or rule.get('name'),
                 'name': rule.get('name') or gws.as_uid(rule.get('title', '')),
-                'value': self._apply_rule(rule, att_map),
+                'value': self._apply_rule(rule, d),
                 'type': rule.get('type') or t.AttributeType.str
             }))
 
         return out
+
+    def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
+        return self.apply_to_dict({a.name: a.value for a in atts})
 
     def _apply_rule(self, rule: t.ModelRule, att_map):
         s = rule.get('value')

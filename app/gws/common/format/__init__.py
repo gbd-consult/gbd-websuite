@@ -2,7 +2,8 @@ import gws
 import gws.types as t
 
 
-class Object(gws.Object, t.FormatObject):
+#:stub FormatObject
+class Object(gws.Object):
     def __init__(self):
         super().__init__()
         self.templates = {}

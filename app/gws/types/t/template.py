@@ -40,24 +40,6 @@ class TemplateOutput(Data):
     path: str
 
 
-class TemplateObject(Object):
-    data_model: 'ModelObject'
-    map_size: List[int]
-    page_size: List[int]
-
-    def dpi_for_quality(self, quality: int) -> int:
-        pass
-
-    def render(self, context: dict, render_output: 'RenderOutput' = None, out_path: str = None, format: str = None) -> TemplateOutput:
-        pass
-
-    def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:
-        pass
-
-    def normalize_user_data(self, attributes: List['Attribute']) -> List['Attribute']:
-        pass
-
-
 class FeatureFormatConfig(Config):
     """Feature format"""
 
@@ -73,10 +55,4 @@ class LayerFormatConfig(Config):
 
     description: Optional[ext.template.Config]  #: template for the layer description
 
-
-class FormatObject(Object):
-    templates: Dict[str, TemplateObject]
-
-    def apply(self, context: dict) -> dict:
-        pass
 

@@ -11,12 +11,13 @@ from . import wrappers, error
 _DELETED = object()
 
 
-class AuthRequest(wrappers.Request, t.Request):
-    _session = None
-    _user = None
-
+#:stub
+class WebRequest(wrappers.BaseWebRequest):
     def __init__(self, root, environ, site):
         super().__init__(root, environ, site)
+
+        self._session = None
+        self._user = None
 
         self.header_name = None
         s = self.root.var('auth.header')
@@ -26,12 +27,12 @@ class AuthRequest(wrappers.Request, t.Request):
         self.cookie_name = self.root.var('auth.cookie.name')
 
     @property
-    def user(self):
+    def user(self) -> t.User:
         if not self._user:
             raise ValueError('auth_begin not called')
         return self._user
 
-    def require(self, klass, uid):
+    def require(self, klass: str, uid: str) -> t.Object:
         node = self.root.find(klass, uid)
         if not node:
             gws.log.error('require: not found', klass, uid)
@@ -41,15 +42,16 @@ class AuthRequest(wrappers.Request, t.Request):
             raise error.Forbidden()
         return node
 
-    def require_project(self, uid):
-        return self.require('gws.common.project', uid)
+    def require_project(self, uid: str) -> t.ProjectObject:
+        p: t.ProjectObject = self.require('gws.common.project', uid)
+        return p
 
-    def acquire(self, klass, uid):
+    def acquire(self, klass: str, uid: str) -> t.Object:
         node = self.root.find(klass, uid)
         if node and self.user.can_use(node):
             return node
 
-    def login(self, username, password):
+    def login(self, username: str, password: str):
         if not self.user.is_guest:
             gws.log.error('login while logged-in')
             raise gws.web.error.Forbidden()
@@ -77,7 +79,7 @@ class AuthRequest(wrappers.Request, t.Request):
         else:
             self._user = self._guest_user
 
-    def auth_commit(self, res: werkzeug.wrappers.Response):
+    def auth_commit(self, res):
         if not self._session:
             return
 

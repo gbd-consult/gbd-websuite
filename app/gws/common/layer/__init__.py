@@ -148,7 +148,8 @@ class Props(t.Data):
     url: str = ''
 
 
-class Base(t.LayerObject, gws.Object):
+#:stub LayerObject
+class Base(gws.Object):
     def __init__(self):
         super().__init__()
 

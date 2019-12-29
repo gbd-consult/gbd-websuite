@@ -17,19 +17,24 @@ class _Runner:
         self.out_dir = out_dir
         self.version = version
         self.units = []
+        self.stubs = {}
 
     def run(self):
-        maketypes.run(self.source_dir)
-
-        paths = _find_files(self.source_dir, 'py$')
-        paths = [p for p in paths if 'types/t' not in p]
+        paths = [p for p in _find_files(self.source_dir, 'py$') if not _ignore_path(p)]
 
         try:
-            self.units = parser.parse(paths)
+            self.units, stubs = parser.parse(paths)
         except parser.Error as e:
             print('PARSE ERROR: %s' % e.args[0])
             print('-' * 40)
             raise
+
+        # create /types/__init__.py
+        maketypes.run(self.source_dir, stubs)
+
+        # and parse it
+        units, _ = parser.parse([self.source_dir + '/types/__init__.py'])
+        self.units.extend(units)
 
         # print(_json(self.units))
 
@@ -138,6 +143,10 @@ def _find_files(dirname, pattern):
 
         if re.search(pattern, fname):
             yield path
+
+
+def _ignore_path(p):
+    return 'types/' in p or p.startswith('___') or p.endswith('.in.py')
 
 
 def _make_cli_main(cli_funcs, path):

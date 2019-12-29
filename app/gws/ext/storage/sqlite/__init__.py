@@ -16,7 +16,8 @@ class Config(t.WithType):
     path: t.Optional[str]
 
 
-class Object(gws.Object, t.StorageObject):
+#:stub StorageObject
+class Object(gws.Object):
     def configure(self):
         super().configure()
         self.path = self.var('path') or _DEFAULT_PATH

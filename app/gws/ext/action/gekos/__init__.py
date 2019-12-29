@@ -87,7 +87,7 @@ class Object(gws.ActionObject):
         if not self.db:
             raise gws.Error(f'{self.uid}: db provider not found')
 
-    def http_get_xy(self, req: gws.web.AuthRequest, p: GetXYParams) -> t.HttpResponse:
+    def http_get_xy(self, req: t.WebRequest, p: GetXYParams) -> t.HttpResponse:
         project_uid = p.projectUid
 
         if project_uid:

@@ -1,10 +1,7 @@
-# type: ignore
-
 ### Attributes and data models.
 
 from .base import Any, List, Optional, Enum, FormatStr
 from ..data import Data, Config, Props
-from .object import Object
 
 
 class AttributeType(Enum):
@@ -61,9 +58,3 @@ class ModelConfig(Config):
 class ModelProps(Props):
     rules: List[ModelRule]
 
-
-class ModelObject(Object):
-    rules: List[ModelRule]
-
-    def apply(self, atts: List['Attribute']) -> List['Attribute']:
-        pass

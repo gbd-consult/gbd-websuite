@@ -103,7 +103,7 @@ class Object(ows.Object):
         except:
             raise gws.web.error.BadRequest()
 
-        args = t.SearchArguments({
+        args = t.SearchArgs({
             'shapes': [gws.gis.shape.from_bbox(bbox, rd.project.map.crs)],
             'crs': rd.project.map.crs,
             'project': None,
