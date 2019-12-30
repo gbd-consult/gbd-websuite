@@ -1,6 +1,7 @@
 ### Dummy classes to support extension typing.
 
 
+# noinspection PyPep8Naming
 class ext:
     class action:
         class Config:

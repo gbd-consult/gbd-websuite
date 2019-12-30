@@ -47,7 +47,7 @@ class Object(gws.ActionObject):
         self.limit = self.var('limit')
         self.pixel_tolerance = self.var('pixelTolerance')
 
-    def api_find_features(self, req: t.WebRequest, p: Params) -> Response:
+    def api_find_features(self, req: t.IRequest, p: Params) -> Response:
         """Perform a search"""
 
         project = req.require_project(p.projectUid)

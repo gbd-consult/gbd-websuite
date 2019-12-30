@@ -19,7 +19,7 @@ def configure_wfs(target: gws.Object, **filter_args):
         **filter_args)
 
 
-def find_features(obj, bbox, target_crs, limit) -> t.List[t.Feature]:
+def find_features(obj, bbox, target_crs, limit) -> t.List[t.IFeature]:
     provider_crs = gws.gis.util.best_crs(target_crs, obj.provider.supported_crs)
     if provider_crs != target_crs:
         bbox = gws.gis.proj.transform_bbox(bbox, target_crs, provider_crs)

@@ -35,7 +35,7 @@ class Object(gws.common.search.provider.Object):
                 and not args.keyword
         )
 
-    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
+    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         shape = args.shapes[0]
         crs = gws.gis.util.best_crs(args.crs, self.provider.supported_crs)
         shape = shape.transform(crs)
@@ -48,7 +48,7 @@ class Object(gws.common.search.provider.Object):
             'crs': crs,
             'layers': [sl.name for sl in self.source_layers],
             'params': self.var('params'),
-            'point': [shape.geo.x, shape.geo.y],
+            'point': [shape.x, shape.y],
             'resolution': args.resolution,
         })
 

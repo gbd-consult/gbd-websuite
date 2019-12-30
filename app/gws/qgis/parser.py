@@ -13,7 +13,7 @@ from . import types
 _bigval = 1e10
 
 
-def parse(prov: types.ProviderObject, xml):
+def parse(prov, xml):
     root = gws.tools.xml3.from_string(xml)
 
     prov.properties = _properties(root.first('properties'))
@@ -104,7 +104,7 @@ def _tree(el, map_layers):
     expanded = el.attr('expanded') == '1'
 
     if el.name == 'layer-tree-group':
-        sl = types.SourceLayer()
+        sl = t.SourceLayer()
         n = el.attr('name')
         sl.meta.title = sl.meta.name = sl.title = sl.name = n
 
@@ -189,7 +189,7 @@ def _layer_meta(el):
 
 
 def _map_layer(el):
-    sl = types.SourceLayer()
+    sl = t.SourceLayer()
 
     sl.meta = _layer_meta(el)
 

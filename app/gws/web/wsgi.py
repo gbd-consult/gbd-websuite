@@ -24,7 +24,7 @@ _DEFAULT_CMD = 'assetHttpGetPath'
 
 def _handle_request(environ):
     root = gws.config.root()
-    req = gws.web.auth.WebRequest(root, environ, _find_site(environ, root))
+    req = gws.web.auth.Request(root, environ, _find_site(environ, root))
     try:
         return _handle_request2(root, req)
     except gws.web.error.HTTPException as err:
@@ -34,7 +34,7 @@ def _handle_request(environ):
         return _handle_error(root, req, gws.web.error.InternalServerError())
 
 
-def _handle_request2(root, req) -> gws.web.wrappers.WebResponse:
+def _handle_request2(root, req) -> gws.web.wrappers.BaseResponse:
     if req.params is None:
         raise gws.web.error.NotFound()
 
@@ -79,7 +79,7 @@ def _handle_error(root, req, err):
         return gws.web.error.InternalServerError()
 
 
-def _handle_action(root: t.RootObject, req):
+def _handle_action(root: t.IRootObject, req):
     cmd = req.param('cmd', _DEFAULT_CMD)
 
     # @TODO: add HEAD
@@ -133,12 +133,12 @@ def _handle_action(root: t.RootObject, req):
 
 
 def _with_cors_headers(cors, res):
-    if cors.get('allowOrigin'):
-        res.headers.add('Access-Control-Allow-Origin', cors.get('allowOrigin'))
-    if cors.get('allowCredentials'):
+    if cors.get('allow_origin'):
+        res.headers.add('Access-Control-Allow-Origin', cors.get('allow_origin'))
+    if cors.get('allow_credentials'):
         res.headers.add('Access-Control-Allow-Credentials', 'true')
-    if cors.get('allowHeaders'):
-        res.headers.add('Access-Control-Allow-Headers', ', '.join(cors.get('allowHeaders')))
+    if cors.get('allow_headers'):
+        res.headers.add('Access-Control-Allow-Headers', ', '.join(cors.get('allow_headers')))
     res.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
     return res

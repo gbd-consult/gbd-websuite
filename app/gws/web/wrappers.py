@@ -7,7 +7,7 @@ from werkzeug.wsgi import wrap_file
 import gws
 import gws.tools.net
 import gws.tools.json2
-import gws.tools.umsgpack
+import gws.tools.vendor.umsgpack as umsgpack
 import gws.types as t
 
 from . import error
@@ -21,21 +21,21 @@ _struct_mime = {
 }
 
 
-#:stub
-class WebResponse(werkzeug.wrappers.Response):
+#:export IResponse
+class BaseResponse(werkzeug.wrappers.Response, t.IResponse):
     pass
 
 
-#:stub
-class BaseWebRequest:
-    def __init__(self, root: t.RootObject, environ: dict, site: t.WebSiteObject):
+#:export IBaseRequest
+class BaseRequest(t.IBaseRequest):
+    def __init__(self, root: t.IRootObject, environ: dict, site: t.IWebSite):
         self._wz = werkzeug.wrappers.Request(environ)
         # the actual limit is set in the nginx conf (see server/ini)
         self._wz.max_content_length = 1024 * 1024 * 1024
-        self.root = root
-        self.site = site
-        self.method = self._wz.method
-        self.headers = self._wz.headers
+        self.root: t.IRootObject = root
+        self.site: t.IWebSite = site
+        self.method: str = self._wz.method
+        self.headers: dict = self._wz.headers
 
     @property
     def environ(self) -> dict:
@@ -132,14 +132,15 @@ class BaseWebRequest:
         gws.log.debug(f'url_for: {url!r}=>{u!r}')
         return u
 
-    def response(self, content: str, mimetype: str, status: int = 200) -> WebResponse:
-        return WebResponse(
+    def response(self, content: str, mimetype: str, status: int = 200) -> t.IResponse:
+        r: t.IResponse = BaseResponse(
             content,
             mimetype=mimetype,
             status=status
         )
+        return r
 
-    def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> WebResponse:
+    def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> t.IResponse:
         headers = {
             'Content-Length': os.path.getsize(path)
         }
@@ -147,15 +148,17 @@ class BaseWebRequest:
             headers['Content-Disposition'] = f'attachment; filename="{attachment_name}"'
 
         fp = wrap_file(self.environ, open(path, 'rb'))
-        return WebResponse(
+
+        r: t.IResponse = BaseResponse(
             fp,
             mimetype=mimetype,
             status=status,
             headers=headers,
             direct_passthrough=True
         )
+        return r
 
-    def struct_response(self, data: t.Response, status: int = 200) -> WebResponse:
+    def struct_response(self, data: t.Response, status: int = 200) -> t.IResponse:
         typ = self.output_struct_type or _JSON
         return self.response(self._encode_struct(data, typ), _struct_mime[typ], status)
 
@@ -163,7 +166,7 @@ class BaseWebRequest:
         if typ == _JSON:
             return gws.tools.json2.to_string(data, pretty=True)
         if typ == _MSGPACK:
-            return gws.tools.umsgpack.dumps(data, default=gws.as_dict)
+            return umsgpack.dumps(data, default=gws.as_dict)
         raise ValueError('invalid struct type')
 
     def _decode_struct(self, typ):
@@ -177,8 +180,8 @@ class BaseWebRequest:
 
         if typ == _MSGPACK:
             try:
-                return gws.tools.umsgpack.loads(self.data)
-            except (TypeError, gws.tools.umsgpack.UnpackException):
+                return umsgpack.loads(self.data)
+            except (TypeError, umsgpack.UnpackException):
                 gws.log.error('malformed msgpack request')
                 raise error.BadRequest()
 

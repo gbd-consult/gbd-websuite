@@ -1,7 +1,5 @@
 """QGIS WMS search."""
 
-import shapely.geometry.point
-
 import gws
 import gws.common.search.provider
 import gws.gis.source
@@ -45,20 +43,18 @@ class Object(gws.common.search.provider.Object):
                 and not args.keyword
         )
 
-    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
+    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         qgis_crs = self.provider.supported_crs[0]
 
         shape = args.shapes[0]
         if args.crs != qgis_crs:
             shape = shape.transform(qgis_crs)
 
-        geo = t.cast(shapely.geometry.point.Point, shape.geo)
-
         args = t.SearchArgs({
             'bbox': shape.bounds,
             'count': args.limit,
             'layers': [sl.name for sl in self.source_layers],
-            'point': [geo.x, geo.y],
+            'point': [shape.x, shape.y],
             'resolution': args.resolution,
         })
 

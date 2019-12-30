@@ -9,11 +9,10 @@ class Config(t.WithTypeAndAccess):
 
     services: t.Optional[t.List[t.ext.ows.service.Config]]  #: services configuration
 
-
 class Object(gws.ActionObject):
     def __init__(self):
         super().__init__()
-        self.services: t.List[gws.common.ows.service.Object] = []
+        self.services: t.List[t.IOwsService] = []
 
     def configure(self):
         super().configure()
@@ -22,9 +21,9 @@ class Object(gws.ActionObject):
         for p in self.var('services', default=[]):
             self.services.append(self.add_child('gws.ext.ows.service', p))
 
-    def http(self, req: t.WebRequest, _) -> t.HttpResponse:
+    def http(self, req: t.IRequest, _) -> t.HttpResponse:
         gws.p(req.params)
-        gws.p(req.post_data)
+        gws.p(req.text_data)
 
         service = self._find_service(req)
         if not service:

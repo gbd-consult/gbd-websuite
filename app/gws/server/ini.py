@@ -31,7 +31,7 @@ _uwsgi_params = """
 """
 
 
-def create(root: t.RootObject, base_dir, pid_dir):
+def create(root: t.IRootObject, base_dir, pid_dir):
     def _write(p, s):
         p = base_dir + '/' + p
         s = '\n'.join(x.strip() for x in s.strip().splitlines())

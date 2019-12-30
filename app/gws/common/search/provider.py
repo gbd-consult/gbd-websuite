@@ -1,19 +1,21 @@
 import gws
 import gws.gis.shape
 import gws.common.format
+import gws.common.model
+import gws.common.template
 import gws.types as t
 
 
 class Config(t.WithTypeAndAccess):
     defaultContext: str = ''  #: default spatial context ('view' or 'map')
-    featureFormat: t.Optional[t.FeatureFormatConfig]  #: feature formatting options
-    dataModel: t.Optional[t.ModelConfig]  #: feature data model
+    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
+    dataModel: t.Optional[gws.common.model.Config]  #: feature data model
     geometryRequired: bool = False
     keywordRequired: bool = False
 
 
-#:stub SearchProviderObject
-class Object(gws.Object):
+#:export ISearchProvider
+class Object(gws.Object, t.ISearchProvider):
     def __init__(self):
         super().__init__()
         self.geometry_required: bool = False
@@ -48,3 +50,6 @@ class Object(gws.Object):
             return gws.gis.shape.from_bbox(args.bbox, args.crs)
         if ctx == 'map':
             return gws.gis.shape.from_bbox(args.project.map.extent, args.crs)
+
+    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
+        return []

@@ -7,43 +7,41 @@ import gws.gis.extent
 import gws.types as t
 
 
-#:stub
-class SourceStyle:
-    def __init__(self):
-        self.is_default = False
-        self.legend: t.Url = ''
-        self.meta: t.MetaData = t.MetaData()
+#:export
+class SourceStyle(t.Data):
+    is_default = False
+    legend: t.Url = ''
+    meta: t.MetaData = None
 
 
-#:stub
-class SourceLayer:
-    def __init__(self):
-        self.data_source = {}
+#:export
+class SourceLayer(t.Data):
+    data_source = {}
 
-        self.supported_crs: t.List[t.Crs] = []
-        self.extents: t.Dict[t.Crs, t.Extent] = {}
+    supported_crs: t.List[t.Crs] = []
+    extents: t.Dict[t.Crs, t.Extent] = {}
 
-        self.is_expanded = False
-        self.is_group = False
-        self.is_image = False
-        self.is_queryable = False
-        self.is_visible = False
+    is_expanded = False
+    is_group = False
+    is_image = False
+    is_queryable = False
+    is_visible = False
 
-        self.layers: t.List['SourceLayer'] = []
+    layers: t.List['SourceLayer'] = []
 
-        self.meta: t.MetaData = t.MetaData()
-        self.name = ''
-        self.title = ''
+    meta: t.MetaData = None
+    name = ''
+    title = ''
 
-        self.opacity = 1
-        self.scale_range: t.List[float] = []
-        self.styles: t.List[SourceStyle] = []
-        self.legend = ''
-        self.resource_urls = {}
+    opacity = 1
+    scale_range: t.List[float] = []
+    styles: t.List[SourceStyle] = []
+    legend = ''
+    resource_urls = {}
 
-        self.a_path = ''
-        self.a_uid = ''
-        self.a_level = 0
+    a_path = ''
+    a_uid = ''
+    a_level = 0
 
 
 class LayerFilterConfig(t.Config):

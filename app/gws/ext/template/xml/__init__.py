@@ -9,18 +9,17 @@ import gws.gis.render
 import gws.tools.misc as misc
 import gws.tools.pdf
 import gws.types as t
-import gws.tools.chartreux
-import gws.tools.chartreux.runtime
+import gws.tools.vendor.chartreux as chartreux
 import gws.tools.xml3
 import gws.common.template
 
 
-class Config(t.TemplateConfig):
+class Config(gws.common.template.Config):
     """XML template"""
     pass
 
 
-class XMLRuntime(gws.tools.chartreux.runtime.Runtime):
+class XMLRuntime(chartreux.Runtime):
     def __init__(self):
         super().__init__()
         self.tags = [[]]
@@ -205,7 +204,7 @@ class Object(gws.common.template.Object):
         rc = XMLCommands()
         rt = XMLRuntime()
 
-        gws.tools.chartreux.render(
+        chartreux.render(
             text,
             context,
             path=self.path or '<string>',

@@ -5,6 +5,8 @@ import gws
 import gws.config
 import gws.tools.json2
 import gws.tools.misc
+import gws.common.storage
+
 import gws.types as t
 
 _DEFAULT_PATH = gws.MISC_DIR + '/store.sqlite'
@@ -16,8 +18,11 @@ class Config(t.WithType):
     path: t.Optional[str]
 
 
-#:stub StorageObject
-class Object(gws.Object):
+class Object(gws.common.storage.Object):
+    def __init__(self):
+        super().__init__()
+        self.path = ''
+
     def configure(self):
         super().configure()
         self.path = self.var('path') or _DEFAULT_PATH

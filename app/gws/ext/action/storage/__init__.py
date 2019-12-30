@@ -38,10 +38,10 @@ class Config(t.WithTypeAndAccess):
 class Object(gws.ActionObject):
 
     @property
-    def storage(self) -> t.StorageObject:
+    def storage(self) -> t.IStorage:
         return self.root.application.storage
 
-    def api_write(self, req: t.WebRequest, p: WriteParams) -> WriteResponse:
+    def api_write(self, req: t.IRequest, p: WriteParams) -> WriteResponse:
         ok = self.storage.write(p.entry, req.user, p.data)
         if not ok:
             raise gws.web.error.Forbidden()
@@ -49,13 +49,13 @@ class Object(gws.ActionObject):
             'entry': p.entry
         })
 
-    def api_read(self, req: t.WebRequest, p: ReadParams) -> ReadResponse:
+    def api_read(self, req: t.IRequest, p: ReadParams) -> ReadResponse:
         return ReadResponse({
             'entry': p.entry,
             'data': self.storage.read(p.entry, req.user)
         })
 
-    def api_dir(self, req: t.WebRequest, p: DirParams) -> DirResponse:
+    def api_dir(self, req: t.IRequest, p: DirParams) -> DirResponse:
         return DirResponse({
             'entries': self.storage.dir(req.user)
         })

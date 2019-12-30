@@ -6,7 +6,7 @@ import requests
 
 import gws
 
-import gws.tools.umsgpack
+import gws.tools.vendor.umsgpack as umsgpack
 import gws.tools.json2
 import gws.gis.feature
 
@@ -54,7 +54,7 @@ def cmd(command, params=None, binary=False, **kwargs):
         'params': params
     }
     if binary:
-        data = gws.tools.umsgpack.dumps(p)
+        data = umsgpack.dumps(p)
         ct = 'application/msgpack'
     else:
         data = gws.tools.json2.to_string(p)

@@ -1,4 +1,5 @@
 import osgeo.gdal
+import shapely.geometry
 
 import gws
 import gws.gis.proj
@@ -35,16 +36,16 @@ def envelope_to_extent(el: gws.tools.xml3.Element):
         return None, None
 
 
-def shape_to_tag(s: t.Shape, precision=0, invert_axis=False):
-    def pos(geo, as_list=True):
+def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False):
+    def pos(geom, as_list=True):
         cs = []
 
         if invert_axis:
-            for x, y in geo.coords:
+            for x, y in geom.coords:
                 cs.append(y)
                 cs.append(x)
         else:
-            for x, y in geo.coords:
+            for x, y in geom.coords:
                 cs.append(x)
                 cs.append(y)
 
@@ -58,33 +59,34 @@ def shape_to_tag(s: t.Shape, precision=0, invert_axis=False):
             {'srsDimension': 2},
             ' '.join(str(c) for c in cs))
 
-    def convert(geo, srs=None):
-        typ = geo.type
+    def convert(geom, srs=None):
+        typ = geom.type
 
         if typ == 'Point':
-            return tag('gml:Point', srs, pos(geo, False))
+            return tag('gml:Point', srs, pos(geom, False))
 
         if typ == 'LineString':
-            return tag('gml:LineString', srs, pos(geo))
+            return tag('gml:LineString', srs, pos(geom))
 
         if typ == 'Polygon':
             return tag(
                 'gml:Polygon',
                 srs,
-                tag('gml:exterior', tag('gml:LinearRing', pos(geo.exterior))),
-                *[tag('gml:interior', tag('gml:LinearRing', pos(p))) for p in geo.interiors]
+                tag('gml:exterior', tag('gml:LinearRing', pos(geom.exterior))),
+                *[tag('gml:interior', tag('gml:LinearRing', pos(p))) for p in geom.interiors]
             )
 
         if typ == 'MultiPoint':
-            return tag('gml:MultiPoint', srs, *[tag('gml:pointMember', convert(p)) for p in geo])
+            return tag('gml:MultiPoint', srs, *[tag('gml:pointMember', convert(p)) for p in geom])
 
         if typ == 'MultiLineString':
-            return tag('gml:MultiCurve', srs, *[tag('gml:curveMember', convert(p)) for p in geo])
+            return tag('gml:MultiCurve', srs, *[tag('gml:curveMember', convert(p)) for p in geom])
 
         if typ == 'MultiPolygon':
-            return tag('gml:MultiSurface', srs, *[tag('gml:surfaceMember', convert(p)) for p in geo])
+            return tag('gml:MultiSurface', srs, *[tag('gml:surfaceMember', convert(p)) for p in geom])
 
-    return convert(s.geo, {'srsName': gws.gis.proj.as_urn(s.crs)})
+    geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
+    return convert(geom, {'srsName': gws.gis.proj.as_urn(shape.crs)})
 
 
 def features_from_xml(xml, invert_axis=False):

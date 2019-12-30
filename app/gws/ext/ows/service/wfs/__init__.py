@@ -46,7 +46,7 @@ class Object(ows.Object):
         for tpl in 'getCapabilities', 'describeFeatureType', 'getFeature', 'feature':
             self.templates[tpl] = self.configure_template(tpl, 'wfs/templates')
 
-    def handle_getcapabilities(self, rd: ows.RequestData):
+    def handle_getcapabilities(self, rd: ows.OwsRequest):
         nodes = ows.layer_node_list(rd)
         if self.use_inspire_data:
             nodes = ows.inspire_nodes(nodes)
@@ -54,7 +54,7 @@ class Object(ows.Object):
             'layer_node_list': nodes,
         }))
 
-    def handle_describefeaturetype(self, rd: ows.RequestData):
+    def handle_describefeaturetype(self, rd: ows.OwsRequest):
         nodes = ows.layer_nodes_from_request_params(rd, 'typeName', 'typeNames')
         if self.use_inspire_data:
             nodes = ows.inspire_nodes(nodes)
@@ -88,7 +88,7 @@ class Object(ows.Object):
             'layer_node_list': nodes,
         }))
 
-    def handle_getfeature(self, rd: ows.RequestData):
+    def handle_getfeature(self, rd: ows.OwsRequest):
         nodes = ows.layer_nodes_from_request_params(rd, 'typeName', 'typeNames')
         if self.use_inspire_data:
             nodes = ows.inspire_nodes(nodes)

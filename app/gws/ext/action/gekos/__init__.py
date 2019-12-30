@@ -1,12 +1,13 @@
 """Interface with GekoS-Bau software."""
 
 import gws
-import gws.auth.api
 import gws.web
 import gws.config
 import gws.tools.net
 import gws.gis.feature
 import gws.common.layer
+import gws.common.db
+import gws.ext.db.provider.postgres
 import gws.gis.proj
 
 import gws.types as t
@@ -67,12 +68,14 @@ class Config(t.WithTypeAndAccess):
     instances: t.Optional[t.List[str]]  #: gek-online instances
     params: dict  #: additional parameters for gek-online calls
     position: t.Optional[PositionConfig]  #: position correction for points
-    table: t.SqlTableConfig  #: sql table configuration
+    table: gws.common.db.SqlTableConfig  #: sql table configuration
     url: t.Url  #: gek-online base url
 
 
 class Object(gws.ActionObject):
-    db: t.SqlProviderObject
+    def __init__(self):
+        super().__init__()
+        self.db: gws.ext.db.provider.postgres = None
 
     def configure(self):
         super().configure()
@@ -87,7 +90,7 @@ class Object(gws.ActionObject):
         if not self.db:
             raise gws.Error(f'{self.uid}: db provider not found')
 
-    def http_get_xy(self, req: t.WebRequest, p: GetXYParams) -> t.HttpResponse:
+    def http_get_xy(self, req: t.IRequest, p: GetXYParams) -> t.HttpResponse:
         project_uid = p.projectUid
 
         if project_uid:

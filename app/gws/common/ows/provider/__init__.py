@@ -2,8 +2,8 @@ import gws
 import gws.types as t
 
 
-#:stub OwsProviderObject
-class Object(gws.Object):
+#:export IOwsProvider
+class Object(gws.Object, t.IOwsProvider):
     def __init__(self):
         super().__init__()
         self.operations: t.List[t.OwsOperation] = []
@@ -14,7 +14,7 @@ class Object(gws.Object):
         self.url: t.Url = ''
         self.version: str = ''
 
-    def find_features(self, args: t.SearchArgs) -> t.List[t.Feature]:
+    def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
         pass
 
     def operation(self, name: str) -> t.OwsOperation:

@@ -5,9 +5,8 @@ import gws.tools.misc
 import gws.tools.date
 import gws.tools.net
 import gws.tools.json2
+import gws.common.db
 import gws.gis.shape
-
-import gws.types as t
 
 _DEVICE_STATE_VERB = 'receiveDeviceState'
 _ALARM_MESSAGE_VERB = 'receiveAlarmMessage'
@@ -64,7 +63,7 @@ def service_request(action):
     with action.db.connect() as conn:
         conn.exec(f'TRUNCATE TABLE {action.DEVICE_TABLE_NAME}')
 
-    tbl = t.SqlTableConfig({
+    tbl = gws.common.db.SqlTableConfig({
         'name': action.DEVICE_TABLE_NAME,
         'keyColumn': 'id',
         'geometryColumn': 'geom'

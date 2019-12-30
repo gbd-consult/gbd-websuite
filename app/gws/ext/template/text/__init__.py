@@ -3,11 +3,11 @@
 import gws
 import gws.common.template
 import gws.tools.misc
-import gws.tools.chartreux
+import gws.tools.vendor.chartreux as chartreux
 
 import gws.types as t
 
-class Config(t.TemplateConfig):
+class Config(gws.common.template.Config):
     """text-only template"""
     pass
 
@@ -48,7 +48,7 @@ class Object(gws.common.template.Object):
             with open(self.path, 'rt') as fp:
                 text = fp.read()
 
-        content = gws.tools.chartreux.render(
+        content = chartreux.render(
             text,
             context,
             path=self.path or '<string>',

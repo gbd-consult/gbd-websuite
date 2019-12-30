@@ -3,9 +3,9 @@
 import json
 
 import gws
-import gws.auth.error
+import gws.common.auth
 import gws.common.auth.provider
-import gws.auth.user
+import gws.common.auth.user
 import gws.tools.password
 import gws.types as t
 
@@ -17,7 +17,7 @@ class Config(t.WithType):
 
 
 class Object(gws.common.auth.provider.Object):
-    def authenticate_user(self, login, password, **args):
+    def authenticate(self, login, password, **args):
         db = _read(self.var('path'))
 
         ls = [
@@ -26,7 +26,7 @@ class Object(gws.common.auth.provider.Object):
         ]
 
         if any(x == 2 for x in ls):
-            raise gws.auth.error.WrongPassword()
+            raise gws.common.auth.error.WrongPassword()
 
         if any(x == 3 for x in ls):
             return self.get_user(login)
@@ -38,7 +38,7 @@ class Object(gws.common.auth.provider.Object):
                 return self._make_user(rec)
 
     def _make_user(self, rec):
-        return gws.auth.user.ValidUser().init_from_source(
+        return gws.common.auth.user.ValidUser().init_from_source(
             provider=self,
             uid=rec['login'],
             roles=rec.get('roles', []),

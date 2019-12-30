@@ -18,8 +18,31 @@ _py_type_to_attr_type = {
 }
 
 
-#:stub ModelObject
-class Object(gws.Object):
+#:export
+class ModelRule(t.Data):
+    """Attribute conversion rule"""
+
+    name: str = ''  #: target attribute name
+    value: t.Optional[str]  #: constant value
+    source: str = ''  #: source attribute
+    title: str = ''  #: target attribute display title
+    type: t.AttributeType = 'str'  #: target attribute type
+    format: t.FormatStr = ''  #: attribute formatter
+    expression: str = ''  #: attribute formatter
+
+
+class Config(t.Config):
+    """Data model."""
+    rules: t.List[ModelRule]
+
+
+#:export
+class ModelProps(t.Props):
+    rules: t.List[ModelRule]
+
+
+#:export IModel
+class Object(gws.Object, t.IModel):
     def __init__(self):
         super().__init__()
         self.rules: t.List[t.ModelRule] = []
@@ -51,16 +74,16 @@ class Object(gws.Object):
     def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
         return self.apply_to_dict({a.name: a.value for a in atts})
 
-    def _apply_rule(self, rule: t.ModelRule, att_map):
+    def _apply_rule(self, rule: t.ModelRule, d):
         s = rule.get('value')
         if s is not None:
             return s
         s = rule.get('source')
         if s:
-            return att_map.get(s)
+            return d.get(s)
         s = rule.get('format')
         if s:
             if '{' not in s:
                 return s
-            return gws.tools.misc.format_placeholders(s, att_map)
+            return gws.tools.misc.format_placeholders(s, d)
         return ''

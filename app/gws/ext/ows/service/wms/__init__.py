@@ -5,6 +5,7 @@ import gws.gis.render
 import gws.gis.shape
 import gws.gis.gml
 import gws.tools.misc as misc
+import gws.tools.units as units
 import gws.tools.shell
 import gws.tools.xml3
 import gws.web.error
@@ -44,7 +45,7 @@ class Object(ows.Object):
         for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
             self.templates[tpl] = self.configure_template(tpl, 'wms/templates')
 
-    def handle_getcapabilities(self, rd: ows.RequestData):
+    def handle_getcapabilities(self, rd: ows.OwsRequest):
         root = ows.layer_node_root(rd)
         if not root:
             raise gws.web.error.NotFound()
@@ -53,7 +54,7 @@ class Object(ows.Object):
             'layer_node_root': root,
         }))
 
-    def handle_getmap(self, rd: ows.RequestData):
+    def handle_getmap(self, rd: ows.OwsRequest):
         try:
             bbox = [float(n) for n in rd.req.kparam('bbox').split(',')]
             px_width = int(rd.req.kparam('width'))
@@ -87,17 +88,17 @@ class Object(ows.Object):
         for _ in renderer.run(render_input):
             pass
 
-        with open(renderer.output.items[0].path, 'rb') as fp:
+        with open(renderer.ro.items[0].path, 'rb') as fp:
             img = fp.read()
 
-        gws.tools.shell.unlink(renderer.output.items[0].path)
+        gws.tools.shell.unlink(renderer.ro.items[0].path)
 
         return t.HttpResponse({
             'mime': 'image/png',
             'content': img
         })
 
-    def handle_getlegendgraphic(self, rd: ows.RequestData):
+    def handle_getlegendgraphic(self, rd: ows.OwsRequest):
         # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
         # @TODO currently only support 'layer'
 
@@ -112,13 +113,13 @@ class Object(ows.Object):
             'content': img or gws.tools.misc.Pixels.png8
         })
 
-    def handle_getfeatureinfo(self, rd: ows.RequestData):
+    def handle_getfeatureinfo(self, rd: ows.OwsRequest):
         results = find_features(rd)
         nodes = ows.feature_node_list(rd, results)
         return self.render_feature_nodes(rd, nodes, 'getFeatureInfo')
 
 
-def find_features(rd: ows.RequestData):
+def find_features(rd: ows.OwsRequest):
     try:
         bbox = [float(n) for n in rd.req.kparam('bbox').split(',')]
         px_width = int(rd.req.kparam('width'))

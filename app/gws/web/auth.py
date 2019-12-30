@@ -1,9 +1,9 @@
-import werkzeug.wrappers
-
 import gws
-import gws.auth.session
-import gws.auth.api
+import gws.common.auth
+import gws.common.auth.session
+
 import gws.types as t
+
 from . import wrappers, error
 
 # @TODO skip updates if heartBeat is enabled
@@ -11,8 +11,8 @@ from . import wrappers, error
 _DELETED = object()
 
 
-#:stub
-class WebRequest(wrappers.BaseWebRequest):
+#:export IRequest
+class Request(wrappers.BaseRequest, t.IRequest):
     def __init__(self, root, environ, site):
         super().__init__(root, environ, site)
 
@@ -27,12 +27,12 @@ class WebRequest(wrappers.BaseWebRequest):
         self.cookie_name = self.root.var('auth.cookie.name')
 
     @property
-    def user(self) -> t.User:
+    def user(self) -> t.IUser:
         if not self._user:
             raise ValueError('auth_begin not called')
         return self._user
 
-    def require(self, klass: str, uid: str) -> t.Object:
+    def require(self, klass: str, uid: str) -> t.IObject:
         node = self.root.find(klass, uid)
         if not node:
             gws.log.error('require: not found', klass, uid)
@@ -42,11 +42,11 @@ class WebRequest(wrappers.BaseWebRequest):
             raise error.Forbidden()
         return node
 
-    def require_project(self, uid: str) -> t.ProjectObject:
-        p: t.ProjectObject = self.require('gws.common.project', uid)
+    def require_project(self, uid: str) -> t.IProject:
+        p: t.IProject = self.require('gws.common.project', uid)
         return p
 
-    def acquire(self, klass: str, uid: str) -> t.Object:
+    def acquire(self, klass: str, uid: str) -> t.IObject:
         node = self.root.find(klass, uid)
         if node and self.user.can_use(node):
             return node
@@ -57,8 +57,8 @@ class WebRequest(wrappers.BaseWebRequest):
             raise gws.web.error.Forbidden()
 
         try:
-            user = gws.auth.api.authenticate_user(username, password)
-        except gws.auth.api.Error as err:
+            user = gws.common.auth.authenticate(username, password)
+        except gws.common.auth.error.Error as err:
             raise error.Forbidden() from err
 
         if not user:
@@ -141,12 +141,12 @@ class WebRequest(wrappers.BaseWebRequest):
 
     @property
     def _session_manager(self):
-        return gws.get_global('auth.session_manager', gws.auth.session.Manager)
+        return gws.get_global('auth.session_manager', gws.common.auth.session.Manager)
 
     @property
     def _guest_user(self):
         def get():
-            p: t.AuthProviderObject = self.root.find_first('gws.ext.auth.provider.system')
+            p: t.IAuthProvider = self.root.find_first('gws.ext.auth.provider.system')
             return p.get_user('guest')
 
         return gws.get_global('auth.guest_user', get)

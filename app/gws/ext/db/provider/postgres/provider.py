@@ -6,31 +6,32 @@ import gws.gis.feature
 import gws.gis.proj
 import gws.gis.shape
 import gws.gis.proj
-import gws.common.db.provider.sql
+import gws.common.db.provider
 import gws.tools.json2
-import gws.tools.misc as misc
 
 import gws.types as t
 
 from . import driver
 
 
-class Config(t.WithType):
-    """Postgres/Postgis database provider"""
-
-    database: str = ''  #: database name
-    host: str = 'localhost'  #: database host
-    password: str  #: password
-    port: int = 5432  #: database port
-    timeout: t.Duration = 0  #: query timeout
-    uid: str  #: unique id
-    user: str  #: username
+def create_shared(obj: t.IObject, cfg) -> 'Object':
+    key = '-'.join([
+        f'h={cfg.host}',
+        f'p={cfg.port}',
+        f'u={cfg.user}',
+        f'd={cfg.database}'
+    ])
+    prov: Object = obj.create_shared_object(
+        'gws.ext.db.provider.postgres',
+        gws.as_uid(key),
+        cfg)
+    return prov
 
 
 PING_TIMEOUT = 5
 
 
-class Object(gws.common.db.provider.sql.Object):
+class Object(gws.common.db.provider.Sql):
     error = driver.Error
 
     @property
@@ -63,7 +64,7 @@ class Object(gws.common.db.provider.sql.Object):
 
         gws.get_global(f'db_ping_{self.uid}', ping)
 
-    def describe(self, table) -> t.SqlTableDescription:
+    def describe(self, table: t.SqlTable):
         def f():
             with self.connect() as conn:
                 return {c['name']: t.SqlTableColumn(c) for c in conn.columns(table.name)}
@@ -71,7 +72,7 @@ class Object(gws.common.db.provider.sql.Object):
         key = 'gws.ext.provider.postgres.describe.' + table.name
         return gws.get_global(key, f)
 
-    def select(self, args: t.SelectArgs, extra_connect_params=None) -> t.List[t.Feature]:
+    def select(self, args: t.SelectArgs, extra_connect_params=None) -> t.List[t.IFeature]:
 
         with self.connect(extra_connect_params) as conn:
 
@@ -135,7 +136,7 @@ class Object(gws.common.db.provider.sql.Object):
 
             return [self._record_to_feature(args.table, r) for r in recs]
 
-    def edit_operation(self, operation: str, table: t.SqlTable, features: t.List[t.Feature]) -> t.List[t.Feature]:
+    def edit_operation(self, operation: str, table: t.SqlTable, features: t.List[t.IFeature]) -> t.List[t.IFeature]:
         uids = []
         recs = [self._feature_to_record(table, f) for f in features]
 
@@ -165,7 +166,58 @@ class Object(gws.common.db.provider.sql.Object):
 
             return []
 
-    def _feature_to_record(self, table: t.SqlTable, feature: t.Feature) -> dict:
+    def configure_table(self, cfg: gws.common.db.SqlTableConfig) -> t.SqlTable:
+        table = t.SqlTable({
+            'name': cfg.get('name'),
+            'geometry_column': '',
+            'geometry_crs': '',
+            'geometry_type': '',
+            'key_column': '',
+            'search_column': ''
+        })
+
+        cols = self.describe(table)
+
+        s = cfg.get('keyColumn')
+        if not s:
+            cs = [c.name for c in cols.values() if c.is_key]
+            if len(cs) != 1:
+                raise gws.Error(f'invalid primary key for table {table.name!r}')
+            s = cs[0]
+        table.key_column = s
+
+        s = cfg.get('geometryColumn')
+        if not s:
+            cs = [c.name for c in cols.values() if c.is_geometry]
+            if cs:
+                gws.log.info(f'found geometry column {cs[0]!r} for table {table.name!r}')
+                s = cs[0]
+        table.geometry_column = s
+
+        if table.geometry_column:
+            col = cols[table.geometry_column]
+            table.geometry_crs = col.crs
+            table.geometry_type = col.type
+
+        table.search_column = cfg.get('searchColumn')
+
+        return table
+
+    def auto_data_model(self, table: t.SqlTable) -> t.IModel:
+        rules = []
+        for name, col in self.describe(table).items():
+            if col.is_geometry or col.is_key:
+                continue
+            rules.append(t.ModelRule({
+                'title': name,
+                'name': name,
+                'source': name,
+                'type': col.type,
+            }))
+        m: t.IModel = self.create_object('gws.common.model', t.Config({'rules': rules}))
+        return m
+
+    def _feature_to_record(self, table: t.SqlTable, feature: t.IFeature) -> dict:
         rec = {a.name: a.value for a in feature.attributes}
 
         if table.key_column:
@@ -184,7 +236,7 @@ class Object(gws.common.db.provider.sql.Object):
 
         return rec
 
-    def _record_to_feature(self, table: t.SqlTable, rec: dict) -> t.Feature:
+    def _record_to_feature(self, table: t.SqlTable, rec: dict) -> t.IFeature:
         shape = None
         if table.geometry_column:
             g = rec.pop(table.geometry_column, None)
@@ -208,4 +260,3 @@ class Object(gws.common.db.provider.sql.Object):
             'table': table,
             'uids': list(uids),
         }))
-

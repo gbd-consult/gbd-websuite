@@ -1,15 +1,16 @@
 """Core application object"""
 
 import gws
-import gws.auth.api
-import gws.auth.types
+
 import gws.common.api
+import gws.common.auth.types
+import gws.common.auth.util
 import gws.common.client
 import gws.common.csv
+import gws.common.layer
 import gws.common.project
 import gws.common.search
 import gws.common.template
-import gws.common.layer
 import gws.gis.zoom
 import gws.qgis.server
 import gws.server.types
@@ -58,7 +59,7 @@ class Config(t.Config):
 
     access: t.Optional[t.Access]  #: default access mode
     api: t.Optional[gws.common.api.Config]  #: system-wide server actions
-    auth: t.Optional[gws.auth.types.Config]  #: authorization methods and options
+    auth: t.Optional[gws.common.auth.types.Config]  #: authorization methods and options
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
     csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
     db: t.Optional[DbConfig]  #: database configuration
@@ -82,17 +83,17 @@ _default_site = t.Data({
 })
 
 
-#:stub ApplicationObject
-class Object(gws.Object):
+#:export IApplication
+class Object(gws.Object, t.IApplication):
     def __init__(self):
         super().__init__()
 
-        self.api: t.ApiObject = None
-        self.client: t.ClientObject = None
+        self.api: t.IApi = None
+        self.client: t.IClient = None
         self.qgis_version = ''
-        self.storage: t.StorageObject = None
+        self.storage: t.IStorage = None
         self.version = gws.VERSION
-        self.web_sites: t.List[t.WebSiteObject] = []
+        self.web_sites: t.List[t.IWebSite] = []
 
     @property
     def auto_uid(self):
@@ -113,7 +114,7 @@ class Object(gws.Object):
         if s:
             _install_fonts(s)
 
-        gws.auth.api.init()
+        gws.common.auth.init()
 
         for p in self.var('auth.providers', default=[]):
             self.add_child('gws.ext.auth.provider', p)

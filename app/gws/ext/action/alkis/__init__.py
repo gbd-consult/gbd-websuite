@@ -9,6 +9,7 @@ import gws.gis.feature
 import gws.gis.shape
 import gws.common.printer.service
 import gws.common.printer.types
+import gws.common.template
 import gws.ext.db.provider.postgres
 import gws.tools.misc
 import gws.types as t
@@ -83,7 +84,7 @@ class Config(t.WithTypeAndAccess):
 
     limit: int = 100  #: search results limit
 
-    featureFormat: t.Optional[t.FeatureFormatConfig]  #: template for on-screen Flurstueck details
+    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
 
     disableApi: bool = False  #: disable external access to this extension
@@ -226,22 +227,22 @@ class GeocoderResponse(t.Response):
 
 _cwd = os.path.dirname(__file__)
 
-DEFAULT_FORMAT = t.FeatureFormatConfig({
-    'title': t.TemplateConfig({
+DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig({
+    'title': gws.common.template.Config({
         'type': 'html',
         'text': '{attributes.vollnummer}'
     }),
-    'teaser': t.TemplateConfig({
+    'teaser': gws.common.template.Config({
         'type': 'html',
         'text': 'Flurstück {attributes.vollnummer}'
     }),
-    'description': t.TemplateConfig({
+    'description': gws.common.template.Config({
         'type': 'html',
         'path': _cwd + '/templates/data.cx.html'
     })
 })
 
-DEFAULT_PRINT_TEMPLATE = t.TemplateConfig({
+DEFAULT_PRINT_TEMPLATE = gws.common.template.Config({
     'type': 'html',
     'path': _cwd + '/templates/print.cx.html',
     'pageWidth': 210,
@@ -262,9 +263,9 @@ class Object(gws.Object):
         self.crs = ''
         self.has_index = False
         self.limit = 0
-        self.short_feature_format: t.FormatObject= None
-        self.long_feature_format: t.FormatObject = None
-        self.print_template: t.TemplateObject = None
+        self.short_feature_format: t.IFormat= None
+        self.long_feature_format: t.IFormat = None
+        self.print_template: t.ITemplate = None
         self.eigentuemer: EigentuemerConfig = None
         self.control_mode = False
         self.log_table = ''
@@ -302,7 +303,7 @@ class Object(gws.Object):
 
         self.limit = int(self.var('limit'))
 
-        fmt = self.var('featureFormat') or t.FeatureFormatConfig()
+        fmt = self.var('featureFormat') or gws.common.template.FeatureFormatConfig()
         for f in 'title', 'teaser', 'description':
             if not fmt.get(f):
                 setattr(fmt, f, DEFAULT_FORMAT.get(f))
@@ -343,7 +344,7 @@ class Object(gws.Object):
         if self.disableApi:
             gws.log.info(f'Alkis API disabled for {self.uid!r}')
 
-    def api_fs_setup(self, req: t.WebRequest, p: FsSetupParams) -> FsSetupResponse:
+    def api_fs_setup(self, req: t.IRequest, p: FsSetupParams) -> FsSetupResponse:
         """Return project-specific Flurstueck-Search settings"""
 
         self._precheck_request(req, p.projectUid)
@@ -360,7 +361,7 @@ class Object(gws.Object):
                 'ui': self.var('ui'),
             })
 
-    def api_fs_strassen(self, req: t.WebRequest, p: FsStrassenParams) -> FsStrassenResponse:
+    def api_fs_strassen(self, req: t.IRequest, p: FsStrassenParams) -> FsStrassenResponse:
         """Return a list of Strassen for the given Gemarkung"""
 
         self._precheck_request(req, p.projectUid)
@@ -371,7 +372,7 @@ class Object(gws.Object):
                 'strassen': flurstueck.strasse_list(conn, p),
             })
 
-    def api_fs_search(self, req: t.WebRequest, p: FsQueryParams) -> FsSearchResponse:
+    def api_fs_search(self, req: t.IRequest, p: FsQueryParams) -> FsSearchResponse:
         """Perform a Flurstueck search"""
 
         self._precheck_request(req, p.projectUid)
@@ -387,7 +388,7 @@ class Object(gws.Object):
             'features': sorted(fs, key=lambda p: p.title)
         })
 
-    def api_fs_details(self, req: t.WebRequest, p: FsDetailsParams) -> FsDetailsResponse:
+    def api_fs_details(self, req: t.IRequest, p: FsDetailsParams) -> FsDetailsResponse:
         """Return a Flurstueck feature with details"""
 
         self._precheck_request(req, p.projectUid)
@@ -401,7 +402,7 @@ class Object(gws.Object):
             'feature': fs[0],
         })
 
-    def api_fs_export(self, req: t.WebRequest, p: FsExportParams) -> FsExportResponse:
+    def api_fs_export(self, req: t.IRequest, p: FsExportParams) -> FsExportResponse:
         """Export Flurstueck features"""
 
         self._precheck_request(req, p.projectUid)
@@ -428,7 +429,7 @@ class Object(gws.Object):
             'url': gws.SERVER_ENDPOINT + '?cmd=assetHttpGetResult&jobUid=' + job_uid,
         })
 
-    def api_fs_print(self, req: t.WebRequest, p: FsPrintParams) -> gws.common.printer.types.PrinterResponse:
+    def api_fs_print(self, req: t.IRequest, p: FsPrintParams) -> gws.common.printer.types.PrinterResponse:
         """Print Flurstueck features"""
 
         self._precheck_request(req, p.projectUid)
@@ -462,7 +463,7 @@ class Object(gws.Object):
 
         return gws.common.printer.service.start_job(req, pp)
 
-    def api_geocoder(self, req: t.WebRequest, p: GeocoderParams) -> GeocoderResponse:
+    def api_geocoder(self, req: t.IRequest, p: GeocoderParams) -> GeocoderResponse:
 
         # NB don't check disableApi here
         if not self.has_index:
@@ -517,7 +518,7 @@ class Object(gws.Object):
 
         return self._find_address(query, target_crs, limit)
 
-    def _precheck_request(self, req: t.WebRequest, project_uid):
+    def _precheck_request(self, req: t.IRequest, project_uid):
         if self.disableApi:
             raise gws.web.error.Forbidden()
         req.require_project(project_uid)
@@ -534,7 +535,7 @@ class Object(gws.Object):
             if len(uid) == 2 and uid[0] == 'gemarkung':
                 query.gemarkungUid = uid[1]
 
-    def _fetch_and_format(self, req, query: FsQueryParams, fmt: t.FormatObject):
+    def _fetch_and_format(self, req, query: FsQueryParams, fmt: t.IFormat):
         fprops = []
         total, features = self._fetch(req, query)
 
@@ -611,7 +612,7 @@ class Object(gws.Object):
 
         return total, features
 
-    def _eigentuemer_flag(self, req: t.WebRequest, p: FsQueryParams):
+    def _eigentuemer_flag(self, req: t.IRequest, p: FsQueryParams):
         if not self._can_read_eigentuemer(req):
             return 0
         if not self.control_mode:
@@ -628,7 +629,7 @@ class Object(gws.Object):
 
     _log_eigentuemer_access_params = ['fsUids', 'bblatt', 'vorname', 'name']
 
-    def _log_eigentuemer_access(self, req: t.WebRequest, p: FsQueryParams, check, total=0, features=None):
+    def _log_eigentuemer_access(self, req: t.IRequest, p: FsQueryParams, check, total=0, features=None):
         if not self.log_table:
             gws.log.debug('_log_eigentuemer_access', check, 'no log table!')
             return

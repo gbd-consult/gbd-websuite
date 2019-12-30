@@ -45,7 +45,7 @@ class Object(gws.common.ows.provider.Object):
 
         caps.parse(self, xml)
 
-    def find_features(self, args: t.SearchArgs) -> t.List[t.Feature]:
+    def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
 
         p = {}
         invert_axis = args.get('axis') == 'yx'

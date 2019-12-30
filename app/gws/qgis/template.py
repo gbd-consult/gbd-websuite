@@ -7,6 +7,7 @@ import gws.common.template
 import gws.tools.mime
 import gws.tools.misc
 import gws.tools.units as units
+import gws.gis.render
 import gws.tools.net
 import gws.tools.pdf
 
@@ -15,7 +16,7 @@ import gws.types as t
 from . import types, provider
 
 
-class Config(t.TemplateConfig):
+class Config(gws.common.template.Config):
     path: t.FilePath
 
 
@@ -167,11 +168,12 @@ class Object(gws.common.template.Object):
             f'width:  {self.map_size[0]}mm',
             f'height: {self.map_size[1]}mm',
         ])
+
         map_html = f'<meta charset="utf8"/><div style="{css}">@@@</div>'
 
         # render the map html into a pdf
 
-        map_path = gws.tools.pdf.render_html_with_map(
+        html = gws.gis.render.create_html_with_map(
             html=map_html,
             render_output=render_output,
             map_placeholder='@@@',
@@ -180,10 +182,18 @@ class Object(gws.common.template.Object):
             out_path=out_path + '-map.pdf'
         )
 
+        map_path = gws.tools.pdf.render_html(
+            html,
+            page_size=self.page_size,
+            margin=None,
+            out_path=out_path
+        )
+
         # merge qgis pdfs + map pdf
         # NB: qgis is ABOVE our map, so the qgis template/map must be transparent!
 
         out_path = gws.tools.pdf.merge(map_path, qgis_path, out_path)
+
         return t.TemplateOutput({
             'mime': gws.tools.mime.get('pdf'),
             'path': out_path

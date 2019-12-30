@@ -113,10 +113,10 @@ class _Config:
         return d
 
 
-def create(root: t.RootObject):
+def create(root: t.IRootObject):
     mc = _Config()
 
-    r: t.LayerObject
+    r: t.ILayer
     for r  in root.find_all('gws.ext.layer'):
         r.mapproxy_config(mc)
 
@@ -124,14 +124,14 @@ def create(root: t.RootObject):
     if not cfg['layers']:
         return
 
-    map: t.MapObject
-    crs = set(map.crs for map in root.find_all('gws.common.map'))
+    m: t.IMap
+    crs = set(m.crs for m in root.find_all('gws.common.map'))
     cfg['services']['wms']['srs'] = sorted(crs)
 
     return cfg
 
 
-def create_and_save(root: t.RootObject, path):
+def create_and_save(root: t.IRootObject, path):
     test_path = path + '.test.yaml'
     sh.unlink(test_path)
 

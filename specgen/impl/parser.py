@@ -119,7 +119,7 @@ class _Parser:
                 self.member(b, class_uid)
 
     def enum_stubs(self, tree):
-        mark = 'stub'
+        mark = 'export'
         for node in _nodes(tree, 'ClassDef'):
             doc = self.doc_for(node)
             if doc.startswith(mark):
@@ -216,7 +216,7 @@ class _Parser:
         if name in self.stubs:
             raise ValueError('stub %r already declared' % name)
         stub = Stub(name, self.mod_name + '.' + node.name)
-        stub.bases = [self.node_name(b) for b in node.bases]
+        stub.bases = [self.qname(b) for b in node.bases]
         for m in node.body:
             self.stub_member(m, stub)
         self.stubs[stub.name] = stub
@@ -229,6 +229,9 @@ class _Parser:
                 return n.id
             if _cls(n) == 'Attribute' and _cls(n.value) == 'Name' and n.value.id == 'self' and isinstance(n.attr, str):
                 return n.attr
+
+        if 'noexport' in self.doc_for(node):
+            return
 
         line = self.lines[node.lineno]
 

@@ -4,8 +4,7 @@ import contextlib
 
 import gws
 import gws.common.auth.provider
-import gws.auth.error
-import gws.auth.user
+import gws.common.auth.user
 import gws.tools.net
 import gws.tools.misc as misc
 
@@ -75,7 +74,7 @@ class Object(gws.common.auth.provider.Object):
         except Exception as e:
             raise ValueError(f'LDAP error: {e.__class__.__name__}', *e.args)
 
-    def authenticate_user(self, login, password, **args):
+    def authenticate(self, login, password, **args):
         if not password.strip():
             gws.log.warn('empty password, continue')
             return None
@@ -91,16 +90,16 @@ class Object(gws.common.auth.provider.Object):
             if uac and uac.isdigit():
                 if int(uac) & _MS_ACCOUNTDISABLE:
                     gws.log.warn('ACCOUNTDISABLE on, FAIL')
-                    raise gws.auth.error.AccessDenied()
+                    raise gws.common.auth.error.AccessDenied()
 
             try:
                 ld.simple_bind_s(user_data['dn'], password)
             except ldap.INVALID_CREDENTIALS:
                 gws.log.warn('wrong password, FAIL')
-                raise gws.auth.error.WrongPassword()
+                raise gws.common.auth.error.WrongPassword()
             except ldap.LDAPError:
                 gws.log.error('generic fault, FAIL')
-                raise gws.auth.error.LoginFailed()
+                raise gws.common.auth.error.LoginFailed()
 
             return self._make_user(ld, user_data)
 
@@ -176,7 +175,7 @@ class Object(gws.common.auth.provider.Object):
                 self.var('displayNameFormat'),
                 user_data)
 
-        return gws.auth.user.ValidUser().init_from_source(
+        return gws.common.auth.user.ValidUser().init_from_source(
             provider=self,
             uid=user_data[self.login_attr],
             roles=self._find_roles(ld, user_data),

@@ -6,8 +6,10 @@ import time
 import gws
 import gws.config
 import gws.tools.json2 as json2
-from gws.auth.stores import sqlite as store
+
 import gws.types as t
+
+from .stores import sqlite as store
 
 
 class Session:
@@ -29,7 +31,7 @@ class Session:
 class Manager:
     def _session_object(self, rec):
         if rec:
-            prov: t.AuthProviderObject = gws.config.root().find('gws.ext.auth.provider', rec['provider_uid'])
+            prov: t.IAuthProvider = gws.config.root().find('gws.ext.auth.provider', rec['provider_uid'])
             if not prov:
                 gws.log.error(f'auth provider not found: {rec!r}')
                 return

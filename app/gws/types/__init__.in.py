@@ -5,17 +5,6 @@ from .data import Data, Config, Props
 
 # @include t/base
 # @include t/ext
-
 # @include t/access
 # @include t/attribute
-# @include t/db
-# @include t/feature
-# @include t/meta
-# @include t/misc
-# @include t/ows
 # @include t/request
-# @include t/search
-# @include t/style
-# @include t/render
-# @include t/template
-# @include t/application

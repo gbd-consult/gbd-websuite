@@ -32,7 +32,7 @@ class Object(gws.common.search.provider.Object):
                 and not args.keyword
         )
 
-    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
+    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         shape = gws.gis.shape.union(args.shapes)
         if shape.type == 'Point':
             shape = shape.tolerance_buffer(args.get('tolerance'))
@@ -40,7 +40,7 @@ class Object(gws.common.search.provider.Object):
         fs = util.find_features(self, shape.bounds, args.crs, args.limit)
 
         # @TODO excluding geometryless features for now
-        fs = [f for f in fs if f.shape and f.shape.geo.intersects(shape.geo)]
+        fs = [f for f in fs if f.shape and f.shape.intersects(shape)]
         gws.log.debug(f'WFS_QUERY: AFTER FILTER: {len(fs)}')
 
         return fs

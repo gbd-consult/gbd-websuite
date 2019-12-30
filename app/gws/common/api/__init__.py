@@ -9,8 +9,8 @@ class Config(t.Config):
     actions: t.Optional[t.List[t.ext.action.Config]]  #: available actions
 
 
-#:stub ApiObject
-class Object(gws.Object):
+#:export IApi
+class Object(gws.Object, t.IApi):
     def __init__(self):
         super().__init__()
         self.actions = {}

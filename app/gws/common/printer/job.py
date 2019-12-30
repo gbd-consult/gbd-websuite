@@ -87,7 +87,7 @@ _PAPER_COLOR = 'white'
 
 
 class _Worker:
-    def __init__(self, job_uid, base_path, p: pt.PrintParams, user: t.User):
+    def __init__(self, job_uid, base_path, p: pt.PrintParams, user: t.IUser):
         self.job_uid = job_uid
         self.base_path = base_path
         self.p = p
@@ -95,7 +95,7 @@ class _Worker:
 
         self.format = p.get('format') or 'pdf'
 
-        self.project: t.ProjectObject = self.acquire('gws.common.project', self.p.projectUid)
+        self.project: t.IProject = self.acquire('gws.common.project', self.p.projectUid)
 
         self.locale = p.get('locale') or ''
         if self.locale not in self.project.locales:
@@ -107,7 +107,7 @@ class _Worker:
         self.render_view.rotation = self.p.rotation
 
         if self.p.templateUid:
-            self.template: t.TemplateObject = self.acquire('gws.ext.template', self.p.templateUid)
+            self.template: t.ITemplate = self.acquire('gws.ext.template', self.p.templateUid)
             if not self.template:
                 raise ValueError(f'cannot find template uid={self.p.templateUid}')
 
@@ -230,7 +230,7 @@ class _Worker:
             units.px2mm(self.render_view.size_px[1], self.render_view.dpi),
         ]
 
-        return gws.tools.pdf.render_html_with_map(
+        html = gws.gis.render.create_html_with_map(
             html='<meta charset="UTF-8"/>@',
             map_placeholder='@',
             page_size=page_size,
@@ -239,6 +239,14 @@ class _Worker:
             out_path=f'{self.base_path}/sec-{n}.pdf',
         )
 
+        out_path = gws.tools.pdf.render_html(
+            html,
+            page_size=page_size,
+            margin=None,
+            out_path=out_path
+        )
+
+        return out_path
 
     def prepare_section(self, sec: pt.PrintSection):
         s = PreparedSection()

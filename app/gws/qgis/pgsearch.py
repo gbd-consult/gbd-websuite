@@ -16,7 +16,7 @@ class Object(gws.common.search.provider.Object):
     def __init__(self):
         super().__init__()
         self.db: gws.ext.db.provider.postgres.Object = None
-        self.table: t.SqlTableConfig = None
+        self.table: t.SqlTable = None
         self.extra_where = ''
 
     def configure(self):
@@ -39,7 +39,7 @@ class Object(gws.common.search.provider.Object):
             gws.as_uid(f"h={cfg['host']}_p={cfg['port']}_u={cfg['user']}_d={cfg['database']}"),
             t.Config(cfg))
 
-        self.table = t.SqlTableConfig({
+        self.table = t.SqlTable({
             'geometryColumn': ds['geometryColumn'],
             'name': ds['table'],
         })
@@ -48,7 +48,7 @@ class Object(gws.common.search.provider.Object):
         # qgis-pg is for spatial searches only
         return args.shapes and not args.keyword
 
-    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
+    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         return self.db.select(t.SelectArgs({
             'table': self.table,
             'shape': self.context_shape(args),

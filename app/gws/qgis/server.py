@@ -42,7 +42,7 @@ def _make_ini(root):
     return '\n'.join(x.strip() for x in ini.splitlines())
 
 
-def environ(root: t.RootObject):
+def environ(root: t.IRootObject):
     base_dir = misc.ensure_dir(gws.TMP_DIR + '/qqq')
 
     # it's all a bit blurry, but the server appears to read 'ini' from OPTIONS_DIR

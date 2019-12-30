@@ -1,8 +1,9 @@
 import gws
-import gws.tools.xml3
+import gws.gis.extent
 import gws.gis.gml
 import gws.gis.proj
 import gws.gis.shape
+import gws.tools.xml3
 
 
 class Filter:

@@ -4,6 +4,7 @@ from lxml import etree
 import gws
 import gws.config
 import gws.config.parser
+import gws.ext.db.provider.postgres
 import gws.server
 import gws.web.error
 import gws.tools.mime
@@ -80,7 +81,9 @@ CLOUD_CONFIG_DIR = CLOUD_DIR + '/configs'
 
 
 class Object(gws.ActionObject):
-    db: t.SqlProviderObject
+    def __init__(self):
+        super().__init__()
+        self.db: gws.ext.db.provider.postgres = None
 
     def configure(self):
         super().configure()
@@ -88,7 +91,7 @@ class Object(gws.ActionObject):
         self.db = self.root.find('gws.ext.db.provider', p) if p else self.root.find_first(
             'gws.ext.db.provider.postgres')
 
-    def api_create_project(self, req: t.WebRequest, p: CreateProjectParams) -> CreateProjectResponse:
+    def api_create_project(self, req: t.IRequest, p: CreateProjectParams) -> CreateProjectResponse:
         # debug
         with open(gws.VAR_DIR + '/cloud-input.json', 'w') as fp:
             fp.write(gws.tools.json2.to_string(p, pretty=True))

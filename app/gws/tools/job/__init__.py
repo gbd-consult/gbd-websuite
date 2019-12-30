@@ -1,7 +1,8 @@
 import importlib
+
 import gws
 import gws.config
-import gws.auth.api
+
 import gws.types as t
 
 from . import storage
@@ -18,6 +19,7 @@ class State(t.Enum):
 
 class Error(gws.Error):
     pass
+
 
 def create(uid, user_uid, worker, args=None):
     gws.log.debug('creating job', worker, user_uid)
@@ -39,6 +41,7 @@ def get(uid):
     rec = storage.find(uid)
     if rec:
         return Job(rec)
+
 
 def remove(uid):
     storage.remove(uid)

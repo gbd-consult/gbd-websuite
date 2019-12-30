@@ -1,30 +1,54 @@
 import gws.types as t
 
 
-def from_props(p: t.StyleProps) -> t.Style:
+class Config(t.Config):
+    """Feature style"""
+
+    type: str  #: style type ("css")
+    content: t.Optional[dict]  #: css rules
+    text: t.Optional[str]  #: raw style content
+
+
+def from_props(p: t.StyleProps) -> t.IStyle:
     if p.type == 'css':
         content = p.content or _parse_css(p.text or '')
-        return Style('css', content)
+        s: t.IStyle = Style('css', content)
+        return s
 
 
-def from_config(p: t.StyleConfig) -> t.Style:
+def from_config(p: Config) -> t.IStyle:
     return from_props(p)
 
 
-#:stub Style
-class Style:
+#:export
+class StyleProps(t.Props):
+    type: str
+    content: t.Optional[dict]
+    text: t.Optional[str]
+
+
+class Config(t.Config):
+    """Feature style"""
+
+    type: str  #: style type ("css")
+    content: t.Optional[dict]  #: css rules
+    text: t.Optional[str]  #: raw style content
+
+
+#:export IStyle
+class Style(t.IStyle):
     def __init__(self, type, content):
         super().__init__()
-        self.type = type
-        self.content = content
+        self.type: str = type
+        self.content: dict = content
 
     @property
-    def text(self):
+    def text(self) -> str:
         if self.type == 'css':
             return _make_css(self.content)
 
     @property
-    def props(self):
+    def props(self) -> t.StyleProps:
         return t.StyleProps({
             'type': self.type,
             'content': self.content

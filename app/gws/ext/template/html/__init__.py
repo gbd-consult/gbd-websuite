@@ -11,11 +11,11 @@ import gws.gis.render
 import gws.tools.misc as misc
 import gws.tools.pdf
 import gws.types as t
-import gws.tools.chartreux
+import gws.tools.vendor.chartreux as chartreux
 import gws.common.template
 
 
-class Config(t.TemplateConfig):
+class Config(gws.common.template.Config):
     """HTML template"""
     pass
 
@@ -68,10 +68,17 @@ class Object(gws.common.template.Object):
             if not out_path:
                 raise ValueError('out_path required for pdf')
 
-            out_path = gws.tools.pdf.render_html_with_map(
+            html = gws.gis.render.create_html_with_map(
                 html=html,
                 render_output=render_output,
                 map_placeholder=self.map_placeholder,
+                page_size=self.parsed.page_size,
+                margin=self.parsed.margin,
+                out_path=out_path
+            )
+
+            out_path = gws.tools.pdf.render_html(
+                html,
                 page_size=self.parsed.page_size,
                 margin=self.parsed.margin,
                 out_path=out_path
@@ -233,7 +240,7 @@ class Object(gws.common.template.Object):
         def err(e, path, line):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
-        content = gws.tools.chartreux.render(
+        content = chartreux.render(
             text,
             context,
             path=self.path or '<string>',

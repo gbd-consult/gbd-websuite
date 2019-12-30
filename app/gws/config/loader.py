@@ -27,7 +27,7 @@ def real_config_path(config_path=None):
             return p
 
 
-def parse_and_activate(path=None) -> t.RootObject:
+def parse_and_activate(path=None) -> t.IRootObject:
     path = real_config_path(path)
     gws.log.info(f'using config "{path}"...')
     cfg = parser.parse_main(path)
@@ -45,7 +45,7 @@ def parse_and_activate(path=None) -> t.RootObject:
     return root
 
 
-def activate(cfg) -> t.RootObject:
+def activate(cfg) -> t.IRootObject:
     try:
         root = gws.set_global('_tree_root', gwsroot.Object())
         root.initialize(cfg)
@@ -66,7 +66,7 @@ def store(path=None):
         raise error.LoadError('unable to store configuration')
 
 
-def load(path=None) -> t.RootObject:
+def load(path=None) -> t.IRootObject:
     path = path or DEFAULT_STORE_PATH
     try:
         gws.log.debug(f'loading config from "{path}"')

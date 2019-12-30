@@ -10,8 +10,8 @@ import gws
 import gws.types
 import gws.types.spec
 import gws.tools.misc
-import gws.tools.chartreux
-import gws.tools.slon
+import gws.tools.vendor.chartreux as chartreux
+import gws.tools.vendor.slon as slon
 
 from . import error, spec
 
@@ -100,11 +100,11 @@ def _read2(path):
 
 def _parse_cx_config(path):
     try:
-        tpl = gws.tools.chartreux.compile_path(
+        tpl = chartreux.compile_path(
             path,
             syntax={'start': '{{', 'end': '}}'},
         )
-    except gws.tools.chartreux.compiler.Error as e:
+    except chartreux.compiler.Error as e:
         with open(e.path) as fp:
             _display_syntax_error(fp.read(), e.message, e.line)
         raise ValueError('syntax error')
@@ -114,7 +114,7 @@ def _parse_cx_config(path):
             _display_syntax_error(fp.read(), repr(exc), line)
         raise ValueError('syntax error')
 
-    src = gws.tools.chartreux.call(
+    src = chartreux.call(
         tpl,
         context={'true': True, 'false': False},
         error=err)
@@ -123,8 +123,8 @@ def _parse_cx_config(path):
         fp.write(src)
 
     try:
-        return gws.tools.slon.loads(src, as_object=True)
-    except gws.tools.slon.DecodeError as e:
+        return slon.loads(src, as_object=True)
+    except slon.DecodeError as e:
         _display_syntax_error(src, e.args[0], e.args[1])
         raise ValueError('syntax error')
 

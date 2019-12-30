@@ -40,21 +40,31 @@ def new(args: dict):
     return Feature(uid, attributes, elements, shape, style)
 
 
-#:stub
+#:export
+class FeatureProps(t.Data):
+    uid: t.Optional[str]
+    attributes: t.Optional[t.List[t.Attribute]]
+    elements: t.Optional[dict]
+    layerUid: t.Optional[str]
+    shape: t.Optional[t.ShapeProps]
+    style: t.Optional[t.StyleProps]
+
+
+#:export
 class FeatureConvertor:
-    feature_format: t.FormatObject
-    data_model: t.ModelObject
+    feature_format: t.IFormat
+    data_model: t.IModel
 
 
-#:stub
-class Feature:
+#:export IFeature
+class Feature(t.IFeature):
     def __init__(self, uid=None, attributes=None, elements=None, shape=None, style=None):
         self.attributes: t.List[t.Attribute] = []
         self.elements: dict = {}
         self.convertor: FeatureConvertor = None
-        self.layer: t.LayerObject = None
-        self.shape: t.Shape = None
-        self.style: t.Style = None
+        self.layer: t.ILayer = None
+        self.shape: t.IShape = None
+        self.style: t.IStyle = None
         self.uid: str = ''
 
         self._init(uid, attributes, elements, shape, style)
@@ -73,26 +83,20 @@ class Feature:
             'layerUid': self.layer.uid if self.layer else None,
         })
 
-    def transform(self, to_crs):
+    def transform(self, to_crs) -> t.IFeature:
         if self.shape:
             self.shape = self.shape.transform(to_crs)
         return self
 
-    def set_default_style(self, style):
-        if self.style or not style:
-            return
-        if isinstance(style, dict):
-            style = t.StyleProps(style)
-        self.style = style
-
-    def to_svg(self, rv: t.RenderView, style: t.Style = None):
+    def to_svg(self, rv: t.RenderView, style: t.IStyle = None) -> str:
         if not self.shape:
             return ''
         style = self.style or style
         if not style and self.layer:
             style = self.layer.style
+        s: gws.gis.shape.Shape = self.shape
         return gws.gis.svg.draw(
-            self.shape.geo,
+            s.geom,
             self.elements.get('label', ''),
             style,
             rv.bbox,
@@ -101,19 +105,16 @@ class Feature:
             rv.rotation
         )
 
-    def to_geojson(self):
-        geometry = None
-        if self.shape:
-            geometry = self.shape.props['geometry']
+    def to_geojson(self) -> dict:
         props = {a.name: a.value for a in self.attributes}
         props['id'] = self.uid
         return {
             'type': 'Feature',
             'properties': props,
-            'geometry': geometry
+            'geometry': self.shape.props.geometry if self.shape else None
         }
 
-    def convert(self, target_crs: t.Crs = None, convertor: t.FeatureConvertor = None) -> 'Feature':
+    def convert(self, target_crs: t.Crs = None, convertor: t.FeatureConvertor = None) -> t.IFeature:
         if self.shape and target_crs:
             self.shape = self.shape.transform(target_crs)
 
@@ -145,18 +146,14 @@ class Feature:
         self.attributes = []
         if attributes:
             if isinstance(attributes, dict):
-                self.attributes = [t.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
-            elif isinstance(attributes, (list, tuple)):
-                for a in attributes:
-                    if not isinstance(a, t.Data):
-                        a = t.Attribute(a)
-                    self.attributes.append(a)
+                attributes = [t.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
+            self.attributes = attributes
 
         self.shape = None
         if shape:
-            if isinstance(shape, t.Shape):
+            if isinstance(shape, gws.gis.shape.Shape):
                 self.shape = shape
-            elif shape.get('geometry'):
+            else:
                 self.shape = gws.gis.shape.from_props(shape)
 
         self.style = None
@@ -164,3 +161,6 @@ class Feature:
             if isinstance(style, dict):
                 style = t.StyleProps(style)
             self.style = style
+
+
+IFeature = Feature

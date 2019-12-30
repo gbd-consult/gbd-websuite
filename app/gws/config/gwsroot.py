@@ -6,12 +6,12 @@ import gws.types as t
 from . import error, spec
 
 
-#:stub RootObject
-class Object(gws.core.tree.RootBase):
+#:export IRootObject
+class Object(gws.core.tree.RootBase, t.IRootObject):
     def __init__(self):
         super().__init__()
 
-        self.application: t.ApplicationObject = None
+        self.application: t.IApplication = None
 
         self._validator: gws.types.spec.Validator = None
         self._monitor: gws.server.monitor.Object = None

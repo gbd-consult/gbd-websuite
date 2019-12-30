@@ -15,13 +15,13 @@ def _new_uid(uid):
     _uids.add(u)
     return u
 
-#:stub Object
-class Object:
+#:export IObject
+class Object(t.IObject):
     def __init__(self):
         self.children = []
-        self.config = None
-        self.parent = None
-        self.root: t.RootObject = None
+        self.config: t.Config = None
+        self.parent: t.IObject = None
+        self.root: t.IRootObject = None
         self.uid = ''
 
         self.access = None
@@ -133,7 +133,7 @@ class Object:
     def props(self) -> t.Props:
         pass
 
-#:stub
+#:export
 class RootBase(Object):
     def __init__(self):
         super().__init__()

@@ -4,12 +4,13 @@ import gws.tools.json2 as json2
 import gws.types as t
 
 
-class Props(t.Data):
+#:export
+class UserProps(t.Data):
     displayName: str
 
 
-#:stub Role
-class Role:
+#:export IRole
+class Role(t.IRole):
     def __init__(self, name):
         self.name = name
 
@@ -17,17 +18,17 @@ class Role:
         return _can_use(self, obj, [self.name], parent)
 
 
-#:stub User
-class User:
+#:export IUser
+class User(t.IUser):
     def __init__(self):
         self.attributes = {}
-        self.provider: t.AuthProviderObject = None
+        self.provider: t.IAuthProvider = None
         self.roles: t.List[str] = []
         self.uid = ''
 
     @property
-    def props(self):
-        return Props()
+    def props(self) -> t.UserProps:
+        return t.UserProps()
 
     @property
     def display_name(self) -> str:
@@ -44,7 +45,7 @@ class User:
     def has_role(self, role: str) -> bool:
         return role in self.roles
 
-    def init_from_source(self, provider, uid, roles=None, attributes=None) -> t.User:
+    def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'IUser':
         attributes = dict(attributes) if attributes else {}
 
         for a, b in _aliases:
@@ -66,7 +67,7 @@ class User:
 
         return self.init_from_cache(provider, uid, roles, attributes)
 
-    def init_from_cache(self, provider, uid, roles, attributes) -> t.User:
+    def init_from_cache(self, provider, uid, roles, attributes) -> 'IUser':
         self.attributes = attributes
         self.provider = provider
         self.roles = set(roles)
@@ -78,7 +79,7 @@ class User:
     def attribute(self, key: str, default: str = '') -> str:
         return self.attributes.get(key, default)
 
-    def can_use(self, obj: t.Object, parent: t.Object = None) -> bool:
+    def can_use(self, obj: t.IObject, parent: t.IObject = None) -> bool:
         return _can_use(self, obj, self.roles, parent)
 
 
@@ -103,7 +104,7 @@ class Nobody(User):
 class ValidUser(User):
     @property
     def props(self):
-        return Props({
+        return UserProps({
             'displayName': self.display_name
         })
 
@@ -175,3 +176,7 @@ def _repr(obj):
     if not obj:
         return repr(obj)
     return repr(gws.get(obj, 'uid') or obj)
+
+
+IUser = User
+IRole = Role

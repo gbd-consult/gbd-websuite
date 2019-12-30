@@ -31,7 +31,7 @@ class Object(gws.common.layer.Base):
         self.direct_render = set()
         self.direct_search = set()
         self.source_layers: t.List[t.SourceLayer] = []
-        self.layers: t.List[t.LayerObject] = []
+        self.layers: t.List[t.ILayer] = []
         self.provider: provider.Object = None
         self.path = ''
         self.flatten = None

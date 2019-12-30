@@ -111,7 +111,7 @@ def drop(layer_uids=None):
             _remove_dir(dirname)
 
 
-def store_in_web_cache(layer: t.LayerObject, x, y, z, img):
+def store_in_web_cache(layer: t.ILayer, x, y, z, img):
     dirname = gws.WEB_CACHE_DIR + f'/_/cmd/mapHttpGetXyz/layerUid/{layer.uid}/z/{z}/x/{x}/y/{y}'
     tmp = gws.random_string(64)
     try:

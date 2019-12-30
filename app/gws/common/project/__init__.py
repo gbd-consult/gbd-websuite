@@ -22,12 +22,12 @@ class Config(t.Config):
 
     access: t.Optional[t.Access]  #: access rights
     api: t.Optional[gws.common.api.Config]  #: project-specific actions
-    assets: t.Optional[t.DocumentRootConfig]  #: project-specific assets options
+    assets: t.Optional[gws.web.site.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.common.client.Config]  #: project-specific gws client configuration
     description: t.Optional[t.ext.template.Config]  #: template for the project description
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.common.map.Config]  #: Map configuration
-    meta: t.Optional[t.MetaData] = {}  #: project metadata
+    meta: t.Optional[gws.common.metadata.Config] = {}  #: project metadata
     multi: t.Optional[t.Regex]  #: filename pattern for a multi-project template
     overviewMap: t.Optional[gws.common.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.common.printer.Config]  #: printer configuration
@@ -49,20 +49,20 @@ class Props(t.Data):
     uid: str
 
 
-#:stub ProjectObject
-class Object(gws.Object):
+#:export IProject
+class Object(gws.Object, t.IProject):
     def __init__(self):
         super().__init__()
 
-        self.api: t.ApiObject = None
-        self.assets_root: t.DocumentRootConfig = None
-        self.client: t.ClientObject = None
-        self.description_template: t.TemplateObject = None
+        self.api: t.IApi = None
+        self.assets_root: t.DocumentRoot = None
+        self.client: t.IClient = None
+        self.description_template: t.ITemplate = None
         self.locales = []
-        self.map: t.MapObject = None
+        self.map: t.IMap = None
         self.meta: t.MetaData = {}
-        self.overview_map: t.MapObject = None
-        self.printer: t.PrinterObject = None
+        self.overview_map: t.IMap = None
+        self.printer: t.IPrinter = None
         self.title = ''
 
     def configure(self):
@@ -72,9 +72,11 @@ class Object(gws.Object):
         # title at the top level config preferred
         if self.var('title'):
             self.meta.title = self.var('title')
+
         self.title = self.meta.title
 
         self.locales = self.var('locales', parent=True, default=['en_CA'])
+        self.assets_root = gws.web.site.document_root(self.var('assets'))
 
         p = self.var('map')
         if p:
@@ -89,15 +91,13 @@ class Object(gws.Object):
         if p:
             self.printer = self.add_child(gws.common.printer.Object, p)
 
-        self.description_template = self.add_child(
-            'gws.ext.template',
-            self.var('description') or gws.common.template.builtin_config('project_description')
-        )
+        p = self.var('description')
+        self.description_template = self.add_child('gws.ext.template', p or gws.common.template.builtin_config('project_description'))
 
-        search = self.var('search')
-        if search.enabled and search.providers:
-            for p in search.providers:
-                self.add_child('gws.ext.search.provider', p)
+        p = self.var('search')
+        if p and p.enabled and p.providers:
+            for s in p.providers:
+                self.add_child('gws.ext.search.provider', s)
 
         p = self.var('api')
         self.api = self.add_child(gws.common.api.Object, p) if p else None
@@ -106,8 +106,6 @@ class Object(gws.Object):
         if p:
             p.parentClient = self.parent.var('client')
             self.client = self.add_child(gws.common.client.Object, p)
-
-        self.assets_root = self.var('assets')
 
     @property
     def description(self):

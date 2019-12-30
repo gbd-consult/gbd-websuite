@@ -7,15 +7,19 @@ _comma = ', '.join
 _nl = '\n'.join
 _nl2 = '\n\n'.join
 
+_known_bases = set('Any Dict List Optional Tuple Union Data Config Props Attribute'.split())
+
 
 def run(stubs):
     classes = {s.class_name: s for s in stubs.values()}
+    classes['gws.Object'] = stubs['IObject']
+    classes['Object'] = stubs['IObject']
 
     for stub in stubs.values():
         stub.bases = [_format_base(b, classes) for b in stub.bases]
 
     for stub in stubs.values():
-        stub.bases = [b for b in stub.bases if b and b in stubs]
+        stub.bases = [b for b in stub.bases if _check_base(b, stubs)]
 
     rs = _topsort(stubs)
 
@@ -26,6 +30,8 @@ def run(stubs):
 
 
 def _format_base(b, classes):
+    if b.startswith('gws.types.I'):
+        return None
     if b in classes:
         b = classes[b].name
     if '.' not in b:
@@ -38,6 +44,14 @@ def _format_base(b, classes):
     return b
 
 
+def _check_base(b, stubs):
+    if not b:
+        return False
+    if b in stubs:
+        return True
+    return b in _known_bases
+
+
 def _check_props(stub, stubs):
     for b in stub.bases:
         base = stubs.get(b)
@@ -48,7 +62,7 @@ def _check_props(stub, stubs):
 def _topsort(stubs):
     ls = list(stubs.values())
     rs = []
-    seen = set()
+    seen = set(_known_bases)
 
     while ls:
         ls2 = []
@@ -101,7 +115,7 @@ def _prop_code(name, type_node, line):
         t = _extract_return_annotation(line)
     else:
         t = _extract_var_annotation(line)
-    return '%s : %s' % (name, t)
+    return '%s: %s = None' % (name, t)
 
 
 def _method_code(name, args_node, type_node, line):
@@ -141,15 +155,12 @@ def _quote_all(s):
     return re.sub(r"""(?x) '[\w.]+' | "[\w.]+" | [\w.]+""", _repl, s)
 
 
-_no_quote = set('Any Dict List Optional Tuple Union Object Data Config Props Attribute'.split())
-
-
 def _quote(s):
     if s[0] in ('"', "'"):
         return s
     if s.startswith('t.'):
         s = s.split('.')[1]
-    if s[0].islower() or s in _no_quote:
+    if s[0].islower() or s in _known_bases:
         return s
     s = s.split('.')[-1]
     return repr(s)

@@ -3,14 +3,16 @@ import time
 import os
 
 import gws
-import gws.auth.api
 import gws.web
 import gws.config
+import gws.common.template
+import gws.ext.db.provider.postgres
 import gws.tools.net
 import gws.tools.date
 import gws.gis.feature
 import gws.gis.shape
 import gws.common.layer
+import gws.common.db
 import gws.gis.proj
 
 import gws.types as t
@@ -20,8 +22,8 @@ _LOG_TABLE_NAME = 'dprocon_log'
 
 _cwd = os.path.dirname(__file__)
 
-_DEFAULT_FORMAT = t.FeatureFormatConfig({
-    'description': t.TemplateConfig({
+_DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig({
+    'description': gws.common.template.Config({
         'type': 'html',
         'text': '''
             <p class="head">{title}</p>
@@ -46,8 +48,8 @@ class Config(t.WithTypeAndAccess):
     requestUrl: t.Url
     crs: t.Crs = ''
 
-    requestTable: t.SqlTableConfig  #: table to store outgoing requests
-    dataTable: t.SqlTableConfig  #: table to store consolidated results
+    requestTable: gws.common.db.SqlTableConfig  #: table to store outgoing requests
+    dataTable: gws.common.db.SqlTableConfig  #: table to store consolidated results
     dataTablePattern: str  #: pattern for result tables to consolidate
 
     cacheTime: t.Duration = '24h'
@@ -76,7 +78,7 @@ class GetDataResponse(t.Data):
 class Object(gws.ActionObject):
     def __init__(self):
         super().__init__()
-        self.db: t.SqlProviderObject = None
+        self.db: gws.ext.db.provider.postgres.Object = None
         
     def configure(self):
         super().configure()
@@ -96,7 +98,7 @@ class Object(gws.ActionObject):
 
         self.feature_format = self.create_object('gws.common.format', _DEFAULT_FORMAT)
 
-    def api_connect(self, req: t.WebRequest, p: ConnectParams) -> ConnectResponse:
+    def api_connect(self, req: t.IRequest, p: ConnectParams) -> ConnectResponse:
         req.require_project(p.projectUid)
 
         shape = gws.gis.shape.union(gws.gis.shape.from_props(s) for s in p.shapes)
@@ -112,7 +114,7 @@ class Object(gws.ActionObject):
             'url': url
         })
 
-    def api_get_data(self, req: t.WebRequest, p: GetDataParams) -> GetDataResponse:
+    def api_get_data(self, req: t.IRequest, p: GetDataParams) -> GetDataResponse:
 
         req.require_project(p.projectUid)
         request_id = p.requestId
@@ -224,7 +226,7 @@ class Object(gws.ActionObject):
 
         features = self.db.select(t.SelectArgs({
             'shape': shape,
-            'table': t.SqlTableConfig({
+            'table': gws.common.db.SqlTableConfig({
                 'name': self.var('indexSchema') + '.' + _INDEX_TABLE_NAME,
                 'geometryColumn': 'geom'
             })

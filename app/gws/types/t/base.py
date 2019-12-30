@@ -1,5 +1,3 @@
-# type: ignore
-
 ### Basic types
 
 # noinspection PyUnresolvedReferences

@@ -1,14 +1,13 @@
 import gws
-import gws.web.error
+import gws.common.metadata
+import gws.common.model
+import gws.common.search.runner
+import gws.gis.gml
+import gws.gis.proj
 import gws.tools.units as units
 import gws.tools.xml3
-import gws.gis.proj
-import gws.gis.gml
-import gws.common.model
-import gws.common.metadata
-import gws.common.search.runner
 import gws.types as t
-import gws.web
+import gws.web.error
 
 from . import const, inspire
 
@@ -50,21 +49,20 @@ class Config(t.WithTypeAndAccess):
     enabled: bool = True
     featureNamespace: str = 'gws'  #: feature namespace name
     featureNamespaceUri: str = 'http://gws.gbd-consult.de'  #: feature namespace uri
-    meta: t.Optional[t.MetaData]  #: service metadata
+    meta: t.Optional[gws.common.metadata.Config]  #: service metadata
     name: str = ''  #: service name
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     useInspire: t.Optional[UseInspireConfig]  #: INSPIRE configuration
 
-
-class RequestData(t.Data):
-    req: t.WebRequest
-    project: t.ProjectObject
-    service: 'Object'
+class OwsRequest(t.Data):
+    req: t.IRequest
+    project: t.IProject
+    service: t.IOwsService
     xml: gws.tools.xml3.Element = None
 
 
 class LayerCapsNode(t.Data):
-    layer: t.LayerObject
+    layer: t.ILayer
 
     title: str
     tag_name: str
@@ -82,7 +80,7 @@ class LayerCapsNode(t.Data):
 
 
 class FeatureNode(t.Data):
-    feature: t.Feature
+    feature: t.IFeature
     shape_tag: ''
     tag_name: ''
     attributes: t.List[t.Attribute]
@@ -91,8 +89,8 @@ class FeatureNode(t.Data):
 _NAMESPACES = gws.extend({}, const.NAMESPACES, inspire.NAMESPACES)
 
 
-#:stub OwsServiceObject
-class Object(gws.Object):
+#:export IOwsService
+class Object(gws.Object, t.IOwsService):
     """Generic OWS Service."""
 
     def __init__(self):
@@ -178,14 +176,15 @@ class Object(gws.Object):
         return xml_error_response(self.version, status, f'Error {status}')
 
     def handle(self, req) -> t.HttpResponse:
-        rd = RequestData({
+        rd = OwsRequest({
             'req': req,
             'project': req.require_project(req.param('projectUid')),
             'service': self,
         })
         return self.dispatch(rd, req.kparam('request', '').lower())
 
-    def dispatch(self, rd: RequestData, request_param):
+    #:noexport
+    def dispatch(self, rd: OwsRequest, request_param):
         h = getattr(self, 'handle_' + request_param, None)
         if not h:
             gws.log.debug(f'request={request_param!r} not found')
@@ -195,7 +194,8 @@ class Object(gws.Object):
     def is_layer_enabled(self, layer):
         return layer and layer.ows_enabled(self)
 
-    def render_template(self, rd: RequestData, template, context, format=None):
+    #:noexport
+    def render_template(self, rd: OwsRequest, template, context, format=None):
 
         def csw_meta_url(uid):
             return rd.req.url_for(
@@ -219,7 +219,8 @@ class Object(gws.Object):
         }, context)
         return self.templates[template].render(context, format=format).content
 
-    def render_feature_nodes(self, rd: RequestData, nodes, container_template_name):
+    #:noexport
+    def render_feature_nodes(self, rd: OwsRequest, nodes, container_template_name):
         tags = []
 
         for node in nodes:
@@ -231,7 +232,7 @@ class Object(gws.Object):
         }))
 
 
-def layer_node_root(rd: RequestData) -> LayerCapsNode:
+def layer_node_root(rd: OwsRequest) -> LayerCapsNode:
     roots = _layer_node_roots(rd)
     if not roots:
         return
@@ -241,14 +242,14 @@ def layer_node_root(rd: RequestData) -> LayerCapsNode:
     return roots[0]
 
 
-def layer_node_list(rd: RequestData) -> t.List[LayerCapsNode]:
+def layer_node_list(rd: OwsRequest) -> t.List[LayerCapsNode]:
     all_nodes = []
     for node in _layer_node_roots(rd):
         _layer_node_sublist(rd, node, all_nodes)
     return all_nodes
 
 
-def layer_nodes_from_request_params(rd: RequestData, *params):
+def layer_nodes_from_request_params(rd: OwsRequest, *params):
     ls = []
     for p in params:
         ls = ls or gws.as_list(rd.req.kparam(p))
@@ -283,8 +284,8 @@ def inspire_nodes(nodes):
     return [n for n in nodes if n.tag_name in inspire.TAGS]
 
 
-def feature_node_list(rd: RequestData, features: t.List[t.Feature]):
-    def node(f: t.Feature):
+def feature_node_list(rd: OwsRequest, features: t.List[t.IFeature]):
+    def node(f: t.IFeature):
         gs = None
         if f.shape:
             gs = gws.gis.gml.shape_to_tag(f.shape, precision=rd.project.map.coordinate_precision)
@@ -371,13 +372,13 @@ def _configure_metadata(obj: gws.Object):
 
 ##
 
-def _layer_node_roots(rd: RequestData) -> t.List[LayerCapsNode]:
+def _layer_node_roots(rd: OwsRequest) -> t.List[LayerCapsNode]:
     if not rd.project:
         return []
     return gws.compact(_layer_node_subtree(rd, la.uid) for la in rd.project.map.layers)
 
 
-def _layer_node_subtree(rd: RequestData, layer_uid):
+def _layer_node_subtree(rd: OwsRequest, layer_uid):
     layer = rd.req.acquire('gws.ext.layer', layer_uid)
 
     if not rd.service.is_layer_enabled(layer):
@@ -391,7 +392,7 @@ def _layer_node_subtree(rd: RequestData, layer_uid):
         return _layer_node(rd, layer, sub)
 
 
-def _layer_node_sublist(rd: RequestData, node, all_nodes):
+def _layer_node_sublist(rd: OwsRequest, node, all_nodes):
     if not node.sub_nodes:
         all_nodes.append(node)
         return
@@ -399,7 +400,7 @@ def _layer_node_sublist(rd: RequestData, node, all_nodes):
         _layer_node_sublist(rd, n, all_nodes)
 
 
-def _layer_node_sublist_selected(rd: RequestData, node, all_nodes, tag_names):
+def _layer_node_sublist_selected(rd: OwsRequest, node, all_nodes, tag_names):
     if node.tag_name in tag_names:
         if not node.sub_nodes:
             all_nodes.append(node)
@@ -411,7 +412,7 @@ def _layer_node_sublist_selected(rd: RequestData, node, all_nodes, tag_names):
             _layer_node_sublist_selected(rd, n, all_nodes, tag_names)
 
 
-def _layer_node(rd: RequestData, layer, sub_nodes=None) -> LayerCapsNode:
+def _layer_node(rd: OwsRequest, layer, sub_nodes=None) -> LayerCapsNode:
     res = [units.res2scale(r) for r in layer.resolutions]
     crs = layer.map.crs
     sub_nodes = sub_nodes or []

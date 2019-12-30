@@ -1,7 +1,7 @@
 ### Attributes and data models.
 
-from .base import Any, List, Optional, Enum, FormatStr
-from ..data import Data, Config, Props
+from .base import Any, Enum
+from ..data import Data
 
 
 class AttributeType(Enum):
@@ -36,25 +36,3 @@ class Attribute(Data):
     title: str = ''
     type: AttributeType = 'str'
     value: Any = None
-
-
-class ModelRule(Data):
-    """Attribute conversion rule"""
-
-    name: str = ''  #: target attribute name
-    value: Optional[str]  #: constant value
-    source: str = ''  #: source attribute
-    title: str = ''  #: target attribute display title
-    type: AttributeType = 'str'  #: target attribute type
-    format: FormatStr = ''  #: attribute formatter
-    expression: str = ''  #: attribute formatter
-
-
-class ModelConfig(Config):
-    """Data model."""
-    rules: List[ModelRule]
-
-
-class ModelProps(Props):
-    rules: List[ModelRule]
-

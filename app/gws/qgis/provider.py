@@ -47,7 +47,7 @@ _LEGEND_DEFAULTS = {
 }
 
 
-class Object(gws.common.ows.provider.Object, types.ProviderObject):
+class Object(gws.common.ows.provider.Object):
     def __init__(self):
         super().__init__()
         self.extent: t.Extent = ''
@@ -74,7 +74,7 @@ class Object(gws.common.ows.provider.Object, types.ProviderObject):
 
         parser.parse(self, s)
 
-    def find_features(self, args: t.SearchArgs) -> t.List[t.Feature]:
+    def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
         # arbitrary width & height
         # @TODO: qgis scales the bbox for some reason?
 

@@ -32,8 +32,8 @@ class Props(t.Data):
     resolutions: t.List[float]
     title: str = ''
 
-#:stub MapObject
-class Object(gws.Object):
+#:export IMap
+class Object(gws.Object, t.IMap):
     def __init__(self):
         super().__init__()
         self.crs = ''
@@ -41,7 +41,7 @@ class Object(gws.Object):
         self.center = []
         self.init_resolution = 0
         self.resolutions = []
-        self.layers: t.List[t.LayerObject] = []
+        self.layers: t.List[t.ILayer] = []
         self.coordinate_precision = 0
 
     @property

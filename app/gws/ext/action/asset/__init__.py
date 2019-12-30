@@ -27,17 +27,17 @@ class GetResultParams(t.Params):
 
 class Object(gws.ActionObject):
 
-    def api_get(self, req: t.WebRequest, p: GetPathParams) -> t.HttpResponse:
+    def api_get(self, req: t.IRequest, p: GetPathParams) -> t.HttpResponse:
         """Return an asset under the given path and project"""
         return self._serve_path(req, p)
 
-    def http_get_path(self, req: t.WebRequest, p: GetPathParams) -> t.HttpResponse:
+    def http_get_path(self, req: t.IRequest, p: GetPathParams) -> t.HttpResponse:
         return self._serve_path(req, p)
 
-    def http_get_download(self, req: t.WebRequest, p) -> t.HttpResponse:
+    def http_get_download(self, req: t.IRequest, p) -> t.HttpResponse:
         return self._serve_path(req, p, True)
 
-    def http_get_result(self, req: t.WebRequest, p: GetResultParams) -> t.HttpResponse:
+    def http_get_result(self, req: t.IRequest, p: GetResultParams) -> t.HttpResponse:
         job = gws.tools.job.get_for(req.user, p.jobUid)
         if not job or job.state != gws.tools.job.State.complete:
             raise gws.web.error.NotFound()
@@ -48,7 +48,7 @@ class Object(gws.ActionObject):
             'content': content
         })
 
-    def _serve_path(self, req: t.WebRequest, p: GetPathParams, as_attachment=False):
+    def _serve_path(self, req: t.IRequest, p: GetPathParams, as_attachment=False):
         spath = str(p.get('path') or '')
         if not spath:
             raise gws.web.error.NotFound()
@@ -153,15 +153,15 @@ def _default_template_context(req, project):
     }
 
 
-def _valid_mime_type(mt, project_assets, site_assets):
-    if project_assets and project_assets.allowMime:
-        return mt in project_assets.allowMime
-    if site_assets and site_assets.allowMime:
-        return mt in site_assets.allowMime
+def _valid_mime_type(mt, project_assets: t.DocumentRoot, site_assets: t.DocumentRoot):
+    if project_assets and project_assets.allow_mime:
+        return mt in project_assets.allow_mime
+    if site_assets and site_assets.allow_mime:
+        return mt in site_assets.allow_mime
     if mt not in gws.tools.mime.default_allowed:
         return False
-    if project_assets and project_assets.denyMime:
-        return mt not in project_assets.denyMime
-    if site_assets and site_assets.denyMime:
-        return mt not in site_assets.denyMime
+    if project_assets and project_assets.deny_mime:
+        return mt not in project_assets.deny_mime
+    if site_assets and site_assets.deny_mime:
+        return mt not in site_assets.deny_mime
     return True

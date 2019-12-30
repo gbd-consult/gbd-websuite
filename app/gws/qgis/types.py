@@ -16,14 +16,3 @@ class PrintTemplate:
         self.attrs = {}
         self.elements: t.List[PrintTemplateElement] = []
 
-
-class SourceLayer(t.SourceLayer):
-    pass
-
-
-class ProviderObject(t.OwsProviderObject):
-    extent: t.Extent
-    legend_params: dict
-    path: str
-    print_templates: t.List[PrintTemplate]
-    properties: dict

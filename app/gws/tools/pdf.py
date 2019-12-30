@@ -1,31 +1,8 @@
-import os
-
 import PyPDF2
 
-import gws.gis.render
+import gws
 import gws.tools.shell as sh
 import gws.tools.units as units
-import gws.types as t
-
-
-def render_html_with_map(html, page_size, margin, out_path, render_output: t.RenderOutput, map_placeholder):
-    map_html = []
-    css = 'position: absolute; left: 0; top: 0; width: 100%; height: 100%'
-    dir = os.path.dirname(out_path)
-
-    for r in render_output.items:
-        if r.type == t.RenderOutputItemType.image:
-            path = dir + '/' + gws.random_string(64) + '.png'
-            r.image.save(path, 'png')
-            map_html.append(f'<img style="{css}" src="{path}"/>')
-        if r.type == t.RenderOutputItemType.path:
-            map_html.append(f'<img style="{css}" src="{r.path}"/>')
-        if r.type == t.RenderOutputItemType.svg:
-            s = '\n'.join(r.elements)
-            map_html.append(f'<svg style="{css}" version="1.1" xmlns="http://www.w3.org/2000/svg">{s}</svg>')
-
-    html = html.replace(map_placeholder, '\n'.join(map_html))
-    return render_html(html, page_size, margin, out_path)
 
 
 def render_html(html, page_size, margin, out_path):

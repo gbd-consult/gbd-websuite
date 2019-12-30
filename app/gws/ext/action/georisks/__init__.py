@@ -9,6 +9,8 @@ import gws.tools.date
 import gws.gis.shape
 import gws.tools.net
 import gws.tools.misc
+import gws.ext.db.provider.postgres
+import gws.common.db
 
 import gws.types as t
 
@@ -207,8 +209,10 @@ class Object(gws.ActionObject):
     ALARM_TABLE_NAME = 'gws_aartelink_alarm'
     DEVICE_TABLE_NAME = 'gws_aartelink_device'
 
-    db: t.SqlProviderObject
-    crs: str
+    def __init__(self):
+        super().__init__()
+        self.db: gws.ext.db.provider.postgres = None
+        self.crs = ''
 
     @property
     def props(self):
@@ -225,7 +229,7 @@ class Object(gws.ActionObject):
         with self.db.connect() as conn:
             self.crs = conn.crs_for_column(self.REPORT_TABLE_NAME, 'geom')
 
-    def api_create_report(self, req: t.WebRequest, p: CreateReportParams) -> CreateReportResponse:
+    def api_create_report(self, req: t.IRequest, p: CreateReportParams) -> CreateReportResponse:
         """Upload a new report"""
 
         rec = {
@@ -256,7 +260,7 @@ class Object(gws.ActionObject):
         for d in _DANGERS:
             rec[f'danger_{d}'] = d in ds
 
-        tbl = t.SqlTableConfig({
+        tbl = gws.common.db.SqlTableConfig({
             'name': self.REPORT_TABLE_NAME,
             'keyColumn': 'id',
             'geometryColumn': 'geom'
@@ -268,7 +272,7 @@ class Object(gws.ActionObject):
             'reportUid': uid
         })
 
-    def api_report_status(self, req: t.WebRequest, p: ReportStatusParams) -> ReportStatusResponse:
+    def api_report_status(self, req: t.IRequest, p: ReportStatusParams) -> ReportStatusResponse:
         """Query the status of the reports"""
 
         ls = []
@@ -295,7 +299,7 @@ class Object(gws.ActionObject):
             'items': ls
         })
 
-    def api_report_list(self, req: t.WebRequest, p: t.NoParams) -> ReportListResponse:
+    def api_report_list(self, req: t.IRequest, p: t.NoParams) -> ReportListResponse:
         """Return all approved reports"""
 
         ls = []
@@ -332,7 +336,7 @@ class Object(gws.ActionObject):
         if r.get(f'image{n}'):
             return f"/_/cmd/georisksHttpGetReportImage/reportUid/{r['id']}/image/{n}.png"
 
-    def http_get_report_image(self, req: t.WebRequest, p) -> t.HttpResponse:
+    def http_get_report_image(self, req: t.IRequest, p) -> t.HttpResponse:
         # params are reportUid, image (1.._MAX_IMAGES)
 
         image = gws.as_int(req.params.get('image')) or 1
@@ -400,7 +404,7 @@ class Object(gws.ActionObject):
         img.save(out, format='JPEG', quality=self.var('report.imageQuality'))
         return out.getvalue(), img.width, img.height
 
-    def http_get_aartelink(self, req: t.WebRequest, p) -> AartelinkResponse:
+    def http_get_aartelink(self, req: t.IRequest, p) -> AartelinkResponse:
         """Endpoint for EASD/AarteLink callbacks."""
 
         try:

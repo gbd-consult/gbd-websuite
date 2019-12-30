@@ -1,5 +1,17 @@
 """Test runner support."""
 
+"""
+Each test suite (_test/suite/<suite-name>) runs in its own dedicated container. It has its own file system 
+with "/data" "/data/config.cx" etc
+
+Containers are managed by a simple server which responds to http requests like 'server?suite=<suite-name>'.
+
+To run the tests:
+    - start the postgres container (cmd.py postgres), runs in the background 
+    - start the server (cmd.py server), runs in the foreground
+    - run a suite (cmd.py run) or all of them (cmd.py batch)
+"""
+
 import argparse
 import atexit
 import http.server
@@ -85,26 +97,23 @@ def start_container(suite, extra_options=None):
     with open(cfg('paths.var_root') + '/test.config.json', 'w') as fp:
         json.dump(CONFIG, fp)
 
-    # create a copy of the suite dir so that container can modify it
+    # create a copy of the suite dir so that the container can modify it (in init.py)
 
     suite_dir = suite_root_dir(suite)
-    run(f"cp -rv {suite_dir} {cfg('paths.var_root')}")
+    run(f"cp -r {suite_dir} {cfg('paths.var_root')}")
     run(f"touch {cfg('paths.var_root')}/{suite}/init.py")
 
     # startup script for the container
 
-    start_script = f"""
-        PYTHONPATH=/gws-app python /gws-var/{suite}/init.py && /gws-app/bin/gws server start -v
-    """
+    start_script = f"PYTHONPATH=/gws-app python /gws-var/{suite}/init.py && /gws-app/bin/gws server start -v"
 
     with open(cfg('paths.var_root') + '/start.sh', 'w') as fp:
         fp.write(start_script.strip())
 
-    opts = ' '.join(opts)
-    cmd = f"docker run {opts} {cfg('docker.image_name')} bash /gws-var/start.sh"
+    # ready to go
 
     banner('CONTAINER START')
-    run(cmd, wait=False)
+    run(f"docker run {' '.join(opts)} {cfg('docker.image_name')} bash /gws-var/start.sh", wait=False)
 
 
 def stop_container():
@@ -120,11 +129,12 @@ def start_container_for_suite(suite, extra_options=None):
 
 
 def exec_suite(suite, opts):
-    cmd = f"docker exec {cfg('docker.container_name')} pytest /gws-app/{SUITE_BASE}/{suite} {opts or ''}"
-    run(cmd)
+    run(f"docker exec {cfg('docker.container_name')} pytest /gws-app/{SUITE_BASE}/{suite} {opts or ''}")
 
 
 def run_suite(suite, opts):
+    banner(f'RUNNING {suite}...')
+
     banner('STARTING CONTAINER...')
 
     start_url = f"http://127.0.0.1:{cfg('cmdserver.port')}?suite={suite}"
@@ -159,7 +169,6 @@ def run_batch(suites, opts):
                 suites.append(p)
 
     for suite in sorted(suites):
-        banner(f'RUNNING {suite}...')
         run_suite(suite, opts)
 
 
@@ -176,17 +185,13 @@ def start_postgres():
         f"--name {cfg('postgres.container_name')}",
     ]
 
-    cmd = f"docker kill {cfg('postgres.container_name')}"
-    run(cmd)
-
-    cmd = f"docker rm --force {cfg('postgres.container_name')}"
-    run(cmd)
+    run(f"docker kill {cfg('postgres.container_name')}")
+    time.sleep(2)
+    run(f"docker rm --force {cfg('postgres.container_name')}")
 
     image_name = 'kartoza/postgis:12.0'
 
-    opts = ' '.join(opts)
-    cmd = f"docker run {opts} {image_name}"
-    run(cmd, wait=False)
+    run(f"docker run {' '.join(opts)} {image_name}", wait=False)
 
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -235,27 +240,27 @@ def main():
     
         cmd.py server --config CONFIG
     
-            starts a simple HTTP server which run gws containers on demand: curl localhost:port?suite=SUITE
+            start a simple HTTP server which run gws containers on demand: curl localhost:port?suite=SUITE
     
         cmd.py run --config CONFIG --suite SUITE --opts 'OPTS'
     
-            tells the server to start a suite container and runs pytest on that suite
+            tell the server to start a suite container and runs pytest on that suite
     
         cmd.py exec --config CONFIG --suite SUITE --opts 'OPTS'
     
-            runs pytest on a suite, assuming its container is started
+            run pytest on a suite, assuming its container is started
     
         cmd.py batch --config CONFIG --suites SUITES
     
-            runs many suites
+            run multiple/all suites
     
         cmd.py container --config CONFIG --suite SUITE 
     
-            starts a suite container interactively
+            start a suite container interactively
         
         cmd.py postgres --config CONFIG
     
-            starts a postgres container
+            start a postgres container
     """
 
     parser = argparse.ArgumentParser(usage=usage)

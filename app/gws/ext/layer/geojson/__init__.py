@@ -19,7 +19,7 @@ class Object(gws.common.layer.Vector):
     def __init__(self):
         super().__init__()
         self.path = ''
-        self.features: t.List[t.Feature] = []
+        self.features: t.List[t.IFeature] = []
 
     def configure(self):
         super().configure()
@@ -31,9 +31,9 @@ class Object(gws.common.layer.Vector):
             f = gws.gis.feature.from_geojson(f, crs, self.var('keyProp'))
             self.features.append(f.transform(self.crs))
 
-    def get_features(self, bbox, limit=0) -> t.List[t.Feature]:
+    def get_features(self, bbox, limit=0):
         shape = gws.gis.shape.from_bbox(bbox, self.crs)
-        fs = [f for f in self.features if f.shape.geo.intersects(shape.geo)]
+        fs = [f for f in self.features if f.shape.intersects(shape)]
         if limit:
             fs = fs[:limit]
         return [self.connect_feature(f) for f in fs]

@@ -8,10 +8,10 @@ class _LimitExceeded(Exception):
     pass
 
 
-def run(req, args: t.SearchArgs) -> t.List[t.Feature]:
+def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
     total_limit = args.limit
     used_layer_ids = set()
-    features: t.List[t.Feature] = []
+    features: t.List[t.IFeature] = []
     prov: provider.Object
 
     try:
@@ -39,10 +39,10 @@ def run(req, args: t.SearchArgs) -> t.List[t.Feature]:
     return features[:total_limit]
 
 
-def _parents(layer):
+def _parents(layer: t.ILayer):
     ps = []
     p = layer.parent
-    while isinstance(p, t.LayerObject):
+    while p.is_a('gws.ext.layer'):
         ps.append(p)
         p = p.parent
     return ps

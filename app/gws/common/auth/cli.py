@@ -2,9 +2,8 @@ import getpass
 
 from argh import arg
 
-import gws.auth.api
-import gws.auth.error
-import gws.auth.session
+import gws.common.auth
+import gws.common.auth.session
 import gws.config.loader
 import gws.tools.clihelpers
 import gws.tools.date as dt
@@ -24,8 +23,8 @@ def test(login=None, password=None):
     password = password or getpass.getpass('Password: ')
 
     try:
-        user = gws.auth.api.authenticate_user(login, password)
-    except gws.auth.error.WrongPassword:
+        user = gws.common.auth.authenticate(login, password)
+    except gws.common.auth.error.WrongPassword:
         print('wrong password!')
         return
 
@@ -41,7 +40,7 @@ def test(login=None, password=None):
 def clear():
     """Logout all users and remove all active sessions"""
 
-    man = gws.auth.session.Manager()
+    man = gws.common.auth.session.Manager()
     man.delete_all()
 
 
@@ -70,7 +69,7 @@ def sessions():
     """Print currently active sessions"""
 
     gws.config.loader.load()
-    man = gws.auth.session.Manager()
+    man = gws.common.auth.session.Manager()
 
     rs = [{
         'user': r['user_uid'],

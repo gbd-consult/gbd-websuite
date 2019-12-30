@@ -66,7 +66,7 @@ class Object(ows.Object):
         if self.records is None:
             self._load_records()
 
-        rd = ows.RequestData({
+        rd = ows.OwsRequest({
             'req': req,
             'project': None,
             'service': self,
@@ -83,13 +83,13 @@ class Object(ows.Object):
 
         return self.dispatch(rd, request_param.lower())
 
-    def handle_getcapabilities(self, rd: ows.RequestData):
+    def handle_getcapabilities(self, rd: ows.OwsRequest):
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {}))
 
-    def handle_describerecord(self, rd: ows.RequestData):
+    def handle_describerecord(self, rd: ows.OwsRequest):
         return ows.xml_response(self.render_template(rd, 'describeRecord', {}))
 
-    def handle_getrecords(self, rd: ows.RequestData):
+    def handle_getrecords(self, rd: ows.OwsRequest):
         records = self._find_records(rd)
 
         results = {
@@ -104,7 +104,7 @@ class Object(ows.Object):
             'results': results,
         }))
 
-    def handle_getrecordbyid(self, rd: ows.RequestData):
+    def handle_getrecordbyid(self, rd: ows.OwsRequest):
         uid = rd.req.kparam('id')
         record = self.records.get(gws.as_uid(uid))
 

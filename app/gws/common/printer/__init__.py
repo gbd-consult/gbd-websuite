@@ -10,11 +10,11 @@ class Props(t.Data):
     templates: t.List[t.TemplateProps]
 
 
-#:stub PrinterObject
-class Object(gws.Object):
+#:export IPrinter
+class Object(gws.Object, t.IPrinter):
     def __init__(self):
         super().__init__()
-        self.templates: t.List[t.TemplateObject] = []
+        self.templates: t.List[t.ITemplate] = []
 
     def configure(self):
         super().configure()

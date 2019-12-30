@@ -1,24 +1,24 @@
-import math
-
 import gws
 
-import gws.tools.misc
-import gws.auth.api
+import gws.common.auth
 import gws.common.format
-import gws.common.style
+import gws.common.metadata
+import gws.common.model
+import gws.common.ows.provider
 import gws.common.search
+import gws.common.style
 import gws.common.template
 import gws.config.parser
+import gws.gis.extent
 import gws.gis.feature
-import gws.gis.svg
 import gws.gis.mpx as mpx
+import gws.gis.ows
 import gws.gis.proj
 import gws.gis.shape
 import gws.gis.source
+import gws.gis.svg
 import gws.gis.zoom
-import gws.common.ows.provider
-import gws.gis.ows
-import gws.common.metadata
+import gws.tools.misc
 import gws.tools.net
 
 import gws.types as t
@@ -93,15 +93,15 @@ class BaseConfig(t.WithTypeAndAccess):
     """Layer"""
 
     clientOptions: ClientOptions = {}  #: options for the layer display in the client
-    dataModel: t.Optional[t.ModelConfig]  #: layer data model
+    dataModel: t.Optional[gws.common.model.Config]  #: layer data model
     description: t.Optional[t.ext.template.Config]  #: template for the layer description
     display: DisplayMode = 'box'  #: layer display mode
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    featureFormat: t.Optional[t.FeatureFormatConfig]  #: feature formatting options
+    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
     legend: LegendConfig = {}  #: legend configuration
-    meta: t.Optional[t.MetaData]  #: layer meta data
+    meta: t.Optional[gws.common.metadata.Config]  #: layer meta data
     opacity: float = 1  #: layer opacity
     ows: t.Optional[OwsConfig]  #: OWS services options
     search: gws.common.search.Config = {}  #: layer search configuration
@@ -122,10 +122,10 @@ class ImageTileConfig(ImageConfig):
 
 class VectorConfig(BaseConfig):
     display: DisplayMode = 'client'  #: layer display mode
-    editDataModel: t.Optional[t.ModelConfig]  #: data model for input data
-    editStyle: t.Optional[t.StyleProps]  #: style for features being edited
+    editDataModel: t.Optional[gws.common.model.Config]  #: data model for input data
+    editStyle: t.Optional[gws.common.style.Config]  #: style for features being edited
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
-    style: t.Optional[t.StyleProps]  #: style for features
+    style: t.Optional[gws.common.style.Config]  #: style for features
 
 
 class Props(t.Data):
@@ -148,8 +148,8 @@ class Props(t.Data):
     url: str = ''
 
 
-#:stub LayerObject
-class Base(gws.Object):
+#:export ILayer
+class Base(gws.Object, t.ILayer):
     def __init__(self):
         super().__init__()
 
@@ -160,7 +160,9 @@ class Base(gws.Object):
 
         self.has_cache = False
 
+        #:noexport
         self.cache: CacheConfig = None
+        #:noexport
         self.grid: GridConfig = None
 
         self.cache_uid = None
@@ -168,38 +170,40 @@ class Base(gws.Object):
 
         self.layers = []
 
-        self.map = None
-        self.meta = None
+        self.map: t.IMap = None
+        self.meta: t.MetaData = None
 
-        self.description_template: t.TemplateObject = None
-        self.feature_format: t.FormatObject = None
-        self.data_model: t.ModelObject = None
+        self.description_template: t.ITemplate = None
+        self.feature_format: t.IFormat = None
+        self.data_model: t.IModel = None
 
-        self.title = None
+        self.title = ''
 
         self.resolutions = []
         self.extent = []
         self.crs = ''
 
         self.has_legend = False
-        self.legend_url = None
+        self.legend_url = ''
 
-        self.opacity = None
-        self.client_options = None
+        self.opacity = 1
+        self.client_options = t
 
         self.services = []
         self.geometry_type = None
 
-        self.style: t.Style = None
-        self.edit_style: t.Style = None
-        self.edit_data_model: t.ModelObject = None
+        self.style: t.IStyle = None
+        self.edit_style: t.IStyle = None
+        self.edit_data_model: t.IModel = None
 
         self.can_render_bbox = False
         self.can_render_xyz = False
         self.can_render_svg = False
 
+        self.ows_name = ''
+
     @property
-    def has_search(self):
+    def has_search(self) -> bool:
         return len(self.get_children('gws.ext.search.provider')) > 0
 
     def use_meta(self, meta):
@@ -229,7 +233,7 @@ class Base(gws.Object):
         super().configure()
 
         self.use_meta(gws.common.metadata.read(self.var('meta')))
-        self.is_public = gws.auth.api.role('all').can_use(self)
+        self.is_public = gws.common.auth.role('all').can_use(self)
 
         self.ows_name = self.var('ows.name') or self.uid.split('.')[-1]
 
@@ -304,6 +308,9 @@ class Base(gws.Object):
         if user.can_use(self.var('edit'), parent=self):
             return ['all']
 
+    def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:
+        pass
+
     @property
     def props(self):
         return Props({
@@ -318,7 +325,7 @@ class Base(gws.Object):
         })
 
     @property
-    def description(self):
+    def description(self) -> str:
         ctx = {
             'layer': self,
         }
@@ -349,6 +356,9 @@ class Base(gws.Object):
             with open(self.legend_url, 'rb') as fp:
                 return fp.read()
         return gws.gis.ows.request.raw_get(self.legend_url).content
+
+    def get_features(self, bbox: t.Extent, limit: int = 0) -> t.List[t.IFeature]:
+        return []
 
     def ows_enabled(self, service):
         if service.name in self.ows_services_disabled:
@@ -487,7 +497,8 @@ class ImageTile(Image):
         self.grid.metaSize = self.grid.metaSize or 1
 
 
-class Vector(Base):
+#:export IVectorLayer
+class Vector(Base, t.IVectorLayer):
     def __init__(self):
         super().__init__()
 
@@ -510,7 +521,7 @@ class Vector(Base):
             'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetFeatures/layerUid/' + self.uid,
         })
 
-    def connect_feature(self, feature: t.Feature) -> t.Feature:
+    def connect_feature(self, feature: t.IFeature) -> t.IFeature:
         feature.layer = self
         return feature
 

@@ -1,7 +1,6 @@
 import time
 
 import gws
-import gws.auth.api
 import gws.common.layer
 import gws.config
 import gws.gis.cache
@@ -61,10 +60,10 @@ _GET_FEATURES_LIMIT = 0
 
 class Object(gws.ActionObject):
 
-    def api_render_bbox(self, req: t.WebRequest, p: RenderBboxParams) -> t.HttpResponse:
+    def api_render_bbox(self, req: t.IRequest, p: RenderBboxParams) -> t.HttpResponse:
         """Render a part of the map inside a bounding box"""
 
-        layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
+        layer: t.ILayer = req.require('gws.ext.layer', p.layerUid)
 
         client_params = {}
         if p.layers:
@@ -93,10 +92,10 @@ class Object(gws.ActionObject):
             'content': img
         })
 
-    def api_render_xyz(self, req: t.WebRequest, p: RenderXyzParams) -> t.HttpResponse:
+    def api_render_xyz(self, req: t.IRequest, p: RenderXyzParams) -> t.HttpResponse:
         """Render an XYZ tile"""
 
-        layer = req.require('gws.ext.layer', p.layerUid)
+        layer: t.ILayer = req.require('gws.ext.layer', p.layerUid)
 
         ts = time.time()
         img = None
@@ -119,10 +118,10 @@ class Object(gws.ActionObject):
             'content': img or gws.tools.misc.Pixels.png8
         })
 
-    def api_render_legend(self, req: t.WebRequest, p: RenderLegendParams) -> t.HttpResponse:
+    def api_render_legend(self, req: t.IRequest, p: RenderLegendParams) -> t.HttpResponse:
         """Render a legend for a layer"""
 
-        layer = req.require('gws.ext.layer', p.layerUid)
+        layer: t.ILayer = req.require('gws.ext.layer', p.layerUid)
 
         if not layer.has_legend:
             raise gws.web.error.NotFound()
@@ -138,17 +137,17 @@ class Object(gws.ActionObject):
             'content': img
         })
 
-    def api_describe_layer(self, req: t.WebRequest, p: DescribeLayerParams) -> t.HttpResponse:
-        layer = req.require('gws.ext.layer', p.layerUid)
+    def api_describe_layer(self, req: t.IRequest, p: DescribeLayerParams) -> t.HttpResponse:
+        layer: t.ILayer = req.require('gws.ext.layer', p.layerUid)
         return t.HttpResponse({
             'mime': 'text/html',
             'content': layer.description
         })
 
-    def api_get_features(self, req: t.WebRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
+    def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
 
-        layer: t.LayerObject = req.require('gws.ext.layer', p.layerUid)
+        layer: t.ILayer = req.require('gws.ext.layer', p.layerUid)
         bbox = p.get('bbox') or layer.map.extent
         limit = min(_GET_FEATURES_LIMIT, p.get('limit') or _GET_FEATURES_LIMIT)
         features = layer.get_features(bbox, limit)
@@ -157,18 +156,18 @@ class Object(gws.ActionObject):
             'features': [f.convert(target_crs=layer.map.crs).props for f in features],
         })
 
-    def http_get_bbox(self, req: t.WebRequest, p: RenderBboxParams) -> t.HttpResponse:
+    def http_get_bbox(self, req: t.IRequest, p: RenderBboxParams) -> t.HttpResponse:
         return self.api_render_bbox(req, p)
 
-    def http_get_xyz(self, req: t.WebRequest, p: RenderXyzParams) -> t.HttpResponse:
+    def http_get_xyz(self, req: t.IRequest, p: RenderXyzParams) -> t.HttpResponse:
         return self.api_render_xyz(req, p)
 
-    def http_get_features(self, req: t.WebRequest, p: GetFeaturesParams) -> t.HttpResponse:
+    def http_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> t.HttpResponse:
         res = self.api_get_features(req, p)
         return t.HttpResponse({
             'mime': 'application/json',
             'content': gws.tools.json2.to_string(res)
         })
 
-    def http_get_legend(self, req: t.WebRequest, p: RenderLegendParams) -> t.HttpResponse:
+    def http_get_legend(self, req: t.IRequest, p: RenderLegendParams) -> t.HttpResponse:
         return self.api_render_legend(req, p)

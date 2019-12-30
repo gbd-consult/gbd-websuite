@@ -3,14 +3,14 @@ import gws.common.db
 
 import gws.types as t
 
-from . import provider, util
+from . import provider
 
 
 class Config(gws.common.search.provider.Config):
     """Database-based search"""
 
     db: t.Optional[str]  #: database provider uid
-    table: t.SqlTableConfig  #: sql table configuration
+    table: gws.common.db.SqlTableConfig  #: sql table configuration
     sort: t.Optional[str]  #: sort expression
 
 
@@ -24,11 +24,9 @@ class Object(gws.common.search.provider.Object):
         super().configure()
 
         self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
-        self.table = util.configure_table(self, self.provider)
+        self.table = self.provider.configure_table(self.var('table'))
 
-
-    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
-
+    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         return self.provider.select(t.SelectArgs({
             'table': self.table,
             'keyword': args.keyword,

@@ -1,5 +1,6 @@
-from PIL import Image
-from io import BytesIO
+import PIL.Image
+import io
+import os
 
 import gws
 import gws.common.layer
@@ -7,6 +8,76 @@ import gws.gis.feature
 import gws.gis.svg
 import gws.tools.units as units
 import gws.types as t
+
+
+#:export
+class SvgFragment:
+    points: t.List[t.Point]
+    svg: str
+
+
+#:export
+class RenderView(t.Data):
+    bbox: t.Extent
+    center: t.Point
+    dpi: int
+    rotation: int
+    scale: int
+    size_mm: t.Size
+    size_px: t.Size
+
+
+#:export
+class RenderInputItemType(t.Enum):
+    image = 'image'
+    features = 'features'
+    fragment = 'fragment'
+    svg_layer = 'svg_layer'
+    bbox_layer = 'bbox_layer'
+
+
+#:export
+class RenderInputItem(t.Data):
+    type: str = ''
+    #:noexport
+    image: PIL.Image.Image = None
+    features: t.List[t.IFeature]
+    layer: t.ILayer = None
+    sub_layers: t.List[str] = []
+    opacity: float = None
+    print_as_vector: bool = None
+    style: t.IStyle = None
+    fragment: t.SvgFragment = None
+    dpi: int = None
+
+
+#:export
+class RenderInput(t.Data):
+    view: t.RenderView
+    background_color: int
+    items: t.List[t.RenderInputItem]
+
+
+#:export
+class RenderOutputItemType(t.Enum):
+    image = 'image'
+    path = 'path'
+    svg = 'svg'
+
+
+#:export
+class RenderOutputItem(t.Data):
+    type: str
+    #:noexport
+    image: PIL.Image.Image = None
+    path: str = ''
+    elements: t.List[str] = []
+
+
+#:export
+class RenderOutput(t.Data):
+    view: 'RenderView'
+    items: t.List[RenderOutputItem]
 
 
 def _view_base(out_size, out_size_unit, rotation, dpi):
@@ -64,20 +135,20 @@ def view_from_bbox(bbox: t.Extent, out_size: t.Size, out_size_unit: str, rotatio
 
 class Composition:
     def __init__(self, size_px, color):
-        self.image = Image.new('RGBA', size_px, color)
+        self.image = PIL.Image.new('RGBA', size_px, color)
 
-    def add_image(self, img: Image.Image, opacity=1):
+    def add_image(self, img: PIL.Image.Image, opacity=1):
         img = img.convert('RGBA')
 
         if img.size != self.image.size:
             gws.log.debug(f'NEEDS_RESIZE self={self.image.size} img={img.size}')
-            img = img.resize(size=self.image.size, resample=Image.BILINEAR)
+            img = img.resize(size=self.image.size, resample=PIL.Image.BILINEAR)
 
         if opacity < 1:
             alpha = img.getchannel('A').point(lambda x: x * opacity)
             img.putalpha(alpha)
 
-        self.image = Image.alpha_composite(self.image, img)
+        self.image = PIL.Image.alpha_composite(self.image, img)
 
     def save(self, path):
         self.image.save(path)
@@ -86,15 +157,15 @@ class Composition:
 
 class Renderer:
     def __init__(self):
-        self.ri: t.RenderInput = None
-        self.ro: t.RenderOutput = None
+        self.ri: RenderInput = None
+        self.ro: RenderOutput = None
         self.composition = None
         self.out_path = ''
         self.default_dpi = 0
 
-    def run(self, ri: t.RenderInput, out_path):
+    def run(self, ri: RenderInput, out_path):
         self.ri = ri
-        self.ro = t.RenderOutput({
+        self.ro = RenderOutput({
             'view': self.ri.view,
             'items': []
         })
@@ -109,7 +180,7 @@ class Renderer:
 
         self._flush_image()
 
-    def _render_item(self, item: t.RenderInputItem):
+    def _render_item(self, item: RenderInputItem):
         try:
             #  use the item's dpi
             self.ri.view.dpi = item.dpi or self.default_dpi
@@ -119,7 +190,7 @@ class Renderer:
             gws.log.error('input item failed')
             gws.log.exception()
 
-    def _render_item2(self, item: t.RenderInputItem):
+    def _render_item2(self, item: RenderInputItem):
         # @TODO opacity for svgs
 
         s = item.opacity
@@ -157,15 +228,15 @@ class Renderer:
         if item.type == t.RenderInputItemType.bbox_layer:
             r = item.layer.render_bbox(self.ri.view, {'layers': item.sub_layers})
             if r:
-                self._add_image(Image.open(BytesIO(r)), opacity)
+                self._add_image(PIL.Image.open(io.BytesIO(r)), opacity)
 
     def _last_item_is(self, type):
         return self.ro.items and self.ro.items[-1].type == type
 
     def _add_image(self, img, opacity):
         if not self._last_item_is('image'):
-            self.ro.items.append(t.RenderOutputItem({
-                'type': t.RenderOutputItemType.image,
+            self.ro.items.append(RenderOutputItem({
+                'type': RenderOutputItemType.image,
             }))
             self.composition = Composition(self.ri.view.size_px, self.ri.background_color)
         self.composition.add_image(img, opacity)
@@ -174,8 +245,8 @@ class Renderer:
     def _add_svg(self, svg):
         self._flush_image()
         if not self._last_item_is('svg'):
-            self.ro.items.append(t.RenderOutputItem({
-                'type': t.RenderOutputItemType.svg,
+            self.ro.items.append(RenderOutputItem({
+                'type': RenderOutputItemType.svg,
                 'elements': []
             }))
         self.ro.items[-1].elements.extend(svg)
@@ -185,4 +256,26 @@ class Renderer:
             # path = '%s-%s.png' % (self.out_path, len(self.ro.items))
             # self.composition.save(path)
             self.composition = None
-            #self.ro.items[-1].path = path
+            # self.ro.items[-1].path = path
+
+
+
+def create_html_with_map(html, page_size, margin, out_path, render_output: RenderOutput, map_placeholder):
+    map_html = []
+    css = 'position: absolute; left: 0; top: 0; width: 100%; height: 100%'
+    dir = os.path.dirname(out_path)
+
+    for r in render_output.items:
+        if r.type == t.RenderOutputItemType.image:
+            path = dir + '/' + gws.random_string(64) + '.png'
+            r.image.save(path, 'png')
+            map_html.append(f'<img style="{css}" src="{path}"/>')
+        if r.type == t.RenderOutputItemType.path:
+            map_html.append(f'<img style="{css}" src="{r.path}"/>')
+        if r.type == t.RenderOutputItemType.svg:
+            s = '\n'.join(r.elements)
+            map_html.append(f'<svg style="{css}" version="1.1" xmlns="http://www.w3.org/2000/svg">{s}</svg>')
+
+    return html.replace(map_placeholder, '\n'.join(map_html))
+
+

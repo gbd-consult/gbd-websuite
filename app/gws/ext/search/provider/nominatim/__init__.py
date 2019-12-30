@@ -1,26 +1,28 @@
 # http://wiki.openstreetmap.org/wiki/Nominatim
 
 import gws
+import gws.common.search.provider
+import gws.common.template
 import gws.config
 import gws.gis.feature
 import gws.gis.proj
 import gws.gis.shape
 import gws.tools.json2
 import gws.tools.net
-import gws.common.search.provider
+
 import gws.types as t
 
 NOMINATIM_CRS = 'epsg:4326'
 NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 
-DEFAULT_FEATURE_FORMAT = t.FeatureFormatConfig({
-    'teaser': t.TemplateConfig({
+DEFAULT_FEATURE_FORMAT = gws.common.template.FeatureFormatConfig({
+    'teaser': gws.common.template.Config({
         'type': 'html',
         'text': '''
             <p class="head">{feature.attributes.name | html}</p>
         '''
     }),
-    'description': t.TemplateConfig({
+    'description': gws.common.template.Config({
         'type': 'html',
         'text': '''
             <p class="head">{feature.attributes.name | html}</p>
@@ -43,7 +45,7 @@ class Object(gws.common.search.provider.Object):
         self.feature_format = self.create_object('gws.common.format', DEFAULT_FEATURE_FORMAT)
         self.keyword_required = True
 
-    def run(self, layer: t.LayerObject, args: t.SearchArgs) -> t.List[t.Feature]:
+    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         params = {
             'q': args.keyword,
             'addressdetails': 1,
@@ -74,9 +76,8 @@ class Object(gws.common.search.provider.Object):
                 gws.log.debug(f'SKIP {uid}: no geometry')
                 continue
 
-            sh = gws.gis.shape.from_geometry(rec.pop('geojson'), NOMINATIM_CRS)
-            sh = sh.transform(args.crs)
-            if not sh.geo.intersects(shape.geo):
+            sh = gws.gis.shape.from_geometry(rec.pop('geojson'), NOMINATIM_CRS).transform(args.crs)
+            if not sh.intersects(shape):
                 gws.log.debug(f'SKIP {uid}: no intersection')
                 continue
 

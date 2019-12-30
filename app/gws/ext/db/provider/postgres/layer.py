@@ -7,14 +7,14 @@ import gws.gis.shape
 
 import gws.types as t
 
-from . import provider, util
+from . import provider
 
 
 class Config(gws.common.layer.VectorConfig):
     """SQL-based layer"""
 
     db: t.Optional[str]  #: database provider uid
-    table: t.SqlTableConfig  #: sql table configuration
+    table: gws.common.db.SqlTableConfig  #: sql table configuration
 
 
 class Object(gws.common.layer.Vector):
@@ -27,7 +27,7 @@ class Object(gws.common.layer.Vector):
         super().configure()
 
         self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
-        self.table = util.configure_table(self, self.provider)
+        self.table = self.provider.configure_table(self.var('table'))
 
         p = self.var('search')
         if not p or (p.enabled and not p.providers):
@@ -54,7 +54,7 @@ class Object(gws.common.layer.Vector):
             'geometryType': self.table.geometry_type.upper(),
         })
 
-    def get_features(self, bbox, limit=0) -> t.List[t.Feature]:
+    def get_features(self, bbox, limit=0) -> t.List[t.IFeature]:
         shape = gws.gis.shape.from_bbox(bbox, self.crs)
 
         fs = self.provider.select(t.SelectArgs({
@@ -65,7 +65,7 @@ class Object(gws.common.layer.Vector):
 
         return [self.connect_feature(f) for f in fs]
 
-    def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.Feature]:
+    def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:
         features = []
 
         for p in feature_props:

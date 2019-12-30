@@ -38,8 +38,8 @@ class Element(gws.Object):
         })
 
 
-#:stub ClientObject
-class Object(gws.Object):
+#:export IClient
+class Object(gws.Object, t.IClient):
     def configure(self):
         super().configure()
 

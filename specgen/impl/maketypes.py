@@ -16,8 +16,21 @@ def run(source_dir, stubs):
 
     dst += makestubs.run(stubs)
 
+    preface = '''\
+"""Common types and data structures."""    
+
+#
+# automatically generated from
+#
+# - types/__init__.in.py    
+# - includes in types/t
+# - class stubs generated from #:export comments
+# 
+    
+'''
+
     with open(dst_path, 'w') as fp:
-        fp.write(dst)
+        fp.write(preface + dst)
 
 
 def _include(d, path):
