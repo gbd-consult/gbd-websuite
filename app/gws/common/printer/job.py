@@ -327,7 +327,7 @@ class _Worker:
             return ii
 
         if ii.layer.can_render_bbox:
-            ii.type = t.RenderInputItemType.bbox_layer
+            ii.type = t.RenderInputItemType.raster_layer
             ii.sub_layers = item.get('subLayers')
             return ii
 

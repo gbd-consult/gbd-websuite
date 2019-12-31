@@ -9,9 +9,8 @@ class Config:
 #:export
 class SearchArgs(t.Data):
     axis: str
-    bbox: t.Extent
+    bounds: t.Bounds
     count: int
-    crs: t.Crs
     feature_format: t.IFormat
     keyword: t.Optional[str]
     layers: t.List[t.ILayer]

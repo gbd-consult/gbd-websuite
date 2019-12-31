@@ -88,7 +88,7 @@ class _Config:
         return self._add('source', c)
 
     def grid(self, c):
-        # self._transform_bbox(c)
+        # self._transform_extent(c)
         return self._add('grid', c)
 
     def layer(self, c):

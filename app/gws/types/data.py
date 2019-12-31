@@ -3,10 +3,8 @@
 class Data:
     """Data object."""
 
-    def __init__(self, d=None):
-        if d:
-            for k, v in d.items():
-                setattr(self, str(k), v)
+    def __init__(self, *args, **kwargs):
+        self._extend(args, kwargs)
 
     def set(self, k, value):
         return setattr(self, k, value)
@@ -17,18 +15,19 @@ class Data:
     def as_dict(self):
         return vars(self)
 
-    def extend(self, *args):
-        d = {}
-        for a in args:
-            if not isinstance(a, dict):
-                a = a.as_dict() if hasattr(a, 'as_dict') else None
-            if a:
-                d.update(a)
-        vars(self).update(d)
+    def extend(self, *args, **kwargs):
+        self._extend(args, kwargs)
         return self
 
     def __repr__(self):
         return repr(vars(self))
+
+    def _extend(self, args, kwargs):
+        d = {}
+        for a in args:
+            d.update(a)
+        d.update(kwargs)
+        vars(self).update(d)
 
 
 class Config(Data):

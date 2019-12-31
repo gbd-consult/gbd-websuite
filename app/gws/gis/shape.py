@@ -3,6 +3,7 @@ import shapely.wkb
 import shapely.wkt
 import shapely.wkt
 import shapely.ops
+import fiona.transform
 
 import gws
 import gws.gis.proj
@@ -32,8 +33,12 @@ def from_props(props: t.ShapeProps) -> t.IShape:
         props.get('crs'))
 
 
-def from_bbox(bbox, crs) -> t.IShape:
-    return Shape(shapely.geometry.box(*bbox), crs)
+def from_extent(extent: t.Extent, crs) -> t.IShape:
+    return Shape(shapely.geometry.box(*extent), crs)
+
+
+def from_bounds(bounds: t.Bounds) -> t.IShape:
+    return Shape(shapely.geometry.box(*bounds.extent), bounds.crs)
 
 
 def from_xy(x, y, crs) -> t.IShape:
@@ -77,7 +82,7 @@ class ShapeProps(t.Props):
 #:export IShape
 class Shape(t.IShape):
     def __init__(self, geom, crs):
-        self.crs: t.Crs = gws.gis.proj.as_epsg(crs)
+        self.crs = gws.gis.proj.as_epsg(crs)
         #:noexport
         self.geom: shapely.geometry.base.BaseGeometry = geom
 
@@ -105,8 +110,10 @@ class Shape(t.IShape):
         return self.geom.wkt
 
     @property
-    def bounds(self) -> t.Extent:
-        return self.geom.bounds
+    def bounds(self) -> t.Bounds:
+        return t.Bounds(
+            crs=self.crs,
+            extent=self.geom.bounds)
 
     @property
     def x(self) -> float:
@@ -130,6 +137,10 @@ class Shape(t.IShape):
         return Shape(self.geom.buffer(tolerance, resolution or _DEFAULT_POINT_BUFFER_RESOLUTION), self.crs)
 
     def transform(self, to_crs) -> t.IShape:
-        if gws.gis.proj.equal(to_crs, self.crs):
+        if gws.gis.proj.equal(self.crs, to_crs):
             return self
-        return Shape(gws.gis.proj.transform(self.geom, self.crs, to_crs), to_crs)
+        src = gws.gis.proj.as_proj(self.crs)
+        dst = gws.gis.proj.as_proj(to_crs)
+        sg = shapely.geometry.mapping(self.geom)
+        dg = fiona.transform.transform_geom(src.epsg, dst.epsg, sg)
+        return Shape(shapely.geometry.shape(dg), dst.epsg)

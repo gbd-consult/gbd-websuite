@@ -191,6 +191,10 @@ def as_query_string(x):
     return (b'&'.join(p)).decode('ascii')
 
 
+def as_str_list(x, sep=','):
+    return sep.join(as_str(s) for s in as_list(x, sep))
+
+
 def lines(txt, comment=None):
     for s in txt.splitlines():
         if comment:

@@ -19,9 +19,9 @@ class Object(gws.core.tree.RootBase, t.IRootObject):
     def configure(self):
         super().configure()
 
-        self.application = self.add_child('gws.common.application', self.config)
         self._monitor = self.add_child(gws.server.monitor.Object, {})
         self._validator = spec.validator()
+        self.application = self.add_child('gws.common.application', self.config)
 
     def validate_action(self, category, cmd, payload):
         cc = self._validator.method_spec(cmd)

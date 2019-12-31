@@ -26,13 +26,13 @@ class Object(gws.common.layer.Vector):
 
         self.path = self.var('path')
         js = gws.tools.json2.from_path(self.path)
-        crs = gws.gis.proj.as_epsg(_get_crs(js) or 'EPSG:4326')
-        for f in js['features']:
-            f = gws.gis.feature.from_geojson(f, crs, self.var('keyProp'))
-            self.features.append(f.transform(self.crs))
+        self.own_crs = gws.gis.proj.as_epsg(_get_crs(js) or 'EPSG:4326')
+        self.features = [
+            gws.gis.feature.from_geojson(f, self.crs, self.var('keyProp'))
+            for f in js['features']]
 
-    def get_features(self, bbox, limit=0):
-        shape = gws.gis.shape.from_bbox(bbox, self.crs)
+    def get_features(self, bounds, limit=0):
+        shape = gws.gis.shape.from_bounds(bounds).transform(self.own_crs)
         fs = [f for f in self.features if f.shape.intersects(shape)]
         if limit:
             fs = fs[:limit]

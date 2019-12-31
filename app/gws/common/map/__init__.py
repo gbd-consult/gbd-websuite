@@ -5,6 +5,31 @@ import gws.gis.proj
 import gws.gis.zoom
 import gws.gis.extent
 import gws.common.layer
+import gws.tools.units as units
+
+# https://wiki.openstreetmap.org/wiki/Zoom_levels
+
+_DEFAULT_RESOLUTIONS = [
+    units.scale2res(150 * 1e6),
+    units.scale2res(70 * 1e6),
+    units.scale2res(35 * 1e6),
+    units.scale2res(15 * 1e6),
+    units.scale2res(10 * 1e6),
+    units.scale2res(4 * 1e6),
+    units.scale2res(2 * 1e6),
+    units.scale2res(1 * 1e6),
+    units.scale2res(500 * 1e3),
+    units.scale2res(250 * 1e3),
+    units.scale2res(150 * 1e3),
+    units.scale2res(70 * 1e3),
+    units.scale2res(35 * 1e3),
+    units.scale2res(15 * 1e3),
+    units.scale2res(8 * 1e3),
+    units.scale2res(4 * 1e3),
+    units.scale2res(2 * 1e3),
+    units.scale2res(1 * 1e3),
+    units.scale2res(500),
+]
 
 
 class Config(t.Config):
@@ -32,15 +57,16 @@ class Props(t.Data):
     resolutions: t.List[float]
     title: str = ''
 
+
 #:export IMap
 class Object(gws.Object, t.IMap):
     def __init__(self):
         super().__init__()
-        self.crs = ''
-        self.extent = []
-        self.center = []
-        self.init_resolution = 0
-        self.resolutions = []
+        self.crs: t.Crs = ''
+        self.extent: t.Extent = []
+        self.center: t.Point = []
+        self.init_resolution = 0.0
+        self.resolutions: t.List[float] = []
         self.layers: t.List[t.ILayer] = []
         self.coordinate_precision = 0
 
@@ -59,8 +85,8 @@ class Object(gws.Object, t.IMap):
 
         self.crs = self.var('crs')
 
-        self.resolutions = [1000, 1]
-        self.init_resolution = 1000
+        self.resolutions = _DEFAULT_RESOLUTIONS
+        self.init_resolution = _DEFAULT_RESOLUTIONS[-1]
 
         zoom = self.var('zoom')
         if zoom:
@@ -69,7 +95,10 @@ class Object(gws.Object, t.IMap):
 
         self.layers = gws.common.layer.add_layers_to_object(self, self.var('layers'))
 
-        _configure_extent(self, None)
+        self.extent = _configure_extent(self, self.crs, None)
+        if not self.extent:
+            raise gws.Error(f'no extent found for {self.uid!r}')
+        _set_default_extent(self, self.extent)
 
         self.center = self.var('center')
         if not self.center:
@@ -82,7 +111,6 @@ class Object(gws.Object, t.IMap):
         self.coordinate_precision = self.var('coordinatePrecision')
         if self.coordinate_precision is None:
             self.coordinate_precision = 2 if proj.units == 'm' else 7
-
 
     @property
     def props(self):
@@ -100,8 +128,8 @@ class Object(gws.Object, t.IMap):
         })
 
 
-def _configure_extent(obj, parent_explicit_extent):
-    # object extent provided in the config
+def _configure_extent(obj, target_crs, parent_explicit_extent):
+    # explicit extent provided in the config
 
     ee = obj.var('extent')
     if ee and not gws.gis.extent.valid(ee):
@@ -116,11 +144,16 @@ def _configure_extent(obj, parent_explicit_extent):
     if layers:
         exts = []
         for la in layers:
-            exts.append(_configure_extent(la, ee or parent_explicit_extent))
-        obj.extent = ee or gws.gis.extent.merge(exts)
+            le = _configure_extent(la, target_crs, ee or parent_explicit_extent)
+            if le:
+                exts.append(le)
+        if ee:
+            obj.extent = ee
+        elif exts:
+            obj.extent = gws.gis.extent.merge(exts)
         return obj.extent
 
-        # terminal layer, explicit extent - just use it
+    # terminal layer, has an explicit extent - just use it
 
     if ee:
         obj.extent = ee
@@ -128,13 +161,15 @@ def _configure_extent(obj, parent_explicit_extent):
 
     # terminal layer, has an own extent and optionally an own or default extent buf.
 
-    own = gws.gis.extent.valid(getattr(obj, 'own_extent', None))
+    own: t.Bounds = getattr(obj, 'own_bounds', None)
     buf = obj.var('extentBuffer', parent=True)
 
     if own:
+        oe = own.extent
         if buf:
-            own = gws.gis.extent.buffer(own, buf)
-        obj.extent = own
+            oe = gws.gis.extent.buffer(oe, buf)
+        oe = gws.gis.extent.transform(oe, own.crs, target_crs)
+        obj.extent = oe
         return obj.extent
 
     # terminal layer, use the parent's explicit extent
@@ -143,6 +178,9 @@ def _configure_extent(obj, parent_explicit_extent):
         obj.extent = parent_explicit_extent
         return obj.extent
 
-    # fail, an extent is required
 
-    raise gws.Error(f'no extent found for {obj.uid!r}')
+def _set_default_extent(obj, extent):
+    if not getattr(obj, 'extent', None):
+        obj.extent = extent
+    for la in getattr(obj, 'layers', []):
+        _set_default_extent(la, extent)

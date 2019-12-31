@@ -3,6 +3,7 @@ import re
 import gws
 import gws.gis.proj
 import gws.gis.extent
+import gws.common.metadata
 
 import gws.types as t
 
@@ -19,7 +20,7 @@ class SourceLayer(t.Data):
     data_source = {}
 
     supported_crs: t.List[t.Crs] = []
-    extents: t.Dict[t.Crs, t.Extent] = {}
+    supported_bound: t.List[t.Bounds] = []
 
     is_expanded = False
     is_group = False
@@ -29,7 +30,7 @@ class SourceLayer(t.Data):
 
     layers: t.List['SourceLayer'] = []
 
-    meta: t.MetaData = None
+    meta: t.MetaData = gws.common.metadata.new()
     name = ''
     title = ''
 
@@ -56,6 +57,11 @@ class LayerFilter(t.Data):
     level: int
     names: t.List[str]
     pattern: str
+
+
+def layer(**kwargs) -> t.SourceLayer:
+    s: t.SourceLayer = SourceLayer()
+    return s.extend(**kwargs)
 
 
 def filter_layers(
@@ -100,24 +106,36 @@ def image_layers(sl: t.SourceLayer) -> t.List[t.SourceLayer]:
     return []
 
 
-def best_source_layer_extent(sl: t.SourceLayer, map_crs):
-    for crs, ext in sl.extents.items():
-        if crs == map_crs:
-            return crs, ext
-    for crs, ext in sl.extents.items():
-        if gws.gis.proj.equal(crs, 'EPSG:4326'):
-            return crs, ext
-    for crs, ext in sl.extents.items():
-        return crs, ext
-
-
-def extent_from_layers(sls: t.List[t.SourceLayer], map_crs):
+def bounds_from_layers(sls: t.List[t.SourceLayer], preferred_crs) -> t.Bounds:
     exts = []
+    source_crs = None
     for sl in sls:
-        if sl.extents:
-            crs, ext = best_source_layer_extent(sl, map_crs)
-            ext = gws.gis.extent.valid(ext)
-            if ext:
-                exts.append(gws.gis.proj.transform_bbox(ext, crs, map_crs))
+        if not sl.supported_bounds:
+            continue
+        if not source_crs:
+            source_crs = _best_crs(sl.supported_bounds, preferred_crs)
+        b = _bounds_for_crs(sl.supported_bounds, source_crs)
+        if b:
+            exts.append(b.extent)
+
     if exts:
-        return gws.gis.extent.merge(exts)
+        return t.Bounds(
+            crs=source_crs,
+            extent=gws.gis.extent.merge(exts))
+
+
+def _best_crs(bs: t.List[t.Bounds], preferred_crs):
+    for b in bs:
+        if gws.gis.proj.equal(b.crs, preferred_crs):
+            return b.crs
+    for b in bs:
+        if gws.gis.proj.equal(b.crs, gws.gis.proj.WEBMERCATOR):
+            return b.crs
+    for b in bs:
+        return b.crs
+
+
+def _bounds_for_crs(bs: t.List[t.Bounds], crs):
+    for b in bs:
+        if gws.gis.proj.equal(b.crs, crs):
+            return b

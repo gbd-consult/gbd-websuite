@@ -183,6 +183,8 @@ class Base(gws.Object, t.ILayer):
         self.extent = []
         self.crs = ''
 
+        self.own_crs = ''
+
         self.has_legend = False
         self.legend_url = ''
 
@@ -205,6 +207,10 @@ class Base(gws.Object, t.ILayer):
     @property
     def has_search(self) -> bool:
         return len(self.get_children('gws.ext.search.provider')) > 0
+
+    @property
+    def own_bounds(self) -> t.Bounds:
+        pass
 
     def use_meta(self, meta):
         title = self.var('title')
@@ -357,7 +363,7 @@ class Base(gws.Object, t.ILayer):
                 return fp.read()
         return gws.gis.ows.request.raw_get(self.legend_url).content
 
-    def get_features(self, bbox: t.Extent, limit: int = 0) -> t.List[t.IFeature]:
+    def get_features(self, bounds: t.Bounds, limit: int = 0) -> t.List[t.IFeature]:
         return []
 
     def ows_enabled(self, service):
@@ -530,9 +536,9 @@ class Vector(Base, t.IVectorLayer):
         return gws.gis.svg.to_png(elements, size=rv.size_px)
 
     def render_svg(self, rv, style=None):
-        features = self.get_features(rv.bbox)
+        features = self.get_features(rv.bounds)
         for f in features:
-            f.convert()
+            f.convert(target_crs=rv.bounds.crs)
         return [f.to_svg(rv, style or self.style) for f in features]
 
     def ows_enabled(self, service):
@@ -548,6 +554,8 @@ def add_layers_to_object(obj, layer_configs):
             uid = gws.get(p, 'uid')
             gws.log.error(f'FAILED LAYER: map={obj.uid!r} layer={uid!r} error={e!r}')
             gws.log.exception()
+            # @TODO: should be an option
+            raise
     return ls
 
 
@@ -555,14 +563,3 @@ def meta_from_source_layers(layer):
     sl = getattr(layer, 'source_layers', [])
     if sl and len(sl) == 1:
         return sl[0].meta
-
-
-def extent_from_source_layers(layer):
-    source_extents = []
-    for sl in layer.source_layers:
-        if sl.extents:
-            for crs, ext in sl.extents.items():
-                source_extents.append(gws.gis.proj.transform_bbox(ext, crs, layer.map.crs))
-                break
-    if source_extents:
-        return gws.gis.extent.merge(source_extents)

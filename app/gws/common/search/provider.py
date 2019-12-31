@@ -47,9 +47,9 @@ class Object(gws.Object, t.ISearchProvider):
             return gws.gis.shape.union(args.get('shapes'))
         ctx = self.var('defaultContext')
         if ctx == 'view' and args.get('bbox'):
-            return gws.gis.shape.from_bbox(args.bbox, args.crs)
+            return gws.gis.shape.from_extent(args.bbox, args.crs)
         if ctx == 'map':
-            return gws.gis.shape.from_bbox(args.project.map.extent, args.crs)
+            return gws.gis.shape.from_extent(args.project.map.extent, args.crs)
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         return []

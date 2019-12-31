@@ -18,7 +18,7 @@ class SvgFragment:
 
 #:export
 class RenderView(t.Data):
-    bbox: t.Extent
+    bounds: t.Bounds
     center: t.Point
     dpi: int
     rotation: int
@@ -33,7 +33,7 @@ class RenderInputItemType(t.Enum):
     features = 'features'
     fragment = 'fragment'
     svg_layer = 'svg_layer'
-    bbox_layer = 'bbox_layer'
+    raster_layer = 'raster_layer'
 
 
 #:export
@@ -98,7 +98,7 @@ def _view_base(out_size, out_size_unit, rotation, dpi):
     return view
 
 
-def view_from_center(center: t.Point, scale: int, out_size: t.Size, out_size_unit: str, rotation=0, dpi=0):
+def view_from_center(crs: t.Crs, center: t.Point, scale: int, out_size: t.Size, out_size_unit: str, rotation=0, dpi=0):
     view = _view_base(out_size, out_size_unit, rotation, dpi)
 
     view.center = center
@@ -110,25 +110,34 @@ def view_from_center(center: t.Point, scale: int, out_size: t.Size, out_size_uni
     w = units.px2mm(view.size_px[0], view.dpi)
     h = units.px2mm(view.size_px[1], view.dpi)
 
-    view.bbox = [
+    ext = [
         view.center[0] - (w * unit_per_mm) / 2,
         view.center[1] - (h * unit_per_mm) / 2,
         view.center[0] + (w * unit_per_mm) / 2,
         view.center[1] + (h * unit_per_mm) / 2,
     ]
 
+    view.bounds = t.Bounds(
+        crs=crs,
+        extent=ext
+    )
+
     return view
 
 
-def view_from_bbox(bbox: t.Extent, out_size: t.Size, out_size_unit: str, rotation=0, dpi=0):
+def view_from_bbox(crs: t.Crs, bbox: t.Extent, out_size: t.Size, out_size_unit: str, rotation=0, dpi=0):
     view = _view_base(out_size, out_size_unit, rotation, dpi)
 
-    view.bbox = bbox
     view.center = [
         bbox[0] + (bbox[2] - bbox[0]) / 2,
         bbox[1] - (bbox[3] - bbox[1]) / 2,
     ]
     view.scale = units.res2scale((bbox[2] - bbox[0]) / view.size_px[0])
+
+    view.bounds = t.Bounds(
+        crs=crs,
+        extent=bbox
+    )
 
     return view
 
@@ -225,7 +234,7 @@ class Renderer:
                 self._add_svg(r)
             return
 
-        if item.type == t.RenderInputItemType.bbox_layer:
+        if item.type == t.RenderInputItemType.raster_layer:
             r = item.layer.render_bbox(self.ri.view, {'layers': item.sub_layers})
             if r:
                 self._add_image(PIL.Image.open(io.BytesIO(r)), opacity)
@@ -259,7 +268,6 @@ class Renderer:
             # self.ro.items[-1].path = path
 
 
-
 def create_html_with_map(html, page_size, margin, out_path, render_output: RenderOutput, map_placeholder):
     map_html = []
     css = 'position: absolute; left: 0; top: 0; width: 100%; height: 100%'
@@ -277,5 +285,3 @@ def create_html_with_map(html, page_size, margin, out_path, render_output: Rende
             map_html.append(f'<svg style="{css}" version="1.1" xmlns="http://www.w3.org/2000/svg">{s}</svg>')
 
     return html.replace(map_placeholder, '\n'.join(map_html))
-
-

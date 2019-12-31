@@ -94,12 +94,12 @@ class Feature(t.IFeature):
         style = self.style or style
         if not style and self.layer:
             style = self.layer.style
-        s: gws.gis.shape.Shape = self.shape
+        s: gws.gis.shape.Shape = self.shape.transform(rv.bounds.crs)
         return gws.gis.svg.draw(
             s.geom,
             self.elements.get('label', ''),
             style,
-            rv.bbox,
+            rv.bounds.extent,
             rv.dpi,
             rv.scale,
             rv.rotation

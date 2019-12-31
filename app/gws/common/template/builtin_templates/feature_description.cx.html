@@ -1,9 +1,9 @@
-@if feature.elements.category
-    <p class="head">{feature.elements.category | html}</p>
+@with feature.elements.category as s
+    <p class="head">{s | html}</p>
 @end
 
-@if feature.elements.title
-    <p class="head2">{feature.elements.title | html}</p>
+@with feature.elements.title as s
+    <p class="head2">{s | html}</p>
 @end
 
 <table><tbody>

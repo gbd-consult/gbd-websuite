@@ -48,8 +48,8 @@ class Object(gws.common.layer.Vector):
             ##'geometryType': self.geometry_type.upper(),
         })
 
-    def get_features(self, bbox, limit=0):
-        return util.find_features(self, bbox, self.map.crs, limit)
+    def get_features(self, bounds, limit=0):
+        return util.find_features(self, bounds, self.map.crs, limit)
 
     def _add_default_search(self):
         p = self.var('search')

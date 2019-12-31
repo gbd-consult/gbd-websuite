@@ -7,6 +7,7 @@ import gws.types as t
 import gws.tools.xml3
 import gws.tools.net
 import gws.common.ows.provider.parseutil as u
+import gws.gis.source
 
 from . import types
 
@@ -104,7 +105,7 @@ def _tree(el, map_layers):
     expanded = el.attr('expanded') == '1'
 
     if el.name == 'layer-tree-group':
-        sl = t.SourceLayer()
+        sl = gws.gis.source.Layer()
         n = el.attr('name')
         sl.meta.title = sl.meta.name = sl.title = sl.name = n
 

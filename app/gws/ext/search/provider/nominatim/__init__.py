@@ -65,7 +65,7 @@ class Object(gws.common.search.provider.Object):
         if not shape:
             return []
 
-        params['viewbox'] = gws.gis.proj.transform_bbox(shape.geo.bounds, args.crs, NOMINATIM_CRS)
+        params['viewbox'] = gws.gis.proj.transform_extent(shape.geo.bounds, args.crs, NOMINATIM_CRS)
 
         features = []
 

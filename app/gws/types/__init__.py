@@ -242,6 +242,10 @@ class FileResponse(Response):
     status: int
     attachment_name: str
 
+class Bounds(Data):
+    crs: 'Crs' = None
+    extent: 'Extent' = None
+
 class CorsOptions(Data):
     allow_credentials: bool = None
     allow_headers: Optional[List[str]] = None
@@ -329,9 +333,8 @@ class IRole:
     def can_use(self, obj, parent=None): pass
 
 class IShape:
-    bounds: 'Extent' = None
+    bounds: 'Bounds' = None
     centroid: 'IShape' = None
-    crs: 'Crs' = None
     props: 'ShapeProps' = None
     type: str = None
     wkb: str = None
@@ -342,6 +345,28 @@ class IShape:
     def intersects(self, shape: 'IShape') -> bool: pass
     def tolerance_buffer(self, tolerance, resolution=None) -> 'IShape': pass
     def transform(self, to_crs) -> 'IShape': pass
+
+class SourceLayer(Data):
+    a_level: int = None
+    a_path: str = None
+    a_uid: str = None
+    data_source: dict = None
+    is_expanded: bool = None
+    is_group: bool = None
+    is_image: bool = None
+    is_queryable: bool = None
+    is_visible: bool = None
+    layers: List['SourceLayer'] = None
+    legend: str = None
+    meta: 'MetaData' = None
+    name: str = None
+    opacity: int = None
+    resource_urls: dict = None
+    scale_range: List[float] = None
+    styles: List['SourceStyle'] = None
+    supported_bounds: List['Bounds'] = None
+    supported_crs: List['Crs'] = None
+    title: str = None
 
 class IStyle:
     content: dict = None
@@ -382,9 +407,9 @@ class MetaData(Data):
     abstract: str = None
     accessConstraints: str = None
     attribution: str = None
-    contact: Optional['MetaContact'] = None
+    contact: 'MetaContact' = None
     fees: str = None
-    image: 'Url' = None
+    image: str = None
     images: dict = None
     inspire: dict = None
     iso: dict = None
@@ -394,9 +419,9 @@ class MetaData(Data):
     modDate: 'Date' = None
     name: str = None
     pubDate: 'Date' = None
-    serviceUrl: 'Url' = None
+    serviceUrl: str = None
     title: str = None
-    url: 'Url' = None
+    url: str = None
 
 class MetaLink(Data):
     function: str = None
@@ -439,10 +464,10 @@ class RenderInputItem(Data):
     type: str = None
 
 class RenderInputItemType:
-    bbox_layer: str = None
     features: str = None
     fragment: str = None
     image: str = None
+    raster_layer: str = None
     svg_layer: str = None
 
 class RenderOutput(Data):
@@ -460,7 +485,7 @@ class RenderOutputItemType:
     svg: str = None
 
 class RenderView(Data):
-    bbox: 'Extent' = None
+    bounds: 'Bounds' = None
     center: 'Point' = None
     dpi: int = None
     rotation: int = None
@@ -475,9 +500,8 @@ class RewriteRule(Data):
 
 class SearchArgs(Data):
     axis: str = None
-    bbox: 'Extent' = None
+    bounds: 'Bounds' = None
     count: int = None
-    crs: 'Crs' = None
     feature_format: 'IFormat' = None
     keyword: Optional[str] = None
     layers: List['ILayer'] = None
@@ -502,28 +526,6 @@ class SelectArgs(Data):
 class ShapeProps(Props):
     crs: str = None
     geometry: dict = None
-
-class SourceLayer(Data):
-    a_level: int = None
-    a_path: str = None
-    a_uid: str = None
-    data_source: dict = None
-    extents: Dict['Crs', 'Extent'] = None
-    is_expanded: bool = None
-    is_group: bool = None
-    is_image: bool = None
-    is_queryable: bool = None
-    is_visible: bool = None
-    layers: List['SourceLayer'] = None
-    legend: str = None
-    meta: 'MetaData' = None
-    name: str = None
-    opacity: int = None
-    resource_urls: dict = None
-    scale_range: List[float] = None
-    styles: List['SourceStyle'] = None
-    supported_crs: List['Crs'] = None
-    title: str = None
 
 class SourceStyle(Data):
     is_default: bool = None
@@ -629,6 +631,8 @@ class ILayer(IObject):
     map: 'IMap' = None
     meta: 'MetaData' = None
     opacity: int = None
+    own_bounds: 'Bounds' = None
+    own_crs: str = None
     ows_name: str = None
     resolutions: list = None
     services: list = None
@@ -636,7 +640,7 @@ class ILayer(IObject):
     title: str = None
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
-    def get_features(self, bbox: 'Extent', limit: int = 0) -> List['IFeature']: pass
+    def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
     def mapproxy_config(self, mc): pass
     def ows_enabled(self, service): pass
     def render_bbox(self, rv: 'RenderView', client_params=None): pass
@@ -646,13 +650,13 @@ class ILayer(IObject):
     def use_meta(self, meta): pass
 
 class IMap(IObject):
-    center: list = None
+    center: 'Point' = None
     coordinate_precision: int = None
-    crs: str = None
-    extent: list = None
-    init_resolution: int = None
+    crs: 'Crs' = None
+    extent: 'Extent' = None
+    init_resolution: float = None
     layers: List['ILayer'] = None
-    resolutions: list = None
+    resolutions: List[float] = None
 
 class IModel(IObject):
     rules: List['ModelRule'] = None
@@ -708,6 +712,7 @@ class IRequest(IBaseRequest):
     def login(self, username: str, password: str): pass
     def logout(self): pass
     def require(self, klass: str, uid: str) -> 'IObject': pass
+    def require_layer(self, uid: str) -> 'ILayer': pass
     def require_project(self, uid: str) -> 'IProject': pass
 
 class ISearchProvider(IObject):

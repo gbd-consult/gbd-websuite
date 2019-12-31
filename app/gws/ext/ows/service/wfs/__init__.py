@@ -104,7 +104,7 @@ class Object(ows.Object):
             raise gws.web.error.BadRequest()
 
         args = t.SearchArgs({
-            'shapes': [gws.gis.shape.from_bbox(bbox, rd.project.map.crs)],
+            'shapes': [gws.gis.shape.from_extent(bbox, rd.project.map.crs)],
             'crs': rd.project.map.crs,
             'project': None,
             'keyword': None,

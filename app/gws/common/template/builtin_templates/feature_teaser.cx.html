@@ -1,1 +1,4 @@
-<p class="head">{feature.elements.title | html}</p>
+@with feature.elements.title as s
+    <p class="head">{s | html}</p>
+@end
+

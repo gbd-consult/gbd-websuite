@@ -1,6 +1,4 @@
-server.mapproxy.enabled false
-server.qgis.enabled false
-server.spool.enabled false
+@include /common/web-server-only.cx
 
 access+ { role "all" type "allow" }
 
@@ -22,4 +20,3 @@ projects+ {
     assets.dir "/data/assets"
     assets.denyMime ["application/pdf", "application/foo"]
 }
-

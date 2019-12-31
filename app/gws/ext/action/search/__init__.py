@@ -24,6 +24,7 @@ class Response(t.Response):
 
 class Params(t.Params):
     bbox: t.Optional[t.Extent]
+    crs: t.Optional[t.Crs]
     keyword: str = ''
     layerUids: t.List[str]
     pixelTolerance: int = 10
@@ -52,17 +53,22 @@ class Object(gws.ActionObject):
 
         project = req.require_project(p.projectUid)
 
-        args = t.SearchArgs({
-            'bbox': p.bbox or project.map.extent,
-            'crs': project.map.crs,
-            'keyword': (p.keyword or '').strip(),
-            'layers': gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids),
-            'limit': min(p.limit, self.limit) if p.limit else self.limit,
-            'project': project,
-            'resolution': p.resolution,
-            'shapes': [gws.gis.shape.from_props(s) for s in p.shapes] if p.get('shapes') else [],
-            'tolerance': self.pixel_tolerance * p.resolution,
-        })
+        bounds = t.Bounds(
+            crs=p.crs or project.map.crs,
+            extent=p.bbox or project.map.extent,
+        )
+
+        args = t.SearchArgs(
+            bounds=bounds,
+            crs=project.map.crs,
+            keyword=(p.keyword or '').strip(),
+            layers=gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids),
+            limit=min(p.limit, self.limit) if p.limit else self.limit,
+            project=project,
+            resolution=p.resolution,
+            shapes=[gws.gis.shape.from_props(s) for s in p.shapes] if p.get('shapes') else [],
+            tolerance=self.pixel_tolerance * p.resolution,
+        )
 
         features = gws.common.search.runner.run(req, args)
 

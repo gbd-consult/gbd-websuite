@@ -1,33 +1,50 @@
-server.mapproxy.enabled false
-server.qgis.enabled false
-server.spool.enabled false
-
-db.providers+ {
-    type "postgres"
-    uid "db0"
-
-    ## must match the test.config
-
-    "host": "mainhost",
-    "port": 9996,
-    "user": "gis",
-    "password": "gispass",
-    "database": "gisdb"
-}
+@include /common/postgres.cx
+@include /common/web-server-only.cx
 
 access+ { role "all" type "allow" }
 
 api.actions+ { type "map" }
 api.actions+ { type "search" }
+api.actions+ { type "asset" }
+api.actions+ { type "project" }
 
 projects+ {
     uid "a"
 
+    map.crs "EPSG:3857"
+
     map.layers+ {
-        uid "points_3857"
+        title "points_3857"
         type "postgres"
-        table {
-            name "points_3857"
+        display "box"
+        table.name "points_3857"
+    }
+    map.layers+ {
+        title "squares_3857"
+        type "postgres"
+        display "box"
+        table.name "squares_3857"
+    }
+    map.layers+ {
+        title "squares_3857_styled"
+        type "postgres"
+        display "box"
+        table.name "squares_3857"
+        style {
+            type "css"
+            text """
+                fill: rgba(255,0,0,0.5);
+                stroke: blue;
+                stroke-width: 2px;
+            """
         }
     }
+    map.layers+ {
+        title "squares_25832"
+        type "postgres"
+        display "box"
+        table.name "squares_25832"
+    }
+
+    @include /common/client.cx
 }

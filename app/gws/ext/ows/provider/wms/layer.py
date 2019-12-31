@@ -46,8 +46,8 @@ class Object(gws.common.layer.Image):
         self._add_legend()
 
     @property
-    def own_extent(self):
-        return gws.gis.source.extent_from_layers(self.source_layers, self.map.crs)
+    def own_bounds(self):
+        return gws.gis.source.bounds_from_layers(self.source_layers, self.map.crs)
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.source_layers if sl.name]

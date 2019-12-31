@@ -21,7 +21,7 @@ def compute_bbox(x, y, crs, resolution, pixel_width, pixel_height):
     ]
 
     # if is_latlong:
-    #     bbox = gws.gis.proj.transform_bbox(bbox, 'EPSG:3857', crs)
+    #     bbox = gws.gis.proj.transform_extent(bbox, 'EPSG:3857', crs)
 
     return bbox
 

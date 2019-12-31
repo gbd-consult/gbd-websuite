@@ -303,7 +303,7 @@ def feature_node_list(rd: OwsRequest, features: t.List[t.IFeature]):
 
 
 def lonlat_extent(extent, crs):
-    return [round(c, 4) for c in gws.gis.proj.transform_bbox(extent, crs, 'EPSG:4326')]
+    return [round(c, 4) for c in gws.gis.proj.transform_extent(extent, crs, 'EPSG:4326')]
 
 
 def xml_error_response(version, status, description):

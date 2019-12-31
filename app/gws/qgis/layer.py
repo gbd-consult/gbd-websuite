@@ -65,8 +65,8 @@ class Object(gws.common.layer.Base):
         self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
 
     @property
-    def own_extent(self):
-        return gws.gis.source.extent_from_layers(self.source_layers, self.map.crs)
+    def own_bounds(self):
+        return gws.gis.source.bounds_from_layers(self.source_layers, self.map.crs)
 
     def render_legend(self):
         if self.legend_url:

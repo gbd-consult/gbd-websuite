@@ -28,6 +28,7 @@ class Object(gws.common.layer.Vector):
 
         self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
         self.table = self.provider.configure_table(self.var('table'))
+        self.own_crs = self.table.geometry_crs
 
         p = self.var('search')
         if not p or (p.enabled and not p.providers):
@@ -39,14 +40,16 @@ class Object(gws.common.layer.Vector):
             }))
 
     @property
-    def own_extent(self):
+    def own_bounds(self):
         if not self.table.geometry_column:
             return None
         with self.provider.connect() as conn:
             r = conn.select_value(f"""
                 SELECT ST_Extent({conn.quote_ident(self.table.geometry_column)})
                 FROM {conn.quote_table(self.table.name)}""")
-        return gws.gis.extent.from_box(r)
+        return t.Bounds(
+            crs=self.table.geometry_crs,
+            extent=gws.gis.extent.from_box(r))
 
     @property
     def props(self):
@@ -54,8 +57,8 @@ class Object(gws.common.layer.Vector):
             'geometryType': self.table.geometry_type.upper(),
         })
 
-    def get_features(self, bbox, limit=0) -> t.List[t.IFeature]:
-        shape = gws.gis.shape.from_bbox(bbox, self.crs)
+    def get_features(self, bounds, limit=0) -> t.List[t.IFeature]:
+        shape = gws.gis.shape.from_bounds(bounds).transform(self.own_crs)
 
         fs = self.provider.select(t.SelectArgs({
             'table': self.table,

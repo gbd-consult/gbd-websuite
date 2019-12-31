@@ -25,8 +25,8 @@ import urllib.parse
 
 CONFIG = {}
 
-# path to the suites relatively to the app root
-SUITE_BASE = "_test/suite"
+TEST_BASE = "_test"
+SUITE_BASE = TEST_BASE + "/suite"
 
 color = {
     'black': '\u001b[30m',
@@ -84,6 +84,7 @@ def start_container(suite, extra_options=None):
         f"--mount type=bind,src={cfg('paths.var_root')}/{suite}/data,dst=/data",
         f"--mount type=bind,src={cfg('paths.app_root')},dst=/gws-app",
         f"--mount type=bind,src={cfg('paths.var_root')},dst=/gws-var",
+        f"--mount type=bind,src={cfg('paths.app_root')}/{TEST_BASE}/common,dst=/common",
         f"--publish 0.0.0.0:{cfg('docker.http_port')}:80",
     ]
 

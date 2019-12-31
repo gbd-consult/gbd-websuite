@@ -107,7 +107,7 @@ class MetaData(t.Data):
     # theme: str = ''  #: INSPIRE theme shortcut, e.g. "au"
     inspire: dict = {}
 
-    contact: t.Optional[MetaContact]
+    contact: MetaContact = None
 
     pubDate: t.Date = ''
     modDate: t.Date = ''
@@ -118,6 +118,12 @@ class MetaData(t.Data):
     url: t.Url = ''
     serviceUrl: t.Url = ''
     links: t.List[MetaLink] = []
+
+
+def new(**kwargs) -> t.MetaData:
+    s: t.MetaData = MetaData()
+    s.contact = MetaContact()
+    return s.extend(**kwargs)
 
 
 def read(m: t.MetaData) -> t.MetaData:

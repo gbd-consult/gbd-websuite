@@ -64,8 +64,8 @@ class Object(gws.common.layer.Image):
             self.meta = gws.common.metadata.read(gws.common.layer.meta_from_source_layers(self))
 
     @property
-    def own_extent(self):
-        return gws.gis.source.extent_from_layers(self.source_layers, self.map.crs)
+    def own_bounds(self):
+        return gws.gis.source.bounds_from_layers(self.source_layers, self.map.crs)
 
     def render_bbox(self, rv: t.RenderView, client_params=None):
         forward = {}

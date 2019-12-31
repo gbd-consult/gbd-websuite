@@ -1,52 +1,49 @@
-import gws.tools.json2
-import gws.ext.db.provider.postgres
-
-import gws.types as t
-
 import _test.util as u
+import _test.common.const as cc
 
 
 def main():
-    cfg = u.test_config()['postgres']
-
-    prov = gws.ext.db.provider.postgres.Object()
-    prov.initialize(t.Data(cfg))
-
-    with prov.connect() as drv:
-        drv.execute_many(
-            ['drop table if exists points_3857'],
-            ['''
-                create table points_3857 (
-                    id integer primary key,
-                    p_str text,
-                    p_int int,
-                    p_date date,
-                    p_geom geometry(point,3857)
-                )
-            ''']
-        )
-
     schema = {
-        'p_str': 'str',
+        'p_str': 'text',
         'p_int': 'int',
         'p_date': 'date',
     }
 
-    crs = 'EPSG:3857'
-
-    fs = u.make_point_features(
-        schema=schema,
-        crs=crs,
+    u.make_geom_table(
+        name='points_3857',
+        geom_type='point',
+        prop_schema=schema,
+        crs='EPSG:3857',
         rows=10,
         cols=5,
-        start_x=1000, start_y=2000, gap=100,
+        start_x=cc.POI.tour_eiffel_3857_x,
+        start_y=cc.POI.tour_eiffel_3857_y,
+        gap=100,
     )
 
-    table = prov.configure_table({
-        'name': 'points_3857',
-    })
+    u.make_geom_table(
+        name='squares_3857',
+        geom_type='square',
+        prop_schema=schema,
+        crs='EPSG:3857',
+        rows=10,
+        cols=5,
+        start_x=cc.POI.flatiron_building_3857_x,
+        start_y=cc.POI.flatiron_building_3857_y,
+        gap=100,
+    )
 
-    prov.edit_operation('insert', table, fs)
+    u.make_geom_table(
+        name='squares_25832',
+        geom_type='square',
+        prop_schema=schema,
+        crs='EPSG:25832',
+        rows=10,
+        cols=5,
+        start_x=cc.POI.big_ben_25832_x,
+        start_y=cc.POI.big_ben_25832_y,
+        gap=100,
+    )
 
 
 if __name__ == '__main__':

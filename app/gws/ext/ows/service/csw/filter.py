@@ -32,7 +32,7 @@ class Filter:
         if not ext:
             return []
 
-        ext = gws.gis.proj.transform_bbox(ext, crs, 4326)
+        ext = gws.gis.proj.transform_extent(ext, crs, 4326)
 
         return [
             r for r in recs
