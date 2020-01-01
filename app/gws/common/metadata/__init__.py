@@ -66,64 +66,58 @@ class Config(t.Config):
 
 #:export
 class MetaContact(t.Data):
-    address: str = ''
-    area: str = ''
-    city: str = ''
-    country: str = ''
-    email: str = ''
-    fax: str = ''
-    organization: str = ''
-    person: str = ''
-    phone: str = ''
-    position: str = ''
-    zip: str = ''
-    url: t.Url = ''
+    address = ''
+    area = ''
+    city = ''
+    country = ''
+    email = ''
+    fax = ''
+    organization = ''
+    person = ''
+    phone = ''
+    position = ''
+    zip = ''
+    url = ''
 
 
 #:export
 class MetaLink(t.Data):
-    scheme: str = ''
+    scheme = ''
     url: t.Url
-    function: str = ''
+    function = ''
 
 
 #:export
 class MetaData(t.Data):
-    abstract: str = ''
-    attribution: str = ''
+    abstract = ''
+    attribution = ''
     keywords: t.List[str] = []
-    language: str = ''
-    name: str = ''
-    title: str = ''
+    language = ''
+    name = ''
+    title = ''
 
-    accessConstraints: str = ''
-    fees: str = ''
+    accessConstraints = ''
+    fees = ''
 
-    # uid: str = ''  #: ISO-19115 identifier
-    # category: str = ''  #: ISO-19115 category, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_TopicCategoryCode
-    # scope: str = ''  #: ISO-19115 scope, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_ScopeCode
+    # uid = ''  #: ISO-19115 identifier
+    # category = ''  #: ISO-19115 category, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_TopicCategoryCode
+    # scope = ''  #: ISO-19115 scope, see https://geo-ide.noaa.gov/wiki/index.php?title=ISO_19115_and_19115-2_CodeList_Dictionaries#MD_ScopeCode
     iso: dict = {}
 
-    # theme: str = ''  #: INSPIRE theme shortcut, e.g. "au"
-    inspire: dict = {}
+    # theme = ''  #: INSPIRE theme shortcut, e.g. "au"
+    inspire = {}
 
     contact: MetaContact = None
 
-    pubDate: t.Date = ''
-    modDate: t.Date = ''
+    pubDate = ''
+    modDate = ''
 
-    image: t.Url = ''
+    image: t.Url
     images: dict = {}
 
-    url: t.Url = ''
-    serviceUrl: t.Url = ''
+    url: t.Url
+    serviceUrl: t.Url
     links: t.List[MetaLink] = []
-
-
-def new(**kwargs) -> t.MetaData:
-    s: t.MetaData = MetaData()
-    s.contact = MetaContact()
-    return s.extend(**kwargs)
 
 
 def read(m: t.MetaData) -> t.MetaData:

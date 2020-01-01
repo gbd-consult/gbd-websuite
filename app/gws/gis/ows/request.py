@@ -12,7 +12,11 @@ def raw_get(url, **kwargs):
 
     kwargs['lax'] = True
 
-    resp = gws.tools.net.http_request(url, **kwargs)
+    try:
+        resp = gws.tools.net.http_request(url, **kwargs)
+    except gws.tools.net.Error as e:
+        raise error.Error('http error') from e
+
     status = resp.status_code
 
     # check for an ows error (no matter what status code says)

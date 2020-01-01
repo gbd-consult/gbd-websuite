@@ -6,8 +6,7 @@ import _test.common.const as cc
 
 
 def test_find_points():
-    x = cc.POI.tour_eiffel_3857_x
-    y = cc.POI.tour_eiffel_3857_y
+    x, y = cc.POINTS.paris
 
     bbox = (x, y, x + 101, y + 101,)
 
@@ -43,12 +42,8 @@ def test_find_points():
 
 
 def test_render_squares():
-    bbox = [
-        cc.POI.flatiron_building_3857_x,
-        cc.POI.flatiron_building_3857_y,
-        cc.POI.flatiron_building_3857_x + 350,
-        cc.POI.flatiron_building_3857_y + 350,
-    ]
+    x, y = cc.POINTS.ny
+    bbox = [x, y, x + 350, y + 350, ]
 
     url = '_/cmd/mapHttpGetBbox/layerUid/a.map.squares_3857/bbox/' + gws.as_str_list(bbox)
 
@@ -66,12 +61,8 @@ def test_render_squares():
 
 
 def test_render_squares_styled():
-    bbox = [
-        cc.POI.flatiron_building_3857_x,
-        cc.POI.flatiron_building_3857_y,
-        cc.POI.flatiron_building_3857_x + 350,
-        cc.POI.flatiron_building_3857_y + 350,
-    ]
+    x, y = cc.POINTS.ny
+    bbox = [x, y, x + 350, y + 350, ]
 
     url = '_/cmd/mapHttpGetBbox/layerUid/a.map.squares_3857_styled/bbox/' + gws.as_str_list(bbox)
 
@@ -81,12 +72,8 @@ def test_render_squares_styled():
 
 
 def test_render_squares_reprojected():
-    bbox = [
-        cc.POI.big_ben_3857_x,
-        cc.POI.big_ben_3857_y,
-        cc.POI.big_ben_3857_x + 350,
-        cc.POI.big_ben_3857_y + 350,
-    ]
+    x, y = cc.POINTS.london
+    bbox = [x, y, x + 350, y + 350, ]
 
     url = '_/cmd/mapHttpGetBbox/layerUid/a.map.squares_25832/bbox/' + gws.as_str_list(bbox)
 

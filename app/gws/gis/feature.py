@@ -73,7 +73,7 @@ class Feature(t.IFeature):
     def props(self) -> t.FeatureProps:
         uid = self.uid or ''
         if self.layer:
-            uid = self.layer.uid + _COMBINED_UID_DELIMITER + uid
+            uid = f'{self.layer.uid}{_COMBINED_UID_DELIMITER}{uid}'
         return t.FeatureProps({
             'uid': uid,
             'attributes': self.attributes,

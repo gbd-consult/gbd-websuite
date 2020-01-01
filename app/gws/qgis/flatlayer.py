@@ -81,10 +81,9 @@ class Object(gws.common.layer.Image):
 
         return gws.gis.mpx.wms_request(
             cache_uid,
-            rv.bbox,
+            rv.bounds,
             rv.size_px[0],
             rv.size_px[1],
-            self.map.crs,
             forward)
 
     def render_legend(self):

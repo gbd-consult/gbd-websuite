@@ -1,52 +1,27 @@
 import gws
 import gws.gis.source
+import gws.gis.ows
+import gws.gis.extent
 import gws.gis.util
-import gws.gis.proj
 
 import gws.types as t
 
 from . import provider
 
 
-def configure_wfs(target: gws.Object, **filter_args):
-    target.url = target.var('url')
+class WfsServiceConfig(t.Config):
+    capsCacheMaxAge: t.Duration = '1d'  #: max cache age for capabilities documents
+    invertAxis: t.Optional[t.List[t.Crs]]  #: projections that have an inverted axis (yx)
+    maxRequests: int = 0  #: max concurrent requests to this source
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    params: dict = {}  #: extra query params
+    url: t.Url  #: service url
 
-    target.provider = gws.gis.util.shared_ows_provider(provider.Object, target, target.config)
-    target.invert_axis_crs = target.var('invertAxis')
-    target.source_layers = gws.gis.source.filter_layers(
-        target.provider.source_layers,
-        target.var('sourceLayers'),
+
+def configure_wfs_for(obj: gws.Object, **filter_args):
+    obj.url = obj.var('url')
+    obj.provider = gws.gis.ows.shared_provider(provider.Object, obj, obj.config)
+    obj.source_layers = gws.gis.source.filter_layers(
+        obj.provider.source_layers,
+        obj.var('sourceLayers'),
         **filter_args)
-
-
-def find_features(obj, bbox, target_crs, limit) -> t.List[t.IFeature]:
-    provider_crs = gws.gis.util.best_crs(target_crs, obj.provider.supported_crs)
-    if provider_crs != target_crs:
-        bbox = gws.gis.proj.transform_extent(bbox, target_crs, provider_crs)
-
-    axis = gws.gis.util.best_axis(provider_crs, obj.invert_axis_crs, 'WFS', obj.provider.version)
-
-    args = t.SearchArgs({
-        'axis': axis,
-        'bbox': bbox,
-        'count': limit,
-        'crs': provider_crs,
-        'layers': [sl.name for sl in obj.source_layers],
-        'point': '',
-    })
-
-    gws.log.debug(f'WFS_QUERY: START')
-    gws.p(args, d=2)
-
-    fs = obj.provider.find_features(args)
-
-    if fs is None:
-        gws.log.debug('WFS_QUERY: NOT_PARSED')
-        fs = []
-    else:
-        gws.log.debug(f'WFS_QUERY: FOUND {len(fs)}')
-
-    if provider_crs != target_crs:
-        fs = [f.transform(target_crs) for f in fs]
-
-    return fs

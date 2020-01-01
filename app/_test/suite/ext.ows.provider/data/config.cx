@@ -1,0 +1,59 @@
+@include /common/web-server-only.cx
+
+access+ { role "all" type "allow" }
+
+api.actions+ { type "map" }
+api.actions+ { type "search" }
+api.actions+ { type "asset" }
+api.actions+ { type "project" }
+
+@let URL = "http://mainhost:9995?MAP=/qgis/ows_25832.qgs"
+
+projects+ {
+    uid "a"
+
+    map.crs "EPSG:3857"
+    map.extent [
+        -20026376.39 -20048966.10
+        20026376.39  20048966.10
+    ]
+
+    map.layers+ {
+        title "wfs_points_ghana_25832"
+        type "wfs"
+        display "box"
+        url "{{URL}}"
+        sourceLayers.names ["points_ghana_25832"]
+        style {
+            type "css"
+            text """
+                fill: rgba(255,0,0,0.5);
+                point-size: 10px;
+            """
+        }
+    }
+    map.layers+ {
+        title "wfs_squares_memphis_25832"
+        type "wfs"
+        display "box"
+        url "{{URL}}"
+        sourceLayers.names ["squares_memphis_25832"]
+        featureFormat.label {
+            type "html"
+            text "{id}"
+        }
+        style {
+            type "css"
+            text """
+                fill: rgba(255,0,0,0.5);
+                stroke: blue;
+                stroke-width: 2px;
+                label-font-size: 13px;
+                label-fill: yellow;
+                label-background: black;
+            """
+        }
+    }
+
+    @include /common/client.cx
+}

@@ -13,9 +13,12 @@
 
 import gws
 import gws.common.ows.provider
-import gws.tools.xml3
-import gws.tools.net
+import gws.gis.extent
 import gws.gis.ows
+import gws.gis.shape
+import gws.gis.util
+import gws.tools.net
+import gws.tools.xml3
 
 import gws.types as t
 
@@ -27,11 +30,15 @@ class Object(gws.common.ows.provider.Object):
         super().__init__()
         self.url = ''
         self.type = 'WFS'
+        self.invert_axis_crs = []
+        self.extra_params = {}
 
     def configure(self):
         super().configure()
 
         self.url = self.var('url')
+        self.invert_axis_crs = self.var('invertAxis')
+        self.extra_params = self.var('params')
 
         if self.url:
             xml = gws.gis.ows.request.get_text(
@@ -41,31 +48,66 @@ class Object(gws.common.ows.provider.Object):
                 params=self.var('params'),
                 max_age=self.var('capsCacheMaxAge'))
         else:
-            xml = self.var('xml')
+            # @TODO offline caps not implemented yet
+            xml = self.var('capsXML')
 
         caps.parse(self, xml)
 
     def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
+        # first, find features within the bounds of given shapes,
+        # then, filter features precisely
+        # this is more performant than WFS spatial ops (at least for qgis)
+        # and also works without spatial ops support on the provider side
+
+        bounds = args.bounds
+        shape = None
+        if args.shapes:
+            shape = gws.gis.shape.union(args.shapes)
+            if shape.type == 'Point':
+                shape = shape.tolerance_buffer(args.get('tolerance'))
+            bounds = shape.bounds
+
+        our_crs = gws.gis.util.best_crs(bounds.crs, self.supported_crs)
+        bbox = gws.gis.extent.transform(bounds.extent, bounds.crs, our_crs)
+        axis = gws.gis.util.best_axis(our_crs, self.invert_axis_crs, 'WFS', self.version)
+        invert_axis = axis == 'yx'
 
         p = {}
-        invert_axis = args.get('axis') == 'yx'
 
-        b = args.get('bbox')
-        if b:
-            if invert_axis:
-                b = [b[1], b[0], b[3], b[2]]
-            p['BBOX'] = b
+        if invert_axis:
+            bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
+        p['BBOX'] = bbox
 
-        p['TYPENAMES' if self.version >= '2.0.0' else 'TYPENAME'] = args.layers
+        if args.source_layer_names:
+            p['TYPENAMES' if self.version >= '2.0.0' else 'TYPENAME'] = args.source_layer_names
 
-        if args.count:
-            p['COUNT' if self.version >= '2.0.0' else 'MAXFEATURES'] = args.count
+        if args.limit:
+            p['COUNT' if self.version >= '2.0.0' else 'MAXFEATURES'] = args.limit
 
-        p['SRSNAME'] = args.crs
+        p['SRSNAME'] = our_crs
         p['VERSION'] = self.version
 
         p = gws.extend(p, args.get('params'))
 
+        if self.extra_params:
+            p = gws.extend(p, self.extra_params)
+
         url = self.operation('GetFeature').get_url
         text = gws.gis.ows.request.get_text(url, service='WFS', request='GetFeature', params=p)
-        return gws.gis.ows.formats.read(text, invert_axis=invert_axis)
+        res = found = gws.gis.ows.formats.read(text, invert_axis=invert_axis)
+
+        if found and shape:
+            res = []
+            for f in found:
+                if not f.shape:
+                    continue
+                f.transform(shape.crs)
+                if f.shape.intersects(shape):
+                    res.append(f)
+
+        if found is None:
+            gws.p('WFS QUERY', p, 'NOT PARSED')
+            return []
+
+        gws.p('WFS QUERY', p, f'FOUND={len(found)} FILTERED={len(res)}')
+        return res

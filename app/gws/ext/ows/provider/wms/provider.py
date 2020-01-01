@@ -41,25 +41,26 @@ class Object(gws.common.ows.provider.Object):
         if not op:
             return []
 
-        #  arbitrary width & height
+        #  draw a 1000x1000 bbox around a point
         width = 1000
         height = 1000
 
-        bbox = gws.gis.util.compute_bbox(
+        b = gws.gis.util.compute_bbox(
             args.point[0],
             args.point[1],
-            args.crs,
+            args.bounds.crs,
             args.resolution,
             width,
             height
         )
 
-        if args.axis == 'yx':
-            bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
+        invert_axis = args.get('axis') == 'yx'
+        if invert_axis:
+            b = [b[1], b[0], b[3], b[2]]
 
         p = {
-            'BBOX': bbox,
-            'CRS' if self.version >= '1.3' else 'SRS': args.crs,
+            'BBOX': b,
+            'CRS' if self.version >= '1.3' else 'SRS': args.bounds.crs,
             'HEIGHT': height,
             'INFO_FORMAT': self._info_format,
             'LAYERS': args.layers,

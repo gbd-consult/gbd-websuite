@@ -5,9 +5,9 @@ import gws.common.map
 import gws.gis.util
 import gws.types as t
 
-from . import types, provider, util
+from . import provider, util
 
-class Config(gws.common.search.provider.Config, types.WmsConfig):
+class Config(gws.common.search.provider.Config, util.WmsConfig):
     pass
 
 
@@ -17,7 +17,7 @@ class Object(gws.common.search.provider.Object):
 
         self.invert_axis_crs = []
         self.provider: provider.Object = None
-        self.source_layers: t.List[types.SourceLayer] = []
+        self.source_layers: t.List[t.SourceLayer] = []
         self.url = ''
         self.map: gws.common.map.Object = None
 

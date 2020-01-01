@@ -62,7 +62,7 @@ def get_meta_contact(el):
     return d
 
 
-def get_extents(el):
+def get_bounds_list(el):
     if not el:
         return {}
 
@@ -80,7 +80,7 @@ def get_extents(el):
                 d['EPSG:4326'] = _bbox_value(e)
                 break
 
-    return d
+    return [t.Bounds(crs=k, extent=v) for k, v in d.items()]
 
 
 def get_style(el):
@@ -147,7 +147,8 @@ def flatten_source_layers(layers):
             sl.a_path = parent_path + '/' + sl.a_uid
             sl.a_level = level
             res.append(sl)
-            _collect(sl.layers, res, sl.a_path, level + 1)
+            if sl.layers:
+                _collect(sl.layers, res, sl.a_path, level + 1)
         return res
 
     return _collect(layers, [], '', 1)

@@ -25,7 +25,10 @@ class Data:
     def _extend(self, args, kwargs):
         d = {}
         for a in args:
-            d.update(a)
+            if isinstance(a, dict):
+                d.update(a)
+            elif hasattr(a, 'as_dict'):
+                d.update(a.as_dict())
         d.update(kwargs)
         vars(self).update(d)
 

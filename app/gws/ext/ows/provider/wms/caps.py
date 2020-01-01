@@ -1,12 +1,12 @@
 """WMS Capabilities parser."""
 
 import gws
-import gws.types as t
 import gws.tools.xml3
+import gws.common.metadata
+
+import gws.types as t
 
 import gws.common.ows.provider.parseutil as u
-
-from . import types
 
 
 def parse(prov, xml):
@@ -23,10 +23,11 @@ def parse(prov, xml):
 
 
 def _layer(el):
-    oo = types.SourceLayer()
+    oo = t.SourceLayer()
 
-    oo.supported_crs = [e.text for e in el.all('CRS')] + [e.text for e in el.all('SRS')]
-    oo.extents = u.get_extents(el)
+    ##oo.supported_crs = [e.text for e in el.all('CRS')] + [e.text for e in el.all('SRS')]
+    oo.supported_bounds = u.get_bounds_list(el)
+    oo.supported_crs = [b.crs for b in oo.supported_bounds]
 
     oo.styles = [u.get_style(e) for e in el.all('Style')]
     ds = u.default_style(oo.styles)

@@ -312,17 +312,20 @@ class IObject:
     root: 'IRootObject' = None
     uid: str = None
     def add_child(self, klass, cfg): pass
+    def append_child(self, obj): pass
     def configure(self): pass
     def create_object(self, klass, cfg, parent=None): pass
     def create_shared_object(self, klass, uid, cfg): pass
-    def find(self, klass, uid): pass
-    def find_all(self, klass=None): pass
-    def find_first(self, klass): pass
-    def get_children(self, klass): pass
-    def get_closest(self, klass): pass
+    def find(self, klass, uid) -> List['IObject']: pass
+    def find_all(self, klass=None) -> List['IObject']: pass
+    def find_first(self, klass) -> 'IObject': pass
+    def get_children(self, klass) -> List['IObject']: pass
+    def get_closest(self, klass) -> 'IObject': pass
     def initialize(self, cfg): pass
     def is_a(self, klass): pass
-    def props_for(self, user): pass
+    def post_configure(self): pass
+    def post_initialize(self): pass
+    def props_for(self, user) -> Optional[dict]: pass
     def set_uid(self, uid): pass
     def var(self, key, default=None, parent=False): pass
 
@@ -345,28 +348,6 @@ class IShape:
     def intersects(self, shape: 'IShape') -> bool: pass
     def tolerance_buffer(self, tolerance, resolution=None) -> 'IShape': pass
     def transform(self, to_crs) -> 'IShape': pass
-
-class SourceLayer(Data):
-    a_level: int = None
-    a_path: str = None
-    a_uid: str = None
-    data_source: dict = None
-    is_expanded: bool = None
-    is_group: bool = None
-    is_image: bool = None
-    is_queryable: bool = None
-    is_visible: bool = None
-    layers: List['SourceLayer'] = None
-    legend: str = None
-    meta: 'MetaData' = None
-    name: str = None
-    opacity: int = None
-    resource_urls: dict = None
-    scale_range: List[float] = None
-    styles: List['SourceStyle'] = None
-    supported_bounds: List['Bounds'] = None
-    supported_crs: List['Crs'] = None
-    title: str = None
 
 class IStyle:
     content: dict = None
@@ -400,7 +381,7 @@ class MetaContact(Data):
     person: str = None
     phone: str = None
     position: str = None
-    url: 'Url' = None
+    url: str = None
     zip: str = None
 
 class MetaData(Data):
@@ -409,19 +390,19 @@ class MetaData(Data):
     attribution: str = None
     contact: 'MetaContact' = None
     fees: str = None
-    image: str = None
+    image: 'Url' = None
     images: dict = None
     inspire: dict = None
     iso: dict = None
     keywords: List[str] = None
     language: str = None
     links: List['MetaLink'] = None
-    modDate: 'Date' = None
+    modDate: str = None
     name: str = None
-    pubDate: 'Date' = None
-    serviceUrl: str = None
+    pubDate: str = None
+    serviceUrl: 'Url' = None
     title: str = None
-    url: str = None
+    url: 'Url' = None
 
 class MetaLink(Data):
     function: str = None
@@ -501,8 +482,6 @@ class RewriteRule(Data):
 class SearchArgs(Data):
     axis: str = None
     bounds: 'Bounds' = None
-    count: int = None
-    feature_format: 'IFormat' = None
     keyword: Optional[str] = None
     layers: List['ILayer'] = None
     limit: int = None
@@ -511,6 +490,7 @@ class SearchArgs(Data):
     project: 'IProject' = None
     resolution: float = None
     shapes: List['IShape'] = None
+    source_layer_names: List[str] = None
     tolerance: int = None
 
 class SelectArgs(Data):
@@ -526,6 +506,28 @@ class SelectArgs(Data):
 class ShapeProps(Props):
     crs: str = None
     geometry: dict = None
+
+class SourceLayer(Data):
+    a_level: int = None
+    a_path: str = None
+    a_uid: str = None
+    data_source: dict = None
+    is_expanded: bool = None
+    is_group: bool = None
+    is_image: bool = None
+    is_queryable: bool = None
+    is_visible: bool = None
+    layers: List['SourceLayer'] = None
+    legend: str = None
+    meta: 'MetaData' = None
+    name: str = None
+    opacity: int = None
+    resource_urls: dict = None
+    scale_range: List[float] = None
+    styles: List['SourceStyle'] = None
+    supported_bounds: List['Bounds'] = None
+    supported_crs: List['Crs'] = None
+    title: str = None
 
 class SourceStyle(Data):
     is_default: bool = None
@@ -614,6 +616,7 @@ class ILayer(IObject):
     can_render_xyz: bool = None
     crs: str = None
     data_model: 'IModel' = None
+    default_search_provider: 'ISearchProvider' = None
     description: str = None
     description_template: 'ITemplate' = None
     display: str = None
@@ -650,6 +653,7 @@ class ILayer(IObject):
     def use_meta(self, meta): pass
 
 class IMap(IObject):
+    bounds: 'Bounds' = None
     center: 'Point' = None
     coordinate_precision: int = None
     crs: 'Crs' = None
@@ -716,8 +720,11 @@ class IRequest(IBaseRequest):
     def require_project(self, uid: str) -> 'IProject': pass
 
 class ISearchProvider(IObject):
-    geometry_required: bool = None
-    keyword_required: bool = None
+    data_model: 'IModel' = None
+    feature_format: 'IFormat' = None
+    pixel_tolerance: int = None
+    with_geometry: bool = None
+    with_keyword: bool = None
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs'): pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass

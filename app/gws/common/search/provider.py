@@ -6,20 +6,33 @@ import gws.common.template
 import gws.types as t
 
 
+class ParameterUsage(t.Enum):
+    yes = 'yes'
+    no = 'no'
+    require = 'require'
+    ignore = 'ignore'
+
+
 class Config(t.WithTypeAndAccess):
     defaultContext: str = ''  #: default spatial context ('view' or 'map')
     featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
     dataModel: t.Optional[gws.common.model.Config]  #: feature data model
-    geometryRequired: bool = False
-    keywordRequired: bool = False
+    pixelTolerance: int = 5
+    withGeometry: ParameterUsage = 'yes'
+    withKeyword: ParameterUsage = 'yes'
 
 
 #:export ISearchProvider
 class Object(gws.Object, t.ISearchProvider):
     def __init__(self):
         super().__init__()
-        self.geometry_required: bool = False
-        self.keyword_required: bool = False
+
+        self.with_geometry: bool = False
+        self.with_keyword: bool = False
+        self.pixel_tolerance: int = 0
+
+        self.feature_format: t.IFormat = None
+        self.data_model: t.IModel = None
 
     def configure(self):
         super().configure()
@@ -32,24 +45,35 @@ class Object(gws.Object, t.ISearchProvider):
         if p:
             self.data_model = self.add_child('gws.common.model', p)
 
-        self.keyword_required = self.var('keywordRequired')
-        self.geometry_required = self.var('geometryRequired')
+        self.with_keyword = self.var('withKeyword')
+        self.with_geometry = self.var('withGeometry')
+
+        self.pixel_tolerance = self.var('pixelTolerance')
+
+    # Parameter usage:
+    #          yes  no   require  ignore
+    # present  ok   ERR  ok       ok
+    # missing  ok   ok   ERR      ok
 
     def can_run(self, args: t.SearchArgs):
-        if self.keyword_required and not args.keyword:
+        if args.keyword and self.with_keyword == 'no':
             return False
-        if self.geometry_required and not args.shapes:
+        if not args.keyword and self.with_keyword == 'require':
             return False
-        return args.keyword or args.shapes
+        geom = args.bounds or args.shapes
+        if geom and self.with_geometry == 'no':
+            return False
+        if not geom and self.with_geometry == 'require':
+            return False
+        return args.keyword or geom
 
     def context_shape(self, args: t.SearchArgs):
         if args.get('shapes'):
-            return gws.gis.shape.union(args.get('shapes'))
+            return gws.gis.shape.union(args.shapes)
         ctx = self.var('defaultContext')
-        if ctx == 'view' and args.get('bbox'):
-            return gws.gis.shape.from_extent(args.bbox, args.crs)
-        if ctx == 'map':
-            return gws.gis.shape.from_extent(args.project.map.extent, args.crs)
+        if ctx == 'view' and args.bounds:
+            return gws.gis.shape.from_bounds(args.bounds)
+        return gws.gis.shape.from_bounds(args.project.map.bounds)
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         return []

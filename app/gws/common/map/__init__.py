@@ -74,6 +74,10 @@ class Object(gws.Object, t.IMap):
     def auto_uid(self):
         return None
 
+    @property
+    def bounds(self) -> t.Bounds:
+        return t.Bounds(crs=self.crs, extent=self.extent)
+
     def configure(self):
         super().configure()
 

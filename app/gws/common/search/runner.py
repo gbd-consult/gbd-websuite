@@ -14,6 +14,17 @@ def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
     features: t.List[t.IFeature] = []
     prov: provider.Object
 
+    gws.log.debug(f'SEARCH: axis={args.axis}')
+    gws.log.debug(f'SEARCH: bounds={args.bounds}')
+    gws.log.debug(f'SEARCH: keyword={args.keyword}')
+    gws.log.debug(f'SEARCH: layers={[p.uid for p in args.layers]}')
+    gws.log.debug(f'SEARCH: limit={args.limit}')
+    gws.log.debug(f'SEARCH: params={args.params}')
+    gws.log.debug(f'SEARCH: point={args.point}')
+    gws.log.debug(f'SEARCH: project={args.project.uid}')
+    gws.log.debug(f'SEARCH: resolution={args.resolution}')
+    gws.log.debug(f'SEARCH: shapes={[p.props for p in args.shapes]}')
+
     try:
         if args.layers:
             for layer in args.layers:

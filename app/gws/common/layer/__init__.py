@@ -205,11 +205,35 @@ class Base(gws.Object, t.ILayer):
         self.ows_name = ''
 
     @property
+    def props(self):
+        return Props({
+            'meta': self.meta,
+            'opacity': self.opacity,
+            'options': self.client_options,
+            'extent': self.extent if self.extent != self.map.extent else None,
+            'resolutions': self.resolutions if self.resolutions != self.map.resolutions else None,
+            'title': self.title,
+            'uid': self.uid,
+            'description': self.description,
+        })
+
+    @property
+    def description(self) -> str:
+        ctx = {
+            'layer': self,
+        }
+        return self.description_template.render(ctx).content
+
+    @property
     def has_search(self) -> bool:
         return len(self.get_children('gws.ext.search.provider')) > 0
 
     @property
     def own_bounds(self) -> t.Bounds:
+        pass
+
+    @property
+    def default_search_provider(self) -> t.ISearchProvider:
         pass
 
     def use_meta(self, meta):
@@ -276,11 +300,6 @@ class Base(gws.Object, t.ILayer):
 
         self.crs = self.var('crs') or self.map.crs
 
-        p = self.var('search')
-        if p.enabled and p.providers:
-            for cfg in p.providers:
-                self.add_child('gws.ext.search.provider', cfg)
-
         p = self.var('dataModel')
         if p:
             self.data_model = self.add_child('gws.common.model', p)
@@ -308,6 +327,10 @@ class Base(gws.Object, t.ILayer):
 
         self.grid = self.var('grid')
 
+    def post_configure(self):
+        super().post_configure()
+        self._configure_search()
+
     def edit_access(self, user):
         # @TODO granular edit access
 
@@ -317,30 +340,10 @@ class Base(gws.Object, t.ILayer):
     def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:
         pass
 
-    @property
-    def props(self):
-        return Props({
-            'meta': self.meta,
-            'opacity': self.opacity,
-            'options': self.client_options,
-            'extent': self.extent if self.extent != self.map.extent else None,
-            'resolutions': self.resolutions if self.resolutions != self.map.resolutions else None,
-            'title': self.title,
-            'uid': self.uid,
-            'description': self.description,
-        })
-
-    @property
-    def description(self) -> str:
-        ctx = {
-            'layer': self,
-        }
-        return self.description_template.render(ctx).content
-
     def props_for(self, user):
         p = super().props_for(user)
         if p:
-            p.editAccess = self.edit_access(user)
+            p['editAccess'] = self.edit_access(user)
         return p
 
     def mapproxy_config(self, mc):
@@ -373,6 +376,27 @@ class Base(gws.Object, t.ILayer):
             return service.name in self.ows_services_enabled
         return True
 
+    def _configure_search(self):
+        # search can be
+        # 1) missing = use default provider
+        # 2) disabled (enabled=False) = skip
+        # 3) just enabled = use default provider
+        # 4) enabled with explicit providers = use these
+
+        p = self.var('search')
+
+        if p and not p.enabled:
+            return
+
+        if not p or not p.providers:
+            prov = self.default_search_provider
+            if prov:
+                self.append_child(prov)
+            return
+
+        for cfg in p.providers:
+            self.add_child('gws.ext.search.provider', cfg)
+
 
 class Image(Base):
     def __init__(self):
@@ -381,11 +405,26 @@ class Image(Base):
         self.can_render_bbox = True
         self.can_render_xyz = True
 
+    @property
+    def props(self):
+        if self.display == 'tile':
+            return super().props.extend({
+                'type': 'tile',
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetXyz/layerUid/' + self.uid + '/z/{z}/x/{x}/y/{y}/t.png',
+                'tileSize': self.grid.tileSize,
+            })
+
+        if self.display == 'box':
+            return super().props.extend({
+                'type': 'box',
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
+            })
+
     def render_bbox(self, rv, client_params=None):
         uid = self.uid
         if not self.has_cache:
             uid += '_NOCACHE'
-        return gws.gis.mpx.wms_request(uid, rv.bbox, rv.size_px[0], rv.size_px[1], self.map.crs)
+        return gws.gis.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1])
 
     def render_xyz(self, x, y, z):
         return gws.gis.mpx.wmts_request(
@@ -472,21 +511,6 @@ class Image(Base):
             'disable_storage': True,
             'format': self.image_format,
         }))
-
-    @property
-    def props(self):
-        if self.display == 'tile':
-            return super().props.extend({
-                'type': 'tile',
-                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetXyz/layerUid/' + self.uid + '/z/{z}/x/{x}/y/{y}/t.png',
-                'tileSize': self.grid.tileSize,
-            })
-
-        if self.display == 'box':
-            return super().props.extend({
-                'type': 'box',
-                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
-            })
 
 
 class ImageTile(Image):

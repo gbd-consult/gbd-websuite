@@ -10,8 +10,6 @@ class Config:
 class SearchArgs(t.Data):
     axis: str
     bounds: t.Bounds
-    count: int
-    feature_format: t.IFormat
     keyword: t.Optional[str]
     layers: t.List[t.ILayer]
     limit: int
@@ -20,4 +18,5 @@ class SearchArgs(t.Data):
     project: t.IProject
     resolution: float
     shapes: t.List[t.IShape]
+    source_layer_names: t.List[str]
     tolerance: int

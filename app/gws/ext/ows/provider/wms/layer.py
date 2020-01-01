@@ -8,10 +8,10 @@ import gws.common.ows.provider
 
 import gws.types as t
 
-from . import types, provider, util
+from . import provider, util
 
 
-class Config(gws.common.layer.ImageConfig, types.WmsConfig):
+class Config(gws.common.layer.ImageConfig, util.WmsConfig):
     getMapParams: t.Optional[dict]  #: additional parameters for GetMap requests
 
 
@@ -21,7 +21,7 @@ class Object(gws.common.layer.Image):
 
         self.invert_axis_crs = []
         self.provider: provider.Object = None
-        self.source_layers: t.List[types.SourceLayer] = []
+        self.source_layers: t.List[t.SourceLayer] = []
         self.source_legend_urls = []
         self.url = ''
 

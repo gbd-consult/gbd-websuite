@@ -105,9 +105,9 @@ def _tree(el, map_layers):
     expanded = el.attr('expanded') == '1'
 
     if el.name == 'layer-tree-group':
-        sl = gws.gis.source.Layer()
         n = el.attr('name')
-        sl.meta.title = sl.meta.name = sl.title = sl.name = n
+        sl = t.SourceLayer(title=n, name=n)
+        sl.meta = t.MetaData(title=n, name=n)
 
         sl.is_visible = visible
         sl.is_expanded = expanded

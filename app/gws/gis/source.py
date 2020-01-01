@@ -20,7 +20,7 @@ class SourceLayer(t.Data):
     data_source = {}
 
     supported_crs: t.List[t.Crs] = []
-    supported_bound: t.List[t.Bounds] = []
+    supported_bounds: t.List[t.Bounds] = []
 
     is_expanded = False
     is_group = False
@@ -30,7 +30,7 @@ class SourceLayer(t.Data):
 
     layers: t.List['SourceLayer'] = []
 
-    meta: t.MetaData = gws.common.metadata.new()
+    meta: t.MetaData = None
     name = ''
     title = ''
 
@@ -57,11 +57,6 @@ class LayerFilter(t.Data):
     level: int
     names: t.List[str]
     pattern: str
-
-
-def layer(**kwargs) -> t.SourceLayer:
-    s: t.SourceLayer = SourceLayer()
-    return s.extend(**kwargs)
 
 
 def filter_layers(

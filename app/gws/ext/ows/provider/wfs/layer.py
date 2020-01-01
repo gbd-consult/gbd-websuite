@@ -5,9 +5,10 @@ import gws.gis.proj
 
 import gws.types as t
 
-from . import provider, types, util
+from . import provider, util
 
-class Config(gws.common.layer.VectorConfig, types.WfsServiceConfig):
+
+class Config(gws.common.layer.VectorConfig, util.WfsServiceConfig):
     pass
 
 
@@ -15,22 +16,17 @@ class Object(gws.common.layer.Vector):
     def __init__(self):
         super().__init__()
 
-        self.invert_axis_crs = []
         self.provider: provider.Object = None
-        self.source_layers: t.List[types.SourceLayer] = []
-        self.geometry_type = ''
+        self.source_layers: t.List[t.SourceLayer] = []
         self.url = ''
 
     def configure(self):
         super().configure()
 
-        util.configure_wfs(self)
+        util.configure_wfs_for(self)
 
         if not self.source_layers:
-            raise gws.Error(f'no layers found in {self.uid!r}')
-
-        self.source_layers = [self.source_layers[0]]
-        self._add_default_search()
+            raise gws.Error(f'no source layers found for {self.uid!r}')
 
     @property
     def description(self):
@@ -41,34 +37,14 @@ class Object(gws.common.layer.Vector):
         }
         return self.description_template.render(context).content
 
-    @property
-    def props(self):
-        return super().props.extend({
-            'type': 'vector',
-            ##'geometryType': self.geometry_type.upper(),
-        })
-
     def get_features(self, bounds, limit=0):
-        return util.find_features(self, bounds, self.map.crs, limit)
+        fs = self.provider.find_features(t.SearchArgs(
+            bounds=bounds,
+            limit=limit,
+            source_layer_names=[sl.name for sl in self.source_layers]
+        ))
+        return [self.connect_feature(f) for f in fs]
 
-    def _add_default_search(self):
-        p = self.var('search')
-        if not p.enabled or p.providers:
-            return
-
-        cfg = {
-            'type': 'wfs'
-        }
-
-        cfg_keys = [
-            'capsCacheMaxAge',
-            'invertAxis',
-            'maxRequests',
-            'sourceLayers',
-            'url',
-        ]
-
-        for key in cfg_keys:
-            cfg[key] = self.var(key)
-
-        self.add_child('gws.ext.search.provider', t.Config(gws.compact(cfg)))
+    @property
+    def default_search_provider(self):
+        return self.create_object('gws.ext.search.provider', t.Config(type='wfs', layer=self))

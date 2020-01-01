@@ -15,6 +15,7 @@ def _new_uid(uid):
     _uids.add(u)
     return u
 
+
 #:export IObject
 class Object(t.IObject):
     def __init__(self):
@@ -28,6 +29,20 @@ class Object(t.IObject):
         self.klass = _class_name(self.__class__)
         self.defaults = None
 
+    @property
+    def props(self) -> t.Props:
+        pass
+
+    @property
+    def auto_uid(self) -> str:
+        u = self.var('uid')
+        if u:
+            return u
+        u = self.var('title')
+        if u:
+            return util.as_uid(u)
+        return self.klass.replace('.', '_')
+
     def is_a(self, klass):
         if isinstance(klass, type):
             return isinstance(self, klass)
@@ -39,16 +54,6 @@ class Object(t.IObject):
         with util.global_lock:
             if self.uid != uid:
                 self.uid = _new_uid(uid)
-
-    @property
-    def auto_uid(self) -> str:
-        u = self.var('uid')
-        if u:
-            return u
-        u = self.var('title')
-        if u:
-            return util.as_uid(u)
-        return self.klass.replace('.', '_')
 
     def initialize(self, cfg):
         self.config = cfg
@@ -70,6 +75,20 @@ class Object(t.IObject):
         # this is intended to be overridden
         pass
 
+    def post_initialize(self):
+        try:
+            self.post_configure()
+        except Exception as e:
+            msg = '%s\nin %s' % (_exc_name_for_error(e), _object_name_for_error(self))
+            raise error.Error(msg)
+
+        for c in self.children:
+            c.post_initialize()
+
+    def post_configure(self):
+        # this is intended to be overridden
+        pass
+
     def var(self, key, default=None, parent=False):
         v = util.get(self.config, key)
         if v is not None:
@@ -86,7 +105,10 @@ class Object(t.IObject):
         return obj
 
     def add_child(self, klass, cfg):
-        obj = self.create_object(klass, cfg, parent=self)
+        return self.append_child(self.create_object(klass, cfg, parent=self))
+
+    def append_child(self, obj):
+        obj.parent = self
         self.children.append(obj)
         return obj
 
@@ -105,33 +127,30 @@ class Object(t.IObject):
 
         return obj
 
-    def get_children(self, klass):
+    def get_children(self, klass) -> t.List[t.IObject]:
         return list(_find_all(self.children, klass))
 
-    def get_closest(self, klass):
+    def get_closest(self, klass) -> t.IObject:
         if self.parent:
             if self.parent.is_a(klass):
                 return self.parent
             return self.parent.get_closest(klass)
 
-    def find_all(self, klass=None):
+    def find_all(self, klass=None) -> t.List[t.IObject]:
         return list(_find_all(self.root.all_objects, klass))
 
-    def find_first(self, klass):
+    def find_first(self, klass) -> t.IObject:
         for p in _find_all(self.root.all_objects, klass):
             return p
 
-    def find(self, klass, uid):
+    def find(self, klass, uid) -> t.List[t.IObject]:
         return _find(self.root.all_objects, klass, uid)
 
-    def props_for(self, user):
+    def props_for(self, user) -> t.Optional[dict]:
         if not user.can_use(self):
             return None
         return _make_props(self.props, user)
 
-    @property
-    def props(self) -> t.Props:
-        pass
 
 #:export
 class RootBase(Object):
@@ -158,9 +177,7 @@ class RootBase(Object):
 
 
 class ActionObject(Object):
-    @property
-    def props(self):
-        return t.Props()
+    pass
 
 
 def _load_class(klass):
@@ -235,6 +252,14 @@ def _object_name_for_error(x):
 
 
 def _make_props(obj, user):
+    if hasattr(obj, 'props_for'):
+        obj = obj.props_for(user)
+    elif hasattr(obj, 'props'):
+        obj = obj.props
+
+    if isinstance(obj, t.Data):
+        obj = obj.as_dict()
+
     if isinstance(obj, list):
         ls = []
         for v in obj:
@@ -243,18 +268,12 @@ def _make_props(obj, user):
                 ls.append(v)
         return ls
 
-    if isinstance(obj, t.Data):
-        obj = obj.as_dict()
-
     if isinstance(obj, dict):
         ls = {}
         for k, v in obj.items():
             v = _make_props(v, user)
             if v is not None:
                 ls[k] = v
-        return t.Props(ls)
-
-    if isinstance(obj, Object):
-        return obj.props_for(user)
+        return ls
 
     return obj

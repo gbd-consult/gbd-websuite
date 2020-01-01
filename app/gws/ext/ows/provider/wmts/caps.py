@@ -56,7 +56,7 @@ def _layer(el):
     if ds:
         oo.legend = ds.legend
 
-    oo.extents = u.get_extents(el)
+    oo.supported_bounds = u.get_bounds_list(el)
 
     oo.is_image = True
     oo.is_visible = True

@@ -26,21 +26,6 @@ def compute_bbox(x, y, crs, resolution, pixel_width, pixel_height):
     return bbox
 
 
-def shared_ows_provider(klass, obj, cfg):
-    url = cfg.get('url')
-    uid = url
-    params = cfg.get('params')
-    if params:
-        uid += '_' + gws.tools.misc.sha256(' '.join(f'{k}={v}' for k, v in sorted(params.items())))
-
-    return obj.create_shared_object(klass, uid, t.Config({
-        'uid': uid,
-        'url': url,
-        'params': params,
-        'capsCacheMaxAge': cfg.get('capsCacheMaxAge')
-    }))
-
-
 def best_axis(crs, inverted_axis_crs_list, service_name, service_version):
     # inverted_axis_crs_list - list of EPSG crs'es which are known to have an inverted axis for this service
     # crs - crs we're going to use with the service
@@ -56,11 +41,23 @@ def best_axis(crs, inverted_axis_crs_list, service_name, service_version):
 
 def best_crs(target_crs, supported_crs):
     # find the best matching crs for the target crs and the list of supported crs.
-    # if target_crs is in the list, we're fine, otherwise try to find a projected crs
+
+    # if target_crs is in the list, we're fine
 
     crs = gws.gis.proj.find(target_crs, supported_crs)
     if crs:
         return crs
+
+    # @TODO find a projection with less errors
+
+    # if webmercator is supported, use it
+
+    crs = gws.gis.proj.find(gws.gis.proj.WEBMERCATOR, supported_crs)
+    if crs:
+        gws.log.debug(f'best_crs: using {crs!r} for {target_crs!r}')
+        return crs
+
+    # return first non-geographic CRS
 
     for crs in supported_crs:
         p = gws.gis.proj.as_proj(crs)

@@ -49,6 +49,7 @@ def activate(cfg) -> t.IRootObject:
     try:
         root = gws.set_global('_tree_root', gwsroot.Object())
         root.initialize(cfg)
+        root.post_initialize()
         return root
     except error.ParseError:
         raise
@@ -72,6 +73,6 @@ def load(path=None) -> t.IRootObject:
         gws.log.debug(f'loading config from "{path}"')
         with open(path, 'rb') as fp:
             r = pickle.load(fp)
-        gws.set_global('_tree_root', r)
+        return gws.set_global('_tree_root', r)
     except Exception:
         raise error.LoadError('unable to load configuration')

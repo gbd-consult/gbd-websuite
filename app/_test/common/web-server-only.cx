@@ -1,0 +1,3 @@
+server.mapproxy.enabled false
+server.qgis.enabled false
+server.spool.enabled false

@@ -6,6 +6,8 @@ import gws
 import gws.config
 import gws.tools.net
 
+import gws.types as t
+
 _error_color = (255, 0, 140, 0)
 
 
@@ -42,12 +44,12 @@ def _call(service, params):
         return
 
 
-def wms_request(layer_uid, bbox, width, height, crs, forward=None):
+def wms_request(layer_uid, bounds: t.Bounds, width, height, forward=None):
     args = {
-        'bbox': bbox,
+        'bbox': bounds.extent,
         'width': width,
         'height': height,
-        'crs': crs,
+        'crs': bounds.crs,
         'service': 'WMS',
         'request': 'GetMap',
         'version': '1.3.0',

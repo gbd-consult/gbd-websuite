@@ -3,9 +3,6 @@ import gws.common.ows.provider.parseutil as u
 import gws.tools.xml3
 import gws.types as t
 
-from . import types
-
-
 def parse(prov, xml):
     el = gws.tools.xml3.from_string(xml)
 
@@ -27,7 +24,7 @@ def parse(prov, xml):
 
 
 def _feature_type(el):
-    oo = types.SourceLayer()
+    oo = t.SourceLayer()
 
     n = el.get_text('Name')
     if ':' in n:
@@ -37,7 +34,7 @@ def _feature_type(el):
         oo.title = oo.name = n
 
     oo.meta = t.MetaData(u.get_meta(el))
-    oo.extents = u.get_extents(el)
+    oo.supported_bounds = u.get_bounds_list(el)
 
     oo.is_queryable = True
 
