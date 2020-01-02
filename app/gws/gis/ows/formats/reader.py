@@ -21,14 +21,14 @@ text_formats = [
 ]
 
 
-def read(s, **kwargs) -> t.List[t.IFeature]:
-    first_el = gws.tools.xml3.peek(s)
+def read(text, crs=None, invert_axis=None, **kwargs) -> t.List[t.IFeature]:
+    first_el = gws.tools.xml3.peek(text)
 
     if first_el:
-        # remove xml declaration, in order not to confuse gdal with non-utf8 encodings
-        s = gws.tools.xml3.strip_before(s, first_el)
+        # remove the xml declaration, in order not to confuse gdal with non-utf8 encodings
+        text = gws.tools.xml3.strip_before(text, first_el)
         for p in xml_formats:
-            res = p.parse(s, first_el, **kwargs)
+            res = p.parse(text, first_el, crs, invert_axis, **kwargs)
             if res is not None:
                 gws.log.debug(f'parsed with {p!r}')
                 return res
@@ -36,7 +36,7 @@ def read(s, **kwargs) -> t.List[t.IFeature]:
     else:
 
         for p in text_formats:
-            res = p.parse(s, **kwargs)
+            res = p.parse(s, crs, invert_axis, **kwargs)
             if res is not None:
                 gws.log.debug(f'parsed with {p!r}')
                 return res

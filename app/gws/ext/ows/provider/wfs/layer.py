@@ -37,6 +37,10 @@ class Object(gws.common.layer.Vector):
         }
         return self.description_template.render(context).content
 
+    @property
+    def default_search_provider(self):
+        return self.create_object('gws.ext.search.provider', t.Config(type='wfs', layer=self))
+
     def get_features(self, bounds, limit=0):
         fs = self.provider.find_features(t.SearchArgs(
             bounds=bounds,
@@ -44,7 +48,3 @@ class Object(gws.common.layer.Vector):
             source_layer_names=[sl.name for sl in self.source_layers]
         ))
         return [self.connect_feature(f) for f in fs]
-
-    @property
-    def default_search_provider(self):
-        return self.create_object('gws.ext.search.provider', t.Config(type='wfs', layer=self))

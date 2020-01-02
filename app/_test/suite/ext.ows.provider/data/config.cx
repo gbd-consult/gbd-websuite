@@ -1,4 +1,6 @@
-@include /common/web-server-only.cx
+server.mapproxy.enabled true
+server.qgis.enabled false
+server.spool.enabled false
 
 access+ { role "all" type "allow" }
 
@@ -32,6 +34,7 @@ projects+ {
             """
         }
     }
+
     map.layers+ {
         title "wfs_squares_memphis_25832"
         type "wfs"
@@ -54,6 +57,16 @@ projects+ {
             """
         }
     }
+
+
+    map.layers+ {
+        title "wms_points_ghana_25832"
+        type "wms"
+        url "{{URL}}"
+        sourceLayers.names ["points_ghana_25832"]
+    }
+
+
 
     @include /common/client.cx
 }

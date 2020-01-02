@@ -137,12 +137,12 @@ def test_find_points_with_reprojection():
     assert u.short_features(r['features']) == exp
 
 
-def test_render_squares():
+def test_render():
     x, y = cc.POINTS.memphis
     bbox = (x - 300, y, x, y + 300,)
 
     url = '_/cmd/mapHttpGetBbox/layerUid/a.map.wfs_squares_memphis_25832/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 400, 'height': 400})
-    d = u.compare_image_response(r, '/data/squares_400x400.png')
+    d = u.compare_image_response(r, '/data/wfs_squares_400x400.png')
     assert not d

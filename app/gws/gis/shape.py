@@ -45,18 +45,18 @@ def from_xy(x, y, crs) -> t.IShape:
     return Shape(shapely.geometry.Point(x, y), crs)
 
 
-def union(shapes: t.List[t.IShape]) -> t.IShape:
+def union(shapes: t.List[t.IShape]) -> t.Optional[t.IShape]:
     if not shapes:
-        return []
+        return
 
     shapes = list(shapes)
     if len(shapes) == 0:
-        return []
+        return
     if len(shapes) == 1:
         return shapes[0]
 
     crs = shapes[0].crs
-    shapes = [s.transform(crs) for s in shapes]
+    shapes = [s.transformed(crs) for s in shapes]
     geom = shapely.ops.unary_union([getattr(s, 'geom') for s in shapes])
 
     return Shape(geom, crs)
@@ -65,24 +65,24 @@ def union(shapes: t.List[t.IShape]) -> t.IShape:
 _DEFAULT_POINT_BUFFER_RESOLUTION = 6
 
 
-def buffer_point(sh, tolerance, resolution=_DEFAULT_POINT_BUFFER_RESOLUTION) -> t.Optional[t.IShape]:
+def buffer_point(sh, tolerance, resolution=None) -> t.Optional[t.IShape]:
     if sh.type != 'Point':
         return
     if not tolerance:
         return
-    return Shape(sh.geom.buffer(tolerance, resolution), sh.crs)
+    return Shape(sh.geom.buffer(tolerance, resolution or _DEFAULT_POINT_BUFFER_RESOLUTION), sh.crs)
 
 
 #:export
 class ShapeProps(t.Props):
-    geometry: dict
     crs: str
+    geometry: dict
 
 
 #:export IShape
 class Shape(t.IShape):
     def __init__(self, geom, crs):
-        self.crs = gws.gis.proj.as_epsg(crs)
+        self.crs: str = gws.gis.proj.as_epsg(crs)
         #:noexport
         self.geom: shapely.geometry.base.BaseGeometry = geom
 
@@ -136,7 +136,7 @@ class Shape(t.IShape):
             return self
         return Shape(self.geom.buffer(tolerance, resolution or _DEFAULT_POINT_BUFFER_RESOLUTION), self.crs)
 
-    def transform(self, to_crs) -> t.IShape:
+    def transformed(self, to_crs) -> t.IShape:
         if gws.gis.proj.equal(self.crs, to_crs):
             return self
         src = gws.gis.proj.as_proj(self.crs)

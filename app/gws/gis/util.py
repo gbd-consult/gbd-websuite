@@ -3,8 +3,8 @@ import gws.tools.misc
 import gws.types as t
 
 
-def compute_bbox(x, y, crs, resolution, pixel_width, pixel_height):
-    """Given a point (in crs units), compute a bbox around it."""
+def make_bbox(x, y, crs, resolution, pixel_width, pixel_height):
+    """Given a point (in crs units), make a widthXheight pixel bbox around it."""
 
     # @TODO
 
@@ -24,6 +24,10 @@ def compute_bbox(x, y, crs, resolution, pixel_width, pixel_height):
     #     bbox = gws.gis.proj.transform_extent(bbox, 'EPSG:3857', crs)
 
     return bbox
+
+
+def invert_bbox(bbox):
+    return [bbox[1], bbox[0], bbox[3], bbox[2]]
 
 
 def best_axis(crs, inverted_axis_crs_list, service_name, service_version):
@@ -70,4 +74,4 @@ def best_crs(target_crs, supported_crs):
 
 def best_crs_and_shape(request_crs, supported_crs, shape):
     crs = best_crs(request_crs, supported_crs)
-    return crs, shape.transform(crs)
+    return crs, shape.transformed(crs)

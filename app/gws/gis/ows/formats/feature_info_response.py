@@ -9,16 +9,16 @@ import gws.gis.feature
 #   <fields objectid="15111" shape="polygon"...
 #   <fields objectid="15111" shape="polygon"...
 
-def parse(s, first_el, **kwargs):
+def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
     if first_el.name.lower() != 'featureinforesponse':
         return None
 
-    el = gws.tools.xml3.from_string(s)
+    el = gws.tools.xml3.from_string(text)
     fs = []
 
     for item in el.all('Fields'):
-        fs.append(gws.gis.feature.new({
-            'attributes': item.attr_dict
-        }))
+        atts = item.attr_dict
+        uid = atts.pop('objectid', None) or atts.pop('OBJECTID', None)
+        fs.append(gws.gis.feature.Feature(uid=uid, attributes=atts))
 
     return fs

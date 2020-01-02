@@ -95,7 +95,7 @@ class Object(gws.common.db.provider.Sql):
                 if shape.type == 'Point':
                     shape = shape.tolerance_buffer(args.get('tolerance'))
 
-                shape = shape.transform(crs)
+                shape = shape.transformed(crs)
 
                 where.append(f'ST_Intersects(ST_SetSRID(%s::geometry,%s), "{geom_col}")')
                 parms.append(shape.wkb_hex)
@@ -228,7 +228,7 @@ class Object(gws.common.db.provider.Sql):
 
         # @TODO: support EWKB directly
 
-        shape = feature.shape.transform(table.geometry_crs)
+        shape = feature.shape.transformed(table.geometry_crs)
         ph = 'ST_SetSRID(%s::geometry,%s)'
         if table.geometry_type.startswith('multi'):
             ph = f'ST_Multi({ph})'
@@ -249,11 +249,7 @@ class Object(gws.common.db.provider.Sql):
         if not uid:
             uid = gws.random_string(16)
 
-        return gws.gis.feature.new({
-            'uid': uid,
-            'attributes': rec,
-            'shape': shape,
-        })
+        return gws.gis.feature.Feature(uid=uid, attributes=rec, shape=shape)
 
     def _get_by_uids(self, table, uids):
         return self.select(t.SelectArgs({

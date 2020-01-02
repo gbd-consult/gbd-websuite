@@ -21,11 +21,11 @@ class Object(gws.common.search.provider.Object):
         self.source_layers: t.List[t.SourceLayer] = []
         self.url = ''
 
-        self.with_geometry = 'require'
-        self.with_keyword = 'no'
-
     def configure(self):
         super().configure()
+
+        self.with_geometry = 'require'
+        self.with_keyword = 'no'
 
         layer = self.var('layer')
         if layer:

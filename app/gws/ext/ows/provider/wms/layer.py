@@ -19,7 +19,6 @@ class Object(gws.common.layer.Image):
     def __init__(self):
         super().__init__()
 
-        self.invert_axis_crs = []
         self.provider: provider.Object = None
         self.source_layers: t.List[t.SourceLayer] = []
         self.source_legend_urls = []
@@ -28,10 +27,10 @@ class Object(gws.common.layer.Image):
     def configure(self):
         super().configure()
 
-        util.configure_wms(self)
+        util.configure_wms_for(self)
 
         if not self.source_layers:
-            raise gws.Error(f'no layers found in {self.uid!r}')
+            raise gws.Error(f'no source layers found for {self.uid!r}')
 
         if not self.var('zoom'):
             zoom = gws.gis.zoom.config_from_source_layers(self.source_layers)
@@ -42,34 +41,18 @@ class Object(gws.common.layer.Image):
         if not self.resolutions:
             raise gws.Error(f'no resolutions in {self.uid!r}')
 
-        self._add_default_search()
-        self._add_legend()
+        self._configure_legend()
+
+    @property
+    def default_search_provider(self):
+        source_layers = [sl for sl in self.source_layers if sl.is_queryable]
+        if source_layers:
+            return self.create_object('gws.ext.search.provider', t.Config(type='wms', layer=self, source_layers=source_layers))
 
     @property
     def own_bounds(self):
-        return gws.gis.source.bounds_from_layers(self.source_layers, self.map.crs)
-
-    def mapproxy_config(self, mc, options=None):
-        layers = [sl.name for sl in self.source_layers if sl.name]
-        if not self.var('capsLayersBottomUp'):
-            layers = reversed(layers)
-
-        crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
-
-        req = gws.extend({
-            'url': self.provider.operation('GetMap').get_url,
-            'transparent': True,
-            'layers': ','.join(layers)
-        }, self.var('getMapParams'))
-
-        source_uid = mc.source(gws.compact({
-            'type': 'wms',
-            'supported_srs': [crs],
-            'concurrent_requests': self.var('maxRequests'),
-            'req': req
-        }))
-
-        self.mapproxy_layer_config(mc, source_uid)
+        our_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
+        return gws.gis.source.bounds_from_layers(self.source_layers, our_crs)
 
     @property
     def description(self):
@@ -80,35 +63,34 @@ class Object(gws.common.layer.Image):
         }
         return self.description_template.render(context).content
 
+    def mapproxy_config(self, mc, options=None):
+        layers = [sl.name for sl in self.source_layers if sl.name]
+        if not self.var('capsLayersBottomUp'):
+            layers = reversed(layers)
+
+        our_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
+
+        req = gws.extend({
+            'url': self.provider.operation('GetMap').get_url,
+            'transparent': True,
+            'layers': ','.join(layers)
+        }, self.var('getMapParams'))
+
+        source_uid = mc.source(gws.compact({
+            'type': 'wms',
+            'supported_srs': [our_crs],
+            'concurrent_requests': self.var('maxRequests'),
+            'req': req
+        }))
+
+        self.mapproxy_layer_config(mc, source_uid)
+
     def render_legend(self):
         if self.legend_url:
             return super().render_legend()
         return gws.gis.legend.combine_legend_urls(self.source_legend_urls)
 
-    def _add_default_search(self):
-        p = self.var('search')
-        if not p.enabled or p.providers:
-            return
-
-        cfg = {
-            'type': 'wms'
-        }
-
-        cfg_keys = [
-            'capsCacheMaxAge',
-            'invertAxis',
-            'maxRequests',
-            'bottomUpLayers',
-            'sourceLayers',
-            'url',
-        ]
-
-        for key in cfg_keys:
-            cfg[key] = self.var(key)
-
-        self.add_child('gws.ext.search.provider', t.Config(gws.compact(cfg)))
-
-    def _add_legend(self):
+    def _configure_legend(self):
         self.has_legend = False
 
         if not self.var('legend.enabled'):
@@ -120,18 +102,11 @@ class Object(gws.common.layer.Image):
             self.legend_url = url
             return
 
-        # if no legend.url is given, use an auto legend
+        # if no legend.url is given, use a combined source legend (see render_legend above)
 
         urls = [sl.legend for sl in self.source_layers if sl.legend]
         if not urls:
             return
 
-        if len(urls) == 1:
-            self.has_legend = True
-            self.legend_url = urls[0]
-            return
-
-        # see render_legend
-
-        self.source_legend_urls = urls
         self.has_legend = True
+        self.source_legend_urls = urls

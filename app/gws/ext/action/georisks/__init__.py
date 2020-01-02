@@ -316,7 +316,7 @@ class Object(gws.ActionObject):
 
                 ls.append({
                     'shape': shape.props,
-                    'shape4326': shape.transform('EPSG:4326').props,
+                    'shape4326': shape.transformed('EPSG:4326').props,
                     'reportUid': r['id'],
                     'category': r['category'],
                     'volume': r['volume'],

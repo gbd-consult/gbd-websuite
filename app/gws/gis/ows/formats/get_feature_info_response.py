@@ -11,11 +11,11 @@ import gws.gis.feature
 #           <Attribute name="..." value="..."/>
 #           <Attribute name="geometry" value="wkt"/>
 
-def parse(s, first_el, **kwargs):
+def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
     if first_el.name.lower() != 'getfeatureinforesponse':
         return None
 
-    el = gws.tools.xml3.from_string(s)
+    el = gws.tools.xml3.from_string(text)
     fs = []
 
     for layer in el.all('Layer'):
@@ -29,11 +29,11 @@ def parse(s, first_el, **kwargs):
             if 'geometry' in atts:
                 shape = gws.gis.shape.from_wkt(atts.pop('geometry'), kwargs.get('crs'))
 
-            fs.append(gws.gis.feature.new({
-                'uid': atts.get('uid') or feature.attr('id'),
-                'category': layer.attr('name', ''),
-                'shape': shape,
-                'attributes': atts
-            }))
+            fs.append(gws.gis.feature.Feature(
+                uid=atts.get('uid') or feature.attr('id'),
+                category=layer.attr('name', ''),
+                shape=shape,
+                attributes=atts
+            ))
 
     return fs

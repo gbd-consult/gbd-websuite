@@ -183,8 +183,6 @@ class Base(gws.Object, t.ILayer):
         self.extent = []
         self.crs = ''
 
-        self.own_crs = ''
-
         self.has_legend = False
         self.legend_url = ''
 

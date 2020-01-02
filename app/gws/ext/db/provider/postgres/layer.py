@@ -28,7 +28,6 @@ class Object(gws.common.layer.Vector):
 
         self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
         self.table = self.provider.configure_table(self.var('table'))
-        self.own_crs = self.table.geometry_crs
 
         p = self.var('search')
         if not p or (p.enabled and not p.providers):
@@ -58,7 +57,7 @@ class Object(gws.common.layer.Vector):
         })
 
     def get_features(self, bounds, limit=0) -> t.List[t.IFeature]:
-        shape = gws.gis.shape.from_bounds(bounds).transform(self.own_crs)
+        shape = gws.gis.shape.from_bounds(bounds).transformed(self.table.geometry_crs)
 
         fs = self.provider.select(t.SelectArgs({
             'table': self.table,

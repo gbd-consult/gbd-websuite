@@ -38,7 +38,6 @@ class Object(gws.core.tree.RootBase, t.IRootObject):
             try:
                 payload = self._validator.read_value(payload, cc['arg'], strict=(cat == 'api'))
             except gws.types.spec.Error as e:
-                gws.log.exception()
-                raise error.DispatchError('invalid parameters') from e
+                raise error.DispatchError(f'invalid parameters ({e.message})') from e
 
         return cc['action'], cc['name'], payload

@@ -19,14 +19,14 @@ import gws.gis.feature
 #           ...
 #
 
-def parse(s, first_el, **kwargs):
+def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
     if 'geobak_20' not in first_el.namespaces:
         return None
 
     # some services have bare &'s in xml
-    s = re.sub(r'&(?![#\w])', '', s)
+    text = re.sub(r'&(?![#\w])', '', text)
 
-    el = gws.tools.xml3.from_string(s)
+    el = gws.tools.xml3.from_string(text)
     fs = []
     layer_name = el.get_text('Kartenebene')
 
@@ -36,9 +36,9 @@ def parse(s, first_el, **kwargs):
                 a.get_text('Name').strip(): a.get_text('Wert').strip()
                 for a in ds.all('Attribut')
             }
-            fs.append(gws.gis.feature.new({
-                'category': layer_name,
-                'attributes': atts
-            }))
+            fs.append(gws.gis.feature.Feature(
+                category=layer_name,
+                attributes=atts
+            ))
 
     return fs

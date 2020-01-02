@@ -48,7 +48,7 @@ class Object(gws.common.search.provider.Object):
 
         shape = args.shapes[0]
         if args.crs != qgis_crs:
-            shape = shape.transform(qgis_crs)
+            shape = shape.transformed(qgis_crs)
 
         args = t.SearchArgs({
             'bbox': shape.bounds,

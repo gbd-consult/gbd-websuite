@@ -20,6 +20,7 @@ class Object(gws.common.layer.Vector):
         super().__init__()
         self.path = ''
         self.features: t.List[t.IFeature] = []
+        self.own_crs = None
 
     def configure(self):
         super().configure()
@@ -32,7 +33,7 @@ class Object(gws.common.layer.Vector):
             for f in js['features']]
 
     def get_features(self, bounds, limit=0):
-        shape = gws.gis.shape.from_bounds(bounds).transform(self.own_crs)
+        shape = gws.gis.shape.from_bounds(bounds).transformed(self.own_crs)
         fs = [f for f in self.features if f.shape.intersects(shape)]
         if limit:
             fs = fs[:limit]

@@ -58,9 +58,10 @@ class FeatureConvertor:
 
 #:export IFeature
 class Feature(t.IFeature):
-    def __init__(self, uid=None, attributes=None, elements=None, shape=None, style=None):
+    def __init__(self, uid=None, attributes=None, category=None, elements=None, shape=None, style=None):
         self.attributes: t.List[t.Attribute] = []
         self.elements: dict = {}
+        self.category = category
         self.convertor: FeatureConvertor = None
         self.layer: t.ILayer = None
         self.shape: t.IShape = None
@@ -85,7 +86,7 @@ class Feature(t.IFeature):
 
     def transform(self, to_crs) -> t.IFeature:
         if self.shape:
-            self.shape = self.shape.transform(to_crs)
+            self.shape = self.shape.transformed(to_crs)
         return self
 
     def to_svg(self, rv: t.RenderView, style: t.IStyle = None) -> str:
@@ -94,7 +95,7 @@ class Feature(t.IFeature):
         style = self.style or style
         if not style and self.layer:
             style = self.layer.style
-        s: gws.gis.shape.Shape = self.shape.transform(rv.bounds.crs)
+        s: gws.gis.shape.Shape = self.shape.transformed(rv.bounds.crs)
         return gws.gis.svg.draw(
             s.geom,
             self.elements.get('label', ''),
@@ -116,7 +117,7 @@ class Feature(t.IFeature):
 
     def convert(self, target_crs: t.Crs = None, convertor: t.FeatureConvertor = None) -> t.IFeature:
         if self.shape and target_crs:
-            self.shape = self.shape.transform(target_crs)
+            self.shape = self.shape.transformed(target_crs)
 
         convertor = convertor or self.convertor or self.layer
 

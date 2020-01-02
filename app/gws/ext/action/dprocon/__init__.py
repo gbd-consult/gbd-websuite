@@ -79,7 +79,7 @@ class Object(gws.ActionObject):
     def __init__(self):
         super().__init__()
         self.db: gws.ext.db.provider.postgres.Object = None
-        
+
     def configure(self):
         super().configure()
 
@@ -128,11 +128,11 @@ class Object(gws.ActionObject):
         atts = self._select_data(request_id)
         shape = gws.gis.shape.from_wkb(geom, self.crs)
 
-        f = gws.gis.feature.new({
-            'uid': 'dprocon_%s' % request_id,
-            'attributes': atts,
-            'shape': shape,
-        })
+        f = gws.gis.feature.Feature(
+            uid=f'dprocon_{request_id}',
+            attributes=atts,
+            shape=shape,
+        )
 
         f.apply_format(self.feature_format, {'title': self.var('infoTitle')})
 

@@ -127,11 +127,15 @@ def compare_image_response(r: requests.Response, path, threshold=0.1):
 def short_features(fs):
     rs = []
     for f in fs:
-        rs.append({
-            'uid': f['uid'],
-            'attributes': ' '.join(f"{a['name']}=<{a['value']}>" for a in f['attributes']),
-            'geometry': f['shape']['geometry']['type'].upper() + ' ' + f['shape']['crs'],
-        })
+        r = {}
+        if f.get('uid'):
+            r['uid'] = f['uid']
+        if f.get('attributes'):
+            r['attributes'] = ' '.join(f"{a['name']}=<{a['value']}>" for a in f['attributes'])
+        if f.get('shape'):
+            r['geometry'] = f['shape']['geometry']['type'].upper() + ' ' + f['shape']['crs']
+        rs.append(r)
+    #gws.p(rs)
     return rs
 
 
@@ -186,14 +190,11 @@ def make_geom_features(geom_type, prop_schema, crs, xy, rows, cols, gap):
                     ]]
                 }
 
-            features.append(gws.gis.feature.new({
-                'uid': uid,
-                'attributes': atts,
-                'shape': {
-                    'crs': crs,
-                    'geometry': geom
-                }
-            }))
+            features.append(gws.gis.feature.Feature(
+                uid=uid,
+                attributes=atts,
+                shape={'crs': crs, 'geometry': geom}
+            ))
 
     return features
 

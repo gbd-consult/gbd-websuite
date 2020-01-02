@@ -28,17 +28,10 @@ from . import caps
 class Object(gws.common.ows.provider.Object):
     def __init__(self):
         super().__init__()
-        self.url = ''
         self.type = 'WFS'
-        self.invert_axis_crs = []
-        self.extra_params = {}
 
     def configure(self):
         super().configure()
-
-        self.url = self.var('url')
-        self.invert_axis_crs = self.var('invertAxis')
-        self.extra_params = self.var('params')
 
         if self.url:
             xml = gws.gis.ows.request.get_text(
@@ -49,7 +42,7 @@ class Object(gws.common.ows.provider.Object):
                 max_age=self.var('capsCacheMaxAge'))
         else:
             # @TODO offline caps not implemented yet
-            xml = self.var('capsXML')
+            xml = self.var('xml')
 
         caps.parse(self, xml)
 
@@ -75,7 +68,7 @@ class Object(gws.common.ows.provider.Object):
         p = {}
 
         if invert_axis:
-            bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
+            bbox = gws.gis.util.invert_bbox(bbox)
         p['BBOX'] = bbox
 
         if args.source_layer_names:
@@ -88,9 +81,6 @@ class Object(gws.common.ows.provider.Object):
         p['VERSION'] = self.version
 
         p = gws.extend(p, args.get('params'))
-
-        if self.extra_params:
-            p = gws.extend(p, self.extra_params)
 
         url = self.operation('GetFeature').get_url
         text = gws.gis.ows.request.get_text(url, service='WFS', request='GetFeature', params=p)

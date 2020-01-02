@@ -204,6 +204,7 @@ def stop_qgis():
     banner('STOPPING QGIS...')
     run(f"docker kill {cfg('qgis.container_name')}")
     run(f"docker rm --force {cfg('qgis.container_name')}")
+    run(f"rm -fr {cfg('paths.qgis_var_root')}/*")
 
 
 def stop_all():
@@ -255,7 +256,7 @@ def run_batch(suites, opts):
         suites = [s.strip() for s in suites.split(',')]
     else:
         suites = []
-        base = f"cfg('paths.app_root')/_test/suite"
+        base = f"{cfg('paths.app_root')}/_test/suite"
         for p in os.listdir(base):
             if os.path.isdir(base + '/' + p):
                 suites.append(p)
@@ -347,6 +348,7 @@ def main():
     parser.add_argument('--opts', dest='opts', help='pytest options')
 
     args = parser.parse_args()
+    args.opts = (args.opts or '').strip("'")
 
     with open(args.config) as fp:
         CONFIG = json.load(fp)

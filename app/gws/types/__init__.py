@@ -338,6 +338,7 @@ class IRole:
 class IShape:
     bounds: 'Bounds' = None
     centroid: 'IShape' = None
+    crs: str = None
     props: 'ShapeProps' = None
     type: str = None
     wkb: str = None
@@ -347,7 +348,7 @@ class IShape:
     y: float = None
     def intersects(self, shape: 'IShape') -> bool: pass
     def tolerance_buffer(self, tolerance, resolution=None) -> 'IShape': pass
-    def transform(self, to_crs) -> 'IShape': pass
+    def transformed(self, to_crs) -> 'IShape': pass
 
 class IStyle:
     content: dict = None
@@ -635,7 +636,6 @@ class ILayer(IObject):
     meta: 'MetaData' = None
     opacity: int = None
     own_bounds: 'Bounds' = None
-    own_crs: str = None
     ows_name: str = None
     resolutions: list = None
     services: list = None
@@ -668,6 +668,7 @@ class IModel(IObject):
     def apply_to_dict(self, d: dict) -> List[Attribute]: pass
 
 class IOwsProvider(IObject):
+    invert_axis_crs: List[str] = None
     meta: 'MetaData' = None
     operations: List['OwsOperation'] = None
     source_layers: List['SourceLayer'] = None

@@ -129,12 +129,12 @@ def _features_from_gdal(ds):
             if not uid and 'fid' in atts:
                 uid = atts.pop('fid')
 
-            yield gws.gis.feature.new({
-                'uid': uid,
-                'category': layer_name,
-                'shape': _shape_from_gdal(feature.GetGeomFieldRef(0)),
-                'attributes': atts
-            })
+            yield gws.gis.feature.Feature(
+                uid=uid,
+                category=layer_name,
+                shape=_shape_from_gdal(feature.GetGeomFieldRef(0)),
+                attributes=atts
+            )
 
 
 def _shape_from_gdal(geom):

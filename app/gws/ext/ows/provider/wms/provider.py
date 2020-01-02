@@ -8,21 +8,24 @@ see also https://docs.geoserver.org/latest/en/user/services/wms/basics.html
 """
 
 import gws
-import gws.types as t
-import gws.gis.util
 import gws.common.ows.provider
 import gws.gis.ows
+import gws.gis.util
+import gws.gis.util
 import gws.tools.net
 import gws.tools.xml3
+import gws.types as t
 
 from . import caps
 
 
 class Object(gws.common.ows.provider.Object):
+    def __init__(self):
+        super().__init__()
+        self.type = 'WFS'
+
     def configure(self):
         super().configure()
-
-        self.url = self.var('url')
 
         if self.url:
             xml = gws.gis.ows.request.get_text(
@@ -37,49 +40,64 @@ class Object(gws.common.ows.provider.Object):
         caps.parse(self, xml)
 
     def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
-        op = self.operation('GetFeatureInfo')
-        if not op:
+        operation = self.operation('GetFeatureInfo')
+        if not operation or not args.shapes:
             return []
+
+        shape = args.shapes[0]
+        if shape.type != 'Point':
+            return []
+
+        our_crs = gws.gis.util.best_crs(shape.crs, self.supported_crs)
+        shape = shape.transformed(our_crs)
+        axis = gws.gis.util.best_axis(our_crs, self.invert_axis_crs, 'WMS', self.version)
 
         #  draw a 1000x1000 bbox around a point
         width = 1000
         height = 1000
 
-        b = gws.gis.util.compute_bbox(
-            args.point[0],
-            args.point[1],
-            args.bounds.crs,
+        bbox = gws.gis.util.make_bbox(
+            shape.x,
+            shape.y,
+            our_crs,
             args.resolution,
             width,
             height
         )
 
-        invert_axis = args.get('axis') == 'yx'
+        invert_axis = axis == 'yx'
         if invert_axis:
-            b = [b[1], b[0], b[3], b[2]]
+            bbox = gws.gis.util.invert_bbox(bbox)
 
         p = {
-            'BBOX': b,
-            'CRS' if self.version >= '1.3' else 'SRS': args.bounds.crs,
-            'HEIGHT': height,
-            'INFO_FORMAT': self._info_format,
-            'LAYERS': args.layers,
-            'QUERY_LAYERS': args.layers,
-            'STYLES': [''] * len(args.layers),
-            'VERSION': self.version,
+            'BBOX': bbox,
             'WIDTH': width,
+            'HEIGHT': height,
+            'CRS' if self.version >= '1.3' else 'SRS': our_crs,
+            'INFO_FORMAT': self._info_format,
+            'LAYERS': args.source_layer_names,
+            'QUERY_LAYERS': args.source_layer_names,
+            'STYLES': [''] * len(args.source_layer_names),
+            'VERSION': self.version,
         }
 
-        if args.count:
-            p['FEATURE_COUNT'] = args.count
+        if args.limit:
+            p['FEATURE_COUNT'] = args.limit
 
         p['I' if self.version >= '1.3' else 'X'] = width >> 1
         p['J' if self.version >= '1.3' else 'Y'] = height >> 1
 
         p = gws.extend(p, args.params)
 
-        text = gws.gis.ows.request.get_text(op.get_url, service='WMS', request='GetFeatureInfo', params=p)
-        return gws.gis.ows.formats.read(text, crs=args.crs)
+        text = gws.gis.ows.request.get_text(operation.get_url, service='WMS', request='GetFeatureInfo', params=p)
+        found = gws.gis.ows.formats.read(text, crs=our_crs, invert_axis=invert_axis)
+
+        if found is None:
+            gws.p('WMS QUERY', p, 'NOT PARSED')
+            return []
+
+        gws.p('WMS QUERY', p, f'FOUND={len(found)}')
+        return found
 
     @gws.cached_property
     def _info_format(self):

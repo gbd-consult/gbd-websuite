@@ -82,11 +82,11 @@ class Object(gws.common.search.provider.Object):
                 continue
 
             rec = _normalize(rec)
-            f = gws.gis.feature.new({
-                'uid': rec.get('place_id'),
-                'attributes': rec,
-                'shape': sh
-            })
+            f = gws.gis.feature.Feature(
+                uid=rec.get('place_id'),
+                attributes=rec,
+                shape=sh
+            )
             features.append(f.apply_format(self.feature_format))
 
         return features

@@ -586,11 +586,11 @@ class Object(gws.Object):
             total, rs = flurstueck.find(conn, query, limit)
             for rec in rs:
                 rec = self._remove_restricted_data(rec, allow_eigentuemer, allow_buchung)
-                feature = gws.gis.feature.new({
-                    'uid': rec['gml_id'],
-                    'attributes': rec,
-                    'shape': gws.gis.shape.from_wkb(rec['geom'], self.crs)
-                })
+                feature = gws.gis.feature.Feature(
+                    uid=rec['gml_id'],
+                    attributes=rec,
+                    shape=gws.gis.shape.from_wkb(rec['geom'], self.crs)
+                )
                 features.append(feature.transform(target_crs))
 
         return total, features
@@ -603,11 +603,11 @@ class Object(gws.Object):
         with self._connect() as conn:
             total, rs = adresse.find(conn, query, limit)
             for rec in rs:
-                feature = gws.gis.feature.new({
-                    'uid': rec['gml_id'],
-                    'attributes': rec,
-                    'shape': gws.gis.shape.from_xy(rec['x'], rec['y'], self.crs)
-                })
+                feature = gws.gis.feature.Feature(
+                    uid=rec['gml_id'],
+                    attributes=rec,
+                    shape=gws.gis.shape.from_xy(rec['x'], rec['y'], self.crs)
+                )
                 features.append(feature.transform(target_crs))
 
         return total, features

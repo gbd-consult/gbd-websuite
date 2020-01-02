@@ -9,11 +9,12 @@ import gws.types as t
 
 def combine_legend_urls(urls: t.List[str]):
     content = []
+
     for url in urls:
         try:
             resp = gws.gis.ows.request.raw_get(url)
             content.append(resp.content)
-        except:
+        except gws.gis.ows.error.Error:
             gws.log.exception()
             continue
 
@@ -25,6 +26,7 @@ def combine_legend_urls(urls: t.List[str]):
 
 def combine_legends(content: t.List[bytes]):
     images = []
+
     for c in content:
         images.append(Image.open(BytesIO(c)))
 

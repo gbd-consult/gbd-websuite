@@ -1,5 +1,6 @@
 import gws
 import gws.gis.source
+import gws.gis.ows
 import gws.gis.util
 
 import gws.types as t
@@ -34,12 +35,10 @@ class WmsConfig(t.Config):
     url: t.Url  #: service url
 
 
-def configure_wms(target: gws.Object, **filter_args):
-    target.url = target.var('url')
-
-    target.provider = gws.gis.util.shared_ows_provider(provider.Object, target, target.config)
-    target.axis = target.var('axis')
-    target.source_layers = gws.gis.source.filter_layers(
-        target.provider.source_layers,
-        target.var('sourceLayers'),
+def configure_wms_for(obj: t.IObject, **filter_args):
+    obj.url = obj.var('url')
+    obj.provider = gws.gis.ows.shared_provider(provider.Object, obj, obj.config)
+    obj.source_layers = gws.gis.source.filter_layers(
+        obj.provider.source_layers,
+        obj.var('sourceLayers'),
         **filter_args)
