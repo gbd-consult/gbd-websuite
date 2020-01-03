@@ -127,9 +127,13 @@ class Feature(t.IFeature):
 
             if convertor.feature_format:
                 ctx = gws.extend(
-                    {'feature': self, 'layer': self.layer},
                     {a.name: a.value for a in self.attributes},
-                    self.elements)
+                    self.elements,
+                    feature=self,
+                    layer=self.layer,
+                    uid=self.uid,
+                    category=self.category
+                )
                 self.elements = gws.extend(self.elements, convertor.feature_format.apply(ctx))
 
         return self

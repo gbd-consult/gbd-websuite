@@ -1,0 +1,75 @@
+server.mapproxy.enabled true
+server.qgis.enabled true
+server.spool.enabled false
+
+access+ { role "all" type "allow" }
+
+api.actions+ { type "map" }
+api.actions+ { type "search" }
+api.actions+ { type "asset" }
+api.actions+ { type "project" }
+
+projects+ {
+    uid "a"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "qgis_flat_ghana"
+        type "qgisflat"
+        path "/common/qgis/test_1.qgs"
+        sourceLayers.names ["points_ghana_25832"]
+    }
+    map.layers+ {
+        title "qgis_flat_dus"
+        type "qgisflat"
+        path "/common/qgis/test_1.qgs"
+        sourceLayers.names ["squares_dus1_3857", "squares_dus2_3857"]
+    }
+
+    @include /common/client.cx
+}
+
+projects+ {
+    uid "tree_full"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "t"
+        type "qgis"
+        path "/common/qgis/test_1.qgs"
+    }
+
+    @include /common/client.cx
+}
+
+projects+ {
+    uid "tree_filtered"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "t"
+        type "qgis"
+        sourceLayers.names [ "GroupOne", "GroupTwoOneOne"]
+        path "/common/qgis/test_1.qgs"
+    }
+
+    @include /common/client.cx
+}
+
+projects+ {
+    uid "tree_flattened"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "t"
+        type "qgis"
+        flatten.level 2
+        path "/common/qgis/test_1.qgs"
+    }
+
+    @include /common/client.cx
+}

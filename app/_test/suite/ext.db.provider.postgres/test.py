@@ -1,51 +1,103 @@
+import gws.gis.extent
+import gws.gis.proj
 import gws.gis.shape
 import gws.tools.json2
 
 import _test.util as u
 import _test.common.const as cc
 
+_REPROJECTION_ERROR_TOLERANCE = 10
+
 
 def test_find_points():
     x, y = cc.POINTS.paris
-
-    bbox = (x, y, x + 101, y + 101,)
-
+    bbox = x, y, x + 101, y + 101
     sh = gws.gis.shape.from_extent(bbox, 'EPSG:3857')
 
     r = u.cmd('searchFindFeatures', {
         'projectUid': 'a',
-        'layerUids': ['a.map.points_3857'],
+        'layerUids': ['a.map.paris_3857'],
         'resolution': 1,
         'shapes': [sh.props]
     })
 
     r = r.json()
 
-    assert len(r['features']) == 4
+    exp = [
+        {
+            "attributes": "id=<1> p_str=<paris_3857/1> p_int=<100> p_date=<2019-01-01>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.paris_3857___1"
+        },
+        {
+            "attributes": "id=<2> p_str=<paris_3857/2> p_int=<200> p_date=<2019-01-02>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.paris_3857___2"
+        },
+        {
+            "attributes": "id=<6> p_str=<paris_3857/6> p_int=<600> p_date=<2019-01-06>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.paris_3857___6"
+        },
+        {
+            "attributes": "id=<7> p_str=<paris_3857/7> p_int=<700> p_date=<2019-01-07>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.paris_3857___7"
+        }
+    ]
 
-    r = r['features']
+    assert u.short_features(r['features']) == exp
 
-    assert r[0]['uid'] == 'a.map.points_3857___1'
-    assert r[1]['uid'] == 'a.map.points_3857___2'
-    assert r[2]['uid'] == 'a.map.points_3857___6'
-    assert r[3]['uid'] == 'a.map.points_3857___7'
 
-    assert r[0]['attributes'] == [{'name': 'p_str', 'value': 'p_str_1', }, {'name': 'p_int', 'value': 100, }, {'name': 'p_date', 'value': '2019-01-01', }]
-    assert r[1]['attributes'] == [{'name': 'p_str', 'value': 'p_str_2', }, {'name': 'p_int', 'value': 200, }, {'name': 'p_date', 'value': '2019-01-02', }]
-    assert r[2]['attributes'] == [{'name': 'p_str', 'value': 'p_str_6', }, {'name': 'p_int', 'value': 600, }, {'name': 'p_date', 'value': '2019-01-06', }]
-    assert r[3]['attributes'] == [{'name': 'p_str', 'value': 'p_str_7', }, {'name': 'p_int', 'value': 700, }, {'name': 'p_date', 'value': '2019-01-07', }]
+def test_find_points_with_reprojection():
+    x, y = cc.POINTS.dus
+    x, y = gws.gis.proj.transform_xy(x, y, cc.CRS_3857, cc.CRS_25832)
+    bbox = x, y, x + 101, y + 101
+    bbox = gws.gis.extent.transformed(bbox, cc.CRS_25832, cc.CRS_3857)
+    bbox = gws.gis.extent.buffer(bbox, _REPROJECTION_ERROR_TOLERANCE)
 
-    assert r[0]['shape']['geometry']['coordinates'] == [x, y]
-    assert r[1]['shape']['geometry']['coordinates'] == [x + 100, y]
-    assert r[2]['shape']['geometry']['coordinates'] == [x, y + 100]
-    assert r[3]['shape']['geometry']['coordinates'] == [x + 100, y + 100]
+    sh = gws.gis.shape.from_extent(bbox, cc.CRS_3857)
+
+    r = u.cmd('searchFindFeatures', {
+        'projectUid': 'a',
+        'layerUids': ['a.map.dus_25832'],
+        'resolution': 1,
+        'shapes': [sh.props]
+    })
+
+    r = r.json()
+
+    exp = [
+        {
+            "attributes": "id=<1> p_str=<dus_25832/1> p_int=<100> p_date=<2019-01-01>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.dus_25832___1"
+        },
+        {
+            "attributes": "id=<2> p_str=<dus_25832/2> p_int=<200> p_date=<2019-01-02>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.dus_25832___2"
+        },
+        {
+            "attributes": "id=<6> p_str=<dus_25832/6> p_int=<600> p_date=<2019-01-06>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.dus_25832___6"
+        },
+        {
+            "attributes": "id=<7> p_str=<dus_25832/7> p_int=<700> p_date=<2019-01-07>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.dus_25832___7"
+        }
+    ]
+
+    assert u.short_features(r['features']) == exp
 
 
 def test_render_squares():
     x, y = cc.POINTS.ny
-    bbox = [x, y, x + 350, y + 350, ]
+    bbox = x, y, x + 350, y + 350
 
-    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.squares_3857/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.ny_3857/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     d = u.compare_image_response(r, '/data/squares_200x200.png')
@@ -62,9 +114,9 @@ def test_render_squares():
 
 def test_render_squares_styled():
     x, y = cc.POINTS.ny
-    bbox = [x, y, x + 350, y + 350, ]
+    bbox = x, y, x + 350, y + 350
 
-    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.squares_3857_styled/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.ny_3857_styled/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     d = u.compare_image_response(r, '/data/squares_styled_200x200.png')
@@ -73,9 +125,11 @@ def test_render_squares_styled():
 
 def test_render_squares_reprojected():
     x, y = cc.POINTS.london
-    bbox = [x, y, x + 350, y + 350, ]
+    x, y = gws.gis.proj.transform_xy(x, y, cc.CRS_3857, cc.CRS_25833)
+    bbox = x, y, x + 350, y + 350
+    bbox = gws.gis.extent.transformed(bbox, cc.CRS_25833, cc.CRS_3857)
 
-    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.squares_25832/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.london_25833/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     d = u.compare_image_response(r, '/data/squares_reprojected_200x200.png')

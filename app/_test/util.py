@@ -7,12 +7,12 @@ import requests
 
 import gws
 
-import gws.tools.vendor.umsgpack as umsgpack
-import gws.tools.json2
+import gws.ext.db.provider.postgres
 import gws.gis.feature
 import gws.gis.proj
-import gws.ext.db.provider.postgres
+import gws.tools.json2
 import gws.tools.misc
+import gws.tools.vendor.umsgpack as umsgpack
 
 import gws.types as t
 
@@ -34,6 +34,10 @@ def xml_file(path):
 def png_file(path):
     with open(DIR + '/' + path, 'rb') as fp:
         return fp.read()
+
+
+def print_json(x):
+    print(gws.tools.json2.to_pretty_string(x))
 
 
 def strlist(ls):
@@ -124,7 +128,7 @@ def compare_image_response(r: requests.Response, path, threshold=0.1):
     return err
 
 
-def short_features(fs):
+def short_features(fs, trace=False):
     rs = []
     for f in fs:
         r = {}
@@ -135,18 +139,21 @@ def short_features(fs):
         if f.get('shape'):
             r['geometry'] = f['shape']['geometry']['type'].upper() + ' ' + f['shape']['crs']
         rs.append(r)
-    #gws.p(rs)
+    if trace:
+        print('-' * 40)
+        print(gws.tools.json2.to_string(rs, pretty=True))
+        print('-' * 40)
     return rs
 
 
 def postgres_provider():
-    cfg = test_config()['postgres']
+    cfg = test_config()['postgres_container']['connection']
     prov = gws.ext.db.provider.postgres.Object()
     prov.initialize(t.Data(cfg))
     return prov
 
 
-def make_geom_features(geom_type, prop_schema, crs, xy, rows, cols, gap):
+def make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
     """Generate features with on a rectangular grid of points"""
 
     features = []
@@ -164,7 +171,7 @@ def make_geom_features(geom_type, prop_schema, crs, xy, rows, cols, gap):
                 if v == 'float':
                     atts[k] = uid * 200.0
                 if v == 'text':
-                    atts[k] = k + '_' + str(uid)
+                    atts[k] = f"{name}/{uid}"
                 if v == 'date':
                     atts[k] = datetime.datetime(2019, 1, 1) + datetime.timedelta(days=uid - 1)
 
@@ -190,6 +197,19 @@ def make_geom_features(geom_type, prop_schema, crs, xy, rows, cols, gap):
                     ]]
                 }
 
+            if geom_type == 'polygon':
+                w = h = gap / 2
+                geom = {
+                    'type': 'Polygon',
+                    'coordinates': [[
+                        [x, y],
+                        [x + w, y],
+                        [x + w, y + h],
+                        [x, y + h],
+                        [x, y],
+                    ]]
+                }
+
             features.append(gws.gis.feature.Feature(
                 uid=uid,
                 attributes=atts,
@@ -199,7 +219,7 @@ def make_geom_features(geom_type, prop_schema, crs, xy, rows, cols, gap):
     return features
 
 
-def create_table(prov, name, prop_schema, geom_type, crs):
+def create_postgis_table(prov, name, prop_schema, geom_type, crs):
     props = ','.join(f'{k} {v}' for k, v in prop_schema.items())
     srid = crs.split(':')[-1]
 
@@ -220,14 +240,14 @@ def make_geom_table(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
     gt = geom_type
     if geom_type == 'square':
         gt = 'polygon'
-    create_table(prov, name, prop_schema, gt, crs)
-    features = make_geom_features(geom_type, prop_schema, crs, xy, rows, cols, gap)
+    create_postgis_table(prov, name, prop_schema, gt, crs)
+    features = make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap)
     table = prov.configure_table({'name': name})
     prov.edit_operation('insert', table, features)
 
 
 def make_geom_json(path, geom_type, prop_schema, crs, xy, rows, cols, gap):
-    features = make_geom_features(geom_type, prop_schema, crs, xy, rows, cols, gap)
+    features = make_geom_features(gws.tools.misc.parse_path(path)['name'], geom_type, prop_schema, crs, xy, rows, cols, gap)
     srid = crs.split(':')[-1]
 
     js = {

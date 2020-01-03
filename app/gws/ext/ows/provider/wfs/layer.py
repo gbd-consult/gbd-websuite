@@ -39,7 +39,9 @@ class Object(gws.common.layer.Vector):
 
     @property
     def default_search_provider(self):
-        return self.create_object('gws.ext.search.provider', t.Config(type='wfs', layer=self))
+        return self.create_object('gws.ext.search.provider.wfs', t.Config(
+            uid=self.uid + '.default_search',
+            layer=self))
 
     def get_features(self, bounds, limit=0):
         fs = self.provider.find_features(t.SearchArgs(

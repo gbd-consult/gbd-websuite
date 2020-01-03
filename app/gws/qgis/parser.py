@@ -197,16 +197,19 @@ def _map_layer(el):
     crs = el.get_text('srs.spatialrefsys.authid')
 
     sl.supported_crs = [crs]
-    sl.extents = {}
+    sl.supported_bounds = []
 
     e = el.first('extent')
     if e:
-        sl.extents[crs] = [
-            _float(e.get_text('xmin')),
-            _float(e.get_text('ymin')),
-            _float(e.get_text('xmax')),
-            _float(e.get_text('ymax')),
-        ]
+        sl.supported_bounds.append(t.Bounds(
+            crs=crs,
+            extent=(
+                _float(e.get_text('xmin')),
+                _float(e.get_text('ymin')),
+                _float(e.get_text('xmax')),
+                _float(e.get_text('ymax')),
+            )
+        ))
 
     if el.attr('hasScaleBasedVisibilityFlag') == '1':
         # sic! these are called min-max in qgis2 and max-min in qgis3

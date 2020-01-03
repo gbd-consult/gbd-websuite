@@ -14,6 +14,7 @@ client.elements [
     { tag "Toolbar.Identify.Click" }
     { tag "Toolbar.Print" }
     { tag "Toolbar.Snapshot" }
+    { tag "Sidebar.Overview" }
     { tag "Sidebar.Layers" }
 ]
 

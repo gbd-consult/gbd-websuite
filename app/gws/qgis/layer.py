@@ -1,12 +1,12 @@
 """QGIS Project layer, retains QGIS options and hierarchy."""
 
 import gws
-import gws.config
-import gws.config.parser
 import gws.common.layer
+import gws.common.metadata
+import gws.config.parser
+import gws.gis.extent
 import gws.gis.source
 import gws.server.monitor
-import gws.common.metadata
 import gws.tools.net
 
 import gws.types as t
@@ -27,31 +27,34 @@ class Config(gws.common.layer.ImageConfig):
 class Object(gws.common.layer.Base):
     def __init__(self):
         super().__init__()
-        self.path = ''
+
         self.direct_render = set()
         self.direct_search = set()
-        self.source_layers: t.List[t.SourceLayer] = []
-        self.layers: t.List[t.ILayer] = []
-        self.provider: provider.Object = None
-        self.path = ''
         self.flatten = None
+        self.layers: t.List[t.ILayer] = []
+        self.own_crs = ''
+        self.path = ''
+        self.provider: provider.Object = None
+        self.root_layers: t.List[t.SourceLayer] = []
 
     def configure(self):
         super().configure()
 
         self.path = self.var('path')
-        self.provider = provider.create_shared(self, self.config)
+        self.provider: provider.Object = provider.create_shared(self, self.config)
+        self.own_crs = self.provider.supported_crs[0]
         self.use_meta(gws.common.metadata.read(self.var('meta') or self.provider.meta))
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))
 
-        slf = self.var('sourceLayers') or t.Data({'names': [], 'pattern': '', 'level': 1})
-        self.source_layers = gws.gis.source.filter_layers(self.provider.source_layers, slf)
+        # by default, take the top-level layers as groups
+        slf = self.var('sourceLayers') or gws.gis.source.LayerFilter(level=1)
+        self.root_layers = gws.gis.source.filter_layers(self.provider.source_layers, slf)
 
         self.flatten = self.var('flatten')
 
-        layer_cfgs = gws.compact(self._layer(sl, depth=1) for sl in self.source_layers)
+        layer_cfgs = gws.compact(self._layer(sl, depth=1) for sl in self.root_layers)
         if gws.is_empty(layer_cfgs):
             raise gws.Error(f'no source layers in {self.uid!r}')
 
@@ -64,21 +67,14 @@ class Object(gws.common.layer.Base):
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
         self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
 
-    @property
-    def own_bounds(self):
-        return gws.gis.source.bounds_from_layers(self.source_layers, self.map.crs)
-
     def render_legend(self):
         if self.legend_url:
             return super().render_legend()
-        return self.provider.get_legend(self.source_layers)
+        return self.provider.get_legend(self.root_layers)
 
     @property
     def props(self):
-        return super().props.extend({
-            'type': 'group',
-            'layers': self.layers,
-        })
+        return super().props.extend(type='group', layers=self.layers)
 
     def ows_enabled(self, provider):
         return (super().ows_enabled(provider)
@@ -232,8 +228,8 @@ class Object(gws.common.layer.Base):
                 return self._wfs_search_provider(sl, ds)
             gws.log.warn(f'directSearch not supported for {prov!r}')
 
-        # if no directSearch for this provider, the we make WMS request to the local QGIS
-        # NB: cannot use type=wms here, because the qgis wms provider is not started yet
+        # if no directSearch for this provider, then we make WMS request to the local QGIS
+
         return {
             'type': 'qgiswms',
             'path': self.path,

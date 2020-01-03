@@ -32,18 +32,18 @@
   </layer-tree-group>
   <snapping-settings mode="2" intersection-snapping="0" enabled="0" unit="1" type="1" tolerance="12">
     <individual-layer-settings>
-      <layer-setting id="squares_memphis_25832_f0ff3749_d03f_4dfd_bcc7_cc46103ed34b" enabled="0" type="1" tolerance="12" units="1"/>
       <layer-setting id="points_ghana_25832_6c00ca76_9dbd_44c2_a210_78f1ab42d503" enabled="0" type="1" tolerance="12" units="1"/>
+      <layer-setting id="squares_memphis_25832_f0ff3749_d03f_4dfd_bcc7_cc46103ed34b" enabled="0" type="1" tolerance="12" units="1"/>
     </individual-layer-settings>
   </snapping-settings>
   <relations/>
   <mapcanvas name="theMapCanvas" annotationsVisible="1">
     <units>meters</units>
     <extent>
-      <xmin>-500552.26168577885255218</xmin>
-      <ymin>630181.39887822780292481</ymin>
-      <xmax>-500132.26168577885255218</xmax>
-      <ymax>631126.39887822780292481</ymax>
+      <xmin>-500514.99827883875695989</xmin>
+      <ymin>630175.43673311732709408</ymin>
+      <xmax>-500094.99827883875695989</xmax>
+      <ymax>631120.43673311732709408</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -75,6 +75,75 @@
   </legend>
   <mapViewDocks/>
   <mapViewDocks3D/>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>meters</units>
+    <extent>
+      <xmin>-500552.26168577885255218</xmin>
+      <ymin>630181.39887822780292481</ymin>
+      <xmax>-500132.26168577885255218</xmax>
+      <ymax>631126.39887822780292481</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+        <srsid>2105</srsid>
+        <srid>25832</srid>
+        <authid>EPSG:25832</authid>
+        <description>ETRS89 / UTM zone 32N</description>
+        <projectionacronym>utm</projectionacronym>
+        <ellipsoidacronym>GRS80</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>meters</units>
+    <extent>
+      <xmin>-500552.26168577885255218</xmin>
+      <ymin>630181.39887822780292481</ymin>
+      <xmax>-500132.26168577885255218</xmax>
+      <ymax>631126.39887822780292481</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+        <srsid>2105</srsid>
+        <srid>25832</srid>
+        <authid>EPSG:25832</authid>
+        <description>ETRS89 / UTM zone 32N</description>
+        <projectionacronym>utm</projectionacronym>
+        <ellipsoidacronym>GRS80</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>meters</units>
+    <extent>
+      <xmin>-500552.26168577885255218</xmin>
+      <ymin>630181.39887822780292481</ymin>
+      <xmax>-500132.26168577885255218</xmax>
+      <ymax>631126.39887822780292481</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+        <srsid>2105</srsid>
+        <srid>25832</srid>
+        <authid>EPSG:25832</authid>
+        <description>ETRS89 / UTM zone 32N</description>
+        <projectionacronym>utm</projectionacronym>
+        <ellipsoidacronym>GRS80</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
   <projectlayers>
     <maplayer refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" geometry="Point" simplifyAlgorithm="0" simplifyDrawingHints="0" simplifyLocal="1" minScale="1e+8" type="vector" styleCategories="AllStyleCategories" maxScale="0" hasScaleBasedVisibilityFlag="0" simplifyMaxScale="1" simplifyDrawingTol="1" autoRefreshTime="0" readOnly="0" autoRefreshEnabled="0" labelsEnabled="1">
       <extent>
@@ -129,7 +198,7 @@
             <description></description>
             <projectionacronym></projectionacronym>
             <ellipsoidacronym></ellipsoidacronym>
-            <geographicflag>true</geographicflag>
+            <geographicflag>false</geographicflag>
           </spatialrefsys>
         </crs>
         <extent>
@@ -233,29 +302,10 @@
             <Option name="properties"/>
             <Option name="type" type="QString" value="collection"/>
           </Option>
-        
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                <WMSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMSUrl>
-                <WMTSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMTSUrl>
-                <WFSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WFSUrl>
-            </properties>
+<WMSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMSUrl>
+<WMTSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMTSUrl>
+<WFSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WFSUrl>
+        </properties>
       </DiagramLayerSettings>
       <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
         <activeChecks/>
@@ -342,15 +392,12 @@
 """
 QGIS forms can have a Python function that is called when the form is
 opened.
-
 Use this function to add extra logic to your forms.
-
 Enter the name of the function in the "Python Init function"
 field.
 An example follows:
 """
 from qgis.PyQt.QtWidgets import QWidget
-
 def my_form_open(dialog, layer, feature):
 	geom = feature.geometry()
 	control = dialog.findChild(QWidget, "MyLineEdit")
@@ -523,29 +570,10 @@ def my_form_open(dialog, layer, feature):
             <Option name="properties"/>
             <Option name="type" type="QString" value="collection"/>
           </Option>
-        
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                <WMSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMSUrl>
-                <WMTSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMTSUrl>
-                <WFSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WFSUrl>
-            </properties>
+<WMSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMSUrl>
+<WMTSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMTSUrl>
+<WFSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WFSUrl>
+        </properties>
       </DiagramLayerSettings>
       <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
         <activeChecks/>
@@ -632,15 +660,12 @@ def my_form_open(dialog, layer, feature):
 """
 QGIS forms can have a Python function that is called when the form is
 opened.
-
 Use this function to add extra logic to your forms.
-
 Enter the name of the function in the "Python Init function"
 field.
 An example follows:
 """
 from qgis.PyQt.QtWidgets import QWidget
-
 def my_form_open(dialog, layer, feature):
 	geom = feature.geometry()
 	control = dialog.findChild(QWidget, "MyLineEdit")
@@ -670,7 +695,7 @@ def my_form_open(dialog, layer, feature):
   </layerorder>
   <properties>
     <WMSAddWktGeometry type="bool">true</WMSAddWktGeometry>
-        <WMTSPngLayers>
+    <WMTSPngLayers>
       <Layer type="QStringList"/>
       <Group type="QStringList"/>
       <Project type="bool">false</Project>
@@ -683,10 +708,10 @@ def my_form_open(dialog, layer, feature):
     </WMTSJpegLayers>
     <WMSContactPhone type="QString"></WMSContactPhone>
     <WMSSegmentizeFeatureInfoGeometry type="bool">false</WMSSegmentizeFeatureInfoGeometry>
-    <WMSImageQuality type="int">90</WMSImageQuality>
     <Paths>
       <Absolute type="bool">false</Absolute>
     </Paths>
+    <WMSImageQuality type="int">90</WMSImageQuality>
     <WMSContactOrganization type="QString"></WMSContactOrganization>
     <WMSFees type="QString">conditions unknown</WMSFees>
     <WMSPrecision type="QString">8</WMSPrecision>
@@ -703,6 +728,9 @@ def my_form_open(dialog, layer, feature):
     </Measurement>
     <WMSServiceAbstract type="QString"></WMSServiceAbstract>
     <WMSContactPosition type="QString"></WMSContactPosition>
+    <Macros>
+      <pythonCode type="QString"></pythonCode>
+    </Macros>
     <PAL>
       <ShowingCandidates type="bool">false</ShowingCandidates>
       <SearchMethod type="int">0</SearchMethod>
@@ -714,9 +742,6 @@ def my_form_open(dialog, layer, feature):
       <ShowingPartialsLabels type="bool">true</ShowingPartialsLabels>
       <ShowingAllLabels type="bool">false</ShowingAllLabels>
     </PAL>
-    <Macros>
-      <pythonCode type="QString"></pythonCode>
-    </Macros>
     <WFSLayers type="QStringList">
       <value>points_ghana_25832_6c00ca76_9dbd_44c2_a210_78f1ab42d503</value>
       <value>squares_memphis_25832_f0ff3749_d03f_4dfd_bcc7_cc46103ed34b</value>
@@ -736,7 +761,7 @@ def my_form_open(dialog, layer, feature):
     <Measure>
       <Ellipsoid type="QString">GRS80</Ellipsoid>
     </Measure>
-        <WCSUrl type="QString"></WCSUrl>
+    <WCSUrl type="QString"></WCSUrl>
     <WMSServiceTitle type="QString"></WMSServiceTitle>
     <Legend>
       <filterByMap type="bool">false</filterByMap>
@@ -747,7 +772,7 @@ def my_form_open(dialog, layer, feature):
       <DecimalPlaces type="int">2</DecimalPlaces>
     </PositionPrecision>
     <WMSRootName type="QString"></WMSRootName>
-        <WMSKeywordList type="QStringList">
+    <WMSKeywordList type="QStringList">
       <value></value>
     </WMSKeywordList>
     <WMSContactMail type="QString"></WMSContactMail>
@@ -773,29 +798,10 @@ def my_form_open(dialog, layer, feature):
     <WMSServiceCapabilities type="bool">false</WMSServiceCapabilities>
     <WMSRequestDefinedDataSources type="bool">false</WMSRequestDefinedDataSources>
     <WMTSMinScale type="int">5000</WMTSMinScale>
-  
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                                                            
-                <WMSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMSUrl>
-                <WMTSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMTSUrl>
-                <WFSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WFSUrl>
-            </properties>
+<WMSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMSUrl>
+<WMTSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WMTSUrl>
+<WFSUrl type="QString">http://mainhost:9995?MAP=/qgis/ows_25832.qgs</WFSUrl>
+  </properties>
   <visibility-presets/>
   <transformContext/>
   <projectMetadata>

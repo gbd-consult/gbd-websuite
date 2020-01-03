@@ -203,7 +203,6 @@ def as_proj(p):
         return p
     if p in _cache:
         return _cache[p]
-    gws.log.debug(f'proj: loading {p!r}')
     with _lock:
         _cache[p] = _load_proj(p)
     return _cache[p]

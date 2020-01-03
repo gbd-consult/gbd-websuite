@@ -14,22 +14,41 @@ projects+ {
     map.crs "EPSG:3857"
 
     map.layers+ {
-        title "points_3857"
+        title "paris_3857"
         type "postgres"
         display "box"
-        table.name "points_3857"
+        table.name "paris_3857"
     }
     map.layers+ {
-        title "squares_3857"
+        title "dus_25832"
         type "postgres"
         display "box"
-        table.name "squares_3857"
+        table.name "dus_25832"
+        featureFormat.label {
+            type "html"
+            text "{id}"
+        }
+        style {
+            type "css"
+            text """
+                fill: rgba(255,0,0,0.5);
+                label-font-size: 13px;
+                label-fill: yellow;
+                label-background: black;
+            """
+        }
     }
     map.layers+ {
-        title "squares_3857_styled"
+        title "ny_3857"
         type "postgres"
         display "box"
-        table.name "squares_3857"
+        table.name "ny_3857"
+    }
+    map.layers+ {
+        title "ny_3857_styled"
+        type "postgres"
+        display "box"
+        table.name "ny_3857"
         style {
             type "css"
             text """
@@ -40,10 +59,10 @@ projects+ {
         }
     }
     map.layers+ {
-        title "squares_25832"
+        title "london_25833"
         type "postgres"
         display "box"
-        table.name "squares_25832"
+        table.name "london_25833"
     }
 
     @include /common/client.cx

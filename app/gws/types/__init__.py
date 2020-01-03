@@ -724,8 +724,8 @@ class ISearchProvider(IObject):
     data_model: 'IModel' = None
     feature_format: 'IFormat' = None
     pixel_tolerance: int = None
-    with_geometry: bool = None
-    with_keyword: bool = None
+    with_geometry: str = None
+    with_keyword: str = None
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs'): pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass

@@ -16,10 +16,7 @@ def create_shared(obj, cfg) -> 'Object':
     path = cfg.get('path')
     uid = path
     gws.server.monitor.add_path(path)
-
-    return obj.create_shared_object(Object, uid, t.Config({
-        'path': path,
-    }))
+    return obj.create_shared_object(Object, uid, t.Config(path=path))
 
 
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
@@ -50,7 +47,7 @@ _LEGEND_DEFAULTS = {
 class Object(gws.common.ows.provider.Object):
     def __init__(self):
         super().__init__()
-        self.extent: t.Extent = ''
+
         self.legend_params = {}
         self.path = ''
         self.print_templates: t.List[types.PrintTemplate] = []
@@ -75,16 +72,24 @@ class Object(gws.common.ows.provider.Object):
         parser.parse(self, s)
 
     def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
-        # arbitrary width & height
-        # @TODO: qgis scales the bbox for some reason?
+        if not args.shapes:
+            return []
 
+        shape = args.shapes[0]
+        if shape.type != 'Point':
+            return []
+
+        our_crs = gws.gis.util.best_crs(shape.crs, self.supported_crs)
+        shape = shape.transformed(our_crs)
+
+        #  draw a 1000x1000 bbox around a point
         width = 1000
         height = 1000
 
-        bbox = gws.gis.util.compute_bbox(
-            args.point[0],
-            args.point[1],
-            self.supported_crs[0],
+        bbox = gws.gis.util.make_bbox(
+            shape.x,
+            shape.y,
+            our_crs,
             args.resolution,
             width,
             height
@@ -100,10 +105,10 @@ class Object(gws.common.ows.provider.Object):
             'J': height >> 1,
 
             'INFO_FORMAT': 'text/xml',
-            'LAYERS': args.layers,
+            'LAYERS': args.source_layer_names,
             'MAP': self.path,
-            'QUERY_LAYERS': args.layers,
-            'STYLES': [''] * len(args.layers),
+            'QUERY_LAYERS': args.source_layer_names,
+            'STYLES': [''] * len(args.source_layer_names),
 
             'FI_LINE_TOLERANCE': 8,
             'FI_POINT_TOLERANCE': 16,
@@ -113,13 +118,20 @@ class Object(gws.common.ows.provider.Object):
             'WITH_GEOMETRY': 1,
         }
 
-        if args.get('count'):
-            p['FEATURE_COUNT'] = args.count
+        if args.limit:
+            p['FEATURE_COUNT'] = args.limit
 
-        p = gws.extend(p, args.get('params'))
+        p = gws.extend(p, args.params)
 
         text = gws.gis.ows.request.get_text(self.url, service='WMS', request='GetFeatureInfo', params=p)
-        return gws.gis.ows.formats.read(text, crs=self.supported_crs[0])
+        found = gws.gis.ows.formats.read(text, crs=our_crs)
+
+        if found is None:
+            gws.p('QGIS/WMS QUERY', p, 'NOT PARSED')
+            return []
+
+        gws.p('QGIS/WMS QUERY', p, f'FOUND={len(found)}')
+        return found
 
     def get_legend(self, source_layers):
         layers = ','.join(sl.name for sl in source_layers)

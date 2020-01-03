@@ -20,7 +20,7 @@ class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
 
-        self.with_geometry = 'require'
+        self.with_geometry = 'required'
         self.with_keyword = 'no'
 
         layer = self.var('layer')

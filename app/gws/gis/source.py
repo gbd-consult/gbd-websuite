@@ -59,11 +59,7 @@ class LayerFilter(t.Data):
     pattern: str
 
 
-def filter_layers(
-        layers: t.List[t.SourceLayer],
-        slf: LayerFilter,
-        image_only=False,
-        queryable_only=False) -> t.List[t.SourceLayer]:
+def filter_layers(layers: t.List[t.SourceLayer], slf: LayerFilter, image_only=False, queryable_only=False) -> t.List[t.SourceLayer]:
     if slf:
         s = gws.get(slf, 'level')
         if s:
@@ -101,36 +97,32 @@ def image_layers(sl: t.SourceLayer) -> t.List[t.SourceLayer]:
     return []
 
 
-def bounds_from_layers(sls: t.List[t.SourceLayer], preferred_crs) -> t.Bounds:
+def bounds_from_layers(source_layers: t.List[t.SourceLayer], target_crs) -> t.Bounds:
+    """Return merged bounds from a list of source layers in the target_crs."""
+
     exts = []
-    source_crs = None
-    for sl in sls:
+
+    for sl in source_layers:
         if not sl.supported_bounds:
             continue
-        if not source_crs:
-            source_crs = _best_crs(sl.supported_bounds, preferred_crs)
-        b = _bounds_for_crs(sl.supported_bounds, source_crs)
-        if b:
-            exts.append(b.extent)
+        bb = _best_bounds(sl.supported_bounds, target_crs)
+        if bb:
+            e = gws.gis.extent.transformed(bb.extent, bb.crs, target_crs)
+            exts.append(e)
 
     if exts:
+        # gws.p('BOUNDS', [sl.name for sl in source_layers], target_crs, exts, gws.gis.extent.merge(exts))
         return t.Bounds(
-            crs=source_crs,
+            crs=target_crs,
             extent=gws.gis.extent.merge(exts))
 
 
-def _best_crs(bs: t.List[t.Bounds], preferred_crs):
+def _best_bounds(bs: t.List[t.Bounds], target_crs):
     for b in bs:
-        if gws.gis.proj.equal(b.crs, preferred_crs):
-            return b.crs
+        if gws.gis.proj.equal(b.crs, target_crs):
+            return b
     for b in bs:
         if gws.gis.proj.equal(b.crs, gws.gis.proj.WEBMERCATOR):
-            return b.crs
-    for b in bs:
-        return b.crs
-
-
-def _bounds_for_crs(bs: t.List[t.Bounds], crs):
-    for b in bs:
-        if gws.gis.proj.equal(b.crs, crs):
             return b
+    for b in bs:
+        return b

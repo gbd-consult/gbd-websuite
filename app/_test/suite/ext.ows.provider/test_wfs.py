@@ -25,23 +25,23 @@ def test_get_points_in_provider_projection():
 
     exp = [
         {
-            "attributes": "gml_id=<points_ghana_25832.1> id=<1> p_date=<2019-01-01 00:00:00> p_int=<100> p_str=<p_str_1>",
-            "geometry": f"POINT EPSG:25832",
+            "attributes": "gml_id=<points_ghana_25832.1> id=<1> p_date=<2019-01-01 00:00:00> p_int=<100> p_str=<points_ghana_25832/1>",
+            "geometry": "POINT EPSG:25832",
             "uid": "a.map.wfs_points_ghana_25832___1"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.2> id=<2> p_date=<2019-01-02 00:00:00> p_int=<200> p_str=<p_str_2>",
-            "geometry": f"POINT EPSG:25832",
+            "attributes": "gml_id=<points_ghana_25832.2> id=<2> p_date=<2019-01-02 00:00:00> p_int=<200> p_str=<points_ghana_25832/2>",
+            "geometry": "POINT EPSG:25832",
             "uid": "a.map.wfs_points_ghana_25832___2"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.6> id=<6> p_date=<2019-01-06 00:00:00> p_int=<600> p_str=<p_str_6>",
-            "geometry": f"POINT EPSG:25832",
+            "attributes": "gml_id=<points_ghana_25832.6> id=<6> p_date=<2019-01-06 00:00:00> p_int=<600> p_str=<points_ghana_25832/6>",
+            "geometry": "POINT EPSG:25832",
             "uid": "a.map.wfs_points_ghana_25832___6"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.7> id=<7> p_date=<2019-01-07 00:00:00> p_int=<700> p_str=<p_str_7>",
-            "geometry": f"POINT EPSG:25832",
+            "attributes": "gml_id=<points_ghana_25832.7> id=<7> p_date=<2019-01-07 00:00:00> p_int=<700> p_str=<points_ghana_25832/7>",
+            "geometry": "POINT EPSG:25832",
             "uid": "a.map.wfs_points_ghana_25832___7"
         }
     ]
@@ -68,23 +68,23 @@ def test_find_points_in_provider_projection():
 
     exp = [
         {
-            "attributes": "gml_id=<points_ghana_25832.1> id=<1> p_date=<2019-01-01 00:00:00> p_int=<100> p_str=<p_str_1>",
-            "geometry": f"POINT EPSG:25832",
+            "attributes": "gml_id=<points_ghana_25832.1> id=<1> p_date=<2019-01-01 00:00:00> p_int=<100> p_str=<points_ghana_25832/1>",
+            "geometry": "POINT EPSG:25832",
             "uid": "a.map.wfs_points_ghana_25832___1"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.2> id=<2> p_date=<2019-01-02 00:00:00> p_int=<200> p_str=<p_str_2>",
-            "geometry": f"POINT EPSG:25832",
+            "attributes": "gml_id=<points_ghana_25832.2> id=<2> p_date=<2019-01-02 00:00:00> p_int=<200> p_str=<points_ghana_25832/2>",
+            "geometry": "POINT EPSG:25832",
             "uid": "a.map.wfs_points_ghana_25832___2"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.6> id=<6> p_date=<2019-01-06 00:00:00> p_int=<600> p_str=<p_str_6>",
-            "geometry": f"POINT EPSG:25832",
+            "attributes": "gml_id=<points_ghana_25832.6> id=<6> p_date=<2019-01-06 00:00:00> p_int=<600> p_str=<points_ghana_25832/6>",
+            "geometry": "POINT EPSG:25832",
             "uid": "a.map.wfs_points_ghana_25832___6"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.7> id=<7> p_date=<2019-01-07 00:00:00> p_int=<700> p_str=<p_str_7>",
-            "geometry": f"POINT EPSG:25832",
+            "attributes": "gml_id=<points_ghana_25832.7> id=<7> p_date=<2019-01-07 00:00:00> p_int=<700> p_str=<points_ghana_25832/7>",
+            "geometry": "POINT EPSG:25832",
             "uid": "a.map.wfs_points_ghana_25832___7"
         }
     ]
@@ -113,22 +113,22 @@ def test_find_points_with_reprojection():
 
     exp = [
         {
-            "attributes": "gml_id=<points_ghana_25832.1> id=<1> p_date=<2019-01-01 00:00:00> p_int=<100> p_str=<p_str_1>",
+            "attributes": "gml_id=<points_ghana_25832.1> id=<1> p_date=<2019-01-01 00:00:00> p_int=<100> p_str=<points_ghana_25832/1>",
             "geometry": "POINT EPSG:32733",
             "uid": "a.map.wfs_points_ghana_25832___1"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.2> id=<2> p_date=<2019-01-02 00:00:00> p_int=<200> p_str=<p_str_2>",
+            "attributes": "gml_id=<points_ghana_25832.2> id=<2> p_date=<2019-01-02 00:00:00> p_int=<200> p_str=<points_ghana_25832/2>",
             "geometry": "POINT EPSG:32733",
             "uid": "a.map.wfs_points_ghana_25832___2"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.6> id=<6> p_date=<2019-01-06 00:00:00> p_int=<600> p_str=<p_str_6>",
+            "attributes": "gml_id=<points_ghana_25832.6> id=<6> p_date=<2019-01-06 00:00:00> p_int=<600> p_str=<points_ghana_25832/6>",
             "geometry": "POINT EPSG:32733",
             "uid": "a.map.wfs_points_ghana_25832___6"
         },
         {
-            "attributes": "gml_id=<points_ghana_25832.7> id=<7> p_date=<2019-01-07 00:00:00> p_int=<700> p_str=<p_str_7>",
+            "attributes": "gml_id=<points_ghana_25832.7> id=<7> p_date=<2019-01-07 00:00:00> p_int=<700> p_str=<points_ghana_25832/7>",
             "geometry": "POINT EPSG:32733",
             "uid": "a.map.wfs_points_ghana_25832___7"
         }

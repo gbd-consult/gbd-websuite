@@ -10,46 +10,33 @@ def main():
     }
 
     u.make_geom_table(
-        name='paris_3857',
-        geom_type='point',
-        prop_schema=schema,
-        crs=cc.CRS_3857,
-        rows=10,
-        cols=5,
-        xy=cc.POINTS.paris,
-        gap=100,
-    )
-
-    u.make_geom_table(
-        name='dus_25832',
-        geom_type='point',
-        prop_schema=schema,
-        crs=cc.CRS_25832,
-        rows=10,
-        cols=5,
-        xy=cc.POINTS.dus,
-        gap=100,
-    )
-
-    u.make_geom_table(
-        name='ny_3857',
+        name='squares_ny_2263',
         geom_type='square',
         prop_schema=schema,
-        crs=cc.CRS_3857,
+        crs='EPSG:2263',
         rows=10,
         cols=5,
         xy=cc.POINTS.ny,
         gap=100,
     )
-
     u.make_geom_table(
-        name='london_25833',
+        name='squares_dus1_3857',
         geom_type='square',
         prop_schema=schema,
-        crs=cc.CRS_25833,
+        crs=cc.CRS_3857,
         rows=10,
         cols=5,
-        xy=cc.POINTS.london,
+        xy=cc.POINTS.dus1,
+        gap=100,
+    )
+    u.make_geom_table(
+        name='squares_dus2_3857',
+        geom_type='square',
+        prop_schema=schema,
+        crs=cc.CRS_3857,
+        rows=10,
+        cols=5,
+        xy=cc.POINTS.dus2,
         gap=100,
     )
 

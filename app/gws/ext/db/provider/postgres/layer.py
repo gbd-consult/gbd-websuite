@@ -20,6 +20,7 @@ class Config(gws.common.layer.VectorConfig):
 class Object(gws.common.layer.Vector):
     def __init__(self):
         super().__init__()
+
         self.provider: provider.Object = None
         self.table: t.SqlTable = None
 
@@ -29,15 +30,6 @@ class Object(gws.common.layer.Vector):
         self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
         self.table = self.provider.configure_table(self.var('table'))
 
-        p = self.var('search')
-        if not p or (p.enabled and not p.providers):
-            # spatial search by default
-            self.add_child('gws.ext.search.provider.postgres', t.Config({
-                'db': self.provider.uid,
-                'table': self.var('table'),
-                'geometryRequired': True,
-            }))
-
     @property
     def own_bounds(self):
         if not self.table.geometry_column:
@@ -45,25 +37,34 @@ class Object(gws.common.layer.Vector):
         with self.provider.connect() as conn:
             r = conn.select_value(f"""
                 SELECT ST_Extent({conn.quote_ident(self.table.geometry_column)})
-                FROM {conn.quote_table(self.table.name)}""")
+                FROM {conn.quote_table(self.table.name)}
+            """)
         return t.Bounds(
             crs=self.table.geometry_crs,
             extent=gws.gis.extent.from_box(r))
 
     @property
     def props(self):
-        return super().props.extend({
-            'geometryType': self.table.geometry_type.upper(),
-        })
+        return super().props.extend(geometryType=self.table.geometry_type.upper())
+
+    @property
+    def default_search_provider(self):
+        return self.create_object('gws.ext.search.provider.postgres', t.Config(
+            uid=self.uid + '.default_search',
+            db=self.provider.uid,
+            table=self.var('table'),
+            withGeometry='required',
+            withKeyword='no',
+        ))
 
     def get_features(self, bounds, limit=0) -> t.List[t.IFeature]:
         shape = gws.gis.shape.from_bounds(bounds).transformed(self.table.geometry_crs)
 
-        fs = self.provider.select(t.SelectArgs({
-            'table': self.table,
-            'shape': shape,
-            'limit': limit,
-        }))
+        fs = self.provider.select(t.SelectArgs(
+            table=self.table,
+            shape=shape,
+            limit=limit,
+        ))
 
         return [self.connect_feature(f) for f in fs]
 

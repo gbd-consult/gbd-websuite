@@ -9,7 +9,7 @@ import gws.core.tree
 
 
 class Config(gws.common.search.provider.Config):
-    ds: dict  #: qgis data source
+    dataSource: dict  #: qgis data source
 
 
 class Object(gws.common.search.provider.Object):

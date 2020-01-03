@@ -79,18 +79,20 @@ def start_suite_container(suite, extra_options=None):
     stop_suite_container()
 
     opts = [
-        f"--add-host=mainhost:{cfg('docker.host_ip')}",
+        f"--add-host={cfg('docker.host_name')}:{cfg('docker.host_ip')}",
         f"--env GWS_CONFIG=/data/config.cx",
         f"--env GWS_TMP_DIR=/gws-var/tmp",
         f"--mount type=bind,src={cfg('paths.app_root')},dst=/gws-app",
         f"--mount type=bind,src={cfg('paths.app_root')}/_test/common,dst=/common",
         f"--mount type=bind,src={cfg('paths.app_root')}/_test/suite/{suite}/data,dst=/data",
         f"--mount type=bind,src={cfg('paths.var_root')},dst=/gws-var",
-        f"--name {cfg('docker.container_name')}",
-        f"--publish 0.0.0.0:{cfg('docker.http_port')}:80",
+        f"--name {cfg('suite_container.name')}",
+        f"--publish {cfg('suite_container.host')}:{cfg('suite_container.http_port')}:80",
+        # publish the bundled qgis for debugging
+        f"--publish {cfg('suite_container.host')}:{cfg('suite_container.qgis_port')}:4000",
     ]
 
-    opts += cfg('docker.options')
+    opts += cfg('suite_container.options')
 
     if extra_options:
         opts += extra_options
@@ -118,13 +120,13 @@ def start_suite_container(suite, extra_options=None):
     # ready to go
 
     banner('CONTAINER START')
-    docker_run(cfg('docker.image_name'), opts, 'bash /gws-var/start.sh')
+    docker_run(cfg('suite_container.image_name'), opts, 'bash /gws-var/start.sh')
 
 
 def stop_suite_container():
     banner('CONTAINER STOP')
-    run(f"docker kill --signal SIGINT {cfg('docker.container_name')}")
-    run(f"docker rm --force {cfg('docker.container_name')}")
+    run(f"docker kill --signal SIGINT {cfg('suite_container.name')}")
+    run(f"docker rm --force {cfg('suite_container.name')}")
     run(f"rm -fr {cfg('paths.var_root')}/*")
 
 
@@ -133,47 +135,25 @@ def start_postgres():
 
     stop_postgres()
 
+    conn = cfg('postgres_container.connection')
+
     opts = [
         f"--detach",
-        f"--env POSTGRES_DB={cfg('postgres.database')}",
-        f"--env POSTGRES_PASS={cfg('postgres.password')}",
-        f"--env POSTGRES_USER={cfg('postgres.user')}",
-        f"--name {cfg('postgres.container_name')}",
-        f"--publish {cfg('postgres.port')}:5432",
+        f"--env POSTGRES_DB={conn['database']}",
+        f"--env POSTGRES_PASS={conn['password']}",
+        f"--env POSTGRES_USER={conn['user']}",
+        f"--name {cfg('postgres_container.name')}",
+        f"--publish {cfg('postgres_container.host')}:{conn['port']}:5432",
     ]
 
-    image_name = 'kartoza/postgis:12.0'
-
     banner('STARTING POSTGRES...')
-    docker_run(image_name, opts)
+    docker_run(cfg('postgres_container.image_name'), opts)
 
 
 def stop_postgres():
     banner('STOPPING POSTGRES...')
-    run(f"docker kill {cfg('postgres.container_name')}")
-    run(f"docker rm --force {cfg('postgres.container_name')}")
-
-
-def patch_qgis_service_urls():
-    port = cfg('qgis.port')
-    base = f"{cfg('paths.app_root')}/_test/common/qgis"
-
-    for p in os.listdir(base):
-        if p.endswith('.qgs'):
-            with open(base + '/' + p) as fp:
-                src = fp.read()
-
-            urls = f"""
-                <WMSUrl type="QString">http://mainhost:{port}?MAP=/qgis/{p}</WMSUrl>
-                <WMTSUrl type="QString">http://mainhost:{port}?MAP=/qgis/{p}</WMTSUrl>
-                <WFSUrl type="QString">http://mainhost:{port}?MAP=/qgis/{p}</WFSUrl>
-            """
-
-            src = re.sub(r'<(WMS|WMTS|WFS)Url.+\n', '', src)
-            src = re.sub(r'</properties>', urls + '</properties>', src)
-
-            with open(base + '/' + p, 'w') as fp:
-                fp.write(src)
+    run(f"docker kill {cfg('postgres_container.name')}")
+    run(f"docker rm --force {cfg('postgres_container.name')}")
 
 
 def start_qgis():
@@ -185,25 +165,25 @@ def start_qgis():
     stop_qgis()
 
     opts = [
-        f"--add-host=mainhost:{cfg('docker.host_ip')}",
+        f"--add-host={cfg('docker.host_name')}:{cfg('docker.host_ip')}",
         f"--detach",
         f"--env GWS_CONFIG=/qgis/config.cx",
         f"--env GWS_TMP_DIR=/gws-var/tmp",
         f"--mount type=bind,src={cfg('paths.app_root')},dst=/gws-app",
         f"--mount type=bind,src={cfg('paths.app_root')}/_test/common/qgis,dst=/qgis",
         f"--mount type=bind,src={cfg('paths.qgis_var_root')},dst=/gws-var",
-        f"--name {cfg('qgis.container_name')}",
-        f"--publish 0.0.0.0:{cfg('qgis.port')}:4000",
+        f"--name {cfg('qgis_container.name')}",
+        f"--publish {cfg('qgis_container.host')}:{cfg('qgis_container.port')}:4000",
     ]
 
     banner('STARTING QGIS...')
-    docker_run(cfg('docker.image_name'), opts, 'bash /gws-app/bin/gws server start -v')
+    docker_run(cfg('qgis_container.image_name'), opts, 'bash /gws-app/bin/gws server start -v')
 
 
 def stop_qgis():
     banner('STOPPING QGIS...')
-    run(f"docker kill {cfg('qgis.container_name')}")
-    run(f"docker rm --force {cfg('qgis.container_name')}")
+    run(f"docker kill {cfg('qgis_container.name')}")
+    run(f"docker rm --force {cfg('qgis_container.name')}")
     run(f"rm -fr {cfg('paths.qgis_var_root')}/*")
 
 
@@ -217,12 +197,11 @@ def stop_all():
 
 def start_container_for_suite(suite, extra_options=None):
     run(f"make -C {cfg('paths.app_root')}/.. spec")
-    patch_qgis_service_urls()
     start_suite_container(suite, extra_options)
 
 
 def exec_suite(suite, opts):
-    run(f"docker exec {cfg('docker.container_name')} pytest /gws-app/_test/suite/{suite} {opts or ''}")
+    run(f"docker exec {cfg('suite_container.name')} pytest /gws-app/_test/suite/{suite} {opts or ''}")
 
 
 def run_suite(suite, opts):
@@ -230,14 +209,14 @@ def run_suite(suite, opts):
 
     banner('STARTING CONTAINER...')
 
-    start_url = f"http://127.0.0.1:{cfg('cmdserver.port')}?suite={suite}"
+    start_url = f"http://{cfg('cmdserver.host')}:{cfg('cmdserver.port')}?suite={suite}"
     requests.get(start_url)
 
     wait_cnt = 0
 
     while True:
         try:
-            requests.get(f"http://127.0.0.1:{cfg('docker.http_port')}")
+            requests.get(f"http://{cfg('suite_container.host')}:{cfg('suite_container.http_port')}")
             break
         except Exception as e:
             wait_cnt += 1
@@ -287,7 +266,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 def start_cmd_server():
     try:
         # signal the server to exit
-        stop_url = f"http://127.0.0.1:{cfg('cmdserver.port')}?exit=1"
+        stop_url = f"http://{cfg('cmdserver.host')}:{cfg('cmdserver.port')}?exit=1"
         requests.get(stop_url)
     except:
         pass

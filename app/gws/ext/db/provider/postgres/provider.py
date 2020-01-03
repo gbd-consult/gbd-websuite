@@ -178,6 +178,9 @@ class Object(gws.common.db.provider.Sql):
 
         cols = self.describe(table)
 
+        if not cols:
+            raise gws.Error(f'table {table.name!r} not found')
+
         s = cfg.get('keyColumn')
         if not s:
             cs = [c.name for c in cols.values() if c.is_key]
@@ -245,7 +248,7 @@ class Object(gws.common.db.provider.Sql):
 
         uid = None
         if table.key_column:
-            uid = str(rec.pop(table.key_column, None))
+            uid = str(rec.get(table.key_column, None))
         if not uid:
             uid = gws.random_string(16)
 

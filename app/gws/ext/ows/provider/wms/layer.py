@@ -45,9 +45,16 @@ class Object(gws.common.layer.Image):
 
     @property
     def default_search_provider(self):
-        source_layers = [sl for sl in self.source_layers if sl.is_queryable]
+        source_layers = gws.gis.source.filter_layers(
+            self.provider.source_layers,
+            self.var('sourceLayers'),
+            queryable_only=True
+        )
         if source_layers:
-            return self.create_object('gws.ext.search.provider', t.Config(type='wms', layer=self, source_layers=source_layers))
+            return self.create_object('gws.ext.search.provider.wms', t.Config(
+                uid=self.uid + '.default_search',
+                layer=self,
+                source_layers=source_layers))
 
     @property
     def own_bounds(self):

@@ -15,14 +15,13 @@ import gws.tools.shell
 
 import gws.types as t
 
-from . import provider
+from . import provider, wmssearch
 
 
 class Config(gws.common.layer.ImageConfig):
     """WMS layer from a Qgis project"""
 
     path: t.FilePath  #: qgis project path
-    display: str = 'box'
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
 
 
@@ -31,21 +30,21 @@ class Object(gws.common.layer.Image):
         super().__init__()
 
         self.source_crs = ''
-        self.path = ''
         self.provider: provider.Object = None
         self.source_layers: t.List[t.SourceLayer] = []
 
     def configure(self):
         super().configure()
 
-        self.path = self.var('path')
         self.provider = provider.create_shared(self, self.config)
-
         self.source_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
 
         self.source_layers = gws.gis.source.filter_layers(
             self.provider.source_layers,
-            self.var('sourceLayers'))
+            self.var('sourceLayers'),
+            image_only=True
+        )
+
         if not self.source_layers:
             raise gws.Error(f'no layers found in {self.uid!r}')
 
@@ -55,8 +54,6 @@ class Object(gws.common.layer.Image):
                 self.resolutions = gws.gis.zoom.resolutions_from_config(
                     zoom, self.resolutions)
 
-        self._add_default_search()
-
         # if no legend.url is given, use an auto legend
         self.has_legend = self.var('legend.enabled')
 
@@ -64,8 +61,37 @@ class Object(gws.common.layer.Image):
             self.meta = gws.common.metadata.read(gws.common.layer.meta_from_source_layers(self))
 
     @property
+    def description(self):
+        ctx = {
+            'layer': self,
+            'provider': self.provider.meta
+        }
+        return self.description_template.render(ctx).content
+        #
+        # sub_layers = self.source_layers
+        # if len(sub_layers) == 1 and gws.get(sub_layers[0], 'title') == self.title:
+        #     sub_layers = []
+        #
+        # return super().description(gws.defaults(
+        #     options,
+        #     sub_layers=sub_layers))
+
+    @property
     def own_bounds(self):
         return gws.gis.source.bounds_from_layers(self.source_layers, self.map.crs)
+
+    @property
+    def default_search_provider(self):
+        source_layers = gws.gis.source.filter_layers(
+            self.provider.source_layers,
+            self.var('sourceLayers'),
+            queryable_only=True
+        )
+        if source_layers:
+            return self.create_object('gws.ext.search.provider.qgiswms', t.Config(
+                uid=self.uid + '.default_search',
+                layer=self,
+                source_layers=source_layers))
 
     def render_bbox(self, rv: t.RenderView, client_params=None):
         forward = {}
@@ -92,9 +118,8 @@ class Object(gws.common.layer.Image):
         return self.provider.get_legend(self.source_layers)
 
     def mapproxy_config(self, mc, options=None):
-        layers = [sl.name for sl in self.source_layers if sl.name]
         # NB: qgis caps layers are always top-down
-        layers = reversed(layers)
+        layers = reversed([sl.name for sl in self.source_layers])
 
         source = mc.source({
             'type': 'wms',
@@ -103,49 +128,13 @@ class Object(gws.common.layer.Image):
             'concurrent_requests': self.root.var('server.qgis.maxRequests', default=0),
             'req': {
                 'url': self.provider.url,
-                'map': self.path,
+                'map': self.provider.path,
                 'layers': ','.join(layers),
                 'transparent': True,
             },
             # add the file checksum to the config, so that the source and cache ids
             # in the mpx config are recalculated when the file changes
-            '$hash': gws.tools.shell.file_checksum(self.path)
+            '$hash': gws.tools.shell.file_checksum(self.provider.path)
         })
 
         self.mapproxy_layer_config(mc, source)
-
-    @property
-    def description(self):
-        ctx = {
-            'layer': self,
-            'provider': self.provider.meta
-        }
-        return self.description_template.render(ctx).content
-        #
-        # sub_layers = self.source_layers
-        # if len(sub_layers) == 1 and gws.get(sub_layers[0], 'title') == self.title:
-        #     sub_layers = []
-        #
-        # return super().description(gws.defaults(
-        #     options,
-        #     sub_layers=sub_layers))
-
-    def _add_default_search(self):
-        p = self.var('search')
-        if not p.enabled or p.providers:
-            return
-
-        queryable_layers = gws.gis.source.filter_layers(
-            self.provider.source_layers,
-            self.var('sourceLayers'),
-            queryable_only=True)
-        if not queryable_layers:
-            return
-
-        self.add_child('gws.ext.search.provider', t.Data({
-            'type': 'qgiswms',
-            'path': self.path,
-            'sourceLayers': t.Data({
-                'names': [sl.name for sl in queryable_layers]
-            })
-        }))

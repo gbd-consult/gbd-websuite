@@ -6,6 +6,7 @@ import gws.gis.extent
 import _test.util as u
 import _test.common.const as cc
 
+
 def test_search_points_in_provider_projection():
     x, y = cc.POINTS.ghana
 
@@ -28,9 +29,9 @@ def test_search_points_in_provider_projection():
 
     exp = [
         {
-            "attributes": "gml_id=<points_ghana_25832.14> id=<14> p_date=<2019-01-14T00:00:00> p_int=<1400> p_str=<p_str_14>",
+            "attributes": "gml_id=<points_ghana_25832.14> id=<14> p_date=<2019-01-14T00:00:00> p_int=<1400> p_str=<points_ghana_25832/14>",
             "uid": "a.map.wms_points_ghana_25832___14"
-        },
+        }
     ]
 
     assert u.short_features(r['features']) == exp
@@ -57,7 +58,7 @@ def test_search_points_with_reprojection():
 
     exp = [
         {
-            "attributes": "gml_id=<points_ghana_25832.14> id=<14> p_date=<2019-01-14T00:00:00> p_int=<1400> p_str=<p_str_14>",
+            "attributes": "gml_id=<points_ghana_25832.14> id=<14> p_date=<2019-01-14T00:00:00> p_int=<1400> p_str=<points_ghana_25832/14>",
             "uid": "a.map.wms_points_ghana_25832___14"
         }
     ]

@@ -1,9 +1,7 @@
-"""QGIS WMS search."""
+"""Internal QGIS/WMS search provider."""
 
-import gws
 import gws.common.search.provider
 import gws.gis.source
-
 import gws.types as t
 
 from . import provider
@@ -20,52 +18,37 @@ class Object(gws.common.search.provider.Object):
     def __init__(self):
         super().__init__()
 
+        # so that it can be found as a 'search' object
+        self.klass = 'gws.ext.search.provider.qgiswms'
+
         self.provider: provider.Object = None
         self.source_layers: t.List[t.SourceLayer] = []
 
     def configure(self):
         super().configure()
 
-        self.provider = provider.create_shared(self, self.config)
-        self.source_layers = gws.gis.source.filter_layers(
-            self.provider.source_layers,
-            self.var('sourceLayers'),
-            queryable_only=True)
+        self.with_geometry = 'required'
+        self.with_keyword = 'no'
 
-        # don't raise any errors here, because it would make parent configuration harder
-        # see also layer/wms
+        layer = self.var('layer')
+        if layer:
+            self.provider = layer.provider
+            self.source_layers = self.var('source_layers')
+        else:
+            self.provider = provider.create_shared(self, self.config)
+            self.source_layers = gws.gis.source.filter_layers(
+                self.provider.source_layers,
+                self.var('sourceLayers'),
+                queryable_only=True)
+
+
 
     def can_run(self, args):
         return (
-                self.source_layers
+                super().can_run(args)
                 and args.shapes
-                and args.shapes[0].type == 'Point'
-                and not args.keyword
-        )
+                and args.shapes[0].type == 'Point')
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
-        qgis_crs = self.provider.supported_crs[0]
-
-        shape = args.shapes[0]
-        if args.crs != qgis_crs:
-            shape = shape.transformed(qgis_crs)
-
-        args = t.SearchArgs({
-            'bbox': shape.bounds,
-            'count': args.limit,
-            'layers': [sl.name for sl in self.source_layers],
-            'point': [shape.x, shape.y],
-            'resolution': args.resolution,
-        })
-
-        gws.log.debug(f'QGIS_WMS_QUERY: START')
-        gws.p(args)
-
-        fs = self.provider.find_features(args)
-
-        if fs is None:
-            gws.log.debug('QGIS_WMS_QUERY: NOT_PARSED')
-            return []
-
-        gws.log.debug(f'QGIS_WMS_QUERY: FOUND {len(fs)}')
-        return fs
+        args.source_layer_names = [sl.name for sl in self.source_layers]
+        return self.provider.find_features(args)

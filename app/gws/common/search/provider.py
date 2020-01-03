@@ -9,8 +9,8 @@ import gws.types as t
 class ParameterUsage(t.Enum):
     yes = 'yes'
     no = 'no'
-    require = 'require'
-    ignore = 'ignore'
+    required = 'required'
+    ignored = 'ignored'
 
 
 class Config(t.WithTypeAndAccess):
@@ -27,8 +27,8 @@ class Object(gws.Object, t.ISearchProvider):
     def __init__(self):
         super().__init__()
 
-        self.with_geometry: bool = False
-        self.with_keyword: bool = False
+        self.with_geometry: str = False
+        self.with_keyword: str = False
         self.pixel_tolerance: int = 0
 
         self.feature_format: t.IFormat = None
@@ -51,19 +51,19 @@ class Object(gws.Object, t.ISearchProvider):
         self.pixel_tolerance = self.var('pixelTolerance')
 
     # Parameter usage:
-    #          yes  no   require  ignore
-    # present  ok   ERR  ok       ok
-    # missing  ok   ok   ERR      ok
+    #          yes  no   required
+    # present  ok   ERR  ok
+    # missing  ok   ok   ERR
 
     def can_run(self, args: t.SearchArgs):
         if args.keyword and self.with_keyword == 'no':
             return False
-        if not args.keyword and self.with_keyword == 'require':
+        if not args.keyword and self.with_keyword == 'required':
             return False
         geom = args.bounds or args.shapes
         if geom and self.with_geometry == 'no':
             return False
-        if not geom and self.with_geometry == 'require':
+        if not geom and self.with_geometry == 'required':
             return False
         return args.keyword or geom
 

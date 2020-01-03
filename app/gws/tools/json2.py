@@ -43,6 +43,10 @@ def to_string(x, pretty=False):
         raise Error() from e
 
 
+def to_pretty_string(x):
+    return to_string(x, pretty=True)
+
+
 def to_hash(x):
     s = json.dumps(x, default=_json_default, sort_keys=True)
     return hashlib.sha256(s.encode('utf8')).hexdigest()
