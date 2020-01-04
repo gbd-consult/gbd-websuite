@@ -54,6 +54,7 @@ class Config(t.WithTypeAndAccess):
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     useInspire: t.Optional[UseInspireConfig]  #: INSPIRE configuration
 
+
 class OwsRequest(t.Data):
     req: t.IRequest
     project: t.IProject
@@ -62,21 +63,22 @@ class OwsRequest(t.Data):
 
 
 class LayerCapsNode(t.Data):
-    layer: t.ILayer
+    layer: t.ILayer = None
 
-    title: str
-    tag_name: str
-    has_search: bool
-    meta: t.MetaData
-    feature_schema: t.List[t.Attribute]
+    feature_schema: t.List[t.Attribute] = []
+    has_legend: bool = False
+    has_search: bool = False
+    meta: t.MetaData = None
+    tag_name: str = None
+    title: str = None
 
-    extent: t.Extent
-    lonlat_extent: t.Extent
-    max_scale: int
-    min_scale: int
-    proj: gws.gis.proj.Proj
+    extent: t.Extent = None
+    lonlat_extent: t.Extent = None
+    max_scale: int = None
+    min_scale: int = None
+    proj: gws.gis.proj.Proj = None
 
-    sub_nodes: t.Optional[t.List['LayerCapsNode']]
+    sub_nodes: t.Optional[t.List['LayerCapsNode']] = []
 
 
 class FeatureNode(t.Data):
@@ -91,59 +93,63 @@ _NAMESPACES = gws.extend({}, const.NAMESPACES, inspire.NAMESPACES)
 
 #:export IOwsService
 class Object(gws.Object, t.IOwsService):
-    """Generic OWS Service."""
+    """OWS service interface."""
 
     def __init__(self):
         super().__init__()
+
         self.feature_namespace = ''
-        self.meta = t.MetaData()
-        self.namespaces = _NAMESPACES
-        self.local_namespaces = {}
+        self.meta: t.MetaData = None
         self.name = ''
         self.type = ''
-        self.templates = {}
         self.version = ''
+        self.enabled = True
+
+    def handle(self, req: t.IRequest) -> t.HttpResponse:
+        pass
+
+    def error_response(self, status) -> t.HttpResponse:
+        pass
+
+
+class Base(Object):
+    """Baseclass for OWS services."""
+
+    def __init__(self):
+        super().__init__()
+
+        self.namespaces = _NAMESPACES
+        self.local_namespaces = {}
+        self.templates = {}
         self.use_inspire_meta = False
         self.use_inspire_data = False
 
+        self.project: t.IProject = None
+
     @property
-    def service_url(self):
+    def url(self):
         u = gws.SERVER_ENDPOINT + '/cmd/owsHttp/serviceName/' + self.name
-        prj = self.get_closest('gws.common.project')
-        if prj:
-            u += f'/projectUid/{prj.uid}'
+        if self.project:
+            u += f'/projectUid/{self.project.uid}'
         return u
 
     @property
     def service_link(self):
         return None
 
+    ## Configuration
+
     def configure(self):
         super().configure()
 
+        self.project: t.IProject = self.get_closest('gws.common.project')
         self.name = self.var('name') or self.type
 
-        if self.var('meta'):
-            self.meta = gws.common.metadata.read(self.var('meta'))
-
-            self.meta.inspire = gws.extend({
-                'mandatoryKeyword': 'infoMapAccessService',
-                'resourceType': 'service',
-                'spatialDataServiceType': 'view'
-            }, self.meta.inspire)
-
-            self.meta.iso = gws.extend({
-                'scope': 'service'
-            }, self.meta.iso)
-
-            self.meta.serviceUrl = self.meta.serviceUrl or self.service_url
-
-            ls = []
-
-            if self.service_link:
-                ls.append(self.service_link)
-
-            self.meta.links = ls + self.meta.links
+        m = self._metadata_dict(self.var('meta'))
+        if self.project:
+            # use project metadata as a fallback
+            m = gws.extend(self._metadata_dict(self.project.meta), m)
+        self.meta = gws.common.metadata.read(m)
 
         if self.var('featureNamespace'):
             self.feature_namespace = self.var('featureNamespace')
@@ -154,6 +160,30 @@ class Object(gws.Object, t.IOwsService):
 
         if self.use_inspire_data:
             self.configure_inspire_templates()
+
+    def _metadata_dict(self, meta):
+        m = gws.extend({}, meta)
+
+        m['inspire'] = gws.extend({
+            'mandatoryKeyword': 'infoMapAccessService',
+            'resourceType': 'service',
+            'spatialDataServiceType': 'view'
+        }, m.get('inspire', {}))
+
+        m['iso'] = gws.extend({
+            'scope': 'service'
+        }, m.get('iso', {}))
+
+        m['serviceUrl'] = m.get('serviceUrl', self.url)
+
+        ls = []
+
+        if self.service_link:
+            ls.append(self.service_link)
+
+        m['links'] = ls + m.get('links', [])
+
+        return gws.strip(m)
 
     def configure_template(self, name, path, type='xml'):
         for tpl in self.var('templates', default=[]):
@@ -172,18 +202,15 @@ class Object(gws.Object, t.IOwsService):
         for tag in inspire.TAGS:
             self.templates[tag] = self.configure_template(tag.replace(':', '_'), 'wfs/templates/inspire')
 
-    def error_response(self, status):
-        return xml_error_response(self.version, status, f'Error {status}')
+    ## Request handling
 
     def handle(self, req) -> t.HttpResponse:
         rd = OwsRequest({
             'req': req,
             'project': req.require_project(req.param('projectUid')),
-            'service': self,
         })
         return self.dispatch(rd, req.kparam('request', '').lower())
 
-    #:noexport
     def dispatch(self, rd: OwsRequest, request_param):
         h = getattr(self, 'handle_' + request_param, None)
         if not h:
@@ -191,10 +218,11 @@ class Object(gws.Object, t.IOwsService):
             raise gws.web.error.NotFound()
         return h(rd)
 
-    def is_layer_enabled(self, layer):
-        return layer and layer.ows_enabled(self)
+    ## Rendering and responses
 
-    #:noexport
+    def error_response(self, status):
+        return self.xml_error_response(self.version, status, f'Error {status}')
+
     def render_template(self, rd: OwsRequest, template, context, format=None):
 
         def csw_meta_url(uid):
@@ -203,7 +231,7 @@ class Object(gws.Object, t.IOwsService):
 
         context = gws.extend({
             'project': rd.project,
-            'meta': self.meta or (rd.project.meta if rd.project else {}),
+            'meta': self.meta,
             'use_inspire_meta': self.use_inspire_meta,
             'url_for': rd.req.url_for,
             'csw_meta_url': csw_meta_url,
@@ -211,223 +239,231 @@ class Object(gws.Object, t.IOwsService):
             'feature_namespace_uri': self.local_namespaces[self.feature_namespace],
             'all_namespaces': self.namespaces,
             'local_namespaces': self.local_namespaces,
-            'service': {
-                'type': self.type.upper(),
-                'version': self.version,
-                'url': self.service_url,
-            }
+            'service': self
         }, context)
+
         return self.templates[template].render(context, format=format).content
 
-    #:noexport
-    def render_feature_nodes(self, rd: OwsRequest, nodes, container_template_name):
+    def render_feature_nodes(self, rd: OwsRequest, nodes: t.List[FeatureNode], container_template_name: str) -> t.HttpResponse:
         tags = []
 
         for node in nodes:
             template_name = node.tag_name if node.tag_name in self.templates else 'feature'
             tags.append(self.render_template(rd, template_name, {'node': node}, format='tag'))
 
-        return xml_response(self.render_template(rd, container_template_name, {
+        return self.xml_response(self.render_template(rd, container_template_name, {
             'feature_tags': tags,
         }))
 
+    def xml_error_response(self, version, status, description) -> t.HttpResponse:
+        description = gws.tools.xml3.encode(description)
+        content = (f'<?xml version="1.0" encoding="UTF-8"?>'
+                   + f'<ServiceExceptionReport version="{version}">'
+                   + f'<ServiceException code="{status}">{description}</ServiceException>'
+                   + f'</ServiceExceptionReport>')
+        return self.xml_response(content, status)
 
-def layer_node_root(rd: OwsRequest) -> LayerCapsNode:
-    roots = _layer_node_roots(rd)
-    if not roots:
-        return
-    if len(roots) == 1:
-        return roots[0]
-    # @TODO create root node from the project
-    return roots[0]
-
-
-def layer_node_list(rd: OwsRequest) -> t.List[LayerCapsNode]:
-    all_nodes = []
-    for node in _layer_node_roots(rd):
-        _layer_node_sublist(rd, node, all_nodes)
-    return all_nodes
-
-
-def layer_nodes_from_request_params(rd: OwsRequest, *params):
-    ls = []
-    for p in params:
-        ls = ls or gws.as_list(rd.req.kparam(p))
-    ows_names = set()
-
-    for s in ls:
-        if ':' not in s:
-            ows_names.add(s)
-            continue
-
-        p = s.split(':')
-        if len(p) != 2:
-            continue
-
-        if p[0] == rd.service.feature_namespace:
-            ows_names.add(s)
-            ows_names.add(p[1])
-        else:
-            ows_names.add(s)
-
-    all_nodes = []
-    for node in _layer_node_roots(rd):
-        if node.tag_name in ows_names:
-            _layer_node_sublist(rd, node, all_nodes)
-        else:
-            _layer_node_sublist_selected(rd, node, all_nodes, ows_names)
-
-    return all_nodes
-
-
-def inspire_nodes(nodes):
-    return [n for n in nodes if n.tag_name in inspire.TAGS]
-
-
-def feature_node_list(rd: OwsRequest, features: t.List[t.IFeature]):
-    def node(f: t.IFeature):
-        gs = None
-        if f.shape:
-            gs = gws.gis.gml.shape_to_tag(f.shape, precision=rd.project.map.coordinate_precision)
-
-        f.convert()
-
-        return FeatureNode({
-            'feature': f,
-            'shape_tag': gs,
-            'tag_name': f.layer.ows_name if f.layer else 'feature',
-            'attributes': f.attributes,
+    def xml_response(self, content, status=200) -> t.HttpResponse:
+        return t.HttpResponse({
+            'mime': 'text/xml',
+            'content': gws.tools.xml3.as_string(content),
+            'status': status,
         })
 
-    return [node(f) for f in features]
+    ## LayerCaps nodes
 
+    def layer_node_root(self, rd: OwsRequest) -> t.Optional[LayerCapsNode]:
+        """Return a single root node for a layer tree (for WMS)."""
 
-def lonlat_extent(extent, crs):
-    return [round(c, 4) for c in gws.gis.proj.transform_extent(extent, crs, 'EPSG:4326')]
+        roots = self._layer_node_roots(rd)
 
+        if not roots:
+            return
 
-def xml_error_response(version, status, description):
-    description = gws.tools.xml3.encode(description)
-    content = f'<?xml version="1.0" encoding="UTF-8"?>' \
-              f'<ServiceExceptionReport version="{version}">' \
-              f'<ServiceException code="{status}">{description}</ServiceException>' \
-              f'</ServiceExceptionReport>'
-    return xml_response(content, status)
+        if len(roots) == 1:
+            return roots[0]
 
+        # multiple root layers -> create a root node from the project
 
-def xml_response(content, status=200):
-    return t.HttpResponse({
-        'mime': 'text/xml',
-        'content': gws.tools.xml3.as_string(content),
-        'status': status,
-    })
+        p = rd.project
 
+        root = LayerCapsNode(
+            meta=p.meta,
+            sub_nodes=roots,
+            tag_name=p.uid,
+            title=p.title,
+        )
 
-def collect_iso_metadata(service):
-    rs = {}
+        return self._add_spatial_props(root, p.map.extent, p.map.crs, p.map.resolutions)
 
-    for obj in service.find_all():
-        meta = getattr(obj, 'meta', None)
-        uid = gws.get(meta, 'iso.uid')
-        if not uid:
-            continue
-        m = _configure_metadata(obj)
-        if m:
-            rs[gws.as_uid(uid)] = m
-    return rs
+    def layer_node_list(self, rd: OwsRequest) -> t.List[LayerCapsNode]:
+        """Return a list of terminal layer nodes (for WFS)."""
 
+        all_nodes = []
+        for node in self._layer_node_roots(rd):
+            self._layer_node_sublist(rd, node, all_nodes)
+        return all_nodes
 
-def _configure_metadata(obj: gws.Object):
-    m: t.MetaData = gws.common.metadata.read(obj.meta)
+    def layer_nodes_from_request_params(self, rd: OwsRequest, *params):
+        ls = []
+        for p in params:
+            ls = ls or gws.as_list(rd.req.kparam(p))
+        ows_names = set()
 
-    if obj.is_a('gws.common.project'):
-        la = obj.map
-    elif obj.is_a('gws.ext.layer'):
-        la = obj
-    else:
-        la = obj.get_closest('gws.common.project')
-        if la:
-            la = la.map
+        for s in ls:
+            if ':' not in s:
+                ows_names.add(s)
+                continue
 
-    if la:
-        m.proj = gws.gis.proj.as_proj(la.crs)
-        m.lonlat_extent = lonlat_extent(la.extent, la.crs)
-        m.resolution = int(min(units.res2scale(r) for r in la.resolutions))
+            p = s.split(':')
+            if len(p) != 2:
+                continue
 
-    if gws.get(m, 'inspire.theme'):
-        m.inspire['themeName'] = inspire.theme_name(m.inspire['theme'], m.language)
+            if p[0] == self.feature_namespace:
+                ows_names.add(s)
+                ows_names.add(p[1])
+            else:
+                ows_names.add(s)
 
-    m.iso = gws.extend({
-        'spatialType': 'vector',
-    }, m.iso)
+        all_nodes = []
+        for node in self._layer_node_roots(rd):
+            if node.tag_name in ows_names:
+                self._layer_node_sublist(rd, node, all_nodes)
+            else:
+                self._layer_node_sublist_selected(rd, node, all_nodes, ows_names)
 
-    m.inspire = gws.extend({
-        'qualityExplanation': '',
-        'qualityPass': 'false',
-        'qualityLineage': '',
-    }, m.inspire)
+        return all_nodes
 
-    return m
+    def _layer_node_roots(self, rd: OwsRequest) -> t.List[LayerCapsNode]:
+        if not rd.project:
+            return []
+        return gws.compact(self._layer_node_subtree(rd, la.uid) for la in rd.project.map.layers)
 
+    def _layer_node_subtree(self, rd: OwsRequest, layer_uid):
+        layer: t.ILayer = rd.req.acquire('gws.ext.layer', layer_uid)
+        if not self.is_layer_enabled(layer):
+            return
 
-##
+        if not layer.layers:
+            return self._layer_node_from(layer)
 
-def _layer_node_roots(rd: OwsRequest) -> t.List[LayerCapsNode]:
-    if not rd.project:
-        return []
-    return gws.compact(_layer_node_subtree(rd, la.uid) for la in rd.project.map.layers)
+        sub = gws.compact(self._layer_node_subtree(rd, la.uid) for la in layer.layers)
+        if sub:
+            return self._layer_node_from(layer, sub)
 
-
-def _layer_node_subtree(rd: OwsRequest, layer_uid):
-    layer = rd.req.acquire('gws.ext.layer', layer_uid)
-
-    if not rd.service.is_layer_enabled(layer):
-        return
-
-    if not layer.layers:
-        return _layer_node(rd, layer)
-
-    sub = gws.compact(_layer_node_subtree(rd, la.uid) for la in layer.layers)
-    if sub:
-        return _layer_node(rd, layer, sub)
-
-
-def _layer_node_sublist(rd: OwsRequest, node, all_nodes):
-    if not node.sub_nodes:
-        all_nodes.append(node)
-        return
-    for n in node.sub_nodes:
-        _layer_node_sublist(rd, n, all_nodes)
-
-
-def _layer_node_sublist_selected(rd: OwsRequest, node, all_nodes, tag_names):
-    if node.tag_name in tag_names:
+    def _layer_node_sublist(self, rd: OwsRequest, node: LayerCapsNode, all_nodes):
         if not node.sub_nodes:
             all_nodes.append(node)
             return
         for n in node.sub_nodes:
-            _layer_node_sublist(rd, n, all_nodes)
-    elif node.sub_nodes:
-        for n in node.sub_nodes:
-            _layer_node_sublist_selected(rd, n, all_nodes, tag_names)
+            self._layer_node_sublist(rd, n, all_nodes)
 
+    def _layer_node_sublist_selected(self, rd: OwsRequest, node: LayerCapsNode, all_nodes, tag_names):
+        if node.tag_name in tag_names:
+            if not node.sub_nodes:
+                all_nodes.append(node)
+                return
+            for n in node.sub_nodes:
+                self._layer_node_sublist(rd, n, all_nodes)
+        elif node.sub_nodes:
+            for n in node.sub_nodes:
+                self._layer_node_sublist_selected(rd, n, all_nodes, tag_names)
 
-def _layer_node(rd: OwsRequest, layer, sub_nodes=None) -> LayerCapsNode:
-    res = [units.res2scale(r) for r in layer.resolutions]
-    crs = layer.map.crs
-    sub_nodes = sub_nodes or []
+    def _layer_node_from(self, layer: t.ILayer, sub_nodes=None) -> LayerCapsNode:
+        sub_nodes = sub_nodes or []
 
-    return LayerCapsNode({
-        'layer': layer,
-        'title': layer.title,
-        'tag_name': layer.ows_name,
-        'has_search': layer.has_search or any(n.has_search for n in sub_nodes),
-        'meta': layer.meta,
-        'feature_schema': None,
-        'extent': layer.extent,
-        'lonlat_extent': lonlat_extent(layer.extent, crs),
-        'min_scale': min(res),
-        'max_scale': max(res),
-        'proj': gws.gis.proj.as_proj(crs),
-        'sub_nodes': sub_nodes,
-    })
+        node = LayerCapsNode(
+            has_search=layer.has_search or any(n.has_search for n in sub_nodes),
+            has_legend=layer.has_legend,
+            layer=layer,
+            meta=layer.meta,
+            sub_nodes=sub_nodes,
+            tag_name=layer.ows_name,
+            title=layer.title,
+        )
+
+        return self._add_spatial_props(node, layer.extent, layer.map.crs, layer.resolutions)
+
+    def _add_spatial_props(self, node: LayerCapsNode, extent: t.Extent, crs, resolutions):
+        scales = [units.res2scale(r) for r in resolutions]
+        node.extent = extent
+        node.lonlat_extent = self.lonlat_extent(extent, crs)
+        node.max_scale = max(scales)
+        node.min_scale = min(scales)
+        node.proj = gws.gis.proj.as_proj(crs)
+        return node
+
+    def inspire_nodes(self, nodes):
+        return [n for n in nodes if n.tag_name in inspire.TAGS]
+
+    def feature_node_list(self, rd: OwsRequest, features: t.List[t.IFeature]):
+        def node(f: t.IFeature):
+            gs = None
+            if f.shape:
+                gs = gws.gis.gml.shape_to_tag(f.shape, precision=rd.project.map.coordinate_precision)
+
+            f.convert()
+
+            return FeatureNode({
+                'feature': f,
+                'shape_tag': gs,
+                'tag_name': f.layer.ows_name if f.layer else 'feature',
+                'attributes': f.attributes,
+            })
+
+        return [node(f) for f in features]
+
+    def collect_iso_metadata(self, service):
+        rs = {}
+
+        for obj in service.find_all():
+            meta = getattr(obj, 'meta', None)
+            uid = gws.get(meta, 'iso.uid')
+            if not uid:
+                continue
+            m = self._configure_metadata(obj)
+            if m:
+                rs[gws.as_uid(uid)] = m
+        return rs
+
+    ##
+
+    def _configure_metadata(self, obj: gws.Object):
+        m: t.MetaData = gws.common.metadata.read(obj.meta)
+
+        if obj.is_a('gws.common.project'):
+            la = obj.map
+        elif obj.is_a('gws.ext.layer'):
+            la = obj
+        else:
+            la = obj.get_closest('gws.common.project')
+            if la:
+                la = la.map
+
+        if la:
+            m.proj = gws.gis.proj.as_proj(la.crs)
+            m.lonlat_extent = lonlat_extent(la.extent, la.crs)
+            m.resolution = int(min(units.res2scale(r) for r in la.resolutions))
+
+        if gws.get(m, 'inspire.theme'):
+            m.inspire['themeName'] = inspire.theme_name(m.inspire['theme'], m.language)
+
+        m.iso = gws.extend({
+            'spatialType': 'vector',
+        }, m.iso)
+
+        m.inspire = gws.extend({
+            'qualityExplanation': '',
+            'qualityPass': 'false',
+            'qualityLineage': '',
+        }, m.inspire)
+
+        return m
+
+    ## Utils
+
+    def is_layer_enabled(self, layer):
+        return layer and layer.ows_enabled(self)
+
+    def lonlat_extent(self, extent, crs):
+        return [round(c, 4) for c in gws.gis.proj.transform_extent(extent, crs, 'EPSG:4326')]

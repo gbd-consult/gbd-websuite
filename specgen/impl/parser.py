@@ -240,13 +240,26 @@ class _Parser:
             if name and not name.startswith('_'):
                 val = _value(node.value, strict=False)
                 if val is not None:
-                    stub.members[name] = ['p', None, type(val).__name__, line.strip()]
+                    stub.members[name] = {
+                        'kind': 'prop',
+                        'name': name,
+                        'type_name': type(val).__name__,
+                        'value': val,
+                        'line': line.strip()
+                    }
             return
 
         if _cls(node) == 'AnnAssign':
             name = _attr_name(node.target)
             if name and not name.startswith('_'):
-                stub.members[name] = ['p', None, node.annotation, line.strip()]
+                val = _value(node.value, strict=False)
+                stub.members[name] = {
+                    'kind': 'prop',
+                    'name': name,
+                    'type_node': node.annotation,
+                    'value': val,
+                    'line': line.strip()
+                }
             return
 
         if with_funcs and _cls(node) == 'FunctionDef':
@@ -258,16 +271,25 @@ class _Parser:
             if node.name.startswith('_'):
                 return
 
-            if not node.decorator_list:
-                stub.members[node.name] = ['m', node.args, node.returns, line.strip()]
-                return
+            if node.decorator_list:
+                line = self.lines[node.lineno + 1]  # @TODO assuming a single decorator
+                if node.decorator_list[0].id in ('property', 'cached_property'):
+                    if node.returns:
+                        stub.members[node.name] = {
+                            'kind': 'prop',
+                            'name': node.name,
+                            'type_node': node.returns,
+                            'line': line.strip()
+                        }
+                    return
 
-            line = self.lines[node.lineno + 1]  # @TODO assuming a single decorator
-            if node.decorator_list[0].id in ('property', 'cached_property'):
-                if node.returns:
-                    stub.members[node.name] = ['p', None, node.returns, line.strip()]
-                return
-            stub.members[node.name] = ['m', node.args, node.returns, line.strip()]
+            stub.members[node.name] = {
+                'kind': 'method',
+                'name': node.name,
+                'args': node.args,
+                'returns': node.returns,
+                'line': line.strip()
+            }
 
     def node_name(self, node):
         if _cls(node) == 'Name':

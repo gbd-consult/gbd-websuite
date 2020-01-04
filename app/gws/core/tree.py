@@ -143,7 +143,7 @@ class Object(t.IObject):
         for p in _find_all(self.root.all_objects, klass):
             return p
 
-    def find(self, klass, uid) -> t.List[t.IObject]:
+    def find(self, klass, uid) -> t.IObject:
         return _find(self.root.all_objects, klass, uid)
 
     def props_for(self, user) -> t.Optional[dict]:

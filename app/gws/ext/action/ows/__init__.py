@@ -9,6 +9,7 @@ class Config(t.WithTypeAndAccess):
 
     services: t.Optional[t.List[t.ext.ows.service.Config]]  #: services configuration
 
+
 class Object(gws.ActionObject):
     def __init__(self):
         super().__init__()
@@ -45,5 +46,5 @@ class Object(gws.ActionObject):
     def _find_service(self, req):
         s = req.param('serviceName')
         for service in self.services:
-            if service.name == s:
+            if service.name == s and service.enabled:
                 return service

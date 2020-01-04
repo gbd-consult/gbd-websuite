@@ -7,7 +7,7 @@ _comma = ', '.join
 _nl = '\n'.join
 _nl2 = '\n\n'.join
 
-_known_bases = set('Any Dict List Optional Tuple Union Data Config Props Attribute'.split())
+_known_bases = set('Any Dict List Optional Tuple Union Data Config Props Attribute Enum'.split())
 
 
 def run(stubs):
@@ -90,11 +90,11 @@ def _code(stub):
     methods = []
 
     for name, m in sorted(stub.members.items()):
-        kind, args_node, type_node, line = m
-        if kind == 'p':
-            props.append(_prop_code(name, type_node, line))
-        if kind == 'm':
-            methods.append(_method_code(name, args_node, type_node, line))
+        if m['kind'] == 'prop':
+            value = m.get('value') if 'Enum' in stub.bases else None
+            props.append(_prop_code(m, value))
+        if m['kind'] == 'method':
+            methods.append(_method_code(m))
 
     for s in props:
         code.append(_indent + s)
@@ -108,18 +108,18 @@ def _code(stub):
 
 # @TODO use the ast
 
-def _prop_code(name, type_node, line):
-    if isinstance(type_node, str):
-        t = type_node
-    elif '->' in line:
-        t = _extract_return_annotation(line)
+def _prop_code(m, value):
+    if 'type_name' in m:
+        t = m['type_name']
+    elif '->' in m['line']:
+        t = _extract_return_annotation(m['line'])
     else:
-        t = _extract_var_annotation(line)
-    return '%s: %s = None' % (name, t)
+        t = _extract_var_annotation(m['line'])
+    return '%s: %s = %r' % (m['name'], t, value)
 
 
-def _method_code(name, args_node, type_node, line):
-    t = _format_function_decl(line)
+def _method_code(m):
+    t = _format_function_decl(m['line'])
     return t + ' pass'
 
 

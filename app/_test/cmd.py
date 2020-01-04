@@ -328,6 +328,7 @@ def main():
 
     args = parser.parse_args()
     args.opts = (args.opts or '').strip("'")
+    args.suite = (args.suite or '').split('/')[-1]
 
     with open(args.config) as fp:
         CONFIG = json.load(fp)

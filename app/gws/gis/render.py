@@ -33,7 +33,7 @@ class RenderInputItemType(t.Enum):
     features = 'features'
     fragment = 'fragment'
     svg_layer = 'svg_layer'
-    raster_layer = 'raster_layer'
+    image_layer = 'image_layer'
 
 
 #:export
@@ -167,23 +167,23 @@ class Composition:
 class Renderer:
     def __init__(self):
         self.ri: RenderInput = None
-        self.ro: RenderOutput = None
+        self.output: RenderOutput = None
         self.composition = None
         self.out_path = ''
         self.default_dpi = 0
 
-    def run(self, ri: RenderInput, out_path):
+    def run(self, ri: RenderInput, out_path=None):
         self.ri = ri
-        self.ro = RenderOutput({
-            'view': self.ri.view,
-            'items': []
-        })
+        self.output = RenderOutput(
+            view=self.ri.view,
+            items=[]
+        )
         self.default_dpi = self.ri.view.dpi
         self.out_path = out_path
 
         # NB: items are top-to-bottom
 
-        for n, item in enumerate(reversed(self.ri.items)):
+        for item in reversed(self.ri.items):
             yield item
             self._render_item(item)
 
@@ -234,38 +234,38 @@ class Renderer:
                 self._add_svg(r)
             return
 
-        if item.type == t.RenderInputItemType.raster_layer:
-            r = item.layer.render_bbox(self.ri.view, {'layers': item.sub_layers})
+        if item.type == t.RenderInputItemType.image_layer:
+            r = item.layer.render_box(self.ri.view, {'layers': item.sub_layers})
             if r:
                 self._add_image(PIL.Image.open(io.BytesIO(r)), opacity)
 
     def _last_item_is(self, type):
-        return self.ro.items and self.ro.items[-1].type == type
+        return self.output.items and self.output.items[-1].type == type
 
     def _add_image(self, img, opacity):
-        if not self._last_item_is('image'):
-            self.ro.items.append(RenderOutputItem({
-                'type': RenderOutputItemType.image,
-            }))
+        if not self._last_item_is(RenderOutputItemType.image):
+            self.output.items.append(RenderOutputItem(
+                type=RenderOutputItemType.image,
+            ))
             self.composition = Composition(self.ri.view.size_px, self.ri.background_color)
         self.composition.add_image(img, opacity)
-        self.ro.items[-1].image = self.composition.image
+        self.output.items[-1].image = self.composition.image
 
     def _add_svg(self, svg):
         self._flush_image()
-        if not self._last_item_is('svg'):
-            self.ro.items.append(RenderOutputItem({
-                'type': RenderOutputItemType.svg,
-                'elements': []
-            }))
-        self.ro.items[-1].elements.extend(svg)
+        if not self._last_item_is(RenderOutputItemType.svg):
+            self.output.items.append(RenderOutputItem(
+                type=RenderOutputItemType.svg,
+                elements=[]
+            ))
+        self.output.items[-1].elements.extend(svg)
 
     def _flush_image(self):
         if self._last_item_is(t.RenderOutputItemType.image):
-            # path = '%s-%s.png' % (self.out_path, len(self.ro.items))
+            # path = '%s-%s.png' % (self.out_path, len(self.output.items))
             # self.composition.save(path)
             self.composition = None
-            # self.ro.items[-1].path = path
+            # self.output.items[-1].path = path
 
 
 def create_html_with_map(html, page_size, margin, out_path, render_output: RenderOutput, map_placeholder):

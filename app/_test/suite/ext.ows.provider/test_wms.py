@@ -70,7 +70,7 @@ def test_render():
     x, y = cc.POINTS.ghana
     bbox = (x + 50, y + 50, x + 350, y + 350,)
 
-    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.wms_points_ghana_25832/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.wms_points_ghana_25832/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 100, 'height': 100})
     d = u.compare_image_response(r, '/data/wms_points_100x100.png')

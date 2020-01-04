@@ -15,6 +15,16 @@ class Bounds(t.Data):
     extent: t.Extent
 
 
+def from_string(s: str) -> t.Optional[t.Extent]:
+    """Create an extent from a comma-separated string "1000,2000,20000 40000" """
+    try:
+        ext = [float(n) for n in s.split(',')]
+    except:
+        return None
+
+    return valid(ext)
+
+
 def from_box(box: str) -> t.Optional[t.Extent]:
     """Create an extent from a Postgis BOX(1000 2000,20000 40000)"""
 
@@ -27,29 +37,25 @@ def from_box(box: str) -> t.Optional[t.Extent]:
 
     try:
         a, b = m.group(1).split(',')
+        a, b = a.split(), b.split()
         ext = (
-            float(a.split()[0]),
-            float(a.split()[1]),
-            float(b.split()[0]),
-            float(b.split()[1]),
+            float(a[0]),
+            float(a[1]),
+            float(b[0]),
+            float(b[1]),
         )
     except:
-        return None
-
-    if len(ext) != 4:
         return None
 
     return valid(ext)
 
 
-def valid(e: t.Extent) -> t.Optional[t.Extent]:
-    if not e:
-        return
-
-    if not all(math.isfinite(p) for p in e):
-        return
-
-    return _sort(e)
+def valid(e) -> t.Optional[t.Extent]:
+    try:
+        ok = len(e) == 4 and all(math.isfinite(p) for p in e)
+    except:
+        ok = False
+    return _sort(e) if ok else None
 
 
 def list_valid(exts: t.List[t.Extent]) -> t.List[t.Extent]:

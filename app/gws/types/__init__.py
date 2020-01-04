@@ -316,7 +316,7 @@ class IObject:
     def configure(self): pass
     def create_object(self, klass, cfg, parent=None): pass
     def create_shared_object(self, klass, uid, cfg): pass
-    def find(self, klass, uid) -> List['IObject']: pass
+    def find(self, klass, uid) -> 'IObject': pass
     def find_all(self, klass=None) -> List['IObject']: pass
     def find_first(self, klass) -> 'IObject': pass
     def get_children(self, klass) -> List['IObject']: pass
@@ -445,12 +445,12 @@ class RenderInputItem(Data):
     sub_layers: List[str] = None
     type: str = None
 
-class RenderInputItemType:
-    features: str = None
-    fragment: str = None
-    image: str = None
-    raster_layer: str = None
-    svg_layer: str = None
+class RenderInputItemType(Enum):
+    features: str = 'features'
+    fragment: str = 'fragment'
+    image: str = 'image'
+    image_layer: str = 'image_layer'
+    svg_layer: str = 'svg_layer'
 
 class RenderOutput(Data):
     items: List['RenderOutputItem'] = None
@@ -461,10 +461,10 @@ class RenderOutputItem(Data):
     path: str = None
     type: str = None
 
-class RenderOutputItemType:
-    image: str = None
-    path: str = None
-    svg: str = None
+class RenderOutputItemType(Enum):
+    image: str = 'image'
+    path: str = 'path'
+    svg: str = 'svg'
 
 class RenderView(Data):
     bounds: 'Bounds' = None
@@ -612,41 +612,45 @@ class IFormat(IObject):
     def apply(self, context: dict) -> dict: pass
 
 class ILayer(IObject):
-    can_render_bbox: bool = None
+    can_render_box: bool = None
     can_render_svg: bool = None
     can_render_xyz: bool = None
-    crs: str = None
     data_model: 'IModel' = None
-    default_search_provider: 'ISearchProvider' = None
+    default_search_provider: Optional['ISearchProvider'] = None
     description: str = None
     description_template: 'ITemplate' = None
     display: str = None
     edit_data_model: 'IModel' = None
     edit_style: 'IStyle' = None
-    extent: list = None
+    extent: 'Extent' = None
     feature_format: 'IFormat' = None
     has_cache: bool = None
     has_legend: bool = None
     has_search: bool = None
     image_format: str = None
+    is_editable: bool = None
     is_public: bool = None
     layers: list = None
     legend_url: str = None
     map: 'IMap' = None
     meta: 'MetaData' = None
     opacity: int = None
-    own_bounds: 'Bounds' = None
+    own_bounds: Optional['Bounds'] = None
     ows_name: str = None
-    resolutions: list = None
+    ows_services_disabled: list = None
+    ows_services_enabled: list = None
+    resolutions: List[float] = None
     services: list = None
     style: 'IStyle' = None
+    supports_wfs: bool = None
+    supports_wms: bool = None
     title: str = None
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
     def mapproxy_config(self, mc): pass
-    def ows_enabled(self, service): pass
-    def render_bbox(self, rv: 'RenderView', client_params=None): pass
+    def ows_enabled(self, service: 'IOwsService') -> bool: pass
+    def render_box(self, rv: 'RenderView', client_params=None): pass
     def render_legend(self): pass
     def render_svg(self, rv: 'RenderView', style=None): pass
     def render_xyz(self, x, y, z): pass
@@ -680,19 +684,14 @@ class IOwsProvider(IObject):
     def operation(self, name: str) -> 'OwsOperation': pass
 
 class IOwsService(IObject):
+    enabled: bool = None
     feature_namespace: str = None
-    local_namespaces: dict = None
+    meta: 'MetaData' = None
     name: str = None
-    templates: dict = None
     type: str = None
-    use_inspire_data: bool = None
-    use_inspire_meta: bool = None
     version: str = None
-    def configure_inspire_templates(self): pass
-    def configure_template(self, name, path, type='xml'): pass
-    def error_response(self, status): pass
-    def handle(self, req) -> 'HttpResponse': pass
-    def is_layer_enabled(self, layer): pass
+    def error_response(self, status) -> 'HttpResponse': pass
+    def handle(self, req: 'IRequest') -> 'HttpResponse': pass
 
 class IPrinter(IObject):
     templates: List['ITemplate'] = None
@@ -751,6 +750,7 @@ class IWebSite(IObject):
     cors: 'CorsOptions' = None
     error_page: 'ITemplate' = None
     host: str = None
+    reversed_host: str = None
     reversed_rewrite_rules: List['RewriteRule'] = None
     rewrite_rules: List['RewriteRule'] = None
     ssl: bool = None

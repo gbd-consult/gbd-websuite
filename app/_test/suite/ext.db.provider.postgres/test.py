@@ -97,7 +97,7 @@ def test_render_squares():
     x, y = cc.POINTS.ny
     bbox = x, y, x + 350, y + 350
 
-    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.ny_3857/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.ny_3857/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     d = u.compare_image_response(r, '/data/squares_200x200.png')
@@ -116,7 +116,7 @@ def test_render_squares_styled():
     x, y = cc.POINTS.ny
     bbox = x, y, x + 350, y + 350
 
-    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.ny_3857_styled/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.ny_3857_styled/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     d = u.compare_image_response(r, '/data/squares_styled_200x200.png')
@@ -129,7 +129,7 @@ def test_render_squares_reprojected():
     bbox = x, y, x + 350, y + 350
     bbox = gws.gis.extent.transformed(bbox, cc.CRS_25833, cc.CRS_3857)
 
-    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.london_25833/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.london_25833/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     d = u.compare_image_response(r, '/data/squares_reprojected_200x200.png')

@@ -15,7 +15,7 @@ import gws.web
 import gws.types as t
 
 
-class RenderBboxParams(t.Params):
+class RenderBoxParams(t.Params):
     bbox: t.Extent
     width: int
     height: int
@@ -62,7 +62,7 @@ _GET_FEATURES_LIMIT = 0
 
 class Object(gws.ActionObject):
 
-    def api_render_bbox(self, req: t.IRequest, p: RenderBboxParams) -> t.HttpResponse:
+    def api_render_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
         """Render a part of the map inside a bounding box"""
 
         layer = req.require_layer(p.layerUid)
@@ -83,7 +83,7 @@ class Object(gws.ActionObject):
 
         ts = time.time()
         try:
-            img = layer.render_bbox(rv, client_params)
+            img = layer.render_box(rv, client_params)
         except:
             gws.log.exception()
         gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(rv), time.time() - ts))
@@ -144,8 +144,8 @@ class Object(gws.ActionObject):
         return GetFeaturesResponse(
             features=[f.convert(target_crs=bounds.crs).props for f in features])
 
-    def http_get_bbox(self, req: t.IRequest, p: RenderBboxParams) -> t.HttpResponse:
-        return self.api_render_bbox(req, p)
+    def http_get_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
+        return self.api_render_box(req, p)
 
     def http_get_xyz(self, req: t.IRequest, p: RenderXyzParams) -> t.HttpResponse:
         return self.api_render_xyz(req, p)

@@ -10,6 +10,14 @@
         @t Name WMS
         @t Title {meta.title}
         @wms_service_metadata
+
+        @with service.wms_layer_limit
+            @t LayerLimit {service.wms_layer_limit}
+        @end
+        @with service.wms_max_size
+            @t MaxWidth  {service.max_size[0]}
+            @t MaxHeight {service.max_size[1]}
+        @end
     @end
 
     @tag Capability
@@ -24,5 +32,3 @@
         @wms_layer_capabilities layer_node_root
     @end
 @end
-
-

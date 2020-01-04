@@ -12,6 +12,7 @@ psycopg2-binary
 pycountry
 PyPDF2
 pytest
+pytest-clarity
 python-ldap
 PyYAML
 requests

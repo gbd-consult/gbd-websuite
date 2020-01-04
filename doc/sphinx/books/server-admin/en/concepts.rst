@@ -15,7 +15,7 @@ Static web requests ::
 
 Dynamic GET requests (e.g. map imagery) ::
 
-    http://maps.my-server.com/_?cmd=mapHttpGetBbox&layer=london.metro&width=100&height=200&bbox=10,20,30,40
+    http://maps.my-server.com/_?cmd=mapHttpGetBox&layer=london.metro&width=100&height=200&bbox=10,20,30,40
 
 Dynamic POST request (e.g. search) ::
 

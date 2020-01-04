@@ -1,9 +1,11 @@
 import os
 import re
 import datetime
+import itertools
 
 import wand.image
 import requests
+from lxml import etree
 
 import gws
 
@@ -19,25 +21,32 @@ import gws.types as t
 DIR = os.path.dirname(__file__)
 
 
-def xml_nows(s):
-    s = s.strip()
-    s = re.sub(r'\s+', ' ', s)
-    s = re.sub(r'> <', '><', s)
-    return s
-
-
-def xml_file(path):
-    with open(DIR + '/' + path) as fp:
-        return xml_nows(fp.read())
-
-
-def png_file(path):
-    with open(DIR + '/' + path, 'rb') as fp:
-        return fp.read()
+def read(path):
+    try:
+        with open(path) as fp:
+            return fp.read()
+    except Exception as e:
+        return f'FILE ERROR: {e}'
 
 
 def print_json(x):
+    print('-' * 40)
     print(gws.tools.json2.to_pretty_string(x))
+    print('-' * 40)
+
+
+def xml(x):
+    try:
+        xml = etree.fromstring(x.encode('utf8'))
+    except Exception as e:
+        return f'INVALID XML:\n{e}\nRAW CONTENT :\n{x}'
+    return etree.tounicode(xml, pretty_print=True)
+
+
+def print_xml(x):
+    print('-' * 40)
+    print(xml(x))
+    print('-' * 40)
 
 
 def strlist(ls):
@@ -122,7 +131,7 @@ def compare_image_response(r: requests.Response, path, threshold=0.1):
     err = _cmp()
     if err:
         name = path.split('/')[-1]
-        d = gws.tools.misc.ensure_dir(gws.VAR_DIR + '/failed_images')
+        d = gws.tools.misc.ensure_dir(gws.VAR_DIR + '/failed_files')
         with open(d + '/' + name, 'wb') as fp:
             fp.write(content)
     return err

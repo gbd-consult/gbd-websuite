@@ -23,6 +23,8 @@ import gws.tools.net
 
 import gws.types as t
 
+from gws import cached_property
+
 
 class ClientOptions(t.Data):
     """Client options for a layer"""
@@ -153,12 +155,21 @@ class Base(gws.Object, t.ILayer):
     def __init__(self):
         super().__init__()
 
-        self.display = ''
-        self.image_format = ''
+        self.can_render_box = False
+        self.can_render_xyz = False
+        self.can_render_svg = False
 
         self.is_public = False
+        self.is_editable = False
 
         self.has_cache = False
+        self.has_legend = False
+
+        self.supports_wms = False
+        self.supports_wfs = False
+
+        self.display = ''
+        self.image_format = ''
 
         #:noexport
         self.cache: CacheConfig = None
@@ -179,11 +190,9 @@ class Base(gws.Object, t.ILayer):
 
         self.title = ''
 
-        self.resolutions = []
-        self.extent = []
-        self.crs = ''
+        self.resolutions: t.List[float] = None
+        self.extent: t.Extent = None
 
-        self.has_legend = False
         self.legend_url = ''
 
         self.opacity = 1
@@ -196,11 +205,9 @@ class Base(gws.Object, t.ILayer):
         self.edit_style: t.IStyle = None
         self.edit_data_model: t.IModel = None
 
-        self.can_render_bbox = False
-        self.can_render_xyz = False
-        self.can_render_svg = False
-
         self.ows_name = ''
+        self.ows_services_enabled = []
+        self.ows_services_disabled = []
 
     @property
     def props(self):
@@ -212,27 +219,26 @@ class Base(gws.Object, t.ILayer):
             'resolutions': self.resolutions if self.resolutions != self.map.resolutions else None,
             'title': self.title,
             'uid': self.uid,
-            'description': self.description,
         })
 
-    @property
+    @cached_property
     def description(self) -> str:
         ctx = {
             'layer': self,
         }
         return self.description_template.render(ctx).content
 
-    @property
+    @cached_property
     def has_search(self) -> bool:
         return len(self.get_children('gws.ext.search.provider')) > 0
 
-    @property
-    def own_bounds(self) -> t.Bounds:
-        pass
+    @cached_property
+    def own_bounds(self) -> t.Optional[t.Bounds]:
+        return
 
     @property
-    def default_search_provider(self) -> t.ISearchProvider:
-        pass
+    def default_search_provider(self) -> t.Optional[t.ISearchProvider]:
+        return
 
     def use_meta(self, meta):
         title = self.var('title')
@@ -347,7 +353,7 @@ class Base(gws.Object, t.ILayer):
     def mapproxy_config(self, mc):
         pass
 
-    def render_bbox(self, rv: t.RenderView, client_params=None):
+    def render_box(self, rv: t.RenderView, client_params=None):
         return None
 
     def render_xyz(self, x, y, z):
@@ -367,8 +373,12 @@ class Base(gws.Object, t.ILayer):
     def get_features(self, bounds: t.Bounds, limit: int = 0) -> t.List[t.IFeature]:
         return []
 
-    def ows_enabled(self, service):
-        if service.name in self.ows_services_disabled:
+    def ows_enabled(self, service: t.IOwsService) -> bool:
+        if service.type == 'wms' and not self.supports_wms:
+            return False
+        if service.type == 'wfs' and not self.supports_wfs:
+            return False
+        if self.ows_services_disabled and service.name in self.ows_services_disabled:
             return False
         if self.ows_services_enabled:
             return service.name in self.ows_services_enabled
@@ -400,8 +410,9 @@ class Image(Base):
     def __init__(self):
         super().__init__()
 
-        self.can_render_bbox = True
+        self.can_render_box = True
         self.can_render_xyz = True
+        self.supports_wms = True
 
     @property
     def props(self):
@@ -415,10 +426,10 @@ class Image(Base):
         if self.display == 'box':
             return super().props.extend({
                 'type': 'box',
-                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBox/layerUid/' + self.uid,
             })
 
-    def render_bbox(self, rv, client_params=None):
+    def render_box(self, rv, client_params=None):
         uid = self.uid
         if not self.has_cache:
             uid += '_NOCACHE'
@@ -430,9 +441,6 @@ class Image(Base):
             x, y, z,
             tile_matrix=self.grid_uid,
             tile_size=self.grid.tileSize)
-
-    def ows_enabled(self, service):
-        return super().ows_enabled(service) and service.type == 'wms'
 
     """
         Mapproxy config is done in two steps
@@ -530,15 +538,17 @@ class Vector(Base, t.IVectorLayer):
     def __init__(self):
         super().__init__()
 
-        self.can_render_bbox = True
+        self.can_render_box = True
         self.can_render_svg = True
+        self.supports_wms = True
+        self.supports_wfs = True
 
     @property
     def props(self):
         if self.display == 'box':
             return super().props.extend({
                 'type': 'box',
-                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBbox/layerUid/' + self.uid,
+                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBox/layerUid/' + self.uid,
             })
 
         return super().props.extend({
@@ -553,7 +563,7 @@ class Vector(Base, t.IVectorLayer):
         feature.layer = self
         return feature
 
-    def render_bbox(self, rv, client_params=None):
+    def render_box(self, rv, client_params=None):
         elements = self.render_svg(rv)
         return gws.gis.svg.to_png(elements, size=rv.size_px)
 
@@ -562,9 +572,6 @@ class Vector(Base, t.IVectorLayer):
         for f in features:
             f.convert(target_crs=rv.bounds.crs)
         return [f.to_svg(rv, style or self.style) for f in features]
-
-    def ows_enabled(self, service):
-        return super().ows_enabled(service) and service.type == 'wfs'
 
 
 def add_layers_to_object(obj, layer_configs):

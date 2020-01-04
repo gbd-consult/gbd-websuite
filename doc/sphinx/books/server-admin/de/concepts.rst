@@ -16,7 +16,7 @@ Hier ein paar Beispiele von Anfragen, die GBD WebSuite bearbeiten kann::
 
     ## dynamische GET-Anfrage (z. B. Kartenbilder) 
 
-    http://maps.my-server.com/_?cmd=mapHttpGetBbox&layer=london.metro&width=100&height=200&bbox=10,20,30,40
+    http://maps.my-server.com/_?cmd=mapHttpGetBox&layer=london.metro&width=100&height=200&bbox=10,20,30,40
 
     ## dynamische POST-Anfrage (z.B. Suche)
 

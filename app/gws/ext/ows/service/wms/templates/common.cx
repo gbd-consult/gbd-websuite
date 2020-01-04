@@ -106,7 +106,7 @@
 
         @wms_meta_url node.meta
 
-        @if node.layer.has_legend
+        @if node.has_legend
             @tag Style/LegendURL
                 @t Format image/png
                 @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + feature_ns(node.tag_name)}"
@@ -115,7 +115,6 @@
 
         @t MinScaleDenominator {node.min_scale | as_int}
         @t MaxScaleDenominator {node.max_scale | as_int}
-
 
         @each reversed(node.sub_nodes) as sub_node
             @wms_layer_capabilities sub_node

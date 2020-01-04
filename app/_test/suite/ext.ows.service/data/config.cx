@@ -2,6 +2,7 @@
 
 @WEB_SERVER_ONLY
 @POSTGRES_CONFIG
+@DEFAULT_WEB_SITE
 
 access+ { role "all" type "allow" }
 
@@ -10,8 +11,27 @@ api.actions+ { type "search" }
 api.actions+ { type "asset" }
 api.actions+ { type "project" }
 
+
+
+
 projects+ {
-    uid "a"
+    uid "wms1"
+
+    meta {
+        @META_DATA "PROJECT"
+    }
+
+    api.actions+ {
+        type "ows"
+        services.0 {
+            type "wms"
+            meta {
+                @META_DATA "service"
+                abstract null
+                accessConstraints null
+            }
+        }
+    }
 
     map.crs "EPSG:3857"
 
@@ -20,7 +40,26 @@ projects+ {
         type "postgres"
         display "box"
         table.name "paris_3857"
+        meta {
+            @META_DATA "PARIS"
+        }
+        featureFormat.label {
+            type "html"
+            text "{id}"
+        }
+        style {
+            type "css"
+            text """
+                fill: rgba(0,0,255,0.5);
+                label-font-size: 13px;
+                label-fill: cyan;
+                label-background: black;
+                label-offset-x: 10px;
+                label-offset-y: -10px;
+            """
+        }
     }
+
     map.layers+ {
         title "dus_25832"
         type "postgres"
@@ -40,32 +79,7 @@ projects+ {
             """
         }
     }
-    map.layers+ {
-        title "ny_3857"
-        type "postgres"
-        display "box"
-        table.name "ny_3857"
-    }
-    map.layers+ {
-        title "ny_3857_styled"
-        type "postgres"
-        display "box"
-        table.name "ny_3857"
-        style {
-            type "css"
-            text """
-                fill: rgba(255,0,0,0.5);
-                stroke: blue;
-                stroke-width: 2px;
-            """
-        }
-    }
-    map.layers+ {
-        title "london_25833"
-        type "postgres"
-        display "box"
-        table.name "london_25833"
-    }
 
     @include /common/client.cx
 }
+

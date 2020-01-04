@@ -141,7 +141,7 @@ def test_render():
     x, y = cc.POINTS.memphis
     bbox = (x - 300, y, x, y + 300,)
 
-    url = '_/cmd/mapHttpGetBbox/layerUid/a.map.wfs_squares_memphis_25832/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.wfs_squares_memphis_25832/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 400, 'height': 400})
     d = u.compare_image_response(r, '/data/wfs_squares_400x400.png')

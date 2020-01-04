@@ -93,7 +93,7 @@ class Object(gws.common.layer.Image):
                 layer=self,
                 source_layers=source_layers))
 
-    def render_bbox(self, rv: t.RenderView, client_params=None):
+    def render_box(self, rv: t.RenderView, client_params=None):
         forward = {}
 
         cache_uid = self.uid

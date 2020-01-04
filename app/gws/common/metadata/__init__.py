@@ -120,9 +120,10 @@ class MetaData(t.Data):
     links: t.List[MetaLink] = []
 
 
-def read(m: t.MetaData) -> t.MetaData:
+def read(m) -> t.MetaData:
     if not m:
         return t.MetaData()
+    m = t.MetaData(m)
     if m.get('language'):
         m.language3 = gws.tools.country.bibliographic_name(language=m.language)
     return m

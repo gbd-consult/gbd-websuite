@@ -135,9 +135,6 @@ class Stub:
         self.class_name = class_name
         self.bases = []
         self.checked = False
-        # a stub member is
-        #   [p, None, type str or annotation node, source_line] = property
-        #   [m, args annotation node, return annotation node, source_line] = method
         self.members = {}
 
     def dump(self):

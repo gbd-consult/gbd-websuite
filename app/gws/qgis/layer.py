@@ -76,9 +76,9 @@ class Object(gws.common.layer.Base):
     def props(self):
         return super().props.extend(type='group', layers=self.layers)
 
-    def ows_enabled(self, provider):
-        return (super().ows_enabled(provider)
-                and any(la.ows_enabled(provider) for la in self.layers))
+    def ows_enabled(self, service):
+        return (super().ows_enabled(service)
+                and any(la.ows_enabled(service) for la in self.layers))
 
     def _layer(self, sl: t.SourceLayer, depth: int):
         if sl.is_group:

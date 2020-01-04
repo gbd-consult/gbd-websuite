@@ -21,6 +21,7 @@ import gws.tools.units as units
 import gws.types as t
 
 
+
 class PreparedSection(t.Data):
     center: t.Point
     data: dict
@@ -219,7 +220,7 @@ class _Worker:
         if self.template:
             tr = self.template.render(
                 context=gws.extend(sec.data, self.template_vars),
-                render_output=renderer.ro,
+                render_output=renderer.output,
                 out_path=f'{self.base_path}/sec-{n}.pdf',
                 format='pdf',
             )
@@ -235,7 +236,7 @@ class _Worker:
             map_placeholder='@',
             page_size=page_size,
             margin=None,
-            render_output=renderer.ro,
+            render_output=renderer.output,
             out_path=f'{self.base_path}/sec-{n}.pdf',
         )
 
@@ -326,8 +327,8 @@ class _Worker:
             ii.dpi = units.PDF_DPI
             return ii
 
-        if ii.layer.can_render_bbox:
-            ii.type = t.RenderInputItemType.raster_layer
+        if ii.layer.can_render_box:
+            ii.type = t.RenderInputItemType.image_layer
             ii.sub_layers = item.get('subLayers')
             return ii
 

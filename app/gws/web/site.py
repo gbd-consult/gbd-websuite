@@ -49,8 +49,9 @@ class Config(t.Config):
     cors: t.Optional[CorsConfig]  #: cors configuration
     errorPage: t.Optional[t.ext.template.Config]  #: error page template
     host: str = '*'  #: host name
-    reversedRewrite: t.Optional[t.List[RewriteRule]]  #: reversed rewrite rules
     rewrite: t.Optional[t.List[RewriteRule]]  #: rewrite rules
+    reversedHost: str = ''  #: hostname for reversed rewriting
+    reversedRewrite: t.Optional[t.List[RewriteRule]]  #: reversed rewrite rules
     root: DocumentRootConfig  #: document root location and options
 
 
@@ -74,6 +75,7 @@ class Object(gws.Object, t.IWebSite):
         self.static_root: t.DocumentRoot = None
         self.assets_root: t.DocumentRoot = None
         self.rewrite_rules: t.List[t.RewriteRule] = []
+        self.reversed_host = ''
         self.reversed_rewrite_rules: t.List[t.RewriteRule] = []
         self.cors: t.CorsOptions = None
 
@@ -81,6 +83,7 @@ class Object(gws.Object, t.IWebSite):
         super().configure()
 
         self.host = self.var('host', default='*')
+        self.reversed_host = self.var('reversedHost')
         self.static_root = document_root(self.var('root'))
         self.assets_root = document_root(self.var('assets'))
 
@@ -114,7 +117,7 @@ class Object(gws.Object, t.IWebSite):
             return url
 
         proto = 'https' if self.ssl else 'http'
-        host = req.env('HTTP_HOST') if self.host == '*' else self.host
+        host = self.reversed_host or (req.env('HTTP_HOST') if self.host == '*' else self.host)
         base = proto + '://' + host
 
         u = url.lstrip('/')

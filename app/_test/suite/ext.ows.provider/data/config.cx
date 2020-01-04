@@ -1,3 +1,5 @@
+@include /common/util.cx
+
 server.mapproxy.enabled true
 server.qgis.enabled false
 server.spool.enabled false
