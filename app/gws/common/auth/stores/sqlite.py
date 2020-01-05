@@ -1,4 +1,5 @@
 import time
+import os
 import sqlite3
 
 import gws
@@ -28,6 +29,7 @@ def init():
             created INTEGER,
             updated INTEGER
         ) WITHOUT ROWID''')
+        os.chown(DB_PATH, gws.UID, gws.GID)
 
 
 def delete_all():
@@ -99,6 +101,7 @@ def delete(uid):
 def drop():
     gws.tools.shell.unlink(DB_PATH)
     init()
+
 
 def get_all():
     rs = []

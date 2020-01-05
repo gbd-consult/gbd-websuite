@@ -17,8 +17,16 @@ class Config(t.WithType):
 
 
 class Object(gws.common.auth.provider.Object):
+    def __init__(self):
+        super().__init__()
+        self.path = ''
+
+    def configure(self):
+        super().configure()
+        self.path = self.var('path')
+
     def authenticate(self, login, password, **args):
-        db = _read(self.var('path'))
+        db = self._read()
 
         ls = [
             gws.tools.password.cmp(login, rec['login']) * 2 + gws.tools.password.check(password, rec['password'])
@@ -32,7 +40,8 @@ class Object(gws.common.auth.provider.Object):
             return self.get_user(login)
 
     def get_user(self, user_uid):
-        db = _read(self.var('path'))
+        db = self._read()
+
         for rec in db:
             if rec['login'] == user_uid:
                 return self._make_user(rec)
@@ -45,10 +54,9 @@ class Object(gws.common.auth.provider.Object):
             attributes={'displayName': rec.get('name', rec['login'])}
         )
 
-
-def _read(path):
-    try:
-        with open(path, encoding='utf8') as fp:
-            return json.load(fp)
-    except IOError:
-        return {}
+    def _read(self):
+        try:
+            with open(self.path, encoding='utf8') as fp:
+                return json.load(fp)
+        except IOError:
+            return {}
