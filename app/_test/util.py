@@ -159,11 +159,21 @@ def short_features(fs, trace=False):
     return rs
 
 
-def postgres_provider() -> gws.ext.db.provider.postgres.Object:
-    cfg = test_config()['postgres_container']['connection']
+def postgres_provider():
+    cfg = test_config()
+    conn = t.Data(
+        host=cfg['host.name'],
+        port=cfg['postgres_connection.port'],
+        user=cfg['postgres_connection.user'],
+        password=cfg['postgres_connection.password'],
+        database=cfg['postgres_connection.database'],
+    )
     prov = gws.ext.db.provider.postgres.Object()
-    prov.initialize(t.Data(cfg))
+    prov.initialize(conn)
     return prov
+
+
+_postgres: gws.ext.db.provider.postgres.Object = postgres_provider()
 
 
 def make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
@@ -249,13 +259,12 @@ def create_postgres_table(prov, name, prop_schema, geom_type, crs):
 
 
 def postgres_select(stmt):
-    prov = postgres_provider()
-    with prov.connect() as conn:
+    with _postgres.connect() as conn:
         return list(conn.select(stmt))
 
 
 def make_geom_table(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
-    prov = postgres_provider()
+    prov = _postgres
     gt = geom_type
     if geom_type == 'square':
         gt = 'polygon'

@@ -43,20 +43,14 @@ color = {
 }
 
 
-def cfg(key):
-    a, b = key.split('.')
-    return CONFIG[a][b]
-
-
 def banner(s):
-    print(color['magenta'] + '>>>>>>> ' + s + color['reset'])
+    sys.stderr.write(color['magenta'] + '>>>>>>> ' + s + color['reset'] + '\n')
+    sys.stderr.flush()
 
 
 def run(cmd, **kwargs):
     args = {
-        'stdin': None,
-        'stdout': None,
-        'stderr': None,
+        'stderr': subprocess.STDOUT,
         'shell': True,
     }
     args.update(kwargs)
@@ -79,27 +73,27 @@ def start_suite_container(suite, extra_options=None):
     stop_suite_container()
 
     opts = [
-        f"--add-host={cfg('docker.host_name')}:{cfg('docker.host_ip')}",
+        f"--add-host={CONFIG['host.name']}:{CONFIG['host.docker_ip']}",
         f"--env GWS_CONFIG=/data/config.cx",
         f"--env GWS_TMP_DIR=/gws-var/tmp",
-        f"--mount type=bind,src={cfg('paths.app_root')},dst=/gws-app",
-        f"--mount type=bind,src={cfg('paths.app_root')}/_test/common,dst=/common",
-        f"--mount type=bind,src={cfg('paths.app_root')}/_test/suite/{suite}/data,dst=/data",
-        f"--mount type=bind,src={cfg('paths.var_root')},dst=/gws-var",
-        f"--name {cfg('suite_container.name')}",
-        f"--publish {cfg('suite_container.host')}:{cfg('suite_container.http_port')}:80",
+        f"--mount type=bind,src={CONFIG['paths.app_root']},dst=/gws-app",
+        f"--mount type=bind,src={CONFIG['paths.app_root']}/_test/common,dst=/common",
+        f"--mount type=bind,src={CONFIG['paths.app_root']}/_test/suite/{suite}/data,dst=/data",
+        f"--mount type=bind,src={CONFIG['paths.suite_var_root']},dst=/gws-var",
+        f"--name {CONFIG['suite_container.name']}",
+        f"--publish {CONFIG['host.ip']}:{CONFIG['suite_container.http_port']}:80",
         # publish the bundled qgis for debugging
-        f"--publish {cfg('suite_container.host')}:{cfg('suite_container.qgis_port')}:4000",
+        f"--publish {CONFIG['host.ip']}:{CONFIG['suite_container.qgis_port']}:4000",
     ]
 
-    opts += cfg('suite_container.options')
+    opts += CONFIG['suite_container.options']
 
     if extra_options:
         opts += extra_options
 
     # write a copy of our config so that the container can read it
 
-    with open(cfg('paths.var_root') + '/test.config.json', 'w') as fp:
+    with open(CONFIG['paths.suite_var_root'] + '/test.config.json', 'w') as fp:
         json.dump(CONFIG, fp)
 
     # startup script for the container
@@ -114,46 +108,45 @@ def start_suite_container(suite, extra_options=None):
         /gws-app/bin/gws server start -v
     """
 
-    with open(cfg('paths.var_root') + '/start.sh', 'w') as fp:
+    with open(CONFIG['paths.suite_var_root'] + '/start.sh', 'w') as fp:
         fp.write(start_script.strip())
 
     # ready to go
 
     banner('CONTAINER START')
-    docker_run(cfg('suite_container.image_name'), opts, 'bash /gws-var/start.sh')
+    docker_run(CONFIG['suite_container.image'], opts, 'bash /gws-var/start.sh')
 
 
 def stop_suite_container():
     banner('CONTAINER STOP')
-    run(f"docker kill --signal SIGINT {cfg('suite_container.name')}")
-    run(f"docker rm --force {cfg('suite_container.name')}")
-    run(f"rm -fr {cfg('paths.var_root')}/*")
+    run(f"docker kill --signal SIGINT {CONFIG['suite_container.name']}")
+    run(f"docker rm --force {CONFIG['suite_container.name']}")
+    run(f"rm -fr {CONFIG['paths.suite_var_root']}/*")
 
 
 def start_postgres():
     # see https://hub.docker.com/r/kartoza/postgis/ for details
 
     stop_postgres()
-
-    conn = cfg('postgres_container.connection')
+    time.sleep(2)
 
     opts = [
         f"--detach",
-        f"--env POSTGRES_DB={conn['database']}",
-        f"--env POSTGRES_PASS={conn['password']}",
-        f"--env POSTGRES_USER={conn['user']}",
-        f"--name {cfg('postgres_container.name')}",
-        f"--publish {cfg('postgres_container.host')}:{conn['port']}:5432",
+        f"--env POSTGRES_DB={CONFIG['postgres_connection.database']}",
+        f"--env POSTGRES_PASS={CONFIG['postgres_connection.password']}",
+        f"--env POSTGRES_USER={CONFIG['postgres_connection.user']}",
+        f"--name {CONFIG['postgres_container.name']}",
+        f"--publish {CONFIG['host.ip']}:{CONFIG['postgres_connection.port']}:5432",
     ]
 
     banner('STARTING POSTGRES...')
-    docker_run(cfg('postgres_container.image_name'), opts)
+    docker_run(CONFIG['postgres_container.image'], opts)
 
 
 def stop_postgres():
     banner('STOPPING POSTGRES...')
-    run(f"docker kill {cfg('postgres_container.name')}")
-    run(f"docker rm --force {cfg('postgres_container.name')}")
+    run(f"docker kill {CONFIG['postgres_container.name']}")
+    run(f"docker rm --force {CONFIG['postgres_container.name']}")
 
 
 def start_qgis():
@@ -163,28 +156,29 @@ def start_qgis():
     # qgs project files must be patched to provide correct callback urls (host:qgis-port)
 
     stop_qgis()
+    time.sleep(2)
 
     opts = [
-        f"--add-host={cfg('docker.host_name')}:{cfg('docker.host_ip')}",
+        f"--add-host={CONFIG['host.name']}:{CONFIG['host.docker_ip']}",
         f"--detach",
         f"--env GWS_CONFIG=/qgis/config.cx",
         f"--env GWS_TMP_DIR=/gws-var/tmp",
-        f"--mount type=bind,src={cfg('paths.app_root')},dst=/gws-app",
-        f"--mount type=bind,src={cfg('paths.app_root')}/_test/common/qgis,dst=/qgis",
-        f"--mount type=bind,src={cfg('paths.qgis_var_root')},dst=/gws-var",
-        f"--name {cfg('qgis_container.name')}",
-        f"--publish {cfg('qgis_container.host')}:{cfg('qgis_container.port')}:4000",
+        f"--mount type=bind,src={CONFIG['paths.app_root']},dst=/gws-app",
+        f"--mount type=bind,src={CONFIG['paths.app_root']}/_test/common/qgis,dst=/qgis",
+        f"--mount type=bind,src={CONFIG['paths.qgis_var_root']},dst=/gws-var",
+        f"--name {CONFIG['qgis_container.name']}",
+        f"--publish {CONFIG['host.ip']}:{CONFIG['qgis_container.port']}:4000",
     ]
 
     banner('STARTING QGIS...')
-    docker_run(cfg('qgis_container.image_name'), opts, 'bash /gws-app/bin/gws server start -v')
+    docker_run(CONFIG['qgis_container.image'], opts, 'bash /gws-app/bin/gws server start -v')
 
 
 def stop_qgis():
     banner('STOPPING QGIS...')
-    run(f"docker kill {cfg('qgis_container.name')}")
-    run(f"docker rm --force {cfg('qgis_container.name')}")
-    run(f"rm -fr {cfg('paths.qgis_var_root')}/*")
+    run(f"docker kill {CONFIG['qgis_container.name']}")
+    run(f"docker rm --force {CONFIG['qgis_container.name']}")
+    run(f"rm -fr {CONFIG['paths.qgis_var_root']}/*")
 
 
 def stop_all():
@@ -196,12 +190,12 @@ def stop_all():
 ##
 
 def start_container_for_suite(suite, extra_options=None):
-    run(f"make -C {cfg('paths.app_root')}/.. spec")
+    run(f"make -C {CONFIG['paths.app_root']}/.. spec")
     start_suite_container(suite, extra_options)
 
 
 def exec_suite(suite, opts):
-    run(f"docker exec {cfg('suite_container.name')} pytest /gws-app/_test/suite/{suite} {opts or ''}")
+    run(f"docker exec {CONFIG['suite_container.name']} pytest /gws-app/_test/suite/{suite} {opts or ''}")
 
 
 def run_suite(suite, opts):
@@ -209,14 +203,14 @@ def run_suite(suite, opts):
 
     banner('STARTING CONTAINER...')
 
-    start_url = f"http://{cfg('cmdserver.host')}:{cfg('cmdserver.port')}?suite={suite}"
+    start_url = f"http://{CONFIG['host.ip']}:{CONFIG['cmdserver.port']}?suite={suite}"
     requests.get(start_url)
 
     wait_cnt = 0
 
     while True:
         try:
-            requests.get(f"http://{cfg('suite_container.host')}:{cfg('suite_container.http_port')}")
+            requests.get(f"http://{CONFIG['host.ip']}:{CONFIG['suite_container.http_port']}")
             break
         except Exception as e:
             wait_cnt += 1
@@ -225,17 +219,17 @@ def run_suite(suite, opts):
                 time.sleep(5)
             else:
                 banner('GIVING UP')
-                sys.exit(1)
+                return
 
     exec_suite(suite, opts)
 
 
-def run_batch(suites, opts):
+def run_suites(suites, opts):
     if suites:
         suites = [s.strip() for s in suites.split(',')]
     else:
         suites = []
-        base = f"{cfg('paths.app_root')}/_test/suite"
+        base = f"{CONFIG['paths.app_root']}/_test/suite"
         for p in os.listdir(base):
             if os.path.isdir(base + '/' + p):
                 suites.append(p)
@@ -266,7 +260,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 def start_cmd_server():
     try:
         # signal the server to exit
-        stop_url = f"http://{cfg('cmdserver.host')}:{cfg('cmdserver.port')}?exit=1"
+        stop_url = f"http://{CONFIG['host.ip']}:{CONFIG['cmdserver.port']}?exit=1"
         requests.get(stop_url)
     except:
         pass
@@ -276,7 +270,7 @@ def start_cmd_server():
     start_postgres()
     start_qgis()
 
-    server_address = (cfg('cmdserver.host'), cfg('cmdserver.port'))
+    server_address = CONFIG['host.ip'], int(CONFIG['cmdserver.port'])
 
     HTTPRequestHandler.protocol_version = 'HTTP/1.1'
     httpd = http.server.HTTPServer(server_address, HTTPRequestHandler)
@@ -286,38 +280,35 @@ def start_cmd_server():
     httpd.serve_forever()
 
 
+def parse_config(path):
+    d = {}
+    with open(path) as fp:
+        for s in fp:
+            s = s.strip()
+            if not s or s.startswith('#'):
+                continue
+            a, b = s.split('=')
+            d[a.strip()] = b.strip()
+    return d
+
+
 def main():
     global CONFIG
 
     usage = """
     
-        cmd.py server --config CONFIG
+        cmd.py server --config CONFIG-PATH
     
             start a simple HTTP server which run gws containers on demand: curl localhost:port?suite=SUITE
     
-        cmd.py run --config CONFIG --suite SUITE --opts 'OPTS'
+        cmd.py run --config CONFIG-PATH --suite SUITE-NAMES --opts 'PYTEST-OPTIONS'
     
-            tell the server to start a suite container and runs pytest on that suite
+            run each suite from a comma separated list (or all if omitted)
     
-        cmd.py exec --config CONFIG --suite SUITE --opts 'OPTS'
+        cmd.py exec --config CONFIG-PATH --suite SUITE-NAME --opts 'PYTEST-OPTIONS'
     
             run pytest on a suite, assuming its container is started
     
-        cmd.py batch --config CONFIG --suites SUITES
-    
-            run multiple/all suites
-    
-        cmd.py container --config CONFIG --suite SUITE 
-    
-            start a suite container interactively
-        
-        cmd.py postgres --config CONFIG
-    
-            start a postgres container
-        
-        cmd.py qgis --config CONFIG
-    
-            start a qgis container
     """
 
     parser = argparse.ArgumentParser(usage=usage)
@@ -330,35 +321,20 @@ def main():
     args.opts = (args.opts or '').strip("'")
     args.suite = (args.suite or '').split('/')[-1]
 
-    with open(args.config) as fp:
-        CONFIG = json.load(fp)
+    CONFIG = parse_config(os.path.dirname(__file__) + '/cmd.ini')
+    if args.config:
+        CONFIG.update(parse_config(args.config))
 
     if args.cmd == 'server':
         start_cmd_server()
         return
 
     if args.cmd in ('run', 'r'):
-        run_suite(args.suite, args.opts)
-        return
-
-    if args.cmd == 'batch':
-        run_batch(args.suite, args.opts)
+        run_suites(args.suite, args.opts)
         return
 
     if args.cmd in ('exec', 'e'):
         exec_suite(args.suite, args.opts)
-        return
-
-    if args.cmd == 'container':
-        start_container_for_suite(args.suite, ['-i'])
-        return
-
-    if args.cmd == 'postgres':
-        start_postgres()
-        return
-
-    if args.cmd == 'qgis':
-        start_qgis()
         return
 
 
