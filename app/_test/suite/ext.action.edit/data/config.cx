@@ -1,0 +1,46 @@
+@include /common/util.cx
+
+@WEB_SERVER_ONLY
+@POSTGRES_CONFIG
+@DEFAULT_WEB_SITE
+
+access+ { role "all" type "allow" }
+
+api.actions+ { type "map" }
+api.actions+ { type "asset" }
+api.actions+ { type "project" }
+
+api.actions+ { type "edit" }
+
+projects+ {
+    uid "a"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "paris_3857"
+        type "postgres"
+        display "box"
+        table.name "paris_3857"
+        featureFormat.label {
+            type "html"
+            text "{id}"
+        }
+        style {
+            type "css"
+            text """
+                fill: rgba(0,0,255,0.5);
+                label-font-size: 13px;
+                label-fill: cyan;
+                label-background: black;
+                label-offset-x: 10px;
+                label-offset-y: -10px;
+            """
+        }
+        edit {
+            access+ { role "all" type "allow" }
+        }
+    }
+
+    @include /common/client.cx
+}

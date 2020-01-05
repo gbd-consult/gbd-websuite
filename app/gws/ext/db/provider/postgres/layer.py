@@ -21,6 +21,8 @@ class Object(gws.common.layer.Vector):
     def __init__(self):
         super().__init__()
 
+        self.is_editable = True
+
         self.provider: provider.Object = None
         self.table: t.SqlTable = None
 

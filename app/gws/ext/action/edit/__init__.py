@@ -35,7 +35,7 @@ class Object(gws.ActionObject):
 
         return self._handle('update', req, p)
 
-    def _handle(self, op, req, p):
+    def _handle(self, op, req, p: EditParams):
         layer: t.ILayer = req.require('gws.ext.layer', p.layerUid)
         if not layer.edit_access(req.user):
             raise gws.web.error.Forbidden()

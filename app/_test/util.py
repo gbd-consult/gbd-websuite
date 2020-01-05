@@ -159,7 +159,7 @@ def short_features(fs, trace=False):
     return rs
 
 
-def postgres_provider():
+def postgres_provider() -> gws.ext.db.provider.postgres.Object:
     cfg = test_config()['postgres_container']['connection']
     prov = gws.ext.db.provider.postgres.Object()
     prov.initialize(t.Data(cfg))
@@ -232,20 +232,26 @@ def make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
     return features
 
 
-def create_postgis_table(prov, name, prop_schema, geom_type, crs):
+def create_postgres_table(prov, name, prop_schema, geom_type, crs):
     props = ','.join(f'{k} {v}' for k, v in prop_schema.items())
     srid = crs.split(':')[-1]
 
     ddl = f'''
         CREATE TABLE {name} (
-            id INTEGER PRIMARY KEY,
+            id SERIAL PRIMARY KEY,
             {props},
             p_geom GEOMETRY({geom_type},{srid})
         )
     '''
-    with prov.connect() as drv:
-        drv.execute(f'DROP TABLE IF EXISTS {name}')
-        drv.execute(ddl)
+    with prov.connect() as conn:
+        conn.execute(f'DROP TABLE IF EXISTS {name}')
+        conn.execute(ddl)
+
+
+def postgres_select(stmt):
+    prov = postgres_provider()
+    with prov.connect() as conn:
+        return list(conn.select(stmt))
 
 
 def make_geom_table(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
@@ -253,10 +259,13 @@ def make_geom_table(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
     gt = geom_type
     if geom_type == 'square':
         gt = 'polygon'
-    create_postgis_table(prov, name, prop_schema, gt, crs)
+    create_postgres_table(prov, name, prop_schema, gt, crs)
     features = make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap)
     table = prov.configure_table({'name': name})
     prov.edit_operation('insert', table, features)
+    next_id = max(int(f.uid) for f in features) + 1
+    with prov.connect() as conn:
+        conn.execute(f"ALTER SEQUENCE {name}_id_seq RESTART WITH {next_id}")
 
 
 def make_geom_json(path, geom_type, prop_schema, crs, xy, rows, cols, gap):

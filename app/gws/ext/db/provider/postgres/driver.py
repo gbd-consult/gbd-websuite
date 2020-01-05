@@ -233,6 +233,8 @@ class Connection:
         values = []
 
         for k, v in rec.items():
+            if v is None:
+                continue
             fields.append(self.quote_ident(k))
             if isinstance(v, (list, tuple)):
                 placeholders.append(v[0])
