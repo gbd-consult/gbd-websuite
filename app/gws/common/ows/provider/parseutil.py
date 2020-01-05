@@ -73,11 +73,11 @@ def get_bounds_list(el):
         if crs:
             d[crs] = _bbox_value(e)
 
-    if 'EPSG:4326' not in d:
+    if gws.EPSG_4326 not in d:
         for tag in 'WGS84BoundingBox', 'EX_GeographicBoundingBox', 'LatLonBoundingBox':
             e = el.first(tag)
             if e:
-                d['EPSG:4326'] = _bbox_value(e)
+                d[gws.EPSG_4326] = _bbox_value(e)
                 break
 
     return [t.Bounds(crs=k, extent=v) for k, v in d.items()]

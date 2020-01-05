@@ -27,7 +27,7 @@ class Object(gws.common.layer.Vector):
 
         self.path = self.var('path')
         js = gws.tools.json2.from_path(self.path)
-        self.own_crs = gws.gis.proj.as_epsg(_get_crs(js) or 'EPSG:4326')
+        self.own_crs = gws.gis.proj.as_epsg(_get_crs(js) or gws.EPSG_4326)
         self.features = [
             gws.gis.feature.from_geojson(f, self.crs, self.var('keyProp'))
             for f in js['features']]

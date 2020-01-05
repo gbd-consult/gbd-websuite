@@ -46,7 +46,7 @@ class Object(gws.common.layer.ImageTile):
         self.service = self.var('service')
 
         if not self.service.extent:
-            if self.service.crs == 'EPSG:3857':
+            if self.service.crs == gws.EPSG_3857:
                 self.service.extent = _EPSG_3857_EXTENT
             else:
                 raise gws.Error(r'service extent required for crs {self.service.crs!r}')

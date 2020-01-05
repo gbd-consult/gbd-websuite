@@ -377,7 +377,7 @@ class Base(Object):
     def inspire_nodes(self, nodes):
         return [n for n in nodes if n.tag_name in inspire.TAGS]
 
-    def feature_node_list(self, rd: Request, features: t.List[t.IFeature]):
+    def feature_node_list(self, rd: Request, features: t.List[t.IFeature]) -> t.List[FeatureNode]:
         def node(f: t.IFeature):
             gs = None
             if f.shape:
@@ -385,61 +385,14 @@ class Base(Object):
 
             f.convert()
 
-            return FeatureNode({
-                'feature': f,
-                'shape_tag': gs,
-                'tag_name': f.layer.ows_name if f.layer else 'feature',
-                'attributes': f.attributes,
-            })
+            return FeatureNode(
+                feature=f,
+                shape_tag=gs,
+                tag_name=f.layer.ows_name if f.layer else 'feature',
+                attributes=f.attributes,
+            )
 
         return [node(f) for f in features]
-
-    def collect_iso_metadata(self, service):
-        rs = {}
-
-        for obj in service.find_all():
-            meta = getattr(obj, 'meta', None)
-            uid = gws.get(meta, 'iso.uid')
-            if not uid:
-                continue
-            m = self._configure_metadata(obj)
-            if m:
-                rs[gws.as_uid(uid)] = m
-        return rs
-
-    ##
-
-    def _configure_metadata(self, obj: gws.Object):
-        m: t.MetaData = gws.common.metadata.read(obj.meta)
-
-        if obj.is_a('gws.common.project'):
-            la = obj.map
-        elif obj.is_a('gws.ext.layer'):
-            la = obj
-        else:
-            la = obj.get_closest('gws.common.project')
-            if la:
-                la = la.map
-
-        if la:
-            m.proj = gws.gis.proj.as_proj(la.crs)
-            m.lonlat_extent = lonlat_extent(la.extent, la.crs)
-            m.resolution = int(min(units.res2scale(r) for r in la.resolutions))
-
-        if gws.get(m, 'inspire.theme'):
-            m.inspire['themeName'] = inspire.theme_name(m.inspire['theme'], m.language)
-
-        m.iso = gws.extend({
-            'spatialType': 'vector',
-        }, m.iso)
-
-        m.inspire = gws.extend({
-            'qualityExplanation': '',
-            'qualityPass': 'false',
-            'qualityLineage': '',
-        }, m.inspire)
-
-        return m
 
     ## Utils
 
@@ -447,4 +400,4 @@ class Base(Object):
         return layer and layer.ows_enabled(self)
 
     def lonlat_extent(self, extent, crs):
-        return [round(c, 4) for c in gws.gis.extent.transformed(extent, crs, 'EPSG:4326')]
+        return [round(c, 4) for c in gws.gis.extent.transformed(extent, crs, gws.EPSG_4326)]

@@ -122,7 +122,7 @@ def _best_bounds(bs: t.List[t.Bounds], target_crs):
         if gws.gis.proj.equal(b.crs, target_crs):
             return b
     for b in bs:
-        if gws.gis.proj.equal(b.crs, gws.gis.proj.WEBMERCATOR):
+        if gws.gis.proj.equal(b.crs, gws.EPSG_3857):
             return b
     for b in bs:
         return b

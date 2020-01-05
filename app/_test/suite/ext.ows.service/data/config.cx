@@ -11,6 +11,13 @@ api.actions+ { type "search" }
 api.actions+ { type "asset" }
 api.actions+ { type "project" }
 
+api.actions+ {
+    type "ows"
+    services+ {
+        type "csw"
+    }
+}
+
 
 @def SIMPLE_MAP
     map.crs "EPSG:3857"

@@ -38,7 +38,6 @@ http://www.opengis.net/def/crs/EPSG/0/4326
 
 """
 
-WEBMERCATOR = 'EPSG:3857'
 
 
 def is_latlong(p) -> bool:

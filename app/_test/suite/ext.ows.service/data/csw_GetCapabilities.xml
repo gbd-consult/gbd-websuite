@@ -1,0 +1,120 @@
+<csw:Capabilities xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:gws="http://gws.gbd-consult.de" xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0" xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.2" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd http://inspire.ec.europa.eu/schemas/common/1.0 http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd http://inspire.ec.europa.eu/schemas/inspire_vs/1.0 http://inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd http://www.opengis.net/ows http://schemas.opengis.net/ows/1.0.0/owsAll.xsd">
+    <ows:ServiceIdentification>
+        <ows:ServiceType>csw</ows:ServiceType>
+        <ows:ServiceTypeVersion>2.0.2</ows:ServiceTypeVersion>
+        <ows:Title>None</ows:Title>
+    </ows:ServiceIdentification>
+    <ows:ServiceProvider/>
+    <ows:OperationsMetadata>
+        <ows:Operation name="GetCapabilities">
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttp/serviceName/csw"/>
+                </ows:HTTP>
+            </ows:DCP>
+        </ows:Operation>
+        <ows:Operation name="GetRecords">
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttp/serviceName/csw"/>
+                    <ows:Post xlink:href="http://mainhost:3333/_/cmd/owsHttp/serviceName/csw"/>
+                </ows:HTTP>
+            </ows:DCP>
+            <ows:Parameter name="typeName">
+                <ows:Value>csw:Record</ows:Value>
+            </ows:Parameter>
+            <ows:Parameter name="outputFormat">
+                <ows:Value>text/xml</ows:Value>
+            </ows:Parameter>
+            <ows:Parameter name="outputSchema">
+                <ows:Value>http://www.opengis.net/cat/csw/2.0.2</ows:Value>
+            </ows:Parameter>
+            <ows:Parameter name="resultType">
+                <ows:Value>results</ows:Value>
+            </ows:Parameter>
+            <ows:Parameter name="ElementSetName">
+                <ows:Value>full</ows:Value>
+            </ows:Parameter>
+            <ows:Parameter name="CONSTRAINTLANGUAGE">
+                <ows:Value>Filter</ows:Value>
+            </ows:Parameter>
+            <ows:Parameter name="version">
+                <ows:Value>2.0.2</ows:Value>
+            </ows:Parameter>
+        </ows:Operation>
+        <ows:Operation name="DescribeRecord">
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttp/serviceName/csw"/>
+                </ows:HTTP>
+            </ows:DCP>
+            <ows:Parameter name="typeName">
+                <ows:Value>gmd:MD_Metadata</ows:Value>
+            </ows:Parameter>
+            <ows:Parameter name="outputFormat">
+                <ows:Value>application/xml</ows:Value>
+            </ows:Parameter>
+            <ows:Parameter name="schemaLanguage">
+                <ows:Value>http://www.w3.org/XML/Schema</ows:Value>
+            </ows:Parameter>
+        </ows:Operation>
+        <ows:Constraint name="IsoProfiles">
+            <ows:Value>http://www.isotc211.org/2005/gmd</ows:Value>
+        </ows:Constraint>
+        <inspire_vs:ExtendedCapabilities>
+            <inspire_common:ResourceLocator>
+                <inspire_common:URL/>
+                <inspire_common:MediaType>text/xml</inspire_common:MediaType>
+            </inspire_common:ResourceLocator>
+            <inspire_common:ResourceType>service</inspire_common:ResourceType>
+            <inspire_common:TemporalReference>
+                <inspire_common:DateOfPublication>None</inspire_common:DateOfPublication>
+            </inspire_common:TemporalReference>
+            <inspire_common:Conformity>
+                <inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng">
+                    <inspire_common:Title>COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services</inspire_common:Title>
+                    <inspire_common:DateOfPublication>2010-12-08</inspire_common:DateOfPublication>
+                </inspire_common:Specification>
+                <inspire_common:Degree/>
+            </inspire_common:Conformity>
+            <inspire_common:MetadataPointOfContact>
+                <inspire_common:OrganisationName/>
+                <inspire_common:EmailAddress/>
+            </inspire_common:MetadataPointOfContact>
+            <inspire_common:SpatialDataServiceType>view</inspire_common:SpatialDataServiceType>
+            <inspire_common:MandatoryKeyword>
+                <inspire_common:KeywordValue>infoMapAccessService</inspire_common:KeywordValue>
+            </inspire_common:MandatoryKeyword>
+            <inspire_common:SupportedLanguages>
+                <inspire_common:DefaultLanguage>
+                    <inspire_common:Language/>
+                </inspire_common:DefaultLanguage>
+                <inspire_common:SupportedLanguage>
+                    <inspire_common:Language/>
+                </inspire_common:SupportedLanguage>
+            </inspire_common:SupportedLanguages>
+            <inspire_common:ResponseLanguage>
+                <inspire_common:Language/>
+            </inspire_common:ResponseLanguage>
+        </inspire_vs:ExtendedCapabilities>
+    </ows:OperationsMetadata>
+    <ogc:Filter_Capabilities>
+        <ogc:Spatial_Capabilities>
+            <ogc:Spatial_Operators>
+                <ogc:BBOX/>
+            </ogc:Spatial_Operators>
+        </ogc:Spatial_Capabilities>
+        <ogc:Scalar_Capabilities>
+            <ogc:Logical_Operators/>
+            <ogc:Comparison_Operators>
+                <ogc:Simple_Comparisons/>
+                <ogc:Like/>
+                <ogc:Between/>
+                <ogc:NullCheck/>
+            </ogc:Comparison_Operators>
+            <ogc:Arithmetic_Operators>
+                <ogc:Simple_Arithmetic/>
+            </ogc:Arithmetic_Operators>
+        </ogc:Scalar_Capabilities>
+    </ogc:Filter_Capabilities>
+</csw:Capabilities>

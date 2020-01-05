@@ -56,7 +56,7 @@ def best_crs(target_crs, supported_crs):
 
     # if webmercator is supported, use it
 
-    crs = gws.gis.proj.find(gws.gis.proj.WEBMERCATOR, supported_crs)
+    crs = gws.gis.proj.find(gws.EPSG_3857, supported_crs)
     if crs:
         gws.log.debug(f'best_crs: using {crs!r} for {target_crs!r}')
         return crs

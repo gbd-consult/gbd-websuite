@@ -2,12 +2,14 @@ import gws
 
 import gws.common.model
 import gws.common.ows.service
+import gws.common.ows.service.inspire
 import gws.common.search.runner
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
 import gws.gis.gml
 import gws.tools.date
+import gws.tools.units as units
 import gws.common.metadata
 import gws.tools.xml3
 import gws.web.error
@@ -29,7 +31,7 @@ VERSION = '2.0.2'
 MAX_LIMIT = 100
 
 
-class Object(ows.Object):
+class Object(ows.Base):
     def __init__(self):
         super().__init__()
 
@@ -84,10 +86,10 @@ class Object(ows.Object):
         return self.dispatch(rd, request_param.lower())
 
     def handle_getcapabilities(self, rd: ows.Request):
-        return ows.xml_response(self.render_template(rd, 'getCapabilities', {}))
+        return self.xml_response(self.render_template(rd, 'getCapabilities', {}))
 
     def handle_describerecord(self, rd: ows.Request):
-        return ows.xml_response(self.render_template(rd, 'describeRecord', {}))
+        return self.xml_response(self.render_template(rd, 'describeRecord', {}))
 
     def handle_getrecords(self, rd: ows.Request):
         records = self._find_records(rd)
@@ -99,7 +101,7 @@ class Object(ows.Object):
             'count_return': len(records),
         }
 
-        return ows.xml_response(rd.service.render_template(rd, 'getRecords', {
+        return self.xml_response(self.render_template(rd, 'getRecords', {
             'record_tags': self._render_records(rd, records),
             'results': results,
         }))
@@ -108,12 +110,12 @@ class Object(ows.Object):
         uid = rd.req.param('id')
         record = self.records.get(gws.as_uid(uid))
 
-        return ows.xml_response(rd.service.render_template(rd, 'getRecordById', {
+        return self.xml_response(self.render_template(rd, 'getRecordById', {
             'record_tags': self._render_records(rd, [record]) if record else [],
         }))
 
     def _load_records(self):
-        metas = ows.collect_iso_metadata(self)
+        metas = self._collect_metadata()
 
         self.records = {}
         self.index = []
@@ -131,6 +133,56 @@ class Object(ows.Object):
             for s in rec.keywords:
                 self.index.append(('subject', s, s.lower(), rec.index))
 
+    def _collect_metadata(self):
+        rs = {}
+
+        for obj in self.find_all():
+            meta = getattr(obj, 'meta', None)
+            uid = gws.get(meta, 'iso.uid')
+            if not uid:
+                continue
+            m = self._configure_metadata(obj, meta)
+            if m:
+                rs[gws.as_uid(uid)] = m
+        return rs
+
+    def _configure_metadata(self, obj: t.IObject, meta: t.MetaData) -> t.MetaData:
+        m = gws.common.metadata.read(meta)
+        extent = crs = res = None
+
+        if obj.is_a('gws.ext.layer'):
+            p: t.ILayer = obj
+            extent = p.extent
+            crs = p.map.crs
+            res = p.resolutions
+        else:
+            p: t.IProject = obj
+            if not obj.is_a('gws.common.project'):
+                p = obj.get_closest('gws.common.project')
+            if p:
+                extent = p.map.extent
+                crs = p.map.crs
+                res = p.map.resolutions
+
+        if extent:
+            m.lonlat_extent = self.lonlat_extent(extent, crs)
+            m.proj = gws.gis.proj.as_proj(crs)
+            m.resolution = int(min(units.res2scale(r) for r in res))
+
+        if gws.get(m, 'inspire.theme'):
+            m.inspire['themeName'] = gws.common.ows.service.inspire.theme_name(m.inspire['theme'], m.language)
+
+        m.iso = gws.extend({
+            'spatialType': 'vector',
+        }, m.iso)
+
+        m.inspire = gws.extend({
+            'qualityExplanation': '',
+            'qualityPass': 'false',
+            'qualityLineage': '',
+        }, m.inspire)
+
+        return m
 
     def _find_records(self, rd):
         recs = self.records.values()
