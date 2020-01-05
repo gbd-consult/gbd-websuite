@@ -10,6 +10,12 @@ class Config(gws.common.layer.BaseConfig):
 
 
 class Object(gws.common.layer.Base):
+    def __init__(self):
+        super().__init__()
+
+        self.supports_wms = True
+        self.supports_wfs = True
+
     def configure(self):
         super().configure()
 

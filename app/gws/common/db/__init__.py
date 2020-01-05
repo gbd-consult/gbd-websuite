@@ -39,13 +39,14 @@ class SelectArgs(t.Data):
     sort: t.Optional[str]
     table: t.SqlTable
     uids: t.Optional[t.List[str]]
-    extraWhere: t.Optional[str]
+    extra_where: t.Optional[str]
 
 
 #:export
 class SqlTableColumn(t.Data):
     name: str
     type: t.AttributeType
+    geom_type: t.GeometryType
     native_type: str
     crs: t.Crs
     is_key: bool

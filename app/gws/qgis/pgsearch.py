@@ -54,5 +54,5 @@ class Object(gws.common.search.provider.Object):
             'shape': self.context_shape(args),
             'limit': args.limit,
             'tolerance': args.tolerance,
-            'extraWhere': self.extra_where,
+            'extra_where': self.extra_where,
         }))

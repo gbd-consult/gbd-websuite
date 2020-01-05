@@ -1,5 +1,8 @@
 ## helper functions for ows templates
 
+
+## OGC 06-121r3 table 15,16,17
+
 @def ows_service_url(get=True, post=False)
     @tag ows:DCP/ows:HTTP
         @if get
@@ -12,23 +15,38 @@
 @end
 
 
+## OGC 06-121r3 sec 7.4.4
+
 @def ows_service_identification
     @tag ows:ServiceIdentification
-        @t ows:Title {meta.title}
-        @t ows:Abstract {meta.abstract}
-        @tag ows:Keywords
-            @each meta.keywords as kw
-                @t ows:Keyword {kw}
-            @end
-        @end
-
         @t ows:ServiceType {service.type}
         @t ows:ServiceTypeVersion {service.version}
 
-        @t ows:Fees {meta.fees}
-        @t ows:AccessConstraints {meta.accessConstraints}
+        @t ows:Title {meta.title}
+
+        @with meta.abstract
+            @t ows:Abstract {meta.abstract}
+        @end
+
+        @with meta.keywords
+            @tag ows:Keywords
+                @each meta.keywords as kw
+                    @t ows:Keyword {kw}
+                @end
+            @end
+        @end
+
+        @with meta.fees
+            @t ows:Fees {meta.fees}
+        @end
+
+        @with meta.accessConstraints
+            @t ows:AccessConstraints {meta.accessConstraints}
+        @end
     @end
 @end
+
+## OGC 06-121r3 sec 7.4.5
 
 @def ows_service_provider
     @tag ows:ServiceProvider

@@ -45,7 +45,7 @@ class Object(gws.common.ows.provider.Object):
             return []
 
         shape = args.shapes[0]
-        if shape.type != 'Point':
+        if shape.type != t.GeometryType.point:
             return []
 
         our_crs = gws.gis.util.best_crs(shape.crs, self.supported_crs)

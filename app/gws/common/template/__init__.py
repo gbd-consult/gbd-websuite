@@ -78,7 +78,9 @@ class Object(gws.Object, t.ITemplate):
 
     def configure(self):
         super().configure()
-        self.data_model = self.add_child('gws.common.model', self.var('dataModel'))
+        p = self.var('dataModel')
+        if p:
+            self.data_model = self.add_child('gws.common.model', p)
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')

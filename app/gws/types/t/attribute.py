@@ -16,19 +16,21 @@ class AttributeType(Enum):
     str = 'str'
     time = 'time'
 
-    geoCurve = 'curve'
-    geoGeomcollection = 'geomcollection'
-    geoGeometry = 'geometry'
-    geoLinestring = 'linestring'
-    geoMulticurve = 'multicurve'
-    geoMultilinestring = 'multilinestring'
-    geoMultipoint = 'multipoint'
-    geoMultipolygon = 'multipolygon'
-    geoMultisurface = 'multisurface'
-    geoPoint = 'point'
-    geoPolygon = 'polygon'
-    geoPolyhedralsurface = 'polyhedralsurface'
-    geoSurface = 'surface'
+
+class GeometryType(Enum):
+    curve = 'curve'
+    geomcollection = 'geomcollection'
+    geometry = 'geometry'
+    linestring = 'linestring'
+    multicurve = 'multicurve'
+    multilinestring = 'multilinestring'
+    multipoint = 'multipoint'
+    multipolygon = 'multipolygon'
+    multisurface = 'multisurface'
+    point = 'point'
+    polygon = 'polygon'
+    polyhedralsurface = 'polyhedralsurface'
+    surface = 'surface'
 
 
 class Attribute(Data):

@@ -4,7 +4,9 @@
     @tag FeatureType
         @t Name {feature_ns(node.tag_name)}
         @t Title {node.title}
-        @t Abstract {node.meta.abstract}
+        @with node.meta.abstract
+            @t Abstract {node.meta.abstract}
+        @end
         @t DefaultSRS {node.proj.urn}
         @tag ows:WGS84BoundingBox
             @t ows:LowerCorner {node.lonlat_extent[0]} {node.lonlat_extent[1]}
@@ -20,17 +22,19 @@
     @end
 @end
 
+@def _wfs_versions
+    @tag ows:AllowedValues
+        @t ows:Value 2.0.2
+        @t ows:Value 2.0.1
+        @t ows:Value 2.0.0
+    @end
+@end
+
 @def wfs_basic_operations default_count=1000
     @tag ows:Operation name="GetCapabilities"
-
         @ows_service_url
-
         @tag ows:Parameter name="AcceptVersions"
-            @tag ows:AllowedValues
-                @t ows:Value 2.0.2
-                @t ows:Value 2.0.1
-                @t ows:Value 2.0.0
-            @end
+            @_wfs_versions
         @end
     @end
 
@@ -43,11 +47,7 @@
     @end
 
     @tag ows:Parameter name="version"
-        @tag ows:AllowedValues
-            @t ows:Value2.0.2
-            @t ows:Value2.0.1
-            @t ows:Value2.0.0
-        @end
+        @_wfs_versions
     @end
 
     @_wfs_constraint "ows", "ImplementsBasicWFS", True

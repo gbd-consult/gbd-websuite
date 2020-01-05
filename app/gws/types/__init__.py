@@ -10,8 +10,52 @@
     
 # noinspection PyUnresolvedReferences
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-# noinspection PyUnresolvedReferences
-from .data import Data, Config, Props
+
+### Data objects
+
+class Data:
+    """Data object."""
+
+    def __init__(self, *args, **kwargs):
+        self._extend(args, kwargs)
+
+    def set(self, k, value):
+        return setattr(self, k, value)
+
+    def get(self, k, default=None):
+        return getattr(self, k, default)
+
+    def as_dict(self):
+        return vars(self)
+
+    def extend(self, *args, **kwargs):
+        self._extend(args, kwargs)
+        return self
+
+    def __repr__(self):
+        return repr(vars(self))
+
+    def _extend(self, args, kwargs):
+        d = {}
+        for a in args:
+            if isinstance(a, dict):
+                d.update(a)
+            elif hasattr(a, 'as_dict'):
+                d.update(a.as_dict())
+        d.update(kwargs)
+        vars(self).update(d)
+
+
+class Config(Data):
+    """Configuration base type"""
+
+    uid: str = ''  #: unique ID
+
+
+class Props(Data):
+    """Properties base type"""
+    pass
+
 
 ### Basic types
 
@@ -90,7 +134,7 @@ class Url(str):
 ### Dummy classes to support extension typing.
 
 
-# noinspection PyPep8Naming
+#: ignore
 class ext:
     class action:
         class Config:
@@ -185,19 +229,21 @@ class AttributeType(Enum):
     str = 'str'
     time = 'time'
 
-    geoCurve = 'curve'
-    geoGeomcollection = 'geomcollection'
-    geoGeometry = 'geometry'
-    geoLinestring = 'linestring'
-    geoMulticurve = 'multicurve'
-    geoMultilinestring = 'multilinestring'
-    geoMultipoint = 'multipoint'
-    geoMultipolygon = 'multipolygon'
-    geoMultisurface = 'multisurface'
-    geoPoint = 'point'
-    geoPolygon = 'polygon'
-    geoPolyhedralsurface = 'polyhedralsurface'
-    geoSurface = 'surface'
+
+class GeometryType(Enum):
+    curve = 'curve'
+    geomcollection = 'geomcollection'
+    geometry = 'geometry'
+    linestring = 'linestring'
+    multicurve = 'multicurve'
+    multilinestring = 'multilinestring'
+    multipoint = 'multipoint'
+    multipolygon = 'multipolygon'
+    multisurface = 'multisurface'
+    point = 'point'
+    polygon = 'polygon'
+    polyhedralsurface = 'polyhedralsurface'
+    surface = 'surface'
 
 
 class Attribute(Data):
@@ -274,7 +320,6 @@ class IBaseRequest:
     environ: dict = None
     headers: dict = None
     input_struct_type: int = None
-    kparams: dict = None
     method: str = None
     output_struct_type: int = None
     params: dict = None
@@ -283,7 +328,7 @@ class IBaseRequest:
     text_data: Optional[str] = None
     def env(self, key: str, default: str = None) -> str: pass
     def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> 'IResponse': pass
-    def kparam(self, key: str, default: str = None) -> str: pass
+    def has_param(self, key: str) -> bool: pass
     def param(self, key: str, default: str = None) -> str: pass
     def response(self, content: str, mimetype: str, status: int = 200) -> 'IResponse': pass
     def struct_response(self, data: 'Response', status: int = 200) -> 'IResponse': pass
@@ -340,7 +385,7 @@ class IShape:
     centroid: 'IShape' = None
     crs: str = None
     props: 'ShapeProps' = None
-    type: str = None
+    type: 'GeometryType' = None
     wkb: str = None
     wkb_hex: str = None
     wkt: str = None
@@ -403,6 +448,7 @@ class MetaData(Data):
     pubDate: str = None
     serviceUrl: 'Url' = None
     title: str = None
+    uid: str = None
     url: 'Url' = None
 
 class MetaLink(Data):
@@ -420,7 +466,7 @@ class ModelRule(Data):
     source: str = None
     title: str = None
     type: 'AttributeType' = None
-    value: Optional[str]  #: constant value = None
+    value: Optional[str] = None
 
 class OwsOperation:
     formats: List[str] = None
@@ -476,9 +522,9 @@ class RenderView(Data):
     size_px: 'Size' = None
 
 class RewriteRule(Data):
-    match: 'Regex'  #: expression to match the url against = None
-    options: Optional[dict]  #: additional options = None
-    target: str  #: target url with placeholders = None
+    match: 'Regex' = None
+    options: Optional[dict] = None
+    target: str = None
 
 class SearchArgs(Data):
     axis: str = None
@@ -487,7 +533,6 @@ class SearchArgs(Data):
     layers: List['ILayer'] = None
     limit: int = None
     params: dict = None
-    point: 'Point' = None
     project: 'IProject' = None
     resolution: float = None
     shapes: List['IShape'] = None
@@ -495,7 +540,7 @@ class SearchArgs(Data):
     tolerance: int = None
 
 class SelectArgs(Data):
-    extraWhere: Optional[str] = None
+    extra_where: Optional[str] = None
     keyword: Optional[str] = None
     limit: Optional[int] = None
     shape: Optional['IShape'] = None
@@ -545,6 +590,7 @@ class SqlTable(Data):
 
 class SqlTableColumn(Data):
     crs: 'Crs' = None
+    geom_type: 'GeometryType' = None
     is_geometry: bool = None
     is_key: bool = None
     name: str = None
@@ -578,7 +624,7 @@ class TemplateProps(Props):
     uid: str = None
 
 class TemplateQualityLevel(Data):
-    dpi: int  #: dpi value = None
+    dpi: int = None
     name: str = None
 
 class UserProps(Data):
@@ -621,6 +667,7 @@ class ILayer(IObject):
     description_template: 'ITemplate' = None
     display: str = None
     edit_data_model: 'IModel' = None
+    edit_options: Data = None
     edit_style: 'IStyle' = None
     extent: 'Extent' = None
     feature_format: 'IFormat' = None
@@ -667,6 +714,9 @@ class IMap(IObject):
     resolutions: List[float] = None
 
 class IModel(IObject):
+    geometry_crs: str = None
+    geometry_type: 'GeometryType' = None
+    is_identity: bool = None
     rules: List['ModelRule'] = None
     def apply(self, atts: List[Attribute]) -> List[Attribute]: pass
     def apply_to_dict(self, d: dict) -> List[Attribute]: pass

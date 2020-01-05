@@ -66,13 +66,13 @@ class Object(ows.Object):
         if self.records is None:
             self._load_records()
 
-        rd = ows.OwsRequest({
+        rd = ows.Request({
             'req': req,
             'project': None,
             'service': self,
         })
 
-        request_param = req.kparam('request', '')
+        request_param = req.param('request', '')
 
         if req.method == 'POST':
             try:
@@ -83,13 +83,13 @@ class Object(ows.Object):
 
         return self.dispatch(rd, request_param.lower())
 
-    def handle_getcapabilities(self, rd: ows.OwsRequest):
+    def handle_getcapabilities(self, rd: ows.Request):
         return ows.xml_response(self.render_template(rd, 'getCapabilities', {}))
 
-    def handle_describerecord(self, rd: ows.OwsRequest):
+    def handle_describerecord(self, rd: ows.Request):
         return ows.xml_response(self.render_template(rd, 'describeRecord', {}))
 
-    def handle_getrecords(self, rd: ows.OwsRequest):
+    def handle_getrecords(self, rd: ows.Request):
         records = self._find_records(rd)
 
         results = {
@@ -104,8 +104,8 @@ class Object(ows.Object):
             'results': results,
         }))
 
-    def handle_getrecordbyid(self, rd: ows.OwsRequest):
-        uid = rd.req.kparam('id')
+    def handle_getrecordbyid(self, rd: ows.Request):
+        uid = rd.req.param('id')
         record = self.records.get(gws.as_uid(uid))
 
         return ows.xml_response(rd.service.render_template(rd, 'getRecordById', {

@@ -30,6 +30,7 @@
 
 
 @def META_DATA(pfx)
+    uid                "{{pfx}}_meta_uid"
     abstract           "{{pfx}}_meta_abstract"
     accessConstraints  "{{pfx}}_meta_accessConstraints"
     attribution        "{{pfx}}_meta_attribution"

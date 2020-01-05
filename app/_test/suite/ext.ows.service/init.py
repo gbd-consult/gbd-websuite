@@ -22,7 +22,7 @@ def main():
 
     u.make_geom_table(
         name='dus_25832',
-        geom_type='point',
+        geom_type='square',
         prop_schema=schema,
         crs=cc.CRS_25832,
         rows=10,

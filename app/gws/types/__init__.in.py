@@ -1,7 +1,7 @@
 # noinspection PyUnresolvedReferences
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-# noinspection PyUnresolvedReferences
-from .data import Data, Config, Props
+
+# @include data
 
 # @include t/base
 # @include t/ext

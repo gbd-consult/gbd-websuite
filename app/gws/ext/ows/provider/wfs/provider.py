@@ -56,7 +56,7 @@ class Object(gws.common.ows.provider.Object):
         shape = None
         if args.shapes:
             shape = gws.gis.shape.union(args.shapes)
-            if shape.type == 'Point':
+            if shape.type == t.GeometryType.point:
                 shape = shape.tolerance_buffer(args.get('tolerance'))
             bounds = shape.bounds
 

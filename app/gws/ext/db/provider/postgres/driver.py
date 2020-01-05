@@ -208,11 +208,15 @@ class Connection:
             col = {
                 'name': name,
                 'is_key': name in key_cols,
+                'geom_type': None,
+                'crs': None,
+                'is_geometry': False,
             }
             if name in geom_cols:
                 col['crs'] = geom_cols[name]['crs']
+                col['type'] = t.AttributeType.geometry
                 col['native_type'] = geom_cols[name]['type']
-                col['type'] = col['native_type']
+                col['geom_type'] = col['native_type']
                 col['is_geometry'] = True
             else:
                 col['native_type'] = (r['udt_name'] if r['data_type'].upper() == 'USER-DEFINED' else r['data_type']).lower()

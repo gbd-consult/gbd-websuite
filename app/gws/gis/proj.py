@@ -40,6 +40,7 @@ http://www.opengis.net/def/crs/EPSG/0/4326
 
 WEBMERCATOR = 'EPSG:3857'
 
+
 def is_latlong(p) -> bool:
     return _check(p).is_latlong
 
@@ -94,30 +95,6 @@ def transform_xy(x, y, src, dst):
         return x, y
 
     return pyproj.transform(src.py, dst.py, x, y, None)
-
-
-def transform(geo, src, dst):
-    src = _check(src)
-    dst = _check(dst)
-
-    if src.srid == dst.srid:
-        return geo
-
-    fn = lambda x, y, z=None: pyproj.transform(src.py, dst.py, x, y, z)
-    return shapely.ops.transform(fn, geo)
-
-
-def transform_extent(ext, src, dst):
-    src = _check(src)
-    dst = _check(dst)
-
-    if src.srid == dst.srid:
-        return ext
-
-    a = pyproj.transform(src.py, dst.py, ext[0], ext[1], always_xy=True)
-    b = pyproj.transform(src.py, dst.py, ext[2], ext[3], always_xy=True)
-
-    return a[0], a[1], b[0], b[1]
 
 
 ##

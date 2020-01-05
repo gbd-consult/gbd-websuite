@@ -14,7 +14,6 @@ class SearchArgs(t.Data):
     layers: t.List[t.ILayer]
     limit: int
     params: dict
-    point: t.Point
     project: t.IProject
     resolution: float
     shapes: t.List[t.IShape]

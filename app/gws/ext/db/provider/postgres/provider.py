@@ -84,24 +84,20 @@ class Object(gws.common.db.provider.Sql):
             key_col = args.table.key_column
             crs = args.table.geometry_crs
 
-            kw = args.get('keyword')
+            kw = args.keyword
             if kw and search_col:
                 kw = kw.lower().replace('%', '').replace('_', '')
                 where.append(f'{conn.quote_ident(search_col)} ILIKE %s')
                 parms.append('%' + kw + '%')
 
-            shape = args.get('shape')
+            shape = args.shape
             if shape and geom_col:
-                if shape.type == 'Point':
-                    shape = shape.tolerance_buffer(args.get('tolerance'))
-
-                shape = shape.transformed(crs)
-
+                shape = shape.tolerance_buffer(args.tolerance).transformed(crs)
                 where.append(f'ST_Intersects(ST_SetSRID(%s::geometry,%s), "{geom_col}")')
                 parms.append(shape.wkb_hex)
                 parms.append(crs.split(':')[1])
 
-            uids = args.get('uids')
+            uids = args.uids
             if uids:
                 if not key_col:
                     return []
@@ -109,8 +105,8 @@ class Object(gws.common.db.provider.Sql):
                 where.append(f'{conn.quote_ident(key_col)} IN ({ph})')
                 parms.extend(uids)
 
-            if args.get('extraWhere'):
-                where.append('(%s)' % args.extraWhere.replace('%', '%%'))
+            if args.extra_where:
+                where.append('(%s)' % args.extra_where.replace('%', '%%'))
 
             if not where:
                 return []
@@ -167,14 +163,14 @@ class Object(gws.common.db.provider.Sql):
             return []
 
     def configure_table(self, cfg: gws.common.db.SqlTableConfig) -> t.SqlTable:
-        table = t.SqlTable({
-            'name': cfg.get('name'),
-            'geometry_column': '',
-            'geometry_crs': '',
-            'geometry_type': '',
-            'key_column': '',
-            'search_column': ''
-        })
+        table = t.SqlTable(
+            name=cfg.get('name'),
+            geometry_column=None,
+            geometry_crs=None,
+            geometry_type=None,
+            key_column=None,
+            search_column=None
+        )
 
         cols = self.describe(table)
 
@@ -200,25 +196,30 @@ class Object(gws.common.db.provider.Sql):
         if table.geometry_column:
             col = cols[table.geometry_column]
             table.geometry_crs = col.crs
-            table.geometry_type = col.type
+            table.geometry_type = col.geom_type
 
         table.search_column = cfg.get('searchColumn')
 
         return table
 
-    def auto_data_model(self, table: t.SqlTable) -> t.IModel:
-        rules = []
+    def table_data_model_config(self, table: t.SqlTable) -> t.Config:
+        cfg = {
+            'rules': [],
+            'geometryType': table.geometry_type,
+            'crs': table.geometry_crs,
+        }
+
         for name, col in self.describe(table).items():
-            if col.is_geometry or col.is_key:
+            if col.is_geometry:
                 continue
-            rules.append(t.ModelRule({
-                'title': name,
-                'name': name,
-                'source': name,
-                'type': col.type,
-            }))
-        m: t.IModel = self.create_object('gws.common.model', t.Config({'rules': rules}))
-        return m
+            cfg['rules'].append(t.ModelRule(
+                title=name,
+                name=name,
+                source=name,
+                type=col.type,
+            ))
+
+        return t.Config(cfg)
 
     def _feature_to_record(self, table: t.SqlTable, feature: t.IFeature) -> dict:
         rec = {a.name: a.value for a in feature.attributes}

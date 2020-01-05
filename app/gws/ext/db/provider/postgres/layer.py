@@ -30,6 +30,11 @@ class Object(gws.common.layer.Vector):
         self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
         self.table = self.provider.configure_table(self.var('table'))
 
+        if not self.data_model:
+            p = self.provider.table_data_model_config(self.table)
+            if p:
+                self.data_model = self.add_child('gws.common.model', p)
+
     @property
     def own_bounds(self):
         if not self.table.geometry_column:

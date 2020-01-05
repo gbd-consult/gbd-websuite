@@ -34,6 +34,8 @@ class ModelRule(t.Data):
 class Config(t.Config):
     """Data model."""
     rules: t.List[ModelRule]
+    geometryType: t.Optional[t.GeometryType]
+    crs: t.Optional[t.Crs]
 
 
 #:export
@@ -46,10 +48,18 @@ class Object(gws.Object, t.IModel):
     def __init__(self):
         super().__init__()
         self.rules: t.List[t.ModelRule] = []
+        self.geometry_type: t.GeometryType = ''
+        self.geometry_crs: str = ''
+        self.is_identity = False
 
     def configure(self):
         super().configure()
-        self.rules = self.var('rules')
+
+        p = self.var('rules')
+        if p:
+            self.rules = [self._normalize_rule(r) for r in p]
+        self.geometry_type = self.var('geometryType')
+        self.geometry_crs = self.var('crs')
 
     @property
     def props(self):
@@ -58,18 +68,12 @@ class Object(gws.Object, t.IModel):
         })
 
     def apply_to_dict(self, d: dict) -> t.List[t.Attribute]:
-        out = []
-
-        for rule in self.rules:
-            # @TODO type conversion
-            out.append(t.Attribute({
-                'title': rule.get('title') or rule.get('name'),
-                'name': rule.get('name') or gws.as_uid(rule.get('title', '')),
-                'value': self._apply_rule(rule, d),
-                'type': rule.get('type') or t.AttributeType.str
-            }))
-
-        return out
+        return [t.Attribute(
+            title=r.title,
+            name=r.name,
+            value=self._apply_rule(r, d),
+            type=r.type,
+        ) for r in self.rules]
 
     def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
         return self.apply_to_dict({a.name: a.value for a in atts})
@@ -87,3 +91,12 @@ class Object(gws.Object, t.IModel):
                 return s
             return gws.tools.misc.format_placeholders(s, d)
         return ''
+
+    def _normalize_rule(self, r):
+        if not r.get('title'):
+            r.title = r.get('name')
+        if not r.get('name'):
+            r.name = gws.as_uid(r.get('title'))
+        if not r.get('type'):
+            r.type = t.AttributeType.str
+        return r

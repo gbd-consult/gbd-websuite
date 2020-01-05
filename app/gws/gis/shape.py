@@ -87,8 +87,8 @@ class Shape(t.IShape):
         self.geom: shapely.geometry.base.BaseGeometry = geom
 
     @property
-    def type(self) -> str:
-        return self.geom.type
+    def type(self) -> t.GeometryType:
+        return self.geom.type.lower()
 
     @property
     def props(self) -> t.ShapeProps:
@@ -134,7 +134,18 @@ class Shape(t.IShape):
     def tolerance_buffer(self, tolerance, resolution=None) -> t.IShape:
         if not tolerance:
             return self
-        return Shape(self.geom.buffer(tolerance, resolution or _DEFAULT_POINT_BUFFER_RESOLUTION), self.crs)
+
+        resolution = resolution or _DEFAULT_POINT_BUFFER_RESOLUTION
+
+        if 'polygon' in self.type:
+            cs = shapely.geometry.CAP_STYLE.flat
+            js = shapely.geometry.JOIN_STYLE.mitre
+        else:
+            cs = shapely.geometry.CAP_STYLE.round
+            js = shapely.geometry.JOIN_STYLE.round
+
+        geom = self.geom.buffer(tolerance, resolution, cap_style=cs, join_style=js)
+        return Shape(geom, self.crs)
 
     def transformed(self, to_crs) -> t.IShape:
         if gws.gis.proj.equal(self.crs, to_crs):

@@ -2,42 +2,19 @@ import gws
 import gws.common.metadata
 import gws.common.model
 import gws.common.search.runner
+import gws.gis.extent
 import gws.gis.gml
 import gws.gis.proj
 import gws.tools.units as units
 import gws.tools.xml3
-import gws.types as t
 import gws.web.error
+
+import gws.types as t
 
 from . import const, inspire
 
-# NB our templates use "xsd" for the XMLSchema namespace
 
-ATTR_TYPE_TO_XML = {
-    t.AttributeType.bool: 'xsd:boolean',
-    t.AttributeType.bytes: None,
-    t.AttributeType.date: 'xsd:date',
-    t.AttributeType.datetime: 'datetime',
-    t.AttributeType.float: 'xsd:decimal',
-    t.AttributeType.geometry: None,
-    t.AttributeType.int: 'xsd:integer',
-    t.AttributeType.list: None,
-    t.AttributeType.str: 'xsd:string',
-    t.AttributeType.time: 'xsd:time',
-    t.AttributeType.geoCurve: 'gml:CurvePropertyType',
-    t.AttributeType.geoGeomcollection: 'gml:MultiGeometryPropertyType',
-    t.AttributeType.geoGeometry: 'gml:MultiGeometryPropertyType',
-    t.AttributeType.geoLinestring: 'gml:CurvePropertyType',
-    t.AttributeType.geoMulticurve: 'gml:MultiCurvePropertyType',
-    t.AttributeType.geoMultilinestring: 'gml:MultiCurvePropertyType',
-    t.AttributeType.geoMultipoint: 'gml:MultiPointPropertyType',
-    t.AttributeType.geoMultipolygon: 'gml:MultiGeometryPropertyType',
-    t.AttributeType.geoMultisurface: 'gml:MultiGeometryPropertyType',
-    t.AttributeType.geoPoint: 'gml:PointPropertyType',
-    t.AttributeType.geoPolygon: 'gml:SurfacePropertyType',
-    t.AttributeType.geoPolyhedralsurface: 'gml:SurfacePropertyType',
-    t.AttributeType.geoSurface: 'gml:SurfacePropertyType',
-}
+# NB our templates use "xsd" for the XMLSchema namespace
 
 
 class UseInspireConfig(t.Config):
@@ -55,7 +32,7 @@ class Config(t.WithTypeAndAccess):
     useInspire: t.Optional[UseInspireConfig]  #: INSPIRE configuration
 
 
-class OwsRequest(t.Data):
+class Request(t.Data):
     req: t.IRequest
     project: t.IProject
     service: t.IOwsService
@@ -205,13 +182,13 @@ class Base(Object):
     ## Request handling
 
     def handle(self, req) -> t.HttpResponse:
-        rd = OwsRequest({
+        rd = Request({
             'req': req,
             'project': req.require_project(req.param('projectUid')),
         })
-        return self.dispatch(rd, req.kparam('request', '').lower())
+        return self.dispatch(rd, req.param('request', '').lower())
 
-    def dispatch(self, rd: OwsRequest, request_param):
+    def dispatch(self, rd: Request, request_param):
         h = getattr(self, 'handle_' + request_param, None)
         if not h:
             gws.log.debug(f'request={request_param!r} not found')
@@ -223,7 +200,7 @@ class Base(Object):
     def error_response(self, status):
         return self.xml_error_response(self.version, status, f'Error {status}')
 
-    def render_template(self, rd: OwsRequest, template, context, format=None):
+    def render_template(self, rd: Request, template, context, format=None):
 
         def csw_meta_url(uid):
             return rd.req.url_for(
@@ -244,7 +221,7 @@ class Base(Object):
 
         return self.templates[template].render(context, format=format).content
 
-    def render_feature_nodes(self, rd: OwsRequest, nodes: t.List[FeatureNode], container_template_name: str) -> t.HttpResponse:
+    def render_feature_nodes(self, rd: Request, nodes: t.List[FeatureNode], container_template_name: str) -> t.HttpResponse:
         tags = []
 
         for node in nodes:
@@ -272,10 +249,13 @@ class Base(Object):
 
     ## LayerCaps nodes
 
-    def layer_node_root(self, rd: OwsRequest) -> t.Optional[LayerCapsNode]:
-        """Return a single root node for a layer tree (for WMS)."""
+    def layer_tree_root(self, rd: Request) -> t.Optional[LayerCapsNode]:
+        """Return a single root node for a layer tree."""
 
-        roots = self._layer_node_roots(rd)
+        if not rd.project:
+            return
+
+        roots = gws.compact(self._layer_node_subtree(rd, la.uid) for la in rd.project.map.layers)
 
         if not roots:
             return
@@ -288,6 +268,7 @@ class Base(Object):
         p = rd.project
 
         root = LayerCapsNode(
+            has_search=any(n.has_search for n in roots),
             meta=p.meta,
             sub_nodes=roots,
             tag_name=p.uid,
@@ -296,23 +277,35 @@ class Base(Object):
 
         return self._add_spatial_props(root, p.map.extent, p.map.crs, p.map.resolutions)
 
-    def layer_node_list(self, rd: OwsRequest) -> t.List[LayerCapsNode]:
+    def layer_node_list(self, rd: Request) -> t.List[LayerCapsNode]:
         """Return a list of terminal layer nodes (for WFS)."""
 
         all_nodes = []
-        for node in self._layer_node_roots(rd):
-            self._layer_node_sublist(rd, node, all_nodes)
+        root = self.layer_tree_root(rd)
+        self._layer_node_sublist(rd, root, all_nodes)
         return all_nodes
 
-    def layer_nodes_from_request_params(self, rd: OwsRequest, *params):
-        ls = []
-        for p in params:
-            ls = ls or gws.as_list(rd.req.kparam(p))
-        ows_names = set()
+    def layer_nodes_from_request_params(self, rd: Request, param_names, fallback_to_all=True):
+        """Return a list of terminal layer nodes matching the layer list."""
 
-        for s in ls:
+        names = None
+
+        for p in param_names:
+            if rd.req.has_param(p):
+                names = gws.as_list(rd.req.param(p))
+                break
+
+        if names is None and fallback_to_all:
+            return self.layer_node_list(rd)
+
+        if not names:
+            return []
+
+        tag_names = set()
+
+        for s in names:
             if ':' not in s:
-                ows_names.add(s)
+                tag_names.add(s)
                 continue
 
             p = s.split(':')
@@ -320,45 +313,33 @@ class Base(Object):
                 continue
 
             if p[0] == self.feature_namespace:
-                ows_names.add(s)
-                ows_names.add(p[1])
+                tag_names.add(s)
+                tag_names.add(p[1])
             else:
-                ows_names.add(s)
+                tag_names.add(s)
 
         all_nodes = []
-        for node in self._layer_node_roots(rd):
-            if node.tag_name in ows_names:
-                self._layer_node_sublist(rd, node, all_nodes)
-            else:
-                self._layer_node_sublist_selected(rd, node, all_nodes, ows_names)
-
+        self._layer_node_sublist_selected(rd, self.layer_tree_root(rd), all_nodes, tag_names)
         return all_nodes
 
-    def _layer_node_roots(self, rd: OwsRequest) -> t.List[LayerCapsNode]:
-        if not rd.project:
-            return []
-        return gws.compact(self._layer_node_subtree(rd, la.uid) for la in rd.project.map.layers)
-
-    def _layer_node_subtree(self, rd: OwsRequest, layer_uid):
+    def _layer_node_subtree(self, rd: Request, layer_uid):
         layer: t.ILayer = rd.req.acquire('gws.ext.layer', layer_uid)
         if not self.is_layer_enabled(layer):
             return
-
         if not layer.layers:
             return self._layer_node_from(layer)
-
         sub = gws.compact(self._layer_node_subtree(rd, la.uid) for la in layer.layers)
         if sub:
             return self._layer_node_from(layer, sub)
 
-    def _layer_node_sublist(self, rd: OwsRequest, node: LayerCapsNode, all_nodes):
+    def _layer_node_sublist(self, rd: Request, node: LayerCapsNode, all_nodes):
         if not node.sub_nodes:
             all_nodes.append(node)
             return
         for n in node.sub_nodes:
             self._layer_node_sublist(rd, n, all_nodes)
 
-    def _layer_node_sublist_selected(self, rd: OwsRequest, node: LayerCapsNode, all_nodes, tag_names):
+    def _layer_node_sublist_selected(self, rd: Request, node: LayerCapsNode, all_nodes, tag_names):
         if node.tag_name in tag_names:
             if not node.sub_nodes:
                 all_nodes.append(node)
@@ -396,7 +377,7 @@ class Base(Object):
     def inspire_nodes(self, nodes):
         return [n for n in nodes if n.tag_name in inspire.TAGS]
 
-    def feature_node_list(self, rd: OwsRequest, features: t.List[t.IFeature]):
+    def feature_node_list(self, rd: Request, features: t.List[t.IFeature]):
         def node(f: t.IFeature):
             gs = None
             if f.shape:
@@ -466,4 +447,4 @@ class Base(Object):
         return layer and layer.ows_enabled(self)
 
     def lonlat_extent(self, extent, crs):
-        return [round(c, 4) for c in gws.gis.proj.transform_extent(extent, crs, 'EPSG:4326')]
+        return [round(c, 4) for c in gws.gis.extent.transformed(extent, crs, 'EPSG:4326')]

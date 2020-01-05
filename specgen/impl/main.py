@@ -36,7 +36,8 @@ class _Runner:
         units, _ = parser.parse([self.source_dir + '/types/__init__.py'])
         self.units.extend(units)
 
-        # print(_json(self.units))
+        # for u in units:
+        #     u.dump()
 
         self.units = normalizer.normalize(self.units)
 

@@ -29,6 +29,6 @@
             @end
         @end
 
-        @wms_layer_capabilities layer_node_root
+        @wms_layer_capabilities layer_tree_root
     @end
 @end

@@ -108,6 +108,9 @@ class _Parser:
 
     def enum_classes(self, tree):
         for node in _nodes(tree, 'ClassDef'):
+            if 'ignore' in self.doc_for(node):
+                continue
+
             class_uid = self.add(
                 'class',
                 name=self.mod_name + '.' + node.name,

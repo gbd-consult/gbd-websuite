@@ -36,11 +36,15 @@ def print_json(x):
 
 
 def xml(x):
+    x = re.sub(r'>\s+<', '><', x.strip())
     try:
         xml = etree.fromstring(x.encode('utf8'))
     except Exception as e:
         return f'INVALID XML:\n{e}\nRAW CONTENT :\n{x}'
-    return etree.tounicode(xml, pretty_print=True)
+    s = etree.tounicode(xml, pretty_print=True)
+    # 4 indents look better than 2
+    s = re.sub(r'(?m)^ +', lambda m: m.group(0) * 2, s)
+    return s
 
 
 def print_xml(x):

@@ -27,11 +27,11 @@ class Object(gws.common.search.provider.Object):
         self.table = self.provider.configure_table(self.var('table'))
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
-        return self.provider.select(t.SelectArgs({
-            'table': self.table,
-            'keyword': args.keyword,
-            'shape': self.context_shape(args),
-            'sort': self.var('sort'),
-            'limit': args.limit,
-            'tolerance': args.tolerance,
-        }))
+        return self.provider.select(t.SelectArgs(
+            table=self.table,
+            keyword=args.keyword,
+            shape=self.context_shape(args),
+            sort=self.var('sort'),
+            limit=args.limit,
+            tolerance=args.tolerance,
+        ))

@@ -113,7 +113,7 @@ def intersect(a: t.Extent, b: t.Extent) -> bool:
     return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
 
 
-def transformed(e: t.Extent, src: t.Crs, dst: t.Crs) -> t.Extent:
+def transformed(e: t.Extent, src: str, dst: str) -> t.Extent:
     if gws.gis.proj.equal(src, dst):
         return e
 
@@ -133,10 +133,10 @@ def transformed(e: t.Extent, src: t.Crs, dst: t.Crs) -> t.Extent:
     cc = dg['coordinates'][0]
 
     return (
-        min(cc[0][0], cc[1][0], cc[2][0], cc[3][0]),
-        min(cc[0][1], cc[1][1], cc[2][1], cc[3][1]),
-        max(cc[0][0], cc[1][0], cc[2][0], cc[3][0]),
-        max(cc[0][1], cc[1][1], cc[2][1], cc[3][1]),
+        min(cc[0][0], cc[1][0], cc[2][0], cc[3][0], cc[4][0]),
+        min(cc[0][1], cc[1][1], cc[2][1], cc[3][1], cc[4][1]),
+        max(cc[0][0], cc[1][0], cc[2][0], cc[3][0], cc[4][0]),
+        max(cc[0][1], cc[1][1], cc[2][1], cc[3][1], cc[4][1]),
     )
 
 

@@ -204,6 +204,7 @@ class Base(gws.Object, t.ILayer):
         self.style: t.IStyle = None
         self.edit_style: t.IStyle = None
         self.edit_data_model: t.IModel = None
+        self.edit_options: t.Data = None
 
         self.ows_name = ''
         self.ows_services_enabled = []
@@ -326,6 +327,10 @@ class Base(gws.Object, t.ILayer):
         if p:
             self.edit_style = gws.common.style.from_config(p)
 
+        p = self.var('edit')
+        if p:
+            self.edit_options = p
+
         self.cache = self.var('cache')
         self.has_cache = self.cache and self.cache.enabled
 
@@ -338,7 +343,7 @@ class Base(gws.Object, t.ILayer):
     def edit_access(self, user):
         # @TODO granular edit access
 
-        if user.can_use(self.var('edit'), parent=self):
+        if self.is_editable and self.edit_options and user.can_use(self.edit_options, parent=self):
             return ['all']
 
     def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:

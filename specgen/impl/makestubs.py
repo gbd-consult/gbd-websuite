@@ -124,14 +124,16 @@ def _method_code(m):
 
 
 def _extract_var_annotation(line):
-    m = re.match(r'^[\w.]+\s*:([^=]+)', line.strip())
+    line = line.split('#')[0].strip()
+    m = re.match(r'^[\w.]+\s*:([^=]+)', line)
     if not m:
         raise ValueError('cannot parse %r' % line)
     return _quote_all(m.group(1).strip())
 
 
 def _extract_return_annotation(line):
-    m = re.search(r'->(.+?):', line.strip())
+    line = line.split('#')[0].strip()
+    m = re.search(r'->(.+?):', line)
     if not m:
         raise ValueError('cannot parse %r' % line)
     return _quote_all(m.group(1).strip())
@@ -141,7 +143,7 @@ def _format_function_decl(line):
     def _repl(m):
         return m.group(1) + _quote_all(m.group(2))
 
-    line = line.strip()
+    line = line.split('#')[0].strip()
     line = re.sub(r'(:\s*)([^,=]+)', _repl, line)
     line = re.sub(r'(->\s*)([^:]+)', _repl, line)
 

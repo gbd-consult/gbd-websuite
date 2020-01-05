@@ -12,28 +12,9 @@ api.actions+ { type "asset" }
 api.actions+ { type "project" }
 
 
-
-
-projects+ {
-    uid "wms1"
-
-    meta {
-        @META_DATA "PROJECT"
-    }
-
-    api.actions+ {
-        type "ows"
-        services.0 {
-            type "wms"
-            meta {
-                @META_DATA "service"
-                abstract null
-                accessConstraints null
-            }
-        }
-    }
-
+@def SIMPLE_MAP
     map.crs "EPSG:3857"
+    map.zoom.scales [1000 2000 5000 10000 50000]
 
     map.layers+ {
         title "paris_3857"
@@ -61,25 +42,81 @@ projects+ {
     }
 
     map.layers+ {
-        title "dus_25832"
-        type "postgres"
-        display "box"
-        table.name "dus_25832"
-        featureFormat.label {
-            type "html"
-            text "{id}"
-        }
-        style {
-            type "css"
-            text """
-                fill: rgba(255,0,0,0.5);
-                label-font-size: 13px;
-                label-fill: yellow;
-                label-background: black;
-            """
+        type "group"
+        title "Group One"
+        layers+ {
+            type "group"
+            title "Group One One"
+            ows.name "own_name_group_one_one"
+            layers+ {
+                title "dus_25832"
+                type "postgres"
+                display "box"
+                table.name "dus_25832"
+                featureFormat.label {
+                    type "html"
+                    text "{id}"
+                }
+                style {
+                    type "css"
+                    text """
+                        fill: rgba(255,0,0,0.5);
+                        label-font-size: 13px;
+                        label-fill: yellow;
+                        label-background: black;
+                    """
+                }
+            }
+
         }
     }
+@end
+
+
+projects+ {
+    uid "wms1"
+
+    meta {
+        @META_DATA "PROJECT"
+    }
+
+    api.actions+ {
+        type "ows"
+        services+ {
+            type "wms"
+            meta {
+                @META_DATA "service"
+                abstract null
+                accessConstraints null
+            }
+        }
+    }
+
+    @SIMPLE_MAP
 
     @include /common/client.cx
 }
 
+projects+ {
+    uid "wfs1"
+
+    meta {
+        @META_DATA "PROJECT"
+    }
+
+    api.actions+ {
+        type "ows"
+        services+ {
+            type "wfs"
+            meta {
+                @META_DATA "service"
+                abstract null
+                accessConstraints null
+            }
+        }
+    }
+
+    @SIMPLE_MAP
+
+    @include /common/client.cx
+}

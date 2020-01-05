@@ -89,6 +89,8 @@ class MetaLink(t.Data):
 
 #:export
 class MetaData(t.Data):
+    uid = ''
+
     abstract = ''
     attribution = ''
     keywords: t.List[str] = []

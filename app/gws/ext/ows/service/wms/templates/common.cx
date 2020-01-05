@@ -27,12 +27,18 @@
 @end
 
 @def wms_service_metadata
-    @t Abstract {meta.abstract}
-    @tag KeywordList
-        @each meta.keywords as kw
-            @t Keyword {kw}
+    @with meta.abstract
+        @t Abstract {meta.abstract}
+    @end
+
+    @with meta.keywords
+        @tag KeywordList
+            @each meta.keywords as kw
+                @t Keyword {kw}
+            @end
         @end
     @end
+
     @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url)}"
 
     @wms_contact_metadata
@@ -40,6 +46,7 @@
     @with meta.fees
         @t Fees {meta.fees}
     @end
+
     @with meta.accessConstraints
         @t AccessConstraints {meta.accessConstraints}
     @end
@@ -87,7 +94,10 @@
 
         @t Name {feature_ns(node.tag_name)}
         @t Title {node.title}
-        @t Abstract {node.meta.abstract}
+
+        @with node.meta.abstract
+            @t Abstract {node.meta.abstract}
+        @end
 
         @t CRS {node.proj.epsg}
 

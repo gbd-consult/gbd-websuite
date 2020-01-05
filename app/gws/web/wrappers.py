@@ -36,6 +36,10 @@ class BaseRequest(t.IBaseRequest):
         self.site: t.IWebSite = site
         self.method: str = self._wz.method
         self.headers: dict = self._wz.headers
+        self.params: dict = self._parse_params()
+        self._nocase_params = gws.extend(
+            {k.lower(): v for k, v in self.params.items()},
+            self.params)
 
     @property
     def environ(self) -> dict:
@@ -83,26 +87,6 @@ class BaseRequest(t.IBaseRequest):
             raise error.BadRequest() from e
 
     @cached_property
-    def params(self) -> dict:
-        if self.input_struct_type:
-            return self._decode_struct(self.input_struct_type)
-
-        args = {k: v for k, v in self._wz.args.items()}
-        path = self._wz.path
-
-        # the server only understands requests to /_/...
-        # the params can be given as query string or encoded in the path
-        # like _/cmd/command/layer/la/x/12/y/34 etc
-
-        if path == gws.SERVER_ENDPOINT:
-            return args
-        if path.startswith(gws.SERVER_ENDPOINT):
-            return gws.extend(_params_from_path(path), args)
-
-        gws.log.error(f'invalid request path: {path!r}')
-        raise error.BadRequest()
-
-    @cached_property
     def post_data(self):
         if self.method != 'POST':
             return None
@@ -114,18 +98,14 @@ class BaseRequest(t.IBaseRequest):
             gws.log.error('post data decoding error')
             return None
 
-    @cached_property
-    def kparams(self) -> dict:
-        return {k.lower(): v for k, v in self.params.items()}
-
     def env(self, key: str, default: str = None) -> str:
         return self._wz.environ.get(key, default)
 
     def param(self, key: str, default: str = None) -> str:
-        return self.params.get(key, default)
+        return self._nocase_params.get(key.lower(), default)
 
-    def kparam(self, key: str, default: str = None) -> str:
-        return self.kparams.get(key.lower(), default)
+    def has_param(self, key: str) -> bool:
+        return key.lower() in self._nocase_params
 
     def url_for(self, url: t.Url) -> t.Url:
         u = self.site.url_for(self, url)
@@ -161,6 +141,25 @@ class BaseRequest(t.IBaseRequest):
     def struct_response(self, data: t.Response, status: int = 200) -> t.IResponse:
         typ = self.output_struct_type or _JSON
         return self.response(self._encode_struct(data, typ), _struct_mime[typ], status)
+
+    def _parse_params(self):
+        if self.input_struct_type:
+            return self._decode_struct(self.input_struct_type)
+
+        args = {k: v for k, v in self._wz.args.items()}
+        path = self._wz.path
+
+        # the server only understands requests to /_/...
+        # the params can be given as query string or encoded in the path
+        # like _/cmd/command/layer/la/x/12/y/34 etc
+
+        if path == gws.SERVER_ENDPOINT:
+            return args
+        if path.startswith(gws.SERVER_ENDPOINT):
+            return gws.extend(_params_from_path(path), args)
+
+        gws.log.error(f'invalid request path: {path!r}')
+        raise error.BadRequest()
 
     def _encode_struct(self, data, typ):
         if typ == _JSON:
