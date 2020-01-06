@@ -54,10 +54,9 @@ class WebConfig(t.Config):
     ssl: t.Optional[SSLConfig]  #: ssl configuration
 
 
-class Config(t.Config):
+class Config(t.WithAccess):
     """Application configuration"""
 
-    access: t.Optional[t.Access]  #: default access mode
     api: t.Optional[gws.common.api.Config]  #: system-wide server actions
     auth: t.Optional[gws.common.auth.types.Config]  #: authorization methods and options
     client: t.Optional[gws.common.client.Config]  #: gws client configuration

@@ -10,17 +10,15 @@ import gws.web.site
 import gws.types as t
 
 
-class ApiConfig(t.Config):
+class ApiConfig(t.WithAccess):
     """Project-specific server actions"""
 
-    access: t.Optional[t.Access]  #: default access mode
     actions: t.Optional[t.List[t.ext.action.Config]]  #: available actions
 
 
-class Config(t.Config):
+class Config(t.WithAccess):
     """Project configuration"""
 
-    access: t.Optional[t.Access]  #: access rights
     api: t.Optional[gws.common.api.Config]  #: project-specific actions
     assets: t.Optional[gws.web.site.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.common.client.Config]  #: project-specific gws client configuration

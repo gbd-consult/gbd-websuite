@@ -69,8 +69,8 @@ class _TypeGenerator:
         if not r:
             return tname
 
-        if r.type == 'alias':
-            return r.target
+        # if r.type == 'alias':
+        #     return r.target
 
         r.name = tname
         r.doc = u.doc

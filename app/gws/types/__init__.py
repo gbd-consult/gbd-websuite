@@ -88,48 +88,32 @@ class Axis(Enum):
 
 ### semantic primitive types
 
-class Literal(str):
-    pass
+#: alias: Verbatim literal type
+Literal = str
 
+#: alias: Valid readable file path on the serve
+FilePath = str
 
-class FilePath(str):
-    """Valid readable file path on the server"""
-    pass
+#: alias: Valid readable directory path on the server
+DirPath = str
 
+#: alias: String like "1w 2d 3h 4m 5s" or a number of seconds
+Duration = str
 
-class DirPath(str):
-    """Valid readable directory path on the server"""
-    pass
+#: alias: Regular expression, as used in Python
+Regex = str
 
+#: alias: String with {attribute} placeholders
+FormatStr = str
 
-class Duration(str):
-    """String like "1w 2d 3h 4m 5s" or a number of seconds"""
-    pass
+#: alias: CRS code like "EPSG:3857
+Crs = str
 
+#: alias: ISO date like "2019-01-30"
+Date = str
 
-class Regex(str):
-    """Regular expression, as used in Python"""
-    pass
-
-
-class FormatStr(str):
-    """String with {attribute} placeholders"""
-    pass
-
-
-class Crs(str):
-    """CRS code like "EPSG:3857" """
-    pass
-
-
-class Date(str):
-    """ISO date like "2019-01-30" """
-    pass
-
-
-class Url(str):
-    """An http or https URL"""
-    pass
+#: alias: Http or https URL
+Url = str
 
 ### Dummy classes to support extension typing.
 
@@ -197,19 +181,20 @@ class AccessRuleConfig(Config):
     """Access rights definition for authorization roles"""
 
     type: AccessType  #: access type (deny or allow)
-    role: str  #: a roles to which this rule applies
-
-
-#: alias:
-Access = List[AccessRuleConfig]
+    role: str  #: a role to which this rule applies
 
 
 class WithType(Config):
     type: str  #: object type
 
 
-class WithTypeAndAccess(WithType):
-    access: Optional[Access]  #: access rights
+class WithAccess(Config):
+    access: Optional[List[AccessRuleConfig]]  #: access rights
+
+
+class WithTypeAndAccess(Config):
+    type: str  #: object type
+    access: Optional[List[AccessRuleConfig]]  #: access rights
 
 ### Attributes and data models.
 

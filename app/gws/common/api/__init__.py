@@ -2,10 +2,9 @@ import gws
 import gws.types as t
 
 
-class Config(t.Config):
+class Config(t.WithAccess):
     """Server actions"""
 
-    access: t.Optional[t.Access]  #: default access mode
     actions: t.Optional[t.List[t.ext.action.Config]]  #: available actions
 
 

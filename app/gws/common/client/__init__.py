@@ -2,19 +2,17 @@ import gws
 import gws.types as t
 
 
-class ElementConfig(t.Config):
+class ElementConfig(t.WithAccess):
     """GWS client UI element configuration"""
 
-    access: t.Optional[t.Access]  #: access rights
     tag: str  #: element tag
     before: str = ''  #: insert before this tag
     after: str = ''  #: insert after this tag
 
 
-class Config(t.Config):
+class Config(t.WithAccess):
     """GWS client configuration"""
 
-    access: t.Optional[t.Access]  #: access rights
     options: t.Optional[dict]  #: client options
     elements: t.Optional[t.List[ElementConfig]]  #: client UI elements
     addElements: t.Optional[t.List[ElementConfig]]  #: add elements to the parent element list

@@ -13,16 +13,17 @@ class AccessRuleConfig(Config):
     """Access rights definition for authorization roles"""
 
     type: AccessType  #: access type (deny or allow)
-    role: str  #: a roles to which this rule applies
-
-
-#: alias:
-Access = List[AccessRuleConfig]
+    role: str  #: a role to which this rule applies
 
 
 class WithType(Config):
     type: str  #: object type
 
 
-class WithTypeAndAccess(WithType):
-    access: Optional[Access]  #: access rights
+class WithAccess(Config):
+    access: Optional[List[AccessRuleConfig]]  #: access rights
+
+
+class WithTypeAndAccess(Config):
+    type: str  #: object type
+    access: Optional[List[AccessRuleConfig]]  #: access rights

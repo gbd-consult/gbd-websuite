@@ -41,10 +41,8 @@ grant usage on <name>_id_seq to <user>
 """
 
 
-class EigentuemerConfig:
+class EigentuemerConfig(t.WithAccess):
     """Access to the Eigentümer (owner) information"""
-
-    access: t.Access  #: access rights
 
     controlMode: bool = False  #: restricted mode enabled
     controlRules: t.Optional[t.List[str]]  #: list of regular expression for the restricted input control
@@ -52,13 +50,12 @@ class EigentuemerConfig:
     logTable: str = ''  #: data access protocol table name
 
 
-class BuchungConfig:
+class BuchungConfig(t.WithAccess):
     """Access to the Grundbuch (register) information"""
+    pass
 
-    access: t.Access  #: access rights
 
-
-class UiConfig:
+class UiConfig(t.Config):
     """Flurstückssuche UI configuration."""
 
     useExport: bool = False  #: export function enabled
@@ -263,7 +260,7 @@ class Object(gws.Object):
         self.crs = ''
         self.has_index = False
         self.limit = 0
-        self.short_feature_format: t.IFormat= None
+        self.short_feature_format: t.IFormat = None
         self.long_feature_format: t.IFormat = None
         self.print_template: t.ITemplate = None
         self.eigentuemer: EigentuemerConfig = None
@@ -273,7 +270,6 @@ class Object(gws.Object):
         self.disableApi = False
         self.connect_args = {}
         self.control_rules = []
-
 
     def configure(self):
         super().configure()
