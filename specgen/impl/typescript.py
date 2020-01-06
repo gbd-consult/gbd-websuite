@@ -103,7 +103,7 @@ class _Generator:
             self.ifaces.append('export type %s = %s;' % (name, b))
 
         elif t.type == 'alias':
-            self.ifaces.append('export type %s = %s;' % (name, t.target))
+            self.ifaces.append('export type %s = %s;' % (name, self.gen(t.target)))
 
         return name
 
