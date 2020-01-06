@@ -2,23 +2,49 @@ import gws.types as t
 import gws.tools.job
 
 
-class PrintBitmap(t.Data):
-    data: t.Optional[bytes]
-    mode: t.Optional[str]
-    width: t.Optional[int]
-    height: t.Optional[int]
-    url: t.Optional[str]
-
-
-class PrintItem(t.Data):
-    bitmap: t.Optional[PrintBitmap]
-    features: t.Optional[t.List[t.FeatureProps]]
-    subLayers: t.Optional[t.List[str]]
-    layerUid: t.Optional[str]
-    opacity: t.Optional[float]
-    printAsVector: t.Optional[bool]
+class PrintItemBase(t.Data):
+    opacity: float = 1
     style: t.Optional[t.StyleProps]
-    svgFragment: t.Optional[t.SvgFragment]
+    printAsVector: t.Optional[bool]
+
+
+class PrintItemBitmap(PrintItemBase):
+    type: str = 'bitmap'
+    data: bytes
+    mode: str
+    width: int
+    height: int
+
+
+class PrintItemUrl(PrintItemBase):
+    type: str = 'url'
+    url: str
+
+
+class PrintItemFeatures(PrintItemBase):
+    type: str = 'features'
+    features: t.List[t.FeatureProps]
+
+
+class PrintItemLayer(PrintItemBase):
+    type: str = 'layer'
+    layerUid: str
+    subLayers: t.Optional[t.List[str]]
+
+
+class PrintItemFragment(PrintItemBase):
+    type: str = 'fragment'
+    fragment: t.SvgFragment
+
+
+#:alias
+PrintItem = t.Union[
+    PrintItemBitmap,
+    PrintItemUrl,
+    PrintItemFeatures,
+    PrintItemLayer,
+    PrintItemFragment
+]
 
 
 class PrintSection(t.Data):
@@ -27,16 +53,30 @@ class PrintSection(t.Data):
     items: t.Optional[t.List[PrintItem]]
 
 
-class PrintParams(t.Params):
-    items: t.List[PrintItem]
-    rotation: int
-    scale: int
+class PrintParamsBase(t.Params):
+    crs: t.Optional[t.Crs]
     format: t.Optional[str]
-    templateUid: str
+    items: t.List[PrintItem]
+    rotation: int = 0
+    scale: int
     sections: t.Optional[t.List[PrintSection]]
+
+
+class PrintParamsWithTemplate(PrintParamsBase):
+    type = 'template'
     quality: int
-    mapWidth: t.Optional[int]
-    mapHeight: t.Optional[int]
+    templateUid: str
+
+
+class PrintParamsWithMap(PrintParamsBase):
+    type = 'map'
+    dpi: int
+    mapHeight: int
+    mapWidth: int
+
+
+#:alias
+PrintParams = t.Union[PrintParamsWithTemplate, PrintParamsWithMap]
 
 
 class PrinterQueryParams(t.Params):
@@ -47,6 +87,6 @@ class PrinterResponse(t.Response):
     jobUid: str = ''
     progress: int = 0
     state: gws.tools.job.State
-    otype: str = ''
-    oname: str = ''
+    steptype: str = ''
+    stepname: str = ''
     url: str = ''

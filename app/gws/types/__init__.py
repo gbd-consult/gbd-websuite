@@ -71,13 +71,13 @@ class Enum:
     pass
 
 
-#: alias: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
+#:alias An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
 
-#: alias: Point coordinates [x, y]
+#:alias Point coordinates [x, y]
 Point = Tuple[float, float]
 
-#: alias: Size [width, height]
+#:alias Size [width, height]
 Size = Tuple[float, float]
 
 
@@ -88,31 +88,31 @@ class Axis(Enum):
 
 ### semantic primitive types
 
-#: alias: Verbatim literal type
+#:alias Verbatim literal type
 Literal = str
 
-#: alias: Valid readable file path on the serve
+#:alias Valid readable file path on the server
 FilePath = str
 
-#: alias: Valid readable directory path on the server
+#:alias Valid readable directory path on the server
 DirPath = str
 
-#: alias: String like "1w 2d 3h 4m 5s" or a number of seconds
+#:alias String like "1w 2d 3h 4m 5s" or a number of seconds
 Duration = str
 
-#: alias: Regular expression, as used in Python
+#:alias Regular expression, as used in Python
 Regex = str
 
-#: alias: String with {attribute} placeholders
+#:alias String with {attribute} placeholders
 FormatStr = str
 
-#: alias: CRS code like "EPSG:3857
+#:alias CRS code like "EPSG:3857
 Crs = str
 
-#: alias: ISO date like "2019-01-30"
+#:alias ISO date like "2019-01-30"
 Date = str
 
-#: alias: Http or https URL
+#:alias Http or https URL
 Url = str
 
 ### Dummy classes to support extension typing.
@@ -315,6 +315,7 @@ class IBaseRequest:
     def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> 'IResponse': pass
     def has_param(self, key: str) -> bool: pass
     def param(self, key: str, default: str = None) -> str: pass
+    def parse_params(self): pass
     def response(self, content: str, mimetype: str, status: int = 200) -> 'IResponse': pass
     def struct_response(self, data: 'Response', status: int = 200) -> 'IResponse': pass
     def url_for(self, url: 'Url') -> 'Url': pass
@@ -400,7 +401,7 @@ class IUser:
     def attribute(self, key: str, default: str = '') -> str: pass
     def can_use(self, obj: 'IObject', parent: 'IObject' = None) -> bool: pass
     def has_role(self, role: str) -> bool: pass
-    def init_from_cache(self, provider, uid, roles, attributes) -> 'IUser': pass
+    def init_from_props(self, provider, uid, roles, attributes) -> 'IUser': pass
     def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'IUser': pass
 
 class MetaContact(Data):
@@ -631,8 +632,8 @@ class IApplication(IObject):
 class IAuthProvider(IObject):
     def authenticate(self, login: str, password: str, **kwargs) -> 'IUser': pass
     def get_user(self, user_uid: str) -> 'IUser': pass
-    def marshal_user(self, u: 'IUser') -> str: pass
-    def unmarshal_user(self, user_uid: str, json: str) -> 'IUser': pass
+    def user_from_dict(self, d: dict) -> 'IUser': pass
+    def user_to_dict(self, u: 'IUser') -> dict: pass
 
 class IClient(IObject):
     pass
@@ -779,7 +780,7 @@ class ITemplate(IObject):
     page_size: 'Size' = None
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str: pass
     def dpi_for_quality(self, quality): pass
-    def normalize_user_data(self, d: dict) -> List[Attribute]: pass
+    def normalize_user_data(self, attributes: List[Attribute]) -> List[Attribute]: pass
     def render(self, context: dict, render_output: 'RenderOutput' = None, out_path: str = None, format: str = None) -> 'TemplateOutput': pass
 
 class IWebSite(IObject):

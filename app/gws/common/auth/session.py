@@ -10,7 +10,7 @@ import gws.tools.json2 as json2
 import gws.types as t
 
 from .stores import sqlite as store
-
+from . import util
 
 class Session:
     def __init__(self, rec, user, data):
@@ -35,7 +35,7 @@ class Manager:
             if not prov:
                 gws.log.error(f'auth provider not found: {rec!r}')
                 return
-            user = prov.unmarshal_user(rec['user_uid'], rec['str_user'])
+            user = util.unserialize_user(rec['str_user'])
             data = json2.from_string(rec['str_data'])
             return Session(rec, user, data)
 
@@ -58,7 +58,7 @@ class Manager:
         uid = store.create(
             user.provider.uid,
             user.uid,
-            user.provider.marshal_user(user))
+            util.serialize_user(user))
         return self._session_object(store.find(uid))
 
     def cleanup(self):

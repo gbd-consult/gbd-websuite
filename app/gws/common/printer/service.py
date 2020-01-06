@@ -11,10 +11,10 @@ from . import types as pt
 def start_job(req, p: pt.PrintParams) -> pt.PrinterResponse:
     job = gws.common.printer.job.create(req, p)
     gws.server.spool.add(job)
-    return pt.PrinterResponse({
-        'jobUid': job.uid,
-        'state': job.state
-    })
+    return pt.PrinterResponse(
+        jobUid=job.uid,
+        state=job.state
+    )
 
 
 def query_job(req, p: pt.PrinterQueryParams) -> pt.PrinterResponse:
@@ -24,35 +24,30 @@ def query_job(req, p: pt.PrinterQueryParams) -> pt.PrinterResponse:
     if job.steps and job.state == gws.tools.job.State.running:
         progress = min(100, int(job.step * 100 / job.steps))
 
-    return pt.PrinterResponse({
-        'jobUid': job.uid,
-        'state': job.state,
-        'progress': progress,
-        'otype': job.otype or '',
-        'oname': job.oname or '',
-        'url': gws.SERVER_ENDPOINT + f'/cmd/assetHttpGetResult/jobUid/{job.uid}',
-    })
+    return pt.PrinterResponse(
+        jobUid=job.uid,
+        state=job.state,
+        progress=progress,
+        steptype=job.steptype or '',
+        stepname=job.stepname or '',
+        url=gws.SERVER_ENDPOINT + f'/cmd/assetHttpGetResult/jobUid/{job.uid}',
+    )
 
 
 def cancel_job(req, p: pt.PrinterQueryParams) -> pt.PrinterResponse:
     job = _get_job(req, p.jobUid)
     job.cancel()
-    return pt.PrinterResponse({
-        'jobUid': job.uid,
-        'state': gws.tools.job.State.cancel,
-    })
+    return pt.PrinterResponse(
+        jobUid=job.uid,
+        state=gws.tools.job.State.cancel,
+    )
 
 
-def job_result(req, p: pt.PrinterQueryParams) -> t.HttpResponse:
+def job_result(req, p: pt.PrinterQueryParams) -> t.Response:
     job = _get_job(req, p.jobUid)
     if job.state != gws.tools.job.State.complete:
         raise gws.web.error.NotFound()
-    with open(job.result, 'rb') as fp:
-        pdf = fp.read()
-    return t.HttpResponse({
-        'mime': 'application/pdf',
-        'content': pdf
-    })
+    return t.FileResponse(mime='application/pdf', path=job.result)
 
 
 def _get_job(req, uid):

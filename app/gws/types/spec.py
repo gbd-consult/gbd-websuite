@@ -7,7 +7,9 @@ from .data import Data
 
 
 class Error(Exception):
-    pass
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.message = args[0] if args else ''
 
 
 class Validator:
@@ -50,6 +52,7 @@ class _Reader:
 def _read_any(rd, val, spec):
     return val
 
+
 def _read_bool(rd, val, spec):
     if rd.strict:
         return _ensure(rd, val, bool)
@@ -66,6 +69,10 @@ def _read_str(rd, val, spec):
         return _to_string(val)
     except:
         rd.error('ERR_MUST_BE_STRING', 'must be a string', val)
+
+
+def _read_tag(rd, val, spec):
+    return _read_str(rd, val, spec)
 
 
 def _read_bytes(rd, val, spec):
@@ -125,27 +132,20 @@ def _read_object(rd, val, spec):
     return Data(res)
 
 
-def _read_typeunion(rd, val, spec):
+def _read_taggedunion(rd, val, spec):
     if not hasattr(val, 'get'):
         return rd.error('ERR_UNEXPECTED', 'unexpected value', val)
 
-    # type unions are discriminated by the "type" prop
-    # e.g {type:printer} will select the base "gws.ext.action.printer.Config"
+    # tagged unions are discriminated by the "tag" prop
+    # the 'parts' spec is a dict tag_value => class_name
 
-    type_name = val.get('type')
+    type_name = val.get(spec['tag'])
+    base = spec['parts'].get(type_name)
 
-    if type_name:
-        base = None
-        for b in spec['bases']:
-            p = b.split('.')
-            if p[-2] == type_name:
-                base = b
-                break
+    if base:
+        return rd.read(val, base)
 
-        if base:
-            return rd.read(val, base)
-
-    return rd.error('ERR_BAD_TYPE', 'expected %r, found %r' % (' or '.join(spec['bases']), type_name), val)
+    return rd.error('ERR_BAD_TYPE', 'expected %r, found %r' % (' or '.join(spec['parts']), type_name), val)
 
 
 def _read_union(rd, val, spec):
@@ -317,9 +317,9 @@ _HANDLERS = {
     'list': _read_list,
     'object': _read_object,
     'str': _read_str,
+    'tag': _read_tag,
     'tuple': _read_tuple,
-    'typeunion': _read_typeunion,
-    'union': _read_union,
+    'taggedunion': _read_taggedunion,
 
     'gws.types.Crs': _read_crsref,
     'gws.types.Date': _read_date,

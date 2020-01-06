@@ -95,7 +95,7 @@ class _Parser:
                 self.imports[nn.asname or nn.name] = m + '.' + nn.name
 
     def enum_aliases(self, tree):
-        mark = 'alias:'
+        mark = 'alias'
         for node in _nodes(tree, 'Assign'):
             doc = self.doc_for(node)
             if doc.startswith(mark):

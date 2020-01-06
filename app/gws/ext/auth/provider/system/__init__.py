@@ -20,8 +20,3 @@ class Object(gws.common.auth.provider.Object):
             user = self.root.create(gws.common.auth.user.System)
             return user.init_from_source(self, uid='system')
 
-    def unmarshal_user(self, user_uid, s=''):
-        return self.get_user(user_uid)
-
-    def marshal_user(self, user):
-        return ''

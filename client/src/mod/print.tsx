@@ -303,8 +303,8 @@ class PrintDialog extends gws.View<PrintViewProps> {
     label(job) {
         let s = this.__('modPrintPrinting');
 
-        if (job.otype === 'layer' && job.oname)
-            return gws.tools.shorten(job.oname, 40);
+        if (job.steptype === 'layer' && job.stepname)
+            return gws.tools.shorten(job.stepname, 40);
 
         return s + '...'
 
@@ -423,7 +423,7 @@ class PrintController extends gws.Controller {
             level = this.selectedTemplate.qualityLevels[quality],
             dpi = level ? level.dpi : 0;
 
-        let params = await this.map.printParams(
+        let basicParams = await this.map.basicPrintParams(
             this.previewBox.getBoundingClientRect(),
             dpi
         );
@@ -431,10 +431,11 @@ class PrintController extends gws.Controller {
         let vs = this.map.viewState;
         let attributes = Object.entries(this.getValue('printData') || {}).map(([name, value]) => ({name, value: String(value)}));
 
-        params = {
-            ...params,
+        let params: gws.api.PrintParamsWithTemplate = {
+            type: 'template',
             templateUid: this.selectedTemplate.uid,
             quality,
+            ...basicParams,
             sections: [
                 {
                     center: [vs.centerX, vs.centerY] as gws.api.Point,
@@ -449,20 +450,20 @@ class PrintController extends gws.Controller {
     async startSnapshot() {
         let dpi = Number(this.getValue('printSnapshotDpi')) || 0;
 
-        let params = await this.map.printParams(
+        let basicParams = await this.map.basicPrintParams(
             this.previewBox.getBoundingClientRect(),
             dpi
         );
 
         let vs = this.map.viewState;
 
-        params = {
-            ...params,
+        let params: gws.api.PrintParamsWithMap = {
+            type: 'map',
+            ...basicParams,
             format: 'png',
-            quality: dpi,
+            dpi: dpi,
             mapWidth: Number(this.getValue('printSnapshotWidth')) || DEFAULT_SNAPSHOT_SIZE,
             mapHeight: Number(this.getValue('printSnapshotHeight')) || DEFAULT_SNAPSHOT_SIZE,
-            templateUid: '',
             sections: [
                 {
                     center: [vs.centerX, vs.centerY] as gws.api.Point,

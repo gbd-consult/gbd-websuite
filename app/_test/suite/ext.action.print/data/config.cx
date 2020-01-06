@@ -1,0 +1,115 @@
+@include /common/util.cx
+
+server.mapproxy.enabled true
+server.qgis.enabled false
+server.spool.enabled true
+
+@POSTGRES_CONFIG
+@DEFAULT_WEB_SITE
+
+access+ { role "all" type "allow" }
+
+api.actions+ { type "map" }
+api.actions+ { type "asset" }
+api.actions+ { type "project" }
+
+api.actions+ { type "printer" }
+
+projects+ {
+    uid "a"
+    title "project_a"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "dus1"
+        type "postgres"
+        display "box"
+        table.name "dus1"
+        featureFormat.label {
+            type "html"
+            text "{id}"
+        }
+        style {
+            type "css"
+            text """
+                fill: rgba(0,0,255,0.5);
+                label-font-size: 13px;
+                label-fill: cyan;
+                label-background: black;
+                label-offset-x: 10px;
+                label-offset-y: -10px;
+            """
+        }
+    }
+
+    map.layers+ {
+        title "dus2"
+        type "postgres"
+        display "client"
+        table.name "dus2"
+        featureFormat.label {
+            type "html"
+            text "{id}"
+        }
+        style {
+            type "css"
+            text """
+                fill: rgba(0,255,0,0.5);
+                label-font-size: 13px;
+                label-fill: red;
+                label-background: blue;
+                label-offset-x: 10px;
+                label-offset-y: -10px;
+            """
+        }
+    }
+
+    map.layers+ {
+        title "wms_dus3"
+        type "wms"
+        url "http://mainhost:9995?MAP=/qgis/ows_3857.qgs"
+        sourceLayers.names ["points_dus3_3857"]
+    }
+
+    printer.templates [
+        {
+            uid "html_template"
+            type "html"
+            path "html.template.cx.html"
+            dataModel.rules [
+                {
+                    name "prop1"
+                }
+                {
+                    name "prop2"
+                }
+            ]
+            qualityLevels [
+                {
+                    dpi 0
+                    name "Entwurf"
+                }
+                {
+                    dpi 150
+                    name "150"
+                }
+                {
+                    dpi 300
+                    name "300"
+                }
+                {
+                    dpi 600
+                    name "600"
+                }
+                {
+                    dpi 1200
+                    name "1200"
+                }
+            ]
+        }
+    ]
+
+
+    @include /common/client.cx
+}

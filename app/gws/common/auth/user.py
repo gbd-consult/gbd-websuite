@@ -58,16 +58,16 @@ class User(t.IUser):
             attributes['displayName'] = attributes.get('login', '')
 
         attributes['uid'] = uid
-        attributes['provider'] = provider.uid
+        attributes['provider_uid'] = provider.uid
         attributes['guest'] = self.is_guest
 
         roles = list(roles) if roles else []
         roles.append(_ROLE_GUEST if self.is_guest else _ROLE_USER)
         roles.append(_ROLE_ALL)
 
-        return self.init_from_cache(provider, uid, roles, attributes)
+        return self.init_from_props(provider, uid, roles, attributes)
 
-    def init_from_cache(self, provider, uid, roles, attributes) -> 'IUser':
+    def init_from_props(self, provider, uid, roles, attributes) -> 'IUser':
         self.attributes = attributes
         self.provider = provider
         self.roles = set(roles)

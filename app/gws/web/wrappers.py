@@ -36,10 +36,15 @@ class BaseRequest(t.IBaseRequest):
         self.site: t.IWebSite = site
         self.method: str = self._wz.method
         self.headers: dict = self._wz.headers
-        self.params: dict = self._parse_params()
-        self._nocase_params = gws.extend(
-            {k.lower(): v for k, v in self.params.items()},
-            self.params)
+        self.params = {}
+        self._nocase_params = {}
+
+    def parse_params(self):
+        self.params = self._parse_params()
+        if self.params:
+            self._nocase_params = gws.extend(
+                {k.lower(): v for k, v in self.params.items()},
+                self.params)
 
     @property
     def environ(self) -> dict:
@@ -159,7 +164,7 @@ class BaseRequest(t.IBaseRequest):
             return gws.extend(_params_from_path(path), args)
 
         gws.log.error(f'invalid request path: {path!r}')
-        raise error.BadRequest()
+        raise error.NotFound()
 
     def _encode_struct(self, data, typ):
         if typ == _JSON:

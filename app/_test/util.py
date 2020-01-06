@@ -21,12 +21,12 @@ import gws.types as t
 DIR = os.path.dirname(__file__)
 
 
-def read(path):
+def read(path, mode='rt'):
     try:
-        with open(path) as fp:
+        with open(path, mode) as fp:
             return fp.read()
     except Exception as e:
-        return f'FILE ERROR: {e}'
+        return f'FILE ERROR: {e}, path {path!r}'
 
 
 def print_json(x):

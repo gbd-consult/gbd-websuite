@@ -92,16 +92,16 @@ class _TypeGenerator:
                 type='any',
             )
 
-        if u.kind == 'union':
+        if u.kind == 'tag':
             return TypeSpec(
-                type='union',
-                bases=[self.gen(t) for t in u.bases]
+                type='tag',
             )
 
-        if u.kind == 'typeunion':
+        if u.kind == 'taggedunion':
             return TypeSpec(
-                type='typeunion',
-                bases=[self.gen(t) for t in u.bases]
+                type='taggedunion',
+                tag=u.tag,
+                parts={k: self.gen(v) for k, v in u.parts.items()}
             )
 
         if u.kind == 'list':
@@ -138,6 +138,13 @@ class _TypeGenerator:
         props = []
 
         for p in self.units:
+            if p.kind == 'tag' and p.parent == u.uid:
+                props.append(PropertySpec(
+                    name=p.name,
+                    doc=p.doc,
+                    type='tag',
+                    default=p.default,
+                ))
             if p.kind == 'prop' and p.parent == u.uid:
                 props.append(PropertySpec(
                     name=p.name,

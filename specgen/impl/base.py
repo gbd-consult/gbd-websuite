@@ -30,6 +30,7 @@ class Unit(_Unit):
 
         self.uid = uid()
         self.kind = ''
+
         self.args = []
         self.bases = []
         self.command = ''
@@ -37,7 +38,9 @@ class Unit(_Unit):
         self.module = ''
         self.optional = False
         self.parent = None
+        self.parts = {}
         self.supers = []
+        self.tag = None
         self.types = []
         self.values = []
 

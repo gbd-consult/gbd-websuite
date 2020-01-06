@@ -587,12 +587,11 @@ class DimensionModel {
 class DimensionLayer extends gws.map.layer.FeatureLayer {
     master: DimensionController;
 
-    get printItem() {
+    get printItem(): gws.api.PrintItem {
         return {
-            features: [],
-            style: null,
+            type: 'fragment',
             printAsVector: true,
-            svgFragment: this.master.model.printFragment(),
+            fragment: this.master.model.printFragment(),
         };
     }
 
@@ -790,8 +789,7 @@ class DimensionController extends gws.Controller {
     snapUpdateCount = 0;
 
     async init() {
-        let res = await this.app.server.dimensionOptions({
-        });
+        let res = await this.app.server.dimensionOptions({});
 
         if (res.error)
             return;

@@ -49,11 +49,11 @@ def px2mm(x, ppi):
     return int((x / ppi) * MM_PER_IN)
 
 
-def mm2px_2(xy, ppi):
+def point_mm2px(xy, ppi):
     return mm2px(xy[0], ppi), mm2px(xy[1], ppi)
 
 
-def px2mm_2(xy, ppi):
+def point_px2mm(xy, ppi):
     return px2mm(xy[0], ppi), px2mm(xy[1], ppi)
 
 

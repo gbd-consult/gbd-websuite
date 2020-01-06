@@ -12,13 +12,13 @@ class Enum:
     pass
 
 
-#: alias: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
+#:alias An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
 
-#: alias: Point coordinates [x, y]
+#:alias Point coordinates [x, y]
 Point = Tuple[float, float]
 
-#: alias: Size [width, height]
+#:alias Size [width, height]
 Size = Tuple[float, float]
 
 
@@ -29,29 +29,29 @@ class Axis(Enum):
 
 ### semantic primitive types
 
-#: alias: Verbatim literal type
+#:alias Verbatim literal type
 Literal = str
 
-#: alias: Valid readable file path on the serve
+#:alias Valid readable file path on the server
 FilePath = str
 
-#: alias: Valid readable directory path on the server
+#:alias Valid readable directory path on the server
 DirPath = str
 
-#: alias: String like "1w 2d 3h 4m 5s" or a number of seconds
+#:alias String like "1w 2d 3h 4m 5s" or a number of seconds
 Duration = str
 
-#: alias: Regular expression, as used in Python
+#:alias Regular expression, as used in Python
 Regex = str
 
-#: alias: String with {attribute} placeholders
+#:alias String with {attribute} placeholders
 FormatStr = str
 
-#: alias: CRS code like "EPSG:3857
+#:alias CRS code like "EPSG:3857
 Crs = str
 
-#: alias: ISO date like "2019-01-30"
+#:alias ISO date like "2019-01-30"
 Date = str
 
-#: alias: Http or https URL
+#:alias Http or https URL
 Url = str

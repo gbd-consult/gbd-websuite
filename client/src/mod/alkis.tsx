@@ -1119,11 +1119,12 @@ class AlkisController extends gws.Controller {
         let level = this.setup.printTemplate.qualityLevels[quality];
         let dpi = level ? level.dpi : 0;
 
-        let base = await this.map.printParams(null, dpi);
-        let printParams: gws.api.PrintParams = {
-            ...base,
+        let basicParams = await this.map.basicPrintParams(null, dpi);
+        let printParams: gws.api.PrintParamsWithTemplate = {
+            type: 'template',
             templateUid: this.setup.printTemplate.uid,
-            quality
+            quality,
+            ...basicParams,
         };
 
         let q = {

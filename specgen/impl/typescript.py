@@ -98,8 +98,8 @@ class _Generator:
             b = _val(t.default)
             self.ifaces.append('export type %s = %s;' % (name, b))
 
-        elif t.type == 'union':
-            b = _pipe(sorted(self.gen(b) for b in t.bases))
+        elif t.type == 'taggedunion':
+            b = _pipe(sorted(self.gen(b) for b in t.parts.values()))
             self.ifaces.append('export type %s = %s;' % (name, b))
 
         elif t.type == 'alias':
@@ -110,9 +110,12 @@ class _Generator:
     def gen_props(self, t):
         ps = []
         for p in t.props:
-            ptype = self.gen(p.type)
             ps.append('\t/// %s' % p.doc)
-            ps.append('\t%s%s: %s;' % (p.name, '?' if p.optional else '', ptype))
+            if p.type == 'tag':
+                ps.append('\t%s: %r;' % (p.name, p.default))
+            else:
+                ptype = self.gen(p.type)
+                ps.append('\t%s%s: %s;' % (p.name, '?' if p.optional else '', ptype))
         return _nl(ps)
 
 

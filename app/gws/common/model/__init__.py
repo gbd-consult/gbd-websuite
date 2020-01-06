@@ -63,9 +63,12 @@ class Object(gws.Object, t.IModel):
 
     @property
     def props(self):
-        return t.ModelProps({
-            'rules': self.rules
-        })
+        return t.ModelProps(
+            rules=self.rules
+        )
+
+    def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
+        return self.apply_to_dict({a.name: a.value for a in atts})
 
     def apply_to_dict(self, d: dict) -> t.List[t.Attribute]:
         return [t.Attribute(
@@ -75,10 +78,7 @@ class Object(gws.Object, t.IModel):
             type=r.type,
         ) for r in self.rules]
 
-    def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
-        return self.apply_to_dict({a.name: a.value for a in atts})
-
-    def _apply_rule(self, rule: t.ModelRule, d):
+    def _apply_rule(self, rule: t.ModelRule, d: dict):
         s = rule.get('value')
         if s is not None:
             return s
@@ -90,7 +90,8 @@ class Object(gws.Object, t.IModel):
             if '{' not in s:
                 return s
             return gws.tools.misc.format_placeholders(s, d)
-        return ''
+        # no value/source/format present - return values[name]
+        return d.get(rule.name, '')
 
     def _normalize_rule(self, r):
         if not r.get('title'):

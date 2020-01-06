@@ -35,8 +35,7 @@ def _handle_request(environ):
 
 
 def _handle_request2(root, req) -> gws.web.wrappers.BaseResponse:
-    if req.params is None:
-        raise gws.web.error.NotFound()
+    req.parse_params()
 
     cors = req.site.cors
 

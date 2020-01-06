@@ -198,11 +198,11 @@ class _ConfigRefGenerator:
             else:
                 self.obj_type(t, self.w('properties') + ':', self.props(t))
 
-        elif t['type'] == 'typeunion':
+        elif t['type'] == 'taggedunion':
             self.obj_type(
                 t,
                 self.w('one_of') + ':',
-                _nl(sorted('* ' + self.ref(b) for b in t['bases'])))
+                _nl(sorted('* ' + self.ref(b) for b in t['bases'].values())))
 
         elif t['type'] == 'enum':
             self.obj_type(

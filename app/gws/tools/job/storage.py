@@ -9,14 +9,15 @@ def _db():
     conn = sqlite3.connect(path)
     conn.execute('''CREATE TABLE IF NOT EXISTS jobs(
         uid TEXT PRIMARY KEY,
-        user_uid TEXT,
+        user_full_uid TEXT,
+        str_user TEXT,
         worker TEXT,
         args TEXT,
         steps INTEGER,
         step INTEGER DEFAULT 0,
         state TEXT,
-        otype TEXT DEFAULT '',
-        oname TEXT DEFAULT '',
+        steptype TEXT DEFAULT '',
+        stepname TEXT DEFAULT '',
         error TEXT DEFAULT '',
         result TEXT DEFAULT '',
         created INTEGER,

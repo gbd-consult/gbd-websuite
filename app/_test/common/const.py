@@ -13,8 +13,8 @@ class POINTS:
     # PT Wehrhahn
     dus2 = [756766.713716578, 6661801.497422857]
 
-    # PT Lierenfeld Süd
-    dus3 = [758912.3456895868, 6658388.657964538]
+    # Linden x Mendelssohn Str
+    dus3 = [757149.9883074065, 6661832.92180825]
 
     # PT Neßler Str.
     dus4 = [765513.3648576294, 6648529.687935782]

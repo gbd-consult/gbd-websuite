@@ -1,7 +1,7 @@
 import importlib
 
 import gws
-import gws.config
+import gws.common.auth
 
 import gws.types as t
 
@@ -21,12 +21,18 @@ class Error(gws.Error):
     pass
 
 
-def create(uid, user_uid, worker, args=None):
-    gws.log.debug('creating job', worker, user_uid)
+def create(uid, user: t.IUser, worker: str, args=None):
+    if user:
+        fid = user.full_uid
+        str_user = gws.common.auth.serialize_user(user)
+    else:
+        fid = str_user = ''
+    gws.log.debug('creating job', worker, fid)
     storage.create(uid)
     storage.update(
         uid,
-        user_uid=user_uid,
+        user_full_uid=fid,
+        str_user=str_user,
         worker=worker,
         args=args or '',
         steps=0,
@@ -52,7 +58,7 @@ def get_for(user, uid):
     if not job:
         gws.log.error(f'job={uid!r}: not found')
         return
-    if job.user_uid != user.full_uid:
+    if job.user_full_uid != user.full_uid:
         gws.log.error(f'job={uid!r} wrong user (job={job.user_uid!r} user={user.full_uid!r})')
         return
     return job
@@ -60,19 +66,28 @@ def get_for(user, uid):
 
 class Job:
     def __init__(self, rec):
-        self.uid = rec['uid']
-        self.user_uid = rec['user_uid']
-        self.worker = rec['worker']
-        self.args = rec['args']
-        self.steps = rec['steps']
-        self.step = rec['step']
-        self.state = rec['state']
-        self.otype = rec['otype']
-        self.oname = rec['oname']
-        self.error = rec['error']
-        self.result = rec['result']
-        self.created = rec['created']
-        self.updated = rec['updated']
+        self.uid = ''
+        self.user_full_uid = ''
+        self.str_user = ''
+        self.worker = ''
+        self.args = ''
+        self.steps = 0
+        self.step = 0
+        self.state = ''
+        self.steptype = ''
+        self.stepname = ''
+        self.error = ''
+        self.result = ''
+        self.created = 0
+        self.updated = 0
+
+        for k, v in rec.items():
+            setattr(self, k, v)
+
+    @property
+    def user(self) -> t.Optional[t.IUser]:
+        if self.str_user:
+            return gws.common.auth.unserialize_user(self.str_user)
 
     def run(self):
         if self.state != State.open:

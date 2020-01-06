@@ -88,10 +88,10 @@ class Object(gws.Object, t.ITemplate):
             return q[quality].dpi
         return 0
 
-    def normalize_user_data(self, d: dict) -> t.List[t.Attribute]:
-        if not d or not self.data_model:
+    def normalize_user_data(self, attributes: t.List[t.Attribute]) -> t.List[t.Attribute]:
+        if not attributes or not self.data_model:
             return []
-        return self.data_model.apply_to_dict(d)
+        return self.data_model.apply(attributes)
 
     def render(self, context: dict, render_output: t.RenderOutput = None, out_path: str = None, format: str = None) -> t.TemplateOutput:
         pass

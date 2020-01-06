@@ -89,11 +89,11 @@ def _view_base(out_size, out_size_unit, rotation, dpi):
 
     if out_size_unit == 'px':
         view.size_px = out_size
-        view.size_mm = units.px2mm_2(out_size, view.dpi)
+        view.size_mm = units.point_px2mm(out_size, view.dpi)
 
     if out_size_unit == 'mm':
         view.size_mm = out_size
-        view.size_px = units.mm2px_2(out_size, view.dpi)
+        view.size_px = units.point_mm2px(out_size, view.dpi)
 
     return view
 

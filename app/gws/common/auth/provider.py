@@ -13,12 +13,13 @@ class Object(gws.Object, t.IAuthProvider):
     def authenticate(self, login: str, password: str, **kwargs) -> t.IUser:
         pass
 
-    def unmarshal_user(self, user_uid: str, json: str) -> t.IUser:
-        s = gws.tools.json2.from_string(json)
-        return user.ValidUser().init_from_cache(self, user_uid, s['roles'], s['attributes'])
+    def user_from_dict(self, d: dict) -> t.IUser:
+        return user.ValidUser().init_from_props(self, d['user_uid'], d['roles'], d['attributes'])
 
-    def marshal_user(self, u: t.IUser) -> str:
-        return gws.tools.json2.to_string({
+    def user_to_dict(self, u: t.IUser) -> dict:
+        return {
+            'provider_uid': self.uid,
+            'user_uid': u.uid,
             'roles': list(u.roles),
             'attributes': u.attributes
-        })
+        }

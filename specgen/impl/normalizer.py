@@ -52,9 +52,10 @@ def _type_unions_from_exts(units):
 
     for union_name, types in ls.items():
         units.append(Unit(
-            kind='typeunion',
+            kind='taggedunion',
             name=union_name,
-            bases=sorted(types)
+            tag='type',
+            parts={t.split('.')[-2]: t for t in types}
         ))
 
 
@@ -115,24 +116,56 @@ def _enum_kinds(units):
             u.values = get_values(u.uid)
 
 
+_union_count = 0
+
+
 def _union_kinds(units):
-    # create explicit 'union' kinds for Union types
+    # create explicit 'taggedunion' kinds for Union types
+
+    global _union_count
 
     ls = {}
+
+    # @TODO assuming the tag prop to always be 'type'
+    tag = 'type'
 
     for u in units:
         if u.types and u.types[0].endswith('Union'):
             # u.types is like [Union, [item, item...]]
-            items = sorted(set(u.types[1]))
-            tname = _tuple_name(items)
-            ls[tname] = Unit(
-                kind='union',
-                name=tname,
-                bases=items
-            )
-            u.types = [tname]
+
+            parts = _union_parts(units, set(u.types[1]), tag)
+
+            if u.kind == 'alias':
+                # like someType = Union[...]
+                u.kind = 'taggedunion'
+                u.tag = tag
+                u.parts = parts
+                u.types = []
+            else:
+                # like someProp: Union[...]
+                _union_count += 1
+                tname = 'Union%d' % _union_count
+                ls[tname] = Unit(
+                    kind='taggedunion',
+                    name=tname,
+                    tag=tag,
+                    parts=parts
+                )
+                u.types = [tname]
 
     units.extend(ls.values())
+
+
+def _union_parts(units, base_names, tag):
+    bmap = {u.uid: u.name for u in units if u.name in base_names}
+    parts = {}
+
+    for u in units:
+        if u.name == tag and u.parent in bmap:
+            parts[u.default] = bmap[u.parent]
+            u.kind = 'tag'
+
+    return parts
 
 
 def _tuple_kinds(units):
@@ -179,6 +212,7 @@ def _clean_global_refs(units):
         u.name = clean(u.name)
         u.supers = [clean(s) for s in u.supers]
         u.bases = [clean(s) for s in u.bases]
+        u.parts = {k: clean(v) for k, v in u.parts.items()}
         u.type = clean(u.type)
 
 
@@ -189,9 +223,3 @@ def _clean_supers(units):
 
     for u in units:
         u.supers = [s for s in u.supers if s in names]
-
-
-def _tuple_name(bases):
-    if len(set(bases)) == 1:
-        return '%s%d' % (bases[0], len(bases))
-    return '_or_'.join(bases).replace('.', '_')

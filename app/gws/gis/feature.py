@@ -26,18 +26,10 @@ def from_props(p: t.FeatureProps):
     return Feature(
         uid=p.get('uid'),
         attributes=p.get('attributes'),
+        elements=p.get('elements'),
         shape=p.get('shape'),
         style=p.get('style'),
     )
-
-
-def new(args: dict):
-    uid = args.pop('uid', None)
-    attributes = args.pop('attributes', None)
-    shape = args.pop('shape', None)
-    style = args.pop('style', None)
-    elements = args
-    return Feature(uid, attributes, elements, shape, style)
 
 
 #:export
