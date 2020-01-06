@@ -45,7 +45,7 @@ def from_xy(x, y, crs) -> t.IShape:
     return Shape(shapely.geometry.Point(x, y), crs)
 
 
-def union(shapes: t.List[t.IShape]) -> t.Optional[t.IShape]:
+def union(shapes) -> t.Optional[t.IShape]:
     if not shapes:
         return
 
@@ -114,6 +114,10 @@ class Shape(t.IShape):
         return t.Bounds(
             crs=self.crs,
             extent=self.geom.bounds)
+
+    @property
+    def extent(self) -> t.Extent:
+        return self.geom.bounds
 
     @property
     def x(self) -> float:

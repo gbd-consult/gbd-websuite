@@ -60,8 +60,8 @@ class FeatureConvertor:
 class Feature(t.IFeature):
     def __init__(self, uid=None, attributes=None, category=None, elements=None, shape=None, style=None):
         self.attributes: t.List[t.Attribute] = []
-        self.elements: dict = {}
-        self.category = category
+        self.elements = {}
+        self.category: str = category
         self.convertor: FeatureConvertor = None
         self.layer: t.ILayer = None
         self.shape: t.IShape = None
@@ -125,14 +125,15 @@ class Feature(t.IFeature):
             if convertor.data_model:
                 self.attributes = convertor.data_model.apply(self.attributes)
 
+            atts = {a.name: a.value for a in self.attributes}
+
             if convertor.feature_format:
                 ctx = gws.extend(
-                    {a.name: a.value for a in self.attributes},
-                    self.elements,
+                    atts,
+                    category=self.category,
                     feature=self,
                     layer=self.layer,
                     uid=self.uid,
-                    category=self.category
                 )
                 self.elements = gws.extend(self.elements, convertor.feature_format.apply(ctx))
 
@@ -166,6 +167,3 @@ class Feature(t.IFeature):
             if isinstance(style, dict):
                 style = t.StyleProps(style)
             self.style = style
-
-
-IFeature = Feature

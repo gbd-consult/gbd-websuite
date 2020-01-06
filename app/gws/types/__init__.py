@@ -336,6 +336,7 @@ class IBaseRequest:
 
 class IFeature:
     attributes: List[Attribute] = None
+    category: str = None
     convertor: 'FeatureConvertor' = None
     elements: dict = None
     layer: 'ILayer' = None
@@ -384,6 +385,7 @@ class IShape:
     bounds: 'Bounds' = None
     centroid: 'IShape' = None
     crs: str = None
+    extent: 'Extent' = None
     props: 'ShapeProps' = None
     type: 'GeometryType' = None
     wkb: str = None
@@ -776,7 +778,7 @@ class ISearchProvider(IObject):
     with_geometry: str = None
     with_keyword: str = None
     def can_run(self, args: 'SearchArgs'): pass
-    def context_shape(self, args: 'SearchArgs'): pass
+    def context_shape(self, args: 'SearchArgs') -> 'IShape': pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass
 
 class IStorage(IObject):

@@ -54,3 +54,9 @@ def test_download_asset_from_subdir():
     assert r.status_code == 200
     assert r.headers['content-disposition'] == 'attachment; filename="y.xml"'
     assert r.text == f'xml:{content}'
+
+
+def test_web_dir():
+    assert u.req('/').text == f'index.html:{content}'
+    assert u.req('/y.html').text == f'y.html:{content}'
+    assert u.req('/subdir/z.html').text == f'z.html:{content}'

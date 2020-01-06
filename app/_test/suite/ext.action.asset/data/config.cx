@@ -6,6 +6,11 @@ access+ { role "all" type "allow" }
 
 api.actions+ { type "asset" }
 
+web.sites.0 {
+    root.dir "/data/web"
+}
+
+
 projects+ {
     uid "allow_std_mime"
     assets.dir "/data/assets"

@@ -27,8 +27,9 @@ class Object(gws.Object, t.ISearchProvider):
     def __init__(self):
         super().__init__()
 
-        self.with_geometry: str = False
-        self.with_keyword: str = False
+        self.with_geometry = ''
+        self.with_keyword = ''
+
         self.pixel_tolerance: int = 0
 
         self.feature_format: t.IFormat = None
@@ -67,7 +68,7 @@ class Object(gws.Object, t.ISearchProvider):
             return False
         return args.keyword or geom
 
-    def context_shape(self, args: t.SearchArgs):
+    def context_shape(self, args: t.SearchArgs) -> t.IShape:
         if args.get('shapes'):
             return gws.gis.shape.union(args.shapes)
         ctx = self.var('defaultContext')

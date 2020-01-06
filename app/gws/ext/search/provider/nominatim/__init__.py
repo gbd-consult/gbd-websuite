@@ -3,33 +3,32 @@
 import gws
 import gws.common.search.provider
 import gws.common.template
-import gws.config
+import gws.gis.extent
 import gws.gis.feature
-import gws.gis.proj
 import gws.gis.shape
 import gws.tools.json2
 import gws.tools.net
 
 import gws.types as t
 
-NOMINATIM_CRS = 'epsg:4326'
-NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
+_NOMINATIM_CRS = gws.EPSG_4326
+_NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 
-DEFAULT_FEATURE_FORMAT = gws.common.template.FeatureFormatConfig({
-    'teaser': gws.common.template.Config({
-        'type': 'html',
-        'text': '''
-            <p class="head">{feature.attributes.name | html}</p>
+_DEFAULT_FEATURE_FORMAT = gws.common.template.FeatureFormatConfig(
+    teaser=gws.common.template.Config(
+        type='html',
+        text='''
+            <p class="head">{name | html}</p>
         '''
-    }),
-    'description': gws.common.template.Config({
-        'type': 'html',
-        'text': '''
-            <p class="head">{feature.attributes.name | html}</p>
-            <p class="text">{feature.attributes.content | html}</p>
+    ),
+    description=gws.common.template.Config(
+        type='html',
+        text='''
+            <p class="head">{name | html}</p>
+            <p class="text">{content | html}</p>
         '''
-    }),
-})
+    ),
+)
 
 
 class Config(gws.common.search.provider.Config):
@@ -42,8 +41,11 @@ class Config(gws.common.search.provider.Config):
 class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
-        self.feature_format = self.create_object('gws.common.format', DEFAULT_FEATURE_FORMAT)
-        self.keyword_required = True
+
+        self.with_keyword = 'required'
+
+        if not self.feature_format:
+            self.feature_format = self.create_object('gws.common.format', _DEFAULT_FEATURE_FORMAT)
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         params = {
@@ -65,36 +67,35 @@ class Object(gws.common.search.provider.Object):
         if not shape:
             return []
 
-        params['viewbox'] = gws.gis.proj.transform_extent(shape.geo.bounds, args.crs, NOMINATIM_CRS)
+        params['viewbox'] = gws.gis.extent.transformed(shape.extent, shape.crs, _NOMINATIM_CRS)
 
         features = []
 
         for rec in _query(params):
             uid = rec.get('place_id', ) or rec.get('osm_id')
+            geom = rec.pop('geojson', None)
 
-            if not rec.get('geojson'):
+            if not geom:
                 gws.log.debug(f'SKIP {uid}: no geometry')
                 continue
 
-            sh = gws.gis.shape.from_geometry(rec.pop('geojson'), NOMINATIM_CRS).transform(args.crs)
+            sh = gws.gis.shape.from_geometry(geom, _NOMINATIM_CRS).transformed(shape.crs)
             if not sh.intersects(shape):
                 gws.log.debug(f'SKIP {uid}: no intersection')
                 continue
 
-            rec = _normalize(rec)
-            f = gws.gis.feature.Feature(
-                uid=rec.get('place_id'),
-                attributes=rec,
+            features.append(gws.gis.feature.Feature(
+                uid=uid,
+                attributes=_normalize(rec),
                 shape=sh
-            )
-            features.append(f.apply_format(self.feature_format))
+            ))
 
         return features
 
 
 def _query(params):
     try:
-        res = gws.tools.net.http_request(NOMINATIM_URL, params=params)
+        res = gws.tools.net.http_request(_NOMINATIM_URL, params=params)
         return gws.tools.json2.from_string(res.text)
     except gws.tools.net.Error as e:
         gws.log.error('nominatim request error', e)
@@ -110,6 +111,7 @@ def _normalize(rec):
 
     # the problem is there's no fixed key for the 'name' (the key depends on the class)
     # however, display_name seems to always start with the 'name'
+
     dn = rec.get('display_name', '')
     rec['name'] = dn.split(',')[0].strip()
     rec['content'] = '' if rec['name'] == dn else dn

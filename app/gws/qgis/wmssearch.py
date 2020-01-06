@@ -38,8 +38,6 @@ class Object(gws.common.search.provider.Object):
                 self.var('sourceLayers'),
                 queryable_only=True)
 
-
-
     def can_run(self, args):
         return (
                 super().can_run(args)

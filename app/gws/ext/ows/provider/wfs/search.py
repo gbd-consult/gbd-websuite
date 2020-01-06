@@ -1,7 +1,4 @@
-import gws
 import gws.common.search.provider
-import gws.gis.util
-import gws.gis.proj
 import gws.gis.shape
 
 import gws.types as t

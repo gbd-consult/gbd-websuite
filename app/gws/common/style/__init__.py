@@ -16,7 +16,8 @@ def from_props(p: t.StyleProps) -> t.IStyle:
         return s
 
 
-def from_config(p: Config) -> t.IStyle:
+def from_config(c: Config) -> t.IStyle:
+    p: t.StyleProps = c
     return from_props(p)
 
 
