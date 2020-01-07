@@ -29,6 +29,16 @@ def main():
         xy=cc.POINTS.memphis,
         gap=100,
     )
+    u.make_geom_json(
+        path='/common/qgis/squares_mexico_25832.geojson',
+        geom_type='square',
+        prop_schema=schema,
+        crs=cc.CRS_25832,
+        rows=70,
+        cols=70,
+        xy=cc.POINTS.mexico,
+        gap=100,
+    )
 
 
 if __name__ == '__main__':

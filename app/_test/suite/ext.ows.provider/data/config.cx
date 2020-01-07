@@ -69,6 +69,13 @@ projects+ {
     }
 
 
+    map.layers+ {
+        title "wmts_squares_mexico_25832"
+        type "wmts"
+        url "{{URL}}"
+    }
+
+
 
     @include /common/client.cx
 }

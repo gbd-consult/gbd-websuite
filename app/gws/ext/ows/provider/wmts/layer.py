@@ -1,10 +1,10 @@
 import gws
 import gws.common.layer
 import gws.gis.source
-import gws.gis.legend
 import gws.gis.util
-import gws.gis.proj
 import gws.gis.mpx
+import gws.gis.ows
+import gws.tools.net
 import gws.tools.json2
 import gws.tools.units as units
 
@@ -20,7 +20,7 @@ class Config(gws.common.layer.ImageTileConfig):
     maxRequests: int = 0  #: max concurrent requests to this source
     params: t.Optional[dict]  #: query string parameters
     sourceLayer: t.Optional[str]  #: WMTS layer name
-    sourceStyle: str = 'default'  #: WMTS style name
+    sourceStyle: str = ''  #: WMTS style name
     url: t.Url  #: service url
 
 
@@ -32,27 +32,27 @@ class Object(gws.common.layer.ImageTile):
         self.provider: provider.Object = None
         self.source_layer: types.SourceLayer = None
         self.source_crs = ''
+        self.source_style = ''
         self.url = ''
 
     def configure(self):
         super().configure()
 
         self.url = self.var('url')
-        self.provider = gws.gis.util.shared_ows_provider(provider.Object, self, self.config)
-        self.source_layer = self._get_layer(self.var('sourceLayer'))
+        self.provider = gws.gis.ows.shared_provider(provider.Object, self, self.config)
         self.source_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
+        self.source_layer = self._get_layer(self.var('sourceLayer'))
         self.matrix_set = self._get_matrix_set()
-
-        # if no legend.url is given, use an auto legend
 
         if not self.legend_url and self.source_layer.legend:
             self.legend_url = self.source_layer.legend
-
         self.has_legend = self.var('legend.enabled') and bool(self.legend_url)
+
+        self.source_style = self.var('sourceStyle')
 
     @property
     def own_bounds(self):
-        return gws.gis.source.bounds_from_layers(self.source_layers, self.map.crs)
+        return gws.gis.source.bounds_from_layers([self.source_layer], self.source_crs)
 
     def mapproxy_config(self, mc):
         m0 = self.matrix_set.matrices[0]
@@ -81,17 +81,21 @@ class Object(gws.common.layer.ImageTile):
         return self.description_template.render(context).content
 
     def _get_layer(self, layer_name) -> types.SourceLayer:
-        if not layer_name:
+        if layer_name:
+            for sl in self.provider.source_layers:
+                if sl.name == layer_name:
+                    return sl
+            raise gws.Error(f'layer {layer_name!r} not found')
+
+        if self.provider.source_layers:
             return self.provider.source_layers[0]
-        for la in self.provider.source_layers:
-            if la.name == layer_name:
-                return la
-        raise gws.Error(f'layer {layer_name!r} not found')
+
+        raise gws.Error(f'no layers found')
 
     def _get_matrix_set(self):
-        for matrix_set in self.source_layer.matrix_sets:
-            if matrix_set.crs == self.source_crs:
-                return matrix_set
+        for ms in self.source_layer.matrix_sets:
+            if ms.crs == self.source_crs:
+                return ms
         raise gws.Error(f'no suitable tile matrix set found')
 
     def _get_tile_url(self):
@@ -103,7 +107,7 @@ class Object(gws.common.layer.ImageTile):
             url = url.replace('{TileRow}', '%(y)d')
             return url
 
-        url = gws.get(self.provider.operations, 'GetTile.get_url')
+        url = self.provider.operation('GetTile').get_url
         if url:
             params = {
                 'SERVICE': 'WMTS',
@@ -118,6 +122,18 @@ class Object(gws.common.layer.ImageTile):
                 'TILEROW': '%(y)d',
             }
 
+            if self.source_style:
+                params['STYLE'] = self.source_style
+
+            p = gws.tools.net.parse_url(url)
+            params.update(p['params'])
+
             # NB cannot use as_query_string because of the MP's percent formatting
+
+            p['params'] = {}
             qs = '&'.join(k + '=' + str(v or '') for k, v in params.items())
-            return url + '?' + qs
+            url = gws.tools.net.make_url(p) + '?' + qs
+
+            return url
+
+        raise gws.Error('no GetTile url found')

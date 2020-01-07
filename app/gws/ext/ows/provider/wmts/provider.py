@@ -3,14 +3,20 @@ import gws.common.ows.provider
 import gws.tools.xml3
 import gws.gis.ows
 
-from . import caps
+import gws.types as t
+
+from . import caps, types
 
 
 class Object(gws.common.ows.provider.Object):
     def __init__(self):
         super().__init__()
+
         self.type = 'WMTS'
         self.url = ''
+
+        self.source_layers: t.List[types.SourceLayer] = []
+        self.matrix_sets: t.List[types.TileMatrixSet] = []
 
     def configure(self):
         super().configure()

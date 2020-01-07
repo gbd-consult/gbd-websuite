@@ -24,24 +24,14 @@ def parse(prov, xml):
     prov.version = el.attr('version')
 
     prov.source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Contents.Layer'))
+    prov.matrix_sets = [_tile_matrix_set(e) for e in el.all('Contents.TileMatrixSet')]
+    prov.supported_crs = sorted(set(ms.crs for ms in prov.matrix_sets))
 
-    tms_all = {}
-    for e in el.all('Contents.TileMatrixSet'):
-        tms = _tile_matrix_set(e)
-        tms_all[tms.uid] = tms
+    tms_map = {ms.uid: ms for ms in prov.matrix_sets}
 
     for sl in prov.source_layers:
-        sl.matrix_sets = []
-        cs = set()
-
-        for tid in sl.matrix_ids:
-            tms = tms_all[tid]
-            cs.add(tms.crs)
-            sl.matrix_sets.append(tms)
-
-        sl.supported_crs = sorted(cs)
-
-    prov.supported_crs = u.crs_from_layers(prov.source_layers)
+        sl.matrix_sets = [tms_map[tid] for tid in sl.matrix_ids]
+        sl.supported_crs = sorted(ms.crs for ms in sl.matrix_sets)
 
 
 def _layer(el):

@@ -11,7 +11,7 @@ class TileMatrix:
         self.height: float = 0
         self.tile_width: float = 0
         self.tile_height: float = 0
-        self.extent = []
+        self.extent: t.Extent = []
 
 
 class TileMatrixSet:
