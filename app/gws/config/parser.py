@@ -119,11 +119,21 @@ def _parse_cx_config(path):
         context={'true': True, 'false': False},
         error=err)
 
+    p = path.split('/')[-1]
+    with open(gws.VAR_DIR + '/' + p + '.parsed.slon', 'wt') as fp:
+        fp.write(src)
+
     try:
-        return gws.tools.slon.loads(src, as_object=True)
+        dct = gws.tools.slon.loads(src, as_object=True)
     except gws.tools.slon.DecodeError as e:
         _display_syntax_error(src, e.args[0], e.args[1])
         raise ValueError('syntax error')
+
+    p = path.split('/')[-1]
+    with open(gws.VAR_DIR + '/' + p + '.parsed.json', 'wt') as fp:
+        json.dump(dct, fp, indent=4, ensure_ascii=False)
+
+    return dct
 
 
 def _display_syntax_error(src, message, line, context=10):
