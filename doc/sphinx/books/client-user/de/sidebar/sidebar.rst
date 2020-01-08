@@ -1,5 +1,5 @@
-Menü
-====
+Menüleiste
+==========
 
 Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs.
 

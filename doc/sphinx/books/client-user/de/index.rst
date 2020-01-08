@@ -7,7 +7,7 @@ Anleitungen für GBD WebSuite Client Nutzer
 .. toctree::
     :maxdepth: 2
 
-    overview/overview.rst
-    sidebar/sidebar.rst
+    overview/help.rst
     toolbox/mapfunction.rst
+    sidebar/sidebar.rst
     infobar/infobar.rst
