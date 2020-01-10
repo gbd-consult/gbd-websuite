@@ -7,7 +7,12 @@ import gws.config
 import gws.config.loader
 import gws.tools.clihelpers as clihelpers
 import gws.tools.json2
-from .tools import nas
+
+import gws.ext.tool.alkis as alkis
+
+import gws.types as t
+
+from .util import nas
 
 COMMAND = 'alkis'
 
@@ -24,24 +29,22 @@ def parse(path=None):
     print(gws.tools.json2.to_string(props, pretty=True))
 
 
-@arg('--project', help='project unique ID')
-def create_index(project=None):
-    """Create an internal ALKIS search index for a project"""
+def create_index():
+    """Create an internal ALKIS search index."""
 
-    a = clihelpers.find_action('alkis', project)
+    a = _get_alkis()
     if a:
         user, password = clihelpers.database_credentials()
-        t = time.time()
-        a.index_create(user, password)
-        t = time.time() - t
+        ts = time.time()
+        a.create_index(user, password)
+        t = time.time() - ts
         gws.log.info('index done in %.2f sec' % t)
 
 
-@arg('--project', help='project unique ID')
-def check_index(project=None):
-    """Check the status of the ALKIS search index"""
+def check_index():
+    """Check the status of the ALKIS search index."""
 
-    a = clihelpers.find_action('alkis', project)
+    a = _get_alkis()
     if a:
         if a.index_ok():
             gws.log.info(f'ALKIS indexes are ok')
@@ -49,11 +52,23 @@ def check_index(project=None):
             gws.log.info(f'ALKIS indexes are NOT ok')
 
 
-@arg('--project', help='project unique ID')
-def drop_index(project=None):
+def drop_index():
     """Remove the ALKIS search index"""
 
-    a = clihelpers.find_action('alkis', project)
+    a = _get_alkis()
     if a:
         user, password = clihelpers.database_credentials()
-        a.index_drop(user, password)
+        a.drop_index(user, password)
+
+
+def _get_alkis() -> t.Optional[alkis.Object]:
+    gws.config.loader.load()
+
+    a: alkis.Object = gws.config.root().application.find_first('gws.ext.tool.alkis')
+    if not a:
+        gws.log.error('ALKIS tool is not configured')
+        return
+    if not a.has_source:
+        gws.log.error('ALKIS source data not found')
+        return
+    return a

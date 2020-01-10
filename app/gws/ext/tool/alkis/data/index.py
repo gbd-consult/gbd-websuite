@@ -1,7 +1,7 @@
 import gws
 
 from . import resolver, adresse, nutzung, grundbuch, flurstueck
-from ..tools.connection import AlkisConnection
+from ..util.connection import AlkisConnection
 
 mods = [resolver, adresse, nutzung, grundbuch, flurstueck]
 

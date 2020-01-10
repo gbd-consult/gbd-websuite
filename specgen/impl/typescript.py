@@ -111,8 +111,8 @@ class _Generator:
         ps = []
         for p in t.props:
             ps.append('\t/// %s' % p.doc)
-            if p.type == 'tag':
-                ps.append('\t%s: %r;' % (p.name, p.default))
+            if p.type == 'literal':
+                ps.append('\t%s: %r;' % (p.name, p.value))
             else:
                 ptype = self.gen(p.type)
                 ps.append('\t%s%s: %s;' % (p.name, '?' if p.optional else '', ptype))

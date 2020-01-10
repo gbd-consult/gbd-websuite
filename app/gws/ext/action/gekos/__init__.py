@@ -1,18 +1,19 @@
 """Interface with GekoS-Bau software."""
 
 import gws
-import gws.web
-import gws.config
-import gws.tools.net
-import gws.gis.feature
-import gws.common.layer
 import gws.common.db
+import gws.common.layer
+import gws.common.template
+import gws.config
 import gws.ext.db.provider.postgres
+import gws.gis.feature
 import gws.gis.proj
+import gws.tools.net
+import gws.web
 
 import gws.types as t
 
-import gws.ext.action.alkis
+import gws.ext.tool.alkis
 
 from . import request
 
@@ -30,7 +31,7 @@ from . import request
     
         GIS-URL-ShowXY  = /project/my-project/?x=<x>&y=<y>&z=my-scale-value
         
-    client-side call, handled in the client and by the alkis ext:
+    client-side call, handled in the client
     
         GIS-URL-ShowFs = /project/my-project/?alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
         
@@ -43,14 +44,18 @@ from . import request
         GIS-URL-GetXYFromFs   = /_/?cmd=gekosHttpGetXy&alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
         GIS-URL-GetXYFromGrd  = /_/?cmd=gekosHttpGetXy&alkisAd=<str>_<hnr><hnralpha>_<plz>_<ort>_<bishnr><bishnralpha>
 
-    NB: the order of placeholders must match _COMBINED_FS_PARAMS and _COMBINED_AD_PARAMS in ext.action.alkis
+    NB: the order of placeholders must match _COMBINED_FS_PARAMS and _COMBINED_AD_PARAMS in ext.tool.alkis
 
 """
 
 
-class GetXYParams(t.Params):
-    alkisFs: str = ''
-    alkisAd: str = ''
+class GetFsParams(t.Params):
+    alkisFs: t.Optional[str]
+    alkisAd: t.Optional[str]
+
+
+class GetFsResponse(t.Response):
+    feature: t.FeatureProps
 
 
 class PositionConfig(t.Config):
@@ -65,6 +70,7 @@ class Config(t.WithTypeAndAccess):
 
     crs: t.Crs = ''  #: CRS for gekos data
     db: t.Optional[str]  #: database provider uid
+    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: template for the Flurstueck details popup
     instances: t.Optional[t.List[str]]  #: gek-online instances
     params: dict  #: additional parameters for gek-online calls
     position: t.Optional[PositionConfig]  #: position correction for points
@@ -72,53 +78,61 @@ class Config(t.WithTypeAndAccess):
     url: t.Url  #: gek-online base url
 
 
+DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
+    title=gws.common.template.Config(type='html', text='{vollnummer}'),
+    teaser=gws.common.template.Config(type='html', text='Flurstück {vollnummer}'),
+)
+
+
 class Object(gws.ActionObject):
     def __init__(self):
         super().__init__()
+
         self.db: gws.ext.db.provider.postgres = None
+        self.alkis: gws.ext.tool.alkis.Object = None
+        self.feature_format: t.IFormat = None
+        self.crs = ''
 
     def configure(self):
         super().configure()
         self.crs = self.var('crs')
+        self.db: gws.ext.db.provider.postgres.Object = gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres')
 
-        s = self.var('db')
-        if s:
-            self.db = self.root.find('gws.ext.db.provider', s)
-        else:
-            self.db = self.root.find_first('gws.ext.db.provider')
+        self.alkis: gws.ext.tool.alkis.Object = self.find_first('gws.ext.tool.alkis')
 
-        if not self.db:
-            raise gws.Error(f'{self.uid}: db provider not found')
+        self.feature_format = self.add_child('gws.common.format', self.var('featureFormat') or DEFAULT_FORMAT)
 
-    def http_get_xy(self, req: t.IRequest, p: GetXYParams) -> t.HttpResponse:
-        project_uid = p.projectUid
+    def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:
+        if not self.alkis:
+            raise gws.web.error.NotFound()
 
-        if project_uid:
-            req.require_project(project_uid)
+        f = self._find_alkis_feature(p)
 
-        alkis = self.find_first('gws.common.application').find_action('alkis', project_uid)
+        if not f:
+            raise gws.web.error.NotFound()
 
-        if p.alkisFs:
-            query = gws.ext.action.alkis.FsQueryParams({
-                'alkisFs': p.alkisFs
-            })
-            total, features = alkis.find_fs(query, self.crs, allow_eigentuemer=False, allow_buchung=False, limit=1)
+        return GetFsResponse(feature=f)
 
-        elif p.alkisAd:
-            query = gws.ext.action.alkis.FsAddressQueryParams({
-                'alkisAd': p.alkisAd,
-                'hausnummerNotNull': True,
-            })
-            total, features = alkis.find_address(query, self.crs, limit=1)
-        else:
-            gws.log.warn(f'gekos: bad request {req.params!r}')
+    def http_get_xy(self, req: t.IRequest, p: GetFsParams) -> t.HttpResponse:
+        if not self.alkis:
             return _text('error:')
 
-        if total == 0:
+        f = self._find_alkis_feature(p)
+
+        if not f:
             gws.log.warn(f'gekos: not found {req.params!r}')
             return _text('error:')
 
-        return _text_xy(features[0])
+        return _text('%.3f;%.3f' % (f.attr('x'), f.attr('y')))
+
+    def _find_alkis_feature(self, p: GetFsParams):
+        res = None
+        if p.alkisFs:
+            res = self.alkis.find_flurstueck_combined(p.alkisAd)
+        elif p.alkisAd:
+            res = self.alkis.find_adresse_combined(p.alkisAd)
+        if res and res.features:
+            return res.features[0]
 
     def load_data(self):
         """Load gekos data into a postgres table."""
@@ -215,7 +229,3 @@ def _text(s):
         'mime': 'text/plain',
         'content': s
     })
-
-
-def _text_xy(f):
-    return _text('%.3f;%.3f' % (f.attributes['x'], f.attributes['y']))

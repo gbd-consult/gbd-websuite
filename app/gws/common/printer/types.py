@@ -9,7 +9,7 @@ class PrintItemBase(t.Data):
 
 
 class PrintItemBitmap(PrintItemBase):
-    type: str = 'bitmap'
+    type: t.Literal = 'bitmap'
     data: bytes
     mode: str
     width: int
@@ -17,23 +17,23 @@ class PrintItemBitmap(PrintItemBase):
 
 
 class PrintItemUrl(PrintItemBase):
-    type: str = 'url'
+    type: t.Literal = 'url'
     url: str
 
 
 class PrintItemFeatures(PrintItemBase):
-    type: str = 'features'
+    type: t.Literal = 'features'
     features: t.List[t.FeatureProps]
 
 
 class PrintItemLayer(PrintItemBase):
-    type: str = 'layer'
+    type: t.Literal = 'layer'
     layerUid: str
     subLayers: t.Optional[t.List[str]]
 
 
 class PrintItemFragment(PrintItemBase):
-    type: str = 'fragment'
+    type: t.Literal = 'fragment'
     fragment: t.SvgFragment
 
 
@@ -49,7 +49,7 @@ PrintItem = t.Union[
 
 class PrintSection(t.Data):
     center: t.Point
-    attributes: t.Optional[t.List[t.Attribute]]
+    context: t.Optional[dict]
     items: t.Optional[t.List[PrintItem]]
 
 
@@ -63,13 +63,13 @@ class PrintParamsBase(t.Params):
 
 
 class PrintParamsWithTemplate(PrintParamsBase):
-    type = 'template'
+    type: t.Literal = 'template'
     quality: int
     templateUid: str
 
 
 class PrintParamsWithMap(PrintParamsBase):
-    type = 'map'
+    type: t.Literal = 'map'
     dpi: int
     mapHeight: int
     mapWidth: int

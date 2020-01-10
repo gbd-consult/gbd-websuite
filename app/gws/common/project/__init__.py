@@ -35,7 +35,7 @@ class Config(t.WithAccess):
 
 
 class Props(t.Data):
-    actions: dict
+    actions: t.List[t.ext.action.Props]
     client: t.Optional[gws.common.client.Props]
     description: str
     locales: t.List[str]
@@ -115,20 +115,17 @@ class Object(gws.Object, t.IProject):
 
     @property
     def props(self):
-        client = self.client or getattr(self.parent, 'client', None)
-        actions = gws.extend(
-            {},
-            self.root.application.api.actions,
-            self.api.actions if self.api else {})
-
-        return Props({
-            'client': client,
-            'actions': actions,
-            'description': self.description,
-            'map': self.map,
-            'meta': self.meta,
-            'overviewMap': self.overview_map,
-            'printer': self.printer,
-            'title': self.title,
-            'uid': self.uid,
-        })
+        return Props(
+            actions=gws.extend(
+                {},
+                self.root.application.api.actions,
+                self.api.actions if self.api else {}),
+            client=self.client or getattr(self.parent, 'client', None),
+            description=self.description,
+            map=self.map,
+            meta=self.meta,
+            overviewMap=self.overview_map,
+            printer=self.printer,
+            title=self.title,
+            uid=self.uid,
+        )

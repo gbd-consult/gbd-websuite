@@ -12,8 +12,7 @@ _known_bases = set('Any Dict List Optional Tuple Union Data Config Props Attribu
 
 def run(stubs):
     classes = {s.class_name: s for s in stubs.values()}
-    classes['gws.Object'] = stubs['IObject']
-    classes['Object'] = stubs['IObject']
+    classes['gws.Object'] = classes['Object'] = stubs.get('IObject')
 
     for stub in stubs.values():
         stub.bases = [_format_base(b, classes) for b in stub.bases]

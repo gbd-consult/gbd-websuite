@@ -116,9 +116,46 @@ class GekosController extends gws.Controller {
                 tb.children = tb.children.filter(c => c.tag !== 'Toolbar.Gekos');
                 this.updateObject('appToolbarState', {gekos: false})
             }
+
+            this.fsUrlSearch();
         })
 
     }
+
+    async fsUrlSearch() {
+        let p, params = null;
+
+        p = this.app.urlParams['alkisFs'];
+        if (p) {
+            params = {alkisFs: p};
+        }
+
+        p = this.app.urlParams['alkisAd'];
+        if (p) {
+            params = {alkisAd: p};
+        }
+
+        if (!params)
+            return;
+
+        let res = await this.app.server.gekosFindFs(params);
+
+        if (res.error) {
+            return false;
+        }
+
+        let feature = this.map.readFeature(res.feature);
+        this.update({
+            marker: {
+                features: [feature],
+                mode: 'draw zoom',
+            },
+            infoboxContent: <gws.components.Infobox
+                controller={this}>{feature.elements.teaser}</gws.components.Infobox>,
+        });
+
+    }
+
 
     get appOverlayView() {
         return this.createElement(

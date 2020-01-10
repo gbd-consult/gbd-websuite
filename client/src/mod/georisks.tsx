@@ -305,9 +305,14 @@ class GeorisksDialog extends gws.View<GeorisksViewProps> {
     form() {
 
         let privacyText = () => {
+            let setup = this.app.actionSetup('georisks');
+
+            if (!setup)
+                return '';
+
             // must be like "I have read $the policy$ and accept it"
             let t = this.__('modGeorisksReportPrivacyLink').split('$');
-            let h = this.app.actions['georisks']['privacyPolicyLink'][this.app.locale];
+            let h = setup['privacyPolicyLink'][this.app.locale];
             return <Cell flex>
                 {t[0]}
                 <gws.ui.Link href={h} target="_blank" content={t[1]}/>
@@ -460,7 +465,7 @@ function validateStoreValues(cc: gws.Controller, rules: Array<ValidationRule>) {
 
 class GeorisksToolbarButton extends toolbar.Button {
     canInit() {
-        return !!this.app.actions['georisks'];
+        return !!this.app.actionSetup('georisks');
     }
 
     iconClass = 'modGeorisksToolbarButton';
@@ -473,7 +478,7 @@ class GeorisksToolbarButton extends toolbar.Button {
 
 class GeorisksController extends gws.Controller {
     canInit() {
-        return !!this.app.actions['georisks'];
+        return !!this.app.actionSetup('georisks');
     }
 
     async init() {

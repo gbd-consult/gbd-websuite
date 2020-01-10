@@ -71,7 +71,7 @@ def _read_str(rd, val, spec):
         rd.error('ERR_MUST_BE_STRING', 'must be a string', val)
 
 
-def _read_tag(rd, val, spec):
+def _read_literal(rd, val, spec):
     return _read_str(rd, val, spec)
 
 
@@ -269,18 +269,6 @@ def _property_value(rd, prop_val, spec):
         # NB, for Data objects, default={} will create an objects with defaults
         return rd.read(default, spec['type'])
 
-    # have value...
-
-    # @TODO we don't have literals for now
-    #
-    # if spec['type'] == 'gws.types.Literal':
-    #     # if literal, the value must be exactly spec[default]
-    #     if prop_val != default:
-    #         return rd.error('ERR_BAD_LITERAL', 'expected %r' % default, prop_val)
-    #     return prop_val
-
-    # no literal, normal case - the value is given and must match the type
-
     return rd.read(prop_val, spec['type'])
 
 
@@ -317,7 +305,7 @@ _HANDLERS = {
     'list': _read_list,
     'object': _read_object,
     'str': _read_str,
-    'tag': _read_tag,
+    'literal': _read_literal,
     'tuple': _read_tuple,
     'taggedunion': _read_taggedunion,
 

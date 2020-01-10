@@ -3,7 +3,7 @@
 import gws
 from gws.tools.console import ProgressIndicator
 from . import resolver
-from ..tools import indexer, connection
+from ..util import indexer, connection
 
 parts_index = 'idx_nutzung_parts'
 all_index = 'idx_nutzung_all'

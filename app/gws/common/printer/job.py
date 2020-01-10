@@ -24,7 +24,7 @@ import gws.types as t
 
 class PreparedSection(t.Data):
     center: t.Point
-    attributes: dict
+    context: dict
     items: t.List[t.RenderInputItem]
 
 
@@ -134,7 +134,7 @@ class _Worker:
 
         self.sections: t.List[PreparedSection] = [self.prepare_section(sec) for sec in p.sections]
 
-        self.template_vars = {
+        self.default_context = {
             'project': self.project,
             'user': self.user,
             'scale': self.view_scale,
@@ -175,7 +175,7 @@ class _Worker:
         comb_path = gws.tools.pdf.concat(section_paths, f'{self.base_path}/comb.pdf')
 
         if self.template:
-            ctx = gws.extend(self.sections[0].attributes, self.template_vars)
+            ctx = gws.extend({}, self.default_context, self.sections[0].context)
             ctx['page_count'] = gws.tools.pdf.page_count(comb_path)
             res_path = self.template.add_headers_and_footers(
                 context=ctx,
@@ -219,7 +219,7 @@ class _Worker:
 
         if self.template:
             tr = self.template.render(
-                context=gws.extend({}, sec.attributes, self.template_vars),
+                context=gws.extend({}, self.default_context, sec.context),
                 render_output=renderer.output,
                 out_path=f'{self.base_path}/sec-{n}.pdf',
                 format='pdf',
@@ -252,7 +252,7 @@ class _Worker:
     def prepare_section(self, sec: pt.PrintSection):
         return PreparedSection(
             center=sec.center,
-            attributes={a.name: a.value for a in sec.get('attributes', [])},
+            context=sec.get('context', {}),
             items=self.prepare_render_items(sec.get('items') or []),
         )
 

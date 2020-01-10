@@ -6,6 +6,8 @@ class ext:
     class action:
         class Config:
             pass
+        class Props:
+            pass
 
     class auth:
         class provider:
@@ -37,6 +39,10 @@ class ext:
                 pass
 
     class storage:
+        class Config:
+            pass
+
+    class tool:
         class Config:
             pass
 

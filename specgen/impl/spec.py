@@ -138,12 +138,12 @@ class _TypeGenerator:
         props = []
 
         for p in self.units:
-            if p.kind == 'tag' and p.parent == u.uid:
+            if p.kind == 'literal' and p.parent == u.uid:
                 props.append(PropertySpec(
                     name=p.name,
                     doc=p.doc,
-                    type='tag',
-                    default=p.default,
+                    type='literal',
+                    value=p.default,
                 ))
             if p.kind == 'prop' and p.parent == u.uid:
                 props.append(PropertySpec(

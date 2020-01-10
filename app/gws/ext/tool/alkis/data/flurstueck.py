@@ -6,7 +6,7 @@ import re
 import gws
 from gws.tools.console import ProgressIndicator
 from . import resolver, adresse, nutzung, grundbuch
-from ..tools import connection, indexer
+from ..util import connection, indexer
 
 main_index = 'idx_flurstueck'
 name_index = 'idx_name'
@@ -386,9 +386,7 @@ def gemarkung_list(conn):
     return list(rs)
 
 
-def strasse_list(conn, query):
-    query = _query_to_dict(query)
-
+def strasse_list(conn, query: dict):
     if 'gemeindeUid' in query:
         where = 'gemeinde_id=%s'
         parms = [query['gemeindeUid']]
@@ -420,7 +418,7 @@ def has_flurnummer(conn: connection.AlkisConnection):
 _DEFAULT_LIMIT = 100
 
 
-def find(conn: connection.AlkisConnection, query, limit=None):
+def find(conn: connection.AlkisConnection, query: dict):
     where = []
     parms = []
 
@@ -428,14 +426,10 @@ def find(conn: connection.AlkisConnection, query, limit=None):
         'FS': main_index
     }
 
-    query = _query_to_dict(query)
-
     if not query:
-        #
         return 0, []
 
     if query.get('vorname') and not query.get('name'):
-        #
         return 0, []
 
     def _prepare_for_like(v):
@@ -516,7 +510,7 @@ def find(conn: connection.AlkisConnection, query, limit=None):
         for k, v in tables.items())
 
     where = ('WHERE ' + ' AND '.join(where)) if where else ''
-    limit = 'LIMIT %d' % (limit or _DEFAULT_LIMIT)
+    limit = 'LIMIT %d' % (query.get('limit') or _DEFAULT_LIMIT)
 
     count_sql = f'SELECT COUNT(DISTINCT FS.*) FROM {tables} {where}'
     count = conn.select_value(count_sql, parms)

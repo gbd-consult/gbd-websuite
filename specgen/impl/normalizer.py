@@ -3,9 +3,10 @@
 
 def normalize(units):
     _check_optional(units)
-    _type_unions_from_exts(units)
+    _unions_from_exts(units)
 
     _any_kinds(units)
+    _literal_kinds(units)
     _list_kinds(units)
     _enum_kinds(units)
     _union_kinds(units)
@@ -36,7 +37,7 @@ def _check_optional(units):
             u.optional = u.default is not None
 
 
-def _type_unions_from_exts(units):
+def _unions_from_exts(units):
     # create "type"-based discriminated unions from gws.ext... types
 
     ls = {}
@@ -73,6 +74,17 @@ def _any_kinds(units):
             )
 
     units.extend(ls.values())
+
+
+def _literal_kinds(units):
+    # create literal kinds from typing.Any
+
+    ls = {}
+
+    for u in units:
+        if u.types and u.types[0].endswith('Literal'):
+            u.kind = 'literal'
+            u.types = []
 
 
 def _list_kinds(units):
@@ -163,7 +175,6 @@ def _union_parts(units, base_names, tag):
     for u in units:
         if u.name == tag and u.parent in bmap:
             parts[u.default] = bmap[u.parent]
-            u.kind = 'tag'
 
     return parts
 

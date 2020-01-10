@@ -1,9 +1,9 @@
 import os
 
 import gws
-import gws.tools.json2 as json2
+import gws.tools.json2
 
-from ..tools import indexer, connection
+from ..util import indexer, connection
 
 # table name, key column, value column
 
@@ -233,12 +233,12 @@ nutzung_keys = {
     43003: 'vegetationsmerkmal',
 }
 
-props_index = 'idx_resolver_props'
-place_index = 'idx_resolver_place'
+PROPS_INDEX = 'idx_resolver_props'
+PLACE_INDEX = 'idx_resolver_place'
 
 
 def _create_props_index(conn):
-    props = json2.from_path(os.path.dirname(__file__) + '/nasprops.json')
+    props = gws.tools.json2.from_path(os.path.dirname(__file__) + '/nasprops.json')
     data = []
 
     for ident, value in props.items():
@@ -251,15 +251,15 @@ def _create_props_index(conn):
             'property_value': value,
         })
 
-    conn.create_index_table(props_index, '''
+    conn.create_index_table(PROPS_INDEX, '''
         id SERIAL PRIMARY KEY,
         table_name CHARACTER VARYING,
         column_name CHARACTER VARYING,
         property_key CHARACTER VARYING,
         property_value CHARACTER VARYING
     ''')
-    conn.index_insert(props_index, data)
-    conn.mark_index_table(props_index)
+    conn.index_insert(PROPS_INDEX, data)
+    conn.mark_index_table(PROPS_INDEX)
 
 def _create_place_index(conn: connection.AlkisConnection):
     data = []
@@ -280,32 +280,32 @@ def _create_place_index(conn: connection.AlkisConnection):
 
             })
 
-    conn.create_index_table(place_index, '''
+    conn.create_index_table(PLACE_INDEX, '''
         id SERIAL PRIMARY KEY,
         table_name CHARACTER VARYING,
         place_key CHARACTER VARYING,
         place_id CHARACTER VARYING,
         place_name CHARACTER VARYING
     ''')
-    conn.index_insert(place_index, data)
-    conn.mark_index_table(place_index)
+    conn.index_insert(PLACE_INDEX, data)
+    conn.mark_index_table(PLACE_INDEX)
 
 
 def create_index(conn):
-    if not indexer.check_version(conn, props_index):
+    if not indexer.check_version(conn, PROPS_INDEX):
         _create_props_index(conn)
-    if not indexer.check_version(conn, place_index):
+    if not indexer.check_version(conn, PLACE_INDEX):
         _create_place_index(conn)
 
 
 def index_ok(conn):
-    return indexer.check_version(conn, props_index) and indexer.check_version(conn, place_index)
+    return indexer.check_version(conn, PROPS_INDEX) and indexer.check_version(conn, PLACE_INDEX)
 
 
 def _load_props_for_table(conn, table):
     idx = conn.index_schema
     d = {}
-    sql = f'SELECT * FROM {idx}.{props_index} WHERE table_name=%s'
+    sql = f'SELECT * FROM {idx}.{PROPS_INDEX} WHERE table_name=%s'
     for r in conn.select(sql, [table]):
         c = r['column_name']
         d.setdefault(c, {})[r['property_key']] = r['property_value']
@@ -315,7 +315,7 @@ def _load_props_for_table(conn, table):
 def _load_places(conn):
     idx = conn.index_schema
     d = {}
-    rs = conn.select(f'SELECT place_key, place_name FROM {idx}.{place_index}')
+    rs = conn.select(f'SELECT place_key, place_name FROM {idx}.{PLACE_INDEX}')
     for r in rs:
         d[r['place_key']] = r['place_name']
     return d

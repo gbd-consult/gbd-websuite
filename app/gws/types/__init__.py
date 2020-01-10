@@ -123,6 +123,8 @@ class ext:
     class action:
         class Config:
             pass
+        class Props:
+            pass
 
     class auth:
         class provider:
@@ -154,6 +156,10 @@ class ext:
                 pass
 
     class storage:
+        class Config:
+            pass
+
+    class tool:
         class Config:
             pass
 
@@ -329,7 +335,11 @@ class IFeature:
     props: 'FeatureProps' = None
     shape: 'IShape' = None
     style: 'IStyle' = None
+    template_context: dict = None
     uid: str = None
+    def apply_data_model(self, model: 'IModel') -> 'IFeature': pass
+    def apply_format(self, fmt: 'IFormat') -> 'IFeature': pass
+    def attr(self, name: str): pass
     def convert(self, target_crs: 'Crs' = None, convertor: 'FeatureConvertor' = None) -> 'IFeature': pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'RenderView', style: 'IStyle' = None) -> str: pass
@@ -399,7 +409,7 @@ class IUser:
     roles: List[str] = None
     uid: str = None
     def attribute(self, key: str, default: str = '') -> str: pass
-    def can_use(self, obj: 'IObject', parent: 'IObject' = None) -> bool: pass
+    def can_use(self, obj, parent=None) -> bool: pass
     def has_role(self, role: str) -> bool: pass
     def init_from_props(self, provider, uid, roles, attributes) -> 'IUser': pass
     def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'IUser': pass

@@ -429,7 +429,6 @@ class PrintController extends gws.Controller {
         );
 
         let vs = this.map.viewState;
-        let attributes = Object.entries(this.getValue('printData') || {}).map(([name, value]) => ({name, value: String(value)}));
 
         let params: gws.api.PrintParamsWithTemplate = {
             type: 'template',
@@ -439,7 +438,7 @@ class PrintController extends gws.Controller {
             sections: [
                 {
                     center: [vs.centerX, vs.centerY] as gws.api.Point,
-                    attributes
+                    context: this.getValue('printData')
                 }
             ]
         };

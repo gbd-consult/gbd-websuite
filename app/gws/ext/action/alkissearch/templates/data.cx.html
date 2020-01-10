@@ -21,29 +21,27 @@
     @return '-'
 @end
 
-@let fs = attributes
-
-<p class="head2">Flurstück {fs.vollnummer}</p>
+<p class="head2">Flurstück {vollnummer}</p>
 
 <table>
 
     @group 'Basisdaten'
-        @row 'Flurnummer', fs.flurnummer
-        @row 'Zähler', fs.zaehler
-        @row 'Nenner', fs.nenner
-        @row 'Fläche', fs.amtlicheflaeche | area
-        @row 'ges. Gebäudefläche', fs.gebaeude_area | area
+        @row 'Flurnummer', flurnummer
+        @row 'Zähler', zaehler
+        @row 'Nenner', nenner
+        @row 'Fläche', amtlicheflaeche | area
+        @row 'ges. Gebäudefläche', gebaeude_area | area
     @end
 
     @group 'Lage'
-        @row 'Gemeinde', fs.gemeinde
-        @row 'Gemarkung', fs.gemarkung
-        @each fs.lage as la
+        @row 'Gemeinde', gemeinde
+        @row 'Gemarkung', gemarkung
+        @each lage as la
             @row 'Adresse', la.strasse + ' ' + la.hausnummer
         @end
     @end
 
-    @with fs.gebaeude as geb
+    @with gebaeude as geb
         @group 'Gebäudenachweis'
             @each geb as g
                 @row g.gebaeudefunktion, g.area | area
@@ -51,7 +49,7 @@
         @end
     @end
 
-    @each fs.buchung as bs
+    @each buchung as bs
         @group 'Buchungssatz'
             @row 'Buchungsart', bs.buchungsart
             @row 'Anteil', bs.anteil
@@ -70,7 +68,7 @@
         @end
     @end
 
-    @with fs.nutzung as nutzung
+    @with nutzung as nutzung
         @group 'Nutzung'
             @each nutzung as nu
                 @row nu.type, nu.a_area | area

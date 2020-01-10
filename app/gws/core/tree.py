@@ -177,7 +177,13 @@ class RootBase(Object):
 
 
 class ActionObject(Object):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.type = ''
+
+    def configure(self):
+        super().configure()
+        self.type = self.var('type')
 
 
 def _load_class(klass):

@@ -21,14 +21,14 @@ COMMANDS = {}
 
 import gws.common.auth.cli
 import gws.config.cli
-import gws.ext.action.alkis.cli
 import gws.ext.action.dprocon.cli
 import gws.ext.action.gekos.cli
 import gws.ext.action.georisks.cli
+import gws.ext.tool.alkis.cli
 import gws.gis.cache_cli
 import gws.server.cli
 
-COMMANDS['alkis'] = [gws.ext.action.alkis.cli.check_index, gws.ext.action.alkis.cli.create_index, gws.ext.action.alkis.cli.drop_index, gws.ext.action.alkis.cli.parse]
+COMMANDS['alkis'] = [gws.ext.tool.alkis.cli.check_index, gws.ext.tool.alkis.cli.create_index, gws.ext.tool.alkis.cli.drop_index, gws.ext.tool.alkis.cli.parse]
 COMMANDS['auth'] = [gws.common.auth.cli.clear, gws.common.auth.cli.passwd, gws.common.auth.cli.sessions, gws.common.auth.cli.test]
 COMMANDS['cache'] = [gws.gis.cache_cli.clean, gws.gis.cache_cli.drop, gws.gis.cache_cli.seed, gws.gis.cache_cli.status]
 COMMANDS['config'] = [gws.config.cli.dump, gws.config.cli.prepare, gws.config.cli.test]

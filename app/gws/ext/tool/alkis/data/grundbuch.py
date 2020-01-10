@@ -2,7 +2,7 @@
 
 import gws
 from . import resolver
-from ..tools import indexer, connection
+from ..util import indexer, connection
 
 stelle_index = 'idx_grundbuch_stelle'
 

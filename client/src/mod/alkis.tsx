@@ -38,15 +38,13 @@ interface AlkisViewProps extends gws.types.ViewProps {
 
     alkisTab: AlkisAlkisTabName;
 
-    alkisFsSetup: gws.api.AlkisFsSetupResponse;
-
     alkisFsLoading: boolean;
     alkisFsError: string;
 
     alkisFsExportGroups: Array<string>;
     alkisFsExportFeatures: Array<gws.types.IMapFeature>;
 
-    alkisFsParams: gws.api.AlkisFsQueryParams;
+    alkisFsParams: gws.api.AlkissearchFindFlurstueckParams;
 
     alkisFsStrassen: Array<gws.ui.MenuItem>;
     alkisFsGemarkungen: Array<gws.ui.MenuItem>;
@@ -96,7 +94,8 @@ function featureIn(fs: Array<gws.types.IMapFeature>, f: gws.types.IMapFeature) {
 
 class AlkisExportAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.ui.useExport || this.props.features.length === 0)
+        let mm = _master(this);
+        if (!mm.setup.ui.useExport || this.props.features.length === 0)
             return null;
         return <sidebar.AuxButton
             className="modAlkisExportAuxButton"
@@ -108,7 +107,8 @@ class AlkisExportAuxButton extends gws.View<AlkisViewProps> {
 
 class AlkisPrintAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.printTemplate || this.props.features.length === 0)
+        let mm = _master(this);
+        if (!mm.setup.printTemplate || this.props.features.length === 0)
             return null;
         return <sidebar.AuxButton
             className="modAlkisPrintAuxButton"
@@ -120,7 +120,8 @@ class AlkisPrintAuxButton extends gws.View<AlkisViewProps> {
 
 class AlkisHighlightAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.printTemplate || this.props.features.length === 0)
+        let mm = _master(this);
+        if (!mm.setup.printTemplate || this.props.features.length === 0)
             return null;
         return <sidebar.AuxButton
             className="modAlkisHighlightAuxButton"
@@ -132,7 +133,8 @@ class AlkisHighlightAuxButton extends gws.View<AlkisViewProps> {
 
 class AlkisSelectAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.ui.useSelect)
+        let mm = _master(this);
+        if (!mm.setup.ui.useSelect)
             return null;
         return <sidebar.AuxButton
             className="modAlkisSelectAuxButton"
@@ -144,22 +146,23 @@ class AlkisSelectAuxButton extends gws.View<AlkisViewProps> {
 
 class AlkisToggleAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.ui.useSelect)
+        let mm = _master(this);
+
+        if (!mm.setup.ui.useSelect)
             return null;
 
-        let master = _master(this),
-            feature = this.props.features[0];
+        let feature = this.props.features[0];
 
-        if (master.isSelected(feature))
+        if (mm.isSelected(feature))
             return <sidebar.AuxButton
                 className="modAlkisUnselectAuxButton"
-                whenTouched={() => master.unselect([feature])}
+                whenTouched={() => mm.unselect([feature])}
                 tooltip={_master(this).STRINGS.unselect}
             />
         else
             return <sidebar.AuxButton
                 className="modAlkisSelectAuxButton"
-                whenTouched={() => master.select([feature])}
+                whenTouched={() => mm.select([feature])}
                 tooltip={_master(this).STRINGS.select}
             />
     }
@@ -187,7 +190,9 @@ class AlkisListAuxButton extends gws.View<AlkisViewProps> {
 
 class AlkisSelectionAuxButton extends gws.View<AlkisViewProps> {
     render() {
-        if (!this.props.alkisFsSetup.ui.useSelect)
+        let mm = _master(this);
+
+        if (!mm.setup.ui.useSelect)
             return null;
 
         let sel = this.props.alkisFsSelection || [];
@@ -277,13 +282,13 @@ class AlkisMessageTab extends gws.View<AlkisMessageViewProps> {
 class AlkisSearchForm extends gws.View<AlkisViewProps> {
 
     render() {
-        let master = _master(this),
-            setup = this.props.alkisFsSetup;
+        let mm = _master(this),
+            setup = mm.setup;
 
         let boundTo = param => ({
             value: this.props.alkisFsParams[param],
-            whenChanged: value => master.updateFsParams({[param]: value}),
-            whenEntered: () => master.search()
+            whenChanged: value => mm.updateFsParams({[param]: value}),
+            whenEntered: () => mm.search()
         });
 
         let nameShowMode = '';
@@ -324,7 +329,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                         placeholder={_master(this).STRINGS.gemarkung}
                         items={this.props.alkisFsGemarkungen}
                         value={this.props.alkisFsParams.gemarkungOrGemeindeUid}
-                        whenChanged={value => master.whenGemarkungChanged(value)}
+                        whenChanged={value => mm.whenGemarkungChanged(value)}
                         withSearch
                         withClear
                     />
@@ -407,35 +412,35 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchSubmitButton')}
                         tooltip={_master(this).STRINGS.submitButton}
-                        whenTouched={() => master.formSearch()}
+                        whenTouched={() => mm.formSearch()}
                     />
                 </Cell>
                 {setup.ui.searchSelection && <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchSelectionButton')}
                         tooltip={_master(this).STRINGS.selectionSearchButton}
-                        whenTouched={() => master.selectionSearch()}
+                        whenTouched={() => mm.selectionSearch()}
                     />
                 </Cell>}
                 {setup.ui.searchSpatial && <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
                         tooltip={_master(this).STRINGS.lensButton}
-                        whenTouched={() => master.startLens()}
+                        whenTouched={() => mm.startLens()}
                     />
                 </Cell>}
                 {setup.ui.usePick && <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisPickButton', this.props.appActiveTool === 'Tool.Alkis.Pick' && 'isActive')}
                         tooltip={_master(this).STRINGS.pickButton}
-                        whenTouched={() => master.startPick()}
+                        whenTouched={() => mm.startPick()}
                     />
                 </Cell>}
                 <Cell>
                     <gws.ui.IconButton
                         {...gws.tools.cls('modAlkisSearchResetButton')}
                         tooltip={_master(this).STRINGS.resetButton}
-                        whenTouched={() => master.reset()}
+                        whenTouched={() => mm.reset()}
                     />
                 </Cell>
             </Row>
@@ -468,33 +473,33 @@ class AlkisFormTab extends gws.View<AlkisViewProps> {
 class AlkisFeatureList extends gws.View<AlkisViewProps> {
 
     render() {
-        let master = _master(this);
+        let mm = _master(this);
 
-        let rightButton = f => master.isSelected(f)
+        let rightButton = f => mm.isSelected(f)
             ? <gws.components.list.Button
                 className="modAlkisUnselectListButton"
-                whenTouched={() => master.unselect([f])}
+                whenTouched={() => mm.unselect([f])}
             />
 
             : <gws.components.list.Button
                 className="modAlkisSelectListButton"
-                whenTouched={() => master.select([f])}
+                whenTouched={() => mm.select([f])}
             />
         ;
 
-        if (!this.props.alkisFsSetup.ui.useSelect)
+        if (!mm.setup.ui.useSelect)
             rightButton = null;
 
         let content = f => <gws.ui.Link
-            whenTouched={() => master.showDetails(f)}
+            whenTouched={() => mm.showDetails(f)}
             content={f.elements.teaser}
         />;
 
         return <gws.components.feature.List
-            controller={master}
+            controller={mm}
             features={this.props.features}
             content={content}
-            isSelected={f => this.props.showSelection && master.isSelected(f)}
+            isSelected={f => this.props.showSelection && mm.isSelected(f)}
             rightButton={rightButton}
             withZoom
         />
@@ -555,7 +560,7 @@ class AlkisListTab extends gws.View<AlkisViewProps> {
 
 class AlkisSelectionTab extends gws.View<AlkisViewProps> {
     render() {
-        let master = _master(this);
+        let mm = _master(this);
         let features = this.props.alkisFsSelection;
         let hasFeatures = !gws.tools.empty(features);
 
@@ -580,7 +585,7 @@ class AlkisSelectionTab extends gws.View<AlkisViewProps> {
                     <storage.ReadAuxButton
                         controller={this.props.controller}
                         category={STORAGE_CATEGORY}
-                        whenDone={data => master.loadSelection(data.features)}
+                        whenDone={data => mm.loadSelection(data.features)}
                     />
                     {hasFeatures && <storage.WriteAuxButton
                         controller={this.props.controller}
@@ -631,6 +636,8 @@ class AlkisDetailsTab extends gws.View<AlkisViewProps> {
 
 class AlkisExportTab extends gws.View<AlkisViewProps> {
     render() {
+        let mm = _master(this);
+
         let groups = this.props.alkisFsExportGroups;
 
         let changed = (group, value) => _master(this).update({
@@ -647,9 +654,9 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
                         <Row>
                             <Cell flex>
                                 {EXPORT_GROUPS.map(([group, name]) => {
-                                    if (group === 'buchung' && !this.props.alkisFsSetup.withBuchung)
+                                    if (group === 'buchung' && !mm.setup.withBuchung)
                                         return null;
-                                    if (group === 'eigentuemer' && !this.props.alkisFsSetup.withEigentuemer)
+                                    if (group === 'eigentuemer' && !mm.setup.withEigentuemer)
                                         return null;
                                     return <gws.ui.Toggle
                                         key={group}
@@ -719,7 +726,8 @@ class AlkisSidebar extends gws.Controller implements gws.types.ISidebarItem {
     }
 
     get tabView() {
-        if (!_master(this).setup)
+        let mm = _master(this);
+        if (!mm.setup)
             return <sidebar.EmptyTab>
                 {_master(this).STRINGS.noData}
             </sidebar.EmptyTab>;
@@ -759,9 +767,10 @@ class AlkisPickTool extends gws.Tool {
 
 class AlkisController extends gws.Controller {
     uid = MASTER;
-    setup: gws.api.AlkisFsSetupResponse;
     history: Array<string>;
     selectionLayer: gws.types.IMapFeatureLayer;
+    setup: gws.api.AlkissearchProps;
+
 
     STRINGS = null;
 
@@ -775,6 +784,9 @@ class AlkisController extends gws.Controller {
     }
 
     async init() {
+        this.setup = this.app.actionSetup('alkissearch')
+        if (!this.setup)
+            return;
 
         this.STRINGS = {
 
@@ -824,14 +836,6 @@ class AlkisController extends gws.Controller {
             searchResults: this.__('modAlkisSearchResults'),
         };
 
-        let res = await this.app.server.alkisFsSetup({});
-
-        if (res.error) {
-            this.setup = null;
-            return;
-        }
-
-        this.setup = res;
 
         if (this.setup.ui.gemarkungListMode === 'tree') {
             this.STRINGS.gemarkung = this.__('modAlkisGemeindeGemarkung')
@@ -840,8 +844,6 @@ class AlkisController extends gws.Controller {
         this.history = [];
 
         this.update({
-            alkisFsSetup: this.setup,
-
             alkisTab: 'form',
             alkisFsLoading: false,
 
@@ -857,8 +859,6 @@ class AlkisController extends gws.Controller {
             alkisFsSelection: [],
 
         });
-
-        this.app.whenLoaded(() => this.urlSearch());
     }
 
     makeGemarkungList(): Array<gws.ui.MenuItem> {
@@ -918,7 +918,7 @@ class AlkisController extends gws.Controller {
         let strassen = [];
 
         if (value) {
-            let res = await this.app.server.alkisFsStrassen({
+            let res = await this.app.server.alkissearchFindStrasse({
                 gemarkungOrGemeindeUid: value,
             });
 
@@ -981,7 +981,7 @@ class AlkisController extends gws.Controller {
     async pickTouched(coord: ol.Coordinate) {
         let pt = new ol.geom.Point(coord);
 
-        let res = await this.app.server.alkisFsSearch({
+        let res = await this.app.server.alkissearchFindFlurstueck({
             shapes: [this.map.geom2shape(pt)],
         });
 
@@ -1002,7 +1002,7 @@ class AlkisController extends gws.Controller {
 
         this.update({alkisFsLoading: true});
 
-        let res = await this.app.server.alkisFsSearch({
+        let res = await this.app.server.alkissearchFindFlurstueck({
             ...this.getValue('alkisFsParams'),
         });
 
@@ -1014,7 +1014,7 @@ class AlkisController extends gws.Controller {
             }
 
             if (res.error.status === 409) {
-                msg = this.STRINGS.errorTooMany.replace(/\$1/g, this.getValue('alkisFsSetup').limit);
+                msg = this.STRINGS.errorTooMany.replace(/\$1/g, this.setup.limit);
             }
 
             this.update({
@@ -1046,44 +1046,8 @@ class AlkisController extends gws.Controller {
         this.update({alkisFsLoading: false});
     }
 
-    async urlSearch() {
-        let p, params = null;
-
-        p = this.app.urlParams['alkisFs'];
-        if (p) {
-            params = {alkisFs: p};
-        }
-
-        p = this.app.urlParams['alkisAd'];
-        if (p) {
-            params = {alkisAd: p};
-        }
-
-        if (!params)
-            return;
-
-        let res = await this.app.server.alkisFsSearch(params);
-
-        if (res.error) {
-            return false;
-        }
-
-        let features = this.map.readFeatures(res.features);
-
-        if (features.length > 0)
-            this.update({
-                marker: {
-                    features: [features[0]],
-                    mode: 'draw zoom',
-                },
-                infoboxContent: <gws.components.Infobox
-                    controller={this}>{features[0].elements.teaser}</gws.components.Infobox>,
-            });
-
-    }
-
     paramsForFeatures(fs: Array<gws.types.IMapFeature>) {
-        let queryParams: gws.api.AlkisFsQueryParams = this.getValue('alkisFsParams');
+        let queryParams: gws.api.AlkissearchFindFlurstueckParams = this.getValue('alkisFsParams');
         return {
             wantEigentuemer: queryParams.wantEigentuemer,
             controlInput: queryParams.controlInput,
@@ -1094,7 +1058,7 @@ class AlkisController extends gws.Controller {
 
     async showDetails(f: gws.types.IMapFeature, highlight = true) {
         let q = this.paramsForFeatures([f]);
-        let res = await this.app.server.alkisFsDetails(q);
+        let res = await this.app.server.alkissearchGetDetails(q);
         let feature = this.map.readFeature(res.feature);
 
         if (f) {
@@ -1128,13 +1092,13 @@ class AlkisController extends gws.Controller {
         };
 
         let q = {
-            ...this.paramsForFeatures(fs),
+            findParams: this.paramsForFeatures(fs),
             printParams,
             highlightStyle: this.map.getStyleFromSelector('.modMarkerFeature').props,
         };
 
         this.update({
-            printJob: await this.app.server.alkisFsPrint(q),
+            printJob: await this.app.server.alkissearchPrint(q),
             printSnapshotMode: false,
         });
     }
@@ -1243,7 +1207,7 @@ class AlkisController extends gws.Controller {
             ...this.paramsForFeatures(fs),
             groups: EXPORT_GROUPS.map(grp => grp[0]).filter(g => groups.indexOf(g) >= 0),
         };
-        let res = await this.app.server.alkisFsExport(q);
+        let res = await this.app.server.alkissearchExport(q);
 
         let a = document.createElement('a');
         a.href = res.url;

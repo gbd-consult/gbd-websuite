@@ -4,7 +4,7 @@ import re
 import gws
 from gws.tools.console import ProgressIndicator
 from . import resolver
-from ..tools import indexer, connection
+from ..util import indexer, connection
 
 addr_index = 'idx_adresse'
 gebs_index = 'idx_gebaeude'
@@ -394,15 +394,9 @@ def index_ok(conn):
 _DEFAULT_LIMIT = 100
 
 
-def find(conn: connection.AlkisConnection, query, limit=None):
+def find(conn: connection.AlkisConnection, query):
     where = []
     parms = []
-
-    query = {
-        k: v
-        for k, v in vars(query).items()
-        if v not in (None, '')
-    }
 
     for k, v in query.items():
 
@@ -429,7 +423,7 @@ def find(conn: connection.AlkisConnection, query, limit=None):
                 where.append('AD.hausnummer IS NOT NULL')
 
     where = ('WHERE ' + ' AND '.join(where)) if where else ''
-    limit = 'LIMIT %d' % (limit or _DEFAULT_LIMIT)
+    limit = 'LIMIT %d' % (query.get('limit', _DEFAULT_LIMIT))
     tables = f'{conn.index_schema}.{addr_index} AS AD'
 
     count_sql = f'SELECT COUNT(DISTINCT AD.*) FROM {tables} {where}'

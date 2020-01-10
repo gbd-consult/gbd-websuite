@@ -71,6 +71,7 @@ class Config(t.WithAccess):
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
     storage: t.Optional[t.ext.storage.Config]  #: storage configuration
     timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
+    tools: t.Optional[t.List[t.ext.tool.Config]]
     web: t.Optional[WebConfig] = {}  #: webserver configuration
 
 
@@ -113,17 +114,24 @@ class Object(gws.Object, t.IApplication):
         if s:
             _install_fonts(s)
 
+        # NB the order of initialization is important
+        # - db
+        # - tools
+        # - auth providers
+        # - actions, client, web
+        # - finally, projects
+
+        for p in self.var('db.providers', default=[]):
+            self.add_child('gws.ext.db.provider', p)
+
+        for p in self.var('tools', default=[]):
+            self.add_child('gws.ext.tool', p)
+
         gws.common.auth.init()
 
         for p in self.var('auth.providers', default=[]):
             self.add_child('gws.ext.auth.provider', p)
         self.add_child('gws.ext.auth.provider', t.Data({'type': 'system'}))
-
-        for p in self.var('db.providers', default=[]):
-            self.add_child('gws.ext.db.provider', p)
-
-        for p in self.var('projects'):
-            self.add_child(gws.common.project.Object, p)
 
         p = self.var('api') or t.Data({'actions': []})
 
@@ -142,6 +150,9 @@ class Object(gws.Object, t.IApplication):
 
         p = self.var('storage') or {'type': 'sqlite'}
         self.storage = self.add_child('gws.ext.storage', p)
+
+        for p in self.var('projects'):
+            self.add_child(gws.common.project.Object, p)
 
     def find_action(self, action_type, project_uid=None):
 

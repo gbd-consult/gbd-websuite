@@ -301,10 +301,10 @@ class Connection:
 
         return self.exec(sql, values)
 
-    def batch_insert(self, table_name, recs, on_conflict=None, page_size=100):
+    def insert_many(self, table_name: str, recs: t.List[dict], on_conflict=None, page_size=100):
         if not recs:
             return
-        all_cols = self.columns(table_name)
+        all_cols = set(c['name'] for c in self.columns(table_name))
 
         cols = set()
         for rec in recs:
@@ -358,3 +358,14 @@ def _dict_hash(d):
     for k, v in sorted(d.items()):
         s += f'{k}={v} '
     return s
+
+
+def _chunked(it, size):
+    buf = []
+    for x in it:
+        buf.append(x)
+        if len(buf) == size:
+            yield buf
+            buf = []
+    if len(buf) > 0:
+        yield buf

@@ -22,7 +22,4 @@ class Object(gws.ActionObject):
         """Return the project configuration"""
 
         project = req.require_project(p.projectUid)
-        return InfoResponse({
-            'project': project.props_for(req.user),
-            'user': req.user.props
-        })
+        return InfoResponse(project=project.props_for(req.user), user=req.user.props)

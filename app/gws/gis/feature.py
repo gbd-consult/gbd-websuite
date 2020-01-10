@@ -67,14 +67,19 @@ class Feature(t.IFeature):
         uid = self.uid or ''
         if self.layer:
             uid = f'{self.layer.uid}{_COMBINED_UID_DELIMITER}{uid}'
-        return t.FeatureProps({
-            'uid': uid,
-            'attributes': self.attributes,
-            'shape': self.shape.props if self.shape else None,
-            'style': self.style,
-            'elements': self.elements,
-            'layerUid': self.layer.uid if self.layer else None,
-        })
+        return t.FeatureProps(
+            uid=uid,
+            attributes=self.attributes,
+            shape=self.shape.props if self.shape else None,
+            style=self.style,
+            elements=self.elements,
+            layerUid=self.layer.uid if self.layer else None,
+        )
+
+    def attr(self, name: str):
+        for a in self.attributes:
+            if a.name == name:
+                return a.value
 
     def transform(self, to_crs) -> t.IFeature:
         if self.shape:
@@ -114,21 +119,30 @@ class Feature(t.IFeature):
         convertor = convertor or self.convertor or self.layer
 
         if convertor:
-            if convertor.data_model:
-                self.attributes = convertor.data_model.apply(self.attributes)
+            s = getattr(convertor, 'data_model', None)
+            if s:
+                self.apply_data_model(s)
+            s = getattr(convertor, 'feature_format', None)
+            if s:
+                self.apply_format(s)
 
-            atts = {a.name: a.value for a in self.attributes}
+        return self
 
-            if convertor.feature_format:
-                ctx = gws.extend(
-                    atts,
-                    category=self.category,
-                    feature=self,
-                    layer=self.layer,
-                    uid=self.uid,
-                )
-                self.elements = gws.extend(self.elements, convertor.feature_format.apply(ctx))
+    def apply_data_model(self, model: t.IModel) -> t.IFeature:
+        self.attributes = model.apply(self.attributes)
+        return self
 
+    @property
+    def template_context(self) -> dict:
+        d = {a.name: a.value for a in self.attributes}
+        d['category'] = self.category
+        d['feature'] = self
+        d['layer'] = self.layer
+        d['uid'] = self.uid
+        return d
+
+    def apply_format(self, fmt: t.IFormat) -> t.IFeature:
+        self.elements = gws.extend(self.elements, fmt.apply(self.template_context))
         return self
 
     def _init(self, uid, attributes, elements, shape, style):

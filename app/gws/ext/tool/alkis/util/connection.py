@@ -1,10 +1,10 @@
 import re
 
-from gws.ext.db.provider.postgres.driver import Connection
+import gws.ext.db.provider.postgres.driver
 from ..data import version
 
 
-class AlkisConnection(Connection):
+class AlkisConnection(gws.ext.db.provider.postgres.driver.Connection):
     def __init__(self, params, index_schema, data_schema, crs, exclude_gemarkung):
         super().__init__(params)
         self.index_schema = index_schema
@@ -38,7 +38,11 @@ class AlkisConnection(Connection):
         self.exec(f'CREATE INDEX {name} ON {self.index_schema}.{table} USING {kind}({columns})')
 
     def index_insert(self, table, data, page_size=100):
-        self.batch_insert(self.index_schema + '.' + table, data, on_conflict='DO NOTHING', page_size=page_size)
+        self.insert_many(
+            self.index_schema + '.' + table,
+            data,
+            on_conflict='DO NOTHING',
+            page_size=page_size)
 
     def drop_all(self):
         for tab in self.table_names(self.index_schema):
@@ -65,7 +69,7 @@ class AlkisConnection(Connection):
         return self.select(sql)
 
     def make_select_from_ax(self, table_name, columns=None, conditions=None):
-        all_cols = self.columns(table_name)
+        all_cols = set(c['name'] for c in self.columns(table_name))
 
         def v3_name(c):
             # handle norbit plugin rename issues, e.g.
@@ -92,7 +96,7 @@ class AlkisConnection(Connection):
         cols = []
         for c in columns:
             if c == '*':
-                cols.extend(all_cols.keys())
+                cols.extend(all_cols)
             else:
                 c = _col_name(c)
                 if c:
