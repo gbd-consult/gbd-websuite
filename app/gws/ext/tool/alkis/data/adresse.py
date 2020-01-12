@@ -3,8 +3,10 @@ import re
 
 import gws
 from gws.tools.console import ProgressIndicator
+
 from . import resolver
-from ..util import indexer, connection
+from ..util import indexer
+from ..util.connection import AlkisConnection
 
 addr_index = 'idx_adresse'
 gebs_index = 'idx_gebaeude'
@@ -100,7 +102,7 @@ def _collect_gebs(conn):
     return gebs
 
 
-def _create_gebs_index(conn: connection.AlkisConnection):
+def _create_gebs_index(conn: AlkisConnection):
     fsx_temp = '_temp_geb_fsx'
     geb_temp = '_temp_geb_geb'
 
@@ -195,7 +197,7 @@ def _create_gebs_index(conn: connection.AlkisConnection):
     conn.mark_index_table(gebs_index)
 
 
-def _create_addr_index(conn: connection.AlkisConnection):
+def _create_addr_index(conn: AlkisConnection):
     dat = conn.data_schema
     idx = conn.index_schema
 
@@ -380,21 +382,21 @@ def _create_addr_index(conn: connection.AlkisConnection):
     conn.mark_index_table(addr_index)
 
 
-def create_index(conn):
+def create_index(conn: AlkisConnection):
     if not indexer.check_version(conn, gebs_index):
         _create_gebs_index(conn)
     if not indexer.check_version(conn, addr_index):
         _create_addr_index(conn)
 
 
-def index_ok(conn):
+def index_ok(conn: AlkisConnection):
     return indexer.check_version(conn, gebs_index) and indexer.check_version(conn, addr_index)
 
 
 _DEFAULT_LIMIT = 100
 
 
-def find(conn: connection.AlkisConnection, query):
+def find(conn: AlkisConnection, query):
     where = []
     parms = []
 

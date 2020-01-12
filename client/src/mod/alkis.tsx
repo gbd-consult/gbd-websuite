@@ -20,15 +20,6 @@ function _master(obj: any) {
         return obj.props.controller.app.controller(MASTER) as AlkisController;
 }
 
-const EXPORT_GROUPS = [
-    ['base', 'Basisdaten'],
-    ['lage', 'Lage'],
-    ['gebaeude', 'Gebäude'],
-    ['buchung', 'Buchungsblatt'],
-    ['eigentuemer', 'Eigentümer'],
-    ['nutzung', 'Nutzung'],
-];
-
 const EXPORT_PATH = 'fs_info.csv';
 
 type AlkisAlkisTabName = 'form' | 'list' | 'details' | 'error' | 'selection' | 'export';
@@ -638,10 +629,11 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
     render() {
         let mm = _master(this);
 
-        let groups = this.props.alkisFsExportGroups;
+        let availGroups = mm.setup.exportGroups,
+            selectedGroupIds = this.props.alkisFsExportGroups;
 
-        let changed = (group, value) => _master(this).update({
-            alkisFsExportGroups: groups.filter(g => g !== group).concat(value ? [group] : [])
+        let changed = (gid, value) => mm.update({
+            alkisFsExportGroups: selectedGroupIds.filter(g => g !== gid).concat(value ? [gid] : [])
         });
 
         return <sidebar.Tab>
@@ -653,20 +645,14 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
                     <Form>
                         <Row>
                             <Cell flex>
-                                {EXPORT_GROUPS.map(([group, name]) => {
-                                    if (group === 'buchung' && !mm.setup.withBuchung)
-                                        return null;
-                                    if (group === 'eigentuemer' && !mm.setup.withEigentuemer)
-                                        return null;
-                                    return <gws.ui.Toggle
-                                        key={group}
+                                {Object.keys(availGroups).map(gid => <gws.ui.Toggle
+                                        key={gid}
                                         type="checkbox"
-                                        label={name}
-                                        value={groups.indexOf(group) >= 0}
-                                        whenChanged={value => changed(group, value)}
+                                        label={availGroups[gid]}
+                                        value={selectedGroupIds.includes(gid)}
+                                        whenChanged={value => changed(gid, value)}
                                     />
-                                })
-                                }
+                                )}
                             </Cell>
                         </Row>
                         <Row>
@@ -674,8 +660,8 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
                             <Cell width={120}>
                                 <gws.ui.TextButton
                                     primary
-                                    whenTouched={() => _master(this).submitExport(this.props.alkisFsExportFeatures)}
-                                >{_master(this).STRINGS.exportButton}</gws.ui.TextButton>
+                                    whenTouched={() => mm.submitExport(this.props.alkisFsExportFeatures)}
+                                >{mm.STRINGS.exportButton}</gws.ui.TextButton>
                             </Cell>
                         </Row>
                     </Form>
@@ -849,7 +835,7 @@ class AlkisController extends gws.Controller {
 
             alkisFsParams: {},
 
-            alkisFsExportGroups: ['base'],
+            alkisFsExportGroups: [],
 
             alkisFsStrassen: [],
             alkisFsGemarkungen: this.makeGemarkungList(),
@@ -1201,12 +1187,11 @@ class AlkisController extends gws.Controller {
     }
 
     async submitExport(fs: Array<gws.types.IMapFeature>) {
-        let groups = this.getValue('alkisFsExportGroups');
-
         let q = {
-            ...this.paramsForFeatures(fs),
-            groups: EXPORT_GROUPS.map(grp => grp[0]).filter(g => groups.indexOf(g) >= 0),
+            findParams: this.paramsForFeatures(fs),
+            groups: this.getValue('alkisFsExportGroups'),
         };
+
         let res = await this.app.server.alkissearchExport(q);
 
         let a = document.createElement('a');

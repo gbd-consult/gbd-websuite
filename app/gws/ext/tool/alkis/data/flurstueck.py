@@ -5,8 +5,10 @@ import re
 
 import gws
 from gws.tools.console import ProgressIndicator
+
 from . import resolver, adresse, nutzung, grundbuch
-from ..util import connection, indexer
+from ..util import indexer
+from ..util.connection import AlkisConnection
 
 main_index = 'idx_flurstueck'
 name_index = 'idx_name'
@@ -100,7 +102,7 @@ def _parse_vnum(s, where, parms):
     return True
 
 
-def _cache(conn: connection.AlkisConnection):
+def _cache(conn: AlkisConnection):
     idx = conn.index_schema
 
     cache = _Cache()
@@ -256,7 +258,7 @@ def _fs_data(conn, fs, cache):
     return d
 
 
-def _create_main_index(conn: connection.AlkisConnection):
+def _create_main_index(conn: AlkisConnection):
     idx = conn.index_schema
     dat = conn.data_schema
 
@@ -406,7 +408,7 @@ def strasse_list(conn, query: dict):
     return list(r['strasse'] for r in rs)
 
 
-def has_flurnummer(conn: connection.AlkisConnection):
+def has_flurnummer(conn: AlkisConnection):
     n = conn.select_value(f'''
         SELECT COUNT(*)
         FROM {conn.index_schema}.{main_index}
@@ -418,7 +420,7 @@ def has_flurnummer(conn: connection.AlkisConnection):
 _DEFAULT_LIMIT = 100
 
 
-def find(conn: connection.AlkisConnection, query: dict):
+def find(conn: AlkisConnection, query: dict):
     where = []
     parms = []
 

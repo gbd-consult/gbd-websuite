@@ -16,7 +16,7 @@ def create(conn: AlkisConnection, read_user):
     conn.exec(f'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA {conn.index_schema} TO {read_user}')
 
 
-def ok(conn):
+def ok(conn: AlkisConnection):
     return all(mod.index_ok(conn) for mod in mods)
 
 

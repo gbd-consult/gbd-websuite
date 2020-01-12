@@ -4,16 +4,17 @@ import os
 import re
 
 import gws
-import gws.tools.date
-import gws.tools.job
-import gws.gis.shape
 import gws.common.printer.service
 import gws.common.printer.types
 import gws.common.template
 import gws.ext.db.provider.postgres
+import gws.gis.shape
+import gws.tools.date
+import gws.tools.job
 import gws.web
 
 import gws.ext.tool.alkis as alkis
+import gws.ext.tool.alkis.util.export as alkis_export
 
 import gws.types as t
 
@@ -45,7 +46,6 @@ class EigentuemerConfig(t.WithAccess):
 
     controlMode: bool = False  #: restricted mode enabled
     controlRules: t.Optional[t.List[str]]  #: list of regular expression for the restricted input control
-
     logTable: str = ''  #: data access protocol table name
 
 
@@ -75,18 +75,20 @@ class Config(t.WithTypeAndAccess):
     featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
     ui: t.Optional[UiConfig]  #: ui options
+    export: t.Optional[alkis_export.Config]  #: csv export configuration
 
 
 class Props(t.Props):
     type: t.Literal = 'alkissearch'
-    withEigentuemer: bool
+    exportGroups: dict
+    gemarkungen: t.List[alkis.Gemarkung]
+    limit: int
+    printTemplate: t.TemplateProps
+    ui: UiConfig
     withBuchung: bool
     withControl: bool
+    withEigentuemer: bool
     withFlurnummer: bool
-    gemarkungen: t.List[alkis.Gemarkung]
-    printTemplate: t.TemplateProps
-    limit: int
-    ui: UiConfig
 
 
 ##
@@ -166,7 +168,8 @@ class PrintParams(t.Params):
     highlightStyle: t.StyleProps
 
 
-class ExportParams(FindFlurstueckParams):
+class ExportParams(t.Params):
+    findParams: FindFlurstueckParams
     groups: t.List[str]
 
 
@@ -214,11 +217,13 @@ class Object(gws.ActionObject):
         self.control_mode = False
         self.control_rules = []
         self.eigentuemer: EigentuemerConfig = None
+        self.export: alkis_export.Config = None
         self.limit = 0
         self.log_table = ''
         self.long_feature_format: t.IFormat = None
         self.print_template: t.ITemplate = None
         self.short_feature_format: t.IFormat = None
+        self.ui: UiConfig = None
 
     def configure(self):
         super().configure()
@@ -251,6 +256,15 @@ class Object(gws.ActionObject):
             'gws.ext.template',
             self.var('printTemplate', default=DEFAULT_PRINT_TEMPLATE))
 
+        self.ui = self.var('ui')
+
+        p = self.var('export')
+        if not p and self.ui.useExport:
+            p = t.Config(groups=alkis_export.DEFAULT_GROUPS)
+        elif p:
+            p.groups = p.groups or alkis_export.DEFAULT_GROUPS
+        self.export = p
+
         self.buchung = self.var('buchung')
 
         self.eigentuemer = self.var('eigentuemer')
@@ -268,19 +282,36 @@ class Object(gws.ActionObject):
                 if not conn.user_can('INSERT', self.log_table):
                     raise ValueError(f'no INSERT acccess to {self.log_table!r}')
 
+
+
     def props_for(self, user):
         if not self.valid:
             return None
+
+        with_eigentuemer = self._can_read_eigentuemer(user)
+        with_buchung = self._can_read_buchung(user)
+
+        eg = {}
+
+        if self.export and self._can_use_export(user):
+            for n, g in enumerate(self.export.groups):
+                if g.get('eigentuemer') and not with_eigentuemer:
+                    continue
+                if g.get('buchung') and not with_buchung:
+                    continue
+                eg[n] = g.get('title')
+
         return {
             'type': self.type,
-            'withEigentuemer': self._can_read_eigentuemer(user),
-            'withControl': self._can_read_eigentuemer(user) and self.control_mode,
-            'withBuchung': self._can_read_buchung(user),
-            'withFlurnummer': self.alkis.has_flurnummer,
+            'exportGroups': eg,
             'gemarkungen': self.alkis.gemarkung_list(),
-            'printTemplate': self.print_template.props,
             'limit': self.limit,
-            'ui': self.var('ui'),
+            'printTemplate': self.print_template.props,
+            'ui': self.ui,
+            'withBuchung': with_buchung,
+            'withControl': with_eigentuemer and self.control_mode,
+            'withEigentuemer': with_eigentuemer,
+            'withFlurnummer': self.alkis.has_flurnummer,
         }
 
     def api_find_strasse(self, req: t.IRequest, p: FindStrasseParams) -> FindStrasseResponse:
@@ -310,24 +341,39 @@ class Object(gws.ActionObject):
         """Export Flurstueck features"""
 
         self._validate_request(req, p)
-        res = self._fetch(req, p)
+
+        fp = p.findParams
+        fp.projectUid = p.projectUid
+        fp.locale = p.locale
+
+        res = self._fetch(req, fp)
 
         if not res.features:
             raise gws.web.error.NotFound()
 
+        combined_rules = []
+
+        for g in sorted(int(g) for g in p.groups):
+            combined_rules.extend(self.export.groups[g].dataModel.rules)
+
+        combined_model = self.create_unbound_object('gws.common.model', t.Config(
+            rules=combined_rules
+        ))
+
+        csv_bytes = alkis_export.as_csv(self, res.features, combined_model)
+
+        # create an one-off job because we need a physical file to trigger a download
+
         job_uid = gws.random_string(64)
-        out_path = f'{gws.TMP_DIR}/{job_uid}fs.export.csv'
+        out_path = f'{gws.TMP_DIR}/{job_uid}_fs.export.csv'
 
-        # FILE RESPONSE
-
-        # export.as_csv(self, (f.attributes for f in features), p.groups, out_path)
+        with open(out_path, 'wb') as fp:
+            fp.write(csv_bytes)
 
         job = gws.tools.job.create(job_uid, req.user, worker='')
         job.update(gws.tools.job.State.complete, result=out_path)
 
-        # return t.FileResponse({
-        #     'url': gws.SERVER_ENDPOINT + '?cmd=assetHttpGetResult&jobUid=' + job_uid,
-        # })
+        return ExportResponse(url=gws.SERVER_ENDPOINT + '?cmd=assetHttpGetResult&jobUid=' + job_uid)
 
     def api_print(self, req: t.IRequest, p: PrintParams) -> gws.common.printer.types.PrinterResponse:
         """Print Flurstueck features"""
@@ -487,11 +533,14 @@ class Object(gws.ActionObject):
         return False
 
     def _can_read_eigentuemer(self, user: t.IUser):
-        b = user.can_use(self.eigentuemer, parent=self)
+        b = user.can_use(self.eigentuemer)
         gws.log.debug(f'_can_read_eigentuemer user={user.full_uid!r} res={b}')
         return b
 
     def _can_read_buchung(self, user: t.IUser):
-        b = user.can_use(self.buchung, parent=self)
+        b = user.can_use(self.buchung)
         gws.log.debug(f'_can_read_buchung user={user.full_uid!r} res={b}')
         return b
+
+    def _can_use_export(self, user: t.IUser):
+        return user.can_use(self.export, parent=self)

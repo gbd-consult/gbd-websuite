@@ -2,8 +2,10 @@
 
 import gws
 from gws.tools.console import ProgressIndicator
+
 from . import resolver
-from ..util import indexer, connection
+from ..util import indexer
+from ..util.connection import AlkisConnection
 
 parts_index = 'idx_nutzung_parts'
 all_index = 'idx_nutzung_all'
@@ -11,7 +13,7 @@ all_index = 'idx_nutzung_all'
 MIN_AREA = 0.01
 
 
-def _collect_from_nutzung_tables(conn):
+def _collect_from_nutzung_tables(conn: AlkisConnection):
     tables = conn.table_names(conn.data_schema)
     data = []
 
@@ -37,7 +39,7 @@ def _collect_from_nutzung_tables(conn):
     return data
 
 
-def _create_all_index(conn: connection.AlkisConnection):
+def _create_all_index(conn: AlkisConnection):
     data = _collect_from_nutzung_tables(conn)
 
     conn.create_index_table(all_index, f'''
@@ -61,7 +63,7 @@ def _create_all_index(conn: connection.AlkisConnection):
     conn.mark_index_table(all_index)
 
 
-def _delete_empty_areas(conn, col):
+def _delete_empty_areas(conn: AlkisConnection, col):
     idx = conn.index_schema
 
     cnt_all = conn.select_value(f'SELECT COUNT(*) FROM {idx}.{parts_index}')
@@ -73,7 +75,7 @@ def _delete_empty_areas(conn, col):
         conn.exec(f'DELETE FROM {idx}.{parts_index} WHERE {col} < {MIN_AREA}')
 
 
-def _create_parts_index(conn: connection.AlkisConnection):
+def _create_parts_index(conn: AlkisConnection):
     idx = conn.index_schema
 
     fs_temp = '_idx_nutzung_fs_temp'
@@ -202,17 +204,17 @@ def _create_parts_index(conn: connection.AlkisConnection):
     conn.mark_index_table(parts_index)
 
 
-def create_index(conn):
+def create_index(conn: AlkisConnection):
     if not indexer.check_version(conn, all_index):
         _create_all_index(conn)
     if not indexer.check_version(conn, parts_index):
         _create_parts_index(conn)
 
 
-def index_ok(conn):
+def index_ok(conn: AlkisConnection):
     return indexer.check_version(conn, all_index) and indexer.check_version(conn, parts_index)
 
 
-def get_all(conn):
+def get_all(conn: AlkisConnection):
     idx = conn.index_schema
     return conn.select(f'SELECT * FROM {idx}.{all_index}')

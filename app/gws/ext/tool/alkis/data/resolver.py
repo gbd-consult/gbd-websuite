@@ -3,7 +3,8 @@ import os
 import gws
 import gws.tools.json2
 
-from ..util import indexer, connection
+from ..util import indexer
+from ..util.connection import AlkisConnection
 
 # table name, key column, value column
 
@@ -261,7 +262,8 @@ def _create_props_index(conn):
     conn.index_insert(PROPS_INDEX, data)
     conn.mark_index_table(PROPS_INDEX)
 
-def _create_place_index(conn: connection.AlkisConnection):
+
+def _create_place_index(conn: AlkisConnection):
     data = []
     tables = conn.table_names(conn.data_schema)
 
@@ -291,18 +293,18 @@ def _create_place_index(conn: connection.AlkisConnection):
     conn.mark_index_table(PLACE_INDEX)
 
 
-def create_index(conn):
+def create_index(conn: AlkisConnection):
     if not indexer.check_version(conn, PROPS_INDEX):
         _create_props_index(conn)
     if not indexer.check_version(conn, PLACE_INDEX):
         _create_place_index(conn)
 
 
-def index_ok(conn):
+def index_ok(conn: AlkisConnection):
     return indexer.check_version(conn, PROPS_INDEX) and indexer.check_version(conn, PLACE_INDEX)
 
 
-def _load_props_for_table(conn, table):
+def _load_props_for_table(conn: AlkisConnection, table):
     idx = conn.index_schema
     d = {}
     sql = f'SELECT * FROM {idx}.{PROPS_INDEX} WHERE table_name=%s'
@@ -312,7 +314,7 @@ def _load_props_for_table(conn, table):
     return d
 
 
-def _load_places(conn):
+def _load_places(conn: AlkisConnection):
     idx = conn.index_schema
     d = {}
     rs = conn.select(f'SELECT place_key, place_name FROM {idx}.{PLACE_INDEX}')
@@ -321,7 +323,7 @@ def _load_places(conn):
     return d
 
 
-def attributes(conn, table, rec):
+def attributes(conn: AlkisConnection, table, rec):
     cc = gws.get_global(
         'alkis_resolver_props_' + table,
         lambda: _load_props_for_table(conn, table))
@@ -339,7 +341,7 @@ def attributes(conn, table, rec):
     return attr
 
 
-def places(conn, rec):
+def places(conn: AlkisConnection, rec):
     cc = gws.get_global(
         'alkis_resolver_places',
         lambda: _load_places(conn))

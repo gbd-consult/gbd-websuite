@@ -97,6 +97,11 @@ class Object(t.IObject):
             return self.parent.var(key, default, parent=True)
         return default
 
+    def create_unbound_object(self, klass, cfg):
+        obj = self.root.create(klass, cfg)
+        obj.initialize(cfg)
+        return obj
+
     def create_object(self, klass, cfg, parent=None):
         obj = self.root.create(klass, cfg)
         obj.parent = parent

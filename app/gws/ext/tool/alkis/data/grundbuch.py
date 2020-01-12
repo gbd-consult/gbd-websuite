@@ -1,8 +1,10 @@
 """Interface for Objektartengruppe:Personen- und Bestandsdaten"""
 
 import gws
+
 from . import resolver
-from ..util import indexer, connection
+from ..util import indexer
+from ..util.connection import AlkisConnection
 
 stelle_index = 'idx_grundbuch_stelle'
 
@@ -24,7 +26,7 @@ def _anteil(r):
     return '%d/%d' % (r['zaehler'] or 0, r['nenner'] or 0)
 
 
-def _all_person(conn):
+def _all_person(conn: AlkisConnection):
     dat = conn.data_schema
 
     rs = conn.select_from_ax('ax_anschrift', [
@@ -68,7 +70,7 @@ def _all_person(conn):
     return person
 
 
-def _all_buchungsblatt(conn):
+def _all_buchungsblatt(conn: AlkisConnection):
     persons = _all_person(conn)
     blatts = {}
 
@@ -118,7 +120,7 @@ def _make_list(stellen, stelle, seen_ids):
     return slist
 
 
-def _all_buchungsstelle(conn):
+def _all_buchungsstelle(conn: AlkisConnection):
     blatts = _all_buchungsblatt(conn)
     stellen = {}
 
@@ -169,7 +171,7 @@ def _all_buchungsstelle(conn):
     return data
 
 
-def _create_stelle_index(conn: connection.AlkisConnection):
+def _create_stelle_index(conn: AlkisConnection):
     data = _all_buchungsstelle(conn)
 
     conn.create_index_table(stelle_index, f'''
@@ -181,10 +183,10 @@ def _create_stelle_index(conn: connection.AlkisConnection):
     conn.mark_index_table(stelle_index)
 
 
-def create_index(conn):
+def create_index(conn: AlkisConnection):
     if not indexer.check_version(conn, stelle_index):
         _create_stelle_index(conn)
 
 
-def index_ok(conn):
+def index_ok(conn: AlkisConnection):
     return indexer.check_version(conn, stelle_index)

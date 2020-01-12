@@ -6,7 +6,6 @@ import gws.common.api
 import gws.common.auth.types
 import gws.common.auth.util
 import gws.common.client
-import gws.common.csv
 import gws.common.layer
 import gws.common.project
 import gws.common.search
@@ -60,7 +59,6 @@ class Config(t.WithAccess):
     api: t.Optional[gws.common.api.Config]  #: system-wide server actions
     auth: t.Optional[gws.common.auth.types.Config]  #: authorization methods and options
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
-    csv: t.Optional[gws.common.csv.Config] = {}  #: csv format options
     db: t.Optional[DbConfig]  #: database configuration
     fonts: t.Optional[FontConfig]  #: fonts configuration
     locales: t.Optional[t.List[str]]  #: default locales for all projects
@@ -146,8 +144,6 @@ class Object(gws.Object, t.IApplication):
             s.ssl = True if self.var('web.ssl') else False
             self.web_sites.append(self.create_object('gws.web.site', s))
 
-        self.add_child(gws.common.csv.Object, self.var('csv'))
-
         p = self.var('storage') or {'type': 'sqlite'}
         self.storage = self.add_child('gws.ext.storage', p)
 
@@ -159,7 +155,7 @@ class Object(gws.Object, t.IApplication):
         action = None
 
         if project_uid:
-            project = self.find('gws.common.project', project_uid)
+            project: t.IProject = self.find('gws.common.project', project_uid)
             if project:
                 action = project.api.actions.get(action_type) if project.api else None
 

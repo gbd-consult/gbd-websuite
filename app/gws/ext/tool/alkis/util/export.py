@@ -1,7 +1,9 @@
 import itertools
-import gws.common.csv
+import gws.ext.tool.csv
+import gws.common.model
 
 import gws
+import gws.types as t
 
 """
 A fs structure, as created by our indexer, is deeply nested.
@@ -13,256 +15,163 @@ We flatten it first, creating a list 'some.nested.key, list positions, value'
     and 2 'eigentuemer' lists, there will be 3x2=6 rows
 """
 
-# actual fs 'flat' keys, classified by their usage ('part')
+
+class GroupConfig(t.Config):
+    """Export group configuration."""
+    title: str
+    eigentuemer: bool = False
+    buchung: bool = False
+    dataModel: t.Optional[gws.common.model.Config]
 
 
-_groups = {
-    'base': [
-        # 'gml_id',
-        # 'land',
-        # 'regierungsbezirk',
-        # 'kreis',
-        'gemeinde',
-        'gemarkung_id',
-        'gemarkung',
-        # 'anlass',
-        # 'endet',
-        # 'zeitpunktderentstehung',
-        'flurnummer',
-        'zaehler',
-        'nenner',
-        'flurstuecksfolge',
-        'amtlicheflaeche',
-        # 'zaehlernenner',
-        # 'vollnummer',
-        # 'flurstueckskennzeichen',
-        'x',
-        'y',
-
-    ],
-    'lage': [
-        # 'lage.gemarkung',
-        # 'lage.gemarkung_id',
-        # 'lage.gemeinde',
-        # 'lage.gemeinde_id',
-        # 'lage.gml_id',
-        # 'lage.kreis',
-        # 'lage.kreis_id',
-        # 'lage.lage_id',
-        # 'lage.lage_schluesselgesamt',
-        # 'lage.land',
-        # 'lage.land_id',
-        # 'lage.regierungsbezirk',
-        # 'lage.regierungsbezirk_id',
-        'lage.strasse',
-        'lage.hausnummer',
-        # 'lage.x',
-        # 'lage.xysrc',
-        # 'lage.y',
-    ],
-    'gebaeude': [
-        'gebaeude.area',
-        'gebaeude.gebaeudefunktion',
-        # 'gebaeude.gebaeudefunktion_id',
-        # 'gebaeude.gml_id',
-    ],
-    'buchung': [
-        # 'buchung.beginnt',
-        'buchung.buchungsart',
-        # 'buchung.buchungsart_id',
-        # 'buchung.buchungsblatt.bezirk',
-        # 'buchung.buchungsblatt.bezirk_id',
-        'buchung.buchungsblatt.blattart',
-        # 'buchung.buchungsblatt.blattart_id',
-        'buchung.buchungsblatt.buchungsblattkennzeichen',
-        'buchung.buchungsblatt.buchungsblattnummermitbuchstabenerweiterung',
-        # 'buchung.buchungsblatt.gml_id',
-        # 'buchung.buchungsblatt.land',
-        # 'buchung.buchungsblatt.land_id',
-        # 'buchung.gml_id',
-        'buchung.laufendenummer',
-    ],
-
-    'eigentuemer': [
-        # 'buchung.eigentuemer.gml_id',
-        # 'buchung.eigentuemer.laufendenummernachdin1421',
-        # 'buchung.eigentuemer.person.anschrift.gml_id',
-        # 'buchung.eigentuemer.person.gml_id',
-        'buchung.eigentuemer.person.vorname',
-        'buchung.eigentuemer.person.nachnameoderfirma',
-        'buchung.eigentuemer.person.geburtsdatum',
-        'buchung.eigentuemer.person.anschrift.strasse',
-        'buchung.eigentuemer.person.anschrift.hausnummer',
-        'buchung.eigentuemer.person.anschrift.postleitzahlpostzustellung',
-        'buchung.eigentuemer.person.anschrift.ort_post',
-    ],
-
-    'nutzung': [
-        'nutzung.a_area',
-        # 'nutzung.area',
-        # 'nutzung.count',
-        # 'nutzung.gml_id',
-        # 'nutzung.key',
-        # 'nutzung.key_id',
-        # 'nutzung.key_label',
-        'nutzung.type',
-        # 'nutzung.type_id',
-    ]
-}
-
-_headers = {
-    'gemeinde': 'Gemeinde',
-    'gemarkung_id': 'Gemarkung ID',
-    'gemarkung': 'Gemarkung',
-    'amtlicheflaeche': 'Fläche',
-    'flurnummer': 'Flurnummer',
-    'zaehler': 'Zähler',
-    'nenner': 'Nenner',
-    'flurstuecksfolge': 'Folge',
-    'x': 'X',
-    'y': 'Y',
-
-    'lage.strasse': 'FS Strasse',
-    'lage.hausnummer': 'FS Hnr',
-
-    'gebaeude.area': 'Gebäude Fläche',
-    'gebaeude.gebaeudefunktion': 'Gebäude Funktion',
-
-    'buchung.buchungsart': 'Buchungsart',
-    'buchung.laufendenummer': 'Laufende Nummer',
-    'buchung.buchungsblatt.blattart': 'Blattart',
-    'buchung.buchungsblatt.buchungsblattkennzeichen': 'Blattkennzeichen',
-    'buchung.buchungsblatt.buchungsblattnummermitbuchstabenerweiterung': 'Blattnummer',
-
-    'buchung.eigentuemer.person.vorname': 'Vorname',
-    'buchung.eigentuemer.person.nachnameoderfirma': 'Name',
-    'buchung.eigentuemer.person.geburtsdatum': 'Geburtsdatum',
-    'buchung.eigentuemer.person.anschrift.strasse': 'Strasse',
-    'buchung.eigentuemer.person.anschrift.hausnummer': 'Hnr',
-    'buchung.eigentuemer.person.anschrift.postleitzahlpostzustellung': 'PLZ',
-    'buchung.eigentuemer.person.anschrift.ort_post': 'Ort',
-
-    'nutzung.a_area': 'Nutzung Fläche',
-    'nutzung.type': 'Nutzung Typ',
-}
+class Config(t.WithAccess):
+    """CSV Export configuration."""
+    groups: t.Optional[t.List[GroupConfig]]
 
 
-def as_csv(obj, fs_list, groups, path):
+# default export groups configuration
+
+
+DEFAULT_GROUPS = [
+    t.Config(
+        title='Basisdaten', eigentuemer=False, buchung=False,
+        dataModel=t.Config(rules=[
+            t.Config(source='gemeinde', title='Gemeinde'),
+            t.Config(source='gemarkung_id', title='Gemarkung ID'),
+            t.Config(source='gemarkung', title='Gemarkung'),
+            t.Config(source='flurnummer', title='Flurnummer', type=t.AttributeType.int),
+            t.Config(source='zaehler', title='Zähler', type=t.AttributeType.int),
+            t.Config(source='nenner', title='Nenner'),
+            t.Config(source='flurstuecksfolge', title='Folge'),
+            t.Config(source='amtlicheflaeche', title='Fläche', type=t.AttributeType.float),
+            t.Config(source='x', title='X', type=t.AttributeType.float),
+            t.Config(source='y', title='Y', type=t.AttributeType.float),
+        ])
+    ),
+    t.Config(
+        title='Lage', eigentuemer=False, buchung=False,
+        dataModel=t.Config(rules=[
+            t.Config(source='lage_strasse', title='FS Strasse'),
+            t.Config(source='lage_hausnummer', title='FS Hnr'),
+        ])
+    ),
+    t.Config(
+        title='Gebäude', eigentuemer=False, buchung=False,
+        dataModel=t.Config(rules=[
+            t.Config(source='gebaeude_area', title='Gebäude Fläche', type=t.AttributeType.float),
+            t.Config(source='gebaeude_gebaeudefunktion', title='Gebäude Funktion'),
+        ])
+    ),
+    t.Config(
+        title='Buchungsblatt', eigentuemer=False, buchung=True,
+        dataModel=t.Config(rules=[
+            t.Config(source='buchung_buchungsart', title='Buchungsart'),
+            t.Config(source='buchung_buchungsblatt_blattart', title='Blattart'),
+            t.Config(source='buchung_buchungsblatt_buchungsblattkennzeichen', title='Blattkennzeichen'),
+            t.Config(source='buchung_buchungsblatt_buchungsblattnummermitbuchstabenerweiterung', title='Blattnummer'),
+            t.Config(source='buchung_laufendenummer', title='Laufende Nummer'),
+        ])
+    ),
+    t.Config(
+        title='Eigentümer', eigentuemer=True, buchung=True,
+        dataModel=t.Config(rules=[
+            t.Config(source='buchung_eigentuemer_person_vorname', title='Vorname'),
+            t.Config(source='buchung_eigentuemer_person_nachnameoderfirma', title='Name'),
+            t.Config(source='buchung_eigentuemer_person_geburtsdatum', title='Geburtsdatum'),
+            t.Config(source='buchung_eigentuemer_person_anschrift_strasse', title='Strasse'),
+            t.Config(source='buchung_eigentuemer_person_anschrift_hausnummer', title='Hnr'),
+            t.Config(source='buchung_eigentuemer_person_anschrift_postleitzahlpostzustellung', title='PLZ'),
+            t.Config(source='buchung_eigentuemer_person_anschrift_ort_post', title='Ort'),
+        ])
+    ),
+    t.Config(
+        title='Nutzung', eigentuemer=False, buchung=False,
+        dataModel=t.Config(rules=[
+            t.Config(source='nutzung_a_area', title='Nutzung Fläche', type=t.AttributeType.float),
+            t.Config(source='nutzung_type', title='Nutzung Typ'),
+        ])
+    ),
+]
+
+
+def as_csv(target_object: t.IObject, fs_features: t.List[t.IFeature], model: gws.common.model.Object):
     # make keys from groups
 
-    keys = []
-    for g in groups:
-        keys.extend(_groups[g])
+    att_names = model.attribute_names
 
-    headers = [_headers.get(k, k) for k in keys]
-    rows = []
+    csv: gws.ext.tool.csv.Object = target_object.find_first('gws.ext.tool.csv')
+    writer = csv.writer()
 
-    for fs in fs_list:
-        fs_as_csv(fs, keys, rows)
+    writer.write_headers([r.title for r in model.rules])
 
-    csv: gws.common.csv.Object = obj.root.find_first('gws.common.csv')
-    csv.write(path, headers, rows)
+    for fs in fs_features:
+        for rec in _recs_from_feature(fs, att_names):
+            writer.write_attributes(model.apply_to_dict(rec))
+
+    return writer.as_bytes()
 
 
-def fs_as_csv(fs, keys, rows):
-    flat = _flatten(fs)
+def _recs_from_feature(fs: t.IFeature, att_names: t.List[str]):
+    # create a flat list from the attributes of the FS feature
+
+    flat = list(_flat_walk({a.name: a.value for a in fs.attributes}))
 
     # keep keys we need
 
-    flat = [
-        f
-        for f in flat
-        if any(f[0].startswith(k) for k in keys)
-    ]
+    flat = [e for e in flat if any(e['path'].startswith(a) for a in att_names)]
 
-    # collect lists
+    # compute max index for each list from 'pos' elements
 
-    lst = _get_lists(flat)
+    max_index = {}
 
-    # no lists, write a single row
+    for e in flat:
+        for k, v in e['pos'].items():
+            max_index[k] = max(max_index.get(k, 0), v)
 
-    if not lst:
-        _write_flat(flat, keys, rows)
+    # no lists, return a single record
+
+    if not max_index:
+        yield {e['path']: e['value'] for e in flat}
         return
 
-    # create a row for each combination of list indexes
+    # create a record for each combination of list indexes
 
-    lst_ranges = [range(x + 1) for x in lst.values()]
+    list_keys = max_index.keys()
+    list_ranges = [range(x + 1) for x in max_index.values()]
 
-    for lst_indexes in itertools.product(*lst_ranges):
-        matching = [
-            f
-            for f in flat
-            if _indexes_match(f, lst.keys(), lst_indexes)
-        ]
-        _write_flat(matching, keys, rows)
+    for list_indexes in itertools.product(*list_ranges):
+        matching = [e for e in flat if _indexes_match(e, list_keys, list_indexes)]
+        yield {e['path']: e['value'] for e in matching}
 
 
-def _flatten(fs):
-    flat = []
+def _flat_walk(obj, path=None, pos=None):
+    # create a flat list from a nested fs record
+    # an element of the list is {path, pos, value}, where
+    #     path = full key path
+    #     pos  = {list_name: list_index, ...} if a value is a member of a list
+    #     value = element value
 
-    """
-    create a flat list from a nested fs record
-    an element of the list is (path, pos, value)
-    where 
-        path = full key path, dot separated
-        pos  = {list_name:index, ...} if a value is in an list
-        value
-    """
-
-    _flat_walk(flat, fs, '', {})
-    return flat
-
-
-def _flat_walk(flat, obj, path, pos):
     if isinstance(obj, dict):
         for k, v in obj.items():
-            _flat_walk(flat, v, path + '.' + str(k) if path else str(k), pos)
+            yield from _flat_walk(v, path + '_' + str(k) if path else str(k), pos)
+        return
 
-    elif isinstance(obj, list):
-        if obj:
-            for n, v in enumerate(obj):
-                p = dict(pos)
-                p[path] = n
-                _flat_walk(flat, v, path, p)
+    if isinstance(obj, list):
+        for n, v in enumerate(obj):
+            p = dict(pos) if pos else {}
+            p[path] = n
+            yield from _flat_walk(v, path, p)
+        return
 
-    else:
-        flat.append((path, pos, obj))
-
-
-def _get_lists(flat):
-    lst = {}
-
-    """
-    extract lists from pos elements of the flat list
-    return a dict {list_name => max_index}
-    """
-
-    for path, pos, val in flat:
-        for k, v in pos.items():
-            lst[k] = max(lst.get(k, 0), v)
-
-    return lst
+    yield {'path': path, 'pos': pos or {}, 'value': obj}
 
 
-def _indexes_match(flat_elem, lst_keys, lst_indexes):
-    pos = flat_elem[1]
+def _indexes_match(flat_elem, list_keys, list_indexes):
+    # check if a flat entry matches the given combination of list positions
 
-    """
-    check if a flat entry matches the given combination
-    of list positions
-    """
-
-    for k, i in zip(lst_keys, lst_indexes):
-        p = pos.get(k)
+    for k, i in zip(list_keys, list_indexes):
+        p = flat_elem['pos'].get(k)
         if p is not None and p != i:
             return False
 
     return True
-
-
-def _write_flat(flat, keys, rows):
-    r = {}
-    for path, pos, val in flat:
-        r[path] = val
-    rows.append([r.get(k) for k in keys])

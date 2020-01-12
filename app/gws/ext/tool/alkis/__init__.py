@@ -1,23 +1,14 @@
-import os
-import re
-
 import gws
-import gws.tools.date
-import gws.tools.job
-import gws.config
-import gws.gis.feature
-import gws.gis.shape
-import gws.common.printer.service
-import gws.common.printer.types
-import gws.common.template
 import gws.common.db
 import gws.ext.db.provider.postgres
-import gws.tools.misc
+import gws.gis.feature
+import gws.gis.shape
+
 import gws.types as t
-import gws.tools.json2
-import gws.web
+
 from .data import index, adresse, flurstueck
-from .util import connection, export
+from .util import export
+from .util.connection import AlkisConnection
 
 
 class Config(t.WithType):
@@ -223,7 +214,7 @@ class Object(gws.Object):
         return FindStrasseResult(strassen=ls)
 
     def connect(self):
-        return connection.AlkisConnection(**self.connect_args)
+        return AlkisConnection(**self.connect_args)
 
     ##
 
@@ -260,7 +251,7 @@ class Object(gws.Object):
             'password': password,
         })
         connect_args = gws.extend(self.connect_args, {'params': params})
-        return connection.AlkisConnection(**connect_args)
+        return AlkisConnection(**connect_args)
 
     def _query_to_dict(self, query):
         q = {k: v for k, v in gws.as_dict(query).items() if not gws.is_empty(v)}

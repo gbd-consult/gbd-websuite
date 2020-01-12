@@ -37,16 +37,11 @@ class Object(gws.ActionObject):
     def http_get_download(self, req: t.IRequest, p) -> t.HttpResponse:
         return self._serve_path(req, p, True)
 
-    def http_get_result(self, req: t.IRequest, p: GetResultParams) -> t.HttpResponse:
+    def http_get_result(self, req: t.IRequest, p: GetResultParams) -> t.FileResponse:
         job = gws.tools.job.get_for(req.user, p.jobUid)
         if not job or job.state != gws.tools.job.State.complete:
             raise gws.web.error.NotFound()
-        with open(job.result, 'rb') as fp:
-            content = fp.read()
-        return t.HttpResponse({
-            'mime': gws.tools.mime.for_path(job.result),
-            'content': content
-        })
+        return t.FileResponse(mime=gws.tools.mime.for_path(job.result), path=job.result)
 
     def _serve_path(self, req: t.IRequest, p: GetPathParams, as_attachment=False):
         spath = str(p.get('path') or '')

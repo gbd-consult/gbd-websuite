@@ -358,6 +358,7 @@ class IObject:
     def configure(self): pass
     def create_object(self, klass, cfg, parent=None): pass
     def create_shared_object(self, klass, uid, cfg): pass
+    def create_unbound_object(self, klass, cfg): pass
     def find(self, klass, uid) -> 'IObject': pass
     def find_all(self, klass=None) -> List['IObject']: pass
     def find_first(self, klass) -> 'IObject': pass
@@ -712,6 +713,7 @@ class IMap(IObject):
     resolutions: List[float] = None
 
 class IModel(IObject):
+    attribute_names: List[str] = None
     geometry_crs: str = None
     geometry_type: 'GeometryType' = None
     is_identity: bool = None

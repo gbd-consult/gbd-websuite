@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import gws
 import gws.tools.misc
@@ -77,6 +78,22 @@ class Object(gws.Object, t.IModel):
             value=self._apply_rule(r, d),
             type=r.type,
         ) for r in self.rules]
+
+    @property
+    def attribute_names(self) -> t.List[str]:
+        """List of attributes used by the model."""
+        names = set()
+        for r in self.rules:
+            if r.get('value'):
+                continue
+            if r.get('source'):
+                names.add(r.source)
+                continue
+            if r.get('format'):
+                names.update(re.findall(r'{([\w.]+)', r.format))
+                continue
+            names.add(r.name)
+        return sorted(names)
 
     def _apply_rule(self, rule: t.ModelRule, d: dict):
         s = rule.get('value')
