@@ -3,7 +3,7 @@ import gws.tools.json2
 
 import gws.types as t
 
-from .user import Role
+from . import user
 from .stores import sqlite
 
 
@@ -20,15 +20,15 @@ def authenticate(login, password, **kw):
             return usr
 
 
-def get_user(user_full_uid):
-    # see user.full_uid
-    provider_uid, user_uid = gws.tools.json2.from_string(user_full_uid)
+def get_user(user_fid):
+    # see user.fid
+    provider_uid, user_uid = user.parse_fid(user_fid)
     prov: t.IAuthProvider = gws.config.root().find('gws.ext.auth.provider', provider_uid)
     return prov.get_user(user_uid)
 
 
-def serialize_user(user: t.IUser) -> str:
-    return gws.tools.json2.to_string(user.provider.user_to_dict(user))
+def serialize_user(u: t.IUser) -> str:
+    return gws.tools.json2.to_string(u.provider.user_to_dict(u))
 
 
 def unserialize_user(s: str) -> t.IUser:
@@ -38,4 +38,4 @@ def unserialize_user(s: str) -> t.IUser:
 
 
 def role(name):
-    return Role(name)
+    return user.Role(name)

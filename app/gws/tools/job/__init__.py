@@ -23,7 +23,7 @@ class Error(gws.Error):
 
 def create(uid, user: t.IUser, worker: str, args=None):
     if user:
-        fid = user.full_uid
+        fid = user.fid
         str_user = gws.common.auth.serialize_user(user)
     else:
         fid = str_user = ''
@@ -31,7 +31,7 @@ def create(uid, user: t.IUser, worker: str, args=None):
     storage.create(uid)
     storage.update(
         uid,
-        user_full_uid=fid,
+        user_fid=fid,
         str_user=str_user,
         worker=worker,
         args=args or '',
@@ -58,16 +58,15 @@ def get_for(user, uid):
     if not job:
         gws.log.error(f'job={uid!r}: not found')
         return
-    if job.user_full_uid != user.full_uid:
-        gws.log.error(f'job={uid!r} wrong user (job={job.user_uid!r} user={user.full_uid!r})')
+    if job.user_fid != user.fid:
+        gws.log.error(f'job={uid!r} wrong user (job={job.user_fid!r} user={user.fid!r})')
         return
     return job
-
 
 class Job:
     def __init__(self, rec):
         self.uid = ''
-        self.user_full_uid = ''
+        self.user_fid = ''
         self.str_user = ''
         self.worker = ''
         self.args = ''

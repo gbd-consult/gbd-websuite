@@ -13,7 +13,7 @@ def _wait_for_print(job_uid):
             return f'JOB STATE: {s}'
         if s == 'complete':
             return u.req(f'/_/cmd/assetHttpGetResult/jobUid/{job_uid}')
-        #print(f'\n> WAITING FOR PRINTER: {s}')
+        # print(f'\n> WAITING FOR PRINTER: {s}')
         time.sleep(2)
 
 
@@ -170,20 +170,11 @@ def test_features():
                     x + 150,
                     y + 150,
                 ],
-                "attributes": [
-                    {
-                        "name": "prop1",
-                        "value": "prop_1_value"
-                    },
-                    {
-                        "name": "prop2",
-                        "value": "prop_2_value"
-                    },
-                    {
-                        "name": "prop3",
-                        "value": "prop_3_value_should_be_ignored"
-                    }
-                ]
+                "context": {
+                    "prop1": "prop_1_value",
+                    "prop2": "prop_2_value",
+                    "prop3": "prop_3_value_should_be_ignored",
+                }
             }
         ]
     }

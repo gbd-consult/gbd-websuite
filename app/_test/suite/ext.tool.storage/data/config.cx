@@ -1,0 +1,13 @@
+@include /common/util.cx
+
+@WEB_SERVER_ONLY
+
+access+ { role "all" type "allow" }
+
+api.actions+ { type "storage" }
+
+tools+ {
+    type "storage"
+    backend "sqlite"
+    path "/gws-var/test_storage.sqlite"
+}

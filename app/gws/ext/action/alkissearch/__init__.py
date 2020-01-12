@@ -534,12 +534,12 @@ class Object(gws.ActionObject):
 
     def _can_read_eigentuemer(self, user: t.IUser):
         b = user.can_use(self.eigentuemer)
-        gws.log.debug(f'_can_read_eigentuemer user={user.full_uid!r} res={b}')
+        gws.log.debug(f'_can_read_eigentuemer user={user.fid!r} res={b}')
         return b
 
     def _can_read_buchung(self, user: t.IUser):
         b = user.can_use(self.buchung)
-        gws.log.debug(f'_can_read_buchung user={user.full_uid!r} res={b}')
+        gws.log.debug(f'_can_read_buchung user={user.fid!r} res={b}')
         return b
 
     def _can_use_export(self, user: t.IUser):

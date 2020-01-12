@@ -9,7 +9,7 @@ def _db():
     conn = sqlite3.connect(path)
     conn.execute('''CREATE TABLE IF NOT EXISTS jobs(
         uid TEXT PRIMARY KEY,
-        user_full_uid TEXT,
+        user_fid TEXT,
         str_user TEXT,
         worker TEXT,
         args TEXT,

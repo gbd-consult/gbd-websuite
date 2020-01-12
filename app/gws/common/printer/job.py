@@ -32,7 +32,7 @@ class PrematureTermination(Exception):
     pass
 
 
-def create(req: t.IRequest, params: pt.PrintParams):
+def create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
     cleanup()
 
     job_uid = gws.random_string(64)
@@ -49,7 +49,7 @@ def create(req: t.IRequest, params: pt.PrintParams):
         worker=__name__ + '._worker')
 
 
-def _worker(job):
+def _worker(job: gws.tools.job.Job):
     job_uid = job.uid
     base_path = gws.PRINT_DIR + '/' + job_uid
 

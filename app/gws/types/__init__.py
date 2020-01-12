@@ -403,7 +403,7 @@ class IStyle:
 class IUser:
     attributes: dict = None
     display_name: str = None
-    full_uid: str = None
+    fid: str = None
     is_guest: bool = None
     props: 'UserProps' = None
     provider: 'IAuthProvider' = None
@@ -596,9 +596,21 @@ class SqlTableColumn(Data):
     native_type: str = None
     type: 'AttributeType' = None
 
+class StorageElement(Data):
+    data: dict = None
+    entry: 'StorageEntry' = None
+
 class StorageEntry(Data):
     category: str = None
     name: str = None
+
+class StorageRecord(Data):
+    category: str = None
+    created: int = None
+    data: str = None
+    name: str = None
+    updated: int = None
+    user_fid: str = None
 
 class StyleProps(Props):
     content: Optional[dict] = None
@@ -636,7 +648,6 @@ class IApplication(IObject):
     api: 'IApi' = None
     client: 'IClient' = None
     qgis_version: str = None
-    storage: 'IStorage' = None
     web_sites: List['IWebSite'] = None
     def find_action(self, action_type, project_uid=None): pass
 
@@ -778,13 +789,6 @@ class ISearchProvider(IObject):
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs') -> 'IShape': pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass
-
-class IStorage(IObject):
-    def can_read(self, r, user: 'IUser') -> bool: pass
-    def can_write(self, r, user: 'IUser') -> bool: pass
-    def dir(self, user: 'IUser') -> List['StorageEntry']: pass
-    def read(self, entry: 'StorageEntry', user: 'IUser') -> dict: pass
-    def write(self, entry: 'StorageEntry', user: 'IUser', data: dict) -> bool: pass
 
 class ITemplate(IObject):
     data_model: 'IModel' = None

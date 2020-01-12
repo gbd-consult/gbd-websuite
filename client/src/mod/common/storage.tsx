@@ -125,7 +125,7 @@ class StorageController extends gws.Controller {
     }
 
     async writeDialog(args: StorageArgs) {
-        let res = await this.app.server.storageDir({});
+        let res = await this.app.server.storageDir({category: args.category});
         if (res.error)
             return;
         this.update({
@@ -138,7 +138,7 @@ class StorageController extends gws.Controller {
     }
 
     async readDialog(args: StorageArgs) {
-        let res = await this.app.server.storageDir({});
+        let res = await this.app.server.storageDir({category: args.category});
         if (res.error)
             return;
         this.update({

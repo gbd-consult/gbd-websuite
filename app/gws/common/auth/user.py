@@ -18,6 +18,17 @@ class Role(t.IRole):
         return _can_use(self, obj, [self.name], parent)
 
 
+def make_fid(user):
+    return f'{user.provider.uid}::{user.uid}'
+
+
+def parse_fid(fid):
+    s = fid.split('::', 1)
+    if len(s) == 2:
+        return s
+    raise ValueError(f'invalid fid: {fid!r}')
+
+
 #:export IUser
 class User(t.IUser):
     def __init__(self):
@@ -39,8 +50,8 @@ class User(t.IUser):
         return False
 
     @property
-    def full_uid(self) -> str:
-        return json2.to_string([self.provider.uid, self.uid])
+    def fid(self) -> str:
+        return make_fid(self)
 
     def has_role(self, role: str) -> bool:
         return role in self.roles

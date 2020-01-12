@@ -67,7 +67,6 @@ class Config(t.WithAccess):
     projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations
     seeding: SeedingConfig = {}  #: configuration for seeding jobs
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
-    storage: t.Optional[t.ext.storage.Config]  #: storage configuration
     timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
     tools: t.Optional[t.List[t.ext.tool.Config]]
     web: t.Optional[WebConfig] = {}  #: webserver configuration
@@ -89,7 +88,6 @@ class Object(gws.Object, t.IApplication):
         self.api: t.IApi = None
         self.client: t.IClient = None
         self.qgis_version = ''
-        self.storage: t.IStorage = None
         self.version = gws.VERSION
         self.web_sites: t.List[t.IWebSite] = []
 
@@ -143,9 +141,6 @@ class Object(gws.Object, t.IApplication):
         for s in p:
             s.ssl = True if self.var('web.ssl') else False
             self.web_sites.append(self.create_object('gws.web.site', s))
-
-        p = self.var('storage') or {'type': 'sqlite'}
-        self.storage = self.add_child('gws.ext.storage', p)
 
         for p in self.var('projects'):
             self.add_child(gws.common.project.Object, p)
