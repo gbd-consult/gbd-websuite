@@ -1,7 +1,7 @@
 Styling
 =======
 
-Vector feature styles can be customized via CSS. GBD WebSuite supports standard CSS properties for SVG (for example, ``fill``) and a few custom properties, which must be prefixed with ``--`` in your CSS.
+Vektor-Feature-Stile können über CSS angepasst werden. Die GBD WebSuite unterstützt standard CSS-Eigenschaften für SVG Symbole (zum Beispiel, ``fill``) und einige benutzerdefinierte Eigenschaften, welche in Ihrer CSS-Konfiguration mit ``--`` vorangestellt werden müssen. ::
 
 TABLE
 ``--label-background``~background color for feature labels
@@ -21,10 +21,11 @@ TABLE
 ``--point-size``~point size for Point features
 /TABLE
 
-Styling vector layers
----------------------
+Styling von Vektorlayern
+------------------------
 
-For vector layers, like ``sql`` or ``geojson`` layers, you can place your css rules directly in the configuration file under ``style``::
+Für `` sql`` oder `` geojson``-Vektorlayer können Sie Ihre CSS-Regeln direkt in der Konfigurationsdatei unter `` style`` einfügen. ::
+
 
     "layers": [
         ...
@@ -38,9 +39,9 @@ For vector layers, like ``sql`` or ``geojson`` layers, you can place your css ru
             }
         }
 
-Alternatively, you can include the rules in your project-related CSS file (see :doc:`projects`), and set ``text`` to the CSS selector ::
+Alternativ können Sie die Regeln in Ihre projektbezogene CSS-Datei mit aufnehmen (siehe: doc: `projects`) und ``text`` bei den CSS-Selektor setzen ::
 
-    // In your css file
+    // In Ihrer CSS-Datei
 
     .myVectorLayer {
         stroke: rgb(0, 255, 255);
@@ -49,7 +50,7 @@ Alternatively, you can include the rules in your project-related CSS file (see :
         --label-fill: rgb(255, 0, 0);
     }
 
-    // In your config file
+    // In Ihrer config-Datei
 
     {
         "title": "My Vector layer",
@@ -61,10 +62,10 @@ Alternatively, you can include the rules in your project-related CSS file (see :
         }
     }
 
-Styling built-in features
--------------------------
+Styling der eingebauten Funktionen
+----------------------------------
 
-You can customize styles for built-in features, like search results markers or measurements. There are following predefined CSS selectors:
+Sie können den Stil der integrierten Funktionen anpassen, z. B. Markierungen von Suchergebnisse oder Messungen. Es gibt folgende vordefinierte CSS-Selektoren: ::
 
 TABLE
 ``.gws .modMarkerFeature``~search results marker
@@ -76,10 +77,10 @@ TABLE
 /TABLE
 
 
-Styling dimensions
-------------------
+Styling des Bemaßungs-Plugins
+-----------------------------
 
-The dimensioning plugin uses these CSS selectors:
+Das Bemaßungs-Plugin verwendet diese CSS-Selektoren: ::
 
 TABLE
 ``.gws .modDimensionDimLine``~main dimension line. For dimension main lines, the ``--marker`` property supports additional values ``cross`` and ``arrow``.
