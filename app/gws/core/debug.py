@@ -9,7 +9,8 @@ import time
 from . import log
 
 _noexpand = {
-    "<type 'datetime.datetime'>",
+    "<class 'datetime.datetime'>",
+    "<class 'datetime.date'>",
     "<class 'memoryview'>",
 }
 

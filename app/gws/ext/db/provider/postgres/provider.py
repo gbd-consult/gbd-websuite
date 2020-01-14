@@ -227,16 +227,9 @@ class Object(gws.common.db.provider.Sql):
         if table.key_column:
             rec[table.key_column] = feature.uid
 
-        if not table.geometry_column or not feature.shape:
-            return rec
-
-        # @TODO: support EWKB directly
-
-        shape = feature.shape.transformed(table.geometry_crs)
-        ph = 'ST_SetSRID(%s::geometry,%s)'
-        if table.geometry_type.startswith('multi'):
-            ph = f'ST_Multi({ph})'
-        rec[table.geometry_column] = [ph, shape.wkb_hex, table.geometry_crs.split(':')[1]]
+        if table.geometry_column and feature.shape:
+            shape = feature.shape.transformed(table.geometry_crs)
+            rec[table.geometry_column] = shape.ewkb_hex
 
         return rec
 
@@ -245,7 +238,8 @@ class Object(gws.common.db.provider.Sql):
         if table.geometry_column:
             g = rec.pop(table.geometry_column, None)
             if g:
-                shape = gws.gis.shape.from_wkb(g, table.geometry_crs)
+                # assuming geometries are returned in hex
+                shape = gws.gis.shape.from_wkb_hex(g, table.geometry_crs)
 
         uid = None
         if table.key_column:

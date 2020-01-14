@@ -174,7 +174,7 @@ class Object(gws.Object):
                 features.append(gws.gis.feature.Feature(
                     uid=rec['gml_id'],
                     attributes=rec,
-                    shape=gws.gis.shape.from_wkb(rec['geom'], self.crs)
+                    shape=gws.gis.shape.from_wkb_hex(rec['geom'], self.crs)
                 ))
 
         return FindFlurstueckResult(features=features, total=total)

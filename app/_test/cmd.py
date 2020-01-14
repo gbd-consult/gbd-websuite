@@ -130,11 +130,18 @@ def start_postgres():
     stop_postgres()
     time.sleep(2)
 
+    extra = '\\n'.join([
+        "log_destination='stderr'",
+        "log_statement='all'",
+        "log_duration=1",
+    ])
+
     opts = [
         f"--detach",
         f"--env POSTGRES_DB={CONFIG['postgres_connection.database']}",
         f"--env POSTGRES_PASS={CONFIG['postgres_connection.password']}",
         f"--env POSTGRES_USER={CONFIG['postgres_connection.user']}",
+        f"""--env EXTRA_CONF="{extra}" """
         f"--name {CONFIG['postgres_container.name']}",
         f"--publish {CONFIG['host.ip']}:{CONFIG['postgres_connection.port']}:5432",
     ]

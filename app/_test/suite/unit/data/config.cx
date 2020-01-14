@@ -1,0 +1,25 @@
+@include /common/util.cx
+
+@WEB_SERVER_ONLY
+@DEFAULT_WEB_SITE
+
+access+ { role "all" type "allow" }
+
+api.actions+ { type "map" }
+api.actions+ { type "search" }
+api.actions+ { type "asset" }
+api.actions+ { type "project" }
+
+projects+ {
+    uid "test"
+
+    map {
+        crs "EPSG:3857"
+        extent [-20026376.39 -20048966.10 20026376.39 20048966.10]
+    }
+
+    map.layers+ {
+        type "osm"
+    }
+
+}

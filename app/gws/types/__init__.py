@@ -379,20 +379,25 @@ class IRole:
     def can_use(self, obj, parent=None): pass
 
 class IShape:
+    area: float = None
     bounds: 'Bounds' = None
     centroid: 'IShape' = None
     crs: str = None
+    ewkb: bytes = None
+    ewkb_hex: str = None
+    ewkt: str = None
     extent: 'Extent' = None
     props: 'ShapeProps' = None
+    srid: int = None
     type: 'GeometryType' = None
-    wkb: str = None
+    wkb: bytes = None
     wkb_hex: str = None
     wkt: str = None
     x: float = None
     y: float = None
     def intersects(self, shape: 'IShape') -> bool: pass
     def tolerance_buffer(self, tolerance, resolution=None) -> 'IShape': pass
-    def transformed(self, to_crs) -> 'IShape': pass
+    def transformed(self, to_crs, **kwargs) -> 'IShape': pass
 
 class IStyle:
     content: dict = None

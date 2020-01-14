@@ -126,7 +126,7 @@ class Object(gws.ActionObject):
 
         self._populate_data_table()
         atts = self._select_data(request_id)
-        shape = gws.gis.shape.from_wkb(geom, self.crs)
+        shape = gws.gis.shape.from_wkb_hex(geom, self.crs)
 
         f = gws.gis.feature.Feature(
             uid=f'dprocon_{request_id}',

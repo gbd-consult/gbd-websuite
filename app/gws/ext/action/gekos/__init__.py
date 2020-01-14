@@ -31,14 +31,14 @@ from . import request
     
         GIS-URL-ShowXY  = /project/my-project/?x=<x>&y=<y>&z=my-scale-value
         
-    client-side call, handled in the client
-    
-        GIS-URL-ShowFs = /project/my-project/?alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
-        
     client-side call, handled in the client:
         
         GIS-URL-GetXYFromMap = /project/my-project?&x=<x>&y=<y>&gekosUrl=<returl>
     
+    client-side call, redirects here to api_find_fs
+    
+        GIS-URL-ShowFs = /project/my-project/?alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
+        
     callback urls, handled here
             
         GIS-URL-GetXYFromFs   = /_/?cmd=gekosHttpGetXy&alkisFs=<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>
@@ -95,11 +95,10 @@ class Object(gws.ActionObject):
 
     def configure(self):
         super().configure()
+
         self.crs = self.var('crs')
         self.db: gws.ext.db.provider.postgres.Object = gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres')
-
         self.alkis: gws.ext.tool.alkis.Object = self.find_first('gws.ext.tool.alkis')
-
         self.feature_format = self.add_child('gws.common.format', self.var('featureFormat') or DEFAULT_FORMAT)
 
     def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:
@@ -115,15 +114,17 @@ class Object(gws.ActionObject):
 
     def http_get_xy(self, req: t.IRequest, p: GetFsParams) -> t.HttpResponse:
         if not self.alkis:
-            return _text('error:')
+            return t.HttpResponse(mime='text/plain', content='error:')
 
         f = self._find_alkis_feature(p)
 
         if not f:
             gws.log.warn(f'gekos: not found {req.params!r}')
-            return _text('error:')
+            return t.HttpResponse(mime='text/plain', content='error:')
 
-        return _text('%.3f;%.3f' % (f.attr('x'), f.attr('y')))
+        return t.HttpResponse(
+            mime='text/plain',
+            content='%.3f;%.3f' % (f.attr('x'), f.attr('y')))
 
     def _find_alkis_feature(self, p: GetFsParams):
         res = None
@@ -222,10 +223,3 @@ class Object(gws.ActionObject):
             ''')
 
             return conn.count(table_name)
-
-
-def _text(s):
-    return t.HttpResponse({
-        'mime': 'text/plain',
-        'content': s
-    })

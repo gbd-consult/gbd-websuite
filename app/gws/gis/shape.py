@@ -3,25 +3,56 @@ import shapely.wkb
 import shapely.wkt
 import shapely.wkt
 import shapely.ops
+import shapely.geos as geos
+
 import fiona.transform
 
 import gws
 import gws.gis.proj
 import gws.types as t
 
+_DEFAULT_POINT_BUFFER_RESOLUTION = 6
+_CIRCLE_RESOLUTION = 16
 
-def from_wkt(wkt, crs) -> t.IShape:
-    return Shape(shapely.wkt.loads(wkt), crs)
+
+def from_wkt(s: str, crs=None) -> t.IShape:
+    if s.startswith('SRID='):
+        # EWKT
+        c = s.index(';')
+        crs = s[5:c]
+        s = s[c + 1:]
+    if not crs:
+        raise ValueError('missing crs')
+    geom = geos.WKTReader(geos.lgeos).read(s)
+    return Shape(geom, crs)
 
 
-def from_wkb(wkb, crs, hex=True) -> t.IShape:
-    return Shape(shapely.wkb.loads(wkb, hex), crs)
+def from_wkb(s: bytes, crs=None) -> t.IShape:
+    return _from_wkb(geos.WKBReader(geos.lgeos).read(s), crs)
+
+
+def from_wkb_hex(s: str, crs=None) -> t.IShape:
+    return _from_wkb(geos.WKBReader(geos.lgeos).read_hex(s), crs)
+
+
+def _from_wkb(g, crs):
+    srid = geos.lgeos.GEOSGetSRID(g._geom)
+    if srid:
+        crs = srid
+        geos.lgeos.GEOSSetSRID(g._geom, 0)
+    if not crs:
+        raise ValueError('missing crs')
+    return Shape(g, crs)
 
 
 def from_geometry(geometry, crs) -> t.IShape:
-    if geometry.get('type') == 'Circle':
+    if geometry.get('type').lower() == 'circle':
         geom = shapely.geometry.Point(geometry.get('center'))
-        geom = geom.buffer(geometry.get('radius'), 6)
+        geom = geom.buffer(
+            geometry.get('radius'),
+            resolution=_CIRCLE_RESOLUTION,
+            cap_style=shapely.geometry.CAP_STYLE.round,
+            join_style=shapely.geometry.JOIN_STYLE.round)
     else:
         geom = shapely.geometry.shape(geometry)
     return Shape(geom, crs)
@@ -62,17 +93,6 @@ def union(shapes) -> t.Optional[t.IShape]:
     return Shape(geom, crs)
 
 
-_DEFAULT_POINT_BUFFER_RESOLUTION = 6
-
-
-def buffer_point(sh, tolerance, resolution=None) -> t.Optional[t.IShape]:
-    if sh.type != 'Point':
-        return
-    if not tolerance:
-        return
-    return Shape(sh.geom.buffer(tolerance, resolution or _DEFAULT_POINT_BUFFER_RESOLUTION), sh.crs)
-
-
 #:export
 class ShapeProps(t.Props):
     crs: str
@@ -82,7 +102,9 @@ class ShapeProps(t.Props):
 #:export IShape
 class Shape(t.IShape):
     def __init__(self, geom, crs):
-        self.crs: str = gws.gis.proj.as_epsg(crs)
+        p = gws.gis.proj.as_proj(crs)
+        self.crs: str = p.epsg
+        self.srid: int = p.srid
         #:noexport
         self.geom: shapely.geometry.base.BaseGeometry = geom
 
@@ -92,28 +114,40 @@ class Shape(t.IShape):
 
     @property
     def props(self) -> t.ShapeProps:
-        return t.ShapeProps({
-            'crs': self.crs,
-            'geometry': shapely.geometry.mapping(self.geom),
-        })
+        return t.ShapeProps(
+            crs=self.crs,
+            geometry=shapely.geometry.mapping(self.geom))
 
     @property
-    def wkb(self) -> str:
-        return self.geom.wkb
+    def wkb(self) -> bytes:
+        return geos.WKBWriter(geos.lgeos).write(self.geom)
+
+    @property
+    def ewkb(self) -> bytes:
+        geos.lgeos.GEOSSetSRID(self.geom._geom, self.srid)
+        s = geos.WKBWriter(geos.lgeos, include_srid=True).write(self.geom)
+        geos.lgeos.GEOSSetSRID(self.geom._geom, 0)
+        return s
 
     @property
     def wkb_hex(self) -> str:
-        return self.geom.wkb_hex
+        return self.wkb.hex()
+
+    @property
+    def ewkb_hex(self) -> str:
+        return self.ewkb.hex()
 
     @property
     def wkt(self) -> str:
-        return self.geom.wkt
+        return geos.WKTWriter(geos.lgeos).write(self.geom)
+
+    @property
+    def ewkt(self) -> str:
+        return f'SRID={self.srid};' + self.wkt
 
     @property
     def bounds(self) -> t.Bounds:
-        return t.Bounds(
-            crs=self.crs,
-            extent=self.geom.bounds)
+        return t.Bounds(crs=self.crs, extent=self.geom.bounds)
 
     @property
     def extent(self) -> t.Extent:
@@ -126,6 +160,10 @@ class Shape(t.IShape):
     @property
     def y(self) -> float:
         return getattr(self.geom, 'y', None)
+
+    @property
+    def area(self) -> float:
+        return getattr(self.geom, 'area', 0)
 
     @property
     def centroid(self) -> t.IShape:
@@ -151,11 +189,10 @@ class Shape(t.IShape):
         geom = self.geom.buffer(tolerance, resolution, cap_style=cs, join_style=js)
         return Shape(geom, self.crs)
 
-    def transformed(self, to_crs) -> t.IShape:
+    def transformed(self, to_crs, **kwargs) -> t.IShape:
         if gws.gis.proj.equal(self.crs, to_crs):
             return self
-        src = gws.gis.proj.as_proj(self.crs)
-        dst = gws.gis.proj.as_proj(to_crs)
+        to_crs = gws.gis.proj.as_proj(to_crs).epsg
         sg = shapely.geometry.mapping(self.geom)
-        dg = fiona.transform.transform_geom(src.epsg, dst.epsg, sg)
-        return Shape(shapely.geometry.shape(dg), dst.epsg)
+        dg = fiona.transform.transform_geom(self.crs, to_crs, sg, **kwargs)
+        return Shape(shapely.geometry.shape(dg), to_crs)
