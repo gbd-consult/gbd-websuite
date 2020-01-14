@@ -783,21 +783,20 @@ class DimensionController extends gws.Controller {
     uid = MASTER;
     layer: DimensionLayer;
     oOverlay: ol.Overlay;
-    options: gws.api.DimensionOptionsResponse = {layerUids: [], pixelTolerance: 10};
+    setup: gws.api.DimensionProps;
     model: DimensionModel;
     targetUpdateCount = 0;
     snapUpdateCount = 0;
 
     async init() {
-        let res = await this.app.server.dimensionOptions({});
 
-        if (res.error)
+        this.setup = this.app.actionSetup('dimension');
+        if (!this.setup)
             return;
 
-        this.options = res;
         this.model = new DimensionModel(this.map);
 
-        this.model.pixelTolerance = this.options.pixelTolerance || 10;
+        this.model.pixelTolerance = this.setup.pixelTolerance || 10;
 
         this.layer = this.map.addServiceLayer(new DimensionLayer(this.map, {
             uid: '_dimension',
@@ -810,7 +809,7 @@ class DimensionController extends gws.Controller {
             this.checkUpdateSnapInteraction();
         });
 
-        this.options.layerUids.forEach(uid => {
+        this.setup.layerUids.forEach(uid => {
             this.app.whenChanged('mapLayerUpdateCount_' + uid, () => {
                 this.targetUpdateCount++;
             })
@@ -836,9 +835,9 @@ class DimensionController extends gws.Controller {
     }
 
     updateSnapInteraction() {
-        if (this.snapFeatures && this.options.layerUids) {
+        if (this.snapFeatures && this.setup.layerUids) {
             this.snapFeatures.clear();
-            this.options.layerUids.forEach(uid => {
+            this.setup.layerUids.forEach(uid => {
                 let la = (this.map.getLayer(uid) as gws.types.IMapFeatureLayer);
                 if (la)
                     this.snapFeatures.extend(la.features.map(f => f.oFeature));
