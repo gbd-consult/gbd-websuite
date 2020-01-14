@@ -131,6 +131,9 @@ def compare_image_response(r: requests.Response, path, threshold=0.1):
 
         return ''
 
+    if isinstance(r, str):
+        return r
+
     content = r.content
     err = _cmp()
     if err:

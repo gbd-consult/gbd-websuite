@@ -796,7 +796,7 @@ class ITemplate(IObject):
     page_size: 'Size' = None
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str: pass
     def dpi_for_quality(self, quality): pass
-    def normalize_user_data(self, attributes: List[Attribute]) -> List[Attribute]: pass
+    def normalize_context(self, context: dict) -> dict: pass
     def render(self, context: dict, render_output: 'RenderOutput' = None, out_path: str = None, format: str = None) -> 'TemplateOutput': pass
 
 class IWebSite(IObject):

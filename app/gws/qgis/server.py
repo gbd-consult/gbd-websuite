@@ -107,3 +107,13 @@ def version():
     if m:
         return m.group(1).strip()
     return 'unknown'
+
+
+def request(root: t.IRootObject, params, **kwargs):
+    """Make a request to the local qgis server"""
+
+    url = 'http://%s:%s' % (
+        root.var('server.qgis.host'),
+        root.var('server.qgis.port'))
+
+    return gws.tools.net.http_request(url, params=params, **kwargs)

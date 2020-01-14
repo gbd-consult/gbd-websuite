@@ -43,6 +43,10 @@ def create(uid, user: t.IUser, worker: str, args=None):
     return get(uid)
 
 
+def url(uid):
+    return gws.SERVER_ENDPOINT + f'?cmd=assetHttpGetResult&jobUid={uid}'
+
+
 def get(uid):
     rec = storage.find(uid)
     if rec:
@@ -62,6 +66,7 @@ def get_for(user, uid):
         gws.log.error(f'job={uid!r} wrong user (job={job.user_fid!r} user={user.fid!r})')
         return
     return job
+
 
 class Job:
     def __init__(self, rec):

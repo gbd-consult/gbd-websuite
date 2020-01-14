@@ -17,7 +17,7 @@ def _wait_for_print(job_uid):
         time.sleep(2)
 
 
-def xxxtest_layers():
+def test_layers():
     x, y = cc.POINTS.dus1
 
     params = {
@@ -49,20 +49,11 @@ def xxxtest_layers():
                     x + 150,
                     y + 150,
                 ],
-                "attributes": [
-                    {
-                        "name": "prop1",
-                        "value": "prop_1_value"
-                    },
-                    {
-                        "name": "prop2",
-                        "value": "prop_2_value"
-                    },
-                    {
-                        "name": "prop3",
-                        "value": "prop_3_value_should_be_ignored"
-                    }
-                ]
+                "context": {
+                    "prop1": "prop_1_value",
+                    "prop2": "prop_2_value",
+                    "prop3": "prop_3_value_should_be_ignored",
+                }
             }
         ]
     }
@@ -223,3 +214,50 @@ def test_bitmap():
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
     assert u.compare_image_response(res, '/data/bitmap.png') == ''
+
+
+def test_qgis_template():
+    x, y = cc.POINTS.dus1
+
+    params = {
+        "type": "template",
+        "format": "png",
+        "projectUid": "a",
+        "templateUid": "qgis_template",
+        "quality": 1,
+        "rotation": 0,
+        "scale": 2000,
+        "items": [
+            {
+                "type": "layer",
+                "layerUid": "a.map.dus1"
+            },
+            {
+                "type": "layer",
+                "layerUid": "a.map.dus2"
+            },
+            {
+                "type": "layer",
+                "layerUid": "a.map.wms_dus3"
+            }
+        ],
+        "sections": [
+            {
+                "center": [
+                    # left bottom corner should be dus1.x, dus1.y,
+                    x + 150,
+                    y + 150,
+                ],
+                "context": {
+                    "prop1": "prop_1_value",
+                    "prop2": "prop_2_value",
+                    "prop3": "prop_3_value_should_be_ignored",
+                }
+            }
+        ]
+    }
+
+    r = u.cmd('printerPrint', params).json()
+    res = _wait_for_print(r['jobUid'])
+    assert u.compare_image_response(res, '/data/qgis.png') == ''
+

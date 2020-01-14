@@ -30,7 +30,7 @@ def query_job(req, p: pt.PrinterQueryParams) -> pt.PrinterResponse:
         progress=progress,
         steptype=job.steptype or '',
         stepname=job.stepname or '',
-        url=gws.SERVER_ENDPOINT + f'/cmd/assetHttpGetResult/jobUid/{job.uid}',
+        url=gws.tools.job.url(job.uid)
     )
 
 

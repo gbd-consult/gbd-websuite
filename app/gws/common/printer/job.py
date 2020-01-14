@@ -187,10 +187,14 @@ class _Worker:
             res_path = comb_path
 
         if self.format == 'png':
+            if self.template:
+                size = units.point_mm2px(self.template.page_size, units.PDF_DPI)
+            else:
+                size = self.view_size_px
             res_path = gws.tools.pdf.to_image(
                 in_path=res_path,
                 out_path=res_path + '.png',
-                size=self.view_size_px,
+                size=size,
                 format='png'
             )
 
@@ -250,9 +254,12 @@ class _Worker:
         return out_path
 
     def prepare_section(self, sec: pt.PrintSection):
+        context = sec.get('context', {})
+        if self.template and context:
+            context = self.template.normalize_context(context)
         return PreparedSection(
             center=sec.center,
-            context=sec.get('context', {}),
+            context=context,
             items=self.prepare_render_items(sec.get('items') or []),
         )
 

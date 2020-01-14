@@ -1,21 +1,5 @@
-import os
-import re
-
-import gws
-import gws.tools.date
-import gws.tools.job
-import gws.config
-import gws.gis.feature
-import gws.gis.shape
-import gws.common.printer.service
-import gws.common.printer.types
-import gws.common.template
-import gws.common.db
-import gws.ext.db.provider.postgres
-import gws.tools.misc
-import gws.types as t
-import gws.tools.json2
 import gws.web
+import gws.types as t
 
 import gws.ext.tool.alkis as alkis
 

@@ -4,7 +4,7 @@ import os
 import re
 
 import gws
-import gws.common.printer.service
+import gws.common.printer.control
 import gws.common.printer.types
 import gws.common.template
 import gws.ext.db.provider.postgres
@@ -282,8 +282,6 @@ class Object(gws.ActionObject):
                 if not conn.user_can('INSERT', self.log_table):
                     raise ValueError(f'no INSERT acccess to {self.log_table!r}')
 
-
-
     def props_for(self, user):
         if not self.valid:
             return None
@@ -373,7 +371,7 @@ class Object(gws.ActionObject):
         job = gws.tools.job.create(job_uid, req.user, worker='')
         job.update(gws.tools.job.State.complete, result=out_path)
 
-        return ExportResponse(url=gws.SERVER_ENDPOINT + '?cmd=assetHttpGetResult&jobUid=' + job_uid)
+        return ExportResponse(gws.tools.job.url(job_uid))
 
     def api_print(self, req: t.IRequest, p: PrintParams) -> gws.common.printer.types.PrinterResponse:
         """Print Flurstueck features"""
@@ -409,7 +407,7 @@ class Object(gws.ActionObject):
                 ]
             ))
 
-        return gws.common.printer.service.start_job(req, pp)
+        return gws.common.printer.control.start_job(req, pp)
 
     ##
 

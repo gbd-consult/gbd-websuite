@@ -1,7 +1,7 @@
 @include /common/util.cx
 
 server.mapproxy.enabled true
-server.qgis.enabled false
+server.qgis.enabled true
 server.spool.enabled true
 
 @POSTGRES_CONFIG
@@ -86,26 +86,31 @@ projects+ {
                 }
             ]
             qualityLevels [
+                { dpi 0 name "Entwurf" }
+                { dpi 150 name "150" }
+                { dpi 300 name "300" }
+                { dpi 600 name "600" }
+                { dpi 1200 name "1200"}
+            ]
+        }
+        {
+            uid "qgis_template"
+            type "qgis"
+            path "qgis.template.qgs"
+            dataModel.rules [
                 {
-                    dpi 0
-                    name "Entwurf"
+                    name "prop1"
                 }
                 {
-                    dpi 150
-                    name "150"
+                    name "prop2"
                 }
-                {
-                    dpi 300
-                    name "300"
-                }
-                {
-                    dpi 600
-                    name "600"
-                }
-                {
-                    dpi 1200
-                    name "1200"
-                }
+            ]
+            qualityLevels [
+                { dpi 0 name "Entwurf" }
+                { dpi 150 name "150" }
+                { dpi 300 name "300" }
+                { dpi 600 name "600" }
+                { dpi 1200 name "1200"}
             ]
         }
     ]
