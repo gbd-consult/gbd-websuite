@@ -3,11 +3,9 @@
 import math
 
 import gws
-import gws.gis.feature
 import gws.tools.net
 import gws.tools.xml3
 
-import gws.types as t
 
 """
 Gekos-Online can be called with different "instance" parameters or no "instance" at all
@@ -46,8 +44,7 @@ class GekosRequest:
         self.position = gws.get(self.options, 'position')
 
     def run(self):
-        features = []
-        crs = self.options.crs
+        recs = []
         used_points = set()
 
         for rec in self.raw_data():
@@ -63,20 +60,12 @@ class GekosRequest:
             used_points.add(xy)
 
             rec['instance'] = self.instance
+            rec['uid'] = self.instance + '_' + str(rec['ObjectID'])
+            rec['xy'] = xy
 
-            features.append(gws.gis.feature.from_props(t.FeatureProps({
-                'attributes': rec,
-                'uid': self.instance + '_' + str(rec['ObjectID']),
-                'shape': {
-                    'crs': crs,
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': xy
-                    }
-                }
-            })))
+            recs.append(rec)
 
-        return features
+        return recs
 
     def raw_data(self):
         src = self.load_data()

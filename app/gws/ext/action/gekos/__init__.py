@@ -2,18 +2,15 @@
 
 import gws
 import gws.common.db
-import gws.common.layer
 import gws.common.template
-import gws.config
 import gws.ext.db.provider.postgres
-import gws.gis.feature
+import gws.ext.tool.alkis
 import gws.gis.proj
-import gws.tools.net
+import gws.gis.shape
 import gws.web
 
 import gws.types as t
 
-import gws.ext.tool.alkis
 
 from . import request
 
@@ -88,7 +85,7 @@ class Object(gws.ActionObject):
     def __init__(self):
         super().__init__()
 
-        self.db: gws.ext.db.provider.postgres = None
+        self.db: gws.ext.db.provider.postgres.Object = None
         self.alkis: gws.ext.tool.alkis.Object = None
         self.feature_format: t.IFormat = None
         self.crs = ''
@@ -138,48 +135,50 @@ class Object(gws.ActionObject):
     def load_data(self):
         """Load gekos data into a postgres table."""
 
-        # @TODO typing, the db provider here is specifically postgres
-        # @TODO the whole WKT business is because we don't support EWKB and cannot use batch_insert of geoms
-
-        features = self._get_data_from_gekos()
+        gws.log.info(f'loading...')
+        recs = self._load_gekos_data()
 
         gws.log.info(f'saving...')
-        count = self._write_gekos_features(features)
+        count = self._write_gekos_data(recs)
+
         gws.log.info(f'saved {count} records')
 
-    def _get_data_from_gekos(self):
+    def _load_gekos_data(self):
 
-        options = t.Data({
-            'crs': self.crs,
-            'url': self.var('url'),
-            'params': self.var('params'),
-            'position': self.var('position'),
-        })
+        options = t.Data(
+            crs=self.crs,
+            url=self.var('url'),
+            params=self.var('params'),
+            position=self.var('position'))
 
-        features = []
+        recs = []
 
         for instance in self.var('instances', default=['none']):
             gr = request.GekosRequest(options, instance, cache_lifetime=0)
-            fs = gr.run()
-            gws.log.info(f'loaded {len(fs)} records from {instance!r}')
-            features.extend(fs)
+            rs = gr.run()
+            gws.log.info(f'loaded {len(rs)} records from {instance!r}')
+            recs.extend(rs)
 
-        return features
+        return recs
 
-    def _write_gekos_features(self, features):
+    def _write_gekos_data(self, recs):
 
         uids = set()
-        recs = []
+        buf = []
 
-        for f in features:
-            if f.uid in uids:
-                gws.log.warn(f'non-unique uid={f.uid!r} ignored')
+        for rec in recs:
+            if rec['uid'] in uids:
+                gws.log.warn(f"non-unique uid={rec['uid']!r} ignored")
                 continue
-            uids.add(f.uid)
-            rec = f.attributes
-            rec['uid'] = f.uid
-            rec['wkt_geometry'] = f.shape.wkt
-            recs.append(rec)
+            uids.add(rec['uid'])
+
+            shape = gws.gis.shape.from_geometry({
+                'type': 'Point',
+                'coordinates': rec.pop('xy')
+            }, self.var('crs'))
+
+            rec['wkb_geometry'] = shape.ewkb_hex
+            buf.append(rec)
 
         table_name = self.var('table').name
         srid = gws.gis.proj.as_srid(self.crs)
@@ -205,7 +204,6 @@ class Object(gws.ActionObject):
                         "UrlOL" CHARACTER VARYING,
                         "Verfahren" CHARACTER VARYING,
                         "instance" CHARACTER VARYING,
-                        "wkt_geometry" TEXT,
                         "wkb_geometry" geometry(POINT, {srid})
                     )
                 ''',
@@ -214,12 +212,8 @@ class Object(gws.ActionObject):
             ]
 
             for s in sql:
-                conn.exec(s)
+                conn.execute(s)
 
-            conn.batch_insert(table_name, recs, page_size=2000)
-            conn.exec(f'''
-                UPDATE {table_name}
-                SET wkb_geometry=ST_GeomFromText(wkt_geometry, {srid})
-            ''')
+            conn.insert_many(table_name, buf, page_size=2000)
 
             return conn.count(table_name)
