@@ -1,59 +1,54 @@
 import gws.types as t
 
+#:export
+class StyleType(t.Enum):
+    css = 'css'
+    cssSelector = 'cssSelector'
+
 
 class Config(t.Config):
     """Feature style"""
 
-    type: str  #: style type ("css")
-    content: t.Optional[dict]  #: css rules
-    text: t.Optional[str]  #: raw style content
+    type: t.StyleType  #: style type
+    text: t.Optional[str]  #: raw style content / selector
 
 
 def from_props(p: t.StyleProps) -> t.IStyle:
     if p.type == 'css':
         content = p.content or _parse_css(p.text or '')
-        s: t.IStyle = Style('css', content)
+        s: t.IStyle = Style(p.type, content=content)
         return s
+    if p.type == 'cssSelector':
+        s: t.IStyle = Style(p.type, text=(p.text or ''))
+        return s
+    raise ValueError(f'invalid style type {p.type!r}')
 
 
 def from_config(c: Config) -> t.IStyle:
-    p: t.StyleProps = c
-    return from_props(p)
+    return from_props(t.StyleProps(type=c.type, text=c.text))
 
 
 #:export
 class StyleProps(t.Props):
-    type: str
-    content: t.Optional[dict]
-    text: t.Optional[str]
-
-
-class Config(t.Config):
-    """Feature style"""
-
-    type: str  #: style type ("css")
-    content: t.Optional[dict]  #: css rules
-    text: t.Optional[str]  #: raw style content
+    type: t.StyleType
+    content: dict
+    text: str
 
 
 #:export IStyle
 class Style(t.IStyle):
-    def __init__(self, type, content):
+    def __init__(self, type, content=None, text=None):
         super().__init__()
         self.type: str = type
         self.content: dict = content
-
-    @property
-    def text(self) -> str:
-        if self.type == 'css':
-            return _make_css(self.content)
+        self.text = text
 
     @property
     def props(self) -> t.StyleProps:
-        return t.StyleProps({
-            'type': self.type,
-            'content': self.content
-        })
+        return t.StyleProps(
+            type=self.type,
+            content=self.content or {},
+            text=self.text or '')
 
 
 # @TODO use a real parser

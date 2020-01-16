@@ -402,7 +402,6 @@ class IShape:
 class IStyle:
     content: dict = None
     props: 'StyleProps' = None
-    text: str = None
     type: str = None
 
 class IUser:
@@ -496,11 +495,11 @@ class RenderInputItem(Data):
     type: str = None
 
 class RenderInputItemType(Enum):
-    features: str = 'features'
-    fragment: str = 'fragment'
-    image: str = 'image'
-    image_layer: str = 'image_layer'
-    svg_layer: str = 'svg_layer'
+    features = 'features'
+    fragment = 'fragment'
+    image = 'image'
+    image_layer = 'image_layer'
+    svg_layer = 'svg_layer'
 
 class RenderOutput(Data):
     items: List['RenderOutputItem'] = None
@@ -512,9 +511,9 @@ class RenderOutputItem(Data):
     type: str = None
 
 class RenderOutputItemType(Enum):
-    image: str = 'image'
-    path: str = 'path'
-    svg: str = 'svg'
+    image = 'image'
+    path = 'path'
+    svg = 'svg'
 
 class RenderView(Data):
     bounds: 'Bounds' = None
@@ -618,9 +617,13 @@ class StorageRecord(Data):
     user_fid: str = None
 
 class StyleProps(Props):
-    content: Optional[dict] = None
-    text: Optional[str] = None
-    type: str = None
+    content: dict = None
+    text: str = None
+    type: 'StyleType' = None
+
+class StyleType(Enum):
+    css = 'css'
+    cssSelector = 'cssSelector'
 
 class SvgFragment:
     points: List['Point'] = None

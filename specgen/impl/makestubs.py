@@ -90,8 +90,9 @@ def _code(stub):
 
     for name, m in sorted(stub.members.items()):
         if m['kind'] == 'prop':
-            value = m.get('value') if 'Enum' in stub.bases else None
-            props.append(_prop_code(m, value))
+            is_enum = 'Enum' in stub.bases
+            value = m.get('value') if is_enum else None
+            props.append(_prop_code(m, value, with_type=not is_enum))
         if m['kind'] == 'method':
             methods.append(_method_code(m))
 
@@ -107,7 +108,9 @@ def _code(stub):
 
 # @TODO use the ast
 
-def _prop_code(m, value):
+def _prop_code(m, value, with_type=True):
+    if not with_type:
+        return '%s = %r' % (m['name'], value)
     if 'type_name' in m:
         t = m['type_name']
     elif '->' in m['line']:
