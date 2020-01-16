@@ -1,15 +1,16 @@
-Templating
-==========
+Vorlagen/Templating
+===================
 
-HTML templates
+HTML-Vorlagen
 --------------
 
-An html template is a text/html file, with external variables enclosed in ``{...}``. Additionally, there are basic programming constructs (conditions, loops, functions) that allow changing the template output depending on the variables.
+Eine HTML-Vorlage ist eine Text- / HTML-Datei mit externen Variablen, die in `` {...} `` eingeschlossen sind. Zusätzlich gibt es grundlegende Programmierkonstrukte (Bedingungen, Schleifen, Funktionen), mit denen die Vorlagenausgabe in Abhängigkeit von den Variablen geändert werden kann.
 
-For project, layer and feature templates, the system provides objects ``project``, ``layer`` and ``feature`` with their respective properties that can be used in templating. Here's an example of a feature formatting template ::
+Für Projekt-, Layer- und Feature-Vorlagen stellt das System Objekte `` project``, `` layer`` und `` feature`` mit ihren jeweiligen Eigenschaften zur Verfügung, die beim Templating verwendet werden können. Hier ist ein Beispiel für eine Formatierungsvorlage von Features. ::
 
-    ## this is a comment
-    ## format a "city" feature, that has the following attributes: "name", "area", "population"
+
+    ## <- diese Zeichenkombination markiert Kommentare
+    ## Formatierung eines "city" Feature, welches die folgenden Attribute besitzt: "name", "area", "population"
 
     @with feature.attributes as atts
 
@@ -25,25 +26,24 @@ For project, layer and feature templates, the system provides objects ``project`
     @end
 
 
-Refer to the `templating engine documentation <https://github.com/gebrkn/chartreux>`_ for the complete description of all features available.
+Eine vollständige Beschreibung aller verfügbaren Funktionen finden Sie in der Dokumentation zur Template-Engine <https://github.com/gebrkn/chartreux> _.
+
+Konfigurationsvorlagen
+----------------------
+
+Konfigurationsvorlagen (`` config.cx``) ähneln HTML-Vorlagen und verwenden dieselben Programmierkonstrukte. Ein wichtiger Unterschied ist, dass Variablen in * zwei * Klammern eingeschlossen werden müssen: `` {{...}} ``. Eine Konfigurationsvorlage sollte im JSON-Format vorliegen. Dann kann auch die "Shortcut" -JSON-Syntax verwendet werden (`Dokumentation <https://github.com/gebrkn/slon>` _).
+
+Beispiel einer Konfigurationsvorlage ::
 
 
-Configuration templates
------------------------
-
-Configuration templates (``config.cx``) are similar to html templates and share the same set of programming constructs. An important difference is that variables must be enclosed in *two* braces: ``{{...}}``. A configruation template is supposed to be in the JSON format, additionally, the "shortcut" JSON syntax can be used (`documentation <https://github.com/gebrkn/slon>`_).
-
-Example of a configuration template ::
-
-
-    ## main application configuration
+    ## Konfiguration der Hauptanwendung
 
     @include database-config.cx
     @include server-config.cx
 
     timeZone "Europe/Berlin"
 
-    ## we have four sites, each of them has its own root dir
+    ## Wir haben vier Standorte, von denen jeder sein eigenes "root" Verzeichnis besitzt
 
     web {
         sites [
@@ -59,6 +59,3 @@ Example of a configuration template ::
             @end
         ]
     }
-
-
-
