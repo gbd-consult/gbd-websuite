@@ -1,7 +1,7 @@
 Styling
 =======
 
-Vektor-Feature-Stile können über CSS angepasst werden. Die GBD WebSuite unterstützt standard CSS-Eigenschaften für SVG Symbole (zum Beispiel, ``fill``) und einige benutzerdefinierte Eigenschaften, welche in Ihrer CSS-Konfiguration mit ``--`` vorangestellt werden müssen. ::
+Vektor-Feature-Stile können über CSS angepasst werden. Die GBD WebSuite unterstützt standard CSS-Eigenschaften für SVG Symbole (zum Beispiel, ``fill``) und einige benutzerdefinierte Eigenschaften, welche in Ihrer CSS-Konfiguration mit ``--`` vorangestellt werden müssen.
 
 TABLE
 ``--label-background``~background color for feature labels
@@ -65,7 +65,7 @@ Alternativ können Sie die Regeln in Ihre projektbezogene CSS-Datei mit aufnehme
 Styling der eingebauten Funktionen
 ----------------------------------
 
-Sie können den Stil der integrierten Funktionen anpassen, z. B. Markierungen von Suchergebnisse oder Messungen. Es gibt folgende vordefinierte CSS-Selektoren: ::
+Sie können den Stil der integrierten Funktionen anpassen, z. B. Markierungen von Suchergebnisse oder Messungen. Es gibt folgende vordefinierte CSS-Selektoren:
 
 TABLE
 ``.gws .modMarkerFeature``~search results marker
@@ -80,7 +80,7 @@ TABLE
 Styling des Bemaßungs-Plugins
 -----------------------------
 
-Das Bemaßungs-Plugin verwendet diese CSS-Selektoren: ::
+Das Bemaßungs-Plugin verwendet diese CSS-Selektoren: 
 
 TABLE
 ``.gws .modDimensionDimLine``~main dimension line. For dimension main lines, the ``--marker`` property supports additional values ``cross`` and ``arrow``.

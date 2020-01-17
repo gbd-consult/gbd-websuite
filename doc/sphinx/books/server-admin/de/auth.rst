@@ -1,12 +1,22 @@
 Autorisierung
 =============
 
-Die GBD WebSuite Autorisierung ist rollenbasiert, mit steckbaren Berechtigungsanbietern. Wenn sich der Benutzer anmeldet, werden seine Credentials nacheinander an alle konfigurierten Provider weitergegeben, wenn ein Provider die Credentials akzeptiert, gibt er eine Liste der Rollen für diesen Benutzer zurück. 
+Die GBD WebSuite Autorisierung ist rollenbasiert, mit steckbaren Berechtigungsanbietern. Wenn sich der Benutzer anmeldet, werden seine Credentials nacheinander an alle konfigurierten Provider weitergegeben, wenn ein Provider die Credentials akzeptiert, gibt er eine Liste der Rollen für diesen Benutzer zurück.
 
-Wenn der Benutzer ein Objekt anfordert, prüft der Server, ob eine der Rollen des Benutzers über ausreichende Berechtigungen verfügt, um das Objekt zu lesen, zu schreiben (z. B. beim Bearbeiten) oder auszuführen (z. B. eine Serveraktion). Wenn es keine expliziten Berechtigungen auf Objektebene gibt, wird das übergeordnete Objekt geprüft und so weiter. Um diese Prüfungen durchzuführen, liest der Server die ``access`` jedes angeforderten Objekts.  
+Wenn der Benutzer ein Objekt anfordert, prüft der Server, ob eine der Rollen des Benutzers über ausreichende Berechtigungen verfügt, um das Objekt zu lesen, zu schreiben (z. B. beim Bearbeiten) oder auszuführen (z. B. eine Serveraktion). Wenn es keine expliziten Berechtigungen auf Objektebene gibt, wird das übergeordnete Objekt geprüft und so weiter. Um diese Prüfungen durchzuführen, liest der Server die ``access`` jedes angeforderten Objekts.
 
 Zugangsreglungen
 ----------------
+
+In der Konfiguration können einige Typen von Objekten  verknüpft sein mit``access`` Konfigurationen:
+
+- main application
+- server action
+- project
+- map
+- layer
+
+Zusätzlich definieren einige Aktionen interne ``access`` Blöcke für bestimmte Befehle.
 
 
 ``access`` ist eine Liste von ``AccessRule`` Objekten. Jede ``AccessRule`` enthält
@@ -68,13 +78,13 @@ TABLE
    *admin* ~ Administrator. Benutzer die diese Rolle haben, erhalten automatisch Zugriff auf alle Ressourcen
 /TABLE
 
-Andernfalls können Sie beliebige Rollennamen verwenden, aber sie müssen gültige Bezeichnungen sein (d. h. mit einem lateinischen Buchstaben beginnen und nur Buchstaben, Ziffern und Unterstriche enthalten). 
+Andernfalls können Sie beliebige Rollennamen verwenden, aber sie müssen gültige Bezeichnungen sein (d. h. mit einem lateinischen Buchstaben beginnen und nur Buchstaben, Ziffern und Unterstriche enthalten).
 
 
 Berechtigungsstrategien
 ------------------------
 
-Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``access`` konfigurieren. Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie ``read`` und ``write`` an "everyone" vergeben:: 
+Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``access`` konfigurieren. Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie ``read`` und ``write`` an "everyone" vergeben::
 
 
     ## in der Hauptkonfiguration:
@@ -89,7 +99,7 @@ Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``ac
 
 
 
-Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen, benötigen Sie zwei Zugriffsregeln: eine, um eine bestimmte Rolle zuzulassen, und eine, um "alle" zu verwehren:: 
+Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen, benötigen Sie zwei Zugriffsregeln: eine, um eine bestimmte Rolle zuzulassen, und eine, um "alle" zu verwehren::
 
     ## in the project config:
 
@@ -106,9 +116,9 @@ Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen
         }
     ]
 
-Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen:: 
+Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen::
 
-    ## in der Hauptkonfiguration: 
+    ## in der Hauptkonfiguration:
 
     "access": [
         {
@@ -169,23 +179,23 @@ Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Se
 
         "url": "ldap://ldap.forumsys.com:389/dc=example,dc=com?uid",
 
-        ## Anmeldeinformationen, um sich an den Server zu binden: 
+        ## Anmeldeinformationen, um sich an den Server zu binden:
 
         "bindDN": "cn=read-only-admin,dc=example,dc=com",
         "bindPassword": "password",
 
-        ## Filter auf Rollen abbilden: 
+        ## Filter auf Rollen abbilden:
 
         "roles": [
 
-            ## LDAP-Benutzer "euler" hat die GBD WebSuite Rolle "Moderatoren": 
+            ## LDAP-Benutzer "euler" hat die GBD WebSuite Rolle "Moderatoren":
 
             {
                 "matches": "(&(cn=euler))",
                 "role": "moderators"
             },
 
-            ## alle Mitglieder der LDAP-Gruppe "Mathematiker" haben die GBD WebSuite Rolle "Mitglieder": 
+            ## alle Mitglieder der LDAP-Gruppe "Mathematiker" haben die GBD WebSuite Rolle "Mitglieder":
 
             {
                 "memberOf": "(&(ou=mathematicians))",
@@ -193,4 +203,3 @@ Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Se
             }
         ]
     }
-

@@ -129,11 +129,12 @@ then the asset is looked for in the site assets directory. If a request comes wi
 
 then the asset is first looked for in project assets, if it's not found, the site assets directory is used as a fallback.
 
+
+
 HTML Templates
 --------------
 
-
-Gws uses its own templating engine, which supports the following basic commands:
+GWS uses its own templating engine, which supports the following basic commands:
 
 TABLE
    ``@if <condition> ... @end`` ~ Check a condition

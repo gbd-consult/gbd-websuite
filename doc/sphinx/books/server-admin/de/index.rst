@@ -20,6 +20,8 @@ Dokumentation für GBD WebSuite Server Administatoren (Deutsch).
     search.rst
     server.rst
     qgis.rst
+    ows.rst
+    templating.rst    
     web.rst
     projects.rst
     layers.rst
@@ -29,6 +31,7 @@ Dokumentation für GBD WebSuite Server Administatoren (Deutsch).
     alkis.rst
     gekos.rst
     dprocon.rst
+    styles.rst
+    remoteadmin.rst
     configref.rst
     cliref.rst
-
