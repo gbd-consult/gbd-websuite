@@ -1,5 +1,5 @@
-Database
-=========
+Datenbanken
+===========
 
 
 Die GBD WebSuite kann Geodaten aus Datenbanken beziehen, entweder indirekt über QGIS und WMS/WMTS-Anbieter oder durch direkte Anbindung an eine Datenbank. Im letzteren Fall müssen Sie die Datenbankverbindungen in der Hauptanwendung config konfigurieren.
@@ -8,7 +8,7 @@ Zur Zeit unterstützen wir nur PostgreSQL/PostGIS Datenbanken. Wir planen, Sqlit
 
 Beispiel einer PostGIS-Provider-Konfiguration ::
 
-    ## in der Hauptkonfiguration: 
+    ## in der Hauptkonfiguration:
 
     "db": {
         "providers" [
@@ -27,7 +27,7 @@ Beispiel einer PostGIS-Provider-Konfiguration ::
 
 Wenn Sie mehrere Credentials auf dem gleichen Server haben, müssen Sie diese als verschiedene Anbieter konfigurieren.
 
-An anderer Stelle, wenn für Ihre Konfiguration eine Datenbankverbindung erforderlich ist, geben Sie einfach die eindeutige ID des Anbieters an. Beispiel für eine SQL-Suchkonfiguration:: 
+An anderer Stelle, wenn für Ihre Konfiguration eine Datenbankverbindung erforderlich ist, geben Sie einfach die eindeutige ID des Anbieters an. Beispiel für eine SQL-Suchkonfiguration::
 
         ## Suchkonfiguration
 

@@ -11,7 +11,7 @@ Ein *layer* in einem GBD WebSuite Projekt wird durch seinen ``type`` identifizie
 * ``meta`` - Transfomationsregeln für Features (siehe :doc:`features`)
 
 Layer Typen
--------------
+-----------
 
 Box
 ~~~
@@ -19,10 +19,11 @@ Box
 Ein Box-Layer ist vergleichbar mit einem konventionellen WMS-Layer. Er wird mit den WMS-Parametern ``bbox``, ``width`` und ``height`` abgefragt und gibt ein ``png`` Bild zurück.
 
 
-wms
+WMS
 ~~~
 
-Sie können festlegen, welche Layer Sie verwenden möchten. Alle WMS-Layer werden neu projiziert, kombiniert und als einzelnes Bild angezeigt:
+Sie können festlegen, welche Layer Sie verwenden möchten. Alle WMS-Layer werden neu projiziert, kombiniert und als einzelnes Bild angezeigt ::
+
     {
         "type": "wms",
         "title": "Webatlas.de",
@@ -33,10 +34,10 @@ Sie können festlegen, welche Layer Sie verwenden möchten. Alle WMS-Layer werde
     }
 
 
-wmts
+WMTS
 ~~~~
 
-Wenn der Dienst mehrere Layer bereitstellt, können Sie angeben, welcher Layer verwendet werden soll:
+Wenn der Dienst mehrere Layer bereitstellt, können Sie angeben, welcher Layer verwendet werden soll ::
 
     {
         "type": "wmts",
@@ -57,7 +58,7 @@ Ein Kachel-Layer arbeitet als XYZ-Kachelquelle. Beachten Sie, dass in Abweichung
 Gruppe
 ~~~~~~~
 
-Gruppenlayer enthalten andere Layer, sie liefern selbst keine Geodaten. Neben der visuellen Gruppierung besteht ein weiterer Zweck einer Gruppe darin, die Zugriffs- oder Fallback-Cache- und Grid-Konfigurationen für ihre untergeordneten Layer beizubehalten. Eine Gruppe kann "virtuell" oder ``unfolded`` erstellt werden, in diesem Fall wird sie im Client nicht angezeigt, während ihre untergeordneten Layer vorhanden sind. ::
+Gruppenlayer enthalten andere Layer, sie liefern selbst keine Geodaten. Neben der visuellen Gruppierung besteht ein weiterer Zweck einer Gruppe darin, die Zugriffs- oder Fallback-Cache- und Grid-Konfigurationen für ihre untergeordneten Layer beizubehalten. Eine Gruppe kann "virtuell" oder ``unfolded`` erstellt werden, in diesem Fall wird sie im Client nicht angezeigt, während ihre untergeordneten Layer vorhanden sind.
 
 
 Baum
@@ -65,7 +66,7 @@ Baum
 
 Ein Baumlayer ist in der Lage, eine ganze Hierarchie von Layern aus einer WMS- oder QGIS-Quelle darzustellen. Ein Baumlayer wird als Gruppe im Client und mit Quellen als Unterknoten (oder *leaves*) angezeigt.
 
-Es ist auch möglich, nur bestimmte Layer aus der Quelle auszuwählen. Beim Lesen der Quelle erzeugt der Server eine virtuelle *path*-Eigenschaft für jeden Layer, die die eindeutige ID des Layers und ihre übergeordneten ids enthält, ähnlich den Pfaden des Dateisystems, wie ``/root-layer-id/grandparent-id/parent-id/layer-id``. Das ``pathMatch`` regex kann verwendet werden, um Layer mit passenden Pfaden zu filtern. ::
+Es ist auch möglich, nur bestimmte Layer aus der Quelle auszuwählen. Beim Lesen der Quelle erzeugt der Server eine virtuelle *path*-Eigenschaft für jeden Layer, die die eindeutige ID des Layers und ihre übergeordneten ids enthält, ähnlich den Pfaden des Dateisystems, wie ``/root-layer-id/grandparent-id/parent-id/layer-id``. Das ``pathMatch`` regex kann verwendet werden, um Layer mit passenden Pfaden zu filtern.
 
 
 QGIS
@@ -83,10 +84,11 @@ QGIS-Layer zeigen ganze QGIS-Projekte als einzelne Gruppe im GWS-Layerbaum an. Z
     }
 
 
-qgisflat
-~~~~~~~
+QGISflat
+~~~~~~~~
 
 QGIS / WMS-Layer zeigen einzelne Layer aus einem QGIS-Projekt als einzelnes flaches Bild an ::
+
     {
         "type": "qgisflat",
         "title": "My qgis project",
@@ -98,7 +100,7 @@ QGIS / WMS-Layer zeigen einzelne Layer aus einem QGIS-Projekt als einzelnes flac
 
 
 Vektor
-~~~~~~~
+~~~~~~
 
 Vektorlayer werden auf dem GBD WebSuite Client gerendert. Wenn ein Vektorlayer angefordert wird, sendet der Server die GeoJSON-Liste der Features und Stilbeschreibungen an den Client, der dann das eigentliche Rendering durchführt.
 
@@ -107,6 +109,7 @@ SQL
 ~~~
 
 SQL-Layer übernehmen Geometrien aus einer SQL-Tabelle. Sie müssen nur den Datenbankanbieter und die zu verwendende Tabelle angeben ::
+
         {
             "title": "Houses",
             "type": "sql",

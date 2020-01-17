@@ -21,7 +21,7 @@ Jede Projektkonfigurationsdatei kann eine Konfiguration für ein einzelnes Proje
 Projekt-Konfigurationen
 -----------------------
 
-Eine Projektkonfiguration sollte mindestens die Konfiguration ``title`` und eine ``Map`` enthalten. Einige Optionen, wie ``access``, ``assets`` und ``client`` überschreiben die jeweiligen Anwendungs- und Webseitenoptionen. ``printer`` beschreibt Projektdruckvorlagen (siehe `doc:`print`).
+Eine Projektkonfiguration sollte mindestens die Konfiguration ``title`` und eine ``Map`` enthalten. Einige Optionen, wie ``access``, ``assets`` und ``client`` überschreiben die jeweiligen Anwendungs- und Webseitenoptionen. ``printer`` beschreibt Projektdruckvorlagen (siehe `doc:`print`) ::
 
 {
     "title": "Hello",
@@ -83,48 +83,48 @@ Neben regulären Platzhaltern werden folgende Platzhalter unterstützt: ::
 Projekt HTML Seite
 ------------------
 
-Um Ihr Projekt in einem Webbrowser anzuzeigen, benötigen Sie eine HTML-Seite, die unseren Javascript-Client (siehe: doc: `client`) und die Projekt-ID enthalten sollte, damit der Client weiß, welches Projekt geladen werden soll. Auf der Seite muss sich ein div-Element mit dem Klassennamen gws befinden. Hier wird die Client-Benutzeroberfläche geladen. Ansonsten können Sie Ihre Startseite frei gestalten. Hier ist ein Beispiel:
+Um Ihr Projekt in einem Webbrowser anzuzeigen, benötigen Sie eine HTML-Seite, die unseren Javascript-Client (siehe: doc: `client`) und die Projekt-ID enthalten sollte, damit der Client weiß, welches Projekt geladen werden soll. Auf der Seite muss sich ein div-Element mit dem Klassennamen gws befinden. Hier wird die Client-Benutzeroberfläche geladen. Ansonsten können Sie Ihre Startseite frei gestalten. Hier ist ein Beispiel ::
 
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8"/>
-                <title>My First Project!</title>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>My First Project!</title>
 
-                <!-- Load the Client, 2.3.1 is the version you're using -->
-                <link rel="stylesheet" href="/gws-client/gws-light-2.3.1.css" type="text/css">
-                <script src="/gws-client/gws-vendor-2.3.1.js"></script>
-                <script src="/gws-client/gws-client-2.3.1.js"></script>
+        <!-- Load the Client, 2.3.1 is the version you're using -->
+        <link rel="stylesheet" href="/gws-client/gws-light-2.3.1.css" type="text/css">
+        <script src="/gws-client/gws-vendor-2.3.1.js"></script>
+        <script src="/gws-client/gws-client-2.3.1.js"></script>
 
-                <!-- Position the Client as you wish -->
-                <style>
-                    .gws {
-                        position: fixed;
-                        left: 10px;
-                        top: 20px;
-                        right: 40px;
-                        bottom: 50px;
-                    }
-                </style>
+        <!-- Position the Client as you wish -->
+        <style>
+            .gws {
+                position: fixed;
+                left: 10px;
+                top: 20px;
+                right: 40px;
+                bottom: 50px;
+            }
+        </style>
 
-                <!-- Project uid, as defined in the config file -->
-                <script>
-                    GWS_PROJECT_UID = "project1";
-                </script>
+        <!-- Project uid, as defined in the config file -->
+        <script>
+            GWS_PROJECT_UID = "project1";
+        </script>
 
-                <!-- Your own css, if needed -->
-                <link rel="stylesheet" href="/my-style.css" type="text/css">
+        <!-- Your own css, if needed -->
+        <link rel="stylesheet" href="/my-style.css" type="text/css">
 
-                <!-- Your additional css/scripts and other resources -->
+        <!-- Your additional css/scripts and other resources -->
 
-            </head>
+    </head>
 
-            <body>
-                <!-- This is where the Client will be loaded -->
-                <div class="gws"></div>
+    <body>
+        <!-- This is where the Client will be loaded -->
+        <div class="gws"></div>
 
-                You can add more content here...
-            </body>
-            </html>
+        You can add more content here...
+    </body>
+    </html>
 
 Platzieren Sie diese Datei in Ihrem konfigurierten ``web``-Verzeichnis (siehe: doc: "web"), um sie im Web zur Verfügung zu stellen.
