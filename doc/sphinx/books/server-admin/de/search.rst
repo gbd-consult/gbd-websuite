@@ -31,3 +31,8 @@ WMS
 ~~~
 
 Implementiert ``GetFeatureInfo`` Anfragen für WMS-Quellen.
+
+WFS
+~~~
+
+Implementiert ``GetFeatureInfo``-Anfragen für WFS-Quellen. Sie müssen die WFS-Service-URL bereitstellen. Es ist auch möglich, die Suche auf bestimmte Layer (oder "Typen") zu beschränken.

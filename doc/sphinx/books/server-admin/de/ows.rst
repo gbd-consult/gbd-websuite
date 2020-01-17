@@ -42,7 +42,7 @@ csw
 
 
 Anwendungs- und Projektkonfiguration
-----------------------------------
+------------------------------------
 
 Um OWS-Dienste für eine gesamte Anwendung oder ein Projekt zu aktivieren, müssen Sie eine `` ows`` Aktion  für den Aktionsblock der Anwendungs- / Projektkonfiguration hinzufügen. Geben Sie in der Aktionskonfiguration an, welche Dienste aktiviert sind. Darüber hinaus können Sie einen XML-Namespace-Namen und eine URL für ``GetFeature`` Dokumente angeben. ::
 
@@ -66,7 +66,7 @@ Um OWS-Dienste für eine gesamte Anwendung oder ein Projekt zu aktivieren, müss
 Layerkonfiguration
 ------------------
 
-Meistens wird der geeignete Diensttyp vom Layertyp abgeleitet, z.B. steht für den WMS-Dienst ein Rasterlayer zur Verfügung, für den WFS-Dienst ein Vektorlayer. Sie können die Dienste auch in der Layerkonfiguration konfigurieren und optional einen Wert für den OWS-Namen des Layers angeben:
+Meistens wird der geeignete Diensttyp vom Layertyp abgeleitet, z.B. steht für den WMS-Dienst ein Rasterlayer zur Verfügung, für den WFS-Dienst ein Vektorlayer. Sie können die Dienste auch in der Layerkonfiguration konfigurieren und optional einen Wert für den OWS-Namen des Layers angeben ::
 
     {
         "type": "qgis",
