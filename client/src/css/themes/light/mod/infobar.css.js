@@ -21,6 +21,7 @@ module.exports = v => ({
             marginLeft: 0,
             '&.modInfobarScaleSlider': {
                 marginLeft: v.UNIT4,
+                width: v.UNIT * 30,
             },
             '&.modInfobarRotationSlider': {
                 marginLeft: v.UNIT4,
@@ -42,17 +43,17 @@ module.exports = v => ({
         },
 
         '.uiSlider': {
-            width: 100,
-
-            '.uiSmallbarOuter': {
+            '.uiSliderBackgroundBar': {
                 backgroundColor: v.INFOBAR_SLIDER_COLOR
-
             },
-            '.uiSliderHandle': {
+            '.uiSliderActiveBar': {
+                backgroundColor: v.INFOBAR_SLIDER_COLOR
+            },
+            '.uiTrackingSurfaceHandle': {
+                width: v.UNIT * 4,
+                height: v.UNIT * 4,
                 backgroundColor: v.INFOBAR_HANDLE_COLOR,
-                width: 14,
-                height: 14,
-                marginTop: -7,
+                borderColor: v.INFOBAR_SLIDER_COLOR,
             }
         },
 

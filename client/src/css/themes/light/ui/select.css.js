@@ -89,19 +89,4 @@ module.exports = v => ({
         transform:'translate(0,-100%)',
     },
 
-
-    '.uiColorSelect .uiRawInput': {
-        border: '4px solid white',
-        borderRight: 'none',
-    },
-
-    '.uiColorMenuItem': {
-        display: 'inline-block',
-        width: v.CONTROL_SIZE - 8,
-        height: v.CONTROL_SIZE - 8,
-        border: '4px solid white'
-    }
-
-
-
 });

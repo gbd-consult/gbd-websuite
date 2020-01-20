@@ -1,53 +1,105 @@
-
-
-
 module.exports = v => ({
-
-    '.uiRawSlider': {
-        width: '100%',
-        height: v.CONTROL_SIZE,
-        position: 'relative',
+    '.uiTrackingSurface': {
+        position: 'absolute',
         background: 'transparent',
         outline: 'none',
         border: 'none',
         margin: 0,
         padding: 0,
-        display: 'flex',
-        alignItems: 'center',
-    },
-
-    '.uiSliderHandle': {
-        width: 20,
-        height: 20,
-        borderRadius: 20,
-        top: '50%',
-        marginTop: -10,
-        position: 'absolute',
-        left: 0,
     },
 
     '.uiSlider': {
-        '.uiSmallbarOuter': {
-            backgroundColor: v.SLIDER_OUTER_COLOR,
-        },
-        '.uiSmallbarInner': {
-            borderRadius: [6, 0, 0, 6],
-            backgroundColor: v.SLIDER_INNER_COLOR,
-        },
-        '.uiSliderHandle': {
+
+        position: 'relative',
+
+        '.uiTrackingSurfaceHandle': {
+            width: v.UNIT * 6,
+            height: v.UNIT * 6,
+            borderRadius: v.UNIT * 6,
+            position: 'absolute',
             backgroundColor: v.SLIDER_HANDLE_COLOR,
+            borderWidth: 3,
+            borderStyle: 'solid',
+            borderColor: v.SLIDER_HANDLE_BORDER_COLOR,
         },
+
+        '.uiSliderBackgroundBar': {
+            position: 'absolute',
+            borderRadius: 6,
+            backgroundColor: v.SLIDER_BACKROUND_COLOR,
+        },
+
+        '.uiSliderActiveBar': {
+            position: 'absolute',
+            borderRadius: 6,
+            backgroundColor: v.SLIDER_ACTIVE_COLOR,
+        },
+
     },
 
     '.uiSlider.hasFocus': {
-        '.uiSmallbarOuter': {
-            backgroundColor: v.SLIDER_OUTER_FOCUS_COLOR,
+        '.uiTrackingSurfaceHandle': {
+            backgroundColor: v.SLIDER_FOCUS_HANDLE_COLOR,
+            borderColor: v.SLIDER_FOCUS_HANDLE_BORDER_COLOR,
         },
-        '.uiSmallbarInner': {
-            backgroundColor: v.SLIDER_INNER_FOCUS_COLOR,
+
+        '.uiSliderBackgroundBar': {
+            backgroundColor: v.SLIDER_FOCUS_BACKROUND_COLOR,
         },
-        '.uiSliderHandle': {
-            backgroundColor: v.SLIDER_HANDLE_FOCUS_COLOR,
+
+        '.uiSliderActiveBar': {
+            backgroundColor: v.SLIDER_FOCUS_ACTIVE_COLOR,
+        },
+    },
+
+
+
+    '.uiSlider.isVertical': {
+        height: '100%',
+        width: v.CONTROL_SIZE,
+        '.uiTrackingSurface': {
+            top: 0,
+            left: v.UNIT * 2,
+            height: '100%',
+            width: v.UNIT * 6,
+        },
+        '.uiSliderBackgroundBar': {
+            top: 0,
+            left: v.UNIT * 4,
+            height: '100%',
+            width: v.UNIT * 2,
+        },
+        '.uiSliderActiveBar': {
+            top: 0,
+            left: v.UNIT * 4,
+            height: 0,
+            width: v.UNIT * 2,
+        }
+
+
+    },
+    '.uiSlider.isHorizontal': {
+
+        width: '100%',
+        height: v.CONTROL_SIZE,
+
+        '.uiTrackingSurface': {
+            left: 0,
+            top: v.UNIT * 2,
+            width: '100%',
+            height: v.UNIT * 6,
+        },
+        '.uiSliderBackgroundBar': {
+            left: 0,
+            top: v.UNIT * 4,
+            width: '100%',
+            height: v.UNIT * 2,
+        },
+        '.uiSliderActiveBar': {
+            left: 0,
+            top: v.UNIT * 4,
+            width: 0,
+            height: v.UNIT * 2,
         }
     },
 

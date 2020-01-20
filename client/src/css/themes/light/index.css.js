@@ -131,17 +131,19 @@ v.INFOBAR_LABEL_COLOR = v.COLOR.white;
 v.INFOBAR_BACKGROUND = v.COLOR.blueGrey700;
 v.INFOBAR_INPUT_COLOR = v.COLOR.white;
 v.INFOBAR_SLIDER_COLOR = v.COLOR.blueGrey400;
-v.INFOBAR_HANDLE_COLOR = v.COLOR.gbdBlue;
+v.INFOBAR_HANDLE_COLOR = v.COLOR.blueGrey500;
 v.INFOBAR_LINK_COLOR = v.COLOR.white;
 v.INFOBAR_ICON_COLOR = v.COLOR.white;
 
-v.SLIDER_OUTER_COLOR = v.COLOR.blueGrey100;
-v.SLIDER_INNER_COLOR = v.COLOR.blueGrey200;
-v.SLIDER_HANDLE_COLOR = v.COLOR.blueGrey100;
+v.SLIDER_BACKROUND_COLOR = v.COLOR.blueGrey100;
+v.SLIDER_ACTIVE_COLOR = v.COLOR.blueGrey300;
+v.SLIDER_HANDLE_BORDER_COLOR = v.COLOR.blueGrey100;
+v.SLIDER_HANDLE_COLOR = v.COLOR.blueGrey300;
 
-v.SLIDER_OUTER_FOCUS_COLOR = v.COLOR.blue100;
-v.SLIDER_INNER_FOCUS_COLOR = v.COLOR.blue300;
-v.SLIDER_HANDLE_FOCUS_COLOR = v.COLOR.blue400;
+v.SLIDER_FOCUS_BACKROUND_COLOR = v.COLOR.blue200;
+v.SLIDER_FOCUS_ACTIVE_COLOR = v.COLOR.blue500;
+v.SLIDER_FOCUS_HANDLE_BORDER_COLOR = v.COLOR.blue200;
+v.SLIDER_FOCUS_HANDLE_COLOR = v.COLOR.blue500;
 
 v.PROGRESS_OUTER_COLOR = v.COLOR.blueGrey100;
 v.PROGRESS_INNER_COLOR = v.COLOR.blueGrey300;
@@ -260,6 +262,7 @@ let rules = [
 
     require('./ui/base.css'),
     require('./ui/button.css'),
+    require('./ui/color.css'),
     require('./ui/toggle.css'),
     require('./ui/dialog.css'),
     require('./ui/input.css'),

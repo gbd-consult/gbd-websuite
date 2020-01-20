@@ -65,6 +65,12 @@ module.exports = {
             "name": "@ygoe/msgpack",
             "path": "./node_modules/@ygoe/msgpack/msgpack.min.js",
             "uid": "mp"
+        },
+        {
+            "key": "tinycolor",
+            "name": "tinycolor2",
+            "path": "./node_modules/tinycolor2/dist/tinycolor-min.js",
+            "uid": "tc"
         }
     ],
 
