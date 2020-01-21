@@ -31,7 +31,7 @@ Eine vollständige Beschreibung aller verfügbaren Funktionen finden Sie in der 
 Konfigurationsvorlagen
 ----------------------
 
-Konfigurationsvorlagen (`` config.cx``) ähneln HTML-Vorlagen und verwenden die selben Programmierkonstrukte. Ein wichtiger Unterschied ist, dass Variablen in * zwei * Klammern eingeschlossen werden müssen: `` {{...}} ``. Eine Konfigurationsvorlage sollte im JSON-Format vorliegen. Dann kann auch die "Shortcut" -JSON-Syntax verwendet werden (`Dokumentation <https://github.com/gebrkn/slon>`_).
+Konfigurationsvorlagen (`` config.cx``) ähneln HTML Vorlagen und verwenden die selben Programmierkonstrukte. Ein wichtiger Unterschied ist, dass Variablen in *zwei* Klammern eingeschlossen werden müssen: `` {{...}} `` . Eine Konfigurationsvorlage sollte im JSON-Format vorliegen. Dann kann auch die "Shortcut" -JSON-Syntax verwendet werden (`Dokumentation <https://github.com/gebrkn/slon>`_).
 
 Beispiel einer Konfigurationsvorlage ::
 

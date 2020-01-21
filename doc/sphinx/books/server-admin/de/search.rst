@@ -1,5 +1,5 @@
 Suche
-======
+=====
 
 Die GBD WebSuite implementiert eine einheitliche Suchfunktionalität, die mit verschiedenen Arten von Raum- und Domänendaten arbeitet. Grundsätzlich enthält eine Suchanfrage an den Server diese drei Parameter:
 
