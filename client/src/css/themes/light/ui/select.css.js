@@ -1,6 +1,3 @@
-
-
-
 module.exports = v => ({
 
     '.uiSelect': {
@@ -57,7 +54,7 @@ module.exports = v => ({
         borderStyle: 'solid',
         backgroundColor: v.COLOR.white,
         zIndex: 1,
-        transform:'translate(0,-10%)',
+        transform: 'translate(0,-10%)',
         visibility: 'hidden',
         transition: 'transform 0.3s ease',
 
@@ -69,7 +66,7 @@ module.exports = v => ({
         borderRightWidth: 1,
         borderTopWidth: 1,
         borderBottomWidth: 0,
-        transform:'translate(0,-90%)',
+        transform: 'translate(0,-90%)',
 
     },
 
@@ -80,13 +77,13 @@ module.exports = v => ({
         borderRightWidth: 1,
         borderTopWidth: 0,
         borderBottomWidth: 1,
-        transform:'translate(0,0)',
+        transform: 'translate(0,0)',
         visibility: 'visible',
         //boxShadow: '0px 11px 14px 0px rgba(0, 0, 0, 0.1)',
     },
 
     '.uiSelect.isOpen.isUp .uiMenu': {
-        transform:'translate(0,-100%)',
+        transform: 'translate(0,-100%)',
     },
 
 });

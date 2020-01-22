@@ -260,18 +260,7 @@ v.CENTER_BOX = (w, h) => ({
 let rules = [
     require('./base/app.css'),
 
-    require('./ui/base.css'),
-    require('./ui/button.css'),
-    require('./ui/color.css'),
-    require('./ui/toggle.css'),
-    require('./ui/dialog.css'),
-    require('./ui/input.css'),
-    require('./ui/layout.css'),
-    require('./ui/menu.css'),
-    require('./ui/misc.css'),
-    require('./ui/progress.css'),
-    require('./ui/select.css'),
-    require('./ui/slider.css'),
+    require('./ui/index.css'),
 
     require('./components/buttons.css'),
     require('./components/sheet.css'),

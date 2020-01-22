@@ -49,7 +49,7 @@ module.exports = v => ({
             '.uiSliderActiveBar': {
                 backgroundColor: v.INFOBAR_SLIDER_COLOR
             },
-            '.uiTrackingSurfaceHandle': {
+            '.uiTrackerHandle': {
                 width: v.UNIT * 4,
                 height: v.UNIT * 4,
                 backgroundColor: v.INFOBAR_HANDLE_COLOR,

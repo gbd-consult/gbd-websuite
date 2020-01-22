@@ -84,7 +84,7 @@ module.exports = v => ({
             height: '100%',
         },
 
-        '.uiTrackingSurface': {
+        '.uiTracker': {
             position: 'absolute',
             left: 0,
             top: 0,
@@ -94,15 +94,15 @@ module.exports = v => ({
 
         },
 
-        '.uiTrackingSurfaceHandle': {
-            width: v.UNIT * 4,
-            height: v.UNIT * 4,
-            borderRadius: v.UNIT * 4,
+        '.uiTrackerHandle': {
+            width: v.UNIT * 3,
+            height: v.UNIT * 3,
+            borderRadius: v.UNIT * 3,
             position: 'absolute',
             backgroundColor: 'transparent',
-            borderWidth: 4,
+            borderWidth: 2,
             borderStyle: 'solid',
-            borderColor: 'rgba(255,255,255,0.4)',
+            borderColor: 'rgba(255,255,255,0.8)',
         },
 
         '.uiColorPickerBar': {
@@ -113,8 +113,8 @@ module.exports = v => ({
 
         '.uiColorPickerBarA': {
             backgroundImage: v.IMAGE('chess.png'),
-            '.uiTrackingSurfaceHandle': {
-                borderColor: 'rgba(0,0,0,0.4)',
+            '.uiTrackerHandle': {
+                backgroundColor: 'rgba(0,0,0,0.8)',
             }
         },
     },

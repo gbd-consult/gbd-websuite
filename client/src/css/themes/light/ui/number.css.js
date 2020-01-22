@@ -1,21 +1,32 @@
 module.exports = v => ({
-    '.uiTrackingSurface': {
-        position: 'absolute',
-        background: 'transparent',
-        outline: 'none',
-        border: 'none',
-        margin: 0,
-        padding: 0,
+
+    '.uiNumberUpDownButton': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('small'),
+        ...v.SVG('updown', v.BORDER_COLOR),
+        position: 'relative',
+
+        '.uiTracker': {
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+        }
     },
+
 
     '.uiSlider': {
 
-        position: 'relative',
 
-        '.uiTrackingSurfaceHandle': {
-            width: v.UNIT * 6,
-            height: v.UNIT * 6,
-            borderRadius: v.UNIT * 6,
+        '.uiControlBox': {
+            position: 'relative',
+        },
+
+
+        '.uiTrackerHandle': {
+            width: v.UNIT * 5,
+            height: v.UNIT * 5,
+            borderRadius: v.UNIT * 5,
             position: 'absolute',
             backgroundColor: v.SLIDER_HANDLE_COLOR,
             borderWidth: 3,
@@ -38,7 +49,7 @@ module.exports = v => ({
     },
 
     '.uiSlider.hasFocus': {
-        '.uiTrackingSurfaceHandle': {
+        '.uiTrackerHandle': {
             backgroundColor: v.SLIDER_FOCUS_HANDLE_COLOR,
             borderColor: v.SLIDER_FOCUS_HANDLE_BORDER_COLOR,
         },
@@ -53,11 +64,12 @@ module.exports = v => ({
     },
 
 
-
     '.uiSlider.isVertical': {
+
         height: '100%',
         width: v.CONTROL_SIZE,
-        '.uiTrackingSurface': {
+
+        '.uiTracker': {
             top: 0,
             left: v.UNIT * 2,
             height: '100%',
@@ -81,9 +93,8 @@ module.exports = v => ({
     '.uiSlider.isHorizontal': {
 
         width: '100%',
-        height: v.CONTROL_SIZE,
 
-        '.uiTrackingSurface': {
+        '.uiTracker': {
             left: 0,
             top: v.UNIT * 2,
             width: '100%',
@@ -91,15 +102,15 @@ module.exports = v => ({
         },
         '.uiSliderBackgroundBar': {
             left: 0,
-            top: v.UNIT * 4,
+            top: v.UNIT * 4.5,
             width: '100%',
-            height: v.UNIT * 2,
+            height: v.UNIT * 1.5,
         },
         '.uiSliderActiveBar': {
             left: 0,
-            top: v.UNIT * 4,
+            top: v.UNIT * 4.5,
             width: 0,
-            height: v.UNIT * 2,
+            height: v.UNIT * 1.5,
         }
     },
 

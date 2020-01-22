@@ -1,5 +1,6 @@
 import gws.common.project
 import gws.web
+import gws.tools.intl
 import gws.types as t
 
 
@@ -14,6 +15,7 @@ class InfoParams(t.Params):
 
 class InfoResponse(t.Response):
     project: gws.common.project.Props
+    localeData: gws.tools.intl.LocaleData
     user: t.Optional[t.UserProps]
 
 
@@ -22,4 +24,12 @@ class Object(gws.ActionObject):
         """Return the project configuration"""
 
         project = req.require_project(p.projectUid)
-        return InfoResponse(project=project.props_for(req.user), user=req.user.props)
+
+        ld = gws.tools.intl.locale_data(p.locale)
+        if not ld:
+            ld = gws.tools.intl.locale_data(project.locales[0])
+
+        return InfoResponse(
+            project=project.props_for(req.user),
+            localeData=ld,
+            user=req.user.props)

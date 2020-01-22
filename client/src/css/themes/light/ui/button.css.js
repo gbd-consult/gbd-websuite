@@ -4,9 +4,13 @@ module.exports = v => ({
         height: v.CONTROL_SIZE,
         fontSize: v.CONTROL_FONT_SIZE,
         fontWeight: 600,
+
+        color: v.COLOR.blueGrey50,
         backgroundColor: v.BORDER_COLOR,
-        borderRadius: 8,
-        padding: [0, v.UNIT2, 0, v.UNIT2],
+
+        borderRadius: v.UNIT * 2,
+        padding: [0, v.UNIT4, 0, v.UNIT4],
+
         ...v.TRANSITION(),
 
         '.uiRawButton': {

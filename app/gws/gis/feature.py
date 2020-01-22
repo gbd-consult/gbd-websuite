@@ -139,6 +139,8 @@ class Feature(t.IFeature):
         d['feature'] = self
         d['layer'] = self.layer
         d['uid'] = self.uid
+        if 'title' not in d:
+            d['title'] = self.uid
         return d
 
     def apply_format(self, fmt: t.IFormat) -> t.IFeature:

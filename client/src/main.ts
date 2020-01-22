@@ -31,6 +31,7 @@ let mods = [
     require('./mod/overview'),
     require('./mod/user'),
     require('./mod/zoom'),
+    require('./mod/uidemo'),
 ];
 
 export async function main() {
