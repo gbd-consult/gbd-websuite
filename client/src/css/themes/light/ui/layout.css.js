@@ -22,18 +22,18 @@ module.exports = v => ({
     },
 
     '.uiForm': {
-        '.uiRow': {
+        '>.uiRow': {
             margin: [0, 0, v.UNIT4, 0],
             '&:last-child': {
                 margin: [0, 0, 0, 0],
-            }
-        },
-
-        '.uiCell': {
-            marginLeft: v.UNIT4,
-            '&:first-child': {
-                marginLeft: 0,
             },
+
+            '>.uiCell': {
+                marginLeft: v.UNIT4,
+                '&:first-child': {
+                    marginLeft: 0,
+                },
+            }
         }
     }
 });

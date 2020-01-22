@@ -71,7 +71,13 @@ module.exports = {
             "name": "tinycolor2",
             "path": "./node_modules/tinycolor2/dist/tinycolor-min.js",
             "uid": "tc"
-        }
+        },
+        {
+            "key": "moment",
+            "name": "moment",
+            "path": "./node_modules/moment/min/moment.min.js",
+            "uid": "m"
+        },
     ],
 
     themes: [

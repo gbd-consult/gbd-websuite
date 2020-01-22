@@ -7,13 +7,16 @@ import gws.types as t
 
 class LocaleData(t.Data):
     id: str
-    daysAbbreviated: t.List[str]
-    daysWide: t.List[str]
+    dateFormatLong: str
+    dateFormatMedium: str
+    dateFormatShort: str
+    daysLong: t.List[str]
+    daysShort: t.List[str]
     firstWeekDay: int
     language: str
     languageName: str
-    monthsAbbreviated: t.List[str]
-    monthsWide: t.List[str]
+    monthsLong: t.List[str]
+    monthsShort: t.List[str]
     numberDecimal: str
     numberGroup: str
 
@@ -31,13 +34,16 @@ def locale_data(locale: str) -> t.Optional[LocaleData]:
     # @TODO script etc
     ld.id = lo.language + '_' + lo.territory
 
-    ld.daysAbbreviated = list(lo.days['format']['abbreviated'].values())
-    ld.daysWide = list(lo.days['format']['wide'].values())
+    ld.dateFormatLong = str(lo.date_formats['long'])
+    ld.dateFormatMedium = str(lo.date_formats['medium'])
+    ld.dateFormatShort = str(lo.date_formats['short'])
+    ld.daysLong = list(lo.days['format']['wide'].values())
+    ld.daysShort = list(lo.days['format']['abbreviated'].values())
     ld.firstWeekDay = lo.first_week_day
     ld.language = lo.language
     ld.languageName = lo.language_name
-    ld.monthsAbbreviated = list(lo.months['format']['abbreviated'].values())
-    ld.monthsWide = list(lo.months['format']['wide'].values())
+    ld.monthsLong = list(lo.months['format']['wide'].values())
+    ld.monthsShort = list(lo.months['format']['abbreviated'].values())
     ld.numberDecimal = lo.number_symbols['decimal']
     ld.numberGroup = lo.number_symbols['group']
 

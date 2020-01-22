@@ -12,7 +12,7 @@ interface ViewProps extends gws.types.ViewProps {
     uiDemoNumber1: number;
     uiDemoColor1: string;
     uiDemoCountry: string;
-    uiDemo5: string;
+    uiDemoDate: string;
 }
 
 const COUNTRIES = [
@@ -309,7 +309,7 @@ class SidebarBody extends gws.View<ViewProps> {
                             <gws.ui.NumberInput
                                 value={this.props.uiDemoNumber1}
                                 label="number/20"
-                                maxValue={100}
+                                maxValue={10000}
                                 step={20}
                                 withClear
                                 whenChanged={bind('uiDemoNumber1')}
@@ -322,6 +322,16 @@ class SidebarBody extends gws.View<ViewProps> {
                                 value={this.props.uiDemoColor1}
                                 label="colorPicker"
                                 whenChanged={bind('uiDemoColor1')}
+                            />
+                        </Cell>
+                    </Row>
+                    <Row>
+                        <Cell>
+                            <gws.ui.DateInput
+                                value={this.props.uiDemoDate}
+                                label="date"
+                                formatDate={this.props.controller.app.localeData.dateFormatShort}
+                                whenChanged={bind('uiDemoDate')}
                             />
                         </Cell>
                     </Row>
@@ -387,7 +397,7 @@ class SidebarBody extends gws.View<ViewProps> {
                 {this.props.uiDemoNumber1} |
                 {this.props.uiDemoColor1} |
                 {this.props.uiDemoCountry} |
-                {this.props.uiDemo5} |
+                {this.props.uiDemoDate} |
 
             </sidebar.TabFooter>
 
@@ -401,6 +411,20 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
     iconClass = '';
 
 
+    async init() {
+        this.update({
+            uiDemoString1: 'string',
+            uiDemoNumber1: 123,
+            uiDemoColor1: 'rgba(100,200,10,0.9)',
+            uiDemoCountry: 'DE',
+            uiDemoDate: '2018-11-22',
+
+
+        })
+
+
+    }
+
     get tabView() {
         return this.createElement(
             this.connect(SidebarBody, [
@@ -408,7 +432,7 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
                 'uiDemoNumber1',
                 'uiDemoColor1',
                 'uiDemoCountry',
-                'uiDemo5',
+                'uiDemoDate',
             ]),
         );
     }

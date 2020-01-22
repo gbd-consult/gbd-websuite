@@ -2,6 +2,7 @@ module.exports = [
     require('./base.css'),
     require('./button.css'),
     require('./color.css'),
+    require('./date.css'),
     require('./dialog.css'),
     require('./input.css'),
     require('./layout.css'),
