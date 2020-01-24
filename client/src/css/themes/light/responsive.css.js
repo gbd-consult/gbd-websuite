@@ -74,13 +74,15 @@ module.exports = v => ({
         top: 0,
         width: '100%',
         height: '100%',
+        paddingBottom: v.CONTROL_SIZE,
 
         [v.MEDIA('large+')]: {
+            paddingBottom: 0,
             left: '50%',
             top: '50%',
             margin: 'auto',
             ...v.SHADOW,
-            ...v.CENTER_BOX(800, 600),
+            ...v.CENTER_BOX(800, 500),
 
             '&.modPrintProgressDialog': {
                 ...v.CENTER_BOX(400, 190),
@@ -91,6 +93,15 @@ module.exports = v => ({
             '&.modAlkisSelectDialog': {
                 ...v.CENTER_BOX(300, 200),
             }
+        },
+    },
+    '.uiDialog.uiAlert': {
+        [v.MEDIA('large+')]: {
+            left: '50%',
+            top: '50%',
+            margin: 'auto',
+            ...v.SHADOW,
+            ...v.CENTER_BOX(300, 200),
         },
     },
 

@@ -1,21 +1,16 @@
 module.exports = v => ({
 
-    '.uiTextButton': {
+    '.uiTextButton, .uiIconButton': {
         height: v.CONTROL_SIZE,
-        fontSize: v.CONTROL_FONT_SIZE,
-        fontWeight: 600,
 
-        color: v.COLOR.blueGrey50,
-        backgroundColor: v.BORDER_COLOR,
-
-        borderRadius: v.UNIT * 2,
-        padding: [0, v.UNIT4, 0, v.UNIT4],
-
-        ...v.TRANSITION(),
+        ...v.TRANSITION('backgroundColor'),
 
         '.uiRawButton': {
             textAlign: 'center',
+        },
 
+        '.uiControlBox': {
+            border: 'none',
         },
 
         '&.isPrimary': {
@@ -23,29 +18,33 @@ module.exports = v => ({
             backgroundColor: v.PRIMARY_BACKGROUND,
         },
 
-        '&:hover': {
-            color: v.COLOR.blueGrey50,
-            backgroundColor: v.COLOR.blueGrey900,
-        },
-
     },
 
-    '.hasBadge': {
-        position: 'relative'
+    '.uiTextButton': {
+        fontWeight: 600,
+
+        color: v.BUTTON_COLOR,
+        backgroundColor: v.BUTTON_BACKGROUND,
+
+        borderRadius: v.UNIT * 2,
+
+        '.uiRawButton': {
+
+            padding: [0, v.UNIT4, 0, v.UNIT4],
+        }
+
+
+
     },
 
     '.uiIconButton': {
         ...v.ICON_BUTTON(),
     },
-    //
-    // '.uiIconButton.isDisabled': {
-    //     opacity: 0.3,
-    // },
 
     '.uiButtonBadge': {
         position: 'absolute',
-        right: 4,
-        top: 4,
+        right: 0,
+        top: 0,
         width: 16,
         height: 16,
         borderRadius: 16,

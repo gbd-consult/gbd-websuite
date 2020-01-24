@@ -4,11 +4,6 @@
 module.exports = v => ({
 
     '.uiMenu': {
-        maxHeight: 200,
-        overflowX: 'hidden',
-        overflowY: 'auto',
-        position: 'absolute',
-        width: '100%',
     },
 
     '.uiMenuItem': {

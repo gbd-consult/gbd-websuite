@@ -29,16 +29,21 @@ v.PLACEHOLDER_COLOR = v.COLOR.blueGrey600;
 v.BORDER_COLOR = v.COLOR.grey500;
 v.DISABLED_COLOR = v.COLOR.grey500;
 v.ERROR_COLOR = v.COLOR.red600;
+v.INFO_COLOR = v.COLOR.blue600;
 v.HOVER_COLOR = v.COLOR.lighten(v.COLOR.gbdBlue, 55);
 v.FOCUS_COLOR = v.COLOR.gbdBlue;
 v.HIGHLIGHT_COLOR = v.COLOR.gbdBlue;
 v.ODD_STRIPE_COLOR = v.COLOR.white;
 v.EVEN_STRIPE_COLOR = v.COLOR.lighten(v.COLOR.blueGrey50, 4);
 
+v.DIALOG_HEADER_COLOR = v.COLOR.lighten(v.COLOR.blueGrey50, 4);
+v.DIALOG_ERROR_HEADER_COLOR = v.COLOR.lighten(v.ERROR_COLOR, 40);
+v.DIALOG_INFO_HEADER_COLOR = v.COLOR.lighten(v.INFO_COLOR, 40);
+
 v.PRIMARY_BACKGROUND = v.FOCUS_COLOR;
 v.PRIMARY_COLOR = v.COLOR.white;
 
-v.BUTTON_BACKGROUND = v.COLOR.blueGrey200;
+v.BUTTON_BACKGROUND = v.COLOR.blueGrey100;
 v.BUTTON_COLOR = v.COLOR.blueGrey500;
 
 v.CANCEL_BACKGROUND = v.COLOR.blueGrey200;
@@ -213,6 +218,7 @@ v.FORM_BUTTON_COLOR = v.COLOR.white;
 
 
 v.ROUND_FORM_BUTTON = img => ({
+    ...v.ICON_BUTTON(),
     ...v.ICON_SIZE('normal'),
     ...v.SVG(img, v.FORM_BUTTON_COLOR),
     backgroundColor: v.FORM_BUTTON_BACKGROUND,
@@ -300,7 +306,7 @@ let rules = [
     require('./extras.css'),
     require('./responsive.css'),
     require('./msie.css'),
-    //require('./base/debug.css'),
+    // require('./base/debug.css'),
 ];
 
 module.exports = [rules, v];

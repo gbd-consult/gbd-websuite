@@ -1,6 +1,9 @@
 module.exports =  v => ({
-    'button.uiRawButton': {
-        backgroundColor: 'rgba(255,0,255,0.3) !important',
+    'input.uiRawInput, button.uiRawButton, textarea.uiRawTextArea': {
+        backgroundColor: 'rgba(255,0,0,0.3) !important'
+    },
+    '.uiTouchable': {
+        backgroundColor: 'rgba(200,0,200,0.3) !important'
     },
 
     // 'input.uiRawInput': {

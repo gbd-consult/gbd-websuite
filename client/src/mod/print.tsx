@@ -314,37 +314,34 @@ class PrintDialog extends gws.View<PrintViewProps> {
         let ps = this.props.printState;
         let job = this.props.printJob;
 
+        let cancel = () => this.props.controller.cancelPrinting();
+
         if (ps === 'printing') {
 
-            return <gws.ui.Dialog className="modPrintProgressDialog">
-                <gws.ui.Progress
-                    label={this.label(job)}
-                    value={job.progress || 0}
-                />
-                <Row>
-                    <Cell flex/>
-                    <Cell>
-                        <gws.ui.TextButton
-                            whenTouched={() => this.props.controller.cancelPrinting()}
-                        >{this.__('modPrintCancel')}</gws.ui.TextButton>
-                    </Cell>
-                </Row>
+            return <gws.ui.Dialog
+                className="modPrintProgressDialog"
+                whenClosed={cancel}
+                buttons={[
+                    <gws.ui.Button label={this.__('modPrintCancel')} whenTouched={cancel}/>
+                ]}
+            >
+                <gws.ui.Progress label={this.label(job)} value={job.progress || 0}/>
             </gws.ui.Dialog>;
         }
 
         let stop = () => this.props.controller.stop();
 
         if (ps === 'complete') {
-            return <gws.ui.Dialog className="modPrintResultDialog" whenClosed={stop}>
-                <iframe src={job.url}/>
-            </gws.ui.Dialog>;
+            return <gws.ui.Dialog
+                className="modPrintResultDialog"
+                whenClosed={stop}
+                frame={job.url}
+            />;
         }
 
         if (ps === 'error') {
             return <gws.ui.Dialog className="modPrintProgressDialog" whenClosed={stop}>
-                <gws.ui.Error
-                    text={this.__('modPrintError')}
-                />
+                <gws.ui.Error text={this.__('modPrintError')} />
             </gws.ui.Dialog>;
         }
 

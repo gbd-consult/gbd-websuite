@@ -39,7 +39,7 @@ module.exports = v => ({
         position: 'absolute',
         left: 10,
         top: 10,
-        '.uiErrorLongText': {
+        '.uiErrorDetails': {
             marginBottom: v.UNIT4,
         },
         '.uiLink': {

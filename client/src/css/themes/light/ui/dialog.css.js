@@ -12,6 +12,84 @@ module.exports = v => ({
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
     },
 
+    '.uiDialog': {
+        position: 'absolute',
+        backgroundColor: v.COLOR.white,
+        display: 'flex',
+        flexDirection: 'column',
+
+        '&.withCloseButton': {
+            paddingTop: v.CONTROL_SIZE + v.UNIT2,
+        },
+        '&.withTitle.withCloseButton': {
+            paddingTop: v.UNIT8,
+        },
+    },
+
+    '.uiDialogHeader': {
+        paddingLeft: v.UNIT8,
+        paddingRight: v.UNIT2,
+        backgroundColor: v.DIALOG_HEADER_COLOR,
+        '.uiRow': {
+            marginTop: v.UNIT2,
+            marginBottom: v.UNIT2,
+        },
+        '.uiAlertError&': {
+            backgroundColor: v.DIALOG_ERROR_HEADER_COLOR,
+        },
+        '.uiAlertInfo&': {
+            backgroundColor: v.DIALOG_INFO_HEADER_COLOR,
+        },
+    },
+
+
+    '.uiDialogTitle': {
+        fontSize: v.BIG_FONT_SIZE,
+        height: '100%',
+    },
+
+    '.uiDialogCloseButton': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('medium'),
+        ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
+    },
+
+    '.uiDialogContent': {
+        flex: 1,
+        width: '100%',
+        padding: v.UNIT8,
+        overflow: 'auto',
+        '-webkit-overflow-scrolling': 'touch',
+    },
+
+    '.uiDialogFrameContent': {
+        flex: 1,
+        width: '100%',
+        padding: 0,
+        overflow: 'hidden',
+        '-webkit-overflow-scrolling': 'touch',
+        'iframe': {
+            width: '100%',
+            height: '100%',
+        }
+    },
+
+    '.uiDialogFooter': {
+        paddingLeft: v.UNIT8,
+        paddingRight: v.UNIT8,
+        '.uiRow': {
+            marginTop: v.UNIT8,
+            marginBottom: v.UNIT8,
+        },
+        '.uiCell': {
+            paddingLeft: v.UNIT4,
+        }
+    },
+
+    '.uiPopup': {
+        position: 'absolute',
+    },
+
     '.uiPopupBackdrop': {
 
         '.uiPopup': {
@@ -25,51 +103,6 @@ module.exports = v => ({
                 opacity: 1,
             }
         },
-    },
-
-
-    '.uiDialog': {
-        position: 'absolute',
-        backgroundColor: v.COLOR.white,
-        padding: v.UNIT8,
-
-        '&.withCloseButton': {
-            paddingTop: v.CONTROL_SIZE + v.UNIT2,
-        },
-        '&.withTitle.withCloseButton': {
-            paddingTop: v.UNIT8,
-        },
-    },
-
-    '.uiDialogTitle': {
-        fontSize: v.BIG_FONT_SIZE,
-        lineHeight: 1.2,
-        paddingRight: v.CONTROL_SIZE,
-        marginBottom: v.UNIT4,
-    },
-
-    '.uiPopup': {
-        position: 'absolute',
-    },
-
-    '.uiIconButton.uiDialogCloseButton': {
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        ...v.ICON_SIZE('medium'),
-        ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
-    },
-
-    '.uiDialogContent': {
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        //overflow: 'hidden',
-        '-webkit-overflow-scrolling': 'touch',
-        'iframe': {
-            width: '100%',
-            height: '95%',
-        }
     },
 
     '.uiPanel': {
@@ -91,6 +124,7 @@ module.exports = v => ({
         position: 'absolute',
         right: v.UNIT2,
         top: v.UNIT2,
+        ...v.ICON_BUTTON(),
         ...v.ICON_SIZE('small'),
         ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
     },

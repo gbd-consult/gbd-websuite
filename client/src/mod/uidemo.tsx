@@ -13,7 +13,21 @@ interface ViewProps extends gws.types.ViewProps {
     uiDemoColor1: string;
     uiDemoCountry: string;
     uiDemoDate: string;
+    uiDemoAllDisabled: boolean;
+    uiDemoBool: boolean;
+    uiDemoDialogMode: string;
 }
+
+const StoreKeys = [
+    'uiDemoString1',
+    'uiDemoNumber1',
+    'uiDemoColor1',
+    'uiDemoCountry',
+    'uiDemoDate',
+    'uiDemoAllDisabled',
+    'uiDemoBool',
+    'uiDemoDialogMode',
+];
 
 const COUNTRIES = [
     {name: 'Afghanistan', code: 'AF'},
@@ -21,7 +35,7 @@ const COUNTRIES = [
     {name: 'Albania', code: 'AL'},
     {name: 'Algeria', code: 'DZ'},
     {name: 'American Samoa', code: 'AS'},
-    {name: 'AndorrA', code: 'AD'},
+    {name: 'Andorra', code: 'AD'},
     {name: 'Angola', code: 'AO'},
     {name: 'Anguilla', code: 'AI'},
     {name: 'Antarctica', code: 'AQ'},
@@ -262,11 +276,226 @@ const COUNTRIES = [
 ].map(({name, code}) => ({text: name, value: code}));
 
 
+class TestForm extends gws.View<ViewProps> {
+    render() {
+        let bind = name => value => this.props.controller.update({[name]: value})
+
+        return <Form>
+            <Row>
+                <Cell>
+                    <gws.ui.Button
+                        disabled={this.props.uiDemoAllDisabled}
+                        whenTouched={e => this.props.controller.update({uiDemoDialogMode: 'dialogSimple'})}
+                        label="Simple"/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button
+                        disabled={this.props.uiDemoAllDisabled}
+                        whenTouched={e => this.props.controller.update({uiDemoDialogMode: 'dialogScroll'})}
+                        label="Scroll"/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button
+                        disabled={this.props.uiDemoAllDisabled}
+                        whenTouched={e => this.props.controller.update({uiDemoDialogMode: 'dialogFrame'})}
+                        label="Frame"/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button
+                        disabled={this.props.uiDemoAllDisabled}
+                        whenTouched={e => this.props.controller.update({uiDemoDialogMode: 'popup'})}
+                        label="popup"
+                        primary/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button
+                        disabled={this.props.uiDemoAllDisabled}
+                        className="uiClearButton" badge="12"/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button
+                        disabled={this.props.uiDemoAllDisabled}
+                        className="modAlkisSidebarIcon" badge="12"/>
+                </Cell>
+            </Row>
+            <Row>
+                <Cell>
+                    <gws.ui.DateInput
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoDate}
+                        label="date"
+                        format={{
+                            date: this.props.controller.app.localeData.dateFormatShort
+                        }}
+                        whenChanged={bind('uiDemoDate')}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
+                    <gws.ui.Toggle
+                        type="checkbox"
+                        label="disabled"
+                        alignRight
+                        value={this.props.uiDemoAllDisabled}
+                        whenChanged={bind('uiDemoAllDisabled')}
+                    />
+                    <gws.ui.Toggle
+                        disabled={this.props.uiDemoAllDisabled}
+                        type="radio"
+                        label="check2"
+                        alignRight
+                        value={this.props.uiDemoBool}
+                        whenChanged={bind('uiDemoBool')}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
+                    <gws.ui.Select
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoCountry}
+                        label="select"
+                        items={COUNTRIES}
+                        whenChanged={bind('uiDemoCountry')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.Select
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoCountry}
+                        label="search"
+                        items={COUNTRIES}
+                        withSearch
+                        whenChanged={bind('uiDemoCountry')}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
+                    <gws.ui.Select
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoCountry}
+                        label="combo"
+                        withCombo
+                        items={COUNTRIES}
+                        whenChanged={bind('uiDemoCountry')}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
+                    <gws.ui.NumberInput
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoNumber1}
+                        label="number float"
+                        minValue={-100}
+                        maxValue={100}
+                        format={{
+                            decimal: this.props.controller.app.localeData.numberDecimal,
+                            group: this.props.controller.app.localeData.numberGroup
+                        }}
+                        whenChanged={bind('uiDemoNumber1')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.NumberInput
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoNumber1}
+                        label="number/20"
+                        maxValue={10000}
+                        step={20}
+                        withClear
+                        whenChanged={bind('uiDemoNumber1')}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
+                    <gws.ui.ColorPicker
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoColor1}
+                        label="colorPicker"
+                        whenChanged={bind('uiDemoColor1')}
+                    />
+                </Cell>
+            </Row>
+
+            <Row>
+                <Cell flex>
+                    <gws.ui.TextInput
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoString1}
+                        label="textInput"
+                        whenChanged={bind('uiDemoString1')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.TextInput
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoString1}
+                        label="textInput"
+                        withClear
+                        whenChanged={bind('uiDemoString1')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.PasswordInput
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoString1}
+                        label="password"
+                        whenChanged={bind('uiDemoString1')}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
+                    <gws.ui.TextArea
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoString1}
+                        label="area"
+                        whenChanged={bind('uiDemoString1')}
+                    />
+                </Cell>
+            </Row>
+
+
+            <Row>
+                <Cell flex>
+                    <gws.ui.Slider
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoNumber1}
+                        label="slider"
+                        minValue={-100}
+                        maxValue={100}
+                        whenChanged={bind('uiDemoNumber1')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.Slider
+                        disabled={this.props.uiDemoAllDisabled}
+                        value={this.props.uiDemoNumber1}
+                        label="slider/20"
+                        minValue={-100}
+                        maxValue={100}
+                        step={20}
+                        whenChanged={bind('uiDemoNumber1')}
+                    />
+                </Cell>
+            </Row>
+
+
+        </Form>
+
+
+    }
+
+}
+
 class SidebarBody extends gws.View<ViewProps> {
 
     render() {
 
-        let bind = name => value => this.props.controller.update({[name]: value})
 
         return <sidebar.Tab>
 
@@ -275,120 +504,7 @@ class SidebarBody extends gws.View<ViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <Form>
-                    <Row>
-                        <Cell flex>
-                            <gws.ui.TextInput
-                                value={this.props.uiDemoString1}
-                                label="textInput"
-                                whenChanged={bind('uiDemoString1')}
-                            />
-                        </Cell>
-                        <Cell flex>
-                            <gws.ui.TextInput
-                                value={this.props.uiDemoString1}
-                                label="textInput"
-                                withClear
-                                whenChanged={bind('uiDemoString1')}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell flex>
-                            <gws.ui.NumberInput
-                                value={this.props.uiDemoNumber1}
-                                label="number"
-                                minValue={-100}
-                                maxValue={100}
-                                formatDecimal={this.props.controller.app.localeData.numberDecimal}
-                                formatGroup={this.props.controller.app.localeData.numberGroup}
-                                whenChanged={bind('uiDemoNumber1')}
-                            />
-                        </Cell>
-                        <Cell flex>
-                            <gws.ui.NumberInput
-                                value={this.props.uiDemoNumber1}
-                                label="number/20"
-                                maxValue={10000}
-                                step={20}
-                                withClear
-                                whenChanged={bind('uiDemoNumber1')}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell flex>
-                            <gws.ui.ColorPicker
-                                value={this.props.uiDemoColor1}
-                                label="colorPicker"
-                                whenChanged={bind('uiDemoColor1')}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell>
-                            <gws.ui.DateInput
-                                value={this.props.uiDemoDate}
-                                label="date"
-                                formatDate={this.props.controller.app.localeData.dateFormatShort}
-                                whenChanged={bind('uiDemoDate')}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell flex>
-                            <gws.ui.Slider
-                                value={this.props.uiDemoNumber1}
-                                label="slider"
-                                minValue={-100}
-                                maxValue={100}
-                                whenChanged={bind('uiDemoNumber1')}
-                            />
-                        </Cell>
-                        <Cell flex>
-                            <gws.ui.Slider
-                                value={this.props.uiDemoNumber1}
-                                label="slider/20"
-                                minValue={-100}
-                                maxValue={100}
-                                step={20}
-                                whenChanged={bind('uiDemoNumber1')}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell flex>
-                            <gws.ui.Select
-                                value={this.props.uiDemoCountry}
-                                label="select"
-                                items={COUNTRIES}
-                                whenChanged={bind('uiDemoCountry')}
-                            />
-                        </Cell>
-                        <Cell flex>
-                            <gws.ui.Select
-                                value={this.props.uiDemoCountry}
-                                label="combo"
-                                items={COUNTRIES}
-                                withCombo
-                                whenChanged={bind('uiDemoCountry')}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell>
-                            <gws.ui.TextButton>normal</gws.ui.TextButton>
-                        </Cell>
-                        <Cell>
-                            <gws.ui.TextButton primary>primary</gws.ui.TextButton>
-                        </Cell>
-                        <Cell>
-                            <gws.ui.TextButton badge="12">ok</gws.ui.TextButton>
-                        </Cell>
-                    </Row>
-
-
-                </Form>
+                <TestForm {...this.props}/>
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
@@ -406,6 +522,95 @@ class SidebarBody extends gws.View<ViewProps> {
     }
 }
 
+class OverlayView extends gws.View<ViewProps> {
+    render() {
+        let dm = this.props.uiDemoDialogMode;
+
+        let close = () => this.props.controller.update({
+            uiDemoDialogMode: ''
+        });
+
+        if (!dm)
+            return null;
+
+        if (dm === 'popup') {
+            return <gws.ui.Popup
+                style={{
+                    left: 100,
+                    top: 100,
+                    width: 200,
+                    height: 200,
+                    background: 'white'
+                }}
+                whenClosed={close}
+            >
+                POPUP CONTENT
+            </gws.ui.Popup>
+        }
+
+        if (dm === 'dialogSimple') {
+            let buttons = [
+                <gws.ui.Button
+                    whenTouched={e => this.props.controller.update({uiDemoDialogMode: ''})}
+                    primary
+                    label="ok"/>,
+                <gws.ui.Button
+                    whenTouched={e => this.props.controller.update({uiDemoDialogMode: ''})}
+                    label="cancel"/>
+            ];
+
+            return <gws.ui.Dialog
+                title="Dialog Title"
+                whenClosed={close}
+                buttons={buttons}
+            >
+                Content
+            </gws.ui.Dialog>
+        }
+
+        if (dm === 'dialogScroll') {
+            return <gws.ui.Dialog
+                title="Dialog Title"
+                whenClosed={close}
+            >
+                <TestForm {...this.props}/>
+            </gws.ui.Dialog>
+        }
+
+        if (dm === 'dialogFrame') {
+            return <gws.ui.Dialog
+                title="Dialog Title"
+                whenClosed={close}
+                frame="/chess.png"
+            />
+        }
+
+
+        if (dm === 'alertError') {
+            return <gws.ui.Alert
+                title="Error"
+                whenClosed={close}
+                error="Error message"
+                details="Some details about the error message. Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+            />
+        }
+
+        if (dm === 'alertInfo') {
+            return <gws.ui.Alert
+                title="Info"
+                whenClosed={close}
+                info="Info message"
+                details="Some details about the info message"
+            />
+        }
+
+
+    }
+
+
+}
+
+
 class SidebarUIDemoController extends gws.Controller implements gws.types.ISidebarItem {
     tooltip = '';
     iconClass = '';
@@ -414,31 +619,30 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
     async init() {
         this.update({
             uiDemoString1: 'string',
-            uiDemoNumber1: 123,
-            uiDemoColor1: 'rgba(100,200,10,0.9)',
+            uiDemoNumber1: 13,
+            uiDemoColor1: 'rgba(255,200,10,0.9)',
             uiDemoCountry: 'DE',
             uiDemoDate: '2018-11-22',
-
-
+            uiDemoDialogMode: 'alertError',
         })
-
-
     }
+
+    get appOverlayView() {
+        return this.createElement(
+            this.connect(OverlayView, StoreKeys)
+        );
+    }
+
 
     get tabView() {
         return this.createElement(
-            this.connect(SidebarBody, [
-                'uiDemoString1',
-                'uiDemoNumber1',
-                'uiDemoColor1',
-                'uiDemoCountry',
-                'uiDemoDate',
-            ]),
+            this.connect(SidebarBody, StoreKeys),
         );
     }
 }
 
 export const tags = {
+    'Shared.UIDemo': SidebarUIDemoController,
     'Sidebar.UIDemo': SidebarUIDemoController
 };
 

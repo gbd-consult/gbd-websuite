@@ -15,8 +15,14 @@ module.exports = v => ({
 
     '.uiToggle': {
 
+        display: 'inline-block',
+
+        '.uiControlBox': {
+            border: 'none'
+        },
+
         '.uiLabel': {
-            padding: [v.UNIT, 0, v.UNIT, 0],
+            padding: [0, 0, 0, 0],
             width: '100%',
         },
 
@@ -28,10 +34,6 @@ module.exports = v => ({
             border: 'none',
             margin: 0,
             padding: 0,
-        },
-
-        '&.alignRight .uiLabel': {
-            paddingLeft: (v.CONTROL_SIZE - 18) >> 1,
         },
 
         '&.isCheckbox': svg(v, 0, 0),

@@ -185,7 +185,7 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                     </Row>
                     {this.props.editError && <Row>
                         <Cell flex>
-                            <gws.ui.Error fade text={this.__('modEditError')}/>
+                            <gws.ui.Error text={this.__('modEditError')}/>
                         </Cell>
                     </Row>}
                 </Form>

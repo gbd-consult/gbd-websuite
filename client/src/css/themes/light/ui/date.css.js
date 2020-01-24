@@ -32,15 +32,19 @@ module.exports = v => ({
             opacity: 0.5,
         },
 
-        '.uiDateInputDay, .uiDateInputMonth': {
-            minWidth: v.UNIT * 9,
-            maxWidth: v.UNIT * 9,
+        '.uiDateInputD, .uiDateInputM': {
+            minWidth: v.UNIT * 8,
+            maxWidth: v.UNIT * 8,
         },
 
 
-        '.uiDateInputYear': {
+        '.uiDateInputY': {
             minWidth: v.UNIT * 13,
             maxWidth: v.UNIT * 13,
+        },
+
+        '.uiDateInputDelimiter': {
+            fontWeight: 800,
         },
 
 

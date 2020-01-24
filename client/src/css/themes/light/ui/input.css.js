@@ -14,33 +14,6 @@ module.exports = v => ({
         lineHeight: '120%',
     },
 
-    '.uiInput, .uiTextArea': {
-
-        '.uiControlBox': {
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: v.BORDER_COLOR,
-            ...v.TRANSITION(),
-        },
-        '&.hasFocus .uiControlBox': {
-            borderColor: v.FOCUS_COLOR,
-        },
-
-        '&.isDisabled': {
-            opacity: 0.5,
-        }
-
-    },
-
-    '.uiInputClearButton': {
-        ...v.ICON_BUTTON(),
-        ...v.ICON_SIZE('tiny'),
-        ...v.SVG(v.CLOSE_ICON, v.BORDER_COLOR),
-        '&.isHidden': {
-            visibility: 'hidden',
-        }
-    },
-
     '.uiFileInputButton': {
         ...v.ICON_BUTTON(),
         ...v.SVG('google:editor/attach_file'),
