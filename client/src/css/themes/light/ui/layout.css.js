@@ -35,5 +35,52 @@ module.exports = v => ({
                 },
             }
         }
-    }
+    },
+
+    '.uiForm.uiTabular': {
+        display: 'table',
+        width: '100%',
+
+        '.uiTabularSpacer': {
+            display: 'table-row',
+            'div': {
+                display: 'table-cell',
+                padding: v.UNIT2,
+            }
+        },
+
+        '> .uiControl': {
+            display: 'table-row',
+
+            '> .uiControlBody': {
+                width: '100%',
+                verticalAlign: 'middle',
+                display: 'table-cell',
+                xpadding: [v.UNIT4, 0, v.UNIT4, 0],
+            },
+
+            '> .uiLabel': {
+                verticalAlign: 'middle',
+                display: 'table-cell',
+                padding: [0, v.UNIT4, 0, 0],
+            },
+        },
+
+    },
+
+    '.uiGroup .uiControlBox': {
+        height: 'auto',
+        padding: [0, v.UNIT2, 0, 0],
+    },
+
+
+    '.uiGroup.uiVertical > .uiControlBody > .uiControlBox': {
+        flexDirection: 'column',
+        alignItems: 'normal',
+        height: 'auto',
+        padding: [v.UNIT2, v.UNIT2, v.UNIT2, 0],
+
+    },
+
+
 });

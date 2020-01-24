@@ -8,25 +8,48 @@ let {Form, Row, Cell} = gws.ui.Layout;
 
 interface ViewProps extends gws.types.ViewProps {
     controller: SidebarUIDemoController;
-    uiDemoString1: string;
-    uiDemoNumber1: number;
-    uiDemoColor1: string;
+    uiDemoString: string;
+    uiDemoNumber: number;
+    uiDemoColor: string;
     uiDemoCountry: string;
     uiDemoDate: string;
     uiDemoAllDisabled: boolean;
     uiDemoBool: boolean;
-    uiDemoDialogMode: string;
+    uiDemoFiles: FileList;
+
+    uiDemoUseDialog: string;
+
+    uiDemoUseTabular: boolean;
+    uiDemoUseTitle: boolean;
+    uiDemoUseClose: boolean;
+    uiDemoUseFooter: boolean;
+    uiDemoUseFrame: boolean;
+
+    uiDemoUseWidth: number;
+    uiDemoUseHeight: number;
+
 }
 
 const StoreKeys = [
-    'uiDemoString1',
-    'uiDemoNumber1',
-    'uiDemoColor1',
+    'uiDemoString',
+    'uiDemoNumber',
+    'uiDemoColor',
     'uiDemoCountry',
     'uiDemoDate',
     'uiDemoAllDisabled',
     'uiDemoBool',
-    'uiDemoDialogMode',
+    'uiDemoFiles',
+
+    'uiDemoUseDialog',
+    'uiDemoUseTabular',
+    'uiDemoUseTitle',
+    'uiDemoUseClose',
+    'uiDemoUseFooter',
+    'uiDemoUseFrame',
+
+    'uiDemoUseWidth',
+    'uiDemoUseHeight',
+
 ];
 
 const COUNTRIES = [
@@ -275,53 +298,113 @@ const COUNTRIES = [
     {name: 'Zimbabwe', code: 'ZW'}
 ].map(({name, code}) => ({text: name, value: code}));
 
+class SmallForm extends gws.View<ViewProps> {
+    render() {
+        let bind = name => value => this.props.controller.update({[name]: value})
 
-class TestForm extends gws.View<ViewProps> {
+        return <Form tabular>
+            <gws.ui.Select
+                value={this.props.uiDemoCountry}
+                label="select"
+                items={COUNTRIES.slice(0, 5)}
+                whenChanged={bind('uiDemoCountry')}
+            />
+            <gws.ui.TextInput
+                value={this.props.uiDemoString}
+                label="text input"
+                whenChanged={bind('uiDemoString')}
+            />
+            <gws.ui.Group label="options">
+                <gws.ui.Toggle
+                    type="checkbox"
+                    label="checkbox"
+                    value={this.props.uiDemoBool}
+                    whenChanged={bind('uiDemoBool')}
+                />
+                <gws.ui.Toggle
+                    type="radio"
+                    label="radio"
+                    value={this.props.uiDemoBool}
+                    whenChanged={bind('uiDemoBool')}
+                />
+                <gws.ui.Toggle
+                    type="radio"
+                    label="radio"
+                    value={this.props.uiDemoBool}
+                    whenChanged={bind('uiDemoBool')}
+                />
+            </gws.ui.Group>
+            <gws.ui.ColorPicker
+                value={this.props.uiDemoColor}
+                label="Hintergrundfarbe"
+                whenChanged={bind('uiDemoColor')}
+            />
+            <gws.ui.Group label="options" vertical>
+                <gws.ui.Toggle
+                    type="checkbox"
+                    label="checkbox"
+                    value={this.props.uiDemoBool}
+                    whenChanged={bind('uiDemoBool')}
+                />
+                <gws.ui.Toggle
+                    type="radio"
+                    label="radio"
+                    value={this.props.uiDemoBool}
+                    whenChanged={bind('uiDemoBool')}
+                />
+            </gws.ui.Group>
+        </Form>
+    }
+}
+
+
+class FormDemo extends gws.View<ViewProps> {
     render() {
         let bind = name => value => this.props.controller.update({[name]: value})
 
         return <Form>
             <Row>
-                <Cell>
-                    <gws.ui.Button
-                        disabled={this.props.uiDemoAllDisabled}
-                        whenTouched={e => this.props.controller.update({uiDemoDialogMode: 'dialogSimple'})}
-                        label="Simple"/>
+                <Cell flex>
+                    <gws.ui.Select
+                        value={this.props.uiDemoCountry}
+                        label="select"
+                        items={COUNTRIES.slice(0, 5)}
+                        whenChanged={bind('uiDemoCountry')}
+                    />
                 </Cell>
-                <Cell>
-                    <gws.ui.Button
-                        disabled={this.props.uiDemoAllDisabled}
-                        whenTouched={e => this.props.controller.update({uiDemoDialogMode: 'dialogScroll'})}
-                        label="Scroll"/>
+                <Cell flex>
+                    <gws.ui.Select
+                        value={this.props.uiDemoCountry}
+                        label="search"
+                        items={COUNTRIES}
+                        withSearch
+                        whenChanged={bind('uiDemoCountry')}
+                    />
                 </Cell>
-                <Cell>
-                    <gws.ui.Button
-                        disabled={this.props.uiDemoAllDisabled}
-                        whenTouched={e => this.props.controller.update({uiDemoDialogMode: 'dialogFrame'})}
-                        label="Frame"/>
+                <Cell flex>
+                    <gws.ui.Select
+                        value={this.props.uiDemoCountry}
+                        label="combo"
+                        withCombo
+                        items={COUNTRIES}
+                        whenChanged={bind('uiDemoCountry')}
+                    />
                 </Cell>
-                <Cell>
-                    <gws.ui.Button
-                        disabled={this.props.uiDemoAllDisabled}
-                        whenTouched={e => this.props.controller.update({uiDemoDialogMode: 'popup'})}
-                        label="popup"
-                        primary/>
-                </Cell>
-                <Cell>
-                    <gws.ui.Button
-                        disabled={this.props.uiDemoAllDisabled}
-                        className="uiClearButton" badge="12"/>
-                </Cell>
-                <Cell>
-                    <gws.ui.Button
-                        disabled={this.props.uiDemoAllDisabled}
-                        className="modAlkisSidebarIcon" badge="12"/>
+                <Cell flex>
+                    <gws.ui.Select
+                        value={this.props.uiDemoCountry}
+                        label="disabled"
+                        disabled
+                        withCombo
+                        items={COUNTRIES}
+                        whenChanged={bind('uiDemoCountry')}
+                    />
                 </Cell>
             </Row>
+
             <Row>
                 <Cell>
                     <gws.ui.DateInput
-                        disabled={this.props.uiDemoAllDisabled}
                         value={this.props.uiDemoDate}
                         label="date"
                         format={{
@@ -330,172 +413,168 @@ class TestForm extends gws.View<ViewProps> {
                         whenChanged={bind('uiDemoDate')}
                     />
                 </Cell>
-            </Row>
-            <Row>
-                <Cell flex>
-                    <gws.ui.Toggle
-                        type="checkbox"
-                        label="disabled"
-                        alignRight
-                        value={this.props.uiDemoAllDisabled}
-                        whenChanged={bind('uiDemoAllDisabled')}
-                    />
-                    <gws.ui.Toggle
-                        disabled={this.props.uiDemoAllDisabled}
-                        type="radio"
-                        label="check2"
-                        alignRight
-                        value={this.props.uiDemoBool}
-                        whenChanged={bind('uiDemoBool')}
-                    />
-                </Cell>
-            </Row>
-            <Row>
-                <Cell flex>
-                    <gws.ui.Select
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoCountry}
-                        label="select"
-                        items={COUNTRIES}
-                        whenChanged={bind('uiDemoCountry')}
-                    />
-                </Cell>
-                <Cell flex>
-                    <gws.ui.Select
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoCountry}
-                        label="search"
-                        items={COUNTRIES}
-                        withSearch
-                        whenChanged={bind('uiDemoCountry')}
-                    />
-                </Cell>
-            </Row>
-            <Row>
-                <Cell flex>
-                    <gws.ui.Select
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoCountry}
-                        label="combo"
-                        withCombo
-                        items={COUNTRIES}
-                        whenChanged={bind('uiDemoCountry')}
-                    />
-                </Cell>
-            </Row>
-            <Row>
-                <Cell flex>
-                    <gws.ui.NumberInput
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoNumber1}
-                        label="number float"
-                        minValue={-100}
-                        maxValue={100}
-                        format={{
-                            decimal: this.props.controller.app.localeData.numberDecimal,
-                            group: this.props.controller.app.localeData.numberGroup
-                        }}
-                        whenChanged={bind('uiDemoNumber1')}
-                    />
-                </Cell>
-                <Cell flex>
-                    <gws.ui.NumberInput
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoNumber1}
-                        label="number/20"
-                        maxValue={10000}
-                        step={20}
-                        withClear
-                        whenChanged={bind('uiDemoNumber1')}
-                    />
-                </Cell>
-            </Row>
-            <Row>
-                <Cell flex>
+                <Cell>
                     <gws.ui.ColorPicker
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoColor1}
-                        label="colorPicker"
-                        whenChanged={bind('uiDemoColor1')}
+                        value={this.props.uiDemoColor}
+                        label="color"
+                        whenChanged={bind('uiDemoColor')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.FileInput
+                        label="file"
+                        multiple
+                        value={this.props.uiDemoFiles}
+                        whenChanged={bind('uiDemoFiles')}
                     />
                 </Cell>
             </Row>
-
             <Row>
                 <Cell flex>
                     <gws.ui.TextInput
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoString1}
+                        value={this.props.uiDemoString}
                         label="textInput"
-                        whenChanged={bind('uiDemoString1')}
+                        whenChanged={bind('uiDemoString')}
                     />
                 </Cell>
                 <Cell flex>
                     <gws.ui.TextInput
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoString1}
-                        label="textInput"
+                        value={this.props.uiDemoString}
+                        label="textInput+clear"
                         withClear
-                        whenChanged={bind('uiDemoString1')}
+                        whenChanged={bind('uiDemoString')}
                     />
                 </Cell>
                 <Cell flex>
                     <gws.ui.PasswordInput
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoString1}
+                        value={this.props.uiDemoString}
                         label="password"
-                        whenChanged={bind('uiDemoString1')}
+                        whenChanged={bind('uiDemoString')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.TextInput
+                        disabled
+                        value={this.props.uiDemoString}
+                        label="disabled"
+                        whenChanged={bind('uiDemoString')}
                     />
                 </Cell>
             </Row>
+
             <Row>
+                <Cell>
+                    <gws.ui.NumberInput
+                        value={this.props.uiDemoNumber}
+                        label="float"
+                        format={{
+                            decimal: this.props.controller.app.localeData.numberDecimal,
+                            group: this.props.controller.app.localeData.numberGroup
+                        }}
+                        whenChanged={bind('uiDemoNumber')}
+                    />
+                </Cell>
+                <Cell>
+                    <gws.ui.NumberInput
+                        value={this.props.uiDemoNumber}
+                        label="int, step 5"
+                        minValue={-200}
+                        maxValue={200}
+                        step={5}
+                        withClear
+                        whenChanged={bind('uiDemoNumber')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.Slider
+                        value={this.props.uiDemoNumber}
+                        label="no step"
+                        minValue={-200}
+                        maxValue={200}
+                        whenChanged={bind('uiDemoNumber')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.Slider
+                        value={this.props.uiDemoNumber}
+                        label="step 50"
+                        minValue={-200}
+                        maxValue={200}
+                        step={50}
+                        whenChanged={bind('uiDemoNumber')}
+                    />
+                </Cell>
+            </Row>
+
+            <Row top>
                 <Cell flex>
                     <gws.ui.TextArea
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoString1}
+                        value={this.props.uiDemoString}
                         label="area"
-                        whenChanged={bind('uiDemoString1')}
+                        whenChanged={bind('uiDemoString')}
+                    />
+                </Cell>
+                <Cell flex>
+                    <gws.ui.Progress
+                        value={100 * (this.props.uiDemoNumber + 200) / 400}
+                        label="progress"
                     />
                 </Cell>
             </Row>
 
-
-            <Row>
-                <Cell flex>
-                    <gws.ui.Slider
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoNumber1}
-                        label="slider"
-                        minValue={-100}
-                        maxValue={100}
-                        whenChanged={bind('uiDemoNumber1')}
-                    />
+            <Row top>
+                <Cell>
+                    <gws.ui.Group label="options">
+                        <gws.ui.Toggle
+                            type="checkbox"
+                            label="checkbox"
+                            value={this.props.uiDemoBool}
+                            whenChanged={bind('uiDemoBool')}
+                        />
+                        <gws.ui.Toggle
+                            type="radio"
+                            label="radio"
+                            value={this.props.uiDemoBool}
+                            whenChanged={bind('uiDemoBool')}
+                        />
+                        <gws.ui.Toggle
+                            type="radio"
+                            label="disabled"
+                            disabled
+                            value={this.props.uiDemoBool}
+                            whenChanged={bind('uiDemoBool')}
+                        />
+                    </gws.ui.Group>
                 </Cell>
-                <Cell flex>
-                    <gws.ui.Slider
-                        disabled={this.props.uiDemoAllDisabled}
-                        value={this.props.uiDemoNumber1}
-                        label="slider/20"
-                        minValue={-100}
-                        maxValue={100}
-                        step={20}
-                        whenChanged={bind('uiDemoNumber1')}
-                    />
+                <Cell>
+                    <gws.ui.Group label="options" vertical>
+                        <gws.ui.Toggle
+                            type="checkbox"
+                            label="checkbox"
+                            value={this.props.uiDemoBool}
+                            whenChanged={bind('uiDemoBool')}
+                        />
+                        <gws.ui.Toggle
+                            type="radio"
+                            label="radio"
+                            value={this.props.uiDemoBool}
+                            whenChanged={bind('uiDemoBool')}
+                        />
+                    </gws.ui.Group>
                 </Cell>
             </Row>
-
 
         </Form>
-
-
     }
-
 }
 
 class SidebarBody extends gws.View<ViewProps> {
 
     render() {
 
+        let
+            bind = name => value => this.props.controller.update({[name]: value}),
+            set = (name, value) => () => this.props.controller.update({[name]: value});
 
         return <sidebar.Tab>
 
@@ -504,17 +583,98 @@ class SidebarBody extends gws.View<ViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <TestForm {...this.props}/>
+                <Form>
+                    <Row>
+                        <Cell>
+                            <gws.ui.Button
+                                whenTouched={set('uiDemoUseDialog', 'form')}
+                                label="form"/>
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                whenTouched={set('uiDemoUseDialog', 'alertError')}
+                                label="error"/>
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                whenTouched={set('uiDemoUseDialog', 'alertInfo')}
+                                label="info"/>
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                whenTouched={set('uiDemoUseDialog', 'popup')}
+                                label="popup"/>
+                        </Cell>
+                    </Row>
+
+                    <Row>
+                        <Cell>
+                            <gws.ui.NumberInput
+                                label="width"
+                                minValue={20} step={1}
+                                value={this.props.uiDemoUseWidth}
+                                whenChanged={bind('uiDemoUseWidth')}
+                            />
+                        </Cell>
+                        <Cell>
+                            <gws.ui.NumberInput
+                                label="height"
+                                minValue={20} step={1}
+                                value={this.props.uiDemoUseHeight}
+                                whenChanged={bind('uiDemoUseHeight')}
+                            />
+                        </Cell>
+                    </Row>
+                    <Row>
+                        <Cell flex>
+                            <gws.ui.Toggle
+                                type="checkbox"
+                                label="title"
+                                value={this.props.uiDemoUseTitle}
+                                whenChanged={bind('uiDemoUseTitle')}
+                            />
+                            <gws.ui.Toggle
+                                type="checkbox"
+                                label="close"
+                                value={this.props.uiDemoUseClose}
+                                whenChanged={bind('uiDemoUseClose')}
+                            />
+                            <gws.ui.Toggle
+                                type="checkbox"
+                                label="footer"
+                                value={this.props.uiDemoUseFooter}
+                                whenChanged={bind('uiDemoUseFooter')}
+                            />
+                            <gws.ui.Toggle
+                                type="checkbox"
+                                label="frame"
+                                value={this.props.uiDemoUseFrame}
+                                whenChanged={bind('uiDemoUseFrame')}
+                            />
+                        </Cell>
+                    </Row>
+                    <Row>
+                        <Cell>
+                            <gws.ui.Button
+                                whenTouched={set('uiDemoUseDialog', 'dialog')}
+                                label="dialog"/>
+                        </Cell>
+                    </Row>
+
+                </Form>
+
+                <pre style={{padding: 10}}>
+                    uiDemoString: {this.props.uiDemoString}<br/>
+                    uiDemoNumber: {this.props.uiDemoNumber}<br/>
+                    uiDemoColor: {this.props.uiDemoColor}<br/>
+                    uiDemoCountry: {this.props.uiDemoCountry}<br/>
+                    uiDemoDate: {this.props.uiDemoDate}<br/>
+                </pre>
+
+
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
-
-                {this.props.uiDemoString1} |
-                {this.props.uiDemoNumber1} |
-                {this.props.uiDemoColor1} |
-                {this.props.uiDemoCountry} |
-                {this.props.uiDemoDate} |
-
             </sidebar.TabFooter>
 
 
@@ -524,67 +684,53 @@ class SidebarBody extends gws.View<ViewProps> {
 
 class OverlayView extends gws.View<ViewProps> {
     render() {
-        let dm = this.props.uiDemoDialogMode;
-
-        let close = () => this.props.controller.update({
-            uiDemoDialogMode: ''
-        });
+        let dm = this.props.uiDemoUseDialog;
 
         if (!dm)
             return null;
 
-        if (dm === 'popup') {
-            return <gws.ui.Popup
-                style={{
-                    left: 100,
-                    top: 100,
-                    width: 200,
-                    height: 200,
-                    background: 'white'
-                }}
-                whenClosed={close}
-            >
-                POPUP CONTENT
-            </gws.ui.Popup>
-        }
+        let close = () => this.props.controller.update({
+            uiDemoUseDialog: ''
+        });
 
-        if (dm === 'dialogSimple') {
-            let buttons = [
-                <gws.ui.Button
-                    whenTouched={e => this.props.controller.update({uiDemoDialogMode: ''})}
-                    primary
-                    label="ok"/>,
-                <gws.ui.Button
-                    whenTouched={e => this.props.controller.update({uiDemoDialogMode: ''})}
-                    label="cancel"/>
-            ];
+        let buttons = [
+            <gws.ui.Button
+                whenTouched={close}
+                primary
+                label="ok"/>,
+            <gws.ui.Button
+                whenTouched={close}
+                label="cancel"/>
+        ];
 
+        let CENTER_BOX = (w, h) => ({
+            width: w,
+            height: h,
+            marginLeft: -(w >> 1),
+            marginTop: -(h >> 1),
+        });
+
+        if (dm === 'form') {
             return <gws.ui.Dialog
-                title="Dialog Title"
+                title='Form Controls'
                 whenClosed={close}
                 buttons={buttons}
             >
-                Content
+                <FormDemo {...this.props}/>
             </gws.ui.Dialog>
         }
 
-        if (dm === 'dialogScroll') {
+        if (dm === 'dialog') {
             return <gws.ui.Dialog
-                title="Dialog Title"
-                whenClosed={close}
+                title={this.props.uiDemoUseTitle ? "Dialog Title" : null}
+                whenClosed={this.props.uiDemoUseClose ? close : null}
+                buttons={this.props.uiDemoUseFooter ? buttons : null}
+                style={CENTER_BOX(this.props.uiDemoUseWidth, this.props.uiDemoUseHeight)}
+                frame={this.props.uiDemoUseFrame ? '/chess.png' : null}
             >
-                <TestForm {...this.props}/>
+                <SmallForm {...this.props}/>
             </gws.ui.Dialog>
         }
-
-        if (dm === 'dialogFrame') {
-            return <gws.ui.Dialog
-                title="Dialog Title"
-                whenClosed={close}
-                frame="/chess.png"
-            />
-        }
-
 
         if (dm === 'alertError') {
             return <gws.ui.Alert
@@ -604,10 +750,22 @@ class OverlayView extends gws.View<ViewProps> {
             />
         }
 
+        if (dm === 'popup') {
+            return <gws.ui.Popup
+                style={{
+                    left: 100,
+                    top: 100,
+                    width: 200,
+                    height: 200,
+                    background: 'white'
+                }}
+                whenClosed={close}
+            >
+                <gws.ui.Text content="POPUP CONTENT"/>
+            </gws.ui.Popup>
+        }
 
     }
-
-
 }
 
 
@@ -618,12 +776,22 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
 
     async init() {
         this.update({
-            uiDemoString1: 'string',
-            uiDemoNumber1: 13,
-            uiDemoColor1: 'rgba(255,200,10,0.9)',
+            uiDemoString: 'string',
+            uiDemoNumber: 13,
+            uiDemoColor: 'rgba(255,200,10,0.9)',
             uiDemoCountry: 'DE',
             uiDemoDate: '2018-11-22',
-            uiDemoDialogMode: 'alertError',
+
+            uiDemoUseDialog: 'form',
+
+            uiDemoUseTabular: true,
+            uiDemoUseTitle: true,
+            uiDemoUseClose: true,
+            uiDemoUseFooter: true,
+            uiDemoUseFrame: false,
+
+            uiDemoUseWidth: 580,
+            uiDemoUseHeight: 580,
         })
     }
 
@@ -632,7 +800,6 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
             this.connect(OverlayView, StoreKeys)
         );
     }
-
 
     get tabView() {
         return this.createElement(

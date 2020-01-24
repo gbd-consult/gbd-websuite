@@ -1,4 +1,7 @@
 module.exports = v => ({
+    '*::placeholder, *::-webkit-input-placeholder, *::-moz-placeholder': {
+        color: v.PLACEHOLDER_COLOR,
+    },
 
     'input.uiRawInput, button.uiRawButton, textarea.uiRawTextArea': {
         background: 'transparent',
@@ -35,17 +38,9 @@ module.exports = v => ({
         pointerEvents: 'none',
     },
 
-
-    '.tabForm': {
-        '.uiControl': {
-            flexDirection: 'row',
-        },
-    },
-
     '.uiControlBody': {
         position: 'relative'
     },
-
 
     '.uiControlBox': {
         display: 'flex',
@@ -55,6 +50,10 @@ module.exports = v => ({
         width: '100%',
         border: [1, 'solid', v.BORDER_COLOR],
         ...v.TRANSITION(),
+    },
+
+    '.uiControlBox .uiControlBox': {
+        border: 'none',
     },
 
     '.uiDropDown': {
@@ -72,7 +71,7 @@ module.exports = v => ({
         zIndex: 1,
 
         '.isOpen&': {
-            maxHeight: 250,
+            maxHeight: v.CONTROL_SIZE * 5 + v.UNIT,
             transform: 'translate(0,0)',
             visibility: 'visible',
             //boxShadow: '0px 11px 14px 0px rgba(0, 0, 0, 0.1)',
@@ -92,24 +91,58 @@ module.exports = v => ({
         },
     },
 
-
-
-
     '.uiLabel': {
         fontSize: v.CONTROL_FONT_SIZE,
+        fontWeight: 600,
         color: v.TEXT_COLOR,
         padding: [0, 0, v.UNIT2, 0],
         cursor: 'default',
         ...v.TRANSITION('color'),
     },
 
+    '.uiInlineLabel': {
+        width: '100%',
+        fontSize: v.CONTROL_FONT_SIZE,
+        color: v.TEXT_COLOR,
+        cursor: 'default',
+        ...v.TRANSITION('color'),
+    },
+
+
     '.hasFocus': {
         '.uiControlBox': {
             borderColor: v.FOCUS_COLOR,
         },
-
         '.uiLabel': {
             color: v.FOCUS_COLOR,
+        },
+    },
+
+    '.uiClearButton': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('tiny'),
+        ...v.SVG(v.CLOSE_ICON, v.BORDER_COLOR),
+        '&.isHidden': {
+            visibility: 'hidden',
+        }
+    },
+
+    '.uiDropDownToggleButton': {
+
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('small'),
+        ...v.SVG('google:navigation/chevron_right', v.BORDER_COLOR),
+        ...v.TRANSITION(),
+        transform: 'rotate(90deg)',
+
+        '.uiControl.hasFocus.isOpen&': {
+            transform: 'rotate(-90deg)',
+        },
+        '.uiControl.isPopupUp&': {
+            transform: 'rotate(-90deg)',
+        },
+        '.uiControl.hasFocus.isOpen.isPopupUp': {
+            transform: 'rotate(90deg)',
         },
     },
 

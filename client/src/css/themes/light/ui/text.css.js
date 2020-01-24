@@ -1,11 +1,4 @@
-
-
-
 module.exports = v => ({
-
-    '*::placeholder, *::-webkit-input-placeholder, *::-moz-placeholder': {
-        color: v.PLACEHOLDER_COLOR,
-    },
 
     '.uiError': {
         color: v.ERROR_COLOR,
@@ -52,32 +45,5 @@ module.exports = v => ({
 
     },
 
-    '.uiClearButton': {
-        ...v.ICON_BUTTON(),
-        ...v.ICON_SIZE('tiny'),
-        ...v.SVG(v.CLOSE_ICON, v.BORDER_COLOR),
-        '&.isHidden': {
-            visibility: 'hidden',
-        }
-    },
+})
 
-    '.uiDropDownToggleButton': {
-
-        ...v.ICON_BUTTON(),
-        ...v.ICON_SIZE('small'),
-        ...v.SVG('google:navigation/chevron_right', v.BORDER_COLOR),
-        ...v.TRANSITION(),
-        transform: 'rotate(90deg)',
-
-        '.uiControl.hasFocus.isOpen&': {
-            transform: 'rotate(-90deg)',
-        },
-        '.uiControl.isPopupUp&': {
-            transform: 'rotate(-90deg)',
-        },
-        '.uiControl.hasFocus.isOpen.isPopupUp': {
-            transform: 'rotate(90deg)',
-        },
-    },
-
-});

@@ -13,17 +13,6 @@ module.exports = v => ({
             textAlign: 'center',
         },
 
-        '.uiControlBox': {
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: v.BORDER_COLOR,
-            ...v.TRANSITION(),
-        },
-
-        '.uiControlBox .uiControlBox': {
-            borderWidth: 0,
-        },
-
         '&.hasFocus .uiControlBox': {
             borderColor: v.FOCUS_COLOR,
         },

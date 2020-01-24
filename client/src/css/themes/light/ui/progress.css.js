@@ -7,13 +7,30 @@ module.exports = v => ({
     },
 
 
-    '.uiProgressBar': {
-        '.uiSmallbarOuter': {
-            backgroundColor: v.PROGRESS_OUTER_COLOR,
+    '.uiProgress': {
+
+        '.uiControlBox': {
+            border: 'none',
         },
-        '.uiSmallbarInner': {
-            backgroundColor: v.PROGRESS_INNER_COLOR,
-            borderRadius: [6, 6, 6, 6],
+
+        '.uiBackgroundBar': {
+            position: 'absolute',
+            left: 0,
+            top: v.UNIT * 4.5,
+            width: '100%',
+            height: v.UNIT * 1.5,
+            borderRadius: 6,
+            backgroundColor: v.PROGRESS_BACKGROUND_COLOR,
+        },
+
+        '.uiActiveBar': {
+            position: 'absolute',
+            left: 0,
+            top: v.UNIT * 4.5,
+            width: 0,
+            height: v.UNIT * 1.5,
+            borderRadius: 6,
+            backgroundColor: v.PROGRESS_ACTIVE_COLOR,
         },
     },
 

@@ -22,19 +22,12 @@ module.exports = v => ({
 
     '.uiTextButton': {
         fontWeight: 600,
-
         color: v.BUTTON_COLOR,
         backgroundColor: v.BUTTON_BACKGROUND,
-
         borderRadius: v.UNIT * 2,
-
         '.uiRawButton': {
-
             padding: [0, v.UNIT4, 0, v.UNIT4],
         }
-
-
-
     },
 
     '.uiIconButton': {
@@ -68,11 +61,8 @@ module.exports = v => ({
             width: 24,
 
             '&.isActive': {
-
                 ...v.SVG('dot', v.FOCUS_COLOR),
-
             },
-
         }
     },
 

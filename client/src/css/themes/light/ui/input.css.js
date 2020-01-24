@@ -14,30 +14,27 @@ module.exports = v => ({
         lineHeight: '120%',
     },
 
-    '.uiFileInputButton': {
-        ...v.ICON_BUTTON(),
-        ...v.SVG('google:editor/attach_file'),
-    },
-
-    '.uiFileInput.hasFiles': {
-
-        '.uiFileInputButton': {
-            ...v.SVG('google:editor/attach_file', v.FOCUS_COLOR),
-        }
-    },
-
     '.uiFileInput': {
-        display: 'flex',
-        alignItems: 'center',
-    },
+        '.uiControlBox': {
+            width: v.CONTROL_SIZE,
+        },
+        '&.uiHasFiles .uiControlBox': {
+            width: '100%',
+        },
 
-    '.uiFileInputList': {
-        fontSize: v.SMALL_FONT_SIZE,
-        p: {
-            marginBottom: v.UNIT,
+        '.uiRawButton': {
+            ...v.ICON_BUTTON(),
+            ...v.ICON_SIZE('normal'),
+            ...v.SVG('google:editor/attach_file'),
+        },
+
+        '.uiFileInputList': {
+            flex: 1,
+            padding: [v.UNIT2, v.UNIT2, v.UNIT2, 0],
+            maxHeight: '100%',
+            overflow: 'auto',
+            fontSize: v.SMALL_FONT_SIZE,
         }
-
     }
-
 
 });

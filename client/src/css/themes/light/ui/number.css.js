@@ -37,7 +37,7 @@ module.exports = v => ({
             borderColor: v.SLIDER_HANDLE_BORDER_COLOR,
         },
 
-        '.uiSliderBackgroundBar': {
+        '.uiBackgroundBar': {
             position: 'absolute',
             left: 0,
             top: v.UNIT * 4.5,
@@ -47,7 +47,7 @@ module.exports = v => ({
             backgroundColor: v.SLIDER_BACKROUND_COLOR,
         },
 
-        '.uiSliderActiveBar': {
+        '.uiActiveBar': {
             position: 'absolute',
             left: 0,
             top: v.UNIT * 4.5,

@@ -18,12 +18,10 @@ module.exports = v => ({
         display: 'inline-block',
 
         '.uiControlBox': {
-            border: 'none'
-        },
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
 
-        '.uiLabel': {
-            padding: [0, 0, 0, 0],
-            width: '100%',
         },
 
         'button': {
