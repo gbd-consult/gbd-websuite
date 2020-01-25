@@ -13,14 +13,14 @@ const URL_PARAM_NAME = 'gekosUrl';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
-interface GekosViewProps extends gws.types.ViewProps {
+interface ViewProps extends gws.types.ViewProps {
     controller: GekosController;
     gekosX: string;
     gekosY: string;
     gekosDialogActive: boolean;
 }
 
-const GekosStoreKeys = [
+const StoreKeys = [
     'gekosX',
     'gekosY',
     'gekosDialogActive',
@@ -45,7 +45,7 @@ class GekosTool extends gws.Tool {
 
 }
 
-class GekosDialog extends gws.View<GekosViewProps> {
+class GekosDialog extends gws.View<ViewProps> {
 
     render() {
         if (!this.props.gekosDialogActive)
@@ -140,7 +140,7 @@ class GekosController extends gws.Controller {
 
     get appOverlayView() {
         return this.createElement(
-            this.connect(GekosDialog, GekosStoreKeys));
+            this.connect(GekosDialog, StoreKeys));
     }
 
     run() {
