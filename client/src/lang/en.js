@@ -10,6 +10,10 @@ module.exports = {
     appErrorTryAgain: 'try again',
     appErrorBackHome: 'back to home page',
 
+    appError: 'Error',
+    appInfo: 'Info',
+
+
     modLayersTooltip: 'layers',
     modEditTooltip: 'edit',
 

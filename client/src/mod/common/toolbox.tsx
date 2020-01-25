@@ -31,7 +31,7 @@ export class Content extends gws.View<ToolboxViewProps> {
                 <Cell flex/>
                 {this.props.buttons && this.props.buttons.map((b, n) => <Cell key={n}>{b}</Cell>)}
                 <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         className="modToolboxCancelButton"
                         tooltip={this.props.controller.__('cmpToolCancelButton')}
                         whenTouched={() => this.props.controller.app.stopTool('')}
@@ -45,7 +45,7 @@ export class Content extends gws.View<ToolboxViewProps> {
         return <div className="modToolboxContent">
             <Row className="modToolboxContentHeader">
                 <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         className={this.props.iconClass}
                     />
                 </Cell>
@@ -59,7 +59,7 @@ export class Content extends gws.View<ToolboxViewProps> {
                 <Cell flex/>
                 {this.props.buttons && this.props.buttons.map((b, n) => <Cell key={n}>{b}</Cell>)}
                 <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         className="modToolboxCancelButton"
                         tooltip={this.props.controller.__('modDrawCancelButton')}
                         whenTouched={() => this.props.controller.app.stopTool('')}

@@ -171,13 +171,13 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                     <Row>
                         <Cell flex/>
                         <Cell>
-                            <gws.ui.IconButton
+                            <gws.ui.Button
                                 className="cmpButtonFormOk"
                                 whenTouched={() => master.saveForm(feature, data)}
                             />
                         </Cell>
                         <Cell>
-                            <gws.ui.IconButton
+                            <gws.ui.Button
                                 className="cmpButtonFormCancel"
                                 whenTouched={() => master.unselectFeature()}
                             />

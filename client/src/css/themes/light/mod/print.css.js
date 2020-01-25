@@ -53,8 +53,10 @@ module.exports = v => ({
         },
     },
 
-    '.modPrintProgressDialog .uiRow': {
-        marginTop: v.UNIT4,
+    '.uiDialog.modPrintProgressDialog': {
+        [v.MEDIA('large+')]: {
+            ...v.CENTER_BOX(400, 290),
+        }
     },
 
 

@@ -6,21 +6,22 @@ import * as toolbar from './common/toolbar';
 
 interface LocationViewProps extends gws.types.ViewProps {
     controller: LocationController;
-    locationErrorMessage: string | null;
+    locationError: string | null;
 }
 
-class LocationDialog extends gws.View<LocationViewProps> {
+class LocationError extends gws.View<LocationViewProps> {
 
     render() {
-        if (!this.props.locationErrorMessage)
+        if (!this.props.locationError)
             return null;
 
-        let close = () => this.props.controller.update({locationErrorMessage: null});
+        let close = () => this.props.controller.update({locationError: null});
 
-        return <gws.ui.Dialog className='modLocationErrorDialog' whenClosed={close}>
-            <gws.ui.TextBlock content={this.props.locationErrorMessage}/>
-        </gws.ui.Dialog>
-
+        return <gws.ui.Alert
+            title={this.props.controller.__('appError')}
+            error={this.props.locationError}
+            whenClosed={close}
+        />
     }
 }
 
@@ -31,7 +32,7 @@ class LocationController extends gws.Controller {
 
     get appOverlayView() {
         return this.createElement(
-            this.connect(LocationDialog, ['locationErrorMessage']));
+            this.connect(LocationError, ['locationError']));
     }
 
     run() {
@@ -61,7 +62,7 @@ class LocationController extends gws.Controller {
 
         if (!ol.extent.containsCoordinate(this.map.extent, xy)) {
             this.update({
-                locationErrorMessage: this.__('modLocationErrorTooFar')
+                locationError: this.__('modLocationErrorTooFar')
             });
             return;
         }
@@ -89,7 +90,7 @@ class LocationController extends gws.Controller {
     protected error(err: PositionError) {
         console.log('PositionError', err);
         this.update({
-            locationErrorMessage: this.__('modLocationErrorNoLocation')
+            locationError: this.__('modLocationErrorNoLocation')
         })
     }
 }

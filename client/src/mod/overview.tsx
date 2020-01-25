@@ -106,9 +106,11 @@ class SidebarBody extends gws.View<ViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.TextButton primary whenTouched={() => this.submit()}>
-                        {this.__('modOverviewUpdateButton')}
-                    </gws.ui.TextButton>
+                    <gws.ui.Button
+                        primary
+                        whenTouched={() => this.submit()}
+                        label={this.__('modOverviewUpdateButton')}
+                    />
                 </Cell>
             </Row>
         </Form>;

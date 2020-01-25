@@ -1,5 +1,9 @@
 module.exports = v => ({
 
+    '.uiTouchable': {
+        cursor: 'default',
+    },
+
     '.uiTextButton, .uiIconButton': {
         height: v.CONTROL_SIZE,
 

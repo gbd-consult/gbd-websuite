@@ -5,6 +5,8 @@ module.exports = {
     appError504: 'Zeitüberschreitung der Anforderung.',
     appErrorBackHome: 'Zur Startseite',
     appErrorTryAgain: 'Erneut versuchen',
+    appError: 'Fehler',
+    appInfo: 'Info',
     appFatalError: 'Applikation Fehler',
     cmpFeatureTaskButton: 'Aufgaben',
     modAlkisSidebarTitle: 'Flurstückssuche',

@@ -453,14 +453,14 @@ class AnnotateFeatureDetailsForm extends gws.View<AnnotateViewProps> {
                 <Row>
                     <Cell flex/>
                     <Cell>
-                        <gws.ui.IconButton
+                        <gws.ui.Button
                             className="cmpButtonFormOk"
                             tooltip={this.props.controller.__('modAnnotateSaveButton')}
                             whenTouched={submit}
                         />
                     </Cell>
                     <Cell>
-                        <gws.ui.IconButton
+                        <gws.ui.Button
                             className="cmpButtonFormCancel"
                             whenTouched={() => {
                                 master.unselectFeature();

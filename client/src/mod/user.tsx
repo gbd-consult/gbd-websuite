@@ -1,6 +1,8 @@
 import * as React from 'react';
 import * as gws from 'gws';
 
+const {Form, Row, Cell} = gws.ui.Layout;
+
 import * as sidebar from './common/sidebar';
 
 interface AuthProps extends gws.types.ViewProps {
@@ -11,16 +13,15 @@ interface AuthProps extends gws.types.ViewProps {
     user: gws.types.IUser,
 }
 
-class Icon extends gws.View<AuthProps> {
-    render() {
-        return <div>A</div>;
-    }
-}
+const StoreKeys = [
+    'authUsername',
+    'authPassword',
+    'authError',
+];
+
 
 class UserInfo extends gws.View<AuthProps> {
     render() {
-        let {Form, Row, Cell} = gws.ui.Layout;
-
         return <Form>
             <Row>
                 <Cell flex>
@@ -30,10 +31,11 @@ class UserInfo extends gws.View<AuthProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.TextButton
+                    <gws.ui.Button
                         primary
                         whenTouched={() => this.props.controller.doLogout()}
-                    >{this.__('modUserLogoutButton')}</gws.ui.TextButton>
+                        label={this.__('modUserLogoutButton')}
+                    />
                 </Cell>
             </Row>
         </Form>;
@@ -44,7 +46,6 @@ class UserInfo extends gws.View<AuthProps> {
 class LoginForm extends gws.View<AuthProps> {
     render() {
         let submit = () => this.props.controller.doLogin();
-        let {Form, Row, Cell} = gws.ui.Layout;
 
         return <Form>
             <Row>
@@ -72,11 +73,11 @@ class LoginForm extends gws.View<AuthProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.TextButton
+                    <gws.ui.Button
                         primary
                         whenTouched={submit}
-                    >{this.__('modUserLoginButton')}</gws.ui.TextButton>
-
+                        label={this.__('modUserLoginButton')}
+                    />
                 </Cell>
             </Row>
 
@@ -92,8 +93,6 @@ class LoginForm extends gws.View<AuthProps> {
 
 class SidebarTab extends gws.View<AuthProps> {
     render() {
-        let {Row, Cell} = gws.ui.Layout;
-
         return <sidebar.Tab>
             <sidebar.TabHeader>
                 <gws.ui.Title content={this.props.user
@@ -120,8 +119,9 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
     }
 
     get tabView() {
+        console.log(this.getValue('user'))
         return this.createElement(
-            this.connect(SidebarTab, ['authUsername', 'authPassword', 'authError']),
+            this.connect(SidebarTab, StoreKeys),
             {user: this.getValue('user')}
         );
     }
@@ -135,7 +135,6 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
         if (res.error)
             this.update({authError: true});
         else
-        //this.update({user: res.user, authError: false});
             this.app.reload();
     }
 

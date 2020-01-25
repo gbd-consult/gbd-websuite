@@ -45,7 +45,7 @@ class LoaderView extends gws.View<LoaderProps> {
         return <div {...gws.tools.cls('modInfobarWidget', 'modInfobarLoader', rc && 'isActive')}>
             <Row>
                 <Cell>
-                    <gws.ui.IconButton className='modInfobarLoaderIcon'/>
+                    <gws.ui.Button className='modInfobarLoaderIcon'/>
                 </Cell>
                 {rc > LOADER_PROGRESS_MIN && <Cell width={bars * 2}>
                     {gws.tools.range(bars).map(n => <div className='modInfobarLoaderBar' key={n}/>)}
@@ -203,7 +203,7 @@ class LinkView extends gws.View<LinkProps> {
 
 class LinkButtonView extends gws.View<LinkProps> {
     render() {
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             className={this.props.className}
             tooltip={this.props.title}
             whenTouched={() => this.props.controller.touched()}

@@ -32,7 +32,7 @@ class LensToolboxView extends gws.View<LensViewProps> {
     render() {
         let button = (type, cls, tooltip) => {
             return <Cell>
-                <gws.ui.IconButton
+                <gws.ui.Button
                     {...gws.tools.cls(cls, type === this.props.lensShapeType && 'isActive')}
                     tooltip={tooltip}
                     whenTouched={() => this.props.controller.setShapeType(type)}

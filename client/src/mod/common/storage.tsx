@@ -57,9 +57,10 @@ class StorageDialog extends gws.View<StorageDialogProps> {
             [category]: v
         });
 
-        let title, submit, control;
+        let cls, title, submit, control;
 
         if (mode === 'write') {
+            cls = 'modStorageWriteDialog';
             title = this.__('modStorageWriteDialogTitle');
             submit = () => this.props.controller.write();
             control = <gws.ui.TextInput
@@ -70,6 +71,7 @@ class StorageDialog extends gws.View<StorageDialogProps> {
         }
 
         if (mode === 'read') {
+            cls = 'modStorageReadDialog';
             title = this.__('modStorageReadDialogTitle');
             submit = () => this.props.controller.read();
             control = <gws.ui.Select
@@ -79,26 +81,21 @@ class StorageDialog extends gws.View<StorageDialogProps> {
                     .map(e => ({
                         text: e.name,
                         value: e.name
-
                     }))
                 }
                 whenChanged={update}
             />;
         }
 
-        return <gws.ui.Dialog className="modStorageDialog" title={title} whenClosed={close}>
+        let buttons = [
+            <gws.ui.Button className="cmpButtonFormOk" whenTouched={submit}/>,
+            <gws.ui.Button className="cmpButtonFormCancel" whenTouched={close}/>
+        ];
+
+        return <gws.ui.Dialog className={cls} title={title} buttons={buttons} whenClosed={close}>
             <Form>
                 <Row>
                     <Cell flex>{control}</Cell>
-                </Row>
-                <Row>
-                    <Cell flex/>
-                    <Cell>
-                        <gws.ui.IconButton className="cmpButtonFormOk" whenTouched={submit}/>
-                    </Cell>
-                    <Cell>
-                        <gws.ui.IconButton className="cmpButtonFormCancel" whenTouched={close}/>
-                    </Cell>
                 </Row>
                 {this.props.storageDialogError && <Row>
                     <Cell flex>

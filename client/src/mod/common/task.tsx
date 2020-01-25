@@ -157,7 +157,7 @@ class TaskPopupButton extends gws.View<TaskProps> {
 
         return <Row>
             <Cell>
-                <gws.ui.IconButton
+                <gws.ui.Button
                     {...cls}
                     tooltip={item.tooltip}
                     whenTouched={touched}

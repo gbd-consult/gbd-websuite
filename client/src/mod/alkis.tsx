@@ -400,35 +400,35 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         {...gws.tools.cls('modAlkisSearchSubmitButton')}
                         tooltip={_master(this).STRINGS.submitButton}
                         whenTouched={() => mm.formSearch()}
                     />
                 </Cell>
                 {setup.ui.searchSelection && <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         {...gws.tools.cls('modAlkisSearchSelectionButton')}
                         tooltip={_master(this).STRINGS.selectionSearchButton}
                         whenTouched={() => mm.selectionSearch()}
                     />
                 </Cell>}
                 {setup.ui.searchSpatial && <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         {...gws.tools.cls('modAlkisSearchLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
                         tooltip={_master(this).STRINGS.lensButton}
                         whenTouched={() => mm.startLens()}
                     />
                 </Cell>}
                 {setup.ui.usePick && <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         {...gws.tools.cls('modAlkisPickButton', this.props.appActiveTool === 'Tool.Alkis.Pick' && 'isActive')}
                         tooltip={_master(this).STRINGS.pickButton}
                         whenTouched={() => mm.startPick()}
                     />
                 </Cell>}
                 <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         {...gws.tools.cls('modAlkisSearchResetButton')}
                         tooltip={_master(this).STRINGS.resetButton}
                         whenTouched={() => mm.reset()}
@@ -645,23 +645,26 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
                     <Form>
                         <Row>
                             <Cell flex>
-                                {Object.keys(availGroups).map(gid => <gws.ui.Toggle
-                                        key={gid}
-                                        type="checkbox"
-                                        label={availGroups[gid]}
-                                        value={selectedGroupIds.includes(gid)}
-                                        whenChanged={value => changed(gid, value)}
-                                    />
-                                )}
+                                <gws.ui.Group vertical>
+                                    {Object.keys(availGroups).map(gid => <gws.ui.Toggle
+                                            key={gid}
+                                            type="checkbox"
+                                            label={availGroups[gid]}
+                                            value={selectedGroupIds.includes(gid)}
+                                            whenChanged={value => changed(gid, value)}
+                                        />
+                                    )}
+                                </gws.ui.Group>
                             </Cell>
                         </Row>
                         <Row>
                             <Cell flex/>
                             <Cell width={120}>
-                                <gws.ui.TextButton
+                                <gws.ui.Button
                                     primary
                                     whenTouched={() => mm.submitExport(this.props.alkisFsExportFeatures)}
-                                >{mm.STRINGS.exportButton}</gws.ui.TextButton>
+                                    label={mm.STRINGS.exportButton}
+                                />
                             </Cell>
                         </Row>
                     </Form>

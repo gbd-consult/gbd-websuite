@@ -10,7 +10,7 @@ class ZoomOut extends gws.Controller {
     }
 
     get defaultView() {
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             className="modZoomInfobarOutButton"
             tooltip={this.__('modZoomInfobarOutButton')}
             whenTouched={() => this.clicked()}
@@ -26,7 +26,7 @@ class ZoomIn extends gws.Controller {
     }
 
     get defaultView() {
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             className="modZoomInfobarInButton"
             tooltip={this.__('modZoomInfobarInButton')}
             whenTouched={() => this.clicked()}
@@ -42,7 +42,7 @@ class ZoomReset extends gws.Controller {
     }
 
     get defaultView() {
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             className="modZoomInfobarResetButton"
             tooltip={this.__('modZoomInfobarResetButton')}
             whenTouched={() => this.clicked()}

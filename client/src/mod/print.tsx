@@ -193,12 +193,12 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
             : this.printDataSheet();
 
         let ok = this.props.printSnapshotMode
-            ? <gws.ui.IconButton
+            ? <gws.ui.Button
                 {...gws.tools.cls('modPrintPreviewSnapshotButton')}
                 whenTouched={() => this.props.controller.startSnapshot()}
                 tooltip={this.__('modPrintPreviewSnapshotButton')}
             />
-            : <gws.ui.IconButton
+            : <gws.ui.Button
                 {...gws.tools.cls('modPrintPreviewPrintButton')}
                 whenTouched={() => this.props.controller.startPrinting()}
                 tooltip={this.__('modPrintPreviewPrintButton')}
@@ -215,7 +215,7 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
                         {ok}
                     </Cell>
                     <Cell>
-                        <gws.ui.IconButton
+                        <gws.ui.Button
                             className="cmpButtonFormCancel"
                             whenTouched={() => this.props.controller.app.startTool('Tool.Default')}
                             tooltip={this.__('modPrintCancel')}
@@ -300,36 +300,32 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
 
 class PrintDialog extends gws.View<PrintViewProps> {
 
-    label(job) {
-        let s = this.__('modPrintPrinting');
-
-        if (job.steptype === 'layer' && job.stepname)
-            return gws.tools.shorten(job.stepname, 40);
-
-        return s + '...'
-
-    }
-
     render() {
         let ps = this.props.printState;
         let job = this.props.printJob;
 
         let cancel = () => this.props.controller.cancelPrinting();
+        let stop = () => this.props.controller.stop();
 
         if (ps === 'printing') {
 
+            let label =  '';
+
+            if (job.steptype === 'layer' && job.stepname)
+                label = gws.tools.shorten(job.stepname, 40);
+
+
             return <gws.ui.Dialog
                 className="modPrintProgressDialog"
+                title={this.__('modPrintPrinting')}
                 whenClosed={cancel}
                 buttons={[
                     <gws.ui.Button label={this.__('modPrintCancel')} whenTouched={cancel}/>
                 ]}
             >
-                <gws.ui.Progress label={this.label(job)} value={job.progress || 0}/>
+                <gws.ui.Progress label={label} value={job.progress}/>
             </gws.ui.Dialog>;
         }
-
-        let stop = () => this.props.controller.stop();
 
         if (ps === 'complete') {
             return <gws.ui.Dialog
@@ -340,9 +336,11 @@ class PrintDialog extends gws.View<PrintViewProps> {
         }
 
         if (ps === 'error') {
-            return <gws.ui.Dialog className="modPrintProgressDialog" whenClosed={stop}>
-                <gws.ui.Error text={this.__('modPrintError')} />
-            </gws.ui.Dialog>;
+            return <gws.ui.Alert
+                whenClosed={stop}
+                title={this.__('appError')}
+                error={this.__('modPrintError')}
+            />;
         }
 
         return null;

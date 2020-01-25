@@ -52,12 +52,12 @@ class SearchResults extends gws.View<SearchViewProps> {
 class SearchBox extends gws.View<SearchViewProps> {
     sideButton() {
         if (this.props.searchWaiting)
-            return <gws.ui.IconButton
+            return <gws.ui.Button
                 className="modSearchWaitButton"
             />;
 
         if (this.props.searchInput)
-            return <gws.ui.IconButton
+            return <gws.ui.Button
                 className="modSearchClearButton"
                 tooltip={this.__('modSearchClearButton')}
                 whenTouched={() => _master(this).clear()}
@@ -68,7 +68,7 @@ class SearchBox extends gws.View<SearchViewProps> {
         return <div className="modSearchBox">
             <Row>
                 <Cell>
-                    <gws.ui.IconButton className='modSearchIcon'/>
+                    <gws.ui.Button className='modSearchIcon'/>
                 </Cell>
                 <Cell flex>
                     <gws.ui.TextInput

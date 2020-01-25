@@ -45,7 +45,7 @@ class DrawToolboxView extends gws.View<DrawProps> {
 
         let button = (type, cls, tooltip) => {
             return <Cell>
-                <gws.ui.IconButton
+                <gws.ui.Button
                     {...gws.tools.cls(cls, type === shapeType && 'isActive')}
                     tooltip={tooltip}
                     whenTouched={() => master.setShapeType(type)}
@@ -63,14 +63,14 @@ class DrawToolboxView extends gws.View<DrawProps> {
 
         if (this.props.drawMode) {
             buttons.push(
-                <gws.ui.IconButton
+                <gws.ui.Button
                     className="modDrawOkButton"
                     tooltip={this.props.controller.__('modDrawOkButton')}
                     whenTouched={() => master.commit()}
                 />
             )
             // buttons.push(
-            //     <gws.ui.IconButton
+            //     <gws.ui.Button
             //         className="modDrawCancelButton"
             //         tooltip={this.props.controller.__('modDrawCancelButton')}
             //         whenTouched={() => master.stopDrawing()}

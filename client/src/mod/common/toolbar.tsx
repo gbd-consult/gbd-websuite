@@ -49,7 +49,7 @@ class ButtonView extends gws.View<ToolbarButtonProps> {
         let touched = () => this.disabled ? null : this.props.whenTouched(),
             cls = gws.tools.cls(this.props.iconClass, this.active && 'isActive', this.disabled && 'isDisabled');
 
-        let btn = <gws.ui.IconButton
+        let btn = <gws.ui.Button
             {...cls}
             tooltip={this.props.tooltip}
             whenTouched={touched}
@@ -137,7 +137,7 @@ class ToolbarContainerView extends gws.View<ToolbarContainerProps> {
             {front.map(cc => <div className='modToolbarItem' key={cc.uid}>{cc.barView}</div>)}
 
             {rest.length > 0 && <div className='modToolbarItem'>
-                <gws.ui.IconButton
+                <gws.ui.Button
                     {...gws.tools.cls('modToolbarOverflowButton', expanded && 'isActive')}
                     tooltip={this.__('modToolbarOverflowButton')}
                     whenTouched={() => this.props.controller.update({

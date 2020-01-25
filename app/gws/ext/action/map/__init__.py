@@ -40,6 +40,10 @@ class DescribeLayerParams(t.Params):
     layerUid: str
 
 
+class DescribeLayerResponse(t.Params):
+    description: str
+
+
 class GetFeaturesParams(t.Params):
     bbox: t.Optional[t.Extent]
     layerUid: str
@@ -125,10 +129,10 @@ class Object(gws.ActionObject):
 
         return t.HttpResponse(mime='image/png', content=img or gws.tools.misc.Pixels.png8)
 
-    def api_describe_layer(self, req: t.IRequest, p: DescribeLayerParams) -> t.HttpResponse:
+    def api_describe_layer(self, req: t.IRequest, p: DescribeLayerParams) -> DescribeLayerResponse:
         layer = req.require_layer(p.layerUid)
 
-        return t.HttpResponse(mime='text/html', content=layer.description)
+        return DescribeLayerResponse(description=layer.description)
 
     def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""

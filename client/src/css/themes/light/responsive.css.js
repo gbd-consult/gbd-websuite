@@ -84,12 +84,6 @@ module.exports = v => ({
             ...v.SHADOW,
             ...v.CENTER_BOX(800, 500),
 
-            '&.modPrintProgressDialog': {
-                ...v.CENTER_BOX(400, 190),
-            },
-            '&.modGekosDialog': {
-                ...v.CENTER_BOX(300, 280),
-            },
             '&.modAlkisSelectDialog': {
                 ...v.CENTER_BOX(300, 200),
             }

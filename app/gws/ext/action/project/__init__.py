@@ -32,4 +32,4 @@ class Object(gws.ActionObject):
         return InfoResponse(
             project=project.props_for(req.user),
             localeData=ld,
-            user=req.user.props)
+            user=None if req.user.is_guest else req.user.props)

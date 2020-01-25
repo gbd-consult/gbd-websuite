@@ -614,17 +614,17 @@ abstract class DimensionTool extends gws.Tool {
 
         let buttons = [
 
-            <gws.ui.IconButton
+            <gws.ui.Button
                 {...gws.tools.cls('modDimensionModifyButton', at === 'Tool.Dimension.Modify' && 'isActive')}
                 tooltip={this.__('modDimensionModifyButton')}
                 whenTouched={() => master.startModify()}
             />,
-            <gws.ui.IconButton
+            <gws.ui.Button
                 {...gws.tools.cls('modDimensionLineButton', at === 'Tool.Dimension.Line' && 'isActive')}
                 tooltip={this.__('modDimensionLineButton')}
                 whenTouched={() => master.startDraw('Line')}
             />,
-            <gws.ui.IconButton
+            <gws.ui.Button
                 className="modDimensionRemoveButton"
                 tooltip={this.__('modDimensionRemoveButton')}
                 whenTouched={() => master.removePoints()}
@@ -970,14 +970,14 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
                     <Row>
                         <Cell flex/>
                         <Cell>
-                            <gws.ui.IconButton
+                            <gws.ui.Button
                                 className="cmpButtonFormOk"
                                 tooltip={this.props.controller.__('modAnnotateSaveButton')}
                                 whenTouched={submit}
                             />
                         </Cell>
                         <Cell>
-                            <gws.ui.IconButton
+                            <gws.ui.Button
                                 className="cmpButtonFormCancel"
                                 whenTouched={() => {
                                     master.selectElement(null);

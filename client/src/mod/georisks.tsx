@@ -338,14 +338,14 @@ class GeorisksDialog extends gws.View<GeorisksViewProps> {
             <Row>
                 <Cell flex/>
                 <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         className="cmpButtonFormOk"
                         disabled={!this.props.controller.reportFormIsValid()}
                         whenTouched={() => this.props.controller.submitReportForm()}
                     />
                 </Cell>
                 <Cell>
-                    <gws.ui.IconButton
+                    <gws.ui.Button
                         className="cmpButtonFormCancel"
                         whenTouched={() => this.close()}
                     />

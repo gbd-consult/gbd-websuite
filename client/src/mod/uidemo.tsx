@@ -782,7 +782,7 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
             uiDemoCountry: 'DE',
             uiDemoDate: '2018-11-22',
 
-            uiDemoUseDialog: 'form',
+            uiDemoUseDialog: '',
 
             uiDemoUseTabular: true,
             uiDemoUseTitle: true,

@@ -17,7 +17,7 @@ class LoginParams(t.Params):
 
 class Object(gws.ActionObject):
 
-    def api_check(self, req: t.IRequest, p: t.NoParams) -> Response:
+    def api_check(self, req: t.IRequest, p: t.Params) -> Response:
         """Check the authorization status"""
 
         return _feedback(req)
@@ -28,7 +28,7 @@ class Object(gws.ActionObject):
         req.login(p.username, p.password)
         return _feedback(req)
 
-    def api_logout(self, req: t.IRequest, p: t.NoParams) -> Response:
+    def api_logout(self, req: t.IRequest, p: t.Params) -> Response:
         """Perform a logout"""
 
         req.logout()

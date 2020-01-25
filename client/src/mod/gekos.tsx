@@ -51,53 +51,34 @@ class GekosDialog extends gws.View<GekosViewProps> {
         if (!this.props.gekosDialogActive)
             return null;
 
-        let data = [
-            {
-                name: 'gekosX',
-                title: 'X',
-                value: this.props.gekosX,
-                editable: true,
-            },
-            {
-                name: 'gekosY',
-                title: 'Y',
-                value: this.props.gekosY,
-                editable: true,
-            },
-        ];
+        let cc = this.props.controller;
 
-        let close = () => this.props.controller.update({gekosDialogActive: false});
+        let close = () => cc.update({gekosDialogActive: false});
+
+        let buttons = [
+            <gws.ui.Button className="cmpButtonFormOk" whenTouched={() => this.props.controller.run()}/>,
+            <gws.ui.Button className="cmpButtonFormCancel" whenTouched={close}/>
+        ];
 
         return <gws.ui.Dialog
             className="modGekosDialog"
             title={STRINGS.confirmText}
             whenClosed={close}
+            buttons={buttons}
         >
-            <Form>
-                <Row>
-                    <Cell flex>
-                        <gws.components.sheet.Editor
-                            data={data}
-                            whenChanged={(k, v) => this.props.controller.update({[k]: v})}
-                            whenEntered={() => this.props.controller.run()}
-                        />
-                    </Cell>
-                </Row>
-                <Row>
-                    <Cell flex/>
-                    <Cell>
-                        <gws.ui.IconButton
-                            className="cmpButtonFormOk"
-                            whenTouched={() => this.props.controller.run()}
-                        />
-                    </Cell>
-                    <Cell>
-                        <gws.ui.IconButton
-                            className="cmpButtonFormCancel"
-                            whenTouched={close}
-                        />
-                    </Cell>
-                </Row>
+            <Form tabular>
+                <gws.ui.TextInput
+                    label="X"
+                    value={cc.getValue('gekosX')}
+                    whenChanged={v => cc.update({gekosX: v})}
+                    whenEntered={v => cc.run()}
+                />
+                <gws.ui.TextInput
+                    label="Y"
+                    value={cc.getValue('gekosY')}
+                    whenChanged={v => cc.update({gekosY: v})}
+                    whenEntered={v => cc.run()}
+                />
             </Form>
         </gws.ui.Dialog>;
     }

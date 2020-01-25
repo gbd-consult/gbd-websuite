@@ -8,9 +8,15 @@ module.exports = v => ({
         ...v.SIDEBAR_AUX_BUTTON('google:file/folder_open')
     },
 
-    '.uiDialog.modStorageDialog': {
+    '.uiDialog.modStorageReadDialog': {
         [v.MEDIA('large+')]: {
-            ...v.CENTER_BOX(300, 250),
+            ...v.CENTER_BOX(300, 500),
+        },
+    },
+
+    '.uiDialog.modStorageWriteDialog': {
+        [v.MEDIA('large+')]: {
+            ...v.CENTER_BOX(300, 300),
         },
     }
 

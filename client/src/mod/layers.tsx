@@ -5,33 +5,34 @@ import * as sidebar from './common/sidebar';
 
 let {Row, Cell} = gws.ui.Layout;
 
-interface LayersViewProps extends gws.types.ViewProps {
+interface ViewProps extends gws.types.ViewProps {
     controller: LayersSidebar;
     mapUpdateCount: number;
     mapSelectedLayer?: gws.types.IMapLayer;
     layer?: gws.types.IMapLayer;
 }
 
-const LayersStoreKeys = [
+const StoreKeys = [
     'mapUpdateCount',
     'mapSelectedLayer'
 ];
 
-class LayersTreeTitle extends gws.View<LayersViewProps> {
+class LayersTreeTitle extends gws.View<ViewProps> {
     render() {
         let click = async () => {
             this.props.controller.map.deselectAllLayers();
             await this.props.controller.map.selectLayer(this.props.layer);
         };
-        return <gws.ui.Button
+
+        return <gws.ui.Touchable    
             className="modLayersTreeTitle"
             whenTouched={click}
-        >{this.props.layer.title}</gws.ui.Button>
+        >{this.props.layer.title}</gws.ui.Touchable>
 
     }
 }
 
-class LayersCheckButton extends gws.View<LayersViewProps> {
+class LayersCheckButton extends gws.View<ViewProps> {
     render() {
         let layer = this.props.layer,
             isExclusive = layer.parent && layer.parent.exclusive,
@@ -46,7 +47,7 @@ class LayersCheckButton extends gws.View<LayersViewProps> {
             isGroup && 'isGroup',
         );
 
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             {...cls}
             tooltip={this.__('modLayersCheckButton')}
             whenTouched={() => this.props.controller.map.setLayerChecked(layer, !(layer.visible && layer.checked))}
@@ -54,13 +55,13 @@ class LayersCheckButton extends gws.View<LayersViewProps> {
     }
 }
 
-class LayersExpandButton extends gws.View<LayersViewProps> {
+class LayersExpandButton extends gws.View<ViewProps> {
     render() {
         let layer = this.props.layer,
             cls = layer.expanded ? 'modLayersCollapseButton' : 'modLayersExpandButton',
             fn = () => this.props.controller.map.setLayerExpanded(layer, !layer.expanded);
 
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             className={cls}
             tooltip={this.__('modLayersExpandButton')}
             whenTouched={fn}
@@ -68,9 +69,9 @@ class LayersExpandButton extends gws.View<LayersViewProps> {
     }
 }
 
-class LayersLeafButton extends gws.View<LayersViewProps> {
+class LayersLeafButton extends gws.View<ViewProps> {
     render() {
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             className='modLayersLeafButton'
             tooltip={this.__('modLayersLeafButton')}
         />;
@@ -92,7 +93,7 @@ let _layerTree = (layer: gws.types.IMapLayer, props) => {
     return cc.length ? cc : null;
 };
 
-class LayersTreeNode extends gws.View<LayersViewProps> {
+class LayersTreeNode extends gws.View<ViewProps> {
     render() {
 
         let layer = this.props.layer,
@@ -120,7 +121,7 @@ class LayersTreeNode extends gws.View<LayersViewProps> {
 
 const ZOOM_EXTENT_PADDING = 50;
 
-class LayerSidebarDetails extends gws.View<LayersViewProps> {
+class LayerSidebarDetails extends gws.View<ViewProps> {
     render() {
         let layer = this.props.layer,
             cc = this.props.controller,
@@ -175,7 +176,7 @@ class LayerSidebarDetails extends gws.View<LayersViewProps> {
     }
 }
 
-class LayersSidebarView extends gws.View<LayersViewProps> {
+class LayersSidebarView extends gws.View<ViewProps> {
     render() {
         let sel = this.props.mapSelectedLayer;
 
@@ -205,7 +206,7 @@ class LayersSidebar extends gws.Controller implements gws.types.ISidebarItem {
 
     get tabView() {
         return this.createElement(
-            this.connect(LayersSidebarView, LayersStoreKeys),
+            this.connect(LayersSidebarView, StoreKeys),
             {map: this.map}
         );
     }

@@ -25,7 +25,7 @@ interface ButtonProps extends SidebarProps {
 
 class CloseButton extends gws.View<SidebarProps> {
     render() {
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             {...gws.tools.cls('modSidebarCloseButton')}
             tooltip={this.__('modSidebarCloseButton')}
             whenTouched={() => this.props.controller.setVisible(false)}
@@ -36,7 +36,7 @@ class CloseButton extends gws.View<SidebarProps> {
 
 class OpenButton extends gws.View<SidebarProps> {
     render() {
-        return <gws.ui.IconButton
+        return <gws.ui.Button
             {...gws.tools.cls('modSidebarOpenButton')}
             tooltip={this.__('modSidebarOpenButton')}
             whenTouched={() => this.props.controller.setVisible(true)}
@@ -57,7 +57,7 @@ class HeaderButton extends gws.View<ButtonProps> {
                 disabled && 'isDisabled');
 
         return <Cell>
-            <gws.ui.IconButton
+            <gws.ui.Button
                 {...cls}
                 tooltip={item.tooltip}
                 whenTouched={() => disabled ? null : this.props.controller.setActiveTab(type)}
@@ -83,7 +83,7 @@ class PopupHeaderButton extends gws.View<ButtonProps> {
 
         return <Row>
             <Cell>
-                <gws.ui.IconButton
+                <gws.ui.Button
                     {...cls}
                     tooltip={item.tooltip}
                     whenTouched={touched}
@@ -122,7 +122,7 @@ class Header extends gws.View<SidebarProps> {
                 {front.map(it =>
                     <HeaderButton key={it.tag} {...this.props} item={it}/>
                 )}
-                {rest.length > 0 && <gws.ui.IconButton
+                {rest.length > 0 && <gws.ui.Button
                     {...gws.tools.cls('modSidebarOverflowButton', expanded && 'isActive')}
                     tooltip={this.__('modSidebarOverflowButton')}
                     whenTouched={() => this.props.controller.update({
@@ -276,7 +276,7 @@ interface AuxButtonProps {
 export class AuxButton extends React.PureComponent<AuxButtonProps> {
     render() {
         return <Cell>
-            <gws.ui.IconButton {...this.props}/>
+            <gws.ui.Button {...this.props}/>
         </Cell>
     }
 }
@@ -289,7 +289,7 @@ interface AuxCloseButtonProps {
 export class AuxCloseButton extends React.PureComponent<AuxCloseButtonProps> {
     render() {
         return <Cell>
-            <gws.ui.IconButton
+            <gws.ui.Button
                 className='modSidebarAuxCloseButton'
                 tooltip={this.props.tooltip}
                 whenTouched={this.props.whenTouched}
