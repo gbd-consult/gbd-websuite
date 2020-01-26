@@ -94,6 +94,7 @@ module.exports = v => ({
     '.uiLabel': {
         fontSize: v.CONTROL_FONT_SIZE,
         fontWeight: 600,
+        lineHeight: 1.2,
         color: v.TEXT_COLOR,
         padding: [0, 0, v.UNIT2, 0],
         cursor: 'default',

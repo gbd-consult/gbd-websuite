@@ -18,7 +18,7 @@ module.exports = v => ({
         },
 
         '.uiDropDown': {
-            width: 250,
+            width: '100%',
         },
 
         '.uiDropDownContent': {

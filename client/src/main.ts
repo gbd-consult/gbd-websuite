@@ -28,7 +28,7 @@ let mods = [
     require('./mod/print'),
     require('./mod/select'),
     require('./mod/search'),
-    // require('./mod/styler'),
+    require('./mod/style'),
     require('./mod/overview'),
     require('./mod/user'),
     require('./mod/zoom'),

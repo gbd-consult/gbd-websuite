@@ -283,16 +283,20 @@ module.exports = {
     modLocationErrorNoLocation: 'Standortdaten sind nicht verfügbar',
     modLocationErrorTooFar: 'Ihr Standort liegt außerhalb des Kartenbereichs',
 
-    modStylerFill: 'Füllfarbe',
-    modStylerStroke: 'Strichfarbe',
-    modStylerStrokeWidth: 'Strichbreite',
-    modStylerPointSize: 'Punktgröße',
-    modStylerLabelEnabled: 'Beschriftungen',
-    modStylerLabelBackground: 'Hintegrundfarbe',
-    modStylerLabelFill: 'Farbe',
-    modStylerLabelFontSize: 'Schriftgröße',
-    modStylerLabelOffsetX: 'Versatz X',
-    modStylerLabelOffsetY: 'Versatz Y',
+    modStyleSidebarTitle: 'Stil',
+    modStyleLabelEnabled: 'Beschriftungen',
+    modStyleName: 'Name',
+    modStyleRename: 'Umbenennen',
+
+    modStyleProp_fill: 'Füllfarbe',
+    modStyleProp_stroke: 'Strichfarbe',
+    modStyleProp_stroke_width: 'Strichbreite',
+    modStyleProp_point_size: 'Punktgröße',
+    modStyleProp_label_background: 'Beschrifrung Hintergrund',
+    modStyleProp_label_fill: 'Beschrifrung Farbe',
+    modStyleProp_label_font_size: 'Schriftgröße',
+    modStyleProp_label_offset_x: 'Versatz X',
+    modStyleProp_label_offset_y: 'Versatz Y',
 
 
 

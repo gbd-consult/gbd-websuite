@@ -110,12 +110,7 @@ def _px(val):
     if isinstance(val, int):
         return val
     m = re.match(r'^(-?\d+)px', str(val))
-    if m:
-        try:
-            return int(m.group(1))
-        except:
-            pass
-    return _int(val)
+    return _int(m.group(1) if m else val)
 
 
 def _int(val):

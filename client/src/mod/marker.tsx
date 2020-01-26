@@ -31,10 +31,6 @@ class MarkerController extends gws.Controller {
                 y = Number(this.app.urlParams['y']),
                 z = Number(this.app.urlParams['z']);
 
-            x = 458914.11
-            y = 5747330.02
-
-
             if (x && y) {
                 this.showXYZ(x, y, z);
                 return;

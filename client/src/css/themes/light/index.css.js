@@ -23,10 +23,11 @@ v.UNIT8 = v.UNIT * 8;
 v.CONTROL_SIZE = v.UNIT * 10;
 
 v.TEXT_COLOR = v.COLOR.blueGrey800;
+v.LABEL_COLOR = v.COLOR.blueGrey400;
 v.LIGHT_TEXT_COLOR = v.COLOR.blueGrey500;
 v.ICON_COLOR = v.COLOR.blueGrey600;
 v.PLACEHOLDER_COLOR = v.COLOR.blueGrey300;
-v.BORDER_COLOR = v.COLOR.blueGrey300;
+v.BORDER_COLOR = v.COLOR.blueGrey200;
 v.DISABLED_COLOR = v.COLOR.grey500;
 v.ERROR_COLOR = v.COLOR.red600;
 v.INFO_COLOR = v.COLOR.blue600;
@@ -280,8 +281,8 @@ let rules = [
     require('./mod/annotate.css'),
     require('./mod/decoration.css'),
     require('./mod/dimension.css'),
-    require('./mod/draw.css'),
     require('./mod/dprocon.css'),
+    require('./mod/draw.css'),
     require('./mod/edit.css'),
     require('./mod/gekos.css'),
     require('./mod/georisks.css'),
@@ -297,6 +298,7 @@ let rules = [
     require('./mod/select.css'),
     require('./mod/sidebar.css'),
     require('./mod/storage.css'),
+    require('./mod/style.css'),
     require('./mod/task.css'),
     require('./mod/toolbar.css'),
     require('./mod/toolbox.css'),

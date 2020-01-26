@@ -68,7 +68,7 @@ module.exports = v => ({
 
     },
 
-    '.uiGroup .uiControlBox': {
+    '.uiGroup > .uiControlBox': {
         height: 'auto',
         padding: [0, v.UNIT2, 0, 0],
     },
