@@ -37,8 +37,8 @@ interface AlkisViewProps extends gws.types.ViewProps {
 
     alkisFsParams: gws.api.AlkissearchFindFlurstueckParams;
 
-    alkisFsStrassen: Array<gws.ui.MenuItem>;
-    alkisFsGemarkungen: Array<gws.ui.MenuItem>;
+    alkisFsStrassen: Array<gws.ui.ListItem>;
+    alkisFsGemarkungen: Array<gws.ui.ListItem>;
 
     alkisFsResults: Array<gws.types.IMapFeature>;
     alkisFsResultCount: number;
@@ -850,7 +850,7 @@ class AlkisController extends gws.Controller {
         });
     }
 
-    makeGemarkungList(): Array<gws.ui.MenuItem> {
+    makeGemarkungList(): Array<gws.ui.ListItem> {
         let sort = a => a.sort((x, y) => x.text.localeCompare(y.text));
         let gs = this.setup.gemarkungen;
 

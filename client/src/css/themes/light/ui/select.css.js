@@ -5,7 +5,7 @@ module.exports = v => ({
         padding: [0, v.UNIT2, 0, v.UNIT2],
     },
 
-    '.uiMenuItem': {
+    '.uiListItem': {
         cursor: 'default',
         height: v.CONTROL_SIZE,
         fontSize: v.CONTROL_FONT_SIZE,
@@ -21,11 +21,11 @@ module.exports = v => ({
         },
     },
 
-    '.uiMenuItemLevel1': {
+    '.uiListItemLevel1': {
         fontWeight: 800
     },
 
-    '.uiMenuItemLevel2': {
+    '.uiListItemLevel2': {
         paddingLeft: v.UNIT8,
     },
 
