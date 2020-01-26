@@ -260,9 +260,9 @@ class DimensionModel {
         this.styles = {};
 
         DimenstionStyles.forEach(sel => {
-            let s = this.map.getStyleFromSelector(sel);
+            let s = this.map.style.get(sel);
             this.styles[sel] = {
-                source: s ? s.source : '',
+                text: s ? s.text : '',
                 values: s ? s.values : '',
             }
         });
@@ -457,11 +457,11 @@ class DimensionModel {
     drawDefs() {
         let buf = [];
 
-        let lineStyle = this.map.getStyleFromSelector('.modDimensionDimLine');
+        let lineStyle = this.map.style.get('.modDimensionDimLine');
 
         if (lineStyle && lineStyle.values['mark'] === 'arrow') {
 
-            let style = this.map.getStyleFromSelector('.modDimensionDimArrow');
+            let style = this.map.style.get('.modDimensionDimArrow');
 
             let w = style ? parseInt(style.values['width']) : 0;
             let h = style ? parseInt(style.values['height']) : 0;
@@ -499,7 +499,7 @@ class DimensionModel {
 
         if (lineStyle && lineStyle.values['mark'] === 'cross') {
 
-            let style = this.map.getStyleFromSelector('.modDimensionDimCross');
+            let style = this.map.style.get('.modDimensionDimCross');
 
             let h = style ? parseInt(style.values['height']) : 0;
 

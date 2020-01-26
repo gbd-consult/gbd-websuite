@@ -21,17 +21,19 @@ class MarkerLayer extends gws.map.layer.FeatureLayer {
 
 class MarkerController extends gws.Controller {
     layer: MarkerLayer;
-    style: gws.types.IMapStyle;
+    styleName: string = '.modMarkerFeature';
 
     async init() {
-        this.style = this.map.getStyleFromSelector('.modMarkerFeature');
-
         this.app.whenChanged('marker', content => this.show(content));
 
         this.app.whenLoaded(async () => {
             let x = Number(this.app.urlParams['x']),
                 y = Number(this.app.urlParams['y']),
                 z = Number(this.app.urlParams['z']);
+
+            x = 458914.11
+            y = 5747330.02
+
 
             if (x && y) {
                 this.showXYZ(x, y, z);
@@ -153,7 +155,7 @@ class MarkerController extends gws.Controller {
 
         if (g) {
             args.geometry = g;
-            args.style = this.style;
+            args.style = this.styleName;
         }
         ;
 

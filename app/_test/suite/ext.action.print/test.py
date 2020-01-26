@@ -89,14 +89,14 @@ def test_features():
                         },
                         "style": {
                             "type": "css",
-                            "content": {
+                            "values": {
                                 "fill": "rgb(0,255,255)",
-                                "point-size": "20px",
-                                "label-font-size": "12px",
-                                "label-fill": "white",
-                                "label-background": "blue",
-                                "label-placement": "start",
-                                "label-offset-y": "20px",
+                                "point_size": 20,
+                                "label_font_size": 12,
+                                "label_fill": "white",
+                                "label_background": "blue",
+                                "label_placement": "start",
+                                "label_offset_y": 20,
                             }
                         }
                     },
@@ -116,13 +116,13 @@ def test_features():
                         },
                         "style": {
                             "type": "css",
-                            "content": {
+                            "values": {
                                 "fill": "rgba(255,0,0,0.5)",
                                 "stroke": "rgba(0,255,0.5)",
-                                "stroke-width": "3pm",
-                                "label-font-size": "13px",
-                                "label-fill": "white",
-                                "label-background": "blue",
+                                "stroke_width": 3,
+                                "label_font_size": 13,
+                                "label_fill": "white",
+                                "label_background": "blue",
                             }
                         }
                     },
@@ -142,7 +142,7 @@ def test_features():
                         },
                         "style": {
                             "type": "css",
-                            "content": {
+                            "values": {
                                 "fill": "rgba(0,255,0,0.5)",
                             }
                         }

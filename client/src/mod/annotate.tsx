@@ -34,7 +34,6 @@ interface AnnotateFormData {
 
 interface AnnotateFeatureArgs extends gws.types.IMapFeatureArgs {
     labelTemplate: string;
-    selectedStyle: gws.types.IMapStyle;
     shapeType: string;
 }
 
@@ -56,8 +55,6 @@ const AnnotateStoreKeys = [
 class AnnotateFeature extends gws.map.Feature {
     master: AnnotateController;
     labelTemplate: string;
-    selected: boolean;
-    selectedStyle: gws.types.IMapStyle;
     shapeType: string;
     cc: any;
 
@@ -80,23 +77,16 @@ class AnnotateFeature extends gws.map.Feature {
     constructor(master: AnnotateController, args: AnnotateFeatureArgs) {
         super(master.map, args);
         this.master = master;
-        this.selected = false;
         this.labelTemplate = args.labelTemplate;
-        this.selectedStyle = args.selectedStyle;
         this.shapeType = args.shapeType;
 
-        this.oFeature.setStyle((oFeature: ol.Feature, r) => {
-            let s = this.selected ? this.selectedStyle : this.style;
-            return s.apply(oFeature.getGeometry(), this.label, r);
-        });
-        this.oFeature.on('change', e => this.onChange(e));
+        //this.oFeature.on('change', e => this.onChange(e));
         this.geometry.on('change', e => this.onChange(e));
         this.redraw();
     }
 
     setSelected(sel) {
-        this.selected = sel;
-        this.oFeature.changed();
+        this.setMode(sel ? 'selected' : 'normal');
     }
 
     onChange(e) {
@@ -671,16 +661,13 @@ class AnnotateController extends gws.Controller {
     }
 
     newFeature(shapeType, oFeature?: ol.Feature) {
-        let
-            sel = '.modAnnotate' + shapeType,
-            style = this.map.getStyleFromSelector(sel),
-            selectedStyle = this.map.getStyleFromSelector(sel + 'Selected');
+        let sel = '.modAnnotate' + shapeType;
 
         return new AnnotateFeature(_master(this), {
             shapeType,
             oFeature,
-            style,
-            selectedStyle,
+            style: sel,
+            selectedStyle: sel + '.selected',
             labelTemplate: defaultLabelTemplates[shapeType],
         });
 

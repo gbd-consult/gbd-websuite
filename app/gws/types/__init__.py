@@ -100,6 +100,9 @@ DirPath = str
 #:alias String like "1w 2d 3h 4m 5s" or a number of seconds
 Duration = str
 
+#:alias CSS color name
+Color = str
+
 #:alias Regular expression, as used in Python
 Regex = str
 
@@ -400,9 +403,10 @@ class IShape:
     def transformed(self, to_crs, **kwargs) -> 'IShape': pass
 
 class IStyle:
-    content: dict = None
     props: 'StyleProps' = None
-    type: str = None
+    text: str = None
+    type: 'StyleType' = None
+    values: 'StyleValues' = None
 
 class IUser:
     attributes: dict = None
@@ -616,14 +620,79 @@ class StorageRecord(Data):
     updated: int = None
     user_fid: str = None
 
+class StyleLabelAlign(Enum):
+    center = 'center'
+    left = 'left'
+    right = 'right'
+
+class StyleLabelFontStyle(Enum):
+    italic = 'italic'
+    normal = 'normal'
+
+class StyleLabelFontWeight(Enum):
+    bold = 'bold'
+    normal = 'normal'
+
+class StyleLabelPlacement(Enum):
+    end = 'end'
+    middle = 'middle'
+    start = 'start'
+
+class StyleMarker(Enum):
+    circle = 'circle'
+    square = 'square'
+
 class StyleProps(Props):
-    content: dict = None
-    text: str = None
+    text: Optional[str] = None
     type: 'StyleType' = None
+    values: Optional['StyleValues'] = None
+
+class StyleStrokeLineCap(Enum):
+    butt = 'butt'
+    round = 'round'
+    square = 'square'
+
+class StyleStrokeLineJoin(Enum):
+    bevel = 'bevel'
+    miter = 'miter'
+    round = 'round'
 
 class StyleType(Enum):
     css = 'css'
     cssSelector = 'cssSelector'
+
+class StyleValues(Data):
+    fill: Optional['Color'] = None
+    label_align: Optional['StyleLabelAlign'] = None
+    label_background: Optional['Color'] = None
+    label_fill: Optional['Color'] = None
+    label_font_family: Optional[str] = None
+    label_font_size: Optional[int] = None
+    label_font_style: Optional['StyleLabelFontStyle'] = None
+    label_font_weight: Optional['StyleLabelFontWeight'] = None
+    label_line_height: Optional[int] = None
+    label_max_scale: Optional[int] = None
+    label_min_scale: Optional[int] = None
+    label_offset_x: Optional[int] = None
+    label_offset_y: Optional[int] = None
+    label_padding: Optional[List[int]] = None
+    label_placement: Optional['StyleLabelPlacement'] = None
+    label_stroke: Optional['Color'] = None
+    label_stroke_width: Optional[int] = None
+    label_width: Optional[int] = None
+    marker: Optional['StyleMarker'] = None
+    marker_fill: Optional['Color'] = None
+    marker_size: Optional[int] = None
+    marker_stroke: Optional['Color'] = None
+    marker_stroke_width: Optional[int] = None
+    point_size: Optional[int] = None
+    stroke: Optional['Color'] = None
+    stroke_dasharray: Optional[List[int]] = None
+    stroke_dashoffset: Optional[int] = None
+    stroke_linecap: Optional['StyleStrokeLineCap'] = None
+    stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
+    stroke_miterLimit: Optional[int] = None
+    stroke_width: Optional[int] = None
 
 class SvgFragment:
     points: List['Point'] = None

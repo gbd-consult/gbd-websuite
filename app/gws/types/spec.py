@@ -235,8 +235,13 @@ def _read_formatstr(rd, val, spec):
     return _read_str(rd, val, spec)
 
 
-def _read_crsref(rd, val, spec):
+def _read_crs(rd, val, spec):
     # @TODO: crs validation
+    return _read_str(rd, val, spec)
+
+
+def _read_color(rd, val, spec):
+    # @TODO: color validation
     return _read_str(rd, val, spec)
 
 
@@ -309,7 +314,8 @@ _HANDLERS = {
     'tuple': _read_tuple,
     'taggedunion': _read_taggedunion,
 
-    'gws.types.Crs': _read_crsref,
+    'gws.types.Crs': _read_crs,
+    'gws.types.Color': _read_color,
     'gws.types.Date': _read_date,
     'gws.types.DirPath': _read_dirpath,
     'gws.types.Duration': _read_duration,

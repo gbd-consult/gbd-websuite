@@ -16,7 +16,7 @@ interface DrawProps extends gws.types.ViewProps {
     title: string;
     drawCurrentShape: string;
     drawEnabledShapes?: Array<string>;
-    drawStyle?: gws.types.IMapStyle;
+    drawStyle?: gws.types.StyleArg;
     drawMode: boolean;
 }
 
@@ -88,7 +88,7 @@ class DrawToolboxView extends gws.View<DrawProps> {
 }
 
 export class Tool extends gws.Tool {
-    style: gws.types.IMapStyle;
+    styleName: string;
 
 
     get title() {
@@ -171,7 +171,7 @@ class DrawController extends gws.Controller {
 
         this.oInteraction = this.map.drawInteraction({
             shapeType,
-            style: this.currTool.style,
+            style: this.currTool.styleName,
             whenStarted: (oFeatures) => {
                 console.log('DRAW whenStarted', this.state);
                 this.oFeature = oFeatures[0];

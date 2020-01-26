@@ -41,6 +41,9 @@ DirPath = str
 #:alias String like "1w 2d 3h 4m 5s" or a number of seconds
 Duration = str
 
+#:alias CSS color name
+Color = str
+
 #:alias Regular expression, as used in Python
 Regex = str
 

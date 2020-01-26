@@ -1083,7 +1083,7 @@ class AlkisController extends gws.Controller {
         let q = {
             findParams: this.paramsForFeatures(fs),
             printParams,
-            highlightStyle: this.map.getStyleFromSelector('.modMarkerFeature').props,
+            highlightStyle: this.app.style.get('.modMarkerFeature').props,
         };
 
         this.update({
@@ -1120,7 +1120,7 @@ class AlkisController extends gws.Controller {
         if (!this.selectionLayer) {
             this.selectionLayer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
                 uid: '_select',
-                style: this.map.getStyleFromSelector('.modAlkisSelectFeature'),
+                styleName: '.modAlkisSelectFeature',
             }));
         }
 

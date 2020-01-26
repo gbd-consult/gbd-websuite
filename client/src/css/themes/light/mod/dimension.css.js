@@ -67,7 +67,7 @@ module.exports = v => {
             strokeWidth: 2,
             stroke: BASE_COLOR,
             fill: 'transparent',
-            mark: 'arrow',
+            marker: 'arrow',
             offsetY: 0,
         },
 

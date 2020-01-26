@@ -11,14 +11,66 @@ import gws.tools.units as units
 import gws.types as t
 
 DEFAULT_FONT_SIZE = 10
-DEFAULT_MARK_SIZE = 10
+DEFAULT_MARKER_SIZE = 10
 DEFAULT_POINT_SIZE = 10
+
+
+def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale: int, rotation: int) -> str:
+    geom = _to_pixel(geom, extent, dpi, scale)
+
+    # @TODO use geom.svg
+    if not sv:
+        return svgis.draw.geometry(shapely.geometry.mapping(geom), precision=0)
+
+    marker = ''
+    marker_id = ''
+    text = ''
+
+    if sv.marker:
+        marker_id = '_M' + gws.random_string(8)
+        marker = _marker(marker_id, sv)
+
+    extra_y_offset = 0
+
+    if geom.type == 'Point':
+        extra_y_offset = 12
+    if geom.type == 'LineString':
+        extra_y_offset = 6
+
+    if label:
+        text = _label(geom, label, sv, extra_y_offset)
+
+    atts = {
+        'precision': 0
+    }
+
+    _fill_stroke(atts, sv, '')
+
+    if marker:
+        atts['marker-start'] = atts['marker-mid'] = atts['marker-end'] = f'url(#{marker_id})'
+
+    if geom.type in ('Point', 'MultiPoint'):
+        atts['r'] = (sv.point_size or DEFAULT_POINT_SIZE) // 2
+
+    if geom.type in ('LineString', 'MultiLineString'):
+        atts['fill'] = 'none'
+
+    g = svgis.draw.geometry(shapely.geometry.mapping(geom), **gws.compact(atts))
+    return marker + g + text
+
+
+def to_png(elements, size: t.Size):
+    elements = '\n'.join(elements)
+    svg = f'<svg version="1.1" xmlns="http://www.w3.org/2000/svg">{elements}</svg>'
+
+    with wand.image.Image(blob=svg.encode('utf8'), format='svg', background='None', width=size[0], height=size[1]) as image:
+        return image.make_blob('png')
 
 
 def convert_fragment(svg_fragment, rv: t.RenderView):
     def trans(x, y):
-        cx = x - rv.bbox[0]
-        cy = rv.bbox[3] - y
+        cx = x - rv.bounds.extent[0]
+        cy = rv.bounds.extent[3] - y
 
         cx /= rv.scale
         cy /= rv.scale
@@ -47,10 +99,12 @@ def convert_fragment(svg_fragment, rv: t.RenderView):
     return svg
 
 
-def _to_pixel(geo, bbox, dpi, scale):
+##
+
+def _to_pixel(geom, extent, dpi, scale):
     def trans(x, y):
-        cx = x - bbox[0]
-        cy = bbox[3] - y
+        cx = x - extent[0]
+        cy = extent[3] - y
 
         cx /= scale
         cy /= scale
@@ -60,198 +114,101 @@ def _to_pixel(geo, bbox, dpi, scale):
 
         return cx, cy
 
-    return shapely.ops.transform(trans, geo)
+    return shapely.ops.transform(trans, geom)
 
 
-def _tag(name, attrs, content=None):
-    attrs = ' '.join(f'{k}="{v}"' for k, v in gws.compact(attrs).items())
-    if content:
-        return f'<{name} {attrs}>{content}</{name}>'
-    return f'<{name} {attrs}/>'
-
-
-_all_props = (
-    'fill',
-
-    'label-anchor',
-    'label-background',
-    'label-fill',
-    'label-font-family',
-    'label-font-size',
-    'label-font-style',
-    'label-font-weight',
-    'label-line-height',
-    'label-offset-x',
-    'label-offset-y',
-    'label-padding',
-    'label-placement',
-
-    'mark',
-    'mark-fill',
-    'mark-size',
-    'mark-stroke',
-    'mark-stroke-dasharray',
-    'mark-stroke-dashoffset',
-    'mark-stroke-linecap',
-    'mark-stroke-linejoin',
-    'mark-stroke-miterlimit',
-    'mark-stroke-width',
-
-    'stroke',
-    'stroke-dasharray',
-    # 'stroke-dashoffset',
-    # 'stroke-linecap',
-    # 'stroke-linejoin',
-    # 'stroke-miterlimit',
-    'stroke-width',
-
-    'point-size',
-
-)
-
-_color_patterns = (
-    r'^#[0-9a-fA-F]{6}$',
-    r'^#[0-9a-fA-F]{8}$',
-    r'^rgb\(\d{1,3},\d{1,3},\d{1,3}\)$',
-    r'^rgba\(\d{1,3},\d{1,3},\d{1,3},\d?(\.\d{1,3})?\)$',
-    r'^[a-z]{3,50}$',
-)
-
-
-def _as_color(val):
-    if val is None:
-        return None
-    val = re.sub(r'\s+', '', val)
-    if any(re.match(p, val) for p in _color_patterns):
-        return val
-
-
-def _as_px(val):
-    if val is None:
-        return None
-    if isinstance(val, int):
-        return val
-    m = re.match(r'^(-?\d+)px', str(val))
-    if m:
-        return int(m.group(1))
-
-
-def _as_px_array(val):
-    if val is None:
-        return None
-    val = str(val).split()
-    p = [None]
-
-    if len(val) == 1:
-        p = _as_px(val[0])
-        p = [p, p, p, p]
-    elif len(val) == 2:
-        p = _as_px(val[0])
-        q = _as_px(val[1])
-        p = [p, q, p, q]
-    elif len(val) == 4:
-        p = [_as_px(q) for q in val]
-
-    if all(q is not None for q in p):
-        return p
-
-
-def _as_enum(val, *args):
-    if val is None:
-        return None
-    if any(a == val for a in args):
-        return val
-
-
-def _fill_stroke(attrs, css, prefix=''):
-    v = _as_color(css.get(prefix + 'fill'))
-    attrs['fill'] = v or 'none'
-
-    v = _as_color(css.get(prefix + 'stroke'))
-    if not v:
-        return
-    attrs['stroke'] = v
-
-    v = _as_px(css.get(prefix + 'stroke-width'))
-    attrs['stroke-width'] = f'{v or 1}px'
-
-    v = css.get(prefix + 'stroke-dasharray')
-    if v:
-        v = v.split()
-        if all(p.isdigit() for p in v):
-            attrs['stroke-dasharray'] = ' '.join(v)
-
-
-def _marker(uid, css):
-    mark = css.get('mark')
-    if not mark:
-        return
-
-    size = _as_px(css.get('mark-size')) or DEFAULT_MARK_SIZE
+def _marker(uid, sv):
+    size = sv.marker_size or DEFAULT_MARKER_SIZE
     size2 = size // 2
 
     content = None
-    content_attrs = {}
+    atts = {}
 
-    _fill_stroke(content_attrs, css, 'mark-')
+    _fill_stroke(atts, sv, 'marker_')
 
-    if mark == 'circle':
-        content_attrs.update({
+    if sv.marker == 'circle':
+        atts.update({
             'cx': size2,
             'cy': size2,
             'r': size2,
         })
-        content = _tag('circle', content_attrs)
+        content = _tag('circle', atts)
 
-    return _tag('marker', {
-        'id': uid,
-        'viewBox': f'0 0 {size} {size}',
-        'refX': size2,
-        'refY': size2,
-        'markerUnits': 'userSpaceOnUse',
-        'markerWidth': size,
-        'markerHeight': size,
-    }, content)
-
-
-def _map_font(css):
-    # @TODO: allow for more fonts and customize the mapping
-
-    DEFAULT_FONT = 'DejaVuSans'
-
-    if css.get('label-font-weight') == 'bold':
-        return DEFAULT_FONT + '-Bold'
-    return DEFAULT_FONT
+    if content:
+        return _tag('marker', {
+            'id': uid,
+            'viewBox': f'0 0 {size} {size}',
+            'refX': size2,
+            'refY': size2,
+            'markerUnits': 'userSpaceOnUse',
+            'markerWidth': size,
+            'markerHeight': size,
+        }, content)
 
 
-def _text(cx, cy, label, css):
+def _label(geom, label, sv, extra_y_offset=0):
+    cx, cy = _label_position(geom, sv, extra_y_offset)
+    return _text(cx, cy, label, sv)
+
+
+def _label_position(geom, sv, extra_y_offset=0):
+    if sv.label_placement == 'start':
+        x, y = _get_points(geom)[0]
+    elif sv.label_placement == 'end':
+        x, y = _get_points(geom)[-1]
+    else:
+        c = geom.centroid
+        x, y = c.x, c.y
+    return (
+        round(x) + (sv.label_offset_x or 0),
+        round(y) + extra_y_offset + (sv.label_offset_y or 0)
+    )
+
+
+def _get_points(geom):
+    t = geom.type
+
+    if t in ('Point', 'LineString', 'LinearRing'):
+        return geom.coords
+    if t in ('Polygon', 'LineString', 'LinearRing'):
+        return geom.exterior.coords
+    if t.startswith('Multi'):
+        return [p for g in geom.geoms for p in _get_points(g)]
+
+
+def _text(cx, cy, label, sv):
     # @TODO label positioning needs more work
 
-    font_name = _map_font(css)
-    font_size = _as_px(css.get('label-font-size')) or DEFAULT_FONT_SIZE
+    font_name = _map_font(sv)
+    font_size = sv.label_font_size or DEFAULT_FONT_SIZE
     font = ImageFont.truetype(font=font_name, size=font_size)
 
-    attrs = gws.compact({
+    anchor = 'start'
+
+    if sv.label_align == 'right':
+        anchor = 'end'
+    elif sv.label_align == 'center':
+        anchor = 'middle'
+
+    atts = gws.compact({
         'font-family': font_name.split('-')[0],
         'font-size': f'{font_size}px',
-        'font-weight': _as_enum(css.get('label-font-weight'), 'bold') or 'normal',
-        'font-style': _as_enum(css.get('label-font-style'), 'italic') or 'normal',
-        'text-anchor': _as_enum(css.get('label-anchor'), 'start', 'middle', 'end') or 'middle',
+        'font-weight': sv.label_font_weight,
+        'font-style': sv.label_font_style,
+        'text-anchor': anchor,
     })
 
-    _fill_stroke(attrs, css, 'label-')
+    _fill_stroke(atts, sv, 'label_')
 
     lines = list(gws.lines(label))
     _, em_height = font.getsize('MMM')
     metrics = [font.getsize(s) for s in lines]
 
-    line_height = _as_px(css.get('label-line-height')) or 1
-    padding = _as_px_array(css.get('label-padding')) or [0, 0, 0, 0]
+    line_height = sv.label_line_height or 1
+    padding = sv.label_padding or [0, 0, 0, 0]
 
     ly = cy - padding[2]
     lx = cx
-
-    anchor = attrs['text-anchor']
 
     if anchor == 'start':
         lx += padding[3]
@@ -272,10 +229,9 @@ def _text(cx, cy, label, css):
         spans.append(_tag('tspan', {'x': lx, 'y': ly}, s))
         ly -= (em_height + line_height)
 
-    text = _tag('text', attrs, ''.join(reversed(spans)))
-    bgr = _as_color(css.get('label-background'))
+    text = _tag('text', atts, ''.join(reversed(spans)))
 
-    if not bgr:
+    if not sv.label_background:
         return text
 
     width = max(xy[0] for xy in metrics) + padding[1] + padding[3]
@@ -287,98 +243,51 @@ def _text(cx, cy, label, css):
     else:
         bx = cx - width // 2
 
-    rattrs = {
+    ratts = {
         'x': bx,
         'y': cy - height,
         'width': width,
         'height': height,
-        'fill': bgr
+        'fill': sv.label_background,
     }
 
-    return _tag('rect', rattrs) + text
+    return _tag('rect', ratts) + text
 
 
-def _points(geo):
-    t = geo.type
+def _map_font(sv):
+    # @TODO: allow for more fonts and customize the mapping
 
-    if t in ('Point', 'LineString', 'LinearRing'):
-        return geo.coords
-    if t in ('Polygon', 'LineString', 'LinearRing'):
-        return geo.exterior.coords
-    if t.startswith('Multi'):
-        return [p for g in geo.geoms for p in _points(g)]
+    DEFAULT_FONT = 'DejaVuSans'
 
-
-def _label_position(geo, css, extra_y_offset=0):
-    placement = _as_enum(css.get('label-placement'), 'start', 'middle', 'end')
-    if placement == 'start':
-        x, y = _points(geo)[0]
-    elif placement == 'end':
-        x, y = _points(geo)[-1]
-    else:
-        c = geo.centroid
-        x, y = c.x, c.y
-    return (
-        round(x) + (_as_px(css.get('label-offset-x')) or 0),
-        round(y) + ((_as_px(css.get('label-offset-y')) or 0) + extra_y_offset),
-    )
+    if sv.label_font_weight == 'bold':
+        return DEFAULT_FONT + '-Bold'
+    return DEFAULT_FONT
 
 
-def _label(geo, label, css, extra_y_offset=0):
-    cx, cy = _label_position(geo, css, extra_y_offset)
-    return _text(cx, cy, label, css)
+def _fill_stroke(atts, sv, prefix=''):
+    atts['fill'] = sv.get(prefix + 'fill') or 'none'
+
+    v = sv.get(prefix + 'stroke')
+    if not v:
+        return
+
+    atts['stroke'] = v
+
+    v = sv.get(prefix + 'stroke_width')
+    atts['stroke-width'] = f'{v or 1}px'
+
+    v = sv.get(prefix + 'stroke_dasharray')
+    if v:
+        atts['stroke-dasharray'] = ' '.join(str(x) for x in v)
+
+    for k in 'dashoffset', 'linecap', 'linejoin', 'miterlimit':
+        v = sv.get(prefix + 'stroke_' + k)
+        if v:
+            atts['stroke-' + k] = v
 
 
-def draw(geo, label, style, bbox, dpi, scale, rotation):
-    geo = _to_pixel(geo, bbox, dpi, scale)
-
-    # @TODO use geo.svg
-    if not style:
-        return svgis.draw.geometry(shapely.geometry.mapping(geo), precision=0)
-
-    # @TODO other style types
-    css = style.content
-
-    mark = ''
-    mark_id = ''
-    text = ''
-
-    if 'mark' in css:
-        mark_id = '_M' + gws.random_string(8)
-        mark = _marker(mark_id, css)
-
-    extra_y_offset = 0
-
-    if geo.type == 'Point':
-        extra_y_offset = 12
-    if geo.type == 'LineString':
-        extra_y_offset = 6
-
-    if label:
-        text = _label(geo, label, css, extra_y_offset)
-
-    attrs = {
-        'precision': 0
-    }
-
-    _fill_stroke(attrs, css, '')
-
-    if mark:
-        attrs['marker-start'] = attrs['marker-mid'] = attrs['marker-end'] = f'url(#{mark_id})'
-
-    if geo.type in ('Point', 'MultiPoint'):
-        attrs['r'] = _as_px(css.get('point-size') or DEFAULT_POINT_SIZE) // 2
-
-    if geo.type in ('LineString', 'MultiLineString'):
-        attrs['fill'] = 'none'
-
-    g = svgis.draw.geometry(shapely.geometry.mapping(geo), **gws.compact(attrs))
-    return mark + g + text
-
-
-def to_png(elements, size: t.Size):
-    elements = '\n'.join(elements)
-    svg = f'<svg version="1.1" xmlns="http://www.w3.org/2000/svg">{elements}</svg>'
-
-    with wand.image.Image(blob=svg.encode('utf8'), format='svg', background='None', width=size[0], height=size[1]) as image:
-        return image.make_blob('png')
+def _tag(name, atts, content=None):
+    atts = ' '.join(f'{k}="{v}"' for k, v in gws.compact(atts).items())
+    if content:
+        return f'<{name} {atts}>{content}</{name}>'
+    return f'<{name} {atts}/>'

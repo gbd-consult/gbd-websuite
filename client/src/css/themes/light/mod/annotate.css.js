@@ -17,10 +17,10 @@ module.exports = v => {
         pointSize: 10,
     });
 
-    let mark = clr => ({
-        mark: 'circle',
-        markFill: clr,
-        markSize: 10,
+    let marker = clr => ({
+        marker: 'circle',
+        markerFill: clr,
+        markerSize: 10,
     });
 
     let pointLabel = {
@@ -36,22 +36,22 @@ module.exports = v => {
     return {
 
         '.modAnnotatePoint': {...common(def), ...pointLabel},
-        '.modAnnotatePointSelected': {...common(sel), ...mark(sel), ...pointLabel},
+        '.modAnnotatePoint.selected': {...common(sel), ...marker(sel), ...pointLabel},
 
         '.modAnnotateLine': {...common(def), ...lineLabel},
-        '.modAnnotateLineSelected': {...common(sel), ...mark(sel), ...lineLabel},
+        '.modAnnotateLine.selected': {...common(sel), ...marker(sel), ...lineLabel},
 
         '.modAnnotatePolygon': common(def),
-        '.modAnnotatePolygonSelected': {...common(sel), ...mark(sel)},
+        '.modAnnotatePolygon.selected': {...common(sel), ...marker(sel)},
 
         '.modAnnotateBox': common(def),
-        '.modAnnotateBoxSelected': {...common(sel), ...mark(sel)},
+        '.modAnnotateBox.selected': {...common(sel), ...marker(sel)},
 
         '.modAnnotateCircle': common(def),
-        '.modAnnotateCircleSelected': {...common(sel), ...mark(sel)},
+        '.modAnnotateCircle.selected': {...common(sel), ...marker(sel)},
 
 
-        '.modAnnotateDraw': {...common(sel), ...mark(sel)},
+        '.modAnnotateDraw': {...common(sel), ...marker(sel)},
 
 
         '.modAnnotateSidebarIcon': {

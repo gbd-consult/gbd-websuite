@@ -40,11 +40,11 @@ module.exports = v => {
 
 
         '.modDrawModifyHandle': {
-            mark: 'circle',
-            markFill: v.COLOR.pink700,
-            markSize: 15,
-            markStroke: v.COLOR.pink100,
-            markStrokeWidth: 5,
+            marker: 'circle',
+            markerFill: v.COLOR.pink700,
+            markerSize: 15,
+            markerStroke: v.COLOR.pink100,
+            markerStrokeWidth: 5,
         },
 
 

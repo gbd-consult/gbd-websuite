@@ -402,7 +402,7 @@ class EditController extends gws.Controller {
 
     unselectFeature() {
         if (this.layer)
-            this.layer.features.forEach(f => f.setStyle(null));
+            this.layer.features.forEach(f => f.setMode('normal'));
         this.update({
             editFeature: null,
             editData: null

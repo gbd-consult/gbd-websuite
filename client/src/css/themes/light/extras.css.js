@@ -22,9 +22,9 @@ module.exports = v => {
 
         '.vectorDemoEdit': {
             ...vectorDemo,
-            mark: 'circle',
-            markSize: 8,
-            markFill: v.COLOR.black,
+            marker: 'circle',
+            markerSize: 8,
+            markerFill: v.COLOR.black,
         },
 
         /*

@@ -96,7 +96,7 @@ class Feature(t.IFeature):
         return gws.gis.svg.draw(
             s.geom,
             self.elements.get('label', ''),
-            style,
+            style.values,
             rv.bounds.extent,
             rv.dpi,
             rv.scale,

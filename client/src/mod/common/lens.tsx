@@ -66,13 +66,13 @@ export class LensTool extends gws.Tool {
     ixDraw: ol.interaction.Draw;
     ixModify: ol.interaction.Modify;
     drawState: string = '';
-    style: gws.types.IMapStyle;
+    styleName: string;
 
     title = this.__('modLens');
 
     async init() {
         this.overlayRef = React.createRef();
-        this.style = this.map.getStyleFromSelector('.modLensFeature');
+        this.styleName = this.app.style.get('.modLensFeature').name;
 
         this.app.whenCalled('lensStartFromFeature', args => {
             this.app.startTool('Tool.Lens');
@@ -98,7 +98,7 @@ export class LensTool extends gws.Tool {
 
         this.ixDraw = this.map.drawInteraction({
             shapeType: this.getValue('lensShapeType'),
-            style: this.style,
+            style: this.styleName,
             whenStarted: (oFeatures) => {
                 drawFeature = oFeatures[0];
                 this.drawState = 'drawing';
@@ -126,7 +126,7 @@ export class LensTool extends gws.Tool {
         if (!this.layerPtr) {
             this.layerPtr = this.map.addServiceLayer(new LensLayer(this.map, {
                 uid: '_lens',
-                style: this.style,
+                style: this.styleName,
             }));
         }
         return this.layerPtr;

@@ -283,4 +283,19 @@ module.exports = {
     modLocationErrorNoLocation: 'Standortdaten sind nicht verfügbar',
     modLocationErrorTooFar: 'Ihr Standort liegt außerhalb des Kartenbereichs',
 
+    modStylerFill: 'Füllfarbe',
+    modStylerStroke: 'Strichfarbe',
+    modStylerStrokeWidth: 'Strichbreite',
+    modStylerPointSize: 'Punktgröße',
+    modStylerLabelEnabled: 'Beschriftungen',
+    modStylerLabelBackground: 'Hintegrundfarbe',
+    modStylerLabelFill: 'Farbe',
+    modStylerLabelFontSize: 'Schriftgröße',
+    modStylerLabelOffsetX: 'Versatz X',
+    modStylerLabelOffsetY: 'Versatz Y',
+
+
+
+
+
 };

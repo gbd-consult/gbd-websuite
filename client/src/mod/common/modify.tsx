@@ -8,7 +8,7 @@ export class Tool extends gws.Tool {
     oFeatureCollection: ol.Collection<ol.Feature>;
     snap: boolean = true;
 
-    get editStyle(): gws.types.IMapStyle {
+    get editStyle(): gws.types.IStyle {
         return null;
         //return this.layer ? this.layer.editStyle : null;
     }
