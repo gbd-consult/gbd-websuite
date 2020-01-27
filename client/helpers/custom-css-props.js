@@ -1,4 +1,6 @@
 module.exports = [
+    'with-label',
+    'with-geometry',
     'label-align',
     'label-background',
     'label-fill',

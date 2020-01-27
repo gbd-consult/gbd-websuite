@@ -620,6 +620,10 @@ class StorageRecord(Data):
     updated: int = None
     user_fid: str = None
 
+class StyleGeometryOption(Enum):
+    all = 'all'
+    none = 'none'
+
 class StyleLabelAlign(Enum):
     center = 'center'
     left = 'left'
@@ -632,6 +636,10 @@ class StyleLabelFontStyle(Enum):
 class StyleLabelFontWeight(Enum):
     bold = 'bold'
     normal = 'normal'
+
+class StyleLabelOption(Enum):
+    all = 'all'
+    none = 'none'
 
 class StyleLabelPlacement(Enum):
     end = 'end'
@@ -693,6 +701,8 @@ class StyleValues(Data):
     stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
     stroke_miterLimit: Optional[int] = None
     stroke_width: Optional[int] = None
+    with_geometry: Optional['StyleGeometryOption'] = None
+    with_label: Optional['StyleLabelOption'] = None
 
 class SvgFragment:
     points: List['Point'] = None

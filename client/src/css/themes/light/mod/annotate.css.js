@@ -1,18 +1,16 @@
 module.exports = v => {
 
-    let def = v.COLOR.blue300,
+    let def = v.COLOR.blue100,
         sel = v.COLOR.blue600;
 
     let common = clr => ({
-        fill: v.COLOR.opacity(clr, 0.3),
+        fill: v.COLOR.opacity(v.COLOR.blue100, 0.3),
 
-        stroke: clr,
+        stroke: v.COLOR.blue300,
         strokeWidth: 1,
 
         labelFontSize: 11,
-        labelFill: v.COLOR.white,
-        labelBackground: v.COLOR.darken(clr, 0.5),
-        labelPadding: 5,
+        labelFill: v.COLOR.blue900,
 
         pointSize: 10,
     });
@@ -34,6 +32,20 @@ module.exports = v => {
     };
 
     return {
+
+        '.modAnnotateFeature': {
+
+            fill: v.COLOR.opacity(v.COLOR.blue100, 0.3),
+
+            stroke: v.COLOR.blue300,
+            strokeWidth: 1,
+
+            withLabel: 'all',
+            labelFontSize: 11,
+            labelFill: v.COLOR.blue900,
+
+            pointSize: 10,
+        },
 
         '.modAnnotatePoint': {...common(def), ...pointLabel},
         '.modAnnotatePoint.selected': {...common(sel), ...marker(sel), ...pointLabel},
@@ -79,10 +91,35 @@ module.exports = v => {
             ...v.SIDEBAR_AUX_BUTTON('spatialsearch'),
         },
 
-        '.modAnnotateRemoveAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON('google:action/delete'),
+        '.modAnnotateRemoveButton': {
+            ...v.ICON_SIZE('normal'),
+            ...v.SVG('google:action/delete', v.CANCEL_COLOR),
+            backgroundColor: v.CANCEL_BACKGROUND,
+            borderRadius: v.BORDER_RADIUS,
         },
 
 
+        '.modAnnotateFormAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('google:action/list'),
+        },
+
+        '.modAnnotateAddAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline'),
+        },
+
+        '.modAnnotateStyleAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('google:image/brush'),
+        },
+
+        '.modAnnotateDeleteListButton': {
+            ...v.LIST_BUTTON('google:action/delete_forever')
+        },
+
+        '.modAnnotateSelected': {
+            marker: 'circle',
+            markerStroke: '#ff0000',
+            markerStrokeWidth: 3,
+            markerSize: 20,
+        }
     }
 };

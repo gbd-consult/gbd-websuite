@@ -38,6 +38,7 @@ const StorageStoreKeys = [
 interface StorageButtonProps extends gws.types.ViewProps {
     category: string;
     tooltip?: string;
+    disabled?: boolean;
     data?: any;
     whenDone?: (data: any) => void;
 }
@@ -224,6 +225,7 @@ export class WriteAuxButton extends gws.View<StorageButtonProps> {
             return null;
         return <sidebar.AuxButton
             className="modStorageWriteAuxButton"
+            disabled={this.props.disabled}
             tooltip={this.props.tooltip || this.__('modStorageWriteAuxButton')}
             whenTouched={() => writeDialog(this.props.controller, this.props)}
         />
@@ -236,6 +238,7 @@ export class ReadAuxButton extends gws.View<StorageButtonProps> {
             return null;
         return <sidebar.AuxButton
             className="modStorageReadAuxButton"
+            disabled={this.props.disabled}
             tooltip={this.props.tooltip || this.__('modStorageReadAuxButton')}
             whenTouched={() => readDialog(this.props.controller, this.props)}
         />

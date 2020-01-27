@@ -65,7 +65,10 @@ module.exports = v => ({
                 padding: [0, v.UNIT4, 0, 0],
             },
         },
+        '> .uiGroup .uiControlBox': {
+            border: 'none',
 
+        }
     },
 
     '.uiGroup > .uiControlBox': {

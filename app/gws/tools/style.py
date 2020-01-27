@@ -25,6 +25,17 @@ class StyleMarker(t.Enum):
 
 
 #:export
+class StyleLabelOption(t.Enum):
+    all = 'all'
+    none = 'none'
+
+#:export
+class StyleGeometryOption(t.Enum):
+    all = 'all'
+    none = 'none'
+
+
+#:export
 class StyleLabelAlign(t.Enum):
     left = 'left'
     right = 'right'
@@ -67,6 +78,9 @@ class StyleValues(t.Data):
     marker_size: t.Optional[int]
     marker_stroke: t.Optional[t.Color]
     marker_stroke_width: t.Optional[int]
+
+    with_geometry: t.Optional[StyleGeometryOption]
+    with_label: t.Optional[StyleLabelOption]
 
     label_align: t.Optional[StyleLabelAlign]
     label_background: t.Optional[t.Color]
@@ -177,6 +191,9 @@ class _Parser:
     marker_size = _px
     marker_stroke = _color
     marker_stroke_width = _px
+
+    with_geometry = _enum(StyleGeometryOption)
+    with_label = _enum(StyleLabelOption)
 
     label_align = _enum(StyleLabelAlign)
     label_background = _color

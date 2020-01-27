@@ -262,7 +262,6 @@ class DimensionModel {
         DimenstionStyles.forEach(sel => {
             let s = this.map.style.get(sel);
             this.styles[sel] = {
-                text: s ? s.text : '',
                 values: s ? s.values : '',
             }
         });

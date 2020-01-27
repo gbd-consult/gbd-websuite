@@ -25,12 +25,18 @@ module.exports = {
     modAnnotatePointButton: 'Punkt setzen und mit Koordinaten markieren',
     modAnnotatePolygon: 'Polygon',
     modAnnotateRadius: 'Radius',
-    modAnnotateRemoveAuxButton: 'Löschen',
+    modAnnotateRemoveButton: 'Löschen',
     modAnnotateSaveButton: 'Aktualisieren',
     modAnnotateSidebarTitle: 'Markierungen',
     modAnnotateWidth: 'Breite',
+    modAnnotateStyleName: 'Stil',
     modAnnotateX: 'X',
     modAnnotateY: 'Y',
+
+    modAnnotateFormAuxButton: 'Eigenschaften',
+    modAnnotateStyleAuxButton: 'Darstellung',
+    modAnnotateAddAuxButton: 'Neu',
+
     modDproconToolbarButton: 'Demografie',
     modDrawToolboxTitle: 'Zeichnen',
     modDrawBoxButton: 'Rechteck',
@@ -288,15 +294,32 @@ module.exports = {
     modStyleName: 'Name',
     modStyleRename: 'Umbenennen',
 
+    modStyleEditStyle: 'Bearbeiten',
+
+    modStyleProp_with_label: 'Beschrifrung',
+    modStyleProp_with_geometry: 'Geometrie',
+
     modStyleProp_fill: 'Füllfarbe',
-    modStyleProp_stroke: 'Strichfarbe',
-    modStyleProp_stroke_width: 'Strichbreite',
-    modStyleProp_point_size: 'Punktgröße',
-    modStyleProp_label_background: 'Beschrifrung Hintergrund',
-    modStyleProp_label_fill: 'Beschrifrung Farbe',
+    modStyleProp_label_align: 'Ausrichtung',
+    modStyleProp_label_align_center: 'zentriert',
+    modStyleProp_label_align_left: 'links',
+    modStyleProp_label_align_right: 'rechts',
+    modStyleProp_label_background: 'Hintergrund',
+    modStyleProp_label_fill: 'Farbe',
     modStyleProp_label_font_size: 'Schriftgröße',
+    modStyleProp_label_offset: 'Versatz X/Y',
     modStyleProp_label_offset_x: 'Versatz X',
     modStyleProp_label_offset_y: 'Versatz Y',
+    modStyleProp_label_placement: 'Platzierung',
+    modStyleProp_label_placement_end: 'Ende',
+    modStyleProp_label_placement_middle: 'Mitte',
+    modStyleProp_label_placement_start: 'Anfang',
+    modStyleProp_point_size: 'Punktgröße',
+    modStyleProp_stroke: 'Strichfarbe',
+    modStyleProp_stroke_width: 'Strichbreite',
+
+
+
 
 
 
