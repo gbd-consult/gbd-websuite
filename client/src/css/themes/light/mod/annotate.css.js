@@ -41,11 +41,22 @@ module.exports = v => {
             strokeWidth: 1,
 
             withLabel: 'all',
-            labelFontSize: 11,
+            labelFontSize: 12,
             labelFill: v.COLOR.blue900,
+            labelStroke: v.COLOR.white,
+            labelStrokeWidth: 6,
 
             pointSize: 10,
         },
+
+        '.modAnnotateSelected': {
+            marker: 'circle',
+            markerStroke: v.COLOR.pink800,
+            markerStrokeWidth: 4,
+            markerSize: 20,
+        },
+
+
 
         '.modAnnotatePoint': {...common(def), ...pointLabel},
         '.modAnnotatePoint.selected': {...common(sel), ...marker(sel), ...pointLabel},
@@ -115,11 +126,5 @@ module.exports = v => {
             ...v.LIST_BUTTON('google:action/delete_forever')
         },
 
-        '.modAnnotateSelected': {
-            marker: 'circle',
-            markerStroke: '#ff0000',
-            markerStrokeWidth: 3,
-            markerSize: 20,
-        }
     }
 };
