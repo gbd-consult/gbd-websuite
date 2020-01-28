@@ -796,7 +796,7 @@ class ILayer(IObject):
     def ows_enabled(self, service: 'IOwsService') -> bool: pass
     def render_box(self, rv: 'RenderView', client_params=None): pass
     def render_legend(self): pass
-    def render_svg(self, rv: 'RenderView', style=None): pass
+    def render_svg(self, rv: 'RenderView', style: 'IStyle' = None): pass
     def render_xyz(self, x, y, z): pass
     def use_meta(self, meta): pass
 

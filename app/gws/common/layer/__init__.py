@@ -25,6 +25,12 @@ import gws.types as t
 
 from gws import cached_property
 
+_DEFAULT_STYLE_VALUES = {
+    'fill': 'rgba(0,0,0,1)',
+    'stroke': 'rgba(0,0,0,1)',
+    'stoke_width': 1,
+}
+
 
 class ClientOptions(t.Data):
     """Client options for a layer"""
@@ -322,6 +328,8 @@ class Base(gws.Object, t.ILayer):
         p = self.var('style')
         if p:
             self.style = gws.common.style.from_config(p)
+        else:
+            self.style = gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES))
 
         p = self.var('editStyle')
         if p:
@@ -364,7 +372,7 @@ class Base(gws.Object, t.ILayer):
     def render_xyz(self, x, y, z):
         return None
 
-    def render_svg(self, rv: t.RenderView, style=None):
+    def render_svg(self, rv: t.RenderView, style: t.IStyle = None):
         return None
 
     def render_legend(self):

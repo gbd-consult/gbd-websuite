@@ -22,6 +22,9 @@ class LocaleData(t.Data):
 
 
 def locale_data(locale: str) -> t.Optional[LocaleData]:
+    if not locale:
+        return
+
     locale = locale.lower().strip().replace('-', '_')
 
     try:

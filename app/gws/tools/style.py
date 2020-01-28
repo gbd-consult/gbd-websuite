@@ -219,6 +219,9 @@ class _Parser:
 def from_css_dict(d: dict) -> t.StyleValues:
     values = t.StyleValues()
 
+    with_geometry = 'none'
+    with_label = 'none'
+
     for k, v in d.items():
         if v is None:
             continue
@@ -229,7 +232,14 @@ def from_css_dict(d: dict) -> t.StyleValues:
         if fn:
             v = fn(v)
             if v is not None:
+                if k.startswith('label'):
+                    with_label = 'all'
+                elif not k.startswith('with'):
+                    with_geometry = 'all'
                 setattr(values, k, v)
+
+    values.with_geometry = values.with_geometry or with_geometry
+    values.with_label = values.with_label or with_label
 
     return values
 

@@ -24,7 +24,10 @@ class StyleProps(t.Props):
 
 def from_props(p: t.StyleProps) -> t.IStyle:
     if p.type == 'css':
-        values = p.values or gws.tools.style.from_css_text(p.text)
+        if p.values:
+            values = gws.tools.style.from_css_dict(gws.as_dict(p.values))
+        else:
+            values = gws.tools.style.from_css_text(p.text)
         s: t.IStyle = Style(p.type, values=values)
         return s
 

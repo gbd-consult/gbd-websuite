@@ -37,6 +37,7 @@ def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale:
     if geom.type == 'LineString':
         extra_y_offset = 6
 
+    # @TODO with_label, scale
     if label:
         text = _label(geom, label, sv, extra_y_offset)
 
