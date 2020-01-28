@@ -94,7 +94,7 @@ class SelectSidebarView extends gws.View<SelectViewProps> {
                     {hasSelection && <storage.WriteAuxButton
                         controller={this.props.controller}
                         category={STORAGE_CATEGORY}
-                        data={{features: this.props.selectFeatures.map(f => f.props)}}
+                        data={{features: this.props.selectFeatures.map(f => f.getProps())}}
                     />}
                     {hasSelection && <sidebar.AuxButton
                         className="modSelectClearAuxButton"

@@ -37,16 +37,12 @@ interface AnnotateFormData {
     labelTemplate: string
 }
 
-interface AnnotateFeatureArgs extends gws.types.IMapFeatureArgs {
-    labelTemplate: string;
-    shapeType: string;
-}
-
 interface ViewProps extends gws.types.ViewProps {
     controller: AnnotateController;
     annotateSelectedFeature: AnnotateFeature;
     annotateFormData: AnnotateFormData;
     annotateTab: string;
+    annotateFeatureCount: number;
     appActiveTool: string;
 };
 
@@ -54,6 +50,7 @@ const StoreKeys = [
     'annotateSelectedFeature',
     'annotateFormData',
     'annotateTab',
+    'annotateUpdated',
     'appActiveTool',
 ];
 
@@ -198,13 +195,21 @@ function debugFeature(shapeType, geom, projection) {
 }
 
 class AnnotateFeature extends gws.map.Feature {
-    master: AnnotateController;
     labelTemplate: string;
     shapeType: string;
-    cc: any;
 
     get dimensions() {
         return computeDimensions(this.shapeType, this.geometry, this.map.projection);
+    }
+
+    getProps() {
+        let p = super.getProps();
+        p.elements = {
+            shapeType: this.shapeType,
+            labelTemplate: this.labelTemplate,
+        }
+        return p;
+
     }
 
     get formData(): AnnotateFormData {
@@ -219,15 +224,18 @@ class AnnotateFeature extends gws.map.Feature {
         }
     }
 
-    constructor(master: AnnotateController, args: AnnotateFeatureArgs) {
-        super(master.map, args);
-        this.master = master;
-        this.labelTemplate = args.labelTemplate;
-        this.shapeType = args.shapeType;
+    get master(): AnnotateController {
+        return this.map.app.controller(MASTER) as AnnotateController;
+    }
+
+    constructor(map, args: gws.types.IMapFeatureArgs) {
+        super(map, args);
+
+        this.labelTemplate = args.props.elements['labelTemplate'];
+        this.shapeType = args.props.elements['shapeType'];
 
         //this.oFeature.on('change', e => this.onChange(e));
-        this.geometry.on('change', e => this.onChange(e));
-        this.redraw();
+        this.geometry.on('change', e => this.redraw());
     }
 
     setStyles(src) {
@@ -239,12 +247,13 @@ class AnnotateFeature extends gws.map.Feature {
         super.setStyles({normal, selected});
     }
 
-    setSelected(sel) {
-        this.setMode(sel ? 'selected' : 'normal');
+    setChanged() {
+        super.setChanged();
+        this.geometry.changed();
     }
 
-    onChange(e) {
-        this.redraw();
+    setSelected(sel) {
+        this.setMode(sel ? 'selected' : 'normal');
     }
 
     redraw() {
@@ -295,7 +304,8 @@ class AnnotateFeature extends gws.map.Feature {
             g.setCoordinates([coords])
         }
 
-        this.geometry.changed();
+        this.setChanged();
+
     }
 
 }
@@ -305,6 +315,7 @@ class AnnotateLayer extends gws.map.layer.FeatureLayer {
 
 class AnnotateDrawTool extends draw.Tool {
     drawFeature: AnnotateFeature;
+    styleName = '.modAnnotateDraw';
 
     get title() {
         return this.__('modAnnotateDrawToolbarButton')
@@ -320,7 +331,7 @@ class AnnotateDrawTool extends draw.Tool {
     }
 
     whenEnded() {
-        _master(this).addAndFocus(this.drawFeature);
+        _master(this).addAndSelectFeature(this.drawFeature);
     }
 
     whenCancelled() {
@@ -403,7 +414,13 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
                         />
                     </Cell>
                     <Cell>
-
+                        <gws.ui.Button
+                            className="modAnnotateStyleButton"
+                            tooltip={this.props.controller.__('modAnnotateSaveButton')}
+                            whenTouched={() => cc.update({annotateTab: 'style'})}
+                        />
+                    </Cell>
+                    <Cell>
                         <gws.ui.Button
                             className="modAnnotateRemoveButton"
                             tooltip={this.__('modAnnotateRemoveButton')}
@@ -504,10 +521,7 @@ class AnnotateFeatureStyleTab extends gws.View<ViewProps> {
 class AnnotateListTab extends gws.View<ViewProps> {
     render() {
         let cc = _master(this.props.controller),
-            layer = cc.layer,
-            selectedFeature = this.props.annotateSelectedFeature,
-            features = layer ? layer.features : null,
-            hasFeatures = !gws.tools.empty(features);
+            selectedFeature = this.props.annotateSelectedFeature;
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -515,16 +529,17 @@ class AnnotateListTab extends gws.View<ViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                {hasFeatures
+                {cc.hasFeatures
                     ? <gws.components.feature.List
                         controller={cc}
-                        features={features}
+                        features={cc.features}
                         isSelected={f => f === selectedFeature}
 
                         content={(f: AnnotateFeature) => <gws.ui.Link
                             whenTouched={() => {
+                                cc.app.stopTool('Tool.Annotate.Modify');
                                 cc.selectFeature(f, true);
-                                cc.app.startTool('Tool.Annotate.Modify')
+                                cc.app.startTool('Tool.Annotate.Modify');
                             }}
                             content={f.label}
                         />}
@@ -545,27 +560,27 @@ class AnnotateListTab extends gws.View<ViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <sidebar.AuxButton
+                        {...gws.tools.cls('modAnnotateEditAuxButton', this.props.appActiveTool === 'Tool.Annotate.Modify' && 'isActive')}
+                        tooltip={this.__('modAnnotateEditAuxButton')}
+                        disabled={!cc.hasFeatures}
+                        whenTouched={() => cc.app.startTool('Tool.Annotate.Modify')}
+                    />
+                    <sidebar.AuxButton
                         {...gws.tools.cls('modAnnotateAddAuxButton')}
                         tooltip={this.props.controller.__('modAnnotateAddAuxButton')}
                         whenTouched={() => cc.app.toggleTool('Tool.Annotate.Draw')}
-                    />
-                    <sidebar.AuxButton
-                        {...gws.tools.cls('modAnnotateEditAuxButton', this.props.appActiveTool === 'Tool.Annotate.Modify' && 'isActive')}
-                        tooltip={this.__('modAnnotateEditAuxButton')}
-                        disabled={!hasFeatures}
-                        whenTouched={() => cc.app.startTool('Tool.Annotate.Modify')}
                     />
                     <Cell flex/>
                     <storage.ReadAuxButton
                         controller={cc}
                         category={STORAGE_CATEGORY}
-                        whenDone={data => cc.storageRead(data)}
+                        whenDone={data => cc.storageSetter(data)}
                     />
                     {<storage.WriteAuxButton
                         controller={this.props.controller}
                         category={STORAGE_CATEGORY}
-                        disabled={!hasFeatures}
-                        data={cc.storageWrite()}
+                        disabled={!cc.hasFeatures}
+                        data={cc.storageGetter()}
                     />}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
@@ -642,13 +657,19 @@ class AnnotateController extends gws.Controller {
 
         this.app.whenCalled('annotateFromFeature', args => {
             let f = this.newFromFeature(args.feature);
-
             if (f) {
-                this.addAndFocus(f);
+                this.addAndSelectFeature(f);
                 this.update({sidebarActiveTab: 'Sidebar.Annotate'})
             }
         });
+    }
 
+    get features(): Array<AnnotateFeature> {
+        return this.layer ? this.layer.features : [];
+    }
+
+    get hasFeatures() {
+        return this.features.length > 0;
     }
 
     startLens() {
@@ -662,38 +683,30 @@ class AnnotateController extends gws.Controller {
 
     }
 
-    newFeature(shapeType, oFeature?: ol.Feature) {
-        let s = this.app.style.get(this.getValue('annotateLastStyleName'));
-
-        let f = new AnnotateFeature(_master(this), {
-            shapeType,
-            oFeature,
-            labelTemplate: defaultLabelTemplates[shapeType],
-        });
-
-        let newName = '.modAnnotate_' + (new Date()).getMilliseconds();
-
-        let newStyle = this.app.style.add(new style.Style(newName, s.values));
-
-        f.setStyles({normal: newStyle});
-
-        this.update({
-            annotateLastStyleName: newName,
-            styleEditorCurrentName: newName,
-        });
-
-        return f;
-    }
-
-    addAndFocus(f: gws.types.IMapFeature) {
-        this.layer.addFeature(f);
-        this.selectFeature(f, false);
-        this.app.startTool('Tool.Annotate.Modify')
-
-    }
-
     newFromFeature(f: gws.types.IMapFeature) {
-        let geometry = this.singleGeometry(f.geometry);
+
+        function singleGeometry(geom) {
+            if (!geom)
+                return null;
+
+            let gt = geom.getType();
+
+            if (gt === 'MultiPolygon') {
+                return (geom as ol.geom.MultiPolygon).getPolygon(0);
+            }
+            if (gt === 'MultiLineString') {
+                return (geom as ol.geom.MultiLineString).getLineString(0);
+            }
+
+            if (gt === 'MultiPoint') {
+                return (geom as ol.geom.MultiPoint).getPoint(0);
+            }
+
+            return geom;
+        }
+
+
+        let geometry = singleGeometry(f.geometry);
 
         if (geometry) {
             let oFeature = new ol.Feature({geometry: geometry['clone']()});
@@ -704,34 +717,51 @@ class AnnotateController extends gws.Controller {
         }
     }
 
-    clear() {
-        this.app.stopTool('Tool.Annotate.*');
-        this.layer.clear();
+    newFeature(shapeType, oFeature?: ol.Feature) {
+        let sty = this.app.style.at(this.getValue('annotateLastStyleName'));
+
+        let newStyle = this.app.style.add(new style.Style(
+            gws.tools.uniqId('AnnotateStyle'),
+            sty.values));
+
+        let feat = new AnnotateFeature(this.map, {
+            oFeature,
+            props: {
+                uid: gws.tools.uniqId('annotate'),
+                elements: {
+                    master: this,
+                    shapeType,
+                    labelTemplate: defaultLabelTemplates[shapeType],
+                }
+            },
+            style: newStyle
+        });
+
+        this.update({
+            annotateLastStyleName: newStyle.name,
+        });
+
+        return feat;
     }
 
-    singleGeometry(geom) {
-        if (!geom)
-            return null;
-
-        let gt = geom.getType();
-
-        if (gt === 'MultiPolygon') {
-            return (geom as ol.geom.MultiPolygon).getPolygon(0);
-        }
-        if (gt === 'MultiLineString') {
-            return (geom as ol.geom.MultiLineString).getLineString(0);
-        }
-
-        if (gt === 'MultiPoint') {
-            return (geom as ol.geom.MultiPoint).getPoint(0);
-        }
-
-        return geom;
+    addAndSelectFeature(f: gws.types.IMapFeature) {
+        this.addFeature(f);
+        this.selectFeature(f, false);
+        this.app.startTool('Tool.Annotate.Modify')
 
     }
 
-    selectFeature(f, highlight) {
-        this.layer.features.forEach(f => (f as AnnotateFeature).setSelected(false));
+    selectFeature(f, panTo) {
+        if (panTo) {
+            this.update({
+                marker: {
+                    features: [f],
+                    mode: 'pan',
+                }
+            });
+        }
+
+        this.features.forEach(f => f.setSelected(false));
         f.setSelected(true);
 
         this.update({
@@ -740,26 +770,14 @@ class AnnotateController extends gws.Controller {
             styleEditorCurrentName: f.styleNames.normal,
         });
 
-        if (highlight) {
-            this.update({
-                marker: {
-                    features: [f],
-                    mode: 'pan',
-                }
-            });
-            f.oFeature.changed();
-        } else {
-            f.redraw();
-        }
-
     }
 
     unselectFeature() {
-        if (this.layer)
-            this.layer.features.forEach(f => (f as AnnotateFeature).setSelected(false));
+        this.features.forEach(f => f.setSelected(false));
         this.update({
             annotateSelectedFeature: null,
             annotateFormData: {},
+            styleEditorCurrentName: '',
         });
     }
 
@@ -771,26 +789,63 @@ class AnnotateController extends gws.Controller {
             });
     }
 
+
+    addFeature(f) {
+        this.layer.addFeature(f);
+        this.setUpdated();
+    }
+
     removeFeature(f) {
         this.app.stopTool('Tool.Annotate.*');
         this.unselectFeature();
         this.layer.removeFeature(f);
-        if (this.layer.features.length > 0)
+        if (this.hasFeatures)
+            this.app.startTool('Tool.Annotate.Modify');
+        this.setUpdated();
+    }
+
+    storageSetter(data) {
+        let lastFeature = null;
+
+        this.clear();
+
+        this.layer.addFeatures(data.features.map(props => {
+            let f = new AnnotateFeature(this.map, {props})
+            f.setChanged();
+            lastFeature = f;
+            return f;
+        }));
+
+        if (this.hasFeatures)
             this.app.startTool('Tool.Annotate.Modify');
 
+        if (lastFeature) {
+            this.update({
+                annotateLastStyleName: lastFeature.styleNames.normal,
+            });
+        }
+
+        this.setUpdated();
     }
 
-    storageRead(data) {
-
-
-
-
-
+    storageGetter() {
+        return {
+            'features': this.features.map(f => f.getProps())
+        }
     }
 
-    storageWrite() {
-        return {};
+    clear() {
+        this.app.stopTool('Tool.Annotate.*');
+        this.layer.clear();
+        this.setUpdated();
     }
+
+    setUpdated() {
+        this.update({
+            annotateUpdated: (this.getValue('annotateUpdated') || 0) + 1,
+        });
+    }
+
 
 }
 

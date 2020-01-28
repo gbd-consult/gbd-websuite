@@ -77,6 +77,11 @@ class StyleValues(t.Data):
     marker_fill: t.Optional[t.Color]
     marker_size: t.Optional[int]
     marker_stroke: t.Optional[t.Color]
+    marker_stroke_dasharray: t.Optional[t.List[int]]
+    marker_stroke_dashoffset: t.Optional[int]
+    marker_stroke_linecap: t.Optional[StyleStrokeLineCap]
+    marker_stroke_linejoin: t.Optional[StyleStrokeLineJoin]
+    marker_stroke_miterLimit: t.Optional[int]
     marker_stroke_width: t.Optional[int]
 
     with_geometry: t.Optional[StyleGeometryOption]
@@ -97,8 +102,12 @@ class StyleValues(t.Data):
     label_padding: t.Optional[t.List[int]]
     label_placement: t.Optional[StyleLabelPlacement]
     label_stroke: t.Optional[t.Color]
+    label_stroke_dasharray: t.Optional[t.List[int]]
+    label_stroke_dashoffset: t.Optional[int]
+    label_stroke_linecap: t.Optional[StyleStrokeLineCap]
+    label_stroke_linejoin: t.Optional[StyleStrokeLineJoin]
+    label_stroke_miterLimit: t.Optional[int]
     label_stroke_width: t.Optional[int]
-    label_width: t.Optional[int]
 
     point_size: t.Optional[int]
 
@@ -190,6 +199,11 @@ class _Parser:
     marker_fill = _color
     marker_size = _px
     marker_stroke = _color
+    marker_stroke_dasharray = _intlist
+    marker_stroke_dashoffset = _px
+    marker_stroke_linecap = _enum(StyleStrokeLineCap)
+    marker_stroke_linejoin = _enum(StyleStrokeLineJoin)
+    marker_stroke_miterLimit = _px
     marker_stroke_width = _px
 
     with_geometry = _enum(StyleGeometryOption)
@@ -210,8 +224,12 @@ class _Parser:
     label_padding = _padding
     label_placement = _enum(StyleLabelPlacement)
     label_stroke = _color
+    label_stroke_dasharray = _intlist
+    label_stroke_dashoffset = _px
+    label_stroke_linecap = _enum(StyleStrokeLineCap)
+    label_stroke_linejoin = _enum(StyleStrokeLineJoin)
+    label_stroke_miterLimit = _px
     label_stroke_width = _px
-    label_width = _px
 
     point_size = _px
 

@@ -1,6 +1,8 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
+import * as style from 'gws/map/style';
+
 import * as sidebar from './common/sidebar';
 import * as storage from './common/storage';
 
@@ -35,7 +37,6 @@ class StyleForm extends gws.View<ViewProps> {
     render() {
 
         let cc = _master(this.props.controller);
-        let sv = this.props.styleEditorValues;
 
         /*
                     <gws.ui.Group label={cc.__('modStyleName')} className="modStyleRenameControl">
@@ -210,7 +211,7 @@ class StyleSidebar extends gws.Controller implements gws.types.ISidebarItem {
     }
 }
 
-const UPDATE_DELAY = 500;
+const UPDATE_DELAY = 200;
 
 
 export class StyleController extends gws.Controller {
@@ -244,18 +245,20 @@ export class StyleController extends gws.Controller {
     loadStyle() {
         let name = this.getValue('styleEditorCurrentName');
         console.log('LOAD STYLE', name)
-        let s = this.app.style.get(name);
+        let sty = this.app.style.at(name);
+        let values = sty ? sty.values : {}
+
         this.update({
-            styleEditorNewName: s.name,
-            styleEditorValues: s.values,
+            styleEditorNewName: sty ? sty.name : '',
+            styleEditorValues: {...style.DEFAULT_VALUES, ...values}
         });
     }
 
     updateValues() {
         let name = this.getValue('styleEditorCurrentName');
-        let style = this.app.style.at(name);
-        if (style) {
-            style.update(this.getValue('styleEditorValues'));
+        let sty = this.app.style.at(name);
+        if (sty) {
+            sty.update(this.getValue('styleEditorValues'));
             clearTimeout(this.updateTimer);
             this.updateTimer = setTimeout(() => this.map.style.notifyChanged(this.map, name), UPDATE_DELAY);
         }

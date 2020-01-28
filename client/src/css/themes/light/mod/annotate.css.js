@@ -1,80 +1,33 @@
 module.exports = v => {
 
-    let def = v.COLOR.blue100,
-        sel = v.COLOR.blue600;
+    let feature = {
 
-    let common = clr => ({
         fill: v.COLOR.opacity(v.COLOR.blue100, 0.3),
 
         stroke: v.COLOR.blue300,
         strokeWidth: 1,
 
-        labelFontSize: 11,
+        withLabel: 'all',
+        labelFontSize: 12,
         labelFill: v.COLOR.blue900,
+        labelStroke: v.COLOR.white,
+        labelStrokeWidth: 6,
 
         pointSize: 10,
-    });
-
-    let marker = clr => ({
-        marker: 'circle',
-        markerFill: clr,
-        markerSize: 10,
-    });
-
-    let pointLabel = {
-        labelPlacement: 'end',
-        labelOffsetY: 20,
     };
 
-    let lineLabel = {
-        labelPlacement: 'end',
-        labelOffsetY: 20,
+    let selected = {
+        marker: 'circle',
+        markerStroke: v.COLOR.opacity(v.COLOR.pink800, 0.3),
+        markerStrokeWidth: 3,
+        markerSize: 20,
+        markerStrokeDasharray: '4',
     };
 
     return {
-
-        '.modAnnotateFeature': {
-
-            fill: v.COLOR.opacity(v.COLOR.blue100, 0.3),
-
-            stroke: v.COLOR.blue300,
-            strokeWidth: 1,
-
-            withLabel: 'all',
-            labelFontSize: 12,
-            labelFill: v.COLOR.blue900,
-            labelStroke: v.COLOR.white,
-            labelStrokeWidth: 6,
-
-            pointSize: 10,
-        },
-
-        '.modAnnotateSelected': {
-            marker: 'circle',
-            markerStroke: v.COLOR.pink800,
-            markerStrokeWidth: 4,
-            markerSize: 20,
-        },
-
-
-
-        '.modAnnotatePoint': {...common(def), ...pointLabel},
-        '.modAnnotatePoint.selected': {...common(sel), ...marker(sel), ...pointLabel},
-
-        '.modAnnotateLine': {...common(def), ...lineLabel},
-        '.modAnnotateLine.selected': {...common(sel), ...marker(sel), ...lineLabel},
-
-        '.modAnnotatePolygon': common(def),
-        '.modAnnotatePolygon.selected': {...common(sel), ...marker(sel)},
-
-        '.modAnnotateBox': common(def),
-        '.modAnnotateBox.selected': {...common(sel), ...marker(sel)},
-
-        '.modAnnotateCircle': common(def),
-        '.modAnnotateCircle.selected': {...common(sel), ...marker(sel)},
-
-
-        '.modAnnotateDraw': {...common(sel), ...marker(sel)},
+        '.modAnnotateFeature': feature,
+        '.modAnnotateSelected': selected,
+        '.modAnnotateDraw': {...feature, ...selected},
 
 
         '.modAnnotateSidebarIcon': {
@@ -103,12 +56,12 @@ module.exports = v => {
         },
 
         '.modAnnotateRemoveButton': {
-            ...v.ICON_SIZE('normal'),
-            ...v.SVG('google:action/delete', v.CANCEL_COLOR),
-            backgroundColor: v.CANCEL_BACKGROUND,
-            borderRadius: v.BORDER_RADIUS,
+            ...v.ROUND_FORM_BUTTON('google:action/delete')
         },
 
+        '.modAnnotateStyleButton': {
+            ...v.ROUND_FORM_BUTTON('google:image/brush')
+        },
 
         '.modAnnotateFormAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/list'),

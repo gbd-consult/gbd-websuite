@@ -581,7 +581,7 @@ class AlkisSelectionTab extends gws.View<AlkisViewProps> {
                     {hasFeatures && <storage.WriteAuxButton
                         controller={this.props.controller}
                         category={STORAGE_CATEGORY}
-                        data={{features: this.props.alkisFsSelection.map(f => f.props)}}
+                        data={{features: this.props.alkisFsSelection.map(f => f.getProps())}}
                     />}
                     {hasFeatures && <AlkisClearAuxButton {...this.props} />}
                 </sidebar.AuxToolbar>
