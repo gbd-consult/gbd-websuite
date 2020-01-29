@@ -11,11 +11,12 @@ interface ViewProps extends gws.types.ViewProps {
     uiDemoString: string;
     uiDemoNumber: number;
     uiDemoColor: string;
-    uiDemoCountry: string;
+    uiDemoName: string;
     uiDemoDate: string;
     uiDemoAllDisabled: boolean;
     uiDemoBool: boolean;
     uiDemoFiles: FileList;
+    uiDemoActiveTab: number,
 
     uiDemoUseDialog: string;
 
@@ -34,11 +35,12 @@ const StoreKeys = [
     'uiDemoString',
     'uiDemoNumber',
     'uiDemoColor',
-    'uiDemoCountry',
+    'uiDemoName',
     'uiDemoDate',
     'uiDemoAllDisabled',
     'uiDemoBool',
     'uiDemoFiles',
+    'uiDemoActiveTab',
 
     'uiDemoUseDialog',
     'uiDemoUseTabular',
@@ -52,251 +54,27 @@ const StoreKeys = [
 
 ];
 
-const COUNTRIES = [
-    {name: 'Afghanistan', code: 'AF'},
-    {name: 'Åland Islands', code: 'AX'},
-    {name: 'Albania', code: 'AL'},
-    {name: 'Algeria', code: 'DZ'},
-    {name: 'American Samoa', code: 'AS'},
-    {name: 'Andorra', code: 'AD'},
-    {name: 'Angola', code: 'AO'},
-    {name: 'Anguilla', code: 'AI'},
-    {name: 'Antarctica', code: 'AQ'},
-    {name: 'Antigua and Barbuda', code: 'AG'},
-    {name: 'Argentina', code: 'AR'},
-    {name: 'Armenia', code: 'AM'},
-    {name: 'Aruba', code: 'AW'},
-    {name: 'Australia', code: 'AU'},
-    {name: 'Austria', code: 'AT'},
-    {name: 'Azerbaijan', code: 'AZ'},
-    {name: 'Bahamas', code: 'BS'},
-    {name: 'Bahrain', code: 'BH'},
-    {name: 'Bangladesh', code: 'BD'},
-    {name: 'Barbados', code: 'BB'},
-    {name: 'Belarus', code: 'BY'},
-    {name: 'Belgium', code: 'BE'},
-    {name: 'Belize', code: 'BZ'},
-    {name: 'Benin', code: 'BJ'},
-    {name: 'Bermuda', code: 'BM'},
-    {name: 'Bhutan', code: 'BT'},
-    {name: 'Bolivia', code: 'BO'},
-    {name: 'Bosnia and Herzegovina', code: 'BA'},
-    {name: 'Botswana', code: 'BW'},
-    {name: 'Bouvet Island', code: 'BV'},
-    {name: 'Brazil', code: 'BR'},
-    {name: 'British Indian Ocean Territory', code: 'IO'},
-    {name: 'Brunei Darussalam', code: 'BN'},
-    {name: 'Bulgaria', code: 'BG'},
-    {name: 'Burkina Faso', code: 'BF'},
-    {name: 'Burundi', code: 'BI'},
-    {name: 'Cambodia', code: 'KH'},
-    {name: 'Cameroon', code: 'CM'},
-    {name: 'Canada', code: 'CA'},
-    {name: 'Cape Verde', code: 'CV'},
-    {name: 'Cayman Islands', code: 'KY'},
-    {name: 'Central African Republic', code: 'CF'},
-    {name: 'Chad', code: 'TD'},
-    {name: 'Chile', code: 'CL'},
-    {name: 'China', code: 'CN'},
-    {name: 'Christmas Island', code: 'CX'},
-    {name: 'Cocos (Keeling) Islands', code: 'CC'},
-    {name: 'Colombia', code: 'CO'},
-    {name: 'Comoros', code: 'KM'},
-    {name: 'Congo', code: 'CG'},
-    {name: 'Congo, The Democratic Republic of the', code: 'CD'},
-    {name: 'Cook Islands', code: 'CK'},
-    {name: 'Costa Rica', code: 'CR'},
-    {name: 'Cote D\'Ivoire', code: 'CI'},
-    {name: 'Croatia', code: 'HR'},
-    {name: 'Cuba', code: 'CU'},
-    {name: 'Cyprus', code: 'CY'},
-    {name: 'Czech Republic', code: 'CZ'},
-    {name: 'Denmark', code: 'DK'},
-    {name: 'Djibouti', code: 'DJ'},
-    {name: 'Dominica', code: 'DM'},
-    {name: 'Dominican Republic', code: 'DO'},
-    {name: 'Ecuador', code: 'EC'},
-    {name: 'Egypt', code: 'EG'},
-    {name: 'El Salvador', code: 'SV'},
-    {name: 'Equatorial Guinea', code: 'GQ'},
-    {name: 'Eritrea', code: 'ER'},
-    {name: 'Estonia', code: 'EE'},
-    {name: 'Ethiopia', code: 'ET'},
-    {name: 'Falkland Islands (Malvinas)', code: 'FK'},
-    {name: 'Faroe Islands', code: 'FO'},
-    {name: 'Fiji', code: 'FJ'},
-    {name: 'Finland', code: 'FI'},
-    {name: 'France', code: 'FR'},
-    {name: 'French Guiana', code: 'GF'},
-    {name: 'French Polynesia', code: 'PF'},
-    {name: 'French Southern Territories', code: 'TF'},
-    {name: 'Gabon', code: 'GA'},
-    {name: 'Gambia', code: 'GM'},
-    {name: 'Georgia', code: 'GE'},
-    {name: 'Germany', code: 'DE'},
-    {name: 'Ghana', code: 'GH'},
-    {name: 'Gibraltar', code: 'GI'},
-    {name: 'Greece', code: 'GR'},
-    {name: 'Greenland', code: 'GL'},
-    {name: 'Grenada', code: 'GD'},
-    {name: 'Guadeloupe', code: 'GP'},
-    {name: 'Guam', code: 'GU'},
-    {name: 'Guatemala', code: 'GT'},
-    {name: 'Guernsey', code: 'GG'},
-    {name: 'Guinea', code: 'GN'},
-    {name: 'Guinea-Bissau', code: 'GW'},
-    {name: 'Guyana', code: 'GY'},
-    {name: 'Haiti', code: 'HT'},
-    {name: 'Heard Island and Mcdonald Islands', code: 'HM'},
-    {name: 'Holy See (Vatican City State)', code: 'VA'},
-    {name: 'Honduras', code: 'HN'},
-    {name: 'Hong Kong', code: 'HK'},
-    {name: 'Hungary', code: 'HU'},
-    {name: 'Iceland', code: 'IS'},
-    {name: 'India', code: 'IN'},
-    {name: 'Indonesia', code: 'ID'},
-    {name: 'Iran, Islamic Republic Of', code: 'IR'},
-    {name: 'Iraq', code: 'IQ'},
-    {name: 'Ireland', code: 'IE'},
-    {name: 'Isle of Man', code: 'IM'},
-    {name: 'Israel', code: 'IL'},
-    {name: 'Italy', code: 'IT'},
-    {name: 'Jamaica', code: 'JM'},
-    {name: 'Japan', code: 'JP'},
-    {name: 'Jersey', code: 'JE'},
-    {name: 'Jordan', code: 'JO'},
-    {name: 'Kazakhstan', code: 'KZ'},
-    {name: 'Kenya', code: 'KE'},
-    {name: 'Kiribati', code: 'KI'},
-    {name: 'Korea, Democratic People\'S Republic of', code: 'KP'},
-    {name: 'Korea, Republic of', code: 'KR'},
-    {name: 'Kuwait', code: 'KW'},
-    {name: 'Kyrgyzstan', code: 'KG'},
-    {name: 'Lao People\'S Democratic Republic', code: 'LA'},
-    {name: 'Latvia', code: 'LV'},
-    {name: 'Lebanon', code: 'LB'},
-    {name: 'Lesotho', code: 'LS'},
-    {name: 'Liberia', code: 'LR'},
-    {name: 'Libyan Arab Jamahiriya', code: 'LY'},
-    {name: 'Liechtenstein', code: 'LI'},
-    {name: 'Lithuania', code: 'LT'},
-    {name: 'Luxembourg', code: 'LU'},
-    {name: 'Macao', code: 'MO'},
-    {name: 'Macedonia, The Former Yugoslav Republic of', code: 'MK'},
-    {name: 'Madagascar', code: 'MG'},
-    {name: 'Malawi', code: 'MW'},
-    {name: 'Malaysia', code: 'MY'},
-    {name: 'Maldives', code: 'MV'},
-    {name: 'Mali', code: 'ML'},
-    {name: 'Malta', code: 'MT'},
-    {name: 'Marshall Islands', code: 'MH'},
-    {name: 'Martinique', code: 'MQ'},
-    {name: 'Mauritania', code: 'MR'},
-    {name: 'Mauritius', code: 'MU'},
-    {name: 'Mayotte', code: 'YT'},
-    {name: 'Mexico', code: 'MX'},
-    {name: 'Micronesia, Federated States of', code: 'FM'},
-    {name: 'Moldova, Republic of', code: 'MD'},
-    {name: 'Monaco', code: 'MC'},
-    {name: 'Mongolia', code: 'MN'},
-    {name: 'Montserrat', code: 'MS'},
-    {name: 'Morocco', code: 'MA'},
-    {name: 'Mozambique', code: 'MZ'},
-    {name: 'Myanmar', code: 'MM'},
-    {name: 'Namibia', code: 'NA'},
-    {name: 'Nauru', code: 'NR'},
-    {name: 'Nepal', code: 'NP'},
-    {name: 'Netherlands', code: 'NL'},
-    {name: 'Netherlands Antilles', code: 'AN'},
-    {name: 'New Caledonia', code: 'NC'},
-    {name: 'New Zealand', code: 'NZ'},
-    {name: 'Nicaragua', code: 'NI'},
-    {name: 'Niger', code: 'NE'},
-    {name: 'Nigeria', code: 'NG'},
-    {name: 'Niue', code: 'NU'},
-    {name: 'Norfolk Island', code: 'NF'},
-    {name: 'Northern Mariana Islands', code: 'MP'},
-    {name: 'Norway', code: 'NO'},
-    {name: 'Oman', code: 'OM'},
-    {name: 'Pakistan', code: 'PK'},
-    {name: 'Palau', code: 'PW'},
-    {name: 'Palestinian Territory, Occupied', code: 'PS'},
-    {name: 'Panama', code: 'PA'},
-    {name: 'Papua New Guinea', code: 'PG'},
-    {name: 'Paraguay', code: 'PY'},
-    {name: 'Peru', code: 'PE'},
-    {name: 'Philippines', code: 'PH'},
-    {name: 'Pitcairn', code: 'PN'},
-    {name: 'Poland', code: 'PL'},
-    {name: 'Portugal', code: 'PT'},
-    {name: 'Puerto Rico', code: 'PR'},
-    {name: 'Qatar', code: 'QA'},
-    {name: 'Reunion', code: 'RE'},
-    {name: 'Romania', code: 'RO'},
-    {name: 'Russian Federation', code: 'RU'},
-    {name: 'RWANDA', code: 'RW'},
-    {name: 'Saint Helena', code: 'SH'},
-    {name: 'Saint Kitts and Nevis', code: 'KN'},
-    {name: 'Saint Lucia', code: 'LC'},
-    {name: 'Saint Pierre and Miquelon', code: 'PM'},
-    {name: 'Saint Vincent and the Grenadines', code: 'VC'},
-    {name: 'Samoa', code: 'WS'},
-    {name: 'San Marino', code: 'SM'},
-    {name: 'Sao Tome and Principe', code: 'ST'},
-    {name: 'Saudi Arabia', code: 'SA'},
-    {name: 'Senegal', code: 'SN'},
-    {name: 'Serbia and Montenegro', code: 'CS'},
-    {name: 'Seychelles', code: 'SC'},
-    {name: 'Sierra Leone', code: 'SL'},
-    {name: 'Singapore', code: 'SG'},
-    {name: 'Slovakia', code: 'SK'},
-    {name: 'Slovenia', code: 'SI'},
-    {name: 'Solomon Islands', code: 'SB'},
-    {name: 'Somalia', code: 'SO'},
-    {name: 'South Africa', code: 'ZA'},
-    {name: 'South Georgia and the South Sandwich Islands', code: 'GS'},
-    {name: 'Spain', code: 'ES'},
-    {name: 'Sri Lanka', code: 'LK'},
-    {name: 'Sudan', code: 'SD'},
-    {name: 'Suriname', code: 'SR'},
-    {name: 'Svalbard and Jan Mayen', code: 'SJ'},
-    {name: 'Swaziland', code: 'SZ'},
-    {name: 'Sweden', code: 'SE'},
-    {name: 'Switzerland', code: 'CH'},
-    {name: 'Syrian Arab Republic', code: 'SY'},
-    {name: 'Taiwan, Province of China', code: 'TW'},
-    {name: 'Tajikistan', code: 'TJ'},
-    {name: 'Tanzania, United Republic of', code: 'TZ'},
-    {name: 'Thailand', code: 'TH'},
-    {name: 'Timor-Leste', code: 'TL'},
-    {name: 'Togo', code: 'TG'},
-    {name: 'Tokelau', code: 'TK'},
-    {name: 'Tonga', code: 'TO'},
-    {name: 'Trinidad and Tobago', code: 'TT'},
-    {name: 'Tunisia', code: 'TN'},
-    {name: 'Turkey', code: 'TR'},
-    {name: 'Turkmenistan', code: 'TM'},
-    {name: 'Turks and Caicos Islands', code: 'TC'},
-    {name: 'Tuvalu', code: 'TV'},
-    {name: 'Uganda', code: 'UG'},
-    {name: 'Ukraine', code: 'UA'},
-    {name: 'United Arab Emirates', code: 'AE'},
-    {name: 'United Kingdom', code: 'GB'},
-    {name: 'United States', code: 'US'},
-    {name: 'United States Minor Outlying Islands', code: 'UM'},
-    {name: 'Uruguay', code: 'UY'},
-    {name: 'Uzbekistan', code: 'UZ'},
-    {name: 'Vanuatu', code: 'VU'},
-    {name: 'Venezuela', code: 'VE'},
-    {name: 'Viet Nam', code: 'VN'},
-    {name: 'Virgin Islands, British', code: 'VG'},
-    {name: 'Virgin Islands, U.S.', code: 'VI'},
-    {name: 'Wallis and Futuna', code: 'WF'},
-    {name: 'Western Sahara', code: 'EH'},
-    {name: 'Yemen', code: 'YE'},
-    {name: 'Zambia', code: 'ZM'},
-    {name: 'Zimbabwe', code: 'ZW'}
-].map(({name, code}) => ({text: name, value: code}));
+// https://en.wikipedia.org/wiki/List_of_most_common_surnames_in_Europe
+const NAMES_1 = "Amato,Barbieri,Barone,Basile,Battaglia,Bellini,Benedetti,Bernardi,Bianchi,Bianco,Bruno,Caputo,Carbone,Caruso,Castelli,Cattaneo,Colombo,Conte,Conti,Coppola,Costa,D'Agostino,D'Amico,D'Angelo,De Angelis,De Luca,De Rosa,De Santis,Di Stefano,Esposito,Fabbri,Farina,Ferrara,Ferrari,Ferraro,Ferretti,Ferri,Fiore,Fontana,Franco,Galli,Gallo,Gatti,Gentile,Giordano,Giuliani,Grassi,Grasso,Greco,Guerra,Leone,Lombardi,Lombardo,Longo,Mancini,Marchetti,Mariani,Marini,Marino,Martinelli,Martini,Martino,Mazza,Messina,Montanari,Monti,Morelli,Moretti,Neri,Orlando,Pagano,Palmieri,Palumbo,Parisi,Pellegrini,Pellegrino,Piras,Poli,Ricci,Rinaldi,Riva,Rizzi,Rizzo,Romano,Romeo,Rossetti,Rossi,Ruggiero,Russo,Sala,Sanna,Santoro,Serra,Silvestri,Sorrentino,Testa,Valente,Valentini,Villa,Vitale"
+    .split(',').sort();
+const NAMES_2 = "Anderson,Brown,Campbell,Clark,MacDonald,Mitchell,Morrison,Murray,Paterson,Reid,Robertson,Ross,Scott,Smith,Stewart,Taylor,Thomson,Watson,Wilson,Young"
+    .split(',').sort();
+
+
+const NAMES = NAMES_1.map(c => ({text: c, value: c}));
+const NAMES_GROUPED = (() => {
+        let items = [], last = '';
+        for (let n of NAMES_1) {
+            if (last[0] !== n[0]) {
+                let m = NAMES_2.shift();
+                items.push({text: m, value: m, level: 1});
+            }
+            items.push({text: n, value: n, level: 2});
+            last = n
+        }
+        return items;
+    }
+)();
 
 class SmallForm extends gws.View<ViewProps> {
     render() {
@@ -304,10 +82,10 @@ class SmallForm extends gws.View<ViewProps> {
 
         return <Form tabular>
             <gws.ui.Select
-                value={this.props.uiDemoCountry}
+                value={this.props.uiDemoName}
                 label="select"
-                items={COUNTRIES.slice(0, 5)}
-                whenChanged={bind('uiDemoCountry')}
+                items={NAMES.slice(0, 5)}
+                whenChanged={bind('uiDemoName')}
             />
             <gws.ui.TextInput
                 value={this.props.uiDemoString}
@@ -357,48 +135,111 @@ class SmallForm extends gws.View<ViewProps> {
     }
 }
 
+class TabsForm extends gws.View<ViewProps> {
+    render() {
+        let bind = name => value => this.props.controller.update({[name]: value})
+
+        return <gws.ui.Tabs
+            active={this.props.uiDemoActiveTab}
+            whenChanged={bind('uiDemoActiveTab')}
+        >
+            <gws.ui.Tab label="Goethe">
+                <p>Johann Wolfgang von Goethe was a German writer and statesman. His works include: four novels; epic
+                    and lyric poetry; prose and verse dramas; memoirs; an autobiography; literary and aesthetic
+                    criticism; and treatises on botany, anatomy, and colour. </p>
+            </gws.ui.Tab>
+            <gws.ui.Tab label="Shakespeare">
+                <p>William Shakespeare was an English poet, playwright, and actor, widely regarded as the greatest
+                    writer in the English language and the world's greatest dramatist</p>
+            </gws.ui.Tab>
+            <gws.ui.Tab label="Dickens">
+                <p>Charles John Huffam Dickens FRSA was an English writer and social critic. He created some of the
+                    world's best-known fictional characters and is regarded by many as the greatest novelist of the
+                    Victorian era.</p>
+            </gws.ui.Tab>
+            <gws.ui.Tab label="Unknown" disabled>
+            </gws.ui.Tab>
+        </gws.ui.Tabs>
+    }
+}
 
 class FormDemo extends gws.View<ViewProps> {
     render() {
         let bind = name => value => this.props.controller.update({[name]: value})
 
         return <Form>
-            <Row>
-                <Cell flex>
-                    <gws.ui.Select
-                        value={this.props.uiDemoCountry}
-                        label="select"
-                        items={COUNTRIES.slice(0, 5)}
-                        whenChanged={bind('uiDemoCountry')}
+            <Row top>
+                <Cell>
+                    <gws.ui.List
+                        value={this.props.uiDemoName}
+                        label="list"
+                        items={NAMES}
+                        whenChanged={bind('uiDemoName')}
                     />
                 </Cell>
                 <Cell flex>
-                    <gws.ui.Select
-                        value={this.props.uiDemoCountry}
-                        label="search"
-                        items={COUNTRIES}
-                        withSearch
-                        whenChanged={bind('uiDemoCountry')}
-                    />
-                </Cell>
-                <Cell flex>
-                    <gws.ui.Select
-                        value={this.props.uiDemoCountry}
-                        label="combo"
-                        withCombo
-                        items={COUNTRIES}
-                        whenChanged={bind('uiDemoCountry')}
-                    />
-                </Cell>
-                <Cell flex>
-                    <gws.ui.Select
-                        value={this.props.uiDemoCountry}
-                        label="disabled"
-                        disabled
-                        withCombo
-                        items={COUNTRIES}
-                        whenChanged={bind('uiDemoCountry')}
-                    />
+                    <Form>
+                        <Row>
+                            <Cell flex>
+                                <gws.ui.Select
+                                    value={this.props.uiDemoName}
+                                    label="select"
+                                    items={NAMES.filter(x => x.text.match(/^Mar/))}
+                                    whenChanged={bind('uiDemoName')}
+                                />
+                            </Cell>
+                            <Cell flex>
+                                <gws.ui.Select
+                                    value={this.props.uiDemoName}
+                                    label="disabled"
+                                    disabled
+                                    items={NAMES}
+                                    whenChanged={bind('uiDemoName')}
+                                />
+                            </Cell>
+                        </Row>
+                        <Row>
+                            <Cell flex>
+                                <gws.ui.Select
+                                    value={this.props.uiDemoName}
+                                    label="search"
+                                    items={NAMES}
+                                    withSearch
+                                    whenChanged={bind('uiDemoName')}
+                                />
+                            </Cell>
+                            <Cell flex>
+                                <gws.ui.Select
+                                    value={this.props.uiDemoName}
+                                    label="search+clear"
+                                    items={NAMES}
+                                    withClear
+                                    withSearch
+                                    whenChanged={bind('uiDemoName')}
+                                />
+                            </Cell>
+                        </Row>
+                        <Row>
+                            <Cell flex>
+                                <gws.ui.Select
+                                    value={this.props.uiDemoName}
+                                    label="combo"
+                                    withCombo
+                                    items={NAMES}
+                                    whenChanged={bind('uiDemoName')}
+                                />
+                            </Cell>
+                            <Cell flex>
+                                <gws.ui.Select
+                                    value={this.props.uiDemoName}
+                                    label="levels"
+                                    withSearch
+                                    items={NAMES_GROUPED}
+                                    whenChanged={bind('uiDemoName')}
+                                />
+                            </Cell>
+                        </Row>
+                    </Form>
                 </Cell>
             </Row>
 
@@ -413,7 +254,7 @@ class FormDemo extends gws.View<ViewProps> {
                         whenChanged={bind('uiDemoDate')}
                     />
                 </Cell>
-                <Cell>
+                <Cell flex>
                     <gws.ui.ColorPicker
                         value={this.props.uiDemoColor}
                         label="color"
@@ -442,13 +283,6 @@ class FormDemo extends gws.View<ViewProps> {
                         value={this.props.uiDemoString}
                         label="textInput+clear"
                         withClear
-                        whenChanged={bind('uiDemoString')}
-                    />
-                </Cell>
-                <Cell flex>
-                    <gws.ui.PasswordInput
-                        value={this.props.uiDemoString}
-                        label="password"
                         whenChanged={bind('uiDemoString')}
                     />
                 </Cell>
@@ -568,7 +402,7 @@ class FormDemo extends gws.View<ViewProps> {
     }
 }
 
-class SidebarBody extends gws.View<ViewProps> {
+class SidebarBody extends gws.View <ViewProps> {
 
     render() {
 
@@ -592,8 +426,16 @@ class SidebarBody extends gws.View<ViewProps> {
                         </Cell>
                         <Cell>
                             <gws.ui.Button
+                                whenTouched={set('uiDemoUseDialog', 'tabs')}
+                                label="tabs"/>
+                        </Cell>
+
+                    </Row>
+                    <Row>
+                        <Cell>
+                            <gws.ui.Button
                                 whenTouched={set('uiDemoUseDialog', 'alertError')}
-                                label="error"/>
+                                label="err"/>
                         </Cell>
                         <Cell>
                             <gws.ui.Button
@@ -667,10 +509,9 @@ class SidebarBody extends gws.View<ViewProps> {
                     uiDemoString: {this.props.uiDemoString}<br/>
                     uiDemoNumber: {this.props.uiDemoNumber}<br/>
                     uiDemoColor: {this.props.uiDemoColor}<br/>
-                    uiDemoCountry: {this.props.uiDemoCountry}<br/>
+                    uiDemoName: {this.props.uiDemoName}<br/>
                     uiDemoDate: {this.props.uiDemoDate}<br/>
                 </pre>
-
 
             </sidebar.TabBody>
 
@@ -715,8 +556,22 @@ class OverlayView extends gws.View<ViewProps> {
                 title='Form Controls'
                 whenClosed={close}
                 buttons={buttons}
+                style={CENTER_BOX(1000, 700)}
+
             >
                 <FormDemo {...this.props}/>
+            </gws.ui.Dialog>
+        }
+
+        if (dm === 'tabs') {
+            return <gws.ui.Dialog
+                title='Tabs'
+                whenClosed={close}
+                buttons={buttons}
+                style={CENTER_BOX(600, 400)}
+
+            >
+                <TabsForm {...this.props}/>
             </gws.ui.Dialog>
         }
 
@@ -779,10 +634,10 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
             uiDemoString: 'string',
             uiDemoNumber: 13,
             uiDemoColor: 'rgba(255,200,10,0.9)',
-            uiDemoCountry: 'DE',
+            uiDemoName: 'Marino',
             uiDemoDate: '2018-11-22',
 
-            uiDemoUseDialog: '',
+            uiDemoUseDialog: 'form',
 
             uiDemoUseTabular: true,
             uiDemoUseTitle: true,
@@ -812,4 +667,3 @@ export const tags = {
     'Shared.UIDemo': SidebarUIDemoController,
     'Sidebar.UIDemo': SidebarUIDemoController
 };
-

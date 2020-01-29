@@ -9,6 +9,10 @@ module.exports = v => ({
     },
 
     '.uiDialog.modStorageReadDialog': {
+        '.uiListBox': {
+            height: 260,
+
+        },
         [v.MEDIA('large+')]: {
             ...v.CENTER_BOX(300, 500),
         },

@@ -2,18 +2,21 @@ module.exports = v => ({
     '.uiColorPicker': {
 
         ' .uiControlBox': {
-            width: v.CONTROL_SIZE * 2,
+            width: v.CONTROL_SIZE * 3,
         },
 
-        '.uiColorPickerColor': {
+        '.uiColorPickerSample': {
             ...v.ICON_BUTTON(),
             outline: 'none',
             padding: v.UNIT * 3,
             backgroundColor: 'transparent',
-
             'div': {
+            border: [1, 'solid', v.BORDER_COLOR],
                 width: '100%',
                 height: '100%',
+            },
+            'div.uiColorPickerNoColor': {
+                ...v.SVG('nocolor', v.BORDER_COLOR),
             }
         },
 

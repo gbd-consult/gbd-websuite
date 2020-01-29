@@ -15,6 +15,7 @@ let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as StyleC
 
 interface ViewProps extends gws.types.ViewProps {
     controller: StyleController;
+    styleEditorActiveTab: number;
     styleEditorLabelEnabled: boolean;
     styleEditorCurrentName: string;
     styleEditorNewName: string;
@@ -23,6 +24,7 @@ interface ViewProps extends gws.types.ViewProps {
 
 
 const StoreKeys = [
+    'styleEditorActiveTab',
     'styleEditorLabelEnabled',
     'styleEditorCurrentName',
     'styleEditorNewName',
@@ -75,79 +77,100 @@ class StyleForm extends gws.View<ViewProps> {
         let noLabel = this.props.styleEditorValues.with_label !== gws.api.StyleLabelOption.all;
         let noGeom = this.props.styleEditorValues.with_geometry !== gws.api.StyleGeometryOption.all;
 
-        return <Form tabular>
-            <gws.ui.Group label={cc.__('modStyleProp_with_geometry')}>
-                <gws.ui.Toggle
-                    type="checkbox"
-                    {...cc.bind(
-                        'styleEditorValues.with_geometry',
-                        val => val === 'all',
-                        val => val ? 'all' : 'none',
-                    )}/>
-            </gws.ui.Group>
+        return <gws.ui.Tabs
+            active={cc.getValue('styleEditorActiveTab')}
+            whenChanged={n => cc.update({styleEditorActiveTab: n})}>
 
-            <gws.ui.ColorPicker
-                disabled={noGeom}
-                label={cc.__('modStyleProp_fill')}
-                {...cc.bind('styleEditorValues.fill')}/>
-            <gws.ui.ColorPicker
-                disabled={noGeom}
-                label={cc.__('modStyleProp_stroke')}
-                {...cc.bind('styleEditorValues.stroke')}/>
-            <gws.ui.Slider
-                disabled={noGeom}
-                label={cc.__('modStyleProp_stroke_width')}
-                minValue={0} maxValue={20} step={1}
-                {...cc.bind('styleEditorValues.stroke_width')}/>
-            <gws.ui.Slider
-                disabled={noGeom}
-                minValue={0} maxValue={20} step={1}
-                label={cc.__('modStyleProp_point_size')}
-                {...cc.bind('styleEditorValues.point_size')}/>
+            <gws.ui.Tab label={cc.__('modStyleProp_with_geometry')}>
 
-            <gws.ui.Group label={cc.__('modStyleProp_with_label')}>
-                <gws.ui.Toggle
-                    type="checkbox"
-                    {...cc.bind(
-                        'styleEditorValues.with_label',
-                        val => val === 'all',
-                        val => val ? 'all' : 'none',
-                    )}/>
-            </gws.ui.Group>
+                <Form tabular>
+                    <gws.ui.Group noBorder label={cc.__('modStyleEnabled')}>
+                        <gws.ui.Toggle
+                            type="checkbox"
+                            {...cc.bind(
+                                'styleEditorValues.with_geometry',
+                                val => val === 'all',
+                                val => val ? 'all' : 'none',
+                            )}/>
+                    </gws.ui.Group>
 
-            <gws.ui.ColorPicker
-                disabled={noLabel}
-                label={cc.__('modStyleProp_fill')}
-                {...cc.bind('styleEditorValues.label_fill')}/>
-            <gws.ui.ColorPicker
-                disabled={noLabel}
-                label={cc.__('modStyleProp_stroke')}
-                {...cc.bind('styleEditorValues.label_stroke')}/>
-            <gws.ui.Slider
-                disabled={noLabel}
-                label={cc.__('modStyleProp_stroke_width')}
-                minValue={0} maxValue={20} step={1}
-                {...cc.bind('styleEditorValues.label_stroke_width')}/>
-            <gws.ui.Slider
-                disabled={noLabel}
-                minValue={10} maxValue={40} step={1}
-                label={cc.__('modStyleProp_label_font_size')}
-                {...cc.bind('styleEditorValues.label_font_size')}/>
-            <gws.ui.Group
-                disabled={noLabel}
-                label={cc.__('modStyleProp_label_placement')}>{labelPlacement}</gws.ui.Group>
-            <gws.ui.Group
-                disabled={noLabel}
-                label={cc.__('modStyleProp_label_align')}>{labelAlign}</gws.ui.Group>
-            <gws.ui.Group disabled={noLabel} label={cc.__('modStyleProp_label_offset')}>
-                <gws.ui.Slider
-                    minValue={-100} maxValue={+100} step={1}
-                    {...cc.bind('styleEditorValues.label_offset_x')}/>
-                <gws.ui.Slider
-                    minValue={-100} maxValue={+100} step={1}
-                    {...cc.bind('styleEditorValues.label_offset_y')}/>
-            </gws.ui.Group>
-        </Form>
+                    <gws.ui.ColorPicker
+                        disabled={noGeom}
+                        label={cc.__('modStyleProp_fill')}
+                        {...cc.bind('styleEditorValues.fill')}/>
+                    <gws.ui.ColorPicker
+                        disabled={noGeom}
+                        label={cc.__('modStyleProp_stroke')}
+                        {...cc.bind('styleEditorValues.stroke')}/>
+                    <gws.ui.Slider
+                        disabled={noGeom}
+                        label={cc.__('modStyleProp_stroke_width')}
+                        minValue={0} maxValue={20} step={1}
+                        {...cc.bind('styleEditorValues.stroke_width')}/>
+                    <gws.ui.Slider
+                        disabled={noGeom}
+                        minValue={0} maxValue={20} step={1}
+                        label={cc.__('modStyleProp_point_size')}
+                        {...cc.bind('styleEditorValues.point_size')}/>
+                </Form>
+            </gws.ui.Tab>
+
+            <gws.ui.Tab label={cc.__('modStyleProp_with_label')}>
+                <Form tabular>
+
+                    <gws.ui.Group noBorder label={cc.__('modStyleEnabled')}>
+                        <gws.ui.Toggle
+                            type="checkbox"
+                            {...cc.bind(
+                                'styleEditorValues.with_label',
+                                val => val === 'all',
+                                val => val ? 'all' : 'none',
+                            )}/>
+                    </gws.ui.Group>
+
+                    <gws.ui.ColorPicker
+                        disabled={noLabel}
+                        label={cc.__('modStyleProp_fill')}
+                        {...cc.bind('styleEditorValues.label_fill')}/>
+                    <gws.ui.ColorPicker
+                        disabled={noLabel}
+                        label={cc.__('modStyleProp_stroke')}
+                        {...cc.bind('styleEditorValues.label_stroke')}/>
+                    <gws.ui.Slider
+                        disabled={noLabel}
+                        label={cc.__('modStyleProp_stroke_width')}
+                        minValue={0} maxValue={20} step={1}
+                        {...cc.bind('styleEditorValues.label_stroke_width')}/>
+                    <gws.ui.Slider
+                        disabled={noLabel}
+                        minValue={10} maxValue={40} step={1}
+                        label={cc.__('modStyleProp_label_font_size')}
+                        {...cc.bind('styleEditorValues.label_font_size')}/>
+                    <gws.ui.Group
+                        noBorder
+                        disabled={noLabel}
+                        label={cc.__('modStyleProp_label_placement')}
+                    >{labelPlacement}</gws.ui.Group>
+                    <gws.ui.Group
+                        noBorder
+                        disabled={noLabel}
+                        label={cc.__('modStyleProp_label_align')}
+                    >{labelAlign}</gws.ui.Group>
+                    <gws.ui.Group
+                        noBorder
+                        disabled={noLabel}
+                        label={cc.__('modStyleProp_label_offset')}
+                    >
+                        <gws.ui.Slider
+                            minValue={-100} maxValue={+100} step={1}
+                            {...cc.bind('styleEditorValues.label_offset_x')}/>
+                        <gws.ui.Slider
+                            minValue={-100} maxValue={+100} step={1}
+                            {...cc.bind('styleEditorValues.label_offset_y')}/>
+                    </gws.ui.Group>
+                </Form>
+            </gws.ui.Tab>
+        </gws.ui.Tabs>
     }
 }
 

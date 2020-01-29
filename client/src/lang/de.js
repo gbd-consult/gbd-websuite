@@ -295,8 +295,9 @@ module.exports = {
     modStyleRename: 'Umbenennen',
 
     modStyleEditStyle: 'Bearbeiten',
+    modStyleEnabled: 'An',
 
-    modStyleProp_with_label: 'Beschrifrung',
+    modStyleProp_with_label: 'Beschriftung',
     modStyleProp_with_geometry: 'Geometrie',
 
     modStyleProp_fill: 'Füllfarbe',

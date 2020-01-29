@@ -75,7 +75,7 @@ class StorageDialog extends gws.View<StorageDialogProps> {
             cls = 'modStorageReadDialog';
             title = this.__('modStorageReadDialogTitle');
             submit = () => this.props.controller.read();
-            control = <gws.ui.Select
+            control = <gws.ui.List
                 value={this.props.storageNames[category]}
                 items={this.props.storageEntries
                     .filter(e => e.category === category)

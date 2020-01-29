@@ -37,7 +37,7 @@ module.exports = v => ({
         }
     },
 
-    '.uiForm.uiTabular': {
+    '.uiForm.isTabular': {
         display: 'table',
         width: '100%',
 
@@ -65,25 +65,26 @@ module.exports = v => ({
                 padding: [0, v.UNIT4, 0, 0],
             },
         },
-        '> .uiGroup .uiControlBox': {
+    },
+
+    '.uiGroup': {
+        ' > .uiControlBody > .uiControlBox': {
+            height: 'auto',
+            padding: [0, v.UNIT2, 0, 0],
+        },
+
+        '&.noBorder > .uiControlBody >.uiControlBox': {
             border: 'none',
+        },
 
-        }
-    },
+        '&.isVertical > .uiControlBody > .uiControlBox': {
+            flexDirection: 'column',
+            alignItems: 'normal',
+            height: 'auto',
+            padding: [v.UNIT2, v.UNIT2, v.UNIT2, 0],
 
-    '.uiGroup > .uiControlBox': {
-        height: 'auto',
-        padding: [0, v.UNIT2, 0, 0],
-    },
-
-
-    '.uiGroup.uiVertical > .uiControlBody > .uiControlBox': {
-        flexDirection: 'column',
-        alignItems: 'normal',
-        height: 'auto',
-        padding: [v.UNIT2, v.UNIT2, v.UNIT2, 0],
-
-    },
+        },
+    }
 
 
 });
