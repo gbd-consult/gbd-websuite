@@ -392,7 +392,7 @@ class DimensionModel {
     }
 
     geoDist(p1, p2) {
-        return measure.distance(p1.coordinate, p2.coordinate, this.map.projection, measure.ELLIPSOID)
+        return measure.distance(p1.coordinate, p2.coordinate, this.map.projection, measure.Mode.ELLIPSOID)
 
     }
 

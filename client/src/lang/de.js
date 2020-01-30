@@ -10,6 +10,7 @@ module.exports = {
     appFatalError: 'Applikation Fehler',
     cmpFeatureTaskButton: 'Aufgaben',
     modAlkisSidebarTitle: 'Flurstückssuche',
+
     modAnnotateClearAuxButton: 'Alle löschen',
     modAnnotateDrawAuxButton: 'Neu',
     modAnnotateDrawToolbarButton: 'Markieren und Messen',
@@ -28,14 +29,17 @@ module.exports = {
     modAnnotateRemoveButton: 'Löschen',
     modAnnotateSaveButton: 'Aktualisieren',
     modAnnotateSidebarTitle: 'Markierungen',
+    modAnnotateSidebarDetailsTitle: 'Markierung bearbeiten',
     modAnnotateWidth: 'Breite',
     modAnnotateStyleName: 'Stil',
     modAnnotateX: 'X',
     modAnnotateY: 'Y',
 
+
     modAnnotateFormAuxButton: 'Eigenschaften',
     modAnnotateStyleAuxButton: 'Darstellung',
     modAnnotateAddAuxButton: 'Neu',
+    modAnnotatePlaceholder: 'Platzhalter',
 
     modDproconToolbarButton: 'Demografie',
     modDrawToolboxTitle: 'Zeichnen',
@@ -235,11 +239,11 @@ module.exports = {
 
     modGeorisksReportFormLabelDanger: 'Gefährdung von',
     modGeorisksReportFormLabelEvent: 'Was ist passiert?',
-	modGeorisksReportFormLabelFiles: 'Bilder',
-	modGeorisksReportFormLabelHeight: 'Maximale Ausbruchshöhe',
-	modGeorisksReportFormLabelKind: 'Art',
-	modGeorisksReportFormLabelMessage: 'Meldung',
-	modGeorisksReportFormLabelName: 'Ihr Name',
+    modGeorisksReportFormLabelFiles: 'Bilder',
+    modGeorisksReportFormLabelHeight: 'Maximale Ausbruchshöhe',
+    modGeorisksReportFormLabelKind: 'Art',
+    modGeorisksReportFormLabelMessage: 'Meldung',
+    modGeorisksReportFormLabelName: 'Ihr Name',
     modGeorisksReportFormLabelVolume: 'Volumen',
     modGeorisksReportFormLabelDate: 'Datum',
 
@@ -249,33 +253,33 @@ module.exports = {
     modGeorisksDialogSuccess: 'Vielen Dank für Ihre Unterstützung. Ihre Daten wurden gespeichert und werden nun geprüft.',
     modGeorisksDialogError: 'Es ist ein Fehler aufgetreten',
 
-	modGeorisksReportFormCat_steinschlag: 'Steinschlag (Blockgröße bis 0,5 m)',
-	modGeorisksReportFormCat_blockschlag: 'Blockschlag (Blockgröße 0,5 - 2 m)',
-	modGeorisksReportFormCat_grossblockschlag: 'Großblockschlag (Blockgröße > 2 m)',
-	modGeorisksReportFormCat_felssturz: 'Felssturz',
+    modGeorisksReportFormCat_steinschlag: 'Steinschlag (Blockgröße bis 0,5 m)',
+    modGeorisksReportFormCat_blockschlag: 'Blockschlag (Blockgröße 0,5 - 2 m)',
+    modGeorisksReportFormCat_grossblockschlag: 'Großblockschlag (Blockgröße > 2 m)',
+    modGeorisksReportFormCat_felssturz: 'Felssturz',
     modGeorisksReportFormCat_veraenderung: 'Veränderungen mir bekannter Fels',
-	modGeorisksReportFormCat_hangrutschung: 'Hangrutschung',
-	modGeorisksReportFormCat_mure: 'Schlammlawine (Mure)',
+    modGeorisksReportFormCat_hangrutschung: 'Hangrutschung',
+    modGeorisksReportFormCat_mure: 'Schlammlawine (Mure)',
 
     modGeorisksReportFormKind_allgemein: 'allgemein',
-	modGeorisksReportFormKind_tief: 'tief (> 5 m)',
-	modGeorisksReportFormKind_flach: 'flach (< 5 m)',
+    modGeorisksReportFormKind_tief: 'tief (> 5 m)',
+    modGeorisksReportFormKind_flach: 'flach (< 5 m)',
 
-	modGeorisksReportFormKind_geroell: 'Geröll & Schlamm',
-	modGeorisksReportFormKind_schlamm: 'nur Schlamm ',
+    modGeorisksReportFormKind_geroell: 'Geröll & Schlamm',
+    modGeorisksReportFormKind_schlamm: 'nur Schlamm ',
 
     modGeorisksReportFormKind_lagegeaendert: 'ein Felsblock hat seine Lage geändert',
     modGeorisksReportFormKind_neuerisse: 'neu Risse /Klüfte sind zu sehen',
     modGeorisksReportFormKind_risseweiter: 'Risse/Klüfte sind weiter geworden',
     modGeorisksReportFormKind_risselaenger: 'Risse/Klüfte sind länger geworden',
 
-	modGeorisksReportFormVol_0: '< 1',
-	modGeorisksReportFormVol_1: '1 - 5',
-	modGeorisksReportFormVol_10: 'sehr klein (10-100)',
-	modGeorisksReportFormVol_100: 'klein (100 - 1.000)',
-	modGeorisksReportFormVol_1000: 'mittel (1.000 - 10.000)',
-	modGeorisksReportFormVol_10000: 'groß > 10.000',
-	modGeorisksReportFormVol_5: '5 - 10',
+    modGeorisksReportFormVol_0: '< 1',
+    modGeorisksReportFormVol_1: '1 - 5',
+    modGeorisksReportFormVol_10: 'sehr klein (10-100)',
+    modGeorisksReportFormVol_100: 'klein (100 - 1.000)',
+    modGeorisksReportFormVol_1000: 'mittel (1.000 - 10.000)',
+    modGeorisksReportFormVol_10000: 'groß > 10.000',
+    modGeorisksReportFormVol_5: '5 - 10',
 
     modGeorisksReportFormDanger_street: 'Straße',
     modGeorisksReportFormDanger_rail: 'Gleis',
@@ -320,10 +324,13 @@ module.exports = {
     modStyleProp_stroke_width: 'Strichbreite',
 
 
-
-
-
-
+    mapPlaceholderArea: 'Fläche',
+    mapPlaceholderLength: 'Distanz',
+    mapPlaceholderPerimeter: 'Umfang',
+    mapPlaceholderRadius: 'Radius',
+    mapPlaceholderWidth: 'Breite',
+    mapPlaceholderHeight: 'Höhe',
+    mapPlaceholderXY: 'Koordinate',
 
 
 };

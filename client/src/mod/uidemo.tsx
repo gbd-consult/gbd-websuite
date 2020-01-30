@@ -248,6 +248,7 @@ class FormDemo extends gws.View<ViewProps> {
                     <gws.ui.DateInput
                         value={this.props.uiDemoDate}
                         label="date"
+                        withClear
                         format={{
                             date: this.props.controller.app.localeData.dateFormatShort
                         }}

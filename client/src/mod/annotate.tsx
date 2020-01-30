@@ -3,6 +3,7 @@ import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 import * as measure from 'gws/map/measure';
+import * as template from 'gws/map/template';
 import * as style from 'gws/map/style';
 
 import * as sidebar from './common/sidebar';
@@ -21,20 +22,21 @@ let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Annota
 let {Form, Row, Cell} = gws.ui.Layout;
 
 const defaultLabelTemplates = {
-    Point: '{x}, {y}',
+    Point: '{xy}',
     Line: '{len}',
     Polygon: '{area}',
     Circle: '{radius}',
-    Box: '{w} x {h}',
+    Box: '{width} x {height}',
 };
 
 interface AnnotateFormData {
     x?: string
     y?: string
-    w?: string
-    h?: string
+    width?: string
+    height?: string
     radius?: string
     labelTemplate: string
+    shapeType: string
 }
 
 interface ViewProps extends gws.types.ViewProps {
@@ -43,6 +45,7 @@ interface ViewProps extends gws.types.ViewProps {
     annotateFormData: AnnotateFormData;
     annotateTab: string;
     annotateFeatureCount: number;
+    annotateLabelTemplates: gws.types.Dict;
     appActiveTool: string;
 };
 
@@ -51,156 +54,35 @@ const StoreKeys = [
     'annotateFormData',
     'annotateTab',
     'annotateUpdated',
+    'annotateLabelTemplates',
     'appActiveTool',
 ];
 
-function computeDimensionsWithMode(shapeType, geom, projection, mode) {
-    let extent = geom.getExtent();
 
-    if (shapeType === 'Point') {
-        let c = (geom as ol.geom.Point).getCoordinates();
-        return {
-            x: c[0],
-            y: c[1],
-            extent,
-        }
-    }
 
-    if (shapeType === 'Line') {
-        return {
-            len: measure.length(geom, projection, mode),
-            extent,
-        }
-    }
-
-    if (shapeType === 'Polygon') {
-        return {
-            len: measure.length(geom, projection, mode),
-            area: measure.area(geom, projection, mode),
-            extent,
-        };
-    }
-
-    if (shapeType === 'Box') {
-
-        let c = (geom as ol.geom.Polygon).getLinearRing(0).getCoordinates();
-
-        // NB: x,y = top left
-        return {
-            len: measure.length(geom, projection, mode),
-            area: measure.area(geom, projection, mode),
-            x: c[0][0],
-            y: c[3][1],
-            w: measure.distance(c[0], c[1], projection, mode),
-            h: measure.distance(c[1], c[2], projection, mode),
-            extent,
-        }
-    }
-
-    if (shapeType === 'Circle') {
-        let g = geom as ol.geom.Circle;
-        let c = g.getCenter();
-
-        return {
-            ...computeDimensions('Polygon', ol.geom.Polygon.fromCircle(g, 64, 0), projection),
-            x: c[0],
-            y: c[1],
-            radius: g.getRadius(),
-            extent,
-        }
-    }
-
-    return {};
-}
-
-function computeDimensions(shapeType, geom, projection) {
-    return computeDimensionsWithMode(shapeType, geom, projection, measure.ELLIPSOID)
-}
-
-function formatLengthForEdit(n) {
-    return (Number(n) || 0).toFixed(2);
-}
-
-function formatCoordinate(feature: AnnotateFeature, n) {
-    return feature.map.formatCoordinate(Number(n) || 0);
-
-}
-
-function formatTemplate(feature: AnnotateFeature, text, dims) {
-
-    function _element(key) {
-        let n = dims[key];
-        if (!n)
-            return '';
-        switch (key) {
-            case 'area':
-                return _area(n);
-            case 'len':
-            case 'radius':
-            case 'w':
-            case 'h':
-                return _length(n);
-            case 'x':
-            case 'y':
-                return formatCoordinate(feature, n);
-            case 'extent':
-                return n.map(c => formatCoordinate(feature, c)).join(', ')
-
-        }
-    }
-
-    function _length(n) {
-        if (!n || n < 0.01)
-            return '';
-        if (n >= 1e3)
-            return (n / 1e3).toFixed(2) + ' km';
-        if (n > 1)
-            return n.toFixed(2) + ' m';
-        return n.toFixed(2) + ' m';
-    }
-
-    function _area(n) {
-        let sq = '\u00b2';
-
-        if (!n || n < 0.01)
-            return '';
-        if (n >= 1e5)
-            return (n / 1e6).toFixed(2) + ' km' + sq;
-        if (n > 1)
-            return n.toFixed(2) + ' m' + sq;
-        return n.toFixed(2) + ' m' + sq;
-    }
-
-    return (text || '').replace(/{(\w+)}/g, ($0, key) => _element(key));
-}
-
-function debugFeature(shapeType, geom, projection) {
-    let fmt = new ol.format.WKT();
-
-    let wkt = 'SRID=' + projection.getCode().split(':')[1] + ';' + fmt.writeGeometry(geom);
-    let dims = [
-        computeDimensionsWithMode(shapeType, geom, projection, measure.CARTESIAN),
-        computeDimensionsWithMode(shapeType, geom, projection, measure.SPHERE),
-        computeDimensionsWithMode(shapeType, geom, projection, measure.ELLIPSOID),
-    ];
-
-    return <pre>
-        {wkt.replace(/,/g, ',\n')}
-        <br/><br/>
-        <h6>cartesian:</h6>{JSON.stringify(dims[0], null, 4)}<br/><br/>
-        <h6>sphere   :</h6>{JSON.stringify(dims[1], null, 4)}<br/><br/>
-        <h6>ellipsoid:</h6>{JSON.stringify(dims[2], null, 4)}
-    </pre>;
-
-}
+// function debugFeature(shapeType, geom, projection) {
+//     let fmt = new ol.format.WKT();
+//
+//     let wkt = 'SRID=' + projection.getCode().split(':')[1] + ';' + fmt.writeGeometry(geom);
+//     let dims = [
+//         computeDimensionsWithMode(shapeType, geom, projection, measure.Mode.CARTESIAN),
+//         computeDimensionsWithMode(shapeType, geom, projection, measure.Mode.SPHERE),
+//         computeDimensionsWithMode(shapeType, geom, projection, measure.Mode.ELLIPSOID),
+//     ];
+//
+//     return <pre>
+//         {wkt.replace(/,/g, ',\n')}
+//         <br/><br/>
+//         <h6>cartesian:</h6>{JSON.stringify(dims[0], null, 4)}<br/><br/>
+//         <h6>sphere   :</h6>{JSON.stringify(dims[1], null, 4)}<br/><br/>
+//         <h6>ellipsoid:</h6>{JSON.stringify(dims[2], null, 4)}
+//     </pre>;
+//
+// }
 
 class AnnotateFeature extends gws.map.Feature {
     labelTemplate: string;
     shapeType: string;
-
-    get dimensions() {
-        return computeDimensions(this.shapeType, this.geometry, this.map.projection);
-    }
 
     getProps() {
         let p = super.getProps();
@@ -209,18 +91,17 @@ class AnnotateFeature extends gws.map.Feature {
             labelTemplate: this.labelTemplate,
         }
         return p;
-
     }
 
     get formData(): AnnotateFormData {
-        let dims = this.dimensions;
         return {
-            x: formatCoordinate(this, dims.x),
-            y: formatCoordinate(this, dims.y),
-            radius: formatLengthForEdit(dims.radius),
-            w: formatLengthForEdit(dims.w),
-            h: formatLengthForEdit(dims.h),
+            shapeType: this.shapeType,
             labelTemplate: this.labelTemplate,
+            x: this.format('{x|M}'),
+            y: this.format('{y|M}'),
+            radius: this.format('{radius|M}'),
+            width: this.format('{width|M}'),
+            height: this.format('{height|M}'),
         }
     }
 
@@ -257,8 +138,7 @@ class AnnotateFeature extends gws.map.Feature {
     }
 
     redraw() {
-        let dims = this.dimensions;
-        this.setLabel(formatTemplate(this, this.labelTemplate, dims));
+        this.setLabel(this.format(this.labelTemplate));
         this.master.featureUpdated(this);
     }
 
@@ -292,23 +172,27 @@ class AnnotateFeature extends gws.map.Feature {
             let g = this.geometry as ol.geom.Polygon;
             let x = Number(ff.x) || 0,
                 y = Number(ff.y) || 0,
-                w = Number(ff.w) || 100,
-                h = Number(ff.h) || 100;
+                width = Number(ff.width) || 100,
+                height = Number(ff.height) || 100;
             let coords: any = [
-                [x, y - h],
-                [x + w, y - h],
-                [x + w, y],
+                [x, y - height],
+                [x + width, y - height],
+                [x + width, y],
                 [x, y],
-                [x, y - h],
+                [x, y - height],
             ];
             g.setCoordinates([coords])
         }
 
         this.setChanged();
+    }
 
+    protected format(text) {
+        return template.formatGeometry(text, this.geometry, this.map.projection);
     }
 
 }
+
 
 class AnnotateLayer extends gws.map.layer.FeatureLayer {
 }
@@ -366,6 +250,36 @@ class AnnotateModifyTool extends modify.Tool {
 
 class AnnotateFeatureForm extends gws.View<ViewProps> {
 
+    get defaultPlaceholders() {
+        let pcb = ['Polygon', 'Circle', 'Box'];
+        let m = ' (m)', km = ' (km)';
+
+        return [
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (m\u00b2)', value: '{area | m}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (m\u00b2)', value: '{area | km | 2}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (ha)', value: '{area | ha | 2}'},
+
+            {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + m, value: '{len | m}'},
+            {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + km, value: '{len | km | 2}'},
+
+            {shapeTypes: pcb, text: this.__('mapPlaceholderPerimeter') + m, value: '{len | m}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderPerimeter') + km, value: '{len | km | 2}'},
+
+            {shapeTypes: ['Circle'], text: this.__('mapPlaceholderRadius') + m, value: '{radius | m}'},
+            {shapeTypes: ['Circle'], text: this.__('mapPlaceholderRadius') + km, value: '{radius | km | 2}'},
+
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderWidth') + m, value: '{width | m}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderWidth') + km, value: '{width | km | 2}'},
+
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderHeight') + m, value: '{height | m}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderHeight') + km, value: '{height | km | 2}'},
+
+            {shapeTypes: ['Point'], text: this.__('mapPlaceholderXY') + m, value: '{xy | m | 2}'},
+            {shapeTypes: ['Point'], text: this.__('mapPlaceholderXY') + ' (deg)', value: '{xy | deg | 5}'},
+            {shapeTypes: ['Point'], text: this.__('mapPlaceholderXY') + ' (dms)', value: '{xy | dms}'},
+        ];
+    }
+
     render() {
         let cc = _master(this.props.controller);
 
@@ -378,6 +292,25 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
             cc.app.stopTool('Tool.Annotate.Modify');
         };
 
+        let placeholders = this.defaultPlaceholders
+            .filter(p => p.shapeTypes.includes(st))
+            .map(p => ({text: p.text, value: p.value}));
+
+        let labelEditorRef: React.RefObject<HTMLTextAreaElement> = React.createRef();
+
+        let insertPlacehodler = p => {
+            let ta = labelEditorRef.current;
+            if (!ta)
+                return;
+            let
+                val = ta.value || '',
+                s = ta.selectionStart || 0,
+                e = ta.selectionEnd || 0;
+
+            val = val.slice(0, s) + p + val.slice(e);
+            ta.focus();
+            cc.updateObject('annotateFormData', {labelTemplate: val});
+        };
 
         let form = [];
 
@@ -387,8 +320,9 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
         }
 
         if (st === 'Box') {
-            form.push(<gws.ui.NumberInput label={this.__('modAnnotateWidth')} {...cc.bind('annotateFormData.w')}/>)
-            form.push(<gws.ui.NumberInput label={this.__('modAnnotateHeight')} {...cc.bind('annotateFormData.h')}/>)
+            form.push(<gws.ui.NumberInput label={this.__('modAnnotateWidth')} {...cc.bind('annotateFormData.width')}/>)
+            form.push(<gws.ui.NumberInput
+                label={this.__('modAnnotateHeight')} {...cc.bind('annotateFormData.height')}/>)
         }
 
         if (st === 'Circle') {
@@ -397,8 +331,16 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
         }
 
         form.push(<gws.ui.TextArea
+            focusRef={labelEditorRef}
             label={this.__('modAnnotateLabelEdit')}
             {...cc.bind('annotateFormData.labelTemplate')}
+        />);
+
+        form.push(<gws.ui.Select
+            label={this.__('modAnnotatePlaceholder')}
+            value=''
+            items={placeholders}
+            whenChanged={insertPlacehodler}
         />);
 
         return <div className="modAnnotateFeatureDetails">
@@ -485,12 +427,11 @@ class AnnotateFeatureFormTab extends gws.View<ViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('modAnnotateSidebarTitle')}/>
+                <gws.ui.Title content={this.__('modAnnotateSidebarDetailsTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
                 <AnnotateFeatureForm {...this.props} />
-                {selectedFeature.labelTemplate.indexOf('debug') > 0 && debugFeature(selectedFeature.shapeType, selectedFeature.geometry, selectedFeature.map.projection)}
             </sidebar.TabBody>
 
             <AnnotateFeatureTabFooter {...this.props}/>
@@ -505,7 +446,7 @@ class AnnotateFeatureStyleTab extends gws.View<ViewProps> {
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.__('modAnnotateSidebarTitle')}/>
+                <gws.ui.Title content={this.__('modAnnotateSidebarDetailsTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -647,13 +588,17 @@ class AnnotateController extends gws.Controller {
 
         this.update({
             annotateLastStyleName: '.modAnnotateFeature',
+            annotateLabelTemplates: defaultLabelTemplates,
         });
 
-        // this.app.whenChanged('annotateFormData', () => {
-        //     let f = this.getValue('annotateSelectedFeature');
-        //     if (f)
-        //         f.updateFromForm(this.getValue('annotateFormData'));
-        // })
+        this.app.whenChanged('annotateFormData', data => {
+            this.updateObject('annotateLabelTemplates', {
+                [data.shapeType]: data.labelTemplate,
+            });
+            // let f = this.getValue('annotateSelectedFeature');
+            // if (f)
+            //     f.updateFromForm(this.getValue('annotateFormData'));
+        })
 
         this.app.whenCalled('annotateFromFeature', args => {
             let f = this.newFromFeature(args.feature);
@@ -724,14 +669,16 @@ class AnnotateController extends gws.Controller {
             gws.tools.uniqId('AnnotateStyle'),
             sty.values));
 
+        let templates = this.getValue('annotateLabelTemplates'),
+            labelTemplate = (templates && templates[shapeType]) || defaultLabelTemplates[shapeType];
+
         let feat = new AnnotateFeature(this.map, {
             oFeature,
             props: {
                 uid: gws.tools.uniqId('annotate'),
                 elements: {
-                    master: this,
                     shapeType,
-                    labelTemplate: defaultLabelTemplates[shapeType],
+                    labelTemplate,
                 }
             },
             style: newStyle
@@ -763,6 +710,7 @@ class AnnotateController extends gws.Controller {
 
         this.features.forEach(f => f.setSelected(false));
         f.setSelected(true);
+        f.setChanged();
 
         this.update({
             annotateSelectedFeature: f,
