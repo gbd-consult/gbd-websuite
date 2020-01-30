@@ -256,7 +256,7 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
 
         return [
             {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (m\u00b2)', value: '{area | m}'},
-            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (m\u00b2)', value: '{area | km | 2}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (km\u00b2)', value: '{area | km | 2}'},
             {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (ha)', value: '{area | ha | 2}'},
 
             {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + m, value: '{len | m}'},
