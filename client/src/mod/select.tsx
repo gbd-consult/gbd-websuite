@@ -9,9 +9,9 @@ import * as storage from './common/storage';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
+const STORAGE_CATEGORY = 'Select';
 const MASTER = 'Shared.Select';
 
-const STORAGE_CATEGORY = 'select.features';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as SelectController;
 
@@ -86,22 +86,18 @@ class SelectSidebarView extends gws.View<SelectViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell flex/>
-                    <storage.ReadAuxButton
-                        controller={this.props.controller}
-                        category={STORAGE_CATEGORY}
-                        whenDone={data => master.loadFeatures(data.features)}
-                    />
-                    {hasSelection && <storage.WriteAuxButton
-                        controller={this.props.controller}
-                        category={STORAGE_CATEGORY}
-                        data={{features: this.props.selectFeatures.map(f => f.getProps())}}
-                    />}
-                    {hasSelection && <sidebar.AuxButton
+                    {storage.auxButtons(master, {
+                        category: STORAGE_CATEGORY,
+                        hasData: hasSelection,
+                        getData: name => ({features: this.props.selectFeatures.map(f => f.getProps())}),
+                        dataReader: (name, data) => master.loadFeatures(data.features)
+                    })}
+                    <sidebar.AuxButton
                         className="modSelectClearAuxButton"
                         tooltip={this.__('modSelectClearAuxButton')}
                         disabled={!hasSelection}
                         whenTouched={() => master.clear()}
-                    />}
+                    />
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>

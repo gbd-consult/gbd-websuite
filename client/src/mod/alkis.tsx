@@ -7,11 +7,10 @@ import * as lens from './common/lens';
 import * as sidebar from './common/sidebar';
 import * as storage from './common/storage';
 
-const STORAGE_CATEGORY = 'alkis.features';
+const STORAGE_CATEGORY = 'Alkis';
+const MASTER = 'Shared.Alkis';
 
 let {Form, Row, Cell} = gws.ui.Layout;
-
-const MASTER = 'Shared.Alkis';
 
 function _master(obj: any) {
     if (obj.app)
@@ -573,16 +572,12 @@ class AlkisSelectionTab extends gws.View<AlkisViewProps> {
                     <Cell flex/>
                     {hasFeatures && <AlkisExportAuxButton {...this.props} features={features}/>}
                     {hasFeatures && <AlkisPrintAuxButton {...this.props} features={features}/>}
-                    <storage.ReadAuxButton
-                        controller={this.props.controller}
-                        category={STORAGE_CATEGORY}
-                        whenDone={data => mm.loadSelection(data.features)}
-                    />
-                    {hasFeatures && <storage.WriteAuxButton
-                        controller={this.props.controller}
-                        category={STORAGE_CATEGORY}
-                        data={{features: this.props.alkisFsSelection.map(f => f.getProps())}}
-                    />}
+                    {storage.auxButtons(mm, {
+                        category: STORAGE_CATEGORY,
+                        hasData: hasFeatures,
+                        getData: name => ({features: this.props.alkisFsSelection.map(f => f.getProps())}),
+                        dataReader: (name, data) => mm.loadSelection(data.features)
+                    })}
                     {hasFeatures && <AlkisClearAuxButton {...this.props} />}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>

@@ -201,16 +201,6 @@ class StyleSidebarView extends gws.View<ViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell flex/>
-                    <storage.ReadAuxButton
-                        controller={cc}
-                        category={STORAGE_CATEGORY}
-                        whenDone={data => cc.readStyles(data)}
-                    />
-                    {<storage.WriteAuxButton
-                        controller={this.props.controller}
-                        category={STORAGE_CATEGORY}
-                        data={cc.writeStyles()}
-                    />}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
 

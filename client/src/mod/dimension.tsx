@@ -11,6 +11,7 @@ import * as storage from './common/storage';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
+const STORAGE_CATEGORY = 'Dimension';
 const MASTER = 'Shared.Dimension';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as DimensionController;
@@ -27,7 +28,6 @@ const DimensionStoreKeys = [
     'mapUpdateCount',
 ];
 
-const STORAGE_CATEGORY = 'dimension.model';
 
 function dist(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
@@ -1025,21 +1025,18 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell flex/>
-                    <storage.ReadAuxButton
-                        controller={this.props.controller}
-                        category={STORAGE_CATEGORY}
-                        whenDone={data => master.model.deserialize(data)}
-                    />
-                    {hasElements && <storage.WriteAuxButton
-                        controller={this.props.controller}
-                        category={STORAGE_CATEGORY}
-                        data={master.model.serialize()}
-                    />}
-                    {hasElements && <sidebar.AuxButton
+                    {storage.auxButtons(master, {
+                        category: STORAGE_CATEGORY,
+                        hasData: hasElements,
+                        getData: name => master.model.serialize(),
+                        dataReader: (name, data) => master.model.deserialize(data)
+                    })}
+                    <sidebar.AuxButton
+                        disabled={!hasElements}
                         className="modSelectClearAuxButton"
                         tooltip={this.__('modDimensionClearAuxButton')}
                         whenTouched={() => master.clear()}
-                    />}
+                    />
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>

@@ -6,41 +6,220 @@ d2 = {'name': 'Name2', 'num': 22, 'prop': 'Val2'}
 d3 = {'name': 'Name3', 'num': 33, 'prop': 'Val3'}
 
 DB_PATH = "/gws-var/test_storage.sqlite"
+PASSWORD = '123'
 
 
-def test_read_write():
-    gws.config.loader.load().find_first('gws.ext.tool.storage').reset()
+def data(category, n):
+    return {'name': f'_{category}_{n}', 'num': n * 10}
 
-    r = u.cmd('storageWrite', {'entry': {'category': 'abc', 'name': '1'}, 'data': d1})
-    assert r.json() == {'entry': {'category': 'abc', 'name': '1'}}
 
-    r = u.cmd('storageWrite', {'entry': {'category': 'abc', 'name': '2'}, 'data': d2})
-    assert r.json() == {'entry': {'category': 'abc', 'name': '2'}}
+storage_obj = gws.config.loader.load().find_first('gws.ext.tool.storage')
 
-    r = u.cmd('storageWrite', {'entry': {'category': 'def', 'name': '3'}, 'data': d3})
-    assert r.json() == {'entry': {'category': 'def', 'name': '3'}}
 
-    r = u.cmd('storageDir', {'category': 'abc', })
+def populate_storage():
+    storage_obj.reset()
 
-    assert r.json() == {'entries': [
-        {'category': 'abc', 'name': '1'},
-        {'category': 'abc', 'name': '2'},
-    ]}
+    auth = u.cmd('authLogin', {'username': 'ddd-power', 'password': PASSWORD}).cookies
 
-    r = u.cmd('storageDir', {'category': 'not_found', })
-    assert r.json() == {'entries': []}
+    for cat in 'cat_read', 'cat_write', 'cat_all_other_read':
+        u.cmd('storageWrite', {'entry': {'category': cat, 'name': '1'}, 'data': data(cat, 1)}, cookies=auth)
+        u.cmd('storageWrite', {'entry': {'category': cat, 'name': '2'}, 'data': data(cat, 2)}, cookies=auth)
+        u.cmd('storageWrite', {'entry': {'category': cat, 'name': '3'}, 'data': data(cat, 3)}, cookies=auth)
 
-    r = u.cmd('storageRead', {'entry': {'category': 'abc', 'name': '1'}, })
-    assert r.json() == {'entry': {'category': 'abc', 'name': '1'}, 'data': d1}
 
-    r = u.cmd('storageRead', {'entry': {'category': 'abc', 'name': '2'}, })
-    assert r.json() == {'entry': {'category': 'abc', 'name': '2'}, 'data': d2}
+def test_dir():
+    populate_storage()
 
-    r = u.cmd('storageRead', {'entry': {'category': 'def', 'name': '3'}, })
-    assert r.json() == {'entry': {'category': 'def', 'name': '3'}, 'data': d3}
+    # normal dir
 
-    r = u.cmd('storageRead', {'entry': {'category': 'def', 'name': 'not_found'}, })
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageDir', {'category': cat}, cookies=auth)
+    assert r.json() == {
+        'entries': [
+            {'category': cat, 'name': '1'},
+            {'category': cat, 'name': '2'},
+            {'category': cat, 'name': '3'}
+        ],
+        'readable': True,
+        'writable': True
+    }
+
+    # read only
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_read'
+    r = u.cmd('storageDir', {'category': cat}, cookies=auth)
+    assert r.json() == {
+        'entries': [
+            {'category': cat, 'name': '1'},
+            {'category': cat, 'name': '2'},
+            {'category': cat, 'name': '3'}
+        ],
+        'readable': True,
+        'writable': False
+    }
+
+    # write only
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_write'
+    r = u.cmd('storageDir', {'category': cat}, cookies=auth)
+    assert r.json() == {
+        'entries': [],
+        'readable': False,
+        'writable': False
+    }
+
+    # no access
+
+    auth = u.cmd('authLogin', {'username': 'ccc-no-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_read'
+    r = u.cmd('storageDir', {'category': cat}, cookies=auth)
+    assert r.json() == {
+        'entries': [],
+        'readable': False,
+        'writable': False,
+    }
+
+
+def test_read():
+    populate_storage()
+
+    # read/all
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageRead', {'entry': {'category': cat, 'name': '1'}}, cookies=auth)
+    assert r.json() == {
+        'entry': {'category': cat, 'name': '1'},
+        'data': data(cat, 1)
+    }
+
+    # read/all
+
+    auth = u.cmd('authLogin', {'username': 'ccc-no-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageRead', {'entry': {'category': cat, 'name': '1'}}, cookies=auth)
+    assert r.json() == {
+        'entry': {'category': cat, 'name': '1'},
+        'data': data(cat, 1)
+    }
+
+    # read/read
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_read'
+    r = u.cmd('storageRead', {'entry': {'category': cat, 'name': '1'}}, cookies=auth)
+    assert r.json() == {
+        'entry': {'category': cat, 'name': '1'},
+        'data': data(cat, 1)
+    }
+
+    # write only
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_write'
+    r = u.cmd('storageRead', {'entry': {'category': cat, 'name': 'NOT_FOUND'}}, cookies=auth)
+    assert r.status_code == 403
+
+    # not found
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_read'
+    r = u.cmd('storageRead', {'entry': {'category': cat, 'name': 'NOT_FOUND'}}, cookies=auth)
     assert r.status_code == 404
 
-    r = u.cmd('storageRead', {'entry': {'category': 'not_found', 'name': '1'}, })
-    assert r.status_code == 404
+    # no access
+
+    auth = u.cmd('authLogin', {'username': 'ccc-no-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_read'
+    r = u.cmd('storageRead', {'entry': {'category': cat, 'name': '1'}}, cookies=auth)
+    assert r.status_code == 403
+
+
+def test_write():
+    populate_storage()
+
+    # write new and read back
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageWrite', {'entry': {'category': cat, 'name': '100'}, 'data': data(cat, 100)}, cookies=auth)
+    assert r.json() == {
+        'entry': {'category': cat, 'name': '100'},
+    }
+
+    auth = u.cmd('authLogin', {'username': 'ccc-no-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageRead', {'entry': {'category': cat, 'name': '100'}}, cookies=auth)
+    assert r.json() == {
+        'entry': {'category': cat, 'name': '100'},
+        'data': data(cat, 100),
+    }
+
+    # overwrite and read back
+
+    new_data = {'s': 'NEWDATA'}
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageWrite', {'entry': {'category': cat, 'name': '2'}, 'data': new_data}, cookies=auth)
+    assert r.json() == {
+        'entry': {'category': cat, 'name': '2'},
+    }
+
+    auth = u.cmd('authLogin', {'username': 'ccc-no-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageRead', {'entry': {'category': cat, 'name': '2'}}, cookies=auth)
+    assert r.json() == {
+        'entry': {'category': cat, 'name': '2'},
+        'data': new_data,
+    }
+
+    # read only
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_read'
+    r = u.cmd('storageWrite', {'entry': {'category': cat, 'name': '100'}, 'data': data(cat, 100)}, cookies=auth)
+    assert r.status_code == 403
+
+    # no access
+
+    auth = u.cmd('authLogin', {'username': 'ccc-no-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageWrite', {'entry': {'category': cat, 'name': '100'}, 'data': data(cat, 100)}, cookies=auth)
+    assert r.status_code == 403
+
+
+def test_delete():
+    populate_storage()
+
+    # delete
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageDelete', {'entry': {'category': cat, 'name': '2'}}, cookies=auth)
+    r = u.cmd('storageDir', {'category': cat}, cookies=auth)
+    assert r.json() == {
+        'entries': [
+            {'category': cat, 'name': '1'},
+            {'category': cat, 'name': '3'}
+        ],
+        'readable': True,
+        'writable': True
+    }
+
+    # read only
+
+    auth = u.cmd('authLogin', {'username': 'aaa-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_read'
+    r = u.cmd('storageDelete', {'entry': {'category': cat, 'name': '2'}}, cookies=auth)
+    assert r.status_code == 403
+
+    # no access
+
+    auth = u.cmd('authLogin', {'username': 'ccc-no-testrole', 'password': PASSWORD}).cookies
+    cat = 'cat_all_other_read'
+    r = u.cmd('storageDelete', {'entry': {'category': cat, 'name': '2'}}, cookies=auth)
+    assert r.status_code == 403

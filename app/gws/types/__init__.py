@@ -604,6 +604,12 @@ class SqlTableColumn(Data):
     native_type: str = None
     type: 'AttributeType' = None
 
+class StorageDirectory(Data):
+    category: str = None
+    entries: List['StorageEntry'] = None
+    readable: bool = None
+    writable: bool = None
+
 class StorageElement(Data):
     data: dict = None
     entry: 'StorageEntry' = None

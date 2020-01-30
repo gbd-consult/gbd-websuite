@@ -4,10 +4,25 @@
 
 access+ { role "all" type "allow" }
 
+## $sha512$DAoCWW8T$7RHQY02aWZZFnT53ebCqgrrFUdbHxplswTdGN29bUbv9AVuqmFZO51gBSKL8IxvmHspph22qjckGhYOQfTOOmw==
+## == "123"
+auth.providers+ { type "file" path "users.json" }
+
+
+api.actions+ { type "auth" }
 api.actions+ { type "storage" }
 
 tools+ {
     type "storage"
     backend "sqlite"
     path "/gws-var/test_storage.sqlite"
+
+    permissions [
+        { category "cat_read" allow "read" role "testrole" }
+        { category "cat_write" allow "write" role "testrole" }
+        { category "cat_all_other_read" allow "all" role "testrole" }
+        { category "cat_all_other_read" allow "read" role "other" }
+        { category "*" allow "all" role "power" }
+    ]
+
 }

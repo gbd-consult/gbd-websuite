@@ -177,6 +177,15 @@ class FormDemo extends gws.View<ViewProps> {
                         whenChanged={bind('uiDemoName')}
                     />
                 </Cell>
+                <Cell>
+                    <gws.ui.List
+                        value={this.props.uiDemoName}
+                        label="list/buttons"
+                        items={NAMES}
+                        rightButton={it => <gws.ui.Button className="uiClearButton"/>}
+                        whenChanged={bind('uiDemoName')}
+                    />
+                </Cell>
                 <Cell flex>
                     <Form>
                         <Row>

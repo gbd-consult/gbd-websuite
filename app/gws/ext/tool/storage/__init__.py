@@ -25,17 +25,38 @@ class Backend(t.Enum):
     sqlite = 'sqlite'
 
 
+class Permission(t.Enum):
+    read = 'read'  #: an object can be read
+    write = 'write'  #: an object can be written and deleted
+    all = 'all'  #: an object can be read and written
+
+
+class PermissionRule(t.Config):
+    category: str  #: storage category name
+    allow: t.Optional[Permission] = 'all'  #: allowed action
+    role: str  #: a role to which this rule applies
+
+
 class Config(t.WithType):
     """Storage"""
 
     backend: Backend
     path: t.Optional[str]
+    permissions: t.Optional[t.List[PermissionRule]]
 
 
 #:export
 class StorageEntry(t.Data):
     category: str
     name: str
+
+
+#:export
+class StorageDirectory(t.Data):
+    category: str
+    writable: bool
+    readable: bool
+    entries: t.List[StorageEntry]
 
 
 #:export
@@ -58,9 +79,11 @@ class Object(gws.Object):
     def __init__(self):
         super().__init__()
         self.backend = None
+        self.permissions: t.List[PermissionRule] = []
 
     def configure(self):
         super().configure()
+        self.permissions = self.var('permissions', default=[])
         if self.var('backend') == 'sqlite':
             self.backend = self.create_unbound_object(sqlite.Object, self.config)
 
@@ -82,16 +105,25 @@ class Object(gws.Object):
 
     def dir(self, category: str, user: t.IUser) -> t.List[t.StorageEntry]:
         if not self.can_read_category(category, user):
-            return []
+            raise AccessDenied()
         return self.backend.dir(category)
+
+    def delete(self, entry: StorageEntry, user: t.IUser):
+        if not self.can_write_category(entry.category, user):
+            raise AccessDenied()
+        self.backend.delete(entry.category, entry.name)
 
     def reset(self):
         self.backend.reset()
 
     def can_read_category(self, category: str, user: t.IUser) -> bool:
-        # @TODO granular permissions
-        return True
+        for p in self.permissions:
+            if p.category in (category, '*') and user.has_role(p.role) and p.allow in (Permission.read, Permission.all):
+                return True
+        return False
 
     def can_write_category(self, category: str, user: t.IUser) -> bool:
-        # @TODO granular permissions
-        return True
+        for p in self.permissions:
+            if p.category in (category, '*') and user.has_role(p.role) and p.allow in (Permission.write, Permission.all):
+                return True
+        return False

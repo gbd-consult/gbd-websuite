@@ -9,11 +9,8 @@ module.exports = v => ({
         cursor: 'default',
         height: v.CONTROL_SIZE,
         fontSize: v.CONTROL_FONT_SIZE,
-        padding: [0, v.UNIT4, 0, v.UNIT4],
-        whiteSpace: 'pre',
         display: 'flex',
         alignItems: 'center',
-        outline: 'none',
         width: '100%',
 
         ...v.TRANSITION('background-color'),
@@ -23,13 +20,28 @@ module.exports = v => ({
         },
 
         '&.isSelected': {
-            backgroundColor: v.BORDER_COLOR,
-            color: v.COLOR.white,
+            backgroundColor: v.SELECTED_ITEM_BACKGROUND,
+        },
+
+        '.uiListItemText': {
+            whiteSpace: 'pre',
+            outline: 'none',
+
+            ':first-child': {
+                paddingLeft: v.UNIT4,
+            },
+            ':last-child': {
+                paddingRight: v.UNIT4,
+            },
+
         }
+
+
     },
 
     '.uiControl.hasFocus .uiListItem.isSelected': {
         backgroundColor: v.FOCUS_COLOR,
+        color: v.COLOR.white,
     },
 
     '.uiListItemLevel1': {
@@ -41,16 +53,16 @@ module.exports = v => ({
     },
 
     '.uiList': {
-        '.uiControlBox': {
+        '> .uiControlBody > .uiControlBox': {
             height: 'auto',
-        },
-        '.uiListBox': {
-            outline: 'none',
-            width: '100%',
-            height: v.UNIT * 50,
-            overflowX: 'hidden',
-            overflowY: 'auto',
-        },
+            '> .uiListBox': {
+                outline: 'none',
+                width: '100%',
+                height: v.UNIT * 50,
+                overflowX: 'hidden',
+                overflowY: 'auto',
+            },
+        }
     }
 
 

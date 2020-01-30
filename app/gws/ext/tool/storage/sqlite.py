@@ -70,6 +70,10 @@ class Object(gws.Object):
                 ls.append(t.StorageEntry(**r))
         return ls
 
+    def delete(self, category: str, name: str):
+        with self._connect() as conn:
+            conn.execute('DELETE FROM storage WHERE category=? AND name=?', [category, name])
+
     def reset(self):
         with self._connect() as conn:
             conn.execute('DELETE FROM storage')

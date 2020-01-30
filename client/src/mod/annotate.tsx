@@ -15,7 +15,7 @@ import * as storage from './common/storage';
 import {StyleController} from './style';
 
 const MASTER = 'Shared.Annotate';
-const STORAGE_CATEGORY = 'annotate';
+const STORAGE_CATEGORY = 'Annotate';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as AnnotateController;
 
@@ -41,6 +41,7 @@ interface AnnotateFormData {
 
 interface ViewProps extends gws.types.ViewProps {
     controller: AnnotateController;
+    annotateFeatures: Array<AnnotateFeature>;
     annotateSelectedFeature: AnnotateFeature;
     annotateFormData: AnnotateFormData;
     annotateTab: string;
@@ -50,6 +51,7 @@ interface ViewProps extends gws.types.ViewProps {
 };
 
 const StoreKeys = [
+    'annotateFeatures',
     'annotateSelectedFeature',
     'annotateFormData',
     'annotateTab',
@@ -462,7 +464,8 @@ class AnnotateFeatureStyleTab extends gws.View<ViewProps> {
 class AnnotateListTab extends gws.View<ViewProps> {
     render() {
         let cc = _master(this.props.controller),
-            selectedFeature = this.props.annotateSelectedFeature;
+            selectedFeature = this.props.annotateSelectedFeature,
+            hasFeatures = this.props.annotateFeatures && this.props.annotateFeatures.length > 0;
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -473,7 +476,7 @@ class AnnotateListTab extends gws.View<ViewProps> {
                 {cc.hasFeatures
                     ? <gws.components.feature.List
                         controller={cc}
-                        features={cc.features}
+                        features={this.props.annotateFeatures || []}
                         isSelected={f => f === selectedFeature}
 
                         content={(f: AnnotateFeature) => <gws.ui.Link
@@ -503,7 +506,7 @@ class AnnotateListTab extends gws.View<ViewProps> {
                     <sidebar.AuxButton
                         {...gws.tools.cls('modAnnotateEditAuxButton', this.props.appActiveTool === 'Tool.Annotate.Modify' && 'isActive')}
                         tooltip={this.__('modAnnotateEditAuxButton')}
-                        disabled={!cc.hasFeatures}
+                        disabled={!hasFeatures}
                         whenTouched={() => cc.app.startTool('Tool.Annotate.Modify')}
                     />
                     <sidebar.AuxButton
@@ -512,17 +515,12 @@ class AnnotateListTab extends gws.View<ViewProps> {
                         whenTouched={() => cc.app.toggleTool('Tool.Annotate.Draw')}
                     />
                     <Cell flex/>
-                    <storage.ReadAuxButton
-                        controller={cc}
-                        category={STORAGE_CATEGORY}
-                        whenDone={data => cc.storageSetter(data)}
-                    />
-                    {<storage.WriteAuxButton
-                        controller={this.props.controller}
-                        category={STORAGE_CATEGORY}
-                        disabled={!cc.hasFeatures}
-                        data={cc.storageGetter()}
-                    />}
+                    {storage.auxButtons(cc, {
+                        category: STORAGE_CATEGORY,
+                        hasData: hasFeatures,
+                        getData: name => cc.storageGetData(name),
+                        dataReader: (name, data) => cc.storageReader(name, data)
+                    })}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>
@@ -752,10 +750,11 @@ class AnnotateController extends gws.Controller {
         this.setUpdated();
     }
 
-    storageSetter(data) {
+    storageReader(name, data) {
         let lastFeature = null;
 
-        this.clear();
+        this.app.stopTool('Tool.Annotate.*');
+        this.layer.clear();
 
         this.layer.addFeatures(data.features.map(props => {
             let f = new AnnotateFeature(this.map, {props})
@@ -776,7 +775,7 @@ class AnnotateController extends gws.Controller {
         this.setUpdated();
     }
 
-    storageGetter() {
+    storageGetData(name) {
         return {
             'features': this.features.map(f => f.getProps())
         }
@@ -790,7 +789,7 @@ class AnnotateController extends gws.Controller {
 
     setUpdated() {
         this.update({
-            annotateUpdated: (this.getValue('annotateUpdated') || 0) + 1,
+            annotateFeatures: this.features,
         });
     }
 

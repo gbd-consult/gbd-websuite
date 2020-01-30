@@ -10,251 +10,417 @@ const MASTER = 'Storage';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as StorageController;
 
-interface StorageArgs {
+interface ButtonsArgs {
     category: string;
-    name?: string;
-    data?: any;
-    whenDone?: (data: any) => void;
+    hasData: boolean;
+    getData: (name: string) => gws.types.Dict;
+    dataReader: (name: string, data: gws.types.Dict) => void;
 }
 
-interface StorageDialogProps extends gws.types.ViewProps {
+interface StorageDialogParams {
+    mode: 'read' | 'write';
+}
+
+
+interface ViewProps extends gws.types.ViewProps {
     controller: StorageController;
-    storageEntries: Array<gws.api.StorageEntry>;
-    storageNames: gws.types.Dict;
-    storageArgs: StorageArgs;
-    storageDialogMode: string;
-    storageDialogError: string;
+    storageDirs: { [category: string]: gws.api.StorageDirResponse };
+    storageRecentNames: { [category: string]: string };
+    storageDialogParams: StorageDialogParams & ButtonsArgs;
+    storageError: string;
 }
 
-const StorageStoreKeys = [
-    'storageEntries',
-    'storageNames',
-    'storageArgs',
-    'storageDialogMode',
-    'storageDialogError',
-    'storageCallback'
+const StoreKeys = [
+    'storageDirs',
+    'storageRecentNames',
+    'storageDialogParams',
+    'storageError',
 ];
 
-interface StorageButtonProps extends gws.types.ViewProps {
-    category: string;
-    tooltip?: string;
-    disabled?: boolean;
-    data?: any;
-    whenDone?: (data: any) => void;
+type ButtonsProps = ViewProps & ButtonsArgs;
+
+export function auxButtons(cc: gws.types.IController, args: ButtonsArgs) {
+    return _master(cc).auxButtons(args);
 }
 
-class StorageDialog extends gws.View<StorageDialogProps> {
+class Dialog extends gws.View<ViewProps> {
+    focusRef: React.RefObject<any>;
+
+    constructor(props) {
+        super(props);
+        this.focusRef = React.createRef();
+    }
 
     render() {
-        let mode = this.props.storageDialogMode;
+        let cc = _master(this.props.controller),
+            params = this.props.storageDialogParams;
 
-        if (!mode)
+        if (!params || !params.mode)
             return null;
 
-        let category = this.props.storageArgs.category;
+        let mode = params.mode,
+            category = params.category,
+            dir = cc.dirOf(category);
 
-        let close = () => this.props.controller.update({storageDialogMode: null});
-        let update = v => this.props.controller.updateObject('storageNames', {
+        if (!dir)
+            return null;
+
+        let listItems = dir.entries.map(e => ({
+            text: e.name,
+            value: e.name
+        }));
+
+        let update = v => cc.updateObject('storageRecentNames', {
             [category]: v
         });
 
-        let cls, title, submit, control;
+        let close = () => cc.update({storageDialogParams: null});
 
-        if (mode === 'write') {
-            cls = 'modStorageWriteDialog';
-            title = this.__('modStorageWriteDialogTitle');
-            submit = () => this.props.controller.write();
-            control = <gws.ui.TextInput
-                value={this.props.storageNames[category]}
-                whenChanged={update}
-                whenEntered={submit}
-            />;
-        }
+        let submit = async () => {
+            let name = cc.recentName(category);
 
-        if (mode === 'read') {
-            cls = 'modStorageReadDialog';
-            title = this.__('modStorageReadDialogTitle');
-            submit = () => this.props.controller.read();
-            control = <gws.ui.List
-                value={this.props.storageNames[category]}
-                items={this.props.storageEntries
-                    .filter(e => e.category === category)
-                    .map(e => ({
-                        text: e.name,
-                        value: e.name
-                    }))
+            if (mode === 'read') {
+                let res = await cc.doRead(category, name);
+                if (res) {
+                    params.dataReader(name, res.data);
+                    close();
                 }
-                whenChanged={update}
-            />;
-        }
+            }
+
+            if (mode === 'write') {
+                let data = params.getData(name);
+                if (!data)
+                    close();
+                let res = await cc.doWrite(category, name, data);
+                if (res) {
+                    close();
+                }
+            }
+        };
 
         let buttons = [
-            <gws.ui.Button className="cmpButtonFormOk" whenTouched={submit}/>,
+            <gws.ui.Button
+                className="cmpButtonFormOk"
+                whenTouched={submit}
+                disabled={mode === 'read' && dir.entries.length === 0}
+            />,
             <gws.ui.Button className="cmpButtonFormCancel" whenTouched={close}/>
         ];
 
+        let cls = mode === 'read' ? 'modStorageReadDialog' : 'modStorageWriteDialog';
+        let title = mode === 'read' ? this.__('modStorageReadDialogTitle') : this.__('modStorageWriteDialogTitle');
+
         return <gws.ui.Dialog className={cls} title={title} buttons={buttons} whenClosed={close}>
             <Form>
-                <Row>
-                    <Cell flex>{control}</Cell>
-                </Row>
-                {this.props.storageDialogError && <Row>
+                {mode === 'write' && <Row>
                     <Cell flex>
-                        <gws.ui.Error
-                            text={this.props.storageDialogError}
+                        <gws.ui.TextInput
+                            focusRef={this.focusRef}
+                            value={cc.recentName(category)}
+                            whenChanged={update}
+                            whenEntered={submit}
                         />
+                    </Cell>
+                </Row>}
+                <Row>
+                    <Cell flex>
+                        <gws.ui.List
+                            value={cc.recentName(category)}
+                            focusRef={mode === 'read' ? this.focusRef : null}
+                            items={listItems}
+                            rightButton={item => dir.writable && <gws.ui.Button
+                                className="uiClearButton"
+                                whenTouched={() => cc.doDelete(category, item.text)}
+                            />}
+                            whenChanged={update}/>
+                    </Cell>
+                </Row>
+                {this.props.storageError && <Row>
+                    <Cell flex>
+                        <gws.ui.Error text={this.props.storageError}/>
                     </Cell>
                 </Row>}
             </Form>
         </gws.ui.Dialog>;
     }
+
+    componentDidMount() {
+        if (this.focusRef.current)
+            this.focusRef.current.focus();
+    }
+
+    componentDidUpdate() {
+        if (this.focusRef.current)
+            this.focusRef.current.focus();
+    }
+
 }
+
+
+export class AuxButtons extends gws.View<ButtonsProps> {
+    render() {
+        let cc = _master(this.props.controller),
+            dir = cc.dirOf(this.props.category);
+
+        let readBtn = null, writeBtn = null;
+
+        let params = {
+            category: this.props.category,
+            hasData: this.props.hasData,
+            getData: this.props.getData,
+            dataReader: this.props.dataReader,
+        };
+
+        if (dir && dir.readable) {
+            readBtn = <sidebar.AuxButton
+                className="modStorageReadAuxButton"
+                disabled={dir.entries.length === 0}
+                tooltip={this.__('modStorageReadAuxButton')}
+                whenTouched={() => cc.update({storageDialogParams: {mode: 'read', ...params}})}
+            />
+        }
+
+        if (dir && dir.writable) {
+            writeBtn = <sidebar.AuxButton
+                className="modStorageWriteAuxButton"
+                disabled={!this.props.hasData}
+                tooltip={this.__('modStorageWriteAuxButton')}
+                whenTouched={() => cc.update({storageDialogParams: {mode: 'write', ...params}})}
+            />
+        }
+
+        return <React.Fragment>{readBtn}{writeBtn}</React.Fragment>;
+    }
+
+    componentDidMount() {
+        let cc = _master(this.props.controller);
+        cc.updateDir(this.props.category);
+    }
+}
+
 
 class StorageController extends gws.Controller {
     uid = MASTER;
 
-    async init() {
-        await super.init();
-
-        this.update({
-            storageNames: {},
-            storageEntries: [],
-        });
-    }
-
-    async writeDialog(args: StorageArgs) {
-        let res = await this.app.server.storageDir({category: args.category});
-        if (res.error)
-            return;
-        this.update({
-            storageEntries: res.entries,
-            storageDialogMode: 'write',
-            storageDialogError: null,
-            storageArgs: args,
-        });
-
-    }
-
-    async readDialog(args: StorageArgs) {
-        let res = await this.app.server.storageDir({category: args.category});
-        if (res.error)
-            return;
-        this.update({
-            storageEntries: res.entries,
-            storageDialogMode: 'read',
-            storageDialogError: null,
-            storageArgs: args,
-        });
-    }
-
-    async write() {
-        let args = this.getValue('storageArgs') as StorageArgs;
-        let name = this.getValue('storageNames')[args.category];
-
-        console.log('WRITE', args);
-
-        let res = await this.app.server.storageWrite({
-            data: args.data || {},
-            entry: {
-                category: args.category,
-                name
-            },
-        });
-
-        if (res.error) {
-            if (res.error.status === 403) {
-                this.update({
-                    storageDialogError: this.__('modStorageErrorAccess')
-                })
-            } else {
-                this.update({
-                    storageDialogError: this.__('modStorageErrorGeneric')
-                })
-            }
-            return;
-        }
-
-        this.update({
-            storageDialogMode: ''
-        });
-
-        if (args.whenDone)
-            args.whenDone(args.data);
-    }
-
-    async read() {
-        let args = this.getValue('storageArgs') as StorageArgs;
-        let name = this.getValue('storageNames')[args.category];
-
-        let res = await this.app.server.storageRead({
-            entry: {
-                category: args.category,
-                name
-            },
-        });
-
-        console.log('READ', args, res);
-
-        this.update({
-            storageDialogMode: ''
-        });
-
-        if (!res.error && args.whenDone)
-            args.whenDone(res.data);
-
-    }
-
     get appOverlayView() {
         return this.createElement(
-            this.connect(StorageDialog, StorageStoreKeys));
+            this.connect(Dialog, StoreKeys));
     }
+
+    auxButtons(args: ButtonsArgs) {
+        return this.createElement(
+            this.connect(AuxButtons, StoreKeys),
+            {controller: this, ...args});
+    }
+
+    dirOf(category) {
+        let dirs = this.getValue('storageDirs');
+        return dirs && dirs[category];
+    }
+
+    recentName(category) {
+        let names = this.getValue('storageRecentNames');
+        return names && names[category];
+
+    }
+
+    async updateDir(category) {
+        if (this.dirOf(category))
+            return;
+        await this.doDir(category);
+    }
+
+    async doDir(category) {
+        let res = await this.app.server.storageDir({category});
+
+        if (res.error)
+            return;
+
+        this.updateObject('storageDirs', {[category]: res});
+    }
+
+    async doRead(category, name): Promise<gws.api.StorageReadResponse | null> {
+
+        let res = await this.app.server.storageRead({
+            entry: {category, name}
+        });
+
+        if (this.error(res))
+            return;
+
+        return res;
+    }
+
+    async doWrite(category, name, data): Promise<gws.api.StorageWriteResponse | null> {
+
+        let res = await this.app.server.storageWrite({
+            entry: {category, name}, data
+        });
+
+        if (this.error(res))
+            return;
+
+        await this.doDir(category);
+        return res;
+    }
+
+    async doDelete(category, name): Promise<gws.api.StorageDeleteResponse | null> {
+
+        let res = await this.app.server.storageDelete({
+            entry: {category, name}
+        });
+
+        if (this.error(res))
+            return;
+
+        await this.doDir(category);
+        return res;
+    }
+
+    error(res) {
+
+        if (!res.error) {
+            return false;
+        }
+        if (res.error.status === 403) {
+            this.update({
+                storageDialogError: this.__('modStorageErrorAccess')
+            })
+        } else {
+            this.update({
+                storageDialogError: this.__('modStorageErrorGeneric')
+            })
+        }
+        return true;
+    }
+}
+
+class StorageButtonsController extends gws.Controller {
+    uid = 'Storage.Buttons';
+}
+
+
+export const tags = {
+    [MASTER]: StorageController,
+    'Storage.Buttons': StorageButtonsController,
+};
+
+
+/*
+
+
+async
+
+readDialog(args: StorageArgs) {
+    let res = await
+    this.app.server.storageDir({category: args.category});
+    if (res.error)
+        return;
+    this.update({
+        storageEntries: res.entries,
+        storageDialogMode: 'read',
+        storageDialogError: null,
+        storageArgs: args,
+    });
+}
+
+async
+
+write() {
+    let args = this.getValue('storageArgs') as StorageArgs;
+    let name = this.getValue('storageNames')[args.category];
+
+    console.log('WRITE', args);
+
+    let res = await
+    this.app.server.storageWrite({
+        data: args.data || {},
+        entry: {
+            category: args.category,
+            name
+        },
+    });
+
+    if (this.error(res))
+        return;
+
+    this.update({
+        storageDialogMode: ''
+    });
+
+    if (args.whenDone)
+        args.whenDone(args.data);
+}
+
+
+async
+
+remove(category, name) {
+    let res = await
+    this.app.server.storageDelete({
+        entry: {category, name},
+    });
+
+    console.log('DELETE', res);
+
+    if (this.error(res))
+        return;
+
+    res = await
+    this.app.server.storageDir({category});
+
+    if (this.error(res))
+        return;
+
+    this.update({
+        storageEntries: res.entries,
+    });
+}
+
+
 
 }
 
 export async function writeDialog(cc: gws.types.IController, args: StorageArgs) {
-    await _master(cc).writeDialog(args);
+await __master(cc).writeDialog(args);
 }
 
 export async function readDialog(cc: gws.types.IController, args: StorageArgs) {
-    await _master(cc).readDialog(args);
+await __master(cc).readDialog(args);
 }
 
 export class WriteAuxButton extends gws.View<StorageButtonProps> {
-    render() {
-        if (!this.app.controller('Storage.Write'))
-            return null;
-        return <sidebar.AuxButton
-            className="modStorageWriteAuxButton"
-            disabled={this.props.disabled}
-            tooltip={this.props.tooltip || this.__('modStorageWriteAuxButton')}
-            whenTouched={() => writeDialog(this.props.controller, this.props)}
-        />
-    }
+render() {
+    if (!this.app.controller('Storage.Write'))
+        return null;
+    return <sidebar.AuxButton
+        className="modStorageWriteAuxButton"
+        disabled={this.props.disabled}
+        tooltip={this.props.tooltip || this.__('modStorageWriteAuxButton')}
+        whenTouched={() => writeDialog(this.props.controller, this.props)}
+    />
+}
 }
 
 export class ReadAuxButton extends gws.View<StorageButtonProps> {
-    render() {
-        if (!this.app.controller('Storage.Read'))
-            return null;
-        return <sidebar.AuxButton
-            className="modStorageReadAuxButton"
-            disabled={this.props.disabled}
-            tooltip={this.props.tooltip || this.__('modStorageReadAuxButton')}
-            whenTouched={() => readDialog(this.props.controller, this.props)}
-        />
-    }
+render() {
+    if (!this.app.controller('Storage.Read'))
+        return null;
+    return <sidebar.AuxButton
+        className="modStorageReadAuxButton"
+        disabled={this.props.disabled}
+        tooltip={this.props.tooltip || this.__('modStorageReadAuxButton')}
+        whenTouched={() => readDialog(this.props.controller, this.props)}
+    />
+}
 }
 
 class StorageReadController extends gws.Controller {
-    uid = 'Storage.Read';
+uid = 'Storage.Read';
 }
 
 class StorageWriteController extends gws.Controller {
-    uid = 'Storage.Write';
+uid = 'Storage.Write';
 }
 
-export const tags = {
-    [MASTER]: StorageController,
-    'Storage.Read': StorageReadController,
-    'Storage.Write': StorageWriteController,
-};
+ */
