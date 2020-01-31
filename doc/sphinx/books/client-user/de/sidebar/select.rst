@@ -10,9 +10,13 @@ Unter diesem Menüpunkt werden die Objekte aufgelistet, welche mit dem ``Auswäh
 
 .. Am unteren Fensterrand befinden sich erneut eine Reihe von Funktionen für speziell dieses Menü. Zum einen ist es möglich die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|,
 
-Über |delete_marking| am unteren Rand des Menüs können Sie die Auswahl löschen.
+Über |delete_marking| am unteren Rand des Menüs können Sie die gesamte Auswahl löschen.
 
-Wenn ein Objekt ausgewählt wird, erscheint rechts unten im Kartenfenster ein Informationsfenster. In diesem Fenster sind verschiedene Informationen über dieses Objekt abzulesen. Außerdem können hier über |settings| weitere Funktionen ausgewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Annotieren`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
+Wenn ein Objekt ausgewählt wird, wird dieses gelb markiert und es erscheint rechts unten im Kartenfenster ein Informationsfenster (siehe Bild unten). In diesem Fenster sind verschiedene Informationen über das angewählte Objekt abzulesen. Außerdem ist es möglich über |settings| weitere Funktionen auszuwählen. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Annotieren`` entnehmen Sie bitte dem jeweiligen Punkt dieser Dokumentation. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. So können Sie weitere Objekte auswählen, welche dann in dem Auswahl-Menü aufgelistet werden. Alle angewählten und somit aufgelisteten Objekte werden rot markiert. Das zuletzt angewählte Objekt wird gelb markiert und es öffnet sich das dazugehörige Informationsfenster. Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
+
+
+ .. figure:: ../../../screenshots/de/client-user/Auswahl_Uebersicht.png
+  :align: center
 
 
 

@@ -9,4 +9,4 @@ GBD WebSuite Documentation
     books/server-admin/en/index.rst
     books/client-developer/en/index.rst
     books/server-developer/en/index.rst
-    books/changelogs/de/index.rst
+
