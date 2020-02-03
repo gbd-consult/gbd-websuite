@@ -54,13 +54,48 @@ class XMLRuntime(chartreux.Runtime):
 class XMLCommands():
     def __init__(self):
         self.tag_counts = []
-        self.cc = None
 
-    def interpolate(self, s):
+    def command_t(self, compiler: chartreux.Compiler, arg):
+        text = self.tag_header(compiler, arg)
+        if text:
+            text = self.interpolate(compiler, text)
+            compiler.code.add(f"_RT.set_text({text})")
+        self.end_tag(compiler)
+
+    def command_tag(self, compiler: chartreux.Compiler, arg):
+        text = self.tag_header(compiler, arg)
+        if text:
+            compiler.error('text is not allowed here')
+        compiler.code.add('_PUSHBUF()')
+        compiler.parser.parse_until('end')
+        compiler.code.add('_RT.set_text(_POPBUF())')
+        self.end_tag(compiler)
+
+    def command_a(self, compiler: chartreux.Compiler, arg):
+        text = self.parse_atts(compiler, arg)
+        if text:
+            compiler.error('text is not allowed here')
+
+    def command_insert(self, compiler: chartreux.Compiler, arg):
+        chunks = []
+        for is_expr, val in compiler.command.parse_interpolations(arg, with_default_filter=False):
+            if not is_expr:
+                compiler.error('"insert" requires a single expression')
+            chunks.append(val)
+        if len(chunks) > 1:
+            compiler.error('"insert" requires a single expression')
+        compiler.code.add(f'_RT.append_tag({chunks[0]})')
+
+    def command_namespaces(self, compiler: chartreux.Compiler, arg):
+        compiler.code.add(f"_RT.add_namespaces_here()")
+
+    ##
+
+    def interpolate(self, compiler: chartreux.Compiler, s):
         code = []
 
-        for m, val in self.cc.command.parse_interpolations(s, with_default_filter=True):
-            if m:
+        for is_expr, val in compiler.command.parse_interpolations(s, with_default_filter=True):
+            if is_expr:
                 code.append(f"str({val})")
             else:
                 code.append(repr(val))
@@ -74,99 +109,41 @@ class XMLCommands():
         )
     '''
 
-    def parse_atts(self, arg):
+    def parse_atts(self, compiler: chartreux.Compiler, arg):
         while True:
             m = re.match(self.attr_re, arg)
             if not m:
                 break
-            a = self.interpolate(m.group(1))
-            v = self.interpolate(m.group(2).strip('"').strip())
-            self.cc.code.add(f"_RT.set_attr({a},{v})")
+            a = self.interpolate(compiler, m.group(1))
+            v = self.interpolate(compiler, m.group(2).strip('"').strip())
+            compiler.code.add(f"_RT.set_attr({a},{v})")
             arg = arg[len(m.group(0)):].strip()
         return arg
 
-    def tag_header(self, arg):
+    def tag_header(self, compiler: chartreux.Compiler, arg):
         m = re.match(r'^(\S+)', arg)
         if not m:
-            self.cc.error('invalid XML tag')
+            compiler.error('invalid XML tag')
 
         cnt = 0
         for s in m.group(1).split('/'):
-            s = self.interpolate(s)
-            self.cc.code.add(f"_RT.push_tag({s})")
+            s = self.interpolate(compiler, s)
+            compiler.code.add(f"_RT.push_tag({s})")
             cnt += 1
         self.tag_counts.append(cnt)
 
         arg = arg[len(m.group(0)):].strip()
-        arg = self.parse_atts(arg)
+        arg = self.parse_atts(compiler, arg)
         return arg.strip()
 
-    def end_tag(self):
+    def end_tag(self, compiler: chartreux.Compiler):
         cnt = self.tag_counts.pop()
         while cnt > 0:
-            self.cc.code.add(f"_RT.pop_tag()")
+            compiler.code.add(f"_RT.pop_tag()")
             cnt -= 1
-
-    def command_t(self, cc, arg):
-        self.cc = cc
-        arg = self.tag_header(arg)
-        if arg:
-            arg = self.interpolate(arg)
-            self.cc.code.add(f"_RT.set_text({arg})")
-        self.end_tag()
-
-    def command_tag(self, cc, arg):
-        self.cc = cc
-        arg = self.tag_header(arg)
-        if arg:
-            self.cc.error('text is not allowed here')
-
-        self.cc.code.add('_PUSHBUF()')
-        self.cc.parser.parse_until('end')
-        self.cc.code.add('_RT.set_text(_POPBUF())')
-        self.end_tag()
-
-    def command_a(self, cc, arg):
-        self.cc = cc
-        arg = self.parse_atts(arg)
-        if arg:
-            self.cc.error('text is not allowed here')
-
-    def command_insert(self, cc, arg):
-        self.cc = cc
-        chunks = []
-        for m, val in self.cc.command.parse_interpolations(arg, with_default_filter=False):
-            if not m:
-                self.cc.error('"insert" requires a single expression')
-            chunks.append(val)
-
-        if len(chunks) > 1:
-            self.cc.error('"insert" requires a single expression')
-        self.cc.code.add(f'_RT.append_tag({chunks[0]})')
-
-    def command_namespaces(self, cc, arg):
-        self.cc = cc
-        self.cc.code.add(f"_RT.add_namespaces_here()")
 
 
 class Object(gws.common.template.Object):
-
-    @property
-    def auto_uid(self):
-        return None
-
-    def configure(self):
-        super().configure()
-
-        self.path = self.var('path')
-        self.text = self.var('text')
-
-        if self.path:
-            fp = open(self.path, 'rt')
-            fp.close()
-
-        uid = self.var('uid') or (misc.sha256(self.path) if self.path else self.klass.replace('.', '_'))
-        self.set_uid(uid)
 
     def render(self, context, render_output=None, out_path=None, format=None):
         namespaces_node, last_tag = self._render_as_tag(context)
@@ -177,13 +154,13 @@ class Object(gws.common.template.Object):
             self._insert_namespaces(namespaces_node, nsdict, context.get('all_namespaces', {}))
 
         if format == 'tag':
-            return t.Data({'content': last_tag})
+            return t.TemplateOutput(content=last_tag)
 
         xml = gws.tools.xml3.as_string(last_tag)
         if not xml.startswith('<?'):
             xml = '<?xml version="1.0" encoding="utf-8"?>' + xml
 
-        return t.Data({'content': xml})
+        return t.TemplateOutput(content=xml)
 
     def _render_as_tag(self, context):
         context = context or {}
@@ -201,7 +178,6 @@ class Object(gws.common.template.Object):
             with open(self.path, 'rt') as fp:
                 text = fp.read()
 
-        rc = XMLCommands()
         rt = XMLRuntime()
 
         chartreux.render(
@@ -211,7 +187,7 @@ class Object(gws.common.template.Object):
             error=err,
             strip=True,
             runtime=rt,
-            commands=rc,
+            commands=XMLCommands(),
         )
 
         return rt.namespaces_node, rt.last_tag

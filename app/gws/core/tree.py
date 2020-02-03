@@ -3,17 +3,7 @@ import importlib
 from . import util, error, log
 import gws.types as t
 
-_uids = set()
-
-
-def _new_uid(uid):
-    n = 0
-    u = uid
-    while u in _uids:
-        n += 1
-        u = uid + str(n)
-    _uids.add(u)
-    return u
+_UIDS = set()
 
 
 #:export IObject
@@ -33,8 +23,25 @@ class Object(t.IObject):
     def props(self) -> t.Props:
         pass
 
-    @property
-    def auto_uid(self) -> str:
+    def is_a(self, klass):
+        if isinstance(klass, type):
+            return isinstance(self, klass)
+        if self.klass == klass:
+            return True
+        return self.klass.startswith(klass + '.')
+
+    def _new_uid(self, uid):
+        global _UIDS
+
+        n = 0
+        u = uid
+        while u in _UIDS:
+            n += 1
+            u = uid + str(n)
+        _UIDS.add(u)
+        return u
+
+    def _auto_uid(self):
         u = self.var('uid')
         if u:
             return u
@@ -43,33 +50,32 @@ class Object(t.IObject):
             return util.as_uid(u)
         return self.klass.replace('.', '_')
 
-    def is_a(self, klass):
-        if isinstance(klass, type):
-            return isinstance(self, klass)
-        if self.klass == klass:
-            return True
-        return self.klass.startswith(klass + '.')
-
     def set_uid(self, uid):
+        global _UIDS
+
+        if not uid or uid == self.uid:
+            return
+
         with util.global_lock:
-            if self.uid != uid:
-                self.uid = _new_uid(uid)
+            if self.uid:
+                _UIDS.discard(self.uid)
+            self.uid = self._new_uid(uid)
 
     def initialize(self, cfg):
         self.config = cfg
-
-        uid = self.auto_uid
-        if uid:
-            self.set_uid(uid)
-
         self.access = self.var('access')
+        self.set_uid(self._auto_uid())
+
+        log.debug(f'BEGIN configure: {self.klass}')
+
         try:
-            log.debug(f'configure: {self.klass} uid={self.uid}')
             self.configure()
         except Exception as e:
             # try to provide a clue where this happened
             msg = '%s\nin %s' % (_exc_name_for_error(e), _object_name_for_error(self))
             raise error.Error(msg)
+
+        log.debug(f'END configure: {self.klass} uid={self.uid}')
 
     def configure(self):
         # this is intended to be overridden

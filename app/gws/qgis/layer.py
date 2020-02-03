@@ -2,6 +2,7 @@
 
 import gws
 import gws.common.layer
+import gws.common.layer.types
 import gws.common.metadata
 import gws.config.parser
 import gws.gis.extent
@@ -21,10 +22,10 @@ class Config(gws.common.layer.ImageConfig):
     directSearch: t.Optional[t.List[str]]  #: QGIS providers that should be searched directly
     path: t.FilePath  #: path to a qgs project file
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use as roots
-    flatten: t.Optional[gws.common.layer.FlattenConfig]  #: flatten the layer hierarchy
+    flatten: t.Optional[gws.common.layer.types.FlattenConfig]  #: flatten the layer hierarchy
 
 
-class Object(gws.common.layer.Base):
+class Object(gws.common.layer.Layer):
     def __init__(self):
         super().__init__()
 
@@ -43,7 +44,7 @@ class Object(gws.common.layer.Base):
         self.path = self.var('path')
         self.provider: provider.Object = provider.create_shared(self, self.config)
         self.own_crs = self.provider.supported_crs[0]
-        self.use_meta(gws.common.metadata.read(self.var('meta') or self.provider.meta))
+        self.load_metadata(self.provider.meta)
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))

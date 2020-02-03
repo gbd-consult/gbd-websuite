@@ -11,7 +11,7 @@ class Error(ValueError):
     pass
 
 
-class _Undef(str):
+class _Undef:
     def get(self, key):
         return self
 
@@ -23,6 +23,9 @@ class _Undef(str):
 
     def __bool__(self):
         return False
+
+    def __str__(self):
+        return ''
 
 
 class _Formatter(string.Formatter):

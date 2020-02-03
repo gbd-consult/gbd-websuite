@@ -20,6 +20,7 @@ projects+ {
 
     map.layers+ {
         type "osm"
+        title "OSM"
     }
 
 }

@@ -1,15 +1,16 @@
 import gws.types as t
 import gws.common.layer
+import gws.common.layer
 import gws.gis.extent
 
 
-class Config(gws.common.layer.BaseConfig):
+class Config(gws.common.layer.Config):
     """Group layer"""
 
     layers: t.List[t.ext.layer.Config]  #: layers in this group
 
 
-class Object(gws.common.layer.Base):
+class Object(gws.common.layer.Layer):
     def __init__(self):
         super().__init__()
 
@@ -19,7 +20,7 @@ class Object(gws.common.layer.Base):
     def configure(self):
         super().configure()
 
-        self.layers = gws.common.layer.add_layers_to_object(self, self.var('layers'))
+        self.layers = gws.common.layer.util.add_layers_to_object(self, self.var('layers'))
 
     def ows_enabled(self, service):
         return (super().ows_enabled(service)

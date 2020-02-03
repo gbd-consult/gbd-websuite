@@ -33,23 +33,18 @@ class Object(gws.common.template.Object):
         self.template: types.PrintTemplate = None
         self.provider: provider.Object = None
 
-    @property
-    def auto_uid(self):
-        return None
-
     def configure(self):
         super().configure()
 
-        self.path = self.var('path')
         self.provider = provider.create_shared(self, self.config)
         self.template = self._find_template(self.var('title'))
         if not self.template:
-            raise ValueError('print template not found')
+            raise gws.Error('print template not found')
 
         uid = self.var('uid') or '%s_%d' % (gws.tools.misc.sha256(self.path), self.template.index)
         self.set_uid(uid)
-        self.title = self.template.title
 
+        self.title = self.template.title
         self.page_size = self._page_size()
         self.map_size, self.map_position = self._map_size_position()
 

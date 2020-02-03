@@ -349,7 +349,6 @@ class IFeature:
     def transform(self, to_crs) -> 'IFeature': pass
 
 class IObject:
-    auto_uid: str = None
     children: list = None
     config: Config = None
     parent: 'IObject' = None
@@ -696,7 +695,7 @@ class StyleValues(Data):
     label_stroke_dashoffset: Optional[int] = None
     label_stroke_linecap: Optional['StyleStrokeLineCap'] = None
     label_stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
-    label_stroke_miterLimit: Optional[int] = None
+    label_stroke_miterlimit: Optional[int] = None
     label_stroke_width: Optional[int] = None
     marker: Optional['StyleMarker'] = None
     marker_fill: Optional['Color'] = None
@@ -706,7 +705,7 @@ class StyleValues(Data):
     marker_stroke_dashoffset: Optional[int] = None
     marker_stroke_linecap: Optional['StyleStrokeLineCap'] = None
     marker_stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
-    marker_stroke_miterLimit: Optional[int] = None
+    marker_stroke_miterlimit: Optional[int] = None
     marker_stroke_width: Optional[int] = None
     point_size: Optional[int] = None
     stroke: Optional['Color'] = None
@@ -714,7 +713,7 @@ class StyleValues(Data):
     stroke_dashoffset: Optional[int] = None
     stroke_linecap: Optional['StyleStrokeLineCap'] = None
     stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
-    stroke_miterLimit: Optional[int] = None
+    stroke_miterlimit: Optional[int] = None
     stroke_width: Optional[int] = None
     with_geometry: Optional['StyleGeometryOption'] = None
     with_label: Optional['StyleLabelOption'] = None
@@ -807,13 +806,13 @@ class ILayer(IObject):
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
+    def load_metadata(self, provider_meta=None): pass
     def mapproxy_config(self, mc): pass
     def ows_enabled(self, service: 'IOwsService') -> bool: pass
     def render_box(self, rv: 'RenderView', client_params=None): pass
     def render_legend(self): pass
     def render_svg(self, rv: 'RenderView', style: 'IStyle' = None): pass
     def render_xyz(self, x, y, z): pass
-    def use_meta(self, meta): pass
 
 class IMap(IObject):
     bounds: 'Bounds' = None
@@ -896,6 +895,8 @@ class ITemplate(IObject):
     data_model: 'IModel' = None
     map_size: 'Size' = None
     page_size: 'Size' = None
+    path: str = None
+    text: str = None
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str: pass
     def dpi_for_quality(self, quality): pass
     def normalize_context(self, context: dict) -> dict: pass

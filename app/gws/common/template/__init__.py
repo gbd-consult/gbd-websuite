@@ -1,5 +1,6 @@
 import os
 import gws.common.model
+import gws.tools.misc
 import gws.types as t
 
 
@@ -18,7 +19,6 @@ class Config(t.Config):
     path: t.Optional[t.FilePath]  #: path to a template file
     text: str = ''  #: template content
     title: str = ''  #: template title
-    uid: str = ''  #: unique id
 
 
 #:export
@@ -62,6 +62,8 @@ class Object(gws.Object, t.ITemplate):
     def __init__(self):
         super().__init__()
         self.data_model: t.IModel = None
+        self.path = ''
+        self.text = ''
 
     @property
     def props(self):
@@ -78,6 +80,13 @@ class Object(gws.Object, t.ITemplate):
 
     def configure(self):
         super().configure()
+
+        self.path = self.var('path')
+        self.text = self.var('text')
+
+        uid = self.var('uid') or (gws.tools.misc.sha256(self.path) if self.path else self.klass.replace('.', '_'))
+        self.set_uid(uid)
+
         p = self.var('dataModel')
         if p:
             self.data_model = self.add_child('gws.common.model', p)

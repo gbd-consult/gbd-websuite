@@ -389,11 +389,13 @@ class Expression:
         return False
 
     def make_getter(self, var, prop):
-        return _f('_GET({},{},__POS__)', var, repr(prop))
+        fn = '_GET_NOEXC' if self.cc.noexc_block else '_GET'
+        return _f('{}({},{},__POS__)', fn, var, repr(prop))
 
     def make_context_getter(self, var):
         self.cc.code.add_context_var(var)
-        return _f('_GETCONTEXT({},__POS__)', repr(var))
+        fn = '_GET_CONTEXT_NOEXC' if self.cc.noexc_block else '_GET_CONTEXT'
+        return _f('{}({},__POS__)', fn, repr(var))
 
 
 class Command:
@@ -846,6 +848,8 @@ class Command:
         else:
             name = self.cc.new_var()
 
+        self.cc.noexc_block += 1
+
         e = self.cc.expression.parse(arg)
 
         # NB 'with' argument never throws
@@ -854,6 +858,8 @@ class Command:
             _f('{} = {}', name, e),
             _f('{} = None', name)
         )
+
+        self.cc.noexc_block -= 1
 
         self.cc.scope.add(name)
 
@@ -1012,11 +1018,23 @@ class Code:
                     _ERR(_EXC, pos)
                     return _RT.undef
             
-            def _GETCONTEXT(prop, pos):
+            def _GET_NOEXC(obj, prop, pos):
+                try:
+                    return _RT.get(obj, prop)
+                except Exception as _EXC:
+                    return _RT.undef
+            
+            def _GET_CONTEXT(prop, pos):
                 try:
                     return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]
                 except Exception as _EXC:
                     _ERR(_EXC, pos)
+                    return _RT.undef
+
+            def _GET_CONTEXT_NOEXC(prop, pos):
+                try:
+                    return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]
+                except Exception as _EXC:
                     return _RT.undef
         ''')
 
@@ -1069,6 +1087,8 @@ class Compiler:
         self.scope = set()
         self.user_commands = {}
         self.frames = []
+
+        self.noexc_block = 0
 
         self.num_vars = 0
 

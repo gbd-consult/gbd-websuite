@@ -70,7 +70,7 @@ class StyleValues(t.Data):
     stroke_dashoffset: t.Optional[int]
     stroke_linecap: t.Optional[StyleStrokeLineCap]
     stroke_linejoin: t.Optional[StyleStrokeLineJoin]
-    stroke_miterLimit: t.Optional[int]
+    stroke_miterlimit: t.Optional[int]
     stroke_width: t.Optional[int]
 
     marker: t.Optional[StyleMarker]
@@ -81,7 +81,7 @@ class StyleValues(t.Data):
     marker_stroke_dashoffset: t.Optional[int]
     marker_stroke_linecap: t.Optional[StyleStrokeLineCap]
     marker_stroke_linejoin: t.Optional[StyleStrokeLineJoin]
-    marker_stroke_miterLimit: t.Optional[int]
+    marker_stroke_miterlimit: t.Optional[int]
     marker_stroke_width: t.Optional[int]
 
     with_geometry: t.Optional[StyleGeometryOption]
@@ -106,7 +106,7 @@ class StyleValues(t.Data):
     label_stroke_dashoffset: t.Optional[int]
     label_stroke_linecap: t.Optional[StyleStrokeLineCap]
     label_stroke_linejoin: t.Optional[StyleStrokeLineJoin]
-    label_stroke_miterLimit: t.Optional[int]
+    label_stroke_miterlimit: t.Optional[int]
     label_stroke_width: t.Optional[int]
 
     point_size: t.Optional[int]
@@ -192,7 +192,7 @@ class _Parser:
     stroke_dashoffset = _px
     stroke_linecap = _enum(StyleStrokeLineCap)
     stroke_linejoin = _enum(StyleStrokeLineJoin)
-    stroke_miterLimit = _px
+    stroke_miterlimit = _px
     stroke_width = _px
 
     marker = _enum(StyleMarker)
@@ -203,7 +203,7 @@ class _Parser:
     marker_stroke_dashoffset = _px
     marker_stroke_linecap = _enum(StyleStrokeLineCap)
     marker_stroke_linejoin = _enum(StyleStrokeLineJoin)
-    marker_stroke_miterLimit = _px
+    marker_stroke_miterlimit = _px
     marker_stroke_width = _px
 
     with_geometry = _enum(StyleGeometryOption)
@@ -228,7 +228,7 @@ class _Parser:
     label_stroke_dashoffset = _px
     label_stroke_linecap = _enum(StyleStrokeLineCap)
     label_stroke_linejoin = _enum(StyleStrokeLineJoin)
-    label_stroke_miterLimit = _px
+    label_stroke_miterlimit = _px
     label_stroke_width = _px
 
     point_size = _px

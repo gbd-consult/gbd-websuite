@@ -48,6 +48,9 @@ class Object(gws.common.layer.Image):
         if not self.source_layers:
             raise gws.Error(f'no layers found in {self.uid!r}')
 
+        if len(self.source_layers) == 1 and not self.var('meta'):
+            self.load_metadata(self.source_layers[0].meta)
+
         if not self.var('zoom'):
             zoom = gws.gis.zoom.config_from_source_layers(self.source_layers)
             if zoom:
@@ -56,9 +59,6 @@ class Object(gws.common.layer.Image):
 
         # if no legend.url is given, use an auto legend
         self.has_legend = self.var('legend.enabled')
-
-        if not self.var('meta'):
-            self.meta = gws.common.metadata.read(gws.common.layer.meta_from_source_layers(self))
 
     @property
     def description(self):

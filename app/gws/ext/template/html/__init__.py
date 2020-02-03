@@ -8,7 +8,6 @@ import gws
 import gws.tools.mime
 import gws.gis.feature
 import gws.gis.render
-import gws.tools.misc as misc
 import gws.tools.pdf
 import gws.types as t
 import gws.tools.vendor.chartreux as chartreux
@@ -32,21 +31,13 @@ class ParsedTemplate(t.Data):
 class Object(gws.common.template.Object):
     map_placeholder = '__map__'
 
-    @property
-    def auto_uid(self):
-        return None
+    def __init__(self):
+        super().__init__()
+        self.parsed: ParsedTemplate = None
+        self.parsed_time = 0
 
     def configure(self):
         super().configure()
-
-        self.parsed: ParsedTemplate = None
-        self.parsed_time = 0
-        self.path = self.var('path')
-        self.text = self.var('text')
-
-        uid = self.var('uid') or (misc.sha256(self.path) if self.path else self.klass.replace('.', '_'))
-        self.set_uid(uid)
-
         self._parse()
 
     @property
@@ -84,24 +75,14 @@ class Object(gws.common.template.Object):
                 out_path=out_path
             )
 
-            return t.TemplateOutput({
-                'mime': gws.tools.mime.get('pdf'),
-                'path': out_path
-            })
+            return t.TemplateOutput(mime=gws.tools.mime.get('pdf'), path=out_path)
 
         if out_path:
             with open(out_path, 'wt') as fp:
                 fp.write(html)
-            return t.TemplateOutput({
-                'mime': gws.tools.mime.get('html'),
-                'path': out_path
-            })
+            return t.TemplateOutput(mime=gws.tools.mime.get('html'), path=out_path)
 
-        return t.TemplateOutput({
-            'mime': gws.tools.mime.get('html'),
-            'content': html
-        })
-
+        return t.TemplateOutput(mime=gws.tools.mime.get('html'), content=html)
 
     def add_headers_and_footers(self, context, in_path, out_path, format):
         if not self.parsed.header and not self.parsed.footer:

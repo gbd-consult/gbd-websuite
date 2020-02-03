@@ -15,23 +15,6 @@ class Config(gws.common.template.Config):
 
 class Object(gws.common.template.Object):
 
-    @property
-    def auto_uid(self):
-        return None
-
-    def configure(self):
-        super().configure()
-
-        self.path = self.var('path')
-        self.text = self.var('text')
-
-        if self.path:
-            fp = open(self.path, 'rt')
-            fp.close()
-
-        uid = self.var('uid') or (gws.tools.misc.sha256(self.path) if self.path else self.klass.replace('.', '_'))
-        self.set_uid(uid)
-
     def render(self, context, render_output=None, out_path=None, format=None):
         context = context or {}
 

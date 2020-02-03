@@ -5,6 +5,7 @@ import gws.gis.proj
 import gws.gis.zoom
 import gws.gis.extent
 import gws.common.layer
+import gws.common.layer.types
 import gws.tools.units as units
 
 # https://wiki.openstreetmap.org/wiki/Zoom_levels
@@ -53,7 +54,7 @@ class Props(t.Data):
     extent: t.Extent
     center: t.Point
     initResolution: float
-    layers: t.List[gws.common.layer.Props]
+    layers: t.List[gws.common.layer.types.LayerProps]
     resolutions: t.List[float]
     title: str = ''
 
@@ -69,10 +70,6 @@ class Object(gws.Object, t.IMap):
         self.resolutions: t.List[float] = []
         self.layers: t.List[t.ILayer] = []
         self.coordinate_precision = 0
-
-    @property
-    def auto_uid(self):
-        return None
 
     @property
     def bounds(self) -> t.Bounds:
@@ -111,9 +108,9 @@ class Object(gws.Object, t.IMap):
                 round(self.extent[1] + (self.extent[3] - self.extent[1]) / 2),
             ]
 
-        proj = gws.gis.proj.as_proj(self.crs)
         self.coordinate_precision = self.var('coordinatePrecision')
         if self.coordinate_precision is None:
+            proj = gws.gis.proj.as_proj(self.crs)
             self.coordinate_precision = 2 if proj.units == 'm' else 7
 
     @property
@@ -163,7 +160,7 @@ def _configure_extent(obj, target_crs, parent_explicit_extent):
         obj.extent = ee
         return obj.extent
 
-    # terminal layer, has an own extent and optionally an own or default extent buf.
+    # terminal layer, has its own extent and optionally an extent buffer
 
     own: t.Bounds = getattr(obj, 'own_bounds', None)
     buf = obj.var('extentBuffer', parent=True)

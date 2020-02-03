@@ -1,11 +1,11 @@
 import gws.common.layer
 
 
-class Config(gws.common.layer.BaseConfig):
+class Config(gws.common.layer.Config):
     pass
 
 
-class Object(gws.common.layer.Base):
+class Object(gws.common.layer.Layer):
     @property
     def props(self):
         return super().props.extend({

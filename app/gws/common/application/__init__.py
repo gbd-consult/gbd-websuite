@@ -91,17 +91,12 @@ class Object(gws.Object, t.IApplication):
         self.version = gws.VERSION
         self.web_sites: t.List[t.IWebSite] = []
 
-    @property
-    def auto_uid(self):
-        return None
-
     def configure(self):
         super().configure()
 
-        self.defaults = self.var('defaults')
-
         self.set_uid('APP')
 
+        self.defaults = self.var('defaults')
         self.qgis_version = gws.qgis.server.version()
 
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
