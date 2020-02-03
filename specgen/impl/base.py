@@ -130,6 +130,21 @@ class CliFunctionSpec(Spec):
         self.type = 'clifunc'
 
 
+class CliArgSpec(Spec):
+    """CLI argument specification."""
+
+    def __init__(self, **kwargs):
+        super().__init__()
+
+        self.name = ''
+        self.doc = ''
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+        self.type = 'cliarg'
+
+
 class Stub:
     """Class stub."""
 

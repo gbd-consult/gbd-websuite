@@ -81,27 +81,34 @@ class _Runner:
         self.write('gws-server.api.ts', ifaces)
         self.write('gws-server.base.ts', stub)
 
+    # @TODO: should use unflattened types for this
+
     def extract_and_merge_docs(self, specs, lang):
-        map = {}
+        dmap = {}
 
         for name, s in specs.items():
-            map[name] = s
+            dmap[name] = s
             for p in s.get('props', []):
-                map[name + ':' + p.name] = p
+                dmap[name + ':' + p.name] = p
             for p in s.get('args', []):
-                map[name + ':' + p.name] = p
+                dmap[name + ':' + p.name] = p
 
-        self.write('doc.json', _json({k: v.doc for k, v in sorted(map.items())}))
+        self.write('doc.json', _json({k: v.doc for k, v in sorted(dmap.items())}))
 
         with open(self.out_dir + '/../lang/' + lang + '.json') as fp:
             translations = json.load(fp)
 
-        for k, v in translations.items():
-            if k in map:
-                map[k].doc = v
-            else:
+        for k, v in dmap.items():
+            if k in translations:
+                dmap[k].doc = translations[k]
+            elif dmap[k].doc:
+                ## print('not found translation: ' + k)
                 pass
-                ##print('unbound translation: ' + k)
+
+        for k, v in translations.items():
+            if k not in dmap:
+                ## print('unbound translation: ' + k)
+                pass
 
     def write_specs(self, specs, lang=None):
         fname = 'spec.json'

@@ -27,7 +27,7 @@ def for_cli_functions(units):
         if u.kind == 'clifunc':
             tname = u.command + '.' + u.name
             specs[tname] = CliFunctionSpec(
-                args=u.args,
+                args=[CliArgSpec(name=a.name, doc=a.doc) for a in u.args],
                 command=u.command,
                 doc=u.doc,
                 module=u.module,

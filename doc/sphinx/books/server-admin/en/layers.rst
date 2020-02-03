@@ -77,7 +77,7 @@ QGIS layers display whole qgis projects as a single group in the GWS layer tree.
 
 
 qgisflat
-~~~~~~~
+~~~~~~~~
 
 QGIS/WMS layers display individual layers from a Qgis project as a single flat image ::
 
@@ -96,14 +96,14 @@ Vector layers
 
 These layers take geometry data from external sources and display it as vectors using client-side Javascript. You can configure the appearance of the layer using the ``style`` option.
 
-sql
-~~~
+postgres
+~~~~~~~~
 
-SQL layers take geometries from an SQL table. You need to specify the database provider and the table to use ::
+Postgres layers take geometries from an Postgres table. You need to specify the database provider and the table to use ::
 
         {
-            "title": "Houses",
-            "type": "sql",
+            "title": "Example",
+            "type": "postgres",
             "table": {
                 "name": "myschema.mytable",
                 "keyColumn": "id",
@@ -114,6 +114,18 @@ SQL layers take geometries from an SQL table. You need to specify the database p
                 "type": "css",
                 "text": "stroke:rgb(0,255,0); stroke-width:1px; fill:rgba(0,100,0,0.2)"
             }
+        }
+
+
+geojson
+~~~~~~~
+
+GeoJSON layers show vector features from a GeoJSON file ::
+
+        {
+            "title": "Example",
+            "type": "geojson",
+            "path": "/data/example.geojson",
         }
 
 

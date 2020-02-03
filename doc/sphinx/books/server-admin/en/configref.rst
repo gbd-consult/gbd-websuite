@@ -3,7 +3,7 @@ Configuration reference
 
 This section formally describes the GBD WebSuite configuration, which is nested key-value structure. The *keys* are always strings, the *values* should belong to one of the types listed below.
 
-The top-level configuration is of type **ApplicationConfig**.
+The top-level configuration is of type **gws.common.application.Config**.
 
 Basic types
 -----------
@@ -18,11 +18,6 @@ TABLE
    ``dict`` ~ Generic key-value object
    [``T``...] ~ List (array) of elements of type ``T``
 /TABLE
-
-Special types
--------------
-
-The values of these types are strings and numbers assoicated with a special semantics.
 
 
 .. include:: /{DOC_ROOT}/gen/en.configref.txt

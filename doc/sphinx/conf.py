@@ -74,14 +74,21 @@ def replace_tables(app, docname, source):
     source[0] = re.sub(r'(?s)TABLE(.+?)/TABLE', _table, source[0])
 
 
-def setup(app):
+def make_refs():
     util.make_config_ref('en', APP_DIR, DOC_ROOT)
     util.make_config_ref('de', APP_DIR, DOC_ROOT)
 
     util.make_cli_ref('en', APP_DIR, DOC_ROOT)
     util.make_cli_ref('de', APP_DIR, DOC_ROOT)
 
+
+def setup(app):
+    make_refs()
     app.add_stylesheet('extras.css')
     app.add_javascript('extras.js')
     app.connect('source-read', replace_vars)
     app.connect('source-read', replace_tables)
+
+
+if __name__ == '__main__':
+    make_refs()
