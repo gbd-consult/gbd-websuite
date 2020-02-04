@@ -3,9 +3,9 @@ module.exports = v => ({
 
     '.modEditSelected': {
         marker: 'circle',
-        markerStroke: v.COLOR.opacity(v.COLOR.pink800, 0.3),
-        markerStrokeWidth: 3,
-        markerSize: 20,
+        markerStroke: v.COLOR.opacity(v.COLOR.pink800, 0.8),
+        markerStrokeWidth: 4,
+        markerSize: 25,
         markerStrokeDasharray: '4',
     },
 

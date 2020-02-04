@@ -244,6 +244,8 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                 return <gws.ui.NumberInput step={1} {...props}/>;
             case gws.api.AttributeType.str:
                 return <gws.ui.TextInput {...props}/>;
+            case gws.api.AttributeType.text:
+                return <gws.ui.TextArea {...props}/>;
         }
         return null;
     }

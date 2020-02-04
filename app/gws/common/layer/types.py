@@ -70,7 +70,7 @@ class LayerProps(t.Data):
     editAccess: t.Optional[t.List[str]]
     editStyle: t.Optional[t.StyleProps]
     extent: t.Optional[t.Extent]
-    geometryType: str = ''
+    geometryType: t.GeometryType = ''
     layers: t.Optional[t.List['LayerProps']]
     loadingStrategy: t.Optional[str]
     meta: t.MetaData

@@ -221,23 +221,24 @@ class AttributeType(Enum):
     int = 'int'
     list = 'list'
     str = 'str'
+    text = 'text'
     time = 'time'
 
 
 class GeometryType(Enum):
-    curve = 'curve'
-    geomcollection = 'geomcollection'
-    geometry = 'geometry'
-    linestring = 'linestring'
-    multicurve = 'multicurve'
-    multilinestring = 'multilinestring'
-    multipoint = 'multipoint'
-    multipolygon = 'multipolygon'
-    multisurface = 'multisurface'
-    point = 'point'
-    polygon = 'polygon'
-    polyhedralsurface = 'polyhedralsurface'
-    surface = 'surface'
+    curve = 'CURVE'
+    geomcollection = 'GEOMCOLLECTION'
+    geometry = 'GEOMETRY'
+    linestring = 'LINESTRING'
+    multicurve = 'MULTICURVE'
+    multilinestring = 'MULTILINESTRING'
+    multipoint = 'MULTIPOINT'
+    multipolygon = 'MULTIPOLYGON'
+    multisurface = 'MULTISURFACE'
+    point = 'POINT'
+    polygon = 'POLYGON'
+    polyhedralsurface = 'POLYHEDRALSURFACE'
+    surface = 'SURFACE'
 
 
 class Attribute(Data):
@@ -399,6 +400,7 @@ class IShape:
     x: float = None
     y: float = None
     def intersects(self, shape: 'IShape') -> bool: pass
+    def to_type(self, new_type: 'GeometryType') -> 'IShape': pass
     def tolerance_buffer(self, tolerance, resolution=None) -> 'IShape': pass
     def transformed(self, to_crs, **kwargs) -> 'IShape': pass
 
@@ -591,7 +593,7 @@ class SourceStyle(Data):
 class SqlTable(Data):
     geometry_column: str = None
     geometry_crs: 'Crs' = None
-    geometry_type: str = None
+    geometry_type: 'GeometryType' = None
     key_column: str = None
     name: str = None
     search_column: str = None

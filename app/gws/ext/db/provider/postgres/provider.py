@@ -229,7 +229,7 @@ class Object(gws.common.db.provider.Sql):
             rec[table.key_column] = feature.uid
 
         if table.geometry_column and feature.shape:
-            shape = feature.shape.transformed(table.geometry_crs)
+            shape = feature.shape.to_type(table.geometry_type).transformed(table.geometry_crs)
             rec[table.geometry_column] = shape.ewkb_hex
 
         return rec

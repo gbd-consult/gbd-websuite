@@ -110,7 +110,7 @@ class Shape(t.IShape):
 
     @property
     def type(self) -> t.GeometryType:
-        return self.geom.type.lower()
+        return self.geom.type.upper()
 
     @property
     def props(self) -> t.ShapeProps:
@@ -188,6 +188,17 @@ class Shape(t.IShape):
 
         geom = self.geom.buffer(tolerance, resolution, cap_style=cs, join_style=js)
         return Shape(geom, self.crs)
+
+    def to_type(self, new_type: t.GeometryType) -> t.IShape:
+        if new_type == self.type:
+            return self
+        if self.type == t.GeometryType.point and new_type == t.GeometryType.multipoint:
+            return Shape(shapely.geometry.MultiPoint([self.geom]), self.crs)
+        if self.type == t.GeometryType.linestring and new_type == t.GeometryType.multilinestring:
+            return Shape(shapely.geometry.MultiLineString([self.geom]), self.crs)
+        if self.type == t.GeometryType.polygon and new_type == t.GeometryType.multipolygon:
+            return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
+        raise ValueError(f'cannot convert {self.type!r} to {new_type!r}')
 
     def transformed(self, to_crs, **kwargs) -> t.IShape:
         if gws.gis.proj.equal(self.crs, to_crs):

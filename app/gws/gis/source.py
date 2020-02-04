@@ -51,6 +51,7 @@ class LayerFilterConfig(t.Config):
     level: int = 0  #: use layers at this level
     names: t.Optional[t.List[str]]  #: use these layer names (top-to-bottom order)
     pattern: t.Regex = ''  #: match a pattern against the layer full path
+    excludePattern: t.Regex = ''  #: match a pattern against the layer full path
 
 
 class LayerFilter(t.Data):
@@ -80,6 +81,10 @@ def filter_layers(layers: t.List[t.SourceLayer], slf: LayerFilter, image_only=Fa
         s = gws.get(slf, 'pattern')
         if s:
             layers = [sl for sl in layers if re.search(s, sl.a_path)]
+
+        s = gws.get(slf, 'excludePattern')
+        if s:
+            layers = [sl for sl in layers if not re.search(s, sl.a_path)]
 
     if image_only:
         layers = [sl for sl in layers if sl.is_image]

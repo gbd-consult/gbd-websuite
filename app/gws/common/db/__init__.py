@@ -26,7 +26,7 @@ class SqlTable(t.Data):
     key_column: str = ''
     search_column: str = ''
     geometry_column: str = ''
-    geometry_type: str = ''
+    geometry_type: t.GeometryType = ''
     geometry_crs: t.Crs = ''
 
 

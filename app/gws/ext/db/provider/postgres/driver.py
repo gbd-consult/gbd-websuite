@@ -22,40 +22,40 @@ Error = psycopg2.Error
 _type_map = {
     'array': t.AttributeType.list,
     'bigint': t.AttributeType.int,
-    'int8': t.AttributeType.int,
     'bigserial': t.AttributeType.int,
-    'serial8': t.AttributeType.int,
     'bit': t.AttributeType.int,
-    'boolean': t.AttributeType.bool,
     'bool': t.AttributeType.bool,
+    'boolean': t.AttributeType.bool,
     'bytea': t.AttributeType.bytes,
-    'character': t.AttributeType.str,
     'char': t.AttributeType.str,
     'character varying': t.AttributeType.str,
-    'varchar': t.AttributeType.str,
+    'character': t.AttributeType.str,
     'date': t.AttributeType.date,
-    'geometry': t.AttributeType.geometry,
+    'decimal': t.AttributeType.float,
     'double precision': t.AttributeType.float,
+    'float4': t.AttributeType.float,
     'float8': t.AttributeType.float,
-    'integer': t.AttributeType.int,
+    'geometry': t.AttributeType.geometry,
     'int': t.AttributeType.int,
+    'int2': t.AttributeType.int,
     'int4': t.AttributeType.int,
+    'int8': t.AttributeType.int,
+    'integer': t.AttributeType.int,
     'money': t.AttributeType.float,
     'numeric': t.AttributeType.float,
-    'decimal': t.AttributeType.float,
     'real': t.AttributeType.float,
-    'float4': t.AttributeType.float,
-    'smallint': t.AttributeType.int,
-    'int2': t.AttributeType.int,
-    'smallserial': t.AttributeType.int,
-    'serial2': t.AttributeType.int,
     'serial': t.AttributeType.int,
+    'serial2': t.AttributeType.int,
     'serial4': t.AttributeType.int,
-    'text': t.AttributeType.str,
+    'serial8': t.AttributeType.int,
+    'smallint': t.AttributeType.int,
+    'smallserial': t.AttributeType.int,
+    'text': t.AttributeType.text,
     'time': t.AttributeType.time,
-    'timetz': t.AttributeType.time,
     'timestamp': t.AttributeType.datetime,
     'timestamptz': t.AttributeType.datetime,
+    'timetz': t.AttributeType.time,
+    'varchar': t.AttributeType.str,
 }
 
 
@@ -215,7 +215,7 @@ class Connection:
             if name in geom_cols:
                 col['crs'] = geom_cols[name]['crs']
                 col['type'] = t.AttributeType.geometry
-                col['native_type'] = geom_cols[name]['type']
+                col['native_type'] = geom_cols[name]['type'].upper()
                 col['geom_type'] = col['native_type']
                 col['is_geometry'] = True
             else:

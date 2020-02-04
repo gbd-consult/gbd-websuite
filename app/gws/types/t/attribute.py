@@ -14,23 +14,24 @@ class AttributeType(Enum):
     int = 'int'
     list = 'list'
     str = 'str'
+    text = 'text'
     time = 'time'
 
 
 class GeometryType(Enum):
-    curve = 'curve'
-    geomcollection = 'geomcollection'
-    geometry = 'geometry'
-    linestring = 'linestring'
-    multicurve = 'multicurve'
-    multilinestring = 'multilinestring'
-    multipoint = 'multipoint'
-    multipolygon = 'multipolygon'
-    multisurface = 'multisurface'
-    point = 'point'
-    polygon = 'polygon'
-    polyhedralsurface = 'polyhedralsurface'
-    surface = 'surface'
+    curve = 'CURVE'
+    geomcollection = 'GEOMCOLLECTION'
+    geometry = 'GEOMETRY'
+    linestring = 'LINESTRING'
+    multicurve = 'MULTICURVE'
+    multilinestring = 'MULTILINESTRING'
+    multipoint = 'MULTIPOINT'
+    multipolygon = 'MULTIPOLYGON'
+    multisurface = 'MULTISURFACE'
+    point = 'POINT'
+    polygon = 'POLYGON'
+    polyhedralsurface = 'POLYHEDRALSURFACE'
+    surface = 'SURFACE'
 
 
 class Attribute(Data):
