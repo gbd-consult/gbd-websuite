@@ -10,6 +10,7 @@ class LocaleData(t.Data):
     dateFormatLong: str
     dateFormatMedium: str
     dateFormatShort: str
+    dateUnits: str  #: date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'
     daysLong: t.List[str]
     daysShort: t.List[str]
     firstWeekDay: int
@@ -49,5 +50,9 @@ def locale_data(locale: str) -> t.Optional[LocaleData]:
     ld.monthsShort = list(lo.months['format']['abbreviated'].values())
     ld.numberDecimal = lo.number_symbols['decimal']
     ld.numberGroup = lo.number_symbols['group']
+    ld.dateUnits = (
+            lo.unit_display_names['duration-year']['narrow'] +
+            lo.unit_display_names['duration-month']['narrow'] +
+            lo.unit_display_names['duration-day']['narrow'])
 
     return ld

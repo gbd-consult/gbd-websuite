@@ -56,7 +56,6 @@ module.exports = v => ({
                 width: '100%',
                 verticalAlign: 'middle',
                 display: 'table-cell',
-                xpadding: [v.UNIT4, 0, v.UNIT4, 0],
             },
 
             '> .uiLabel': {
