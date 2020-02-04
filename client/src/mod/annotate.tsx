@@ -2,10 +2,8 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
-import * as measure from 'gws/map/measure';
 import * as template from 'gws/map/template';
 import * as style from 'gws/map/style';
-
 import * as sidebar from './common/sidebar';
 import * as toolbar from './common/toolbar';
 import * as modify from './common/modify';

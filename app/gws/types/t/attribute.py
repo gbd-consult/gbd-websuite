@@ -38,3 +38,4 @@ class Attribute(Data):
     title: str = ''
     type: AttributeType = 'str'
     value: Any = None
+    editable: bool = True

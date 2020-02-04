@@ -64,7 +64,7 @@ class Object(gws.common.db.provider.Sql):
 
         gws.get_global(f'db_ping_{self.uid}', ping)
 
-    def describe(self, table: t.SqlTable):
+    def describe(self, table: t.SqlTable) -> t.Dict[str, t.SqlTableColumn]:
         def f():
             with self.connect() as conn:
                 return {c['name']: t.SqlTableColumn(c) for c in conn.columns(table.name)}
@@ -217,6 +217,7 @@ class Object(gws.common.db.provider.Sql):
                 name=name,
                 source=name,
                 type=col.type,
+                editable=not col.is_key,
             ))
 
         return t.Config(cfg)

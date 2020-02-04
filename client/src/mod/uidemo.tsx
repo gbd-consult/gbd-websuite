@@ -92,26 +92,18 @@ class SmallForm extends gws.View<ViewProps> {
                 label="text input"
                 whenChanged={bind('uiDemoString')}
             />
-            <gws.ui.Group label="options">
-                <gws.ui.Toggle
-                    type="checkbox"
-                    label="checkbox"
-                    value={this.props.uiDemoBool}
-                    whenChanged={bind('uiDemoBool')}
-                />
-                <gws.ui.Toggle
-                    type="radio"
-                    label="radio"
-                    value={this.props.uiDemoBool}
-                    whenChanged={bind('uiDemoBool')}
-                />
-                <gws.ui.Toggle
-                    type="radio"
-                    label="radio"
-                    value={this.props.uiDemoBool}
-                    whenChanged={bind('uiDemoBool')}
-                />
-            </gws.ui.Group>
+            <gws.ui.Toggle
+                type="checkbox"
+                label="checkbox"
+                value={this.props.uiDemoBool}
+                whenChanged={bind('uiDemoBool')}
+            />
+            <gws.ui.Toggle
+                type="radio"
+                label="radio"
+                value={this.props.uiDemoBool}
+                whenChanged={bind('uiDemoBool')}
+            />
             <gws.ui.ColorPicker
                 value={this.props.uiDemoColor}
                 label="Hintergrundfarbe"
@@ -119,12 +111,14 @@ class SmallForm extends gws.View<ViewProps> {
             />
             <gws.ui.Group label="options" vertical>
                 <gws.ui.Toggle
+                    inline
                     type="checkbox"
                     label="checkbox"
                     value={this.props.uiDemoBool}
                     whenChanged={bind('uiDemoBool')}
                 />
                 <gws.ui.Toggle
+                    inline
                     type="radio"
                     label="radio"
                     value={this.props.uiDemoBool}
@@ -259,7 +253,8 @@ class FormDemo extends gws.View<ViewProps> {
                         label="date"
                         withClear
                         format={{
-                            date: this.props.controller.app.localeData.dateFormatShort
+                            date: this.props.controller.app.localeData.dateFormatShort,
+                            units: this.props.controller.app.localeData.dateUnits,
                         }}
                         whenChanged={bind('uiDemoDate')}
                     />
@@ -368,20 +363,32 @@ class FormDemo extends gws.View<ViewProps> {
 
             <Row top>
                 <Cell>
+                    <gws.ui.Toggle
+                        type="checkbox"
+                        label="checkbox"
+                        value={this.props.uiDemoBool}
+                        whenChanged={bind('uiDemoBool')}
+                    />
+                </Cell>
+
+                <Cell>
                     <gws.ui.Group label="options">
                         <gws.ui.Toggle
+                            inline
                             type="checkbox"
                             label="checkbox"
                             value={this.props.uiDemoBool}
                             whenChanged={bind('uiDemoBool')}
                         />
                         <gws.ui.Toggle
+                            inline
                             type="radio"
                             label="radio"
                             value={this.props.uiDemoBool}
                             whenChanged={bind('uiDemoBool')}
                         />
                         <gws.ui.Toggle
+                            inline
                             type="radio"
                             label="disabled"
                             disabled
@@ -393,12 +400,14 @@ class FormDemo extends gws.View<ViewProps> {
                 <Cell>
                     <gws.ui.Group label="options" vertical>
                         <gws.ui.Toggle
+                            inline
                             type="checkbox"
                             label="checkbox"
                             value={this.props.uiDemoBool}
                             whenChanged={bind('uiDemoBool')}
                         />
                         <gws.ui.Toggle
+                            inline
                             type="radio"
                             label="radio"
                             value={this.props.uiDemoBool}
@@ -645,7 +654,7 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
             uiDemoNumber: 13,
             uiDemoColor: 'rgba(255,200,10,0.9)',
             uiDemoName: 'Marino',
-            uiDemoDate: '2018-11-22',
+            //uiDemoDate: '2018-11-22',
 
             uiDemoUseDialog: 'form',
 

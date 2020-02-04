@@ -1,6 +1,14 @@
-
-
 module.exports = v => ({
+
+
+    '.modEditSelected': {
+        marker: 'circle',
+        markerStroke: v.COLOR.opacity(v.COLOR.pink800, 0.3),
+        markerStrokeWidth: 3,
+        markerSize: 20,
+        markerStrokeDasharray: '4',
+    },
+
     '.modEditSidebarIcon': {
         ...v.SIDEBAR_ICON('google:image/edit')
     },
@@ -28,5 +36,13 @@ module.exports = v => ({
     '.modEditCancelButton': {
         ...v.ROUND_CLOSE_BUTTON(),
     },
+    '.modEditRemoveButton': {
+        ...v.ROUND_FORM_BUTTON('google:action/delete')
+    },
+
+    '.modEditStyleButton': {
+        ...v.ROUND_FORM_BUTTON('google:image/brush')
+    },
+
 
 });

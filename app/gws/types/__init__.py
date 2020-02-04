@@ -245,6 +245,7 @@ class Attribute(Data):
     title: str = ''
     type: AttributeType = 'str'
     value: Any = None
+    editable: bool = True
 
 ### Request params and responses.
 
@@ -296,7 +297,7 @@ class DocumentRoot(Data):
     deny_mime: Optional[List[str]] = None
     dir: 'DirPath' = None
 
-class FeatureConvertor:
+class FeatureConverter:
     data_model: 'IModel' = None
     feature_format: 'IFormat' = None
 
@@ -332,7 +333,7 @@ class IBaseRequest:
 class IFeature:
     attributes: List[Attribute] = None
     category: str = None
-    convertor: 'FeatureConvertor' = None
+    converter: 'FeatureConverter' = None
     elements: dict = None
     layer: 'ILayer' = None
     props: 'FeatureProps' = None
@@ -343,7 +344,7 @@ class IFeature:
     def apply_data_model(self, model: 'IModel') -> 'IFeature': pass
     def apply_format(self, fmt: 'IFormat') -> 'IFeature': pass
     def attr(self, name: str): pass
-    def convert(self, target_crs: 'Crs' = None, convertor: 'FeatureConvertor' = None) -> 'IFeature': pass
+    def convert(self, target_crs: 'Crs' = None, converter: 'FeatureConverter' = None) -> 'IFeature': pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'RenderView', style: 'IStyle' = None) -> str: pass
     def transform(self, to_crs) -> 'IFeature': pass
@@ -466,6 +467,7 @@ class ModelProps(Props):
     rules: List['ModelRule'] = None
 
 class ModelRule(Data):
+    editable: bool = None
     expression: str = None
     format: 'FormatStr' = None
     name: str = None

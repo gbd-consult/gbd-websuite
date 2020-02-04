@@ -43,7 +43,7 @@ class FeatureProps(t.Data):
 
 
 #:export
-class FeatureConvertor:
+class FeatureConverter:
     feature_format: t.IFormat
     data_model: t.IModel
 
@@ -54,7 +54,7 @@ class Feature(t.IFeature):
         self.attributes: t.List[t.Attribute] = []
         self.elements = {}
         self.category: str = category
-        self.convertor: FeatureConvertor = None
+        self.converter: FeatureConverter = None
         self.layer: t.ILayer = None
         self.shape: t.IShape = None
         self.style: t.IStyle = None
@@ -112,17 +112,17 @@ class Feature(t.IFeature):
             'geometry': self.shape.props.geometry if self.shape else None
         }
 
-    def convert(self, target_crs: t.Crs = None, convertor: t.FeatureConvertor = None) -> t.IFeature:
+    def convert(self, target_crs: t.Crs = None, converter: t.FeatureConverter = None) -> t.IFeature:
         if self.shape and target_crs:
             self.shape = self.shape.transformed(target_crs)
 
-        convertor = convertor or self.convertor or self.layer
+        converter = converter or self.converter or self.layer
 
-        if convertor:
-            s = getattr(convertor, 'data_model', None)
+        if converter:
+            s = getattr(converter, 'data_model', None)
             if s:
                 self.apply_data_model(s)
-            s = getattr(convertor, 'feature_format', None)
+            s = getattr(converter, 'feature_format', None)
             if s:
                 self.apply_format(s)
 
@@ -154,7 +154,7 @@ class Feature(t.IFeature):
         self.uid = uid
 
         self.elements = elements or {}
-        self.convertor = None
+        self.converter = None
         self.layer = None
 
         self.attributes = []

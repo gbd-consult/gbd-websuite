@@ -40,6 +40,6 @@ class Object(gws.ActionObject):
         if not layer.edit_access(req.user):
             raise gws.web.error.Forbidden()
 
-        fs = layer.edit_operation(op, p.features)
+        features = layer.edit_operation(op, p.features)
 
-        return EditResponse({'features': [f.convert().props for f in fs]})
+        return EditResponse(features=[f.convert().props for f in features])

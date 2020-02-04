@@ -23,17 +23,19 @@ _py_type_to_attr_type = {
 class ModelRule(t.Data):
     """Attribute conversion rule"""
 
-    name: str = ''  #: target attribute name
-    value: t.Optional[str]  #: constant value
-    source: str = ''  #: source attribute
-    title: str = ''  #: target attribute display title
-    type: t.AttributeType = 'str'  #: target attribute type
+    editable: bool = True  #: attribute is editable
+    expression: str = ''  #: attribute conversion expression
     format: t.FormatStr = ''  #: attribute formatter
-    expression: str = ''  #: attribute formatter
+    name: str = ''  #: target attribute name
+    source: str = ''  #: source attribute
+    title: str = ''  #: target attribute title
+    type: t.AttributeType = 'str'  #: target attribute type
+    value: t.Optional[str]  #: constant value
 
 
 class Config(t.Config):
     """Data model."""
+
     rules: t.List[ModelRule]
     geometryType: t.Optional[t.GeometryType]
     crs: t.Optional[t.Crs]
@@ -77,6 +79,7 @@ class Object(gws.Object, t.IModel):
             name=r.name,
             value=self._apply_rule(r, d),
             type=r.type,
+            editable=r.editable,
         ) for r in self.rules]
 
     @property
