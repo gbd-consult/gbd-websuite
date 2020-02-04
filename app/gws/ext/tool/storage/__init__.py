@@ -25,16 +25,15 @@ class Backend(t.Enum):
     sqlite = 'sqlite'
 
 
-class Permission(t.Enum):
+class Mode(t.Enum):
     read = 'read'  #: an object can be read
     write = 'write'  #: an object can be written and deleted
     all = 'all'  #: an object can be read and written
 
 
-class PermissionRule(t.Config):
+class PermissionRule(t.WithAccess):
     category: str  #: storage category name
-    allow: t.Optional[Permission] = 'all'  #: allowed action
-    role: str  #: a role to which this rule applies
+    mode: Mode  #: allowed mode (read/write)
 
 
 class Config(t.WithType):
@@ -117,13 +116,14 @@ class Object(gws.Object):
         self.backend.reset()
 
     def can_read_category(self, category: str, user: t.IUser) -> bool:
+        return self._can_use(category, user, Mode.read)
+
+    def can_write_category(self, category: str, user: t.IUser) -> bool:
+        return self._can_use(category, user, Mode.write)
+    
+    def _can_use(self, category: str, user: t.IUser, mode):   
         for p in self.permissions:
-            if p.category in (category, '*') and user.has_role(p.role) and p.allow in (Permission.read, Permission.all):
+            if p.category in (category, '*') and p.mode in (mode, Mode.all) and user.can_use(p):
                 return True
         return False
 
-    def can_write_category(self, category: str, user: t.IUser) -> bool:
-        for p in self.permissions:
-            if p.category in (category, '*') and user.has_role(p.role) and p.allow in (Permission.write, Permission.all):
-                return True
-        return False

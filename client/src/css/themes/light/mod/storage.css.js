@@ -22,7 +22,12 @@ module.exports = v => ({
         [v.MEDIA('large+')]: {
             ...v.CENTER_BOX(300, 490),
         },
-    }
+    },
 
+    '.modStorageDeleteButton': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('tiny'),
+        ...v.SVG('google:action/delete_forever', v.BORDER_COLOR),
+    },
 
 });

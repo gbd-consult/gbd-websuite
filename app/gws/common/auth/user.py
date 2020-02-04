@@ -15,7 +15,9 @@ class Role(t.IRole):
         self.name = name
 
     def can_use(self, obj, parent=None):
-        return _can_use(self, obj, [self.name], parent)
+        if obj == self:
+            return True
+        return _can_use([self.name], obj, parent)
 
 
 def make_fid(user):
@@ -91,7 +93,9 @@ class User(t.IUser):
         return self.attributes.get(key, default)
 
     def can_use(self, obj, parent=None) -> bool:
-        return _can_use(self, obj, self.roles, parent)
+        if obj == self:
+            return True
+        return _can_use(self.roles, obj, parent)
 
 
 class Guest(User):
@@ -143,7 +147,7 @@ _ROLE_GUEST = 'guest'
 _ROLE_ALL = 'all'
 
 
-def _can_use(who, target, roles, parent):
+def _can_use(roles, target, parent):
     if not target:
         gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r}: empty')
         return False
@@ -152,17 +156,14 @@ def _can_use(who, target, roles, parent):
         gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: _ROLE_ADMIN')
         return True
 
-    if target == who:
-        return True
-
-    c = _check_access(target, target, roles)
+    c = _check_access(roles, target, target)
     if c is not None:
         return c
 
     current = parent or gws.get(target, 'parent')
 
     while current:
-        c = _check_access(target, current, roles)
+        c = _check_access(roles, target, current)
         if c is not None:
             return c
         current = gws.get(current, 'parent')
@@ -171,7 +172,7 @@ def _can_use(who, target, roles, parent):
     return False
 
 
-def _check_access(target, current, roles):
+def _check_access(roles, target, current):
     access = gws.get(current, 'access')
 
     if not access:

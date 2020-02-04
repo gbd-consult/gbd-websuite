@@ -18,11 +18,35 @@ tools+ {
     path "/gws-var/test_storage.sqlite"
 
     permissions [
-        { category "cat_read" allow "read" role "testrole" }
-        { category "cat_write" allow "write" role "testrole" }
-        { category "cat_all_other_read" allow "all" role "testrole" }
-        { category "cat_all_other_read" allow "read" role "other" }
-        { category "*" allow "all" role "power" }
+        { category "cat_read"  mode "read"
+            access [
+                {role "testrole" type "allow"}
+            ]
+        }
+
+        { category "cat_write" mode "write"
+            access [
+                {role "testrole" type "allow"}
+            ]
+        }
+
+        { category "cat_all_other_read" mode "read"
+            access [
+                { role "other" type "allow" }
+            ]
+        }
+
+        { category "cat_all_other_read" mode "all"
+            access [
+                { role "testrole" type "allow" }
+            ]
+        }
+
+        { category "*" mode "all"
+            access [
+                { role "power" type "allow" }
+            ]
+        }
     ]
 
 }

@@ -129,7 +129,7 @@ class Dialog extends gws.View<ViewProps> {
                             focusRef={mode === 'read' ? this.focusRef : null}
                             items={listItems}
                             rightButton={item => dir.writable && <gws.ui.Button
-                                className="uiClearButton"
+                                className="modStorageDeleteButton"
                                 whenTouched={() => cc.doDelete(category, item.text)}
                             />}
                             whenChanged={update}/>
