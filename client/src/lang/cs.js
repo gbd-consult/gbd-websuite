@@ -88,6 +88,7 @@ module.exports = {
     modLensOverlayCancelButton: 'Zavřít',
     modLensOverlayDrawButton: 'Kreslit',
     modLensToolbarButton: 'Prostorové hledání',
+    modLocationToolbarButton: 'Aktuálni poloha',
     modOverviewCenterX: 'Střed-X',
     modOverviewCenterY: 'Střed-Y',
     modOverviewExtent: 'Rozměr',
