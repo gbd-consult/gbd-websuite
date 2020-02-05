@@ -164,7 +164,7 @@ class Object(ows.Base):
             limit=min(limit, MAX_LIMIT),
             resolution=xres,
             shapes=[point],
-            tolerance=pixel_tolerance * xres,
+            tolerance=(pixel_tolerance, 'px'),
         )
 
         return gws.common.search.runner.run(rd.req, args)

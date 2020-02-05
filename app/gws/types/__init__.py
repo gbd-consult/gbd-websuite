@@ -80,6 +80,9 @@ Point = Tuple[float, float]
 #:alias Size [width, height]
 Size = Tuple[float, float]
 
+#:alias A value with a unit
+Measurement = Tuple[float, str]
+
 
 class Axis(Enum):
     xy = 'xy'
@@ -401,7 +404,7 @@ class IShape:
     y: float = None
     def intersects(self, shape: 'IShape') -> bool: pass
     def to_type(self, new_type: 'GeometryType') -> 'IShape': pass
-    def tolerance_buffer(self, tolerance, resolution=None) -> 'IShape': pass
+    def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': pass
     def transformed(self, to_crs, **kwargs) -> 'IShape': pass
 
 class IStyle:
@@ -547,16 +550,16 @@ class SearchArgs(Data):
     resolution: float = None
     shapes: List['IShape'] = None
     source_layer_names: List[str] = None
-    tolerance: int = None
+    tolerance: 'Measurement' = None
 
 class SelectArgs(Data):
     extra_where: Optional[str] = None
     keyword: Optional[str] = None
     limit: Optional[int] = None
+    map_tolerance: Optional[float] = None
     shape: Optional['IShape'] = None
     sort: Optional[str] = None
     table: 'SqlTable' = None
-    tolerance: Optional[float] = None
     uids: Optional[List[str]] = None
 
 class ShapeProps(Props):
@@ -888,7 +891,7 @@ class IRequest(IBaseRequest):
 class ISearchProvider(IObject):
     data_model: 'IModel' = None
     feature_format: 'IFormat' = None
-    pixel_tolerance: int = None
+    tolerance: 'Measurement' = None
     with_geometry: str = None
     with_keyword: str = None
     def can_run(self, args: 'SearchArgs'): pass

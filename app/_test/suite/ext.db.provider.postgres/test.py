@@ -9,7 +9,7 @@ import _test.common.const as cc
 _REPROJECTION_ERROR_TOLERANCE = 10
 
 
-def test_find_points():
+def test_find_points_in_extent():
     x, y = cc.POINTS.paris
     bbox = x, y, x + 101, y + 101
     sh = gws.gis.shape.from_extent(bbox, 'EPSG:3857')
@@ -46,6 +46,66 @@ def test_find_points():
         }
     ]
 
+    assert u.short_features(r['features']) == exp
+
+
+def test_find_points_from_point():
+    x, y = cc.POINTS.paris
+    sh = gws.gis.shape.from_geometry({'type': 'Point', 'coordinates': [x, y]}, 'EPSG:3857')
+
+    r = u.cmd('searchFindFeatures', {
+        'projectUid': 'a',
+        'layerUids': ['a.map.paris_3857'],
+        'resolution': 1,
+        'shapes': [sh.props]
+    })
+
+    r = r.json()
+
+    exp = [
+        {
+            "attributes": "id=<1> p_str=<paris_3857/1> p_int=<100> p_date=<2019-01-01>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.paris_3857___1"
+        },
+    ]
+
+    assert u.short_features(r['features']) == exp
+
+
+def test_find_points_from_point_with_tolerance():
+    # search a point 5 meters off with
+    # 1) no tolerance (empty)
+    # 2) tolerance=3 (empty)
+    # 3) tolerance=8 (which os >5*sqrt(2)) (should be ok)
+
+    x, y = cc.POINTS.paris
+    sh = gws.gis.shape.from_geometry({'type': 'Point', 'coordinates': [x - 5, y + 5]}, cc.CRS_3857)
+    params = {
+        'projectUid': 'a',
+        'layerUids': ['a.map.paris_3857'],
+        'resolution': 1,
+        'shapes': [sh.props]
+    }
+
+    exp = [
+        {
+            "attributes": "id=<1> p_str=<paris_3857/1> p_int=<100> p_date=<2019-01-01>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "a.map.paris_3857___1"
+        },
+    ]
+
+    r = u.cmd('searchFindFeatures', gws.extend(params, {'tolerance': '0'}))
+    r = r.json()
+    assert u.short_features(r['features']) == []
+
+    r = u.cmd('searchFindFeatures', gws.extend(params, {'tolerance': '3m'}))
+    r = r.json()
+    assert u.short_features(r['features']) == []
+
+    r = u.cmd('searchFindFeatures', gws.extend(params, {'tolerance': '8m'}))
+    r = r.json()
     assert u.short_features(r['features']) == exp
 
 

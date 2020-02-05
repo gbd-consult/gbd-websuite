@@ -3,12 +3,15 @@ import gws.gis.shape
 import gws.common.format
 import gws.common.model
 import gws.common.template
+import gws.tools.units
 import gws.types as t
+
+_DEFAULT_PIXEL_TOLERANCE = 10
 
 
 class ParameterUsage(t.Enum):
-    yes = 'yes'
-    no = 'no'
+    allowed = 'allowed'
+    forbidden = 'forbidden'
     required = 'required'
     ignored = 'ignored'
 
@@ -17,9 +20,9 @@ class Config(t.WithTypeAndAccess):
     defaultContext: str = ''  #: default spatial context ('view' or 'map')
     featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
     dataModel: t.Optional[gws.common.model.Config]  #: feature data model
-    pixelTolerance: int = 5
-    withGeometry: ParameterUsage = 'yes'
-    withKeyword: ParameterUsage = 'yes'
+    tolerance: str = '10px'  #: tolerance, in pixels or map units
+    withGeometry: ParameterUsage = 'allowed'  #: whether to use geometry with this search
+    withKeyword: ParameterUsage = 'allowed'  #: whether to use keywords with this search
 
 
 #:export ISearchProvider
@@ -27,44 +30,42 @@ class Object(gws.Object, t.ISearchProvider):
     def __init__(self):
         super().__init__()
 
+        self.data_model: t.IModel = None
+        self.feature_format: t.IFormat = None
+        self.tolerance: t.Measurement = (_DEFAULT_PIXEL_TOLERANCE, 'px')
         self.with_geometry = ''
         self.with_keyword = ''
 
-        self.pixel_tolerance: int = 0
-
-        self.feature_format: t.IFormat = None
-        self.data_model: t.IModel = None
-
     def configure(self):
         super().configure()
-
-        p = self.var('featureFormat')
-        if p:
-            self.feature_format = self.add_child('gws.common.format', p)
 
         p = self.var('dataModel')
         if p:
             self.data_model = self.add_child('gws.common.model', p)
 
+        p = self.var('featureFormat')
+        if p:
+            self.feature_format = self.add_child('gws.common.format', p)
+
+        p = self.var('tolerance')
+        if p:
+            self.tolerance = gws.tools.units.parse(p, units=['px', 'm'], default='px')
+
         self.with_keyword = self.var('withKeyword')
         self.with_geometry = self.var('withGeometry')
 
-        self.pixel_tolerance = self.var('pixelTolerance')
-
-    # Parameter usage:
-    #          yes  no   required
-    # present  ok   ERR  ok
-    # missing  ok   ok   ERR
-
     def can_run(self, args: t.SearchArgs):
-        if args.keyword and self.with_keyword == 'no':
+        # usage:           allowed   forbidden   required
+        # param present    ok        ERR         ok
+        # param missing    ok        ok          ERR
+        if args.keyword and self.with_keyword == ParameterUsage.forbidden:
             return False
-        if not args.keyword and self.with_keyword == 'required':
+        if not args.keyword and self.with_keyword == ParameterUsage.required:
             return False
         geom = args.bounds or args.shapes
-        if geom and self.with_geometry == 'no':
+        if geom and self.with_geometry == ParameterUsage.forbidden:
             return False
-        if not geom and self.with_geometry == 'required':
+        if not geom and self.with_geometry == ParameterUsage.required:
             return False
         return args.keyword or geom
 

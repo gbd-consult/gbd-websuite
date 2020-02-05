@@ -54,10 +54,15 @@ class Object(gws.common.ows.provider.Object):
 
         bounds = args.bounds
         shape = None
+
         if args.shapes:
-            shape = gws.gis.shape.union(args.shapes)
-            if shape.type == t.GeometryType.point:
-                shape = shape.tolerance_buffer(args.get('tolerance'))
+            map_tolerance = 0
+
+            if args.tolerance:
+                n, u = args.tolerance
+                map_tolerance = n * (args.resolution or 1) if u == 'px' else n
+
+            shape = gws.gis.shape.union(args.shapes).tolerance_polygon(map_tolerance)
             bounds = shape.bounds
 
         our_crs = gws.gis.util.best_crs(bounds.crs, self.supported_crs)

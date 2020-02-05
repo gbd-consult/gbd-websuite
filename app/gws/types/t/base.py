@@ -21,6 +21,9 @@ Point = Tuple[float, float]
 #:alias Size [width, height]
 Size = Tuple[float, float]
 
+#:alias A value with a unit
+Measurement = Tuple[float, str]
+
 
 class Axis(Enum):
     xy = 'xy'

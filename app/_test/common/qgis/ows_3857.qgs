@@ -480,7 +480,9 @@ def my_form_open(dialog, layer, feature):
       <Ellipsoid type="QString">GRS80</Ellipsoid>
     </Measure>
     <WMTSMinScale type="int">5000</WMTSMinScale>
-    <WFSLayers type="QStringList"/>
+    <WFSLayers type="QStringList">
+      <value>points_dus3_3857_2105de61_9a52_4a49_8d50_1e2a92321e81</value>
+    </WFSLayers>
     <Measurement>
       <AreaUnits type="QString">m2</AreaUnits>
       <DistanceUnits type="QString">meters</DistanceUnits>

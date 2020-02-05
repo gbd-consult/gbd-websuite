@@ -5,6 +5,7 @@ import gws.gis.feature
 import gws.tools.json2
 import gws.common.template
 import gws.common.search.runner
+import gws.tools.units
 
 import gws.types as t
 
@@ -26,8 +27,8 @@ class Params(t.Params):
     crs: t.Optional[t.Crs]
     keyword: str = ''
     layerUids: t.List[str]
-    limit: int = 0
-    pixelTolerance: int = 0
+    limit: t.Optional[int]
+    tolerance: t.Optional[str]
     resolution: float
     shapes: t.Optional[t.List[t.ShapeProps]]
     withAttributes: bool = True
@@ -60,11 +61,13 @@ class Object(gws.ActionObject):
             bounds=bounds,
             keyword=(p.keyword or '').strip(),
             layers=gws.compact(req.acquire('gws.ext.layer', uid) for uid in p.layerUids),
-            limit=min(p.limit, self.limit) if p.limit else self.limit,
+            limit=min(p.limit, self.limit) if p.get('limit') else self.limit,
             project=project,
             resolution=p.resolution,
             shapes=[gws.gis.shape.from_props(s) for s in p.shapes] if p.get('shapes') else [],
-            tolerance=p.pixelTolerance,
+            tolerance=(
+                gws.tools.units.parse(p.tolerance, units=['px', 'm'], default='px')
+                if p.get('tolerance') else None),
         )
 
         features = gws.common.search.runner.run(req, args)

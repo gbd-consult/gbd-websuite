@@ -25,7 +25,9 @@ def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
         f"project={args.project.uid if args.project else None}",
         f"resolution={args.resolution}",
         f"shapes={[p.props for p in (args.shapes or [])]}",
+        f"tolerance={args.tolerance}",
     ]
+
     gws.p(dbg)
 
     try:

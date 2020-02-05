@@ -23,6 +23,7 @@ _xml_types = {
     t.AttributeType.int: 'xsd:integer',
     t.AttributeType.list: None,
     t.AttributeType.str: 'xsd:string',
+    t.AttributeType.text: 'xsd:string',
     t.AttributeType.time: 'xsd:time',
     t.GeometryType.curve: 'gml:CurvePropertyType',
     t.GeometryType.geomcollection: 'gml:MultiGeometryPropertyType',
@@ -136,7 +137,8 @@ class Object(ows.Base):
             shapes=[shape],
             layers=[n.layer for n in nodes],
             limit=min(limit, MAX_LIMIT),
-            tolerance=10
+            tolerance=(10, 'px'),
+            resolution=1,
         )
 
         features = gws.common.search.runner.run(rd.req, args)

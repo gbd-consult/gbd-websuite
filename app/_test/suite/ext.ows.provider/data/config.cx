@@ -11,7 +11,8 @@ api.actions+ { type "search" }
 api.actions+ { type "asset" }
 api.actions+ { type "project" }
 
-@let URL = "http://mainhost:9995?MAP=/qgis/ows_25832.qgs"
+@let URL_25832 = "http://mainhost:9995?MAP=/qgis/ows_25832.qgs"
+@let URL_3857 = "http://mainhost:9995?MAP=/qgis/ows_3857.qgs"
 
 projects+ {
     uid "a"
@@ -26,7 +27,7 @@ projects+ {
         title "wfs_points_ghana_25832"
         type "wfs"
         display "box"
-        url "{{URL}}"
+        url "{{URL_25832}}"
         sourceLayers.names ["points_ghana_25832"]
         style {
             type "css"
@@ -41,7 +42,7 @@ projects+ {
         title "wfs_squares_memphis_25832"
         type "wfs"
         display "box"
-        url "{{URL}}"
+        url "{{URL_25832}}"
         sourceLayers.names ["squares_memphis_25832"]
         featureFormat.label {
             type "html"
@@ -64,7 +65,7 @@ projects+ {
     map.layers+ {
         title "wms_points_ghana_25832"
         type "wms"
-        url "{{URL}}"
+        url "{{URL_25832}}"
         sourceLayers.names ["points_ghana_25832"]
     }
 
@@ -72,10 +73,28 @@ projects+ {
     map.layers+ {
         title "wmts_squares_mexico_25832"
         type "wmts"
-        url "{{URL}}"
+        url "{{URL_25832}}"
     }
 
 
 
     @include /common/client.cx
+}
+
+projects+ {
+    uid "b"
+
+    map.crs "EPSG:3857"
+    map.extent [
+        -20026376.39 -20048966.10
+        20026376.39  20048966.10
+    ]
+
+    map.layers+ {
+        title "wfs_points_dus3_3857"
+        type "wfs"
+        url "{{URL_3857}}"
+        sourceLayers.names ["points_dus3_3857"]
+    }
+
 }

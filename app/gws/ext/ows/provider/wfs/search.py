@@ -21,8 +21,8 @@ class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
 
-        self.with_geometry = 'required'
-        self.with_keyword = 'no'
+        self.with_geometry = gws.common.search.provider.ParameterUsage.required
+        self.with_keyword = gws.common.search.provider.ParameterUsage.forbidden
 
         layer = self.var('layer')
         if layer:
@@ -37,4 +37,5 @@ class Object(gws.common.search.provider.Object):
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         args.source_layer_names = [sl.name for sl in self.source_layers]
+        args.tolerance = args.tolerance or self.tolerance
         return self.provider.find_features(args)

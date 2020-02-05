@@ -137,6 +137,48 @@ def test_find_points_with_reprojection():
     assert u.short_features(r['features']) == exp
 
 
+def test_find_points_from_point():
+    x, y = cc.POINTS.dus3
+    point_exact = gws.gis.shape.from_geometry({'type': 'Point', 'coordinates': [x, y]}, cc.CRS_3857)
+    point_offset = gws.gis.shape.from_geometry({'type': 'Point', 'coordinates': [x + 5, y - 5]}, cc.CRS_3857)
+
+    params = {
+        'projectUid': 'b',
+        'layerUids': ['b.map.wfs_points_dus3_3857'],
+        'crs': cc.CRS_3857,
+        'resolution': 1,
+    }
+
+    exp = [
+        {
+            "attributes": "gml_id=<points_dus3_3857.1> id=<1> p_date=<2019-01-01 00:00:00> p_int=<100> p_str=<points_dus3_3857/1>",
+            "geometry": "POINT EPSG:3857",
+            "uid": "b.map.wfs_points_dus3_3857___1"
+        },
+    ]
+
+    r = u.cmd('searchFindFeatures', gws.extend(params, {'shapes': [point_exact.props]}))
+    r = r.json()
+    assert u.short_features(r['features']) == exp
+
+    # search a point 5 meters off with
+    # 1) no tolerance (empty)
+    # 2) tolerance=3 (empty)
+    # 3) tolerance=8 (which os >5*sqrt(2)) (should be ok)
+
+    r = u.cmd('searchFindFeatures', gws.extend(params, {'shapes': [point_offset.props], 'tolerance': '0'}))
+    r = r.json()
+    assert u.short_features(r['features']) == []
+
+    r = u.cmd('searchFindFeatures', gws.extend(params, {'shapes': [point_offset.props], 'tolerance': '3m'}))
+    r = r.json()
+    assert u.short_features(r['features']) == []
+
+    r = u.cmd('searchFindFeatures', gws.extend(params, {'shapes': [point_offset.props], 'tolerance': '8m'}))
+    r = r.json()
+    assert u.short_features(r['features']) == exp
+
+
 def test_render():
     x, y = cc.POINTS.memphis
     bbox = (x - 300, y, x, y + 300,)

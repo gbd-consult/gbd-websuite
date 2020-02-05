@@ -18,4 +18,4 @@ class SearchArgs(t.Data):
     resolution: float
     shapes: t.List[t.IShape]
     source_layer_names: t.List[str]
-    tolerance: int
+    tolerance: t.Measurement

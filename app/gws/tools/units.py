@@ -1,6 +1,8 @@
 import re
 import gws
 
+import gws.types as t
+
 # OGC's 1px = 0.28mm
 # https://portal.opengeospatial.org/files/?artifact_id=14416 page 27
 
@@ -78,31 +80,46 @@ _unit_re = re.compile(r'''(?x)
 ''')
 
 
-def parse(s, unit=None):
+_METRIC = {
+    'mm': 1,
+    'cm': 10,
+    'm': 1e3,
+    'km': 1e6,
+}
+
+def parse(s: str, units: t.List=[], default=None) -> t.Measurement:
     if isinstance(s, (int, float)):
-        if not unit:
-            raise ValueError('parse_unit: unit required', s)
-        n = float(s)
-        u = gws.as_str(unit).lower()
-    else:
-        s = gws.as_str(s).strip()
-        m = _unit_re.match(s)
-        if not m:
-            raise ValueError('parse_unit: not a number', s)
-        n = float(m.group('number'))
-        u = (m.group('rest').strip() or unit).lower()
+        if not default:
+            raise ValueError(f'invalid unit value: {s!r}')
+        return s, default
 
-    if u == 'm':
-        u = 'mm'
-        n *= 1000
+    s = gws.as_str(s).strip()
+    m = _unit_re.match(s)
+    if not m:
+        raise ValueError(f'invalid unit value: {s!r}')
 
-    elif u == 'cm':
-        u = 'mm'
-        n *= 100
+    n = float(m.group('number'))
+    u = m.group('rest').strip().lower()
 
-    if u not in ('mm', 'in', 'px'):
-        raise ValueError('parse_unit: invalid unit', s)
+    if not units and default:
+        units = [default]
 
-    return n, u
+    if not u:
+        if not default:
+            raise ValueError(f'invalid unit value: {s!r}')
+        return n, default
 
+    if u in units:
+        return n, u
 
+    # e.g. 1cm given, but only mm allowed
+
+    if u in _METRIC:
+        mm = n * _METRIC[u]
+        for unit, f in _METRIC.items():
+            if unit in units:
+                return mm / f, unit
+
+    # @TODO: in, ft etc
+
+    raise ValueError(f'invalid unit value: {s!r}')

@@ -1,7 +1,7 @@
 import os
 import re
 import datetime
-import itertools
+import pytest
 
 import wand.image
 import requests
@@ -19,6 +19,10 @@ import gws.tools.vendor.umsgpack as umsgpack
 import gws.types as t
 
 DIR = os.path.dirname(__file__)
+
+
+def raises(exc):
+    return pytest.raises(exc)
 
 
 def read(path, mode='rt'):

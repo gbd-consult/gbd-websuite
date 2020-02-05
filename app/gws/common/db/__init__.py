@@ -32,14 +32,14 @@ class SqlTable(t.Data):
 
 #:export
 class SelectArgs(t.Data):
+    extra_where: t.Optional[str]
     keyword: t.Optional[str]
     limit: t.Optional[int]
-    tolerance: t.Optional[float]
+    map_tolerance: t.Optional[float]
     shape: t.Optional[t.IShape]
     sort: t.Optional[str]
     table: t.SqlTable
     uids: t.Optional[t.List[str]]
-    extra_where: t.Optional[str]
 
 
 #:export

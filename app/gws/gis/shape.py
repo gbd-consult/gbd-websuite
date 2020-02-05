@@ -12,6 +12,7 @@ import gws.gis.proj
 import gws.types as t
 
 _DEFAULT_POINT_BUFFER_RESOLUTION = 6
+_MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
 _CIRCLE_RESOLUTION = 16
 
 
@@ -76,13 +77,15 @@ def from_xy(x, y, crs) -> t.IShape:
     return Shape(shapely.geometry.Point(x, y), crs)
 
 
-def union(shapes) -> t.Optional[t.IShape]:
+def union(shapes) -> t.IShape:
     if not shapes:
-        return
+        raise ValueError('empty union')
 
     shapes = list(shapes)
+
     if len(shapes) == 0:
-        return
+        raise ValueError('empty union')
+
     if len(shapes) == 1:
         return shapes[0]
 
@@ -173,13 +176,17 @@ class Shape(t.IShape):
         s: Shape = shape
         return self.geom.intersects(s.geom)
 
-    def tolerance_buffer(self, tolerance, resolution=None) -> t.IShape:
-        if not tolerance:
+    def tolerance_polygon(self, tolerance, resolution=None) -> t.IShape:
+        is_poly = self.type in (t.GeometryType.polygon, t.GeometryType.multipolygon)
+
+        if not tolerance and is_poly:
             return self
 
+        # we need a polygon even if tolerance = 0
+        tolerance = tolerance or _MIN_TOLERANCE_POLYGON
         resolution = resolution or _DEFAULT_POINT_BUFFER_RESOLUTION
 
-        if 'polygon' in self.type:
+        if is_poly:
             cs = shapely.geometry.CAP_STYLE.flat
             js = shapely.geometry.JOIN_STYLE.mitre
         else:

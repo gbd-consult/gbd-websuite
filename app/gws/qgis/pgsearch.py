@@ -49,10 +49,12 @@ class Object(gws.common.search.provider.Object):
         return args.shapes and not args.keyword
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
-        return self.db.select(t.SelectArgs({
-            'table': self.table,
-            'shape': self.context_shape(args),
-            'limit': args.limit,
-            'tolerance': args.tolerance,
-            'extra_where': self.extra_where,
-        }))
+        n, u = args.tolerance or self.tolerance
+        map_tolerance = n * args.resolution if u == 'px' else n
+        return self.db.select(t.SelectArgs(
+            table=self.table,
+            shape=self.context_shape(args),
+            limit=args.limit,
+            map_tolerance=map_tolerance,
+            extra_where=self.extra_where,
+        ))

@@ -77,7 +77,7 @@ class Object(gws.common.db.provider.Sql):
         with self.connect(extra_connect_params) as conn:
 
             where = []
-            parms = []
+            values = []
 
             search_col = args.table.search_column
             geom_col = args.table.geometry_column
@@ -86,16 +86,16 @@ class Object(gws.common.db.provider.Sql):
 
             kw = args.keyword
             if kw and search_col:
+                # @TODO search mode (startsWith, contains, exact etc)
                 kw = kw.lower().replace('%', '').replace('_', '')
                 where.append(f'{conn.quote_ident(search_col)} ILIKE %s')
-                parms.append('%' + kw + '%')
+                values.append('%' + kw + '%')
 
             shape = args.shape
             if shape and geom_col:
-                shape = shape.tolerance_buffer(args.tolerance).transformed(crs)
-                where.append(f'ST_Intersects(ST_SetSRID(%s::geometry,%s), "{geom_col}")')
-                parms.append(shape.wkb_hex)
-                parms.append(crs.split(':')[1])
+                shape = shape.tolerance_polygon(args.map_tolerance).transformed(crs)
+                where.append(f'ST_Intersects(%s::geometry, "{geom_col}")')
+                values.append(shape.ewkb_hex)
 
             uids = args.uids
             if uids:
@@ -103,7 +103,7 @@ class Object(gws.common.db.provider.Sql):
                     return []
                 ph = ','.join(['%s'] * len(uids))
                 where.append(f'{conn.quote_ident(key_col)} IN ({ph})')
-                parms.extend(uids)
+                values.extend(uids)
 
             if args.extra_where:
                 where.append('(%s)' % args.extra_where.replace('%', '%%'))
@@ -126,8 +126,8 @@ class Object(gws.common.db.provider.Sql):
 
             sql = f'SELECT * FROM {conn.quote_table(args.table.name)} WHERE {where} {sort} {limit}'
 
-            gws.log.debug(f'SELECT_FEATURES_START {sql} p={parms}')
-            recs = list(r for r in conn.select(sql, parms))
+            gws.log.debug(f'SELECT_FEATURES_START {sql} p={values}')
+            recs = list(r for r in conn.select(sql, values))
             gws.log.debug(f'SELECT_FEATURES_END len={len(recs)}')
 
             return [self._record_to_feature(args.table, r) for r in recs]

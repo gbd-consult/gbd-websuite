@@ -180,7 +180,7 @@ def _num_pair(s):
 
 
 def _parse_size(size):
-    w, uw = gws.tools.units.parse(size[0], 'mm')
-    h, uh = gws.tools.units.parse(size[1], 'mm')
+    w, uw = gws.tools.units.parse(size[0], default='mm')
+    h, uh = gws.tools.units.parse(size[1], default='mm')
     # @TODO inches etc
     return int(w), int(h)

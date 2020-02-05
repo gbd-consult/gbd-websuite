@@ -2,6 +2,7 @@ import gws.common.layer
 import gws.gis.shape
 import gws.gis.feature
 import gws.common.db
+import gws.common.search.provider
 import gws.gis.extent
 import gws.gis.shape
 
@@ -52,7 +53,7 @@ class Object(gws.common.layer.Vector):
 
     @property
     def props(self):
-        return super().props.extend(geometryType=self.table.geometry_type.upper())
+        return super().props.extend(geometryType=self.table.geometry_type)
 
     @property
     def default_search_provider(self):
@@ -60,8 +61,6 @@ class Object(gws.common.layer.Vector):
             uid=self.uid + '.default_search',
             db=self.provider.uid,
             table=self.var('table'),
-            withGeometry='required',
-            withKeyword='no',
         ))
 
     def get_features(self, bounds, limit=0) -> t.List[t.IFeature]:
