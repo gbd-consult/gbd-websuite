@@ -89,7 +89,8 @@ class AnnotateFeature extends gws.map.Feature {
         p.elements = {
             shapeType: this.shapeType,
             labelTemplate: this.labelTemplate,
-        }
+            label: this.format(this.labelTemplate),
+        };
         return p;
     }
 

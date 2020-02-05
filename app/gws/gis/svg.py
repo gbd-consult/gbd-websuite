@@ -232,6 +232,11 @@ def _text(cx, cy, label, sv):
 
     text = _tag('text', atts, ''.join(reversed(spans)))
 
+    # @TODO a hack to emulate 'paint-order' which wkhtmltopdf doesn't seem to support
+    if atts.get('stroke'):
+        atts2 = {k: v for k, v in atts.items() if not k.startswith('stroke')}
+        text += _tag('text', atts2, ''.join(reversed(spans)))
+
     if not sv.label_background:
         return text
 
