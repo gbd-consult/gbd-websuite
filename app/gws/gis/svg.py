@@ -32,10 +32,11 @@ def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale:
 
     extra_y_offset = 0
 
-    if geom.type == 'Point':
-        extra_y_offset = 12
-    if geom.type == 'LineString':
-        extra_y_offset = 6
+    if sv.label_offset_y is None:
+        if geom.type == 'Point':
+            extra_y_offset = 12
+        if geom.type == 'LineString':
+            extra_y_offset = 6
 
     # @TODO with_label, scale
     if label:
@@ -162,7 +163,7 @@ def _label_position(geom, sv, extra_y_offset=0):
         x, y = c.x, c.y
     return (
         round(x) + (sv.label_offset_x or 0),
-        round(y) + extra_y_offset + (sv.label_offset_y or 0)
+        round(y) + extra_y_offset + (sv.label_font_size >> 1) + (sv.label_offset_y or 0)
     )
 
 
