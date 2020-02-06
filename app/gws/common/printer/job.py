@@ -289,7 +289,7 @@ class _Worker:
 
         s = item.get('style')
         if s:
-            s = gws.common.style.from_props(s)
+            s = gws.common.style.from_props(self.project.root, s)
         if s:
             ii.style = s
 

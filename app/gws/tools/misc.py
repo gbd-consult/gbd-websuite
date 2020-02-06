@@ -67,6 +67,16 @@ def find_files(dirname, pattern=None):
             yield path
 
 
+def read_file(path, mode='rt'):
+    with open(path, mode) as fp:
+        return fp.read()
+
+
+def write_file(path, s, mode='wt'):
+    with open(path, mode) as fp:
+        return fp.write(s)
+
+
 def ensure_dir(path, base=None, mode=0o755):
     if base:
         path = os.path.join(base, path)

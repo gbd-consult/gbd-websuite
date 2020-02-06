@@ -3,6 +3,7 @@ import shapely.ops
 import shapely.geometry
 import svgis
 from PIL import ImageFont
+import bs4
 import wand.image
 
 import gws
@@ -25,10 +26,22 @@ def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale:
     marker = ''
     marker_id = ''
     text = ''
+    icon = ''
 
     if sv.marker:
         marker_id = '_M' + gws.random_string(8)
         marker = _marker(marker_id, sv)
+
+    if sv.icon:
+        ico = _parse_icon(sv.icon, dpi)
+        if not ico:
+            gws.log.warn(f'cannot parse icon {sv.icon!r}')
+        else:
+            svg, w, h = ico
+            x, y = _icon_position(geom, svg, w, h)
+            svg['x'] = f'{x}px'
+            svg['y'] = f'{y}px'
+            icon = str(svg)
 
     extra_y_offset = 0
 
@@ -58,7 +71,7 @@ def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale:
         atts['fill'] = 'none'
 
     g = svgis.draw.geometry(shapely.geometry.mapping(geom), **gws.compact(atts))
-    return marker + g + text
+    return marker + g + icon + text
 
 
 def to_png(elements, size: t.Size):
@@ -167,14 +180,59 @@ def _label_position(geom, sv, extra_y_offset=0):
     )
 
 
-def _get_points(geom):
-    t = geom.type
+_PFX_SVF_UTF8 = 'data:image/svg+xml;utf8,'
 
-    if t in ('Point', 'LineString', 'LinearRing'):
+
+def _parse_icon(s, dpi):
+    content = None
+
+    if s.startswith(_PFX_SVF_UTF8):
+        content = s[len(_PFX_SVF_UTF8):]
+
+    if not content:
+        return
+
+    # @TODO
+    svg = bs4.BeautifulSoup(content, 'lxml-xml').svg
+    if not svg:
+        return
+
+    w = svg.attrs.get('width')
+    h = svg.attrs.get('height')
+
+    if not w or not h:
+        return
+
+    try:
+        w, wu = units.parse(w, units=['px', 'mm'], default='px')
+        h, hu = units.parse(h, units=['px', 'mm'], default='px')
+    except ValueError:
+        return
+
+    if wu == 'mm':
+        w = units.mm2px(w, dpi)
+    if hu == 'mm':
+        h = units.mm2px(h, dpi)
+
+    svg['width'] = f'{w}px'
+    svg['height'] = f'{h}px'
+
+    return svg, w, h
+
+
+def _icon_position(geom, sv, width, height):
+    c = geom.centroid
+    return c.x - (int(width) >> 1), c.y - (int(height) >> 1)
+
+
+def _get_points(geom):
+    gt = geom.type
+
+    if gt in ('Point', 'LineString', 'LinearRing'):
         return geom.coords
-    if t in ('Polygon', 'LineString', 'LinearRing'):
+    if gt in ('Polygon', 'LineString', 'LinearRing'):
         return geom.exterior.coords
-    if t.startswith('Multi'):
+    if gt.startswith('Multi'):
         return [p for g in geom.geoms for p in _get_points(g)]
 
 

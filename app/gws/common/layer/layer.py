@@ -201,13 +201,9 @@ class Layer(gws.Object, t.ILayer):
 
         p = self.var('style')
         if p:
-            self.style = gws.common.style.from_config(p)
+            self.style = gws.common.style.from_config(self.root, p)
         else:
-            self.style = gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES))
-
-        p = self.var('editStyle')
-        if p:
-            self.edit_style = gws.common.style.from_config(p)
+            self.style = gws.common.style.from_props(self.root, t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES))
 
         p = self.var('edit')
         if p:

@@ -683,6 +683,7 @@ class StyleType(Enum):
 
 class StyleValues(Data):
     fill: Optional['Color'] = None
+    icon: Optional[str] = None
     label_align: Optional['StyleLabelAlign'] = None
     label_background: Optional['Color'] = None
     label_fill: Optional['Color'] = None

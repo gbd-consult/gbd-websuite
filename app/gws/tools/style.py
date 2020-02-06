@@ -1,6 +1,9 @@
 import re
 
 import gws
+import gws.tools.net
+import gws.tools.misc
+
 import gws.types as t
 
 
@@ -28,6 +31,7 @@ class StyleMarker(t.Enum):
 class StyleLabelOption(t.Enum):
     all = 'all'
     none = 'none'
+
 
 #:export
 class StyleGeometryOption(t.Enum):
@@ -110,6 +114,7 @@ class StyleValues(t.Data):
     label_stroke_width: t.Optional[int]
 
     point_size: t.Optional[int]
+    icon: t.Optional[str]
 
 
 ##
@@ -127,6 +132,28 @@ def _color(val):
     val = re.sub(r'\s+', '', str(val))
     if any(re.match(p, val) for p in _color_patterns):
         return val
+
+
+def _icon(val, url_root):
+    s = val
+    m = re.match(r'^url\((.+?)\)$', val)
+    if m:
+        s = m.group(1).strip('\'\"')
+    try:
+        return _to_data_url(s, url_root)
+    except Exception as e:
+        raise gws.Error(f'cannot load {val!r}') from e
+
+
+def _to_data_url(val, url_root):
+    if val.startswith('data:'):
+        return val
+    if re.match(r'^https?:', val):
+        svg = gws.tools.net.http_request(val).text
+    else:
+        svg = gws.tools.misc.read_file(url_root + val)
+    svg = svg.replace('\n', '')
+    return 'data:image/svg+xml;utf8,' + svg
 
 
 def _px(val):
@@ -232,9 +259,10 @@ class _Parser:
     label_stroke_width = _px
 
     point_size = _px
+    icon = _icon
 
 
-def from_css_dict(d: dict) -> t.StyleValues:
+def from_css_dict(d: dict, url_root: str = None) -> t.StyleValues:
     values = t.StyleValues()
 
     with_geometry = 'none'
@@ -248,7 +276,7 @@ def from_css_dict(d: dict) -> t.StyleValues:
             k = k[2:]
         fn = getattr(_Parser, k, None)
         if fn:
-            v = fn(v)
+            v = fn(v, url_root) if fn == _icon else fn(v)
             if v is not None:
                 if k.startswith('label'):
                     with_label = 'all'
@@ -263,7 +291,7 @@ def from_css_dict(d: dict) -> t.StyleValues:
 
 
 # @TODO use a real parser
-def from_css_text(text) -> t.StyleValues:
+def from_css_text(text, url_root: str = None) -> t.StyleValues:
     d = {}
     for r in text.split(';'):
         r = r.strip()
@@ -271,4 +299,4 @@ def from_css_text(text) -> t.StyleValues:
             continue
         r = r.split(':')
         d[r[0].strip()] = r[1].strip()
-    return from_css_dict(d)
+    return from_css_dict(d, url_root)

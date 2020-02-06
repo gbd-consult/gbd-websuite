@@ -38,6 +38,8 @@ module.exports = [
     'marker-stroke-width',
 
     'point-size',
+    'icon',
+
     'offset-x',
     'offset-y',
 ]
