@@ -61,15 +61,15 @@ const NAMES_2 = "Anderson,Brown,Campbell,Clark,MacDonald,Mitchell,Morrison,Murra
     .split(',').sort();
 
 
-const NAMES = NAMES_1.map(c => ({text: c, value: c}));
+const NAMES = NAMES_1.map(c => ({text: c, value: 'name:' + c}));
 const NAMES_GROUPED = (() => {
         let items = [], last = '';
         for (let n of NAMES_1) {
             if (last[0] !== n[0]) {
                 let m = NAMES_2.shift();
-                items.push({text: m, value: m, level: 1});
+                items.push({text: m, value: 'name:' + m, level: 1});
             }
-            items.push({text: n, value: n, level: 2});
+            items.push({text: n, value: 'name:' + n, level: 2});
             last = n
         }
         return items;
@@ -653,7 +653,7 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
             uiDemoString: 'string',
             uiDemoNumber: 13,
             uiDemoColor: 'rgba(255,200,10,0.9)',
-            uiDemoName: 'Marino',
+            uiDemoName: 'name:Marino',
             //uiDemoDate: '2018-11-22',
 
             uiDemoUseDialog: 'form',

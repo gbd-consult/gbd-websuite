@@ -59,7 +59,8 @@ module.exports = v => ({
     '.uiDropDown': {
         backgroundColor: v.COLOR.white,
         border: [1, 'solid', v.FOCUS_COLOR],
-        maxHeight: 0,
+        minHeight: v.CONTROL_SIZE,
+        maxHeight: v.CONTROL_SIZE * 5 + v.UNIT,
         overflowX: 'hidden',
         overflowY: 'auto',
         position: 'absolute',
@@ -71,7 +72,6 @@ module.exports = v => ({
         zIndex: 1,
 
         '.isOpen&': {
-            maxHeight: v.CONTROL_SIZE * 5 + v.UNIT,
             transform: 'translate(0,0)',
             visibility: 'visible',
             //boxShadow: '0px 11px 14px 0px rgba(0, 0, 0, 0.1)',

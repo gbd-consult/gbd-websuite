@@ -50,7 +50,16 @@ module.exports = v => ({
 
     '.uiListItemLevel2': {
         paddingLeft: v.UNIT8,
+        '&.isFlat': {
+            paddingLeft: 0,
+        },
     },
+
+    '.uiListItemParentLevelText': {
+        paddingLeft: v.UNIT,
+        fontWeight: 800
+    },
+
 
     '.uiList': {
         '> .uiControlBody > .uiControlBox': {

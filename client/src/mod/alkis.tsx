@@ -677,6 +677,13 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
 
 class AlkisSidebarView extends gws.View<AlkisViewProps> {
     render() {
+        let mm = _master(this);
+
+        if (!mm.setup)
+            return <sidebar.EmptyTab>
+                {mm.STRINGS.noData}
+            </sidebar.EmptyTab>;
+
         if (this.props.alkisFsLoading)
             return <AlkisLoaderTab {...this.props}/>;
 
@@ -710,12 +717,6 @@ class AlkisSidebar extends gws.Controller implements gws.types.ISidebarItem {
     }
 
     get tabView() {
-        let mm = _master(this);
-        if (!mm.setup)
-            return <sidebar.EmptyTab>
-                {_master(this).STRINGS.noData}
-            </sidebar.EmptyTab>;
-
         return this.createElement(
             this.connect(AlkisSidebarView, AlkisStoreKeys));
     }
@@ -768,9 +769,7 @@ class AlkisController extends gws.Controller {
     }
 
     async init() {
-        this.setup = this.app.actionSetup('alkissearch')
-        if (!this.setup)
-            return;
+        this.setup = this.app.actionSetup('alkissearch');
 
         this.STRINGS = {
 
@@ -820,6 +819,8 @@ class AlkisController extends gws.Controller {
             searchResults: this.__('modAlkisSearchResults'),
         };
 
+        if (!this.setup)
+            return;
 
         if (this.setup.ui.gemarkungListMode === 'tree') {
             this.STRINGS.gemarkung = this.__('modAlkisGemeindeGemarkung')
@@ -860,10 +861,10 @@ class AlkisController extends gws.Controller {
             case 'combined':
                 return sort(gs.map(g => ({
                     text: g.gemarkung + ' (' + g.gemeinde
-                        .replace(/^Stadt\s+/, '')
-                        .replace(/\(.+/, '')
-                        .trim()
-                    + ')',
+                            .replace(/^Stadt\s+/, '')
+                            .replace(/\(.+/, '')
+                            .trim()
+                        + ')',
                     value: 'gemarkung:' + g.gemarkungUid,
                 })));
 
