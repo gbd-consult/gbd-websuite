@@ -224,6 +224,7 @@ module.exports = {
     modAlkisSearchResults2: "Suchergebnisse ($1 von $2)",
     modAlkisSearchResults: "Suchergebnisse ($1)",
     modAlkisLensTitle: 'Räumliche Suche (Flurstücke)',
+    modAlkisErrorExport: 'CSV-Export fehlgeschlagen',
 
 
     modStorageWriteDialogTitle: 'Speichern',

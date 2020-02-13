@@ -818,6 +818,7 @@ class AlkisController extends gws.Controller {
             exportButton: this.__('modAlkisExportButton'),
             searchResults2: this.__('modAlkisSearchResults2'),
             searchResults: this.__('modAlkisSearchResults'),
+            errorExport: this.__('modAlkisErrorExport'),
         };
 
         if (!this.setup)
@@ -1192,13 +1193,20 @@ class AlkisController extends gws.Controller {
             groups: this.getValue('alkisFsExportGroups'),
         };
 
-        let res = await this.app.server.alkissearchExport(q);
+        // NB: must use binary because csv doesn't neccessary come in utf8
+
+        let res = await this.app.server.alkissearchExport(q, {binary: true});
+
+        if (res.error) {
+            return;
+        }
 
         let a = document.createElement('a');
-        a.href = res.url;
+        a.href = window.URL.createObjectURL(new Blob([res.content], {type: res.mime}));
         a.download = EXPORT_PATH;
         document.body.appendChild(a);
         a.click();
+        window.URL.revokeObjectURL(a.href);
         document.body.removeChild(a);
     }
 

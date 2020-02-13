@@ -174,7 +174,8 @@ class ExportParams(t.Params):
 
 
 class ExportResponse(t.Response):
-    url: str
+    content: str
+    mime: str
 
 
 ##
@@ -360,18 +361,7 @@ class Object(gws.ActionObject):
 
         csv_bytes = alkis_export.as_csv(self, res.features, combined_model)
 
-        # create an one-off job because we need a physical file to trigger a download
-
-        job_uid = gws.random_string(64)
-        out_path = f'{gws.TMP_DIR}/{job_uid}_fs.export.csv'
-
-        with open(out_path, 'wb') as fp:
-            fp.write(csv_bytes)
-
-        job = gws.tools.job.create(job_uid, req.user, worker='')
-        job.update(gws.tools.job.State.complete, result=out_path)
-
-        return ExportResponse(gws.tools.job.url(job_uid))
+        return ExportResponse(content=csv_bytes, mime='text/csv')
 
     def api_print(self, req: t.IRequest, p: PrintParams) -> gws.common.printer.types.PrinterResponse:
         """Print Flurstueck features"""
