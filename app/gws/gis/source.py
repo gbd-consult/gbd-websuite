@@ -112,7 +112,7 @@ def bounds_from_layers(source_layers: t.List[t.SourceLayer], target_crs) -> t.Bo
             continue
         bb = _best_bounds(sl.supported_bounds, target_crs)
         if bb:
-            e = gws.gis.extent.transformed(bb.extent, bb.crs, target_crs)
+            e = gws.gis.extent.transform(bb.extent, bb.crs, target_crs)
             exts.append(e)
 
     if exts:

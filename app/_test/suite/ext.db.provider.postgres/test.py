@@ -113,7 +113,7 @@ def test_find_points_with_reprojection():
     x, y = cc.POINTS.dus
     x, y = gws.gis.proj.transform_xy(x, y, cc.CRS_3857, cc.CRS_25832)
     bbox = x, y, x + 101, y + 101
-    bbox = gws.gis.extent.transformed(bbox, cc.CRS_25832, cc.CRS_3857)
+    bbox = gws.gis.extent.transform(bbox, cc.CRS_25832, cc.CRS_3857)
     bbox = gws.gis.extent.buffer(bbox, _REPROJECTION_ERROR_TOLERANCE)
 
     sh = gws.gis.shape.from_extent(bbox, cc.CRS_3857)
@@ -187,7 +187,7 @@ def test_render_squares_reprojected():
     x, y = cc.POINTS.london
     x, y = gws.gis.proj.transform_xy(x, y, cc.CRS_3857, cc.CRS_25833)
     bbox = x, y, x + 350, y + 350
-    bbox = gws.gis.extent.transformed(bbox, cc.CRS_25833, cc.CRS_3857)
+    bbox = gws.gis.extent.transform(bbox, cc.CRS_25833, cc.CRS_3857)
 
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.london_25833/bbox/' + gws.as_str_list(bbox)
 

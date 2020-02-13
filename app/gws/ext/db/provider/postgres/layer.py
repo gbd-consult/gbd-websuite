@@ -64,7 +64,7 @@ class Object(gws.common.layer.Vector):
         ))
 
     def get_features(self, bounds, limit=0) -> t.List[t.IFeature]:
-        shape = gws.gis.shape.from_bounds(bounds).transformed(self.table.geometry_crs)
+        shape = gws.gis.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)
 
         fs = self.provider.select(t.SelectArgs(
             table=self.table,

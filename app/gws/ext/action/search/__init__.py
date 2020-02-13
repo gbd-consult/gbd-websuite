@@ -73,5 +73,5 @@ class Object(gws.ActionObject):
         features = gws.common.search.runner.run(req, args)
 
         return Response(
-            features=[f.convert(target_crs=args.bounds.crs).props for f in features]
+            features=[f.transform_to(args.bounds.crs).props for f in features]
         )

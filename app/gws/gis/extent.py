@@ -113,7 +113,7 @@ def intersect(a: t.Extent, b: t.Extent) -> bool:
     return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
 
 
-def transformed(e: t.Extent, src: str, dst: str) -> t.Extent:
+def transform(e: t.Extent, src: str, dst: str) -> t.Extent:
     if gws.gis.proj.equal(src, dst):
         return e
 

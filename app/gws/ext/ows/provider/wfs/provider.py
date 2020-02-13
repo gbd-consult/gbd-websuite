@@ -66,7 +66,7 @@ class Object(gws.common.ows.provider.Object):
             bounds = shape.bounds
 
         our_crs = gws.gis.util.best_crs(bounds.crs, self.supported_crs)
-        bbox = gws.gis.extent.transformed(bounds.extent, bounds.crs, our_crs)
+        bbox = gws.gis.extent.transform(bounds.extent, bounds.crs, our_crs)
         axis = gws.gis.util.best_axis(our_crs, self.invert_axis_crs, 'WFS', self.version)
         invert_axis = axis == 'yx'
 
@@ -96,7 +96,7 @@ class Object(gws.common.ows.provider.Object):
             for f in found:
                 if not f.shape:
                     continue
-                f.transform(shape.crs)
+                f.transform_to(shape.crs)
                 if f.shape.intersects(shape):
                     res.append(f)
 

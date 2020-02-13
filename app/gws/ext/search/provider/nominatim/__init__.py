@@ -67,7 +67,7 @@ class Object(gws.common.search.provider.Object):
         if not shape:
             return []
 
-        params['viewbox'] = gws.gis.extent.transformed(shape.extent, shape.crs, _NOMINATIM_CRS)
+        params['viewbox'] = gws.gis.extent.transform(shape.extent, shape.crs, _NOMINATIM_CRS)
 
         features = []
 
@@ -79,7 +79,7 @@ class Object(gws.common.search.provider.Object):
                 gws.log.debug(f'SKIP {uid}: no geometry')
                 continue
 
-            sh = gws.gis.shape.from_geometry(geom, _NOMINATIM_CRS).transformed(shape.crs)
+            sh = gws.gis.shape.from_geometry(geom, _NOMINATIM_CRS).transformed_to(shape.crs)
             if not sh.intersects(shape):
                 gws.log.debug(f'SKIP {uid}: no intersection')
                 continue

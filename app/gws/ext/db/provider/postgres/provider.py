@@ -93,7 +93,7 @@ class Object(gws.common.db.provider.Sql):
 
             shape = args.shape
             if shape and geom_col:
-                shape = shape.tolerance_polygon(args.map_tolerance).transformed(crs)
+                shape = shape.tolerance_polygon(args.map_tolerance).transformed_to(crs)
                 where.append(f'ST_Intersects(%s::geometry, "{geom_col}")')
                 values.append(shape.ewkb_hex)
 
@@ -229,7 +229,7 @@ class Object(gws.common.db.provider.Sql):
             rec[table.key_column] = feature.uid
 
         if table.geometry_column and feature.shape:
-            shape = feature.shape.to_type(table.geometry_type).transformed(table.geometry_crs)
+            shape = feature.shape.to_type(table.geometry_type).transformed_to(table.geometry_crs)
             rec[table.geometry_column] = shape.ewkb_hex
 
         return rec

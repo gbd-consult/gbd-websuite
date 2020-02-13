@@ -445,7 +445,7 @@ class Object(gws.ActionObject):
         if p.get('shapes'):
             shape = gws.gis.shape.union(gws.gis.shape.from_props(s) for s in p.get('shapes'))
             if shape:
-                fq.shape = shape.transformed(self.alkis.crs)
+                fq.shape = shape.transformed_to(self.alkis.crs)
 
         if soft_limit:
             fq.limit = soft_limit
@@ -461,7 +461,7 @@ class Object(gws.ActionObject):
         crs = p.get('crs') or project.map.crs
 
         for f in res.features:
-            f.transform(crs)
+            f.transform_to(crs)
             f.attributes.append(t.Attribute(name='is_guest_user', value=req.user.is_guest))
 
         if fq.withEigentuemer:

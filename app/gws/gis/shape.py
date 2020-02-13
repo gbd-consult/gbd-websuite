@@ -90,7 +90,7 @@ def union(shapes) -> t.IShape:
         return shapes[0]
 
     crs = shapes[0].crs
-    shapes = [s.transformed(crs) for s in shapes]
+    shapes = [s.transformed_to(crs) for s in shapes]
     geom = shapely.ops.unary_union([getattr(s, 'geom') for s in shapes])
 
     return Shape(geom, crs)
@@ -207,7 +207,7 @@ class Shape(t.IShape):
             return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
         raise ValueError(f'cannot convert {self.type!r} to {new_type!r}')
 
-    def transformed(self, to_crs, **kwargs) -> t.IShape:
+    def transformed_to(self, to_crs, **kwargs) -> t.IShape:
         if gws.gis.proj.equal(self.crs, to_crs):
             return self
         to_crs = gws.gis.proj.as_proj(to_crs).epsg

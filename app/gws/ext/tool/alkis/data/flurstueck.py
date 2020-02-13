@@ -489,7 +489,7 @@ def find(conn: AlkisConnection, query: dict):
             parms.append('%' + v + ';')
 
         elif k == 'shape':
-            v = v.transform(conn.crs)
+            v = v.transformed_to(conn.crs)
             where.append(f'ST_Intersects(ST_SetSRID(%s::geometry,%s), FS.geom)')
             parms.append(v.wkb_hex)
             parms.append(conn.srid)

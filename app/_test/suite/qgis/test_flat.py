@@ -43,7 +43,7 @@ def test_render():
 
     x, y = gws.gis.proj.transform_xy(x, y, cc.CRS_3857, cc.CRS_25833)
     bbox = x, y, x + 350, y + 350
-    bbox = gws.gis.extent.transformed(bbox, cc.CRS_25833, cc.CRS_3857)
+    bbox = gws.gis.extent.transform(bbox, cc.CRS_25833, cc.CRS_3857)
 
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.qgis_flat_ghana/bbox/' + gws.as_str_list(bbox)
 

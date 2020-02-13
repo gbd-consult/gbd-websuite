@@ -74,4 +74,4 @@ def best_crs(target_crs, supported_crs):
 
 def best_crs_and_shape(request_crs, supported_crs, shape):
     crs = best_crs(request_crs, supported_crs)
-    return crs, shape.transformed(crs)
+    return crs, shape.transformed_to(crs)

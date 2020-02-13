@@ -42,4 +42,4 @@ class Object(gws.ActionObject):
 
         features = layer.edit_operation(op, p.features)
 
-        return EditResponse(features=[f.convert().props for f in features])
+        return EditResponse(features=[f.apply_converter().props for f in features])

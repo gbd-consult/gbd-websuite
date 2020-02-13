@@ -55,6 +55,6 @@ def test_transform():
     p = shape.from_wkt(a)
     q = shape.from_wkt(b)
 
-    t = p.transformed(25832, precision=3)
+    t = p.transformed_to(25832, precision=3)
 
     assert t.ewkt == b

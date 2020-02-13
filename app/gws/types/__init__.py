@@ -337,21 +337,23 @@ class IBaseRequest:
 class IFeature:
     attributes: List[Attribute] = None
     category: str = None
-    converter: 'FeatureConverter' = None
+    converter: Optional['FeatureConverter'] = None
     elements: dict = None
-    layer: 'ILayer' = None
+    full_uid: str = None
+    layer: Optional['ILayer'] = None
+    minimal_props: 'FeatureProps' = None
     props: 'FeatureProps' = None
-    shape: 'IShape' = None
-    style: 'IStyle' = None
+    shape: Optional['IShape'] = None
+    style: Optional['IStyle'] = None
     template_context: dict = None
     uid: str = None
+    def apply_converter(self, converter: 'FeatureConverter' = None) -> 'IFeature': pass
     def apply_data_model(self, model: 'IModel') -> 'IFeature': pass
-    def apply_format(self, fmt: 'IFormat') -> 'IFeature': pass
+    def apply_format(self, fmt: 'IFormat', extra_context: dict = None) -> 'IFeature': pass
     def attr(self, name: str): pass
-    def convert(self, target_crs: 'Crs' = None, converter: 'FeatureConverter' = None) -> 'IFeature': pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'RenderView', style: 'IStyle' = None) -> str: pass
-    def transform(self, to_crs) -> 'IFeature': pass
+    def transform_to(self, crs) -> 'IFeature': pass
 
 class IObject:
     children: list = None
@@ -405,7 +407,7 @@ class IShape:
     def intersects(self, shape: 'IShape') -> bool: pass
     def to_type(self, new_type: 'GeometryType') -> 'IShape': pass
     def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': pass
-    def transformed(self, to_crs, **kwargs) -> 'IShape': pass
+    def transformed_to(self, to_crs, **kwargs) -> 'IShape': pass
 
 class IStyle:
     props: 'StyleProps' = None

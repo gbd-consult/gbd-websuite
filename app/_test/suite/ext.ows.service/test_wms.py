@@ -114,7 +114,7 @@ def test_get_features_with_reprojection():
     x, y = cc.POINTS.dus
 
     x, y = gws.gis.proj.transform_xy(x, y, cc.CRS_3857, cc.CRS_25832)
-    bbox = gws.gis.extent.transformed((x, y, x + 350, y + 350), cc.CRS_25832, cc.CRS_3857)
+    bbox = gws.gis.extent.transform((x, y, x + 350, y + 350), cc.CRS_25832, cc.CRS_3857)
 
     r = u.req('_/cmd/owsHttp', params={
         'projectUid': 'wms1',

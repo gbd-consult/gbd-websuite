@@ -32,7 +32,7 @@ class Filter:
         if not ext:
             return []
 
-        ext = gws.gis.extent.transformed(ext, crs, gws.EPSG_4326)
+        ext = gws.gis.extent.transform(ext, crs, gws.EPSG_4326)
 
         return [
             r for r in recs

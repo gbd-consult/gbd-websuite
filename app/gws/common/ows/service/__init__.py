@@ -383,7 +383,7 @@ class Base(Object):
             if f.shape:
                 gs = gws.gis.gml.shape_to_tag(f.shape, precision=rd.project.map.coordinate_precision)
 
-            f.convert()
+            f.apply_converter()
 
             return FeatureNode(
                 feature=f,
@@ -400,4 +400,4 @@ class Base(Object):
         return layer and layer.ows_enabled(self)
 
     def lonlat_extent(self, extent, crs):
-        return [round(c, 4) for c in gws.gis.extent.transformed(extent, crs, gws.EPSG_4326)]
+        return [round(c, 4) for c in gws.gis.extent.transform(extent, crs, gws.EPSG_4326)]
