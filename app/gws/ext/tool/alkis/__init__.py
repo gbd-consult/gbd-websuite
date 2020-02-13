@@ -14,7 +14,7 @@ from .util.connection import AlkisConnection
 class Config(t.WithType):
     """ALKIS tool."""
 
-    db = ''  #: database provider ID
+    db: str = ''  #: database provider ID
     crs: t.Crs  #: CRS for the alkis data
     dataSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
     indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
@@ -108,13 +108,15 @@ class Object(gws.Object):
         self.has_source = False
         self.has_flurnummer = False
         self.connect_args = {}
-        self.db: gws.ext.db.provider.postgres.Object = None
+        self.db = None
 
     def configure(self):
         super().configure()
 
         self.crs = self.var('crs')
-        self.db: gws.ext.db.provider.postgres.Object = gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres')
+        self.db: gws.ext.db.provider.postgres.Object = t.cast(
+            gws.ext.db.provider.postgres.Object,
+            gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
         self.connect_args = {
             'params': self.db.connect_params,
@@ -138,7 +140,7 @@ class Object(gws.Object):
             else:
                 gws.log.warn(f'ALKIS indexes in "{self.db.uid}" NOT found')
 
-    ## public index tools
+    # public index tools
 
     def create_index(self, user, password):
         if not self.has_source:
@@ -154,7 +156,7 @@ class Object(gws.Object):
         with self.connect() as conn:
             return index.ok(conn)
 
-    ## public search tools
+    # public search tools
 
     def gemarkung_list(self) -> t.List[Gemarkung]:
         with self.connect() as conn:

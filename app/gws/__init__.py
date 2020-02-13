@@ -1,4 +1,4 @@
-from .core import log
+from .core import log, debug
 from .core.error import Error
 from .core.util import *
 from .core.debug import p
