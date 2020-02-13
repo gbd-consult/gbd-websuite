@@ -18,9 +18,9 @@ interface ViewProps extends gws.types.ViewProps {
     uiDemoFiles: FileList;
     uiDemoActiveTab: number,
 
-    uiDemoUseDialog: string;
+    uiDemoMode: string;
 
-    uiDemoUseTabular: boolean;
+    uiDemoUseTabs: boolean;
     uiDemoUseTitle: boolean;
     uiDemoUseClose: boolean;
     uiDemoUseFooter: boolean;
@@ -42,8 +42,8 @@ const StoreKeys = [
     'uiDemoFiles',
     'uiDemoActiveTab',
 
-    'uiDemoUseDialog',
-    'uiDemoUseTabular',
+    'uiDemoMode',
+    'uiDemoUseTabs',
     'uiDemoUseTitle',
     'uiDemoUseClose',
     'uiDemoUseFooter',
@@ -76,7 +76,7 @@ const NAMES_GROUPED = (() => {
     }
 )();
 
-class SmallForm extends gws.View<ViewProps> {
+class TabularForm extends gws.View<ViewProps> {
     render() {
         let bind = name => value => this.props.controller.update({[name]: value})
 
@@ -129,35 +129,7 @@ class SmallForm extends gws.View<ViewProps> {
     }
 }
 
-class TabsForm extends gws.View<ViewProps> {
-    render() {
-        let bind = name => value => this.props.controller.update({[name]: value})
-
-        return <gws.ui.Tabs
-            active={this.props.uiDemoActiveTab}
-            whenChanged={bind('uiDemoActiveTab')}
-        >
-            <gws.ui.Tab label="Goethe">
-                <p>Johann Wolfgang von Goethe was a German writer and statesman. His works include: four novels; epic
-                    and lyric poetry; prose and verse dramas; memoirs; an autobiography; literary and aesthetic
-                    criticism; and treatises on botany, anatomy, and colour. </p>
-            </gws.ui.Tab>
-            <gws.ui.Tab label="Shakespeare">
-                <p>William Shakespeare was an English poet, playwright, and actor, widely regarded as the greatest
-                    writer in the English language and the world's greatest dramatist</p>
-            </gws.ui.Tab>
-            <gws.ui.Tab label="Dickens">
-                <p>Charles John Huffam Dickens FRSA was an English writer and social critic. He created some of the
-                    world's best-known fictional characters and is regarded by many as the greatest novelist of the
-                    Victorian era.</p>
-            </gws.ui.Tab>
-            <gws.ui.Tab label="Unknown" disabled>
-            </gws.ui.Tab>
-        </gws.ui.Tabs>
-    }
-}
-
-class FormDemo extends gws.View<ViewProps> {
+class BigForm extends gws.View<ViewProps> {
     render() {
         let bind = name => value => this.props.controller.update({[name]: value})
 
@@ -421,6 +393,67 @@ class FormDemo extends gws.View<ViewProps> {
     }
 }
 
+class ButtonsDemo extends gws.View<ViewProps> {
+    render() {
+        return <Form>
+            <Row>
+                <Cell>
+                    <gws.ui.Button label="text"/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button label="primary" primary/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button label="disabled" disabled/>
+                </Cell>
+            </Row>
+            <Row>
+                <Cell>
+                    <gws.ui.Button className="uiDemoIcon"/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button className="uiDemoIcon" badge="15"/>
+                </Cell>
+                <Cell>
+                    <gws.ui.Button className="uiDemoIcon" disabled/>
+                </Cell>
+            </Row>
+        </Form>
+
+
+    }
+
+
+}
+
+class DialogContent extends gws.View<ViewProps> {
+    render() {
+        let bind = name => value => this.props.controller.update({[name]: value})
+
+        return <gws.ui.Tabs
+            active={this.props.uiDemoActiveTab}
+            whenChanged={bind('uiDemoActiveTab')}
+        >
+            <gws.ui.Tab label="form">
+                <BigForm {...this.props}/>
+            </gws.ui.Tab>
+            <gws.ui.Tab label="tabular">
+                <TabularForm {...this.props}/>
+            </gws.ui.Tab>
+            <gws.ui.Tab label="buttons">
+                <ButtonsDemo {...this.props}/>
+            </gws.ui.Tab>
+            <gws.ui.Tab label="text">
+                <p>William Shakespeare was an English poet, playwright, and actor, widely regarded as the greatest
+                    writer in the English language and the world's greatest dramatist</p>
+            </gws.ui.Tab>
+            <gws.ui.Tab label="Unknown" disabled>
+            </gws.ui.Tab>
+        </gws.ui.Tabs>
+    }
+}
+
+
 class SidebarBody extends gws.View <ViewProps> {
 
     render() {
@@ -437,37 +470,6 @@ class SidebarBody extends gws.View <ViewProps> {
 
             <sidebar.TabBody>
                 <Form>
-                    <Row>
-                        <Cell>
-                            <gws.ui.Button
-                                whenTouched={set('uiDemoUseDialog', 'form')}
-                                label="form"/>
-                        </Cell>
-                        <Cell>
-                            <gws.ui.Button
-                                whenTouched={set('uiDemoUseDialog', 'tabs')}
-                                label="tabs"/>
-                        </Cell>
-
-                    </Row>
-                    <Row>
-                        <Cell>
-                            <gws.ui.Button
-                                whenTouched={set('uiDemoUseDialog', 'alertError')}
-                                label="err"/>
-                        </Cell>
-                        <Cell>
-                            <gws.ui.Button
-                                whenTouched={set('uiDemoUseDialog', 'alertInfo')}
-                                label="info"/>
-                        </Cell>
-                        <Cell>
-                            <gws.ui.Button
-                                whenTouched={set('uiDemoUseDialog', 'popup')}
-                                label="popup"/>
-                        </Cell>
-                    </Row>
-
                     <Row>
                         <Cell>
                             <gws.ui.NumberInput
@@ -488,37 +490,65 @@ class SidebarBody extends gws.View <ViewProps> {
                     </Row>
                     <Row>
                         <Cell flex>
-                            <gws.ui.Toggle
-                                type="checkbox"
-                                label="title"
-                                value={this.props.uiDemoUseTitle}
-                                whenChanged={bind('uiDemoUseTitle')}
-                            />
-                            <gws.ui.Toggle
-                                type="checkbox"
-                                label="close"
-                                value={this.props.uiDemoUseClose}
-                                whenChanged={bind('uiDemoUseClose')}
-                            />
-                            <gws.ui.Toggle
-                                type="checkbox"
-                                label="footer"
-                                value={this.props.uiDemoUseFooter}
-                                whenChanged={bind('uiDemoUseFooter')}
-                            />
-                            <gws.ui.Toggle
-                                type="checkbox"
-                                label="frame"
-                                value={this.props.uiDemoUseFrame}
-                                whenChanged={bind('uiDemoUseFrame')}
-                            />
+                            <gws.ui.Group vertical>
+                                <gws.ui.Toggle
+                                    inline
+                                    type="checkbox"
+                                    label="tabs"
+                                    value={this.props.uiDemoUseTabs}
+                                    whenChanged={bind('uiDemoUseTabs')}
+                                />
+                                <gws.ui.Toggle
+                                    inline
+                                    type="checkbox"
+                                    label="title"
+                                    value={this.props.uiDemoUseTitle}
+                                    whenChanged={bind('uiDemoUseTitle')}
+                                />
+                                <gws.ui.Toggle
+                                    inline
+                                    type="checkbox"
+                                    label="close"
+                                    value={this.props.uiDemoUseClose}
+                                    whenChanged={bind('uiDemoUseClose')}
+                                />
+                                <gws.ui.Toggle
+                                    inline
+                                    type="checkbox"
+                                    label="footer"
+                                    value={this.props.uiDemoUseFooter}
+                                    whenChanged={bind('uiDemoUseFooter')}
+                                />
+                                <gws.ui.Toggle
+                                    inline
+                                    type="checkbox"
+                                    label="frame"
+                                    value={this.props.uiDemoUseFrame}
+                                    whenChanged={bind('uiDemoUseFrame')}
+                                />
+                            </gws.ui.Group>
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                whenTouched={set('uiDemoMode', 'dialog')}
+                                label="dialog"/>
                         </Cell>
                     </Row>
                     <Row>
                         <Cell>
                             <gws.ui.Button
-                                whenTouched={set('uiDemoUseDialog', 'dialog')}
-                                label="dialog"/>
+                                whenTouched={set('uiDemoMode', 'alertError')}
+                                label="err"/>
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                whenTouched={set('uiDemoMode', 'alertInfo')}
+                                label="info"/>
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                whenTouched={set('uiDemoMode', 'popup')}
+                                label="popup"/>
                         </Cell>
                     </Row>
 
@@ -544,13 +574,13 @@ class SidebarBody extends gws.View <ViewProps> {
 
 class OverlayView extends gws.View<ViewProps> {
     render() {
-        let dm = this.props.uiDemoUseDialog;
+        let dm = this.props.uiDemoMode;
 
         if (!dm)
             return null;
 
         let close = () => this.props.controller.update({
-            uiDemoUseDialog: ''
+            uiDemoMode: ''
         });
 
         let buttons = [
@@ -570,40 +600,20 @@ class OverlayView extends gws.View<ViewProps> {
             marginTop: -(h >> 1),
         });
 
-        if (dm === 'form') {
-            return <gws.ui.Dialog
-                title='Form Controls'
-                whenClosed={close}
-                buttons={buttons}
-                style={CENTER_BOX(1000, 700)}
-
-            >
-                <FormDemo {...this.props}/>
-            </gws.ui.Dialog>
-        }
-
-        if (dm === 'tabs') {
-            return <gws.ui.Dialog
-                title='Tabs'
-                whenClosed={close}
-                buttons={buttons}
-                style={CENTER_BOX(600, 400)}
-
-            >
-                <TabsForm {...this.props}/>
-            </gws.ui.Dialog>
+        let dlgOpts = {
+            title: this.props.uiDemoUseTitle ? "Dialog Title" : null,
+            whenClosed: this.props.uiDemoUseClose ? close : null,
+            buttons: this.props.uiDemoUseFooter ? buttons : null,
+            style: CENTER_BOX(this.props.uiDemoUseWidth, this.props.uiDemoUseHeight),
+            frame: this.props.uiDemoUseFrame ? '/chess.png' : null,
         }
 
         if (dm === 'dialog') {
-            return <gws.ui.Dialog
-                title={this.props.uiDemoUseTitle ? "Dialog Title" : null}
-                whenClosed={this.props.uiDemoUseClose ? close : null}
-                buttons={this.props.uiDemoUseFooter ? buttons : null}
-                style={CENTER_BOX(this.props.uiDemoUseWidth, this.props.uiDemoUseHeight)}
-                frame={this.props.uiDemoUseFrame ? '/chess.png' : null}
-            >
-                <SmallForm {...this.props}/>
-            </gws.ui.Dialog>
+            if (this.props.uiDemoUseTabs) {
+                return <gws.ui.Dialog {...dlgOpts}><DialogContent {...this.props}/></gws.ui.Dialog>
+            } else {
+                return <gws.ui.Dialog {...dlgOpts}><BigForm {...this.props}/></gws.ui.Dialog>
+            }
         }
 
         if (dm === 'alertError') {
@@ -656,17 +666,18 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
             uiDemoName: 'name:Marino',
             //uiDemoDate: '2018-11-22',
 
-            uiDemoUseDialog: 'form',
+            uiDemoMode: 'dialog',
+            uiDemoActiveTab: 2,
 
-            uiDemoUseTabular: true,
+            uiDemoUseTabs: true,
             uiDemoUseTitle: true,
-            uiDemoUseClose: true,
+            uiDemoUseClose: false,
             uiDemoUseFooter: true,
             uiDemoUseFrame: false,
 
-            uiDemoUseWidth: 580,
+            uiDemoUseWidth: 800,
             uiDemoUseHeight: 580,
-        })
+        });
     }
 
     get appOverlayView() {

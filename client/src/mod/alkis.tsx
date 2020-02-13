@@ -644,6 +644,7 @@ class AlkisExportTab extends gws.View<AlkisViewProps> {
                                     {Object.keys(availGroups).map(gid => <gws.ui.Toggle
                                             key={gid}
                                             type="checkbox"
+                                            inline
                                             label={availGroups[gid]}
                                             value={selectedGroupIds.includes(gid)}
                                             whenChanged={value => changed(gid, value)}

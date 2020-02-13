@@ -40,8 +40,8 @@ module.exports = v => ({
 
     '.uiButtonBadge': {
         position: 'absolute',
-        right: 0,
-        top: 0,
+        right: 2,
+        top: 2,
         width: 16,
         height: 16,
         borderRadius: 16,

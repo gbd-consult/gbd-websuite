@@ -1,5 +1,11 @@
 module.exports = v => ({
 
+    '.uiTabs': {
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+    },
+
     '.uiTabsHead': {
         display: 'flex',
         alignItems: 'center',
@@ -7,7 +13,7 @@ module.exports = v => ({
         marginBottom: v.UNIT8,
     },
 
-    '.uiTabHeader': {
+    '.uiTabHeadItem': {
         textTransform: 'uppercase',
         borderBottom: 3,
         borderBottomStyle: 'solid',
@@ -24,7 +30,7 @@ module.exports = v => ({
 
         '&.isActive': {
             color: v.FOCUS_COLOR,
-            borderBottomColor: v.COLOR.opacity(v.FOCUS_COLOR, 1),
+            borderBottomColor: v.FOCUS_COLOR,
         },
 
         '&.isDisabled': {
@@ -32,6 +38,10 @@ module.exports = v => ({
         },
     },
 
-    '.uiTabContent': {}
+    '.uiTabContent': {
+        overflow: 'auto',
+        flex: 1,
+        paddingRight: v.UNIT * 4,
+    }
 
 });

@@ -17,13 +17,6 @@ module.exports = v => ({
         backgroundColor: v.COLOR.white,
         display: 'flex',
         flexDirection: 'column',
-
-        '&.withCloseButton': {
-            paddingTop: v.CONTROL_SIZE + v.UNIT2,
-        },
-        '&.withTitle.withCloseButton': {
-            paddingTop: v.UNIT8,
-        },
     },
 
     '.uiDialogHeader': {
@@ -31,6 +24,7 @@ module.exports = v => ({
         paddingRight: v.UNIT2,
         backgroundColor: v.DIALOG_HEADER_COLOR,
         '.uiRow': {
+            minHeight: v.CONTROL_SIZE,
             marginTop: v.UNIT2,
             marginBottom: v.UNIT2,
         },

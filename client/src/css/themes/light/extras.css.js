@@ -18,6 +18,13 @@ module.exports = v => {
             background: v.COLOR.grey800
         },
 
+        '.uiDemoIcon': {
+            ...v.ICON_BUTTON(),
+            ...v.ICON_SIZE('normal'),
+            ...v.SVG('print', v.COLOR.blueGrey400),
+        },
+
+
         '.vectorDemo': vectorDemo,
 
         '.vectorDemoEdit': {
