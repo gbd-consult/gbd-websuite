@@ -61,7 +61,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-_GET_FEATURES_LIMIT = 0
+_FEATURE_FULL_FORMAT_THRESHOLD = 500
 
 
 class Object(gws.ActionObject):
@@ -138,15 +138,20 @@ class Object(gws.ActionObject):
         """Get a list of features in a bounding box"""
 
         layer = req.require_layer(p.layerUid)
-        limit = min(_GET_FEATURES_LIMIT, p.get('limit') or _GET_FEATURES_LIMIT)
         bounds = t.Bounds(
             crs=p.crs or layer.map.crs,
             extent=p.get('bbox') or layer.map.extent
         )
-        features = layer.get_features(bounds, limit)
+        found = layer.get_features(bounds, p.get('limit'))
 
-        return GetFeaturesResponse(
-            features=[f.convert(target_crs=bounds.crs).props for f in features])
+        # skip full conversion for large amounts of features
+
+        if len(found) > _FEATURE_FULL_FORMAT_THRESHOLD:
+            features = [f.transform_to(bounds.crs).minimal_props for f in found]
+        else:
+            features = [f.transform_to(bounds.crs).apply_converter().props for f in found]
+
+        return GetFeaturesResponse(features=features)
 
     def http_get_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
         return self.api_render_box(req, p)

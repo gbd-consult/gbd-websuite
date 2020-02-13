@@ -7,6 +7,8 @@ import gws.types as t
 
 from . import layer, types
 
+_FEATURE_FULL_FORMAT_THRESHOLD = 500
+
 
 class Config(layer.Config):
     display: types.DisplayMode = 'client'  #: layer display mode
@@ -48,10 +50,27 @@ class Vector(layer.Layer, t.IVectorLayer):
 
     def render_box(self, rv, client_params=None):
         elements = self.render_svg(rv)
-        return gws.gis.svg.to_png(elements, size=rv.size_px)
+        gws.debug.time_start('render_box:to_png')
+        png = gws.gis.svg.to_png(elements, size=rv.size_px)
+        gws.debug.time_start('render_box:to_png')
+        return png
 
     def render_svg(self, rv, style=None):
-        features = self.get_features(rv.bounds)
-        for f in features:
-            f.convert(target_crs=rv.bounds.crs)
-        return [f.to_svg(rv, style or self.style) for f in features]
+        gws.debug.time_start('render_svg:get_features')
+        found = self.get_features(rv.bounds)
+        gws.debug.time_end('render_svg:get_features')
+
+        # skip full conversion for large amounts of features
+
+        gws.debug.time_start('render_svg:convert')
+        if len(found) > _FEATURE_FULL_FORMAT_THRESHOLD:
+            features = [f.transform_to(rv.bounds.crs) for f in found]
+        else:
+            features = [f.transform_to(rv.bounds.crs).apply_converter() for f in found]
+        gws.debug.time_end('render_svg:convert')
+
+        gws.debug.time_start('render_svg:to_svg')
+        svgs = [f.to_svg(rv, style or self.style) for f in features]
+        gws.debug.time_end('render_svg:to_svg')
+
+        return svgs

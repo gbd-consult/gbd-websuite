@@ -169,7 +169,7 @@ def _configure_extent(obj, target_crs, parent_explicit_extent):
         oe = own.extent
         if buf:
             oe = gws.gis.extent.buffer(oe, buf)
-        oe = gws.gis.extent.transformed(oe, own.crs, target_crs)
+        oe = gws.gis.extent.transform(oe, own.crs, target_crs)
         obj.extent = oe
         return obj.extent
 
