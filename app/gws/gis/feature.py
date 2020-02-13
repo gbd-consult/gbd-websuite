@@ -52,23 +52,20 @@ class FeatureConverter:
 class Feature(t.IFeature):
     def __init__(self, uid=None, attributes=None, category=None, elements=None, shape=None, style=None):
         self.attributes: t.List[t.Attribute] = []
-        self.elements = {}
         self.category: str = category
-        self.converter: FeatureConverter = None
-        self.layer: t.ILayer = None
-        self.shape: t.IShape = None
-        self.style: t.IStyle = None
+        self.converter: t.Optional[FeatureConverter] = None
+        self.elements = {}
+        self.layer: t.Optional[t.ILayer] = None
+        self.shape: t.Optional[t.IShape] = None
+        self.style: t.Optional[t.IStyle] = None
         self.uid: str = ''
 
         self._init(uid, attributes, elements, shape, style)
 
     @property
     def props(self) -> t.FeatureProps:
-        uid = self.uid or ''
-        if self.layer:
-            uid = f'{self.layer.uid}{_COMBINED_UID_DELIMITER}{uid}'
         return t.FeatureProps(
-            uid=uid,
+            uid=self.full_uid,
             attributes=self.attributes,
             shape=self.shape.props if self.shape else None,
             style=self.style,
@@ -76,14 +73,42 @@ class Feature(t.IFeature):
             layerUid=self.layer.uid if self.layer else None,
         )
 
+    @property
+    def minimal_props(self) -> t.FeatureProps:
+        return t.FeatureProps(
+            uid=self.full_uid,
+            attributes=[],
+            shape=self.shape.props if self.shape else None,
+            layerUid=self.layer.uid if self.layer else None,
+        )
+
+    @property
+    def full_uid(self) -> str:
+        uid = self.uid or ''
+        if self.layer:
+            uid = f'{self.layer.uid}{_COMBINED_UID_DELIMITER}{uid}'
+        return uid
+
+
+    @property
+    def template_context(self) -> dict:
+        d = {a.name: a.value for a in self.attributes}
+        d['category'] = self.category
+        d['feature'] = self
+        d['layer'] = self.layer
+        d['uid'] = self.uid
+        if 'title' not in d:
+            d['title'] = self.uid
+        return d
+
     def attr(self, name: str):
         for a in self.attributes:
             if a.name == name:
                 return a.value
 
-    def transform(self, to_crs) -> t.IFeature:
+    def transform_to(self, crs) -> t.IFeature:
         if self.shape:
-            self.shape = self.shape.transformed(to_crs)
+            self.shape = self.shape.transformed_to(crs)
         return self
 
     def to_svg(self, rv: t.RenderView, style: t.IStyle = None) -> str:
@@ -92,7 +117,7 @@ class Feature(t.IFeature):
         style = self.style or style
         if not style and self.layer:
             style = self.layer.style
-        s: gws.gis.shape.Shape = self.shape.transformed(rv.bounds.crs)
+        s: gws.gis.shape.Shape = self.shape.transformed_to(rv.bounds.crs)
         return gws.gis.svg.draw(
             s.geom,
             self.elements.get('label', ''),
@@ -112,10 +137,7 @@ class Feature(t.IFeature):
             'geometry': self.shape.props.geometry if self.shape else None
         }
 
-    def convert(self, target_crs: t.Crs = None, converter: t.FeatureConverter = None) -> t.IFeature:
-        if self.shape and target_crs:
-            self.shape = self.shape.transformed(target_crs)
-
+    def apply_converter(self, converter: t.FeatureConverter = None) -> t.IFeature:
         converter = converter or self.converter or self.layer
 
         if converter:
@@ -132,19 +154,8 @@ class Feature(t.IFeature):
         self.attributes = model.apply(self.attributes)
         return self
 
-    @property
-    def template_context(self) -> dict:
-        d = {a.name: a.value for a in self.attributes}
-        d['category'] = self.category
-        d['feature'] = self
-        d['layer'] = self.layer
-        d['uid'] = self.uid
-        if 'title' not in d:
-            d['title'] = self.uid
-        return d
-
-    def apply_format(self, fmt: t.IFormat) -> t.IFeature:
-        self.elements = gws.extend(self.elements, fmt.apply(self.template_context))
+    def apply_format(self, fmt: t.IFormat, extra_context: dict = None) -> t.IFeature:
+        self.elements = gws.extend(self.elements, fmt.apply(gws.extend(self.template_context, extra_context)))
         return self
 
     def _init(self, uid, attributes, elements, shape, style):
@@ -152,10 +163,7 @@ class Feature(t.IFeature):
             uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
 
         self.uid = uid
-
         self.elements = elements or {}
-        self.converter = None
-        self.layer = None
 
         self.attributes = []
         if attributes:
@@ -163,14 +171,12 @@ class Feature(t.IFeature):
                 attributes = [t.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
             self.attributes = attributes
 
-        self.shape = None
         if shape:
             if isinstance(shape, gws.gis.shape.Shape):
                 self.shape = shape
             else:
                 self.shape = gws.gis.shape.from_props(shape)
 
-        self.style = None
         if style:
             if isinstance(style, dict):
                 style = t.StyleProps(style)
