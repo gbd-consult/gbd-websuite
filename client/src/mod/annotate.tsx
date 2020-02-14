@@ -574,10 +574,7 @@ class AnnotateController extends gws.Controller {
         await super.init();
 
         let selectedSelector = '.modAnnotateSelected';
-
-        this.selectedStyle = this.app.style.add(new style.Style(
-            selectedSelector,
-            style.valuesFromCssSelector(selectedSelector)));
+        this.selectedStyle = this.app.style.get(selectedSelector);
 
         this.layer = this.map.addServiceLayer(new AnnotateLayer(this.map, {
             uid: '_annotate',

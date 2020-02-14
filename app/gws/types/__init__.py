@@ -661,7 +661,9 @@ class StyleLabelPlacement(Enum):
     start = 'start'
 
 class StyleMarker(Enum):
+    arrow = 'arrow'
     circle = 'circle'
+    cross = 'cross'
     square = 'square'
 
 class StyleProps(Props):
@@ -717,6 +719,8 @@ class StyleValues(Data):
     marker_stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
     marker_stroke_miterlimit: Optional[int] = None
     marker_stroke_width: Optional[int] = None
+    offset_x: Optional[int] = None
+    offset_y: Optional[int] = None
     point_size: Optional[int] = None
     stroke: Optional['Color'] = None
     stroke_dasharray: Optional[List[int]] = None

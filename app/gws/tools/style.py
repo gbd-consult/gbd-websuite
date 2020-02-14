@@ -25,6 +25,8 @@ class StyleStrokeLineJoin(t.Enum):
 class StyleMarker(t.Enum):
     circle = 'circle'
     square = 'square'
+    arrow = 'arrow'
+    cross = 'cross'
 
 
 #:export
@@ -116,6 +118,24 @@ class StyleValues(t.Data):
     point_size: t.Optional[int]
     icon: t.Optional[str]
 
+    offset_x: t.Optional[int]
+    offset_y: t.Optional[int]
+
+
+##
+
+_DEFAULT_VALUES = {
+    'label_align': StyleLabelAlign.center,
+    'label_font_family': 'sans-serif',
+    'label_font_size': 12,
+    'label_font_style': StyleLabelFontStyle.normal,
+    'label_font_weight': StyleLabelFontWeight.normal,
+    'label_line_height': 1,
+    'label_max_scale': 1000000000,
+    'label_min_scale': 0,
+    'label_placement': StyleLabelPlacement.middle,
+    'label_stroke_linejoin': StyleStrokeLineJoin.round,
+}
 
 ##
 
@@ -261,12 +281,15 @@ class _Parser:
     point_size = _px
     icon = _icon
 
+    offset_x = _px
+    offset_y = _px
+
 
 def from_css_dict(d: dict, url_root: str = None) -> t.StyleValues:
-    values = t.StyleValues()
+    values = t.StyleValues(_DEFAULT_VALUES)
 
-    with_geometry = 'none'
-    with_label = 'none'
+    with_geometry = StyleGeometryOption.none
+    with_label = StyleLabelOption.none
 
     for k, v in d.items():
         if v is None:

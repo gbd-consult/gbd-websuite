@@ -7,6 +7,7 @@ from werkzeug.wsgi import wrap_file
 import gws
 import gws.tools.net
 import gws.tools.json2
+import gws.tools.misc
 import gws.tools.vendor.umsgpack as umsgpack
 import gws.types as t
 
@@ -149,6 +150,7 @@ class BaseRequest(t.IBaseRequest):
 
     def _parse_params(self):
         if self.input_struct_type:
+            ## gws.tools.misc.write_file(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}.py', repr(self._decode_struct(self.input_struct_type)))
             return self._decode_struct(self.input_struct_type)
 
         args = {k: v for k, v in self._wz.args.items()}

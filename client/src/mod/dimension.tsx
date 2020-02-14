@@ -156,8 +156,13 @@ class DimensionElement {
             <g transform="rotate(${adeg},<<${_bl} 0 0>>,<<${_bl} 1 0>>)">
         `;
 
-        let lny = -(parseInt(this.model.styles['.modDimensionDimLine'].values['offset-y']) || 0);
-        let lay = -(parseInt(this.model.styles['.modDimensionDimLabel'].values['offset-y']) || 0);
+        let lny, lay, s;
+
+        s = this.model.styles['.modDimensionDimLine'];
+        lny = s ? -(s.values.offset_y || 0) : 0;
+
+        s = this.model.styles['.modDimensionDimLabel'];
+        lay = s ? -(s.values.offset_y || 0) : 0;
 
         lay += lny;
 
@@ -249,23 +254,20 @@ class DimensionModel {
     index = 0;
     isInteractive: boolean;
     svgDefs: string;
-    styles: gws.types.Dict;
+    styles: { [k: string]: gws.types.IStyle };
 
     constructor(map) {
         this.map = map;
         this.points = [];
         this.elements = [];
-        this.svgDefs = this.drawDefs();
 
         this.styles = {};
 
-        DimenstionStyles.forEach(sel => {
-            let s = this.map.style.get(sel);
-            this.styles[sel] = {
-                values: s ? s.values : '',
-            }
+        DimenstionStyles.forEach(s => {
+            this.styles[s] = this.map.style.get(s);
         });
 
+        this.svgDefs = this.drawDefs();
     }
 
     get empty() {
@@ -456,14 +458,14 @@ class DimensionModel {
     drawDefs() {
         let buf = [];
 
-        let lineStyle = this.map.style.get('.modDimensionDimLine');
+        let lineStyle = this.styles['.modDimensionDimLine'];
 
-        if (lineStyle && lineStyle.values['mark'] === 'arrow') {
+        if (lineStyle && lineStyle.values.marker === 'arrow') {
 
-            let style = this.map.style.get('.modDimensionDimArrow');
+            let style = this.styles['.modDimensionDimArrow'];
 
-            let w = style ? parseInt(style.values['width']) : 0;
-            let h = style ? parseInt(style.values['height']) : 0;
+            let w = style ? style.values.width : 0;
+            let h = style ? style.values.height : 0;
 
             w = w || 12;
             h = h || 8;
@@ -496,11 +498,11 @@ class DimensionModel {
             `);
         }
 
-        if (lineStyle && lineStyle.values['mark'] === 'cross') {
+        if (lineStyle && lineStyle.values.marker === 'cross') {
 
-            let style = this.map.style.get('.modDimensionDimCross');
+            let style = this.styles['.modDimensionDimCross'];
 
-            let h = style ? parseInt(style.values['height']) : 0;
+            let h = style ? style.values.height : 0;
 
             h = h || 10;
 
@@ -569,8 +571,8 @@ class DimensionModel {
     }
 
     printFragment() {
-        let css = gws.tools.entries(this.styles).map(([sel, s]) =>
-            sel + ' {\n' + s['source'] + '\n}'
+        let css = gws.tools.entries(this.styles).map(([name, s]) =>
+            name + ' {\n' + s.source + '\n}'
         ).join('\n');
 
         let frag = this.fragment();
@@ -587,6 +589,8 @@ class DimensionLayer extends gws.map.layer.FeatureLayer {
     master: DimensionController;
 
     get printItem(): gws.api.PrintItem {
+        if (this.master.model.empty)
+            return null;
         return {
             type: 'fragment',
             printAsVector: true,
