@@ -26,5 +26,8 @@ Version 5.2
 
 - server-side rendering of vector layers
 - GeoJSON layers
+- storage permissions
+- measurement objects can now be styled
+- more units supported for measurement
 
 
