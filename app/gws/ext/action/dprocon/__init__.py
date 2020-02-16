@@ -146,6 +146,8 @@ class Object(gws.Object):
         'lage': 'CHARACTER VARYING',
         'hausnummer': 'CHARACTER VARYING',
         'bezeichnung': 'CHARACTER VARYING',
+        'wert': 'INT',
+        'beschreibung': 'CHARACTER VARYING',
         'x': 'FLOAT',
         'y': 'FLOAT',
     }
@@ -178,7 +180,7 @@ class Object(gws.Object):
                 ''',
                 f'''
                     INSERT INTO {index_table}
-                        SELECT 
+                        SELECT
                             h.gml_id,
                             h.lage || ' ' || h.hausnummer AS meso_key,
                             h.land,
@@ -188,13 +190,17 @@ class Object(gws.Object):
                             h.lage,
                             h.hausnummer,
                             c.bezeichnung,
+                            gf.wert,
+                            gf.beschreibung,
                             ST_X(p.wkb_geometry) AS x,
                             ST_Y(p.wkb_geometry) AS y,
                             p.wkb_geometry AS geom
                         FROM
                             "{alkis_schema}".ax_lagebezeichnungmithausnummer AS h,
                             "{alkis_schema}".ax_lagebezeichnungkatalogeintrag AS c,
-                            "{alkis_schema}".ap_pto AS p
+                            "{alkis_schema}".ap_pto AS p,
+                            "{alkis_schema}".ax_gebaeude AS g,
+                            "{alkis_schema}".ax_gebaeudefunktion AS gf
                         WHERE
                             p.art = 'HNR'
                             AND h.gml_id = ANY (p.dientzurdarstellungvon)
@@ -205,6 +211,8 @@ class Object(gws.Object):
                             AND c.kreis = h.kreis
                             AND c.gemeinde = h.gemeinde
                             AND c.lage = h.lage
+                            AND h.gml_id = ANY(g.zeigtauf)
+                            AND gf.wert = g.gebaeudefunktion
                 ''',
                 f'''
                     CREATE INDEX geom_index ON {index_table} USING GIST(geom)
