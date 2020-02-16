@@ -410,9 +410,6 @@ class Object(gws.ActionObject):
             gws.log.exception()
             raise gws.web.error.NotAcceptable()
 
-        # update the devices table
-        aartelink.service_request(self)
-
         return AartelinkResponse({
             'ok': True
         })
