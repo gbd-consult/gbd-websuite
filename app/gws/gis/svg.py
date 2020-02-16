@@ -1,4 +1,5 @@
 import re
+import base64
 import shapely.ops
 import shapely.geometry
 import svgis
@@ -181,6 +182,7 @@ def _label_position(geom, sv, extra_y_offset=0):
 
 
 _PFX_SVF_UTF8 = 'data:image/svg+xml;utf8,'
+_PFX_SVF_BASE64 = 'data:image/svg+xml;base64,'
 
 
 def _parse_icon(s, dpi):
@@ -188,6 +190,8 @@ def _parse_icon(s, dpi):
 
     if s.startswith(_PFX_SVF_UTF8):
         content = s[len(_PFX_SVF_UTF8):]
+    elif s.startswith(_PFX_SVF_BASE64):
+        content = base64.standard_b64decode(s[len(_PFX_SVF_BASE64):]).decode('utf8')
 
     if not content:
         return

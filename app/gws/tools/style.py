@@ -1,4 +1,5 @@
 import re
+import base64
 
 import gws
 import gws.tools.net
@@ -169,11 +170,10 @@ def _to_data_url(val, url_root):
     if val.startswith('data:'):
         return val
     if re.match(r'^https?:', val):
-        svg = gws.tools.net.http_request(val).text
+        svg = gws.tools.net.http_request(val).content
     else:
-        svg = gws.tools.misc.read_file(url_root + val)
-    svg = svg.replace('\n', '')
-    return 'data:image/svg+xml;utf8,' + svg
+        svg = gws.tools.misc.read_file(url_root + val, 'rb')
+    return 'data:image/svg+xml;base64,' + base64.standard_b64encode(svg).decode('utf8')
 
 
 def _px(val):
