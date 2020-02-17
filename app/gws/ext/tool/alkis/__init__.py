@@ -100,28 +100,30 @@ _COMBINED_PARAMS_DELIM = '_'
 
 
 class Object(gws.Object):
-    def __init__(self):
-        super().__init__()
-
-        self.crs = ''
-        self.has_index = False
-        self.has_source = False
-        self.has_flurnummer = False
-        self.connect_args = {}
-        self.db = None
+    db: gws.ext.db.provider.postgres.Object
+    has_index = False
+    has_source = False
+    has_flurnummer = False
+    crs = ''
+    connect_args = {}
+    data_schema = ''
+    index_schema = ''
 
     def configure(self):
         super().configure()
 
         self.crs = self.var('crs')
-        self.db: gws.ext.db.provider.postgres.Object = t.cast(
+        self.db = t.cast(
             gws.ext.db.provider.postgres.Object,
             gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
+        self.index_schema = self.var('indexSchema')
+        self.data_schema = self.var('dataSchema')
+
         self.connect_args = {
             'params': self.db.connect_params,
-            'index_schema': self.var('indexSchema'),
-            'data_schema': self.var('dataSchema'),
+            'index_schema': self.index_schema,
+            'data_schema': self.data_schema,
             'crs': self.crs,
             'exclude_gemarkung': self.var('excludeGemarkung')
         }
