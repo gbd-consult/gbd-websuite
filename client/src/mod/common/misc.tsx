@@ -61,7 +61,7 @@ class InfoboxController extends gws.Controller {
 
 interface DialogProps extends gws.types.ViewProps {
     controller: DialogController;
-    dialogContent: React.ReactElement<any>;
+    dialogContent: any;
 
 }
 
@@ -69,9 +69,10 @@ class DialogView extends gws.View<DialogProps> {
     render() {
         if (!this.props.dialogContent)
             return null;
-        return <gws.ui.Dialog whenClosed={_ => this.props.controller.update({dialogContent: null})}>
-            {this.props.dialogContent}
-        </gws.ui.Dialog>;
+        return <gws.ui.Dialog
+            {...this.props.dialogContent}
+            whenClosed={_ => this.props.controller.update({dialogContent: null})}
+        />;
     }
 }
 

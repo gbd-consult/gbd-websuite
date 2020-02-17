@@ -217,7 +217,7 @@ class LinkWidget extends gws.Controller {
         let url = this.options.href;
 
         if (this.options.target === 'frame')
-            this.update({dialogContent: <iframe src={url}/>});
+            this.update({dialogContent: {frame: url}});
         else if (this.options.target === 'blank')
             window.open(url);
         else
