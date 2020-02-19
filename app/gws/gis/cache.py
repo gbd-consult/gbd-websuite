@@ -16,14 +16,14 @@ import gws.common.layer
 import gws.types as t
 
 
-def status(layer_uids=None):
-    mc = gws.gis.mpx.config.create()
+def status(root: t.IRootObject, layer_uids=None):
+    mc = gws.gis.mpx.config.create(root)
     files = _get_files()
 
     st = {}
 
     layer: gws.common.layer.Image
-    for layer, cc in _cached_layers(mc):
+    for layer, cc in _cached_layers(root, mc):
         uid = cc['name']
         if uid not in st:
             st[uid] = {
@@ -47,11 +47,11 @@ def status(layer_uids=None):
     }
 
 
-def dangling_dirs():
-    mc = gws.gis.mpx.config.create()
+def dangling_dirs(root: t.IRootObject, ):
+    mc = gws.gis.mpx.config.create(root)
     used = {
         cc['name']
-        for layer, cc in _cached_layers(mc)
+        for layer, cc in _cached_layers(root, mc)
     }
     return [
         d
@@ -60,19 +60,19 @@ def dangling_dirs():
     ]
 
 
-def clean():
+def clean(root: t.IRootObject):
     ds = []
-    for d in dangling_dirs():
+    for d in dangling_dirs(root):
         _remove_dir(gws.MAPPROXY_CACHE_DIR + '/' + d)
     return len(ds)
 
 
-def seed(layer_uids=None, max_time=None, concurrency=1, levels=None):
-    mc = gws.gis.mpx.config.create()
+def seed(root: t.IRootObject, layer_uids=None, max_time=None, concurrency=1, levels=None):
+    mc = gws.gis.mpx.config.create(root)
     seeds = {}
 
     layer: gws.common.layer.Image
-    for layer, cc in _cached_layers(mc, layer_uids):
+    for layer, cc in _cached_layers(root, mc, layer_uids):
         seeds[layer.cache_uid] = _seed_config(layer, cc, levels)
 
     if not seeds:
@@ -102,10 +102,10 @@ def seed(layer_uids=None, max_time=None, concurrency=1, levels=None):
     return True
 
 
-def drop(layer_uids=None):
-    mc = gws.gis.mpx.config.create()
+def drop(root: t.IRootObject, layer_uids=None):
+    mc = gws.gis.mpx.config.create(root)
 
-    for layer, cc in _cached_layers(mc, layer_uids):
+    for layer, cc in _cached_layers(root, mc, layer_uids):
         dirname = _dirname_for_cache(cc)
         if os.path.isdir(dirname):
             _remove_dir(dirname)
@@ -154,8 +154,8 @@ def _file_counts_by_zoom_level(cc, mc, files):
     return out
 
 
-def _cached_layers(mc, layer_uids=None):
-    for layer in gws.config.root().find_all('gws.ext.layer'):
+def _cached_layers(root: t.IRootObject, mc, layer_uids=None):
+    for layer in root.find_all('gws.ext.layer'):
         cc = _cache_for_layer(t.cast(gws.common.layer.Image, layer), mc)
         if not cc:
             continue

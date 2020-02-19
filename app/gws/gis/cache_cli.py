@@ -15,12 +15,12 @@ COMMAND = 'cache'
 def status(layers=None):
     """Display the cache status"""
 
-    gws.config.loader.load()
+    root = gws.config.loader.load()
 
     if layers:
         layers = _as_list(layers)
 
-    st = gws.gis.cache.status(layers)
+    st = gws.gis.cache.status(root, layers)
 
     if not st:
         print('no cached layers found')
@@ -51,7 +51,7 @@ def status(layers=None):
     print()
     print()
 
-    u = gws.gis.cache.dangling_dirs()
+    u = gws.gis.cache.dangling_dirs(root)
     if u:
         print(f'{len(u)} DANGLING CACHES:')
         print()
@@ -63,18 +63,18 @@ def status(layers=None):
 def clean():
     """Clean up the cache."""
 
-    gws.config.loader.load()
-    gws.gis.cache.clean()
+    root = gws.config.loader.load()
+    gws.gis.cache.clean(root)
 
 
 @arg('--layers', help='comma separated list of layer IDs')
 def drop(layers=None):
     """Drop caches for specific or all layers."""
 
-    gws.config.loader.load()
+    root = gws.config.loader.load()
     if layers:
         layers = _as_list(layers)
-    gws.gis.cache.drop(layers)
+    gws.gis.cache.drop(root, layers)
 
 
 _SEED_LOCKFILE = gws.CONFIG_DIR + '/mapproxy.seed.lock'
@@ -85,7 +85,7 @@ _SEED_LOCKFILE = gws.CONFIG_DIR + '/mapproxy.seed.lock'
 def seed(layers=None, levels=None):
     """Start the cache seeding process"""
 
-    gws.config.loader.load()
+    root = gws.config.loader.load()
 
     if layers:
         layers = _as_list(layers)
@@ -98,12 +98,12 @@ def seed(layers=None, levels=None):
             gws.log.info('seed already running')
             return
 
-        max_time = gws.config.root().var('seeding.maxTime')
-        concurrency = gws.config.root().var('seeding.concurrency')
+        max_time = root.var('seeding.maxTime')
+        concurrency = root.var('seeding.concurrency')
         ts = time.time()
 
         print(f'\nSTART SEEDING (maxTime={max_time} concurrency={concurrency}), ^C ANYTIME TO CANCEL...\n')
-        done = gws.gis.cache.seed(layers, max_time, concurrency, levels)
+        done = gws.gis.cache.seed(root, layers, max_time, concurrency, levels)
         print('=' * 40)
         print('TIME: %.1f sec' % (time.time() - ts))
         print(f'SEEDING COMPLETE' if done else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
