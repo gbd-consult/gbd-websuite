@@ -15,7 +15,7 @@ import gws.tools.vendor.slon as slon
 
 from . import error, spec
 
-config_path_pattern = r'\bconfig\.(py|json|yaml)$'
+config_path_pattern = r'\bconfig\.(py|json|yaml|cx)$'
 config_function_name = 'config'
 
 
@@ -32,9 +32,6 @@ def parse_main(path):
     """Read and parse the main config file"""
 
     dct = _read(path) or {}
-
-    with open(gws.VAR_DIR + '/config/config.parsed.json', 'wt') as fp:
-        json.dump(dct, fp, indent=4, ensure_ascii=False)
 
     prj_configs = []
     for pc in dct.pop('projects', []):
@@ -74,9 +71,12 @@ def _read(path):
     if not os.path.exists(path):
         raise error.ParseError('file not found', path, '', '')
     try:
-        return _read2(path)
+        dct = _read2(path)
     except Exception as e:
         raise error.ParseError('read error: %s' % e, path, '', '') from e
+
+    _save_intermediate(path, json.dumps(dct, indent=4), 'json')
+    return dct
 
 
 def _read2(path):
@@ -99,37 +99,31 @@ def _read2(path):
 
 
 def _parse_cx_config(path):
+    def _err(exc, path, line):
+        return _syntax_error(gws.tools.misc.read_file(path), repr(exc), line)
+
     try:
         tpl = chartreux.compile_path(
             path,
             syntax={'start': '{{', 'end': '}}'},
         )
     except chartreux.compiler.Error as e:
-        with open(e.path) as fp:
-            _display_syntax_error(fp.read(), e.message, e.line)
-        raise ValueError('syntax error')
-
-    def err(exc, path, line):
-        with open(path) as fp:
-            _display_syntax_error(fp.read(), repr(exc), line)
-        raise ValueError('syntax error')
+        return _syntax_error(gws.tools.misc.read_file(path), e.message, e.line)
 
     src = chartreux.call(
         tpl,
         context={'true': True, 'false': False},
-        error=err)
+        error=_err)
 
-    with open(gws.VAR_DIR + '/config/config.parsed.slon', 'wt') as fp:
-        fp.write(src)
+    _save_intermediate(path, src, 'slon')
 
     try:
         return slon.loads(src, as_object=True)
     except slon.DecodeError as e:
-        _display_syntax_error(src, e.args[0], e.args[1])
-        raise ValueError('syntax error')
+        return _syntax_error(src, e.args[0], e.args[1])
 
 
-def _display_syntax_error(src, message, line, context=10):
+def _syntax_error(src, message, line, context=10):
     gws.log.error('CONFIGURATION SYNTAX ERROR')
     gws.log.error(message)
     gws.log.error('-' * 40)
@@ -142,6 +136,7 @@ def _display_syntax_error(src, message, line, context=10):
         if n == line:
             t = '>>>' + t
         gws.log.error(t)
+    raise ValueError('syntax error')
 
 
 def _parse_multi_project(cfg, path):
@@ -187,3 +182,9 @@ def _deep_format(x, a):
     if isinstance(x, str):
         return re.sub(_multi_placeholder_re, lambda m: a.get(m.group(1), m.group(0)), x)
     return x
+
+
+def _save_intermediate(path, txt, ext):
+    p = gws.tools.misc.parse_path(path)
+    d = gws.VAR_DIR + '/config'
+    gws.tools.misc.write_file(f"{d}/{p['name']}.parsed.{ext}", txt)
