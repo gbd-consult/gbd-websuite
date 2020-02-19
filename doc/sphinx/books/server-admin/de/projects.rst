@@ -23,23 +23,23 @@ Projekt-Konfigurationen
 
 Eine Projektkonfiguration sollte mindestens die Konfiguration ``title`` und eine ``Map`` enthalten. Einige Optionen, wie ``access``, ``assets`` und ``client`` überschreiben die jeweiligen Anwendungs- und Webseitenoptionen. ``printer`` beschreibt Projektdruckvorlagen (siehe `doc:`print`) ::
 
-{
-    "title": "Hello",
-    "uid": "project1",
-    "map": {
-        "view": {
-            "extent": [554000, 6461000, 954000, 6861000],
-            "scales": [1e3, 5e3, 1e4]
-        },
-        "layers": [
-            {
-                "title": "OpenStreetMap",
-                "type": "client",
-                "kind": "osm"
-            }
-        ]
+    {
+        "title": "Hello",
+        "uid": "project1",
+        "map": {
+          "view": {
+              "extent": [554000, 6461000, 954000, 6861000],
+              "scales": [1e3, 5e3, 1e4]
+          },
+          "layers": [
+                {
+                  "title": "OpenStreetMap",
+                  "type": "client",
+                  "kind": "osm"
+                }
+            ]
+        }
     }
-}
 
 
 Karten

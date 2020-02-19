@@ -10,12 +10,12 @@ Unterstützte Dienste
 
 Derzeit werden folgende Dienste unterstützt:
 
-wms
+WMS
 ~~~
 
 Der WMS-Dienst sind vollständig gemäß der Eigenschaften der Version 1.3.0 implementiert.
 
-wfs
+WFS
 ~~~
 
 Der WFS-Dienst sind vollständig gemäß der Eigenschaften der Version 2.0 implementiert. Der WFS-Dienst bietet die folgenden Funktionen:
@@ -24,20 +24,20 @@ Der WFS-Dienst sind vollständig gemäß der Eigenschaften der Version 2.0 imple
 - `KVPEncoding`
 - `ImplementsResultPaging`
 
-inspirewms
-~~~
+# inspirewms
+# ~~~~~~~~~~
 
-inspirewfs
-~~~
+# inspirewfs
+# ~~~~~~~~~~
 
-meta
-~~~
+# meta
+# ~~~~
 
 ISO19115 metadata service
 
 
-csw
-~~~
+# CSW
+# ~~~
 
 
 

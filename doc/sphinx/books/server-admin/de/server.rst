@@ -1,5 +1,5 @@
 Server Konfiguration
-======================
+====================
 
 Die GBD WebSuite betreibt intern mehrere Servermodule:
 
