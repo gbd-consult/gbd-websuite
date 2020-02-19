@@ -58,10 +58,11 @@ export async function main() {
         projectUid: glob['GWS_PROJECT_UID'],
         cssBreakpoints: require('./css/node_modules/breakpoints'),
         labels: require('./lang'),
-        locale: glob['GWS_LOCALE'],
+        locale: glob['GWS_LOCALE'] || 'en_CA',
         tags: mods.reduce((o, m) => Object.assign(o, m.tags), {}),
         defaultHelpUrl: '',
         defaultHomeUrl: '/',
+        version: require('./version').VERSION,
         domNode
     };
 
@@ -72,16 +73,10 @@ export async function main() {
         }
     }
 
-    // NB assuming our script to be called gws-client-whatever.js
+    let release = options.version.replace(/\.\d+$/, '');
+    let lang = options.locale.split('_')[0];
 
-    let scripts = document.getElementsByTagName('script');
-    if (scripts) {
-        for (let i = 0; i < scripts.length; i++) {
-            let m = (scripts[i].src || '').match(/^(.+?)gws-client[^\/]+$/);
-            if (m)
-                options.defaultHelpUrl = m[1] + 'help_' + options.locale + '.html';
-        }
-    }
+    options.defaultHelpUrl = `https://gws.gbd-consult.de/doc/${release}/help_${lang}.html`;
 
     let app = await gws.Application.create(options);
     if (app) {

@@ -41,7 +41,8 @@ client: spec
     cd $(CWD)
 
 doc: spec
-	sphinx-build -b html $(SPHINXOPTS) "$(SPHINXBASE)" $(SPHINXBUILD)
+	sphinx-build -b html $(SPHINXOPTS) "$(SPHINXBASE)" $(SPHINXBUILD) && \
+	$(PYTHON) $(SPHINXBASE)/makehelp.py
 
 doc-dev: spec
 	sphinx-autobuild -B -b html $(SPHINXOPTS) "$(SPHINXBASE)" $(SPHINXBUILD)

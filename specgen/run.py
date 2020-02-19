@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
     paths = [
         base + '/app/gws/core/const.py',
+        base + '/client/src/version.js',
     ]
 
     for path in paths:
