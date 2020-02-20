@@ -6,7 +6,7 @@ import gws
 import gws.web
 import gws.config
 import gws.common.template
-import gws.ext.tool.alkis
+import gws.ext.helper.alkis
 import gws.tools.net
 import gws.tools.date
 import gws.gis.feature
@@ -71,7 +71,7 @@ class GetDataResponse(t.Data):
 
 
 class Object(gws.ActionObject):
-    alkis: gws.ext.tool.alkis.Object
+    alkis: gws.ext.helper.alkis.Object
     request_url: str
     feature_format: t.IFormat
     data_table_name: str
@@ -81,8 +81,8 @@ class Object(gws.ActionObject):
         super().configure()
 
         self.alkis = t.cast(
-            gws.ext.tool.alkis.Object,
-            self.find_first('gws.ext.tool.alkis'))
+            gws.ext.helper.alkis.Object,
+            self.find_first('gws.ext.helper.alkis'))
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('dprocon cannot init, no alkis index found')
             return

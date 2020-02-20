@@ -12,7 +12,7 @@ auth.providers+ { type "file" path "users.json" }
 api.actions+ { type "auth" }
 api.actions+ { type "storage" }
 
-tools+ {
+helpers+ {
     type "storage"
     backend "sqlite"
     path "/gws-var/test_storage.sqlite"

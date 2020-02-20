@@ -12,7 +12,7 @@ from .util.connection import AlkisConnection
 
 
 class Config(t.WithType):
-    """ALKIS tool."""
+    """ALKIS helper."""
 
     db: str = ''  #: database provider ID
     crs: t.Crs  #: CRS for the alkis data

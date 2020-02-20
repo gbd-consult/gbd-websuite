@@ -1,5 +1,5 @@
 import itertools
-import gws.ext.tool.csv
+import gws.ext.helper.csv
 import gws.common.model
 
 import gws
@@ -99,7 +99,7 @@ def as_csv(target_object: t.IObject, fs_features: t.List[t.IFeature], model: gws
 
     att_names = model.attribute_names
 
-    csv: gws.ext.tool.csv.Object = target_object.find_first('gws.ext.tool.csv')
+    csv: gws.ext.helper.csv.Object = target_object.find_first('gws.ext.helper.csv')
     writer = csv.writer()
 
     writer.write_headers([r.title for r in model.rules])

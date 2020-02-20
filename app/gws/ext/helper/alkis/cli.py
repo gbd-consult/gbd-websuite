@@ -8,7 +8,7 @@ import gws.config.loader
 import gws.tools.clihelpers as clihelpers
 import gws.tools.json2
 
-import gws.ext.tool.alkis as alkis
+import gws.ext.helper.alkis as alkis
 
 import gws.types as t
 
@@ -62,11 +62,11 @@ def drop_index():
 
 
 def _get_alkis() -> t.Optional[alkis.Object]:
-    gws.config.loader.load()
+    root = gws.config.loader.load()
 
-    a: alkis.Object = gws.config.root().application.find_first('gws.ext.tool.alkis')
+    a = t.cast(alkis.Object, root.find_first('gws.ext.helper.alkis'))
     if not a:
-        gws.log.error('ALKIS tool is not configured')
+        gws.log.error('ALKIS helper is not configured')
         return
     if not a.has_source:
         gws.log.error('ALKIS source data not found')

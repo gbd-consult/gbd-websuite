@@ -42,7 +42,7 @@ class ext:
         class Config:
             pass
 
-    class tool:
+    class helper:
         class Config:
             pass
 

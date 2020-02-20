@@ -1,5 +1,8 @@
 import gws.config.loader
+import gws.ext.helper.storage
 import _test.util as u
+
+import gws.types as t
 
 d1 = {'name': 'Name1', 'num': 11, 'prop': 'Val1'}
 d2 = {'name': 'Name2', 'num': 22, 'prop': 'Val2'}
@@ -13,7 +16,9 @@ def data(category, n):
     return {'name': f'_{category}_{n}', 'num': n * 10}
 
 
-storage_obj = gws.config.loader.load().find_first('gws.ext.tool.storage')
+storage_obj = t.cast(
+    gws.ext.helper.storage.Object,
+    gws.config.loader.load().find_first('gws.ext.helper.storage'))
 
 
 def populate_storage():

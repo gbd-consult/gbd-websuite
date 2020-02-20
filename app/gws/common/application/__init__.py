@@ -68,7 +68,7 @@ class Config(t.WithAccess):
     seeding: SeedingConfig = {}  #: configuration for seeding jobs
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
     timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
-    tools: t.Optional[t.List[t.ext.tool.Config]]
+    helpers: t.Optional[t.List[t.ext.helper.Config]]
     web: t.Optional[WebConfig] = {}  #: webserver configuration
 
 
@@ -107,7 +107,7 @@ class Object(gws.Object, t.IApplication):
 
         # NB the order of initialization is important
         # - db
-        # - tools
+        # - helpers
         # - auth providers
         # - actions, client, web
         # - finally, projects
@@ -115,8 +115,8 @@ class Object(gws.Object, t.IApplication):
         for p in self.var('db.providers', default=[]):
             self.add_child('gws.ext.db.provider', p)
 
-        for p in self.var('tools', default=[]):
-            self.add_child('gws.ext.tool', p)
+        for p in self.var('helpers', default=[]):
+            self.add_child('gws.ext.helper', p)
 
         gws.common.auth.init()
 

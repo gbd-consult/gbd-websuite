@@ -1,7 +1,7 @@
 import gws.web
 import gws.types as t
 
-import gws.ext.tool.alkis as alkis
+import gws.ext.helper.alkis as alkis
 
 
 class Config(t.WithType):
@@ -35,9 +35,9 @@ class Object(gws.Object):
 
     def configure(self):
         super().configure()
-        self.alkis: alkis.Object = self.find_first('gws.ext.tool.alkis')
+        self.alkis = t.cast(alkis.Object, self.find_first('gws.ext.helper.alkis'))
         if not self.alkis:
-            raise ValueError('alkis tool not found')
+            raise ValueError('alkis helper not found')
 
     def api_decode(self, req: t.IRequest, p: GeocoderParams) -> GeocoderResponse:
 

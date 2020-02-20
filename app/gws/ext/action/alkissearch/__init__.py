@@ -13,8 +13,8 @@ import gws.tools.date
 import gws.tools.job
 import gws.web
 
-import gws.ext.tool.alkis as alkis
-import gws.ext.tool.alkis.util.export as alkis_export
+import gws.ext.helper.alkis as alkis
+import gws.ext.helper.alkis.util.export as alkis_export
 
 import gws.types as t
 
@@ -229,7 +229,7 @@ class Object(gws.ActionObject):
     def configure(self):
         super().configure()
 
-        self.alkis: gws.ext.tool.alkis.Object = self.find_first('gws.ext.tool.alkis')
+        self.alkis: gws.ext.helper.alkis.Object = self.find_first('gws.ext.helper.alkis')
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('alkissearch cannot init, no alkis index found')
             return

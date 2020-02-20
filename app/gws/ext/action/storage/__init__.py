@@ -1,6 +1,6 @@
 import gws
 import gws.web.error
-import gws.ext.tool.storage
+import gws.ext.helper.storage
 
 import gws.types as t
 
@@ -48,30 +48,30 @@ class Config(t.WithTypeAndAccess):
 class Object(gws.ActionObject):
 
     @gws.cached_property
-    def storage(self) -> gws.ext.tool.storage.Object:
-        obj: gws.ext.tool.storage.Object = self.find_first('gws.ext.tool.storage')
+    def storage(self) -> gws.ext.helper.storage.Object:
+        obj: gws.ext.helper.storage.Object = self.find_first('gws.ext.helper.storage')
         return obj
 
     def api_write(self, req: t.IRequest, p: WriteParams) -> WriteResponse:
         try:
             entry = self.storage.write(p.entry, req.user, p.data)
-        except gws.ext.tool.storage.AccessDenied:
+        except gws.ext.helper.storage.AccessDenied:
             raise gws.web.error.Forbidden()
         return WriteResponse(entry=entry)
 
     def api_delete(self, req: t.IRequest, p: DeleteParams) -> DeleteResponse:
         try:
             self.storage.delete(p.entry, req.user)
-        except gws.ext.tool.storage.AccessDenied:
+        except gws.ext.helper.storage.AccessDenied:
             raise gws.web.error.Forbidden()
         return DeleteResponse()
 
     def api_read(self, req: t.IRequest, p: ReadParams) -> ReadResponse:
         try:
             element = self.storage.read(p.entry, req.user)
-        except gws.ext.tool.storage.NotFound:
+        except gws.ext.helper.storage.NotFound:
             raise gws.web.error.NotFound()
-        except gws.ext.tool.storage.AccessDenied:
+        except gws.ext.helper.storage.AccessDenied:
             raise gws.web.error.Forbidden()
         return ReadResponse(element)
 
