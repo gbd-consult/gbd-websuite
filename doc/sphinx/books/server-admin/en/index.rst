@@ -30,7 +30,7 @@ Documentation for system administrators who configure the GBD WebSuite Server.
     cache.rst
     features.rst
     styles.rst
-    remoteadmin.rst
+    storage.rst
     configref.rst
     cliref.rst
 

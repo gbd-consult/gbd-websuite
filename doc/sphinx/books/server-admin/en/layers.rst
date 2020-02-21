@@ -20,7 +20,7 @@ These layers display map imagery from remote services. All these types require a
 wms
 ~~~
 
-You can speicify which layers you want to use. All WMS layers are reprojected, combined and displayed as a single image ::
+You can speicify which WMS layers you want to use. All WMS layers are reprojected, combined and displayed as a single image ::
 
     {
         "type": "wms",
@@ -94,7 +94,7 @@ QGIS/WMS layers display individual layers from a Qgis project as a single flat i
 Vector layers
 -------------
 
-These layers take geometry data from external sources and display it as vectors using client-side Javascript. You can configure the appearance of the layer using the ``style`` option.
+These layers take geometries and data from external sources and display it using client-side Javascript. You can configure the appearance of the layer using the ``style`` option.
 
 postgres
 ~~~~~~~~
@@ -104,6 +104,7 @@ Postgres layers take geometries from an Postgres table. You need to specify the 
         {
             "title": "Example",
             "type": "postgres",
+            "db": "my_db_connection",
             "table": {
                 "name": "myschema.mytable",
                 "keyColumn": "id",
@@ -126,6 +127,17 @@ GeoJSON layers show vector features from a GeoJSON file ::
             "title": "Example",
             "type": "geojson",
             "path": "/data/example.geojson",
+        }
+
+wfs
+~~~
+
+Shows vector features from an external WFS service ::
+
+        {
+            "title": "Example",
+            "type": "wfs",
+            "url": "https://www.wfs.nrw.de/geobasis/wfs_nw_dvg"
         }
 
 

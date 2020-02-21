@@ -4,15 +4,17 @@ Styling
 Vector feature styles can be customized via CSS. GBD WebSuite supports standard CSS properties for SVG (for example, ``fill``) and a few custom properties, which must be prefixed with ``--`` in your CSS.
 
 TABLE
-``--label-background``~background color for feature labels
+``--with-labels``~``all`` to render all labels, ``none`` to skip labels
 ``--label-fill``~foreground color for labels
 ``--label-font-size``~label font size
+``--label-stroke-width``~label stroke color
+``--label-stroke``~label stroke color
 ``--label-offset-x``~label offset from the automatic position
 ``--label-offset-y``~label offset from the automatic position
 ``--label-min-resolution``~min resolution to display labels
 ``--label-max-resolution``~max resolution to display labels
 
-``--mark``~end of line or edge marker (``circle``)
+``--mark``~type of the end of line or edge marker (``circle``, ``square``, ``cross``, ``arrow`` )
 ``--mark-fill``~fill color for the marker
 ``--mark-size``~marker size
 ``--mark-stroke-width``~marker stroke color
@@ -24,7 +26,7 @@ TABLE
 Styling vector layers
 ---------------------
 
-For vector layers, like ``sql`` or ``geojson`` layers, you can place your css rules directly in the configuration file under ``style``::
+For vector layers, like ``postgres`` layers, you can place your css rules directly in the configuration file under ``style``::
 
     "layers": [
         ...
@@ -38,7 +40,7 @@ For vector layers, like ``sql`` or ``geojson`` layers, you can place your css ru
             }
         }
 
-Alternatively, you can include the rules in your project-related CSS file (see :doc:`projects`), and set ``text`` to the CSS selector ::
+Alternatively, you can include the rules in your project-related CSS file (see :doc:`projects`), and use the ``cssSelector`` style type ::
 
     // In your css file
 
@@ -53,10 +55,10 @@ Alternatively, you can include the rules in your project-related CSS file (see :
 
     {
         "title": "My Vector layer",
-        "type": "sql",
+        "type": "postgres",
         ...
         "style": {
-            "type": "css",
+            "type": "cssSelector",
             "text": ".myVectorLayer"
         }
     }
@@ -68,11 +70,7 @@ You can customize styles for built-in features, like search results markers or m
 
 TABLE
 ``.gws .modMarkerFeature``~search results marker
-``.gws .modAnnotatePoint``~point measure
-``.gws .modAnnotateLine``~line measure
-``.gws .modAnnotatePolygon``~polygon measure
-``.gws .modAnnotateBox``~box measure
-``.gws .modAnnotateCircle``~circle measure
+``.gws .modAnnotateFeature``~measured/annotated geometry
 /TABLE
 
 
@@ -82,7 +80,7 @@ Styling dimensions
 The dimensioning plugin uses these CSS selectors:
 
 TABLE
-``.gws .modDimensionDimLine``~main dimension line. For dimension main lines, the ``--marker`` property supports additional values ``cross`` and ``arrow``.
+``.gws .modDimensionDimLine``~main dimension line
 ``.gws .modDimensionDimPlumb``~a "plumb" line from the end of the main line to the edge of the object
 ``.gws .modDimensionDimCross``~a cross at the end of the main line
 ``.gws .modDimensionDimArrow``~an arrow at the end of the main line
