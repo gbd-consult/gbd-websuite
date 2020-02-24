@@ -6,7 +6,7 @@ HTML-Vorlagen
 
 Eine HTML-Vorlage ist eine Text- / HTML-Datei mit externen Variablen, die in `` {...} `` eingeschlossen sind. Zusätzlich gibt es grundlegende Programmierkonstrukte (Bedingungen, Schleifen, Funktionen), mit denen die Vorlagenausgabe in Abhängigkeit von den Variablen geändert werden kann.
 
-Für Projekt-, Layer- und Feature-Vorlagen stellt das System Objekte `` project``, `` layer`` und `` feature`` mit ihren jeweiligen Eigenschaften zur Verfügung, die beim Templating verwendet werden können. Hier ist ein Beispiel für eine Formatierungsvorlage von Features. ::
+Für Projekt-, Layer- und Feature-Vorlagen stellt das System Objekte `` project`` , `` layer`` und `` feature`` mit ihren jeweiligen Eigenschaften zur Verfügung, die beim Templating verwendet werden können. Hier ist ein Beispiel für eine Formatierungsvorlage von Features. ::
 
 
     ## <- diese Zeichenkombination markiert Kommentare
