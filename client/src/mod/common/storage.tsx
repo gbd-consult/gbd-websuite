@@ -40,7 +40,7 @@ const StoreKeys = [
 type ButtonsProps = ViewProps & ButtonsArgs;
 
 export function auxButtons(cc: gws.types.IController, args: ButtonsArgs) {
-    return _master(cc).auxButtons(args);
+    return _master(cc) ? _master(cc).auxButtons(args) : null;
 }
 
 class Dialog extends gws.View<ViewProps> {

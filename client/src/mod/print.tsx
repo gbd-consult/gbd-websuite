@@ -323,7 +323,8 @@ class PrintDialog extends gws.View<PrintViewProps> {
                     <gws.ui.Button label={this.__('modPrintCancel')} whenTouched={cancel}/>
                 ]}
             >
-                <gws.ui.Progress label={label} value={job.progress}/>
+                <gws.ui.Progress value={job.progress}/>
+                <gws.ui.TextBlock content={label} />
             </gws.ui.Dialog>;
         }
 
