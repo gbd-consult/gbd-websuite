@@ -17,6 +17,10 @@ interface IMarkerContent {
 
 class MarkerLayer extends gws.map.layer.FeatureLayer {
     controller: MarkerController;
+
+    get printItem() {
+        return null;
+    }
 }
 
 class MarkerController extends gws.Controller {
