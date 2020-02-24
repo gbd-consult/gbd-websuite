@@ -60,7 +60,7 @@ class Object(gws.Object, t.IModel):
 
         p = self.var('rules')
         if p:
-            self.rules = [self._normalize_rule(r) for r in p]
+            self.rules = [self._configure_rule(r) for r in p]
         self.geometry_type = self.var('geometryType')
         self.geometry_crs = self.var('crs')
 
@@ -113,7 +113,8 @@ class Object(gws.Object, t.IModel):
         # no value/source/format present - return values[name]
         return d.get(rule.name, '')
 
-    def _normalize_rule(self, r):
+    def _configure_rule(self, rule):
+        r = t.ModelRule(rule)
         if not r.get('title'):
             r.title = r.get('name')
         if not r.get('name'):
