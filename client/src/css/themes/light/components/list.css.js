@@ -5,7 +5,7 @@ module.exports = v => ({
         color: v.LIST_ITEM_COLOR,
     },
 
-    '.cmpListButton': {
+    '.cmpListRow': {
         '.uiIconButton': {
             ...v.ICON_SIZE('small'),
         }

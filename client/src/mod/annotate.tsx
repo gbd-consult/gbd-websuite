@@ -484,7 +484,7 @@ class AnnotateListTab extends gws.View<ViewProps> {
                                 cc.selectFeature(f, true);
                                 cc.app.startTool('Tool.Annotate.Modify');
                             }}
-                            content={f.label}
+                            content={f.label || '...'}
                         />}
 
                         rightButton={f => <gws.components.list.Button
