@@ -16,7 +16,7 @@ Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis
 * Bemaßung von Segmentlängen in der Karte
 * Benutzer-Authentifizierung (LDAP-, Postgres- und Datei-basiert)
 * Editieren von Punkten, Linien und Flächen
-* ALKIS Integration (Flurstücksuche, Beauskunftung und Druck)
+* ALKIS Integration (Flurstückssuche, Beauskunftung und Druck)
 * Konfigurierbare Suche (Nominatim, ALKIS-Adressen und Postgres)
 * Schnittstelle zur Fachanwendung D-ProCon (Demographische Analysen)
 * Schnittstelle zur Fachanwendung GekoS Online (E-Government)

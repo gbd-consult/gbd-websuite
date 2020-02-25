@@ -1,8 +1,10 @@
 Suche
 =====
 
-Des Weiteren gelangt man anhand der Menüleiste |menu| zur |search| ``Suche``.
-Hier ist es möglich nach Namen von Straßen, Schulen, Krankenhäusern, Geschäften und ähnlichem zu suchen.
+Die integrierte |search| ``Suche`` der GBD WebSuite kann unterschiedlich konfiguriert werden. Die Suche kann Nominatim, sprich OSM-Daten, durchsuchen sowie ALKIS-Adressen und Postgres-Datenbanken.
+Bei der Nominatim-Suche werden die Objekteigenschaften von OSM-Objekten durchsucht. Bei der ALKIS-Suche werden Attribute des amtlichen Liegenschaftskataster durchsucht und bei der Suche in
+Postgres-Datenbanken wird auf Informationen einzelner Spalten der Datenbank zugegriffen. 
+
 
 .. figure:: ../../../screenshots/de/client-user/search_menue.png
   :align: center

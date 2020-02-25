@@ -2,9 +2,13 @@ Drucken
 =======
 
 
-Über das |print| ``Drucken``-Werkzeug wird eine PDF generiert, die sowohl gespeichert, als auch ausgedruckt werden kann.
+Mithilfe des |print| ``Drucken``-Werkzeugs kann eine PDF generiert werden, die gespeichert und gedruckt werden kann.
+Die GBD WebSuite kann in QGIS erstellte Druckvorlagen übernehmen und in Form einer Auswahl bereitstellen.
+Zusätzlich auf der Karte gezeichnete, beschriftete oder durch eine Abfrage markierte Objekte werden dabei in die Druckkarte übernommen.
+Bei Bedarf kann auch ein Titel manuell eingefügt werden und die Druckqualität bestimmt werden.
 
-Beim Aktivieren der Druckfunktion öffnet sich auf der Karte ein Kartenrahmen, der den zu druckenden Auswahlbereich symbolisiert. Dieser kann beliebig verschoben werden. Mit der linken Maustaste und dem Mausrad kann der entsprechende Ausschnitt und die Zoomstufe eingestellt werden.
+Beim Aktivieren der Druckfunktion öffnet sich auf der Karte ein Kartenrahmen, der den zu druckenden Auswahlbereich symbolisiert. Dieser kann beliebig verschoben werden.
+Mit der linken Maustaste und dem Mausrad kann der entsprechende Ausschnitt und die Zoomstufe eingestellt werden.
 
 
  .. figure:: ../../../screenshots/de/client-user/print1.png

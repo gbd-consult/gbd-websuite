@@ -1,12 +1,19 @@
 Flurstückssuche
-===============
+==============
 
-In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstückssuche``, welche auf amtlichen ALKIS-Daten beruht. Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
+In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstückssuche``, welche auf amtlichen ALKIS-Daten beruht. Diese Funktion steht erst zur Verfügung, wenn ein Benutzer mit
+ALKIS-Zugrissrechten angemeldet ist. Die Datenbank auf der die Suche basiert, logt jede Anfrage. So kann anhand eines Aktenzeichens  verfolgt werden welcher Benutzer welche Suche gestartet hat.
+
+Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
+
 
 Starten der Flurstückssuche
----------------------------
+--------------------------
 
-Öffnet man die Flurstückssuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl, welche auf verschiedene Weisen verwendet werden können. Zum einen ist es möglich nach einem speziellen Flurstück zu suchen, indem die individuellen Daten eingegeben werden. Zum anderen können die Felder als Filter verwendet werden.
+Öffnet man die Flurstückssuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen.
+Hier stehen verschiedene Suchfelder zur Auswahl, welche auf verschiedene Weisen verwendet werden können.
+Zum einen ist es möglich nach einem speziellen Flurstück zu suchen, indem die individuellen Daten eingegeben werden. Zum anderen können die Felder als Filter verwendet werden.
+So kann zum Beispiel ohne Eigentümer oder nur nach Eigentümer oder Buchungsblattnummer gesucht werden.
 
 Die Flurstückssuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden.
 
@@ -110,17 +117,17 @@ Wählen Sie die gewünschten Daten für den Export aus und klicken Sie auf ``Exp
 
 Sobald |print| gedrückt wird, startet der Druck. Dies bedeutet dass der Kartenausschnitt vorher gewählt werden muss.
 
-Save
-^^^^
+Speichern
+^^^^^^^^^
 
-Vergeben Sie einen gewünschten Namen und bestätigen Sie durch Klicken auf das Häckchen.
+Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
 
-Load
-^^^^
+Laden
+^^^^^
 
-Wählen Sie eine vorhande Datei und laden Sie diese durch Klicken auf das Häckchen.
+Wählen Sie eine vorhandene Datei und laden Sie diese durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_load.png
 
@@ -184,6 +191,6 @@ Das Werkzeug |select| ``Auswahl eines Flurstücks in der Karte`` ermöglicht die
 
 .. Protokollierter Zugang zu Personendaten
 .. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. Zum einbehalten der Datenschutzrechte gibt es folgendes Werkzeug in der Flurstücksuche. Wenn jemand nach personenbezogenen Daten wie Vorname und Name sucht, muss das Häckchen bei  ``Zugang zu Personendaten`` gesetzt werden. Es öffnet sich ein Fenster in dem ein firmeninternes Aktenzeichen vergeben werden muss. Dieses Aktenzeichen verifiziert den Erhalt der personenbezogenen Daten. Außerdem wird jede Anfrag in einer PostGIS Datei abgelegt, sodass jede Anfrage protokolliert und somit kontrolliert werden kann.
+.. Zum einbehalten der Datenschutzrechte gibt es folgendes Werkzeug in der Flurstückssuche. Wenn jemand nach personenbezogenen Daten wie Vorname und Name sucht, muss das Häckchen bei  ``Zugang zu Personendaten`` gesetzt werden. Es öffnet sich ein Fenster in dem ein firmeninternes Aktenzeichen vergeben werden muss. Dieses Aktenzeichen verifiziert den Erhalt der personenbezogenen Daten. Außerdem wird jede Anfrag in einer PostGIS Datei abgelegt, sodass jede Anfrage protokolliert und somit kontrolliert werden kann.
 
 .. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_search_data_rights.png
