@@ -28,9 +28,6 @@ def create_shared(obj: t.IObject, cfg) -> 'Object':
     return prov
 
 
-PING_TIMEOUT = 5
-
-
 class Object(gws.common.db.provider.Sql):
     error = driver.Error
 
@@ -41,10 +38,13 @@ class Object(gws.common.db.provider.Sql):
         }
         for p in 'host', 'port', 'user', 'password', 'database':
             params[p] = self.var(p)
-        timeout = self.var('timeout')
-        if timeout:
+        p = self.var('connectTimeout')
+        if p:
+            params['connect_timeout'] = p
+        p = self.var('timeout')
+        if p:
             # statement_timeout is in ms
-            params['options'] = '-c statement_timeout=%d' % (timeout * 1000)
+            params['options'] = '-c statement_timeout={p * 1000}'
         return params
 
     def connect(self, extra_connect_params=None) -> driver.Connection:
@@ -54,10 +54,8 @@ class Object(gws.common.db.provider.Sql):
         super().configure()
 
         def ping():
-            p = self.connect_params
-            p['connect_timeout'] = PING_TIMEOUT
             try:
-                with driver.Connection(p):
+                with driver.Connection(self.connect_params):
                     gws.log.info(f'db connection "{self.uid}": ok')
             except driver.Error as e:
                 raise gws.Error(f'cannot open db connection "{self.uid}"', e.args[0]) from e

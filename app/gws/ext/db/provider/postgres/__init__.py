@@ -10,5 +10,6 @@ class Config(t.WithType):
     password: str  #: password
     port: int = 5432  #: database port
     timeout: t.Duration = 0  #: query timeout
+    connectTimeout: t.Duration = 0  #: connection timeout
     uid: str  #: unique id
     user: str  #: username
