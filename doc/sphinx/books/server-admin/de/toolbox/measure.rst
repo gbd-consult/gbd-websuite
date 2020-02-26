@@ -1,18 +1,25 @@
 Markieren & Messen
 ==================
 
-Nach dem Aktivieren des |measure| ``Markieren & Messen``-Werkzeuges, stehen fünf verschiedene Werkzeuge zur Verfügung:
+Beim Aktivieren des |measure| ``Markieren & Messen``-Werkzeugs öffnet sich automatisch der Menüpunkt ``Markierungen`` in der Menüleiste.
+Unter diesem Menüpunkt werden alle erstellten Objekte aufgelistet.
+
+Das ``Markieren & Messen``-Werkzeug kann mit Hilfe von fünf verschiedenen Geometrischen Formen angewendet werden:
 
 **Punktmarkierung** |point|,
-**Distanz-** |distance|,
+**Linien-** |distance|,
 **Rechteck-** |quadrat|,
 **Polygon-** |polygon|,
-und **Kreisflächenmessung** |measurecircle|
+und **Kreisgeometrie** |measurecircle|
 
 .. figure:: ../../../screenshots/de/client-user/marking_tool.png
   :align: center
 
-Die |point| **Punktmarkierung** dient lediglich dem Markierungszweck. Ein Messen ist hier nicht möglich. Aktivieren Sie das Werkzeug und klicken Sie mit der linken Maustaste auf einen Punkt in der Karte. Dieser wird standardmäßig mit der X- und Y-Koordinate beschriftet. Sie können die Beschriftung beliebig anpassen. Nutzen Sie dazu das sich automatisch öffnende Beschriftungsfeld in der Menüleiste.
+Die |point| **Punktmarkierung** dient dem Markierungszweck. Ein Messen ist hier nicht möglich.
+Aktivieren Sie das Werkzeug und klicken Sie mit der linken Maustaste auf den gewünschten Punkt in der Karte.
+Sofort wird ein Punkt gesetzt, welcher standardmäßig mit X- und Y-Koordinate beschriftet wird. Sie können die Beschriftung beliebig anpassen.
+Nutzen Sie dazu das sich automatisch öffnende ``Markierung bearbeiten``-Menü in der Menüleiste.
+Ausführlichere Darstellungskonfigurationen für Geometrie und Beschriftung sind unter |style| ``Darstellung`` vorhanden.
 
 Bei der |distance| **Distanzmessung** wird mit der linken Maustaste auf die Karte ein Startpunkt und mit jedem weiteren Klick ein weiterer Punkt gesetzt. Mit einem Doppelklick wird der Endpunkt gesetzt und die Länge der Strecke angezeigt.
 
@@ -22,10 +29,32 @@ Bei der |polygon| **Polygonflächenmessung** kann durch das Setzen mehrerer Punk
 
 Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit einem Klick in die Karte gesetzt, dies ist der Kreismittelpunkt. Mit einem zweiten Klick um den Kreis, wird der Radius festgelegt. Es wird nun ein Kreis gezeichnet, welcher mit dem Radius in Metern beschriftet wird. Der Radius sowie die Beschriftung können nachträglich verändert werden. Hierzu nutzen Sie das entsprechende Feld in dem sich geöffneten Menüfenster.
 
-.. note::
-  Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| ``Räumliche Suche`` zur Verfügung. Über die Symbole in der Werkzeugleiste können Sie die Zeichnung bestätigen |savedraw| oder abbrechen |canceldraw|. Außerdem kann jedes Objekt nachträglich angepasst werden. Wählen Sie dazu das Objekt im Menü ``Markierungen`` an. Nun können Sie neue Stützpunkt vergeben. Bei der Kreisflächenmessung kann der Radius angepasst werden. Mit |delete| kann man die erstellte Linie wieder löschen. Per |delete| kann das jeweilige Objekt gelöscht werden.
+Über die Symbole in der Werkzeugleiste können Sie zusätzlich das Zeichnen jeglischer Geometrie bestätigen |savedraw| oder abbrechen |canceldraw|.
+Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| ``Räumliche Suche`` zur Verfügung.
 
-**Mögliche Felder für die Markierung**
+Eigenschaften
+-------------
+
+Jedes Objekt kann nachträglich angepasst werden. Wählen Sie dazu das Objekt im Menü ``Markierungen`` an und es öffnen sich automatisch die Objekteigenschaften.
+Nun können Sie die vorhanden Stützpunkte wieder bewegen und durch einen Doppelklick neue Stützpunkte setzen.
+Bei der Kreisflächenmessung kann der Radius angepasst werden. Bei jedem Objekt kann über den Reiter ``Platzhalter`` frei gewählt werden, ob die Längen in Meter oder Kilometer angegeben werden.
+
+.. figure:: ../../../screenshots/de/client-user/measure_info.png
+  :align: center
+
+
+Darstellungskonfigurationen
+---------------------------
+
+Über den Punkt |style| ``Darstellung`` gelangt man zu den ausführlichen Darstellungsoptionen für Geometrie und Beschriftung.
+
+.. figure:: ../../../screenshots/de/client-user/measure_combi.png
+  :align: center
+
+
+Mögliche Felder für die Markierung
+----------------------------------
+(dieser Punkt ist meiner Meinung nach nicht mehr von Nöten da wir den Platzhalter Reiter eingefügt haben)
 
 +------------------------+---------------------------------+
 | **Feld**               | **Erläuterung**                 |
@@ -49,10 +78,14 @@ Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit ein
 
 
 .. note::
- Wie bei anderen Werkzeugen auch kann dieses Werkzeug individuell angepasst werden. Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren. Falls die Messungen lieber in Kilometer oder ähnlichem erstellt werden sollen, kann auch dies angepasst werden.
+ Wie bei anderen Werkzeugen auch kann dieses Werkzeug individuell angepasst werden.
+ Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren.
+
 
 
  .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
+   :width: 30em
+ .. |style| image:: ../../../images/brush.svg
    :width: 30em
  .. |point| image:: ../../../images/g_point.svg
    :width: 30em
