@@ -359,7 +359,7 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
                     <Cell>
                         <gws.ui.Button
                             className="modAnnotateStyleButton"
-                            tooltip={this.props.controller.__('modAnnotateSaveButton')}
+                            tooltip={this.props.controller.__('modAnnotateStyleButton')}
                             whenTouched={() => cc.update({annotateTab: 'style'})}
                         />
                     </Cell>

@@ -43,6 +43,7 @@ class Config(t.Config):
     extentBuffer: t.Optional[int]  #: extent buffer
     layers: t.List[t.ext.layer.Config]  #: collection of layers for this map
     title: str = ''  #: map title
+    skipInvalidLayers: bool = False  #: remove invalid layers from the map
     uid: t.Optional[str]  #: unique id
     zoom: t.Optional[gws.gis.zoom.Config]  #: map scales and resolutions
 
@@ -103,10 +104,10 @@ class Object(gws.Object, t.IMap):
 
         self.center = self.var('center')
         if not self.center:
-            self.center = [
+            self.center = (
                 round(self.extent[0] + (self.extent[2] - self.extent[0]) / 2),
                 round(self.extent[1] + (self.extent[3] - self.extent[1]) / 2),
-            ]
+            )
 
         self.coordinate_precision = self.var('coordinatePrecision')
         if self.coordinate_precision is None:

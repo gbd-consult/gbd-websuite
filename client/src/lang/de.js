@@ -28,6 +28,7 @@ module.exports = {
     modAnnotateRadius: 'Radius',
     modAnnotateRemoveButton: 'Löschen',
     modAnnotateSaveButton: 'Aktualisieren',
+    modAnnotateStyleButton: 'Stil',
     modAnnotateSidebarTitle: 'Markierungen',
     modAnnotateSidebarDetailsTitle: 'Markierung bearbeiten',
     modAnnotateWidth: 'Breite',
