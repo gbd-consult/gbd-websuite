@@ -22,7 +22,7 @@ class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
 
-        ds = self.var('ds')
+        ds = self.var('dataSource')
 
         cfg = {
             'database': ds['dbname'],

@@ -231,7 +231,7 @@ class Layer(gws.Object, t.ILayer):
             elif self.var('uid'):
                 meta = t.MetaData(title=self.var('uid'))
             else:
-                raise gws.Error('no metadata found for layer')
+                meta = t.MetaData()
 
         if title:
             # title at the top level config overrides meta title

@@ -89,7 +89,7 @@ def _run(req, layer, prov: provider.Object, args: t.SearchArgs, total_limit, fea
 
     for f in fs:
         f.layer = layer
-        f.converter = layer or prov
+        f.converter = prov or layer
 
     gws.log.debug('SEARCH_END, found=%r', len(fs))
 

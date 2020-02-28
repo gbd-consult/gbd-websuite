@@ -255,7 +255,7 @@ class Object(gws.common.layer.Layer):
         if tab.startswith('(') or tab.upper().startswith('SELECT '):
             return
 
-        return {'type': 'qgispostgres', 'ds': ds}
+        return {'type': 'qgispostgres', 'dataSource': ds}
 
     def _wfs_search_provider(self, sl, ds):
         cfg = {
