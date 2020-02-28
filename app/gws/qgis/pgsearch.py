@@ -39,16 +39,18 @@ class Object(gws.common.search.provider.Object):
             gws.as_uid(f"h={cfg['host']}_p={cfg['port']}_u={cfg['user']}_d={cfg['database']}"),
             t.Config(cfg))
 
-        self.table = t.SqlTable({
-            'geometryColumn': ds['geometryColumn'],
-            'name': ds['table'],
-        })
+        try:
+            self.table = self.db.configure_table(t.Config(name=ds['table'], geometryColumn=ds['geometryColumn']))
+        except gws.Error:
+            gws.log.warn(f"table {ds['table']} not found")
 
     def can_run(self, args):
         # qgis-pg is for spatial searches only
         return args.shapes and not args.keyword
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
+        if not self.table:
+            return []
         n, u = args.tolerance or self.tolerance
         map_tolerance = n * args.resolution if u == 'px' else n
         return self.db.select(t.SelectArgs(

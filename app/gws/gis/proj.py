@@ -218,7 +218,7 @@ class Proj:
         self.url = _formats['url'] % srid
         self.uri = _formats['uri'] % srid
 
-        self.py = pyproj.Proj(init=self.epsg)
+        self.py = pyproj.Proj(self.epsg)
 
 
 def _check(p):

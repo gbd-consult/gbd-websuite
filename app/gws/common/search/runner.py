@@ -89,8 +89,15 @@ def _run(req, layer, prov: provider.Object, args: t.SearchArgs, total_limit, fea
 
     for f in fs:
         f.layer = layer
-        f.converter = prov or layer
+        f.converter = _get_converter(prov, layer)
 
     gws.log.debug('SEARCH_END, found=%r', len(fs))
 
     features.extend(fs)
+
+
+def _get_converter(a, b):
+    if a and gws.get(a, 'feature_format'):
+        return a
+    if b and gws.get(b, 'feature_format'):
+        return b
