@@ -42,7 +42,6 @@ class Object(gws.common.layer.Image):
         self.source_layers = gws.gis.source.filter_layers(
             self.provider.source_layers,
             self.var('sourceLayers'),
-            image_only=True
         )
 
         if not self.source_layers:
