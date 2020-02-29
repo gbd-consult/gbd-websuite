@@ -11,7 +11,6 @@ import gws.types
 from . import ini
 
 _START_SCRIPT = gws.VAR_DIR + '/server.sh'
-_PID_DIR = misc.ensure_dir('pids', gws.TMP_DIR)
 
 
 def configure(config_path=None):
@@ -32,7 +31,8 @@ def start(config_path=None):
     for p in misc.find_files(gws.SERVER_DIR, '.*'):
         sh.unlink(p)
 
-    commands = ini.create(root, gws.SERVER_DIR, _PID_DIR)
+    pid_dir = misc.ensure_dir('pids', gws.TMP_DIR)
+    commands = ini.create(root, gws.SERVER_DIR, pid_dir)
 
     s = root.var('server.autoRun')
     if s:
@@ -75,8 +75,10 @@ def reset(module=None):
 
 
 def reload_uwsgi(module):
+    pid_dir = misc.ensure_dir('pids', gws.TMP_DIR)
     pattern = f'({module}).uwsgi.pid'
-    for p in misc.find_files(_PID_DIR, pattern):
+
+    for p in misc.find_files(pid_dir, pattern):
         gws.log.info(f'reloading {p}...')
         sh.run(['uwsgi', '--reload', p])
 

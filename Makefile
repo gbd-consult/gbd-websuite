@@ -1,13 +1,10 @@
-CWD  = $(shell pwd)
-BASE = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
-
-
+CWD    = $(shell pwd)
+BASE   = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+DOC    = $(BASE)doc
 
 PYTHON = python3
 
-SPHINXOPTS    = -q -n -E -a
-SPHINXBASE    = $(BASE)doc/sphinx
-SPHINXBUILD   = $(BASE)doc/_build
+SPHINXOPTS = -q -n -b html -j auto -c $(DOC)/sphinx
 
 .PHONY: help spec client-dev client doc doc-dev image image-debug clean
 
@@ -34,18 +31,19 @@ client-dev: spec
 
 client: spec
 	cd $(BASE)client && \
-    npm run production && \
-    rm -fr $(BASE)app/web/gws-client && \
-    mkdir -p $(BASE)app/web/gws-client && \
-    mv $(BASE)client/_build/* $(BASE)app/web/gws-client && \
-    cd $(CWD)
+	npm run production && \
+	rm -fr $(BASE)app/web/gws-client && \
+	mkdir -p $(BASE)app/web/gws-client && \
+	mv $(BASE)client/_build/* $(BASE)app/web/gws-client && \
+	cd $(CWD)
 
 doc: spec
-	sphinx-build -b html $(SPHINXOPTS) "$(SPHINXBASE)" $(SPHINXBUILD) && \
-	$(PYTHON) $(SPHINXBASE)/makehelp.py
+	$(PYTHON) $(DOC)/sphinx/conf.py pre && \
+	sphinx-build -E -a $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build && \
+	$(PYTHON) $(DOC)/sphinx/conf.py post
 
-doc-dev: spec
-	sphinx-autobuild -B -b html $(SPHINXOPTS) "$(SPHINXBASE)" $(SPHINXBUILD)
+doc-dev: doc
+	sphinx-autobuild -B $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
 
 image:
 	$(PYTHON) $(BASE)install/build.py docker release $(IMAGE_NAME) && cd $(CWD)

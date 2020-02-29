@@ -17,7 +17,7 @@
 /client/_docs
 /client/node_modules
 /doc/_build
-/doc/sphinx/gen
+/doc/sphinx/ref
 /install/_build
 ___*
 __pycache__

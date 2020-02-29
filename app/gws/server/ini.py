@@ -251,7 +251,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
             uwsgi-socket = {web_socket}
             vacuum = true
             worker-reload-mercy = {mercy}
-            wsgi-file = {gws.APP_DIR}/gws/web/wsgi.py
+            wsgi-file = {gws.APP_DIR}/gws/web/web.wsgi.py
             {stdenv}
         """
 
@@ -393,7 +393,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
             vacuum = true
             worker-reload-mercy = {mercy}
             wsgi-disable-file-wrapper = true
-            wsgi-file = {gws.APP_DIR}/gws/gis/mpx/wsgi.py
+            wsgi-file = {gws.APP_DIR}/gws/gis/mpx/mpx.wsgi.py
             {stdenv}
         """
 
@@ -425,7 +425,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
             uwsgi-socket = {spool_socket}
             vacuum = true
             worker-reload-mercy = {mercy}
-            wsgi-file = {gws.APP_DIR}/gws/server/spool_wsgi.py
+            wsgi-file = {gws.APP_DIR}/gws/server/spool.wsgi.py
             {stdenv}
         """
 

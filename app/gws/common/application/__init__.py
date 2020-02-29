@@ -82,6 +82,8 @@ _default_site = t.Data({
 
 #:export IApplication
 class Object(gws.Object, t.IApplication):
+    """Main Appilication object"""
+
     def __init__(self):
         super().__init__()
 

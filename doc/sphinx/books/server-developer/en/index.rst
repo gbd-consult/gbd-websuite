@@ -1,14 +1,13 @@
 GBD WebSuite Server Developer Documentation
 ===========================================
 
-Documentation for developers who want to extend the GBD WebSuite Server.
+General notes
+-------------
 
-Modules
--------
 
-Indices and tables
-==================
 
+API Reference
+-------------
+
+* :doc:`/ref/server/index`
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

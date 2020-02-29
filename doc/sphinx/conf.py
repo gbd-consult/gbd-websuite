@@ -1,36 +1,59 @@
-# -*- coding: utf-8 -*-
-
 import os
 import sys
 import re
 
-DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
-APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
+sys.path.insert(0, os.path.dirname(__file__))
 
-VERSION = open(DOC_ROOT + '/../../VERSION').read().strip()
+import util
+
 
 project = 'GBD WebSuite'
 copyright = '2017-2019, Geoinformatikbüro Dassau GmbH'
 author = 'Geoinformatikbüro Dassau GmbH'
-version = VERSION
-release = VERSION
+version = util.VERSION
+release = util.VERSION
 
-sys.path.insert(0, APP_DIR)
-sys.path.insert(0, DOC_ROOT)
-
-# noinspection PyUnresolvedReferences
-import util
+DOC_ROOT = util.DOC_ROOT
+GEN_ROOT = util.GEN_ROOT
 
 extensions = [
-    # 'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autodoc',
     # 'sphinx.ext.autosummary',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.ifconfig',
+    # 'sphinx.ext.doctest',
+    # 'sphinx.ext.intersphinx',
+    # 'sphinx.ext.todo',
+    # 'sphinx.ext.coverage',
+    # 'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
 ]
+
+autoclass_content = "class"
+
+autodoc_mock_imports = [
+    'fiona',
+    'ldap',
+    'mapproxy',
+    'osgeo',
+    'PIL',
+    'psutil',
+    'psycopg2',
+    'pycountry',
+    'PyPDF2',
+    'pyproj',
+    'shapely',
+    'svgis',
+    'uwsgi',
+    'wand',
+    'werkzeug',
+]
+
+autodoc_member_order = 'bysource'
+
+# autosummary_generate = True
+
+napoleon_numpy_docstring = False
+napoleon_use_rtype = False
 
 templates_path = ['_templates']
 source_suffix = '.rst'
@@ -45,11 +68,10 @@ html_static_path = ['_static']
 html_sidebars = {}
 html_show_sourcelink = False
 
-intersphinx_mapping = {'https://docs.python.org/': None}
-todo_include_todos = True
-
 keep_warnings = True
 
+
+##
 
 def replace_vars(app, docname, source):
     for k, v in globals().items():
@@ -74,21 +96,39 @@ def replace_tables(app, docname, source):
     source[0] = re.sub(r'(?s)TABLE(.+?)/TABLE', _table, source[0])
 
 
-def make_refs():
-    util.make_config_ref('en', APP_DIR, DOC_ROOT)
-    util.make_config_ref('de', APP_DIR, DOC_ROOT)
-
-    util.make_cli_ref('en', APP_DIR, DOC_ROOT)
-    util.make_cli_ref('de', APP_DIR, DOC_ROOT)
-
+##
 
 def setup(app):
-    make_refs()
     app.add_stylesheet('extras.css')
     app.add_javascript('extras.js')
     app.connect('source-read', replace_vars)
     app.connect('source-read', replace_tables)
 
 
+##
+
+def pre_build():
+    util.clear()
+
+    util.make_config_ref('en')
+    util.make_config_ref('de')
+
+    util.make_cli_ref('en')
+    util.make_cli_ref('de')
+
+    util.make_autodoc()
+
+
+def post_build():
+    util.make_help('en')
+    util.make_help('de')
+
+
+##
+
 if __name__ == '__main__':
-    make_refs()
+    fn = sys.argv[1]
+    if fn == 'pre':
+        pre_build()
+    if fn == 'post':
+        post_build()

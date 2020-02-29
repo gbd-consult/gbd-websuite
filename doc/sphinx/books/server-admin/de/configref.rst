@@ -25,5 +25,5 @@ Spezial Typen
 Die Werte dieser Typen sind Zeichenketten und Zahlen, die mit einer speziellen Semantik versehen sind. 
 
 
-.. include:: /{DOC_ROOT}/gen/de.configref.txt
+.. include:: /{GEN_ROOT}/de.configref.txt
 

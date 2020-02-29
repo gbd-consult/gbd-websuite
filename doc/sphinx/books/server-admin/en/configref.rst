@@ -20,5 +20,5 @@ TABLE
 /TABLE
 
 
-.. include:: /{DOC_ROOT}/gen/en.configref.txt
+.. include:: /{GEN_ROOT}/en.configref.txt
 

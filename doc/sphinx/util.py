@@ -1,34 +1,139 @@
 import os
 import re
 import json
+import sys
+import shutil
+import bs4
+
+DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
+GEN_ROOT = DOC_ROOT + '/ref'
+
+APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
+
+VERSION = open(DOC_ROOT + '/../../VERSION').read().strip()
+
+sys.path.insert(0, APP_DIR)
 
 with open(os.path.dirname(__file__) + '/words.json') as fp:
     WORDS = json.load(fp)
 
-PRIMITIVES = "bool", "int", "str", "float", "float2", "float4", "dict",
-
 
 ##
 
 
-def make_config_ref(lang, app_dir, doc_root):
+def clear():
+    shutil.rmtree(DOC_ROOT + '/../_build', ignore_errors=True)
+    shutil.rmtree(GEN_ROOT, ignore_errors=True)
+
+
+def make_config_ref(lang):
     page = 'configref'
     root_type = 'gws.common.application.Config'
-    gen = _ConfigRefGenerator(lang, page, _load_spec(lang, app_dir), root_type)
+    gen = _ConfigRefGenerator(lang, page, _load_spec(lang, APP_DIR), root_type)
     text = gen.run()
-    out = doc_root + '/gen/' + lang + '.' + page + '.txt'
+    out = GEN_ROOT + '/' + lang + '.' + page + '.txt'
     _write_if_changed(out, text)
 
 
-def make_cli_ref(lang, app_dir, doc_root):
+def make_cli_ref(lang):
     page = 'cliref'
-    gen = _CliRefGenerator(lang, page, _load_spec(lang, app_dir))
+    gen = _CliRefGenerator(lang, page, _load_spec(lang, APP_DIR))
     text = gen.run()
-    out = doc_root + '/gen/' + lang + '.' + page + '.txt'
+    out = GEN_ROOT + '/' + lang + '.' + page + '.txt'
     _write_if_changed(out, text)
+
+
+_HELP_BASE_URL = 'https://gws.gbd-consult.de/doc/{release}/books/client-user/{lang}/overview'
+
+
+def make_help(lang):
+    release = '.'.join(VERSION.split('.')[:-1])
+    base = _HELP_BASE_URL.format(lang=lang, release=release)
+
+    with open(DOC_ROOT + f'/../_build/books/client-user/{lang}/overview/help.html') as fp:
+        html = fp.read()
+
+    bs = bs4.BeautifulSoup(html, 'html.parser')
+
+    for n in bs.find_all('link'):
+        if n.get('href'):
+            n['href'] = _abslink(n['href'], base)
+    for n in bs.find_all('a'):
+        if n.get('href'):
+            n['href'] = _abslink(n['href'], base)
+            n['target'] = '_blank'
+    for n in bs.find_all('img'):
+        if n.get('src'):
+            n['src'] = _abslink(n['src'], base)
+
+    for n in bs.find_all(['script', 'nav', 'footer']):
+        n.extract()
+    for n in bs.find_all(role='navigation'):
+        n.extract()
+
+    html = bs.prettify()
+    html += """
+        <style>
+            .wy-nav-content-wrap {
+                margin-left: 0 !important;
+                background: none !important;
+            }
+            .wy-body-for-nav {
+                background: none !important;
+            }
+        </style>
+    """
+
+    with open(DOC_ROOT + f'/../_build/help_{lang}.html', 'w') as fp:
+        fp.write(html)
+
+
+_EXCLUDE = ['vendor', '/t/', '.in.', '.wsgi']
+
+
+def make_autodoc():
+    mods = set()
+
+    for p in _find_files(APP_DIR + '/gws', 'py$'):
+        if any(s in p for s in _EXCLUDE):
+            continue
+        p = re.sub(r'.*?gws/', 'gws/', p)
+        p = re.sub(r'__init__.py$', '', p)
+        p = re.sub(r'.py$', '', p)
+        p = re.sub(r'/$', '', p)
+        mods.add(p.replace('/', '.'))
+
+    for mod in sorted(mods):
+        txt = [
+            mod,
+            '=' * len(mod),
+            '',
+            '.. automodule:: ' + mod,
+            '    :members:',
+            '    :undoc-members:',
+            '',
+        ]
+        _write_if_changed(GEN_ROOT + '/server/' + mod + '.rst', _nl(txt))
+
+    txt = [
+        'Modules',
+        '=======',
+        '',
+        '.. toctree::',
+        '    :maxdepth: 1',
+        '',
+    ]
+
+    for mod in sorted(mods):
+        txt.append('    ' + mod)
+
+    _write_if_changed(GEN_ROOT + '/server/index.rst', _nl(txt))
 
 
 ##
+
+_PRIMITIVES = "bool", "int", "str", "float", "float2", "float4", "dict",
+
 
 class _ConfigRefGenerator:
 
@@ -39,7 +144,7 @@ class _ConfigRefGenerator:
         self.spec = spec
         self.root_type = root_type
         self.queue = [root_type]
-        self.done = set(PRIMITIVES)
+        self.done = set(_PRIMITIVES)
         self.obj_types = {}
 
     def run(self):
@@ -110,7 +215,7 @@ class _ConfigRefGenerator:
         return '_'.join([self.book, self.lang, self.page, tname.replace('.', '_')])
 
     def ref(self, tname):
-        if tname in PRIMITIVES:
+        if tname in _PRIMITIVES:
             return _ee(tname)
 
         m = re.match(r'(.+?)List$', tname)
@@ -303,3 +408,26 @@ def _table(headers, rows):
 
 def _sorted_values(d):
     return [v for _, v in sorted(d.items())]
+
+
+def _find_files(dirname, pattern):
+    for fname in os.listdir(dirname):
+        if fname.startswith('.'):
+            continue
+
+        path = os.path.join(dirname, fname)
+
+        if os.path.isdir(path):
+            yield from _find_files(path, pattern)
+            continue
+
+        if re.search(pattern, fname):
+            yield path
+
+
+def _abslink(href, base):
+    if href.startswith(('http', '#')):
+        return href
+    if href.startswith('/'):
+        return base + href
+    return base + '/' + href
