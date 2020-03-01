@@ -31,3 +31,11 @@ Version 5.2
 - more units supported for measurement
 
 
+Version 6.0
+--------------------------------------------
+
+- support for client-side tile layers (OSM, Google Maps etc)
+- mixed-mode printing (low resolution rasters + high resolution vectors)
+
+
+
