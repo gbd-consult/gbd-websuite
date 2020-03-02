@@ -262,6 +262,12 @@ class Object(gws.ActionObject):
                 if n is not None:
                     n.text = 'postgres'
 
+        if not xml.findall('.//WMSUseLayerIDs'):
+            etree.SubElement(xml.find('properties'), 'WMSUseLayerIDs')
+
+        for node in xml.findall('.//WMSUseLayerIDs'):
+            node.text = 'true'
+
         source = etree.tounicode(xml)
 
         for a in assets:
