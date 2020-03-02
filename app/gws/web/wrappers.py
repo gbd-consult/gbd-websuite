@@ -1,4 +1,6 @@
 import os
+import gzip
+import io
 
 import werkzeug.wrappers
 from werkzeug.utils import cached_property
@@ -31,8 +33,8 @@ class BaseResponse(werkzeug.wrappers.Response, t.IResponse):
 class BaseRequest(t.IBaseRequest):
     def __init__(self, root: t.IRootObject, environ: dict, site: t.IWebSite):
         self._wz = werkzeug.wrappers.Request(environ)
-        # the actual limit is set in the nginx conf (see server/ini)
-        self._wz.max_content_length = 1024 * 1024 * 1024
+        # this is also set in nginx (see server/ini), but we need this for unzipping (see data below)
+        self._wz.max_content_length = root.var('server.web.maxRequestLength') * 1024 * 1024
         self.root: t.IRootObject = root
         self.site: t.IWebSite = site
         self.method: str = self._wz.method
@@ -78,7 +80,16 @@ class BaseRequest(t.IBaseRequest):
     def data(self) -> t.Optional[bytes]:
         if self.method != 'POST':
             return None
-        return self._wz.get_data(as_text=False, parse_form_data=False)
+
+        data = self._wz.get_data(as_text=False, parse_form_data=False)
+        # gws.tools.misc.write_file(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}', data, 'wb')
+
+        if self.headers.get('content-encoding') == 'gzip':
+            with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
+                return fp.read(self._wz.max_content_length)
+
+        return data
+
 
     @property
     def text_data(self) -> t.Optional[str]:
@@ -150,7 +161,6 @@ class BaseRequest(t.IBaseRequest):
 
     def _parse_params(self):
         if self.input_struct_type:
-            ## gws.tools.misc.write_file(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}.py', repr(self._decode_struct(self.input_struct_type)))
             return self._decode_struct(self.input_struct_type)
 
         args = {k: v for k, v in self._wz.args.items()}
