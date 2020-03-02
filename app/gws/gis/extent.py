@@ -97,6 +97,13 @@ def constrain(a: t.Extent, b: t.Extent) -> t.Extent:
     )
 
 
+def center(e: t.Extent) -> t.Point:
+    return (
+        round(e[0] + (e[2] - e[0]) / 2),
+        round(e[1] + (e[3] - e[1]) / 2),
+    )
+
+
 def buffer(e: t.Extent, buf: int) -> t.Extent:
     e = _sort(e)
     return (

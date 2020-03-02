@@ -102,12 +102,7 @@ class Object(gws.Object, t.IMap):
             raise gws.Error(f'no extent found for {self.uid!r}')
         _set_default_extent(self, self.extent)
 
-        self.center = self.var('center')
-        if not self.center:
-            self.center = (
-                round(self.extent[0] + (self.extent[2] - self.extent[0]) / 2),
-                round(self.extent[1] + (self.extent[3] - self.extent[1]) / 2),
-            )
+        self.center = self.var('center') or gws.gis.extent.center(self.extent)
 
         self.coordinate_precision = self.var('coordinatePrecision')
         if self.coordinate_precision is None:

@@ -11,6 +11,7 @@ import gws.tools.mime
 import gws.tools.job
 import gws.tools.json2
 import gws.tools.misc
+import gws.gis.extent
 
 import gws.types as t
 import gws.common.template
@@ -56,6 +57,10 @@ class Map(t.Data):
     layerUids: t.Optional[t.List[str]]  #: layer ids to use in the cloud
     data: t.Optional[t.List[DataSet]]  #: data for the map
     assets: t.Optional[t.List[Asset]]  #: map assets
+    extent: t.Optional[t.Extent]
+    scales: t.Optional[t.List[int]]
+    initScale: t.Optional[int]
+    center: t.Optional[t.Point]
 
 
 class CreateProjectParams(t.Params):
@@ -74,6 +79,10 @@ class CreateProjectResponse(t.Response):
 _QGIS_DATASOURCE_TEMPLATE = """dbname='{database}' host={host} port={port} user='{user}' password='{password}' sslmode=disable key='{key}' srid={geo_srid} type={geo_type} table="{schema}"."{table}" ({geo_col}) sql="""
 
 _CONFIG_TEMPLATE_PATH = '/data/cloud_project_template.json'
+
+_DEFAULT_SCALES = [
+    4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000, 15000, 8000, 4000, 2000, 1000
+]
 
 CLOUD_DIR = gws.VAR_DIR + '/cloud'
 CLOUD_USER_DIR = CLOUD_DIR + '/users'
@@ -132,13 +141,15 @@ class Object(gws.ActionObject):
         tpl_vars = {
             'PROJECT_UID': project_full_uid,
             'PROJECT_TITLE': p.projectName,
-            'MAP_EXTENT': qdata['extent'],
-            'MAP_SCALES': [4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000, 15000, 8000, 4000, 2000,
-                           1000],
+            'MAP_EXTENT': p.map.extent or qdata['extent'],
+            'MAP_SCALES': p.map.scales or _DEFAULT_SCALES,
             'MAP_CRS': qdata['crs'],
             'QGIS_PATH': qpath,
             'QGIS_LAYERS': p.map.layerUids,
         }
+
+        tpl_vars['MAP_CENTER'] = p.map.center or gws.gis.extent.center(tpl_vars['MAP_EXTENT'])
+        tpl_vars['MAP_INIT_SCALE'] = p.map.initScale or tpl_vars['MAP_SCALES'][0]
 
         with open(_CONFIG_TEMPLATE_PATH) as fp:
             tpl = fp.read()
