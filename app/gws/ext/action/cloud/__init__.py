@@ -73,7 +73,7 @@ class CreateProjectResponse(t.Response):
 
 _QGIS_DATASOURCE_TEMPLATE = """dbname='{database}' host={host} port={port} user='{user}' password='{password}' sslmode=disable key='{key}' srid={geo_srid} type={geo_type} table="{schema}"."{table}" ({geo_col}) sql="""
 
-_CX_TEMPLATE_PATH = '/data/project_template.json'
+_CONFIG_TEMPLATE_PATH = '/data/cloud_project_template.json'
 
 CLOUD_DIR = gws.VAR_DIR + '/cloud'
 CLOUD_USER_DIR = CLOUD_DIR + '/users'
@@ -93,16 +93,16 @@ class Object(gws.ActionObject):
 
     def api_create_project(self, req: t.IRequest, p: CreateProjectParams) -> CreateProjectResponse:
         # debug
-        with open(gws.VAR_DIR + '/cloud-input.json', 'w') as fp:
+        with open(gws.VAR_DIR + '/cloud-debug-input.json', 'w') as fp:
             fp.write(gws.tools.json2.to_string(p, pretty=True))
-        with open(gws.VAR_DIR + '/cloud-input.qgs', 'w') as fp:
+        with open(gws.VAR_DIR + '/cloud-debug-input.qgs', 'w') as fp:
             fp.write(p.map.source.text)
 
         uid = self._create_project(p)
 
-        return CreateProjectResponse({
-            "url": req.url_for(gws.SERVER_ENDPOINT + f'/cmd/assetHttpGetPath/projectUid/{uid}/path/project.cx.html'),
-        })
+        return CreateProjectResponse(
+            url=req.url_for(gws.SERVER_ENDPOINT + f'/cmd/assetHttpGetPath/projectUid/{uid}/path/project.cx.html')
+        )
 
     def _create_project(self, p: CreateProjectParams):
         user_uid = gws.as_uid(p.userUid)
@@ -120,7 +120,9 @@ class Object(gws.ActionObject):
 
         assets_dir = gws.tools.misc.ensure_dir(f'{user_dir}/assets')
         qdata = self._prepare_qgis_project(p.map.source.text, ds_map, p.map.assets, assets_dir)
-        qpath = f'{user_dir}/{project_uid}.qgs'
+        # use a custom ext to prevent the monitor from watching this
+        # @TODO fix monitor settings
+        qpath = f'{user_dir}/{project_uid}.qgs.x'
 
         with open(qpath, 'w') as fp:
             fp.write(qdata['source'])
@@ -138,30 +140,36 @@ class Object(gws.ActionObject):
             'QGIS_LAYERS': p.map.layerUids,
         }
 
-        with open(_CX_TEMPLATE_PATH) as fp:
+        with open(_CONFIG_TEMPLATE_PATH) as fp:
             tpl = fp.read()
 
         config = re.sub(r'"{{(\w+)}}"', lambda m: gws.tools.json2.to_string(tpl_vars[m.group(1)]), tpl)
         config = gws.tools.json2.from_string(config)
 
-        # parse the config before saving, if this fails, then it fails
-        gws.config.parser.parse(config, 'gws.common.project.Config')
+        with open(gws.VAR_DIR + '/cloud-debug-config.json', 'w') as fp:
+            fp.write(gws.tools.json2.to_string(config, pretty=True))
 
-        cfg_path = f'{CLOUD_CONFIG_DIR}/{project_full_uid}.config.json'
+        # parse the config before saving, if this fails, then it fails
+        gws.log.debug('parsing config...')
+        gws.config.parser.parse(config, 'gws.common.project.Config')
+        gws.log.debug('parsing config ok')
+
+        config_dir = gws.tools.misc.ensure_dir(CLOUD_CONFIG_DIR)
+        cfg_path = config_dir + f'/{project_full_uid}.config.json'
         gws.tools.json2.to_path(cfg_path, config, pretty=True)
 
         gws.log.debug(f'added project {project_full_uid!r}')
 
         return project_full_uid
 
-    def _dataset_to_table(self, ds: DataSet, schema):
+    def _dataset_to_table(self, ds: DataSet, schema_name):
         ddl = []
 
         qsrc = dict(self.db.connect_params)
-        qsrc['schema'] = schema
+        qsrc['schema'] = schema_name
         qsrc['table'] = gws.as_uid(ds.uid)
 
-        # @TODO require client to provude a schema
+        # @TODO require the client to provide a data schema
 
         for k, v in ds.records[0].items():
             pt = 'TEXT'
@@ -205,7 +213,7 @@ class Object(gws.ActionObject):
         with self.db.connect() as conn:
             conn.execute(f'DROP TABLE IF EXISTS {table}')
             conn.execute(create_sql)
-            conn.batch_insert(table, data)
+            conn.insert_many(table, data)
             if geo_col:
                 conn.execute(f'UPDATE {table} SET {geo_col}=ST_GeomFromGeoJSON({geo_col}__json)')
                 conn.execute(f'ALTER TABLE {table} DROP COLUMN {geo_col}__json')
