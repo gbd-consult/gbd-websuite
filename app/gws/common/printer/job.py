@@ -111,8 +111,8 @@ class _Worker:
             if not self.template:
                 raise ValueError(f'cannot find template uid={self.p.templateUid}')
 
-            # for draft printing (dpi=0), ensure that the client's canvas buffer and our image have the same dimensions
-            self.view_dpi = self.template.dpi_for_quality(p.get('quality', 0)) or units.OGC_SCREEN_PPI
+            # force dpi=OGC_SCREEN_PPI for low-res printing (dpi < OGC_SCREEN_PPI)
+            self.view_dpi = max(self.template.dpi_for_quality(p.get('quality', 0)), units.OGC_SCREEN_PPI)
             self.view_size_mm = self.template.map_size
             self.view_size_px = units.point_mm2px(self.template.map_size, self.view_dpi)
 
@@ -293,19 +293,22 @@ class _Worker:
         if s:
             ii.style = s
 
-        if item.type == 'layer':
+        if item.type == 'raster':
             ii.layer = self.acquire('gws.ext.layer', item.layerUid)
-            if not ii.layer:
-                return
 
-            if ii.layer.can_render_svg:
-                ii.type = t.RenderInputItemType.svg_layer
-                ii.dpi = units.PDF_DPI
-                return ii
-
-            if ii.layer.can_render_box:
+            if ii.layer and ii.layer.can_render_box:
                 ii.type = t.RenderInputItemType.image_layer
                 ii.sub_layers = item.get('subLayers')
+                return ii
+
+                return
+
+        if item.type == 'vector':
+            ii.layer = self.acquire('gws.ext.layer', item.layerUid)
+
+            if ii.layer and ii.layer.can_render_svg:
+                ii.type = t.RenderInputItemType.svg_layer
+                ii.dpi = units.PDF_DPI
                 return ii
 
             return

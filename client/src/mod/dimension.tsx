@@ -593,7 +593,6 @@ class DimensionLayer extends gws.map.layer.FeatureLayer {
             return null;
         return {
             type: 'fragment',
-            printAsVector: true,
             fragment: this.master.model.printFragment(),
         };
     }

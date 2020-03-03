@@ -1,4 +1,5 @@
 import re
+import math
 
 import gws
 import gws.common.layer
@@ -7,11 +8,13 @@ import gws.gis.source
 import gws.tools.misc
 import gws.tools.json2
 
+_EPSG_3857_RADIUS = 6378137
+
 _EPSG_3857_EXTENT = [
-    -20037508.342789244,
-    -20037508.342789244,
-    20037508.342789244,
-    20037508.342789244
+    -(math.pi * _EPSG_3857_RADIUS),
+    -(math.pi * _EPSG_3857_RADIUS),
+    +(math.pi * _EPSG_3857_RADIUS),
+    +(math.pi * _EPSG_3857_RADIUS),
 ]
 
 
@@ -50,6 +53,15 @@ class Object(gws.common.layer.ImageTile):
                 self.service.extent = _EPSG_3857_EXTENT
             else:
                 raise gws.Error(r'service extent required for crs {self.service.crs!r}')
+
+    @property
+    def props(self):
+        if self.display == 'client':
+            return super().props.extend({
+                'type': 'xyz',
+                'url': self.url
+            })
+        return super().props
 
     def mapproxy_config(self, mc, options=None):
         # we use {x} like in Ol, mapproxy wants %(x)s

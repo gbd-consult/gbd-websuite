@@ -5,7 +5,6 @@ import gws.tools.job
 class PrintItemBase(t.Data):
     opacity: float = 1
     style: t.Optional[t.StyleProps]
-    printAsVector: t.Optional[bool]
 
 
 class PrintItemBitmap(PrintItemBase):
@@ -26,10 +25,15 @@ class PrintItemFeatures(PrintItemBase):
     features: t.List[t.FeatureProps]
 
 
-class PrintItemLayer(PrintItemBase):
-    type: t.Literal = 'layer'
+class PrintItemRaster(PrintItemBase):
+    type: t.Literal = 'raster'
     layerUid: str
     subLayers: t.Optional[t.List[str]]
+
+
+class PrintItemVector(PrintItemBase):
+    type: t.Literal = 'vector'
+    layerUid: str
 
 
 class PrintItemFragment(PrintItemBase):
@@ -42,7 +46,8 @@ PrintItem = t.Union[
     PrintItemBitmap,
     PrintItemUrl,
     PrintItemFeatures,
-    PrintItemLayer,
+    PrintItemRaster,
+    PrintItemVector,
     PrintItemFragment
 ]
 

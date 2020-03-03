@@ -35,6 +35,8 @@ class Image(layer.Layer):
                 'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBox/layerUid/' + self.uid,
             })
 
+        return super().props
+
     def render_box(self, rv, client_params=None):
         uid = self.uid
         if not self.has_cache:
