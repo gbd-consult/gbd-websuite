@@ -125,10 +125,12 @@ class Object(gws.common.layer.Layer):
             la = self._wms_based_layer(sl)
         elif prov == 'wmts':
             la = self._wmts_based_layer(sl)
-
         else:
             gws.log.warn(f'directRender not supported for {prov!r}')
             la = self._qgis_based_layer(sl)
+
+        if not la:
+            return
 
         la['cache'] = self.var('cache')
         la['grid'] = self.var('grid')
@@ -178,8 +180,7 @@ class Object(gws.common.layer.Layer):
             'type': 'wmts',
             'url': ds['url'].split('?')[0],
             'sourceLayer': ds['layers'][0],
-            'format': opts.get('format'),
-            'style': opts.get('styles'),
+            'sourceStyle': opts.get('styles'),
         })
 
     def _qgis_based_layer(self, sl: t.SourceLayer):
