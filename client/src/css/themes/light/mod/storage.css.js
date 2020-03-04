@@ -14,13 +14,13 @@ module.exports = v => ({
 
         },
         [v.MEDIA('large+')]: {
-            ...v.CENTER_BOX(300, 430),
+            ...v.CENTER_BOX(500, 430),
         },
     },
 
     '.uiDialog.modStorageWriteDialog': {
         [v.MEDIA('large+')]: {
-            ...v.CENTER_BOX(300, 490),
+            ...v.CENTER_BOX(500, 490),
         },
     },
 

@@ -575,8 +575,8 @@ class AlkisSelectionTab extends gws.View<AlkisViewProps> {
                     {storage.auxButtons(mm, {
                         category: STORAGE_CATEGORY,
                         hasData: hasFeatures,
-                        getData: name => ({features: this.props.alkisFsSelection.map(f => f.getProps())}),
-                        dataReader: (name, data) => mm.loadSelection(data.features)
+                        getData: name => mm.selectionData(),
+                        dataReader: (name, data) => mm.loadSelection(data)
                     })}
                     {hasFeatures && <AlkisClearAuxButton {...this.props} />}
                 </sidebar.AuxToolbar>
@@ -1149,9 +1149,36 @@ class AlkisController extends gws.Controller {
         this.selectionLayer.addFeatures(this.getValue('alkisFsSelection'));
     }
 
-    loadSelection(fs) {
+    selectionData() {
+        let fs = this.getValue('alkisFsSelection');
+        return {
+            selection: fs.map(f => f.uid)
+        }
+    }
+
+    async loadSelection(data) {
         this.clearSelection();
-        this.select(this.map.readFeatures(fs));
+
+        let res = await this.app.server.alkissearchFindFlurstueck({
+            wantEigentuemer: false,
+            fsUids: data.selection,
+        });
+
+        if (res.error) {
+            return;
+        }
+
+        let features = this.map.readFeatures(res.features);
+
+        this.select(features);
+
+        this.update({
+            marker: {
+                features,
+                mode: 'zoom fade',
+            }
+        });
+
     }
 
     clearSelection() {
