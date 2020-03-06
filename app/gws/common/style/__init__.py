@@ -22,17 +22,12 @@ class StyleProps(t.Props):
     text: t.Optional[str]
 
 
-def from_props(root: t.IRootObject, p: t.StyleProps) -> t.IStyle:
-    # @TODO: icon urls are resolved from the _first_ configured site
-
-    site: t.IWebSite = root.find_first('gws.web.site')
-    url_root = site.static_root.dir if site else None
-
+def from_props(p: t.StyleProps) -> t.IStyle:
     if p.type == 'css':
         if p.values:
-            values = gws.tools.style.from_css_dict(gws.as_dict(p.values), url_root)
+            values = gws.tools.style.from_css_dict(gws.as_dict(p.values))
         else:
-            values = gws.tools.style.from_css_text(p.text, url_root)
+            values = gws.tools.style.from_css_text(p.text)
         return Style(p.type, values=values)
 
     if p.type == 'cssSelector':
@@ -41,8 +36,8 @@ def from_props(root: t.IRootObject, p: t.StyleProps) -> t.IStyle:
     raise gws.Error(f'invalid style type {p.type!r}')
 
 
-def from_config(root: t.IRootObject, c: Config) -> t.IStyle:
-    return from_props(root, t.StyleProps(type=c.type, text=c.text))
+def from_config(c: Config) -> t.IStyle:
+    return from_props(t.StyleProps(type=c.type, text=c.text))
 
 
 #:export IStyle

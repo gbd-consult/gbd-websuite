@@ -1,6 +1,7 @@
 import gws
 import gws.types as t
 import gws.gis.shape
+import gws.common.style
 import gws.gis.svg
 
 _COMBINED_UID_DELIMITER = '___'
@@ -180,4 +181,4 @@ class Feature(t.IFeature):
         if style:
             if isinstance(style, dict):
                 style = t.StyleProps(style)
-            self.style = style
+            self.style = gws.common.style.from_props(style)

@@ -125,18 +125,59 @@ class StyleValues(t.Data):
 
 ##
 
-_DEFAULT_VALUES = {
-    'label_align': StyleLabelAlign.center,
-    'label_font_family': 'sans-serif',
-    'label_font_size': 12,
-    'label_font_style': StyleLabelFontStyle.normal,
-    'label_font_weight': StyleLabelFontWeight.normal,
-    'label_line_height': 1,
-    'label_max_scale': 1000000000,
-    'label_min_scale': 0,
-    'label_placement': StyleLabelPlacement.middle,
-    'label_stroke_linejoin': StyleStrokeLineJoin.round,
-}
+_DEFAULT_VALUES = dict(
+    fill=None,
+
+    stroke=None,
+    stroke_dasharray=[],
+    stroke_dashoffset=0,
+    stroke_linecap=StyleStrokeLineCap.butt,
+    stroke_linejoin=StyleStrokeLineJoin.miter,
+    stroke_miterlimit=0,
+    stroke_width=0,
+
+    marker=None,
+    marker_fill=None,
+    marker_size=0,
+    marker_stroke=None,
+    marker_stroke_dasharray=[],
+    marker_stroke_dashoffset=0,
+    marker_stroke_linecap=StyleStrokeLineCap.butt,
+    marker_stroke_linejoin=StyleStrokeLineJoin.miter,
+    marker_stroke_miterlimit=0,
+    marker_stroke_width=0,
+
+    with_geometry=StyleGeometryOption.all,
+    with_label=StyleLabelOption.all,
+
+    label_align=StyleLabelAlign.left,
+    label_background=None,
+    label_fill=None,
+    label_font_family='sans-serif',
+    label_font_size=12,
+    label_font_style=StyleLabelFontStyle.normal,
+    label_font_weight=StyleLabelFontWeight.normal,
+    label_line_height=1,
+    label_max_scale=1000000000,
+    label_min_scale=0,
+    label_offset_x=0,
+    label_offset_y=0,
+    label_padding=None,
+    label_placement=StyleLabelPlacement.middle,
+    label_stroke=None,
+    label_stroke_dasharray=[],
+    label_stroke_dashoffset=0,
+    label_stroke_linecap=StyleStrokeLineCap.butt,
+    label_stroke_linejoin=StyleStrokeLineJoin.miter,
+    label_stroke_miterlimit=0,
+    label_stroke_width=0,
+
+    point_size=10,
+    icon='',
+
+    offset_x=0,
+    offset_y=0,
+)
 
 ##
 
@@ -155,25 +196,24 @@ def _color(val):
         return val
 
 
-def _icon(val, url_root):
+def _icon(val):
     s = val
     m = re.match(r'^url\((.+?)\)$', val)
     if m:
         s = m.group(1).strip('\'\"')
     try:
-        return _to_data_url(s, url_root)
+        return _to_data_url(s)
     except Exception as e:
         raise gws.Error(f'cannot load {val!r}') from e
 
 
-def _to_data_url(val, url_root):
+def _to_data_url(val):
     if val.startswith('data:'):
         return val
     if re.match(r'^https?:', val):
         svg = gws.tools.net.http_request(val).content
-    else:
-        svg = gws.tools.misc.read_file(url_root + val, 'rb')
-    return 'data:image/svg+xml;base64,' + base64.standard_b64encode(svg).decode('utf8')
+        return 'data:image/svg+xml;base64,' + base64.standard_b64encode(svg).decode('utf8')
+    raise ValueError()
 
 
 def _px(val):
@@ -285,11 +325,8 @@ class _Parser:
     offset_y = _px
 
 
-def from_css_dict(d: dict, url_root: str = None) -> t.StyleValues:
+def from_css_dict(d: dict) -> t.StyleValues:
     values = t.StyleValues(_DEFAULT_VALUES)
-
-    with_geometry = StyleGeometryOption.none
-    with_label = StyleLabelOption.none
 
     for k, v in d.items():
         if v is None:
@@ -297,24 +334,17 @@ def from_css_dict(d: dict, url_root: str = None) -> t.StyleValues:
         k = k.replace('-', '_')
         if k.startswith('__'):
             k = k[2:]
-        fn = getattr(_Parser, k, None)
+        fn = gws.get(_Parser, k)
         if fn:
-            v = fn(v, url_root) if fn == _icon else fn(v)
+            v = fn(v)
             if v is not None:
-                if k.startswith('label'):
-                    with_label = 'all'
-                elif not k.startswith('with'):
-                    with_geometry = 'all'
                 setattr(values, k, v)
-
-    values.with_geometry = values.with_geometry or with_geometry
-    values.with_label = values.with_label or with_label
 
     return values
 
 
 # @TODO use a real parser
-def from_css_text(text, url_root: str = None) -> t.StyleValues:
+def from_css_text(text) -> t.StyleValues:
     d = {}
     for r in text.split(';'):
         r = r.strip()
@@ -322,4 +352,4 @@ def from_css_text(text, url_root: str = None) -> t.StyleValues:
             continue
         r = r.split(':')
         d[r[0].strip()] = r[1].strip()
-    return from_css_dict(d, url_root)
+    return from_css_dict(d)

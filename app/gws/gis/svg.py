@@ -9,6 +9,7 @@ import wand.image
 
 import gws
 import gws.tools.units as units
+import gws.tools.style
 
 import gws.types as t
 
@@ -24,16 +25,19 @@ def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale:
     if not sv:
         return svgis.draw.geometry(shapely.geometry.mapping(geom), precision=0)
 
+    with_geometry = sv.with_geometry == gws.tools.style.StyleGeometryOption.all
+    with_label = sv.with_label == gws.tools.style.StyleLabelOption.all
+
     marker = ''
     marker_id = ''
     text = ''
     icon = ''
 
-    if sv.marker:
+    if with_geometry and sv.marker:
         marker_id = '_M' + gws.random_string(8)
         marker = _marker(marker_id, sv)
 
-    if sv.icon:
+    if with_geometry and sv.icon:
         ico = _parse_icon(sv.icon, dpi)
         if not ico:
             gws.log.warn(f'cannot parse icon {sv.icon!r}')
@@ -53,25 +57,29 @@ def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale:
             extra_y_offset = 6
 
     # @TODO with_label, scale
-    if label:
+    if with_label and label:
         text = _label(geom, label, sv, extra_y_offset)
 
     atts = {
         'precision': 0
     }
 
-    _fill_stroke(atts, sv, '')
+    g = ''
 
-    if marker:
-        atts['marker-start'] = atts['marker-mid'] = atts['marker-end'] = f'url(#{marker_id})'
+    if with_geometry:
+        _fill_stroke(atts, sv, '')
 
-    if geom.type in ('Point', 'MultiPoint'):
-        atts['r'] = (sv.point_size or DEFAULT_POINT_SIZE) // 2
+        if marker:
+            atts['marker-start'] = atts['marker-mid'] = atts['marker-end'] = f'url(#{marker_id})'
 
-    if geom.type in ('LineString', 'MultiLineString'):
-        atts['fill'] = 'none'
+        if geom.type in ('Point', 'MultiPoint'):
+            atts['r'] = (sv.point_size or DEFAULT_POINT_SIZE) // 2
 
-    g = svgis.draw.geometry(shapely.geometry.mapping(geom), **gws.compact(atts))
+        if geom.type in ('LineString', 'MultiLineString'):
+            atts['fill'] = 'none'
+
+        g = svgis.draw.geometry(shapely.geometry.mapping(geom), **gws.compact(atts))
+
     return marker + g + icon + text
 
 
