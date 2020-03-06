@@ -18,7 +18,7 @@ So kann zum Beispiel ohne Eigentümer oder nur nach Eigentümer oder Buchungsbla
 Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
-
+  :align: center
 
 Beschreibung der Felder
 -----------------------
@@ -57,11 +57,12 @@ Anzeigen der Ergebnisse
 Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter |results| ``Ergebnisse`` aufgelistet.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_2.png
+  :align: center
 
 Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese bestehen aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
-
+  :align: center
 
 
 .. Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden |fokus| Symbol fokussiert werden. Außerdem ist es möglich über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage zu entfernen. Oder über das |addall| Icon ebenfalls in der Leiste am unteren Fensterrand ``Alle zur Ablage`` hinzufügen.  So können Sie in der |tab| ``Ablage`` , welche ebenfalls am unteren Fensterrand der ``Flurstücksuche`` zu finden ist, eine Sammlung gesuchter Flurstücke anlegen und diese |save| ``Speichern``, |load| ``Laden``, |csv| als CSV-Datei exportieren oder |print| ``Drucken``.
@@ -73,6 +74,7 @@ Arbeiten mit der Ablage
   :align: center
 
 Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen und deren Funktion im Ablagefenster ab.
+
 
 +------------------------+--------------------------------------------------------------------------------------+
 | **Icon**               | **Funktion**                                                                         |
@@ -98,6 +100,7 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 | |delete_shelf|         | Leeren der Ablage                                                                    |
 +------------------------+--------------------------------------------------------------------------------------+
 
+
 .. Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt.
 
 Exportieren
@@ -108,6 +111,7 @@ Exportieren
 Wählen Sie die gewünschten Daten für den Export aus und klicken Sie auf ``Exportieren``.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
+  :align: center
 
 .. note::
    Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen.
@@ -123,6 +127,7 @@ Speichern
 Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
+  :align: center
 
 Laden
 ^^^^^
@@ -130,6 +135,7 @@ Laden
 Wählen Sie eine vorhandene Datei und laden Sie diese durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_load.png
+  :align: center
 
 .. note::
   Das Speichern geschieht in einer SQLite Datei.
@@ -144,6 +150,7 @@ Mit Hilfe des Werkzeuges |spatial_search| ``Flurstücke über räumliche Suche f
 Wählen Sie das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine Linie und schließen Sie diese mit einem Doppelklick ab. Anschließend werden Ihnen die Flurstücke in den Ergebnissen aufgelistet, welche von der Linie geschnitten werden. Auf dem Screenshot unten sieht man ein mögliches Ergebnis.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
+   :align: center
 
 Auswahl eines Flurstücks in der Karte
 -------------------------------------
@@ -151,6 +158,7 @@ Auswahl eines Flurstücks in der Karte
 Das Werkzeug |select| ``Auswahl eines Flurstücks in der Karte`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
+   :align: center
 
 
 

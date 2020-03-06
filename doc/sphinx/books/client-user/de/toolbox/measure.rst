@@ -1,3 +1,5 @@
+.. _M&M:
+
 Markieren & Messen
 ==================
 
@@ -7,10 +9,10 @@ Unter diesem Menüpunkt werden alle erstellten Objekte aufgelistet.
 Das ``Markieren & Messen``-Werkzeug kann mit Hilfe von fünf verschiedenen Geometrischen Formen angewendet werden:
 
 **Punktmarkierung** |point|,
-**Linien-** |distance|,
+**Distanzmessung** |distance|,
 **Rechteck-** |quadrat|,
 **Polygon-** |polygon|,
-und **Kreisgeometrie** |measurecircle|
+und **Kreisflächenmessung** |measurecircle|
 
 .. figure:: ../../../screenshots/de/client-user/marking_tool.png
   :align: center
@@ -32,6 +34,7 @@ Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit ein
 Über die Symbole in der Werkzeugleiste können Sie zusätzlich das Zeichnen jeglischer Geometrie bestätigen |savedraw| oder abbrechen |canceldraw|.
 Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| ``Räumliche Suche`` zur Verfügung.
 
+
 Eigenschaften
 -------------
 
@@ -39,25 +42,24 @@ Jedes Objekt kann nachträglich angepasst werden. Wählen Sie dazu das Objekt im
 Nun können Sie die vorhanden Stützpunkte wieder bewegen und durch einen Doppelklick neue Stützpunkte setzen.
 Bei der Kreisflächenmessung kann der Radius angepasst werden. Bei jedem Objekt kann über den Reiter ``Platzhalter`` frei gewählt werden, ob die Längen in Meter oder Kilometer angegeben werden.
 
+
 .. figure:: ../../../screenshots/de/client-user/measure_info.png
   :align: center
 
 
-Darstellungskonfigurationen
----------------------------
-
-Über den Punkt |style| ``Darstellung`` gelangt man zu den ausführlichen Darstellungsoptionen für Geometrie und Beschriftung.
-
-.. figure:: ../../../screenshots/de/client-user/measure_combi.png
-  :align: center
-
-
-Mögliche Felder für die Markierung
-----------------------------------
-(dieser Punkt ist meiner Meinung nach nicht mehr von Nöten da wir den Platzhalter Reiter eingefügt haben)
+Platzhalter für die Beschriftung
+--------------------------------
 
 +------------------------+---------------------------------+
 | **Feld**               | **Erläuterung**                 |
++------------------------+---------------------------------+
+| {x}                    | gibt die X-Koordinate an        |
++------------------------+---------------------------------+
+| {y}                    | gibt die Y-Koordinate an        |
++------------------------+---------------------------------+
+| {widt}                 | gibt die Breite an              |
++------------------------+---------------------------------+
+| {height}               | gibt die Höhe                   |
 +------------------------+---------------------------------+
 | {len}                  | gibt die Länge einer Linie an   |
 +------------------------+---------------------------------+
@@ -65,21 +67,43 @@ Mögliche Felder für die Markierung
 +------------------------+---------------------------------+
 | {radius}               | gibt den Radius an              |
 +------------------------+---------------------------------+
-| {x}                    | gibt die X-Koordinate an        |
-+------------------------+---------------------------------+
-| {y}                    | gibt die Y-Koordinate an        |
-+------------------------+---------------------------------+
-| {w}                    | gibt die Breite an              |
-+------------------------+---------------------------------+
-| {h}                    | gibt die Höhe                   |
-+------------------------+---------------------------------+
+
+Für die Verwendung der Platzhalter wurde eine Formel entwickelt, wodurch die Einheit und die Präzision individuell bestimmt werden können.
+Diese Formel besitzt folgende Form { |  | }. In den ersten Abschnitt wird der gewünschte Platzhalter eingetragen. In den zweiten Abschnitt wird die Einheit eingetragen.
+Der letzte Abschnitt bestimmt die Präzision bzw wie viele Nachkommastellen vergeben werden sollen.
+
+Hier ein paar Beispiele:
+
++----------------+------------------------------------------+
+| {x | km | 2}   | x Position in Kilometer, 2 Dezimalstellen|
++----------------+------------------------------------------+
+| {x | dms }     |x Position in Dezimalstellen              |
++----------------+------------------------------------------+
+| {area | ha | 3}| Fläche in ha, 3 Dezimalstellen           |
++----------------+------------------------------------------+
+| {area | km}    |Fläche in km2, 0 Dezimalstellen           |
++----------------+------------------------------------------+
 
 
 
+
+
+Darstellungskonfigurationen
+---------------------------
+
+Über den Punkt |style| ``Darstellung`` gelangt man zu den ausführlichen Darstellungsoptionen für |1| Geometrie und |2| Beschriftung.
+Beide Darstellungen können über den jeweils obersten Menüpunkt an- oder ausgeschaltet werden.
+Bei den Geometrieoptionen kann der Stil der Linien, sowie die Füllung der Geometrie eingestellt werden.
+Die Darstellungsoptionen für die Beschriftung bieten die gleichen Möglichkeiten.
+Zusätzlich kann jedoch über die Menüpunkte ``Platzierung``, ``Ausrichtung`` und ``Versatz X/Y`` die Beschriftung positioniert werden.
+
+.. figure:: ../../../screenshots/de/client-user/measure_combi.png
+  :align: center
 
 .. note::
- Wie bei anderen Werkzeugen auch kann dieses Werkzeug individuell angepasst werden.
+ Wie andere Werkzeuge auch, kann dieses Werkzeug individuell angepasst werden.
  Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren.
+
 
 
 
@@ -111,3 +135,7 @@ Mögliche Felder für die Markierung
    :width: 30em
  .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
    :width: 30em
+ .. |1| image:: ../../../images/gws_digits-01.svg
+   :width: 35em
+ .. |2| image:: ../../../images/gws_digits-02.svg
+   :width: 35em

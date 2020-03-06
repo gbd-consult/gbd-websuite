@@ -14,7 +14,7 @@ Alternativ kann der unterste Layer in einer Layerstruktur gewählt werden, wodur
 .. figure:: ../../../screenshots/de/client-user/mouseover_identification_2.png
   :align: center
 
-Wenn mehrere Objekte markiert wurden, kann man über |continue| und |back| die einzelnen Informationen anzeigen lassen. Des Weiteren kann man über |options| die Auswahl der Objekte auch auf andere Werkzeuge, wie dem ``Auswählen``, ``Räumliche Suche`` und ``Annotieren`` Werkzeug, übertragen. Zusätzlich ist es möglich, über das ``Hinzoomen``-Werkzeug die einzelnen Objekte zu fokussieren. Über |cancel| schließen Sie das Pop-up-Fenster.
+Wenn mehrere Objekte markiert wurden, kann man über |continue| und |back| sich die einzelnen Informationen anzeigen lassen. Des Weiteren kann man über |options| die Auswahl der Objekte auch auf andere Werkzeuge, wie dem ``Auswählen``, ``Räumliche Suche`` und ``Annotieren`` Werkzeug, übertragen. Zusätzlich ist es möglich, über das ``Hinzoomen``-Werkzeug die einzelnen Objekte zu fokussieren. Über |cancel| schließen Sie das Pop-up-Fenster.
 
 .. note::
  Wie alle Werkzeuge kann auch dieses deaktiviert oder anders plaziert werden.
