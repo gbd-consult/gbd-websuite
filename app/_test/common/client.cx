@@ -26,7 +26,8 @@ client.options {
 }
 
 map.layers+ {
-    type "osm"
     title "osm"
+    type "tile"
+    url "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
     opacity 0.3
 }

@@ -186,5 +186,4 @@ def test_render():
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.wfs_squares_memphis_25832/bbox/' + gws.as_str_list(bbox)
 
     r = u.req(url, params={'width': 400, 'height': 400})
-    d = u.compare_image_response(r, '/data/wfs_squares_400x400.png')
-    assert not d
+    assert True is u.response_image_matches(r, '/data/response_images/wfs_squares_400x400.png')

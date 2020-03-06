@@ -9,8 +9,8 @@ def main():
         'p_date': 'date',
     }
 
-    u.make_geom_table(
-        name='dus1',
+    u.make_features(
+        'postgres:dus1',
         geom_type='square',
         prop_schema=schema,
         crs=cc.CRS_3857,
@@ -19,8 +19,8 @@ def main():
         xy=cc.POINTS.dus1,
         gap=100,
     )
-    u.make_geom_table(
-        name='dus2',
+    u.make_features(
+        'postgres:dus2',
         geom_type='square',
         prop_schema=schema,
         crs=cc.CRS_3857,
@@ -29,8 +29,8 @@ def main():
         xy=cc.POINTS.dus2,
         gap=100,
     )
-    u.make_geom_json(
-        path='/common/qgis/points_dus3_3857.geojson',
+    u.make_features(
+        '/common/qgis/points_dus3_3857.geojson',
         geom_type='point',
         prop_schema=schema,
         crs=cc.CRS_3857,

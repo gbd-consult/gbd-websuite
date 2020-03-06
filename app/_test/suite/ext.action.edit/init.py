@@ -11,8 +11,8 @@ def main():
         'p_date': 'date',
     }
 
-    u.make_geom_table(
-        name='paris_3857',
+    u.make_features(
+        'postgres:paris_3857',
         geom_type='point',
         prop_schema=schema,
         crs=cc.CRS_3857,

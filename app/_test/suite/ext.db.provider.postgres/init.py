@@ -9,8 +9,8 @@ def main():
         'p_date': 'date',
     }
 
-    u.make_geom_table(
-        name='paris_3857',
+    u.make_features(
+        'postgres:paris_3857',
         geom_type='point',
         prop_schema=schema,
         crs=cc.CRS_3857,
@@ -20,8 +20,8 @@ def main():
         gap=100,
     )
 
-    u.make_geom_table(
-        name='dus_25832',
+    u.make_features(
+        'postgres:dus_25832',
         geom_type='point',
         prop_schema=schema,
         crs=cc.CRS_25832,
@@ -31,8 +31,8 @@ def main():
         gap=100,
     )
 
-    u.make_geom_table(
-        name='ny_3857',
+    u.make_features(
+        'postgres:ny_3857',
         geom_type='square',
         prop_schema=schema,
         crs=cc.CRS_3857,
@@ -42,8 +42,8 @@ def main():
         gap=100,
     )
 
-    u.make_geom_table(
-        name='london_25833',
+    u.make_features(
+        'postgres:london_25833',
         geom_type='square',
         prop_schema=schema,
         crs=cc.CRS_25833,

@@ -8,4 +8,4 @@ def test_get_capabilities():
         'REQUEST': 'GetCapabilities'
     })
 
-    assert u.xml(r.text) == u.read('/data/csw_GetCapabilities.xml')
+    assert True is u.response_xml_matches(r, path='/data/response_xml/csw_GetCapabilities.xml')

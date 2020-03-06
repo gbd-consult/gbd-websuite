@@ -17,13 +17,13 @@ projects+ {
     map.layers+ {
         title "qgis_flat_ghana"
         type "qgisflat"
-        path "/common/qgis/test_1.qgs"
+        path "/common/qgis/test_geojson_postgres.qgs"
         sourceLayers.names ["points_ghana_25832"]
     }
     map.layers+ {
         title "qgis_flat_dus"
         type "qgisflat"
-        path "/common/qgis/test_1.qgs"
+        path "/common/qgis/test_geojson_postgres.qgs"
         sourceLayers.names ["squares_dus1_3857", "squares_dus2_3857"]
     }
 
@@ -38,7 +38,7 @@ projects+ {
     map.layers+ {
         title "t"
         type "qgis"
-        path "/common/qgis/test_1.qgs"
+        path "/common/qgis/test_geojson_postgres.qgs"
     }
 
     @include /common/client.cx
@@ -53,7 +53,7 @@ projects+ {
         title "t"
         type "qgis"
         sourceLayers.names [ "GroupOne", "GroupTwoOneOne"]
-        path "/common/qgis/test_1.qgs"
+        path "/common/qgis/test_geojson_postgres.qgs"
     }
 
     @include /common/client.cx
@@ -68,7 +68,7 @@ projects+ {
         title "t"
         type "qgis"
         flatten.level 2
-        path "/common/qgis/test_1.qgs"
+        path "/common/qgis/test_geojson_postgres.qgs"
     }
 
     @include /common/client.cx

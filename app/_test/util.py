@@ -22,10 +22,14 @@ DIR = os.path.dirname(__file__)
 
 
 def raises(exc):
+    """Shortcut for pytest.raises."""
+
     return pytest.raises(exc)
 
 
 def read(path, mode='rt'):
+    """Read a file and return its content."""
+
     try:
         with open(path, mode) as fp:
             return fp.read()
@@ -33,13 +37,9 @@ def read(path, mode='rt'):
         return f'FILE ERROR: {e}, path {path!r}'
 
 
-def print_json(x):
-    print('-' * 40)
-    print(gws.tools.json2.to_pretty_string(x))
-    print('-' * 40)
+def pretty_xml(x):
+    """Format an xml document nicely."""
 
-
-def xml(x):
     x = re.sub(r'>\s+<', '><', x.strip())
     try:
         xml = etree.fromstring(x.encode('utf8'))
@@ -51,20 +51,35 @@ def xml(x):
     return s
 
 
-def print_xml(x):
+def print_json(x):
+    """Print a value as a nice json."""
+
     print('-' * 40)
-    print(xml(x))
+    print(gws.tools.json2.to_pretty_string(x))
+    print('-' * 40)
+
+
+def print_xml(x):
+    """Print a nicely formatted xml."""
+
+    print('-' * 40)
+    print(pretty_xml(x))
     print('-' * 40)
 
 
 def strlist(ls):
+    """Format a list as a comma-separated string."""
+
     return ','.join(str(p) for p in ls)
+
+
+_LOCALHOST = 'http://127.0.0.1'
 
 
 def req(url, **kwargs) -> requests.Response:
     """Perform a get request to the local server."""
 
-    url = 'http://127.0.0.1/' + url
+    url = _LOCALHOST + '/' + url
     if 'params' in kwargs:
         qs = gws.as_query_string(kwargs.pop('params'))
         b = '&' if '?' in url else '?'
@@ -98,7 +113,7 @@ def cmd(command, params=None, binary=False, **kwargs):
     }
 
     res = requests.request(
-        url='http://127.0.0.1/_',
+        url=_LOCALHOST + '/_',
         method='POST',
         data=data,
         headers=headers,
@@ -107,48 +122,52 @@ def cmd(command, params=None, binary=False, **kwargs):
     return res
 
 
-def test_config():
-    # see cmd.py/start_container
-    return gws.tools.json2.from_path(gws.VAR_DIR + '/test.config.json')
+def response_xml_matches(r: requests.Response, path=None, text=None):
+    """Compare an XML text in the request with a reference document."""
+
+    if path:
+        text = read(path)
+    else:
+        text = pretty_xml(text.strip())
+    return pretty_xml(r.text) == text
 
 
-def compare_image_response(r: requests.Response, path, threshold=0.1):
-    def _cmp():
+def response_image_matches(r: requests.Response, path, threshold=0.00001):
+    """Compare an image in the request with a reference image."""
+
+    def _cmp(content):
         if not os.path.exists(path):
-            return f'missing {path}'
+            return f'image error: {path}: missing'
 
         a = wand.image.Image(blob=content)
         b = wand.image.Image(filename=path)
 
         if a.width != b.width:
-            return f'bad width {a.width} != {b.width}'
+            return f'image error: {path}: bad width {a.width} != {b.width}'
         if a.height != b.height:
-            return f'bad height {a.height} != {b.height}'
+            return f'image error: {path}: bad height {a.height} != {b.height}'
 
-        loc, diff = a.similarity(b)
-
-        if loc['left'] != 0 or loc['top'] != 0 or loc['width'] != b.width or loc['height'] != b.height:
-            return f'bad loc {loc}'
+        _, diff = a.compare(b, metric='mean_absolute')
 
         if diff > threshold:
-            return f'bad diff {diff} > {threshold}'
+            return f'image error: {path}: too different {diff:f} threshold={threshold:f}'
 
-        return ''
+        return True
 
     if isinstance(r, str):
         return r
 
-    content = r.content
-    err = _cmp()
-    if err:
-        name = path.split('/')[-1]
-        d = gws.tools.misc.ensure_dir(gws.VAR_DIR + '/failed_files')
-        with open(d + '/' + name, 'wb') as fp:
-            fp.write(content)
-    return err
+    name = path.split('/')[-1]
+    d = gws.tools.misc.ensure_dir(gws.VAR_DIR + '/response_images')
+    with open(d + '/' + name, 'wb') as fp:
+        fp.write(r.content)
+
+    return _cmp(r.content)
 
 
 def short_features(fs, trace=False):
+    """Pick essential properties from a list of features."""
+
     rs = []
     for f in fs:
         r = {}
@@ -166,8 +185,82 @@ def short_features(fs, trace=False):
     return rs
 
 
-def postgres_provider():
-    cfg = test_config()
+def postgres_select(stmt):
+    """Perform a SELECT in postgres and return records as a list of dicts."""
+
+    with _postgres_provider().connect() as conn:
+        return list(conn.select(stmt))
+
+
+def make_features(target, geom_type, prop_schema, crs, xy, rows, cols, gap):
+    """Generate features on a rectangular grid in a postgres table or a geojson file.
+
+    Args:
+        target: Either 'postgres:<table name>' or '<path>.geojson'
+        geom_type: One of 'point' or 'square'
+        prop_schema: A dictionary {property_name: type} where type is one of 'int', 'float', 'text', 'date'
+        crs: A CRS like 'EPGS:3857'
+        xy: Start point
+        rows: Number of rows
+        cols: Number of columns
+        gap: Distance between features in projection units
+    """
+
+    if target.startswith('postgres:'):
+        name = target.split(':')[1]
+        features = _make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap)
+        prov = _postgres_provider()
+        gt = geom_type
+        if geom_type == 'square':
+            gt = 'polygon'
+        _postgres_create_table(prov, name, prop_schema, gt, crs)
+        table = prov.configure_table({'name': name})
+        prov.edit_operation('insert', table, features)
+        next_id = max(int(f.uid) for f in features) + 1
+        with prov.connect() as conn:
+            conn.execute(f"ALTER SEQUENCE {name}_id_seq RESTART WITH {next_id}")
+    else:
+        name = gws.tools.misc.parse_path(target)['name']
+        features = _make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap)
+        srid = crs.split(':')[-1]
+
+        js = {
+            "type": "FeatureCollection",
+            "crs": {
+                "type": "name",
+                "properties": {
+                    "name": "urn:ogc:def:crs:EPSG::" + srid
+                }
+            },
+            "features": []
+        }
+
+        for f in features:
+            f = f.props
+            props = {a.name: a.value for a in f.attributes}
+            props['id'] = f.uid
+            js["features"].append({
+                "type": "Feature",
+                "geometry": f.shape.geometry,
+                "properties": props
+            })
+
+        gws.tools.json2.to_path(target, js, pretty=True)
+
+
+##
+
+
+_postgres = None
+
+
+def _postgres_provider() -> gws.ext.db.provider.postgres.Object:
+    global _postgres
+
+    if _postgres:
+        return _postgres
+
+    cfg = _test_config()
     conn = t.Data(
         host=cfg['host.name'],
         port=cfg['postgres_connection.port'],
@@ -175,17 +268,33 @@ def postgres_provider():
         password=cfg['postgres_connection.password'],
         database=cfg['postgres_connection.database'],
     )
-    prov = gws.ext.db.provider.postgres.Object()
-    prov.initialize(conn)
-    return prov
+    _postgres = gws.ext.db.provider.postgres.Object()
+    _postgres.initialize(conn)
+    return _postgres
 
 
-_postgres: gws.ext.db.provider.postgres.Object = postgres_provider()
+def _postgres_create_table(prov, name, prop_schema, geom_type, crs):
+    props = ','.join(f'{k} {v}' for k, v in prop_schema.items())
+    srid = crs.split(':')[-1]
+
+    ddl = f'''
+        CREATE TABLE {name} (
+            id SERIAL PRIMARY KEY,
+            {props},
+            p_geom GEOMETRY({geom_type},{srid})
+        )
+    '''
+    with prov.connect() as conn:
+        conn.execute(f'DROP TABLE IF EXISTS {name}')
+        conn.execute(ddl)
 
 
-def make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
-    """Generate features with on a rectangular grid of points"""
+def _test_config():
+    # see cmd.py/start_container
+    return gws.tools.json2.from_path(gws.VAR_DIR + '/cmd.ini.json')
 
+
+def _make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
     features = []
 
     sx, sy = gws.gis.proj.transform_xy(xy[0], xy[1], 'EPSG:3857', crs)
@@ -227,19 +336,6 @@ def make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
                     ]]
                 }
 
-            if geom_type == 'polygon':
-                w = h = gap / 2
-                geom = {
-                    'type': 'Polygon',
-                    'coordinates': [[
-                        [x, y],
-                        [x + w, y],
-                        [x + w, y + h],
-                        [x, y + h],
-                        [x, y],
-                    ]]
-                }
-
             features.append(gws.gis.feature.Feature(
                 uid=uid,
                 attributes=atts,
@@ -247,66 +343,3 @@ def make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
             ))
 
     return features
-
-
-def create_postgres_table(prov, name, prop_schema, geom_type, crs):
-    props = ','.join(f'{k} {v}' for k, v in prop_schema.items())
-    srid = crs.split(':')[-1]
-
-    ddl = f'''
-        CREATE TABLE {name} (
-            id SERIAL PRIMARY KEY,
-            {props},
-            p_geom GEOMETRY({geom_type},{srid})
-        )
-    '''
-    with prov.connect() as conn:
-        conn.execute(f'DROP TABLE IF EXISTS {name}')
-        conn.execute(ddl)
-
-
-def postgres_select(stmt):
-    with _postgres.connect() as conn:
-        return list(conn.select(stmt))
-
-
-def make_geom_table(name, geom_type, prop_schema, crs, xy, rows, cols, gap):
-    prov = _postgres
-    gt = geom_type
-    if geom_type == 'square':
-        gt = 'polygon'
-    create_postgres_table(prov, name, prop_schema, gt, crs)
-    features = make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap)
-    table = prov.configure_table({'name': name})
-    prov.edit_operation('insert', table, features)
-    next_id = max(int(f.uid) for f in features) + 1
-    with prov.connect() as conn:
-        conn.execute(f"ALTER SEQUENCE {name}_id_seq RESTART WITH {next_id}")
-
-
-def make_geom_json(path, geom_type, prop_schema, crs, xy, rows, cols, gap):
-    features = make_geom_features(gws.tools.misc.parse_path(path)['name'], geom_type, prop_schema, crs, xy, rows, cols, gap)
-    srid = crs.split(':')[-1]
-
-    js = {
-        "type": "FeatureCollection",
-        "crs": {
-            "type": "name",
-            "properties": {
-                "name": "urn:ogc:def:crs:EPSG::" + srid
-            }
-        },
-        "features": []
-    }
-
-    for f in features:
-        f = f.props
-        props = {a.name: a.value for a in f.attributes}
-        props['id'] = f.uid
-        js["features"].append({
-            "type": "Feature",
-            "geometry": f.shape.geometry,
-            "properties": props
-        })
-
-    gws.tools.json2.to_path(path, js, pretty=True)

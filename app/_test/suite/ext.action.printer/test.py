@@ -12,7 +12,7 @@ def _wait_for_print(job_uid):
         if s in ('error', 'cancel'):
             return f'JOB STATE: {s}'
         if s == 'complete':
-            return u.req(f'/_/cmd/assetHttpGetResult/jobUid/{job_uid}')
+            return u.req(f'_/cmd/assetHttpGetResult/jobUid/{job_uid}')
         # print(f'\n> WAITING FOR PRINTER: {s}')
         time.sleep(2)
 
@@ -30,15 +30,15 @@ def test_layers():
         "scale": 2000,
         "items": [
             {
-                "type": "layer",
+                "type": "vector",
                 "layerUid": "a.map.dus1"
             },
             {
-                "type": "layer",
+                "type": "vector",
                 "layerUid": "a.map.dus2"
             },
             {
-                "type": "layer",
+                "type": "raster",
                 "layerUid": "a.map.wms_dus3"
             }
         ],
@@ -60,7 +60,7 @@ def test_layers():
 
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
-    assert u.compare_image_response(res, '/data/layers.png') == ''
+    assert True is u.response_image_matches(res, '/data/response_images/layers.png')
 
 
 def test_features():
@@ -146,11 +146,30 @@ def test_features():
                                 "fill": "rgba(0,255,0,0.5)",
                             }
                         }
-                    }
+                    },
+                    # {
+                    #     "elements": {"label": "SHOULD NOT BE PRINTED"},
+                    #     "shape": {
+                    #         "crs": cc.CRS_3857,
+                    #         "geometry": {
+                    #             "type": "Point",
+                    #             "coordinates": [x + 300, y + 300],
+                    #         }
+                    #     },
+                    #     "style": {
+                    #         "type": "css",
+                    #         "values": {
+                    #             'with_geometry': 'none',
+                    #             "fill": "rgb(0,255,255)",
+                    #             "point_size": 200,
+                    #         }
+                    #     }
+                    # },
+
                 ]
             },
             {
-                "type": "layer",
+                "type": "vector",
                 "layerUid": "a.map.dus1"
             }
         ],
@@ -172,10 +191,10 @@ def test_features():
 
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
-    assert u.compare_image_response(res, '/data/features.png') == ''
+    assert True is u.response_image_matches(res, '/data/response_images/features.png')
 
 
-def test_bitmap():
+def test_bitmap_url():
     x, y = cc.POINTS.dus1
 
     img = u.read('/data/chess.png', 'rb')
@@ -192,7 +211,7 @@ def test_bitmap():
         "scale": 2000,
         "items": [
             {
-                "type": "layer",
+                "type": "vector",
                 "layerUid": "a.map.dus1"
             },
             {
@@ -213,7 +232,7 @@ def test_bitmap():
 
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
-    assert u.compare_image_response(res, '/data/bitmap.png') == ''
+    assert True is u.response_image_matches(res, '/data/response_images/bitmap.png')
 
 
 def test_qgis_template():
@@ -229,15 +248,15 @@ def test_qgis_template():
         "scale": 2000,
         "items": [
             {
-                "type": "layer",
+                "type": "vector",
                 "layerUid": "a.map.dus1"
             },
             {
-                "type": "layer",
+                "type": "vector",
                 "layerUid": "a.map.dus2"
             },
             {
-                "type": "layer",
+                "type": "raster",
                 "layerUid": "a.map.wms_dus3"
             }
         ],
@@ -259,5 +278,5 @@ def test_qgis_template():
 
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
-    assert u.compare_image_response(res, '/data/qgis.png') == ''
+    assert True is u.response_image_matches(res, '/data/response_images/qgis.png')
 

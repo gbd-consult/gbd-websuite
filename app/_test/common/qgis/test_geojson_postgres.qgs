@@ -1553,7 +1553,7 @@ def my_form_open(dialog, layer, feature):
       <Group type="QStringList"/>
       <Project type="bool">false</Project>
     </WMTSPngLayers>
-    <WMTSUrl type="QString">http://mainhost:9995?MAP=/qgis/test_1.qgs</WMTSUrl>
+    <WMTSUrl type="QString">http://mainhost:9995?MAP=/qgis/test_geojson_postgres.qgs</WMTSUrl>
     <WCSLayers type="QStringList"/>
     <WMTSJpegLayers>
       <Layer type="QStringList"/>
@@ -1615,7 +1615,7 @@ def my_form_open(dialog, layer, feature):
     <Measure>
       <Ellipsoid type="QString">GRS80</Ellipsoid>
     </Measure>
-    <WMSUrl type="QString">http://mainhost:9995?MAP=/qgis/test_1.qgs</WMSUrl>
+    <WMSUrl type="QString">http://mainhost:9995?MAP=/qgis/test_geojson_postgres.qgs</WMSUrl>
     <WCSUrl type="QString"></WCSUrl>
     <WMSServiceTitle type="QString"></WMSServiceTitle>
     <Legend>
@@ -1627,7 +1627,7 @@ def my_form_open(dialog, layer, feature):
       <DecimalPlaces type="int">2</DecimalPlaces>
     </PositionPrecision>
     <WMSRootName type="QString"></WMSRootName>
-    <WFSUrl type="QString">http://mainhost:9995?MAP=/qgis/test_1.qgs</WFSUrl>
+    <WFSUrl type="QString">http://mainhost:9995?MAP=/qgis/test_geojson_postgres.qgs</WFSUrl>
     <WMSKeywordList type="QStringList">
       <value></value>
     </WMSKeywordList>

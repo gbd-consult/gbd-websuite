@@ -15,7 +15,7 @@ def test_get_capabilities():
         'REQUEST': 'GetCapabilities'
     })
 
-    assert u.xml(r.text) == u.read('/data/wms_GetCapabilities_wms1.xml')
+    assert True is u.response_xml_matches(r, path='/data/response_xml/wms_GetCapabilities_wms1.xml')
 
 
 def test_get_map():
@@ -32,8 +32,7 @@ def test_get_map():
         'HEIGHT': 400,
     })
 
-    d = u.compare_image_response(r, '/data/wms_paris_3857_400x400.png')
-    assert not d
+    assert True is u.response_image_matches(r, path='/data/response_images/wms_paris_3857_400x400.png')
 
 
 def test_get_features1():
@@ -71,7 +70,7 @@ def test_get_features1():
         </wfs:FeatureCollection>
     """
 
-    assert u.xml(r.text) == u.xml(exp)
+    assert True is u.response_xml_matches(r, text=exp)
 
 def test_get_features_with_resolution():
     x, y = cc.POINTS.paris
@@ -108,7 +107,7 @@ def test_get_features_with_resolution():
         </wfs:FeatureCollection>
     """
 
-    assert u.xml(r.text) == u.xml(exp)
+    assert True is u.response_xml_matches(r, text=exp)
 
 def test_get_features_with_reprojection():
     x, y = cc.POINTS.dus
@@ -152,4 +151,4 @@ def test_get_features_with_reprojection():
         </wfs:FeatureCollection>
     """
 
-    assert u.xml(r.text) == u.xml(exp)
+    assert True is u.response_xml_matches(r, text=exp)

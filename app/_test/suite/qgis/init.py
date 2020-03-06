@@ -9,8 +9,8 @@ def main():
         'p_date': 'date',
     }
 
-    u.make_geom_table(
-        name='squares_ny_2263',
+    u.make_features(
+        'postgres:squares_ny_2263',
         geom_type='square',
         prop_schema=schema,
         crs='EPSG:2263',
@@ -19,8 +19,8 @@ def main():
         xy=cc.POINTS.ny,
         gap=100,
     )
-    u.make_geom_table(
-        name='squares_dus1_3857',
+    u.make_features(
+        'postgres:squares_dus1_3857',
         geom_type='square',
         prop_schema=schema,
         crs=cc.CRS_3857,
@@ -29,8 +29,8 @@ def main():
         xy=cc.POINTS.dus1,
         gap=100,
     )
-    u.make_geom_table(
-        name='squares_dus2_3857',
+    u.make_features(
+        'postgres:squares_dus2_3857',
         geom_type='square',
         prop_schema=schema,
         crs=cc.CRS_3857,

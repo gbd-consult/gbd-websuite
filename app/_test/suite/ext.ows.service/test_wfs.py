@@ -15,7 +15,7 @@ def test_get_capabilities():
         'REQUEST': 'GetCapabilities'
     })
 
-    assert u.xml(r.text) == u.read('/data/wfs_GetCapabilities_wfs1.xml')
+    assert True is u.response_xml_matches(r, path='/data/response_xml/wfs_GetCapabilities_wfs1.xml')
 
 def test_get_describefeaturetype():
     r = u.req('_/cmd/owsHttp', params={
@@ -25,7 +25,7 @@ def test_get_describefeaturetype():
         'REQUEST': 'DescribeFeatureType',
     })
 
-    assert u.xml(r.text) == u.read('/data/wfs_DescribeFeatureType_wfs1.xml')
+    assert True is u.response_xml_matches(r, path='/data/response_xml/wfs_DescribeFeatureType_wfs1.xml')
 
 
 def test_get_all_features():
@@ -39,7 +39,7 @@ def test_get_all_features():
         'TYPENAMES': 'paris_3857'
     })
 
-    assert u.xml(r.text).count('<wfs:member>') == 50
+    assert u.pretty_xml(r.text).count('<wfs:member>') == 50
 
 
 def test_get_features_with_bbox():
@@ -85,4 +85,4 @@ def test_get_features_with_bbox():
         </wfs:FeatureCollection>
     """
 
-    assert u.xml(r.text) == u.xml(exp)
+    assert True is u.response_xml_matches(r, text=exp)

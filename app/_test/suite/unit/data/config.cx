@@ -18,9 +18,5 @@ projects+ {
         extent [-20026376.39 -20048966.10 20026376.39 20048966.10]
     }
 
-    map.layers+ {
-        type "osm"
-        title "OSM"
-    }
-
+    @include /common/client.cx
 }
