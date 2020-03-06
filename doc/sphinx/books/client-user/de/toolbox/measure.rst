@@ -1,3 +1,5 @@
+.. _M&M:
+
 Markieren & Messen
 ==================
 
@@ -99,7 +101,7 @@ Zusätzlich kann jedoch über die Menüpunkte ``Platzierung``, ``Ausrichtung`` u
   :align: center
 
 .. note::
- Wie bei anderen Werkzeugen auch kann dieses Werkzeug individuell angepasst werden.
+ Wie andere Werkzeuge auch, kann dieses Werkzeug individuell angepasst werden.
  Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren.
 
 

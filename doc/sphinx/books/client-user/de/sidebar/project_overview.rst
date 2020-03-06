@@ -3,7 +3,7 @@ Projektübersicht
 
 Im |menu| ``Menü`` finden Sie die Ebene |project| ``Projektübersicht``. Diese bietet die Möglichkeit, dem Nutzer allgemeine Informationen zum aktuellen Projekt zu vermitteln. Dazu gehört eine Übersichtskarte, welche den aktuellen Ausschnitt der Hauptkarte darstellt. Sie können den Rahmen in der Übersichtskarte verschieben, um den dargestellten Ausschnitt der Hauptkarte an eine andere Position zu bewegen.
 
-.. figure:: ../../../screenshots/de/client-user/project_overview_map.png
+.. figure:: ../../../screenshots/de/client-user/project_overview_map_Original.png
   :align: center
 
 Des Weiteren können dem Nutzer Basisdaten des Projekts, wie ein Titel, das Koordinatenbezugssystem oder die Ausmaße des Projektes vermittelt werden.

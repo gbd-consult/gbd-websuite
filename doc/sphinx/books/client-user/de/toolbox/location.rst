@@ -4,10 +4,13 @@ Mein Standort
 Über die |location| ``Mein Standort``-Funktion können sie zu Ihrem aktuellen Standort springen. Sobald Sie den Button anklicken, zoomt die Karte zu Ihrem aktuellen Standort.
 Mit der Genauigkeit von einigen Metern wird ein Punkt in der Karte angezeigt, welcher Ihrer Position entsprechen sollte. Zusätzlich wird die Koordinate des Punktes angegeben.
 
-Falls Sie eine Fehlermeldung erhalten kann dies verschiedene Gründe haben.
+.. figure:: ../../../screenshots/de/client-user/r4_mein_standort.png
+  :align: center
 
-Zum einen kann es sein, das Ihre Standortdaten nicht verfügbar sind. Die Fehlermeldung lautet dann "Standortdaten sind nicht verfügbar". Dies kann verschiedene Gründe haben. Vorraussetzung ist das Ihr Gerät GPS-fähig ist.
-Heutzutage besitzt jedes mobiles Endgerät. Wenn Sie jedoch von einem Computer arbeiten funktioniert es in der Regel nicht.
+Falls Sie eine Fehlermeldung erhalten kann dies verschiedene Gründe haben:
+
+Zum einen kann es sein, dass Ihre Standortdaten nicht verfügbar sind. Die Fehlermeldung lautet dann "Standortdaten sind nicht verfügbar". Vorraussetzung ist das Ihr Gerät GPS-fähig ist,
+was heutzutage jedes mobile Endgerät ist. Wenn Sie jedoch von einem Computer arbeiten funktioniert es in der Regel nicht.
 Falls ihr Gerät GPS besitzt und Sie trotzdem eine Fehlermeldung erhalten, kann es sein dass Sie den Zugriff des Browsers auf auf die GPS-Koordinaten erst erlauben müssen.
 
 Zum anderen kann es sein, dass Sie die Fehlermeldung "Standort außerhalb der Kartenanzeige" erhalten. Das bedeutet dass sich Ihr Standort außerhalb der Kartenanzeige befindet.
