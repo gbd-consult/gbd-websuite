@@ -71,7 +71,7 @@ def get_bounds_list(el):
     for e in el.all('BoundingBox'):
         crs = e.attr('srs') or e.attr('crs')
         if crs:
-            d[crs] = _bbox_value(e)
+            d[crs.upper()] = _bbox_value(e)
 
     if gws.EPSG_4326 not in d:
         for tag in 'WGS84BoundingBox', 'EX_GeographicBoundingBox', 'LatLonBoundingBox':
