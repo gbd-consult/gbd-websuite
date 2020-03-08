@@ -4,7 +4,7 @@ import urllib.parse
 
 import gws
 import gws.types as t
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.tools.net
 import gws.common.ows.provider.parseutil as u
 import gws.gis.source
@@ -15,7 +15,7 @@ _bigval = 1e10
 
 
 def parse(prov, xml):
-    root = gws.tools.xml3.from_string(xml)
+    root = gws.tools.xml2.from_string(xml)
 
     prov.properties = _properties(root.first('properties'))
     prov.meta = _project_meta_from_props(prov.properties)

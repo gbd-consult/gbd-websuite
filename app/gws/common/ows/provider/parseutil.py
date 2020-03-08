@@ -1,7 +1,7 @@
 import re
 import gws
 import gws.common.ows.provider
-import gws.tools.xml3 as xml3
+import gws.tools.xml2 as xml2
 import gws.types as t
 
 
@@ -275,6 +275,6 @@ def _bbox_value(el):
 
 
 def _is(el, *names):
-    if not isinstance(el, xml3.Element):
+    if not isinstance(el, xml2.Element):
         return False
     return any(el.name.lower() == n.lower() for n in names)

@@ -5,7 +5,7 @@ import os
 import gws
 import gws.common.layer
 import gws.gis.feature
-import gws.gis.svg
+import gws.tools.svg
 import gws.tools.units as units
 import gws.types as t
 
@@ -223,7 +223,7 @@ class Renderer:
             return
 
         if item.type == t.RenderInputItemType.fragment:
-            svg = gws.gis.svg.convert_fragment(item.fragment, self.ri.view)
+            svg = gws.tools.svg.convert_fragment(item.fragment, self.ri.view)
             if svg:
                 self._add_svg([svg])
             return

@@ -1,4 +1,4 @@
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.gis.shape
 import gws.gis.feature
 

@@ -3,7 +3,8 @@ import os
 import gws
 import gws.core.tree
 import gws.config
-import gws.tools.misc as misc
+import gws.tools.misc
+import gws.tools.os2
 
 from . import control
 
@@ -71,7 +72,7 @@ def start():
 
 
 def _worker(signo):
-    with misc.lock(_lockfile) as ok:
+    with gws.tools.misc.lock(_lockfile) as ok:
         if not ok:
             gws.log.info('MONITOR: locked...')
             return
@@ -132,7 +133,7 @@ def _poll():
     changed = []
 
     for dirname, pattern in m.watch_dirs.items():
-        for filename in misc.find_files(dirname, pattern):
+        for filename in gws.tools.os2.find_files(dirname, pattern):
             paths[filename] = _stats(filename)
 
     for filename, _ in m.watch_files.items():

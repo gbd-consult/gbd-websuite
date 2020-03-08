@@ -7,8 +7,8 @@ import gws.gis.gml
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
-import gws.tools.shell
-import gws.tools.xml3
+import gws.tools.os2
+import gws.tools.xml2
 import gws.web.error
 
 import gws.types as t

@@ -1,6 +1,6 @@
 import gws
 import gws.common.ows.provider
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.gis.ows
 
 import gws.types as t

@@ -1,6 +1,10 @@
-import gws.web
+"""Provides the printing API."""
+
+import gws.common.action
 import gws.common.printer.control as control
 import gws.common.printer.types as pt
+import gws.web.error
+
 import gws.types as t
 
 
@@ -9,7 +13,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
 
     def api_print(self, req: t.IRequest, p: pt.PrintParams) -> pt.PrinterResponse:
         """Start a backround print job"""

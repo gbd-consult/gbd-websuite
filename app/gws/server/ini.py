@@ -5,8 +5,7 @@ import grp
 
 import gws.config
 import gws.qgis.server
-import gws.tools.misc
-import gws.tools.shell
+import gws.tools.os2
 
 import gws.types as t
 
@@ -39,13 +38,13 @@ def create(root: t.IRootObject, base_dir, pid_dir):
             fp.write(s + '\n')
         return p
 
-    for p in gws.tools.misc.find_files(base_dir, '(conf|ini)$'):
-        gws.tools.shell.unlink(p)
+    for p in gws.tools.os2.find_files(base_dir, '(conf|ini)$'):
+        gws.tools.os2.unlink(p)
 
     commands = []
     frontends = []
 
-    in_container = gws.tools.misc.running_in_container()
+    in_container = gws.running_in_container()
 
     rsyslogd_enabled = in_container
 
@@ -296,7 +295,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
             {roots}
             
             location /gws-client/ {{
-                root {gws.APP_DIR}/web;
+                root {gws.APP_DIR}/www;
                 try_files $uri @app;
             }}
 

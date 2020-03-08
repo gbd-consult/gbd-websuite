@@ -1,5 +1,4 @@
 import gws.gis.proj
-import gws.tools.misc
 import gws.types as t
 
 

@@ -1,19 +1,21 @@
+"""Intergration with the DProCon software."""
+
 import re
 import time
 import os
 
 import gws
-import gws.web
-import gws.config
+import gws.common.action
+import gws.common.db
+import gws.common.layer
 import gws.common.template
 import gws.ext.helper.alkis
-import gws.tools.net
-import gws.tools.date
 import gws.gis.feature
-import gws.gis.shape
-import gws.common.layer
-import gws.common.db
 import gws.gis.proj
+import gws.gis.shape
+import gws.tools.date
+import gws.tools.net
+import gws.web.error
 
 import gws.types as t
 
@@ -70,7 +72,7 @@ class GetDataResponse(t.Data):
     feature: t.FeatureProps
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
     alkis: gws.ext.helper.alkis.Object
     request_url: str
     feature_format: t.IFormat
@@ -118,7 +120,7 @@ class Object(gws.ActionObject):
 
         self._populate_data_table()
         atts = self._select_data(request_id)
-        shape = gws.gis.shape.from_wkb_hex(geom, self.crs)
+        shape = gws.gis.shape.from_wkb_hex(geom, self.alkis.crs)
 
         f = gws.gis.feature.Feature(
             uid=f'dprocon_{request_id}',

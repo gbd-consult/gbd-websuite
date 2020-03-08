@@ -1,5 +1,10 @@
+"""Check user logins and logouts."""
+
 import gws.web
 import gws.types as t
+
+import gws.common.action
+
 
 class Config(t.WithTypeAndAccess):
     """Authorization action"""
@@ -15,7 +20,7 @@ class LoginParams(t.Params):
     password: str
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
 
     def api_check(self, req: t.IRequest, p: t.Params) -> Response:
         """Check the authorization status"""

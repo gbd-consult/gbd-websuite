@@ -1,6 +1,6 @@
 import re
 
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.gis.shape
 import gws.gis.feature
 
@@ -26,7 +26,7 @@ def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
     # some services have bare &'s in xml
     text = re.sub(r'&(?![#\w])', '', text)
 
-    el = gws.tools.xml3.from_string(text)
+    el = gws.tools.xml2.from_string(text)
     fs = []
     layer_name = el.get_text('Kartenebene')
 

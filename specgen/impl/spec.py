@@ -224,5 +224,3 @@ def _method_category(u):
         return 'http_get'
     if u.name.startswith('http_post'):
         return 'http_post'
-    if u.name.startswith('http'):
-        return 'http'

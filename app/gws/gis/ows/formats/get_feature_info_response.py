@@ -1,4 +1,4 @@
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.gis.shape
 import gws.gis.feature
 
@@ -15,7 +15,7 @@ def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
     if first_el.name.lower() != 'getfeatureinforesponse':
         return None
 
-    el = gws.tools.xml3.from_string(text)
+    el = gws.tools.xml2.from_string(text)
     fs = []
 
     for layer in el.all('Layer'):

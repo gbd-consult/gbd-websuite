@@ -13,8 +13,7 @@ import gws.common.template
 import gws.gis.zoom
 import gws.qgis.server
 import gws.server.types
-import gws.tools.misc as misc
-import gws.tools.shell
+import gws.tools.os2
 import gws.web.site
 
 import gws.types as t
@@ -162,8 +161,8 @@ def _install_fonts(source_dir):
     gws.log.info('checking fonts...')
 
     target_dir = '/usr/local/share/fonts'
-    gws.tools.shell.run(['mkdir', '-p', target_dir], echo=True)
-    for p in misc.find_files(source_dir):
-        gws.tools.shell.run(['cp', '-v', p, target_dir], echo=True)
+    gws.tools.os2.run(['mkdir', '-p', target_dir], echo=True)
+    for p in gws.tools.os2.find_files(source_dir):
+        gws.tools.os2.run(['cp', '-v', p, target_dir], echo=True)
 
-    gws.tools.shell.run(['fc-cache', '-fv'], echo=True)
+    gws.tools.os2.run(['fc-cache', '-fv'], echo=True)

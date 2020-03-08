@@ -2,6 +2,7 @@
 
 import subprocess
 import os
+import re
 import signal
 import hashlib
 import psutil
@@ -139,3 +140,32 @@ def pids_of(proc_name):
             pids.append(p.pid)
 
     return pids
+
+
+def find_files(dirname, pattern=None):
+    for fname in os.listdir(dirname):
+        if fname.startswith('.'):
+            continue
+
+        path = os.path.join(dirname, fname)
+
+        if os.path.isdir(path):
+            yield from find_files(path, pattern)
+            continue
+
+        if pattern is None or re.search(pattern, path):
+            yield path
+
+
+def parse_path(path):
+    """Parse a path into a dict(path,dirname,filename,name,extension)"""
+
+    d = {'path': path}
+
+    d['dirname'], d['filename'] = os.path.split(path)
+    if d['filename'].startswith('.'):
+        d['name'], d['extension'] = d['filename'], ''
+    else:
+        d['name'], _, d['extension'] = d['filename'].partition('.')
+
+    return d

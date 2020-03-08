@@ -13,7 +13,7 @@ import gws.ext.db.provider.postgres
 import gws.gis.feature
 import gws.gis.proj
 import gws.tools.json2
-import gws.tools.misc
+import gws.tools.os2
 import gws.tools.vendor.umsgpack as umsgpack
 
 import gws.types as t
@@ -158,7 +158,7 @@ def response_image_matches(r: requests.Response, path, threshold=0.00001):
         return r
 
     name = path.split('/')[-1]
-    d = gws.tools.misc.ensure_dir(gws.VAR_DIR + '/response_images')
+    d = gws.ensure_dir(gws.VAR_DIR + '/response_images')
     with open(d + '/' + name, 'wb') as fp:
         fp.write(r.content)
 
@@ -220,7 +220,7 @@ def make_features(target, geom_type, prop_schema, crs, xy, rows, cols, gap):
         with prov.connect() as conn:
             conn.execute(f"ALTER SEQUENCE {name}_id_seq RESTART WITH {next_id}")
     else:
-        name = gws.tools.misc.parse_path(target)['name']
+        name = gws.tools.os2.parse_path(target)['name']
         features = _make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap)
         srid = crs.split(':')[-1]
 

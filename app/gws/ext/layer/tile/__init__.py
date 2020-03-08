@@ -5,7 +5,6 @@ import gws
 import gws.common.layer
 import gws.types as t
 import gws.gis.source
-import gws.tools.misc
 import gws.tools.json2
 
 _EPSG_3857_RADIUS = 6378137
@@ -57,10 +56,7 @@ class Object(gws.common.layer.ImageTile):
     @property
     def props(self):
         if self.display == 'client':
-            return super().props.extend({
-                'type': 'xyz',
-                'url': self.url
-            })
+            return gws.merge(super().props, type='xyz', url=self.url)
         return super().props
 
     def mapproxy_config(self, mc, options=None):

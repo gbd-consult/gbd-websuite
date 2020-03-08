@@ -250,11 +250,11 @@ class Object(gws.Object):
         return rec
 
     def _connect_for_writing(self, user, password):
-        params = gws.extend(self.connect_args['params'], {
+        params = gws.merge(self.connect_args['params'], {
             'user': user,
             'password': password,
         })
-        connect_args = gws.extend(self.connect_args, {'params': params})
+        connect_args = gws.merge(self.connect_args, {'params': params})
         return AlkisConnection(**connect_args)
 
     def _query_to_dict(self, query):

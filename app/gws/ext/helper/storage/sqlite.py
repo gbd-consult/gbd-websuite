@@ -5,7 +5,6 @@ import time
 import gws
 import gws.config
 import gws.tools.json2
-import gws.tools.misc
 
 import gws.types as t
 

@@ -1,6 +1,10 @@
+"""Backend for vector edit operations."""
+
+import gws
+import gws.common.action
 import gws.gis.feature
 import gws.tools.json2
-import gws.web
+import gws.web.error
 
 import gws.types as t
 
@@ -19,7 +23,7 @@ class EditResponse(t.Response):
     features: t.List[t.FeatureProps]
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
     def api_add_features(self, req: t.IRequest, p: EditParams) -> EditResponse:
         """Add features to the layer"""
 

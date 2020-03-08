@@ -6,13 +6,12 @@ import gws
 import gws.tools.mime
 import gws.gis.feature
 import gws.gis.render
-import gws.tools.misc as misc
 import gws.tools.pdf
-import gws.types as t
 import gws.tools.vendor.chartreux as chartreux
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.common.template
 
+import gws.types as t
 
 class Config(gws.common.template.Config):
     """XML template"""
@@ -156,7 +155,7 @@ class Object(gws.common.template.Object):
         if format == 'tag':
             return t.TemplateOutput(content=last_tag)
 
-        xml = gws.tools.xml3.as_string(last_tag)
+        xml = gws.tools.xml2.as_string(last_tag)
         if not xml.startswith('<?'):
             xml = '<?xml version="1.0" encoding="utf-8"?>' + xml
 

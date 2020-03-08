@@ -2,8 +2,9 @@
 
 import os
 import re
-import gws.tools.misc as misc
-from .data import Data
+import gws.tools.units
+
+import gws.types as t
 
 
 class Error(Exception):
@@ -47,7 +48,7 @@ class _Reader:
         return self.handlers[s['type']](self, val, s)
 
 
-## type handlers
+# type handlers
 
 def _read_any(rd, val, spec):
     return val
@@ -129,7 +130,7 @@ def _read_object(rd, val, spec):
         if len(unknown) > 1:
             return rd.error('ERR_UNKNOWN_PROP', 'unknown properties: %r' % ', '.join(unknown), val)
 
-    return Data(res)
+    return t.Data(res)
 
 
 def _read_taggedunion(rd, val, spec):
@@ -217,7 +218,7 @@ def _read_filepath(rd, val, spec):
 
 def _read_duration(rd, val, spec):
     try:
-        return misc.parse_duration(val)
+        return gws.tools.units.parse_duration(val)
     except ValueError:
         rd.error('ERR_BAD_DURATION', 'invalid duration', val)
 
@@ -282,7 +283,7 @@ def _ensure(rd, val, klass):
         return val
     if klass == list and isinstance(val, tuple):
         return list(val)
-    if klass == dict and isinstance(val, Data):
+    if klass == dict and hasattr(val, 'as_dict'):
         return val.as_dict()
     if isinstance(klass, type):
         klass = 'object' if klass == dict else klass.__name__

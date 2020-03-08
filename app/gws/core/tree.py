@@ -8,13 +8,13 @@ _UIDS = set()
 
 #:export IObject
 class Object(t.IObject):
+    config: t.Config
+    parent: t.IObject
+    root: t.IRootObject
+
     def __init__(self):
         self.children = []
-        self.config: t.Config = None
-        self.parent: t.IObject = None
-        self.root: t.IRootObject = None
         self.uid = ''
-
         self.access = None
         self.klass = _class_name(self.__class__)
         self.defaults = None
@@ -56,7 +56,7 @@ class Object(t.IObject):
         if not uid or uid == self.uid:
             return
 
-        with util.global_lock:
+        with util.global_lock():
             if self.uid:
                 _UIDS.discard(self.uid)
             self.uid = self._new_uid(uid)
@@ -130,7 +130,7 @@ class Object(t.IObject):
             # log.debug(f'SHARED: FOUND {klass} {uid}')
             return self.root.shared_objects[uid]
 
-        with util.global_lock:
+        with util.global_lock():
             log.debug(f'SHARED: create {klass} {uid}')
             obj = self.create_object(klass, cfg)
             obj.uid = uid
@@ -185,16 +185,6 @@ class RootBase(Object):
         if klass not in self.all_types:
             self.all_types[klass] = _load_class(klass)
         return self.all_types[klass]()
-
-
-class ActionObject(Object):
-    def __init__(self):
-        super().__init__()
-        self.type = ''
-
-    def configure(self):
-        super().configure()
-        self.type = self.var('type')
 
 
 def _load_class(klass):

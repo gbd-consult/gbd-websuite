@@ -1,17 +1,20 @@
+"""Upload and update GWS Cloud projects."""
+
 import re
 from lxml import etree
 
 import gws
+import gws.common.action
 import gws.config
 import gws.config.parser
 import gws.ext.db.provider.postgres
+import gws.gis.extent
 import gws.server
-import gws.web.error
-import gws.tools.mime
 import gws.tools.job
 import gws.tools.json2
+import gws.tools.mime
 import gws.tools.misc
-import gws.gis.extent
+import gws.web.error
 
 import gws.types as t
 import gws.common.template
@@ -89,7 +92,7 @@ CLOUD_USER_DIR = CLOUD_DIR + '/users'
 CLOUD_CONFIG_DIR = CLOUD_DIR + '/configs'
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
     def __init__(self):
         super().__init__()
         self.db: gws.ext.db.provider.postgres = None
@@ -117,7 +120,7 @@ class Object(gws.ActionObject):
         user_uid = gws.as_uid(p.userUid)
         project_uid = gws.as_uid(p.projectName)
 
-        user_dir = gws.tools.misc.ensure_dir(f'{CLOUD_USER_DIR}/{user_uid}')
+        user_dir = gws.ensure_dir(f'{CLOUD_USER_DIR}/{user_uid}')
 
         with self.db.connect() as conn:
             conn.execute(f'CREATE SCHEMA IF NOT EXISTS {user_uid}')
@@ -127,7 +130,7 @@ class Object(gws.ActionObject):
         for ds in p.map.data:
             ds_map[ds.uid] = self._dataset_to_table(ds, user_uid)
 
-        assets_dir = gws.tools.misc.ensure_dir(f'{user_dir}/assets')
+        assets_dir = gws.ensure_dir(f'{user_dir}/assets')
         qdata = self._prepare_qgis_project(p.map.source.text, ds_map, p.map.assets, assets_dir)
         # use a custom ext to prevent the monitor from watching this
         # @TODO fix monitor settings
@@ -165,7 +168,7 @@ class Object(gws.ActionObject):
         gws.config.parser.parse(config, 'gws.common.project.Config')
         gws.log.debug('parsing config ok')
 
-        config_dir = gws.tools.misc.ensure_dir(CLOUD_CONFIG_DIR)
+        config_dir = gws.ensure_dir(CLOUD_CONFIG_DIR)
         cfg_path = config_dir + f'/{project_full_uid}.config.json'
         gws.tools.json2.to_path(cfg_path, config, pretty=True)
 

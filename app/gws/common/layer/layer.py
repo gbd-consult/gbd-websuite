@@ -15,9 +15,7 @@ import gws.gis.ows
 import gws.gis.proj
 import gws.gis.shape
 import gws.gis.source
-import gws.gis.svg
 import gws.gis.zoom
-import gws.tools.misc
 import gws.tools.net
 
 import gws.types as t
@@ -114,15 +112,15 @@ class Layer(gws.Object, t.ILayer):
 
     @property
     def props(self):
-        return types.LayerProps({
-            'extent': self.extent if self.extent != self.map.extent else None,
-            'meta': self.meta,
-            'opacity': self.opacity,
-            'options': self.client_options,
-            'resolutions': self.resolutions if self.resolutions != self.map.resolutions else None,
-            'title': self.title,
-            'uid': self.uid,
-        })
+        return types.LayerProps(
+            extent=self.extent if self.extent != self.map.extent else None,
+            meta=self.meta,
+            opacity=self.opacity,
+            options=self.client_options,
+            resolutions=self.resolutions if self.resolutions != self.map.resolutions else None,
+            title=self.title,
+            uid=self.uid,
+        )
 
     @cached_property
     def description(self) -> str:

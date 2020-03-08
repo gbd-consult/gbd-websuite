@@ -2,7 +2,7 @@ import gws
 import gws.types as t
 import gws.gis.shape
 import gws.common.style
-import gws.gis.svg
+import gws.tools.svg
 
 _COMBINED_UID_DELIMITER = '___'
 
@@ -119,7 +119,7 @@ class Feature(t.IFeature):
         if not style and self.layer:
             style = self.layer.style
         s: gws.gis.shape.Shape = self.shape.transformed_to(rv.bounds.crs)
-        return gws.gis.svg.draw(
+        return gws.tools.svg.draw(
             s.geom,
             self.elements.get('label', ''),
             style.values,
@@ -156,7 +156,7 @@ class Feature(t.IFeature):
         return self
 
     def apply_format(self, fmt: t.IFormat, extra_context: dict = None) -> t.IFeature:
-        self.elements = gws.extend(self.elements, fmt.apply(gws.extend(self.template_context, extra_context)))
+        self.elements = gws.merge(self.elements, fmt.apply(gws.merge(self.template_context, extra_context)))
         return self
 
     def _init(self, uid, attributes, elements, shape, style):

@@ -130,13 +130,13 @@ def _configure_extent(obj, target_crs, parent_explicit_extent):
 
     ee = obj.var('extent')
     if ee and not gws.gis.extent.valid(ee):
-        raise gws.Error(f'invalid extent {ee} in {obj.uid!r}')
+        raise gws.Error(f'invalid extent {ee} for {obj.uid!r}')
 
     # if this is a group (or a map itself), configure extents for sublayers
     # using this (or parent's) explicit extent as default
     # and merge sublayers' extents unless there's an explicit ext.
 
-    layers = getattr(obj, 'layers', [])
+    layers = gws.get(obj, 'layers')
 
     if layers:
         exts = []
@@ -158,7 +158,7 @@ def _configure_extent(obj, target_crs, parent_explicit_extent):
 
     # terminal layer, has its own extent and optionally an extent buffer
 
-    own: t.Bounds = getattr(obj, 'own_bounds', None)
+    own: t.Bounds = gws.get(obj, 'own_bounds')
     buf = obj.var('extentBuffer', parent=True)
 
     if own:
@@ -174,6 +174,8 @@ def _configure_extent(obj, target_crs, parent_explicit_extent):
     if parent_explicit_extent:
         obj.extent = parent_explicit_extent
         return obj.extent
+
+    raise gws.Error(f'cannot compute layer extent for {obj.uid!r}')
 
 
 def _set_default_extent(obj, extent):

@@ -3,7 +3,7 @@ import time
 import gws
 import gws.config
 import gws.config.loader
-import gws.tools.misc as misc
+import gws.tools.misc
 import gws.tools.units as units
 import gws.tools.clihelpers as clihelpers
 import gws.gis.cache
@@ -93,7 +93,7 @@ def seed(layers=None, levels=None):
     if levels:
         levels = [int(x) for x in _as_list(levels)]
 
-    with misc.lock(_SEED_LOCKFILE) as ok:
+    with gws.tools.misc.lock(_SEED_LOCKFILE) as ok:
         if not ok:
             gws.log.info('seed already running')
             return

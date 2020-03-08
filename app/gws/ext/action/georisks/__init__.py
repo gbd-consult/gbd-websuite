@@ -1,23 +1,22 @@
+"""Support the Georisks app"""
+
 import warnings
 
 from PIL import Image
 from io import BytesIO
 
 import gws
-import gws.web
-import gws.tools.date
-import gws.gis.shape
-import gws.tools.net
-import gws.tools.misc
-import gws.ext.db.provider.postgres
+import gws.common.action
 import gws.common.db
+import gws.ext.db.provider.postgres
+import gws.gis.shape
+import gws.tools.date
+import gws.tools.net
+import gws.web.error
 
 import gws.types as t
 
 from . import aartelink
-
-# actions for the Georisks app
-# see http://elbe-labe-georisiko.eu
 
 _MAX_IMAGES = 5
 
@@ -203,7 +202,7 @@ class AartelinkResponse(t.Response):
     ok: bool
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
     REPORT_TABLE_NAME = 'gws_report'
     MESSAGE_TABLE_NAME = 'gws_aartelink_message'
     ALARM_TABLE_NAME = 'gws_aartelink_alarm'

@@ -3,7 +3,7 @@ import os
 import sqlite3
 
 import gws
-import gws.tools.shell
+import gws.tools.os2
 
 DB_PATH = gws.MISC_DIR + '/sessions.sqlite'
 
@@ -99,7 +99,7 @@ def delete(uid):
 
 
 def drop():
-    gws.tools.shell.unlink(DB_PATH)
+    gws.tools.os2.unlink(DB_PATH)
     init()
 
 

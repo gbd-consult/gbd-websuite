@@ -4,7 +4,7 @@ import math
 
 import gws
 import gws.tools.net
-import gws.tools.xml3
+import gws.tools.xml2
 
 
 """
@@ -70,7 +70,7 @@ class GekosRequest:
     def raw_data(self):
         src = self.load_data()
 
-        xml = gws.tools.xml3.from_string(src)
+        xml = gws.tools.xml2.from_string(src)
         for node in xml.all('Vorgang'):
             rec = {}
             for tag in node.children:

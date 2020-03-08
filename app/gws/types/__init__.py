@@ -1,66 +1,4 @@
-"""Common types and data structures."""    
-
-#
-# automatically generated from
-#
-# - types/__init__.in.py    
-# - includes in types/t
-# - class stubs generated from #:export comments
-# 
-    
-# noinspection PyUnresolvedReferences
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-
-### Data objects
-
-class Data:
-    """Data object."""
-
-    def __init__(self, *args, **kwargs):
-        self._extend(args, kwargs)
-
-    def set(self, k, value):
-        return setattr(self, k, value)
-
-    def get(self, k, default=None):
-        return getattr(self, k, default)
-
-    def as_dict(self):
-        return vars(self)
-
-    def extend(self, *args, **kwargs):
-        self._extend(args, kwargs)
-        return self
-
-    def __repr__(self):
-        return repr(vars(self))
-
-    def _extend(self, args, kwargs):
-        d = {}
-        for a in args:
-            if isinstance(a, dict):
-                d.update(a)
-            elif hasattr(a, 'as_dict'):
-                d.update(a.as_dict())
-        d.update(kwargs)
-        vars(self).update(d)
-
-
-class Config(Data):
-    """Configuration base type"""
-
-    uid: str = ''  #: unique ID
-
-
-class Props(Data):
-    """Properties base type"""
-    pass
-
-
-### Basic types
-
-# noinspection PyUnresolvedReferences
-
 
 
 # NB: we cannot use the standard Enum, because after "class Color(Enum): RED = 1"
@@ -85,11 +23,10 @@ Measurement = Tuple[float, str]
 
 
 class Axis(Enum):
+    """Axis orientation."""
     xy = 'xy'
     yx = 'yx'
 
-
-### semantic primitive types
 
 #:alias Verbatim literal type
 Literal = str
@@ -121,14 +58,14 @@ Date = str
 #:alias Http or https URL
 Url = str
 
-### Dummy classes to support extension typing.
 
+# dummy classes to support extension typing
 
-#: ignore
 class ext:
     class action:
         class Config:
             pass
+
         class Props:
             pass
 
@@ -178,10 +115,45 @@ class ext:
             class Config:
                 pass
 
-### Access rules and configs.
+
+# basic data type
+
+class Data:
+    """Basic data object."""
+
+    def __init__(self, *args, **kwargs):
+        self._extend(args, kwargs)
+
+    def get(self, k, default=None):
+        return getattr(self, k, default)
+
+    def as_dict(self):
+        return vars(self)
+
+    def __repr__(self):
+        return repr(vars(self))
+
+    def _extend(self, args, kwargs):
+        d = {}
+        for a in args:
+            if isinstance(a, dict):
+                d.update(a)
+            elif hasattr(a, 'as_dict'):
+                d.update(a.as_dict())
+        d.update(kwargs)
+        vars(self).update(d)
 
 
+# configuration primitives
 
+class Config(Data):
+    """Configuration base type"""
+
+    uid: str = ''  #: unique ID
+
+
+class WithType(Config):
+    type: str  #: object type
 
 
 class AccessType(Enum):
@@ -196,10 +168,6 @@ class AccessRuleConfig(Config):
     role: str  #: a role to which this rule applies
 
 
-class WithType(Config):
-    type: str  #: object type
-
-
 class WithAccess(Config):
     access: Optional[List[AccessRuleConfig]]  #: access rights
 
@@ -208,11 +176,8 @@ class WithTypeAndAccess(Config):
     type: str  #: object type
     access: Optional[List[AccessRuleConfig]]  #: access rights
 
-### Attributes and data models.
 
-
-
-
+# attributes
 
 class AttributeType(Enum):
     bool = 'bool'
@@ -251,11 +216,8 @@ class Attribute(Data):
     value: Any = None
     editable: bool = True
 
-### Request params and responses.
 
-
-
-
+# request params and responses
 
 class Params(Data):
     projectUid: Optional[str]  #: project uid
@@ -287,23 +249,36 @@ class FileResponse(Response):
     status: int
     attachment_name: str
 
+
+# props baseclass
+
+
+class Props(Data):
+    """Properties base type"""
+    pass
+
+
 class Bounds(Data):
     crs: 'Crs' = None
     extent: 'Extent' = None
+
 
 class CorsOptions(Data):
     allow_credentials: bool = None
     allow_headers: Optional[List[str]] = None
     allow_origin: str = None
 
+
 class DocumentRoot(Data):
     allow_mime: Optional[List[str]] = None
     deny_mime: Optional[List[str]] = None
     dir: 'DirPath' = None
 
+
 class FeatureConverter:
     data_model: 'IModel' = None
     feature_format: 'IFormat' = None
+
 
 class FeatureProps(Data):
     attributes: Optional[List[Attribute]] = None
@@ -312,6 +287,7 @@ class FeatureProps(Data):
     shape: Optional['ShapeProps'] = None
     style: Optional['StyleProps'] = None
     uid: Optional[str] = None
+
 
 class IBaseRequest:
     cookies: dict = None
@@ -334,6 +310,7 @@ class IBaseRequest:
     def struct_response(self, data: 'Response', status: int = 200) -> 'IResponse': pass
     def url_for(self, url: 'Url') -> 'Url': pass
 
+
 class IFeature:
     attributes: List[Attribute] = None
     category: str = None
@@ -354,6 +331,7 @@ class IFeature:
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'RenderView', style: 'IStyle' = None) -> str: pass
     def transform_to(self, crs) -> 'IFeature': pass
+
 
 class IObject:
     children: list = None
@@ -381,11 +359,14 @@ class IObject:
     def set_uid(self, uid): pass
     def var(self, key, default=None, parent=False): pass
 
+
 class IResponse:
     pass
 
+
 class IRole:
     def can_use(self, obj, parent=None): pass
+
 
 class IShape:
     area: float = None
@@ -409,11 +390,13 @@ class IShape:
     def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': pass
     def transformed_to(self, to_crs, **kwargs) -> 'IShape': pass
 
+
 class IStyle:
     props: 'StyleProps' = None
     text: str = None
     type: 'StyleType' = None
     values: 'StyleValues' = None
+
 
 class IUser:
     attributes: dict = None
@@ -430,6 +413,7 @@ class IUser:
     def init_from_props(self, provider, uid, roles, attributes) -> 'IUser': pass
     def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'IUser': pass
 
+
 class MetaContact(Data):
     address: str = None
     area: str = None
@@ -443,6 +427,7 @@ class MetaContact(Data):
     position: str = None
     url: str = None
     zip: str = None
+
 
 class MetaData(Data):
     abstract: str = None
@@ -465,13 +450,16 @@ class MetaData(Data):
     uid: str = None
     url: 'Url' = None
 
+
 class MetaLink(Data):
     function: str = None
     scheme: str = None
     url: 'Url' = None
 
+
 class ModelProps(Props):
     rules: List['ModelRule'] = None
+
 
 class ModelRule(Data):
     editable: bool = None
@@ -483,6 +471,7 @@ class ModelRule(Data):
     type: 'AttributeType' = None
     value: Optional[str] = None
 
+
 class OwsOperation:
     formats: List[str] = None
     get_url: 'Url' = None
@@ -490,10 +479,12 @@ class OwsOperation:
     parameters: dict = None
     post_url: 'Url' = None
 
+
 class RenderInput(Data):
     background_color: int = None
     items: List['RenderInputItem'] = None
     view: 'RenderView' = None
+
 
 class RenderInputItem(Data):
     dpi: int = None
@@ -506,6 +497,7 @@ class RenderInputItem(Data):
     sub_layers: List[str] = None
     type: str = None
 
+
 class RenderInputItemType(Enum):
     features = 'features'
     fragment = 'fragment'
@@ -513,19 +505,23 @@ class RenderInputItemType(Enum):
     image_layer = 'image_layer'
     svg_layer = 'svg_layer'
 
+
 class RenderOutput(Data):
     items: List['RenderOutputItem'] = None
     view: 'RenderView' = None
+
 
 class RenderOutputItem(Data):
     elements: List[str] = None
     path: str = None
     type: str = None
 
+
 class RenderOutputItemType(Enum):
     image = 'image'
     path = 'path'
     svg = 'svg'
+
 
 class RenderView(Data):
     bounds: 'Bounds' = None
@@ -536,10 +532,12 @@ class RenderView(Data):
     size_mm: 'Size' = None
     size_px: 'Size' = None
 
+
 class RewriteRule(Data):
     match: 'Regex' = None
     options: Optional[dict] = None
     target: str = None
+
 
 class SearchArgs(Data):
     axis: str = None
@@ -554,6 +552,7 @@ class SearchArgs(Data):
     source_layer_names: List[str] = None
     tolerance: 'Measurement' = None
 
+
 class SelectArgs(Data):
     extra_where: Optional[str] = None
     keyword: Optional[str] = None
@@ -564,9 +563,11 @@ class SelectArgs(Data):
     table: 'SqlTable' = None
     uids: Optional[List[str]] = None
 
+
 class ShapeProps(Props):
     crs: str = None
     geometry: dict = None
+
 
 class SourceLayer(Data):
     a_level: int = None
@@ -590,10 +591,12 @@ class SourceLayer(Data):
     supported_crs: List['Crs'] = None
     title: str = None
 
+
 class SourceStyle(Data):
     is_default: bool = None
     legend: 'Url' = None
     meta: 'MetaData' = None
+
 
 class SqlTable(Data):
     geometry_column: str = None
@@ -602,6 +605,7 @@ class SqlTable(Data):
     key_column: str = None
     name: str = None
     search_column: str = None
+
 
 class SqlTableColumn(Data):
     crs: 'Crs' = None
@@ -612,19 +616,23 @@ class SqlTableColumn(Data):
     native_type: str = None
     type: 'AttributeType' = None
 
+
 class StorageDirectory(Data):
     category: str = None
     entries: List['StorageEntry'] = None
     readable: bool = None
     writable: bool = None
 
+
 class StorageElement(Data):
     data: dict = None
     entry: 'StorageEntry' = None
 
+
 class StorageEntry(Data):
     category: str = None
     name: str = None
+
 
 class StorageRecord(Data):
     category: str = None
@@ -634,31 +642,38 @@ class StorageRecord(Data):
     updated: int = None
     user_fid: str = None
 
+
 class StyleGeometryOption(Enum):
     all = 'all'
     none = 'none'
+
 
 class StyleLabelAlign(Enum):
     center = 'center'
     left = 'left'
     right = 'right'
 
+
 class StyleLabelFontStyle(Enum):
     italic = 'italic'
     normal = 'normal'
+
 
 class StyleLabelFontWeight(Enum):
     bold = 'bold'
     normal = 'normal'
 
+
 class StyleLabelOption(Enum):
     all = 'all'
     none = 'none'
+
 
 class StyleLabelPlacement(Enum):
     end = 'end'
     middle = 'middle'
     start = 'start'
+
 
 class StyleMarker(Enum):
     arrow = 'arrow'
@@ -666,24 +681,29 @@ class StyleMarker(Enum):
     cross = 'cross'
     square = 'square'
 
+
 class StyleProps(Props):
     text: Optional[str] = None
     type: 'StyleType' = None
     values: Optional['StyleValues'] = None
+
 
 class StyleStrokeLineCap(Enum):
     butt = 'butt'
     round = 'round'
     square = 'square'
 
+
 class StyleStrokeLineJoin(Enum):
     bevel = 'bevel'
     miter = 'miter'
     round = 'round'
 
+
 class StyleType(Enum):
     css = 'css'
     cssSelector = 'cssSelector'
+
 
 class StyleValues(Data):
     fill: Optional['Color'] = None
@@ -732,14 +752,17 @@ class StyleValues(Data):
     with_geometry: Optional['StyleGeometryOption'] = None
     with_label: Optional['StyleLabelOption'] = None
 
+
 class SvgFragment:
     points: List['Point'] = None
     svg: str = None
+
 
 class TemplateOutput(Data):
     content: str = None
     mime: str = None
     path: str = None
+
 
 class TemplateProps(Props):
     dataModel: 'ModelProps' = None
@@ -749,15 +772,19 @@ class TemplateProps(Props):
     title: str = None
     uid: str = None
 
+
 class TemplateQualityLevel(Data):
     dpi: int = None
     name: str = None
 
+
 class UserProps(Data):
     displayName: str = None
 
+
 class IApi(IObject):
     actions: dict = None
+
 
 class IApplication(IObject):
     api: 'IApi' = None
@@ -766,21 +793,26 @@ class IApplication(IObject):
     web_sites: List['IWebSite'] = None
     def find_action(self, action_type, project_uid=None): pass
 
+
 class IAuthProvider(IObject):
     def authenticate(self, login: str, password: str, **kwargs) -> 'IUser': pass
     def get_user(self, user_uid: str) -> 'IUser': pass
     def user_from_dict(self, d: dict) -> 'IUser': pass
     def user_to_dict(self, u: 'IUser') -> dict: pass
 
+
 class IClient(IObject):
     pass
+
 
 class IDbProvider(IObject):
     pass
 
+
 class IFormat(IObject):
     templates: dict = None
     def apply(self, context: dict) -> dict: pass
+
 
 class ILayer(IObject):
     can_render_box: bool = None
@@ -828,6 +860,7 @@ class ILayer(IObject):
     def render_svg(self, rv: 'RenderView', style: 'IStyle' = None): pass
     def render_xyz(self, x, y, z): pass
 
+
 class IMap(IObject):
     bounds: 'Bounds' = None
     center: 'Point' = None
@@ -838,6 +871,7 @@ class IMap(IObject):
     layers: List['ILayer'] = None
     resolutions: List[float] = None
 
+
 class IModel(IObject):
     attribute_names: List[str] = None
     geometry_crs: str = None
@@ -846,6 +880,7 @@ class IModel(IObject):
     rules: List['ModelRule'] = None
     def apply(self, atts: List[Attribute]) -> List[Attribute]: pass
     def apply_to_dict(self, d: dict) -> List[Attribute]: pass
+
 
 class IOwsProvider(IObject):
     invert_axis_crs: List[str] = None
@@ -859,6 +894,7 @@ class IOwsProvider(IObject):
     def find_features(self, args: 'SearchArgs') -> List['IFeature']: pass
     def operation(self, name: str) -> 'OwsOperation': pass
 
+
 class IOwsService(IObject):
     enabled: bool = None
     feature_namespace: str = None
@@ -869,8 +905,10 @@ class IOwsService(IObject):
     def error_response(self, status) -> 'HttpResponse': pass
     def handle(self, req: 'IRequest') -> 'HttpResponse': pass
 
+
 class IPrinter(IObject):
     templates: List['ITemplate'] = None
+
 
 class IProject(IObject):
     api: 'IApi' = None
@@ -884,6 +922,7 @@ class IProject(IObject):
     printer: 'IPrinter' = None
     title: str = None
 
+
 class IRequest(IBaseRequest):
     user: 'IUser' = None
     def acquire(self, klass: str, uid: str) -> 'IObject': pass
@@ -895,6 +934,7 @@ class IRequest(IBaseRequest):
     def require_layer(self, uid: str) -> 'ILayer': pass
     def require_project(self, uid: str) -> 'IProject': pass
 
+
 class ISearchProvider(IObject):
     data_model: 'IModel' = None
     feature_format: 'IFormat' = None
@@ -904,6 +944,7 @@ class ISearchProvider(IObject):
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs') -> 'IShape': pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass
+
 
 class ITemplate(IObject):
     data_model: 'IModel' = None
@@ -915,6 +956,7 @@ class ITemplate(IObject):
     def dpi_for_quality(self, quality): pass
     def normalize_context(self, context: dict) -> dict: pass
     def render(self, context: dict, render_output: 'RenderOutput' = None, out_path: str = None, format: str = None) -> 'TemplateOutput': pass
+
 
 class IWebSite(IObject):
     assets_root: 'DocumentRoot' = None
@@ -928,21 +970,25 @@ class IWebSite(IObject):
     static_root: 'DocumentRoot' = None
     def url_for(self, req, url): pass
 
+
 class RootBase(IObject):
     all_objects: list = None
     all_types: dict = None
     shared_objects: dict = None
     def create(self, klass, cfg=None): pass
 
+
 class IRootObject(RootBase):
     application: 'IApplication' = None
     def configure(self): pass
     def validate_action(self, category, cmd, payload): pass
 
+
 class ISqlProvider(IDbProvider):
     def describe(self, table: 'SqlTable') -> Dict[str, 'SqlTableColumn']: pass
     def edit_operation(self, operation: str, table: 'SqlTable', features: List['IFeature']) -> List['IFeature']: pass
     def select(self, args: 'SelectArgs', extra_connect_params: dict = None) -> List['IFeature']: pass
+
 
 class IVectorLayer(ILayer):
     def connect_feature(self, feature: 'IFeature') -> 'IFeature': pass

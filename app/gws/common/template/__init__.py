@@ -1,6 +1,6 @@
 import os
 import gws.common.model
-import gws.tools.misc
+
 import gws.types as t
 
 
@@ -84,7 +84,7 @@ class Object(gws.Object, t.ITemplate):
         self.path = self.var('path')
         self.text = self.var('text')
 
-        uid = self.var('uid') or (gws.tools.misc.sha256(self.path) if self.path else self.klass.replace('.', '_'))
+        uid = self.var('uid') or (gws.sha256(self.path) if self.path else self.klass.replace('.', '_'))
         self.set_uid(uid)
 
         p = self.var('dataModel')

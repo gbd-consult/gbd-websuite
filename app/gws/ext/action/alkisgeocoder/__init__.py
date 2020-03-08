@@ -1,6 +1,8 @@
-import gws.web
+"""ALKIS Geocoder action."""
+
 import gws.types as t
 
+import gws.common.action
 import gws.ext.helper.alkis as alkis
 
 
@@ -28,10 +30,8 @@ class GeocoderResponse(t.Response):
     coordinates: t.List[t.Point]
 
 
-class Object(gws.Object):
-    def __init__(self):
-        super().__init__()
-        self.alkis: alkis.Object = None
+class Object(gws.common.action.Object):
+    alkis: alkis.Object
 
     def configure(self):
         super().configure()

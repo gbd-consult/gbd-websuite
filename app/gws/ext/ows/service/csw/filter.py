@@ -3,7 +3,7 @@ import gws.gis.extent
 import gws.gis.gml
 import gws.gis.proj
 import gws.gis.shape
-import gws.tools.xml3
+import gws.tools.xml2
 
 
 class Filter:

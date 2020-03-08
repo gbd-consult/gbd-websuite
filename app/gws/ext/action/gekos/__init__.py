@@ -1,13 +1,14 @@
 """Interface with GekoS-Bau software."""
 
 import gws
+import gws.common.action
 import gws.common.db
 import gws.common.template
 import gws.ext.db.provider.postgres
 import gws.ext.helper.alkis
 import gws.gis.proj
 import gws.gis.shape
-import gws.web
+import gws.web.error
 
 import gws.types as t
 
@@ -81,21 +82,18 @@ DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
 )
 
 
-class Object(gws.ActionObject):
-    def __init__(self):
-        super().__init__()
-
-        self.db: gws.ext.db.provider.postgres.Object = None
-        self.alkis: gws.ext.helper.alkis.Object = None
-        self.feature_format: t.IFormat = None
-        self.crs = ''
+class Object(gws.common.action.Object):
+    db: gws.ext.db.provider.postgres.Object
+    alkis: gws.ext.helper.alkis.Object
+    feature_format: t.IFormat
+    crs: str
 
     def configure(self):
         super().configure()
 
         self.crs = self.var('crs')
-        self.db: gws.ext.db.provider.postgres.Object = gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres')
-        self.alkis: gws.ext.helper.alkis.Object = self.find_first('gws.ext.helper.alkis')
+        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+        self.alkis = t.cast( gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         self.feature_format = self.add_child('gws.common.format', self.var('featureFormat') or DEFAULT_FORMAT)
 
     def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:

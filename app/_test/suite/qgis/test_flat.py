@@ -45,7 +45,7 @@ def test_render():
     bbox = x, y, x + 350, y + 350
     bbox = gws.gis.extent.transform(bbox, cc.CRS_25833, cc.CRS_3857)
 
-    url = '_/cmd/mapHttpGetBox/layerUid/a.map.qgis_flat_ghana/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.qgis_flat_ghana/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 300, 'height': 300})
     assert True is u.response_image_matches(r, '/data/response_images/ghana_200x200.png')
@@ -88,7 +88,7 @@ def test_render_multi():
     x, y = cc.POINTS.dus2
     bbox = x, y, x + 350, y + 450
 
-    url = '_/cmd/mapHttpGetBox/layerUid/a.map.qgis_flat_dus/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.qgis_flat_dus/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 300, 'height': 300})
     assert True is u.response_image_matches(r, '/data/response_images/dus_200x200.png')

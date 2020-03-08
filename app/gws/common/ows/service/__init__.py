@@ -6,7 +6,7 @@ import gws.gis.extent
 import gws.gis.gml
 import gws.gis.proj
 import gws.tools.units as units
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.web.error
 
 import gws.types as t
@@ -36,7 +36,7 @@ class Request(t.Data):
     req: t.IRequest
     project: t.IProject
     service: t.IOwsService
-    xml: gws.tools.xml3.Element = None
+    xml: gws.tools.xml2.Element = None
 
 
 class LayerCapsNode(t.Data):
@@ -65,7 +65,7 @@ class FeatureNode(t.Data):
     attributes: t.List[t.Attribute]
 
 
-_NAMESPACES = gws.extend({}, const.NAMESPACES, inspire.NAMESPACES)
+_NAMESPACES = gws.merge(const.NAMESPACES, inspire.NAMESPACES)
 
 
 #:export IOwsService
@@ -125,7 +125,7 @@ class Base(Object):
         m = self._metadata_dict(self.var('meta'))
         if self.project:
             # use project metadata as a fallback
-            m = gws.extend(self._metadata_dict(self.project.meta), m)
+            m = gws.merge(self._metadata_dict(self.project.meta), m)
         self.meta = gws.common.metadata.read(m)
 
         if self.var('featureNamespace'):
@@ -139,15 +139,15 @@ class Base(Object):
             self.configure_inspire_templates()
 
     def _metadata_dict(self, meta):
-        m = gws.extend({}, meta)
+        m = gws.merge({}, meta)
 
-        m['inspire'] = gws.extend({
+        m['inspire'] = gws.merge({
             'mandatoryKeyword': 'infoMapAccessService',
             'resourceType': 'service',
             'spatialDataServiceType': 'view'
         }, m.get('inspire', {}))
 
-        m['iso'] = gws.extend({
+        m['iso'] = gws.merge({
             'scope': 'service'
         }, m.get('iso', {}))
 
@@ -206,7 +206,7 @@ class Base(Object):
             return rd.req.url_for(
                 gws.SERVER_ENDPOINT + '/cmd/owsHttp/serviceName/csw/request/GetRecordById/id/' + gws.as_uid(uid))
 
-        context = gws.extend({
+        context = gws.merge({
             'project': rd.project,
             'meta': self.meta,
             'use_inspire_meta': self.use_inspire_meta,
@@ -233,7 +233,7 @@ class Base(Object):
         }))
 
     def xml_error_response(self, version, status, description) -> t.HttpResponse:
-        description = gws.tools.xml3.encode(description)
+        description = gws.tools.xml2.encode(description)
         content = (f'<?xml version="1.0" encoding="UTF-8"?>'
                    + f'<ServiceExceptionReport version="{version}">'
                    + f'<ServiceException code="{status}">{description}</ServiceException>'
@@ -243,7 +243,7 @@ class Base(Object):
     def xml_response(self, content, status=200) -> t.HttpResponse:
         return t.HttpResponse({
             'mime': 'text/xml',
-            'content': gws.tools.xml3.as_string(content),
+            'content': gws.tools.xml2.as_string(content),
             'status': status,
         })
 

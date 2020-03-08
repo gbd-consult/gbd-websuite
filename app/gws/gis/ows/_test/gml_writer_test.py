@@ -1,6 +1,6 @@
 import gws.gis.gml
 import gws.gis.shape
-import gws.tools.xml3
+import gws.tools.xml2
 
 """
 drop table if exists tt;
@@ -65,5 +65,5 @@ def test_gml_writer():
     for t in test:
         s = gws.gis.shape.from_wkt(t['w'], 'EPSG:25832')
         r = gws.gis.gml.shape_to_tag(s)
-        g = gws.tools.xml3._string(r)
+        g = gws.tools.xml2._string(r)
         assert t['g'] == g

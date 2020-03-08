@@ -3,19 +3,18 @@ import sys
 import argh
 
 import gws
-import gws.tools.misc as misc
 import gws.tools.clihelpers as ch
 
-misc.ensure_dir(gws.MAPPROXY_CACHE_DIR)
-misc.ensure_dir(gws.WEB_CACHE_DIR)
-misc.ensure_dir(gws.OBJECT_CACHE_DIR)
-misc.ensure_dir(gws.NET_CACHE_DIR)
-misc.ensure_dir(gws.CONFIG_DIR)
-misc.ensure_dir(gws.LOG_DIR)
-misc.ensure_dir(gws.MISC_DIR)
-misc.ensure_dir(gws.PRINT_DIR)
-misc.ensure_dir(gws.SERVER_DIR)
-misc.ensure_dir(gws.SPOOL_DIR)
+gws.ensure_dir(gws.MAPPROXY_CACHE_DIR)
+gws.ensure_dir(gws.WEB_CACHE_DIR)
+gws.ensure_dir(gws.OBJECT_CACHE_DIR)
+gws.ensure_dir(gws.NET_CACHE_DIR)
+gws.ensure_dir(gws.CONFIG_DIR)
+gws.ensure_dir(gws.LOG_DIR)
+gws.ensure_dir(gws.MISC_DIR)
+gws.ensure_dir(gws.PRINT_DIR)
+gws.ensure_dir(gws.SERVER_DIR)
+gws.ensure_dir(gws.SPOOL_DIR)
 
 COMMANDS = {}
 

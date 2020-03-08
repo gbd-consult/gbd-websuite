@@ -11,7 +11,7 @@ def test_render_box():
     x, y = cc.POINTS.mexico
     bbox = (x - 300, y - 150, x, y + 150)
 
-    url = '_/cmd/mapHttpGetBox/layerUid/a.map.wmts_squares_mexico_25832/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.wmts_squares_mexico_25832/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 100, 'height': 100})
     assert True is u.response_image_matches(r, '/data/response_images/wmts_points_100x100.png')

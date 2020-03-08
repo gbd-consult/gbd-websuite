@@ -11,7 +11,7 @@ import gws.gis.gml
 import gws.tools.date
 import gws.tools.units as units
 import gws.common.metadata
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.web.error
 
 import gws.types as t
@@ -55,12 +55,12 @@ class Object(ows.Base):
 
         self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates', type='text')
 
-        self.meta.inspire = gws.extend({
+        self.meta.inspire = gws.merge({
             'mandatoryKeyword': 'humanCatalogueViewer',
             'spatialDataServiceType': 'discovery',
         }, self.meta.inspire)
 
-        self.meta.iso = gws.extend({
+        self.meta.iso = gws.merge({
             'scope': 'dataset',
         }, self.meta.iso)
 
@@ -78,8 +78,8 @@ class Object(ows.Base):
 
         if req.method == 'POST':
             try:
-                rd.xml = gws.tools.xml3.from_string(req.post_data)
-            except gws.tools.xml3.Error:
+                rd.xml = gws.tools.xml2.from_string(req.post_data)
+            except gws.tools.xml2.Error:
                 raise gws.web.error.BadRequest()
             request_param = rd.xml.name
 
@@ -172,11 +172,11 @@ class Object(ows.Base):
         if gws.get(m, 'inspire.theme'):
             m.inspire['themeName'] = gws.common.ows.service.inspire.theme_name(m.inspire['theme'], m.language)
 
-        m.iso = gws.extend({
+        m.iso = gws.merge({
             'spatialType': 'vector',
         }, m.iso)
 
-        m.inspire = gws.extend({
+        m.inspire = gws.merge({
             'qualityExplanation': '',
             'qualityPass': 'false',
             'qualityLineage': '',

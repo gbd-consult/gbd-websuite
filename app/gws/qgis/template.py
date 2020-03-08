@@ -4,12 +4,11 @@ import bs4
 
 import gws
 import gws.common.template
-import gws.tools.mime
-import gws.tools.misc
-import gws.tools.units as units
 import gws.gis.render
+import gws.tools.mime
 import gws.tools.net
 import gws.tools.pdf
+import gws.tools.units as units
 
 import gws.types as t
 
@@ -41,7 +40,7 @@ class Object(gws.common.template.Object):
         if not self.template:
             raise gws.Error('print template not found')
 
-        uid = self.var('uid') or '%s_%d' % (gws.tools.misc.sha256(self.path), self.template.index)
+        uid = self.var('uid') or '%s_%d' % (gws.sha256(self.path), self.template.index)
         self.set_uid(uid)
 
         self.title = self.template.title

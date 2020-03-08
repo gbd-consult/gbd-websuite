@@ -77,7 +77,7 @@ class Object(gws.common.layer.Image):
 
         our_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
 
-        req = gws.extend({
+        req = gws.merge({
             'url': self.provider.operation('GetMap').get_url,
             'transparent': True,
             'layers': ','.join(layers)

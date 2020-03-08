@@ -1,5 +1,5 @@
 import gws.core.tree
-import gws.types.spec
+import gws.core.spec
 import gws.server.monitor
 import gws.types as t
 
@@ -13,7 +13,7 @@ class Object(gws.core.tree.RootBase, t.IRootObject):
 
         self.application: t.IApplication = None
 
-        self._validator: gws.types.spec.Validator = None
+        self._validator: gws.core.spec.Validator = None
         self._monitor: gws.server.monitor.Object = None
 
     def configure(self):
@@ -37,7 +37,7 @@ class Object(gws.core.tree.RootBase, t.IRootObject):
         if cc['arg']:
             try:
                 payload = self._validator.read_value(payload, cc['arg'], strict=(cat == 'api'))
-            except gws.types.spec.Error as e:
+            except gws.core.spec.Error as e:
                 raise error.DispatchError(f'invalid parameters ({e.message})') from e
 
         return cc['action'], cc['name'], payload

@@ -1,5 +1,5 @@
 import gws.tools.net
-import gws.tools.xml3
+import gws.tools.xml2
 
 from . import error
 

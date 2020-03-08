@@ -5,9 +5,8 @@ import gws.config.loader
 import gws.gis.mpx.config
 import gws.tools.date
 import gws.tools.json2
-import gws.tools.misc as misc
-import gws.tools.shell as sh
-import gws.types
+import gws.tools.os2
+
 from . import ini
 
 _START_SCRIPT = gws.VAR_DIR + '/server.sh'
@@ -28,10 +27,10 @@ def start(config_path=None):
     root = configure(config_path)
     gws.tools.date.set_system_time_zone(root.var('timeZone'))
 
-    for p in misc.find_files(gws.SERVER_DIR, '.*'):
-        sh.unlink(p)
+    for p in gws.tools.os2.find_files(gws.SERVER_DIR, '.*'):
+        gws.tools.os2.unlink(p)
 
-    pid_dir = misc.ensure_dir('pids', gws.TMP_DIR)
+    pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     commands = ini.create(root, gws.SERVER_DIR, pid_dir)
 
     s = root.var('server.autoRun')
@@ -61,7 +60,7 @@ def _stop(proc_name):
             return
         time.sleep(5)
 
-    pids = sh.pids_of(proc_name)
+    pids = gws.tools.os2.pids_of(proc_name)
     if pids:
         raise ValueError(f'failed to stop {proc_name} pids={pids!r}')
 
@@ -75,16 +74,16 @@ def reset(module=None):
 
 
 def reload_uwsgi(module):
-    pid_dir = misc.ensure_dir('pids', gws.TMP_DIR)
+    pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     pattern = f'({module}).uwsgi.pid'
 
-    for p in misc.find_files(pid_dir, pattern):
+    for p in gws.tools.os2.find_files(pid_dir, pattern):
         gws.log.info(f'reloading {p}...')
-        sh.run(['uwsgi', '--reload', p])
+        gws.tools.os2.run(['uwsgi', '--reload', p])
 
 
 def _reload(reconfigure, config_path, module=None):
-    pid = sh.pids_of('uwsgi')
+    pid = gws.tools.os2.pids_of('uwsgi')
     if not pid:
         gws.log.info('server not running, starting...')
         start(config_path)
@@ -99,10 +98,10 @@ def _reload(reconfigure, config_path, module=None):
 
 
 def _kill_name(proc_name, sig_name):
-    pids = sh.pids_of(proc_name)
+    pids = gws.tools.os2.pids_of(proc_name)
     if not pids:
         return True
     for pid in pids:
         gws.log.info(f'stopping {proc_name} pid={pid}')
-        sh.kill_pid(pid, sig_name)
+        gws.tools.os2.kill_pid(pid, sig_name)
     return False

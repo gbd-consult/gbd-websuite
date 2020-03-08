@@ -5,7 +5,7 @@ import gws
 import gws.gis.proj
 import gws.gis.feature
 import gws.gis.shape
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.types as t
 
 
@@ -13,7 +13,7 @@ def tag(*args):
     return args
 
 
-def envelope_to_extent(el: gws.tools.xml3.Element):
+def envelope_to_extent(el: gws.tools.xml2.Element):
     crs = el.attr('srsName') or 4326
     prj = gws.gis.proj.as_proj(crs)
     if not prj:

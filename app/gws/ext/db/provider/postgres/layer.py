@@ -19,18 +19,15 @@ class Config(gws.common.layer.VectorConfig):
 
 
 class Object(gws.common.layer.Vector):
-    def __init__(self):
-        super().__init__()
-
-        self.is_editable = True
-
-        self.provider: provider.Object = None
-        self.table: t.SqlTable = None
+    provider: provider.Object
+    table: t.SqlTable
 
     def configure(self):
         super().configure()
 
-        self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
+        self.is_editable = True
+
+        self.provider = t.cast(provider.Object, gws.common.db.require_provider(self, provider.Object))
         self.table = self.provider.configure_table(self.var('table'))
 
         if not self.data_model:
@@ -47,13 +44,15 @@ class Object(gws.common.layer.Vector):
                 SELECT ST_Extent({conn.quote_ident(self.table.geometry_column)})
                 FROM {conn.quote_table(self.table.name)}
             """)
+        if not r:
+            return None
         return t.Bounds(
             crs=self.table.geometry_crs,
             extent=gws.gis.extent.from_box(r))
 
     @property
     def props(self):
-        return super().props.extend(geometryType=self.table.geometry_type)
+        return gws.merge(super().props, geometryType=self.table.geometry_type)
 
     @property
     def default_search_provider(self):

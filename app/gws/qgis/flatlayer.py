@@ -11,7 +11,7 @@ import gws.gis.zoom
 import gws.gis.util
 import gws.server.monitor
 import gws.common.metadata
-import gws.tools.shell
+import gws.tools.os2
 
 import gws.types as t
 
@@ -133,7 +133,7 @@ class Object(gws.common.layer.Image):
             },
             # add the file checksum to the config, so that the source and cache ids
             # in the mpx config are recalculated when the file changes
-            '$hash': gws.tools.shell.file_checksum(self.provider.path)
+            '$hash': gws.tools.os2.file_checksum(self.provider.path)
         })
 
         self.mapproxy_layer_config(mc, source)

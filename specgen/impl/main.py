@@ -1,7 +1,7 @@
 import re
 import os
 import json
-from . import normalizer, parser, spec, typescript, maketypes
+from . import normalizer, parser, spec, typescript, makestubs
 
 
 def run(source_dir, out_dir, version):
@@ -30,10 +30,21 @@ class _Runner:
             raise
 
         # create /types/__init__.py
-        maketypes.run(self.source_dir, stubs)
+
+        d = self.source_dir + '/types'
+        src_path = d + '/__init__.in.py'
+        dst_path = d + '/__init__.py'
+
+        with open(src_path) as fp:
+            src = fp.read()
+
+        dst = src + '\n\n' + makestubs.run(stubs)
+
+        with open(dst_path, 'w') as fp:
+            fp.write(dst)
 
         # and parse it
-        units, _ = parser.parse([self.source_dir + '/types/__init__.py'])
+        units, _ = parser.parse([dst_path])
         self.units.extend(units)
 
         # for u in self.units:

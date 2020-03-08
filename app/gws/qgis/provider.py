@@ -2,7 +2,7 @@ import gws
 import gws.common.ows.provider
 import gws.gis.ows
 import gws.config
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.tools.net
 import gws.gis.util
 import gws.server.monitor
@@ -58,7 +58,7 @@ class Object(gws.common.ows.provider.Object):
     def configure(self):
         super().configure()
 
-        self.legend_params = gws.extend(_LEGEND_DEFAULTS, self.root.var('server.qgis.legend'))
+        self.legend_params = gws.merge(_LEGEND_DEFAULTS, self.root.var('server.qgis.legend'))
 
         self.path = self.var('path')
         self.url = 'http://%s:%s' % (
@@ -123,7 +123,7 @@ class Object(gws.common.ows.provider.Object):
         if args.limit:
             p['FEATURE_COUNT'] = args.limit
 
-        p = gws.extend(p, args.params)
+        p = gws.merge(p, args.params)
 
         text = gws.gis.ows.request.get_text(self.url, service='WMS', request='GetFeatureInfo', params=p)
         found = gws.gis.ows.formats.read(text, crs=our_crs)
@@ -137,7 +137,7 @@ class Object(gws.common.ows.provider.Object):
 
     def get_legend(self, source_layers):
         layers = ','.join(sl.name for sl in source_layers)
-        params = gws.extend(self.legend_params, {
+        params = gws.merge(self.legend_params, {
             'MAP': self.path,
             'LAYER': layers,
             'FORMAT': 'image/png',

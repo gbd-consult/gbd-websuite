@@ -8,15 +8,16 @@ import gws.config.loader
 import gws.config.error
 import gws.gis.mpx.config
 import gws.tools.json2 as json2
-import gws.tools.misc as misc
+import gws.tools.os2
+import gws.tools.misc
 
 
 def find_commands():
     cs = {}
 
-    for path in misc.find_files(gws.APP_DIR, r'\bcli\.py$'):
+    for path in gws.tools.os2.find_files(gws.APP_DIR, r'\bcli\.py$'):
         name = path[len(gws.APP_DIR) + 1:-3].replace('/', '.')
-        mod = misc.load_source(path, name)
+        mod = gws.tools.misc.load_source(path, name)
         fns = [
             v
             for k, v in vars(mod).items()

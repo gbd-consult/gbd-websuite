@@ -96,15 +96,15 @@ def test_find_points_from_point_with_tolerance():
         },
     ]
 
-    r = u.cmd('searchFindFeatures', gws.extend(params, {'tolerance': '0'}))
+    r = u.cmd('searchFindFeatures', gws.merge(params, {'tolerance': '0'}))
     r = r.json()
     assert u.short_features(r['features']) == []
 
-    r = u.cmd('searchFindFeatures', gws.extend(params, {'tolerance': '3m'}))
+    r = u.cmd('searchFindFeatures', gws.merge(params, {'tolerance': '3m'}))
     r = r.json()
     assert u.short_features(r['features']) == []
 
-    r = u.cmd('searchFindFeatures', gws.extend(params, {'tolerance': '8m'}))
+    r = u.cmd('searchFindFeatures', gws.merge(params, {'tolerance': '8m'}))
     r = r.json()
     assert u.short_features(r['features']) == exp
 
@@ -157,7 +157,7 @@ def test_render_squares():
     x, y = cc.POINTS.ny
     bbox = x, y, x + 350, y + 350
 
-    url = '_/cmd/mapHttpGetBox/layerUid/a.map.ny_3857/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.ny_3857/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     assert True is u.response_image_matches(r, '/data/response_images/squares_200x200.png')
@@ -173,7 +173,7 @@ def test_render_squares_styled():
     x, y = cc.POINTS.ny
     bbox = x, y, x + 350, y + 350
 
-    url = '_/cmd/mapHttpGetBox/layerUid/a.map.ny_3857_styled/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.ny_3857_styled/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     assert True is u.response_image_matches(r, '/data/response_images/squares_styled_200x200.png')
@@ -185,7 +185,7 @@ def test_render_squares_reprojected():
     bbox = x, y, x + 350, y + 350
     bbox = gws.gis.extent.transform(bbox, cc.CRS_25833, cc.CRS_3857)
 
-    url = '_/cmd/mapHttpGetBox/layerUid/a.map.london_25833/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.london_25833/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
     assert True is u.response_image_matches(r, '/data/response_images/squares_reprojected_200x200.png')

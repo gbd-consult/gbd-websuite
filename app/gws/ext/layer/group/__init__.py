@@ -28,7 +28,7 @@ class Object(gws.common.layer.Layer):
 
     @property
     def props(self):
-        return super().props.extend({
-            'type': 'group',
-            'layers': self.layers,
-        })
+        return gws.merge(super().props,
+            type='group',
+            layers=self.layers,
+        )

@@ -13,7 +13,7 @@ import gws.gis.ows
 import gws.gis.util
 import gws.gis.util
 import gws.tools.net
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.types as t
 
 from . import caps
@@ -87,7 +87,7 @@ class Object(gws.common.ows.provider.Object):
         p['I' if self.version >= '1.3' else 'X'] = width >> 1
         p['J' if self.version >= '1.3' else 'Y'] = height >> 1
 
-        p = gws.extend(p, args.params)
+        p = gws.merge(p, args.params)
 
         text = gws.gis.ows.request.get_text(operation.get_url, service='WMS', request='GetFeatureInfo', params=p)
         found = gws.gis.ows.formats.read(text, crs=our_crs, invert_axis=invert_axis)

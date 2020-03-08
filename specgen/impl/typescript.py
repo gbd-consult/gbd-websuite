@@ -28,24 +28,29 @@ class _Generator:
         ]
 
     def write_types(self):
-        methods = []
+        code = []
         for m in self.methods:
-            methods.append(
-                '\t/// %s\n\t%s(p: %s, options?: any): Promise<%s>;'
-                % (m.doc, m.cmd, _short(m.arg), _short(m.ret)))
+            code.append('')
+            code.append('\t/// %s' % m.doc)
+            code.append('\t%s(p: %s, options?: any): Promise<%s>;' % (
+                m.cmd,
+                _short_name(m.arg),
+                _short_name(m.ret)))
 
-        return _format(_types_template, ifaces=_nl2(self.ifaces), methods=_nl(methods))
+        return _format(_types_template, ifaces=_nl2(self.ifaces), methods=_nl(code))
 
     def write_stub(self):
-        methods = []
+        code = []
         for m in self.methods:
-            methods.append((
-                '\tasync %s(p: gws.%s, options?: any): Promise<gws.%s> {\n' +
-                '\t\treturn await this._call("%s", p, options);\n' +
-                '\t}')
-                % (m.cmd, _short(m.arg), _short(m.ret), m.cmd))
+            code.append('')
+            code.append('\tasync %s(p: gws.%s, options?: any): Promise<gws.%s> {' % (
+                m.cmd,
+                _short_name(m.arg),
+                _short_name(m.ret)))
+            code.append('\t\treturn await this._call("%s", p, options);' % m.cmd)
+            code.append('\t}')
 
-        return _format(_stub_template, methods=_nl(methods))
+        return _format(_stub_template, methods=_nl(code))
 
     def gen(self, tname):
         if tname == 'str':
@@ -64,7 +69,7 @@ class _Generator:
             return self.done[tname]
 
         t = self.types[tname]
-        name = _short(tname)
+        name = _short_name(tname)
         self.done[tname] = name
 
         if t.type == 'object':
@@ -173,7 +178,7 @@ def _val(s):
     return json.dumps(s)
 
 
-def _short(s):
+def _short_name(s):
     if '.' not in s:
         return s
     s = s.split('.')

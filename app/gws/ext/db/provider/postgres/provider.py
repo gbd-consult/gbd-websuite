@@ -48,7 +48,7 @@ class Object(gws.common.db.provider.Sql):
         return params
 
     def connect(self, extra_connect_params=None) -> driver.Connection:
-        return driver.Connection(gws.extend(self.connect_params, extra_connect_params))
+        return driver.Connection(gws.merge(self.connect_params, extra_connect_params))
 
     def configure(self):
         super().configure()

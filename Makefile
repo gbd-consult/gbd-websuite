@@ -4,7 +4,7 @@ DOC    = $(BASE)doc
 
 PYTHON = python3
 
-SPHINXOPTS = -q -n -b html -j auto -c $(DOC)/sphinx
+SPHINXOPTS = -v -n -b html -j auto -c $(DOC)/sphinx
 
 .PHONY: help spec client-dev client doc doc-dev image image-debug clean
 
@@ -32,9 +32,9 @@ client-dev: spec
 client: spec
 	cd $(BASE)client && \
 	npm run production && \
-	rm -fr $(BASE)app/web/gws-client && \
-	mkdir -p $(BASE)app/web/gws-client && \
-	mv $(BASE)client/_build/* $(BASE)app/web/gws-client && \
+	rm -fr $(BASE)app/www/gws-client && \
+	mkdir -p $(BASE)app/www/gws-client && \
+	mv $(BASE)client/_build/* $(BASE)app/www/gws-client && \
 	cd $(CWD)
 
 doc: spec

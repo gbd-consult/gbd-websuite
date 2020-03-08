@@ -3,7 +3,6 @@ import base64
 
 import gws
 import gws.tools.net
-import gws.tools.misc
 
 import gws.types as t
 
@@ -150,7 +149,7 @@ _DEFAULT_VALUES = dict(
     with_geometry=StyleGeometryOption.all,
     with_label=StyleLabelOption.all,
 
-    label_align=StyleLabelAlign.left,
+    label_align=StyleLabelAlign.center,
     label_background=None,
     label_fill=None,
     label_font_family='sans-serif',
@@ -210,10 +209,12 @@ def _icon(val):
 def _to_data_url(val):
     if val.startswith('data:'):
         return val
+    # @TODO security, this should be only allowed in a trusted context
     if re.match(r'^https?:', val):
         svg = gws.tools.net.http_request(val).content
-        return 'data:image/svg+xml;base64,' + base64.standard_b64encode(svg).decode('utf8')
-    raise ValueError()
+    else:
+        svg = gws.read_file(val, 'rb')
+    return 'data:image/svg+xml;base64,' + base64.standard_b64encode(svg).decode('utf8')
 
 
 def _px(val):

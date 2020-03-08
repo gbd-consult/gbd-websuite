@@ -157,7 +157,7 @@ def test_find_points_from_point():
         },
     ]
 
-    r = u.cmd('searchFindFeatures', gws.extend(params, {'shapes': [point_exact.props]}))
+    r = u.cmd('searchFindFeatures', gws.merge(params, {'shapes': [point_exact.props]}))
     r = r.json()
     assert u.short_features(r['features']) == exp
 
@@ -166,15 +166,15 @@ def test_find_points_from_point():
     # 2) tolerance=3 (empty)
     # 3) tolerance=8 (which os >5*sqrt(2)) (should be ok)
 
-    r = u.cmd('searchFindFeatures', gws.extend(params, {'shapes': [point_offset.props], 'tolerance': '0'}))
+    r = u.cmd('searchFindFeatures', gws.merge(params, {'shapes': [point_offset.props], 'tolerance': '0'}))
     r = r.json()
     assert u.short_features(r['features']) == []
 
-    r = u.cmd('searchFindFeatures', gws.extend(params, {'shapes': [point_offset.props], 'tolerance': '3m'}))
+    r = u.cmd('searchFindFeatures', gws.merge(params, {'shapes': [point_offset.props], 'tolerance': '3m'}))
     r = r.json()
     assert u.short_features(r['features']) == []
 
-    r = u.cmd('searchFindFeatures', gws.extend(params, {'shapes': [point_offset.props], 'tolerance': '8m'}))
+    r = u.cmd('searchFindFeatures', gws.merge(params, {'shapes': [point_offset.props], 'tolerance': '8m'}))
     r = r.json()
     assert u.short_features(r['features']) == exp
 
@@ -183,7 +183,7 @@ def test_render():
     x, y = cc.POINTS.memphis
     bbox = (x - 300, y, x, y + 300,)
 
-    url = '_/cmd/mapHttpGetBox/layerUid/a.map.wfs_squares_memphis_25832/bbox/' + gws.as_str_list(bbox)
+    url = '_/cmd/mapHttpGetBox/layerUid/a.map.wfs_squares_memphis_25832/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 400, 'height': 400})
     assert True is u.response_image_matches(r, '/data/response_images/wfs_squares_400x400.png')

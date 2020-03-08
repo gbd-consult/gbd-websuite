@@ -2,15 +2,14 @@
 
 import gws
 import gws.common.template
-import gws.tools.misc
 import gws.tools.vendor.chartreux as chartreux
 
 import gws.types as t
 
+
 class Config(gws.common.template.Config):
     """text-only template"""
     pass
-
 
 
 class Object(gws.common.template.Object):

@@ -1,7 +1,8 @@
 """Utilities for EASD AarteLink push notifications"""
 
+import hashlib
+
 import gws
-import gws.tools.misc
 import gws.tools.date
 import gws.tools.net
 import gws.tools.json2
@@ -162,7 +163,7 @@ def _parse_alarm_message(action, p):
 
 def _save_device_state(action, r):
     data = [
-        gws.extend(v, {
+        gws.merge(v, {
             'customer_id': r['customer_id'],
             'system_id': r['system_id'],
             'device_id': r['device_id'],
@@ -193,7 +194,7 @@ def _validate_checksum(action, r, *keys):
 
     h = system_key + ''.join(r[k] for k in keys)
 
-    md5 = gws.tools.misc.md5(h)
+    md5 = _md5(h)
     if md5 != r['checksum']:
         gws.log.warn(f"checksum mismatch: h={h!r} cs={r['checksum']!r}")
         # raise ValueError(f"checksum mismatch: h={h!r} cs={r['checksum']!r}")
@@ -203,3 +204,7 @@ def _to_date(r):
     return gws.tools.date.to_isotz(
         gws.tools.date.utc_from_timestamp(
             int(r['timestamp'])))
+
+
+def _md5(s):
+    return hashlib.md5(gws.as_bytes(s)).hexdigest()

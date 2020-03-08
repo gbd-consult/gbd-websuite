@@ -52,76 +52,6 @@ def utime():
     return time.time()
 
 
-def find_files(dirname, pattern=None):
-    for fname in os.listdir(dirname):
-        if fname.startswith('.'):
-            continue
-
-        path = os.path.join(dirname, fname)
-
-        if os.path.isdir(path):
-            yield from find_files(path, pattern)
-            continue
-
-        if pattern is None or re.search(pattern, path):
-            yield path
-
-
-def read_file(path, mode='rt'):
-    with open(path, mode) as fp:
-        return fp.read()
-
-
-def write_file(path, s, mode='wt'):
-    with open(path, mode) as fp:
-        return fp.write(s)
-
-
-def ensure_dir(path, base=None, mode=0o755):
-    if base:
-        path = os.path.join(base, path)
-    ps = []
-    for c in path.split('/'):
-        ps.append(c)
-        pth = '/'.join(ps)
-        if not pth:
-            continue
-        if not os.path.isdir(pth):
-            os.mkdir(pth, mode)
-    os.chown(path, gws.UID, gws.GID)
-    return path
-
-
-def running_in_container():
-    # see install/build.py
-    try:
-        return os.path.isfile('/.GWS_IN_CONTAINER')
-    except:
-        return False
-
-
-def parse_path(path):
-    """Parse a path into a dict(path,dirname,filename,name,extension)"""
-
-    d = {'path': path}
-
-    d['dirname'], d['filename'] = os.path.split(path)
-    if d['filename'].startswith('.'):
-        d['name'], d['extension'] = d['filename'], ''
-    else:
-        d['name'], _, d['extension'] = d['filename'].partition('.')
-
-    return d
-
-
-def sha256(s):
-    return hashlib.sha256(gws.as_bytes(s)).hexdigest()
-
-
-def md5(s):
-    return hashlib.md5(gws.as_bytes(s)).hexdigest()
-
-
 def load_source(path, name):
     # see https://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3
     loader = importlib.machinery.SourceFileLoader(name, path)
@@ -129,38 +59,6 @@ def load_source(path, name):
     mod = importlib.util.module_from_spec(spec)
     loader.exec_module(mod)
     return mod
-
-
-_durations = {
-    'w': 3600 * 24 * 7,
-    'd': 3600 * 24,
-    'h': 3600,
-    'm': 60,
-    's': 1,
-}
-
-
-def parse_duration(s):
-    if isinstance(s, int):
-        return s
-
-    p = None
-    r = 0
-
-    for n, v in re.findall(r'(\d+)|(\D+)', str(s).strip()):
-        if n:
-            p = int(n)
-            continue
-        v = v.strip()
-        if p is None or v not in _durations:
-            raise ValueError('invalid duration', s)
-        r += p * _durations[v]
-        p = None
-
-    if p:
-        r += p
-
-    return r
 
 
 class lock:

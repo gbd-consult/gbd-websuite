@@ -1,6 +1,10 @@
+"""OWS server."""
+
 import gws
+import gws.common.action
 import gws.common.ows.service
-import gws.web
+import gws.web.error
+
 import gws.types as t
 
 
@@ -10,7 +14,7 @@ class Config(t.WithTypeAndAccess):
     services: t.Optional[t.List[t.ext.ows.service.Config]]  #: services configuration
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
     def __init__(self):
         super().__init__()
         self.services: t.List[t.IOwsService] = []

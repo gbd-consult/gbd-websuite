@@ -8,8 +8,7 @@ import yaml
 
 import gws
 import gws.config
-import gws.tools.misc as misc
-import gws.tools.shell as sh
+import gws.tools.os2
 import gws.gis.mpx.config
 import gws.common.layer
 
@@ -93,8 +92,8 @@ def seed(root: t.IRootObject, layer_uids=None, max_time=None, concurrency=1, lev
         path
     ]
     try:
-        sh.run(cmd, echo=True, timeout=max_time)
-    except sh.TimeoutError:
+        gws.tools.os2.run(cmd, echo=True, timeout=max_time)
+    except gws.tools.os2.TimeoutError:
         return False
     except KeyboardInterrupt:
         return False
@@ -167,7 +166,7 @@ def _cached_layers(root: t.IRootObject, mc, layer_uids=None):
 def _cache_for_layer(layer: gws.common.layer.Image, mc):
     for name, cc in mc['caches'].items():
         if layer.has_cache and name == layer.cache_uid and not cc['disable_storage']:
-            return gws.extend(cc, {
+            return gws.merge(cc, {
                 'name': name,
                 'grid': mc['grids'][cc['grids'][0]],
 
@@ -204,7 +203,7 @@ def _calc_grids(grid):
 
 
 def _get_files():
-    return list(misc.find_files(gws.MAPPROXY_CACHE_DIR))
+    return list(gws.tools.os2.find_files(gws.MAPPROXY_CACHE_DIR))
 
 
 def _get_dirs():
@@ -222,5 +221,5 @@ def _get_dirs():
 
 def _remove_dir(dirname):
     cmd = ['rm', '-fr', dirname]
-    sh.run(cmd, echo=True)
+    gws.tools.os2.run(cmd, echo=True)
     gws.log.info(f'removed {dirname}')

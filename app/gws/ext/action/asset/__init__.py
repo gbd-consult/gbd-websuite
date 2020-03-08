@@ -1,12 +1,15 @@
+"""Serve dynamic assets."""
+
 import os
 
 import gws
+import gws.common.action
 import gws.common.template
 import gws.config
 import gws.server
 import gws.tools.job
 import gws.tools.mime
-import gws.tools.misc
+import gws.tools.os2
 import gws.web.error
 
 import gws.types as t
@@ -25,7 +28,7 @@ class GetResultParams(t.Params):
     jobUid: str
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
 
     def api_get(self, req: t.IRequest, p: GetPathParams) -> t.HttpResponse:
         """Return an asset under the given path and project"""
@@ -77,7 +80,7 @@ class Object(gws.ActionObject):
                     'path': rpath
                 }))
 
-                context = gws.extend(
+                context = gws.merge(
                     _default_template_context(req, project),
                     params=p)
 
@@ -100,7 +103,7 @@ class Object(gws.ActionObject):
         attachment_name = None
 
         if as_attachment:
-            p = gws.tools.misc.parse_path(spath)
+            p = gws.tools.os2.parse_path(spath)
             attachment_name = p['name'] + '.' + gws.tools.mime.extension(mt)
 
         return t.FileResponse({

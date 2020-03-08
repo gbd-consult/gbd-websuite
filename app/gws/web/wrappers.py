@@ -9,7 +9,6 @@ from werkzeug.wsgi import wrap_file
 import gws
 import gws.tools.net
 import gws.tools.json2
-import gws.tools.misc
 import gws.tools.vendor.umsgpack as umsgpack
 import gws.types as t
 
@@ -45,7 +44,7 @@ class BaseRequest(t.IBaseRequest):
     def parse_params(self):
         self.params = self._parse_params()
         if self.params:
-            self._nocase_params = gws.extend(
+            self._nocase_params = gws.merge(
                 {k.lower(): v for k, v in self.params.items()},
                 self.params)
 
@@ -82,14 +81,13 @@ class BaseRequest(t.IBaseRequest):
             return None
 
         data = self._wz.get_data(as_text=False, parse_form_data=False)
-        # gws.tools.misc.write_file(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}', data, 'wb')
+        # gws.write_file(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}', data, 'wb')
 
         if self.headers.get('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
                 return fp.read(self._wz.max_content_length)
 
         return data
-
 
     @property
     def text_data(self) -> t.Optional[str]:
@@ -172,8 +170,12 @@ class BaseRequest(t.IBaseRequest):
 
         if path == gws.SERVER_ENDPOINT:
             return args
-        if path.startswith(gws.SERVER_ENDPOINT):
-            return gws.extend(_params_from_path(path), args)
+
+        if path.startswith(gws.SERVER_ENDPOINT + '/'):
+            p = path.split('/')
+            for n in range(3, len(p), 2):
+                args[p[n - 1]] = p[n]
+            return args
 
         gws.log.error(f'invalid request path: {path!r}')
         raise error.NotFound()
@@ -202,12 +204,3 @@ class BaseRequest(t.IBaseRequest):
                 raise error.BadRequest()
 
         raise ValueError('invalid struct type')
-
-
-def _params_from_path(path):
-    path = path.split('/')
-    d = {}
-    for n in range(2, len(path)):
-        if n % 2:
-            d[path[n - 1]] = path[n]
-    return d

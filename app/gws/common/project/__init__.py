@@ -116,7 +116,7 @@ class Object(gws.Object, t.IProject):
     @property
     def props(self):
         return Props(
-            actions=gws.extend(
+            actions=gws.merge(
                 {},
                 self.root.application.api.actions,
                 self.api.actions if self.api else {}),

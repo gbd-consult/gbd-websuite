@@ -1,8 +1,8 @@
 import PyPDF2
 
 import gws
-import gws.tools.shell as sh
-import gws.tools.units as units
+import gws.tools.os2
+import gws.tools.units
 
 
 def render_html(html, page_size, margin, out_path):
@@ -16,7 +16,7 @@ def render_html(html, page_size, margin, out_path):
         'wkhtmltopdf',
         '--disable-javascript',
         '--disable-smart-shrinking',
-        '--dpi', str(units.PDF_DPI),
+        '--dpi', str(gws.tools.units.PDF_DPI),
         '--margin-top', str(margin[0]),
         '--margin-right', str(margin[1]),
         '--margin-bottom', str(margin[2]),
@@ -29,7 +29,7 @@ def render_html(html, page_size, margin, out_path):
     ]
 
     gws.log.debug(cmd)
-    sh.run(cmd, echo=False)
+    gws.tools.os2.run(cmd, echo=False)
 
     return out_path + '.pdf'
 
@@ -109,6 +109,6 @@ def to_image(in_path, out_path, size, format):
     ]
 
     gws.log.debug(cmd)
-    sh.run(cmd, echo=False)
+    gws.tools.os2.run(cmd, echo=False)
 
     return out_path

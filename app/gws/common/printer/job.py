@@ -14,9 +14,8 @@ import gws.gis.feature
 import gws.gis.render
 import gws.tools.date
 import gws.tools.job
-import gws.tools.misc
+import gws.tools.os2
 import gws.tools.pdf
-import gws.tools.shell
 import gws.tools.units as units
 
 import gws.types as t
@@ -37,7 +36,7 @@ def create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
 
     job_uid = gws.random_string(64)
     base_path = gws.PRINT_DIR + '/' + job_uid
-    gws.tools.misc.ensure_dir(base_path)
+    gws.ensure_dir(base_path)
 
     req_path = base_path + '/request.pickle'
     with open(req_path, 'wb') as fp:
@@ -71,9 +70,9 @@ _lifetime = 3600 * 1
 def cleanup():
     for p in os.listdir(gws.PRINT_DIR):
         d = gws.PRINT_DIR + '/' + p
-        age = int(time.time() - gws.tools.shell.file_mtime(d))
+        age = int(time.time() - gws.tools.os2.file_mtime(d))
         if age > _lifetime:
-            gws.tools.shell.run(['rm', '-fr', d])
+            gws.tools.os2.run(['rm', '-fr', d])
             gws.tools.job.remove(p)
             gws.log.debug(f'cleaned up job {p} age={age}')
 
@@ -175,7 +174,7 @@ class _Worker:
         comb_path = gws.tools.pdf.concat(section_paths, f'{self.base_path}/comb.pdf')
 
         if self.template:
-            ctx = gws.extend({}, self.default_context, self.sections[0].context)
+            ctx = gws.merge(self.default_context, self.sections[0].context)
             ctx['page_count'] = gws.tools.pdf.page_count(comb_path)
             res_path = self.template.add_headers_and_footers(
                 context=ctx,
@@ -223,7 +222,7 @@ class _Worker:
 
         if self.template:
             tr = self.template.render(
-                context=gws.extend({}, self.default_context, sec.context),
+                context=gws.merge({}, self.default_context, sec.context),
                 render_output=renderer.output,
                 out_path=f'{self.base_path}/sec-{n}.pdf',
                 format='pdf',
@@ -289,9 +288,10 @@ class _Worker:
 
         s = item.get('style')
         if s:
-            s = gws.common.style.from_props(self.project.root, s)
+            s = gws.common.style.from_props(s)
         if s:
             ii.style = s
+            gws.p(ii.style.values)
 
         if item.type == 'raster':
             ii.layer = self.acquire('gws.ext.layer', item.layerUid)

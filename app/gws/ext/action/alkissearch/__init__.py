@@ -4,17 +4,17 @@ import os
 import re
 
 import gws
+import gws.common.action
 import gws.common.printer.control
 import gws.common.printer.types
 import gws.common.template
 import gws.ext.db.provider.postgres
+import gws.ext.helper.alkis
+import gws.ext.helper.alkis.util.export
 import gws.gis.shape
 import gws.tools.date
 import gws.tools.job
-import gws.web
-
-import gws.ext.helper.alkis as alkis
-import gws.ext.helper.alkis.util.export as alkis_export
+import gws.web.error
 
 import gws.types as t
 
@@ -75,13 +75,13 @@ class Config(t.WithTypeAndAccess):
     featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: template for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
     ui: t.Optional[UiConfig]  #: ui options
-    export: t.Optional[alkis_export.Config]  #: csv export configuration
+    export: t.Optional[gws.ext.helper.alkis.util.export.Config]  #: csv export configuration
 
 
 class Props(t.Props):
     type: t.Literal = 'alkissearch'
     exportGroups: dict
-    gemarkungen: t.List[alkis.Gemarkung]
+    gemarkungen: t.List[gws.ext.helper.alkis.Gemarkung]
     limit: int
     printTemplate: t.TemplateProps
     ui: UiConfig
@@ -207,29 +207,25 @@ _EF_FAIL = -1  # access to Eigentümer granted, control check failed
 ##
 
 
-class Object(gws.ActionObject):
-    def __init__(self):
-        super().__init__()
-
-        self.alkis: alkis.Object = None
-        self.valid = False
-
-        self.buchung: BuchungConfig = None
-        self.control_mode = False
-        self.control_rules = []
-        self.eigentuemer: EigentuemerConfig = None
-        self.export: alkis_export.Config = None
-        self.limit = 0
-        self.log_table = ''
-        self.long_feature_format: t.IFormat = None
-        self.print_template: t.ITemplate = None
-        self.short_feature_format: t.IFormat = None
-        self.ui: UiConfig = None
+class Object(gws.common.action.Object):
+    alkis: gws.ext.helper.alkis.Object = None
+    valid = False
+    buchung: BuchungConfig = None
+    control_mode = False
+    control_rules = []
+    eigentuemer: EigentuemerConfig = None
+    export: gws.ext.helper.alkis.util.export.Config = None
+    limit = 0
+    log_table = ''
+    long_feature_format: t.IFormat = None
+    print_template: t.ITemplate = None
+    short_feature_format: t.IFormat = None
+    ui: UiConfig = None
 
     def configure(self):
         super().configure()
 
-        self.alkis: gws.ext.helper.alkis.Object = self.find_first('gws.ext.helper.alkis')
+        self.alkis = t.cast(gws.ext.helper.alkis.Object, self.find_first('gws.ext.helper.alkis'))
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('alkissearch cannot init, no alkis index found')
             return
@@ -260,10 +256,11 @@ class Object(gws.ActionObject):
         self.ui = self.var('ui')
 
         p = self.var('export')
+        g = gws.ext.helper.alkis.util.export.DEFAULT_GROUPS
         if not p and self.ui.useExport:
-            p = t.Config(groups=alkis_export.DEFAULT_GROUPS)
+            p = t.Config(groups=g)
         elif p:
-            p.groups = p.groups or alkis_export.DEFAULT_GROUPS
+            p.groups = p.groups or g
         self.export = p
 
         self.buchung = self.var('buchung')
@@ -317,7 +314,7 @@ class Object(gws.ActionObject):
         """Return a list of Strassen for the given Gemarkung"""
 
         self._validate_request(req, p)
-        return FindStrasseResponse(self.alkis.find_strasse(alkis.FindStrasseQuery(p)))
+        return FindStrasseResponse(self.alkis.find_strasse(gws.ext.helper.alkis.FindStrasseQuery(p)))
 
     def api_find_flurstueck(self, req: t.IRequest, p: FindFlurstueckParams) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
@@ -359,7 +356,7 @@ class Object(gws.ActionObject):
             rules=combined_rules
         ))
 
-        csv_bytes = alkis_export.as_csv(self, res.features, combined_model)
+        csv_bytes = gws.ext.helper.alkis.export.as_csv(self, res.features, combined_model)
 
         return ExportResponse(content=csv_bytes, mime='text/csv')
 
@@ -420,9 +417,9 @@ class Object(gws.ActionObject):
             total=res.total,
             features=sorted(fprops, key=lambda f: f.elements['title']))
 
-    def _fetch(self, req, p: FindFlurstueckParams, soft_limit=0, hard_limit=0) -> alkis.FindFlurstueckResult:
+    def _fetch(self, req, p: FindFlurstueckParams, soft_limit=0, hard_limit=0) -> gws.ext.helper.alkis.FindFlurstueckResult:
 
-        fq = alkis.FindFlurstueckQuery(p)
+        fq = gws.ext.helper.alkis.FindFlurstueckQuery(p)
 
         eigentuemer_flag = self._eigentuemer_flag(req, p)
         if eigentuemer_flag == _EF_FAIL:

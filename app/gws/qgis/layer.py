@@ -75,7 +75,7 @@ class Object(gws.common.layer.Layer):
 
     @property
     def props(self):
-        return super().props.extend(type='group', layers=self.layers)
+        return gws.merge(super().props, type='group', layers=self.layers)
 
     def ows_enabled(self, service):
         return (super().ows_enabled(service)
@@ -94,7 +94,7 @@ class Object(gws.common.layer.Layer):
         if not la:
             return
 
-        la = gws.extend(la, {
+        la = gws.merge(la, {
             'uid': gws.as_uid(sl.name),
             'title': sl.title,
             'clientOptions': {

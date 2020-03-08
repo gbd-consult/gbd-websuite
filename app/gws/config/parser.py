@@ -7,9 +7,9 @@ import re
 import yaml
 
 import gws
-import gws.types
-import gws.types.spec
+import gws.core.spec
 import gws.tools.misc
+import gws.tools.os2
 import gws.tools.vendor.chartreux as chartreux
 import gws.tools.vendor.slon as slon
 
@@ -24,7 +24,7 @@ def parse(dct, type_name, source_path=''):
 
     try:
         return spec.validator().read_value(dct, type_name, source_path)
-    except gws.types.spec.Error as e:
+    except gws.core.spec.Error as e:
         raise error.ParseError(*e.args)
 
 
@@ -42,7 +42,7 @@ def parse_main(path):
 
     prj_paths = cfg.get('projectPaths') or []
     for dirname in cfg.get('projectDirs') or []:
-        prj_paths.extend(gws.tools.misc.find_files(dirname, config_path_pattern))
+        prj_paths.extend(gws.tools.os2.find_files(dirname, config_path_pattern))
 
     for prj_path in sorted(set(prj_paths)):
         pcs = _read(prj_path)
@@ -100,7 +100,7 @@ def _read2(path):
 
 def _parse_cx_config(path):
     def _err(exc, path, line):
-        return _syntax_error(gws.tools.misc.read_file(path), repr(exc), line)
+        return _syntax_error(gws.read_file(path), repr(exc), line)
 
     try:
         tpl = chartreux.compile_path(
@@ -108,7 +108,7 @@ def _parse_cx_config(path):
             syntax={'start': '{{', 'end': '}}'},
         )
     except chartreux.compiler.Error as e:
-        return _syntax_error(gws.tools.misc.read_file(path), e.message, e.line)
+        return _syntax_error(gws.read_file(path), e.message, e.line)
 
     src = chartreux.call(
         tpl,
@@ -155,13 +155,13 @@ def _parse_multi_project(cfg, path):
 
     res = []
 
-    for index, p in enumerate(sorted(gws.tools.misc.find_files(dirname, mm))):
+    for index, p in enumerate(sorted(gws.tools.os2.find_files(dirname, mm))):
         gws.log.info(f'multi-project: found {p!r}')
         m = re.search(mm, p)
         args = {'$' + str(n): s for n, s in enumerate(m.groups(), 1)}
         args['$0'] = p
         args['index'] = str(index)
-        args.update(gws.tools.misc.parse_path(p))
+        args.update(gws.tools.os2.parse_path(p))
         dct = _deep_format(cfg, args)
         res.append(parse(dct, 'gws.common.project.Config', path))
 
@@ -185,6 +185,6 @@ def _deep_format(x, a):
 
 
 def _save_intermediate(path, txt, ext):
-    p = gws.tools.misc.parse_path(path)
+    p = gws.tools.os2.parse_path(path)
     d = gws.VAR_DIR + '/config'
-    gws.tools.misc.write_file(f"{d}/{p['name']}.parsed.{ext}", txt)
+    gws.write_file(f"{d}/{p['name']}.parsed.{ext}", txt)

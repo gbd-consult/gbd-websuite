@@ -18,7 +18,7 @@ import gws.gis.ows
 import gws.gis.shape
 import gws.gis.util
 import gws.tools.net
-import gws.tools.xml3
+import gws.tools.xml2
 
 import gws.types as t
 
@@ -85,7 +85,7 @@ class Object(gws.common.ows.provider.Object):
         p['SRSNAME'] = our_crs
         p['VERSION'] = self.version
 
-        p = gws.extend(p, args.get('params'))
+        p = gws.merge(p, args.get('params'))
 
         url = self.operation('GetFeature').get_url
         text = gws.gis.ows.request.get_text(url, service='WFS', request='GetFeature', params=p)

@@ -1,7 +1,7 @@
 import gws
 import gws.common.model
 import gws.common.style
-import gws.gis.svg
+import gws.tools.svg
 
 import gws.types as t
 
@@ -30,13 +30,15 @@ class Vector(layer.Layer, t.IVectorLayer):
 
     @property
     def props(self):
+        p = super().props
+
         if self.display == 'box':
-            return super().props.extend({
+            return gws.merge(p, {
                 'type': 'box',
                 'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBox/layerUid/' + self.uid,
             })
 
-        return super().props.extend({
+        return gws.merge(p, {
             'type': 'vector',
             'loadingStrategy': self.var('loadingStrategy'),
             'style': self.style,
@@ -51,7 +53,7 @@ class Vector(layer.Layer, t.IVectorLayer):
     def render_box(self, rv, client_params=None):
         elements = self.render_svg(rv)
         gws.debug.time_start('render_box:to_png')
-        png = gws.gis.svg.to_png(elements, size=rv.size_px)
+        png = gws.tools.svg.to_png(elements, size=rv.size_px)
         gws.debug.time_start('render_box:to_png')
         return png
 

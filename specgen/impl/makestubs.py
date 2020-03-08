@@ -2,11 +2,6 @@
 
 import re
 
-_indent = ' ' * 4
-_comma = ', '.join
-_nl = '\n'.join
-_nl2 = '\n\n'.join
-
 _known_bases = set('Any Dict List Optional Tuple Union Data Config Props Attribute Enum'.split())
 
 
@@ -25,7 +20,7 @@ def run(stubs):
     for stub in rs:
         _check_props(stub, stubs)
 
-    return _nl2(_code(stub) for stub in rs)
+    return _nl3(_code(stub) for stub in rs)
 
 
 def _format_base(b, classes):
@@ -168,3 +163,10 @@ def _quote(s):
         return s
     s = s.split('.')[-1]
     return repr(s)
+
+
+_indent = ' ' * 4
+_comma = ', '.join
+_nl = '\n'.join
+_nl2 = '\n\n'.join
+_nl3 = '\n\n\n'.join

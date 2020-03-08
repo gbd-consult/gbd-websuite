@@ -1,11 +1,14 @@
+"""Search API."""
+
 import gws
-import gws.web
-import gws.gis.shape
-import gws.gis.feature
-import gws.tools.json2
-import gws.common.template
+import gws.common.action
 import gws.common.search.runner
+import gws.common.template
+import gws.gis.feature
+import gws.gis.shape
+import gws.tools.json2
 import gws.tools.units
+import gws.web.error
 
 import gws.types as t
 
@@ -36,11 +39,8 @@ class Params(t.Params):
     withGeometry: bool = True
 
 
-class Object(gws.ActionObject):
-    def __init__(self):
-        super().__init__()
-
-        self.limit = 0
+class Object(gws.common.action.Object):
+    limit = 0
 
     def configure(self):
         super().configure()

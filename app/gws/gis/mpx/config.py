@@ -3,7 +3,7 @@ from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
 import gws.config
-import gws.tools.shell as sh
+import gws.tools.os2
 import gws.tools.json2
 
 import gws.types as t
@@ -133,12 +133,12 @@ def create(root: t.IRootObject):
 
 def create_and_save(root: t.IRootObject, path):
     test_path = path + '.test.yaml'
-    sh.unlink(test_path)
+    gws.tools.os2.unlink(test_path)
 
     cfg = create(root)
     if not cfg:
         gws.log.warn('mapproxy: NO CONFIG')
-        sh.unlink(path)
+        gws.tools.os2.unlink(path)
         return
 
     with open(test_path, 'wt') as fp:
@@ -150,7 +150,7 @@ def create_and_save(root: t.IRootObject, path):
     except Exception as e:
         raise gws.config.MapproxyConfigError(*e.args) from e
 
-    sh.unlink(test_path)
+    gws.tools.os2.unlink(test_path)
 
     with open(path, 'wt') as fp:
         fp.write(yaml.dump(cfg))

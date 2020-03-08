@@ -22,20 +22,22 @@ class Image(layer.Layer):
 
     @property
     def props(self):
+        p = super().props
+
         if self.display == 'tile':
-            return super().props.extend({
+            return gws.merge(p, {
                 'type': 'tile',
                 'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetXyz/layerUid/' + self.uid + '/z/{z}/x/{x}/y/{y}/t.png',
                 'tileSize': self.grid.tileSize,
             })
 
         if self.display == 'box':
-            return super().props.extend({
+            return gws.merge(p, {
                 'type': 'box',
                 'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBox/layerUid/' + self.uid,
             })
 
-        return super().props
+        return p
 
     def render_box(self, rv, client_params=None):
         uid = self.uid

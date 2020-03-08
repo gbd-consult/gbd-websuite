@@ -2,7 +2,7 @@ import json
 import os
 
 import gws
-import gws.types.spec
+import gws.core.spec
 
 
 def load(lang=None):
@@ -17,7 +17,7 @@ def load(lang=None):
         return json.load(fp)
 
 
-def validator() -> gws.types.spec.Validator:
+def validator() -> gws.core.spec.Validator:
     def init():
-        return gws.types.spec.Validator(load())
+        return gws.core.spec.Validator(load())
     return gws.get_global('spec_validator', init)

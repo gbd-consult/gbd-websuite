@@ -79,7 +79,6 @@ _unit_re = re.compile(r'''(?x)
     $
 ''')
 
-
 _METRIC = {
     'mm': 1,
     'cm': 10,
@@ -87,7 +86,8 @@ _METRIC = {
     'km': 1e6,
 }
 
-def parse(s: str, units: t.List=[], default=None) -> t.Measurement:
+
+def parse(s: str, units: t.List = [], default=None) -> t.Measurement:
     if isinstance(s, (int, float)):
         if not default:
             raise ValueError(f'invalid unit value: {s!r}')
@@ -123,3 +123,35 @@ def parse(s: str, units: t.List=[], default=None) -> t.Measurement:
     # @TODO: in, ft etc
 
     raise ValueError(f'invalid unit value: {s!r}')
+
+
+_durations = {
+    'w': 3600 * 24 * 7,
+    'd': 3600 * 24,
+    'h': 3600,
+    'm': 60,
+    's': 1,
+}
+
+
+def parse_duration(s):
+    if isinstance(s, int):
+        return s
+
+    p = None
+    r = 0
+
+    for n, v in re.findall(r'(\d+)|(\D+)', str(s).strip()):
+        if n:
+            p = int(n)
+            continue
+        v = v.strip()
+        if p is None or v not in _durations:
+            raise ValueError('invalid duration', s)
+        r += p * _durations[v]
+        p = None
+
+    if p:
+        r += p
+
+    return r

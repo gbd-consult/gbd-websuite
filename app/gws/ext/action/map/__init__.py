@@ -1,6 +1,9 @@
+"""Map related commands."""
+
 import time
 
 import gws
+import gws.common.action
 import gws.common.layer
 import gws.config
 import gws.gis.cache
@@ -10,7 +13,7 @@ import gws.tools.json2
 import gws.tools.misc
 import gws.tools.net
 import gws.tools.units as units
-import gws.web
+import gws.web.error
 
 import gws.types as t
 
@@ -64,7 +67,7 @@ class Config(t.WithTypeAndAccess):
 _FEATURE_FULL_FORMAT_THRESHOLD = 500
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
 
     def api_render_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
         """Render a part of the map inside a bounding box"""

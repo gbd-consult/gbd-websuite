@@ -1,7 +1,7 @@
 """WMS Capabilities parser."""
 
 import gws
-import gws.tools.xml3
+import gws.tools.xml2
 import gws.common.metadata
 
 import gws.types as t
@@ -10,7 +10,7 @@ import gws.common.ows.provider.parseutil as u
 
 
 def parse(prov, xml):
-    el = gws.tools.xml3.from_string(xml)
+    el = gws.tools.xml2.from_string(xml)
 
     prov.type = 'WMS'
     prov.meta = t.MetaData(u.get_meta(el.first('Service')))

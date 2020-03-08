@@ -12,7 +12,7 @@
 .mypy*
 .pytest_cache
 /app/spec/gen
-/app/web/gws-client
+/app/www
 /client/_build
 /client/_docs
 /client/node_modules

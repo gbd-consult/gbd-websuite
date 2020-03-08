@@ -2,7 +2,8 @@ import re
 import datetime
 import time
 import babel.dates
-from . import shell
+
+import gws.tools.os2
 
 
 def set_system_time_zone(tz):
@@ -10,7 +11,7 @@ def set_system_time_zone(tz):
         return
     if tz != 'UTC' and not re.match(r'^(\w+)/(\w+)$', tz):
         raise ValueError('invald timezone', tz)
-    shell.run(['ln', '-fs', f'/usr/share/zoneinfo/{tz}', '/etc/localtime'])
+    gws.tools.os2.run(['ln', '-fs', f'/usr/share/zoneinfo/{tz}', '/etc/localtime'])
 
 
 def to_iso(d):
