@@ -105,7 +105,7 @@ class Base(Object):
 
     @property
     def url(self):
-        u = gws.SERVER_ENDPOINT + '/cmd/owsHttp/serviceName/' + self.name
+        u = gws.SERVER_ENDPOINT + '/cmd/owsHttpGet' + self.name.title()
         if self.project:
             u += f'/projectUid/{self.project.uid}'
         return u
@@ -204,7 +204,7 @@ class Base(Object):
 
         def csw_meta_url(uid):
             return rd.req.url_for(
-                gws.SERVER_ENDPOINT + '/cmd/owsHttp/serviceName/csw/request/GetRecordById/id/' + gws.as_uid(uid))
+                gws.SERVER_ENDPOINT + '/cmd/owsHttpGetCsw/request/GetRecordById/id/' + gws.as_uid(uid))
 
         context = gws.merge({
             'project': rd.project,
