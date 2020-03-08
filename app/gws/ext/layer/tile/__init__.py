@@ -35,11 +35,8 @@ class Config(gws.common.layer.ImageTileConfig):
 
 
 class Object(gws.common.layer.ImageTile):
-    def __init__(self):
-        super().__init__()
-
-        self.service: ServiceConfig = None
-        self.url = ''
+    service: ServiceConfig
+    url = ''
 
     def configure(self):
         super().configure()
@@ -58,6 +55,12 @@ class Object(gws.common.layer.ImageTile):
         if self.display == 'client':
             return gws.merge(super().props, type='xyz', url=self.url)
         return super().props
+
+    @property
+    def own_bounds(self):
+        return t.Bounds(
+            crs=self.service.crs,
+            extent=self.service.extent)
 
     def mapproxy_config(self, mc, options=None):
         # we use {x} like in Ol, mapproxy wants %(x)s
