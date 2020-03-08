@@ -38,10 +38,9 @@ api.actions+ {
         style {
             type "css"
             text """
-                fill: rgba(0,0,255,0.5);
-                label-font-size: 13px;
-                label-fill: cyan;
-                label-background: black;
+                fill: rgba(0,0,255,1);
+                label-font-size: 14px;
+                label-fill: rgba(255,0,0,1);
                 label-offset-x: 10px;
                 label-offset-y: -10px;
             """
@@ -67,10 +66,9 @@ api.actions+ {
                 style {
                     type "css"
                     text """
-                        fill: rgba(255,0,0,0.5);
-                        label-font-size: 13px;
-                        label-fill: yellow;
-                        label-background: black;
+                        fill: rgba(255,0,255,0.5);
+                        label-font-size: 16px;
+                        label-fill: rgba(255,255,0,1);
                     """
                 }
             }

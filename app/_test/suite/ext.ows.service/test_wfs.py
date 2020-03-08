@@ -8,46 +8,42 @@ import _test.common.const as cc
 
 
 def test_get_capabilities():
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWfs', params={
         'projectUid': 'wfs1',
-        'serviceName': 'wfs',
         'SERVICE': 'WFS',
         'REQUEST': 'GetCapabilities'
     })
 
-    assert True is u.response_xml_matches(r, path='/data/response_xml/wfs_GetCapabilities_wfs1.xml')
+    assert u.xml(r) == u.xml('/data/response_xml/wfs_GetCapabilities_wfs1.xml')
 
 def test_get_describefeaturetype():
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWfs', params={
         'projectUid': 'wfs1',
-        'serviceName': 'wfs',
         'SERVICE': 'WFS',
         'REQUEST': 'DescribeFeatureType',
     })
 
-    assert True is u.response_xml_matches(r, path='/data/response_xml/wfs_DescribeFeatureType_wfs1.xml')
+    assert u.xml(r) == u.xml('/data/response_xml/wfs_DescribeFeatureType_wfs1.xml')
 
 
 def test_get_all_features():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWfs', params={
         'projectUid': 'wfs1',
-        'serviceName': 'wfs',
         'SERVICE': 'WFS',
         'REQUEST': 'GetFeature',
         'TYPENAMES': 'paris_3857'
     })
 
-    assert u.pretty_xml(r.text).count('<wfs:member>') == 50
+    assert u.xml(r.text).count('<wfs:member>') == 50
 
 
 def test_get_features_with_bbox():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWfs', params={
         'projectUid': 'wfs1',
-        'serviceName': 'wfs',
         'SERVICE': 'WFS',
         'REQUEST': 'GetFeature',
         'TYPENAMES': 'paris_3857',
@@ -85,4 +81,4 @@ def test_get_features_with_bbox():
         </wfs:FeatureCollection>
     """
 
-    assert True is u.response_xml_matches(r, text=exp)
+    assert u.xml(r) == u.xml(exp)

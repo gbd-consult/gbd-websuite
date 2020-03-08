@@ -8,22 +8,20 @@ import _test.common.const as cc
 
 
 def test_get_capabilities():
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWms', params={
         'projectUid': 'wms1',
-        'serviceName': 'wms',
         'SERVICE': 'WMS',
         'REQUEST': 'GetCapabilities'
     })
 
-    assert True is u.response_xml_matches(r, path='/data/response_xml/wms_GetCapabilities_wms1.xml')
+    assert u.xml(r) == u.xml('/data/response_xml/wms_GetCapabilities_wms1.xml')
 
 
 def test_get_map():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWms', params={
         'projectUid': 'wms1',
-        'serviceName': 'wms',
         'SERVICE': 'WMS',
         'REQUEST': 'GetMap',
         'LAYERS': 'paris_3857',
@@ -38,9 +36,8 @@ def test_get_map():
 def test_get_features1():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWms', params={
         'projectUid': 'wms1',
-        'serviceName': 'wms',
         'SERVICE': 'WMS',
         'REQUEST': 'GetFeatureInfo',
         'QUERY_LAYERS': 'paris_3857',
@@ -70,14 +67,14 @@ def test_get_features1():
         </wfs:FeatureCollection>
     """
 
-    assert True is u.response_xml_matches(r, text=exp)
+    assert u.xml(r) == u.xml(exp)
+
 
 def test_get_features_with_resolution():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWms', params={
         'projectUid': 'wms1',
-        'serviceName': 'wms',
         'SERVICE': 'WMS',
         'REQUEST': 'GetFeatureInfo',
         'QUERY_LAYERS': 'paris_3857',
@@ -107,7 +104,8 @@ def test_get_features_with_resolution():
         </wfs:FeatureCollection>
     """
 
-    assert True is u.response_xml_matches(r, text=exp)
+    assert u.xml(r) == u.xml(exp)
+
 
 def test_get_features_with_reprojection():
     x, y = cc.POINTS.dus
@@ -115,9 +113,8 @@ def test_get_features_with_reprojection():
     x, y = gws.gis.proj.transform_xy(x, y, cc.CRS_3857, cc.CRS_25832)
     bbox = gws.gis.extent.transform((x, y, x + 350, y + 350), cc.CRS_25832, cc.CRS_3857)
 
-    r = u.req('_/cmd/owsHttp', params={
+    r = u.req('_/cmd/owsHttpGetWms', params={
         'projectUid': 'wms1',
-        'serviceName': 'wms',
         'SERVICE': 'WMS',
         'REQUEST': 'GetFeatureInfo',
         'QUERY_LAYERS': 'dus_25832',
@@ -151,4 +148,4 @@ def test_get_features_with_reprojection():
         </wfs:FeatureCollection>
     """
 
-    assert True is u.response_xml_matches(r, text=exp)
+    assert u.xml(r) == u.xml(exp)

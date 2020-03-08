@@ -55,8 +55,7 @@ projects+ {
                 stroke: blue;
                 stroke-width: 2px;
                 label-font-size: 13px;
-                label-fill: yellow;
-                label-background: black;
+                label-fill: rgba(0,0,255,1);
             """
         }
     }

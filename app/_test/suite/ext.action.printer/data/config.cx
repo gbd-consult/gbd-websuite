@@ -36,9 +36,6 @@ projects+ {
                 fill: rgba(0,0,255,0.5);
                 label-font-size: 13px;
                 label-fill: cyan;
-                label-background: black;
-                label-offset-x: 10px;
-                label-offset-y: -10px;
             """
         }
     }
@@ -58,9 +55,6 @@ projects+ {
                 fill: rgba(0,255,0,0.5);
                 label-font-size: 13px;
                 label-fill: red;
-                label-background: blue;
-                label-offset-x: 10px;
-                label-offset-y: -10px;
             """
         }
     }

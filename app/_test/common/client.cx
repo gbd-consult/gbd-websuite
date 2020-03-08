@@ -25,9 +25,9 @@ client.options {
     sidebarVisible true
 }
 
-map.layers+ {
-    title "osm"
-    type "tile"
-    url "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
-    opacity 0.3
-}
+##map.layers+ {
+##    title "osm"
+##    type "tile"
+##    url "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+##    opacity 0.3
+##}

@@ -37,34 +37,25 @@ def read(path, mode='rt'):
         return f'FILE ERROR: {e}, path {path!r}'
 
 
-def pretty_xml(x):
-    """Format an xml document nicely."""
+def xml(src):
+    """Format an xml document/file/response nicely."""
 
-    x = re.sub(r'>\s+<', '><', x.strip())
+    if hasattr(src, 'text'):
+        text = src.text
+    elif src.endswith('.xml'):
+        text = read(src)
+    else:
+        text = src
+
+    text = re.sub(r'>\s+<', '><', text.strip())
     try:
-        xml = etree.fromstring(x.encode('utf8'))
+        xml = etree.fromstring(text.encode('utf8'))
     except Exception as e:
-        return f'INVALID XML:\n{e}\nRAW CONTENT :\n{x}'
-    s = etree.tounicode(xml, pretty_print=True)
+        return f'INVALID XML:\n{e}\nRAW CONTENT :\n{text}\nFROM {src!r}'
+    out = etree.tounicode(xml, pretty_print=True)
     # 4 indents look better than 2
-    s = re.sub(r'(?m)^ +', lambda m: m.group(0) * 2, s)
-    return s
-
-
-def print_json(x):
-    """Print a value as a nice json."""
-
-    print('-' * 40)
-    print(gws.tools.json2.to_pretty_string(x))
-    print('-' * 40)
-
-
-def print_xml(x):
-    """Print a nicely formatted xml."""
-
-    print('-' * 40)
-    print(pretty_xml(x))
-    print('-' * 40)
+    out = re.sub(r'(?m)^ +', lambda m: m.group(0) * 2, out)
+    return out
 
 
 def strlist(ls):
@@ -120,16 +111,6 @@ def cmd(command, params=None, binary=False, **kwargs):
         **kwargs)
 
     return res
-
-
-def response_xml_matches(r: requests.Response, path=None, text=None):
-    """Compare an XML text in the request with a reference document."""
-
-    if path:
-        text = read(path)
-    else:
-        text = pretty_xml(text.strip())
-    return pretty_xml(r.text) == text
 
 
 def response_image_matches(r: requests.Response, path, threshold=0.00001):
