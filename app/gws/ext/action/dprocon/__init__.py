@@ -173,7 +173,7 @@ class Object(gws.Object):
                 ''',
                 f'''
                     CREATE TABLE {index_table} (
-                        gml_id CHARACTER(16) NOT NULL,
+                        gml_id CHARACTER(16) NOT NULL PRIMARY KEY,
                         {data_fields},
                         geom geometry(POINT, {self.srid})
                     )
@@ -204,8 +204,6 @@ class Object(gws.Object):
                         WHERE
                             p.art = 'HNR'
                             AND h.gml_id = ANY (p.dientzurdarstellungvon)
-                            AND p.endet IS NULL
-                            AND h.endet IS NULL
                             AND c.land = h.land
                             AND c.regierungsbezirk = h.regierungsbezirk
                             AND c.kreis = h.kreis
@@ -213,6 +211,11 @@ class Object(gws.Object):
                             AND c.lage = h.lage
                             AND h.gml_id = ANY(g.zeigtauf)
                             AND gf.wert = g.gebaeudefunktion
+                            AND c.endet IS NULL
+                            AND g.endet IS NULL
+                            AND h.endet IS NULL
+                            AND p.endet IS NULL
+                        ON CONFLICT DO NOTHING
                 ''',
                 f'''
                     CREATE INDEX geom_index ON {index_table} USING GIST(geom)
