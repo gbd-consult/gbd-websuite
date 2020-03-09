@@ -141,9 +141,9 @@ Symbol				               Function
   :width: 30em
 .. |zoommap| image:: ../../../images/baseline-home-24px.svg
   :width: 30em
-.. |massstab| image:: ../../../images/massstab.png
+.. |massstab| image:: ../../../screenshots/de/client-user/massstab.png
      :width: 11em
-.. |rotation| image:: ../../../images/rotation.png
+.. |rotation| image:: ../../../screenshots/de/client-user/rotation.png
      :width: 10em
-.. |xy| image:: ../../../images/xy.png
+.. |xy| image:: ../../../screenshots/de/client-user/xy.png
      :width: 7em
