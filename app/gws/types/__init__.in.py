@@ -9,6 +9,10 @@ class Enum:
     pass
 
 
+def none() -> Any:
+    return None
+
+
 #:alias An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
 

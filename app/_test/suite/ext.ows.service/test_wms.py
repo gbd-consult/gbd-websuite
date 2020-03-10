@@ -17,6 +17,16 @@ def test_get_capabilities():
     assert u.xml(r) == u.xml('/data/response_xml/wms_GetCapabilities_wms1.xml')
 
 
+def test_get_inspire_capabilities():
+    r = u.req('_/cmd/owsHttpGetWms', params={
+        'projectUid': 'wms_inspire',
+        'SERVICE': 'WMS',
+        'REQUEST': 'GetCapabilities'
+    })
+
+    assert u.xml(r) == u.xml('/data/response_xml/wms_GetCapabilities_wms_inspire.xml')
+
+
 def test_get_map():
     x, y = cc.POINTS.paris
 

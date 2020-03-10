@@ -51,7 +51,7 @@ def get(data, key, default=None):
 
 
 def merge(data, *args, **kwargs):
-    """Update a dict/Data object with the values from dicts/Datas or kwargs.
+    """Create a dict/Data object with the values from dicts/Datas or kwargs.
 
     Args:
         data: A dict or a Data.
@@ -72,6 +72,37 @@ def merge(data, *args, **kwargs):
         return d
 
     return type(data)(d)
+
+
+def setdefault(data, *args, **kwargs):
+    """Update a dict/Data object with the values from dicts/Datas or kwargs, do not overwrite keys unless they're missing or None.
+
+    Args:
+        data: A dict or a Data.
+        *args: Dicts or Datas.
+        **kwargs: Keyword args.
+
+    Returns:
+        The updated argument.
+    """
+
+    d = {}
+
+    for a in args:
+        d.update(as_dict(a))
+    d.update(kwargs)
+
+    if isinstance(data, dict):
+        for k, v in d.items():
+            if data.get(k) is None:
+                data[k] = v
+        return data
+
+    for k, v in d.items():
+        if getattr(data, k, None) is None:
+            setattr(data, k, v)
+
+    return data
 
 
 def _is_not_empty_or_blank(x):

@@ -15,6 +15,9 @@ api.actions+ {
     type "ows"
     services+ {
         type "csw"
+        meta {
+            @META_DATA "csw"
+        }
     }
 }
 
@@ -118,6 +121,31 @@ projects+ {
                 abstract null
                 accessConstraints null
             }
+        }
+    }
+
+    @SIMPLE_MAP
+
+    @include /common/client.cx
+}
+
+projects+ {
+    uid "wms_inspire"
+
+    meta {
+        @META_DATA "PROJECT"
+    }
+
+    api.actions+ {
+        type "ows"
+        services+ {
+            type "wms"
+            meta {
+                @META_DATA "service"
+                abstract null
+                accessConstraints null
+            }
+            withInspireMeta true
         }
     }
 

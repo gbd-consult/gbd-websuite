@@ -1,4 +1,11 @@
-<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:gws="http://gws.gbd-consult.de" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.3.0" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1/sldAll.xsd">
+<WMS_Capabilities
+        xmlns="http://www.opengis.net/wms"
+        xmlns:gws="http://gws.gbd-consult.de"
+        xmlns:sld="http://www.opengis.net/sld"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        version="1.3.0"
+        xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1/sldAll.xsd">
     <Service>
         <Name>WMS</Name>
         <Title>service_meta_title</Title>
@@ -36,7 +43,8 @@
                 <DCPType>
                     <HTTP>
                         <Get>
-                            <OnlineResource xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+                            <OnlineResource xlink:type="simple"
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -46,7 +54,8 @@
                 <DCPType>
                     <HTTP>
                         <Get>
-                            <OnlineResource xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+                            <OnlineResource xlink:type="simple"
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -56,7 +65,8 @@
                 <DCPType>
                     <HTTP>
                         <Get>
-                            <OnlineResource xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+                            <OnlineResource xlink:type="simple"
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -66,7 +76,8 @@
                 <DCPType>
                     <HTTP>
                         <Get>
-                            <OnlineResource xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+                            <OnlineResource xlink:type="simple"
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -86,7 +97,8 @@
                 <southBoundLatitude>48.8575</southBoundLatitude>
                 <northBoundLatitude>51.2319</northBoundLatitude>
             </EX_GeographicBoundingBox>
-            <BoundingBox CRS="EPSG:3857" minx="254451.842681146" miny="6250716.48078953" maxx="754551.4271137204" maxy="6662413.966834171"/>
+            <BoundingBox CRS="EPSG:3857" minx="254451.842681146" miny="6250716.48078953" maxx="754551.4271137204"
+                         maxy="6662413.966834171"/>
             <Attribution>
                 <Title>PROJECT_meta_attribution</Title>
             </Attribution>
@@ -106,7 +118,8 @@
                     <southBoundLatitude>51.2232</southBoundLatitude>
                     <northBoundLatitude>51.2319</northBoundLatitude>
                 </EX_GeographicBoundingBox>
-                <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416" maxx="754551.4271137204" maxy="6662413.966834171"/>
+                <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416" maxx="754551.4271137204"
+                             maxy="6662413.966834171"/>
                 <MinScaleDenominator>1000</MinScaleDenominator>
                 <MaxScaleDenominator>50000</MaxScaleDenominator>
                 <Layer queryable="1">
@@ -119,7 +132,8 @@
                         <southBoundLatitude>51.2232</southBoundLatitude>
                         <northBoundLatitude>51.2319</northBoundLatitude>
                     </EX_GeographicBoundingBox>
-                    <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416" maxx="754551.4271137204" maxy="6662413.966834171"/>
+                    <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
+                                 maxx="754551.4271137204" maxy="6662413.966834171"/>
                     <MinScaleDenominator>1000</MinScaleDenominator>
                     <MaxScaleDenominator>50000</MaxScaleDenominator>
                     <Layer queryable="1">
@@ -132,7 +146,8 @@
                             <southBoundLatitude>51.2232</southBoundLatitude>
                             <northBoundLatitude>51.2319</northBoundLatitude>
                         </EX_GeographicBoundingBox>
-                        <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416" maxx="754551.4271137204" maxy="6662413.966834171"/>
+                        <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
+                                     maxx="754551.4271137204" maxy="6662413.966834171"/>
                         <MinScaleDenominator>1000</MinScaleDenominator>
                         <MaxScaleDenominator>50000</MaxScaleDenominator>
                     </Layer>
@@ -149,7 +164,8 @@
                     <southBoundLatitude>48.8575</southBoundLatitude>
                     <northBoundLatitude>48.8628</northBoundLatitude>
                 </EX_GeographicBoundingBox>
-                <BoundingBox CRS="EPSG:3857" minx="254451.842681146" miny="6250716.48078953" maxx="254851.842681146" maxy="6251616.48078953"/>
+                <BoundingBox CRS="EPSG:3857" minx="254451.842681146" miny="6250716.48078953" maxx="254851.842681146"
+                             maxy="6251616.48078953"/>
                 <Attribution>
                     <Title>PARIS_meta_attribution</Title>
                 </Attribution>

@@ -52,6 +52,8 @@ NAMESPACES = {
         "http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd"
     ),
     'xlink': "http://www.w3.org/1999/xlink",
+
+    # NB our templates use "xsd" and "xsi" for XMLSchema namespaces
     'xsd': "http://www.w3.org/2001/XMLSchema",
     'xsi': "http://www.w3.org/2001/XMLSchema-instance",
 }

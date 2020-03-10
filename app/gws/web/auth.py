@@ -43,12 +43,10 @@ class Request(wrappers.BaseRequest, t.IRequest):
         return node
 
     def require_project(self, uid: str) -> t.IProject:
-        p: t.IProject = self.require('gws.common.project', uid)
-        return p
+        return t.cast(t.IProject, self.require('gws.common.project', uid))
 
     def require_layer(self, uid: str) -> t.ILayer:
-        p: t.ILayer = self.require('gws.ext.layer', uid)
-        return p
+        return t.cast(t.ILayer, self.require('gws.ext.layer', uid))
 
     def acquire(self, klass: str, uid: str) -> t.IObject:
         node = self.root.find(klass, uid)

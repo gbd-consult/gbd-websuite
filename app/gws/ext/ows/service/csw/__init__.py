@@ -55,14 +55,12 @@ class Object(ows.Base):
 
         self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates', type='text')
 
-        self.meta.inspire = gws.merge({
-            'mandatoryKeyword': 'humanCatalogueViewer',
-            'spatialDataServiceType': 'discovery',
-        }, self.meta.inspire)
-
-        self.meta.iso = gws.merge({
-            'scope': 'dataset',
-        }, self.meta.iso)
+        self.meta = gws.merge(
+            self.meta,
+            mandatoryKeyword='humanCatalogueViewer',
+            spatialDataServiceType='discovery',
+            isoScope='dataset'
+        )
 
     def handle(self, req) -> t.HttpResponse:
         if self.records is None:
@@ -78,7 +76,7 @@ class Object(ows.Base):
 
         if req.method == 'POST':
             try:
-                rd.xml = gws.tools.xml2.from_string(req.post_data)
+                rd.xml = gws.tools.xml2.from_string(req.text_data)
             except gws.tools.xml2.Error:
                 raise gws.web.error.BadRequest()
             request_param = rd.xml.name
@@ -86,10 +84,10 @@ class Object(ows.Base):
         return self.dispatch(rd, request_param.lower())
 
     def handle_getcapabilities(self, rd: ows.Request):
-        return self.xml_response(self.render_template(rd, 'getCapabilities', {}))
+        return self.xml_response(self.render_template(rd, 'getCapabilities'))
 
     def handle_describerecord(self, rd: ows.Request):
-        return self.xml_response(self.render_template(rd, 'describeRecord', {}))
+        return self.xml_response(self.render_template(rd, 'describeRecord'))
 
     def handle_getrecords(self, rd: ows.Request):
         records = self._find_records(rd)
@@ -147,7 +145,7 @@ class Object(ows.Base):
         return rs
 
     def _configure_metadata(self, obj: t.IObject, meta: t.MetaData) -> t.MetaData:
-        m = gws.common.metadata.read(meta)
+        m = gws.common.metadata.from_config(meta)
         extent = crs = res = None
 
         if obj.is_a('gws.ext.layer'):

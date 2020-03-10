@@ -25,6 +25,13 @@ def _should_list(k, v):
     return True
 
 
+def _repr(x):
+    s = repr(x)
+    if len(s) > 50:
+        s = s[:50] + '...'
+    return s
+
+
 def _dump(x, name, depth, max_depth, all_props):
     pfx = '    ' * depth
 
@@ -41,11 +48,11 @@ def _dump(x, name, depth, max_depth, all_props):
         pass
 
     if x is None or isinstance(x, (bool, int, float, str, bytes)):
-        yield pfx + ' = ' + repr(x)
+        yield pfx + ' = ' + _repr(x)
         return
 
     if not all_props and str(type(x)) in _noexpand:
-        yield pfx + ' = ' + repr(x)
+        yield pfx + ' = ' + _repr(x)
         return
 
     if depth >= max_depth:
@@ -65,7 +72,7 @@ def _dump(x, name, depth, max_depth, all_props):
                 yield s
 
     else:
-        yield pfx + ' = ' + repr(x)
+        yield pfx + ' = ' + _repr(x)
 
     for k in dir(x):
         try:

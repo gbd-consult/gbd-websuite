@@ -66,7 +66,7 @@ class Object(gws.Object, t.IProject):
     def configure(self):
         super().configure()
 
-        self.meta = gws.common.metadata.read(self.var('meta'))
+        self.meta = gws.common.metadata.from_config(self.var('meta'))
         # title at the top level config preferred
         if self.var('title'):
             self.meta.title = self.var('title')

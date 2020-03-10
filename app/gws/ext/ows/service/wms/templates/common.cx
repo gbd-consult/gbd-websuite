@@ -53,10 +53,10 @@
 @end
 
 @def wms_meta_url(meta)
-    @if meta.iso.uid
+    @if use_csw
         @tag MetadataURL type="ISO19115:2003"
             @t Format application/xml
-            @t OnlineResource xlink:type="simple" xlink:href="{csw_meta_url(meta.iso.uid)}"
+            @t OnlineResource xlink:type="simple" xlink:href="{csw_meta_url(meta.isoUid)}"
         @end
     @elif meta.url
         @tag MetadataURL

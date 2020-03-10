@@ -1,10 +1,50 @@
-<csw:Capabilities xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:gws="http://gws.gbd-consult.de" xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0" xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.2" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd http://inspire.ec.europa.eu/schemas/common/1.0 http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd http://inspire.ec.europa.eu/schemas/inspire_vs/1.0 http://inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd http://www.opengis.net/ows http://schemas.opengis.net/ows/1.0.0/owsAll.xsd">
+<csw:Capabilities
+        xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:gws="http://gws.gbd-consult.de"
+        xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0"
+        xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0"
+        xmlns:ogc="http://www.opengis.net/ogc"
+        xmlns:ows="http://www.opengis.net/ows"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        version="2.0.2"
+        xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd http://inspire.ec.europa.eu/schemas/common/1.0 http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd http://inspire.ec.europa.eu/schemas/inspire_vs/1.0 http://inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd http://www.opengis.net/ows http://schemas.opengis.net/ows/1.0.0/owsAll.xsd">
     <ows:ServiceIdentification>
         <ows:ServiceType>csw</ows:ServiceType>
         <ows:ServiceTypeVersion>2.0.2</ows:ServiceTypeVersion>
-        <ows:Title>None</ows:Title>
+        <ows:Title>csw_meta_title</ows:Title>
+        <ows:Abstract>csw_meta_abstract</ows:Abstract>
+        <ows:Keywords>
+            <ows:Keyword>csw_meta_keyword1</ows:Keyword>
+            <ows:Keyword>csw_meta_keyword2</ows:Keyword>
+            <ows:Keyword>csw_meta_keyword3</ows:Keyword>
+        </ows:Keywords>
+        <ows:Fees>csw_meta_fees</ows:Fees>
+        <ows:AccessConstraints>csw_meta_accessConstraints</ows:AccessConstraints>
     </ows:ServiceIdentification>
-    <ows:ServiceProvider/>
+    <ows:ServiceProvider>
+        <ows:ProviderName/>
+        <ows:ProviderSite xlink:href="csw_meta_contact_url"/>
+        <ows:ServiceContact>
+            <ows:IndividualName>csw_meta_contact_person</ows:IndividualName>
+            <ows:PositionName>csw_meta_contact_position</ows:PositionName>
+            <ows:ContactInfo>
+                <ows:Phone>
+                    <ows:Voice>csw_meta_contact_phone</ows:Voice>
+                    <ows:Facsimile>csw_meta_contact_fax</ows:Facsimile>
+                </ows:Phone>
+                <ows:Address>
+                    <ows:DeliveryPoint>csw_meta_contact_address</ows:DeliveryPoint>
+                    <ows:City>csw_meta_contact_city</ows:City>
+                    <ows:AdministrativeArea>csw_meta_contact_area</ows:AdministrativeArea>
+                    <ows:PostalCode>csw_meta_contact_zip</ows:PostalCode>
+                    <ows:Country>csw_meta_contact_country</ows:Country>
+                    <ows:ElectronicMailAddress>csw_meta_contact_email</ows:ElectronicMailAddress>
+                </ows:Address>
+                <ows:OnlineResource xlink:href="csw_meta_contact_url"/>
+            </ows:ContactInfo>
+            <ows:Role/>
+        </ows:ServiceContact>
+    </ows:ServiceProvider>
     <ows:OperationsMetadata>
         <ows:Operation name="GetCapabilities">
             <ows:DCP>
@@ -63,12 +103,12 @@
         </ows:Constraint>
         <inspire_vs:ExtendedCapabilities>
             <inspire_common:ResourceLocator>
-                <inspire_common:URL/>
+                <inspire_common:URL>http://csw_meta_url</inspire_common:URL>
                 <inspire_common:MediaType>text/xml</inspire_common:MediaType>
             </inspire_common:ResourceLocator>
             <inspire_common:ResourceType>service</inspire_common:ResourceType>
             <inspire_common:TemporalReference>
-                <inspire_common:DateOfPublication>None</inspire_common:DateOfPublication>
+                <inspire_common:DateOfPublication>2020-01-02</inspire_common:DateOfPublication>
             </inspire_common:TemporalReference>
             <inspire_common:Conformity>
                 <inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng">
@@ -78,23 +118,23 @@
                 <inspire_common:Degree/>
             </inspire_common:Conformity>
             <inspire_common:MetadataPointOfContact>
-                <inspire_common:OrganisationName/>
-                <inspire_common:EmailAddress/>
+                <inspire_common:OrganisationName>csw_meta_contact_organization</inspire_common:OrganisationName>
+                <inspire_common:EmailAddress>csw_meta_contact_email</inspire_common:EmailAddress>
             </inspire_common:MetadataPointOfContact>
-            <inspire_common:SpatialDataServiceType>view</inspire_common:SpatialDataServiceType>
+            <inspire_common:SpatialDataServiceType>discovery</inspire_common:SpatialDataServiceType>
             <inspire_common:MandatoryKeyword>
-                <inspire_common:KeywordValue>infoMapAccessService</inspire_common:KeywordValue>
+                <inspire_common:KeywordValue>humanCatalogueViewer</inspire_common:KeywordValue>
             </inspire_common:MandatoryKeyword>
             <inspire_common:SupportedLanguages>
                 <inspire_common:DefaultLanguage>
-                    <inspire_common:Language/>
+                    <inspire_common:Language>ger</inspire_common:Language>
                 </inspire_common:DefaultLanguage>
                 <inspire_common:SupportedLanguage>
-                    <inspire_common:Language/>
+                    <inspire_common:Language>ger</inspire_common:Language>
                 </inspire_common:SupportedLanguage>
             </inspire_common:SupportedLanguages>
             <inspire_common:ResponseLanguage>
-                <inspire_common:Language/>
+                <inspire_common:Language>ger</inspire_common:Language>
             </inspire_common:ResponseLanguage>
         </inspire_vs:ExtendedCapabilities>
     </ows:OperationsMetadata>

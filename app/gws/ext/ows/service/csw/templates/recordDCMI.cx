@@ -1,7 +1,7 @@
 @tag csw:Record
-    @t dc:identifier {meta.iso.uid}
+    @t dc:identifier {meta.isoUid}
     @t dc:title {meta.title}
-    @t dc:type {meta.iso.scope}
+    @t dc:type {meta.isoScope}
 
     @each meta.keywords as kw
         @t dc:subject {kw}

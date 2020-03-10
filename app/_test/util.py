@@ -53,8 +53,18 @@ def xml(src):
     except Exception as e:
         return f'INVALID XML:\n{e}\nRAW CONTENT :\n{text}\nFROM {src!r}'
     out = etree.tounicode(xml, pretty_print=True)
+
     # 4 indents look better than 2
+
     out = re.sub(r'(?m)^ +', lambda m: m.group(0) * 2, out)
+
+    # each root tag attr on a separate line
+
+    out = re.sub(
+        r'(?s)^<(.+?)>',
+        lambda m: '<' + re.sub(r'(?i)\s+([a-z]+(:[a-z]+)?=)', '\n       \\1', m.group(1)) + '>',
+        out)
+
     return out
 
 

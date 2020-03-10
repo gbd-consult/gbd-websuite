@@ -7,8 +7,7 @@ import gws.gis.render
 import gws.gis.shape
 import gws.gis.extent
 import gws.gis.gml
-import gws.tools.misc as misc
-import gws.tools.units as units
+import gws.tools.misc
 import gws.tools.os2
 import gws.tools.xml2
 import gws.web.error
@@ -44,6 +43,8 @@ class Object(ows.Base):
 
     def configure(self):
         super().configure()
+
+        self.meta.spatialDataServiceType = 'view'
 
         for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
             self.templates[tpl] = self.configure_template(tpl, 'wms/templates')
@@ -100,10 +101,7 @@ class Object(ows.Base):
             out.items[0].image.save(buf, format='png')
             img = buf.getvalue()
 
-        return t.HttpResponse({
-            'mime': 'image/png',
-            'content': img
-        })
+        return t.HttpResponse(mime='image/png', content=img)
 
     def handle_getlegendgraphic(self, rd: ows.Request):
         # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
@@ -114,11 +112,7 @@ class Object(ows.Base):
             raise gws.web.error.NotFound()
 
         img = nodes[0].layer.render_legend()
-
-        return t.HttpResponse({
-            'mime': 'image/png',
-            'content': img or gws.tools.misc.Pixels.png8
-        })
+        return t.HttpResponse(mime='image/png', content=img or gws.tools.misc.Pixels.png8)
 
     def handle_getfeatureinfo(self, rd: ows.Request):
         results = self.find_features(rd)
@@ -127,6 +121,7 @@ class Object(ows.Base):
 
     def find_features(self, rd: ows.Request):
         try:
+            bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
             px_width = int(rd.req.param('width'))
             px_height = int(rd.req.param('height'))
             limit = int(rd.req.param('feature_count', '1'))
@@ -135,8 +130,7 @@ class Object(ows.Base):
         except:
             raise gws.web.error.BadRequest()
 
-        bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
-        crs = rd.req.param('crs') or rd.req.param('srs')
+        crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs
 
         nodes = self.layer_nodes_from_request_params(rd, ['query_layers'])
         if not nodes:
@@ -147,13 +141,10 @@ class Object(ows.Base):
         x = bbox[0] + (x * xres)
         y = bbox[3] - (y * yres)
 
-        point = gws.gis.shape.from_props(t.ShapeProps(
-            crs=rd.project.map.crs,
-            geometry={
-                'type': 'Point',
-                'coordinates': [x, y]
-            }
-        ))
+        point = gws.gis.shape.from_geometry({
+            'type': 'Point',
+            'coordinates': [x, y]
+        }, crs)
 
         # @TODO: should be a parameter
         pixel_tolerance = 10

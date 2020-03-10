@@ -9,6 +9,10 @@ class Enum:
     pass
 
 
+def none() -> Any:
+    return None
+
+
 #:alias An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
 
@@ -433,21 +437,30 @@ class MetaData(Data):
     abstract: str = None
     accessConstraints: str = None
     attribution: str = None
-    contact: 'MetaContact' = None
+    contact: Optional['MetaContact'] = None
     fees: str = None
     image: 'Url' = None
     images: dict = None
-    inspire: dict = None
-    iso: dict = None
+    inspireTheme: str = None
+    isoCategory: str = None
+    isoScope: str = None
+    isoSpatialType: str = None
+    isoUid: str = None
     keywords: List[str] = None
     language: str = None
+    language3: str = None
     links: List['MetaLink'] = None
-    modDate: str = None
+    mandatoryKeyword: str = None
+    modDate: 'Date' = None
     name: str = None
-    pubDate: str = None
+    pubDate: 'Date' = None
+    qualityExplanation: str = None
+    qualityLineage: str = None
+    qualityPass: bool = None
+    resourceType: str = None
     serviceUrl: 'Url' = None
+    spatialDataServiceType: str = None
     title: str = None
-    uid: str = None
     url: 'Url' = None
 
 

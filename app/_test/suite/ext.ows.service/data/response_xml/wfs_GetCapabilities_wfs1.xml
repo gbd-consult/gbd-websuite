@@ -1,4 +1,12 @@
-<WFS_Capabilities xmlns="http://www.opengis.net/wfs/2.0" xmlns:fes="http://www.opengis.net/fes/2.0" xmlns:gws="http://gws.gbd-consult.de" xmlns:ows="http://www.opengis.net/ows" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0" xsi:schemaLocation="http://www.opengis.net/ows http://schemas.opengis.net/ows/1.0.0/owsAll.xsd">
+<WFS_Capabilities
+        xmlns="http://www.opengis.net/wfs/2.0"
+        xmlns:fes="http://www.opengis.net/fes/2.0"
+        xmlns:gws="http://gws.gbd-consult.de"
+        xmlns:ows="http://www.opengis.net/ows"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        version="2.0"
+        xsi:schemaLocation="http://www.opengis.net/ows http://schemas.opengis.net/ows/1.0.0/owsAll.xsd">
     <ows:ServiceIdentification>
         <ows:ServiceType>wfs</ows:ServiceType>
         <ows:ServiceTypeVersion>2.0</ows:ServiceTypeVersion>

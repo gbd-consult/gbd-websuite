@@ -14,14 +14,6 @@ import gws.types as t
 from . import const, inspire
 
 
-# NB our templates use "xsd" for the XMLSchema namespace
-
-
-class UseInspireConfig(t.Config):
-    meta: bool = False  #: enable INSPIRE metadata for this service
-    data: bool = False  #: enable INSPIRE data models for this service
-
-
 class Config(t.WithTypeAndAccess):
     enabled: bool = True
     featureNamespace: str = 'gws'  #: feature namespace name
@@ -29,7 +21,9 @@ class Config(t.WithTypeAndAccess):
     meta: t.Optional[gws.common.metadata.Config]  #: service metadata
     name: str = ''  #: service name
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
-    useInspire: t.Optional[UseInspireConfig]  #: INSPIRE configuration
+    withInspireMeta: bool = False  #: use INSPIRE Metadata
+    withInspireData: bool = False  #: use INSPIRE data model
+    withCSW: bool = False  #: use the CSW service
 
 
 class Request(t.Data):
@@ -76,11 +70,11 @@ class Object(gws.Object, t.IOwsService):
         super().__init__()
 
         self.feature_namespace = ''
-        self.meta: t.MetaData = None
         self.name = ''
         self.type = ''
         self.version = ''
         self.enabled = True
+        self.meta: t.MetaData
 
     def handle(self, req: t.IRequest) -> t.HttpResponse:
         pass
@@ -100,8 +94,8 @@ class Base(Object):
         self.templates = {}
         self.use_inspire_meta = False
         self.use_inspire_data = False
-
-        self.project: t.IProject = None
+        self.use_csw = False
+        self.project: t.IProject = t.none()
 
     @property
     def url(self):
@@ -114,53 +108,49 @@ class Base(Object):
     def service_link(self):
         return None
 
-    ## Configuration
+    # Configuration
 
     def configure(self):
         super().configure()
 
-        self.project: t.IProject = self.get_closest('gws.common.project')
+        self.project = t.cast(t.IProject, self.get_closest('gws.common.project'))
         self.name = self.var('name') or self.type
 
-        m = self._metadata_dict(self.var('meta'))
-        if self.project:
-            # use project metadata as a fallback
-            m = gws.merge(self._metadata_dict(self.project.meta), m)
-        self.meta = gws.common.metadata.read(m)
+        self.meta = self._prepare_metadata()
 
         if self.var('featureNamespace'):
             self.feature_namespace = self.var('featureNamespace')
             self.local_namespaces[self.feature_namespace] = self.var('featureNamespaceUri')
 
-        self.use_inspire_meta = self.var('useInspire.meta')
-        self.use_inspire_data = self.var('useInspire.data')
+        self.use_inspire_meta = self.var('withInspireMeta')
+        self.use_inspire_data = self.var('withInspireData')
+        self.use_csw = self.var('withCSW')
 
         if self.use_inspire_data:
             self.configure_inspire_templates()
 
-    def _metadata_dict(self, meta):
-        m = gws.merge({}, meta)
+    def _prepare_metadata(self):
+        meta = gws.common.metadata.from_config(self.var('meta'))
+        if self.project:
+            meta = gws.setdefault(meta, self.project.meta)
 
-        m['inspire'] = gws.merge({
-            'mandatoryKeyword': 'infoMapAccessService',
-            'resourceType': 'service',
-            'spatialDataServiceType': 'view'
-        }, m.get('inspire', {}))
-
-        m['iso'] = gws.merge({
-            'scope': 'service'
-        }, m.get('iso', {}))
-
-        m['serviceUrl'] = m.get('serviceUrl', self.url)
+        meta = gws.setdefault(
+            meta,
+            mandatoryKeyword='infoMapAccessService',
+            resourceType='service',
+            isoScope='service',
+            serviceUrl=self.url,
+            links=[],
+        )
 
         ls = []
 
         if self.service_link:
             ls.append(self.service_link)
 
-        m['links'] = ls + m.get('links', [])
+        meta.links += ls
 
-        return gws.strip(m)
+        return meta
 
     def configure_template(self, name, path, type='xml'):
         for tpl in self.var('templates', default=[]):
@@ -179,7 +169,7 @@ class Base(Object):
         for tag in inspire.TAGS:
             self.templates[tag] = self.configure_template(tag.replace(':', '_'), 'wfs/templates/inspire')
 
-    ## Request handling
+    # Request handling
 
     def handle(self, req) -> t.HttpResponse:
         rd = Request({
@@ -195,12 +185,12 @@ class Base(Object):
             raise gws.web.error.NotFound()
         return h(rd)
 
-    ## Rendering and responses
+    # Rendering and responses
 
     def error_response(self, status):
         return self.xml_error_response(self.version, status, f'Error {status}')
 
-    def render_template(self, rd: Request, template, context, format=None):
+    def render_template(self, rd: Request, template, context=None, format=None):
 
         def csw_meta_url(uid):
             return rd.req.url_for(
@@ -210,6 +200,7 @@ class Base(Object):
             'project': rd.project,
             'meta': self.meta,
             'use_inspire_meta': self.use_inspire_meta,
+            'use_csw': self.use_csw,
             'url_for': rd.req.url_for,
             'csw_meta_url': csw_meta_url,
             'feature_namespace': self.feature_namespace,
@@ -228,9 +219,11 @@ class Base(Object):
             template_name = node.tag_name if node.tag_name in self.templates else 'feature'
             tags.append(self.render_template(rd, template_name, {'node': node}, format='tag'))
 
-        return self.xml_response(self.render_template(rd, container_template_name, {
+        context = {
             'feature_tags': tags,
-        }))
+        }
+
+        return self.xml_response(self.render_template(rd, container_template_name, context))
 
     def xml_error_response(self, version, status, description) -> t.HttpResponse:
         description = gws.tools.xml2.encode(description)
@@ -247,7 +240,7 @@ class Base(Object):
             'status': status,
         })
 
-    ## LayerCaps nodes
+    # LayerCaps nodes
 
     def layer_tree_root(self, rd: Request) -> t.Optional[LayerCapsNode]:
         """Return a single root node for a layer tree."""
@@ -323,7 +316,7 @@ class Base(Object):
         return all_nodes
 
     def _layer_node_subtree(self, rd: Request, layer_uid):
-        layer: t.ILayer = rd.req.acquire('gws.ext.layer', layer_uid)
+        layer = t.cast(t.ILayer, rd.req.acquire('gws.ext.layer', layer_uid))
         if not self.is_layer_enabled(layer):
             return
         if not layer.layers:
@@ -394,7 +387,7 @@ class Base(Object):
 
         return [node(f) for f in features]
 
-    ## Utils
+    # Utils
 
     def is_layer_enabled(self, layer):
         return layer and layer.ows_enabled(self)

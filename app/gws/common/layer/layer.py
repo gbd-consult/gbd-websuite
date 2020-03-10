@@ -235,7 +235,7 @@ class Layer(gws.Object, t.ILayer):
             # title at the top level config overrides meta title
             meta.title = title
 
-        self.meta = gws.common.metadata.read(meta)
+        self.meta = gws.common.metadata.from_config(meta)
         self.title = self.meta.title
 
         uid = self.var('uid') or gws.as_uid(self.title) or 'layer'
