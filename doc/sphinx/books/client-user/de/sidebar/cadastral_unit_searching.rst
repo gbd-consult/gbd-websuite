@@ -1,8 +1,7 @@
 Flurstücksuche
 ==============
 
-In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstücksuche``, welche auf amtlichen ALKIS-Daten beruht. Diese Funktion steht erst zur Verfügung, wenn ein Benutzer mit
-ALKIS-Zugrissrechten angemeldet ist. Die Datenbank auf der die Suche basiert, logt jede Anfrage. So kann anhand eines Aktenzeichens  verfolgt werden welcher Benutzer welche Suche gestartet hat.
+In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstücksuche``, welche auf amtliche ALKIS-Daten angewendet werden kann. Das Modul und der Zugriff darauf kann individuell projekt- und benutzerspezifisch konfiguriert, Anfragen zum Einhalten des Datenschutzes gelogged werden.
 
 Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
 
@@ -10,56 +9,29 @@ Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandt
 Starten der Flurstücksuche
 --------------------------
 
-Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen.
-Hier stehen verschiedene Suchfelder zur Auswahl, welche auf verschiedene Weisen verwendet werden können.
-Zum einen ist es möglich nach einem speziellen Flurstück zu suchen, indem die individuellen Daten eingegeben werden. Zum anderen können die Felder als Filter verwendet werden.
-So kann zum Beispiel ohne Eigentümer oder nur nach Eigentümer oder Buchungsblattnummer gesucht werden.
+Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl die individuell konfiguriert werden können. So kann man Flurstücke nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen. 
 
-Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden.
+Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden. Dabei werden die Inhalte aller Felder gelöscht. 
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
   :align: center
 
-Beschreibung der Felder
------------------------
-
-+------------------------+---------------------------------+
-| **Feld**               | **Beispiel**                    |
-+------------------------+---------------------------------+
-| Vorname                | Max                             |
-+------------------------+---------------------------------+
-| Nachname               | Mustermann                      |
-+------------------------+---------------------------------+
-| Gemarkung              | Albshausen (Rauschenberg)       |
-+------------------------+---------------------------------+
-| Straße                 | Am Bingel                       |
-+------------------------+---------------------------------+
-| Nummer                 | 2b                              |
-+------------------------+---------------------------------+
-| Flur-Zähler/Nenner     | 6-30/6                          |
-+------------------------+---------------------------------+
-| Fläche                 | 30 bis 50 m²                    |
-+------------------------+---------------------------------+
-| Buchungsblattnummer    | 0013658                         |
-+------------------------+---------------------------------+
-
 .. note::
-    Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten:
-    **Flur-Zähler/Nenner**. Optional kann auch nach den einzelnen Bestandteilen *Flur*, *Zähler* oder *Nenner* gesucht werden. Für die Suche nach einer bestimmten Straße, ist zuvor die Gemarkung auszuwählen.
+    Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten, die je nach Bundesland unterschiedlich sein kann. Für die Suche nach einer Adresse ist aktuell eine Eingrenzung über eine Gemarkung vorzunehmen.
 
 
 Anzeigen der Ergebnisse
 -----------------------
 
 .. note::
- Bei der Ausgabe der Ergebnisse ist zu beachten, dass die Ergebnisspalte maximal 100 Ergebnisse ausgibt. Grund: Es wird eine weitere Spezifizierung erwartet.
+ Für die Ausgabe der Ergebnisse kann die maximale Anzahl der Flurstücke konfiguriert werden.
 
 Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter |results| ``Ergebnisse`` aufgelistet.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_2.png
   :align: center
 
-Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese bestehen aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche.
+Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese können individuell konfiguriert werden und bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche. Über die Symbole |add| und |delete| rechts neben der Flurstücksbezeichnung, können einzelne Flurstücke in eine Ablage gelegt werden. Diese kann für einen späteren Zugriff gespeichert werden. Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden. 
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
   :align: center
@@ -67,11 +39,6 @@ Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinfo
 
 .. Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden |fokus| Symbol fokussiert werden. Außerdem ist es möglich über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage zu entfernen. Oder über das |addall| Icon ebenfalls in der Leiste am unteren Fensterrand ``Alle zur Ablage`` hinzufügen.  So können Sie in der |tab| ``Ablage`` , welche ebenfalls am unteren Fensterrand der ``Flurstücksuche`` zu finden ist, eine Sammlung gesuchter Flurstücke anlegen und diese |save| ``Speichern``, |load| ``Laden``, |csv| als CSV-Datei exportieren oder |print| ``Drucken``.
 
-Arbeiten mit der Ablage
------------------------
-
-.. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_3.png
-  :align: center
 
 Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen und deren Funktion im Ablagefenster ab.
 
@@ -103,28 +70,34 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 
 .. Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt.
 
-Exportieren
-^^^^^^^^^^^
+Exportieren und Drucken
+-----------------------
 
-**Exportieren als CSV**
+Exportieren als CSV
+^^^^^^^^^^^^^^^^^^^
 
-Wählen Sie die gewünschten Daten für den Export aus und klicken Sie auf ``Exportieren``.
+Die Flurstückinformationen bestehen aus unterschiedlichen Teilbereichen. Beim Export in das CSV Format können Sie eine Auswahl treffen und dann auf den Button ``Exportieren`` klicken.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
   :align: center
 
 .. note::
-   Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen.
+   Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen. Das ist u.a. dann der Fall, wenn ein Flurstück mehrere Eigentümer hat.
 
+Drucken der Flurstückinformationen
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Exportieren als Druck**
+Über das |print| Symbol können Sie die ausgewählten Flurstückinformationen drucken. Der Inhalt des Ausdrucks kann individuell über ein Template vorbereitet werden. Dieses kann auch einen Kartendarstellung des jeweiligen Flurstücks beinhalten. 
 
-Sobald |print| gedrückt wird, startet der Druck. Dies bedeutet dass der Kartenausschnitt vorher gewählt werden muss.
+Arbeiten mit der Ablage
+-----------------------
+
+Die |tab| Ablage ist ein Bereich, der genutzt werden kann, um bestimmte Flurstücke einer Suchanfrage und/oder Ergebnisse mehrerer Suchanfragen abzulegen. Man kann es als eine Art Sammelstelle verstehen, deren Inhalt letztlich für die Beauskunftung verwendet werden kann. 
 
 Speichern
 ^^^^^^^^^
 
-Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
+Über das |save| Symbol können Sie ausgewählte Flurstücke oder Flurstücke der Ablage in einer benutzerspefischen Ablage speichern. Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
   :align: center
@@ -132,16 +105,16 @@ Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das H�
 Laden
 ^^^^^
 
-Wählen Sie eine vorhandene Datei und laden Sie diese durch Klicken auf das Häckchen.
+Über das |load| Symbol kann eine benutzerspefische Ablage wieder geladen werden. Wählen Sie einen Ablagenamen und laden Sie diese durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_load.png
   :align: center
 
 .. note::
-  Das Speichern geschieht in einer SQLite Datei.
+  Das Speichern benutzerspefischer Ablagen geschieht in einer SQLite Datenbank.
 
-Arbeiten mit der räumlichen Suche
----------------------------------
+Flurstücke in der Karte suchen
+------------------------------
 
 Mit Hilfe des Werkzeuges |spatial_search| ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln. Es öffnet sich in der Toolbar die Leiste für die Räumliche Suche, mit dem Verweis, dass nun in den Flurstücken gesucht wird.
 
@@ -152,10 +125,10 @@ Wählen Sie das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
    :align: center
 
-Auswahl eines Flurstücks in der Karte
--------------------------------------
+Flurstücke in der Karte wählen
+------------------------------
 
-Das Werkzeug |select| ``Auswahl eines Flurstücks in der Karte`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
+Das Werkzeug |select| ``Einzelne Flurstücke in der Karte wählen`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
    :align: center
