@@ -102,3 +102,18 @@ projects+ {
 
     @include /common/client.cx
 }
+
+projects+ {
+    uid "tree_qgz"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "t"
+        type "qgis"
+        path "/common/qgis/test_geojson_postgres.qgz"
+        rootLayers.names ["squares_dus1_3857"]
+    }
+
+    @include /common/client.cx
+}

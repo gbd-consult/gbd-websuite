@@ -8,7 +8,7 @@ def layer_tree_structure(project_info_layer):
     return r
 
 
-def test_tree_struct_full():
+def test_tree_full():
     exp = {
         "_uid": "tree_full.map.t",
         "layers": [
@@ -60,7 +60,7 @@ def test_tree_struct_full():
     assert tree == exp
 
 
-def test_tree_struct_with_filter():
+def test_tree_with_filter():
     exp = {
         "_uid": "tree_filtered.map.t",
         "layers": [
@@ -96,8 +96,7 @@ def test_tree_struct_with_filter():
     assert tree == exp
 
 
-def test_tree_struct_with_exclude():
-
+def test_tree_with_exclude():
     # NB empty groups are excluded as well
 
     exp = {
@@ -135,7 +134,7 @@ def test_tree_struct_with_exclude():
     assert tree == exp
 
 
-def test_tree_struct_with_flatten():
+def test_tree_with_flatten():
     exp = {
         "_uid": "tree_flattened.map.t",
         "layers": [
@@ -162,5 +161,20 @@ def test_tree_struct_with_flatten():
     }
 
     r = u.cmd('projectInfo', {'projectUid': 'tree_flattened'}).json()
+    tree = layer_tree_structure(r['project']['map']['layers'][0])
+    assert tree == exp
+
+
+def test_tree_qgz():
+    exp = {
+        "_uid": "tree_qgz.map.t",
+        "layers": [
+            {
+                "_uid": "tree_qgz.map.squares_dus1_3857"
+            }
+        ]
+    }
+
+    r = u.cmd('projectInfo', {'projectUid': 'tree_qgz'}).json()
     tree = layer_tree_structure(r['project']['map']['layers'][0])
     assert tree == exp

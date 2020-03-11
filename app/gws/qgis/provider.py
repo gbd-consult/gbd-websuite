@@ -1,3 +1,5 @@
+import zipfile
+
 import gws
 import gws.common.ows.provider
 import gws.gis.ows
@@ -65,11 +67,7 @@ class Object(gws.common.ows.provider.Object):
             self.root.var('server.qgis.host'),
             self.root.var('server.qgis.port'))
 
-        with open(self.path) as fp:
-            # @TODO qgz support
-            s = fp.read()
-
-        parser.parse(self, s)
+        parser.parse(self, self._read(self.path))
 
     def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
         if not args.shapes:
@@ -152,3 +150,14 @@ class Object(gws.common.ows.provider.Object):
             params=params)
 
         return resp.content
+
+    def _read(self, path):
+        if path.endswith('.qgz'):
+            with zipfile.ZipFile(path) as zf:
+                for info in zf.infolist():
+                    if info.filename.endswith('.qgs'):
+                        with zf.open(info) as fp:
+                            return fp.read()
+
+        with open(self.path) as fp:
+            return fp.read()
