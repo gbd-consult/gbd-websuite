@@ -12,7 +12,6 @@ import gws.web.error
 
 import gws.types as t
 
-
 from . import request
 
 """
@@ -76,34 +75,43 @@ class Config(t.WithTypeAndAccess):
     url: t.Url  #: gek-online base url
 
 
-DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
+_DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
     title=gws.common.template.Config(type='html', text='{vollnummer}'),
     teaser=gws.common.template.Config(type='html', text='Flurstück {vollnummer}'),
 )
 
 
 class Object(gws.common.action.Object):
-    db: gws.ext.db.provider.postgres.Object
-    alkis: gws.ext.helper.alkis.Object
-    feature_format: t.IFormat
-    crs: str
+    def __init__(self):
+        super().__init__()
+
+        self.alkis: gws.ext.helper.alkis.Object = t.none()
+        self.crs = ''
+        self.db: gws.ext.db.provider.postgres.Object = t.none()
+        self.feature_format: t.IFormat = t.none()
 
     def configure(self):
         super().configure()
 
+        self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         self.crs = self.var('crs')
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.alkis = t.cast( gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
-        self.feature_format = self.add_child('gws.common.format', self.var('featureFormat') or DEFAULT_FORMAT)
+        self.feature_format = self.add_child('gws.common.format', self.var('featureFormat') or _DEFAULT_FORMAT)
 
     def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:
         if not self.alkis:
             raise gws.web.error.NotFound()
 
-        f = self._find_alkis_feature(p)
+        feature = self._find_alkis_feature(p)
 
-        if not f:
+        if not feature:
             raise gws.web.error.NotFound()
+
+        project = req.require_project(p.projectUid)
+        feature.transform_to(project.map.crs)
+
+        f = feature.apply_format(self.feature_format).props
+        f.attributes = []
 
         return GetFsResponse(feature=f)
 
@@ -124,7 +132,7 @@ class Object(gws.common.action.Object):
     def _find_alkis_feature(self, p: GetFsParams):
         res = None
         if p.alkisFs:
-            res = self.alkis.find_flurstueck_combined(p.alkisAd)
+            res = self.alkis.find_flurstueck_combined(p.alkisFs)
         elif p.alkisAd:
             res = self.alkis.find_adresse_combined(p.alkisAd)
         if res and res.features:
@@ -173,7 +181,7 @@ class Object(gws.common.action.Object):
             shape = gws.gis.shape.from_geometry({
                 'type': 'Point',
                 'coordinates': rec.pop('xy')
-            }, self.var('crs'))
+            }, self.crs)
 
             rec['wkb_geometry'] = shape.ewkb_hex
             buf.append(rec)
