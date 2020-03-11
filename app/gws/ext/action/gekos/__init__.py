@@ -107,7 +107,7 @@ class Object(gws.ActionObject):
         if not f:
             raise gws.web.error.NotFound()
 
-        return GetFsResponse(feature=f)
+        return GetFsResponse(feature=f.apply_format(self.feature_format).props)
 
     def http_get_xy(self, req: t.IRequest, p: GetFsParams) -> t.HttpResponse:
         if not self.alkis:
@@ -126,7 +126,7 @@ class Object(gws.ActionObject):
     def _find_alkis_feature(self, p: GetFsParams):
         res = None
         if p.alkisFs:
-            res = self.alkis.find_flurstueck_combined(p.alkisAd)
+            res = self.alkis.find_flurstueck_combined(p.alkisFs)
         elif p.alkisAd:
             res = self.alkis.find_adresse_combined(p.alkisAd)
         if res and res.features:
