@@ -5,8 +5,8 @@ Die GBD WebSuite bietet dedizierten Support für `QGIS <https://qgis.org>`_, ein
 
 Mit unserem QGIS-Modul können Sie
 
-- komplette QGIS-Karten (``. qgs``) als *Layer* in Ihren Projekten anzeigen (siehe :doc:`Layer`)
-- QGIS-Karten (``. qgs``) als *Quellen* für Ihre Bildebenen verwenden (siehe :doc:`sources`)
+- komplette QGIS Projekte (``. qgs``) als *Layer* in Ihren GBD WebSuite Projekten anzeigen (siehe :doc:`layers`)
+- bestimmte QGIS Layer aus einem QGIS Projekt in Ihre GBD WebSuite Projekte einbinden  
 - QGIS-Templates zum Drucken verwenden (siehe :doc:`print`)
 
 In der Serverkonfiguration (:doc:`server`) gibt es einige Optionen, die die Werte von QGIS-Umgebungsvariablen setzen. Die genaue Bedeutung entnehmen Sie bitte der QGIS-Dokumentation:
