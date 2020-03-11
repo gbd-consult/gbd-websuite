@@ -96,6 +96,45 @@ def test_tree_struct_with_filter():
     assert tree == exp
 
 
+def test_tree_struct_with_exclude():
+
+    # NB empty groups are excluded as well
+
+    exp = {
+        "_uid": "tree_exclude.map.t",
+        "layers": [
+            {
+                "_uid": "tree_exclude.map.grouptwo",
+                "layers": [
+                    {
+                        "_uid": "tree_exclude.map.squares_memphis_25832"
+                    },
+                    {
+                        "_uid": "tree_exclude.map.grouptwoone",
+                        "layers": [
+                            {
+                                "_uid": "tree_exclude.map.squares_ny_2263"
+                            },
+                            {
+                                "_uid": "tree_exclude.map.grouptwooneone",
+                                "layers": [
+                                    {
+                                        "_uid": "tree_exclude.map.squares_dus2_3857"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+
+    r = u.cmd('projectInfo', {'projectUid': 'tree_exclude'}).json()
+    tree = layer_tree_structure(r['project']['map']['layers'][0])
+    assert tree == exp
+
+
 def test_tree_struct_with_flatten():
     exp = {
         "_uid": "tree_flattened.map.t",

@@ -37,6 +37,12 @@ def read(path, mode='rt'):
         return f'FILE ERROR: {e}, path {path!r}'
 
 
+def json(src):
+    """Encode `src` as pretty json."""
+
+    return gws.tools.json2.to_pretty_string(src)
+
+
 def xml(src):
     """Format an xml document/file/response nicely."""
 

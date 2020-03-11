@@ -21,7 +21,8 @@ class Config(gws.common.layer.ImageConfig):
     directRender: t.Optional[t.List[str]]  #: QGIS providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS providers that should be searched directly
     path: t.FilePath  #: path to a qgs project file
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use as roots
+    rootLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use as roots
+    excludeLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to exclude
     flatten: t.Optional[gws.common.layer.types.FlattenConfig]  #: flatten the layer hierarchy
 
 
@@ -35,7 +36,7 @@ class Object(gws.common.layer.Layer):
         self.layers: t.List[t.ILayer] = []
         self.own_crs = ''
         self.path = ''
-        self.provider: provider.Object = None
+        self.provider: provider.Object = t.none()
         self.root_layers: t.List[t.SourceLayer] = []
 
     def configure(self):
@@ -50,7 +51,7 @@ class Object(gws.common.layer.Layer):
         self.direct_search = set(self.var('directSearch', default=[]))
 
         # by default, take the top-level layers as groups
-        slf = self.var('sourceLayers') or gws.gis.source.LayerFilter(level=1)
+        slf = self.var('rootLayers') or gws.gis.source.LayerFilter(level=1)
         self.root_layers = gws.gis.source.filter_layers(self.provider.source_layers, slf)
 
         self.flatten = self.var('flatten')
@@ -82,6 +83,9 @@ class Object(gws.common.layer.Layer):
                 and any(la.ows_enabled(service) for la in self.layers))
 
     def _layer(self, sl: t.SourceLayer, depth: int):
+        if self.var('excludeLayers') and gws.gis.source.layer_matches(sl, self.var('excludeLayers')):
+            return
+
         if sl.is_group:
             # NB use the absolute level to compute flatness, could also use relative (=depth)
             if self.flatten and sl.a_level >= self.flatten.level:

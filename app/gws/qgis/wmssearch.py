@@ -11,7 +11,7 @@ class Config(gws.common.search.provider.Config):
     """Qgis/WMS automatic search provider"""
 
     path: t.FilePath  #: project path
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use
 
 
 class Object(gws.common.search.provider.Object):

@@ -22,7 +22,7 @@ class Config(gws.common.layer.ImageConfig):
     """WMS layer from a Qgis project"""
 
     path: t.FilePath  #: qgis project path
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use
 
 
 class Object(gws.common.layer.Image):
@@ -30,7 +30,7 @@ class Object(gws.common.layer.Image):
         super().__init__()
 
         self.source_crs = ''
-        self.provider: provider.Object = None
+        self.provider: provider.Object = t.none()
         self.source_layers: t.List[t.SourceLayer] = []
 
     def configure(self):

@@ -45,22 +45,35 @@ class SourceLayer(t.Data):
     a_level = 0
 
 
-class LayerFilterConfig(t.Config):
+class LayerFilter(t.Config):
     """Layer filter"""
 
     level: int = 0  #: use layers at this level
     names: t.Optional[t.List[str]]  #: use these layer names (top-to-bottom order)
-    pattern: t.Regex = ''  #: match a pattern against the layer full path
-    excludePattern: t.Regex = ''  #: match a pattern against the layer full path
+    pattern: t.Regex = ''  #: use layers whose full path matches a pattern
 
 
-class LayerFilter(t.Data):
-    level: int
-    names: t.List[str]
-    pattern: str
+def layer_matches(sl: t.SourceLayer, slf: LayerFilter) -> bool:
+    """Check if a source layer matches the filter"""
+
+    s = gws.get(slf, 'level')
+    if s and sl.a_level != s:
+        return False
+
+    s = gws.get(slf, 'names')
+    if s and sl.name not in s:
+        return False
+
+    s = gws.get(slf, 'pattern')
+    if s and not re.search(s, sl.a_path):
+        return False
+
+    return True
 
 
 def filter_layers(layers: t.List[t.SourceLayer], slf: LayerFilter, image_only=False, queryable_only=False) -> t.List[t.SourceLayer]:
+    """Filter source layers by the given layer filter."""
+
     if slf:
         s = gws.get(slf, 'level')
         if s:
@@ -81,10 +94,6 @@ def filter_layers(layers: t.List[t.SourceLayer], slf: LayerFilter, image_only=Fa
         s = gws.get(slf, 'pattern')
         if s:
             layers = [sl for sl in layers if re.search(s, sl.a_path)]
-
-        s = gws.get(slf, 'excludePattern')
-        if s:
-            layers = [sl for sl in layers if not re.search(s, sl.a_path)]
 
     if image_only:
         layers = [sl for sl in layers if sl.is_image]
@@ -131,9 +140,3 @@ def _best_bounds(bs: t.List[t.Bounds], target_crs):
             return b
     for b in bs:
         return b
-
-
-
-
-
-

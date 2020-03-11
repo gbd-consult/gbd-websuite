@@ -31,7 +31,7 @@ class WmsConfig(t.Config):
     invertAxis: t.Optional[t.List[t.Crs]]  #: projections that have an inverted axis (yx)
     maxRequests: int = 0  #: max concurrent requests to this source
     capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
-    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use
     url: t.Url  #: service url
 
 

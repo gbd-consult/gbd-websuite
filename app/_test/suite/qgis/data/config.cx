@@ -9,6 +9,20 @@ api.actions+ { type "search" }
 api.actions+ { type "asset" }
 api.actions+ { type "project" }
 
+## the structure of the qgis project is as follows
+##
+##    GroupOne
+##        GroupOneOne
+##            points_ghana_25832
+##    GroupTwo
+##        squares_memphis_25832
+##        GroupTwoOne
+##            squares_ny_2263
+##            GroupTwoOneOne
+##                squares_dus1_3857
+##                squares_dus2_3857
+
+
 projects+ {
     uid "a"
 
@@ -52,7 +66,22 @@ projects+ {
     map.layers+ {
         title "t"
         type "qgis"
-        sourceLayers.names [ "GroupOne", "GroupTwoOneOne"]
+        rootLayers.names [ "GroupOne", "GroupTwoOneOne"]
+        path "/common/qgis/test_geojson_postgres.qgs"
+    }
+
+    @include /common/client.cx
+}
+
+projects+ {
+    uid "tree_exclude"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "t"
+        type "qgis"
+        excludeLayers.names ["points_ghana_25832", "squares_dus1_3857"]
         path "/common/qgis/test_geojson_postgres.qgs"
     }
 
