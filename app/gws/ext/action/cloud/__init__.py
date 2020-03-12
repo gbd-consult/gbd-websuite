@@ -5,6 +5,7 @@ from lxml import etree
 
 import gws
 import gws.common.action
+import gws.common.db
 import gws.config
 import gws.config.parser
 import gws.ext.db.provider.postgres
@@ -22,7 +23,8 @@ import gws.common.template
 
 class Config(t.WithTypeAndAccess):
     """Cloud admin action"""
-    pass
+
+    configTemplate: t.ext.template.Config  #: project config template
 
 
 class DataSet(t.Data):
@@ -57,7 +59,8 @@ class Map(t.Data):
 
     type: MapType  #: map type
     source: Source  #: map source code (e.g. a QGIS project)
-    layerUids: t.Optional[t.List[str]]  #: layer ids to use in the cloud
+    layerUids: t.Optional[t.List[str]]  #: layer ids to use in the cloud project
+    excludeLayerUids: t.Optional[t.List[str]]  #: layer ids to exclude from the cloud
     data: t.Optional[t.List[DataSet]]  #: data for the map
     assets: t.Optional[t.List[Asset]]  #: map assets
     extent: t.Optional[t.Extent]
@@ -81,7 +84,7 @@ class CreateProjectResponse(t.Response):
 
 _QGIS_DATASOURCE_TEMPLATE = """dbname='{database}' host={host} port={port} user='{user}' password='{password}' sslmode=disable key='{key}' srid={geo_srid} type={geo_type} table="{schema}"."{table}" ({geo_col}) sql="""
 
-_CONFIG_TEMPLATE_PATH = '/data/cloud_project_template.json'
+_CONFIG_TEMPLATE_PATH = '/data/cloud_project_template.json.cx'
 
 _DEFAULT_SCALES = [
     4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000, 15000, 8000, 4000, 2000, 1000
@@ -91,24 +94,23 @@ CLOUD_DIR = gws.VAR_DIR + '/cloud'
 CLOUD_USER_DIR = CLOUD_DIR + '/users'
 CLOUD_CONFIG_DIR = CLOUD_DIR + '/configs'
 
+_CLOUD_USER_TABLE = 'public.cloud_user'
+
 
 class Object(gws.common.action.Object):
-    def __init__(self):
-        super().__init__()
-        self.db: gws.ext.db.provider.postgres = None
+    db: gws.ext.db.provider.postgres
+    config_template: t.ITemplate
 
     def configure(self):
         super().configure()
-        p = self.var('db')
-        self.db = self.root.find('gws.ext.db.provider', p) if p else self.root.find_first(
-            'gws.ext.db.provider.postgres')
+        self.db = t.cast(
+            gws.ext.db.provider.postgres.Object,
+            gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+        self.config_template = self.create_object('gws.ext.template', self.var('configTemplate'))
 
     def api_create_project(self, req: t.IRequest, p: CreateProjectParams) -> CreateProjectResponse:
-        # debug
-        with open(gws.VAR_DIR + '/cloud-debug-input.json', 'w') as fp:
-            fp.write(gws.tools.json2.to_string(p, pretty=True))
-        with open(gws.VAR_DIR + '/cloud-debug-input.qgs', 'w') as fp:
-            fp.write(p.map.source.text)
+        gws.write_file(gws.VAR_DIR + '/cloud-debug-input.json', gws.tools.json2.to_pretty_string(p))
+        gws.write_file(gws.VAR_DIR + '/cloud-debug-input.qgs', p.map.source.text)
 
         uid = self._create_project(p)
 
@@ -120,15 +122,13 @@ class Object(gws.common.action.Object):
         user_uid = gws.as_uid(p.userUid)
         project_uid = gws.as_uid(p.projectName)
 
+        db_user = self._init_user_db(user_uid)
         user_dir = gws.ensure_dir(f'{CLOUD_USER_DIR}/{user_uid}')
-
-        with self.db.connect() as conn:
-            conn.execute(f'CREATE SCHEMA IF NOT EXISTS {user_uid}')
 
         ds_map = {}
 
         for ds in p.map.data:
-            ds_map[ds.uid] = self._dataset_to_table(ds, user_uid)
+            ds_map[ds.uid] = self._dataset_to_table(ds, db_user)
 
         assets_dir = gws.ensure_dir(f'{user_dir}/assets')
         qdata = self._prepare_qgis_project(p.map.source.text, ds_map, p.map.assets, assets_dir)
@@ -136,32 +136,28 @@ class Object(gws.common.action.Object):
         # @TODO fix monitor settings
         qpath = f'{user_dir}/{project_uid}.qgs.x'
 
-        with open(qpath, 'w') as fp:
-            fp.write(qdata['source'])
+        gws.write_file(qpath, qdata['source'])
 
         project_full_uid = user_uid + '::' + project_uid
 
-        tpl_vars = {
+        context = {
             'PROJECT_UID': project_full_uid,
             'PROJECT_TITLE': p.projectName,
             'MAP_EXTENT': p.map.extent or qdata['extent'],
             'MAP_SCALES': p.map.scales or _DEFAULT_SCALES,
             'MAP_CRS': qdata['crs'],
             'QGIS_PATH': qpath,
-            'QGIS_LAYERS': p.map.layerUids,
+            'QGIS_ROOT_LAYERS': gws.get(p.map, 'layerUids'),
+            'QGIS_EXCLUDE_LAYERS': gws.get(p.map, 'excludeLayerUids'),
         }
 
-        tpl_vars['MAP_CENTER'] = p.map.center or gws.gis.extent.center(tpl_vars['MAP_EXTENT'])
-        tpl_vars['MAP_INIT_SCALE'] = p.map.initScale or tpl_vars['MAP_SCALES'][0]
+        context['MAP_CENTER'] = p.map.center or gws.gis.extent.center(context['MAP_EXTENT'])
+        context['MAP_INIT_SCALE'] = p.map.initScale or context['MAP_SCALES'][0]
 
-        with open(_CONFIG_TEMPLATE_PATH) as fp:
-            tpl = fp.read()
+        res = self.config_template.render(context)
+        gws.write_file(gws.VAR_DIR + '/cloud-debug-config.json', res.content)
 
-        config = re.sub(r'"{{(\w+)}}"', lambda m: gws.tools.json2.to_string(tpl_vars[m.group(1)]), tpl)
-        config = gws.tools.json2.from_string(config)
-
-        with open(gws.VAR_DIR + '/cloud-debug-config.json', 'w') as fp:
-            fp.write(gws.tools.json2.to_string(config, pretty=True))
+        config = gws.tools.json2.from_string(res.content)
 
         # parse the config before saving, if this fails, then it fails
         gws.log.debug('parsing config...')
@@ -170,17 +166,22 @@ class Object(gws.common.action.Object):
 
         config_dir = gws.ensure_dir(CLOUD_CONFIG_DIR)
         cfg_path = config_dir + f'/{project_full_uid}.config.json'
-        gws.tools.json2.to_path(cfg_path, config, pretty=True)
+        gws.write_file(cfg_path, gws.tools.json2.to_pretty_string(config))
+
+        with self.db.connect() as conn:
+            conn.execute(f"GRANT ALL ON ALL TABLES IN SCHEMA {db_user['schema_name']} TO {db_user['role_name']}")
 
         gws.log.debug(f'added project {project_full_uid!r}')
 
         return project_full_uid
 
-    def _dataset_to_table(self, ds: DataSet, schema_name):
+    def _dataset_to_table(self, ds: DataSet, db_user):
         ddl = []
 
         qsrc = dict(self.db.connect_params)
-        qsrc['schema'] = schema_name
+        qsrc['user'] = db_user['role_name']
+        qsrc['schema'] = db_user['schema_name']
+        qsrc['password'] = db_user['password']
         qsrc['table'] = gws.as_uid(ds.uid)
 
         # @TODO require the client to provide a data schema
@@ -235,6 +236,51 @@ class Object(gws.common.action.Object):
         gws.log.debug(f'added tabled {table!r} qsrc={qsrc!r}')
 
         return qsrc
+
+    def _init_user_db(self, user_uid):
+        schema_name = f's_{user_uid}'
+        role_name = f'u_{user_uid}'
+
+        with self.db.connect() as conn:
+            conn.execute(f'''CREATE TABLE IF NOT EXISTS {_CLOUD_USER_TABLE} (
+                id SERIAL PRIMARY KEY,
+                role_name VARCHAR,
+                schema_name VARCHAR,
+                password VARCHAR,
+                time_created TIMESTAMP WITH TIME ZONE,
+                time_updated TIMESTAMP WITH TIME ZONE
+            )''')
+
+        with self.db.connect() as conn:
+            user = conn.select_one(f'SELECT * FROM {_CLOUD_USER_TABLE} WHERE role_name=%s', [role_name])
+            if not user:
+                gws.log.debug(f"creating user entry {user['role_name']!r}")
+                conn.insert_one(_CLOUD_USER_TABLE, 'id', {
+                    'role_name': role_name,
+                    'schema_name': schema_name,
+                    'password': gws.random_string(32),
+                    'time_created': ['current_timestamp'],
+                })
+                user = conn.select_one(f'SELECT * FROM {_CLOUD_USER_TABLE} WHERE role_name=%s', [role_name])
+
+            role_exists = conn.select_one('SELECT 1 FROM pg_roles WHERE rolname=%s', [user['role_name']])
+
+            if not role_exists:
+                gws.log.debug(f"creating role {user['role_name']!r}")
+                conn.execute(f'''CREATE ROLE {user['role_name']} WITH
+                    LOGIN
+                    PASSWORD '{user['password']}'
+                ''')
+
+            conn.update(_CLOUD_USER_TABLE, 'id', {
+                'id': user['id'],
+                'time_updated': ['current_timestamp'],
+            })
+
+            conn.execute(f"CREATE SCHEMA IF NOT EXISTS {user['schema_name']}")
+            conn.execute(f"GRANT USAGE ON SCHEMA {user['schema_name']} TO {user['role_name']}")
+
+        return user
 
     def _prepare_qgis_project(self, text, ds_map, assets, assets_dir):
         # @TODO move this to qqgis
