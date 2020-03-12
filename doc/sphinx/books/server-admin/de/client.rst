@@ -129,4 +129,4 @@ Beispiel für die Client-Konfiguration ::
 Layer flags
 -----------
 
-Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll. Siehe :ref:`server_admin_en_configref_gws_gis_layer_ClientOptions` für Details. 
+Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll.

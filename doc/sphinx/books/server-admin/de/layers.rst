@@ -3,7 +3,7 @@ Layer
 
 Ein *layer* in einem GBD WebSuite Projekt wird durch seinen ``type`` identifiziert, zusätzlich haben Layer die folgenden Eigenschaften (wenn nicht explizit konfiguriert, wird er von der übergeordneten Ebene oder von der Map geerbt):
 
-* ``source`` - wo die Ebene ihre Geodaten herbekommt (siehe :doc:`sources`)
+* ``source`` - wo die Ebene ihre Geodaten herbekommt
 * ``view`` - räumliche Eigenschaften der Ebene (Umfang, erlaubte Auflösungen oder Skalen für diese Ebene)
 * ``cache`` und ``grid`` - beeinflussen das Layer-Caching (siehe :doc:`cache`)
 * ``clientOptions`` - Optionen für den GBD WebSuite Client (siehe :doc:`client`)

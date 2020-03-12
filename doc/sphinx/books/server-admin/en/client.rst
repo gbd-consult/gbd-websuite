@@ -65,4 +65,4 @@ Example of the client configuration ::
 Layer flags
 -----------
 
-Besides the UI configuration, each map layer can have a set of boolean options, telling the GBD WebSuite Client how to display this layer. See :ref:`server_admin_en_configref_gws_gis_layer_ClientOptions` for details.
+Besides the UI configuration, each map layer can have a set of boolean options, telling the GBD WebSuite Client how to display this layer.
