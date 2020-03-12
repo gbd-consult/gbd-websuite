@@ -254,7 +254,7 @@ class Object(gws.common.action.Object):
         with self.db.connect() as conn:
             user = conn.select_one(f'SELECT * FROM {_CLOUD_USER_TABLE} WHERE role_name=%s', [role_name])
             if not user:
-                gws.log.debug(f"creating user entry {user['role_name']!r}")
+                gws.log.debug(f"creating user entry {role_name!r}")
                 conn.insert_one(_CLOUD_USER_TABLE, 'id', {
                     'role_name': role_name,
                     'schema_name': schema_name,
@@ -263,9 +263,8 @@ class Object(gws.common.action.Object):
                 })
                 user = conn.select_one(f'SELECT * FROM {_CLOUD_USER_TABLE} WHERE role_name=%s', [role_name])
 
-            role_exists = conn.select_one('SELECT 1 FROM pg_roles WHERE rolname=%s', [user['role_name']])
-
-            if not role_exists:
+            role = conn.select_one('SELECT * FROM pg_roles WHERE rolname=%s', [user['role_name']])
+            if not role:
                 gws.log.debug(f"creating role {user['role_name']!r}")
                 conn.execute(f'''CREATE ROLE {user['role_name']} WITH
                     LOGIN
