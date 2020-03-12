@@ -22,6 +22,7 @@ class Object(gws.common.layer.Image):
         self.provider: provider.Object = None
         self.source_layers: t.List[t.SourceLayer] = []
         self.source_legend_urls = []
+        self.source_crs = ''
         self.url = ''
 
     def configure(self):
@@ -31,6 +32,9 @@ class Object(gws.common.layer.Image):
 
         if not self.source_layers:
             raise gws.Error(f'no source layers found for {self.uid!r}')
+
+        crs_list = gws.gis.source.crs_from_layers(self.source_layers) or self.provider.supported_crs
+        self.source_crs = gws.gis.util.best_crs(self.map.crs, crs_list)
 
         if not self.var('zoom'):
             zoom = gws.gis.zoom.config_from_source_layers(self.source_layers)
@@ -58,8 +62,7 @@ class Object(gws.common.layer.Image):
 
     @property
     def own_bounds(self):
-        our_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
-        return gws.gis.source.bounds_from_layers(self.source_layers, our_crs)
+        return gws.gis.source.bounds_from_layers(self.source_layers, self.source_crs)
 
     @property
     def description(self):
@@ -75,8 +78,6 @@ class Object(gws.common.layer.Image):
         if not self.var('capsLayersBottomUp'):
             layers = reversed(layers)
 
-        our_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
-
         req = gws.extend({
             'url': self.provider.operation('GetMap').get_url,
             'transparent': True,
@@ -85,7 +86,7 @@ class Object(gws.common.layer.Image):
 
         source_uid = mc.source(gws.compact({
             'type': 'wms',
-            'supported_srs': [our_crs],
+            'supported_srs': [self.source_crs],
             'concurrent_requests': self.var('maxRequests'),
             'req': req
         }))

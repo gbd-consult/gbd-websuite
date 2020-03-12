@@ -102,6 +102,20 @@ def image_layers(sl: t.SourceLayer) -> t.List[t.SourceLayer]:
     return []
 
 
+def crs_from_layers(source_layers: t.List[t.SourceLayer]) -> t.List[t.Crs]:
+    cs = set()
+
+    for sl in source_layers:
+        if not sl.supported_crs:
+            continue
+        if not cs:
+            cs.update(sl.supported_crs)
+        else:
+            cs = cs.intersection(sl.supported_crs)
+
+    return sorted(cs)
+
+
 def bounds_from_layers(source_layers: t.List[t.SourceLayer], target_crs) -> t.Bounds:
     """Return merged bounds from a list of source layers in the target_crs."""
 
@@ -131,9 +145,3 @@ def _best_bounds(bs: t.List[t.Bounds], target_crs):
             return b
     for b in bs:
         return b
-
-
-
-
-
-
