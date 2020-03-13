@@ -1,17 +1,15 @@
 import time
 import os
-import sqlite3
 
 import gws
 import gws.tools.os2
+import gws.tools.sqlite
 
 DB_PATH = gws.MISC_DIR + '/sessions.sqlite'
 
 
 def _db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return gws.tools.sqlite.connect(DB_PATH)
 
 
 def _ts():

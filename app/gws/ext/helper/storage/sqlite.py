@@ -1,10 +1,10 @@
 import os
-import sqlite3
 import time
 
 import gws
 import gws.config
 import gws.tools.json2
+import gws.tools.sqlite
 
 import gws.types as t
 
@@ -78,6 +78,4 @@ class Object(gws.Object):
             conn.execute('DELETE FROM storage')
 
     def _connect(self):
-        conn = sqlite3.connect(self.path)
-        conn.row_factory = sqlite3.Row
-        return conn
+        return gws.tools.sqlite.connect(self.path)

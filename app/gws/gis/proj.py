@@ -6,9 +6,8 @@ import osgeo.osr
 import pyproj
 import shapely.ops
 
-import sqlite3
-
 import gws
+import gws.tools.sqlite
 
 osgeo.osr.UseExceptions()
 
@@ -37,7 +36,6 @@ http://www.opengis.net/def/crs/EPSG/0/4326
 
 
 """
-
 
 
 def is_latlong(p) -> bool:
@@ -193,10 +191,8 @@ def _load_proj(p):
         gws.log.warn(f'proj: cannot parse {p!r}')
         return
 
-    with sqlite3.connect(_dbpath) as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM crs WHERE srid=?', (srid,))
-        r = c.fetchone()
+    with gws.tools.sqlite.connect(_dbpath) as conn:
+        r = conn.execute('SELECT * FROM crs WHERE srid=?', (srid,)).fetchone()
 
     if not r:
         gws.log.warn(f'proj: cannot find {p!r}')

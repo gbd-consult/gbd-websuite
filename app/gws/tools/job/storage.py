@@ -1,12 +1,16 @@
-import sqlite3
 import time
 
 import gws
+import gws.tools.sqlite
+
+_DB_PATH = gws.PRINT_DIR + '/jobs.sqlite'
 
 
 def _db():
-    path = gws.PRINT_DIR + '/jobs.sqlite'
-    conn = sqlite3.connect(path)
+    return gws.tools.sqlite.connect(_DB_PATH)
+
+
+def _ensure_table(conn):
     conn.execute('''CREATE TABLE IF NOT EXISTS jobs(
         uid TEXT PRIMARY KEY,
         user_fid TEXT,
@@ -24,9 +28,6 @@ def _db():
         updated INTEGER
     ) WITHOUT ROWID''')
 
-    conn.row_factory = sqlite3.Row
-    return conn
-
 
 def timestamp():
     return int(time.time())
@@ -40,6 +41,7 @@ def find(uid):
 
 def create(uid):
     with _db() as db:
+        _ensure_table(db)
         db.execute('INSERT INTO jobs(uid) VALUES (?)', [uid])
     return uid
 
