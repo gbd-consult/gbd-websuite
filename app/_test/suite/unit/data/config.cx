@@ -18,5 +18,10 @@ projects+ {
         extent [-20026376.39 -20048966.10 20026376.39 20048966.10]
     }
 
-    @include /common/client.cx
+    map.layers+ {
+        title "osm"
+        type "tile"
+        url "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        opacity 0.3
+    }
 }
