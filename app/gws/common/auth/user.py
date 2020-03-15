@@ -1,6 +1,5 @@
 import gws
 import gws.config
-import gws.tools.json2 as json2
 import gws.types as t
 
 
@@ -33,11 +32,10 @@ def parse_fid(fid):
 
 #:export IUser
 class User(t.IUser):
-    def __init__(self):
-        self.attributes = {}
-        self.provider: t.IAuthProvider = None
-        self.roles: t.List[str] = []
-        self.uid = ''
+    attributes = {}
+    provider: t.IAuthProvider
+    roles: t.List[str] = []
+    uid = ''
 
     @property
     def props(self) -> t.UserProps:
@@ -59,7 +57,7 @@ class User(t.IUser):
         return role in self.roles
 
     def init_from_source(self, provider, uid, roles=None, attributes=None) -> t.IUser:
-        attributes = dict(attributes) if attributes else {}
+        attributes = dict(attributes or {})
 
         for a, b in _aliases:
             if a in attributes:
@@ -78,12 +76,12 @@ class User(t.IUser):
         roles.append(_ROLE_GUEST if self.is_guest else _ROLE_USER)
         roles.append(_ROLE_ALL)
 
-        return self.init_from_props(provider, uid, roles, attributes)
+        return self.init_from_data(provider, uid, roles, attributes)
 
-    def init_from_props(self, provider, uid, roles, attributes) -> t.IUser:
+    def init_from_data(self, provider, uid, roles, attributes) -> t.IUser:
         self.attributes = attributes
         self.provider = provider
-        self.roles = set(roles)
+        self.roles = sorted(set(roles))
         self.uid = uid
 
         gws.log.info(f'inited user: prov={provider.uid!r} uid={uid!r} roles={roles!r}')

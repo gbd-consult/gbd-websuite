@@ -108,14 +108,15 @@ class Object(t.IObject):
         obj.initialize(cfg)
         return obj
 
-    def create_object(self, klass, cfg, parent=None):
+    def create_object(self, klass, cfg=None, parent=None):
+        cfg = cfg or t.Data()
         obj = self.root.create(klass, cfg)
         obj.parent = parent
         obj.initialize(cfg)
         self.root.all_objects.append(obj)
         return obj
 
-    def add_child(self, klass, cfg):
+    def add_child(self, klass, cfg=None):
         return self.append_child(self.create_object(klass, cfg, parent=self))
 
     def append_child(self, obj):

@@ -74,6 +74,9 @@ class ext:
             pass
 
     class auth:
+        class method:
+            class Config:
+                pass
         class provider:
             class Config:
                 pass

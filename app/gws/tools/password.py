@@ -5,7 +5,7 @@ import random
 
 
 def cmp(a, b):
-    return 1 if hmac.compare_digest(a, b) else 0
+    return hmac.compare_digest(a, b)
 
 
 def encode(password, algo='sha512'):

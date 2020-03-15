@@ -17,13 +17,13 @@ COMMAND = 'auth'
 def test(login=None, password=None):
     """Interactively test a login"""
 
-    gws.config.loader.load()
-
     login = login or input('Username: ')
     password = password or getpass.getpass('Password: ')
 
+    auth = gws.config.loader.load().application.auth
+
     try:
-        user = gws.common.auth.authenticate(login, password)
+        user = auth.authenticate(auth.get_method('web'), login, password)
     except gws.common.auth.error.WrongPassword:
         print('wrong password!')
         return
@@ -35,13 +35,6 @@ def test(login=None, password=None):
     print('logged in!')
     print(f'User display name: {user.display_name}')
     print(f'Roles: {user.roles}')
-
-
-def clear():
-    """Logout all users and remove all active sessions"""
-
-    man = gws.common.auth.session.Manager()
-    man.delete_all()
 
 
 @arg('--path', help='where to store the password')
@@ -65,18 +58,24 @@ def passwd(path=None):
         break
 
 
+def clear():
+    """Logout all users and remove all active sessions"""
+
+    auth = gws.config.loader.load().application.auth
+    auth.delete_stored_sessions()
+
+
 def sessions():
     """Print currently active sessions"""
 
-    gws.config.loader.load()
-    man = gws.common.auth.session.Manager()
+    auth = gws.config.loader.load().application.auth
 
     rs = [{
         'user': r['user_uid'],
         'login': dt.to_iso(dt.from_timestamp(r['created'])),
         'activity': dt.to_iso(dt.from_timestamp(r['updated'])),
         'duration': r['updated'] - r['created']
-    } for r in man.get_all()]
+    } for r in auth.stored_session_records()]
 
     print(f'{len(rs)} active sessions\n')
     print(gws.tools.clihelpers.text_table(rs, header=('user', 'login', 'activity', 'duration')))

@@ -5,34 +5,17 @@
 ## $sha512$DAoCWW8T$7RHQY02aWZZFnT53ebCqgrrFUdbHxplswTdGN29bUbv9AVuqmFZO51gBSKL8IxvmHspph22qjckGhYOQfTOOmw==
 ## == "123"
 auth.providers+ { type "file" path "users.json" }
+auth.methods+ { type "web" secure false }
 
 access+ { role "all" type "deny" }
 
 api.access+ { role "all" type "allow" }
 
-api.actions+ { type "asset" }
 api.actions+ { type "auth" }
-
-projects+ {
-    uid "public"
-    assets.dir "/data"
-    access.0 { role "all" type "allow" }
-}
+api.actions+ { type "asset" }
 
 projects+ {
     uid "testrole_only"
     assets.dir "/data"
     access.0 { role "testrole" type "allow" }
-}
-
-projects+ {
-    uid "user_only"
-    assets.dir "/data"
-    access.0 { role "user" type "allow" }
-}
-
-projects+ {
-    uid "guest_only"
-    assets.dir "/data"
-    access.0 { role "guest" type "allow" }
 }

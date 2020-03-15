@@ -3,8 +3,7 @@
 import gws
 
 import gws.common.api
-import gws.common.auth.types
-import gws.common.auth.util
+import gws.common.auth
 import gws.common.client
 import gws.common.layer
 import gws.common.project
@@ -56,7 +55,7 @@ class Config(t.WithAccess):
     """Application configuration"""
 
     api: t.Optional[gws.common.api.Config]  #: system-wide server actions
-    auth: t.Optional[gws.common.auth.types.Config]  #: authorization methods and options
+    auth: t.Optional[gws.common.auth.Config]  #: authorization methods and options
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
     db: t.Optional[DbConfig]  #: database configuration
     fonts: t.Optional[FontConfig]  #: fonts configuration
@@ -83,11 +82,13 @@ _default_site = t.Data({
 class Object(gws.Object, t.IApplication):
     """Main Appilication object"""
 
+    api: t.IApi
+    auth: t.IAuthManager
+    client: t.IClient
+
     def __init__(self):
         super().__init__()
 
-        self.api: t.IApi = None
-        self.client: t.IClient = None
         self.qgis_version = ''
         self.version = gws.VERSION
         self.web_sites: t.List[t.IWebSite] = []
@@ -101,6 +102,9 @@ class Object(gws.Object, t.IApplication):
         self.qgis_version = gws.qgis.server.version()
 
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
+
+        self.root.application = self
+
 
         s = self.var('fonts.dir')
         if s:
@@ -119,15 +123,8 @@ class Object(gws.Object, t.IApplication):
         for p in self.var('helpers', default=[]):
             self.add_child('gws.ext.helper', p)
 
-        gws.common.auth.init()
-
-        for p in self.var('auth.providers', default=[]):
-            self.add_child('gws.ext.auth.provider', p)
-        self.add_child('gws.ext.auth.provider', t.Data({'type': 'system'}))
-
-        p = self.var('api') or t.Data({'actions': []})
-
-        self.api = self.add_child(gws.common.api.Object, p)
+        self.auth = self.add_child(gws.common.auth.Object, self.var('auth', default=t.Data()))
+        self.api = self.add_child(gws.common.api.Object, self.var('api', default=t.Data()))
 
         p = self.var('client')
         if p:

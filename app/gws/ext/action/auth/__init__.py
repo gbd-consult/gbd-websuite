@@ -1,6 +1,5 @@
 """Check user logins and logouts."""
 
-import gws.web
 import gws.types as t
 
 import gws.common.action

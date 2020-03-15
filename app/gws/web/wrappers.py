@@ -4,7 +4,7 @@ import io
 
 import werkzeug.wrappers
 from werkzeug.utils import cached_property
-from werkzeug.wsgi import wrap_file
+import werkzeug.wsgi
 
 import gws
 import gws.tools.net
@@ -12,7 +12,7 @@ import gws.tools.json2
 import gws.tools.vendor.umsgpack as umsgpack
 import gws.types as t
 
-from . import error
+import gws.web.error
 
 _JSON = 1
 _MSGPACK = 2
@@ -24,42 +24,52 @@ _struct_mime = {
 
 
 #:export IResponse
-class BaseResponse(werkzeug.wrappers.Response, t.IResponse):
-    pass
+class BaseResponse(t.IResponse):
+    def __init__(self, **kwargs):
+        if 'wz' in kwargs:
+            self._wz = kwargs['wz']
+        else:
+            self._wz = werkzeug.wrappers.Response(**kwargs)
+
+    def __call__(self, environ, start_response):
+        return self._wz(environ, start_response)
+
+    def set_cookie(self, key, **kwargs):
+        self._wz.set_cookie(key, **kwargs)
+
+    def delete_cookie(self, key, **kwargs):
+        self._wz.delete_cookie(key, **kwargs)
+
+    def add_header(self, key, value):
+        self._wz.headers.add(key, value)
 
 
 #:export IBaseRequest
 class BaseRequest(t.IBaseRequest):
     def __init__(self, root: t.IRootObject, environ: dict, site: t.IWebSite):
         self._wz = werkzeug.wrappers.Request(environ)
-        # this is also set in nginx (see server/ini), but we need this for unzipping (see data below)
+        # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
         self._wz.max_content_length = root.var('server.web.maxRequestLength') * 1024 * 1024
+
+        self.params = {}
+        self._lower_params = {}
+
         self.root: t.IRootObject = root
         self.site: t.IWebSite = site
         self.method: str = self._wz.method
-        self.headers: dict = self._wz.headers
-        self.params = {}
-        self._nocase_params = {}
 
-    def parse_params(self):
-        self.params = self._parse_params()
-        if self.params:
-            self._nocase_params = gws.merge(
-                {k.lower(): v for k, v in self.params.items()},
-                self.params)
+    def init(self):
+        self.params = self._parse_params() or {}
+        self._lower_params = {k.lower(): v for k, v in self.params.items()}
 
     @property
     def environ(self) -> dict:
         return self._wz.environ
 
-    @property
-    def cookies(self) -> dict:
-        return self._wz.cookies
-
     @cached_property
     def input_struct_type(self) -> int:
         if self.method == 'POST':
-            ct = self.headers.get('content-type', '').lower()
+            ct = self.header('content-type', '').lower()
             if ct.startswith(_struct_mime[_JSON]):
                 return _JSON
             if ct.startswith(_struct_mime[_MSGPACK]):
@@ -68,7 +78,7 @@ class BaseRequest(t.IBaseRequest):
 
     @cached_property
     def output_struct_type(self) -> int:
-        h = self.headers.get('accept', '').lower()
+        h = self.header('accept', '').lower()
         if _struct_mime[_MSGPACK] in h:
             return _MSGPACK
         if _struct_mime[_JSON] in h:
@@ -83,7 +93,7 @@ class BaseRequest(t.IBaseRequest):
         data = self._wz.get_data(as_text=False, parse_form_data=False)
         # gws.write_file(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}', data, 'wb')
 
-        if self.headers.get('content-encoding') == 'gzip':
+        if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
                 return fp.read(self._wz.max_content_length)
 
@@ -94,33 +104,31 @@ class BaseRequest(t.IBaseRequest):
         if self.method != 'POST':
             return None
 
-        charset = self.headers.get('charset', 'utf-8')
+        charset = self.header('charset', 'utf-8')
         try:
             return self.data.decode(encoding=charset, errors='strict')
         except UnicodeDecodeError as e:
             gws.log.error('post data decoding error')
-            raise error.BadRequest() from e
+            raise gws.web.error.BadRequest() from e
 
-    @cached_property
-    def post_data(self):
-        if self.method != 'POST':
-            return None
-
-        charset = self.headers.get('charset', 'utf-8')
-        try:
-            return self.data.decode(encoding=charset, errors='strict')
-        except UnicodeDecodeError:
-            gws.log.error('post data decoding error')
-            return None
+    @property
+    def is_secure(self) -> bool:
+        return self._wz.is_secure
 
     def env(self, key: str, default: str = None) -> str:
         return self._wz.environ.get(key, default)
 
     def param(self, key: str, default: str = None) -> str:
-        return self._nocase_params.get(key.lower(), default)
+        return self._lower_params.get(key.lower(), default)
 
     def has_param(self, key: str) -> bool:
-        return key.lower() in self._nocase_params
+        return key.lower() in self._lower_params
+
+    def header(self, key: str, default: str = None) -> str:
+        return self._wz.headers.get(key, default)
+
+    def cookie(self, key: str, default: str = None) -> str:
+        return self._wz.cookies.get(key, default)
 
     def url_for(self, url: t.Url) -> t.Url:
         u = self.site.url_for(self, url)
@@ -128,12 +136,11 @@ class BaseRequest(t.IBaseRequest):
         return u
 
     def response(self, content: str, mimetype: str, status: int = 200) -> t.IResponse:
-        r: t.IResponse = BaseResponse(
-            content,
+        return BaseResponse(
+            response=content,
             mimetype=mimetype,
             status=status
         )
-        return r
 
     def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> t.IResponse:
         headers = {
@@ -142,20 +149,22 @@ class BaseRequest(t.IBaseRequest):
         if attachment_name:
             headers['Content-Disposition'] = f'attachment; filename="{attachment_name}"'
 
-        fp = wrap_file(self.environ, open(path, 'rb'))
+        fp = werkzeug.wsgi.wrap_file(self.environ, open(path, 'rb'))
 
-        r: t.IResponse = BaseResponse(
-            fp,
+        return BaseResponse(
+            response=fp,
             mimetype=mimetype,
             status=status,
             headers=headers,
             direct_passthrough=True
         )
-        return r
 
     def struct_response(self, data: t.Response, status: int = 200) -> t.IResponse:
         typ = self.output_struct_type or _JSON
         return self.response(self._encode_struct(data, typ), _struct_mime[typ], status)
+
+    def error_response(self, err) -> t.IResponse:
+        return BaseResponse(wz=err.get_response(self._wz.environ))
 
     def _parse_params(self):
         if self.input_struct_type:
@@ -178,7 +187,7 @@ class BaseRequest(t.IBaseRequest):
             return args
 
         gws.log.error(f'invalid request path: {path!r}')
-        raise error.NotFound()
+        raise gws.web.error.NotFound()
 
     def _encode_struct(self, data, typ):
         if typ == _JSON:
@@ -194,13 +203,14 @@ class BaseRequest(t.IBaseRequest):
                 return gws.tools.json2.from_string(s)
             except (UnicodeDecodeError, gws.tools.json2.Error):
                 gws.log.error('malformed json request')
-                raise error.BadRequest()
+                raise gws.web.error.BadRequest()
 
         if typ == _MSGPACK:
             try:
                 return umsgpack.loads(self.data)
             except (TypeError, umsgpack.UnpackException):
                 gws.log.error('malformed msgpack request')
-                raise error.BadRequest()
+                raise gws.web.error.BadRequest()
 
-        raise ValueError('invalid struct type')
+        gws.log.error('invalid struct type')
+        raise gws.web.error.BadRequest()

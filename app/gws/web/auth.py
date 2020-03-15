@@ -1,36 +1,51 @@
 import gws
 import gws.common.auth
-import gws.common.auth.session
 
 import gws.types as t
 
 from . import wrappers, error
 
-# @TODO skip updates if heartBeat is enabled
-
-_DELETED = object()
-
 
 #:export IRequest
 class Request(wrappers.BaseRequest, t.IRequest):
-    def __init__(self, root, environ, site):
-        super().__init__(root, environ, site)
+    session: t.ISession = None
 
-        self._session = None
-        self._user = None
-
-        self.header_name = None
-        s = self.root.var('auth.header')
-        if s:
-            self.header_name = 'HTTP_' + s.upper().replace('-', '_')
-
-        self.cookie_name = self.root.var('auth.cookie.name')
+    @property
+    def auth(self) -> t.IAuthManager:
+        return self.root.application.auth
 
     @property
     def user(self) -> t.IUser:
-        if not self._user:
-            raise ValueError('auth_begin not called')
-        return self._user
+        if not self.session:
+            raise gws.Error('session not opened')
+        return self.session.user
+
+    def auth_open(self):
+        try:
+            self.session = self.auth.open_session(self)
+        except gws.common.auth.Error as e:
+            raise error.Forbidden() from e
+
+    def auth_close(self, res: t.IResponse):
+        self.session = self.auth.close_session(self.session, self, res)
+
+    def login(self, login: str, password: str):
+        if not self.user.is_guest:
+            gws.log.error('login while logged-in')
+            raise gws.web.error.Forbidden()
+
+        method = self.auth.get_method('web')
+        if not method:
+            gws.log.error('web auth method not found')
+            raise gws.web.error.Forbidden()
+
+        try:
+            self.session = self.auth.login(method, login, password, self)
+        except gws.common.auth.Error as e:
+            raise error.Forbidden() from e
+
+    def logout(self):
+        self.session = self.auth.logout(self.session, self)
 
     def require(self, klass: str, uid: str) -> t.IObject:
         node = self.root.find(klass, uid)
@@ -48,107 +63,7 @@ class Request(wrappers.BaseRequest, t.IRequest):
     def require_layer(self, uid: str) -> t.ILayer:
         return t.cast(t.ILayer, self.require('gws.ext.layer', uid))
 
-    def acquire(self, klass: str, uid: str) -> t.IObject:
-        node = self.root.find(klass, uid)
-        if node and self.user.can_use(node):
-            return node
-
-    def login(self, username: str, password: str):
-        if not self.user.is_guest:
-            gws.log.error('login while logged-in')
-            raise gws.web.error.Forbidden()
-
-        try:
-            user = gws.common.auth.authenticate(username, password)
-        except gws.common.auth.error.Error as err:
-            raise error.Forbidden() from err
-
-        if not user:
-            raise error.Forbidden()
-
-        self._stop_session()
-        self._session = self._session_manager.create_for(user)
-        self._user = user
-
-    def logout(self):
-        self._stop_session()
-        self._user = self._guest_user
-
-    def auth_begin(self):
-        self._session = self._init_session()
-        if self._session and self._session is not _DELETED:
-            self._user = self._session.user
-        else:
-            self._user = self._guest_user
-
-    def auth_commit(self, res):
-        if not self._session:
-            return
-
-        if self._session is _DELETED:
-            if self.cookie_name:
-                gws.log.info('session cookie=deleted')
-                res.delete_cookie(self.cookie_name)
-            return
-
-        self._session_manager.update(self._session)
-
-        if self.cookie_name:
-            gws.log.info('session cookie=', self._session.uid)
-            res.set_cookie(
-                self.cookie_name,
-                value=self._session.uid,
-                **self._cookie_options
-            )
-
-    def _init_session(self):
-        sid = self._session_id
-        if not sid:
-            return
-
-        gws.log.debug('found sid', sid)
-        sess = self._session_manager.find(sid)
-        if not sess:
-            gws.log.info('no session for sid', sid)
-            return _DELETED
-
-        return sess
-
-    @property
-    def _session_id(self):
-        # @TODO secure
-
-        if self.header_name in self.environ:
-            return self.environ[self.header_name]
-
-        if self.cookie_name in self.cookies:
-            return self.cookies[self.cookie_name]
-
-    def _stop_session(self):
-        if self._session and self._session is not _DELETED:
-            self._session_manager.delete(self._session)
-            self._session = _DELETED
-        else:
-            self._session = None
-
-    @property
-    def _cookie_options(self):
-        d = {
-            'path': self.root.var('auth.session.cookie.path', default='/'),
-            'httponly': True
-        }
-        # domain=str(self.root.get('auth.session.cookie.domain')),
-        # secure=self.root.get('auth.session.httpsOnly'),
-        return d
-
-    @property
-    def _session_manager(self):
-        return gws.get_global('auth.session_manager', gws.common.auth.session.Manager)
-
-    @property
-    def _guest_user(self):
-        def get():
-            p: t.IAuthProvider = self.root.find_first('gws.ext.auth.provider.system')
-            return p.get_user('guest')
-
-        return gws.get_global('auth.guest_user', get)
+    def acquire(self, klass: str, uid: str) -> t.Optional[t.IObject]:
+        obj = self.root.find(klass, uid)
+        if obj and self.user.can_use(obj):
+            return obj

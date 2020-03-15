@@ -38,6 +38,7 @@ Version 6.0
 - mixed-mode printing (low resolution rasters + high resolution vectors)
 - option to exclude layers from qgis projects
 - support for the QGZ format
+- support for HTTP Basic authorization
 
 
 

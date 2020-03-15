@@ -147,7 +147,7 @@ class Layer(gws.Object, t.ILayer):
         self.load_metadata()
 
         self.map = self.get_closest('gws.common.map')
-        self.is_public = gws.common.auth.role('all').can_use(self)
+        self.is_public = self.root.application.auth.get_role('all').can_use(self)
         self.ows_name = self.var('ows.name') or self.uid.split('.')[-1]
 
         p = self.var('legend')

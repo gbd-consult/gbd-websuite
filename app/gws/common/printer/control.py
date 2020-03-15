@@ -4,7 +4,7 @@ import gws.server.spool
 import gws.tools.job
 import gws.common.printer.job
 import gws.types as t
-import gws.web
+import gws.web.error
 from . import types as pt
 
 

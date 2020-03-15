@@ -44,7 +44,7 @@ class UserSpec(t.Data):
     memberOf: t.Optional[str]  #: LDAP group the account has to be a member of
 
 
-class Config(t.WithType):
+class Config(gws.common.auth.provider.Config):
     """LDAP authorization provider"""
 
     activeDirectory: bool = True  #: true if the LDAP server is ActiveDirectory
@@ -74,7 +74,7 @@ class Object(gws.common.auth.provider.Object):
         except Exception as e:
             raise ValueError(f'LDAP error: {e.__class__.__name__}', *e.args)
 
-    def authenticate(self, login, password, **args):
+    def authenticate(self, method: t.IAuthMethod, login, password, **args):
         if not password.strip():
             gws.log.warn('empty password, continue')
             return None

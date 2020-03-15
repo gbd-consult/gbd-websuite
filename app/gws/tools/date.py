@@ -44,6 +44,10 @@ def utime():
     return time.time()
 
 
+def timestamp():
+    return int(time.time())
+
+
 class DateFormatter:
     def __init__(self, locale):
         self.locale = locale

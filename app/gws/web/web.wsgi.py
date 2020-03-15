@@ -13,7 +13,7 @@ gws.config.loader.load()
 
 
 def application(environ, start_response):
-    res = _handle_request(environ)
+    res = t.cast(gws.web.wrappers.BaseResponse, _handle_request(environ))
     return res(environ, start_response)
 
 
@@ -22,7 +22,7 @@ def application(environ, start_response):
 _DEFAULT_CMD = 'assetHttpGetPath'
 
 
-def _handle_request(environ):
+def _handle_request(environ) -> t.IResponse:
     root = gws.config.root()
     req = gws.web.auth.Request(root, environ, _find_site(environ, root))
     try:
@@ -34,21 +34,21 @@ def _handle_request(environ):
         return _handle_error(root, req, gws.web.error.InternalServerError())
 
 
-def _handle_request2(root, req) -> gws.web.wrappers.BaseResponse:
-    req.parse_params()
+def _handle_request2(root, req) -> t.IResponse:
+    req.init()
 
     cors = req.site.cors
 
     if cors and req.method == 'OPTIONS':
         return _with_cors_headers(cors, req.response('', 'text/plain'))
 
-    req.auth_begin()
+    req.auth_open()
 
     ## gws.p('REQUEST', {'user': req.user, 'params': req.params})
 
     res = _handle_action(root, req)
 
-    req.auth_commit(res)
+    req.auth_close(res)
 
     if cors and req.method == 'POST':
         res = _with_cors_headers(cors, res)
@@ -56,7 +56,7 @@ def _handle_request2(root, req) -> gws.web.wrappers.BaseResponse:
     return res
 
 
-def _handle_error(root, req, err):
+def _handle_error(root, req, err) -> t.IResponse:
     # @TODO: image errors
 
     if req.output_struct_type:
@@ -65,7 +65,7 @@ def _handle_error(root, req, err):
             status=err.code)
 
     if not req.site.error_page:
-        return err
+        return req.error_response(err)
 
     try:
         r = req.site.error_page.render({
@@ -75,10 +75,10 @@ def _handle_error(root, req, err):
         return req.response(r.content, r.mime, err.code)
     except:
         gws.log.exception()
-        return gws.web.error.InternalServerError()
+        return req.error_response(gws.web.error.InternalServerError())
 
 
-def _handle_action(root: t.IRootObject, req):
+def _handle_action(root: t.IRootObject, req: t.IRequest) -> t.IResponse:
     cmd = req.param('cmd', _DEFAULT_CMD)
 
     # @TODO: add HEAD
@@ -131,14 +131,14 @@ def _handle_action(root: t.IRootObject, req):
     return req.struct_response(r)
 
 
-def _with_cors_headers(cors, res):
+def _with_cors_headers(cors, res: t.IResponse) -> t.IResponse:
     if cors.get('allow_origin'):
-        res.headers.add('Access-Control-Allow-Origin', cors.get('allow_origin'))
+        res.add_header('Access-Control-Allow-Origin', cors.get('allow_origin'))
     if cors.get('allow_credentials'):
-        res.headers.add('Access-Control-Allow-Credentials', 'true')
+        res.add_header('Access-Control-Allow-Credentials', 'true')
     if cors.get('allow_headers'):
-        res.headers.add('Access-Control-Allow-Headers', ', '.join(cors.get('allow_headers')))
-    res.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        res.add_header('Access-Control-Allow-Headers', ', '.join(cors.get('allow_headers')))
+    res.add_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
     return res
 

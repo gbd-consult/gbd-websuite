@@ -24,3 +24,13 @@ class LoginFailed(Error):
 class AccessDenied(Error):
     """Can login, but the acccess is denied"""
     pass
+
+
+class UnknownMethod(Error):
+    """Unknown authorization method"""
+    pass
+
+
+class UnknownProvider(Error):
+    """Unknown authorization provider"""
+    pass

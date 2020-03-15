@@ -6,7 +6,6 @@ import pickle
 from PIL import Image
 
 import gws
-import gws.common.auth
 import gws.common.printer.types as pt
 import gws.common.style
 import gws.config

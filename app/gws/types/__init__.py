@@ -74,6 +74,9 @@ class ext:
             pass
 
     class auth:
+        class method:
+            class Config:
+                pass
         class provider:
             class Config:
                 pass
@@ -294,22 +297,24 @@ class FeatureProps(Data):
 
 
 class IBaseRequest:
-    cookies: dict = None
     data: Optional[bytes] = None
     environ: dict = None
-    headers: dict = None
     input_struct_type: int = None
+    is_secure: bool = None
     method: str = None
     output_struct_type: int = None
     params: dict = None
     root: 'IRootObject' = None
     site: 'IWebSite' = None
     text_data: Optional[str] = None
+    def cookie(self, key: str, default: str = None) -> str: pass
     def env(self, key: str, default: str = None) -> str: pass
+    def error_response(self, err) -> 'IResponse': pass
     def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> 'IResponse': pass
     def has_param(self, key: str) -> bool: pass
+    def header(self, key: str, default: str = None) -> str: pass
+    def init(self): pass
     def param(self, key: str, default: str = None) -> str: pass
-    def parse_params(self): pass
     def response(self, content: str, mimetype: str, status: int = 200) -> 'IResponse': pass
     def struct_response(self, data: 'Response', status: int = 200) -> 'IResponse': pass
     def url_for(self, url: 'Url') -> 'Url': pass
@@ -344,10 +349,10 @@ class IObject:
     props: Props = None
     root: 'IRootObject' = None
     uid: str = None
-    def add_child(self, klass, cfg): pass
+    def add_child(self, klass, cfg=None): pass
     def append_child(self, obj): pass
     def configure(self): pass
-    def create_object(self, klass, cfg, parent=None): pass
+    def create_object(self, klass, cfg=None, parent=None): pass
     def create_shared_object(self, klass, uid, cfg): pass
     def create_unbound_object(self, klass, cfg): pass
     def find(self, klass, uid) -> 'IObject': pass
@@ -365,11 +370,24 @@ class IObject:
 
 
 class IResponse:
-    pass
+    def add_header(self, key, value): pass
+    def delete_cookie(self, key, **kwargs): pass
+    def set_cookie(self, key, **kwargs): pass
 
 
 class IRole:
     def can_use(self, obj, parent=None): pass
+
+
+class ISession:
+    changed: bool = None
+    data: dict = None
+    method: 'IAuthMethod' = None
+    type: str = None
+    uid: str = None
+    user: 'IUser' = None
+    def get(self, key, default=None): pass
+    def set(self, key, val): pass
 
 
 class IShape:
@@ -414,7 +432,7 @@ class IUser:
     def attribute(self, key: str, default: str = '') -> str: pass
     def can_use(self, obj, parent=None) -> bool: pass
     def has_role(self, role: str) -> bool: pass
-    def init_from_props(self, provider, uid, roles, attributes) -> 'IUser': pass
+    def init_from_data(self, provider, uid, roles, attributes) -> 'IUser': pass
     def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'IUser': pass
 
 
@@ -801,15 +819,49 @@ class IApi(IObject):
 
 class IApplication(IObject):
     api: 'IApi' = None
+    auth: 'IAuthManager' = None
     client: 'IClient' = None
     qgis_version: str = None
     web_sites: List['IWebSite'] = None
     def find_action(self, action_type, project_uid=None): pass
 
 
+class IAuthManager(IObject):
+    guest_user: 'IUser' = None
+    methods: List['IAuthMethod'] = None
+    providers: List['IAuthProvider'] = None
+    def authenticate(self, method: 'IAuthMethod', login, password, **kw) -> Optional['IUser']: pass
+    def close_session(self, sess: 'ISession', req: 'IRequest', res: 'IResponse') -> 'ISession': pass
+    def create_stored_session(self, type: str, method: 'IAuthMethod', user: 'IUser') -> 'ISession': pass
+    def delete_stored_sessions(self): pass
+    def destroy_stored_session(self, sess: 'ISession'): pass
+    def find_stored_session(self, uid): pass
+    def get_method(self, type: str) -> Optional['IAuthMethod']: pass
+    def get_provider(self, uid: str) -> Optional['IAuthProvider']: pass
+    def get_role(self, name: str) -> 'IRole': pass
+    def get_user(self, user_fid: str) -> Optional['IUser']: pass
+    def login(self, method: 'IAuthMethod', login: str, password: str, req: 'IRequest') -> 'ISession': pass
+    def logout(self, sess: 'ISession', req: 'IRequest') -> 'ISession': pass
+    def new_session(self, **kwargs): pass
+    def open_session(self, req: 'IRequest') -> 'ISession': pass
+    def save_stored_session(self, sess: 'ISession'): pass
+    def serialize_user(self, user: 'IUser') -> str: pass
+    def stored_session_records(self) -> List[dict]: pass
+    def unserialize_user(self, s: str) -> 'IUser': pass
+
+
+class IAuthMethod(IObject):
+    type: str = None
+    def close_session(self, auth: 'IAuthManager', sess: 'ISession', req: 'IRequest', res: 'IResponse'): pass
+    def login(self, auth: 'IAuthManager', login: str, password: str, req: 'IRequest') -> Optional['ISession']: pass
+    def logout(self, auth: 'IAuthManager', sess: 'ISession', req: 'IRequest') -> 'ISession': pass
+    def open_session(self, auth: 'IAuthManager', req: 'IRequest') -> Optional['ISession']: pass
+
+
 class IAuthProvider(IObject):
-    def authenticate(self, login: str, password: str, **kwargs) -> 'IUser': pass
-    def get_user(self, user_uid: str) -> 'IUser': pass
+    allowed_methods: List[str] = None
+    def authenticate(self, method: 'IAuthMethod', login: str, password: str, **kwargs) -> Optional['IUser']: pass
+    def get_user(self, user_uid: str) -> Optional['IUser']: pass
     def user_from_dict(self, d: dict) -> 'IUser': pass
     def user_to_dict(self, u: 'IUser') -> dict: pass
 
@@ -937,11 +989,13 @@ class IProject(IObject):
 
 
 class IRequest(IBaseRequest):
+    auth: 'IAuthManager' = None
+    session: 'ISession' = None
     user: 'IUser' = None
-    def acquire(self, klass: str, uid: str) -> 'IObject': pass
-    def auth_begin(self): pass
-    def auth_commit(self, res): pass
-    def login(self, username: str, password: str): pass
+    def acquire(self, klass: str, uid: str) -> Optional['IObject']: pass
+    def auth_close(self, res: 'IResponse'): pass
+    def auth_open(self): pass
+    def login(self, login: str, password: str): pass
     def logout(self): pass
     def require(self, klass: str, uid: str) -> 'IObject': pass
     def require_layer(self, uid: str) -> 'ILayer': pass

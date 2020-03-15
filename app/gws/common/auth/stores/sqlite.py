@@ -1,109 +1,100 @@
-import time
 import os
 
 import gws
 import gws.tools.os2
 import gws.tools.sqlite
+import gws.tools.date
 
-DB_PATH = gws.MISC_DIR + '/sessions.sqlite'
-
-
-def _db():
-    return gws.tools.sqlite.connect(DB_PATH)
+DB_PATH = gws.MISC_DIR + '/sessions6.sqlite'
 
 
-def _ts():
-    return int(time.time())
+class SessionStore:
+    @property
+    def _connection(self):
+        return gws.tools.sqlite.connect(DB_PATH)
 
+    def init(self):
+        with self._connection as conn:
+            conn.execute('''CREATE TABLE IF NOT EXISTS sess(
+                uid TEXT PRIMARY KEY,
+                method_type TEXT,
+                session_type TEXT,
+                provider_uid TEXT,
+                user_uid TEXT,
+                str_user TEXT,
+                str_data TEXT,
+                created INTEGER,
+                updated INTEGER
+            ) WITHOUT ROWID''')
 
-def init():
-    with _db() as db:
-        db.execute('''CREATE TABLE IF NOT EXISTS sess(
-            uid TEXT PRIMARY KEY,
-            provider_uid TEXT,
-            user_uid TEXT,
-            str_user TEXT,
-            str_data TEXT,
-            created INTEGER,
-            updated INTEGER
-        ) WITHOUT ROWID''')
-        os.chown(DB_PATH, gws.UID, gws.GID)
+    def count(self):
+        with self._connection as conn:
+            return conn.execute('SELECT COUNT(*) FROM sess').fetchone(self)[0]
 
+    def cleanup(self, lifetime):
+        with self._connection as conn:
+            conn.execute('DELETE FROM sess WHERE updated < ?', [gws.tools.date.timestamp() - lifetime])
 
-def delete_all():
-    with _db() as db:
-        db.execute('DROP TABLE sess')
+    def find(self, uid):
+        with self._connection as conn:
+            for r in conn.execute('SELECT * FROM sess WHERE uid=?', [uid]):
+                return dict(r)
 
+    def create(self, method_type, session_type, provider_uid, user_uid, str_user, str_data=''):
+        uid = gws.random_string(64)
 
-def count():
-    with _db() as db:
-        return db.execute('SELECT COUNT(*) FROM sess').fetchone()[0]
-
-
-def cleanup(lifetime):
-    with _db() as db:
-        db.execute('DELETE FROM sess WHERE updated < ?', [_ts() - lifetime])
-
-
-def find(uid):
-    with _db() as db:
-        for r in db.execute('SELECT * FROM sess WHERE uid=?', [uid]):
-            return dict(r)
-
-
-def create(provider_uid, user_uid, str_user, str_data=''):
-    uid = gws.random_string(64)
-    ts = _ts()
-
-    with _db() as db:
-        db.execute('''INSERT 
-            INTO sess(
+        with self._connection as conn:
+            conn.execute('''INSERT 
+                INTO sess(
+                    uid,
+                    method_type,
+                    session_type,
+                    provider_uid,
+                    user_uid,
+                    str_user,
+                    str_data,
+                    created,
+                    updated
+                ) 
+                VALUES(?,?,?,?,?,?,?,?,?)
+            ''', [
                 uid,
+                method_type,
+                session_type,
                 provider_uid,
                 user_uid,
                 str_user,
                 str_data,
-                created,
-                updated
-            ) 
-            VALUES(?,?,?,?,?,?,?)
-        ''', [
-            uid,
-            provider_uid,
-            user_uid,
-            str_user,
-            str_data,
-            ts,
-            ts
-        ])
+                gws.tools.date.timestamp(),
+                gws.tools.date.timestamp()
+            ])
 
-    gws.log.info('session: created:', uid)
-    return uid
+        gws.log.debug('session: created:', uid)
+        return uid
 
+    def update(self, uid, str_data):
+        with self._connection as conn:
+            conn.execute(
+                'UPDATE sess SET str_data=?, updated=? WHERE uid=?',
+                [str_data, gws.tools.date.timestamp(), uid])
 
-def update(uid, str_data):
-    with _db() as db:
-        db.execute('UPDATE sess SET str_data=?, updated=? WHERE uid=?', [str_data, _ts(), uid])
+    def touch(self, uid):
+        with self._connection as conn:
+            conn.execute(
+                'UPDATE sess SET updated=? WHERE uid=?',
+                [gws.tools.date.timestamp(), uid])
 
+    def delete(self, uid):
+        with self._connection as conn:
+            conn.execute('DELETE FROM sess WHERE uid = ?', [uid])
 
-def touch(uid):
-    with _db() as db:
-        db.execute('UPDATE sess SET updated=? WHERE uid=?', [_ts(), uid])
+    def delete_all(self):
+        gws.tools.os2.unlink(DB_PATH)
+        self.init()
 
-
-def delete(uid):
-    with _db() as db:
-        db.execute('DELETE FROM sess WHERE uid = ?', [uid])
-
-
-def drop():
-    gws.tools.os2.unlink(DB_PATH)
-    init()
-
-
-def get_all():
-    rs = []
-    with _db() as db:
-        for r in db.execute('SELECT * FROM sess ORDER BY updated'):
-            rs.append(dict(r))
-    return rs
+    def get_all(self):
+        rs = []
+        with self._connection as conn:
+            for r in conn.execute('SELECT * FROM sess ORDER BY updated'):
+                rs.append(dict(r))
+        return rs

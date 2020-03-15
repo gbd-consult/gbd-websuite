@@ -1,7 +1,7 @@
 import importlib
 
 import gws
-import gws.common.auth
+import gws.config
 
 import gws.types as t
 
@@ -24,7 +24,7 @@ class Error(gws.Error):
 def create(uid, user: t.IUser, worker: str, args=None):
     if user:
         fid = user.fid
-        str_user = gws.common.auth.serialize_user(user)
+        str_user = gws.config.root().application.auth.serialize_user(user)
     else:
         fid = str_user = ''
     gws.log.debug('creating job', worker, fid)
@@ -91,7 +91,7 @@ class Job:
     @property
     def user(self) -> t.Optional[t.IUser]:
         if self.str_user:
-            return gws.common.auth.unserialize_user(self.str_user)
+            return gws.config.root().application.auth.unserialize_user(self.str_user)
 
     def run(self):
         if self.state != State.open:
