@@ -67,46 +67,33 @@ def document_root(cfg: DocumentRootConfig) -> t.Optional[t.DocumentRoot]:
 
 #:export IWebSite
 class Object(gws.Object, t.IWebSite):
-    def __init__(self):
-        super().__init__()
-        self.host = ''
-        self.ssl = False
-        self.error_page: t.ITemplate = None
-        self.static_root: t.DocumentRoot = None
-        self.assets_root: t.DocumentRoot = None
-        self.rewrite_rules: t.List[t.RewriteRule] = []
-        self.reversed_host = ''
-        self.reversed_rewrite_rules: t.List[t.RewriteRule] = []
-        self.cors: t.CorsOptions = None
-
     def configure(self):
         super().configure()
 
-        self.host = self.var('host', default='*')
-        self.reversed_host = self.var('reversedHost')
-        self.static_root = document_root(self.var('root'))
-        self.assets_root = document_root(self.var('assets'))
+        self.host: str = self.var('host', default='*')
+        self.reversed_host: str = self.var('reversedHost')
+        self.static_root: t.DocumentRoot = document_root(self.var('root'))
+        self.assets_root: t.DocumentRoot = document_root(self.var('assets'))
 
         # config.ssl is populated in the application init
-        self.ssl = self.var('ssl')
+        self.ssl: bool = self.var('ssl')
 
-        self.rewrite_rules = self.var('rewrite', default=[])
+        self.rewrite_rules: t.List[t.RewriteRule] = self.var('rewrite', default=[])
         for r in self.rewrite_rules:
             if not gws.tools.net.is_abs_url(r.target):
                 # ensure rewriting from root
                 r.target = '/' + r.target.lstrip('/')
 
-        self.reversed_rewrite_rules = self.var('reversedRewrite', default=[])
+        self.reversed_rewrite_rules: t.List[t.RewriteRule] = self.var('reversedRewrite', default=[])
         for r in self.reversed_rewrite_rules:
             r.match = str(r.match).strip('/')
             # we use nginx syntax $1, need python's \1
             r.target = r.target.replace('$', '\\')
 
         p = self.var('errorPage')
-        if p:
-            self.error_page = self.create_object('gws.ext.template', p)
+        self.error_page: t.Optional[t.ITemplate] = self.create_object('gws.ext.template', p) if p else None
 
-        self.cors = CorsOptions({
+        self.cors: t.CorsOptions = CorsOptions({
             'allow_origin': self.var('cors.allowOrigin'),
             'allow_credentials': self.var('cors.allowCredentials'),
             'allow_headers': self.var('cors.allowHeaders'),

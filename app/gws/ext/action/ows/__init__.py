@@ -26,29 +26,8 @@ class Object(gws.common.action.Object):
         for p in self.var('services', default=[]):
             self.services.append(self.add_child('gws.ext.ows.service', p))
 
-    def http_get_wms(self, req: t.IRequest, _) -> t.HttpResponse:
-        return self._handle_service('wms', req)
-
-    def http_get_wfs(self, req: t.IRequest, _) -> t.HttpResponse:
-        return self._handle_service('wfs', req)
-
-    def http_get_wmts(self, req: t.IRequest, _) -> t.HttpResponse:
-        return self._handle_service('wmts', req)
-
-    def http_get_csw(self, req: t.IRequest, _) -> t.HttpResponse:
-        return self._handle_service('csw', req)
-
-    def _handle_service(self, name, req: t.IRequest) -> t.HttpResponse:
-
-        gws.p(req.params)
-        gws.p(req.text_data)
-
-        service = None
-
-        for s in self.services:
-            if s.name == name and s.enabled:
-                service = s
-
+    def http_get_service(self, req: t.IRequest, _) -> t.HttpResponse:
+        service = self._find_service(req)
         if not service:
             raise gws.web.error.NotFound()
 
@@ -64,3 +43,9 @@ class Object(gws.common.action.Object):
         except:
             gws.log.exception()
             return service.error_response(500)
+
+    def _find_service(self, req):
+        uid = req.param('uid')
+        for service in self.services:
+            if service.uid == uid and service.enabled:
+                return service

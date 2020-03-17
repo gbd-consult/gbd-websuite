@@ -8,8 +8,8 @@ import _test.common.const as cc
 
 
 def test_get_capabilities():
-    r = u.req('_/cmd/owsHttpGetWms', params={
-        'projectUid': 'wms1',
+    r = u.req('_/cmd/owsHttpGetService/uid/wms', params={
+        'projectUid': 'a',
         'SERVICE': 'WMS',
         'REQUEST': 'GetCapabilities'
     })
@@ -18,8 +18,8 @@ def test_get_capabilities():
 
 
 def test_get_inspire_capabilities():
-    r = u.req('_/cmd/owsHttpGetWms', params={
-        'projectUid': 'wms_inspire',
+    r = u.req('_/cmd/owsHttpGetService/uid/wms_inspire', params={
+        'projectUid': 'a',
         'SERVICE': 'WMS',
         'REQUEST': 'GetCapabilities'
     })
@@ -30,8 +30,8 @@ def test_get_inspire_capabilities():
 def test_get_map():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttpGetWms', params={
-        'projectUid': 'wms1',
+    r = u.req('_/cmd/owsHttpGetService/uid/wms', params={
+        'projectUid': 'a',
         'SERVICE': 'WMS',
         'REQUEST': 'GetMap',
         'LAYERS': 'paris_3857',
@@ -46,8 +46,8 @@ def test_get_map():
 def test_get_features1():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttpGetWms', params={
-        'projectUid': 'wms1',
+    r = u.req('_/cmd/owsHttpGetService/uid/wms', params={
+        'projectUid': 'a',
         'SERVICE': 'WMS',
         'REQUEST': 'GetFeatureInfo',
         'QUERY_LAYERS': 'paris_3857',
@@ -83,8 +83,8 @@ def test_get_features1():
 def test_get_features_with_resolution():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttpGetWms', params={
-        'projectUid': 'wms1',
+    r = u.req('_/cmd/owsHttpGetService/uid/wms', params={
+        'projectUid': 'a',
         'SERVICE': 'WMS',
         'REQUEST': 'GetFeatureInfo',
         'QUERY_LAYERS': 'paris_3857',
@@ -123,8 +123,8 @@ def test_get_features_with_reprojection():
     x, y = gws.gis.proj.transform_xy(x, y, cc.CRS_3857, cc.CRS_25832)
     bbox = gws.gis.extent.transform((x, y, x + 350, y + 350), cc.CRS_25832, cc.CRS_3857)
 
-    r = u.req('_/cmd/owsHttpGetWms', params={
-        'projectUid': 'wms1',
+    r = u.req('_/cmd/owsHttpGetService/uid/wms', params={
+        'projectUid': 'a',
         'SERVICE': 'WMS',
         'REQUEST': 'GetFeatureInfo',
         'QUERY_LAYERS': 'dus_25832',

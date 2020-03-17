@@ -1,5 +1,8 @@
 import gws.common.search.provider
+import gws.gis.ows
+import gws.gis.source
 import gws.gis.util
+
 import gws.types as t
 
 from . import provider, util
@@ -10,26 +13,25 @@ class Config(gws.common.search.provider.Config, util.WmsConfig):
 
 
 class Object(gws.common.search.provider.Object):
-    def __init__(self):
-        super().__init__()
-
-        self.provider: provider.Object = None
-        self.source_layers: t.List[t.SourceLayer] = []
-        self.url = ''
-
     def configure(self):
         super().configure()
 
-        self.with_geometry = 'required'
-        self.with_keyword = 'no'
+        self.with_geometry = gws.common.search.provider.ParameterUsage.required
+        self.with_keyword = gws.common.search.provider.ParameterUsage.forbidden
 
         layer = self.var('layer')
         if layer:
-            self.provider = layer.provider
+            self.provider: provider.Object = layer.provider
             self.source_layers = self.var('source_layers')
-            self.url = layer.url
         else:
-            util.configure_wms_for(self, queryable_only=True)
+            self.provider: provider.Object = gws.gis.ows.shared_provider(provider.Object, self, self.config)
+            self.source_layers = gws.gis.source.filter_layers(
+                self.provider.source_layers,
+                self.var('sourceLayers'),
+                queryable_only=True
+            )
+            if not self.source_layers:
+                raise gws.Error(f'no source layers found for {self.uid!r}')
 
     def can_run(self, args):
         return (

@@ -1,12 +1,13 @@
 import io
 
 import gws
+import gws.common.metadata
 import gws.common.search.runner
+import gws.gis.extent
+import gws.gis.gml
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
-import gws.gis.extent
-import gws.gis.gml
 import gws.tools.misc
 import gws.tools.os2
 import gws.tools.xml2
@@ -27,11 +28,6 @@ MAX_LIMIT = 100
 
 
 class Object(ows.Base):
-    def __init__(self):
-        super().__init__()
-
-        self.type = 'wms'
-        self.version = VERSION
 
     @property
     def service_link(self):
@@ -44,14 +40,25 @@ class Object(ows.Base):
     def configure(self):
         super().configure()
 
-        self.meta.spatialDataServiceType = 'view'
+        self.type = 'wms'
+        self.version = VERSION
 
         for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
             self.templates[tpl] = self.configure_template(tpl, 'wms/templates')
 
+    def configure_metadata(self):
+        return gws.setdefault(
+            super().configure_metadata(),
+            isoScope='service',
+            inspireMandatoryKeyword=gws.common.metadata.InspireKeyword.infoMapAccessService,
+            inspireResourceType=gws.common.metadata.InspireResourceType.service,
+            inspireSpatialDataServiceType=gws.common.metadata.InspireSpatialDataServiceType.view,
+        )
+
     def handle_getcapabilities(self, rd: ows.Request):
         root = self.layer_tree_root(rd)
         if not root:
+            gws.log.debug(f'service={self.uid!r}: no layer_tree_root')
             raise gws.web.error.NotFound()
         return self.xml_response(self.render_template(rd, 'getCapabilities', {
             'layer_tree_root': root,

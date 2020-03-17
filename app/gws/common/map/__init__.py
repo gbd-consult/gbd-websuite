@@ -62,16 +62,6 @@ class Props(t.Data):
 
 #:export IMap
 class Object(gws.Object, t.IMap):
-    def __init__(self):
-        super().__init__()
-        self.crs: t.Crs = ''
-        self.extent: t.Extent = []
-        self.center: t.Point = []
-        self.init_resolution = 0.0
-        self.resolutions: t.List[float] = []
-        self.layers: t.List[t.ILayer] = []
-        self.coordinate_precision = 0
-
     @property
     def bounds(self) -> t.Bounds:
         return t.Bounds(crs=self.crs, extent=self.extent)
@@ -85,26 +75,26 @@ class Object(gws.Object, t.IMap):
             uid = p.uid + '.' + uid
         self.set_uid(uid)
 
-        self.crs = self.var('crs')
+        self.crs: t.Crs = self.var('crs')
 
-        self.resolutions = _DEFAULT_RESOLUTIONS
-        self.init_resolution = _DEFAULT_RESOLUTIONS[-1]
+        self.resolutions: t.List[float] = _DEFAULT_RESOLUTIONS
+        self.init_resolution: float = _DEFAULT_RESOLUTIONS[-1]
 
         zoom = self.var('zoom')
         if zoom:
             self.resolutions = gws.gis.zoom.resolutions_from_config(zoom)
             self.init_resolution = gws.gis.zoom.init_resolution(zoom, self.resolutions)
 
-        self.layers = gws.common.layer.add_layers_to_object(self, self.var('layers'))
+        self.layers: t.List[t.ILayer] = gws.common.layer.add_layers_to_object(self, self.var('layers'))
 
-        self.extent = _configure_extent(self, self.crs, None)
+        self.extent: t.Extent = _configure_extent(self, self.crs, None)
         if not self.extent:
             raise gws.Error(f'no extent found for {self.uid!r}')
         _set_default_extent(self, self.extent)
 
-        self.center = self.var('center') or gws.gis.extent.center(self.extent)
+        self.center: t.Point = self.var('center') or gws.gis.extent.center(self.extent)
 
-        self.coordinate_precision = self.var('coordinatePrecision')
+        self.coordinate_precision: float = self.var('coordinatePrecision')
         if self.coordinate_precision is None:
             proj = gws.gis.proj.as_proj(self.crs)
             self.coordinate_precision = 2 if proj.units == 'm' else 7

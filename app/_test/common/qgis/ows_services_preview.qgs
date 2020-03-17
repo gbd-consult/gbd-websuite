@@ -19,10 +19,10 @@
   </projectCrs>
   <layer-tree-group>
     <customproperties/>
-    <layer-tree-layer checked="Qt::Checked" source="contextualWMSLegend=0&amp;crs=EPSG:3857&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=gws:paris_3857&amp;styles&amp;url=http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1" providerKey="wms" name="paris_3857" id="paris_3857_624d1b4a_b6f0_4312_83ed_391cb00eb0df" expanded="1">
+    <layer-tree-layer checked="Qt::Checked" source="contextualWMSLegend=0&amp;crs=EPSG:3857&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=gws:paris_3857&amp;styles&amp;url=http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/wms1" providerKey="wms" name="paris_3857" id="paris_3857_624d1b4a_b6f0_4312_83ed_391cb00eb0df" expanded="1">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" source="contextualWMSLegend=0&amp;crs=EPSG:3857&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=gws:dus_25832&amp;styles&amp;url=http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1" providerKey="wms" name="dus_25832" id="dus_25832_4618d0dc_f495_4d0e_b59c_79194d67e0d9" expanded="1">
+    <layer-tree-layer checked="Qt::Checked" source="contextualWMSLegend=0&amp;crs=EPSG:3857&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=gws:dus_25832&amp;styles&amp;url=http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/wms1" providerKey="wms" name="dus_25832" id="dus_25832_4618d0dc_f495_4d0e_b59c_79194d67e0d9" expanded="1">
       <customproperties/>
     </layer-tree-layer>
     <layer-tree-layer checked="Qt::Checked" source="type=xyz&amp;zmin=0&amp;zmax=19&amp;url=http://tile.openstreetmap.org/{z}/{x}/{y}.png" providerKey="wms" name="OSM Standard" id="OSM_Standard_aaa7cbdb_26a6_4af7_8757_72a1761dcffe" expanded="1">
@@ -262,7 +262,7 @@
         <ymax>6662331.68020864669233561</ymax>
       </extent>
       <id>dus_25832_4618d0dc_f495_4d0e_b59c_79194d67e0d9</id>
-      <datasource>contextualWMSLegend=0&amp;crs=EPSG:3857&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=gws:dus_25832&amp;styles&amp;url=http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1</datasource>
+      <datasource>contextualWMSLegend=0&amp;crs=EPSG:3857&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=gws:dus_25832&amp;styles&amp;url=http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/wms1</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -344,7 +344,7 @@
         <ymax>6251616.48078953009098768</ymax>
       </extent>
       <id>paris_3857_624d1b4a_b6f0_4312_83ed_391cb00eb0df</id>
-      <datasource>contextualWMSLegend=0&amp;crs=EPSG:3857&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=gws:paris_3857&amp;styles&amp;url=http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1</datasource>
+      <datasource>contextualWMSLegend=0&amp;crs=EPSG:3857&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=gws:paris_3857&amp;styles&amp;url=http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/wms1</datasource>
       <keywordList>
         <value></value>
       </keywordList>

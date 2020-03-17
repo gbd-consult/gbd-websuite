@@ -35,14 +35,11 @@ class Config(gws.common.layer.ImageTileConfig):
 
 
 class Object(gws.common.layer.ImageTile):
-    service: ServiceConfig
-    url = ''
-
     def configure(self):
         super().configure()
 
         self.url = self.var('url')
-        self.service = self.var('service')
+        self.service: ServiceConfig = self.var('service')
 
         if not self.service.extent:
             if self.service.crs == gws.EPSG_3857:

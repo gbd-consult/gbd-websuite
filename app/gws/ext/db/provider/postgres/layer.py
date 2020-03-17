@@ -19,8 +19,6 @@ class Config(gws.common.layer.VectorConfig):
 
 
 class Object(gws.common.layer.Vector):
-    provider: provider.Object
-    table: t.SqlTable
 
     def configure(self):
         super().configure()

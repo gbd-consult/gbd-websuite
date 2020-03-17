@@ -349,10 +349,9 @@ class IObject:
     props: Props = None
     root: 'IRootObject' = None
     uid: str = None
-    def add_child(self, klass, cfg=None): pass
+    def add_child(self, klass, cfg): pass
     def append_child(self, obj): pass
-    def configure(self): pass
-    def create_object(self, klass, cfg=None, parent=None): pass
+    def create_object(self, klass, cfg, parent=None): pass
     def create_shared_object(self, klass, uid, cfg): pass
     def create_unbound_object(self, klass, cfg): pass
     def find(self, klass, uid) -> 'IObject': pass
@@ -455,29 +454,29 @@ class MetaData(Data):
     abstract: str = None
     accessConstraints: str = None
     attribution: str = None
-    contact: Optional['MetaContact'] = None
+    contact: 'ContactConfig' = None
+    dateCreated: 'Date' = None
+    dateUpdated: 'Date' = None
     fees: str = None
     image: 'Url' = None
     images: dict = None
+    insipreMandatoryKeyword: str = None
+    inspireResourceType: 'InspireResourceType' = None
+    inspireSpatialDataServiceType: 'InspireSpatialDataServiceType' = None
     inspireTheme: str = None
+    inspireTopicCategory: 'InspireTopicCategory' = None
     isoCategory: str = None
+    isoQualityExplanation: str = None
+    isoQualityLineage: str = None
+    isoQualityPass: bool = None
     isoScope: str = None
     isoSpatialType: str = None
     isoUid: str = None
     keywords: List[str] = None
     language: str = None
-    language3: str = None
-    links: List['MetaLink'] = None
-    mandatoryKeyword: str = None
-    modDate: 'Date' = None
+    links: List['LinkConfig'] = None
     name: str = None
-    pubDate: 'Date' = None
-    qualityExplanation: str = None
-    qualityLineage: str = None
-    qualityPass: bool = None
-    resourceType: str = None
     serviceUrl: 'Url' = None
-    spatialDataServiceType: str = None
     title: str = None
     url: 'Url' = None
 
@@ -820,7 +819,7 @@ class IApi(IObject):
 class IApplication(IObject):
     api: 'IApi' = None
     auth: 'IAuthManager' = None
-    client: 'IClient' = None
+    client: Optional['IClient'] = None
     qgis_version: str = None
     web_sites: List['IWebSite'] = None
     def find_action(self, action_type, project_uid=None): pass
@@ -880,44 +879,47 @@ class IFormat(IObject):
 
 
 class ILayer(IObject):
+    cache_uid: str = None
     can_render_box: bool = None
     can_render_svg: bool = None
     can_render_xyz: bool = None
-    data_model: 'IModel' = None
+    crs: str = None
+    data_model: Optional['IModel'] = None
     default_search_provider: Optional['ISearchProvider'] = None
     description: str = None
     description_template: 'ITemplate' = None
     display: str = None
-    edit_data_model: 'IModel' = None
+    edit_data_model: Optional['IModel'] = None
     edit_options: Data = None
-    edit_style: 'IStyle' = None
-    extent: 'Extent' = None
+    edit_style: Optional['IStyle'] = None
+    extent: Optional['Extent'] = None
     feature_format: 'IFormat' = None
+    geometry_type: Optional['GeometryType'] = None
+    grid_uid: str = None
     has_cache: bool = None
     has_legend: bool = None
     has_search: bool = None
     image_format: str = None
     is_editable: bool = None
     is_public: bool = None
-    layers: list = None
+    layers: List['ILayer'] = None
     legend_url: str = None
     map: 'IMap' = None
     meta: 'MetaData' = None
-    opacity: int = None
     own_bounds: Optional['Bounds'] = None
     ows_name: str = None
-    ows_services_disabled: list = None
-    ows_services_enabled: list = None
+    ows_services_disabled: List[str] = None
+    ows_services_enabled: List[str] = None
     resolutions: List[float] = None
-    services: list = None
     style: 'IStyle' = None
     supports_wfs: bool = None
     supports_wms: bool = None
     title: str = None
+    def configure_metadata(self, provider_meta=None): pass
+    def configure_search(self): pass
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
-    def load_metadata(self, provider_meta=None): pass
     def mapproxy_config(self, mc): pass
     def ows_enabled(self, service: 'IOwsService') -> bool: pass
     def render_box(self, rv: 'RenderView', client_params=None): pass
@@ -929,7 +931,7 @@ class ILayer(IObject):
 class IMap(IObject):
     bounds: 'Bounds' = None
     center: 'Point' = None
-    coordinate_precision: int = None
+    coordinate_precision: float = None
     crs: 'Crs' = None
     extent: 'Extent' = None
     init_resolution: float = None
@@ -939,9 +941,8 @@ class IMap(IObject):
 
 class IModel(IObject):
     attribute_names: List[str] = None
-    geometry_crs: str = None
+    geometry_crs: 'Crs' = None
     geometry_type: 'GeometryType' = None
-    is_identity: bool = None
     rules: List['ModelRule'] = None
     def apply(self, atts: List[Attribute]) -> List[Attribute]: pass
     def apply_to_dict(self, d: dict) -> List[Attribute]: pass
@@ -962,9 +963,7 @@ class IOwsProvider(IObject):
 
 class IOwsService(IObject):
     enabled: bool = None
-    feature_namespace: str = None
     meta: 'MetaData' = None
-    name: str = None
     type: str = None
     version: str = None
     def error_response(self, status) -> 'HttpResponse': pass
@@ -978,13 +977,13 @@ class IPrinter(IObject):
 class IProject(IObject):
     api: 'IApi' = None
     assets_root: 'DocumentRoot' = None
-    client: 'IClient' = None
+    client: Optional['IClient'] = None
     description_template: 'ITemplate' = None
-    locales: list = None
-    map: 'IMap' = None
+    locales: List[str] = None
+    map: Optional['IMap'] = None
     meta: 'MetaData' = None
-    overview_map: 'IMap' = None
-    printer: 'IPrinter' = None
+    overview_map: Optional['IMap'] = None
+    printer: Optional['IPrinter'] = None
     title: str = None
 
 
@@ -1003,18 +1002,18 @@ class IRequest(IBaseRequest):
 
 
 class ISearchProvider(IObject):
-    data_model: 'IModel' = None
-    feature_format: 'IFormat' = None
+    data_model: Optional['IModel'] = None
+    feature_format: Optional['IFormat'] = None
     tolerance: 'Measurement' = None
-    with_geometry: str = None
-    with_keyword: str = None
+    with_geometry: bool = None
+    with_keyword: bool = None
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs') -> 'IShape': pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass
 
 
 class ITemplate(IObject):
-    data_model: 'IModel' = None
+    data_model: Optional['IModel'] = None
     map_size: 'Size' = None
     page_size: 'Size' = None
     path: str = None
@@ -1028,7 +1027,7 @@ class ITemplate(IObject):
 class IWebSite(IObject):
     assets_root: 'DocumentRoot' = None
     cors: 'CorsOptions' = None
-    error_page: 'ITemplate' = None
+    error_page: Optional['ITemplate'] = None
     host: str = None
     reversed_host: str = None
     reversed_rewrite_rules: List['RewriteRule'] = None
@@ -1047,7 +1046,6 @@ class RootBase(IObject):
 
 class IRootObject(RootBase):
     application: 'IApplication' = None
-    def configure(self): pass
     def validate_action(self, category, cmd, payload): pass
 
 

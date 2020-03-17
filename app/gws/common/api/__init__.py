@@ -10,12 +10,10 @@ class Config(t.WithAccess):
 
 #:export IApi
 class Object(gws.Object, t.IApi):
-    def __init__(self):
-        super().__init__()
-        self.actions = {}
-
     def configure(self):
         super().configure()
+
+        self.actions = {}
 
         for p in self.var('actions', []):
             a = self.add_child('gws.ext.action', p)

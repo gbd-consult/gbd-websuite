@@ -27,32 +27,20 @@ class Config(t.WithTypeAndAccess):
 
 #:export ISearchProvider
 class Object(gws.Object, t.ISearchProvider):
-    def __init__(self):
-        super().__init__()
-
-        self.data_model: t.IModel = None
-        self.feature_format: t.IFormat = None
-        self.tolerance: t.Measurement = (_DEFAULT_PIXEL_TOLERANCE, 'px')
-        self.with_geometry = ''
-        self.with_keyword = ''
-
     def configure(self):
         super().configure()
 
         p = self.var('dataModel')
-        if p:
-            self.data_model = self.add_child('gws.common.model', p)
+        self.data_model: t.Optional[t.IModel] = self.add_child('gws.common.model', p) if p else None
 
         p = self.var('featureFormat')
-        if p:
-            self.feature_format = self.add_child('gws.common.format', p)
+        self.feature_format: t.Optional[t.IFormat] = self.add_child('gws.common.format', p) if p else None
 
         p = self.var('tolerance')
-        if p:
-            self.tolerance = gws.tools.units.parse(p, units=['px', 'm'], default='px')
+        self.tolerance: t.Measurement = gws.tools.units.parse(p, units=['px', 'm'], default='px') if p else (_DEFAULT_PIXEL_TOLERANCE, 'px')
 
-        self.with_keyword = self.var('withKeyword')
-        self.with_geometry = self.var('withGeometry')
+        self.with_keyword: bool = self.var('withKeyword')
+        self.with_geometry: bool = self.var('withGeometry')
 
     def can_run(self, args: t.SearchArgs):
         # usage:           allowed   forbidden   required

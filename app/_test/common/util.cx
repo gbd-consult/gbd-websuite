@@ -43,8 +43,8 @@
 
     keywords           ["{{pfx}}_meta_keyword1" "{{pfx}}_meta_keyword2" "{{pfx}}_meta_keyword3"]
     language           "de"
-    pubDate            "2020-01-02"
-    modDate            "2020-03-04"
+    dateCreated        "2020-01-02"
+    dateUpdated        "2020-03-04"
 
 
     contact {

@@ -15,8 +15,10 @@ api.actions+ {
     type "ows"
     services+ {
         type "csw"
+        uid "csw"
         meta {
             @META_DATA "csw"
+            isoUid "CSW_ISO_UID"
         }
     }
 }
@@ -82,7 +84,7 @@ api.actions+ {
 
 
 projects+ {
-    uid "wms1"
+    uid "a"
 
     meta {
         @META_DATA "PROJECT"
@@ -90,60 +92,37 @@ projects+ {
 
     api.actions+ {
         type "ows"
+
         services+ {
             type "wms"
+            uid "wms"
             meta {
                 @META_DATA "service"
                 abstract null
                 accessConstraints null
+                isoUid "WMS_ISO_UID"
             }
         }
-    }
 
-    @SIMPLE_MAP
-
-    @include /common/client.cx
-}
-
-projects+ {
-    uid "wfs1"
-
-    meta {
-        @META_DATA "PROJECT"
-    }
-
-    api.actions+ {
-        type "ows"
         services+ {
             type "wfs"
+            uid "wfs"
             meta {
                 @META_DATA "service"
                 abstract null
                 accessConstraints null
+                isoUid "WFS_ISO_UID"
             }
         }
-    }
 
-    @SIMPLE_MAP
-
-    @include /common/client.cx
-}
-
-projects+ {
-    uid "wms_inspire"
-
-    meta {
-        @META_DATA "PROJECT"
-    }
-
-    api.actions+ {
-        type "ows"
         services+ {
             type "wms"
+            uid "wms_inspire"
             meta {
                 @META_DATA "service"
                 abstract null
                 accessConstraints null
+                isoUid "WMS_INSPIRE_ISO_UID"
             }
             withInspireMeta true
         }

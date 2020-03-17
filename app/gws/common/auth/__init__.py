@@ -26,10 +26,6 @@ class Config(t.Config):
 class Object(gws.Object, t.IAuthManager):
     """Authorization manager."""
 
-    providers: t.List[t.IAuthProvider]
-    methods: t.List[t.IAuthMethod]
-    guest_user: t.IUser
-
     def configure(self):
         super().configure()
 
@@ -40,24 +36,16 @@ class Object(gws.Object, t.IAuthManager):
         self.store = gws.common.auth.stores.sqlite.SessionStore()
         self.store.init()
 
-        self.providers = []
-
-        p = self.var('providers')
-        if p:
-            self.providers = [self.add_child('gws.ext.auth.provider', c) for c in p]
+        p = self.var('providers', default=[])
+        self.providers: t.List[t.IAuthProvider] = [self.add_child('gws.ext.auth.provider', c) for c in p]
 
         sys = self.add_child('gws.ext.auth.provider', t.Data(type='system'))
         self.providers.append(sys)
-        self.guest_user = sys.get_user('guest')
+        self.guest_user: t.IUser = sys.get_user('guest')
 
-        self.methods = []
-
-        p = self.var('methods')
-        if p is None:
-            # no methods at all, enable the web method
-            self.methods.append(self.add_child('gws.ext.auth.method', t.Config(type='web')))
-        else:
-            self.methods = [self.add_child('gws.ext.auth.method', c) for c in p]
+        # no methods at all, enable the web method
+        p = self.var('methods', default=[t.Config(type='web')])
+        self.methods: t.List[t.IAuthMethod] = [self.add_child('gws.ext.auth.method', c) for c in p]
 
     @property
     def guest_session(self):

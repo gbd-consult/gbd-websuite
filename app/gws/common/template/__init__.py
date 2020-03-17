@@ -59,12 +59,6 @@ class Object(gws.Object, t.ITemplate):
     map_size: t.Size
     page_size: t.Size
 
-    def __init__(self):
-        super().__init__()
-        self.data_model: t.IModel = None
-        self.path = ''
-        self.text = ''
-
     @property
     def props(self):
         return t.TemplateProps({
@@ -81,15 +75,14 @@ class Object(gws.Object, t.ITemplate):
     def configure(self):
         super().configure()
 
-        self.path = self.var('path')
-        self.text = self.var('text')
+        self.path: str = self.var('path')
+        self.text: str = self.var('text')
 
         uid = self.var('uid') or (gws.sha256(self.path) if self.path else self.klass.replace('.', '_'))
         self.set_uid(uid)
 
         p = self.var('dataModel')
-        if p:
-            self.data_model = self.add_child('gws.common.model', p)
+        self.data_model: t.Optional[t.IModel] = self.add_child('gws.common.model', p) if p else None
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')

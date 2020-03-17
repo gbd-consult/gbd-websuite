@@ -86,10 +86,10 @@
     @return feature_namespace + ':' + s
 @end
 
-@def inspire_extended_capabilities
-    ## http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd
-    ## Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities, plus mandatory language parameters, plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document
+## http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd
+## Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities, plus mandatory language parameters, plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document
 
+@def inspire_extended_capabilities
     @tag inspire_common:ResourceLocator
         @tag inspire_common:URL
             @if use_csw
@@ -101,15 +101,15 @@
         @t inspire_common:MediaType text/xml
     @end
 
-    @t inspire_common:ResourceType {meta.resourceType}
-    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.pubDate}
+    @t inspire_common:ResourceType {meta.inspireResourceType}
+    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.dateCreated}
 
     @tag inspire_common:Conformity
         @tag inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng"
             @t inspire_common:Title COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
             @t inspire_common:DateOfPublication 2010-12-08
         @end
-        @t inspire_common:Degree {meta.degreeOfConformity}
+        @t inspire_common:Degree {meta.inspireDegreeOfConformity}
     @end
 
     @tag inspire_common:MetadataPointOfContact
@@ -117,8 +117,8 @@
         @t inspire_common:EmailAddress {meta.contact.email}
     @end
 
-    @t inspire_common:SpatialDataServiceType {meta.spatialDataServiceType}
-    @t inspire_common:MandatoryKeyword/inspire_common:KeywordValue {meta.mandatoryKeyword}
+    @t inspire_common:SpatialDataServiceType {meta.inspireSpatialDataServiceType}
+    @t inspire_common:MandatoryKeyword/inspire_common:KeywordValue {meta.inspireMandatoryKeyword}
 
     @tag inspire_common:SupportedLanguages
         @t inspire_common:DefaultLanguage/inspire_common:Language {meta.language3}

@@ -48,21 +48,13 @@ class ModelProps(t.Props):
 
 #:export IModel
 class Object(gws.Object, t.IModel):
-    def __init__(self):
-        super().__init__()
-        self.rules: t.List[t.ModelRule] = []
-        self.geometry_type: t.GeometryType = ''
-        self.geometry_crs: str = ''
-        self.is_identity = False
-
     def configure(self):
         super().configure()
 
-        p = self.var('rules')
-        if p:
-            self.rules = [self._configure_rule(r) for r in p]
-        self.geometry_type = self.var('geometryType')
-        self.geometry_crs = self.var('crs')
+        p = self.var('rules', default=[])
+        self.rules: t.List[t.ModelRule] = [self._configure_rule(r) for r in p]
+        self.geometry_type: t.GeometryType = self.var('geometryType')
+        self.geometry_crs: t.Crs = self.var('crs')
 
     @property
     def props(self):

@@ -1,7 +1,6 @@
 <WMS_Capabilities
         xmlns="http://www.opengis.net/wms"
-        xmlns:gws="http://gws.gbd-consult.de"
-        xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0"
+        xmlns:gws="http://gws.gbd-consult.de" xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0"
         xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0"
         xmlns:sld="http://www.opengis.net/sld"
         xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -18,7 +17,7 @@
             <Keyword>service_meta_keyword3</Keyword>
         </KeywordList>
         <OnlineResource xlink:type="simple"
-                        xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms_inspire"/>
+                        xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
         <ContactInformation>
             <ContactPersonPrimary>
                 <ContactPerson>service_meta_contact_person</ContactPerson>
@@ -47,7 +46,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms_inspire"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -58,7 +57,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms_inspire"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -69,7 +68,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms_inspire"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -80,7 +79,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms_inspire"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -91,7 +90,7 @@
         </Exception>
         <inspire_vs:ExtendedCapabilities>
             <inspire_common:ResourceLocator>
-                <inspire_common:URL>http://service_meta_url</inspire_common:URL>
+                <inspire_common:URL>http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/WMS_INSPIRE_ISO_UID</inspire_common:URL>
                 <inspire_common:MediaType>text/xml</inspire_common:MediaType>
             </inspire_common:ResourceLocator>
             <inspire_common:ResourceType>service</inspire_common:ResourceType>
@@ -103,7 +102,7 @@
                     <inspire_common:Title>COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services</inspire_common:Title>
                     <inspire_common:DateOfPublication>2010-12-08</inspire_common:DateOfPublication>
                 </inspire_common:Specification>
-                <inspire_common:Degree/>
+                <inspire_common:Degree>notEvaluated</inspire_common:Degree>
             </inspire_common:Conformity>
             <inspire_common:MetadataPointOfContact>
                 <inspire_common:OrganisationName>service_meta_contact_organization</inspire_common:OrganisationName>
@@ -126,7 +125,7 @@
             </inspire_common:ResponseLanguage>
         </inspire_vs:ExtendedCapabilities>
         <Layer queryable="1">
-            <Name>gws:wms_inspire</Name>
+            <Name>gws:a</Name>
             <Title>PROJECT_meta_title</Title>
             <Abstract>PROJECT_meta_abstract</Abstract>
             <CRS>EPSG:3857</CRS>
@@ -141,9 +140,10 @@
             <Attribution>
                 <Title>PROJECT_meta_attribution</Title>
             </Attribution>
-            <MetadataURL>
+            <MetadataURL type="ISO19115:2003">
                 <Format>application/xml</Format>
-                <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
+                <OnlineResource xlink:type="simple"
+                                xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a"/>
             </MetadataURL>
             <MinScaleDenominator>1000</MinScaleDenominator>
             <MaxScaleDenominator>50000</MaxScaleDenominator>
@@ -159,6 +159,11 @@
                 </EX_GeographicBoundingBox>
                 <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416" maxx="754551.4271137204"
                              maxy="6662413.966834171"/>
+                <MetadataURL type="ISO19115:2003">
+                    <Format>application/xml</Format>
+                    <OnlineResource xlink:type="simple"
+                                    xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.group_one"/>
+                </MetadataURL>
                 <MinScaleDenominator>1000</MinScaleDenominator>
                 <MaxScaleDenominator>50000</MaxScaleDenominator>
                 <Layer queryable="1">
@@ -173,6 +178,11 @@
                     </EX_GeographicBoundingBox>
                     <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
                                  maxx="754551.4271137204" maxy="6662413.966834171"/>
+                    <MetadataURL type="ISO19115:2003">
+                        <Format>application/xml</Format>
+                        <OnlineResource xlink:type="simple"
+                                        xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.group_one_one"/>
+                    </MetadataURL>
                     <MinScaleDenominator>1000</MinScaleDenominator>
                     <MaxScaleDenominator>50000</MaxScaleDenominator>
                     <Layer queryable="1">
@@ -187,6 +197,11 @@
                         </EX_GeographicBoundingBox>
                         <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
                                      maxx="754551.4271137204" maxy="6662413.966834171"/>
+                        <MetadataURL type="ISO19115:2003">
+                            <Format>application/xml</Format>
+                            <OnlineResource xlink:type="simple"
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.dus_25832"/>
+                        </MetadataURL>
                         <MinScaleDenominator>1000</MinScaleDenominator>
                         <MaxScaleDenominator>50000</MaxScaleDenominator>
                     </Layer>
@@ -208,9 +223,10 @@
                 <Attribution>
                     <Title>PARIS_meta_attribution</Title>
                 </Attribution>
-                <MetadataURL>
+                <MetadataURL type="ISO19115:2003">
                     <Format>application/xml</Format>
-                    <OnlineResource xlink:type="simple" xlink:href="http://PARIS_meta_url"/>
+                    <OnlineResource xlink:type="simple"
+                                    xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.paris_3857"/>
                 </MetadataURL>
                 <MinScaleDenominator>1000</MinScaleDenominator>
                 <MaxScaleDenominator>50000</MaxScaleDenominator>

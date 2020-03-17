@@ -13,8 +13,8 @@ class Config(layer.Config):
 
 
 class Image(layer.Layer):
-    def __init__(self):
-        super().__init__()
+    def configure(self):
+        super().configure()
 
         self.can_render_box = True
         self.can_render_xyz = True

@@ -52,64 +52,6 @@ class Config(t.WithTypeAndAccess):
 
 #:export ILayer
 class Layer(gws.Object, t.ILayer):
-    def __init__(self):
-        super().__init__()
-
-        self.can_render_box = False
-        self.can_render_xyz = False
-        self.can_render_svg = False
-
-        self.is_public = False
-        self.is_editable = False
-
-        self.has_cache = False
-        self.has_legend = False
-
-        self.supports_wms = False
-        self.supports_wfs = False
-
-        self.display = ''
-        self.image_format = ''
-
-        #:noexport
-        self.cache: types.CacheConfig = None
-        #:noexport
-        self.grid: types.GridConfig = None
-
-        self.cache_uid = None
-        self.grid_uid = None
-
-        self.layers = []
-
-        self.map: t.IMap = None
-        self.meta: t.MetaData = None
-
-        self.description_template: t.ITemplate = None
-        self.feature_format: t.IFormat = None
-        self.data_model: t.IModel = None
-
-        self.title = ''
-
-        self.resolutions: t.List[float] = None
-        self.extent: t.Extent = None
-
-        self.legend_url = ''
-
-        self.opacity = 1
-        self.client_options = t
-
-        self.services = []
-        self.geometry_type = None
-
-        self.style: t.IStyle = None
-        self.edit_style: t.IStyle = None
-        self.edit_data_model: t.IModel = None
-        self.edit_options: t.Data = None
-
-        self.ows_name = ''
-        self.ows_services_enabled = []
-        self.ows_services_disabled = []
-
     @property
     def props(self):
         return types.LayerProps(
@@ -144,79 +86,98 @@ class Layer(gws.Object, t.ILayer):
     def configure(self):
         super().configure()
 
-        self.load_metadata()
+        self.map: t.IMap = t.cast(t.IMap, self.get_closest('gws.common.map'))
 
-        self.map = self.get_closest('gws.common.map')
-        self.is_public = self.root.application.auth.get_role('all').can_use(self)
-        self.ows_name = self.var('ows.name') or self.uid.split('.')[-1]
+        p = self.configure_metadata()
+        self.meta: t.MetaData = p[0]
+        self.title: str = p[1]
+
+        self.can_render_box: bool = False
+        self.can_render_xyz: bool = False
+        self.can_render_svg: bool = False
+
+        self.is_public: bool = self.root.application.auth.get_role('all').can_use(self)
+        self.is_editable: bool = False
 
         p = self.var('legend')
-        self.legend_url = p.url
-        self.has_legend = p.enabled and p.url
+        self.has_legend: bool = p.enabled and p.url
+        self.legend_url: str = p.url
 
-        self.opacity = self.var('opacity')
-        self.client_options = self.var('clientOptions')
+        self.image_format: str = self.var('imageFormat')
+        self.display: str = self.var('display')
+
+        #:noexport
+        self.cache: types.CacheConfig = self.var('cache')
+        self.has_cache: bool = self.cache and self.cache.enabled
+
+        #:noexport
+        self.grid: types.GridConfig = self.var('grid')
+
+        self.cache_uid: str = ''
+        self.grid_uid: str = ''
+
+        self.layers: t.List[t.ILayer] = []
 
         p = self.var('description')
-        if p:
-            self.description_template = self.create_object('gws.ext.template', p)
-        else:
-            self.description_template = self.create_shared_object(
+        self.description_template: t.ITemplate = (
+            self.create_object('gws.ext.template', p) if p
+            else self.create_shared_object(
                 'gws.ext.template',
                 'default_layer_description',
                 gws.common.template.builtin_config('layer_description')
             )
+        )
 
         p = self.var('featureFormat')
-        if p:
-            self.feature_format = self.create_object('gws.common.format', p)
-        else:
-            self.feature_format = self.create_shared_object(
+        self.feature_format: t.IFormat = (
+            self.create_object('gws.common.format', p) if p
+            else self.create_shared_object(
                 'gws.common.format',
                 'default_feature_description',
                 gws.common.template.builtin_config('feature_format')
             )
-
-        self.resolutions = gws.gis.zoom.resolutions_from_config(
-            self.var('zoom'),
-            self.map.resolutions)
-
-        self.crs = self.var('crs') or self.map.crs
+        )
 
         p = self.var('dataModel')
-        if p:
-            self.data_model = self.add_child('gws.common.model', p)
+        self.data_model: t.Optional[t.IModel] = (self.add_child('gws.common.model', p) if p else None)
 
-        self.image_format = self.var('imageFormat')
-        self.display = self.var('display')
+        self.resolutions: t.List[float] = gws.gis.zoom.resolutions_from_config(
+            self.var('zoom'),
+            self.map.resolutions)
+        self.extent: t.Optional[t.Extent] = None
 
-        self.ows_services_enabled = set(self.var('ows.servicesEnabled', default=[]))
-        self.ows_services_disabled = set(self.var('ows.servicesDisabled', default=[]))
+        self.opacity = self.var('opacity')
+        self.client_options = self.var('clientOptions')
 
-        p = self.var('editDataModel')
-        if p:
-            self.edit_data_model = self.add_child('gws.common.model', p)
+        self.geometry_type: t.Optional[t.GeometryType] = None
 
         p = self.var('style')
-        if p:
-            self.style = gws.common.style.from_config(p)
-        else:
-            self.style = gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES))
+        self.style: t.IStyle = (
+            gws.common.style.from_config(p) if p
+            else gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES))
+        )
 
-        p = self.var('edit')
-        if p:
-            self.edit_options = p
+        self.supports_wms: bool = False
+        self.supports_wfs: bool = False
 
-        self.cache = self.var('cache')
-        self.has_cache = self.cache and self.cache.enabled
+        self.ows_name: str = self.var('ows.name') or self.uid.split('.')[-1]
+        self.ows_services_enabled: t.List[str] = self.var('ows.servicesEnabled', default=[])
+        self.ows_services_disabled: t.List[str] = self.var('ows.servicesDisabled', default=[])
 
-        self.grid = self.var('grid')
+        self.crs: str = self.var('crs') or self.map.crs
+
+        p = self.var('editDataModel')
+        self.edit_data_model: t.Optional[t.IModel] = self.add_child('gws.common.model', p) if p else None
+        self.edit_options: t.Data = self.var('edit')
+
+        p = self.var('editStyle')
+        self.edit_style: t.Optional[t.IStyle] = gws.common.style.from_config(p) if p else None
 
     def post_configure(self):
         super().post_configure()
-        self._configure_search()
+        self.configure_search()
 
-    def load_metadata(self, provider_meta=None):
+    def configure_metadata(self, provider_meta=None):
         """Load metadata from the config or from a provider, whichever comes first."""
 
         title = self.var('title')
@@ -235,14 +196,36 @@ class Layer(gws.Object, t.ILayer):
             # title at the top level config overrides meta title
             meta.title = title
 
-        self.meta = gws.common.metadata.from_config(meta)
-        self.title = self.meta.title
+        meta = gws.common.metadata.from_config(meta)
+        title = meta.title
 
-        uid = self.var('uid') or gws.as_uid(self.title) or 'layer'
-        map = self.get_closest('gws.common.map')
-        if map:
-            uid = map.uid + '.' + uid
+        uid = self.var('uid') or gws.as_uid(title) or 'layer'
+        if self.map:
+            uid = self.map.uid + '.' + uid
         self.set_uid(uid)
+
+        return meta, title
+
+    def configure_search(self):
+        # search can be
+        # 1) missing = use default provider
+        # 2) disabled (enabled=False) = skip
+        # 3) just enabled = use default provider
+        # 4) enabled with explicit providers = use these
+
+        p = self.var('search')
+
+        if p and not p.enabled:
+            return
+
+        if not p or not p.providers:
+            prov = self.default_search_provider
+            if prov:
+                self.append_child(prov)
+            return
+
+        for cfg in p.providers:
+            self.add_child('gws.ext.search.provider', cfg)
 
     def edit_access(self, user):
         # @TODO granular edit access
@@ -287,29 +270,8 @@ class Layer(gws.Object, t.ILayer):
             return False
         if service.type == 'wfs' and not self.supports_wfs:
             return False
-        if self.ows_services_disabled and service.name in self.ows_services_disabled:
+        if self.ows_services_disabled and service.uid in self.ows_services_disabled:
             return False
         if self.ows_services_enabled:
-            return service.name in self.ows_services_enabled
+            return service.uid in self.ows_services_enabled
         return True
-
-    def _configure_search(self):
-        # search can be
-        # 1) missing = use default provider
-        # 2) disabled (enabled=False) = skip
-        # 3) just enabled = use default provider
-        # 4) enabled with explicit providers = use these
-
-        p = self.var('search')
-
-        if p and not p.enabled:
-            return
-
-        if not p or not p.providers:
-            prov = self.default_search_provider
-            if prov:
-                self.append_child(prov)
-            return
-
-        for cfg in p.providers:
-            self.add_child('gws.ext.search.provider', cfg)

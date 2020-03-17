@@ -19,7 +19,6 @@ class Config(t.WithTypeAndAccess):
     featureNamespace: str = 'gws'  #: feature namespace name
     featureNamespaceUri: str = 'http://gws.gbd-consult.de'  #: feature namespace uri
     meta: t.Optional[gws.common.metadata.Config]  #: service metadata
-    name: str = ''  #: service name
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     withInspireMeta: bool = False  #: use INSPIRE Metadata
     withInspireData: bool = False  #: use INSPIRE data model
@@ -41,6 +40,7 @@ class LayerCapsNode(t.Data):
     has_search: bool = False
     meta: t.MetaData = None
     tag_name: str = None
+    object_uid: str = None
     title: str = None
 
     extent: t.Extent = None
@@ -66,15 +66,14 @@ _NAMESPACES = gws.merge(const.NAMESPACES, inspire.NAMESPACES)
 class Object(gws.Object, t.IOwsService):
     """OWS service interface."""
 
-    def __init__(self):
-        super().__init__()
+    def configure(self):
+        super().configure()
 
-        self.feature_namespace = ''
-        self.name = ''
         self.type = ''
         self.version = ''
-        self.enabled = True
-        self.meta: t.MetaData
+        self.meta: t.MetaData = t.MetaData()
+        self.enabled: bool = self.var('enabled')
+
 
     def handle(self, req: t.IRequest) -> t.HttpResponse:
         pass
@@ -86,20 +85,9 @@ class Object(gws.Object, t.IOwsService):
 class Base(Object):
     """Baseclass for OWS services."""
 
-    def __init__(self):
-        super().__init__()
-
-        self.namespaces = _NAMESPACES
-        self.local_namespaces = {}
-        self.templates = {}
-        self.use_inspire_meta = False
-        self.use_inspire_data = False
-        self.use_csw = False
-        self.project: t.IProject = t.none()
-
     @property
     def url(self):
-        u = gws.SERVER_ENDPOINT + '/cmd/owsHttpGet' + self.name.title()
+        u = gws.SERVER_ENDPOINT + '/cmd/owsHttpGetService/uid/' + self.uid
         if self.project:
             u += f'/projectUid/{self.project.uid}'
         return u
@@ -108,15 +96,25 @@ class Base(Object):
     def service_link(self):
         return None
 
+    @property
+    def csw_uid(self):
+        if not hasattr(self, '_csw_uid'):
+            srv = self.root.find_first('gws.ext.ows.service.csw')
+            setattr(self, '_csw_uid', srv.uid if srv else None)
+        return getattr(self, '_csw_uid')
+
     # Configuration
 
     def configure(self):
         super().configure()
 
-        self.project = t.cast(t.IProject, self.get_closest('gws.common.project'))
-        self.name = self.var('name') or self.type
+        self.local_namespaces = {}
+        self.namespaces = _NAMESPACES
+        self.project: t.Optional[t.IProject] = t.cast(t.IProject, self.get_closest('gws.common.project'))
 
-        self.meta = self._prepare_metadata()
+        self.templates = {}
+        self.use_inspire_data = False
+        self.use_inspire_meta = False
 
         if self.var('featureNamespace'):
             self.feature_namespace = self.var('featureNamespace')
@@ -124,31 +122,28 @@ class Base(Object):
 
         self.use_inspire_meta = self.var('withInspireMeta')
         self.use_inspire_data = self.var('withInspireData')
-        self.use_csw = self.var('withCSW')
+
+        self.meta = self.configure_metadata()
 
         if self.use_inspire_data:
             self.configure_inspire_templates()
 
-    def _prepare_metadata(self):
+    def configure_metadata(self):
         meta = gws.common.metadata.from_config(self.var('meta'))
         if self.project:
             meta = gws.setdefault(meta, self.project.meta)
 
         meta = gws.setdefault(
             meta,
-            mandatoryKeyword='infoMapAccessService',
-            resourceType='service',
-            isoScope='service',
-            serviceUrl=self.url,
+            isoUid=self.uid,
             links=[],
+            resourceType='service',
+            serviceUrl=self.url,
+            inspireDegreeOfConformity=gws.common.metadata.InspireDegreeOfConformity.notEvaluated,
         )
 
-        ls = []
-
         if self.service_link:
-            ls.append(self.service_link)
-
-        meta.links += ls
+            meta.links.append(self.service_link)
 
         return meta
 
@@ -172,16 +167,21 @@ class Base(Object):
     # Request handling
 
     def handle(self, req) -> t.HttpResponse:
+        p = req.param('projectUid')
+        project = req.require_project(p) if p else self.project
+        if self.project and project != self.project:
+            gws.log.debug(f'service={self.uid!r}: wrong project={p!r}')
+            raise gws.web.error.NotFound()
         rd = Request({
             'req': req,
-            'project': req.require_project(req.param('projectUid')),
+            'project': project,
         })
         return self.dispatch(rd, req.param('request', '').lower())
 
     def dispatch(self, rd: Request, request_param):
         h = getattr(self, 'handle_' + request_param, None)
         if not h:
-            gws.log.debug(f'request={request_param!r} not found')
+            gws.log.debug(f'service={self.uid!r}: request={request_param!r} not found')
             raise gws.web.error.NotFound()
         return h(rd)
 
@@ -194,13 +194,13 @@ class Base(Object):
 
         def csw_meta_url(uid):
             return rd.req.url_for(
-                gws.SERVER_ENDPOINT + '/cmd/owsHttpGetCsw/request/GetRecordById/id/' + gws.as_uid(uid))
+                f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.csw_uid}/request/GetRecordById/id/{uid}')
 
         context = gws.merge({
             'project': rd.project,
             'meta': self.meta,
             'use_inspire_meta': self.use_inspire_meta,
-            'use_csw': self.use_csw,
+            'use_csw': self.csw_uid is not None,
             'url_for': rd.req.url_for,
             'csw_meta_url': csw_meta_url,
             'feature_namespace': self.feature_namespace,
@@ -263,6 +263,7 @@ class Base(Object):
         root = LayerCapsNode(
             has_search=any(n.has_search for n in roots),
             meta=p.meta,
+            object_uid=p.uid,
             sub_nodes=roots,
             tag_name=p.uid,
             title=p.title,
@@ -350,6 +351,7 @@ class Base(Object):
             has_search=layer.has_search or any(n.has_search for n in sub_nodes),
             has_legend=layer.has_legend,
             layer=layer,
+            object_uid=layer.uid,
             meta=layer.meta,
             sub_nodes=sub_nodes,
             tag_name=layer.ows_name,

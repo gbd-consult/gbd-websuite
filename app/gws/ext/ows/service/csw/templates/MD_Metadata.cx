@@ -47,7 +47,7 @@
 @def identification
     @tag gmd:citation/gmd:CI_Citation
         @t gmd:title/gco:CharacterString {meta.title}
-        @publication_date meta.pubDate
+        @publication_date meta.dateCreated
         @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.isoUid}
     @end
 
@@ -124,13 +124,13 @@
                     @t gmd:title/gco:CharacterString COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
                     @publication_date '2010-12-08'
                 @end
-                @t gmd:explanation/gco:CharacterString {meta.qualityExplanation}
-                @t gmd:pass/gco:Boolean {meta.qualityPass}
+                @t gmd:explanation/gco:CharacterString {meta.isoQualityExplanation}
+                @t gmd:pass/gco:Boolean {meta.isoQualityPass}
             @end
         @end
     @end
     @tag gmd:lineage/gmd:LI_Lineage
-        @t gmd:statement/gco:CharacterString {meta.qualityLineage}
+        @t gmd:statement/gco:CharacterString {meta.isoQualityLineage}
     @end
 @end
 
@@ -148,7 +148,7 @@
         @contact meta.contact
     @end
 
-    @t gmd:dateStamp/gco:DateTime {meta.pubDate}
+    @t gmd:dateStamp/gco:DateTime {meta.dateCreated}
     @t gmd:metadataStandardName/gco:CharacterString ISO19115
     @t gmd:metadataStandardVersion/gco:CharacterString 2003/Cor.1:2006
     @t gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString {meta.proj.uri}

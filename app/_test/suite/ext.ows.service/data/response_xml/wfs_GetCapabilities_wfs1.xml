@@ -48,7 +48,7 @@
         <ows:Operation name="GetCapabilities">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWfs/projectUid/wfs1"/>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wfs/projectUid/a"/>
                 </ows:HTTP>
             </ows:DCP>
             <ows:Parameter name="AcceptVersions">
@@ -62,14 +62,14 @@
         <ows:Operation name="DescribeFeatureType">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWfs/projectUid/wfs1"/>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wfs/projectUid/a"/>
                 </ows:HTTP>
             </ows:DCP>
         </ows:Operation>
         <ows:Operation name="GetFeature">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWfs/projectUid/wfs1"/>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wfs/projectUid/a"/>
                 </ows:HTTP>
             </ows:DCP>
         </ows:Operation>

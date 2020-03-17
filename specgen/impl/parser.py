@@ -266,7 +266,7 @@ class _Parser:
             return
 
         if with_funcs and _cls(node) == 'FunctionDef':
-            if node.name == '__init__':
+            if node.name in ('__init__', 'configure'):
                 for b in node.body:
                     self.stub_member(b, stub, with_funcs=False)
                 return

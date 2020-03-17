@@ -1,11 +1,7 @@
-import gws
 import gws.gis.source
-import gws.gis.ows
 import gws.gis.util
 
 import gws.types as t
-
-from . import provider
 
 """
 
@@ -33,12 +29,3 @@ class WmsConfig(t.Config):
     capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
     sourceLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use
     url: t.Url  #: service url
-
-
-def configure_wms_for(obj: t.IObject, **filter_args):
-    obj.url = obj.var('url')
-    obj.provider = gws.gis.ows.shared_provider(provider.Object, obj, obj.config)
-    obj.source_layers = gws.gis.source.filter_layers(
-        obj.provider.source_layers,
-        obj.var('sourceLayers'),
-        **filter_args)

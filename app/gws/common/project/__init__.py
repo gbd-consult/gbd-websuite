@@ -49,48 +49,32 @@ class Props(t.Data):
 
 #:export IProject
 class Object(gws.Object, t.IProject):
-    def __init__(self):
-        super().__init__()
-
-        self.api: t.IApi = None
-        self.assets_root: t.DocumentRoot = None
-        self.client: t.IClient = None
-        self.description_template: t.ITemplate = None
-        self.locales = []
-        self.map: t.IMap = None
-        self.meta: t.MetaData = {}
-        self.overview_map: t.IMap = None
-        self.printer: t.IPrinter = None
-        self.title = ''
-
     def configure(self):
         super().configure()
 
-        self.meta = gws.common.metadata.from_config(self.var('meta'))
+        self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
         # title at the top level config preferred
         if self.var('title'):
             self.meta.title = self.var('title')
 
-        self.title = self.meta.title
+        self.title: str = self.meta.title
 
-        self.locales = self.var('locales', parent=True, default=['en_CA'])
-        self.assets_root = gws.web.site.document_root(self.var('assets'))
+        self.locales: t.List[str] = self.var('locales', parent=True, default=['en_CA'])
+        self.assets_root: t.DocumentRoot = gws.web.site.document_root(self.var('assets'))
 
         p = self.var('map')
-        if p:
-            self.map = self.add_child(gws.common.map.Object, p)
+        self.map: t.Optional[t.IMap] = self.add_child(gws.common.map.Object, p) if p else None
 
         p = self.var('overviewMap')
-        if p:
-            p.uid = 'overview'
-            self.overview_map = self.add_child(gws.common.map.Object, p)
+        self.overview_map: t.Optional[t.IMap] = self.add_child(gws.common.map.Object, p) if p else None
+        if self.overview_map:
+            self.overview_map.uid = 'overview'
 
         p = self.var('printer')
-        if p:
-            self.printer = self.add_child(gws.common.printer.Object, p)
+        self.printer: t.Optional[t.IPrinter] = self.add_child(gws.common.printer.Object, p) if p else None
 
         p = self.var('description')
-        self.description_template = self.add_child('gws.ext.template', p or gws.common.template.builtin_config('project_description'))
+        self.description_template: t.ITemplate = self.add_child('gws.ext.template', p or gws.common.template.builtin_config('project_description'))
 
         p = self.var('search')
         if p and p.enabled and p.providers:
@@ -98,12 +82,12 @@ class Object(gws.Object, t.IProject):
                 self.add_child('gws.ext.search.provider', s)
 
         p = self.var('api')
-        self.api = self.add_child(gws.common.api.Object, p) if p else None
+        self.api: t.IApi = self.add_child(gws.common.api.Object, p) if p else None
 
         p = self.var('client')
         if p:
             p.parentClient = self.parent.var('client')
-            self.client = self.add_child(gws.common.client.Object, p)
+        self.client: t.Optional[t.IClient] = self.add_child(gws.common.client.Object, p) if p else None
 
     @property
     def description(self):

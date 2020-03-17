@@ -82,19 +82,12 @@ _default_site = t.Data({
 class Object(gws.Object, t.IApplication):
     """Main Appilication object"""
 
-    api: t.IApi
-    auth: t.IAuthManager
-    client: t.IClient
-
-    def __init__(self):
-        super().__init__()
+    def configure(self):
+        super().configure()
 
         self.qgis_version = ''
         self.version = gws.VERSION
         self.web_sites: t.List[t.IWebSite] = []
-
-    def configure(self):
-        super().configure()
 
         self.set_uid('APP')
 
@@ -104,7 +97,6 @@ class Object(gws.Object, t.IApplication):
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
 
         self.root.application = self
-
 
         s = self.var('fonts.dir')
         if s:
@@ -123,12 +115,11 @@ class Object(gws.Object, t.IApplication):
         for p in self.var('helpers', default=[]):
             self.add_child('gws.ext.helper', p)
 
-        self.auth = self.add_child(gws.common.auth.Object, self.var('auth', default=t.Data()))
-        self.api = self.add_child(gws.common.api.Object, self.var('api', default=t.Data()))
+        self.auth: t.IAuthManager = self.add_child(gws.common.auth.Object, self.var('auth', default=t.Data()))
+        self.api: t.IApi = self.add_child(gws.common.api.Object, self.var('api', default=t.Data()))
 
         p = self.var('client')
-        if p:
-            self.client = self.add_child(gws.common.client.Object, p)
+        self.client: t.Optional[t.IClient] = self.add_child(gws.common.client.Object, p) if p else None
 
         p = self.var('web.sites') or [_default_site]
         for s in p:
@@ -139,19 +130,19 @@ class Object(gws.Object, t.IApplication):
             self.add_child(gws.common.project.Object, p)
 
     def find_action(self, action_type, project_uid=None):
-
-        action = None
-
         if project_uid:
-            project: t.IProject = self.find('gws.common.project', project_uid)
-            if project:
-                action = project.api.actions.get(action_type) if project.api else None
+            project = t.cast(t.IProject, self.find('gws.common.project', project_uid))
+            if project and project.api:
+                action = project.api.actions.get(action_type)
+                if action:
+                    gws.log.debug(f'find_action {action_type!r} found={action.uid!r} in prj={project_uid!r}')
+                    return action
 
-        if not action:
-            action = self.api.actions.get(action_type) if self.api else None
-
-        gws.log.debug(f'find_action {action_type!r} prj={project_uid!r} found={action.uid if action else None}')
-        return action
+        if self.api:
+            action = self.api.actions.get(action_type)
+            if action:
+                gws.log.debug(f'find_action {action_type!r} found={action.uid!r} in app')
+                return action
 
 
 def _install_fonts(source_dir):

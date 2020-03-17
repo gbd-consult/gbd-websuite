@@ -11,14 +11,11 @@ class Config(gws.common.layer.Config):
 
 
 class Object(gws.common.layer.Layer):
-    def __init__(self):
-        super().__init__()
+    def configure(self):
+        super().configure()
 
         self.supports_wms = True
         self.supports_wfs = True
-
-    def configure(self):
-        super().configure()
 
         self.layers = gws.common.layer.util.add_layers_to_object(self, self.var('layers'))
 

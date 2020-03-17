@@ -6,11 +6,9 @@ from . import error
 
 #:export IAuthMethod
 class Object(gws.Object, t.IAuthMethod):
-    type: str
-
     def configure(self):
         super().configure()
-        self.type = self.var('type')
+        self.type: str = self.var('type')
 
     def open_session(self, auth: t.IAuthManager, req: t.IRequest) -> t.Optional[t.ISession]:
         pass

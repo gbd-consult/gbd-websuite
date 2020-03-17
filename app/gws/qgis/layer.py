@@ -27,25 +27,13 @@ class Config(gws.common.layer.ImageConfig):
 
 
 class Object(gws.common.layer.Layer):
-    def __init__(self):
-        super().__init__()
-
-        self.direct_render = set()
-        self.direct_search = set()
-        self.flatten = None
-        self.layers: t.List[t.ILayer] = []
-        self.own_crs = ''
-        self.path = ''
-        self.provider: provider.Object = t.none()
-        self.root_layers: t.List[t.SourceLayer] = []
-
     def configure(self):
         super().configure()
 
         self.path = self.var('path')
         self.provider: provider.Object = provider.create_shared(self, self.config)
         self.own_crs = self.provider.supported_crs[0]
-        self.load_metadata(self.provider.meta)
+        self.configure_metadata(self.provider.meta)
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))

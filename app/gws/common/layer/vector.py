@@ -20,8 +20,8 @@ class Config(layer.Config):
 
 #:export IVectorLayer
 class Vector(layer.Layer, t.IVectorLayer):
-    def __init__(self):
-        super().__init__()
+    def configure(self):
+        super().configure()
 
         self.can_render_box = True
         self.can_render_svg = True

@@ -16,12 +16,6 @@ class Config(gws.common.layer.VectorConfig):
 
 
 class Object(gws.common.layer.Vector):
-    def __init__(self):
-        super().__init__()
-        self.path = ''
-        self.features: t.List[t.IFeature] = []
-        self.own_crs = None
-
     def configure(self):
         super().configure()
 

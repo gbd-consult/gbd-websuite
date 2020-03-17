@@ -52,20 +52,19 @@
     @end
 @end
 
-@def wms_meta_url(meta)
+@def wms_meta_url(node)
     @if use_csw
         @tag MetadataURL type="ISO19115:2003"
             @t Format application/xml
-            @t OnlineResource xlink:type="simple" xlink:href="{csw_meta_url(meta.isoUid)}"
+            @t OnlineResource xlink:type="simple" xlink:href="{csw_meta_url(node.meta.isoUid or node.object_uid)}"
         @end
-    @elif meta.url
+    @elif node.meta.url
         @tag MetadataURL
             @t Format application/xml
-            @t OnlineResource xlink:type="simple" xlink:href="{url_for(meta.url)}"
+            @t OnlineResource xlink:type="simple" xlink:href="{url_for(node.meta.url)}"
         @end
     @end
 @end
-
 
 @def wms_request_capabilities
     @tag Request
@@ -114,7 +113,7 @@
             @t Attribution/Title {node.meta.attribution}
         @end
 
-        @wms_meta_url node.meta
+        @wms_meta_url node
 
         @if node.has_legend
             @tag Style/LegendURL

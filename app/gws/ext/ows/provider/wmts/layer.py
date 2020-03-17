@@ -25,24 +25,14 @@ class Config(gws.common.layer.ImageTileConfig):
 
 
 class Object(gws.common.layer.ImageTile):
-    def __init__(self):
-        super().__init__()
-
-        self.matrix_set: types.TileMatrixSet = None
-        self.provider: provider.Object = None
-        self.source_layer: types.SourceLayer = None
-        self.source_crs = ''
-        self.source_style = ''
-        self.url = ''
-
     def configure(self):
         super().configure()
 
         self.url = self.var('url')
-        self.provider = gws.gis.ows.shared_provider(provider.Object, self, self.config)
+        self.provider: provider.Object = gws.gis.ows.shared_provider(provider.Object, self, self.config)
         self.source_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
-        self.source_layer = self._get_layer(self.var('sourceLayer'))
-        self.matrix_set = self._get_matrix_set()
+        self.source_layer: types.SourceLayer = self._get_layer(self.var('sourceLayer'))
+        self.matrix_set: types.TileMatrixSet = self._get_matrix_set()
 
         if not self.legend_url and self.source_layer.legend:
             self.legend_url = self.source_layer.legend

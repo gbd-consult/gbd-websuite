@@ -1,10 +1,11 @@
 import gws
 import gws.common.layer
-import gws.gis.zoom
-import gws.gis.source
 import gws.gis.legend
+import gws.gis.ows
+import gws.gis.source
+import gws.gis.source
 import gws.gis.util
-import gws.common.ows.provider
+import gws.gis.zoom
 
 import gws.types as t
 
@@ -16,19 +17,13 @@ class Config(gws.common.layer.ImageConfig, util.WmsConfig):
 
 
 class Object(gws.common.layer.Image):
-    def __init__(self):
-        super().__init__()
-
-        self.provider: provider.Object = None
-        self.source_layers: t.List[t.SourceLayer] = []
-        self.source_legend_urls = []
-        self.url = ''
-
     def configure(self):
         super().configure()
 
-        util.configure_wms_for(self)
-
+        self.provider = gws.gis.ows.shared_provider(provider.Object, self, self.config)
+        self.source_layers = gws.gis.source.filter_layers(
+            self.provider.source_layers,
+            self.var('sourceLayers'))
         if not self.source_layers:
             raise gws.Error(f'no source layers found for {self.uid!r}')
 

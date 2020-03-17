@@ -12,8 +12,8 @@
     @end
 
     @t dct:abstract {meta.abstract}
-    @t dct:modified {meta.modDate}
-    @t dc:date {meta.pubDate}
+    @t dct:modified {meta.dateUpdated}
+    @t dc:date {meta.dateCreated}
     @t dc:language {meta.language3}
 
     @with meta.lonlat_extent as e

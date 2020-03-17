@@ -8,20 +8,12 @@ from . import error, spec
 
 #:export IRootObject
 class Object(gws.core.tree.RootBase, t.IRootObject):
-    def __init__(self):
-        super().__init__()
-
-        self.application: t.IApplication = None
-
-        self._validator: gws.core.spec.Validator = None
-        self._monitor: gws.server.monitor.Object = None
-
     def configure(self):
         super().configure()
 
-        self._monitor = self.add_child(gws.server.monitor.Object, {})
-        self._validator = spec.validator()
-        self.application = self.add_child('gws.common.application', self.config)
+        self._monitor: gws.server.monitor.Object = self.add_child(gws.server.monitor.Object, {})
+        self._validator: gws.core.spec.Validator = spec.validator()
+        self.application: t.IApplication = self.add_child('gws.common.application', self.config)
 
     def validate_action(self, category, cmd, payload):
         cc = self._validator.method_spec(cmd)

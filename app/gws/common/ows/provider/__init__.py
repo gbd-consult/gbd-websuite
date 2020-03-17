@@ -4,23 +4,17 @@ import gws.types as t
 
 #:export IOwsProvider
 class Object(gws.Object, t.IOwsProvider):
-    def __init__(self):
-        super().__init__()
+    def configure(self):
+        super().configure()
 
-        self.invert_axis_crs: t.List[str] = []
-        self.meta: t.MetaData = None
+        self.invert_axis_crs: t.List[str] = self.var('invertAxis', default=[])
+        self.meta: t.MetaData = t.MetaData()
         self.operations: t.List[t.OwsOperation] = []
         self.source_layers: t.List[t.SourceLayer] = []
         self.supported_crs: t.List[t.Crs] = []
         self.type: str = ''
-        self.url: t.Url = ''
+        self.url: t.Url = self.var('url')
         self.version: str = ''
-
-    def configure(self):
-        super().configure()
-
-        self.invert_axis_crs = self.var('invertAxis')
-        self.url = self.var('url')
 
 
     def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:

@@ -15,7 +15,8 @@
             <Keyword>service_meta_keyword2</Keyword>
             <Keyword>service_meta_keyword3</Keyword>
         </KeywordList>
-        <OnlineResource xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+        <OnlineResource xlink:type="simple"
+                        xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/a"/>
         <ContactInformation>
             <ContactPersonPrimary>
                 <ContactPerson>service_meta_contact_person</ContactPerson>
@@ -44,7 +45,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -55,7 +56,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -66,7 +67,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -77,7 +78,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetWms/projectUid/wms1"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -87,7 +88,7 @@
             <Format>XML</Format>
         </Exception>
         <Layer queryable="1">
-            <Name>gws:wms1</Name>
+            <Name>gws:a</Name>
             <Title>PROJECT_meta_title</Title>
             <Abstract>PROJECT_meta_abstract</Abstract>
             <CRS>EPSG:3857</CRS>
@@ -102,9 +103,11 @@
             <Attribution>
                 <Title>PROJECT_meta_attribution</Title>
             </Attribution>
-            <MetadataURL>
+            <MetadataURL type="ISO19115:2003">
                 <Format>application/xml</Format>
-                <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
+                <OnlineResource
+                        xlink:type="simple"
+                        xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a"/>
             </MetadataURL>
             <MinScaleDenominator>1000</MinScaleDenominator>
             <MaxScaleDenominator>50000</MaxScaleDenominator>
@@ -120,6 +123,12 @@
                 </EX_GeographicBoundingBox>
                 <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416" maxx="754551.4271137204"
                              maxy="6662413.966834171"/>
+                <MetadataURL type="ISO19115:2003">
+                    <Format>application/xml</Format>
+                    <OnlineResource
+                            xlink:type="simple"
+                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.group_one"/>
+                </MetadataURL>
                 <MinScaleDenominator>1000</MinScaleDenominator>
                 <MaxScaleDenominator>50000</MaxScaleDenominator>
                 <Layer queryable="1">
@@ -134,6 +143,12 @@
                     </EX_GeographicBoundingBox>
                     <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
                                  maxx="754551.4271137204" maxy="6662413.966834171"/>
+                    <MetadataURL type="ISO19115:2003">
+                        <Format>application/xml</Format>
+                        <OnlineResource
+                                xlink:type="simple"
+                                xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.group_one_one"/>
+                    </MetadataURL>
                     <MinScaleDenominator>1000</MinScaleDenominator>
                     <MaxScaleDenominator>50000</MaxScaleDenominator>
                     <Layer queryable="1">
@@ -148,6 +163,12 @@
                         </EX_GeographicBoundingBox>
                         <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
                                      maxx="754551.4271137204" maxy="6662413.966834171"/>
+                        <MetadataURL type="ISO19115:2003">
+                            <Format>application/xml</Format>
+                            <OnlineResource
+                                    xlink:type="simple"
+                                    xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.dus_25832"/>
+                        </MetadataURL>
                         <MinScaleDenominator>1000</MinScaleDenominator>
                         <MaxScaleDenominator>50000</MaxScaleDenominator>
                     </Layer>
@@ -169,9 +190,11 @@
                 <Attribution>
                     <Title>PARIS_meta_attribution</Title>
                 </Attribution>
-                <MetadataURL>
+                <MetadataURL type="ISO19115:2003">
                     <Format>application/xml</Format>
-                    <OnlineResource xlink:type="simple" xlink:href="http://PARIS_meta_url"/>
+                    <OnlineResource
+                            xlink:type="simple"
+                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.paris_3857"/>
                 </MetadataURL>
                 <MinScaleDenominator>1000</MinScaleDenominator>
                 <MaxScaleDenominator>50000</MaxScaleDenominator>

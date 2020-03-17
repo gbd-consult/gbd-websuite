@@ -26,17 +26,10 @@ class Config(gws.common.layer.ImageConfig):
 
 
 class Object(gws.common.layer.Image):
-    def __init__(self):
-        super().__init__()
-
-        self.source_crs = ''
-        self.provider: provider.Object = t.none()
-        self.source_layers: t.List[t.SourceLayer] = []
-
     def configure(self):
         super().configure()
 
-        self.provider = provider.create_shared(self, self.config)
+        self.provider: provider.Object = provider.create_shared(self, self.config)
         self.source_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
 
         self.source_layers = gws.gis.source.filter_layers(
@@ -48,7 +41,7 @@ class Object(gws.common.layer.Image):
             raise gws.Error(f'no layers found in {self.uid!r}')
 
         if len(self.source_layers) == 1 and not self.var('meta'):
-            self.load_metadata(self.source_layers[0].meta)
+            self.configure_metadata(self.source_layers[0].meta)
 
         if not self.var('zoom'):
             zoom = gws.gis.zoom.config_from_source_layers(self.source_layers)

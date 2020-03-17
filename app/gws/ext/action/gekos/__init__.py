@@ -82,21 +82,13 @@ _DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
 
 
 class Object(gws.common.action.Object):
-    def __init__(self):
-        super().__init__()
-
-        self.alkis: gws.ext.helper.alkis.Object = t.none()
-        self.crs = ''
-        self.db: gws.ext.db.provider.postgres.Object = t.none()
-        self.feature_format: t.IFormat = t.none()
-
     def configure(self):
         super().configure()
 
         self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
-        self.crs = self.var('crs')
+        self.crs: t.Crs = self.var('crs')
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.feature_format = self.add_child('gws.common.format', self.var('featureFormat') or _DEFAULT_FORMAT)
+        self.feature_format = t.cast(t.IFormat, self.add_child('gws.common.format', self.var('featureFormat') or _DEFAULT_FORMAT))
 
     def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:
         if not self.alkis:
@@ -109,6 +101,8 @@ class Object(gws.common.action.Object):
 
         project = req.require_project(p.projectUid)
         feature.transform_to(project.map.crs)
+
+        self.alkis.index_schema
 
         f = feature.apply_format(self.feature_format).props
         f.attributes = []

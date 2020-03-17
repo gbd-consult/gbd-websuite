@@ -13,11 +13,9 @@ class Config(t.WithType):
 
 #:export IAuthProvider
 class Object(gws.Object, t.IAuthProvider):
-    allowed_methods: t.List[str]
-
     def configure(self):
         super().configure()
-        self.allowed_methods = self.var('allowedMethods')
+        self.allowed_methods: t.List[str] = self.var('allowedMethods')
 
     def get_user(self, user_uid: str) -> t.Optional[t.IUser]:
         pass

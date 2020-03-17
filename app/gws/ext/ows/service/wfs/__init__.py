@@ -52,11 +52,6 @@ MAX_LIMIT = 100
 
 
 class Object(ows.Base):
-    def __init__(self):
-        super().__init__()
-
-        self.type = 'wfs'
-        self.version = VERSION
 
     @property
     def service_link(self):
@@ -68,6 +63,9 @@ class Object(ows.Base):
 
     def configure(self):
         super().configure()
+
+        self.type = 'wfs'
+        self.version = VERSION
 
         for tpl in 'getCapabilities', 'describeFeatureType', 'getFeature', 'feature':
             self.templates[tpl] = self.configure_template(tpl, 'wfs/templates')

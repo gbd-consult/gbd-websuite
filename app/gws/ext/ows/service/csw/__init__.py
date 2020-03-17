@@ -21,10 +21,15 @@ import gws.common.ows.service as ows
 from . import filter
 
 
+class Profile(t.Enum):
+    ISO = 'ISO'
+    DCMI = 'DCMI'
+
+
 class Config(gws.common.ows.service.Config):
     """CSW Service configuration"""
 
-    profile: str = 'ISO'  #: ISO or DCMI profile
+    profile: Profile = 'ISO'  #: metadata profile
 
 
 VERSION = '2.0.2'
@@ -32,20 +37,15 @@ MAX_LIMIT = 100
 
 
 class Object(ows.Base):
-    def __init__(self):
-        super().__init__()
+
+    def configure(self):
+        super().configure()
 
         self.type = 'csw'
         self.version = VERSION
 
         self.records = None
         self.index = None
-
-        self.record_template = ''
-        self.profile = ''
-
-    def configure(self):
-        super().configure()
 
         self.profile = self.var('profile')
         self.record_template = 'record' + self.profile
@@ -55,11 +55,13 @@ class Object(ows.Base):
 
         self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates', type='text')
 
-        self.meta = gws.merge(
-            self.meta,
-            mandatoryKeyword='humanCatalogueViewer',
-            spatialDataServiceType='discovery',
-            isoScope='dataset'
+    def configure_metadata(self):
+        return gws.setdefault(
+            super().configure_metadata(),
+            isoScope='dataset',
+            inspireMandatoryKeyword=gws.common.metadata.InspireKeyword.humanCatalogueViewer,
+            inspireResourceType=gws.common.metadata.InspireResourceType.service,
+            inspireSpatialDataServiceType=gws.common.metadata.InspireSpatialDataServiceType.discovery,
         )
 
     def handle(self, req) -> t.HttpResponse:
