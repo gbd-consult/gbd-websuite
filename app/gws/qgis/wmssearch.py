@@ -15,28 +15,25 @@ class Config(gws.common.search.provider.Config):
 
 
 class Object(gws.common.search.provider.Object):
-    def __init__(self):
-        super().__init__()
-
-        self.provider: provider.Object = None
-        self.source_layers: t.List[t.SourceLayer] = []
-
     def configure(self):
         super().configure()
 
-        self.with_geometry = 'required'
-        self.with_keyword = 'no'
+        self.with_geometry = gws.common.search.provider.ParameterUsage.required
+        self.with_keyword = gws.common.search.provider.ParameterUsage.forbidden
 
         layer = self.var('layer')
         if layer:
-            self.provider = layer.provider
-            self.source_layers = self.var('source_layers')
+            self.provider: provider.Object = layer.provider
+            self.source_layers: t.List[t.SourceLayer] = self.var('source_layers')
         else:
-            self.provider = provider.create_shared(self, self.config)
-            self.source_layers = gws.gis.source.filter_layers(
+            self.provider: provider.Object = provider.create_shared(self, self.config)
+            self.source_layers: t.List[t.SourceLayer] = gws.gis.source.filter_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers'),
                 queryable_only=True)
+        if not self.source_layers:
+            gws.log.warn(f'{self.uid!r}: no source layers')
+            self.active = False
 
     def can_run(self, args):
         return (

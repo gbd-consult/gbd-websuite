@@ -1002,6 +1002,7 @@ class IRequest(IBaseRequest):
 
 
 class ISearchProvider(IObject):
+    active: bool = None
     data_model: Optional['IModel'] = None
     feature_format: Optional['IFormat'] = None
     tolerance: 'Measurement' = None

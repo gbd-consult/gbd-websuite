@@ -30,6 +30,10 @@ class Object(gws.Object, t.ISearchProvider):
     def configure(self):
         super().configure()
 
+        # `active` will be False for automatic search providers that failed to initialize
+        # @TODO remove inactive prodivers from the tree
+        self.active = True
+
         p = self.var('dataModel')
         self.data_model: t.Optional[t.IModel] = self.add_child('gws.common.model', p) if p else None
 
@@ -43,9 +47,13 @@ class Object(gws.Object, t.ISearchProvider):
         self.with_geometry: bool = self.var('withGeometry')
 
     def can_run(self, args: t.SearchArgs):
+        if not self.active:
+            return False
+
         # usage:           allowed   forbidden   required
         # param present    ok        ERR         ok
         # param missing    ok        ok          ERR
+
         if args.keyword and self.with_keyword == ParameterUsage.forbidden:
             return False
         if not args.keyword and self.with_keyword == ParameterUsage.required:

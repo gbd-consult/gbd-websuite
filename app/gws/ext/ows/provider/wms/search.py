@@ -30,8 +30,9 @@ class Object(gws.common.search.provider.Object):
                 self.var('sourceLayers'),
                 queryable_only=True
             )
-            if not self.source_layers:
-                raise gws.Error(f'no source layers found for {self.uid!r}')
+        if not self.source_layers:
+            gws.log.warn(f'{self.uid!r}: no source layers')
+            self.active = False
 
     def can_run(self, args):
         return (

@@ -226,6 +226,7 @@ class Object(gws.common.layer.Layer):
 
         return {
             'type': 'qgiswms',
+            'uid': gws.as_uid(sl.name) + '_qgiswms_search',
             'path': self.path,
             'sourceLayers': {
                 'names': [sl.name]
@@ -235,6 +236,7 @@ class Object(gws.common.layer.Layer):
     def _wms_search_provider(self, sl, ds):
         return {
             'type': 'wms',
+            'uid': gws.as_uid(sl.name) + '_wms_search',
             'url': self._make_wms_url(ds['url'], ds['params']),
             'sourceLayers': {
                 'names': ds['layers'],
@@ -248,12 +250,17 @@ class Object(gws.common.layer.Layer):
         if tab.startswith('(') or tab.upper().startswith('SELECT '):
             return
 
-        return {'type': 'qgispostgres', 'dataSource': ds}
+        return {
+            'type': 'qgispostgres',
+            'uid': gws.as_uid(sl.name) + '_qgispostgres_search',
+            'dataSource': ds
+        }
 
     def _wfs_search_provider(self, sl, ds):
         cfg = {
             'type': 'wfs',
             'url': ds['url'],
+            'uid': gws.as_uid(sl.name) + '_wfs_search',
         }
         if gws.get(ds, 'typeName'):
             cfg['sourceLayers'] = {
