@@ -41,7 +41,7 @@ class Object(gws.common.layer.Image):
             raise gws.Error(f'no layers found in {self.uid!r}')
 
         if len(self.source_layers) == 1 and not self.var('meta'):
-            self.configure_metadata(self.source_layers[0].meta)
+            self.meta, self.title = self.configure_metadata(self.source_layers[0].meta)
 
         if not self.var('zoom'):
             zoom = gws.gis.zoom.config_from_source_layers(self.source_layers)

@@ -16,7 +16,7 @@
     @t dc:date {meta.dateCreated}
     @t dc:language {meta.language3}
 
-    @with meta.lonlat_extent as e
+    @with meta.geographicExtent as e
         @tag ows:BoundingBox
             @t ows:LowerCorner {e[0]} {e[1]}
             @t ows:UpperCorner {e[2]} {e[3]}

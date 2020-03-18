@@ -454,35 +454,216 @@ class MetaData(Data):
     abstract: str = None
     accessConstraints: str = None
     attribution: str = None
-    contact: 'ContactConfig' = None
+    contact: 'MetaContact' = None
     dateCreated: 'Date' = None
     dateUpdated: 'Date' = None
     fees: str = None
+    geographicExtent: Optional['Extent'] = None
     image: 'Url' = None
     images: dict = None
     insipreMandatoryKeyword: str = None
-    inspireResourceType: 'InspireResourceType' = None
-    inspireSpatialDataServiceType: 'InspireSpatialDataServiceType' = None
+    inspireResourceType: 'MetaInspireResourceType' = None
+    inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType' = None
     inspireTheme: str = None
-    inspireTopicCategory: 'InspireTopicCategory' = None
-    isoCategory: str = None
+    inspireThemeDefinition: str = None
+    inspireThemeName: str = None
+    inspireTopicCategory: 'MetaInspireTopicCategory' = None
     isoQualityExplanation: str = None
     isoQualityLineage: str = None
     isoQualityPass: bool = None
-    isoScope: str = None
-    isoSpatialType: str = None
+    isoScope: 'MetaIsoScope' = None
+    isoSpatialRepresentationType: 'MetaIsoSpatialRepresentationType' = None
+    isoTopicCategory: 'MetaIsoTopicCategory' = None
     isoUid: str = None
     keywords: List[str] = None
     language: str = None
-    links: List['LinkConfig'] = None
+    links: List['MetaLink'] = None
+    maxScale: Optional[int] = None
+    minScale: Optional[int] = None
     name: str = None
+    proj: 'Projection' = None
     serviceUrl: 'Url' = None
     title: str = None
     url: 'Url' = None
 
 
+class MetaInspireDegreeOfConformity(Enum):
+    conformant = 'conformant'
+    notConformant = 'notConformant'
+    notEvaluated = 'notEvaluated'
+
+
+class MetaInspireKeyword(Enum):
+    chainDefinitionService = 'chainDefinitionService'
+    comEncodingService = 'comEncodingService'
+    comGeographicCompressionService = 'comGeographicCompressionService'
+    comGeographicFormatConversionService = 'comGeographicFormatConversionService'
+    comMessagingService = 'comMessagingService'
+    comRemoteFileAndExecutableManagement = 'comRemoteFileAndExecutableManagement'
+    comService = 'comService'
+    comTransferService = 'comTransferService'
+    humanCatalogueViewer = 'humanCatalogueViewer'
+    humanChainDefinitionEditor = 'humanChainDefinitionEditor'
+    humanFeatureGeneralizationEditor = 'humanFeatureGeneralizationEditor'
+    humanGeographicDataStructureViewer = 'humanGeographicDataStructureViewer'
+    humanGeographicFeatureEditor = 'humanGeographicFeatureEditor'
+    humanGeographicSpreadsheetViewer = 'humanGeographicSpreadsheetViewer'
+    humanGeographicSymbolEditor = 'humanGeographicSymbolEditor'
+    humanGeographicViewer = 'humanGeographicViewer'
+    humanInteractionService = 'humanInteractionService'
+    humanServiceEditor = 'humanServiceEditor'
+    humanWorkflowEnactmentManager = 'humanWorkflowEnactmentManager'
+    infoCatalogueService = 'infoCatalogueService'
+    infoCoverageAccessService = 'infoCoverageAccessService'
+    infoFeatureAccessService = 'infoFeatureAccessService'
+    infoFeatureTypeService = 'infoFeatureTypeService'
+    infoGazetteerService = 'infoGazetteerService'
+    infoManagementService = 'infoManagementService'
+    infoMapAccessService = 'infoMapAccessService'
+    infoOrderHandlingService = 'infoOrderHandlingService'
+    infoProductAccessService = 'infoProductAccessService'
+    infoRegistryService = 'infoRegistryService'
+    infoSensorDescriptionService = 'infoSensorDescriptionService'
+    infoStandingOrderService = 'infoStandingOrderService'
+    metadataGeographicAnnotationService = 'metadataGeographicAnnotationService'
+    metadataProcessingService = 'metadataProcessingService'
+    metadataStatisticalCalculationService = 'metadataStatisticalCalculationService'
+    spatialCoordinateConversionService = 'spatialCoordinateConversionService'
+    spatialCoordinateTransformationService = 'spatialCoordinateTransformationService'
+    spatialCoverageVectorConversionService = 'spatialCoverageVectorConversionService'
+    spatialDimensionMeasurementService = 'spatialDimensionMeasurementService'
+    spatialFeatureGeneralizationService = 'spatialFeatureGeneralizationService'
+    spatialFeatureManipulationService = 'spatialFeatureManipulationService'
+    spatialFeatureMatchingService = 'spatialFeatureMatchingService'
+    spatialImageCoordinateConversionService = 'spatialImageCoordinateConversionService'
+    spatialImageGeometryModelConversionService = 'spatialImageGeometryModelConversionService'
+    spatialOrthorectificationService = 'spatialOrthorectificationService'
+    spatialPositioningService = 'spatialPositioningService'
+    spatialProcessingService = 'spatialProcessingService'
+    spatialProximityAnalysisService = 'spatialProximityAnalysisService'
+    spatialRectificationService = 'spatialRectificationService'
+    spatialRouteDeterminationService = 'spatialRouteDeterminationService'
+    spatialSamplingService = 'spatialSamplingService'
+    spatialSensorGeometryModelAdjustmentService = 'spatialSensorGeometryModelAdjustmentService'
+    spatialSubsettingService = 'spatialSubsettingService'
+    spatialTilingChangeService = 'spatialTilingChangeService'
+    subscriptionService = 'subscriptionService'
+    taskManagementService = 'taskManagementService'
+    temporalProcessingService = 'temporalProcessingService'
+    temporalProximityAnalysisService = 'temporalProximityAnalysisService'
+    temporalReferenceSystemTransformationService = 'temporalReferenceSystemTransformationService'
+    temporalSamplingService = 'temporalSamplingService'
+    temporalSubsettingService = 'temporalSubsettingService'
+    thematicChangeDetectionService = 'thematicChangeDetectionService'
+    thematicClassificationService = 'thematicClassificationService'
+    thematicFeatureGeneralizationService = 'thematicFeatureGeneralizationService'
+    thematicGeocodingService = 'thematicGeocodingService'
+    thematicGeographicInformationExtractionService = 'thematicGeographicInformationExtractionService'
+    thematicGeoparsingService = 'thematicGeoparsingService'
+    thematicGoparameterCalculationService = 'thematicGoparameterCalculationService'
+    thematicImageManipulationService = 'thematicImageManipulationService'
+    thematicImageProcessingService = 'thematicImageProcessingService'
+    thematicImageSynthesisService = 'thematicImageSynthesisService'
+    thematicImageUnderstandingService = 'thematicImageUnderstandingService'
+    thematicMultibandImageManipulationService = 'thematicMultibandImageManipulationService'
+    thematicObjectDetectionService = 'thematicObjectDetectionService'
+    thematicProcessingService = 'thematicProcessingService'
+    thematicReducedResolutionGenerationService = 'thematicReducedResolutionGenerationService'
+    thematicSpatialCountingService = 'thematicSpatialCountingService'
+    thematicSubsettingService = 'thematicSubsettingService'
+    workflowEnactmentService = 'workflowEnactmentService'
+
+
+class MetaInspireResourceType(Enum):
+    dataset = 'dataset'
+    series = 'series'
+    service = 'service'
+
+
+class MetaInspireSpatialDataServiceType(Enum):
+    discovery = 'discovery'
+    download = 'download'
+    invoke = 'invoke'
+    other = 'other'
+    transformation = 'transformation'
+    view = 'view'
+
+
+class MetaInspireTopicCategory(Enum):
+    biota = 'biota'
+    boundaries = 'boundaries'
+    climatologyMeteorologyAtmosphere = 'climatologyMeteorologyAtmosphere'
+    economy = 'economy'
+    elevation = 'elevation'
+    environment = 'environment'
+    farming = 'farming'
+    geoscientificInformation = 'geoscientificInformation'
+    health = 'health'
+    imageryBaseMapsEarthCover = 'imageryBaseMapsEarthCover'
+    inlandWaters = 'inlandWaters'
+    intelligenceMilitary = 'intelligenceMilitary'
+    location = 'location'
+    oceans = 'oceans'
+    planningCadastre = 'planningCadastre'
+    society = 'society'
+    structure = 'structure'
+    transportation = 'transportation'
+    utilitiesCommunication = 'utilitiesCommunication'
+
+
+class MetaIsoOnLineFunction(Enum):
+    download = 'download'
+    information = 'information'
+    offlineAccess = 'offlineAccess'
+    order = 'order'
+    search = 'search'
+
+
+class MetaIsoScope(Enum):
+    attribute = 'attribute'
+    attributeType = 'attributeType'
+    dataset = 'dataset'
+    feature = 'feature'
+    featureType = 'featureType'
+    nonGeographicDataset = 'nonGeographicDataset'
+    propertyType = 'propertyType'
+    series = 'series'
+    tile = 'tile'
+
+
+class MetaIsoSpatialRepresentationType(Enum):
+    grid = 'grid'
+    stereoModel = 'stereoModel'
+    textTable = 'textTable'
+    tin = 'tin'
+    vector = 'vector'
+    video = 'video'
+
+
+class MetaIsoTopicCategory(Enum):
+    biota = 'biota'
+    boundaries = 'boundaries'
+    climatologyMeteorologyAtmosphere = 'climatologyMeteorologyAtmosphere'
+    economy = 'economy'
+    elevation = 'elevation'
+    environment = 'environment'
+    farming = 'farming'
+    geoscientificInformation = 'geoscientificInformation'
+    health = 'health'
+    imageryBaseMapsEarthCover = 'imageryBaseMapsEarthCover'
+    inlandWaters = 'inlandWaters'
+    intelligenceMilitary = 'intelligenceMilitary'
+    location = 'location'
+    oceans = 'oceans'
+    planningCadastre = 'planningCadastre'
+    society = 'society'
+    structure = 'structure'
+    transportation = 'transportation'
+    utilitiesCommunication = 'utilitiesCommunication'
+
+
 class MetaLink(Data):
-    function: str = None
+    function: 'MetaIsoOnLineFunction' = None
     scheme: str = None
     url: 'Url' = None
 
@@ -508,6 +689,18 @@ class OwsOperation:
     name: str = None
     parameters: dict = None
     post_url: 'Url' = None
+
+
+class Projection(Data):
+    epsg: str = None
+    is_geographic: bool = None
+    proj4text: str = None
+    srid: int = None
+    units: str = None
+    uri: str = None
+    url: str = None
+    urn: str = None
+    urnx: str = None
 
 
 class RenderInput(Data):
@@ -917,6 +1110,7 @@ class ILayer(IObject):
     title: str = None
     def configure_metadata(self, provider_meta=None): pass
     def configure_search(self): pass
+    def configure_spatial_metadata(self): pass
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
@@ -962,7 +1156,6 @@ class IOwsProvider(IObject):
 
 
 class IOwsService(IObject):
-    enabled: bool = None
     meta: 'MetaData' = None
     type: str = None
     version: str = None

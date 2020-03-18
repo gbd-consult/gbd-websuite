@@ -30,6 +30,9 @@ class Object(gws.common.layer.ImageTile):
 
         self.url = self.var('url')
         self.provider: provider.Object = gws.gis.ows.shared_provider(provider.Object, self, self.config)
+
+        self.meta, self.title = self.configure_metadata(self.provider.meta)
+
         self.source_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
         self.source_layer: types.SourceLayer = self._get_layer(self.var('sourceLayer'))
         self.matrix_set: types.TileMatrixSet = self._get_matrix_set()

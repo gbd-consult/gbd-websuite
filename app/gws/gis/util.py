@@ -7,9 +7,9 @@ def make_bbox(x, y, crs, resolution, pixel_width, pixel_height):
 
     # @TODO
 
-    # is_latlong = gws.gis.proj.is_latlong(crs)
+    # is_geographic = gws.gis.proj.is_geographic(crs)
     #
-    # if is_latlong:
+    # if is_geographic:
     #     x, y = gws.gis.proj.transform_xy(x, y, crs, 'EPSG:3857')
 
     bbox = [
@@ -19,7 +19,7 @@ def make_bbox(x, y, crs, resolution, pixel_width, pixel_height):
         y + (pixel_height * resolution) / 2,
     ]
 
-    # if is_latlong:
+    # if is_geographic:
     #     bbox = gws.gis.proj.transform_extent(bbox, 'EPSG:3857', crs)
 
     return bbox
@@ -64,7 +64,7 @@ def best_crs(target_crs, supported_crs):
 
     for crs in supported_crs:
         p = gws.gis.proj.as_proj(crs)
-        if p and not p.is_latlong:
+        if p and not p.is_geographic:
             gws.log.debug(f'best_crs: using {p.epsg!r} for {target_crs!r}')
             return p.epsg
 

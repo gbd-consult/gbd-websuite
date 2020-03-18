@@ -33,7 +33,8 @@ class Object(gws.common.layer.Layer):
         self.path = self.var('path')
         self.provider: provider.Object = provider.create_shared(self, self.config)
         self.own_crs = self.provider.supported_crs[0]
-        self.configure_metadata(self.provider.meta)
+
+        self.meta, self.title = self.configure_metadata(self.provider.meta)
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))

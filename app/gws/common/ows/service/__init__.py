@@ -1,5 +1,6 @@
 import gws
 import gws.common.metadata
+import gws.common.metadata.inspire
 import gws.common.model
 import gws.common.search.runner
 import gws.gis.extent
@@ -11,11 +12,10 @@ import gws.web.error
 
 import gws.types as t
 
-from . import const, inspire
+from . import const
 
 
 class Config(t.WithTypeAndAccess):
-    enabled: bool = True
     featureNamespace: str = 'gws'  #: feature namespace name
     featureNamespaceUri: str = 'http://gws.gbd-consult.de'  #: feature namespace uri
     meta: t.Optional[gws.common.metadata.Config]  #: service metadata
@@ -40,11 +40,10 @@ class LayerCapsNode(t.Data):
     has_search: bool = False
     meta: t.MetaData = None
     tag_name: str = None
-    object_uid: str = None
     title: str = None
 
     extent: t.Extent = None
-    lonlat_extent: t.Extent = None
+    geographic_extent: t.Extent = None
     max_scale: int = None
     min_scale: int = None
     proj: gws.gis.proj.Proj = None
@@ -59,7 +58,7 @@ class FeatureNode(t.Data):
     attributes: t.List[t.Attribute]
 
 
-_NAMESPACES = gws.merge(const.NAMESPACES, inspire.NAMESPACES)
+_NAMESPACES = gws.merge(const.NAMESPACES, gws.common.metadata.inspire.NAMESPACES)
 
 
 #:export IOwsService
@@ -72,8 +71,6 @@ class Object(gws.Object, t.IOwsService):
         self.type = ''
         self.version = ''
         self.meta: t.MetaData = t.MetaData()
-        self.enabled: bool = self.var('enabled')
-
 
     def handle(self, req: t.IRequest) -> t.HttpResponse:
         pass
@@ -95,13 +92,6 @@ class Base(Object):
     @property
     def service_link(self):
         return None
-
-    @property
-    def csw_uid(self):
-        if not hasattr(self, '_csw_uid'):
-            srv = self.root.find_first('gws.ext.ows.service.csw')
-            setattr(self, '_csw_uid', srv.uid if srv else None)
-        return getattr(self, '_csw_uid')
 
     # Configuration
 
@@ -128,18 +118,20 @@ class Base(Object):
         if self.use_inspire_data:
             self.configure_inspire_templates()
 
+    def post_configure(self):
+        super().post_configure()
+        self.configure_metadata()
+
     def configure_metadata(self):
         meta = gws.common.metadata.from_config(self.var('meta'))
         if self.project:
-            meta = gws.setdefault(meta, self.project.meta)
+            meta = gws.setdefault(meta, gws.common.metadata.from_meta(self.project.meta))
 
         meta = gws.setdefault(
             meta,
             isoUid=self.uid,
             links=[],
-            resourceType='service',
             serviceUrl=self.url,
-            inspireDegreeOfConformity=gws.common.metadata.InspireDegreeOfConformity.notEvaluated,
         )
 
         if self.service_link:
@@ -161,21 +153,32 @@ class Base(Object):
         })
 
     def configure_inspire_templates(self):
-        for tag in inspire.TAGS:
+        for tag in gws.common.metadata.inspire.TAGS:
             self.templates[tag] = self.configure_template(tag.replace(':', '_'), 'wfs/templates/inspire')
 
     # Request handling
 
     def handle(self, req) -> t.HttpResponse:
+        # services can be configured globally (in which case, self.project=None)
+        # and applied to multiple projects with the projectUid param
+
+        project = None
+
         p = req.param('projectUid')
-        project = req.require_project(p) if p else self.project
-        if self.project and project != self.project:
-            gws.log.debug(f'service={self.uid!r}: wrong project={p!r}')
-            raise gws.web.error.NotFound()
+        if p:
+            project = req.require_project(p)
+            if self.project and project != self.project:
+                gws.log.debug(f'service={self.uid!r}: wrong project={p!r}')
+                raise gws.web.error.NotFound()
+        elif self.project:
+            # for in-project services, ensure the user can access the project
+            req.require_project(self.project.uid)
+
         rd = Request({
             'req': req,
-            'project': project,
+            'project': project or self.project,
         })
+
         return self.dispatch(rd, req.param('request', '').lower())
 
     def dispatch(self, rd: Request, request_param):
@@ -191,18 +194,11 @@ class Base(Object):
         return self.xml_error_response(self.version, status, f'Error {status}')
 
     def render_template(self, rd: Request, template, context=None, format=None):
-
-        def csw_meta_url(uid):
-            return rd.req.url_for(
-                f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.csw_uid}/request/GetRecordById/id/{uid}')
-
         context = gws.merge({
             'project': rd.project,
             'meta': self.meta,
             'use_inspire_meta': self.use_inspire_meta,
-            'use_csw': self.csw_uid is not None,
             'url_for': rd.req.url_for,
-            'csw_meta_url': csw_meta_url,
             'feature_namespace': self.feature_namespace,
             'feature_namespace_uri': self.local_namespaces[self.feature_namespace],
             'all_namespaces': self.namespaces,
@@ -253,23 +249,14 @@ class Base(Object):
         if not roots:
             return
 
-        if len(roots) == 1:
-            return roots[0]
-
-        # multiple root layers -> create a root node from the project
-
-        p = rd.project
-
-        root = LayerCapsNode(
+        return LayerCapsNode(
+            extent=rd.project.map.extent,
             has_search=any(n.has_search for n in roots),
-            meta=p.meta,
-            object_uid=p.uid,
+            meta=rd.project.meta,
             sub_nodes=roots,
-            tag_name=p.uid,
-            title=p.title,
+            tag_name=rd.project.uid,
+            title=rd.project.title,
         )
-
-        return self._add_spatial_props(root, p.map.extent, p.map.crs, p.map.resolutions)
 
     def layer_node_list(self, rd: Request) -> t.List[LayerCapsNode]:
         """Return a list of terminal layer nodes (for WFS)."""
@@ -347,30 +334,19 @@ class Base(Object):
     def _layer_node_from(self, layer: t.ILayer, sub_nodes=None) -> LayerCapsNode:
         sub_nodes = sub_nodes or []
 
-        node = LayerCapsNode(
-            has_search=layer.has_search or any(n.has_search for n in sub_nodes),
+        return LayerCapsNode(
+            extent=layer.extent,
             has_legend=layer.has_legend,
+            has_search=layer.has_search or any(n.has_search for n in sub_nodes),
             layer=layer,
-            object_uid=layer.uid,
             meta=layer.meta,
             sub_nodes=sub_nodes,
             tag_name=layer.ows_name,
             title=layer.title,
         )
 
-        return self._add_spatial_props(node, layer.extent, layer.map.crs, layer.resolutions)
-
-    def _add_spatial_props(self, node: LayerCapsNode, extent: t.Extent, crs, resolutions):
-        scales = [units.res2scale(r) for r in resolutions]
-        node.extent = extent
-        node.lonlat_extent = self.lonlat_extent(extent, crs)
-        node.max_scale = max(scales)
-        node.min_scale = min(scales)
-        node.proj = gws.gis.proj.as_proj(crs)
-        return node
-
     def inspire_nodes(self, nodes):
-        return [n for n in nodes if n.tag_name in inspire.TAGS]
+        return [n for n in nodes if n.tag_name in gws.common.metadata.inspire.TAGS]
 
     def feature_node_list(self, rd: Request, features: t.List[t.IFeature]) -> t.List[FeatureNode]:
         def node(f: t.IFeature):
@@ -393,6 +369,3 @@ class Base(Object):
 
     def is_layer_enabled(self, layer):
         return layer and layer.ows_enabled(self)
-
-    def lonlat_extent(self, extent, crs):
-        return [round(c, 4) for c in gws.gis.extent.transform(extent, crs, gws.EPSG_4326)]

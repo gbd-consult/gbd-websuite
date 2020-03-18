@@ -53,12 +53,7 @@
 @end
 
 @def wms_meta_url(node)
-    @if use_csw
-        @tag MetadataURL type="ISO19115:2003"
-            @t Format application/xml
-            @t OnlineResource xlink:type="simple" xlink:href="{csw_meta_url(node.meta.isoUid or node.object_uid)}"
-        @end
-    @elif node.meta.url
+    @if node.meta.url
         @tag MetadataURL
             @t Format application/xml
             @t OnlineResource xlink:type="simple" xlink:href="{url_for(node.meta.url)}"
@@ -98,16 +93,16 @@
             @t Abstract {node.meta.abstract}
         @end
 
-        @t CRS {node.proj.epsg}
+        @t CRS {node.meta.proj.epsg}
 
         @tag EX_GeographicBoundingBox
-            @t westBoundLongitude {node.lonlat_extent[0]}
-            @t eastBoundLongitude {node.lonlat_extent[2]}
-            @t southBoundLatitude {node.lonlat_extent[1]}
-            @t northBoundLatitude {node.lonlat_extent[3]}
+            @t westBoundLongitude {node.meta.geographicExtent[0]}
+            @t eastBoundLongitude {node.meta.geographicExtent[2]}
+            @t southBoundLatitude {node.meta.geographicExtent[1]}
+            @t northBoundLatitude {node.meta.geographicExtent[3]}
         @end
 
-        @t BoundingBox CRS="{node.proj.epsg}" minx="{node.extent[0]}" miny="{node.extent[1]}" maxx="{node.extent[2]}" maxy="{node.extent[3]}"
+        @t BoundingBox CRS="{node.meta.proj.epsg}" minx="{node.extent[0]}" miny="{node.extent[1]}" maxx="{node.extent[2]}" maxy="{node.extent[3]}"
 
         @with node.meta.attribution
             @t Attribution/Title {node.meta.attribution}
@@ -116,14 +111,18 @@
         @wms_meta_url node
 
         @if node.has_legend
-            @tag Style/LegendURL
-                @t Format image/png
-                @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + feature_ns(node.tag_name)}"
+            @tag Style
+                @t Name default
+                @t Title default
+                @tag LegendURL
+                    @t Format image/png
+                    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + feature_ns(node.tag_name)}"
+                @end
             @end
         @end
 
-        @t MinScaleDenominator {node.min_scale | as_int}
-        @t MaxScaleDenominator {node.max_scale | as_int}
+        @t MinScaleDenominator {node.meta.minScale}
+        @t MaxScaleDenominator {node.meta.maxScale}
 
         @each reversed(node.sub_nodes) as sub_node
             @wms_layer_capabilities sub_node

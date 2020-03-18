@@ -15,20 +15,15 @@ class Config(gws.common.layer.VectorConfig, util.WfsServiceConfig):
 
 
 class Object(gws.common.layer.Vector):
-    def __init__(self):
-        super().__init__()
-
-        self.provider = None
-        self.source_layers: t.List[t.SourceLayer] = []
-        self.url = ''
-
     def configure(self):
         super().configure()
 
-        self.url = self.var('url')
+        self.url: str = self.var('url')
         self.provider: provider.Object = gws.gis.ows.shared_provider(provider.Object, self, self.config)
 
-        self.source_layers = gws.gis.source.filter_layers(
+        self.meta, self.title = self.configure_metadata(self.provider.meta)
+
+        self.source_layers: t.List[t.SourceLayer] = gws.gis.source.filter_layers(
             self.provider.source_layers,
             self.var('sourceLayers'))
         if not self.source_layers:

@@ -147,6 +147,16 @@ def transform(e: t.Extent, src: str, dst: str) -> t.Extent:
     )
 
 
+def transform_to_4326(e: t.Extent, crs: str) -> t.Extent:
+    e = transform(e, crs, gws.EPSG_4326)
+    return (
+        round(e[0], 5),
+        round(e[1], 5),
+        round(e[2], 5),
+        round(e[3], 5),
+    )
+
+
 def _sort(e):
     # our extents are always [minx, miny, maxx, maxy]
     return (

@@ -17,6 +17,7 @@ import gws.gis.shape
 import gws.gis.source
 import gws.gis.zoom
 import gws.tools.net
+import gws.tools.units
 
 import gws.types as t
 from gws import cached_property
@@ -175,7 +176,9 @@ class Layer(gws.Object, t.ILayer):
 
     def post_configure(self):
         super().post_configure()
+
         self.configure_search()
+        self.configure_spatial_metadata()
 
     def configure_metadata(self, provider_meta=None):
         """Load metadata from the config or from a provider, whichever comes first."""
@@ -205,6 +208,13 @@ class Layer(gws.Object, t.ILayer):
         self.set_uid(uid)
 
         return meta, title
+
+    def configure_spatial_metadata(self):
+        scales = [gws.tools.units.res2scale(r) for r in self.resolutions]
+        self.meta.geographicExtent = gws.gis.extent.transform_to_4326(self.extent, self.map.crs)
+        self.meta.minScale = int(min(scales))
+        self.meta.maxScale = int(max(scales))
+        self.meta.proj = gws.gis.proj.as_projection(self.map.crs)
 
     def configure_search(self):
         # search can be

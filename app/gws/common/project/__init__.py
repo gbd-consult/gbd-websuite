@@ -1,10 +1,13 @@
 import gws.common.api
 import gws.common.client
 import gws.common.map
+import gws.common.metadata
 import gws.common.printer
 import gws.common.search
 import gws.common.template
-import gws.common.metadata
+import gws.gis.extent
+import gws.gis.proj
+import gws.tools.units
 import gws.web.site
 
 import gws.types as t
@@ -56,7 +59,6 @@ class Object(gws.Object, t.IProject):
         # title at the top level config preferred
         if self.var('title'):
             self.meta.title = self.var('title')
-
         self.title: str = self.meta.title
 
         self.locales: t.List[str] = self.var('locales', parent=True, default=['en_CA'])
@@ -88,6 +90,13 @@ class Object(gws.Object, t.IProject):
         if p:
             p.parentClient = self.parent.var('client')
         self.client: t.Optional[t.IClient] = self.add_child(gws.common.client.Object, p) if p else None
+
+        if self.map:
+            scales = [gws.tools.units.res2scale(r) for r in self.map.resolutions]
+            self.meta.geographicExtent = gws.gis.extent.transform_to_4326(self.map.extent, self.map.crs)
+            self.meta.minScale = int(min(scales))
+            self.meta.maxScale = int(max(scales))
+            self.meta.proj = gws.gis.proj.as_projection(self.map.crs)
 
     @property
     def description(self):

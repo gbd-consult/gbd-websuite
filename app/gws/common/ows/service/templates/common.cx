@@ -92,11 +92,7 @@
 @def inspire_extended_capabilities
     @tag inspire_common:ResourceLocator
         @tag inspire_common:URL
-            @if use_csw
-                {csw_meta_url(meta.isoUid)}
-            @else
-                {url_for(meta.url)}
-            @end
+            {url_for(meta.url)}
         @end
         @t inspire_common:MediaType text/xml
     @end

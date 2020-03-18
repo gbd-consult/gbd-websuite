@@ -3,8 +3,6 @@
     @namespaces
 
     @each record_tags as tag
-        @tag csw:Record
-            @insert {tag}
-        @end
+        @insert {tag}
     @end
 @end

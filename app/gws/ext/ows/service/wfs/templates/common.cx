@@ -7,10 +7,10 @@
         @with node.meta.abstract
             @t Abstract {node.meta.abstract}
         @end
-        @t DefaultSRS {node.proj.urn}
+        @t DefaultSRS {node.meta.proj.urn}
         @tag ows:WGS84BoundingBox
-            @t ows:LowerCorner {node.lonlat_extent[0]} {node.lonlat_extent[1]}
-            @t ows:UpperCorner {node.lonlat_extent[2]} {node.lonlat_extent[3]}
+            @t ows:LowerCorner {node.meta.geographicExtent[0]} {node.meta.geographicExtent[1]}
+            @t ows:UpperCorner {node.meta.geographicExtent[2]} {node.meta.geographicExtent[3]}
         @end
     @end
 @end

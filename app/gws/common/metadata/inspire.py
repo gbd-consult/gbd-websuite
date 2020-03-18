@@ -380,8 +380,23 @@ NAMESPACES['lu'] = NAMESPACES['lunom']
 NAMESPACES['ac'] = NAMESPACES['ac-mf']
 NAMESPACES['mf'] = NAMESPACES['ac-mf']
 
-# https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32007L0002&from=EN
-# https://eur-lex.europa.eu/legal-content/DE/TXT/HTML/?uri=CELEX:32007L0002&from=EN
+## THEMES are generated with
+#
+# import requests, json
+#
+# langs = 'en', 'de'
+# es = {}
+#
+# for lang in langs:
+#     js = requests.get(f'http://inspire.ec.europa.eu/theme/theme.{lang}.json').json()
+#     for p in js['register']['containeditems']:
+#         p = p['theme']
+#         id = p['id'].split('/')[-1]
+#         es.setdefault(id, {})
+#         es[id][lang] = [p['label']['text'], p['definition']['text']]
+#
+# print(json.dumps(dict(sorted(es.items())), indent=4, ensure_ascii=False))
+
 
 THEMES = {
     "ac": {
@@ -392,6 +407,16 @@ THEMES = {
         "de": [
             "Atmosphärische Bedingungen",
             "Physikalische Bedingungen in der Atmosphäre. Dazu zählen Geodaten auf der Grundlage von Messungen, Modellen oder einer Kombination aus beiden sowie Angabe der Messstandorte."
+        ]
+    },
+    "ac-mf": {
+        "en": [
+            "Atmospheric Conditions and meteorological geographical features",
+            "Physical conditions in the atmosphere. Includes spatial data based on measurements, on models or on a combination thereof and includes measurement locations. Weather conditions and their measurements; precipitation, temperature, evapotranspiration, wind speed and direction."
+        ],
+        "de": [
+            "Atmospheric Conditions and meteorological geographical features",
+            "Physical conditions in the atmosphere. Includes spatial data based on measurements, on models or on a combination thereof and includes measurement locations. Weather conditions and their measurements; precipitation, temperature, evapotranspiration, wind speed and direction."
         ]
     },
     "ad": {
@@ -551,7 +576,7 @@ THEMES = {
         ],
         "de": [
             "Gewässernetz",
-            "Elemente des Gewässernetzes, einschließlich Meeresgebieten und allen sonstigen Wasserkörpern und hiermit verbundenen Teilsystemen, darunter Einzugsgebiete und Teileinzugsgebiete. Gegebenenfalls gemäß den Definitionen der Richtlinie 2000/60/EG des Europäischen Parlaments und des Rates vom 23. Oktober 2000 zur Schaffung eines Ordnungsrahmens für Maßnahmen der Gemeinschaft im Bereich der Wasserpolitik (2) und in Form von Netzen."
+            "Elemente des Gewässernetzes, einschließlich Meeresgebieten und allen sonstigen Wasserkörpern und hiermit verbundenen Teilsystemen, darunter Einzugsgebiete und Teileinzugsgebiete. Gegebenenfalls gemäß den Definitionen der Richtlinie 2000/60/EG des Europäischen Parlaments und des Rates vom 23. Oktober 2000 zur Schaffung eines Ordnungsrahmens für Maßnahmen der Gemeinschaft im Bereich der Wasserpolitik [2] und in Form von Netzen."
         ]
     },
     "lc": {
@@ -641,7 +666,7 @@ THEMES = {
         ],
         "de": [
             "Produktions- und Industrieanlagen",
-            "Standorte für industrielle Produktion, einschließlich durch die Richtlinie 96/61/EG des Rates vom 24. September 1996 über die integrierte Vermeidung und Verminderung der Umweltverschmutzung (1) erfasste Anlagen und Einrichtungen zur Wasserentnahme sowie Bergbau- und Lagerstandorte."
+            "Standorte für industrielle Produktion, einschließlich durch die Richtlinie 96/61/EG des Rates vom 24. September 1996 über die integrierte Vermeidung und Verminderung der Umweltverschmutzung [1] erfasste Anlagen und Einrichtungen zur Wasserentnahme sowie Bergbau- und Lagerstandorte."
         ]
     },
     "ps": {
@@ -711,7 +736,7 @@ THEMES = {
         ],
         "de": [
             "Verkehrsnetze",
-            "Verkehrsnetze und zugehörige Infrastruktureinrichtungen für Straßen-, Schienen- und Luftverkehr sowie Schifffahrt. Umfasst auch die Verbindungen zwischen den verschiedenen Netzen. Umfasst auch das transeuropäische Verkehrsnetz im Sinne der Entscheidung Nr. 1692/96/EG des Europäischen Parlaments und des Rates vom 23. Juli 1996 über gemeinschaftliche Leitlinien für den Aufbau eines transeuropäischen Verkehrsnetzes (1) und künftiger Überarbeitungen dieser Entscheidung."
+            "Verkehrsnetze und zugehörige Infrastruktureinrichtungen für Straßen-, Schienen- und Luftverkehr sowie Schifffahrt. Umfasst auch die Verbindungen zwischen den verschiedenen Netzen. Umfasst auch das transeuropäische Verkehrsnetz im Sinne der Entscheidung Nr. 1692/96/EG des Europäischen Parlaments und des Rates vom 23. Juli 1996 über gemeinschaftliche Leitlinien für den Aufbau eines transeuropäischen Verkehrsnetzes [1] und künftiger Überarbeitungen dieser Entscheidung."
         ]
     },
     "us": {
@@ -734,7 +759,7 @@ def theme_name(theme, language):
         pass
 
 
-def theme_description(theme, language):
+def theme_definition(theme, language):
     try:
         return THEMES[theme][language][1]
     except KeyError:

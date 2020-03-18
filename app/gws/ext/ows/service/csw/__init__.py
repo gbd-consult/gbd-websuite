@@ -1,16 +1,15 @@
 import gws
 
+import gws.common.metadata
+import gws.common.metadata.inspire
 import gws.common.model
 import gws.common.ows.service
-import gws.common.ows.service.inspire
 import gws.common.search.runner
+import gws.gis.gml
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
-import gws.gis.gml
 import gws.tools.date
-import gws.tools.units as units
-import gws.common.metadata
 import gws.tools.xml2
 import gws.web.error
 
@@ -44,7 +43,7 @@ class Object(ows.Base):
         self.type = 'csw'
         self.version = VERSION
 
-        self.records = None
+        self.metas = None
         self.index = None
 
         self.profile = self.var('profile')
@@ -58,15 +57,27 @@ class Object(ows.Base):
     def configure_metadata(self):
         return gws.setdefault(
             super().configure_metadata(),
-            isoScope='dataset',
-            inspireMandatoryKeyword=gws.common.metadata.InspireKeyword.humanCatalogueViewer,
-            inspireResourceType=gws.common.metadata.InspireResourceType.service,
-            inspireSpatialDataServiceType=gws.common.metadata.InspireSpatialDataServiceType.discovery,
+            inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
+            inspireMandatoryKeyword=t.MetaInspireKeyword.humanCatalogueViewer,
+            inspireResourceType=t.MetaInspireResourceType.service,
+            inspireSpatialDataServiceType=t.MetaInspireSpatialDataServiceType.discovery,
+            isoScope=t.MetaIsoScope.dataset,
+            isoSpatialRepresentationType=t.MetaIsoSpatialRepresentationType.vector,
         )
 
+    def post_configure(self):
+        # when using CSW, set meta urls of all objects (that don't have meta.url set) to our service url
+
+        super().post_configure()
+
+        for obj in self.root.find_all():
+            meta = gws.get(obj, 'meta')
+            if meta and not gws.get(meta, 'url'):
+                meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
+
     def handle(self, req) -> t.HttpResponse:
-        if self.records is None:
-            self._load_records()
+        if self.metas is None:
+            self._init_db()
 
         rd = ows.Request({
             'req': req,
@@ -107,82 +118,30 @@ class Object(ows.Base):
         }))
 
     def handle_getrecordbyid(self, rd: ows.Request):
-        uid = rd.req.param('id')
-        record = self.records.get(gws.as_uid(uid))
-
+        meta = self.metas.get(rd.req.param('id'))
+        if not meta:
+            raise gws.web.error.NotFound()
+        tags = self._render_metas(rd, [meta])
         return self.xml_response(self.render_template(rd, 'getRecordById', {
-            'record_tags': self._render_records(rd, [record]) if record else [],
+            'record_tags': tags
         }))
 
-    def _load_records(self):
-        metas = self._collect_metadata()
-
-        self.records = {}
+    def _init_db(self):
+        self.metas = {}
         self.index = []
 
-        for uid, meta in metas.items():
-            rec = t.Data(gws.as_dict(meta))
-            rec.index = len(self.records) + 1
-            self.records[uid] = rec
-
-        for rec in self.records.values():
-            for f in 'abstract', 'title':
-                s = rec.get(f)
-                if s:
-                    self.index.append((f, s, s.lower(), rec.index))
-            for s in rec.keywords:
-                self.index.append(('subject', s, s.lower(), rec.index))
-
-    def _collect_metadata(self):
-        rs = {}
-
-        for obj in self.find_all():
-            meta = getattr(obj, 'meta', None)
-            uid = gws.get(meta, 'iso.uid')
-            if not uid:
+        for obj in self.root.find_all():
+            meta = gws.get(obj, 'meta')
+            if not meta:
                 continue
-            m = self._configure_metadata(obj, meta)
-            if m:
-                rs[gws.as_uid(uid)] = m
-        return rs
+            self.metas[obj.uid] = meta
 
-    def _configure_metadata(self, obj: t.IObject, meta: t.MetaData) -> t.MetaData:
-        m = gws.common.metadata.from_config(meta)
-        extent = crs = res = None
-
-        if obj.is_a('gws.ext.layer'):
-            p: t.ILayer = obj
-            extent = p.extent
-            crs = p.map.crs
-            res = p.resolutions
-        else:
-            p: t.IProject = obj
-            if not obj.is_a('gws.common.project'):
-                p = obj.get_closest('gws.common.project')
-            if p:
-                extent = p.map.extent
-                crs = p.map.crs
-                res = p.map.resolutions
-
-        if extent:
-            m.lonlat_extent = self.lonlat_extent(extent, crs)
-            m.proj = gws.gis.proj.as_proj(crs)
-            m.resolution = int(min(units.res2scale(r) for r in res))
-
-        if gws.get(m, 'inspire.theme'):
-            m.inspire['themeName'] = gws.common.ows.service.inspire.theme_name(m.inspire['theme'], m.language)
-
-        m.iso = gws.merge({
-            'spatialType': 'vector',
-        }, m.iso)
-
-        m.inspire = gws.merge({
-            'qualityExplanation': '',
-            'qualityPass': 'false',
-            'qualityLineage': '',
-        }, m.inspire)
-
-        return m
+            for f in 'abstract', 'title':
+                s = gws.get(meta, f)
+                if s:
+                    self.index.append((f, s, s.lower(), obj.uid))
+            for s in gws.get(meta, 'keywords', default=[]):
+                self.index.append(('subject', s, s.lower(), obj.uid))
 
     def _find_records(self, rd):
         recs = self.records.values()
@@ -192,12 +151,12 @@ class Object(ows.Base):
         f = filter.Filter(self.index)
         return f.apply(flt.first(), recs)
 
-    def _render_records(self, rd, records):
+    def _render_metas(self, rd, metas):
         tags = []
 
-        for record in records:
+        for m in metas:
             tags.append(self.render_template(rd, self.record_template, {
-                'meta': record,
+                'meta': m,
             }, format='tag'))
 
         return tags

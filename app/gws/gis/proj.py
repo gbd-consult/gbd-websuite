@@ -4,10 +4,11 @@ import threading
 
 import osgeo.osr
 import pyproj
-import shapely.ops
 
 import gws
 import gws.tools.sqlite
+
+import gws.types as t
 
 osgeo.osr.UseExceptions()
 
@@ -38,8 +39,8 @@ http://www.opengis.net/def/crs/EPSG/0/4326
 """
 
 
-def is_latlong(p) -> bool:
-    return _check(p).is_latlong
+def is_geographic(p) -> bool:
+    return _check(p).is_geographic
 
 
 def units(p) -> str:
@@ -201,12 +202,40 @@ def _load_proj(p):
     return Proj(srid, r[1], r[2], r[3])
 
 
+#:export
+class Projection(t.Data):
+    epsg: str
+    is_geographic: bool
+    proj4text: str
+    srid: int
+    units: str
+    uri: str
+    url: str
+    urn: str
+    urnx: str
+
+
+def as_projection(p):
+    p = as_proj(p)
+    return t.Projection(
+        epsg=p.epsg,
+        is_geographic=p.is_geographic,
+        proj4text=p.proj4text,
+        srid=p.srid,
+        units=p.units,
+        uri=p.uri,
+        url=p.url,
+        urn=p.urn,
+        urnx=p.urnx,
+    )
+
+
 class Proj:
-    def __init__(self, srid, proj4text, units, is_latlong):
+    def __init__(self, srid, proj4text, units, is_geographic):
         self.srid = srid
         self.proj4text = proj4text
         self.units = units or ''
-        self.is_latlong = bool(is_latlong)
+        self.is_geographic = bool(is_geographic)
 
         self.epsg = _formats['epsg'] % srid
         self.urn = _formats['urn'] % srid

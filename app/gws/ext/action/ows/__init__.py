@@ -47,5 +47,5 @@ class Object(gws.common.action.Object):
     def _find_service(self, req):
         uid = req.param('uid')
         for service in self.services:
-            if service.uid == uid and service.enabled:
+            if service.uid == uid:
                 return service

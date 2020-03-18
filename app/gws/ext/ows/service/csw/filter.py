@@ -32,11 +32,11 @@ class Filter:
         if not ext:
             return []
 
-        ext = gws.gis.extent.transform(ext, crs, gws.EPSG_4326)
+        ext = gws.gis.extent.transform_to_4326(ext, crs)
 
         return [
             r for r in recs
-            if not r.get('lonlat_extent') or gws.gis.extent.intersect(r.lonlat_extent, ext)
+            if not r.get('geographicExtent') or gws.gis.extent.intersect(r.geographicExtent, ext)
         ]
 
     def _propertyislike(self, flt, recs):

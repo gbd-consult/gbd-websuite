@@ -49,10 +49,11 @@ class Object(ows.Base):
     def configure_metadata(self):
         return gws.setdefault(
             super().configure_metadata(),
-            isoScope='service',
-            inspireMandatoryKeyword=gws.common.metadata.InspireKeyword.infoMapAccessService,
-            inspireResourceType=gws.common.metadata.InspireResourceType.service,
-            inspireSpatialDataServiceType=gws.common.metadata.InspireSpatialDataServiceType.view,
+            isoScope=t.MetaIsoScope.dataset,
+            isoSpatialRepresentationType=t.MetaIsoSpatialRepresentationType.vector,
+            inspireMandatoryKeyword=t.MetaInspireKeyword.infoMapAccessService,
+            inspireResourceType=t.MetaInspireResourceType.service,
+            inspireSpatialDataServiceType=t.MetaInspireSpatialDataServiceType.view,
         )
 
     def handle_getcapabilities(self, rd: ows.Request):
