@@ -458,15 +458,12 @@ class MetaData(Data):
     dateCreated: 'Date' = None
     dateUpdated: 'Date' = None
     fees: str = None
-    geographicExtent: Optional['Extent'] = None
+    geographicExtent: 'Extent' = None
     image: 'Url' = None
-    images: dict = None
     insipreMandatoryKeyword: str = None
     inspireResourceType: 'MetaInspireResourceType' = None
     inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType' = None
     inspireTheme: str = None
-    inspireThemeDefinition: str = None
-    inspireThemeName: str = None
     inspireTopicCategory: 'MetaInspireTopicCategory' = None
     isoQualityExplanation: str = None
     isoQualityLineage: str = None
@@ -478,13 +475,14 @@ class MetaData(Data):
     keywords: List[str] = None
     language: str = None
     links: List['MetaLink'] = None
-    maxScale: Optional[int] = None
-    minScale: Optional[int] = None
+    maxScale: int = None
+    minScale: int = None
     name: str = None
     proj: 'Projection' = None
     serviceUrl: 'Url' = None
     title: str = None
     url: 'Url' = None
+    urlType: str = None
 
 
 class MetaInspireDegreeOfConformity(Enum):
@@ -622,13 +620,28 @@ class MetaIsoOnLineFunction(Enum):
 class MetaIsoScope(Enum):
     attribute = 'attribute'
     attributeType = 'attributeType'
+    collectionHardware = 'collectionHardware'
+    collectionSession = 'collectionSession'
     dataset = 'dataset'
+    dimensionGroup = 'dimensionGroup'
     feature = 'feature'
     featureType = 'featureType'
+    fieldSession = 'fieldSession'
+    initiative = 'initiative'
+    model = 'model'
     nonGeographicDataset = 'nonGeographicDataset'
+    otherAggregate = 'otherAggregate'
+    platformSeries = 'platformSeries'
+    productionSeries = 'productionSeries'
     propertyType = 'propertyType'
+    sensor = 'sensor'
+    sensorSeries = 'sensorSeries'
     series = 'series'
+    service = 'service'
+    software = 'software'
+    stereomate = 'stereomate'
     tile = 'tile'
+    transferAggregate = 'transferAggregate'
 
 
 class MetaIsoSpatialRepresentationType(Enum):
@@ -1013,6 +1026,7 @@ class IApplication(IObject):
     api: 'IApi' = None
     auth: 'IAuthManager' = None
     client: Optional['IClient'] = None
+    meta: 'MetaData' = None
     qgis_version: str = None
     web_sites: List['IWebSite'] = None
     def find_action(self, action_type, project_uid=None): pass

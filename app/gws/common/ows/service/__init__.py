@@ -125,9 +125,11 @@ class Base(Object):
     def configure_metadata(self):
         meta = gws.common.metadata.from_config(self.var('meta'))
         if self.project:
-            meta = gws.setdefault(meta, gws.common.metadata.from_meta(self.project.meta))
+            meta = gws.common.metadata.extend(meta, self.project.meta)
+        else:
+            meta = gws.common.metadata.extend(meta, self.root.application.meta)
 
-        meta = gws.setdefault(
+        meta = gws.extend(
             meta,
             isoUid=self.uid,
             links=[],

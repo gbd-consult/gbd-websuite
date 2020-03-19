@@ -50,8 +50,32 @@ def get(data, key, default=None):
         return default
 
 
+def has(data, key) -> bool:
+    """True if a nested value/attribute exists in data.
+
+    Args:
+        data: A dict, list or Data.
+        key: A list or a dot separated string of nested keys.
+
+    Returns:
+        True if a key exists
+    """
+
+    if not data:
+        return False
+
+    if isinstance(key, str):
+        key = key.split('.')
+
+    try:
+        _get(data, key)
+        return True
+    except (KeyError, IndexError, AttributeError):
+        return False
+
+
 def merge(data, *args, **kwargs):
-    """Create a dict/Data object with the values from dicts/Datas or kwargs.
+    """Create a dict/Data object with the values from dicts/Datas or kwargs, overwriting keys.
 
     Args:
         data: A dict or a Data.
@@ -74,8 +98,8 @@ def merge(data, *args, **kwargs):
     return type(data)(d)
 
 
-def setdefault(data, *args, **kwargs):
-    """Update a dict/Data object with the values from dicts/Datas or kwargs, do not overwrite keys unless they're missing or None.
+def extend(data, *args, **kwargs):
+    """Create a dict/Data object with the values from dicts/Datas or kwargs, do not overwrite keys unless they're None.
 
     Args:
         data: A dict or a Data.
@@ -83,7 +107,7 @@ def setdefault(data, *args, **kwargs):
         **kwargs: Keyword args.
 
     Returns:
-        The updated argument.
+        A new object (dict or Data).
     """
 
     d = {}
@@ -92,17 +116,16 @@ def setdefault(data, *args, **kwargs):
         d.update(as_dict(a))
     d.update(kwargs)
 
-    if isinstance(data, dict):
-        for k, v in d.items():
-            if data.get(k) is None:
-                data[k] = v
-        return data
+    e = dict(as_dict(data))
 
     for k, v in d.items():
-        if getattr(data, k, None) is None:
-            setattr(data, k, v)
+        if e.get(k) is None:
+            e[k] = v
 
-    return data
+    if isinstance(data, dict):
+        return e
+
+    return type(data)(e)
 
 
 def _is_not_empty_or_blank(x):

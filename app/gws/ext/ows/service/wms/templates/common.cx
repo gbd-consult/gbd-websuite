@@ -5,35 +5,35 @@
 @end
 
 @def wms_contact_metadata
-    @with meta.contact as co
+    @with service.meta.contact as x
         @tag ContactInformation
             @tag ContactPersonPrimary
-                @t ContactPerson {co.person}
-                @t ContactOrganization {co.organization}
+                @t ContactPerson {x.person}
+                @t ContactOrganization {x.organization}
             @end
-            @t ContactPosition {co.position}
+            @t ContactPosition {x.position}
             @tag ContactAddress
                 @t AddressType postal
-                @t Address {co.address}
-                @t City {co.city}
-                @t StateOrProvince {co.area}
-                @t PostCode {co.zip}
-                @t Country {co.country}
+                @t Address {x.address}
+                @t City {x.city}
+                @t StateOrProvince {x.area}
+                @t PostCode {x.zip}
+                @t Country {x.country}
             @end
-            @t ContactVoiceTelephone {co.phone}
-            @t ContactElectronicMailAddress {co.email}
+            @t ContactVoiceTelephone {x.phone}
+            @t ContactElectronicMailAddress {x.email}
         @end
     @end
 @end
 
 @def wms_service_metadata
-    @with meta.abstract
-        @t Abstract {meta.abstract}
+    @with service.meta.abstract as x
+        @t Abstract {x}
     @end
 
-    @with meta.keywords
+    @with service.meta.keywords as x
         @tag KeywordList
-            @each meta.keywords as kw
+            @each x as kw
                 @t Keyword {kw}
             @end
         @end
@@ -43,18 +43,18 @@
 
     @wms_contact_metadata
 
-    @with meta.fees
-        @t Fees {meta.fees}
+    @with service.meta.fees as x
+        @t Fees {x}
     @end
 
-    @with meta.accessConstraints
-        @t AccessConstraints {meta.accessConstraints}
+    @with service.meta.accessConstraints as x
+        @t AccessConstraints {x}
     @end
 @end
 
 @def wms_meta_url(node)
     @if node.meta.url
-        @tag MetadataURL
+        @tag MetadataURL type="{node.meta.urlType or service.meta.urlType}"
             @t Format application/xml
             @t OnlineResource xlink:type="simple" xlink:href="{url_for(node.meta.url)}"
         @end
@@ -89,8 +89,8 @@
         @t Name {feature_ns(node.tag_name)}
         @t Title {node.title}
 
-        @with node.meta.abstract
-            @t Abstract {node.meta.abstract}
+        @with node.meta.abstract as x
+            @t Abstract {x}
         @end
 
         @t CRS {node.meta.proj.epsg}
@@ -104,8 +104,8 @@
 
         @t BoundingBox CRS="{node.meta.proj.epsg}" minx="{node.extent[0]}" miny="{node.extent[1]}" maxx="{node.extent[2]}" maxy="{node.extent[3]}"
 
-        @with node.meta.attribution
-            @t Attribution/Title {node.meta.attribution}
+        @with node.meta.attribution as x
+            @t Attribution/Title {x}
         @end
 
         @wms_meta_url node

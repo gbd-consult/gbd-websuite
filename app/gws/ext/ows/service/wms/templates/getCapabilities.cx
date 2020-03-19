@@ -8,7 +8,8 @@
 
     @tag Service
         @t Name WMS
-        @t Title {meta.title}
+        @t Title {service.meta.title}
+
         @wms_service_metadata
 
         @with service.wms_layer_limit

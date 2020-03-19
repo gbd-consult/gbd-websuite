@@ -55,7 +55,7 @@ class Object(ows.Base):
         self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates', type='text')
 
     def configure_metadata(self):
-        return gws.setdefault(
+        return gws.extend(
             super().configure_metadata(),
             inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
             inspireMandatoryKeyword=t.MetaInspireKeyword.humanCatalogueViewer,
@@ -134,13 +134,18 @@ class Object(ows.Base):
             meta = gws.get(obj, 'meta')
             if not meta:
                 continue
+
             self.metas[obj.uid] = meta
+
+            if gws.get(meta, 'inspireTheme'):
+                meta.inspireThemeName = gws.common.metadata.inspire.theme_name(meta.inspireTheme, meta.language)
+                meta.inspireThemeDefinition = gws.common.metadata.inspire.theme_definition(meta.inspireTheme, meta.language)
 
             for f in 'abstract', 'title':
                 s = gws.get(meta, f)
                 if s:
                     self.index.append((f, s, s.lower(), obj.uid))
-            for s in gws.get(meta, 'keywords', default=[]):
+            for s in gws.get(meta, 'keywords') or []:
                 self.index.append(('subject', s, s.lower(), obj.uid))
 
     def _find_records(self, rd):

@@ -144,16 +144,31 @@ class MetaInspireKeyword(t.Enum):
 
 #:export
 class MetaIsoScope(t.Enum):
-    """ISO-19139 MD_ScopeCode, see http://schemas.opengis.net/iso/19139/20070417/resources/codelist/ML_gmxCodelists.xml"""
-    attribute = 'attribute'  #: Information applies to the attribute class
-    attributeType = 'attributeType'  #: Information applies to the characteristic of a feature
-    dataset = 'dataset'  #: Information applies to the dataset
-    series = 'series'  #: Information applies to the series
-    nonGeographicDataset = 'nonGeographicDataset'  #: Information applies to non-geographic data
-    feature = 'feature'  #: Information applies to a feature
-    featureType = 'featureType'  #: Information applies to a feature type
-    propertyType = 'propertyType'  #: Information applies to a property type
-    tile = 'tile'  #: Information applies to a tile, a spatial subset of geographic data
+    """ISO-19139 MD/MX_ScopeCode, see http://schemas.opengis.net/iso/19139/20070417/resources/codelist/gmxCodelists.xml"""
+    attribute = 'attribute'  #: information applies to the attribute class
+    attributeType = 'attributeType'  #: information applies to the characteristic of a feature
+    collectionHardware = 'collectionHardware'  #: information applies to the collection hardware class
+    collectionSession = 'collectionSession'  #: information applies to the collection session
+    dataset = 'dataset'  #: information applies to the dataset
+    series = 'series'  #: information applies to the series
+    nonGeographicDataset = 'nonGeographicDataset'  #: information applies to non-geographic data
+    dimensionGroup = 'dimensionGroup'  #: information applies to a dimension group
+    feature = 'feature'  #: information applies to a feature
+    featureType = 'featureType'  #: information applies to a feature type
+    propertyType = 'propertyType'  #: information applies to a property type
+    fieldSession = 'fieldSession'  #: information applies to a field session
+    software = 'software'  #: information applies to a computer program or routine
+    service = 'service'  #: information applies to a capability which a service provider entity makes available to a service user entity through a set of interfaces that define a behaviour, such as a use case
+    model = 'model'  #: information applies to a copy or imitation of an existing or hypothetical object
+    tile = 'tile'  #: information applies to a tile, a spatial subset of geographic data
+    initiative = 'initiative'  #: The referencing entity applies to a transfer aggregate which was originally identified as an initiative (DS_Initiative)
+    stereomate = 'stereomate'  #: The referencing entity applies to a transfer aggregate which was originally identified as a stereo mate (DS_StereoMate)
+    sensor = 'sensor'  #: The referencing entity applies to a transfer aggregate which was originally identified as a sensor (DS_Sensor)
+    platformSeries = 'platformSeries'  #: The referencing entity applies to a transfer aggregate which was originally identified as a platform series (DS_PlatformSeries)
+    sensorSeries = 'sensorSeries'  #: The referencing entity applies to a transfer aggregate which was originally identified as a sensor series (DS_SensorSeries)
+    productionSeries = 'productionSeries'  #: The referencing entity applies to a transfer aggregate which was originally identified as a production series (DS_ProductionSeries)
+    transferAggregate = 'transferAggregate'  #: The referencing entity applies to a transfer aggregate which has no existence outside of the transfer context
+    otherAggregate = 'otherAggregate'  #: The referencing entity applies to a transfer aggregate which has an existence outside of the transfer context, but which does not pertains to a specific aggregate type
 
 
 #:export
@@ -233,11 +248,10 @@ class Config(t.Config):
     accessConstraints: t.Optional[str]
     attribution: t.Optional[str]  #: attribution (copyright) string
     contact: t.Optional[ContactConfig]  #: contact information
-    dateCreated: t.Date = ''  #: publication date
-    dateUpdated: t.Date = ''  #: modification date
+    dateCreated: t.Optional[t.Date]  #: publication date
+    dateUpdated: t.Optional[t.Date]  #: modification date
     fees: t.Optional[str]
-    image: t.Url = ''  #: image (logo) url
-    images: dict = {}  #: further images
+    image: t.Optional[t.Url]  #: image (logo) url
 
     insipreKeywords: t.Optional[t.List[MetaInspireKeyword]]
     insipreMandatoryKeyword: t.Optional[MetaInspireKeyword]
@@ -259,25 +273,26 @@ class Config(t.Config):
     language: t.Optional[str]  #: object language
     links: t.List[LinkConfig] = []  #: additional links
     name: t.Optional[str]  #: object internal name
-    serviceUrl: t.Url = ''  #: service url
+    serviceUrl: t.Optional[t.Url]  #: service url
     title: t.Optional[str]  #: object title
-    url: t.Url = ''  #: metadata url
+    url: t.Optional[t.Url]  #: metadata url
+    urlType: t.Optional[str]  #: metadata url type like "ISO19115:2003"
 
 
 #:export
 class MetaContact(t.Data):
-    address = ''
-    area = ''
-    city = ''
-    country = ''
-    email = ''
-    fax = ''
-    organization = ''
-    person = ''
-    phone = ''
-    position = ''
-    zip = ''
-    url = ''
+    address: str
+    area: str
+    city: str
+    country: str
+    email: str
+    fax: str
+    organization: str
+    person: str
+    phone: str
+    position: str
+    zip: str
+    url: str
 
 
 #:export
@@ -297,7 +312,6 @@ class MetaData(t.Data):
     dateUpdated: t.Date
     fees: str
     image: t.Url
-    images: dict
 
     insipreMandatoryKeyword: str
 
@@ -305,9 +319,6 @@ class MetaData(t.Data):
     inspireSpatialDataServiceType: MetaInspireSpatialDataServiceType
     inspireTheme: str
     inspireTopicCategory: MetaInspireTopicCategory
-
-    inspireThemeName: str
-    inspireThemeDefinition: str
 
     isoTopicCategory: MetaIsoTopicCategory
     isoQualityExplanation: str
@@ -324,10 +335,11 @@ class MetaData(t.Data):
     serviceUrl: t.Url
     title: str
     url: t.Url
+    urlType: str
 
-    geographicExtent: t.Optional[t.Extent]
-    maxScale: t.Optional[int]
-    minScale: t.Optional[int]
+    geographicExtent: t.Extent
+    maxScale: int
+    minScale: int
     proj: t.Projection
 
 
@@ -337,20 +349,23 @@ def from_config(m: t.Config) -> t.MetaData:
 
     meta = t.MetaData(m)
 
-    meta.language = gws.get(meta, 'language') or 'en'
-    meta.language3 = gws.tools.country.bibliographic_name(language=meta.language)
+    if gws.has(meta, 'language'):
+        meta.language3 = gws.tools.country.bibliographic_name(language=meta.language)
 
     meta.contact = MetaContact(gws.get(meta, 'contact') or {})
-
-    if gws.get(meta, 'inspireTheme'):
-        meta.inspireThemeName = inspire.theme_name(meta.inspireTheme, meta.language) or ''
-        meta.inspireThemeDefinition = inspire.theme_definition(meta.inspireTheme, meta.language) or ''
-
-    meta.links = [MetaLink(p) for p in (gws.get(meta, 'links') or [])]
-    meta.keywords = gws.get(meta, 'keywords') or []
 
     return meta
 
 
 def from_meta(m: t.MetaData) -> t.MetaData:
     return from_config(t.cast(t.Config, m))
+
+
+def extend(a: t.MetaData, b: t.MetaData):
+    a = gws.extend(a, b)
+    if gws.has(b, 'contact'):
+        a.contact = gws.extend(a.contact, b.contact)
+    kwa = gws.get(a, 'keywords') or []
+    kwb = gws.get(b, 'keywords') or []
+    a.keywords = sorted(set(kwa + kwb))
+    return a

@@ -6,6 +6,7 @@ import gws.common.api
 import gws.common.auth
 import gws.common.client
 import gws.common.layer
+import gws.common.metadata
 import gws.common.project
 import gws.common.search
 import gws.common.template
@@ -59,6 +60,7 @@ class Config(t.WithAccess):
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
     db: t.Optional[DbConfig]  #: database configuration
     fonts: t.Optional[FontConfig]  #: fonts configuration
+    meta: t.Optional[gws.common.metadata.Config] = {}  #: application metadata
     locales: t.Optional[t.List[str]]  #: default locales for all projects
     projectDirs: t.Optional[t.List[t.DirPath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[t.FilePath]]  #: additional project paths
@@ -84,6 +86,8 @@ class Object(gws.Object, t.IApplication):
 
     def configure(self):
         super().configure()
+
+        self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
 
         self.qgis_version = ''
         self.version = gws.VERSION

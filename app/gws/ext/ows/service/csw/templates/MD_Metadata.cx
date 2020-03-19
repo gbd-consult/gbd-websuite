@@ -90,8 +90,11 @@
     @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="{meta.language3}"
     @t gmd:topicCategory/gmd:MD_TopicCategoryCode {meta.isoTopicCategory}
 
-    @tag gmd:extent/gmd:EX_Extent/gmd:geographicElement
-        @bounding_box meta.geographicExtent
+
+    @with meta.geographicExtent
+        @tag gmd:extent/gmd:EX_Extent/gmd:geographicElement
+            @bounding_box meta.geographicExtent
+        @end
     @end
 @end
 
@@ -150,7 +153,10 @@
     @t gmd:dateStamp/gco:DateTime {meta.dateCreated}
     @t gmd:metadataStandardName/gco:CharacterString ISO19115
     @t gmd:metadataStandardVersion/gco:CharacterString 2003/Cor.1:2006
-    @t gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString {meta.crsUri}
+
+    @with meta.proj
+        @t gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString {meta.proj.uri}
+    @end
 
     @tag gmd:identificationInfo/gmd:MD_DataIdentification
         @identification
