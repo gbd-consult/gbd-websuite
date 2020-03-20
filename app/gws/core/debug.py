@@ -5,6 +5,7 @@ import re
 import socket
 import sys
 import time
+import traceback
 
 from . import log
 
@@ -25,10 +26,13 @@ def _should_list(k, v):
     return True
 
 
+_MAX_REPR_LEN = 255
+
+
 def _repr(x):
     s = repr(x)
-    if len(s) > 50:
-        s = s[:50] + '...'
+    if len(s) > _MAX_REPR_LEN:
+        s = s[:_MAX_REPR_LEN] + '...'
     return s
 
 
@@ -94,19 +98,22 @@ def inspect(arg, max_depth=1, all_props=False):
 def p(*args, **kwargs):
     sep = '-' * 60
 
-    if 'lines' in kwargs:
+    if kwargs.get('lines'):
         for arg in args:
             for s in enumerate(str(arg).split('\n'), 1):
                 log.debug('%06d:%s' % s, extra={'skip_frames': 1})
             log.debug(sep, extra={'skip_frames': 1})
-        return
+    else:
+        max_depth = kwargs.get('d', 3)
+        all_props = kwargs.get('all', False)
+        for arg in args:
+            for s in inspect(arg, max_depth=max_depth, all_props=all_props):
+                log.debug(s, extra={'skip_frames': 1})
+            log.debug(sep, extra={'skip_frames': 1})
 
-    max_depth = kwargs.get('d', 3)
-    all_props = kwargs.get('all', False)
-    for arg in args:
-        for s in inspect(arg, max_depth=max_depth, all_props=all_props):
-            log.debug(s, extra={'skip_frames': 1})
-        log.debug(sep, extra={'skip_frames': 1})
+    if kwargs.get('stack'):
+        for s in traceback.format_stack()[:-1]:
+            log.debug(s.replace('\n', ' '), extra={'skip_frames': 1})
 
 
 _timers = {}

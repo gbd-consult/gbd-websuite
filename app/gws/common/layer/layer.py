@@ -282,6 +282,6 @@ class Layer(gws.Object, t.ILayer):
             return False
         if self.ows_services_disabled and service.uid in self.ows_services_disabled:
             return False
-        if self.ows_services_enabled:
-            return service.uid in self.ows_services_enabled
+        if self.ows_services_enabled and service.uid not in self.ows_services_enabled:
+            return False
         return True
