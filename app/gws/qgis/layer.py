@@ -39,6 +39,9 @@ class Object(gws.common.layer.Layer):
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))
 
+        self.supports_wms = True
+        self.supports_wfs = True
+
         # by default, take the top-level layers as groups
         slf = self.var('rootLayers') or gws.gis.source.LayerFilter(level=1)
         self.root_layers = gws.gis.source.filter_layers(self.provider.source_layers, slf)
