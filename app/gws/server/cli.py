@@ -18,17 +18,17 @@ def stop():
 
 
 @arg('--cfg', help='configuration file')
-def reload(cfg=None):
+def reconfigure(cfg=None):
     """Reconfigure and gracefully reload the server"""
 
-    control.reload(cfg)
+    control.reconfigure(cfg)
 
 
-@arg('--module', help='server module to reset')
-def reset(module=None):
+@arg('--module', help='server module to reload')
+def reload(module=None):
     """Gracefully reload the server without reconfiguring"""
 
-    control.reset(module)
+    control.reload(module)
 
 
 @arg('--cfg', help='configuration file')

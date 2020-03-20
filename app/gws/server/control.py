@@ -65,11 +65,11 @@ def _stop(proc_name):
         raise ValueError(f'failed to stop {proc_name} pids={pids!r}')
 
 
-def reload(config_path=None):
+def reconfigure(config_path=None):
     _reload(True, config_path)
 
 
-def reset(module=None):
+def reload(module=None):
     _reload(False, None, module)
 
 

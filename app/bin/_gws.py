@@ -34,7 +34,7 @@ COMMANDS['config'] = [gws.config.cli.dump, gws.config.cli.prepare, gws.config.cl
 COMMANDS['dprocon'] = [gws.ext.action.dprocon.cli.setup]
 COMMANDS['gekos'] = [gws.ext.action.gekos.cli.load]
 COMMANDS['georisks'] = [gws.ext.action.georisks.cli.aartelink, gws.ext.action.georisks.cli.export]
-COMMANDS['server'] = [gws.server.cli.configure, gws.server.cli.reload, gws.server.cli.reset, gws.server.cli.start, gws.server.cli.stop]
+COMMANDS['server'] = [gws.server.cli.configure, gws.server.cli.reconfigure, gws.server.cli.reload, gws.server.cli.start, gws.server.cli.stop]
 
 
 
