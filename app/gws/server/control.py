@@ -16,7 +16,7 @@ def configure(config_path=None):
     root = gws.config.loader.parse_and_activate(config_path)
     if root.var('server.mapproxy.enabled'):
         gws.gis.mpx.config.create_and_save(root, ini.MAPPROXY_YAML_PATH)
-    gws.config.loader.store()
+    gws.config.loader.store(root)
     gws.log.info('CONFIGURATION OK')
     return root
 

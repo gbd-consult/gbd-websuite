@@ -5,6 +5,7 @@ import gws.common.metadata
 import gws.common.search.runner
 import gws.gis.extent
 import gws.gis.gml
+import gws.gis.legend
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
@@ -119,8 +120,9 @@ class Object(ows.Base):
         if not nodes:
             raise gws.web.error.NotFound()
 
-        img = nodes[0].layer.render_legend()
-        return t.HttpResponse(mime='image/png', content=img or gws.tools.misc.Pixels.png8)
+        imgs = [n.layer.render_legend() for n in nodes if n.has_legend]
+        out = gws.gis.legend.combine_legends(imgs)
+        return t.HttpResponse(mime='image/png', content=out or gws.tools.misc.Pixels.png8)
 
     def handle_getfeatureinfo(self, rd: ows.Request):
         results = self.find_features(rd)

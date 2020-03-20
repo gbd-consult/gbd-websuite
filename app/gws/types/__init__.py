@@ -1122,7 +1122,7 @@ class ILayer(IObject):
     supports_wfs: bool = None
     supports_wms: bool = None
     title: str = None
-    def configure_metadata(self, provider_meta=None): pass
+    def configure_metadata(self, provider_meta=None) -> 'MetaData': pass
     def configure_search(self): pass
     def configure_spatial_metadata(self): pass
     def edit_access(self, user): pass

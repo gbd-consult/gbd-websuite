@@ -70,7 +70,7 @@ class Object(gws.Object, t.IMap):
         super().configure()
 
         uid = self.var('uid') or 'map'
-        p = self.get_closest('gws.common.project')
+        p = t.cast(t.IProject, self.get_closest('gws.common.project'))
         if p:
             uid = p.uid + '.' + uid
         self.set_uid(uid)

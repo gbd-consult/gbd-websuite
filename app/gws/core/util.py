@@ -322,7 +322,8 @@ _UID_DE_TRANS = {
 
 def as_uid(x) -> str:
     """Convert a value to an uid (alphanumeric string)."""
-
+    if not x:
+        return ''
     x = as_str(x).lower().strip().translate(_UID_DE_TRANS)
     x = re.sub(r'[^a-z0-9]+', '_', x)
     return x.strip('_')

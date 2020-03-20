@@ -354,6 +354,9 @@ def from_config(m: t.Config) -> t.MetaData:
 
     meta.contact = MetaContact(gws.get(meta, 'contact') or {})
 
+    if gws.get(meta, 'keywords'):
+        meta.keywords = gws.strip(gws.get(meta, 'keywords')) or None
+
     return meta
 
 

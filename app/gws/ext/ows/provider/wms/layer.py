@@ -22,7 +22,8 @@ class Object(gws.common.layer.Image):
 
         self.provider = gws.gis.ows.shared_provider(provider.Object, self, self.config)
 
-        self.meta, self.title = self.configure_metadata(self.provider.meta)
+        self.meta = self.configure_metadata(self.provider.meta)
+        self.title = self.meta.title
 
         self.source_layers = gws.gis.source.filter_layers(
             self.provider.source_layers,

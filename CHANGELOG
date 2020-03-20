@@ -36,7 +36,7 @@ Version 6.0
 
 - support for client-side tile layers (OSM, Google Maps etc)
 - mixed-mode printing (low resolution rasters + high resolution vectors)
-- option to exclude layers from qgis projects
+- option to exclude layers and legends from qgis projects
 - support for the QGZ format
 - support for HTTP Basic authorization
 

@@ -89,9 +89,13 @@ class Layer(gws.Object, t.ILayer):
 
         self.map: t.IMap = t.cast(t.IMap, self.get_closest('gws.common.map'))
 
-        p = self.configure_metadata()
-        self.meta: t.MetaData = p[0]
-        self.title: str = p[1]
+        self.meta: t.MetaData = self.configure_metadata()
+        self.title: str = self.meta.title
+
+        uid = self.var('uid') or gws.as_uid(self.title) or 'layer'
+        if self.map:
+            uid = self.map.uid + '.' + uid
+        self.set_uid(uid)
 
         self.can_render_box: bool = False
         self.can_render_xyz: bool = False
@@ -161,7 +165,7 @@ class Layer(gws.Object, t.ILayer):
         self.supports_wms: bool = False
         self.supports_wfs: bool = False
 
-        self.ows_name: str = self.var('ows.name') or self.uid.split('.')[-1]
+        self.ows_name: str = gws.as_uid(self.var('ows.name')) or self.uid.split('.')[-1]
         self.ows_services_enabled: t.List[str] = self.var('ows.servicesEnabled', default=[])
         self.ows_services_disabled: t.List[str] = self.var('ows.servicesDisabled', default=[])
 
@@ -180,34 +184,30 @@ class Layer(gws.Object, t.ILayer):
         self.configure_search()
         self.configure_spatial_metadata()
 
-    def configure_metadata(self, provider_meta=None):
+    def configure_metadata(self, provider_meta=None) -> t.MetaData:
         """Load metadata from the config or from a provider, whichever comes first."""
 
         title = self.var('title')
 
         # use, in order 1) configured metadata, 2) provider meta, 3) dummy meta with title only
-        meta = self.var('meta') or provider_meta
-        if not meta:
+        m = self.var('meta') or provider_meta
+        if not m:
             if title:
-                meta = t.MetaData(title=title)
+                m = t.MetaData(title=title)
             elif self.var('uid'):
-                meta = t.MetaData(title=self.var('uid'))
+                m = t.MetaData(title=self.var('uid'))
             else:
-                meta = t.MetaData()
+                m = t.MetaData()
 
         if title:
             # title at the top level config overrides meta title
-            meta.title = title
+            m.title = title
 
-        meta = gws.common.metadata.from_config(meta)
-        title = meta.title
-
-        uid = self.var('uid') or gws.as_uid(title) or 'layer'
-        if self.map:
-            uid = self.map.uid + '.' + uid
-        self.set_uid(uid)
-
-        return meta, title
+        meta = gws.common.metadata.from_config(m)
+        p = t.cast(t.IProject, self.get_closest('gws.common.project'))
+        if p:
+            meta = gws.common.metadata.extend(meta, p.meta)
+        return meta
 
     def configure_spatial_metadata(self):
         scales = [gws.tools.units.res2scale(r) for r in self.resolutions]
@@ -265,8 +265,6 @@ class Layer(gws.Object, t.ILayer):
         return None
 
     def render_legend(self):
-        if not self.has_legend:
-            return
         if self.legend_url.startswith('/'):
             with open(self.legend_url, 'rb') as fp:
                 return fp.read()

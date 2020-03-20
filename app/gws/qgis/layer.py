@@ -6,6 +6,7 @@ import gws.common.layer.types
 import gws.common.metadata
 import gws.config.parser
 import gws.gis.extent
+import gws.gis.legend
 import gws.gis.source
 import gws.server.monitor
 import gws.tools.net
@@ -23,7 +24,8 @@ class Config(gws.common.layer.ImageConfig):
     path: t.FilePath  #: path to a qgs project file
     rootLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use as roots
     excludeLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to exclude
-    flatten: t.Optional[gws.common.layer.types.FlattenConfig]  #: flatten the layer hierarchy
+    excludeLegends: t.Optional[gws.gis.source.LayerFilter]  #: remove legends for these source layers
+    flattenLayers: t.Optional[gws.common.layer.types.FlattenConfig]  #: flatten the layer hierarchy
 
 
 class Object(gws.common.layer.Layer):
@@ -34,7 +36,8 @@ class Object(gws.common.layer.Layer):
         self.provider: provider.Object = provider.create_shared(self, self.config)
         self.own_crs = self.provider.supported_crs[0]
 
-        self.meta, self.title = self.configure_metadata(self.provider.meta)
+        self.meta = self.configure_metadata(self.provider.meta)
+        self.title = self.meta.title
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))
@@ -46,7 +49,7 @@ class Object(gws.common.layer.Layer):
         slf = self.var('rootLayers') or gws.gis.source.LayerFilter(level=1)
         self.root_layers = gws.gis.source.filter_layers(self.provider.source_layers, slf)
 
-        self.flatten = self.var('flatten')
+        self.flatten = self.var('flattenLayers')
 
         layer_cfgs = gws.compact(self._layer(sl, depth=1) for sl in self.root_layers)
         if gws.is_empty(layer_cfgs):
@@ -61,10 +64,17 @@ class Object(gws.common.layer.Layer):
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
         self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
 
+        self.has_legend = self.legend_url or any(la.has_legend for la in self.layers)
+
     def render_legend(self):
         if self.legend_url:
             return super().render_legend()
-        return self.provider.get_legend(self.root_layers)
+        content = [
+            la.render_legend()
+            for la in self.layers
+            if la.has_legend
+        ]
+        return gws.gis.legend.combine_legends(content)
 
     @property
     def props(self):
@@ -89,6 +99,9 @@ class Object(gws.common.layer.Layer):
 
         if not la:
             return
+
+        if self.var('excludeLegends') and gws.gis.source.layer_matches(sl, self.var('excludeLegends')):
+            la['legend'] = {'enabled': False}
 
         la = gws.merge(la, {
             'uid': gws.as_uid(sl.name),

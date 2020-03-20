@@ -57,14 +57,13 @@ def activate(cfg) -> t.IRootObject:
         raise error.LoadError(*e.args)
 
 
-def store(path=None):
+def store(root: t.IRootObject, path=None):
     path = path or DEFAULT_STORE_PATH
     try:
-        r = globals.root()
         with open(path, 'wb') as fp:
-            pickle.dump(r, fp)
-    except Exception:
-        raise error.LoadError('unable to store configuration')
+            pickle.dump(root, fp)
+    except Exception as e:
+        raise error.LoadError('unable to store configuration') from e
 
 
 def load(path=None) -> t.IRootObject:
@@ -74,5 +73,5 @@ def load(path=None) -> t.IRootObject:
         with open(path, 'rb') as fp:
             r = pickle.load(fp)
         return gws.set_global('_tree_root', r)
-    except Exception:
-        raise error.LoadError('unable to load configuration')
+    except Exception as e:
+        raise error.LoadError('unable to load configuration') from e

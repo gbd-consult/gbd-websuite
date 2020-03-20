@@ -13,6 +13,7 @@ import gws.common.template
 
 import gws.types as t
 
+
 class Config(gws.common.template.Config):
     """XML template"""
     pass
@@ -48,6 +49,9 @@ class XMLRuntime(chartreux.Runtime):
 
     def add_namespaces_here(self):
         self.namespaces_node = self.tags[-1]
+
+    def as_text(self, *vals):
+        return ''.join(str(v) for v in vals if v is not None)
 
 
 class XMLCommands():
@@ -91,14 +95,11 @@ class XMLCommands():
     ##
 
     def interpolate(self, compiler: chartreux.Compiler, s):
-        code = []
-
-        for is_expr, val in compiler.command.parse_interpolations(s, with_default_filter=True):
-            if is_expr:
-                code.append(f"str({val})")
-            else:
-                code.append(repr(val))
-        return '+'.join(code)
+        vals = [
+            v if is_expr else repr(v)
+            for is_expr, v in compiler.command.parse_interpolations(s, with_default_filter=True)
+        ]
+        return '_RT.as_text(' + ','.join(vals) + ')'
 
     attr_re = r'''(?x)
         ([^\s=]+) = (

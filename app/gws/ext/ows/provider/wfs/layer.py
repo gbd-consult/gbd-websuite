@@ -21,7 +21,8 @@ class Object(gws.common.layer.Vector):
         self.url: str = self.var('url')
         self.provider: provider.Object = gws.gis.ows.shared_provider(provider.Object, self, self.config)
 
-        self.meta, self.title = self.configure_metadata(self.provider.meta)
+        self.meta = self.configure_metadata(self.provider.meta)
+        self.title = self.meta.title
 
         self.source_layers: t.List[t.SourceLayer] = gws.gis.source.filter_layers(
             self.provider.source_layers,

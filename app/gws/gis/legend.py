@@ -7,7 +7,7 @@ import gws.gis.ows.request
 import gws.types as t
 
 
-def combine_legend_urls(urls: t.List[str]):
+def combine_legend_urls(urls: t.List[str]) -> t.Optional[bytes]:
     content = []
 
     for url in urls:
@@ -24,15 +24,10 @@ def combine_legend_urls(urls: t.List[str]):
     return combine_legends(content)
 
 
-def combine_legends(content: t.List[bytes]):
-    images = []
-
-    for c in content:
-        images.append(Image.open(BytesIO(c)))
-
+def combine_legends(content: t.List[bytes]) -> t.Optional[bytes]:
+    images = [Image.open(BytesIO(c)) for c in content if c]
     if not images:
         return
-
     return _combine_vertically(images)
 
 
@@ -48,5 +43,4 @@ def _combine_vertically(images):
 
     buf = BytesIO()
     out.save(buf, 'PNG')
-    buf.seek(0)
-    return buf
+    return buf.getvalue()

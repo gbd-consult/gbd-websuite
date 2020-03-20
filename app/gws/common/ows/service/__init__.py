@@ -253,6 +253,7 @@ class Base(Object):
 
         return LayerCapsNode(
             extent=rd.project.map.extent,
+            has_legend=any(n.has_legend for n in roots),
             has_search=any(n.has_search for n in roots),
             meta=rd.project.meta,
             sub_nodes=roots,
@@ -338,7 +339,8 @@ class Base(Object):
 
         return LayerCapsNode(
             extent=layer.extent,
-            has_legend=layer.has_legend,
+            # in a service, only provide legends for leaf layers
+            has_legend=layer.has_legend and not sub_nodes,
             has_search=layer.has_search or any(n.has_search for n in sub_nodes),
             layer=layer,
             meta=layer.meta,
