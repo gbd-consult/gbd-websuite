@@ -2,11 +2,11 @@ import os
 import pickle
 
 import gws
-import gws.server.monitor
+import gws.core.tree
 
 import gws.types as t
 
-from . import parser, error, globals, gwsroot
+from . import parser, error, gwsroot
 
 DEFAULT_CONFIG_PATHS = [
     '/data/config.cx',
@@ -35,19 +35,19 @@ def parse_and_activate(path=None) -> t.IRootObject:
 
     project_pattern = f'({parser.config_path_pattern})|(\\.qgs$)'
 
-    gws.server.monitor.add_path(path)
+    root.application.monitor.add_path(path)
 
     for p in cfg.get('projectPaths') or []:
-        gws.server.monitor.add_directory(p, project_pattern)
+        root.application.monitor.add_directory(p, project_pattern)
     for d in cfg.get('projectDirs') or []:
-        gws.server.monitor.add_directory(d, project_pattern)
+        root.application.monitor.add_directory(d, project_pattern)
 
     return root
 
 
 def activate(cfg) -> t.IRootObject:
     try:
-        root = gws.set_global('_tree_root', gwsroot.Object())
+        root = gwsroot.create()
         root.initialize(cfg)
         root.post_initialize()
         return root

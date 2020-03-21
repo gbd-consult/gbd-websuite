@@ -52,7 +52,7 @@ class Object(gws.common.action.Object):
 
     @gws.cached_property
     def storage(self) -> gws.ext.helper.storage.Object:
-        obj: gws.ext.helper.storage.Object = self.find_first('gws.ext.helper.storage')
+        obj: gws.ext.helper.storage.Object = self.root.find_first('gws.ext.helper.storage')
         return obj
 
     def api_write(self, req: t.IRequest, p: WriteParams) -> WriteResponse:

@@ -13,7 +13,8 @@ class Error(Exception):
         self.message = args[0] if args else ''
 
 
-class Validator:
+#:export SpecValidator
+class SpecValidator:
     def __init__(self, spec):
         self.spec = spec
 
@@ -283,8 +284,8 @@ def _ensure(rd, val, klass):
         return val
     if klass == list and isinstance(val, tuple):
         return list(val)
-    if klass == dict and hasattr(val, 'as_dict'):
-        return val.as_dict()
+    if klass == dict and gws.is_data_object(val):
+        return vars(val)
     if isinstance(klass, type):
         klass = 'object' if klass == dict else klass.__name__
     rd.error('ERR_WRONG_TYPE', '%r expected' % klass, val)

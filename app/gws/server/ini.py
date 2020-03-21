@@ -44,7 +44,11 @@ def create(root: t.IRootObject, base_dir, pid_dir):
     commands = []
     frontends = []
 
-    in_container = gws.running_in_container()
+    # Check the marker file created by our docker build (see install/build.py)
+    try:
+        in_container = os.path.isfile('/.GWS_IN_CONTAINER')
+    except:
+        in_container = False
 
     rsyslogd_enabled = in_container
 
@@ -111,7 +115,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
         for k, v in os.environ.items()
         if k.startswith('GWS_')
     )
-    
+
     stdenv += f'\nTMP={gws.TMP_DIR}'
     stdenv += f'\nTEMP={gws.TMP_DIR}'
 

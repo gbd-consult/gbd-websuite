@@ -26,11 +26,15 @@ def exit(code: int = 255):
     sys.exit(code)
 
 
-def get(data, key, default=None):
-    """Get a nested value/attribute from data.
+def is_data_object(x):
+    return isinstance(x, t.Data)
+
+
+def get(x, key, default=None):
+    """Get a nested value/attribute from a structure.
 
     Args:
-        data: A dict, list or Data.
+        x: A dict, list or Data.
         key: A list or a dot separated string of nested keys.
         default: The default value.
 
@@ -38,47 +42,38 @@ def get(data, key, default=None):
         The value if it exists and the default otherwise.
     """
 
-    if not data:
+    if not x:
         return default
-
     if isinstance(key, str):
         key = key.split('.')
-
-    try:
-        return _get(data, key)
-    except (KeyError, IndexError, AttributeError):
-        return default
+    val, ok = _get(x, key)
+    return val if ok else default
 
 
-def has(data, key) -> bool:
-    """True if a nested value/attribute exists in data.
+def has(x, key) -> bool:
+    """True if a nested value/attribute exists in a structure.
 
     Args:
-        data: A dict, list or Data.
+        x: A dict, list or Data.
         key: A list or a dot separated string of nested keys.
 
     Returns:
         True if a key exists
     """
 
-    if not data:
+    if not x:
         return False
-
     if isinstance(key, str):
         key = key.split('.')
-
-    try:
-        _get(data, key)
-        return True
-    except (KeyError, IndexError, AttributeError):
-        return False
+    _, ok = _get(x, key)
+    return ok
 
 
-def merge(data, *args, **kwargs):
+def merge(x, *args, **kwargs):
     """Create a dict/Data object with the values from dicts/Datas or kwargs, overwriting keys.
 
     Args:
-        data: A dict or a Data.
+        x: A dict or a Data.
         *args: Dicts or Datas.
         **kwargs: Keyword args.
 
@@ -86,23 +81,23 @@ def merge(data, *args, **kwargs):
         A new object (dict or Data).
     """
 
-    d = dict(as_dict(data))
+    d = dict(as_dict(x))
 
     for a in args:
         d.update(as_dict(a))
     d.update(kwargs)
 
-    if isinstance(data, dict):
+    if isinstance(x, dict):
         return d
 
-    return type(data)(d)
+    return type(x)(d)
 
 
-def extend(data, *args, **kwargs):
+def extend(x, *args, **kwargs):
     """Create a dict/Data object with the values from dicts/Datas or kwargs, do not overwrite keys unless they're None.
 
     Args:
-        data: A dict or a Data.
+        x: A dict or a Data.
         *args: Dicts or Datas.
         **kwargs: Keyword args.
 
@@ -116,91 +111,85 @@ def extend(data, *args, **kwargs):
         d.update(as_dict(a))
     d.update(kwargs)
 
-    e = dict(as_dict(data))
+    e = dict(as_dict(x))
 
     for k, v in d.items():
         if e.get(k) is None:
             e[k] = v
 
-    if isinstance(data, dict):
+    if isinstance(x, dict):
         return e
 
-    return type(data)(e)
+    return type(x)(e)
 
 
-def _is_not_empty_or_blank(x):
-    if isinstance(x, (str, bytes, bytearray)):
-        x = x.strip()
-    return not is_empty(x)
-
-
-def filter(data, fn=None):
+def filter(x, fn=None):
     """Apply a filter to a collection.
 
     Args:
-        data: A dict/Data or an iterable.
+        x: A dict/Data or an iterable.
         fn: Filtering function, if omitted, blank strings and empty values are removed.
 
     Returns:
         A filtered object.
     """
 
+    def _is_not_empty_or_blank(x):
+        if isinstance(x, (str, bytes, bytearray)):
+            x = x.strip()
+        return not is_empty(x)
+
     fn = fn or _is_not_empty_or_blank
 
-    if isinstance(data, dict):
-        return {k: v for k, v in data.items() if fn(v)}
-    if hasattr(data, 'as_dict'):
-        d = {k: v for k, v in data.as_dict().items() if fn(v)}
-        return type(data)(d)
-    return [x for x in data if fn(x)]
+    if isinstance(x, dict):
+        return {k: v for k, v in x.items() if fn(v)}
+    if is_data_object(x):
+        d = {k: v for k, v in vars(x).items() if fn(v)}
+        return type(x)(d)
+    return [v for v in x if fn(v)]
 
 
-def _is_not_none(x):
-    return x is not None
-
-
-def compact(data):
+def compact(x):
     """Remove all None values from a collection."""
 
-    return filter(data, _is_not_none)
+    return filter(x, lambda v: v is not None)
 
 
-def map(data, fn):
+def map(x, fn):
     """Apply a function to a collection.
 
     Args:
-        data: A dict/Data or an iterable.
+        x: A dict/Data or an iterable.
         fn: A function.
 
     Returns:
         A mapped object.
     """
 
-    if isinstance(data, dict):
-        return {k: fn(v) for k, v in data.items()}
-    if hasattr(data, 'as_dict'):
-        d = {k: fn(v) for k, v in data.as_dict().items()}
-        return type(data)(d)
-    return [fn(x) for x in data]
+    if isinstance(x, dict):
+        return {k: fn(v) for k, v in x.items()}
+    if is_data_object(x):
+        d = {k: fn(v) for k, v in vars(x).items()}
+        return type(x)(d)
+    return [fn(v) for v in x]
 
 
-def _strip(x):
-    if isinstance(x, (str, bytes, bytearray)):
-        return x.strip()
-    return x
-
-
-def strip(data):
+def strip(x):
     """Strip all str values in a collection and remove empty values.
 
     Args:
-        data: A dict/Data or an iterable.
+        x: A dict/Data or an iterable.
 
     Returns:
         The stripped object.
      """
 
-    return filter(map(data, _strip))
+    def _strip(v):
+        if isinstance(v, (str, bytes, bytearray)):
+            return v.strip()
+        return v
+
+    return filter(map(x, _strip))
 
 
 def is_empty(x) -> bool:
@@ -303,12 +292,12 @@ def as_list(x, delimiter: str = ',') -> list:
 
 
 def as_dict(x) -> dict:
-    """Convert a value to a dict. If the argument provides `as_dict`, use it."""
+    """Convert a value to a dict. If the argument is a Data object, return its `dict`."""
 
     if isinstance(x, dict):
         return x
-    if hasattr(x, 'as_dict'):
-        return x.as_dict()
+    if isinstance(x, t.Data):
+        return vars(x)
     return {}
 
 
@@ -533,30 +522,28 @@ def get_cached_object(name, init_fn, max_age: int):
         return obj
 
 
-def running_in_container() -> bool:
-    """True if the app is running in a docker container.
-
-    Check the marker file created by our docker build (see install/build.py)
-    """
-
-    try:
-        return os.path.isfile('/.GWS_IN_CONTAINER')
-    except:
-        return False
-
-
 ####################################################################################################
 
 
 def _get(x, keys):
-    for k in keys:
-        if isinstance(x, dict):
-            x = x[k]
-        elif _is_list(x):
-            x = x[int(k)]
-        else:
-            x = getattr(x, k)
-    return x
+    try:
+        for k in keys:
+            if isinstance(x, dict):
+                x = x[k]
+            elif _is_list(x):
+                x = x[int(k)]
+            elif is_data_object(x):
+                v = getattr(x, k)
+                if v is None:
+                    # special case: raise a KeyError if the attribute is truly missing in a Data
+                    # (and not just equals to None)
+                    v = vars(x)[k]
+                x = v
+            else:
+                x = getattr(x, k)
+        return x, True
+    except (KeyError, IndexError, AttributeError, ValueError):
+        return None, False
 
 
 def _is_list(x):

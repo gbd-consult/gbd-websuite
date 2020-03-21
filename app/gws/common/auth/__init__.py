@@ -37,15 +37,15 @@ class Object(gws.Object, t.IAuthManager):
         self.store.init()
 
         p = self.var('providers', default=[])
-        self.providers: t.List[t.IAuthProvider] = [self.add_child('gws.ext.auth.provider', c) for c in p]
+        self.providers: t.List[t.IAuthProvider] = [self.create_child('gws.ext.auth.provider', c) for c in p]
 
-        sys = self.add_child('gws.ext.auth.provider', t.Data(type='system'))
+        sys = self.create_child('gws.ext.auth.provider', t.Data(type='system'))
         self.providers.append(sys)
         self.guest_user: t.IUser = sys.get_user('guest')
 
         # no methods at all, enable the web method
         p = self.var('methods', default=[t.Config(type='web')])
-        self.methods: t.List[t.IAuthMethod] = [self.add_child('gws.ext.auth.method', c) for c in p]
+        self.methods: t.List[t.IAuthMethod] = [self.create_child('gws.ext.auth.method', c) for c in p]
 
     @property
     def guest_session(self):

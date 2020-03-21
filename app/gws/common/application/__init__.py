@@ -12,6 +12,7 @@ import gws.common.search
 import gws.common.template
 import gws.gis.zoom
 import gws.qgis.server
+import gws.server.monitor
 import gws.server.types
 import gws.tools.os2
 import gws.web.site
@@ -89,6 +90,8 @@ class Object(gws.Object, t.IApplication):
 
         self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
 
+        self.monitor: t.IMonitor  = t.cast(t.IMonitor, self.create_child(gws.server.monitor.Object, {}))
+
         self.qgis_version = ''
         self.version = gws.VERSION
         self.web_sites: t.List[t.IWebSite] = []
@@ -114,28 +117,28 @@ class Object(gws.Object, t.IApplication):
         # - finally, projects
 
         for p in self.var('db.providers', default=[]):
-            self.add_child('gws.ext.db.provider', p)
+            self.create_child('gws.ext.db.provider', p)
 
         for p in self.var('helpers', default=[]):
-            self.add_child('gws.ext.helper', p)
+            self.create_child('gws.ext.helper', p)
 
-        self.auth: t.IAuthManager = self.add_child(gws.common.auth.Object, self.var('auth', default=t.Data()))
-        self.api: t.IApi = self.add_child(gws.common.api.Object, self.var('api', default=t.Data()))
+        self.auth: t.IAuthManager = self.create_child(gws.common.auth.Object, self.var('auth', default=t.Data()))
+        self.api: t.IApi = self.create_child(gws.common.api.Object, self.var('api', default=t.Data()))
 
         p = self.var('client')
-        self.client: t.Optional[t.IClient] = self.add_child(gws.common.client.Object, p) if p else None
+        self.client: t.Optional[t.IClient] = self.create_child(gws.common.client.Object, p) if p else None
 
         p = self.var('web.sites') or [_default_site]
         for s in p:
             s.ssl = True if self.var('web.ssl') else False
-            self.web_sites.append(self.create_object('gws.web.site', s))
+            self.web_sites.append(self.root.create_object('gws.web.site', s))
 
         for p in self.var('projects'):
-            self.add_child(gws.common.project.Object, p)
+            self.create_child(gws.common.project.Object, p)
 
     def find_action(self, action_type, project_uid=None):
         if project_uid:
-            project = t.cast(t.IProject, self.find('gws.common.project', project_uid))
+            project = t.cast(t.IProject, self.root.find('gws.common.project', project_uid))
             if project and project.api:
                 action = project.api.actions.get(action_type)
                 if action:

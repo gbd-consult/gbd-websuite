@@ -5,7 +5,7 @@ import gws
 import gws.core.spec
 
 
-def load(lang=None):
+def load(lang=None) -> gws.core.spec.SpecValidator:
     path = f'{gws.APP_DIR}/spec/gen/spec.json'
 
     if lang and lang != 'en':
@@ -17,7 +17,7 @@ def load(lang=None):
         return json.load(fp)
 
 
-def validator() -> gws.core.spec.Validator:
+def validator() -> gws.core.spec.SpecValidator:
     def init():
-        return gws.core.spec.Validator(load())
+        return gws.core.spec.SpecValidator(load())
     return gws.get_global('spec_validator', init)

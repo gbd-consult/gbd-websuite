@@ -1,2 +1,2 @@
 from .error import *
-from .globals import root
+from .gwsroot import root

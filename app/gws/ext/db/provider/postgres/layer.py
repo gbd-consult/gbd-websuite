@@ -31,7 +31,7 @@ class Object(gws.common.layer.Vector):
         if not self.data_model:
             p = self.provider.table_data_model_config(self.table)
             if p:
-                self.data_model = self.add_child('gws.common.model', p)
+                self.data_model = self.create_child('gws.common.model', p)
 
     @property
     def own_bounds(self):
@@ -54,7 +54,7 @@ class Object(gws.common.layer.Vector):
 
     @property
     def default_search_provider(self):
-        return self.create_object('gws.ext.search.provider.postgres', t.Config(
+        return self.root.create_object('gws.ext.search.provider.postgres', t.Config(
             uid=self.uid + '.default_search',
             db=self.provider.uid,
             table=self.var('table'),

@@ -3,6 +3,7 @@
 import gws
 import gws.common.template
 import gws.config.loader
+import gws.core.spec
 import gws.web.auth
 import gws.web.error
 import gws.web.wrappers
@@ -20,6 +21,10 @@ def application(environ, start_response):
 ##
 
 _DEFAULT_CMD = 'assetHttpGetPath'
+
+
+class _DispatchError(gws.Error):
+    pass
 
 
 def _handle_request(environ) -> t.IResponse:
@@ -93,10 +98,10 @@ def _handle_action(root: t.IRootObject, req: t.IRequest) -> t.IResponse:
 
     try:
         if category == 'api':
-            action_type, method_name, payload = root.validate_action(category, cmd, req.params.get('params'))
+            action_type, method_name, payload = _validate_action(root, category, cmd, req.params.get('params'))
         else:
-            action_type, method_name, payload = root.validate_action(category, cmd, req.params)
-    except gws.config.Error as e:
+            action_type, method_name, payload = _validate_action(root, category, cmd, req.params)
+    except _DispatchError as e:
         gws.log.error('ACTION ERROR', e)
         raise gws.web.error.BadRequest()
 
@@ -129,6 +134,26 @@ def _handle_action(root: t.IRootObject, req: t.IRequest) -> t.IResponse:
         return req.file_response(r.path, r.mime, r.get('status', 200), r.get('attachment_name'))
 
     return req.struct_response(r)
+
+
+def _validate_action(root: t.IRootObject, category, cmd, payload):
+    cc = root.validator.method_spec(cmd)
+    if not cc:
+        raise _DispatchError('not found', cmd)
+
+    cat = cc['category']
+    if cat == 'http' and category.startswith('http'):
+        cat = category
+    if category != cat:
+        raise _DispatchError('wrong command category', category)
+
+    if cc['arg']:
+        try:
+            payload = root.validator.read_value(payload, cc['arg'], strict=(cat == 'api'))
+        except gws.core.spec.Error as e:
+            raise _DispatchError(f"invalid parameter {e.args[2]} ({e.args[0]})") from e
+
+    return cc['action'], cc['name'], payload
 
 
 def _with_cors_headers(cors, res: t.IResponse) -> t.IResponse:

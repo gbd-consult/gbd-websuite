@@ -41,7 +41,7 @@ class Object(gws.common.layer.Vector):
 
     @property
     def default_search_provider(self):
-        return self.create_object('gws.ext.search.provider.wfs', t.Config(
+        return self.root.create_object('gws.ext.search.provider.wfs', t.Config(
             uid=self.uid + '.default_search',
             layer=self))
 

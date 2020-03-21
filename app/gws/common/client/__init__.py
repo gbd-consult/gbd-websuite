@@ -44,7 +44,7 @@ class Object(gws.Object, t.IClient):
         parent_client = self.var('parentClient')
 
         for c in self._get_elements(parent_client):
-            self.add_child(Element, c)
+            self.create_child(Element, c)
 
         self.options = self.var('options')
 

@@ -7,4 +7,4 @@ def shared_provider(klass, obj, cfg):
     params = cfg.get('params')
     if params:
         uid += '_' + gws.sha256(' '.join(f'{k}={v}' for k, v in sorted(params.items())))
-    return obj.create_shared_object(klass, uid, gws.merge(t.Config(uid=uid), cfg))
+    return obj.root.create_shared_object(klass, uid, gws.merge(t.Config(uid=uid), cfg))

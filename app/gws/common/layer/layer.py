@@ -125,8 +125,8 @@ class Layer(gws.Object, t.ILayer):
 
         p = self.var('description')
         self.description_template: t.ITemplate = (
-            self.create_object('gws.ext.template', p) if p
-            else self.create_shared_object(
+            self.root.create_object('gws.ext.template', p) if p
+            else self.root.create_shared_object(
                 'gws.ext.template',
                 'default_layer_description',
                 gws.common.template.builtin_config('layer_description')
@@ -135,8 +135,8 @@ class Layer(gws.Object, t.ILayer):
 
         p = self.var('featureFormat')
         self.feature_format: t.IFormat = (
-            self.create_object('gws.common.format', p) if p
-            else self.create_shared_object(
+            self.root.create_object('gws.common.format', p) if p
+            else self.root.create_shared_object(
                 'gws.common.format',
                 'default_feature_description',
                 gws.common.template.builtin_config('feature_format')
@@ -144,7 +144,7 @@ class Layer(gws.Object, t.ILayer):
         )
 
         p = self.var('dataModel')
-        self.data_model: t.Optional[t.IModel] = (self.add_child('gws.common.model', p) if p else None)
+        self.data_model: t.Optional[t.IModel] = (self.create_child('gws.common.model', p) if p else None)
 
         self.resolutions: t.List[float] = gws.gis.zoom.resolutions_from_config(
             self.var('zoom'),
@@ -172,7 +172,7 @@ class Layer(gws.Object, t.ILayer):
         self.crs: str = self.var('crs') or self.map.crs
 
         p = self.var('editDataModel')
-        self.edit_data_model: t.Optional[t.IModel] = self.add_child('gws.common.model', p) if p else None
+        self.edit_data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
         self.edit_options: t.Data = self.var('edit')
 
         p = self.var('editStyle')
@@ -235,7 +235,7 @@ class Layer(gws.Object, t.ILayer):
             return
 
         for cfg in p.providers:
-            self.add_child('gws.ext.search.provider', cfg)
+            self.create_child('gws.ext.search.provider', cfg)
 
     def edit_access(self, user):
         # @TODO granular edit access

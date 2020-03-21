@@ -1,5 +1,4 @@
 import gws.config.loader
-import gws.server.monitor
 import gws
 import gws.tools.job
 
@@ -34,6 +33,6 @@ def spooler(env):
     return gws.SPOOL_OK
 
 
-gws.config.loader.load()
-gws.server.monitor.start()
+root = gws.config.loader.load()
+root.application.monitor.start()
 uwsgi.spooler = spooler

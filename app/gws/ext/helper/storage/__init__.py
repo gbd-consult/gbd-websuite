@@ -84,7 +84,7 @@ class Object(gws.Object):
         super().configure()
         self.permissions = self.var('permissions', default=[])
         if self.var('backend') == 'sqlite':
-            self.backend = self.create_unbound_object(sqlite.Object, self.config)
+            self.backend = self.root.create_unbound_object(sqlite.Object, self.config)
 
     def read(self, entry: StorageEntry, user: t.IUser) -> StorageElement:
         if not self.can_read_category(entry.category, user):

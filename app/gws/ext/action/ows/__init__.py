@@ -24,7 +24,7 @@ class Object(gws.common.action.Object):
         self.services = []
 
         for p in self.var('services', default=[]):
-            self.services.append(self.add_child('gws.ext.ows.service', p))
+            self.services.append(self.create_child('gws.ext.ows.service', p))
 
     def http_get_service(self, req: t.IRequest, _) -> t.HttpResponse:
         service = self._find_service(req)

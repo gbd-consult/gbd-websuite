@@ -8,7 +8,6 @@ import gws.config.parser
 import gws.gis.extent
 import gws.gis.legend
 import gws.gis.source
-import gws.server.monitor
 import gws.tools.net
 
 import gws.types as t

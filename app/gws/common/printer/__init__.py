@@ -15,7 +15,7 @@ class Object(gws.Object, t.IPrinter):
     def configure(self):
         super().configure()
         self.templates: t.List[t.ITemplate] = [
-            self.add_child('gws.ext.template', p)
+            self.create_child('gws.ext.template', p)
             for p in self.var('templates')
         ]
 

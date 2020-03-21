@@ -8,9 +8,9 @@ class Object(gws.Object, t.IFormat):
         super().configure()
 
         self.templates = {}
-        for key, p in self.config.as_dict().items():
+        for key, p in gws.as_dict(self.config).items():
             if p:
-                self.templates[key] = self.add_child('gws.ext.template', p)
+                self.templates[key] = self.create_child('gws.ext.template', p)
 
     def apply(self, context: dict) -> dict:
         res = {}

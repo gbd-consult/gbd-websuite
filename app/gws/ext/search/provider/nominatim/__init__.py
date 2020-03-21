@@ -45,7 +45,7 @@ class Object(gws.common.search.provider.Object):
         self.with_keyword = 'required'
 
         if not self.feature_format:
-            self.feature_format = self.create_object('gws.common.format', _DEFAULT_FEATURE_FORMAT)
+            self.feature_format = self.root.create_object('gws.common.format', _DEFAULT_FEATURE_FORMAT)
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         params = {

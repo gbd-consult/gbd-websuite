@@ -7,7 +7,6 @@ import gws.config
 import gws.tools.xml2
 import gws.tools.net
 import gws.gis.util
-import gws.server.monitor
 
 import gws.types as t
 
@@ -17,8 +16,8 @@ from . import types, parser
 def create_shared(obj, cfg) -> 'Object':
     path = cfg.get('path')
     uid = path
-    gws.server.monitor.add_path(path)
-    return obj.create_shared_object(Object, uid, t.Config(path=path))
+    obj.root.application.monitor.add_path(path)
+    return obj.root.create_shared_object(Object, uid, t.Config(path=path))
 
 
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request

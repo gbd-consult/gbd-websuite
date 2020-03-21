@@ -34,7 +34,7 @@ class Object(gws.common.search.provider.Object):
 
         self.extra_where = ds.get('sql')
 
-        self.db = self.create_shared_object(
+        self.db = self.root.create_shared_object(
             'gws.ext.db.provider.postgres',
             gws.as_uid(f"h={cfg['host']}_p={cfg['port']}_u={cfg['user']}_d={cfg['database']}"),
             t.Config(cfg))

@@ -77,6 +77,7 @@ class ext:
         class method:
             class Config:
                 pass
+
         class provider:
             class Config:
                 pass
@@ -131,22 +132,25 @@ class Data:
     def __init__(self, *args, **kwargs):
         self._extend(args, kwargs)
 
-    def get(self, k, default=None):
-        return getattr(self, k, default)
-
-    def as_dict(self):
-        return vars(self)
-
     def __repr__(self):
         return repr(vars(self))
+
+    def __getattr__(self, item):
+        if item.startswith('_'):
+            # do not use None fallback for special props
+            raise AttributeError()
+        return None
+
+    def get(self, k, default=None):
+        return getattr(self, k, default)
 
     def _extend(self, args, kwargs):
         d = {}
         for a in args:
             if isinstance(a, dict):
                 d.update(a)
-            elif hasattr(a, 'as_dict'):
-                d.update(a.as_dict())
+            elif isinstance(a, Data):
+                d.update(vars(a))
         d.update(kwargs)
         vars(self).update(d)
 
@@ -168,7 +172,7 @@ class AccessType(Enum):
     deny = 'deny'
 
 
-class AccessRuleConfig(Config):
+class Access(Config):
     """Access rights definition for authorization roles"""
 
     type: AccessType  #: access type (deny or allow)
@@ -176,12 +180,12 @@ class AccessRuleConfig(Config):
 
 
 class WithAccess(Config):
-    access: Optional[List[AccessRuleConfig]]  #: access rights
+    access: Optional[List[Access]]  #: access rights
 
 
 class WithTypeAndAccess(Config):
     type: str  #: object type
-    access: Optional[List[AccessRuleConfig]]  #: access rights
+    access: Optional[List[Access]]  #: access rights
 
 
 # attributes

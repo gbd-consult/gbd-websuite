@@ -12,16 +12,4 @@ api.actions+ { type "project" }
 
 projects+ {
     uid "test"
-
-    map {
-        crs "EPSG:3857"
-        extent [-20026376.39 -20048966.10 20026376.39 20048966.10]
-    }
-
-    map.layers+ {
-        title "osm"
-        type "tile"
-        url "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        opacity 0.3
-    }
 }

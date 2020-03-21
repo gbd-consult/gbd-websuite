@@ -38,6 +38,12 @@ def test_get():
     assert cu.get(d, 'a.b.1') == 'ok'
     assert cu.get(d, 'a.ZERO', 'miss') == 'miss'
 
+    d = [0, 1, {'a': 'ok'}]
+
+    assert cu.get(d, '2.a') == 'ok'
+    assert cu.get(d, 'ZERO', 'miss') == 'miss'
+
+
 
 def test_extend():
     a = {'a': 1, 'b': 2}

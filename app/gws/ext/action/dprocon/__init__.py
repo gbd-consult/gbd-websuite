@@ -84,13 +84,13 @@ class Object(gws.common.action.Object):
 
         self.alkis = t.cast(
             gws.ext.helper.alkis.Object,
-            self.find_first('gws.ext.helper.alkis'))
+            self.root.find_first('gws.ext.helper.alkis'))
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('dprocon cannot init, no alkis index found')
             return
 
         self.request_url = self.var('requestUrl')
-        self.feature_format = self.create_object('gws.common.format', _DEFAULT_FORMAT)
+        self.feature_format = self.root.create_object('gws.common.format', _DEFAULT_FORMAT)
 
         self.data_table_name = self.var('dataTableName')
         self.request_table_name = self.var('requestTableName')

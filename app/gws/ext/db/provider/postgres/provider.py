@@ -21,7 +21,7 @@ def create_shared(obj: t.IObject, cfg) -> 'Object':
         f'u={cfg.user}',
         f'd={cfg.database}'
     ])
-    prov: Object = obj.create_shared_object(
+    prov: Object = obj.root.create_shared_object(
         'gws.ext.db.provider.postgres',
         gws.as_uid(key),
         cfg)

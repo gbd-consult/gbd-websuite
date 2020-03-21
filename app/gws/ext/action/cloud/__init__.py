@@ -106,7 +106,7 @@ class Object(gws.common.action.Object):
         self.db = t.cast(
             gws.ext.db.provider.postgres.Object,
             gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.config_template = self.create_object('gws.ext.template', self.var('configTemplate'))
+        self.config_template = self.root.create_object('gws.ext.template', self.var('configTemplate'))
 
     def api_create_project(self, req: t.IRequest, p: CreateProjectParams) -> CreateProjectResponse:
         gws.write_file(gws.VAR_DIR + '/cloud-debug-input.json', gws.tools.json2.to_pretty_string(p))

@@ -88,7 +88,7 @@ class Object(gws.common.action.Object):
         self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         self.crs: t.Crs = self.var('crs')
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.feature_format = t.cast(t.IFormat, self.add_child('gws.common.format', self.var('featureFormat') or _DEFAULT_FORMAT))
+        self.feature_format = t.cast(t.IFormat, self.create_child('gws.common.format', self.var('featureFormat') or _DEFAULT_FORMAT))
 
     def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:
         if not self.alkis:

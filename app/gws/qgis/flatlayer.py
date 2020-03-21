@@ -1,16 +1,15 @@
 import gws
 
+import gws.common.layer
+import gws.common.metadata
 import gws.common.search
 import gws.config
-import gws.common.layer
 import gws.gis.mpx
 import gws.gis.proj
 import gws.gis.shape
 import gws.gis.source
-import gws.gis.zoom
 import gws.gis.util
-import gws.server.monitor
-import gws.common.metadata
+import gws.gis.zoom
 import gws.tools.os2
 
 import gws.types as t
@@ -80,7 +79,7 @@ class Object(gws.common.layer.Image):
             queryable_only=True
         )
         if source_layers:
-            return self.create_object('gws.ext.search.provider.qgiswms', t.Config(
+            return self.root.create_object('gws.ext.search.provider.qgiswms', t.Config(
                 uid=self.uid + '.default_search',
                 layer=self,
                 source_layers=source_layers))

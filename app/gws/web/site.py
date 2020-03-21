@@ -91,7 +91,7 @@ class Object(gws.Object, t.IWebSite):
             r.target = r.target.replace('$', '\\')
 
         p = self.var('errorPage')
-        self.error_page: t.Optional[t.ITemplate] = self.create_object('gws.ext.template', p) if p else None
+        self.error_page: t.Optional[t.ITemplate] = self.root.create_object('gws.ext.template', p) if p else None
 
         self.cors: t.CorsOptions = CorsOptions({
             'allow_origin': self.var('cors.allowOrigin'),

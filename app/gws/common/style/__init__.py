@@ -52,5 +52,5 @@ class Style(t.IStyle):
     def props(self) -> t.StyleProps:
         return t.StyleProps(
             type=self.type,
-            values=self.values.as_dict() if self.values else None,
+            values=self.values,
             text=self.text or '')

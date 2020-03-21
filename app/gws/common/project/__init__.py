@@ -68,31 +68,31 @@ class Object(gws.Object, t.IProject):
         self.assets_root: t.DocumentRoot = gws.web.site.document_root(self.var('assets'))
 
         p = self.var('map')
-        self.map: t.Optional[t.IMap] = self.add_child(gws.common.map.Object, p) if p else None
+        self.map: t.Optional[t.IMap] = self.create_child(gws.common.map.Object, p) if p else None
 
         p = self.var('overviewMap')
-        self.overview_map: t.Optional[t.IMap] = self.add_child(gws.common.map.Object, p) if p else None
+        self.overview_map: t.Optional[t.IMap] = self.create_child(gws.common.map.Object, p) if p else None
         if self.overview_map:
             self.overview_map.uid = 'overview'
 
         p = self.var('printer')
-        self.printer: t.Optional[t.IPrinter] = self.add_child(gws.common.printer.Object, p) if p else None
+        self.printer: t.Optional[t.IPrinter] = self.create_child(gws.common.printer.Object, p) if p else None
 
         p = self.var('description')
-        self.description_template: t.ITemplate = self.add_child('gws.ext.template', p or gws.common.template.builtin_config('project_description'))
+        self.description_template: t.ITemplate = self.create_child('gws.ext.template', p or gws.common.template.builtin_config('project_description'))
 
         p = self.var('search')
         if p and p.enabled and p.providers:
             for s in p.providers:
-                self.add_child('gws.ext.search.provider', s)
+                self.create_child('gws.ext.search.provider', s)
 
         p = self.var('api')
-        self.api: t.IApi = self.add_child(gws.common.api.Object, p) if p else None
+        self.api: t.IApi = self.create_child(gws.common.api.Object, p) if p else None
 
         p = self.var('client')
         if p:
             p.parentClient = self.parent.var('client')
-        self.client: t.Optional[t.IClient] = self.add_child(gws.common.client.Object, p) if p else None
+        self.client: t.Optional[t.IClient] = self.create_child(gws.common.client.Object, p) if p else None
 
         if self.map:
             scales = [gws.tools.units.res2scale(r) for r in self.map.resolutions]

@@ -16,5 +16,5 @@ class Object(gws.Object, t.IApi):
         self.actions = {}
 
         for p in self.var('actions', []):
-            a = self.add_child('gws.ext.action', p)
+            a = self.create_child('gws.ext.action', p)
             self.actions[p.type] = a

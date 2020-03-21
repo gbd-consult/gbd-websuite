@@ -144,12 +144,12 @@ class Base(Object):
     def configure_template(self, name, path, type='xml'):
         for tpl in self.var('templates', default=[]):
             if tpl.title == name:
-                return self.create_object('gws.ext.template', tpl)
+                return self.root.create_object('gws.ext.template', tpl)
 
         if not path.startswith('/'):
             path = gws.APP_DIR + '/gws/ext/ows/service/' + path.strip('/') + '/' + name + '.cx'
 
-        return self.create_shared_object('gws.ext.template', path, {
+        return self.root.create_shared_object('gws.ext.template', path, {
             'type': type,
             'path': path
         })

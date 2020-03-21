@@ -13,9 +13,5 @@ class LoadError(Error):
     pass
 
 
-class DispatchError(Error):
-    pass
-
-
 class MapproxyConfigError(Error):
     pass

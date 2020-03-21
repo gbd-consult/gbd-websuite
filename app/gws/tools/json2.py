@@ -105,6 +105,6 @@ def to_tagged_string(x, pretty=False, ascii=True):
 
 
 def _json_default(x):
-    if hasattr(x, 'as_dict'):
-        return x.as_dict()
+    if gws.is_data_object(x):
+        return vars(x)
     return str(x)

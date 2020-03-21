@@ -112,6 +112,8 @@ def _prop_code(m, value, with_type=True):
         t = _extract_return_annotation(m['line'])
     else:
         t = _extract_var_annotation(m['line'])
+    if value is None:
+        return '%s: %s' % (m['name'], t)
     return '%s: %s = %r' % (m['name'], t, value)
 
 

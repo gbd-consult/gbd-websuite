@@ -50,7 +50,7 @@ class Object(gws.common.layer.Image):
             queryable_only=True
         )
         if source_layers:
-            return self.create_object('gws.ext.search.provider.wms', t.Config(
+            return self.root.create_object('gws.ext.search.provider.wms', t.Config(
                 uid=self.uid + '.default_search',
                 layer=self,
                 source_layers=source_layers))

@@ -1,6 +1,6 @@
 import importlib
 
-from . import util, error, log
+from . import util, error, log, spec
 import gws.types as t
 
 _UIDS = set()
@@ -8,27 +8,26 @@ _UIDS = set()
 
 #:export IObject
 class Object(t.IObject):
+    access: t.Access
     config: t.Config
     parent: t.IObject
     root: t.IRootObject
 
     def __init__(self):
-        self.children = []
-        self.uid = ''
-        self.access = None
+        self.children: t.List[t.IObject] = []
         self.klass = _class_name(self.__class__)
-        self.defaults = None
+        self.uid: str = ''
+        for a in 'access', 'config', 'parent', 'root':
+            setattr(self, a, None)
 
     @property
     def props(self) -> t.Props:
-        pass
+        return t.cast(t.Props, None)
 
     def is_a(self, klass):
         if isinstance(klass, type):
             return isinstance(self, klass)
-        if self.klass == klass:
-            return True
-        return self.klass.startswith(klass + '.')
+        return self.klass == klass or self.klass.startswith(klass + '.')
 
     def _new_uid(self, uid):
         global _UIDS
@@ -103,40 +102,12 @@ class Object(t.IObject):
             return self.parent.var(key, default, parent=True)
         return default
 
-    def create_unbound_object(self, klass, cfg):
-        obj = self.root.create(klass, cfg)
-        obj.initialize(cfg)
-        return obj
+    def create_child(self, klass, cfg) -> t.IObject:
+        return self.append_child(self.root.create_object(klass, cfg, parent=self))
 
-    def create_object(self, klass, cfg, parent=None):
-        cfg = cfg or t.Data()
-        obj = self.root.create(klass, cfg)
-        obj.parent = parent
-        obj.initialize(cfg)
-        self.root.all_objects.append(obj)
-        return obj
-
-    def add_child(self, klass, cfg):
-        return self.append_child(self.create_object(klass, cfg, parent=self))
-
-    def append_child(self, obj):
+    def append_child(self, obj: t.IObject) -> t.IObject:
         obj.parent = self
         self.children.append(obj)
-        return obj
-
-    def create_shared_object(self, klass, uid, cfg):
-        uid = _class_name(klass).replace('.', '_') + '_' + util.as_uid(uid)
-
-        if uid in self.root.shared_objects:
-            # log.debug(f'SHARED: FOUND {klass} {uid}')
-            return self.root.shared_objects[uid]
-
-        with util.global_lock():
-            log.debug(f'SHARED: create {klass} {uid}')
-            obj = self.create_object(klass, cfg)
-            obj.uid = uid
-            self.root.shared_objects[uid] = obj
-
         return obj
 
     def get_children(self, klass) -> t.List[t.IObject]:
@@ -148,35 +119,68 @@ class Object(t.IObject):
                 return self.parent
             return self.parent.get_closest(klass)
 
-    def find_all(self, klass=None) -> t.List[t.IObject]:
-        return list(_find_all(self.root.all_objects, klass))
-
-    def find_first(self, klass) -> t.IObject:
-        for p in _find_all(self.root.all_objects, klass):
-            return p
-
-    def find(self, klass, uid) -> t.IObject:
-        return _find(self.root.all_objects, klass, uid)
-
     def props_for(self, user) -> t.Optional[dict]:
         if not user.can_use(self):
             return None
         return _make_props(self.props, user)
 
 
-#:export
-class RootBase(Object):
+#:export IRootObject
+class RootObject(Object, t.IRootObject):
+    application: t.IApplication
+    validator: t.SpecValidator
+
     def __init__(self):
         super().__init__()
         self.all_types = {}
         self.all_objects = []
         self.shared_objects = {}
         self.root = self
+        for a in 'application', 'validator':
+            setattr(self, a, None)
 
     def create(self, klass, cfg=None):
+        cfg = cfg or t.Data()
         oo = self._create(klass, cfg)
         oo.root = self
         return oo
+
+    def create_object(self, klass, cfg, parent=None):
+        obj = self.create(klass, cfg)
+        obj.parent = parent
+        obj.initialize(cfg)
+        self.all_objects.append(obj)
+        return obj
+
+    def create_unbound_object(self, klass, cfg):
+        obj = self.create(klass, cfg)
+        obj.initialize(cfg)
+        return obj
+
+    def create_shared_object(self, klass, uid, cfg):
+        uid = _class_name(klass).replace('.', '_') + '_' + util.as_uid(uid)
+
+        if uid in self.shared_objects:
+            # log.debug(f'SHARED: FOUND {klass} {uid}')
+            return self.shared_objects[uid]
+
+        with util.global_lock():
+            log.debug(f'SHARED: create {klass} {uid}')
+            obj = self.root.create_object(klass, cfg)
+            obj.uid = uid
+            self.shared_objects[uid] = obj
+
+        return obj
+
+    def find_all(self, klass=None) -> t.List[t.IObject]:
+        return list(_find_all(self.all_objects, klass))
+
+    def find_first(self, klass) -> t.IObject:
+        for p in _find_all(self.all_objects, klass):
+            return p
+
+    def find(self, klass, uid) -> t.IObject:
+        return _find(self.all_objects, klass, uid)
 
     def _create(self, klass, cfg):
         if isinstance(klass, type):
@@ -260,21 +264,11 @@ def _object_name_for_error(x):
 
 
 def _make_props(obj, user):
-    if hasattr(obj, 'props_for'):
-        obj = obj.props_for(user)
-    elif hasattr(obj, 'props'):
-        obj = obj.props
+    if obj is None or isinstance(obj, (int, float, bool, str, bytes)):
+        return obj
 
-    if isinstance(obj, t.Data):
-        obj = obj.as_dict()
-
-    if isinstance(obj, list):
-        ls = []
-        for v in obj:
-            v = _make_props(v, user)
-            if v is not None:
-                ls.append(v)
-        return ls
+    if util.is_data_object(obj):
+        obj = vars(obj)
 
     if isinstance(obj, dict):
         ls = {}
@@ -284,4 +278,18 @@ def _make_props(obj, user):
                 ls[k] = v
         return ls
 
-    return obj
+    if isinstance(obj, (list, tuple)):
+        ls = []
+        for v in obj:
+            v = _make_props(v, user)
+            if v is not None:
+                ls.append(v)
+        return ls
+
+    if util.has(obj, 'props_for'):
+        return _make_props(obj.props_for(user), user)
+
+    if util.has(obj, 'props'):
+        return _make_props(obj.props, user)
+
+    raise ValueError(f'make_props failed for {obj.__class__}')

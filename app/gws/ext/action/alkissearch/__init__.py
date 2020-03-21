@@ -225,7 +225,7 @@ class Object(gws.common.action.Object):
     def configure(self):
         super().configure()
 
-        self.alkis = t.cast(gws.ext.helper.alkis.Object, self.find_first('gws.ext.helper.alkis'))
+        self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('alkissearch cannot init, no alkis index found')
             return
@@ -238,18 +238,18 @@ class Object(gws.common.action.Object):
             if not fmt.get(f):
                 setattr(fmt, f, DEFAULT_FORMAT.get(f))
 
-        self.short_feature_format = self.add_child('gws.common.format', t.Config(
+        self.short_feature_format = self.create_child('gws.common.format', t.Config(
             title=fmt.title,
             teaser=fmt.teaser,
         ))
 
-        self.long_feature_format = self.add_child('gws.common.format', t.Config(
+        self.long_feature_format = self.create_child('gws.common.format', t.Config(
             title=fmt.title,
             teaser=fmt.teaser,
             description=fmt.description,
         ))
 
-        self.print_template = self.add_child(
+        self.print_template = self.create_child(
             'gws.ext.template',
             self.var('printTemplate', default=DEFAULT_PRINT_TEMPLATE))
 
@@ -352,7 +352,7 @@ class Object(gws.common.action.Object):
         for g in sorted(int(g) for g in p.groups):
             combined_rules.extend(self.export.groups[g].dataModel.rules)
 
-        combined_model = self.create_unbound_object('gws.common.model', t.Config(
+        combined_model = self.root.create_unbound_object('gws.common.model', t.Config(
             rules=combined_rules
         ))
 

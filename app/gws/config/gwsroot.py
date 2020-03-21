@@ -1,35 +1,24 @@
+import gws
 import gws.core.tree
-import gws.core.spec
-import gws.server.monitor
+
 import gws.types as t
 
-from . import error, spec
+from . import spec, error
 
 
-#:export IRootObject
-class Object(gws.core.tree.RootBase, t.IRootObject):
+class Object(gws.core.tree.RootObject):
     def configure(self):
         super().configure()
+        self.validator = spec.validator()
+        self.application = t.cast(t.IApplication, self.create_child('gws.common.application', self.config))
 
-        self._monitor: gws.server.monitor.Object = self.add_child(gws.server.monitor.Object, {})
-        self._validator: gws.core.spec.Validator = spec.validator()
-        self.application: t.IApplication = self.add_child('gws.common.application', self.config)
 
-    def validate_action(self, category, cmd, payload):
-        cc = self._validator.method_spec(cmd)
-        if not cc:
-            raise error.DispatchError('not found', cmd)
+def create() -> t.IRootObject:
+    return gws.set_global('_tree_root', Object())
 
-        cat = cc['category']
-        if cat == 'http' and category.startswith('http'):
-            cat = category
-        if category != cat:
-            raise error.DispatchError('wrong command category', category)
 
-        if cc['arg']:
-            try:
-                payload = self._validator.read_value(payload, cc['arg'], strict=(cat == 'api'))
-            except gws.core.spec.Error as e:
-                raise error.DispatchError(f'invalid parameters ({e.message})') from e
+def root() -> t.IRootObject:
+    def _err():
+        raise error.LoadError('no configuration root found')
 
-        return cc['action'], cc['name'], payload
+    return gws.get_global('_tree_root', _err)

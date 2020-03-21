@@ -35,7 +35,7 @@ class Object(gws.common.action.Object):
 
     def configure(self):
         super().configure()
-        self.alkis = t.cast(alkis.Object, self.find_first('gws.ext.helper.alkis'))
+        self.alkis = t.cast(alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         if not self.alkis:
             raise ValueError('alkis helper not found')
 

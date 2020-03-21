@@ -35,10 +35,10 @@ class Object(gws.Object, t.ISearchProvider):
         self.active = True
 
         p = self.var('dataModel')
-        self.data_model: t.Optional[t.IModel] = self.add_child('gws.common.model', p) if p else None
+        self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
         p = self.var('featureFormat')
-        self.feature_format: t.Optional[t.IFormat] = self.add_child('gws.common.format', p) if p else None
+        self.feature_format: t.Optional[t.IFormat] = self.create_child('gws.common.format', p) if p else None
 
         p = self.var('tolerance')
         self.tolerance: t.Measurement = gws.tools.units.parse(p, units=['px', 'm'], default='px') if p else (_DEFAULT_PIXEL_TOLERANCE, 'px')

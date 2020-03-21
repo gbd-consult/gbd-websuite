@@ -77,6 +77,7 @@ class ext:
         class method:
             class Config:
                 pass
+
         class provider:
             class Config:
                 pass
@@ -131,22 +132,25 @@ class Data:
     def __init__(self, *args, **kwargs):
         self._extend(args, kwargs)
 
-    def get(self, k, default=None):
-        return getattr(self, k, default)
-
-    def as_dict(self):
-        return vars(self)
-
     def __repr__(self):
         return repr(vars(self))
+
+    def __getattr__(self, item):
+        if item.startswith('_'):
+            # do not use None fallback for special props
+            raise AttributeError()
+        return None
+
+    def get(self, k, default=None):
+        return getattr(self, k, default)
 
     def _extend(self, args, kwargs):
         d = {}
         for a in args:
             if isinstance(a, dict):
                 d.update(a)
-            elif hasattr(a, 'as_dict'):
-                d.update(a.as_dict())
+            elif isinstance(a, Data):
+                d.update(vars(a))
         d.update(kwargs)
         vars(self).update(d)
 
@@ -168,7 +172,7 @@ class AccessType(Enum):
     deny = 'deny'
 
 
-class AccessRuleConfig(Config):
+class Access(Config):
     """Access rights definition for authorization roles"""
 
     type: AccessType  #: access type (deny or allow)
@@ -176,12 +180,12 @@ class AccessRuleConfig(Config):
 
 
 class WithAccess(Config):
-    access: Optional[List[AccessRuleConfig]]  #: access rights
+    access: Optional[List[Access]]  #: access rights
 
 
 class WithTypeAndAccess(Config):
     type: str  #: object type
-    access: Optional[List[AccessRuleConfig]]  #: access rights
+    access: Optional[List[Access]]  #: access rights
 
 
 # attributes
@@ -266,47 +270,47 @@ class Props(Data):
 
 
 class Bounds(Data):
-    crs: 'Crs' = None
-    extent: 'Extent' = None
+    crs: 'Crs'
+    extent: 'Extent'
 
 
 class CorsOptions(Data):
-    allow_credentials: bool = None
-    allow_headers: Optional[List[str]] = None
-    allow_origin: str = None
+    allow_credentials: bool
+    allow_headers: Optional[List[str]]
+    allow_origin: str
 
 
 class DocumentRoot(Data):
-    allow_mime: Optional[List[str]] = None
-    deny_mime: Optional[List[str]] = None
-    dir: 'DirPath' = None
+    allow_mime: Optional[List[str]]
+    deny_mime: Optional[List[str]]
+    dir: 'DirPath'
 
 
 class FeatureConverter:
-    data_model: 'IModel' = None
-    feature_format: 'IFormat' = None
+    data_model: 'IModel'
+    feature_format: 'IFormat'
 
 
 class FeatureProps(Data):
-    attributes: Optional[List[Attribute]] = None
-    elements: Optional[dict] = None
-    layerUid: Optional[str] = None
-    shape: Optional['ShapeProps'] = None
-    style: Optional['StyleProps'] = None
-    uid: Optional[str] = None
+    attributes: Optional[List[Attribute]]
+    elements: Optional[dict]
+    layerUid: Optional[str]
+    shape: Optional['ShapeProps']
+    style: Optional['StyleProps']
+    uid: Optional[str]
 
 
 class IBaseRequest:
-    data: Optional[bytes] = None
-    environ: dict = None
-    input_struct_type: int = None
-    is_secure: bool = None
-    method: str = None
-    output_struct_type: int = None
-    params: dict = None
-    root: 'IRootObject' = None
-    site: 'IWebSite' = None
-    text_data: Optional[str] = None
+    data: Optional[bytes]
+    environ: dict
+    input_struct_type: int
+    is_secure: bool
+    method: str
+    output_struct_type: int
+    params: dict
+    root: 'IRootObject'
+    site: 'IWebSite'
+    text_data: Optional[str]
     def cookie(self, key: str, default: str = None) -> str: pass
     def env(self, key: str, default: str = None) -> str: pass
     def error_response(self, err) -> 'IResponse': pass
@@ -321,18 +325,18 @@ class IBaseRequest:
 
 
 class IFeature:
-    attributes: List[Attribute] = None
-    category: str = None
-    converter: Optional['FeatureConverter'] = None
-    elements: dict = None
-    full_uid: str = None
-    layer: Optional['ILayer'] = None
-    minimal_props: 'FeatureProps' = None
-    props: 'FeatureProps' = None
-    shape: Optional['IShape'] = None
-    style: Optional['IStyle'] = None
-    template_context: dict = None
-    uid: str = None
+    attributes: List[Attribute]
+    category: str
+    converter: Optional['FeatureConverter']
+    elements: dict
+    full_uid: str
+    layer: Optional['ILayer']
+    minimal_props: 'FeatureProps'
+    props: 'FeatureProps'
+    shape: Optional['IShape']
+    style: Optional['IStyle']
+    template_context: dict
+    uid: str
     def apply_converter(self, converter: 'FeatureConverter' = None) -> 'IFeature': pass
     def apply_data_model(self, model: 'IModel') -> 'IFeature': pass
     def apply_format(self, fmt: 'IFormat', extra_context: dict = None) -> 'IFeature': pass
@@ -343,20 +347,15 @@ class IFeature:
 
 
 class IObject:
-    children: list = None
-    config: Config = None
-    parent: 'IObject' = None
-    props: Props = None
-    root: 'IRootObject' = None
-    uid: str = None
-    def add_child(self, klass, cfg): pass
-    def append_child(self, obj): pass
-    def create_object(self, klass, cfg, parent=None): pass
-    def create_shared_object(self, klass, uid, cfg): pass
-    def create_unbound_object(self, klass, cfg): pass
-    def find(self, klass, uid) -> 'IObject': pass
-    def find_all(self, klass=None) -> List['IObject']: pass
-    def find_first(self, klass) -> 'IObject': pass
+    access: 'Access'
+    children: List['IObject']
+    config: Config
+    parent: 'IObject'
+    props: Props
+    root: 'IRootObject'
+    uid: str
+    def append_child(self, obj: 'IObject') -> 'IObject': pass
+    def create_child(self, klass, cfg) -> 'IObject': pass
     def get_children(self, klass) -> List['IObject']: pass
     def get_closest(self, klass) -> 'IObject': pass
     def initialize(self, cfg): pass
@@ -379,33 +378,33 @@ class IRole:
 
 
 class ISession:
-    changed: bool = None
-    data: dict = None
-    method: 'IAuthMethod' = None
-    type: str = None
-    uid: str = None
-    user: 'IUser' = None
+    changed: bool
+    data: dict
+    method: 'IAuthMethod'
+    type: str
+    uid: str
+    user: 'IUser'
     def get(self, key, default=None): pass
     def set(self, key, val): pass
 
 
 class IShape:
-    area: float = None
-    bounds: 'Bounds' = None
-    centroid: 'IShape' = None
-    crs: str = None
-    ewkb: bytes = None
-    ewkb_hex: str = None
-    ewkt: str = None
-    extent: 'Extent' = None
-    props: 'ShapeProps' = None
-    srid: int = None
-    type: 'GeometryType' = None
-    wkb: bytes = None
-    wkb_hex: str = None
-    wkt: str = None
-    x: float = None
-    y: float = None
+    area: float
+    bounds: 'Bounds'
+    centroid: 'IShape'
+    crs: str
+    ewkb: bytes
+    ewkb_hex: str
+    ewkt: str
+    extent: 'Extent'
+    props: 'ShapeProps'
+    srid: int
+    type: 'GeometryType'
+    wkb: bytes
+    wkb_hex: str
+    wkt: str
+    x: float
+    y: float
     def intersects(self, shape: 'IShape') -> bool: pass
     def to_type(self, new_type: 'GeometryType') -> 'IShape': pass
     def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': pass
@@ -413,21 +412,21 @@ class IShape:
 
 
 class IStyle:
-    props: 'StyleProps' = None
-    text: str = None
-    type: 'StyleType' = None
-    values: 'StyleValues' = None
+    props: 'StyleProps'
+    text: str
+    type: 'StyleType'
+    values: 'StyleValues'
 
 
 class IUser:
-    attributes: dict = None
-    display_name: str = None
-    fid: str = None
-    is_guest: bool = None
-    props: 'UserProps' = None
-    provider: 'IAuthProvider' = None
-    roles: List[str] = None
-    uid: str = None
+    attributes: dict
+    display_name: str
+    fid: str
+    is_guest: bool
+    props: 'UserProps'
+    provider: 'IAuthProvider'
+    roles: List[str]
+    uid: str
     def attribute(self, key: str, default: str = '') -> str: pass
     def can_use(self, obj, parent=None) -> bool: pass
     def has_role(self, role: str) -> bool: pass
@@ -436,54 +435,54 @@ class IUser:
 
 
 class MetaContact(Data):
-    address: str = None
-    area: str = None
-    city: str = None
-    country: str = None
-    email: str = None
-    fax: str = None
-    organization: str = None
-    person: str = None
-    phone: str = None
-    position: str = None
-    role: str = None
-    url: str = None
-    zip: str = None
+    address: str
+    area: str
+    city: str
+    country: str
+    email: str
+    fax: str
+    organization: str
+    person: str
+    phone: str
+    position: str
+    role: str
+    url: str
+    zip: str
 
 
 class MetaData(Data):
-    abstract: str = None
-    accessConstraints: str = None
-    attribution: str = None
-    contact: 'MetaContact' = None
-    dateCreated: 'Date' = None
-    dateUpdated: 'Date' = None
-    fees: str = None
-    geographicExtent: 'Extent' = None
-    image: 'Url' = None
-    insipreMandatoryKeyword: str = None
-    inspireResourceType: 'MetaInspireResourceType' = None
-    inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType' = None
-    inspireTheme: str = None
-    inspireTopicCategory: 'MetaInspireTopicCategory' = None
-    isoQualityExplanation: str = None
-    isoQualityLineage: str = None
-    isoQualityPass: bool = None
-    isoScope: 'MetaIsoScope' = None
-    isoSpatialRepresentationType: 'MetaIsoSpatialRepresentationType' = None
-    isoTopicCategory: 'MetaIsoTopicCategory' = None
-    isoUid: str = None
-    keywords: List[str] = None
-    language: str = None
-    links: List['MetaLink'] = None
-    maxScale: int = None
-    minScale: int = None
-    name: str = None
-    proj: 'Projection' = None
-    serviceUrl: 'Url' = None
-    title: str = None
-    url: 'Url' = None
-    urlType: str = None
+    abstract: str
+    accessConstraints: str
+    attribution: str
+    contact: 'MetaContact'
+    dateCreated: 'Date'
+    dateUpdated: 'Date'
+    fees: str
+    geographicExtent: 'Extent'
+    image: 'Url'
+    insipreMandatoryKeyword: str
+    inspireResourceType: 'MetaInspireResourceType'
+    inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType'
+    inspireTheme: str
+    inspireTopicCategory: 'MetaInspireTopicCategory'
+    isoQualityExplanation: str
+    isoQualityLineage: str
+    isoQualityPass: bool
+    isoScope: 'MetaIsoScope'
+    isoSpatialRepresentationType: 'MetaIsoSpatialRepresentationType'
+    isoTopicCategory: 'MetaIsoTopicCategory'
+    isoUid: str
+    keywords: List[str]
+    language: str
+    links: List['MetaLink']
+    maxScale: int
+    minScale: int
+    name: str
+    proj: 'Projection'
+    serviceUrl: 'Url'
+    title: str
+    url: 'Url'
+    urlType: str
 
 
 class MetaInspireDegreeOfConformity(Enum):
@@ -677,62 +676,62 @@ class MetaIsoTopicCategory(Enum):
 
 
 class MetaLink(Data):
-    function: 'MetaIsoOnLineFunction' = None
-    scheme: str = None
-    url: 'Url' = None
+    function: 'MetaIsoOnLineFunction'
+    scheme: str
+    url: 'Url'
 
 
 class ModelProps(Props):
-    rules: List['ModelRule'] = None
+    rules: List['ModelRule']
 
 
 class ModelRule(Data):
-    editable: bool = None
-    expression: str = None
-    format: 'FormatStr' = None
-    name: str = None
-    source: str = None
-    title: str = None
-    type: 'AttributeType' = None
-    value: Optional[str] = None
+    editable: bool
+    expression: str
+    format: 'FormatStr'
+    name: str
+    source: str
+    title: str
+    type: 'AttributeType'
+    value: Optional[str]
 
 
 class OwsOperation:
-    formats: List[str] = None
-    get_url: 'Url' = None
-    name: str = None
-    parameters: dict = None
-    post_url: 'Url' = None
+    formats: List[str]
+    get_url: 'Url'
+    name: str
+    parameters: dict
+    post_url: 'Url'
 
 
 class Projection(Data):
-    epsg: str = None
-    is_geographic: bool = None
-    proj4text: str = None
-    srid: int = None
-    units: str = None
-    uri: str = None
-    url: str = None
-    urn: str = None
-    urnx: str = None
+    epsg: str
+    is_geographic: bool
+    proj4text: str
+    srid: int
+    units: str
+    uri: str
+    url: str
+    urn: str
+    urnx: str
 
 
 class RenderInput(Data):
-    background_color: int = None
-    items: List['RenderInputItem'] = None
-    view: 'RenderView' = None
+    background_color: int
+    items: List['RenderInputItem']
+    view: 'RenderView'
 
 
 class RenderInputItem(Data):
-    dpi: int = None
-    features: List['IFeature'] = None
-    fragment: 'SvgFragment' = None
-    layer: 'ILayer' = None
-    opacity: float = None
-    print_as_vector: bool = None
-    style: 'IStyle' = None
-    sub_layers: List[str] = None
-    type: str = None
+    dpi: int
+    features: List['IFeature']
+    fragment: 'SvgFragment'
+    layer: 'ILayer'
+    opacity: float
+    print_as_vector: bool
+    style: 'IStyle'
+    sub_layers: List[str]
+    type: str
 
 
 class RenderInputItemType(Enum):
@@ -744,14 +743,14 @@ class RenderInputItemType(Enum):
 
 
 class RenderOutput(Data):
-    items: List['RenderOutputItem'] = None
-    view: 'RenderView' = None
+    items: List['RenderOutputItem']
+    view: 'RenderView'
 
 
 class RenderOutputItem(Data):
-    elements: List[str] = None
-    path: str = None
-    type: str = None
+    elements: List[str]
+    path: str
+    type: str
 
 
 class RenderOutputItemType(Enum):
@@ -761,123 +760,128 @@ class RenderOutputItemType(Enum):
 
 
 class RenderView(Data):
-    bounds: 'Bounds' = None
-    center: 'Point' = None
-    dpi: int = None
-    rotation: int = None
-    scale: int = None
-    size_mm: 'Size' = None
-    size_px: 'Size' = None
+    bounds: 'Bounds'
+    center: 'Point'
+    dpi: int
+    rotation: int
+    scale: int
+    size_mm: 'Size'
+    size_px: 'Size'
 
 
 class RewriteRule(Data):
-    match: 'Regex' = None
-    options: Optional[dict] = None
-    target: str = None
+    match: 'Regex'
+    options: Optional[dict]
+    target: str
 
 
 class SearchArgs(Data):
-    axis: str = None
-    bounds: 'Bounds' = None
-    keyword: Optional[str] = None
-    layers: List['ILayer'] = None
-    limit: int = None
-    params: dict = None
-    project: 'IProject' = None
-    resolution: float = None
-    shapes: List['IShape'] = None
-    source_layer_names: List[str] = None
-    tolerance: 'Measurement' = None
+    axis: str
+    bounds: 'Bounds'
+    keyword: Optional[str]
+    layers: List['ILayer']
+    limit: int
+    params: dict
+    project: 'IProject'
+    resolution: float
+    shapes: List['IShape']
+    source_layer_names: List[str]
+    tolerance: 'Measurement'
 
 
 class SelectArgs(Data):
-    extra_where: Optional[str] = None
-    keyword: Optional[str] = None
-    limit: Optional[int] = None
-    map_tolerance: Optional[float] = None
-    shape: Optional['IShape'] = None
-    sort: Optional[str] = None
-    table: 'SqlTable' = None
-    uids: Optional[List[str]] = None
+    extra_where: Optional[str]
+    keyword: Optional[str]
+    limit: Optional[int]
+    map_tolerance: Optional[float]
+    shape: Optional['IShape']
+    sort: Optional[str]
+    table: 'SqlTable'
+    uids: Optional[List[str]]
 
 
 class ShapeProps(Props):
-    crs: str = None
-    geometry: dict = None
+    crs: str
+    geometry: dict
 
 
 class SourceLayer(Data):
-    a_level: int = None
-    a_path: str = None
-    a_uid: str = None
-    data_source: dict = None
-    is_expanded: bool = None
-    is_group: bool = None
-    is_image: bool = None
-    is_queryable: bool = None
-    is_visible: bool = None
-    layers: List['SourceLayer'] = None
-    legend: str = None
-    meta: 'MetaData' = None
-    name: str = None
-    opacity: int = None
-    resource_urls: dict = None
-    scale_range: List[float] = None
-    styles: List['SourceStyle'] = None
-    supported_bounds: List['Bounds'] = None
-    supported_crs: List['Crs'] = None
-    title: str = None
+    a_level: int
+    a_path: str
+    a_uid: str
+    data_source: dict
+    is_expanded: bool
+    is_group: bool
+    is_image: bool
+    is_queryable: bool
+    is_visible: bool
+    layers: List['SourceLayer']
+    legend: str
+    meta: 'MetaData'
+    name: str
+    opacity: int
+    resource_urls: dict
+    scale_range: List[float]
+    styles: List['SourceStyle']
+    supported_bounds: List['Bounds']
+    supported_crs: List['Crs']
+    title: str
 
 
 class SourceStyle(Data):
-    is_default: bool = None
-    legend: 'Url' = None
-    meta: 'MetaData' = None
+    is_default: bool
+    legend: 'Url'
+    meta: 'MetaData'
+
+
+class SpecValidator:
+    def method_spec(self, name): pass
+    def read_value(self, val, type_name, path='', strict=True): pass
 
 
 class SqlTable(Data):
-    geometry_column: str = None
-    geometry_crs: 'Crs' = None
-    geometry_type: 'GeometryType' = None
-    key_column: str = None
-    name: str = None
-    search_column: str = None
+    geometry_column: str
+    geometry_crs: 'Crs'
+    geometry_type: 'GeometryType'
+    key_column: str
+    name: str
+    search_column: str
 
 
 class SqlTableColumn(Data):
-    crs: 'Crs' = None
-    geom_type: 'GeometryType' = None
-    is_geometry: bool = None
-    is_key: bool = None
-    name: str = None
-    native_type: str = None
-    type: 'AttributeType' = None
+    crs: 'Crs'
+    geom_type: 'GeometryType'
+    is_geometry: bool
+    is_key: bool
+    name: str
+    native_type: str
+    type: 'AttributeType'
 
 
 class StorageDirectory(Data):
-    category: str = None
-    entries: List['StorageEntry'] = None
-    readable: bool = None
-    writable: bool = None
+    category: str
+    entries: List['StorageEntry']
+    readable: bool
+    writable: bool
 
 
 class StorageElement(Data):
-    data: dict = None
-    entry: 'StorageEntry' = None
+    data: dict
+    entry: 'StorageEntry'
 
 
 class StorageEntry(Data):
-    category: str = None
-    name: str = None
+    category: str
+    name: str
 
 
 class StorageRecord(Data):
-    category: str = None
-    created: int = None
-    data: str = None
-    name: str = None
-    updated: int = None
-    user_fid: str = None
+    category: str
+    created: int
+    data: str
+    name: str
+    updated: int
+    user_fid: str
 
 
 class StyleGeometryOption(Enum):
@@ -920,9 +924,9 @@ class StyleMarker(Enum):
 
 
 class StyleProps(Props):
-    text: Optional[str] = None
-    type: 'StyleType' = None
-    values: Optional['StyleValues'] = None
+    text: Optional[str]
+    type: 'StyleType'
+    values: Optional['StyleValues']
 
 
 class StyleStrokeLineCap(Enum):
@@ -943,100 +947,101 @@ class StyleType(Enum):
 
 
 class StyleValues(Data):
-    fill: Optional['Color'] = None
-    icon: Optional[str] = None
-    label_align: Optional['StyleLabelAlign'] = None
-    label_background: Optional['Color'] = None
-    label_fill: Optional['Color'] = None
-    label_font_family: Optional[str] = None
-    label_font_size: Optional[int] = None
-    label_font_style: Optional['StyleLabelFontStyle'] = None
-    label_font_weight: Optional['StyleLabelFontWeight'] = None
-    label_line_height: Optional[int] = None
-    label_max_scale: Optional[int] = None
-    label_min_scale: Optional[int] = None
-    label_offset_x: Optional[int] = None
-    label_offset_y: Optional[int] = None
-    label_padding: Optional[List[int]] = None
-    label_placement: Optional['StyleLabelPlacement'] = None
-    label_stroke: Optional['Color'] = None
-    label_stroke_dasharray: Optional[List[int]] = None
-    label_stroke_dashoffset: Optional[int] = None
-    label_stroke_linecap: Optional['StyleStrokeLineCap'] = None
-    label_stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
-    label_stroke_miterlimit: Optional[int] = None
-    label_stroke_width: Optional[int] = None
-    marker: Optional['StyleMarker'] = None
-    marker_fill: Optional['Color'] = None
-    marker_size: Optional[int] = None
-    marker_stroke: Optional['Color'] = None
-    marker_stroke_dasharray: Optional[List[int]] = None
-    marker_stroke_dashoffset: Optional[int] = None
-    marker_stroke_linecap: Optional['StyleStrokeLineCap'] = None
-    marker_stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
-    marker_stroke_miterlimit: Optional[int] = None
-    marker_stroke_width: Optional[int] = None
-    offset_x: Optional[int] = None
-    offset_y: Optional[int] = None
-    point_size: Optional[int] = None
-    stroke: Optional['Color'] = None
-    stroke_dasharray: Optional[List[int]] = None
-    stroke_dashoffset: Optional[int] = None
-    stroke_linecap: Optional['StyleStrokeLineCap'] = None
-    stroke_linejoin: Optional['StyleStrokeLineJoin'] = None
-    stroke_miterlimit: Optional[int] = None
-    stroke_width: Optional[int] = None
-    with_geometry: Optional['StyleGeometryOption'] = None
-    with_label: Optional['StyleLabelOption'] = None
+    fill: Optional['Color']
+    icon: Optional[str]
+    label_align: Optional['StyleLabelAlign']
+    label_background: Optional['Color']
+    label_fill: Optional['Color']
+    label_font_family: Optional[str]
+    label_font_size: Optional[int]
+    label_font_style: Optional['StyleLabelFontStyle']
+    label_font_weight: Optional['StyleLabelFontWeight']
+    label_line_height: Optional[int]
+    label_max_scale: Optional[int]
+    label_min_scale: Optional[int]
+    label_offset_x: Optional[int]
+    label_offset_y: Optional[int]
+    label_padding: Optional[List[int]]
+    label_placement: Optional['StyleLabelPlacement']
+    label_stroke: Optional['Color']
+    label_stroke_dasharray: Optional[List[int]]
+    label_stroke_dashoffset: Optional[int]
+    label_stroke_linecap: Optional['StyleStrokeLineCap']
+    label_stroke_linejoin: Optional['StyleStrokeLineJoin']
+    label_stroke_miterlimit: Optional[int]
+    label_stroke_width: Optional[int]
+    marker: Optional['StyleMarker']
+    marker_fill: Optional['Color']
+    marker_size: Optional[int]
+    marker_stroke: Optional['Color']
+    marker_stroke_dasharray: Optional[List[int]]
+    marker_stroke_dashoffset: Optional[int]
+    marker_stroke_linecap: Optional['StyleStrokeLineCap']
+    marker_stroke_linejoin: Optional['StyleStrokeLineJoin']
+    marker_stroke_miterlimit: Optional[int]
+    marker_stroke_width: Optional[int]
+    offset_x: Optional[int]
+    offset_y: Optional[int]
+    point_size: Optional[int]
+    stroke: Optional['Color']
+    stroke_dasharray: Optional[List[int]]
+    stroke_dashoffset: Optional[int]
+    stroke_linecap: Optional['StyleStrokeLineCap']
+    stroke_linejoin: Optional['StyleStrokeLineJoin']
+    stroke_miterlimit: Optional[int]
+    stroke_width: Optional[int]
+    with_geometry: Optional['StyleGeometryOption']
+    with_label: Optional['StyleLabelOption']
 
 
 class SvgFragment:
-    points: List['Point'] = None
-    svg: str = None
+    points: List['Point']
+    svg: str
 
 
 class TemplateOutput(Data):
-    content: str = None
-    mime: str = None
-    path: str = None
+    content: str
+    mime: str
+    path: str
 
 
 class TemplateProps(Props):
-    dataModel: 'ModelProps' = None
-    mapHeight: int = None
-    mapWidth: int = None
-    qualityLevels: List['TemplateQualityLevel'] = None
-    title: str = None
-    uid: str = None
+    dataModel: 'ModelProps'
+    mapHeight: int
+    mapWidth: int
+    qualityLevels: List['TemplateQualityLevel']
+    title: str
+    uid: str
 
 
 class TemplateQualityLevel(Data):
-    dpi: int = None
-    name: str = None
+    dpi: int
+    name: str
 
 
 class UserProps(Data):
-    displayName: str = None
+    displayName: str
 
 
 class IApi(IObject):
-    actions: dict = None
+    actions: dict
 
 
 class IApplication(IObject):
-    api: 'IApi' = None
-    auth: 'IAuthManager' = None
-    client: Optional['IClient'] = None
-    meta: 'MetaData' = None
-    qgis_version: str = None
-    web_sites: List['IWebSite'] = None
+    api: 'IApi'
+    auth: 'IAuthManager'
+    client: Optional['IClient']
+    meta: 'MetaData'
+    monitor: 'IMonitor'
+    qgis_version: str
+    web_sites: List['IWebSite']
     def find_action(self, action_type, project_uid=None): pass
 
 
 class IAuthManager(IObject):
-    guest_user: 'IUser' = None
-    methods: List['IAuthMethod'] = None
-    providers: List['IAuthProvider'] = None
+    guest_user: 'IUser'
+    methods: List['IAuthMethod']
+    providers: List['IAuthProvider']
     def authenticate(self, method: 'IAuthMethod', login, password, **kw) -> Optional['IUser']: pass
     def close_session(self, sess: 'ISession', req: 'IRequest', res: 'IResponse') -> 'ISession': pass
     def create_stored_session(self, type: str, method: 'IAuthMethod', user: 'IUser') -> 'ISession': pass
@@ -1058,7 +1063,7 @@ class IAuthManager(IObject):
 
 
 class IAuthMethod(IObject):
-    type: str = None
+    type: str
     def close_session(self, auth: 'IAuthManager', sess: 'ISession', req: 'IRequest', res: 'IResponse'): pass
     def login(self, auth: 'IAuthManager', login: str, password: str, req: 'IRequest') -> Optional['ISession']: pass
     def logout(self, auth: 'IAuthManager', sess: 'ISession', req: 'IRequest') -> 'ISession': pass
@@ -1066,7 +1071,7 @@ class IAuthMethod(IObject):
 
 
 class IAuthProvider(IObject):
-    allowed_methods: List[str] = None
+    allowed_methods: List[str]
     def authenticate(self, method: 'IAuthMethod', login: str, password: str, **kwargs) -> Optional['IUser']: pass
     def get_user(self, user_uid: str) -> Optional['IUser']: pass
     def user_from_dict(self, d: dict) -> 'IUser': pass
@@ -1082,47 +1087,47 @@ class IDbProvider(IObject):
 
 
 class IFormat(IObject):
-    templates: dict = None
+    templates: dict
     def apply(self, context: dict) -> dict: pass
 
 
 class ILayer(IObject):
-    cache_uid: str = None
-    can_render_box: bool = None
-    can_render_svg: bool = None
-    can_render_xyz: bool = None
-    crs: str = None
-    data_model: Optional['IModel'] = None
-    default_search_provider: Optional['ISearchProvider'] = None
-    description: str = None
-    description_template: 'ITemplate' = None
-    display: str = None
-    edit_data_model: Optional['IModel'] = None
-    edit_options: Data = None
-    edit_style: Optional['IStyle'] = None
-    extent: Optional['Extent'] = None
-    feature_format: 'IFormat' = None
-    geometry_type: Optional['GeometryType'] = None
-    grid_uid: str = None
-    has_cache: bool = None
-    has_legend: bool = None
-    has_search: bool = None
-    image_format: str = None
-    is_editable: bool = None
-    is_public: bool = None
-    layers: List['ILayer'] = None
-    legend_url: str = None
-    map: 'IMap' = None
-    meta: 'MetaData' = None
-    own_bounds: Optional['Bounds'] = None
-    ows_name: str = None
-    ows_services_disabled: List[str] = None
-    ows_services_enabled: List[str] = None
-    resolutions: List[float] = None
-    style: 'IStyle' = None
-    supports_wfs: bool = None
-    supports_wms: bool = None
-    title: str = None
+    cache_uid: str
+    can_render_box: bool
+    can_render_svg: bool
+    can_render_xyz: bool
+    crs: str
+    data_model: Optional['IModel']
+    default_search_provider: Optional['ISearchProvider']
+    description: str
+    description_template: 'ITemplate'
+    display: str
+    edit_data_model: Optional['IModel']
+    edit_options: Data
+    edit_style: Optional['IStyle']
+    extent: Optional['Extent']
+    feature_format: 'IFormat'
+    geometry_type: Optional['GeometryType']
+    grid_uid: str
+    has_cache: bool
+    has_legend: bool
+    has_search: bool
+    image_format: str
+    is_editable: bool
+    is_public: bool
+    layers: List['ILayer']
+    legend_url: str
+    map: 'IMap'
+    meta: 'MetaData'
+    own_bounds: Optional['Bounds']
+    ows_name: str
+    ows_services_disabled: List[str]
+    ows_services_enabled: List[str]
+    resolutions: List[float]
+    style: 'IStyle'
+    supports_wfs: bool
+    supports_wms: bool
+    title: str
     def configure_metadata(self, provider_meta=None) -> 'MetaData': pass
     def configure_search(self): pass
     def configure_spatial_metadata(self): pass
@@ -1138,67 +1143,76 @@ class ILayer(IObject):
 
 
 class IMap(IObject):
-    bounds: 'Bounds' = None
-    center: 'Point' = None
-    coordinate_precision: float = None
-    crs: 'Crs' = None
-    extent: 'Extent' = None
-    init_resolution: float = None
-    layers: List['ILayer'] = None
-    resolutions: List[float] = None
+    bounds: 'Bounds'
+    center: 'Point'
+    coordinate_precision: float
+    crs: 'Crs'
+    extent: 'Extent'
+    init_resolution: float
+    layers: List['ILayer']
+    resolutions: List[float]
 
 
 class IModel(IObject):
-    attribute_names: List[str] = None
-    geometry_crs: 'Crs' = None
-    geometry_type: 'GeometryType' = None
-    rules: List['ModelRule'] = None
+    attribute_names: List[str]
+    geometry_crs: 'Crs'
+    geometry_type: 'GeometryType'
+    rules: List['ModelRule']
     def apply(self, atts: List[Attribute]) -> List[Attribute]: pass
     def apply_to_dict(self, d: dict) -> List[Attribute]: pass
 
 
+class IMonitor(IObject):
+    cpaths: dict
+    watch_dirs: dict
+    watch_files: dict
+    def add_directory(self, path, pattern): pass
+    def add_path(self, path): pass
+    def start(self): pass
+
+
 class IOwsProvider(IObject):
-    invert_axis_crs: List[str] = None
-    meta: 'MetaData' = None
-    operations: List['OwsOperation'] = None
-    source_layers: List['SourceLayer'] = None
-    supported_crs: List['Crs'] = None
-    type: str = None
-    url: 'Url' = None
-    version: str = None
+    invert_axis_crs: List[str]
+    meta: 'MetaData'
+    operations: List['OwsOperation']
+    source_layers: List['SourceLayer']
+    supported_crs: List['Crs']
+    type: str
+    url: 'Url'
+    version: str
     def find_features(self, args: 'SearchArgs') -> List['IFeature']: pass
     def operation(self, name: str) -> 'OwsOperation': pass
 
 
 class IOwsService(IObject):
-    meta: 'MetaData' = None
-    type: str = None
-    version: str = None
+    meta: 'MetaData'
+    type: str
+    version: str
     def error_response(self, status) -> 'HttpResponse': pass
     def handle(self, req: 'IRequest') -> 'HttpResponse': pass
 
 
 class IPrinter(IObject):
-    templates: List['ITemplate'] = None
+    templates: List['ITemplate']
 
 
 class IProject(IObject):
-    api: 'IApi' = None
-    assets_root: 'DocumentRoot' = None
-    client: Optional['IClient'] = None
-    description_template: 'ITemplate' = None
-    locales: List[str] = None
-    map: Optional['IMap'] = None
-    meta: 'MetaData' = None
-    overview_map: Optional['IMap'] = None
-    printer: Optional['IPrinter'] = None
-    title: str = None
+    api: 'IApi'
+    assets_root: 'DocumentRoot'
+    client: Optional['IClient']
+    description_template: 'ITemplate'
+    locales: List[str]
+    map: Optional['IMap']
+    meta: 'MetaData'
+    overview_map: Optional['IMap']
+    printer: Optional['IPrinter']
+    title: str
 
 
 class IRequest(IBaseRequest):
-    auth: 'IAuthManager' = None
-    session: 'ISession' = None
-    user: 'IUser' = None
+    auth: 'IAuthManager'
+    session: 'ISession'
+    user: 'IUser'
     def acquire(self, klass: str, uid: str) -> Optional['IObject']: pass
     def auth_close(self, res: 'IResponse'): pass
     def auth_open(self): pass
@@ -1209,24 +1223,39 @@ class IRequest(IBaseRequest):
     def require_project(self, uid: str) -> 'IProject': pass
 
 
+class IRootObject(IObject):
+    all_objects: list
+    all_types: dict
+    application: 'IApplication'
+    shared_objects: dict
+    validator: 'SpecValidator'
+    def create(self, klass, cfg=None): pass
+    def create_object(self, klass, cfg, parent=None): pass
+    def create_shared_object(self, klass, uid, cfg): pass
+    def create_unbound_object(self, klass, cfg): pass
+    def find(self, klass, uid) -> 'IObject': pass
+    def find_all(self, klass=None) -> List['IObject']: pass
+    def find_first(self, klass) -> 'IObject': pass
+
+
 class ISearchProvider(IObject):
-    active: bool = None
-    data_model: Optional['IModel'] = None
-    feature_format: Optional['IFormat'] = None
-    tolerance: 'Measurement' = None
-    with_geometry: bool = None
-    with_keyword: bool = None
+    active: bool
+    data_model: Optional['IModel']
+    feature_format: Optional['IFormat']
+    tolerance: 'Measurement'
+    with_geometry: bool
+    with_keyword: bool
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs') -> 'IShape': pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass
 
 
 class ITemplate(IObject):
-    data_model: Optional['IModel'] = None
-    map_size: 'Size' = None
-    page_size: 'Size' = None
-    path: str = None
-    text: str = None
+    data_model: Optional['IModel']
+    map_size: 'Size'
+    page_size: 'Size'
+    path: str
+    text: str
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str: pass
     def dpi_for_quality(self, quality): pass
     def normalize_context(self, context: dict) -> dict: pass
@@ -1234,28 +1263,16 @@ class ITemplate(IObject):
 
 
 class IWebSite(IObject):
-    assets_root: 'DocumentRoot' = None
-    cors: 'CorsOptions' = None
-    error_page: Optional['ITemplate'] = None
-    host: str = None
-    reversed_host: str = None
-    reversed_rewrite_rules: List['RewriteRule'] = None
-    rewrite_rules: List['RewriteRule'] = None
-    ssl: bool = None
-    static_root: 'DocumentRoot' = None
+    assets_root: 'DocumentRoot'
+    cors: 'CorsOptions'
+    error_page: Optional['ITemplate']
+    host: str
+    reversed_host: str
+    reversed_rewrite_rules: List['RewriteRule']
+    rewrite_rules: List['RewriteRule']
+    ssl: bool
+    static_root: 'DocumentRoot'
     def url_for(self, req, url): pass
-
-
-class RootBase(IObject):
-    all_objects: list = None
-    all_types: dict = None
-    shared_objects: dict = None
-    def create(self, klass, cfg=None): pass
-
-
-class IRootObject(RootBase):
-    application: 'IApplication' = None
-    def validate_action(self, category, cmd, payload): pass
 
 
 class ISqlProvider(IDbProvider):

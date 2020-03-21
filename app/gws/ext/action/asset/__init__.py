@@ -75,7 +75,7 @@ class Object(gws.common.action.Object):
             template_type = gws.common.template.type_from_path(rpath)
 
             if template_type:
-                tpl = self.create_shared_object('gws.ext.template', rpath, t.Config({
+                tpl = self.root.create_shared_object('gws.ext.template', rpath, t.Config({
                     'type': template_type,
                     'path': rpath
                 }))

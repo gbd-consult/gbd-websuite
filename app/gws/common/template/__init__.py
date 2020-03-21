@@ -82,7 +82,7 @@ class Object(gws.Object, t.ITemplate):
         self.set_uid(uid)
 
         p = self.var('dataModel')
-        self.data_model: t.Optional[t.IModel] = self.add_child('gws.common.model', p) if p else None
+        self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')
