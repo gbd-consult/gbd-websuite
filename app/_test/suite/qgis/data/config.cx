@@ -96,7 +96,7 @@ projects+ {
     map.layers+ {
         title "t"
         type "qgis"
-        flatten.level 2
+        flattenLayers.level 2
         path "/common/qgis/test_geojson_postgres.qgs"
     }
 

@@ -446,6 +446,7 @@ class MetaContact(Data):
     person: str = None
     phone: str = None
     position: str = None
+    role: str = None
     url: str = None
     zip: str = None
 

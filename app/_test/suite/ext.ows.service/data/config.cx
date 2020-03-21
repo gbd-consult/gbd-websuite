@@ -123,6 +123,7 @@ projects+ {
                 abstract null
                 accessConstraints null
                 isoUid "WMS_INSPIRE_ISO_UID"
+                inspireDegreeOfConformity "notEvaluated"
             }
             withInspireMeta true
         }

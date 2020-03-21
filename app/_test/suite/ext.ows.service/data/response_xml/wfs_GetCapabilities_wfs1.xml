@@ -13,6 +13,9 @@
         <ows:Title>service_meta_title</ows:Title>
         <ows:Abstract>PROJECT_meta_abstract</ows:Abstract>
         <ows:Keywords>
+            <ows:Keyword>PROJECT_meta_keyword1</ows:Keyword>
+            <ows:Keyword>PROJECT_meta_keyword2</ows:Keyword>
+            <ows:Keyword>PROJECT_meta_keyword3</ows:Keyword>
             <ows:Keyword>service_meta_keyword1</ows:Keyword>
             <ows:Keyword>service_meta_keyword2</ows:Keyword>
             <ows:Keyword>service_meta_keyword3</ows:Keyword>
@@ -216,17 +219,18 @@
             <Abstract>PARIS_meta_abstract</Abstract>
             <DefaultSRS>urn:ogc:def:crs:EPSG::3857</DefaultSRS>
             <ows:WGS84BoundingBox>
-                <ows:LowerCorner>2.2858 48.8575</ows:LowerCorner>
-                <ows:UpperCorner>2.2894 48.8628</ows:UpperCorner>
+                <ows:LowerCorner>2.28578 48.8575</ows:LowerCorner>
+                <ows:UpperCorner>2.28937 48.86282</ows:UpperCorner>
             </ows:WGS84BoundingBox>
         </FeatureType>
         <FeatureType>
             <Name>gws:dus_25832</Name>
             <Title>dus_25832</Title>
+            <Abstract>PROJECT_meta_abstract</Abstract>
             <DefaultSRS>urn:ogc:def:crs:EPSG::3857</DefaultSRS>
             <ows:WGS84BoundingBox>
-                <ows:LowerCorner>6.7714 51.2232</ows:LowerCorner>
-                <ows:UpperCorner>6.7783 51.2319</ows:UpperCorner>
+                <ows:LowerCorner>6.7714 51.22322</ows:LowerCorner>
+                <ows:UpperCorner>6.77825 51.23188</ows:UpperCorner>
             </ows:WGS84BoundingBox>
         </FeatureType>
     </FeatureTypeList>

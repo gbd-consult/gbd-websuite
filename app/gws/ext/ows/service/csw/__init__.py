@@ -72,7 +72,7 @@ class Object(ows.Base):
 
         for obj in self.root.find_all():
             meta = gws.get(obj, 'meta')
-            if meta and not gws.get(meta, 'url'):
+            if meta and not gws.has(meta, 'url'):
                 meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
 
     def handle(self, req) -> t.HttpResponse:

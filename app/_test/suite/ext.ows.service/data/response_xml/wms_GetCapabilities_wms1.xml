@@ -11,6 +11,9 @@
         <Title>service_meta_title</Title>
         <Abstract>PROJECT_meta_abstract</Abstract>
         <KeywordList>
+            <Keyword>PROJECT_meta_keyword1</Keyword>
+            <Keyword>PROJECT_meta_keyword2</Keyword>
+            <Keyword>PROJECT_meta_keyword3</Keyword>
             <Keyword>service_meta_keyword1</Keyword>
             <Keyword>service_meta_keyword2</Keyword>
             <Keyword>service_meta_keyword3</Keyword>
@@ -93,81 +96,85 @@
             <Abstract>PROJECT_meta_abstract</Abstract>
             <CRS>EPSG:3857</CRS>
             <EX_GeographicBoundingBox>
-                <westBoundLongitude>2.2858</westBoundLongitude>
-                <eastBoundLongitude>6.7783</eastBoundLongitude>
+                <westBoundLongitude>2.28578</westBoundLongitude>
+                <eastBoundLongitude>6.77825</eastBoundLongitude>
                 <southBoundLatitude>48.8575</southBoundLatitude>
-                <northBoundLatitude>51.2319</northBoundLatitude>
+                <northBoundLatitude>51.23188</northBoundLatitude>
             </EX_GeographicBoundingBox>
             <BoundingBox CRS="EPSG:3857" minx="254451.842681146" miny="6250716.48078953" maxx="754551.4271137204"
                          maxy="6662413.966834171"/>
             <Attribution>
                 <Title>PROJECT_meta_attribution</Title>
             </Attribution>
-            <MetadataURL type="ISO19115:2003">
+            <MetadataURL type="PROJECT_META_URL_TYPE">
                 <Format>application/xml</Format>
-                <OnlineResource
-                        xlink:type="simple"
-                        xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a"/>
+                <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
             </MetadataURL>
             <MinScaleDenominator>1000</MinScaleDenominator>
             <MaxScaleDenominator>50000</MaxScaleDenominator>
             <Layer queryable="1">
                 <Name>gws:group_one</Name>
                 <Title>Group One</Title>
+                <Abstract>PROJECT_meta_abstract</Abstract>
                 <CRS>EPSG:3857</CRS>
                 <EX_GeographicBoundingBox>
                     <westBoundLongitude>6.7714</westBoundLongitude>
-                    <eastBoundLongitude>6.7783</eastBoundLongitude>
-                    <southBoundLatitude>51.2232</southBoundLatitude>
-                    <northBoundLatitude>51.2319</northBoundLatitude>
+                    <eastBoundLongitude>6.77825</eastBoundLongitude>
+                    <southBoundLatitude>51.22322</southBoundLatitude>
+                    <northBoundLatitude>51.23188</northBoundLatitude>
                 </EX_GeographicBoundingBox>
                 <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416" maxx="754551.4271137204"
                              maxy="6662413.966834171"/>
-                <MetadataURL type="ISO19115:2003">
+                <Attribution>
+                    <Title>PROJECT_meta_attribution</Title>
+                </Attribution>
+                <MetadataURL type="PROJECT_META_URL_TYPE">
                     <Format>application/xml</Format>
-                    <OnlineResource
-                            xlink:type="simple"
-                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.group_one"/>
+                    <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
                 </MetadataURL>
                 <MinScaleDenominator>1000</MinScaleDenominator>
                 <MaxScaleDenominator>50000</MaxScaleDenominator>
                 <Layer queryable="1">
                     <Name>gws:own_name_group_one_one</Name>
                     <Title>Group One One</Title>
+                    <Abstract>PROJECT_meta_abstract</Abstract>
                     <CRS>EPSG:3857</CRS>
                     <EX_GeographicBoundingBox>
                         <westBoundLongitude>6.7714</westBoundLongitude>
-                        <eastBoundLongitude>6.7783</eastBoundLongitude>
-                        <southBoundLatitude>51.2232</southBoundLatitude>
-                        <northBoundLatitude>51.2319</northBoundLatitude>
+                        <eastBoundLongitude>6.77825</eastBoundLongitude>
+                        <southBoundLatitude>51.22322</southBoundLatitude>
+                        <northBoundLatitude>51.23188</northBoundLatitude>
                     </EX_GeographicBoundingBox>
                     <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
                                  maxx="754551.4271137204" maxy="6662413.966834171"/>
-                    <MetadataURL type="ISO19115:2003">
+                    <Attribution>
+                        <Title>PROJECT_meta_attribution</Title>
+                    </Attribution>
+                    <MetadataURL type="PROJECT_META_URL_TYPE">
                         <Format>application/xml</Format>
-                        <OnlineResource
-                                xlink:type="simple"
-                                xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.group_one_one"/>
+                        <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
                     </MetadataURL>
                     <MinScaleDenominator>1000</MinScaleDenominator>
                     <MaxScaleDenominator>50000</MaxScaleDenominator>
                     <Layer queryable="1">
                         <Name>gws:dus_25832</Name>
                         <Title>dus_25832</Title>
+                        <Abstract>PROJECT_meta_abstract</Abstract>
                         <CRS>EPSG:3857</CRS>
                         <EX_GeographicBoundingBox>
                             <westBoundLongitude>6.7714</westBoundLongitude>
-                            <eastBoundLongitude>6.7783</eastBoundLongitude>
-                            <southBoundLatitude>51.2232</southBoundLatitude>
-                            <northBoundLatitude>51.2319</northBoundLatitude>
+                            <eastBoundLongitude>6.77825</eastBoundLongitude>
+                            <southBoundLatitude>51.22322</southBoundLatitude>
+                            <northBoundLatitude>51.23188</northBoundLatitude>
                         </EX_GeographicBoundingBox>
                         <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
                                      maxx="754551.4271137204" maxy="6662413.966834171"/>
-                        <MetadataURL type="ISO19115:2003">
+                        <Attribution>
+                            <Title>PROJECT_meta_attribution</Title>
+                        </Attribution>
+                        <MetadataURL type="PROJECT_META_URL_TYPE">
                             <Format>application/xml</Format>
-                            <OnlineResource
-                                    xlink:type="simple"
-                                    xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.dus_25832"/>
+                            <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
                         </MetadataURL>
                         <MinScaleDenominator>1000</MinScaleDenominator>
                         <MaxScaleDenominator>50000</MaxScaleDenominator>
@@ -180,21 +187,19 @@
                 <Abstract>PARIS_meta_abstract</Abstract>
                 <CRS>EPSG:3857</CRS>
                 <EX_GeographicBoundingBox>
-                    <westBoundLongitude>2.2858</westBoundLongitude>
-                    <eastBoundLongitude>2.2894</eastBoundLongitude>
+                    <westBoundLongitude>2.28578</westBoundLongitude>
+                    <eastBoundLongitude>2.28937</eastBoundLongitude>
                     <southBoundLatitude>48.8575</southBoundLatitude>
-                    <northBoundLatitude>48.8628</northBoundLatitude>
+                    <northBoundLatitude>48.86282</northBoundLatitude>
                 </EX_GeographicBoundingBox>
                 <BoundingBox CRS="EPSG:3857" minx="254451.842681146" miny="6250716.48078953" maxx="254851.842681146"
                              maxy="6251616.48078953"/>
                 <Attribution>
                     <Title>PARIS_meta_attribution</Title>
                 </Attribution>
-                <MetadataURL type="ISO19115:2003">
+                <MetadataURL type="PARIS_META_URL_TYPE">
                     <Format>application/xml</Format>
-                    <OnlineResource
-                            xlink:type="simple"
-                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/a.map.paris_3857"/>
+                    <OnlineResource xlink:type="simple" xlink:href="http://PARIS_meta_url"/>
                 </MetadataURL>
                 <MinScaleDenominator>1000</MinScaleDenominator>
                 <MaxScaleDenominator>50000</MaxScaleDenominator>

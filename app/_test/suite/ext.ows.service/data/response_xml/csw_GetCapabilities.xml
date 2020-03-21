@@ -103,7 +103,7 @@
         </ows:Constraint>
         <inspire_vs:ExtendedCapabilities>
             <inspire_common:ResourceLocator>
-                <inspire_common:URL>http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw/request/GetRecordById/id/CSW_ISO_UID</inspire_common:URL>
+                <inspire_common:URL>http://csw_meta_url</inspire_common:URL>
                 <inspire_common:MediaType>text/xml</inspire_common:MediaType>
             </inspire_common:ResourceLocator>
             <inspire_common:ResourceType>service</inspire_common:ResourceType>

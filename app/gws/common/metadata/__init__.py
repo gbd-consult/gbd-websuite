@@ -291,6 +291,7 @@ class MetaContact(t.Data):
     person: str
     phone: str
     position: str
+    role: str
     zip: str
     url: str
 

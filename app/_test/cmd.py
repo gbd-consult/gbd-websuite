@@ -84,7 +84,9 @@ def exec_suite(suite, opts):
 
 
 def run_suite(suite, opts):
+    banner('-' * 80)
     banner(f'RUNNING {suite}...')
+    banner('-' * 80)
 
     banner('STARTING CONTAINER...')
 
@@ -103,7 +105,7 @@ def run_suite(suite, opts):
                 banner(f"WAITING FOR THE CONTAINER: {e.__class__.__name__}")
                 time.sleep(5)
             else:
-                banner('GIVING UP')
+                message(f'{suite} startup: FAILED', 'red')
                 return
 
     exec_suite(suite, opts)
@@ -310,9 +312,15 @@ COLOR = {
 }
 
 
+def message(s, color):
+    if sys.stdout.isatty():
+        s = COLOR[color] + s + COLOR['reset']
+    sys.stdout.write(s + '\n')
+    sys.stdout.flush()
+
+
 def banner(s):
-    sys.stderr.write(COLOR['magenta'] + '>>>>>>> ' + s + COLOR['reset'] + '\n')
-    sys.stderr.flush()
+    message('>>>>>>> ' + s, 'magenta')
 
 
 def run(cmd, **kwargs):

@@ -40,6 +40,7 @@
     serviceUrl         "{{pfx}}_meta_serviceUrl"
     title              "{{pfx}}_meta_title"
     url                "http://{{pfx}}_meta_url"
+    urlType            "{{pfx}}_META_URL_TYPE"
 
     keywords           ["{{pfx}}_meta_keyword1" "{{pfx}}_meta_keyword2" "{{pfx}}_meta_keyword3"]
     language           "de"
@@ -66,12 +67,12 @@
         {
             scheme   "{{pfx}}_meta_link_1_scheme"
             url      "http://{{pfx}}_meta_link_1_url"
-            function "{{pfx}}_meta_link_1_function"
+            function "download"
         }
         {
             scheme   "{{pfx}}_meta_link_2_scheme"
             url      "http://{{pfx}}_meta_link_2_url"
-            function "{{pfx}}_meta_link_2_function"
+            function "information"
         }
     ]
 @end
