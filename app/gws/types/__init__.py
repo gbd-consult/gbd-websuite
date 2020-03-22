@@ -142,7 +142,7 @@ class Data:
         return None
 
     def get(self, k, default=None):
-        return getattr(self, k, default)
+        return vars(self).get(k, default)
 
     def _extend(self, args, kwargs):
         d = {}
