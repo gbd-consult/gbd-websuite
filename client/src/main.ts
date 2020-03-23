@@ -14,6 +14,7 @@ let mods = [
     require('./mod/common/toolbox'),
     require('./mod/alkis'),
     require('./mod/annotate'),
+    require('./mod/bplan'),
     require('./mod/decoration'),
     require('./mod/dimension'),
     require('./mod/dprocon'),

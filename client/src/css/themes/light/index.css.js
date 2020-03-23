@@ -279,6 +279,7 @@ let rules = [
     require('./mod/alkis.css'),
     require('./mod/altbar.css'),
     require('./mod/annotate.css'),
+    require('./mod/bplan.css'),
     require('./mod/decoration.css'),
     require('./mod/dimension.css'),
     require('./mod/dprocon.css'),

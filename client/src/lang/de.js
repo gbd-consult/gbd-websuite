@@ -334,5 +334,13 @@ module.exports = {
     mapPlaceholderHeight: 'Höhe',
     mapPlaceholderXY: 'Koordinate',
 
+    modBplanSidebarTitle: 'Baupläne',
+    modBplanDialogTitle: 'Baupläne hochladen',
+    modBplanAddAuxButton: 'Baupläne hochladen',
+    modBplanFileLabel: 'Datei auswählen',
+    modBplanProgressDialogTitle: 'Bearbeitung',
+    modBplanOkMessage: 'Update erfolgreich',
+    modBplanErrorMessage: 'Update fehlgeschlagen',
+    modBplanSelectArea: 'Gemeinde',
 
 };
