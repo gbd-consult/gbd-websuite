@@ -790,7 +790,7 @@ class SearchArgs(Data):
 
 
 class SelectArgs(Data):
-    extra_where: Optional[str]
+    extra_where: Optional[list]
     keyword: Optional[str]
     limit: Optional[int]
     map_tolerance: Optional[float]

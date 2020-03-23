@@ -104,7 +104,11 @@ class Object(gws.common.db.provider.Sql):
                 values.extend(uids)
 
             if args.extra_where:
-                where.append('(%s)' % args.extra_where.replace('%', '%%'))
+                if len(args.extra_where) == 1:
+                    where.append('(' + args.extra_where[0].replace('%', '%%') + ')')
+                else:
+                    where.append('(' + args.extra_where[0] + ')')
+                    values.extend(args.extra_where[1:])
 
             if not where:
                 return []

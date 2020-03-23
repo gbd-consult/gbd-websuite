@@ -31,7 +31,7 @@ class SqlTable(t.Data):
 
 #:export
 class SelectArgs(t.Data):
-    extra_where: t.Optional[str]
+    extra_where: t.Optional[list]
     keyword: t.Optional[str]
     limit: t.Optional[int]
     map_tolerance: t.Optional[float]
