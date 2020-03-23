@@ -1,0 +1,12 @@
+@include /common/util.cx
+
+@WEB_SERVER_ONLY
+@DEFAULT_WEB_SITE
+
+access+ { role "all" type "allow" }
+
+api.actions+ { type "upload" }
+
+projects+ {
+    uid "test"
+}

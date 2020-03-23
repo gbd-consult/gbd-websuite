@@ -71,6 +71,13 @@ def file_mtime(path):
         return 0
 
 
+def file_size(path):
+    try:
+        return os.stat(path).st_size
+    except OSError:
+        return 0
+
+
 def file_checksum(path):
     try:
         with open(path, 'rb') as fp:
