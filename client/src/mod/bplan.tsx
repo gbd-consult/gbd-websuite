@@ -231,7 +231,7 @@ class BplanController extends gws.Controller {
             uid = '';
 
         for (let n = 0; n < chunkCount; n++) {
-            let res = await this.app.server.uploadSendChunk({
+            let res = await this.app.server.bplanUploadChunk({
                 chunkCount,
                 uid,
                 chunkNumber: n + 1,

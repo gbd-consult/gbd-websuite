@@ -95,6 +95,9 @@ class Object(gws.common.action.Object):
         ))
         return GetFeaturesResponse(features=[f.apply_format(self.feature_format).props for f in features])
 
+    def api_upload_chunk(self, req: t.IRequest, p: gws.tools.upload.UploadChunkParams) -> gws.tools.upload.UploadChunkResponse:
+        return gws.tools.upload.upload_chunk(p)
+
     def api_upload(self, req: t.IRequest, p: UploadParams) -> UploadResponse:
         try:
             rec = gws.tools.upload.get(p.uploadUid)
