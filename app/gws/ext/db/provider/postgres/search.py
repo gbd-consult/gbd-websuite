@@ -15,16 +15,11 @@ class Config(gws.common.search.provider.Config):
 
 
 class Object(gws.common.search.provider.Object):
-    def __init__(self):
-        super().__init__()
-        self.provider: provider.Object = None
-        self.table: t.SqlTable = None
-
     def configure(self):
         super().configure()
 
-        self.provider: provider.Object = gws.common.db.require_provider(self, provider.Object)
-        self.table = self.provider.configure_table(self.var('table'))
+        self.provider: provider.Object = t.cast(provider.Object, gws.common.db.require_provider(self, provider.Object))
+        self.table: t.SqlTable = self.provider.configure_table(self.var('table'))
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         n, u = args.tolerance or self.tolerance

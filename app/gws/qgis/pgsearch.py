@@ -13,12 +13,6 @@ class Config(gws.common.search.provider.Config):
 
 
 class Object(gws.common.search.provider.Object):
-    def __init__(self):
-        super().__init__()
-        self.db: gws.ext.db.provider.postgres.Object = None
-        self.table: t.SqlTable = None
-        self.extra_where = ''
-
     def configure(self):
         super().configure()
 
@@ -32,21 +26,25 @@ class Object(gws.common.search.provider.Object):
             'password': ds['password'],
         }
 
-        self.extra_where = ds.get('sql')
+        self.extra_where = None
+        sql = ds.get('sql')
+        if sql:
+            self.extra_where = [sql.replace('%', '%%')]
 
-        self.db = self.root.create_shared_object(
-            'gws.ext.db.provider.postgres',
-            gws.as_uid(f"h={cfg['host']}_p={cfg['port']}_u={cfg['user']}_d={cfg['database']}"),
-            t.Config(cfg))
+        db_uid = gws.as_uid(f"h={cfg['host']}_p={cfg['port']}_u={cfg['user']}_d={cfg['database']}")
+
+        self.db = t.cast(
+            gws.ext.db.provider.postgres.Object,
+            self.root.create_shared_object('gws.ext.db.provider.postgres', db_uid, cfg))
 
         try:
-            self.table = self.db.configure_table(t.Config(name=ds['table'], geometryColumn=ds['geometryColumn']))
+            self.table: t.SqlTable = self.db.configure_table(t.Config(name=ds['table'], geometryColumn=ds['geometryColumn']))
         except gws.Error:
             gws.log.warn(f"table {ds['table']} not found")
+            self.active = False
 
-    def can_run(self, args):
-        # qgis-pg is for spatial searches only
-        return args.shapes and not args.keyword
+        self.with_keyword = gws.common.search.provider.ParameterUsage.forbidden
+        self.with_geometry = gws.common.search.provider.ParameterUsage.required
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         if not self.table:

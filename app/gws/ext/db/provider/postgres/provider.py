@@ -54,6 +54,7 @@ class Object(gws.common.db.provider.Sql):
         super().configure()
 
         def ping():
+            gws.log.debug(f'db: ping {self.uid!r}')
             try:
                 with driver.Connection(self.connect_params):
                     gws.log.info(f'db connection "{self.uid}": ok')
@@ -64,6 +65,7 @@ class Object(gws.common.db.provider.Sql):
 
     def describe(self, table: t.SqlTable) -> t.Dict[str, t.SqlTableColumn]:
         def f():
+            gws.log.debug(f'db: describe {key!r}')
             with self.connect() as conn:
                 return {c['name']: t.SqlTableColumn(c) for c in conn.columns(table.name)}
 
@@ -104,11 +106,8 @@ class Object(gws.common.db.provider.Sql):
                 values.extend(uids)
 
             if args.extra_where:
-                if len(args.extra_where) == 1:
-                    where.append('(' + args.extra_where[0].replace('%', '%%') + ')')
-                else:
-                    where.append('(' + args.extra_where[0] + ')')
-                    values.extend(args.extra_where[1:])
+                where.append('(' + args.extra_where[0] + ')')
+                values.extend(args.extra_where[1:])
 
             if not where:
                 return []

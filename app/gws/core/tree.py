@@ -1,6 +1,6 @@
 import importlib
 
-from . import util, error, log, spec
+from . import util, error, log, debug
 import gws.types as t
 
 _UIDS = set()
@@ -166,8 +166,7 @@ class RootObject(Object, t.IRootObject):
 
         with util.global_lock():
             log.debug(f'SHARED: create {klass} {uid}')
-            obj = self.root.create_object(klass, cfg)
-            obj.uid = uid
+            obj = self.root.create_object(klass, util.merge(cfg, {'uid': uid}))
             self.shared_objects[uid] = obj
 
         return obj

@@ -9,7 +9,7 @@ class Object(gws.Object, t.IFormat):
 
         self.templates = {}
         for key, p in gws.as_dict(self.config).items():
-            if p:
+            if gws.has(p, 'type'):
                 self.templates[key] = self.create_child('gws.ext.template', p)
 
     def apply(self, context: dict) -> dict:
