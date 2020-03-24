@@ -16,4 +16,4 @@ TABLE
 *search* ~ behandelt die Suche (siehe :doc:`search`)
 /TABLE
 
-Wir pflegen die komplette Liste der Befehle, deren Argumente und Rückgabewerte als TypeScript-Schnittstellen-Datei, siehe :doc:`apiref`. 
+Wir pflegen die komplette Liste der Befehle, deren Argumente und Rückgabewerte als TypeScript-Schnittstellen-Datei.

@@ -205,6 +205,14 @@ SSL can configured under ``web.ssl``. You have to provide paths (as visible in t
         }
     }
 
-If your certificate consist of separate files (e.g. domain certificate, intermediate and root certificates) you can create the bundle by concatenating them together ::
+If your certificate consists of separate files (e.g. domain certificate, intermediate and root certificates) you can create the bundle by concatenating them together ::
 
     cat domain.crt intermediate.crt root.crt > bundle.crt
+
+If your certificate consists of only one password protected .pfx file you will need to extract the .crt bundle and the .key using openssl ::
+
+    openssl pkcs12 -in cert.pfx -clcerts -nokeys -out cert.crt
+    openssl pkcs12 -in cert.pfx -nocerts -out cert-encrypted.key
+    openssl rsa -in cert-encrypted.key -out cert.key
+
+This yields the cert.crt and the cert.key files, to which you will need to provide the paths in the config as shown above. The .key is now unencrypted (otherwise the webserver would require a password everytime it starts) so take appropriate measures to protect it.

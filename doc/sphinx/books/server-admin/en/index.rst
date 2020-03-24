@@ -33,7 +33,7 @@ Documentation for system administrators who configure the GBD WebSuite Server.
     storage.rst
     configref.rst
     cliref.rst
-
+    remoteadmin.rst
 
 
 

@@ -1,10 +1,9 @@
 GBD WebSuite Client User Manual
 ===============================
 
-Instructions for GBD WebSuite Client users.
-
+Help for GBD WebSuite Client Users
 
 .. toctree::
     :maxdepth: 2
 
-    overview/overview.rst
+    overview/help.rst

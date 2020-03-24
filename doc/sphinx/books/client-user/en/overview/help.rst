@@ -1,149 +1,218 @@
-Short guide to the GBD WebSuite
-===============================
+Funktionsübersicht
+==================
 
-The GBD WebSuite is a web-based open source GIS platform. It includes the GBD WebSuite Server and GBD WebSuite Client. In addition to the classic WebGIS functionality, the GBD WebSuite is characterized above all by the modular and efficient integration of external applications and new functionalities which enables extensive configurations. The core libraries of client and server are kept slim indeed. The whole architecture is plugin based. The QGIS integration is also implemented as a plugin, which communicates natively with QGIS.
+Funktionsübersicht der GBD WebSuite.
 
-Detailed help for the GBD WebSuite
-**********************************
+Die GBD WebSuite ist eine webbasierte Open Source GIS Plattform. Sie beinhaltet den GBD WebSuite Server und GBD WebSuite
+Client und zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus, externe Anwendungen und
+neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen. Die
+Kern-Bibliotheken von Client und Server sind schlank gehalten. Die gesamte Architektur ist Plugin-basiert. Auch die QGIS
+Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
 
-The detailed help in dealing with the GBD WebSuite can be found here:
-`Detailed help of the GBD WebSuite <http://gws.gbd-consult.en/docs/index.html>`_
+Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren Verlauf dieser Dokumentation.
 
-Overview of the controls in the GBD WebSuite
-********************************************
 
-.. _table_attribute_1:
+Übersicht der Bedienelemente in der GBD WebSuite
 
-Toolbar
-#######
-
-==========================   ==============================
-Symbol				               Function
-==========================   ==============================
-|savedraw|			Confirm
-|canceldraw|			Cancel
-|distance| 			Measure lines
-|area|				Measure area
-|measure_circle| 		Measure circles
-|info|				Object identification
-|print|				Print
-|mouse|				Show map hint
-|continue|			continue
-|back|				back
-|delete|			delete
-|back1|				Close submenu
-==========================   ==============================
-
-.. note:: You can find more about the individual functions under: `Toolbar`
-
-Menu
-####
-
-.. _table_attribute_2:
-
-==========================   ==============================
-Symbol				               Function
-==========================   ==============================
-|menu|				Expand the menu
-|cancel|			Fold in the menu
-|layers|			Layer
-|showother| 			Open up the lower layer
-|showlayer|			Show layer
-|hidelayer| 			Sign out
-|authorization|			Sign in
-|search|			Search
-|alkis|				Parcel search
-|zoom_layer| 			Zoom on entire layer
-==========================   ==============================
-
-.. note:: You can find out more about the individual functions under: `Menu`
-
-Status bar
-##########
-
-.. _table_attribute_3:
-
-==========================   ==============================
-Symbol				               Function
-==========================   ==============================
-|zoomin|			Zoom in
-|zoomout|			Zoom out
-|zoommap|			Show whole project
-|zoomrect|			Pull up the zoom rectangle
-|massstab| 			Changing the scale
-|rotation| 			Changing the rotation
-|xy| 				View the mouse position
-==========================   ==============================
-
-.. note:: Mehr über die einzelnen Funktionen finden sie unter: `Status bar`
+.. toctree::
+    :maxdepth: 2
 
 
 
-.. Toolbar
-.. |savedraw| image:: ../../../images/baseline-done-24px.svg
-  :width: 30em
-.. |canceldraw| image:: ../../../images/baseline-cancel-24px.svg
-  :width: 30em
-.. |area| image:: ../../../images/baseline-texture1-24px.svg
-  :width: 30em
-.. |distance| image:: ../../../images/vector_line.svg
-  :width: 30em
-.. |measure_circle| image:: ../../../images/baseline-circle-24px.svg
-  :width: 30em
-.. |print| image:: ../../../images/baseline-print-24px.svg
-  :width: 30em
-.. |mouse| image:: ../../../images/baseline-mouse-24px.svg
-  :width: 30em
-.. |info| image:: ../../../images/baseline-info-24px.svg
-  :width: 30em
-.. |continue| image:: ../../../images/baseline-chevron_right-24px.svg
-  :width: 30em
-.. |back| image:: ../../../images/baseline-keyboard_arrow_left-24px.svg
-  :width: 30em
-.. |delete| image:: ../../../images/baseline-delete_sweep-24px.svg
-  :width: 30em
-.. |back1| image:: ../../../images/double-arrow.svg
-  :width: 30em
-.. |center| image:: ../../../images/sharp-center_focus_weak-24px.svg
-  :width: 30em
+**Werkzeugleiste**
 
-.. Menu
-.. |showlayer| image:: ../../../images/baseline-visibility-24px.svg
-  :width: 30em
-.. |hidelayer| image:: ../../../images/baseline-visibility_off-24px.svg
-  :width: 30em
-.. |layers| image:: ../../../images/baseline-layers-24px.svg
-  :width: 30em
-.. |hideother| image:: ../../../images/baseline-expand_more-24px.svg
-  :width: 30em
-.. |showother| image:: ../../../images/baseline-chevron_right-24px.svg
-  :width: 30em
-.. |alkis| image:: ../../../images/baseline-searchingbuilding-24px.svg
-  :width: 30em
-.. |authorization| image:: ../../../images/baseline-person-24px.svg
-  :width: 30em
-.. |search| image:: ../../../images/baseline-search-24px.svg
-  :width: 30em
-.. |menu| image:: ../../../images/baseline-menu-24px.svg
-  :width: 30em
-.. |cancel| image:: ../../../images/baseline-close-24px.svg
-  :width: 30em
-.. |zoom_layer| image:: ../../../images/baseline-zoom_out_map-24px.svg
-  :width: 30em
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+| **Symbol**             | **Funktion**                            |        **Funktionsbeschreibung**                          |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |select|          |Auswählen                                |Auswählen von Objekten per Mausklick                       |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |info|            |Abfragen                                 |Informationen von Objekten per Mausklick                   |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |mouseover|       |Anzeigen                                 |Informationen von Objekten per Mouseover                   |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |geo_search|      |Räumliche Suche                          |Suche mit Hilfe von geometrischen Objekten                 |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |dimensions|      |Bemaßung                                 |Erfassung von Strecken-Distanzen                           |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |measure|         |Markieren & Messen                       |Markieren mit Hilfe von geometrischen Objekten             |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |dpro|            |Auswahl an D-ProCon übermittlen          |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |gkos|            |Auswahl an GeKos übermittlen             |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |print|           |Drucken                                  |PDF-Generierung welche gespeichert und gedruckt werden kann|
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+|      |screenshot|      |Screenshot exportieren                   |Abspeichern eines Kartenausschnitts als PNG-Datei          |
++------------------------+-----------------------------------------+-----------------------------------------------------------+
+
+Mehr über die einzelnen Funktionen finden sie unter: Werkzeugleiste
 
 
-.. Status bar
-.. |zoomin| image:: ../../../images/baseline-add-24px.svg
-  :width: 30em
-.. |zoomout| image:: ../../../images/baseline-remove-24px.svg
-  :width: 30em
-.. |zoomrect| image:: ../../../images/zoom_rectangle.svg
-  :width: 30em
-.. |zoommap| image:: ../../../images/baseline-home-24px.svg
-  :width: 30em
-.. |massstab| image:: ../../../screenshots/de/client-user/massstab.png
-     :width: 11em
-.. |rotation| image:: ../../../screenshots/de/client-user/rotation.png
-     :width: 10em
-.. |xy| image:: ../../../screenshots/de/client-user/xy.png
-     :width: 7em
+
+**Menüleiste**
+
++------------------------+-----------------------------------------+-----------------------------------------+
+| **Symbol**             | **Funktion**                            |          **Funktionsbeschreibung**      |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |menu|            |    Menü ausklappen                      |Anzeigen des Untermenüs                  |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |project|         |    Projektübersicht                     |Übersicht über die Projekteigenschaften  |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |layers|          |    Layer                                |Übersicht über die einzelnen Layer       |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |search|          |    Suche                                |Liste von Ergebnissen der Suche          |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |select|          |    Auswahl                              |Liste der ausgewählten Objekte           |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |cadastralunit|   |    Flurstücksuche                       |Liste der ausgewählten Flurstücke        |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |measure|         |   Markierungen                          |Liste der ausgewählten Markierungen      |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |dimensions|      |   Bemaßung                              |Auflistung der erstellten Bemaßungen     |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |edit|            |   Editieren                             |Liste der editierbaren Objekte           |
++------------------------+-----------------------------------------+-----------------------------------------+
+|      |authorization|   |   Anmeldung                             |An- und Abmelden von Benutzern           |
++------------------------+-----------------------------------------+-----------------------------------------+
+
+Mehr über die einzelnen Funktionen finden sie unter: Menüleiste
+
+
+
+**Statusleiste**
+
++------------------------+----------------------------------------------------------------------+-----------------------------------------+
+| **Symbol**             | **Funktion**                                                         |       **Funktionsbeschreibung**         |
++------------------------+----------------------------------------------------------------------+-----------------------------------------+
+|      |zoomin|          |Hineinzoomen                                                          |In die Karte Hineinzoomen                |
++------------------------+----------------------------------------------------------------------+-----------------------------------------+
+|      |zoomout|         |Herauszoomen                                                          |Aus der Karte Herauszoomen               |
++------------------------+----------------------------------------------------------------------+-----------------------------------------+
+|      |zoommap|         |Ganzes Projekt anzeigen                                               |Herauszoomen auf die Ausmaße des Projekts|
++------------------------+----------------------------------------------------------------------+-----------------------------------------+
+|      |home|            |Zurück zur Startseite                                                 |Öffnet die Anmeldeseite der WebSuite     |
++------------------------+----------------------------------------------------------------------+-----------------------------------------+
+|      |help|            |Hilfe                                                                 |Öffnet die Dokumentation der GBD WebSuite|
++------------------------+----------------------------------------------------------------------+-----------------------------------------+
+|      |gbd|             |Geoinformatikbüro Dassau GmbH und GBD WebSuite                        |Informationen und Kontakt zur GBD GmbH   |
++------------------------+----------------------------------------------------------------------+-----------------------------------------+
+
+Mehr über die einzelnen Funktionen finden sie unter: Statusleiste
+
+
+
+Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gws.gbd-consult.de/
+
+
+   .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
+     :width: 30em
+   .. |options| image:: ../../../images/round-settings-24px.svg
+     :width: 30em
+   .. |mouseover| image:: ../../../images/gbd-icon-anzeige-01.svg
+     :width: 30em
+   .. |geo_search| image:: ../../../images/gbd-icon-raeumliche-suche-01.svg
+     :width: 30em
+   .. |edit| image:: ../../../images/sharp-edit-24px.svg
+     :width: 30em
+   .. |navi| image:: ../../../images/Feather-core-move.svg
+     :width: 30em
+   .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
+     :width: 30em
+   .. |dimensions| image:: ../../../images/gbd-icon-bemassung-02.svg
+     :width: 30em
+   .. |arrow| image:: ../../../images/cursor.svg
+     :width: 30em
+   .. |line| image:: ../../../images/dim_line.svg
+     :width: 30em
+   .. |point| image:: ../../../images/g_point.svg
+       :width: 30em
+   .. |quadrat| image:: ../../../images/g_box.svg
+       :width: 30em
+   .. |polygon| image:: ../../../images/g_poly.svg
+       :width: 30em
+   .. |distance| image:: ../../../images/dim_line.svg
+       :width: 30em
+   .. |cancel| image:: ../../../images/baseline-close-24px.svg
+       :width: 30em
+   .. |measurecircle| image:: ../../../images/dim_circle.svg
+       :width: 30em
+   .. |trash| image:: ../../../images/baseline-delete-24px.svg
+       :width: 30em
+   .. |continue| image:: ../../../images/baseline-chevron_right-24px.svg
+     :width: 30em
+   .. |back| image:: ../../../images/baseline-keyboard_arrow_left-24px.svg
+     :width: 30em
+   .. |dpro| image:: ../../../images/gbd-icon-d-procon-02.svg
+     :width: 30em
+   .. |gkos| image:: ../../../images/gbd-icon-gekos-04.svg
+     :width: 30em
+   .. |screenshot| image:: ../../../images/outline-insert_photo-24px.svg
+     :width: 30em
+   .. |project| image:: ../../../images/map-24px.svg
+     :width: 30em
+   .. |menu| image:: ../../../images/baseline-menu-24px.svg
+       :width: 30em
+   .. |cadastralunit| image:: ../../../images/gbd-icon-flurstuecksuche-01.svg
+       :width: 30em
+   .. |results| image:: ../../../images/baseline-menu-24px.svg
+       :width: 30em
+   .. |tab| image:: ../../../images/sharp-bookmark_border-24px.svg
+     :width: 30em
+   .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
+       :width: 30em
+   .. |add| image:: ../../../images/sharp-control_point-24px.svg
+       :width: 30em
+   .. |addall| image:: ../../../images/gbd-icon-alle-ablage-01.svg
+       :width: 30em
+   .. |delete| image:: ../../../images/sharp-remove_circle_outline-24px.svg
+       :width: 30em
+   .. |save| image:: ../../../images/sharp-save-24px.svg
+     :width: 30em
+   .. |load| image:: ../../../images/gbd-icon-ablage-oeffnen-01.svg
+       :width: 30em
+   .. |csv| image:: ../../../images/sharp-grid_on-24px.svg
+     :width: 30em
+   .. |print| image:: ../../../images/baseline-print-24px.svg
+       :width: 30em
+   .. |search| image:: ../../../images/baseline-search-24px.svg
+       :width: 30em
+   .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
+       :width: 30em
+   .. |spatial_search| image:: ../../../images/gbd-icon-raeumliche-suche-01.svg
+       :width: 30em
+   .. |delete_shelf| image:: ../../../images/sharp-delete_forever-24px.svg
+       :width: 30em
+   .. |new_search|  image:: ../../../images/baseline-delete_sweep-24px.svg
+       :width: 30em
+   .. |showlayer| image:: ../../../images/baseline-visibility-24px.svg
+         :width: 30em
+   .. |hidelayer| image:: ../../../images/baseline-visibility_off-24px.svg
+         :width: 30em
+   .. |layers| image:: ../../../images/baseline-layers-24px.svg
+         :width: 30em
+   .. |showother| image:: ../../../images/baseline-chevron_right-24px.svg
+         :width: 30em
+   .. |hideother| image:: ../../../images/baseline-expand_more-24px.svg
+         :width: 30em
+   .. |zoom_layer| image:: ../../../images/baseline-zoom_out_map-24px.svg
+         :width: 30em
+   .. |off_layer| image:: ../../../images/sharp-layers_clear-24px.svg
+         :width: 30em
+   .. |edit_layer| image:: ../../../images/baseline-create-24px.svg
+         :width: 30em
+   .. |several| image:: ../../../images/more_horiz-24px.svg
+         :width: 30em
+   .. |authorization| image:: ../../../images/baseline-person-24px.svg
+       :width: 30em
+   .. |help| image:: ../../../images/sharp-help-24px.svg
+      :width: 30em
+   .. |home| image:: ../../../images/baseline-home-24px.svg
+       :width: 30em
+   .. |zoomin| image:: ../../../images/zoom-24.svg
+         :width: 30em
+   .. |zoomout| image:: ../../../images/zoom_out.svg
+         :width: 30em
+   .. |zoommap| image:: ../../../images/zoom_reset.svg
+         :width: 30em
+   .. |gbd| image:: ../../../images/gws_logo.svg
+        :width: 30em

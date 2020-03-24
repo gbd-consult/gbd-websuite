@@ -24,28 +24,28 @@ Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren 
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
 | **Symbol**             | **Funktion**                            |        **Funktionsbeschreibung**                          |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|       |select|         |:ref:`Auswählen`                         |Auswählen von Objekten per Mausklick                       |
+|      |select|          |Auswählen                                |Auswählen von Objekten per Mausklick                       |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|       |info|           |:ref:`Abfragen`                          |Informationen von Objekten per Mausklick                   |
+|      |info|            |Abfragen                                 |Informationen von Objekten per Mausklick                   |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|       |mouseover|      |:ref:`Anzeigen`                          |Informationen von Objekten per Mouseover                   |
+|      |mouseover|       |Anzeigen                                 |Informationen von Objekten per Mouseover                   |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|  |geo_search|          |:ref:`Räumliche Suche`                   |Suche mit Hilfe von geometrischen Objekten                 |
+|      |geo_search|      |Räumliche Suche                          |Suche mit Hilfe von geometrischen Objekten                 |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|         |dimensions|   |:ref:`Bemaßung`                          |Erfassung von Strecken-Distanzen                           |
+|      |dimensions|      |Bemaßung                                 |Erfassung von Strecken-Distanzen                           |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|        |measure|       |:ref:`Markieren & Messen`                |Markieren mit Hilfe von geometrischen Objekten             |
+|      |measure|         |Markieren & Messen                       |Markieren mit Hilfe von geometrischen Objekten             |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|      |dpro|            | Auswahl an :ref:`D-ProCon` übermittlen  |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
+|      |dpro|            |Auswahl an D-ProCon übermittlen          |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|      |gkos|            | Auswahl an :ref:`GeKos` übermittlen     |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
+|      |gkos|            |Auswahl an GeKos übermittlen             |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|      |print|           |    :ref:`Drucken`                       |PDF-Generierung welche gespeichert und gedruckt werden kann|
+|      |print|           |Drucken                                  |PDF-Generierung welche gespeichert und gedruckt werden kann|
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
-|      |screenshot|      |    :ref:`Screenshot` exportieren        |Abspeichern eines Kartenausschnitts als PNG-Datei          |
+|      |screenshot|      |Screenshot exportieren                   |Abspeichern eines Kartenausschnitts als PNG-Datei          |
 +------------------------+-----------------------------------------+-----------------------------------------------------------+
 
-Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste`
+Mehr über die einzelnen Funktionen finden sie unter: Werkzeugleiste
 
 
 
@@ -56,26 +56,26 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste`
 +------------------------+-----------------------------------------+-----------------------------------------+
 |      |menu|            |    Menü ausklappen                      |Anzeigen des Untermenüs                  |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |project|         |    :ref:`Projektübersicht`              |Übersicht über die Projekteigenschaften  |
+|      |project|         |    Projektübersicht                     |Übersicht über die Projekteigenschaften  |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |layers|          |    :ref:`Layer`                         |Übersicht über die einzelnen Layer       |
+|      |layers|          |    Layer                                |Übersicht über die einzelnen Layer       |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |search|          |    :ref:`Suche`                         |Liste von Ergebnissen der Suche          |
+|      |search|          |    Suche                                |Liste von Ergebnissen der Suche          |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |select|          |    :ref:`Auswahl`                       |Liste der ausgewählten Objekte           |
+|      |select|          |    Auswahl                              |Liste der ausgewählten Objekte           |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |cadastralunit|   |    :ref:`Flurstückssuche`               |Liste der ausgewählten Flurstücke        |
+|      |cadastralunit|   |    Flurstücksuche                       |Liste der ausgewählten Flurstücke        |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |measure|         |   :ref:`Markierungen`                   |Liste der ausgewählten Markierungen      |
+|      |measure|         |   Markierungen                          |Liste der ausgewählten Markierungen      |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |dimensions|      |   :ref:`Bemaßung`                       |Auflistung der erstellten Bemaßungen     |
+|      |dimensions|      |   Bemaßung                              |Auflistung der erstellten Bemaßungen     |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |edit|            |   :ref:`Editieren`                      |Liste der editierbaren Objekte           |
+|      |edit|            |   Editieren                             |Liste der editierbaren Objekte           |
 +------------------------+-----------------------------------------+-----------------------------------------+
-|      |authorization|   |   :ref:`Anmeldung`                      |An- und Abmelden von Benutzern           |
+|      |authorization|   |   Anmeldung                             |An- und Abmelden von Benutzern           |
 +------------------------+-----------------------------------------+-----------------------------------------+
 
-Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste`
+Mehr über die einzelnen Funktionen finden sie unter: Menüleiste
 
 
 
@@ -97,7 +97,7 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste`
 |      |gbd|             |Geoinformatikbüro Dassau GmbH und GBD WebSuite                        |Informationen und Kontakt zur GBD GmbH   |
 +------------------------+----------------------------------------------------------------------+-----------------------------------------+
 
-Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste`
+Mehr über die einzelnen Funktionen finden sie unter: Statusleiste
 
 
 
