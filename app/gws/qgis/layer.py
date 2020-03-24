@@ -41,6 +41,9 @@ class Object(gws.common.layer.Layer):
     def configure(self):
         super().configure()
 
+        self.supports_wms = True
+        self.supports_wfs = True
+
         self.path = self.var('path')
         self.provider: provider.Object = provider.create_shared(self, self.config)
         self.own_crs = self.provider.supported_crs[0]
