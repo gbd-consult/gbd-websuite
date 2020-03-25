@@ -77,6 +77,11 @@ class Request(wrappers.BaseRequest, t.IRequest):
         self._user = self._guest_user
 
     def auth_begin(self):
+        ip = self.environ.get('REMOTE_ADDR')
+        if ip == '127.0.0.1':
+            gws.log.info(f'REMOTE_ADDR={ip}, SYSTEM_AUTH')
+            self._user = self.root.find_first('gws.ext.auth.provider.system').get_user('system')
+            return
         self._session = self._init_session()
         if self._session and self._session is not _DELETED:
             self._user = self._session.user

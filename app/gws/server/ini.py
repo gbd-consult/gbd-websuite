@@ -343,6 +343,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
                 }}
 
                 server {{
+                    listen 127.0.0.1:80;
                     listen 443 ssl default_server;
                     server_name gws;
     
