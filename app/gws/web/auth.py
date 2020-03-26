@@ -1,3 +1,5 @@
+import base64
+
 import gws
 import gws.common.auth
 import gws.common.auth.session
@@ -82,6 +84,18 @@ class Request(wrappers.BaseRequest, t.IRequest):
             gws.log.info(f'REMOTE_ADDR={ip}, SYSTEM_AUTH')
             self._user = self.root.find_first('gws.ext.auth.provider.system').get_user('system')
             return
+
+        credentials = self._parse_http_basic_header()
+        if credentials:
+            try:
+                user = gws.common.auth.authenticate(credentials[0], credentials[1])
+            except gws.common.auth.error.Error as err:
+                raise error.Forbidden() from err
+            if not user:
+                raise error.Forbidden()
+            self._user = user
+            return
+
         self._session = self._init_session()
         if self._session and self._session is not _DELETED:
             self._user = self._session.user
@@ -159,3 +173,23 @@ class Request(wrappers.BaseRequest, t.IRequest):
             return p.get_user('guest')
 
         return gws.get_global('auth.guest_user', get)
+
+    def _parse_http_basic_header(self):
+        h = self.headers.get('Authorization')
+        if not h:
+            return
+
+        h = h.strip().split()
+        if len(h) != 2 or h[0].lower() != 'basic':
+            return
+
+        try:
+            h = gws.as_str(base64.decodebytes(gws.as_bytes(h[1])))
+        except ValueError:
+            return
+
+        h = h.split(':')
+        if len(h) != 2:
+            return
+
+        return h
