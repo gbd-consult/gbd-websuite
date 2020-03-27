@@ -194,6 +194,10 @@ class BplanController extends gws.Controller {
 
     async init() {
         this.setup = this.app.actionSetup('bplan');
+
+        if (!this.setup)
+            return;
+
         this.update({
             bplanAreaList: this.setup.areas.map(a => ({value: a.uid, text: a.name})),
             bplanDialogMode: '',
