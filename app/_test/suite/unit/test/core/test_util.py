@@ -96,3 +96,14 @@ def test_is_empty():
     assert not cu.is_empty('  ')
     assert not cu.is_empty(333)
     assert not cu.is_empty(T(333))
+
+
+
+def test_deep_merge():
+    p1 = t.Data(a='a1', b='b1', c=t.Data(c1=1, c2=11), ls=[11, 22, 33])
+    p2 = t.Data(b='b2', c=t.Data(c1=2, c3=t.Data(c4=2222)))
+    p3 = t.Data(a='a3', c=t.Data(c3=t.Data(c4=3333)), d='d3', ls=[55, 66])
+
+    m = cu.deep_merge(p1, p2, p3, d='D', e='E')
+
+    assert str(m) == "{'a': 'a3', 'b': 'b2', 'c': {'c1': 2, 'c2': 11, 'c3': {'c4': 3333}}, 'ls': [55, 66], 'd': 'D', 'e': 'E'}"
