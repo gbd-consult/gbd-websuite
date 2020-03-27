@@ -140,12 +140,13 @@ class RootObject(Object, t.IRootObject):
             setattr(self, a, None)
 
     def create(self, klass, cfg=None):
-        cfg = cfg or t.Data()
+        cfg = _to_config(cfg)
         oo = self._create(klass, cfg)
         oo.root = self
         return oo
 
     def create_object(self, klass, cfg, parent=None):
+        cfg = _to_config(cfg)
         obj = self.create(klass, cfg)
         obj.parent = parent
         obj.initialize(cfg)
@@ -153,11 +154,13 @@ class RootObject(Object, t.IRootObject):
         return obj
 
     def create_unbound_object(self, klass, cfg):
+        cfg = _to_config(cfg)
         obj = self.create(klass, cfg)
         obj.initialize(cfg)
         return obj
 
     def create_shared_object(self, klass, uid, cfg):
+        cfg = _to_config(cfg)
         uid = _class_name(klass).replace('.', '_') + '_' + util.as_uid(uid)
 
         if uid in self.shared_objects:
@@ -166,7 +169,7 @@ class RootObject(Object, t.IRootObject):
 
         with util.global_lock():
             log.debug(f'SHARED: create {klass} {uid}')
-            obj = self.root.create_object(klass, util.merge(cfg, {'uid': uid}))
+            obj = self.create_object(klass, util.merge(cfg, {'uid': uid}))
             self.shared_objects[uid] = obj
 
         return obj
@@ -184,11 +187,21 @@ class RootObject(Object, t.IRootObject):
     def _create(self, klass, cfg):
         if isinstance(klass, type):
             return klass()
-        if cfg and cfg.get('type'):
-            klass += '.' + cfg.get('type')
+        if cfg.type:
+            klass += '.' + cfg.type
         if klass not in self.all_types:
             self.all_types[klass] = _load_class(klass)
         return self.all_types[klass]()
+
+
+def _to_config(cfg):
+    if util.is_data_object(cfg):
+        return cfg
+    if isinstance(cfg, dict):
+        return t.Data(cfg)
+    if not cfg:
+        return t.Data()
+    return cfg
 
 
 def _load_class(klass):

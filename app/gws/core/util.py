@@ -155,6 +155,49 @@ def compact(x):
     return filter(x, lambda v: v is not None)
 
 
+def deep_merge(x, *args, **kwargs):
+    """Deeply merge dicts/Datas into a Data object.
+
+    Args:
+        x: A dict or a Data.
+        *args: Dicts or Datas.
+        **kwargs: Keyword args.
+
+    Returns:
+        A new object (dict or Data).
+    """
+
+    def flatten(o, keys, f):
+        if is_data_object(o):
+            o = vars(o)
+        if isinstance(o, dict):
+            for k, v in o.items():
+                flatten(v, keys + (k,), f)
+            return
+        f[keys] = o
+
+    def unflatten(o, f):
+        for keys, v in f.items():
+            p = o
+            for k in keys[:-1]:
+                if getattr(p, k, None) is None:
+                    setattr(p, k, t.Data())
+                p = getattr(p, k)
+            setattr(p, keys[-1], v)
+
+    flat = {}
+
+    flatten(x, (), flat)
+    for a in args:
+        flatten(a, (), flat)
+    for k, v in kwargs.items():
+        flat[(k,)] = v
+
+    d = t.Data()
+    unflatten(d, flat)
+    return d
+
+
 def map(x, fn):
     """Apply a function to a collection.
 
