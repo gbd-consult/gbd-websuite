@@ -32,7 +32,7 @@ _DEFAULT_STYLE_VALUES = {
 
 
 class Config(t.WithTypeAndAccess):
-    """Layer"""
+    """Layer configuration"""
 
     clientOptions: types.ClientOptions = {}  #: options for the layer display in the client
     dataModel: t.Optional[gws.common.model.Config]  #: layer data model
@@ -48,6 +48,27 @@ class Config(t.WithTypeAndAccess):
     ows: t.Optional[types.OwsConfig]  #: OWS services options
     search: gws.common.search.Config = {}  #: layer search configuration
     title: str = ''  #: layer title
+    zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
+
+
+class CustomConfig(t.WithAccess):
+    """Custom layer configuration"""
+
+    applyTo: t.Optional[gws.gis.source.LayerFilter]  #: source layers this configuration applies to
+    clientOptions: t.Optional[types.ClientOptions]  #: options for the layer display in the client
+    dataModel: t.Optional[gws.common.model.Config]  #: layer data model
+    description: t.Optional[t.ext.template.Config]  #: template for the layer description
+    display: t.Optional[types.DisplayMode]  #: layer display mode
+    edit: t.Optional[types.EditConfig]  #: editing permissions
+    extent: t.Optional[t.Extent]  #: layer extent
+    extentBuffer: t.Optional[int]  #: extent buffer
+    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
+    legend: t.Optional[types.LegendConfig]  #: legend configuration
+    meta: t.Optional[gws.common.metadata.Config]  #: layer meta data
+    opacity: t.Optional[float]  #: layer opacity
+    ows: t.Optional[types.OwsConfig]  #: OWS services options
+    search: t.Optional[gws.common.search.Config]  #: layer search configuration
+    title: t.Optional[str]  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 

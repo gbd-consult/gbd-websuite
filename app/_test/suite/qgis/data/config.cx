@@ -9,19 +9,27 @@ api.actions+ { type "search" }
 api.actions+ { type "asset" }
 api.actions+ { type "project" }
 
-## the structure of the qgis project is as follows
-##
-##    GroupOne
-##        GroupOneOne
-##            points_ghana_25832
-##    GroupTwo
-##        squares_memphis_25832
-##        GroupTwoOne
-##            squares_ny_2263
-##            GroupTwoOneOne
-##                squares_dus1_3857
-##                squares_dus2_3857
+web.sites.0 {
+    root.dir "/data/web"
+}
 
+
+## the structure of `/data/test_geojson_postgres.qgs` is as follows
+##
+##  layer-tree-group name="GroupOne"
+##      layer-tree-group name="GroupOneOne"
+##          layer-tree-layer name="points_ghana_25832" id="points_ghana_25832_6c00ca76_9dbd_44c2_a210_78f1ab42d503"
+##  layer-tree-group name="GroupTwo"
+##      layer-tree-layer name="squares_memphis_25832" id="squares_memphis_25832_f0ff3749_d03f_4dfd_bcc7_cc46103ed34b"
+##      layer-tree-group name="GroupTwoOne"
+##          layer-tree-layer name="squares_ny_2263" id="squares_ny_2263_91ff0192_7713_45b5_97b0_0ec52b0abcf6"
+##          layer-tree-group name="GroupTwoOneOne"
+##                layer-tree-layer name="squares_dus1_3857" id="squares_dus1_3857_b0fba263_bd9b_4a82_ac88_a46fe65493bd"
+##                layer-tree-layer name="squares_dus2_3857" id="squares_dus2_3857_a251e52c_0006_4c16_88c5_095abbd3989e"
+##
+##
+## WMSUseLayerIDs is false
+##
 
 projects+ {
     uid "a"
@@ -113,6 +121,40 @@ projects+ {
         type "qgis"
         path "/common/qgis/test_geojson_postgres.qgz"
         rootLayers.names ["squares_dus1_3857"]
+    }
+
+    @include /common/client.cx
+}
+
+
+projects+ {
+    uid "custom_config"
+
+    map.crs "EPSG:3857"
+
+    map.layers+ {
+        title "t"
+        type "qgis"
+        path "/common/qgis/test_geojson_postgres.qgs"
+        layerConfig [
+            {
+                applyTo.names ["points_ghana_25832"]
+                description {
+                    type "html"
+                    text "points_ghana_25832 custom description"
+                }
+            }
+            {
+                ## applies to squares_ny_2263, squares_dus1_3857, squares_dus2_3857
+                applyTo.pattern "grouptwoone"
+                legend.url "/data/web/legend1.png"
+            }
+            {
+                ## override the above for squares_dus2_3857
+                applyTo.pattern "squares_dus2"
+                legend.url "/data/web/legend2.png"
+            }
+        ]
     }
 
     @include /common/client.cx

@@ -39,7 +39,4 @@ Version 6.0
 - option to exclude layers and legends from qgis projects
 - support for the QGZ format
 - support for HTTP Basic authorization
-
-
-
-
+- custom configurations for auto-created qgis layers

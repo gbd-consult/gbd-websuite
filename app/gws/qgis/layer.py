@@ -23,8 +23,8 @@ class Config(gws.common.layer.ImageConfig):
     path: t.FilePath  #: path to a qgs project file
     rootLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use as roots
     excludeLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to exclude
-    excludeLegends: t.Optional[gws.gis.source.LayerFilter]  #: remove legends for these source layers
     flattenLayers: t.Optional[gws.common.layer.types.FlattenConfig]  #: flatten the layer hierarchy
+    layerConfig: t.Optional[t.List[gws.common.layer.CustomConfig]]  #: custom configurations for specific layers
 
 
 class Object(gws.common.layer.Layer):
@@ -49,6 +49,7 @@ class Object(gws.common.layer.Layer):
         self.root_layers = gws.gis.source.filter_layers(self.provider.source_layers, slf)
 
         self.flatten = self.var('flattenLayers')
+        self.custom_layer_config = self.var('layerConfig', default=[])
 
         layer_cfgs = gws.compact(self._layer(sl, depth=1) for sl in self.root_layers)
         if gws.is_empty(layer_cfgs):
@@ -64,6 +65,7 @@ class Object(gws.common.layer.Layer):
         self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
 
         self.has_legend = self.legend_url or any(la.has_legend for la in self.layers)
+
 
     def render_legend(self):
         if self.legend_url:
@@ -99,9 +101,6 @@ class Object(gws.common.layer.Layer):
         if not la:
             return
 
-        if self.var('excludeLegends') and gws.gis.source.layer_matches(sl, self.var('excludeLegends')):
-            la['legend'] = {'enabled': False}
-
         la = gws.merge(la, {
             'uid': gws.as_uid(sl.name),
             'title': sl.title,
@@ -122,6 +121,11 @@ class Object(gws.common.layer.Layer):
         if ff:
             la['featureFormat'] = ff
 
+        custom = [gws.strip(c) for c in self.custom_layer_config if gws.gis.source.layer_matches(sl, c.applyTo)]
+        if custom:
+            la = gws.deep_merge(la, *custom)
+            delattr(la, 'applyTo')
+
         return gws.compact(la)
 
     def _image_layer(self, sl: t.SourceLayer):
@@ -139,9 +143,6 @@ class Object(gws.common.layer.Layer):
 
         if not la:
             return
-
-        la['cache'] = self.var('cache')
-        la['grid'] = self.var('grid')
 
         if not sl.is_queryable:
             return la

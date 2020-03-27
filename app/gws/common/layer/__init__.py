@@ -11,6 +11,10 @@ class Config(layer.Config):
     pass
 
 
+class CustomConfig(layer.CustomConfig):
+    pass
+
+
 class VectorConfig(vector.Config):
     pass
 
