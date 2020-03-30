@@ -25,9 +25,15 @@ interface ViewProps extends gws.types.ViewProps {
     uiDemoUseClose: boolean;
     uiDemoUseFooter: boolean;
     uiDemoUseFrame: boolean;
+    uiDemoUseRelative: boolean;
 
     uiDemoUseWidth: number;
     uiDemoUseHeight: number;
+
+    uiDemoTableWidths: string,
+    uiDemoTableHeaders: string,
+    uiDemoTableFixedCols: number,
+    uiDemoTableNumRows: number,
 
 }
 
@@ -48,9 +54,15 @@ const StoreKeys = [
     'uiDemoUseClose',
     'uiDemoUseFooter',
     'uiDemoUseFrame',
+    'uiDemoUseRelative',
 
     'uiDemoUseWidth',
     'uiDemoUseHeight',
+
+    'uiDemoTableWidths',
+    'uiDemoTableHeaders',
+    'uiDemoTableFixedCols',
+    'uiDemoTableNumRows',
 
 ];
 
@@ -75,6 +87,101 @@ const NAMES_GROUPED = (() => {
         return items;
     }
 )();
+
+class TableForm extends gws.View<ViewProps> {
+    render() {
+        let bind = name => value => this.props.controller.update({[name]: value});
+
+        let row = r => [
+            String(r),
+            <gws.ui.Select
+                value={this.props.uiDemoName}
+                label="select"
+                items={NAMES.slice(0, 5)}
+                whenChanged={bind('uiDemoName')}
+            />,
+            <gws.ui.TextInput
+                value={this.props.uiDemoString}
+                label="text input"
+                whenChanged={bind('uiDemoString')}
+            />,
+            <gws.ui.TextInput
+                value={this.props.uiDemoString}
+                label="text input"
+                whenChanged={bind('uiDemoString')}
+            />,
+            <gws.ui.Group label="options">
+                <gws.ui.Toggle
+                    inline
+                    type="checkbox"
+                    value={this.props.uiDemoBool}
+                    whenChanged={bind('uiDemoBool')}
+                />
+            </gws.ui.Group>,
+            <gws.ui.DateInput
+                value={this.props.uiDemoDate}
+                label="date"
+                withClear
+                format={{
+                    date: this.props.controller.app.localeData.dateFormatShort,
+                    units: this.props.controller.app.localeData.dateUnits,
+                }}
+                whenChanged={bind('uiDemoDate')}
+            />,
+        ];
+
+        let tp = {row}, s;
+
+        let split = s => s.trim().split(' ').map(p => p.trim());
+
+        if (s = this.props.uiDemoTableWidths) {
+            tp['widths'] = split(s).map(Number);
+        }
+
+        if (s = this.props.uiDemoTableFixedCols) {
+            tp['fixedCols'] = s
+        }
+
+        if (s = this.props.uiDemoTableHeaders) {
+            tp['headers'] = split(s)
+        }
+
+        if (s = this.props.uiDemoTableNumRows) {
+            tp['numRows'] = s;
+        }
+
+        return <div style={{width: '100%', height: '100%', display: 'flex'}}>
+            <div style={{paddingRight: 50, width: 200}}>
+                <gws.ui.TextInput
+                    value={this.props.uiDemoTableWidths}
+                    label="widths"
+                    whenChanged={bind('uiDemoTableWidths')}
+                />
+                <gws.ui.TextInput
+                    value={this.props.uiDemoTableHeaders}
+                    label="top"
+                    whenChanged={bind('uiDemoTableHeaders')}
+                />
+                <gws.ui.NumberInput
+                    step={1}
+                    value={this.props.uiDemoTableFixedCols}
+                    label="left"
+                    whenChanged={bind('uiDemoTableFixedCols')}
+                />
+                <gws.ui.NumberInput
+                    step={1}
+                    value={this.props.uiDemoTableNumRows}
+                    label="num rows"
+                    whenChanged={bind('uiDemoTableNumRows')}
+                />
+            </div>
+            <div style={{height: '100%', flex: 1, overflow: 'auto' as any}}>
+                <gws.ui.Table {...tp}/>
+            </div>
+        </div>
+    }
+}
+
 
 class TabularForm extends gws.View<ViewProps> {
     render() {
@@ -434,6 +541,9 @@ class DialogContent extends gws.View<ViewProps> {
             active={this.props.uiDemoActiveTab}
             whenChanged={bind('uiDemoActiveTab')}
         >
+            <gws.ui.Tab label="table">
+                <TableForm {...this.props}/>
+            </gws.ui.Tab>
             <gws.ui.Tab label="form">
                 <BigForm {...this.props}/>
             </gws.ui.Tab>
@@ -491,6 +601,13 @@ class SidebarBody extends gws.View <ViewProps> {
                     <Row>
                         <Cell flex>
                             <gws.ui.Group vertical>
+                                <gws.ui.Toggle
+                                    inline
+                                    type="checkbox"
+                                    label="relative"
+                                    value={this.props.uiDemoUseRelative}
+                                    whenChanged={bind('uiDemoUseRelative')}
+                                />
                                 <gws.ui.Toggle
                                     inline
                                     type="checkbox"
@@ -604,15 +721,30 @@ class OverlayView extends gws.View<ViewProps> {
             title: this.props.uiDemoUseTitle ? "Dialog Title" : null,
             whenClosed: this.props.uiDemoUseClose ? close : null,
             buttons: this.props.uiDemoUseFooter ? buttons : null,
-            style: CENTER_BOX(this.props.uiDemoUseWidth, this.props.uiDemoUseHeight),
             frame: this.props.uiDemoUseFrame ? '/chess.png' : null,
+        };
+
+        let DIALOG_PADDING = 35;
+
+        if (this.props.uiDemoUseRelative) {
+            dlgOpts['style'] = {
+                left: DIALOG_PADDING,
+                top: DIALOG_PADDING,
+                right: DIALOG_PADDING,
+                bottom: DIALOG_PADDING,
+                width: 'auto',
+                height: 'auto',
+                margin: 'auto',
+            }
+        } else {
+            dlgOpts['style'] = CENTER_BOX(this.props.uiDemoUseWidth, this.props.uiDemoUseHeight)
         }
 
         if (dm === 'dialog') {
             if (this.props.uiDemoUseTabs) {
                 return <gws.ui.Dialog {...dlgOpts}><DialogContent {...this.props}/></gws.ui.Dialog>
             } else {
-                return <gws.ui.Dialog {...dlgOpts}><BigForm {...this.props}/></gws.ui.Dialog>
+                return <gws.ui.Dialog {...dlgOpts}><TableForm {...this.props}/></gws.ui.Dialog>
             }
         }
 
@@ -666,17 +798,25 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
             uiDemoName: 'name:Marino',
             //uiDemoDate: '2018-11-22',
 
-            uiDemoMode: 'dialog',
-            uiDemoActiveTab: 2,
+            uiDemoMode: '',
+            uiDemoActiveTab: 0,
 
-            uiDemoUseTabs: true,
+            uiDemoUseTabs: false,
             uiDemoUseTitle: true,
             uiDemoUseClose: false,
             uiDemoUseFooter: true,
             uiDemoUseFrame: false,
+            uiDemoUseRelative: true,
 
             uiDemoUseWidth: 800,
             uiDemoUseHeight: 580,
+
+            uiDemoTableWidths: '40 80 150 100 260 0',
+            uiDemoTableHeaders: 'A B C D E F',
+            uiDemoTableFixedCols: 2,
+            uiDemoTableNumRows: 20,
+
+
         });
     }
 
