@@ -20,18 +20,6 @@ class Config(gws.common.template.Config):
 
 
 class Object(gws.common.template.Object):
-    def __init__(self):
-        super().__init__()
-
-        self.title = ''
-        self.map_position = [0, 0]
-        self.map_size = [0, 0]
-        self.page_size = [0, 0]
-
-        self.path = ''
-        self.template: types.PrintTemplate = None
-        self.provider: provider.Object = None
-
     def configure(self):
         super().configure()
 
@@ -40,7 +28,7 @@ class Object(gws.common.template.Object):
         if not self.template:
             raise gws.Error('print template not found')
 
-        uid = self.var('uid') or '%s_%d' % (gws.sha256(self.path), self.template.index)
+        uid = self.var('uid') or '%s_%d' % (gws.sha256(self.provider.path), self.template.index)
         self.set_uid(uid)
 
         self.title = self.template.title
@@ -66,10 +54,10 @@ class Object(gws.common.template.Object):
     def _page_size(self):
         # qgis 2:
         if 'paperwidth' in self.template.attrs:
-            return [
+            return (
                 float(self.template.attrs['paperwidth']),
                 float(self.template.attrs['paperheight'])
-            ]
+            )
 
         # qgis 3:
         for el in self.template.elements:
@@ -100,8 +88,7 @@ class Object(gws.common.template.Object):
         # @TODO fails if there are relative paths in the project
 
         temp_prj_path = out_path + '.qgs'
-        with open(temp_prj_path, 'wt') as fp:
-            fp.write(writer.add_variables(self.path, context))
+        gws.write_file(temp_prj_path, writer.add_variables(self.provider.path, context))
 
         # ask qgis to render the template, without the map
         # NB we still need map0:xxxx for scale bars to work
@@ -121,8 +108,7 @@ class Object(gws.common.template.Object):
         })
 
         qgis_pdf_path = out_path + '_qgis.pdf'
-        with open(qgis_pdf_path, 'wb') as fp:
-            fp.write(resp.content)
+        gws.write_file(qgis_pdf_path, resp.content, 'wb')
 
         if not render_output:
             return qgis_pdf_path
@@ -137,18 +123,8 @@ class Object(gws.common.template.Object):
             f'height: {self.map_size[1]}mm',
         ])
 
-        map_html = f'<meta charset="utf8"/><div style="{css}">@@@</div>'
-
-        # render the map html into a pdf
-
-        html = gws.gis.render.create_html_with_map(
-            html=map_html,
-            render_output=render_output,
-            map_placeholder='@@@',
-            page_size=self.page_size,
-            margin=None,
-            out_path=out_path + '-map.pdf'
-        )
+        map_html = gws.gis.render.output_html(render_output)
+        html = f'<meta charset="utf8"/><div style="{css}">{map_html}</div>'
 
         map_path = gws.tools.pdf.render_html(
             html,

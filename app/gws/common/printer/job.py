@@ -34,10 +34,9 @@ def create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
     cleanup()
 
     job_uid = gws.random_string(64)
-    base_path = gws.PRINT_DIR + '/' + job_uid
-    gws.ensure_dir(base_path)
+    base_dir = gws.ensure_dir(gws.PRINT_DIR + '/' + job_uid)
 
-    req_path = base_path + '/request.pickle'
+    req_path = base_dir + '/request.pickle'
     with open(req_path, 'wb') as fp:
         pickle.dump(params, fp)
 
@@ -49,15 +48,15 @@ def create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
 
 def _worker(job: gws.tools.job.Job):
     job_uid = job.uid
-    base_path = gws.PRINT_DIR + '/' + job_uid
+    base_dir = gws.PRINT_DIR + '/' + job_uid
 
-    req_path = base_path + '/request.pickle'
+    req_path = base_dir + '/request.pickle'
     with open(req_path, 'rb') as fp:
         params = pickle.load(fp)
 
     job.update(gws.tools.job.State.running)
 
-    w = _Worker(job.uid, base_path, params, job.user)
+    w = _Worker(job.uid, base_dir, params, job.user)
     w.run()
 
 
@@ -80,48 +79,41 @@ _PAPER_COLOR = 'white'
 
 
 class _Worker:
-    def __init__(self, job_uid, base_path, p: pt.PrintParams, user: t.IUser):
+    def __init__(self, job_uid, base_dir, p: pt.PrintParams, user: t.IUser):
         self.job_uid = job_uid
-        self.base_path = base_path
-        self.p = p
+        self.base_dir = base_dir
         self.user = user
 
-        self.format = p.get('format') or 'pdf'
+        self.format = p.format or 'pdf'
 
-        self.project: t.IProject = self.acquire('gws.common.project', self.p.projectUid)
+        self.project = t.cast(t.IProject, self.acquire('gws.common.project', p.projectUid))
 
-        self.locale = p.get('locale') or ''
+        self.locale = p.locale
         if self.locale not in self.project.locales:
             self.locale = self.project.locales[0]
 
-        self.view_scale = self.p.scale
-        self.view_rotation = self.p.rotation
+        self.view_scale = p.scale or 1
+        self.view_rotation = p.rotation or 0
 
-        if p.get('crs'):
-            self.view_crs = p.crs
-        elif self.project:
+        self.view_crs = p.crs
+        if not self.view_crs and self.project:
             self.view_crs = self.project.map.crs
-        else:
+        if not self.view_crs:
             raise ValueError('no crs can be found')
 
-        if self.p.type == 'template':
-            self.template: t.ITemplate = self.acquire('gws.ext.template', self.p.templateUid)
+        if p.type == 'template':
+            self.template = t.cast(t.ITemplate, self.acquire('gws.ext.template', p.templateUid))
             if not self.template:
-                raise ValueError(f'cannot find template uid={self.p.templateUid}')
+                raise ValueError(f'cannot find template uid={p.templateUid!r}')
 
             # force dpi=OGC_SCREEN_PPI for low-res printing (dpi < OGC_SCREEN_PPI)
-            self.view_dpi = max(self.template.dpi_for_quality(p.get('quality', 0)), units.OGC_SCREEN_PPI)
+            self.view_dpi = max(self.template.dpi_for_quality(p.quality or 0), units.OGC_SCREEN_PPI)
             self.view_size_mm = self.template.map_size
             self.view_size_px = units.point_mm2px(self.template.map_size, self.view_dpi)
 
-        elif self.p.type == 'map':
+        elif p.type == 'map':
             self.template = None
-            try:
-                dpi = min(units.OGC_SCREEN_PPI, int(p.dpi))
-            except:
-                dpi = units.OGC_SCREEN_PPI
-
-            self.view_dpi = dpi
+            self.view_dpi = max(gws.as_int(p.dpi), units.OGC_SCREEN_PPI)
             self.view_size_mm = units.point_px2mm((p.mapWidth, p.mapHeight), units.OGC_SCREEN_PPI)
             self.view_size_px = units.point_mm2px(self.view_size_mm, self.view_dpi)
 
@@ -170,7 +162,7 @@ class _Worker:
 
         self.check_job(steptype='end')
 
-        comb_path = gws.tools.pdf.concat(section_paths, f'{self.base_path}/comb.pdf')
+        comb_path = gws.tools.pdf.concat(section_paths, f'{self.base_dir}/comb.pdf')
 
         if self.template:
             ctx = gws.merge(self.default_context, self.sections[0].context)
@@ -178,7 +170,7 @@ class _Worker:
             res_path = self.template.add_headers_and_footers(
                 context=ctx,
                 in_path=comb_path,
-                out_path=f'{self.base_path}/res.pdf',
+                out_path=f'{self.base_dir}/res.pdf',
                 format='pdf',
             )
         else:
@@ -200,12 +192,12 @@ class _Worker:
 
     def run_section(self, sec: PreparedSection, n: int):
         renderer = gws.gis.render.Renderer()
-        out_path = f'{self.base_path}/map-{n}'
+        out_path = f'{self.base_dir}/sec-{n}.pdf'
 
-        ri = t.RenderInput({
-            'items': sec.items + self.common_render_items,
-            'background_color': _PAPER_COLOR,
-            'view': gws.gis.render.view_from_center(
+        ri = t.RenderInput(
+            items=sec.items + self.common_render_items,
+            background_color=_PAPER_COLOR,
+            view=gws.gis.render.view_from_center(
                 crs=self.view_crs,
                 center=sec.center,
                 scale=self.view_scale,
@@ -214,16 +206,16 @@ class _Worker:
                 rotation=self.view_rotation,
                 dpi=self.view_dpi,
             )
-        })
+        )
 
-        for item in renderer.run(ri, out_path):
+        for item in renderer.run(ri, self.base_dir):
             self.check_job(steptype='layer', stepname=item.layer.title if item.get('layer') else '')
 
         if self.template:
             tr = self.template.render(
                 context=gws.merge({}, self.default_context, sec.context),
                 render_output=renderer.output,
-                out_path=f'{self.base_path}/sec-{n}.pdf',
+                out_path=out_path,
                 format='pdf',
             )
             return tr.path
@@ -233,17 +225,10 @@ class _Worker:
             units.px2mm(self.view_size_px[1], self.view_dpi),
         ]
 
-        html = gws.gis.render.create_html_with_map(
-            html='<meta charset="UTF-8"/>@',
-            map_placeholder='@',
-            page_size=page_size,
-            margin=None,
-            render_output=renderer.output,
-            out_path=f'{self.base_path}/sec-{n}.pdf',
-        )
+        map_html = gws.gis.render.output_html(renderer.output)
 
         out_path = gws.tools.pdf.render_html(
-            html,
+            '<meta charset="UTF-8"/>' + map_html,
             page_size=page_size,
             margin=None,
             out_path=out_path
@@ -293,7 +278,7 @@ class _Worker:
             gws.p(ii.style.values)
 
         if item.type == 'raster':
-            ii.layer = self.acquire('gws.ext.layer', item.layerUid)
+            ii.layer = t.cast(t.ILayer, self.acquire('gws.ext.layer', item.layerUid))
 
             if ii.layer and ii.layer.can_render_box:
                 ii.type = t.RenderInputItemType.image_layer
@@ -303,7 +288,7 @@ class _Worker:
             return
 
         if item.type == 'vector':
-            ii.layer = self.acquire('gws.ext.layer', item.layerUid)
+            ii.layer = t.cast(t.ILayer, self.acquire('gws.ext.layer', item.layerUid))
 
             if ii.layer and ii.layer.can_render_svg:
                 ii.type = t.RenderInputItemType.svg_layer

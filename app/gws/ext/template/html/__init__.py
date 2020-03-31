@@ -5,13 +5,15 @@ import time
 import os
 
 import gws
-import gws.tools.mime
+import gws.common.template
 import gws.gis.feature
 import gws.gis.render
+import gws.tools.mime
+import gws.tools.os2
 import gws.tools.pdf
-import gws.types as t
 import gws.tools.vendor.chartreux as chartreux
-import gws.common.template
+
+import gws.types as t
 
 
 class Config(gws.common.template.Config):
@@ -26,69 +28,63 @@ class ParsedTemplate(t.Data):
     header: str
     footer: str
     text: str
+    time: int
 
 
 class Object(gws.common.template.Object):
-    map_placeholder = '__map__'
+    _parsed_template = None
 
-    def __init__(self):
-        super().__init__()
-        self.parsed: ParsedTemplate = None
-        self.parsed_time = 0
-
-    def configure(self):
-        super().configure()
-        self._parse()
+    @property
+    def parsed_template(self):
+        if not self._parsed_template:
+            self._parsed_template = self._parse()
+        elif self.path and gws.tools.os2.file_mtime(self.path) > self._parsed_template.time:
+            self._parsed_template = self._parse()
+        return self._parsed_template
 
     @property
     def page_size(self):
-        self._check_cache()
-        return self.parsed.page_size
+        return self.parsed_template.page_size
 
     @property
     def map_size(self):
-        self._check_cache()
-        return self.parsed.map_size
+        return self.parsed_template.map_size
 
     def render(self, context, render_output=None, out_path=None, format=None):
-        self._check_cache()
+        pt = self.parsed_template
 
-        html = self._render_html(self.parsed.text, context)
+        html = self._render_html(pt.text, context)
+
+        if render_output:
+            map_html = gws.gis.render.output_html(render_output)
+            html = html.replace('[MAP_PLACEHOLDER]', map_html)
 
         if format == 'pdf':
             if not out_path:
                 raise ValueError('out_path required for pdf')
 
-            html = gws.gis.render.create_html_with_map(
-                html=html,
-                render_output=render_output,
-                map_placeholder=self.map_placeholder,
-                page_size=self.parsed.page_size,
-                margin=self.parsed.margin,
-                out_path=out_path
-            )
-
             out_path = gws.tools.pdf.render_html(
                 html,
-                page_size=self.parsed.page_size,
-                margin=self.parsed.margin,
+                page_size=pt.page_size,
+                margin=pt.margin,
                 out_path=out_path
             )
 
             return t.TemplateOutput(mime=gws.tools.mime.get('pdf'), path=out_path)
 
         if out_path:
-            with open(out_path, 'wt') as fp:
-                fp.write(html)
+            gws.write_file(out_path, html)
             return t.TemplateOutput(mime=gws.tools.mime.get('html'), path=out_path)
 
         return t.TemplateOutput(mime=gws.tools.mime.get('html'), content=html)
 
     def add_headers_and_footers(self, context, in_path, out_path, format):
-        if not self.parsed.header and not self.parsed.footer:
+        pt = self.parsed_template
+
+        if not pt.header and not pt.footer:
             return in_path
 
-        text = self._frame_template()
+        text = self._frame_template(pt)
         html = self._render_html(text, context)
 
         if format == 'pdf':
@@ -103,11 +99,6 @@ class Object(gws.common.template.Object):
 
         return in_path
 
-    def _check_cache(self):
-        if self.path and _file_mtime(self.path) > self.parsed_time:
-            gws.log.debug(f'{self.path!r}: updated, reparsing')
-            self._parse()
-
     def _parse(self):
         if self.path:
             with open(self.path, 'rt') as fp:
@@ -115,48 +106,47 @@ class Object(gws.common.template.Object):
         else:
             text = self.text
 
-        self.parsed = ParsedTemplate({
-            'page_size': [210, 297],
-            'map_size': [100, 100],
-            'margin': [10, 10, 10, 10],
-            'header': '',
-            'footer': '',
-            'text': ''
-        })
+        pt = ParsedTemplate(
+            page_size=[210, 297],
+            map_size=[100, 100],
+            margin=[10, 10, 10, 10],
+            header='',
+            footer='',
+            text='',
+            time=0
+        )
 
         # we cannot parse our html with bs4 or whatever, because it's a template,
         # and in a template, whitespace is critical, and a structural parser won't preserve it one-to-one
 
         tags_re = r'''(?xs)
             (
-                <(?P<tag1> gws:page|gws:map) (?P<atts1> .*?) />
+                <(?P<tag1> gws:\w+) (?P<atts1> .*?) />
             )
             |
             (
-                <(?P<tag2> gws:header|gws:footer) (?P<atts2> .*?)>
+                <(?P<tag2> gws:\w+) (?P<atts2> .*?)>
                     (?P<contents2> .*?)
                 </(?P=tag2)>
             ) 
         '''
 
-        self.parsed.text = re.sub(tags_re, lambda m: self._parse_tag(m.groupdict()), text)
-        self.parsed_time = time.time()
+        pt.text = re.sub(tags_re, lambda m: self._parse_tag(pt, m.groupdict()), text)
+        pt.time = time.time()
 
-    def _parse_tag(self, m):
+        return pt
+
+    def _parse_tag(self, pt, m):
         name = m.get('tag1') or m.get('tag2')
-        contents = m.get('contents2') or ''
-
-        a = m.get('atts1') or m.get('atts2') or ''
-        atts = {}
-        for k, v in re.findall(r'(\w+)="(.+?)"', a):
-            atts[k] = v.strip()
+        contents = (m.get('contents2') or '').strip()
+        atts = _parse_atts(m.get('atts1') or m.get('atts2') or '')
 
         if name == 'gws:map':
             if 'width' in atts:
-                self.parsed.map_size = _parse_size(atts)
+                pt.map_size = _parse_size(atts)
             return f'''
-                <div style="position:relative;width:{self.parsed.map_size[0]}mm; height:{self.parsed.map_size[1]}mm">
-                    {self.map_placeholder}
+                <div style="position:relative;width:{pt.map_size[0]}mm; height:{pt.map_size[1]}mm">
+                    [MAP_PLACEHOLDER]
                 </div>
             '''.strip()
 
@@ -164,17 +154,17 @@ class Object(gws.common.template.Object):
 
         if name == 'gws:page':
             if 'width' in atts:
-                self.parsed.page_size = _parse_size(atts)
+                pt.page_size = _parse_size(atts)
             if 'margin' in atts:
-                self.parsed.margin = _parse_margin(atts)
+                pt.margin = _parse_margin(atts)
 
         if name == 'gws:header':
-            self.parsed.header = contents.strip()
+            pt.header = contents
 
         if name == 'gws:footer':
-            self.parsed.footer = contents.strip()
+            pt.footer = contents
 
-    def _frame_template(self):
+    def _frame_template(self, pt):
         css = f'''
             body, table, tr, td {{
                 margin: 0;
@@ -189,17 +179,17 @@ class Object(gws.common.template.Object):
                 width: 100%
             }}
             body {{
-                width:  {self.parsed.page_size[0]}mm;
-                height: {self.parsed.page_size[1]}mm;
+                width:  {pt.page_size[0]}mm;
+                height: {pt.page_size[1]}mm;
             }}
         '''
 
         body = f'''
             @each range(1, page_count + 1) as page:
                 <table border=0 cellspacing=0 cellpadding=0>
-                    <tr><td>{self.parsed.header}</td></tr>
+                    <tr><td>{pt.header}</td></tr>
                     <tr><td style="height:100%"></td></tr>
-                    <tr><td>{self.parsed.footer}</td></tr>
+                    <tr><td>{pt.footer}</td></tr>
                 </table>
             @end
         '''
@@ -231,12 +221,8 @@ class Object(gws.common.template.Object):
         return content
 
 
-def _file_mtime(path):
-    try:
-        st = os.stat(path)
-    except:
-        return 1e20
-    return int(st.st_mtime)
+def _parse_atts(a):
+    return {k: v.strip() for k, v in re.findall(r'(\w+)="(.+?)"', a)}
 
 
 def _parse_size(atts):

@@ -743,6 +743,7 @@ class RenderInputItemType(Enum):
 
 
 class RenderOutput(Data):
+    base_dir: str
     items: List['RenderOutputItem']
     view: 'RenderView'
 
@@ -1119,6 +1120,7 @@ class ILayer(IObject):
     legend_url: str
     map: 'IMap'
     meta: 'MetaData'
+    opacity: float
     own_bounds: Optional['Bounds']
     ows_name: str
     ows_services_disabled: List[str]

@@ -78,6 +78,7 @@ class RenderOutputItem(t.Data):
 class RenderOutput(t.Data):
     view: 'RenderView'
     items: t.List[RenderOutputItem]
+    base_dir: str
 
 
 def _view_base(out_size, out_size_unit, rotation, dpi):
@@ -116,11 +117,7 @@ def view_from_center(crs: t.Crs, center: t.Point, scale: int, out_size: t.Size, 
         view.center[0] + (w * unit_per_mm) / 2,
         view.center[1] + (h * unit_per_mm) / 2,
     ]
-
-    view.bounds = t.Bounds(
-        crs=crs,
-        extent=ext
-    )
+    view.bounds = t.Bounds(crs=crs, extent=ext)
 
     return view
 
@@ -133,11 +130,7 @@ def view_from_bbox(crs: t.Crs, bbox: t.Extent, out_size: t.Size, out_size_unit: 
         bbox[1] - (bbox[3] - bbox[1]) / 2,
     ]
     view.scale = units.res2scale((bbox[2] - bbox[0]) / view.size_px[0])
-
-    view.bounds = t.Bounds(
-        crs=crs,
-        extent=bbox
-    )
+    view.bounds = t.Bounds(crs=crs, extent=bbox)
 
     return view
 
@@ -165,21 +158,15 @@ class Composition:
 
 
 class Renderer:
-    def __init__(self):
-        self.ri: RenderInput = None
-        self.output: RenderOutput = None
-        self.composition = None
-        self.out_path = ''
-        self.default_dpi = 0
-
-    def run(self, ri: RenderInput, out_path=None):
-        self.ri = ri
+    def run(self, ri: RenderInput, base_dir=None):
+        self.ri: RenderInput = ri
         self.output = RenderOutput(
             view=self.ri.view,
-            items=[]
+            items=[],
+            base_dir=base_dir,
         )
         self.default_dpi = self.ri.view.dpi
-        self.out_path = out_path
+        self.composition = None
 
         # NB: items are top-to-bottom
 
@@ -262,26 +249,25 @@ class Renderer:
 
     def _flush_image(self):
         if self._last_item_is(t.RenderOutputItemType.image):
-            # path = '%s-%s.png' % (self.out_path, len(self.output.items))
+            # path = '%s/%s.png' % (self.base_dir, len(self.output.items))
             # self.composition.save(path)
             self.composition = None
             # self.output.items[-1].path = path
 
 
-def create_html_with_map(html, page_size, margin, out_path, render_output: RenderOutput, map_placeholder):
-    map_html = []
+def output_html(ro: RenderOutput) -> str:
+    html = []
     css = 'position: absolute; left: 0; top: 0; width: 100%; height: 100%'
-    dir = os.path.dirname(out_path)
 
-    for r in render_output.items:
+    for r in ro.items:
         if r.type == t.RenderOutputItemType.image:
-            path = dir + '/' + gws.random_string(64) + '.png'
+            path = ro.base_dir + '/' + gws.random_string(64) + '.png'
             r.image.save(path, 'png')
-            map_html.append(f'<img style="{css}" src="{path}"/>')
+            html.append(f'<img style="{css}" src="{path}"/>')
         if r.type == t.RenderOutputItemType.path:
-            map_html.append(f'<img style="{css}" src="{r.path}"/>')
+            html.append(f'<img style="{css}" src="{r.path}"/>')
         if r.type == t.RenderOutputItemType.svg:
             s = '\n'.join(r.elements)
-            map_html.append(f'<svg style="{css}" version="1.1" xmlns="http://www.w3.org/2000/svg">{s}</svg>')
+            html.append(f'<svg style="{css}" version="1.1" xmlns="http://www.w3.org/2000/svg">{s}</svg>')
 
-    return html.replace(map_placeholder, '\n'.join(map_html))
+    return '\n'.join(html)

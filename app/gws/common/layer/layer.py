@@ -172,7 +172,7 @@ class Layer(gws.Object, t.ILayer):
             self.map.resolutions)
         self.extent: t.Optional[t.Extent] = None
 
-        self.opacity = self.var('opacity')
+        self.opacity: float = self.var('opacity')
         self.client_options = self.var('clientOptions')
 
         self.geometry_type: t.Optional[t.GeometryType] = None
