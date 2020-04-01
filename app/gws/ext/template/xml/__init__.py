@@ -145,7 +145,7 @@ class XMLCommands():
 
 class Object(gws.common.template.Object):
 
-    def render(self, context, render_output=None, out_path=None, format=None):
+    def render(self, context, format=None):
         namespaces_node, last_tag = self._render_as_tag(context)
 
         if namespaces_node:

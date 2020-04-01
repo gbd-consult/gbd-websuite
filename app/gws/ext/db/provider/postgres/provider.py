@@ -14,18 +14,17 @@ import gws.types as t
 from . import driver
 
 
-def create_shared(obj: t.IObject, cfg) -> 'Object':
+def create_shared(root: t.IRootObject, cfg) -> 'Object':
     key = '-'.join([
         f'h={cfg.host}',
         f'p={cfg.port}',
         f'u={cfg.user}',
         f'd={cfg.database}'
     ])
-    prov: Object = obj.root.create_shared_object(
+    return t.cast(Object, root.create_shared_object(
         'gws.ext.db.provider.postgres',
         gws.as_uid(key),
-        cfg)
-    return prov
+        cfg))
 
 
 class Object(gws.common.db.provider.Sql):

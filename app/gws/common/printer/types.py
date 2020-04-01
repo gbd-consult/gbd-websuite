@@ -62,6 +62,7 @@ class PrintParamsBase(t.Params):
     crs: t.Optional[t.Crs]
     format: t.Optional[str]
     items: t.List[PrintItem]
+    legendLayers: t.Optional[t.List[str]]
     rotation: int = 0
     scale: int
     sections: t.Optional[t.List[PrintSection]]

@@ -23,7 +23,7 @@ import gws.types as t
 class PreparedSection(t.Data):
     center: t.Point
     context: dict
-    items: t.List[t.RenderInputItem]
+    items: t.List[t.MapRenderInputItem]
 
 
 class PrematureTermination(Exception):
@@ -101,6 +101,10 @@ class _Worker:
         if not self.view_crs:
             raise ValueError('no crs can be found')
 
+        self.template: t.Optional[t.ITemplate] = None
+
+        self.legend_layer_uids = p.legendLayers or []
+
         if p.type == 'template':
             self.template = t.cast(t.ITemplate, self.acquire('gws.ext.template', p.templateUid))
             if not self.template:
@@ -112,7 +116,6 @@ class _Worker:
             self.view_size_px = units.point_mm2px(self.template.map_size, self.view_dpi)
 
         elif p.type == 'map':
-            self.template = None
             self.view_dpi = max(gws.as_int(p.dpi), units.OGC_SCREEN_PPI)
             self.view_size_mm = units.point_px2mm((p.mapWidth, p.mapHeight), units.OGC_SCREEN_PPI)
             self.view_size_px = units.point_mm2px(self.view_size_mm, self.view_dpi)
@@ -156,6 +159,8 @@ class _Worker:
 
         self.check_job(steptype='begin')
 
+        self.legends = self.render_legends()
+
         for n, sec in enumerate(self.sections):
             section_paths.append(self.run_section(sec, n))
             self.check_job(steptype='page', stepname=str(n))
@@ -194,7 +199,7 @@ class _Worker:
         renderer = gws.gis.render.Renderer()
         out_path = f'{self.base_dir}/sec-{n}.pdf'
 
-        ri = t.RenderInput(
+        ri = t.MapRenderInput(
             items=sec.items + self.common_render_items,
             background_color=_PAPER_COLOR,
             view=gws.gis.render.view_from_center(
@@ -214,9 +219,10 @@ class _Worker:
         if self.template:
             tr = self.template.render(
                 context=gws.merge({}, self.default_context, sec.context),
-                render_output=renderer.output,
-                out_path=out_path,
                 format='pdf',
+                mro=renderer.output,
+                legends=self.legends,
+                out_path=out_path,
             )
             return tr.path
 
@@ -235,6 +241,32 @@ class _Worker:
         )
 
         return out_path
+
+    def render_legends(self):
+        if not self.template or not self.template.legend_mode:
+            return
+
+        ls = {}
+
+        for layer_uid in self.legend_layer_uids:
+            if self.template.legend_layer_uids and layer_uid not in self.template.legend_layer_uids:
+                continue
+
+            layer = t.cast(t.ILayer, self.acquire('gws.ext.layer', layer_uid))
+            if not layer or not layer.has_legend:
+                continue
+            s = self.render_legend(layer)
+            if s:
+                ls[layer.uid] = s
+
+        return ls
+
+    def render_legend(self, layer: t.ILayer):
+        if self.template.legend_mode == t.TemplateLegendMode.image:
+            return layer.render_legend()
+
+        if self.template.legend_mode == t.TemplateLegendMode.html:
+            return layer.render_html_legend()
 
     def prepare_section(self, sec: pt.PrintSection):
         context = sec.get('context', {})
@@ -260,7 +292,7 @@ class _Worker:
         return rs
 
     def prepare_render_item(self, item: pt.PrintItem):
-        ii = t.RenderInputItem()
+        ii = t.MapRenderInputItem()
 
         s = item.get('opacity')
         if s is not None:
@@ -281,7 +313,7 @@ class _Worker:
             ii.layer = t.cast(t.ILayer, self.acquire('gws.ext.layer', item.layerUid))
 
             if ii.layer and ii.layer.can_render_box:
-                ii.type = t.RenderInputItemType.image_layer
+                ii.type = t.MapRenderInputItemType.image_layer
                 ii.sub_layers = item.get('subLayers')
                 return ii
 
@@ -291,7 +323,7 @@ class _Worker:
             ii.layer = t.cast(t.ILayer, self.acquire('gws.ext.layer', item.layerUid))
 
             if ii.layer and ii.layer.can_render_svg:
-                ii.type = t.RenderInputItemType.svg_layer
+                ii.type = t.MapRenderInputItemType.svg_layer
                 ii.dpi = units.PDF_DPI
                 return ii
 
@@ -301,7 +333,7 @@ class _Worker:
             img = self.prepare_bitmap(item)
             if not img:
                 return
-            ii.type = t.RenderInputItemType.image
+            ii.type = t.MapRenderInputItemType.image
             ii.image = img
             return ii
 
@@ -309,7 +341,7 @@ class _Worker:
             img = self.prepare_bitmap_url(item.url)
             if not img:
                 return
-            ii.type = t.RenderInputItemType.image
+            ii.type = t.MapRenderInputItemType.image
             ii.image = img
             return ii
 
@@ -318,13 +350,13 @@ class _Worker:
             features = [f for f in features if f and f.shape]
             if not features:
                 return
-            ii.type = t.RenderInputItemType.features
+            ii.type = t.MapRenderInputItemType.features
             ii.features = features
             ii.dpi = units.PDF_DPI
             return ii
 
         if item.type == 'fragment':
-            ii.type = t.RenderInputItemType.fragment
+            ii.type = t.MapRenderInputItemType.fragment
             ii.fragment = item.fragment
             ii.dpi = units.PDF_DPI
             return ii

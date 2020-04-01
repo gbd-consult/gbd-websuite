@@ -14,7 +14,7 @@ class Config(gws.common.template.Config):
 
 class Object(gws.common.template.Object):
 
-    def render(self, context, render_output=None, out_path=None, format=None):
+    def render(self, context, format=None):
         context = context or {}
 
         context['gws'] = {

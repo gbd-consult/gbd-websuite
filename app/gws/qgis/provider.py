@@ -13,11 +13,11 @@ import gws.types as t
 from . import types, parser
 
 
-def create_shared(obj, cfg) -> 'Object':
+def create_shared(root: t.IRootObject, cfg) -> 'Object':
     path = cfg.get('path')
     uid = path
-    obj.root.application.monitor.add_path(path)
-    return obj.root.create_shared_object(Object, uid, t.Config(path=path))
+    root.application.monitor.add_path(path)
+    return root.create_shared_object(Object, uid, t.Config(path=path))
 
 
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
@@ -46,15 +46,11 @@ _LEGEND_DEFAULTS = {
 
 
 class Object(gws.common.ows.provider.Object):
-    def __init__(self):
-        super().__init__()
-
-        self.legend_params = {}
-        self.path = ''
-        self.print_templates: t.List[types.PrintTemplate] = []
-        self.properties: t.Dict = {}
-        self.type = 'QGIS/WMS'
-        self.version = '1.3.0'  # as of QGIS 3.4
+    legend_params: dict
+    path: str
+    print_templates: t.List[types.PrintTemplate]
+    properties: dict
+    source_text: str
 
     def configure(self):
         super().configure()
@@ -66,7 +62,15 @@ class Object(gws.common.ows.provider.Object):
             self.root.var('server.qgis.host'),
             self.root.var('server.qgis.port'))
 
-        parser.parse(self, self._read(self.path))
+        self.type = 'QGIS/WMS'
+        self.version = '1.3.0'  # as of QGIS 3.4
+
+        self.print_templates = []
+        self.properties = {}
+
+        self.source_text = self._read(self.path)
+
+        parser.parse(self, self.source_text)
 
     def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
         if not args.shapes:

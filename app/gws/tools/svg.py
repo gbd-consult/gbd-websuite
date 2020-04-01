@@ -91,7 +91,7 @@ def to_png(elements, size: t.Size):
         return image.make_blob('png')
 
 
-def convert_fragment(svg_fragment, rv: t.RenderView):
+def convert_fragment(svg_fragment, rv: t.MapRenderView):
     def trans(x, y):
         cx = x - rv.bounds.extent[0]
         cy = rv.bounds.extent[3] - y

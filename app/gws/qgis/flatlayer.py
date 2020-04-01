@@ -28,7 +28,7 @@ class Object(gws.common.layer.Image):
     def configure(self):
         super().configure()
 
-        self.provider: provider.Object = provider.create_shared(self, self.config)
+        self.provider: provider.Object = provider.create_shared(self.root, self.config)
         self.source_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
 
         self.source_layers = gws.gis.source.filter_layers(
@@ -84,7 +84,7 @@ class Object(gws.common.layer.Image):
                 layer=self,
                 source_layers=source_layers))
 
-    def render_box(self, rv: t.RenderView, client_params=None):
+    def render_box(self, rv: t.MapRenderView, client_params=None):
         forward = {}
 
         cache_uid = self.uid

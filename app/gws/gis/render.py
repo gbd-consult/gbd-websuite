@@ -17,7 +17,7 @@ class SvgFragment:
 
 
 #:export
-class RenderView(t.Data):
+class MapRenderView(t.Data):
     bounds: t.Bounds
     center: t.Point
     dpi: int
@@ -28,7 +28,7 @@ class RenderView(t.Data):
 
 
 #:export
-class RenderInputItemType(t.Enum):
+class MapRenderInputItemType(t.Enum):
     image = 'image'
     features = 'features'
     fragment = 'fragment'
@@ -37,7 +37,7 @@ class RenderInputItemType(t.Enum):
 
 
 #:export
-class RenderInputItem(t.Data):
+class MapRenderInputItem(t.Data):
     type: str = ''
     #:noexport
     image: PIL.Image.Image = None
@@ -52,21 +52,21 @@ class RenderInputItem(t.Data):
 
 
 #:export
-class RenderInput(t.Data):
-    view: t.RenderView
+class MapRenderInput(t.Data):
+    view: t.MapRenderView
     background_color: int
-    items: t.List[t.RenderInputItem]
+    items: t.List[t.MapRenderInputItem]
 
 
 #:export
-class RenderOutputItemType(t.Enum):
+class MapRenderOutputItemType(t.Enum):
     image = 'image'
     path = 'path'
     svg = 'svg'
 
 
 #:export
-class RenderOutputItem(t.Data):
+class MapRenderOutputItem(t.Data):
     type: str
     #:noexport
     image: PIL.Image.Image = None
@@ -75,14 +75,14 @@ class RenderOutputItem(t.Data):
 
 
 #:export
-class RenderOutput(t.Data):
-    view: 'RenderView'
-    items: t.List[RenderOutputItem]
+class MapRenderOutput(t.Data):
+    view: 'MapRenderView'
+    items: t.List[MapRenderOutputItem]
     base_dir: str
 
 
 def _view_base(out_size, out_size_unit, rotation, dpi):
-    view = t.RenderView()
+    view = t.MapRenderView()
 
     view.dpi = max(units.OGC_SCREEN_PPI, int(dpi))
     # @TODO
@@ -158,9 +158,9 @@ class Composition:
 
 
 class Renderer:
-    def run(self, ri: RenderInput, base_dir=None):
-        self.ri: RenderInput = ri
-        self.output = RenderOutput(
+    def run(self, ri: MapRenderInput, base_dir=None):
+        self.ri: MapRenderInput = ri
+        self.output = MapRenderOutput(
             view=self.ri.view,
             items=[],
             base_dir=base_dir,
@@ -176,7 +176,7 @@ class Renderer:
 
         self._flush_image()
 
-    def _render_item(self, item: RenderInputItem):
+    def _render_item(self, item: MapRenderInputItem):
         try:
             #  use the item's dpi
             self.ri.view.dpi = item.dpi or self.default_dpi
@@ -186,7 +186,7 @@ class Renderer:
             gws.log.error('input item failed')
             gws.log.exception()
 
-    def _render_item2(self, item: RenderInputItem):
+    def _render_item2(self, item: MapRenderInputItem):
         # @TODO opacity for svgs
 
         s = item.opacity
@@ -197,11 +197,11 @@ class Renderer:
         else:
             opacity = 1
 
-        if item.type == t.RenderInputItemType.image:
+        if item.type == t.MapRenderInputItemType.image:
             self._add_image(item.image, opacity)
             return
 
-        if item.type == t.RenderInputItemType.features:
+        if item.type == t.MapRenderInputItemType.features:
             r = [
                 feature.to_svg(self.ri.view, item.style)
                 for feature in item.features
@@ -209,19 +209,19 @@ class Renderer:
             self._add_svg(r)
             return
 
-        if item.type == t.RenderInputItemType.fragment:
+        if item.type == t.MapRenderInputItemType.fragment:
             svg = gws.tools.svg.convert_fragment(item.fragment, self.ri.view)
             if svg:
                 self._add_svg([svg])
             return
 
-        if item.type == t.RenderInputItemType.svg_layer:
+        if item.type == t.MapRenderInputItemType.svg_layer:
             r = item.layer.render_svg(self.ri.view, item.style)
             if r:
                 self._add_svg(r)
             return
 
-        if item.type == t.RenderInputItemType.image_layer:
+        if item.type == t.MapRenderInputItemType.image_layer:
             r = item.layer.render_box(self.ri.view, {'layers': item.sub_layers})
             if r:
                 self._add_image(PIL.Image.open(io.BytesIO(r)), opacity)
@@ -230,9 +230,9 @@ class Renderer:
         return self.output.items and self.output.items[-1].type == type
 
     def _add_image(self, img, opacity):
-        if not self._last_item_is(RenderOutputItemType.image):
-            self.output.items.append(RenderOutputItem(
-                type=RenderOutputItemType.image,
+        if not self._last_item_is(MapRenderOutputItemType.image):
+            self.output.items.append(MapRenderOutputItem(
+                type=MapRenderOutputItemType.image,
             ))
             self.composition = Composition(self.ri.view.size_px, self.ri.background_color)
         self.composition.add_image(img, opacity)
@@ -240,33 +240,33 @@ class Renderer:
 
     def _add_svg(self, svg):
         self._flush_image()
-        if not self._last_item_is(RenderOutputItemType.svg):
-            self.output.items.append(RenderOutputItem(
-                type=RenderOutputItemType.svg,
+        if not self._last_item_is(MapRenderOutputItemType.svg):
+            self.output.items.append(MapRenderOutputItem(
+                type=MapRenderOutputItemType.svg,
                 elements=[]
             ))
         self.output.items[-1].elements.extend(svg)
 
     def _flush_image(self):
-        if self._last_item_is(t.RenderOutputItemType.image):
+        if self._last_item_is(t.MapRenderOutputItemType.image):
             # path = '%s/%s.png' % (self.base_dir, len(self.output.items))
             # self.composition.save(path)
             self.composition = None
             # self.output.items[-1].path = path
 
 
-def output_html(ro: RenderOutput) -> str:
+def output_html(ro: MapRenderOutput) -> str:
     html = []
     css = 'position: absolute; left: 0; top: 0; width: 100%; height: 100%'
 
     for r in ro.items:
-        if r.type == t.RenderOutputItemType.image:
+        if r.type == t.MapRenderOutputItemType.image:
             path = ro.base_dir + '/' + gws.random_string(64) + '.png'
             r.image.save(path, 'png')
             html.append(f'<img style="{css}" src="{path}"/>')
-        if r.type == t.RenderOutputItemType.path:
+        if r.type == t.MapRenderOutputItemType.path:
             html.append(f'<img style="{css}" src="{r.path}"/>')
-        if r.type == t.RenderOutputItemType.svg:
+        if r.type == t.MapRenderOutputItemType.svg:
             s = '\n'.join(r.elements)
             html.append(f'<svg style="{css}" version="1.1" xmlns="http://www.w3.org/2000/svg">{s}</svg>')
 

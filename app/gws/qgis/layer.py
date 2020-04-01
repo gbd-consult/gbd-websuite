@@ -32,7 +32,7 @@ class Object(gws.common.layer.Layer):
         super().configure()
 
         self.path = self.var('path')
-        self.provider: provider.Object = provider.create_shared(self, self.config)
+        self.provider: provider.Object = provider.create_shared(self.root, self.config)
         self.own_crs = self.provider.supported_crs[0]
 
         self.meta = self.configure_metadata(self.provider.meta)

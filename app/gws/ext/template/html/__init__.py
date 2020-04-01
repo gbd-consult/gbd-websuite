@@ -1,8 +1,6 @@
 """CX templates."""
 
 import re
-import time
-import os
 
 import gws
 import gws.common.template
@@ -21,43 +19,34 @@ class Config(gws.common.template.Config):
     pass
 
 
-class ParsedTemplate(t.Data):
-    page_size: t.Size
-    map_size: t.Size
-    margin: t.List[int]
-    header: str
-    footer: str
-    text: str
-    time: int
-
-
 class Object(gws.common.template.Object):
-    _parsed_template = None
 
-    @property
-    def parsed_template(self):
-        if not self._parsed_template:
-            self._parsed_template = self._parse()
-        elif self.path and gws.tools.os2.file_mtime(self.path) > self._parsed_template.time:
-            self._parsed_template = self._parse()
-        return self._parsed_template
+    def configure(self):
+        super().configure()
 
-    @property
-    def page_size(self):
-        return self.parsed_template.page_size
+        self.page_size = 210, 297
+        self.map_size = 100, 100
+        self.margin = 10, 10, 10, 10
+        self.header = ''
+        self.footer = ''
+        self.text = ''
+        self.legend_use_all = False
+        self.legend_mode = None
+        self.legend_layer_uids = []
 
-    @property
-    def map_size(self):
-        return self.parsed_template.map_size
+        self._parse()
 
-    def render(self, context, render_output=None, out_path=None, format=None):
-        pt = self.parsed_template
+    def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
+        def legend_func(layer_uid=None):
+            if not legends:
+                return ''
+            if not layer_uid:
+                return ''.join(legends.values())
+            return legends.get(layer_uid, '')
 
-        html = self._render_html(pt.text, context)
-
-        if render_output:
-            map_html = gws.gis.render.output_html(render_output)
-            html = html.replace('[MAP_PLACEHOLDER]', map_html)
+        map_html = gws.gis.render.output_html(mro) if mro else ''
+        context = gws.extend(context, GWS_MAP=map_html, GWS_LEGEND=legend_func)
+        html = self._render_html(self.text, context)
 
         if format == 'pdf':
             if not out_path:
@@ -65,8 +54,8 @@ class Object(gws.common.template.Object):
 
             out_path = gws.tools.pdf.render_html(
                 html,
-                page_size=pt.page_size,
-                margin=pt.margin,
+                page_size=self.page_size,
+                margin=self.margin,
                 out_path=out_path
             )
 
@@ -79,12 +68,10 @@ class Object(gws.common.template.Object):
         return t.TemplateOutput(mime=gws.tools.mime.get('html'), content=html)
 
     def add_headers_and_footers(self, context, in_path, out_path, format):
-        pt = self.parsed_template
-
-        if not pt.header and not pt.footer:
+        if not self.header and not self.footer:
             return in_path
 
-        text = self._frame_template(pt)
+        text = self._frame_template()
         html = self._render_html(text, context)
 
         if format == 'pdf':
@@ -94,27 +81,13 @@ class Object(gws.common.template.Object):
                 margin=None,
                 out_path=out_path + '-frame'
             )
-
             return gws.tools.pdf.merge(in_path, frame, out_path)
 
         return in_path
 
     def _parse(self):
         if self.path:
-            with open(self.path, 'rt') as fp:
-                text = fp.read()
-        else:
-            text = self.text
-
-        pt = ParsedTemplate(
-            page_size=[210, 297],
-            map_size=[100, 100],
-            margin=[10, 10, 10, 10],
-            header='',
-            footer='',
-            text='',
-            time=0
-        )
+            self.text = gws.read_file(self.path)
 
         # we cannot parse our html with bs4 or whatever, because it's a template,
         # and in a template, whitespace is critical, and a structural parser won't preserve it one-to-one
@@ -131,22 +104,22 @@ class Object(gws.common.template.Object):
             ) 
         '''
 
-        pt.text = re.sub(tags_re, lambda m: self._parse_tag(pt, m.groupdict()), text)
-        pt.time = time.time()
+        self.text = re.sub(tags_re, lambda m: self._parse_tag(m.groupdict()), self.text)
 
-        return pt
+        if self.legend_use_all:
+            self.legend_layer_uids = []
 
-    def _parse_tag(self, pt, m):
+    def _parse_tag(self, m):
         name = m.get('tag1') or m.get('tag2')
         contents = (m.get('contents2') or '').strip()
         atts = _parse_atts(m.get('atts1') or m.get('atts2') or '')
 
         if name == 'gws:map':
             if 'width' in atts:
-                pt.map_size = _parse_size(atts)
+                self.map_size = _parse_size(atts)
             return f'''
-                <div style="position:relative;width:{pt.map_size[0]}mm; height:{pt.map_size[1]}mm">
-                    [MAP_PLACEHOLDER]
+                <div style="position:relative;width:{self.map_size[0]}mm; height:{self.map_size[1]}mm">
+                    {{GWS_MAP|raw}}
                 </div>
             '''.strip()
 
@@ -154,17 +127,29 @@ class Object(gws.common.template.Object):
 
         if name == 'gws:page':
             if 'width' in atts:
-                pt.page_size = _parse_size(atts)
+                self.page_size = _parse_size(atts)
             if 'margin' in atts:
-                pt.margin = _parse_margin(atts)
+                self.margin = _parse_margin(atts)
+
+        if name == 'gws:legend':
+            self.legend_mode = t.TemplateLegendMode.html
+            if 'layer' in atts:
+                html = ''
+                for layer_uid in gws.as_list(atts['for']):
+                    if layer_uid not in self.legend_layer_uids:
+                        self.legend_layer_uids.append(layer_uid)
+                    html += f'{{GWS_LEGEND({layer_uid!r})|raw}}'
+                return html
+            self.legend_use_all = True
+            return f'{{GWS_LEGEND()|raw}}'
 
         if name == 'gws:header':
-            pt.header = contents
+            self.header = contents
 
         if name == 'gws:footer':
-            pt.footer = contents
+            self.footer = contents
 
-    def _frame_template(self, pt):
+    def _frame_template(self):
         css = f'''
             body, table, tr, td {{
                 margin: 0;
@@ -179,17 +164,17 @@ class Object(gws.common.template.Object):
                 width: 100%
             }}
             body {{
-                width:  {pt.page_size[0]}mm;
-                height: {pt.page_size[1]}mm;
+                width:  {self.page_size[0]}mm;
+                height: {self.page_size[1]}mm;
             }}
         '''
 
         body = f'''
             @each range(1, page_count + 1) as page:
                 <table border=0 cellspacing=0 cellpadding=0>
-                    <tr><td>{pt.header}</td></tr>
+                    <tr><td>{self.header}</td></tr>
                     <tr><td style="height:100%"></td></tr>
-                    <tr><td>{pt.footer}</td></tr>
+                    <tr><td>{self.footer}</td></tr>
                 </table>
             @end
         '''
@@ -226,10 +211,7 @@ def _parse_atts(a):
 
 
 def _parse_size(atts):
-    return [
-        int(atts['width']),
-        int(atts['height']),
-    ]
+    return int(atts['width']), int(atts['height'])
 
 
 def _parse_margin(atts):

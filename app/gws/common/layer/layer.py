@@ -30,6 +30,9 @@ _DEFAULT_STYLE_VALUES = {
     'stoke_width': 1,
 }
 
+_DEFAULT_LEGEND_TEMPLATE = """
+    <div class="legend"><img src="{path}"/></div>
+"""
 
 class Config(t.WithTypeAndAccess):
     """Layer configuration"""
@@ -276,20 +279,25 @@ class Layer(gws.Object, t.ILayer):
     def mapproxy_config(self, mc):
         pass
 
-    def render_box(self, rv: t.RenderView, client_params=None):
+    def render_box(self, rv: t.MapRenderView, client_params=None):
         return None
 
     def render_xyz(self, x, y, z):
         return None
 
-    def render_svg(self, rv: t.RenderView, style: t.IStyle = None):
+    def render_svg(self, rv: t.MapRenderView, style: t.IStyle = None):
         return None
 
-    def render_legend(self):
+    def render_legend(self) -> bytes:
         if self.legend_url.startswith('/'):
-            with open(self.legend_url, 'rb') as fp:
-                return fp.read()
+            return gws.read_file(self.legend_url, 'rb')
         return gws.gis.ows.request.raw_get(self.legend_url).content
+
+    def render_html_legend(self) -> str:
+        img = self.render_legend()
+        path = gws.PRINT_DIR + f'/legend.{self.uid}.png'
+        gws.write_file(path, img, 'wb')
+        return _DEFAULT_LEGEND_TEMPLATE.replace('{path}', path)
 
     def get_features(self, bounds: t.Bounds, limit: int = 0) -> t.List[t.IFeature]:
         return []

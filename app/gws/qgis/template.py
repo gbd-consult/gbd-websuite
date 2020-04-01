@@ -1,6 +1,6 @@
 """QGIS Print template"""
 
-import bs4
+import re
 
 import gws
 import gws.common.template
@@ -23,7 +23,7 @@ class Object(gws.common.template.Object):
     def configure(self):
         super().configure()
 
-        self.provider = provider.create_shared(self, self.config)
+        self.provider = provider.create_shared(self.root, self.config)
         self.template = self._find_template(self.var('title'))
         if not self.template:
             raise gws.Error('print template not found')
@@ -31,69 +31,29 @@ class Object(gws.common.template.Object):
         uid = self.var('uid') or '%s_%d' % (gws.sha256(self.provider.path), self.template.index)
         self.set_uid(uid)
 
-        self.title = self.template.title
-        self.page_size = self._page_size()
-        self.map_size, self.map_position = self._map_size_position()
+        self.source_text = self.provider.source_text
+        self._parse()
 
-    def _find_template(self, ref: str):
-        pts = self.provider.print_templates
-
-        if not pts:
-            return
-
-        if not ref:
-            return pts[0]
-
-        if ref.isdigit() and int(ref) < len(pts):
-            return pts[int(ref)]
-
-        for tpl in pts:
-            if tpl.title == ref:
-                return tpl
-
-    def _page_size(self):
-        # qgis 2:
-        if 'paperwidth' in self.template.attrs:
-            return (
-                float(self.template.attrs['paperwidth']),
-                float(self.template.attrs['paperheight'])
-            )
-
-        # qgis 3:
-        for el in self.template.elements:
-            if el.type == 'page':
-                return _num_pair(el.attrs['size'])
-
-    def _map_size_position(self):
-        for el in self.template.elements:
-            if el.type == 'map':
-
-                # qgis 2:
-                if 'pagex' in el.attrs:
-                    return (
-                        [float(el.attrs['width']), float(el.attrs['height'])],
-                        [float(el.attrs['pagex']), float(el.attrs['pagey'])],
-                    )
-
-                # qgis 3:
-                if 'position' in el.attrs:
-                    return (
-                        _num_pair(el.attrs['size']),
-                        _num_pair(el.attrs['position']),
-                    )
-
-    def render(self, context, render_output: t.RenderOutput = None, out_path=None, format=None):
+    def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
 
         # rewrite the project and replace variables within
         # @TODO fails if there are relative paths in the project
 
+        if legends and self.legend_mode:
+            ctx = {}
+            for layer_uid, s in legends.items():
+                ctx['GWS_LEGEND_' + gws.sha256(layer_uid)] = s
+            ctx['GWS_LEGEND'] = ''.join(legends.values())
+
+            context = gws.extend(context, ctx)
+
         temp_prj_path = out_path + '.qgs'
-        gws.write_file(temp_prj_path, writer.add_variables(self.provider.path, context))
+        gws.write_file(temp_prj_path, writer.add_variables(self.source_text, context))
 
         # ask qgis to render the template, without the map
         # NB we still need map0:xxxx for scale bars to work
 
-        resp = server.request(self.root, {
+        params = {
             'service': 'WMS',
             'version': '1.3',
             'request': 'GetPrint',
@@ -102,18 +62,20 @@ class Object(gws.common.template.Object):
             'template': self.template.title,
             'crs': gws.EPSG_3857,  # crs doesn't matter, but required
             'map': temp_prj_path,
-            'map0:scale': render_output.view.scale,
-            'map0:extent': render_output.view.bounds.extent,
-            'map0:rotation': render_output.view.rotation,
-        })
+        }
+
+        if mro:
+            params['map0:scale'] = mro.view.scale
+            params['map0:extent'] = mro.view.bounds.extent
+            params['map0:rotation'] = mro.view.rotation
+
+        resp = server.request(self.root, params)
 
         qgis_pdf_path = out_path + '_qgis.pdf'
         gws.write_file(qgis_pdf_path, resp.content, 'wb')
 
-        if not render_output:
+        if not mro:
             return qgis_pdf_path
-
-        # create a temp html for the map
 
         css = ';'.join([
             f'position: absolute',
@@ -123,7 +85,7 @@ class Object(gws.common.template.Object):
             f'height: {self.map_size[1]}mm',
         ])
 
-        map_html = gws.gis.render.output_html(render_output)
+        map_html = gws.gis.render.output_html(mro)
         html = f'<meta charset="utf8"/><div style="{css}">{map_html}</div>'
 
         map_path = gws.tools.pdf.render_html(
@@ -144,6 +106,92 @@ class Object(gws.common.template.Object):
         # @TODO
         return in_path
 
+    def _find_template(self, ref: str):
+        pts = self.provider.print_templates
+
+        if not pts:
+            return
+
+        if not ref:
+            return pts[0]
+
+        if ref.isdigit() and int(ref) < len(pts):
+            return pts[int(ref)]
+
+        for tpl in pts:
+            if tpl.title == ref:
+                return tpl
+
+    def _parse(self):
+        self.title = self.template.title
+        self.page_size = _page_size(self.template)
+        self.map_size, self.map_position = _map_size_position(self.template)
+
+        self.legend_use_all = False
+        self.legend_mode = None
+        self.legend_layer_uids = []
+
+        # @TODO use a real parser, merge with the html template
+
+        tags_re = r'''(?xs)
+            (<|&lt;) (?P<tag1> gws:\w+) (?P<atts1> .*?) / (>|&gt;) 
+        '''
+
+        self.source_text = re.sub(tags_re, lambda m: self._parse_tag(m.groupdict()), self.source_text)
+
+        if self.legend_use_all:
+            self.legend_layer_uids = []
+
+    def _parse_tag(self, m):
+        name = m.get('tag1') or m.get('tag2')
+        contents = (m.get('contents2') or '').strip()
+        atts = _parse_atts(m.get('atts1') or m.get('atts2') or '')
+
+        if name == 'gws:legend':
+            self.legend_mode = t.TemplateLegendMode.html
+            if 'layer' in atts:
+                html = ''
+                for layer_uid in gws.as_list(atts['layer']):
+                    if layer_uid not in self.legend_layer_uids:
+                        self.legend_layer_uids.append(layer_uid)
+                    html += '[% @GWS_LEGEND_' + gws.sha256(layer_uid) + '%]'
+                return html
+            self.legend_use_all = True
+            return '[% @GWS_LEGEND %]'
+
+
+def _page_size(tpl):
+    # qgis 2:
+    if 'paperwidth' in tpl.attrs:
+        return (
+            float(tpl.attrs['paperwidth']),
+            float(tpl.attrs['paperheight'])
+        )
+
+    # qgis 3:
+    for el in tpl.elements:
+        if el.type == 'page':
+            return _num_pair(el.attrs['size'])
+
+
+def _map_size_position(tpl):
+    for el in tpl.elements:
+        if el.type == 'map':
+
+            # qgis 2:
+            if 'pagex' in el.attrs:
+                return (
+                    (float(el.attrs['width']), float(el.attrs['height'])),
+                    (float(el.attrs['pagex']), float(el.attrs['pagey'])),
+                )
+
+            # qgis 3:
+            if 'position' in el.attrs:
+                return (
+                    _num_pair(el.attrs['size']),
+                    _num_pair(el.attrs['position']),
+                )
+
 
 def _num_pair(s):
     # like '297,210,mm'
@@ -151,7 +199,7 @@ def _num_pair(s):
     if unit != 'mm':
         # @TODO
         raise ValueError('mm units only please')
-    return [float(a), float(b)]
+    return float(a), float(b)
 
 
 def _parse_size(size):
@@ -159,3 +207,7 @@ def _parse_size(size):
     h, uh = gws.tools.units.parse(size[1], default='mm')
     # @TODO inches etc
     return int(w), int(h)
+
+
+def _parse_atts(a):
+    return {k: v.strip() for k, v in re.findall(r'(\w+)=&quot;(.+?)&quot;', a)}

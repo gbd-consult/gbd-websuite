@@ -81,7 +81,7 @@ class Object(ows.Base):
         if not nodes:
             raise gws.web.error.NotFound()
 
-        render_input = t.RenderInput(
+        render_input = t.MapRenderInput(
             background_color=None,
             items=[],
             view=gws.gis.render.view_from_bbox(
@@ -94,8 +94,8 @@ class Object(ows.Base):
         )
 
         for node in nodes:
-            render_input.items.append(t.RenderInputItem(
-                type=t.RenderInputItemType.image_layer,
+            render_input.items.append(t.MapRenderInputItem(
+                type=t.MapRenderInputItemType.image_layer,
                 layer=node.layer))
 
         renderer = gws.gis.render.Renderer()

@@ -26,7 +26,7 @@ class Object(gws.common.search.provider.Object):
             self.provider: provider.Object = layer.provider
             self.source_layers: t.List[t.SourceLayer] = self.var('source_layers')
         else:
-            self.provider: provider.Object = provider.create_shared(self, self.config)
+            self.provider: provider.Object = provider.create_shared(self.root, self.config)
             self.source_layers: t.List[t.SourceLayer] = gws.gis.source.filter_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers'),

@@ -342,7 +342,7 @@ class IFeature:
     def apply_format(self, fmt: 'IFormat', extra_context: dict = None) -> 'IFeature': pass
     def attr(self, name: str): pass
     def to_geojson(self) -> dict: pass
-    def to_svg(self, rv: 'RenderView', style: 'IStyle' = None) -> str: pass
+    def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
     def transform_to(self, crs) -> 'IFeature': pass
 
 
@@ -432,6 +432,60 @@ class IUser:
     def has_role(self, role: str) -> bool: pass
     def init_from_data(self, provider, uid, roles, attributes) -> 'IUser': pass
     def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'IUser': pass
+
+
+class MapRenderInput(Data):
+    background_color: int
+    items: List['MapRenderInputItem']
+    view: 'MapRenderView'
+
+
+class MapRenderInputItem(Data):
+    dpi: int
+    features: List['IFeature']
+    fragment: 'SvgFragment'
+    layer: 'ILayer'
+    opacity: float
+    print_as_vector: bool
+    style: 'IStyle'
+    sub_layers: List[str]
+    type: str
+
+
+class MapRenderInputItemType(Enum):
+    features = 'features'
+    fragment = 'fragment'
+    image = 'image'
+    image_layer = 'image_layer'
+    svg_layer = 'svg_layer'
+
+
+class MapRenderOutput(Data):
+    base_dir: str
+    items: List['MapRenderOutputItem']
+    view: 'MapRenderView'
+
+
+class MapRenderOutputItem(Data):
+    elements: List[str]
+    path: str
+    type: str
+
+
+class MapRenderOutputItemType(Enum):
+    image = 'image'
+    path = 'path'
+    svg = 'svg'
+
+
+class MapRenderView(Data):
+    bounds: 'Bounds'
+    center: 'Point'
+    dpi: int
+    rotation: int
+    scale: int
+    size_mm: 'Size'
+    size_px: 'Size'
 
 
 class MetaContact(Data):
@@ -716,60 +770,6 @@ class Projection(Data):
     urnx: str
 
 
-class RenderInput(Data):
-    background_color: int
-    items: List['RenderInputItem']
-    view: 'RenderView'
-
-
-class RenderInputItem(Data):
-    dpi: int
-    features: List['IFeature']
-    fragment: 'SvgFragment'
-    layer: 'ILayer'
-    opacity: float
-    print_as_vector: bool
-    style: 'IStyle'
-    sub_layers: List[str]
-    type: str
-
-
-class RenderInputItemType(Enum):
-    features = 'features'
-    fragment = 'fragment'
-    image = 'image'
-    image_layer = 'image_layer'
-    svg_layer = 'svg_layer'
-
-
-class RenderOutput(Data):
-    base_dir: str
-    items: List['RenderOutputItem']
-    view: 'RenderView'
-
-
-class RenderOutputItem(Data):
-    elements: List[str]
-    path: str
-    type: str
-
-
-class RenderOutputItemType(Enum):
-    image = 'image'
-    path = 'path'
-    svg = 'svg'
-
-
-class RenderView(Data):
-    bounds: 'Bounds'
-    center: 'Point'
-    dpi: int
-    rotation: int
-    scale: int
-    size_mm: 'Size'
-    size_px: 'Size'
-
-
 class RewriteRule(Data):
     match: 'Regex'
     options: Optional[dict]
@@ -1000,6 +1000,11 @@ class SvgFragment:
     svg: str
 
 
+class TemplateLegendMode(Enum):
+    html = 'html'
+    image = 'image'
+
+
 class TemplateOutput(Data):
     content: str
     mime: str
@@ -1138,9 +1143,10 @@ class ILayer(IObject):
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
     def mapproxy_config(self, mc): pass
     def ows_enabled(self, service: 'IOwsService') -> bool: pass
-    def render_box(self, rv: 'RenderView', client_params=None): pass
-    def render_legend(self): pass
-    def render_svg(self, rv: 'RenderView', style: 'IStyle' = None): pass
+    def render_box(self, rv: 'MapRenderView', client_params=None): pass
+    def render_html_legend(self) -> str: pass
+    def render_legend(self) -> bytes: pass
+    def render_svg(self, rv: 'MapRenderView', style: 'IStyle' = None): pass
     def render_xyz(self, x, y, z): pass
 
 
@@ -1254,6 +1260,8 @@ class ISearchProvider(IObject):
 
 class ITemplate(IObject):
     data_model: Optional['IModel']
+    legend_layer_uids: List[str]
+    legend_mode: Optional['TemplateLegendMode']
     map_size: 'Size'
     page_size: 'Size'
     path: str
@@ -1261,7 +1269,7 @@ class ITemplate(IObject):
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str: pass
     def dpi_for_quality(self, quality): pass
     def normalize_context(self, context: dict) -> dict: pass
-    def render(self, context: dict, render_output: 'RenderOutput' = None, out_path: str = None, format: str = None) -> 'TemplateOutput': pass
+    def render(self, context: dict, mro: 'MapRenderOutput' = None, out_path: str = None, legends: dict = None, format: str = None) -> 'TemplateOutput': pass
 
 
 class IWebSite(IObject):

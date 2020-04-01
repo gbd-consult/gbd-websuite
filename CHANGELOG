@@ -40,3 +40,4 @@ Version 6.0
 - support for the QGZ format
 - support for HTTP Basic authorization
 - custom configurations for auto-created qgis layers
+- print legends supported

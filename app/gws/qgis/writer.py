@@ -5,14 +5,11 @@ import bs4
 import gws
 
 
-def add_variables(path: str, d: dict) -> str:
+def add_variables(source_text: str, d: dict) -> str:
     """Inject our variables into a project"""
 
     # @TODO rewrite relative paths to absolute
-    with open(path) as fp:
-        xml = fp.read()
-
-    bs = bs4.BeautifulSoup(xml, 'lxml-xml')
+    bs = bs4.BeautifulSoup(source_text, 'lxml-xml')
 
     """
     The vars are stored like this in both 2 and 3:

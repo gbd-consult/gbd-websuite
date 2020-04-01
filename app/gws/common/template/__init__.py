@@ -38,6 +38,12 @@ class TemplateOutput(t.Data):
     path: str
 
 
+#:export
+class TemplateLegendMode(t.Enum):
+    html = 'html'
+    image = 'image'
+
+
 class FeatureFormatConfig(t.Config):
     """Feature format"""
 
@@ -58,25 +64,30 @@ class LayerFormatConfig(t.Config):
 class Object(gws.Object, t.ITemplate):
     map_size: t.Size
     page_size: t.Size
+    legend_mode: t.Optional[t.TemplateLegendMode]
+    legend_layer_uids: t.List[str]
 
     @property
     def props(self):
-        return t.TemplateProps({
-            'uid': self.uid,
-            'title': self.var('title'),
-            'qualityLevels': self.var('qualityLevels', default=[]),
-            'dataModel': self.data_model,
-            'mapWidth': self.map_size[0],
-            'mapHeight': self.map_size[1],
-            'pageWidth': self.page_size[0],
-            'pageHeight': self.page_size[1],
-        })
+        return t.TemplateProps(
+            uid=self.uid,
+            title=self.var('title'),
+            qualityLevels=self.var('qualityLevels', default=[]),
+            dataModel=self.data_model,
+            mapWidth=self.map_size[0],
+            mapHeight=self.map_size[1],
+            pageWidth=self.page_size[0],
+            pageHeight=self.page_size[1],
+        )
 
     def configure(self):
         super().configure()
 
         self.path: str = self.var('path')
         self.text: str = self.var('text')
+
+        if self.path:
+            self.root.application.monitor.add_path(self.path)
 
         uid = self.var('uid') or (gws.sha256(self.path) if self.path else self.klass.replace('.', '_'))
         self.set_uid(uid)
@@ -96,7 +107,7 @@ class Object(gws.Object, t.ITemplate):
         atts = self.data_model.apply_to_dict(context)
         return {a.name: a.value for a in atts}
 
-    def render(self, context: dict, render_output: t.RenderOutput = None, out_path: str = None, format: str = None) -> t.TemplateOutput:
+    def render(self, context: dict, mro: t.MapRenderOutput = None, out_path: str = None, legends: dict = None, format: str = None) -> t.TemplateOutput:
         pass
 
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str:

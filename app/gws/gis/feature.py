@@ -110,7 +110,7 @@ class Feature(t.IFeature):
             self.shape = self.shape.transformed_to(crs)
         return self
 
-    def to_svg(self, rv: t.RenderView, style: t.IStyle = None) -> str:
+    def to_svg(self, rv: t.MapRenderView, style: t.IStyle = None) -> str:
         if not self.shape:
             return ''
         style = self.style or style
