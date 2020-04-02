@@ -18,8 +18,19 @@ def combine_legend_urls(urls: t.List[str]) -> t.Optional[bytes]:
             gws.log.exception()
             continue
 
-    if not content:
-        return
+    return combine_legends(content)
+
+
+def combine_legend_paths(paths: t.List[str]) -> t.Optional[bytes]:
+    content = []
+
+    for path in paths:
+        try:
+            if path:
+                content.append(gws.read_file_b(path))
+        except:
+            gws.log.exception()
+            continue
 
     return combine_legends(content)
 

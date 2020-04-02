@@ -81,6 +81,7 @@ def merge(x, *args, **kwargs):
         A new object (dict or Data).
     """
 
+    x = x or {}
     d = dict(as_dict(x))
 
     for a in args:
@@ -105,6 +106,7 @@ def extend(x, *args, **kwargs):
         A new object (dict or Data).
     """
 
+    x = x or {}
     d = {}
 
     for a in args:
@@ -402,14 +404,24 @@ def lines(txt: str, comment: str = None) -> t.List[str]:
     return ls
 
 
-def read_file(path, mode='rt'):
-    with open(path, mode) as fp:
+def read_file(path: str) -> str:
+    with open(path, 'rt') as fp:
         return fp.read()
 
 
-def write_file(path, s, mode='wt'):
-    with open(path, mode) as fp:
-        return fp.write(s)
+def read_file_b(path: str) -> bytes:
+    with open(path, 'rb') as fp:
+        return fp.read()
+
+
+def write_file(path: str, s: str):
+    with open(path, 'wt') as fp:
+        fp.write(s)
+
+
+def write_file_b(path: str, s: bytes):
+    with open(path, 'wb') as fp:
+        fp.write(s)
 
 
 def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int = None, group: int = None) -> str:

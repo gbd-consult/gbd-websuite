@@ -120,8 +120,8 @@ class Object(ows.Base):
         if not nodes:
             raise gws.web.error.NotFound()
 
-        imgs = [n.layer.render_legend() for n in nodes if n.has_legend]
-        out = gws.gis.legend.combine_legends(imgs)
+        paths = [n.layer.render_legend() for n in nodes if n.has_legend]
+        out = gws.gis.legend.combine_legend_paths(paths)
         return t.HttpResponse(mime='image/png', content=out or gws.tools.misc.Pixels.png8)
 
     def handle_getfeatureinfo(self, rd: ows.Request):

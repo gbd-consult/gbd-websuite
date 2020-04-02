@@ -29,10 +29,12 @@ class Object(gws.common.template.Object):
         self.margin = 10, 10, 10, 10
         self.header = ''
         self.footer = ''
-        self.text = ''
         self.legend_use_all = False
         self.legend_mode = None
         self.legend_layer_uids = []
+
+        if self.path:
+            self.text = gws.read_file(self.path)
 
         self._parse()
 
@@ -45,21 +47,30 @@ class Object(gws.common.template.Object):
             return legends.get(layer_uid, '')
 
         map_html = gws.gis.render.output_html(mro) if mro else ''
-        context = gws.extend(context, GWS_MAP=map_html, GWS_LEGEND=legend_func)
+        context = gws.merge(context, GWS_MAP=map_html, GWS_LEGEND=legend_func)
         html = self._render_html(self.text, context)
 
         if format == 'pdf':
             if not out_path:
                 raise ValueError('out_path required for pdf')
-
-            out_path = gws.tools.pdf.render_html(
+            gws.tools.pdf.render_html(
                 html,
                 page_size=self.page_size,
                 margin=self.margin,
                 out_path=out_path
             )
-
             return t.TemplateOutput(mime=gws.tools.mime.get('pdf'), path=out_path)
+
+        if format == 'png':
+            if not out_path:
+                raise ValueError('out_path required for png')
+            gws.tools.pdf.render_html_to_png(
+                html,
+                page_size=self.page_size,
+                margin=self.margin,
+                out_path=out_path
+            )
+            return t.TemplateOutput(mime=gws.tools.mime.get('png'), path=out_path)
 
         if out_path:
             gws.write_file(out_path, html)
@@ -86,9 +97,6 @@ class Object(gws.common.template.Object):
         return in_path
 
     def _parse(self):
-        if self.path:
-            self.text = gws.read_file(self.path)
-
         # we cannot parse our html with bs4 or whatever, because it's a template,
         # and in a template, whitespace is critical, and a structural parser won't preserve it one-to-one
 

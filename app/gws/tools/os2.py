@@ -49,6 +49,8 @@ def run(cmd, input=None, echo=False, strict=True, timeout=None, **kwargs):
         rc = p.returncode
     except subprocess.TimeoutExpired:
         raise TimeoutError()
+    except Exception as e:
+        raise Error from e
 
     if rc and strict:
         raise Error('command failed', cmd, rc, out)

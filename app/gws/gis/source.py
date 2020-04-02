@@ -56,6 +56,9 @@ class LayerFilter(t.Config):
 def layer_matches(sl: t.SourceLayer, slf: LayerFilter) -> bool:
     """Check if a source layer matches the filter"""
 
+    if not slf:
+        return True
+
     s = gws.get(slf, 'level')
     if s and sl.a_level != s:
         return False

@@ -30,9 +30,10 @@ _DEFAULT_STYLE_VALUES = {
     'stoke_width': 1,
 }
 
-_DEFAULT_LEGEND_TEMPLATE = """
+_DEFAULT_LEGEND_HTML = """
     <div class="legend"><img src="{path}"/></div>
 """
+
 
 class Config(t.WithTypeAndAccess):
     """Layer configuration"""
@@ -75,6 +76,14 @@ class CustomConfig(t.WithAccess):
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
+#:export
+class LayerLegend(t.Data):
+    enabled: bool
+    path: str
+    url: str
+    template: t.ITemplate
+
+
 #:export ILayer
 class Layer(gws.Object, t.ILayer):
     @property
@@ -100,6 +109,10 @@ class Layer(gws.Object, t.ILayer):
     def has_search(self) -> bool:
         return len(self.get_children('gws.ext.search.provider')) > 0
 
+    @property
+    def has_legend(self) -> bool:
+        return self.legend.enabled
+
     @cached_property
     def own_bounds(self) -> t.Optional[t.Bounds]:
         return
@@ -107,6 +120,10 @@ class Layer(gws.Object, t.ILayer):
     @property
     def default_search_provider(self) -> t.Optional[t.ISearchProvider]:
         return
+
+    @property
+    def legend_url(self):
+        return gws.SERVER_ENDPOINT + f'/cmd/mapHttpGetLegend/layerUid/{self.uid}'
 
     def configure(self):
         super().configure()
@@ -125,12 +142,12 @@ class Layer(gws.Object, t.ILayer):
         self.can_render_xyz: bool = False
         self.can_render_svg: bool = False
 
+        self.is_group: bool = False
+
         self.is_public: bool = self.root.application.auth.get_role('all').can_use(self)
         self.is_editable: bool = False
 
-        p = self.var('legend')
-        self.has_legend: bool = p.enabled and p.url
-        self.legend_url: str = p.url
+        self.legend: t.LayerLegend = t.LayerLegend(enabled=False)
 
         self.image_format: str = self.var('imageFormat')
         self.display: str = self.var('display')
@@ -207,6 +224,11 @@ class Layer(gws.Object, t.ILayer):
 
         self.configure_search()
         self.configure_spatial_metadata()
+
+        legend = self.configure_legend()
+        if legend:
+            self.legend = legend
+            self.legend.options = self.var('legend.options', default={})
 
     def configure_metadata(self, provider_meta=None) -> t.MetaData:
         """Load metadata from the config or from a provider, whichever comes first."""
@@ -288,16 +310,67 @@ class Layer(gws.Object, t.ILayer):
     def render_svg(self, rv: t.MapRenderView, style: t.IStyle = None):
         return None
 
-    def render_legend(self) -> bytes:
-        if self.legend_url.startswith('/'):
-            return gws.read_file(self.legend_url, 'rb')
-        return gws.gis.ows.request.raw_get(self.legend_url).content
+    def configure_legend(self) -> t.LayerLegend:
+        p = self.var('legend')
+        if not p.enabled:
+            return t.LayerLegend(enabled=False)
 
-    def render_html_legend(self) -> str:
-        img = self.render_legend()
-        path = gws.PRINT_DIR + f'/legend.{self.uid}.png'
-        gws.write_file(path, img, 'wb')
-        return _DEFAULT_LEGEND_TEMPLATE.replace('{path}', path)
+        if p.path:
+            return t.LayerLegend(enabled=True, path=p.path)
+
+        if p.url:
+            return t.LayerLegend(enabled=True, url=p.url)
+
+        if p.template:
+            return t.LayerLegend(enabled=True, template=self.create_child('gws.ext.template', p.template))
+
+    def render_legend(self, context=None) -> t.Optional[str]:
+        """Render a legend and return the path to the legend image."""
+
+        if self.legend.path:
+            return self.legend.path
+
+        cache_path = gws.ensure_dir(gws.NET_CACHE_DIR + '/legend') + '/' + self.uid + '.png'
+
+        if self.legend.url:
+            try:
+                r = gws.gis.ows.request.raw_get(self.legend.url)
+            except gws.gis.ows.error.Error as e:
+                gws.log.error(f'layer {self.uid!r}: legend download failed: {e!r}')
+                self.legend.enabled = False
+                return
+
+            gws.write_file_b(cache_path, r.content)
+            self.legend.path = cache_path
+            return self.legend.path
+
+        if self.legend.template:
+            self.legend.template.render(context, out_path=cache_path, format='png')
+            self.legend.path = cache_path
+            return self.legend.path
+
+        img = self.render_legend_image(context)
+        if img:
+            gws.write_file_b(cache_path, img)
+            self.legend.path = cache_path
+            return self.legend.path
+
+        self.legend.enabled = False
+
+    def render_legend_image(self, context=None) -> bytes:
+        pass
+
+    def render_html_legend(self, context=None) -> str:
+        """Render a legend in the html format."""
+
+        if self.legend.template:
+            return self.legend.template.render(context).content
+
+        path = self.render_legend(context)
+        if path:
+            return _DEFAULT_LEGEND_HTML.replace('{path}', path)
+
+        return ''
 
     def get_features(self, bounds: t.Bounds, limit: int = 0) -> t.List[t.IFeature]:
         return []

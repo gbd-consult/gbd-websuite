@@ -434,6 +434,13 @@ class IUser:
     def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'IUser': pass
 
 
+class LayerLegend(Data):
+    enabled: bool
+    path: str
+    template: 'ITemplate'
+    url: str
+
+
 class MapRenderInput(Data):
     background_color: int
     items: List['MapRenderInputItem']
@@ -1040,6 +1047,7 @@ class IApplication(IObject):
     meta: 'MetaData'
     monitor: 'IMonitor'
     qgis_version: str
+    version: str
     web_sites: List['IWebSite']
     def find_action(self, action_type, project_uid=None): pass
 
@@ -1120,9 +1128,10 @@ class ILayer(IObject):
     has_search: bool
     image_format: str
     is_editable: bool
+    is_group: bool
     is_public: bool
     layers: List['ILayer']
-    legend_url: str
+    legend: 'LayerLegend'
     map: 'IMap'
     meta: 'MetaData'
     opacity: float
@@ -1135,6 +1144,7 @@ class ILayer(IObject):
     supports_wfs: bool
     supports_wms: bool
     title: str
+    def configure_legend(self) -> 'LayerLegend': pass
     def configure_metadata(self, provider_meta=None) -> 'MetaData': pass
     def configure_search(self): pass
     def configure_spatial_metadata(self): pass
@@ -1144,8 +1154,9 @@ class ILayer(IObject):
     def mapproxy_config(self, mc): pass
     def ows_enabled(self, service: 'IOwsService') -> bool: pass
     def render_box(self, rv: 'MapRenderView', client_params=None): pass
-    def render_html_legend(self) -> str: pass
-    def render_legend(self) -> bytes: pass
+    def render_html_legend(self, context=None) -> str: pass
+    def render_legend(self, context=None) -> Optional[str]: pass
+    def render_legend_image(self, context=None) -> bytes: pass
     def render_svg(self, rv: 'MapRenderView', style: 'IStyle' = None): pass
     def render_xyz(self, x, y, z): pass
 

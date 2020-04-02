@@ -91,7 +91,7 @@ class BaseRequest(t.IBaseRequest):
             return None
 
         data = self._wz.get_data(as_text=False, parse_form_data=False)
-        # gws.write_file(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}', data, 'wb')
+        # gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:

@@ -38,15 +38,16 @@ class Object(gws.common.layer.ImageTile):
         self.source_layer: types.SourceLayer = self._get_layer(self.var('sourceLayer'))
         self.matrix_set: types.TileMatrixSet = self._get_matrix_set()
 
-        if not self.legend_url and self.source_layer.legend:
-            self.legend_url = self.source_layer.legend
-        self.has_legend = self.var('legend.enabled') and bool(self.legend_url)
-
         self.source_style = self.var('sourceStyle')
 
     @property
     def own_bounds(self):
         return gws.gis.source.bounds_from_layers([self.source_layer], self.source_crs)
+
+    def configure_legend(self):
+        return super().configure_legend() or t.LayerLegend(
+            enabled=bool(self.source_layer.legend),
+            url=self.source_layer.legend)
 
     def mapproxy_config(self, mc):
         m0 = self.matrix_set.matrices[0]

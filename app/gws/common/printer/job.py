@@ -222,7 +222,7 @@ class _Worker:
                 format='pdf',
                 mro=renderer.output,
                 legends=self.legends,
-                out_path=out_path,
+                out_path=out_path + '.pdf',
             )
             return tr.path
 
@@ -233,7 +233,7 @@ class _Worker:
 
         map_html = gws.gis.render.output_html(renderer.output)
 
-        out_path = gws.tools.pdf.render_html(
+        gws.tools.pdf.render_html(
             '<meta charset="UTF-8"/>' + map_html,
             page_size=page_size,
             margin=None,

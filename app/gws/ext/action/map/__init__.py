@@ -121,16 +121,23 @@ class Object(gws.common.action.Object):
     def api_render_legend(self, req: t.IRequest, p: RenderLegendParams) -> t.HttpResponse:
         """Render a legend for a layer"""
 
-        layer = req.require_layer(p.layerUid)
-        img = None
+        path = self._legend_path(req, p)
+        content = gws.read_file_b(path) if path else gws.tools.misc.Pixels.png8
+        return t.HttpResponse(mime='image/png', content=content)
 
+    def http_get_legend(self, req: t.IRequest, p: RenderLegendParams) -> t.Response:
+        path = self._legend_path(req, p)
+        if path:
+            return t.FileResponse(mime='image/png', path=path)
+        return t.HttpResponse(mime='image/png', content=gws.tools.misc.Pixels.png8)
+
+    def _legend_path(self, req: t.IRequest, p: RenderLegendParams):
+        layer = req.require_layer(p.layerUid)
         if layer.has_legend:
             try:
-                img = layer.render_legend()
+                return layer.render_legend()
             except:
                 gws.log.exception()
-
-        return t.HttpResponse(mime='image/png', content=img or gws.tools.misc.Pixels.png8)
 
     def api_describe_layer(self, req: t.IRequest, p: DescribeLayerParams) -> DescribeLayerResponse:
         layer = req.require_layer(p.layerUid)
@@ -165,6 +172,3 @@ class Object(gws.common.action.Object):
     def http_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> t.HttpResponse:
         res = self.api_get_features(req, p)
         return t.HttpResponse(mime='application/json', content=gws.tools.json2.to_string(res))
-
-    def http_get_legend(self, req: t.IRequest, p: RenderLegendParams) -> t.HttpResponse:
-        return self.api_render_legend(req, p)

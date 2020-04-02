@@ -78,7 +78,7 @@ def save_chunk(uid: str, name: str, content: bytes, total_size: int, chunk_numbe
     if chunk_number < 1 or chunk_number > status.chunk_count:
         raise Error(f'upload {uid!r}: invalid chunk number')
 
-    gws.write_file(f'{dir}/{uid}.{chunk_number}', content, 'wb')
+    gws.write_file_b(f'{dir}/{uid}.{chunk_number}', content)
     return uid
 
 

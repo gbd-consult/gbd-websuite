@@ -40,8 +40,6 @@ class Object(gws.common.layer.Image):
         if not self.resolutions:
             raise gws.Error(f'no resolutions in {self.uid!r}')
 
-        self._configure_legend()
-
     @property
     def default_search_provider(self):
         source_layers = gws.gis.source.filter_layers(
@@ -91,28 +89,10 @@ class Object(gws.common.layer.Image):
 
         self.mapproxy_layer_config(mc, source_uid)
 
-    def render_legend(self):
-        if self.legend_url:
-            return super().render_legend()
-        return gws.gis.legend.combine_legend_urls(self.source_legend_urls)
+    def configure_legend(self):
+        legend = super().configure_legend() or t.LayerLegend(enabled=True)
+        legend.source_legends = [sl.legend for sl in self.source_layers if sl.legend]
+        return legend
 
-    def _configure_legend(self):
-        self.has_legend = False
-
-        if not self.var('legend.enabled'):
-            return
-
-        url = self.var('legend.url')
-        if url:
-            self.has_legend = True
-            self.legend_url = url
-            return
-
-        # if no legend.url is given, use a combined source legend (see render_legend above)
-
-        urls = [sl.legend for sl in self.source_layers if sl.legend]
-        if not urls:
-            return
-
-        self.has_legend = True
-        self.source_legend_urls = urls
+    def render_legend_image(self, context=None):
+        return gws.gis.legend.combine_legend_urls(self.legend.source_legends)

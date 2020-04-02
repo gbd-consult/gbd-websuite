@@ -27,7 +27,7 @@ class Config(gws.common.layer.ImageConfig):
     layerConfig: t.Optional[t.List[gws.common.layer.CustomConfig]]  #: custom configurations for specific layers
 
 
-class Object(gws.common.layer.Layer):
+class Object(gws.common.layer.Group):
     def configure(self):
         super().configure()
 
@@ -40,9 +40,6 @@ class Object(gws.common.layer.Layer):
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))
-
-        self.supports_wms = True
-        self.supports_wfs = True
 
         # by default, take the top-level layers as groups
         slf = self.var('rootLayers') or gws.gis.source.LayerFilter(level=1)
@@ -63,27 +60,6 @@ class Object(gws.common.layer.Layer):
 
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
         self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
-
-        self.has_legend = self.legend_url or any(la.has_legend for la in self.layers)
-
-
-    def render_legend(self):
-        if self.legend_url:
-            return super().render_legend()
-        content = [
-            la.render_legend()
-            for la in self.layers
-            if la.has_legend
-        ]
-        return gws.gis.legend.combine_legends(content)
-
-    @property
-    def props(self):
-        return gws.merge(super().props, type='group', layers=self.layers)
-
-    def ows_enabled(self, service):
-        return (super().ows_enabled(service)
-                and any(la.ows_enabled(service) for la in self.layers))
 
     def _layer(self, sl: t.SourceLayer, depth: int):
         if self.var('excludeLayers') and gws.gis.source.layer_matches(sl, self.var('excludeLayers')):
@@ -124,7 +100,8 @@ class Object(gws.common.layer.Layer):
         custom = [gws.strip(c) for c in self.custom_layer_config if gws.gis.source.layer_matches(sl, c.applyTo)]
         if custom:
             la = gws.deep_merge(la, *custom)
-            delattr(la, 'applyTo')
+            if la.applyTo:
+                delattr(la, 'applyTo')
 
         return gws.compact(la)
 

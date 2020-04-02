@@ -69,10 +69,9 @@ class Object(gws.common.template.Object):
             params['map0:extent'] = mro.view.bounds.extent
             params['map0:rotation'] = mro.view.rotation
 
-        resp = server.request(self.root, params)
-
+        r = server.request(self.root, params)
         qgis_pdf_path = out_path + '_qgis.pdf'
-        gws.write_file(qgis_pdf_path, resp.content, 'wb')
+        gws.write_file_b(qgis_pdf_path, r.content)
 
         if not mro:
             return qgis_pdf_path
@@ -88,17 +87,18 @@ class Object(gws.common.template.Object):
         map_html = gws.gis.render.output_html(mro)
         html = f'<meta charset="utf8"/><div style="{css}">{map_html}</div>'
 
-        map_path = gws.tools.pdf.render_html(
+        map_path = out_path + '.map.pdf'
+        gws.tools.pdf.render_html(
             html,
             page_size=self.page_size,
             margin=None,
-            out_path=out_path
+            out_path=map_path
         )
 
         # merge qgis pdfs + map pdf
         # NB: qgis is ABOVE our map, so the qgis template/map must be transparent!
 
-        out_path = gws.tools.pdf.merge(map_path, qgis_pdf_path, out_path)
+        gws.tools.pdf.merge(map_path, qgis_pdf_path, out_path)
 
         return t.TemplateOutput(mime=gws.tools.mime.get('pdf'), path=out_path)
 

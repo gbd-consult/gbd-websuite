@@ -22,7 +22,7 @@ def create_shared(root: t.IRootObject, cfg) -> 'Object':
 
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
 
-_LEGEND_DEFAULTS = {
+_DEFAULT_LEGEND_PARAMS = {
     'BOXSPACE': 2,
     'ICONLABELSPACE': 2,
     'ITEMFONTBOLD': False,
@@ -55,7 +55,7 @@ class Object(gws.common.ows.provider.Object):
     def configure(self):
         super().configure()
 
-        self.legend_params = gws.merge(_LEGEND_DEFAULTS, self.root.var('server.qgis.legend'))
+        self.legend_params = gws.merge(_DEFAULT_LEGEND_PARAMS, self.root.var('server.qgis.legend'))
 
         self.path = self.var('path')
         self.url = 'http://%s:%s' % (
@@ -136,15 +136,16 @@ class Object(gws.common.ows.provider.Object):
         gws.p('QGIS/WMS QUERY', p, f'FOUND={len(found)}')
         return found
 
-    def get_legend(self, source_layers):
+    def get_legend(self, source_layers, options=None):
         layers = ','.join(sl.name for sl in source_layers)
+
         params = gws.merge(self.legend_params, {
             'MAP': self.path,
             'LAYER': layers,
             'FORMAT': 'image/png',
             'STYLE': '',
             'VERSION': '1.1.1',
-        })
+        }, options)
 
         resp = gws.gis.ows.request.get(
             self.url,

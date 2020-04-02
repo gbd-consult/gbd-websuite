@@ -25,32 +25,6 @@ class Config(gws.common.layer.ImageConfig):
 
 
 class Object(gws.common.layer.Image):
-    def configure(self):
-        super().configure()
-
-        self.provider: provider.Object = provider.create_shared(self.root, self.config)
-        self.source_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
-
-        self.source_layers = gws.gis.source.filter_layers(
-            self.provider.source_layers,
-            self.var('sourceLayers'),
-        )
-
-        if not self.source_layers:
-            raise gws.Error(f'no layers found in {self.uid!r}')
-
-        self.meta = self.configure_metadata(
-            self.source_layers[0].meta if len(self.source_layers) == 1 else None)
-        self.title = self.meta.title
-
-        if not self.var('zoom'):
-            zoom = gws.gis.zoom.config_from_source_layers(self.source_layers)
-            if zoom:
-                self.resolutions = gws.gis.zoom.resolutions_from_config(
-                    zoom, self.resolutions)
-
-        self.has_legend = self.var('legend.enabled')
-
     @property
     def description(self):
         ctx = {
@@ -84,6 +58,30 @@ class Object(gws.common.layer.Image):
                 layer=self,
                 source_layers=source_layers))
 
+    def configure(self):
+        super().configure()
+
+        self.provider: provider.Object = provider.create_shared(self.root, self.config)
+        self.source_crs = gws.gis.util.best_crs(self.map.crs, self.provider.supported_crs)
+
+        self.source_layers = gws.gis.source.filter_layers(
+            self.provider.source_layers,
+            self.var('sourceLayers'),
+        )
+
+        if not self.source_layers:
+            raise gws.Error(f'no layers found in {self.uid!r}')
+
+        self.meta = self.configure_metadata(
+            self.source_layers[0].meta if len(self.source_layers) == 1 else None)
+        self.title = self.meta.title
+
+        if not self.var('zoom'):
+            zoom = gws.gis.zoom.config_from_source_layers(self.source_layers)
+            if zoom:
+                self.resolutions = gws.gis.zoom.resolutions_from_config(
+                    zoom, self.resolutions)
+
     def render_box(self, rv: t.MapRenderView, client_params=None):
         forward = {}
 
@@ -103,12 +101,11 @@ class Object(gws.common.layer.Image):
             rv.size_px[1],
             forward)
 
-    def render_legend(self):
-        if not self.has_legend:
-            return
-        if self.legend_url:
-            return super().render_legend()
-        return self.provider.get_legend(self.source_layers)
+    def configure_legend(self):
+        return super().configure_legend() or t.LayerLegend(enabled=True)
+
+    def render_legend_image(self, context=None):
+        return self.provider.get_legend(self.source_layers, self.legend.options)
 
     def mapproxy_config(self, mc, options=None):
         # NB: qgis caps layers are always top-down

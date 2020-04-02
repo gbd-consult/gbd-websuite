@@ -6,8 +6,7 @@ import gws.tools.units
 
 
 def render_html(html, page_size, margin, out_path):
-    with open(out_path + '.html', 'wb') as fp:
-        fp.write(gws.as_bytes(html))
+    gws.write_file_b(out_path + '.html', gws.as_bytes(html))
 
     if not margin:
         margin = [0, 0, 0, 0]
@@ -25,13 +24,42 @@ def render_html(html, page_size, margin, out_path):
         '--page-height', str(page_size[1]),
         'page',
         out_path + '.html',
-        out_path + '.pdf',
+        out_path,
     ]
 
     gws.log.debug(cmd)
     gws.tools.os2.run(cmd, echo=False)
 
-    return out_path + '.pdf'
+    return out_path
+
+
+def render_html_to_png(html, page_size, margin, out_path):
+    if margin:
+        html = f"""
+            <body style="margin:{margin[0]}px {margin[1]}px {margin[2]}px {margin[3]}px">
+                {html}
+            </body>
+        """
+
+    gws.write_file_b(out_path + '.html', gws.as_bytes(html))
+
+    cmd = [
+        'wkhtmltoimage',
+        '--disable-javascript',
+        '--disable-smart-width',
+        '--width', str(page_size[0]),
+        '--height', str(page_size[1]),
+        '--crop-w', str(page_size[0]),
+        '--crop-h', str(page_size[1]),
+        '--transparent',
+        out_path + '.html',
+        out_path,
+    ]
+
+    gws.log.debug(cmd)
+    gws.tools.os2.run(cmd, echo=False)
+
+    return out_path
 
 
 def merge(a_path, b_path, out_path):
@@ -90,8 +118,10 @@ def page_count(path):
 def to_image(in_path, out_path, size, format):
     if format == 'png':
         device = 'png16m'
-    if format == 'jpeg' or format == 'jpg':
+    elif format == 'jpeg' or format == 'jpg':
         device = 'jpeg'
+    else:
+        raise ValueError(f'uknown format {format!r}')
 
     cmd = [
         'gs',

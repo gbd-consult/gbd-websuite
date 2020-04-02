@@ -132,10 +132,7 @@ def type_from_path(path):
 def config_from_path(path):
     tt = type_from_path(path)
     if tt:
-        return t.Config({
-            'type': tt,
-            'path': path
-        })
+        return t.Config(type=tt, path=path)
 
 
 def from_path(path, tree):

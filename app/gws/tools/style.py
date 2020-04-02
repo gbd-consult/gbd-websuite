@@ -213,7 +213,7 @@ def _to_data_url(val):
     if re.match(r'^https?:', val):
         svg = gws.tools.net.http_request(val).content
     else:
-        svg = gws.read_file(val, 'rb')
+        svg = gws.read_file_b(val)
     return 'data:image/svg+xml;base64,' + base64.standard_b64encode(svg).decode('utf8')
 
 

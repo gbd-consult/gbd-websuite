@@ -49,8 +49,13 @@ class EditConfig(t.WithAccess):
 
 
 class LegendConfig(t.Config):
-    enabled: bool = True
-    url: t.Optional[t.Url]
+    """Layer legend confuguration."""
+
+    enabled: bool = True  #: the legend is enabled
+    url: t.Optional[t.Url]  #: url of the legend image
+    path: t.Optional[t.FilePath]  #: path of the legend image
+    template: t.Optional[t.ext.template.Config]  #: template for an HTML legend
+    options: t.Optional[dict]  #: provider-dependent legend options
 
 
 class FlattenConfig(t.Config):

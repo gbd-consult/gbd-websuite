@@ -92,14 +92,13 @@ class Object(gws.Object, t.IApplication):
 
         self.monitor: t.IMonitor  = t.cast(t.IMonitor, self.create_child(gws.server.monitor.Object, {}))
 
-        self.qgis_version = ''
-        self.version = gws.VERSION
+        self.version: str = gws.VERSION
+        self.qgis_version: str = gws.qgis.server.version()
         self.web_sites: t.List[t.IWebSite] = []
 
         self.set_uid('APP')
 
         self.defaults = self.var('defaults')
-        self.qgis_version = gws.qgis.server.version()
 
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
 
@@ -122,8 +121,8 @@ class Object(gws.Object, t.IApplication):
         for p in self.var('helpers', default=[]):
             self.create_child('gws.ext.helper', p)
 
-        self.auth: t.IAuthManager = self.create_child(gws.common.auth.Object, self.var('auth', default=t.Data()))
-        self.api: t.IApi = self.create_child(gws.common.api.Object, self.var('api', default=t.Data()))
+        self.auth: t.IAuthManager = t.cast(t.IAuthManager, self.create_child(gws.common.auth.Object, self.var('auth', default=t.Data())))
+        self.api: t.IApi = t.cast(t.IApi, self.create_child(gws.common.api.Object, self.var('api', default=t.Data())))
 
         p = self.var('client')
         self.client: t.Optional[t.IClient] = self.create_child(gws.common.client.Object, p) if p else None
