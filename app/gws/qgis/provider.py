@@ -137,12 +137,14 @@ class Object(gws.common.ows.provider.Object):
         return found
 
     def get_legend(self, source_layers, options=None):
-        layers = ','.join(sl.name for sl in source_layers)
+        # qgis legends are rendered bottom-up (rightmost first)
+        # we need the straight order (leftmost first), like in the config
 
         params = gws.merge(self.legend_params, {
             'MAP': self.path,
-            'LAYER': layers,
+            'LAYER': ','.join(sl.name for sl in reversed(source_layers)),
             'FORMAT': 'image/png',
+            'TRANSPARENT': True,
             'STYLE': '',
             'VERSION': '1.1.1',
         }, options)

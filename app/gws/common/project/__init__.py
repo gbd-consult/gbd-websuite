@@ -60,12 +60,12 @@ class Object(gws.Object, t.IProject):
             self.root.application.meta)
 
         # title at the top level config preferred
-        if self.var('title'):
-            self.meta.title = self.var('title')
-        self.title: str = self.meta.title
+        title = self.var('title') or self.meta.title or self.uid
+        self.meta.title = title
+        self.title: str = title
 
         self.locales: t.List[str] = self.var('locales', parent=True, default=['en_CA'])
-        self.assets_root: t.DocumentRoot = gws.web.site.document_root(self.var('assets'))
+        self.assets_root: t.Optional[t.DocumentRoot] = gws.web.site.document_root(self.var('assets'))
 
         p = self.var('map')
         self.map: t.Optional[t.IMap] = self.create_child(gws.common.map.Object, p) if p else None
@@ -79,7 +79,12 @@ class Object(gws.Object, t.IProject):
         self.printer: t.Optional[t.IPrinter] = self.create_child(gws.common.printer.Object, p) if p else None
 
         p = self.var('description')
-        self.description_template: t.ITemplate = self.create_child('gws.ext.template', p or gws.common.template.builtin_config('project_description'))
+        self.description_template: t.ITemplate = (
+            self.root.create_object('gws.ext.template', p) if p
+            else self.root.create_shared_object(
+                'gws.ext.template',
+                'default_project_description',
+                gws.common.template.builtin_config('project_description')))
 
         p = self.var('search')
         if p and p.enabled and p.providers:
@@ -87,7 +92,7 @@ class Object(gws.Object, t.IProject):
                 self.create_child('gws.ext.search.provider', s)
 
         p = self.var('api')
-        self.api: t.IApi = self.create_child(gws.common.api.Object, p) if p else None
+        self.api: t.Optional[t.IApi] = self.create_child(gws.common.api.Object, p) if p else None
 
         p = self.var('client')
         if p:

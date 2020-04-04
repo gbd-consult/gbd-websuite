@@ -84,10 +84,7 @@ class Object(gws.Object, t.IClient):
 
     @property
     def props(self):
-        return Props({
-            'options': self.options,
-            'elements': self.children,
-        })
+        return Props(options=self.options or {}, elements=self.children)
 
 
 def _find_element(elements, tag):

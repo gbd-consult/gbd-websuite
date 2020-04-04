@@ -135,21 +135,15 @@ def config_from_path(path):
         return t.Config(type=tt, path=path)
 
 
-def from_path(path, tree):
+def from_path(path, root):
     cnf = config_from_path(path)
     if cnf:
-        return tree.create_object('gws.ext.template', cnf)
+        return root.create_object('gws.ext.template', cnf)
 
 
 def builtin_config(name):
     # @TODO: cache
     # @TODO: do not hardcode template type
-
-    if name == 'feature_format':
-        return FeatureFormatConfig({
-            'description': builtin_config('feature_description'),
-            'teaser': builtin_config('feature_teaser')
-        })
 
     path = os.path.dirname(__file__) + '/builtin_templates/' + name + '.cx.html'
     return config_from_path(path)

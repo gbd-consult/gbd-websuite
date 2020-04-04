@@ -12,7 +12,8 @@ class Config(t.Config):
     """Feature style"""
 
     type: t.StyleType  #: style type
-    text: str  #: raw style content / selector
+    text: t.Optional[str]  #: raw style content or a selector
+    values: t.Optional[dict]  #: style values
 
 
 #:export
@@ -37,7 +38,10 @@ def from_props(p: t.StyleProps) -> t.IStyle:
 
 
 def from_config(c: Config) -> t.IStyle:
-    return from_props(t.StyleProps(type=c.type, text=c.text))
+    if c.values:
+        return from_props(t.StyleProps(type=c.type, values=c.values))
+    if c.text:
+        return from_props(t.StyleProps(type=c.type, text=c.text))
 
 
 #:export IStyle

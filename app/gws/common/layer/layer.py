@@ -170,19 +170,15 @@ class Layer(gws.Object, t.ILayer):
             else self.root.create_shared_object(
                 'gws.ext.template',
                 'default_layer_description',
-                gws.common.template.builtin_config('layer_description')
-            )
-        )
+                gws.common.template.builtin_config('layer_description')))
 
         p = self.var('featureFormat')
+        default_fmt = t.Data(
+            teaser=gws.common.template.builtin_config('feature_teaser'),
+            description = gws.common.template.builtin_config('feature_description'))
         self.feature_format: t.IFormat = (
-            self.root.create_object('gws.common.format', p) if p
-            else self.root.create_shared_object(
-                'gws.common.format',
-                'default_feature_description',
-                gws.common.template.builtin_config('feature_format')
-            )
-        )
+            self.root.create_object('gws.common.format', gws.extend(p, default_fmt)) if p
+            else self.root.create_shared_object('gws.common.format', 'default_feature_format', default_fmt))
 
         p = self.var('dataModel')
         self.data_model: t.Optional[t.IModel] = (self.create_child('gws.common.model', p) if p else None)
@@ -190,6 +186,8 @@ class Layer(gws.Object, t.ILayer):
         self.resolutions: t.List[float] = gws.gis.zoom.resolutions_from_config(
             self.var('zoom'),
             self.map.resolutions)
+
+        # NB: the extent will be configured later on in map._configure_extent
         self.extent: t.Optional[t.Extent] = None
 
         self.opacity: float = self.var('opacity')
@@ -200,8 +198,7 @@ class Layer(gws.Object, t.ILayer):
         p = self.var('style')
         self.style: t.IStyle = (
             gws.common.style.from_config(p) if p
-            else gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES))
-        )
+            else gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
 
         self.supports_wms: bool = False
         self.supports_wfs: bool = False

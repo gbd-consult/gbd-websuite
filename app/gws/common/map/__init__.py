@@ -115,57 +115,63 @@ class Object(gws.Object, t.IMap):
         })
 
 
-def _configure_extent(obj, target_crs, parent_explicit_extent):
-    # explicit extent provided in the config
+def _configure_extent(obj, target_crs, default_ext):
+    layers = gws.get(obj, 'layers') or []
 
-    ee = obj.var('extent')
-    if ee and not gws.gis.extent.valid(ee):
-        raise gws.Error(f'invalid extent {ee} for {obj.uid!r}')
+    # we have an explicit extent provided in the config
 
-    # if this is a group (or a map itself), configure extents for sublayers
-    # using this (or parent's) explicit extent as default
-    # and merge sublayers' extents unless there's an explicit ext.
+    config_ext = obj.var('extent')
 
-    layers = gws.get(obj, 'layers')
+    if config_ext:
+        if not gws.gis.extent.valid(config_ext):
+            raise gws.Error(f'{obj.uid!r}: invalid extent {config_ext!r}')
+
+        # configure sublayers using config_ext as a default
+        for la in layers:
+            _configure_extent(la, target_crs, config_ext)
+
+        obj.extent = config_ext
+        return obj.extent
 
     if layers:
-        exts = []
+        # no config extent, configure sublayers using the current default extent
+        # set obj.extent to the sum of sublayers' extents
+
+        layer_ext_list = []
         for la in layers:
-            le = _configure_extent(la, target_crs, ee or parent_explicit_extent)
-            if le:
-                exts.append(le)
-        if ee:
-            obj.extent = ee
-        elif exts:
-            obj.extent = gws.gis.extent.merge(exts)
+            layer_ext = _configure_extent(la, target_crs, default_ext)
+            if layer_ext:
+                layer_ext_list.append(layer_ext)
+
+        if layer_ext_list:
+            obj.extent = gws.gis.extent.merge(layer_ext_list)
+        else:
+            obj.extent = default_ext
         return obj.extent
 
-    # terminal layer, has an explicit extent - just use it
+    # obj is a leaf layer and has no configured extent
+    # check if it has an own extent (from its source)
 
-    if ee:
-        obj.extent = ee
-        return obj.extent
+    own_bounds: t.Bounds = gws.get(obj, 'own_bounds')
 
-    # terminal layer, has its own extent and optionally an extent buffer
-
-    own: t.Bounds = gws.get(obj, 'own_bounds')
-    buf = obj.var('extentBuffer', parent=True)
-
-    if own:
-        oe = own.extent
+    if own_bounds:
+        own_ext = own_bounds.extent
+        buf = obj.var('extentBuffer', parent=True)
         if buf:
-            oe = gws.gis.extent.buffer(oe, buf)
-        oe = gws.gis.extent.transform(oe, own.crs, target_crs)
-        obj.extent = oe
+            own_ext = gws.gis.extent.buffer(own_ext, buf)
+        own_ext = gws.gis.extent.transform(own_ext, own_bounds.crs, target_crs)
+        obj.extent = own_ext
         return obj.extent
 
-    # terminal layer, use the parent's explicit extent
+    # obj is a leaf layer and has neither configured nor own extent
+    # try using the default extent
 
-    if parent_explicit_extent:
-        obj.extent = parent_explicit_extent
+    if default_ext:
+        obj.extent = default_ext
         return obj.extent
 
-    raise gws.Error(f'cannot compute layer extent for {obj.uid!r}')
+    # no extent can be computed, it will be set to the map extent later on
+    return None
 
 
 def _set_default_extent(obj, extent):

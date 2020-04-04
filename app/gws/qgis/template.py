@@ -85,7 +85,7 @@ class Object(gws.common.template.Object):
         ])
 
         map_html = gws.gis.render.output_html(mro)
-        html = f'<meta charset="utf8"/><div style="{css}">{map_html}</div>'
+        html = f'<div style="{css}">{map_html}</div>'
 
         map_path = out_path + '.map.pdf'
         gws.tools.pdf.render_html(

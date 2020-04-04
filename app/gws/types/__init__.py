@@ -1216,8 +1216,8 @@ class IPrinter(IObject):
 
 
 class IProject(IObject):
-    api: 'IApi'
-    assets_root: 'DocumentRoot'
+    api: Optional['IApi']
+    assets_root: Optional['DocumentRoot']
     client: Optional['IClient']
     description_template: 'ITemplate'
     locales: List[str]

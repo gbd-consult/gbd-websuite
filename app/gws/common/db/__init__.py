@@ -3,11 +3,16 @@ import gws.types as t
 
 
 def require_provider(obj: t.IObject, klass='gws.ext.db.provider') -> t.IDbProvider:
-    s = obj.var('db')
-    prov = t.cast(t.IDbProvider, obj.root.find('gws.ext.db.provider', s) if s else obj.root.find_first(klass))
-    if not prov:
-        raise gws.Error(f'{obj.uid}: db provider not found')
-    return prov
+    uid = obj.var('db')
+    if uid:
+        prov = obj.root.find('gws.ext.db.provider', uid)
+        if not prov:
+            raise gws.Error(f'{obj.uid}: db provider {uid!r} not found')
+    else:
+        prov = obj.root.find_first(klass)
+        if not prov:
+            raise gws.Error(f'{obj.uid}: db provider {klass!r} not found')
+    return t.cast(t.IDbProvider, prov)
 
 
 class SqlTableConfig(t.Config):

@@ -6,6 +6,8 @@ import gws.tools.units
 
 
 def render_html(html, page_size, margin, out_path):
+    if 'charset' not in html:
+        html = '<meta charset="utf8"/>' + html
     gws.write_file_b(out_path + '.html', gws.as_bytes(html))
 
     if not margin:
@@ -41,6 +43,8 @@ def render_html_to_png(html, page_size, margin, out_path):
             </body>
         """
 
+    if 'charset' not in html:
+        html = '<meta charset="utf8"/>' + html
     gws.write_file_b(out_path + '.html', gws.as_bytes(html))
 
     cmd = [
