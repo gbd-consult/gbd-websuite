@@ -30,17 +30,15 @@ def real_config_path(config_path=None):
 def parse_and_activate(path=None) -> t.IRootObject:
     path = real_config_path(path)
     gws.log.info(f'using config "{path}"...')
-    cfg = parser.parse_main(path)
+    cfg, cfg_paths = parser.parse_main(path)
     root = activate(cfg)
 
-    project_pattern = f'({parser.config_path_pattern})|(\\.qgs$)'
-
-    root.application.monitor.add_path(path)
-
-    for p in cfg.get('projectPaths') or []:
-        root.application.monitor.add_directory(p, project_pattern)
-    for d in cfg.get('projectDirs') or []:
-        root.application.monitor.add_directory(d, project_pattern)
+    for p in set(cfg_paths):
+        root.application.monitor.add_path(p)
+    for p in cfg.projectPaths:
+        root.application.monitor.add_path(p)
+    for d in cfg.projectDirs:
+        root.application.monitor.add_directory(d, parser.config_path_pattern)
 
     return root
 

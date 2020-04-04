@@ -31,52 +31,55 @@ def parse(dct, type_name, source_path=''):
 def parse_main(path):
     """Read and parse the main config file"""
 
-    dct = _read(path) or {}
+    dct, cfg_paths = _read(path)
 
     prj_configs = []
+
     for pc in dct.pop('projects', []):
         prj_configs.append([pc, path])
 
     gws.log.info('parsing main configuration...')
-    cfg = parse(dct, 'gws.common.application.Config', path)
+    app = parse(dct, 'gws.common.application.Config', path)
 
-    prj_paths = cfg.get('projectPaths') or []
-    for dirname in cfg.get('projectDirs') or []:
+    app.projectPaths = app.projectPaths or []
+    app.projectDirs = app.projectDirs or []
+
+    prj_paths = app.projectPaths
+    for dirname in app.projectDirs:
         prj_paths.extend(gws.tools.os2.find_files(dirname, config_path_pattern))
 
     for prj_path in sorted(set(prj_paths)):
-        pcs = _read(prj_path)
-        if not isinstance(pcs, list):
-            pcs = [pcs]
-        for pc in pcs:
+        prj_cfg, prj_cfg_paths = _read(prj_path)
+        cfg_paths.extend(prj_cfg_paths)
+
+        if not isinstance(prj_cfg, list):
+            prj_cfg = [prj_cfg]
+        for pc in prj_cfg:
             prj_configs.append([pc, prj_path])
 
-    cfg.projects = []
+    app.projects = []
 
     for pc, prj_path in prj_configs:
-        try:
-            uid = pc.get('uid') or pc.get('title')
-        except:
-            uid = 'unknown'
+        uid = pc.get('uid') or pc.get('title') or '???'
         gws.log.info(f'parsing project {uid!r}...')
         if pc.get('multi'):
-            cfg.projects.extend(_parse_multi_project(pc, prj_path))
+            app.projects.extend(_parse_multi_project(pc, prj_path))
         else:
-            cfg.projects.append(parse(pc, 'gws.common.project.Config', path))
+            app.projects.append(parse(pc, 'gws.common.project.Config', prj_path))
 
-    return cfg
+    return app, cfg_paths
 
 
 def _read(path):
-    if not os.path.exists(path):
+    if not os.path.isfile(path):
         raise error.ParseError('file not found', path, '', '')
     try:
-        dct = _read2(path)
+        dct, paths = _read2(path)
     except Exception as e:
         raise error.ParseError('read error: %s' % e, path, '', '') from e
 
     _save_intermediate(path, json.dumps(dct, indent=4), 'json')
-    return dct
+    return dct, paths
 
 
 def _read2(path):
@@ -84,28 +87,41 @@ def _read2(path):
         mod_name = 'gws.cfg.' + gws.as_uid(path)
         mod = gws.tools.misc.load_source(path, mod_name)
         fn = getattr(mod, config_function_name)
-        return fn()
+        dct = fn()
+        return dct, [path]
 
     if path.endswith('.json'):
         with open(path, encoding='utf8') as fp:
-            return json.load(fp)
+            dct = json.load(fp)
+        return dct, [path]
 
     if path.endswith('.yaml'):
         with open(path, encoding='utf8') as fp:
-            return yaml.load(fp)
+            dct = yaml.load(fp)
+        return dct, [path]
 
     if path.endswith('.cx'):
         return _parse_cx_config(path)
 
 
 def _parse_cx_config(path):
+    paths = {path}
+
     def _err(exc, path, line):
         return _syntax_error(gws.read_file(path), repr(exc), line)
+
+    def _finder(cur_path, p):
+        if not os.path.isabs(p):
+            d = os.path.dirname(cur_path)
+            p = os.path.abspath(os.path.join(d, p))
+        paths.add(p)
+        return p
 
     try:
         tpl = chartreux.compile_path(
             path,
             syntax={'start': '{{', 'end': '}}'},
+            finder=_finder
         )
     except chartreux.compiler.Error as e:
         return _syntax_error(gws.read_file(path), e.message, e.line)
@@ -118,9 +134,11 @@ def _parse_cx_config(path):
     _save_intermediate(path, src, 'slon')
 
     try:
-        return slon.loads(src, as_object=True)
+        dct = slon.loads(src, as_object=True)
     except slon.DecodeError as e:
         return _syntax_error(src, e.args[0], e.args[1])
+
+    return dct, list(paths)
 
 
 def _syntax_error(src, message, line, context=10):
