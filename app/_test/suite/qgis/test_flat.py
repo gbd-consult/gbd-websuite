@@ -92,3 +92,21 @@ def test_render_multi():
 
     r = u.req(url, params={'width': 300, 'height': 300})
     assert True is u.response_image_matches(r, '/data/response_images/dus_200x200.png')
+
+
+def test_legend():
+    # auto-legend multiple layers
+
+    r = u.cmd('mapRenderLegend', {
+        'layerUid': 'a.map.qgis_flat_dus',
+    })
+
+    assert True is u.response_image_matches(r, '/data/response_images/legend_dus_1_dus_2.png')
+
+    # legend with options
+
+    r = u.cmd('mapRenderLegend', {
+        'layerUid': 'a.map.qgis_flat_ghana',
+    })
+
+    assert True is u.response_image_matches(r, '/data/response_images/legend_ghana.png')

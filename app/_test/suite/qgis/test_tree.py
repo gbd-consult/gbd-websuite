@@ -178,3 +178,13 @@ def test_tree_qgz():
     r = u.cmd('projectInfo', {'projectUid': 'tree_qgz'}).json()
     tree = layer_tree_structure(r['project']['map']['layers'][0])
     assert tree == exp
+
+
+def test_legend():
+    # auto-legend multiple layers
+
+    r = u.cmd('mapRenderLegend', {
+        'layerUid': 'tree_full.map.t',
+    })
+
+    assert True is u.response_image_matches(r, '/data/response_images/legend_tree.png')

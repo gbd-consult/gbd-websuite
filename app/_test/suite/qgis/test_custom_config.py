@@ -15,12 +15,12 @@ def test_custom_config_for_multiple_layers():
         'layerUid': 'custom_config.map.squares_ny_2263',
     })
 
-    assert True is u.response_image_matches(r, '/data/web/legend1.png')
+    assert True is u.response_image_matches(r, '/data/response_images/custom_legend_1.png')
     r = u.cmd('mapRenderLegend', {
         'layerUid': 'custom_config.map.squares_dus1_3857',
     })
 
-    assert True is u.response_image_matches(r, '/data/web/legend1.png')
+    assert True is u.response_image_matches(r, '/data/response_images/custom_legend_1.png')
 
 
 def test_custom_config_override():
@@ -29,4 +29,4 @@ def test_custom_config_override():
         'layerUid': 'custom_config.map.squares_dus2_3857',
     })
 
-    assert True is u.response_image_matches(r, '/data/web/legend2.png')
+    assert True is u.response_image_matches(r, '/data/response_images/custom_legend_2.png')

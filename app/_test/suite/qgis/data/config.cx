@@ -9,11 +9,6 @@ api.actions+ { type "search" }
 api.actions+ { type "asset" }
 api.actions+ { type "project" }
 
-web.sites.0 {
-    root.dir "/data/web"
-}
-
-
 ## the structure of `/data/test_geojson_postgres.qgs` is as follows
 ##
 ##  layer-tree-group name="GroupOne"
@@ -41,6 +36,21 @@ projects+ {
         type "qgisflat"
         path "/common/qgis/test_geojson_postgres.qgs"
         sourceLayers.names ["points_ghana_25832"]
+        legend.options {
+            'BOXSPACE': 20,
+            'ICONLABELSPACE': 30,
+            'ITEMFONTBOLD': True,
+            'ITEMFONTCOLOR': '#ff0000',
+            'ITEMFONTITALIC': True,
+            'ITEMFONTSIZE': 20,
+            'LAYERFONTBOLD': True,
+            'LAYERFONTCOLOR': '#00ff00',
+            'LAYERFONTITALIC': True,
+            'LAYERFONTSIZE': 30,
+            'SYMBOLHEIGHT': 16,
+            'SYMBOLSPACE': 40,
+            'SYMBOLWIDTH': 16,
+        }
     }
     map.layers+ {
         title "qgis_flat_dus"
@@ -147,12 +157,12 @@ projects+ {
             {
                 ## applies to squares_ny_2263, squares_dus1_3857, squares_dus2_3857
                 applyTo.pattern "grouptwoone"
-                legend.url "/data/web/legend1.png"
+                legend.path "/data/response_images/custom_legend_1.png"
             }
             {
                 ## override the above for squares_dus2_3857
                 applyTo.pattern "squares_dus2"
-                legend.url "/data/web/legend2.png"
+                legend.path "/data/response_images/custom_legend_2.png"
             }
         ]
     }
