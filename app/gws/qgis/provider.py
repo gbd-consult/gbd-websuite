@@ -147,6 +147,7 @@ class Object(gws.common.ows.provider.Object):
             'TRANSPARENT': True,
             'STYLE': '',
             'VERSION': '1.1.1',
+            'DPI': 96,
         }, options)
 
         resp = gws.gis.ows.request.get(

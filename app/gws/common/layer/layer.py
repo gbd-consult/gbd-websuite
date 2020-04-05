@@ -30,9 +30,7 @@ _DEFAULT_STYLE_VALUES = {
     'stoke_width': 1,
 }
 
-_DEFAULT_LEGEND_HTML = """
-    <div class="legend"><img src="{path}"/></div>
-"""
+_DEFAULT_LEGEND_HTML = """<div class="legend"><img src="{path}"/></div>"""
 
 
 class Config(t.WithTypeAndAccess):
@@ -175,7 +173,7 @@ class Layer(gws.Object, t.ILayer):
         p = self.var('featureFormat')
         default_fmt = t.Data(
             teaser=gws.common.template.builtin_config('feature_teaser'),
-            description = gws.common.template.builtin_config('feature_description'))
+            description=gws.common.template.builtin_config('feature_description'))
         self.feature_format: t.IFormat = (
             self.root.create_object('gws.common.format', gws.extend(p, default_fmt)) if p
             else self.root.create_shared_object('gws.common.format', 'default_feature_format', default_fmt))

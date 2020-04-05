@@ -57,13 +57,15 @@ def add_variables(source_text: str, d: dict) -> str:
     props.Variables.append(vvals)
 
     for k, v in sorted(vs.items()):
-        tag = bs.new_tag('value')
-        tag.append(k)
-        vnames.append(tag)
+        v = gws.as_str(v).replace('\n', ' ').strip()
+        if v:
+            tag = bs.new_tag('value')
+            tag.append(k)
+            vnames.append(tag)
 
-        tag = bs.new_tag('value')
-        tag.append(str(v))
-        vvals.append(tag)
+            tag = bs.new_tag('value')
+            tag.append(v)
+            vvals.append(tag)
 
     return str(bs)
 
