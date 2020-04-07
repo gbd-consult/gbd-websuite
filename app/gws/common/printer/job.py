@@ -119,7 +119,7 @@ class _Worker:
         elif self.p.type == 'map':
             self.template = None
             try:
-                dpi = min(units.OGC_SCREEN_PPI, int(p.dpi))
+                dpi = max(units.OGC_SCREEN_PPI, int(p.dpi))
             except:
                 dpi = units.OGC_SCREEN_PPI
 
