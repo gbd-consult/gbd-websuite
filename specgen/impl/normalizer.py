@@ -183,7 +183,7 @@ def _tuple_kinds(units):
     # replace Tuple types with 'tuple' kinds
 
     for u in units:
-        if u.types and u.types[0].lower().endswith('tuple'):
+        if u.types and u.types[0].endswith('Tuple'):
             # u.types is [tuple, [item, item...]]
             u.kind = 'tuple'
             u.bases = u.types[1]
