@@ -9,10 +9,6 @@ class Enum:
     pass
 
 
-def none() -> Any:
-    return None
-
-
 #:alias An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
 
@@ -24,6 +20,9 @@ Size = Tuple[float, float]
 
 #:alias A value with a unit
 Measurement = Tuple[float, str]
+
+#:alias An XML generator tag
+Tag = tuple
 
 
 class Axis(Enum):

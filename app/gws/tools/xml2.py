@@ -1,27 +1,33 @@
-"""Expat-based XML parser."""
+"""XML parser and generator.
 
-# we don't bother with lxml, etree, bs4 etc because they are too picky about encodings, namespaces
-# and all stuff we really don't care about
+The parser is expat-based. It returns `Element` instances.
 
+The generator (`as_string`) accepts a Tag, which is simply a tuple of tag name, attributes (dict) and subtags (Tags).
+"""
 
-import typing
 import collections
 import xml.parsers.expat
+
+import gws.types as t
 
 
 class Error(Exception):
     pass
 
 
-def tag(*args):
+def tag(*args) -> t.Tag:
     return args
 
 
-def as_string(t):
-    return t if isinstance(t, str) else _string(t)
+def as_string(p: t.Union[str, t.Tag, 'Element']) -> str:
+    if _is_list(p):
+        return _string(p)
+    if _is_elem(p):
+        return _string(p.as_tag())
+    return str(p)
 
 
-def encode(v):
+def encode(v: str) -> str:
     v = str(v).strip()
     v = v.replace("&", "&amp;")
     v = v.replace(">", "&gt;")
@@ -30,21 +36,23 @@ def encode(v):
     return v
 
 
-def _string(elems):
-    name = ''
+def _string(tag: t.Tag):
+    if not tag:
+        return ''
 
-    elems = iter(elems)
-    for e in elems:
+    name = None
+
+    tag = iter(tag)
+    for e in tag:
         name = e
         break
 
-    nodes = []
+    sub = []
     atts = collections.OrderedDict()
 
-    for e in elems:
-        if isinstance(e, (list, tuple)):
-            if e:
-                nodes.append(_string(e))
+    for e in tag:
+        if _is_list(e):
+            sub.append(_string(e))
             continue
         if isinstance(e, dict):
             atts.update(e)
@@ -52,7 +60,7 @@ def _string(elems):
         if e is not None:
             e = str(e)
             if e:
-                nodes.append(encode(e))
+                sub.append(encode(e))
 
     res = name
 
@@ -60,28 +68,53 @@ def _string(elems):
         atts = [f'{k}="{encode(v)}"' for k, v in atts.items() if v is not None]
     if atts:
         res += ' ' + ' '.join(atts)
-    if nodes:
-        return '<' + res + '>' + ''.join(nodes) + '</' + name + '>'
+    if sub:
+        return '<' + res + '>' + ''.join(sub) + '</' + name + '>'
     return '<' + res + '/>'
 
 
+_NS_PREFIX = 'xmlns'
+
+
 class Attribute:
-    def __init__(self):
-        self.name = ''
-        self.qname = ''
-        self.value = ''
+    def __init__(self, qname, name, value):
+        self.qname = qname
+        self.name = name
+        self.value = value
 
 
 class Element:
     def __init__(self):
-        self.attributes: typing.List['Attribute'] = []
-        self.children: typing.List['Element'] = []
+        self.attributes: t.List['Attribute'] = []
+        self.children: t.List['Element'] = []
         self.name = ''
         self.namespaces = {}
+        self.default_namespace = ''
         self.ns = ''
         self.qname = ''
         self.text = ''
         self.pos = [0, 0]
+
+    def as_tag(self):
+        atts = {a.qname: a.value for a in self.attributes}
+        if self.default_namespace:
+            atts[_NS_PREFIX] = self.default_namespace
+        for k, v in self.namespaces.items():
+            atts[_NS_PREFIX + ':' + k] = v
+        return (
+            self.qname,
+            atts,
+            *(c.as_tag for c in self.children))
+
+    def strip_ns(self):
+        self.ns = ''
+        for a in self.attributes:
+            a.qname = a.name
+        self.namespaces = {}
+        self.default_namespace = ''
+        for c in self.children:
+            c.strip_ns()
+        return self
 
     def attr(self, key, default=None):
         key = key.lower()
@@ -98,7 +131,7 @@ class Element:
     def get(self, path, default=None):
         return self._get(path) or default
 
-    def all(self, path=None) -> typing.List['Element']:
+    def all(self, path=None) -> t.List['Element']:
         if not path:
             return self.children
 
@@ -127,7 +160,7 @@ class Element:
         if not e:
             return ''
         if _is_str(e):
-            return e
+            return str(e)
         if _is_list(e):
             e = e[0]
         if _is_elem(e):
@@ -231,17 +264,16 @@ class _BaseHandler:
 
         for key, val in attributes.items():
             if key == 'xmlns':
-                el.namespaces[''] = val.strip()
-            else:
-                s, n = _ns_tag(key)
-                if s == 'xmlns':
-                    el.namespaces[n] = val.strip()
-                else:
-                    a = Attribute()
-                    a.name = n
-                    a.qname = key
-                    a.value = val
-                    el.attributes.append(a)
+                el.default_namespace = val.strip()
+                continue
+
+            ns, n = _ns_tag(key)
+
+            if ns == 'xmlns':
+                el.namespaces[n] = val.strip()
+                continue
+
+            el.attributes.append(Attribute(key, n, val.strip()))
 
         el.ns, el.name = _ns_tag(name)
         el.qname = name
@@ -258,7 +290,7 @@ class _BaseHandler:
 
 
 class _Handler(_BaseHandler):
-    def parse(self, s):
+    def parse(self, src):
         self.stack = [Element()]
 
         # our inputs are always unicode
@@ -270,7 +302,7 @@ class _Handler(_BaseHandler):
         self.p.CharacterDataHandler = self.CharacterDataHandler
 
         try:
-            self.p.Parse(s, True)
+            self.p.Parse(src, True)
         except xml.parsers.expat.ExpatError as e:
             raise Error(_errors[getattr(e, 'code')], self.p.ErrorLineNumber, self.p.ErrorColumnNumber)
 

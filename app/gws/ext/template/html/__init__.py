@@ -125,11 +125,7 @@ class Object(gws.common.template.Object):
         if name == 'gws:map':
             if 'width' in atts:
                 self.map_size = _parse_size(atts)
-            return f'''
-                <div style="position:relative;width:{self.map_size[0]}mm; height:{self.map_size[1]}mm">
-                    {{GWS_MAP|raw}}
-                </div>
-            '''.strip()
+            return '{GWS_MAP|raw}'
 
         # NB other tags don't return anything
 
@@ -149,7 +145,7 @@ class Object(gws.common.template.Object):
                     html += f'{{GWS_LEGEND({layer_uid!r})|raw}}'
                 return html
             self.legend_use_all = True
-            return f'{{GWS_LEGEND()|raw}}'
+            return '{GWS_LEGEND()|raw}'
 
         if name == 'gws:header':
             self.header = contents

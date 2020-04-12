@@ -3,6 +3,7 @@ import gws.types as t
 import gws.gis.shape
 import gws.common.style
 import gws.tools.svg
+import gws.tools.xml2
 
 _COMBINED_UID_DELIMITER = '___'
 
@@ -90,7 +91,6 @@ class Feature(t.IFeature):
             uid = f'{self.layer.uid}{_COMBINED_UID_DELIMITER}{uid}'
         return uid
 
-
     @property
     def template_context(self) -> dict:
         d = {a.name: a.value for a in self.attributes}
@@ -110,22 +110,21 @@ class Feature(t.IFeature):
             self.shape = self.shape.transformed_to(crs)
         return self
 
-    def to_svg(self, rv: t.MapRenderView, style: t.IStyle = None) -> str:
+    def to_svg_tags(self, rv: t.MapRenderView, style: t.IStyle = None) -> t.List[t.Tag]:
         if not self.shape:
-            return ''
+            return []
         style = self.style or style
         if not style and self.layer:
             style = self.layer.style
-        s: gws.gis.shape.Shape = self.shape.transformed_to(rv.bounds.crs)
-        return gws.tools.svg.draw(
-            s.geom,
-            self.elements.get('label', ''),
+        shape = self.shape.transformed_to(rv.bounds.crs)
+        return gws.tools.svg.geometry_tags(
+            t.cast(gws.gis.shape.Shape, shape).geom,
+            rv,
             style.values,
-            rv.bounds.extent,
-            rv.dpi,
-            rv.scale,
-            rv.rotation
-        )
+            self.elements.get('label', ''))
+
+    def to_svg(self, rv: t.MapRenderView, style: t.IStyle = None) -> str:
+        return gws.tools.svg.as_xml(self.to_svg_tags(rv, style))
 
     def to_geojson(self) -> dict:
         props = {a.name: a.value for a in self.attributes}

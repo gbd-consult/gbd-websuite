@@ -1,4 +1,5 @@
 import re
+import math
 import base64
 import shapely.ops
 import shapely.geometry
@@ -9,6 +10,8 @@ import wand.image
 
 import gws
 import gws.tools.units as units
+import gws.tools.xml2 as xml2
+import gws.gis.extent
 import gws.tools.style
 
 import gws.types as t
@@ -17,57 +20,66 @@ DEFAULT_FONT_SIZE = 10
 DEFAULT_MARKER_SIZE = 10
 DEFAULT_POINT_SIZE = 10
 
+SVG_ATTRIBUTES = {
+    'version': '1.1',
+    'xmlns': 'http://www.w3.org/2000/svg',
+}
 
-def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale: int, rotation: int) -> str:
-    geom = _to_pixel(geom, extent, dpi, scale)
 
-    # @TODO use geom.svg
+def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: t.MapRenderView, sv: t.StyleValues, label: str) -> t.List[t.Tag]:
+    if geom.is_empty:
+        return []
+
+    trans = _pixel_transform(rv)
+    geom = shapely.ops.transform(trans, geom)
+
     if not sv:
-        return svgis.draw.geometry(shapely.geometry.mapping(geom), precision=0)
+        return [_geometry(geom)]
 
     with_geometry = sv.with_geometry == gws.tools.style.StyleGeometryOption.all
     with_label = sv.with_label == gws.tools.style.StyleLabelOption.all
 
-    marker = ''
-    marker_id = ''
-    text = ''
-    icon = ''
+    text = None
+
+    if with_label and label:
+        extra_y_offset = 0
+
+        if sv.label_offset_y is None:
+            if geom.type == 'Point':
+                extra_y_offset = 12
+            if geom.type == 'LineString':
+                extra_y_offset = 6
+
+        text = _label(geom, label, sv, extra_y_offset)
+
+    marker = None
+    marker_id = None
 
     if with_geometry and sv.marker:
         marker_id = '_M' + gws.random_string(8)
         marker = _marker(marker_id, sv)
 
+    icon = None
+
     if with_geometry and sv.icon:
-        ico = _parse_icon(sv.icon, dpi)
-        if not ico:
-            gws.log.warn(f'cannot parse icon {sv.icon!r}')
-        else:
-            svg, w, h = ico
-            x, y = _icon_position(geom, svg, w, h)
-            svg['x'] = f'{x}px'
-            svg['y'] = f'{y}px'
-            icon = str(svg)
+        res = _parse_icon_url(sv.icon, rv.dpi)
+        if res:
+            icon, w, h = res
+            x, y, w, h = _icon_size_position(geom, sv, w, h)
+            atts = {
+                'x': f'{x}px',
+                'y': f'{y}px',
+                'width': f'{w}px',
+                'height': f'{h}px',
+            }
+            icon += (atts,)
 
-    extra_y_offset = 0
-
-    if sv.label_offset_y is None:
-        if geom.type == 'Point':
-            extra_y_offset = 12
-        if geom.type == 'LineString':
-            extra_y_offset = 6
-
-    # @TODO with_label, scale
-    if with_label and label:
-        text = _label(geom, label, sv, extra_y_offset)
-
-    atts = {
-        'precision': 0
-    }
-
-    g = ''
+    body = None
 
     if with_geometry:
-        _fill_stroke(atts, sv, '')
+        atts = {}
+
+        _fill_stroke_props(atts, sv)
 
         if marker:
             atts['marker-start'] = atts['marker-mid'] = atts['marker-end'] = f'url(#{marker_id})'
@@ -78,77 +90,128 @@ def draw(geom, label: str, sv: t.StyleValues, extent: t.Extent, dpi: int, scale:
         if geom.type in ('LineString', 'MultiLineString'):
             atts['fill'] = 'none'
 
-        g = svgis.draw.geometry(shapely.geometry.mapping(geom), **gws.compact(atts))
+        body = _geometry(geom) + (atts,)
 
-    return marker + g + icon + text
+    return gws.compact([marker, body, icon, text])
 
 
-def to_png(elements, size: t.Size):
-    elements = '\n'.join(elements)
-    svg = f'<svg version="1.1" xmlns="http://www.w3.org/2000/svg">{elements}</svg>'
+def sort_by_z_index(tags: t.List[t.Tag]):
+    def key(tag):
+        for e in tag:
+            if isinstance(e, dict) and 'z-index' in e:
+                return e['z-index']
+        return 0
 
+    tags.sort(key=key)
+
+
+def as_xml(tags: t.List[t.Tag]) -> str:
+    return ''.join(gws.tools.xml2.as_string(tag) for tag in tags)
+
+
+def as_png(tags: t.List[t.Tag], size: t.Size) -> bytes:
+    sort_by_z_index(tags)
+    svg = gws.tools.xml2.as_string(('svg', SVG_ATTRIBUTES, *tags))
     with wand.image.Image(blob=svg.encode('utf8'), format='svg', background='None', width=size[0], height=size[1]) as image:
         return image.make_blob('png')
 
 
-def convert_fragment(svg_fragment, rv: t.MapRenderView):
-    def trans(x, y):
-        cx = x - rv.bounds.extent[0]
-        cy = rv.bounds.extent[3] - y
+def fragment_tags(fragment: t.SvgFragment, rv: t.MapRenderView) -> t.List[t.Tag]:
+    """Convert an SvgFragment to a list of Tags.
 
-        cx /= rv.scale
-        cy /= rv.scale
+    A fragment has three components:
 
-        cx = units.mm2px(cx * 1000, rv.dpi)
-        cy = units.mm2px(cy * 1000, rv.dpi)
+    - a list of xml2.Tags (which are just tuples)
+    - a list of points, in the map coordinate system
+    - a list of named styles
 
-        return cx, cy
+    The idea is to represent client-side svg drawings (e.g. dimensions) in a resolution-independent way
 
-    def repl(m):
-        pt = points[int(m.group(1))]
-        n = pt[int(m.group(2))]
-        n += int(m.group(3))
-        return str(n)
+    The fragment is converted as follows:
 
+    - points are converted to pixels
+    - tags' attributes are iterated. If any attribute value is an array, it's assumed to be a 'function'
+    - 'class' attributes are replaced with inline styles from the .styles list
+
+    Attribute 'functions' are
+
+    - '' (empty function), ['', index, component] - returns `pixels[index][component]`,
+        where `component` is 0 for x, 1 for y
+    - 'rotate' ['rotate', index1, index2, index3] - computes a slope between `pixels[index1]` and `pixels[index2]`
+        and returns a string `rotate(slope, pixels[index3])`.
     """
-        svg fragments contain point array (coordinates)
-        and an svg string, with <<...>> placeholders
-        which are <<point-number  0=x,1=y  offset>>
-    """
 
-    points = [trans(x, y) for x, y in svg_fragment.points]
+    trans = _pixel_transform(rv)
+    pixels = [trans(*p) for p in fragment.points]
+    style_map = {s.name: s.values for s in (fragment.styles or []) if s.name}
 
-    svg = re.sub(r'<<(\S+) (\S+) (\S+)>>', repl, svg_fragment.svg)
+    def eval_func(v):
+        if v[0] == '':
+            return round(pixels[v[1]][v[2]])
+        if v[0] == 'rotate':
+            a = _slope(pixels[v[1]], pixels[v[2]])
+            adeg = math.degrees(a)
+            x, y = pixels[v[3]]
+            return f'rotate({adeg:.0f}, {x:.0f}, {y:.0f})'
 
-    return svg
+    def process(tag):
+        for p in tag:
+            if isinstance(p, (list, tuple)):
+                process(p)
+                continue
+
+            if isinstance(p, dict):
+                for k, v in p.items():
+                    if isinstance(v, (list, tuple)):
+                        p[k] = eval_func(v)
+                if 'class' in p:
+                    sv = style_map.get('.' + p.pop('class'))
+                    if sv:
+                        _fill_stroke_props(p, sv)
+                        _font_props(p, sv)
+
+    for tag in fragment.tags:
+        process(tag)
+    return fragment.tags
 
 
 ##
 
-def _to_pixel(geom, extent, dpi, scale):
-    def trans(x, y):
-        cx = x - extent[0]
-        cy = extent[3] - y
+def _pixel_transform(rv: t.MapRenderView):
+    def translate(x, y):
+        x = x - rv.bounds.extent[0]
+        y = rv.bounds.extent[3] - y
 
-        cx /= scale
-        cy /= scale
+        return (
+            units.mm2px((x / rv.scale) * 1000, rv.dpi),
+            units.mm2px((y / rv.scale) * 1000, rv.dpi))
 
-        cx = units.mm2px(cx * 1000, dpi)
-        cy = units.mm2px(cy * 1000, dpi)
+    def rotate(x, y):
+        return (
+            cosa * (x - ox) - sina * (y - oy) + ox,
+            sina * (x - ox) + cosa * (y - oy) + oy)
 
-        return cx, cy
+    def fn(x, y):
+        x, y = translate(x, y)
+        if rv.rotation:
+            x, y = rotate(x, y)
+        return int(x), int(y)
 
-    return shapely.ops.transform(trans, geom)
+    ox, oy = translate(*gws.gis.extent.center(rv.bounds.extent))
+    cosa = math.cos(math.radians(rv.rotation))
+    sina = math.sin(math.radians(rv.rotation))
+
+    return fn
 
 
-def _marker(uid, sv):
+def _marker(uid, sv) -> t.Tag:
     size = sv.marker_size or DEFAULT_MARKER_SIZE
     size2 = size // 2
 
     content = None
     atts = {}
 
-    _fill_stroke(atts, sv, 'marker_')
+    _fill_stroke_props(atts, sv, 'marker_')
 
     if sv.marker == 'circle':
         atts.update({
@@ -156,10 +219,10 @@ def _marker(uid, sv):
             'cy': size2,
             'r': size2,
         })
-        content = _tag('circle', atts)
+        content = 'circle', atts
 
     if content:
-        return _tag('marker', {
+        return 'marker', {
             'id': uid,
             'viewBox': f'0 0 {size} {size}',
             'refX': size2,
@@ -167,10 +230,10 @@ def _marker(uid, sv):
             'markerUnits': 'userSpaceOnUse',
             'markerWidth': size,
             'markerHeight': size,
-        }, content)
+        }, content
 
 
-def _label(geom, label, sv, extra_y_offset=0):
+def _label(geom, label, sv, extra_y_offset=0) -> t.Tag:
     cx, cy = _label_position(geom, sv, extra_y_offset)
     return _text(cx, cy, label, sv)
 
@@ -189,66 +252,7 @@ def _label_position(geom, sv, extra_y_offset=0):
     )
 
 
-_PFX_SVF_UTF8 = 'data:image/svg+xml;utf8,'
-_PFX_SVF_BASE64 = 'data:image/svg+xml;base64,'
-
-
-def _parse_icon(s, dpi):
-    content = None
-
-    if s.startswith(_PFX_SVF_UTF8):
-        content = s[len(_PFX_SVF_UTF8):]
-    elif s.startswith(_PFX_SVF_BASE64):
-        content = base64.standard_b64decode(s[len(_PFX_SVF_BASE64):]).decode('utf8')
-
-    if not content:
-        return
-
-    # @TODO
-    svg = bs4.BeautifulSoup(content, 'lxml-xml').svg
-    if not svg:
-        return
-
-    w = svg.attrs.get('width')
-    h = svg.attrs.get('height')
-
-    if not w or not h:
-        return
-
-    try:
-        w, wu = units.parse(w, units=['px', 'mm'], default='px')
-        h, hu = units.parse(h, units=['px', 'mm'], default='px')
-    except ValueError:
-        return
-
-    if wu == 'mm':
-        w = units.mm2px(w, dpi)
-    if hu == 'mm':
-        h = units.mm2px(h, dpi)
-
-    svg['width'] = f'{w}px'
-    svg['height'] = f'{h}px'
-
-    return svg, w, h
-
-
-def _icon_position(geom, sv, width, height):
-    c = geom.centroid
-    return c.x - (int(width) >> 1), c.y - (int(height) >> 1)
-
-
-def _get_points(geom):
-    gt = geom.type
-
-    if gt in ('Point', 'LineString', 'LinearRing'):
-        return geom.coords
-    if gt in ('Polygon', 'LineString', 'LinearRing'):
-        return geom.exterior.coords
-    if gt.startswith('Multi'):
-        return [p for g in geom.geoms for p in _get_points(g)]
-
-
-def _text(cx, cy, label, sv):
+def _text(cx, cy, label, sv) -> t.Tag:
     # @TODO label positioning needs more work
 
     font_name = _map_font(sv)
@@ -262,15 +266,10 @@ def _text(cx, cy, label, sv):
     elif sv.label_align == 'center':
         anchor = 'middle'
 
-    atts = gws.compact({
-        'font-family': font_name.split('-')[0],
-        'font-size': f'{font_size}px',
-        'font-weight': sv.label_font_weight,
-        'font-style': sv.label_font_style,
-        'text-anchor': anchor,
-    })
+    atts = {'text-anchor': anchor}
 
-    _fill_stroke(atts, sv, 'label_')
+    _font_props(atts, sv, 'label_')
+    _fill_stroke_props(atts, sv, 'label_')
 
     lines = list(gws.lines(label))
     _, em_height = font.getsize('MMM')
@@ -298,50 +297,159 @@ def _text(cx, cy, label, sv):
 
     spans = []
     for s in reversed(lines):
-        spans.append(_tag('tspan', {'x': lx, 'y': ly}, s))
+        spans.append(xml2.tag('tspan', {'x': lx, 'y': ly}, s))
         ly -= (em_height + line_height)
 
-    text = _tag('text', atts, ''.join(reversed(spans)))
+    tags = [xml2.tag('text', atts, *reversed(spans))]
 
     # @TODO a hack to emulate 'paint-order' which wkhtmltopdf doesn't seem to support
+    # place a copy without the stroke above above the text
     if atts.get('stroke'):
-        atts2 = {k: v for k, v in atts.items() if not k.startswith('stroke')}
-        text += _tag('text', atts2, ''.join(reversed(spans)))
+        no_stroke_atts = {k: v for k, v in atts.items() if not k.startswith('stroke')}
+        tags.append(xml2.tag('text', no_stroke_atts, *reversed(spans)))
 
-    if not sv.label_background:
-        return text
+    if sv.label_background:
+        width = max(xy[0] for xy in metrics) + padding[1] + padding[3]
 
-    width = max(xy[0] for xy in metrics) + padding[1] + padding[3]
+        if anchor == 'start':
+            bx = cx
+        elif anchor == 'end':
+            bx = cx - width
+        else:
+            bx = cx - width // 2
 
-    if anchor == 'start':
-        bx = cx
-    elif anchor == 'end':
-        bx = cx - width
-    else:
-        bx = cx - width // 2
+        ratts = {
+            'x': bx,
+            'y': cy - height,
+            'width': width,
+            'height': height,
+            'fill': sv.label_background,
+        }
 
-    ratts = {
-        'x': bx,
-        'y': cy - height,
-        'width': width,
-        'height': height,
-        'fill': sv.label_background,
-    }
+        tags.insert(0, xml2.tag('rect', ratts))
 
-    return _tag('rect', ratts) + text
+    # a hack to move labels forward: emit a (non-supported) z-index attribute
+    # and sort elements by it later on
 
-
-def _map_font(sv):
-    # @TODO: allow for more fonts and customize the mapping
-
-    DEFAULT_FONT = 'DejaVuSans'
-
-    if sv.label_font_weight == 'bold':
-        return DEFAULT_FONT + '-Bold'
-    return DEFAULT_FONT
+    return xml2.tag('g', {'z-index': 100}, *tags)
 
 
-def _fill_stroke(atts, sv, prefix=''):
+_PFX_SVF_UTF8 = 'data:image/svg+xml;utf8,'
+_PFX_SVF_BASE64 = 'data:image/svg+xml;base64,'
+
+
+def _parse_icon_url(url, dpi):
+    src = None
+
+    if url.startswith(_PFX_SVF_UTF8):
+        src = url[len(_PFX_SVF_UTF8):]
+    elif url.startswith(_PFX_SVF_BASE64):
+        src = base64.standard_b64decode(url[len(_PFX_SVF_BASE64):]).decode('utf8')
+
+    if not src:
+        return
+
+    try:
+        svg = xml2.from_string(src)
+    except xml2.Error as e:
+        gws.log.error(f'error parsing icon url: {e}')
+        return
+
+    w = svg.attr('width')
+    h = svg.attr('height')
+
+    if not w or not h:
+        return
+
+    try:
+        w, wu = units.parse(w, units=['px', 'mm'], default='px')
+        h, hu = units.parse(h, units=['px', 'mm'], default='px')
+    except ValueError:
+        return
+
+    if wu == 'mm':
+        w = units.mm2px(w, dpi)
+    if hu == 'mm':
+        h = units.mm2px(h, dpi)
+
+    sub = gws.compact(_clean(c) for c in svg.children)
+
+    return xml2.tag('svg', *(c.as_tag() for c in sub)), w, h
+
+
+_ALLOWED_TAGS = {
+    'circle',
+    'clippath',
+    'defs',
+    'ellipse',
+    'g',
+    'hatch',
+    'hatchpath',
+    'line',
+    'lineargradient',
+    'marker',
+    'mask',
+    'mesh',
+    'meshgradient',
+    'meshpatch',
+    'meshrow',
+    'mpath',
+    'path',
+    'pattern',
+    'polygon',
+    'polyline',
+    'radialgradient',
+    'rect',
+    'solidcolor',
+    'symbol',
+    'text',
+    'textpath',
+    'title',
+    'tspan',
+    'use',
+}
+
+
+def _clean(el: xml2.Element) -> t.Optional[xml2.Element]:
+    # @TODO: security! since icons are arbitrary content, check for valid tag names and values
+
+    if el.name not in _ALLOWED_TAGS:
+        return
+
+    el.attributes = [_clean_attr(a) for a in el.attributes]
+    el.children = gws.compact(_clean(c) for c in el.children)
+
+    return el
+
+
+def _clean_attr(a: xml2.Attribute):
+    if a.value.startswith(('http:', 'https:', 'data:')):
+        return
+    return a
+
+
+def _icon_size_position(geom, sv, width, height):
+    # @TODO style options for icon positioning
+    c = geom.centroid
+    return (
+        int(c.x - width / 2),
+        int(c.y - height / 2),
+        width,
+        height)
+
+
+def _get_points(geom):
+    gt = geom.type
+
+    if gt in ('Point', 'LineString', 'LinearRing'):
+        return geom.coords
+    if gt in ('Polygon', 'LineString', 'LinearRing'):
+        return geom.exterior.coords
+    if gt.startswith('Multi'):
+        return [p for g in geom.geoms for p in _get_points(g)]
+
+
+def _fill_stroke_props(atts, sv, prefix=''):
     atts['fill'] = sv.get(prefix + 'fill') or 'none'
 
     v = sv.get(prefix + 'stroke')
@@ -363,8 +471,80 @@ def _fill_stroke(atts, sv, prefix=''):
             atts['stroke-' + k] = v
 
 
-def _tag(name, atts, content=None):
-    atts = ' '.join(f'{k}="{v}"' for k, v in gws.compact(atts).items())
-    if content:
-        return f'<{name} {atts}>{content}</{name}>'
-    return f'<{name} {atts}/>'
+def _font_props(atts, sv, prefix=''):
+    font_name = _map_font(sv, prefix)
+    font_size = sv.get(prefix + 'font_size') or DEFAULT_FONT_SIZE
+
+    atts.update(gws.compact({
+        'font-family': font_name.split('-')[0],
+        'font-size': f'{font_size}px',
+        'font-weight': sv.get(prefix + 'font_weight'),
+        'font-style': sv.get(prefix + 'font_style'),
+    }))
+
+
+def _map_font(sv, prefix=''):
+    # @TODO: allow for more fonts and customize the mapping
+
+    DEFAULT_FONT = 'DejaVuSans'
+    w = sv.get(prefix + 'font_weight')
+    if w == 'bold':
+        return DEFAULT_FONT + '-Bold'
+    return DEFAULT_FONT
+
+
+def _geometry(geom: shapely.geometry.base.BaseGeometry) -> t.Tag:
+    def _xy(xy):
+        return str(xy[0]) + ' ' + str(xy[1])
+
+    def _lpath(coords):
+        ps = []
+        cs = iter(coords)
+        for c in cs:
+            ps.append(f'M {_xy(c)}')
+            break
+        for c in cs:
+            ps.append(f'L {_xy(c)}')
+        return ' '.join(ps)
+
+    ty = geom.type.lower()
+
+    if ty == 'point':
+        g = t.cast(shapely.geometry.Point, geom)
+        return xml2.tag('circle', {'cx': g.x, 'cy': g.y})
+
+    if ty == 'linestring':
+        g = t.cast(shapely.geometry.LineString, geom)
+        d = _lpath(g.coords)
+        return xml2.tag('path', {'d': d})
+
+    if ty == 'polygon':
+        g = t.cast(shapely.geometry.Polygon, geom)
+        d = ' '.join(_lpath(interior.coords) + ' z' for interior in g.interiors)
+        d = _lpath(g.exterior.coords) + ' z ' + d
+        return xml2.tag('path', {'fill-rule': 'evenodd', 'd': d.strip()})
+
+    if ty in ('multipolygon', 'multipoint', 'mutlilinestring'):
+        g = t.cast(shapely.geometry.base.BaseMultipartGeometry, geom)
+        return xml2.tag('g', *[_geometry(p) for p in g.geoms])
+
+    raise ValueError(f'unknown type {geom.type!r}')
+
+
+def _slope(a: t.Point, b: t.Point) -> float:
+    # slope between two points
+    dx = b[0] - a[0]
+    dy = b[1] - a[1]
+
+    if dx == 0:
+        dx = 0.01;
+
+    return math.atan(dy / dx)
+
+
+def _rotate(p: t.Point, o: t.Point, a: float) -> t.Point:
+    # rotate P(oint) about O(rigin) by A(ngle)
+    return (
+        o[0] + (p[0] - o[0]) * math.cos(a) - (p[1] - o[1]) * math.sin(a),
+        o[1] + (p[0] - o[0]) * math.sin(a) + (p[1] - o[1]) * math.cos(a),
+    )

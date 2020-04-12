@@ -1,5 +1,9 @@
+import PIL.Image
+import io
+
 import gws
 import gws.gis.mpx as mpx
+import gws.gis.extent
 
 import gws.types as t
 
@@ -43,7 +47,42 @@ class Image(layer.Layer):
         uid = self.uid
         if not self.has_cache:
             uid += '_NOCACHE'
-        return gws.gis.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1])
+
+        if not rv.rotation:
+            return gws.gis.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1])
+
+        # rotation: render a circumsquare around the wanted extent
+
+        circ = gws.gis.extent.circumsquare(rv.bounds.extent)
+        w, h = rv.size_px
+        d = gws.gis.extent.diagonal((0, 0, w, h))
+
+        r = gws.gis.mpx.wms_request(uid, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d)
+        if not r:
+            return
+
+        img: PIL.Image.Image = PIL.Image.open(io.BytesIO(r))
+        img.save(gws.VAR_DIR + '/111.png')
+
+        # rotate the square (NB: PIL rotations are counter-clockwise)
+
+        img = img.rotate(-rv.rotation, resample=PIL.Image.BICUBIC)
+        img.save(gws.VAR_DIR + '/222.png')
+
+        # crop the square back to the wanted extent
+
+        img = img.crop((
+            d / 2 - w / 2,
+            d / 2 - h / 2,
+            d / 2 + w / 2,
+            d / 2 + h / 2,
+        ))
+
+        img.save(gws.VAR_DIR + '/333.png')
+
+        with io.BytesIO() as out:
+            img.save(out, format='png')
+            return out.getvalue()
 
     def render_xyz(self, x, y, z):
         return gws.gis.mpx.wmts_request(

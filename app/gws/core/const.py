@@ -16,9 +16,10 @@ TMP_DIR = os.getenv('GWS_TMP_DIR', TMP_DIR)
 UID = int(os.getenv('GWS_UID', UID))
 GID = int(os.getenv('GWS_GID', GID))
 
+LEGEND_CACHE_DIR = VAR_DIR + '/cache/legend'
 MAPPROXY_CACHE_DIR = VAR_DIR + '/cache/mpx'
-OBJECT_CACHE_DIR = VAR_DIR + '/cache/object'
 NET_CACHE_DIR = VAR_DIR + '/cache/net'
+OBJECT_CACHE_DIR = VAR_DIR + '/cache/object'
 WEB_CACHE_DIR = TMP_DIR + '/webcache'
 
 LOG_DIR = VAR_DIR + '/log'
@@ -35,8 +36,6 @@ SERVER_ENDPOINT = '/_'
 SPOOL_OK = -2
 SPOOL_RETRY = -1
 SPOOL_IGNORE = 0
-
-REMOTE_ADMIN_PASSWD_FILE = VAR_DIR + '/.remoteadmin'
 
 EPSG_3857 = 'EPSG:3857'
 EPSG_4326 = 'EPSG:4326'

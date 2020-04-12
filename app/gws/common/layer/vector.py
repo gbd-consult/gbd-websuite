@@ -2,6 +2,7 @@ import gws
 import gws.common.model
 import gws.common.style
 import gws.tools.svg
+import gws.gis.extent
 
 import gws.types as t
 
@@ -51,28 +52,27 @@ class Vector(layer.Layer, t.IVectorLayer):
         return feature
 
     def render_box(self, rv, client_params=None):
-        elements = self.render_svg(rv)
+        tags = self.render_svg_tags(rv)
         gws.debug.time_start('render_box:to_png')
-        png = gws.tools.svg.to_png(elements, size=rv.size_px)
+        png = gws.tools.svg.as_png(tags, size=rv.size_px)
         gws.debug.time_start('render_box:to_png')
         return png
 
-    def render_svg(self, rv, style=None):
+    def render_svg_tags(self, rv, style=None):
+        bounds = rv.bounds
+        if rv.rotation:
+            bounds = t.Bounds(crs=bounds.crs, extent=gws.gis.extent.circumsquare(bounds.extent))
+
         gws.debug.time_start('render_svg:get_features')
-        found = self.get_features(rv.bounds)
+        found = self.get_features(bounds)
         gws.debug.time_end('render_svg:get_features')
 
-        # skip full conversion for large amounts of features
-
         gws.debug.time_start('render_svg:convert')
-        if len(found) > _FEATURE_FULL_FORMAT_THRESHOLD:
-            features = [f.transform_to(rv.bounds.crs) for f in found]
-        else:
-            features = [f.transform_to(rv.bounds.crs).apply_converter() for f in found]
+        features = [f.transform_to(rv.bounds.crs).apply_converter() for f in found]
         gws.debug.time_end('render_svg:convert')
 
         gws.debug.time_start('render_svg:to_svg')
-        svgs = [f.to_svg(rv, style or self.style) for f in features]
+        tags = [tag for f in features for tag in f.to_svg_tags(rv, style or self.style)]
         gws.debug.time_end('render_svg:to_svg')
 
-        return svgs
+        return tags

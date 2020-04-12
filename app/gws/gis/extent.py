@@ -25,6 +25,15 @@ def from_string(s: str) -> t.Optional[t.Extent]:
     return valid(ext)
 
 
+def from_center(xy: t.Point, size: t.Size) -> t.Extent:
+    return (
+        xy[0] - size[0] / 2,
+        xy[1] - size[1] / 2,
+        xy[0] + size[0] / 2,
+        xy[1] + size[1] / 2,
+    )
+
+
 def from_box(box: str) -> t.Optional[t.Extent]:
     """Create an extent from a Postgis BOX(1000 2000,20000 40000)"""
 
@@ -99,9 +108,27 @@ def constrain(a: t.Extent, b: t.Extent) -> t.Extent:
 
 def center(e: t.Extent) -> t.Point:
     return (
-        round(e[0] + (e[2] - e[0]) / 2),
-        round(e[1] + (e[3] - e[1]) / 2),
+        e[0] + (e[2] - e[0]) / 2,
+        e[1] + (e[3] - e[1]) / 2,
     )
+
+
+def size(e: t.Extent) -> t.Size:
+    return (
+        e[2] - e[0],
+        e[3] - e[1],
+    )
+
+
+def diagonal(e: t.Extent) -> float:
+    return math.sqrt((e[2] - e[0]) ** 2 + (e[3] - e[1]) ** 2)
+
+
+def circumsquare(e: t.Extent) -> t.Extent:
+    """A circumscribed square of the extent."""
+
+    d = diagonal(e)
+    return from_center(center(e), (d, d))
 
 
 def buffer(e: t.Extent, buf: int) -> t.Extent:

@@ -326,4 +326,6 @@ _HANDLERS = {
     'gws.types.Regex': _read_regex,
     'gws.types.Url': _read_url,
 
+    'gws.types.Any': _read_any,
+
 }

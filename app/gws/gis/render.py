@@ -1,19 +1,23 @@
 import PIL.Image
 import io
-import os
 
 import gws
 import gws.common.layer
+import gws.common.style
 import gws.gis.feature
+import gws.gis.extent
 import gws.tools.svg
+import gws.tools.xml2
 import gws.tools.units as units
+
 import gws.types as t
 
 
 #:export
-class SvgFragment:
+class SvgFragment(t.Data):
     points: t.List[t.Point]
-    svg: str
+    tags: t.List[t.Tag]
+    styles: t.Optional[t.List[t.IStyle]]
 
 
 #:export
@@ -71,7 +75,7 @@ class MapRenderOutputItem(t.Data):
     #:noexport
     image: PIL.Image.Image = None
     path: str = ''
-    elements: t.List[str] = []
+    tags: t.List[t.Tag] = []
 
 
 #:export
@@ -85,8 +89,7 @@ def _view_base(out_size, out_size_unit, rotation, dpi):
     view = t.MapRenderView()
 
     view.dpi = max(units.OGC_SCREEN_PPI, int(dpi))
-    # @TODO
-    view.rotation = 0
+    view.rotation = rotation
 
     if out_size_unit == 'px':
         view.size_px = out_size
@@ -174,8 +177,6 @@ class Renderer:
             yield item
             self._render_item(item)
 
-        self._flush_image()
-
     def _render_item(self, item: MapRenderInputItem):
         try:
             #  use the item's dpi
@@ -202,23 +203,19 @@ class Renderer:
             return
 
         if item.type == t.MapRenderInputItemType.features:
-            r = [
-                feature.to_svg(self.ri.view, item.style)
-                for feature in item.features
-            ]
-            self._add_svg(r)
+            for feature in item.features:
+                tags = feature.to_svg_tags(self.ri.view, item.style)
+                self._add_svg_tags(tags)
             return
 
         if item.type == t.MapRenderInputItemType.fragment:
-            svg = gws.tools.svg.convert_fragment(item.fragment, self.ri.view)
-            if svg:
-                self._add_svg([svg])
+            tags = gws.tools.svg.fragment_tags(item.fragment, self.ri.view)
+            self._add_svg_tags(tags)
             return
 
         if item.type == t.MapRenderInputItemType.svg_layer:
-            r = item.layer.render_svg(self.ri.view, item.style)
-            if r:
-                self._add_svg(r)
+            tags = item.layer.render_svg_tags(self.ri.view, item.style)
+            self._add_svg_tags(tags)
             return
 
         if item.type == t.MapRenderInputItemType.image_layer:
@@ -238,36 +235,35 @@ class Renderer:
         self.composition.add_image(img, opacity)
         self.output.items[-1].image = self.composition.image
 
-    def _add_svg(self, svg):
-        self._flush_image()
+    def _add_svg_tags(self, tags):
         if not self._last_item_is(MapRenderOutputItemType.svg):
             self.output.items.append(MapRenderOutputItem(
                 type=MapRenderOutputItemType.svg,
-                elements=[]
+                tags=[]
             ))
-        self.output.items[-1].elements.extend(svg)
-
-    def _flush_image(self):
-        if self._last_item_is(t.MapRenderOutputItemType.image):
-            # path = '%s/%s.png' % (self.base_dir, len(self.output.items))
-            # self.composition.save(path)
-            self.composition = None
-            # self.output.items[-1].path = path
+        self.output.items[-1].tags.extend(tags)
 
 
 def output_html(ro: MapRenderOutput) -> str:
-    html = []
-    css = 'position: absolute; left: 0; top: 0; width: 100%; height: 100%'
+    w, h = ro.view.size_mm
+    css = ';'.join([
+        f'position:absolute',
+        f'left:0',
+        f'top:0',
+        f'width:{w}mm',
+        f'height:{h}mm',
+    ])
+    tags = []
 
-    for r in ro.items:
-        if r.type == t.MapRenderOutputItemType.image:
+    for item in ro.items:
+        if item.type == t.MapRenderOutputItemType.image:
             path = ro.base_dir + '/' + gws.random_string(64) + '.png'
-            r.image.save(path, 'png')
-            html.append(f'<img style="{css}" src="{path}"/>')
-        if r.type == t.MapRenderOutputItemType.path:
-            html.append(f'<img style="{css}" src="{r.path}"/>')
-        if r.type == t.MapRenderOutputItemType.svg:
-            s = '\n'.join(r.elements)
-            html.append(f'<svg style="{css}" version="1.1" xmlns="http://www.w3.org/2000/svg">{s}</svg>')
+            item.image.save(path, 'png')
+            tags.append(('img', {'style': css, 'src': path}))
+        if item.type == t.MapRenderOutputItemType.path:
+            tags.append(('img', {'style': css, 'src': item.path}))
+        if item.type == t.MapRenderOutputItemType.svg:
+            gws.tools.svg.sort_by_z_index(item.tags)
+            tags.append(('svg', gws.tools.svg.SVG_ATTRIBUTES, {'style': css}, *item.tags))
 
-    return '\n'.join(html)
+    return ''.join(gws.tools.xml2.as_string(tag) for tag in tags)

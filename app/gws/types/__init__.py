@@ -9,10 +9,6 @@ class Enum:
     pass
 
 
-def none() -> Any:
-    return None
-
-
 #:alias An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
 Extent = Tuple[float, float, float, float]
 
@@ -24,6 +20,9 @@ Size = Tuple[float, float]
 
 #:alias A value with a unit
 Measurement = Tuple[float, str]
+
+#:alias An XML generator tag
+Tag = tuple
 
 
 class Axis(Enum):
@@ -343,6 +342,7 @@ class IFeature:
     def attr(self, name: str): pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
+    def to_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: pass
     def transform_to(self, crs) -> 'IFeature': pass
 
 
@@ -412,6 +412,7 @@ class IShape:
 
 
 class IStyle:
+    name: str
     props: 'StyleProps'
     text: str
     type: 'StyleType'
@@ -474,8 +475,8 @@ class MapRenderOutput(Data):
 
 
 class MapRenderOutputItem(Data):
-    elements: List[str]
     path: str
+    tags: List['Tag']
     type: str
 
 
@@ -932,6 +933,7 @@ class StyleMarker(Enum):
 
 
 class StyleProps(Props):
+    name: Optional[str]
     text: Optional[str]
     type: 'StyleType'
     values: Optional['StyleValues']
@@ -1002,9 +1004,10 @@ class StyleValues(Data):
     with_label: Optional['StyleLabelOption']
 
 
-class SvgFragment:
+class SvgFragment(Data):
     points: List['Point']
-    svg: str
+    styles: Optional[List['IStyle']]
+    tags: List['Tag']
 
 
 class TemplateLegendMode(Enum):
@@ -1044,6 +1047,7 @@ class IApplication(IObject):
     api: 'IApi'
     auth: 'IAuthManager'
     client: Optional['IClient']
+    developer_mode: bool
     meta: 'MetaData'
     monitor: 'IMonitor'
     qgis_version: str
@@ -1157,7 +1161,8 @@ class ILayer(IObject):
     def render_html_legend(self, context=None) -> str: pass
     def render_legend(self, context=None) -> Optional[str]: pass
     def render_legend_image(self, context=None) -> bytes: pass
-    def render_svg(self, rv: 'MapRenderView', style: 'IStyle' = None): pass
+    def render_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
+    def render_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: pass
     def render_xyz(self, x, y, z): pass
 
 
@@ -1277,6 +1282,7 @@ class ITemplate(IObject):
     page_size: 'Size'
     path: str
     text: str
+    title: str
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str: pass
     def dpi_for_quality(self, quality): pass
     def normalize_context(self, context: dict) -> dict: pass

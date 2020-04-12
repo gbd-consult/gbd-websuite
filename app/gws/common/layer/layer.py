@@ -18,6 +18,7 @@ import gws.gis.source
 import gws.gis.zoom
 import gws.tools.net
 import gws.tools.units
+import gws.tools.svg
 
 import gws.types as t
 from gws import cached_property
@@ -302,8 +303,11 @@ class Layer(gws.Object, t.ILayer):
     def render_xyz(self, x, y, z):
         return None
 
-    def render_svg(self, rv: t.MapRenderView, style: t.IStyle = None):
-        return None
+    def render_svg(self, rv: t.MapRenderView, style: t.IStyle = None) -> str:
+        return gws.tools.svg.as_xml(self.render_svg_tags(rv, style))
+
+    def render_svg_tags(self, rv: t.MapRenderView, style: t.IStyle = None) -> t.List[t.Tag]:
+        return []
 
     def configure_legend(self) -> t.LayerLegend:
         p = self.var('legend')

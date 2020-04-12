@@ -13,7 +13,7 @@ import gws.types as t
 
 _DEFAULT_POINT_BUFFER_RESOLUTION = 6
 _MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
-_CIRCLE_RESOLUTION = 16
+_CIRCLE_RESOLUTION = 64
 
 
 def from_wkt(s: str, crs=None) -> t.IShape:
@@ -173,8 +173,7 @@ class Shape(t.IShape):
         return Shape(self.geom.centroid, self.crs)
 
     def intersects(self, shape: t.IShape) -> bool:
-        s: Shape = shape
-        return self.geom.intersects(s.geom)
+        return self.geom.intersects(t.cast(Shape, shape).geom)
 
     def tolerance_polygon(self, tolerance, resolution=None) -> t.IShape:
         is_poly = self.type in (t.GeometryType.polygon, t.GeometryType.multipolygon)
