@@ -68,17 +68,22 @@ module.exports = v => {
             stroke: BASE_COLOR,
             fill: 'transparent',
             marker: 'arrow',
-            offsetY: 0,
         },
 
         '.modDimensionDimPlumb': {
             strokeWidth: 1,
+            strokeDasharray: 2,
             stroke: BASE_COLOR,
-            fill: 'transparent',
+        },
+
+        '.modDimensionDimExt': {
+            strokeWidth: 2,
+            strokeDasharray: 4,
+            stroke: BASE_COLOR,
         },
 
         '.modDimensionDimLabel': {
-            fontSize: 12,
+            fontSize: 11,
             fill: BASE_COLOR,
             userSelect: 'none',
             offsetY: 5,

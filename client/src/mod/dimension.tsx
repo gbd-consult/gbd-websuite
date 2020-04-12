@@ -33,10 +33,22 @@ function dist(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 }
 
-function rotate(x0, y0, x, y, a) {
+function slope(a, b) {
+    // slope between two points
+    let dx = (b[0] - a[0]);
+    let dy = (b[1] - a[1]);
+
+    if (dx === 0)
+        dx = 0.01;
+
+    return Math.atan(dy / dx);
+}
+
+function rotate(p, o, a) {
+    // rotate P(oint) about O(rigin) by A(ngle)
     return [
-        x0 + ((x - x0) * Math.cos(a) - (y - y0) * Math.sin(a)),
-        y0 + ((x - x0) * Math.sin(a) + (y - y0) * Math.cos(a)),
+        o[0] + (p[0] - o[0]) * Math.cos(a) - (p[1] - o[1]) * Math.sin(a),
+        o[1] + (p[0] - o[0]) * Math.sin(a) + (p[1] - o[1]) * Math.cos(a),
     ]
 }
 
@@ -89,13 +101,6 @@ class DimensionElement {
         return (dim + ' ' + this.text).trim();
     }
 
-    draw(fragmentPoints) {
-        if (this.type === 'Line') {
-            return this.drawLine(fragmentPoints)
-        }
-        return '';
-    }
-
     hasPoint(p) {
         return this.dimPoints.indexOf(p) >= 0 || this.controlPoint === p;
     }
@@ -121,124 +126,142 @@ class DimensionElement {
         }
     }
 
-    drawLine(fragmentPoints) {
-        let [x1, y1] = this.dimPoints[0].coordinate,
-            [x2, y2] = this.dimPoints[1].coordinate,
-            [xc, yc] = this.controlPoint.coordinate;
+    createTag(fragment) {
+        if (this.type === 'Line') {
+            return this.createLineTag(fragment)
+        }
+        return [];
+    }
 
-        let dx = (x2 - x1);
-        let dy = (y2 - y1);
+    createLineTag(fragment) {
 
-        if (dx === 0 && dy === 0)
-            return '';
+        /*
+                                                     label
+            [Q1] <-------------------> [Q2] .............. [CP]
+             |                           |
+             |                           |
+             | [h]                       |
+             |                           |
+             |                           |
+             |                           |
+            [P1]                        [P2]
 
-        if (dx === 0)
-            dx = 0.01;
+            - = modDimensionDimLine
+            | = modDimensionDimPlumb
+            . = modDimensionDimExt
 
-        let a = Math.atan(dy / dx);
 
-        [xc, yc] = rotate(x1, y1, xc, yc, -a);
-        [x2, y2] = rotate(x1, y1, x2, y2, -a);
+         */
 
-        let adeg = -a / (Math.PI / 180)
+        let p1 = this.dimPoints[0].coordinate,
+            p2 = this.dimPoints[1].coordinate,
+            cp = this.controlPoint.coordinate;
 
-        let h = yc - y1;
+        let a = slope(p1, p2);
 
-        let _bl = vpush(fragmentPoints, [x1, y1]);
-        let _tl = vpush(fragmentPoints, [x1, y1 + h]);
-        let _br = vpush(fragmentPoints, [x2, y2]);
-        let _tr = vpush(fragmentPoints, [x2, y2 + h]);
-        let _la = vpush(fragmentPoints, [xc, yc]);
+        let p1r = p1;
+        let p2r = rotate(p2, p1, -a);
+        let cpr = rotate(cp, p1, -a);
 
-        let buf = '';
+        let h = cpr[1] - p2r[1];
 
-        buf += `
-            <g transform="rotate(${adeg},<<${_bl} 0 0>>,<<${_bl} 1 0>>)">
-        `;
+        let q1r = [p1r[0], p1r[1] + h];
+        let q2r = [p2r[0], p2r[1] + h];
 
-        let lny, lay, s;
+        let q1 = rotate(q1r, p1, a);
+        let q2 = rotate(q2r, p1, a);
 
-        s = this.model.styles['.modDimensionDimLine'];
-        lny = s ? -(s.values.offset_y || 0) : 0;
+        let p1ref = vpush(fragment.points, p1);
+        let p2ref = vpush(fragment.points, p2);
+        let q1ref = vpush(fragment.points, q1);
+        let q2ref = vpush(fragment.points, q2);
+        let cpref = vpush(fragment.points, cp);
 
-        s = this.model.styles['.modDimensionDimLabel'];
-        lay = s ? -(s.values.offset_y || 0) : 0;
+        fragment.tags.push(['line', {
+            class: "modDimensionDimLine",
+            'marker-start': 'url(#lineStart)',
+            'marker-end': 'url(#lineEnd)',
+            x1: ['', q1ref, 0],
+            y1: ['', q1ref, 1],
+            x2: ['', q2ref, 0],
+            y2: ['', q2ref, 1],
+        }]);
 
-        lay += lny;
+        fragment.tags.push(['line', {
+            class: "modDimensionDimPlumb",
+            x1: ['', p1ref, 0],
+            y1: ['', p1ref, 1],
+            x2: ['', q1ref, 0],
+            y2: ['', q1ref, 1],
+        }]);
 
-        buf += `<line
-            class="modDimensionDimLine"
-            marker-start='url(#lineStart)'
-            marker-end='url(#lineEnd)'
-            x1="<<${_tl} 0 0>>"
-            y1="<<${_tl} 1 ${lny}>>"
-            x2="<<${_tr} 0 0>>"
-            y2="<<${_tr} 1 ${lny}>>"
-        />`;
+        fragment.tags.push(['line', {
+            class: "modDimensionDimPlumb",
+            x1: ['', p2ref, 0],
+            y1: ['', p2ref, 1],
+            x2: ['', q2ref, 0],
+            y2: ['', q2ref, 1],
+        }]);
 
-        buf += `<line
-            class="modDimensionDimPlumb"
-            x1="<<${_bl} 0 0>>"
-            y1="<<${_bl} 1 0>>"
-            x2="<<${_tl} 0 0>>"
-            y2="<<${_tl} 1 ${lny}>>"
-        />`;
+        let x1 = q1r[0], x2 = q2r[0];
+        let minx, maxx, minref, maxref;
 
-        buf += `<line
-            class="modDimensionDimPlumb"
-            x1="<<${_br} 0 0>>"
-            y1="<<${_br} 1 0>>"
-            x2="<<${_tr} 0 0>>"
-            y2="<<${_tr} 1 ${lny}>>"
-        />`;
+        if (x1 < x2) {
+            minx = x1;
+            maxx = x2;
+            minref = q1ref;
+            maxref = q2ref;
+        } else {
+            minx = x2;
+            maxx = x1;
+            minref = q2ref;
+            maxref = q1ref;
+        }
 
-        let minx = Math.min(x1, x2);
-        let maxx = Math.max(x1, x2);
         let anchor = 'middle';
 
-        if (xc < minx) {
-            let _ex = vpush(fragmentPoints, [minx, yc]);
-            buf += `<line
-                class="modDimensionDimLine"
-                x1="<<${_la} 0 0>>"
-                y1="<<${_la} 1 ${lny}>>"
-                x2="<<${_ex} 0 0>>"
-                y2="<<${_ex} 1 ${lny}>>"
-            />`;
+        if (cpr[0] < minx) {
+            fragment.tags.push(['line', {
+                class: 'modDimensionDimExt',
+                x1: ['', minref, 0],
+                y1: ['', minref, 1],
+                x2: ['', cpref, 0],
+                y2: ['', cpref, 1],
+            }]);
             anchor = 'start';
         }
 
-        if (xc > maxx) {
-            let _ex = vpush(fragmentPoints, [maxx, yc]);
-            buf += `<line
-                class="modDimensionDimLine"
-                x1="<<${_la} 0 0>>"
-                y1="<<${_la} 1 ${lny}>>"
-                x2="<<${_ex} 0 0>>"
-                y2="<<${_ex} 1 ${lny}>>"
-            />`;
+        if (cpr[0] > maxx) {
+            fragment.tags.push(['line', {
+                class: 'modDimensionDimExt',
+                x1: ['', cpref, 0],
+                y1: ['', cpref, 1],
+                x2: ['', maxref, 0],
+                y2: ['', maxref, 1],
+            }]);
             anchor = 'end';
         }
 
-        buf += `<text 
-            text-anchor="${anchor}" 
-            class="modDimensionDimLabel"
-            x="<<${_la} 0 0>>"
-            y="<<${_la} 1 ${lay}>>"
-            >
-            ${this.label}</text>
+        let s = this.model.styles['.modDimensionDimLabel'];
+        let labelOffset = s ? (s.values.offset_y || 0) : 0;
 
-        `;
-
-        buf += '</g>';
-
-        return buf;
+        fragment.tags.push(['text', {
+            class: 'modDimensionDimLabel',
+            'text-anchor': anchor,
+            x: ['', cpref, 0],
+            y: ['', cpref, 1],
+            transform: ['rotate', p1ref, p2ref, cpref],
+        },
+            ['tspan', {}, ''],
+            ['tspan', {dy: -labelOffset}, this.label],
+        ]);
     }
 }
 
 const DimenstionStyles = [
     '.modDimensionDimLine',
     '.modDimensionDimPlumb',
+    '.modDimensionDimExt',
     '.modDimensionDimLabel',
     '.modDimensionDimArrow',
     '.modDimensionDimCross',
@@ -267,7 +290,10 @@ class DimensionModel {
             this.styles[s] = this.map.style.get(s);
         });
 
-        this.svgDefs = this.drawDefs();
+        let fragment = {points: [], tags: []};
+        this.createDefsTag(fragment);
+        console.log(fragment);
+        this.svgDefs = this.toSvg(fragment.tags[0], []);
     }
 
     get empty() {
@@ -414,6 +440,45 @@ class DimensionModel {
         }
     }
 
+    toSvg(element, pixels) {
+        if (!Array.isArray(element))
+            return element;
+
+        let atts = '';
+
+        if (element[1]) {
+
+            atts = gws.tools.entries(element[1]).map(([key, val]) => {
+
+                if (Array.isArray(val)) {
+                    switch (val[0]) {
+                        case '':
+                            val = pixels[val[1]][val[2]];
+                            break;
+                        case 'rotate':
+                            let a = slope(pixels[val[1]], pixels[val[2]])
+                            let adeg = a / (Math.PI / 180);
+                            let r = pixels[val[3]];
+                            val = `rotate(${adeg}, ${r[0]}, ${r[1]})`;
+                            break;
+                    }
+                }
+
+                return `${key}="${val}"`
+
+            }).join(' ');
+        }
+
+        let content = element.slice(2).map(el => this.toSvg(el, pixels)).join('');
+
+        if (content) {
+            return `<${element[0]} ${atts}>${content}</${element[0]}>`;
+        }
+
+        return `<${element[0]} ${atts}/>`;
+    }
+
+
     drawDraft() {
         let buf = [];
         let r = this.pixelTolerance >> 1;
@@ -455,8 +520,8 @@ class DimensionModel {
         return `<circle class="${cls}" cx="${x}" cy="${y}" r="${r}" />`;
     }
 
-    drawDefs() {
-        let buf = [];
+    createDefsTag(fragment) {
+        let buf = [], defs = [];
 
         let lineStyle = this.styles['.modDimensionDimLine'];
 
@@ -470,32 +535,30 @@ class DimensionModel {
             w = w || 12;
             h = h || 8;
 
-            buf.push(`
-                <marker 
-                    id="lineStart" 
-                    markerWidth="${w}" 
-                    markerHeight="${h}" 
-                    refX="0" 
-                    refY="${h >> 1}" 
-                    orient="auto" 
-                    markerUnits="userSpaceOnUse">
-                    <path
-                        class="modDimensionDimArrow"
-                        d="M0,${h >> 1} L${w},0 L${w},${h} Z"/>
-                </marker>
-                <marker 
-                    id="lineEnd" 
-                    markerWidth="${w}" 
-                    markerHeight="${h}"
-                    refX="${w}" 
-                    refY="${h >> 1}"
-                    orient="auto" 
-                    markerUnits="userSpaceOnUse">
-                    <path
-                        class="modDimensionDimArrow"
-                        d="M0,0 L0,${h} L${w},${h >> 1} Z" />
-                </marker>
-            `);
+            defs.push(['marker', {
+                id: 'lineStart',
+                markerWidth: w,
+                markerHeight: h,
+                refX: 0,
+                refY: h >> 1,
+                orient: 'auto',
+                markerUnits: 'userSpaceOnUse'
+            },
+                ['path', {class: 'modDimensionDimArrow', d: `M0,${h >> 1} L${w},0 L${w},${h} Z`}]
+            ]);
+
+            defs.push(['marker', {
+                id: 'lineEnd',
+                markerWidth: w,
+                markerHeight: h,
+                refX: w,
+                refY: h >> 1,
+                orient: 'auto',
+                markerUnits: 'userSpaceOnUse'
+            },
+                ['path', {class: 'modDimensionDimArrow', d: `M0,0 L0,${h} L${w},${h >> 1} Z`}]
+            ]);
+
         }
 
         if (lineStyle && lineStyle.values.marker === 'cross') {
@@ -526,7 +589,9 @@ class DimensionModel {
 
         }
 
-        return '<defs>' + buf.join('') + '</defs>';
+        fragment.tags.push(['defs', {}, ...defs]);
+
+        // return '<defs>' + buf.join('') + '</defs>';
 
     }
 
@@ -539,48 +604,40 @@ class DimensionModel {
         if (!mapSize)
             return '';
 
-        let frag = this.fragment();
+        let fragment = {points: [], tags: []};
+        this.elements.map(e => e.createTag(fragment));
 
-        let xy = frag.points.map(c => this.toPx(c));
-
-        frag.svg = frag.svg.replace(/<<(\S+) (\S+) (\S+)>>/g, ($0, $1, $2, $3) => {
-            let px = xy[Number($1)]
-            return String(px[Number($2)] + Number($3))
-        });
-
+        let pixels = fragment.points.map(c => this.toPx(c));
+        let svg = fragment.tags.map(el => this.toSvg(el, pixels)).join('');
         let points = this.isInteractive ? this.points.map(p => this.drawPoint(p)).join('') : '';
-
         let draft = this.drawDraft();
 
         return `<svg width="${mapSize[0]}" height="${mapSize[1]}" version="1.1" xmlns="http://www.w3.org/2000/svg">
             ${this.svgDefs}
             ${points}
-            ${frag.svg}
+            ${svg}
             ${draft}
         </svg>`;
     }
 
-    fragment(): gws.api.SvgFragment {
-        let fragmentPoints = [];
-        let elements = this.elements.map(e => e.draw(fragmentPoints)).join('');
+    printItem(): gws.api.PrintItem {
+        let fragment = {points: [], tags: [], styles: []};
+
+        this.createDefsTag(fragment);
+        this.elements.map(e => e.createTag(fragment));
+
+        let styles = gws.tools.entries(this.styles).map(([name, s]) => ({
+            type: gws.api.StyleType.css,
+            values: s.values,
+            name,
+        }));
 
         return {
-            points: fragmentPoints,
-            svg: `${this.svgDefs}${elements}`
+            type: 'fragment',
+            points: fragment.points,
+            tags: fragment.tags,
+            styles
         }
-    }
-
-    printFragment() {
-        let css = gws.tools.entries(this.styles).map(([name, s]) =>
-            name + ' {\n' + s.source + '\n}'
-        ).join('\n');
-
-        let frag = this.fragment();
-        frag.svg = `
-            <style>${css}</style>${frag.svg}
-        `;
-
-        return frag;
     }
 
 }
@@ -591,10 +648,7 @@ class DimensionLayer extends gws.map.layer.FeatureLayer {
     get printItem(): gws.api.PrintItem {
         if (this.master.model.empty)
             return null;
-        return {
-            type: 'fragment',
-            fragment: this.master.model.printFragment(),
-        };
+        return this.master.model.printItem()
     }
 
 }
