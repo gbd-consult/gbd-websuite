@@ -1047,7 +1047,7 @@ class IApplication(IObject):
     api: 'IApi'
     auth: 'IAuthManager'
     client: Optional['IClient']
-    developer_mode: bool
+    developer: dict
     meta: 'MetaData'
     monitor: 'IMonitor'
     qgis_version: str
