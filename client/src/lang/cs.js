@@ -106,7 +106,6 @@ module.exports = {
     modPrintPrinting: 'Tisk',
     modPrintPrintToolbarButton: 'Tisk',
     modPrintQuality: 'Kvalita tisku',
-    modPrintRotationWarning: 'Tisk otočené mapy není podporován',
     modPrintSnapshotToolbarButton: 'Exportovat screenshot',
     modPrintTemplate: 'Předloha tisku',
     modSearchClearButton: 'Odstranit',

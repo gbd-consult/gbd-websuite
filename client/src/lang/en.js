@@ -52,7 +52,6 @@ module.exports = {
     modPrintError: 'printing error',
     modPrintErrorDetails: '',
     modPrintTemplate: 'template',
-    modPrintRotationWarning: 'rotated printing is not supported yet',
 
     modLayersDetailsZoomButton: 'zoom layer',
     modLayersDetailsShowButton: 'hide others',

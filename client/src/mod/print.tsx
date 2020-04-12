@@ -222,7 +222,6 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
                         />
                     </Cell>
                 </Row>
-                {vs.rotation !== 0 && <gws.ui.Error text={this.__('modPrintRotationWarning')}/>}
             </Form>
         </div>
     }
