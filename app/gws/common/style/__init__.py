@@ -12,13 +12,15 @@ class Config(t.Config):
     """Feature style"""
 
     type: t.StyleType  #: style type
-    text: t.Optional[str]  #: raw style content or a selector
+    name: t.Optional[str]  #: style name
+    text: t.Optional[str]  #: raw style content
     values: t.Optional[dict]  #: style values
 
 
 #:export
 class StyleProps(t.Props):
     type: t.StyleType
+    name: t.Optional[str]
     values: t.Optional[t.StyleValues]
     text: t.Optional[str]
 
@@ -29,10 +31,10 @@ def from_props(p: t.StyleProps) -> t.IStyle:
             values = gws.tools.style.from_css_dict(gws.as_dict(p.values))
         else:
             values = gws.tools.style.from_css_text(p.text)
-        return Style(p.type, values=values)
+        return Style(p.type, values=values, name=gws.get(p, 'name'))
 
     if p.type == 'cssSelector':
-        return Style(p.type, text=(p.text or ''))
+        return Style(p.type, name=(p.name or ''))
 
     raise gws.Error(f'invalid style type {p.type!r}')
 
@@ -46,15 +48,17 @@ def from_config(c: Config) -> t.IStyle:
 
 #:export IStyle
 class Style(t.IStyle):
-    def __init__(self, type: StyleType, values: t.StyleValues = None, text: str = None):
+    def __init__(self, type: StyleType, values: t.StyleValues = None, text: str = None, name: str = None):
         super().__init__()
         self.type: StyleType = type
         self.values: t.StyleValues = values
         self.text: str = text
+        self.name: str = name
 
     @property
     def props(self) -> t.StyleProps:
         return t.StyleProps(
             type=self.type,
             values=self.values,
-            text=self.text or '')
+            text=self.text or '',
+            name=self.name or '')

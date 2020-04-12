@@ -135,10 +135,7 @@ _DEFAULT_VALUES = dict(
     stroke_miterlimit=0,
     stroke_width=0,
 
-    marker=None,
-    marker_fill=None,
     marker_size=0,
-    marker_stroke=None,
     marker_stroke_dasharray=[],
     marker_stroke_dashoffset=0,
     marker_stroke_linecap=StyleStrokeLineCap.butt,
@@ -150,8 +147,6 @@ _DEFAULT_VALUES = dict(
     with_label=StyleLabelOption.all,
 
     label_align=StyleLabelAlign.center,
-    label_background=None,
-    label_fill=None,
     label_font_family='sans-serif',
     label_font_size=12,
     label_font_style=StyleLabelFontStyle.normal,
@@ -161,9 +156,7 @@ _DEFAULT_VALUES = dict(
     label_min_scale=0,
     label_offset_x=0,
     label_offset_y=0,
-    label_padding=None,
     label_placement=StyleLabelPlacement.middle,
-    label_stroke=None,
     label_stroke_dasharray=[],
     label_stroke_dashoffset=0,
     label_stroke_linecap=StyleStrokeLineCap.butt,
@@ -181,6 +174,7 @@ _DEFAULT_VALUES = dict(
 ##
 
 _color_patterns = (
+    r'^#[0-9a-fA-F]{3}$',
     r'^#[0-9a-fA-F]{6}$',
     r'^#[0-9a-fA-F]{8}$',
     r'^rgb\(\d{1,3},\d{1,3},\d{1,3}\)$',
@@ -196,6 +190,8 @@ def _color(val):
 
 
 def _icon(val):
+    if not val:
+        return
     s = val
     m = re.match(r'^url\((.+?)\)$', val)
     if m:
