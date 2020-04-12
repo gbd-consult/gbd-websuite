@@ -8,16 +8,6 @@ import gws.tools.net
 
 import gws.types as t
 
-_error_color = (255, 0, 140, 0)
-
-
-def _error_image(w, h):
-    img = Image.new('RGBA', (w, h), _error_color)
-    with io.BytesIO() as out:
-        img.save(out, format='png')
-        return out.getvalue()
-
-
 class ServiceException(Exception):
     pass
 
@@ -60,7 +50,7 @@ def wms_request(layer_uid, bounds: t.Bounds, width, height, forward=None):
     }
     if forward:
         args.update(forward)
-    return _call('wms', args) or _error_image(width, height)
+    return _call('wms', args)
 
 
 def wmts_request(source_uid, x, y, z, tile_matrix, tile_size):
@@ -76,4 +66,4 @@ def wmts_request(source_uid, x, y, z, tile_matrix, tile_size):
         'style': 'default',
         'layer': source_uid
     }
-    return _call('ows', args) or _error_image(tile_size, tile_size)
+    return _call('ows', args)
