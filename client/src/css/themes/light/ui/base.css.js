@@ -38,6 +38,11 @@ module.exports = v => ({
         pointerEvents: 'none',
     },
 
+    '.uiControl.isReadOnly .uiControlBox': {
+        backgroundColor: '#f5f5f5',
+        borderColor: '#f5f5f5',
+    },
+
     '.uiControlBody': {
         position: 'relative'
     },

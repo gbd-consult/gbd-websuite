@@ -46,62 +46,58 @@ class SidebarBody extends gws.View<ViewProps> {
     }
 
     mapInfoBlock() {
-        let map = this.props.controller.map,
-            vs = map.viewState,
-            ve = map.viewExtent;
+        let map = this.props.controller.map;
 
         let coord = n => map.formatCoordinate(Number(n) || 0);
-        let num = n => n; //String(Math.floor(Number(n) || 0));
+        let ext = map.viewExtent.map(coord).join(', ');
 
-        let data = [
-            {
-                name: 'projection',
-                title: this.__('modOverviewProjection'),
-                value: map.projection.getCode(),
-            },
-            {
-                name: 'extent',
-                title: this.__('modOverviewExtent'),
-                value: <div>
-                    {coord(ve[0])}, {coord(ve[1])}, {coord(ve[2])}, {coord(ve[3])}
-                </div>
-            },
-            {
-                name: 'mapEditCenterX',
-                title: this.__('modOverviewCenterX'),
-                value: coord(this.props.mapEditCenterX),
-                editable: true,
-            },
-            {
-                name: 'mapEditCenterY',
-                title: this.__('modOverviewCenterY'),
-                value: coord(this.props.mapEditCenterY),
-                editable: true,
-            },
-            {
-                name: 'mapEditScale',
-                title: this.__('modOverviewScale'),
-                value: num(this.props.mapEditScale),
-                editable: true,
-            },
-            {
-                name: 'mapEditAngle',
-                title: this.__('modOverviewRotation'),
-                value: num(this.props.mapEditAngle),
-                editable: true,
-            },
+        let res = map.resolutions,
+            maxScale = Math.max(...res.map(gws.tools.res2scale)),
+            minScale = Math.min(...res.map(gws.tools.res2scale));
 
-        ];
+        let bind = k => ({
+            whenChanged: v => this.props.controller.update({[k]: v}),
+            whenEntered: v => this.submit(),
+            value: this.props[k]
+        });
+
+
 
         return <Form>
             <Row>
                 <Cell flex>
-                    <gws.components.sheet.Editor
-                        data={data}
-                        whenChanged={(k, v) => this.props.controller.update({[k]: v})}
-                        whenEntered={() => this.submit()}
-                    />
+                    <Form tabular>
+                        <gws.ui.TextInput
+                            label={this.__('modOverviewProjection')}
+                            value={map.projection.getCode()}
+                            readOnly/>
+                        <gws.ui.TextInput
+                            label={this.__('modOverviewExtent')}
+                            value={ext}
+                            readOnly/>
+                        <gws.ui.TextInput
+                            label={this.__('modOverviewCenterX')}
+                            {...bind('mapEditCenterX')}/>
+                        <gws.ui.TextInput
+                            label={this.__('modOverviewCenterY')}
+                            {...bind('mapEditCenterY')}/>
+                        <gws.ui.NumberInput
+                            minValue={minScale}
+                            maxValue={maxScale}
+                            step={1000}
+                            label={this.__('modOverviewScale')}
+                            {...bind('mapEditScale')}/>
+                        <gws.ui.NumberInput
+                            minValue={0}
+                            maxValue={359}
+                            step={5}
+                            withClear
+                            label={this.__('modOverviewRotation')}
+                            {...bind('mapEditAngle')}/>
+                    </Form>
                 </Cell>
+
+
             </Row>
             <Row>
                 <Cell flex/>
@@ -122,7 +118,7 @@ class SidebarBody extends gws.View<ViewProps> {
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
-                <gws.ui.Title content={this.props.controller.app.project.title}/>
+                <gws.ui.Title content={this.__('modOverviewSidebarTitle')}/>
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
