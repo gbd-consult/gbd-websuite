@@ -2,33 +2,33 @@ import gws
 import gws.types as t
 
 
-class SrvConfig(t.Config):
+class ModuleConfig(t.Config):
     enabled: bool = True  #: the module is enabled
     threads: int = 0  #: number of threads for this module
     workers: int = 4  #: number of processes for this module
 
 
-class SpoolConfig(SrvConfig):
+class SpoolConfig(ModuleConfig):
     """Spool server module"""
 
     jobFrequency: t.Duration = 3  #: background jobs checking frequency
     monitorFrequency: t.Duration = 30  #: filesystem changes check frequency
 
 
-class WebConfig(SrvConfig):
+class WebConfig(ModuleConfig):
     """Web server module"""
+
     maxRequestLength: int = 10  #: max request length in megabytes
-    pass
 
 
-class MapproxyConfig(SrvConfig):
+class MapproxyConfig(ModuleConfig):
     """Mapproxy server module"""
 
     host: str = 'localhost'
     port: int = 5000
 
 
-class QgisConfig(SrvConfig):
+class QgisConfig(ModuleConfig):
     """Bundled QGIS server module"""
 
     host: str = 'localhost'

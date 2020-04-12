@@ -1,4 +1,6 @@
 from argh import arg
+
+import gws
 from . import control
 
 COMMAND = 'server'
@@ -24,11 +26,11 @@ def reconfigure(cfg=None):
     control.reconfigure(cfg)
 
 
-@arg('--module', help='server module to reload')
-def reload(module=None):
+@arg('--modules', help='server modules to reload')
+def reload(modules=None):
     """Gracefully reload the server without reconfiguring"""
 
-    control.reload(module)
+    control.reload(gws.as_list(modules))
 
 
 @arg('--cfg', help='configuration file')

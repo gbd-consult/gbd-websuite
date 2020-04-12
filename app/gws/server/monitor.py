@@ -50,9 +50,9 @@ class Object(gws.Object, t.IMonitor):
         self._prepare()
 
         for s in self.watch_dirs:
-            gws.log.info(f'MONITOR: watching directory {s!r}...')
+            gws.log.info(f'MONITOR: watching directory {s!r}')
         for s in self.watch_files:
-            gws.log.info(f'MONITOR: watching file {s!r}...')
+            gws.log.info(f'MONITOR: watching file {s!r}')
 
         try:
             os.unlink(_lockfile)
@@ -83,22 +83,25 @@ class Object(gws.Object, t.IMonitor):
 
             # @TODO: smarter reload
 
-            gws.log.info('MONITOR: begin reload')
+            reconf = any(gws.APP_DIR not in path for path in changed)
 
-            if not self._reload():
+            gws.log.info(f'MONITOR: begin reload (reconfigure={reconf})')
+
+            if not self._reload(reconf):
                 return
 
         # finally, reload ourselves
         gws.log.info(f'MONITOR: bye bye')
         control.reload_uwsgi('spool')
 
-    def _reload(self):
-        try:
-            control.configure()
-        except Exception:
-            gws.log.error('MONITOR: configuration error')
-            gws.log.exception()
-            return False
+    def _reload(self, reconf):
+        if reconf:
+            try:
+                control.configure()
+            except Exception:
+                gws.log.error('MONITOR: configuration error')
+                gws.log.exception()
+                return False
 
         try:
             control.reload_uwsgi('qgis')

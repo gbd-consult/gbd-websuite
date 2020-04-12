@@ -69,8 +69,8 @@ def reconfigure(config_path=None):
     _reload(True, config_path)
 
 
-def reload(module=None):
-    _reload(False, None, module)
+def reload(modules=None):
+    _reload(False, None, modules)
 
 
 def reload_uwsgi(module):
@@ -82,18 +82,18 @@ def reload_uwsgi(module):
         gws.tools.os2.run(['uwsgi', '--reload', p])
 
 
-def _reload(reconfigure, config_path, module=None):
+def _reload(reconf, config_path, modules=None):
     pid = gws.tools.os2.pids_of('uwsgi')
     if not pid:
         gws.log.info('server not running, starting...')
         start(config_path)
         return
 
-    if reconfigure:
+    if reconf:
         configure(config_path)
 
-    for m in ('qgis', 'mapproxy', 'web'):
-        if not module or m == module:
+    for m in ('qgis', 'mapproxy', 'web', 'spool'):
+        if not modules or m in modules:
             reload_uwsgi(m)
 
 
