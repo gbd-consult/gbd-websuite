@@ -6,9 +6,10 @@ import gws
 import gws.tools.clihelpers as ch
 
 gws.ensure_dir(gws.MAPPROXY_CACHE_DIR)
-gws.ensure_dir(gws.WEB_CACHE_DIR)
-gws.ensure_dir(gws.OBJECT_CACHE_DIR)
+gws.ensure_dir(gws.LEGEND_CACHE_DIR)
 gws.ensure_dir(gws.NET_CACHE_DIR)
+gws.ensure_dir(gws.OBJECT_CACHE_DIR)
+gws.ensure_dir(gws.WEB_CACHE_DIR)
 gws.ensure_dir(gws.CONFIG_DIR)
 gws.ensure_dir(gws.LOG_DIR)
 gws.ensure_dir(gws.MISC_DIR)

@@ -325,7 +325,7 @@ class Layer(gws.Object, t.ILayer):
         if self.legend.path:
             return self.legend.path
 
-        cache_path = gws.ensure_dir(gws.NET_CACHE_DIR + '/legend') + '/' + self.uid + '.png'
+        cache_path = gws.LEGEND_CACHE_DIR + '/' + self.uid + '.png'
 
         if self.legend.url:
             try:
