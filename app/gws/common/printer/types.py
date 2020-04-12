@@ -3,7 +3,7 @@ import gws.tools.job
 
 
 class PrintItemBase(t.Data):
-    opacity: float = 1
+    opacity: t.Optional[float]
     style: t.Optional[t.StyleProps]
 
 
@@ -38,7 +38,9 @@ class PrintItemVector(PrintItemBase):
 
 class PrintItemFragment(PrintItemBase):
     type: t.Literal = 'fragment'
-    fragment: t.SvgFragment
+    points: t.List[t.Point]
+    styles: t.Optional[t.List[t.StyleProps]]
+    tags: t.List[t.Any]
 
 
 #:alias

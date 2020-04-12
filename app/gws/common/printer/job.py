@@ -113,12 +113,10 @@ class _Worker:
             # force dpi=OGC_SCREEN_PPI for low-res printing (dpi < OGC_SCREEN_PPI)
             self.view_dpi = max(self.template.dpi_for_quality(p.quality or 0), units.OGC_SCREEN_PPI)
             self.view_size_mm = self.template.map_size
-            self.view_size_px = units.point_mm2px(self.template.map_size, self.view_dpi)
 
         elif p.type == 'map':
             self.view_dpi = max(gws.as_int(p.dpi), units.OGC_SCREEN_PPI)
             self.view_size_mm = units.point_px2mm((p.mapWidth, p.mapHeight), units.OGC_SCREEN_PPI)
-            self.view_size_px = units.point_mm2px(self.view_size_mm, self.view_dpi)
 
         else:
             raise ValueError('invalid print params type')
@@ -185,7 +183,7 @@ class _Worker:
             if self.template:
                 size = units.point_mm2px(self.template.page_size, units.PDF_DPI)
             else:
-                size = self.view_size_px
+                size = units.point_mm2px(self.view_size_mm, self.view_dpi)
             res_path = gws.tools.pdf.to_image(
                 in_path=res_path,
                 out_path=res_path + '.png',
@@ -206,8 +204,8 @@ class _Worker:
                 crs=self.view_crs,
                 center=sec.center,
                 scale=self.view_scale,
-                out_size=self.view_size_px,
-                out_size_unit='px',
+                out_size=self.view_size_mm,
+                out_size_unit='mm',
                 rotation=self.view_rotation,
                 dpi=self.view_dpi,
             )
@@ -226,16 +224,11 @@ class _Worker:
             )
             return tr.path
 
-        page_size = [
-            units.px2mm(self.view_size_px[0], self.view_dpi),
-            units.px2mm(self.view_size_px[1], self.view_dpi),
-        ]
-
         map_html = gws.gis.render.output_html(renderer.output)
 
         gws.tools.pdf.render_html(
             '<meta charset="UTF-8"/>' + map_html,
-            page_size=page_size,
+            page_size=self.view_size_mm,
             margin=None,
             out_path=out_path
         )
@@ -307,7 +300,6 @@ class _Worker:
             s = gws.common.style.from_props(s)
         if s:
             ii.style = s
-            gws.p(ii.style.values)
 
         if item.type == 'raster':
             ii.layer = t.cast(t.ILayer, self.acquire('gws.ext.layer', item.layerUid))
@@ -357,7 +349,10 @@ class _Worker:
 
         if item.type == 'fragment':
             ii.type = t.MapRenderInputItemType.fragment
-            ii.fragment = item.fragment
+            ii.fragment = t.SvgFragment(
+                points=item.points or [],
+                tags=item.tags or [],
+                styles=[gws.common.style.from_props(s) for s in (item.styles or [])])
             ii.dpi = units.PDF_DPI
             return ii
 
