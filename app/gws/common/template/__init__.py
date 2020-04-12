@@ -71,7 +71,7 @@ class Object(gws.Object, t.ITemplate):
     def props(self):
         return t.TemplateProps(
             uid=self.uid,
-            title=self.var('title'),
+            title=self.title,
             qualityLevels=self.var('qualityLevels', default=[]),
             dataModel=self.data_model,
             mapWidth=self.map_size[0],
@@ -85,6 +85,7 @@ class Object(gws.Object, t.ITemplate):
 
         self.path: str = self.var('path')
         self.text: str = self.var('text')
+        self.title: str = self.var('title')
 
         if self.path:
             self.root.application.monitor.add_path(self.path)
