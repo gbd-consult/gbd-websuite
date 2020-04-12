@@ -59,6 +59,7 @@ class Config(t.WithAccess):
     api: t.Optional[gws.common.api.Config]  #: system-wide server actions
     auth: t.Optional[gws.common.auth.Config]  #: authorization methods and options
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
+    developer: t.Optional[dict]  #: developer options
     db: t.Optional[DbConfig]  #: database configuration
     fonts: t.Optional[FontConfig]  #: fonts configuration
     meta: t.Optional[gws.common.metadata.Config] = {}  #: application metadata
@@ -73,12 +74,7 @@ class Config(t.WithAccess):
     web: t.Optional[WebConfig] = {}  #: webserver configuration
 
 
-_default_site = t.Data({
-    'host': '*',
-    'root': t.Data({
-        'dir': '/data/web',
-    })
-})
+_DEFAULT_SITE = t.Data(host='*', root=t.Data(dir='/data/web'))
 
 
 #:export IApplication
@@ -88,21 +84,24 @@ class Object(gws.Object, t.IApplication):
     def configure(self):
         super().configure()
 
-        self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
-
-        self.monitor: t.IMonitor  = t.cast(t.IMonitor, self.create_child(gws.server.monitor.Object, {}))
-
-        self.version: str = gws.VERSION
-        self.qgis_version: str = gws.qgis.server.version()
-        self.web_sites: t.List[t.IWebSite] = []
+        self.developer: dict = self.var('developer')
+        if self.developer:
+            gws.log.warn('DEVELOPER MODE ENABLED')
 
         self.set_uid('APP')
 
-        self.defaults = self.var('defaults')
+        self.root.application = self
+        self.version: str = gws.VERSION
+
+        # IDEA doesn't like 'qgis.server' for some reason
+        # noinspection PyUnresolvedReferences
+        self.qgis_version: str = gws.qgis.server.version()
 
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
 
-        self.root.application = self
+        self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
+        self.monitor: t.IMonitor = t.cast(t.IMonitor, self.create_child(gws.server.monitor.Object, {}))
+        self.web_sites: t.List[t.IWebSite] = []
 
         s = self.var('fonts.dir')
         if s:
@@ -127,7 +126,7 @@ class Object(gws.Object, t.IApplication):
         p = self.var('client')
         self.client: t.Optional[t.IClient] = self.create_child(gws.common.client.Object, p) if p else None
 
-        p = self.var('web.sites') or [_default_site]
+        p = self.var('web.sites') or [_DEFAULT_SITE]
         for s in p:
             s.ssl = True if self.var('web.ssl') else False
             self.web_sites.append(self.root.create_object('gws.web.site', s))
