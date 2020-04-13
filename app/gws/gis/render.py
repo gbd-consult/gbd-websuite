@@ -219,7 +219,10 @@ class Renderer:
             return
 
         if item.type == t.MapRenderInputItemType.image_layer:
-            r = item.layer.render_box(self.ri.view, {'layers': item.sub_layers})
+            extra_params = {}
+            if item.sub_layers:
+                extra_params = {'layers': item.sub_layers}
+            r = item.layer.render_box(self.ri.view, extra_params)
             if r:
                 self._add_image(PIL.Image.open(io.BytesIO(r)), opacity)
 

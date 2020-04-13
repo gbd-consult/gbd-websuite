@@ -51,7 +51,7 @@ class Vector(layer.Layer, t.IVectorLayer):
         feature.layer = self
         return feature
 
-    def render_box(self, rv, client_params=None):
+    def render_box(self, rv, extra_params=None):
         tags = self.render_svg_tags(rv)
         gws.debug.time_start('render_box:to_png')
         png = gws.tools.svg.as_png(tags, size=rv.size_px)

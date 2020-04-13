@@ -75,9 +75,9 @@ class Object(gws.common.action.Object):
         layer = req.require_layer(p.layerUid)
         img = None
 
-        client_params = {}
+        extra_params = {}
         if p.layers:
-            client_params['layers'] = p.layers
+            extra_params['layers'] = p.layers
 
         rv = gws.gis.render.view_from_bbox(
             crs=p.crs or layer.map.crs,
@@ -90,7 +90,7 @@ class Object(gws.common.action.Object):
 
         ts = time.time()
         try:
-            img = layer.render_box(rv, client_params)
+            img = layer.render_box(rv, extra_params)
         except:
             gws.log.exception()
         gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(rv), time.time() - ts))

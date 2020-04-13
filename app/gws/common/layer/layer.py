@@ -297,7 +297,7 @@ class Layer(gws.Object, t.ILayer):
     def mapproxy_config(self, mc):
         pass
 
-    def render_box(self, rv: t.MapRenderView, client_params=None):
+    def render_box(self, rv: t.MapRenderView, extra_params=None):
         return None
 
     def render_xyz(self, x, y, z):

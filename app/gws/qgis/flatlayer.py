@@ -82,24 +82,11 @@ class Object(gws.common.layer.Image):
                 self.resolutions = gws.gis.zoom.resolutions_from_config(
                     zoom, self.resolutions)
 
-    def render_box(self, rv: t.MapRenderView, client_params=None):
-        forward = {}
-
-        cache_uid = self.uid
-
-        if not self.has_cache:
-            cache_uid = self.uid + '_NOCACHE'
-
+    def render_box(self, rv: t.MapRenderView, extra_params=None):
+        extra_params = extra_params or {}
         if rv.dpi > 90:
-            forward['DPI__gws'] = str(rv.dpi)
-            cache_uid = self.uid + '_NOCACHE'
-
-        return gws.gis.mpx.wms_request(
-            cache_uid,
-            rv.bounds,
-            rv.size_px[0],
-            rv.size_px[1],
-            forward)
+            extra_params['DPI__gws'] = str(rv.dpi)
+        return super().render_box(rv, extra_params)
 
     def configure_legend(self):
         return super().configure_legend() or t.LayerLegend(enabled=True)

@@ -1157,7 +1157,7 @@ class ILayer(IObject):
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
     def mapproxy_config(self, mc): pass
     def ows_enabled(self, service: 'IOwsService') -> bool: pass
-    def render_box(self, rv: 'MapRenderView', client_params=None): pass
+    def render_box(self, rv: 'MapRenderView', extra_params=None): pass
     def render_html_legend(self, context=None) -> str: pass
     def render_legend(self, context=None) -> Optional[str]: pass
     def render_legend_image(self, context=None) -> bytes: pass

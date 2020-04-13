@@ -43,13 +43,13 @@ class Image(layer.Layer):
 
         return p
 
-    def render_box(self, rv, client_params=None):
+    def render_box(self, rv, extra_params=None):
         uid = self.uid
         if not self.has_cache:
             uid += '_NOCACHE'
 
         if not rv.rotation:
-            return gws.gis.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1])
+            return gws.gis.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1], forward=extra_params)
 
         # rotation: render a circumsquare around the wanted extent
 
@@ -57,7 +57,7 @@ class Image(layer.Layer):
         w, h = rv.size_px
         d = gws.gis.extent.diagonal((0, 0, w, h))
 
-        r = gws.gis.mpx.wms_request(uid, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d)
+        r = gws.gis.mpx.wms_request(uid, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d, forward=extra_params)
         if not r:
             return
 
