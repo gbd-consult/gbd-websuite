@@ -9,6 +9,7 @@ import werkzeug.wsgi
 import gws
 import gws.tools.net
 import gws.tools.json2
+import gws.tools.date
 import gws.tools.vendor.umsgpack as umsgpack
 import gws.types as t
 
@@ -91,7 +92,9 @@ class BaseRequest(t.IBaseRequest):
             return None
 
         data = self._wz.get_data(as_text=False, parse_form_data=False)
-        # gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.random_string(8)}', data)
+
+        if self.root.application.developer.get('log_requests'):
+            gws.write_file_b(f'{gws.VAR_DIR}/request_{gws.tools.date.timestamp()}', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:

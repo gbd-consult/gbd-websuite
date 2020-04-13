@@ -84,7 +84,7 @@ class Object(gws.Object, t.IApplication):
     def configure(self):
         super().configure()
 
-        self.developer: dict = self.var('developer')
+        self.developer: dict = self.var('developer') or {}
         if self.developer:
             gws.log.warn('DEVELOPER MODE ENABLED')
 

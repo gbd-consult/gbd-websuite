@@ -39,7 +39,7 @@ def parse_and_activate(path=None) -> t.IRootObject:
     for d in cfg.projectDirs:
         root.application.monitor.add_directory(d, parser.config_path_pattern)
 
-    if root.application.developer and root.application.developer.get('reload'):
+    if root.application.developer.get('reload'):
         root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
 
     return root
