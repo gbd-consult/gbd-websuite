@@ -111,7 +111,7 @@ module.exports = {
     modOverviewUpdateButton: 'Aktualisieren',
     modPrintButton: 'Drucken',
     modPrintCancel: 'Abbrechen',
-    modPrintDpi: 'DPI',
+    modPrintSnapshotResolution: 'Auflösung',
     modPrintError: 'Drucken fehlgeschlagen',
     modPrintErrorDetails: '',
     modPrintPreviewPrintButton: 'Drucken',

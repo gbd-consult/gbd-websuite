@@ -41,6 +41,7 @@ module.exports = {
     modMeasurePolygon: 'polygon',
     modMeasureCircle: 'circle',
 
+    modPrintSnapshotResolution: 'Resolution',
     modPrintButton: 'Print',
     modPrintPrinting: 'printing',
     modPrintCancel: 'cancel',

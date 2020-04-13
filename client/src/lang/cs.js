@@ -98,7 +98,7 @@ module.exports = {
     modOverviewUpdateButton: 'Aktualizovat',
     modPrintButton: 'Tisknout',
     modPrintCancel: 'Přerušit',
-    modPrintDpi: 'DPI',
+    modPrintSnapshotQuality: 'DPI',
     modPrintError: 'Selhání tisku',
     modPrintErrorDetails: '',
     modPrintPreviewPrintButton: 'Tisk',

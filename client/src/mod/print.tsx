@@ -106,7 +106,7 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
         }));
     }
 
-    printDataSheet() {
+    printOptionsForm() {
         let data = [], items;
 
         items = this.templateItems();
@@ -158,39 +158,43 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
             this.props.controller.update(up)
         };
 
-        return <gws.components.sheet.Editor
-            data={data}
-            whenChanged={changed}
-        />;
+        return <Row><Cell>
+            <gws.components.sheet.Editor
+                data={data}
+                whenChanged={changed}
+            />
+        </Cell></Row>;
     }
 
-    snapshotDataSheet() {
-        let data = [];
+    snapshotOptionsForm() {
+        let cc = this.props.controller;
 
-        let changed = (k, v) => {
-            this.props.controller.update({[k]: v})
-        };
+        return <React.Fragment>
 
-        data.push({
-            name: 'printSnapshotDpi',
-            title: this.__('modPrintDpi'),
-            value: this.props.printSnapshotDpi || '',
-            editable: true,
-        });
+            <Row>
+                <Cell flex>
+                    <gws.ui.Slider
+                        minValue={10}
+                        maxValue={600}
+                        step={10}
+                        label={this.__('modPrintSnapshotResolution')}
+                        {...cc.bind('printSnapshotDpi')}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex>
+                    {this.props.printSnapshotDpi} dpi
+                </Cell>
 
-        return <gws.components.sheet.Editor
-            data={data}
-            whenChanged={changed}
-        />;
-
+            </Row>
+        </React.Fragment>
     }
 
     optionsDialog() {
-        let vs = this.props.controller.map.viewState;
-
-        let ds = this.props.printSnapshotMode
-            ? this.snapshotDataSheet()
-            : this.printDataSheet();
+        let form = this.props.printSnapshotMode
+            ? this.snapshotOptionsForm()
+            : this.printOptionsForm();
 
         let ok = this.props.printSnapshotMode
             ? <gws.ui.Button
@@ -206,9 +210,7 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
 
         return <div className="modPrintPreviewDialog">
             <Form>
-                <Row>
-                    <Cell flex>{ds}</Cell>
-                </Row>
+                {form}
                 <Row>
                     <Cell flex/>
                     <Cell>
@@ -308,7 +310,7 @@ class PrintDialog extends gws.View<PrintViewProps> {
 
         if (ps === 'printing') {
 
-            let label =  '';
+            let label = '';
 
             if (job.steptype === 'layer' && job.stepname)
                 label = gws.tools.shorten(job.stepname, 40);
@@ -323,7 +325,7 @@ class PrintDialog extends gws.View<PrintViewProps> {
                 ]}
             >
                 <gws.ui.Progress value={job.progress}/>
-                <gws.ui.TextBlock content={label} />
+                <gws.ui.TextBlock content={label}/>
             </gws.ui.Dialog>;
         }
 
@@ -380,6 +382,11 @@ class PrintController extends gws.Controller {
     async init() {
         await super.init();
         this.app.whenChanged('printJob', job => this.jobUpdated(job));
+        this.update({
+            printSnapshotDpi: 10,
+            printSnapshotWidth: DEFAULT_SNAPSHOT_SIZE,
+            printSnapshotHeight: DEFAULT_SNAPSHOT_SIZE
+        })
     }
 
     reset() {
@@ -442,7 +449,7 @@ class PrintController extends gws.Controller {
     }
 
     async startSnapshot() {
-        let dpi = Number(this.getValue('printSnapshotDpi')) || 0;
+        let dpi = Number(this.getValue('printSnapshotDpi')) || 10;
 
         let basicParams = await this.map.basicPrintParams(
             this.previewBox.getBoundingClientRect(),
