@@ -17,7 +17,6 @@ python-ldap
 PyYAML
 requests
 Shapely
-svgis
 uWSGI
 uwsgitop
 Wand

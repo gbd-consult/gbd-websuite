@@ -1,11 +1,8 @@
-import re
 import math
 import base64
 import shapely.ops
 import shapely.geometry
-import svgis
 from PIL import ImageFont
-import bs4
 import wand.image
 
 import gws
@@ -416,7 +413,7 @@ def _clean(el: xml2.Element) -> t.Optional[xml2.Element]:
     if el.name not in _ALLOWED_TAGS:
         return
 
-    el.attributes = [_clean_attr(a) for a in el.attributes]
+    el.attributes = gws.compact(_clean_attr(a) for a in el.attributes)
     el.children = gws.compact(_clean(c) for c in el.children)
 
     return el

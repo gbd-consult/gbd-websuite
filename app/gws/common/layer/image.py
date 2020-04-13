@@ -62,23 +62,17 @@ class Image(layer.Layer):
             return
 
         img: PIL.Image.Image = PIL.Image.open(io.BytesIO(r))
-        img.save(gws.VAR_DIR + '/111.png')
 
         # rotate the square (NB: PIL rotations are counter-clockwise)
+        # and crop the square back to the wanted extent
 
         img = img.rotate(-rv.rotation, resample=PIL.Image.BICUBIC)
-        img.save(gws.VAR_DIR + '/222.png')
-
-        # crop the square back to the wanted extent
-
         img = img.crop((
             d / 2 - w / 2,
             d / 2 - h / 2,
             d / 2 + w / 2,
             d / 2 + h / 2,
         ))
-
-        img.save(gws.VAR_DIR + '/333.png')
 
         with io.BytesIO() as out:
             img.save(out, format='png')
