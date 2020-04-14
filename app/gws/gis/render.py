@@ -224,8 +224,12 @@ class Renderer:
 
     def _add_image(self, img, opacity):
         if not self._last_item_is('image'):
+            # NB use background for the first composition only
+            background = self.ri.background_color
+            if any(item.type == 'image' for item in self.output.items):
+                background = None
+            self.composition = Composition(self.ri.view.size_px, background)
             self.output.items.append(MapRenderOutputItem(type='image'))
-            self.composition = Composition(self.ri.view.size_px)
         self.composition.add_image(img, opacity)
         self.output.items[-1].image = self.composition.image
 
