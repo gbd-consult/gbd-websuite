@@ -480,12 +480,6 @@ class MapRenderOutputItem(Data):
     type: str
 
 
-class MapRenderOutputItemType(Enum):
-    image = 'image'
-    path = 'path'
-    svg = 'svg'
-
-
 class MapRenderView(Data):
     bounds: 'Bounds'
     center: 'Point'

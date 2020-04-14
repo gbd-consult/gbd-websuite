@@ -63,13 +63,6 @@ class MapRenderInput(t.Data):
 
 
 #:export
-class MapRenderOutputItemType(t.Enum):
-    image = 'image'
-    path = 'path'
-    svg = 'svg'
-
-
-#:export
 class MapRenderOutputItem(t.Data):
     type: str
     #:noexport
@@ -139,7 +132,7 @@ def view_from_bbox(crs: t.Crs, bbox: t.Extent, out_size: t.Size, out_size_unit: 
 
 
 class Composition:
-    def __init__(self, size_px, color):
+    def __init__(self, size_px, color=None):
         self.image = PIL.Image.new('RGBA', size_px, color)
 
     def add_image(self, img: PIL.Image.Image, opacity=1):
@@ -230,20 +223,15 @@ class Renderer:
         return self.output.items and self.output.items[-1].type == type
 
     def _add_image(self, img, opacity):
-        if not self._last_item_is(MapRenderOutputItemType.image):
-            self.output.items.append(MapRenderOutputItem(
-                type=MapRenderOutputItemType.image,
-            ))
-            self.composition = Composition(self.ri.view.size_px, self.ri.background_color)
+        if not self._last_item_is('image'):
+            self.output.items.append(MapRenderOutputItem(type='image'))
+            self.composition = Composition(self.ri.view.size_px)
         self.composition.add_image(img, opacity)
         self.output.items[-1].image = self.composition.image
 
     def _add_svg_tags(self, tags):
-        if not self._last_item_is(MapRenderOutputItemType.svg):
-            self.output.items.append(MapRenderOutputItem(
-                type=MapRenderOutputItemType.svg,
-                tags=[]
-            ))
+        if not self._last_item_is('svg'):
+            self.output.items.append(MapRenderOutputItem(type='svg', tags=[]))
         self.output.items[-1].tags.extend(tags)
 
 
@@ -259,13 +247,13 @@ def output_html(ro: MapRenderOutput) -> str:
     tags = []
 
     for item in ro.items:
-        if item.type == t.MapRenderOutputItemType.image:
+        if item.type == 'image':
             path = ro.base_dir + '/' + gws.random_string(64) + '.png'
             item.image.save(path, 'png')
             tags.append(('img', {'style': css, 'src': path}))
-        if item.type == t.MapRenderOutputItemType.path:
+        if item.type == 'path':
             tags.append(('img', {'style': css, 'src': item.path}))
-        if item.type == t.MapRenderOutputItemType.svg:
+        if item.type == 'svg':
             gws.tools.svg.sort_by_z_index(item.tags)
             tags.append(('svg', gws.tools.svg.SVG_ATTRIBUTES, {'style': css}, *item.tags))
 

@@ -11,6 +11,8 @@ let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as PrintC
 
 const JOB_POLL_INTERVAL = 2000;
 const DEFAULT_SNAPSHOT_SIZE = 300;
+const MIN_SNAPSHOT_DPI = 70;
+const MAX_SNAPSHOT_DPI = 600;
 
 interface PrintViewProps extends gws.types.ViewProps {
     controller: PrintController;
@@ -174,8 +176,8 @@ class PrintPreviewBox extends gws.View<PrintViewProps> {
             <Row>
                 <Cell flex>
                     <gws.ui.Slider
-                        minValue={10}
-                        maxValue={600}
+                        minValue={MIN_SNAPSHOT_DPI}
+                        maxValue={MAX_SNAPSHOT_DPI}
                         step={10}
                         label={this.__('modPrintSnapshotResolution')}
                         {...cc.bind('printSnapshotDpi')}
@@ -383,7 +385,7 @@ class PrintController extends gws.Controller {
         await super.init();
         this.app.whenChanged('printJob', job => this.jobUpdated(job));
         this.update({
-            printSnapshotDpi: 10,
+            printSnapshotDpi: MIN_SNAPSHOT_DPI,
             printSnapshotWidth: DEFAULT_SNAPSHOT_SIZE,
             printSnapshotHeight: DEFAULT_SNAPSHOT_SIZE
         })
@@ -449,7 +451,7 @@ class PrintController extends gws.Controller {
     }
 
     async startSnapshot() {
-        let dpi = Number(this.getValue('printSnapshotDpi')) || 10;
+        let dpi = Number(this.getValue('printSnapshotDpi')) || MIN_SNAPSHOT_DPI;
 
         let basicParams = await this.map.basicPrintParams(
             this.previewBox.getBoundingClientRect(),
