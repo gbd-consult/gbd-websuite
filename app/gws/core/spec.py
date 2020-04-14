@@ -157,7 +157,8 @@ def _read_union(rd, val, spec):
 
 def _read_list(rd, val, spec):
     if not rd.strict and isinstance(val, str):
-        val = val.split(',')
+        val = val.strip()
+        val = [v.strip() for v in val.split(',')] if val else []
 
     val = _ensure(rd, val, list)
     res = []
@@ -174,7 +175,8 @@ def _read_list(rd, val, spec):
 
 def _read_tuple(rd, val, spec):
     if not rd.strict and isinstance(val, str):
-        val = val.split(',')
+        val = val.strip()
+        val = [v.strip() for v in val.split(',')] if val else []
 
     val = _ensure(rd, val, list)
 
