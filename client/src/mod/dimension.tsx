@@ -895,7 +895,7 @@ class DimensionController extends gws.Controller {
             this.snapFeatures.clear();
             this.setup.layerUids.forEach(uid => {
                 let la = (this.map.getLayer(uid) as gws.types.IMapFeatureLayer);
-                if (la)
+                if (la && la.features)
                     this.snapFeatures.extend(la.features.map(f => f.oFeature));
             });
         }
