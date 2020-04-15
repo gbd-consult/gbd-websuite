@@ -243,7 +243,10 @@ def http_request(url, **kwargs) -> Response:
         raise Timeout() from e
     except requests.RequestException as e:
         gws.log.debug(f'REQUEST_FAILED: generic url={url!r}')
-        raise HTTPError(500, str(e)) from e
+        if cache_path:
+            resp = None
+        else:
+            raise HTTPError(500, str(e)) from e
 
     if not lax:
         try:
@@ -253,9 +256,12 @@ def http_request(url, **kwargs) -> Response:
             raise HTTPError(resp.status_code, resp.text)
 
     ts = time.time() - ts
-    gws.log.debug(f'REQUEST_DONE: code={resp.status_code} len={len(resp.content)} time={ts:.3f}')
-
-    r = Response(resp)
+    if resp:
+        gws.log.debug(f'REQUEST_DONE: code={resp.status_code} len={len(resp.content)} time={ts:.3f}')
+        r = Response(resp)
+    else:
+        gws.log.debug(f'REQUEST_DONE: resp=None time={ts:.3f}')
+        r = None
 
     if cache_path:
         _store_cache(r, cache_path)
