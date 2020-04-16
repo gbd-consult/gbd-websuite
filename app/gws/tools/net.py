@@ -53,8 +53,10 @@ def quote(s, safe='/'):
 def unquote(s):
     return urllib.parse.unquote(s)
 
+
 def is_abs_url(url):
     return re.match(r'^([a-z]+:|)//', url)
+
 
 def parse_url(url):
     p = {k: '' for k in _parse_url_keys}
@@ -204,6 +206,14 @@ class Response:
         return ctype, enc
 
 
+class FailedResponse:
+    def __init__(self, err):
+        self.status_code = 500
+        self.content = repr(err).encode('utf8')
+        self.content_type, self.content_type_encoding = 'text/plain', 'utf8'
+        self.text = repr(err)
+
+
 def http_request(url, **kwargs) -> Response:
     if 'params' in kwargs:
         url = add_params(url, kwargs.pop('params'))
@@ -236,19 +246,25 @@ def http_request(url, **kwargs) -> Response:
     lax = kwargs.pop('lax', False)
     ts = time.time()
 
+    err = None
+    resp = None
+
     try:
         resp = requests.request(method, url, **kwargs)
     except requests.Timeout as e:
         gws.log.debug(f'REQUEST_FAILED: timeout url={url!r}')
-        raise Timeout() from e
+        if cache_path:
+            err = e
+        else:
+            raise Timeout() from e
     except requests.RequestException as e:
         gws.log.debug(f'REQUEST_FAILED: generic url={url!r}')
         if cache_path:
-            resp = None
+            err = e
         else:
             raise HTTPError(500, str(e)) from e
 
-    if not lax:
+    if resp and not lax:
         try:
             resp.raise_for_status()
         except requests.RequestException as e:
@@ -256,12 +272,12 @@ def http_request(url, **kwargs) -> Response:
             raise HTTPError(resp.status_code, resp.text)
 
     ts = time.time() - ts
-    if resp:
+    if resp and not err:
         gws.log.debug(f'REQUEST_DONE: code={resp.status_code} len={len(resp.content)} time={ts:.3f}')
         r = Response(resp)
     else:
-        gws.log.debug(f'REQUEST_DONE: resp=None time={ts:.3f}')
-        r = None
+        gws.log.debug(f'REQUEST_DONE: resp=FAILED time={ts:.3f}')
+        r = FailedResponse(err)
 
     if cache_path:
         _store_cache(r, cache_path)
