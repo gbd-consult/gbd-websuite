@@ -216,7 +216,10 @@ class Layer(gws.Object, t.ILayer):
 
     def post_configure(self):
         super().post_configure()
-        self._configure_search()
+        try:
+            self._configure_search()
+        except Exception as e:
+            gws.log.exception()
 
     def load_metadata(self, provider_meta=None):
         """Load metadata from the config or from a provider, whichever comes first."""
