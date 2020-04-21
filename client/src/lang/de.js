@@ -335,4 +335,9 @@ module.exports = {
     mapPlaceholderXY: 'Koordinate',
 
 
+    modTabeditToolbarButton: 'Werte editieren',
+    modTabeditDialogTitle: 'Werte editieren',
+    modTabeditDialogSuccess: 'Daten wurden gespeichert',
+    modTabeditDialogError: 'Es ist ein Fehler aufgetreten',
+
 };
