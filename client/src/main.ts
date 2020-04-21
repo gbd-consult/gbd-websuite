@@ -29,6 +29,7 @@ let mods = [
     require('./mod/select'),
     require('./mod/search'),
     require('./mod/style'),
+    require('./mod/tabedit'),
     require('./mod/overview'),
     require('./mod/user'),
     require('./mod/zoom'),

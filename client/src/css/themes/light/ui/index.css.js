@@ -9,6 +9,7 @@ module.exports = [
     require('./number.css'),
     require('./progress.css'),
     require('./select.css'),
+    require('./table.css'),
     require('./tabs.css'),
     require('./text.css'),
     require('./tracker.css'),

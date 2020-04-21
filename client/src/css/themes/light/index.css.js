@@ -300,6 +300,7 @@ let rules = [
     require('./mod/storage.css'),
     require('./mod/style.css'),
     require('./mod/task.css'),
+    require('./mod/tabedit.css'),
     require('./mod/toolbar.css'),
     require('./mod/toolbox.css'),
     require('./mod/user.css'),
