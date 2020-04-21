@@ -5,6 +5,7 @@ import gws
 import gws.config
 import gws.tools.shell as sh
 import gws.tools.json2
+import gws.tools.misc
 
 import gws.types as t
 
@@ -152,5 +153,4 @@ def create_and_save(root: t.IRootObject, path):
 
     sh.unlink(test_path)
 
-    with open(path, 'wt') as fp:
-        fp.write(yaml.dump(cfg))
+    gws.tools.misc.write_file(path, yaml.dump(cfg))

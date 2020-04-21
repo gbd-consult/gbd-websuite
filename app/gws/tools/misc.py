@@ -74,7 +74,11 @@ def read_file(path, mode='rt'):
 
 def write_file(path, s, mode='wt'):
     with open(path, mode) as fp:
-        return fp.write(s)
+        fp.write(s)
+    try:
+        os.chown(path, gws.UID, gws.GID)
+    except:
+        pass
 
 
 def ensure_dir(path, base=None, mode=0o755):

@@ -65,6 +65,10 @@ def store(path=None):
             pickle.dump(r, fp)
     except Exception:
         raise error.LoadError('unable to store configuration')
+    try:
+        os.chown(path, gws.UID, gws.GID)
+    except:
+        pass
 
 
 def load(path=None) -> t.IRootObject:
