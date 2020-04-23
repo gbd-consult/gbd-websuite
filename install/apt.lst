@@ -13,6 +13,7 @@ tzdata
 xvfb
 ghostscript
 libmagickwand-dev
+gdal-bin
 
 # ldap
 
@@ -53,3 +54,5 @@ qt5keychain-dev
 libqt5sql5-odbc
 freetds-dev
 tdsodbc
+
+
