@@ -1,8 +1,268 @@
+import re
+import shutil
+import zipfile
+
 import gws
 import gws.ext.db.provider.postgres
+import gws.gis.extent
+import gws.gis.gdal2
+import gws.qgis.project
+import gws.tools.json2
+import gws.tools.os2 as os2
 
 import gws.types as t
 
 
-def run(db: gws.ext.db.provider.postgres.Object, table: t.SqlTable, dir_path: str):
-    pass
+def run(action, src_path: str, replace: bool):
+    """"Import bplan data from a file or a directory.
+
+
+    Args:
+        action: bplan action
+        src_path: A file (.zip) or a directory path
+        replace: Remove all bplans from the given AUs before updating
+    """
+
+    if os2.is_file(src_path):
+        # a file is given - unpack it into a temp dir
+        tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/bplan_' + gws.random_string(32))
+        _extract(src_path, tmp_dir)
+        _run2(action, tmp_dir, replace)
+        # remove tmp_dir
+        return
+
+    _run2(action, src_path, replace)
+
+
+def update(action):
+    _create_vrts(action)
+    _update_pdfs(action)
+    _create_qgis_projects(action)
+
+
+##
+
+def _run2(action, src_dir, replace):
+    gws.log.debug(f'BEGIN {src_dir!r}')
+
+    # step 1. iterate shape files and prepare a list of db records
+
+    shp_paths = set()
+    recs = {}
+
+    for p in sorted(os2.find_files(src_dir, ext='shp')):
+        # NB prefer '..._utf8.shp' variants if they exist
+        if '_utf8' in p:
+            shp_paths.discard(p.replace('_utf8', ''))
+        shp_paths.add(p)
+
+    for p in shp_paths:
+        gws.log.debug(f'read {p!r}')
+        with gws.gis.gdal2.from_path(p) as ds:
+            for f in gws.gis.gdal2.features(ds, action.crs, encoding=_encoding(p)):
+                r = {a.name.lower(): a.value for a in f.attributes}
+
+                r['uid'] = uid = r[action.key_col]
+                r['_type'] = action.type_mapping.get(r.get(action.type_col, ''), '')
+
+                if uid not in recs:
+                    recs[uid] = r
+                if f.shape:
+                    s = f.shape.to_multi()
+                    recs[uid][_geom_name(s)] = s.ewkt
+
+    # step 2. insert records
+
+    table: t.SqlTable = action.table
+    db: gws.ext.db.provider.postgres.Object = action.db
+
+    akey = action.au_key_col
+    recs = list(recs.values())
+    aus = set(r.get(akey) for r in recs)
+
+    with db.connect() as conn:
+        src = table.name
+
+        with conn.transaction():
+            for au in sorted(aus):
+                au_recs = [r for r in recs if r.get(akey) == au]
+                gws.log.debug(f'insert {au!r} ({len(au_recs)})')
+
+                if replace:
+                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE {akey} = %s', [au])
+                else:
+                    uids = [r['uid'] for r in au_recs]
+                    ph = ','.join(['%s'] * len(uids))
+                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE uid IN ({ph})', uids)
+
+                conn.insert_many(src, au_recs)
+
+    # step 3. move png/pgw files into place
+
+    dd = action.data_dir
+
+    # if replace:
+    #     for au in aus:
+    #         for p in os2.find_files(raster_dir, '\.png$'):
+    #             if p.startswith(au):
+    #                 print('delete ', p)
+
+    for p in os2.find_files(src_dir, ext='png'):
+        cc = _filecode(p)
+        if not cc:
+            continue
+
+        w = re.sub(r'\.png$', '.pgw', p)
+        if not os2.is_file(w):
+            continue
+
+        gws.log.debug(f'copy {cc}.png')
+        shutil.copyfile(p, f'{dd}/png/{cc}.png')
+        shutil.copyfile(w, f'{dd}/png/{cc}.pgw')
+
+    # step 4. move pdfs into place
+
+    for p in os2.find_files(src_dir, ext='pdf'):
+        cc = _filecode(p)
+        if not cc:
+            continue
+
+        gws.log.debug(f'copy {cc}.pdf')
+        shutil.copyfile(p, f'{dd}/pdf/{cc}.pdf')
+
+
+    # step 5. post-process
+
+    update(action)
+
+    gws.log.debug(f'END {src_dir!r}')
+
+
+_EMPTY_VRT = '<VRTDataset rasterXSize="0" rasterYSize="0"/>'
+
+
+def _create_vrts(action):
+    """Create VRT files from png/pgw files, one VRT per au + typecode."""
+
+    akey = action.au_key_col
+    dd = action.data_dir
+    pngs = [_filename(p) for p in os2.find_files(dd + '/png', ext='png')]
+
+    groups = {}
+
+    with action.db.connect() as conn:
+        for r in conn.select(f'SELECT uid, {akey}, _type FROM {conn.quote_table(action.table.name)}'):
+            key = r[akey]
+            if r['_type']:
+                key += '-' + r['_type']
+            groups.setdefault(key, []).extend(p for p in pngs if p.startswith(r['uid']))
+
+    for key, ps in sorted(groups.items()):
+        vrt = f'{dd}/vrt/{key}.vrt'
+
+        if not ps:
+            gws.write_file(vrt, _EMPTY_VRT)
+            continue
+
+        gws.log.debug(f'create {key}.vrt')
+
+        lst = f'{dd}/vrt/{key}.lst'
+        gws.write_file(lst, '\n'.join(f'{dd}/png/{p}' for p in ps))
+        os2.run([
+            'gdalbuildvrt',
+            '-srcnodata', '0',
+            '-input_file_list', lst,
+            '-overwrite', vrt
+        ])
+
+
+def _update_pdfs(action):
+    gws.log.debug(f'update pdf lists')
+
+    dd = action.data_dir
+    pdfs = [_filename(p) for p in os2.find_files(dd + '/pdf', ext='pdf')]
+    d = {}
+
+    with action.db.connect() as conn:
+        for r in conn.select(f'SELECT uid FROM {conn.quote_table(action.table.name)}'):
+            uid = r['uid']
+            d[uid] = ','.join(_filecode(p) for p in pdfs if p.startswith(uid))
+        with conn.transaction():
+            for uid, s in d.items():
+                conn.execute(f'UPDATE {conn.quote_table(action.table.name)} SET _pdf=%s WHERE uid=%s', [s, uid])
+
+
+def _create_qgis_projects(action):
+    akey = action.au_key_col
+    dd = action.data_dir
+
+    xml = gws.read_file(action.qgis_template)
+    m = re.search(r'(\w+)\.vrt', xml)
+    placeholder = m.group(1)
+
+    extent_tags = 'xmin', 'ymin', 'xmax', 'ymax'
+
+    with action.db.connect() as conn:
+        rs = conn.select(f'''
+            SELECT {akey} AS a, ST_Extent(_geom_p) AS e
+            FROM {conn.quote_table(action.table.name)}
+            GROUP BY {akey}
+        ''')
+        for r in rs:
+            au = r['a']
+            ext = gws.gis.extent.from_box(r['e'])
+
+            gws.log.debug(f'create {au}.qgs')
+
+            prj = gws.qgis.project.from_string(xml.replace(placeholder, au))
+            for n, val in enumerate(ext):
+                for e in prj.bs.select('extent ' + extent_tags[n]):
+                    e.string = str(val)
+
+            prj.save(f'{dd}/qgs/{au}.qgs')
+
+
+def _extract(zip_path, target_dir):
+    zf = zipfile.ZipFile(zip_path)
+    for fi in zf.infolist():
+        fn = re.sub(r'[^\w.-]', '_', fi.filename)
+        if fn.startswith('.'):
+            continue
+        with zf.open(fi) as src, open(target_dir + '/' + fn, 'wb') as dst:
+            gws.log.debug(f'unzip {fn!r}')
+            shutil.copyfileobj(src, dst)
+
+
+def _encoding(path):
+    p = path.replace('.shp', '.cpg')
+    if os2.is_file(p):
+        # have a cpg file, let gdal handle the encoding
+        return
+    return 'utf8' if 'utf8' in path else 'ISO-8859–1'
+
+
+def _geom_name(s: t.IShape):
+    if s.type == t.GeometryType.multipoint:
+        return '_geom_x'
+    if s.type == t.GeometryType.multilinestring:
+        return '_geom_l'
+    if s.type == t.GeometryType.multipolygon:
+        return '_geom_p'
+    raise ValueError(f'invalid geometry type: {s.type!r}')
+
+
+def _filename(path):
+    return os2.parse_path(path)['filename']
+
+
+def _filecode(path):
+    m = re.search(r'\b([0-9A-Z]+)\.[a-z]+$', path)
+    return m.group(1) if m else None
+
+
+def _diff(a, b):
+    d = {}
+    for k in a.keys() | b.keys():
+        if a.get(k) != b.get(k):
+            d[k] = a[k], b[k]
+    return d

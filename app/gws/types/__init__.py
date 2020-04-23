@@ -406,6 +406,7 @@ class IShape:
     x: float
     y: float
     def intersects(self, shape: 'IShape') -> bool: pass
+    def to_multi(self) -> 'IShape': pass
     def to_type(self, new_type: 'GeometryType') -> 'IShape': pass
     def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': pass
     def transformed_to(self, to_crs, **kwargs) -> 'IShape': pass
@@ -1181,7 +1182,7 @@ class IModel(IObject):
 
 
 class IMonitor(IObject):
-    cpaths: dict
+    path_stats: dict
     watch_dirs: dict
     watch_files: dict
     def add_directory(self, path, pattern): pass

@@ -340,6 +340,6 @@ module.exports = {
     modBplanProgressDialogTitle: 'Bearbeitung',
     modBplanOkMessage: 'Update erfolgreich',
     modBplanErrorMessage: 'Update fehlgeschlagen',
-    modBplanSelectArea: 'Gemeinde',
+    modBplanSelectAU: 'Gemeinde',
 
 };

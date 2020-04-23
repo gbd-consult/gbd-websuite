@@ -1,9 +1,5 @@
 """Manage construction plans."""
 
-import re
-import shutil
-import zipfile
-
 import gws
 import gws.common.action
 import gws.common.db
@@ -23,16 +19,18 @@ class Config(t.WithTypeAndAccess):
     db: str = ''  #: database provider ID
     crs: t.Crs  #: CRS for the bplan data
     table: gws.common.db.SqlTableConfig  #: sql table configuration
+    dataDir: t.DirPath  #: data directory
+    qgisTemplate: t.FilePath  #: qgis template project
 
 
-class BplanArea(t.Data):
+class BplanAU(t.Data):
     uid: str
     name: str
 
 
 class Props(t.Props):
     type: t.Literal = 'bplan'
-    areas: t.List[BplanArea]
+    auList: t.List[BplanAU]
 
 
 class UploadParams(t.Params):
@@ -44,15 +42,12 @@ class UploadResponse(t.Response):
 
 
 class GetFeaturesParams(t.Params):
-    areaCode: str
+    auUid: str
 
 
 class GetFeaturesResponse(t.Response):
     features: t.List[t.FeatureProps]
 
-
-_AREA_KEY_FIELD = 'ags'
-_AREA_NAME_FIELD = 'gemeinde'
 
 DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
     title=gws.common.template.Config(type='html', text='{name}'),
@@ -71,27 +66,41 @@ class Object(gws.common.action.Object):
             gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
         self.feature_format = t.cast(t.IFormat, self.create_child('gws.common.format', DEFAULT_FORMAT))
-
         self.table = self.db.configure_table(self.var('table'))
+        self.data_dir = self.var('dataDir')
+        self.qgis_template = self.var('qgisTemplate')
 
-        areas = {}
+        for sub in 'png', 'pdf', 'vrt', 'qgs':
+            gws.ensure_dir(self.data_dir + '/' + sub)
+
+        self.key_col = 'plan_id'
+        self.au_key_col = 'ags'
+        self.au_name_col = 'gemeinde'
+        self.type_col = 'typ'
+        self.type_mapping = {
+            'Flächennutzungsplan': 'F',
+        }
+
+    @gws.cached_property
+    def au_list(self):
         with self.db.connect() as conn:
-            rs = conn.select(f"SELECT {_AREA_KEY_FIELD}, {_AREA_NAME_FIELD} FROM {self.table.name}")
-            for r in rs:
-                areas[r[_AREA_KEY_FIELD]] = r[_AREA_NAME_FIELD]
-
-        self.areas = sorted(areas.items(), key=lambda x: x[1])
+            rs = conn.select(f'''
+                SELECT DISTINCT {self.au_key_col}, {self.au_name_col} 
+                FROM {conn.quote_table(self.table.name)}
+                ORDER BY {self.au_name_col}
+            ''')
+            return [t.Data(uid=r[self.au_key_col], name=r[self.au_name_col]) for r in rs]
 
     def props_for(self, user):
         return {
             'type': self.type,
-            'areas': [t.Data(uid=a[0], name=a[1]) for a in self.areas]
+            'auList': self.au_list,
         }
 
     def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         features = self.db.select(t.SelectArgs(
             table=self.table,
-            extra_where=[f'{_AREA_KEY_FIELD} = %s', p.areaCode],
+            extra_where=[f'{self.au_key_col} = %s', p.auUid],
         ))
         return GetFeaturesResponse(features=[f.apply_format(self.feature_format).props for f in features])
 
@@ -105,21 +114,16 @@ class Object(gws.common.action.Object):
             gws.log.error(e)
             raise gws.web.error.BadRequest()
 
-        uid = gws.random_string(64)
-        dir = gws.ensure_dir(gws.TMP_DIR + '/bplan/' + uid)
-
         try:
-            self._extract_upload(rec.path, dir)
-            importer.run(self.db, self.table, dir)
+            importer.run(self, rec.path, False)
         except Exception as e:
             gws.log.exception()
             raise gws.web.error.BadRequest()
 
         return UploadResponse()
 
-    def _extract_upload(self, zip_path, target_dir):
-        zf = zipfile.ZipFile(zip_path)
-        for fi in zf.infolist():
-            fn = re.sub(r'[\\/]', '__', fi.filename)
-            with zf.open(fi) as src, open(target_dir + '/' + fn, 'wb') as dst:
-                shutil.copyfileobj(src, dst)
+    def do_import(self, path, replace):
+        importer.run(self, path, replace)
+
+    def do_update(self):
+        importer.update(self)

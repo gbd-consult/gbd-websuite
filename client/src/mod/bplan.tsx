@@ -16,8 +16,8 @@ interface BplanViewProps extends gws.types.ViewProps {
     bplanDialogMode: string;
     bplanFormName: string;
     bplanFormFiles: FileList;
-    bplanAreaList: Array<gws.ui.ListItem>;
-    bplanAreaCode: string;
+    bplanAUList: Array<gws.ui.ListItem>;
+    bplanAUCode: string;
     bplanUploadProgress: number;
     bplanFeatures: Array<gws.types.IMapFeature>,
 }
@@ -26,8 +26,8 @@ const BplanStoreKeys = [
     'bplanDialogMode',
     'bplanFormName',
     'bplanFormFiles',
-    'bplanAreaList',
-    'bplanAreaCode',
+    'bplanAUList',
+    'bplanAUCode',
     'bplanUploadProgress',
     'bplanFeatures',
 ];
@@ -67,10 +67,10 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                 <Row>
                     <Cell flex>
                         <gws.ui.Select
-                            placeholder={this.props.controller.__('modBplanSelectArea')}
-                            items={this.props.bplanAreaList}
-                            value={this.props.bplanAreaCode}
-                            whenChanged={value => cc.whenAreaChanged(value)}
+                            placeholder={this.props.controller.__('modBplanSelectAU')}
+                            items={this.props.bplanAUList}
+                            value={this.props.bplanAUCode}
+                            whenChanged={value => cc.whenAUChanged(value)}
                         />
                     </Cell>
                 </Row>
@@ -199,7 +199,7 @@ class BplanController extends gws.Controller {
             return;
 
         this.update({
-            bplanAreaList: this.setup.areas.map(a => ({value: a.uid, text: a.name})),
+            bplanAUList: this.setup.auList.map(a => ({value: a.uid, text: a.name})),
             bplanDialogMode: '',
         });
     }
@@ -209,10 +209,10 @@ class BplanController extends gws.Controller {
             this.connect(BplanDialog, BplanStoreKeys));
     }
 
-    async whenAreaChanged(value) {
-        let res = await this.app.server.bplanGetFeatures({areaCode: value});
+    async whenAUChanged(value) {
+        let res = await this.app.server.bplanGetFeatures({auUid: value});
         this.update({
-            bplanAreaCode: value,
+            bplanAUCode: value,
             bplanFeatures: this.map.readFeatures(res.features),
         });
 
