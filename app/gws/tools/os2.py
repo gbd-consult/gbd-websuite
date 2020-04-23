@@ -88,6 +88,14 @@ def file_checksum(path):
         return '0'
 
 
+def is_file(path):
+    return os.path.isfile(path)
+
+
+def is_dir(path):
+    return os.path.isdir(path)
+
+
 try:
     _signals = {
         'ABRT': signal.SIGABRT,
@@ -151,7 +159,12 @@ def pids_of(proc_name):
     return pids
 
 
-def find_files(dirname, pattern=None):
+def find_files(dirname, pattern=None, ext=None):
+    if not pattern and ext:
+        if isinstance(ext, (list, tuple)):
+            ext = '|'.join(ext)
+        pattern = '\\.(' + ext + ')$'
+
     for fname in os.listdir(dirname):
         if fname.startswith('.'):
             continue

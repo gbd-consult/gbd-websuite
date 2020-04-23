@@ -101,10 +101,13 @@ class Element:
             atts[_NS_PREFIX] = self.default_namespace
         for k, v in self.namespaces.items():
             atts[_NS_PREFIX + ':' + k] = v
-        return (
-            self.qname,
-            atts,
-            *(c.as_tag for c in self.children))
+        tag = [self.qname]
+        if atts:
+            tag.append(atts)
+        tag.extend(c.as_tag() for c in self.children)
+        if self.text:
+            tag.append(self.text)
+        return tuple(tag)
 
     def strip_ns(self):
         self.ns = ''

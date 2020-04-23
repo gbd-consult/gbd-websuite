@@ -199,12 +199,21 @@ class Shape(t.IShape):
         if new_type == self.type:
             return self
         if self.type == t.GeometryType.point and new_type == t.GeometryType.multipoint:
-            return Shape(shapely.geometry.MultiPoint([self.geom]), self.crs)
+            return self.to_multi()
         if self.type == t.GeometryType.linestring and new_type == t.GeometryType.multilinestring:
-            return Shape(shapely.geometry.MultiLineString([self.geom]), self.crs)
+            return self.to_multi()
         if self.type == t.GeometryType.polygon and new_type == t.GeometryType.multipolygon:
-            return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
+            return self.to_multi()
         raise ValueError(f'cannot convert {self.type!r} to {new_type!r}')
+
+    def to_multi(self) -> t.IShape:
+        if self.type == t.GeometryType.point:
+            return Shape(shapely.geometry.MultiPoint([self.geom]), self.crs)
+        if self.type == t.GeometryType.linestring:
+            return Shape(shapely.geometry.MultiLineString([self.geom]), self.crs)
+        if self.type == t.GeometryType.polygon:
+            return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
+        return self
 
     def transformed_to(self, to_crs, **kwargs) -> t.IShape:
         if gws.gis.proj.equal(self.crs, to_crs):
