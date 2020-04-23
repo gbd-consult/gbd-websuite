@@ -12,7 +12,6 @@ class SpoolConfig(ModuleConfig):
     """Spool server module"""
 
     jobFrequency: t.Duration = 3  #: background jobs checking frequency
-    monitorFrequency: t.Duration = 30  #: filesystem changes check frequency
 
 
 class WebConfig(ModuleConfig):
@@ -26,6 +25,12 @@ class MapproxyConfig(ModuleConfig):
 
     host: str = 'localhost'
     port: int = 5000
+
+
+class MonitorConfig(t.Config):
+    enabled: bool = True  #: the module is enabled
+    frequency: t.Duration = 30  #: filesystem changes check frequency
+    ignore: t.Optional[t.List[t.Regex]] #: ignore paths that match these regexes
 
 
 class QgisConfig(ModuleConfig):
@@ -53,4 +58,5 @@ class Config(t.Config):
     qgis: QgisConfig = {}  #: bundled Qgis module
     spool: SpoolConfig = {}  #: spool server module
     timeout: t.Duration = 60  #: server timeout
+    monitor: MonitorConfig = {} #: monitor configuation
     web: WebConfig = {}  #: web server module

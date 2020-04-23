@@ -97,10 +97,16 @@ class Object(gws.Object, t.IApplication):
         # noinspection PyUnresolvedReferences
         self.qgis_version: str = gws.qgis.server.version()
 
+        gws.log.info('*' * 40)
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
+        gws.log.info('*' * 40)
 
         self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
-        self.monitor: t.IMonitor = t.cast(t.IMonitor, self.create_child(gws.server.monitor.Object, {}))
+
+        self.monitor: t.IMonitor = t.cast(
+            t.IMonitor,
+            self.create_child(gws.server.monitor.Object, self.var('server.monitor')))
+
         self.web_sites: t.List[t.IWebSite] = []
 
         s = self.var('fonts.dir')

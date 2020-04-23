@@ -1,3 +1,4 @@
+import re
 import os
 
 import gws
@@ -25,11 +26,13 @@ def _m() -> t.IMonitor:
 
 #:export IMonitor
 class Object(gws.Object, t.IMonitor):
-    def __init__(self):
-        super().__init__()
+    def configure(self):
+        super().configure()
         self.watch_dirs = {}
         self.watch_files = {}
-        self.cpaths = {}
+        self.path_stats = {}
+        self.frequency = self.var('frequency', default=30)
+        self.ignore = self.var('ignore', default=[])
 
     def add_directory(self, path, pattern):
         if os.path.isfile(path):
@@ -61,11 +64,10 @@ class Object(gws.Object, t.IMonitor):
 
         self._poll()
 
-        freq = self.root.var('server.spool.monitorFrequency')
         # only one worker is allowed to do that
         uwsgi.register_signal(42, 'worker1', self._worker)
-        uwsgi.add_timer(42, freq)
-        gws.log.info(f'MONITOR: started, frequency={freq}')
+        uwsgi.add_timer(42, self.frequency)
+        gws.log.info(f'MONITOR: started, frequency={self.frequency}')
 
     def _worker(self, signo):
         with gws.tools.misc.lock(_lockfile) as ok:
@@ -123,22 +125,24 @@ class Object(gws.Object, t.IMonitor):
         self.watch_dirs = {d: dirs[d] for d in ds}
 
     def _poll(self):
-        paths = {}
+        new_stats = {}
         changed = []
 
         for dirname, pattern in self.watch_dirs.items():
-            for filename in gws.tools.os2.find_files(dirname, pattern):
-                paths[filename] = self._stats(filename)
+            if not self._ignored(dirname):
+                for filename in gws.tools.os2.find_files(dirname, pattern):
+                    if not self._ignored(filename):
+                        new_stats[filename] = self._stats(filename)
 
         for filename, _ in self.watch_files.items():
-            if filename not in paths:
-                paths[filename] = self._stats(filename)
+            if filename not in new_stats and not self._ignored(filename):
+                new_stats[filename] = self._stats(filename)
 
-        for p in set(self.cpaths) | set(paths):
-            if self.cpaths.get(p) != paths.get(p):
+        for p in set(self.path_stats) | set(new_stats):
+            if self.path_stats.get(p) != new_stats.get(p):
                 changed.append(p)
 
-        self.cpaths = paths
+        self.path_stats = new_stats
         return changed
 
     def _stats(self, path):
@@ -147,3 +151,6 @@ class Object(gws.Object, t.IMonitor):
             return s.st_size, s.st_mtime
         except OSError:
             return 0, 0
+
+    def _ignored(self, filename):
+        return self.ignore and any(re.search(p, filename) for p in self.ignore)
