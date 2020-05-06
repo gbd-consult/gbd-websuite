@@ -678,6 +678,15 @@ class Command:
         # @block name args ...body... @end
         self.parse_def_body(arg, _COMMAND_BLOCK)
 
+    def command_import(self, arg):
+        # @import arg
+
+        for x in arg.split(','):
+            x = x.strip().split('.')
+            self.cc.scope.add(x[0])
+
+        self.cc.code.try_block('import ' + arg.strip())
+
     def command_code(self, arg):
         # @code python-expression
         # @code ...python-code... @end
@@ -695,7 +704,7 @@ class Command:
                     return self.cc.error(ERROR_EOF)
                 buf.append(ln.rstrip())
 
-        self.cc.code.try_block(_dedent(buf), 'pass')
+        self.cc.code.try_block(_dedent(buf))
 
     def parse_quote(self, arg, emit=True):
         label = arg
@@ -711,8 +720,8 @@ class Command:
         # @quote label ...flow... @end label
         self.parse_quote(arg, emit=True)
 
-    def command_skip(self, arg):
-        # @skip label ...flow... @end label
+    def command_comment(self, arg):
+        # @comment label ...flow... @end label
         self.parse_quote(arg, emit=False)
 
     let_re = r'''(?x)
@@ -752,7 +761,7 @@ class Command:
             self.cc.code.add(_f('{} = _POPBUF()', _comma(names)))
 
     def command_var(self, arg):
-        # @var var, var,...
+        # @var var, var,... DEPRECATED
 
         names = [x.strip() for x in arg.split(',')]
 

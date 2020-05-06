@@ -55,9 +55,7 @@ class Object(gws.Object, t.IProject):
     def configure(self):
         super().configure()
 
-        self.meta: t.MetaData = gws.common.metadata.extend(
-            gws.common.metadata.from_config(self.var('meta')),
-            self.root.application.meta)
+        self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
 
         # title at the top level config preferred
         title = self.var('title') or self.meta.title or self.uid

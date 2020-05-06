@@ -1,5 +1,5 @@
 @def inspire_id(node, theme)
-    @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" {node.attributes.isoUid.value}
+    @t gml:identifier codeSpace="http://inspire.jrc.ec.europa.eu/ids" {node.attributes.catalogUid.value}
 
     @tag {theme}:inspireId/base:Identifier
         @t base:localId {node.attributes.localUid.value}

@@ -106,7 +106,7 @@ class BaseRuntime:
         self.buf[-1].append(s)
 
     def printa(self, *a):
-        self.buf[-1].extend(a)
+        self.buf[-1].append(' '.join(str(s) for s in a))
 
 
 class Runtime(BaseRuntime):

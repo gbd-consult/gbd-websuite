@@ -2,7 +2,6 @@
 
 @tag csw:Capabilities
     @a version={service.version}
-    @namespaces
 
     @ows_service_identification
     @ows_service_provider

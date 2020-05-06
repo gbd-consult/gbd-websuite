@@ -286,13 +286,18 @@ def create(root: t.IRootObject, base_dir, pid_dir):
         # this is in MB
         max_body_size = root.var('server.web.maxRequestLength')
 
+        client_buffer_size = 4  # MB
+        client_tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/nginx')
+
         web_common = f"""
             error_log {nginx_web_log} {nginx_log_level};
             access_log {nginx_web_log} apm;
             rewrite_log on;
         
             client_max_body_size {max_body_size}m;
-        
+            client_body_buffer_size {client_buffer_size}m;
+            client_body_temp_path {client_tmp_dir};
+            
             # @TODO: optimize, disallow _ rewriting
 
             {rewr}

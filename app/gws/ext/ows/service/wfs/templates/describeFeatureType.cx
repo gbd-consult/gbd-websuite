@@ -1,7 +1,6 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
 @tag xsd:schema
-    @namespaces
     @a elementFormDefault="qualified"
     @a targetNamespace="{feature_namespace_uri}"
 

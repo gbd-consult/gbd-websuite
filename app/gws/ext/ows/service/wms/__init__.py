@@ -45,16 +45,17 @@ class Object(ows.Base):
         self.version = VERSION
 
         for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
-            self.templates[tpl] = self.configure_template(tpl, 'wms/templates')
+            self.templates[tpl] = self.configure_template(tpl, 'wms/templates/')
 
     def configure_metadata(self):
         return gws.extend(
             super().configure_metadata(),
-            isoScope=t.MetaIsoScope.dataset,
-            isoSpatialRepresentationType=t.MetaIsoSpatialRepresentationType.vector,
+            inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
             inspireMandatoryKeyword=t.MetaInspireKeyword.infoMapAccessService,
             inspireResourceType=t.MetaInspireResourceType.service,
             inspireSpatialDataServiceType=t.MetaInspireSpatialDataServiceType.view,
+            isoScope=t.MetaIsoScope.dataset,
+            isoSpatialRepresentationType=t.MetaIsoSpatialRepresentationType.vector,
         )
 
     def handle_getcapabilities(self, rd: ows.Request):

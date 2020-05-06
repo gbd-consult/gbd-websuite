@@ -1,6 +1,6 @@
-@tag csw:GetRecordsResponse
-    @a version={service.version}
-    @namespaces
+@include record_ISO.cx
+
+@tag csw:GetRecordsResponse version={service.version}
 
 	@t csw:SearchStatus timestamp={results.timestamp}
 
@@ -9,10 +9,11 @@
 	    @a nextRecord={results.next}
 	    @a numberOfRecordsMatched={results.count_total}
 	    @a numberOfRecordsReturned={results.count_return}
-	    @a recordSchema="http://www.opengis.net/cat/csw/2.0.2"
+	    @a recordSchema="http://www.isotc211.org/2005/gmd"
+	    @a elementSet="full"
 
-        @each record_tags as tag
-            @insert {tag}
+        @each metas as meta
+            @record meta
         @end
     @end
 @end

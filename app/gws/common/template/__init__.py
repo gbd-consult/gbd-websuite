@@ -121,25 +121,24 @@ _types = {
     '.cx.html': 'html',
     '.cx.csv': 'csv',
     '.qgs': 'qgis',
+    '.cx.xml': 'xml',
 }
 
 
-def type_from_path(path):
+def _type_from_path(path):
     for ext, tt in _types.items():
         if path.endswith(ext):
             return tt
 
 
-def config_from_path(path):
-    tt = type_from_path(path)
-    if tt:
-        return t.Config(type=tt, path=path)
-
-
-def from_path(path, root):
-    cnf = config_from_path(path)
-    if cnf:
-        return root.create_object('gws.ext.template', cnf)
+def from_path(root, path, shared=True):
+    tt = _type_from_path(path)
+    if not tt:
+        return
+    cfg = t.Config(type=tt, path=path)
+    if shared:
+        return root.create_shared_object('gws.ext.template', '_template_' + path, cfg)
+    return root.create_object('gws.ext.template', cfg)
 
 
 def builtin_config(name):
@@ -147,4 +146,5 @@ def builtin_config(name):
     # @TODO: do not hardcode template type
 
     path = os.path.dirname(__file__) + '/builtin_templates/' + name + '.cx.html'
-    return config_from_path(path)
+    tt = _type_from_path(path)
+    return t.Config(type=tt, path=path)

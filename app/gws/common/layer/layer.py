@@ -48,7 +48,7 @@ class Config(t.WithTypeAndAccess):
     legend: types.LegendConfig = {}  #: legend configuration
     meta: t.Optional[gws.common.metadata.Config]  #: layer meta data
     opacity: float = 1  #: layer opacity
-    ows: t.Optional[types.OwsConfig]  #: OWS services options
+    ows: types.OwsConfig = {}  #: OWS services options
     search: gws.common.search.Config = {}  #: layer search configuration
     title: str = ''  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
@@ -203,8 +203,7 @@ class Layer(gws.Object, t.ILayer):
         self.supports_wfs: bool = False
 
         self.ows_name: str = gws.as_uid(self.var('ows.name')) or self.uid.split('.')[-1]
-        self.ows_services_enabled: t.List[str] = self.var('ows.servicesEnabled', default=[])
-        self.ows_services_disabled: t.List[str] = self.var('ows.servicesDisabled', default=[])
+        self._ows_enabled: bool = self.var('ows.enabled')
 
         self.crs: str = self.var('crs') or self.map.crs
 
@@ -245,11 +244,7 @@ class Layer(gws.Object, t.ILayer):
             # title at the top level config overrides meta title
             m.title = title
 
-        meta = gws.common.metadata.from_config(m)
-        p = t.cast(t.IProject, self.get_closest('gws.common.project'))
-        if p:
-            meta = gws.common.metadata.extend(meta, p.meta)
-        return meta
+        return gws.common.metadata.from_config(m)
 
     def configure_spatial_metadata(self):
         scales = [gws.tools.units.res2scale(r) for r in self.resolutions]
@@ -375,12 +370,10 @@ class Layer(gws.Object, t.ILayer):
         return []
 
     def ows_enabled(self, service: t.IOwsService) -> bool:
+        if not self._ows_enabled:
+            return False
         if service.type == 'wms' and not self.supports_wms:
             return False
         if service.type == 'wfs' and not self.supports_wfs:
-            return False
-        if self.ows_services_disabled and service.uid in self.ows_services_disabled:
-            return False
-        if self.ows_services_enabled and service.uid not in self.ows_services_enabled:
             return False
         return True

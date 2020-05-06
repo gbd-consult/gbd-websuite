@@ -15,16 +15,13 @@ class Config(t.WithTypeAndAccess):
 
 
 class Object(gws.common.action.Object):
-    def __init__(self):
-        super().__init__()
-        self.services: t.List[t.IOwsService] = []
-
     def configure(self):
         super().configure()
-        self.services = []
+
+        self.services: t.List[t.IOwsService] = []
 
         for p in self.var('services', default=[]):
-            self.services.append(self.create_child('gws.ext.ows.service', p))
+            self.services.append(t.cast(t.IOwsService, self.create_child('gws.ext.ows.service', p)))
 
     def http_get_service(self, req: t.IRequest, _) -> t.HttpResponse:
         service = self._find_service(req)

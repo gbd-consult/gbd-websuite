@@ -1,5 +1,6 @@
-@tag csw:Record
-    @t dc:identifier {meta.isoUid}
+@def record(meta)
+
+    @t dc:identifier {meta.catalogUid}
     @t dc:title {meta.title}
     @t dc:type {meta.isoScope}
 

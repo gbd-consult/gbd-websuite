@@ -3,6 +3,7 @@
 import os
 import re
 import gws.tools.units
+import gws.tools.date
 
 import gws.types as t
 
@@ -250,8 +251,10 @@ def _read_color(rd, val, spec):
 
 
 def _read_date(rd, val, spec):
-    # @TODO: date validation
-    return _read_str(rd, val, spec)
+    d = gws.tools.date.from_iso(str(val))
+    if not d:
+        return rd.error('ERR_INVALID_DATE', 'invalid date', val)
+    return d
 
 
 def _read_url(rd, val, spec):

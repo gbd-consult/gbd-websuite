@@ -68,11 +68,13 @@ class Vector(layer.Layer, t.IVectorLayer):
         gws.debug.time_end('render_svg:get_features')
 
         gws.debug.time_start('render_svg:convert')
-        features = [f.transform_to(rv.bounds.crs).apply_converter() for f in found]
+        for f in found:
+            f.transform_to(rv.bounds.crs)
+            f.apply_format(keys=['label'])
         gws.debug.time_end('render_svg:convert')
 
         gws.debug.time_start('render_svg:to_svg')
-        tags = [tag for f in features for tag in f.to_svg_tags(rv, style or self.style)]
+        tags = [tag for f in found for tag in f.to_svg_tags(rv, style or self.style)]
         gws.debug.time_end('render_svg:to_svg')
 
         return tags

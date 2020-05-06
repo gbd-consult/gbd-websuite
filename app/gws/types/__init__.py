@@ -285,11 +285,6 @@ class DocumentRoot(Data):
     dir: 'DirPath'
 
 
-class FeatureConverter:
-    data_model: 'IModel'
-    feature_format: 'IFormat'
-
-
 class FeatureProps(Data):
     attributes: Optional[List[Attribute]]
     elements: Optional[dict]
@@ -326,19 +321,19 @@ class IBaseRequest:
 class IFeature:
     attributes: List[Attribute]
     category: str
-    converter: Optional['FeatureConverter']
+    data_model: Optional['IModel']
     elements: dict
+    feature_format: Optional['IFormat']
     full_uid: str
     layer: Optional['ILayer']
-    minimal_props: 'FeatureProps'
     props: 'FeatureProps'
+    props_for_render: 'FeatureProps'
     shape: Optional['IShape']
     style: Optional['IStyle']
     template_context: dict
     uid: str
-    def apply_converter(self, converter: 'FeatureConverter' = None) -> 'IFeature': pass
-    def apply_data_model(self, model: 'IModel') -> 'IFeature': pass
-    def apply_format(self, fmt: 'IFormat', extra_context: dict = None) -> 'IFeature': pass
+    def apply_data_model(self, model: 'IModel' = None) -> 'IFeature': pass
+    def apply_format(self, fmt: 'IFormat' = None, extra_context: dict = None, keys: List[str] = None) -> 'IFeature': pass
     def attr(self, name: str): pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
@@ -511,6 +506,7 @@ class MetaData(Data):
     abstract: str
     accessConstraints: str
     attribution: str
+    catalogUid: str
     contact: 'MetaContact'
     dateCreated: 'Date'
     dateUpdated: 'Date'
@@ -521,14 +517,12 @@ class MetaData(Data):
     inspireResourceType: 'MetaInspireResourceType'
     inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType'
     inspireTheme: str
-    inspireTopicCategory: 'MetaInspireTopicCategory'
     isoQualityExplanation: str
     isoQualityLineage: str
     isoQualityPass: bool
     isoScope: 'MetaIsoScope'
     isoSpatialRepresentationType: 'MetaIsoSpatialRepresentationType'
     isoTopicCategory: 'MetaIsoTopicCategory'
-    isoUid: str
     keywords: List[str]
     language: str
     links: List['MetaLink']
@@ -642,28 +636,6 @@ class MetaInspireSpatialDataServiceType(Enum):
     other = 'other'
     transformation = 'transformation'
     view = 'view'
-
-
-class MetaInspireTopicCategory(Enum):
-    biota = 'biota'
-    boundaries = 'boundaries'
-    climatologyMeteorologyAtmosphere = 'climatologyMeteorologyAtmosphere'
-    economy = 'economy'
-    elevation = 'elevation'
-    environment = 'environment'
-    farming = 'farming'
-    geoscientificInformation = 'geoscientificInformation'
-    health = 'health'
-    imageryBaseMapsEarthCover = 'imageryBaseMapsEarthCover'
-    inlandWaters = 'inlandWaters'
-    intelligenceMilitary = 'intelligenceMilitary'
-    location = 'location'
-    oceans = 'oceans'
-    planningCadastre = 'planningCadastre'
-    society = 'society'
-    structure = 'structure'
-    transportation = 'transportation'
-    utilitiesCommunication = 'utilitiesCommunication'
 
 
 class MetaIsoOnLineFunction(Enum):
@@ -1101,7 +1073,7 @@ class IDbProvider(IObject):
 
 class IFormat(IObject):
     templates: dict
-    def apply(self, context: dict) -> dict: pass
+    def apply(self, context: dict, keys: List[str] = None) -> dict: pass
 
 
 class ILayer(IObject):
@@ -1136,8 +1108,6 @@ class ILayer(IObject):
     opacity: float
     own_bounds: Optional['Bounds']
     ows_name: str
-    ows_services_disabled: List[str]
-    ows_services_enabled: List[str]
     resolutions: List[float]
     style: 'IStyle'
     supports_wfs: bool

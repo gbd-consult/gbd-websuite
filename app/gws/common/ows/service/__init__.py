@@ -12,8 +12,6 @@ import gws.web.error
 
 import gws.types as t
 
-from . import const
-
 
 class Config(t.WithTypeAndAccess):
     featureNamespace: str = 'gws'  #: feature namespace name
@@ -22,7 +20,6 @@ class Config(t.WithTypeAndAccess):
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     withInspireMeta: bool = False  #: use INSPIRE Metadata
     withInspireData: bool = False  #: use INSPIRE data model
-    withCSW: bool = False  #: use the CSW service
 
 
 class Request(t.Data):
@@ -56,9 +53,6 @@ class FeatureNode(t.Data):
     shape_tag: ''
     tag_name: ''
     attributes: t.List[t.Attribute]
-
-
-_NAMESPACES = gws.merge(const.NAMESPACES, gws.common.metadata.inspire.NAMESPACES)
 
 
 #:export IOwsService
@@ -99,7 +93,6 @@ class Base(Object):
         super().configure()
 
         self.local_namespaces = {}
-        self.namespaces = _NAMESPACES
         self.project: t.Optional[t.IProject] = t.cast(t.IProject, self.get_closest('gws.common.project'))
 
         self.templates = {}
@@ -131,7 +124,7 @@ class Base(Object):
 
         meta = gws.extend(
             meta,
-            isoUid=self.uid,
+            catalogUid=self.uid,
             links=[],
             serviceUrl=self.url,
         )
@@ -147,7 +140,9 @@ class Base(Object):
                 return self.root.create_object('gws.ext.template', tpl)
 
         if not path.startswith('/'):
-            path = gws.APP_DIR + '/gws/ext/ows/service/' + path.strip('/') + '/' + name + '.cx'
+            path = gws.APP_DIR + '/gws/ext/ows/service/' + path.lstrip('/')
+        if path.endswith('/'):
+            path += name + '.cx'
 
         return self.root.create_shared_object('gws.ext.template', path, {
             'type': type,
@@ -156,7 +151,7 @@ class Base(Object):
 
     def configure_inspire_templates(self):
         for tag in gws.common.metadata.inspire.TAGS:
-            self.templates[tag] = self.configure_template(tag.replace(':', '_'), 'wfs/templates/inspire')
+            self.templates[tag] = self.configure_template(tag.replace(':', '_'), 'wfs/templates/inspire/')
 
     # Request handling
 
@@ -181,10 +176,10 @@ class Base(Object):
             'project': project or self.project,
         })
 
-        return self.dispatch(rd, req.param('request', '').lower())
+        return self.dispatch(rd, req.param('request', ''))
 
     def dispatch(self, rd: Request, request_param):
-        h = getattr(self, 'handle_' + request_param, None)
+        h = getattr(self, 'handle_' + request_param.lower(), None)
         if not h:
             gws.log.debug(f'service={self.uid!r}: request={request_param!r} not found')
             raise gws.web.error.NotFound()
@@ -195,7 +190,7 @@ class Base(Object):
     def error_response(self, status):
         return self.xml_error_response(self.version, status, f'Error {status}')
 
-    def render_template(self, rd: Request, template, context=None, format=None):
+    def render_template(self, rd: Request, template_name: str, context=None, format=None):
         context = gws.merge({
             'project': rd.project,
             'meta': self.meta,
@@ -203,12 +198,11 @@ class Base(Object):
             'url_for': rd.req.url_for,
             'feature_namespace': self.feature_namespace,
             'feature_namespace_uri': self.local_namespaces[self.feature_namespace],
-            'all_namespaces': self.namespaces,
-            'local_namespaces': self.local_namespaces,
+            'namespaces': self.local_namespaces,
             'service': self
         }, context)
 
-        return self.templates[template].render(context, format=format).content
+        return self.templates[template_name].render(context, format=format).content
 
     def render_feature_nodes(self, rd: Request, nodes: t.List[FeatureNode], container_template_name: str) -> t.HttpResponse:
         tags = []
@@ -358,7 +352,7 @@ class Base(Object):
             if f.shape:
                 gs = gws.gis.gml.shape_to_tag(f.shape, precision=rd.project.map.coordinate_precision)
 
-            f.apply_converter()
+            f.apply_data_model()
 
             return FeatureNode(
                 feature=f,

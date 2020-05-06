@@ -2,9 +2,8 @@
 @include common.cx
 
 @tag WMS_Capabilities
+    @xmlns wms default
     @a version={service.version}
-    @a xmlns="http://www.opengis.net/wms"
-    @namespaces
 
     @tag Service
         @t Name WMS

@@ -47,12 +47,11 @@ class Object(ows.Base):
         self.index = None
 
         self.profile = self.var('profile')
-        self.record_template = 'record' + self.profile
 
-        for tpl in 'getCapabilities', 'getRecords', 'getRecordById', 'recordISO', 'recordDCMI':
-            self.templates[tpl] = self.configure_template(tpl, 'csw/templates')
-
-        self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates', type='text')
+        self.templates['getCapabilities'] = self.configure_template('getCapabilities', 'csw/templates/')
+        self.templates['getRecords'] = self.configure_template('getRecords', f'csw/templates/getRecords_{self.profile}.cx')
+        self.templates['getRecordById'] = self.configure_template('getRecordById', f'csw/templates/getRecordById_{self.profile}.cx')
+        self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates/', type='text')
 
     def configure_metadata(self):
         return gws.extend(
@@ -70,14 +69,21 @@ class Object(ows.Base):
 
         super().post_configure()
 
+        self.metas = {}
+
         for obj in self.root.find_all():
             meta = gws.get(obj, 'meta')
-            if meta and not gws.has(meta, 'url'):
-                meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
+            if meta and meta.catalogUid:
+                if not meta.url:
+                    meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
+                self.metas[obj.uid] = meta
+
+        self._create_index()
 
     def handle(self, req) -> t.HttpResponse:
         if self.metas is None:
-            self._init_db()
+            self._collect_metas()
+            self._create_index()
 
         rd = ows.Request({
             'req': req,
@@ -94,7 +100,7 @@ class Object(ows.Base):
                 raise gws.web.error.BadRequest()
             request_param = rd.xml.name
 
-        return self.dispatch(rd, request_param.lower())
+        return self.dispatch(rd, request_param)
 
     def handle_getcapabilities(self, rd: ows.Request):
         return self.xml_response(self.render_template(rd, 'getCapabilities'))
@@ -103,17 +109,17 @@ class Object(ows.Base):
         return self.xml_response(self.render_template(rd, 'describeRecord'))
 
     def handle_getrecords(self, rd: ows.Request):
-        records = self._find_records(rd)
+        metas = self._find_metas(rd)
 
         results = {
-            'timestamp': gws.tools.date.now_iso(),
+            'timestamp': gws.tools.date.now_iso(with_tz=False),
             'next': 0,
-            'count_total': len(records),
-            'count_return': len(records),
+            'count_total': len(metas),
+            'count_return': len(metas),
         }
 
         return self.xml_response(self.render_template(rd, 'getRecords', {
-            'record_tags': self._render_records(rd, records),
+            'metas': metas,
             'results': results,
         }))
 
@@ -121,47 +127,38 @@ class Object(ows.Base):
         meta = self.metas.get(rd.req.param('id'))
         if not meta:
             raise gws.web.error.NotFound()
-        tags = self._render_metas(rd, [meta])
         return self.xml_response(self.render_template(rd, 'getRecordById', {
-            'record_tags': tags
+            'meta': meta
         }))
 
-    def _init_db(self):
+    def _collect_metas(self):
         self.metas = {}
-        self.index = []
 
         for obj in self.root.find_all():
             meta = gws.get(obj, 'meta')
-            if not meta:
+            if not meta or not meta.catalogUid:
                 continue
-
             self.metas[obj.uid] = meta
 
-            if gws.get(meta, 'inspireTheme'):
-                meta.inspireThemeName = gws.common.metadata.inspire.theme_name(meta.inspireTheme, meta.language)
-                meta.inspireThemeDefinition = gws.common.metadata.inspire.theme_definition(meta.inspireTheme, meta.language)
+    def _create_index(self):
+        self.index = []
 
-            for f in 'abstract', 'title':
-                s = gws.get(meta, f)
-                if s:
-                    self.index.append((f, s, s.lower(), obj.uid))
-            for s in gws.get(meta, 'keywords') or []:
-                self.index.append(('subject', s, s.lower(), obj.uid))
+        for uid, meta in self.metas.items():
+            s = gws.get(meta, 'title')
+            if s:
+                self.index.append(['title', s, s.lower(), uid])
+            s = gws.get(meta, 'abstract')
+            if s:
+                self.index.append(['abstract', s, s.lower(), uid])
+            s = gws.get(meta, 'keywords')
+            if s:
+                for kw in s:
+                    self.index.append(('subject', kw, kw.lower(), uid))
 
-    def _find_records(self, rd):
-        recs = self.records.values()
+    def _find_metas(self, rd):
+        recs = self.metas.values()
         flt = rd.xml.first('Query.Constraint.Filter') if rd.xml else None
         if not flt:
             return recs
         f = filter.Filter(self.index)
         return f.apply(flt.first(), recs)
-
-    def _render_metas(self, rd, metas):
-        tags = []
-
-        for m in metas:
-            tags.append(self.render_template(rd, self.record_template, {
-                'meta': m,
-            }, format='tag'))
-
-        return tags

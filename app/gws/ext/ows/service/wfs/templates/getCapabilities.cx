@@ -4,7 +4,6 @@
 @tag WFS_Capabilities
     @a version={service.version}
     @a xmlns="http://www.opengis.net/wfs/2.0"
-    @namespaces
 
     @ows_service_identification
     @ows_service_provider

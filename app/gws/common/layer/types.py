@@ -66,9 +66,8 @@ class FlattenConfig(t.Config):
 
 
 class OwsConfig(t.Config):
-    name: str = ''  #: layer name for ows services
-    servicesEnabled: t.Optional[t.List[str]]  #: services enabled for this layer
-    servicesDisabled: t.Optional[t.List[str]]  #: services disabled for this layer
+    name: t.Optional[str]  #: layer name for ows services
+    enabled: bool = True  #: enable this layer for ows services
 
 
 class LayerProps(t.Data):

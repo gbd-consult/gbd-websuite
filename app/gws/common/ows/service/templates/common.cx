@@ -98,12 +98,19 @@
     @end
 
     @t inspire_common:ResourceType {meta.inspireResourceType}
-    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.dateCreated}
+    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.dateCreated.strftime('%Y-%m-%d')}
 
     @tag inspire_common:Conformity
         @tag inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng"
             @t inspire_common:Title COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
             @t inspire_common:DateOfPublication 2010-12-08
+            @t inspire_common:URI OJ:L:2010:323:0011:0102:EN:PDF
+            @tag inspire_common:ResourceLocator
+                @tag inspire_common:URL
+                    http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF
+                @end
+                @t inspire_common:MediaType application/pdf
+            @end
         @end
         @t inspire_common:Degree {meta.inspireDegreeOfConformity}
     @end
@@ -113,6 +120,7 @@
         @t inspire_common:EmailAddress {meta.contact.email}
     @end
 
+    @t inspire_common:MetadataDate {meta.dateCreated.strftime('%Y-%m-%d')}
     @t inspire_common:SpatialDataServiceType {meta.inspireSpatialDataServiceType}
     @t inspire_common:MandatoryKeyword/inspire_common:KeywordValue {meta.inspireMandatoryKeyword}
 

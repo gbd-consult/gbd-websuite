@@ -58,7 +58,7 @@ def to_tagged_dict(x):
 
     def _dict(x):
         try:
-            return dict(vars(x))
+            return {k: v for k, v in vars(x).items() if not callable(v)}
         except TypeError:
             return {}
 
@@ -84,7 +84,7 @@ def to_tagged_dict(x):
 
         tag = '$%s.%s:%d' % (
             getattr(x, '__module__', ''),
-            x.__class__.__name__,
+            getattr(x, '__class__', '').__name__,
             len(objects))
 
         keys[id(x)] = tag

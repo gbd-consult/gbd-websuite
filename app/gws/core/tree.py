@@ -65,8 +65,6 @@ class Object(t.IObject):
         self.access = self.var('access')
         self.set_uid(self._auto_uid())
 
-        log.debug(f'BEGIN configure: {self.klass}')
-
         try:
             self.configure()
         except Exception as e:
@@ -74,7 +72,7 @@ class Object(t.IObject):
             msg = '%s\nin %s' % (_exc_name_for_error(e), _object_name_for_error(self))
             raise error.Error(msg)
 
-        log.debug(f'END configure: {self.klass} uid={self.uid}')
+        log.debug(f'configured {self.klass} uid={self.uid}')
 
     def configure(self):
         # this is intended to be overridden
@@ -279,8 +277,11 @@ def _make_props(obj, user):
     if obj is None or isinstance(obj, (int, float, bool, str, bytes)):
         return obj
 
+    if isinstance(obj, t.IObject):
+        return _make_props(obj.props_for(user), user)
+
     if util.is_data_object(obj):
-        obj = vars(obj)
+        return _make_props(vars(obj), user)
 
     if isinstance(obj, dict):
         ls = {}
@@ -298,10 +299,8 @@ def _make_props(obj, user):
                 ls.append(v)
         return ls
 
-    if util.has(obj, 'props_for'):
-        return _make_props(obj.props_for(user), user)
-
     if util.has(obj, 'props'):
-        return _make_props(obj.props, user)
+        return _make_props(util.get(obj, 'props'), user)
 
-    raise ValueError(f'make_props failed for {obj.__class__}')
+    if obj:
+        return str(obj)

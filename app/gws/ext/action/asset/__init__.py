@@ -70,26 +70,21 @@ class Object(gws.common.action.Object):
         if not rpath:
             raise gws.web.error.NotFound()
 
-        if not as_attachment:
+        tpl = gws.common.template.from_path(self.root, rpath)
 
-            template_type = gws.common.template.type_from_path(rpath)
+        if tpl:
+            context = gws.merge(
+                _default_template_context(req, project),
+                params=p)
 
-            if template_type:
-                tpl = self.root.create_shared_object('gws.ext.template', rpath, t.Config({
-                    'type': template_type,
-                    'path': rpath
-                }))
+            tr = tpl.render(context)
 
-                context = gws.merge(
-                    _default_template_context(req, project),
-                    params=p)
+            # @TODO check as_attachment
 
-                tr = tpl.render(context)
-
-                return t.HttpResponse({
-                    'mime': tr.mime,
-                    'content': tr.content
-                })
+            return t.HttpResponse({
+                'mime': tr.mime,
+                'content': tr.content
+            })
 
         mt = gws.tools.mime.for_path(rpath)
 

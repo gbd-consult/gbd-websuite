@@ -3,15 +3,16 @@
 import re
 
 import gws
-import gws.tools.mime
-import gws.gis.feature
-import gws.gis.render
-import gws.tools.pdf
+import gws.common.template
+import gws.tools.date as date
 import gws.tools.vendor.chartreux as chartreux
 import gws.tools.xml2
-import gws.common.template
 
 import gws.types as t
+
+from . import namespaces
+
+_KNOWN_NAMESPACES = {_[0]: _[1:] for _ in namespaces.ALL}
 
 
 class Config(gws.common.template.Config):
@@ -22,24 +23,32 @@ class Config(gws.common.template.Config):
 class XMLRuntime(chartreux.Runtime):
     def __init__(self):
         super().__init__()
-        self.tags = [[]]
-        self.ns = []
-        self.last_tag = None
-        self.namespaces_node = None
+        self.tags = []
+        self.namespaces = {}
+        self.default_namespace = None
+        self.root = None
 
     def push_tag(self, name):
+        self.add_ns(name)
         tag = [name]
-        self.tags[-1].append(tag)
+        if self.tags:
+            self.tags[-1].append(tag)
+        else:
+            self.root = tag
         self.tags.append(tag)
 
     def pop_tag(self):
-        self.last_tag = self.tags.pop()
+        self.tags.pop()
 
     def append_tag(self, val):
+        # if isinstance(val, _TagWithNamespaces):
+        #     self.namespaces.update(val.namespaces)
+        #     val = val.tag
         tag = self.tags[-1]
         tag.append(val)
 
     def set_attr(self, name, val):
+        self.add_ns(name)
         tag = self.tags[-1]
         tag.append({name: val})
 
@@ -47,11 +56,32 @@ class XMLRuntime(chartreux.Runtime):
         tag = self.tags[-1]
         tag.append(s)
 
-    def add_namespaces_here(self):
-        self.namespaces_node = self.tags[-1]
+    def add_namespace(self, text):
+        s = text.strip().split()
+        if s[-1] == 'default':
+            self.default_namespace = s[0]
+            s.pop()
+        self.namespaces[s[0]] = s[1:]
 
     def as_text(self, *vals):
         return ''.join(str(v) for v in vals if v is not None)
+
+    def add_ns(self, name):
+        if ':' in name:
+            s = name.split(':')[0]
+            if s not in self.namespaces:
+                self.namespaces[s] = None
+
+    def _date_value(self, val):
+        if val and not date.is_datetime(val):
+            val = date.from_iso(val)
+        return val or date.now()
+
+    def filter_format_datetime(self, val):
+        return date.to_iso(self._date_value(val), with_tz=False, sep='T')
+
+    def filter_format_date(self, val):
+        return date.to_iso_date(self._date_value(val))
 
 
 class XMLCommands():
@@ -89,8 +119,12 @@ class XMLCommands():
             compiler.error('"insert" requires a single expression')
         compiler.code.add(f'_RT.append_tag({chunks[0]})')
 
-    def command_namespaces(self, compiler: chartreux.Compiler, arg):
-        compiler.code.add(f"_RT.add_namespaces_here()")
+    def command_xmlns(self, compiler: chartreux.Compiler, arg):
+        # @xmlns wms default
+        # @xmlns gml
+        # @xmlns myNs http://url http://schema
+        text = self.interpolate(compiler, arg)
+        compiler.code.add(f"_RT.add_namespace({text})")
 
     ##
 
@@ -145,18 +179,27 @@ class XMLCommands():
 
 class Object(gws.common.template.Object):
 
-    def render(self, context, format=None):
-        namespaces_node, last_tag = self._render_as_tag(context)
+    def configure(self):
+        super().configure()
+        if self.path:
+            self.text = gws.read_file(self.path)
 
-        if namespaces_node:
-            nsdict = self._collect_namespaces(iter(last_tag), {})
-            nsdict.update(context.get('local_namespaces', {}))
-            self._insert_namespaces(namespaces_node, nsdict, context.get('all_namespaces', {}))
+    def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
+        rt = self._render_as_tag(context)
+        root = rt.root
+
+        if rt.namespaces:
+            self._insert_namespaces(root, rt.namespaces, rt.default_namespace, context.get('namespaces', {}))
 
         if format == 'tag':
-            return t.TemplateOutput(content=last_tag)
+            content = root
+            # if rt.namespaces:
+            #     content = _TagWithNamespaces()
+            #     content.namespaces = rt.namespaces
+            #     content.tag = root
+            return t.TemplateOutput(content=content)
 
-        xml = gws.tools.xml2.as_string(last_tag)
+        xml = gws.tools.xml2.as_string(root)
         if not xml.startswith('<?'):
             xml = '<?xml version="1.0" encoding="utf-8"?>' + xml
 
@@ -173,15 +216,10 @@ class Object(gws.common.template.Object):
         def err(e, path, line):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
-        text = self.text
-        if self.path:
-            with open(self.path, 'rt') as fp:
-                text = fp.read()
-
         rt = XMLRuntime()
 
         chartreux.render(
-            text,
+            self.text,
             context,
             path=self.path or '<string>',
             error=err,
@@ -190,49 +228,34 @@ class Object(gws.common.template.Object):
             commands=XMLCommands(),
         )
 
-        return rt.namespaces_node, rt.last_tag
+        return rt
 
-    # @TODO: move this to the compiler
-    def _collect_namespaces(self, tag_iter, nsdict):
-        for el in tag_iter:
-            n = el.find(':')
-            if n > 0:
-                nsdict.setdefault(el[:n], False)
-            break
-
-        for el in tag_iter:
-            if isinstance(el, (list, tuple)):
-                self._collect_namespaces(iter(el), nsdict)
-            elif isinstance(el, dict):
-                for key in el:
-                    n = key.find(':')
-                    if n > 0:
-                        nsdict.setdefault(key[:n], False)
-
-        return nsdict
-
-    def _insert_namespaces(self, target_node, nsdict, all_namespaces):
+    def _insert_namespaces(self, target_node, nsdict, default_namespace, extra_namespaces):
         atts = {}
         schemas = []
 
         for id, ns in sorted(nsdict.items()):
-            ns = ns or all_namespaces.get(id)
+            ns = ns or extra_namespaces.get(id) or _KNOWN_NAMESPACES.get(id)
             if not ns:
                 gws.log.warn(f'unknown namespace {id!r}')
                 continue
+
             if isinstance(ns, str):
                 uri, schema = ns, None
+            elif len(ns) == 1:
+                uri, schema = ns[0], None
             else:
                 uri, schema = ns
-            atts['xmlns:' + id] = uri
+
+            atts['xmlns' if id == default_namespace else 'xmlns:' + id] = uri
+
             if schema:
                 schemas.append(uri)
                 schemas.append(schema)
 
+        if schemas:
+            atts['xmlns:xsi'] = _KNOWN_NAMESPACES['xsi'][0]
+            atts['xsi:schemaLocation'] = ' '.join(schemas)
+
         if atts:
             target_node.append(atts)
-
-        if schemas:
-            if 'xsi' not in nsdict:
-                target_node.append({'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance'})
-            target_node.append({'xsi:schemaLocation': ' '.join(schemas)})

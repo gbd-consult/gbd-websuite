@@ -55,16 +55,16 @@ def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
     return features[:total_limit]
 
 
-def _parents(layer: t.ILayer):
+def _parents(layer: t.ILayer) -> t.List[t.ILayer]:
     ps = []
     p = layer.parent
     while p.is_a('gws.ext.layer'):
-        ps.append(p)
+        ps.append(t.cast(t.ILayer, p))
         p = p.parent
     return ps
 
 
-def _run(req, layer, prov: provider.Object, args: t.SearchArgs, total_limit, features):
+def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.SearchArgs, total_limit, features):
     args.limit = total_limit - len(features)
     if args.limit <= 0:
         raise _LimitExceeded()
@@ -81,23 +81,20 @@ def _run(req, layer, prov: provider.Object, args: t.SearchArgs, total_limit, fea
         return
 
     try:
-        fs = prov.run(layer, args) or []
+        fs: t.List[t.IFeature] = prov.run(layer, args) or []
     except Exception:
         gws.log.exception()
         gws.log.debug('SEARCH_FAILED')
         return
 
+    ff = prov.feature_format or (layer.feature_format if layer else None)
+    dm = prov.data_model or (layer.data_model if layer else None)
+
     for f in fs:
         f.layer = layer
-        f.converter = _get_converter(prov, layer)
+        f.feature_format = ff
+        f.data_model = dm
 
     gws.log.debug('SEARCH_END, found=%r', len(fs))
 
     features.extend(fs)
-
-
-def _get_converter(a, b):
-    if a and gws.get(a, 'feature_format'):
-        return a
-    if b and gws.get(b, 'feature_format'):
-        return b

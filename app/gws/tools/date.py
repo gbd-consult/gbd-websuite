@@ -1,3 +1,4 @@
+from typing import Optional
 import re
 import datetime
 import time
@@ -14,38 +15,104 @@ def set_system_time_zone(tz):
     gws.tools.os2.run(['ln', '-fs', f'/usr/share/zoneinfo/{tz}', '/etc/localtime'])
 
 
-def to_iso(d):
-    return d.strftime("%Y-%m-%d %H:%M:%S")
+def to_iso(d: datetime.datetime, with_tz=True, sep='T') -> str:
+    fmt = f'%Y-%m-%d{sep}%H:%M:%S'
+    if with_tz:
+        fmt += '%z'
+    return d.strftime(fmt)
 
 
-def to_isotz(d):
-    if not d.tzinfo:
-        return d.strftime("%Y-%m-%d %H:%M:%S+0000")
-    return d.strftime("%Y-%m-%d %H:%M:%S%z")
+def to_iso_date(d: datetime.datetime) -> str:
+    fmt = '%Y-%m-%d'
+    return d.strftime(fmt)
 
 
-def utc_from_timestamp(s):
-    return datetime.datetime.fromtimestamp(s, tz=datetime.timezone.utc)
+def now() -> datetime.datetime:
+    return datetime.datetime.now(datetime.timezone.utc)
 
 
-def now():
-    return datetime.datetime.now()
+def now_iso(with_tz=True, sep='T') -> str:
+    return to_iso(now(), with_tz, sep)
 
 
-def now_iso():
-    return to_iso(now())
+def from_timestamp(ts) -> datetime.datetime:
+    return datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
 
 
-def from_timestamp(ts):
-    return datetime.datetime.fromtimestamp(ts)
-
-
-def utime():
+def utime() -> float:
     return time.time()
 
 
-def timestamp():
+def timestamp() -> int:
     return int(time.time())
+
+
+def is_date(x) -> bool:
+    return isinstance(x, datetime.date)
+
+
+def is_datetime(x) -> bool:
+    return isinstance(x, datetime.datetime)
+
+
+_iso_re = r'''(?x)
+    ^
+    
+    # date
+    (?P<Y> \d{4}) - (?P<m> \d{1,2}) - (?P<d> \d{1,2})    
+    
+    # time?
+    (
+        # separator
+        [ T]
+        
+        # time
+        (?P<H> \d{1,2}) : (?P<M> \d{1,2}) : (?P<S> \d{1,2})         
+        
+        # fraction?
+        (
+            \. 
+            (?P<f> \d+) 
+        )?
+        
+        # time zone?
+        (
+            Z
+            |
+            ( 
+                (?P<zsign> [+-]) (?P<zh> \d{2}) :? (?P<zm> \d{2})
+            )
+        )?   
+    
+    )?
+    $
+'''
+
+
+def from_iso(s: str) -> Optional[datetime.datetime]:
+    m = re.match(_iso_re, s)
+    if not m:
+        return None
+
+    g = m.groupdict()
+    tz = datetime.timezone.utc
+
+    if g['zsign']:
+        sec = int(g['zh']) * 3600 + int(g['zm']) * 60
+        if g['zsign'] == '-':
+            sec = -sec
+        tz = datetime.timezone(datetime.timedelta(seconds=sec))
+
+    return datetime.datetime(
+        int(g['Y']),
+        int(g['m']),
+        int(g['d']),
+        int(g['H'] or 0),
+        int(g['M'] or 0),
+        int(g['S'] or 0),
+        int(g['f'] or 0),
+        tz
+    )
 
 
 class DateFormatter:

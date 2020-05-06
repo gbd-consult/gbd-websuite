@@ -101,7 +101,8 @@ class Object(gws.Object, t.IApplication):
         gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
         gws.log.info('*' * 40)
 
-        self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
+        p = self.var('meta')
+        self.meta: t.MetaData = gws.common.metadata.from_config(p) if p else None
 
         self.monitor: t.IMonitor = t.cast(
             t.IMonitor,

@@ -17,30 +17,6 @@ class MetaInspireResourceType(t.Enum):
 
 
 #:export
-class MetaInspireTopicCategory(t.Enum):
-    """Inspire topicCategory, see http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd"""
-    farming = 'farming'
-    biota = 'biota'
-    boundaries = 'boundaries'
-    climatologyMeteorologyAtmosphere = 'climatologyMeteorologyAtmosphere'
-    economy = 'economy'
-    elevation = 'elevation'
-    environment = 'environment'
-    geoscientificInformation = 'geoscientificInformation'
-    health = 'health'
-    imageryBaseMapsEarthCover = 'imageryBaseMapsEarthCover'
-    intelligenceMilitary = 'intelligenceMilitary'
-    inlandWaters = 'inlandWaters'
-    location = 'location'
-    oceans = 'oceans'
-    planningCadastre = 'planningCadastre'
-    society = 'society'
-    structure = 'structure'
-    transportation = 'transportation'
-    utilitiesCommunication = 'utilitiesCommunication'
-
-
-#:export
 class MetaInspireSpatialDataServiceType(t.Enum):
     """Inspire spatialDataServiceType, see http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd"""
     discovery = 'discovery'
@@ -259,7 +235,6 @@ class Config(t.Config):
     inspireResourceType: t.Optional[MetaInspireResourceType]
     inspireSpatialDataServiceType: t.Optional[MetaInspireSpatialDataServiceType]
     inspireTheme: t.Optional[str]  #: INSPIRE theme shortcut, like 'au'
-    inspireTopicCategory: t.Optional[MetaInspireTopicCategory]
 
     isoTopicCategory: t.Optional[MetaIsoTopicCategory]  #: ISO-19139 topic category
     isoQualityExplanation: t.Optional[str]
@@ -267,7 +242,8 @@ class Config(t.Config):
     isoQualityPass: bool = False
     isoScope: t.Optional[MetaIsoScope]  #: ISO-19139 scope
     isoSpatialRepresentationType: t.Optional[MetaIsoSpatialRepresentationType]  #: ISO-19139 spatial type
-    isoUid: t.Optional[str]  #: ISO-19139 identifier
+
+    catalogUid: t.Optional[str]  #: catalog identifier
 
     keywords: t.List[str] = []  #: keywords
     language: t.Optional[str]  #: object language
@@ -319,7 +295,6 @@ class MetaData(t.Data):
     inspireResourceType: MetaInspireResourceType
     inspireSpatialDataServiceType: MetaInspireSpatialDataServiceType
     inspireTheme: str
-    inspireTopicCategory: MetaInspireTopicCategory
 
     isoTopicCategory: MetaIsoTopicCategory
     isoQualityExplanation: str
@@ -327,7 +302,8 @@ class MetaData(t.Data):
     isoQualityPass: bool
     isoScope: MetaIsoScope
     isoSpatialRepresentationType: MetaIsoSpatialRepresentationType
-    isoUid: str
+
+    catalogUid: str
 
     keywords: t.List[str]
     language: str
@@ -350,13 +326,17 @@ def from_config(m: t.Config) -> t.MetaData:
 
     meta = t.MetaData(m)
 
-    if gws.has(meta, 'language'):
+    if meta.language:
         meta.language3 = gws.tools.country.bibliographic_name(language=meta.language)
 
-    meta.contact = MetaContact(gws.get(meta, 'contact') or {})
+    meta.contact = MetaContact(meta.contact or {})
 
-    if gws.get(meta, 'keywords'):
-        meta.keywords = gws.strip(gws.get(meta, 'keywords')) or None
+    if meta.keywords:
+        meta.keywords = gws.strip(meta.keywords) or None
+
+    if meta.inspireTheme:
+        meta.inspireThemeName = inspire.theme_name(meta.inspireTheme, meta.language)
+        meta.inspireThemeDefinition = inspire.theme_definition(meta.inspireTheme, meta.language)
 
     return meta
 

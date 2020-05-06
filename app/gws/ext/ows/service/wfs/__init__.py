@@ -68,7 +68,7 @@ class Object(ows.Base):
         self.version = VERSION
 
         for tpl in 'getCapabilities', 'describeFeatureType', 'getFeature', 'feature':
-            self.templates[tpl] = self.configure_template(tpl, 'wfs/templates')
+            self.templates[tpl] = self.configure_template(tpl, 'wfs/templates/')
 
     def handle_getcapabilities(self, rd: ows.Request):
         nodes = self.layer_node_list(rd)
