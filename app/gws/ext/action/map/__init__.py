@@ -64,9 +64,6 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-_FEATURE_FULL_FORMAT_THRESHOLD = 500
-
-
 class Object(gws.common.action.Object):
 
     def api_render_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
@@ -152,16 +149,14 @@ class Object(gws.common.action.Object):
             crs=p.crs or layer.map.crs,
             extent=p.get('bbox') or layer.map.extent
         )
+
         found = layer.get_features(bounds, p.get('limit'))
 
-        # skip full conversion for large amounts of features
+        for f in found:
+            f.transform_to(bounds.crs)
+            f.apply_format(keys=['label'])
 
-        if len(found) > _FEATURE_FULL_FORMAT_THRESHOLD:
-            features = [f.transform_to(bounds.crs).minimal_props for f in found]
-        else:
-            features = [f.transform_to(bounds.crs).apply_converter().props for f in found]
-
-        return GetFeaturesResponse(features=features)
+        return GetFeaturesResponse(features=[f.props_for_render for f in found])
 
     def http_get_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
         return self.api_render_box(req, p)

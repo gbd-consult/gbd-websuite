@@ -44,18 +44,13 @@ class FeatureProps(t.Data):
     style: t.Optional[t.StyleProps]
 
 
-#:export
-class FeatureConverter:
-    feature_format: t.IFormat
-    data_model: t.IModel
-
-
 #:export IFeature
 class Feature(t.IFeature):
     def __init__(self, uid=None, attributes=None, category=None, elements=None, shape=None, style=None):
         self.attributes: t.List[t.Attribute] = []
         self.category: str = category
-        self.converter: t.Optional[FeatureConverter] = None
+        self.feature_format: t.Optional[t.IFormat] = None
+        self.data_model: t.Optional[t.IModel] = None
         self.elements = {}
         self.layer: t.Optional[t.ILayer] = None
         self.shape: t.Optional[t.IShape] = None
@@ -76,7 +71,7 @@ class Feature(t.IFeature):
         )
 
     @property
-    def minimal_props(self) -> t.FeatureProps:
+    def props_for_render(self) -> t.FeatureProps:
         return t.FeatureProps(
             uid=self.full_uid,
             attributes=[],
@@ -135,25 +130,18 @@ class Feature(t.IFeature):
             'geometry': self.shape.props.geometry if self.shape else None
         }
 
-    def apply_converter(self, converter: t.FeatureConverter = None) -> t.IFeature:
-        converter = converter or self.converter or self.layer
-
-        if converter:
-            s = getattr(converter, 'data_model', None)
-            if s:
-                self.apply_data_model(s)
-            s = getattr(converter, 'feature_format', None)
-            if s:
-                self.apply_format(s)
-
+    def apply_data_model(self, model: t.IModel = None) -> t.IFeature:
+        model = model or self.data_model
+        if model:
+            self.attributes = model.apply(self.attributes)
         return self
 
-    def apply_data_model(self, model: t.IModel) -> t.IFeature:
-        self.attributes = model.apply(self.attributes)
-        return self
-
-    def apply_format(self, fmt: t.IFormat, extra_context: dict = None) -> t.IFeature:
-        self.elements = gws.merge(self.elements, fmt.apply(gws.merge(self.template_context, extra_context)))
+    def apply_format(self, fmt: t.IFormat = None, extra_context: dict = None, keys: t.List[str] = None) -> t.IFeature:
+        fmt = fmt or self.feature_format
+        if fmt:
+            self.elements = gws.merge(
+                self.elements,
+                fmt.apply(gws.merge(self.template_context, extra_context), keys))
         return self
 
     def _init(self, uid, attributes, elements, shape, style):

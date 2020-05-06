@@ -70,11 +70,11 @@ class Object(gws.common.action.Object):
                 if p.get('tolerance') else None),
         )
 
-        features = gws.common.search.runner.run(req, args)
+        found = gws.common.search.runner.run(req, args)
 
-        return Response(
-            features=[
-                f.transform_to(args.bounds.crs).apply_converter().props
-                for f in features
-            ]
-        )
+        for f in found:
+            f.transform_to(args.bounds.crs)
+            f.apply_format()
+            f.apply_data_model()
+
+        return Response(features=[f.props for f in found])
