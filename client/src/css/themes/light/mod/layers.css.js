@@ -103,6 +103,11 @@ module.exports = v => ({
         padding: v.UNIT4,
     },
 
+    '.modLayersDetailsControls': {
+        padding: v.UNIT4,
+        borderTop: [1, 'solid', v.BORDER_COLOR],
+    },
+
     '.modLayersZoomAuxButton': {
         ...v.SIDEBAR_AUX_BUTTON('zoom_layer')
     },
@@ -111,6 +116,9 @@ module.exports = v => ({
     },
     '.modLayersEditAuxButton': {
         ...v.SIDEBAR_AUX_BUTTON('google:image/edit')
+    },
+    '.modLayersOpacityAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:action/opacity')
     },
 
 

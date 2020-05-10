@@ -96,6 +96,8 @@ module.exports = {
     modLayersVisibleButton: 'Layersichtbarkeit ändern',
     modLayersCheckButton: 'Layersichtbarkeit ändern',
     modLayersZoomAuxButton: 'Auf den Layer zoomen',
+    modLayersOpacity: 'Transparenz',
+    modLayersOpacityAuxButton: 'Transparenz',
     modLens: 'Räumliche Suche',
     modLensOverlayAnchorButton: 'Verschieben',
     modLensOverlayCancelButton: 'Schließen',

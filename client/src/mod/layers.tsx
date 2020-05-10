@@ -3,18 +3,20 @@ import * as React from 'react';
 import * as gws from 'gws';
 import * as sidebar from './sidebar';
 
-let {Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell} = gws.ui.Layout;
 
 interface ViewProps extends gws.types.ViewProps {
     controller: LayersSidebar;
     mapUpdateCount: number;
     mapSelectedLayer?: gws.types.IMapLayer;
+    modLayersShowOpacity: boolean;
     layer?: gws.types.IMapLayer;
 }
 
 const StoreKeys = [
     'mapUpdateCount',
-    'mapSelectedLayer'
+    'mapSelectedLayer',
+    'modLayersShowOpacity',
 ];
 
 class LayersTreeTitle extends gws.View<ViewProps> {
@@ -24,7 +26,7 @@ class LayersTreeTitle extends gws.View<ViewProps> {
             await this.props.controller.map.selectLayer(this.props.layer);
         };
 
-        return <gws.ui.Touchable    
+        return <gws.ui.Touchable
             className="modLayersTreeTitle"
             whenTouched={click}
         >{this.props.layer.title}</gws.ui.Touchable>
@@ -145,6 +147,15 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
             },
             close() {
                 map.deselectAllLayers()
+            },
+            setOpacity(v) {
+                layer.opacity = v / 100;
+                map.computeOpacities();
+            },
+            toggleOpacityControl() {
+                cc.update({
+                    modLayersShowOpacity: !cc.getValue('modLayersShowOpacity')
+                })
             }
         };
 
@@ -154,9 +165,40 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                     <gws.components.Description content={this.props.layer.description}/>
                 </div>
             </div>
+            {this.props.modLayersShowOpacity && <div className="modLayersDetailsControls">
+                <Form>
+                    <Row>
+                        <Cell>
+                            {this.__('modLayersOpacity')}
+                        </Cell>
+                        <Cell flex>
+                            <gws.ui.Slider
+                                value={Math.floor(100 * this.props.layer.opacity)}
+                                minValue={0}
+                                maxValue={100}
+                                step={1}
+                                whenChanged={f.setOpacity}
+                            />
+                        </Cell>
+                        <Cell width={50}>
+                            <gws.ui.NumberInput
+                                value={Math.floor(100 * this.props.layer.opacity)}
+                                minValue={0}
+                                maxValue={100}
+                                whenChanged={f.setOpacity}
+                            />
+                        </Cell>
+                    </Row>
+                </Form>
+            </div>}
 
             <sidebar.AuxToolbar>
                 <Cell flex/>
+                <sidebar.AuxButton
+                    className="modLayersOpacityAuxButton"
+                    tooltip={this.__('modLayersOpacityAuxButton')}
+                    whenTouched={f.toggleOpacityControl}
+                />
                 <sidebar.AuxButton
                     className="modLayersZoomAuxButton"
                     tooltip={this.__('modLayersZoomAuxButton')}
