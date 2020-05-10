@@ -12,8 +12,9 @@ class Object(gws.Object, t.IFormat):
             if gws.has(p, 'type'):
                 self.templates[key] = self.create_child('gws.ext.template', p)
 
-    def apply(self, context: dict) -> dict:
+    def apply(self, context: dict, keys: t.List[str] = None) -> dict:
         res = {}
         for key, tpl in self.templates.items():
-            res[key] = tpl.render(dict(context)).content
+            if not keys or key in keys:
+                res[key] = tpl.render(dict(context)).content
         return res

@@ -1,0 +1,5 @@
+@include record_ISO.cx
+
+@tag csw:GetRecordByIdResponse version={service.version}
+    @record meta
+@end
