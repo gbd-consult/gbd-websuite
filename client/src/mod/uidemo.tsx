@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
-import * as sidebar from './common/sidebar';
+import * as sidebar from './sidebar';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
-import * as sidebar from './common/sidebar';
+import * as sidebar from './sidebar';
 
 const MASTER = 'Shared.Search';
 

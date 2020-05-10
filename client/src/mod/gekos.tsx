@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
-import * as toolbar from './common/toolbar';
+import * as toolbar from './toolbar';
 
 const STRINGS = {
     tooltip: 'Koordinaten für GekoS auswählen',

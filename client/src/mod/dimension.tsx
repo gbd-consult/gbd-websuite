@@ -4,10 +4,10 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 import * as measure from 'gws/map/measure';
 
-import * as sidebar from './common/sidebar';
-import * as toolbar from './common/toolbar';
-import * as toolbox from './common/toolbox';
-import * as storage from './common/storage';
+import * as sidebar from './sidebar';
+import * as toolbar from './toolbar';
+import * as toolbox from './toolbox';
+import * as storage from './storage';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 

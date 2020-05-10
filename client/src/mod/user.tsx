@@ -3,7 +3,7 @@ import * as gws from 'gws';
 
 const {Form, Row, Cell} = gws.ui.Layout;
 
-import * as sidebar from './common/sidebar';
+import * as sidebar from './sidebar';
 
 interface AuthProps extends gws.types.ViewProps {
     controller: SidebarUserTab;

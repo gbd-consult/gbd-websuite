@@ -3,9 +3,9 @@ import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 
-import * as lens from './common/lens';
-import * as sidebar from './common/sidebar';
-import * as storage from './common/storage';
+import * as lens from './lens';
+import * as sidebar from './sidebar';
+import * as storage from './storage';
 
 const STORAGE_CATEGORY = 'Alkis';
 const MASTER = 'Shared.Alkis';

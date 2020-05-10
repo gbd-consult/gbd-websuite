@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
-import * as toolbar from './common/toolbar';
+import * as toolbar from './toolbar';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 

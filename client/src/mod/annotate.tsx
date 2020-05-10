@@ -4,11 +4,12 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 import * as template from 'gws/map/template';
 import * as style from 'gws/map/style';
-import * as sidebar from './common/sidebar';
-import * as toolbar from './common/toolbar';
-import * as modify from './common/modify';
-import * as draw from './common/draw';
-import * as storage from './common/storage';
+
+import * as sidebar from './sidebar';
+import * as toolbar from './toolbar';
+import * as modify from './modify';
+import * as draw from './draw';
+import * as storage from './storage';
 
 import {StyleController} from './style';
 

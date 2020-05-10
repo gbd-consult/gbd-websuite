@@ -2,10 +2,10 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gws from 'gws';
-import * as sidebar from './common/sidebar';
 import * as style from 'gws/map/style';
-import * as modify from './common/modify';
-import * as draw from './common/draw';
+import * as sidebar from './sidebar';
+import * as modify from './modify';
+import * as draw from './draw';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 

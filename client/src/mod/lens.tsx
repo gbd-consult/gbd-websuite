@@ -3,9 +3,9 @@ import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 
-import * as draw from '../common/draw';
-import * as toolbar from '../common/toolbar';
-import * as toolbox from '../common/toolbox';
+import * as draw from './draw';
+import * as toolbar from './toolbar';
+import * as toolbox from './toolbox';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
