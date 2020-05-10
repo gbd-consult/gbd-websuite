@@ -1,8 +1,6 @@
 let options = require('./options');
 let helpers = require('./helpers');
 
-let CleanWebpackPlugin = require('clean-webpack-plugin');
-
 options.mode = process.env.NODE_ENV;
 options.buildAssets = !(process.argv[1] || '').includes('dev-server');
 
@@ -42,7 +40,6 @@ let config = {
     },
 
     plugins: [
-        new CleanWebpackPlugin([options.dist]),
         new helpers.ConfigPlugin(options)
     ],
 

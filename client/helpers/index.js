@@ -96,15 +96,19 @@ function ConfigPlugin(options) {
 }
 
 ConfigPlugin.prototype.apply = function (compiler) {
-    if (this.options.buildAssets) {
+    compiler.hooks.emit.tap('ConfigPlugin', () => {
+        fs.rmdirSync(absPath(this.options.dist), {recursive: true});
         fs.mkdirSync(absPath(this.options.dist));
+    });
 
-        compiler.hooks.done.tap('ConfigPlugin', () => {
+    compiler.hooks.done.tap('ConfigPlugin', () => {
+        if (this.options.buildAssets) {
             packageVendors(this.options);
             generateThemes(this.options);
             copyAssets(this.options);
-        });
-    }
+        }
+    });
+
 };
 
 
