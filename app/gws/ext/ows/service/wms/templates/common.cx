@@ -108,6 +108,16 @@
             @t Attribution/Title {x}
         @end
 
+        @with node.meta.authorityUrl
+            @tag AuthorityURL name="{node.meta.authorityName}"
+                @t OnlineResource xlink:href="{node.meta.authorityUrl}"
+            @end
+        @end
+
+        @with node.meta.authorityIdentifier
+            @t Identifier authority="{node.meta.authorityName}" {node.meta.authorityIdentifier}
+        @end
+
         @wms_meta_url node
 
         @if node.has_legend

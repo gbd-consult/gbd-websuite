@@ -1,11 +1,52 @@
 """Utilities to manipulate metadata"""
 
+import datetime
+
 import gws
 import gws.tools.country
 
 import gws.types as t
 
 from . import inspire
+
+
+#:export
+class MetaInspireTheme(t.Enum):
+    """Inspire theme, see http://inspire.ec.europa.eu/theme/"""
+    ac = 'ac'  #: Atmospheric conditions
+    ad = 'ad'  #: Addresses
+    af = 'af'  #: Agricultural and aquaculture facilities
+    am = 'am'  #: Area management/restriction/regulation zones and reporting units
+    au = 'au'  #: Administrative units
+    br = 'br'  #: Bio-geographical regions
+    bu = 'bu'  #: Buildings
+    cp = 'cp'  #: Cadastral parcels
+    ef = 'ef'  #: Environmental monitoring facilities
+    el = 'el'  #: Elevation
+    er = 'er'  #: Energy resources
+    ge = 'ge'  #: Geology
+    gg = 'gg'  #: Geographical grid systems
+    gn = 'gn'  #: Geographical names
+    hb = 'hb'  #: Habitats and biotopes
+    hh = 'hh'  #: Human health and safety
+    hy = 'hy'  #: Hydrography
+    lc = 'lc'  #: Land cover
+    lu = 'lu'  #: Land use
+    mf = 'mf'  #: Meteorological geographical features
+    mr = 'mr'  #: Mineral resources
+    nz = 'nz'  #: Natural risk zones
+    of = 'of'  #: Oceanographic geographical features
+    oi = 'oi'  #: Orthoimagery
+    pd = 'pd'  #: Population distribution — demography
+    pf = 'pf'  #: Production and industrial facilities
+    ps = 'ps'  #: Protected sites
+    rs = 'rs'  #: Coordinate reference systems
+    sd = 'sd'  #: Species distribution
+    so = 'so'  #: Soil
+    sr = 'sr'  #: Sea regions
+    su = 'su'  #: Statistical units
+    tn = 'tn'  #: Transport networks
+    us = 'us'  #: Utility and governmental services
 
 
 #:export
@@ -120,7 +161,7 @@ class MetaInspireKeyword(t.Enum):
 
 #:export
 class MetaIsoScope(t.Enum):
-    """ISO-19139 MD/MX_ScopeCode, see http://schemas.opengis.net/iso/19139/20070417/resources/codelist/gmxCodelists.xml"""
+    """ISO-19139 MD/MX_ScopeCode, see https://standards.iso.org/iso/19139/resources/gmxCodelists.xml"""
     attribute = 'attribute'  #: information applies to the attribute class
     attributeType = 'attributeType'  #: information applies to the characteristic of a feature
     collectionHardware = 'collectionHardware'  #: information applies to the collection hardware class
@@ -148,8 +189,25 @@ class MetaIsoScope(t.Enum):
 
 
 #:export
+class MetaIsoMaintenanceFrequencyCode(t.Enum):
+    """ISO-19139 MD_MaintenanceFrequencyCode, see https://standards.iso.org/iso/19139/resources/gmxCodelists.xml"""
+    continual = 'continual'
+    daily = 'daily'
+    weekly = 'weekly'
+    fortnightly = 'fortnightly'
+    monthly = 'monthly'
+    quarterly = 'quarterly'
+    biannually = 'biannually'
+    annually = 'annually'
+    asNeeded = 'asNeeded'
+    irregular = 'irregular'
+    notPlanned = 'notPlanned'
+    unknown = 'unknown'
+
+
+#:export
 class MetaIsoSpatialRepresentationType(t.Enum):
-    """ISO-19139 MD_SpatialRepresentationTypeCode, see http://schemas.opengis.net/iso/19139/20070417/resources/codelist/gmxCodelists.xml"""
+    """ISO-19139 MD_SpatialRepresentationTypeCode, see https://standards.iso.org/iso/19139/resources/gmxCodelists.xml"""
     vector = 'vector'  #: vector data is used to represent geographic data
     grid = 'grid'  #: grid data is used to represent geographic data
     textTable = 'textTable'  #: textual or tabular data is used to represent geographic data
@@ -160,7 +218,7 @@ class MetaIsoSpatialRepresentationType(t.Enum):
 
 #:export
 class MetaIsoOnLineFunction(t.Enum):
-    """ISO-19139 CI_OnLineFunctionCode, see http://schemas.opengis.net/iso/19139/20070417/resources/codelist/gmxCodelists.xml"""
+    """ISO-19139 CI_OnLineFunctionCode, see https://standards.iso.org/iso/19139/resources/gmxCodelists.xml"""
     download = 'download'  #: online instructions for transferring data from one storage device or system to another
     information = 'information'  #: online information about the resource
     offlineAccess = 'offlineAccess'  #: online instructions for requesting the resource from the provider
@@ -170,7 +228,7 @@ class MetaIsoOnLineFunction(t.Enum):
 
 #:export
 class MetaIsoTopicCategory(t.Enum):
-    """ISO-19139 MD_TopicCategoryCode, see http://schemas.opengis.net/iso/19139/20070417/resources/codelist/gmxCodelists.xml"""
+    """ISO-19139 MD_TopicCategoryCode, see https://standards.iso.org/iso/19139/resources/gmxCodelists.xml"""
     farming = 'farming'  #: rearing of animals and/or cultivation of plants. Examples: agriculture, irrigation, aquaculture, plantations, herding, pests and diseases affecting crops and livestock
     biota = 'biota'  #: flora and/or fauna in natural environment. Examples: wildlife, vegetation, biological sciences, ecology, wilderness, sealife, wetlands, habitat
     boundaries = 'boundaries'  #: legal land descriptions. Examples: political and administrative boundaries
@@ -229,19 +287,27 @@ class Config(t.Config):
     fees: t.Optional[str]
     image: t.Optional[t.Url]  #: image (logo) url
 
+    authorityName: t.Optional[str]
+    authorityUrl: t.Optional[t.Url]
+    authorityIdentifier: t.Optional[str]
+
     insipreKeywords: t.Optional[t.List[MetaInspireKeyword]]
     insipreMandatoryKeyword: t.Optional[MetaInspireKeyword]
     inspireDegreeOfConformity: t.Optional[MetaInspireDegreeOfConformity]
     inspireResourceType: t.Optional[MetaInspireResourceType]
     inspireSpatialDataServiceType: t.Optional[MetaInspireSpatialDataServiceType]
-    inspireTheme: t.Optional[str]  #: INSPIRE theme shortcut, like 'au'
+    inspireTheme: t.Optional[MetaInspireTheme]
 
-    isoTopicCategory: t.Optional[MetaIsoTopicCategory]  #: ISO-19139 topic category
-    isoQualityExplanation: t.Optional[str]
-    isoQualityLineage: t.Optional[str]
-    isoQualityPass: bool = False
+    isoMaintenanceFrequencyCode: t.Optional[MetaIsoMaintenanceFrequencyCode]
     isoScope: t.Optional[MetaIsoScope]  #: ISO-19139 scope
     isoSpatialRepresentationType: t.Optional[MetaIsoSpatialRepresentationType]  #: ISO-19139 spatial type
+    isoTopicCategory: t.Optional[MetaIsoTopicCategory]  #: ISO-19139 topic category
+
+    isoQualityConformanceExplanation: t.Optional[str]
+    isoQualityConformancePass: bool = False
+    isoQualityLineageSource: t.Optional[str]
+    isoQualityLineageSourceScale: t.Optional[int]
+    isoQualityLineageStatement: t.Optional[str]
 
     catalogUid: t.Optional[str]  #: catalog identifier
 
@@ -285,23 +351,32 @@ class MetaData(t.Data):
     accessConstraints: str
     attribution: str
     contact: MetaContact
-    dateCreated: t.Date
-    dateUpdated: t.Date
+    dateCreated: datetime.datetime
+    dateUpdated: datetime.datetime
     fees: str
     image: t.Url
 
-    insipreMandatoryKeyword: str
+    authorityName: str
+    authorityUrl: t.Url
+    authorityIdentifier: str
 
+    insipreKeywords: t.List[MetaInspireKeyword]
+    insipreMandatoryKeyword: MetaInspireKeyword
+    inspireDegreeOfConformity: MetaInspireDegreeOfConformity
     inspireResourceType: MetaInspireResourceType
     inspireSpatialDataServiceType: MetaInspireSpatialDataServiceType
-    inspireTheme: str
+    inspireTheme: MetaInspireTheme
 
-    isoTopicCategory: MetaIsoTopicCategory
-    isoQualityExplanation: str
-    isoQualityLineage: str
-    isoQualityPass: bool
+    isoMaintenanceFrequencyCode: MetaIsoMaintenanceFrequencyCode
     isoScope: MetaIsoScope
     isoSpatialRepresentationType: MetaIsoSpatialRepresentationType
+    isoTopicCategory: MetaIsoTopicCategory
+
+    isoQualityConformanceExplanation: str
+    isoQualityConformancePass: bool
+    isoQualityLineageSource: str
+    isoQualityLineageSourceScale: int
+    isoQualityLineageStatement: str
 
     catalogUid: str
 

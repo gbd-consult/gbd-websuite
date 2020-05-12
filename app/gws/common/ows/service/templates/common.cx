@@ -4,13 +4,11 @@
 ## OGC 06-121r3 table 15,16,17
 
 @def ows_service_url(get=True, post=False)
-    @tag ows:DCP/ows:HTTP
-        @if get
-            @t ows:Get xlink:href={url_for(service.url)}
-        @end
-        @if post
-            @t ows:Post xlink:href={url_for(service.url)}
-        @end
+    @if get
+        @t ows:DCP/ows:HTTP/ows:Get xlink:href={url_for(service.url)}
+    @end
+    @if post
+        @t ows:DCP/ows:HTTP/ows:Post xlink:href={url_for(service.url)}
     @end
 @end
 

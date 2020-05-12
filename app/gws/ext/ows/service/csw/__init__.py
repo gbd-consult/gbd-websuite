@@ -72,19 +72,22 @@ class Object(ows.Base):
         self.metas = {}
 
         for obj in self.root.find_all():
-            meta = gws.get(obj, 'meta')
-            if meta and meta.catalogUid:
-                if not meta.url:
-                    meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
-                self.metas[obj.uid] = meta
+            meta: t.MetaData = gws.get(obj, 'meta')
+            if not meta:
+                continue
+            if not meta.catalogUid:
+                if meta.authorityIdentifier:
+                    meta.catalogUid = meta.authorityIdentifier
+                else:
+                    meta.catalogUid = obj.uid
+            if not meta.url:
+                meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
+
+            self.metas[obj.uid] = meta
 
         self._create_index()
 
     def handle(self, req) -> t.HttpResponse:
-        if self.metas is None:
-            self._collect_metas()
-            self._create_index()
-
         rd = ows.Request({
             'req': req,
             'project': None,

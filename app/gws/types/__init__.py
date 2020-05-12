@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
+import datetime
 
 
 # NB: we cannot use the standard Enum, because after "class Color(Enum): RED = 1"
@@ -506,20 +507,28 @@ class MetaData(Data):
     abstract: str
     accessConstraints: str
     attribution: str
+    authorityIdentifier: str
+    authorityName: str
+    authorityUrl: 'Url'
     catalogUid: str
     contact: 'MetaContact'
-    dateCreated: 'Date'
-    dateUpdated: 'Date'
+    dateCreated: datetime.datetime
+    dateUpdated: datetime.datetime
     fees: str
     geographicExtent: 'Extent'
     image: 'Url'
-    insipreMandatoryKeyword: str
+    insipreKeywords: List['MetaInspireKeyword']
+    insipreMandatoryKeyword: 'MetaInspireKeyword'
+    inspireDegreeOfConformity: 'MetaInspireDegreeOfConformity'
     inspireResourceType: 'MetaInspireResourceType'
     inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType'
-    inspireTheme: str
-    isoQualityExplanation: str
-    isoQualityLineage: str
-    isoQualityPass: bool
+    inspireTheme: 'MetaInspireTheme'
+    isoMaintenanceFrequencyCode: 'MetaIsoMaintenanceFrequencyCode'
+    isoQualityConformanceExplanation: str
+    isoQualityConformancePass: bool
+    isoQualityLineageSource: str
+    isoQualityLineageSourceScale: int
+    isoQualityLineageStatement: str
     isoScope: 'MetaIsoScope'
     isoSpatialRepresentationType: 'MetaIsoSpatialRepresentationType'
     isoTopicCategory: 'MetaIsoTopicCategory'
@@ -636,6 +645,58 @@ class MetaInspireSpatialDataServiceType(Enum):
     other = 'other'
     transformation = 'transformation'
     view = 'view'
+
+
+class MetaInspireTheme(Enum):
+    ac = 'ac'
+    ad = 'ad'
+    af = 'af'
+    am = 'am'
+    au = 'au'
+    br = 'br'
+    bu = 'bu'
+    cp = 'cp'
+    ef = 'ef'
+    el = 'el'
+    er = 'er'
+    ge = 'ge'
+    gg = 'gg'
+    gn = 'gn'
+    hb = 'hb'
+    hh = 'hh'
+    hy = 'hy'
+    lc = 'lc'
+    lu = 'lu'
+    mf = 'mf'
+    mr = 'mr'
+    nz = 'nz'
+    of = 'of'
+    oi = 'oi'
+    pd = 'pd'
+    pf = 'pf'
+    ps = 'ps'
+    rs = 'rs'
+    sd = 'sd'
+    so = 'so'
+    sr = 'sr'
+    su = 'su'
+    tn = 'tn'
+    us = 'us'
+
+
+class MetaIsoMaintenanceFrequencyCode(Enum):
+    annually = 'annually'
+    asNeeded = 'asNeeded'
+    biannually = 'biannually'
+    continual = 'continual'
+    daily = 'daily'
+    fortnightly = 'fortnightly'
+    irregular = 'irregular'
+    monthly = 'monthly'
+    notPlanned = 'notPlanned'
+    quarterly = 'quarterly'
+    unknown = 'unknown'
+    weekly = 'weekly'
 
 
 class MetaIsoOnLineFunction(Enum):

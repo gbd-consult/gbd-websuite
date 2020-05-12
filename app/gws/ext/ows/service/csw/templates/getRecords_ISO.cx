@@ -1,6 +1,6 @@
 @include record_ISO.cx
 
-@tag csw:GetRecordsResponse version={service.version}
+@tag csw:GetRecordsResponse
 
 	@t csw:SearchStatus timestamp={results.timestamp}
 
