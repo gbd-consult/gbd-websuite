@@ -66,7 +66,7 @@ def _handle_error(root, req, err) -> t.IResponse:
 
     if req.output_struct_type:
         return req.struct_response(
-            {'error': {'status': err.code, 'info': ''}},
+            {'error': {'status': err.code, 'info': gws.get(err, 'description', '')}},
             status=err.code)
 
     if not req.site.error_page:
