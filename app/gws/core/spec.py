@@ -80,6 +80,8 @@ def _read_literal(rd, val, spec):
 
 def _read_bytes(rd, val, spec):
     try:
+        if isinstance(val, str):
+            return val.encode('utf8', errors='strict')
         return bytes(val)
     except:
         rd.error('ERR_MUST_BE_BYTES', 'must be a byte buffer', val)
