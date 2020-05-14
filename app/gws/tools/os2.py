@@ -191,3 +191,28 @@ def parse_path(path):
         d['name'], _, d['extension'] = d['filename'].partition('.')
 
     return d
+
+
+def abs_path(path, basedir):
+    """Absolutize a relative path with respect to a base dir."""
+
+    p = path.strip('/')
+
+    if p.startswith('.') or '/.' in p:
+        return None
+
+    p = os.path.abspath(os.path.join(basedir, p))
+
+    if not p.startswith(basedir):
+        return None
+
+    return p
+
+
+def rel_path(path, basedir):
+    """Relativize an absolute path with respect to a base dir."""
+
+    if not path.startswith(basedir):
+        return None
+
+    return os.path.relpath(path, basedir)
