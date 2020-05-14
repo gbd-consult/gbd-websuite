@@ -74,7 +74,7 @@ keep_warnings = True
 ##
 
 def replace_vars(app, docname, source):
-    for k, v in globals().items():
+    for k, v in vars(util).items():
         if isinstance(v, str):
             source[0] = source[0].replace('{' + k + '}', v)
 
