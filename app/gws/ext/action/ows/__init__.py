@@ -23,7 +23,7 @@ class Object(gws.common.action.Object):
         for p in self.var('services', default=[]):
             self.services.append(t.cast(t.IOwsService, self.create_child('gws.ext.ows.service', p)))
 
-    def http_get_service(self, req: t.IRequest, _) -> t.HttpResponse:
+    def http_service(self, req: t.IRequest, _) -> t.HttpResponse:
         service = self._find_service(req)
         if not service:
             raise gws.web.error.NotFound()

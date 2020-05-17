@@ -305,7 +305,7 @@ class IBaseRequest:
     params: dict
     root: 'IRootObject'
     site: 'IWebSite'
-    text_data: Optional[str]
+    text: Optional[str]
     def cookie(self, key: str, default: str = None) -> str: pass
     def env(self, key: str, default: str = None) -> str: pass
     def error_response(self, err) -> 'IResponse': pass

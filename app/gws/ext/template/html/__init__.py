@@ -31,14 +31,16 @@ class Object(gws.common.template.Object):
         self.footer = ''
         self.legend_use_all = False
         self.legend_mode = None
+
         self.legend_layer_uids = []
+        self.parsed_text = ''
 
-        if self.path:
-            self.text = gws.read_file(self.path)
-
-        self._parse()
+        self._load()
 
     def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
+        if self.root.application.developer.get('reload_templates'):
+            self._load()
+
         def legend_func(layer_uid=None):
             if not legends:
                 return ''
@@ -48,7 +50,7 @@ class Object(gws.common.template.Object):
 
         map_html = gws.gis.render.output_html(mro) if mro else ''
         context = gws.merge(context, GWS_MAP=map_html, GWS_LEGEND=legend_func)
-        html = self._render_html(self.text, context)
+        html = self._render_html(self.parsed_text, context)
 
         if format == 'pdf':
             if not out_path:
@@ -96,6 +98,14 @@ class Object(gws.common.template.Object):
 
         return in_path
 
+    def _load(self):
+        self.legend_layer_uids = []
+        self.parsed_text = ''
+
+        if self.path:
+            self.text = gws.read_file(self.path)
+        self._parse()
+
     def _parse(self):
         # we cannot parse our html with bs4 or whatever, because it's a template,
         # and in a template, whitespace is critical, and a structural parser won't preserve it one-to-one
@@ -112,7 +122,9 @@ class Object(gws.common.template.Object):
             ) 
         '''
 
-        self.text = re.sub(tags_re, lambda m: self._parse_tag(m.groupdict()), self.text)
+        self.legend_use_all = False
+
+        self.parsed_text = re.sub(tags_re, lambda m: self._parse_tag(m.groupdict()), self.text)
 
         if self.legend_use_all:
             self.legend_layer_uids = []

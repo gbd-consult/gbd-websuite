@@ -8,7 +8,7 @@ import _test.common.const as cc
 
 
 def test_get_capabilities():
-    r = u.req('_/cmd/owsHttpGetService/uid/wfs', params={
+    r = u.req('_/cmd/owsHttpService/uid/wfs', params={
         'projectUid': 'a',
         'SERVICE': 'WFS',
         'REQUEST': 'GetCapabilities'
@@ -17,7 +17,7 @@ def test_get_capabilities():
     assert u.xml(r) == u.xml('/data/response_xml/wfs_GetCapabilities_wfs1.xml')
 
 def test_get_describefeaturetype():
-    r = u.req('_/cmd/owsHttpGetService/uid/wfs', params={
+    r = u.req('_/cmd/owsHttpService/uid/wfs', params={
         'projectUid': 'a',
         'SERVICE': 'WFS',
         'REQUEST': 'DescribeFeatureType',
@@ -29,7 +29,7 @@ def test_get_describefeaturetype():
 def test_get_all_features():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttpGetService/uid/wfs', params={
+    r = u.req('_/cmd/owsHttpService/uid/wfs', params={
         'projectUid': 'a',
         'SERVICE': 'WFS',
         'REQUEST': 'GetFeature',
@@ -42,7 +42,7 @@ def test_get_all_features():
 def test_get_features_with_bbox():
     x, y = cc.POINTS.paris
 
-    r = u.req('_/cmd/owsHttpGetService/uid/wfs', params={
+    r = u.req('_/cmd/owsHttpService/uid/wfs', params={
         'projectUid': 'a',
         'SERVICE': 'WFS',
         'REQUEST': 'GetFeature',

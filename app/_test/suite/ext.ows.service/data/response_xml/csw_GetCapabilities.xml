@@ -49,15 +49,15 @@
         <ows:Operation name="GetCapabilities">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw"/>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
                 </ows:HTTP>
             </ows:DCP>
         </ows:Operation>
         <ows:Operation name="GetRecords">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw"/>
-                    <ows:Post xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw"/>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
+                    <ows:Post xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
                 </ows:HTTP>
             </ows:DCP>
             <ows:Parameter name="typeName">
@@ -85,7 +85,7 @@
         <ows:Operation name="DescribeRecord">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/csw"/>
+                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
                 </ows:HTTP>
             </ows:DCP>
             <ows:Parameter name="typeName">

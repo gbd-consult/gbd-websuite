@@ -81,29 +81,33 @@ class Object(ows.Base):
                 else:
                     meta.catalogUid = obj.uid
             if not meta.url:
-                meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpGetService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
+                meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
 
             self.metas[obj.uid] = meta
 
         self._create_index()
 
     def handle(self, req) -> t.HttpResponse:
-        rd = ows.Request({
-            'req': req,
-            'project': None,
-            'service': self,
-        })
+        rd = ows.Request(req=req, project=None, service=self)
 
-        request_param = req.param('request', '')
+        if req.method == 'GET':
+            return self.dispatch(rd, req.param('request', ''))
 
-        if req.method == 'POST':
+        # CSW should accept POST'ed xml, which can be wrapped in a SOAP envelope
+
+        try:
+            rd.xml = gws.tools.xml2.from_string(req.text)
+        except gws.tools.xml2.Error:
+            raise gws.web.error.BadRequest()
+
+        if rd.xml.name.lower() == 'envelope':
+            rd.xml_is_soap = True
             try:
-                rd.xml = gws.tools.xml2.from_string(req.text_data)
-            except gws.tools.xml2.Error:
+                rd.xml = rd.xml.first('body').first()
+            except AttributeError:
                 raise gws.web.error.BadRequest()
-            request_param = rd.xml.name
 
-        return self.dispatch(rd, request_param)
+        return self.dispatch(rd, rd.xml.name.lower())
 
     def handle_getcapabilities(self, rd: ows.Request):
         return self.xml_response(self.render_template(rd, 'getCapabilities'))
@@ -124,6 +128,7 @@ class Object(ows.Base):
         return self.xml_response(self.render_template(rd, 'getRecords', {
             'metas': metas,
             'results': results,
+            'with_soap': rd.xml_is_soap,
         }))
 
     def handle_getrecordbyid(self, rd: ows.Request):
@@ -131,7 +136,8 @@ class Object(ows.Base):
         if not meta:
             raise gws.web.error.NotFound()
         return self.xml_response(self.render_template(rd, 'getRecordById', {
-            'meta': meta
+            'meta': meta,
+            'with_soap': rd.xml_is_soap,
         }))
 
     def _collect_metas(self):

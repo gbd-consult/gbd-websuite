@@ -20,7 +20,7 @@
             <Keyword>service_meta_keyword3</Keyword>
         </KeywordList>
         <OnlineResource xlink:type="simple"
-                        xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
+                        xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms_inspire/projectUid/a"/>
         <ContactInformation>
             <ContactPersonPrimary>
                 <ContactPerson>service_meta_contact_person</ContactPerson>
@@ -49,7 +49,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms_inspire/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -60,7 +60,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms_inspire/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -71,7 +71,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms_inspire/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>
@@ -82,7 +82,7 @@
                     <HTTP>
                         <Get>
                             <OnlineResource xlink:type="simple"
-                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpGetService/uid/wms_inspire/projectUid/a"/>
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms_inspire/projectUid/a"/>
                         </Get>
                     </HTTP>
                 </DCPType>

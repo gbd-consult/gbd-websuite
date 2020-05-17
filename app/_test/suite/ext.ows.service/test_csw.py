@@ -2,7 +2,7 @@ import _test.util as u
 
 
 def test_get_capabilities():
-    r = u.req('_/cmd/owsHttpGetService/uid/csw', params={
+    r = u.req('_/cmd/owsHttpService/uid/csw', params={
         'SERVICE': 'CSW',
         'REQUEST': 'GetCapabilities'
     })

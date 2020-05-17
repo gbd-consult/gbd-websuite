@@ -103,7 +103,7 @@ class BaseRequest(t.IBaseRequest):
         return data
 
     @property
-    def text_data(self) -> t.Optional[str]:
+    def text(self) -> t.Optional[str]:
         if self.method != 'POST':
             return None
 

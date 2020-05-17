@@ -3,7 +3,6 @@
 # (id, url, schema)
 
 ALL = [
-
     # xml standard
 
     # NB our templates use "xsd" and "xsi" for XMLSchema namespaces
@@ -11,6 +10,7 @@ ALL = [
     ('xsi', 'http://www.w3.org/2001/XMLSchema-instance', ''),
     ('xlink', 'http://www.w3.org/1999/xlink', 'https://www.w3.org/XML/2008/06/xlink.xsd'),
     ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns', ''),
+    ('soap', 'http://www.w3.org/2003/05/soap-envelope', 'https://www.w3.org/2003/05/soap-envelope/'),
 
     # ogc
 
@@ -18,7 +18,7 @@ ALL = [
     ('dc', 'http://purl.org/dc/elements/1.1/', 'http://schemas.opengis.net/csw/2.0.2/rec-dcmes.xsd'),
     ('dcm', 'http://purl.org/dc/dcmitype/', 'http://dublincore.org/schemas/xmls/qdc/2008/02/11/dcmitype.xsd'),
     ('dct', 'http://purl.org/dc/terms/', 'http://schemas.opengis.net/csw/2.0.2/rec-dcterms.xsd'),
-    ('fes', 'http://www.opengis.net/fes/2.0', ''),
+    ('fes', 'http://www.opengis.net/fes/2.0', 'http://schemas.opengis.net/filter/2.0/filterAll.xsd'),
     ('gco', 'http://www.isotc211.org/2005/gco', 'http://schemas.opengis.net/iso/19139/20070417/gco/gco.xsd'),
     ('gmd', 'http://www.isotc211.org/2005/gmd', 'http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd'),
     ('gml', 'http://www.opengis.net/gml/3.2', 'http://schemas.opengis.net/gml/3.2.1/gml.xsd'),
@@ -29,6 +29,7 @@ ALL = [
     ('srv', 'http://www.isotc211.org/2005/srv', 'http://schemas.opengis.net/iso/19139/20070417/srv/1.0/srv.xsd'),
     ('wfs', 'http://www.opengis.net/wfs/2.0', 'http://schemas.opengis.net/wfs/2.0/wfs.xsd'),
     ('wms', 'http://www.opengis.net/wms', 'http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd'),
+    ('wmts', 'http://www.opengis.net/wmts', 'http://schemas.opengis.net/wmts/1.0/wmts.xsd'),
 
     # inspire
 

@@ -1,19 +1,32 @@
 @include record_ISO.cx
 
-@tag csw:GetRecordsResponse
+@def response
+    @tag csw:GetRecordsResponse
 
-	@t csw:SearchStatus timestamp={results.timestamp}
+        @t csw:SearchStatus timestamp={results.timestamp}
 
-	@tag csw:SearchResults
-	    @a elementSet=full
-	    @a nextRecord={results.next}
-	    @a numberOfRecordsMatched={results.count_total}
-	    @a numberOfRecordsReturned={results.count_return}
-	    @a recordSchema="http://www.isotc211.org/2005/gmd"
-	    @a elementSet="full"
+        @tag csw:SearchResults
+            @a elementSet=full
+            @a nextRecord={results.next}
+            @a numberOfRecordsMatched={results.count_total}
+            @a numberOfRecordsReturned={results.count_return}
+            @a recordSchema="http://www.isotc211.org/2005/gmd"
+            @a elementSet="full"
 
-        @each metas as meta
-            @record meta
+            @each metas as meta
+                @record meta
+            @end
         @end
     @end
+@end
+
+@if with_soap
+    @tag soap:Envelope
+        @t soap:Header
+        @tag soap:Body
+            @response
+        @end
+    @end
+@else
+    @response
 @end

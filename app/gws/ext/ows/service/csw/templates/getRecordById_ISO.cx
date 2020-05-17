@@ -1,5 +1,18 @@
 @include record_ISO.cx
 
-@tag csw:GetRecordByIdResponse
-    @record meta
+@def response
+    @tag csw:GetRecordByIdResponse
+        @record meta
+    @end
+@end
+
+@if with_soap
+    @tag soap:Envelope
+        @t soap:Header
+        @tag soap:Body
+            @response
+        @end
+    @end
+@else
+    @response
 @end

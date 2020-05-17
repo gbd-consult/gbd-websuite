@@ -102,6 +102,6 @@ def _kill_name(proc_name, sig_name):
     if not pids:
         return True
     for pid in pids:
-        gws.log.info(f'stopping {proc_name} pid={pid}')
+        gws.log.debug(f'stopping {proc_name} pid={pid}')
         gws.tools.os2.kill_pid(pid, sig_name)
     return False

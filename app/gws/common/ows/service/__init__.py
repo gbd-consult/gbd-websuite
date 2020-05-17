@@ -27,6 +27,7 @@ class Request(t.Data):
     project: t.IProject
     service: t.IOwsService
     xml: gws.tools.xml2.Element = None
+    xml_is_soap: bool = False
 
 
 class LayerCapsNode(t.Data):
@@ -78,7 +79,7 @@ class Base(Object):
 
     @property
     def url(self):
-        u = gws.SERVER_ENDPOINT + '/cmd/owsHttpGetService/uid/' + self.uid
+        u = gws.SERVER_ENDPOINT + '/cmd/owsHttpService/uid/' + self.uid
         if self.project:
             u += f'/projectUid/{self.project.uid}'
         return u
