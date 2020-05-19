@@ -73,12 +73,16 @@ class EmptyTrashResponse(t.Response):
     pass
 
 
+TRASH_NAME = '__fs_trash'
+DB_NAME = '__fs_meta6.sqlite'
+
+
 class Object(gws.common.action.Object):
     def configure(self):
         super().configure()
-        self.root_dir = self.var('root')
-        self.trash_dir = gws.ensure_dir(self.root_dir + '/.trash')
-        self.db_path = self.root_dir + '/.meta6.sqlite'
+        self.root_dir = gws.ensure_dir(self.var('root'))
+        self.trash_dir = gws.ensure_dir(self.root_dir + '/' + TRASH_NAME)
+        self.db_path = self.root_dir + '/' + DB_NAME
 
         with self._connect() as conn:
             conn.execute('''CREATE TABLE IF NOT EXISTS meta(
@@ -159,7 +163,7 @@ class Object(gws.common.action.Object):
 
         for p in gws.tools.os2.find_files(self.root_dir):
             p = gws.tools.os2.rel_path(p, self.root_dir)
-            if p.startswith('.'):
+            if p.startswith('__'):
                 continue
             entries.append(ListEntry(path=p))
 
