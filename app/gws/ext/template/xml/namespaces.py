@@ -24,12 +24,12 @@ ALL = [
     ('gml', 'http://www.opengis.net/gml/3.2', 'http://schemas.opengis.net/gml/3.2.1/gml.xsd'),
     ('gmx', 'http://www.isotc211.org/2005/gmx', 'http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd'),
     ('ogc', 'http://www.opengis.net/ogc', 'http://schemas.opengis.net/filter/1.1.0/filter.xsd'),
-    ('ows', 'http://www.opengis.net/ows', 'http://schemas.opengis.net/ows/1.0.0/owsAll.xsd'),
+    ('ows', 'http://www.opengis.net/ows/1.1', 'http://schemas.opengis.net/ows/1.0.0/owsAll.xsd'),
     ('sld', 'http://www.opengis.net/sld', 'http://schemas.opengis.net/sld/1.1/sldAll.xsd'),
     ('srv', 'http://www.isotc211.org/2005/srv', 'http://schemas.opengis.net/iso/19139/20070417/srv/1.0/srv.xsd'),
     ('wfs', 'http://www.opengis.net/wfs/2.0', 'http://schemas.opengis.net/wfs/2.0/wfs.xsd'),
     ('wms', 'http://www.opengis.net/wms', 'http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd'),
-    ('wmts', 'http://www.opengis.net/wmts', 'http://schemas.opengis.net/wmts/1.0/wmts.xsd'),
+    ('wmts', 'http://www.opengis.net/wmts/1.0', 'http://schemas.opengis.net/wmts/1.0/wmts.xsd'),
 
     # inspire
 
