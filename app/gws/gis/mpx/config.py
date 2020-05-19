@@ -151,6 +151,4 @@ def create_and_save(root: t.IRootObject, path):
         raise gws.config.MapproxyConfigError(*e.args) from e
 
     gws.tools.os2.unlink(test_path)
-
-    with open(path, 'wt') as fp:
-        fp.write(yaml.dump(cfg))
+    gws.write_file(path, yaml.dump(cfg))

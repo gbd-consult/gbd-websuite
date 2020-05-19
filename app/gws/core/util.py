@@ -414,14 +414,16 @@ def read_file_b(path: str) -> bytes:
         return fp.read()
 
 
-def write_file(path: str, s: str):
+def write_file(path: str, s: str, user: int = None, group: int = None):
     with open(path, 'wt') as fp:
         fp.write(s)
+    _chown(path, user, group)
 
 
-def write_file_b(path: str, s: bytes):
+def write_file_b(path: str, s: bytes, user: int = None, group: int = None):
     with open(path, 'wb') as fp:
         fp.write(s)
+    _chown(path, user, group)
 
 
 def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int = None, group: int = None) -> str:
@@ -455,8 +457,15 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
         if path and not os.path.isdir(path):
             os.mkdir(path, mode)
 
-    os.chown(bpath, user or gws.core.const.UID, group or gws.core.const.GID)
+    _chown(bpath, user, group)
     return bpath.decode('utf8')
+
+
+def _chown(path, user, group):
+    try:
+        os.chown(path, user or gws.core.const.UID, group or gws.core.const.GID)
+    except OSError:
+        pass
 
 
 def random_string(size: int) -> str:
