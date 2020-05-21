@@ -43,7 +43,7 @@ class Props(t.Data):
     description: str
     locales: t.List[str]
     map: gws.common.map.Props
-    meta: t.MetaData
+    meta: gws.common.metadata.Props
     overviewMap: gws.common.map.Props
     printer: gws.common.printer.Props
     title: str
@@ -122,7 +122,7 @@ class Object(gws.Object, t.IProject):
             client=self.client or getattr(self.parent, 'client', None),
             description=self.description,
             map=self.map,
-            meta=self.meta,
+            meta=gws.common.metadata.props(self.meta),
             overviewMap=self.overview_map,
             printer=self.printer,
             title=self.title,

@@ -1,4 +1,5 @@
 import gws.types as t
+import gws.common.metadata
 
 
 class ImageFormat(t.Enum):
@@ -77,7 +78,7 @@ class LayerProps(t.Data):
     geometryType: t.GeometryType = ''
     layers: t.Optional[t.List['LayerProps']]
     loadingStrategy: t.Optional[str]
-    meta: t.MetaData
+    meta: gws.common.metadata.Props
     opacity: t.Optional[float]
     options: ClientOptions
     resolutions: t.Optional[t.List[float]]

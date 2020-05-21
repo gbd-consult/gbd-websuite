@@ -89,7 +89,7 @@ class Layer(gws.Object, t.ILayer):
     def props(self):
         return types.LayerProps(
             extent=self.extent if self.extent != self.map.extent else None,
-            meta=self.meta,
+            meta=gws.common.metadata.props(self.meta),
             opacity=self.opacity,
             options=self.client_options,
             resolutions=self.resolutions if self.resolutions != self.map.resolutions else None,

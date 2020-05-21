@@ -256,7 +256,14 @@ def _read_date(rd, val, spec):
     d = gws.tools.date.from_iso(str(val))
     if not d:
         return rd.error('ERR_INVALID_DATE', 'invalid date', val)
-    return d
+    return gws.tools.date.to_iso_date(d)
+
+
+def _read_datetime(rd, val, spec):
+    d = gws.tools.date.from_iso(str(val))
+    if not d:
+        return rd.error('ERR_INVALID_DATE', 'invalid date', val)
+    return gws.tools.date.to_iso(d)
 
 
 def _read_url(rd, val, spec):
@@ -326,6 +333,7 @@ _HANDLERS = {
     'gws.types.Crs': _read_crs,
     'gws.types.Color': _read_color,
     'gws.types.Date': _read_date,
+    'gws.types.DateTime': _read_datetime,
     'gws.types.DirPath': _read_dirpath,
     'gws.types.Duration': _read_duration,
     'gws.types.FilePath': _read_filepath,

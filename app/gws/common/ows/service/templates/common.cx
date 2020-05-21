@@ -96,7 +96,7 @@
     @end
 
     @t inspire_common:ResourceType {meta.inspireResourceType}
-    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.dateCreated.strftime('%Y-%m-%d')}
+    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.dateCreated}
 
     @tag inspire_common:Conformity
         @tag inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng"
@@ -118,7 +118,7 @@
         @t inspire_common:EmailAddress {meta.contact.email}
     @end
 
-    @t inspire_common:MetadataDate {meta.dateCreated.strftime('%Y-%m-%d')}
+    @t inspire_common:MetadataDate {meta.dateCreated}
     @t inspire_common:SpatialDataServiceType {meta.inspireSpatialDataServiceType}
     @t inspire_common:MandatoryKeyword/inspire_common:KeywordValue {meta.inspireMandatoryKeyword}
 

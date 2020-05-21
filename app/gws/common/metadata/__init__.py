@@ -1,9 +1,8 @@
 """Utilities to manipulate metadata"""
 
-import datetime
-
 import gws
 import gws.tools.country
+import gws.tools.date
 
 import gws.types as t
 
@@ -351,8 +350,8 @@ class MetaData(t.Data):
     accessConstraints: str
     attribution: str
     contact: MetaContact
-    dateCreated: datetime.datetime
-    dateUpdated: datetime.datetime
+    dateCreated: t.DateTime
+    dateUpdated: t.DateTime
     fees: str
     image: t.Url
 
@@ -393,6 +392,28 @@ class MetaData(t.Data):
     maxScale: int
     minScale: int
     proj: t.Projection
+
+
+class Props(t.Props):
+    abstract: str
+    attribution: str
+    dateCreated: str
+    dateUpdated: str
+    keywords: t.List[str]
+    language: str
+    title: str
+
+
+def props(m: t.MetaData) -> Props:
+    return Props(
+        abstract=m.abstract or '',
+        attribution=m.attribution or '',
+        dateCreated=m.dateCreated,
+        dateUpdated=m.dateUpdated,
+        keywords=m.keywords or '',
+        language=m.language or '',
+        title=m.title or '',
+    )
 
 
 def from_config(m: t.Config) -> t.MetaData:
