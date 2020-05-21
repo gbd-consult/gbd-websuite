@@ -16,7 +16,7 @@ const MAX_SNAPSHOT_DPI = 600;
 
 interface PrintViewProps extends gws.types.ViewProps {
     controller: PrintController;
-    printJob?: gws.api.PrinterResponse;
+    printJob?: gws.api.JobStatusResponse;
     printQuality: string;
     printState?: 'preview' | 'printing' | 'error' | 'complete';
     printTemplateIndex: string;
@@ -557,7 +557,7 @@ class PrintController extends gws.Controller {
 
         if (job) {
             this.update({
-                printJob: await this.app.server.printerQuery({jobUid: job.jobUid}),
+                printJob: await this.app.server.printerStatus({jobUid: job.jobUid}),
             });
         }
     }

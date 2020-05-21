@@ -21,6 +21,54 @@ class Error(gws.Error):
     pass
 
 
+class PrematureTermination(Exception):
+    pass
+
+
+class StatusParams(t.Params):
+    jobUid: str
+
+
+class StatusResponse(t.Response):
+    jobUid: str
+    progress: int
+    state: State
+    steptype: str
+    stepname: str
+    url: str
+
+
+def status_request(req: t.IRequest, p: StatusParams) -> t.Optional[StatusResponse]:
+    job = get_for(req.user, p.jobUid)
+    if not job:
+        return
+
+    progress = 0
+    if job.steps and job.state == State.running:
+        progress = min(100, int(job.step * 100 / job.steps))
+
+    return StatusResponse(
+        jobUid=job.uid,
+        state=job.state,
+        progress=progress,
+        steptype=job.steptype or '',
+        stepname=job.stepname or '',
+        url=url(job.uid)
+    )
+
+
+def cancel_request(req, p: StatusParams) -> t.Optional[StatusResponse]:
+    job = get_for(req.user, p.jobUid)
+    if not job:
+        return
+
+    job.cancel()
+    return StatusResponse(
+        jobUid=job.uid,
+        state=State.cancel,
+    )
+
+
 def create(uid, user: t.IUser, worker: str, args=None):
     if user:
         fid = user.fid
@@ -102,18 +150,20 @@ class Job:
         mod = importlib.import_module(mod_name)
         fn = getattr(mod, fn_name)
 
+        root = gws.config.root()
+
         try:
-            fn(self)
+            fn(root, self)
         except Exception as e:
             gws.log.error('job: FAILED', self.uid)
-            self.update(State.error, error=repr(e))
+            self.update(state=State.error, error=repr(e))
             raise
 
-    def update(self, state, **kwargs):
-        storage.update(self.uid, state=state, **kwargs)
+    def update(self, **kwargs):
+        storage.update(self.uid, **kwargs)
 
     def cancel(self):
-        self.update(State.cancel)
+        self.update(state=State.cancel)
 
     def remove(self):
         storage.remove(self.uid)

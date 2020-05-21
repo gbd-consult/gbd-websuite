@@ -85,16 +85,3 @@ class PrintParamsWithMap(PrintParamsBase):
 
 #:alias
 PrintParams = t.Union[PrintParamsWithTemplate, PrintParamsWithMap]
-
-
-class PrinterQueryParams(t.Params):
-    jobUid: str
-
-
-class PrinterResponse(t.Response):
-    jobUid: str = ''
-    progress: int = 0
-    state: gws.tools.job.State
-    steptype: str = ''
-    stepname: str = ''
-    url: str = ''

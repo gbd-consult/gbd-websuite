@@ -11,6 +11,7 @@ import gws.common.style
 import gws.config
 import gws.gis.feature
 import gws.gis.render
+import gws.server.spool
 import gws.tools.date
 import gws.tools.job
 import gws.tools.os2
@@ -26,8 +27,13 @@ class PreparedSection(t.Data):
     items: t.List[t.MapRenderInputItem]
 
 
-class PrematureTermination(Exception):
-    pass
+def start(req: t.IRequest, p: pt.PrintParams) -> gws.tools.job.StatusResponse:
+    job = create(req, p)
+    gws.server.spool.add(job)
+    return gws.tools.job.StatusResponse(
+        jobUid=job.uid,
+        state=job.state
+    )
 
 
 def create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
@@ -46,7 +52,7 @@ def create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
         worker=__name__ + '._worker')
 
 
-def _worker(job: gws.tools.job.Job):
+def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     job_uid = job.uid
     base_dir = gws.PRINT_DIR + '/' + job_uid
 
@@ -54,22 +60,22 @@ def _worker(job: gws.tools.job.Job):
     with open(req_path, 'rb') as fp:
         params = pickle.load(fp)
 
-    job.update(gws.tools.job.State.running)
+    job.update(state=gws.tools.job.State.running)
 
-    w = _Worker(job.uid, base_dir, params, job.user)
+    w = _Worker(root, job.uid, base_dir, params, job.user)
     w.run()
 
 
 # remove jobs older than that
 
-_lifetime = 3600 * 1
+_MAX_LIFETIME = 3600 * 1
 
 
 def cleanup():
     for p in os.listdir(gws.PRINT_DIR):
         d = gws.PRINT_DIR + '/' + p
         age = int(time.time() - gws.tools.os2.file_mtime(d))
-        if age > _lifetime:
+        if age > _MAX_LIFETIME:
             gws.tools.os2.run(['rm', '-fr', d])
             gws.tools.job.remove(p)
             gws.log.debug(f'cleaned up job {p} age={age}')
@@ -79,7 +85,8 @@ _PAPER_COLOR = 'white'
 
 
 class _Worker:
-    def __init__(self, job_uid, base_dir, p: pt.PrintParams, user: t.IUser):
+    def __init__(self, root: t.IRootObject, job_uid, base_dir, p: pt.PrintParams, user: t.IUser):
+        self.root = root
         self.job_uid = job_uid
         self.base_dir = base_dir
         self.user = user
@@ -143,27 +150,27 @@ class _Worker:
                 nsec +
                 3)
 
-        self.check_job(steps=steps)
+        self.job_step(steps=steps)
 
     def run(self):
         try:
             self.run2()
-        except PrematureTermination as e:
+        except gws.tools.job.PrematureTermination as e:
             gws.log.warn(f'job={self.job_uid} TERMINATED {e.args!r}')
 
     def run2(self):
 
         section_paths = []
 
-        self.check_job(steptype='begin')
+        self.job_step(steptype='begin')
 
         self.legends = self.render_legends()
 
         for n, sec in enumerate(self.sections):
             section_paths.append(self.run_section(sec, n))
-            self.check_job(steptype='page', stepname=str(n))
+            self.job_step(steptype='page', stepname=str(n))
 
-        self.check_job(steptype='end')
+        self.job_step(steptype='end')
 
         comb_path = gws.tools.pdf.concat(section_paths, f'{self.base_dir}/comb.pdf')
 
@@ -191,7 +198,7 @@ class _Worker:
                 format='png'
             )
 
-        self.get_job().update(gws.tools.job.State.complete, result=res_path)
+        self.get_job().update(state=gws.tools.job.State.complete, result=res_path)
 
     def run_section(self, sec: PreparedSection, n: int):
         renderer = gws.gis.render.Renderer()
@@ -212,7 +219,7 @@ class _Worker:
         )
 
         for item in renderer.run(ri, self.base_dir):
-            self.check_job(steptype='layer', stepname=item.layer.title if item.get('layer') else '')
+            self.job_step(steptype='layer', stepname=item.layer.title if item.get('layer') else '')
 
         if self.template:
             tr = self.template.render(
@@ -374,7 +381,7 @@ class _Worker:
             return img
 
     def acquire(self, klass, uid):
-        obj = gws.config.root().find(klass, uid)
+        obj = self.root.find(klass, uid)
         if obj and self.user.can_use(obj):
             return obj
 
@@ -382,13 +389,13 @@ class _Worker:
         job = gws.tools.job.get(self.job_uid)
 
         if not job:
-            raise PrematureTermination('NOT_FOUND')
+            raise gws.tools.job.PrematureTermination('NOT_FOUND')
 
         if job.state != gws.tools.job.State.running:
-            raise PrematureTermination(f'WRONG_STATE={job.state}')
+            raise gws.tools.job.PrematureTermination(f'WRONG_STATE={job.state}')
 
         return job
 
-    def check_job(self, **kwargs):
+    def job_step(self, **kwargs):
         job = self.get_job()
-        job.update(gws.tools.job.State.running, step=job.step + 1, **kwargs)
+        job.update(state=gws.tools.job.State.running, step=job.step + 1, **kwargs)
