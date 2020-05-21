@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-import datetime
 
 
 # NB: we cannot use the standard Enum, because after "class Color(Enum): RED = 1"
@@ -58,6 +57,9 @@ Crs = str
 
 #:alias ISO date like "2019-01-30"
 Date = str
+
+#:alias ISO date/time like "2019-01-30 01:02:03"
+DateTime = str
 
 #:alias Http or https URL
 Url = str
@@ -512,8 +514,8 @@ class MetaData(Data):
     authorityUrl: 'Url'
     catalogUid: str
     contact: 'MetaContact'
-    dateCreated: datetime.datetime
-    dateUpdated: datetime.datetime
+    dateCreated: 'DateTime'
+    dateUpdated: 'DateTime'
     fees: str
     geographicExtent: 'Extent'
     image: 'Url'

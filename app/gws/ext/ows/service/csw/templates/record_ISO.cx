@@ -39,7 +39,7 @@
 @def identification
     @tag gmd:citation/gmd:CI_Citation
         @t gmd:title/gco:CharacterString {meta.title}
-        @publication_date meta.dateCreated | format_date
+        @publication_date meta.dateCreated
         @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.catalogUid}
     @end
 
@@ -142,7 +142,7 @@
             @contact meta.contact
         @end
 
-        @t gmd:dateStamp/gco:DateTime {meta.dateCreated | format_datetime}
+        @t gmd:dateStamp/gco:DateTime {meta.dateCreated}
 
         @t gmd:metadataStandardName/gco:CharacterString ISO19115
         @t gmd:metadataStandardVersion/gco:CharacterString 2003/Cor.1:2006
