@@ -4,8 +4,11 @@ import gws
 import gws.common.action
 import gws.common.db
 import gws.common.template
-import gws.tools.upload
 import gws.ext.db.provider.postgres
+import gws.server.spool
+import gws.tools.job
+import gws.tools.json2
+import gws.tools.upload
 import gws.web.error
 
 import gws.types as t
@@ -33,8 +36,9 @@ class Props(t.Props):
     auList: t.List[BplanAU]
 
 
-class UploadParams(t.Params):
+class ImportParams(t.Params):
     uploadUid: str
+    replace: bool
 
 
 class UploadResponse(t.Response):
@@ -107,23 +111,62 @@ class Object(gws.common.action.Object):
     def api_upload_chunk(self, req: t.IRequest, p: gws.tools.upload.UploadChunkParams) -> gws.tools.upload.UploadChunkResponse:
         return gws.tools.upload.upload_chunk(p)
 
-    def api_upload(self, req: t.IRequest, p: UploadParams) -> UploadResponse:
+    def api_import(self, req: t.IRequest, p: ImportParams) -> gws.tools.job.StatusResponse:
         try:
             rec = gws.tools.upload.get(p.uploadUid)
         except gws.tools.upload.Error as e:
             gws.log.error(e)
             raise gws.web.error.BadRequest()
 
-        try:
-            importer.run(self, rec.path, False)
-        except Exception as e:
-            gws.log.exception()
-            raise gws.web.error.BadRequest()
+        job_uid = gws.random_string(64)
 
-        return UploadResponse()
+        args = {
+            'actionUid': self.uid,
+            'path': rec.path,
+            'replace': p.replace,
+        }
+
+        job = gws.tools.job.create(
+            uid=job_uid,
+            user=req.user,
+            args=gws.tools.json2.to_string(args),
+            worker=__name__ + '._worker')
+
+        gws.server.spool.add(job)
+
+        return gws.tools.job.StatusResponse(
+            jobUid=job.uid,
+            state=job.state,
+        )
+
+    def api_import_status(self, req: t.IRequest, p: gws.tools.job.StatusParams) -> gws.tools.job.StatusResponse:
+        r = gws.tools.job.status_request(req, p)
+        if not r:
+            raise gws.web.error.NotFound()
+        return r
+        #
+        #
+        #
+        #
+        # return UploadResponse()
+
+    def api_import_cancel(self, req: t.IRequest, p: gws.tools.job.StatusParams) -> gws.tools.job.StatusResponse:
+        """Cancel a print job"""
+
+        r = gws.tools.job.cancel_request(req, p)
+        if not r:
+            raise gws.web.error.NotFound()
+        return r
 
     def do_import(self, path, replace):
         importer.run(self, path, replace)
 
     def do_update(self):
         importer.update(self)
+
+
+def _worker(root: t.IRootObject, job: gws.tools.job.Job):
+    args = gws.tools.json2.from_string(job.args)
+    action = root.find('gws.ext.action', args['actionUid'])
+    job.update(state=gws.tools.job.State.running)
+    importer.run(action, job, args['path'], args['replace'])

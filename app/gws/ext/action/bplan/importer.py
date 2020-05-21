@@ -9,29 +9,26 @@ import gws.gis.gdal2
 import gws.qgis.project
 import gws.tools.json2
 import gws.tools.os2 as os2
+import gws.tools.job
 
 import gws.types as t
 
 
-def run(action, src_path: str, replace: bool):
-    """"Import bplan data from a file or a directory.
-
-
-    Args:
-        action: bplan action
-        src_path: A file (.zip) or a directory path
-        replace: Remove all bplans from the given AUs before updating
-    """
+def run(action, job: gws.tools.job.Job, src_path: str, replace: bool):
+    """"Import bplan data from a file or a directory."""
 
     if os2.is_file(src_path):
         # a file is given - unpack it into a temp dir
         tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/bplan_' + gws.random_string(32))
         _extract(src_path, tmp_dir)
-        _run2(action, tmp_dir, replace)
+        _run2(action, job, tmp_dir, replace)
         # remove tmp_dir
         return
 
-    _run2(action, src_path, replace)
+    try:
+        _run2(action, job, src_path, replace)
+    except gws.tools.job.PrematureTermination as e:
+        pass
 
 
 def update(action):
@@ -42,10 +39,12 @@ def update(action):
 
 ##
 
-def _run2(action, src_dir, replace):
+def _run2(action, job, src_dir, replace):
     gws.log.debug(f'BEGIN {src_dir!r}')
 
-    # step 1. iterate shape files and prepare a list of db records
+    _update_job(job, step=0, steps=7)
+
+    # iterate shape files and prepare a list of db records
 
     shp_paths = set()
     recs = {}
@@ -71,7 +70,9 @@ def _run2(action, src_dir, replace):
                     s = f.shape.to_multi()
                     recs[uid][_geom_name(s)] = s.ewkt
 
-    # step 2. insert records
+    _update_job(job, state=gws.tools.job.State.running, step=1)
+
+    # insert records
 
     table: t.SqlTable = action.table
     db: gws.ext.db.provider.postgres.Object = action.db
@@ -97,7 +98,9 @@ def _run2(action, src_dir, replace):
 
                 conn.insert_many(src, au_recs)
 
-    # step 3. move png/pgw files into place
+    _update_job(job, state=gws.tools.job.State.running, step=2)
+
+    # move png/pgw files into place
 
     dd = action.data_dir
 
@@ -120,7 +123,9 @@ def _run2(action, src_dir, replace):
         shutil.copyfile(p, f'{dd}/png/{cc}.png')
         shutil.copyfile(w, f'{dd}/png/{cc}.pgw')
 
-    # step 4. move pdfs into place
+    _update_job(job, state=gws.tools.job.State.running, step=3)
+
+    # move pdfs into place
 
     for p in os2.find_files(src_dir, ext='pdf'):
         cc = _filecode(p)
@@ -130,10 +135,27 @@ def _run2(action, src_dir, replace):
         gws.log.debug(f'copy {cc}.pdf')
         shutil.copyfile(p, f'{dd}/pdf/{cc}.pdf')
 
+    _update_job(job, state=gws.tools.job.State.running, step=4)
 
-    # step 5. post-process
+    #
 
-    update(action)
+    _create_vrts(action)
+    _update_job(job, state=gws.tools.job.State.running, step=5)
+
+
+    #
+
+    _update_pdfs(action)
+    _update_job(job, state=gws.tools.job.State.running, step=6)
+
+
+    #
+
+    _create_qgis_projects(action)
+    _update_job(job, state=gws.tools.job.State.running, step=7)
+
+
+    _update_job(job, state=gws.tools.job.State.complete)
 
     gws.log.debug(f'END {src_dir!r}')
 
@@ -266,3 +288,18 @@ def _diff(a, b):
         if a.get(k) != b.get(k):
             d[k] = a[k], b[k]
     return d
+
+
+def _update_job(job, **kwargs):
+    if not job:
+        return
+
+    j = gws.tools.job.get(job.uid)
+
+    if not j:
+        raise gws.tools.job.PrematureTermination('NOT_FOUND')
+
+    if j.state != gws.tools.job.State.running:
+        raise gws.tools.job.PrematureTermination(f'WRONG_STATE={j.state}')
+
+    j.update(**kwargs)

@@ -13,22 +13,24 @@ let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as BplanC
 
 interface BplanViewProps extends gws.types.ViewProps {
     controller: BplanController;
-    bplanDialogMode: string;
+    bplanJob?: gws.api.JobStatusResponse;
+    bplanDialog: string;
     bplanFormName: string;
     bplanFormFiles: FileList;
     bplanAUList: Array<gws.ui.ListItem>;
     bplanAUCode: string;
-    bplanUploadProgress: number;
+    bplanProgress: number;
     bplanFeatures: Array<gws.types.IMapFeature>,
 }
 
 const BplanStoreKeys = [
-    'bplanDialogMode',
+    'bplanJob',
+    'bplanDialog',
     'bplanFormName',
     'bplanFormFiles',
     'bplanAUList',
     'bplanAUCode',
-    'bplanUploadProgress',
+    'bplanProgress',
     'bplanFeatures',
 ];
 
@@ -135,11 +137,11 @@ class BplanDialog extends gws.View<BplanViewProps> {
     render() {
         let cc = _master(this.props.controller);
 
-        let mode = this.props.bplanDialogMode;
+        let mode = this.props.bplanDialog;
         if (!mode)
             return null;
 
-        let close = () => cc.update({bplanDialogMode: ''});
+        let close = () => cc.update({bplanDialog: ''});
 
         if (mode === 'open') {
             let buttons = [
@@ -162,12 +164,21 @@ class BplanDialog extends gws.View<BplanViewProps> {
             >{this.form()}</gws.ui.Dialog>
         }
 
-        if (mode === 'loading') {
+        if (mode === 'upload') {
             return <gws.ui.Dialog
                 className='modBplanProgressDialog'
                 title={this.__('modBplanProgressDialogTitle')}
             >
-                <gws.ui.Progress value={this.props.bplanUploadProgress}/>
+                <gws.ui.Progress value={this.props.bplanProgress}/>
+            </gws.ui.Dialog>
+        }
+
+        if (mode === 'process') {
+            return <gws.ui.Dialog
+                className='modBplanProgressDialog'
+                title={this.__('modBplanProgressDialogTitle')}
+            >
+                <gws.ui.Progress value={this.props.bplanProgress}/>
             </gws.ui.Dialog>
         }
 
@@ -200,8 +211,12 @@ class BplanController extends gws.Controller {
 
         this.update({
             bplanAUList: this.setup.auList.map(a => ({value: a.uid, text: a.name})),
-            bplanDialogMode: '',
+            bplanDialog: '',
         });
+
+        this.app.whenChanged('bplanJob', job => this.jobUpdated(job));
+
+
     }
 
     get appOverlayView() {
@@ -221,7 +236,7 @@ class BplanController extends gws.Controller {
 
     showDialog() {
         this.update({
-            bplanDialogMode: 'open'
+            bplanDialog: 'open'
         })
     }
 
@@ -244,9 +259,12 @@ class BplanController extends gws.Controller {
                 totalSize,
             }, {binary: true});
 
+            if (res.error)
+                return null;
+
             uid = res.uid;
 
-            this.update({bplanUploadProgress: 100 * (n / chunkCount)})
+            this.update({bplanProgress: 100 * (n / chunkCount)})
         }
 
         return uid;
@@ -255,19 +273,92 @@ class BplanController extends gws.Controller {
     UPLOAD_CHUNK_SIZE = 1024 * 1024;
 
     async submitForm() {
-        this.update({bplanDialogMode: 'loading'})
+        this.update({
+            bplanDialog: 'upload',
+            bplanProgress: 0,
+        });
 
         let files = this.getValue('bplanFormFiles') as FileList;
         let buf: Uint8Array = await gws.tools.readFile(files[0]);
         let uploadUid = await this.chunkedUpload(files[0].name, buf, this.UPLOAD_CHUNK_SIZE);
 
-        this.update({bplanUploadProgress: 100})
-        let res = await this.app.server.bplanUpload({uploadUid});
+        if (!uploadUid) {
+            this.update({bplanDialog: 'error'});
+            return;
+        }
 
         this.update({
-            bplanDialogMode: res.error ? 'error' : 'ok'
+            bplanDialog: 'process',
+            bplanProgress: 0,
+            bplanJob: await this.app.server.bplanImport({uploadUid, replace: false})
         });
     }
+
+    jobTimer: any = null;
+
+
+    JOB_POLL_INTERVAL = 2000;
+    
+    
+    protected jobUpdated(job) {
+        if (!job) {
+            return this.update({bplanDialog: null});
+        }
+
+        if (job.error) {
+            return this.update({bplanDialog: 'error'});
+        }
+
+        console.log('JOB_UPDATED', job.state);
+
+        switch (job.state) {
+
+            case gws.api.JobState.open:
+            case gws.api.JobState.running:
+                this.jobTimer = setTimeout(() => this.poll(), this.JOB_POLL_INTERVAL);
+                break;
+
+            case gws.api.JobState.cancel:
+                this.stop();
+                return this.update({bplanDialog: null});
+
+            case gws.api.JobState.complete:
+                this.stop()
+                return this.update({bplanDialog: 'ok'});
+
+            case gws.api.JobState.error:
+                this.stop()
+                return this.update({bplanDialog: 'error'});
+        }
+    }
+
+    protected async poll() {
+        let job = this.getValue('bplanJob');
+
+        if (job) {
+            job = await this.app.server.bplanImportStatus({jobUid: job.jobUid});
+            this.update({
+                bplanJob: job,
+                bplanProgress: job.progress,
+            });
+        }
+    }
+
+    protected async sendCancel(jobUid) {
+        if (jobUid) {
+            console.log('SEND CANCEL');
+            await this.app.server.bplanImportCancel({jobUid});
+        }
+    }
+    
+    protected stop() {
+        this.update({
+            bplanJob: null,
+        });
+        clearTimeout(this.jobTimer);
+        this.jobTimer = 0;
+    }
+
 
 }
 
