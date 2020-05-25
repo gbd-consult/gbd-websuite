@@ -14,21 +14,22 @@ import gws.tools.job
 import gws.types as t
 
 
-def run(action, job: gws.tools.job.Job, src_path: str, replace: bool):
+def run(action, src_path: str, replace: bool, job: gws.tools.job.Job = None):
     """"Import bplan data from a file or a directory."""
+
+    tmp_dir = None
 
     if os2.is_file(src_path):
         # a file is given - unpack it into a temp dir
         tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/bplan_' + gws.random_string(32))
         _extract(src_path, tmp_dir)
-        _run2(action, job, tmp_dir, replace)
-        # remove tmp_dir
-        return
 
     try:
-        _run2(action, job, src_path, replace)
+        _run2(action, tmp_dir or src_path, replace, job)
     except gws.tools.job.PrematureTermination as e:
         pass
+
+    # @TODO remove tmp_dir
 
 
 def update(action):
@@ -39,10 +40,10 @@ def update(action):
 
 ##
 
-def _run2(action, job, src_dir, replace):
+def _run2(action, src_dir, replace, job):
     gws.log.debug(f'BEGIN {src_dir!r}')
 
-    _update_job(job, step=0, steps=7)
+    _update_job(job, step=0, steps=6)
 
     # iterate shape files and prepare a list of db records
 
@@ -61,7 +62,7 @@ def _run2(action, job, src_dir, replace):
             for f in gws.gis.gdal2.features(ds, action.crs, encoding=_encoding(p)):
                 r = {a.name.lower(): a.value for a in f.attributes}
 
-                r['uid'] = uid = r[action.key_col]
+                r['_uid'] = uid = r[action.key_col]
                 r['_type'] = action.type_mapping.get(r.get(action.type_col, ''), '')
 
                 if uid not in recs:
@@ -70,35 +71,37 @@ def _run2(action, job, src_dir, replace):
                     s = f.shape.to_multi()
                     recs[uid][_geom_name(s)] = s.ewkt
 
-    _update_job(job, state=gws.tools.job.State.running, step=1)
+    _update_job(job, step=1)
 
     # insert records
 
     table: t.SqlTable = action.table
     db: gws.ext.db.provider.postgres.Object = action.db
 
-    akey = action.au_key_col
+    aukey = action.au_key_col
     recs = list(recs.values())
-    aus = set(r.get(akey) for r in recs)
+    aus = set(r.get(aukey) for r in recs)
 
     with db.connect() as conn:
         src = table.name
+        conn.execute(f'TRUNCATE {conn.quote_table(src)}')
+
 
         with conn.transaction():
             for au in sorted(aus):
-                au_recs = [r for r in recs if r.get(akey) == au]
+                au_recs = [r for r in recs if r.get(aukey) == au]
                 gws.log.debug(f'insert {au!r} ({len(au_recs)})')
 
                 if replace:
-                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE {akey} = %s', [au])
+                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE {aukey} = %s', [au])
                 else:
-                    uids = [r['uid'] for r in au_recs]
+                    uids = [r['_uid'] for r in au_recs]
                     ph = ','.join(['%s'] * len(uids))
-                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE uid IN ({ph})', uids)
+                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE _uid IN ({ph})', uids)
 
                 conn.insert_many(src, au_recs)
 
-    _update_job(job, state=gws.tools.job.State.running, step=2)
+    _update_job(job, step=2)
 
     # move png/pgw files into place
 
@@ -123,7 +126,7 @@ def _run2(action, job, src_dir, replace):
         shutil.copyfile(p, f'{dd}/png/{cc}.png')
         shutil.copyfile(w, f'{dd}/png/{cc}.pgw')
 
-    _update_job(job, state=gws.tools.job.State.running, step=3)
+    _update_job(job, step=3)
 
     # move pdfs into place
 
@@ -135,26 +138,21 @@ def _run2(action, job, src_dir, replace):
         gws.log.debug(f'copy {cc}.pdf')
         shutil.copyfile(p, f'{dd}/pdf/{cc}.pdf')
 
-    _update_job(job, state=gws.tools.job.State.running, step=4)
+    _update_job(job, step=4)
 
     #
 
     _create_vrts(action)
-    _update_job(job, state=gws.tools.job.State.running, step=5)
-
+    _update_job(job, step=5)
 
     #
 
     _update_pdfs(action)
-    _update_job(job, state=gws.tools.job.State.running, step=6)
-
+    _update_job(job, step=6)
 
     #
 
     _create_qgis_projects(action)
-    _update_job(job, state=gws.tools.job.State.running, step=7)
-
-
     _update_job(job, state=gws.tools.job.State.complete)
 
     gws.log.debug(f'END {src_dir!r}')
@@ -173,11 +171,11 @@ def _create_vrts(action):
     groups = {}
 
     with action.db.connect() as conn:
-        for r in conn.select(f'SELECT uid, {akey}, _type FROM {conn.quote_table(action.table.name)}'):
+        for r in conn.select(f'SELECT _uid, {akey}, _type FROM {conn.quote_table(action.table.name)}'):
             key = r[akey]
             if r['_type']:
                 key += '-' + r['_type']
-            groups.setdefault(key, []).extend(p for p in pngs if p.startswith(r['uid']))
+            groups.setdefault(key, []).extend(p for p in pngs if p.startswith(r['_uid']))
 
     for key, ps in sorted(groups.items()):
         vrt = f'{dd}/vrt/{key}.vrt'
@@ -202,16 +200,26 @@ def _update_pdfs(action):
     gws.log.debug(f'update pdf lists')
 
     dd = action.data_dir
-    pdfs = [_filename(p) for p in os2.find_files(dd + '/pdf', ext='pdf')]
-    d = {}
+    by_uid = {}
 
     with action.db.connect() as conn:
-        for r in conn.select(f'SELECT uid FROM {conn.quote_table(action.table.name)}'):
-            uid = r['uid']
-            d[uid] = ','.join(_filecode(p) for p in pdfs if p.startswith(uid))
+        for r in conn.select(f'SELECT _uid FROM {conn.quote_table(action.table.name)}'):
+            by_uid[r['_uid']] = []
+
+    for p in os2.find_files(dd + '/pdf', ext='pdf'):
+        p = _filename(p)
+        for uid, names in by_uid.items():
+            if p.startswith(uid):
+                names.append(p)
+                break
+
+    with action.db.connect() as conn:
         with conn.transaction():
-            for uid, s in d.items():
-                conn.execute(f'UPDATE {conn.quote_table(action.table.name)} SET _pdf=%s WHERE uid=%s', [s, uid])
+            for uid, names in by_uid.items():
+                if names:
+                    gws.log.debug(f'save pdfs for {uid}')
+                    names = ','.join(names)
+                    conn.execute(f'UPDATE {conn.quote_table(action.table.name)} SET _pdf=%s WHERE _uid=%s', [names, uid])
 
 
 def _create_qgis_projects(action):

@@ -169,4 +169,4 @@ def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     args = gws.tools.json2.from_string(job.args)
     action = root.find('gws.ext.action', args['actionUid'])
     job.update(state=gws.tools.job.State.running)
-    importer.run(action, job, args['path'], args['replace'])
+    importer.run(action, args['path'], args['replace'], job)
