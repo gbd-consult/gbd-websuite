@@ -21,7 +21,8 @@ class Config(t.WithTypeAndAccess):
 
     db: str = ''  #: database provider ID
     crs: t.Crs  #: CRS for the bplan data
-    table: gws.common.db.SqlTableConfig  #: sql table configuration
+    planTable: gws.common.db.SqlTableConfig  #: plan table configuration
+    metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
     dataDir: t.DirPath  #: data directory
     qgisTemplate: t.FilePath  #: qgis template project
 
@@ -41,16 +42,28 @@ class ImportParams(t.Params):
     replace: bool
 
 
-class UploadResponse(t.Response):
-    pass
-
-
 class GetFeaturesParams(t.Params):
     auUid: str
 
 
 class GetFeaturesResponse(t.Response):
     features: t.List[t.FeatureProps]
+
+
+class LoadUserMetaParams(t.Params):
+    pass
+
+
+class LoadUserMetaResponse(t.Response):
+    meta: dict
+
+
+class SaveUserMetaParams(t.Params):
+    meta: dict
+
+
+class SaveUserMetaResponse(t.Response):
+    pass
 
 
 DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
@@ -70,7 +83,8 @@ class Object(gws.common.action.Object):
             gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
         self.feature_format = t.cast(t.IFormat, self.create_child('gws.common.format', DEFAULT_FORMAT))
-        self.table = self.db.configure_table(self.var('table'))
+        self.plan_table = self.db.configure_table(self.var('planTable'))
+        self.meta_table = self.db.configure_table(self.var('metaTable'))
         self.data_dir = self.var('dataDir')
         self.qgis_template = self.var('qgisTemplate')
 
@@ -90,7 +104,7 @@ class Object(gws.common.action.Object):
         with self.db.connect() as conn:
             rs = conn.select(f'''
                 SELECT DISTINCT {self.au_key_col}, {self.au_name_col} 
-                FROM {conn.quote_table(self.table.name)}
+                FROM {conn.quote_table(self.plan_table.name)}
                 ORDER BY {self.au_name_col}
             ''')
             return [t.Data(uid=r[self.au_key_col], name=r[self.au_name_col]) for r in rs]
@@ -103,7 +117,7 @@ class Object(gws.common.action.Object):
 
     def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         features = self.db.select(t.SelectArgs(
-            table=self.table,
+            table=self.plan_table,
             extra_where=[f'{self.au_key_col} = %s', p.auUid],
         ))
         return GetFeaturesResponse(features=[f.apply_format(self.feature_format).props for f in features])
@@ -144,11 +158,6 @@ class Object(gws.common.action.Object):
         if not r:
             raise gws.web.error.NotFound()
         return r
-        #
-        #
-        #
-        #
-        # return UploadResponse()
 
     def api_import_cancel(self, req: t.IRequest, p: gws.tools.job.StatusParams) -> gws.tools.job.StatusResponse:
         """Cancel a print job"""
@@ -157,6 +166,39 @@ class Object(gws.common.action.Object):
         if not r:
             raise gws.web.error.NotFound()
         return r
+
+    def api_load_user_meta(self, req: t.IRequest, p: LoadUserMetaParams) -> LoadUserMetaResponse:
+        """Return the user metadata"""
+
+        with self.db.connect() as conn:
+            rs = conn.select(f'''
+                SELECT * 
+                FROM {conn.quote_table(self.meta_table.name)} 
+                WHERE user_id=%s
+            ''', [req.user.fid])
+            for r in rs:
+                return LoadUserMetaResponse(meta=gws.tools.json2.from_string(r['meta']))
+
+        return LoadUserMetaResponse(meta={})
+
+    def api_save_user_meta(self, req: t.IRequest, p: SaveUserMetaParams) -> SaveUserMetaResponse:
+
+        with self.db.connect() as conn:
+            with conn.transaction():
+                conn.execute(f'''
+                    DELETE
+                    FROM {conn.quote_table(self.meta_table.name)}
+                    WHERE user_id=%s
+                ''', [req.user.fid])
+
+                conn.execute(f'''
+                    INSERT 
+                    INTO {conn.quote_table(self.meta_table.name)}
+                    (user_id, meta)
+                    VALUES(%s, %s)
+                ''', [req.user.fid, gws.tools.json2.to_pretty_string(p.meta)])
+
+        return SaveUserMetaResponse()
 
     def do_import(self, path, replace):
         importer.run(self, path, replace)

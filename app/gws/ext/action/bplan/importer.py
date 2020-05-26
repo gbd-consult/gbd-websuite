@@ -75,7 +75,7 @@ def _run2(action, src_dir, replace, job):
 
     # insert records
 
-    table: t.SqlTable = action.table
+    table: t.SqlTable = action.plan_table
     db: gws.ext.db.provider.postgres.Object = action.db
 
     aukey = action.au_key_col
@@ -171,7 +171,7 @@ def _create_vrts(action):
     groups = {}
 
     with action.db.connect() as conn:
-        for r in conn.select(f'SELECT _uid, {akey}, _type FROM {conn.quote_table(action.table.name)}'):
+        for r in conn.select(f'SELECT _uid, {akey}, _type FROM {conn.quote_table(action.plan_table.name)}'):
             key = r[akey]
             if r['_type']:
                 key += '-' + r['_type']
@@ -203,7 +203,7 @@ def _update_pdfs(action):
     by_uid = {}
 
     with action.db.connect() as conn:
-        for r in conn.select(f'SELECT _uid FROM {conn.quote_table(action.table.name)}'):
+        for r in conn.select(f'SELECT _uid FROM {conn.quote_table(action.plan_table.name)}'):
             by_uid[r['_uid']] = []
 
     for p in os2.find_files(dd + '/pdf', ext='pdf'):
@@ -219,7 +219,7 @@ def _update_pdfs(action):
                 if names:
                     gws.log.debug(f'save pdfs for {uid}')
                     names = ','.join(names)
-                    conn.execute(f'UPDATE {conn.quote_table(action.table.name)} SET _pdf=%s WHERE _uid=%s', [names, uid])
+                    conn.execute(f'UPDATE {conn.quote_table(action.plan_table.name)} SET _pdf=%s WHERE _uid=%s', [names, uid])
 
 
 def _create_qgis_projects(action):
@@ -235,7 +235,7 @@ def _create_qgis_projects(action):
     with action.db.connect() as conn:
         rs = conn.select(f'''
             SELECT {akey} AS a, ST_Extent(_geom_p) AS e
-            FROM {conn.quote_table(action.table.name)}
+            FROM {conn.quote_table(action.plan_table.name)}
             GROUP BY {akey}
         ''')
         for r in rs:

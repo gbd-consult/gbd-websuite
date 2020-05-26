@@ -15,19 +15,29 @@ interface BplanViewProps extends gws.types.ViewProps {
     controller: BplanController;
     bplanJob?: gws.api.JobStatusResponse;
     bplanDialog: string;
-    bplanFormName: string;
-    bplanFormFiles: FileList;
+
+    bplanMeta: object;
+
+    bplanImportFiles: FileList;
+    bplanImportReplace: boolean;
+
     bplanAUList: Array<gws.ui.ListItem>;
     bplanAUCode: string;
     bplanProgress: number;
     bplanFeatures: Array<gws.types.IMapFeature>,
+
+
 }
 
 const BplanStoreKeys = [
     'bplanJob',
     'bplanDialog',
-    'bplanFormName',
-    'bplanFormFiles',
+
+    'bplanMeta',
+
+    'bplanImportFiles',
+    'bplanImportReplace',
+
     'bplanAUList',
     'bplanAUCode',
     'bplanProgress',
@@ -52,9 +62,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
             rightButton={rightButton}
             withZoom
         />
-
     }
-
 
     render() {
 
@@ -85,9 +93,16 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                 <sidebar.AuxToolbar>
                     <Cell>
                         <sidebar.AuxButton
-                            {...gws.tools.cls('modAnnotateAddAuxButton')}
-                            tooltip={this.props.controller.__('modBplanAddAuxButton')}
-                            whenTouched={() => cc.showDialog()}
+                            {...gws.tools.cls('modBplanImportAuxButton')}
+                            tooltip={this.props.controller.__('modBplanTitleImport')}
+                            whenTouched={() => cc.openImportDialog()}
+                        />
+                    </Cell>
+                    <Cell>
+                        <sidebar.AuxButton
+                            {...gws.tools.cls('modBplanMetaAuxButton')}
+                            tooltip={this.props.controller.__('modBplanTitleMeta')}
+                            whenTouched={() => cc.openMetaDialog()}
                         />
                     </Cell>
                     <Cell flex/>
@@ -113,24 +128,49 @@ class BplanSidebar extends gws.Controller implements gws.types.ISidebarItem {
 
 class BplanDialog extends gws.View<BplanViewProps> {
 
-    form() {
-        let whenChanged = (name, v) => {
-            this.props.controller.update({[name]: v});
-        };
 
-        return <Form>
-            <Row>
-                <Cell>
-                    <gws.ui.FileInput
-                        accept="application/zip"
-                        multiple={false}
-                        value={this.props.bplanFormFiles}
-                        whenChanged={v => whenChanged('bplanFormFiles', v)}
-                        label={this.__('modBplanFileLabel')}
-                    />
-                </Cell>
+    importForm() {
+        return <Form tabular>
+            <gws.ui.FileInput
+                accept="application/zip"
+                multiple={false}
+                {...this.props.controller.bind('bplanImportFiles')}
+                label={this.__('modBplanLabelImportFiles')}
+            />
+            <gws.ui.Toggle
+                type="checkbox"
+                {...this.props.controller.bind('bplanImportReplace')}
+                label={this.__('modBplanLabelImportReplace')}
+            />
+        </Form>
+    }
 
-            </Row>
+    metaForm() {
+        let cc = this.props.controller;
+
+        let change = (key, val) => cc.update({
+            bplanMeta: {...cc.getValue('bplanMeta'), [key]: val}
+        });
+
+        let inp = (key, label) => <gws.ui.TextInput
+            value={cc.getValue('bplanMeta')[key] || ''}
+            whenChanged={val => change(key, val)}
+            label={label}
+        />;
+
+        return <Form tabular>
+            {inp('address', this.__('modBplanLabelMetaAddress'))}
+            {inp('zip', this.__('modBplanLabelMetaZip'))}
+            {inp('city', this.__('modBplanLabelMetaCity'))}
+            {inp('email', this.__('modBplanLabelMetaEmail'))}
+            {inp('fax', this.__('modBplanLabelMetaFax'))}
+            {inp('phone', this.__('modBplanLabelMetaPhone'))}
+            {inp('organization', this.__('modBplanLabelMetaOrganization'))}
+            {inp('person', this.__('modBplanLabelMetaPerson'))}
+            {inp('position', this.__('modBplanLabelMetaPosition'))}
+            {inp('url', this.__('modBplanLabelMetaUrl'))}
+
+
         </Form>
     }
 
@@ -142,41 +182,56 @@ class BplanDialog extends gws.View<BplanViewProps> {
             return null;
 
         let close = () => cc.update({bplanDialog: ''});
+        let cancel = <gws.ui.Button
+            className="cmpButtonFormCancel"
+            whenTouched={close}
+        />;
 
-        if (mode === 'open') {
-            let buttons = [
-                <gws.ui.Button
-                    className="cmpButtonFormOk"
-                    whenTouched={() => this.props.controller.submitForm()}
-                    primary
-                />,
-                <gws.ui.Button
-                    className="cmpButtonFormCancel"
-                    whenTouched={close}
-                />,
-            ];
+
+        if (mode === 'importForm') {
+            let ok = <gws.ui.Button
+                className="cmpButtonFormOk"
+                whenTouched={() => cc.submitUpload()}
+                primary
+            />;
+
 
             return <gws.ui.Dialog
-                className="modBplanDialog"
-                title={this.__('modBplanDialogTitle')}
-                buttons={buttons}
+                className="modBplanImportDialog"
+                title={this.__('modBplanTitleImport')}
+                buttons={[ok, cancel]}
                 whenClosed={close}
-            >{this.form()}</gws.ui.Dialog>
+            >{this.importForm()}</gws.ui.Dialog>
         }
 
-        if (mode === 'upload') {
+        if (mode === 'metaForm') {
+            let ok = <gws.ui.Button
+                className="cmpButtonFormOk"
+                whenTouched={() => cc.submitMeta()}
+                primary
+            />;
+
+            return <gws.ui.Dialog
+                className="modBplanMetaDialog"
+                title={this.__('modBplanTitleMeta')}
+                buttons={[ok, cancel]}
+                whenClosed={close}
+            >{this.metaForm()}</gws.ui.Dialog>
+        }
+
+        if (mode === 'uploadProgress') {
             return <gws.ui.Dialog
                 className='modBplanProgressDialog'
-                title={this.__('modBplanProgressDialogTitle')}
+                title={this.__('modBplanTitlelUploadProgress')}
             >
                 <gws.ui.Progress value={this.props.bplanProgress}/>
             </gws.ui.Dialog>
         }
 
-        if (mode === 'process') {
+        if (mode === 'importProgress') {
             return <gws.ui.Dialog
                 className='modBplanProgressDialog'
-                title={this.__('modBplanProgressDialogTitle')}
+                title={this.__('modBplanTitlelImportProgress')}
             >
                 <gws.ui.Progress value={this.props.bplanProgress}/>
             </gws.ui.Dialog>
@@ -215,8 +270,6 @@ class BplanController extends gws.Controller {
         });
 
         this.app.whenChanged('bplanJob', job => this.jobUpdated(job));
-
-
     }
 
     get appOverlayView() {
@@ -234,9 +287,17 @@ class BplanController extends gws.Controller {
 
     }
 
-    showDialog() {
+    openImportDialog() {
         this.update({
-            bplanDialog: 'open'
+            bplanDialog: 'importForm'
+        })
+    }
+
+    async openMetaDialog() {
+        let res = await this.app.server.bplanLoadUserMeta({});
+        this.update({
+            bplanMeta: res.meta,
+            bplanDialog: 'metaForm',
         })
     }
 
@@ -272,13 +333,24 @@ class BplanController extends gws.Controller {
 
     UPLOAD_CHUNK_SIZE = 1024 * 1024;
 
-    async submitForm() {
+    async submitMeta() {
+        let res = await this.app.server.bplanSaveUserMeta({meta: this.getValue('bplanMeta')});
+        if (res.error) {
+            this.update({bplanDialog: 'error'});
+            return;
+        }
         this.update({
-            bplanDialog: 'upload',
+            bplanDialog: null,
+        })
+    }
+
+    async submitUpload() {
+        this.update({
+            bplanDialog: 'uploadProgress',
             bplanProgress: 0,
         });
 
-        let files = this.getValue('bplanFormFiles') as FileList;
+        let files = this.getValue('bplanImportFiles') as FileList;
         let buf: Uint8Array = await gws.tools.readFile(files[0]);
         let uploadUid = await this.chunkedUpload(files[0].name, buf, this.UPLOAD_CHUNK_SIZE);
 
@@ -288,7 +360,7 @@ class BplanController extends gws.Controller {
         }
 
         this.update({
-            bplanDialog: 'process',
+            bplanDialog: 'importProgress',
             bplanProgress: 0,
             bplanJob: await this.app.server.bplanImport({uploadUid, replace: false})
         });
@@ -298,8 +370,8 @@ class BplanController extends gws.Controller {
 
 
     JOB_POLL_INTERVAL = 2000;
-    
-    
+
+
     protected jobUpdated(job) {
         if (!job) {
             return this.update({bplanDialog: null});
@@ -350,7 +422,7 @@ class BplanController extends gws.Controller {
             await this.app.server.bplanImportCancel({jobUid});
         }
     }
-    
+
     protected stop() {
         this.update({
             bplanJob: null,
