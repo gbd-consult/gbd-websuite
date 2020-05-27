@@ -201,7 +201,7 @@ class Object(gws.common.action.Object):
         """Empty the trash."""
 
         with self._connect() as conn:
-            conn.execute('DELETE * FROM meta WHERE deleted=1')
+            conn.execute('DELETE FROM meta WHERE deleted=1')
         for p in gws.tools.os2.find_files(self.trash_dir):
             gws.tools.os2.unlink(p)
 
