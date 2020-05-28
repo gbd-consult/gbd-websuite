@@ -360,7 +360,7 @@ class Object(gws.common.action.Object):
 
         return ExportResponse(content=csv_bytes, mime='text/csv')
 
-    def api_print(self, req: t.IRequest, p: PrintParams) -> gws.tools.job.StatusResponse:
+    def api_print(self, req: t.IRequest, p: PrintParams) -> gws.common.printer.job.StatusResponse:
         """Print Flurstueck features"""
 
         self._validate_request(req, p)
@@ -394,7 +394,8 @@ class Object(gws.common.action.Object):
                 ]
             ))
 
-        return gws.common.printer.job.start(req, pp)
+        job = gws.common.printer.job.start(req, pp)
+        return gws.common.printer.job.status(job)
 
     ##
 

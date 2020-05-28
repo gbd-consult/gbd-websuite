@@ -21,22 +21,46 @@ import gws.tools.units as units
 import gws.types as t
 
 
+class StatusParams(t.Params):
+    jobUid: str
+
+
+class StatusResponse(t.Response):
+    jobUid: str
+    progress: int
+    state: gws.tools.job.State
+    steptype: str
+    stepname: str
+    url: str
+
+
 class PreparedSection(t.Data):
     center: t.Point
     context: dict
     items: t.List[t.MapRenderInputItem]
 
 
-def start(req: t.IRequest, p: pt.PrintParams) -> gws.tools.job.StatusResponse:
-    job = create(req, p)
+def start(req: t.IRequest, p: pt.PrintParams) -> gws.tools.job.Job:
+    job = _create(req, p)
     gws.server.spool.add(job)
-    return gws.tools.job.StatusResponse(
+    return job
+
+
+def status(job) -> StatusResponse:
+    return StatusResponse(
         jobUid=job.uid,
-        state=job.state
+        state=job.state,
+        progress=job.progress,
+        steptype=job.steptype or '',
+        stepname=job.stepname or '',
+        url=gws.SERVER_ENDPOINT + f'/cmd/printerHttpGetResult/jobUid/' + job.uid,
     )
 
 
-def create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
+##
+
+
+def _create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
     cleanup()
 
     job_uid = gws.random_string(64)
@@ -198,7 +222,7 @@ class _Worker:
                 format='png'
             )
 
-        self.get_job().update(state=gws.tools.job.State.complete, result=res_path)
+        self.get_job().update(state=gws.tools.job.State.complete, result={'path': res_path})
 
     def run_section(self, sec: PreparedSection, n: int):
         renderer = gws.gis.render.Renderer()

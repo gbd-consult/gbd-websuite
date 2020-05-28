@@ -14,7 +14,13 @@ import gws.tools.job
 import gws.types as t
 
 
-def run(action, src_path: str, replace: bool, job: gws.tools.job.Job = None):
+class Stats(t.Data):
+    numRecords: int
+    numPngs: int
+    numPdfs: int
+
+
+def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.tools.job.Job = None) -> Stats:
     """"Import bplan data from a file or a directory."""
 
     tmp_dir = None
@@ -24,12 +30,16 @@ def run(action, src_path: str, replace: bool, job: gws.tools.job.Job = None):
         tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/bplan_' + gws.random_string(32))
         _extract(src_path, tmp_dir)
 
+    stats = None
+
     try:
-        _run2(action, tmp_dir or src_path, replace, job)
+        stats = _run2(action, tmp_dir or src_path, replace, au_uid, job)
     except gws.tools.job.PrematureTermination as e:
         pass
 
     # @TODO remove tmp_dir
+
+    return stats
 
 
 def update(action):
@@ -40,8 +50,10 @@ def update(action):
 
 ##
 
-def _run2(action, src_dir, replace, job):
-    gws.log.debug(f'BEGIN {src_dir!r}')
+def _run2(action, src_dir, replace, au_uid, job):
+    gws.log.debug(f'BEGIN {src_dir!r} au={au_uid}')
+
+    stats = Stats(numRecords=0, numPngs=0, numPdfs=0)
 
     _update_job(job, step=0, steps=6)
 
@@ -58,6 +70,8 @@ def _run2(action, src_dir, replace, job):
 
     for p in shp_paths:
         gws.log.debug(f'read {p!r}')
+        if au_uid and not _path_belongs_to_au(p, [au_uid]):
+            continue
         with gws.gis.gdal2.from_path(p) as ds:
             for f in gws.gis.gdal2.features(ds, action.crs, encoding=_encoding(p)):
                 r = {a.name.lower(): a.value for a in f.attributes}
@@ -78,28 +92,30 @@ def _run2(action, src_dir, replace, job):
     table: t.SqlTable = action.plan_table
     db: gws.ext.db.provider.postgres.Object = action.db
 
-    aukey = action.au_key_col
     recs = list(recs.values())
-    aus = set(r.get(aukey) for r in recs)
+
+    au_key = action.au_key_col
+    au_uids = set(r.get(au_key) for r in recs)
 
     with db.connect() as conn:
         src = table.name
         conn.execute(f'TRUNCATE {conn.quote_table(src)}')
 
-
         with conn.transaction():
-            for au in sorted(aus):
-                au_recs = [r for r in recs if r.get(aukey) == au]
-                gws.log.debug(f'insert {au!r} ({len(au_recs)})')
+            for aid in sorted(au_uids):
+                au_recs = [r for r in recs if r.get(au_key) == aid]
+                gws.log.debug(f'insert {aid!r} ({len(au_recs)})')
 
                 if replace:
-                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE {aukey} = %s', [au])
+                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE {au_key} = %s', [aid])
                 else:
                     uids = [r['_uid'] for r in au_recs]
                     ph = ','.join(['%s'] * len(uids))
                     conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE _uid IN ({ph})', uids)
 
                 conn.insert_many(src, au_recs)
+
+    stats.numRecords = len(recs)
 
     _update_job(job, step=2)
 
@@ -114,29 +130,35 @@ def _run2(action, src_dir, replace, job):
     #                 print('delete ', p)
 
     for p in os2.find_files(src_dir, ext='png'):
-        cc = _filecode(p)
-        if not cc:
+        if not _path_belongs_to_au(p, au_uids):
             continue
 
         w = re.sub(r'\.png$', '.pgw', p)
         if not os2.is_file(w):
             continue
 
-        gws.log.debug(f'copy {cc}.png')
-        shutil.copyfile(p, f'{dd}/png/{cc}.png')
-        shutil.copyfile(w, f'{dd}/png/{cc}.pgw')
+        fn = _filename(p)
+
+        gws.log.debug(f'copy {fn}.png')
+        shutil.copyfile(p, f'{dd}/png/{fn}.png')
+        shutil.copyfile(w, f'{dd}/png/{fn}.pgw')
+
+        stats.numPngs += 1
 
     _update_job(job, step=3)
 
     # move pdfs into place
 
     for p in os2.find_files(src_dir, ext='pdf'):
-        cc = _filecode(p)
-        if not cc:
+        if not _path_belongs_to_au(p, au_uids):
             continue
 
-        gws.log.debug(f'copy {cc}.pdf')
-        shutil.copyfile(p, f'{dd}/pdf/{cc}.pdf')
+        fn = _filename(p)
+
+        gws.log.debug(f'copy {fn}.pdf')
+        shutil.copyfile(p, f'{dd}/pdf/{fn}.pdf')
+
+        stats.numPdfs += 1
 
     _update_job(job, step=4)
 
@@ -156,6 +178,8 @@ def _run2(action, src_dir, replace, job):
     _update_job(job, state=gws.tools.job.State.complete)
 
     gws.log.debug(f'END {src_dir!r}')
+
+    return stats
 
 
 _EMPTY_VRT = '<VRTDataset rasterXSize="0" rasterYSize="0"/>'
@@ -285,9 +309,12 @@ def _filename(path):
     return os2.parse_path(path)['filename']
 
 
-def _filecode(path):
-    m = re.search(r'\b([0-9A-Z]+)\.[a-z]+$', path)
-    return m.group(1) if m else None
+def _path_belongs_to_au(path, au_uids):
+    fn = _filename(path)
+    if any(fn.startswith(aid) for aid in au_uids):
+        return True
+    gws.log.debug(f'skip {path}')
+    return False
 
 
 def _diff(a, b):

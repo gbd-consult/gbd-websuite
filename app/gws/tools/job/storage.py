@@ -42,7 +42,7 @@ def find(uid):
 def create(uid):
     with _db() as db:
         _ensure_table(db)
-        db.execute('INSERT INTO jobs(uid) VALUES (?)', [uid])
+        db.execute('INSERT INTO jobs(uid,created) VALUES (?,?)', [uid, timestamp()])
     return uid
 
 

@@ -16,6 +16,11 @@ import gws.types as t
 from . import importer
 
 
+class AdministrativeUnitConfig(t.WithAccess):
+    uid: str
+    name: str
+
+
 class Config(t.WithTypeAndAccess):
     """Construction plans action"""
 
@@ -25,20 +30,33 @@ class Config(t.WithTypeAndAccess):
     metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
     dataDir: t.DirPath  #: data directory
     qgisTemplate: t.FilePath  #: qgis template project
+    administrativeUnits: t.List[AdministrativeUnitConfig]
 
 
-class BplanAU(t.Data):
+class AdministrativeUnit(t.Data):
     uid: str
     name: str
 
 
 class Props(t.Props):
     type: t.Literal = 'bplan'
-    auList: t.List[BplanAU]
+    auList: t.List[AdministrativeUnit]
+
+
+class StatusParams(t.Params):
+    jobUid: str
+
+
+class StatusResponse(t.Response):
+    jobUid: str
+    progress: int
+    state: gws.tools.job.State
+    stats: dict
 
 
 class ImportParams(t.Params):
     uploadUid: str
+    auUid: str
     replace: bool
 
 
@@ -99,20 +117,15 @@ class Object(gws.common.action.Object):
             'Flächennutzungsplan': 'F',
         }
 
-    @gws.cached_property
-    def au_list(self):
-        with self.db.connect() as conn:
-            rs = conn.select(f'''
-                SELECT DISTINCT {self.au_key_col}, {self.au_name_col} 
-                FROM {conn.quote_table(self.plan_table.name)}
-                ORDER BY {self.au_name_col}
-            ''')
-            return [t.Data(uid=r[self.au_key_col], name=r[self.au_name_col]) for r in rs]
+        self.au_list = self.var('administrativeUnits')
+
+    def au_list_for(self, user):
+        return [au for au in self.au_list if user.can_use(au)]
 
     def props_for(self, user):
         return {
             'type': self.type,
-            'auList': self.au_list,
+            'auList': self.au_list_for(user),
         }
 
     def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
@@ -125,17 +138,24 @@ class Object(gws.common.action.Object):
     def api_upload_chunk(self, req: t.IRequest, p: gws.tools.upload.UploadChunkParams) -> gws.tools.upload.UploadChunkResponse:
         return gws.tools.upload.upload_chunk(p)
 
-    def api_import(self, req: t.IRequest, p: ImportParams) -> gws.tools.job.StatusResponse:
+    def api_import(self, req: t.IRequest, p: ImportParams) -> StatusResponse:
         try:
             rec = gws.tools.upload.get(p.uploadUid)
         except gws.tools.upload.Error as e:
             gws.log.error(e)
             raise gws.web.error.BadRequest()
 
+        au_uids = set(au.uid for au in self.au_list_for(req.user))
+
+        if p.auUid not in au_uids:
+            gws.log.error(f'wrong auUid={p.auUid}')
+            raise gws.web.error.Forbidden()
+
         job_uid = gws.random_string(64)
 
         args = {
             'actionUid': self.uid,
+            'auUid': p.auUid,
             'path': rec.path,
             'replace': p.replace,
         }
@@ -148,24 +168,36 @@ class Object(gws.common.action.Object):
 
         gws.server.spool.add(job)
 
-        return gws.tools.job.StatusResponse(
+        return StatusResponse(
             jobUid=job.uid,
             state=job.state,
         )
 
-    def api_import_status(self, req: t.IRequest, p: gws.tools.job.StatusParams) -> gws.tools.job.StatusResponse:
-        r = gws.tools.job.status_request(req, p)
-        if not r:
+    def api_import_status(self, req: t.IRequest, p: StatusParams) -> StatusResponse:
+        job = gws.tools.job.get_for(req.user, p.jobUid)
+        if not job:
             raise gws.web.error.NotFound()
-        return r
 
-    def api_import_cancel(self, req: t.IRequest, p: gws.tools.job.StatusParams) -> gws.tools.job.StatusResponse:
+        return StatusResponse(
+            jobUid=job.uid,
+            state=job.state,
+            progress=job.progress,
+            stats=job.result.get('stats', {}) if job.result else {},
+        )
+
+    def api_import_cancel(self, req: t.IRequest, p: StatusParams) -> StatusResponse:
         """Cancel a print job"""
 
-        r = gws.tools.job.cancel_request(req, p)
-        if not r:
+        job = gws.tools.job.get_for(req.user, p.jobUid)
+        if not job:
             raise gws.web.error.NotFound()
-        return r
+
+        job.cancel()
+
+        return StatusResponse(
+            jobUid=job.uid,
+            state=job.state,
+        )
 
     def api_load_user_meta(self, req: t.IRequest, p: LoadUserMetaParams) -> LoadUserMetaResponse:
         """Return the user metadata"""
@@ -211,4 +243,5 @@ def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     args = gws.tools.json2.from_string(job.args)
     action = root.find('gws.ext.action', args['actionUid'])
     job.update(state=gws.tools.job.State.running)
-    importer.run(action, args['path'], args['replace'], job)
+    stats = importer.run(action, args['path'], args['replace'], args['auUid'], job)
+    job.update(result={'stats': stats})

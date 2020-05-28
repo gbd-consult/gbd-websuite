@@ -2,6 +2,7 @@ import importlib
 
 import gws
 import gws.config
+import gws.tools.json2
 
 import gws.types as t
 
@@ -25,50 +26,6 @@ class PrematureTermination(Exception):
     pass
 
 
-class StatusParams(t.Params):
-    jobUid: str
-
-
-class StatusResponse(t.Response):
-    jobUid: str
-    progress: int
-    state: State
-    steptype: str
-    stepname: str
-    url: str
-
-
-def status_request(req: t.IRequest, p: StatusParams) -> t.Optional[StatusResponse]:
-    job = get_for(req.user, p.jobUid)
-    if not job:
-        return
-
-    progress = 0
-    if job.steps and job.state == State.running:
-        progress = min(100, int(job.step * 100 / job.steps))
-
-    return StatusResponse(
-        jobUid=job.uid,
-        state=job.state,
-        progress=progress,
-        steptype=job.steptype or '',
-        stepname=job.stepname or '',
-        url=url(job.uid)
-    )
-
-
-def cancel_request(req, p: StatusParams) -> t.Optional[StatusResponse]:
-    job = get_for(req.user, p.jobUid)
-    if not job:
-        return
-
-    job.cancel()
-    return StatusResponse(
-        jobUid=job.uid,
-        state=State.cancel,
-    )
-
-
 def create(uid, user: t.IUser, worker: str, args=None):
     if user:
         fid = user.fid
@@ -82,17 +39,12 @@ def create(uid, user: t.IUser, worker: str, args=None):
         user_fid=fid,
         str_user=str_user,
         worker=worker,
-        args=args or '',
+        args=gws.tools.json2.to_string(args),
         steps=0,
         step=0,
         state=State.open,
-        created=storage.timestamp(),
     )
     return get(uid)
-
-
-def url(uid):
-    return gws.SERVER_ENDPOINT + f'?cmd=assetHttpGetResult&jobUid={uid}'
 
 
 def get(uid):
@@ -136,10 +88,21 @@ class Job:
         for k, v in rec.items():
             setattr(self, k, v)
 
+        self.args = gws.tools.json2.from_string(self.args)
+        self.result = gws.tools.json2.from_string(self.result)
+
     @property
     def user(self) -> t.Optional[t.IUser]:
         if self.str_user:
             return gws.config.root().application.auth.unserialize_user(self.str_user)
+
+    @property
+    def progress(self) -> int:
+        if self.state == State.complete:
+            return 100
+        if self.steps and self.state == State.running:
+            return min(100, int((self.step or 0) * 100 / self.steps))
+        return 0
 
     def run(self):
         if self.state != State.open:
@@ -160,6 +123,12 @@ class Job:
             raise
 
     def update(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+        if 'result' in kwargs:
+            kwargs['result'] = gws.tools.json2.to_string(kwargs['result'])
+
         storage.update(self.uid, **kwargs)
 
     def cancel(self):

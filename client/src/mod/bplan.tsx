@@ -21,8 +21,8 @@ interface BplanViewProps extends gws.types.ViewProps {
     bplanImportFiles: FileList;
     bplanImportReplace: boolean;
 
-    bplanAUList: Array<gws.ui.ListItem>;
-    bplanAUCode: string;
+    bplanAuList: Array<gws.ui.ListItem>;
+    bplanAuUid: string;
     bplanProgress: number;
     bplanFeatures: Array<gws.types.IMapFeature>,
 
@@ -38,8 +38,8 @@ const BplanStoreKeys = [
     'bplanImportFiles',
     'bplanImportReplace',
 
-    'bplanAUList',
-    'bplanAUCode',
+    'bplanAuList',
+    'bplanAuUid',
     'bplanProgress',
     'bplanFeatures',
 ];
@@ -78,9 +78,9 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                     <Cell flex>
                         <gws.ui.Select
                             placeholder={this.props.controller.__('modBplanSelectAU')}
-                            items={this.props.bplanAUList}
-                            value={this.props.bplanAUCode}
-                            whenChanged={value => cc.whenAUChanged(value)}
+                            items={this.props.bplanAuList}
+                            value={this.props.bplanAuUid}
+                            whenChanged={value => cc.selectAu(value)}
                         />
                     </Cell>
                 </Row>
@@ -265,7 +265,7 @@ class BplanController extends gws.Controller {
             return;
 
         this.update({
-            bplanAUList: this.setup.auList.map(a => ({value: a.uid, text: a.name})),
+            bplanAuList: this.setup.auList.map(a => ({value: a.uid, text: a.name})),
             bplanDialog: '',
         });
 
@@ -277,10 +277,10 @@ class BplanController extends gws.Controller {
             this.connect(BplanDialog, BplanStoreKeys));
     }
 
-    async whenAUChanged(value) {
+    async selectAu(value) {
         let res = await this.app.server.bplanGetFeatures({auUid: value});
         this.update({
-            bplanAUCode: value,
+            bplanAuUid: value,
             bplanFeatures: this.map.readFeatures(res.features),
         });
 
@@ -288,6 +288,9 @@ class BplanController extends gws.Controller {
     }
 
     openImportDialog() {
+        if(!this.getValue('bplanAuUid')) {
+            return;
+        }
         this.update({
             bplanDialog: 'importForm'
         })
@@ -362,7 +365,11 @@ class BplanController extends gws.Controller {
         this.update({
             bplanDialog: 'importProgress',
             bplanProgress: 0,
-            bplanJob: await this.app.server.bplanImport({uploadUid, replace: false})
+            bplanJob: await this.app.server.bplanImport({
+                uploadUid,
+                auUid: this.getValue('bplanAuUid'),
+                replace: !!this.getValue('bplanImportReplace')
+            })
         });
     }
 
