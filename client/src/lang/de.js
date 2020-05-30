@@ -357,4 +357,9 @@ module.exports = {
     modBplanTitlelUploadProgress: 'Wird hochgeladen...',
     modBplanTitleMeta: 'Metadaten editieren',
 
+    modBplanTitlelImportComplete: 'Import abgeschlossen',
+    modBplanImportStatsNumRecords: 'Baupläne:',
+    modBplanImportStatsNumPngs: 'PNG Daten:',
+    modBplanImportStatsNumPdfs: 'PDF Daten:',
+
 };

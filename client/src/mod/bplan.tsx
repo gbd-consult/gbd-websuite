@@ -20,6 +20,7 @@ interface BplanViewProps extends gws.types.ViewProps {
 
     bplanImportFiles: FileList;
     bplanImportReplace: boolean;
+    bplanImportStats: gws.api.ImporterStats;
 
     bplanAuList: Array<gws.ui.ListItem>;
     bplanAuUid: string;
@@ -37,6 +38,7 @@ const BplanStoreKeys = [
 
     'bplanImportFiles',
     'bplanImportReplace',
+    'bplanImportStats',
 
     'bplanAuList',
     'bplanAuUid',
@@ -174,6 +176,25 @@ class BplanDialog extends gws.View<BplanViewProps> {
         </Form>
     }
 
+    statsSheet() {
+        let s = this.props.bplanImportStats;
+
+        return <Form>
+            <Row>
+                <Cell>{this.__('modBplanImportStatsNumRecords')}</Cell>
+                <Cell>{s.numRecords}</Cell>
+            </Row>
+            <Row>
+                <Cell>{this.__('modBplanImportStatsNumPngs')}</Cell>
+                <Cell>{s.numPngs}</Cell>
+            </Row>
+            <Row>
+                <Cell>{this.__('modBplanImportStatsNumPdfs')}</Cell>
+                <Cell>{s.numPdfs}</Cell>
+            </Row>
+        </Form>
+    }
+
     render() {
         let cc = _master(this.props.controller);
 
@@ -194,7 +215,6 @@ class BplanDialog extends gws.View<BplanViewProps> {
                 whenTouched={() => cc.submitUpload()}
                 primary
             />;
-
 
             return <gws.ui.Dialog
                 className="modBplanImportDialog"
@@ -245,10 +265,19 @@ class BplanDialog extends gws.View<BplanViewProps> {
         }
 
         if (mode === 'ok') {
-            return <gws.ui.Alert
-                info={this.__('modBplanOkMessage')}
+            let ok = <gws.ui.Button
+                className="cmpButtonFormOk"
+                whenTouched={close}
+                primary
+            />;
+            return <gws.ui.Dialog
+                className='modBplanProgressDialog'
+                title={this.__('modBplanTitlelImportComplete')}
+                buttons={[ok]}
                 whenClosed={close}
-            />
+            >
+                {this.statsSheet()}
+            </gws.ui.Dialog>
         }
     }
 }
@@ -288,7 +317,7 @@ class BplanController extends gws.Controller {
     }
 
     openImportDialog() {
-        if(!this.getValue('bplanAuUid')) {
+        if (!this.getValue('bplanAuUid')) {
             return;
         }
         this.update({
@@ -379,7 +408,7 @@ class BplanController extends gws.Controller {
     JOB_POLL_INTERVAL = 2000;
 
 
-    protected jobUpdated(job) {
+    protected jobUpdated(job: gws.api.BplanStatusResponse) {
         if (!job) {
             return this.update({bplanDialog: null});
         }
@@ -403,7 +432,11 @@ class BplanController extends gws.Controller {
 
             case gws.api.JobState.complete:
                 this.stop()
-                return this.update({bplanDialog: 'ok'});
+                return this.update({
+                    bplanImportStats: job.stats,
+                    bplanDialog: 'ok'
+
+                });
 
             case gws.api.JobState.error:
                 this.stop()

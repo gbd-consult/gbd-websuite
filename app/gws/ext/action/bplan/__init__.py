@@ -51,7 +51,7 @@ class StatusResponse(t.Response):
     jobUid: str
     progress: int
     state: gws.tools.job.State
-    stats: dict
+    stats: importer.Stats
 
 
 class ImportParams(t.Params):
