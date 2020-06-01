@@ -95,7 +95,7 @@ def _run2(action, src_dir, replace, au_uid, job):
     recs = list(recs.values())
 
     au_key = action.au_key_col
-    au_uids = set(r.get(au_key) for r in recs)
+    au_uids = [au_uid] if au_uid else [r.get(au_key) for r in recs]
 
     with db.connect() as conn:
         src = table.name
@@ -104,7 +104,11 @@ def _run2(action, src_dir, replace, au_uid, job):
         with conn.transaction():
             for aid in sorted(au_uids):
                 au_recs = [r for r in recs if r.get(au_key) == aid]
+                if not au_recs:
+                    continue
+
                 gws.log.debug(f'insert {aid!r} ({len(au_recs)})')
+                stats.numRecords += len(au_recs)
 
                 if replace:
                     conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE {au_key} = %s', [aid])
@@ -114,8 +118,6 @@ def _run2(action, src_dir, replace, au_uid, job):
                     conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE _uid IN ({ph})', uids)
 
                 conn.insert_many(src, au_recs)
-
-    stats.numRecords = len(recs)
 
     _update_job(job, step=2)
 
@@ -137,7 +139,7 @@ def _run2(action, src_dir, replace, au_uid, job):
         if not os2.is_file(w):
             continue
 
-        fn = _filename(p)
+        fn = _filecode(p)
 
         gws.log.debug(f'copy {fn}.png')
         shutil.copyfile(p, f'{dd}/png/{fn}.png')
@@ -153,7 +155,7 @@ def _run2(action, src_dir, replace, au_uid, job):
         if not _path_belongs_to_au(p, au_uids):
             continue
 
-        fn = _filename(p)
+        fn = _filecode(p)
 
         gws.log.debug(f'copy {fn}.pdf')
         shutil.copyfile(p, f'{dd}/pdf/{fn}.pdf')
@@ -309,11 +311,16 @@ def _filename(path):
     return os2.parse_path(path)['filename']
 
 
+def _filecode(path):
+    m = re.search(r'([0-9A-Z]+)\.[a-z]+$', _filename(path))
+    return m.group(1) if m else ''
+
+
 def _path_belongs_to_au(path, au_uids):
-    fn = _filename(path)
+    fn = _filecode(path)
     if any(fn.startswith(aid) for aid in au_uids):
         return True
-    gws.log.debug(f'skip {path}')
+    gws.log.debug(f'skip {path} au={au_uids}')
     return False
 
 

@@ -326,7 +326,9 @@ class BplanController extends gws.Controller {
     }
 
     async openMetaDialog() {
-        let res = await this.app.server.bplanLoadUserMeta({});
+        let res = await this.app.server.bplanLoadUserMeta({
+            auUid: this.getValue('bplanAuUid'),
+        });
         this.update({
             bplanMeta: res.meta,
             bplanDialog: 'metaForm',
@@ -366,7 +368,10 @@ class BplanController extends gws.Controller {
     UPLOAD_CHUNK_SIZE = 1024 * 1024;
 
     async submitMeta() {
-        let res = await this.app.server.bplanSaveUserMeta({meta: this.getValue('bplanMeta')});
+        let res = await this.app.server.bplanSaveUserMeta({
+            auUid: this.getValue('bplanAuUid'),
+            meta: this.getValue('bplanMeta')
+        });
         if (res.error) {
             this.update({bplanDialog: 'error'});
             return;

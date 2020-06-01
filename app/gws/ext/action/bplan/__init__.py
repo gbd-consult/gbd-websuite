@@ -69,7 +69,7 @@ class GetFeaturesResponse(t.Response):
 
 
 class LoadUserMetaParams(t.Params):
-    pass
+    auUid: str
 
 
 class LoadUserMetaResponse(t.Response):
@@ -77,6 +77,7 @@ class LoadUserMetaResponse(t.Response):
 
 
 class SaveUserMetaParams(t.Params):
+    auUid: str
     meta: dict
 
 
@@ -120,7 +121,11 @@ class Object(gws.common.action.Object):
         self.au_list = self.var('administrativeUnits')
 
     def au_list_for(self, user):
-        return [au for au in self.au_list if user.can_use(au)]
+        return [
+            t.Data(uid=au.uid, name=au.name)
+            for au in self.au_list
+            if user.can_use(au)
+        ]
 
     def props_for(self, user):
         return {
@@ -145,17 +150,11 @@ class Object(gws.common.action.Object):
             gws.log.error(e)
             raise gws.web.error.BadRequest()
 
-        au_uids = set(au.uid for au in self.au_list_for(req.user))
-
-        if p.auUid not in au_uids:
-            gws.log.error(f'wrong auUid={p.auUid}')
-            raise gws.web.error.Forbidden()
-
         job_uid = gws.random_string(64)
 
         args = {
             'actionUid': self.uid,
-            'auUid': p.auUid,
+            'auUid': self._check_au(req, p.auUid),
             'path': rec.path,
             'replace': p.replace,
         }
@@ -202,12 +201,14 @@ class Object(gws.common.action.Object):
     def api_load_user_meta(self, req: t.IRequest, p: LoadUserMetaParams) -> LoadUserMetaResponse:
         """Return the user metadata"""
 
+        au_uid = self._check_au(req, p.auUid)
+
         with self.db.connect() as conn:
             rs = conn.select(f'''
                 SELECT * 
                 FROM {conn.quote_table(self.meta_table.name)} 
-                WHERE user_id=%s
-            ''', [req.user.fid])
+                WHERE au_uid=%s
+            ''', [au_uid])
             for r in rs:
                 return LoadUserMetaResponse(meta=gws.tools.json2.from_string(r['meta']))
 
@@ -215,20 +216,22 @@ class Object(gws.common.action.Object):
 
     def api_save_user_meta(self, req: t.IRequest, p: SaveUserMetaParams) -> SaveUserMetaResponse:
 
+        au_uid = self._check_au(req, p.auUid)
+
         with self.db.connect() as conn:
             with conn.transaction():
                 conn.execute(f'''
                     DELETE
                     FROM {conn.quote_table(self.meta_table.name)}
-                    WHERE user_id=%s
-                ''', [req.user.fid])
+                    WHERE au_uid=%s
+                ''', [au_uid])
 
                 conn.execute(f'''
                     INSERT 
                     INTO {conn.quote_table(self.meta_table.name)}
-                    (user_id, meta)
-                    VALUES(%s, %s)
-                ''', [req.user.fid, gws.tools.json2.to_pretty_string(p.meta)])
+                    (au_uid, user_id, meta)
+                    VALUES(%s, %s, %s)
+                ''', [au_uid, req.user.fid, gws.tools.json2.to_pretty_string(p.meta)])
 
         return SaveUserMetaResponse()
 
@@ -237,6 +240,15 @@ class Object(gws.common.action.Object):
 
     def do_update(self):
         importer.update(self)
+
+    def _check_au(self, req, au_uid):
+        au_uids = set(au.uid for au in self.au_list_for(req.user))
+
+        if au_uid not in au_uids:
+            gws.log.error(f'wrong auUid={au_uid}')
+            raise gws.web.error.Forbidden()
+
+        return au_uid
 
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):
