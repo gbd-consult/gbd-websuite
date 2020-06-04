@@ -115,7 +115,16 @@ class Object(gws.common.action.Object):
         self.au_name_col = 'gemeinde'
         self.type_col = 'typ'
         self.type_mapping = {
-            'Flächennutzungsplan': 'F',
+            "Abrundungssatzung": 'AS',
+            "Außenbereichssatzung": 'AU',
+            "Bebauungsplan, qualifizierter Bebauungsplan": 'BP',
+            "Ergänzungssatzung": 'EG',
+            "Erhaltungssatzung": 'ER',
+            "Flächennutzungsplan": 'FN',
+            "Gestaltungssatzung": 'GS',
+            "Satzung": 'SA',
+            "Vorhaben- und Erschließungsplan": 'VE',
+            "Vorhabenbezogener Bebauungsplan": 'VB',
         }
 
         self.au_list = self.var('administrativeUnits')

@@ -77,6 +77,7 @@ def _run2(action, src_dir, replace, au_uid, job):
                 r = {a.name.lower(): a.value for a in f.attributes}
 
                 r['_uid'] = uid = r[action.key_col]
+                r['_au'] = r[action.au_key_col]
                 r['_type'] = action.type_mapping.get(r.get(action.type_col, ''), '')
 
                 if uid not in recs:
@@ -94,24 +95,22 @@ def _run2(action, src_dir, replace, au_uid, job):
 
     recs = list(recs.values())
 
-    au_key = action.au_key_col
-    au_uids = [au_uid] if au_uid else [r.get(au_key) for r in recs]
+    au_uids = [au_uid] if au_uid else sorted(set(r['_au'] for r in recs))
 
     with db.connect() as conn:
         src = table.name
-        conn.execute(f'TRUNCATE {conn.quote_table(src)}')
 
         with conn.transaction():
-            for aid in sorted(au_uids):
-                au_recs = [r for r in recs if r.get(au_key) == aid]
+            for a in au_uids:
+                au_recs = [r for r in recs if r['_au'] == a]
                 if not au_recs:
                     continue
 
-                gws.log.debug(f'insert {aid!r} ({len(au_recs)})')
+                gws.log.debug(f'insert {a!r} ({len(au_recs)})')
                 stats.numRecords += len(au_recs)
 
                 if replace:
-                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE {au_key} = %s', [aid])
+                    conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE _au = %s', [a])
                 else:
                     uids = [r['_uid'] for r in au_recs]
                     ph = ','.join(['%s'] * len(uids))
@@ -190,30 +189,28 @@ _EMPTY_VRT = '<VRTDataset rasterXSize="0" rasterYSize="0"/>'
 def _create_vrts(action):
     """Create VRT files from png/pgw files, one VRT per au + typecode."""
 
-    akey = action.au_key_col
     dd = action.data_dir
     pngs = [_filename(p) for p in os2.find_files(dd + '/png', ext='png')]
 
     groups = {}
 
     with action.db.connect() as conn:
-        for r in conn.select(f'SELECT _uid, {akey}, _type FROM {conn.quote_table(action.plan_table.name)}'):
-            key = r[akey]
-            if r['_type']:
-                key += '-' + r['_type']
+        for r in conn.select(f'SELECT _uid, _au, _type FROM {conn.quote_table(action.plan_table.name)}'):
+            key = r['_type'].lower() + '_r_' + r['_au']
             groups.setdefault(key, []).extend(p for p in pngs if p.startswith(r['_uid']))
 
-    for key, ps in sorted(groups.items()):
+    for key, pngs in sorted(groups.items()):
         vrt = f'{dd}/vrt/{key}.vrt'
 
-        if not ps:
-            gws.write_file(vrt, _EMPTY_VRT)
+        os2.unlink(vrt)
+
+        if not pngs:
             continue
 
         gws.log.debug(f'create {key}.vrt')
 
         lst = f'{dd}/vrt/{key}.lst'
-        gws.write_file(lst, '\n'.join(f'{dd}/png/{p}' for p in ps))
+        gws.write_file(lst, '\n'.join(f'{dd}/png/{p}' for p in pngs))
         os2.run([
             'gdalbuildvrt',
             '-srcnodata', '0',
@@ -249,33 +246,60 @@ def _update_pdfs(action):
 
 
 def _create_qgis_projects(action):
-    akey = action.au_key_col
     dd = action.data_dir
+    layer_uids = set()
+    template = gws.read_file(action.qgis_template)
 
-    xml = gws.read_file(action.qgis_template)
-    m = re.search(r'(\w+)\.vrt', xml)
-    placeholder = m.group(1)
+    m = re.search(rf"_au\s*=\s*'(\w+)'", template)
+    au_placeholder = m.group(1)
 
-    extent_tags = 'xmin', 'ymin', 'xmax', 'ymax'
+    extents = {}
 
     with action.db.connect() as conn:
-        rs = conn.select(f'''
-            SELECT {akey} AS a, ST_Extent(_geom_p) AS e
-            FROM {conn.quote_table(action.plan_table.name)}
-            GROUP BY {akey}
-        ''')
+
+        tab = conn.quote_table(action.plan_table.name)
+
+        rs = conn.select(f'SELECT _au, ST_Extent(_geom_p) AS p FROM {tab} GROUP BY _au')
         for r in rs:
-            au = r['a']
-            ext = gws.gis.extent.from_box(r['e'])
+            extents[r['_au']] = gws.gis.extent.from_box(r['p'])
 
-            gws.log.debug(f'create {au}.qgs')
+        for g in 'plx':
+            rs = conn.select(f'SELECT DISTINCT _au, _type FROM {tab} WHERE _geom_{g} IS NOT NULL')
+            for r in rs:
+                layer_uids.add('%s_%s_%s' % (r['_type'].lower(), g, r['_au']))
 
-            prj = gws.qgis.project.from_string(xml.replace(placeholder, au))
-            for n, val in enumerate(ext):
-                for e in prj.bs.select('extent ' + extent_tags[n]):
-                    e.string = str(val)
+    for p in os2.find_files(dd + '/vrt', ext='vrt'):
+        layer_uids.add(_filename(p).replace('.vrt', ''))
 
-            prj.save(f'{dd}/qgs/{au}.qgs')
+    for au in action.au_list:
+        ext = extents.get(au.uid)
+        if not ext:
+            gws.log.warn(f'no extent for {au.uid}')
+            continue
+
+        xml = template.replace(au_placeholder, au.uid)
+        prj = gws.qgis.project.from_string(xml)
+
+        for e in prj.bs.select('extent xmin'):
+            e.string = str(ext[0])
+        for e in prj.bs.select('extent ymin'):
+            e.string = str(ext[1])
+        for e in prj.bs.select('extent xmax'):
+            e.string = str(ext[2])
+        for e in prj.bs.select('extent ymax'):
+            e.string = str(ext[3])
+
+        for e in prj.bs.select('layer-tree-layer'):
+            if e['id'] not in layer_uids:
+                e.decompose()
+
+        for e in prj.bs.select('maplayer'):
+            if e.id.text not in layer_uids:
+                e.decompose()
+
+        path = f'{dd}/qgs/{au.uid}.qgs'
+        gws.log.debug(f'create {path}')
+        prj.save(path)
 
 
 def _extract(zip_path, target_dir):

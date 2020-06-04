@@ -5,19 +5,21 @@ import gws.tools.clihelpers as clihelpers
 COMMAND = 'bplan'
 
 
+@arg('--project', help='project unique ID')
 @arg('--path', help='zip file or directory path')
 @arg('--replace', help='replace the ags (area) completely')
-def read(path=None, replace=False):
+def read(project=None, path=None, replace=False):
     """Read and parse bplan source files."""
 
-    action = clihelpers.find_action('bplan')
+    action = clihelpers.find_action('bplan', project)
     if action:
         action.do_import(path, replace)
 
 
-def update():
+@arg('--project', help='project unique ID')
+def update(project=None):
     """Update bplan VRT and Qgis files."""
 
-    action = clihelpers.find_action('bplan')
+    action = clihelpers.find_action('bplan', project)
     if action:
         action.do_update()
