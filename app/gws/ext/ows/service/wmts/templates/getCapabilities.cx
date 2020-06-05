@@ -30,7 +30,7 @@
         @t Format image/png
 
         @each matrix_sets as tms
-            @t TileMatrixSetLink/TileMatrixSet {tms.Identifier}
+            @t TileMatrixSetLink/TileMatrixSet {tms.uid}
         @end
     @end
 
@@ -39,14 +39,14 @@
     @end
 @end
 
-@def wmts_matrix_sets(matrix_sets)
+@def wmts_matrix_sets
     @each matrix_sets as tms
 
         @tag TileMatrixSet
             @t ows:Identifier {tms.uid}
             @t ows:SupportedCRS {tms.crs}
 
-            @each tms.TileMatrices as tm
+            @each tms.matrices as tm
                 @tag TileMatrix
                     @t ows:Identifier {tm.uid}
                     @t ScaleDenominator {tm.scale}
@@ -80,7 +80,7 @@
 
     @tag Contents
         @wmts_layer layer_tree_root
-        @wmts_matrix_sets matrix_sets
+        @wmts_matrix_sets
     @end
 
    @t ServiceMetadataURL xlink:href="{url_for(service.meta.url)}"
