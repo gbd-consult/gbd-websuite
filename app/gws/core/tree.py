@@ -68,9 +68,7 @@ class Object(t.IObject):
         try:
             self.configure()
         except Exception as e:
-            # try to provide a clue where this happened
-            msg = '%s\nin %s' % (_exc_name_for_error(e), _object_name_for_error(self))
-            raise error.Error(msg)
+            raise _error(self, e)
 
         log.debug(f'configured {self.klass} uid={self.uid}')
 
@@ -80,13 +78,10 @@ class Object(t.IObject):
 
     def post_initialize(self):
         try:
-            self.post_configure()
+            for obj in reversed(self.root.all_objects):
+                obj.post_configure()
         except Exception as e:
-            msg = '%s\nin %s' % (_exc_name_for_error(e), _object_name_for_error(self))
-            raise error.Error(msg)
-
-        for c in self.children:
-            c.post_initialize()
+            raise _error(self, e)
 
     def post_configure(self):
         # this is intended to be overridden
@@ -271,6 +266,11 @@ def _object_name_for_error(x):
         return '%s(%s)' % (cls, uid)
 
     return cls
+
+
+def _error(obj, exc):
+    msg = '%s\nin %s' % (_exc_name_for_error(exc), _object_name_for_error(obj))
+    raise error.Error(msg)
 
 
 def _make_props(obj, user):
