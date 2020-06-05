@@ -1077,12 +1077,12 @@ class IApplication(IObject):
     api: 'IApi'
     auth: 'IAuthManager'
     client: Optional['IClient']
-    developer: dict
     meta: 'MetaData'
     monitor: 'IMonitor'
     qgis_version: str
     version: str
     web_sites: List['IWebSite']
+    def developer_option(self, name): pass
     def find_action(self, action_type, project_uid=None): pass
 
 

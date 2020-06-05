@@ -84,8 +84,8 @@ class Object(gws.Object, t.IApplication):
     def configure(self):
         super().configure()
 
-        self.developer: dict = self.var('developer') or {}
-        if self.developer:
+        self._devopts: dict = self.var('developer') or {}
+        if self._devopts:
             gws.log.warn('DEVELOPER MODE ENABLED')
 
         self.set_uid('APP')
@@ -140,6 +140,9 @@ class Object(gws.Object, t.IApplication):
 
         for p in self.var('projects'):
             self.create_child(gws.common.project.Object, p)
+
+    def developer_option(self, name):
+        return self._devopts.get(name)
 
     def find_action(self, action_type, project_uid=None):
         if project_uid:

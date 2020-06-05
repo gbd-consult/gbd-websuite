@@ -93,8 +93,8 @@ class BaseRequest(t.IBaseRequest):
 
         data = self._wz.get_data(as_text=False, parse_form_data=False)
 
-        if self.root.application.developer.get('log_requests'):
-            gws.write_file_b(f'{gws.VAR_DIR}/request_{gws.tools.date.timestamp()}', data)
+        if self.root.application.developer_option('log_requests'):
+            gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.tools.date.timestamp()}', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
@@ -135,7 +135,7 @@ class BaseRequest(t.IBaseRequest):
 
     def url_for(self, url: t.Url) -> t.Url:
         u = self.site.url_for(self, url)
-        gws.log.debug(f'url_for: {url!r}=>{u!r}')
+        # gws.log.debug(f'url_for: {url!r}=>{u!r}')
         return u
 
     def response(self, content: str, mimetype: str, status: int = 200) -> t.IResponse:

@@ -213,6 +213,18 @@ class Object(gws.common.template.Object):
             'endpoint': gws.SERVER_ENDPOINT,
         }
 
+        if self.root.application.developer_option('reload_templates') and self.path:
+            self.text = gws.read_file(self.path)
+
+        if self.root.application.developer_option('save_compiled_templates'):
+            gws.write_file(
+                gws.VAR_DIR + '/debug_template_' + gws.as_uid(self.path),
+                chartreux.translate(
+                    self.text,
+                    path=self.path or '<string>',
+                    commands=XMLCommands()))
+
+
         def err(e, path, line):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
