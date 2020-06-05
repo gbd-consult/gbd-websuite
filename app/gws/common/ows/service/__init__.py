@@ -14,8 +14,7 @@ import gws.types as t
 
 
 class Config(t.WithTypeAndAccess):
-    featureNamespace: str = 'gws'  #: feature namespace name
-    featureNamespaceUri: str = 'http://gws.gbd-consult.de'  #: feature namespace uri
+    featureNamespace: str = ''  #: feature namespace name and uri
     meta: t.Optional[gws.common.metadata.Config]  #: service metadata
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     withInspireMeta: bool = False  #: use INSPIRE Metadata
@@ -100,7 +99,10 @@ class Base(Object):
         self.use_inspire_data = False
         self.use_inspire_meta = False
 
-        if self.var('featureNamespace'):
+        self.feature_namespace = ''
+
+        s = self.var('featureNamespace')
+        if s:
             self.feature_namespace = self.var('featureNamespace')
             self.local_namespaces[self.feature_namespace] = self.var('featureNamespaceUri')
 
@@ -198,7 +200,7 @@ class Base(Object):
             'use_inspire_meta': self.use_inspire_meta,
             'url_for': rd.req.url_for,
             'feature_namespace': self.feature_namespace,
-            'feature_namespace_uri': self.local_namespaces[self.feature_namespace],
+            'feature_namespace_uri': self.local_namespaces.get(self.feature_namespace, ''),
             'namespaces': self.local_namespaces,
             'service': self
         }, context)
