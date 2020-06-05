@@ -161,16 +161,16 @@ class BplanDialog extends gws.View<BplanViewProps> {
         />;
 
         return <Form tabular>
-            {inp('address', this.__('modBplanLabelMetaAddress'))}
-            {inp('zip', this.__('modBplanLabelMetaZip'))}
-            {inp('city', this.__('modBplanLabelMetaCity'))}
-            {inp('email', this.__('modBplanLabelMetaEmail'))}
-            {inp('fax', this.__('modBplanLabelMetaFax'))}
-            {inp('phone', this.__('modBplanLabelMetaPhone'))}
-            {inp('organization', this.__('modBplanLabelMetaOrganization'))}
-            {inp('person', this.__('modBplanLabelMetaPerson'))}
-            {inp('position', this.__('modBplanLabelMetaPosition'))}
-            {inp('url', this.__('modBplanLabelMetaUrl'))}
+            {inp('contact.address', this.__('modBplanLabelMetaAddress'))}
+            {inp('contact.zip', this.__('modBplanLabelMetaZip'))}
+            {inp('contact.city', this.__('modBplanLabelMetaCity'))}
+            {inp('contact.email', this.__('modBplanLabelMetaEmail'))}
+            {inp('contact.fax', this.__('modBplanLabelMetaFax'))}
+            {inp('contact.phone', this.__('modBplanLabelMetaPhone'))}
+            {inp('contact.organization', this.__('modBplanLabelMetaOrganization'))}
+            {inp('contact.person', this.__('modBplanLabelMetaPerson'))}
+            {inp('contact.position', this.__('modBplanLabelMetaPosition'))}
+            {inp('contact.url', this.__('modBplanLabelMetaUrl'))}
 
 
         </Form>

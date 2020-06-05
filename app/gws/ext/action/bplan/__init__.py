@@ -2,6 +2,8 @@
 
 import gws
 import gws.common.action
+import gws.common.metadata
+import gws.tools.date
 import gws.common.db
 import gws.common.template
 import gws.ext.db.provider.postgres
@@ -129,6 +131,35 @@ class Object(gws.common.action.Object):
 
         self.au_list = self.var('administrativeUnits')
 
+    def post_configure(self):
+        super().post_configure()
+
+        metas = {}
+
+        with self.db.connect() as conn:
+            rs = conn.select(f'''SELECT * FROM {conn.quote_table(self.meta_table.name)}''')
+            for r in rs:
+                au_uid = r['_au']
+                metas[au_uid] = gws.common.metadata.from_dict(gws.tools.json2.from_string(r['meta']))
+
+            rs = conn.select(f'''
+                SELECT _au, MIN(_updated) AS mi, MAX(_updated) AS ma
+                FROM {conn.quote_table(self.plan_table.name)}
+                GROUP BY _au
+            ''')
+            for r in rs:
+                au_uid = r['_au']
+                if au_uid not in metas:
+                    metas[au_uid] = t.MetaData()
+                metas[au_uid].dateCreated = gws.tools.date.to_iso(r['mi'])
+                metas[au_uid].dateUpdated = gws.tools.date.to_iso(r['ma'])
+
+        for au_uid, meta in metas.items():
+            la: t.ILayer
+            for la in self.root.find_all('gws.ext.layer'):
+                if la.ows_name and la.ows_name.endswith(au_uid):
+                    la.meta = gws.common.metadata.extend(la.meta, meta)
+
     def au_list_for(self, user):
         return [
             t.Data(uid=au.uid, name=au.name)
@@ -216,7 +247,7 @@ class Object(gws.common.action.Object):
             rs = conn.select(f'''
                 SELECT * 
                 FROM {conn.quote_table(self.meta_table.name)} 
-                WHERE au_uid=%s
+                WHERE _au=%s
             ''', [au_uid])
             for r in rs:
                 return LoadUserMetaResponse(meta=gws.tools.json2.from_string(r['meta']))
@@ -232,13 +263,13 @@ class Object(gws.common.action.Object):
                 conn.execute(f'''
                     DELETE
                     FROM {conn.quote_table(self.meta_table.name)}
-                    WHERE au_uid=%s
+                    WHERE _au=%s
                 ''', [au_uid])
 
                 conn.execute(f'''
                     INSERT 
                     INTO {conn.quote_table(self.meta_table.name)}
-                    (au_uid, user_id, meta)
+                    (_au, user_id, meta)
                     VALUES(%s, %s, %s)
                 ''', [au_uid, req.user.fid, gws.tools.json2.to_pretty_string(p.meta)])
 

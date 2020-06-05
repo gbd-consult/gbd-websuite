@@ -437,6 +437,24 @@ def from_config(m: t.Config) -> t.MetaData:
     return meta
 
 
+def from_dict(d: dict) -> t.MetaData:
+    m = {}
+    contact = None
+
+    for k, v in d.items():
+        if k.startswith('contact.'):
+            contact = contact or {}
+            contact[k.split('.')[1]] = v
+        else:
+            m[k] = v
+
+    cfg = t.Config(m)
+    if contact:
+        cfg.contact = t.Config(contact)
+
+    return from_config(cfg)
+
+
 def from_meta(m: t.MetaData) -> t.MetaData:
     return from_config(t.cast(t.Config, m))
 
