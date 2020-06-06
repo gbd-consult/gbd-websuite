@@ -9,6 +9,7 @@ import gws.common.template
 import gws.ext.db.provider.postgres
 import gws.server.spool
 import gws.tools.job
+import gws.gis.shape
 import gws.tools.json2
 import gws.tools.upload
 import gws.web.error
@@ -33,6 +34,7 @@ class Config(t.WithTypeAndAccess):
     dataDir: t.DirPath  #: data directory
     qgisTemplate: t.FilePath  #: qgis template project
     administrativeUnits: t.List[AdministrativeUnitConfig]
+    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
 
 
 class AdministrativeUnit(t.Data):
@@ -87,12 +89,6 @@ class SaveUserMetaResponse(t.Response):
     pass
 
 
-DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
-    title=gws.common.template.Config(type='html', text='{name}'),
-    teaser=gws.common.template.Config(type='html', text='{name}'),
-)
-
-
 class Object(gws.common.action.Object):
 
     def configure(self):
@@ -103,7 +99,9 @@ class Object(gws.common.action.Object):
             gws.ext.db.provider.postgres.Object,
             gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
-        self.feature_format = t.cast(t.IFormat, self.create_child('gws.common.format', DEFAULT_FORMAT))
+        s = self.var('featureFormat')
+        self.feature_format = t.cast(t.IFormat, self.create_child('gws.common.format', s)) if s else None
+
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))
         self.data_dir = self.var('dataDir')
@@ -176,9 +174,18 @@ class Object(gws.common.action.Object):
     def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         features = self.db.select(t.SelectArgs(
             table=self.plan_table,
-            extra_where=[f'{self.au_key_col} = %s', p.auUid],
+            extra_where=[f'_au = %s', p.auUid],
+            sort='name',
         ))
-        return GetFeaturesResponse(features=[f.apply_format(self.feature_format).props for f in features])
+        for f in features:
+            if self.feature_format:
+                f.apply_format(self.feature_format)
+            g = f.attr('_geom_p') or f.attr('_geom_l') or f.attr('_geom_x')
+            if g:
+                f.shape = gws.gis.shape.from_wkb_hex(g, self.plan_table.geometry_crs)
+            f.attributes = []
+
+        return GetFeaturesResponse(features=[f.props for f in features])
 
     def api_upload_chunk(self, req: t.IRequest, p: gws.tools.upload.UploadChunkParams) -> gws.tools.upload.UploadChunkResponse:
         return gws.tools.upload.upload_chunk(p)

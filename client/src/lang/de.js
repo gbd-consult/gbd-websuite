@@ -351,7 +351,7 @@ module.exports = {
 	modBplanLabelMetaZip: 'PLZ',
 	modBplanOkMessage: 'Update erfolgreich',
 	modBplanSelectAU: 'Gemeinde',
-	modBplanSidebarTitle: 'Baupläne',
+	modBplanSidebarTitle: 'Bauleitplanung',
     modBplanTitleImport: 'Baupläne hochladen',
     modBplanTitlelImportProgress: 'Wird importiert...',
     modBplanTitlelUploadProgress: 'Wird hochgeladen...',

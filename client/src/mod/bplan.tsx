@@ -51,10 +51,24 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
     featureList() {
         let cc = _master(this.props.controller);
 
-        let rightButton = null;
+        let show = f => cc.update({
+            marker: {
+                features: [f],
+                mode: 'zoom draw',
+            },
+            infoboxContent: <gws.components.feature.InfoList controller={cc} features={[f]}/>
+        });
+
+
+        let rightButton = f => <gws.components.list.Button
+                className="modAnnotateDeleteListButton"
+                whenTouched={() => cc.removeFeature(f)}
+            />
+        ;
 
         let content = f => <gws.ui.Link
-            content={f.elements.teaser}
+            content={f.elements.title}
+            whenTouched={() => show(f)}
         />;
 
         return <gws.components.feature.List
@@ -62,7 +76,6 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
             features={this.props.bplanFeatures}
             content={content}
             rightButton={rightButton}
-            withZoom
         />
     }
 
@@ -76,7 +89,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <Row>
+                {this.props.bplanAuList && <Row>
                     <Cell flex>
                         <gws.ui.Select
                             placeholder={this.props.controller.__('modBplanSelectAU')}
@@ -85,7 +98,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                             whenChanged={value => cc.selectAu(value)}
                         />
                     </Cell>
-                </Row>
+                </Row>}
                 <Row>
                     {this.props.bplanFeatures && this.featureList()}
                 </Row>
@@ -293,10 +306,18 @@ class BplanController extends gws.Controller {
         if (!this.setup)
             return;
 
-        this.update({
-            bplanAuList: this.setup.auList.map(a => ({value: a.uid, text: a.name})),
-            bplanDialog: '',
-        });
+        let auList = this.setup.auList.map(a => ({value: a.uid, text: a.name}));
+
+        if (auList.length === 1) {
+            this.update({
+                bplanAuList: null,
+            });
+            await this.selectAu(auList[0].value)
+        } else {
+            this.update({
+                bplanAuList: auList,
+            });
+        }
 
         this.app.whenChanged('bplanJob', job => this.jobUpdated(job));
     }
@@ -312,8 +333,6 @@ class BplanController extends gws.Controller {
             bplanAuUid: value,
             bplanFeatures: this.map.readFeatures(res.features),
         });
-
-
     }
 
     openImportDialog() {
@@ -333,6 +352,12 @@ class BplanController extends gws.Controller {
             bplanMeta: res.meta,
             bplanDialog: 'metaForm',
         })
+    }
+
+    removeFeature(f) {
+
+
+
     }
 
     formIsValid() {
