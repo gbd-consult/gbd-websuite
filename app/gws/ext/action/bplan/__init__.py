@@ -97,6 +97,8 @@ class SaveUserMetaResponse(t.Response):
     pass
 
 
+_WMS_SERVICE_UID = "bauleitplanung_wms"
+
 class Object(gws.common.action.Object):
 
     def configure(self):
@@ -153,18 +155,25 @@ class Object(gws.common.action.Object):
                 FROM {conn.quote_table(self.plan_table.name)}
                 GROUP BY _au
             ''')
+
             for r in rs:
                 au_uid = r['_au']
                 if au_uid not in metas:
                     metas[au_uid] = t.MetaData()
-                metas[au_uid].dateCreated = gws.tools.date.to_iso(r['mi'])
-                metas[au_uid].dateUpdated = gws.tools.date.to_iso(r['ma'])
+                metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['mi']), with_tz='Z')
+                metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['ma']), with_tz='Z')
 
         for au_uid, meta in metas.items():
             la: t.ILayer
             for la in self.root.find_all('gws.ext.layer'):
                 if la.ows_name and la.ows_name.endswith(au_uid):
                     la.meta = gws.common.metadata.extend(la.meta, meta)
+
+        service = self.root.find_by_uid(_WMS_SERVICE_UID)
+        if service:
+            service.update_sequence = max(m.dateUpdated for m in metas.values())
+
+
 
     def props_for(self, user):
         return {

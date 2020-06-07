@@ -15,11 +15,14 @@ def set_system_time_zone(tz):
     gws.tools.os2.run(['ln', '-fs', f'/usr/share/zoneinfo/{tz}', '/etc/localtime'])
 
 
-def to_iso(d: datetime.datetime, with_tz=True, sep='T') -> str:
+def to_iso(d: datetime.datetime, with_tz='+', sep='T') -> str:
     fmt = f'%Y-%m-%d{sep}%H:%M:%S'
     if with_tz:
         fmt += '%z'
-    return d.strftime(fmt)
+    s = d.strftime(fmt)
+    if with_tz == 'Z' and s.endswith('+0000'):
+        s = s[:-5] + 'Z'
+    return s
 
 
 def to_iso_date(d: datetime.datetime) -> str:
@@ -31,8 +34,12 @@ def now() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def now_iso(with_tz=True, sep='T') -> str:
+def now_iso(with_tz='+', sep='T') -> str:
     return to_iso(now(), with_tz, sep)
+
+
+def to_utc(d: datetime.datetime) -> datetime.datetime:
+    return d.astimezone(datetime.timezone.utc)
 
 
 def from_timestamp(ts) -> datetime.datetime:

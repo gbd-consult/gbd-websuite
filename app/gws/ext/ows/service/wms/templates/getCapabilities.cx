@@ -5,6 +5,10 @@
     @xmlns wms default
     @a version={service.version}
 
+    @with service.update_sequence as x
+        @a updateSequence={x}
+    @end
+
     @tag Service
         @t Name WMS
         @t Title {service.meta.title}

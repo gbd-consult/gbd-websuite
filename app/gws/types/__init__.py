@@ -1285,8 +1285,9 @@ class IRootObject(IObject):
     def create_object(self, klass, cfg, parent=None): pass
     def create_shared_object(self, klass, uid, cfg): pass
     def create_unbound_object(self, klass, cfg): pass
-    def find(self, klass, uid) -> 'IObject': pass
+    def find(self, klass, uid=None) -> 'IObject': pass
     def find_all(self, klass=None) -> List['IObject']: pass
+    def find_by_uid(self, uid) -> 'IObject': pass
     def find_first(self, klass) -> 'IObject': pass
 
 

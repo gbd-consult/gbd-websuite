@@ -174,8 +174,11 @@ class RootObject(Object, t.IRootObject):
         for p in _find_all(self.all_objects, klass):
             return p
 
-    def find(self, klass, uid) -> t.IObject:
+    def find(self, klass, uid=None) -> t.IObject:
         return _find(self.all_objects, klass, uid)
+
+    def find_by_uid(self, uid) -> t.IObject:
+        return _find_by_uid(self.all_objects, uid)
 
     def _create(self, klass, cfg):
         if isinstance(klass, type):
@@ -213,6 +216,14 @@ def _find(nodes, klass, uid):
         return
     for obj in nodes:
         if obj.uid == uid and obj.is_a(klass):
+            return obj
+
+
+def _find_by_uid(nodes, uid):
+    if not uid:
+        return
+    for obj in nodes:
+        if obj.uid == uid:
             return obj
 
 

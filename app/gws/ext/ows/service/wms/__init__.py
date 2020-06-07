@@ -47,6 +47,9 @@ class Object(ows.Base):
         for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
             self.templates[tpl] = self.configure_template(tpl, 'wms/templates/')
 
+        self.update_sequence = None
+
+
     def configure_metadata(self):
         return gws.extend(
             super().configure_metadata(),
@@ -59,6 +62,12 @@ class Object(ows.Base):
         )
 
     def handle_getcapabilities(self, rd: ows.Request):
+        # OGC 06-042, 7.2.3.5
+
+        update_sequence = rd.req.param('updatesequence')
+        if update_sequence and self.update_sequence and update_sequence >= self.update_sequence:
+            raise gws.web.error.BadRequest()
+
         root = self.layer_tree_root(rd)
         if not root:
             gws.log.debug(f'service={self.uid!r}: no layer_tree_root')
