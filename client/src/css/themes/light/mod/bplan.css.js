@@ -1,7 +1,15 @@
 module.exports = v => ({
+    '.modBplanSidebarIcon': {
+        ...v.ROUND_FORM_BUTTON('bplan')
+    },
     '.uiDialog.modBplanImportDialog': {
         [v.MEDIA('large+')]: {
             ...v.CENTER_BOX(400, 400),
+        },
+    },
+    '.uiDialog.modBplanDeleteDialog': {
+        [v.MEDIA('large+')]: {
+            ...v.CENTER_BOX(400, 300),
         },
     },
     '.uiDialog.modBplanMetaDialog': {

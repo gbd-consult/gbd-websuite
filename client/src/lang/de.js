@@ -352,10 +352,11 @@ module.exports = {
 	modBplanOkMessage: 'Update erfolgreich',
 	modBplanSelectAU: 'Gemeinde',
 	modBplanSidebarTitle: 'Bauleitplanung',
-    modBplanTitleImport: 'Baupläne hochladen',
+    modBplanTitleImport: 'Bauleitpläne hochladen',
     modBplanTitlelImportProgress: 'Wird importiert...',
     modBplanTitlelUploadProgress: 'Wird hochgeladen...',
     modBplanTitleMeta: 'Metadaten editieren',
+    modBplanTitleDelete: 'Bauleitplan löschen?',
 
     modBplanTitlelImportComplete: 'Import abgeschlossen',
     modBplanImportStatsNumRecords: 'Baupläne:',

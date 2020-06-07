@@ -22,6 +22,8 @@ interface BplanViewProps extends gws.types.ViewProps {
     bplanImportReplace: boolean;
     bplanImportStats: gws.api.ImporterStats;
 
+    bplanFeatureToDelete: gws.types.IMapFeature,
+
     bplanAuList: Array<gws.ui.ListItem>;
     bplanAuUid: string;
     bplanProgress: number;
@@ -39,6 +41,8 @@ const BplanStoreKeys = [
     'bplanImportFiles',
     'bplanImportReplace',
     'bplanImportStats',
+
+    'bplanFeatureToDelete',
 
     'bplanAuList',
     'bplanAuUid',
@@ -62,7 +66,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
 
         let rightButton = f => <gws.components.list.Button
                 className="modAnnotateDeleteListButton"
-                whenTouched={() => cc.removeFeature(f)}
+                whenTouched={() => cc.deleteFeature(f)}
             />
         ;
 
@@ -215,7 +219,7 @@ class BplanDialog extends gws.View<BplanViewProps> {
         if (!mode)
             return null;
 
-        let close = () => cc.update({bplanDialog: ''});
+        let close = () => cc.update({bplanDialog: null});
         let cancel = <gws.ui.Button
             className="cmpButtonFormCancel"
             whenTouched={close}
@@ -267,6 +271,25 @@ class BplanDialog extends gws.View<BplanViewProps> {
                 title={this.__('modBplanTitlelImportProgress')}
             >
                 <gws.ui.Progress value={this.props.bplanProgress}/>
+            </gws.ui.Dialog>
+        }
+
+        if (mode === 'delete') {
+            let feature = this.props.bplanFeatureToDelete;
+            console.log(feature)
+            let ok = <gws.ui.Button
+                className="cmpButtonFormOk"
+                whenTouched={() => cc.submitDelete(feature)}
+                primary
+            />;
+
+            return <gws.ui.Dialog
+                className="modBplanDeleteDialog"
+                title={this.__('modBplanTitleDelete')}
+                buttons={[ok, cancel]}
+                whenClosed={close}
+            >
+                {feature.elements.title}
             </gws.ui.Dialog>
         }
 
@@ -354,14 +377,17 @@ class BplanController extends gws.Controller {
         })
     }
 
-    removeFeature(f) {
-
-
-
+    deleteFeature(f) {
+        this.update({
+            bplanFeatureToDelete: f,
+            bplanDialog: 'delete',
+        })
     }
 
-    formIsValid() {
-        return true;
+    async submitDelete(f) {
+        let res = await this.app.server.bplanDeleteFeature({uid: f.uid});
+        this.update({bplanDialog: null});
+        await this.selectAu(this.getValue('bplanAuUid'));
     }
 
     async chunkedUpload(name: string, buf: Uint8Array, chunkSize: number): Promise<string> {

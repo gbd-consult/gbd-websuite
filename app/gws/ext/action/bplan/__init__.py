@@ -72,6 +72,14 @@ class GetFeaturesResponse(t.Response):
     features: t.List[t.FeatureProps]
 
 
+class DeleteFeatureParams(t.Params):
+    uid: str
+
+
+class DeleteFeatureResponse(t.Response):
+    pass
+
+
 class LoadUserMetaParams(t.Params):
     auUid: str
 
@@ -158,23 +166,18 @@ class Object(gws.common.action.Object):
                 if la.ows_name and la.ows_name.endswith(au_uid):
                     la.meta = gws.common.metadata.extend(la.meta, meta)
 
-    def au_list_for(self, user):
-        return [
-            t.Data(uid=au.uid, name=au.name)
-            for au in self.au_list
-            if user.can_use(au)
-        ]
-
     def props_for(self, user):
         return {
             'type': self.type,
-            'auList': self.au_list_for(user),
+            'auList': self._au_list_for(user),
         }
 
     def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
+        au_uid = self._check_au(req, p.auUid)
+
         features = self.db.select(t.SelectArgs(
             table=self.plan_table,
-            extra_where=[f'_au = %s', p.auUid],
+            extra_where=[f'_au = %s', au_uid],
             sort='name',
         ))
         for f in features:
@@ -186,6 +189,27 @@ class Object(gws.common.action.Object):
             f.attributes = []
 
         return GetFeaturesResponse(features=[f.props for f in features])
+
+    def api_delete_feature(self, req: t.IRequest, p: DeleteFeatureParams) -> DeleteFeatureResponse:
+        with self.db.connect() as conn:
+            r = conn.select_one(f'''
+                SELECT *
+                FROM {conn.quote_table(self.plan_table.name)}
+                WHERE _uid = %s
+            ''', [p.uid])
+
+            if not r:
+                raise gws.web.error.NotFound()
+
+            self._check_au(req, r['_au'])
+
+            conn.execute(f'''
+                DELETE
+                FROM {conn.quote_table(self.plan_table.name)}
+                WHERE _uid = %s
+            ''', [r['_uid']])
+
+        return DeleteFeatureResponse()
 
     def api_upload_chunk(self, req: t.IRequest, p: gws.tools.upload.UploadChunkParams) -> gws.tools.upload.UploadChunkResponse:
         return gws.tools.upload.upload_chunk(p)
@@ -288,8 +312,15 @@ class Object(gws.common.action.Object):
     def do_update(self):
         importer.update(self)
 
+    def _au_list_for(self, user):
+        return [
+            t.Data(uid=au.uid, name=au.name)
+            for au in self.au_list
+            if user.can_use(au)
+        ]
+
     def _check_au(self, req, au_uid):
-        au_uids = set(au.uid for au in self.au_list_for(req.user))
+        au_uids = set(au.uid for au in self._au_list_for(req.user))
 
         if au_uid not in au_uids:
             gws.log.error(f'wrong auUid={au_uid}')
