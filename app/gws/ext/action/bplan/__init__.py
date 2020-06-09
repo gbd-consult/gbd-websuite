@@ -124,6 +124,8 @@ class Object(gws.common.action.Object):
         self.au_key_col = 'ags'
         self.au_name_col = 'gemeinde'
         self.type_col = 'typ'
+        self.x_coord_col = 'utm_ost'
+        self.y_coord_col = 'utm_nord'
         self.type_mapping = {
             "Abrundungssatzung": 'AS',
             "Außenbereichssatzung": 'AU',

@@ -416,7 +416,7 @@ class BplanController extends gws.Controller {
         return uid;
     }
 
-    UPLOAD_CHUNK_SIZE = 1024 * 1024;
+    UPLOAD_CHUNK_SIZE = 20 * 1024 * 1024;
 
     async submitMeta() {
         let res = await this.app.server.bplanSaveUserMeta({

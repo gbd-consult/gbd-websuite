@@ -6,6 +6,7 @@ import gws
 import gws.ext.db.provider.postgres
 import gws.gis.extent
 import gws.gis.gdal2
+import gws.gis.shape
 import gws.qgis.project
 import gws.tools.json2
 import gws.tools.os2 as os2
@@ -37,7 +38,8 @@ def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.tools
     except gws.tools.job.PrematureTermination as e:
         pass
 
-    # @TODO remove tmp_dir
+    if tmp_dir:
+        shutil.rmtree(tmp_dir)
 
     return stats
 
@@ -68,10 +70,12 @@ def _run2(action, src_dir, replace, au_uid, job):
             shp_paths.discard(p.replace('_utf8', ''))
         shp_paths.add(p)
 
-    for p in shp_paths:
+    for p in sorted(shp_paths):
         gws.log.debug(f'read {p!r}')
+
         if au_uid and not _path_belongs_to_au(p, [au_uid]):
             continue
+
         with gws.gis.gdal2.from_path(p) as ds:
             for f in gws.gis.gdal2.features(ds, action.crs, encoding=_encoding(p)):
                 r = {a.name.lower(): a.value for a in f.attributes}
@@ -82,6 +86,20 @@ def _run2(action, src_dir, replace, au_uid, job):
 
                 if uid not in recs:
                     recs[uid] = r
+
+                if not f.shape:
+                    # if no geometry found, create a point from x/y coords
+                    try:
+                        f.shape = gws.gis.shape.from_geometry({
+                            "type": "Point",
+                            "coordinates": [
+                                float(r[action.x_coord_col]),
+                                float(r[action.y_coord_col]),
+                            ]
+                        }, action.crs)
+                    except:
+                        pass
+
                 if f.shape:
                     s = f.shape.to_multi()
                     recs[uid][_geom_name(s)] = s.ewkt
@@ -124,11 +142,11 @@ def _run2(action, src_dir, replace, au_uid, job):
 
     dd = action.data_dir
 
-    # if replace:
-    #     for au in aus:
-    #         for p in os2.find_files(raster_dir, '\.png$'):
-    #             if p.startswith(au):
-    #                 print('delete ', p)
+    if replace:
+        for p in os2.find_files(f'{dd}/png'):
+            if _path_belongs_to_au(p, au_uids):
+                gws.log.debug(f'delete {p}')
+                os2.unlink(p)
 
     for p in os2.find_files(src_dir, ext='png'):
         if not _path_belongs_to_au(p, au_uids):
@@ -149,6 +167,12 @@ def _run2(action, src_dir, replace, au_uid, job):
     _update_job(job, step=3)
 
     # move pdfs into place
+
+    if replace:
+        for p in os2.find_files(f'{dd}/pdf'):
+            if _path_belongs_to_au(p, au_uids):
+                gws.log.debug(f'delete {p}')
+                os2.unlink(p)
 
     for p in os2.find_files(src_dir, ext='pdf'):
         if not _path_belongs_to_au(p, au_uids):
@@ -183,9 +207,6 @@ def _run2(action, src_dir, replace, au_uid, job):
     return stats
 
 
-_EMPTY_VRT = '<VRTDataset rasterXSize="0" rasterYSize="0"/>'
-
-
 def _create_vrts(action):
     """Create VRT files from png/pgw files, one VRT per au + typecode."""
 
@@ -196,20 +217,20 @@ def _create_vrts(action):
 
     with action.db.connect() as conn:
         for r in conn.select(f'SELECT _uid, _au, _type FROM {conn.quote_table(action.plan_table.name)}'):
-            key = r['_type'].lower() + '_r_' + r['_au']
-            groups.setdefault(key, []).extend(p for p in pngs if p.startswith(r['_uid']))
+            layer_uid = _qgis_layer_uid(r, geom_type='r')
+            groups.setdefault(layer_uid, []).extend(p for p in pngs if p.startswith(r['_uid']))
 
-    for key, pngs in sorted(groups.items()):
-        vrt = f'{dd}/vrt/{key}.vrt'
+    for layer_uid, pngs in sorted(groups.items()):
+        vrt = f'{dd}/vrt/{layer_uid}.vrt'
 
         os2.unlink(vrt)
 
         if not pngs:
             continue
 
-        gws.log.debug(f'create {key}.vrt')
+        gws.log.debug(f'create {layer_uid}.vrt')
 
-        lst = f'{dd}/vrt/{key}.lst'
+        lst = f'{dd}/vrt/{layer_uid}.lst'
         gws.write_file(lst, '\n'.join(f'{dd}/png/{p}' for p in pngs))
         os2.run([
             'gdalbuildvrt',
@@ -266,7 +287,7 @@ def _create_qgis_projects(action):
         for g in 'plx':
             rs = conn.select(f'SELECT DISTINCT _au, _type FROM {tab} WHERE _geom_{g} IS NOT NULL')
             for r in rs:
-                layer_uids.add('%s_%s_%s' % (r['_type'].lower(), g, r['_au']))
+                layer_uids.add(_qgis_layer_uid(r, geom_type=g))
 
     for p in os2.find_files(dd + '/vrt', ext='vrt'):
         layer_uids.add(_filename(p).replace('.vrt', ''))
@@ -302,6 +323,10 @@ def _create_qgis_projects(action):
         prj.save(path)
 
 
+def _qgis_layer_uid(rec, geom_type):
+    return rec['_type'].lower() + '_' + geom_type + '_' + rec['_au']
+
+
 def _extract(zip_path, target_dir):
     zf = zipfile.ZipFile(zip_path)
     for fi in zf.infolist():
@@ -314,8 +339,7 @@ def _extract(zip_path, target_dir):
 
 
 def _encoding(path):
-    p = path.replace('.shp', '.cpg')
-    if os2.is_file(p):
+    if os2.is_file(path.replace('.shp', '.cpg')):
         # have a cpg file, let gdal handle the encoding
         return
     return 'utf8' if 'utf8' in path else 'ISO-8859–1'
@@ -344,7 +368,6 @@ def _path_belongs_to_au(path, au_uids):
     fn = _filecode(path)
     if any(fn.startswith(aid) for aid in au_uids):
         return True
-    gws.log.debug(f'skip {path} au={au_uids}')
     return False
 
 
