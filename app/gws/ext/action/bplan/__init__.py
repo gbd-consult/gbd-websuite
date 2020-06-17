@@ -172,7 +172,7 @@ class Object(gws.common.action.Object):
                     la.meta = gws.common.metadata.extend(la.meta, meta)
 
         service = self.root.find_by_uid(_WMS_SERVICE_UID)
-        if service:
+        if service and metas:
             service.update_sequence = max(m.dateUpdated for m in metas.values())
 
 
