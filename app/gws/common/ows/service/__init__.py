@@ -263,6 +263,8 @@ class Base(Object):
 
         all_nodes = []
         root = self.layer_tree_root(rd)
+        if not root:
+            return []
         self._layer_node_sublist(rd, root, all_nodes)
         return all_nodes
 

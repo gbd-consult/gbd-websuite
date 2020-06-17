@@ -1,3 +1,5 @@
+import re
+
 import gws
 
 import gws.common.auth
@@ -204,6 +206,8 @@ class Layer(gws.Object, t.ILayer):
 
         self.ows_name: str = gws.as_uid(self.var('ows.name')) or self.uid.split('.')[-1]
         self._ows_enabled: bool = self.var('ows.enabled')
+        self._ows_enabled_services_uids: t.List[str] = self.var('ows.enabledServices.uids') or []
+        self._ows_enabled_services_pattern: t.Regex = self.var('ows.enabledServices.pattern')
 
         self.crs: str = self.var('crs') or self.map.crs
 
@@ -372,8 +376,14 @@ class Layer(gws.Object, t.ILayer):
     def ows_enabled(self, service: t.IOwsService) -> bool:
         if not self._ows_enabled:
             return False
-        if service.type == 'wms' and not self.supports_wms:
-            return False
-        if service.type == 'wfs' and not self.supports_wfs:
-            return False
-        return True
+        if self._ows_enabled_services_uids:
+            return service.uid in self._ows_enabled_services_uids
+        if self._ows_enabled_services_pattern:
+            return re.search(self._ows_enabled_services_pattern, service.uid) is not None
+        if service.type == 'wms' and self.supports_wms:
+            return True
+        if service.type == 'wfs' and self.supports_wfs:
+            return True
+        if self.layers:
+            return any(la.ows_enabled(service) for la in self.layers)
+        return False

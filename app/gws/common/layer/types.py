@@ -66,9 +66,15 @@ class FlattenConfig(t.Config):
     useGroups: bool = False  #: use group names (true) or image layer names (false)
 
 
+class OwsEnabledServicesConfig(t.Config):
+    uids: t.Optional[t.List[str]] #: enabled services uids
+    pattern: t.Regex = '' #: pattern for enabled service uids
+
 class OwsConfig(t.Config):
+    """OWS services."""
     name: t.Optional[str]  #: layer name for ows services
     enabled: bool = True  #: enable this layer for ows services
+    enabledServices: t.Optional[OwsEnabledServicesConfig]  #: enabled OWS services
 
 
 class LayerProps(t.Data):
