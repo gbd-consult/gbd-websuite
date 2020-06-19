@@ -269,12 +269,8 @@ def _update_pdfs(action):
 def _create_qgis_projects(action):
     dd = action.data_dir
     layer_uids = set()
-    template = gws.read_file(action.qgis_template)
-
-    m = re.search(rf"_au\s*=\s*'(\w+)'", template)
-    au_placeholder = m.group(1)
-
     extents = {}
+    template = gws.read_file(action.qgis_template)
 
     with action.db.connect() as conn:
 
@@ -298,7 +294,10 @@ def _create_qgis_projects(action):
             gws.log.warn(f'no extent for {au.uid}')
             continue
 
-        xml = template.replace(au_placeholder, au.uid)
+        xml = template
+        xml = xml.replace('{au.uid}', au.uid)
+        xml = xml.replace('{au.name}', au.name)
+
         prj = gws.qgis.project.from_string(xml)
 
         for e in prj.bs.select('extent xmin'):
