@@ -1,0 +1,31 @@
+@tag CoverageDescriptions
+    @xmlns wcs default
+
+    @each layer_node_list as node
+        @tag CoverageDescription gml:id="{feature_ns(node.tag_name)}"
+            @t gml:name {node.tag_name}
+
+            @tag gml:boundedBy/gml:Envelope srsName="{node.meta.proj.uri}" axisLabels="x y" uomLabels="m m" srsDimension="2"
+                @t gml:lowerCorner {node.extent[0]} {node.extent[2]}
+                @t gml:upperCorner {node.extent[2]} {node.extent[1]}
+            @end
+
+            @tag gml:domainSet/gml:RectifiedGrid gml:id="{feature_ns(node.tag_name)}" dimension="2"
+                @tag gml:limits/gml:GridEnvelope
+                    @t gml:low 0 0
+                    @t gml:high 215323 125027
+                @end
+                @t gml:axisLabels x y
+                @t gml:origin/gml:Point/gml:pos {node.extent[0]} {node.extent[3]}
+                @t gml:offsetVector 0 1
+                @t gml:offsetVector 1 0
+            @end
+
+            @tag ServiceParameters
+                @t CoverageSubtype RectifiedGridCoverage
+                @t nativeFormat image/png
+            @end
+
+        @end
+    @end
+@end

@@ -3,7 +3,7 @@
 
 @tag WMS_Capabilities
     @xmlns wms default
-    @a version={service.version}
+    @a version={version}
 
     @with service.update_sequence as x
         @a updateSequence={x}

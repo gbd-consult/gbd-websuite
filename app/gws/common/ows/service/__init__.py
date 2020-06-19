@@ -1,13 +1,17 @@
+import io
+
 import gws
 import gws.common.metadata
 import gws.common.metadata.inspire
 import gws.common.model
 import gws.common.search.runner
 import gws.gis.extent
+import gws.gis.render
 import gws.gis.gml
 import gws.gis.proj
 import gws.tools.units as units
 import gws.tools.xml2
+import gws.tools.misc
 import gws.web.error
 
 import gws.types as t
@@ -369,6 +373,49 @@ class Base(Object):
         return [node(f) for f in features]
 
     # Utils
+
+    def render_map_from_nodes(self, nodes, rd: Request):
+
+        try:
+            bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
+            px_width = int(rd.req.param('width'))
+            px_height = int(rd.req.param('height'))
+        except:
+            raise gws.web.error.BadRequest()
+
+        if not bbox or not px_width or not px_height:
+            raise gws.web.error.BadRequest()
+
+        render_input = t.MapRenderInput(
+            background_color=None,
+            items=[],
+            view=gws.gis.render.view_from_bbox(
+                crs=rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
+                bbox=bbox,
+                out_size=(px_width, px_height),
+                out_size_unit='px',
+                rotation=0,
+                dpi=0)
+        )
+
+        for node in nodes:
+            render_input.items.append(t.MapRenderInputItem(
+                type=t.MapRenderInputItemType.image_layer,
+                layer=node.layer))
+
+        renderer = gws.gis.render.Renderer()
+        for _ in renderer.run(render_input):
+            pass
+
+        out = renderer.output
+        if not out.items:
+            img = gws.tools.misc.Pixels.png8
+        else:
+            buf = io.BytesIO()
+            out.items[0].image.save(buf, format='png')
+            img = buf.getvalue()
+
+        return t.HttpResponse(mime='image/png', content=img)
 
     def is_layer_enabled(self, layer):
         return layer and layer.ows_enabled(self)

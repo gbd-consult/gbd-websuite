@@ -1,0 +1,74 @@
+@def default_url
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={url_for(service.url)}
+@end
+
+
+@tag WCS_Capabilities version="1.0.0"
+
+    @tag Service
+        @t Name WMS
+        @t Title {service.meta.title}
+
+        @with service.meta.abstract as x
+            @t Abstract {x}
+        @end
+
+        @with service.meta.keywords as x
+            @tag KeywordList
+                @each x as kw
+                    @t Keyword {kw}
+                @end
+            @end
+        @end
+
+        @with service.meta.fees as x
+            @t Fees {x}
+        @end
+
+        @with service.meta.accessConstraints as x
+            @t AccessConstraints {x}
+        @end
+
+        @with service.meta.contact as x
+            @tag responsibleParty
+                @t individualName {x.person}
+                @t organisationName {x.organization}
+                @t positionName {x.position}
+                @tag contactInfo
+                    @t phone/voice {x.phone}
+                    @t deliveryPoint {x.address}
+                    @t city {x.city}
+                    @t administrativeArea {x.area}
+                    @t postalCode {x.zip}
+                    @t country {x.country}
+                    @t electronicMailAddress {x.email}
+                @end
+            @end
+        @end
+    @end
+
+    @tag Capability/Request
+        @tag GetCapabilities
+            @default_url
+        @end
+        @tag DescribeCoverage
+            @default_url
+        @end
+        @tag GetCoverage
+            @default_url
+        @end
+    @end
+
+    @tag ContentMetadata
+        @each layer_node_list as node
+            @tag CoverageOfferingBrief
+                @t label {node.title}
+                @t name {feature_ns(node.tag_name)}
+                @tag lonLatEnvelope srsName="urn:ogc:def:crs:OGC:1.3:CRS84"
+                    @t gml:pos {node.meta.geographicExtent[0]} {node.meta.geographicExtent[1]}
+                    @t gml:pos {node.meta.geographicExtent[2]} {node.meta.geographicExtent[3]}
+                @end
+            @end
+        @end
+    @end
+@end

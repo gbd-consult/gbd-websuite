@@ -1,0 +1,7 @@
+@include /gws-app/gws/common/ows/service/templates/common.cx
+
+@if version == '1.0.0'
+    @include describeCoverage1.cx
+@elif version == '2.0.1'
+    @include describeCoverage2.cx
+@end

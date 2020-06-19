@@ -1,0 +1,44 @@
+@tag Capabilities
+    @xmlns wcs default
+    @a version={service.version}
+
+    @ows_service_identification
+    @ows_service_provider
+
+    @tag ows:OperationsMetadata
+
+        @tag ows:Operation name="GetCapabilities"
+            @ows_service_url
+        @end
+
+        @tag ows:Operation name="DescribeCoverage"
+            @ows_service_url
+        @end
+
+        @tag ows:Operation name="GetCoverage"
+            @ows_service_url
+        @end
+
+    @end
+
+    @tag ServiceMetadata
+        @t formatSupported image/png
+    @end
+
+    @tag Contents
+        @each layer_node_list as node
+            @tag CoverageSummary
+                @t CoverageId {feature_ns(node.tag_name)}
+                @t CoverageSubtype RectifiedGridCoverage
+                @t Title {node.title}
+                @with node.meta.abstract
+                    @t Abstract {node.meta.abstract}
+                @end
+                @tag ows:WGS84BoundingBox
+                    @t ows:LowerCorner {node.meta.geographicExtent[0]} {node.meta.geographicExtent[1]}
+                    @t ows:UpperCorner {node.meta.geographicExtent[2]} {node.meta.geographicExtent[3]}
+                @end
+            @end
+        @end
+    @end
+@end

@@ -24,7 +24,7 @@ class Config(gws.common.ows.service.Config):
     pass
 
 
-VERSION = '2.0.1'
+VERSIONS = '1.0.0', '2.0.1'
 
 
 class Object(ows.Base):
@@ -41,11 +41,9 @@ class Object(ows.Base):
         super().configure()
 
         self.type = 'wcs'
-        self.version = VERSION
 
         for tpl in 'getCapabilities', 'describeCoverage':
             self.templates[tpl] = self.configure_template(tpl, 'wcs/templates/')
-
 
     def configure_metadata(self):
         return gws.extend(
@@ -62,4 +60,26 @@ class Object(ows.Base):
         nodes = self.layer_node_list(rd)
         return self.xml_response(self.render_template(rd, 'getCapabilities', {
             'layer_node_list': nodes,
+            'version': self.request_version(rd),
         }))
+
+    def handle_describecoverage(self, rd: ows.Request):
+        nodes = self.layer_nodes_from_request_params(rd, ['coverageid', 'coverage', 'identifier'])
+        if not nodes:
+            raise gws.web.error.NotFound()
+        return self.xml_response(self.render_template(rd, 'describeCoverage', {
+            'layer_node_list': nodes,
+            'version': self.request_version(rd),
+        }))
+
+    def handle_getcoverage(self, rd: ows.Request):
+        nodes = self.layer_nodes_from_request_params(rd, ['coverageid', 'coverage', 'identifier'])
+        if not nodes:
+            raise gws.web.error.NotFound()
+        return self.render_map_from_nodes(nodes, rd)
+
+    def request_version(self, rd: ows.Request) -> str:
+        v = rd.req.param('version', default=VERSIONS[0])
+        if v not in VERSIONS:
+            raise gws.web.error.BadRequest()
+        return v

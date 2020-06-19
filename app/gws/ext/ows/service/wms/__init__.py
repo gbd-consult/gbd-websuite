@@ -1,5 +1,3 @@
-import io
-
 import gws
 import gws.common.metadata
 import gws.common.search.runner
@@ -7,7 +5,6 @@ import gws.gis.extent
 import gws.gis.gml
 import gws.gis.legend
 import gws.gis.proj
-import gws.gis.render
 import gws.gis.shape
 import gws.tools.misc
 import gws.tools.os2
@@ -77,50 +74,10 @@ class Object(ows.Base):
         }))
 
     def handle_getmap(self, rd: ows.Request):
-        try:
-            bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
-            px_width = int(rd.req.param('width'))
-            px_height = int(rd.req.param('height'))
-        except:
-            raise gws.web.error.BadRequest()
-
-        if not bbox or not px_width or not px_height:
-            raise gws.web.error.BadRequest()
-
         nodes = self.layer_nodes_from_request_params(rd, ['layer', 'layers'])
         if not nodes:
             raise gws.web.error.NotFound()
-
-        render_input = t.MapRenderInput(
-            background_color=None,
-            items=[],
-            view=gws.gis.render.view_from_bbox(
-                crs=rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
-                bbox=bbox,
-                out_size=(px_width, px_height),
-                out_size_unit='px',
-                rotation=0,
-                dpi=0)
-        )
-
-        for node in nodes:
-            render_input.items.append(t.MapRenderInputItem(
-                type=t.MapRenderInputItemType.image_layer,
-                layer=node.layer))
-
-        renderer = gws.gis.render.Renderer()
-        for _ in renderer.run(render_input):
-            pass
-
-        out = renderer.output
-        if not out.items:
-            img = gws.tools.misc.Pixels.png8
-        else:
-            buf = io.BytesIO()
-            out.items[0].image.save(buf, format='png')
-            img = buf.getvalue()
-
-        return t.HttpResponse(mime='image/png', content=img)
+        return self.render_map_from_nodes(nodes, rd)
 
     def handle_getlegendgraphic(self, rd: ows.Request):
         # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
