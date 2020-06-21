@@ -45,9 +45,13 @@ def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.tools
 
 
 def update(action):
-    _create_vrts(action)
-    _update_pdfs(action)
-    _create_qgis_projects(action)
+    with action.db.connect() as conn:
+        rs = conn.select(f'SELECT DISTINCT _au FROM {conn.quote_table(action.plan_table.name)}')
+        au_uids = set(r['_au'] for r in rs)
+
+    _create_vrts(action, au_uids)
+    _update_pdfs(action, au_uids)
+    _create_qgis_projects(action, au_uids)
 
 
 ##
@@ -189,17 +193,17 @@ def _run2(action, src_dir, replace, au_uid, job):
 
     #
 
-    _create_vrts(action)
+    _create_vrts(action, au_uids)
     _update_job(job, step=5)
 
     #
 
-    _update_pdfs(action)
+    _update_pdfs(action, au_uids)
     _update_job(job, step=6)
 
     #
 
-    _create_qgis_projects(action)
+    _create_qgis_projects(action, au_uids)
     _update_job(job, state=gws.tools.job.State.complete)
 
     gws.log.debug(f'END {src_dir!r}')
@@ -207,8 +211,10 @@ def _run2(action, src_dir, replace, au_uid, job):
     return stats
 
 
-def _create_vrts(action):
+def _create_vrts(action, au_uids):
     """Create VRT files from png/pgw files, one VRT per au + typecode."""
+
+    gws.log.debug(f'create vrts for {au_uids!r}')
 
     dd = action.data_dir
     pngs = [_filename(p) for p in os2.find_files(dd + '/png', ext='png')]
@@ -217,8 +223,9 @@ def _create_vrts(action):
 
     with action.db.connect() as conn:
         for r in conn.select(f'SELECT _uid, _au, _type FROM {conn.quote_table(action.plan_table.name)}'):
-            layer_uid = _qgis_layer_uid(r, geom_type='r')
-            groups.setdefault(layer_uid, []).extend(p for p in pngs if p.startswith(r['_uid']))
+            if r['_au'] in au_uids:
+                layer_uid = _qgis_layer_uid(r, geom_type='r')
+                groups.setdefault(layer_uid, []).extend(p for p in pngs if p.startswith(r['_uid']))
 
     for layer_uid, pngs in sorted(groups.items()):
         vrt = f'{dd}/vrt/{layer_uid}.vrt'
@@ -240,15 +247,16 @@ def _create_vrts(action):
         ])
 
 
-def _update_pdfs(action):
-    gws.log.debug(f'update pdf lists')
+def _update_pdfs(action, au_uids):
+    gws.log.debug(f'update pdfs for {au_uids!r}')
 
     dd = action.data_dir
     by_uid = {}
 
     with action.db.connect() as conn:
-        for r in conn.select(f'SELECT _uid FROM {conn.quote_table(action.plan_table.name)}'):
-            by_uid[r['_uid']] = []
+        for r in conn.select(f'SELECT _au, _uid FROM {conn.quote_table(action.plan_table.name)}'):
+            if r['_au'] in au_uids:
+                by_uid[r['_uid']] = []
 
     for p in os2.find_files(dd + '/pdf', ext='pdf'):
         p = _filename(p)
@@ -266,7 +274,9 @@ def _update_pdfs(action):
                     conn.execute(f'UPDATE {conn.quote_table(action.plan_table.name)} SET _pdf=%s WHERE _uid=%s', [names, uid])
 
 
-def _create_qgis_projects(action):
+def _create_qgis_projects(action, au_uids):
+    gws.log.debug(f'create qgis projects for {au_uids!r}')
+
     dd = action.data_dir
     layer_uids = set()
     extents = {}
@@ -278,12 +288,14 @@ def _create_qgis_projects(action):
 
         rs = conn.select(f'SELECT _au, ST_Extent(_geom_p) AS p FROM {tab} GROUP BY _au')
         for r in rs:
-            extents[r['_au']] = gws.gis.extent.from_box(r['p'])
+            if r['_au'] in au_uids:
+                extents[r['_au']] = gws.gis.extent.from_box(r['p'])
 
         for g in 'plx':
             rs = conn.select(f'SELECT DISTINCT _au, _type FROM {tab} WHERE _geom_{g} IS NOT NULL')
             for r in rs:
-                layer_uids.add(_qgis_layer_uid(r, geom_type=g))
+                if r['_au'] in au_uids:
+                    layer_uids.add(_qgis_layer_uid(r, geom_type=g))
 
     for p in os2.find_files(dd + '/vrt', ext='vrt'):
         layer_uids.add(_filename(p).replace('.vrt', ''))
@@ -291,7 +303,6 @@ def _create_qgis_projects(action):
     for au in action.au_list:
         ext = extents.get(au.uid)
         if not ext:
-            gws.log.warn(f'no extent for {au.uid}')
             continue
 
         xml = template
