@@ -7,12 +7,12 @@ import _test.common.const as cc
 
 def _wait_for_print(job_uid):
     while True:
-        res = u.cmd("printerQuery", {"jobUid": job_uid})
+        res = u.cmd("printerStatus", {"jobUid": job_uid})
         s = res.json()['state']
         if s in ('error', 'cancel'):
             return f'JOB STATE: {s}'
         if s == 'complete':
-            return u.req(f'_/cmd/assetHttpGetResult/jobUid/{job_uid}')
+            return u.req(f'_/cmd/printerHttpGetResult/jobUid/{job_uid}')
         # print(f'\n> WAITING FOR PRINTER: {s}')
         time.sleep(2)
 

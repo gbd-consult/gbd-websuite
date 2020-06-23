@@ -49,6 +49,8 @@ class Vector(layer.Layer, t.IVectorLayer):
 
     def connect_feature(self, feature: t.IFeature) -> t.IFeature:
         feature.layer = self
+        feature.feature_format = self.feature_format
+        feature.data_model = self.data_model
         return feature
 
     def render_box(self, rv, extra_params=None):

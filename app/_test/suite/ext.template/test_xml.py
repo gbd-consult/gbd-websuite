@@ -49,7 +49,7 @@ def test_custom_namespaces():
         <abc
             xmlns:bar="http://bar.url"
             xmlns:baz="http://baz.url"
-            xmlns:foo="http://foo.url"
+            xmlns="http://foo.url"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             simple="123"
             bar:attr="123"

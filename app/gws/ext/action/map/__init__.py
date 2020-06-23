@@ -156,7 +156,7 @@ class Object(gws.common.action.Object):
             f.transform_to(bounds.crs)
             f.apply_format(keys=['label'])
 
-        return GetFeaturesResponse(features=[f.props_for_render for f in found])
+        return GetFeaturesResponse(features=[f.props for f in found])
 
     def http_get_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
         return self.api_render_box(req, p)
