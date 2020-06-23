@@ -57,7 +57,7 @@ def update(action):
 ##
 
 def _run2(action, src_dir, replace, au_uid, job):
-    gws.log.debug(f'BEGIN {src_dir!r} au={au_uid}')
+    gws.log.debug(f'BEGIN {src_dir!r} au={au_uid!r}')
 
     stats = Stats(numRecords=0, numPngs=0, numPdfs=0)
 
@@ -370,7 +370,7 @@ def _filename(path):
 
 
 def _filecode(path):
-    m = re.search(r'([0-9A-Z]+)\.[a-z]+$', _filename(path))
+    m = re.search(r'([0-9]+[A-Z]*)(_\w+)?\.[a-z]+$', _filename(path))
     return m.group(1) if m else ''
 
 
