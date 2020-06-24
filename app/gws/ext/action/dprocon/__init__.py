@@ -56,6 +56,8 @@ class Config(t.WithTypeAndAccess):
     indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
     alkisSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
 
+    gemeindeFilter: t.Optional[t.List[str]]  #: gemeinde (AU) ids to keep in the index
+
 
 class ConnectParams(t.Data):
     projectUid: str
@@ -94,6 +96,7 @@ class Object(gws.Object):
         self.data_table = self.var('dataTable')
 
         self.feature_format = self.create_object('gws.common.format', _DEFAULT_FORMAT)
+        self.au_filter = self.var('gemeindeFilter')
 
     def api_connect(self, req, p: ConnectParams) -> ConnectResponse:
         req.require_project(p.projectUid)
@@ -167,6 +170,11 @@ class Object(gws.Object):
             index_table = conn.quote_table(_INDEX_TABLE_NAME, self.var('indexSchema'))
             alkis_schema = self.var('alkisSchema')
 
+            au_filter = ''
+            if self.au_filter:
+                s = ','.join(repr(s) for s in self.au_filter)
+                au_filter = f' AND h.gemeinde IN ({s})'
+
             sql = [
                 f'''
                     DROP TABLE IF EXISTS {index_table} CASCADE
@@ -215,6 +223,7 @@ class Object(gws.Object):
                             AND g.endet IS NULL
                             AND h.endet IS NULL
                             AND p.endet IS NULL
+                            {au_filter}
                         ON CONFLICT DO NOTHING
                 ''',
                 f'''
