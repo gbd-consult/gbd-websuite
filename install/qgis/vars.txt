@@ -1,6 +1,12 @@
 // helper file for changing cmake vars easily
-// generated with _BUILD/cmake -LAH ..
-// our overrides marked with @
+// generated with cd _BUILD && cmake -LAH ..
+// our overrides are marked with @
+// after changing this, run prepare.py to generate configure/package scripts
+
+
+
+// Add default set of clazy checks which should not raise any warnings
+ADD_CLAZY_CHECKS:STRING=
 
 // Install bindings to global python directory? (might need root)
 BINDINGS_GLOBAL_INSTALL:BOOL=FALSE
@@ -15,6 +21,9 @@ BUILD_TESTING:BOOL=ON @OFF
 BZRCOMMAND:FILEPATH=BZRCOMMAND-NOTFOUND
 
 // Path to a program.
+CCACHE_FOUND:FILEPATH=/usr/bin/ccache
+
+// Path to a program.
 CMAKE_AR:FILEPATH=/usr/bin/ar
 
 // Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.
@@ -24,13 +33,13 @@ CMAKE_BUILD_TYPE:STRING= @$1
 CMAKE_COLOR_MAKEFILE:BOOL=ON
 
 // CXX compiler
-CMAKE_CXX_COMPILER:FILEPATH=/usr/lib/ccache/clang++
+CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++
 
-// LLVM archiver
-CMAKE_CXX_COMPILER_AR:FILEPATH=/usr/bin/llvm-ar-6.0
+// A wrapper around 'ar' adding the appropriate '--plugin' option for the GCC compiler
+CMAKE_CXX_COMPILER_AR:FILEPATH=/usr/bin/gcc-ar-7
 
-// Generate index for LLVM archive
-CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/usr/bin/llvm-ranlib-6.0
+// A wrapper around 'ranlib' adding the appropriate '--plugin' option for the GCC compiler
+CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/usr/bin/gcc-ranlib-7
 
 // Flags used by the compiler during all build types.
 CMAKE_CXX_FLAGS:STRING=
@@ -48,13 +57,13 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
 // C compiler
-CMAKE_C_COMPILER:FILEPATH=/usr/lib/ccache/clang
+CMAKE_C_COMPILER:FILEPATH=/usr/bin/cc
 
-// LLVM archiver
-CMAKE_C_COMPILER_AR:FILEPATH=/usr/bin/llvm-ar-6.0
+// A wrapper around 'ar' adding the appropriate '--plugin' option for the GCC compiler
+CMAKE_C_COMPILER_AR:FILEPATH=/usr/bin/gcc-ar-7
 
-// Generate index for LLVM archive
-CMAKE_C_COMPILER_RANLIB:FILEPATH=/usr/bin/llvm-ranlib-6.0
+// A wrapper around 'ranlib' adding the appropriate '--plugin' option for the GCC compiler
+CMAKE_C_COMPILER_RANLIB:FILEPATH=/usr/bin/gcc-ranlib-7
 
 // Flags used by the compiler during all build types.
 CMAKE_C_FLAGS:STRING=
@@ -70,6 +79,9 @@ CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 
 // Flags used by the compiler during release builds with debug info.
 CMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
+
+// Enable automatic path configuration
+CMAKE_ENABLE:BOOL=ON
 
 // Flags used by the linker.
 CMAKE_EXE_LINKER_FLAGS:STRING=
@@ -275,8 +287,17 @@ ENABLE_ORACLETEST:BOOL=FALSE
 // Enable PostgreSQL provider tests
 ENABLE_PGTEST:BOOL=FALSE
 
+// Enable Saga tests
+ENABLE_SAGA_TESTS:BOOL=FALSE
+
 // Build unit tests?
 ENABLE_TESTS:BOOL=TRUE @FALSE
+
+// Path to a file.
+EXIV2_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+EXIV2_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libexiv2.so
 
 // Path to a file.
 EXPAT_INCLUDE_DIR:PATH=/usr/include
@@ -286,6 +307,12 @@ EXPAT_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libexpat.so
 
 // Path to a program.
 FLEX_EXECUTABLE:FILEPATH=/usr/bin/flex
+
+// Determines whether libraries should be static only
+FORCE_STATIC_LIBS:BOOL=FALSE
+
+// Determines whether data providers should be static only
+FORCE_STATIC_PROVIDERS:BOOL=FALSE
 
 // Path to a program.
 GDAL_CONFIG:FILEPATH=/usr/bin/gdal-config
@@ -323,14 +350,11 @@ GEOS_LIB_NAME_WITH_PREFIX:STRING=-lgeos_c
 // Path to a program.
 GITCOMMAND:FILEPATH=/usr/bin/git
 
-// Extra includes string used for GRASS7
-GRASS_EXTRA_INCLUDE_DIRS7:STRING=
-
 // Path to GRASS 7 include directory
-GRASS_INCLUDE_DIR7:PATH=/usr/lib/grass74/include
+GRASS_INCLUDE_DIR7:PATH=GRASS_INCLUDE_DIR7-NOTFOUND
 
 // Path to GRASS 7 base directory
-GRASS_PREFIX7:PATH=/usr/lib/grass74
+GRASS_PREFIX7:PATH=
 
 // Path to a program.
 GSL_CONFIG:FILEPATH=/usr/bin/gsl-config
@@ -347,11 +371,47 @@ GSL_INCLUDE_DIR:STRING=/usr/include
 // Path to gunzip executable
 GUNZIPCOMMAND:FILEPATH=/bin/gunzip
 
+// HDF5 C Wrapper compiler.  Used only to detect HDF5 compile flags.
+HDF5_C_COMPILER_EXECUTABLE:FILEPATH=/usr/bin/h5cc
+
+// Path to a library.
+HDF5_C_LIBRARY_dl:FILEPATH=/usr/lib/x86_64-linux-gnu/libdl.so
+
+// Path to a library.
+HDF5_C_LIBRARY_hdf5:FILEPATH=/usr/lib/x86_64-linux-gnu/hdf5/serial/libhdf5.so
+
+// Path to a library.
+HDF5_C_LIBRARY_m:FILEPATH=/usr/lib/x86_64-linux-gnu/libm.so
+
+// Path to a library.
+HDF5_C_LIBRARY_pthread:FILEPATH=/usr/lib/x86_64-linux-gnu/libpthread.so
+
+// Path to a library.
+HDF5_C_LIBRARY_sz:FILEPATH=/usr/lib/x86_64-linux-gnu/libsz.so
+
+// Path to a library.
+HDF5_C_LIBRARY_z:FILEPATH=/usr/lib/x86_64-linux-gnu/libz.so
+
+// HDF5 file differencing tool.
+HDF5_DIFF_EXECUTABLE:FILEPATH=HDF5_DIFF_EXECUTABLE-NOTFOUND
+
+// The directory containing a CMake configuration file for HDF5.
+HDF5_DIR:PATH=HDF5_DIR-NOTFOUND
+
 // Path to a program.
 HGCOMMAND:FILEPATH=HGCOMMAND-NOTFOUND
 
 // Path to java command, used by the Dart server to create html.
 JAVACOMMAND:FILEPATH=JAVACOMMAND-NOTFOUND
+
+// Path to a file.
+LIBXML2_INCLUDE_DIR:PATH=/usr/include/libxml2
+
+// Path to a library.
+LIBXML2_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libxml2.so
+
+// Path to a program.
+LIBXML2_XMLLINT_EXECUTABLE:FILEPATH=LIBXML2_XMLLINT_EXECUTABLE-NOTFOUND
 
 // Path to a file.
 LIBZIP_CONF_INCLUDE_DIR:PATH=/usr/include/x86_64-linux-gnu
@@ -371,11 +431,29 @@ MEMORYCHECK_COMMAND:FILEPATH=MEMORYCHECK_COMMAND-NOTFOUND
 // File that contains suppressions for the memory checker
 MEMORYCHECK_SUPPRESSIONS_FILE:FILEPATH=
 
+// Path to a file.
+NETCDF_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+NETCDF_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnetcdf.so
+
+// Path to a file.
+OPENCL_HPP_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a file.
+OpenCL_INCLUDE_DIR:PATH=/usr/include
+
+// Path to a library.
+OpenCL_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libOpenCL.so
+
 // Path to a program.
 P4COMMAND:FILEPATH=P4COMMAND-NOTFOUND
 
 // Determines if we should compile in pedantic mode.
 PEDANTIC:BOOL=TRUE @FALSE
+
+// pkg-config executable
+PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
 // Path to POSTGRESQL base directory
 POSTGRESQL_PREFIX:PATH=
@@ -446,8 +524,14 @@ QGIS_MANUAL_SUBDIR:STRING=man
 // Subdirectory where plugins will be installed
 QGIS_PLUGIN_SUBDIR:STRING=lib/qgis/plugins
 
+// Subdirectory where qml files/libraries will be installed
+QGIS_QML_SUBDIR:STRING=qml
+
 // Subdirectory where server modules will be installed
 QGIS_SERVER_MODULE_SUBDIR:STRING=lib/qgis/server
+
+// QML directory for QML autocomplete
+QML_IMPORT_PATH:PATH=
 
 // Path to a file.
 QSCINTILLA_INCLUDE_DIR:PATH=/usr/include/x86_64-linux-gnu/qt5
@@ -465,7 +549,7 @@ QTKEYCHAIN_INCLUDE_DIR:PATH=/usr/include/qt5keychain
 QTKEYCHAIN_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libqt5keychain.so
 
 // URL for Qt docs
-QT_DOC_URL:STRING=http://doc.qt.io/qt-5/
+QT_DOC_URL:STRING=https://doc.qt.io/qt-5/
 
 // Path to a program.
 QT_LRELEASE_EXECUTABLE:FILEPATH=/usr/bin/lrelease
@@ -482,6 +566,9 @@ Qt5Concurrent_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Concurrent
 // The directory containing a CMake configuration file for Qt5Core.
 Qt5Core_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Core
 
+// The directory containing a CMake configuration file for Qt5DBus.
+Qt5DBus_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5DBus
+
 // The directory containing a CMake configuration file for Qt5Gui.
 Qt5Gui_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Gui
 
@@ -493,6 +580,18 @@ Qt5Positioning_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Positioning
 
 // The directory containing a CMake configuration file for Qt5PrintSupport.
 Qt5PrintSupport_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5PrintSupport
+
+// The directory containing a CMake configuration file for Qt5Qml.
+Qt5Qml_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Qml
+
+// The directory containing a CMake configuration file for Qt5QuickWidgets.
+Qt5QuickWidgets_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5QuickWidgets
+
+// The directory containing a CMake configuration file for Qt5Quick.
+Qt5Quick_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Quick
+
+// The directory containing a CMake configuration file for Qt5SerialPort.
+Qt5SerialPort_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5SerialPort
 
 // The directory containing a CMake configuration file for Qt5Sql.
 Qt5Sql_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Sql
@@ -515,17 +614,17 @@ Qt5WebKit_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5WebKit
 // The directory containing a CMake configuration file for Qt5Widgets.
 Qt5Widgets_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Widgets
 
-// The directory containing a CMake configuration file for Qt5XmlPatterns.
-Qt5XmlPatterns_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5XmlPatterns
-
 // The directory containing a CMake configuration file for Qt5Xml.
 Qt5Xml_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Xml
 
 // Path to scp command, used by CTest for submitting results to a Dart server
 SCPCOMMAND:FILEPATH=/usr/bin/scp
 
+// Install sip source files to system sip directory? (might need root)
+SIP_GLOBAL_INSTALL:BOOL=FALSE
+
 // Name of the computer/site where compile is being run
-SITE:STRING=2761f17883e2
+SITE:STRING=9303a9d62537
 
 // Path to the SLURM sbatch executable
 SLURM_SBATCH_COMMAND:FILEPATH=SLURM_SBATCH_COMMAND-NOTFOUND
@@ -534,7 +633,7 @@ SLURM_SBATCH_COMMAND:FILEPATH=SLURM_SBATCH_COMMAND-NOTFOUND
 SLURM_SRUN_COMMAND:FILEPATH=SLURM_SRUN_COMMAND-NOTFOUND
 
 // Path to a file.
-SPATIALINDEX_INCLUDE_DIR:PATH=/usr/include/spatialindex
+SPATIALINDEX_INCLUDE_DIR:PATH=/usr/include
 
 // Path to a library.
 SPATIALINDEX_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libspatialindex.so
@@ -557,8 +656,20 @@ SVNCOMMAND:FILEPATH=/usr/bin/svn
 // Path to a program.
 TXT2TAGS_EXECUTABLE:FILEPATH=/usr/bin/txt2tags
 
+// Use ccache
+USE_CCACHE:BOOL=ON
+
+// Use OpenCL
+USE_OPENCL:BOOL=ON
+
+// Treat build warnings as errors.
+WERROR:BOOL=FALSE
+
 // Determines whether QGIS 3D library should be built
 WITH_3D:BOOL=FALSE
+
+// Determines whether QGIS analysis library should be built
+WITH_ANALYSIS:BOOL=TRUE
 
 // Determines whether the QGIS API doxygen documentation should be built
 WITH_APIDOC:BOOL=FALSE
@@ -616,6 +727,9 @@ WITH_QSCIAPI:BOOL=TRUE @FALSE
 
 // Determines whether QSPATIALITE sql driver should be built
 WITH_QSPATIALITE:BOOL=FALSE @TRUE
+
+// Determines whether Qt5SerialPort should be tried for GPS positioning
+WITH_QT5SERIALPORT:BOOL=TRUE @FALSE
 
 // Determines if QtMobility related code should be build (for example internal GPS)
 WITH_QTMOBILITY:BOOL=FALSE

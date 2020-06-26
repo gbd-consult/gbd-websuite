@@ -43,3 +43,10 @@ Version 6.0
 - print legends supported
 - custom legends in png and html formats
 - legend customization for qgis layers
+
+
+Version 6.1
+--------------------------------------------
+
+- bundled QGIS upgraded to 3.10
+

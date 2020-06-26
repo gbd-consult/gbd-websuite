@@ -5,7 +5,7 @@ Prerequisites: git, docker, python.
 Clone the specific QGIS version:
 
 ```
-git clone -b final-3_4_8 --single-branch https://github.com/qgis/QGIS
+git clone -b final-final-3_10_7 --single-branch https://github.com/qgis/QGIS
 ```
 
 Create a directory for your build in the qgis source tree:
@@ -25,18 +25,18 @@ cp /var/work/gws-server/build/qgis/gws-package.sh _BUILD
 
 Review `gws-configure.sh` and edit cmake variables therein if necessary. 
 
-Create a docker image based on QGIS dockerfile with build dependencies and tag it as e.g. `qgis-build-3.4.8`:
+Create a docker image based on QGIS dockerfile with build dependencies and tag it as e.g. `qgis-build-3.10.7`:
 
 ```
 cd .docker
-docker build -f qgis3-build-deps.dockerfile -t qgis-build-3.4.8 .
+docker build -f qgis3-build-deps.dockerfile -t qgis-build-3.10.7 .
 ```
 
 Run the docker image and bind your `QGIS` directory:
 
 ```
 cd ..
-docker run --mount type=bind,src=`pwd`,dst=/QGIS -it qgis-build-3.4.8 bash
+docker run --mount type=bind,src=`pwd`,dst=/QGIS -it qgis-build-3.10.7 bash
 ```
 
 Once in the container, chdir to the build dir and run `gws-configure.sh Debug` or `gws-configure.sh Release` to build a debug or a release version respectively:
@@ -66,5 +66,5 @@ This will create the directory `_BUILD/qgis-for-gws`, which you can copy to the 
 You can also archive the directory for later reuse, for example:
 
 ```
-tar czvf qgis-for-gws-3.4.8-bionic-debug.tar.gz qgis-for-gws
+tar czvf qgis-for-gws-3.10.7-bionic-debug.tar.gz qgis-for-gws
 ```

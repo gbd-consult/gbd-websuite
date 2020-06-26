@@ -67,6 +67,10 @@ def environ(root: t.IRootObject):
     server_env = {
         # not used here 'QGIS_PLUGINPATH': '',
         # not used here 'QGIS_SERVER_LOG_FILE': '',
+
+        # see https://github.com/qgis/QGIS/pull/35738
+        'QGIS_SERVER_IGNORE_BAD_LAYERS': 'true',
+
         'MAX_CACHE_LAYERS': root.var('server.qgis.maxCacheLayers'),
         'QGIS_OPTIONS_PATH': base_dir + '/profiles/profiles/default',
         'QGIS_SERVER_CACHE_DIRECTORY': gws.ensure_dir('servercache', base_dir),
