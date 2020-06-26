@@ -15,6 +15,7 @@ def _ensure_table(conn):
         uid TEXT PRIMARY KEY,
         user_fid TEXT,
         str_user TEXT,
+        project_uid TEXT,
         worker TEXT,
         args TEXT,
         steps INTEGER,

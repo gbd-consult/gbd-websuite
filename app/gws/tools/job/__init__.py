@@ -26,7 +26,7 @@ class PrematureTermination(Exception):
     pass
 
 
-def create(uid, user: t.IUser, worker: str, args=None):
+def create(uid, user: t.IUser, worker: str, project_uid=None, args=None):
     if user:
         fid = user.fid
         str_user = gws.config.root().application.auth.serialize_user(user)
@@ -38,6 +38,7 @@ def create(uid, user: t.IUser, worker: str, args=None):
         uid,
         user_fid=fid,
         str_user=str_user,
+        project_uid=project_uid,
         worker=worker,
         args=gws.tools.json2.to_string(args),
         steps=0,
@@ -73,6 +74,7 @@ class Job:
         self.uid = ''
         self.user_fid = ''
         self.str_user = ''
+        self.project_uid = ''
         self.worker = ''
         self.args = ''
         self.steps = 0

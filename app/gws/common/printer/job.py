@@ -53,14 +53,13 @@ def status(job) -> StatusResponse:
         progress=job.progress,
         steptype=job.steptype or '',
         stepname=job.stepname or '',
-        url=gws.SERVER_ENDPOINT + f'/cmd/printerHttpGetResult/jobUid/' + job.uid,
+        url=f'{gws.SERVER_ENDPOINT}/cmd/printerHttpGetResult/jobUid/{job.uid}/projectUid/{job.project_uid}',
     )
-
 
 ##
 
 
-def _create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
+def _create(req: t.IRequest, p: pt.PrintParams) -> gws.tools.job.Job:
     cleanup()
 
     job_uid = gws.random_string(64)
@@ -68,11 +67,12 @@ def _create(req: t.IRequest, params: pt.PrintParams) -> gws.tools.job.Job:
 
     req_path = base_dir + '/request.pickle'
     with open(req_path, 'wb') as fp:
-        pickle.dump(params, fp)
+        pickle.dump(p, fp)
 
     return gws.tools.job.create(
         uid=job_uid,
         user=req.user,
+        project_uid=p.projectUid,
         worker=__name__ + '._worker')
 
 
@@ -86,7 +86,7 @@ def _worker(root: t.IRootObject, job: gws.tools.job.Job):
 
     job.update(state=gws.tools.job.State.running)
 
-    w = _Worker(root, job.uid, base_dir, params, job.user)
+    w = _Worker(root, job, base_dir, params, job.user)
     w.run()
 
 
@@ -109,15 +109,15 @@ _PAPER_COLOR = 'white'
 
 
 class _Worker:
-    def __init__(self, root: t.IRootObject, job_uid, base_dir, p: pt.PrintParams, user: t.IUser):
+    def __init__(self, root: t.IRootObject, job: gws.tools.job.Job, base_dir, p: pt.PrintParams, user: t.IUser):
         self.root = root
-        self.job_uid = job_uid
+        self.job = job
         self.base_dir = base_dir
         self.user = user
 
         self.format = p.format or 'pdf'
 
-        self.project = t.cast(t.IProject, self.acquire('gws.common.project', p.projectUid))
+        self.project = t.cast(t.IProject, self.acquire('gws.common.project', job.project_uid))
 
         self.locale = p.locale
         if self.locale not in self.project.locales:
@@ -180,7 +180,7 @@ class _Worker:
         try:
             self.run2()
         except gws.tools.job.PrematureTermination as e:
-            gws.log.warn(f'job={self.job_uid} TERMINATED {e.args!r}')
+            gws.log.warn(f'job={self.job.uid} TERMINATED {e.args!r}')
 
     def run2(self):
 
@@ -410,7 +410,7 @@ class _Worker:
             return obj
 
     def get_job(self):
-        job = gws.tools.job.get(self.job_uid)
+        job = gws.tools.job.get(self.job.uid)
 
         if not job:
             raise gws.tools.job.PrematureTermination('NOT_FOUND')
