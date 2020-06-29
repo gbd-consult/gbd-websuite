@@ -345,7 +345,7 @@ class Object(gws.ActionObject):
         fp.projectUid = p.projectUid
         fp.locale = p.locale
 
-        res = self._fetch(req, fp)
+        res = self._fetch(req, fp, self.limit, self.limit)
 
         if not res.features:
             raise gws.web.error.NotFound()
@@ -372,7 +372,7 @@ class Object(gws.ActionObject):
         fp.projectUid = p.projectUid
         fp.locale = p.locale
 
-        res = self._fetch(req, fp)
+        res = self._fetch(req, fp, self.limit, self.limit)
 
         if not res.features:
             raise gws.web.error.NotFound()
