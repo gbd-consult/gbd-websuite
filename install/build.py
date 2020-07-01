@@ -59,7 +59,7 @@ def init(argv):
     ENV.BASE_DIR = os.path.abspath(ENV.SCRIPT_DIR + '/..')
     ENV.BUILD_DIR = os.path.abspath(ENV.SCRIPT_DIR + '/_build')
 
-    ENV.QGIS_VERSION = '3.4.8'
+    ENV.QGIS_VERSION = '3.10.7'
 
     load_const()
 

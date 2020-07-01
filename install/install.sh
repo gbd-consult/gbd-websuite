@@ -43,7 +43,7 @@ cd $INSTALL_DIR/install
 
 banner "INSTALLING QGIS"
 
-curl -sL 'http://gws-files.gbd-consult.de/qgis-for-gws-3.4.8-bionic-release.tar.gz' -o qgis-for-gws.tar.gz \
+curl -sL 'http://gws-files.gbd-consult.de/qgis-for-gws-3.10.7-bionic-release.tar.gz' -o qgis-for-gws.tar.gz \
 && tar -xzf qgis-for-gws.tar.gz --no-same-owner \
 && cp -r qgis-for-gws/usr/* /usr
 
@@ -82,7 +82,7 @@ cat > update <<EOF
 echo "Updating gws..."
 
 INSTALL_DIR=$INSTALL_DIR
-RELEASE=6.0
+RELEASE=6.1
 
 cd \$INSTALL_DIR \\
 && rm -f gws-\$RELEASE.tar.gz \\
@@ -117,7 +117,7 @@ check
 
 banner "INSTALLING THE DEMO PROJECT"
 
-curl -sL 'http://gws-files.gbd-consult.de/gws-welcome-6.0.tar.gz' -o welcome.tar.gz \
+curl -sL 'http://gws-files.gbd-consult.de/gws-welcome-6.1.tar.gz' -o welcome.tar.gz \
 && tar -xzf welcome.tar.gz --no-same-owner \
 && rm -f welcome.tar.gz \
 && chown -R $USER:$GROUP $INSTALL_DIR/data

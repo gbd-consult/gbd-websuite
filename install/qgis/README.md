@@ -5,7 +5,7 @@ Prerequisites: git, docker, python.
 Clone the specific QGIS version:
 
 ```
-git clone -b final-final-3_10_7 --single-branch https://github.com/qgis/QGIS
+git clone -b final-3_10_7 --single-branch https://github.com/qgis/QGIS
 ```
 
 Create a directory for your build in the qgis source tree:
