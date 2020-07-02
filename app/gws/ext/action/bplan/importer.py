@@ -70,8 +70,8 @@ def _run2(action, src_dir, replace, au_uid, job):
 
     for p in sorted(os2.find_files(src_dir, ext='shp')):
         # NB prefer '..._utf8.shp' variants if they exist
-        if '_utf8' in p:
-            shp_paths.discard(p.replace('_utf8', ''))
+        if 'utf8' in p:
+            shp_paths.discard(p.replace('utf8', ''))
         shp_paths.add(p)
 
     for p in sorted(shp_paths):
@@ -160,11 +160,11 @@ def _run2(action, src_dir, replace, au_uid, job):
         if not os2.is_file(w):
             continue
 
-        fn = _filecode(p)
+        fb = _fnbody(p)
 
-        gws.log.debug(f'copy {fn}.png')
-        shutil.copyfile(p, f'{dd}/png/{fn}.png')
-        shutil.copyfile(w, f'{dd}/png/{fn}.pgw')
+        gws.log.debug(f'copy {fb}.png')
+        shutil.copyfile(p, f'{dd}/png/{fb}.png')
+        shutil.copyfile(w, f'{dd}/png/{fb}.pgw')
 
         stats.numPngs += 1
 
@@ -182,10 +182,10 @@ def _run2(action, src_dir, replace, au_uid, job):
         if not _path_belongs_to_au(p, au_uids):
             continue
 
-        fn = _filecode(p)
+        fb = _fnbody(p)
 
-        gws.log.debug(f'copy {fn}.pdf')
-        shutil.copyfile(p, f'{dd}/pdf/{fn}.pdf')
+        gws.log.debug(f'copy {fb}.pdf')
+        shutil.copyfile(p, f'{dd}/pdf/{fb}.pdf')
 
         stats.numPdfs += 1
 
@@ -259,10 +259,10 @@ def _update_pdfs(action, au_uids):
                 by_uid[r['_uid']] = []
 
     for p in os2.find_files(dd + '/pdf', ext='pdf'):
-        p = _filename(p)
+        fn = _filename(p)
         for uid, names in by_uid.items():
-            if p.startswith(uid):
-                names.append(p)
+            if fn.startswith(uid):
+                names.append(fn)
                 break
 
     with action.db.connect() as conn:
@@ -298,7 +298,7 @@ def _create_qgis_projects(action, au_uids):
                     layer_uids.add(_qgis_layer_uid(r, geom_type=g))
 
     for p in os2.find_files(dd + '/vrt', ext='vrt'):
-        layer_uids.add(_filename(p).replace('.vrt', ''))
+        layer_uids.add(_fnbody(p))
 
     for au in action.au_list:
         ext = extents.get(au.uid)
@@ -340,8 +340,8 @@ def _qgis_layer_uid(rec, geom_type):
 def _extract(zip_path, target_dir):
     zf = zipfile.ZipFile(zip_path)
     for fi in zf.infolist():
-        fn = re.sub(r'[^\w.-]', '_', fi.filename)
-        if fn.startswith('.'):
+        fn = _filename(fi.filename)
+        if not fn or fn.startswith('.'):
             continue
         with zf.open(fi) as src, open(target_dir + '/' + fn, 'wb') as dst:
             gws.log.debug(f'unzip {fn!r}')
@@ -369,15 +369,16 @@ def _filename(path):
     return os2.parse_path(path)['filename']
 
 
-def _filecode(path):
-    m = re.search(r'([0-9]+[A-Z]*)(_\w+)?\.[a-z]+$', _filename(path))
-    return m.group(1) if m else ''
+def _fnbody(path):
+    return os2.parse_path(path)['name']
 
 
 def _path_belongs_to_au(path, au_uids):
-    fn = _filecode(path)
-    if any(fn.startswith(aid) for aid in au_uids):
-        return True
+    fn = _filename(path)
+    # filename is like AAAAnnn.png or Shapes_AAAA_xxx.shp, where AAAA = au uid
+    for aid in au_uids:
+        if fn.startswith(aid) or (aid + '_' in fn) or ('_' + aid in fn):
+            return True
     return False
 
 
