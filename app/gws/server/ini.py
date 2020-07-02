@@ -81,7 +81,12 @@ def create(root: t.IRootObject, base_dir, pid_dir):
     log = root.var('server.log') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
 
     nginx_log_level = 'info'
-    # nginx_log_level = 'debug'
+    if root.application.developer_option('nginx_log_level_debug'):
+        nginx_log_level = 'debug'
+
+    nginx_rewrite_log = 'off'
+    if root.application.developer_option('nginx_rewrite_log_on'):
+        nginx_rewrite_log = 'on'
 
     if log == 'syslog':
         nginx_log = 'syslog:server=unix:/dev/log,nohostname,tag'
@@ -206,7 +211,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
                 server_name qgis;
                 error_log {nginx_qgis_log} {nginx_log_level};
                 access_log {nginx_qgis_log};
-                rewrite_log on;
+                rewrite_log {nginx_rewrite_log};
             
                 location / {{
                     gzip off;
@@ -292,7 +297,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
         web_common = f"""
             error_log {nginx_web_log} {nginx_log_level};
             access_log {nginx_web_log} apm;
-            rewrite_log on;
+            rewrite_log {nginx_rewrite_log};
         
             client_max_body_size {max_body_size}m;
             client_body_buffer_size {client_buffer_size}m;
