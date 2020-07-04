@@ -29,6 +29,8 @@ interface BplanViewProps extends gws.types.ViewProps {
     bplanProgress: number;
     bplanFeatures: Array<gws.types.IMapFeature>,
 
+    bplanSearch: string;
+
 
 }
 
@@ -48,7 +50,28 @@ const BplanStoreKeys = [
     'bplanAuUid',
     'bplanProgress',
     'bplanFeatures',
+
+    'bplanSearch',
 ];
+
+class BplanSearchBox extends gws.View<BplanViewProps> {
+    render() {
+        return <div className="modSearchBox">
+            <Row>
+                <Cell>
+                    <gws.ui.Button className='modSearchIcon'/>
+                </Cell>
+                <Cell flex>
+                    <gws.ui.TextInput
+                        placeholder={this.__('modSearchPlaceholder')}
+                        withClear={true}
+                        {...this.props.controller.bind('bplanSearch')}
+                    />
+                </Cell>
+            </Row>
+        </div>;
+    }
+}
 
 
 class BplanSidebarView extends gws.View<BplanViewProps> {
@@ -75,9 +98,13 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
             whenTouched={() => show(f)}
         />;
 
+        let search = (this.props.bplanSearch || '').toLowerCase(),
+            fs = this.props.bplanFeatures.filter(f =>
+                !search || f.elements.title.toLowerCase().contains(search));
+
         return <gws.components.feature.List
             controller={cc}
-            features={this.props.bplanFeatures}
+            features={fs}
             content={content}
             rightButton={rightButton}
         />
@@ -103,6 +130,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                         />
                     </Cell>
                 </Row>}
+                <BplanSearchBox {...this.props}/>
                 <Row>
                     {this.props.bplanFeatures && this.featureList()}
                 </Row>
@@ -155,11 +183,6 @@ class BplanDialog extends gws.View<BplanViewProps> {
                 multiple={false}
                 {...this.props.controller.bind('bplanImportFiles')}
                 label={this.__('modBplanLabelImportFiles')}
-            />
-            <gws.ui.Toggle
-                type="checkbox"
-                {...this.props.controller.bind('bplanImportReplace')}
-                label={this.__('modBplanLabelImportReplace')}
             />
         </Form>
     }
@@ -453,7 +476,7 @@ class BplanController extends gws.Controller {
             bplanJob: await this.app.server.bplanImport({
                 uploadUid,
                 auUid: this.getValue('bplanAuUid'),
-                replace: !!this.getValue('bplanImportReplace')
+                replace: false,
             })
         });
     }
