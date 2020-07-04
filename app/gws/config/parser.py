@@ -35,8 +35,9 @@ def parse_main(path):
 
     prj_configs = []
 
-    for pc in dct.pop('projects', []):
-        prj_configs.append([pc, path])
+    for prj_cfg in dct.pop('projects', []):
+        for pc in _as_flat_list(prj_cfg):
+            prj_configs.append([pc, path])
 
     gws.log.info('parsing main configuration...')
     app = parse(dct, 'gws.common.application.Config', path)
@@ -51,10 +52,7 @@ def parse_main(path):
     for prj_path in sorted(set(prj_paths)):
         prj_cfg, prj_cfg_paths = _read(prj_path)
         cfg_paths.extend(prj_cfg_paths)
-
-        if not isinstance(prj_cfg, list):
-            prj_cfg = [prj_cfg]
-        for pc in prj_cfg:
+        for pc in _as_flat_list(prj_cfg):
             prj_configs.append([pc, prj_path])
 
     app.projects = []
@@ -62,10 +60,7 @@ def parse_main(path):
     for pc, prj_path in prj_configs:
         uid = pc.get('uid') or pc.get('title') or '???'
         gws.log.info(f'parsing project {uid!r}...')
-        if pc.get('multi'):
-            app.projects.extend(_parse_multi_project(pc, prj_path))
-        else:
-            app.projects.append(parse(pc, 'gws.common.project.Config', prj_path))
+        app.projects.append(parse(pc, 'gws.common.project.Config', prj_path))
 
     return app, cfg_paths
 
@@ -124,7 +119,7 @@ def _parse_cx_config(path):
             finder=_finder
         )
     except chartreux.compiler.Error as e:
-        return _syntax_error(gws.read_file(path), e.message, e.line)
+        return _syntax_error(gws.read_file(e.path), e.message, e.line)
 
     src = chartreux.call(
         tpl,
@@ -157,52 +152,15 @@ def _syntax_error(src, message, line, context=10):
     raise ValueError('syntax error')
 
 
-def _parse_multi_project(cfg, path):
-    mm = cfg.pop('multi')
-    pfx = re.match(r'^/([\w-]+/)*', mm)
-    if pfx:
-        # absolute multi match like /foo/bar.*/baz? - try to extract the base path
-        dirname = pfx.group(0)
-        if dirname == '/':
-            raise error.ParseError('multi-project: pattern cannot be root', path, '', mm)
-    else:
-        dirname = os.path.dirname(path)
-
-    if not os.path.isdir(dirname):
-        raise error.ParseError(f'multi-project: {dirname!r} not found', path, '', mm)
-
-    res = []
-
-    for index, p in enumerate(sorted(gws.tools.os2.find_files(dirname, mm))):
-        gws.log.info(f'multi-project: found {p!r}')
-        m = re.search(mm, p)
-        args = {'$' + str(n): s for n, s in enumerate(m.groups(), 1)}
-        args['$0'] = p
-        args['index'] = str(index)
-        args.update(gws.tools.os2.parse_path(p))
-        dct = _deep_format(cfg, args)
-        res.append(parse(dct, 'gws.common.project.Config', path))
-
-    if not res:
-        gws.log.warn(f'multi-project: no files found for {mm!r}')
-
-    return res
-
-
-_multi_placeholder_re = r'{{(.+?)}}'
-
-
-def _deep_format(x, a):
-    if isinstance(x, dict):
-        return {k: _deep_format(v, a) for k, v in x.items()}
-    if isinstance(x, list):
-        return [_deep_format(v, a) for v in x]
-    if isinstance(x, str):
-        return re.sub(_multi_placeholder_re, lambda m: a.get(m.group(1), m.group(0)), x)
-    return x
-
-
 def _save_intermediate(path, txt, ext):
     p = gws.tools.os2.parse_path(path)
     d = gws.VAR_DIR + '/config'
     gws.write_file(f"{d}/{p['name']}.parsed.{ext}", txt)
+
+
+def _as_flat_list(ls):
+    if not isinstance(ls, (list, tuple)):
+        yield ls
+    else:
+        for x in ls:
+            yield from _as_flat_list(x)
