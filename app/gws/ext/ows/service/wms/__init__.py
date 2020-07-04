@@ -71,6 +71,7 @@ class Object(ows.Base):
             raise gws.web.error.NotFound()
         return self.xml_response(self.render_template(rd, 'getCapabilities', {
             'layer_tree_root': root,
+            'version': self.version,
         }))
 
     def handle_getmap(self, rd: ows.Request):

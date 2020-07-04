@@ -36,7 +36,7 @@ class Filter:
 
         return [
             r for r in recs
-            if not r.get('geographicExtent') or gws.gis.extent.intersect(r.geographicExtent, ext)
+            if not r.get('extent4326') or gws.gis.extent.intersect(r.extent4326, ext)
         ]
 
     def _propertyislike(self, flt, recs):

@@ -84,6 +84,26 @@
     @return feature_namespace + ':' + s
 @end
 
+
+@def ex_geographic_bounding_box(node)
+    @tag EX_GeographicBoundingBox
+        @t westBoundLongitude {node.extent4326[0]}
+        @t eastBoundLongitude {node.extent4326[2]}
+        @t southBoundLatitude {node.extent4326[1]}
+        @t northBoundLatitude {node.extent4326[3]}
+    @end
+@end
+
+
+@def ows_wgs84_bounding_box(node)
+    @tag ows:WGS84BoundingBox
+        @t ows:LowerCorner {node.extent4326[0]} {node.extent4326[1]}
+        @t ows:UpperCorner {node.extent4326[2]} {node.extent4326[3]}
+    @end
+@end
+
+
+
 ## http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd
 ## Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities, plus mandatory language parameters, plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document
 

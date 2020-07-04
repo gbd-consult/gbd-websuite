@@ -6,6 +6,7 @@ import gws.common.model
 import gws.common.ows.service
 import gws.common.search.runner
 import gws.gis.gml
+import gws.gis.extent
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
@@ -82,6 +83,11 @@ class Object(ows.Base):
                     meta.catalogUid = obj.uid
             if not meta.url:
                 meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
+
+            extent = gws.get(obj, 'extent') or gws.get(obj, 'map.extent')
+            crs = gws.get(obj, 'crs') or gws.get(obj, 'map.crs')
+            if extent and crs:
+                meta.extent4326 = gws.gis.extent.transform_to_4326(extent, crs)
 
             self.metas[obj.uid] = meta
 

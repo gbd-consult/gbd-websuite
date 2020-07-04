@@ -517,7 +517,6 @@ class MetaData(Data):
     dateCreated: 'DateTime'
     dateUpdated: 'DateTime'
     fees: str
-    geographicExtent: 'Extent'
     image: 'Url'
     insipreKeywords: List['MetaInspireKeyword']
     insipreMandatoryKeyword: 'MetaInspireKeyword'
@@ -537,10 +536,7 @@ class MetaData(Data):
     keywords: List[str]
     language: str
     links: List['MetaLink']
-    maxScale: int
-    minScale: int
     name: str
-    proj: 'Projection'
     serviceUrl: 'Url'
     title: str
     url: 'Url'
@@ -1179,7 +1175,6 @@ class ILayer(IObject):
     def configure_legend(self) -> 'LayerLegend': pass
     def configure_metadata(self, provider_meta=None) -> 'MetaData': pass
     def configure_search(self): pass
-    def configure_spatial_metadata(self): pass
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass

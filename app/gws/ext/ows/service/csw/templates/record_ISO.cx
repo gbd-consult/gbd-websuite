@@ -80,9 +80,9 @@
         @t gmd:topicCategory/gmd:MD_TopicCategoryCode {meta.isoTopicCategory}
     @end
 
-    @with meta.geographicExtent
+    @with meta.extent4326
         @tag gmd:extent/gmd:EX_Extent/gmd:geographicElement
-            @bounding_box meta.geographicExtent
+            @bounding_box meta.extent4326
         @end
     @end
 @end

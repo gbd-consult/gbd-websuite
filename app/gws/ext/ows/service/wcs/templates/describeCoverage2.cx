@@ -5,7 +5,7 @@
         @tag CoverageDescription gml:id="{feature_ns(node.tag_name)}"
             @t gml:name {node.tag_name}
 
-            @tag gml:boundedBy/gml:Envelope srsName="{node.meta.proj.uri}" axisLabels="x y" uomLabels="m m" srsDimension="2"
+            @tag gml:boundedBy/gml:Envelope srsName="{node.proj.uri}" axisLabels="x y" uomLabels="m m" srsDimension="2"
                 @t gml:lowerCorner {node.extent[0]} {node.extent[2]}
                 @t gml:upperCorner {node.extent[2]} {node.extent[1]}
             @end

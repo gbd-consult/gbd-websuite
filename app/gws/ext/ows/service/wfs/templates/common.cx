@@ -7,11 +7,8 @@
         @with node.meta.abstract
             @t Abstract {node.meta.abstract}
         @end
-        @t DefaultSRS {node.meta.proj.urn}
-        @tag ows:WGS84BoundingBox
-            @t ows:LowerCorner {node.meta.geographicExtent[0]} {node.meta.geographicExtent[1]}
-            @t ows:UpperCorner {node.meta.geographicExtent[2]} {node.meta.geographicExtent[3]}
-        @end
+        @t DefaultSRS {node.proj.urn}
+        @ows_wgs84_bounding_box node
     @end
 @end
 

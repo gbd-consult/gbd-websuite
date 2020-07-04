@@ -97,13 +97,6 @@ class Object(gws.Object, t.IProject):
             p.parentClient = self.parent.var('client')
         self.client: t.Optional[t.IClient] = self.create_child(gws.common.client.Object, p) if p else None
 
-        if self.map:
-            scales = [gws.tools.units.res2scale(r) for r in self.map.resolutions]
-            self.meta.geographicExtent = gws.gis.extent.transform_to_4326(self.map.extent, self.map.crs)
-            self.meta.minScale = int(min(scales))
-            self.meta.maxScale = int(max(scales))
-            self.meta.proj = gws.gis.proj.as_projection(self.map.crs)
-
     @property
     def description(self):
         ctx = {

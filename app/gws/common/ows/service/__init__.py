@@ -23,6 +23,7 @@ class Config(t.WithTypeAndAccess):
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     withInspireMeta: bool = False  #: use INSPIRE Metadata
     withInspireData: bool = False  #: use INSPIRE data model
+    supportedCrs: t.Optional[t.List[t.Crs]]  #: supported CRS for this service
 
 
 class Request(t.Data):
@@ -31,6 +32,11 @@ class Request(t.Data):
     service: t.IOwsService
     xml: gws.tools.xml2.Element = None
     xml_is_soap: bool = False
+
+
+class SupportedCrs(t.Data):
+    proj: gws.gis.proj.Proj = None
+    extent: t.Extent = None
 
 
 class LayerCapsNode(t.Data):
@@ -44,10 +50,11 @@ class LayerCapsNode(t.Data):
     title: str = None
 
     extent: t.Extent = None
-    geographic_extent: t.Extent = None
+    extent4326: t.Extent = None
     max_scale: int = None
     min_scale: int = None
     proj: gws.gis.proj.Proj = None
+    supported_crs: t.List[SupportedCrs] = None
 
     sub_nodes: t.Optional[t.List['LayerCapsNode']] = []
 
@@ -117,6 +124,8 @@ class Base(Object):
 
         if self.use_inspire_data:
             self.configure_inspire_templates()
+
+        self.supported_crs: t.List[t.Crs] = self.var('supportedCrs', default=[])
 
     def post_configure(self):
         super().post_configure()
@@ -252,7 +261,7 @@ class Base(Object):
         if not roots:
             return
 
-        return LayerCapsNode(
+        node = LayerCapsNode(
             extent=rd.project.map.extent,
             has_legend=any(n.has_legend for n in roots),
             has_search=any(n.has_search for n in roots),
@@ -261,6 +270,7 @@ class Base(Object):
             tag_name=rd.project.uid,
             title=rd.project.title,
         )
+        return self._add_spatial_props(node, rd.project.map)
 
     def layer_node_list(self, rd: Request) -> t.List[LayerCapsNode]:
         """Return a list of terminal layer nodes (for WFS)."""
@@ -339,8 +349,7 @@ class Base(Object):
 
     def _layer_node_from(self, layer: t.ILayer, sub_nodes=None) -> LayerCapsNode:
         sub_nodes = sub_nodes or []
-
-        return LayerCapsNode(
+        node = LayerCapsNode(
             extent=layer.extent,
             # in a service, only provide legends for leaf layers
             has_legend=layer.has_legend and not sub_nodes,
@@ -351,6 +360,25 @@ class Base(Object):
             tag_name=layer.ows_name,
             title=layer.title,
         )
+        return self._add_spatial_props(node, layer)
+
+    def _add_spatial_props(self, node: LayerCapsNode, source) -> LayerCapsNode:
+        node.extent = source.extent
+        node.extent4326 = gws.gis.extent.transform_to_4326(source.extent, source.crs)
+        scales = [gws.tools.units.res2scale(r) for r in source.resolutions]
+        node.minScale = int(min(scales))
+        node.maxScale = int(max(scales))
+        node.proj = gws.gis.proj.as_projection(source.crs)
+
+        node.supported_crs = [
+            SupportedCrs(
+                proj=gws.gis.proj.as_projection(crs),
+                extent=gws.gis.extent.transform(source.extent, source.crs, crs)
+            )
+            for crs in self.supported_crs or [source.crs]
+        ]
+
+        return node
 
     def inspire_nodes(self, nodes):
         return [n for n in nodes if n.tag_name in gws.common.metadata.inspire.TAGS]

@@ -388,11 +388,6 @@ class MetaData(t.Data):
     url: t.Url
     urlType: str
 
-    geographicExtent: t.Extent
-    maxScale: int
-    minScale: int
-    proj: t.Projection
-
 
 class Props(t.Props):
     abstract: str

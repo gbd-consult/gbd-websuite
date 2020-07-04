@@ -222,7 +222,6 @@ class Layer(gws.Object, t.ILayer):
         super().post_configure()
 
         self.configure_search()
-        self.configure_spatial_metadata()
 
         legend = self.configure_legend()
         if legend:
@@ -249,13 +248,6 @@ class Layer(gws.Object, t.ILayer):
             m.title = title
 
         return gws.common.metadata.from_config(m)
-
-    def configure_spatial_metadata(self):
-        scales = [gws.tools.units.res2scale(r) for r in self.resolutions]
-        self.meta.geographicExtent = gws.gis.extent.transform_to_4326(self.extent, self.map.crs)
-        self.meta.minScale = int(min(scales))
-        self.meta.maxScale = int(max(scales))
-        self.meta.proj = gws.gis.proj.as_projection(self.map.crs)
 
     def configure_search(self):
         # search can be

@@ -1,5 +1,143 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
-@include common.cx
+
+@def wms_default_url
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={url_for(service.url)}
+@end
+
+@def wms_contact_metadata
+    @with service.meta.contact as x
+        @tag ContactInformation
+            @tag ContactPersonPrimary
+                @t ContactPerson {x.person}
+                @t ContactOrganization {x.organization}
+            @end
+            @t ContactPosition {x.position}
+            @tag ContactAddress
+                @t AddressType postal
+                @t Address {x.address}
+                @t City {x.city}
+                @t StateOrProvince {x.area}
+                @t PostCode {x.zip}
+                @t Country {x.country}
+            @end
+            @t ContactVoiceTelephone {x.phone}
+            @t ContactElectronicMailAddress {x.email}
+        @end
+    @end
+@end
+
+@def wms_service_metadata
+    @with service.meta.abstract as x
+        @t Abstract {x}
+    @end
+
+    @with service.meta.keywords as x
+        @tag KeywordList
+            @each x as kw
+                @t Keyword {kw}
+            @end
+        @end
+    @end
+
+    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url)}"
+
+    @wms_contact_metadata
+
+    @with service.meta.fees as x
+        @t Fees {x}
+    @end
+
+    @with service.meta.accessConstraints as x
+        @t AccessConstraints {x}
+    @end
+@end
+
+@def wms_meta_url(node)
+    @if node.meta.url
+        @tag MetadataURL type="{node.meta.urlType or service.meta.urlType}"
+            @t Format application/xml
+            @t OnlineResource xlink:type="simple" xlink:href="{url_for(node.meta.url)}"
+        @end
+    @end
+@end
+
+@def wms_request_capabilities
+    @tag Request
+        @tag GetCapabilities
+            @t Format text/xml
+            @wms_default_url
+        @end
+        @tag GetMap
+            @t Format image/png
+            @wms_default_url
+        @end
+        @tag GetFeatureInfo
+            @t Format application/vnd.ogc.gml
+            @wms_default_url
+        @end
+        @tag sld:GetLegendGraphic
+            @t Format image/png
+            @wms_default_url
+        @end
+    @end
+    @t Exception/Format XML
+@end
+
+@def wms_layer_capabilities(node)
+    @tag Layer queryable="{1 if node.has_search else 0}"
+
+        @t Name {feature_ns(node.tag_name)}
+        @t Title {node.title}
+
+        @with node.meta.abstract as x
+            @t Abstract {x}
+        @end
+
+        @each node.supported_crs as s
+            @t CRS {s.proj.epsg}
+        @end
+
+        @ex_geographic_bounding_box node
+
+        @each node.supported_crs as s
+            @t BoundingBox CRS="{s.proj.epsg}" minx="{s.extent[0]}" miny="{s.extent[1]}" maxx="{s.extent[2]}" maxy="{s.extent[3]}"
+        @end
+
+        @with node.meta.attribution as x
+            @t Attribution/Title {x}
+        @end
+
+        @with node.meta.authorityUrl
+            @tag AuthorityURL name="{node.meta.authorityName}"
+                @t OnlineResource xlink:href="{node.meta.authorityUrl}"
+            @end
+        @end
+
+        @with node.meta.authorityIdentifier
+            @t Identifier authority="{node.meta.authorityName}" {node.meta.authorityIdentifier}
+        @end
+
+        @wms_meta_url node
+
+        @if node.has_legend
+            @tag Style
+                @t Name default
+                @t Title default
+                @tag LegendURL
+                    @t Format image/png
+                    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + feature_ns(node.tag_name)}"
+                @end
+            @end
+        @end
+
+        @t MinScaleDenominator {node.minScale}
+        @t MaxScaleDenominator {node.maxScale}
+
+        @each reversed(node.sub_nodes) as sub_node
+            @wms_layer_capabilities sub_node
+        @end
+    @end
+@end
 
 @tag WMS_Capabilities
     @xmlns wms default

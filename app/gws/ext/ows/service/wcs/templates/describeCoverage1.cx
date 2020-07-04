@@ -8,8 +8,8 @@
             @t name {feature_ns(node.tag_name)}
 
             @tag lonLatEnvelope srsName="urn:ogc:def:crs:OGC:1.3:CRS84"
-                @t gml:pos {node.meta.geographicExtent[0]} {node.meta.geographicExtent[1]}
-                @t gml:pos {node.meta.geographicExtent[2]} {node.meta.geographicExtent[3]}
+                @t gml:pos {node.extent4326[0]} {node.extent4326[1]}
+                @t gml:pos {node.extent4326[2]} {node.extent4326[3]}
             @end
 
             @tag gml:domainSet/gml:RectifiedGrid gml:id="{feature_ns(node.tag_name)}" dimension="2"
@@ -23,7 +23,7 @@
                 @t gml:offsetVector 1 0
             @end
 
-            @t supportedCRSs/requestResponseCRSs {node.meta.proj.epsg}
+            @t supportedCRSs/requestResponseCRSs {node.proj.epsg}
             @t supportedFormats/formats image/png
 
         @end
