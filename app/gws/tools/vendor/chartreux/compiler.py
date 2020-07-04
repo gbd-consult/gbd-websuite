@@ -394,7 +394,7 @@ class Expression:
 
     def make_context_getter(self, var):
         self.cc.code.add_context_var(var)
-        fn = '_GET_CONTEXT_NOEXC' if self.cc.noexc_block else '_GET_CONTEXT'
+        fn = '_GET_VAR_NOEXC' if self.cc.noexc_block else '_GET_VAR'
         return _f('{}({},__POS__)', fn, repr(var))
 
 
@@ -993,7 +993,7 @@ class Code:
                 pos['line'] = line
                 w(0, _f('## {}:{}', pos['path'], pos['line']))
 
-        w(0, _f('def {}(_RT, _CONTEXT, _ERROR=None):', self.cc.option('name')))
+        w(0, _f('def {}(_RT, _VARS, _ERROR=None):', self.cc.option('name')))
 
         if not self.buf:
             w(1, 'return ""')
@@ -1033,23 +1033,23 @@ class Code:
                 except Exception as _EXC:
                     return _RT.undef
             
-            def _GET_CONTEXT(prop, pos):
+            def _GET_VAR(prop, pos):
                 try:
-                    return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]
+                    return _VARS[prop] if prop in _VARS else _GLOBALS[prop]
                 except Exception as _EXC:
                     _ERR(_EXC, pos)
                     return _RT.undef
 
-            def _GET_CONTEXT_NOEXC(prop, pos):
+            def _GET_VAR_NOEXC(prop, pos):
                 try:
-                    return _CONTEXT[prop] if prop in _CONTEXT else _GLOBALS[prop]
+                    return _VARS[prop] if prop in _VARS else _GLOBALS[prop]
                 except Exception as _EXC:
                     return _RT.undef
         ''')
 
         w(1, 'try:')
 
-        w(2, _f('_CONTEXT, _GLOBALS = _RT.prepare(_CONTEXT, {})', sorted(self.context_vars)))
+        w(2, _f('_VARS, _GLOBALS = _RT.prepare(_VARS, {})', sorted(self.context_vars)))
         w(2, '_PUSHBUF()')
 
         level = 2
@@ -1138,8 +1138,8 @@ def _error(msg, path, line, *args):
 
 
 def _source_location(code, lineno):
-    path = '?'
-    line = '?'
+    path = 0
+    line = 0
 
     for n, ln in enumerate(code.splitlines(), 1):
         if n >= lineno:
@@ -1147,7 +1147,7 @@ def _source_location(code, lineno):
         m = re.search(r'## (.*?):(\d+)', ln)
         if m:
             path = m.group(1)
-            line = m.group(2)
+            line = int(m.group(2))
 
     return path, line
 
