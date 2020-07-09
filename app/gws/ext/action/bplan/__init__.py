@@ -24,6 +24,13 @@ class AdministrativeUnitConfig(t.WithAccess):
     name: str
 
 
+class PlanTypeConfig(t.Config):
+    uid: str
+    name: str
+    srcName: str
+    color: str
+
+
 class Config(t.WithTypeAndAccess):
     """Construction plans action"""
 
@@ -34,6 +41,8 @@ class Config(t.WithTypeAndAccess):
     dataDir: t.DirPath  #: data directory
     qgisTemplate: t.FilePath  #: qgis template project
     administrativeUnits: t.List[AdministrativeUnitConfig]
+    planTypes: t.List[PlanTypeConfig]
+    imageQuality: int = 24 #: palette size for optimized images
     featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
 
 
@@ -116,8 +125,12 @@ class Object(gws.common.action.Object):
         self.meta_table = self.db.configure_table(self.var('metaTable'))
         self.data_dir = self.var('dataDir')
         self.qgis_template = self.var('qgisTemplate')
+        self.qgis_template = self.create_child('gws.ext.template', t.Config(type='text', path=self.var('qgisTemplate')))
+        self.au_list = self.var('administrativeUnits')
+        self.type_list = self.var('planTypes')
+        self.image_quality = self.var('imageQuality')
 
-        for sub in 'png', 'pdf', 'vrt', 'qgs':
+        for sub in 'png', 'pdf', 'cnv', 'qgs':
             gws.ensure_dir(self.data_dir + '/' + sub)
 
         self.key_col = 'plan_id'
@@ -126,20 +139,7 @@ class Object(gws.common.action.Object):
         self.type_col = 'typ'
         self.x_coord_col = 'utm_ost'
         self.y_coord_col = 'utm_nord'
-        self.type_mapping = {
-            "Abrundungssatzung": 'AS',
-            "Außenbereichssatzung": 'AU',
-            "Bebauungsplan, qualifizierter Bebauungsplan": 'BP',
-            "Ergänzungssatzung": 'EG',
-            "Erhaltungssatzung": 'ER',
-            "Flächennutzungsplan": 'FN',
-            "Gestaltungssatzung": 'GS',
-            "Satzung": 'SA',
-            "Vorhaben- und Erschließungsplan": 'VE',
-            "Vorhabenbezogener Bebauungsplan": 'VB',
-        }
 
-        self.au_list = self.var('administrativeUnits')
 
     def post_configure(self):
         super().post_configure()

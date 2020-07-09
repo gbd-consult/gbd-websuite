@@ -1,6 +1,7 @@
 import re
 import shutil
 import zipfile
+import PIL.Image
 
 import gws
 import gws.ext.db.provider.postgres
@@ -49,7 +50,6 @@ def update(action):
         rs = conn.select(f'SELECT DISTINCT _au FROM {conn.quote_table(action.plan_table.name)}')
         au_uids = set(r['_au'] for r in rs)
 
-    _create_vrts(action, au_uids)
     _update_pdfs(action, au_uids)
     _create_qgis_projects(action, au_uids)
 
@@ -61,7 +61,7 @@ def _run2(action, src_dir, replace, au_uid, job):
 
     stats = Stats(numRecords=0, numPngs=0, numPdfs=0)
 
-    _update_job(job, step=0, steps=6)
+    _update_job(job, step=0, steps=5)
 
     # iterate shape files and prepare a list of db records
 
@@ -86,7 +86,12 @@ def _run2(action, src_dir, replace, au_uid, job):
 
                 r['_uid'] = uid = r[action.key_col]
                 r['_au'] = r[action.au_key_col]
-                r['_type'] = action.type_mapping.get(r.get(action.type_col, ''), '')
+
+                type_name = r.get(action.type_col, '')
+                for ty in action.type_list:
+                    if ty.srcName == type_name:
+                        r['_type'] = ty.uid
+                        break
 
                 if uid not in recs:
                     recs[uid] = r
@@ -193,13 +198,8 @@ def _run2(action, src_dir, replace, au_uid, job):
 
     #
 
-    _create_vrts(action, au_uids)
-    _update_job(job, step=5)
-
-    #
-
     _update_pdfs(action, au_uids)
-    _update_job(job, step=6)
+    _update_job(job, step=5)
 
     #
 
@@ -209,42 +209,6 @@ def _run2(action, src_dir, replace, au_uid, job):
     gws.log.debug(f'END {src_dir!r}')
 
     return stats
-
-
-def _create_vrts(action, au_uids):
-    """Create VRT files from png/pgw files, one VRT per au + typecode."""
-
-    gws.log.debug(f'create vrts for {au_uids!r}')
-
-    dd = action.data_dir
-    pngs = [_filename(p) for p in os2.find_files(dd + '/png', ext='png')]
-
-    groups = {}
-
-    with action.db.connect() as conn:
-        for r in conn.select(f'SELECT _uid, _au, _type FROM {conn.quote_table(action.plan_table.name)}'):
-            if r['_au'] in au_uids:
-                layer_uid = _qgis_layer_uid(r, geom_type='r')
-                groups.setdefault(layer_uid, []).extend(p for p in pngs if p.startswith(r['_uid']))
-
-    for layer_uid, pngs in sorted(groups.items()):
-        vrt = f'{dd}/vrt/{layer_uid}.vrt'
-
-        os2.unlink(vrt)
-
-        if not pngs:
-            continue
-
-        gws.log.debug(f'create {layer_uid}.vrt')
-
-        lst = f'{dd}/vrt/{layer_uid}.lst'
-        gws.write_file(lst, '\n'.join(f'{dd}/png/{p}' for p in pngs))
-        os2.run([
-            'gdalbuildvrt',
-            '-srcnodata', '0',
-            '-input_file_list', lst,
-            '-overwrite', vrt
-        ])
 
 
 def _update_pdfs(action, au_uids):
@@ -278,63 +242,160 @@ def _create_qgis_projects(action, au_uids):
     gws.log.debug(f'create qgis projects for {au_uids!r}')
 
     dd = action.data_dir
-    layer_uids = set()
+
+    extents = _enum_extents(action, au_uids)
+    layers = _enum_layers(action, au_uids)
+
+    for au_uid in au_uids:
+        path = f'{dd}/qgs/{au_uid}.qgs'
+
+        ls = [la for la in layers if la['au_uid'] == au_uid]
+        if not ls:
+            os2.unlink(path)
+            return
+
+        ext = extents.get(au_uid)
+        if not ext:
+            continue
+
+        res = action.qgis_template.render({
+            'extent': ext,
+            'layers': ls
+        })
+
+        gws.write_file(path, res.content)
+        gws.log.debug(f'created {path!r}')
+
+
+def _enum_extents(action, au_uids):
     extents = {}
-    template = gws.read_file(action.qgis_template)
+
+    with action.db.connect() as conn:
+        tab = conn.quote_table(action.plan_table.name)
+        rs = conn.select(f'SELECT _au, ST_Extent(_geom_p) AS p FROM {tab} GROUP BY _au')
+        for rec in rs:
+            if rec['_au'] not in au_uids:
+                continue
+            extents[rec['_au']] = gws.gis.extent.from_box(rec['p'])
+
+    return extents
+
+
+def _enum_layers(action, au_uids):
+    layers = {}
+    images = _enum_images(action)
+
+    au_index = {au.uid: au for au in action.au_list}
+    type_index = {ty.uid: ty for ty in action.type_list}
+
+    def _layer_uid(rec, geom_type):
+        return rec['_type'].lower() + '_' + geom_type + '_' + rec['_au']
+
+    def _new_layer(rec, geom_type):
+        au = au_index.get(rec['_au'])
+        au_name = au.name if au else ''
+
+        ty = type_index.get(rec['_type'])
+        type_name = ty.name if ty else ''
+        color = ty.color if ty else ''
+
+        return {
+            'uid': _layer_uid(rec, geom_type),
+            'geom': geom_type,
+            'type': rec['_type'],
+            'type_name': type_name,
+            'au_uid': rec['_au'],
+            'au_name': au_name,
+            'color': color,
+            'images': [],
+        }
 
     with action.db.connect() as conn:
 
         tab = conn.quote_table(action.plan_table.name)
+        rs = conn.select(f'SELECT _uid, _au, _type, _geom_p, _geom_l, _geom_x FROM {tab} ORDER BY _uid')
 
-        rs = conn.select(f'SELECT _au, ST_Extent(_geom_p) AS p FROM {tab} GROUP BY _au')
-        for r in rs:
-            if r['_au'] in au_uids:
-                extents[r['_au']] = gws.gis.extent.from_box(r['p'])
+        for rec in rs:
+            if rec['_au'] not in au_uids:
+                continue
 
-        for g in 'plx':
-            rs = conn.select(f'SELECT DISTINCT _au, _type FROM {tab} WHERE _geom_{g} IS NOT NULL')
-            for r in rs:
-                if r['_au'] in au_uids:
-                    layer_uids.add(_qgis_layer_uid(r, geom_type=g))
+            for g in 'plx':
+                if rec['_geom_' + g]:
+                    layer_uid = _layer_uid(rec, g)
+                    if layer_uid not in layers:
+                        layers[layer_uid] = _new_layer(rec, g)
 
-    for p in os2.find_files(dd + '/vrt', ext='vrt'):
-        layer_uids.add(_fnbody(p))
+            imgs = [img for img in images if img['fname'].startswith(rec['_uid'])]
 
-    for au in action.au_list:
-        ext = extents.get(au.uid)
-        if not ext:
-            continue
+            if imgs:
+                layer_uid = _layer_uid(rec, 'r')
+                if layer_uid not in layers:
+                    layers[layer_uid] = _new_layer(rec, 'r')
+                layers[layer_uid]['images'].extend(imgs)
 
-        xml = template
-        xml = xml.replace('{au.uid}', au.uid)
-        xml = xml.replace('{au.name}', au.name)
+    ls = sorted(layers.values(), key=lambda la: la['type_name'])
 
-        prj = gws.qgis.project.from_string(xml)
+    for la in ls:
+        la['images'].sort(key=lambda img: img['fname'], reverse=True)
 
-        for e in prj.bs.select('extent xmin'):
-            e.string = str(ext[0])
-        for e in prj.bs.select('extent ymin'):
-            e.string = str(ext[1])
-        for e in prj.bs.select('extent xmax'):
-            e.string = str(ext[2])
-        for e in prj.bs.select('extent ymax'):
-            e.string = str(ext[3])
-
-        for e in prj.bs.select('layer-tree-layer'):
-            if e['id'] not in layer_uids:
-                e.decompose()
-
-        for e in prj.bs.select('maplayer'):
-            if e.id.text not in layer_uids:
-                e.decompose()
-
-        path = f'{dd}/qgs/{au.uid}.qgs'
-        gws.log.debug(f'create {path}')
-        prj.save(path)
+    return ls
 
 
-def _qgis_layer_uid(rec, geom_type):
-    return rec['_type'].lower() + '_' + geom_type + '_' + rec['_au']
+def _enum_images(action):
+    dd = action.data_dir
+    images = []
+
+    for path in os2.find_files(f'{dd}/png', ext='png'):
+        fn = _fnbody(path)
+        converted_path = f'{dd}/cnv/{fn}.png'
+
+        if os2.file_mtime(converted_path) < os2.file_mtime(path):
+            # reduce the image palette (20-30 colors work just fine for scanned plans)
+            gws.log.debug(f'converting {path!r}')
+            img = PIL.Image.open(path)
+            img = img.convert('RGBA')
+            img = img.convert('P', palette=PIL.Image.ADAPTIVE, colors=action.image_quality)
+            img.save(converted_path)
+
+            # copy the pgw along
+            pgw = gws.read_file(f'{dd}/png/{fn}.pgw')
+            gws.write_file(f'{dd}/cnv/{fn}.pgw', pgw)
+
+        images.append({
+            'uid': '_r_' + fn,
+            'fname': fn,
+            'path': converted_path,
+            'palette': _image_palette(converted_path)
+        })
+
+    return images
+
+
+def _image_palette(path):
+    colors = []
+    img = PIL.Image.open(path)
+    palette = img.getpalette()
+
+    # transparency is either a 256-bytes array for each entry or an integer index
+    transparency = img.info.get('transparency', None)
+    if isinstance(transparency, bytes) and len(transparency) < 256:
+        transparency = None
+
+    for n in range(255):
+        r = palette[n * 3 + 0]
+        g = palette[n * 3 + 1]
+        b = palette[n * 3 + 2]
+
+        if isinstance(transparency, int):
+            alpha = 0 if n == transparency else 0xFF
+        elif isinstance(transparency, bytes):
+            alpha = transparency[n]
+        else:
+            alpha = 0xFF
+
+        colors.append(['#%02x%02x%02x' % (r, g, b), alpha])
+
+    return colors
 
 
 def _extract(zip_path, target_dir):
@@ -376,8 +437,8 @@ def _fnbody(path):
 def _path_belongs_to_au(path, au_uids):
     fn = _filename(path)
     # filename is like AAAAnnn.png or Shapes_AAAA_xxx.shp, where AAAA = au uid
-    for aid in au_uids:
-        if fn.startswith(aid) or (aid + '_' in fn) or ('_' + aid in fn):
+    for a in au_uids:
+        if fn.startswith(a) or (a + '_' in fn) or ('_' + a in fn):
             return True
     return False
 
