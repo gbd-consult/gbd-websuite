@@ -67,18 +67,24 @@ class Object(gws.common.action.Object):
         tpl = gws.common.template.from_path(self.root, rpath)
 
         if tpl:
-            context = gws.merge(
-                _default_template_context(req, project),
-                params=p)
+            # give the template an empty response to manipulate (e.g. add 'location')
+            r = t.HttpResponse()
+            context = {
+                'project': project,
+                'projects': _projects_for_user(req.user),
+                'request': req,
+                'user': req.user,
+                'params': p,
+                'response': r,
+            }
 
-            tr = tpl.render(context)
+            out = tpl.render(context)
 
-            # @TODO check as_attachment
+            if gws.is_empty(r):
+                r.mime = out.mime
+                r.content = out.content
 
-            return t.HttpResponse({
-                'mime': tr.mime,
-                'content': tr.content
-            })
+            return r
 
         mt = gws.tools.mime.for_path(rpath)
 
@@ -95,7 +101,7 @@ class Object(gws.common.action.Object):
             p = gws.tools.os2.parse_path(spath)
             attachment_name = p['name'] + '.' + gws.tools.mime.extension(mt)
 
-        return t.FileResponse({
+        return t.HttpResponse({
             'mime': mt,
             'path': rpath,
             'attachment_name': attachment_name,
@@ -129,15 +135,6 @@ def _abs_path(path, basedir):
         return None
 
     return p
-
-
-def _default_template_context(req, project):
-    return {
-        'project': project,
-        'projects': _projects_for_user(req.user),
-        'request': req,
-        'user': req.user,
-    }
 
 
 def _valid_mime_type(mt, project_assets: t.DocumentRoot, site_assets: t.DocumentRoot):

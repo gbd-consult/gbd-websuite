@@ -2,18 +2,20 @@ import os
 import gzip
 import io
 
+import werkzeug.utils
 import werkzeug.wrappers
-from werkzeug.utils import cached_property
 import werkzeug.wsgi
 
-import gws
-import gws.tools.net
-import gws.tools.json2
-import gws.tools.date
-import gws.tools.vendor.umsgpack as umsgpack
-import gws.types as t
+from werkzeug.utils import cached_property
 
+import gws
+import gws.tools.date
+import gws.tools.json2
+import gws.tools.net
+import gws.tools.vendor.umsgpack as umsgpack
 import gws.web.error
+
+import gws.types as t
 
 _JSON = 1
 _MSGPACK = 2
@@ -144,6 +146,9 @@ class BaseRequest(t.IBaseRequest):
             mimetype=mimetype,
             status=status
         )
+
+    def redirect_response(self, location, status=302):
+        return werkzeug.utils.redirect(location, status)
 
     def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> t.IResponse:
         headers = {

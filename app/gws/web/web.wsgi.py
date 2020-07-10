@@ -128,6 +128,9 @@ def _handle_action(root: t.IRootObject, req: t.IRequest) -> t.IResponse:
         raise gws.web.error.NotFound()
 
     if isinstance(r, t.HttpResponse):
+        loc = r.get('location')
+        if loc:
+            return req.redirect_response(loc)
         return req.response(r.content, r.mime, r.get('status', 200))
 
     if isinstance(r, t.FileResponse):

@@ -316,6 +316,7 @@ class IBaseRequest:
     def header(self, key: str, default: str = None) -> str: pass
     def init(self): pass
     def param(self, key: str, default: str = None) -> str: pass
+    def redirect_response(self, location, status=302): pass
     def response(self, content: str, mimetype: str, status: int = 200) -> 'IResponse': pass
     def struct_response(self, data: 'Response', status: int = 200) -> 'IResponse': pass
     def url_for(self, url: 'Url') -> 'Url': pass
@@ -1235,7 +1236,7 @@ class IOwsService(IObject):
     meta: 'MetaData'
     type: str
     version: str
-    def error_response(self, status) -> 'HttpResponse': pass
+    def error_response(self, err: 'Exception') -> 'HttpResponse': pass
     def handle(self, req: 'IRequest') -> 'HttpResponse': pass
 
 
