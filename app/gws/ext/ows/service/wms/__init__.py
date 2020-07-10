@@ -21,10 +21,6 @@ class Config(gws.common.ows.service.Config):
     pass
 
 
-VERSION = '1.3.0'
-MAX_LIMIT = 100
-
-
 class Object(ows.Base):
 
     @property
@@ -39,13 +35,13 @@ class Object(ows.Base):
         super().configure()
 
         self.type = 'wms'
-        self.version = VERSION
+        self.supported_versions = ['1.3.0', '1.1.1', '1.1.0']
+        self.search_max_limit = 100
 
         for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
             self.templates[tpl] = self.configure_template(tpl, 'wms/templates/')
 
         self.update_sequence = None
-
 
     def configure_metadata(self):
         return gws.extend(
@@ -71,7 +67,7 @@ class Object(ows.Base):
             raise gws.web.error.NotFound()
         return self.xml_response(self.render_template(rd, 'getCapabilities', {
             'layer_tree_root': root,
-            'version': self.version,
+            'version': self.request_version(rd),
         }))
 
     def handle_getmap(self, rd: ows.Request):
@@ -130,7 +126,7 @@ class Object(ows.Base):
         args = t.SearchArgs(
             project=rd.project,
             layers=[n.layer for n in nodes],
-            limit=min(limit, MAX_LIMIT),
+            limit=min(limit, self.search_max_limit),
             resolution=xres,
             shapes=[point],
             tolerance=(pixel_tolerance, 'px'),

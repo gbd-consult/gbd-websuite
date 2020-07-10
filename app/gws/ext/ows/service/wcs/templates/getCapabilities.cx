@@ -1,7 +1,7 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
 @if version == '1.0.0'
-    @include getCapabilities1.cx
+    @include getCapabilities.1.cx
 @elif version == '2.0.1'
-    @include getCapabilities2.cx
+    @include getCapabilities.2.cx
 @end

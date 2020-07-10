@@ -85,16 +85,6 @@
 @end
 
 
-@def ex_geographic_bounding_box(node)
-    @tag EX_GeographicBoundingBox
-        @t westBoundLongitude {node.extent4326[0]}
-        @t eastBoundLongitude {node.extent4326[2]}
-        @t southBoundLatitude {node.extent4326[1]}
-        @t northBoundLatitude {node.extent4326[3]}
-    @end
-@end
-
-
 @def ows_wgs84_bounding_box(node)
     @tag ows:WGS84BoundingBox
         @t ows:LowerCorner {node.extent4326[0]} {node.extent4326[1]}

@@ -31,15 +31,15 @@ class Object(gws.common.action.Object):
         gws.log.debug(f'found service={service.uid}')
 
         if not req.user.can_use(service):
-            return service.error_response(403)
+            return service.error_response(gws.web.error.Forbidden())
 
         try:
             return service.handle(req)
         except gws.web.error.HTTPException as err:
-            return service.error_response(err.code)
+            return service.error_response(err)
         except:
             gws.log.exception()
-            return service.error_response(500)
+            return service.error_response(gws.web.error.InternalServerError())
 
     def _find_service(self, req):
         uid = req.param('uid')

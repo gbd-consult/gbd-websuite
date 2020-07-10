@@ -24,9 +24,6 @@ class Config(gws.common.ows.service.Config):
     pass
 
 
-VERSIONS = '1.0.0', '2.0.1'
-
-
 class Object(ows.Base):
 
     @property
@@ -41,6 +38,7 @@ class Object(ows.Base):
         super().configure()
 
         self.type = 'wcs'
+        self.supported_versions = ['2.0.1', '1.0.0']
 
         for tpl in 'getCapabilities', 'describeCoverage':
             self.templates[tpl] = self.configure_template(tpl, 'wcs/templates/')
@@ -77,9 +75,3 @@ class Object(ows.Base):
         if not nodes:
             raise gws.web.error.NotFound()
         return self.render_map_from_nodes(nodes, rd)
-
-    def request_version(self, rd: ows.Request) -> str:
-        v = rd.req.param('version', default=VERSIONS[0])
-        if v not in VERSIONS:
-            raise gws.web.error.BadRequest()
-        return v
