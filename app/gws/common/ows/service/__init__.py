@@ -80,7 +80,7 @@ class Object(gws.Object, t.IOwsService):
     def handle(self, req: t.IRequest) -> t.HttpResponse:
         pass
 
-    def error_response(self, status) -> t.HttpResponse:
+    def error_response(self, err: Exception) -> t.HttpResponse:
         pass
 
 
@@ -102,6 +102,8 @@ class Base(Object):
 
     def configure(self):
         super().configure()
+
+        self.supported_versions = []
 
         self.local_namespaces = {}
         self.project: t.Optional[t.IProject] = t.cast(t.IProject, self.get_closest('gws.common.project'))
@@ -171,9 +173,21 @@ class Base(Object):
 
     # Request handling
 
+    def request_version(self, rd: Request) -> str:
+        version = rd.req.param('version') or rd.req.param('acceptversions')
+        if not version:
+            # the first supported version is the default
+            return self.supported_versions[0] if self.supported_versions else None
+        for v in gws.as_list(version):
+            for ver in self.supported_versions:
+                if ver.startswith(v):
+                    return ver
+        raise gws.web.error.BadRequest('Unsupported service version')
+
     def handle(self, req) -> t.HttpResponse:
-        # services can be configured globally (in which case, self.project=None)
+        # services can be configured globally (in which case, self.project == None)
         # and applied to multiple projects with the projectUid param
+        # or, configured just for a single project (self.project != None)
 
         project = None
 
@@ -187,10 +201,7 @@ class Base(Object):
             # for in-project services, ensure the user can access the project
             req.require_project(self.project.uid)
 
-        rd = Request({
-            'req': req,
-            'project': project or self.project,
-        })
+        rd = Request(req=req, project=project or self.project)
 
         return self.dispatch(rd, req.param('request', ''))
 
@@ -203,8 +214,10 @@ class Base(Object):
 
     # Rendering and responses
 
-    def error_response(self, status):
-        return self.xml_error_response(self.version, status, f'Error {status}')
+    def error_response(self, err: Exception):
+        status = gws.get(err, 'code') or 500
+        description = gws.get(err, 'description') or f'Error {status}'
+        return self.xml_error_response(status, description)
 
     def render_template(self, rd: Request, template_name: str, context=None, format=None):
         context = gws.merge({
@@ -233,20 +246,20 @@ class Base(Object):
 
         return self.xml_response(self.render_template(rd, container_template_name, context))
 
-    def xml_error_response(self, version, status, description) -> t.HttpResponse:
+    def xml_error_response(self, status, description) -> t.HttpResponse:
         description = gws.tools.xml2.encode(description)
         content = (f'<?xml version="1.0" encoding="UTF-8"?>'
-                   + f'<ServiceExceptionReport version="{version}">'
+                   + f'<ServiceExceptionReport>'
                    + f'<ServiceException code="{status}">{description}</ServiceException>'
                    + f'</ServiceExceptionReport>')
         return self.xml_response(content, status)
 
     def xml_response(self, content, status=200) -> t.HttpResponse:
-        return t.HttpResponse({
-            'mime': 'text/xml',
-            'content': gws.tools.xml2.as_string(content),
-            'status': status,
-        })
+        return t.HttpResponse(
+            mime='text/xml',
+            content=gws.tools.xml2.as_string(content),
+            status=status,
+        )
 
     # LayerCaps nodes
 

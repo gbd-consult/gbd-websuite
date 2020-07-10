@@ -1,0 +1,117 @@
+@include /gws-app/gws/common/ows/service/templates/common.cx
+
+@def wms_layer_capabilities(node)
+    @tag Layer queryable="{1 if node.has_search else 0}"
+
+        @t Name {feature_ns(node.tag_name)}
+        @t Title {node.title}
+
+        @with node.meta.abstract as x
+            @t Abstract {x}
+        @end
+
+        @each node.supported_crs as s
+            @t CRS {s.proj.epsg}
+        @end
+
+        @tag EX_GeographicBoundingBox
+            @t westBoundLongitude {node.extent4326[0]}
+            @t eastBoundLongitude {node.extent4326[2]}
+            @t southBoundLatitude {node.extent4326[1]}
+            @t northBoundLatitude {node.extent4326[3]}
+        @end
+
+        @each node.supported_crs as s
+            @t BoundingBox CRS="{s.proj.epsg}" minx="{s.extent[0]}" miny="{s.extent[1]}" maxx="{s.extent[2]}" maxy="{s.extent[3]}"
+        @end
+
+        @with node.meta.attribution as x
+            @t Attribution/Title {x}
+        @end
+
+        @with node.meta.authorityUrl
+            @tag AuthorityURL name="{node.meta.authorityName}"
+                @t OnlineResource xlink:href="{node.meta.authorityUrl}"
+            @end
+        @end
+
+        @with node.meta.authorityIdentifier
+            @t Identifier authority="{node.meta.authorityName}" {node.meta.authorityIdentifier}
+        @end
+
+        @wms_meta_url node
+
+        @if node.has_legend
+            @tag Style
+                @t Name default
+                @t Title default
+                @tag LegendURL
+                    @t Format image/png
+                    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + feature_ns(node.tag_name)}"
+                @end
+            @end
+        @end
+
+        @t MinScaleDenominator {node.minScale}
+        @t MaxScaleDenominator {node.maxScale}
+
+        @each reversed(node.sub_nodes) as sub_node
+            @wms_layer_capabilities sub_node
+        @end
+    @end
+@end
+
+@tag WMS_Capabilities
+    @xmlns wms default
+    @a version={version}
+
+    @with service.update_sequence as x
+        @a updateSequence={x}
+    @end
+
+    @tag Service
+        @t Name WMS
+        @t Title {service.meta.title}
+
+        @wms_service_metadata
+
+        @with service.wms_layer_limit
+            @t LayerLimit {service.wms_layer_limit}
+        @end
+
+        @with service.wms_max_size
+            @t MaxWidth  {service.max_size[0]}
+            @t MaxHeight {service.max_size[1]}
+        @end
+    @end
+
+    @tag Capability
+        @tag Request
+            @tag GetCapabilities
+                @t Format text/xml
+                @wms_default_url
+            @end
+            @tag GetMap
+                @t Format image/png
+                @wms_default_url
+            @end
+            @tag GetFeatureInfo
+                @t Format application/vnd.ogc.gml
+                @wms_default_url
+            @end
+            @tag sld:GetLegendGraphic
+                @t Format image/png
+                @wms_default_url
+            @end
+        @end
+        @t Exception/Format XML
+
+        @if use_inspire_meta
+            @tag inspire_vs:ExtendedCapabilities
+                @inspire_extended_capabilities
+            @end
+        @end
+
+        @wms_layer_capabilities layer_tree_root
+    @end
+@end
