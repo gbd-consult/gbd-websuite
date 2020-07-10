@@ -105,9 +105,12 @@ def _tree(el, map_layers):
     expanded = el.attr('expanded') == '1'
 
     if el.name == 'layer-tree-group':
-        n = el.attr('name')
-        sl = t.SourceLayer(title=n, name=n)
-        sl.meta = t.MetaData(title=n, name=n)
+        title = el.attr('name')
+        # qgis doesn't write 'id' for groups but our generators might
+        name = el.attr('id') or title
+
+        sl = t.SourceLayer(title=title, name=name)
+        sl.meta = t.MetaData(title=title, name=name)
 
         sl.is_visible = visible
         sl.is_expanded = expanded
