@@ -17,6 +17,7 @@ interface BplanViewProps extends gws.types.ViewProps {
     bplanDialog: string;
 
     bplanMeta: object;
+    bplanInfo: string;
 
     bplanImportFiles: FileList;
     bplanImportReplace: boolean;
@@ -39,6 +40,7 @@ const BplanStoreKeys = [
     'bplanDialog',
 
     'bplanMeta',
+    'bplanInfo',
 
     'bplanImportFiles',
     'bplanImportReplace',
@@ -150,6 +152,13 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                             {...gws.tools.cls('modBplanMetaAuxButton')}
                             tooltip={this.props.controller.__('modBplanTitleMeta')}
                             whenTouched={() => cc.openMetaDialog()}
+                        />
+                    </Cell>
+                    <Cell>
+                        <sidebar.AuxButton
+                            {...gws.tools.cls('modBplanInfoAuxButton')}
+                            tooltip={this.props.controller.__('modBplanTitleInfo')}
+                            whenTouched={() => cc.openInfoDialog()}
                         />
                     </Cell>
                     <Cell flex/>
@@ -282,7 +291,7 @@ class BplanDialog extends gws.View<BplanViewProps> {
         if (mode === 'uploadProgress') {
             return <gws.ui.Dialog
                 className='modBplanProgressDialog'
-                title={this.__('modBplanTitlelUploadProgress')}
+                title={this.__('modBplanTitleUploadProgress')}
             >
                 <gws.ui.Progress value={this.props.bplanProgress}/>
             </gws.ui.Dialog>
@@ -291,9 +300,26 @@ class BplanDialog extends gws.View<BplanViewProps> {
         if (mode === 'importProgress') {
             return <gws.ui.Dialog
                 className='modBplanProgressDialog'
-                title={this.__('modBplanTitlelImportProgress')}
+                title={this.__('modBplanTitleImportProgress')}
             >
                 <gws.ui.Progress value={this.props.bplanProgress}/>
+            </gws.ui.Dialog>
+        }
+
+        if (mode === 'info') {
+            let ok = <gws.ui.Button
+                className="cmpButtonFormOk"
+                whenTouched={close}
+                primary
+            />;
+
+            return <gws.ui.Dialog
+                className='modBplanInfoDialog'
+                title={this.__('modBplanTitleInfo')}
+                buttons={[ok]}
+                whenClosed={close}
+            >
+                <gws.ui.HtmlBlock content={this.props.bplanInfo}/>
             </gws.ui.Dialog>
         }
 
@@ -331,7 +357,7 @@ class BplanDialog extends gws.View<BplanViewProps> {
             />;
             return <gws.ui.Dialog
                 className='modBplanProgressDialog'
-                title={this.__('modBplanTitlelImportComplete')}
+                title={this.__('modBplanTitleImportComplete')}
                 buttons={[ok]}
                 whenClosed={close}
             >
@@ -400,6 +426,16 @@ class BplanController extends gws.Controller {
         })
     }
 
+    async openInfoDialog() {
+        let res = await this.app.server.bplanLoadInfo({
+            auUid: this.getValue('bplanAuUid'),
+        });
+        this.update({
+            bplanInfo: res.info,
+            bplanDialog: 'info',
+        })
+    }
+
     deleteFeature(f) {
         this.update({
             bplanFeatureToDelete: f,
@@ -439,8 +475,6 @@ class BplanController extends gws.Controller {
         return uid;
     }
 
-    UPLOAD_CHUNK_SIZE = 1024 * 1024;
-
     async submitMeta() {
         let res = await this.app.server.bplanSaveUserMeta({
             auUid: this.getValue('bplanAuUid'),
@@ -463,7 +497,7 @@ class BplanController extends gws.Controller {
 
         let files = this.getValue('bplanImportFiles') as FileList;
         let buf: Uint8Array = await gws.tools.readFile(files[0]);
-        let uploadUid = await this.chunkedUpload(files[0].name, buf, this.UPLOAD_CHUNK_SIZE);
+        let uploadUid = await this.chunkedUpload(files[0].name, buf, this.setup.uploadChunkSize);
 
         if (!uploadUid) {
             this.update({bplanDialog: 'error'});

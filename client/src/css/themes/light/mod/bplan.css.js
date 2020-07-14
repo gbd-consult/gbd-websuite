@@ -29,4 +29,8 @@ module.exports = v => ({
         ...v.SIDEBAR_AUX_BUTTON('google:action/list'),
     },
 
+    '.modBplanInfoAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:action/language'),
+    },
+
 });
