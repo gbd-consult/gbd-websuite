@@ -39,11 +39,13 @@ class Config(t.WithTypeAndAccess):
     planTable: gws.common.db.SqlTableConfig  #: plan table configuration
     metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
     dataDir: t.DirPath  #: data directory
-    qgisTemplate: t.FilePath  #: qgis template project
+    qgisTemplate: gws.common.template.Config  #: qgis template project
+    infoTemplate: gws.common.template.Config #: info template
     administrativeUnits: t.List[AdministrativeUnitConfig]
     planTypes: t.List[PlanTypeConfig]
-    imageQuality: int = 24 #: palette size for optimized images
+    imageQuality: int = 24  #: palette size for optimized images
     featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
+    uploadChunkSize: int #: upload chunk size in mb
 
 
 class AdministrativeUnit(t.Data):
@@ -54,6 +56,7 @@ class AdministrativeUnit(t.Data):
 class Props(t.Props):
     type: t.Literal = 'bplan'
     auList: t.List[AdministrativeUnit]
+    uploadChunkSize: int
 
 
 class StatusParams(t.Params):
@@ -106,7 +109,13 @@ class SaveUserMetaResponse(t.Response):
     pass
 
 
-_WMS_SERVICE_UID = "bauleitplanung_wms"
+class LoadInfoParams(t.Params):
+    auUid: str
+
+
+class LoadInfoResponse(t.Response):
+    info: str
+
 
 class Object(gws.common.action.Object):
 
@@ -124,8 +133,8 @@ class Object(gws.common.action.Object):
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))
         self.data_dir = self.var('dataDir')
-        self.qgis_template = self.var('qgisTemplate')
-        self.qgis_template = self.create_child('gws.ext.template', t.Config(type='text', path=self.var('qgisTemplate')))
+        self.qgis_template: t.ITemplate = t.cast(t.ITemplate, self.create_child('gws.ext.template', self.var('qgisTemplate')))
+        self.info_template: t.ITemplate = t.cast(t.ITemplate, self.create_child('gws.ext.template', self.var('infoTemplate')))
         self.au_list = self.var('administrativeUnits')
         self.type_list = self.var('planTypes')
         self.image_quality = self.var('imageQuality')
@@ -140,47 +149,15 @@ class Object(gws.common.action.Object):
         self.x_coord_col = 'utm_ost'
         self.y_coord_col = 'utm_nord'
 
-
     def post_configure(self):
         super().post_configure()
-
-        metas = {}
-
-        with self.db.connect() as conn:
-            rs = conn.select(f'''SELECT * FROM {conn.quote_table(self.meta_table.name)}''')
-            for r in rs:
-                au_uid = r['_au']
-                metas[au_uid] = gws.common.metadata.from_dict(gws.tools.json2.from_string(r['meta']))
-
-            rs = conn.select(f'''
-                SELECT _au, MIN(_updated) AS mi, MAX(_updated) AS ma
-                FROM {conn.quote_table(self.plan_table.name)}
-                GROUP BY _au
-            ''')
-
-            for r in rs:
-                au_uid = r['_au']
-                if au_uid not in metas:
-                    metas[au_uid] = t.MetaData()
-                metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['mi']), with_tz='Z')
-                metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['ma']), with_tz='Z')
-
-        for au_uid, meta in metas.items():
-            la: t.ILayer
-            for la in self.root.find_all('gws.ext.layer'):
-                if la.ows_name and la.ows_name.endswith(au_uid):
-                    la.meta = gws.common.metadata.extend(la.meta, meta)
-
-        service = self.root.find_by_uid(_WMS_SERVICE_UID)
-        if service and metas:
-            service.update_sequence = max(m.dateUpdated for m in metas.values())
-
-
+        self._load_db_meta()
 
     def props_for(self, user):
         return {
             'type': self.type,
             'auList': self._au_list_for(user),
+            'uploadChunkSize': self.var('uploadChunkSize') * 1024 * 1024,
         }
 
     def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
@@ -315,7 +292,13 @@ class Object(gws.common.action.Object):
                     VALUES(%s, %s, %s)
                 ''', [au_uid, req.user.fid, gws.tools.json2.to_pretty_string(p.meta)])
 
+        self._load_db_meta()
+
         return SaveUserMetaResponse()
+
+    def api_load_info(self, req: t.IRequest, p: LoadInfoParams) -> LoadInfoResponse:
+        res = self.info_template.render({'auUid': p.auUid})
+        return LoadInfoResponse(info=res.content)
 
     def do_import(self, path, replace):
         importer.run(self, path, replace)
@@ -338,6 +321,37 @@ class Object(gws.common.action.Object):
             raise gws.web.error.Forbidden()
 
         return au_uid
+
+    def _load_db_meta(self):
+        metas = {}
+
+        with self.db.connect() as conn:
+            rs = conn.select(f'''SELECT * FROM {conn.quote_table(self.meta_table.name)}''')
+            for r in rs:
+                au_uid = r['_au']
+                metas[au_uid] = gws.common.metadata.from_dict(gws.tools.json2.from_string(r['meta']))
+
+            rs = conn.select(f'''
+                SELECT _au, MIN(_updated) AS mi, MAX(_updated) AS ma
+                FROM {conn.quote_table(self.plan_table.name)}
+                GROUP BY _au
+            ''')
+
+            for r in rs:
+                au_uid = r['_au']
+                if au_uid not in metas:
+                    metas[au_uid] = t.MetaData()
+                metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['mi']), with_tz='Z')
+                metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['ma']), with_tz='Z')
+
+        for obj in self.root.find_all():
+            uid = gws.get(obj, 'uid') or ''
+            if uid and gws.get(obj, 'meta'):
+                for au_uid, meta in metas.items():
+                    if uid.endswith(au_uid):
+                        obj.meta = gws.common.metadata.extend(meta, obj.meta)
+                        if gws.get(obj, 'update_sequence'):
+                            obj.update_sequence = meta.dateUpdated
 
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):

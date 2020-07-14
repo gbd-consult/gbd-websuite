@@ -235,7 +235,7 @@ def _update_pdfs(action, au_uids):
                 if names:
                     gws.log.debug(f'save pdfs for {uid}')
                     names = ','.join(names)
-                    conn.execute(f'UPDATE {conn.quote_table(action.plan_table.name)} SET _pdf=%s WHERE _uid=%s', [names, uid])
+                    conn.execute(f'UPDATE {conn.quote_table(action.plan_table.name)} SET medien=%s WHERE _uid=%s', [names, uid])
 
 
 def _create_qgis_projects(action, au_uids):
