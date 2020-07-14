@@ -81,11 +81,11 @@ def create(root: t.IRootObject, base_dir, pid_dir):
     log = root.var('server.log') or ('syslog' if in_container else gws.LOG_DIR + '/gws.log')
 
     nginx_log_level = 'info'
-    if root.application.developer_option('nginx_log_level_debug'):
+    if root.application.developer_option('nginx.log_level_debug'):
         nginx_log_level = 'debug'
 
     nginx_rewrite_log = 'off'
-    if root.application.developer_option('nginx_rewrite_log_on'):
+    if root.application.developer_option('nginx.rewrite_log_on'):
         nginx_rewrite_log = 'on'
 
     if log == 'syslog':

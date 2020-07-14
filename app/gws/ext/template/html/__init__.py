@@ -38,7 +38,7 @@ class Object(gws.common.template.Object):
         self._load()
 
     def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
-        if self.root.application.developer_option('reload_templates'):
+        if self.root.application.developer_option('template.reparse'):
             self._load()
 
         def legend_func(layer_uid=None):
@@ -212,7 +212,7 @@ class Object(gws.common.template.Object):
         def err(e, path, line):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
-        if self.root.application.developer_option('save_compiled_templates'):
+        if self.root.application.developer_option('template.save_compiled'):
             gws.write_file(
                 gws.VAR_DIR + '/debug_template_' + gws.as_uid(self.path),
                 chartreux.translate(

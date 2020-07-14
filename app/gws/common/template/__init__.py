@@ -87,7 +87,7 @@ class Object(gws.Object, t.ITemplate):
         self.text: str = self.var('text')
         self.title: str = self.var('title')
 
-        if self.path:
+        if self.path and not self.root.application.developer_option('template.reparse'):
             self.root.application.monitor.add_path(self.path)
 
         uid = self.var('uid') or (gws.sha256(self.path) if self.path else self.klass.replace('.', '_'))

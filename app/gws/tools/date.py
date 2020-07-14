@@ -54,6 +54,10 @@ def timestamp() -> int:
     return int(time.time())
 
 
+def timestamp_msec() -> int:
+    return int(time.time() * 1000)
+
+
 def is_date(x) -> bool:
     return isinstance(x, datetime.date)
 

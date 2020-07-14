@@ -95,8 +95,8 @@ class BaseRequest(t.IBaseRequest):
 
         data = self._wz.get_data(as_text=False, parse_form_data=False)
 
-        if self.root.application.developer_option('log_requests'):
-            gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.tools.date.timestamp()}', data)
+        if self.root.application.developer_option('request.log_all'):
+            gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.tools.date.timestamp_msec()}', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
