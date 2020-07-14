@@ -7,13 +7,9 @@ import gws.common.template
 import gws.tools.date as date
 import gws.tools.vendor.chartreux as chartreux
 import gws.tools.xml2
+import gws.ext.helper.xml
 
 import gws.types as t
-
-from . import namespaces
-
-_KNOWN_NAMESPACES = {_[0]: _[1:] for _ in namespaces.ALL}
-
 
 class Config(gws.common.template.Config):
     """XML template"""
@@ -29,7 +25,7 @@ class XMLRuntime(chartreux.Runtime):
         self.root = None
 
     def push_tag(self, name):
-        self.add_ns(name)
+        self._add_ns(name)
         tag = [name]
         if self.tags:
             self.tags[-1].append(tag)
@@ -48,7 +44,7 @@ class XMLRuntime(chartreux.Runtime):
         tag.append(val)
 
     def set_attr(self, name, val):
-        self.add_ns(name)
+        self._add_ns(name)
         tag = self.tags[-1]
         tag.append({name: val})
 
@@ -56,7 +52,7 @@ class XMLRuntime(chartreux.Runtime):
         tag = self.tags[-1]
         tag.append(s)
 
-    def add_namespace(self, text):
+    def register_namespace(self, text):
         s = text.strip().split()
         if s[-1] == 'default':
             self.default_namespace = s[0]
@@ -66,7 +62,7 @@ class XMLRuntime(chartreux.Runtime):
     def as_text(self, *vals):
         return ''.join(str(v) for v in vals if v is not None)
 
-    def add_ns(self, name):
+    def _add_ns(self, name):
         if ':' in name:
             s = name.split(':')[0]
             if s not in self.namespaces:
@@ -124,7 +120,7 @@ class XMLCommands():
         # @xmlns gml
         # @xmlns myNs http://url http://schema
         text = self.interpolate(compiler, arg)
-        compiler.code.add(f"_RT.add_namespace({text})")
+        compiler.code.add(f"_RT.register_namespace({text})")
 
     ##
 
@@ -184,12 +180,15 @@ class Object(gws.common.template.Object):
         if self.path:
             self.text = gws.read_file(self.path)
 
+    def post_configure(self):
+        self.helper: gws.ext.helper.xml.Object = t.cast(gws.ext.helper.xml.Object, self.root.find_first('gws.ext.helper.xml'))
+
     def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
         rt = self._render_as_tag(context)
         root = rt.root
 
         if rt.namespaces:
-            self._insert_namespaces(root, rt.namespaces, rt.default_namespace, context.get('namespaces', {}))
+            self._insert_namespaces(root, rt.namespaces, rt.default_namespace)
 
         if format == 'tag':
             content = root
@@ -213,17 +212,16 @@ class Object(gws.common.template.Object):
             'endpoint': gws.SERVER_ENDPOINT,
         }
 
-        if self.root.application.developer_option('reload_templates') and self.path:
+        if self.root.application.developer_option('template.reparse') and self.path:
             self.text = gws.read_file(self.path)
 
-        if self.root.application.developer_option('save_compiled_templates'):
+        if self.root.application.developer_option('template.save_compiled'):
             gws.write_file(
                 gws.VAR_DIR + '/debug_template_' + gws.as_uid(self.path),
                 chartreux.translate(
                     self.text,
                     path=self.path or '<string>',
                     commands=XMLCommands()))
-
 
         def err(e, path, line):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
@@ -242,12 +240,15 @@ class Object(gws.common.template.Object):
 
         return rt
 
-    def _insert_namespaces(self, target_node, nsdict, default_namespace, extra_namespaces):
+    def _insert_namespaces(self, target_node, nsdict, default_namespace):
+        # a namespace can
+
+
         atts = {}
         schemas = []
 
         for id, ns in sorted(nsdict.items()):
-            ns = ns or extra_namespaces.get(id) or _KNOWN_NAMESPACES.get(id)
+            ns = ns or self.helper.namespaces.get(id)
             if not ns:
                 gws.log.warn(f'unknown namespace {id!r}')
                 continue
@@ -266,7 +267,7 @@ class Object(gws.common.template.Object):
                 schemas.append(schema)
 
         if schemas:
-            atts['xmlns:xsi'] = _KNOWN_NAMESPACES['xsi'][0]
+            atts['xmlns:xsi'] = self.helper.namespaces['xsi'][0]
             atts['xsi:schemaLocation'] = ' '.join(schemas)
 
         if atts:
