@@ -323,6 +323,7 @@ class IBaseRequest:
 
 
 class IFeature:
+    attr_dict: dict
     attributes: List[Attribute]
     category: str
     data_model: Optional['IModel']
@@ -1081,6 +1082,7 @@ class IApplication(IObject):
     web_sites: List['IWebSite']
     def developer_option(self, name): pass
     def find_action(self, action_type, project_uid=None): pass
+    def require_helper(self, key): pass
 
 
 class IAuthManager(IObject):
@@ -1167,6 +1169,7 @@ class ILayer(IObject):
     meta: 'MetaData'
     opacity: float
     own_bounds: Optional['Bounds']
+    ows_feature_name: str
     ows_name: str
     resolutions: List[float]
     style: 'IStyle'
@@ -1304,6 +1307,8 @@ class ITemplate(IObject):
     legend_layer_uids: List[str]
     legend_mode: Optional['TemplateLegendMode']
     map_size: 'Size'
+    ows_format: str
+    ows_request: str
     page_size: 'Size'
     path: str
     text: str

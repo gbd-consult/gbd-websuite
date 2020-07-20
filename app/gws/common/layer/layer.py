@@ -184,9 +184,7 @@ class Layer(gws.Object, t.ILayer):
         p = self.var('dataModel')
         self.data_model: t.Optional[t.IModel] = (self.create_child('gws.common.model', p) if p else None)
 
-        self.resolutions: t.List[float] = gws.gis.zoom.resolutions_from_config(
-            self.var('zoom'),
-            self.map.resolutions)
+        self.resolutions: t.List[float] = gws.gis.zoom.resolutions_from_config(self.var('zoom'), self.map.resolutions)
 
         # NB: the extent will be configured later on in map._configure_extent
         self.extent: t.Optional[t.Extent] = None
@@ -204,7 +202,8 @@ class Layer(gws.Object, t.ILayer):
         self.supports_wms: bool = False
         self.supports_wfs: bool = False
 
-        self.ows_name: str = gws.as_uid(self.var('ows.name')) or self.uid.split('.')[-1]
+        self.ows_name: str = self.var('ows.name') or self.uid.split('.')[-1]
+        self.ows_feature_name: str = self.var('ows.featureName') or self.ows_name
         self._ows_enabled: bool = self.var('ows.enabled')
         self._ows_enabled_services_uids: t.List[str] = self.var('ows.enabledServices.uids') or []
         self._ows_enabled_services_pattern: t.Regex = self.var('ows.enabledServices.pattern')

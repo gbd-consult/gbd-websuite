@@ -159,6 +159,15 @@ class Object(gws.Object, t.IApplication):
                 gws.log.debug(f'find_action {action_type!r} found={action.uid!r} in app')
                 return action
 
+    def require_helper(self, key):
+        base = 'gws.ext.helper'
+        p = self.root.find_first(f'{base}.{key}')
+        if not p:
+            cfg = self.root.validator.read_value({'type': key}, f'{base}.{key}.Config')
+            gws.log.debug(f'created an ad-hoc helper, key={key!r} cfg={cfg!r}')
+            p = self.create_child(base, cfg)
+        return p
+
 
 def _install_fonts(source_dir):
     gws.log.info('checking fonts...')

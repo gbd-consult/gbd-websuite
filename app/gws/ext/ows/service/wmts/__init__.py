@@ -13,6 +13,7 @@ import gws.tools.misc
 import gws.tools.os2
 import gws.tools.xml2
 import gws.tools.units
+import gws.tools.mime
 import gws.web.error
 
 import gws.types as t
@@ -27,27 +28,45 @@ class Config(gws.common.ows.service.Config):
     pass
 
 
-VERSION = '1.0.0'
-
-
 class Object(ows.Base):
 
     @property
     def service_link(self):
-        return t.MetaLink(
-            url=self.url,
-            scheme='OGC:WMTS',
-            function='search'
+        return t.MetaLink(url=self.url, scheme='OGC:WMTS', function='search')
+
+    @property
+    def default_templates(self):
+        return [
+            t.Config(
+                type='xml',
+                path=gws.APP_DIR + '/gws/ext/ows/service/wmts/templates/getCapabilities.cx',
+                owsRequest='GetCapabilities',
+                owsFormat=gws.tools.mime.get('xml'),
+            ),
+        ]
+
+    @property
+    def default_metadata(self):
+        return t.Data(
+            inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
+            inspireMandatoryKeyword=t.MetaInspireKeyword.infoMapAccessService,
+            inspireResourceType=t.MetaInspireResourceType.service,
+            inspireSpatialDataServiceType=t.MetaInspireSpatialDataServiceType.view,
+            isoScope=t.MetaIsoScope.dataset,
+            isoSpatialRepresentationType=t.MetaIsoSpatialRepresentationType.vector,
         )
+
+    @property
+    def default_name(self):
+        return 'WMTS'
+
+    ##
 
     def configure(self):
         super().configure()
 
         self.type = 'wmts'
-        self.version = VERSION
-
-        for tpl in ['getCapabilities']:
-            self.templates[tpl] = self.configure_template(tpl, 'wmts/templates/')
+        self.supported_versions = ['1.0.0']
 
         # @TODO more crs
         self.matrix_sets = [
@@ -59,27 +78,19 @@ class Object(ows.Base):
             )
         ]
 
-    def configure_metadata(self):
-        return gws.extend(
-            super().configure_metadata(),
-            inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
-            inspireMandatoryKeyword=t.MetaInspireKeyword.infoMapAccessService,
-            inspireResourceType=t.MetaInspireResourceType.service,
-            inspireSpatialDataServiceType=t.MetaInspireSpatialDataServiceType.view,
-            isoScope=t.MetaIsoScope.dataset,
-            isoSpatialRepresentationType=t.MetaIsoSpatialRepresentationType.vector,
-        )
+    ##
 
     def handle_getcapabilities(self, rd: ows.Request):
-        root = self.layer_tree_root(rd)
+        root = self.layer_root_caps(rd)
         if not root:
-            gws.log.debug(f'service={self.uid!r}: no layer_tree_root')
+            gws.log.debug(f'service={self.uid!r}: no layer_root_caps')
             raise gws.web.error.NotFound()
 
-        return self.xml_response(self.render_template(rd, 'getCapabilities', {
-            'layer_tree_root': root,
+        return self.template_response(rd, 'GetCapabilities', context={
+            'layer_root_caps': root,
+            'version': self.request_version(rd),
             'matrix_sets': self.matrix_sets
-        }))
+        })
 
     def handle_gettile(self, rd: ows.Request):
         try:
@@ -92,8 +103,8 @@ class Object(ows.Base):
         except:
             raise gws.web.error.BadRequest()
 
-        nodes = self.layer_nodes_from_request_params(rd, ['layer'])
-        if not nodes:
+        lcs = self.layer_caps_list_from_request(rd, ['layer'])
+        if not lcs:
             raise gws.web.error.NotFound()
 
         tm_crs, bbox = self._tile_to_bbox(tile)
@@ -112,10 +123,10 @@ class Object(ows.Base):
                 dpi=0)
         )
 
-        for node in nodes:
+        for lc in lcs:
             render_input.items.append(t.MapRenderInputItem(
                 type=t.MapRenderInputItemType.image_layer,
-                layer=node.layer))
+                layer=lc.layer))
 
         renderer = gws.gis.render.Renderer()
         for _ in renderer.run(render_input):
@@ -135,13 +146,15 @@ class Object(ows.Base):
         # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
         # @TODO currently only support 'layer'
 
-        nodes = self.layer_nodes_from_request_params(rd, ['layer', 'layers'])
-        if not nodes:
+        lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'])
+        if not lcs:
             raise gws.web.error.NotFound()
 
-        paths = [n.layer.render_legend() for n in nodes if n.has_legend]
+        paths = [lc.layer.render_legend() for lc in lcs if lc.has_legend]
         out = gws.gis.legend.combine_legend_paths(paths)
         return t.HttpResponse(mime='image/png', content=out or gws.tools.misc.Pixels.png8)
+
+    ##
 
     def _tile_to_bbox(self, tile):
         tms = None
@@ -169,14 +182,6 @@ class Object(ows.Base):
 
         bbox = x, y, x + span, y - span
         return tms.crs, bbox
-
-
-
-
-
-
-
-
 
 
 EPSG3857_RADIUS = 6378137

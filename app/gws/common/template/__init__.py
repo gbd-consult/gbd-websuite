@@ -1,5 +1,6 @@
 import os
 import gws.common.model
+import gws.tools.mime
 
 import gws.types as t
 
@@ -19,6 +20,8 @@ class Config(t.Config):
     path: t.Optional[t.FilePath]  #: path to a template file
     text: str = ''  #: template content
     title: str = ''  #: template title
+    owsRequest: str = ''  #: OWS request verb
+    owsFormat: str = ''  #: OWS response mime type
 
 
 #:export
@@ -95,6 +98,14 @@ class Object(gws.Object, t.ITemplate):
 
         p = self.var('dataModel')
         self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
+
+        self.ows_request: str = self.var('owsRequest', default='').lower()
+
+        # owsFormat can be literal, like 'text/html', or a shortcut, e.g. 'html'
+        p = self.var('owsFormat', default='').lower()
+        self.ows_format: str = ''
+        if p:
+            self.ows_format = p if '/' in p else gws.tools.mime.get(p)
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')

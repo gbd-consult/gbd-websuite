@@ -27,6 +27,12 @@ def as_string(p: t.Union[str, t.Tag, 'Element']) -> str:
     return str(p)
 
 
+def qname(namespace, tag):
+    if namespace:
+        return namespace + ':' + tag
+    return tag
+
+
 def encode(v: str) -> str:
     v = str(v).strip()
     v = v.replace("&", "&amp;")

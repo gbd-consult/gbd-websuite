@@ -4,12 +4,14 @@ import re
 
 import gws
 import gws.common.template
-import gws.tools.date as date
+import gws.tools.date
 import gws.tools.vendor.chartreux as chartreux
 import gws.tools.xml2
+import gws.tools.mime
 import gws.ext.helper.xml
 
 import gws.types as t
+
 
 class Config(gws.common.template.Config):
     """XML template"""
@@ -69,15 +71,15 @@ class XMLRuntime(chartreux.Runtime):
                 self.namespaces[s] = None
 
     def _date_value(self, val):
-        if val and not date.is_datetime(val):
-            val = date.from_iso(val)
-        return val or date.now()
+        if val and not gws.tools.date.is_datetime(val):
+            val = gws.tools.date.from_iso(val)
+        return val or gws.tools.date.now()
 
-    def filter_format_datetime(self, val):
-        return date.to_iso(self._date_value(val), with_tz=False, sep='T')
+    def filter_datetime(self, val):
+        return gws.tools.date.to_iso(self._date_value(val), with_tz=False, sep='T')
 
-    def filter_format_date(self, val):
-        return date.to_iso_date(self._date_value(val))
+    def filter_date(self, val):
+        return gws.tools.date.to_iso_date(self._date_value(val))
 
 
 class XMLCommands():
@@ -179,9 +181,9 @@ class Object(gws.common.template.Object):
         super().configure()
         if self.path:
             self.text = gws.read_file(self.path)
-
-    def post_configure(self):
-        self.helper: gws.ext.helper.xml.Object = t.cast(gws.ext.helper.xml.Object, self.root.find_first('gws.ext.helper.xml'))
+        self.helper: gws.ext.helper.xml.Object = t.cast(
+            gws.ext.helper.xml.Object,
+            self.root.application.require_helper('xml'))
 
     def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
         rt = self._render_as_tag(context)
@@ -202,7 +204,7 @@ class Object(gws.common.template.Object):
         if not xml.startswith('<?'):
             xml = '<?xml version="1.0" encoding="utf-8"?>' + xml
 
-        return t.TemplateOutput(content=xml)
+        return t.TemplateOutput(content=xml, mime=gws.tools.mime.get('xml'))
 
     def _render_as_tag(self, context):
         context = context or {}
@@ -242,7 +244,6 @@ class Object(gws.common.template.Object):
 
     def _insert_namespaces(self, target_node, nsdict, default_namespace):
         # a namespace can
-
 
         atts = {}
         schemas = []

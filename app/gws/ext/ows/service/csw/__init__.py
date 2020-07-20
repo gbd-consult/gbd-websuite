@@ -12,6 +12,7 @@ import gws.gis.render
 import gws.gis.shape
 import gws.tools.date
 import gws.tools.xml2
+import gws.tools.mime
 import gws.web.error
 
 import gws.types as t
@@ -32,27 +33,55 @@ class Config(gws.common.ows.service.Config):
     profile: Profile = 'ISO'  #: metadata profile
 
 
-VERSION = '2.0.2'
-MAX_LIMIT = 100
-
-
 class Object(ows.Base):
+
+    @property
+    def default_templates(self):
+        base = gws.APP_DIR + '/gws/ext/ows/service/csw/templates'
+
+        return [
+            t.Config(
+                type='xml',
+                path=base + '/getCapabilities.cx',
+                owsRequest='GetCapabilities',
+                owsFormat=gws.tools.mime.get('xml'),
+            ),
+            t.Config(
+                type='xml',
+                path=base + '/getRecords.cx',
+                owsRequest='GetRecords',
+                owsFormat=gws.tools.mime.get('xml'),
+            ),
+            t.Config(
+                type='xml',
+                path=base + '/getRecordById.cx',
+                owsRequest='GetRecordById',
+                owsFormat=gws.tools.mime.get('xml'),
+            ),
+            t.Config(
+                type='xml',
+                path=base + '/describeRecord.cx',
+                owsRequest='DescribeRecord',
+                owsFormat=gws.tools.mime.get('xml'),
+            ),
+        ]
+
+    @property
+    def default_name(self):
+        return 'CSW'
+
+    ##
 
     def configure(self):
         super().configure()
 
         self.type = 'csw'
-        self.version = VERSION
+        self.supported_versions = ['2.0.2']
 
         self.metas = None
         self.index = None
 
         self.profile = self.var('profile')
-
-        self.templates['getCapabilities'] = self.configure_template('getCapabilities', 'csw/templates/')
-        self.templates['getRecords'] = self.configure_template('getRecords', f'csw/templates/getRecords_{self.profile}.cx')
-        self.templates['getRecordById'] = self.configure_template('getRecordById', f'csw/templates/getRecordById_{self.profile}.cx')
-        self.templates['describeRecord'] = self.configure_template('describeRecord', 'csw/templates/', type='text')
 
     def configure_metadata(self):
         return gws.extend(
@@ -66,8 +95,6 @@ class Object(ows.Base):
         )
 
     def post_configure(self):
-        # when using CSW, set meta urls of all objects (that don't have meta.url set) to our service url
-
         super().post_configure()
 
         self.metas = {}
@@ -82,16 +109,21 @@ class Object(ows.Base):
                 else:
                     meta.catalogUid = obj.uid
             if not meta.url:
+                # when using CSW, set meta urls of all objects (that don't have meta.url set) to our service url
                 meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
+                meta.urlType = "TC211" if self.profile == 'ISO' else 'DCMI'  ## @TODO
 
             extent = gws.get(obj, 'extent') or gws.get(obj, 'map.extent')
             crs = gws.get(obj, 'crs') or gws.get(obj, 'map.crs')
             if extent and crs:
                 meta.extent4326 = gws.gis.extent.transform_to_4326(extent, crs)
+                meta.proj = gws.gis.proj.as_proj(crs)
 
             self.metas[obj.uid] = meta
 
         self._create_index()
+
+    ##
 
     def handle(self, req) -> t.HttpResponse:
         rd = ows.Request(req=req, project=None, service=self)
@@ -116,10 +148,14 @@ class Object(ows.Base):
         return self.dispatch(rd, rd.xml.name.lower())
 
     def handle_getcapabilities(self, rd: ows.Request):
-        return self.xml_response(self.render_template(rd, 'getCapabilities'))
+        return self.template_response(rd, 'GetCapabilities', context={
+            'profile': self.profile,
+        })
 
     def handle_describerecord(self, rd: ows.Request):
-        return self.xml_response(self.render_template(rd, 'describeRecord'))
+        return self.template_response(rd, 'DescribeRecord', context={
+            'profile': self.profile,
+        })
 
     def handle_getrecords(self, rd: ows.Request):
         metas = self._find_metas(rd)
@@ -131,20 +167,24 @@ class Object(ows.Base):
             'count_return': len(metas),
         }
 
-        return self.xml_response(self.render_template(rd, 'getRecords', {
+        return self.template_response(rd, 'GetRecords', context={
             'metas': metas,
             'results': results,
             'with_soap': rd.xml_is_soap,
-        }))
+            'profile': self.profile,
+        })
 
     def handle_getrecordbyid(self, rd: ows.Request):
         meta = self.metas.get(rd.req.param('id'))
         if not meta:
             raise gws.web.error.NotFound()
-        return self.xml_response(self.render_template(rd, 'getRecordById', {
+        return self.template_response(rd, 'GetRecordById', context={
             'meta': meta,
             'with_soap': rd.xml_is_soap,
-        }))
+            'profile': self.profile,
+        })
+
+    ##
 
     def _collect_metas(self):
         self.metas = {}

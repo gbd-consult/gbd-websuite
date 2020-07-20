@@ -7,9 +7,11 @@ from . import provider
 class _LimitExceeded(Exception):
     pass
 
+_DEFAULT_LIMIT = 10 * 1000
+
 
 def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
-    total_limit = args.limit
+    total_limit = args.limit or _DEFAULT_LIMIT
     used_layer_ids = set()
     features: t.List[t.IFeature] = []
     prov: provider.Object

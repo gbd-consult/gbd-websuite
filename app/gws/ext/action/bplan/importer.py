@@ -10,6 +10,7 @@ import gws.gis.gdal2
 import gws.gis.shape
 import gws.qgis.project
 import gws.tools.json2
+import gws.tools.date
 import gws.tools.os2 as os2
 import gws.tools.job
 
@@ -82,7 +83,15 @@ def _run2(action, src_dir, replace, au_uid, job):
 
         with gws.gis.gdal2.from_path(p) as ds:
             for f in gws.gis.gdal2.features(ds, action.crs, encoding=_encoding(p)):
-                r = {a.name.lower(): a.value for a in f.attributes}
+                r = {}
+
+                # convert all attributes to strings
+                for a in f.attributes:
+                    if a.type == t.AttributeType.datetime:
+                        val = gws.tools.date.to_iso_date(a.value)
+                    else:
+                        val = str(a.value)
+                    r[a.name.lower()] = val
 
                 r['_uid'] = uid = r[action.key_col]
                 r['_au'] = r[action.au_key_col]
@@ -350,16 +359,20 @@ def _enum_images(action):
         converted_path = f'{dd}/cnv/{fn}.png'
 
         if os2.file_mtime(converted_path) < os2.file_mtime(path):
-            # reduce the image palette (20-30 colors work just fine for scanned plans)
-            gws.log.debug(f'converting {path!r}')
-            img = PIL.Image.open(path)
-            img = img.convert('RGBA')
-            img = img.convert('P', palette=PIL.Image.ADAPTIVE, colors=action.image_quality)
-            img.save(converted_path)
+            try:
+                # reduce the image palette (20-30 colors work just fine for scanned plans)
+                gws.log.debug(f'converting {path!r}')
+                img = PIL.Image.open(path)
+                img = img.convert('RGBA')
+                img = img.convert('P', palette=PIL.Image.ADAPTIVE, colors=action.image_quality)
+                img.save(converted_path)
 
-            # copy the pgw along
-            pgw = gws.read_file(f'{dd}/png/{fn}.pgw')
-            gws.write_file(f'{dd}/cnv/{fn}.pgw', pgw)
+                # copy the pgw along
+                pgw = gws.read_file(f'{dd}/png/{fn}.pgw')
+                gws.write_file(f'{dd}/cnv/{fn}.pgw', pgw)
+            except Exception as e:
+                gws.log.error(f'error converting {path!r}: {e}')
+                continue
 
         images.append({
             'uid': '_r_' + fn,

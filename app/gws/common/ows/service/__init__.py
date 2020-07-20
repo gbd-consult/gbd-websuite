@@ -11,19 +11,53 @@ import gws.gis.gml
 import gws.gis.proj
 import gws.tools.units as units
 import gws.tools.xml2
+import gws.tools.date
+import gws.tools.mime
 import gws.tools.misc
 import gws.web.error
+import gws.ext.helper.xml
 
 import gws.types as t
 
+_XML_SCHEMA_TYPES = {
+    t.AttributeType.bool: 'xsd:boolean',
+    t.AttributeType.bytes: None,
+    t.AttributeType.date: 'xsd:date',
+    t.AttributeType.datetime: 'datetime',
+    t.AttributeType.float: 'xsd:decimal',
+    t.AttributeType.geometry: None,
+    t.AttributeType.int: 'xsd:integer',
+    t.AttributeType.list: None,
+    t.AttributeType.str: 'xsd:string',
+    t.AttributeType.text: 'xsd:string',
+    t.AttributeType.time: 'xsd:time',
+    t.GeometryType.curve: 'gml:CurvePropertyType',
+    t.GeometryType.geomcollection: 'gml:MultiGeometryPropertyType',
+    t.GeometryType.geometry: 'gml:MultiGeometryPropertyType',
+    t.GeometryType.linestring: 'gml:CurvePropertyType',
+    t.GeometryType.multicurve: 'gml:MultiCurvePropertyType',
+    t.GeometryType.multilinestring: 'gml:MultiCurvePropertyType',
+    t.GeometryType.multipoint: 'gml:MultiPointPropertyType',
+    t.GeometryType.multipolygon: 'gml:MultiPolygonPropertyType',
+    t.GeometryType.multisurface: 'gml:MultiGeometryPropertyType',
+    t.GeometryType.point: 'gml:PointPropertyType',
+    t.GeometryType.polygon: 'gml:SurfacePropertyType',
+    t.GeometryType.polyhedralsurface: 'gml:SurfacePropertyType',
+    t.GeometryType.surface: 'gml:SurfacePropertyType',
+}
+
+_DEFAULT_FEAUTURE_NAME = 'feature'
+_DEFAULT_GEOMETRY_NAME = 'geometry'
+
 
 class Config(t.WithTypeAndAccess):
-    featureNamespace: str = ''  #: feature namespace name and uri
     meta: t.Optional[gws.common.metadata.Config]  #: service metadata
-    templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
-    withInspireMeta: bool = False  #: use INSPIRE Metadata
-    withInspireData: bool = False  #: use INSPIRE data model
+    root: str = ''  #: root layer uid
+    name: str = ''  #: service name
     supportedCrs: t.Optional[t.List[t.Crs]]  #: supported CRS for this service
+    templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
+    updateSequence: t.Optional[str]  #: service update sequence
+    withInspireMeta: bool = False  #: use INSPIRE Metadata
 
 
 class Request(t.Data):
@@ -34,36 +68,58 @@ class Request(t.Data):
     xml_is_soap: bool = False
 
 
-class SupportedCrs(t.Data):
-    proj: gws.gis.proj.Proj = None
-    extent: t.Extent = None
+class Projection(t.Data):
+    crs: str
+    proj: gws.gis.proj.Proj
+    extent: t.Extent
 
 
-class LayerCapsNode(t.Data):
-    layer: t.ILayer = None
-
-    feature_schema: t.List[t.Attribute] = []
-    has_legend: bool = False
-    has_search: bool = False
-    meta: t.MetaData = None
-    tag_name: str = None
-    title: str = None
-
-    extent: t.Extent = None
-    extent4326: t.Extent = None
-    max_scale: int = None
-    min_scale: int = None
-    proj: gws.gis.proj.Proj = None
-    supported_crs: t.List[SupportedCrs] = None
-
-    sub_nodes: t.Optional[t.List['LayerCapsNode']] = []
+class Name(t.Data):
+    p: str  # plain name
+    q: str  # qualified name
+    ns: str  # namespace
+    ns_prefix: str  # namespace prefix
+    ns_uri: str  # namespace uri
+    ns_schema_location: str  # namespace schema location
 
 
-class FeatureNode(t.Data):
+class FeatureSchemaAttribute(t.Data):
+    type: str
+    name: Name
+
+
+class LayerCaps(t.Data):
+    layer: t.ILayer
+
+    has_legend: bool
+    has_search: bool
+    meta: t.MetaData
+    title: str
+
+    layer_name: Name
+    feature_name: Name
+
+    extent: t.Extent
+    extent4326: t.Extent
+    max_scale: int
+    min_scale: int
+    projections: t.List[Projection]
+
+    sub_caps: t.List['LayerCaps']
+    feature_schema: t.List[FeatureSchemaAttribute]
+
+
+class FeatureCaps(t.Data):
     feature: t.IFeature
-    shape_tag: ''
-    tag_name: ''
-    attributes: t.List[t.Attribute]
+    shape_tag: t.Tag
+    name: Name
+
+
+class FeatureCollection(t.Data):
+    caps: t.List[FeatureCaps]
+    time_stamp: str
+    num_matched: int
+    num_returned: int
 
 
 #:export IOwsService
@@ -98,40 +154,44 @@ class Base(Object):
     def service_link(self):
         return None
 
+    @property
+    def default_templates(self):
+        return []
+
+    @property
+    def default_metadata(self):
+        return {}
+
+    @property
+    def default_name(self):
+        return ''
+
     # Configuration
 
     def configure(self):
         super().configure()
 
+        self.name = self.var('name') or self.default_name
         self.supported_versions = []
 
-        self.local_namespaces = {}
+        self.xml_helper: gws.ext.helper.xml.Object = t.cast(
+            gws.ext.helper.xml.Object,
+            self.root.application.require_helper('xml'))
+
         self.project: t.Optional[t.IProject] = t.cast(t.IProject, self.get_closest('gws.common.project'))
 
-        self.templates = {}
-        self.use_inspire_data = False
-        self.use_inspire_meta = False
+        self.meta: t.MetaData = self.configure_metadata()
 
-        self.feature_namespace = ''
-
-        s = self.var('featureNamespace')
-        if s:
-            self.feature_namespace = self.var('featureNamespace')
-            self.local_namespaces[self.feature_namespace] = self.var('featureNamespaceUri')
-
-        self.use_inspire_meta = self.var('withInspireMeta')
-        self.use_inspire_data = self.var('withInspireData')
-
-        self.meta = self.configure_metadata()
-
-        if self.use_inspire_data:
-            self.configure_inspire_templates()
-
+        self.root_layer_uid = self.var('root')
         self.supported_crs: t.List[t.Crs] = self.var('supportedCrs', default=[])
+        self.update_sequence = self.var('updateSequence')
+        self.with_inspire_meta = self.var('withInspireMeta')
 
-    def post_configure(self):
-        super().post_configure()
-        self.configure_metadata()
+        self.templates: t.List[t.ITemplate] = []
+        for p in self.var('templates', default=[]):
+            self.templates.append(t.cast(t.ITemplate, self.create_child('gws.ext.template', p)))
+        for p in self.default_templates:
+            self.templates.append(t.cast(t.ITemplate, self.root.create_shared_object('gws.ext.template', p.path, p)))
 
     def configure_metadata(self):
         meta = gws.common.metadata.from_config(self.var('meta'))
@@ -150,39 +210,10 @@ class Base(Object):
         if self.service_link:
             meta.links.append(self.service_link)
 
+        meta = gws.extend(meta, self.default_metadata)
         return meta
 
-    def configure_template(self, name, path, type='xml'):
-        for tpl in self.var('templates', default=[]):
-            if tpl.title == name:
-                return self.root.create_object('gws.ext.template', tpl)
-
-        if not path.startswith('/'):
-            path = gws.APP_DIR + '/gws/ext/ows/service/' + path.lstrip('/')
-        if path.endswith('/'):
-            path += name + '.cx'
-
-        return self.root.create_shared_object('gws.ext.template', path, {
-            'type': type,
-            'path': path
-        })
-
-    def configure_inspire_templates(self):
-        for tag in gws.common.metadata.inspire.TAGS:
-            self.templates[tag] = self.configure_template(tag.replace(':', '_'), 'wfs/templates/inspire/')
-
     # Request handling
-
-    def request_version(self, rd: Request) -> str:
-        version = rd.req.param('version') or rd.req.param('acceptversions')
-        if not version:
-            # the first supported version is the default
-            return self.supported_versions[0] if self.supported_versions else None
-        for v in gws.as_list(version):
-            for ver in self.supported_versions:
-                if ver.startswith(v):
-                    return ver
-        raise gws.web.error.BadRequest('Unsupported service version')
 
     def handle(self, req) -> t.HttpResponse:
         # services can be configured globally (in which case, self.project == None)
@@ -196,7 +227,7 @@ class Base(Object):
             project = req.require_project(p)
             if self.project and project != self.project:
                 gws.log.debug(f'service={self.uid!r}: wrong project={p!r}')
-                raise gws.web.error.NotFound()
+                raise gws.web.error.NotFound('Project not found')
         elif self.project:
             # for in-project services, ensure the user can access the project
             req.require_project(self.project.uid)
@@ -209,8 +240,21 @@ class Base(Object):
         h = getattr(self, 'handle_' + request_param.lower(), None)
         if not h:
             gws.log.debug(f'service={self.uid!r}: request={request_param!r} not found')
-            raise gws.web.error.NotFound()
+            raise gws.web.error.BadRequest('Invalid REQUEST parameter')
         return h(rd)
+
+    def request_version(self, rd: Request) -> str:
+        version = rd.req.param('version') or rd.req.param('acceptversions')
+        if version:
+            for v in gws.as_list(version):
+                for ver in self.supported_versions:
+                    if ver.startswith(v):
+                        return ver
+        elif self.supported_versions:
+            # the first supported version is the default
+            return self.supported_versions[0]
+
+        raise gws.web.error.BadRequest('Unsupported service version')
 
     # Rendering and responses
 
@@ -219,32 +263,37 @@ class Base(Object):
         description = gws.get(err, 'description') or f'Error {status}'
         return self.xml_error_response(status, description)
 
-    def render_template(self, rd: Request, template_name: str, context=None, format=None):
+    def template_response(self, rd: Request, ows_request: str, ows_format: str = None, context=None):
+        out = self.render_template(rd, ows_request, ows_format, context)
+        return t.HttpResponse(content=out.content, mime=out.mime)
+
+    def render_template(self, rd: Request, ows_request: str, ows_format: str = None, context=None, format=None):
+        tpl = self.find_template(ows_request, ows_format)
+        if not tpl:
+            raise gws.web.error.BadRequest('Invalid format requested')
+        gws.log.debug(f'ows_request={ows_request!r} ows_format={ows_format!r} template={tpl.uid!r}')
+
         context = gws.merge({
             'project': rd.project,
             'meta': self.meta,
-            'use_inspire_meta': self.use_inspire_meta,
+            'with_inspire_meta': self.with_inspire_meta,
             'url_for': rd.req.url_for,
-            'feature_namespace': self.feature_namespace,
-            'feature_namespace_uri': self.local_namespaces.get(self.feature_namespace, ''),
-            'namespaces': self.local_namespaces,
             'service': self
         }, context)
 
-        return self.templates[template_name].render(context, format=format).content
+        return tpl.render(context, format=format)
 
-    def render_feature_nodes(self, rd: Request, nodes: t.List[FeatureNode], container_template_name: str) -> t.HttpResponse:
-        tags = []
+    def find_template(self, request, format) -> t.Optional[t.ITemplate]:
+        for tpl in self.templates:
+            if tpl.ows_request == request.lower() and (not format or not tpl.ows_format or gws.tools.mime.equal(tpl.ows_format, format)):
+                return tpl
 
-        for node in nodes:
-            template_name = node.tag_name if node.tag_name in self.templates else 'feature'
-            tags.append(self.render_template(rd, template_name, {'node': node}, format='tag'))
-
-        context = {
-            'feature_tags': tags,
-        }
-
-        return self.xml_response(self.render_template(rd, container_template_name, context))
+    def enum_template_formats(self):
+        fs = {}
+        for tpl in self.templates:
+            if tpl.ows_format:
+                fs.setdefault(tpl.ows_request, set()).add(tpl.ows_format)
+        return {k: list(v) for k, v in fs.items()}
 
     def xml_error_response(self, status, description) -> t.HttpResponse:
         description = gws.tools.xml2.encode(description)
@@ -256,47 +305,73 @@ class Base(Object):
 
     def xml_response(self, content, status=200) -> t.HttpResponse:
         return t.HttpResponse(
-            mime='text/xml',
+            mime=gws.tools.mime.get('xml'),
             content=gws.tools.xml2.as_string(content),
             status=status,
         )
 
-    # LayerCaps nodes
+    # LayerCaps and lists
 
-    def layer_tree_root(self, rd: Request) -> t.Optional[LayerCapsNode]:
-        """Return a single root node for a layer tree."""
+    def layer_root_caps(self, rd: Request) -> t.Optional[LayerCaps]:
+        """Return the root layer caps for a project."""
+
+        def enum(layer_uid):
+            layer = t.cast(t.ILayer, rd.req.acquire('gws.ext.layer', layer_uid))
+            if not self.is_layer_enabled(layer):
+                return
+            sub = []
+            if layer.layers:
+                sub = gws.compact(enum(la.uid) for la in layer.layers)
+            return self._layer_caps(layer, sub)
 
         if not rd.project:
             return
 
-        roots = gws.compact(self._layer_node_subtree(rd, la.uid) for la in rd.project.map.layers)
+        if self.root_layer_uid:
+            root = enum(self.root_layer_uid)
+        else:
+            # no root given, take the first (enabled) root layer
+            roots = gws.compact(enum(la.uid) for la in rd.project.map.layers)
+            root = roots[0] if roots else None
 
-        if not roots:
-            return
+        if root:
+            return root
 
-        node = LayerCapsNode(
-            extent=rd.project.map.extent,
-            has_legend=any(n.has_legend for n in roots),
-            has_search=any(n.has_search for n in roots),
-            meta=rd.project.meta,
-            sub_nodes=roots,
-            tag_name=rd.project.uid,
-            title=rd.project.title,
-        )
-        return self._add_spatial_props(node, rd.project.map)
+    def layer_caps_list(self, rd: Request, layer_names=None) -> t.List[LayerCaps]:
+        """Return a list of terminal layer caps (for WFS)."""
 
-    def layer_node_list(self, rd: Request) -> t.List[LayerCapsNode]:
-        """Return a list of terminal layer nodes (for WFS)."""
+        lcs = []
 
-        all_nodes = []
-        root = self.layer_tree_root(rd)
-        if not root:
-            return []
-        self._layer_node_sublist(rd, root, all_nodes)
-        return all_nodes
+        def walk(lc: LayerCaps, names=None):
+            # if a group matches, collect all children unconditionally
+            # if a terminal matches - add it
+            # if a group doesn't match, collect its children conditionally
 
-    def layer_nodes_from_request_params(self, rd: Request, param_names, fallback_to_all=True):
-        """Return a list of terminal layer nodes matching the layer list."""
+            matches = (
+                    not names
+                    or lc.layer_name.p in names
+                    or lc.layer_name.q in names
+                    or lc.feature_name.p in names
+                    or lc.feature_name.q in names
+            )
+
+            if matches:
+                if lc.sub_caps:
+                    for s in lc.sub_caps:
+                        walk(s)
+                else:
+                    lcs.append(lc)
+            elif lc.sub_caps:
+                for s in lc.sub_caps:
+                    walk(s, names)
+
+        root = self.layer_root_caps(rd)
+        if root:
+            walk(root, layer_names)
+        return lcs
+
+    def layer_caps_list_from_request(self, rd: Request, param_names, fallback_to_all=True) -> t.List[LayerCaps]:
+        """Return a list of terminal layer caps matching request parameters."""
 
         names = None
 
@@ -306,116 +381,90 @@ class Base(Object):
                 break
 
         if names is None and fallback_to_all:
-            return self.layer_node_list(rd)
+            return self.layer_caps_list(rd)
 
         if not names:
             return []
 
-        tag_names = set()
+        return self.layer_caps_list(rd, set(names))
 
-        for s in names:
-            if ':' not in s:
-                tag_names.add(s)
-                continue
+    def _layer_caps(self, layer: t.ILayer, sub_caps=None) -> LayerCaps:
 
-            p = s.split(':')
-            if len(p) != 2:
-                continue
+        lc = LayerCaps()
 
-            if p[0] == self.feature_namespace:
-                tag_names.add(s)
-                tag_names.add(p[1])
-            else:
-                tag_names.add(s)
+        lc.layer = layer
+        lc.title = layer.title
+        lc.layer_name = self._parse_name(layer.ows_name)
+        lc.feature_name = self._parse_name(layer.ows_feature_name)
+        lc.meta = layer.meta
+        lc.sub_caps = sub_caps or []
 
-        all_nodes = []
-        self._layer_node_sublist_selected(rd, self.layer_tree_root(rd), all_nodes, tag_names)
-        return all_nodes
+        lc.extent = layer.extent
+        lc.extent4326 = gws.gis.extent.transform_to_4326(layer.extent, layer.crs)
+        lc.has_legend = layer.has_legend or any(s.has_legend for s in lc.sub_caps)
+        lc.has_search = layer.has_search or any(s.has_search for s in lc.sub_caps)
 
-    def _layer_node_subtree(self, rd: Request, layer_uid):
-        layer = t.cast(t.ILayer, rd.req.acquire('gws.ext.layer', layer_uid))
-        if not self.is_layer_enabled(layer):
-            return
-        if not layer.layers:
-            return self._layer_node_from(layer)
-        sub = gws.compact(self._layer_node_subtree(rd, la.uid) for la in layer.layers)
-        if sub:
-            return self._layer_node_from(layer, sub)
+        scales = [gws.tools.units.res2scale(r) for r in layer.resolutions]
+        lc.min_scale = int(min(scales))
+        lc.max_scale = int(max(scales))
 
-    def _layer_node_sublist(self, rd: Request, node: LayerCapsNode, all_nodes):
-        if not node.sub_nodes:
-            all_nodes.append(node)
-            return
-        for n in node.sub_nodes:
-            self._layer_node_sublist(rd, n, all_nodes)
-
-    def _layer_node_sublist_selected(self, rd: Request, node: LayerCapsNode, all_nodes, tag_names):
-        if node.tag_name in tag_names:
-            if not node.sub_nodes:
-                all_nodes.append(node)
-                return
-            for n in node.sub_nodes:
-                self._layer_node_sublist(rd, n, all_nodes)
-        elif node.sub_nodes:
-            for n in node.sub_nodes:
-                self._layer_node_sublist_selected(rd, n, all_nodes, tag_names)
-
-    def _layer_node_from(self, layer: t.ILayer, sub_nodes=None) -> LayerCapsNode:
-        sub_nodes = sub_nodes or []
-        node = LayerCapsNode(
-            extent=layer.extent,
-            # in a service, only provide legends for leaf layers
-            has_legend=layer.has_legend and not sub_nodes,
-            has_search=layer.has_search or any(n.has_search for n in sub_nodes),
-            layer=layer,
-            meta=layer.meta,
-            sub_nodes=sub_nodes,
-            tag_name=layer.ows_name,
-            title=layer.title,
-        )
-        return self._add_spatial_props(node, layer)
-
-    def _add_spatial_props(self, node: LayerCapsNode, source) -> LayerCapsNode:
-        node.extent = source.extent
-        node.extent4326 = gws.gis.extent.transform_to_4326(source.extent, source.crs)
-        scales = [gws.tools.units.res2scale(r) for r in source.resolutions]
-        node.minScale = int(min(scales))
-        node.maxScale = int(max(scales))
-        node.proj = gws.gis.proj.as_projection(source.crs)
-
-        node.supported_crs = [
-            SupportedCrs(
+        lc.projections = [
+            Projection(
+                crs=crs,
                 proj=gws.gis.proj.as_projection(crs),
-                extent=gws.gis.extent.transform(source.extent, source.crs, crs)
+                extent=gws.gis.extent.transform(layer.extent, layer.crs, crs)
             )
-            for crs in self.supported_crs or [source.crs]
+            for crs in self.supported_crs or [layer.crs]
         ]
 
-        return node
+        lc.feature_schema = []
+        dm = layer.data_model
 
-    def inspire_nodes(self, nodes):
-        return [n for n in nodes if n.tag_name in gws.common.metadata.inspire.TAGS]
+        if dm:
+            for rule in dm.rules:
+                x = _XML_SCHEMA_TYPES.get(rule.type)
+                if x:
+                    lc.feature_schema.append(FeatureSchemaAttribute(
+                        type=x,
+                        name=self._parse_name(rule.name, lc.feature_name.ns)))
 
-    def feature_node_list(self, rd: Request, features: t.List[t.IFeature]) -> t.List[FeatureNode]:
-        def node(f: t.IFeature):
+            if dm.geometry_type:
+                lc.feature_schema.append(FeatureSchemaAttribute(
+                    type=_XML_SCHEMA_TYPES.get(dm.geometry_type),
+                    name=self._parse_name(_DEFAULT_GEOMETRY_NAME, lc.feature_name.ns)))
+
+        return lc
+
+    # FeatureCaps
+
+    def feature_collection(self, features: t.List[t.IFeature], rd: Request) -> FeatureCollection:
+        coll = FeatureCollection(
+            caps=[],
+            time_stamp=gws.tools.date.now_iso(with_tz=False),
+            num_matched=len(features),
+            num_returned=len(features),
+        )
+
+        default_name = self._parse_name(_DEFAULT_FEAUTURE_NAME)
+
+        for f in features:
             gs = None
             if f.shape:
                 gs = gws.gis.gml.shape_to_tag(f.shape, precision=rd.project.map.coordinate_precision)
 
             f.apply_data_model()
 
-            return FeatureNode(
+            coll.caps.append(FeatureCaps(
                 feature=f,
                 shape_tag=gs,
-                tag_name=f.layer.ows_name if f.layer else 'feature',
-                attributes=f.attributes,
-            )
+                name=self._parse_name(f.layer.ows_feature_name) if f.layer else default_name,
+            ))
 
-        return [node(f) for f in features]
+        return coll
 
     # Utils
 
-    def render_map_from_nodes(self, nodes, rd: Request):
+    def render_map_bbox_from_layer_caps_list(self, lcs: t.List[LayerCaps], rd: Request) -> t.HttpResponse:
 
         try:
             bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
@@ -439,10 +488,10 @@ class Base(Object):
                 dpi=0)
         )
 
-        for node in nodes:
+        for lc in lcs:
             render_input.items.append(t.MapRenderInputItem(
                 type=t.MapRenderInputItemType.image_layer,
-                layer=node.layer))
+                layer=lc.layer))
 
         renderer = gws.gis.render.Renderer()
         for _ in renderer.run(render_input):
@@ -460,3 +509,28 @@ class Base(Object):
 
     def is_layer_enabled(self, layer):
         return layer and layer.ows_enabled(self)
+
+    def _parse_name(self, name, nsid=None) -> Name:
+        if ':' in name:
+            nsid, name = name.split(':')
+
+        ns = self.xml_helper.namespace(nsid) if nsid else None
+
+        if ns:
+            return Name(
+                p=name,
+                q=nsid + ':' + name,
+                ns=nsid,
+                ns_prefix=nsid + ':',
+                ns_uri=ns[0],
+                ns_schema_location=ns[1],
+            )
+        else:
+            return Name(
+                p=name,
+                q=name,
+                ns='',
+                ns_prefix='',
+                ns_uri='',
+                ns_schema_location='',
+            )

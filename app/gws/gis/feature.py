@@ -95,6 +95,10 @@ class Feature(t.IFeature):
         d['uid'] = self.uid
         return d
 
+    @property
+    def attr_dict(self) -> dict:
+        return {a.name: a.value for a in self.attributes}
+
     def attr(self, name: str):
         for a in self.attributes:
             if a.name == name:

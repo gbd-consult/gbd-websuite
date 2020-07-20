@@ -29,3 +29,7 @@ class Object(gws.Object):
 
         for ns in self.var('namespaces', default=[]):
             self.namespaces[ns.name] = [ns.uri, ns.get('schemaLocation', '')]
+
+    def namespace(self, name):
+        p = self.namespaces.get(name)
+        return p or ['', '']

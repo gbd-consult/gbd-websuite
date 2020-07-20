@@ -1,52 +1,54 @@
-@def wms_layer_capabilities(node)
-    @tag Layer queryable="{1 if node.has_search else 0}"
+@def wms_layer_capabilities(lc)
+    @tag Layer queryable="{1 if lc.has_search else 0}"
 
-        @t Name {feature_ns(node.tag_name)}
-        @t Title {node.title}
+        @t Name {lc.layer_name.p}
+        @t Title {lc.title}
 
-        @with node.meta.abstract as x
+        @with lc.meta.abstract as x
             @t Abstract {x}
         @end
 
-        @each node.supported_crs as s
-            @t SRS {s.proj.epsg}
+        @each lc.projections as p
+            @t SRS {p.proj.epsg}
         @end
 
-        @t LatLonBoundingBox minx="{node.extent4326[0]}" miny="{node.extent4326[1]}" maxx="{node.extent4326[2]}" maxy="{node.extent4326[3]}"
+        @t LatLonBoundingBox minx="{lc.extent4326[0]}" miny="{lc.extent4326[1]}" maxx="{lc.extent4326[2]}" maxy="{lc.extent4326[3]}"
 
-        @each node.supported_crs as s
-            @t BoundingBox SRS="{s.proj.epsg}" minx="{s.extent[0]}" miny="{s.extent[1]}" maxx="{s.extent[2]}" maxy="{s.extent[3]}"
+        @each lc.projections as p
+            @t BoundingBox SRS="{p.proj.epsg}" minx="{s.extent[0]}" miny="{s.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
         @end
 
-        @with node.meta.attribution as x
+        @with lc.meta.attribution as x
             @t Attribution/Title {x}
         @end
 
-        @with node.meta.authorityUrl
-            @tag AuthorityURL name="{node.meta.authorityName}"
-                @t OnlineResource xlink:href="{node.meta.authorityUrl}"
+        @with lc.meta.authorityUrl
+            @tag AuthorityURL name="{lc.meta.authorityName}"
+                @t OnlineResource xlink:href="{lc.meta.authorityUrl}"
             @end
         @end
 
-        @with node.meta.authorityIdentifier
-            @t Identifier authority="{node.meta.authorityName}" {node.meta.authorityIdentifier}
+        @with lc.meta.authorityIdentifier
+            @t Identifier authority="{lc.meta.authorityName}" {lc.meta.authorityIdentifier}
         @end
 
-        @wms_meta_url node
+        @wms_meta_url lc
 
-        @if node.has_legend
+        @if lc.has_legend
             @tag Style
                 @t Name default
                 @t Title default
                 @tag LegendURL
                     @t Format image/png
-                    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + feature_ns(node.tag_name)}"
+                    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + lc.layer_name.p}"
                 @end
             @end
         @end
 
-        @each reversed(node.sub_nodes) as sub_node
-            @wms_layer_capabilities sub_node
+        @t ScaleHint min="{lc.min_scale}" max="{lc.max_scale}"
+
+        @each reversed(lc.sub_caps) as s
+            @wms_layer_capabilities s
         @end
     @end
 @end
@@ -60,7 +62,7 @@
     @end
  
     @tag Service
-        @t Name WMS
+        @t Name {service.name}
         @t Title {service.meta.title}
         @wms_service_metadata
     @end
@@ -68,22 +70,32 @@
     @tag Capability
         @tag Request
             @tag GetCapabilities
-                @t Format text/xml
-                @wms_default_url
+                @wms_formats 'getcapabilities'
+                @dcp_service_url
             @end
             @tag GetMap
-                @t Format image/png
-                @wms_default_url
+                @wms_formats 'getmap'
+                @dcp_service_url
             @end
             @tag GetFeatureInfo
-                @t Format application/vnd.ogc.gml
-                @wms_default_url
+                @wms_formats 'getfeatureinfo'
+                @dcp_service_url
+            @end
+            @tag GetLegendGraphic
+                @wms_formats 'getfeatureinfo'
+                @dcp_service_url
             @end
         @end
 
         @t Exception/Format XML
 
-        @wms_layer_capabilities layer_tree_root
+        @if with_inspire_meta
+            @tag VendorSpecificCapabilities/inspire_vs:ExtendedCapabilities
+                @inspire_extended_capabilities
+            @end
+        @end
+
+        @wms_layer_capabilities layer_root_caps
     @end
 @end
 

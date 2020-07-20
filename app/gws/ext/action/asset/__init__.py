@@ -86,10 +86,10 @@ class Object(gws.common.action.Object):
 
             return r
 
-        mt = gws.tools.mime.for_path(rpath)
+        mime = gws.tools.mime.for_path(rpath)
 
-        if not _valid_mime_type(mt, project_assets, site_assets):
-            gws.log.error(f'invalid mime path={rpath!r} mt={mt!r}')
+        if not _valid_mime_type(mime, project_assets, site_assets):
+            gws.log.error(f'invalid mime path={rpath!r} mime={mime!r}')
             # NB: pretend the file doesn't exist
             raise gws.web.error.NotFound()
 
@@ -99,13 +99,9 @@ class Object(gws.common.action.Object):
 
         if as_attachment:
             p = gws.tools.os2.parse_path(spath)
-            attachment_name = p['name'] + '.' + gws.tools.mime.extension(mt)
+            attachment_name = p['name'] + '.' + gws.tools.mime.extension(mime)
 
-        return t.HttpResponse({
-            'mime': mt,
-            'path': rpath,
-            'attachment_name': attachment_name,
-        })
+        return t.FileResponse(mime=mime, path=rpath, attachment_name=attachment_name)
 
 
 def _projects_for_user(user):

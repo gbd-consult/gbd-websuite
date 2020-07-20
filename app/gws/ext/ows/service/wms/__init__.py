@@ -6,7 +6,9 @@ import gws.gis.gml
 import gws.gis.legend
 import gws.gis.proj
 import gws.gis.shape
+import gws.tools.date
 import gws.tools.misc
+import gws.tools.mime
 import gws.tools.os2
 import gws.tools.xml2
 import gws.web.error
@@ -25,27 +27,28 @@ class Object(ows.Base):
 
     @property
     def service_link(self):
-        return t.MetaLink(
-            url=self.url,
-            scheme='OGC:WMS',
-            function='search'
-        )
+        return t.MetaLink(url=self.url, scheme='OGC:WMS', function='search')
 
-    def configure(self):
-        super().configure()
+    @property
+    def default_templates(self):
+        return [
+            t.Config(
+                type='xml',
+                path=gws.APP_DIR + '/gws/ext/ows/service/wms/templates/getCapabilities.cx',
+                owsRequest='GetCapabilities',
+                owsFormat=gws.tools.mime.get('xml'),
+            ),
+            t.Config(
+                type='xml',
+                path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getFeature.cx',  # NB use the wfs template
+                owsRequest='GetFeatureInfo',
+                owsFormat=gws.tools.mime.get('gml2'),
+            ),
+        ]
 
-        self.type = 'wms'
-        self.supported_versions = ['1.3.0', '1.1.1', '1.1.0']
-        self.search_max_limit = 100
-
-        for tpl in 'getCapabilities', 'getFeatureInfo', 'feature':
-            self.templates[tpl] = self.configure_template(tpl, 'wms/templates/')
-
-        self.update_sequence = None
-
-    def configure_metadata(self):
-        return gws.extend(
-            super().configure_metadata(),
+    @property
+    def default_metadata(self):
+        return t.Data(
             inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
             inspireMandatoryKeyword=t.MetaInspireKeyword.infoMapAccessService,
             inspireResourceType=t.MetaInspireResourceType.service,
@@ -54,44 +57,70 @@ class Object(ows.Base):
             isoSpatialRepresentationType=t.MetaIsoSpatialRepresentationType.vector,
         )
 
+    @property
+    def default_name(self):
+        return 'WMS'
+
+    ##
+
+    def configure(self):
+        super().configure()
+
+        self.type = 'wms'
+        self.supported_versions = ['1.3.0', '1.1.1', '1.1.0']
+        self.search_max_limit = 100
+
+    ##
+
     def handle_getcapabilities(self, rd: ows.Request):
         # OGC 06-042, 7.2.3.5
 
         update_sequence = rd.req.param('updatesequence')
         if update_sequence and self.update_sequence and update_sequence >= self.update_sequence:
-            raise gws.web.error.BadRequest()
+            raise gws.web.error.BadRequest('Wrong update sequence')
 
-        root = self.layer_tree_root(rd)
+        root = self.layer_root_caps(rd)
         if not root:
-            gws.log.debug(f'service={self.uid!r}: no layer_tree_root')
+            gws.log.debug(f'service={self.uid!r}: no layer_root_caps')
             raise gws.web.error.NotFound()
-        return self.xml_response(self.render_template(rd, 'getCapabilities', {
-            'layer_tree_root': root,
+
+        fmt = rd.req.param('format') or gws.tools.mime.get('xml')
+
+        supported_formats = self.enum_template_formats()
+        supported_formats['getmap'] = ['image/png']
+        supported_formats['getlegendgraphic'] = ['image/png']
+
+        return self.template_response(rd, 'GetCapabilities', fmt, context={
+            'layer_root_caps': root,
+            'supported_formats': supported_formats,
             'version': self.request_version(rd),
-        }))
+        })
 
     def handle_getmap(self, rd: ows.Request):
-        nodes = self.layer_nodes_from_request_params(rd, ['layer', 'layers'])
-        if not nodes:
-            raise gws.web.error.NotFound()
-        return self.render_map_from_nodes(nodes, rd)
+        lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'])
+        if not lcs:
+            raise gws.web.error.NotFound('No layers found')
+        return self.render_map_bbox_from_layer_caps_list(lcs, rd)
 
     def handle_getlegendgraphic(self, rd: ows.Request):
         # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
         # @TODO currently only support 'layer'
 
-        nodes = self.layer_nodes_from_request_params(rd, ['layer', 'layers'])
-        if not nodes:
-            raise gws.web.error.NotFound()
-
-        paths = [n.layer.render_legend() for n in nodes if n.has_legend]
+        lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'])
+        if not lcs:
+            raise gws.web.error.NotFound('No layers found')
+        paths = [lc.layer.render_legend() for lc in lcs if lc.has_legend]
         out = gws.gis.legend.combine_legend_paths(paths)
         return t.HttpResponse(mime='image/png', content=out or gws.tools.misc.Pixels.png8)
 
     def handle_getfeatureinfo(self, rd: ows.Request):
-        results = self.find_features(rd)
-        nodes = self.feature_node_list(rd, results)
-        return self.render_feature_nodes(rd, nodes, 'getFeatureInfo')
+        features = self.find_features(rd)
+        fmt = rd.req.param('info_format') or gws.tools.mime.get('gml2')
+        return self.template_response(rd, 'GetFeatureInfo', fmt, context={
+            'collection': self.feature_collection(features, rd),
+        })
+
+    ###
 
     def find_features(self, rd: ows.Request):
         try:
@@ -102,13 +131,13 @@ class Object(ows.Base):
             x = int(rd.req.param('i') or rd.req.param('x'))
             y = int(rd.req.param('j') or rd.req.param('y'))
         except:
-            raise gws.web.error.BadRequest()
+            raise gws.web.error.BadRequest('Invalid parameter')
 
         crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs
 
-        nodes = self.layer_nodes_from_request_params(rd, ['query_layers'])
-        if not nodes:
-            raise gws.web.error.NotFound()
+        lcs = self.layer_caps_list_from_request(rd, ['query_layers'])
+        if not lcs:
+            raise gws.web.error.NotFound('No layers found')
 
         xres = (bbox[2] - bbox[0]) / px_width
         yres = (bbox[3] - bbox[1]) / px_height
@@ -125,7 +154,7 @@ class Object(ows.Base):
 
         args = t.SearchArgs(
             project=rd.project,
-            layers=[n.layer for n in nodes],
+            layers=[lc.layer for lc in lcs],
             limit=min(limit, self.search_max_limit),
             resolution=xres,
             shapes=[point],

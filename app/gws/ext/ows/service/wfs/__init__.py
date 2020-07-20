@@ -9,36 +9,10 @@ import gws.gis.render
 import gws.gis.shape
 import gws.tools.os2
 import gws.tools.xml2
+import gws.tools.mime
 import gws.web.error
 
 import gws.types as t
-
-_xml_types = {
-    t.AttributeType.bool: 'xsd:boolean',
-    t.AttributeType.bytes: None,
-    t.AttributeType.date: 'xsd:date',
-    t.AttributeType.datetime: 'datetime',
-    t.AttributeType.float: 'xsd:decimal',
-    t.AttributeType.geometry: None,
-    t.AttributeType.int: 'xsd:integer',
-    t.AttributeType.list: None,
-    t.AttributeType.str: 'xsd:string',
-    t.AttributeType.text: 'xsd:string',
-    t.AttributeType.time: 'xsd:time',
-    t.GeometryType.curve: 'gml:CurvePropertyType',
-    t.GeometryType.geomcollection: 'gml:MultiGeometryPropertyType',
-    t.GeometryType.geometry: 'gml:MultiGeometryPropertyType',
-    t.GeometryType.linestring: 'gml:CurvePropertyType',
-    t.GeometryType.multicurve: 'gml:MultiCurvePropertyType',
-    t.GeometryType.multilinestring: 'gml:MultiCurvePropertyType',
-    t.GeometryType.multipoint: 'gml:MultiPointPropertyType',
-    t.GeometryType.multipolygon: 'gml:MultiGeometryPropertyType',
-    t.GeometryType.multisurface: 'gml:MultiGeometryPropertyType',
-    t.GeometryType.point: 'gml:PointPropertyType',
-    t.GeometryType.polygon: 'gml:SurfacePropertyType',
-    t.GeometryType.polyhedralsurface: 'gml:SurfacePropertyType',
-    t.GeometryType.surface: 'gml:SurfacePropertyType',
-}
 
 
 class Config(ows.Config):
@@ -47,109 +21,117 @@ class Config(ows.Config):
     pass
 
 
-VERSION = '2.0'
-MAX_LIMIT = 100
-
-
 class Object(ows.Base):
 
     @property
     def service_link(self):
-        return t.MetaLink({
-            'url': self.url,
-            'scheme': 'OGC:WFS',
-            'function': 'download'
-        })
+        return t.MetaLink(url=self.url, scheme='OGC:WFS', function='download')
+
+    @property
+    def default_templates(self):
+        return [
+            t.Config(
+                type='xml',
+                path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getCapabilities.cx',
+                owsRequest='GetCapabilities',
+                owsFormat=gws.tools.mime.get('xml'),
+            ),
+            t.Config(
+                type='xml',
+                path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/describeFeatureType.cx',
+                owsRequest='DescribeFeatureType',
+                owsFormat=gws.tools.mime.get('xml'),
+            ),
+            t.Config(
+                type='xml',
+                path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getFeature.cx',
+                owsRequest='GetFeatureInfo',
+                owsFormat=gws.tools.mime.get('gml2'),
+            ),
+        ]
+
+    @property
+    def default_metadata(self):
+        return t.Data(
+            inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
+            inspireMandatoryKeyword=t.MetaInspireKeyword.infoMapAccessService,
+            inspireResourceType=t.MetaInspireResourceType.service,
+            inspireSpatialDataServiceType=t.MetaInspireSpatialDataServiceType.view,
+            isoScope=t.MetaIsoScope.dataset,
+            isoSpatialRepresentationType=t.MetaIsoSpatialRepresentationType.vector,
+        )
+
+    @property
+    def default_name(self):
+        return 'WFS'
+
+    ##
 
     def configure(self):
         super().configure()
 
         self.type = 'wfs'
-        self.version = VERSION
-
-        for tpl in 'getCapabilities', 'describeFeatureType', 'getFeature', 'feature':
-            self.templates[tpl] = self.configure_template(tpl, 'wfs/templates/')
+        self.supported_versions = ['2.0.2', '2.0.1', '2.0.0']
 
     def handle_getcapabilities(self, rd: ows.Request):
-        nodes = self.layer_node_list(rd)
-        if self.use_inspire_data:
-            nodes = self.inspire_nodes(nodes)
-        return self.xml_response(self.render_template(rd, 'getCapabilities', {
-            'layer_node_list': nodes,
-        }))
+        lcs = self._layer_caps_with_schemas(rd)
+        return self.template_response(rd, 'GetCapabilities', context={
+            'layer_caps_list': lcs,
+            'version': self.request_version(rd),
+        })
 
     def handle_describefeaturetype(self, rd: ows.Request):
-        nodes = self._nodes_from_request(rd)
-
-        if self.use_inspire_data:
-            return self._describe_inspire_features(nodes)
-
-        for node in nodes:
-            dm = node.layer.data_model
-            if not dm:
-                continue
-
-            node.feature_schema = []
-            for rule in dm.rules:
-                xtype = _xml_types.get(rule.type)
-                if xtype:
-                    node.feature_schema.append({
-                        'name': rule.name,
-                        'type': xtype
-                    })
-
-            if dm.geometry_type:
-                node.feature_schema.append({
-                    'name': 'geometry',
-                    'type': _xml_types.get(dm.geometry_type)
-                })
-
-        return self.xml_response(self.render_template(rd, 'describeFeatureType', {
-            'layer_node_list': nodes,
-        }))
-
-    def _describe_inspire_features(self, nodes):
-        # @TODO inspire schemas
-        pass
+        lcs = self._layer_caps_with_schemas(rd)
+        # @TODO multiple namespaces should be handled by importing individual ns schemas
+        return self.template_response(rd, 'DescribeFeatureType', context={
+            'layer_caps_list': lcs,
+            'ns': lcs[0].feature_name.ns if lcs else '',
+            'ns_uri': lcs[0].feature_name.ns_uri if lcs else '',
+            'version': self.request_version(rd),
+        })
 
     def handle_getfeature(self, rd: ows.Request):
-        nodes = self._nodes_from_request(rd)
+        lcs = self.layer_caps_list_from_request(rd, ['typeName', 'typeNames'])
+        if not lcs:
+            raise gws.web.error.NotFound('Invalid type name')
         try:
-            limit = int(rd.req.param('count') or rd.req.param('maxFeatures') or MAX_LIMIT)
+            limit = int(rd.req.param('count') or rd.req.param('maxFeatures') or 0)
         except:
-            raise gws.web.error.BadRequest()
+            raise gws.web.error.BadRequest('Invalid COUNT value')
 
-        bbox = None
+        crs = rd.req.param('srsName') or rd.project.map.crs
+
         if rd.req.has_param('bbox'):
             bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
             if not bbox:
-                raise gws.web.error.BadRequest()
-
-        shape = gws.gis.shape.from_extent(
-            extent=bbox or rd.project.map.extent,
-            crs=rd.req.param('srsName') or rd.project.map.crs
-        )
+                raise gws.web.error.BadRequest('Invalid BBOX value')
+            shape = gws.gis.shape.from_extent(extent=bbox, crs=crs)
+        else:
+            shape = gws.gis.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
 
         args = t.SearchArgs(
             project=rd.project,
             shapes=[shape],
-            layers=[n.layer for n in nodes],
-            limit=min(limit, MAX_LIMIT),
+            layers=[lc.layer for lc in lcs],
+            limit=limit,
             tolerance=(10, 'px'),
             resolution=1,
         )
 
         features = gws.common.search.runner.run(rd.req, args)
-        nodes = self.feature_node_list(rd, features)
-        return self.render_feature_nodes(rd, nodes, 'getFeature')
+        for f in features:
+            f.transform_to(crs)
 
-    def _nodes_from_request(self, rd):
-        nodes = self.layer_nodes_from_request_params(rd, ['typeName', 'typeNames'])
+        fmt = rd.req.param('output_format') or gws.tools.mime.get('gml2')
+        return self.template_response(rd, 'GetFeatureInfo', fmt, context={
+            'collection': self.feature_collection(features, rd),
+        })
 
-        if self.use_inspire_data:
-            nodes = self.inspire_nodes(nodes)
+    def _layer_caps_with_schemas(self, rd) -> t.List[ows.LayerCaps]:
+        d = {}
 
-        if not nodes:
-            raise gws.web.error.NotFound()
+        for lc in self.layer_caps_list(rd):
+            if lc.feature_schema:
+                d[lc.feature_name.q] = lc
 
-        return nodes
+        return list(d.values())

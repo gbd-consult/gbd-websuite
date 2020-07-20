@@ -5,11 +5,15 @@
 
 @def ows_service_url(get=True, post=False)
     @if get
-        @t ows:DCP/ows:HTTP/ows:Get xlink:href={url_for(service.url)}
+        @t ows:DCP/ows:HTTP/ows:Get xlink:type="simple" xlink:href={url_for(service.url)}
     @end
     @if post
-        @t ows:DCP/ows:HTTP/ows:Post xlink:href={url_for(service.url)}
+        @t ows:DCP/ows:HTTP/ows:Post xlink:type="simple" xlink:href={url_for(service.url)}
     @end
+@end
+
+@def dcp_service_url
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={url_for(service.url)}
 @end
 
 
@@ -18,7 +22,7 @@
 @def ows_service_identification
     @tag ows:ServiceIdentification
         @t ows:ServiceType {service.type}
-        @t ows:ServiceTypeVersion {service.version}
+        @t ows:ServiceTypeVersion {version}
 
         @t ows:Title {meta.title}
 
@@ -77,25 +81,32 @@
     @end
 @end
 
-@def feature_ns(s):
-    @if ':' in s or not feature_namespace:
-        @return s
+
+@def wfs_feature_collection(collection, feature_formatter)
+    @tag wfs:FeatureCollection
+        @a timeStamp={collection.time_stamp}
+        @a numberMatched={collection.num_matched}
+        @a numberReturned={collection.num_returned}
+        @each collection.caps as fc
+            @tag wfs:member
+                {feature_formatter(fc)}
+            @end
+        @end
     @end
-    @return feature_namespace + ':' + s
 @end
 
 
-@def ows_wgs84_bounding_box(node)
+@def ows_wgs84_bounding_box(lc)
     @tag ows:WGS84BoundingBox
-        @t ows:LowerCorner {node.extent4326[0]} {node.extent4326[1]}
-        @t ows:UpperCorner {node.extent4326[2]} {node.extent4326[3]}
+        @t ows:LowerCorner {lc.extent4326[0]} {lc.extent4326[1]}
+        @t ows:UpperCorner {lc.extent4326[2]} {lc.extent4326[3]}
     @end
 @end
-
 
 
 ## http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd
-## Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities, plus mandatory language parameters, plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document
+## Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities, plus mandatory language parameters,
+## plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document
 
 @def inspire_extended_capabilities
     @tag inspire_common:ResourceLocator

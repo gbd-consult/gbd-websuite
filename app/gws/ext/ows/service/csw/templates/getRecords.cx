@@ -1,0 +1,5 @@
+@if profile == 'ISO'
+    @include iso/getRecords.cx
+##@elif profile == 'DCMI'
+##    @include dcmi/getRecords.cx
+@end

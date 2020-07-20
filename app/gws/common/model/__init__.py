@@ -58,9 +58,7 @@ class Object(gws.Object, t.IModel):
 
     @property
     def props(self):
-        return t.ModelProps(
-            rules=self.rules
-        )
+        return t.ModelProps(rules=self.rules)
 
     def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
         return self.apply_to_dict({a.name: a.value for a in atts})
@@ -105,12 +103,21 @@ class Object(gws.Object, t.IModel):
         # no value/source/format present - return values[name]
         return d.get(rule.name, '')
 
-    def _configure_rule(self, rule):
-        r = t.ModelRule(rule)
-        if not r.get('title'):
-            r.title = r.get('name')
-        if not r.get('name'):
-            r.name = gws.as_uid(r.get('title'))
-        if not r.get('type'):
-            r.type = t.AttributeType.str
-        return r
+    def _configure_rule(self, r):
+        rule = t.ModelRule(r)
+
+        name = rule.get('name')
+        title = rule.get('title')
+
+        if not name:
+            name = gws.as_uid(title) if title else rule.get('source')
+
+        if not name:
+            raise gws.Error('missing attribute name')
+
+        rule.name = name
+        rule.title = title or name
+
+        rule.type = rule.get('type') or t.AttributeType.str
+
+        return rule

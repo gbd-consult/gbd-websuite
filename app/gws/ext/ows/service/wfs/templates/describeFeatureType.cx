@@ -1,23 +1,25 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
 @tag xsd:schema
+    @xmlns {ns}
+    @xmlns gml
+    @a targetNamespace="{ns_uri}"
     @a elementFormDefault="qualified"
-    @a targetNamespace="{feature_namespace_uri}"
 
-    @t xsd:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"
+    @t xsd:import namespace="http://www.opengis.net/gml/3.2" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"
 
-    @each layer_node_list as node
-        @tag xsd:complexType name="{node.tag_name}Type"
+    @each layer_caps_list as lc
+        @tag xsd:complexType name="{lc.feature_name.p}Type"
             @tag xsd:complexContent
                 @tag xsd:extension base="gml:AbstractFeatureType"
                     @tag xsd:sequence
-                        @each node.feature_schema as attr
+                        @each lc.feature_schema as a
                             @tag xsd:element
                                 @a maxOccurs="1"
                                 @a minOccurs="0"
                                 @a nillable="true"
-                                @a name="{attr.name}"
-                                @a type="{attr.type}"
+                                @a name="{a.name.p}"
+                                @a type="{a.type}"
                             @end
                         @end
                     @end
@@ -25,9 +27,9 @@
             @end
         @end
 
-        @tag xsd:element name="{feature_ns(node.tag_name)}"
-            @a substitutionGroup="gml:Feature"
-            @a type="{feature_ns(node.tag_name)}Type"
+        @tag xsd:element name="{lc.feature_name.p}"
+            @a substitutionGroup="gml:AbstractFeature"
+            @a type="{lc.feature_name.q}Type"
         @end
     @end
 @end

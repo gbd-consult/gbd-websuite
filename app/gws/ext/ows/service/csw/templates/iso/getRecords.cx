@@ -1,4 +1,4 @@
-@include record_ISO.cx
+@include record.cx
 
 @def response
     @tag csw:GetRecordsResponse

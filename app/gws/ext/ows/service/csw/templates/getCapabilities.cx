@@ -19,7 +19,7 @@
                 @t ows:Value csw:Record
             @end
             @tag ows:Parameter name="outputFormat"
-                @t ows:Value text/xml
+                @t ows:Value application/xml
             @end
             @tag ows:Parameter name="outputSchema"
                 @t ows:Value http://www.opengis.net/cat/csw/2.0.2

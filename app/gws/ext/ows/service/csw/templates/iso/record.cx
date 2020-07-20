@@ -60,9 +60,11 @@
         @end
     @end
 
-    @tag gmd:descriptiveKeywords/gmd:MD_Keywords
-        @each meta.keywords as kw
-            @t gmd:keyword/gco:CharacterString {kw}
+    @with meta.keywords
+        @tag gmd:descriptiveKeywords/gmd:MD_Keywords
+            @each meta.keywords as kw
+                @t gmd:keyword/gco:CharacterString {kw}
+            @end
         @end
     @end
 
@@ -136,13 +138,14 @@
 
         @t gmd:fileIdentifier/gco:CharacterString {meta.catalogUid}
         @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue={meta.language3}
+        @t gmd:characterSet/gmd:MD_CharacterSetCode codeList="{ML_GMX_CODELISTS}#MD_CharacterSetCode" codeListValue="utf8"
         @t gmd:hierarchyLevel/gmd:MD_ScopeCode codeList="{ML_GMX_CODELISTS}#MD_ScopeCode" codeListValue={meta.isoScope}
 
         @tag gmd:contact
             @contact meta.contact
         @end
 
-        @t gmd:dateStamp/gco:DateTime {meta.dateCreated}
+        @t gmd:dateStamp/gco:DateTime {meta.dateCreated | datetime}
 
         @t gmd:metadataStandardName/gco:CharacterString ISO19115
         @t gmd:metadataStandardVersion/gco:CharacterString 2003/Cor.1:2006

@@ -1,12 +1,15 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
-@tag wfs:FeatureCollection
-    @a version="2.0"
-
-    @each feature_tags as tag
-        @tag wfs:member
-            @insert {tag}
+@def formatter(feature_caps)
+    @tag {feature_caps.name.q} gml:id="{feature_caps.feature.uid}"
+        @each feature_caps.feature.attributes as a
+            @t {feature_caps.name.ns_prefix+a.name} {a.value}
+        @end
+        @tag {feature_caps.name.ns_prefix+'geometry'}
+            @insert {feature_caps.shape_tag}
         @end
     @end
-
 @end
+
+@wfs_feature_collection(collection, formatter)
+

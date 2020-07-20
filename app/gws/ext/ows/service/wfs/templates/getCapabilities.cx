@@ -2,29 +2,30 @@
 @include common.cx
 
 @tag WFS_Capabilities
-    @a version={service.version}
-    @a xmlns="http://www.opengis.net/wfs/2.0"
+    @xmlns wfs default
+    @each layer_caps_list as lc
+        @xmlns {lc.feature_name.ns} {lc.feature_name.ns_uri} {lc.feature_name.ns_schema_location}
+    @end
+
+    @a version={version}
 
     @ows_service_identification
     @ows_service_provider
 
-    @tag ows:OperationsMetadata
-        @wfs_basic_operations
-
-        @if use_inspire_meta
-            @tag ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities
-                @inspire_extended_capabilities
-            @end
-        @end
-    @end
-
-    @tag fes:Filter_Capabilities
-        @wfs_basic_filter_capabilities
-    @end
+    @wfs_basic_operations
+    @wfs_basic_filters
 
     @tag FeatureTypeList
-        @each layer_node_list as node
-            @wfs_feature_type node
+        @each layer_caps_list as lc
+            @tag FeatureType
+                @t Name {lc.feature_name.q}
+                @t Title {lc.title}
+                @with lc.meta.abstract as x
+                    @t Abstract {x}
+                @end
+                @t DefaultSRS {lc.projections[0].proj.urn}
+                @ows_wgs84_bounding_box lc
+            @end
         @end
     @end
 @end
