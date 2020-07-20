@@ -64,7 +64,7 @@
                 <ows:Value>csw:Record</ows:Value>
             </ows:Parameter>
             <ows:Parameter name="outputFormat">
-                <ows:Value>text/xml</ows:Value>
+                <ows:Value>application/xml</ows:Value>
             </ows:Parameter>
             <ows:Parameter name="outputSchema">
                 <ows:Value>http://www.opengis.net/cat/csw/2.0.2</ows:Value>
@@ -104,7 +104,7 @@
         <inspire_vs:ExtendedCapabilities>
             <inspire_common:ResourceLocator>
                 <inspire_common:URL>http://csw_meta_url</inspire_common:URL>
-                <inspire_common:MediaType>text/xml</inspire_common:MediaType>
+                <inspire_common:MediaType>application/xml</inspire_common:MediaType>
             </inspire_common:ResourceLocator>
             <inspire_common:ResourceType>service</inspire_common:ResourceType>
             <inspire_common:TemporalReference>

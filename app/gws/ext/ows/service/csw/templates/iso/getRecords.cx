@@ -1,7 +1,7 @@
 @include record.cx
 
 @def response
-    @tag csw:GetRecordsResponse
+    @tag csw:GetRecordsResponse version={version}
 
         @t csw:SearchStatus timestamp={results.timestamp}
 

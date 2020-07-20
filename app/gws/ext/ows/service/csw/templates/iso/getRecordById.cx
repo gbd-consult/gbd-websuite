@@ -1,7 +1,7 @@
 @include record.cx
 
 @def response
-    @tag csw:GetRecordByIdResponse
+    @tag csw:GetRecordByIdResponse version={version}
         @record meta
     @end
 @end

@@ -76,7 +76,7 @@ class MetaInspireDegreeOfConformity(t.Enum):
 
 
 #:export
-class MetaInspireKeyword(t.Enum):
+class MetaInspireMandatoryKeyword(t.Enum):
     """Inspire keyword, see http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd"""
     chainDefinitionService = 'chainDefinitionService'
     comEncodingService = 'comEncodingService'
@@ -290,8 +290,8 @@ class Config(t.Config):
     authorityUrl: t.Optional[t.Url]
     authorityIdentifier: t.Optional[str]
 
-    insipreKeywords: t.Optional[t.List[MetaInspireKeyword]]
-    insipreMandatoryKeyword: t.Optional[MetaInspireKeyword]
+    insipreKeywords: t.Optional[t.List[MetaInspireMandatoryKeyword]]
+    insipreMandatoryKeyword: t.Optional[MetaInspireMandatoryKeyword]
     inspireDegreeOfConformity: t.Optional[MetaInspireDegreeOfConformity]
     inspireResourceType: t.Optional[MetaInspireResourceType]
     inspireSpatialDataServiceType: t.Optional[MetaInspireSpatialDataServiceType]
@@ -359,12 +359,14 @@ class MetaData(t.Data):
     authorityUrl: t.Url
     authorityIdentifier: str
 
-    insipreKeywords: t.List[MetaInspireKeyword]
-    insipreMandatoryKeyword: MetaInspireKeyword
+    insipreKeywords: t.List[MetaInspireMandatoryKeyword]
+    insipreMandatoryKeyword: MetaInspireMandatoryKeyword
     inspireDegreeOfConformity: MetaInspireDegreeOfConformity
     inspireResourceType: MetaInspireResourceType
     inspireSpatialDataServiceType: MetaInspireSpatialDataServiceType
     inspireTheme: MetaInspireTheme
+    inspireThemeName: str
+    inspireThemeNameEn: str
 
     isoMaintenanceFrequencyCode: MetaIsoMaintenanceFrequencyCode
     isoScope: MetaIsoScope
@@ -427,7 +429,7 @@ def from_config(m: t.Config) -> t.MetaData:
 
     if meta.inspireTheme:
         meta.inspireThemeName = inspire.theme_name(meta.inspireTheme, meta.language)
-        meta.inspireThemeDefinition = inspire.theme_definition(meta.inspireTheme, meta.language)
+        meta.inspireThemeNameEn = inspire.theme_name(meta.inspireTheme, 'en')
 
     return meta
 

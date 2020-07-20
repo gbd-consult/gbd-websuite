@@ -1,51 +1,40 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
 @def wms_contact_metadata
-    @with service.meta.contact as x
+    @with service.meta.contact as co
         @tag ContactInformation
             @tag ContactPersonPrimary
-                @t ContactPerson {x.person}
-                @t ContactOrganization {x.organization}
+                @t ContactPerson {co.person}
+                @t ContactOrganization {co.organization}
             @end
-            @t ContactPosition {x.position}
+            @t ContactPosition {co.position}
             @tag ContactAddress
                 @t AddressType postal
-                @t Address {x.address}
-                @t City {x.city}
-                @t StateOrProvince {x.area}
-                @t PostCode {x.zip}
-                @t Country {x.country}
+                @t Address {co.address}
+                @t City {co.city}
+                @t StateOrProvince {co.area}
+                @t PostCode {co.zip}
+                @t Country {co.country}
             @end
-            @t ContactVoiceTelephone {x.phone}
-            @t ContactElectronicMailAddress {x.email}
+            @t ContactVoiceTelephone {co.phone}
+            @t ContactElectronicMailAddress {co.email}
         @end
     @end
 @end
 
 @def wms_service_metadata
-    @with service.meta.abstract as x
-        @t Abstract {x}
+    @with service.meta.abstract
+        @t Abstract {service.meta.abstract}
     @end
 
-    @with service.meta.keywords as x
-        @tag KeywordList
-            @each x as kw
-                @t Keyword {kw}
-            @end
-        @end
-    @end
+    @keywords service.meta
 
     @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url)}"
 
     @wms_contact_metadata
 
-    @with service.meta.fees as x
-        @t Fees {x}
-    @end
-
-    @with service.meta.accessConstraints as x
-        @t AccessConstraints {x}
-    @end
+    @t Fees {service.meta.fees}
+    @t AccessConstraints {service.meta.accessConstraints}
 @end
 
 @def wms_meta_url(lc)

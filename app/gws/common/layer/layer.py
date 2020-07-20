@@ -233,14 +233,18 @@ class Layer(gws.Object, t.ILayer):
         title = self.var('title')
 
         # use, in order 1) configured metadata, 2) provider meta, 3) dummy meta with title only
-        m = self.var('meta') or provider_meta
+        m = self.var('meta')
+
+        if not m and provider_meta:
+            m = t.Config(provider_meta)
+
         if not m:
             if title:
-                m = t.MetaData(title=title)
+                m = t.Config(title=title)
             elif self.var('uid'):
-                m = t.MetaData(title=self.var('uid'))
+                m = t.Config(title=self.var('uid'))
             else:
-                m = t.MetaData()
+                m = t.Config()
 
         if title:
             # title at the top level config overrides meta title

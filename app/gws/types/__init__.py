@@ -520,12 +520,14 @@ class MetaData(Data):
     dateUpdated: 'DateTime'
     fees: str
     image: 'Url'
-    insipreKeywords: List['MetaInspireKeyword']
-    insipreMandatoryKeyword: 'MetaInspireKeyword'
+    insipreKeywords: List['MetaInspireMandatoryKeyword']
+    insipreMandatoryKeyword: 'MetaInspireMandatoryKeyword'
     inspireDegreeOfConformity: 'MetaInspireDegreeOfConformity'
     inspireResourceType: 'MetaInspireResourceType'
     inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType'
     inspireTheme: 'MetaInspireTheme'
+    inspireThemeName: str
+    inspireThemeNameEn: str
     isoMaintenanceFrequencyCode: 'MetaIsoMaintenanceFrequencyCode'
     isoQualityConformanceExplanation: str
     isoQualityConformancePass: bool
@@ -551,7 +553,7 @@ class MetaInspireDegreeOfConformity(Enum):
     notEvaluated = 'notEvaluated'
 
 
-class MetaInspireKeyword(Enum):
+class MetaInspireMandatoryKeyword(Enum):
     chainDefinitionService = 'chainDefinitionService'
     comEncodingService = 'comEncodingService'
     comGeographicCompressionService = 'comGeographicCompressionService'

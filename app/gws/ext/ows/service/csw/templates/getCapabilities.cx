@@ -1,7 +1,6 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
-@tag csw:Capabilities
-    @a version={service.version}
+@tag csw:Capabilities version={version}
 
     @ows_service_identification
     @ows_service_provider
@@ -34,7 +33,7 @@
                 @t ows:Value Filter
             @end
             @tag ows:Parameter name="version"
-                @t ows:Value {service.version}
+                @t ows:Value {version}
             @end
         @end
 

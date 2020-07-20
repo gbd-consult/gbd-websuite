@@ -50,7 +50,7 @@ class Object(ows.Base):
     def default_metadata(self):
         return t.Data(
             inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
-            inspireMandatoryKeyword=t.MetaInspireKeyword.infoMapAccessService,
+            inspireMandatoryKeyword=t.MetaInspireMandatoryKeyword.infoMapAccessService,
             inspireResourceType=t.MetaInspireResourceType.service,
             inspireSpatialDataServiceType=t.MetaInspireSpatialDataServiceType.view,
             isoScope=t.MetaIsoScope.dataset,

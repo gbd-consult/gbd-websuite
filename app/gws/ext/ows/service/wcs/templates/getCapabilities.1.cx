@@ -6,24 +6,18 @@
         @t Name {service.name}
         @t Title {service.meta.title}
 
-        @with service.meta.abstract as x
-            @t Abstract {x}
+        @with service.meta.abstract
+            @t Abstract {service.meta.abstract}
         @end
 
-        @with service.meta.keywords as x
-            @tag KeywordList
-                @each x as kw
-                    @t Keyword {kw}
-                @end
-            @end
+        @keywords service.meta
+
+        @with service.meta.fees
+            @t Fees {service.meta.fees}
         @end
 
-        @with service.meta.fees as x
-            @t Fees {x}
-        @end
-
-        @with service.meta.accessConstraints as x
-            @t AccessConstraints {x}
+        @with service.meta.accessConstraints
+            @t AccessConstraints {service.meta.accessConstraints}
         @end
 
         @with service.meta.contact as co

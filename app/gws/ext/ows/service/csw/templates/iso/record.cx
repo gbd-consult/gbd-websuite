@@ -51,7 +51,7 @@
 
     @if meta.inspireTheme
         @tag gmd:descriptiveKeywords/gmd:MD_Keywords
-            @t gmd:keyword/gco:CharacterString {meta.inspireThemeName}
+            @t gmd:keyword/gco:CharacterString {meta.inspireThemeNameEn}
             @t gmd:type/gmd:MD_KeywordTypeCode codeList="{ML_GMX_CODELISTS}#MD_KeywordTypeCode" codeListValue="theme"
             @tag gmd:thesaurusName/gmd:CI_Citation
                 @t gmd:title/gco:CharacterString GEMET - INSPIRE themes, version 1.0

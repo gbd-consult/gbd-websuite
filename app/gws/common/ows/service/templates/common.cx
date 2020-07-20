@@ -1,5 +1,45 @@
 ## helper functions for ows templates
 
+@def dcp_service_url
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={url_for(service.url)}
+@end
+
+
+@def legend_url(lc)
+    @tag LegendURL
+        @t Format image/png
+        @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + lc.layer_name.p}"
+    @end
+@end
+
+
+@def keywords(meta, ows=False)
+    @if ows
+        @let container = 'ows:Keywords'
+        @let tag = 'ows:Keyword'
+    @else
+        @let container = 'KeywordList'
+        @let tag = 'Keyword'
+    @end
+
+    @with meta.keywords or meta.inspireTheme or meta.isoTopicCategory
+        @tag {container}
+            @with meta.keywords
+                @each meta.keywords as kw
+                    @t {tag} {kw}
+                @end
+            @end
+
+            @with meta.inspireTheme
+                @t {tag} vocabulary="GEMET - INSPIRE themes" {meta.inspireThemeNameEn}
+            @end
+
+            @with meta.isoTopicCategory
+                @t {tag} vocabulary="ISO 19115:2003" {meta.isoTopicCategory}
+            @end
+        @end
+    @end
+@end
 
 ## OGC 06-121r3 table 15,16,17
 
@@ -11,11 +51,6 @@
         @t ows:DCP/ows:HTTP/ows:Post xlink:type="simple" xlink:href={url_for(service.url)}
     @end
 @end
-
-@def dcp_service_url
-    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={url_for(service.url)}
-@end
-
 
 ## OGC 06-121r3 sec 7.4.4
 
@@ -30,13 +65,7 @@
             @t ows:Abstract {meta.abstract}
         @end
 
-        @with meta.keywords
-            @tag ows:Keywords
-                @each meta.keywords as kw
-                    @t ows:Keyword {kw}
-                @end
-            @end
-        @end
+        @keywords meta, ows=True
 
         @with meta.fees
             @t ows:Fees {meta.fees}
@@ -82,6 +111,14 @@
 @end
 
 
+@def ows_wgs84_bounding_box(lc)
+    @tag ows:WGS84BoundingBox
+        @t ows:LowerCorner {lc.extent4326[0]} {lc.extent4326[1]}
+        @t ows:UpperCorner {lc.extent4326[2]} {lc.extent4326[3]}
+    @end
+@end
+
+
 @def wfs_feature_collection(collection, feature_formatter)
     @tag wfs:FeatureCollection
         @a timeStamp={collection.time_stamp}
@@ -96,14 +133,6 @@
 @end
 
 
-@def ows_wgs84_bounding_box(lc)
-    @tag ows:WGS84BoundingBox
-        @t ows:LowerCorner {lc.extent4326[0]} {lc.extent4326[1]}
-        @t ows:UpperCorner {lc.extent4326[2]} {lc.extent4326[3]}
-    @end
-@end
-
-
 ## http://inspire.ec.europa.eu/schemas/common/1.0/network.xsd
 ## Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities, plus mandatory language parameters,
 ## plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document
@@ -113,7 +142,7 @@
         @tag inspire_common:URL
             {url_for(meta.url)}
         @end
-        @t inspire_common:MediaType text/xml
+        @t inspire_common:MediaType application/xml
     @end
 
     @t inspire_common:ResourceType {meta.inspireResourceType}
@@ -142,6 +171,14 @@
     @t inspire_common:MetadataDate {meta.dateCreated}
     @t inspire_common:SpatialDataServiceType {meta.inspireSpatialDataServiceType}
     @t inspire_common:MandatoryKeyword/inspire_common:KeywordValue {meta.inspireMandatoryKeyword}
+
+    @tag inspire_common:Keyword
+        @tag inspire_common:OriginatingControlledVocabulary
+            @t inspire_common:Title INSPIRE themes
+            @t inspire_common:DateOfPublication 2008-06-01
+        @end
+        @t inspire_common:KeywordValue {meta.inspireThemeNameEn}
+    @end
 
     @tag inspire_common:SupportedLanguages
         @t inspire_common:DefaultLanguage/inspire_common:Language {meta.language3}

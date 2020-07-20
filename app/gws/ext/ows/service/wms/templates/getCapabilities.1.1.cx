@@ -4,9 +4,11 @@
         @t Name {lc.layer_name.p}
         @t Title {lc.title}
 
-        @with lc.meta.abstract as x
-            @t Abstract {x}
+        @with lc.meta.abstract
+            @t Abstract {lc.meta.abstract}
         @end
+
+        @keywords lc.meta
 
         @each lc.projections as p
             @t SRS {p.proj.epsg}
@@ -15,11 +17,11 @@
         @t LatLonBoundingBox minx="{lc.extent4326[0]}" miny="{lc.extent4326[1]}" maxx="{lc.extent4326[2]}" maxy="{lc.extent4326[3]}"
 
         @each lc.projections as p
-            @t BoundingBox SRS="{p.proj.epsg}" minx="{s.extent[0]}" miny="{s.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
+            @t BoundingBox SRS="{p.proj.epsg}" minx="{p.extent[0]}" miny="{p.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
         @end
 
-        @with lc.meta.attribution as x
-            @t Attribution/Title {x}
+        @with lc.meta.attribution
+            @t Attribution/Title {lc.meta.attribution}
         @end
 
         @with lc.meta.authorityUrl
@@ -38,10 +40,7 @@
             @tag Style
                 @t Name default
                 @t Title default
-                @tag LegendURL
-                    @t Format image/png
-                    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + lc.layer_name.p}"
-                @end
+                @legend_url lc
             @end
         @end
 
@@ -54,11 +53,10 @@
 @end
 
 
-@tag WMT_MS_Capabilities
-    @a version={version}
+@tag WMT_MS_Capabilities version="{version}"
 
-    @with service.update_sequence as x
-        @a updateSequence={x}
+    @with service.update_sequence
+        @a updateSequence={service.update_sequence}
     @end
  
     @tag Service

@@ -5,8 +5,8 @@
     @tag Layer
         @t ows:Title {lc.title}
 
-        @with lc.meta.abstract as x
-            @t ows:Abstract {x}
+        @with lc.meta.abstract
+            @t ows:Abstract {lc.meta.abstract}
         @end
 
         @ows_wgs84_bounding_box lc
@@ -17,10 +17,7 @@
             @tag Style
                 @t ows:Identifier default
                 @t ows:Title default
-                @tag LegendURL
-                    @t Format image/png
-                    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url) + '?request=GetLegendGraphic&layer=' + lc.layer_name.p}"
-                @end
+                @legend_url lc
             @end
         @end
 
@@ -59,7 +56,7 @@
     @end
 @end
 
-@tag Capabilities version={service.version}
+@tag Capabilities version={version}
     @xmlns wmts default
 
     @ows_service_identification

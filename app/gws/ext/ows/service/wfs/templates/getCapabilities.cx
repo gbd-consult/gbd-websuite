@@ -20,8 +20,8 @@
             @tag FeatureType
                 @t Name {lc.feature_name.q}
                 @t Title {lc.title}
-                @with lc.meta.abstract as x
-                    @t Abstract {x}
+                @with lc.meta.abstract
+                    @t Abstract {lc.meta.abstract}
                 @end
                 @t DefaultSRS {lc.projections[0].proj.urn}
                 @ows_wgs84_bounding_box lc

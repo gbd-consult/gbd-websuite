@@ -87,7 +87,7 @@ class Object(ows.Base):
         return gws.extend(
             super().configure_metadata(),
             inspireDegreeOfConformity=t.MetaInspireDegreeOfConformity.notEvaluated,
-            inspireMandatoryKeyword=t.MetaInspireKeyword.humanCatalogueViewer,
+            inspireMandatoryKeyword=t.MetaInspireMandatoryKeyword.humanCatalogueViewer,
             inspireResourceType=t.MetaInspireResourceType.service,
             inspireSpatialDataServiceType=t.MetaInspireSpatialDataServiceType.discovery,
             isoScope=t.MetaIsoScope.dataset,
@@ -150,11 +150,13 @@ class Object(ows.Base):
     def handle_getcapabilities(self, rd: ows.Request):
         return self.template_response(rd, 'GetCapabilities', context={
             'profile': self.profile,
+            'version': self.request_version(rd),
         })
 
     def handle_describerecord(self, rd: ows.Request):
         return self.template_response(rd, 'DescribeRecord', context={
             'profile': self.profile,
+            'version': self.request_version(rd),
         })
 
     def handle_getrecords(self, rd: ows.Request):
@@ -172,6 +174,7 @@ class Object(ows.Base):
             'results': results,
             'with_soap': rd.xml_is_soap,
             'profile': self.profile,
+            'version': self.request_version(rd),
         })
 
     def handle_getrecordbyid(self, rd: ows.Request):
@@ -182,6 +185,7 @@ class Object(ows.Base):
             'meta': meta,
             'with_soap': rd.xml_is_soap,
             'profile': self.profile,
+            'version': self.request_version(rd),
         })
 
     ##
