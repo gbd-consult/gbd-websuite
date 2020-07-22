@@ -24,10 +24,11 @@ _LOG_TABLE_NAME = 'dprocon_log'
 
 _cwd = os.path.dirname(__file__)
 
-_DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig({
-    'description': gws.common.template.Config({
-        'type': 'html',
-        'text': '''
+_DEFAULT_TEMPLATES = [
+    t.Config(
+        subject='feature.description',
+        type='html',
+        text='''
             <p class="head">{title}</p>
             
             <table>
@@ -39,8 +40,8 @@ _DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig({
             @end
             </table>
         '''
-    })
-})
+    )
+]
 
 
 class Config(t.WithTypeAndAccess):
@@ -54,6 +55,8 @@ class Config(t.WithTypeAndAccess):
 
     cacheTime: t.Duration = '24h'
     infoTitle: str = ''
+
+    templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
 
 
 class ConnectParams(t.Params):
@@ -73,27 +76,22 @@ class GetDataResponse(t.Data):
 
 
 class Object(gws.common.action.Object):
-    alkis: gws.ext.helper.alkis.Object
-    request_url: str
-    feature_format: t.IFormat
-    data_table_name: str
-    request_table_name: str
-
     def configure(self):
         super().configure()
 
-        self.alkis = t.cast(
+        self.alkis: gws.ext.helper.alkis.Object = t.cast(
             gws.ext.helper.alkis.Object,
             self.root.find_first('gws.ext.helper.alkis'))
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('dprocon cannot init, no alkis index found')
             return
 
-        self.request_url = self.var('requestUrl')
-        self.feature_format = self.root.create_object('gws.common.format', _DEFAULT_FORMAT)
+        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(
+            self.root, self.var('templates', default=_DEFAULT_TEMPLATES))
 
-        self.data_table_name = self.var('dataTableName')
-        self.request_table_name = self.var('requestTableName')
+        self.request_url: str = self.var('requestUrl')
+        self.data_table_name: str = self.var('dataTableName')
+        self.request_table_name: str = self.var('requestTableName')
 
     def api_connect(self, req: t.IRequest, p: ConnectParams) -> ConnectResponse:
         req.require_project(p.projectUid)
@@ -128,7 +126,7 @@ class Object(gws.common.action.Object):
             shape=shape,
         )
 
-        f.apply_format(self.feature_format, {'title': self.var('infoTitle')})
+        f.apply_templates(self.templates, {'title': self.var('infoTitle')})
 
         return GetDataResponse(feature=f.props)
 

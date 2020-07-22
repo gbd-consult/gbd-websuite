@@ -46,4 +46,4 @@ class Object(gws.common.action.Object):
 
         features = layer.edit_operation(op, p.features)
 
-        return EditResponse(features=[f.apply_format().apply_data_model().props for f in features])
+        return EditResponse(features=[f.apply_templates().apply_data_model().props for f in features])

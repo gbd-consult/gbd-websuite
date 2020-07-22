@@ -37,14 +37,14 @@ class Object(ows.Base):
             t.Config(
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wcs/templates/getCapabilities.cx',
-                owsRequest='GetCapabilities',
-                owsFormat=gws.tools.mime.get('xml'),
+                subject='GetCapabilities',
+                mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wcs/templates/describeCoverage.cx',
-                owsRequest='DescribeCoverage',
-                owsFormat=gws.tools.mime.get('xml'),
+                subject='DescribeCoverage',
+                mimeTypes=['xml'],
             ),
         ]
 

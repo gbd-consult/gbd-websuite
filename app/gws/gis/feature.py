@@ -49,7 +49,7 @@ class Feature(t.IFeature):
     def __init__(self, uid=None, attributes=None, category=None, elements=None, shape=None, style=None):
         self.attributes: t.List[t.Attribute] = []
         self.category: str = category
-        self.feature_format: t.Optional[t.IFormat] = None
+        self.templates: t.Optional[t.List[t.ITemplate]] = None
         self.data_model: t.Optional[t.IModel] = None
         self.elements = {}
         self.layer: t.Optional[t.ILayer] = None
@@ -140,12 +140,12 @@ class Feature(t.IFeature):
             self.attributes = model.apply(self.attributes)
         return self
 
-    def apply_format(self, fmt: t.IFormat = None, extra_context: dict = None, keys: t.List[str] = None) -> t.IFeature:
-        fmt = fmt or self.feature_format
-        if fmt:
-            self.elements = gws.merge(
-                self.elements,
-                fmt.apply(gws.merge(self.template_context, extra_context), keys))
+    def apply_templates(self, templates: t.List[t.ITemplate] = None, extra_context: dict = None, keys: t.List[str] = None) -> t.IFeature:
+        templates = templates or self.templates
+        ctx = gws.merge(self.template_context, extra_context)
+        for tpl in templates:
+            if tpl.category == 'feature' and (not keys or tpl.key in keys):
+                self.elements[tpl.key] = tpl.render(context=ctx).content
         return self
 
     def _init(self, uid, attributes, elements, shape, style):

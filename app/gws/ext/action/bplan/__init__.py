@@ -39,13 +39,11 @@ class Config(t.WithTypeAndAccess):
     planTable: gws.common.db.SqlTableConfig  #: plan table configuration
     metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
     dataDir: t.DirPath  #: data directory
-    qgisTemplate: gws.common.template.Config  #: qgis template project
-    infoTemplate: gws.common.template.Config #: info template
+    templates: t.List[t.ext.template.Config]
     administrativeUnits: t.List[AdministrativeUnitConfig]
     planTypes: t.List[PlanTypeConfig]
     imageQuality: int = 24  #: palette size for optimized images
-    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
-    uploadChunkSize: int #: upload chunk size in mb
+    uploadChunkSize: int  #: upload chunk size in mb
 
 
 class AdministrativeUnit(t.Data):
@@ -127,14 +125,14 @@ class Object(gws.common.action.Object):
             gws.ext.db.provider.postgres.Object,
             gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
-        s = self.var('featureFormat')
-        self.feature_format = t.cast(t.IFormat, self.create_child('gws.common.format', s)) if s else None
+        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(self.root, self.var('templates'))
+        self.qgis_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.qgis', required=True)
+        self.info_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.info', required=True)
 
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))
         self.data_dir = self.var('dataDir')
-        self.qgis_template: t.ITemplate = t.cast(t.ITemplate, self.create_child('gws.ext.template', self.var('qgisTemplate')))
-        self.info_template: t.ITemplate = t.cast(t.ITemplate, self.create_child('gws.ext.template', self.var('infoTemplate')))
+
         self.au_list = self.var('administrativeUnits')
         self.type_list = self.var('planTypes')
         self.image_quality = self.var('imageQuality')
@@ -169,8 +167,7 @@ class Object(gws.common.action.Object):
             sort='name',
         ))
         for f in features:
-            if self.feature_format:
-                f.apply_format(self.feature_format)
+            f.apply_templates(self.templates)
             g = f.attr('_geom_p') or f.attr('_geom_l') or f.attr('_geom_x')
             if g:
                 f.shape = gws.gis.shape.from_wkb_hex(g, self.plan_table.geometry_crs)

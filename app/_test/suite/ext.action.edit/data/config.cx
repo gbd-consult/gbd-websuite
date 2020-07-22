@@ -22,7 +22,8 @@ projects+ {
         type "postgres"
         display "box"
         table.name "paris_3857"
-        featureFormat.label {
+        templates+ {
+            subject "feature.label"
             type "html"
             text "{id}"
         }

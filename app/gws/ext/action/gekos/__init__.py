@@ -67,18 +67,26 @@ class Config(t.WithTypeAndAccess):
 
     crs: t.Crs = ''  #: CRS for gekos data
     db: t.Optional[str]  #: database provider uid
-    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: template for the Flurstueck details popup
     instances: t.Optional[t.List[str]]  #: gek-online instances
     params: dict  #: additional parameters for gek-online calls
     position: t.Optional[PositionConfig]  #: position correction for points
     table: gws.common.db.SqlTableConfig  #: sql table configuration
+    templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
     url: t.Url  #: gek-online base url
 
 
-_DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
-    title=gws.common.template.Config(type='html', text='{vollnummer}'),
-    teaser=gws.common.template.Config(type='html', text='Flurstück {vollnummer}'),
-)
+_DEFAULT_TEMPLATES = [
+    t.Config(
+        subject='feature.title',
+        type='html',
+        text='{vollnummer}'
+    ),
+    t.Config(
+        subject='feature.teaser',
+        type='html',
+        text='Flurstück {vollnummer}',
+    )
+]
 
 
 class Object(gws.common.action.Object):
@@ -88,7 +96,8 @@ class Object(gws.common.action.Object):
         self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         self.crs: t.Crs = self.var('crs')
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.feature_format = t.cast(t.IFormat, self.create_child('gws.common.format', self.var('featureFormat') or _DEFAULT_FORMAT))
+        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(
+            self.root, self.var('templates', default=_DEFAULT_TEMPLATES))
 
     def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:
         if not self.alkis:
@@ -102,9 +111,7 @@ class Object(gws.common.action.Object):
         project = req.require_project(p.projectUid)
         feature.transform_to(project.map.crs)
 
-        self.alkis.index_schema
-
-        f = feature.apply_format(self.feature_format).props
+        f = feature.apply_templates(self.templates).props
         f.attributes = []
 
         return GetFsResponse(feature=f)

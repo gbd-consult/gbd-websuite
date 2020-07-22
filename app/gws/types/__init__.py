@@ -328,7 +328,6 @@ class IFeature:
     category: str
     data_model: Optional['IModel']
     elements: dict
-    feature_format: Optional['IFormat']
     full_uid: str
     layer: Optional['ILayer']
     props: 'FeatureProps'
@@ -336,9 +335,10 @@ class IFeature:
     shape: Optional['IShape']
     style: Optional['IStyle']
     template_context: dict
+    templates: Optional[List['ITemplate']]
     uid: str
     def apply_data_model(self, model: 'IModel' = None) -> 'IFeature': pass
-    def apply_format(self, fmt: 'IFormat' = None, extra_context: dict = None, keys: List[str] = None) -> 'IFeature': pass
+    def apply_templates(self, templates: List['ITemplate'] = None, extra_context: dict = None, keys: List[str] = None) -> 'IFeature': pass
     def attr(self, name: str): pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
@@ -1155,7 +1155,6 @@ class ILayer(IObject):
     edit_options: Data
     edit_style: Optional['IStyle']
     extent: Optional['Extent']
-    feature_format: 'IFormat'
     geometry_type: Optional['GeometryType']
     grid_uid: str
     has_cache: bool
@@ -1177,6 +1176,7 @@ class ILayer(IObject):
     style: 'IStyle'
     supports_wfs: bool
     supports_wms: bool
+    templates: List['ITemplate']
     title: str
     def configure_legend(self) -> 'LayerLegend': pass
     def configure_metadata(self, provider_meta=None) -> 'MetaData': pass
@@ -1253,12 +1253,12 @@ class IProject(IObject):
     api: Optional['IApi']
     assets_root: Optional['DocumentRoot']
     client: Optional['IClient']
-    description_template: 'ITemplate'
     locales: List[str]
     map: Optional['IMap']
     meta: 'MetaData'
     overview_map: Optional['IMap']
     printer: Optional['IPrinter']
+    templates: List['ITemplate']
     title: str
 
 
@@ -1295,24 +1295,26 @@ class IRootObject(IObject):
 class ISearchProvider(IObject):
     active: bool
     data_model: Optional['IModel']
-    feature_format: Optional['IFormat']
+    templates: List['ITemplate']
     tolerance: 'Measurement'
-    with_geometry: bool
-    with_keyword: bool
+    with_geometry: 'ParameterUsage'
+    with_keyword: 'ParameterUsage'
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs') -> 'IShape': pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass
 
 
 class ITemplate(IObject):
+    category: str
     data_model: Optional['IModel']
+    key: str
     legend_layer_uids: List[str]
     legend_mode: Optional['TemplateLegendMode']
     map_size: 'Size'
-    ows_format: str
-    ows_request: str
+    mime_types: List[str]
     page_size: 'Size'
     path: str
+    subject: str
     text: str
     title: str
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str: pass

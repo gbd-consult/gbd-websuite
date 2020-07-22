@@ -27,19 +27,11 @@ class Config(gws.common.layer.ImageConfig):
 class Object(gws.common.layer.Image):
     @property
     def description(self):
-        ctx = {
+        context = {
             'layer': self,
             'provider': self.provider.meta
         }
-        return self.description_template.render(ctx).content
-        #
-        # sub_layers = self.source_layers
-        # if len(sub_layers) == 1 and gws.get(sub_layers[0], 'title') == self.title:
-        #     sub_layers = []
-        #
-        # return super().description(gws.defaults(
-        #     options,
-        #     sub_layers=sub_layers))
+        return self.description_template.render(context).content
 
     @property
     def own_bounds(self):

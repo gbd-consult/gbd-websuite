@@ -25,30 +25,32 @@ _common = {
     'gml3': 'application/vnd.ogc.gml/3.1.1',
 }
 
-_rmap = {
+_aliases = {
     'text/xml': 'xml',
     'application/xml': 'xml',
 }
 
-default_allowed = list(_common.values())
+DEFAULT_ALLOWED = list(_common.values())
 
 
 def get(key):
+    if not key:
+        return
+
+    key = key.lower()
+
+    # literal mime type
+    if '/' in key:
+        if key in _aliases:
+            return _common[_aliases[key]]
+        return key
+
+    # shortcut
     if key in _common:
         return _common[key]
+
     t, _ = mimetypes.guess_type('x.' + key)
     return t
-
-
-def equal(a, b):
-    """Return `True` if a and b are semantically equal mime types"""
-
-    a = a.lower()
-    b = b.lower()
-
-    if a in _rmap and b in _rmap:
-        return _rmap[a] == _rmap[b]
-    return a == b
 
 
 def for_path(path):

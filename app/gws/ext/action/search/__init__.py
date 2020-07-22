@@ -74,7 +74,7 @@ class Object(gws.common.action.Object):
 
         for f in found:
             f.transform_to(args.bounds.crs)
-            f.apply_format()
+            f.apply_templates()
             f.apply_data_model()
 
         return Response(features=[f.props for f in found])

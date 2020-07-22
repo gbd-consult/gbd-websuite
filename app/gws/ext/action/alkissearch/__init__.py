@@ -72,7 +72,7 @@ class Config(t.WithTypeAndAccess):
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
     buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
     limit: int = 100  #: search results limit
-    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: template for on-screen Flurstueck details
+    featureTemplates: t.Optional[t.List[t.ext.template.Config]]  #: templates for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
     ui: t.Optional[UiConfig]  #: ui options
     export: t.Optional[gws.ext.helper.alkis.util.export.Config]  #: csv export configuration
@@ -183,13 +183,25 @@ class ExportResponse(t.Response):
 
 _dir = os.path.dirname(__file__)
 
-DEFAULT_FORMAT = gws.common.template.FeatureFormatConfig(
-    title=gws.common.template.Config(type='html', text='{vollnummer}'),
-    teaser=gws.common.template.Config(type='html', text='Flurstück {vollnummer}'),
-    description=gws.common.template.Config(type='html', path=f'{_dir}/templates/data.cx.html')
-)
+_DEFAULT_FEATURE_TEMPLATES = [
+    t.Config(
+        subject='feature.title',
+        type='html',
+        text='{vollnummer}',
+    ),
+    t.Config(
+        subject='feature.teaser',
+        type='html',
+        text='Flurstück {vollnummer}',
+    ),
+    t.Config(
+        subject='feature.description',
+        type='html',
+        path=f'{_dir}/templates/data.cx.html',
+    ),
+]
 
-DEFAULT_PRINT_TEMPLATE = gws.common.template.Config(
+_DEFAULT_PRINT_TEMPLATE = t.Config(
     type='html',
     path=f'{_dir}/templates/print.cx.html',
     pageWidth=210,
@@ -208,52 +220,29 @@ _EF_FAIL = -1  # access to Eigentümer granted, control check failed
 
 
 class Object(gws.common.action.Object):
-    alkis: gws.ext.helper.alkis.Object = None
-    valid = False
-    buchung: BuchungConfig = None
-    control_mode = False
-    control_rules = []
-    eigentuemer: EigentuemerConfig = None
-    export: gws.ext.helper.alkis.util.export.Config = None
-    limit = 0
-    log_table = ''
-    long_feature_format: t.IFormat = None
-    print_template: t.ITemplate = None
-    short_feature_format: t.IFormat = None
-    ui: UiConfig = None
-
     def configure(self):
         super().configure()
 
-        self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
+        self.alkis: gws.ext.helper.alkis.Object = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('alkissearch cannot init, no alkis index found')
             return
 
-        self.valid = True
-        self.limit = int(self.var('limit'))
+        self.valid: bool = True
+        self.limit: int = int(self.var('limit'))
 
-        fmt = self.var('featureFormat') or gws.common.template.FeatureFormatConfig()
-        for f in 'title', 'teaser', 'description':
-            if not fmt.get(f):
-                setattr(fmt, f, DEFAULT_FORMAT.get(f))
-
-        self.short_feature_format = self.create_child('gws.common.format', t.Config(
-            title=fmt.title,
-            teaser=fmt.teaser,
-        ))
-
-        self.long_feature_format = self.create_child('gws.common.format', t.Config(
-            title=fmt.title,
-            teaser=fmt.teaser,
-            description=fmt.description,
-        ))
+        self.feature_templates: t.List[t.ITemplate] = gws.common.template.configure_list(
+            self.root, self.var('featureTemplates', default=_DEFAULT_FEATURE_TEMPLATES))
+        self.feature_short_templates: t.List[t.ITemplate] = [
+            tpl for tpl in self.feature_templates
+            if 'description' not in tpl.subject
+        ]
 
         self.print_template = self.create_child(
             'gws.ext.template',
-            self.var('printTemplate', default=DEFAULT_PRINT_TEMPLATE))
+            self.var('printTemplate', default=_DEFAULT_PRINT_TEMPLATE))
 
-        self.ui = self.var('ui')
+        self.ui: UiConfig = self.var('ui')
 
         p = self.var('export')
         g = gws.ext.helper.alkis.util.export.DEFAULT_GROUPS
@@ -261,13 +250,14 @@ class Object(gws.common.action.Object):
             p = t.Config(groups=g)
         elif p:
             p.groups = p.groups or g
-        self.export = p
+        self.export: gws.ext.helper.alkis.util.export.Config = p
 
-        self.buchung = self.var('buchung')
+        self.buchung: BuchungConfig = self.var('buchung')
 
-        self.eigentuemer = self.var('eigentuemer')
-        self.control_mode = False
-        self.log_table = None
+        self.eigentuemer: EigentuemerConfig = self.var('eigentuemer')
+        self.control_mode: bool = False
+        self.log_table: str = ''
+        self.control_rules: t.List[str] = []
 
         if self.eigentuemer:
             self.log_table = self.eigentuemer.get('logTable')
@@ -320,13 +310,13 @@ class Object(gws.common.action.Object):
         """Perform a Flurstueck search"""
 
         self._validate_request(req, p)
-        return self._fetch_and_format(req, p, self.short_feature_format, self.limit, self.limit)
+        return self._fetch_and_format(req, p, self.feature_short_templates, self.limit, self.limit)
 
     def api_get_details(self, req: t.IRequest, p: GetDetailsParams) -> GetDetailsResponse:
         """Return a Flurstueck feature with details"""
 
         self._validate_request(req, p)
-        res = self._fetch_and_format(req, p, self.long_feature_format, 1, self.limit)
+        res = self._fetch_and_format(req, p, self.feature_templates, 1, self.limit)
 
         if not res.features:
             raise gws.web.error.NotFound()
@@ -404,12 +394,12 @@ class Object(gws.common.action.Object):
             raise gws.web.error.NotFound()
         req.require_project(p.projectUid)
 
-    def _fetch_and_format(self, req, p: FindFlurstueckParams, fmt: t.IFormat, soft_limit, hard_limit) -> FindFlurstueckResponse:
+    def _fetch_and_format(self, req, p: FindFlurstueckParams, templates: t.List[t.ITemplate], soft_limit, hard_limit) -> FindFlurstueckResponse:
         fprops = []
         res = self._fetch(req, p, soft_limit, hard_limit)
 
         for f in res.features:
-            f.apply_format(fmt)
+            f.apply_templates(templates)
             props = f.props
             del props.attributes
             fprops.append(props)

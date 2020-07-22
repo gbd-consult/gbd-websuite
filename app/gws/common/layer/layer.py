@@ -41,17 +41,16 @@ class Config(t.WithTypeAndAccess):
 
     clientOptions: types.ClientOptions = {}  #: options for the layer display in the client
     dataModel: t.Optional[gws.common.model.Config]  #: layer data model
-    description: t.Optional[t.ext.template.Config]  #: template for the layer description
     display: types.DisplayMode = 'box'  #: layer display mode
     edit: t.Optional[types.EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
     legend: types.LegendConfig = {}  #: legend configuration
     meta: t.Optional[gws.common.metadata.Config]  #: layer meta data
     opacity: float = 1  #: layer opacity
     ows: types.OwsConfig = {}  #: OWS services options
     search: gws.common.search.Config = {}  #: layer search configuration
+    templates: t.Optional[t.List[t.ext.template.Config]]  #: client templates
     title: str = ''  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
@@ -62,17 +61,16 @@ class CustomConfig(t.WithAccess):
     applyTo: t.Optional[gws.gis.source.LayerFilter]  #: source layers this configuration applies to
     clientOptions: t.Optional[types.ClientOptions]  #: options for the layer display in the client
     dataModel: t.Optional[gws.common.model.Config]  #: layer data model
-    description: t.Optional[t.ext.template.Config]  #: template for the layer description
     display: t.Optional[types.DisplayMode]  #: layer display mode
     edit: t.Optional[types.EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
     legend: t.Optional[types.LegendConfig]  #: legend configuration
     meta: t.Optional[gws.common.metadata.Config]  #: layer meta data
     opacity: t.Optional[float]  #: layer opacity
     ows: t.Optional[types.OwsConfig]  #: OWS services options
     search: t.Optional[gws.common.search.Config]  #: layer search configuration
+    templates: t.Optional[t.List[t.ext.template.Config]]  #:client templates
     title: t.Optional[str]  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
@@ -99,12 +97,10 @@ class Layer(gws.Object, t.ILayer):
             uid=self.uid,
         )
 
-    @cached_property
+    @property
     def description(self) -> str:
-        ctx = {
-            'layer': self,
-        }
-        return self.description_template.render(ctx).content
+        context = {'layer': self}
+        return self.description_template.render(context).content
 
     @cached_property
     def has_search(self) -> bool:
@@ -165,21 +161,11 @@ class Layer(gws.Object, t.ILayer):
 
         self.layers: t.List[t.ILayer] = []
 
-        p = self.var('description')
-        self.description_template: t.ITemplate = (
-            self.root.create_object('gws.ext.template', p) if p
-            else self.root.create_shared_object(
-                'gws.ext.template',
-                'default_layer_description',
-                gws.common.template.builtin_config('layer_description')))
+        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(self.root, self.var('templates'))
+        self.templates.extend(gws.common.template.builtins(self.root, category='layer'))
+        self.templates.extend(gws.common.template.builtins(self.root, category='feature'))
 
-        p = self.var('featureFormat')
-        default_fmt = t.Data(
-            teaser=gws.common.template.builtin_config('feature_teaser'),
-            description=gws.common.template.builtin_config('feature_description'))
-        self.feature_format: t.IFormat = (
-            self.root.create_object('gws.common.format', gws.extend(p, default_fmt)) if p
-            else self.root.create_shared_object('gws.common.format', 'default_feature_format', default_fmt))
+        self.description_template: t.ITemplate = gws.common.template.find(self.templates, subject='layer.description')
 
         p = self.var('dataModel')
         self.data_model: t.Optional[t.IModel] = (self.create_child('gws.common.model', p) if p else None)

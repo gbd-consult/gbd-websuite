@@ -36,7 +36,8 @@ api.actions+ {
         meta {
             @META_DATA "PARIS"
         }
-        featureFormat.label {
+        templates+ {
+            subject "feature.label"
             type "html"
             text "{id}"
         }
@@ -64,7 +65,8 @@ api.actions+ {
                 type "postgres"
                 display "box"
                 table.name "dus_25832"
-                featureFormat.label {
+                templates+ {
+                    subject "feature.label"
                     type "html"
                     text "{id}"
                 }

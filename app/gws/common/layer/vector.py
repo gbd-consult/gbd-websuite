@@ -49,7 +49,7 @@ class Vector(layer.Layer, t.IVectorLayer):
 
     def connect_feature(self, feature: t.IFeature) -> t.IFeature:
         feature.layer = self
-        feature.feature_format = self.feature_format
+        feature.templates = self.templates
         feature.data_model = self.data_model
         return feature
 
@@ -72,7 +72,7 @@ class Vector(layer.Layer, t.IVectorLayer):
         gws.debug.time_start('render_svg:convert')
         for f in found:
             f.transform_to(rv.bounds.crs)
-            f.apply_format(keys=['label'])
+            f.apply_templates(keys=['label'])
         gws.debug.time_end('render_svg:convert')
 
         gws.debug.time_start('render_svg:to_svg')

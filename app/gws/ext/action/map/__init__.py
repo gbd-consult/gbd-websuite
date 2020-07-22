@@ -154,7 +154,7 @@ class Object(gws.common.action.Object):
 
         for f in found:
             f.transform_to(bounds.crs)
-            f.apply_format(keys=['label'])
+            f.apply_templates(keys=['label'])
 
         return GetFeaturesResponse(features=[f.props for f in found])
 

@@ -149,7 +149,8 @@ projects+ {
         layerConfig [
             {
                 applyTo.names ["points_ghana_25832"]
-                description {
+                templates+ {
+                    subject "layer.description"
                     type "html"
                     text "points_ghana_25832 custom description"
                 }

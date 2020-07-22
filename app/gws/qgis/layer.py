@@ -93,9 +93,9 @@ class Object(gws.common.layer.Group):
                 'maxScale': sl.scale_range[1],
             }
 
-        ff = self.var('featureFormat')
-        if ff:
-            la['featureFormat'] = ff
+        p = self.var('templates')
+        if p:
+            la['templates'] = p
 
         custom = [gws.strip(c) for c in self.custom_layer_config if gws.gis.source.layer_matches(sl, c.applyTo)]
         if custom:

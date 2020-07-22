@@ -89,12 +89,12 @@ def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.Search
         gws.log.debug('SEARCH_FAILED')
         return
 
-    ff = prov.feature_format or (layer.feature_format if layer else None)
+    tt = prov.templates or (layer.templates if layer else None)
     dm = prov.data_model or (layer.data_model if layer else None)
 
     for f in fs:
         f.layer = layer
-        f.feature_format = ff
+        f.templates = tt
         f.data_model = dm
 
     gws.log.debug('SEARCH_END, found=%r', len(fs))

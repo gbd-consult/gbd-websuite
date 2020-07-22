@@ -17,9 +17,9 @@ class ParameterUsage(t.Enum):
 
 
 class Config(t.WithTypeAndAccess):
-    defaultContext: str = ''  #: default spatial context ('view' or 'map')
-    featureFormat: t.Optional[gws.common.template.FeatureFormatConfig]  #: feature formatting options
     dataModel: t.Optional[gws.common.model.Config]  #: feature data model
+    defaultContext: str = ''  #: default spatial context ('view' or 'map')
+    templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
     tolerance: str = '10px'  #: tolerance, in pixels or map units
     withGeometry: ParameterUsage = 'allowed'  #: whether to use geometry with this search
     withKeyword: ParameterUsage = 'allowed'  #: whether to use keywords with this search
@@ -37,14 +37,16 @@ class Object(gws.Object, t.ISearchProvider):
         p = self.var('dataModel')
         self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
-        p = self.var('featureFormat')
-        self.feature_format: t.Optional[t.IFormat] = self.create_child('gws.common.format', p) if p else None
+        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(
+            self.root, self.var('templates'))
 
         p = self.var('tolerance')
-        self.tolerance: t.Measurement = gws.tools.units.parse(p, units=['px', 'm'], default='px') if p else (_DEFAULT_PIXEL_TOLERANCE, 'px')
+        self.tolerance: t.Measurement = (
+            gws.tools.units.parse(p, units=['px', 'm'], default='px') if p
+            else (_DEFAULT_PIXEL_TOLERANCE, 'px'))
 
-        self.with_keyword: bool = self.var('withKeyword')
-        self.with_geometry: bool = self.var('withGeometry')
+        self.with_keyword: ParameterUsage = self.var('withKeyword')
+        self.with_geometry: ParameterUsage = self.var('withGeometry')
 
     def can_run(self, args: t.SearchArgs):
         if not self.active:

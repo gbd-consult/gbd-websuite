@@ -13,15 +13,14 @@ class TemplateQualityLevel(t.Data):
     dpi: int  #: dpi value
 
 
-class Config(t.Config):
-    type: str  #: template type
-    qualityLevels: t.Optional[t.List[t.TemplateQualityLevel]]  #: list of quality levels supported by the template
+class Config(t.WithType):
     dataModel: t.Optional[gws.common.model.Config]  #: user-editable template attributes
+    mimeTypes: t.Optional[t.List[str]]  #: mime types this template can generate
     path: t.Optional[t.FilePath]  #: path to a template file
+    subject: str = ''  #: template purpose
+    qualityLevels: t.Optional[t.List[t.TemplateQualityLevel]]  #: list of quality levels supported by the template
     text: str = ''  #: template content
     title: str = ''  #: template title
-    owsRequest: str = ''  #: OWS request verb
-    owsFormat: str = ''  #: OWS response mime type
 
 
 #:export
@@ -99,13 +98,14 @@ class Object(gws.Object, t.ITemplate):
         p = self.var('dataModel')
         self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
-        self.ows_request: str = self.var('owsRequest', default='').lower()
+        self.subject: str = self.var('subject', default='').lower()
+        p = self.subject.split('.')
+        self.category: str = p[0] if len(p) > 1 else ''
+        self.key: str = p[-1]
 
-        # owsFormat can be literal, like 'text/html', or a shortcut, e.g. 'html'
-        p = self.var('owsFormat', default='').lower()
-        self.ows_format: str = ''
-        if p:
-            self.ows_format = p if '/' in p else gws.tools.mime.get(p)
+        self.mime_types: t.List[str] = []
+        for p in self.var('mimeTypes', default=[]):
+            self.mime_types.append(gws.tools.mime.get(p))
 
     def dpi_for_quality(self, quality):
         q = self.var('qualityLevels')
@@ -152,10 +152,58 @@ def from_path(root, path, shared=True):
     return root.create_object('gws.ext.template', cfg)
 
 
-def builtin_config(name):
-    # @TODO: cache
-    # @TODO: do not hardcode template type
+def _builtin_configs():
+    base = os.path.dirname(__file__) + '/builtin_templates/'
 
-    path = os.path.dirname(__file__) + '/builtin_templates/' + name + '.cx.html'
-    tt = _type_from_path(path)
-    return t.Config(type=tt, path=path)
+    return [
+        t.Config(
+            type='html',
+            path=base + '/layer_description.cx.html',
+            subject='layer.description',
+        ),
+        t.Config(
+            type='html',
+            path=base + '/project_description.cx.html',
+            subject='project.description',
+        ),
+        t.Config(
+            type='html',
+            path=base + '/feature_description.cx.html',
+            subject='feature.description',
+        ),
+        t.Config(
+            type='html',
+            path=base + '/feature_teaser.cx.html',
+            subject='feature.teaser',
+        ),
+    ]
+
+
+_builtin_templates = []
+
+
+def builtins(root, category=None):
+    if not _builtin_templates:
+        for cfg in _builtin_configs():
+            _builtin_templates.append(root.create_shared_object('gws.ext.template', '_builtin_template_' + cfg.path, cfg))
+    return [tpl for tpl in _builtin_templates if not category or tpl.subject.startswith(category + '.')]
+
+
+def configure_list(root, configs: t.List[t.ext.template.Config]) -> t.List[t.ITemplate]:
+    if not configs:
+        return []
+    return [
+        t.cast(t.ITemplate, root.create_object('gws.ext.template', c))
+        for c in configs
+    ]
+
+
+def find(templates: t.List[t.ITemplate], subject: str = None, category: str = None, required: bool = False) -> t.Optional[t.ITemplate]:
+    for tpl in templates:
+        if subject and tpl.subject == subject:
+            return tpl
+        if category and tpl.category == category:
+            return tpl
+
+    if required:
+        raise gws.Error(f'template not found: {subject or category}')

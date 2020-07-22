@@ -25,7 +25,6 @@ class Config(t.WithAccess):
     api: t.Optional[gws.common.api.Config]  #: project-specific actions
     assets: t.Optional[gws.web.site.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.common.client.Config]  #: project-specific gws client configuration
-    description: t.Optional[t.ext.template.Config]  #: template for the project description
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.common.map.Config]  #: Map configuration
     meta: t.Optional[gws.common.metadata.Config] = {}  #: project metadata
@@ -33,6 +32,7 @@ class Config(t.WithAccess):
     overviewMap: t.Optional[gws.common.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.common.printer.Config]  #: printer configuration
     search: t.Optional[gws.common.search.Config] = {}  #: project-wide search configuration
+    templates: t.Optional[t.List[t.ext.template.Config]]  #: project info templates
     title: str = ''  #: project title
     uid: t.Optional[str]  #: unique id
 
@@ -76,13 +76,8 @@ class Object(gws.Object, t.IProject):
         p = self.var('printer')
         self.printer: t.Optional[t.IPrinter] = self.create_child(gws.common.printer.Object, p) if p else None
 
-        p = self.var('description')
-        self.description_template: t.ITemplate = (
-            self.root.create_object('gws.ext.template', p) if p
-            else self.root.create_shared_object(
-                'gws.ext.template',
-                'default_project_description',
-                gws.common.template.builtin_config('project_description')))
+        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(self.root, self.var('templates'))
+        self.templates.extend(gws.common.template.builtins(self.root, category='project'))
 
         p = self.var('search')
         if p and p.enabled and p.providers:
@@ -99,11 +94,9 @@ class Object(gws.Object, t.IProject):
 
     @property
     def description(self):
-        ctx = {
-            'project': self,
-            'meta': self.meta,
-        }
-        return self.description_template.render(ctx).content
+        context = {'project': self, 'meta': self.meta}
+        tpl = gws.common.template.find(self.templates, subject='project.description')
+        return tpl.render(context).content
 
     @property
     def props(self):

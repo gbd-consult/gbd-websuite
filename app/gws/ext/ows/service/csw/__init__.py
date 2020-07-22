@@ -43,26 +43,26 @@ class Object(ows.Base):
             t.Config(
                 type='xml',
                 path=base + '/getCapabilities.cx',
-                owsRequest='GetCapabilities',
-                owsFormat=gws.tools.mime.get('xml'),
+                subject='GetCapabilities',
+                mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=base + '/getRecords.cx',
-                owsRequest='GetRecords',
-                owsFormat=gws.tools.mime.get('xml'),
+                subject='GetRecords',
+                mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=base + '/getRecordById.cx',
-                owsRequest='GetRecordById',
-                owsFormat=gws.tools.mime.get('xml'),
+                subject='GetRecordById',
+                mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=base + '/describeRecord.cx',
-                owsRequest='DescribeRecord',
-                owsFormat=gws.tools.mime.get('xml'),
+                subject='DescribeRecord',
+                mimeTypes=['xml'],
             ),
         ]
 

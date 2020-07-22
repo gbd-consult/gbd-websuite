@@ -33,20 +33,20 @@ class Object(ows.Base):
             t.Config(
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getCapabilities.cx',
-                owsRequest='GetCapabilities',
-                owsFormat=gws.tools.mime.get('xml'),
+                subject='GetCapabilities',
+                mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/describeFeatureType.cx',
-                owsRequest='DescribeFeatureType',
-                owsFormat=gws.tools.mime.get('xml'),
+                subject='DescribeFeatureType',
+                mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getFeature.cx',
-                owsRequest='GetFeatureInfo',
-                owsFormat=gws.tools.mime.get('gml2'),
+                subject='GetFeatureInfo',
+                mimeTypes=['xml', 'gml2'],
             ),
         ]
 

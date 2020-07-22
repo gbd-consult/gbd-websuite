@@ -14,21 +14,23 @@ import gws.types as t
 _NOMINATIM_CRS = gws.EPSG_4326
 _NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 
-_DEFAULT_FEATURE_FORMAT = gws.common.template.FeatureFormatConfig(
-    teaser=gws.common.template.Config(
+_DEFAULT_TEMPLATES = [
+    t.Config(
+        subject='feature.teaser',
         type='html',
         text='''
             <p class="head">{name | html}</p>
         '''
     ),
-    description=gws.common.template.Config(
+    t.Config(
+        subject='feature.description',
         type='html',
         text='''
             <p class="head">{name | html}</p>
             <p class="text">{content | html}</p>
         '''
     ),
-)
+]
 
 
 class Config(gws.common.search.provider.Config):
@@ -42,10 +44,8 @@ class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
 
-        self.with_keyword = 'required'
-
-        if not self.feature_format:
-            self.feature_format = self.root.create_object('gws.common.format', _DEFAULT_FEATURE_FORMAT)
+        self.with_keyword = gws.common.search.provider.ParameterUsage.required
+        self.templates.extend(gws.common.template.configure_list(self.root, _DEFAULT_TEMPLATES))
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         params = {

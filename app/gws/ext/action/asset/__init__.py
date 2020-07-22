@@ -138,7 +138,7 @@ def _valid_mime_type(mt, project_assets: t.DocumentRoot, site_assets: t.Document
         return mt in project_assets.allow_mime
     if site_assets and site_assets.allow_mime:
         return mt in site_assets.allow_mime
-    if mt not in gws.tools.mime.default_allowed:
+    if mt not in gws.tools.mime.DEFAULT_ALLOWED:
         return False
     if project_assets and project_assets.deny_mime:
         return mt not in project_assets.deny_mime

@@ -26,7 +26,8 @@ projects+ {
         type "postgres"
         display "box"
         table.name "dus1"
-        featureFormat.label {
+        templates+ {
+            subject "feature.label"
             type "html"
             text "{id}"
         }
@@ -45,7 +46,8 @@ projects+ {
         type "postgres"
         display "client"
         table.name "dus2"
-        featureFormat.label {
+        templates+ {
+            subject "feature.label"
             type "html"
             text "{id}"
         }
