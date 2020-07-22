@@ -295,6 +295,22 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                 nameShowMode = 'enabled';
             else
                 nameShowMode = '';
+        
+        let streetInput;
+        if(this.props.alkisFsParams.gemarkungUid)
+            streetInput = <gws.ui.Select 
+                placeholder={_master(this).STRINGS.strasse}
+                items={this.props.alkisFsStrassen}
+                {...boundTo('strasse')}
+                withSearch
+                withClear
+            />;
+        else
+            streetInput = <gws.ui.TextInput 
+                placeholder={_master(this).STRINGS.strasse}
+                {...boundTo('strasse')}
+                withClear
+            />;
 
         return <Form>
             {nameShowMode && <Row>
@@ -332,13 +348,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             </Row>
             <Row>
                 <Cell flex>
-                    <gws.ui.Select
-                        placeholder={_master(this).STRINGS.strasse}
-                        items={this.props.alkisFsStrassen}
-                        {...boundTo('strasse')}
-                        withSearch
-                        withClear
-                    />
+                    {streetInput}
                 </Cell>
                 <Cell width={90}>
                     <gws.ui.TextInput
