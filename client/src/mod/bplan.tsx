@@ -261,6 +261,7 @@ class BplanDialog extends gws.View<BplanViewProps> {
         if (mode === 'importForm') {
             let ok = <gws.ui.Button
                 className="cmpButtonFormOk"
+                disabled={!this.props.bplanImportFiles}
                 whenTouched={() => cc.submitUpload()}
                 primary
             />;
