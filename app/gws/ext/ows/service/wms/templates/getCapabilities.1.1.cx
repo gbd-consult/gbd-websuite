@@ -80,7 +80,7 @@
                 @dcp_service_url
             @end
             @tag GetLegendGraphic
-                @wms_formats 'getfeatureinfo'
+                @wms_formats 'getlegendgraphic'
                 @dcp_service_url
             @end
         @end

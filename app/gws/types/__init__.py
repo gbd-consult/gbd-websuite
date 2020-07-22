@@ -1135,11 +1135,6 @@ class IDbProvider(IObject):
     pass
 
 
-class IFormat(IObject):
-    templates: dict
-    def apply(self, context: dict, keys: List[str] = None) -> dict: pass
-
-
 class ILayer(IObject):
     cache_uid: str
     can_render_box: bool

@@ -1,6 +1,5 @@
 import gws
 import gws.gis.shape
-import gws.common.format
 import gws.common.model
 import gws.common.template
 import gws.tools.units

@@ -3,7 +3,6 @@ import re
 import gws
 
 import gws.common.auth
-import gws.common.format
 import gws.common.metadata
 import gws.common.model
 import gws.common.ows.provider

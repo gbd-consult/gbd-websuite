@@ -35,13 +35,13 @@ class Object(ows.Base):
             t.Config(
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wms/templates/getCapabilities.cx',
-                subject='GetCapabilities',
+                subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getFeature.cx',  # NB use the wfs template
-                subject='GetFeatureInfo',
+                subject='ows.GetFeatureInfo',
                 mimeTypes=['xml', 'gml2'],
             ),
         ]

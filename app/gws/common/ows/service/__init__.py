@@ -287,15 +287,16 @@ class Base(Object):
         mime = gws.tools.mime.get(ows_format)
         if ows_format and not mime:
             return None
+        subj = 'ows.' + ows_request.lower()
         for tpl in self.templates:
-            if tpl.key == ows_request.lower() and (not mime or not tpl.mime_types or mime in tpl.mime_types):
+            if tpl.subject == subj  and (not mime or not tpl.mime_types or mime in tpl.mime_types):
                     return tpl
 
     def enum_template_formats(self):
         fs = {}
         for tpl in self.templates:
             for m in tpl.mime_types:
-                fs.setdefault(tpl.subject, set()).add(m)
+                fs.setdefault(tpl.key, set()).add(m)
         return {k: list(v) for k, v in fs.items()}
 
     def xml_error_response(self, status, description) -> t.HttpResponse:

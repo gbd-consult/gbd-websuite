@@ -40,7 +40,7 @@ class Object(ows.Base):
             t.Config(
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wmts/templates/getCapabilities.cx',
-                subject='GetCapabilities',
+                subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
             ),
         ]

@@ -43,25 +43,25 @@ class Object(ows.Base):
             t.Config(
                 type='xml',
                 path=base + '/getCapabilities.cx',
-                subject='GetCapabilities',
+                subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=base + '/getRecords.cx',
-                subject='GetRecords',
+                subject='ows.GetRecords',
                 mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=base + '/getRecordById.cx',
-                subject='GetRecordById',
+                subject='ows.GetRecordById',
                 mimeTypes=['xml'],
             ),
             t.Config(
                 type='xml',
                 path=base + '/describeRecord.cx',
-                subject='DescribeRecord',
+                subject='ows.DescribeRecord',
                 mimeTypes=['xml'],
             ),
         ]
