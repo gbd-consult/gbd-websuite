@@ -34,9 +34,6 @@ class Params(t.Params):
     tolerance: t.Optional[str]
     resolution: float
     shapes: t.Optional[t.List[t.ShapeProps]]
-    withAttributes: bool = True
-    withDescription: bool = True
-    withGeometry: bool = True
 
 
 class Object(gws.common.action.Object):
@@ -73,6 +70,7 @@ class Object(gws.common.action.Object):
         found = gws.common.search.runner.run(req, args)
 
         for f in found:
+            # @TODO only pull specified props from a feature
             f.transform_to(args.bounds.crs)
             f.apply_templates()
             f.apply_data_model()

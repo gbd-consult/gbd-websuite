@@ -13,9 +13,8 @@ def tag(*args):
     return args
 
 
-def envelope_to_extent(el: gws.tools.xml2.Element):
-    crs = el.attr('srsName') or 4326
-    prj = gws.gis.proj.as_proj(crs)
+def parse_envelope(el: gws.tools.xml2.Element):
+    prj = gws.gis.proj.as_proj(el.attr('srsName') or 4326)
     if not prj:
         return None, None
 
@@ -26,12 +25,13 @@ def envelope_to_extent(el: gws.tools.xml2.Element):
     try:
         x1, y1 = pair(el.get_text('LowerCorner'))
         x2, y2 = pair(el.get_text('UpperCorner'))
-        return prj.epsg, [
+        ext = [
             min(x1, x2),
             min(y1, y2),
             max(x1, x2),
             max(y1, y2),
         ]
+        return ext, prj.epsg
     except (IndexError, TypeError):
         return None, None
 

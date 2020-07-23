@@ -31,7 +31,7 @@ class Object(gws.common.layer.Vector):
         if not self.data_model:
             p = self.provider.table_data_model_config(self.table)
             if p:
-                self.data_model = self.create_child('gws.common.model', p)
+                self.data_model = t.cast(t.IModel, self.create_child('gws.common.model', p))
 
     @property
     def own_bounds(self):

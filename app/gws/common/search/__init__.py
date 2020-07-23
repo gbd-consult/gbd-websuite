@@ -11,6 +11,7 @@ class SearchArgs(t.Data):
     axis: str
     bounds: t.Bounds
     keyword: t.Optional[str]
+    filter: t.Optional[t.SearchFilter]
     layers: t.List[t.ILayer]
     limit: int
     params: dict

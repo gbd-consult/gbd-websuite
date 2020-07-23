@@ -3,6 +3,7 @@ import gws.common.model
 import gws.common.ows.service as ows
 import gws.common.search.runner
 import gws.gis.extent
+import gws.gis.filter
 import gws.gis.gml
 import gws.gis.proj
 import gws.gis.render
@@ -109,9 +110,21 @@ class Object(ows.Base):
         else:
             shape = gws.gis.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
 
+        if rd.req.has_param('filter'):
+            src = rd.req.param('filter')
+            try:
+                filter = gws.gis.filter.from_fes_string(src)
+            except gws.gis.filter.Error as err:
+                gws.log.error(f'FILTER ERROR: {err!r} filter={src!r}')
+                raise gws.web.error.BadRequest('Invalid FILTER value')
+            gws.p('FILTER', filter)
+        else:
+            filter = None
+
         args = t.SearchArgs(
             project=rd.project,
             shapes=[shape],
+            filter=filter,
             layers=[lc.layer for lc in lcs],
             limit=limit,
             tolerance=(10, 'px'),

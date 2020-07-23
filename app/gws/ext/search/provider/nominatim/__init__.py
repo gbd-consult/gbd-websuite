@@ -44,7 +44,7 @@ class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
 
-        self.with_keyword = gws.common.search.provider.ParameterUsage.required
+        self.capabilties = gws.common.search.provider.CAPS_KEYWORD
         self.templates.extend(gws.common.template.configure_list(self.root, _DEFAULT_TEMPLATES))
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:

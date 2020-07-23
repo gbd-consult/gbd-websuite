@@ -20,6 +20,7 @@ def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
         f'SEARCH ARGS',
         f"axis={args.axis}",
         f"bounds={args.bounds}",
+        f"filter={args.filter}",
         f"keyword={args.keyword}",
         f"layers={[p.uid for p in args.layers]}",
         f"limit={args.limit}",

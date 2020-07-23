@@ -16,6 +16,8 @@ class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
 
+        self.capabilties = gws.common.search.provider.CAPS_GEOMETRY
+
         ds = self.var('dataSource')
 
         cfg = {
@@ -42,9 +44,6 @@ class Object(gws.common.search.provider.Object):
         except gws.Error:
             gws.log.warn(f"table {ds['table']} not found")
             self.active = False
-
-        self.with_keyword = gws.common.search.provider.ParameterUsage.forbidden
-        self.with_geometry = gws.common.search.provider.ParameterUsage.required
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         if not self.table:

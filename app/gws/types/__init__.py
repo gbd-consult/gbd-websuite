@@ -817,6 +817,7 @@ class RewriteRule(Data):
 class SearchArgs(Data):
     axis: str
     bounds: 'Bounds'
+    filter: Optional['SearchFilter']
     keyword: Optional[str]
     layers: List['ILayer']
     limit: int
@@ -826,6 +827,14 @@ class SearchArgs(Data):
     shapes: List['IShape']
     source_layer_names: List[str]
     tolerance: 'Measurement'
+
+
+class SearchFilter(Data):
+    name: str
+    operator: str
+    shape: 'IShape'
+    sub: List['SearchFilter']
+    value: str
 
 
 class SelectArgs(Data):
@@ -1289,11 +1298,12 @@ class IRootObject(IObject):
 
 class ISearchProvider(IObject):
     active: bool
+    capabilties: int
     data_model: Optional['IModel']
     templates: List['ITemplate']
     tolerance: 'Measurement'
-    with_geometry: 'ParameterUsage'
-    with_keyword: 'ParameterUsage'
+    with_geometry: bool
+    with_keyword: bool
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs') -> 'IShape': pass
     def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass

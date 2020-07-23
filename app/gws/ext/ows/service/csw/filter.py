@@ -28,7 +28,7 @@ class Filter:
         return [r for r in recs if r.index in ns]
 
     def _bbox(self, flt, recs):
-        crs, ext = gws.gis.gml.envelope_to_extent(flt.first('Envelope'))
+        ext, crs = gws.gis.gml.parse_envelope(flt.first('Envelope'))
         if not ext:
             return []
 

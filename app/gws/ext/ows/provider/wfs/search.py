@@ -16,8 +16,8 @@ class Object(gws.common.search.provider.Object):
     def configure(self):
         super().configure()
 
-        self.with_geometry = gws.common.search.provider.ParameterUsage.required
-        self.with_keyword = gws.common.search.provider.ParameterUsage.forbidden
+        # @TODO support filters
+        self.capabilties = gws.common.search.provider.CAPS_GEOMETRY
 
         layer = self.var('layer')
         if layer:
