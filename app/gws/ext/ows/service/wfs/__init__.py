@@ -2,6 +2,7 @@ import gws
 import gws.common.model
 import gws.common.ows.service as ows
 import gws.common.search.runner
+import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.filter
 import gws.gis.gml
@@ -103,10 +104,10 @@ class Object(ows.Base):
         crs = rd.req.param('srsName') or rd.project.map.crs
 
         if rd.req.has_param('bbox'):
-            bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
-            if not bbox:
+            bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), crs)
+            if not bounds:
                 raise gws.web.error.BadRequest('Invalid BBOX value')
-            shape = gws.gis.shape.from_extent(extent=bbox, crs=crs)
+            shape = gws.gis.shape.from_bounds(bounds)
         else:
             shape = gws.gis.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
 

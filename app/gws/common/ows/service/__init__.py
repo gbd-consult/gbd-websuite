@@ -6,6 +6,7 @@ import gws.common.metadata.inspire
 import gws.common.model
 import gws.common.search.runner
 import gws.common.template
+import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.render
 import gws.gis.gml
@@ -466,23 +467,23 @@ class Base(Object):
     # Utils
 
     def render_map_bbox_from_layer_caps_list(self, lcs: t.List[LayerCaps], rd: Request) -> t.HttpResponse:
-
+        crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs
         try:
-            bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
+            bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), crs)
             px_width = int(rd.req.param('width'))
             px_height = int(rd.req.param('height'))
         except:
             raise gws.web.error.BadRequest()
 
-        if not bbox or not px_width or not px_height:
+        if not bounds or not px_width or not px_height:
             raise gws.web.error.BadRequest()
 
         render_input = t.MapRenderInput(
             background_color=None,
             items=[],
             view=gws.gis.render.view_from_bbox(
-                crs=rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
-                bbox=bbox,
+                crs=bounds.crs,
+                bbox=bounds.extent,
                 out_size=(px_width, px_height),
                 out_size_unit='px',
                 rotation=0,

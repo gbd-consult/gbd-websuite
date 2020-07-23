@@ -13,10 +13,20 @@ def tag(*args):
     return args
 
 
-def parse_envelope(el: gws.tools.xml2.Element):
+def parse_envelope(el: gws.tools.xml2.Element) -> t.Optional[t.Bounds]:
+    """Parse a gml:Envelope.
+
+    See:
+        OGC 07-036, 10.1.4.6 EnvelopeType, Envelope
+    """
+    # @TODO "coordinates" and "pos" are deprecated, but still should be parsed
+
+    if not el:
+        return
+
     prj = gws.gis.proj.as_proj(el.attr('srsName') or 4326)
     if not prj:
-        return None, None
+        return
 
     def pair(s):
         s = s.split()
@@ -31,9 +41,9 @@ def parse_envelope(el: gws.tools.xml2.Element):
             max(x1, x2),
             max(y1, y2),
         ]
-        return ext, prj.epsg
+        return t.Bounds(extent=ext, crs=prj.epsg)
     except (IndexError, TypeError):
-        return None, None
+        pass
 
 
 def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False):

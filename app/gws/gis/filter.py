@@ -4,7 +4,7 @@ import re
 
 import gws
 
-import gws.gis.gml
+import gws.gis.bounds
 import gws.gis.shape
 import gws.tools.xml2
 import gws.types as t
@@ -90,13 +90,10 @@ def from_fes_element(el: gws.tools.xml2.Element) -> SearchFilter:
     f.name = m.group(2)
 
     if op == 'bbox':
-        v = el.first('Envelope')
-        if not v:
+        bounds = gws.gis.bounds.from_gml_envelope_element(el.first('Envelope'))
+        if not bounds:
             raise Error(f'invalid BBOX')
-        extent, crs = gws.gis.gml.parse_envelope(v)
-        if not extent:
-            raise Error(f'invalid BBOX')
-        f.shape = gws.gis.shape.from_extent(extent, crs)
+        f.shape = gws.gis.shape.from_bounds(bounds)
         return f
 
     v = el.first('Literal')

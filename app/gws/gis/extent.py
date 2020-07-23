@@ -9,12 +9,6 @@ import gws.gis.shape
 import gws.types as t
 
 
-#:export
-class Bounds(t.Data):
-    crs: t.Crs
-    extent: t.Extent
-
-
 def from_string(s: str) -> t.Optional[t.Extent]:
     """Create an extent from a comma-separated string "1000,2000,20000 40000" """
     try:

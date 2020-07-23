@@ -1,6 +1,7 @@
 import gws
 import gws.common.metadata
 import gws.common.search.runner
+import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.gml
 import gws.gis.legend
@@ -123,8 +124,12 @@ class Object(ows.Base):
     ###
 
     def find_features(self, rd: ows.Request):
+        crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs
+        bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), crs)
+        if not bounds:
+            raise gws.web.error.BadRequest('Invalid BBOX')
+
         try:
-            bbox = gws.gis.extent.from_string(rd.req.param('bbox'))
             px_width = int(rd.req.param('width'))
             px_height = int(rd.req.param('height'))
             limit = int(rd.req.param('feature_count', '1'))
@@ -133,12 +138,12 @@ class Object(ows.Base):
         except:
             raise gws.web.error.BadRequest('Invalid parameter')
 
-        crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs
 
         lcs = self.layer_caps_list_from_request(rd, ['query_layers'])
         if not lcs:
             raise gws.web.error.NotFound('No layers found')
 
+        bbox = bounds.extent
         xres = (bbox[2] - bbox[0]) / px_width
         yres = (bbox[3] - bbox[1]) / px_height
         x = bbox[0] + (x * xres)
