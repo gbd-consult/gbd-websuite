@@ -1,4 +1,5 @@
 import gws
+import gws.common.template
 import gws.types as t
 
 
@@ -14,10 +15,7 @@ class Props(t.Data):
 class Object(gws.Object, t.IPrinter):
     def configure(self):
         super().configure()
-        self.templates: t.List[t.ITemplate] = [
-            self.create_child('gws.ext.template', p)
-            for p in self.var('templates')
-        ]
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
 
     @property
     def props(self) -> Props:

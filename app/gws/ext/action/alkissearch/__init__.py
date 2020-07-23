@@ -231,12 +231,11 @@ class Object(gws.common.action.Object):
         self.valid: bool = True
         self.limit: int = int(self.var('limit'))
 
-        self.feature_templates: t.List[t.ITemplate] = gws.common.template.configure_list(
-            self.root, self.var('featureTemplates', default=_DEFAULT_FEATURE_TEMPLATES))
+        self.feature_templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_FEATURE_TEMPLATES)
+
         self.feature_short_templates: t.List[t.ITemplate] = [
             tpl for tpl in self.feature_templates
-            if 'description' not in tpl.subject
-        ]
+            if 'description' not in tpl.subject]
 
         self.print_template = self.create_child(
             'gws.ext.template',

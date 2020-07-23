@@ -36,7 +36,7 @@ class Object(gws.Object, t.ISearchProvider):
         p = self.var('dataModel')
         self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
-        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(self.root, self.var('templates'))
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
 
         p = self.var('tolerance')
         self.tolerance: t.Measurement = (

@@ -96,8 +96,7 @@ class Object(gws.common.action.Object):
         self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         self.crs: t.Crs = self.var('crs')
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(
-            self.root, self.var('templates', default=_DEFAULT_TEMPLATES))
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
     def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:
         if not self.alkis:

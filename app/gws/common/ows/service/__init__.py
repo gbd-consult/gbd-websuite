@@ -5,6 +5,7 @@ import gws.common.metadata
 import gws.common.metadata.inspire
 import gws.common.model
 import gws.common.search.runner
+import gws.common.template
 import gws.gis.extent
 import gws.gis.render
 import gws.gis.gml
@@ -187,11 +188,7 @@ class Base(Object):
         self.update_sequence = self.var('updateSequence')
         self.with_inspire_meta = self.var('withInspireMeta')
 
-        self.templates: t.List[t.ITemplate] = []
-        for p in self.var('templates', default=[]):
-            self.templates.append(t.cast(t.ITemplate, self.create_child('gws.ext.template', p)))
-        for p in self.default_templates:
-            self.templates.append(t.cast(t.ITemplate, self.root.create_shared_object('gws.ext.template', p.path, p)))
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), self.default_templates)
 
     def configure_metadata(self):
         meta = gws.common.metadata.from_config(self.var('meta'))
@@ -289,8 +286,8 @@ class Base(Object):
             return None
         subj = 'ows.' + ows_request.lower()
         for tpl in self.templates:
-            if tpl.subject == subj  and (not mime or not tpl.mime_types or mime in tpl.mime_types):
-                    return tpl
+            if tpl.subject == subj and (not mime or not tpl.mime_types or mime in tpl.mime_types):
+                return tpl
 
     def enum_template_formats(self):
         fs = {}

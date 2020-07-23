@@ -45,7 +45,7 @@ class Object(gws.common.search.provider.Object):
         super().configure()
 
         self.capabilties = gws.common.search.provider.CAPS_KEYWORD
-        self.templates.extend(gws.common.template.configure_list(self.root, _DEFAULT_TEMPLATES))
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         params = {

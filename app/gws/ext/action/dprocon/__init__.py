@@ -86,8 +86,7 @@ class Object(gws.common.action.Object):
             gws.log.warn('dprocon cannot init, no alkis index found')
             return
 
-        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(
-            self.root, self.var('templates', default=_DEFAULT_TEMPLATES))
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
         self.request_url: str = self.var('requestUrl')
         self.data_table_name: str = self.var('dataTableName')

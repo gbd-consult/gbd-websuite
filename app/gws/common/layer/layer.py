@@ -160,10 +160,7 @@ class Layer(gws.Object, t.ILayer):
 
         self.layers: t.List[t.ILayer] = []
 
-        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(self.root, self.var('templates'))
-        self.templates.extend(gws.common.template.builtins(self.root, category='layer'))
-        self.templates.extend(gws.common.template.builtins(self.root, category='feature'))
-
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), gws.common.template.BUILTINS)
         self.description_template: t.ITemplate = gws.common.template.find(self.templates, subject='layer.description')
 
         p = self.var('dataModel')

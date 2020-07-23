@@ -76,8 +76,7 @@ class Object(gws.Object, t.IProject):
         p = self.var('printer')
         self.printer: t.Optional[t.IPrinter] = self.create_child(gws.common.printer.Object, p) if p else None
 
-        self.templates: t.List[t.ITemplate] = gws.common.template.configure_list(self.root, self.var('templates'))
-        self.templates.extend(gws.common.template.builtins(self.root, category='project'))
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), gws.common.template.BUILTINS)
 
         p = self.var('search')
         if p and p.enabled and p.providers:

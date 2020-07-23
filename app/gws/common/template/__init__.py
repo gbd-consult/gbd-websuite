@@ -147,55 +147,69 @@ def from_path(root, path, shared=True):
     if not tt:
         return
     cfg = t.Config(type=tt, path=path)
-    if shared:
-        return root.create_shared_object('gws.ext.template', '_template_' + path, cfg)
-    return root.create_object('gws.ext.template', cfg)
+    return from_config(root, cfg, shared=shared)
 
 
-def _builtin_configs():
-    base = os.path.dirname(__file__) + '/builtin_templates/'
+def from_config(root, cfg, shared: bool = False, parent: t.IObject = None) -> t.ITemplate:
+    if not shared:
+        return t.cast(t.ITemplate, root.create_object('gws.ext.template', cfg, parent))
 
-    return [
-        t.Config(
-            type='html',
-            path=base + '/layer_description.cx.html',
-            subject='layer.description',
-        ),
-        t.Config(
-            type='html',
-            path=base + '/project_description.cx.html',
-            subject='project.description',
-        ),
-        t.Config(
-            type='html',
-            path=base + '/feature_description.cx.html',
-            subject='feature.description',
-        ),
-        t.Config(
-            type='html',
-            path=base + '/feature_teaser.cx.html',
-            subject='feature.teaser',
-        ),
-    ]
+    uid = gws.get(cfg, 'uid') or gws.get(cfg, 'path') or gws.sha256(gws.get(cfg, 'text') or '')
+    tpl = t.cast(t.ITemplate, root.create_shared_object('gws.ext.template', uid, cfg))
+    if parent:
+        parent.append_child(tpl)
+    return tpl
 
 
-_builtin_templates = []
+_dir = os.path.dirname(__file__) + '/builtin_templates/'
+
+BUILTINS = [
+    t.Config(
+        type='html',
+        path=_dir + '/layer_description.cx.html',
+        subject='layer.description',
+    ),
+    t.Config(
+        type='html',
+        path=_dir + '/project_description.cx.html',
+        subject='project.description',
+    ),
+    t.Config(
+        type='html',
+        path=_dir + '/feature_description.cx.html',
+        subject='feature.description',
+    ),
+    t.Config(
+        type='html',
+        path=_dir + '/feature_teaser.cx.html',
+        subject='feature.teaser',
+    ),
+]
 
 
-def builtins(root, category=None):
-    if not _builtin_templates:
-        for cfg in _builtin_configs():
-            _builtin_templates.append(root.create_shared_object('gws.ext.template', '_builtin_template_' + cfg.path, cfg))
-    return [tpl for tpl in _builtin_templates if not category or tpl.subject.startswith(category + '.')]
+def bundle(
+        target: t.IObject,
+        configs: t.List[t.ext.template.Config],
+        defaults: t.List[t.ext.template.Config] = None,
+) -> t.List[t.ITemplate]:
+    ts = []
+    subj = set()
 
+    for cfg in (configs or []):
+        s = gws.get(cfg, 'subject')
+        if s:
+            subj.add(s)
+        ts.append(from_config(target.root, cfg, shared=False, parent=target))
 
-def configure_list(root, configs: t.List[t.ext.template.Config]) -> t.List[t.ITemplate]:
-    if not configs:
-        return []
-    return [
-        t.cast(t.ITemplate, root.create_object('gws.ext.template', c))
-        for c in configs
-    ]
+    for cfg in (defaults or []):
+        s = gws.get(cfg, 'subject')
+        if s and s in subj:
+            continue
+        if s:
+            subj.add(s)
+        ts.append(from_config(target.root, cfg, shared=True, parent=target))
+
+    return ts
 
 
 def find(templates: t.List[t.ITemplate], subject: str = None, category: str = None, required: bool = False) -> t.Optional[t.ITemplate]:
