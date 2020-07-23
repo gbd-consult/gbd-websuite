@@ -126,8 +126,8 @@ class Object(gws.common.action.Object):
             gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
-        self.qgis_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.qgis', required=True)
-        self.info_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.info', required=True)
+        self.qgis_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.qgis')
+        self.info_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.info')
 
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))

@@ -266,9 +266,12 @@ class Base(Object):
         return t.HttpResponse(content=out.content, mime=out.mime)
 
     def render_template(self, rd: Request, ows_request: str, ows_format: str = None, context=None, format=None):
-        tpl = self.find_template(ows_request, ows_format)
+        mime = gws.tools.mime.get(ows_format)
+        if ows_format and not mime:
+            raise gws.web.error.BadRequest('Invalid FORMAT')
+        tpl = gws.common.template.find(self.templates, subject='ows.' + ows_request.lower(), mime=mime)
         if not tpl:
-            raise gws.web.error.BadRequest('Invalid format requested')
+            raise gws.web.error.BadRequest('Unsupported FORMAT')
         gws.log.debug(f'ows_request={ows_request!r} ows_format={ows_format!r} template={tpl.uid!r}')
 
         context = gws.merge({
@@ -280,15 +283,6 @@ class Base(Object):
         }, context)
 
         return tpl.render(context, format=format)
-
-    def find_template(self, ows_request, ows_format) -> t.Optional[t.ITemplate]:
-        mime = gws.tools.mime.get(ows_format)
-        if ows_format and not mime:
-            return None
-        subj = 'ows.' + ows_request.lower()
-        for tpl in self.templates:
-            if tpl.subject == subj and (not mime or not tpl.mime_types or mime in tpl.mime_types):
-                return tpl
 
     def enum_template_formats(self):
         fs = {}

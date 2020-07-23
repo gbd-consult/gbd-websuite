@@ -141,11 +141,13 @@ class Feature(t.IFeature):
         return self
 
     def apply_templates(self, templates: t.List[t.ITemplate] = None, extra_context: dict = None, keys: t.List[str] = None) -> t.IFeature:
+        used = set()
         templates = templates or self.templates
         ctx = gws.merge(self.template_context, extra_context)
         for tpl in templates:
-            if tpl.category == 'feature' and (not keys or tpl.key in keys):
+            if tpl.category == 'feature' and (tpl.key not in used) and (not keys or tpl.key in keys):
                 self.elements[tpl.key] = tpl.render(context=ctx).content
+                used.add(tpl.key)
         return self
 
     def _init(self, uid, attributes, elements, shape, style):

@@ -192,32 +192,23 @@ def bundle(
         configs: t.List[t.ext.template.Config],
         defaults: t.List[t.ext.template.Config] = None,
 ) -> t.List[t.ITemplate]:
+
     ts = []
-    subj = set()
 
     for cfg in (configs or []):
-        s = gws.get(cfg, 'subject')
-        if s:
-            subj.add(s)
         ts.append(from_config(target.root, cfg, shared=False, parent=target))
 
     for cfg in (defaults or []):
-        s = gws.get(cfg, 'subject')
-        if s and s in subj:
-            continue
-        if s:
-            subj.add(s)
         ts.append(from_config(target.root, cfg, shared=True, parent=target))
 
     return ts
 
 
-def find(templates: t.List[t.ITemplate], subject: str = None, category: str = None, required: bool = False) -> t.Optional[t.ITemplate]:
+def find(templates: t.List[t.ITemplate], subject: str = None, category: str = None, mime: str = None) -> t.Optional[t.ITemplate]:
     for tpl in templates:
-        if subject and tpl.subject == subject:
+        ok = (
+            (not subject or subject == tpl.subject)
+            and (not category or category == tpl.category)
+            and (not mime or mime in tpl.mime_types))
+        if ok:
             return tpl
-        if category and tpl.category == category:
-            return tpl
-
-    if required:
-        raise gws.Error(f'template not found: {subject or category}')
