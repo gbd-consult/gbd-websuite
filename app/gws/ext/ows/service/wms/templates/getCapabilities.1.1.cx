@@ -44,7 +44,9 @@
             @end
         @end
 
-        @t ScaleHint min="{lc.min_scale}" max="{lc.max_scale}"
+        ## OGC 01-068r3, 7.1.4.5.8
+        ## pixel diagonal, assuming 72dpi screen
+        @t ScaleHint min="{lc.min_scale * (1.41421 / 72 * 0.0254)}" max="{lc.max_scale * (1.41421 / 72 * 0.0254)}"
 
         @each reversed(lc.sub_caps) as s
             @wms_layer_capabilities s

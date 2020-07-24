@@ -3,16 +3,16 @@ import gws
 
 import gws.types as t
 
-# OGC's 1px = 0.28mm
-# https://portal.opengeospatial.org/files/?artifact_id=14416 page 27
-
-OGC_M_PER_PX = 0.00028
-OGC_SCREEN_PPI = 25.4 / OGC_M_PER_PX / 1000
-
-PDF_DPI = 96
-
 MM_PER_IN = 25.4
 PT_PER_IN = 72
+
+# OGC's 1px = 0.28mm
+# OGC 06-042, 7.2.4.6.9
+
+OGC_M_PER_PX = 0.00028
+OGC_SCREEN_PPI = MM_PER_IN / (OGC_M_PER_PX * 1000)  # 90.71
+
+PDF_DPI = 96
 
 
 def scale2res(x):
