@@ -48,10 +48,6 @@ export async function main() {
         document.body.appendChild(domNode);
     }
 
-    if (navigator.userAgent.indexOf('Trident/7.0') > 0) {
-        domNode.className = 'gws msie';
-    }
-
     let glob = window;
 
     let options = {

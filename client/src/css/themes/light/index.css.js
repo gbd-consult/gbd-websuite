@@ -308,7 +308,6 @@ let rules = [
 
     require('./extras.css'),
     require('./responsive.css'),
-    require('./msie.css'),
     // require('./base/debug.css'),
 ];
 

@@ -80,10 +80,6 @@ let generateThemes = options => {
 
 let copyAssets = options => {
 
-    // msie polyfill
-    let msie = 'msie11.polyfill.io.js';
-    fs.copyFileSync(absPath(msie), options.dist + '/' + msie);
-
     // start script
     let start = absPath('src/gws-start.js');
     fs.copyFileSync(start, options.dist + '/gws-start-' + options.version + '.js');
