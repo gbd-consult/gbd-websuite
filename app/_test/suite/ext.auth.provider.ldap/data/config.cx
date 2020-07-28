@@ -2,20 +2,31 @@
 
 @WEB_SERVER_ONLY
 
-## $sha512$DAoCWW8T$7RHQY02aWZZFnT53ebCqgrrFUdbHxplswTdGN29bUbv9AVuqmFZO51gBSKL8IxvmHspph22qjckGhYOQfTOOmw==
-## == "123"
-auth.providers+ { 
+auth.providers+ {
     type "ldap"
-    url "ldap://localhost:389/dc=planetexpress,dc=com?uid"
+    url "ldap://mainhost:389/dc=planetexpress,dc=com?uid"
     bindDN "cn=admin,dc=planetexpress,dc=com"
     bindPassword "GoodNewsEveryone"
     displayNameFormat "{displayName}"
-    users+ {
-        matches "(&(uid=fry))"
-        role "testrole"
-    }
-    
+
+    ## see https://github.com/rroemhild/docker-test-openldap
+
+    users [
+        {
+            matches "uid=fry"
+            roles ["role_uid"]
+        }
+        {
+            memberOf "cn=admin_staff"
+            roles ["role_group"]
+        }
+        {
+            matches "(|(uid=leela)(uid=bender))"
+            roles ["role_or"]
+        }
+    ]
 }
+
 auth.methods+ { type "web" secure false }
 
 access+ { role "all" type "deny" }
@@ -26,7 +37,25 @@ api.actions+ { type "auth" }
 api.actions+ { type "asset" }
 
 projects+ {
-    uid "testrole_only"
+    uid "user_project"
     assets.dir "/data"
-    access.0 { role "testrole" type "allow" }
+    access+ { role "user" type "allow" }
+}
+
+projects+ {
+    uid "uid_project"
+    assets.dir "/data"
+    access+ { role "role_uid" type "allow" }
+}
+
+projects+ {
+    uid "group_project"
+    assets.dir "/data"
+    access+ { role "role_group" type "allow" }
+}
+
+projects+ {
+    uid "or_project"
+    assets.dir "/data"
+    access+ { role "role_or" type "allow" }
 }

@@ -125,6 +125,11 @@ def run_suites(suites, opts):
         run_suite(suite, opts)
 
 
+def stop_all_containers():
+    stop_suite_container()
+    stop_utility_containers()
+
+
 def start_cmd_server():
     try:
         # signal the server to exit
@@ -133,10 +138,9 @@ def start_cmd_server():
     except:
         pass
 
-    atexit.register(stop_all)
+    atexit.register(stop_all_containers)
 
-    start_postgres_container()
-    start_qgis_container()
+    start_utility_containers()
 
     server_address = CONFIG['host.ip'], int(CONFIG['cmdserver.port'])
 
@@ -167,8 +171,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
 
-# container control
-
+# suite containers
 
 def start_suite_container(suite, extra_options=None):
     stop_suite_container()
@@ -227,91 +230,96 @@ def stop_suite_container():
     run(f"rm -fr {CONFIG['paths.suite_var_root']}/*")
 
 
-def start_postgres_container():
-    # see https://hub.docker.com/r/kartoza/postgis/ for details
+# utility containers
 
-    stop_postgres_container()
-    time.sleep(2)
+class PostgresContainer:
+    def start(self):
+        # see https://hub.docker.com/r/kartoza/postgis/ for details
 
-    extra_conf = '\\n'.join([
-        "log_destination='stderr'",
-        "log_statement='all'",
-        "log_duration=1",
-    ])
+        extra_conf = '\\n'.join([
+            "log_destination='stderr'",
+            "log_statement='all'",
+            "log_duration=1",
+        ])
 
-    opts = [
-        f"--detach",
-        f"--env POSTGRES_DB={CONFIG['postgres_connection.database']}",
-        f"--env POSTGRES_PASS={CONFIG['postgres_connection.password']}",
-        f"--env POSTGRES_USER={CONFIG['postgres_connection.user']}",
-        f"""--env EXTRA_CONF="{extra_conf}" """
-        f"--name {CONFIG['postgres_container.name']}",
-        f"--publish {CONFIG['host.ip']}:{CONFIG['postgres_connection.port']}:5432",
-    ]
+        opts = [
+            f"--detach",
+            f"--env POSTGRES_DB={CONFIG['postgres_connection.database']}",
+            f"--env POSTGRES_PASS={CONFIG['postgres_connection.password']}",
+            f"--env POSTGRES_USER={CONFIG['postgres_connection.user']}",
+            f"""--env EXTRA_CONF="{extra_conf}" """
+            f"--name {CONFIG['postgres_container.name']}",
+            f"--publish {CONFIG['host.ip']}:{CONFIG['postgres_connection.port']}:5432",
+        ]
 
-    banner('STARTING POSTGRES CONTAINER...')
-    docker_run(CONFIG['postgres_container.image'], opts)
+        docker_run(CONFIG['postgres_container.image'], opts)
 
-
-def stop_postgres_container():
-    banner('STOPPING POSTGRES CONTAINER...')
-    run(f"docker kill {CONFIG['postgres_container.name']}")
-    run(f"docker rm --force {CONFIG['postgres_container.name']}")
+    def stop(self):
+        run(f"docker kill {CONFIG['postgres_container.name']}")
+        run(f"docker rm --force {CONFIG['postgres_container.name']}")
 
 
-def start_qgis_container():
-    # we use our own image to expose the qgis server which will provide us with test OWS services
-    # port 4000 (our qgis port) is exposed to the host
-    # the server serves projects from _test/common/qgis
-    # qgs project files must be patched to provide correct callback urls (host:qgis-port)
+class QgisContainer:
+    def start(self):
+        # we use our own image to expose the qgis server which will provide us with test OWS services
+        # port 4000 (our qgis port) is exposed to the host
+        # the server serves projects from _test/common/qgis
+        # qgs project files must be patched to provide correct callback urls (host:qgis-port)
 
-    stop_qgis_container()
-    time.sleep(2)
+        opts = [
+            f"--add-host={CONFIG['host.name']}:{CONFIG['host.docker_ip']}",
+            f"--detach",
+            f"--env GWS_CONFIG=/qgis/config.cx",
+            f"--env GWS_TMP_DIR=/gws-var/tmp",
+            f"--mount type=bind,src={CONFIG['paths.app_root']},dst=/gws-app",
+            f"--mount type=bind,src={CONFIG['paths.app_root']}/_test/common/qgis,dst=/qgis",
+            f"--mount type=bind,src={CONFIG['paths.qgis_var_root']},dst=/gws-var",
+            f"--name {CONFIG['qgis_container.name']}",
+            f"--publish {CONFIG['host.ip']}:{CONFIG['qgis_container.port']}:4000",
+        ]
 
-    opts = [
-        f"--add-host={CONFIG['host.name']}:{CONFIG['host.docker_ip']}",
-        f"--detach",
-        f"--env GWS_CONFIG=/qgis/config.cx",
-        f"--env GWS_TMP_DIR=/gws-var/tmp",
-        f"--mount type=bind,src={CONFIG['paths.app_root']},dst=/gws-app",
-        f"--mount type=bind,src={CONFIG['paths.app_root']}/_test/common/qgis,dst=/qgis",
-        f"--mount type=bind,src={CONFIG['paths.qgis_var_root']},dst=/gws-var",
-        f"--name {CONFIG['qgis_container.name']}",
-        f"--publish {CONFIG['host.ip']}:{CONFIG['qgis_container.port']}:4000",
-    ]
+        docker_run(CONFIG['qgis_container.image'], opts, 'bash /gws-app/bin/gws server start -v')
 
-    banner('STARTING QGIS CONTAINER...')
-    docker_run(CONFIG['qgis_container.image'], opts, 'bash /gws-app/bin/gws server start -v')
-
-
-def stop_qgis_container():
-    banner('STOPPING QGIS CONTAINER...')
-    run(f"docker kill {CONFIG['qgis_container.name']}")
-    run(f"docker rm --force {CONFIG['qgis_container.name']}")
-    run(f"rm -fr {CONFIG['paths.qgis_var_root']}/*")
-
-def start_ldap_container():
-    stop_ldap_container()
-    time.sleep(2)
-    opts = [
-        f"--privileged"
-    ]
-    banner("STARTING LDAP CONTAINER...")
-    docker_run(CONFIG['ldap_container.image'], opts)
-    pass
-
-def stop_ldap_container():
-    banner("STOPPING LDAP CONTAINER...")
-    run(f"docker kill {CONFIG['ldap_container.name']}")
-    run(f"docker rm --force {CONFIG['ldap_container.name']}")
-    pass
+    def stop(self):
+        run(f"docker kill {CONFIG['qgis_container.name']}")
+        run(f"docker rm --force {CONFIG['qgis_container.name']}")
+        run(f"rm -fr {CONFIG['paths.qgis_var_root']}/*")
 
 
-def stop_all():
-    stop_suite_container()
-    stop_postgres_container()
-    stop_qgis_container()
-    stop_ldap_container()
+class LdapContainer:
+    def start(self):
+        opts = [
+            f"--detach",
+            f"--name {CONFIG['ldap_container.name']}",
+            f"--privileged",
+            f"--publish {CONFIG['host.ip']}:389:389",
+        ]
+        docker_run(CONFIG['ldap_container.image'], opts)
+
+    def stop(self):
+        run(f"docker kill {CONFIG['ldap_container.name']}")
+        run(f"docker rm --force {CONFIG['ldap_container.name']}")
+
+
+_utility_containers = {
+    'POSTGRES': PostgresContainer(),
+    'QGIS': QgisContainer(),
+    'LDAP': LdapContainer(),
+}
+
+
+def start_utility_containers():
+    for name, c in _utility_containers.items():
+        c.stop()
+        time.sleep(2)
+        banner(f"STARTING {name} CONTAINER...")
+        c.start()
+
+
+def stop_utility_containers():
+    for name, c in _utility_containers.items():
+        banner(f"STOPPING {name} CONTAINER...")
+        c.stop()
 
 
 # utils
