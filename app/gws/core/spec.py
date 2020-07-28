@@ -129,10 +129,8 @@ def _read_object(rd, val, spec):
     if rd.strict:
         names = set(p['name'] for p in spec['props'])
         unknown = [key for key in val if key not in names]
-        if len(unknown) == 1:
-            return rd.error('ERR_UNKNOWN_PROP', 'unknown property: %r' % unknown[0], val)
-        if len(unknown) > 1:
-            return rd.error('ERR_UNKNOWN_PROP', 'unknown properties: %r' % ', '.join(unknown), val)
+        if unknown:
+            return rd.error('ERR_UNKNOWN_PROP', f"unknown properties: {_comma(unknown)}, expected {_comma(names)}", val)
 
     return t.Data(res)
 
@@ -150,7 +148,7 @@ def _read_taggedunion(rd, val, spec):
     if base:
         return rd.read(val, base)
 
-    return rd.error('ERR_BAD_TYPE', 'expected %r, found %r' % (' or '.join(spec['parts']), type_name), val)
+    return rd.error('ERR_BAD_TYPE', f"illegal type: {type_name!r}, expected {_comma(spec['parts'])}", val)
 
 
 def _read_union(rd, val, spec):
@@ -184,7 +182,7 @@ def _read_tuple(rd, val, spec):
     val = _ensure(rd, val, list)
 
     if len(val) != len(spec['bases']):
-        rd.error('ERR_BAD_TYPE', 'expected %r' % spec['name'], val)
+        rd.error('ERR_BAD_TYPE', f"expected {spec['name']!r}", val)
 
     res = []
 
@@ -205,7 +203,7 @@ def _read_enum(rd, val, spec):
     for k, v in spec['values'].items():
         if val == k or val == v:
             return v
-    rd.error('ERR_BAD_ENUM', 'invalid value (expected %r)' % ' or '.join(v for v in spec['values']), val)
+    rd.error('ERR_BAD_ENUM', f"invalid value, expected {_comma(spec['values'])}", val)
 
 
 def _read_dirpath(rd, val, spec):
@@ -234,7 +232,7 @@ def _read_regex(rd, val, spec):
         re.compile(val)
         return val
     except re.error as e:
-        rd.error('ERR_BAD_REGEX', 'invalid regular expression: %r' % e, val)
+        rd.error('ERR_BAD_REGEX', f"invalid regular expression: {e!r}", val)
 
 
 def _read_formatstr(rd, val, spec):
@@ -280,7 +278,7 @@ def _property_value(rd, prop_val, spec):
 
     if prop_val is None:
         if not spec['optional']:
-            return rd.error('ERR_MISSING_PROP', 'required property missing: %r' % spec['name'], 'nothing')
+            return rd.error('ERR_MISSING_PROP', f"required property missing: {spec['name']!r}", 'nothing')
 
         # no default as well
         if default is None:
@@ -300,9 +298,7 @@ def _ensure(rd, val, klass):
         return list(val)
     if klass == dict and gws.is_data_object(val):
         return vars(val)
-    if isinstance(klass, type):
-        klass = 'object' if klass == dict else klass.__name__
-    rd.error('ERR_WRONG_TYPE', '%r expected' % klass, val)
+    rd.error('ERR_WRONG_TYPE', f"wrong type {_classname(type(val))!r}, expected {_classname(klass)!r}", val)
 
 
 def _to_string(x):
@@ -311,6 +307,17 @@ def _to_string(x):
     if isinstance(x, (bytes, bytearray)):
         return x.decode('utf8')
     raise ValueError()
+
+
+def _classname(cls):
+    try:
+        return cls.__name__
+    except:
+        return str(cls)
+
+
+def _comma(ls):
+    return ', '.join(sorted(repr(x) for x in ls))
 
 
 ##
