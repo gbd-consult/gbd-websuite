@@ -290,11 +290,28 @@ def stop_qgis_container():
     run(f"docker rm --force {CONFIG['qgis_container.name']}")
     run(f"rm -fr {CONFIG['paths.qgis_var_root']}/*")
 
+def start_ldap_container():
+    stop_ldap_container()
+    time.sleep(2)
+    opts = [
+        f"--privileged"
+    ]
+    banner("STARTING LDAP CONTAINER...")
+    docker_run(CONFIG['ldap_container.image'], opts)
+    pass
+
+def stop_ldap_container():
+    banner("STOPPING LDAP CONTAINER...")
+    run(f"docker kill {CONFIG['ldap_container.name']}")
+    run(f"docker rm --force {CONFIG['ldap_container.name']}")
+    pass
+
 
 def stop_all():
     stop_suite_container()
     stop_postgres_container()
     stop_qgis_container()
+    stop_ldap_container()
 
 
 # utils
