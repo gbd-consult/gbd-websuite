@@ -1,48 +1,42 @@
-<WFS_Capabilities
-        xmlns="http://www.opengis.net/wfs/2.0"
-        xmlns:fes="http://www.opengis.net/fes/2.0"
-        xmlns:gws="http://gws.gbd-consult.de"
-        xmlns:ows="http://www.opengis.net/ows"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        version="2.0"
-        xsi:schemaLocation="http://www.opengis.net/ows http://schemas.opengis.net/ows/1.0.0/owsAll.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<WFS_Capabilities version="2.0.2" xmlns:aaa="http://ns-aaa" xmlns:fes="http://www.opengis.net/fes/2.0"
+                  xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:ows="http://www.opengis.net/ows/1.1"
+                  xmlns="http://www.opengis.net/wfs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://ns-aaa http://ns-aaa-schema http://www.opengis.net/fes/2.0 http://schemas.opengis.net/filter/2.0/filterAll.xsd http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd http://www.opengis.net/ows/1.1 http://schemas.opengis.net/ows/1.0.0/owsAll.xsd http://www.opengis.net/wfs/2.0 http://schemas.opengis.net/wfs/2.0/wfs.xsd http://www.w3.org/1999/xlink https://www.w3.org/XML/2008/06/xlink.xsd">
     <ows:ServiceIdentification>
-        <ows:ServiceType>wfs</ows:ServiceType>
-        <ows:ServiceTypeVersion>2.0</ows:ServiceTypeVersion>
-        <ows:Title>service_meta_title</ows:Title>
-        <ows:Abstract>PROJECT_meta_abstract</ows:Abstract>
+        <ows:Title>wfs_meta_title</ows:Title>
+        <ows:Abstract>wfs_meta_abstract</ows:Abstract>
         <ows:Keywords>
-            <ows:Keyword>PROJECT_meta_keyword1</ows:Keyword>
-            <ows:Keyword>PROJECT_meta_keyword2</ows:Keyword>
-            <ows:Keyword>PROJECT_meta_keyword3</ows:Keyword>
-            <ows:Keyword>service_meta_keyword1</ows:Keyword>
-            <ows:Keyword>service_meta_keyword2</ows:Keyword>
-            <ows:Keyword>service_meta_keyword3</ows:Keyword>
+            <ows:Keyword>wfs_meta_keyword1</ows:Keyword>
+            <ows:Keyword>wfs_meta_keyword2</ows:Keyword>
+            <ows:Keyword>wfs_meta_keyword3</ows:Keyword>
         </ows:Keywords>
-        <ows:Fees>service_meta_fees</ows:Fees>
-        <ows:AccessConstraints>PROJECT_meta_accessConstraints</ows:AccessConstraints>
+        <ows:ServiceType>wfs</ows:ServiceType>
+        <ows:ServiceTypeVersion>2.0.2</ows:ServiceTypeVersion>
+        <ows:Fees>wfs_meta_fees</ows:Fees>
+        <ows:AccessConstraints>wfs_meta_accessConstraints</ows:AccessConstraints>
     </ows:ServiceIdentification>
     <ows:ServiceProvider>
         <ows:ProviderName/>
-        <ows:ProviderSite xlink:href="service_meta_contact_url"/>
+        <ows:ProviderSite xlink:href="wfs_meta_contact_url"/>
         <ows:ServiceContact>
-            <ows:IndividualName>service_meta_contact_person</ows:IndividualName>
-            <ows:PositionName>service_meta_contact_position</ows:PositionName>
+            <ows:IndividualName>wfs_meta_contact_person</ows:IndividualName>
+            <ows:PositionName>wfs_meta_contact_position</ows:PositionName>
             <ows:ContactInfo>
                 <ows:Phone>
-                    <ows:Voice>service_meta_contact_phone</ows:Voice>
-                    <ows:Facsimile>service_meta_contact_fax</ows:Facsimile>
+                    <ows:Voice>wfs_meta_contact_phone</ows:Voice>
+                    <ows:Facsimile>wfs_meta_contact_fax</ows:Facsimile>
                 </ows:Phone>
                 <ows:Address>
-                    <ows:DeliveryPoint>service_meta_contact_address</ows:DeliveryPoint>
-                    <ows:City>service_meta_contact_city</ows:City>
-                    <ows:AdministrativeArea>service_meta_contact_area</ows:AdministrativeArea>
-                    <ows:PostalCode>service_meta_contact_zip</ows:PostalCode>
-                    <ows:Country>service_meta_contact_country</ows:Country>
-                    <ows:ElectronicMailAddress>service_meta_contact_email</ows:ElectronicMailAddress>
+                    <ows:DeliveryPoint>wfs_meta_contact_address</ows:DeliveryPoint>
+                    <ows:City>wfs_meta_contact_city</ows:City>
+                    <ows:AdministrativeArea>wfs_meta_contact_area</ows:AdministrativeArea>
+                    <ows:PostalCode>wfs_meta_contact_zip</ows:PostalCode>
+                    <ows:Country>wfs_meta_contact_country</ows:Country>
+                    <ows:ElectronicMailAddress>wfs_meta_contact_email</ows:ElectronicMailAddress>
                 </ows:Address>
-                <ows:OnlineResource xlink:href="service_meta_contact_url"/>
+                <ows:OnlineResource xlink:href="wfs_meta_contact_url"/>
             </ows:ContactInfo>
             <ows:Role/>
         </ows:ServiceContact>
@@ -51,7 +45,8 @@
         <ows:Operation name="GetCapabilities">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wfs/projectUid/a"/>
+                    <ows:Get xlink:type="simple"
+                             xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wfs/projectUid/a"/>
                 </ows:HTTP>
             </ows:DCP>
             <ows:Parameter name="AcceptVersions">
@@ -65,14 +60,16 @@
         <ows:Operation name="DescribeFeatureType">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wfs/projectUid/a"/>
+                    <ows:Get xlink:type="simple"
+                             xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wfs/projectUid/a"/>
                 </ows:HTTP>
             </ows:DCP>
         </ows:Operation>
         <ows:Operation name="GetFeature">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wfs/projectUid/a"/>
+                    <ows:Get xlink:type="simple"
+                             xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wfs/projectUid/a"/>
                 </ows:HTTP>
             </ows:DCP>
         </ows:Operation>
@@ -141,7 +138,7 @@
         </ows:Constraint>
         <ows:Constraint name="CountDefault">
             <ows:NoValues/>
-            <ows:DefaultValue1000/>
+            <ows:DefaultValue>1000</ows:DefaultValue>
         </ows:Constraint>
         <ows:Constraint name="QueryExpressions">
             <ows:AllowedValues>
@@ -149,6 +146,27 @@
             </ows:AllowedValues>
         </ows:Constraint>
     </ows:OperationsMetadata>
+    <FeatureTypeList>
+        <FeatureType>
+            <Name>aaa:paris</Name>
+            <Title>paris_3857</Title>
+            <Abstract>PARIS_meta_abstract</Abstract>
+            <DefaultCRS>urn:ogc:def:crs:EPSG::3857</DefaultCRS>
+            <ows:WGS84BoundingBox>
+                <ows:LowerCorner>2.28578 48.8575</ows:LowerCorner>
+                <ows:UpperCorner>2.28937 48.86282</ows:UpperCorner>
+            </ows:WGS84BoundingBox>
+        </FeatureType>
+        <FeatureType>
+            <Name>aaa:dus</Name>
+            <Title>dus_25832</Title>
+            <DefaultCRS>urn:ogc:def:crs:EPSG::3857</DefaultCRS>
+            <ows:WGS84BoundingBox>
+                <ows:LowerCorner>6.7714 51.22322</ows:LowerCorner>
+                <ows:UpperCorner>6.77825 51.23188</ows:UpperCorner>
+            </ows:WGS84BoundingBox>
+        </FeatureType>
+    </FeatureTypeList>
     <fes:Filter_Capabilities>
         <fes:Conformance>
             <fes:Constraint name="ImplementsQuery">
@@ -212,26 +230,4 @@
             </fes:SpatialOperators>
         </fes:Spatial_Capabilities>
     </fes:Filter_Capabilities>
-    <FeatureTypeList>
-        <FeatureType>
-            <Name>gws:paris_3857</Name>
-            <Title>paris_3857</Title>
-            <Abstract>PARIS_meta_abstract</Abstract>
-            <DefaultSRS>urn:ogc:def:crs:EPSG::3857</DefaultSRS>
-            <ows:WGS84BoundingBox>
-                <ows:LowerCorner>2.28578 48.8575</ows:LowerCorner>
-                <ows:UpperCorner>2.28937 48.86282</ows:UpperCorner>
-            </ows:WGS84BoundingBox>
-        </FeatureType>
-        <FeatureType>
-            <Name>gws:dus_25832</Name>
-            <Title>dus_25832</Title>
-            <Abstract>PROJECT_meta_abstract</Abstract>
-            <DefaultSRS>urn:ogc:def:crs:EPSG::3857</DefaultSRS>
-            <ows:WGS84BoundingBox>
-                <ows:LowerCorner>6.7714 51.22322</ows:LowerCorner>
-                <ows:UpperCorner>6.77825 51.23188</ows:UpperCorner>
-            </ows:WGS84BoundingBox>
-        </FeatureType>
-    </FeatureTypeList>
 </WFS_Capabilities>

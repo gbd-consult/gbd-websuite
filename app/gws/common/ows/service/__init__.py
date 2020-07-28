@@ -288,8 +288,10 @@ class Base(Object):
         fs = {}
         for tpl in self.templates:
             for m in tpl.mime_types:
-                fs.setdefault(tpl.key, set()).add(m)
-        return {k: list(v) for k, v in fs.items()}
+                fs.setdefault(tpl.key, [])
+                if m not in fs[tpl.key]:
+                    fs[tpl.key].append(m)
+        return fs
 
     def xml_error_response(self, status, description) -> t.HttpResponse:
         description = gws.tools.xml2.encode(description)

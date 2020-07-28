@@ -72,11 +72,7 @@
             @tag ogc:Comparison_Operators
                 @t ogc:Simple_Comparisons
                 @t ogc:Like
-                @t ogc:Between
                 @t ogc:NullCheck
-            @end
-            @tag ogc:Arithmetic_Operators
-                @t ogc:Simple_Arithmetic
             @end
         @end
     @end

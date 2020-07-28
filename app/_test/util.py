@@ -13,6 +13,7 @@ import gws.ext.db.provider.postgres
 import gws.gis.feature
 import gws.gis.proj
 import gws.tools.json2
+import gws.tools.xml2
 import gws.tools.os2
 import gws.tools.vendor.umsgpack as umsgpack
 
@@ -43,8 +44,13 @@ def json(src):
     return gws.tools.json2.to_pretty_string(src)
 
 
-def xml(src):
-    """Format an xml document/file/response nicely."""
+_replace_attributes = {
+    'timeStamp': '...',
+}
+
+
+def xml(src, save_to=None):
+    """Format an xml document/file/response for better diffing."""
 
     if hasattr(src, 'text'):
         text = src.text
@@ -53,25 +59,34 @@ def xml(src):
     else:
         text = src
 
-    text = re.sub(r'>\s+<', '><', text.strip())
+    text = gws.as_str(text)
+    if save_to:
+        with open(save_to, 'wt') as fp:
+            fp.write(text)
+
+    def as_str(el, indent):
+        i1 = '    ' * indent
+        i2 = '    ' * (indent + 1)
+
+        s = i1 + '<' + el.qname
+        for k, v in sorted(el.attr_dict.items()):
+            s += '\n' + i2 + k + '="' + gws.tools.xml2.encode(_replace_attributes.get(k, v)) + '"'
+        if not el.text and not el.children:
+            s += '/>'
+            return s
+        s += '>'
+        if el.text:
+            s += '\n' + i2 + re.sub(r'\s+', ' ', el.text.strip())
+        for c in el.children:
+            s += '\n' + as_str(c, indent + 1)
+        s += '\n' + i1 + '</' + el.qname + '>'
+        return s
+
     try:
-        xml = etree.fromstring(text.encode('utf8'))
+        root = gws.tools.xml2.from_string(text)
     except Exception as e:
         return f'INVALID XML:\n{e}\nRAW CONTENT :\n{text}\nFROM {src!r}'
-    out = etree.tounicode(xml, pretty_print=True)
-
-    # 4 indents look better than 2
-
-    out = re.sub(r'(?m)^ +', lambda m: m.group(0) * 2, out)
-
-    # each root tag attr on a separate line
-
-    out = re.sub(
-        r'(?s)^<(.+?)>',
-        lambda m: '<' + re.sub(r'(?i)\s+([a-z]+(:[a-z]+)?=)', '\n       \\1', m.group(1)) + '>',
-        out)
-
-    return out
+    return as_str(root, 0)
 
 
 def strlist(ls):
@@ -129,37 +144,48 @@ def cmd(command, params=None, binary=False, **kwargs):
     return res
 
 
-def response_image_matches(r: requests.Response, path, threshold=0.00001):
+def compare_image(r: requests.Response, path, threshold=0.00001):
     """Compare an image in the request with a reference image."""
 
     def _cmp(content):
         if not os.path.exists(path):
-            return f'image error: {path}: missing'
+            return f'IMAGE ERROR: {path}: missing'
 
         a = wand.image.Image(blob=content)
         b = wand.image.Image(filename=path)
 
         if a.width != b.width:
-            return f'image error: {path}: bad width {a.width} != {b.width}'
+            return f'IMAGE ERROR: {path}: bad width {a.width} != {b.width}'
         if a.height != b.height:
-            return f'image error: {path}: bad height {a.height} != {b.height}'
+            return f'IMAGE ERROR: {path}: bad height {a.height} != {b.height}'
 
         _, diff = a.compare(b, metric='mean_absolute')
 
         if diff > threshold:
-            return f'image error: {path}: too different {diff:f} threshold={threshold:f}'
-
-        return True
+            return f'IMAGE ERROR: {path}: too different diff={diff:f} threshold={threshold:f}'
 
     if isinstance(r, str):
-        return r
+        return 'NO ERROR', r
 
-    name = path.split('/')[-1]
     d = gws.ensure_dir(gws.VAR_DIR + '/response_images')
-    with open(d + '/' + name, 'wb') as fp:
+    with open(d + '/' + path.split('/')[-1], 'wb') as fp:
         fp.write(r.content)
 
-    return _cmp(r.content)
+    err = _cmp(r.content)
+    if not err:
+        return True, True
+    return 'NO ERROR', err
+
+
+def compare_xml(r: requests.Response, content=None, path=None):
+    a = xml(r.text)
+    b = xml(content or path)
+    if a != b:
+        p = path or (gws.sha256(content) + '.xml')
+        d = gws.ensure_dir(gws.VAR_DIR + '/response_xml')
+        with open(d + '/' + p.split('/')[-1], 'wt') as fp:
+            fp.write(r.text)
+    return a, b
 
 
 def short_features(fs, trace=False):

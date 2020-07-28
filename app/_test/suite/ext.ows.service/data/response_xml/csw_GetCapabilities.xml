@@ -1,16 +1,11 @@
-<csw:Capabilities
-        xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:gws="http://gws.gbd-consult.de"
-        xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0"
-        xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0"
-        xmlns:ogc="http://www.opengis.net/ogc"
-        xmlns:ows="http://www.opengis.net/ows"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        version="2.0.2"
-        xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd http://inspire.ec.europa.eu/schemas/common/1.0 http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd http://inspire.ec.europa.eu/schemas/inspire_vs/1.0 http://inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd http://www.opengis.net/ows http://schemas.opengis.net/ows/1.0.0/owsAll.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<csw:Capabilities version="2.0.2" xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+                  xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0"
+                  xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0"
+                  xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows/1.1"
+                  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/csw.xsd http://inspire.ec.europa.eu/schemas/common/1.0 http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd http://inspire.ec.europa.eu/schemas/inspire_vs/1.0 http://inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd http://www.opengis.net/ogc http://schemas.opengis.net/filter/1.1.0/filter.xsd http://www.opengis.net/ows/1.1 http://schemas.opengis.net/ows/1.0.0/owsAll.xsd http://www.w3.org/1999/xlink https://www.w3.org/XML/2008/06/xlink.xsd">
     <ows:ServiceIdentification>
-        <ows:ServiceType>csw</ows:ServiceType>
-        <ows:ServiceTypeVersion>2.0.2</ows:ServiceTypeVersion>
         <ows:Title>csw_meta_title</ows:Title>
         <ows:Abstract>csw_meta_abstract</ows:Abstract>
         <ows:Keywords>
@@ -18,6 +13,8 @@
             <ows:Keyword>csw_meta_keyword2</ows:Keyword>
             <ows:Keyword>csw_meta_keyword3</ows:Keyword>
         </ows:Keywords>
+        <ows:ServiceType>csw</ows:ServiceType>
+        <ows:ServiceTypeVersion>2.0.2</ows:ServiceTypeVersion>
         <ows:Fees>csw_meta_fees</ows:Fees>
         <ows:AccessConstraints>csw_meta_accessConstraints</ows:AccessConstraints>
     </ows:ServiceIdentification>
@@ -49,15 +46,19 @@
         <ows:Operation name="GetCapabilities">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
+                    <ows:Get xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
                 </ows:HTTP>
             </ows:DCP>
         </ows:Operation>
         <ows:Operation name="GetRecords">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
-                    <ows:Post xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
+                    <ows:Get xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
+                </ows:HTTP>
+            </ows:DCP>
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Post xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
                 </ows:HTTP>
             </ows:DCP>
             <ows:Parameter name="typeName">
@@ -85,7 +86,7 @@
         <ows:Operation name="DescribeRecord">
             <ows:DCP>
                 <ows:HTTP>
-                    <ows:Get xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
+                    <ows:Get xlink:type="simple" xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw"/>
                 </ows:HTTP>
             </ows:DCP>
             <ows:Parameter name="typeName">
@@ -112,8 +113,18 @@
             </inspire_common:TemporalReference>
             <inspire_common:Conformity>
                 <inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng">
-                    <inspire_common:Title>COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services</inspire_common:Title>
+                    <inspire_common:Title>COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing
+                        Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of
+                        spatial data sets and services
+                    </inspire_common:Title>
                     <inspire_common:DateOfPublication>2010-12-08</inspire_common:DateOfPublication>
+                    <inspire_common:URI>OJ:L:2010:323:0011:0102:EN:PDF</inspire_common:URI>
+                    <inspire_common:ResourceLocator>
+                        <inspire_common:URL>
+                            http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF
+                        </inspire_common:URL>
+                        <inspire_common:MediaType>application/pdf</inspire_common:MediaType>
+                    </inspire_common:ResourceLocator>
                 </inspire_common:Specification>
                 <inspire_common:Degree>notEvaluated</inspire_common:Degree>
             </inspire_common:Conformity>
@@ -121,10 +132,18 @@
                 <inspire_common:OrganisationName>csw_meta_contact_organization</inspire_common:OrganisationName>
                 <inspire_common:EmailAddress>csw_meta_contact_email</inspire_common:EmailAddress>
             </inspire_common:MetadataPointOfContact>
+            <inspire_common:MetadataDate>2020-01-02</inspire_common:MetadataDate>
             <inspire_common:SpatialDataServiceType>discovery</inspire_common:SpatialDataServiceType>
             <inspire_common:MandatoryKeyword>
                 <inspire_common:KeywordValue>humanCatalogueViewer</inspire_common:KeywordValue>
             </inspire_common:MandatoryKeyword>
+            <inspire_common:Keyword>
+                <inspire_common:OriginatingControlledVocabulary>
+                    <inspire_common:Title>INSPIRE themes</inspire_common:Title>
+                    <inspire_common:DateOfPublication>2008-06-01</inspire_common:DateOfPublication>
+                </inspire_common:OriginatingControlledVocabulary>
+                <inspire_common:KeywordValue/>
+            </inspire_common:Keyword>
             <inspire_common:SupportedLanguages>
                 <inspire_common:DefaultLanguage>
                     <inspire_common:Language>ger</inspire_common:Language>
@@ -149,12 +168,8 @@
             <ogc:Comparison_Operators>
                 <ogc:Simple_Comparisons/>
                 <ogc:Like/>
-                <ogc:Between/>
                 <ogc:NullCheck/>
             </ogc:Comparison_Operators>
-            <ogc:Arithmetic_Operators>
-                <ogc:Simple_Arithmetic/>
-            </ogc:Arithmetic_Operators>
         </ogc:Scalar_Capabilities>
     </ogc:Filter_Capabilities>
 </csw:Capabilities>

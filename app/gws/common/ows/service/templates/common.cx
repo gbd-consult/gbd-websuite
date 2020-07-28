@@ -56,9 +56,6 @@
 
 @def ows_service_identification
     @tag ows:ServiceIdentification
-        @t ows:ServiceType {service.type}
-        @t ows:ServiceTypeVersion {version}
-
         @t ows:Title {meta.title}
 
         @with meta.abstract
@@ -66,6 +63,9 @@
         @end
 
         @keywords meta, ows=True
+
+        @t ows:ServiceType {service.type}
+        @t ows:ServiceTypeVersion {version}
 
         @with meta.fees
             @t ows:Fees {meta.fees}

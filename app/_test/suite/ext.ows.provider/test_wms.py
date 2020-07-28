@@ -73,7 +73,9 @@ def test_render():
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.wms_points_ghana_25832/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 100, 'height': 100})
-    assert True is u.response_image_matches(r, '/data/response_images/wms_points_100x100.png')
+    a, b = u.compare_image(r, '/data/response_images/wms_points_100x100.png')
+    assert a == b
 
     r = u.req(url, params={'width': 400, 'height': 400})
-    assert True is u.response_image_matches(r, '/data/response_images/wms_points_400x400.png')
+    a, b = u.compare_image(r, '/data/response_images/wms_points_400x400.png')
+    assert a == b

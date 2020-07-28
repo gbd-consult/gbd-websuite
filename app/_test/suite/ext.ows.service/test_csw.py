@@ -7,4 +7,5 @@ def test_get_capabilities():
         'REQUEST': 'GetCapabilities'
     })
 
-    assert u.xml(r) == u.xml('/data/response_xml/csw_GetCapabilities.xml')
+    a, b = u.compare_xml(r, path='/data/response_xml/csw_GetCapabilities.xml')
+    assert a == b

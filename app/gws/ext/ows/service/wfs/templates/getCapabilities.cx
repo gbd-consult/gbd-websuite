@@ -3,6 +3,8 @@
 
 @tag WFS_Capabilities
     @xmlns wfs default
+    @xmlns gml
+
     @each layer_caps_list as lc
         @xmlns {lc.feature_name.ns} {lc.feature_name.ns_uri} {lc.feature_name.ns_schema_location}
     @end
@@ -13,7 +15,6 @@
     @ows_service_provider
 
     @wfs_basic_operations
-    @wfs_basic_filters
 
     @tag FeatureTypeList
         @each layer_caps_list as lc
@@ -23,11 +24,14 @@
                 @with lc.meta.abstract
                     @t Abstract {lc.meta.abstract}
                 @end
-                @t DefaultSRS {lc.projections[0].proj.urn}
+                @t DefaultCRS {lc.projections[0].proj.urn}
                 @ows_wgs84_bounding_box lc
             @end
         @end
     @end
+
+    @wfs_basic_filters
+
 @end
 
 

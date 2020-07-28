@@ -187,4 +187,5 @@ def test_legend():
         'layerUid': 'tree_full.map.t',
     })
 
-    assert True is u.response_image_matches(r, '/data/response_images/legend_tree.png')
+    a, b = u.compare_image(r, '/data/response_images/legend_tree.png')
+    assert a == b

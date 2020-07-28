@@ -76,3 +76,11 @@
         }
     ]
 @end
+
+developer {
+    'template.reparse' true
+    'template.save_compiled' true
+##    'template.raise_errors' true
+    'nginx.rewrite_log_on' true
+    'request.log_all' true
+}

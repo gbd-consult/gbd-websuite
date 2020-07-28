@@ -1,6 +1,11 @@
-<xsd:schema xmlns:gws="http://gws.gbd-consult.de" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://gws.gbd-consult.de">
-    <xsd:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"/>
-    <xsd:complexType name="paris_3857Type">
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://ns-aaa" elementFormDefault="qualified" xmlns:aaa="http://ns-aaa"
+            xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://ns-aaa http://ns-aaa-schema http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd">
+    <xsd:import namespace="http://www.opengis.net/gml/3.2"
+                schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"/>
+    <xsd:complexType name="parisType">
         <xsd:complexContent>
             <xsd:extension base="gml:AbstractFeatureType">
                 <xsd:sequence>
@@ -8,13 +13,14 @@
                     <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="p_str" type="xsd:string"/>
                     <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="p_int" type="xsd:integer"/>
                     <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="p_date" type="xsd:date"/>
-                    <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="geometry" type="gml:PointPropertyType"/>
+                    <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="geometry"
+                                 type="gml:PointPropertyType"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    <xsd:element name="gws:paris_3857" substitutionGroup="gml:Feature" type="gws:paris_3857Type"/>
-    <xsd:complexType name="dus_25832Type">
+    <xsd:element name="paris" substitutionGroup="gml:AbstractFeature" type="aaa:parisType"/>
+    <xsd:complexType name="dusType">
         <xsd:complexContent>
             <xsd:extension base="gml:AbstractFeatureType">
                 <xsd:sequence>
@@ -22,10 +28,11 @@
                     <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="p_str" type="xsd:string"/>
                     <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="p_int" type="xsd:integer"/>
                     <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="p_date" type="xsd:date"/>
-                    <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="geometry" type="gml:SurfacePropertyType"/>
+                    <xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="geometry"
+                                 type="gml:SurfacePropertyType"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    <xsd:element name="gws:dus_25832" substitutionGroup="gml:Feature" type="gws:dus_25832Type"/>
+    <xsd:element name="dus" substitutionGroup="gml:AbstractFeature" type="aaa:dusType"/>
 </xsd:schema>

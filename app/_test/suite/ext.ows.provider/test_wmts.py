@@ -14,23 +14,29 @@ def test_render_box():
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.wmts_squares_mexico_25832/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 100, 'height': 100})
-    assert True is u.response_image_matches(r, '/data/response_images/wmts_points_100x100.png')
+    a, b = u.compare_image(r, '/data/response_images/wmts_points_100x100.png')
+    assert a == b
 
     r = u.req(url, params={'width': 400, 'height': 400})
-    assert True is u.response_image_matches(r, '/data/response_images/wmts_points_400x400.png')
+    a, b = u.compare_image(r, '/data/response_images/wmts_points_400x400.png')
+    assert a == b
 
 
 def test_render_tile():
     url = '_/cmd/mapHttpGetXyz/layerUid/a.map.wmts_squares_mexico_25832/z/12/x/%d/y/%d/t.png'
 
     r = u.req(url % (0, 0))
-    assert True is u.response_image_matches(r, '/data/response_images/wmts_tile_12_0_0.png')
+    a, b = u.compare_image(r, '/data/response_images/wmts_tile_12_0_0.png')
+    assert a == b
 
     r = u.req(url % (1, 0))
-    assert True is u.response_image_matches(r, '/data/response_images/wmts_tile_12_1_0.png')
+    a, b = u.compare_image(r, '/data/response_images/wmts_tile_12_1_0.png')
+    assert a == b
 
     r = u.req(url % (0, 1))
-    assert True is u.response_image_matches(r, '/data/response_images/wmts_tile_12_0_1.png')
+    a, b = u.compare_image(r, '/data/response_images/wmts_tile_12_0_1.png')
+    assert a == b
 
     r = u.req(url % (1, 1))
-    assert True is u.response_image_matches(r, '/data/response_images/wmts_tile_12_1_1.png')
+    a, b = u.compare_image(r, '/data/response_images/wmts_tile_12_1_1.png')
+    assert a == b

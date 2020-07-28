@@ -48,7 +48,8 @@ def test_render():
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.qgis_flat_ghana/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 300, 'height': 300})
-    assert True is u.response_image_matches(r, '/data/response_images/ghana_200x200.png')
+    a, b = u.compare_image(r, '/data/response_images/ghana_200x200.png')
+    assert a == b
 
 
 def test_search_multi():
@@ -91,7 +92,8 @@ def test_render_multi():
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.qgis_flat_dus/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 300, 'height': 300})
-    assert True is u.response_image_matches(r, '/data/response_images/dus_200x200.png')
+    a, b = u.compare_image(r, '/data/response_images/dus_200x200.png')
+    assert a == b
 
 
 def test_legend():
@@ -101,7 +103,8 @@ def test_legend():
         'layerUid': 'a.map.qgis_flat_dus',
     })
 
-    assert True is u.response_image_matches(r, '/data/response_images/legend_dus_1_dus_2.png')
+    a, b = u.compare_image(r, '/data/response_images/legend_dus_1_dus_2.png')
+    assert a == b
 
     # legend with options
 
@@ -109,4 +112,5 @@ def test_legend():
         'layerUid': 'a.map.qgis_flat_ghana',
     })
 
-    assert True is u.response_image_matches(r, '/data/response_images/legend_ghana.png')
+    a, b = u.compare_image(r, '/data/response_images/legend_ghana.png')
+    assert a == b

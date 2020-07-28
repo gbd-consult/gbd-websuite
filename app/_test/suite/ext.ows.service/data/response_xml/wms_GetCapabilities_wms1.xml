@@ -1,49 +1,42 @@
-<WMS_Capabilities
-        xmlns="http://www.opengis.net/wms"
-        xmlns:gws="http://gws.gbd-consult.de"
-        xmlns:sld="http://www.opengis.net/sld"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        version="1.3.0"
-        xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1/sldAll.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<WMS_Capabilities version="1.3.0" xmlns:sld="http://www.opengis.net/sld" xmlns="http://www.opengis.net/wms"
+                  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1/sldAll.xsd http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd http://www.w3.org/1999/xlink https://www.w3.org/XML/2008/06/xlink.xsd">
     <Service>
         <Name>WMS</Name>
-        <Title>service_meta_title</Title>
-        <Abstract>PROJECT_meta_abstract</Abstract>
+        <Title>wms_meta_title</Title>
+        <Abstract>wms_meta_abstract</Abstract>
         <KeywordList>
-            <Keyword>PROJECT_meta_keyword1</Keyword>
-            <Keyword>PROJECT_meta_keyword2</Keyword>
-            <Keyword>PROJECT_meta_keyword3</Keyword>
-            <Keyword>service_meta_keyword1</Keyword>
-            <Keyword>service_meta_keyword2</Keyword>
-            <Keyword>service_meta_keyword3</Keyword>
+            <Keyword>wms_meta_keyword1</Keyword>
+            <Keyword>wms_meta_keyword2</Keyword>
+            <Keyword>wms_meta_keyword3</Keyword>
         </KeywordList>
         <OnlineResource xlink:type="simple"
                         xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms/projectUid/a"/>
         <ContactInformation>
             <ContactPersonPrimary>
-                <ContactPerson>service_meta_contact_person</ContactPerson>
-                <ContactOrganization>service_meta_contact_organization</ContactOrganization>
+                <ContactPerson>wms_meta_contact_person</ContactPerson>
+                <ContactOrganization>wms_meta_contact_organization</ContactOrganization>
             </ContactPersonPrimary>
-            <ContactPosition>service_meta_contact_position</ContactPosition>
+            <ContactPosition>wms_meta_contact_position</ContactPosition>
             <ContactAddress>
                 <AddressType>postal</AddressType>
-                <Address>service_meta_contact_address</Address>
-                <City>service_meta_contact_city</City>
-                <StateOrProvince>service_meta_contact_area</StateOrProvince>
-                <PostCode>service_meta_contact_zip</PostCode>
-                <Country>service_meta_contact_country</Country>
+                <Address>wms_meta_contact_address</Address>
+                <City>wms_meta_contact_city</City>
+                <StateOrProvince>wms_meta_contact_area</StateOrProvince>
+                <PostCode>wms_meta_contact_zip</PostCode>
+                <Country>wms_meta_contact_country</Country>
             </ContactAddress>
-            <ContactVoiceTelephone>service_meta_contact_phone</ContactVoiceTelephone>
-            <ContactElectronicMailAddress>service_meta_contact_email</ContactElectronicMailAddress>
+            <ContactVoiceTelephone>wms_meta_contact_phone</ContactVoiceTelephone>
+            <ContactElectronicMailAddress>wms_meta_contact_email</ContactElectronicMailAddress>
         </ContactInformation>
-        <Fees>service_meta_fees</Fees>
-        <AccessConstraints>PROJECT_meta_accessConstraints</AccessConstraints>
+        <Fees>wms_meta_fees</Fees>
+        <AccessConstraints>wms_meta_accessConstraints</AccessConstraints>
     </Service>
     <Capability>
         <Request>
             <GetCapabilities>
-                <Format>text/xml</Format>
+                <Format>application/xml</Format>
                 <DCPType>
                     <HTTP>
                         <Get>
@@ -65,6 +58,7 @@
                 </DCPType>
             </GetMap>
             <GetFeatureInfo>
+                <Format>application/xml</Format>
                 <Format>application/vnd.ogc.gml</Format>
                 <DCPType>
                     <HTTP>
@@ -91,9 +85,14 @@
             <Format>XML</Format>
         </Exception>
         <Layer queryable="1">
-            <Name>gws:a</Name>
-            <Title>PROJECT_meta_title</Title>
-            <Abstract>PROJECT_meta_abstract</Abstract>
+            <Name>root</Name>
+            <Title>Root Layer</Title>
+            <Abstract>ROOT_meta_abstract</Abstract>
+            <KeywordList>
+                <Keyword>ROOT_meta_keyword1</Keyword>
+                <Keyword>ROOT_meta_keyword2</Keyword>
+                <Keyword>ROOT_meta_keyword3</Keyword>
+            </KeywordList>
             <CRS>EPSG:3857</CRS>
             <EX_GeographicBoundingBox>
                 <westBoundLongitude>2.28578</westBoundLongitude>
@@ -104,18 +103,24 @@
             <BoundingBox CRS="EPSG:3857" minx="254451.842681146" miny="6250716.48078953" maxx="754551.4271137204"
                          maxy="6662413.966834171"/>
             <Attribution>
-                <Title>PROJECT_meta_attribution</Title>
+                <Title>ROOT_meta_attribution</Title>
             </Attribution>
-            <MetadataURL type="PROJECT_META_URL_TYPE">
+            <MetadataURL type="ROOT_META_URL_TYPE">
                 <Format>application/xml</Format>
-                <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
+                <OnlineResource xlink:type="simple" xlink:href="http://ROOT_meta_url"/>
             </MetadataURL>
-            <MinScaleDenominator>1000</MinScaleDenominator>
-            <MaxScaleDenominator>50000</MaxScaleDenominator>
+            <Style>
+                <Name>default</Name>
+                <Title>default</Title>
+                <LegendURL>
+                    <Format>image/png</Format>
+                    <OnlineResource xlink:type="simple"
+                                    xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms/projectUid/a?request=GetLegendGraphic&amp;layer=root"/>
+                </LegendURL>
+            </Style>
             <Layer queryable="1">
-                <Name>gws:group_one</Name>
+                <Name>group_one</Name>
                 <Title>Group One</Title>
-                <Abstract>PROJECT_meta_abstract</Abstract>
                 <CRS>EPSG:3857</CRS>
                 <EX_GeographicBoundingBox>
                     <westBoundLongitude>6.7714</westBoundLongitude>
@@ -125,19 +130,23 @@
                 </EX_GeographicBoundingBox>
                 <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416" maxx="754551.4271137204"
                              maxy="6662413.966834171"/>
-                <Attribution>
-                    <Title>PROJECT_meta_attribution</Title>
-                </Attribution>
-                <MetadataURL type="PROJECT_META_URL_TYPE">
+                <MetadataURL type="TC211">
                     <Format>application/xml</Format>
-                    <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
+                    <OnlineResource xlink:type="simple"
+                                    xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw/request/GetRecordById/id/a.map.group_one"/>
                 </MetadataURL>
-                <MinScaleDenominator>1000</MinScaleDenominator>
-                <MaxScaleDenominator>50000</MaxScaleDenominator>
+                <Style>
+                    <Name>default</Name>
+                    <Title>default</Title>
+                    <LegendURL>
+                        <Format>image/png</Format>
+                        <OnlineResource xlink:type="simple"
+                                        xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms/projectUid/a?request=GetLegendGraphic&amp;layer=group_one"/>
+                    </LegendURL>
+                </Style>
                 <Layer queryable="1">
-                    <Name>gws:own_name_group_one_one</Name>
+                    <Name>own_name_group_one_one</Name>
                     <Title>Group One One</Title>
-                    <Abstract>PROJECT_meta_abstract</Abstract>
                     <CRS>EPSG:3857</CRS>
                     <EX_GeographicBoundingBox>
                         <westBoundLongitude>6.7714</westBoundLongitude>
@@ -147,19 +156,23 @@
                     </EX_GeographicBoundingBox>
                     <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
                                  maxx="754551.4271137204" maxy="6662413.966834171"/>
-                    <Attribution>
-                        <Title>PROJECT_meta_attribution</Title>
-                    </Attribution>
-                    <MetadataURL type="PROJECT_META_URL_TYPE">
+                    <MetadataURL type="TC211">
                         <Format>application/xml</Format>
-                        <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
+                        <OnlineResource xlink:type="simple"
+                                        xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw/request/GetRecordById/id/a.map.group_one_one"/>
                     </MetadataURL>
-                    <MinScaleDenominator>1000</MinScaleDenominator>
-                    <MaxScaleDenominator>50000</MaxScaleDenominator>
+                    <Style>
+                        <Name>default</Name>
+                        <Title>default</Title>
+                        <LegendURL>
+                            <Format>image/png</Format>
+                            <OnlineResource xlink:type="simple"
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/wms/projectUid/a?request=GetLegendGraphic&amp;layer=own_name_group_one_one"/>
+                        </LegendURL>
+                    </Style>
                     <Layer queryable="1">
-                        <Name>gws:dus_25832</Name>
+                        <Name>dus_25832</Name>
                         <Title>dus_25832</Title>
-                        <Abstract>PROJECT_meta_abstract</Abstract>
                         <CRS>EPSG:3857</CRS>
                         <EX_GeographicBoundingBox>
                             <westBoundLongitude>6.7714</westBoundLongitude>
@@ -169,12 +182,10 @@
                         </EX_GeographicBoundingBox>
                         <BoundingBox CRS="EPSG:3857" minx="753788.7117511705" miny="6660874.80282416"
                                      maxx="754551.4271137204" maxy="6662413.966834171"/>
-                        <Attribution>
-                            <Title>PROJECT_meta_attribution</Title>
-                        </Attribution>
-                        <MetadataURL type="PROJECT_META_URL_TYPE">
+                        <MetadataURL type="TC211">
                             <Format>application/xml</Format>
-                            <OnlineResource xlink:type="simple" xlink:href="http://PROJECT_meta_url"/>
+                            <OnlineResource xlink:type="simple"
+                                            xlink:href="http://mainhost:3333/_/cmd/owsHttpService/uid/csw/request/GetRecordById/id/a.map.dus_25832"/>
                         </MetadataURL>
                         <MinScaleDenominator>1000</MinScaleDenominator>
                         <MaxScaleDenominator>50000</MaxScaleDenominator>
@@ -182,9 +193,14 @@
                 </Layer>
             </Layer>
             <Layer queryable="1">
-                <Name>gws:paris_3857</Name>
+                <Name>paris_3857</Name>
                 <Title>paris_3857</Title>
                 <Abstract>PARIS_meta_abstract</Abstract>
+                <KeywordList>
+                    <Keyword>PARIS_meta_keyword1</Keyword>
+                    <Keyword>PARIS_meta_keyword2</Keyword>
+                    <Keyword>PARIS_meta_keyword3</Keyword>
+                </KeywordList>
                 <CRS>EPSG:3857</CRS>
                 <EX_GeographicBoundingBox>
                     <westBoundLongitude>2.28578</westBoundLongitude>

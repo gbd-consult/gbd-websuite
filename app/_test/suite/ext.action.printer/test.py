@@ -60,7 +60,9 @@ def test_layers():
 
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
-    assert True is u.response_image_matches(res, '/data/response_images/layers.png')
+
+    a, b = u.compare_image(res, '/data/response_images/layers.png')
+    assert a == b
 
 
 def test_features():
@@ -191,7 +193,8 @@ def test_features():
 
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
-    assert True is u.response_image_matches(res, '/data/response_images/features.png')
+    a, b = u.compare_image(res, '/data/response_images/features.png')
+    assert a == b
 
 
 def test_bitmap_url():
@@ -232,7 +235,8 @@ def test_bitmap_url():
 
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
-    assert True is u.response_image_matches(res, '/data/response_images/bitmap.png')
+    a, b = u.compare_image(res, '/data/response_images/bitmap.png')
+    assert a == b
 
 
 def test_qgis_template():
@@ -278,5 +282,6 @@ def test_qgis_template():
 
     r = u.cmd('printerPrint', params).json()
     res = _wait_for_print(r['jobUid'])
-    assert True is u.response_image_matches(res, '/data/response_images/qgis.png')
+    a, b = u.compare_image(res, '/data/response_images/qgis.png')
+    assert a == b
 

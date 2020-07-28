@@ -24,62 +24,81 @@ api.actions+ {
 }
 
 
+helpers+ {
+    type "xml"
+    namespaces [
+        { name "aaa" uri "http://ns-aaa" schemaLocation "http://ns-aaa-schema"}
+    ]
+}
+
+
+
 @def SIMPLE_MAP
     map.crs "EPSG:3857"
     map.zoom.scales [1000 2000 5000 10000 50000]
 
     map.layers+ {
-        title "paris_3857"
-        type "postgres"
-        display "box"
-        table.name "paris_3857"
-        meta {
-            @META_DATA "PARIS"
-        }
-        templates+ {
-            subject "feature.label"
-            type "html"
-            text "{id}"
-        }
-        style {
-            type "css"
-            text """
-                fill: rgba(0,0,255,1);
-                label-font-size: 14px;
-                label-fill: rgba(255,0,0,1);
-                label-offset-x: 10px;
-                label-offset-y: -10px;
-            """
-        }
-    }
-
-    map.layers+ {
+        uid "root"
+        title "Root Layer"
         type "group"
-        title "Group One"
+        meta {
+            @META_DATA "ROOT"
+        }
+
+        layers+ {
+            title "paris_3857"
+            type "postgres"
+            display "box"
+            table.name "paris_3857"
+            ows.featureName "aaa:paris"
+            meta {
+                @META_DATA "PARIS"
+            }
+            templates+ {
+                subject "feature.label"
+                type "html"
+                text "{id}"
+            }
+            style {
+                type "css"
+                text """
+                    fill: rgba(0,0,255,1);
+                    label-font-size: 14px;
+                    label-fill: rgba(255,0,0,1);
+                    label-offset-x: 10px;
+                    label-offset-y: -10px;
+                """
+            }
+        }
+
         layers+ {
             type "group"
-            title "Group One One"
-            ows.name "own_name_group_one_one"
+            title "Group One"
             layers+ {
-                title "dus_25832"
-                type "postgres"
-                display "box"
-                table.name "dus_25832"
-                templates+ {
-                    subject "feature.label"
-                    type "html"
-                    text "{id}"
-                }
-                style {
-                    type "css"
-                    text """
-                        fill: rgba(255,0,255,0.5);
-                        label-font-size: 16px;
-                        label-fill: rgba(255,255,0,1);
-                    """
+                type "group"
+                title "Group One One"
+                ows.name "own_name_group_one_one"
+                layers+ {
+                    title "dus_25832"
+                    type "postgres"
+                    display "box"
+                    table.name "dus_25832"
+                    ows.featureName "aaa:dus"
+                    templates+ {
+                        subject "feature.label"
+                        type "html"
+                        text "{id}"
+                    }
+                    style {
+                        type "css"
+                        text """
+                            fill: rgba(255,0,255,0.5);
+                            label-font-size: 16px;
+                            label-fill: rgba(255,255,0,1);
+                        """
+                    }
                 }
             }
-
         }
     }
 @end
@@ -88,10 +107,6 @@ api.actions+ {
 projects+ {
     uid "a"
 
-    meta {
-        @META_DATA "PROJECT"
-    }
-
     api.actions+ {
         type "ows"
 
@@ -99,9 +114,7 @@ projects+ {
             type "wms"
             uid "wms"
             meta {
-                @META_DATA "service"
-                abstract null
-                accessConstraints null
+                @META_DATA "wms"
                 catalogUid "WMS_ISO_UID"
             }
         }
@@ -110,9 +123,7 @@ projects+ {
             type "wfs"
             uid "wfs"
             meta {
-                @META_DATA "service"
-                abstract null
-                accessConstraints null
+                @META_DATA "wfs"
                 catalogUid "WFS_ISO_UID"
             }
         }
@@ -121,9 +132,7 @@ projects+ {
             type "wms"
             uid "wms_inspire"
             meta {
-                @META_DATA "service"
-                abstract null
-                accessConstraints null
+                @META_DATA "inspire"
                 catalogUid "WMS_INSPIRE_ISO_UID"
                 inspireDegreeOfConformity "notEvaluated"
             }

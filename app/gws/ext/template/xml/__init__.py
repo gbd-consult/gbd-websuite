@@ -56,10 +56,11 @@ class XMLRuntime(chartreux.Runtime):
 
     def register_namespace(self, text):
         s = text.strip().split()
-        if s[-1] == 'default':
-            self.default_namespace = s[0]
-            s.pop()
-        self.namespaces[s[0]] = s[1:]
+        if s:
+            if s[-1] == 'default':
+                self.default_namespace = s[0]
+                s.pop()
+            self.namespaces[s[0]] = s[1:]
 
     def as_text(self, *vals):
         return ''.join(str(v) for v in vals if v is not None)
@@ -226,7 +227,10 @@ class Object(gws.common.template.Object):
                     commands=XMLCommands()))
 
         def err(e, path, line):
-            gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
+            gws.log.error(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
+
+        if self.root.application.developer_option('template.raise_errors'):
+            err = None
 
         rt = XMLRuntime()
 

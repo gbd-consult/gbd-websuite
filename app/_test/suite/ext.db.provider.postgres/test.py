@@ -160,13 +160,16 @@ def test_render_squares():
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.ny_3857/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
-    assert True is u.response_image_matches(r, '/data/response_images/squares_200x200.png')
+    a, b = u.compare_image(r, '/data/response_images/squares_200x200.png')
+    assert a == b
 
     r = u.req(url, params={'width': 400, 'height': 400})
-    assert True is u.response_image_matches(r, '/data/response_images/squares_400x400.png')
+    a, b = u.compare_image(r, '/data/response_images/squares_400x400.png')
+    assert a == b
 
     r = u.req(url, params={'width': 800, 'height': 400})
-    assert True is u.response_image_matches(r, '/data/response_images/squares_800x400.png')
+    a, b = u.compare_image(r, '/data/response_images/squares_800x400.png')
+    assert a == b
 
 
 def test_render_squares_styled():
@@ -176,7 +179,8 @@ def test_render_squares_styled():
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.ny_3857_styled/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
-    assert True is u.response_image_matches(r, '/data/response_images/squares_styled_200x200.png')
+    a, b = u.compare_image(r, '/data/response_images/squares_styled_200x200.png')
+    assert a == b
 
 
 def test_render_squares_reprojected():
@@ -188,4 +192,5 @@ def test_render_squares_reprojected():
     url = '_/cmd/mapHttpGetBox/layerUid/a.map.london_25833/bbox/' + u.strlist(bbox)
 
     r = u.req(url, params={'width': 200, 'height': 200})
-    assert True is u.response_image_matches(r, '/data/response_images/squares_reprojected_200x200.png')
+    a, b = u.compare_image(r, '/data/response_images/squares_reprojected_200x200.png')
+    assert a == b
