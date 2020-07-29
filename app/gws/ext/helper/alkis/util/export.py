@@ -95,17 +95,15 @@ DEFAULT_GROUPS = [
 
 
 def as_csv(target_object: t.IObject, fs_features: t.List[t.IFeature], model: gws.common.model.Object):
-    # make keys from groups
-
-    att_names = model.attribute_names
-
-    csv: gws.ext.helper.csv.Object = target_object.find_first('gws.ext.helper.csv')
-    writer = csv.writer()
+    helper: gws.ext.helper.csv.Object = t.cast(
+        gws.ext.helper.csv.Object,
+        target_object.root.find_first('gws.ext.helper.csv'))
+    writer = helper.writer()
 
     writer.write_headers([r.title for r in model.rules])
 
     for fs in fs_features:
-        for rec in _recs_from_feature(fs, att_names):
+        for rec in _recs_from_feature(fs, model.attribute_names):
             writer.write_attributes(model.apply_to_dict(rec))
 
     return writer.as_bytes()
@@ -147,7 +145,7 @@ def _recs_from_feature(fs: t.IFeature, att_names: t.List[str]):
 def _flat_walk(obj, path=None, pos=None):
     # create a flat list from a nested fs record
     # an element of the list is {path, pos, value}, where
-    #     path = full key path
+    #     path = full key path (joined by _)
     #     pos  = {list_name: list_index, ...} if a value is a member of a list
     #     value = element value
 
