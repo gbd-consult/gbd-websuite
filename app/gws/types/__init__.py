@@ -1100,6 +1100,7 @@ class IAuthManager(IObject):
     guest_user: 'IUser'
     methods: List['IAuthMethod']
     providers: List['IAuthProvider']
+    sys: 'IAuthProvider'
     def authenticate(self, method: 'IAuthMethod', login, password, **kw) -> Optional['IUser']: pass
     def close_session(self, sess: 'ISession', req: 'IRequest', res: 'IResponse') -> 'ISession': pass
     def create_stored_session(self, type: str, method: 'IAuthMethod', user: 'IUser') -> 'ISession': pass
