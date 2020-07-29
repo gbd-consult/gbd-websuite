@@ -142,8 +142,7 @@ def create_and_save(root: t.IRootObject, path):
         gws.tools.os2.unlink(path)
         return
 
-    with open(test_path, 'wt') as fp:
-        fp.write(yaml.dump(cfg))
+    gws.write_file(test_path, yaml.dump(cfg))
 
     # make sure the config is ok before starting the server!
     try:

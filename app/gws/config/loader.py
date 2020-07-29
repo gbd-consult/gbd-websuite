@@ -60,9 +60,7 @@ def activate(cfg) -> t.IRootObject:
 def store(root: t.IRootObject, path=None):
     path = path or DEFAULT_STORE_PATH
     try:
-        with open(path, 'wb') as fp:
-            pickle.dump(root, fp)
-        os.chown(path, gws.UID, gws.GID)
+        gws.write_file_b(path, pickle.dumps(root))
     except Exception as e:
         raise error.LoadError('unable to store configuration') from e
 
