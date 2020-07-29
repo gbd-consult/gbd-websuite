@@ -202,7 +202,10 @@ class Layer(gws.Object, t.ILayer):
     def post_configure(self):
         super().post_configure()
 
-        self.configure_search()
+        try:
+            self.configure_search()
+        except Exception as e:
+            gws.log.exception()
 
         legend = self.configure_legend()
         if legend:
