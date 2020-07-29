@@ -47,15 +47,13 @@ _DEFAULT_TEMPLATES = [
 class Config(t.WithTypeAndAccess):
     """D-Procon action"""
 
-    requestUrl: t.Url
-
-    requestTableName: str  #: table to store outgoing requests
+    cacheTime: t.Duration = '24h'
     dataTableName: str  #: table to store consolidated results
     dataTablePattern: str  #: pattern for result tables to consolidate
-
-    cacheTime: t.Duration = '24h'
+    gemeindeFilter: t.Optional[t.List[str]]  #: gemeinde (AU) ids to keep in the index
     infoTitle: str = ''
-
+    requestTableName: str  #: table to store outgoing requests
+    requestUrl: t.Url
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
 
 
@@ -86,11 +84,11 @@ class Object(gws.common.action.Object):
             gws.log.warn('dprocon cannot init, no alkis index found')
             return
 
-        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
-
-        self.request_url: str = self.var('requestUrl')
+        self.au_filter: t.List[str] = self.var('gemeindeFilter', default=[])
         self.data_table_name: str = self.var('dataTableName')
         self.request_table_name: str = self.var('requestTableName')
+        self.request_url: str = self.var('requestUrl')
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
     def api_connect(self, req: t.IRequest, p: ConnectParams) -> ConnectResponse:
         req.require_project(p.projectUid)
@@ -159,6 +157,12 @@ class Object(gws.common.action.Object):
             alkis_schema = self.alkis.data_schema
             srid = self.alkis.crs.split(':')[1]
 
+            au_filter = ''
+            if self.au_filter:
+                s = ','.join(repr(s) for s in self.au_filter)
+                au_filter = f' AND h.gemeinde IN ({s})'
+
+
             sql = [
                 f'''
                     DROP TABLE IF EXISTS {index_table_name} CASCADE
@@ -196,8 +200,6 @@ class Object(gws.common.action.Object):
                         WHERE
                             p.art = 'HNR'
                             AND h.gml_id = ANY (p.dientzurdarstellungvon)
-                            AND p.endet IS NULL
-                            AND h.endet IS NULL
                             AND c.land = h.land
                             AND c.regierungsbezirk = h.regierungsbezirk
                             AND c.kreis = h.kreis
@@ -205,6 +207,11 @@ class Object(gws.common.action.Object):
                             AND c.lage = h.lage
                             AND h.gml_id = ANY(g.zeigtauf)
                             AND gf.wert = g.gebaeudefunktion
+                            AND c.endet IS NULL
+                            AND g.endet IS NULL
+                            AND h.endet IS NULL
+                            AND p.endet IS NULL
+                            {au_filter}
                     ON CONFLICT DO NOTHING
                 ''',
                 f'''
