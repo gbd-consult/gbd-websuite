@@ -1118,7 +1118,7 @@ class AlkisController extends gws.Controller {
         if (!this.selectionLayer) {
             this.selectionLayer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
                 uid: '_select',
-                styleName: '.modAlkisSelectFeature',
+                style: '.modAlkisSelectFeature',
             }));
         }
 
