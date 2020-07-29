@@ -161,9 +161,10 @@ def _map_layers(root, props):
             sl.is_queryable = sl.meta.name not in disabled_layers
 
         sl.title = sl.meta.title
-        sl.name = sl.meta.name if use_layer_ids else sl.title
+        sl.name = el.get_text('id') if use_layer_ids else (el.get_text('shortname') or el.get_text('layername'))
+        sl.meta.name = sl.name
 
-        map_layers[sl.meta.name] = sl
+        map_layers[el.get_text('id')] = sl
 
     return map_layers
 
