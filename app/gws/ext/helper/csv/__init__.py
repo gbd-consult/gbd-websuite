@@ -12,10 +12,11 @@ class Config(t.WithType):
     decimal: str = '.'  #: decimal sign
     delimiter: str = ','  #: field delimiter
     encoding: str = 'utf8'  #: encoding for CSV files
+    formulaHack: bool = True  #: prepend numeric strings with an equal sign
     precision: int = 2  #: precision for floats
     quote: str = '"'  #: quote sign
+    quoteAll: bool = False #: quote all fields
     rowDelimiter: str = '\n'  #: row delimiter
-    formulaHack: bool = True  #: prepend numeric strings with an equal sign
 
 
 class Object(gws.Object):
@@ -25,10 +26,11 @@ class Object(gws.Object):
         self.decimal = self.var('decimal')
         self.delimiter = self.var('delimiter')
         self.encoding = self.var('encoding')
+        self.formula_hack = self.var('formulaHack')
         self.precision = self.var('precision')
         self.quote = self.var('quote')
+        self.quote_all = self.var('quoteAll')
         self.row_delimiter = self.var('rowDelimiter').replace('CR', '\r').replace('LF', '\n')
-        self.formula_hack = self.var('formulaHack')
 
     def writer(self):
         return _Writer(self)
@@ -42,9 +44,11 @@ class _Writer:
 
     def write_headers(self, headers: t.List[str]):
         self.headers = self.h.delimiter.join(self._quote(s) for s in headers)
+        return self
 
     def write_attributes(self, attributes: t.List[t.Attribute]):
         self.rows.append(self.h.delimiter.join(self._format(a.value, a.type) for a in attributes))
+        return self
 
     def as_str(self):
         rows = []
@@ -58,20 +62,21 @@ class _Writer:
 
     def _format(self, val, type):
         if val is None:
-            return ''
+            return self._quote('')
 
         if type == t.AttributeType.float:
             s = '{:.{prec}f}'.format(float(val), prec=self.h.precision)
-            return s.replace('.', self.h.decimal)
+            s = s.replace('.', self.h.decimal)
+            return self._quote(s) if self.h.quote_all else s
 
         if type == t.AttributeType.int:
-            return str(val)
+            s = str(val)
+            return self._quote(s) if self.h.quote_all else s
 
         val = gws.as_str(val)
 
         if val and val.isdigit() and self.h.formula_hack:
-            q = self.h.quote
-            val = '=' + q + val + q
+            val = '=' + self._quote(val)
 
         return self._quote(val)
 

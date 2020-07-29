@@ -1,0 +1,18 @@
+@include /common/util.cx
+
+@WEB_SERVER_ONLY
+
+helpers+ {
+    uid "csv_default"
+    type "csv"
+}
+
+helpers+ {
+    uid "csv_custom"
+    type "csv"
+
+    decimal ','
+    delimiter ';'
+    precision 3
+    formulaHack false
+}

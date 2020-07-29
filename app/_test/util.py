@@ -95,6 +95,12 @@ def strlist(ls):
     return ','.join(str(p) for p in ls)
 
 
+def strlines(s):
+    """Strip each line in a text"""
+
+    return '\n'.join(gws.lines(s))
+
+
 _LOCALHOST = 'http://127.0.0.1'
 
 
