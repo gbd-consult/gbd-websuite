@@ -130,8 +130,8 @@ def _parse_cx_config(path):
 
     try:
         dct = slon.loads(src, as_object=True)
-    except slon.DecodeError as e:
-        return _syntax_error(src, e.args[0], e.args[1])
+    except slon.SlonError as e:
+        return _syntax_error(src, e.args[0], e.args[2])
 
     return dct, list(paths)
 
