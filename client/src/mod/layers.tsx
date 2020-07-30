@@ -9,14 +9,15 @@ interface ViewProps extends gws.types.ViewProps {
     controller: LayersSidebar;
     mapUpdateCount: number;
     mapSelectedLayer?: gws.types.IMapLayer;
-    modLayersShowOpacity: boolean;
+    modLayersOpacityVisible: boolean;
     layer?: gws.types.IMapLayer;
 }
 
 const StoreKeys = [
     'mapUpdateCount',
     'mapSelectedLayer',
-    'modLayersShowOpacity',
+    'modLayersOpacityVisible',
+    'layersShowInactive',
 ];
 
 class LayersTreeTitle extends gws.View<ViewProps> {
@@ -40,6 +41,13 @@ class LayersCheckButton extends gws.View<ViewProps> {
             isExclusive = layer.parent && layer.parent.exclusive,
             isChecked = layer.checked,
             isGroup = !gws.tools.empty(layer.children);
+
+        if (!layer.inResolution) {
+            return <gws.ui.Button
+                className='modLayersCheckButton isInactive'
+                tooltip={this.__('modLayersCheckButton')}
+            />;
+        }
 
         let cls = gws.tools.cls(
             'modLayersCheckButton',
@@ -84,7 +92,9 @@ let _layerTree = (layer: gws.types.IMapLayer, props) => {
     let cc = [];
 
     layer.children.forEach(la => {
-        if (!la.shouldList)
+        if (!la.listed)
+            return;
+        if(!la.inResolution && !props.layersShowInactive)
             return;
         if (la.unfolded)
             cc.push(..._layerTree(la, props));
@@ -99,10 +109,16 @@ class LayersTreeNode extends gws.View<ViewProps> {
     render() {
 
         let layer = this.props.layer,
-            children = _layerTree(layer, this.props);
+            children = _layerTree(layer, this.props),
+            cls = gws.tools.cls(
+                'modLayersTreeRow',
+                layer.visible && layer.inResolution && 'isVisible',
+                layer.selected && 'isSelected',
+                !layer.inResolution && 'isInactive',
+            );
 
         return <div className="modLayersTreeNode">
-            <Row {...gws.tools.cls('modLayersTreeRow', layer.visible && 'isVisible', layer.selected && 'isSelected')}>
+            <Row {...cls}>
                 <Cell>
                     {children
                         ? <LayersExpandButton {...this.props}  />
@@ -154,7 +170,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
             },
             toggleOpacityControl() {
                 cc.update({
-                    modLayersShowOpacity: !cc.getValue('modLayersShowOpacity')
+                    modLayersOpacityVisible: !cc.getValue('modLayersOpacityVisible')
                 })
             }
         };
@@ -165,7 +181,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                     <gws.components.Description content={this.props.layer.description}/>
                 </div>
             </div>
-            {this.props.modLayersShowOpacity && <div className="modLayersDetailsControls">
+            {this.props.modLayersOpacityVisible && <div className="modLayersDetailsControls">
                 <Form>
                     <Row>
                         <Cell>

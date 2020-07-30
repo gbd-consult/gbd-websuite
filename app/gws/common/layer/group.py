@@ -29,4 +29,11 @@ class Group(layer.Layer):
 
     @property
     def props(self):
-        return gws.merge(super().props, type='group', layers=self.layers)
+        resolutions = set()
+        for la in self.layers:
+            resolutions.update(la.resolutions)
+        return gws.merge(
+            super().props,
+            type='group',
+            layers=self.layers,
+            resolutions=sorted(resolutions, reverse=True))

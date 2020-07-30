@@ -39,6 +39,16 @@ module.exports = v => ({
                 opacity: 1,
             }
         },
+
+        '&.isInactive': {
+            '.modLayersTreeTitle': {
+                opacity: 0.3,
+                fontStyle: 'italic',
+            },
+            '.uiIconButton': {
+                opacity: 0.3,
+            }
+        },
     },
 
     '.modLayersTreeChildren': {
@@ -88,6 +98,10 @@ module.exports = v => ({
 
     '.modLayersCheckButton.isExclusive.isChecked.isVisible': {
         ...v.SVG('google:toggle/radio_button_checked', v.FOCUS_COLOR),
+    } ,
+
+    '.modLayersCheckButton.isInactive': {
+        ...v.SVG('google:av/not_interested', v.TEXT_COLOR),
     } ,
 
     '.modLayersDetails': {

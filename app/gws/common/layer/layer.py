@@ -91,7 +91,7 @@ class Layer(gws.Object, t.ILayer):
             meta=gws.common.metadata.props(self.meta),
             opacity=self.opacity,
             options=self.client_options,
-            resolutions=self.resolutions if self.resolutions != self.map.resolutions else None,
+            resolutions=self.resolutions,
             title=self.title,
             uid=self.uid,
         )
@@ -164,9 +164,11 @@ class Layer(gws.Object, t.ILayer):
         self.description_template: t.ITemplate = gws.common.template.find(self.templates, subject='layer.description')
 
         p = self.var('dataModel')
-        self.data_model: t.Optional[t.IModel] = (self.create_child('gws.common.model', p) if p else None)
+        self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
         self.resolutions: t.List[float] = gws.gis.zoom.resolutions_from_config(self.var('zoom'), self.map.resolutions)
+        if not self.resolutions:
+            raise gws.Error(f'no resolutions')
 
         # NB: the extent will be configured later on in map._configure_extent
         self.extent: t.Optional[t.Extent] = None
