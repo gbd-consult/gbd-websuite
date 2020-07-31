@@ -3,6 +3,7 @@ import * as ol from 'openlayers';
 
 import * as gws from 'gws';
 import * as template from 'gws/map/template';
+import * as measure from 'gws/map/measure';
 import * as style from 'gws/map/style';
 
 import * as sidebar from './sidebar';
@@ -58,7 +59,6 @@ const StoreKeys = [
     'annotateLabelTemplates',
     'appActiveTool',
 ];
-
 
 
 // function debugFeature(shapeType, geom, projection) {
@@ -176,14 +176,14 @@ class AnnotateFeature extends gws.map.Feature {
                 y = Number(ff.y) || 0,
                 width = Number(ff.width) || 100,
                 height = Number(ff.height) || 100;
-            let coords: any = [
-                [x, y - height],
-                [x + width, y - height],
-                [x + width, y],
-                [x, y],
-                [x, y - height],
-            ];
-            g.setCoordinates([coords])
+
+            let
+                a = [x, y] as ol.Coordinate,
+                b = measure.direct(a, 180, height, this.map.projection, measure.Mode.ELLIPSOID),
+                c = measure.direct(b, 90, width, this.map.projection, measure.Mode.ELLIPSOID),
+                d = measure.direct(c, 0, height, this.map.projection, measure.Mode.ELLIPSOID);
+
+            g.setCoordinates([[a, b, c, d, a]]);
         }
 
         this.setChanged();
