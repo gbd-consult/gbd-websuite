@@ -25,6 +25,7 @@ module.exports = v => ({
             },
             '&.modInfobarRotationSlider': {
                 marginLeft: v.UNIT4,
+                width: v.UNIT * 30,
             },
         },
 

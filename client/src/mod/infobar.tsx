@@ -141,7 +141,8 @@ class RotationView extends gws.View<RotationProps> {
             <Cell className="modInfobarRotationSlider">
                 <gws.ui.Slider
                     minValue={0}
-                    maxValue={360}
+                    maxValue={359}
+                    step={1}
                     value={n}
                     whenChanged={v => cc.setValue(v, true)}
                     whenInteractionStarted={() => cc.map.setInteracting(true)}
