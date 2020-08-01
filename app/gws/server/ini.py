@@ -12,6 +12,7 @@ import gws.types as t
 MAPPROXY_YAML_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
 
 # https://uwsgi-docs.readthedocs.io/en/latest/Nginx.html
+# HTTPS is to ensure that the backend werkzeug can see secure requests
 
 _uwsgi_params = """
     uwsgi_param QUERY_STRING $query_string;
@@ -27,6 +28,7 @@ _uwsgi_params = """
     uwsgi_param SERVER_ADDR $server_addr;
     uwsgi_param SERVER_PORT $server_port;
     uwsgi_param SERVER_NAME $server_name;
+    uwsgi_param HTTPS $https;
 """
 
 

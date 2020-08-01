@@ -23,10 +23,12 @@ class Object(gws.common.auth.method.Object):
 
     def open_session(self, auth: t.IAuthManager, req: t.IRequest):
         if self.secure and not req.is_secure:
+            gws.log.debug('insecure request, reject')
             return
 
         credentials = self._parse_header(req)
         if not credentials:
+            gws.log.debug('no credentials, reject')
             return
 
         user = auth.authenticate(self, credentials[0], credentials[1])
