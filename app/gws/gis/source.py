@@ -64,7 +64,7 @@ def layer_matches(sl: t.SourceLayer, slf: LayerFilter) -> bool:
         return False
 
     s = gws.get(slf, 'names')
-    if s and sl.name not in s:
+    if s is not None and sl.name not in s:
         return False
 
     s = gws.get(slf, 'pattern')
