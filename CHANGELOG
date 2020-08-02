@@ -43,6 +43,9 @@ Version 6.0
 - print legends supported
 - custom legends in png and html formats
 - legend customization for qgis layers
+- layer and layer group transparency
+- INSPIRE compliant WMS, WMTS, WFS and WCS services
+- support for greyed out layer in scale-based visibility mode
 
 
 Version 6.1
