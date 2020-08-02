@@ -146,14 +146,9 @@ class Base(Object):
     """Baseclass for OWS services."""
 
     @property
-    def url(self):
-        u = gws.SERVER_ENDPOINT + '/cmd/owsHttpService/uid/' + self.uid
-        if self.project:
-            u += f'/projectUid/{self.project.uid}'
-        return u
-
-    @property
     def service_link(self):
+        # NB: for project-based services, e.g. WMS,
+        # a service link only makes sense with a bound project
         return None
 
     @property
@@ -202,7 +197,6 @@ class Base(Object):
             meta,
             catalogUid=self.uid,
             links=[],
-            serviceUrl=self.url,
         )
 
         if self.service_link:
@@ -228,9 +222,9 @@ class Base(Object):
                 raise gws.web.error.NotFound('Project not found')
         elif self.project:
             # for in-project services, ensure the user can access the project
-            req.require_project(self.project.uid)
+            project = req.require_project(self.project.uid)
 
-        rd = Request(req=req, project=project or self.project)
+        rd = Request(req=req, project=project)
 
         return self.dispatch(rd, req.param('request', ''))
 
@@ -279,7 +273,8 @@ class Base(Object):
             'meta': self.meta,
             'with_inspire_meta': self.with_inspire_meta,
             'url_for': rd.req.url_for,
-            'service': self
+            'service': self,
+            'service_url': self.url_for_project(rd.project),
         }, context)
 
         return tpl.render(context, format=format)
@@ -461,6 +456,12 @@ class Base(Object):
         return coll
 
     # Utils
+
+    def url_for_project(self, project):
+        u = gws.SERVER_ENDPOINT + '/cmd/owsHttpService/uid/' + self.uid
+        if project:
+            u += f'/projectUid/{project.uid}'
+        return u
 
     def render_map_bbox_from_layer_caps_list(self, lcs: t.List[LayerCaps], rd: Request) -> t.HttpResponse:
         crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs

@@ -29,7 +29,7 @@
 
     @keywords service.meta
 
-    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service.url)}"
+    @t OnlineResource xlink:type="simple" xlink:href="{url_for(service_url)}"
 
     @wms_contact_metadata
 

@@ -27,7 +27,8 @@ class Object(ows.Base):
 
     @property
     def service_link(self):
-        return t.MetaLink(url=self.url, scheme='OGC:WFS', function='download')
+        if self.project:
+            return t.MetaLink(url=self.url_for_project(self.project), scheme='OGC:WFS', function='download')
 
     @property
     def default_templates(self):

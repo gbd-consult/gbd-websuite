@@ -28,7 +28,8 @@ class Object(ows.Base):
 
     @property
     def service_link(self):
-        return t.MetaLink(url=self.url, scheme='OGC:WMS', function='search')
+        if self.project:
+            return t.MetaLink(url=self.url_for_project(self.project), scheme='OGC:WMS', function='search')
 
     @property
     def default_templates(self):
