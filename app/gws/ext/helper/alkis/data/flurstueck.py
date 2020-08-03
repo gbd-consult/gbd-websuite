@@ -388,24 +388,58 @@ def gemarkung_list(conn):
     return list(rs)
 
 
+def _add_strasse_param(query, where, parms):
+    if 'strasse' not in query:
+        return
+
+    skey = adresse.street_name_key(query['strasse'])
+    smode = query.get('strasseMode', 'exact')
+
+    if smode == 'exact':
+        where.append('AD.strasse_k = %s')
+        parms.append(skey)
+        return
+
+    if smode == 'start':
+        where.append('AD.strasse_k LIKE %s')
+        parms.append(skey + '%')
+        return
+
+    if smode == 'substring':
+        where.append('AD.strasse_k LIKE %s')
+        parms.append('%' + skey + '%')
+        return
+
+
 def strasse_list(conn, query: dict):
+    where = ["strasse NOT IN ('ohne Lage')"]
+    parms = []
+
     if 'gemeindeUid' in query:
-        where = 'gemeinde_id=%s'
-        parms = [query['gemeindeUid']]
-    elif 'gemarkungUid' in query:
-        where = 'gemarkung_id=%s'
-        parms = [query['gemarkungUid']]
-    else:
-        return []
+        where.append('gemeinde_id=%s')
+        parms.append(query['gemeindeUid'])
+
+    if 'gemarkungUid' in query:
+        where.append('gemarkung_id=%s')
+        parms.append(query['gemarkungUid'])
+
+    _add_strasse_param(query, where, parms)
+
+    where = ' AND '.join(where)
 
     rs = conn.select(f'''
-        SELECT DISTINCT strasse
-        FROM {conn.index_schema}.{adresse.addr_index}
-        WHERE strasse NOT IN ('ohne Lage') AND {where}
+        SELECT DISTINCT 
+            strasse, 
+            gemeinde_id as "gemeindeUid", 
+            gemeinde, 
+            gemarkung_id as "gemarkungUid",
+            gemarkung
+        FROM {conn.index_schema}.{adresse.addr_index} as AD
+        WHERE {where}
         ORDER BY strasse
     ''', parms)
 
-    return list(r['strasse'] for r in rs)
+    return list(rs)
 
 
 def has_flurnummer(conn: AlkisConnection):
@@ -451,8 +485,7 @@ def find(conn: AlkisConnection, query: dict):
             tables['AD'] = adresse.addr_index
             where.append('AD.fs_id = FS.gml_id')
 
-            where.append('AD.strasse_k = %s')
-            parms.append(adresse.street_name_key(v))
+            _add_strasse_param(query, where, parms)
 
             hnr = query.get('hausnummer')
 

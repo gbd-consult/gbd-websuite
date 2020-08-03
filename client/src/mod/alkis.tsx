@@ -23,6 +23,9 @@ const EXPORT_PATH = 'fs_info.csv';
 
 type AlkisAlkisTabName = 'form' | 'list' | 'details' | 'error' | 'selection' | 'export';
 
+const _PREFIX_GEMARKUNG = '@gemarkung';
+const _PREFIX_GEMEINDE = '@gemeinde';
+
 interface AlkisViewProps extends gws.types.ViewProps {
     controller: AlkisController;
 
@@ -283,13 +286,21 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
 
         let nameShowMode = '';
 
-        if (setup.withEigentuemer)
+        if (setup.withEigentuemer) {
             if (!setup.withControl)
                 nameShowMode = 'enabled';
             else if (this.props.alkisFsParams.wantEigentuemer)
                 nameShowMode = 'enabled';
             else
                 nameShowMode = '';
+        }
+
+        let gemarkungListValue = '';
+
+        if (this.props.alkisFsParams.gemarkungUid)
+            gemarkungListValue = _PREFIX_GEMARKUNG + ':' + this.props.alkisFsParams.gemarkungUid;
+        else if (this.props.alkisFsParams.gemeindeUid)
+            gemarkungListValue = _PREFIX_GEMEINDE + ':' + this.props.alkisFsParams.gemeindeUid;
 
         return <Form>
             {nameShowMode && <Row>
@@ -318,7 +329,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                     <gws.ui.Select
                         placeholder={_master(this).STRINGS.gemarkung}
                         items={this.props.alkisFsGemarkungen}
-                        value={this.props.alkisFsParams.gemarkungOrGemeindeUid}
+                        value={gemarkungListValue}
                         whenChanged={value => mm.whenGemarkungChanged(value)}
                         withSearch
                         withClear
@@ -857,7 +868,7 @@ class AlkisController extends gws.Controller {
             case 'plain':
                 return sort(gs.map(g => ({
                     text: g.gemarkung,
-                    value: 'gemarkung:' + g.gemarkungUid,
+                    value: _PREFIX_GEMARKUNG + ':' + g.gemarkungUid,
                 })));
 
             case 'combined':
@@ -867,7 +878,7 @@ class AlkisController extends gws.Controller {
                             .replace(/\(.+/, '')
                             .trim()
                         + ')',
-                    value: 'gemarkung:' + g.gemarkungUid,
+                    value: _PREFIX_GEMARKUNG + ':' + g.gemarkungUid,
                 })));
 
             case 'tree':
@@ -878,7 +889,7 @@ class AlkisController extends gws.Controller {
                     uid: g.gemeindeUid,
                     item: {
                         text: g.gemeinde,
-                        value: 'gemeinde:' + g.gemeindeUid,
+                        value: _PREFIX_GEMEINDE + ':' + g.gemeindeUid,
                         level: 1,
                     }
                 });
@@ -890,7 +901,7 @@ class AlkisController extends gws.Controller {
                         .filter(g => g.gemeindeUid === gem.uid)
                         .map(g => ({
                                 text: g.gemarkung,
-                                value: 'gemarkung:' + g.gemarkungUid,
+                                value: _PREFIX_GEMARKUNG + ':' + g.gemarkungUid,
                                 level: 2,
                             })
                         )));
@@ -902,19 +913,29 @@ class AlkisController extends gws.Controller {
     }
 
     async whenGemarkungChanged(value) {
-        let strassen = [];
+        let strassen = [], params = {
+            gemarkungUid: '',
+            gemeindeUid: '',
+        };
 
         if (value) {
-            let res = await this.app.server.alkissearchFindStrasse({
-                gemarkungOrGemeindeUid: value,
-            });
+            let p = value.split(':');
+
+            if(p[0] === _PREFIX_GEMEINDE) {
+                params.gemeindeUid = p[1];
+            }
+            if(p[0] === _PREFIX_GEMARKUNG) {
+                params.gemarkungUid = p[1];
+            }
+
+            let res = await this.app.server.alkissearchFindStrasse(params);
 
             if (!res.error)
-                strassen = res.strassen.map(s => ({text: s, value: s}));
+                strassen = res.strassen.map(s => ({text: s.strasse, value: s.strasse}));
         }
 
         this.updateFsParams({
-            gemarkungOrGemeindeUid: value,
+            ...params,
             strasse: ''
         });
 

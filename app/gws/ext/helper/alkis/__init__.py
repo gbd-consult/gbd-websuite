@@ -30,12 +30,29 @@ class Gemarkung(t.Data):
     gemeindeUid: str  #: Gemeinde uid
 
 
+class Strasse(t.Data):
+    """Strasse (street) object"""
+
+    strasse: str  #: name
+    gemarkung: str  #: Gemarkung name
+    gemarkungUid: str  #: Gemarkung uid
+    gemeinde: str  #: Gemeinde name
+    gemeindeUid: str  #: Gemeinde uid
+
+
+class StrasseQueryMode(t.Enum):
+    exact = 'exact'  #: exact match (up to denormalization)
+    substring = 'substring'  #: substring match
+    start = 'start'  #: string start match
+
+
 class BaseQuery(t.Data):
     gemarkung: str = ''
-    gemarkungOrGemeindeUid: str = ''
     gemarkungUid: str = ''
     gemeinde: str = ''
     gemeindeUid: str = ''
+    strasse: str = ''
+    strasseMode: StrasseQueryMode = ''
 
 
 class FindFlurstueckQuery(BaseQuery):
@@ -90,7 +107,7 @@ class FindStrasseQuery(BaseQuery):
 
 
 class FindStrasseResult(t.Data):
-    strassen: t.List[str]
+    strassen: t.List[Strasse]
 
 
 _COMBINED_FS_PARAMS = ['landUid', 'gemarkungUid', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge']
@@ -214,8 +231,8 @@ class Object(gws.Object):
         q = self._query_to_dict(query)
         q.update(kwargs)
         with self.connect() as conn:
-            ls = flurstueck.strasse_list(conn, q)
-        return FindStrasseResult(strassen=ls)
+            rs = flurstueck.strasse_list(conn, q)
+        return FindStrasseResult(strassen=[Strasse(r) for r in rs])
 
     def connect(self):
         return AlkisConnection(**self.connect_args)
@@ -258,14 +275,4 @@ class Object(gws.Object):
         return AlkisConnection(**connect_args)
 
     def _query_to_dict(self, query):
-        q = {k: v for k, v in gws.as_dict(query).items() if not gws.is_empty(v)}
-
-        uid = q.pop('gemarkungOrGemeindeUid', None)
-        if uid:
-            uid = str(uid).split(':')
-            if len(uid) == 2 and uid[0] == 'gemeinde':
-                q['gemeindeUid'] = uid[1]
-            if len(uid) == 2 and uid[0] == 'gemarkung':
-                q['gemarkungUid'] = uid[1]
-
-        return q
+        return {k: v for k, v in gws.as_dict(query).items() if not gws.is_empty(v)}

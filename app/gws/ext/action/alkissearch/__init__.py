@@ -54,6 +54,28 @@ class BuchungConfig(t.WithAccess):
     pass
 
 
+class UiGemarkungListMode(t.Enum):
+    none = 'none'  #: do not show the list
+    plain = 'plain'  #: only "gemarkung"
+    combined = 'combined'  #: "gemarkung (gemeinde)"
+    tree = 'tree'  # a tree with level 1 = "gemeinde" and level 2 = "gemarkung"
+
+
+class UiStrasseListMode(t.Enum):
+    filtered = 'filtered'  #: show only streets from the selected gemeinde/gemarkung
+    all = 'all'  #: show all streets at once
+    search = 'search'  #: autocomplete, substring search
+    searchStart = 'searchStart'  #: autocomplete, string start search
+
+
+class UiStrasseListFormat(t.Enum):
+    plain = 'plain'  #: just "strasse"
+    withGemeinde = 'withGemeinde'  #: "strasse" ("gemeinde")
+    withGemarkung = 'withGemarkung'  #: "strasse" ("gemarkung")
+    withGemeindeWhenNeeded = 'withGemeindeWhenNeeded'  #: "strasse" ("gemeinde"), when needed for disambiguation
+    withGemarkungWhenNeeded = 'withGemarkungWhenNeeded'  #: "strasse" ("gemarkung"), when needed for disambiguation
+
+
 class UiConfig(t.Config):
     """Flurstückssuche UI configuration."""
 
@@ -62,7 +84,9 @@ class UiConfig(t.Config):
     usePick: bool = False  #: pick mode enabled
     searchSelection: bool = False  #: search in selection enabled
     searchSpatial: bool = False  #: spatial search enabled
-    gemarkungListMode: str = 'combined'  #: plain = only "gemarkung", combined = "gemarkung(gemeinde)", tree = "gemeinde", then "gemarkung"
+    gemarkungListMode: UiGemarkungListMode = 'combined'  #: gemarkung list mode
+    strasseListMode: UiStrasseListMode = 'filtered'  #: strasse list mode
+    strasseListFormat: UiStrasseListFormat = 'plain'  #: strasse list entry format
     autoSpatialSearch: bool = False  #: activate spatial search after submit
 
 
@@ -93,23 +117,24 @@ class Props(t.Props):
 
 ##
 
-class FindParams(t.Params):
+class BaseFindParams(t.Params):
     gemarkung: str = ''
-    gemarkungOrGemeindeUid: str = ''
     gemarkungUid: str = ''
     gemeinde: str = ''
     gemeindeUid: str = ''
+    strasse: str = ''
+    strasseMode: t.Optional[gws.ext.helper.alkis.StrasseQueryMode]
 
 
-class FindStrasseParams(FindParams):
+class FindStrasseParams(BaseFindParams):
     pass
 
 
 class FindStrasseResponse(t.Response):
-    strassen: t.List[str]
+    strassen: t.List[gws.ext.helper.alkis.Strasse]
 
 
-class FindFlurstueckParams(FindParams):
+class FindFlurstueckParams(BaseFindParams):
     wantEigentuemer: t.Optional[bool]
     controlInput: t.Optional[str]
     crs: t.Optional[t.Crs]
@@ -124,7 +149,6 @@ class FindFlurstueckParams(FindParams):
     hausnummer: str = ''
     name: str = ''
     nenner: str = ''
-    strasse: str = ''
     vnum: str = ''
     vorname: str = ''
     zaehler: str = ''
@@ -135,7 +159,7 @@ class FindFlurstueckResponse(t.Response):
     total: int
 
 
-class FindAdresseParams(FindParams):
+class FindAdresseParams(BaseFindParams):
     crs: t.Optional[t.Crs]
 
     bisHausnummer: str = ''
@@ -146,7 +170,6 @@ class FindAdresseParams(FindParams):
     landUid: str = ''
     regierungsbezirk: str = ''
     regierungsbezirkUid: str = ''
-    strasse: str = ''
 
 
 class FindAdresseResponse(t.Response):
@@ -223,12 +246,18 @@ class Object(gws.common.action.Object):
     def configure(self):
         super().configure()
 
+        self.valid: bool = False
+
         self.alkis: gws.ext.helper.alkis.Object = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
-        if not self.alkis or not self.alkis.has_index:
-            gws.log.warn('alkissearch cannot init, no alkis index found')
+        if not self.alkis:
+            gws.log.warn('alkissearch cannot init, alkis helper not found')
+            return
+        if not self.alkis.has_index:
+            gws.log.warn('alkissearch cannot init, no alkis index')
             return
 
-        self.valid: bool = True
+        self.valid = True
+
         self.limit: int = int(self.var('limit'))
 
         self.feature_templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_FEATURE_TEMPLATES)
@@ -303,7 +332,8 @@ class Object(gws.common.action.Object):
         """Return a list of Strassen for the given Gemarkung"""
 
         self._validate_request(req, p)
-        return FindStrasseResponse(self.alkis.find_strasse(gws.ext.helper.alkis.FindStrasseQuery(p)))
+        res = self.alkis.find_strasse(gws.ext.helper.alkis.FindStrasseQuery(p))
+        return FindStrasseResponse(strassen=res.strassen)
 
     def api_find_flurstueck(self, req: t.IRequest, p: FindFlurstueckParams) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
