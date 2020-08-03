@@ -85,6 +85,7 @@ class _Runner:
         # typescript interface and stub files for API methods
 
         api_methods = [m for m in all_methods.values() if m.category == 'api']
+        api_methods.sort(key=lambda m: m.cmd)
         api_types_tree = _arg_and_return_spec(self.units, api_methods, flatten=False)
 
         ifaces, stub = typescript.generate(api_types_tree, api_methods)
