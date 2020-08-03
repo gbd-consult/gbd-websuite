@@ -110,7 +110,7 @@ class Object(gws.common.action.Object):
         geom = self._selection_for_request(request_id)
 
         if not geom:
-            gws.log.info(f'request {request_id!r} not found')
+            gws.log.warn(f'request {request_id!r} not found')
             raise gws.web.error.NotFound()
 
         self._populate_data_table()

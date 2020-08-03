@@ -130,13 +130,13 @@ class Object(gws.Object):
 
         with self.connect() as conn:
             if 'ax_flurstueck' in conn.table_names(self.connect_args['data_schema']):
-                gws.log.info(f'ALKIS sources in "{self.db.uid}" found')
+                gws.log.debug(f'ALKIS sources in "{self.db.uid}" found')
                 self.has_source = True
             else:
-                gws.log.info(f'ALKIS sources in "{self.db.uid}" NOT found')
+                gws.log.warn(f'ALKIS sources in "{self.db.uid}" NOT found')
 
             if index.ok(conn):
-                gws.log.info(f'ALKIS indexes in "{self.db.uid}" found')
+                gws.log.debug(f'ALKIS indexes in "{self.db.uid}" found')
                 self.has_index = True
                 self.has_flurnummer = flurstueck.has_flurnummer(conn)
             else:

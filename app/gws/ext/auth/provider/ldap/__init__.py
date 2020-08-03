@@ -70,7 +70,7 @@ class Object(gws.common.auth.provider.Object):
 
         try:
             with self._connection():
-                gws.log.info(f'LDAP connection "{self.uid!r}" is fine')
+                gws.log.debug(f'LDAP connection "{self.uid!r}" is fine')
         except Exception as e:
             raise ValueError(f'LDAP error: {e.__class__.__name__}', *e.args)
 

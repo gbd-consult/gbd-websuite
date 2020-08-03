@@ -93,7 +93,7 @@ class Object(gws.common.action.Object):
             # NB: pretend the file doesn't exist
             raise gws.web.error.NotFound()
 
-        gws.log.info(f'serving {rpath!r} for {spath!r}')
+        gws.log.debug(f'serving {rpath!r} for {spath!r}')
 
         attachment_name = None
 

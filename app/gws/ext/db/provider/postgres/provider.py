@@ -56,7 +56,7 @@ class Object(gws.common.db.provider.Sql):
             gws.log.debug(f'db: ping {self.uid!r}')
             try:
                 with driver.Connection(self.connect_params):
-                    gws.log.info(f'db connection "{self.uid}": ok')
+                    gws.log.debug(f'db connection "{self.uid}": ok')
             except driver.Error as e:
                 raise gws.Error(f'cannot open db connection "{self.uid}"', e.args[0]) from e
 
@@ -189,7 +189,7 @@ class Object(gws.common.db.provider.Sql):
         if not s:
             cs = [c.name for c in cols.values() if c.is_geometry]
             if cs:
-                gws.log.info(f'found geometry column {cs[0]!r} for table {table.name!r}')
+                gws.log.debug(f'found geometry column {cs[0]!r} for table {table.name!r}')
                 s = cs[0]
         table.geometry_column = s
 

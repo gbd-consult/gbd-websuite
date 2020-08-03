@@ -170,8 +170,6 @@ class Object(gws.Object, t.IApplication):
 
 
 def _install_fonts(source_dir):
-    gws.log.info('checking fonts...')
-
     target_dir = '/usr/local/share/fonts'
     gws.tools.os2.run(['mkdir', '-p', target_dir], echo=True)
     for p in gws.tools.os2.find_files(source_dir):

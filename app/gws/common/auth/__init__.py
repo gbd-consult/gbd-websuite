@@ -92,7 +92,7 @@ class Object(gws.Object, t.IAuthManager):
 
         age = gws.tools.date.timestamp() - rec['updated']
         if age > self.session_life_time:
-            gws.log.info(f'sess uid={uid!r} EXPIRED age={age!r}')
+            gws.log.debug(f'sess uid={uid!r} EXPIRED age={age!r}')
             self.store.delete(uid)
             return
 
