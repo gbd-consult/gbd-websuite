@@ -99,11 +99,11 @@ class AnnotateFeature extends gws.map.Feature {
         return {
             shapeType: this.shapeType,
             labelTemplate: this.labelTemplate,
-            x: this.format('{x|M}'),
-            y: this.format('{y|M}'),
-            radius: this.format('{radius|M}'),
-            width: this.format('{width|M}'),
-            height: this.format('{height|M}'),
+            x: this.format('{x|M|2}'),
+            y: this.format('{y|M|2}'),
+            radius: this.format('{radius|M|2}'),
+            width: this.format('{width|M|2}'),
+            height: this.format('{height|M|2}'),
         }
     }
 
@@ -316,20 +316,22 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
 
         let form = [];
 
+        let decimalFmt = {
+            decimal: ","
+        };
+
         if (['Point', 'Box', 'Circle'].includes(st)) {
-            form.push(<gws.ui.NumberInput label={this.__('modAnnotateX')} {...cc.bind('annotateFormData.x')}/>)
-            form.push(<gws.ui.NumberInput label={this.__('modAnnotateY')} {...cc.bind('annotateFormData.y')}/>)
+            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateX')} {...cc.bind('annotateFormData.x')}/>)
+            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateY')} {...cc.bind('annotateFormData.y')}/>)
         }
 
         if (st === 'Box') {
-            form.push(<gws.ui.NumberInput label={this.__('modAnnotateWidth')} {...cc.bind('annotateFormData.width')}/>)
-            form.push(<gws.ui.NumberInput
-                label={this.__('modAnnotateHeight')} {...cc.bind('annotateFormData.height')}/>)
+            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateWidth')} {...cc.bind('annotateFormData.width')}/>)
+            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateHeight')} {...cc.bind('annotateFormData.height')}/>)
         }
 
         if (st === 'Circle') {
-            form.push(<gws.ui.NumberInput
-                label={this.__('modAnnotateRadius')} {...cc.bind('annotateFormData.radius')}/>)
+            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateRadius')} {...cc.bind('annotateFormData.radius')}/>)
         }
 
         form.push(<gws.ui.TextArea
