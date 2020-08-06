@@ -9,6 +9,7 @@ import gws
 import gws.tools.units as units
 import gws.tools.xml2 as xml2
 import gws.gis.extent
+import gws.gis.renderview
 import gws.tools.style
 
 import gws.types as t
@@ -27,7 +28,7 @@ def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: t.MapRenderView,
     if geom.is_empty:
         return []
 
-    trans = _pixel_transform(rv)
+    trans = gws.gis.renderview.pixel_transformer(rv)
     geom = shapely.ops.transform(trans, geom)
 
     if not sv:
@@ -180,8 +181,8 @@ def _pixel_transform(rv: t.MapRenderView):
         y = rv.bounds.extent[3] - y
 
         return (
-            units.mm2px((x / rv.scale) * 1000, rv.dpi),
-            units.mm2px((y / rv.scale) * 1000, rv.dpi))
+            units.mm2px_f((x / rv.scale) * 1000, rv.dpi),
+            units.mm2px_f((y / rv.scale) * 1000, rv.dpi))
 
     def rotate(x, y):
         return (
@@ -192,7 +193,7 @@ def _pixel_transform(rv: t.MapRenderView):
         x, y = translate(x, y)
         if rv.rotation:
             x, y = rotate(x, y)
-        return int(x), int(y)
+        return x, y
 
     ox, oy = translate(*gws.gis.extent.center(rv.bounds.extent))
     cosa = math.cos(math.radians(rv.rotation))

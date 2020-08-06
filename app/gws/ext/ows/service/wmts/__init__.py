@@ -8,6 +8,7 @@ import gws.gis.gml
 import gws.gis.legend
 import gws.gis.proj
 import gws.gis.render
+import gws.gis.renderview
 import gws.gis.shape
 import gws.tools.misc
 import gws.tools.os2
@@ -115,7 +116,7 @@ class Object(ows.Base):
         render_input = t.MapRenderInput(
             background_color=None,
             items=[],
-            view=gws.gis.render.view_from_bbox(
+            view=gws.gis.renderview.from_bbox(
                 crs=crs,
                 bbox=bbox,
                 out_size=(256, 256),

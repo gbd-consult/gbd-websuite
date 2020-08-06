@@ -47,12 +47,20 @@ def mm2px(x, ppi):
     return int((x * ppi) / MM_PER_IN)
 
 
+def mm2px_f(x, ppi):
+    return (x * ppi) / MM_PER_IN
+
+
 def px2mm(x, ppi):
     return int((x / ppi) * MM_PER_IN)
 
 
 def point_mm2px(xy, ppi):
     return mm2px(xy[0], ppi), mm2px(xy[1], ppi)
+
+
+def point_mm2px_f(xy, ppi):
+    return mm2px_f(xy[0], ppi), mm2px_f(xy[1], ppi)
 
 
 def point_px2mm(xy, ppi):

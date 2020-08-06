@@ -9,6 +9,7 @@ import gws.config
 import gws.gis.cache
 import gws.gis.feature
 import gws.gis.render
+import gws.gis.renderview
 import gws.tools.json2
 import gws.tools.misc
 import gws.tools.net
@@ -76,7 +77,7 @@ class Object(gws.common.action.Object):
         if p.layers:
             extra_params['layers'] = p.layers
 
-        rv = gws.gis.render.view_from_bbox(
+        rv = gws.gis.renderview.from_bbox(
             crs=p.crs or layer.map.crs,
             bbox=p.bbox,
             out_size=(p.width, p.height),

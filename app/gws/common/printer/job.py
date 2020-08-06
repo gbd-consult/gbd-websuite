@@ -11,6 +11,7 @@ import gws.common.style
 import gws.config
 import gws.gis.feature
 import gws.gis.render
+import gws.gis.renderview
 import gws.server.spool
 import gws.tools.date
 import gws.tools.job
@@ -66,8 +67,7 @@ def _create(req: t.IRequest, p: pt.PrintParams) -> gws.tools.job.Job:
     base_dir = gws.ensure_dir(gws.PRINT_DIR + '/' + job_uid)
 
     req_path = base_dir + '/request.pickle'
-    with open(req_path, 'wb') as fp:
-        pickle.dump(p, fp)
+    gws.write_file_b(req_path, pickle.dumps(p))
 
     return gws.tools.job.create(
         uid=job_uid,
@@ -81,8 +81,7 @@ def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     base_dir = gws.PRINT_DIR + '/' + job_uid
 
     req_path = base_dir + '/request.pickle'
-    with open(req_path, 'rb') as fp:
-        params = pickle.load(fp)
+    params = pickle.loads(gws.read_file_b(req_path))
 
     job.update(state=gws.tools.job.State.running)
 
@@ -231,7 +230,7 @@ class _Worker:
         ri = t.MapRenderInput(
             items=sec.items + self.common_render_items,
             background_color=_PAPER_COLOR,
-            view=gws.gis.render.view_from_center(
+            view=gws.gis.renderview.from_center(
                 crs=self.view_crs,
                 center=sec.center,
                 scale=self.view_scale,

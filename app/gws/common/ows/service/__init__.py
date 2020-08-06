@@ -9,6 +9,7 @@ import gws.common.template
 import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.render
+import gws.gis.renderview
 import gws.gis.gml
 import gws.gis.proj
 import gws.tools.units as units
@@ -478,7 +479,7 @@ class Base(Object):
         render_input = t.MapRenderInput(
             background_color=None,
             items=[],
-            view=gws.gis.render.view_from_bbox(
+            view=gws.gis.renderview.from_bbox(
                 crs=bounds.crs,
                 bbox=bounds.extent,
                 out_size=(px_width, px_height),

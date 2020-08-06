@@ -1,5 +1,6 @@
 import PIL.Image
 import io
+import math
 
 import gws
 import gws.common.layer
@@ -8,7 +9,7 @@ import gws.gis.feature
 import gws.gis.extent
 import gws.tools.svg
 import gws.tools.xml2
-import gws.tools.units as units
+import gws.gis.renderview
 
 import gws.types as t
 
@@ -18,17 +19,6 @@ class SvgFragment(t.Data):
     points: t.List[t.Point]
     tags: t.List[t.Tag]
     styles: t.Optional[t.List[t.IStyle]]
-
-
-#:export
-class MapRenderView(t.Data):
-    bounds: t.Bounds
-    center: t.Point
-    dpi: int
-    rotation: int
-    scale: int
-    size_mm: t.Size
-    size_px: t.Size
 
 
 #:export
@@ -73,62 +63,9 @@ class MapRenderOutputItem(t.Data):
 
 #:export
 class MapRenderOutput(t.Data):
-    view: 'MapRenderView'
-    items: t.List[MapRenderOutputItem]
+    view: t.MapRenderView
+    items: t.List[t.MapRenderOutputItem]
     base_dir: str
-
-
-def _view_base(out_size, out_size_unit, rotation, dpi):
-    view = t.MapRenderView()
-
-    view.dpi = max(units.OGC_SCREEN_PPI, int(dpi))
-    view.rotation = rotation
-
-    if out_size_unit == 'px':
-        view.size_px = out_size
-        view.size_mm = units.point_px2mm(out_size, view.dpi)
-
-    if out_size_unit == 'mm':
-        view.size_mm = out_size
-        view.size_px = units.point_mm2px(out_size, view.dpi)
-
-    return view
-
-
-def view_from_center(crs: t.Crs, center: t.Point, scale: int, out_size: t.Size, out_size_unit: str, rotation=0, dpi=0):
-    view = _view_base(out_size, out_size_unit, rotation, dpi)
-
-    view.center = center
-    view.scale = scale
-
-    # @TODO assuming projection units are 'm'
-    unit_per_mm = scale / 1000.0
-
-    w = units.px2mm(view.size_px[0], view.dpi)
-    h = units.px2mm(view.size_px[1], view.dpi)
-
-    ext = [
-        view.center[0] - (w * unit_per_mm) / 2,
-        view.center[1] - (h * unit_per_mm) / 2,
-        view.center[0] + (w * unit_per_mm) / 2,
-        view.center[1] + (h * unit_per_mm) / 2,
-    ]
-    view.bounds = t.Bounds(crs=crs, extent=ext)
-
-    return view
-
-
-def view_from_bbox(crs: t.Crs, bbox: t.Extent, out_size: t.Size, out_size_unit: str, rotation=0, dpi=0):
-    view = _view_base(out_size, out_size_unit, rotation, dpi)
-
-    view.center = [
-        bbox[0] + (bbox[2] - bbox[0]) / 2,
-        bbox[1] - (bbox[3] - bbox[1]) / 2,
-    ]
-    view.scale = units.res2scale((bbox[2] - bbox[0]) / view.size_px[0])
-    view.bounds = t.Bounds(crs=crs, extent=bbox)
-
-    return view
 
 
 class Composition:
@@ -248,6 +185,7 @@ def output_html(ro: MapRenderOutput) -> str:
         f'width:{w}mm',
         f'height:{h}mm',
     ])
+    vbox = ' '.join(str(s) for s in gws.gis.renderview.pixel_viewbox(ro.view))
     tags = []
 
     for item in ro.items:
@@ -259,6 +197,6 @@ def output_html(ro: MapRenderOutput) -> str:
             tags.append(('img', {'style': css, 'src': item.path}))
         if item.type == 'svg':
             gws.tools.svg.sort_by_z_index(item.tags)
-            tags.append(('svg', gws.tools.svg.SVG_ATTRIBUTES, {'style': css}, *item.tags))
+            tags.append(('svg', gws.tools.svg.SVG_ATTRIBUTES, {'style': css, 'viewBox': vbox}, *item.tags))
 
     return ''.join(gws.tools.xml2.as_string(tag) for tag in tags)
