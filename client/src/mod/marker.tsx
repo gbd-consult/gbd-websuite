@@ -18,7 +18,26 @@ interface IMarkerContent {
 class MarkerLayer extends gws.map.layer.FeatureLayer {
     controller: MarkerController;
 
+    super_printItem(): gws.api.PrintItem {
+        let fs = gws.tools.compact(this.features.map(f => f.getProps()));
+
+        if (fs.length === 0)
+            return null;
+
+        let style = this.map.style.at(this.styleNames.normal);
+
+        return {
+            type: 'features',
+            opacity: this.computedOpacity,
+            features: fs,
+            style: style ? style.props : null,
+        };
+    }
+
     get printItem() {
+        // @TODO target es6 and use super.printItem here
+        if (this.controller.getValue('markerPrint'))
+            return this.super_printItem();
         return null;
     }
 }
@@ -84,7 +103,8 @@ class MarkerController extends gws.Controller {
                 features: [f],
                 mode
             },
-            infoboxContent: <gws.components.Infobox controller={this}><p>{extent.join(', ')}</p></gws.components.Infobox>
+            infoboxContent: <gws.components.Infobox controller={this}><p>{extent.join(', ')}</p>
+            </gws.components.Infobox>
         })
     }
 
