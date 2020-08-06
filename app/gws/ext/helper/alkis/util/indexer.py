@@ -31,7 +31,7 @@ def validate_geoms(conn, table):
 def check_version(conn, table):
     ver = conn.index_table_version(table)
     if ver == version.INDEX:
-        gws.log.info('index %r version %s, ok' % (table, ver))
+        gws.log.debug('index %r version %s, ok' % (table, ver))
         return True
-    gws.log.info('index %r version %s, needs update' % (table, ver))
+    gws.log.warn('index %r version %s, needs update' % (table, ver))
     return False
