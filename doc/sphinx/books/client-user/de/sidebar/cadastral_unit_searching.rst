@@ -1,3 +1,5 @@
+.. _cadastral_unit_searching:
+
 Flurstücksuche
 ==============
 
@@ -9,9 +11,9 @@ Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandt
 Starten der Flurstücksuche
 --------------------------
 
-Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl die individuell konfiguriert werden können. So kann man Flurstücke nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen. 
+Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl die individuell konfiguriert werden können. So kann man Flurstücke nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
 
-Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden. Dabei werden die Inhalte aller Felder gelöscht. 
+Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden. Dabei werden die Inhalte aller Felder gelöscht.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
   :align: center
@@ -31,7 +33,7 @@ Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Er
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_2.png
   :align: center
 
-Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese können individuell konfiguriert werden und bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche. Über die Symbole |add| und |delete| rechts neben der Flurstücksbezeichnung, können einzelne Flurstücke in eine Ablage gelegt werden. Diese kann für einen späteren Zugriff gespeichert werden. Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden. 
+Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese können individuell konfiguriert werden und bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche. Über die Symbole |add| und |delete| rechts neben der Flurstücksbezeichnung, können einzelne Flurstücke in eine Ablage gelegt werden. Diese kann für einen späteren Zugriff gespeichert werden. Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
   :align: center
@@ -87,12 +89,12 @@ Die Flurstückinformationen bestehen aus unterschiedlichen Teilbereichen. Beim E
 Drucken der Flurstückinformationen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Über das |print| Symbol können Sie die ausgewählten Flurstückinformationen drucken. Der Inhalt des Ausdrucks kann individuell über ein Template vorbereitet werden. Dieses kann auch einen Kartendarstellung des jeweiligen Flurstücks beinhalten. 
+Über das |print| Symbol können Sie die ausgewählten Flurstückinformationen drucken. Der Inhalt des Ausdrucks kann individuell über ein Template vorbereitet werden. Dieses kann auch einen Kartendarstellung des jeweiligen Flurstücks beinhalten.
 
 Arbeiten mit der Ablage
 -----------------------
 
-Die |tab| Ablage ist ein Bereich, der genutzt werden kann, um bestimmte Flurstücke einer Suchanfrage und/oder Ergebnisse mehrerer Suchanfragen abzulegen. Man kann es als eine Art Sammelstelle verstehen, deren Inhalt letztlich für die Beauskunftung verwendet werden kann. 
+Die |tab| Ablage ist ein Bereich, der genutzt werden kann, um bestimmte Flurstücke einer Suchanfrage und/oder Ergebnisse mehrerer Suchanfragen abzulegen. Man kann es als eine Art Sammelstelle verstehen, deren Inhalt letztlich für die Beauskunftung verwendet werden kann.
 
 Speichern
 ^^^^^^^^^

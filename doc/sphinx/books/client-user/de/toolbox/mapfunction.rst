@@ -13,13 +13,13 @@ Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst
     :maxdepth: 2
 
     location.rst
-    select.rst
+    selecting.rst
     object_identification.rst
     mouseover.rst
     searching.rst
     dprocon.rst
     gkos.rst
-    dimensions.rst
+    dimensioning.rst
     measure.rst
     print.rst
     screenshot.rst
