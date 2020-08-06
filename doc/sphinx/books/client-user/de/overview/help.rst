@@ -97,8 +97,7 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste`
 |      |gbd|             |Geoinformatikbüro Dassau GmbH und GBD WebSuite                        |Informationen und Kontakt zur GBD GmbH   |
 +------------------------+----------------------------------------------------------------------+-----------------------------------------+
 
-Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste`
-
+Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <_infobar>`
 
 
 Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gws.gbd-consult.de/
