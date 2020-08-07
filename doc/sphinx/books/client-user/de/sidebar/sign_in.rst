@@ -1,3 +1,5 @@
+.. _sign_in:
+
 Anmeldung
 =========
 
