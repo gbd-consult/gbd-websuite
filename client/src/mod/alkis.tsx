@@ -287,7 +287,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
         let bindStrasse = () => ({
             value: this.props.alkisFsParams['strasse'],
             whenChanged: value => mm.updateFsParams({
-                ['strasse']: value.strasse,
+                ['strasse']: value,
                 ['gemarkung']: value.gemarkung,
             }),
             whenEntered: () => mm.search(),
@@ -1129,8 +1129,18 @@ class AlkisController extends gws.Controller {
 
         this.update({alkisFsLoading: true});
 
+        let p = {...this.getValue('alkisFsParams')};
+        if([
+            gws.api.AlkissearchUiStrasseListMode.all,
+            gws.api.AlkissearchUiStrasseListMode.search,
+            gws.api.AlkissearchUiStrasseListMode.searchStart
+            ].includes(this.setup.ui.strasseListMode) 
+            && p['strasse']
+          ){
+            p['strasse'] = p['strasse'].strasse
+        }
         let res = await this.app.server.alkissearchFindFlurstueck({
-            ...this.getValue('alkisFsParams'),
+            ...p,
         });
 
         if (res.error) {
