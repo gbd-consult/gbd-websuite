@@ -55,7 +55,7 @@ module.exports = v => ({
         },
     },
 
-    '.uiListItemParentLevelText': {
+    '.uiListItemExtraText': {
         paddingLeft: v.UNIT,
         fontWeight: 800
     },
