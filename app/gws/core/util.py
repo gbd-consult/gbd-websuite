@@ -405,7 +405,7 @@ def lines(txt: str, comment: str = None) -> t.List[str]:
 
 
 def read_file(path: str) -> str:
-    with open(path, 'rt') as fp:
+    with open(path, 'rt', encoding='utf8') as fp:
         return fp.read()
 
 
@@ -415,7 +415,7 @@ def read_file_b(path: str) -> bytes:
 
 
 def write_file(path: str, s: str, user: int = None, group: int = None):
-    with open(path, 'wt') as fp:
+    with open(path, 'wt', encoding='utf8') as fp:
         fp.write(s)
     _chown(path, user, group)
 
