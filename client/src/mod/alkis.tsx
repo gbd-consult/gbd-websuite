@@ -294,7 +294,8 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
             onInputChange: (e, callback) => {
                 mm.whenStrasseChanged(e.currentTarget.value);
                 callback(e);
-            }
+            },
+            searchAnywhere: setup.ui.strasseListMode === gws.api.AlkissearchUiStrasseListMode.search
         });
 
         let nameShowMode = '';
@@ -1002,31 +1003,45 @@ class AlkisController extends gws.Controller {
 
     }
 
-    // updates alkisFsStrassen when gemarkungListMode IS "none"
     async whenStrasseChanged(value){
-        let minimumLookupLength = 3;
-        if( value.length >= minimumLookupLength && 
-            !this.strassenQuerys.includes(value.substr(0,minimumLookupLength))
-        ){
-            // lookup query cache for if we need to fetch more 
-            // strassen from server or if we can let the input box filter stuff for us
-            let params = {
-                strasseMode: this.setup.ui.strasseListMode == gws.api.AlkissearchUiStrasseListMode.searchStart 
-                    ? AlkisStrasseQueryMode.start : AlkisStrasseQueryMode.substring,
-                strasse: value
+        let minimumLookupLength = 3; // maybe pull this from config in future
+        if ( value.length >= minimumLookupLength  ){
+            // fetch only missing streets into strassenCache
+            if ( !this.strassenQuerys.includes(value.substr(0,minimumLookupLength)) ){
+                let params = {
+                    strasseMode: this.setup.ui.strasseListMode == gws.api.AlkissearchUiStrasseListMode.searchStart 
+                        ? AlkisStrasseQueryMode.start : AlkisStrasseQueryMode.substring,
+                    strasse: value
+                };
+                
+                this.strassenQuerys.push(value);
+
+                let res = await this.app.server.alkissearchFindStrasse(params);
+
+                this.strassenCache = this.strassenCache.concat(res.strassen.filter((item) => this.strassenCache.indexOf(item) < 0));
+            }
+
+            let filterFn = this.setup.ui.strasseListMode == gws.api.AlkissearchUiStrasseListMode.searchStart ? 
+                // filter for value on searchStart
+                (x) => { return x.strasse.startsWith(value) }
+                : // filter for values on search
+                (x) => { return x.strasse.includes(value) };
+
+            let compare = (a,b) => {
+                if (a.text < b.text) return -1;
+                if (a.text > b.text) return 1;
+                return 0;
             };
-            
-            this.strassenQuerys.push(value);
-            let res = await this.app.server.alkissearchFindStrasse(params);
 
-            this.strassenCache = this.strassenCache.concat(res.strassen.filter((item) => this.strassenCache.indexOf(item) < 0));
-
-            //maybe sort?
-        
+            //filter cache -> format into ListItem -> sort
             this.update({
-                alkisFsStrassen: this.formatStrassenList(this.strassenCache)
+                alkisFsStrassen: this.formatStrassenList(this.strassenCache.filter(filterFn)).sort(compare)
             });
 
+        } else {
+            this.update({
+                alkisFsStrassen: []
+            })
         }
     }
 
