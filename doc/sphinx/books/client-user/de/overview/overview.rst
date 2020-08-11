@@ -30,4 +30,4 @@ Die GBD WebSuite wird als Docker Image bereitgestellt und kann plattformunabhän
 
    function.rst
    gbd.rst
-   shorthelp.rst
+   help.rst
