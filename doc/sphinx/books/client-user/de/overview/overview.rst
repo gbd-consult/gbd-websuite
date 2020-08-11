@@ -12,7 +12,7 @@ Die GBD WebSuite als **Web Server**:
 Die GBD WebSuite als **Geo Server**:
 
   *  kombiniert unterschiedliche Quellen (WMS, Tile Server und Datenbanken) in einer Karte
-  *  ermöglicht das direkte Einbindung von QGIS Projekten
+  *  ermöglicht die direkte Einbindung von QGIS Projekten (QGS-Format, QGZ-Format)
   *  bietet Cachen, Reprojizieren und Resampling von Rasterdaten
   *  erlaubt das direkte Verarbeiten und Rendern von Vektordaten (PostGIS, Shapefile, JSON)
   *  ermöglicht die Integration von OGC Diensten (WMS, WMTS, WFS)

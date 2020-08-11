@@ -19,10 +19,14 @@ Wenn dies nicht der Fall ist, wird der Layer nicht angezeigt und neben ihm ersch
 
 Mit einem Klick auf den Layernamen öffnet man die Eigenschaften dieses Layers.
 Hier können Legende, Metadaten sowie Copyright Einträge eingesehen werden.
-Unter der Layerlegende befinden sich drei Werkzeuge.
+Für alle Layertypen der GBD WebSuite können individuell erstellte Legenden eingebunden werden.
+Im Bildformat bestehende Legenden können als PNG-Dateien eingebunden werden. Legenden neu zu erstellen und einzubinden ist im HTML-Format möglich.
+Eine bereits durch QGIS bereitgestellte Legende kann bei Bedarf ausgeblendet oder in der GBD WebSuite Konfiguration nachträglich angepasst werden.
+
+Unter den Layereigenschaften befinden sich drei Werkzeuge.
 Für einzelne Layer oder Layergruppen kann über |transperency| die ``Transparenz`` eingestellt werden.
 Der Grad der Transparenz kann über den Schieberegler wie auch über das vergeben eines Wertes gewählt werden.
-Dies wirkt sich auf jedes Objekt, unabhängig davon ob es Punkt-, Linien- und Flächenlayern sind, aus.
+Dies wirkt sich auf jedes Objekt dieses Layers, unabhängig davon ob es ein Punkt-, Linien- und Flächenlayern ist, aus.
 Mit |zoom_layer| ``Auf den Layer zoomen`` ist es möglich auf die Gesamtausdehnung des gewählten Layers zu zoomen.
 Über |cancel| ``Layerlegende schließen`` kann die Layerlegende geschlossen werden.
 
@@ -54,7 +58,7 @@ Mit |zoom_layer| ``Auf den Layer zoomen`` ist es möglich auf die Gesamtausdehnu
    :width: 30em
  .. |edit_layer| image:: ../../../images/baseline-create-24px.svg
    :width: 30em
- .. |scale_layer| image:: ../../../images/scale-create-24px.svg
+ .. |scale_layer| image:: ../../../images/block-24px.svg
    :width: 30em
  .. |transperency| image:: ../../../images/opacity-24px.svg
    :width: 30em

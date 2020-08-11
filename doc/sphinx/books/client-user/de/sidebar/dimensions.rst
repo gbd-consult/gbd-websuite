@@ -3,19 +3,20 @@
 Bemaßung
 ========
 
-Das ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichnen von Linien. Ähnlich einer technischen Bemaßung. Zum genauen Bemessen der Strecken wird das Zeichnen durch eine Snap_Funktion unterstützt.
-Diese Snap-Funktion fängt auf ALKIS und Gebäude Daten. Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet und können frei verschoben und textlich erweitert werden.
-Wenn Sie mit Hilfe des Werkzeuges |dimensions| ``Bemaßung`` Objekte gezeichnet haben, tauchen diese im Menü |dimensions| ``Bemaßung`` auf. Hier findet eine Auflistung aller gezeichneten Bemaßungen statt.
-Durch Klicken auf |fokus| wird auf das spezielle Objekt gezoomt und durch Klicken auf |delete| wird dieses Objekt gelöscht.
-
-Mit dieser Version ist das Werkzeug Bemaßung hinzugekommen. Dieses Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichen von Linien.
-
+Das ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichnen von Linien. Ähnlich einer technischen Bemaßung.
+Zum genauen Bemessen der Strecken wird das Zeichnen durch eine Snap_Funktion unterstützt.
+Diese Snap-Funktion fängt auf ALKIS und Gebäude Daten.
+Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet und können frei verschoben und textlich erweitert werden.
+Wenn Sie mit Hilfe des Werkzeuges |dimensions| ``Bemaßung`` Objekte gezeichnet haben, tauchen diese im Menü |dimensions| ``Bemaßung`` auf.
+Hier findet eine Auflistung aller gezeichneten Bemaßungen statt.
+Durch Klicken auf |fokus| wird auf das gewählte Objekt gezoomt und durch Klicken auf |delete| wird dieses Objekt gelöscht.
 
 
 .. figure:: ../../../screenshots/de/client-user/dimensions_menue.png
   :align: center
 
-Unter den Objekten finden Sie Optionen, die sich auf alle gelisteten Objekte beziehen. So können Sie die Auswahl aller Objekte |save| speichern, eine gespeicherte Auswahl |load| laden oder alle gelisteten Objekte auf einmal |delete_marking| löschen.
+Unter den Objekten finden Sie Optionen, die sich auf alle aufgelisteten Objekte beziehen.
+So können Sie die Auswahl aller Objekte |save| speichern, eine gespeicherte Auswahl |load| laden oder alle gelisteten Objekte auf einmal |delete_marking| löschen.
 
 .. note::
  Wie alle Werkzeuge kann auch dieses, optional eingebaut oder deaktiviert werden. Die Anordnung im Menü sowie auf dem Bildschirm ist dabei flexibel.
