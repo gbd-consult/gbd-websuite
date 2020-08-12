@@ -1,3 +1,4 @@
+import re
 import yaml
 from mapproxy.wsgiapp import make_wsgi_app
 
@@ -127,6 +128,7 @@ def create(root: t.IRootObject):
     m: t.IMap
     crs = set(m.crs for m in root.find_all('gws.common.map'))
     crs.add(gws.EPSG_3857)
+    crs.add(gws.EPSG_4326)
     cfg['services']['wms']['srs'] = sorted(crs)
 
     return cfg

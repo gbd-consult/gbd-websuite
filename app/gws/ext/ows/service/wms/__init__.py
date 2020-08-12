@@ -76,7 +76,6 @@ class Object(ows.Base):
 
     def handle_getcapabilities(self, rd: ows.Request):
         # OGC 06-042, 7.2.3.5
-
         update_sequence = rd.req.param('updatesequence')
         if update_sequence and self.update_sequence and update_sequence >= self.update_sequence:
             raise gws.web.error.BadRequest('Wrong update sequence')
@@ -126,7 +125,8 @@ class Object(ows.Base):
 
     def find_features(self, rd: ows.Request):
         crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs
-        bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), crs)
+        ver = self.request_version(rd)
+        bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), crs, swap4326=ver=='1.3.0')
         if not bounds:
             raise gws.web.error.BadRequest('Invalid BBOX')
 
