@@ -352,7 +352,8 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                 </Cell>
             </Row> }
             <Row>
-                {setup.ui.strasseListMode === gws.api.AlkissearchUiStrasseListMode.filtered ? <Cell flex>
+                {(setup.ui.strasseListMode === gws.api.AlkissearchUiStrasseListMode.filtered ||
+                    setup.ui.strasseListMode === gws.api.AlkissearchUiStrasseListMode.all)? <Cell flex>
                     <gws.ui.Select
                         placeholder={_master(this).STRINGS.strasse}
                         items={this.props.alkisFsStrassen}
@@ -913,7 +914,7 @@ class AlkisController extends gws.Controller {
             return strassen.map((s) => {return {text: s.strasse, value: s}});
 
         if (this.setup.ui.strasseListFormat == gws.api.AlkissearchUiStrasseListFormat.withGemarkung)
-            return strassen.map((s) => {return { text: s.strasse + ' ('+ s.gemarkung + ')', value: s}});
+            return strassen.map((s) => {return { text: s.strasse, extraText: s.gemarkung, value: s}});
 
         if (this.setup.ui.strasseListFormat == gws.api.AlkissearchUiStrasseListFormat.withGemeinde)
             return strassen.map((s) => {return { text: s.strasse + ' ('+ s.gemeinde+ ')', value: s}});
@@ -1005,7 +1006,7 @@ class AlkisController extends gws.Controller {
 
     async whenStrasseChanged(value){
         let minimumLookupLength = 3; // maybe pull this from config in future
-        if ( value.length >= minimumLookupLength  ){
+        if ( value.length >= minimumLookupLength ){
             // fetch only missing streets into strassenCache
             if ( !this.strassenQuerys.includes(value.substr(0,minimumLookupLength)) ){
                 let params = {
@@ -1023,9 +1024,9 @@ class AlkisController extends gws.Controller {
 
             let filterFn = this.setup.ui.strasseListMode == gws.api.AlkissearchUiStrasseListMode.searchStart ? 
                 // filter for value on searchStart
-                (x) => { return x.strasse.startsWith(value) }
+                (x) => { return x.strasse.toLowerCase().startsWith(value.toLowerCase()) }
                 : // filter for values on search
-                (x) => { return x.strasse.includes(value) };
+                (x) => { return x.strasse.toLowerCase().includes(value.toLowerCase()) };
 
             let compare = (a,b) => {
                 if (a.text < b.text) return -1;
