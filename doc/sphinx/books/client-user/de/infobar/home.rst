@@ -1,3 +1,5 @@
+.. _home:
+
 Zurück zur Startseite
 =====================
 

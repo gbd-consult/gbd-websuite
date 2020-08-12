@@ -1,3 +1,5 @@
+.. _gbdinfo:
+
 GBD Informationen
 =================
 

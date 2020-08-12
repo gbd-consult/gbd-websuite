@@ -21,83 +21,83 @@ Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren 
 
 **Werkzeugleiste**
 
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-| **Symbol**             | **Funktion**                            |        **Funktionsbeschreibung**                          |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|       |select|         |:ref:`Auswählen`                         |Auswählen von Objekten per Mausklick                       |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|       |info|           |:ref:`Abfragen`                          |Informationen von Objekten per Mausklick                   |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|       |mouseover|      |:ref:`Anzeigen`                          |Informationen von Objekten per Mouseover                   |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|  |geo_search|          |:ref:`Räumliche Suche`                   |Suche mit Hilfe von geometrischen Objekten                 |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|         |dimensions|   |:ref:`Bemaßung`                          |Erfassung von Strecken-Distanzen                           |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|        |measure|       |:ref:`Markieren & Messen`                |Markieren mit Hilfe von geometrischen Objekten             |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|      |dpro|            | Auswahl an :ref:`D-ProCon` übermittlen  |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|      |gkos|            | Auswahl an :ref:`GeKos` übermittlen     |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|      |print|           |    :ref:`Drucken`                       |PDF-Generierung welche gespeichert und gedruckt werden kann|
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
-|      |screenshot|      |    :ref:`Screenshot` exportieren        |Abspeichern eines Kartenausschnitts als PNG-Datei          |
-+------------------------+-----------------------------------------+-----------------------------------------------------------+
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+| **Symbol**             | **Funktion**                                     |        **Funktionsbeschreibung**                          |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|       |select|         |:ref:`Auswählen <selecting>`                      |Auswählen von Objekten per Mausklick                       |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|       |info|           |:ref:`Abfragen <object_identi>`                   |Informationen von Objekten per Mausklick                   |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|       |mouseover|      |:ref:`Anzeigen <mouseover>`                       |Informationen von Objekten per Mouseover                   |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|  |geo_search|          |:ref:`Räumliche Suche <searching>`                |Suche mit Hilfe von geometrischen Objekten                 |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|         |dimensions|   |:ref:`Bemaßung <dimensioning>`                    |Erfassung von Strecken-Distanzen                           |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|        |measure|       |:ref:`Markieren & Messen <measure>`               |Markieren mit Hilfe von geometrischen Objekten             |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|      |dpro|            | :ref:`Auswahl an D-ProCon übermittlen <dprocon>` |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|      |gkos|            | :ref:`Auswahl an GeKos übermittlen <gkos>`       |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|      |print|           |    :ref:`Drucken <print>`                        |PDF-Generierung welche gespeichert und gedruckt werden kann|
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|      |screenshot|      |    :ref:`Screenshot exportieren <screenshot>`    |Abspeichern eines Kartenausschnitts als PNG-Datei          |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
 
-Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste`
+Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapfunction>`
 
 
 
 **Menüleiste**
 
-+------------------------+-----------------------------------------+-----------------------------------------+
-| **Symbol**             | **Funktion**                            |          **Funktionsbeschreibung**      |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |menu|            |    Menü ausklappen                      |Anzeigen des Untermenüs                  |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |project|         |    :ref:`Projektübersicht`              |Übersicht über die Projekteigenschaften  |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |layers|          |    :ref:`Layer`                         |Übersicht über die einzelnen Layer       |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |search|          |    :ref:`Suche`                         |Liste von Ergebnissen der Suche          |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |select|          |    :ref:`Auswahl`                       |Liste der ausgewählten Objekte           |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |cadastralunit|   |    :ref:`Flurstückssuche`               |Liste der ausgewählten Flurstücke        |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |measure|         |   :ref:`Markierungen`                   |Liste der ausgewählten Markierungen      |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |dimensions|      |   :ref:`Bemaßung`                       |Auflistung der erstellten Bemaßungen     |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |edit|            |   :ref:`Editieren`                      |Liste der editierbaren Objekte           |
-+------------------------+-----------------------------------------+-----------------------------------------+
-|      |authorization|   |   :ref:`Anmeldung`                      |An- und Abmelden von Benutzern           |
-+------------------------+-----------------------------------------+-----------------------------------------+
++------------------------+------------------------------------------------------+-----------------------------------------+
+| **Symbol**             | **Funktion**                                         |          **Funktionsbeschreibung**      |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |menu|            |    Menü ausklappen                                   |Anzeigen des Untermenüs                  |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |project|         |    :ref:`Projektübersicht <project_overview>`        |Übersicht über die Projekteigenschaften  |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |layers|          |    :ref:`Layer <map_element>`                        |Übersicht über die einzelnen Layer       |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |search|          |    :ref:`Suche <search>`                             |Liste von Ergebnissen der Suche          |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |select|          |    :ref:`Auswahl <select>`                           |Liste der ausgewählten Objekte           |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |cadastralunit|   |    :ref:`Flurstückssuche <cadastral_unit_searching>` |Liste der ausgewählten Flurstücke        |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |measure|         |   :ref:`Markierungen <markings>`                     |Liste der ausgewählten Markierungen      |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |dimensions|      |   :ref:`Bemaßung <dimensions>`                       |Auflistung der erstellten Bemaßungen     |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |edit|            |   :ref:`Editieren <editing>`                         |Liste der editierbaren Objekte           |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |authorization|   |   :ref:`Anmeldung <sign_in>`                         |An- und Abmelden von Benutzern           |
++------------------------+------------------------------------------------------+-----------------------------------------+
 
-Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste`
+Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste <sidebar>`
 
 
 
 **Statusleiste**
 
-+------------------------+----------------------------------------------------------------------+-----------------------------------------+
-| **Symbol**             | **Funktion**                                                         |       **Funktionsbeschreibung**         |
-+------------------------+----------------------------------------------------------------------+-----------------------------------------+
-|      |zoomin|          |Hineinzoomen                                                          |In die Karte Hineinzoomen                |
-+------------------------+----------------------------------------------------------------------+-----------------------------------------+
-|      |zoomout|         |Herauszoomen                                                          |Aus der Karte Herauszoomen               |
-+------------------------+----------------------------------------------------------------------+-----------------------------------------+
-|      |zoommap|         |Ganzes Projekt anzeigen                                               |Herauszoomen auf die Ausmaße des Projekts|
-+------------------------+----------------------------------------------------------------------+-----------------------------------------+
-|      |home|            |Zurück zur Startseite                                                 |Öffnet die Anmeldeseite der WebSuite     |
-+------------------------+----------------------------------------------------------------------+-----------------------------------------+
-|      |help|            |Hilfe                                                                 |Öffnet die Dokumentation der GBD WebSuite|
-+------------------------+----------------------------------------------------------------------+-----------------------------------------+
-|      |gbd|             |Geoinformatikbüro Dassau GmbH und GBD WebSuite                        |Informationen und Kontakt zur GBD GmbH   |
-+------------------------+----------------------------------------------------------------------+-----------------------------------------+
++------------------------+--------------------------------------------+-----------------------------------------+
+| **Symbol**             | **Funktion**                               |       **Funktionsbeschreibung**         |
++------------------------+--------------------------------------------+-----------------------------------------+
+|      |zoomin|          |:ref:`Hineinzoomen <navigation>`            |In die Karte Hineinzoomen                |
++------------------------+--------------------------------------------+-----------------------------------------+
+|      |zoomout|         |:ref:`Herauszoomen <navigation>`            |Aus der Karte Herauszoomen               |
++------------------------+--------------------------------------------+-----------------------------------------+
+|      |zoommap|         |:ref:`Ganzes Projekt anzeigen <navigation>` |Herauszoomen auf die Ausmaße des Projekts|
++------------------------+--------------------------------------------+-----------------------------------------+
+|      |home|            |:ref:`Zurück zur Startseite <home>`         |Öffnet die Anmeldeseite der WebSuite     |
++------------------------+--------------------------------------------+-----------------------------------------+
+|      |help|            |:ref:`Hilfe <help>`                         |Öffnet die Dokumentation der GBD WebSuite|
++------------------------+--------------------------------------------+-----------------------------------------+
 
-Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <_infobar>`
+
+
+Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <infobar>`
 
 
 Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gws.gbd-consult.de/
@@ -215,3 +215,11 @@ Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie
          :width: 30em
    .. |gbd| image:: ../../../images/gws_logo.svg
         :width: 30em
+
+
+.. |      |coordinates|     |:ref:`Koordinatenanzeige <coordinates>`     |Zeigt die Koordinaten der Mausposition an|
+.. +------------------------+--------------------------------------------+-----------------------------------------+
+.. |      |scale|           |:ref:`Maßstab <scale>`                      |Ablesen des aktuellen Kartenmaßstabs     |
+.. +------------------------+--------------------------------------------+-----------------------------------------+
+.. |      |turn|            |:ref:`Rotation <turn>`                      |Ablesen der aktuellen Kartenrotation     |
+.. +------------------------+--------------------------------------------+-----------------------------------------+

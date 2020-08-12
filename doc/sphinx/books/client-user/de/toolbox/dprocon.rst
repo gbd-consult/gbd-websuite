@@ -1,3 +1,5 @@
+.. _dprocon:
+
 D-ProCon
 ========
 

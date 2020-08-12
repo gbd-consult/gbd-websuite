@@ -1,4 +1,4 @@
-.. _M&M:
+.. _measure:
 
 Markieren & Messen
 ==================
