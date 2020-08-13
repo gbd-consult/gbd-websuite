@@ -76,7 +76,6 @@ class Object(ows.Base):
 
     def handle_getcapabilities(self, rd: ows.Request):
         # OGC 06-042, 7.2.3.5
-
         update_sequence = rd.req.param('updatesequence')
         if update_sequence and self.update_sequence and update_sequence >= self.update_sequence:
             raise gws.web.error.BadRequest('Wrong update sequence')
@@ -99,10 +98,15 @@ class Object(ows.Base):
         })
 
     def handle_getmap(self, rd: ows.Request):
+        bounds = self._request_bounds(rd)
+        if not bounds:
+            raise gws.web.error.BadRequest('Invalid BBOX')
+
         lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'])
         if not lcs:
             raise gws.web.error.NotFound('No layers found')
-        return self.render_map_bbox_from_layer_caps_list(lcs, rd)
+
+        return self.render_map_bbox_from_layer_caps_list(lcs, bounds, rd)
 
     def handle_getlegendgraphic(self, rd: ows.Request):
         # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
@@ -116,19 +120,13 @@ class Object(ows.Base):
         return t.HttpResponse(mime='image/png', content=out or gws.tools.misc.Pixels.png8)
 
     def handle_getfeatureinfo(self, rd: ows.Request):
-        features = self.find_features(rd)
-        fmt = rd.req.param('info_format') or gws.tools.mime.get('gml2')
-        return self.template_response(rd, 'GetFeatureInfo', fmt, context={
-            'collection': self.feature_collection(features, rd),
-        })
-
-    ###
-
-    def find_features(self, rd: ows.Request):
-        crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs
-        bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), crs)
+        bounds = self._request_bounds(rd)
         if not bounds:
             raise gws.web.error.BadRequest('Invalid BBOX')
+
+        lcs = self.layer_caps_list_from_request(rd, ['query_layers'])
+        if not lcs:
+            raise gws.web.error.NotFound('No layers found')
 
         try:
             px_width = int(rd.req.param('width'))
@@ -139,11 +137,6 @@ class Object(ows.Base):
         except:
             raise gws.web.error.BadRequest('Invalid parameter')
 
-
-        lcs = self.layer_caps_list_from_request(rd, ['query_layers'])
-        if not lcs:
-            raise gws.web.error.NotFound('No layers found')
-
         bbox = bounds.extent
         xres = (bbox[2] - bbox[0]) / px_width
         yres = (bbox[3] - bbox[1]) / px_height
@@ -153,7 +146,7 @@ class Object(ows.Base):
         point = gws.gis.shape.from_geometry({
             'type': 'Point',
             'coordinates': [x, y]
-        }, crs)
+        }, bounds.crs)
 
         # @TODO: should be a parameter
         pixel_tolerance = 10
@@ -167,4 +160,18 @@ class Object(ows.Base):
             tolerance=(pixel_tolerance, 'px'),
         )
 
-        return gws.common.search.runner.run(rd.req, args)
+        features = gws.common.search.runner.run(rd.req, args)
+
+        fmt = rd.req.param('info_format') or gws.tools.mime.get('gml2')
+        return self.template_response(rd, 'GetFeatureInfo', fmt, context={
+            'collection': self.feature_collection(features, rd),
+        })
+
+    ###
+
+    def _request_bounds(self, rd: ows.Request):
+        ver = self.request_version(rd)
+        return gws.gis.bounds.from_request_bbox(
+            rd.req.param('bbox'),
+            rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
+            swap4326=ver >= '1.3.0')

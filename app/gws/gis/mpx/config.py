@@ -1,3 +1,4 @@
+import re
 import yaml
 from mapproxy.wsgiapp import make_wsgi_app
 
@@ -24,6 +25,12 @@ class _Config:
         }
 
         self.globals = {
+            # https://mapproxy.org/docs/1.11.0/configuration.html#id14
+            # "By default MapProxy assumes lat/long (north/east) order for all geographic and x/y (east/north) order for all projected SRS."
+            # we need to change that because our extents are always x/y (lon/lat) even if a CRS says otherwise
+            'srs': {
+                'axis_order_en': ['EPSG:4326']
+            },
             'cache': {
                 'base_dir': gws.MAPPROXY_CACHE_DIR,
                 'lock_dir': gws.TMP_DIR + '/mpx/locks_' + gws.random_string(16),
@@ -127,6 +134,7 @@ def create(root: t.IRootObject):
     m: t.IMap
     crs = set(m.crs for m in root.find_all('gws.common.map'))
     crs.add(gws.EPSG_3857)
+    crs.add(gws.EPSG_4326)
     cfg['services']['wms']['srs'] = sorted(crs)
 
     return cfg

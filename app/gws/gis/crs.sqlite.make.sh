@@ -5,7 +5,7 @@ DB=crs.sqlite
 rm -f $DB
 rm -f spatial_ref_sys.sql
 
-curl -O 'https://raw.githubusercontent.com/postgis/postgis/svn-trunk/spatial_ref_sys.sql'
+curl -O 'https://raw.githubusercontent.com/postgis/postgis/master/spatial_ref_sys.sql'
 
 cat << EOF | sqlite3 $DB
 CREATE TABLE spatial_ref_sys

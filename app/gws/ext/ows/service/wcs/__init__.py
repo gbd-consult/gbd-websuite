@@ -9,6 +9,7 @@ import gws.gis.legend
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
+import gws.gis.bounds
 import gws.tools.misc
 import gws.tools.os2
 import gws.tools.xml2
@@ -91,7 +92,16 @@ class Object(ows.Base):
         })
 
     def handle_getcoverage(self, rd: ows.Request):
+        bounds = gws.gis.bounds.from_request_bbox(
+            rd.req.param('bbox'),
+            rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
+            swap4326=True
+        )
+        if not bounds:
+            raise gws.web.error.BadRequest('Invalid BBOX')
+
         lcs = self.layer_caps_list_from_request(rd, ['coverageid', 'coverage', 'identifier'])
         if not lcs:
-            raise gws.web.error.NotFound()
-        return self.render_map_bbox_from_layer_caps_list(lcs, rd)
+            raise gws.web.error.NotFound('No layers found')
+
+        return self.render_map_bbox_from_layer_caps_list(lcs, bounds, rd)

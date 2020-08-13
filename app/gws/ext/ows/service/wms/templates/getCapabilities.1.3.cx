@@ -24,7 +24,14 @@
         @end
 
         @each lc.projections as p
-            @t BoundingBox CRS="{p.proj.epsg}" minx="{p.extent[0]}" miny="{p.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
+            @if p.proj.srid == 4326
+                ## OGC 06-042, 6.7.3.3
+                ## EPSG:4326 refers to WGS 84 geographic latitude, then longitude. That is, in this CRS the x axis corresponds
+                ## to latitude, and the y axis to longitude.
+                @t BoundingBox CRS="{p.proj.epsg}" minx="{p.extent[1]}" miny="{p.extent[0]}" maxx="{p.extent[3]}" maxy="{p.extent[2]}"
+            @else
+                @t BoundingBox CRS="{p.proj.epsg}" minx="{p.extent[0]}" miny="{p.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
+            @end
         @end
 
         @with lc.meta.attribution
