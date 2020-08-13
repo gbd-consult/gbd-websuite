@@ -464,10 +464,8 @@ class Base(Object):
             u += f'/projectUid/{project.uid}'
         return u
 
-    def render_map_bbox_from_layer_caps_list(self, lcs: t.List[LayerCaps], rd: Request) -> t.HttpResponse:
-        crs = rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs
+    def render_map_bbox_from_layer_caps_list(self, lcs: t.List[LayerCaps], bounds: t.Bounds, rd: Request) -> t.HttpResponse:
         try:
-            bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), crs)
             px_width = int(rd.req.param('width'))
             px_height = int(rd.req.param('height'))
         except:
