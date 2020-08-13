@@ -77,7 +77,7 @@ Das Laden |load| und Abspeichern |save| der gewählten Markierungen ist ebenfall
 Über das Werkzeug |delete_marking| ``Alle löschen`` werden alle Markierung auf einmal gelöscht.
 
 .. note::
-  Die Einheit der Markierung kann beliebig angepasst werden. Für weitere Informationen schauen Sie unter :ref:`Markieren & Messen <M&M>` nach.
+  Die Einheit der Markierung kann beliebig angepasst werden. Für weitere Informationen schauen Sie unter :ref:`Markieren & Messen <measure>` nach.
   All diese Funktionen können auf Wunsch auch deaktiviert oder nur gewissen Nutzern zur Verfügung gestellt werden.
 
 
