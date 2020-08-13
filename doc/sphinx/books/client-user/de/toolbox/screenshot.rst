@@ -3,7 +3,12 @@
 Screenshot
 ==========
 
-Bei Aktivierung des |screenshot| ``Screenshot``-Werkzeuges öffnet sich ein Rechteck auf der Karte. Dieses kann frei navigiert werden. Wählen Sie den gewünschten Ausschnitt und vergeben Sie anschließend den DPI Wert. Sie sollten am besten einen Wert zwischen 70 und 300 DPI auswählen um eine gute Auflösung zu erhalten. Klicken Sie anschließend wieder auf |screenshot| um den Screenshot zu speichern. Alternativ können Sie über |cancel| abbrechen.
+Bei Aktivierung des |screenshot| ``Screenshot``-Werkzeuges öffnet sich ein Rechteck auf der Karte.
+Dieses kann frei navigiert werden. Wählen Sie den gewünschten Ausschnitt und vergeben Sie anschließend den DPI Wert.
+Sie sollten am besten einen Wert zwischen 70 und 300 DPI auswählen um eine gute Auflösung zu erhalten.
+Globale Einstellung wie die festgelegte  :ref:`Rotation <turn>` und maßstabsbezogene Ebenendarstellungen werden beim Screenshot genauso wie beim :ref:`Drucken <print>` mit übernommen.
+Auch manuell festgelegte Transparenzen für einzelne Layer und Layergruppen werden übernommen.
+Klicken Sie anschließend wieder auf |screenshot| um den Screenshot zu speichern. Alternativ können Sie über |cancel| den Vorgang abbrechen.
 
 .. .. figure:: ../../../screenshots/de/client-user/screenshot.png
   :scale: 60%

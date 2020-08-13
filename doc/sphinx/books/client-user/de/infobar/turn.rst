@@ -1,7 +1,7 @@
 .. _turn:
 
-Drehen
-======
+Rotation
+========
 
 Das Drehen der Karte im Kartenfenster ist auf zwei Weisen möglich. Zum einen über den Rotationsschieber welcher sich in der Statusleiste befindet.
 Das Maß in dem die Karte gedreht wird, kann durch bewegen des Punktes auf der Rotationsskala eingestellt werden.

@@ -3,7 +3,8 @@
 Flurstücksuche
 ==============
 
-In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstücksuche``, welche auf amtliche ALKIS-Daten angewendet werden kann. Das Modul und der Zugriff darauf kann individuell projekt- und benutzerspezifisch konfiguriert, Anfragen zum Einhalten des Datenschutzes gelogged werden.
+In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstücksuche``, welche auf amtliche ALKIS-Daten angewendet werden kann.
+Das Modul und der Zugriff darauf kann individuell projekt- und benutzerspezifisch konfiguriert, Anfragen zum Einhalten des Datenschutzes geloggt werden.
 
 Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
 
