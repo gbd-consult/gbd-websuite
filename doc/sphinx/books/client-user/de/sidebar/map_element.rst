@@ -16,6 +16,8 @@ Erscheint neben dem Layer das Icon |showlayer| ist dieser sichtbar, erscheint da
 Außerdem können maßstabsbezogene Darstellungen für Layer und Layergruppen in der Konfiguration der GBD WebSuite vergeben werden.
 Diese Layer werden nur dann dargestellt wenn der Kartenmaßstab einem Wert für die maßstabsbezogene Darstellung entspricht.
 Wenn dies nicht der Fall ist, wird der Layer nicht angezeigt und neben ihm erscheint das Symbol |scale_layer|.
+Das Anpassen und Konfigurieren von Layern ist per QGIS möglich. Sämtliche Änderungen die in dem verknüpften QGIS Projekt vorgenommen werden, 
+werden so in die GBD WebSuite hochgelaen.
 
 Mit einem Klick auf den Layernamen öffnet man die Eigenschaften dieses Layers.
 Hier können Legende, Metadaten sowie Copyright Einträge eingesehen werden.

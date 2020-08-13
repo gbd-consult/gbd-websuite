@@ -20,7 +20,8 @@ Bei Bedarf kann auch ein Titel manuell eingefügt werden und die Druckqualität 
    :align: center
 
 Neben dem Kartenrahmen öffnet sich ebenfalls ein Dialogfenster, in dem die Ausrichtung der Druckvorlage sowie die Druckauflösung eingestellt werden können.
-Wird das Drucksymbol |print| erneut gedrückt, öffnet sich die druckfertige PDF, per |cancel| wird der ganze Vorgang geschlossen.
+Wird das Drucksymbol |print| erneut gedrückt, öffnet sich die druckfertige PDF. Mit dem QGIS Drucklayout erstellte Legende können hier bereitgestellt und eingebunden werden.
+So kann man bei Layern der GBD WebSuite welche keine eigenen Legenden besitzen, Legenden zur druckbaren Karte hinzufügen.
 
 
 
