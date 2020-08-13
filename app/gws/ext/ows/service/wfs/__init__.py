@@ -102,12 +102,12 @@ class Object(ows.Base):
         except:
             raise gws.web.error.BadRequest('Invalid COUNT value')
 
-        crs = rd.req.param('srsName') or rd.project.map.crs
-
         if rd.req.has_param('bbox'):
-            bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), crs)
+            bounds = gws.gis.bounds.from_request_bbox(
+                rd.req.param('bbox'),
+                rd.req.param('srsName') or rd.project.map.crs)
             if not bounds:
-                raise gws.web.error.BadRequest('Invalid BBOX value')
+                raise gws.web.error.BadRequest('Invalid BBOX')
             shape = gws.gis.shape.from_bounds(bounds)
         else:
             shape = gws.gis.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
