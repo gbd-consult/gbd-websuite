@@ -3,7 +3,7 @@
 Inspire
 =======
 
-|bplan| Inspire konforme Datenbereitstellung
+|bplan| Dynamische Übersetzung Ihrer Datenstruktur für INSPIRE Konformität
 
 
  .. |bplan| image:: ../../../images/bplan.svg
