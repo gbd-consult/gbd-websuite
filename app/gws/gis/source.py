@@ -13,6 +13,7 @@ class SourceStyle(t.Data):
     is_default = False
     legend: t.Url = ''
     meta: t.MetaData = None
+    name: str = ''
 
 
 #:export
@@ -132,6 +133,22 @@ def bounds_from_layers(source_layers: t.List[t.SourceLayer], target_crs) -> t.Bo
         return t.Bounds(
             crs=target_crs,
             extent=gws.gis.extent.merge(exts))
+
+
+def crs_from_layers(source_layers: t.List[t.SourceLayer]) -> t.List[t.Crs]:
+    """Return an intersection of crs supported by each source layer."""
+
+    cs = set()
+
+    for sl in source_layers:
+        if not sl.supported_crs:
+            continue
+        if not cs:
+            cs.update(sl.supported_crs)
+        else:
+            cs = cs.intersection(sl.supported_crs)
+
+    return sorted(cs)
 
 
 def _best_bounds(bs: t.List[t.Bounds], target_crs):

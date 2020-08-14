@@ -1,7 +1,10 @@
 import gws
-import gws.common.ows.provider.parseutil as u
+import gws.gis.source
 import gws.tools.xml2
+
 import gws.types as t
+
+import gws.common.ows.provider.parseutil as u
 
 def parse(prov, xml):
     el = gws.tools.xml2.from_string(xml)
@@ -20,7 +23,7 @@ def parse(prov, xml):
 
     prov.version = el.attr('version')
     prov.source_layers = u.flatten_source_layers(_feature_type(e) for e in el.all('FeatureTypeList.FeatureType'))
-    prov.supported_crs = u.crs_from_layers(prov.source_layers)
+    prov.supported_crs = gws.gis.source.crs_from_layers(prov.source_layers)
 
 
 def _feature_type(el):

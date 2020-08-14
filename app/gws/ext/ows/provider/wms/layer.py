@@ -9,11 +9,11 @@ import gws.gis.zoom
 
 import gws.types as t
 
-from . import provider, util
+from . import provider
 
 
-class Config(gws.common.layer.ImageConfig, util.WmsConfig):
-    getMapParams: t.Optional[dict]  #: additional parameters for GetMap requests
+class Config(gws.common.layer.ImageConfig, provider.Config):
+    sourceLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use
 
 
 class Object(gws.common.layer.Image):

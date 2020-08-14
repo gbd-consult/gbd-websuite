@@ -880,6 +880,7 @@ class SourceStyle(Data):
     is_default: bool
     legend: 'Url'
     meta: 'MetaData'
+    name: str
 
 
 class SpecValidator:

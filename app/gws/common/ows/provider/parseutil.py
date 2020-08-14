@@ -1,6 +1,7 @@
 import re
 import gws
 import gws.common.ows.provider
+import gws.gis.proj
 import gws.tools.xml2 as xml2
 import gws.types as t
 
@@ -71,7 +72,9 @@ def get_bounds_list(el):
     for e in el.all('BoundingBox'):
         crs = e.attr('srs') or e.attr('crs')
         if crs:
-            d[crs.upper()] = _bbox_value(e)
+            proj = gws.gis.proj.as_proj(crs)
+            if proj:
+                d[proj.epsg] = _bbox_value(e)
 
     if gws.EPSG_4326 not in d:
         for tag in 'WGS84BoundingBox', 'EX_GeographicBoundingBox', 'LatLonBoundingBox':
@@ -87,11 +90,12 @@ def get_style(el):
     oo = t.SourceStyle()
 
     oo.meta = t.MetaData(get_meta(el))
+    oo.name = oo.meta.name.lower()
     oo.legend = get_url(el.first('LegendURL'))
     oo.is_default = (
             el.get_text('Identifier').lower() == 'default'
             or el.attr('IsDefault') == 'true'
-            or oo.meta.name.lower() == 'default')
+            or oo.name == 'default')
     return oo
 
 
@@ -100,20 +104,6 @@ def default_style(styles):
         if s.is_default:
             return s
     return styles[0] if styles else None
-
-
-def crs_from_layers(layers):
-    cs = set()
-
-    for sl in layers:
-        if not sl.supported_crs:
-            continue
-        if not cs:
-            cs.update(sl.supported_crs)
-        else:
-            cs = cs.intersection(sl.supported_crs)
-
-    return sorted(cs)
 
 
 def get_url(el):
@@ -143,6 +133,8 @@ def one_of(el, *tags):
 def flatten_source_layers(layers):
     def _collect(ls, res, parent_path, level):
         for sl in ls:
+            if not sl:
+                continue
             sl.a_uid = gws.as_uid(sl.name or sl.meta.title)
             sl.a_path = parent_path + '/' + sl.a_uid
             sl.a_level = level

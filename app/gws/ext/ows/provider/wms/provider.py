@@ -1,17 +1,31 @@
 """WMS provder."""
 
 """
-http://portal.opengeospatial.org/files/?artifact_id=1081&version=1&format=pdf Sec 7.2.2 and 7.3
-http://portal.opengeospatial.org/files/?artifact_id=14416 Sec 7.2.2 and 7.3
+OGC documents:
+    - OGC 01-068r3: WMS 1.1.1
+    - OGC 06-042: WMS 1.3.0
 
 see also https://docs.geoserver.org/latest/en/user/services/wms/basics.html
+
+NB: layer order
+our configuration lists layers top-to-bottom,
+this also applies by default to WMS caps (like in qgis)
+
+for servers with bottom-up caps, set capsLayersBottomUp=True 
+
+the order of GetMap is always bottomUp:
+
+> A WMS shall render the requested layers by drawing the leftmost in the list bottommost, 
+> the next one over that, and so on.
+
+OGC 06-042, 7.3.3.3 
 """
 
 import gws
 import gws.common.ows.provider
 import gws.gis.ows
 import gws.gis.util
-import gws.gis.util
+import gws.gis.source
 import gws.tools.net
 import gws.tools.xml2
 import gws.types as t
@@ -19,23 +33,30 @@ import gws.types as t
 from . import caps
 
 
+class Config(t.Config):
+    capsCacheMaxAge: t.Duration = '1d'  #: max cache age for capabilities documents
+    capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
+    getCapabilitiesParams: t.Optional[dict]  #: additional parameters for GetCapabilities requests
+    getMapParams: t.Optional[dict]  #: additional parameters for GetMap requests
+    invertAxis: t.Optional[t.List[t.Crs]]  #: projections that have an inverted axis (yx)
+    maxRequests: int = 0  #: max concurrent requests to this source
+    url: t.Url  #: service url
+
+
 class Object(gws.common.ows.provider.Object):
     def __init__(self):
         super().__init__()
-        self.type = 'WFS'
+        self.type = 'WMS'
 
     def configure(self):
         super().configure()
 
-        if self.url:
-            xml = gws.gis.ows.request.get_text(
-                self.url,
-                service='WMS',
-                request='GetCapabilities',
-                params=self.var('params'),
-                max_age=self.var('capsCacheMaxAge'))
-        else:
-            xml = self.var('xml')
+        xml = gws.gis.ows.request.get_text(
+            self.url,
+            service='WMS',
+            request='GetCapabilities',
+            params=self.var('getCapabilitiesParams'),
+            max_age=self.var('capsCacheMaxAge'))
 
         caps.parse(self, xml)
 

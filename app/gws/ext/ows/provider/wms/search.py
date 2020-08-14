@@ -5,11 +5,11 @@ import gws.gis.util
 
 import gws.types as t
 
-from . import provider, util
+from . import provider
 
 
-class Config(gws.common.search.provider.Config, util.WmsConfig):
-    pass
+class Config(gws.common.search.provider.Config, provider.Config):
+    sourceLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use
 
 
 class Object(gws.common.search.provider.Object):
