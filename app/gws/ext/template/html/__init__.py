@@ -112,11 +112,11 @@ class Object(gws.common.template.Object):
 
         tags_re = r'''(?xs)
             (
-                <(?P<tag1> gws:\w+) (?P<atts1> .*?) />
+                <(?P<tag1> gws:\w+) (?P<atts1> [^<>]*?) />
             )
             |
             (
-                <(?P<tag2> gws:\w+) (?P<atts2> .*?)>
+                <(?P<tag2> gws:\w+) (?P<atts2> [^<>]*?)>
                     (?P<contents2> .*?)
                 </(?P=tag2)>
             ) 
