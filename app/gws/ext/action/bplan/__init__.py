@@ -349,6 +349,7 @@ class Object(gws.common.action.Object):
                         obj.meta = gws.common.metadata.extend(meta, obj.meta)
                         if gws.get(obj, 'update_sequence'):
                             obj.update_sequence = meta.dateUpdated
+                        obj.meta.authorityIdentifier = (obj.meta.authorityIdentifier or '') + '/' + uid
 
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):

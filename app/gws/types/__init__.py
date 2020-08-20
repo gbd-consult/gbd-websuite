@@ -534,16 +534,20 @@ class MetaData(Data):
     isoQualityLineageSource: str
     isoQualityLineageSourceScale: int
     isoQualityLineageStatement: str
+    isoRestrictionCode: str
     isoScope: 'MetaIsoScope'
+    isoScopeName: str
     isoSpatialRepresentationType: 'MetaIsoSpatialRepresentationType'
     isoTopicCategory: 'MetaIsoTopicCategory'
     keywords: List[str]
     language: str
+    license: str
     links: List['MetaLink']
     name: str
     serviceUrl: 'Url'
     title: str
     url: 'Url'
+    urlFormat: str
     urlType: str
 
 
@@ -707,6 +711,17 @@ class MetaIsoOnLineFunction(Enum):
     offlineAccess = 'offlineAccess'
     order = 'order'
     search = 'search'
+
+
+class MetaIsoRestrictionCode(Enum):
+    copyright = 'copyright'
+    intellectualPropertyRights = 'intellectualPropertyRights'
+    license = 'license'
+    otherRestrictions = 'otherRestrictions'
+    patent = 'patent'
+    patentPending = 'patentPending'
+    restricted = 'restricted'
+    trademark = 'trademark'
 
 
 class MetaIsoScope(Enum):

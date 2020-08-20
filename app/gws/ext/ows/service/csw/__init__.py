@@ -64,6 +64,12 @@ class Object(ows.Base):
                 subject='ows.DescribeRecord',
                 mimeTypes=['xml'],
             ),
+            t.Config(
+                type='xml',
+                path=base + '/rawRecord.cx',
+                subject='ows.RawRecord',
+                mimeTypes=['xml'],
+            ),
         ]
 
     @property
@@ -109,9 +115,10 @@ class Object(ows.Base):
                 else:
                     meta.catalogUid = obj.uid
             if not meta.url:
-                # when using CSW, set meta urls of all objects (that don't have meta.url set) to our service url
-                meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpService/uid/{self.uid}/request/GetRecordById/id/{obj.uid}'
+                # when using CSW, set meta urls of all objects (that don't have meta.url set) to our "raw record" url
+                meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpService/uid/{self.uid}/id/{obj.uid}'
                 meta.urlType = "TC211" if self.profile == 'ISO' else 'DCMI'  ## @TODO
+                meta.urlFormat = "text/xml"
 
             extent = gws.get(obj, 'extent') or gws.get(obj, 'map.extent')
             crs = gws.get(obj, 'crs') or gws.get(obj, 'map.crs')
@@ -129,7 +136,7 @@ class Object(ows.Base):
         rd = ows.Request(req=req, project=None, service=self)
 
         if req.method == 'GET':
-            return self.dispatch(rd, req.param('request', ''))
+            return self.dispatch(rd, req.param('request', '') or 'rawrecord')
 
         # CSW should accept POST'ed xml, which can be wrapped in a SOAP envelope
 
@@ -184,6 +191,18 @@ class Object(ows.Base):
         return self.template_response(rd, 'GetRecordById', context={
             'meta': meta,
             'with_soap': rd.xml_is_soap,
+            'profile': self.profile,
+            'version': self.request_version(rd),
+        })
+
+    def handle_rawrecord(self, rd: ows.Request):
+        # RawRecord is our internal method to return bare metadata without the GetRecordByIdResponse envelope
+        meta = self.metas.get(rd.req.param('id'))
+        if not meta:
+            raise gws.web.error.NotFound()
+        return self.template_response(rd, 'RawRecord', context={
+            'meta': meta,
+            'with_soap': False,
             'profile': self.profile,
             'version': self.request_version(rd),
         })

@@ -61,6 +61,7 @@ class Config(t.WithTypeAndAccess):
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     updateSequence: t.Optional[str]  #: service update sequence
     withInspireMeta: bool = False  #: use INSPIRE Metadata
+    strictParams: bool = False  #: strict parameter parsing
 
 
 class Request(t.Data):
@@ -184,6 +185,7 @@ class Base(Object):
         self.supported_crs: t.List[t.Crs] = self.var('supportedCrs', default=[])
         self.update_sequence = self.var('updateSequence')
         self.with_inspire_meta = self.var('withInspireMeta')
+        self.strict_params = self.var('strictParams')
 
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), self.default_templates)
 
@@ -295,7 +297,9 @@ class Base(Object):
                    + f'<ServiceExceptionReport>'
                    + f'<ServiceException code="{status}">{description}</ServiceException>'
                    + f'</ServiceExceptionReport>')
-        return self.xml_response(content, status)
+        # @TODO, check OGC 17-007r1
+        # return self.xml_response(content, status)
+        return self.xml_response(content, 200)
 
     def xml_response(self, content, status=200) -> t.HttpResponse:
         return t.HttpResponse(
@@ -475,7 +479,7 @@ class Base(Object):
             raise gws.web.error.BadRequest()
 
         render_input = t.MapRenderInput(
-            background_color=None,
+            background_color=0 if rd.req.param('transparent', '').lower() == 'false' else None,
             items=[],
             view=gws.gis.renderview.from_bbox(
                 crs=bounds.crs,

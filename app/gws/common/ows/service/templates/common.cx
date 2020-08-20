@@ -37,6 +37,10 @@
             @with meta.isoTopicCategory
                 @t {tag} vocabulary="ISO 19115:2003" {meta.isoTopicCategory}
             @end
+
+            @with meta.inspireMandatoryKeyword
+                @t {tag} vocabulary="ISO" {meta.inspireMandatoryKeyword}
+            @end
         @end
     @end
 @end
@@ -146,7 +150,7 @@
     @end
 
     @t inspire_common:ResourceType {meta.inspireResourceType}
-    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.dateCreated}
+    @t inspire_common:TemporalReference/inspire_common:DateOfPublication {meta.dateCreated | date}
 
     @tag inspire_common:Conformity
         @tag inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng"
@@ -168,7 +172,7 @@
         @t inspire_common:EmailAddress {meta.contact.email}
     @end
 
-    @t inspire_common:MetadataDate {meta.dateCreated}
+    @t inspire_common:MetadataDate {meta.dateCreated | date}
     @t inspire_common:SpatialDataServiceType {meta.inspireSpatialDataServiceType}
     @t inspire_common:MandatoryKeyword/inspire_common:KeywordValue {meta.inspireMandatoryKeyword}
 
