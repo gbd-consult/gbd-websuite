@@ -62,7 +62,7 @@ def _run2(action, src_dir, replace, au_uid, job):
 
     stats = Stats(numRecords=0, numPngs=0, numPdfs=0)
 
-    _update_job(job, step=0, steps=5)
+    _update_job(job, step=0, steps=6)
 
     # iterate shape files and prepare a list of db records
 
