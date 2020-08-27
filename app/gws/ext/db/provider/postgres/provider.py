@@ -177,28 +177,39 @@ class Object(gws.common.db.provider.Sql):
         if not cols:
             raise gws.Error(f'table {table.name!r} not found')
 
-        s = cfg.get('keyColumn')
-        if not s:
+        cname = cfg.get('keyColumn')
+        if cname:
+            if cname not in cols:
+                raise gws.Error(f'invalid keyColumn {cname!r} for table {table.name!r}')
+        else:
             cs = [c.name for c in cols.values() if c.is_key]
             if len(cs) != 1:
                 raise gws.Error(f'invalid primary key for table {table.name!r}')
-            s = cs[0]
-        table.key_column = s
+            cname = cs[0]
 
-        s = cfg.get('geometryColumn')
-        if not s:
+        table.key_column = cname
+
+        cname = cfg.get('geometryColumn')
+        if cname:
+            if cname not in cols or not cols[cname].geom_type or not cols[cname].crs:
+                raise gws.Error(f'invalid geometryColumn {cname!r} for table {table.name!r}')
+        else:
             cs = [c.name for c in cols.values() if c.is_geometry]
             if cs:
                 gws.log.debug(f'found geometry column {cs[0]!r} for table {table.name!r}')
-                s = cs[0]
-        table.geometry_column = s
+                cname = cs[0]
 
-        if table.geometry_column:
-            col = cols[table.geometry_column]
-            table.geometry_crs = col.crs
-            table.geometry_type = col.geom_type
+        if cname:
+            table.geometry_column = cname
+            table.geometry_crs = cols[cname].crs
+            table.geometry_type = cols[cname].geom_type
 
-        table.search_column = cfg.get('searchColumn')
+        cname = cfg.get('searchColumn')
+
+        if cname:
+            if cname not in cols:
+                raise gws.Error(f'invalid searchColumn {cname!r} for table {table.name!r}')
+            table.search_column = cname
 
         return table
 
