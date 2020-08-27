@@ -852,6 +852,11 @@ class SearchFilter(Data):
     value: str
 
 
+class SearchSpatialContext(Enum):
+    map = 'map'
+    view = 'view'
+
+
 class SelectArgs(Data):
     extra_where: Optional[list]
     keyword: Optional[str]
@@ -1317,6 +1322,7 @@ class ISearchProvider(IObject):
     active: bool
     capabilties: int
     data_model: Optional['IModel']
+    spatial_context: 'SearchSpatialContext'
     templates: List['ITemplate']
     tolerance: 'Measurement'
     with_geometry: bool

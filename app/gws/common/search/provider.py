@@ -7,10 +7,15 @@ import gws.types as t
 
 _DEFAULT_PIXEL_TOLERANCE = 10
 
+#:export
+class SearchSpatialContext(t.Enum):
+    map = 'map'  #: search in the map extent
+    view = 'view'  #: search in the client view extent
+
 
 class Config(t.WithTypeAndAccess):
     dataModel: t.Optional[gws.common.model.Config]  #: feature data model
-    defaultContext: str = ''  #: default spatial context ('view' or 'map')
+    defaultContext: t.Optional[SearchSpatialContext] = 'map'  #: default spatial context
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
     tolerance: str = '10px'  #: tolerance, in pixels or map units
     withGeometry: bool = True  #: enable geometry search
@@ -43,8 +48,9 @@ class Object(gws.Object, t.ISearchProvider):
             gws.tools.units.parse(p, units=['px', 'm'], default='px') if p
             else (_DEFAULT_PIXEL_TOLERANCE, 'px'))
 
-        self.with_keyword: bool = self.var('withKeyword', default=True)
-        self.with_geometry: bool = self.var('withGeometry', default=True)
+        self.with_keyword: bool = self.var('withKeyword')
+        self.with_geometry: bool = self.var('withGeometry')
+        self.spatial_context: SearchSpatialContext = self.var('defaultContext')
 
     def can_run(self, args: t.SearchArgs):
         if not self.active:
@@ -68,8 +74,7 @@ class Object(gws.Object, t.ISearchProvider):
     def context_shape(self, args: t.SearchArgs) -> t.IShape:
         if args.get('shapes'):
             return gws.gis.shape.union(args.shapes)
-        ctx = self.var('defaultContext')
-        if ctx == 'view' and args.bounds:
+        if self.spatial_context == SearchSpatialContext.view and args.bounds:
             return gws.gis.shape.from_bounds(args.bounds)
         return gws.gis.shape.from_bounds(args.project.map.bounds)
 
