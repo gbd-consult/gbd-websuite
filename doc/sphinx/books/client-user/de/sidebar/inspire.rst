@@ -1,44 +1,63 @@
 .. _inspire:
 
-Inspire
+INSPIRE
 =======
 
-Das Inspire |bplan| Modul der GBD WebSuite ermöglicht es, einzelnen Kommunen und Gemeinden Bebauungspläne hochzuladen und zu verwalten.
-Die hochgeladenen Daten werden dann konform der INSPIRE-Datenstruktur angelegt und können dann in Form von OGC-Diensten, wie zum Beispiel WMS oder WFS Diensten, bereitgestellt werden.
-Eine dynamische Übersetzung Ihrer internen Datenstruktur für INSPIRE Konformität ist somit ermöglicht.
+Das INSPIRE |bplan| Modul der GBD WebSuite ermöglicht einem Administrator momentan die dynamische Bereitstellung von Geodaten und deren Metadaten für das Fachthema Bauleitplanung entsprechend der INSPIRE Vorgabe. Es ist dabei so konzipiert, dass es zukünftig um weitere Fachthemen erweitert werden kann. Wenn mehrere Fachthemen vorhanden sind, kann im Vorfeld das Fachthema ausgewählt und den Daten zugewiesen werden.
 
-In dem Menü :ref:`Layer <layer>` kann man in der Gruppe ``Bauleitplanung`` auswählen aus welcher Kategorie Bebauungspläne angezeigt werden sollen.
-Den Kategorien wurden unterschiedliche Farben zugeordnet, mit denen die Geometrien der Bebauungspläne umrandet werden. Außerdem gibt es von jede Kategorie als Vektor- und als Rasterlayer.
-Im Rasterlayer befinden sich die eingescannten Bebauungspläne. Im Vektorlayer befinden sich die Umrisse der eingescannten Pläne.
-Bei einem Maßstab 1 zu 5000 und größer werden ALKIS Karten als Hintergrundkarten verwendet. Bei einem Maßstab über 1 zu 5000 werden die Karten aus dem Webatlas verwendet.
+Die INSPIRE konforme Bereitstellung der Geodaten findet auf Anfrage dynamisch durch den GBD WebSuite Server auf Basis von XML−Schemas statt. Das bedeutet, dass keine temporären, redundanten Daten erstellt und auf dem Server abgelegt werden. Die INSPIRE konformen Dienste basieren immer auf den aktuellen Originaldaten. Für Transformation von Gauß−Krüger nach ETRS89 ist ein geeigneter Transformationsansatz integriert.
 
-Wenn man das Modul ``Inspire`` |bplan|  aktiviert, öffnet sich die Liste mit den ausgewählten Bebauungsplänen.
-Oberhalb der Liste ist ein Suchfeld angeordnet.
-Über dieses Feld ist es möglich Bebauungspläne über ihren Namen zu Suchen. Dabei reicht die Eingabe einzelner Buchstaben des Wortes bereits aus das diese angezeigt werden.
-Wenn ein Bebauungsplan angeklickt wird, wird automatisch zu diesem Objekt gezoomt und das dazugehörige Informationsfenster öffnet sich.
-In dem Informationsfenster findet man alle angehängten Dokumente, wie zum Beispiel Änderungen oder Artenschutzprüfungen, zu diesem Objekt.
-Durch ein Anklicken der Dokumente öffnen sich diese in einem separaten Fenster.
-Wenn Sie einen Bebauungsplan löschen wollen, weil zum Beispiel die Eingabe fehlerhaft war, ist dies über das |trash| Icon möglich, welches sich hinter dem jeweiligen Plan befindet.
+Unterstützt wird die Bereitstellung folgender INSPIRE Dienste:
 
-Unterhalb der Liste befinden sich drei Werkezuge.
-Über |new_bplan| kann man neue ``Bauleitpläne hochladen``. Sobald man das Icon anklickt öffnet sich ein neues Dialogfenster.
-Hier kann man nun durch Anklicken der Büroklammer, auf die lokalen Daten zugreifen und die gewünschte Datei auswählen.
-Die Datei muss eine ZIP-Datei sein und gewissen Vorgaben des übergeordneten Landkreises entsprechen.
-Wenn die richtige Datei ausgewählt wurde, kann man auf den Haken drücken und die Datei wird in die Datenbank der GBD WebSuite hochgeladen.
-Das Hochladen kann einige Minuten dauern. Falls das Dateiformat oder der Aufbau der ZIP-Datei nicht stimmen, erhält man eine Fehlermeldung.
+- INSPIRE konformer Catalogue Service for the Web (CSW)
+- INSPIRE konformer Web Mapping Service (WMS/WMTS)
+- Umsetzung INSPIRE konformer Web Feature Service (WFS)
+- Umsetzung INSPIRE konformer Web Coverage Service (WCS)
 
-Das Bearbeiten der Metadaten die andere Kommune und an den Landkreis gesendet werden, ist über |metadata| ``Metadaten editieren`` möglich.
-Beim aktivieren dieses Werkzeugs öffnet sich das Formular in welchem die Metadaten eingetragen werden können.
-Einige Informationen wie zum Beispiel: wann war die letzte Änderung oder wer hat die letzte Änderung vorgenommen, vermerkt die GBD WebSuite selbstständig.
-Andere Informationen wie zum Beispiel Kontaktdaten etc., müssen vom Nutzer selbst eingetragen werden.
+Bauleitpläne anzeigen, suchen und löschen
+-----------------------------------------
 
-Als letztes Werkzeug stehen die |world| ``Dienste`` noch zur Verfügung. Hier kann eine Übersicht über die Links der bereitgestellten Dienste gewonnen werden.
-Jede Kommune hat einen eigenen WMS Dienst, welcher im Geoportal integriert werden kann.
-Die Zahlen am Ende des Links spiegeln den Geimeindeschlüssel der jeweiligen Kommune wieder.
-Wenn am Ende des Links ``Gesamt`` steht, stellt dieser Dienst den gesamten Landkreis da.
-So kann der Landkreis die Pläne einer Kommune ganz unkompliziert in den Gesamtbestand einarbeiten und bereitstellen.
-Die WMS Dienste können aber auch überall anderes eingebunden werden oder alternativ auch als WMTS oder WCS Dienst angeboten werden.
+Nachdem sich der Benutzer anmeldet hat, wird er direkt in das INSPIRE |bplan| Modul weitergeleitet. Falls die Berechtigung vorhanden ist, mehrere Datensätze zu bearbeiten, muss zuerst eine Auswahl stattfinden. Danach werden dann alle Daten zum Thema Bauleitplanung angezeigt für die der Benutzer Zugriffsrechte hat. Mit einem Klick auf den Namen eines Eintrags wird auf diesen gezoomt und das dazugehörige Informationsfenster öffnet sich.
 
+.. figure:: ../../../screenshots/de/client-user/inspire_show.png
+ :align: center
+
+
+Über ein Suchfeld kann man frei nach dem Namen eines Eintrags der Bauleitplanung suchen. Dabei reicht die Eingabe einzelner Buchstaben des Wortes bereits aus.
+
+.. figure:: ../../../screenshots/de/client-user/inspire_delete.png
+ :align: center
+
+Wenn Sie einen Bebauungsplan löschen wollen, ist dies über das |trash| Icon möglich, welches sich hinter dem jeweiligen Eintrag befindet.
+
+Bauleitpläne hochladen
+----------------------
+
+Nachdem sich der Benutzer anmeldet hat, kann dieser über das Icon |new_bplan| ``Bauleitpläne hochladen`` Daten und deren Metadaten auf den Server laden. Die Daten sind dabei in einer vorher definierten Daten- und Dateistruktur als ZIP-Paket vorbereitet. Der Ort der Datenablage auf dem Server wird über die Konfiguration des Moduls vorgegeben. Falls das Dateiformat oder der Aufbau der ZIP-Datei nicht stimmen, erhält man eine entsprechende Fehlermeldung. Sobald man das Icon anklickt öffnet sich ein neues Dialogfenster. Hier kann man nun durch Anklicken der Büroklammer, auf die lokalen Daten zugreifen und die gewünschte Datei auswählen.
+
+.. figure:: ../../../screenshots/de/client-user/inspire_upload.png
+ :align: center
+
+Die Daten des Fachthemas Bauleitplanung umfassen Vektordaten als Punkte, Linien und Flächen (z.B. Satzungen, Bebauungs- und Flächennutzungspläne) sowie dazugehörige Metadaten. Dazu gehören die Bebauungs- und Flächennutzungspläne als Rasterdaten und ergänzende Dokumente als PDF (z.B. Gesamtpläne, Begründungen, Umweltberichte oder textliche Festsetzungen). Die Vektordaten werden in eine PostGIS Datenbank importiert.
+
+Metadaten pflegen
+-----------------
+
+Das Bearbeiten der Metadaten ist über |metadata| ``Metadaten editieren`` möglich. Bereits in der Konfiguration festgelegte oder automatisch erstellbare Informationen, wie zum Beispiel: wann war die letzte Änderung werden angezeigt. 
+
+.. figure:: ../../../screenshots/de/client-user/inspire_metadata.png
+ :align: center
+
+
+Dienste anzeigen
+----------------
+
+Als weiteres Werkzeug stehen die |world| ``Dienste`` zur Verfügung. Hier wird eine Übersicht über die im System konfigurierten und somit bereitgestellten OGC und INSPIRE konformen Dienste angezeigt. Über die URL können diese in eine externe Anwendung eingebunden werden. Über den Link können die Capabilities aufgerufen werden.
+
+.. figure:: ../../../screenshots/de/client-user/inspire_dienste.png
+ :align: center
+
+Das Ergebnis der aktuellen Umsetzung wurde für den Landkreis Marburg-Biedenkopf entwickelt und kann über deren `Geoportal <https://gis.marburg-biedenkopf.de/project/bebauungsplaene>`_ sowie über das `Geoportal Hessen <http://www.geoportal.hessen.de>`_ aufgerufen werden.
 
  .. |bplan| image:: ../../../images/bplan.svg
    :width: 30em
