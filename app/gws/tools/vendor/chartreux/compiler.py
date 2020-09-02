@@ -993,7 +993,7 @@ class Code:
                 pos['line'] = line
                 w(0, _f('## {}:{}', pos['path'], pos['line']))
 
-        w(0, _f('def {}(_RT, _VARS, _ERROR=None):', self.cc.option('name')))
+        w(0, _f('def {}(_RT, _, _ERROR=None):', self.cc.option('name')))
 
         if not self.buf:
             w(1, 'return ""')
@@ -1035,21 +1035,21 @@ class Code:
             
             def _GET_VAR(prop, pos):
                 try:
-                    return _VARS[prop] if prop in _VARS else _GLOBALS[prop]
+                    return _[prop] if prop in _ else _GLOBALS[prop]
                 except Exception as _EXC:
                     _ERR(_EXC, pos)
                     return _RT.undef
 
             def _GET_VAR_NOEXC(prop, pos):
                 try:
-                    return _VARS[prop] if prop in _VARS else _GLOBALS[prop]
+                    return _[prop] if prop in _ else _GLOBALS[prop]
                 except Exception as _EXC:
                     return _RT.undef
         ''')
 
         w(1, 'try:')
 
-        w(2, _f('_VARS, _GLOBALS = _RT.prepare(_VARS, {})', sorted(self.context_vars)))
+        w(2, _f('_, _GLOBALS = _RT.prepare(_, {})', sorted(self.context_vars)))
         w(2, '_PUSHBUF()')
 
         level = 2
@@ -1093,7 +1093,7 @@ class Compiler:
 
         self.globals = set(self.option('globals', []))
 
-        self.scope = set()
+        self.scope = {'_RT', '_', '_ERROR'}
         self.user_commands = {}
         self.frames = []
 
