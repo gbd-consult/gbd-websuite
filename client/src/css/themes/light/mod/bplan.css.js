@@ -26,7 +26,7 @@ module.exports = v => ({
         ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline'),
     },
     '.modBplanMetaAuxButton': {
-        ...v.SIDEBAR_AUX_BUTTON('google:action/list'),
+        ...v.SIDEBAR_AUX_BUTTON('google:content/content_paste'),
     },
 
     '.modBplanInfoAuxButton': {
