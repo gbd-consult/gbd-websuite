@@ -110,10 +110,7 @@ class Object(ows.Base):
             if not meta:
                 continue
             if not meta.catalogUid:
-                if meta.authorityIdentifier:
-                    meta.catalogUid = meta.authorityIdentifier
-                else:
-                    meta.catalogUid = obj.uid
+                meta.catalogUid = meta.authorityIdentifier or obj.uid
             if not meta.url:
                 # when using CSW, set meta urls of all objects (that don't have meta.url set) to our "raw record" url
                 meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpService/uid/{self.uid}/id/{obj.uid}'

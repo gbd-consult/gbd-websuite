@@ -196,11 +196,7 @@ class Base(Object):
         else:
             meta = gws.common.metadata.extend(meta, self.root.application.meta)
 
-        meta = gws.extend(
-            meta,
-            catalogUid=self.uid,
-            links=[],
-        )
+        meta.links = []
 
         if self.service_link:
             meta.links.append(self.service_link)

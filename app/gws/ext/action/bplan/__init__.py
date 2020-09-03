@@ -341,6 +341,8 @@ class Object(gws.common.action.Object):
                 metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['mi']), with_tz='Z')
                 metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['ma']), with_tz='Z')
 
+        # extend metadata for "our" objects
+
         for obj in self.root.find_all():
             uid = gws.get(obj, 'uid') or ''
             if uid and gws.get(obj, 'meta'):
@@ -349,7 +351,10 @@ class Object(gws.common.action.Object):
                         obj.meta = gws.common.metadata.extend(meta, obj.meta)
                         if gws.get(obj, 'update_sequence'):
                             obj.update_sequence = meta.dateUpdated
-                        obj.meta.authorityIdentifier = (obj.meta.authorityIdentifier or '') + '/' + uid
+                        # inspire integrator requires authIds to be UUIDs
+                        r = (obj.meta.authorityIdentifier or '') + '/' + uid
+                        r = gws.sha256(r)
+                        obj.meta.authorityIdentifier = r[0:8] + '-' + r[7:11] + '-' + r[11:15] + '-' + r[15:19] + '-' + r[19:31]
 
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):
