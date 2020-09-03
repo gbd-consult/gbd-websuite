@@ -53,6 +53,7 @@ def from_gml_envelope_element(el: gws.tools.xml2.Element):
 def transformed_to(b: t.Bounds, crs: t.Crs) -> t.Bounds:
     if gws.gis.proj.equal(b.crs, crs):
         return b
+    proj = gws.gis.proj.as_proj(crs)
     return t.Bounds(
-        crs=crs,
-        extent=gws.gis.extent.transform(b.extent, b.crs, crs))
+        crs=proj.epsg,
+        extent=gws.gis.extent.transform(b.extent, b.crs, proj))
