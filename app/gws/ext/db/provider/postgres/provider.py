@@ -184,7 +184,8 @@ class Object(gws.common.db.provider.Sql):
         else:
             cs = [c.name for c in cols.values() if c.is_key]
             if len(cs) != 1:
-                raise gws.Error(f'invalid primary key for table {table.name!r}')
+                raise gws.Error(f'invalid primary key for table {table.name!r} found={cs}')
+            gws.log.debug(f'found key column {cs[0]!r} for table {table.name!r}')
             cname = cs[0]
 
         table.key_column = cname
