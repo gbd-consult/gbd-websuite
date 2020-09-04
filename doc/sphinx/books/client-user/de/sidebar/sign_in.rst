@@ -29,4 +29,4 @@ Das Layout und die Darstellung des GBD WebSuite Clients  kann für die angemelde
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
  .. |authorization| image:: ../../../images/baseline-person-24px.svg
-     :width: 30em
+   :width: 30em

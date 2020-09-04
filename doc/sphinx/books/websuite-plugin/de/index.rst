@@ -1,11 +1,12 @@
-GBD WebSuite Client Benutzerhandbuch
-====================================
+GBD WebSuite Manager Benutzerhandbuch
+=====================================
 
-Anleitungen für GBD WebSuite Manager Nutzer
-
+Benutzerhandbuch für das GBD WebSuite Plugin
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
-   functions.rst
-   background.rst
+    functions.rst
+    login.rst
+    edit_project.rst
+    manage_projects.rst
