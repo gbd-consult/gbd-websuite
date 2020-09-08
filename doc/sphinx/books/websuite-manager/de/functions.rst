@@ -3,7 +3,7 @@
 
 Das |gws| GBD WebSuite Manager Plugin ist eine Erweiterung die in QGIS installiert werden kann. Es ermöglicht die direkte Bereitstellung von QGIS Projekten in der GBD WebSuite.
 
-.. figure:: /screenshots/websuite_plugin.png
+.. figure:: screenshots/websuite_plugin.png
    :align: center
 
 Das Plugin kann über folgenden Link heruntergeladen und dann als ZIP-Datei in QGIS eingebunden werden:
@@ -20,7 +20,7 @@ Wenn das Plugin installiert ist, ist es in QGIS unter Web -> GBD WebSuite -> GBD
 Alternativ kann es in den Werkzeugkästen ausgewählt und somit prominent in die Werkzeugleiste integriert werden.
 Die einzelnen Funktionen werden im jeweiligen Menüpunkt genauer erklärt.
 
- .. |gws| image:: gbd-websuite-r/doc/sphinx/books/images/gws_logo.svg
-   :width: 30em
- .. |trash| image:: ../../../images/mActionTrash.png
+
+
+ .. |gws| image:: images/gws_logo.svg
    :width: 30em
