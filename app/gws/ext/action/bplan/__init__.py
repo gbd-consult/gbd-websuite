@@ -144,6 +144,7 @@ class Object(gws.common.action.Object):
         self.au_key_col = 'ags'
         self.au_name_col = 'gemeinde'
         self.type_col = 'typ'
+        self.time_col = 'rechtskr'
         self.x_coord_col = 'utm_ost'
         self.y_coord_col = 'utm_nord'
 
@@ -329,7 +330,11 @@ class Object(gws.common.action.Object):
                 metas[au_uid] = gws.common.metadata.from_dict(gws.tools.json2.from_string(r['meta']))
 
             rs = conn.select(f'''
-                SELECT _au, MIN(_updated) AS mi, MAX(_updated) AS ma
+                SELECT _au, 
+                    MIN(_updated) AS min_updated, 
+                    MAX(_updated) AS max_updated,
+                    MIN(CASE WHEN {self.time_col} != '' THEN DATE({self.time_col}) ELSE _updated END) AS min_time,
+                    MAX(CASE WHEN {self.time_col} != '' THEN DATE({self.time_col}) ELSE _updated END) AS max_time
                 FROM {conn.quote_table(self.plan_table.name)}
                 GROUP BY _au
             ''')
@@ -338,8 +343,10 @@ class Object(gws.common.action.Object):
                 au_uid = r['_au']
                 if au_uid not in metas:
                     metas[au_uid] = t.MetaData()
-                metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['mi']), with_tz='Z')
-                metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['ma']), with_tz='Z')
+                metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['min_updated']), with_tz='Z')
+                metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['max_updated']), with_tz='Z')
+                metas[au_uid].dateBegin = gws.tools.date.to_iso(gws.tools.date.to_utc(r['min_time']), with_tz='Z')
+                metas[au_uid].dateEnd = gws.tools.date.to_iso(gws.tools.date.to_utc(r['max_time']), with_tz='Z')
 
         # extend metadata for "our" objects
 
@@ -351,10 +358,6 @@ class Object(gws.common.action.Object):
                         obj.meta = gws.common.metadata.extend(meta, obj.meta)
                         if gws.get(obj, 'update_sequence'):
                             obj.update_sequence = meta.dateUpdated
-                        # inspire integrator requires authIds to be UUIDs
-                        r = (obj.meta.authorityIdentifier or '') + '/' + uid
-                        r = gws.sha256(r)
-                        obj.meta.authorityIdentifier = r[0:8] + '-' + r[7:11] + '-' + r[11:15] + '-' + r[15:19] + '-' + r[19:31]
 
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):
