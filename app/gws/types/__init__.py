@@ -516,7 +516,9 @@ class MetaData(Data):
     authorityUrl: 'Url'
     catalogUid: str
     contact: 'MetaContact'
+    dateBegin: 'DateTime'
     dateCreated: 'DateTime'
+    dateEnd: 'DateTime'
     dateUpdated: 'DateTime'
     fees: str
     image: 'Url'
@@ -529,11 +531,8 @@ class MetaData(Data):
     inspireThemeName: str
     inspireThemeNameEn: str
     isoMaintenanceFrequencyCode: 'MetaIsoMaintenanceFrequencyCode'
-    isoQualityConformanceExplanation: str
-    isoQualityConformancePass: bool
-    isoQualityLineageSource: str
-    isoQualityLineageSourceScale: int
-    isoQualityLineageStatement: str
+    isoQualityConformance: 'MetaIsoQualityConformance'
+    isoQualityLineage: 'MetaIsoQualityLineage'
     isoRestrictionCode: str
     isoScope: 'MetaIsoScope'
     isoScopeName: str
@@ -711,6 +710,19 @@ class MetaIsoOnLineFunction(Enum):
     offlineAccess = 'offlineAccess'
     order = 'order'
     search = 'search'
+
+
+class MetaIsoQualityConformance(Data):
+    explanation: str
+    qualityPass: bool
+    specificationDate: str
+    specificationTitle: str
+
+
+class MetaIsoQualityLineage(Data):
+    source: str
+    sourceScale: int
+    statement: str
 
 
 class MetaIsoRestrictionCode(Enum):

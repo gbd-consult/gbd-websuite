@@ -96,7 +96,7 @@ class Object(ows.Base):
     def handle_getfeature(self, rd: ows.Request):
         lcs = self.layer_caps_list_from_request(rd, ['typeName', 'typeNames'])
         if not lcs:
-            raise gws.web.error.NotFound('Invalid type name')
+            raise gws.web.error.BadRequest('Invalid type name')
         try:
             limit = int(rd.req.param('count') or rd.req.param('maxFeatures') or 0)
         except:
@@ -135,7 +135,7 @@ class Object(ows.Base):
 
         features = gws.common.search.runner.run(rd.req, args)
         for f in features:
-            f.transform_to(crs)
+            f.transform_to(shape.crs)
 
         fmt = rd.req.param('output_format') or gws.tools.mime.get('gml2')
         return self.template_response(rd, 'GetFeatureInfo', fmt, context={

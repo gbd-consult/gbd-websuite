@@ -262,6 +262,21 @@ class MetaIsoRestrictionCode(t.Enum):
     otherRestrictions = 'otherRestrictions'  #: limitation not listed
 
 
+#:export
+class MetaIsoQualityConformance(t.Data):
+    specificationTitle: str
+    specificationDate: str
+    explanation: str = ''
+    qualityPass: bool
+
+
+#:export
+class MetaIsoQualityLineage(t.Data):
+    statement: str
+    source: str
+    sourceScale: int
+
+
 class ContactConfig(t.Config):
     """Contact metadata configuration"""
 
@@ -297,6 +312,8 @@ class Config(t.Config):
     contact: t.Optional[ContactConfig]  #: contact information
     dateCreated: t.Optional[t.Date]  #: publication date
     dateUpdated: t.Optional[t.Date]  #: modification date
+    dateBegin: t.Optional[t.Date]  #: temporal extent begin
+    dateEnd: t.Optional[t.Date]  #: temporal extent end
     fees: t.Optional[str]
     image: t.Optional[t.Url]  #: image (logo) url
 
@@ -317,11 +334,8 @@ class Config(t.Config):
     isoSpatialRepresentationType: t.Optional[MetaIsoSpatialRepresentationType]  #: ISO-19139 spatial type
     isoTopicCategory: t.Optional[MetaIsoTopicCategory]  #: ISO-19139 topic category
 
-    isoQualityConformanceExplanation: t.Optional[str]
-    isoQualityConformancePass: bool = False
-    isoQualityLineageSource: t.Optional[str]
-    isoQualityLineageSourceScale: t.Optional[int]
-    isoQualityLineageStatement: t.Optional[str]
+    isoQualityConformance: t.Optional[t.List[MetaIsoQualityConformance]]
+    isoQualityLineage: t.Optional[MetaIsoQualityLineage]
 
     isoRestrictionCode: t.Optional[MetaIsoRestrictionCode]
 
@@ -371,6 +385,8 @@ class MetaData(t.Data):
     contact: MetaContact
     dateCreated: t.DateTime
     dateUpdated: t.DateTime
+    dateBegin: t.DateTime
+    dateEnd: t.DateTime
     fees: str
     image: t.Url
 
@@ -393,11 +409,8 @@ class MetaData(t.Data):
     isoSpatialRepresentationType: MetaIsoSpatialRepresentationType
     isoTopicCategory: MetaIsoTopicCategory
 
-    isoQualityConformanceExplanation: str
-    isoQualityConformancePass: bool
-    isoQualityLineageSource: str
-    isoQualityLineageSourceScale: int
-    isoQualityLineageStatement: str
+    isoQualityConformance: MetaIsoQualityConformance
+    isoQualityLineage: MetaIsoQualityLineage
     isoRestrictionCode: str
 
     catalogUid: str

@@ -107,9 +107,17 @@
         @t gmd:topicCategory/gmd:MD_TopicCategoryCode {meta.isoTopicCategory}
     @end
 
-    @with meta.extent4326
-        @tag gmd:extent/gmd:EX_Extent/gmd:geographicElement
-            @bounding_box meta.extent4326
+    @tag gmd:extent/gmd:EX_Extent
+        @with meta.extent4326
+            @tag gmd:geographicElement
+                @bounding_box meta.extent4326
+            @end
+        @end
+        @with meta.dateBegin
+            @tag gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod
+                @t gml:beginPosition {meta.dateBegin | date}
+                @t gml:endPosition {meta.dateEnd | date}
+            @end
         @end
     @end
 @end
@@ -130,37 +138,23 @@
         @CODE "level/MD_ScopeCode", meta.isoScope
     @end
 
-    @if meta.inspireTheme
-        @tag gmd:report/gmd:DQ_DomainConsistency
-            @tag gmd:measureIdentification/gmd:RS_Identifier
-                @t gmd:code/gco:CharacterString Conformity_001
-                @t gmd:codeSpace/gco:CharacterString INSPIRE
+    @each meta.isoQualityConformance as qc
+        @tag gmd:report/gmd:DQ_DomainConsistency/gmd:result/gmd:DQ_ConformanceResult
+            @tag gmd:specification/gmd:CI_Citation
+                @t gmd:title/gco:CharacterString {qc.specificationTitle}
+                @DATE qc.specificationDate, "publication"
             @end
-            @tag gmd:result/gmd:DQ_ConformanceResult
-                @tag gmd:specification/gmd:CI_Citation
-                    @tag gmd:title/gco:CharacterString
-                        @if meta.language == 'de'
-                            VERORDNUNG (EG) Nr. 1089/2010 DER KOMMISSION vom 23. November 2010 zur Durchführung der Richtlinie 2007/2/EG des Europäischen Parlaments und des Rates hinsichtlich der Interoperabilität von Geodatensätzen und -diensten
-                        @else
-                            COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
-                        @end
-                    @end
-                    @DATE "2010-12-08", "publication"
-                @end
-                @t gmd:explanation/gco:CharacterString {meta.isoQualityConformanceExplanation}
-                @t gmd:pass/gco:Boolean {meta.isoQualityConformancePass | lower}
-            @end
+            @t gmd:explanation/gco:CharacterString {qc.explanation}
+            @t gmd:pass/gco:Boolean {qc.qualityPass | lower}
         @end
     @end
 
-    @tag gmd:lineage/gmd:LI_Lineage
-        @with meta.isoQualityLineageStatement
-            @t gmd:statement/gco:CharacterString {meta.isoQualityLineageStatement}
-        @end
-        @with meta.isoQualityLineageSource
+    @with meta.isoQualityLineage as ql
+        @tag gmd:lineage/gmd:LI_Lineage
+            @t gmd:statement/gco:CharacterString {ql.statement}
             @tag gmd:source/gmd:LI_Source
-                @t gmd:description/gco:CharacterString {meta.isoQualityLineageSource}
-                @t gmd:scaleDenominator/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer {meta.isoQualityLineageSourceScale}
+                @t gmd:description/gco:CharacterString {ql.source}
+                @t gmd:scaleDenominator/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer {ql.sourceScale}
             @end
         @end
     @end
