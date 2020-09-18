@@ -26,6 +26,9 @@
                 @end
                 @t DefaultCRS {lc.projections[0].proj.urn}
                 @ows_wgs84_bounding_box lc
+                @with lc.meta.url
+                    @t MetadataURL xlink:href="{url_for(lc.meta.url)}"
+                @end
             @end
         @end
     @end

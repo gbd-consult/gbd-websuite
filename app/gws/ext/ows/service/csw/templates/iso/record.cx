@@ -58,7 +58,7 @@
     @tag gmd:citation/gmd:CI_Citation
         @t gmd:title/gco:CharacterString {meta.title}
         @DATE meta.dateCreated, "publication"
-        @DATE meta.dateUpdate, "revision"
+        @DATE meta.dateUpdated, "revision"
         @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.catalogUid}
     @end
 
@@ -79,7 +79,17 @@
         @end
     @end
 
-    @with meta.keywords
+    @if meta.inspireSpatialScope
+        @tag gmd:descriptiveKeywords/gmd:MD_Keywords
+		    @t gmd:keyword/gmx:Anchor xlink:href="http://inspire.ec.europa.eu/metadata-codelist/SpatialScope/{meta.inspireSpatialScope}" {meta.inspireSpatialScope | title}
+            @tag gmd:thesaurusName/gmd:CI_Citation
+                @t gmd:title/gmx:Anchor xlink:href="http://inspire.ec.europa.eu/metadata-codelist/SpatialScope" Spatial scope
+    			@DATE "2019-05-22", "publication"
+            @end
+        @end
+    @end
+
+    @if meta.keywords
         @tag gmd:descriptiveKeywords/gmd:MD_Keywords
             @each meta.keywords as kw
                 @t gmd:keyword/gco:CharacterString {kw}
@@ -87,11 +97,12 @@
         @end
     @end
 
-    @t gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString {meta.accessConstraints}
     @tag gmd:resourceConstraints/gmd:MD_LegalConstraints
-        @CODE "accessConstraints/MD_RestrictionCode", meta.isoRestrictionCode
-        @CODE "accessConstraints/MD_RestrictionCode", "otherRestrictions"
-        @t gmd:otherConstraints/gco:CharacterString {meta.license}
+        @CODE "useConstraints/MD_RestrictionCode", "otherRestrictions"
+        @with meta.license
+            @t gmd:otherConstraints/gco:CharacterString {meta.license}
+        @end
+        @t gmd:otherConstraints/gco:CharacterString {meta.accessConstraints}
     @end
 
     @CODE "spatialRepresentationType/MD_SpatialRepresentationTypeCode", meta.isoSpatialRepresentationType

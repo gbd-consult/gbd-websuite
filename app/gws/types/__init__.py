@@ -527,6 +527,7 @@ class MetaData(Data):
     inspireDegreeOfConformity: 'MetaInspireDegreeOfConformity'
     inspireResourceType: 'MetaInspireResourceType'
     inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType'
+    inspireSpatialScope: 'MetaInspireSpatialScope'
     inspireTheme: 'MetaInspireTheme'
     inspireThemeName: str
     inspireThemeNameEn: str
@@ -650,6 +651,14 @@ class MetaInspireSpatialDataServiceType(Enum):
     other = 'other'
     transformation = 'transformation'
     view = 'view'
+
+
+class MetaInspireSpatialScope(Enum):
+    european = 'european'
+    global_ = 'global'
+    local = 'local'
+    national = 'national'
+    regional = 'regional'
 
 
 class MetaInspireTheme(Enum):

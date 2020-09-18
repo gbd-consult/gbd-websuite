@@ -167,6 +167,9 @@ class Runtime(BaseRuntime):
     def filter_lower(self, val):
         return str(val).lower()
 
+    def filter_title(self, val):
+        return str(val).title()
+
     # based on: https://daringfireball.net/2010/07/improved_regex_for_matching_urls
     linkify_re = r'''(?xi)
         \b

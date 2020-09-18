@@ -68,6 +68,16 @@ class MetaInspireSpatialDataServiceType(t.Enum):
 
 
 #:export
+class MetaInspireSpatialScope(t.Enum):
+    """Inspire spatialScope, see https://inspire.ec.europa.eu/metadata-codelist/SpatialScope"""
+    national = 'national'
+    regional = 'regional'
+    local = 'local'
+    global_ = 'global'
+    european = 'european'
+
+
+#:export
 class MetaInspireDegreeOfConformity(t.Enum):
     """Inspire degreeOfConformity, see http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd"""
     conformant = 'conformant'
@@ -326,6 +336,7 @@ class Config(t.Config):
     inspireDegreeOfConformity: t.Optional[MetaInspireDegreeOfConformity]
     inspireResourceType: t.Optional[MetaInspireResourceType]
     inspireSpatialDataServiceType: t.Optional[MetaInspireSpatialDataServiceType]
+    inspireSpatialScope: t.Optional[MetaInspireSpatialScope]
     inspireTheme: t.Optional[MetaInspireTheme]
 
     isoMaintenanceFrequencyCode: t.Optional[MetaIsoMaintenanceFrequencyCode]
@@ -399,6 +410,7 @@ class MetaData(t.Data):
     inspireDegreeOfConformity: MetaInspireDegreeOfConformity
     inspireResourceType: MetaInspireResourceType
     inspireSpatialDataServiceType: MetaInspireSpatialDataServiceType
+    inspireSpatialScope: MetaInspireSpatialScope
     inspireTheme: MetaInspireTheme
     inspireThemeName: str
     inspireThemeNameEn: str
