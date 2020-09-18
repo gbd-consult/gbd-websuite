@@ -8,7 +8,7 @@ import util
 
 
 project = 'GBD WebSuite'
-copyright = '2017-2019, Geoinformatikbüro Dassau GmbH'
+copyright = '2017-2020, Geoinformatikbüro Dassau GmbH'
 author = 'Geoinformatikbüro Dassau GmbH'
 version = util.VERSION
 release = util.VERSION
