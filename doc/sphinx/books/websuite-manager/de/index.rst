@@ -8,18 +8,18 @@ Benutzerhandbuch für das GBD WebSuite Manager Plugin
 
 Das |gws| GBD WebSuite Manager Plugin ist eine Erweiterung die in QGIS installiert werden kann. Es ermöglicht die direkte Bereitstellung von QGIS Projekten in der GBD WebSuite.
 
-.. figure:: screenshots/websuite_plugin.png
+.. figure:: screenshots/ueberblick.png
    :align: center
 
-Das Plugin kann über folgenden Link heruntergeladen und dann als ZIP-Datei in QGIS eingebunden werden:
+
+Es gibt zwei Möglichkeiten das Pluginin QGIS zu installieren.
+Zum einen kann das Plugin über folgenden Link heruntergeladen und als ZIP-Datei in QGIS eingebunden werden:
 
  https://plugins-ng.gbd-consult.de/
 
-
-Eine direkte Einbindung des Plugin-Repository in QGIS ist über diesen Link möglich:
+Zum anderen ist eine direkte Einbindung des Plugin-Repositorys in QGIS über folgenden Link möglich:
 
 https://plugins-ng.gbd-consult.de/plugins.xml
-
 
 Wenn das Plugin installiert ist, ist es in QGIS unter Web -> GBD WebSuite -> GBD WebSuite Manager zu finden.
 Alternativ kann es in den Werkzeugkästen ausgewählt und somit prominent in die Werkzeugleiste integriert werden.
@@ -29,29 +29,32 @@ Die einzelnen Funktionen werden im jeweiligen Menüpunkt genauer erklärt.
 Anmelden
 --------
 
-Bevor Sie das GBD WebSuite Manager Plugin nutzen können müssen Sie sich auf dem GBD WebSuite Server anmelden.
+Bevor man das GBD WebSuite Manager Plugin nutzen kann, muss man sich auf dem GBD WebSuite Server anmelden.
 Dafür benötigt man eine Login-Datei im JSON-Format. In dieser muss der Nutzername mit Passwort und die Serveradresse abgelegt werden.
-Der Aufbau der JSON-Datei entnehmen Sie bitte folgendem Screenshot. Zwischen den grünen Anführungszeichen müssen die Werte für Nutzername, Passwort und Serveradresse eingetragen werden.
+Der Aufbau der JSON-Datei entnehmen Sie bitte folgendem Screenshot.
+Zwischen den grünen Anführungszeichen müssen die Werte für Nutzername, Passwort und Serveradresse eingetragen werden.
 
 .. figure:: screenshots/loginexample.png
   :align: center
 
 Wenn diese Datei angelegt ist, kann man über den |browse| ``Durchsuchen``-Button im GBD WebSuite Plugin, den Dateibrowser öffnen und die JSON-Datei auswählen.
-Wenn die Logindaten richtig angelegt und auf dem Server als registrierter Nutzer eingetragen ist, verbindet das Plugin sich automatisch.
+Wenn die Logindaten richtig angelegt und der Nutzer auf dem Server als registrierter Nutzer eingetragen ist, verbindet das Plugin sich automatisch.
 
 .. figure:: screenshots/login.png
   :align: center
 
+
 Außerdem ist es möglich eine automatische Anmeldung einzurichten, sodass die Logindatei nicht jedes mal manuell ausgewählt werden muss.
 Dazu muss unter dem Pfad '.local/share/QGIS/QGIS3/profiles/default' der Ordner 'GBD_WebSuite' angelegt werden.
 Kopieren Sie dann in '.local/share/QGIS/QGIS3/profiles/default/GBD_WebSuite' die Logindatei.
-Wichtig ist zu beachten, das die Logindatei als 'conf.json' bennant ist.
+Wichtig ist zu beachten, dass die Logindatei als 'conf.json' benannt ist.
 
 
 Aktuelles Projekt
 -----------------
 
-Hier können Sie ihr aktuelles QGIS Projekt in die GBD WebSuite hochladen. Es werden sämtliche Raster- und Vektorlayer sowie deren Darstellungsoptionen mit übernommen.
+Hier können Sie ihr aktuelles QGIS Projekt in die GBD WebSuite hochladen.
+Es werden sämtliche Vektorlayer und Dienste mit implementiert. Wenn Sie
 
 .. figure:: screenshots/selected_project_no_options.png
   :align: center
