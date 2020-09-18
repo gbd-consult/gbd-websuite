@@ -115,6 +115,9 @@ class LoadInfoResponse(t.Response):
     info: str
 
 
+_RELOAD_FILE = gws.VAR_DIR + '/bplan.reload'
+
+
 class Object(gws.common.action.Object):
 
     def configure(self):
@@ -147,6 +150,9 @@ class Object(gws.common.action.Object):
         self.time_col = 'rechtskr'
         self.x_coord_col = 'utm_ost'
         self.y_coord_col = 'utm_nord'
+
+        gws.write_file(_RELOAD_FILE, gws.random_string(16))
+        self.root.application.monitor.add_path(_RELOAD_FILE)
 
     def post_configure(self):
         super().post_configure()
@@ -291,6 +297,7 @@ class Object(gws.common.action.Object):
                 ''', [au_uid, req.user.fid, gws.tools.json2.to_pretty_string(p.meta)])
 
         self._load_db_meta()
+        self.signal_reload('metadata')
 
         return SaveUserMetaResponse()
 
@@ -303,6 +310,10 @@ class Object(gws.common.action.Object):
 
     def do_update(self):
         importer.update(self)
+
+    def signal_reload(self, source):
+        gws.log.debug(f'bplan reload signal {source!r}')
+        gws.write_file(_RELOAD_FILE, gws.random_string(16))
 
     def _au_list_for(self, user):
         return [
@@ -362,7 +373,8 @@ class Object(gws.common.action.Object):
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     args = gws.tools.json2.from_string(job.args)
-    action = root.find('gws.ext.action', args['actionUid'])
+    action = t.cast(Object, root.find('gws.ext.action', args['actionUid']))
     job.update(state=gws.tools.job.State.running)
     stats = importer.run(action, args['path'], args['replace'], args['auUid'], job)
     job.update(result={'stats': stats})
+    action.signal_reload('worker')
