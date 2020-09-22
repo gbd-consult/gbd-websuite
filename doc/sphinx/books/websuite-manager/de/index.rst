@@ -15,7 +15,7 @@ Installation
 ------------
 
 Es gibt zwei Möglichkeiten, das Plugin in QGIS zu installieren. Zum einen können Sie es von unserem `Plugin Repository <https://plugins.gbd-consult.de/>`_ herunterladen und als ZIP-Datei in QGIS einbinden.
- 
+
 Zum anderen ist eine direkte Einbindung unseres Plugin-Repositorys in QGIS über folgenden Link möglich:
 
 .. figure:: screenshots/repodetails.png
@@ -31,7 +31,7 @@ Anmelden
 
 Bevor man das GBD WebSuite Manager Plugin nutzen kann, muss man sich auf dem GBD WebSuite Server anmelden.
 Dafür benötigt man eine Login-Datei im JSON-Format. In dieser muss der Nutzername mit Passwort und die Serveradresse abgelegt werden.
-Den Aufbau der JSON-Datei entnehmen Sie bitte folgendem Screenshot. Zwischen den grünen Anführungszeichen müssen die Werte für 
+Den Aufbau der JSON-Datei entnehmen Sie bitte folgendem Screenshot. Zwischen den grünen Anführungszeichen müssen die Werte für
 Nutzername, Passwort und Serveradresse eingetragen werden.
 
 .. figure:: screenshots/loginexample.png
@@ -45,9 +45,17 @@ Wenn die Logindaten richtig angelegt und der Nutzer auf dem Server als registrie
 
 
 Außerdem ist es möglich eine automatische Anmeldung einzurichten, sodass die Logindatei nicht jedes mal manuell ausgewählt werden muss.
-Dazu muss unter dem Pfad '.local/share/QGIS/QGIS3/profiles/default' der Ordner 'GBD_WebSuite' angelegt werden.
-Kopieren Sie dann die Logindatei nach in '.local/share/QGIS/QGIS3/profiles/default/GBD_WebSuite' die Logindatei.
-Wichtig ist zu beachten, dass die Logindatei als 'conf.json' benannt ist.
+Dafür lassen Sie sich, über die QGIS Python-Konsole, den Pfad zum aktuellen Benutzerprofil ausgeben, mit:
+
+QgsApplication.qgisSettingsDirPath()
+
+Unter diesem Pfad erstellen Sie dann einen Ordner mit dem Namen GBD_WebSuite und legen hier ihre .json Login-Datei ab, diese muss den Namen qgws-manager.json haben.
+
+Nach der Anmeldung überprüft das Plugin ihre Authentifizierung, bei Erfolg werden die vorhandenen Projekte geladen und das Plugin wird auf aktiv geschlatet.
+
+.. Dazu muss unter dem Pfad '.local/share/QGIS/QGIS3/profiles/default' der Ordner 'GBD_WebSuite' angelegt werden.
+.. Kopieren Sie dann die Logindatei nach in '.local/share/QGIS/QGIS3/profiles/default/GBD_WebSuite' die Logindatei.
+.. Wichtig ist zu beachten, dass die Logindatei als 'conf.json' benannt ist.
 
 
 Aktuelles Projekt
