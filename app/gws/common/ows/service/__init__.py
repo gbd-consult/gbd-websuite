@@ -49,7 +49,7 @@ _XML_SCHEMA_TYPES = {
     t.GeometryType.surface: 'gml:SurfacePropertyType',
 }
 
-_DEFAULT_FEAUTURE_NAME = 'feature'
+_DEFAULT_FEATURE_NAME = 'feature'
 _DEFAULT_GEOMETRY_NAME = 'geometry'
 
 
@@ -121,6 +121,7 @@ class FeatureCaps(t.Data):
 
 class FeatureCollection(t.Data):
     caps: t.List[FeatureCaps]
+    features: t.List[t.IFeature]
     time_stamp: str
     num_matched: int
     num_returned: int
@@ -429,17 +430,18 @@ class Base(Object):
 
         return lc
 
-    # FeatureCaps
+    # FeatureCaps and collections
 
     def feature_collection(self, features: t.List[t.IFeature], rd: Request) -> FeatureCollection:
         coll = FeatureCollection(
             caps=[],
+            features=[],
             time_stamp=gws.tools.date.now_iso(with_tz=False),
             num_matched=len(features),
             num_returned=len(features),
         )
 
-        default_name = self._parse_name(_DEFAULT_FEAUTURE_NAME)
+        default_name = self._parse_name(_DEFAULT_FEATURE_NAME)
 
         for f in features:
             gs = None
@@ -453,6 +455,8 @@ class Base(Object):
                 shape_tag=gs,
                 name=self._parse_name(f.layer.ows_feature_name) if f.layer else default_name,
             ))
+
+            coll.features.append(f)
 
         return coll
 
