@@ -24,9 +24,11 @@ class Object(gws.common.template.Object):
         super().configure()
 
         self.provider = provider.create_shared(self.root, self.config)
-        self.template = self._find_template(self.var('title'))
+
+        s = self.var('title')
+        self.template = self._find_template(s)
         if not self.template:
-            raise gws.Error('print template not found')
+            raise gws.Error(f'print template {s!r} not found')
 
         uid = self.var('uid') or '%s_%d' % (gws.sha256(self.provider.path), self.template.index)
         self.set_uid(uid)

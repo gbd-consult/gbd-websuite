@@ -42,7 +42,8 @@ class Object(gws.common.search.provider.Object):
         try:
             self.table: t.SqlTable = self.db.configure_table(t.Config(name=ds['table'], geometryColumn=ds['geometryColumn']))
         except gws.Error:
-            gws.log.warn(f"table {ds['table']} not found")
+            gws.log.warn(f"table {ds['table']!r} not found or invalid")
+            gws.log.exception()
             self.active = False
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
