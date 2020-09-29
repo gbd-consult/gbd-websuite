@@ -13,6 +13,8 @@ import gws.types as t
 
 from . import driver
 
+_DESCRIBE_CACHE_LIFETIME = 3600
+
 
 def create_shared(root: t.IRootObject, cfg) -> 'Object':
     key = '-'.join([
@@ -69,7 +71,7 @@ class Object(gws.common.db.provider.Sql):
                 return {c['name']: t.SqlTableColumn(c) for c in conn.columns(table.name)}
 
         key = 'gws.ext.provider.postgres.describe.' + table.name
-        return gws.get_global(key, f)
+        return gws.get_cached_object(key, f, _DESCRIBE_CACHE_LIFETIME)
 
     def select(self, args: t.SelectArgs, extra_connect_params=None) -> t.List[t.IFeature]:
 
