@@ -1,5 +1,6 @@
 import re
 import os
+import psutil
 
 import gws
 import gws.core.tree
@@ -72,9 +73,17 @@ class Object(gws.Object, t.IMonitor):
     def _worker(self, signo):
         with gws.tools.misc.lock(_lockfile) as ok:
             if not ok:
-                gws.log.info('MONITOR: locked...')
-                return
+                try:
+                    pid = int(gws.read_file(_lockfile))
+                except:
+                    pid = None
+                if not pid or not psutil.pid_exists(pid):
+                    gws.log.info(f'MONITOR: locked by dead pid={pid!r}, releasing')
+                else:
+                    gws.log.info(f'MONITOR: locked by pid={pid!r}')
+                    return
 
+            gws.write_file(_lockfile, str(os.getpid()))
             changed = self._poll()
 
             if not changed:
