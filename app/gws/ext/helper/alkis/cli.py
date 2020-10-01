@@ -29,7 +29,7 @@ def parse(path=None):
     print(gws.tools.json2.to_string(props, pretty=True))
 
 
-def create_index():
+def setup():
     """Create an internal ALKIS search index."""
 
     a = _get_alkis()
