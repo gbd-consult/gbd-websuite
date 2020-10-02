@@ -6,7 +6,7 @@ import gws.common.action
 import gws.ext.helper.alkis as alkis
 
 
-class Config(t.WithType):
+class Config(t.WithTypeAndAccess):
     """ALKIS Geocoder action."""
     pass
 
