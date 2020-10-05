@@ -29,6 +29,7 @@ let mods = [
     require('./mod/storage'),
     require('./mod/style'),
     require('./mod/task'),
+    require('./mod/tabedit'),
     require('./mod/toolbar'),
     require('./mod/toolbox'),
     require('./mod/user'),
