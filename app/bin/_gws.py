@@ -29,7 +29,7 @@ import gws.ext.helper.alkis.cli
 import gws.gis.cache_cli
 import gws.server.cli
 
-COMMANDS['alkis'] = [gws.ext.helper.alkis.cli.check_index, gws.ext.helper.alkis.cli.drop_index, gws.ext.helper.alkis.cli.parse, gws.ext.helper.alkis.cli.setup]
+COMMANDS['alkis'] = [gws.ext.helper.alkis.cli.check_index, gws.ext.helper.alkis.cli.create_index, gws.ext.helper.alkis.cli.drop_index, gws.ext.helper.alkis.cli.parse, gws.ext.helper.alkis.cli.setup]
 COMMANDS['auth'] = [gws.common.auth.cli.clear, gws.common.auth.cli.passwd, gws.common.auth.cli.sessions, gws.common.auth.cli.test]
 COMMANDS['bplan'] = [gws.ext.action.bplan.cli.read, gws.ext.action.bplan.cli.update]
 COMMANDS['cache'] = [gws.gis.cache_cli.clean, gws.gis.cache_cli.drop, gws.gis.cache_cli.seed, gws.gis.cache_cli.status]

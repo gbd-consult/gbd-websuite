@@ -41,6 +41,12 @@ def setup():
         gws.log.info('index done in %.2f sec' % t)
 
 
+def create_index():
+    """Create an internal ALKIS search index."""
+
+    setup()
+
+
 def check_index():
     """Check the status of the ALKIS search index."""
 
