@@ -269,7 +269,7 @@ def _text(cx, cy, label, sv) -> t.Tag:
     _font_props(atts, sv, 'label_')
     _fill_stroke_props(atts, sv, 'label_')
 
-    lines = list(gws.lines(label))
+    lines = label.split('\n')
     _, em_height = font.getsize('MMM')
     metrics = [font.getsize(s) for s in lines]
 
