@@ -22,18 +22,15 @@ Leave the server running on the background and (in a new console) run the select
 
 Run ``cmd.py`` without params to see all the options.
 
-
 Test files
 ----------
 
 Our tests run on ``pytest``. Everything that starts with ``test_`` is being run and ``assert`` is used for test assertions. We provide a few helpers in ``util.py`` which you can include in your tests to simplify repetitive tasks.
 
-
 Fixtures
 --------
 
 ``make_features`` in ``util.py`` can be used to generate point or square features on a rectangular grid and save them in a postgres table or a geojson file. Additionally, ``common/const.py`` contains a list of reference locations to visually assess positioning and reprojection on a map. Example of use ::
-
 
     u.make_features(
         'postgres:my_table',          # create a postgres table my_table
@@ -50,5 +47,3 @@ Fixtures
     )
 
 Fixture generation code should be placed in ``init.py`` in the respective suite.
-
-

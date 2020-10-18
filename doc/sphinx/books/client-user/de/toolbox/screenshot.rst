@@ -17,7 +17,6 @@ Klicken Sie anschließend wieder auf |screenshot| um den Screenshot zu speichern
 .. note::
  Beachten Sie, dass gedrehte Karten weder gedruckt, noch ein Screenshot von diesen gemacht werden kann.
 
-
  .. |screenshot| image:: ../../../images/outline-insert_photo-24px.svg
    :width: 30em
  .. |cancel| image:: ../../../images/baseline-close-24px.svg

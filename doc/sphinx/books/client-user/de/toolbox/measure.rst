@@ -41,10 +41,8 @@ Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit ein
 Mit einem zweiten Klick um den Kreis, wird der Radius festgelegt. Es wird nun ein Kreis gezeichnet, welcher mit dem Radius in Metern beschriftet wird.
 Der Radius sowie die Beschriftung können nachträglich verändert werden. Hierzu nutzen Sie das entsprechende Feld in dem sich geöffneten Menüfenster.
 
-
 Über die Symbole in der Werkzeugleiste können Sie zusätzlich das Zeichnen jeglischer Geometrie bestätigen |savedraw| oder abbrechen |canceldraw|.
 Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| ``Räumliche Suche`` zur Verfügung.
-
 
 Eigenschaften
 -------------
@@ -57,7 +55,6 @@ Dabei ist die Eingabe von Werten mit Nachkommastellen möglich, welche je nach g
 
 .. figure:: ../../../screenshots/de/client-user/measure_info.png
   :align: center
-
 
 Platzhalter für die Beschriftung
 --------------------------------
@@ -96,10 +93,6 @@ Hier ein paar Beispiele:
 | {area | km}    |Fläche in km2, 0 Dezimalstellen           |
 +----------------+------------------------------------------+
 
-
-
-
-
 Darstellungskonfigurationen
 ---------------------------
 
@@ -115,9 +108,6 @@ Zusätzlich kann jedoch über die Menüpunkte ``Platzierung``, ``Ausrichtung`` u
 .. note::
  Wie andere Werkzeuge auch, kann dieses Werkzeug individuell angepasst werden.
  Die Platzierung kann verändert werden, sowie es ebenfalls möglich wäre, zum Beispiel nur die Flächenmessung zu aktivieren.
-
-
-
 
  .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
    :width: 30em

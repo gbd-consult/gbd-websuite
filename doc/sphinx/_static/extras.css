@@ -8,6 +8,10 @@
     white-space: normal !important;
 }
 
+.wy-table-responsive table th p {
+    margin: 0 !important;
+}
+
 .wy-nav-content {
     max-width: 100% !important;
 }

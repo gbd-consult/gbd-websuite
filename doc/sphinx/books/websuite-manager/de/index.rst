@@ -25,7 +25,6 @@ Wenn das Plugin installiert ist, ist es in QGIS unter Web -> GBD WebSuite -> GBD
 Alternativ kann es in den Werkzeugkästen ausgewählt und somit prominent in die Werkzeugleiste integriert werden.
 Die einzelnen Funktionen werden im jeweiligen Menüpunkt genauer erklärt.
 
-
 Anmelden
 --------
 
@@ -43,7 +42,6 @@ Wenn die Logindaten richtig angelegt und der Nutzer auf dem Server als registrie
 .. figure:: screenshots/login.png
   :align: center
 
-
 Außerdem ist es möglich eine automatische Anmeldung einzurichten, sodass die Logindatei nicht jedes mal manuell ausgewählt werden muss.
 Dafür lassen Sie sich, über die QGIS Python-Konsole, den Pfad zum aktuellen Benutzerprofil ausgeben, mit:
 
@@ -56,7 +54,6 @@ Nach der Anmeldung überprüft das Plugin ihre Authentifizierung, bei Erfolg wer
 .. Dazu muss unter dem Pfad '.local/share/QGIS/QGIS3/profiles/default' der Ordner 'GBD_WebSuite' angelegt werden.
 .. Kopieren Sie dann die Logindatei nach in '.local/share/QGIS/QGIS3/profiles/default/GBD_WebSuite' die Logindatei.
 .. Wichtig ist zu beachten, dass die Logindatei als 'conf.json' benannt ist.
-
 
 Aktuelles Projekt
 -----------------
@@ -71,7 +68,6 @@ Tragen Sie den gewünschten Titel ein, der in die GBD WebSuite übernommen werde
 Über die |options| ``Erweiterten Einstellungen``  können Sie auswählen, welche Werkzeuge der GBD WebSuite diesem Projekt zur Verfügung gestellt werden.
 Wenn alles angepasst ist, muss man nur noch auf |add| ``Aktuelles Projekt hinzufügen`` klicken und das Projekt wird direkt in die GBD WebSuite hochgeladen.
 
-
 Vorhandene Projekte verwalten
 -----------------------------
 
@@ -83,7 +79,6 @@ Drei Werkzeuge am unteren Rand.
 Über Hilfe gelangt man zur ausführlichen Hilfe und Dokumentation.
 Durch Klicken des Button ``ausgewähltes Projekt anzeigen`` öffnet man das gewählte Projekt lokal in QGIS.
 Mit Hilfe des |trash| Button kann das gewählte Projekt vom Server gelöscht werden.
-
 
 .. |browse| image:: images/more_horiz-24px.svg
   :width: 30em
@@ -97,11 +92,6 @@ Mit Hilfe des |trash| Button kann das gewählte Projekt vom Server gelöscht wer
   :width: 30em
 .. |trash| image:: images/mActionTrash.png
   :width: 2em
-
-
-
-
-
 
 .. .. toctree::
 ..     :maxdepth: 1

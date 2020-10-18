@@ -3,7 +3,6 @@
 Drucken
 =======
 
-
 Mithilfe des |print| ``Drucken``-Werkzeugs kann eine PDF generiert werden, die gespeichert und gedruckt werden kann.
 Die GBD WebSuite kann in QGIS erstellte Druckvorlagen übernehmen und in Form einer Auswahl bereitstellen.
 Beim Starten der Druckfunktion wird der aktuelle Kartenausschnitt unverändert übernommen.
@@ -23,13 +22,10 @@ Neben dem Kartenrahmen öffnet sich ebenfalls ein Dialogfenster, in dem die Ausr
 Wird das Drucksymbol |print| erneut gedrückt, öffnet sich die druckfertige PDF. Mit dem QGIS Drucklayout erstellte Legende können hier bereitgestellt und eingebunden werden.
 So kann man bei Layern der GBD WebSuite welche keine eigenen Legenden besitzen, Legenden zur druckbaren Karte hinzufügen.
 
-
-
  .. |print| image:: ../../../images/baseline-print-24px.svg
    :width: 30em
  .. |cancel| image:: ../../../images/baseline-cancel-24px.svg
    :width: 30em
-
 
 .. .. figure:: ../../../screenshots/de/client-user/print_2.png
       :scale: 60%

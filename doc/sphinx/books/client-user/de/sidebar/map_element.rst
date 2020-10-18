@@ -3,7 +3,6 @@
 Layer
 =====
 
-
 In der Menüebene |layers| ``Layer`` findet man eine Auflistung der implementierten Layer und Layergruppen des Projekts
 (Layergruppen können in der Konfiguration der GBD WebSuite erstellt und implementiert werden).
 Anhand dieser Auflistung kann jederzeit ein Überblick über die Sichtbarkeit der einzelnen Layer gewonnen werden.
@@ -16,7 +15,7 @@ Erscheint neben dem Layer das Icon |showlayer| ist dieser sichtbar, erscheint da
 Außerdem können maßstabsbezogene Darstellungen für Layer und Layergruppen in der Konfiguration der GBD WebSuite vergeben werden.
 Diese Layer werden nur dann dargestellt wenn der Kartenmaßstab einem Wert für die maßstabsbezogene Darstellung entspricht.
 Wenn dies nicht der Fall ist, wird der Layer nicht angezeigt und neben ihm erscheint das Symbol |scale_layer|.
-Das Anpassen und Konfigurieren von Layern ist per QGIS möglich. Sämtliche Änderungen die in dem verknüpften QGIS Projekt vorgenommen werden, 
+Das Anpassen und Konfigurieren von Layern ist per QGIS möglich. Sämtliche Änderungen die in dem verknüpften QGIS Projekt vorgenommen werden,
 werden so in die GBD WebSuite hochgelaen.
 
 Mit einem Klick auf den Layernamen öffnet man die Eigenschaften dieses Layers.
@@ -37,8 +36,6 @@ Mit |zoom_layer| ``Auf den Layer zoomen`` ist es möglich auf die Gesamtausdehnu
  Durch die Integration von QGIS in die GBD WebSuite kann z.B.
  die Layerstruktur aus einem oder mehreren QGIS Projekten mit anderen Datenquellen kombiniert, zusammengefasst und übernommen werden.
  Im Zusammenspiel mit dem Rechtemanagement ist es zusätzlich möglich, dass verschiedene Nutzer unterschiedliche Layer bereitgestelltbekommen.
-
-
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em

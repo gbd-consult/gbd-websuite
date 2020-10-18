@@ -17,9 +17,8 @@ Overview of the controls in the GBD WebSuite
 Toolbar
 #######
 
-==========================   ==============================
 Symbol				               Function
-==========================   ==============================
+=================================
 |savedraw|			Confirm
 |canceldraw|			Cancel
 |distance| 			Measure lines
@@ -32,7 +31,7 @@ Symbol				               Function
 |back|				back
 |delete|			delete
 |back1|				Close submenu
-==========================   ==============================
+========================
 
 .. note:: You can find more about the individual functions under: `Toolbar`
 
@@ -41,9 +40,8 @@ Menu
 
 .. _table_attribute_2:
 
-==========================   ==============================
 Symbol				               Function
-==========================   ==============================
+=================================
 |menu|				Expand the menu
 |cancel|			Fold in the menu
 |layers|			Layer
@@ -54,7 +52,7 @@ Symbol				               Function
 |search|			Search
 |alkis|				Parcel search
 |zoom_layer| 			Zoom on entire layer
-==========================   ==============================
+====================================
 
 .. note:: You can find out more about the individual functions under: `Menu`
 
@@ -63,9 +61,8 @@ Status bar
 
 .. _table_attribute_3:
 
-==========================   ==============================
 Symbol				               Function
-==========================   ==============================
+=================================
 |zoomin|			Zoom in
 |zoomout|			Zoom out
 |zoommap|			Show whole project
@@ -73,11 +70,9 @@ Symbol				               Function
 |massstab| 			Changing the scale
 |rotation| 			Changing the rotation
 |xy| 				View the mouse position
-==========================   ==============================
+================================
 
 .. note:: Mehr über die einzelnen Funktionen finden sie unter: `Status bar`
-
-
 
 .. Toolbar
 .. |savedraw| image:: ../../../images/baseline-done-24px.svg
@@ -130,7 +125,6 @@ Symbol				               Function
   :width: 30em
 .. |zoom_layer| image:: ../../../images/baseline-zoom_out_map-24px.svg
   :width: 30em
-
 
 .. Status bar
 .. |zoomin| image:: ../../../images/baseline-add-24px.svg

@@ -23,7 +23,6 @@ Apart from type stubs, the code generator (located in ``/specgen`` and invoked a
 
 The server application is located in the ``/app`` folder in the GWS source tree. The structure of the app folder is as follows:
 
-
 - ``_test`` - tests
 - ``bin`` - the server startup script
 - ``gws`` - main application package
@@ -39,9 +38,7 @@ The server application is located in the ``/app`` folder in the GWS source tree.
 - ``gws/web`` - front end web application
 - ``spec`` - generated config and request specifications
 
-
 The "extensions" are parts of the application that provide the actual functionality. All other code might be thought of as a supporting framework. Extensions are joined in groups, currently there are following:
-
 
 - ``action`` - front web server actions (request handlers)
 - ``auth/provider`` - authorization providers
@@ -55,12 +52,10 @@ The "extensions" are parts of the application that provide the actual functional
 
 (To keep the vocabulary straight, we use the term "provider" for external things `we make use of`, and "service" for things `we make available for others`).
 
-
 Configuration and the Tree
 --------------------------
 
 When the GWS server starts up, it locates and reads the configuration file. The configuration is normally a very nested structure, but at the top level it corresponds to the ``Config`` object as defined in ``common/application``. The ``Application`` object is instantiated and its ``configure`` method is invoked. This method, in turn, instantiates and configures further objects and so on, recursively. As a result, an object tree is created in memory and stays there until the server stops or reloads. Every node in the tree implements ``t.IObject`` and represents a ``common`` or an ``ext`` object. ``t.IObject`` defines a mandatory ``configure`` method, which is invoked during configuration, the ``root`` property which is the Tree's root and a set of navigation methods. Specific objects (e.g. layers) provide methods defined by their respective interfaces (e.g. ``t.ILayer``). Some objects also provide the ``props`` getter, which exposes selected  properties to our client application.
-
 
 Data and friends
 ----------------
@@ -71,7 +66,6 @@ All non-object structures in GWS inherit from ``t.Data``, which is a dictionary-
 - ``t.Params`` - request parameters
 - ``t.Response`` - request responses
 - ``t.Props`` - structures returned by ``props`` getters
-
 
 All data structures used in GWS should extend one of these. Each structure must provide type annotations and, if appropriate, defaults for each member.
 

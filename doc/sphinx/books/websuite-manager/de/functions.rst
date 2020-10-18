@@ -10,17 +10,13 @@ Das Plugin kann über folgenden Link heruntergeladen und dann als ZIP-Datei in Q
 
  https://plugins-ng.gbd-consult.de/
 
-
 Eine direkte Einbindung des Plugin-Repository in QGIS ist über diesen Link möglich:
 
 https://plugins-ng.gbd-consult.de/plugins.xml
 
-
 Wenn das Plugin installiert ist, ist es in QGIS unter Web -> GBD WebSuite -> GBD WebSuite Manager zu finden.
 Alternativ kann es in den Werkzeugkästen ausgewählt und somit prominent in die Werkzeugleiste integriert werden.
 Die einzelnen Funktionen werden im jeweiligen Menüpunkt genauer erklärt.
-
-
 
  .. |gws| image:: images/gws_logo.svg
    :width: 30em

@@ -35,13 +35,9 @@ class _Runner:
         src_path = d + '/__init__.in.py'
         dst_path = d + '/__init__.py'
 
-        with open(src_path) as fp:
-            src = fp.read()
-
+        src = _read(src_path)
         dst = src + '\n\n' + makestubs.run(stubs)
-
-        with open(dst_path, 'w') as fp:
-            fp.write(dst)
+        _write(dst_path, dst)
 
         # and parse it
         units, _ = parser.parse([dst_path])
@@ -105,10 +101,8 @@ class _Runner:
             for p in s.get('args', []):
                 dmap[name + ':' + p.name] = p
 
-        self.write('doc.json', _json({k: v.doc for k, v in sorted(dmap.items())}))
-
-        with open(self.out_dir + '/../lang/' + lang + '.json') as fp:
-            translations = json.load(fp)
+        _kvp_write(os.path.join(self.out_dir, 'doc.txt'), {k: v.doc for k, v in dmap.items()})
+        translations = _kvp_read(self.out_dir + '/../lang/' + lang + '.txt')
 
         for k, v in dmap.items():
             if k in translations:
@@ -148,6 +142,24 @@ def _arg_and_return_spec(units, method_specs, flatten):
 
 def _json(r):
     return json.dumps(r, indent=4, sort_keys=True, ensure_ascii=False, default=vars)
+
+
+def _kvp_read(path):
+    ls = []
+    for s in _read(path).strip().splitlines():
+        s = s.strip()
+        if not s or s.startswith('#') or '=' not in s:
+            continue
+        s = s.split('=')
+        ls.append([s[0].strip(), s[1].strip()])
+    return {k: v for k, v in sorted(ls)}
+
+
+def _kvp_write(path, d):
+    ls = []
+    for k, v in sorted(d.items()):
+        ls.append(k + ' = ' + v)
+    _write(path, '\n'.join(ls))
 
 
 def _find_files(dirname, pattern):
@@ -197,3 +209,13 @@ def _make_cli_main(cli_funcs, path):
     path = path.replace('.in', '')
     with open(path, 'w') as fp:
         fp.write(text)
+
+
+def _read(path):
+    with open(path, encoding='utf8') as fp:
+        return fp.read()
+
+
+def _write(path, txt):
+    with open(path, 'wt', encoding='utf8') as fp:
+        return fp.write(txt)

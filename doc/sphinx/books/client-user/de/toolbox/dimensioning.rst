@@ -21,9 +21,6 @@ Wenn Sie das Tool aktiviert haben, öffnet sich unter der Werkzeugleiste ein Fel
 .. note::
   Die Längeneinheit kann individuell angepasst werden.
 
-
-
-
  .. |dimensions| image:: ../../../images/gbd-icon-bemassung-02.svg
    :width: 30em
  .. |arrow| image:: ../../../images/cursor.svg

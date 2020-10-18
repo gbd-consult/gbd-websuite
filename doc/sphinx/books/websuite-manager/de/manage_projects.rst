@@ -10,7 +10,6 @@ Drei Werkzeuge am unteren Rand.
 Durch Klicken des Button ``ausgewähltes Projekt anzeigen`` öffnet man das gewählte Projekt lokal in QGIS.
 Mit Hilfe des |trash| Button kann das gewählte Projekt vom Server gelöscht werden.
 
-
 .. |gws| image:: images/gws_logo.svg
   :width: 30em
 .. |link| image:: images/link.svg

@@ -26,12 +26,6 @@ Zusätzlich ist es möglich, über das ``Hinzoomen``-Werkzeug die einzelnen Obje
 .. note::
  Wie alle Werkzeuge kann auch dieses deaktiviert oder anders plaziert werden.
 
-
-
-
-
-
-
  .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
    :width: 30em
  .. |continue| image:: ../../../images/baseline-chevron_right-24px.svg

@@ -3,7 +3,6 @@
 Digitalisieren
 ==============
 
-
 Über das Menüfeld |menu|
 in der linken oberen Ecke gelangt man in das Digitalisierungsmenü |edit|.
 Über das Pluszeichen |level|
@@ -16,9 +15,8 @@ oder Flächen |newpolygon|
 wählen. Die Element werden durch einen Klick in die Karte hinzugefügt. Nach der Benennung des Objektes, kann über |labelon| die Beschriftung angeschaltet oder abgeschaltet werden |labeloff|. Des Weiteren kann man digitalisierte Objekte auswählen |selectedit|
 oder Punkte zu einem Objekt hinzufügen.
 
-==========================   =========================
 Symbol                        Funktion
-==========================   =========================
+======================================
 |newpoint|			Punkte erstellen
 |newline|			Linien erstellen
 |newpolygon|			Flächen erstellen
@@ -30,8 +28,7 @@ Symbol                        Funktion
 |editstyl|			Stil/Farbe bearbeiten
 |labelon|			Beschriftung an
 |labeloff|			Beschriftung aus
-==========================   =========================
-
+=============================
 
  .. |newpoint| image:: ../../../images/points-24px.svg
    :width: 30em

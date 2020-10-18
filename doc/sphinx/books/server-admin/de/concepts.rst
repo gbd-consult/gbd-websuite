@@ -1,27 +1,28 @@
-Basis Konzept
-==============
+Grundkonzepte
+=============
 
-Anforderungen und URL-Adressen
-------------------------------
+In diesem Kapitel beschreiben wir kurz, auf welche Grundkonzepten die Funktionalität von GWS basiert ist.
 
+Anfragen und URLs
+-----------------
 
 Einmal gestartet, hört die GBD WebSuite auf Ports ``80/443`` und verarbeitet ``GET`` und ``POST`` Anfragen. Wie ein herkömmlicher Webserver kann GWS statische Inhalte wie HTML-Seiten oder Bilder bereitstellen, aber sein Hauptzweck ist es, dynamische Kartenbilder und Daten bereitzustellen. Für dynamische Anfragen gibt es einen einzigen Endpunkt (url), nämlich den ``_`` (Unterstrich). Alle Anfragen an diesen Endpunkt müssen den Befehl (``cmd``) Parameter enthalten.
 Zusätzlich müssen alle ``POST`` Anfragen im JSON-Format vorliegen
 
-Hier ein paar Beispiele von Anfragen, die GBD WebSuite bearbeiten kann:: 
+Hier ein paar Beispiele von Anfragen, die GBD WebSuite bearbeiten kann.
 
- ## normale Webanfrage 
+Eine statische GET-Anfrage: ::
 
     http://maps.my-server.com/images/smile.jpg
 
-    ## dynamische GET-Anfrage (z. B. Kartenbilder) 
+Eine dynamische GET-Anfrage (z. B. ein Kartenbild): ::
 
-    http://maps.my-server.com/_?cmd=mapHttpGetBox&layer=london.metro&width=100&height=200&bbox=10,20,30,40
+    http://maps.my-server.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro&width=100&height=200&bbox=10,20,30,40
 
-    ## dynamische POST-Anfrage (z.B. Suche)
+Eine dynamische POST-Anfrage (z.B. Suche): ::
 
     {
-        "cmd":"searchRun",
+        "cmd":"search",
         "params": {
             "projectUid": "london",
             "bbox": [10,20,30,40],
@@ -29,88 +30,73 @@ Hier ein paar Beispiele von Anfragen, die GBD WebSuite bearbeiten kann::
         }
     }
 
-Dynamische GET-URLs können durch URL-Rewriting modifiziert werden, so dass diese :: 
+GET-URLs können durch URL-Rewriting modifiziert werden, so dass diese URL ::
 
-    http://maps.my-server.com/wms/london/metro
+    http://maps.my-server.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro
 
-kann anstelle verwendet werden::
+zu dieser reduziert werden kann ::
 
-    http://maps.my-server.com/_?cmd=wmsHttpGetMap&project=london&layers=metro
+    http://maps.my-server.com/london/metro
 
-Standorte und Projekte
------------------------
-
-Auf der obersten Ebene arbeitet die GBD WebSuite mit zwei Arten von Entitäten: *Projekte* und *Standorte*. Ein Projekt ist in etwa eine Karte und eine Sammlung von Einstellungen, die sich auf diese spezielle Karte beziehen. Eine Site ist ein Domain-Name, der an Autorisierungs- und Routing-Regeln gebunden ist.
-
-Im obigen Beispiel ist ``london`` ein Projekt, ``metro`` ist eine für dieses Projekt konfigurierte Ebene, während der Domainname ``maps. my-server. com`` und die entsprechende Rewrite-Regel aus der Site-Konfiguration übernommen werden.
-
-Sites und Projekte sind orthogonale Konzepte, und Sie können dasselbe Projekt unter mehreren Sites ausführen. Wenn Sie z. B. ``maps.my-server.com`` to e.g. ``gis.my-other-server.com`` ändern würden, würde dies keine Änderungen im Projekt ``london`` erfordern.
+^SEE Eine ausführliche Anleitung zur URL-Rewriting find Sie unter ^config/web
 
 Aktionen
------------
+--------
 
-Der Befehlssatz (``cmd`` in den obigen Beispielen) ist nicht festgelegt und kann frei konfiguriert werden. Befehle sind in *Aktionen* gruppiert, Sie können verfügbare Aktionen global oder projektbezogen konfigurieren. 
+Anhand vom ``cmd`` Parameter entscheidet der Server welche *Server Aktion* die Bearbeitung der Anfrage übernimmt. Falls die Aktion existiert und richtig konfiguriert ist,  wird die Anfrage zu dieser Aktion weitergeleitet. Die Aktion bearbeitet die Anfrage und stellt eine Antwort bereit, die abhängig von der Natur der Anfrage, in HTML, JSON oder PNG Format vorliegt. Intern sind die Aktionen die Python-Klassen, die für jeden Befehl (``cmd``) über eine Methode verfügen. Im obigen Beispiel (``cmd=mapHttpGetBox``) ist ``map`` die Aktion und ``httpGetBox`` die Methode die diese Anfrage bearbeitet.
 
+^SEE Server Aktionen sind unter ^config/actions beschrieben
 
-Karten, Ebenen und Quellen
----------------------------------
-
-Jedes GBD WebSuite Projekt enthält mindestens eine *Map*, die eine Sammlung von *Layern* ist. Es gibt verschiedene Arten von Ebenen (z. B. "Box" oder "Kachel"). Sie können Zugriffsrechte, Ansichtseigenschaften (wie ein Extent) und die Metadaten für die gesamte Karte und für jede Ebene individuell konfigurieren. Die meisten Ebenen sind auch an *source* Objekte gebunden, die dem Server mitteilen, woher die Geodaten stammen. Eine Layer-Konfiguration enthält typischerweise Anweisungen für den Server, wie die Quelldaten transformiert werden, z. B.
-
-- die Daten transformieren
-- die Bilder von WMS in Kacheln umwandeln und umgekehrt
-- Merkmaldaten neu formatieren
-- benutzerdefinierte Stile auf Features anwenden
-
-
-Pluggable Architektur
+Webseiten und Projekte
 ----------------------
 
-Fast alle Funktionen der GBD WebSuite sind über Plugins implementiert. Wir haben Plugins für diese Art von Objekten
+Auf der obersten Ebene arbeitet die GBD WebSuite mit zwei Arten von Entitäten: *Projekte* und *Webseiten*. Ein Projekt ist in etwa eine Karte und eine Sammlung von Einstellungen, die sich auf diese spezielle Karte beziehen. Eine Site ist ein Domain-Name, der an Autorisierungs- und Routing-Regeln gebunden ist.
 
-TABLE
-   Aktionen ~ Server-Aktionen
-   Autorisierungsanbieter ~ Autorisierung und Authentifizierung handhaben
-   Datenbankanbieter ~ Datenbankverbindungen
-   Suche bietet ~ Volltextsuche und Attributsuche
-   Ebenen ~ Kartenebenen
-   Quellen ~ Geodatenquellen für Karten
-   Druckvorlagen ~ Verschiedene Druckvorlagenformate
-/TABLE
+In dieser URL ::
 
-Pluggable-Objekte in der Konfiguration werden durch ihre ``type`` Eigenschaft identifiziert
+    http://maps.my-server.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro
 
+ist ``london`` ein Projekt, ``london.map.metro`` ist eine für dieses Projekt konfigurierte Ebene, während der Domainname ``maps. my-server. com`` und die entsprechende Rewrite-Regel aus der Webseiten-Konfiguration übernommen werden.
 
-Konfigurationsdateien und Objekte
------------------------------------
+Webseiten und Projekte sind orthogonale Konzepte. Sie können dasselbe Projekt unter mehreren Webseiten ausführen. Wenn Sie z. B. ``maps.my-server.com`` to e.g. ``gis.my-other-server.com`` ändern würden, würde dies keine Änderungen im Projekt ``london`` erfordern.
 
-GWS unterstützt verschiedene Konfigurationsformate:
+Statische Dokumente und Assets
+------------------------------
 
-- json, in diesem Fall muss der Name der Konfigurationsdatei mit ``config. json`` enden.
-- yaml (``config. yaml``). Wir verwenden Json in diesen Dokumenten, aber Sie können Yaml immer mit der gleichen Struktur verwenden, wenn Sie es mehr wollen.
-- python (``config. py``). Komplexe, sich wiederholende oder hochdynamische Konfigurationen können auch in gerader Pythonform geschrieben werden. Ihr Python-Skript muss eine Funktion namens ``config()`` mit der gleichen Struktur wie JSON enthalten. Beachten Sie, dass Ihr Konfigurationsmodul innerhalb des Containers ausgeführt wird und daher mit Python 3. 6 kompatibel sein muss.
+Zugriffsrechte
+--------------
 
-Die Konfiguration beginnt mit der Hauptkonfigurationsdatei (``GWS_CONFIG``), die weitere Konfigurationsdateien für Projekte und Projektgruppen enthalten kann. Sobald alle Dateien gelesen und gepaart sind, werden alle konfigurierten Objekte zu einem großen "Baum" zusammengefasst, wobei das ``Application`` Objekt der Wurzelknoten ist. Hier ist ein Beispiel für einen solchen Baum::
+GWS enthält eine Rollen-Basierte Autorisierung. Bei allen konfigurierbaren Systemobjekte kann spezifiziert werden, welche Rollen den Zugriff zu diesem Objekt haben. Falls es für die gegebene Rolle keine explizite Anweisung gibt, wird das übergeordnete Objekte gecheckt. Für das Root Objekt (`application`) werden per default alle Zugriffe verweigert.
 
-   Application
-    |
-    |-- auth options
-    |-- server options
-    |-- web options
-    |
-    \-- projects
-        |
-        |-- First project
-        |   |-- project options
-        |   \-- Map
-        |       |-- First layer
-        |       \-- Second layer
-        |
-        \-- Second project
-           |-- project options
-           \-- Map
-               \-- Layer group
-                   \-- Sub-layer
+Individuelle Logins (Nutzername + Passwort) werden zu Rollen mittels *Autorisierungsprovider* verknüpft. Aktuell werden folgende Provider unterstützt:
 
+* LDAP
+* file-basiert
 
-Die meisten Konfigurationsoptionen sind vererbbar, d. h. wenn das System nach einer Eigenschaft für eine Ebene sucht und diese nicht explizit konfiguriert ist, dann wird die übergeordnete Ebene, dann die Karte, dann das enthaltene Projekt und schließlich die Wurzel ``Application`` konsultiert. 
+^NOTE In der Zukunft sind Datenbank sowie OAuth Autorisierung geplant.
+
+^SEE ^config/auth
+
+Karten und Layer
+----------------
+
+Jedes GBD WebSuite Projekt enthält eine *Karte* (``map``), die eine Sammlung von *Layern* (``layers``) ist. Es gibt verschiedene Arten von Ebenen (z. B. "Qgis" oder "WMS"). Sie können Zugriffsrechte, Ansichtseigenschaften (wie ein Extent) und die Metadaten für die gesamte Karte und für jede Ebene individuell konfigurieren. Die meisten Ebenen sind auch an *Quellen* gebunden, die dem Server mitteilen, woher die Geodaten stammen. Eine Layer-Konfiguration enthält typischerweise Anweisungen für den Server, wie die Quelldaten transformiert werden. In der aktuellen Version unterstützt GWS folgende Geodaten-Quellen:
+
+* PostGIS Tabellen
+* WMS/WMTS und WFS Dienste
+* Kacheldienste wie Open Street Map
+* GeoJSON
+
+^NOTE In der Zukunft sind auch Rasterquellen, Shape und Geopackage Daten geplant.
+
+Features
+--------
+
+^SEE config/features
+
+QGIS Unterstützung
+------------------
+
+QGIS Projekte können in den GWS Maps reibungslos integriert werden.
+
+^SEE ^config/qgis

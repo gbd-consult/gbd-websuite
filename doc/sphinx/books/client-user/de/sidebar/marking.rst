@@ -16,10 +16,8 @@ Unter dem Reiter ``Platzhalter`` befinden sich vorgefertigte Ausdrücke welche h
 Wenn keine Beschriftung eingetragen wird, werden Punkte, Linien und Flächen standardmäßig mit Koordinaten, Streckenlänge in Kilometer oder Fläche in Quadratkilometer beschriftet.
 Falls dies auch nicht gewünscht ist, muss lediglich die Formel in dem Beschriftungsfenster gelöscht werden.
 
-
 .. figure:: ../../../screenshots/de/client-user/measure_info.png
   :align: center
-
 
 Platzhalter für die Beschriftung
 --------------------------------
@@ -70,7 +68,6 @@ Zusätzlich kann jedoch über die Menüpunkte ``Platzierung``, ``Ausrichtung`` u
 .. figure:: ../../../screenshots/de/client-user/measure_combi.png
     :align: center
 
-
 Mit Hilfe des Werkzeuges |select_marking| ``Bearbeiten`` können erstellte Markierungen in der Karte angewählt und danach bearbeitet werden.
 Eine neue Markierung kann über das |new_marking| Icon angelegt werden oder über das ``Markieren und Messen`` Werkzeug selbst.
 Das Laden |load| und Abspeichern |save| der gewählten Markierungen ist ebenfalls möglich.
@@ -79,8 +76,6 @@ Das Laden |load| und Abspeichern |save| der gewählten Markierungen ist ebenfall
 .. note::
   Die Einheit der Markierung kann beliebig angepasst werden. Für weitere Informationen schauen Sie unter :ref:`Markieren & Messen <measure>` nach.
   All diese Funktionen können auf Wunsch auch deaktiviert oder nur gewissen Nutzern zur Verfügung gestellt werden.
-
-
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em

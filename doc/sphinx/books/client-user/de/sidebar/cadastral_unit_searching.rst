@@ -8,7 +8,6 @@ Das Modul und der Zugriff darauf kann individuell projekt- und benutzerspezifisc
 
 Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
 
-
 Starten der Flurstücksuche
 --------------------------
 
@@ -21,7 +20,6 @@ Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue 
 
 .. note::
     Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten, die je nach Bundesland unterschiedlich sein kann. Für die Suche nach einer Adresse ist aktuell eine Eingrenzung über eine Gemarkung vorzunehmen.
-
 
 Anzeigen der Ergebnisse
 -----------------------
@@ -39,12 +37,9 @@ Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinfo
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
   :align: center
 
-
 .. Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden |fokus| Symbol fokussiert werden. Außerdem ist es möglich über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage zu entfernen. Oder über das |addall| Icon ebenfalls in der Leiste am unteren Fensterrand ``Alle zur Ablage`` hinzufügen.  So können Sie in der |tab| ``Ablage`` , welche ebenfalls am unteren Fensterrand der ``Flurstücksuche`` zu finden ist, eine Sammlung gesuchter Flurstücke anlegen und diese |save| ``Speichern``, |load| ``Laden``, |csv| als CSV-Datei exportieren oder |print| ``Drucken``.
 
-
 Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen und deren Funktion im Ablagefenster ab.
-
 
 +------------------------+--------------------------------------------------------------------------------------+
 | **Icon**               | **Funktion**                                                                         |
@@ -69,7 +64,6 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 +------------------------+--------------------------------------------------------------------------------------+
 | |delete_shelf|         | Leeren der Ablage                                                                    |
 +------------------------+--------------------------------------------------------------------------------------+
-
 
 .. Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt.
 
@@ -135,8 +129,6 @@ Das Werkzeug |select| ``Einzelne Flurstücke in der Karte wählen`` ermöglicht 
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
    :align: center
-
-
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em

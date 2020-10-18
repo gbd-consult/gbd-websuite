@@ -22,7 +22,6 @@ Nachdem sich der Benutzer anmeldet hat, wird er direkt in das INSPIRE |bplan| Mo
 .. figure:: ../../../screenshots/de/client-user/inspire_show.png
  :align: center
 
-
 Über ein Suchfeld kann man frei nach dem Namen eines Eintrags der Bauleitplanung suchen. Dabei reicht die Eingabe einzelner Buchstaben des Wortes bereits aus.
 
 .. figure:: ../../../screenshots/de/client-user/inspire_delete.png
@@ -43,11 +42,10 @@ Die Daten des Fachthemas Bauleitplanung umfassen Vektordaten als Punkte, Linien 
 Metadaten pflegen
 -----------------
 
-Das Bearbeiten der Metadaten ist über |metadata| ``Metadaten editieren`` möglich. Bereits in der Konfiguration festgelegte oder automatisch erstellbare Informationen, wie zum Beispiel: wann war die letzte Änderung werden angezeigt. 
+Das Bearbeiten der Metadaten ist über |metadata| ``Metadaten editieren`` möglich. Bereits in der Konfiguration festgelegte oder automatisch erstellbare Informationen, wie zum Beispiel: wann war die letzte Änderung werden angezeigt.
 
 .. figure:: ../../../screenshots/de/client-user/inspire_metadata.png
  :align: center
-
 
 Dienste anzeigen
 ----------------

@@ -11,7 +11,6 @@ General notes
     request.rst
     testing.rst
 
-
 API Reference
 -------------
 

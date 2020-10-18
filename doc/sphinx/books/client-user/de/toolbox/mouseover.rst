@@ -22,10 +22,6 @@ Wenn mehrere Objekte markiert wurden, kann man über |continue| und
 .. note::
  Wie alle Werkzeuge kann auch dieses deaktiviert oder anders plaziert werden.
 
-
-
-
-
  .. |mouseover| image:: ../../../images/gbd-icon-anzeige-01.svg
    :width: 30em
  .. |continue| image:: ../../../images/baseline-chevron_right-24px.svg
