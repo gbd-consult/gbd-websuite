@@ -177,7 +177,7 @@ class Object(gws.common.db.provider.Sql):
         cols = self.describe(table)
 
         if not cols:
-            raise gws.Error(f'table {table.name!r} not found')
+            raise gws.Error(f'table {table.name!r} not found or not accessible')
 
         cname = cfg.get('keyColumn')
         if cname:
@@ -187,7 +187,7 @@ class Object(gws.common.db.provider.Sql):
             cs = [c.name for c in cols.values() if c.is_key]
             if len(cs) == 1:
                 cname = cs[0]
-                gws.log.debug(f'found key column {cname!r} for table {table.name!r}')
+                gws.log.debug(f'found primary key {cname!r} for table {table.name!r}')
             else:
                 gws.log.warn(f'invalid primary key for table {table.name!r} found={cs}')
 

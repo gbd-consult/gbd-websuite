@@ -189,16 +189,20 @@ class Connection:
         rs = self.select('''
             SELECT ccu.column_name AS name
             FROM information_schema.table_constraints AS tc
-            JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
-            WHERE tc.table_schema = %s AND tc.table_name = %s
+            JOIN information_schema.constraint_column_usage AS ccu USING (
+                table_schema, table_name, constraint_schema, constraint_name)
+            WHERE
+                tc.table_schema = %s
+                AND tc.table_name = %s
+                AND tc.constraint_type = 'PRIMARY KEY'
         ''', [schema, tab])
 
         key_cols = set(r['name'] for r in rs)
 
         rs = self.select('''
             SELECT column_name, data_type, udt_name 
-                FROM information_schema.columns 
-                WHERE table_schema = %s AND table_name = %s
+            FROM information_schema.columns 
+            WHERE table_schema = %s AND table_name = %s
         ''', [schema, tab])
 
         cols = []
