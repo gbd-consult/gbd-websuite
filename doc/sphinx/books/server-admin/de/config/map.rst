@@ -1,7 +1,7 @@
-Kartenkonfiguration
-===================
+Karten
+======
 
-^REF_DE gws.common.map.Config
+^REF gws.common.map.Config
 
 Eine *Karte* ist im Grunde eine Sammlung von *Ebenen* (``layers``). Eine Kartenkonfiguration kann auch Cache-, Raster- und Ansichtsoptionen enthalten, die als Fallback für Ebenen dienen, die diese nicht explizit definieren. Die Option ``crs`` muss ein gültiger EPSG KBS-Referenzstring sein. Alle Ebenen im Projekt werden in diesem KBS angezeigt, wobei die Quellen mit unterschiedlichen Projektionen dynamisch umprojiziert werden.
 
@@ -18,4 +18,4 @@ Zoomstufen und Auflösungen
 Aktion ``map``
 --------------
 
-^REF_DE gws.ext.action.map.Config
+^REF gws.ext.action.map.Config

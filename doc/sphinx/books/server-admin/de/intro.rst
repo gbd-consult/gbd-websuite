@@ -45,4 +45,4 @@ Wir danken unsere Sponsoren...
 Wie ist dieses Buch aufgebaut
 -----------------------------
 
-Wenn Sie neu zu GWS sind, starten Sie mit dem Kapitel ^quickstart und dann ^concepts, wo Sie eine Überblick der GWS Funktionen und Grundkonzepte  finden. Kapitel ^config enthält detaillierte Anweisungen zur Konfiguration. Unter ^references finden Sie eine Auflistung aller Konfigurationsoptionen sowie Kommandozeile Tools.
+Wenn Sie neu zu GWS sind, starten Sie mit dem Kapitel ^quickstart und dann ^concepts, wo Sie eine Überblick der GWS Funktionen und Grundkonzepte  finden. Kapitel ^config/index enthält detaillierte Anweisungen zur Konfiguration. Unter ^ref/index finden Sie eine Auflistung aller Konfigurationsoptionen sowie Kommandozeile Tools.

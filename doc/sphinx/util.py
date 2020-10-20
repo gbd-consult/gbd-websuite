@@ -27,6 +27,11 @@ VERSION = _read(DOC_ROOT + '/../../VERSION').strip()
 sys.path.insert(0, os.path.dirname(__file__))
 import refgen
 
+with open(DOC_ROOT + '/words.json') as fp:
+    WORDS = json.load(fp)
+
+HELP_BASE_URL = 'https://gws.gbd-consult.de/doc/{release}/books/client-user/{lang}/overview'
+
 
 ##
 
@@ -53,7 +58,7 @@ def cleanup_rst():
         _write_if_changed(p, _nl(out) + '\n')
 
 
-def format_special(txt):
+def format_special(txt, book, lang):
     def _table(m):
         head = m.group(1).strip()
         code = [
@@ -70,9 +75,9 @@ def format_special(txt):
 
         return '\n'.join(code)
 
-    def _ref_de(m):
-        s = m.group(1).strip().replace('.', '_')
-        return '.. admonition:: Referenz\n\n   :ref:`de_configref_' + s + '`'
+    def _ref(m):
+        return ".. admonition:: %s\n\n   :ref:`%s_configref_%s`" % (
+            WORDS[lang]['reference'], lang, m.group(1).strip().replace('.', '_'))
 
     # some RST shortcuts:
 
@@ -88,9 +93,9 @@ def format_special(txt):
 
     txt = re.sub(r'\^NOTE', r'.. note::', txt)
 
-    # ^REF_DE class => config reference link, german
+    # ^REF class => config reference link
 
-    txt = re.sub(r'\^REF_DE(.+)', _ref_de, txt)
+    txt = re.sub(r'\^REF(.+)', _ref, txt)
 
     # {TABLE}...{/TABLE} => ..csvtable
 
@@ -120,12 +125,9 @@ def make_cli_ref(lang):
     _write_if_changed(out, text)
 
 
-_HELP_BASE_URL = 'https://gws.gbd-consult.de/doc/{release}/books/client-user/{lang}/overview'
-
-
 def make_help(lang):
     release = '.'.join(VERSION.split('.')[:-1])
-    base = _HELP_BASE_URL.format(lang=lang, release=release)
+    base = HELP_BASE_URL.format(lang=lang, release=release)
     html = _read(DOC_ROOT + f'/../_build/books/client-user/{lang}/overview/help.html')
 
     bs = bs4.BeautifulSoup(html, 'html.parser')

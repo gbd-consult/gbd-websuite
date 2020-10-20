@@ -1,7 +1,7 @@
 Server Aktionen
 ===============
 
-^REF_DE gws.types.ext.action.Config
+^REF gws.types.ext.action.Config
 
 Die GBD WebSuite unterstützt viele verschiedene Befehle. In Ihrer Anwendungs- und Projektkonfiguration können Sie entscheiden, welche Sie in Ihrer speziellen Installation verwenden möchten. Jede Aktionskonfiguration benötigt mindestens die Eigenschaft ``type``, und optional einen ``access`` Block (s. ^auth), der angibt, welche Rollen die Berechtigung haben, diesen Aktionstyp *auszuführen*. Einige Aktionen erfordern zusätzliche Optionen.
 

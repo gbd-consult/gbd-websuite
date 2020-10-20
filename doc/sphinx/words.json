@@ -10,7 +10,8 @@
         "prop_type": "type",
         "prop_required": "required",
         "prop_default": "default",
-        "options": "Options"
+        "options": "Options",
+        "reference": "Reference"
     },
     "de": {
         "yes": "ja",
@@ -23,6 +24,7 @@
         "prop_type": "Typ",
         "prop_required": "Erforderlich",
         "prop_default": "Defaultwert",
-        "options": "Optionen"
+        "options": "Optionen",
+        "reference": "Referenz"
     }
 }

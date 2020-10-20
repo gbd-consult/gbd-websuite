@@ -1,33 +1,31 @@
-Feature Transformation
-======================
+Features
+========
 
-Die GBD WebSuite verschiedene Werkzeuge zur Transformation und Neuformatierung von Feature-Daten aus verschiedenen Quellen. Wenn der GBD WebSuite Client ein Feature anzeigt, sucht er nach den folgenden Attributen und zeigt, falls diese vorhanden sind, eine schön formatierte Feature-Info-Box an:
+GWS enthält Werkzeuge zur Feature Transformation.
 
-TABLE
-    *title* ~ Feature-Titel
-    *shortText* ~ Kurzbeschreibung des Features
-    *longText* ~ Detaillierte Beschreibung
-    *imageUrl* ~ Illustration für das Feature
-    *label* ~ Kartenbeschriftung für das Feature
-/TABLE
+Datenmodelle
+------------
 
-Wenn ein Formatwert mit einem ``<`` beginnt, zeigt der GBD WebSuite Client ihn im HTML-Format an.
+^REF gws.common.model.Config
 
-Sie können die Option ``meta`` verwenden, um unterschiedlich strukturierte Features neu zu formatieren, um ein einheitliches Aussehen zu erreichen. Betrachten wir zum Beispiel einen Layer "Stores", der auf einer WMS-Quelle basiert, die Feaure-Daten in folgendem Format liefert::
+Ein *Datenmodel* (``dataModel``) beschreibt wie Attributen eines Features transformiert werden müssen.
 
-    name    -  Geschäftsname
-    owner   - Name des Eigentümers
-    address - Straße und Hausnummer
-    photo   - ein Dateiname des Speicherbildes
+Editieren
+---------
 
-Für diese Ebene könnte die Option ``meta`` wie folgt aussehen (beachten Sie die Verwendung von html)::
+Vorlagen für visuelle Präsentation
+----------------------------------
 
-    "meta": {
-        "format": {
-            "title": "Store {name}",
-            "shortText": "<p>This store is run by <em>{owner}</em>. The address of the store is <strong>{address}</strong></p>",
-            "imageUrl": "{photo}"
-        }
-    }
+{TABLE}
+    ``feature.title`` | Feature-Titel
+    ``feature.teaser`` | Kurzbeschreibung des Features, erscheint in der Autocomplete-Box beim Suchen
+    ``feature.description`` | detaillierte Beschreibung, erscheint in der Info-Box
+    ``feature.label`` | Kartenbeschriftung für das Feature
+{/TABLE}
 
-Neben Ebenen können auch ``meta``-Konfigurationen zu Suchanbietern hinzugefügt werden, um Suchergebnisse neu zu formatieren (s. ^search).
+Die Vorlagen können für Layer (s. ^layer) oder Suchprovider (s. ^search) konfiguriert werden.
+
+Vorlagen für XML Präsentation
+-----------------------------
+
+Für WMS/WFS Dienste besteht die Möglichkeit, für bestimmte Features eine angepasste XML Präsentation zu konfigurieren. Dazu erstellen Sie in der Konfiguration der jeweiligen Dienstes eine Vorlage mit dem ``subject`` ``ows.GetFeatureInfo``.

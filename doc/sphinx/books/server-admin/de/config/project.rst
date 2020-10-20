@@ -1,7 +1,7 @@
 Projekte
 ========
 
-^REF_DE gws.common.project.Config
+^REF gws.common.project.Config
 
 Ein *Projekt* (``project``) in der GBD WebSuite besteht aus einer Karte, Druckvorlagen und zusätzlichen Optionen. In Abschnitten ``api`` und ``client`` können Sie die im Hauptkonfig definierte Aktionen und Client-Optionen überschreiben bzw. erweitern. Mittels ``access`` können Sie die Zugriffsrechte zu Projekten steuern.
 
@@ -33,6 +33,6 @@ Im Projekt kann eine Info-Vorlage konfiguriert werden, die im Client gezeigt wer
 Aktion ``projekt``
 ------------------
 
-^REF_DE gws.ext.action.project.Config
+^REF gws.ext.action.project.Config
 
 Mit dieser Aktion wird ein Projekt für den GWS Client freigeschaltet. Wenn diese Aktion fehlt, kann das Projekt nicht im Client aufgerufen werden, kann aber für andere Zwecke wie z.B. ein WMS Dienst verwender werden.

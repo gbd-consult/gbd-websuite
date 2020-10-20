@@ -63,19 +63,26 @@ Webseiten und Projekte sind orthogonale Konzepte. Sie können dasselbe Projekt u
 Statische Dokumente und Assets
 ------------------------------
 
-Zugriffsrechte
---------------
+Autorisierung
+-------------
 
-GWS enthält eine Rollen-Basierte Autorisierung. Bei allen konfigurierbaren Systemobjekte kann spezifiziert werden, welche Rollen den Zugriff zu diesem Objekt haben. Falls es für die gegebene Rolle keine explizite Anweisung gibt, wird das übergeordnete Objekte gecheckt. Für das Root Objekt (`application`) werden per default alle Zugriffe verweigert.
+GWS enthält eine Rollen-Basierte Autorisierung. Bei allen konfigurierbaren Systemobjekte kann mittels *Zugriffsblöcken* (``access``) spezifiziert werden, welche Rollen den Zugriff zu diesem Objekt haben. Falls es für die gegebene Rolle keine explizite Anweisung gibt, wird das übergeordnete Objekte gecheckt. Für das Root Objekt (`application`) werden per default alle Zugriffe verweigert.
 
-Individuelle Logins (Nutzername + Passwort) werden zu Rollen mittels *Autorisierungsprovider* verknüpft. Aktuell werden folgende Provider unterstützt:
+Individuelle Zugangsdaten (Nutzername, Passwort) werden zu Rollen mittels *Autorisierungsanbieter* (``provider``) verknüpft. Die Aufgabe eines Providers ist, die Zugangsdaten gegen der angegebenen Datenquelle zu prüfen. Aktuell werden folgende Provider unterstützt:
 
 * LDAP
 * file-basiert
 
-^NOTE In der Zukunft sind Datenbank sowie OAuth Autorisierung geplant.
+^NOTE In der Zukunft sind auch Datenbank Provider geplant.
 
-^SEE ^config/auth
+*Autorisierungsmethoden* (``method``) geben an, wie die Zugangsdaten dem System übergeben werden. Aktuell sind diese Methoden unterstützt:
+
+- ``web``: Übergabe mittels eines Web-Formulars (Login-Form)
+- ``basic``: Übergabe mittels einer HTTP-Basic Autorisierung
+
+^NOTE In der Zukunft sind auch OAuth, Two-Factor sowie Windows single sign-on (SSO) geplant.
+
+^SEE Mehr dazu in ^config/auth.
 
 Karten und Layer
 ----------------
@@ -89,13 +96,19 @@ Jedes GBD WebSuite Projekt enthält eine *Karte* (``map``), die eine Sammlung vo
 
 ^NOTE In der Zukunft sind auch Rasterquellen, Shape und Geopackage Daten geplant.
 
-Features
---------
+Suche und Features
+------------------
+
+In GWS sind die Funktionen wie Suche nach dem Schlüsselwort oder auch räumliche Suche durch Klicken oder Ziehen einheitlich *Suche* (``search``) genannt. Es können diverse Such-Quellen (``provider``) konfiguriert werden.
+
+Ein Feature ist ein Objekt das sowohl Sachdaten in Form von *Attributen*, als auch Geoinformation in Form einer *Shape* enthält. Die Suchergebnisse sind, unabhängig von der Art der Suche, als eine Liste von Features repräsentiert.
+
+GWS bietet Werkzeuge um die Feautres aus diversen Quellen einheitlich im Client oder in einem OWS Dienst einheitlich darzustellen. Dazu gehören *Datenmodellen* (``dataModel``), die Attributen transformieren und *Vorlagen* (``template``), die aus Attributen Präsentiationsobjekte, wie HTML Snippets, erstellen.
 
 ^SEE config/features
 
-QGIS Unterstützung
-------------------
+Arbeiten mit QGIS
+-----------------
 
 QGIS Projekte können in den GWS Maps reibungslos integriert werden.
 

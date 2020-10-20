@@ -70,7 +70,7 @@ Dieser Baum bleibt im Server-Speicher bis der GWS Server beendet oder neu konfig
 Hauptkonfigurationsdatei
 ------------------------
 
-^REF_DE gws.common.application.Config
+^REF gws.common.application.Config
 
 Die wichtigsten Teile der Hauptkonfigurationsdatei sind die folgenden Abschnitte, die weiter im Detail beschrieben werden:
 

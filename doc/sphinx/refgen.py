@@ -7,10 +7,10 @@ import json
 DOC_ROOT = os.path.abspath(os.path.dirname(__file__))
 APP_DIR = os.path.abspath(DOC_ROOT + '../../../app')
 
-_PRIMITIVES = "bool", "int", "str", "float", "float2", "float4", "dict",
+PRIMITIVES = "bool", "int", "str", "float", "float2", "float4", "dict",
 
 with open(DOC_ROOT + '/words.json') as fp:
-    _WORDS = json.load(fp)
+    WORDS = json.load(fp)
 
 
 class ConfigRefGenerator:
@@ -22,7 +22,7 @@ class ConfigRefGenerator:
         self.spec = spec
         self.root_type = root_type
         self.queue = [root_type]
-        self.done = set(_PRIMITIVES)
+        self.done = set(PRIMITIVES)
         self.obj_types = {}
 
     def run(self):
@@ -87,7 +87,7 @@ class ConfigRefGenerator:
         return '_'.join([self.lang, self.page, tname.replace('.', '_')])
 
     def ref(self, tname):
-        if tname in _PRIMITIVES:
+        if tname in PRIMITIVES:
             return _i(tname)
 
         m = re.match(r'(.+?)List$', tname)
@@ -115,7 +115,7 @@ class ConfigRefGenerator:
         )
 
     def w(self, s):
-        return _WORDS[self.lang][s]
+        return WORDS[self.lang][s]
 
 
 class CliRefGenerator:
@@ -167,7 +167,7 @@ class CliRefGenerator:
         return '_'.join([self.book, self.lang, self.page, fname.replace(' ', '_')])
 
     def w(self, s):
-        return _WORDS[self.lang][s]
+        return WORDS[self.lang][s]
 
 
 _pipe = ' | '.join

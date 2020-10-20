@@ -16,7 +16,7 @@ Grundlegende Datentypen sing wie folgt:
    ``int`` | integer Nummer
    ``float`` | reelle Nummer
    ``dict`` | generisches Schlüssel-Wert-Objekt
-   ``array of T`` | Liste (Array) von Elementen vom Typ  ``T``
+   **[** ``Typ`` **]** | Liste (Array) von Elementen vom ``Typ``
 {/TABLE}
 
 .. include:: ../../../../ref/de.configref.txt

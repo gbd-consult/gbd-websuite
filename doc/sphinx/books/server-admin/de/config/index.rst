@@ -3,32 +3,62 @@ Konfiguration
 
 In diesem Kapitel finden Sie eine detaillierte Beschreibung der GWS Konfiguration.
 
-.. toctree::
-    :maxdepth: 2
 
-    intro.rst
-    actions.rst
-    project.rst
-    map.rst
-    layers.rst
+Basis Konfiguration
+-------------------
 
-    alkis.rst
-    auth.rst
-    cache.rst
-    cli.rst
-    client.rst
-    db.rst
-    dprocon.rst
-    features.rst
-    gekos.rst
-    intl.rst
-    ows.rst
-    format.rst
-    style.rst
-    print.rst
-    qgis.rst
-    search.rst
-    server.rst
-    storage.rst
-    styles.rst
-    web.rst
+- ^intro
+- ^project
+- ^actions
+
+Karten
+------
+
+- ^map
+- ^layers
+- ^features
+- ^qgis
+- ^cache
+- ^search
+
+
+Client
+------
+
+- ^client
+- ^storage
+
+
+System
+------
+
+- ^auth
+- ^intl
+- ^server
+- ^web
+- ^db
+
+
+Formatieren und Drucken
+-----------------------
+
+- ^templates
+- ^styles
+- ^print
+
+Metadaten und Dienste
+----------------------
+
+- ^ows
+- ^meta
+
+Spezielle Themengebiete
+-----------------------
+
+- ^alkis
+- ^bplan
+- ^dimension
+- ^dprocon
+- ^gekos
+
+

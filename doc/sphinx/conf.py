@@ -72,7 +72,10 @@ keep_warnings = True
 ##
 
 def format_special(app, docname, source):
-    source[0] = util.format_special(source[0])
+    m = re.match('^books/(.+?)/([a-z]+)', docname)
+    book = m.group(1) if m else ''
+    lang = m.group(2) if m else ''
+    source[0] = util.format_special(source[0], book, lang)
 
 
 def setup(app):

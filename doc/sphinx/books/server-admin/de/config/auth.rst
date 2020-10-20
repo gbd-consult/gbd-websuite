@@ -1,147 +1,107 @@
 Autorisierung
 =============
 
-Die GBD WebSuite Autorisierung ist rollenbasiert, mit steckbaren Berechtigungsanbietern. Wenn sich der Benutzer anmeldet, werden seine Credentials nacheinander an alle konfigurierten Provider weitergegeben, wenn ein Provider die Credentials akzeptiert, gibt er eine Liste der Rollen für diesen Benutzer zurück.
-
-Wenn der Benutzer ein Objekt anfordert, prüft der Server, ob eine der Rollen des Benutzers über ausreichende Berechtigungen verfügt, um das Objekt zu lesen, zu schreiben (z. B. beim Bearbeiten) oder auszuführen (z. B. eine Serveraktion). Wenn es keine expliziten Berechtigungen auf Objektebene gibt, wird das übergeordnete Objekt geprüft und so weiter. Um diese Prüfungen durchzuführen, liest der Server die ``access`` jedes angeforderten Objekts.
+Eine Rolle in GWS wird mit einer einfachen Zeichenkette bezeichnet. Ein Nutzer, der sich mit den Zugangsdaten identifiziert, kann mehrere Rollen besitzen.
 
 Zugangsreglungen
 ----------------
 
-In der Konfiguration können einige Typen von Objekten  verknüpft sein mit``access`` Konfigurationen:
+^REF gws.types.Access
+
+In der Konfiguration können einige Typen von Objekten  verknüpft sein mit Zugangsblock (``access``) Konfigurationen, wie z.B.
 
 - main application
 - server action
 - project
-- map
 - layer
 
 Zusätzlich definieren einige Aktionen interne ``access`` Blöcke für bestimmte Befehle.
 
-``access`` ist eine Liste von ``AccessRule`` Objekten. Jede ``AccessRule`` enthält
+Ein ``access`` Block ist eine Liste von Regeln. Jede Regel enthält die Eigenschaften ``role`` (ein Name der Rolle auf die sich die Regel bezieht) und ``type``, welche ist entweder ``allow`` ("erlauben") oder ``deny`` ("verweigern").
 
-- der ``type`` der Regel - "erlauben" oder "verweigern",
-- der ``mode`` - "lesen", "schreiben", "ausführen" oder eine Kombination davon,
-- die Liste der ``role`` Namen, auf die sich die Regel bezieht
+Wenn ein Nutzer X einen Zugriff auf ein Objekt erfragt, werden alle Regel für dieses Objekt überprüft. Falls eine von Rollen die der Nutzer besitzt explizit gefunden wird, ist der Zugriff anhand von ``type`` erlaubt und verweigert. Ansonsten wird das übergeordnete Objekt geprüft. Falls es kein  übergeordnetes Objekt gibt, d.h. das Root-Objekt wird erreicht, ist der Zugriff verweigert.
 
-Mit Hilfe der ``access``-Regeln kann der Berechtigungsprüfungsalgorithmus formal wie folgt beschrieben werden::
-
-    ## Der Benutzer U fordert einen Berechtigungsmodus P (z. B. "lesen") für ein Objekt O
-
-    let currentObject = O
-    let userRoles = "roles" of the user U
-
-    loop
-
-        if currentObject has property "access"
-
-            ## Überprüfen Sie die expliziten Zugriffsregeln:
-
-            for each Rule in currentObject.access
-                if (Rule.roles contains any of userRoles) and (Rule.mode contains P)
-                    if Rule.type is "allow", return Access Granted
-                    if Rule.type is "deny",  return Access Denied
-                end if
-            end for
-
-        end if
-
-        ## An dieser Stelle hat das aktuelle Objekt entweder keine "Zugriffsregeln",
-        ## oder keine dieser Regeln passt zu den Rollen des Benutzers.
-        ## Überprüfen Sie das übergeordnete Objekt, wenn es existiert.
-
-        if currentObject has a "parent"
-            let currentObject = currentObject.parent
-            continue loop
-        end if
-
-        ## An diesem Punkt haben wir das Wurzelobjekt erreicht.
-        ## und haben immer noch keine passende Regel gefunden.
-        ## Verwenden Sie die Standardregel "Alle Anfragen ablehnen".
-
-        return Access Denied
-
-    end loop
-
-Rollen
-------
+Vordefinierte Rollen
+--------------------
 
 Es gibt einige vordefinierte Rollen, die in GWS eine besondere Bedeutung haben:
 
-TABLE
-   *guest* ~ Nicht eingeloggter Benutzer
-   *user* ~ Jeder eingeloggter Benutzer
-   *everyone* ~ Alle Benutzer, eingeloggt und Gäste
-   *admin* ~ Administrator. Benutzer die diese Rolle haben, erhalten automatisch Zugriff auf alle Ressourcen
-/TABLE
+{TABLE}
+   ``guest`` | nicht eingeloggter Benutzer
+   ``user`` | jeder eingeloggter Benutzer
+   ``all`` | alle Benutzer, eingeloggt und Gäste. Objekte, auf welche die Rolle ``all`` Zugriff hat sind öffentliche ("public") Objekte
+   ``admin`` | Administrator. Benutzer die diese Rolle haben, erhalten automatisch Zugriff auf alle Objekte
+{/TABLE}
 
 Andernfalls können Sie beliebige Rollennamen verwenden, aber sie müssen gültige Bezeichnungen sein (d. h. mit einem lateinischen Buchstaben beginnen und nur Buchstaben, Ziffern und Unterstriche enthalten).
 
 Berechtigungsstrategien
 -----------------------
 
-Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``access`` konfigurieren. Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie ``read`` und ``write`` an "everyone" vergeben::
+Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``access`` konfigurieren. Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie ``allow`` an ``all`` vergeben::
 
     ## in der Hauptkonfiguration:
 
     "access": [
         {
-            "type": "allow",
-            "mode": ["read", "write"],
-            "role": ["everyone"]
+            "role": "all",
+            "type": "allow"
         }
     ]
 
-Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen, benötigen Sie zwei Zugriffsregeln: eine, um eine bestimmte Rolle zuzulassen, und eine, um "alle" zu verwehren::
+Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen, benötigen Sie zwei Zugriffsregeln: eine, um eine bestimmte Rolle zuzulassen, und eine, um ``all`` zu verwehren: ::
 
-    ## in the project config:
+    ## in der Projektkonfiguration
 
     "access": [
         {
-            "type": "allow",
-            "mode": ["read", "write"],
-            "role": ["members"]
+            "role": "member",
+            "type": "allow"
         },
         {
-            "type": "deny",
-            "mode": ["read", "write"],
-            "role": ["everyone"]
+            "role": "all",
+            "type": "deny"
         }
     ]
 
-Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen::
+Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen: ::
 
     ## in der Hauptkonfiguration:
 
     "access": [
         {
-            "type": "deny",
-            "mode": ["read", "write"],
-            "role": ["everyone"]
+            "role": "all",
+            "type": "deny"
         }
     ]
 
-und erlauben dann explizit den Zugriff auf bestimmte Objekte ::
+und erlauben dann explizit den Zugriff auf bestimmte Objekte: ::
 
-    # in der Projektkonfigurationsdatei:
+    # in der Projektkonfiguration:
 
     "access": [
         {
-            "type": "allow",
-            "mode": ["read", "write"],
-            "role": ["members"]
+            "role": "member",
+            "type": "allow"
         }
     ]
 
-Normalerweise ist es nicht notwendig, ``execute`` Rechte speziell zu konfigurieren, aber wenn Sie sich dazu entschließen, sollten Sie darauf achten, dass zumindest ``asset`` und ``auth`` Aktionen von jedem ausführbar sind, andernfalls könnten sich Ihre Benutzer nicht einmal anmelden!
+Aktion ``auth``
+---------------
 
-Berechtigungsanbieter
----------------------
+^REF gws.ext.action.auth.Config
 
-Datei
-~~~~~
+Diese Aktion ist für die Bearbeitung der Zugangsdaten zuständig und muss freigeschaltet sein wenn Sie Logins verwenden. Wenn Sie die "deny all" Strategie folgen, achten Sie darauf, dass die die ``auth`` Aktion für ``all`` zugänglich ist, andernfalls könnten sich Ihre Benutzer nicht einmal anmelden.
 
-Der Dateianbieter verwendet eine einfache Json-Datei, um Autorisierungsdaten zu speichern. Der json ist nur ein Array von "user"-Objekten ::
+Autorisierungsanbieter
+----------------------
+
+file
+~~~~
+
+^REF gws.ext.auth.provider.file.Config
+
+Der Dateianbieter verwendet eine einfache Json-Datei, um Zugangsdaten zu speichern. Der json ist nur ein Array von "user"-Objekten ::
 
     [
         {
@@ -157,8 +117,10 @@ Der Dateianbieter verwendet eine einfache Json-Datei, um Autorisierungsdaten zu 
 
 Der Name und der Speicherort der Datei ist Ihnen überlassen, geben Sie einfach ihren absoluten Pfad in der Konfiguration an. Um das verschlüsselte Passwort zu generieren, verwenden Sie den Befehl ``auth passwd``.
 
-Ldap
+ldap
 ~~~~
+
+^REF gws.ext.auth.provider.ldap.Config
 
 Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys. com bereitgestellten LDAP-Testservers.  <http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server>`_ ::
 
@@ -176,20 +138,33 @@ Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Se
 
         ## Filter auf Rollen abbilden:
 
-        "roles": [
+        "users": [
 
-            ## LDAP-Benutzer "euler" hat die GBD WebSuite Rolle "Moderatoren":
+            ## LDAP-Benutzer "euler" hat Rollen "moderator" und "expert":
 
             {
                 "matches": "(&(cn=euler))",
-                "role": "moderators"
+                "roles": ["moderator", "expert"]
             },
 
-            ## alle Mitglieder der LDAP-Gruppe "Mathematiker" haben die GBD WebSuite Rolle "Mitglieder":
+            ## alle Mitglieder der LDAP-Gruppe "mathematicians" haben die Rolle "member":
 
             {
-                "memberOf": "(&(ou=mathematicians))",
-                "role": "members"
+                "memberOf": "mathematicians",
+                "roles": ["member"]
             }
         ]
     }
+
+Autorisierungsmethoden
+----------------------
+
+web
+~~~
+
+^REF gws.ext.auth.method.web.Config
+
+basic
+~~~~~
+
+^REF gws.ext.auth.method.basic.Config
