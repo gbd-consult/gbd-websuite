@@ -1,24 +1,36 @@
-GBD WebSuite Client
-===================
+Client
+======
 
-Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Hauptzweck, zusammen mit einem "reichen" Javascript-Client verwendet zu werden, der in der Lage ist, dynamische Web-Maps wie OpenLayers of Leaflet anzuzeigen. Wir bieten einen solchen Client als Teil der GBD WebSuite an und stellen einige Optionen in der Serverkonfiguration zur Verfügung, um unseren Client gezielt zu unterstützen.
+GWS Client ist eine Javascript (React) Anwendung, die dafür konzipiert ist, zusammen mit dem GWS Server zu arbeiten.
 
-Projekt HTML Seite
-------------------
+HTML Vorlage
+------------
 
-Um Ihr Projekt in einem Webbrowser anzuzeigen, benötigen Sie eine HTML-Seite, die unseren Javascript-Client (s. doc: `client`) und die Projekt-ID enthalten sollte, damit der Client weiß, welches Projekt geladen werden soll. Auf der Seite muss sich ein div-Element mit dem Klassennamen ``gws`` befinden. Hier wird die Client-Benutzeroberfläche geladen. Ansonsten können Sie Ihre Startseite frei gestalten. Hier ist ein Beispiel ::
+Um Ihr Projekt in einem Webbrowser anzuzeigen, benötigen Sie eine HTML-Seite, die den Client und einige Projekt Informationen enthalten sollte, damit der Client weiß, welches Projekt geladen werden soll. Auf der Seite muss sich ein div-Element mit dem Klassennamen ``gws`` befinden. Hier wird die Client-Benutzeroberfläche geladen. Ansonsten können Sie Ihre Startseite frei gestalten.
+
+Der Client selbst besteht aus drei Dateien:
+
+- ``gws-light-<VERSION>.css`` - Style Datei
+- ``gws-vendor-<VERSION>.js`` - Javascript Bibliothek
+- ``gws-client-<VERSION>.js`` - Javascript Anwendung
+
+Diese Dateien sind im GWS Server unter einer speziellen Adresse ``/gws-client`` erreichbar. Sie brauchen diese Adresse in Ihrer Konfiguration *nicht* explizit einzurichten.
+
+Hier ist ein Vorlage der Client-Seite, die Sie nach Ihren Bedürfnissen anpassen können: ::
 
     <!DOCTYPE html>
     <html>
     <head>
+        <!-- Charset muss immer UTF8 sein! -->
         <meta charset="UTF-8"/>
-        <title>My First Project!</title>
 
-        <!-- CSS und Skripten von GWS Client
-        <link rel="stylesheet" href="/gws-client/gws-light-6.1.css" type="text/css">
-        <script src="/gws-client/gws-vendor-6.1.js"></script>
-        <script src="/gws-client/gws-client-6.1.js"></script>
+        <!-- Für Mobilgeräte soll die Anwendung nicht skalierbar sein -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 
+        <!-- CSS vom GWS Client -->
+        <link rel="stylesheet" href="/gws-client/gws-light-6.1.1.css" type="text/css">
+
+        <!-- "gws" Element kann frei positioniert werden, wir empfehlen "postion:absolute" bzw "fixed" -->
         <style>
             .gws {
                 position: fixed;
@@ -29,149 +41,103 @@ Um Ihr Projekt in einem Webbrowser anzuzeigen, benötigen Sie eine HTML-Seite, d
             }
         </style>
 
-        <!-- Project uid, as defined in the config file -->
+        <!-- Hier muss die ID von Ihrem Projekt stehen, sowie die Sprache von Client Meldungen -->
         <script>
             GWS_PROJECT_UID = "project1";
+            GWS_LOCALE = "de_DE";
         </script>
-
-        <!-- Your own css, if needed -->
-        <link rel="stylesheet" href="/my-style.css" type="text/css">
-
-        <!-- Your additional css/scripts and other resources -->
 
     </head>
 
     <body>
-        <!-- This is where the Client will be loaded -->
+        <!-- In diesem Element wird der Client geladen. -->
         <div class="gws"></div>
 
-        You can add more content here...
+        <!-- Javascript vom GWS Client -->
+        <script src="/gws-client/gws-vendor-6.1.1.js"></script>
+        <script src="/gws-client/gws-client-6.1.1.js"></script>
+
     </body>
     </html>
-
-Platzieren Sie diese Datei in Ihrem konfigurierten ``web``-Verzeichnis (s.: doc: "web"), um sie im Web zur Verfügung zu stellen.
 
 UI-Konfiguration
 ----------------
 
-Jedes GBD WebSuite Projekt, wie auch die Hauptanwendung, kann die ``client`` Konfiguration haben, die verschiedene Optionen für den Client enthält und dessen UI-Layout beschreibt, so dass Sie bestimmte UI-Elemente pro Projekt ein- und ausschalten können.
+^REF gws.common.client.Config
 
-Beispiel für die Client-Konfiguration ::
+Jedes GBD WebSuite Projekt, wie auch die Hauptanwendung, kann ein ``client`` Objekt enthalten, das verschiedene Optionen für den Client und dessen UI-Layout beschreibt, so dass Sie bestimmte UI-Elemente pro Projekt ein- und ausschalten können. Dieses Objekt besteht aus zwei Teilen: ``options`` (generelle Optionen) und ``elements`` (Auflistung der UI Elemente).
 
-    {
+options
+~~~~~~~
 
-        ## root UI Element:
+Die Optionen sind wie folgt:
 
-        "tag": "ui",
+{TABLE head}
+Option | Typ | Bedeutung | Beispielwert
+``infobarVisible`` | *bool* | untere Leiste ("Infobar") ist sichtbar | ``false``
+``sidebarActiveTab`` | *str* | actives Icon in der linken Leiste ("Sidebar") | ``"Sidebar.Layers``
+``sidebarVisible`` | *bool* | Sidebar ursprünglich sichtbar | ``true``
+``sidebarSize`` | *int* | Anzahl von sichtbaren Icons in der Sidebar |  ``4``
+``toolbarSize`` | *int* | Anzahl von sichtbaren Icons in der Toolbar |  ``5``
+{/TABLE}
 
-        "options": {
-            ## Die aktive Seitenleiste ist "Layers"
-            "sidebarActiveTab": "Sidebar.Layers",
+elements
+~~~~~~~~
 
-            ## sidebar is intially visible
-            "sidebarVisible": False,
+Jede Element Konfiguration enthält einen Tag-Namen sowie optional eine Zugriffsberechtigung, sodass die UI Elemente nur für bestimmte Nutzer erscheinen.
 
-            ## vorgewählte Infoleiste-Taste
-            "toolbarActiveButton": "Toolbar.Identify.Click",
-        },
+Es werden folgende Element-Tags unterstützt:
 
-        "elements": [
-
-            ## Kartendekorationselemente:
-
-            { "tag": "Decoration.ScaleRuler"},
-            { "tag": "Decoration.Attribution"},
-
-            ## Infoleiste (normalerweise am unteren Bildschirmrand)
-
-            {
-                "tag": "Infobar",
-                "elements": [
-                    {
-                        ## auf der linken Seite der Infoleiste, Zoom-Werkzeuge anzeigen:
-
-                        "tag": "Infobar.LeftSide",
-                        "elements": [
-                            {"tag": "Infobar.ZoomOut"},
-                            {"tag": "Infobar.ZoomIn"},
-                            {"tag": "Infobar.ZoomBox"},
-                            {"tag": "Infobar.ZoomReset"},
-                        ]
-                    },
-                    {
-
-                        ## auf der rechten Seite der Infoleiste den "About"-Link anzeigen, der sich in einem Pop-Over-Frame öffnet:
-
-                        "tag": "Infobar.RightSide",
-                        "elements": [
-                            {
-                                "tag": "Infobar.Link",
-                                "options": {
-                                    "title": "About",
-                                    "href": "https://example.org/about",
-                                    "target": "frame"
-                                }
-                            },
-                        ]
-                    },
-
-                ]
-            },
-
-            ## Symbolleiste (normalerweise oben rechts)
-
-            {
-                "tag": "Toolbar",
-                "elements": [
-
-                    ## Anzeige der Messwerkzeuge in der Symbolleiste
-
-                    {
-                        "tag": "Toolbar.Group",
-                        "elements": [
-                            {"tag": "Toolbar.Measure.Line"},
-                            {"tag": "Toolbar.Measure.Polygon"},
-                            {"tag": "Toolbar.Measure.Circle"},
-                            {"tag": "Toolbar.Measure.Clear"},
-                            {"tag": "Toolbar.Measure.Cancel"},
-                        ]
-                    },
-
-                    ## Anzeige der Drucktaste in der Symbolleiste
-
-                    {
-                        "tag": "Toolbar.Group",
-                        "elements": [
-                            {"tag": "Toolbar.Print.Go"},
-                        ]
-                    },
-
-                    ## Anzeige des Suchfeldes in der Symbolleiste
-
-                    {"tag": "Toolbar.Search"},
-                ]
-            },
-
-            ## Sidebar (normalerweise oben links)
-
-            {
-                "tag": "Sidebar",
-                "elements": [
-
-                    ## Anzeige der Registerkarte Ebenen
-                    {"tag": "Sidebar.Layers"},
-
-                    ## Anzeige der Registerkarte Suche
-                    {"tag": "Sidebar.Search"},
-
-                    ## Anzeige der Registerkarte Benutzer und Anmeldung
-                    {"tag": "Sidebar.User"},
-                ]
-            }
-        ]
-    }
+{TABLE head}
+Tag | Bedeutung
+``Altbar.Search`` | ...
+``Decoration.Attribution`` | ...
+``Decoration.ScaleRuler`` | ...
+``Infobar.About`` | ...
+``Infobar.Help`` | ...
+``Infobar.HomeLink`` | ...
+``Infobar.Link`` | ...
+``Infobar.Loader`` | ...
+``Infobar.Position`` | ...
+``Infobar.Rotation`` | ...
+``Infobar.Scale`` | ...
+``Infobar.Spacer`` | ...
+``Sidebar.Alkis`` | ...
+``Sidebar.Annotate`` | ...
+``Sidebar.Bplan`` | ...
+``Sidebar.Dimension`` | ...
+``Sidebar.Edit`` | ...
+``Sidebar.Layers`` | ...
+``Sidebar.Overview`` | ...
+``Sidebar.Search`` | ...
+``Sidebar.Select`` | ...
+``Sidebar.Style`` | ...
+``Sidebar.UIDemo`` | ...
+``Sidebar.User`` | ...
+``Storage.Read`` | ...
+``Storage.Write`` | ...
+``Task.Annotate`` | ...
+``Task.Lens`` | ...
+``Task.Search`` | ...
+``Task.Select`` | ...
+``Task.Zoom`` | ...
+``Toolbar.Annotate`` | ...
+``Toolbar.Dimension`` | ...
+``Toolbar.Dprocon`` | ...
+``Toolbar.Gekos`` | ...
+``Toolbar.Identify`` | ...
+``Toolbar.Identify`` | ...
+``Toolbar.Lens`` | ...
+``Toolbar.Location`` | ...
+``Toolbar.Print`` | ...
+``Toolbar.Select`` | ...
+``Toolbar.Snapshot`` | ...
+``Toolbar.Tabedit`` | ...
+{/TABLE}
 
 Layer flags
 -----------
 
-Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll. Siehe :ref:`server_admin_en_configref_gws_gis_layer_ClientOptions` für Details.
+^REF gws.common.layer.types.ClientOptions
+
+Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll. Siehe Referenze für Details.

@@ -60,17 +60,24 @@ ist ``london`` ein Projekt, ``london.map.metro`` ist eine für dieses Projekt ko
 
 Webseiten und Projekte sind orthogonale Konzepte. Sie können dasselbe Projekt unter mehreren Webseiten ausführen. Wenn Sie z. B. ``maps.my-server.com`` to e.g. ``gis.my-other-server.com`` ändern würden, würde dies keine Änderungen im Projekt ``london`` erfordern.
 
+Client
+------
+
+Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Hauptzweck, zusammen mit einem "reichen" Javascript-Client verwendet zu werden, der in der Lage ist, dynamische Web-Maps wie OpenLayers of Leaflet anzuzeigen. Wir bieten einen solchen Client als Teil der GBD WebSuite an und stellen einige Optionen in der Serverkonfiguration zur Verfügung, um unseren Client gezielt zu unterstützen.
+
 Statische Dokumente und Assets
 ------------------------------
+
+@TODO
 
 Autorisierung
 -------------
 
 GWS enthält eine Rollen-Basierte Autorisierung. Bei allen konfigurierbaren Systemobjekte kann mittels *Zugriffsblöcken* (``access``) spezifiziert werden, welche Rollen den Zugriff zu diesem Objekt haben. Falls es für die gegebene Rolle keine explizite Anweisung gibt, wird das übergeordnete Objekte gecheckt. Für das Root Objekt (`application`) werden per default alle Zugriffe verweigert.
 
-Individuelle Zugangsdaten (Nutzername, Passwort) werden zu Rollen mittels *Autorisierungsanbieter* (``provider``) verknüpft. Die Aufgabe eines Providers ist, die Zugangsdaten gegen der angegebenen Datenquelle zu prüfen. Aktuell werden folgende Provider unterstützt:
+Individuelle Zugangsdaten (Nutzername, Passwort) werden zu Rollen mittels *Autorisierungsanbieter* (``provider``) verknüpft. Die Aufgabe eines Anbieters ist, die Zugangsdaten gegen der angegebenen Datenquelle zu prüfen. Aktuell werden folgende Anbieter unterstützt:
 
-* LDAP
+* LDAP/ActiveDirectory
 * file-basiert
 
 ^NOTE In der Zukunft sind auch Datenbank Provider geplant.
@@ -89,10 +96,10 @@ Karten und Layer
 
 Jedes GBD WebSuite Projekt enthält eine *Karte* (``map``), die eine Sammlung von *Layern* (``layers``) ist. Es gibt verschiedene Arten von Ebenen (z. B. "Qgis" oder "WMS"). Sie können Zugriffsrechte, Ansichtseigenschaften (wie ein Extent) und die Metadaten für die gesamte Karte und für jede Ebene individuell konfigurieren. Die meisten Ebenen sind auch an *Quellen* gebunden, die dem Server mitteilen, woher die Geodaten stammen. Eine Layer-Konfiguration enthält typischerweise Anweisungen für den Server, wie die Quelldaten transformiert werden. In der aktuellen Version unterstützt GWS folgende Geodaten-Quellen:
 
-* PostGIS Tabellen
-* WMS/WMTS und WFS Dienste
-* Kacheldienste wie Open Street Map
-* GeoJSON
+- PostGIS Tabellen
+- WMS/WMTS und WFS Dienste
+- Kacheldienste wie Open Street Map
+- GeoJSON
 
 ^NOTE In der Zukunft sind auch Rasterquellen, Shape und Geopackage Daten geplant.
 
@@ -103,7 +110,7 @@ In GWS sind die Funktionen wie Suche nach dem Schlüsselwort oder auch räumlich
 
 Ein Feature ist ein Objekt das sowohl Sachdaten in Form von *Attributen*, als auch Geoinformation in Form einer *Shape* enthält. Die Suchergebnisse sind, unabhängig von der Art der Suche, als eine Liste von Features repräsentiert.
 
-GWS bietet Werkzeuge um die Feautres aus diversen Quellen einheitlich im Client oder in einem OWS Dienst einheitlich darzustellen. Dazu gehören *Datenmodellen* (``dataModel``), die Attributen transformieren und *Vorlagen* (``template``), die aus Attributen Präsentiationsobjekte, wie HTML Snippets, erstellen.
+GWS bietet Werkzeuge um die Features aus diversen Quellen im Client oder in einem OWS Dienst einheitlich darzustellen. Dazu gehören *Datenmodellen* (``dataModel``), die Attributen transformieren und *Vorlagen* (``template``), die aus Attributen Präsentationsobjekte, wie HTML Snippets, erstellen.
 
 ^SEE config/features
 

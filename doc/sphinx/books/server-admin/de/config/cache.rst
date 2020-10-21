@@ -1,16 +1,38 @@
 Caching-Framework
 =================
 
-Der gebündelte Mapproxy-Server kann so konfiguriert werden, dass er Geodaten aus externen WMS-, WMTS- oder KVP-Quellen zwischenspeichert. In der GBD WebSuite verwenden Sie die Optionen ``Cache`` und ``Grid`` in der Map-Konfiguration oder auf Layer-Basis und die Konfiguration ``Seeding`` in der Hauptkonfiguration.
+Der GWS Server kann Geo-Bilder aus externen Quellen auf der Festplatte zwischenspeichern (or *cachen*), sodass weitere Anfragen zu der selben Quelle viel schneller ausgeführt werden können.  Das Cache Verzeichnis befindet sich in dem von Ihnen konfigurierten *var* Verzeichnis und kann bei Bedarf jederzeit komplett gelöscht werden
 
-Es sind einige Schritte notwendig, um eine Ebene zwischenzuspeichern:
+^NOTE Die Caches können sehr groß werden und ganz viele Dateien enthalten. Sorgen Sie dafür, dass Ihr Dateisystem ausreichen freien Platz und freie **inodes** hat.
 
-* die Ebene muss einen definierten ``View`` mit einem ``Extent`` und einem Satz erlaubter ``resolutions`` oder ``scales`` haben. Diese Einstellungen können in der Layer-Konfiguration definiert oder von der Map-Konfiguration vererbt werden.
+Layer Konfiguration
+-------------------
 
-* die Ebene (oder die Karte) muss ein ``Grid`` haben. Für WMS-Quellen ist es wichtig, das Meta-Tiling richtig einzustellen, um das Problem der "baumelnden Labels" zu vermeiden (s. https://mapproxy. org/docs/latest/labeling. html).
+Das Cachen kann für jeden Layer mit den Optionen ``cache`` und ``grid`` flexibel konfiguriert werden.
 
-* die Ebene (oder die Karte) muss einen ``Cache`` mit ``freigegeben`` auf ``true`` gesetzt haben
+cache
+~~~~~
 
-Sobald das Caching eingerichtet ist, wird es automatisch gefüllt, wenn Benutzer Ihre Karten durchsuchen. Sie können den Cache auch mit den Kommandozeilen-Tools ``gws cache`` voreinstellen.
+^REF gws.common.layer.types.CacheConfig
 
-Wichtig: Wenn Sie Ansichts- oder Rasterkonfigurationen ändern, müssen Sie den Cache für die Ebene oder die Karte entfernen, um unangenehme Artefakte zu vermeiden.
+grid
+~~~~
+
+^REF gws.common.layer.types.GridConfig
+
+Seeding
+-------
+
+^REF gws.common.application.SeedingConfig
+^CLIREF cache.seed
+
+Sobald der Cache eingerichtet ist, wird er automatisch gefüllt, wenn Benutzer Ihre Karten in Browser anschauen. Sie können den Cache auch mit den Kommandozeilen-Tools ``gws cache`` befüllen (sogenanntes *Seeding*).
+
+Verwaltung von Cache
+--------------------
+
+^CLIREF cache.clean
+
+Mit dem selben Tool können Sie den Status des Cache abfragen oder individuelle Caches löschen.
+
+^NOTE Wenn Sie Ansichts- oder Rasterkonfigurationen ändern, müssen Sie den Cache für die Ebene oder die Karte entfernen, um unangenehme Artefakte zu vermeiden.

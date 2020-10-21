@@ -1,64 +1,96 @@
 Konfiguration
 =============
 
-In diesem Kapitel finden Sie eine detaillierte Beschreibung der GWS Konfiguration.
+In diesem Kapitel finden Sie eine detaillierte Beschreibung der GWS Konfiguration. Da unsere Konfiguration sehr umfangreich ist, haben wir die Beschreibung in konzeptuelle Anschnitte unterteilt.
 
+Einführung
+----------
 
-Basis Konfiguration
--------------------
+Allgemeines zur Konfiguration.
 
-- ^intro
-- ^project
-- ^actions
+.. toctree::
+    :maxdepth: 1
+
+    intro.rst
+    main.rst
+    project.rst
+    actions.rst
+    client.rst
 
 Karten
 ------
 
-- ^map
-- ^layers
-- ^features
-- ^qgis
-- ^cache
-- ^search
+Konfiguration der Karten, Layer und Suchoptionen.
 
+.. toctree::
+    :maxdepth: 1
 
-Client
-------
-
-- ^client
-- ^storage
-
-
-System
-------
-
-- ^auth
-- ^intl
-- ^server
-- ^web
-- ^db
-
+    map.rst
+    layers.rst
+    features.rst
+    qgis.rst
+    cache.rst
+    search.rst
 
 Formatieren und Drucken
 -----------------------
 
-- ^templates
-- ^styles
-- ^print
+Options für die visuelle Präsentation von Karten und Sachdaten.
 
-Metadaten und Dienste
-----------------------
+.. toctree::
+    :maxdepth: 1
 
-- ^ows
-- ^meta
+    templates.rst
+    styles.rst
+    print.rst
+
+Editieren
+---------
+
+Optionen im Bezug auf Editieren von geographischen Objekten und Sachdaten.
+
+.. toctree::
+    :maxdepth: 1
+
+    digitize.rst
+    tabedit.rst
+    storage.rst
+
+System
+------
+
+Konfiguration des Servers.
+
+.. toctree::
+    :maxdepth: 1
+
+    auth.rst
+    intl.rst
+    server.rst
+    web.rst
+    db.rst
+
+Dienste und Metadaten
+---------------------
+
+Einrichtung von OWS Diensten sowie deren Metadaten.
+
+.. toctree::
+    :maxdepth: 1
+
+    ows.rst
+    meta.rst
 
 Spezielle Themengebiete
 -----------------------
 
-- ^alkis
-- ^bplan
-- ^dimension
-- ^dprocon
-- ^gekos
+Optionale und spezielle Komponente.
 
+.. toctree::
+    :maxdepth: 1
 
+    alkis.rst
+    bplan.rst
+    dimension.rst
+    dprocon.rst
+    gekos.rst

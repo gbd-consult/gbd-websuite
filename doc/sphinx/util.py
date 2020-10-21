@@ -60,15 +60,20 @@ def cleanup_rst():
 
 def format_special(txt, book, lang):
     def _table(m):
-        head = m.group(1).strip()
+
+        delim = '|'
+
         code = [
             '.. csv-table::',
             '   :delim: |',
             '   :widths: auto',
             '   :align: left',
-            ''
         ]
-        delim = '|'
+
+        opts = m.group(1).strip()
+        if 'head' in opts:
+            code.append('   :header-rows: 1')
+        code.append('')
 
         for ln in m.group(2).strip().split('\n'):
             code.append('   ' + delim.join(s.strip() for s in ln.split(delim)))
@@ -76,7 +81,11 @@ def format_special(txt, book, lang):
         return '\n'.join(code)
 
     def _ref(m):
-        return ".. admonition:: %s\n\n   :ref:`%s_configref_%s`" % (
+        return ".. pull-quote:: %s: :ref:`%s_configref_%s`" % (
+            WORDS[lang]['reference'], lang, m.group(1).strip().replace('.', '_'))
+
+    def _cliref(m):
+        return ".. pull-quote:: %s: :ref:`%s_cliref_%s`" % (
             WORDS[lang]['reference'], lang, m.group(1).strip().replace('.', '_'))
 
     # some RST shortcuts:
@@ -97,7 +106,11 @@ def format_special(txt, book, lang):
 
     txt = re.sub(r'\^REF(.+)', _ref, txt)
 
-    # {TABLE}...{/TABLE} => ..csvtable
+    # ^CLIREF class => config reference link
+
+    txt = re.sub(r'\^CLIREF(.+)', _cliref, txt)
+
+    # {TABLE options}...{/TABLE} => ..csvtable
 
     txt = re.sub(r'''(?sx)
         {TABLE (.*?)}

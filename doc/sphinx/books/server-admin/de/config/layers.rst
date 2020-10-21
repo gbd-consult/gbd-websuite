@@ -47,35 +47,10 @@ Postgres-Layer übernehmen Geometrien aus einer Postgres-Tabelle. Sie müssen nu
             }
         }
 
-qgis
-~~~~
+qgis/qgisflat
+~~~~~~~~~~~~~
 
-^REF gws.ext.layer.qgis.Config
-
-QGIS-Layer zeigen ganze QGIS-Projekte als einzelne Gruppe im GWS-Layerbaum an. Zusätzlich zu einem Layerfilter können Sie angeben, ob entfernte (z. B. WMS-) Layer direkt gerendert und / oder durchsucht werden sollen, oder den QGIS-Server verwenden: ::
-
-    {
-        "type": "qgis",
-        "title": "My qgis project",
-        "path": "/data/path/to/my-project.qgis",
-        "directRender": ["wms"]
-    }
-
-qgisflat
-~~~~~~~~
-
-^REF gws.ext.layer.qgisflat.Config
-
-``qgisflat``-Layer zeigen einzelne Layer aus einem QGIS-Projekt als einzelnes flaches Bild an ::
-
-    {
-        "type": "qgisflat",
-        "title": "My qgis project",
-        "path": "/data/path/to/my-project.qgis",
-        "sourceLayers": [
-            "names": ["My First Layer", "My Second Layer"]
-        ]
-    }
+Siehe ^qgis
 
 tile
 ~~~~

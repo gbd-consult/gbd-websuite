@@ -164,7 +164,7 @@ class CliRefGenerator:
         return _table(None, rows)
 
     def label(self, fname):
-        return '_'.join([self.book, self.lang, self.page, fname.replace(' ', '_')])
+        return '_'.join([self.lang, self.page, fname.replace(' ', '_')])
 
     def w(self, s):
         return WORDS[self.lang][s]

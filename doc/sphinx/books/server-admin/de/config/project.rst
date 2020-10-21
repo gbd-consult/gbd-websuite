@@ -28,7 +28,7 @@ Projekt-Vorlagen
 
 Im Projekt kann eine Info-Vorlage konfiguriert werden, die im Client gezeigt werden sobald der Nutzer die Projekt-Eigenschaften aktiviert. Diese Vorlage muss mit dem ``subject: project.description`` versehen werden.
 
-^SEE Siehe ^format für mehr Info on Vorlagen.
+^SEE Siehe ^templates für mehr Info.
 
 Aktion ``projekt``
 ------------------

@@ -1,46 +1,49 @@
 Installation
 ============
 
+Vor der Installation
+--------------------
+
 Als Docker-Anwendung benötigt die GBD WebSuite keine Installation per se, aber Sie müssen ein paar Dinge wissen, um es zum Laufen zu bringen.
 
 Verzeichnisse
--------------
+~~~~~~~~~~~~~
 
 Die GBD WebSuite benötigt einige Verzeichnisse, die von Ihrem Host-Rechner eingebunden werden müssen, um die Daten mit der Außenwelt auszutauschen.
 
-- ein oder mehrere "Daten"-Verzeichnisse. Hier speichern Sie Ihre Konfiguration und Daten. Der Server schreibt nie in diese Verzeichnisse, daher ist es eine gute Idee, sie schreibgeschützt zu mounten. Diese Verzeichnisse können an beliebige Stellen im Container eingebunden werden (wir verwenden standardmäßig ``/data``).
-- ein "var"-Verzeichnis, in dem der Server seine eigenen persistenten Daten wie Caches und Sitzungsdaten speichert. Es sollte an ``/gws-var`` im Container montiert werden.
-- ein temporäres Verzeichnis. Normalerweise würde man es als ``tmpfs`` bezeichnen.
+- ein oder mehrere *Daten*-Verzeichnisse. Hier speichern Sie Ihre Konfiguration und Daten. Der Server schreibt nie in diese Verzeichnisse, daher ist es eine gute Idee, sie schreibgeschützt zu mounten. Diese Verzeichnisse können an beliebige Stellen im Container eingebunden werden (wir verwenden standardmäßig ``/data``).
+- ein *var*-Verzeichnis, in dem der Server seine eigenen persistenten Daten wie Caches und Sitzungsdaten speichert. Es sollte an ``/gws-var`` im Container montiert werden.
+- ein temporäres Verzeichnis *tmp*. Normalerweise würde man es als ``tmpfs`` bezeichnen.
 
 Nutzer
-------
+~~~~~~
 
 GWS wird intern standardmäßig als Nutzer- und Gruppen-ID ``1000`` ausgeführt. Sorgen Sie bitte dafür, das dieser Nutzer in Ihrem Hostsystem
 
-- über Leserechte für alle "Daten"-Verzeichnisse verfügt
-- über Schreib- und Leserechte für "var" und "tmp" Verzeichnisse
+- über Leserechte für alle *Daten*-Verzeichnisse verfügt
+- über Schreib- und Leserechte für *var* und *tmp* Verzeichnisse
 
-^NOTE Sie können diese Werte mit Umgebungsvariablen ``GWS_UID`` und ``GWS_GID`` ändern.
+Sie können die ``uid/gid``  Werte mit Umgebungsvariablen ``GWS_UID`` und ``GWS_GID`` ändern.
 
 Port
-----
+~~~~
 
 Die GBD WebSuite zeigt die Ports ``80`` und ``443`` an. Sie können sie auf alles abbilden, was Sie beim Testen wollen, und auf echte 80/443 in der Produktion.
 
 Hauptkonfiguration
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Die GBD WebSuite erwartet seine Hauptkonfiguration in ``/data/config. json``. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable ``GWS_CONFIG`` auf den Pfad Ihrer Hauptkonfiguration.
 
 ^SEE Die Konfigurationsformate sind unter ^config/intro beschreiben.
 
-Externe Rechner
----------------
+Externe Adressen
+~~~~~~~~~~~~~~~~
 
 Wenn Ihr GBD WebSuite Container externe Verbindungen benötigt (höchstwahrscheinlich zu Datenbankservern), benötigen Sie eine oder mehrere ``--add-host`` Optionen in Ihrem Docker-Startbefehl.
 
 Einstiegspunkt
---------------
+~~~~~~~~~~~~~~
 
 Die GBD WebSuite hat einen einzigen Einstiegspunkt, ein Shell-Skript namens ``gws``. Um den Server zu starten und zu stoppen, möchten Sie einen von diesen ::
 
@@ -52,8 +55,8 @@ Ausführen mit ``docker run``
 
 Also, hier sind Optionen, die Sie in Ihrem ``docker run`` Befehl anpassen müssen:
 
-- ein oder mehrere "Daten"-Verzeichnisse einbinden
-- "var" und "tmp" Verzeichnisse einbinden
+- ein oder mehrere *Daten*-Verzeichnisse einbinden
+- *var* und *tmp* Verzeichnisse einbinden
 - Port-Mappings
 - Konfigurationspfad
 - externe Hosts
@@ -73,8 +76,8 @@ Hier ist eine Skript-Vorlage, die GWS mittels ``docker run`` startet. Sie könne
 
     STARTOPTS=(
         --name $CONTAINER
-        --mount type=bind,src=$VAR_DIR,dst=/gws-var
         --mount type=bind,src=$DATA_DIR,dst=/data,readonly
+        --mount type=bind,src=$VAR_DIR,dst=/gws-var
         --mount type=tmpfs,dst=/tmp,tmpfs-mode=1777
         --publish 0.0.0.0:80:80
         --publish 0.0.0.0:443:443
@@ -84,7 +87,7 @@ Hier ist eine Skript-Vorlage, die GWS mittels ``docker run`` startet. Sie könne
     )
 
     start_server() {
-        $DOCKER run ${STARTOPTS[*]} --detach $IMAGE gws server start $@
+        $DOCKER run ${STARTOPTS[*]} --detach $IMAGE gws server start
     }
 
     stop() {

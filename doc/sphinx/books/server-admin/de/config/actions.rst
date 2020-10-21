@@ -8,14 +8,14 @@ Die GBD WebSuite unterstützt viele verschiedene Befehle. In Ihrer Anwendungs- u
 Hier ein kurzer Überblick über die unterstützten Aktionstypen:
 
 {TABLE}
-    ``alkisgeocoder`` | bietet eine Schnittstelle zur Geocodierung auf dem Basis der deutschen Katasterdaten (ALKIS) (s. ^alkis)
+    ``alkisgeocoder`` | bietet eine Schnittstelle zur Geocodierung auf dem Basis der deutschen Katasterdaten (s. ^alkis)
     ``alkissearch`` | Suche nach Katasterparzellen (*Flurstücke*) nach Adresse, Standort, Besitzername etc. (s. ^alkis)
     ``asset`` | verwaltet dynamische Assets (s. ^web)
     ``auth`` | bearbeitet Autorisierungsanfragen, wie Login oder Logout (s. ^auth)
     ``bplan`` | Verwaltung von Bauleitplänen (s. ^bplan)
     ``dimension`` |  (s. ^dimension)
     ``dprocon`` | (s. ^dprocon)
-    ``edit`` | (s. ^edit)
+    ``edit`` | (s. ^digitize)
     ``fs`` | bietet eine Schnittstelle für das virtuelle Dateisystem, mit der die Daten auf dem Server gespeichert werden können
     ``gekos`` | (s. ^gekos)
     ``map`` | erzeugt Kartenbilder für Projekte und Ebenen in verschiedenen Formaten (s. ^map)
@@ -23,8 +23,8 @@ Hier ein kurzer Überblick über die unterstützten Aktionstypen:
     ``printer`` | übernimmt das Drucken (s. ^print)
     ``project`` | gibt Projektbeschreibung und Konfigurationsdaten zurück (s. ^project)
     ``search`` | behandelt die Suche (s. ^search)
-    ``storage`` | (s. ^storage)
-    ``tabedit`` |
+    ``storage`` | übernimmt den Datenaustausch mit der Datenablage (s. ^storage)
+    ``tabedit`` | Editieren von Sachdaten in einer tabellarischen Form (s. ^tabedit)
 {/TABLE}
 
 Aktionen werden in ``api`` Blocks in der Applikation- bzw Projektkonfigs konfiguriert.

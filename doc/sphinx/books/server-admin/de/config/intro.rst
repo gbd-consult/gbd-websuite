@@ -1,7 +1,7 @@
-Einführung in der Konfiguration
-===============================
+Übersicht
+=========
 
-Die GWS Konfiguration besteht aus Hauptkonfigdatei und optional mehrere Projekt-Konfigurationsdateien.
+Die GWS Konfiguration besteht aus Hauptkonfigdatei (^main) und optional mehrere Projekt-Konfigurationsdateien (^project). Die Struktur der Konfigurationsobjekte ist in ^ref/config vollständig beschrieben.
 
 Konfigurationsformate
 ---------------------
@@ -23,12 +23,12 @@ SLON
 
 SLON (https://github.com/gebrkn/slon) ist  eine Alternative zu JSON, die die Strukturen in einer vereinfachten Form darstellt. Bei diesem Format können Sie auch alle Befehle der Templating-Sprache verwenden (wie z.B. ``@include`` oder ``@if``). Konfigdateien im SLON Format müssen eine Erweiterung ``.cx`` haben.
 
-^SEE Mehr über Templating-Sprache lesen Sie unter ^format.
+^SEE Mehr über Templating-Sprache lesen Sie unter ^templates.
 
 Python
 ~~~~~~
 
-Komplexe, sich wiederholende oder hochdynamische Konfigurationen können auch direkt in Programmiersprache Python geschrieben werden. Die Python-Konfigurationsdatei muss eine Funktion ``config()`` enthalten, die einen Python ``dict`` zurückgibt, mit der  gleichen Struktur wie JSON. Beachten Sie, dass Ihr Konfigurationsmodul innerhalb des Containers ausgeführt wird und daher mit Python 3.6 kompatibel sein muss.
+Komplexe, sich wiederholende oder hochdynamische Konfigurationen können auch direkt in Programmiersprache Python geschrieben werden. Die Python-Konfigurationsdatei muss eine Funktion ``config()`` enthalten, die einen Python ``dict`` zurückgibt. Beachten Sie, dass Ihr Konfigurationsmodul innerhalb des Containers ausgeführt wird und daher mit Python 3.6 kompatibel sein muss.
 
 Laden der Konfiguration
 -----------------------
@@ -42,48 +42,6 @@ Die Konfiguration beginnt mit der Hauptkonfigurationsdatei (``GWS_CONFIG`` bzw `
 - ``projectDirs`` (eine Liste von Ordnernamen). Mit dieser Option liest das System aus angegebenen Verzeichnissen alle Dateien die mit ``.config.json``, ``.config.yaml``, ``.config.cx`` oder ``.config.py`` enden und diese als Projekte konfiguriert.
 
 Diese Optionen können miteinander auch frei kombiniert werden.
-
-Sobald alle Dateien gelesen und analysiert sind, werden alle konfigurierten Objekte zu einem großen "Baum" zusammengefasst, wobei das ``Application`` Objekt der Wurzelknoten ist. Hier ist ein Beispiel für einen solchen Baum::
-
-   Application
-    |
-    |-- auth options
-    |-- server options
-    |-- web options
-    |
-    \-- projects
-        |
-        |-- First project
-        |   |-- project options
-        |   \-- Map
-        |       |-- First layer
-        |       \-- Second layer
-        |
-        \-- Second project
-           |-- project options
-           \-- Map
-               \-- Layer group
-                   \-- Sub-layer
-
-Dieser Baum bleibt im Server-Speicher bis der GWS Server beendet oder neu konfiguriert wird.
-
-Hauptkonfigurationsdatei
-------------------------
-
-^REF gws.common.application.Config
-
-Die wichtigsten Teile der Hauptkonfigurationsdatei sind die folgenden Abschnitte, die weiter im Detail beschrieben werden:
-
-{TABLE}
-    ``api`` |  Server-Aktionen (s. ^actions)
-    ``auth`` |  Zugriffsrechte (s. ^auth)
-    ``client`` |  Client Optionen (s. ^client)
-    ``db`` |  Datenbankanbindung (s. ^db)
-    ``locales`` |  Server Localen (s. ^intl)
-    ``meta`` |  Globale Metadaten (s. ^meta)
-    ``server`` |  Server Optionen (s. ^server)
-    ``web`` |  Web-Server Konfigurationen (s. ^web)
-{/TABLE}
 
 Monitoring
 ----------
