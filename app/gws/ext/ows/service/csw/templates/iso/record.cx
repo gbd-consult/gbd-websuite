@@ -8,7 +8,6 @@
         @tag gmd:{lst}
             @a codeList="{ML_GMX_CODELISTS}#{lst}"
             @a codeListValue="{value}"
-            {value}
         @end
     @end
 @end
@@ -98,6 +97,7 @@
     @end
 
     @tag gmd:resourceConstraints/gmd:MD_LegalConstraints
+        @CODE "accessConstraints/MD_RestrictionCode", "otherRestrictions"
         @CODE "useConstraints/MD_RestrictionCode", "otherRestrictions"
         @with meta.license
             @t gmd:otherConstraints/gco:CharacterString {meta.license}
