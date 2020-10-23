@@ -169,7 +169,7 @@ class Object(gws.common.template.Object):
         css = f'''
             body, table, tr, td {{
                 margin: 0;
-                padding: 0
+                padding: 0;
                 border: none;
             }}
             table {{
