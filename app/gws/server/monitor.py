@@ -32,6 +32,7 @@ class Object(gws.Object, t.IMonitor):
         self.watch_dirs = {}
         self.watch_files = {}
         self.path_stats = {}
+        self.enabled = self.var('enabled', default=True)
         self.frequency = self.var('frequency', default=30)
         self.ignore = self.var('ignore', default=[])
 
@@ -47,6 +48,10 @@ class Object(gws.Object, t.IMonitor):
             raise ValueError(f'{path!r} is not a file')
 
     def start(self):
+        if not self.enabled:
+            gws.log.info(f'MONITOR: disabled')
+            return
+
         # @TODO: use file monitor
         # actually, we should be using uwsgi.add_file_monitor here, however I keep having problems
         # getting inotify working on docker-mounted volumes (is that possible at all)?
