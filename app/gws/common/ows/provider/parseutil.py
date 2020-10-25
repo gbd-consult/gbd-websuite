@@ -76,12 +76,10 @@ def get_bounds_list(el):
             if proj:
                 d[proj.epsg] = _bbox_value(e)
 
-    if gws.EPSG_4326 not in d:
-        for tag in 'WGS84BoundingBox', 'EX_GeographicBoundingBox', 'LatLonBoundingBox':
-            e = el.first(tag)
-            if e:
-                d[gws.EPSG_4326] = _bbox_value(e)
-                break
+    # NB prefer these for 4326 to avoid axis issues
+    e = one_of(el, 'EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
+    if e:
+        d[gws.EPSG_4326] = _bbox_value(e)
 
     return [t.Bounds(crs=k, extent=v) for k, v in d.items()]
 
@@ -254,10 +252,10 @@ def _bbox_value(el):
     #     <northBoundLatitude>42.90</northBoundLatitude>
     # </EX_GeographicBoundingBox>
     if el.get('westBoundLongitude'):
-        x1 = as_float(el.get_text('eastBoundLongitude')),
-        y1 = as_float(el.get_text('southBoundLatitude')),
-        x2 = as_float(el.get_text('westBoundLongitude')),
-        y2 = as_float(el.get_text('northBoundLatitude')),
+        x1 = as_float(el.get_text('eastBoundLongitude'))
+        y1 = as_float(el.get_text('southBoundLatitude'))
+        x2 = as_float(el.get_text('westBoundLongitude'))
+        y2 = as_float(el.get_text('northBoundLatitude'))
         return [
             min(x1, x2),
             min(y1, y2),
