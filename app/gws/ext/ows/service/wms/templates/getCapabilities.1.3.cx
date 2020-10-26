@@ -24,7 +24,7 @@
         @end
 
         @each lc.projections as p
-            @if p.proj.srid == 4326
+            @if p.proj.is_geographic
                 ## OGC 06-042, 6.7.3.3
                 ## EPSG:4326 refers to WGS 84 geographic latitude, then longitude. That is, in this CRS the x axis corresponds
                 ## to latitude, and the y axis to longitude.

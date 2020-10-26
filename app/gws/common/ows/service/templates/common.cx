@@ -1,7 +1,11 @@
 ## helper functions for ows templates
 
 @def dcp_service_url
-    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href={url_for(service_url)}
+    ## OGC 01-068r3, 6.2.2
+    ## The URL prefix shall end in either a '?' (in the absence of additional server-specific parameters) or a '&'.
+    ## OGC 06-042, 6.3.3
+    ##  A URL prefix is defined... as a string including... mandatory question mark
+    @t DCPType/HTTP/Get/OnlineResource xlink:type="simple" xlink:href="{url_for(service_url) + '?'}"
 @end
 
 
@@ -49,7 +53,9 @@
 
 @def ows_service_url(get=True, post=False)
     @if get
-        @t ows:DCP/ows:HTTP/ows:Get xlink:type="simple" xlink:href={url_for(service_url)}
+        ## OGC 06-121r3 11.2
+        ## A URL prefix is defined as a string including... mandatory question mark
+        @t ows:DCP/ows:HTTP/ows:Get xlink:type="simple" xlink:href="{url_for(service_url) + '?'}"
     @end
     @if post
         @t ows:DCP/ows:HTTP/ows:Post xlink:type="simple" xlink:href={url_for(service_url)}
