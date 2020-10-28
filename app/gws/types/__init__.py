@@ -1345,6 +1345,7 @@ class ISearchProvider(IObject):
     data_model: Optional['IModel']
     spatial_context: 'SearchSpatialContext'
     templates: List['ITemplate']
+    title: str
     tolerance: 'Measurement'
     with_geometry: bool
     with_keyword: bool

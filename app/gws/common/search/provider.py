@@ -7,6 +7,7 @@ import gws.types as t
 
 _DEFAULT_PIXEL_TOLERANCE = 10
 
+
 #:export
 class SearchSpatialContext(t.Enum):
     map = 'map'  #: search in the map extent
@@ -17,6 +18,7 @@ class Config(t.WithTypeAndAccess):
     dataModel: t.Optional[gws.common.model.Config]  #: feature data model
     defaultContext: t.Optional[SearchSpatialContext] = 'map'  #: default spatial context
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
+    title: t.Optional[str]  #: provider title
     tolerance: str = '10px'  #: tolerance, in pixels or map units
     withGeometry: bool = True  #: enable geometry search
     withKeyword: bool = True  #: enable keyword search
@@ -51,6 +53,7 @@ class Object(gws.Object, t.ISearchProvider):
         self.with_keyword: bool = self.var('withKeyword', default=True)
         self.with_geometry: bool = self.var('withGeometry', default=True)
         self.spatial_context: SearchSpatialContext = self.var('defaultContext', default=SearchSpatialContext.map)
+        self.title: str = self.var('title', default='')
 
     def can_run(self, args: t.SearchArgs):
         if not self.active:
@@ -83,8 +86,6 @@ class Object(gws.Object, t.ISearchProvider):
 
         gws.log.debug('can_run: not enough args')
         return False
-
-
 
     def context_shape(self, args: t.SearchArgs) -> t.IShape:
         if args.get('shapes'):
