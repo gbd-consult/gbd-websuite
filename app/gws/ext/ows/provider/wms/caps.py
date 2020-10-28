@@ -18,7 +18,6 @@ def parse(prov, xml):
     prov.type = 'WMS'
     prov.meta = t.MetaData(u.get_meta(el.first('Service')))
     prov.meta.contact = t.MetaContact(u.get_meta_contact(el.first('Service.ContactInformation')))
-    prov.meta.url = u.get_url(el.first('Service.OnlineResource'))
     prov.version = el.attr('version')
     prov.operations = u.get_operations(el.first('Capability'))
     prov.source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Capability.Layer'))
