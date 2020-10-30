@@ -10,7 +10,12 @@ import gws.web.wrappers
 
 import gws.types as t
 
-gws.config.loader.load()
+try:
+    gws.config.loader.load()
+except:
+    gws.log.error('UNABLE TO LOAD CONFIGURATION')
+    gws.log.exception()
+    gws.exit(255)
 
 
 def application(environ, start_response):
