@@ -1,185 +1,80 @@
 Web Server
 ==========
 
+^REF gws.common.application.WebConfig
+
 Web-Inhalte (HTML-Dateien, Bilder, Downloads) werden in der GBD WebSuite von dem integrierten NGINX, einem schnellen und zuverlässigen Web-Server, verarbeitet.
 
-Sie können mehrere *Sites* ("virtuelle Hosts") in einer einzigen GBD WebSuite Installation konfigurieren, jeder mit seinem eigenen Hostnamen und Dokumentenstamm.
+Websiten
+--------
 
-Statische Dateien und Assets
-----------------------------
+Sie können mehrere *Webseiten* ("virtuelle Hosts") in einer einzigen GBD WebSuite Installation konfigurieren, jeder mit seinem eigenen Hostnamen und Dokumentenstamm. Mit dem Hostnamen ``*`` (Sternchen) wird eine Default-Site bezeichnet.
 
-Es gibt zwei Arten von Webinhalten: *statische* Ressourcen und *Vermögenswerte*. Statische Ressourcen werden in einem Web-Root-Ordner abgelegt und ohne jegliche Bearbeitung bereitgestellt. Assets sind Ressourcen, die serverseitig verarbeitet werden müssen, bevor sie dem GBD WebSuite Client zur Verfügung gestellt werden können.
+Dokument-Ordner
+---------------
 
-Anwendungsfälle für statische Dateien sind:
+Pro Web-Site kann einen ``root`` Ordner konfiguriert werden, wo Sie Ihre statische Inhalte, wie Javascript, CSS Daten und Bilder, platzieren, sowie einen ``assets`` Ordner, der dynamische Inhalte wie Vorlagen enthält.
 
-- einfache, öffentliche html-Seiten
-- Javascript- und CSS-Dateien (einschließlich des GBD WebSuite Client Materials)
-- statische Bilder
+Per Default, werden aus diesen Ordnern nur folgende *Mime-Typen* (Dateierweiterungen) zurückgegeben: ::
 
-Anwendungsfälle für Vermögenswerte sind:
+    css, csv, gif, html, jpeg, jpg, js, json, pdf, png, svg, ttf, txt, xml, zip, gml2, gml3
 
-- jede Ressource, die einer Autorisierung bedarf
-- Template-basierte HTML-Seiten (Die GBD WebSuite verwendet `mako <https:--www.makotemplates.org/>`_ für das Templating)
-- projektspezifische Ressourcen
+Sie können Ihre eigene Liste mit ``allowMime`` konfigurieren bzw. bestimmte Typen mit ``denyMime`` ausschließen.
 
-Die GBD WebSuite bedient nur Ressourcen mit bekannten Mime-Typen (bestimmt durch die Dateiendung), die Voreinstellung ist ::
+Asset-Ordner können auf Projekt-Basis umkonfiguriert werden, zusätzlich muss die ``asset`` Aktion global oder projektweise freigeschaltet werden.  Bei Anfragen ohne Projekt-ID, wie z.B. ::
 
-    .css .csv .gif .html .jpeg .jpg .js .json .pdf .png .svg .ttf .xml .zip
+    http://example.com/_?cmd=assetHttpGetPath&path=mypage.html
 
-Sie können diese Liste pro Seite oder pro Projekt neu definieren
+wird die Vorlage ``mypage.html`` nur in Website Asset-Ordner gesucht, bei Anfragen mit Projekt-ID ::
+
+    http://example.com/_?cmd=assetHttpGetPath&path=mypage.html&projectUid=myproject
+
+dann wird das Asset zuerst in den Projekt-Assets gesucht, wenn es nicht gefunden wird, wird das Site-Asset-Verzeichnis als Fallback verwendet.
 
 Rewrite-Regeln
 --------------
 
-Assets werden vom Serverbefehl ``assetHttpGetPath`` behandelt, der den Parameter ``path`` akzeptiert, und optional eine eindeutige Projekt-ID, so dass die endgültige URL wie folgt lautet::
+*Rewrite-Regel* ermöglicht es Ihnen, komplizierte GET-Anfragen in einer einfacheren Form darzustellen. Eine Regel besteht aus zwei Komponenten: das ``match`` ist ein regulärer Ausdruck und das ``target`` ist die endgültige URL mit ``{$n}`` Platzhaltern, die den Capture-Gruppen im diesem Ausdruck entsprechen. Wenn die Ziel-URL absolut ist (beginnt mit einem Schema), führt der Server einen Redirect statt eines Rewritings durch.
 
-    http://example.org/_?cmd=assetHttpGetPath&path=somepage.mako
+Zum Beispiel, diese "schöne" URL ::
 
-Die folgende Rewrite-Regel ::
+    http://example.com/mypage
+
+kann mit dieser Regel ::
 
     {
-        "match": "^/([a-z]+)/([a-z]+)$",
-        "target": "_?cmd=assetHttpGetPath&projectUid=$1&path=$2.mako"
+        "match": "^/mypage",
+        "target": "_?cmd=assetHttpGetPath&path=mypage.html"
     }
 
-wird diese URL in einfach umwandeln::
+in einer Asset-Anfrage umgewandelt werden ::
 
-    http://example.org/myproject/somepage
+    http://example.com/_?cmd=assetHttpGetPath&path=mypage.html
 
-Das ``match`` ist ein erforderlicher Ausdruck und das ``target`` ist die endgültige URL mit ``{$n}`` Platzhaltern, die den Capture-Gruppen im RegEx entsprechen. Wenn das Ziel mit einem Schema beginnt (z. B. ``http://``), führt der Server einen Redirect statt eines Rewritings durch.
-
-Website-Konfiguration
----------------------
-
-Eine Website-Konfiguration muss einen Hostnamen (Hostname ``*`` markiert die Standard-Site), eine Root- und Asset-Konfiguration sowie optional eine Reihe von URL-Rewriting-Regeln enthalten ::
-
-    {
-
-        ## Hostname
-
-        "host": "example.org",
-
-        ## statisches document root
-
-        "root": {
-
-            ## absoluter Pfad zur root directory
-
-            "dir": "/example/www-root",
-
-            ## erlaubte Dateierweiterungen (zusätzlich zur Standardliste)
-
-            "allowMime": [".xls", ".doc"],
-
-            ## deaktivierte Dateierweiterungen (aus der Standardliste)
-
-            "denyMime": [".xml", ".json"],
-
-        },
-
-        ## assets root
-
-        "assets": {
-
-            ## absoluter Pfad zum Site-Asset-Verzeichnis
-
-            "dir": "/example/www-assets",
-
-        },
-
-        ## rewrite rules
-
-        "rewrite": [
-
-            {
-                "match": "^/$",
-                "target": "_?cmd=assetHttpGetPath&path=root-page.mako"
-            },
-            {
-                "match": "^/hello/([a-z]+)$",
-                "target": "_?cmd=assetHttpGetPath&projectUid=hello_project&path=$1.mako"
-            }
-        ]
-
-Projektressourcen
------------------
-
-Jedes GBD WebSuite Projekt kann seine eigene Asset-Root-Konfiguration haben. Wenn der Client ein Asset ohne Projekt-UID anfordert, z. B. ::
-
-    http://example.org/_?cmd=assetHttpGetPath&path=somepage.mako
-
-dann wird das Asset im Site-Asset-Verzeichnis gesucht. Wenn ein Auftrag mit einem Projekt uid ::
-
-    http://example.org/_?cmd=assetHttpGetPath&projectUid=myproject&path=somepage.mako
-
-dann wird das Asset zuerst in den Projekt-Assets gesucht, wenn es nicht gefunden wird, wird das Site-Asset-Verzeichnis als Fallback verwendet.
-
-HTML Vorlagen
--------------
-
-Die GWS verwendet ein eigenes Vorlagenkonstrukt (Template-Engine), die die folgenden grundlegenden Befehle unterstützt:
-
-TABLE
-   `` @if <condition> ... @ end`` ~ Überprüfen Sie eine Bedingung
-   `` @each <object> as <key>, <value> ... @ end`` ~ Definiere ein Schlüsselwertobjekt
-   `` @include <path> `` ~ Füge eine weitere Vorlage hinzu
-/TABLE
-
-Die Werte der Eigenschaften können mit einem Konstrukt `` {object.property} `` mit optionalen Filtern, z. `` {{object.property | html}} `` eingepflegt werden.
-
-Hier ist ein Beispiel für eine Formatierungsvorlage für Features ::
-
-    @if feature.category
-        <p class="head">{feature.category | html}</p>
-    @end
-
-    @if feature.title
-        <p class="head2">{feature.title | html}</p>
-    @end
-
-    <table><tbody>
-
-        @each feature.attributes as name, value
-            <tr>
-                <th>{name | html}</th>
-                <td>{value | html | nl2br | linkify(target="_blank", cut=30)}</td>
-            </tr>
-        @end
-
-    </tbody></table>
+Für die URLs, die vom Server selbst erzeugt werden, können die umkehrende Regel (``reversedRewrite``) definiert werden, die complexe URLs in die "schönen" umwandeln.
 
 Fehlerseitenvorlage
 -------------------
 
-Eine Fehlerseitenvorlage hat Zugriff auf den Fehlercode in der Variablen `` error``. Sie können den Befehl `` @ if`` verwenden, um je nach Fehler unterschiedliche Inhalte bereitzustellen ::
+Sie können eine Fehlerseitenvorlage  (``errorPage``) konfigurieren, die bei HTTP Fehlern, wie ``404 Not Found`` gezeigt werden. Diese Vorlage hat Zugriff auf den Fehlercode in der Variablen ``error``. Sie können den Befehl ``@if`` verwenden, um je nach Fehler unterschiedliche Inhalte bereitzustellen: ::
 
     <h1>Error!</h1>
 
     @if error == 404
-        Resource not found
+        Datei nicht gefunden!
     @elif error == 403
-        Access denied
+        Zugriff verweigert!
     @else
-        Error {error} has occured
+        Sonstige Fehler {error}
     @end
 
 SSL Konfiguration
 -----------------
 
-SSL kann unter ``web.ssl`` konfiguriert werden. Sie müssen Pfade (wie im Container sichtbar) zu Ihrem Zertifikatspaket und dem privaten Schlüssel angeben. Die SSL-Konfiguration wird auf den gesamten Server angewendet, nicht nur auf einzeln konfigurierten Seiten. Mit SSL würde Ihre "Web" -Konfiguration so aussehen ::
+SSL kann unter ``web.ssl`` konfiguriert werden. Sie müssen Pfade (wie im Container sichtbar) zu Ihrem Zertifikatspaket (*bundle*) und dem privaten Schlüssel angeben. Die SSL-Konfiguration wird auf den gesamten Server angewendet, nicht nur auf einzeln konfigurierten Seiten. ::
 
     "web": {
-        "sites": [
-            {
-                "host": "..."
-                // site configuration as described above
-            },
-            {
-                "host": "..."
-                // another site configuration
-            }
-            ...
-        ],
+        ...
         "ssl": {
             "crt": "/path/to/your-certificate-bundle.crt",
             "key": "/path/to/your-private-key.crt"

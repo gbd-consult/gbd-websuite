@@ -40,7 +40,7 @@ Berechtigungsstrategien
 
 Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``access`` konfigurieren. Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie ``allow`` an ``all`` vergeben::
 
-    ## in der Hauptkonfiguration:
+    ## in der App-Konfig:
 
     "access": [
         {
@@ -66,7 +66,7 @@ Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen
 
 Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen: ::
 
-    ## in der Hauptkonfiguration:
+    ## in der App-Konfig:
 
     "access": [
         {
@@ -96,6 +96,8 @@ Diese Aktion ist für die Bearbeitung der Zugangsdaten zuständig und muss freig
 Autorisierungsanbieter
 ----------------------
 
+Die Aufgabe eines Autorisierungsanbieters ist, die Zugangsdaten mit der Quelle zu vergleichen und bei der positiven Antwort, Benutzer Eigenschaften (Vollname, Rollen usw) zurückzugeben
+
 file
 ~~~~
 
@@ -115,14 +117,18 @@ Der Dateianbieter verwendet eine einfache Json-Datei, um Zugangsdaten zu speiche
         }
     }
 
-Der Name und der Speicherort der Datei ist Ihnen überlassen, geben Sie einfach ihren absoluten Pfad in der Konfiguration an. Um das verschlüsselte Passwort zu generieren, verwenden Sie den Befehl ``auth passwd``.
+Der Name und der Speicherort der Datei ist Ihnen überlassen, geben Sie einfach ihren absoluten Pfad in der Konfiguration an.
+
+^CLIREF auth.passwd
+
+Um das verschlüsselte Passwort zu generieren, verwenden Sie den Kommandozeilen-Befehl ``gws auth passwd``.
 
 ldap
 ~~~~
 
 ^REF gws.ext.auth.provider.ldap.Config
 
-Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys. com bereitgestellten LDAP-Testservers.  <http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server>`_ ::
+Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys.com` bereitgestellten LDAP-Testservers (http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server) ::
 
     {
         "type": "ldap",
@@ -159,12 +165,57 @@ Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Se
 Autorisierungsmethoden
 ----------------------
 
+Eine Autorisierungsmethode sorgt dafür, dass die Zugangsdaten vom Nutzer zu einem Anbieter weitergeleitet werden. Derzeit sind folgende Methoden implementiert:
+
 web
 ~~~
 
 ^REF gws.ext.auth.method.web.Config
 
+Sendet die Zugangsdaten als eine JSON-Struktur an den Server Endpunkt. Bei der positiven Prüfung setzt der Server ein Sitzungscookie, das bei weiteren Anfragen mitgesendet wird.
+
+Im Browser wird zur Bearbeitung eines Login-Formulars eine Javascript Funktion benötigt, die den Endpunkt mittels AJAX aufruft. Eine beispielhafte Vorlage des Formulars kann wie folgt aussehen: ::
+
+    @if user.is_guest
+        ## Login Formular für nicht-eingeloggte Nutzer
+
+        <form onsubmit="gwsLogin()">
+            <label>
+                Benutzername
+                <input type="text" id="gwsUsername" name="username"/>
+            </label>
+            <label>
+                Kennwort
+                <input type="password" id="gwsPassword" name="password"/>
+            </label>
+            <button type="submit">Einloggen</button>
+        </form>
+
+    @else
+        ## Logout Button für eingeloggte Nutzer
+
+        <button onclick="gwsLogout()">Ausloggen</button>
+
+    @end
+
+Die Definitionen der Funktionen ``gwsLogin`` und ``gwsLogout`` finder Sie unter https://github.com/gbd-consult/gbd-websuite/blob/master/client/src/gws-start.js. Sie können auch eigene Funktionen verwenden.
+
+Siehe auch ^template für Details über die Vorlagen-Sprache.
+
 basic
 ~~~~~
 
 ^REF gws.ext.auth.method.basic.Config
+
+Mit dieser Methode werden die Zugangsdaten in HTTP Header mitgesendet. Diese Methode in vor allem für automatische Anmeldungen durch QGIS Plugins und geschüzten OWS Dienste gedacht.
+
+Sitzungen
+---------
+
+Sitzungen werden in einer Sqlite Tabelle gespeichert, die sich in einem persistenten Ordner innerhalb des ``var`` Ordner befindet. Dies bedeutet, dass die Sitzungen auch nach einem Neustart des Servers nicht unterbrochen werden.
+
+Sie können die Lebenszeit einer Sitzung mit der Option ``sessionLifeTime`` steuern.
+
+^CLIREF auth.sessions
+
+Mit dem Kommandozeilen-Befehl ``gws auth sessions`` können Sie die aktiven Sitzungen auflisten.

@@ -1,7 +1,7 @@
 Client
 ======
 
-GWS Client ist eine Javascript (React) Anwendung, die dafür konzipiert ist, zusammen mit dem GWS Server zu arbeiten.
+GWS Client ist eine Javascript Browser-Anwendung, die dafür konzipiert ist, zusammen mit dem GWS Server zu arbeiten.
 
 HTML Vorlage
 ------------
@@ -43,7 +43,7 @@ Hier ist ein Vorlage der Client-Seite, die Sie nach Ihren Bedürfnissen anpassen
 
         <!-- Hier muss die ID von Ihrem Projekt stehen, sowie die Sprache von Client Meldungen -->
         <script>
-            GWS_PROJECT_UID = "project1";
+            GWS_PROJECT_UID = "meinprojekt";
             GWS_LOCALE = "de_DE";
         </script>
 
@@ -59,6 +59,28 @@ Hier ist ein Vorlage der Client-Seite, die Sie nach Ihren Bedürfnissen anpassen
 
     </body>
     </html>
+
+Um diese Vorlage für mehrere Projekte zu verwenden, ersetzen Sie den ``script`` Abschnitt mit dynamischen Werten: ::
+
+    GWS_PROJECT_UID = "{project.uid}";
+    GWS_LOCALE = "{project.locales[0]}";
+
+und speichern Sie die Vorlage als z.B. "project.html" in Ihren ``assets`` Ordner. Dann kann diese Seit im Browser wie folgt aufgerufen werden: ::
+
+    http://example.com/_?cmd=assetHttpGetPath&path=project.html&projectUid=meinprojekt
+
+Diese URL kann auch "schöner" gemacht werden, indem Sie diese Rewrite-Regel verwenden: ::
+
+    {
+        "match": "^/project/([a-z][a-z0-9_]*)",
+        "target": "_?cmd=assetHttpGetPath&&path=project.html&projectUid=$1"
+    }
+
+Dann heißt die URL einfach ::
+
+    http://example.com/project/meinprojekt
+
+Für mehr Info s. ^web.
 
 UI-Konfiguration
 ----------------
@@ -125,8 +147,8 @@ Tag | Bedeutung
 ``Toolbar.Dimension`` | ...
 ``Toolbar.Dprocon`` | ...
 ``Toolbar.Gekos`` | ...
-``Toolbar.Identify`` | ...
-``Toolbar.Identify`` | ...
+``Toolbar.Identify.Click`` | ...
+``Toolbar.Identify.Hover`` | ...
 ``Toolbar.Lens`` | ...
 ``Toolbar.Location`` | ...
 ``Toolbar.Print`` | ...
@@ -140,4 +162,21 @@ Layer flags
 
 ^REF gws.common.layer.types.ClientOptions
 
-Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll. Siehe Referenze für Details.
+Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll. Siehe Referenz für Details.
+
+CSS Anpassungen
+---------------
+
+Sie können den Stil der integrierten Funktionen anpassen, z. B. Markierungen von Suchergebnisse oder Messungen. Es gibt folgende vordefinierte CSS-Selektoren:
+
+{TABLE head}
+CSS Klasse | Funktion
+``.gws.modMarkerFeature`` | Markierung für Suchergebnisse
+``.gws.modAnnotatePoint`` | Punkt-Markierung
+``.gws.modAnnotateLine`` | Linien-Markierung
+``.gws.modAnnotatePolygon`` | Polygon-Markierung
+``.gws.modAnnotateBox`` | Box-Markierung
+``.gws.modAnnotateCircle`` | Kreis-Markierung
+{/TABLE}
+
+^SEE Unter ^style finden Sie eine Auflistung von CSS Eingenschaften.

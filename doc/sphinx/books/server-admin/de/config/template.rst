@@ -11,10 +11,19 @@ Vorlagen werden an verschiedenen Stellen in GWS genutzt.
 
 Eine HTML-Vorlage ist eine Text oder HTML-Datei mit externen Variablen, die in Klammern ``{...}`` eingeschlossen sind. Zusätzlich gibt es grundlegende Programmierkonstrukte (Bedingungen, Schleifen, Funktionen), mit denen die Vorlagenausgabe in Abhängigkeit von den Variablen geändert werden kann.
 
-Für Projekt-, Layer- und Feature-Vorlagen stellt das System Objekte ``project``, ``layer`` und ``feature`` mit ihren jeweiligen Eigenschaften zur Verfügung, die beim Templating verwendet werden können. Bei Feature-Vorlagen sind zusätzlich alle Attributen des Features als Variablen verfügbar.
+Für Projekt-, Layer- und Feature-Vorlagen stellt das System Objekte ``project``, ``user`` und ggf. ``layer`` und ``feature`` mit ihren jeweiligen Eigenschaften zur Verfügung, die beim Templating verwendet werden können. Bei Feature-Vorlagen sind zusätzlich alle Attributen des Features als Variablen verfügbar.
 
-Template Syntax
----------------
+Konfiguration
+-------------
+
+^REF gws.types.ext.template.Config
+
+Eine Vorlagen-Konfiguration enthält zwei grundlegende Eigenschaften: den Typ (``type``) und das Subjekt (``subject``), das angibt, für welchen Zweck die Vorlage verwendet wird.
+
+Den Ihnalt der Vorlage können Sie direkt in der Konfiguration mit ``text`` angeben, oder auf eine externe Datei mit ``path`` verweisen.
+
+Vorlagen-Sprache
+----------------
 
 Neben den Variablen, können in Vorlagen auch Basis Programmierkonstrukte verwendet werden. Die Konstrukte sind mit dem ``@`` Zeichen markiert. Die wichtigsten davon sind:
 
@@ -24,6 +33,24 @@ Neben den Variablen, können in Vorlagen auch Basis Programmierkonstrukte verwen
 - Inklusion ``@include`` mit der die Vorlagen ineinander inkludiert werden können
 
 ^SEE Eine vollständige Beschreibung aller verfügbaren Konstrukte finden Sie in der Dokumentation zur Template-Engine unter https://github.com/gebrkn/chartreux.
+
+Vorlage Typen
+-------------
+
+text
+~~~~
+
+Text-Vorlagen enthalten Befehle der Vorlagen-Sprache, ansonsten werden alle Zeichen wortwörtlich interpretiert
+
+html
+~~~~
+
+HTML-Vorlagen können die Befehle der Vorlagen-Sprache enthalten, beliebige HTML Formatierung und spezielle HTML Tags die unter ^print beschrieben sind.
+
+xml
+~~~
+
+XML Vorlagen werden intern für OWS Diensten benutzt.
 
 Beispiele
 ---------

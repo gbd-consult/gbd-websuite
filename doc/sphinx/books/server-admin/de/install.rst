@@ -30,10 +30,10 @@ Port
 
 Die GBD WebSuite zeigt die Ports ``80`` und ``443`` an. Sie können sie auf alles abbilden, was Sie beim Testen wollen, und auf echte 80/443 in der Produktion.
 
-Hauptkonfiguration
-~~~~~~~~~~~~~~~~~~
+Konfiguration
+~~~~~~~~~~~~~
 
-Die GBD WebSuite erwartet seine Hauptkonfiguration in ``/data/config. json``. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable ``GWS_CONFIG`` auf den Pfad Ihrer Hauptkonfiguration.
+Die GBD WebSuite erwartet die Konfiguration in ``/data/config. json``. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable ``GWS_CONFIG`` auf den Pfad Ihrer Konfigurationsdatei.
 
 ^SEE Die Konfigurationsformate sind unter ^config/intro beschreiben.
 
@@ -108,10 +108,23 @@ Sobald Sie dieses Skript als z.B. ``gws`` in Ihren Pfad abspeichern, können Sie
     gws server stop
     gws server restart
 
-Ausführen mit ``docker compose``
---------------------------------
 
-@TODO
+Aktuellen Quellcode anbinden
+----------------------------
+
+Da die GBD-Websuite aktiv entwickelt wird, kann es vorkommen, das eine in dem Docker-Image enthaltene Version von unserem Quellcode veraltet wird. Sie können aber das Image mit der aktuellen Version ausführen indem Sie das Quellcodeverzeichnis unter ``gws-app`` mounten.
+
+Laden Sie zuerst unser Paket von Ihrer Version herunter (in diesem Fall, Version 6.1): ::
+
+    curl -O http://gws-files.gbd-consult.de/gws-6.1.tar.gz
+
+entpacken Sie das Paket: ::
+
+    tar xvzf gws-6.1.tar.gz
+
+und mounten Sie den ``gws-server/app`` Unterordner als ``gws-app``: ::
+
+    --mount type=bind,src=<absoluter Pfad>/gws-server/app,dst=/gws-app,readonly
 
 Host-Installation
 -----------------

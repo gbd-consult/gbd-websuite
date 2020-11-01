@@ -1,13 +1,11 @@
 Internationalisierung und Lokalisierung
 =======================================
 
-Der GBD WebSuite Server und Client sind sprach- und ortsunabhängig, alle Spracheinstellungen sind konfigurierbar. In der Hauptkonfiguration haben wir die Standardoptionen ``locales`` und ``timeZone``, zusätzlich können Sie das Gebietsschema für jedes Projekt individuell einstellen.
+Der GBD WebSuite Server und Client sind sprach- und ortsunabhängig, alle Spracheinstellungen sind konfigurierbar. In der Konfiguration haben wir die Standardoptionen ``locales`` und ``timeZone``, zusätzlich können Sie das Gebietsschema für jedes Projekt individuell einstellen.
 
 Alle Anfragen an den GBD WebSuite Server und alle Serverantworten werden als ``UTF-8`` kodiert. Andere Kodierungen werden von uns nicht unterstützt.
 
 Beispiel für die Gebietsschema-Konfiguration ::
-
-    ## in der Hauptkonfiguration:
 
     "locales": ["de_DE", "en_US"],
     "timeZone": "Europe/Berlin"

@@ -1,70 +1,86 @@
 ALKIS Integration
 =================
 
-Gbd Websuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Unter anderem, steht ein Plugin für Flurstückssuche zur Verfügung. Die Konfiguration erfolgt im Abschnitt ``actions``, Typ ``alkis``. Folgende Optionen sind verfügbar:
+Gbd Websuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Es steht eine Client-Oberfläche für Flurstücksuche zur Verfügung und ein QGIS Plugin für ALKIS-basierte Geocodierung.
 
-TABLE
-    *alkisSchema* ~ Postgis Schema wo die ALKIS Daten liegen
-    *buchung* ~ Zugang zu Grundbuchung Daten (z.B. Blattnummer)
-    *db* ~ Datenbank-Provider ID
-    *eigentuemer* ~ Zugang zu Eigentümerdaten (z.B. Name, Adresse)
-    *excludeGemarkung* ~ Liste von Gemarkungen, die aus der Suche ausgeschlossen werden müssen
-    *featureFormat* ~ Formatierung von Flurstücksdaten
-    *indexSchema* ~ Postgis Schema wo die Indexes geschrieben werden
-    *limit* ~ Anzahl von Ergebnissen
-    *printTemplate* ~ Druckvorlage für Flurstücksdaten
-    *ui* ~ Einstellungen der Benutzeroberfläche
-/TABLE
+Um die ALKIS Integration zu nutzen benötigen Sie folgendes:
 
-Einstellungen der Benutzeroberfläche sind wie folgt:
+- eine Postgres/PostGIS Datenbank, die aus ALKIS Quelldaten (*NAS-Format*) erstellt wurde, z.B. mittels ALKIS-Import Software der Firma Norbit (http://www.norbit.de/68/)
+- eine Helper Konfiguration
+- Aktion Konfigurationen für die Flurstücksuche (``alkissearch``) und/oder Geocodierung (``alkisgeocoder``)
 
-TABLE
-    *autoSpatialSearch* ~ Räumliche Suche nach dem Absenden des Formulars aktivieren
-    *gemarkungListMode* ~ Darstellung der Gemarkungsliste: ``"plain"`` = nur Gemarkungen, ``"combined"`` = "Gemarkung (Gemeinde)", ``"tree"`` = Baumansicht mit Gemeinden und Gemarkungen
-    *searchSelection* ~ Funktion "In der Auswahl suchen" aktivieren
-    *searchSpatial* ~ Räumliche Suche aktivieren
-    *useExport* ~ CSV-Export Funktion aktivieren
-    *usePick* ~ Funktion "Flurstück direkt auswahlen" aktivieren
-    *useSelect* ~ Auswahl-Funktion aktivieren
-/TABLE
+Helper ``alkis``
+----------------
+
+^REF gws.ext.helper.alkis.Config
+
+In diesem Helper (s. ^helper) werden allgemeine ALKIS Einstellungen konfiguriert:
+
+{TABLE}
+   ``crs`` | KBS für ALKIS Daten, normalerweise ``EPSG:25832`` oder ``EPSG:25833``
+   ``dataSchema`` | Postgres Schema wo die ALKIS Tabellen liegen
+   ``excludeGemarkung`` | Liste von Gemarkungen, die aus der Suche ausgeschlossen werden müssen
+   ``indexSchema`` | Postgres Schema wo die Indexes geschrieben werden
+{/TABLE}
 
 Indizierung
 -----------
 
-Bevor die ALKIS Daten für die Flurstückssuche verwendet werden können, müssen sie für Gws speziell indiziert werden. Dies erfoglt mit folgenden Kommandozeilen Befehlen ::
+^CLIREF alkis.create-index
+^CLIREF alkis.drop-index
 
-    ## gws Indizien löschen
+Bevor die ALKIS Daten für die Flurstücksuche verwendet werden können, müssen sie für GWS speziell indiziert werden. Dies erfolgt mit folgenden Kommandozeilen Befehlen:
 
-    gws alkis drop-index
+- ``gws alkis drop-index`` - GWS Indizien löschen
+- ``gws alkis create-index`` - GWS Indizien erzeugen
 
-    ## gws Indizien erzeugen
-
-    gws alkis create-index
+Die Index Tabellen werden in das unter ``indexSchema`` angegebene Schema geschrieben. Das ALKIS Modul schreibt nie in das ALKIS Schema (``dataSchema``).
 
 Diese Befehle müssen nach jeder ALKIS-Aktualisierung erneut ausgeführt werden.
 
+Aktion ``alkissearch``
+----------------------
+
+^REF gws.ext.action.alkissearch.Config
+
+Die Optionen für diese Aktion sind:
+
+{TABLE}
+    ``buchung`` | Zugang zu Grundbuchung Daten (z.B. Blattnummer)
+    ``eigentuemer`` | Zugang zu Eigentümerdaten (z.B. Name, Adresse)
+    ``export`` | Konfiguration der CSV-Export Funktion. Für diese Funktion muss auch den CSV Helper konfiguriert werden (s. ^csv)
+    ``featureTemplates`` | Format-Vorlagen für Flurstückdaten
+    ``limit`` | max. Anzahl von Ergebnissen
+    ``printTemplate`` | Druckvorlage für Flurstückdaten
+    ``ui`` | Einstellungen der Benutzeroberfläche
+{/TABLE}
+
+Einstellungen der Benutzeroberfläche
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Einstellungen der Benutzeroberfläche sind wie folgt:
+
+{TABLE}
+    ``autoSpatialSearch`` | räumliche Suche nach dem Absenden des Formulars aktivieren
+    ``gemarkungListMode`` | Darstellung der Gemarkungsliste: ``plain`` = nur Gemarkungen, ``combined`` = "Gemarkung (Gemeinde)", ``tree`` = Baumansicht mit Gemeinden und Gemarkungen
+    ``searchSelection`` | Funktion "In der Auswahl suchen" aktivieren
+    ``searchSpatial`` | räumliche Suche freischalten
+    ``strasseListFormat`` | Verhalten der Straßen-Liste: ``all`` = alle Straßen zeigen, ``filtered`` = nur diejenigen in der ausgewählten Gemarkung, ``search`` = nur diejenigen, die mit dem Suchstring übereinstimmen, ``searchStart`` = nur diejenigen, die mit dem *Anfang* des Suchstrings übereinstimmen
+    ``strasseListMode`` | Darstellung der Straßen-Liste (``plain`` = nur Straßennamen, ``withGemarkung`` = "Straße (Gemarkung)", ``withGemarkungWhenNeeded`` = "Straße (Gemarkung)", aber nur wenn derselben Namen in mehreren Gemarkungen vorkommt
+    ``useExport`` | CSV-Export Funktion freischalten
+    ``usePick`` | Funktion "Flurstück direkt auswahlen" freischalten
+    ``useSelect`` | Auswahl-Funktion freischalten
+{/TABLE}
+
+Außerdem muss im Client-Einstellungen (s. ^client) das Element ``Sidebar.Alkis`` aktiviert werden.
+
 Vorlagen
---------
+~~~~~~~~
 
-Es sind folgende Standardvorlagen im Plugin vorhanden
-
-TABLE
-teaser.cx.html ~ Vorlage für die Beschriftung in der Ergebnissliste
-data.cx.html ~ Flurstücksdetails Vorlage
-print.cx.html ~ Druckvorlage
-/TABLE
-
-Diese Vorlagen sind unter https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws/ext/action/alkis/templates zu finden. Für die Anpassung einer Vorlage ist es empfohlen eine Kopie der Standardvorlage anzulegen und die ``featureFormat`` Option entsprechend anzupassen, z.B. ::
-
-    "featureFormat": {
-        "description": {
-            "type": "html",
-            "path": "/data/vorlagen/meine-fs-details-vorlage.cx.html"
-        }
-    }
+Sie können Vorlagen mit Subjekten ``feature.title``, ``feature.teaser`` (Listenansicht) und ``feature.description`` (Detailsansicht) bei Bedarf anpassen. Die Standardvorlagen finden Sie unter https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws/ext/action/alkis/templates zu finden. Ebenso kann mit ``printTemplate`` eine Druckvorlage angepasst werden.
 
 Zugang zu Eigentümerdaten
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann das Kontrolmodus (``controlMode``) aktiviert werden, wobei alle Zugriffe auf Eigentümerdaten auf Plausibilität geprüft und protokolliert werden. Eine Beispielkonfiguration kann wie folgt aussehen ::
 
@@ -107,3 +123,10 @@ Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgender Struktur 
         fs_count INTEGER,
         fs_ids TEXT
     )
+
+Aktion ``alkisgeocoder``
+------------------------
+
+^REF gws.ext.action.alkisgeocoder.Config
+
+Für diese Aktion sind keine spezielle Optionen vorhanden. Da diese Aktion über keine UI verfügt, müssen Sie die Autorisierungsmethode ``basic`` im System freischalten wenn Sie diese Aktion mit einem Passwort schützen möchten. Siehe dazu ^auth.

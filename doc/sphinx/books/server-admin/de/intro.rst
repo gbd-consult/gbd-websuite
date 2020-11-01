@@ -22,7 +22,7 @@ Die GBD WebSuite als Geo-Server:
 Die GBD WebSuite als Anwendungsserver:
 
 - bietet einen Rahmen für domänenspezifische Erweiterungen
-- hat eine steckbare Architektur für einfache Integration lll
+- hat eine steckbare Architektur für einfache Integration
 
 Die GBD WebSuite ist eine Docker-Anwendung, die folgende Komponente beinhaltet:
 

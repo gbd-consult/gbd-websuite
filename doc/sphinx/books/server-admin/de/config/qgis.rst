@@ -1,8 +1,6 @@
 QGIS Support
 ============
 
-Die GBD WebSuite bietet dedizierten Support für `QGIS <https://qgis.org>`_, ein kostenloses und quelloffenes geografisches Informationssystem. Die Unterstützung ist optional und kann abgeschaltet werden, wenn Sie QGIS nicht verwenden.
-
 Layer
 -----
 
@@ -27,7 +25,7 @@ qgisflat
 
 ^REF gws.ext.layer.qgisflat.Config
 
-``qgisflat``-Layer zeigen einzelne Layer aus einem QGIS-Projekt als einzelnes flaches Bild an ::
+``qgisflat``-Layer zeigen einzelne Layer aus einem QGIS-Projekt als einzelnes flaches Bild an: ::
 
     {
         "type": "qgisflat",
@@ -38,17 +36,22 @@ qgisflat
         ]
     }
 
+Legenden
+--------
+
+Für QGIS Layer können Sie unter ``legend.options`` einige visuelle Einstellungen für Legenden anpassen. Eine Liste der möglichen Einstellungen finden Sie in der `QGIS Referenz <https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request>`_.
+
 Druckvorlagen
 -------------
 
 ^REF gws.ext.template.qgis.Config
 
-Sie können QGIS Druckvorlagen ("Layouts") frei verwenden, auch für nicht-QGIS bzw. gemischte Karten. In der Vorlagen-Konfiguration muss den Pfad zu der QGIS Projektdatei angegeben werden, sowie Layernamen bzw Index.
+Sie können QGIS Druckvorlagen ("Layouts") frei verwenden, auch für nicht-QGIS bzw. gemischte Karten. In der Vorlagen-Konfiguration muss den Pfad zu der QGIS Projektdatei angegeben werden, sowie Layout-Namen bzw Nummer. In dem Layout wird das ``Map`` Element mit der aktuellen GWS Karte ersetzt, zusätzlich können Sie in ``HTML-Frame`` Elements einige ``gws:`` Tags nutzen, wie z.B. ``<gws:legend>`` (s. ^print für mehr Info). Die vom Nutzer definierte Druck-Attribute können Sie mit dem QGIS Syntax ``[% @variable %]`` einfügen.
 
 ^NOTE Beachten Sie, dass der Hintergrund der Vorlage (unter "Seiteneigenschaften") transparent sein muss.
 
-Server Einstelliungen
----------------------
+Server Einstelligen
+-------------------
 
 ^REF gws.server.types.QgisConfig
 

@@ -1,20 +1,30 @@
 Datenbanken
 ===========
 
-Die GBD WebSuite kann Geodaten aus Datenbanken beziehen, entweder indirekt über QGIS und WMS/WMTS-Anbieter oder durch direkte Anbindung an eine Datenbank. Im letzteren Fall müssen Sie die Datenbankverbindungen in der Hauptanwendung config konfigurieren.
+Die GBD WebSuite kann Geodaten aus Datenbanken beziehen, entweder indirekt über QGIS und WMS/WMTS-Anbieter oder durch direkte Anbindung an eine Datenbank. Im letzteren Fall müssen Sie die Datenbankverbindungen und Tabellen konfigurieren.
 
-Zur Zeit unterstützen wir nur PostgreSQL/PostGIS Datenbanken. Wir planen, Sqlite/SpatiaLite, MySQL und MongoDB später hinzuzufügen.
+Datenbank-Anbieter
+------------------
 
-Beispiel einer PostGIS-Provider-Konfiguration ::
+Eine Anbieter (``prodiver``) Konfiguration beschreibt, welche Datenbanken und mit welchen Zugangsdaten verwendet werden. Zur Zeit unterstützen wir nur PostgreSQL/PostGIS Datenbanken.
 
-    ## in der Hauptkonfiguration:
+^NOTE Wir planen, Sqlite/SpatiaLite, MySQL und MongoDB später hinzuzufügen.
+
+postgres
+~~~~~~~~
+
+^REF gws.ext.db.provider.postgres.Config
+
+Wir unterstützen PostgreSQL ab Version 10. PostGIS (Version 2.4) ist obligatorisch.
+
+Beispiel einer Postgres-Provider-Konfiguration ::
 
     "db": {
         "providers" [
             {
-                "type": "postgis",
-                "uid": "my_db_connection",
-                "host": "DBHOST",
+                "type": "postgres",
+                "uid": "my_db",
+                "host": "172.17.0.1",
                 "port": 5432,
                 "database": "mydatabase",
                 "user": "me",
@@ -23,16 +33,20 @@ Beispiel einer PostGIS-Provider-Konfiguration ::
         ]
     }
 
-Wenn Sie mehrere Credentials auf dem gleichen Server haben, müssen Sie diese als verschiedene Anbieter konfigurieren.
+Wenn Sie mehrere Server bzw. mehrere Zugangsdaten auf dem gleichen Server haben, müssen Sie diese als verschiedene Anbieter konfigurieren.
 
-An anderer Stelle, wenn für Ihre Konfiguration eine Datenbankverbindung erforderlich ist, geben Sie einfach die eindeutige ID des Anbieters an. Beispiel für eine SQL-Suchkonfiguration::
+^NOTE Auch wenn Ihr DB-Server sich auf demselben physischen Host befindet, können Sie nicht ``localhost`` als Hostname verwenden, weil GWS in einem Docker-Container läuft. Stattdessen sollte die IP-Adresse des Docker-Hosts wie ``172.17.0.1`` verwendet werden (der genaue Wert hängt von den Einstellungen Ihres Docker-Netzwerks ab). Aus Gründen der Portabilität ist es empfehlenswert, es mit ``--add-host`` zu aliasieren.
 
-        ## Suchkonfiguration
+Zugriffsrechte
+--------------
 
-        {
-            "type": "sql",
-            "db": "my_db_connection",
-            ...other options
-        }
+Wir empfehlen Ihrem Datenbank-Nutzer möglichst wenige Rechte zu vergeben. Für die Funktionen wie ^search oder Postgres-Layer (s. ^layer) ist ein ``SELECT`` ausreichend, für Editierfunktionen (^digitize oder ^tabedit) braucht man auch ``INSERT`` und ``UPDATE``. Wenn Sie ALKIS (s. ^alkis) verwenden, muss der DB-Nutzer auch ``CREATE`` und ``DROP`` für das GWS-Arbeitsschema besitzen.
 
-Da GWS in einem Container läuft, können Sie nicht ``localhost`` als Hostname verwenden, auch wenn Ihr DB-Server auf derselben physischen Maschine läuft. Stattdessen sollte die IP-Adresse des Docker-Hosts wie ``172. 17. 0. 1`` verwendet werden (der genaue Wert hängt von den Einstellungen Ihres Docker-Netzwerks ab). Aus Gründen der Portabilität ist es empfehlenswert, es mit ``--add-host`` zu aliasieren.
+Datenbank-Tabellen
+------------------
+
+^REF gws.common.db.SqlTableConfig
+
+Bei einigen GWS Funktionen wie z.B. ^search oder ^digitize ist eine Tabellen-Konfiguration notwendig. Minimal ist ein Tabellen-Namen notwendig (optional mit einem Schema). Sie können auch die Namen für Primärschlüssel (``keyColumn``) und Geometrie-Spalte (``geometryColumn``) angeben, per Default versucht das System diese Werte aus ``INFORMATION_SCHEMA`` und ``GEOMETRY_COLUMNS`` automatisch zu ermitteln.
+
+Falls Sie mehrere Anbieter verwenden, müssen Sie auch die Anbieter ``uid`` in der Konfiguration angeben.

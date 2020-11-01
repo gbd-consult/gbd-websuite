@@ -88,11 +88,21 @@ def format_special(txt, book, lang):
         return ".. pull-quote:: %s: :ref:`%s_cliref_%s`" % (
             WORDS[lang]['reference'], lang, m.group(1).strip().replace('.', '_'))
 
+    # add a role for the inline html
+    # https://docutils.sourceforge.io/docs/ref/rst/directives.html#custom-interpreted-text-roles
+
+    # role = """.. role:: rawhtml(raw)\n   :format: html"""
+    # txt = role + '\n' + txt
+
     # some RST shortcuts:
+
+    # {BR} => raw <br/>
+
+    # txt = txt.replace('{BR}', ':rawhtml:`<br/>`')
 
     # ^filename => :doc:`filename`
 
-    txt = re.sub(r'\^([a-z_/]+)', r':doc:`\1`', txt)
+    txt = re.sub(r'(?<!")\^(\.*[a-z_/]+)', r':doc:`\1`', txt)
 
     # ^SEE => ..seealso:
 

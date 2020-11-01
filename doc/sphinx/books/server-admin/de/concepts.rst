@@ -6,18 +6,21 @@ In diesem Kapitel beschreiben wir kurz, auf welche Grundkonzepten die Funktional
 Anfragen und URLs
 -----------------
 
-Einmal gestartet, hört die GBD WebSuite auf Ports ``80/443`` und verarbeitet ``GET`` und ``POST`` Anfragen. Wie ein herkömmlicher Webserver kann GWS statische Inhalte wie HTML-Seiten oder Bilder bereitstellen, aber sein Hauptzweck ist es, dynamische Kartenbilder und Daten bereitzustellen. Für dynamische Anfragen gibt es einen einzigen Endpunkt (url), nämlich den ``_`` (Unterstrich). Alle Anfragen an diesen Endpunkt müssen den Befehl (``cmd``) Parameter enthalten.
-Zusätzlich müssen alle ``POST`` Anfragen im JSON-Format vorliegen
+Einmal gestartet, hört die GBD WebSuite auf Ports ``80/443`` und verarbeitet ``GET`` und ``POST`` Anfragen. Wie ein herkömmlicher Webserver kann GWS statische Inhalte wie HTML-Seiten oder Bilder bereitstellen, aber sein Hauptzweck ist es, dynamische Kartenbilder und Daten bereitzustellen. Für dynamische Anfragen gibt es einen einzigen Endpunkt (url), nämlich den ``_`` (Unterstrich). Alle Anfragen an diesen Endpunkt müssen den Befehl (``cmd``) Parameter enthalten. Zusätzlich müssen alle ``POST`` Anfragen im JSON-Format vorliegen.
 
 Hier ein paar Beispiele von Anfragen, die GBD WebSuite bearbeiten kann.
 
 Eine statische GET-Anfrage: ::
 
-    http://maps.my-server.com/images/smile.jpg
+    http://example.com/images/smile.jpg
 
 Eine dynamische GET-Anfrage (z. B. ein Kartenbild): ::
 
-    http://maps.my-server.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro&width=100&height=200&bbox=10,20,30,40
+    http://example.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro&width=100&height=200
+
+Bei dynamischen GET-Anfragen unterstützt GWS eine alternative Schreibweise mit der die Parameter und Werte mit einem Slash ``/`` getrennt werden: ::
+
+    http://example.com/_/cmd/mapHttpGetBox/projectUid/london/layerUid/london.map.metro/width/100/height/200
 
 Eine dynamische POST-Anfrage (z.B. Suche): ::
 
@@ -30,22 +33,12 @@ Eine dynamische POST-Anfrage (z.B. Suche): ::
         }
     }
 
-GET-URLs können durch URL-Rewriting modifiziert werden, so dass diese URL ::
-
-    http://maps.my-server.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro
-
-zu dieser reduziert werden kann ::
-
-    http://maps.my-server.com/london/metro
-
-^SEE Eine ausführliche Anleitung zur URL-Rewriting find Sie unter ^config/web
-
 Aktionen
 --------
 
-Anhand vom ``cmd`` Parameter entscheidet der Server welche *Server Aktion* die Bearbeitung der Anfrage übernimmt. Falls die Aktion existiert und richtig konfiguriert ist,  wird die Anfrage zu dieser Aktion weitergeleitet. Die Aktion bearbeitet die Anfrage und stellt eine Antwort bereit, die abhängig von der Natur der Anfrage, in HTML, JSON oder PNG Format vorliegt. Intern sind die Aktionen die Python-Klassen, die für jeden Befehl (``cmd``) über eine Methode verfügen. Im obigen Beispiel (``cmd=mapHttpGetBox``) ist ``map`` die Aktion und ``httpGetBox`` die Methode die diese Anfrage bearbeitet.
+Anhand vom ``cmd`` Parameter entscheidet der Server welche *Server Aktion* die Bearbeitung der Anfrage übernimmt. Falls die Aktion existiert und richtig konfiguriert ist,  wird die Anfrage zu dieser Aktion weitergeleitet. Die Aktion bearbeitet die Anfrage und stellt eine Antwort bereit, die abhängig von der Natur der Anfrage, in HTML, JSON oder PNG Format vorliegt. Intern sind die Aktionen die Python-Klassen, die für jeden Befehl (``cmd``) über eine Methode verfügen. Im obigen Beispiel (``cmd=mapHttpGetBox``) ist ``map`` die Aktion und ``httpGetBox`` die Methode, die diese Anfrage bearbeitet.
 
-^SEE Server Aktionen sind unter ^config/actions beschrieben
+^SEE Server Aktionen sind unter ^config/action beschrieben.
 
 Webseiten und Projekte
 ----------------------
@@ -54,21 +47,27 @@ Auf der obersten Ebene arbeitet die GBD WebSuite mit zwei Arten von Entitäten: 
 
 In dieser URL ::
 
-    http://maps.my-server.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro
+    http://example.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro
 
-ist ``london`` ein Projekt, ``london.map.metro`` ist eine für dieses Projekt konfigurierte Ebene, während der Domainname ``maps. my-server. com`` und die entsprechende Rewrite-Regel aus der Webseiten-Konfiguration übernommen werden.
+ist ``london`` ein Projekt, ``london.map.metro`` ist eine für dieses Projekt konfigurierte Ebene, während der Domainname ``example.com`` aus der Webseiten-Konfiguration übernommen wird.
 
-Webseiten und Projekte sind orthogonale Konzepte. Sie können dasselbe Projekt unter mehreren Webseiten ausführen. Wenn Sie z. B. ``maps.my-server.com`` to e.g. ``gis.my-other-server.com`` ändern würden, würde dies keine Änderungen im Projekt ``london`` erfordern.
+Webseiten und Projekte sind orthogonale Konzepte. Sie können dasselbe Projekt unter mehreren Webseiten ausführen. Wenn Sie z. B. ``example.com`` ins ``other-example.com`` ändern würden, würde dies keine Änderungen im Projekt ``london`` erfordern.
 
 Client
 ------
 
 Obwohl die GBD WebSuite als gewöhnlicher Webserver arbeiten kann, ist ihr Hauptzweck, zusammen mit einem "reichen" Javascript-Client verwendet zu werden, der in der Lage ist, dynamische Web-Maps wie OpenLayers of Leaflet anzuzeigen. Wir bieten einen solchen Client als Teil der GBD WebSuite an und stellen einige Optionen in der Serverkonfiguration zur Verfügung, um unseren Client gezielt zu unterstützen.
 
+^SEE Mehr dazu in ^config/client.
+
 Statische Dokumente und Assets
 ------------------------------
 
-@TODO
+*Statische Web-Dokumente* sind Dateien (z.B. HTML oder PDF) die keine spezielle Bearbeitung auf dem Server erfordern und jedem Nutzer unverändert zur Verfügung stehen. Bei einer Webseite kann ein "public" Ordner mit statischen Dokumenten konfiguriert werden, wobei die URLs den Dateipfaden entsprechen. Zum Beispiel, wenn Ihr "public"-Ordner als ``data/web`` konfiguriert wird, und Sie eine PDF Datei unter ``data/web/documents/file.pdf`` abspeichern, kann diese Datei unter ``http://example.com/documents/file.pdf`` heruntergeladen werden.
+
+Ein *Asset* ist dagegen ein Dokument, das dynamisch erzeugt wird, abhängig vom Kontext (eine *Vorlage*) oder nur berechtigten Nutzern zur Verfügung steht. Assets werden in einem speziellen Ordner platziert, der sowohl für eine Webseite als auch Projekt-abhängig konfiguriert werden kann.
+
+^SEE Mehr dazu in ^config/web, ^config/template und ^config/project.
 
 Autorisierung
 -------------
@@ -103,20 +102,26 @@ Jedes GBD WebSuite Projekt enthält eine *Karte* (``map``), die eine Sammlung vo
 
 ^NOTE In der Zukunft sind auch Rasterquellen, Shape und Geopackage Daten geplant.
 
+^SEE ^config/map und ^config/layer.
+
 Suche und Features
 ------------------
 
 In GWS sind die Funktionen wie Suche nach dem Schlüsselwort oder auch räumliche Suche durch Klicken oder Ziehen einheitlich *Suche* (``search``) genannt. Es können diverse Such-Quellen (``provider``) konfiguriert werden.
 
-Ein Feature ist ein Objekt das sowohl Sachdaten in Form von *Attributen*, als auch Geoinformation in Form einer *Shape* enthält. Die Suchergebnisse sind, unabhängig von der Art der Suche, als eine Liste von Features repräsentiert.
+Ein Feature ist ein Objekt das sowohl Sachdaten in Form von *Attributen*, als auch Geoinformation in Form einer *Geometrie* enthält. Die Suchergebnisse sind, unabhängig von der Art der Suche, als eine Liste von Features repräsentiert.
 
 GWS bietet Werkzeuge um die Features aus diversen Quellen im Client oder in einem OWS Dienst einheitlich darzustellen. Dazu gehören *Datenmodellen* (``dataModel``), die Attributen transformieren und *Vorlagen* (``template``), die aus Attributen Präsentationsobjekte, wie HTML Snippets, erstellen.
 
-^SEE config/features
+^SEE ^config/search und ^config/feature.
 
 Arbeiten mit QGIS
 -----------------
 
-QGIS Projekte können in den GWS Maps reibungslos integriert werden.
+Die GBD WebSuite bietet dedizierten Support für `QGIS <https://qgis.org>`_, ein kostenloses und quelloffenes geografisches Informationssystem. Die Unterstützung ist optional und kann abgeschaltet werden, wenn Sie QGIS nicht verwenden.
 
-^SEE ^config/qgis
+QGIS Projekte können in den GWS Karten reibungslos integriert werden. Ein QGIS Projekt wird als ein Layer in der GWS Karte dargestellt und kann mit anderen Layer-Typen frei kombiniert werden.
+
+Für Drucken unterstützt GWS auch die QGIS Druckvorlagen ("Layouts"), die auch für nicht-QGIS Karten verwendet werden können.
+
+^SEE Mehr dazu in ^config/qgis.

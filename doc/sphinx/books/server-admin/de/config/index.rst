@@ -9,12 +9,13 @@ Einführung
 Allgemeines zur Konfiguration.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     intro.rst
-    main.rst
+    app.rst
     project.rst
-    actions.rst
+    action.rst
+    helper.rst
     client.rst
 
 Karten
@@ -23,11 +24,11 @@ Karten
 Konfiguration der Karten, Layer und Suchoptionen.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     map.rst
-    layers.rst
-    features.rst
+    layer.rst
+    feature.rst
     qgis.rst
     cache.rst
     search.rst
@@ -38,11 +39,12 @@ Formatieren und Drucken
 Options für die visuelle Präsentation von Karten und Sachdaten.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
-    templates.rst
-    styles.rst
+    template.rst
+    style.rst
     print.rst
+    csv.rst
 
 Editieren
 ---------
@@ -50,7 +52,7 @@ Editieren
 Optionen im Bezug auf Editieren von geographischen Objekten und Sachdaten.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     digitize.rst
     tabedit.rst
@@ -62,7 +64,7 @@ System
 Konfiguration des Servers.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     auth.rst
     intl.rst
@@ -76,7 +78,7 @@ Dienste und Metadaten
 Einrichtung von OWS Diensten sowie deren Metadaten.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     ows.rst
     meta.rst
@@ -87,7 +89,7 @@ Spezielle Themengebiete
 Optionale und spezielle Komponente.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     alkis.rst
     bplan.rst
