@@ -24,7 +24,13 @@
                 @with lc.meta.abstract
                     @t Abstract {lc.meta.abstract}
                 @end
-                @t DefaultCRS {lc.projections[0].proj.urn}
+                @each lc.projections as p index n
+                    @if n == 1
+                        @t DefaultCRS {p.proj.urn}
+                    @else
+                        @t OtherCRS {p.proj.urn}
+                    @end
+                @end
                 @ows_wgs84_bounding_box lc
                 @with lc.meta.url
                     @t MetadataURL xlink:href="{url_for(lc.meta.url)}"
