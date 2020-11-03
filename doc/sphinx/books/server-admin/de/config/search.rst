@@ -4,18 +4,20 @@ Suche
 Die GBD WebSuite implementiert eine einheitliche Suchfunktionalität, die mit verschiedenen Arten von Raum- und Sachdaten arbeitet. Grundsätzlich enthält eine Suchanfrage an den Server diese drei Parameter:
 
 {TABLE}
-    ``keyword`` | ein Stichwort, nach dem gesucht werden soll
-    ``shape`` | eine Geometrie, falls vorhanden, ist die Suche räumlich auf diese Geometrie beschränkt.
-    ``layers`` | eine Liste der Ebenen, auf denen die Suche durchgeführt werden soll. Das sind normalerweise die im Client sichtbare bzw selektierte Ebene
+    *keyword* | ein Stichwort, nach dem gesucht werden soll
+    *shape* | eine Geometrie. Falls vorhanden, ist die Suche räumlich auf diese Geometrie beschränkt.
+    *layers* | eine Liste der Ebenen, auf denen die Suche durchgeführt werden soll. Das sind normalerweise die im Client sichtbare bzw selektierte Ebene
 {/TABLE}
-
-Es muss entweder ``keyword`` oder ``shape`` oder beides vorhanden sein.
 
 Die von anderen GIS-Systemen bekannte "Identifizieren" Funktion fällt in GWS auch unter dem Begriff Suche, in dem Fall, eine ohne Stichwort und mit einer Punkt-Geometrie.
 
 Wenn der GBD WebSuite Server eine Suchanfrage erhält, verbindet er sich mit den konfigurierten Suchanbietern (``provider``) und verwendet automatisch die für jede Quelle gültige Methode. Beispielsweise werden für WMS-Quellen "GetFeatureInfo"-Anfragen gestellt, für Datenbankdaten wird eine "SELECT"-Abfrage durchgeführt und so weiter. Sobald der Server Ergebnisse aus verschiedenen Quellen erhält, werden sie konsolidiert, optional transformiert und formatiert (s. ^feature) und als Liste einheitlicher Features an den Client zurückgegeben.
 
 Die Anbieter werden für das ganze Projekt oder für individuelle Layers konfiguriert. Die Layer-Anbieter werden nur dann aktiviert, wenn der ``layers`` Liste den entsprechende Layer-ID enthält.
+
+Mit der Aktion ``search`` schalten Sie die Suchfunktionalität frei. Mit dem Parameter ``limit`` können Sie steuern, wie viele Suchergebnisse der Server zurückgibt (unter allen Anbietern).
+
+^NOTE In der Zukunft können Sie auch ein ``limit`` pro Anbieter steuern.
 
 Allgemeine Optionen
 -------------------
@@ -46,14 +48,14 @@ postgres
 
 ^REF gws.ext.search.provider.postgres.Config
 
-Bietet direkte Suche in Postgres/PostGIS Tabellen. Sie müssen und die zu durchsuchende Tabelle (``table``) angeben (s. ^db). Zusätzlich können Sie die Spalte wo nach dem Stichwort gesucht werden soll (`searchColumn``) konfigurieren.
+Bietet direkte Suche in Postgres/PostGIS Tabellen. Sie müssen und die zu durchsuchende Tabelle (``table``) angeben (s. ^db). Zusätzlich können Sie die Spalte wo nach dem Stichwort gesucht werden soll (``searchColumn``) konfigurieren.
 
-Wenn der Server eine Abfrage mit ``keyword`` und ``shape`` bearbeitet, wird ungefähr folgende SQL Abfrage ausgeführt: ::
+Wenn der Server eine Abfrage mit *keyword* und *shape* bearbeitet, wird ungefähr folgende SQL Abfrage ausgeführt: ::
 
     SELECT * FROM {table}
         WHERE
-            searchColumn ILIKE %{keyword}%
-            AND ST_Intersects(geometryColumn, {shape})
+            {searchColumn} ILIKE %{keyword}%
+            AND ST_Intersects({geometryColumn}, {shape})
 
 Anders gesagt, wird Stichword case-insensitiv mit beliebiger Platzierung und Geometrie mit der Überschneidung gesucht. Wenn ``searchColumn`` bzw ``geometryColumn`` fehlen, wird in dieser Abfrage nur eine Bedingung stehen.
 
@@ -77,10 +79,3 @@ qgispostgres/qgiswms
 ~~~~~~~~~~~~~~~~~~~~
 
 Diese Anbieter werden intern bei der Konfiguration von QGIS Projekten verwendet.
-
-Aktion ``search``
------------------
-
-Mit dieser Aktion schalten Sie die Suchfunktionalität frei. Mit dem Parameter ``limit`` können Sie steuern, wie viele Suchergebnisse der Server zurückgibt (unter allen Anbietern).
-
-^NOTE In der Zukunft können Sie auch ein ``limit`` pro Anbieter steuern.

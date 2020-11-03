@@ -15,10 +15,14 @@ cache
 
 ^REF gws.common.layer.types.CacheConfig
 
+Geben Sie hier an, ob Caching aktiviert ist und für wie lange die gecachten Bilder gespeichert werden sollen.
+
 grid
 ~~~~
 
 ^REF gws.common.layer.types.GridConfig
+
+Geben Sie hier an, die der Kachelgrid für diesen Layer aussieht. Bei den Layern die keine Kachel liefern, wie ``wms`` oder ``qgisflat`` ist es wichtig einen ausreichenen Puffer (``metaBuffer``) zu setzen, damit die Beschriftungen richtig positioniert werden.
 
 Seeding
 -------

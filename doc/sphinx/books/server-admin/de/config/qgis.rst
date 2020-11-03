@@ -20,6 +20,8 @@ QGIS-Layer zeigen ganze QGIS-Projekte als einzelne Gruppe im GWS-Layerbaum an. Z
         "directRender": ["wms"]
     }
 
+Sie können auch die Struktur der Gruppe mit ``flattenLayers`` beinflüssen, indem Sie z.B. nur die Layers bis Tiefe 2 Zeigen und tiefere Layers flach darstellen.
+
 qgisflat
 ~~~~~~~~
 
@@ -39,7 +41,7 @@ qgisflat
 Legenden
 --------
 
-Für QGIS Layer können Sie unter ``legend.options`` einige visuelle Einstellungen für Legenden anpassen. Eine Liste der möglichen Einstellungen finden Sie in der `QGIS Referenz <https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request>`_.
+Für QGIS Layer können Sie unter ``legend.options`` einige visuelle Einstellungen für Legenden anpassen. Eine Liste der möglichen Einstellungen finden Sie in der `QGIS Referenz <https://docs.qgis.org/testing/en/docs/server_manual/services.html#getlegendgraphics>`_.
 
 Druckvorlagen
 -------------

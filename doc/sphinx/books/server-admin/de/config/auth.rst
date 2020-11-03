@@ -10,16 +10,17 @@ Zugangsreglungen
 
 In der Konfiguration können einige Typen von Objekten  verknüpft sein mit Zugangsblock (``access``) Konfigurationen, wie z.B.
 
-- main application
-- server action
-- project
-- layer
+- Applikation
+- Server Aktion
+- Projekt
+- Layer
+- Druckvorlage
 
 Zusätzlich definieren einige Aktionen interne ``access`` Blöcke für bestimmte Befehle.
 
 Ein ``access`` Block ist eine Liste von Regeln. Jede Regel enthält die Eigenschaften ``role`` (ein Name der Rolle auf die sich die Regel bezieht) und ``type``, welche ist entweder ``allow`` ("erlauben") oder ``deny`` ("verweigern").
 
-Wenn ein Nutzer X einen Zugriff auf ein Objekt erfragt, werden alle Regel für dieses Objekt überprüft. Falls eine von Rollen die der Nutzer besitzt explizit gefunden wird, ist der Zugriff anhand von ``type`` erlaubt und verweigert. Ansonsten wird das übergeordnete Objekt geprüft. Falls es kein  übergeordnetes Objekt gibt, d.h. das Root-Objekt wird erreicht, ist der Zugriff verweigert.
+Wenn ein Nutzer einen Zugriff auf ein Objekt erfragt, werden alle Regel für dieses Objekt überprüft. Falls eine von Rollen die der Nutzer besitzt explizit gefunden wird, ist der Zugriff anhand von ``type`` erlaubt und verweigert. Ansonsten wird das übergeordnete Objekt geprüft. Falls es kein  übergeordnetes Objekt gibt, d.h. das Root-Objekt wird erreicht, ist der Zugriff verweigert.
 
 Vordefinierte Rollen
 --------------------
@@ -38,7 +39,10 @@ Andernfalls können Sie beliebige Rollennamen verwenden, aber sie müssen gülti
 Berechtigungsstrategien
 -----------------------
 
-Da die Zugriffsregeln vererbt werden, müssen Sie als erstes die Root-Liste ``access`` konfigurieren. Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie ``allow`` an ``all`` vergeben::
+selektives ``deny``
+~~~~~~~~~~~~~~~~~~~
+
+Wenn Ihre Projekte größtenteils öffentlich sind (oder wenn Sie überhaupt keine Berechtigung benötigen), können Sie in der App-Konfig ``allow`` an ``all`` vergeben::
 
     ## in der App-Konfig:
 
@@ -63,6 +67,9 @@ Wenn Sie nun den Zugriff auf ein Objekt, z. B. ein Projekt, einschränken wollen
             "type": "deny"
         }
     ]
+
+selektives ``allow``
+~~~~~~~~~~~~~~~~~~~~
 
 Auf der anderen Seite, wenn die meisten Ihrer Projekte ein Login erfordern, ist es einfacher, mit einer "deny all"-Regel zu beginnen: ::
 
@@ -128,12 +135,12 @@ ldap
 
 ^REF gws.ext.auth.provider.ldap.Config
 
-Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys.com` bereitgestellten LDAP-Testservers (http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server) ::
+Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Server autorisieren. Sie sollten mindestens eine URL des Servers und ein Regelwerk konfigurieren, um LDAP-Filter auf GBD WebSuit Rollennamen abzubilden. Hier ist eine Beispielkonfiguration unter Verwendung des von `forumsys.com` bereitgestellten `LDAP-Testservers <http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server>`_ ::
 
     {
         "type": "ldap",
 
-        ## the URL format is  "ldap://host:port/baseDN?searchAttribute":
+        ## das Format ist  "ldap://host:port/baseDN?searchAttribute":
 
         "url": "ldap://ldap.forumsys.com:389/dc=example,dc=com?uid",
 
@@ -165,7 +172,7 @@ Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Se
 Autorisierungsmethoden
 ----------------------
 
-Eine Autorisierungsmethode sorgt dafür, dass die Zugangsdaten vom Nutzer zu einem Anbieter weitergeleitet werden. Derzeit sind folgende Methoden implementiert:
+Eine Autorisierungsmethode sorgt dafür, dass die Zugangsdaten vom Nutzer zu einem Anbieter weitergeleitet werden. Alle Methoden unterstützen die Option ``secure`` (Defaultwert ``true``), die angibt, dass diese Methode nur über SSL (sichere Verbindung) verfügbar ist. Falls Sie keine Autorisierungsmethode explizit konfigurieren, wird automatisch nur ``web`` freigeschaltet.
 
 web
 ~~~
@@ -207,7 +214,7 @@ basic
 
 ^REF gws.ext.auth.method.basic.Config
 
-Mit dieser Methode werden die Zugangsdaten in HTTP Header mitgesendet. Diese Methode in vor allem für automatische Anmeldungen durch QGIS Plugins und geschüzten OWS Dienste gedacht.
+Mit dieser Methode werden die Zugangsdaten in HTTP Header mitgesendet. Diese Methode in vor allem für automatische Anmeldungen durch QGIS Plugins und geschützten OWS Dienste gedacht.
 
 Sitzungen
 ---------

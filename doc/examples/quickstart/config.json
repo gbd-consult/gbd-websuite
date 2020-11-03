@@ -23,7 +23,8 @@
     ],
     "projects": [
         {
-            "title": "Hello",
+            "title": "Test Project",
+            "uid": "hello",
             "map": {
                 "extent": [
                     554000,

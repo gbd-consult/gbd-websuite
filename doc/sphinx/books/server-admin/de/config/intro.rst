@@ -1,7 +1,7 @@
 Übersicht
 =========
 
-Die GWS Konfiguration besteht aus Applikation-Konfigdatei (^app) und optional mehrere Projekt-Konfigurationsdateien (^project). Die Struktur der Konfigurationsobjekte ist in ^../ref/config vollständig beschrieben.
+Die GWS Konfiguration besteht aus Applikation-Konfigurationsdatei (^app) und optional mehrere Projekt-Konfigurationsdateien (^project). Die Struktur der Konfigurationsobjekte ist in ^../ref/config vollständig beschrieben.
 
 Konfigurationsformate
 ---------------------
@@ -35,7 +35,7 @@ Struktur der Konfiguration
 
 Auf der obersten Ebene, ist die Konfiguration eine Schlüssel-Wert Struktur (*dict*), die Zeichenketten als Schlüssel und entweder die "primitiven" Werte (wie z.B. eine Zahl oder Zeichenkette) oder weitere Schlüssel-Wert Strukturen bzw. Listen (*arrays*) von Werten enthält.
 
-Einige Schlüssel-Wert Strukturen eine grundlegende Eigenschaft Typ (``type``), der angibt, zu welchem Typ die gegebene Struktur gehört. Diese Eigenschaft ist stets anzugeben.
+Einige Schlüssel-Wert Strukturen haben eine grundlegende Eigenschaft Typ (``type``), der angibt, zu welchem Typ die gegebene Struktur gehört. Diese Eigenschaft ist stets anzugeben.
 
 Eine weitere grundlegende Eigenschaft Identifikator (``uid``) ist dagegen Optional und ist nur dann anzugeben, wenn Sie auf die gegebene Struktur an weiteren Stellen der Konfiguration verweisen möchten. In anderen Fällen wird die ``uid`` aus dem Objekt-Titel bzw Typ automatisch generiert.
 

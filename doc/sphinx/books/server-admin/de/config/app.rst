@@ -1,5 +1,5 @@
 Applikation Konfiguration
-==========================
+=========================
 
 ^REF gws.common.application.Config
 
@@ -7,10 +7,10 @@ Die wichtigsten Teile der App-Konfiguration sind die folgenden Abschnitte, die w
 
 {TABLE}
     ``api`` |  Server-Aktionen (s. ^action)
-    ``helper`` |  Server-Helper (s. ^helper)
     ``auth`` |  Zugriffsrechte (s. ^auth)
     ``client`` |  Client Optionen (s. ^client)
     ``db`` |  Datenbankanbindung (s. ^db)
+    ``helper`` |  Server-Helper (s. ^helper)
     ``locales`` |  Server Localen (s. ^intl)
     ``meta`` |  globale Metadaten (s. ^meta)
     ``server`` |  Server Optionen (s. ^server)

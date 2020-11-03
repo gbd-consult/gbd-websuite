@@ -12,7 +12,17 @@ Ein *Datenmodel* (``dataModel``) beschreibt wie Attributen eines Quell-Features 
 
 - eine Bezeichnung (``name``)
 - einen Titel (``title``)
-- einen Wert. Das kann Quell-Feature Attribut sein (``source``) oder einen festen Wert (``value``) oder eine Formatierungs-String mit ``{...}`` Platzhaltern
+- einen Wert. Das kann Quell-Feature Attribut sein (``source``) oder einen festen Wert (``value``) oder eine Formatierungs-String mit ``{...}`` Platzhaltern, die mit Attributen der Quell-Feature ersetzt werden.
+
+Zum Beispiel, wenn eine Postgres Tabelle ``user`` die Spalten ``first_name``, ``last_name`` und ``age`` enthält, können Sie so transformieren: ::
+
+    "dataModel": {
+        "rules": [
+            { "name": "Name", "format": "{first_name} {last_name}" },
+            { "name": "Alter", "source": "age" },
+            { "name": "Bezeichnung", "value": "Nutzer" }
+        ]
+    }
 
 Außerdem können Sie angeben welche Attribute editierbar (``editable``) sind. Wenn Sie eine Editierfunktion verwenden (s. ^digitize und ^tabedit), werden nur editierbare Attribute eines Feature für Editieren freigeschaltet.
 

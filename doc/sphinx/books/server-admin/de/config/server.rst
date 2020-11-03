@@ -28,7 +28,7 @@ Die GBD WebSuite betreibt intern mehrere Servermodule:
 - das ``spool`` Modul, das den Druck und andere Hintergrundaufgaben übernimmt.
 - das ``monitor`` Modul, das das Dateisystem überwacht, und bei den Änderungen in Ihren Daten einen Hot-Reload des Servers durchführt
 
-Jedes Modul kann mit ``enabled: false`` deaktiviert werden, wenn es nicht benötigt wird (z.B. wenn Sie keine QGIS-Projekte verwenden, brauchen Sie den QGIS-Server nicht auszuführen). Sie können auch die Anzahl der *Worker* (Prozessen) konfigurieren, die jedes Modul verwenden darf.
+Jedes Modul kann mit ``enabled: false`` deaktiviert werden, wenn es nicht benötigt wird (z.B. wenn Sie keine QGIS-Projekte verwenden, brauchen Sie den QGIS-Server nicht auszuführen). Sie können auch die Anzahl der *Prozessen* (``worker``) konfigurieren, die jedes Modul verwenden darf.
 
 Für Hochlast-Workflows ist es auch möglich, verschiedene Module auf verschiedenen physikalischen Maschinen zu betreiben. Beispielsweise können Sie eine GWS-Installation einrichten, die nur das Mapproxy-Modul, eine weitere für den QGIS-Server und eine weitere für das Frontend-Web-Modul ausführt. In diesem Fall können Sie für Mapproxy und QGIS in der Web-Konfiguration ``host`` and ``port`` angeben, so dass diese über das Netzwerk abgefragt werden können.
 

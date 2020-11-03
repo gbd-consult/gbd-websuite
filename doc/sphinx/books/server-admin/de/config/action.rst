@@ -27,4 +27,3 @@ Hier ein kurzer Überblick über die unterstützten Aktionstypen:
 {/TABLE}
 
 Aktionen werden in ``api`` Blocks in der App- bzw Projektkonfigs konfiguriert. Jede Aktionskonfiguration benötigt mindestens die Eigenschaft ``type``, und optional einen ``access`` Block (s. ^auth), der angibt, welche Rollen die Berechtigung haben, diesen Aktionstyp auszuführen. Einige Aktionen erfordern zusätzliche Optionen.
-

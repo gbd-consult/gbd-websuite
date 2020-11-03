@@ -1,7 +1,7 @@
 ALKIS Integration
 =================
 
-Gbd Websuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Es steht eine Client-Oberfläche für Flurstücksuche zur Verfügung und ein QGIS Plugin für ALKIS-basierte Geocodierung.
+GBD Websuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Es steht eine Client-Oberfläche für Flurstücksuche zur Verfügung und ein QGIS Plugin für ALKIS-basierte Geocodierung.
 
 Um die ALKIS Integration zu nutzen benötigen Sie folgendes:
 
@@ -19,7 +19,7 @@ In diesem Helper (s. ^helper) werden allgemeine ALKIS Einstellungen konfiguriert
 {TABLE}
    ``crs`` | KBS für ALKIS Daten, normalerweise ``EPSG:25832`` oder ``EPSG:25833``
    ``dataSchema`` | Postgres Schema wo die ALKIS Tabellen liegen
-   ``excludeGemarkung`` | Liste von Gemarkungen, die aus der Suche ausgeschlossen werden müssen
+   ``excludeGemarkung`` | Liste von Gemarkungen IDs (*gemarkungsnummer*), die aus der Suche ausgeschlossen werden müssen
    ``indexSchema`` | Postgres Schema wo die Indexes geschrieben werden
 {/TABLE}
 
@@ -34,9 +34,7 @@ Bevor die ALKIS Daten für die Flurstücksuche verwendet werden können, müssen
 - ``gws alkis drop-index`` - GWS Indizien löschen
 - ``gws alkis create-index`` - GWS Indizien erzeugen
 
-Die Index Tabellen werden in das unter ``indexSchema`` angegebene Schema geschrieben. Das ALKIS Modul schreibt nie in das ALKIS Schema (``dataSchema``).
-
-Diese Befehle müssen nach jeder ALKIS-Aktualisierung erneut ausgeführt werden.
+Die Index Tabellen werden in das unter ``indexSchema`` angegebene Schema geschrieben. Das ALKIS Modul schreibt nie in das ALKIS Schema (``dataSchema``). Diese Befehle müssen nach jeder ALKIS-Aktualisierung erneut ausgeführt werden. Aus Sicherheitsgründen werden bei diesen Befehlen Datenbank Benutzer- Kennung und Passwort explizit abgefragt.
 
 Aktion ``alkissearch``
 ----------------------
@@ -66,10 +64,10 @@ Einstellungen der Benutzeroberfläche sind wie folgt:
     ``searchSelection`` | Funktion "In der Auswahl suchen" aktivieren
     ``searchSpatial`` | räumliche Suche freischalten
     ``strasseListFormat`` | Verhalten der Straßen-Liste: ``all`` = alle Straßen zeigen, ``filtered`` = nur diejenigen in der ausgewählten Gemarkung, ``search`` = nur diejenigen, die mit dem Suchstring übereinstimmen, ``searchStart`` = nur diejenigen, die mit dem *Anfang* des Suchstrings übereinstimmen
-    ``strasseListMode`` | Darstellung der Straßen-Liste (``plain`` = nur Straßennamen, ``withGemarkung`` = "Straße (Gemarkung)", ``withGemarkungWhenNeeded`` = "Straße (Gemarkung)", aber nur wenn derselben Namen in mehreren Gemarkungen vorkommt
+    ``strasseListMode`` | Darstellung der Straßen-Liste (``plain`` = nur Straßennamen, ``withGemarkung`` = "Straße (Gemarkung)", ``withGemarkungWhenNeeded`` = "Straße (Gemarkung)", aber nur wenn dieser Straßenname in mehreren Gemarkungen vorkommt
     ``useExport`` | CSV-Export Funktion freischalten
     ``usePick`` | Funktion "Flurstück direkt auswahlen" freischalten
-    ``useSelect`` | Auswahl-Funktion freischalten
+    ``useSelect`` | Funktion "Flurstück selektieren" und die Ablage freischalten
 {/TABLE}
 
 Außerdem muss im Client-Einstellungen (s. ^client) das Element ``Sidebar.Alkis`` aktiviert werden.
@@ -82,7 +80,7 @@ Sie können Vorlagen mit Subjekten ``feature.title``, ``feature.teaser`` (Listen
 Zugang zu Eigentümerdaten
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann das Kontrolmodus (``controlMode``) aktiviert werden, wobei alle Zugriffe auf Eigentümerdaten auf Plausibilität geprüft und protokolliert werden. Eine Beispielkonfiguration kann wie folgt aussehen ::
+Es besteht die Möglichkeit, den Zugang zu Eigentümerdaten für bestimmte Nutzerrollen einzugrenzen. Zusätzlich kann das Kontrolmodus (``controlMode``) aktiviert werden, wobei alle Zugriffe auf Eigentümerdaten auf Plausibilität geprüft und protokolliert werden. Die Plausibilitätsprüfung erfolgt indem das Formularfeld "Abrufgrund" mit angegebenen Regulären Ausdrucken verglichen wird. Eine Beispielkonfiguration kann wie folgt aussehen ::
 
     "eigentuemer": {
 
@@ -124,9 +122,11 @@ Die Protokoll-Tabelle muss im System vorhanden sein, mit der folgender Struktur 
         fs_ids TEXT
     )
 
+Der Datenbank-Nutzer muss ``INSERT`` Recht auf diese Tabelle haben, aber nicht unbedingt ``SELECT``.
+
 Aktion ``alkisgeocoder``
 ------------------------
 
 ^REF gws.ext.action.alkisgeocoder.Config
 
-Für diese Aktion sind keine spezielle Optionen vorhanden. Da diese Aktion über keine UI verfügt, müssen Sie die Autorisierungsmethode ``basic`` im System freischalten wenn Sie diese Aktion mit einem Passwort schützen möchten. Siehe dazu ^auth.
+Für diese Aktion sind keine spezielle Optionen vorhanden. Da diese Aktion über unser QGIS-Plugin aufgerufen wird und über keine UI verfügt, müssen Sie die Autorisierungsmethode ``basic`` im System freischalten wenn Sie diese Aktion mit einem Passwort schützen möchten. Siehe dazu ^auth.

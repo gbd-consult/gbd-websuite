@@ -8,14 +8,14 @@ Datenbank-Anbieter
 
 Eine Anbieter (``prodiver``) Konfiguration beschreibt, welche Datenbanken und mit welchen Zugangsdaten verwendet werden. Zur Zeit unterstützen wir nur PostgreSQL/PostGIS Datenbanken.
 
-^NOTE Wir planen, Sqlite/SpatiaLite, MySQL und MongoDB später hinzuzufügen.
+^NOTE In der Zukunft sind auch Sqlite/SpatiaLite, MySQL und MongoDB geplant.
 
 postgres
 ~~~~~~~~
 
 ^REF gws.ext.db.provider.postgres.Config
 
-Wir unterstützen PostgreSQL ab Version 10. PostGIS (Version 2.4) ist obligatorisch.
+Wir unterstützen PostgreSQL ab Version 10 mit der obligatorisch PostGIS (ab 2.4) Extension.
 
 Beispiel einer Postgres-Provider-Konfiguration ::
 
@@ -47,6 +47,6 @@ Datenbank-Tabellen
 
 ^REF gws.common.db.SqlTableConfig
 
-Bei einigen GWS Funktionen wie z.B. ^search oder ^digitize ist eine Tabellen-Konfiguration notwendig. Minimal ist ein Tabellen-Namen notwendig (optional mit einem Schema). Sie können auch die Namen für Primärschlüssel (``keyColumn``) und Geometrie-Spalte (``geometryColumn``) angeben, per Default versucht das System diese Werte aus ``INFORMATION_SCHEMA`` und ``GEOMETRY_COLUMNS`` automatisch zu ermitteln.
+Bei einigen GWS Funktionen wie z.B. ^search oder ^digitize ist eine Tabellen-Konfiguration notwendig. Minimal ist ein Tabellen-Namen anzugeben (optional mit einem Schema). Sie können auch die Namen für Primärschlüssel (``keyColumn``) und Geometrie-Spalte (``geometryColumn``) angeben, per Default versucht das System diese Werte aus ``INFORMATION_SCHEMA`` und ``GEOMETRY_COLUMNS`` automatisch zu ermitteln.
 
-Falls Sie mehrere Anbieter verwenden, müssen Sie auch die Anbieter ``uid`` in der Konfiguration angeben.
+Falls Sie mehrere Anbieter verwenden, müssen Sie auch die Anbieter ``uid`` in der Tabellen-Konfiguration angeben.

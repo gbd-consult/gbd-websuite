@@ -108,7 +108,6 @@ Sobald Sie dieses Skript als z.B. ``gws`` in Ihren Pfad abspeichern, können Sie
     gws server stop
     gws server restart
 
-
 Aktuellen Quellcode anbinden
 ----------------------------
 

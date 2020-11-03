@@ -10,12 +10,12 @@ Aktion ``ows``
 
 Die Dienste werden freigeschaltet indem Sie die Aktion ``ows`` global oder in einem Projekt konfigurieren. Diese Aktion besitzt eine Liste von Diensten (``service``), wo Sie die konkrete Dienste konfigurieren.
 
-Für alle OWS Dienste muss aus Projekt-Layer ein "root" Layer ausgewählt sein. Sie können diesen Layer explizit mit der ``root`` Eigenschaft konfigurieren, per Default wird den ersten Layer auf der obersten Ebene genommen.
+Für alle OWS Dienste muss aus Projekt-Layern ein "root" Layer ausgewählt sein. Sie können diesen Layer explizit mit der ``root`` Eigenschaft konfigurieren, ansonste wird den ersten Layer auf der obersten Ebene genommen.
 
 Unterstützte Dienste
 --------------------
 
-Derzeit werden folgende Dienste unterstützt:
+Derzeit sind folgende Dienste implementiert:
 
 wms
 ~~~
@@ -65,7 +65,7 @@ GWS enthält eine Basis-Implementation von einem CSW Dienst. Dieser Dienst kann 
 
 Sie können auch zwischen Metadata-Profilen ``iso`` (ISO 19139) oder ``dcmi`` (Dublin Core) wählen.
 
-CSW Dienst ist für alle OWS und ISO Metadaten zuständig. Sobald Sie den Dienst aktivieren, werden alle im System vorhandene Metadaten gesammelt und als CSW Einträge (``record``) dargestellt. Jedes Objekt bekommt automatisch eine ``MetadataURL``, die auf die entsprechende CSW Seite zeigt.
+CSW Dienst ist für alle OWS und ISO Metadaten zuständig. Sobald Sie den Dienst aktivieren, werden alle im System vorhandene Metadaten gesammelt und als CSW Einträge (``record``) dargestellt. Jedes Objekt bekommt automatisch eine ``MetadataURL``, die auf die entsprechende CSW Seite zeigt, sofern Sie unter ``meta.url`` nicht anderes angeben.
 
 Layer-Konfiguration
 -------------------
@@ -83,7 +83,7 @@ Standardmäßig werden OWS-Dienste unter einer dynamischen URL angezeigt, die di
 
     http://example.com/_?cmd=owsHttpService&uid=my_wms_service&projectUid=meinprojekt
 
-Wenn Sie diese URL in eine schönere Form mit URL-Rewriting umschreiben, z.B: ::
+Sie können diese URL in eine schönere Form mit URL-Rewriting umschreiben, z.B: ::
 
     https://example.com/my_wms_service/meinprojekt
 

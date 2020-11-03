@@ -1,9 +1,9 @@
 Datenablage
 ===========
 
-Im GWS Client besteht es die Möglichkeit, bestimmte Objekte, wie Markierungen, Bemaßungen oder Auswahllisten abzuspeichern und später aufzurufen. Serverseitig wird dies mit der Funktion *Datenablage* (``storage``) unterstützt. Die Datenablage wird mit einem Helper (s. ^helper) und einer Aktion konfiguriert.
+Im GWS Client besteht es die Möglichkeit, bestimmte Objekte, wie Markierungen, Bemaßungen oder Auswahllisten abzuspeichern und später aufzurufen. Serverseitig wird dies mit der Funktion *Datenablage* (``storage``) unterstützt. Die Datenablage wird mit dem ``storage`` Helper (s. ^helper konfiguriert. Zusätzlich zu der Helper-Konfiguration muss auch die ``storage`` Aktion und die Client Elemente ``Storage.Read`` und ``Storage.Write`` aktiviert werden.
 
-Die Ablage wird in *Kategorien* (``category``) unterteilt wobei jede Kategorie einer Client-Funktion entspricht. In jeder Kategorie kann unbegrenzte Anzahl von Einträgen (``entry``) gespeichert werden. Aktuell sind folgende Kategorien implementiert:
+Die Ablage wird in *Kategorien* (``category``) unterteilt wobei jede Kategorie einer Client-Funktion entspricht. In jeder Kategorie kann unbegrenzte Anzahl von Einträgen gespeichert werden. Aktuell sind folgende Kategorien implementiert:
 
 {TABLE}
 ``Alkis`` | Flurstückslisten (s. ^alkis)
@@ -44,8 +44,3 @@ In der Konfiguration des Helpers geben Sie an, welche User-Rollen den Zugriff zu
         }
         ...
     ]
-
-Aktion und Client
------------------
-
-Zusätzlich zu der Helper-Konfiguration muss auch die ``storage`` Aktion und die Client Elemente ``Storage.Read`` und ``Storage.Write`` aktiviert werden.
