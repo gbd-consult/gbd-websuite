@@ -15,10 +15,10 @@ class Config(t.WithType):
     """ALKIS helper."""
 
     db: str = ''  #: database provider ID
-    crs: t.Crs  #: CRS for the alkis data
-    dataSchema: str = 'public'  #: schema where ALKIS tables are stored, must be readable
-    indexSchema: str = 'gws'  #: schema to store gws internal indexes, must be writable
-    excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (AU) IDs to exclude from search
+    crs: t.Crs  #: CRS for the ALKIS data
+    dataSchema: str = 'public'  #: schema where ALKIS tables are stored
+    indexSchema: str = 'gws'  #: schema to store GWS internal indexes
+    excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (Administrative Unit) IDs to exclude from search
 
 
 class Gemarkung(t.Data):

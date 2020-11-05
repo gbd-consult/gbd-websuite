@@ -23,21 +23,21 @@ class WebConfig(ModuleConfig):
 class MapproxyConfig(ModuleConfig):
     """Mapproxy server module"""
 
-    host: str = 'localhost'
-    port: int = 5000
+    host: str = 'localhost'  #: host to run the module on
+    port: int = 5000  #: port number
 
 
 class MonitorConfig(t.Config):
     enabled: bool = True  #: the module is enabled
     frequency: t.Duration = 30  #: filesystem changes check frequency
-    ignore: t.Optional[t.List[t.Regex]] #: ignore paths that match these regexes
+    ignore: t.Optional[t.List[t.Regex]]  #: ignore paths that match these regexes
 
 
 class QgisConfig(ModuleConfig):
     """Bundled QGIS server module"""
 
-    host: str = 'localhost'
-    port: int = 4000
+    host: str = 'localhost'  #: host to run the module on
+    port: int = 4000  #: port number
     maxRequests: int = 6  #: max concurrent requests to this server
 
     debug: int = 0  #: QGIS_DEBUG (env. variable)
@@ -52,11 +52,11 @@ class Config(t.Config):
     """Server module configuation"""
 
     autoRun: str = ''  #: shell command to run before server start
-    log: str = '' #: log path
+    log: str = ''  #: log path
     logLevel: gws.log.Level = 'INFO'  #: logging level
     mapproxy: MapproxyConfig = {}  #: bundled Mapproxy module
     qgis: QgisConfig = {}  #: bundled Qgis module
     spool: SpoolConfig = {}  #: spool server module
     timeout: t.Duration = 60  #: server timeout
-    monitor: MonitorConfig = {} #: monitor configuation
+    monitor: MonitorConfig = {}  #: monitor configuation
     web: WebConfig = {}  #: web server module

@@ -45,7 +45,7 @@ class EigentuemerConfig(t.WithAccess):
     """Access to the Eigentümer (owner) information"""
 
     controlMode: bool = False  #: restricted mode enabled
-    controlRules: t.Optional[t.List[str]]  #: list of regular expression for the restricted input control
+    controlRules: t.Optional[t.List[str]]  #: regular expression for the restricted input control
     logTable: str = ''  #: data access protocol table name
 
 

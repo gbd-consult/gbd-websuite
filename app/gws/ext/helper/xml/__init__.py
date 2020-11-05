@@ -7,15 +7,17 @@ from . import namespaces
 
 
 class NamespaceConfig(t.Data):
-    name: str
-    uri: t.Url
-    schemaLocation: t.Optional[t.Url]
+    """XML namespace configuration"""
+
+    name: str  #: namespace name
+    uri: t.Url  #: namespace uri
+    schemaLocation: t.Optional[t.Url]  #: namespace schema location
 
 
 class Config(t.WithType):
     """XML settings"""
 
-    namespaces: t.Optional[t.List[NamespaceConfig]]
+    namespaces: t.Optional[t.List[NamespaceConfig]]  #: custom namespaces
 
 
 class Object(gws.Object):

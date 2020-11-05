@@ -32,16 +32,16 @@ class PlanTypeConfig(t.Config):
 
 
 class Config(t.WithTypeAndAccess):
-    """Construction plans action"""
+    """Construction plans management action"""
 
     db: str = ''  #: database provider ID
     crs: t.Crs  #: CRS for the bplan data
     planTable: gws.common.db.SqlTableConfig  #: plan table configuration
     metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
     dataDir: t.DirPath  #: data directory
-    templates: t.List[t.ext.template.Config]
-    administrativeUnits: t.List[AdministrativeUnitConfig]
-    planTypes: t.List[PlanTypeConfig]
+    templates: t.List[t.ext.template.Config] #: templates
+    administrativeUnits: t.List[AdministrativeUnitConfig] #: Administrative Units
+    planTypes: t.List[PlanTypeConfig] #: Plan Types
     imageQuality: int = 24  #: palette size for optimized images
     uploadChunkSize: int  #: upload chunk size in mb
 

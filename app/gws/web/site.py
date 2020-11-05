@@ -8,9 +8,9 @@ import gws.types as t
 
 
 class CorsConfig(t.Config):
-    allowOrigin: str = '*'
-    allowCredentials: bool = False
-    allowHeaders: t.Optional[t.List[str]]
+    allowOrigin: str = '*'  #: Access-Control-Allow-Origin header
+    allowCredentials: bool = False  #: Access-Control-Allow-Credentials header
+    allowHeaders: t.Optional[t.List[str]]  #: Access-Control-Allow-Headers header
 
 
 #:export

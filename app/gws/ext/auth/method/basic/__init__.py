@@ -12,7 +12,7 @@ import gws.types as t
 class Config(t.WithType):
     """HTTP-basic authorization options"""
 
-    secure: bool = True  #: web authorization via ssl only
+    secure: bool = True  #: use only with SSL
 
 
 class Object(gws.common.auth.method.Object):

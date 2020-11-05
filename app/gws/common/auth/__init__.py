@@ -18,8 +18,8 @@ class Config(t.Config):
 
     methods: t.Optional[t.List[t.ext.auth.method.Config]]  #: authorization methods
     providers: t.List[t.ext.auth.provider.Config]  #: authorization providers
-    sessionLifeTime: t.Duration = 1200  #: sess life time
-    sessionStorage: str = 'sqlite'  #: sess storage engine
+    sessionLifeTime: t.Duration = 1200  #: session life time
+    sessionStorage: str = 'sqlite'  #: session storage engine
 
 
 #:export IAuthManager

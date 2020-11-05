@@ -46,6 +46,8 @@ class ClientOptions(t.Data):
 
 
 class EditConfig(t.WithAccess):
+    """Edit access for a layer"""
+
     pass
 
 
@@ -60,19 +62,22 @@ class LegendConfig(t.Config):
 
 
 class FlattenConfig(t.Config):
-    """Flatten the layer hierarchy."""
+    """Layer hierarchy flattening"""
 
     level: int  #: flatten level
     useGroups: bool = False  #: use group names (true) or image layer names (false)
 
 
 class OwsEnabledServicesConfig(t.Config):
+    """Configuration for enabled OWS services"""
+
     uids: t.Optional[t.List[str]]  #: enabled services uids
     pattern: t.Regex = ''  #: pattern for enabled service uids
 
 
 class OwsConfig(t.Config):
-    """OWS services."""
+    """OWS services confuguration"""
+
     name: t.Optional[str]  #: layer name for ows services
     featureName: t.Optional[str]  #: feature name for ows services
     enabled: bool = True  #: enable this layer for ows services

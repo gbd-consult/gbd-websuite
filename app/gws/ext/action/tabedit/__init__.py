@@ -17,9 +17,11 @@ import gws.types as t
 
 
 class ProjectConfig(t.Config):
-    template: t.FilePath
-    path: str
-    datePattern: str
+    """QGIS project"""
+
+    template: t.FilePath  #: source qgis project
+    path: str  #: target path
+    datePattern: t.Regex  #: regular expression for dates
 
 
 class Config(t.WithTypeAndAccess):

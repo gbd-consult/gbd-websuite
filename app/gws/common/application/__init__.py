@@ -23,11 +23,11 @@ import gws.types as t
 class DbConfig(t.Config):
     """Database configuration"""
 
-    providers: t.List[t.ext.db.provider.Config]
+    providers: t.List[t.ext.db.provider.Config] #: database providers
 
 
 class SeedingConfig(t.Config):
-    """Seeding options"""
+    """Cache seeding options"""
 
     maxTime: t.Duration = 600  #: max. time for a seeding job
     concurrency: int = 1  #: number of concurrent seeding jobs
@@ -42,7 +42,7 @@ class FontConfig(t.Config):
 class SSLConfig(t.Config):
     """SSL configuration"""
 
-    crt: t.FilePath  #: crt file location
+    crt: t.FilePath  #: crt bundle location
     key: t.FilePath  #: key file location
 
 
@@ -54,23 +54,23 @@ class WebConfig(t.Config):
 
 
 class Config(t.WithAccess):
-    """Application configuration"""
+    """Main application configuration"""
 
     api: t.Optional[gws.common.api.Config]  #: system-wide server actions
     auth: t.Optional[gws.common.auth.Config]  #: authorization methods and options
     client: t.Optional[gws.common.client.Config]  #: gws client configuration
-    developer: t.Optional[dict]  #: developer options
     db: t.Optional[DbConfig]  #: database configuration
+    developer: t.Optional[dict]  #: developer options
     fonts: t.Optional[FontConfig]  #: fonts configuration
-    meta: t.Optional[gws.common.metadata.Config] = {}  #: application metadata
+    helpers: t.Optional[t.List[t.ext.helper.Config]] #: helpers configurations
     locales: t.Optional[t.List[str]]  #: default locales for all projects
+    meta: t.Optional[gws.common.metadata.Config] = {}  #: application metadata
     projectDirs: t.Optional[t.List[t.DirPath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[t.FilePath]]  #: additional project paths
     projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations
     seeding: SeedingConfig = {}  #: configuration for seeding jobs
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
     timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
-    helpers: t.Optional[t.List[t.ext.helper.Config]]
     web: t.Optional[WebConfig] = {}  #: webserver configuration
 
 

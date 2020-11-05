@@ -47,11 +47,11 @@ class SourceLayer(t.Data):
 
 
 class LayerFilter(t.Config):
-    """Layer filter"""
+    """Source layer filter"""
 
-    level: int = 0  #: use layers at this level
-    names: t.Optional[t.List[str]]  #: use these layer names (top-to-bottom order)
-    pattern: t.Regex = ''  #: use layers whose full path matches a pattern
+    level: int = 0  #: match only layers at this level
+    names: t.Optional[t.List[str]]  #: match these layer names (top-to-bottom order)
+    pattern: t.Regex = ''  #: match layers whose full path matches a pattern
 
 
 def layer_matches(sl: t.SourceLayer, slf: LayerFilter) -> bool:

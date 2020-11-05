@@ -45,15 +45,15 @@ _DEFAULT_TEMPLATES = [
 
 
 class Config(t.WithTypeAndAccess):
-    """D-Procon action"""
+    """D-Procon connector action"""
 
-    cacheTime: t.Duration = '24h'
+    cacheTime: t.Duration = '24h'  #: request cache life time
     dataTableName: str  #: table to store consolidated results
     dataTablePattern: str  #: pattern for result tables to consolidate
     gemeindeFilter: t.Optional[t.List[str]]  #: gemeinde (AU) ids to keep in the index
-    infoTitle: str = ''
+    infoTitle: str = '' #: information box title
     requestTableName: str  #: table to store outgoing requests
-    requestUrl: t.Url
+    requestUrl: t.Url #: main program url, with the placholder {REQUEST_ID}
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
 
 
