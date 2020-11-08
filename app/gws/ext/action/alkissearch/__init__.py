@@ -62,18 +62,16 @@ class UiGemarkungListMode(t.Enum):
 
 
 class UiStrasseListMode(t.Enum):
-    filtered = 'filtered'  #: show only streets from the selected gemeinde/gemarkung
-    all = 'all'  #: show all streets at once
-    search = 'search'  #: autocomplete, substring search
-    searchStart = 'searchStart'  #: autocomplete, string start search
-
-
-class UiStrasseListFormat(t.Enum):
     plain = 'plain'  #: just "strasse"
     withGemeinde = 'withGemeinde'  #: "strasse" ("gemeinde")
     withGemarkung = 'withGemarkung'  #: "strasse" ("gemarkung")
-    withGemeindeWhenNeeded = 'withGemeindeWhenNeeded'  #: "strasse" ("gemeinde"), when needed for disambiguation
-    withGemarkungWhenNeeded = 'withGemarkungWhenNeeded'  #: "strasse" ("gemarkung"), when needed for disambiguation
+    withGemeindeIfRepeated = 'withGemeindeIfRepeated'  #: "strasse" ("gemeinde"), when needed for disambiguation
+    withGemarkungIfRepeated = 'withGemarkungIfRepeated'  #: "strasse" ("gemarkung"), when needed for disambiguation
+
+
+class UiStrasseSearchMode(t.Enum):
+    start = 'start'  #: search from the beginning
+    any = 'any'  #: search anywhere
 
 
 class UiConfig(t.Config):
@@ -85,8 +83,8 @@ class UiConfig(t.Config):
     searchSelection: bool = False  #: search in selection enabled
     searchSpatial: bool = False  #: spatial search enabled
     gemarkungListMode: UiGemarkungListMode = 'combined'  #: gemarkung list mode
-    strasseListMode: UiStrasseListMode = 'filtered'  #: strasse list mode
-    strasseListFormat: UiStrasseListFormat = 'plain'  #: strasse list entry format
+    strasseListMode: UiStrasseListMode = 'plain'  #: strasse list entry format
+    strasseSearchMode: UiStrasseSearchMode = 'start'  #: strasse search mode
     autoSpatialSearch: bool = False  #: activate spatial search after submit
 
 
@@ -126,12 +124,31 @@ class BaseFindParams(t.Params):
     strasseMode: t.Optional[gws.ext.helper.alkis.StrasseQueryMode]
 
 
-class FindStrasseParams(BaseFindParams):
+class GetToponymsParams(t.Params):
     pass
 
 
-class FindStrasseResponse(t.Response):
-    strassen: t.List[gws.ext.helper.alkis.Strasse]
+class ToponymGemeinde(t.Data):
+    name: str
+    uid: str
+
+
+class ToponymGemarkung(t.Data):
+    name: str
+    uid: str
+    gemeindeUid: str
+
+
+class ToponymStrasse(t.Data):
+    name: str
+    gemarkungUid: str
+
+
+class GetToponymsResponse(t.Response):
+    gemeinden: t.List[ToponymGemeinde]
+    gemarkungen: t.List[ToponymGemarkung]
+    strasseNames: t.List[str]
+    strasseGemarkungUids: t.List[str]
 
 
 class FindFlurstueckParams(BaseFindParams):
@@ -328,12 +345,29 @@ class Object(gws.common.action.Object):
             'withFlurnummer': self.alkis.has_flurnummer,
         }
 
-    def api_find_strasse(self, req: t.IRequest, p: FindStrasseParams) -> FindStrasseResponse:
-        """Return a list of Strassen for the given Gemarkung"""
+    def api_get_toponyms(self, req: t.IRequest, p: GetToponymsParams) -> GetToponymsResponse:
+        """Return all Toponyms (Gemeinde/Gemarkung/Strasse) in the area"""
 
         self._validate_request(req, p)
         res = self.alkis.find_strasse(gws.ext.helper.alkis.FindStrasseQuery(p))
-        return FindStrasseResponse(strassen=res.strassen)
+
+        gemeinde = {}
+        gemarkung = {}
+
+        for s in res.strassen:
+            if s.gemeindeUid not in gemeinde:
+                gemeinde[s.gemeindeUid] = ToponymGemeinde(name=re.sub(r'^Stadt\s+', '', s.gemeinde), uid=s.gemeindeUid)
+            if s.gemarkungUid not in gemarkung:
+                gemarkung[s.gemarkungUid] = ToponymGemarkung(name=s.gemarkung, uid=s.gemarkungUid, gemeindeUid=s.gemeindeUid)
+
+        by_name = lambda x: x.name
+
+        return GetToponymsResponse(
+            gemeinden=sorted(gemeinde.values(), key=by_name),
+            gemarkungen=sorted(gemarkung.values(), key=by_name),
+            strasseNames=[s.strasse for s in res.strassen],
+            strasseGemarkungUids=[s.gemarkungUid for s in res.strassen],
+        )
 
     def api_find_flurstueck(self, req: t.IRequest, p: FindFlurstueckParams) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""

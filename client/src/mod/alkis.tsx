@@ -6,7 +6,6 @@ import * as gws from 'gws';
 import * as lens from './lens';
 import * as sidebar from './sidebar';
 import * as storage from './storage';
-import { AlkisStrasseQueryMode, AlkisStrasseList, AlkisStrasse } from '../../../app/spec/gen/gws-server.api';
 
 const STORAGE_CATEGORY = 'Alkis';
 const MASTER = 'Shared.Alkis';
@@ -27,6 +26,37 @@ type AlkisAlkisTabName = 'form' | 'list' | 'details' | 'error' | 'selection' | '
 const _PREFIX_GEMARKUNG = '@gemarkung';
 const _PREFIX_GEMEINDE = '@gemeinde';
 
+interface FormValues {
+    bblatt?: string;
+    controlInput?: string;
+    flaecheBis?: string;
+    flaecheVon?: string;
+    gemarkungUid?: string;
+    gemeindeUid?: string;
+    hausnummer?: string;
+    name?: string;
+    strasseUid?: number;
+    vnum?: string;
+    vorname?: string;
+    wantEigentuemer?: boolean;
+    shapes?: Array<gws.api.ShapeProps>;
+}
+
+interface Strasse {
+    name: string;
+    uid: string;
+    gemarkungUid: string;
+    gemeindeUid: string;
+}
+
+interface Toponyms {
+    gemarkungen: Array<gws.api.AlkissearchToponymGemarkung>;
+    gemeinden: Array<gws.api.AlkissearchToponymGemeinde>;
+    gemarkungIndex: gws.types.Dict,
+    gemeindeIndex: gws.types.Dict,
+    strassen: Array<Strasse>;
+}
+
 interface AlkisViewProps extends gws.types.ViewProps {
     controller: AlkisController;
 
@@ -38,10 +68,10 @@ interface AlkisViewProps extends gws.types.ViewProps {
     alkisFsExportGroups: Array<string>;
     alkisFsExportFeatures: Array<gws.types.IMapFeature>;
 
-    alkisFsParams: gws.api.AlkissearchFindFlurstueckParams;
+    alkisFsFormValues: FormValues;
 
-    alkisFsStrassen: Array<gws.ui.ListItem>;
-    alkisFsGemarkungen: Array<gws.ui.ListItem>;
+    alkisFsGemarkungListItems: Array<gws.ui.ListItem>;
+    alkisFsStrasseListItems: Array<gws.ui.ListItem>;
 
     alkisFsResults: Array<gws.types.IMapFeature>;
     alkisFsResultCount: number;
@@ -71,9 +101,9 @@ const AlkisStoreKeys = [
     'alkisFsError',
     'alkisFsExportGroups',
     'alkisFsExportFeatures',
-    'alkisFsParams',
-    'alkisFsStrassen',
-    'alkisFsGemarkungen',
+    'alkisFsFormValues',
+    'alkisFsStrasseListItems',
+    'alkisFsGemarkungListItems',
     'alkisFsResults',
     'alkisFsResultCount',
     'alkisFsDetailsFeature',
@@ -277,25 +307,13 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
 
     render() {
         let mm = _master(this),
-            setup = mm.setup;
+            setup = mm.setup,
+            form = this.props.alkisFsFormValues;
 
-        let boundTo = param => ({
-            value: this.props.alkisFsParams[param],
-            whenChanged: value => mm.updateFsParams({[param]: value}),
+        let boundTo = key => ({
+            value: form[key],
+            whenChanged: value => mm.updateForm({[key]: value}),
             whenEntered: () => mm.search()
-        });
-        let bindStrasse = () => ({
-            value: this.props.alkisFsParams['strasse'],
-            whenChanged: value => mm.updateFsParams({
-                ['strasse']: value,
-                ['gemarkung']: value.gemarkung,
-            }),
-            whenEntered: () => mm.search(),
-            onInputChange: (e, callback) => {
-                mm.whenStrasseChanged(e.currentTarget.value);
-                callback(e);
-            },
-            searchAnywhere: setup.ui.strasseListMode === gws.api.AlkissearchUiStrasseListMode.search
         });
 
         let nameShowMode = '';
@@ -303,7 +321,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
         if (setup.withEigentuemer) {
             if (!setup.withControl)
                 nameShowMode = 'enabled';
-            else if (this.props.alkisFsParams.wantEigentuemer)
+            else if (form.wantEigentuemer)
                 nameShowMode = 'enabled';
             else
                 nameShowMode = '';
@@ -311,10 +329,16 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
 
         let gemarkungListValue = '';
 
-        if (this.props.alkisFsParams.gemarkungUid)
-            gemarkungListValue = _PREFIX_GEMARKUNG + ':' + this.props.alkisFsParams.gemarkungUid;
-        else if (this.props.alkisFsParams.gemeindeUid)
-            gemarkungListValue = _PREFIX_GEMEINDE + ':' + this.props.alkisFsParams.gemeindeUid;
+        if (form.gemarkungUid)
+            gemarkungListValue = _PREFIX_GEMARKUNG + ':' + form.gemarkungUid;
+        else if (form.gemeindeUid)
+            gemarkungListValue = _PREFIX_GEMEINDE + ':' + form.gemeindeUid;
+
+        let strasseSearchMode = {
+            anySubstring: setup.ui.strasseSearchMode === gws.api.AlkissearchUiStrasseSearchMode.any,
+            withExtra: true,
+            caseSensitive: false,
+        };
 
         return <Form>
             {nameShowMode && <Row>
@@ -327,6 +351,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                     />
                 </Cell>
             </Row>}
+
             {nameShowMode && <Row>
                 <Cell flex>
                     <gws.ui.TextInput
@@ -338,41 +363,30 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                 </Cell>
             </Row>}
 
-            {setup.ui.gemarkungListMode !== gws.api.AlkissearchUiGemarkungListMode.none &&
-            <Row>
+            {setup.ui.gemarkungListMode !== gws.api.AlkissearchUiGemarkungListMode.none && <Row>
                 <Cell flex>
                     <gws.ui.Select
                         placeholder={_master(this).STRINGS.gemarkung}
-                        items={this.props.alkisFsGemarkungen}
+                        items={this.props.alkisFsGemarkungListItems}
                         value={gemarkungListValue}
                         whenChanged={value => mm.whenGemarkungChanged(value)}
                         withSearch
                         withClear
                     />
                 </Cell>
-            </Row> }
+            </Row>}
+
             <Row>
-                {(setup.ui.strasseListMode === gws.api.AlkissearchUiStrasseListMode.filtered ||
-                    setup.ui.strasseListMode === gws.api.AlkissearchUiStrasseListMode.all)? <Cell flex>
+                <Cell flex>
                     <gws.ui.Select
                         placeholder={_master(this).STRINGS.strasse}
-                        items={this.props.alkisFsStrassen}
-                        {...boundTo('strasse')}
-                        withSearch
-                        withClear
-                    />
-                </Cell> 
-                :
-                <Cell flex>
-                    <gws.ui.Select 
-                        placeholder={_master(this).STRINGS.strasse}
-                        items={this.props.alkisFsStrassen}
-                        {...bindStrasse()}
+                        items={this.props.alkisFsStrasseListItems}
+                        {...boundTo('strasseUid')}
+                        searchMode={strasseSearchMode}
                         withSearch
                         withClear
                     />
                 </Cell>
-                }
                 <Cell width={90}>
                     <gws.ui.TextInput
                         placeholder={_master(this).STRINGS.nr}
@@ -381,6 +395,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                     />
                 </Cell>
             </Row>
+
             <Row>
                 <Cell flex>
                     <gws.ui.TextInput
@@ -390,6 +405,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                     />
                 </Cell>
             </Row>
+
             <Row>
                 <Cell flex>
                     <gws.ui.TextInput
@@ -423,10 +439,12 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                         type="checkbox"
                         {...boundTo('wantEigentuemer')}
                         label={_master(this).STRINGS.wantEigentuemer}
+                        inline={true}
                     />
                 </Cell>
             </Row>}
-            {setup.withControl && this.props.alkisFsParams.wantEigentuemer && <Row>
+
+            {setup.withControl && form.wantEigentuemer && <Row>
                 <Cell flex>
                     <gws.ui.TextArea
                         {...boundTo('controlInput')}
@@ -434,6 +452,7 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
                     />
                 </Cell>
             </Row>}
+
             <Row>
                 <Cell flex/>
                 <Cell>
@@ -766,12 +785,13 @@ class AlkisLensTool extends lens.LensTool {
     title = this.__('modAlkisLensTitle');
 
     async runSearch(geom) {
-        await _master(this).search({shapes: [this.map.geom2shape(geom)]});
+        _master(this).updateForm({shapes: [this.map.geom2shape(geom)]});
+        await _master(this).search();
     }
 
     stop() {
         super.stop();
-        _master(this).updateFsParams({shapes: null});
+        _master(this).updateForm({shapes: null});
     }
 }
 
@@ -794,21 +814,9 @@ class AlkisController extends gws.Controller {
     history: Array<string>;
     selectionLayer: gws.types.IMapFeatureLayer;
     setup: gws.api.AlkissearchProps;
-
-    strassenCache: AlkisStrasseList = new Array<AlkisStrasse>();
-    strassenQuerys: Array<string> = [];
-
+    toponyms: Toponyms;
 
     STRINGS = null;
-
-    updateFsParams(obj) {
-        this.update({
-            alkisFsParams: {
-                ...this.getValue('alkisFsParams'),
-                ...obj
-            }
-        });
-    }
 
     async init() {
         this.setup = this.app.actionSetup('alkissearch');
@@ -871,218 +879,194 @@ class AlkisController extends gws.Controller {
 
         this.history = [];
 
+        console.time('ALKIS:toponyms:load');
+
+        this.toponyms = await this.loadToponyms();
+
+        console.timeEnd('ALKIS:toponyms:load');
+
 
         this.update({
             alkisTab: 'form',
             alkisFsLoading: false,
 
-            alkisFsParams: {},
-
+            alkisFsFormValues: {},
             alkisFsExportGroups: [],
 
-            alkisFsStrassen: [],
-            alkisFsGemarkungen: this.makeGemarkungList(),
+            alkisFsGemarkungListItems: this.gemarkungListItems(),
+            alkisFsStrasseListItems: this.strasseListItems(this.toponyms.strassen),
 
             alkisFsSearchResponse: null,
             alkisFsDetailsResponse: null,
             alkisFsSelection: [],
         });
-
-        if(this.setup.ui.strasseListMode === 'all') {
-            // when is alkisFsStrassen populated? (depending on strasseListMode)
-            // filtered               -> whenGemarkungChanged
-            // all                    -> on controller init      <-- we are here
-            // search || searchBegin  -> whenStrasseChanged
-            this.populateStrassenList();
-        }
     }
 
-    async populateStrassenList() {
-        let params = {};
-        let res = await this.app.server.alkissearchFindStrasse(params);
+    async loadToponyms(): Promise<Toponyms> {
+        let res = await this.app.server.alkissearchGetToponyms({});
 
-        if (!res.error)
-            this.strassenCache = res.strassen;//.map(s => ({text: s.strasse, value: s.strasse}));
+        let t: Toponyms = {
+            gemeinden: res.gemeinden,
+            gemarkungen: res.gemarkungen,
+            gemeindeIndex: {},
+            gemarkungIndex: {},
+            strassen: []
+        };
 
-        this.update({
-            alkisFsStrassen: this.formatStrassenList(this.strassenCache)
-        });
-    }
-
-    formatStrassenList(strassen: AlkisStrasseList): Array<gws.ui.ListItem> {
-        if (this.setup.ui.strasseListFormat == gws.api.AlkissearchUiStrasseListFormat.plain)
-            return strassen.map((s) => {return {text: s.strasse, value: s}});
-
-        if (this.setup.ui.strasseListFormat == gws.api.AlkissearchUiStrasseListFormat.withGemarkung)
-            return strassen.map((s) => {return { text: s.strasse, extraText: s.gemarkung, value: s}});
-
-        if (this.setup.ui.strasseListFormat == gws.api.AlkissearchUiStrasseListFormat.withGemeinde)
-            return strassen.map((s) => {return { text: s.strasse + ' ('+ s.gemeinde+ ')', value: s}});
-
-        //count duplicates for "WhenNeeded" cases
-        let stats = {};
-        for (let s of strassen) {
-            if (stats[s.strasse]) {
-                stats[s.strasse]++;
-            } else {
-                stats[s.strasse] = 1;
-            }
+        for (let g of res.gemeinden) {
+            t.gemeindeIndex[g.uid] = g;
+        }
+        for (let g of res.gemarkungen) {
+            t.gemarkungIndex[g.uid] = g;
         }
 
-        let result = [];
-        if (this.setup.ui.strasseListFormat == gws.api.AlkissearchUiStrasseListFormat.withGemarkungWhenNeeded) {
-            for (let s of strassen) {
-                if (stats[s.strasse] > 1) {
-                    result.push({ text: s.strasse + ' (' + s.gemarkung + ')', value: s });
-                } else {
-                    result.push({ text: s.strasse,                            value: s });
-                }
-            }
-        } else if (this.setup.ui.strasseListFormat == gws.api.AlkissearchUiStrasseListFormat.withGemeindeWhenNeeded) {
-            for (let s of strassen) {
-                if (stats[s.strasse] > 1) {
-                    result.push({ text: s.strasse + ' (' + s.gemeinde+ ')', value: s });
-                } else {
-                    result.push({ text: s.strasse,                          value: s });
-                }
-            }
-        }
-        return result;
+        t.strassen = res.strasseNames.map((name, n) => ({
+            name,
+            uid: String(n),
+            gemarkungUid: res.strasseGemarkungUids[n],
+            gemeindeUid: t.gemarkungIndex[res.strasseGemarkungUids[n]].gemeindeUid,
+        }));
+
+        return t;
     }
 
-
-    makeGemarkungList(): Array<gws.ui.ListItem> {
-        let sort = a => a.sort((x, y) => x.text.localeCompare(y.text));
-        let gs = this.setup.gemarkungen;
+    gemarkungListItems(): Array<gws.ui.ListItem> {
+        let items = [];
 
         switch (this.setup.ui.gemarkungListMode) {
 
-            case 'plain':
-                return sort(gs.map(g => ({
-                    text: g.gemarkung,
-                    value: _PREFIX_GEMARKUNG + ':' + g.gemarkungUid,
-                })));
+            case gws.api.AlkissearchUiGemarkungListMode.plain:
+                for (let g of this.toponyms.gemarkungen) {
+                    items.push({
+                        text: g.name,
+                        value: _PREFIX_GEMARKUNG + ':' + g.uid,
+                    })
+                }
+                break;
 
-            case 'combined':
-                return sort(gs.map(g => ({
-                    text: g.gemarkung + ' (' + g.gemeinde
-                            .replace(/^Stadt\s+/, '')
-                            .replace(/\(.+/, '')
-                            .trim()
-                        + ')',
-                    value: _PREFIX_GEMARKUNG + ':' + g.gemarkungUid,
-                })));
+            case gws.api.AlkissearchUiGemarkungListMode.combined:
+                for (let g of this.toponyms.gemarkungen) {
+                    items.push({
+                        text: g.name,
+                        extraText: this.toponyms.gemeindeIndex[g.gemeindeUid].name,
+                        value: _PREFIX_GEMARKUNG + ':' + g.uid,
+                    });
+                }
+                break;
 
-            case 'tree':
-                let gemeinde = {};
-
-                gs.forEach(g => gemeinde[g.gemeindeUid] = {
-                    text: g.gemeinde,
-                    uid: g.gemeindeUid,
-                    item: {
-                        text: g.gemeinde,
-                        value: _PREFIX_GEMEINDE + ':' + g.gemeindeUid,
+            case gws.api.AlkissearchUiGemarkungListMode.tree:
+                for (let gd of this.toponyms.gemeinden) {
+                    items.push({
+                        text: gd.name,
+                        value: _PREFIX_GEMEINDE + ':' + gd.uid,
                         level: 1,
-                    }
-                });
-
-                let a = [];
-
-                sort(Object.values(gemeinde)).forEach(gem => {
-                    a.push(gem.item, ...sort(gs
-                        .filter(g => g.gemeindeUid === gem.uid)
-                        .map(g => ({
-                                text: g.gemarkung,
-                                value: _PREFIX_GEMARKUNG + ':' + g.gemarkungUid,
+                    });
+                    for (let gk of this.toponyms.gemarkungen) {
+                        if (gk.gemeindeUid === gd.uid) {
+                            items.push({
+                                text: gk.name,
+                                value: _PREFIX_GEMARKUNG + ':' + gk.uid,
                                 level: 2,
-                            })
-                        )));
-                });
-
-                return a;
+                            });
+                        }
+                    }
+                }
+                break;
         }
 
+        return items;
     }
 
-    async whenStrasseChanged(value){
-        let minimumLookupLength = 3; // maybe pull this from config in future
-        if ( value.length >= minimumLookupLength ){
-            // fetch only missing streets into strassenCache
-            if ( !this.strassenQuerys.includes(value.substr(0,minimumLookupLength)) ){
-                let params = {
-                    strasseMode: this.setup.ui.strasseListMode == gws.api.AlkissearchUiStrasseListMode.searchStart 
-                        ? AlkisStrasseQueryMode.start : AlkisStrasseQueryMode.substring,
-                    strasse: value
-                };
-                
-                this.strassenQuerys.push(value);
+    strasseListItems(strassen: Array<Strasse>): Array<gws.ui.ListItem> {
+        let strasseStats = {}, ls = [];
 
-                let res = await this.app.server.alkissearchFindStrasse(params);
-
-                this.strassenCache = this.strassenCache.concat(res.strassen.filter((item) => this.strassenCache.indexOf(item) < 0));
-            }
-
-            let filterFn = this.setup.ui.strasseListMode == gws.api.AlkissearchUiStrasseListMode.searchStart ? 
-                // filter for value on searchStart
-                (x) => { return x.strasse.toLowerCase().startsWith(value.toLowerCase()) }
-                : // filter for values on search
-                (x) => { return x.strasse.toLowerCase().includes(value.toLowerCase()) };
-
-            let compare = (a,b) => {
-                if (a.text < b.text) return -1;
-                if (a.text > b.text) return 1;
-                return 0;
-            };
-
-            //filter cache -> format into ListItem -> sort
-            this.update({
-                alkisFsStrassen: this.formatStrassenList(this.strassenCache.filter(filterFn)).sort(compare)
-            });
-
-        } else {
-            this.update({
-                alkisFsStrassen: []
-            })
+        for (let s of strassen) {
+            strasseStats[s.name] = (strasseStats[s.name] || 0) + 1;
         }
+
+         switch (this.setup.ui.strasseListMode) {
+
+            case gws.api.AlkissearchUiStrasseListMode.plain:
+                ls = strassen.map(s => ({
+                    text: s.name,
+                    value: s.uid,
+                    extraText: '',
+                }));
+                break;
+
+            case gws.api.AlkissearchUiStrasseListMode.withGemarkung:
+                ls = strassen.map(s => ({
+                    text: s.name,
+                    value: s.uid,
+                    extraText: this.toponyms.gemarkungIndex[s.gemarkungUid].name,
+                }));
+                break;
+
+            case gws.api.AlkissearchUiStrasseListMode.withGemarkungIfRepeated:
+                ls = strassen.map(s => ({
+                    text: s.name,
+                    value: s.uid,
+                    extraText: strasseStats[s.name] > 1
+                        ? this.toponyms.gemarkungIndex[s.gemarkungUid].name
+                        : ''
+                }));
+                break;
+
+            case gws.api.AlkissearchUiStrasseListMode.withGemeinde:
+                ls = strassen.map(s => ({
+                    text: s.name,
+                    value: s.uid,
+                    extraText: this.toponyms.gemeindeIndex[s.gemeindeUid].name,
+                }));
+                break;
+
+            case gws.api.AlkissearchUiStrasseListMode.withGemeindeIfRepeated:
+                ls = strassen.map(s => ({
+                    text: s.name,
+                    value: s.uid,
+                    extraText: strasseStats[s.name] > 1
+                        ? this.toponyms.gemeindeIndex[s.gemeindeUid].name
+                        : ''
+                }));
+                break;
+        }
+
+        return ls.sort((a, b) => a.text.localeCompare(b.text) || a.extraText.localeCompare(b.extraText));
     }
 
-    // only called when gemarkungListMode is NOT "none"
     async whenGemarkungChanged(value) {
-        let strassen = [], params = {
-            gemarkungUid: '',
-            gemeindeUid: '',
-        };
+        let strassen = this.toponyms.strassen,
+            form: FormValues = {
+                gemarkungUid: null,
+                gemeindeUid: null,
+                strasseUid: null,
+            };
 
         if (value) {
             let p = value.split(':');
 
-            if(p[0] === _PREFIX_GEMEINDE) {
-                params.gemeindeUid = p[1];
+            if (p[0] === _PREFIX_GEMEINDE) {
+                form.gemeindeUid = p[1];
+                strassen = this.toponyms.strassen.filter(s => s.gemeindeUid === form.gemeindeUid);
             }
-            if(p[0] === _PREFIX_GEMARKUNG) {
-                params.gemarkungUid = p[1];
+            if (p[0] === _PREFIX_GEMARKUNG) {
+                form.gemarkungUid = p[1];
+                form.gemeindeUid = this.toponyms.gemarkungIndex[p[1]].gemeindeUid;
+                strassen = this.toponyms.strassen.filter(s => s.gemarkungUid === form.gemarkungUid);
             }
-
-            let res = await this.app.server.alkissearchFindStrasse(params);
-
-            if (!res.error)
-                strassen = res.strassen.map(s => ({text: s.strasse, value: s.strasse}));
         }
 
-        this.updateFsParams({
-            ...params,
-            strasse: ''
-        });
+        this.updateForm(form);
 
         this.update({
-            alkisFsStrassen: strassen
+            alkisFsStrasseListItems: this.strasseListItems(strassen),
         });
     };
 
     selectionSearch() {
         let geoms = this.selectionGeometries();
         if (geoms) {
-            this.updateFsParams({shapes: geoms.map(g => this.map.geom2shape(g))});
+            this.updateForm({shapes: geoms.map(g => this.map.geom2shape(g))});
             this.search();
         }
     }
@@ -1138,26 +1122,20 @@ class AlkisController extends gws.Controller {
         this.goTo('selection');
     }
 
-    async search(params?: object) {
-
-        if (params)
-            this.updateFsParams(params);
+    async search() {
 
         this.update({alkisFsLoading: true});
 
-        let p = {...this.getValue('alkisFsParams')};
-        if([
-            gws.api.AlkissearchUiStrasseListMode.all,
-            gws.api.AlkissearchUiStrasseListMode.search,
-            gws.api.AlkissearchUiStrasseListMode.searchStart
-            ].includes(this.setup.ui.strasseListMode) 
-            && p['strasse']
-          ){
-            p['strasse'] = p['strasse'].strasse
+        let params = {...this.getValue('alkisFsFormValues')};
+
+        let strasse = this.toponyms.strassen[Number(params.strasseUid)];
+        if (strasse) {
+            params.gemarkungUid = strasse.gemarkungUid;
+            params.strasse = strasse.name;
         }
-        let res = await this.app.server.alkissearchFindFlurstueck({
-            ...p,
-        });
+        delete params.strasseUid;
+
+        let res = await this.app.server.alkissearchFindFlurstueck(params);
 
         if (res.error) {
             let msg = this.STRINGS.errorGeneric;
@@ -1200,13 +1178,12 @@ class AlkisController extends gws.Controller {
     }
 
     paramsForFeatures(fs: Array<gws.types.IMapFeature>) {
-        let queryParams: gws.api.AlkissearchFindFlurstueckParams = this.getValue('alkisFsParams');
+        let form = this.getValue('alkisFsFormValues');
         return {
-            wantEigentuemer: queryParams.wantEigentuemer,
-            controlInput: queryParams.controlInput,
+            wantEigentuemer: form.wantEigentuemer,
+            controlInput: form.controlInput,
             fsUids: fs.map(f => f.uid),
         }
-
     }
 
     async showDetails(f: gws.types.IMapFeature, highlight = true) {
@@ -1365,8 +1342,8 @@ class AlkisController extends gws.Controller {
 
     reset() {
         this.update({
-            alkisFsParams: {},
-            alkisFsStrassen: [],
+            alkisFsFormValues: {},
+            alkisFsStrasseListItems: [],
         });
         this.clearResults();
         this.stopTools();
@@ -1410,10 +1387,18 @@ class AlkisController extends gws.Controller {
             alkisTab: tab
         });
         if (tab === 'form') {
-            this.updateFsParams({controlInput: ''});
+            this.updateForm({controlInput: null});
         }
     }
 
+    updateForm(obj) {
+        this.update({
+            alkisFsFormValues: {
+                ...this.getValue('alkisFsFormValues'),
+                ...obj
+            }
+        });
+    }
 }
 
 export const tags = {
