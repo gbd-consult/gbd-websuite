@@ -42,6 +42,7 @@
             @end
             @tag ows:Parameter name="resultType"
                 @t ows:Value results
+                @t ows:Value hits
             @end
         @end
 

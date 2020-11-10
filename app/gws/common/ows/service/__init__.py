@@ -262,10 +262,14 @@ class Base(Object):
     def render_template(self, rd: Request, ows_request: str, ows_format: str = None, context=None, format=None):
         mime = gws.tools.mime.get(ows_format)
         if ows_format and not mime:
+            gws.log.debug(f'no mime: ows_request={ows_request!r} ows_format={ows_format!r}')
             raise gws.web.error.BadRequest('Invalid FORMAT')
+
         tpl = gws.common.template.find(self.templates, subject='ows.' + ows_request.lower(), mime=mime)
         if not tpl:
+            gws.log.debug(f'no template: ows_request={ows_request!r} ows_format={ows_format!r}')
             raise gws.web.error.BadRequest('Unsupported FORMAT')
+
         gws.log.debug(f'ows_request={ows_request!r} ows_format={ows_format!r} template={tpl.uid!r}')
 
         context = gws.merge({
@@ -432,14 +436,17 @@ class Base(Object):
 
     # FeatureCaps and collections
 
-    def feature_collection(self, features: t.List[t.IFeature], rd: Request) -> FeatureCollection:
+    def feature_collection(self, features: t.List[t.IFeature], rd: Request, populate=True) -> FeatureCollection:
         coll = FeatureCollection(
             caps=[],
             features=[],
             time_stamp=gws.tools.date.now_iso(with_tz=False),
             num_matched=len(features),
-            num_returned=len(features),
+            num_returned=len(features) if populate else 0,
         )
+
+        if not populate:
+            return coll
 
         default_name = self._parse_name(_DEFAULT_FEATURE_NAME)
 

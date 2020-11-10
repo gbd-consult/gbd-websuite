@@ -47,7 +47,7 @@ class Object(ows.Base):
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getFeature.cx',  # NB use the wfs template
                 subject='ows.GetFeatureInfo',
-                mimeTypes=['xml', 'gml2'],
+                mimeTypes=['xml', 'gml', 'gml3'],
             ),
         ]
 
@@ -177,7 +177,7 @@ class Object(ows.Base):
 
         features = gws.common.search.runner.run(rd.req, args)
 
-        fmt = rd.req.param('info_format') or gws.tools.mime.get('gml2')
+        fmt = rd.req.param('info_format') or 'gml'
         return self.template_response(rd, 'GetFeatureInfo', fmt, context={
             'collection': self.feature_collection(features, rd),
         })
