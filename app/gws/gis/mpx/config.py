@@ -36,6 +36,7 @@ class _Config:
                 'lock_dir': gws.TMP_DIR + '/mpx/locks_' + gws.random_string(16),
                 'tile_lock_dir': gws.TMP_DIR + '/mpx/tile_locks_' + gws.random_string(16),
                 'concurrent_tile_creators': 1,
+                'max_tile_limit': 5000,
 
             },
             'image': {
