@@ -90,12 +90,18 @@ def seed(layers=None, levels=None):
     if layers:
         layers = _as_list(layers)
 
+    st = gws.gis.cache.status(root, layers)
+
+    if not st:
+        print('no cached layers found')
+        return
+
     if levels:
         levels = [int(x) for x in _as_list(levels)]
 
     with gws.tools.misc.lock(_SEED_LOCKFILE) as ok:
         if not ok:
-            gws.log.info('seed already running')
+            print('seed already running')
             return
 
         max_time = root.var('seeding.maxTime')
