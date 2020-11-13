@@ -1,14 +1,14 @@
 Grundkonzepte
 =============
 
-In diesem Kapitel beschreiben wir kurz, auf welche Grundkonzepten die Funktionalität von GWS basiert ist.
+In diesem Kapitel beschreiben wir kurz, auf welchen Grundkonzepten die Funktionalitäten der GBD WebSuite basieren.
 
 Anfragen und URLs
 -----------------
 
-Einmal gestartet, hört die GBD WebSuite auf Ports ``80/443`` und verarbeitet ``GET`` und ``POST`` Anfragen. Wie ein herkömmlicher Webserver kann GWS statische Inhalte wie HTML-Seiten oder Bilder bereitstellen, aber sein Hauptzweck ist es, dynamische Kartenbilder und Daten bereitzustellen. Für dynamische Anfragen gibt es einen einzigen Endpunkt (url), nämlich den ``_`` (Unterstrich). Alle Anfragen an diesen Endpunkt müssen den Befehl (``cmd``) Parameter enthalten. Zusätzlich müssen alle ``POST`` Anfragen im JSON-Format vorliegen.
+Einmal gestartet, hört die GBD WebSuite auf Ports ``80/443`` und verarbeitet ``GET`` und ``POST`` Anfragen. Wie ein herkömmlicher Webserver kann die GBD WebSuite statische Inhalte wie HTML-Seiten oder Bilder bereitstellen, aber der Hauptzweck liegt darin, dynamische Kartenbilder und Daten bereitzustellen. Für dynamische Anfragen gibt es einen einzigen Endpunkt (url), nämlich den ``_`` (Unterstrich). Alle Anfragen an diesen Endpunkt müssen den Befehl (``cmd``) Parameter enthalten. Zusätzlich müssen alle ``POST`` Anfragen im JSON-Format vorliegen.
 
-Hier ein paar Beispiele von Anfragen, die GBD WebSuite bearbeiten kann.
+Hier ein paar Beispiele von Anfragen, die die GBD WebSuite bearbeiten kann.
 
 Eine statische GET-Anfrage: ::
 
@@ -18,7 +18,7 @@ Eine dynamische GET-Anfrage (z. B. ein Kartenbild): ::
 
     http://example.com/_?cmd=mapHttpGetBox&projectUid=london&layerUid=london.map.metro&width=100&height=200
 
-Bei dynamischen GET-Anfragen unterstützt GWS eine alternative Schreibweise mit der die Parameter und Werte mit einem Slash ``/`` getrennt werden: ::
+Bei dynamischen GET-Anfragen unterstützt die GBD WebSuite eine alternative Schreibweise mit der die Parameter und Werte mit einem Slash ``/`` getrennt werden: ::
 
     http://example.com/_/cmd/mapHttpGetBox/projectUid/london/layerUid/london.map.metro/width/100/height/200
 
@@ -107,7 +107,7 @@ Jedes GBD WebSuite Projekt enthält eine *Karte* (``map``), die eine Sammlung vo
 Suche und Features
 ------------------
 
-In GWS sind die Funktionen wie Suche nach dem Schlüsselwort oder auch räumliche Suche durch Klicken oder Ziehen einheitlich *Suche* (``search``) genannt. Es können diverse Such-Quellen (``provider``) konfiguriert werden.
+In der GBD WebSuite sind die Funktionen wie Suche nach dem Schlüsselwort oder auch räumliche Suche durch Klicken oder Ziehen einheitlich *Suche* (``search``) genannt. Es können diverse Such-Quellen (``provider``) konfiguriert werden.
 
 Ein Feature ist ein Objekt das sowohl Sachdaten in Form von *Attributen*, als auch Geoinformation in Form einer *Geometrie* enthält. Die Suchergebnisse sind, unabhängig von der Art der Suche, als eine Liste von Features repräsentiert.
 

@@ -1,34 +1,34 @@
 Übersicht
 =========
 
-Die GWS Konfiguration besteht aus Applikation-Konfigurationsdatei (^app) und optional mehrere Projekt-Konfigurationsdateien (^project). Die Struktur der Konfigurationsobjekte ist in ^../ref/config vollständig beschrieben.
+Die GBD WebSuite Konfiguration besteht aus Applikations-Konfigurationsdatein (^app) und optional mehrere Projekt-Konfigurationsdateien (^project). Die Struktur der Konfigurationsobjekte ist in ^../ref/config vollständig beschrieben.
 
 Konfigurationsformate
 ---------------------
 
-Diese Dateien können in verschiedenen Sprachen geschrieben werden, nämlich JSON, YAML, SLON und Python. Sie können die Sprachen auch frei mischen, z.B. App-Konfig in Python und Projekt-Konfig in YAML.
+Die Konfirgurationen können in verschiedenen Sprachen geschrieben werden, nämlich JSON, YAML, SLON und Python. Sie können die Sprachen auch frei mischen, z.B. App-Konfig in Python und Projekt-Konfig in YAML.
 
 JSON
 ~~~~
 
-JSON (https://www.json.org) ist ein gängiges Konfigurations- und Datenaustauschformat. In dieser Dokumentation verwenden wir JSON für Code-Snippets und Beispiele. Dies ist auch unser Defaultformat: falls Sie keinen expliziten Konfigurationspfad mittels ``GWS_CONFIG`` bestimmen, wird eine JSON Datei ``config.json`` im "Data"-Verzeichnis geladen. JSON Konfigdateien müssen mit dem Erweiterung ``.json`` abgespeichert werden.
+Bei JSON (https://www.json.org) handelt es sich um ein gängiges Konfigurations- und Datenaustauschformat. In dieser Dokumentation verwenden wir JSON für Code-Snippets und Beispiele. Dies ist auch unser Defaultformat: falls Sie keinen expliziten Konfigurationspfad mittels ``GWS_CONFIG`` bestimmen, wird eine JSON Datei ``config.json`` im "Data"-Verzeichnis geladen. JSON Konfigdateien müssen mit der Endung ``.json`` abgespeichert werden.
 
 YAML
 ~~~~
 
-YAML (https://www.yaml.org) ist eine Alternative zu JSON, die einfacher zum Schreiben und Lesen ist. Sie können Ihre Konfiguration in YAML schreiben, mit der gleichen Struktur wie JSON. YAML Konfigdateien müssen mit dem Erweiterung ``.yaml`` abgespeichert werden.
+YAML (https://yaml.org) ist eine Alternative zu JSON, die einfacher zu schreiben und lesen ist. Sie können Ihre Konfiguration in YAML schreiben, mit der gleichen Struktur wie JSON. YAML Konfigdateien müssen mit der Endung ``.yaml`` abgespeichert werden.
 
 SLON
 ~~~~
 
-SLON (https://github.com/gebrkn/slon) ist  eine Alternative zu JSON, die die Strukturen in einer vereinfachten Form darstellt. Bei diesem Format können Sie auch alle Befehle der Templating-Sprache verwenden (wie z.B. ``@include`` oder ``@if``). Konfigdateien im SLON Format müssen eine Erweiterung ``.cx`` haben.
+SLON (https://github.com/gebrkn/slon) ist  eine Alternative zu JSON, die die Strukturen in einer weiter vereinfachten Form darstellt. Bei diesem Format können Sie auch alle Befehle der Templating-Sprache verwenden (wie z.B. ``@include`` oder ``@if``). Konfigdateien im SLON Format müssen eine Erweiterung ``.cx`` haben.
 
 ^SEE Mehr über Templating-Sprache lesen Sie unter ^template.
 
 Python
 ~~~~~~
 
-Komplexe, sich wiederholende oder hochdynamische Konfigurationen können auch direkt in Programmiersprache Python geschrieben werden. Die Python-Konfigurationsdatei muss eine Funktion ``config()`` enthalten, die einen Python ``dict`` zurückgibt. Beachten Sie, dass Ihr Konfigurationsmodul innerhalb des Containers ausgeführt wird und daher mit Python 3.6 kompatibel sein muss.
+Komplexe, sich wiederholende oder hochdynamische Konfigurationen können auch direkt in def Programmiersprache Python geschrieben werden. Die Python-Konfigurationsdatei muss eine Funktion ``config()`` enthalten, die einen Python ``dict`` zurückgibt. Beachten Sie, dass Ihr Konfigurationsmodul innerhalb des Containers ausgeführt wird und daher mit Python 3.6 kompatibel sein muss.
 
 Struktur der Konfiguration
 --------------------------
@@ -37,7 +37,7 @@ Auf der obersten Ebene, ist die Konfiguration eine Schlüssel-Wert Struktur (*di
 
 Einige Schlüssel-Wert Strukturen haben eine grundlegende Eigenschaft Typ (``type``), der angibt, zu welchem Typ die gegebene Struktur gehört. Diese Eigenschaft ist stets anzugeben.
 
-Eine weitere grundlegende Eigenschaft Identifikator (``uid``) ist dagegen Optional und ist nur dann anzugeben, wenn Sie auf die gegebene Struktur an weiteren Stellen der Konfiguration verweisen möchten. In anderen Fällen wird die ``uid`` aus dem Objekt-Titel bzw Typ automatisch generiert.
+Eine weitere grundlegende Eigenschaft, def Identifikator (``uid``), ist dagegen Optional und ist nur dann anzugeben, wenn Sie auf die gegebene Struktur an weiteren Stellen der Konfiguration verweisen möchten. In anderen Fällen wird die ``uid`` aus dem Objekt-Titel bzw. Typ automatisch generiert.
 
 Laden der Konfiguration
 -----------------------

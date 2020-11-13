@@ -3,7 +3,7 @@ Applikation Konfiguration
 
 ^REF gws.common.application.Config
 
-Die wichtigsten Teile der App-Konfiguration sind die folgenden Abschnitte, die weiter im Detail beschrieben werden:
+Die wichtigsten Teile der App-Konfiguration sind die folgenden Abschnitte, welche weiter im Detail beschrieben werden:
 
 {TABLE}
     ``api`` |  Server-Aktionen (s. ^action)

@@ -4,7 +4,7 @@ Installation
 Vor der Installation
 --------------------
 
-Als Docker-Anwendung benötigt die GBD WebSuite keine Installation per se, aber Sie müssen ein paar Dinge wissen, um es zum Laufen zu bringen.
+Als Docker-Anwendung benötigt die GBD WebSuite keine Installation per se, aber Sie müssen ein paar Dinge einstellen, damit die GBD WebSuite problemfrei starten kann.
 
 Verzeichnisse
 ~~~~~~~~~~~~~
@@ -18,7 +18,7 @@ Die GBD WebSuite benötigt einige Verzeichnisse, die von Ihrem Host-Rechner eing
 Nutzer
 ~~~~~~
 
-GWS wird intern standardmäßig als Nutzer- und Gruppen-ID ``1000`` ausgeführt. Sorgen Sie bitte dafür, das dieser Nutzer in Ihrem Hostsystem
+Die GBD WebSuite wird intern standardmäßig als Nutzer- und Gruppen-ID ``1000`` ausgeführt. Sorgen Sie bitte dafür, das dieser Nutzer in Ihrem Hostsystem
 
 - über Leserechte für alle *Daten*-Verzeichnisse verfügt
 - über Schreib- und Leserechte für *var* und *tmp* Verzeichnisse
@@ -28,14 +28,14 @@ Sie können die ``uid/gid``  Werte mit Umgebungsvariablen ``GWS_UID`` und ``GWS_
 Port
 ~~~~
 
-Die GBD WebSuite zeigt die Ports ``80`` und ``443`` an. Sie können sie auf alles abbilden, was Sie beim Testen wollen, und auf echte 80/443 in der Produktion.
+Die GBD WebSuite benutzt die Ports ``80`` und ``443``. Sie können sie auf alles abbilden, was Sie beim Testen wollen, und auf echte 80/443 in der Produktion.
 
 Konfiguration
 ~~~~~~~~~~~~~
 
-Die GBD WebSuite erwartet die Konfiguration in ``/data/config. json``. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable ``GWS_CONFIG`` auf den Pfad Ihrer Konfigurationsdatei.
+Die GBD WebSuite erwartet die Konfiguration in ``/data/config.json``. Wenn Sie einen anderen Speicherort und/oder ein anderes Format bevorzugen, setzen Sie die Umgebungsvariable ``GWS_CONFIG`` auf den Pfad Ihrer Konfigurationsdatei.
 
-^SEE Die Konfigurationsformate sind unter ^config/intro beschreiben.
+^SEE Die Konfigurationsformate sind unter ^config/intro beschrieben.
 
 Externe Adressen
 ~~~~~~~~~~~~~~~~
@@ -45,15 +45,15 @@ Wenn Ihr GBD WebSuite Container externe Verbindungen benötigt (höchstwahrschei
 Einstiegspunkt
 ~~~~~~~~~~~~~~
 
-Die GBD WebSuite hat einen einzigen Einstiegspunkt, ein Shell-Skript namens ``gws``. Um den Server zu starten und zu stoppen, möchten Sie einen von diesen ::
+Die GBD WebSuite hat einen einzigen Einstiegspunkt, ein Shell-Skript namens ``gws``. Um den Server zu starten oder zu stoppen, nutzen Sie die folgenden Befehle:
 
     gws server start
     gws server stop
 
-Ausführen mit ``docker run``
+Ausführen mit ``gws``-Shell-Skript
 ----------------------------
 
-Also, hier sind Optionen, die Sie in Ihrem ``docker run`` Befehl anpassen müssen:
+Folgende Optionen müseen Sie in Ihrem ``gws``-Shell-Skript anpassen:
 
 - ein oder mehrere *Daten*-Verzeichnisse einbinden
 - *var* und *tmp* Verzeichnisse einbinden
@@ -61,7 +61,7 @@ Also, hier sind Optionen, die Sie in Ihrem ``docker run`` Befehl anpassen müsse
 - Konfigurationspfad
 - externe Hosts
 
-Hier ist eine Skript-Vorlage, die GWS mittels ``docker run`` startet. Sie können diese Vorlage nach Ihren Bedürfnissen anpassen. ::
+Hier ist eine Skript-Vorlage, die die GBD WebSuite mittels ``docker run`` startet. Sie können diese Vorlage nach Ihren Bedürfnissen anpassen. ::
 
     #!/usr/bin/env bash
 
@@ -111,7 +111,7 @@ Sobald Sie dieses Skript als z.B. ``gws`` in Ihren Pfad abspeichern, können Sie
 Aktuellen Quellcode anbinden
 ----------------------------
 
-Da die GBD-Websuite aktiv entwickelt wird, kann es vorkommen, das eine in dem Docker-Image enthaltene Version von unserem Quellcode veraltet wird. Sie können aber das Image mit der aktuellen Version ausführen indem Sie das Quellcodeverzeichnis unter ``gws-app`` mounten.
+Da die GBD WebSuite aktiv entwickelt wird, kann es vorkommen, dass eine in dem Docker-Image enthaltene Version von unserem Quellcode veraltet ist. Sie können aber das Image mit der aktuellen Version ausführen indem Sie das Quellcodeverzeichnis unter ``gws-app`` mounten.
 
 Laden Sie zuerst unser Paket von Ihrer Version herunter (in diesem Fall, Version 6.1): ::
 

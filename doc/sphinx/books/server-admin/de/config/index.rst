@@ -1,7 +1,7 @@
 Konfiguration
 =============
 
-In diesem Kapitel finden Sie eine detaillierte Beschreibung der GWS Konfiguration. Da unsere Konfiguration sehr umfangreich ist, haben wir die Beschreibung in konzeptuelle Anschnitte unterteilt.
+In diesem Kapitel finden Sie eine detaillierte Beschreibung der GBD WebSuite Konfiguration. Da die Konfiguration sehr umfangreich ist, haben wir die Beschreibung in konzeptuelle Anschnitte unterteilt.
 
 Einführung
 ----------
