@@ -35,7 +35,7 @@ interface FormValues {
     gemeindeUid?: string;
     hausnummer?: string;
     name?: string;
-    strasseUid?: number;
+    strasseUid?: string;
     vnum?: string;
     vorname?: string;
     wantEigentuemer?: boolean;
@@ -984,7 +984,7 @@ class AlkisController extends gws.Controller {
             strasseStats[s.name] = (strasseStats[s.name] || 0) + 1;
         }
 
-         switch (this.setup.ui.strasseListMode) {
+        switch (this.setup.ui.strasseListMode) {
 
             case gws.api.AlkissearchUiStrasseListMode.plain:
                 ls = strassen.map(s => ({
@@ -1128,10 +1128,12 @@ class AlkisController extends gws.Controller {
 
         let params = {...this.getValue('alkisFsFormValues')};
 
-        let strasse = this.toponyms.strassen[Number(params.strasseUid)];
-        if (strasse) {
-            params.gemarkungUid = strasse.gemarkungUid;
-            params.strasse = strasse.name;
+        if (!gws.tools.empty(params.strasseUid)) {
+            let strasse = this.toponyms.strassen[Number(params.strasseUid)];
+            if (strasse) {
+                params.gemarkungUid = strasse.gemarkungUid;
+                params.strasse = strasse.name;
+            }
         }
         delete params.strasseUid;
 
