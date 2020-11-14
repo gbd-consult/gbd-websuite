@@ -75,7 +75,7 @@ def seed(root: t.IRootObject, layer_uids=None, max_time=None, concurrency=1, lev
         seeds[layer.cache_uid] = _seed_config(layer, cc, levels)
 
     if not seeds:
-        return False
+        return True
 
     path = gws.CONFIG_DIR + '/mapproxy.seed.yaml'
     cfg = {

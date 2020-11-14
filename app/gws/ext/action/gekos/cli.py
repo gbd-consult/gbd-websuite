@@ -5,7 +5,7 @@ COMMAND = 'gekos'
 
 
 @arg('--project', help='project unique ID')
-def load(project=None):
+def setup(project=None):
     """Load the data from Gekos-Online into a postgres table"""
 
     a = clihelpers.find_action('gekos', project)

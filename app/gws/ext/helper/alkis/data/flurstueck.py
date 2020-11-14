@@ -411,9 +411,13 @@ def _add_strasse_param(query, where, parms):
         return
 
 
-def strasse_list(conn, query: dict):
+def strasse_list(conn: AlkisConnection, query: dict):
     where = ["strasse NOT IN ('ohne Lage')"]
     parms = []
+
+    if conn.exclude_gemarkung:
+        where.append('gemarkung_id NOT IN (%s)' % ','.join(['%s'] * len(conn.exclude_gemarkung)))
+        parms.extend(conn.exclude_gemarkung)
 
     if 'gemeindeUid' in query:
         where.append('gemeinde_id=%s')

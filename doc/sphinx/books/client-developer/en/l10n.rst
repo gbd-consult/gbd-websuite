@@ -21,12 +21,8 @@ This file must export a single object ``message identifier : translated text``:
         // etc
     }
 
-
 To list all message identifiers used in the project, run the following command in the ``gws-client`` directory:
 
 ::
 
     find  ./src -regex '.*tsx?$' | xargs grep __
-
-
-

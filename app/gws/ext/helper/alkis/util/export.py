@@ -17,16 +17,18 @@ We flatten it first, creating a list 'some.nested.key, list positions, value'
 
 
 class GroupConfig(t.Config):
-    """Export group configuration."""
-    title: str
-    eigentuemer: bool = False
-    buchung: bool = False
-    dataModel: t.Optional[gws.common.model.Config]
+    """Export group configuration"""
+
+    title: str  #: title for this group
+    eigentuemer: bool = False #: include Eigentuemer (owner) data
+    buchung: bool = False  #: include Grundbuch (register) data
+    dataModel: t.Optional[gws.common.model.Config] #: data model for this group
 
 
 class Config(t.WithAccess):
-    """CSV Export configuration."""
-    groups: t.Optional[t.List[GroupConfig]]
+    """CSV Export configuration"""
+
+    groups: t.Optional[t.List[GroupConfig]] #: export groups
 
 
 # default export groups configuration

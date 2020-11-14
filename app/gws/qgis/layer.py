@@ -121,6 +121,9 @@ class Object(gws.common.layer.Group):
         if not la:
             return
 
+        la['cache'] = self.var('cache')
+        la['grid'] = self.var('grid')
+
         if not sl.is_queryable:
             return la
 
@@ -193,8 +196,6 @@ class Object(gws.common.layer.Group):
                 'names': names
             },
             'path': self.path,
-            'cache': self.var('cache'),
-            'grid': self.var('grid'),
         }
 
         return la

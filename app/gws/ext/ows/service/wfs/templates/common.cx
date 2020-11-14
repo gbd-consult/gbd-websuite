@@ -23,14 +23,27 @@
             @tag ows:Parameter name="AcceptVersions"
                 @_wfs_versions
             @end
+            @tag ows:Parameter name="AcceptFormats"
+                @t ows:Value text/xml
+            @end
         @end
 
         @tag ows:Operation name="DescribeFeatureType"
             @ows_service_url
+            @tag ows:Parameter name="outputFormat"
+                @t ows:Value text/xml; subtype=gml/3.1.1
+            @end
         @end
 
         @tag ows:Operation name="GetFeature"
             @ows_service_url
+            @tag ows:Parameter name="outputFormat"
+                @t ows:Value text/xml; subtype=gml/3.1.1
+            @end
+            @tag ows:Parameter name="resultType"
+                @t ows:Value results
+                @t ows:Value hits
+            @end
         @end
 
         @tag ows:Parameter name="version"

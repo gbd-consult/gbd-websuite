@@ -32,16 +32,18 @@ class Mode(t.Enum):
 
 
 class PermissionRule(t.WithAccess):
+    """Permission rule for a storage category"""
+
     category: str  #: storage category name
     mode: Mode  #: allowed mode (read/write)
 
 
 class Config(t.WithType):
-    """Storage"""
+    """Storage helper"""
 
-    backend: Backend
-    path: t.Optional[str]
-    permissions: t.Optional[t.List[PermissionRule]]
+    backend: Backend  #: backend type
+    path: t.Optional[str]  #: path to the storage file
+    permissions: t.Optional[t.List[PermissionRule]]  #: permission rules
 
 
 #:export
@@ -120,10 +122,9 @@ class Object(gws.Object):
 
     def can_write_category(self, category: str, user: t.IUser) -> bool:
         return self._can_use(category, user, Mode.write)
-    
-    def _can_use(self, category: str, user: t.IUser, mode):   
+
+    def _can_use(self, category: str, user: t.IUser, mode):
         for p in self.permissions:
             if p.category in (category, '*') and p.mode in (mode, Mode.all) and user.can_use(p):
                 return True
         return False
-

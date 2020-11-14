@@ -4,7 +4,6 @@ GBD WebSuite
 Funktionalität
 ..............
 
-
 Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis von Plugins zur Verfügung gestellt und flexibel konfiguriert werden können.
 Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebung angepasst oder in diese integriert werden. Die aktuelle Funktionalität umfasst:
 
@@ -24,7 +23,6 @@ Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebu
 * Drucken in unterschiedlicher Auflösung inklusive redlining
 * Screenshots erstellen im PNG-Format
 
-
 GBD WebSuite Server und Client
 ..............................
 
@@ -39,7 +37,6 @@ Die UI Bibliothek wird über einen Abstraktionslayer angesprochen, sodass diese 
 Da nahezu alle Server- und Client-Funktionalitäten Plugin-basiert sind, können sehr kleine, angepasste Tools für bestimmte Installationen und Zwecke bereitgestellt werden.
 Selbst die Integration von QGIS Funktionalitäten ist als Plugin realisiert.
 Dabei besteht die Möglichkeit, dass QGIS Desktop Benutzer über ein Plugin, Anpassungen an der Konfiguration von Server und Client vornehmen können.
-
 
 Die GBD WebSuite ist eine WebGIS Anwendung. Demzufolge verwendet diese für die Darstellung von Daten in der Karte WebGIS Layer und WebGIS Gruppen.
 Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine Übersicht von verwendeten Abkürzungen.
@@ -68,8 +65,6 @@ Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine �
 | |delete_shelf|         | Leeren der Ablage                                                                    |
 +------------------------+--------------------------------------------------------------------------------------+
 
-
-
 Die **GBD WebSuite** ist eine webbasierte Open Source GIS Plattform zur Geodatenverarbeitung.
 Sie beinhaltet den GBD WebSuite Server und GBD WebSuite Client und zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus, externe Anwendungen und neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen.
 Die Kern-Bibliotheken von Client und Server sind schlank gehalten. Die gesamte Architektur ist Plugin-basiert.
@@ -95,8 +90,6 @@ Die GBD WebSuite als **Applikations Server**:
   *  verfügt über eine modulare Architektur zur einfachen Integration von (Fach)-Anwendungen
 
 Die GBD WebSuite wird als Docker Image bereitgestellt und kann plattformunabhängig in IT-Infrastrukturen integriert werden. Sie kombiniert die Funktionalität zahlreicher Open Source Software, wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
-
-
 
  .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
    :width: 30em

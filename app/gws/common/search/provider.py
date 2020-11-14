@@ -8,10 +8,17 @@ import gws.types as t
 _DEFAULT_PIXEL_TOLERANCE = 10
 
 
+#:export
+class SearchSpatialContext(t.Enum):
+    map = 'map'  #: search in the map extent
+    view = 'view'  #: search in the client view extent
+
+
 class Config(t.WithTypeAndAccess):
     dataModel: t.Optional[gws.common.model.Config]  #: feature data model
-    defaultContext: str = ''  #: default spatial context ('view' or 'map')
+    defaultContext: t.Optional[SearchSpatialContext] = 'map'  #: default spatial context
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
+    title: t.Optional[str]  #: provider title
     tolerance: str = '10px'  #: tolerance, in pixels or map units
     withGeometry: bool = True  #: enable geometry search
     withKeyword: bool = True  #: enable keyword search
@@ -45,31 +52,45 @@ class Object(gws.Object, t.ISearchProvider):
 
         self.with_keyword: bool = self.var('withKeyword', default=True)
         self.with_geometry: bool = self.var('withGeometry', default=True)
+        self.spatial_context: SearchSpatialContext = self.var('defaultContext', default=SearchSpatialContext.map)
+        self.title: str = self.var('title', default='')
 
     def can_run(self, args: t.SearchArgs):
         if not self.active:
+            gws.log.debug('can_run: inactive')
             return False
 
         if args.keyword:
-            if not (CAPS_KEYWORD & self.capabilties) or not self.with_keyword:
+            if not (CAPS_KEYWORD & self.capabilties):
+                gws.log.debug('can_run: no keyword caps')
+                return False
+            if not self.with_keyword:
+                gws.log.debug('can_run: with_keyword=false')
                 return False
 
-        geom = args.bounds or args.shapes
-        if geom:
-            if not (CAPS_GEOMETRY & self.capabilties) or not self.with_geometry:
+        if args.shapes:
+            if not (CAPS_GEOMETRY & self.capabilties):
+                gws.log.debug('can_run: no geometry caps')
+                return False
+            if not self.with_geometry:
+                gws.log.debug('can_run: with_geometry=false')
                 return False
 
         if args.filter:
-            if not (CAPS_GEOMETRY & self.capabilties):
+            if not (CAPS_FILTER & self.capabilties):
+                gws.log.debug('can_run: no filter caps')
                 return False
 
-        return bool(args.keyword or geom or args.filter)
+        if args.keyword or args.shapes or args.filter:
+            return True
+
+        gws.log.debug('can_run: not enough args')
+        return False
 
     def context_shape(self, args: t.SearchArgs) -> t.IShape:
         if args.get('shapes'):
             return gws.gis.shape.union(args.shapes)
-        ctx = self.var('defaultContext')
-        if ctx == 'view' and args.bounds:
+        if self.spatial_context == SearchSpatialContext.view and args.bounds:
             return gws.gis.shape.from_bounds(args.bounds)
         return gws.gis.shape.from_bounds(args.project.map.bounds)
 

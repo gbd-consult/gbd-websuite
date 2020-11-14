@@ -2,6 +2,8 @@
 
 import gws
 import gws.common.metadata
+import gws.gis.bounds
+import gws.gis.proj
 import gws.gis.source
 import gws.tools.xml2
 
@@ -16,7 +18,6 @@ def parse(prov, xml):
     prov.type = 'WMS'
     prov.meta = t.MetaData(u.get_meta(el.first('Service')))
     prov.meta.contact = t.MetaContact(u.get_meta_contact(el.first('Service.ContactInformation')))
-    prov.meta.url = u.get_url(el.first('Service.OnlineResource'))
     prov.version = el.attr('version')
     prov.operations = u.get_operations(el.first('Capability'))
     prov.source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Capability.Layer'))
@@ -27,6 +28,16 @@ def _layer(el, parent=None):
     oo = t.SourceLayer()
 
     oo.supported_bounds = u.get_bounds_list(el)
+
+    if oo.supported_bounds:
+        # in addition to specific bounds (above), add crs listed in CRS/SRS tags
+        cs = set(b.crs for b in oo.supported_bounds)
+        for e in el.all('crs') or el.all('srs'):
+            proj = gws.gis.proj.as_proj(e.text)
+            if proj and proj.epsg not in cs:
+                oo.supported_bounds.append(gws.gis.bounds.transformed_to(oo.supported_bounds[0], proj))
+                cs.add(proj.epsg)
+
     oo.styles = [u.get_style(e) for e in el.all('Style')]
     oo.is_queryable = el.attr('queryable') == '1'
     oo.is_visible = True

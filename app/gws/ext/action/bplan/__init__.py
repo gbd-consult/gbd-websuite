@@ -32,16 +32,16 @@ class PlanTypeConfig(t.Config):
 
 
 class Config(t.WithTypeAndAccess):
-    """Construction plans action"""
+    """Construction plans management action"""
 
     db: str = ''  #: database provider ID
     crs: t.Crs  #: CRS for the bplan data
     planTable: gws.common.db.SqlTableConfig  #: plan table configuration
     metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
     dataDir: t.DirPath  #: data directory
-    templates: t.List[t.ext.template.Config]
-    administrativeUnits: t.List[AdministrativeUnitConfig]
-    planTypes: t.List[PlanTypeConfig]
+    templates: t.List[t.ext.template.Config] #: templates
+    administrativeUnits: t.List[AdministrativeUnitConfig] #: Administrative Units
+    planTypes: t.List[PlanTypeConfig] #: Plan Types
     imageQuality: int = 24  #: palette size for optimized images
     uploadChunkSize: int  #: upload chunk size in mb
 
@@ -115,6 +115,9 @@ class LoadInfoResponse(t.Response):
     info: str
 
 
+_RELOAD_FILE = gws.VAR_DIR + '/bplan.reload'
+
+
 class Object(gws.common.action.Object):
 
     def configure(self):
@@ -144,8 +147,12 @@ class Object(gws.common.action.Object):
         self.au_key_col = 'ags'
         self.au_name_col = 'gemeinde'
         self.type_col = 'typ'
+        self.time_col = 'rechtskr'
         self.x_coord_col = 'utm_ost'
         self.y_coord_col = 'utm_nord'
+
+        gws.write_file(_RELOAD_FILE, gws.random_string(16))
+        self.root.application.monitor.add_path(_RELOAD_FILE)
 
     def post_configure(self):
         super().post_configure()
@@ -290,6 +297,7 @@ class Object(gws.common.action.Object):
                 ''', [au_uid, req.user.fid, gws.tools.json2.to_pretty_string(p.meta)])
 
         self._load_db_meta()
+        self.signal_reload('metadata')
 
         return SaveUserMetaResponse()
 
@@ -302,6 +310,10 @@ class Object(gws.common.action.Object):
 
     def do_update(self):
         importer.update(self)
+
+    def signal_reload(self, source):
+        gws.log.debug(f'bplan reload signal {source!r}')
+        gws.write_file(_RELOAD_FILE, gws.random_string(16))
 
     def _au_list_for(self, user):
         return [
@@ -329,7 +341,11 @@ class Object(gws.common.action.Object):
                 metas[au_uid] = gws.common.metadata.from_dict(gws.tools.json2.from_string(r['meta']))
 
             rs = conn.select(f'''
-                SELECT _au, MIN(_updated) AS mi, MAX(_updated) AS ma
+                SELECT _au, 
+                    MIN(_updated) AS min_updated, 
+                    MAX(_updated) AS max_updated,
+                    MIN(CASE WHEN {self.time_col} != '' THEN DATE({self.time_col}) ELSE _updated END) AS min_time,
+                    MAX(CASE WHEN {self.time_col} != '' THEN DATE({self.time_col}) ELSE _updated END) AS max_time
                 FROM {conn.quote_table(self.plan_table.name)}
                 GROUP BY _au
             ''')
@@ -338,8 +354,12 @@ class Object(gws.common.action.Object):
                 au_uid = r['_au']
                 if au_uid not in metas:
                     metas[au_uid] = t.MetaData()
-                metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['mi']), with_tz='Z')
-                metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['ma']), with_tz='Z')
+                metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['min_updated']), with_tz='Z')
+                metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['max_updated']), with_tz='Z')
+                metas[au_uid].dateBegin = gws.tools.date.to_iso(gws.tools.date.to_utc(r['min_time']), with_tz='Z')
+                metas[au_uid].dateEnd = gws.tools.date.to_iso(gws.tools.date.to_utc(r['max_time']), with_tz='Z')
+
+        # extend metadata for "our" objects
 
         for obj in self.root.find_all():
             uid = gws.get(obj, 'uid') or ''
@@ -353,7 +373,8 @@ class Object(gws.common.action.Object):
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     args = gws.tools.json2.from_string(job.args)
-    action = root.find('gws.ext.action', args['actionUid'])
+    action = t.cast(Object, root.find('gws.ext.action', args['actionUid']))
     job.update(state=gws.tools.job.State.running)
     stats = importer.run(action, args['path'], args['replace'], args['auUid'], job)
     job.update(result={'stats': stats})
+    action.signal_reload('worker')

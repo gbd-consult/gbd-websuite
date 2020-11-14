@@ -24,6 +24,9 @@ class Config(gws.common.ows.service.Config):
     pass
 
 
+_GETMAP_MANDATORY_PARAMS = ['version', 'request', 'layers', 'styles', 'bbox', 'width', 'height', 'format']
+
+
 class Object(ows.Base):
 
     @property
@@ -44,7 +47,7 @@ class Object(ows.Base):
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getFeature.cx',  # NB use the wfs template
                 subject='ows.GetFeatureInfo',
-                mimeTypes=['xml', 'gml2'],
+                mimeTypes=['xml', 'gml', 'gml3'],
             ),
         ]
 
@@ -98,6 +101,18 @@ class Object(ows.Base):
         })
 
     def handle_getmap(self, rd: ows.Request):
+        if self.strict_params:
+            for p in _GETMAP_MANDATORY_PARAMS:
+                if not rd.req.has_param(p):
+                    raise gws.web.error.BadRequest(f'Required parameter missing: {p}')
+            if not rd.req.has_param('crs') and not rd.req.has_param('srs'):
+                raise gws.web.error.BadRequest('Required parameter missing: CRS')
+
+        trans = rd.req.param('transparent', '').lower()
+        if trans:
+            if self.strict_params and trans not in ('true', 'false'):
+                raise gws.web.error.BadRequest('Invalid parameter: TRANSPARENT')
+
         bounds = self._request_bounds(rd)
         if not bounds:
             raise gws.web.error.BadRequest('Invalid BBOX')
@@ -162,7 +177,7 @@ class Object(ows.Base):
 
         features = gws.common.search.runner.run(rd.req, args)
 
-        fmt = rd.req.param('info_format') or gws.tools.mime.get('gml2')
+        fmt = rd.req.param('info_format') or 'gml'
         return self.template_response(rd, 'GetFeatureInfo', fmt, context={
             'collection': self.feature_collection(features, rd),
         })

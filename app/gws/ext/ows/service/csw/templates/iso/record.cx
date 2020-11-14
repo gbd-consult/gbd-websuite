@@ -2,28 +2,45 @@
 
 @let ML_GMX_CODELISTS "https://standards.iso.org/iso/19139/resources/gmxCodelists.xml"
 
-@def publication_date(d)
+@def CODE(tag, value)
+    @let wrap, lst = tag.split('/')
+    @tag gmd:{wrap}
+        @tag gmd:{lst}
+            @a codeList="{ML_GMX_CODELISTS}#{lst}"
+            @a codeListValue="{value}"
+        @end
+    @end
+@end
+
+@def DATE(d, type)
     @tag gmd:date/gmd:CI_Date
-        @t gmd:date/gco:Date {d}
-        @t gmd:dateType/gmd:CI_DateTypeCode codeList="{ML_GMX_CODELISTS}#CI_DateTypeCode" codeListValue="publication"
+        @t gmd:date/gco:Date {d | date}
+        @CODE "dateType/CI_DateTypeCode", type
     @end
 @end
 
 @def contact(co, role='pointOfContact')
     @tag gmd:CI_ResponsibleParty
         @t gmd:organisationName/gco:CharacterString {co.organization}
-        @tag gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address
-            @t gmd:deliveryPoint/gco:CharacterString {co.address}
-            @t gmd:city/gco:CharacterString {co.city}
-            @t gmd:administrativeArea/gco:CharacterString {co.area}
-            @t gmd:postalCode/gco:CharacterString {co.zip}
-            @t gmd:country/gco:CharacterString {co.country}
-            @t gmd:electronicMailAddress/gco:CharacterString {co.email}
+        @t gmd:positionName/gco:CharacterString {co.position}
+        @tag gmd:contactInfo/gmd:CI_Contact
+            @tag gmd:phone/gmd:CI_Telephone
+                @t gmd:voice/gco:CharacterString {co.phone}
+                @with co.fax
+                    @t gmd:facsimile/gco:CharacterString {co.fax}
+                @end
+            @end
+            @tag gmd:address/gmd:CI_Address
+                @t gmd:deliveryPoint/gco:CharacterString {co.address}
+                @t gmd:city/gco:CharacterString {co.city}
+                @t gmd:administrativeArea/gco:CharacterString {co.area}
+                @t gmd:postalCode/gco:CharacterString {co.zip}
+                @t gmd:country/gco:CharacterString {co.country}
+                @t gmd:electronicMailAddress/gco:CharacterString {co.email}
+            @end
+            @t gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL {co.url}
         @end
-        @tag gmd:role/gmd:CI_RoleCode
-            @a codeList="{ML_GMX_CODELISTS}#CI_RoleCode"
-            @a codeListValue={role}
-        @end
+        @CODE "role/CI_RoleCode", role
     @end
 @end
 
@@ -39,7 +56,8 @@
 @def identification
     @tag gmd:citation/gmd:CI_Citation
         @t gmd:title/gco:CharacterString {meta.title}
-        @publication_date meta.dateCreated
+        @DATE meta.dateCreated, "publication"
+        @DATE meta.dateUpdated, "revision"
         @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.catalogUid}
     @end
 
@@ -51,16 +69,26 @@
 
     @if meta.inspireTheme
         @tag gmd:descriptiveKeywords/gmd:MD_Keywords
-            @t gmd:keyword/gco:CharacterString {meta.inspireThemeNameEn}
-            @t gmd:type/gmd:MD_KeywordTypeCode codeList="{ML_GMX_CODELISTS}#MD_KeywordTypeCode" codeListValue="theme"
+            @t gmd:keyword/gco:CharacterString {meta.inspireThemeName}
+            @CODE "type/MD_KeywordTypeCode", "theme"
             @tag gmd:thesaurusName/gmd:CI_Citation
                 @t gmd:title/gco:CharacterString GEMET - INSPIRE themes, version 1.0
-                @publication_date '2008-06-01'
+                @DATE "2008-06-01", "publication"
             @end
         @end
     @end
 
-    @with meta.keywords
+    @if meta.inspireSpatialScope
+        @tag gmd:descriptiveKeywords/gmd:MD_Keywords
+		    @t gmd:keyword/gmx:Anchor xlink:href="http://inspire.ec.europa.eu/metadata-codelist/SpatialScope/{meta.inspireSpatialScope}" {meta.inspireSpatialScope | title}
+            @tag gmd:thesaurusName/gmd:CI_Citation
+                @t gmd:title/gmx:Anchor xlink:href="http://inspire.ec.europa.eu/metadata-codelist/SpatialScope" Spatial scope
+    			@DATE "2019-05-22", "publication"
+            @end
+        @end
+    @end
+
+    @if meta.keywords
         @tag gmd:descriptiveKeywords/gmd:MD_Keywords
             @each meta.keywords as kw
                 @t gmd:keyword/gco:CharacterString {kw}
@@ -68,23 +96,39 @@
         @end
     @end
 
-    @t gmd:resourceConstraints/gmd:MD_Constraints/gmd:useLimitation/gco:CharacterString {meta.accessConstraints}
-    @t gmd:spatialRepresentationType/gmd:MD_SpatialRepresentationTypeCode codeList="{ML_GMX_CODELISTS}#MD_SpatialRepresentationTypeCode" codeListValue={meta.isoSpatialRepresentationType}
+    @tag gmd:resourceConstraints/gmd:MD_LegalConstraints
+        @CODE "accessConstraints/MD_RestrictionCode", "otherRestrictions"
+        @CODE "useConstraints/MD_RestrictionCode", "otherRestrictions"
+        @with meta.license
+            @t gmd:otherConstraints/gco:CharacterString {meta.license}
+        @end
+        @t gmd:otherConstraints/gco:CharacterString {meta.accessConstraints}
+    @end
+
+    @CODE "spatialRepresentationType/MD_SpatialRepresentationTypeCode", meta.isoSpatialRepresentationType
 
     @with meta.minScale
         @t gmd:spatialResolution/gmd:MD_Resolution/gmd:equivalentScale/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer {meta.minScale}
     @end
 
-    @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="{meta.language3}"
-    @t gmd:characterSet/gmd:MD_CharacterSetCode codeList="{ML_GMX_CODELISTS}#MD_CharacterSetCode" codeListValue="utf8"
+    @CODE "language/LanguageCode", meta.language3
+    @CODE "characterSet/MD_CharacterSetCode", "utf8"
 
     @with meta.isoTopicCategory
         @t gmd:topicCategory/gmd:MD_TopicCategoryCode {meta.isoTopicCategory}
     @end
 
-    @with meta.extent4326
-        @tag gmd:extent/gmd:EX_Extent/gmd:geographicElement
-            @bounding_box meta.extent4326
+    @tag gmd:extent/gmd:EX_Extent
+        @with meta.extent4326
+            @tag gmd:geographicElement
+                @bounding_box meta.extent4326
+            @end
+        @end
+        @with meta.dateBegin
+            @tag gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod
+                @t gml:beginPosition {meta.dateBegin | date}
+                @t gml:endPosition {meta.dateEnd | date}
+            @end
         @end
     @end
 @end
@@ -94,40 +138,34 @@
         @each meta.links as link
             @tag gmd:onLine/gmd:CI_OnlineResource
                 @t gmd:linkage/gmd:URL {url_for(link.url)}
-                @t gmd:function/gmd:CI_OnLineFunctionCode codeList="{ML_GMX_CODELISTS}#CI_OnLineFunctionCode" codeListValue={link.function}
+                @CODE "function/CI_OnLineFunctionCode", link.function
             @end
         @end
     @end
 @end
 
 @def dataQualityInfo
-    @t gmd:scope/gmd:DQ_Scope/gmd:level/gmd:MD_ScopeCode codeList="{ML_GMX_CODELISTS}#MD_ScopeCode" codeListValue={meta.isoScope}
+    @tag gmd:scope/gmd:DQ_Scope
+        @CODE "level/MD_ScopeCode", meta.isoScope
+    @end
 
-    @if meta.inspireTheme
-        @tag gmd:report/gmd:DQ_DomainConsistency
-            @tag gmd:measureIdentification/gmd:RS_Identifier
-                @t gmd:code/gco:CharacterString Conformity_001
-                @t gmd:codeSpace/gco:CharacterString INSPIRE
+    @each meta.isoQualityConformance as qc
+        @tag gmd:report/gmd:DQ_DomainConsistency/gmd:result/gmd:DQ_ConformanceResult
+            @tag gmd:specification/gmd:CI_Citation
+                @t gmd:title/gco:CharacterString {qc.specificationTitle}
+                @DATE qc.specificationDate, "publication"
             @end
-            @tag gmd:result/gmd:DQ_ConformanceResult
-                @tag gmd:specification/gmd:CI_Citation
-                    @t gmd:title/gco:CharacterString COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services
-                    @publication_date '2010-12-08'
-                @end
-                @t gmd:explanation/gco:CharacterString {meta.isoQualityConformanceExplanation}
-                @t gmd:pass/gco:Boolean {meta.isoQualityConformancePass | lower}
-            @end
+            @t gmd:explanation/gco:CharacterString {qc.explanation}
+            @t gmd:pass/gco:Boolean {qc.qualityPass | lower}
         @end
     @end
 
-    @tag gmd:lineage/gmd:LI_Lineage
-        @with meta.isoQualityLineageStatement
-            @t gmd:statement/gco:CharacterString {meta.isoQualityLineageStatement}
-        @end
-        @with meta.isoQualityLineageSource
+    @with meta.isoQualityLineage as ql
+        @tag gmd:lineage/gmd:LI_Lineage
+            @t gmd:statement/gco:CharacterString {ql.statement}
             @tag gmd:source/gmd:LI_Source
-                @t gmd:description/gco:CharacterString {meta.isoQualityLineageSource}
-                @t gmd:scaleDenominator/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer {meta.isoQualityLineageSourceScale}
+                @t gmd:description/gco:CharacterString {ql.source}
+                @t gmd:scaleDenominator/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer {ql.sourceScale}
             @end
         @end
     @end
@@ -137,9 +175,10 @@
     @tag gmd:MD_Metadata
 
         @t gmd:fileIdentifier/gco:CharacterString {meta.catalogUid}
-        @t gmd:language/gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue={meta.language3}
-        @t gmd:characterSet/gmd:MD_CharacterSetCode codeList="{ML_GMX_CODELISTS}#MD_CharacterSetCode" codeListValue="utf8"
-        @t gmd:hierarchyLevel/gmd:MD_ScopeCode codeList="{ML_GMX_CODELISTS}#MD_ScopeCode" codeListValue={meta.isoScope}
+        @CODE "language/LanguageCode", meta.language3
+        @CODE "characterSet/MD_CharacterSetCode", "utf8"
+        @CODE "hierarchyLevel/MD_ScopeCode", meta.isoScope
+        @t gmd:hierarchyLevelName/gco:CharacterString {meta.isoScopeName}
 
         @tag gmd:contact
             @contact meta.contact

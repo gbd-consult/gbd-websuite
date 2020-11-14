@@ -7,11 +7,10 @@ Das ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch 
 Zum genauen Bemessen der Strecken wird das Zeichnen durch eine Snap_Funktion unterstützt.
 Diese Snap-Funktion fängt auf ALKIS und Gebäude Daten.
 Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet und können frei verschoben und textlich erweitert werden.
-Die Eingabe von Werten ist auch mit Nachkommastellen möglich, welche dann Zentimeter (cm) darstellen. 
+Die Eingabe von Werten ist auch mit Nachkommastellen möglich, welche dann Zentimeter (cm) darstellen.
 Wenn Sie mit Hilfe des Werkzeuges |dimensions| ``Bemaßung`` Objekte gezeichnet haben, tauchen diese im Menü :ref:`Bemaßung <dimensioning>` auf.
 Hier findet eine Auflistung aller gezeichneten Bemaßungen statt.
 Durch Klicken auf |fokus| wird auf das gewählte Objekt gezoomt und durch Klicken auf |delete| wird dieses Objekt gelöscht.
-
 
 .. figure:: ../../../screenshots/de/client-user/dimensions_menue.png
   :align: center
@@ -21,9 +20,6 @@ So können Sie die Auswahl aller Objekte |save| speichern, eine gespeicherte Aus
 
 .. note::
  Wie alle Werkzeuge kann auch dieses, optional eingebaut oder deaktiviert werden. Die Anordnung im Menü sowie auf dem Bildschirm ist dabei flexibel.
-
-
-
 
  .. |dimensions| image:: ../../../images/gbd-icon-bemassung-02.svg
    :width: 30em

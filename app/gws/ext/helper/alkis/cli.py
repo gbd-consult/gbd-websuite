@@ -29,7 +29,7 @@ def parse(path=None):
     print(gws.tools.json2.to_string(props, pretty=True))
 
 
-def create_index():
+def setup():
     """Create an internal ALKIS search index."""
 
     a = _get_alkis()
@@ -39,6 +39,12 @@ def create_index():
         a.create_index(user, password)
         t = time.time() - ts
         gws.log.info('index done in %.2f sec' % t)
+
+
+def create_index():
+    """Create an internal ALKIS search index."""
+
+    setup()
 
 
 def check_index():

@@ -3,12 +3,10 @@ import sys
 import re
 
 sys.path.insert(0, os.path.dirname(__file__))
-
 import util
 
-
 project = 'GBD WebSuite'
-copyright = '2017-2019, Geoinformatikbüro Dassau GmbH'
+copyright = '2017-2020, Geoinformatikbüro Dassau GmbH'
 author = 'Geoinformatikbüro Dassau GmbH'
 version = util.VERSION
 release = util.VERSION
@@ -73,50 +71,30 @@ keep_warnings = True
 
 ##
 
-def replace_vars(app, docname, source):
-    for k, v in vars(util).items():
-        if isinstance(v, str):
-            source[0] = source[0].replace('{' + k + '}', v)
+def format_special(app, docname, source):
+    m = re.match('^books/(.+?)/([a-z]+)', docname)
+    book = m.group(1) if m else ''
+    lang = m.group(2) if m else ''
+    source[0] = util.format_special(source[0], book, lang)
 
-
-def replace_tables(app, docname, source):
-    def _table(m):
-        cc = m.group(1).strip().split('\n')
-        cc = ['   ' + s.strip() for s in cc]
-
-        return '\n'.join(
-            [
-                '.. csv-table::',
-                '   :delim: ~',
-                '   :widths: auto',
-                '   :align: left',
-                ''
-            ] + cc)
-
-    source[0] = re.sub(r'(?s)TABLE(.+?)/TABLE', _table, source[0])
-
-
-##
 
 def setup(app):
     app.add_stylesheet('extras.css')
     app.add_javascript('extras.js')
-    app.connect('source-read', replace_vars)
-    app.connect('source-read', replace_tables)
+    app.connect('source-read', format_special)
 
-
-##
 
 def pre_build():
-    util.clear()
+    util.clear_output()
+    util.cleanup_rst()
 
     util.make_config_ref('en')
     util.make_config_ref('de')
 
     util.make_cli_ref('en')
     util.make_cli_ref('de')
-
-    util.make_autodoc()
+    #
+    # util.make_autodoc()
 
 
 def post_build():

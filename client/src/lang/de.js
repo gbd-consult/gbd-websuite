@@ -236,61 +236,6 @@ module.exports = {
     modStorageErrorAccess: 'Zugriff verweigert',
     modStorageErrorGeneric: 'Es ist ein Fehler aufgetreten',
 
-    modGeorisksToolbarButton: 'Georisiko melden',
-
-    modGeorisksReportDialogTitle: 'Georisiko melden',
-
-    modGeorisksReportFormLabelDanger: 'Gefährdung von',
-    modGeorisksReportFormLabelEvent: 'Was ist passiert?',
-    modGeorisksReportFormLabelFiles: 'Bilder',
-    modGeorisksReportFormLabelHeight: 'Maximale Ausbruchshöhe',
-    modGeorisksReportFormLabelKind: 'Art',
-    modGeorisksReportFormLabelMessage: 'Meldung',
-    modGeorisksReportFormLabelName: 'Ihr Name',
-    modGeorisksReportFormLabelVolume: 'Volumen',
-    modGeorisksReportFormLabelDate: 'Datum',
-
-    modGeorisksReportPrivacyLink: 'Ich stimme der $Datenschutzerklärung$ zu',
-
-    modGeorisksDialogLoading: 'Daten werden geladen',
-    modGeorisksDialogSuccess: 'Vielen Dank für Ihre Unterstützung. Ihre Daten wurden gespeichert und werden nun geprüft.',
-    modGeorisksDialogError: 'Es ist ein Fehler aufgetreten',
-
-    modGeorisksReportFormCat_steinschlag: 'Steinschlag (Blockgröße bis 0,5 m)',
-    modGeorisksReportFormCat_blockschlag: 'Blockschlag (Blockgröße 0,5 - 2 m)',
-    modGeorisksReportFormCat_grossblockschlag: 'Großblockschlag (Blockgröße > 2 m)',
-    modGeorisksReportFormCat_felssturz: 'Felssturz',
-    modGeorisksReportFormCat_veraenderung: 'Veränderungen mir bekannter Fels',
-    modGeorisksReportFormCat_hangrutschung: 'Hangrutschung',
-    modGeorisksReportFormCat_mure: 'Schlammlawine (Mure)',
-
-    modGeorisksReportFormKind_allgemein: 'allgemein',
-    modGeorisksReportFormKind_tief: 'tief (> 5 m)',
-    modGeorisksReportFormKind_flach: 'flach (< 5 m)',
-
-    modGeorisksReportFormKind_geroell: 'Geröll & Schlamm',
-    modGeorisksReportFormKind_schlamm: 'nur Schlamm ',
-
-    modGeorisksReportFormKind_lagegeaendert: 'ein Felsblock hat seine Lage geändert',
-    modGeorisksReportFormKind_neuerisse: 'neu Risse /Klüfte sind zu sehen',
-    modGeorisksReportFormKind_risseweiter: 'Risse/Klüfte sind weiter geworden',
-    modGeorisksReportFormKind_risselaenger: 'Risse/Klüfte sind länger geworden',
-
-    modGeorisksReportFormVol_0: '< 1',
-    modGeorisksReportFormVol_1: '1 - 5',
-    modGeorisksReportFormVol_10: 'sehr klein (10-100)',
-    modGeorisksReportFormVol_100: 'klein (100 - 1.000)',
-    modGeorisksReportFormVol_1000: 'mittel (1.000 - 10.000)',
-    modGeorisksReportFormVol_10000: 'groß > 10.000',
-    modGeorisksReportFormVol_5: '5 - 10',
-
-    modGeorisksReportFormDanger_street: 'Straße',
-    modGeorisksReportFormDanger_rail: 'Gleis',
-    modGeorisksReportFormDanger_way: 'Weg',
-    modGeorisksReportFormDanger_house: 'Häuser',
-    modGeorisksReportFormDanger_object: 'Schutzwürdige Objekte',
-    modGeorisksReportFormDanger_person: 'Personenschaden',
-
     modLocationToolbarButton: 'Mein Standort',
     modLocationHeader: 'Standort:',
     modLocationErrorNoLocation: 'Standortdaten sind nicht verfügbar',
@@ -364,4 +309,8 @@ module.exports = {
     modBplanImportStatsNumPngs: 'PNG Daten:',
     modBplanImportStatsNumPdfs: 'PDF Daten:',
 
+    modTabeditToolbarButton: 'Werte editieren',
+    modTabeditDialogTitle: 'Werte editieren',
+    modTabeditDialogSuccess: 'Daten wurden gespeichert',
+    modTabeditDialogError: 'Es ist ein Fehler aufgetreten',
 };

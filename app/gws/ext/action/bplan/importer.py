@@ -62,7 +62,7 @@ def _run2(action, src_dir, replace, au_uid, job):
 
     stats = Stats(numRecords=0, numPngs=0, numPdfs=0)
 
-    _update_job(job, step=0, steps=5)
+    _update_job(job, step=0, steps=6)
 
     # iterate shape files and prepare a list of db records
 
@@ -261,15 +261,20 @@ def _create_qgis_projects(action, au_uids):
         ls = [la for la in layers if la['au_uid'] == au_uid]
         if not ls:
             os2.unlink(path)
-            return
+            continue
 
         ext = extents.get(au_uid)
         if not ext:
             continue
 
+        au_props = [au for au in action.au_list if au.uid == au_uid]
+        if not au_props:
+            continue
+
         res = action.qgis_template.render({
             'extent': ext,
-            'layers': ls
+            'layers': ls,
+            'au': au_props[0],
         })
 
         gws.write_file(path, res.content)

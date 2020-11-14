@@ -18,7 +18,7 @@ class Config(t.WithType):
     mimeTypes: t.Optional[t.List[str]]  #: mime types this template can generate
     path: t.Optional[t.FilePath]  #: path to a template file
     subject: str = ''  #: template purpose
-    qualityLevels: t.Optional[t.List[t.TemplateQualityLevel]]  #: list of quality levels supported by the template
+    qualityLevels: t.Optional[t.List[t.TemplateQualityLevel]]  #: quality levels supported by the template
     text: str = ''  #: template content
     title: str = ''  #: template title
 

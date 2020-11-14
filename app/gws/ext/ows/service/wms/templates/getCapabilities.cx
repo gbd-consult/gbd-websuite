@@ -40,14 +40,8 @@
 @def wms_meta_url(lc)
     @with lc.meta.url
         @tag MetadataURL type="{lc.meta.urlType}"
-            @t Format application/xml
+            @t Format {lc.meta.urlFormat}
             @t OnlineResource xlink:type="simple" xlink:href="{url_for(lc.meta.url)}"
-        @end
-    @end
-    @with lc.meta.data_url
-        @tag MetadataURL type="{lc.meta.urlType}"
-            @t Format {lc.meta.data_url_format}
-            @t OnlineResource xlink:type="simple" xlink:href="{url_for(lc.meta.data_url)}"
         @end
     @end
 @end

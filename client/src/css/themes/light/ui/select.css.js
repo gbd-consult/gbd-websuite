@@ -5,6 +5,7 @@ module.exports = v => ({
         padding: [0, v.UNIT2, 0, v.UNIT2],
     },
 
+
     '.uiListItem': {
         cursor: 'default',
         height: v.CONTROL_SIZE,
@@ -35,8 +36,12 @@ module.exports = v => ({
             },
 
         }
+    },
 
-
+    '.uiListOverflowSign': {
+        height: v.UNIT8,
+        textAlign: 'center',
+        color: v.BORDER_COLOR,
     },
 
     '.uiControl.hasFocus .uiListItem.isSelected': {

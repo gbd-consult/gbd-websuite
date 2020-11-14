@@ -21,8 +21,8 @@ class Config(t.Config):
 class StyleProps(t.Props):
     type: t.StyleType
     name: t.Optional[str]
-    values: t.Optional[t.StyleValues]
     text: t.Optional[str]
+    values: t.Optional[t.StyleValues]
 
 
 def from_props(p: t.StyleProps) -> t.IStyle:
@@ -40,10 +40,7 @@ def from_props(p: t.StyleProps) -> t.IStyle:
 
 
 def from_config(c: Config) -> t.IStyle:
-    if c.values:
-        return from_props(t.StyleProps(type=c.type, values=c.values))
-    if c.text:
-        return from_props(t.StyleProps(type=c.type, text=c.text))
+    return from_props(t.cast(StyleProps, c))
 
 
 #:export IStyle

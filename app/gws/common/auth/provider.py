@@ -8,7 +8,7 @@ from . import user
 class Config(t.WithType):
     """Auth provider config."""
 
-    allowedMethods: t.Optional[t.List[str]]
+    allowedMethods: t.Optional[t.List[str]]  #: allowed authorization methods
 
 
 #:export IAuthProvider

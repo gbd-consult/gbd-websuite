@@ -1,0 +1,67 @@
+{
+    "access": [
+        {
+            "role": "all",
+            "type": "allow"
+        }
+    ],
+    "api": {
+        "actions": [
+            {
+                "type": "asset"
+            },
+            {
+                "type": "project"
+            },
+            {
+                "type": "map"
+            }
+        ]
+    },
+    "locales": [
+        "de_DE"
+    ],
+    "projects": [
+        {
+            "title": "Test Project",
+            "uid": "hello",
+            "map": {
+                "extent": [
+                    554000,
+                    6461000,
+                    954000,
+                    6861000
+                ],
+                "zoom": {
+                    "scales": [1e3, 5e3, 1e4, 5e4, 1e5]
+                },
+                "layers": [
+                    {
+                        "title": "OpenStreetMap",
+                        "type": "tile",
+                        "display": "client",
+                        "url": "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    }
+                ]
+            }
+        }
+    ],
+    "web": {
+        "sites": [
+            {
+                "assets": {
+                    "dir": "/data"
+                },
+                "root": {
+                    "dir": "/data"
+                },
+                "rewrite": [
+                    {
+                        "match": "^/hello",
+                        "target": "_?cmd=assetHttpGetPath&path=project.html&projectUid=hello"
+                    }
+                ]
+            }
+        ]
+    }
+}

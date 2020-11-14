@@ -69,6 +69,8 @@ class GekosRequest:
 
     def raw_data(self):
         src = self.load_data()
+        if not src:
+            return []
 
         xml = gws.tools.xml2.from_string(src)
         for node in xml.all('Vorgang'):
@@ -87,7 +89,7 @@ class GekosRequest:
             params=params
         )
 
-        return res.text
+        return (res.text or '').strip()
 
     def free_point(self, x, y, points):
         if not self.position:

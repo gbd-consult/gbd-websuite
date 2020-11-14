@@ -24,19 +24,17 @@ import gws.config.cli
 import gws.ext.action.bplan.cli
 import gws.ext.action.dprocon.cli
 import gws.ext.action.gekos.cli
-import gws.ext.action.georisks.cli
 import gws.ext.helper.alkis.cli
 import gws.gis.cache_cli
 import gws.server.cli
 
-COMMANDS['alkis'] = [gws.ext.helper.alkis.cli.check_index, gws.ext.helper.alkis.cli.create_index, gws.ext.helper.alkis.cli.drop_index, gws.ext.helper.alkis.cli.parse]
+COMMANDS['alkis'] = [gws.ext.helper.alkis.cli.check_index, gws.ext.helper.alkis.cli.create_index, gws.ext.helper.alkis.cli.drop_index, gws.ext.helper.alkis.cli.parse, gws.ext.helper.alkis.cli.setup]
 COMMANDS['auth'] = [gws.common.auth.cli.clear, gws.common.auth.cli.passwd, gws.common.auth.cli.sessions, gws.common.auth.cli.test]
 COMMANDS['bplan'] = [gws.ext.action.bplan.cli.read, gws.ext.action.bplan.cli.update]
 COMMANDS['cache'] = [gws.gis.cache_cli.clean, gws.gis.cache_cli.drop, gws.gis.cache_cli.seed, gws.gis.cache_cli.status]
 COMMANDS['config'] = [gws.config.cli.dump, gws.config.cli.dumpmeta, gws.config.cli.prepare, gws.config.cli.test]
 COMMANDS['dprocon'] = [gws.ext.action.dprocon.cli.setup]
-COMMANDS['gekos'] = [gws.ext.action.gekos.cli.load]
-COMMANDS['georisks'] = [gws.ext.action.georisks.cli.aartelink, gws.ext.action.georisks.cli.export]
+COMMANDS['gekos'] = [gws.ext.action.gekos.cli.setup]
 COMMANDS['server'] = [gws.server.cli.configure, gws.server.cli.reconfigure, gws.server.cli.reload, gws.server.cli.start, gws.server.cli.stop]
 
 

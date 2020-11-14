@@ -49,7 +49,7 @@ _XML_SCHEMA_TYPES = {
     t.GeometryType.surface: 'gml:SurfacePropertyType',
 }
 
-_DEFAULT_FEAUTURE_NAME = 'feature'
+_DEFAULT_FEATURE_NAME = 'feature'
 _DEFAULT_GEOMETRY_NAME = 'geometry'
 
 
@@ -61,6 +61,7 @@ class Config(t.WithTypeAndAccess):
     templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
     updateSequence: t.Optional[str]  #: service update sequence
     withInspireMeta: bool = False  #: use INSPIRE Metadata
+    strictParams: bool = False  #: strict parameter parsing
 
 
 class Request(t.Data):
@@ -120,6 +121,7 @@ class FeatureCaps(t.Data):
 
 class FeatureCollection(t.Data):
     caps: t.List[FeatureCaps]
+    features: t.List[t.IFeature]
     time_stamp: str
     num_matched: int
     num_returned: int
@@ -184,6 +186,7 @@ class Base(Object):
         self.supported_crs: t.List[t.Crs] = self.var('supportedCrs', default=[])
         self.update_sequence = self.var('updateSequence')
         self.with_inspire_meta = self.var('withInspireMeta')
+        self.strict_params = self.var('strictParams')
 
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), self.default_templates)
 
@@ -194,11 +197,7 @@ class Base(Object):
         else:
             meta = gws.common.metadata.extend(meta, self.root.application.meta)
 
-        meta = gws.extend(
-            meta,
-            catalogUid=self.uid,
-            links=[],
-        )
+        meta.links = []
 
         if self.service_link:
             meta.links.append(self.service_link)
@@ -263,10 +262,14 @@ class Base(Object):
     def render_template(self, rd: Request, ows_request: str, ows_format: str = None, context=None, format=None):
         mime = gws.tools.mime.get(ows_format)
         if ows_format and not mime:
+            gws.log.debug(f'no mime: ows_request={ows_request!r} ows_format={ows_format!r}')
             raise gws.web.error.BadRequest('Invalid FORMAT')
+
         tpl = gws.common.template.find(self.templates, subject='ows.' + ows_request.lower(), mime=mime)
         if not tpl:
+            gws.log.debug(f'no template: ows_request={ows_request!r} ows_format={ows_format!r}')
             raise gws.web.error.BadRequest('Unsupported FORMAT')
+
         gws.log.debug(f'ows_request={ows_request!r} ows_format={ows_format!r} template={tpl.uid!r}')
 
         context = gws.merge({
@@ -295,7 +298,9 @@ class Base(Object):
                    + f'<ServiceExceptionReport>'
                    + f'<ServiceException code="{status}">{description}</ServiceException>'
                    + f'</ServiceExceptionReport>')
-        return self.xml_response(content, status)
+        # @TODO, check OGC 17-007r1
+        # return self.xml_response(content, status)
+        return self.xml_response(content, 200)
 
     def xml_response(self, content, status=200) -> t.HttpResponse:
         return t.HttpResponse(
@@ -429,17 +434,21 @@ class Base(Object):
 
         return lc
 
-    # FeatureCaps
+    # FeatureCaps and collections
 
-    def feature_collection(self, features: t.List[t.IFeature], rd: Request) -> FeatureCollection:
+    def feature_collection(self, features: t.List[t.IFeature], rd: Request, populate=True) -> FeatureCollection:
         coll = FeatureCollection(
             caps=[],
+            features=[],
             time_stamp=gws.tools.date.now_iso(with_tz=False),
             num_matched=len(features),
-            num_returned=len(features),
+            num_returned=len(features) if populate else 0,
         )
 
-        default_name = self._parse_name(_DEFAULT_FEAUTURE_NAME)
+        if not populate:
+            return coll
+
+        default_name = self._parse_name(_DEFAULT_FEATURE_NAME)
 
         for f in features:
             gs = None
@@ -453,6 +462,8 @@ class Base(Object):
                 shape_tag=gs,
                 name=self._parse_name(f.layer.ows_feature_name) if f.layer else default_name,
             ))
+
+            coll.features.append(f)
 
         return coll
 
@@ -475,7 +486,7 @@ class Base(Object):
             raise gws.web.error.BadRequest()
 
         render_input = t.MapRenderInput(
-            background_color=None,
+            background_color=0 if rd.req.param('transparent', '').lower() == 'false' else None,
             items=[],
             view=gws.gis.renderview.from_bbox(
                 crs=bounds.crs,

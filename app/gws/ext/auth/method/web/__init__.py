@@ -9,7 +9,7 @@ class Config(t.WithType):
 
     cookieName: str = 'auth'  #: name for the cookie
     cookiePath: str = '/'  #: cookie path
-    secure: bool = True  #: web authorization via ssl only
+    secure: bool = True  #: use only with SSL
 
 
 _ST_STORED = 'web:stored'

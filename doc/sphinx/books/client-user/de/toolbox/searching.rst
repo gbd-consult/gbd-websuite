@@ -18,7 +18,6 @@ Klicken Sie dafür auf |navi| und halten Sie Maustaste gedrückt. Nun können Si
 .. note::
  Die räumliche Suche kann auf Wunsch deaktiviert oder wo anders angeordnet werden. Einzelne Funktionen wie die Suche per Punkt, Linie, Rechteck, Fläche oder Kreis können seperat aktiviert oder deaktiviert werden.
 
-
  .. |geo_search| image:: ../../../images/gbd-icon-raeumliche-suche-01.svg
    :width: 30em
  .. |edit| image:: ../../../images/sharp-edit-24px.svg

@@ -24,7 +24,6 @@ Die GBD WebSuite als **Applikations Server**:
 
 Die GBD WebSuite wird als Docker Image bereitgestellt und kann plattformunabhängig in IT-Infrastrukturen integriert werden. Sie kombiniert die Funktionalität zahlreicher Open Source Software, wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
 
-
 .. toctree::
    :maxdepth: 2
 

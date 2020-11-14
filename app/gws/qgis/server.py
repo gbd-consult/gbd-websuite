@@ -12,7 +12,7 @@ EXEC_PATH = '/usr/bin/qgis_mapserv.fcgi'
 SVG_SEARCH_PATHS = ['/usr/share/qgis/svg', '/usr/share/alkisplugin/svg']
 
 
-def _make_ini(root):
+def _make_ini(root, base_dir):
     ini = ''
 
     paths = []
@@ -23,6 +23,14 @@ def _make_ini(root):
     ini += f'''
         [svg]
         searchPathsForSVG={','.join(paths)}        
+    '''
+
+    # set the cache dir and size=4096Kb
+    gws.ensure_dir('netcache', base_dir)
+    ini += fr'''
+        [cache]
+        directory={base_dir}/netcache
+        size=@Variant(\0\0\0\x81\0\0\0\0\0@\0\0)
     '''
 
     proxy = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
@@ -55,11 +63,9 @@ def environ(root: t.IRootObject):
     gws.ensure_dir('profiles/profiles/default', base_dir)
     gws.ensure_dir('profiles/profiles/default/QGIS', base_dir)
 
-    ini = _make_ini(root)
-    with open(base_dir + '/profiles/default/QGIS/QGIS3.ini', 'wt') as fp:
-        fp.write(ini)
-    with open(base_dir + '/profiles/profiles/default/QGIS/QGIS3.ini', 'wt') as fp:
-        fp.write(ini)
+    ini = _make_ini(root, base_dir)
+    gws.write_file(base_dir + '/profiles/default/QGIS/QGIS3.ini', ini)
+    gws.write_file(base_dir + '/profiles/profiles/default/QGIS/QGIS3.ini', ini)
 
     # server options, as documented on
     # see https://docs.qgis.org/testing/en/docs/user_manual/working_with_ogc/server/config.html#environment-variables

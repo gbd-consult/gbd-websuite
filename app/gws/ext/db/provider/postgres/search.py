@@ -19,7 +19,12 @@ class Object(gws.common.search.provider.Object):
         super().configure()
 
         self.provider: provider.Object = t.cast(provider.Object, gws.common.db.require_provider(self, provider.Object))
-        self.table: t.SqlTable = self.provider.configure_table(self.var('table'))
+        try:
+            self.table: t.SqlTable = self.provider.configure_table(self.var('table'))
+        except gws.Error:
+            gws.log.exception()
+            self.active = False
+            return
 
         self.capabilties = gws.common.search.provider.CAPS_FILTER
         if self.table.geometry_column:

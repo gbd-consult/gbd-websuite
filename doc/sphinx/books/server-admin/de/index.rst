@@ -1,37 +1,14 @@
 GBD WebSuite Server Administrator Handbuch
 ==========================================
 
-Dokumentation für GBD WebSuite Server Administatoren (Deutsch).
+Dokumentation für GBD WebSuite Server Administratoren (Deutsch).
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     intro.rst
     quickstart.rst
-    install.rst
-    cli.rst
     concepts.rst
-    main.rst
-    actions.rst
-    auth.rst
-    intl.rst
-    client.rst
-    db.rst
-    search.rst
-    server.rst
-    qgis.rst
-    ows.rst
-    templating.rst    
-    web.rst
-    projects.rst
-    layers.rst
-    print.rst
-    cache.rst
-    features.rst
-    alkis.rst
-    gekos.rst
-    dprocon.rst
-    styles.rst
-    remoteadmin.rst
-    configref.rst
-    cliref.rst
+    install.rst
+    config/index.rst
+    ref/index.rst

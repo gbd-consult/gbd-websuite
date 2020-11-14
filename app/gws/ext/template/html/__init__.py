@@ -112,11 +112,11 @@ class Object(gws.common.template.Object):
 
         tags_re = r'''(?xs)
             (
-                <(?P<tag1> gws:\w+) (?P<atts1> .*?) />
+                <(?P<tag1> gws:\w+) (?P<atts1> [^<>]*?) />
             )
             |
             (
-                <(?P<tag2> gws:\w+) (?P<atts2> .*?)>
+                <(?P<tag2> gws:\w+) (?P<atts2> [^<>]*?)>
                     (?P<contents2> .*?)
                 </(?P=tag2)>
             ) 
@@ -169,7 +169,7 @@ class Object(gws.common.template.Object):
         css = f'''
             body, table, tr, td {{
                 margin: 0;
-                padding: 0
+                padding: 0;
                 border: none;
             }}
             table {{

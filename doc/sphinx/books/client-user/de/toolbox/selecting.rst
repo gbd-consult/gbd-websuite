@@ -10,7 +10,6 @@ Am unteren Fensterrand befinden sich eine Reihe von Funktionen für speziell die
 .. note::
  Auf Wunsch kann das ``Auswählen``-Werkzeug und der dazu gehörige Menüpunkt deaktiviert werden. Es wäre zum Beispiel auch möglich, dass mit diesem Werkzeug nur Objekte von gewissen Layern ausgewählt werden können.
 
-
  .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
    :width: 30em
  .. |save| image:: ../../../images/sharp-save-24px.svg

@@ -28,7 +28,6 @@ class Config(t.WithAccess):
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.common.map.Config]  #: Map configuration
     meta: t.Optional[gws.common.metadata.Config] = {}  #: project metadata
-    multi: t.Optional[t.Regex]  #: filename pattern for a multi-project template
     overviewMap: t.Optional[gws.common.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.common.printer.Config]  #: printer configuration
     search: t.Optional[gws.common.search.Config] = {}  #: project-wide search configuration
@@ -56,6 +55,7 @@ class Object(gws.Object, t.IProject):
         super().configure()
 
         self.meta: t.MetaData = gws.common.metadata.from_config(self.var('meta'))
+        gws.log.info(f'configuring project {self.uid!r}')
 
         # title at the top level config preferred
         title = self.var('title') or self.meta.title or self.uid

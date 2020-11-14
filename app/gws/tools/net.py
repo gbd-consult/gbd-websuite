@@ -310,10 +310,8 @@ def _file_age(path):
 
 
 def _store_cache(resp, path):
-    with open(path, 'wb') as fp:
-        pickle.dump(resp, fp)
+    gws.write_file_b(path, pickle.dumps(resp))
 
 
 def _read_cache(path):
-    with open(path, 'rb') as fp:
-        return pickle.load(fp)
+    return pickle.loads(gws.read_file_b(path))

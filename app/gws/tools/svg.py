@@ -32,10 +32,10 @@ def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: t.MapRenderView,
     geom = shapely.ops.transform(trans, geom)
 
     if not sv:
-        return [_geometry(geom)]
+        return [_geometry(geom, {})]
 
     with_geometry = sv.with_geometry == gws.tools.style.StyleGeometryOption.all
-    with_label = sv.with_label == gws.tools.style.StyleLabelOption.all
+    with_label = _is_label_visible(rv, sv)
 
     text = None
 
@@ -88,7 +88,7 @@ def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: t.MapRenderView,
         if geom.type in ('LineString', 'MultiLineString'):
             atts['fill'] = 'none'
 
-        body = _geometry(geom) + (atts,)
+        body = _geometry(geom, atts)
 
     return gws.compact([marker, body, icon, text])
 
@@ -231,12 +231,22 @@ def _marker(uid, sv) -> t.Tag:
         }, content
 
 
-def _label(geom, label, sv, extra_y_offset=0) -> t.Tag:
+def _is_label_visible(rv: t.MapRenderView, sv: t.StyleValues) -> bool:
+    if sv.with_label != gws.tools.style.StyleLabelOption.all:
+        return False
+    if rv.scale < int(sv.get('label_min_scale', 0)):
+        return False
+    if rv.scale > int(sv.get('label_max_scale', 1e10)):
+        return False
+    return True
+
+
+def _label(geom, label, sv: t.StyleValues, extra_y_offset=0) -> t.Tag:
     cx, cy = _label_position(geom, sv, extra_y_offset)
     return _text(cx, cy, label, sv)
 
 
-def _label_position(geom, sv, extra_y_offset=0):
+def _label_position(geom, sv: t.StyleValues, extra_y_offset=0):
     if sv.label_placement == 'start':
         x, y = _get_points(geom)[0]
     elif sv.label_placement == 'end':
@@ -250,7 +260,7 @@ def _label_position(geom, sv, extra_y_offset=0):
     )
 
 
-def _text(cx, cy, label, sv) -> t.Tag:
+def _text(cx, cy, label, sv: t.StyleValues) -> t.Tag:
     # @TODO label positioning needs more work
 
     font_name = _map_font(sv)
@@ -269,7 +279,7 @@ def _text(cx, cy, label, sv) -> t.Tag:
     _font_props(atts, sv, 'label_')
     _fill_stroke_props(atts, sv, 'label_')
 
-    lines = list(gws.lines(label))
+    lines = label.split('\n')
     _, em_height = font.getsize('MMM')
     metrics = [font.getsize(s) for s in lines]
 
@@ -491,7 +501,7 @@ def _map_font(sv, prefix=''):
     return DEFAULT_FONT
 
 
-def _geometry(geom: shapely.geometry.base.BaseGeometry) -> t.Tag:
+def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict) -> t.Tag:
     def _xy(xy):
         return str(xy[0]) + ' ' + str(xy[1])
 
@@ -509,22 +519,22 @@ def _geometry(geom: shapely.geometry.base.BaseGeometry) -> t.Tag:
 
     if ty == 'point':
         g = t.cast(shapely.geometry.Point, geom)
-        return xml2.tag('circle', {'cx': g.x, 'cy': g.y})
+        return xml2.tag('circle', {'cx': g.x, 'cy': g.y}, atts)
 
     if ty == 'linestring':
         g = t.cast(shapely.geometry.LineString, geom)
         d = _lpath(g.coords)
-        return xml2.tag('path', {'d': d})
+        return xml2.tag('path', {'d': d}, atts)
 
     if ty == 'polygon':
         g = t.cast(shapely.geometry.Polygon, geom)
         d = ' '.join(_lpath(interior.coords) + ' z' for interior in g.interiors)
         d = _lpath(g.exterior.coords) + ' z ' + d
-        return xml2.tag('path', {'fill-rule': 'evenodd', 'd': d.strip()})
+        return xml2.tag('path', {'fill-rule': 'evenodd', 'd': d.strip()}, atts)
 
     if ty in ('multipolygon', 'multipoint', 'mutlilinestring'):
         g = t.cast(shapely.geometry.base.BaseMultipartGeometry, geom)
-        return xml2.tag('g', *[_geometry(p) for p in g.geoms])
+        return xml2.tag('g', *[_geometry(p, atts) for p in g.geoms])
 
     raise ValueError(f'unknown type {geom.type!r}')
 

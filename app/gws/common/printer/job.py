@@ -271,10 +271,15 @@ class _Worker:
 
         ls = {}
 
-        for layer_uid in self.legend_layer_uids:
-            if self.template.legend_layer_uids and layer_uid not in self.template.legend_layer_uids:
-                continue
+        # @TODO options to print legends even if their layers are hidden
+        # @TODO should support printing legends from other maps
 
+        uids = set(self.legend_layer_uids)
+        if self.template.legend_layer_uids:
+            uids.update(self.template.legend_layer_uids)
+            uids = set(s for s in uids if s in self.template.legend_layer_uids)
+
+        for layer_uid in uids:
             layer = t.cast(t.ILayer, self.acquire('gws.ext.layer', layer_uid))
             if not layer or not layer.has_legend:
                 continue

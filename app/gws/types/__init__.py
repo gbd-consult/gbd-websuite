@@ -516,7 +516,9 @@ class MetaData(Data):
     authorityUrl: 'Url'
     catalogUid: str
     contact: 'MetaContact'
+    dateBegin: 'DateTime'
     dateCreated: 'DateTime'
+    dateEnd: 'DateTime'
     dateUpdated: 'DateTime'
     fees: str
     image: 'Url'
@@ -525,25 +527,27 @@ class MetaData(Data):
     inspireDegreeOfConformity: 'MetaInspireDegreeOfConformity'
     inspireResourceType: 'MetaInspireResourceType'
     inspireSpatialDataServiceType: 'MetaInspireSpatialDataServiceType'
+    inspireSpatialScope: 'MetaInspireSpatialScope'
     inspireTheme: 'MetaInspireTheme'
     inspireThemeName: str
     inspireThemeNameEn: str
     isoMaintenanceFrequencyCode: 'MetaIsoMaintenanceFrequencyCode'
-    isoQualityConformanceExplanation: str
-    isoQualityConformancePass: bool
-    isoQualityLineageSource: str
-    isoQualityLineageSourceScale: int
-    isoQualityLineageStatement: str
+    isoQualityConformance: 'MetaIsoQualityConformance'
+    isoQualityLineage: 'MetaIsoQualityLineage'
+    isoRestrictionCode: str
     isoScope: 'MetaIsoScope'
+    isoScopeName: str
     isoSpatialRepresentationType: 'MetaIsoSpatialRepresentationType'
     isoTopicCategory: 'MetaIsoTopicCategory'
     keywords: List[str]
     language: str
+    license: str
     links: List['MetaLink']
     name: str
     serviceUrl: 'Url'
     title: str
     url: 'Url'
+    urlFormat: str
     urlType: str
 
 
@@ -649,6 +653,14 @@ class MetaInspireSpatialDataServiceType(Enum):
     view = 'view'
 
 
+class MetaInspireSpatialScope(Enum):
+    european = 'european'
+    global_ = 'global'
+    local = 'local'
+    national = 'national'
+    regional = 'regional'
+
+
 class MetaInspireTheme(Enum):
     ac = 'ac'
     ad = 'ad'
@@ -707,6 +719,30 @@ class MetaIsoOnLineFunction(Enum):
     offlineAccess = 'offlineAccess'
     order = 'order'
     search = 'search'
+
+
+class MetaIsoQualityConformance(Data):
+    explanation: str
+    qualityPass: bool
+    specificationDate: str
+    specificationTitle: str
+
+
+class MetaIsoQualityLineage(Data):
+    source: str
+    sourceScale: int
+    statement: str
+
+
+class MetaIsoRestrictionCode(Enum):
+    copyright = 'copyright'
+    intellectualPropertyRights = 'intellectualPropertyRights'
+    license = 'license'
+    otherRestrictions = 'otherRestrictions'
+    patent = 'patent'
+    patentPending = 'patentPending'
+    restricted = 'restricted'
+    trademark = 'trademark'
 
 
 class MetaIsoScope(Enum):
@@ -835,6 +871,11 @@ class SearchFilter(Data):
     shape: 'IShape'
     sub: List['SearchFilter']
     value: str
+
+
+class SearchSpatialContext(Enum):
+    map = 'map'
+    view = 'view'
 
 
 class SelectArgs(Data):
@@ -1302,7 +1343,9 @@ class ISearchProvider(IObject):
     active: bool
     capabilties: int
     data_model: Optional['IModel']
+    spatial_context: 'SearchSpatialContext'
     templates: List['ITemplate']
+    title: str
     tolerance: 'Measurement'
     with_geometry: bool
     with_keyword: bool

@@ -102,7 +102,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
 
         let search = (this.props.bplanSearch || '').toLowerCase(),
             fs = this.props.bplanFeatures.filter(f =>
-                !search || f.elements.title.toLowerCase().contains(search));
+                !search || f.elements.title.toLowerCase().indexOf(search) >= 0);
 
         return <gws.components.feature.List
             controller={cc}

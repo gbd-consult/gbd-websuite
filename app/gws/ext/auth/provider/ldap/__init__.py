@@ -39,7 +39,7 @@ _MS_PARTIAL_SECRETS_ACCOUNT = 0x04000000
 class UserSpec(t.Data):
     """Map LDAP filters to authorization roles"""
 
-    roles: t.List[str]  #: gws role names
+    roles: t.List[str]  #: role names
     matches: t.Optional[str]  #: LDAP filter the account has to match
     memberOf: t.Optional[str]  #: LDAP group the account has to be a member of
 

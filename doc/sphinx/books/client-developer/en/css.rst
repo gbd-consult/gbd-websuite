@@ -1,9 +1,7 @@
 Working with css
 ================
 
-
 CSS support in GBD WebSuite Client is theme-based. Themes are located in ``./src/css/themes``. Each theme must have at least one ``index`` file, which is responsible for the generating of the target css. Our default theme, ``light``, is written in a css-in-js dialect, but you can use whatever you want (sass, less, straight css etc).
-
 
 css-in-js Syntax
 ~~~~~~~~~~~~~~~~
@@ -87,7 +85,6 @@ Since css-in-js rules are just plain objects, you can use arbitrary javascript i
         // etc...
     }
 
-
 Default theme
 ~~~~~~~~~~~~~
 
@@ -120,11 +117,9 @@ Object helpers
 
 These helpers retun objects, so they must be used with the spread operator ``...``:
 
-
 - ``v.GOOGLE_SVG(category/name, color)``
 
     Sets ``backgroundImage`` to a `material icon <https://material.io/tools/icons>`_ from the given category/name. ``color`` defaults to ``v.ICON_COLOR`` if omitted. Example ::
-
 
         '.mySelector': {
             ...v.SVG('google:image/straighten', 'blue')
@@ -133,10 +128,8 @@ These helpers retun objects, so they must be used with the spread operator ``...
 
     Sets ``backgroundImage`` to an svg icon placed in ``themes/light/img``. Example ::
 
-
         '.mySelector': {
             ...v.SVG('zoom_rectangle', 'cyan')
-
 
 - ``v.TRANSITION(property)``
 
@@ -144,7 +137,6 @@ These helpers retun objects, so they must be used with the spread operator ``...
 
         '.mySelector': {
             ...v.TRANSITION('left')
-
 
 - ``v.SHADOW()``
 
@@ -157,7 +149,6 @@ Selector helpers
 ----------------
 
 These are intended to be used in selectors (using the js key evaluation operator ``[...]``).
-
 
 - ``v.MEDIA(breakpoint-name)``
 
@@ -197,6 +188,3 @@ These are intended to be used in selectors (using the js key evaluation operator
                 display: 'none'
             }
         }
-
-
-

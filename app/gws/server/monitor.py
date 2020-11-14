@@ -1,5 +1,6 @@
 import re
 import os
+import psutil
 
 import gws
 import gws.core.tree
@@ -31,6 +32,7 @@ class Object(gws.Object, t.IMonitor):
         self.watch_dirs = {}
         self.watch_files = {}
         self.path_stats = {}
+        self.enabled = self.var('enabled', default=True)
         self.frequency = self.var('frequency', default=30)
         self.ignore = self.var('ignore', default=[])
 
@@ -46,6 +48,10 @@ class Object(gws.Object, t.IMonitor):
             raise ValueError(f'{path!r} is not a file')
 
     def start(self):
+        if not self.enabled:
+            gws.log.info(f'MONITOR: disabled')
+            return
+
         # @TODO: use file monitor
         # actually, we should be using uwsgi.add_file_monitor here, however I keep having problems
         # getting inotify working on docker-mounted volumes (is that possible at all)?
@@ -72,9 +78,17 @@ class Object(gws.Object, t.IMonitor):
     def _worker(self, signo):
         with gws.tools.misc.lock(_lockfile) as ok:
             if not ok:
-                gws.log.info('MONITOR: locked...')
-                return
+                try:
+                    pid = int(gws.read_file(_lockfile))
+                except:
+                    pid = None
+                if not pid or not psutil.pid_exists(pid):
+                    gws.log.info(f'MONITOR: locked by dead pid={pid!r}, releasing')
+                else:
+                    gws.log.info(f'MONITOR: locked by pid={pid!r}')
+                    return
 
+            gws.write_file(_lockfile, str(os.getpid()))
             changed = self._poll()
 
             if not changed:

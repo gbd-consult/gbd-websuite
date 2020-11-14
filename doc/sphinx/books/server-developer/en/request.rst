@@ -45,7 +45,6 @@ After the validation completes and the parameters have been converted, the webap
 
 The command method is supposed to return a ``Response`` object or to raise a ``HTTPException`` as defined is ``web/error.py``. Returns of type ``HttpResponse`` or ``FileResponse`` are sent to directly to the client, other responses are encoded in the same format as the request (JSON or MsgPack).
 
-
 Illustration
 ------------
 
@@ -69,7 +68,6 @@ Here's a code snippet that illustrates the above concepts ::
 
     import gws.types as t
 
-
     # define a Config object for this action
     # this object will be automatically checked when the configurator encounters `action`: `{type: example}`
 
@@ -78,18 +76,15 @@ Here's a code snippet that illustrates the above concepts ::
 
         helloString: str = "Hi"
 
-
     # define the parameters structure for the `hello` command
 
     class HelloParams(t.Params):
         color: str  #: color for the message
 
-
     # define the response structure for `hello`
 
     class HelloResponse(t.Response):
         message: str
-
 
     # define the action object. It extends the generic action Object which is an IObject
 
@@ -122,4 +117,3 @@ Here's a code snippet that illustrates the above concepts ::
             # create and return the response object
 
             return HelloResponse(message=message)
-

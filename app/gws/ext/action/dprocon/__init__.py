@@ -45,15 +45,15 @@ _DEFAULT_TEMPLATES = [
 
 
 class Config(t.WithTypeAndAccess):
-    """D-Procon action"""
+    """D-Procon connector action"""
 
-    cacheTime: t.Duration = '24h'
+    cacheTime: t.Duration = '24h'  #: request cache life time
     dataTableName: str  #: table to store consolidated results
     dataTablePattern: str  #: pattern for result tables to consolidate
     gemeindeFilter: t.Optional[t.List[str]]  #: gemeinde (AU) ids to keep in the index
-    infoTitle: str = ''
+    infoTitle: str = '' #: information box title
     requestTableName: str  #: table to store outgoing requests
-    requestUrl: t.Url
+    requestUrl: t.Url #: main program url, with the placholder {REQUEST_ID}
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
 
 
@@ -77,18 +77,18 @@ class Object(gws.common.action.Object):
     def configure(self):
         super().configure()
 
+        self.au_filter: t.List[str] = self.var('gemeindeFilter', default=[])
+        self.data_table_name: str = self.var('dataTableName')
+        self.request_table_name: str = self.var('requestTableName')
+        self.request_url: str = self.var('requestUrl')
+        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+
         self.alkis: gws.ext.helper.alkis.Object = t.cast(
             gws.ext.helper.alkis.Object,
             self.root.find_first('gws.ext.helper.alkis'))
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('dprocon cannot init, no alkis index found')
             return
-
-        self.au_filter: t.List[str] = self.var('gemeindeFilter', default=[])
-        self.data_table_name: str = self.var('dataTableName')
-        self.request_table_name: str = self.var('requestTableName')
-        self.request_url: str = self.var('requestUrl')
-        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
     def api_connect(self, req: t.IRequest, p: ConnectParams) -> ConnectResponse:
         req.require_project(p.projectUid)
@@ -135,6 +135,7 @@ class Object(gws.common.action.Object):
         'gemeinde': 'CHARACTER VARYING',
         'lage': 'CHARACTER VARYING',
         'hausnummer': 'CHARACTER VARYING',
+        'adresse': 'CHARACTER VARYING',
         'bezeichnung': 'CHARACTER VARYING',
         'wert': 'INT',
         'beschreibung': 'CHARACTER VARYING',
@@ -162,7 +163,6 @@ class Object(gws.common.action.Object):
                 s = ','.join(repr(s) for s in self.au_filter)
                 au_filter = f' AND h.gemeinde IN ({s})'
 
-
             sql = [
                 f'''
                     DROP TABLE IF EXISTS {index_table_name} CASCADE
@@ -185,6 +185,7 @@ class Object(gws.common.action.Object):
                             h.gemeinde,
                             h.lage,
                             h.hausnummer,
+                            c.bezeichnung || ' ' || h.hausnummer,
                             c.bezeichnung,
                             gf.wert,
                             gf.beschreibung,

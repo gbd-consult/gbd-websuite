@@ -11,13 +11,10 @@ Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
 
 Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren Verlauf dieser Dokumentation.
 
-
 Übersicht der Bedienelemente in der GBD WebSuite
 
 .. toctree::
     :maxdepth: 2
-
-
 
 **Werkzeugleiste**
 
@@ -47,8 +44,6 @@ Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren 
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapfunction>`
 
-
-
 **Menüleiste**
 
 +------------------------+------------------------------------------------------+-----------------------------------------+
@@ -77,8 +72,6 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapf
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste <sidebar>`
 
-
-
 **Statusleiste**
 
 +------------------------+--------------------------------------------+-----------------------------------------+
@@ -95,13 +88,9 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste <sidebar
 |      |help|            |:ref:`Hilfe <help>`                         |Öffnet die Dokumentation der GBD WebSuite|
 +------------------------+--------------------------------------------+-----------------------------------------+
 
-
-
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <infobar>`
 
-
 Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gws.gbd-consult.de/
-
 
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
      :width: 30em
@@ -215,7 +204,6 @@ Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie
          :width: 30em
    .. |gbd| image:: ../../../images/gws_logo.svg
         :width: 30em
-
 
 .. |      |coordinates|     |:ref:`Koordinatenanzeige <coordinates>`     |Zeigt die Koordinaten der Mausposition an|
 .. +------------------------+--------------------------------------------+-----------------------------------------+

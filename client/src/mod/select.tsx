@@ -168,9 +168,15 @@ class SelectController extends gws.Controller {
             feature.oFeature = new ol.Feature({geometry});
         }
 
-        console.log(feature)
+        console.log(feature);
 
-        this.layer.addFeatures([feature]);
+        let f = this.findFeatureByUid(feature.uid);
+
+        if (f)
+            this.layer.removeFeature(f);
+        else
+            this.layer.addFeatures([feature]);
+
         this.update({
             selectFeatures: this.layer.features
         });
@@ -205,6 +211,12 @@ class SelectController extends gws.Controller {
         this.update({
             selectFeatures: this.layer.features
         });
+    }
+
+    findFeatureByUid(uid) {
+        for (let f of this.layer.features)
+            if (f.uid === uid)
+                return f;
     }
 
     clear() {

@@ -22,5 +22,4 @@ Dies kann passieren wenn in der WebSuite nur ein kleiner Ausschnitt eines Gebiet
  Auf Wunsch kann die ``Mein Standort``-Funktion deaktiviert werden. Ebenfalls wäre es möglich, dass der Standort von einem oder mehreren anderen Geräten angezeigt wird.
  Außerdem könnte eine Aufzeichnung der Bewegungen erstellt werden. So könnten zum Beispiel Tiere, welche mit GPS-Sendern markiert wurden, verfolgt und beobachtet werden.
 
-
  .. |location| image:: ../../../images/gps_fixed-24px.svg

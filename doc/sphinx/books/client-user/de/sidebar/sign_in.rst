@@ -12,21 +12,11 @@ Das Layout und die Darstellung des GBD WebSuite Clients  kann für die angemelde
 .. figure:: ../../../screenshots/de/client-user/sign_in.png
   :align: center
 
-
 .. .. note::
  Abhängig von Projekt und Benutzer, können individuell bestimmte Funktionen freigeschaltet werden. So ist es zum Beispiel möglich, verschiedene Informationen oder Funktionen für gewisse Nutzer frei zu geben und für andere nicht.
 ..
 
-
-
-
-
-
-
-
-
-
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
  .. |authorization| image:: ../../../images/baseline-person-24px.svg
-     :width: 30em
+   :width: 30em

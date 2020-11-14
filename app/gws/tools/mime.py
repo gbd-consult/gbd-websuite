@@ -21,7 +21,7 @@ _common = {
     'xml': 'application/xml',
     'zip': 'application/zip',
 
-    'gml2': 'application/vnd.ogc.gml',
+    'gml': 'application/vnd.ogc.gml',
     'gml3': 'application/vnd.ogc.gml/3.1.1',
 }
 

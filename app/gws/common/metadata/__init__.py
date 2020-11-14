@@ -68,6 +68,16 @@ class MetaInspireSpatialDataServiceType(t.Enum):
 
 
 #:export
+class MetaInspireSpatialScope(t.Enum):
+    """Inspire spatialScope, see https://inspire.ec.europa.eu/metadata-codelist/SpatialScope"""
+    national = 'national'
+    regional = 'regional'
+    local = 'local'
+    global_ = 'global'
+    european = 'european'
+
+
+#:export
 class MetaInspireDegreeOfConformity(t.Enum):
     """Inspire degreeOfConformity, see http://inspire.ec.europa.eu/schemas/common/1.0/common.xsd"""
     conformant = 'conformant'
@@ -249,6 +259,34 @@ class MetaIsoTopicCategory(t.Enum):
     utilitiesCommunication = 'utilitiesCommunication'  #: energy, water and waste systems and communications infrastructure and services. Examples: hydroelectricity, geothermal, solar and nuclear sources of energy, water purification and distribution, sewage collection and disposal, electricity and gas distribution, data communication, telecommunication, radio, communication networks
 
 
+#:export
+class MetaIsoRestrictionCode(t.Enum):
+    """ISO-19139 MD_RestrictionCode, see https://standards.iso.org/iso/19139/resources/gmxCodelists.xml"""
+    copyright = 'copyright'  #: exclusive right to the publication, production, or sale of the rights to a literary, dramatic, musical, or artistic work, or to the use of a commercial print or label, granted by law for a specified period of time to an author, composer, artist, distributor
+    patent = 'patent'  #: government has granted exclusive right to make, sell, use or license an invention or discovery
+    patentPending = 'patentPending'  #: produced or sold information awaiting a patent
+    trademark = 'trademark'  #: a name, symbol, or other device identifying a product, officially registered and legally restricted to the use of the owner or manufacturer
+    license = 'license'  #: formal permission to do something
+    intellectualPropertyRights = 'intellectualPropertyRights'  #: rights to financial benefit from and control of distribution of non-tangible property that is a result of creativity
+    restricted = 'restricted'  #: withheld from general circulation or disclosure
+    otherRestrictions = 'otherRestrictions'  #: limitation not listed
+
+
+#:export
+class MetaIsoQualityConformance(t.Data):
+    specificationTitle: str
+    specificationDate: str
+    explanation: str = ''
+    qualityPass: bool
+
+
+#:export
+class MetaIsoQualityLineage(t.Data):
+    statement: str
+    source: str
+    sourceScale: int
+
+
 class ContactConfig(t.Config):
     """Contact metadata configuration"""
 
@@ -279,10 +317,13 @@ class Config(t.Config):
 
     abstract: t.Optional[str]  #: object abstract description
     accessConstraints: t.Optional[str]
+    license: t.Optional[str]
     attribution: t.Optional[str]  #: attribution (copyright) string
     contact: t.Optional[ContactConfig]  #: contact information
     dateCreated: t.Optional[t.Date]  #: publication date
     dateUpdated: t.Optional[t.Date]  #: modification date
+    dateBegin: t.Optional[t.Date]  #: temporal extent begin
+    dateEnd: t.Optional[t.Date]  #: temporal extent end
     fees: t.Optional[str]
     image: t.Optional[t.Url]  #: image (logo) url
 
@@ -295,18 +336,19 @@ class Config(t.Config):
     inspireDegreeOfConformity: t.Optional[MetaInspireDegreeOfConformity]
     inspireResourceType: t.Optional[MetaInspireResourceType]
     inspireSpatialDataServiceType: t.Optional[MetaInspireSpatialDataServiceType]
+    inspireSpatialScope: t.Optional[MetaInspireSpatialScope]
     inspireTheme: t.Optional[MetaInspireTheme]
 
     isoMaintenanceFrequencyCode: t.Optional[MetaIsoMaintenanceFrequencyCode]
-    isoScope: t.Optional[MetaIsoScope]  #: ISO-19139 scope
+    isoScope: t.Optional[MetaIsoScope]  #: ISO-19139 scope code
+    isoScopeName: t.Optional[str]  #: ISO-19139 scope name
     isoSpatialRepresentationType: t.Optional[MetaIsoSpatialRepresentationType]  #: ISO-19139 spatial type
     isoTopicCategory: t.Optional[MetaIsoTopicCategory]  #: ISO-19139 topic category
 
-    isoQualityConformanceExplanation: t.Optional[str]
-    isoQualityConformancePass: bool = False
-    isoQualityLineageSource: t.Optional[str]
-    isoQualityLineageSourceScale: t.Optional[int]
-    isoQualityLineageStatement: t.Optional[str]
+    isoQualityConformance: t.Optional[t.List[MetaIsoQualityConformance]]
+    isoQualityLineage: t.Optional[MetaIsoQualityLineage]
+
+    isoRestrictionCode: t.Optional[MetaIsoRestrictionCode]
 
     catalogUid: t.Optional[str]  #: catalog identifier
 
@@ -317,7 +359,8 @@ class Config(t.Config):
     serviceUrl: t.Optional[t.Url]  #: service url
     title: t.Optional[str]  #: object title
     url: t.Optional[t.Url]  #: metadata url
-    urlType: t.Optional[str]  #: metadata url type like "ISO19115:2003"
+    urlType: t.Optional[str]  #: metadata url type like "TC211"
+    urlFormat: t.Optional[str]  #: metadata url mime type
 
 
 #:export
@@ -348,10 +391,13 @@ class MetaLink(t.Data):
 class MetaData(t.Data):
     abstract: str
     accessConstraints: str
+    license: str
     attribution: str
     contact: MetaContact
     dateCreated: t.DateTime
     dateUpdated: t.DateTime
+    dateBegin: t.DateTime
+    dateEnd: t.DateTime
     fees: str
     image: t.Url
 
@@ -364,20 +410,20 @@ class MetaData(t.Data):
     inspireDegreeOfConformity: MetaInspireDegreeOfConformity
     inspireResourceType: MetaInspireResourceType
     inspireSpatialDataServiceType: MetaInspireSpatialDataServiceType
+    inspireSpatialScope: MetaInspireSpatialScope
     inspireTheme: MetaInspireTheme
     inspireThemeName: str
     inspireThemeNameEn: str
 
     isoMaintenanceFrequencyCode: MetaIsoMaintenanceFrequencyCode
     isoScope: MetaIsoScope
+    isoScopeName: str
     isoSpatialRepresentationType: MetaIsoSpatialRepresentationType
     isoTopicCategory: MetaIsoTopicCategory
 
-    isoQualityConformanceExplanation: str
-    isoQualityConformancePass: bool
-    isoQualityLineageSource: str
-    isoQualityLineageSourceScale: int
-    isoQualityLineageStatement: str
+    isoQualityConformance: MetaIsoQualityConformance
+    isoQualityLineage: MetaIsoQualityLineage
+    isoRestrictionCode: str
 
     catalogUid: str
 
@@ -387,8 +433,10 @@ class MetaData(t.Data):
     name: str
     serviceUrl: t.Url
     title: str
+
     url: t.Url
     urlType: str
+    urlFormat: str
 
 
 class Props(t.Props):

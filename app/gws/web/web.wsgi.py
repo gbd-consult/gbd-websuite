@@ -10,7 +10,12 @@ import gws.web.wrappers
 
 import gws.types as t
 
-gws.config.loader.load()
+try:
+    gws.config.loader.load()
+except:
+    gws.log.error('UNABLE TO LOAD CONFIGURATION')
+    gws.log.exception()
+    gws.exit(255)
 
 
 def application(environ, start_response):
@@ -107,7 +112,7 @@ def _handle_action(root: t.IRootObject, req: t.IRequest) -> t.IResponse:
 
     project_uid = payload.get('projectUid')
 
-    ## gws.log.debug(f'DISPATCH a={action_type!r} m={method_name!r} projectUid={project_uid!r}')
+    gws.log.debug(f'DISPATCH a={action_type!r} m={method_name!r} projectUid={project_uid!r}')
 
     action = root.application.find_action(action_type, project_uid)
 

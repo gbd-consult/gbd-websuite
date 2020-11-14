@@ -36,6 +36,7 @@ class _Config:
                 'lock_dir': gws.TMP_DIR + '/mpx/locks_' + gws.random_string(16),
                 'tile_lock_dir': gws.TMP_DIR + '/mpx/tile_locks_' + gws.random_string(16),
                 'concurrent_tile_creators': 1,
+                'max_tile_limit': 5000,
 
             },
             'image': {
@@ -131,10 +132,11 @@ def create(root: t.IRootObject):
     if not cfg['layers']:
         return
 
-    m: t.IMap
-    crs = set(m.crs for m in root.find_all('gws.common.map'))
-    crs.add(gws.EPSG_3857)
-    crs.add(gws.EPSG_4326)
+    crs = set()
+    for p in root.find_all('gws.common.map'):
+        crs.add(gws.get(p, 'crs'))
+    for p in root.find_all('gws.ext.ows.service'):
+        crs.update(gws.get(p, 'supported_crs', default=[]))
     cfg['services']['wms']['srs'] = sorted(crs)
 
     return cfg

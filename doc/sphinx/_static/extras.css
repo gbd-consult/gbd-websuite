@@ -8,6 +8,17 @@
     white-space: normal !important;
 }
 
+.wy-table-responsive table th * {
+    margin: 0 !important;
+}
+
+.pull-quote {
+    padding: 0 0 0 10px !important;
+    margin: 0 0 0 0 !important;
+    border-left: 5px solid #2980B9 !important;
+
+}
+
 .wy-nav-content {
     max-width: 100% !important;
 }

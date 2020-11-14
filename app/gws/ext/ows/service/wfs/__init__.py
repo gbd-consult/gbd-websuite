@@ -49,7 +49,7 @@ class Object(ows.Base):
                 type='xml',
                 path=gws.APP_DIR + '/gws/ext/ows/service/wfs/templates/getFeature.cx',
                 subject='ows.GetFeatureInfo',
-                mimeTypes=['xml', 'gml2'],
+                mimeTypes=['xml', 'gml', 'gml3'],
             ),
         ]
 
@@ -96,7 +96,7 @@ class Object(ows.Base):
     def handle_getfeature(self, rd: ows.Request):
         lcs = self.layer_caps_list_from_request(rd, ['typeName', 'typeNames'])
         if not lcs:
-            raise gws.web.error.NotFound('Invalid type name')
+            raise gws.web.error.BadRequest('Invalid type name')
         try:
             limit = int(rd.req.param('count') or rd.req.param('maxFeatures') or 0)
         except:
@@ -123,6 +123,11 @@ class Object(ows.Base):
         else:
             filter = None
 
+        result_type = rd.req.param('resultType', default='results').lower()
+        if result_type not in ('hits', 'results'):
+            raise gws.web.error.BadRequest('Invalid RESULTTYPE value')
+        with_results = result_type == 'results'
+
         args = t.SearchArgs(
             project=rd.project,
             shapes=[shape],
@@ -134,12 +139,14 @@ class Object(ows.Base):
         )
 
         features = gws.common.search.runner.run(rd.req, args)
-        for f in features:
-            f.transform_to(crs)
 
-        fmt = rd.req.param('output_format') or gws.tools.mime.get('gml2')
+        if with_results:
+            for f in features:
+                f.transform_to(shape.crs)
+
+        fmt = rd.req.param('output_format') or 'gml'
         return self.template_response(rd, 'GetFeatureInfo', fmt, context={
-            'collection': self.feature_collection(features, rd),
+            'collection': self.feature_collection(features, rd, populate=with_results),
         })
 
     def _layer_caps_with_schemas(self, rd) -> t.List[ows.LayerCaps]:
