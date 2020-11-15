@@ -351,6 +351,7 @@ class Config(t.Config):
     isoRestrictionCode: t.Optional[MetaIsoRestrictionCode]
 
     catalogUid: t.Optional[str]  #: catalog identifier
+    catalogCitationUid: t.Optional[str]  #: catalog citation identifier
 
     keywords: t.List[str] = []  #: keywords
     language: t.Optional[str]  #: object language
@@ -426,6 +427,7 @@ class MetaData(t.Data):
     isoRestrictionCode: str
 
     catalogUid: str
+    catalogCitationUid: str
 
     keywords: t.List[str]
     language: str

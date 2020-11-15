@@ -58,7 +58,7 @@
         @t gmd:title/gco:CharacterString {meta.title}
         @DATE meta.dateCreated, "publication"
         @DATE meta.dateUpdated, "revision"
-        @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.catalogUid}
+        @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.catalogCitationUid}
     @end
 
     @t gmd:abstract/gco:CharacterString {meta.abstract}
