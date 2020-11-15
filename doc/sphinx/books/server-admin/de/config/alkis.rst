@@ -63,7 +63,7 @@ Einstellungen der Benutzeroberfläche sind wie folgt:
     ``gemarkungListMode`` | Darstellung der Gemarkungsliste: ``plain`` = nur Gemarkungen, ``combined`` = "Gemarkung (Gemeinde)", ``tree`` = Baumansicht mit Gemeinden und Gemarkungen
     ``searchSelection`` | Funktion "In der Auswahl suchen" aktivieren
     ``searchSpatial`` | räumliche Suche freischalten
-    ``strasseListMode`` | Verhalten der Straßen-Liste: ``all`` = alle Straßen zeigen, ``filtered`` = nur diejenigen in der ausgewählten Gemarkung, ``search`` = nur diejenigen, die mit dem Suchstring übereinstimmen, ``searchStart`` = nur diejenigen, die mit dem *Anfang* des Suchstrings übereinstimmen
+    ``strasseListMode`` | Darstellung der Straßen-Liste: ``plain`` = nur Straßennamen zeigen, ``withGemeinde`` oder ``withGemarkung`` = Straßenname + Gemeinde (oder Gemarkung),  ``withGemeindeIfRepeated`` / ``withGemarkungIfRepeated`` =  Straßenname + Gemeinde (Gemarkung) nur wenn der Name mehrmals vorkommt
     ``strasseSearchMode`` | Suchverhalten der Straßen-Liste (``start`` = nur Anfangssuche, ``all`` = überall suchen)
     ``useExport`` | CSV-Export Funktion freischalten
     ``usePick`` | Funktion "Flurstück direkt auswahlen" freischalten

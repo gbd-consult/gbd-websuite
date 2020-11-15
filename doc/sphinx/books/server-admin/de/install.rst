@@ -51,9 +51,9 @@ Die GBD WebSuite hat einen einzigen Einstiegspunkt, ein Shell-Skript namens ``gw
     gws server stop
 
 Ausführen mit ``gws``-Shell-Skript
-----------------------------
+----------------------------------
 
-Folgende Optionen müseen Sie in Ihrem ``gws``-Shell-Skript anpassen:
+Folgende Optionen müssen Sie in Ihrem ``gws``-Shell-Skript anpassen:
 
 - ein oder mehrere *Daten*-Verzeichnisse einbinden
 - *var* und *tmp* Verzeichnisse einbinden
