@@ -514,6 +514,7 @@ class MetaData(Data):
     authorityIdentifier: str
     authorityName: str
     authorityUrl: 'Url'
+    catalogCitationUid: str
     catalogUid: str
     contact: 'MetaContact'
     dateBegin: 'DateTime'

@@ -58,7 +58,7 @@
         @t gmd:title/gco:CharacterString {meta.title}
         @DATE meta.dateCreated, "publication"
         @DATE meta.dateUpdated, "revision"
-        @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.catalogUid}
+        @t gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString {meta.catalogCitationUid}
     @end
 
     @t gmd:abstract/gco:CharacterString {meta.abstract}
@@ -184,7 +184,7 @@
             @contact meta.contact
         @end
 
-        @t gmd:dateStamp/gco:DateTime {meta.dateCreated | datetime}
+        @t gmd:dateStamp/gco:DateTime {meta.dateUpdated | datetime}
 
         @t gmd:metadataStandardName/gco:CharacterString ISO19115
         @t gmd:metadataStandardVersion/gco:CharacterString 2003/Cor.1:2006

@@ -333,12 +333,17 @@ class Object(gws.common.action.Object):
 
     def _load_db_meta(self):
         metas = {}
+        meta_dates = {}
+
+        def _date(s):
+            return gws.tools.date.to_iso(gws.tools.date.to_utc(s), with_tz='Z')
 
         with self.db.connect() as conn:
             rs = conn.select(f'''SELECT * FROM {conn.quote_table(self.meta_table.name)}''')
             for r in rs:
                 au_uid = r['_au']
                 metas[au_uid] = gws.common.metadata.from_dict(gws.tools.json2.from_string(r['meta']))
+                meta_dates[au_uid] = _date(r['_updated'])
 
             rs = conn.select(f'''
                 SELECT _au, 
@@ -354,10 +359,17 @@ class Object(gws.common.action.Object):
                 au_uid = r['_au']
                 if au_uid not in metas:
                     metas[au_uid] = t.MetaData()
-                metas[au_uid].dateCreated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['min_updated']), with_tz='Z')
-                metas[au_uid].dateUpdated = gws.tools.date.to_iso(gws.tools.date.to_utc(r['max_updated']), with_tz='Z')
-                metas[au_uid].dateBegin = gws.tools.date.to_iso(gws.tools.date.to_utc(r['min_time']), with_tz='Z')
-                metas[au_uid].dateEnd = gws.tools.date.to_iso(gws.tools.date.to_utc(r['max_time']), with_tz='Z')
+
+                metas[au_uid].dateCreated = _date(r['min_updated'])
+                metas[au_uid].dateUpdated = _date(r['max_updated'])
+                md = meta_dates.get(au_uid)
+                if md and md < metas[au_uid].dateCreated:
+                    metas[au_uid].dateCreated = md
+                if md and md > metas[au_uid].dateUpdated:
+                    metas[au_uid].dateUpdated = md
+
+                metas[au_uid].dateBegin = _date(r['min_time'])
+                metas[au_uid].dateEnd = _date(r['max_time'])
 
         # extend metadata for "our" objects
 
