@@ -216,3 +216,10 @@ def rel_path(path, basedir):
         return None
 
     return os.path.relpath(path, basedir)
+
+
+def chown(path, user=None, group=None):
+    try:
+        os.chown(path, user or gws.UID, group or gws.GID)
+    except OSError:
+        pass
