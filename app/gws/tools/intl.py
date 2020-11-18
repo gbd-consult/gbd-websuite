@@ -5,54 +5,58 @@ import babel
 import gws.types as t
 
 
-class LocaleData(t.Data):
+class Locale(t.Data):
     id: str
     dateFormatLong: str
     dateFormatMedium: str
     dateFormatShort: str
     dateUnits: str  #: date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'
-    daysLong: t.List[str]
-    daysShort: t.List[str]
+    dayNamesLong: t.List[str]
+    dayNamesShort: t.List[str]
+    dayNamesNarrow: t.List[str]
     firstWeekDay: int
     language: str
     languageName: str
-    monthsLong: t.List[str]
-    monthsShort: t.List[str]
+    monthNamesLong: t.List[str]
+    monthNamesShort: t.List[str]
+    monthNamesNarrow: t.List[str]
     numberDecimal: str
     numberGroup: str
 
 
-def locale_data(locale: str) -> t.Optional[LocaleData]:
-    if not locale:
+def locale_data(locale_name: str) -> t.Optional[Locale]:
+    if not locale_name:
         return
 
-    locale = locale.lower().strip().replace('-', '_')
+    locale_name = locale_name.lower().strip().replace('-', '_')
 
     try:
-        lo = babel.Locale.parse(locale, resolve_likely_subtags=True)
+        p = babel.Locale.parse(locale_name, resolve_likely_subtags=True)
     except (ValueError, babel.UnknownLocaleError):
         return
 
-    ld = LocaleData()
+    lo = Locale()
 
     # @TODO script etc
-    ld.id = lo.language + '_' + lo.territory
+    lo.id = p.language + '_' + p.territory
 
-    ld.dateFormatLong = str(lo.date_formats['long'])
-    ld.dateFormatMedium = str(lo.date_formats['medium'])
-    ld.dateFormatShort = str(lo.date_formats['short'])
-    ld.daysLong = list(lo.days['format']['wide'].values())
-    ld.daysShort = list(lo.days['format']['abbreviated'].values())
-    ld.firstWeekDay = lo.first_week_day
-    ld.language = lo.language
-    ld.languageName = lo.language_name
-    ld.monthsLong = list(lo.months['format']['wide'].values())
-    ld.monthsShort = list(lo.months['format']['abbreviated'].values())
-    ld.numberDecimal = lo.number_symbols['decimal']
-    ld.numberGroup = lo.number_symbols['group']
-    ld.dateUnits = (
-            lo.unit_display_names['duration-year']['narrow'] +
-            lo.unit_display_names['duration-month']['narrow'] +
-            lo.unit_display_names['duration-day']['narrow'])
+    lo.dateFormatLong = str(p.date_formats['long'])
+    lo.dateFormatMedium = str(p.date_formats['medium'])
+    lo.dateFormatShort = str(p.date_formats['short'])
+    lo.dateUnits = (
+            p.unit_display_names['duration-year']['narrow'] +
+            p.unit_display_names['duration-month']['narrow'] +
+            p.unit_display_names['duration-day']['narrow'])
+    lo.dayNamesLong = list(p.days['format']['wide'].values())
+    lo.dayNamesNarrow = list(p.days['format']['narrow'].values())
+    lo.dayNamesShort = list(p.days['format']['abbreviated'].values())
+    lo.firstWeekDay = p.first_week_day
+    lo.language = p.language
+    lo.languageName = p.language_name
+    lo.monthNamesLong = list(p.months['format']['wide'].values())
+    lo.monthNamesNarrow = list(p.months['format']['narrow'].values())
+    lo.monthNamesShort = list(p.months['format']['abbreviated'].values())
+    lo.numberDecimal = p.number_symbols['decimal']
+    lo.numberGroup = p.number_symbols['group']
 
-    return ld
+    return lo

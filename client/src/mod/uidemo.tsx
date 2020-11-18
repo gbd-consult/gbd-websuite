@@ -122,10 +122,6 @@ class TableForm extends gws.View<ViewProps> {
                 value={this.props.uiDemoDate}
                 label="date"
                 withClear
-                format={{
-                    date: this.props.controller.app.localeData.dateFormatShort,
-                    units: this.props.controller.app.localeData.dateUnits,
-                }}
                 whenChanged={bind('uiDemoDate')}
             />,
         ];
@@ -198,6 +194,14 @@ class TabularForm extends gws.View<ViewProps> {
                 value={this.props.uiDemoString}
                 label="text input"
                 whenChanged={bind('uiDemoString')}
+            />
+            <gws.ui.DateInput
+                value={this.props.uiDemoDate}
+                label="date"
+                minValue={"2020-11-05"}
+                maxValue={"2020-12-13"}
+                withClear
+                whenChanged={bind('uiDemoDate')}
             />
             <gws.ui.Toggle
                 type="checkbox"
@@ -326,15 +330,14 @@ class BigForm extends gws.View<ViewProps> {
             </Row>
 
             <Row>
-                <Cell>
+                <Cell flex>
                     <gws.ui.DateInput
                         value={this.props.uiDemoDate}
                         label="date"
+                        minValue={"2020-11-05"}
+                        maxValue={"2020-12-13"}
                         withClear
-                        format={{
-                            date: this.props.controller.app.localeData.dateFormatShort,
-                            units: this.props.controller.app.localeData.dateUnits,
-                        }}
+                        locale={this.props.controller.app.locale}
                         whenChanged={bind('uiDemoDate')}
                     />
                 </Cell>
@@ -385,10 +388,7 @@ class BigForm extends gws.View<ViewProps> {
                     <gws.ui.NumberInput
                         value={this.props.uiDemoNumber}
                         label="float"
-                        format={{
-                            decimal: this.props.controller.app.localeData.numberDecimal,
-                            group: this.props.controller.app.localeData.numberGroup
-                        }}
+                        locale={this.props.controller.app.locale}
                         whenChanged={bind('uiDemoNumber')}
                     />
                 </Cell>
@@ -796,12 +796,12 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
             uiDemoNumber: 13,
             uiDemoColor: 'rgba(255,200,10,0.9)',
             uiDemoName: 'name:Marino',
-            //uiDemoDate: '2018-11-22',
+            uiDemoDate: '2020-11-22',
 
-            uiDemoMode: '',
-            uiDemoActiveTab: 0,
+            uiDemoMode: 'dialog',
+            uiDemoActiveTab: 1,
 
-            uiDemoUseTabs: false,
+            uiDemoUseTabs: true,
             uiDemoUseTitle: true,
             uiDemoUseClose: false,
             uiDemoUseFooter: true,

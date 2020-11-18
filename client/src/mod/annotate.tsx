@@ -321,17 +321,17 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
         };
 
         if (['Point', 'Box', 'Circle'].includes(st)) {
-            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateX')} {...cc.bind('annotateFormData.x')}/>)
-            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateY')} {...cc.bind('annotateFormData.y')}/>)
+            form.push(<gws.ui.NumberInput locale={this.props.controller.app.locale} label={this.__('modAnnotateX')} {...cc.bind('annotateFormData.x')}/>)
+            form.push(<gws.ui.NumberInput locale={this.props.controller.app.locale} label={this.__('modAnnotateY')} {...cc.bind('annotateFormData.y')}/>)
         }
 
         if (st === 'Box') {
-            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateWidth')} {...cc.bind('annotateFormData.width')}/>)
-            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateHeight')} {...cc.bind('annotateFormData.height')}/>)
+            form.push(<gws.ui.NumberInput locale={this.props.controller.app.locale} label={this.__('modAnnotateWidth')} {...cc.bind('annotateFormData.width')}/>)
+            form.push(<gws.ui.NumberInput locale={this.props.controller.app.locale} label={this.__('modAnnotateHeight')} {...cc.bind('annotateFormData.height')}/>)
         }
 
         if (st === 'Circle') {
-            form.push(<gws.ui.NumberInput format={decimalFmt} label={this.__('modAnnotateRadius')} {...cc.bind('annotateFormData.radius')}/>)
+            form.push(<gws.ui.NumberInput locale={this.props.controller.app.locale} label={this.__('modAnnotateRadius')} {...cc.bind('annotateFormData.radius')}/>)
         }
 
         form.push(<gws.ui.TextArea

@@ -227,18 +227,12 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
             case gws.api.AttributeType.date:
                 return <gws.ui.DateInput
                     {...props}
-                    format={{
-                        date: cc.app.localeData.dateFormatShort,
-                        units: cc.app.localeData.dateUnits,
-                    }}
+                    locale={this.props.controller.app.locale}
                 />;
             case gws.api.AttributeType.float:
                 return <gws.ui.NumberInput
                     {...props}
-                    format={{
-                        decimal: cc.app.localeData.numberDecimal,
-                        group: cc.app.localeData.numberGroup,
-                    }}
+                    locale={this.props.controller.app.locale}
                 />;
             case gws.api.AttributeType.int:
                 return <gws.ui.NumberInput step={1} {...props}/>;

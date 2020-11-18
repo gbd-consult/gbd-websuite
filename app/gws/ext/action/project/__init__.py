@@ -19,7 +19,7 @@ class InfoParams(t.Params):
 
 class InfoResponse(t.Response):
     project: gws.common.project.Props
-    localeData: gws.tools.intl.LocaleData
+    locale: gws.tools.intl.Locale
     user: t.Optional[t.UserProps]
 
 
@@ -29,11 +29,11 @@ class Object(gws.common.action.Object):
 
         project = req.require_project(p.projectUid)
 
-        ld = gws.tools.intl.locale_data(p.locale)
-        if not ld:
-            ld = gws.tools.intl.locale_data(project.locales[0])
+        lo = gws.tools.intl.locale_data(p.locale)
+        if not lo:
+            lo = gws.tools.intl.locale_data(project.locales[0])
 
         return InfoResponse(
             project=project.props_for(req.user),
-            localeData=ld,
+            locale=lo,
             user=None if req.user.is_guest else req.user.props)

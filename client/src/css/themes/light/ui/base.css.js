@@ -136,6 +136,18 @@ module.exports = v => ({
         }
     },
 
+    '.uiLeftButton': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('tiny'),
+        ...v.SVG('google:navigation/chevron_left', v.BORDER_COLOR),
+    },
+
+    '.uiRightButton': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('tiny'),
+        ...v.SVG('google:navigation/chevron_right', v.BORDER_COLOR),
+    },
+
     '.uiDropDownToggleButton': {
 
         ...v.ICON_BUTTON(),

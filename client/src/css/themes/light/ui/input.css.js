@@ -18,7 +18,7 @@ module.exports = v => ({
         '.uiControlBox': {
             width: v.CONTROL_SIZE,
         },
-        '&.uiHasFiles .uiControlBox': {
+        '&.uiHasContent .uiControlBox': {
             width: '100%',
         },
 
