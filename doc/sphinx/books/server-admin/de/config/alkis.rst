@@ -1,7 +1,7 @@
 ALKIS Integration
 =================
 
-GBD Websuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Es steht eine Client-Oberfläche für Flurstücksuche zur Verfügung und ein QGIS Plugin für ALKIS-basierte Geocodierung.
+Die GBD WebSuite kann die Daten aus dem Amtliches Liegenschaftskatasterinformationssystem  (ALKIS) durchsuchen und bearbeiten. Es steht eine Client-Oberfläche für Flurstücksuche zur Verfügung und ein QGIS Plugin für ALKIS-basierte Geocodierung.
 
 Um die ALKIS Integration zu nutzen benötigen Sie folgendes:
 
@@ -18,9 +18,9 @@ In diesem Helper (s. ^helper) werden allgemeine ALKIS Einstellungen konfiguriert
 
 {TABLE}
    ``crs`` | KBS für ALKIS Daten, normalerweise ``EPSG:25832`` oder ``EPSG:25833``
-   ``dataSchema`` | Postgres Schema wo die ALKIS Tabellen liegen
+   ``dataSchema`` | Postgres Schema in dem die ALKIS Tabellen liegen
    ``excludeGemarkung`` | Liste von Gemarkungen IDs (*gemarkungsnummer*), die aus der Suche ausgeschlossen werden müssen
-   ``indexSchema`` | Postgres Schema wo die Indexes geschrieben werden
+   ``indexSchema`` | Postgres Schema in dem die Indexe geschrieben werden
 {/TABLE}
 
 Indizierung
@@ -75,7 +75,7 @@ Außerdem muss im Client-Einstellungen (s. ^client) das Element ``Sidebar.Alkis`
 Vorlagen
 ~~~~~~~~
 
-Sie können Vorlagen mit Subjekten ``feature.title``, ``feature.teaser`` (Listenansicht) und ``feature.description`` (Detailsansicht) bei Bedarf anpassen. Die Standardvorlagen finden Sie unter https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws/ext/action/alkis/templates zu finden. Ebenso kann mit ``printTemplate`` eine Druckvorlage angepasst werden.
+Sie können Vorlagen mit Subjekten ``feature.title``, ``feature.teaser`` (Listenansicht) und ``feature.description`` (Detailsansicht) bei Bedarf anpassen. Die Standardvorlagen finden Sie unter https://github.com/gbd-consult/gbd-websuite/tree/master/app/gws/ext/action/alkissearch/templates zu finden. Ebenso kann mit ``printTemplate`` eine Druckvorlage angepasst werden.
 
 Zugang zu Eigentümerdaten
 ~~~~~~~~~~~~~~~~~~~~~~~~~

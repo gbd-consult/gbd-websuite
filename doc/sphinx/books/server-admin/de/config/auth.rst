@@ -1,7 +1,7 @@
 Autorisierung
 =============
 
-Eine Rolle in GWS wird mit einer einfachen Zeichenkette bezeichnet. Ein Nutzer, der sich mit den Zugangsdaten identifiziert, kann mehrere Rollen besitzen.
+Eine Rolle in der GBD WebSuit wird mit einer einfachen Zeichenkette bezeichnet. Ein Nutzer, der sich mit den Zugangsdaten identifiziert, kann mehrere Rollen besitzen.
 
 Zugangsreglungen
 ----------------
@@ -20,7 +20,7 @@ Zusätzlich definieren einige Aktionen interne ``access`` Blöcke für bestimmte
 
 Ein ``access`` Block ist eine Liste von Regeln. Jede Regel enthält die Eigenschaften ``role`` (ein Name der Rolle auf die sich die Regel bezieht) und ``type``, welche ist entweder ``allow`` ("erlauben") oder ``deny`` ("verweigern").
 
-Wenn ein Nutzer einen Zugriff auf ein Objekt erfragt, werden alle Regel für dieses Objekt überprüft. Falls eine von Rollen die der Nutzer besitzt explizit gefunden wird, ist der Zugriff anhand von ``type`` erlaubt und verweigert. Ansonsten wird das übergeordnete Objekt geprüft. Falls es kein  übergeordnetes Objekt gibt, d.h. das Root-Objekt wird erreicht, ist der Zugriff verweigert.
+Wenn ein Nutzer einen Zugriff auf ein Objekt erfragt, werden alle Regel für dieses Objekt überprüft. Falls eine der Rollen, die der Nutzer besitzt, explizit gefunden wird, ist der Zugriff anhand von ``type`` erlaubt oder verweigert. Ansonsten wird das übergeordnete Objekt geprüft. Falls es kein  übergeordnetes Objekt gibt, d.h. das Root-Objekt wird erreicht, wird der Zugriff verweigert.
 
 Vordefinierte Rollen
 --------------------
@@ -98,12 +98,12 @@ Aktion ``auth``
 
 ^REF gws.ext.action.auth.Config
 
-Diese Aktion ist für die Bearbeitung der Zugangsdaten zuständig und muss freigeschaltet sein wenn Sie Logins verwenden. Wenn Sie die "deny all" Strategie folgen, achten Sie darauf, dass die die ``auth`` Aktion für ``all`` zugänglich ist, andernfalls könnten sich Ihre Benutzer nicht einmal anmelden.
+Diese Aktion ist für die Bearbeitung der Zugangsdaten zuständig und muss freigeschaltet sein wenn Sie Logins verwenden. Wenn Sie die "deny all" Strategie folgen, achten Sie darauf, dass die ``auth`` Aktion für ``all`` zugänglich ist, andernfalls könnten sich Ihre Benutzer nicht einmal anmelden.
 
 Autorisierungsanbieter
 ----------------------
 
-Die Aufgabe eines Autorisierungsanbieters ist, die Zugangsdaten mit der Quelle zu vergleichen und bei der positiven Antwort, Benutzer Eigenschaften (Vollname, Rollen usw) zurückzugeben
+Die Aufgabe eines Autorisierungsanbieters ist, die Zugangsdaten mit der Quelle zu vergleichen und bei der positiven Antwort, Benutzer Eigenschaften (Vollname, Rollen usw) zurückzugeben.
 
 file
 ~~~~
@@ -219,7 +219,7 @@ Mit dieser Methode werden die Zugangsdaten in HTTP Header mitgesendet. Diese Met
 Sitzungen
 ---------
 
-Sitzungen werden in einer Sqlite Tabelle gespeichert, die sich in einem persistenten Ordner innerhalb des ``var`` Ordner befindet. Dies bedeutet, dass die Sitzungen auch nach einem Neustart des Servers nicht unterbrochen werden.
+Sitzungen werden in einer Sqlite Tabelle gespeichert, die sich in einem persistenten Ordner innerhalb des ``var`` Ordners befindet. Dies bedeutet, dass die Sitzungen auch nach einem Neustart des Servers nicht unterbrochen werden.
 
 Sie können die Lebenszeit einer Sitzung mit der Option ``sessionLifeTime`` steuern.
 

@@ -3,7 +3,7 @@ Metadaten
 
 ^REF gws.common.metadata.Config
 
-GWS Metadata konfiguration ist umfangreich und beinhaltet folgende Themen:
+GBD WebSuite Metadata konfiguration ist umfangreich und beinhaltet folgende Themen:
 
 - allgemeine Metadaten, wie z.B. Titel (``title``), Beschreibung (``abstract``) und Kontakt-Daten (``contact``)
 - INSPIRE Metadaten, wie z.B. Thema (``inspireTheme``) oder Ressourcen-Typ (``inspireResourceType``)

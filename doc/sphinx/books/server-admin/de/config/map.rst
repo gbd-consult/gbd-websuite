@@ -12,7 +12,7 @@ Die Darstellung der Karte wird von der Aktion ``map`` behandelt.
 Karten-Ausmaß
 -------------
 
-Das Ausmaß der Karte kann mit ``extent`` konfiguriert werden. In Client kann der Nutzer die Karte nicht außerhalb des Extents scrollen. Die Koordinaten des Extents sind in KBS Einheiten anzugeben. Falls Sie kein ``extent`` angeben, wird das Ausmaß aus Layer-Ausmaßen berechnet. Mit ``extentBuffer`` können Sie den automatisch berechneten Extent-Wert erweitern.
+Das Ausmaß der Karte kann mit ``extent`` konfiguriert werden. In Client kann der Nutzer die Karte nicht außerhalb des Extents scrollen. Die Koordinaten des Extents sind in KBS Einheiten anzugeben. Falls Sie kein ``extent`` angeben, wird das Ausmaß aus den Layer-Ausmaßen berechnet. Mit ``extentBuffer`` können Sie den automatisch berechneten Extent-Wert erweitern.
 
 Die Anfangsposition der Karte können Sie mit der Option ``center`` konfigurieren, ansonsten wird die Mitte des Extents genommen.
 
