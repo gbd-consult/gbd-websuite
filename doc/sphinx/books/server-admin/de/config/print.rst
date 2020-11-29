@@ -6,7 +6,7 @@ Ein Projekt in der GBD WebSuite kann eine oder mehrere Druckvorlagen bereitstell
 Qualitätsstufen
 ---------------
 
-Für jede Vorlage können Sie eine Liste der Qualitätsstufen konfigurieren. Eine Qualitätsstufe ist ein DPI-Wert mit einem Namen. Beachten Sie, dass das Drucken mit hohen DPI-Werten viel Speicherplatz benötigt und nicht einmal mit Quellen möglich ist, die Beschränkungen für die Begrenzung von Anfragen auferlegen. Das Drucken einer A3-Karte mit 300 DPI wird nicht immer funktionieren.
+Für jede Vorlage können Sie eine Liste der Qualitätsstufen konfigurieren. Eine Qualitätsstufe ist ein DPI-Wert mit einem Namen. Beachten Sie, dass das Drucken mit hohen DPI-Werten viel Speicherplatz benötigt und nicht mit allen Quellen möglich ist. Das Drucken einer A3-Karte mit 300 DPI wird nicht immer funktionieren.
 
 Zwei DPI-Werte werden in GWS auf besondere Weise bearbeitet:
 
@@ -19,7 +19,7 @@ Druckvorlagen
 html
 ~~~~
 
-Eine ``html`` Druckvorlage ist eine Vorlage (s. ^template) die auch spezielle HTML-Tags enthält, der beim Drucken mit aktuellen Werten ersetzt werden. Es werden folgende Tags unterstützt:
+Eine ``html`` Druckvorlage ist eine Vorlage (s. ^template),welche spezielle HTML-Tags enthält die beim drucken mit aktuellen Werten ersetzt werden. Es werden folgende Tags unterstützt:
 
 {TABLE head}
 Tag | Bedeutung | Beispiel

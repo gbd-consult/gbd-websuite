@@ -48,7 +48,7 @@ postgres
 
 ^REF gws.ext.search.provider.postgres.Config
 
-Bietet direkte Suche in Postgres/PostGIS Tabellen. Sie müssen und die zu durchsuchende Tabelle (``table``) angeben (s. ^db). Zusätzlich können Sie die Spalte wo nach dem Stichwort gesucht werden soll (``searchColumn``) konfigurieren.
+Bietet direkte Suche in Postgres/PostGIS Tabellen. Sie müssen und die zu durchsuchende Tabelle (``table``) angeben (s. ^db). Zusätzlich können Sie die Spalte in der nach dem Stichwort gesucht werden soll (``searchColumn``) konfigurieren.
 
 Wenn der Server eine Abfrage mit *keyword* und *shape* bearbeitet, wird ungefähr folgende SQL Abfrage ausgeführt: ::
 

@@ -1,12 +1,12 @@
 Client
 ======
 
-GWS Client ist eine Javascript Browser-Anwendung, die dafür konzipiert ist, zusammen mit dem GWS Server zu arbeiten.
+Der GBD WebSuite Client ist eine Javascript Browser-Anwendung, die dafür konzipiert ist, zusammen mit dem GBD WebSuite Server zu arbeiten.
 
 HTML Vorlage
 ------------
 
-Um Ihr Projekt in einem Webbrowser anzuzeigen, benötigen Sie eine HTML-Seite, die den Client und einige Projekt Informationen enthalten sollte, damit der Client weiß, welches Projekt geladen werden soll. Auf der Seite muss sich ein div-Element mit dem Klassennamen ``gws`` befinden. Hier wird die Client-Benutzeroberfläche geladen. Ansonsten können Sie Ihre Startseite frei gestalten.
+Um Ihr Projekt in einem Webbrowser anzuzeigen, benötigen Sie eine HTML-Seite, die den Client und einige Projekt Informationen enthalten sollte, damit der Client weiß, welches Projekt geladen werden soll. Auf der Seite muss sich ein div-Element mit dem Klassennamen ``gws`` befinden. Hier wird die Client-Benutzeroberfläche geladen. Ansonsten können Sie Ihre Seite frei gestalten.
 
 Der Client selbst besteht aus drei Dateien:
 
@@ -97,7 +97,7 @@ Die Optionen sind wie folgt:
 {TABLE head}
 Option | Typ | Bedeutung | Beispielwert
 ``infobarVisible`` | *bool* | untere Leiste ("Infobar") ist sichtbar | ``false``
-``sidebarActiveTab`` | *str* | actives Icon in der linken Leiste ("Sidebar") | ``"Sidebar.Layers``
+``sidebarActiveTab`` | *str* | actives Icon in der linken Leiste ("Sidebar") | ``"Sidebar.Layers"``
 ``sidebarVisible`` | *bool* | Sidebar ursprünglich sichtbar | ``true``
 ``sidebarSize`` | *int* | Anzahl von sichtbaren Icons in der Sidebar |  ``4``
 ``toolbarSize`` | *int* | Anzahl von sichtbaren Icons in der Toolbar |  ``5``

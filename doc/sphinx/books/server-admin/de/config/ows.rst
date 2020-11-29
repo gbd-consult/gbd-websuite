@@ -10,7 +10,7 @@ Aktion ``ows``
 
 Die Dienste werden freigeschaltet indem Sie die Aktion ``ows`` global oder in einem Projekt konfigurieren. Diese Aktion besitzt eine Liste von Diensten (``service``), wo Sie die konkrete Dienste konfigurieren.
 
-Für alle OWS Dienste muss aus Projekt-Layern ein "root" Layer ausgewählt sein. Sie können diesen Layer explizit mit der ``root`` Eigenschaft konfigurieren, ansonste wird den ersten Layer auf der obersten Ebene genommen.
+Für alle OWS Dienste muss aus den Projekt-Layern ein "root" Layer ausgewählt sein. Sie können diesen Layer explizit mit der ``root`` Eigenschaft konfigurieren, ansonste wird der erste Layer, auf der obersten Ebene genommen.
 
 Unterstützte Dienste
 --------------------
@@ -22,7 +22,7 @@ wms
 
 ^REF gws.ext.ows.service.wms.Config
 
-Der WMS-Dienst sind vollständig gemäß der Eigenschaften der Version 1.3.0 implementiert.
+Der WMS-Dienst ist vollständig gemäß der Eigenschaften der Version 1.3.0 implementiert.
 
 wfs
 ~~~
@@ -56,7 +56,7 @@ CSW Dienst
 
 ^REF gws.ext.ows.service.csw.Config
 
-GWS enthält eine Basis-Implementation von einem CSW Dienst. Dieser Dienst kann nur in der App-Konfig konfiguriert werden. Derzeit sind folgende Operationen implementiert:
+Die GBD WebSuite enthält eine Basis-Implementation von einem CSW Dienst. Dieser Dienst kann nur in der App-Konfig konfiguriert werden. Derzeit sind folgende Operationen implementiert:
 
 - ``GetCapabilities``
 - ``DescribeRecord``
@@ -92,7 +92,7 @@ Damit Ihre in Capabilities Dokumenten angegebene URLs auch "schön" aussehen, m�
 Vorlagen
 --------
 
-Die für einen Dienst notwendige XML Dokumente werden vom System automatisch erstellt. Sie haben jedoch die Möglichkeit, diese Dokumente anzupassen. Dafür definieren Sie unter Dienst ``templates`` eine Vorlage mit dem ``subject`` das fîr eine der folgenden Dokument-Kategorien steht:
+Die für einen Dienst notwendige XML Dokumente werden vom System automatisch erstellt. Sie haben jedoch die Möglichkeit, diese Dokumente anzupassen. Dafür definieren Sie unter Dienst ``templates`` eine Vorlage mit dem ``subject`` das für eine der folgenden Dokument-Kategorien steht:
 
 {TABLE head}
 Subject | Dienste
@@ -110,7 +110,7 @@ Die Vorlagen müssen in ``xml`` bzw ``text`` Format sein, s. ^template für mehr
 INSPIRE Support
 ---------------
 
-GWS unterstützt Europäische Direktive INSPIRE indem die ``GetCapabilities`` Dokumente INSPIRE Metadaten enthalten. Es ist auch möglich INSPIRE-Konforme (*harmonisierte*) Sachdaten in ``GetFeature`` Responses auszugeben.
+Die GBD WebSuite unterstützt die Europäische Direktive INSPIRE indem die ``GetCapabilities`` Dokumente INSPIRE Metadaten enthalten. Es ist auch möglich INSPIRE-Konforme (*harmonisierte*) Sachdaten in ``GetFeature`` Responses auszugeben.
 
 INSPIRE Metadaten
 ~~~~~~~~~~~~~~~~~
