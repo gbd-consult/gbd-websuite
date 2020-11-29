@@ -309,6 +309,8 @@ class LinkConfig(t.Config):
 
     scheme: t.Optional[str]  #: link scheme
     url: t.Url  #: link url
+    formatName: t.Optional[str]  #: link format
+    formatVersion: t.Optional[str]  #: link format version
     function: t.Optional[MetaIsoOnLineFunction]  #: ISO-19115 function
 
 
@@ -383,9 +385,11 @@ class MetaContact(t.Data):
 
 #:export
 class MetaLink(t.Data):
+    formatName: str
+    formatValue: str
+    function: MetaIsoOnLineFunction
     scheme: str
     url: t.Url
-    function: MetaIsoOnLineFunction
 
 
 #:export

@@ -41,10 +41,10 @@ _XML_SCHEMA_TYPES = {
     t.GeometryType.multicurve: 'gml:MultiCurvePropertyType',
     t.GeometryType.multilinestring: 'gml:MultiCurvePropertyType',
     t.GeometryType.multipoint: 'gml:MultiPointPropertyType',
-    t.GeometryType.multipolygon: 'gml:MultiPolygonPropertyType',
+    t.GeometryType.multipolygon: 'gml:MultiSurfacePropertyType',
     t.GeometryType.multisurface: 'gml:MultiGeometryPropertyType',
     t.GeometryType.point: 'gml:PointPropertyType',
-    t.GeometryType.polygon: 'gml:SurfacePropertyType',
+    t.GeometryType.polygon: 'gml:PolygonPropertyType',
     t.GeometryType.polyhedralsurface: 'gml:SurfacePropertyType',
     t.GeometryType.surface: 'gml:SurfacePropertyType',
 }
@@ -62,6 +62,7 @@ class Config(t.WithTypeAndAccess):
     updateSequence: t.Optional[str]  #: service update sequence
     withInspireMeta: bool = False  #: use INSPIRE Metadata
     strictParams: bool = False  #: strict parameter parsing
+    forceFeatureName: str = ''
 
 
 class Request(t.Data):
@@ -187,6 +188,7 @@ class Base(Object):
         self.update_sequence = self.var('updateSequence')
         self.with_inspire_meta = self.var('withInspireMeta')
         self.strict_params = self.var('strictParams')
+        self.force_feature_name = self.var('forceFeatureName', default='')
 
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), self.default_templates)
 
@@ -197,10 +199,8 @@ class Base(Object):
         else:
             meta = gws.common.metadata.extend(meta, self.root.application.meta)
 
-        meta.links = []
-
-        if self.service_link:
-            meta.links.append(self.service_link)
+        if not meta.links and self.service_link:
+            meta.links = [self.service_link]
 
         meta = gws.extend(meta, self.default_metadata)
         return meta
@@ -385,7 +385,15 @@ class Base(Object):
         if not names:
             return []
 
-        return self.layer_caps_list(rd, set(names))
+        layer_names = set()
+
+        for name in names:
+            layer_names.add(name)
+            # some agents invent their own namespaces, so add non-namespaced versions to the layer names set
+            if ':' in name:
+                layer_names.add(name.split(':')[1])
+
+        return self.layer_caps_list(rd, layer_names)
 
     def _layer_caps(self, layer: t.ILayer, sub_caps=None) -> LayerCaps:
 
@@ -394,7 +402,7 @@ class Base(Object):
         lc.layer = layer
         lc.title = layer.title
         lc.layer_name = self._parse_name(layer.ows_name)
-        lc.feature_name = self._parse_name(layer.ows_feature_name)
+        lc.feature_name = self._parse_name(self.force_feature_name or layer.ows_feature_name)
         lc.meta = layer.meta
         lc.sub_caps = sub_caps or []
 
@@ -421,10 +429,10 @@ class Base(Object):
 
         if dm:
             for rule in dm.rules:
-                x = _XML_SCHEMA_TYPES.get(rule.type)
-                if x:
+                schema_type = _XML_SCHEMA_TYPES.get(rule.type)
+                if schema_type:
                     lc.feature_schema.append(FeatureSchemaAttribute(
-                        type=x,
+                        type=schema_type,
                         name=self._parse_name(rule.name, lc.feature_name.ns)))
 
             if dm.geometry_type:
@@ -457,10 +465,14 @@ class Base(Object):
 
             f.apply_data_model()
 
+            name = self._parse_name(f.layer.ows_feature_name) if f.layer else default_name
+            if self.force_feature_name:
+                name = self._parse_name(self.force_feature_name)
+
             coll.caps.append(FeatureCaps(
                 feature=f,
                 shape_tag=gs,
-                name=self._parse_name(f.layer.ows_feature_name) if f.layer else default_name,
+                name=name
             ))
 
             coll.features.append(f)

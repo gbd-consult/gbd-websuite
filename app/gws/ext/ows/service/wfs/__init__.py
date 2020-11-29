@@ -77,14 +77,17 @@ class Object(ows.Base):
         self.supported_versions = ['2.0.2', '2.0.1', '2.0.0']
 
     def handle_getcapabilities(self, rd: ows.Request):
-        lcs = self._layer_caps_with_schemas(rd)
+        lcs = self._filter_layer_caps(self.layer_caps_list(rd))
         return self.template_response(rd, 'GetCapabilities', context={
             'layer_caps_list': lcs,
             'version': self.request_version(rd),
         })
 
     def handle_describefeaturetype(self, rd: ows.Request):
-        lcs = self._layer_caps_with_schemas(rd)
+        lcs = self._filter_layer_caps(self.layer_caps_list_from_request(rd, ['typeName', 'typeNames']))
+        if not lcs:
+            raise gws.web.error.BadRequest('Invalid type name')
+
         # @TODO multiple namespaces should be handled by importing individual ns schemas
         return self.template_response(rd, 'DescribeFeatureType', context={
             'layer_caps_list': lcs,
@@ -94,9 +97,10 @@ class Object(ows.Base):
         })
 
     def handle_getfeature(self, rd: ows.Request):
-        lcs = self.layer_caps_list_from_request(rd, ['typeName', 'typeNames'])
+        lcs = self._filter_layer_caps(self.layer_caps_list_from_request(rd, ['typeName', 'typeNames']))
         if not lcs:
             raise gws.web.error.BadRequest('Invalid type name')
+
         try:
             limit = int(rd.req.param('count') or rd.req.param('maxFeatures') or 0)
         except:
@@ -149,11 +153,10 @@ class Object(ows.Base):
             'collection': self.feature_collection(features, rd, populate=with_results),
         })
 
-    def _layer_caps_with_schemas(self, rd) -> t.List[ows.LayerCaps]:
+    def _filter_layer_caps(self, lcs) -> t.List[ows.LayerCaps]:
+        # return only layer caps that have schemas
         d = {}
-
-        for lc in self.layer_caps_list(rd):
+        for lc in lcs:
             if lc.feature_schema:
                 d[lc.feature_name.q] = lc
-
         return list(d.values())
