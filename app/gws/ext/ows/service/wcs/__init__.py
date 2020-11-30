@@ -95,7 +95,7 @@ class Object(ows.Base):
         bounds = gws.gis.bounds.from_request_bbox(
             rd.req.param('bbox'),
             rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
-            swap4326=True
+            invert_axis_if_geographic=True
         )
         if not bounds:
             raise gws.web.error.BadRequest('Invalid BBOX')

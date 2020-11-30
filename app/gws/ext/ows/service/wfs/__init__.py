@@ -97,7 +97,7 @@ class Object(ows.Base):
         })
 
     def handle_getfeature(self, rd: ows.Request):
-        lcs = self._filter_layer_caps(self.layer_caps_list_from_request(rd, ['typeName', 'typeNames']))
+        lcs = self.layer_caps_list_from_request(rd, ['typeName', 'typeNames'])
         if not lcs:
             raise gws.web.error.BadRequest('Invalid type name')
 
@@ -106,13 +106,20 @@ class Object(ows.Base):
         except:
             raise gws.web.error.BadRequest('Invalid COUNT value')
 
+        request_crs = rd.project.map.crs
+
+        if rd.req.param('srsName'):
+            proj = gws.gis.proj.as_proj(rd.req.param('srsName'))
+            if not proj:
+                raise gws.web.error.BadRequest('Invalid CRS')
+            request_crs = proj.epsg
+
         if rd.req.has_param('bbox'):
-            bounds = gws.gis.bounds.from_request_bbox(
-                rd.req.param('bbox'),
-                rd.req.param('srsName') or rd.project.map.crs)
+            bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
             if not bounds:
                 raise gws.web.error.BadRequest('Invalid BBOX')
             shape = gws.gis.shape.from_bounds(bounds)
+            request_crs = shape.crs
         else:
             shape = gws.gis.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
 
@@ -144,14 +151,18 @@ class Object(ows.Base):
 
         features = gws.common.search.runner.run(rd.req, args)
 
-        if with_results:
-            for f in features:
-                f.transform_to(shape.crs)
+        coll = self.feature_collection(
+            features,
+            rd,
+            populate=with_results,
+            target_crs=request_crs,
+            invert_axis_if_geographic=True)
 
-        fmt = rd.req.param('output_format') or 'gml'
-        return self.template_response(rd, 'GetFeatureInfo', fmt, context={
-            'collection': self.feature_collection(features, rd, populate=with_results),
-        })
+        return self.template_response(
+            rd,
+            'GetFeatureInfo',
+            ows_format=rd.req.param('output_format') or 'gml',
+            context={'collection': coll})
 
     def _filter_layer_caps(self, lcs) -> t.List[ows.LayerCaps]:
         # return only layer caps that have schemas
