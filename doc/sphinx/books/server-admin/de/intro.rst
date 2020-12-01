@@ -35,12 +35,12 @@ Die GBD WebSuite ist eine Docker-Anwendung, die die folgenden Komponenten beinha
 Open Source
 -----------
 
-Die GBD WebSuite basiert vollständig auf Free Open Source Software, und ist eine frei zugängliche Software (MIT Lizenz).
+Die GBD WebSuite basiert vollständig auf Free Open Source Software, und ist eine frei zugängliche Software (Apache License 2.0).
 
 Sponsoren und Mitwirkende
 -------------------------
 
-Wir danken unsere Sponsoren...
+Wir danken unseren Sponsoren...
 
 Wie ist dieses Buch aufgebaut
 -----------------------------
