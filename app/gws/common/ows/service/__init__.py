@@ -444,7 +444,7 @@ class Base(Object):
 
     # FeatureCaps and collections
 
-    def feature_collection(self, features: t.List[t.IFeature], rd: Request, populate=True, target_crs=None, invert_axis_if_geographic=False) -> FeatureCollection:
+    def feature_collection(self, features: t.List[t.IFeature], rd: Request, populate=True, target_crs=None, invert_axis_if_geographic=False, crs_format='uri') -> FeatureCollection:
         coll = FeatureCollection(
             caps=[],
             features=[],
@@ -472,7 +472,7 @@ class Base(Object):
             gs = None
             if f.shape:
                 inv = target_proj and target_proj.is_geographic and invert_axis_if_geographic
-                gs = gws.gis.gml.shape_to_tag(f.shape, precision=prec, invert_axis=inv)
+                gs = gws.gis.gml.shape_to_tag(f.shape, precision=prec, invert_axis=inv, crs_format=crs_format)
 
             f.apply_data_model()
 

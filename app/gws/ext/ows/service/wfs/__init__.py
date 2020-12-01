@@ -107,12 +107,15 @@ class Object(ows.Base):
             raise gws.web.error.BadRequest('Invalid COUNT value')
 
         request_crs = rd.project.map.crs
+        crs_format = 'uri'
 
-        if rd.req.param('srsName'):
-            proj = gws.gis.proj.as_proj(rd.req.param('srsName'))
-            if not proj:
+        p = rd.req.param('srsName')
+        if p:
+            fmt, srid = gws.gis.proj.parse(p)
+            if not srid:
                 raise gws.web.error.BadRequest('Invalid CRS')
-            request_crs = proj.epsg
+            request_crs = gws.gis.proj.format(srid, 'epsg')
+            crs_format = fmt
 
         if rd.req.has_param('bbox'):
             bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
@@ -156,7 +159,8 @@ class Object(ows.Base):
             rd,
             populate=with_results,
             target_crs=request_crs,
-            invert_axis_if_geographic=True)
+            invert_axis_if_geographic=gws.gis.proj.invert_axis(crs_format),
+            crs_format=crs_format)
 
         return self.template_response(
             rd,

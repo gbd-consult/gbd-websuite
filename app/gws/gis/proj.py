@@ -107,14 +107,12 @@ def find(crs, crs_list):
 ##
 
 # https://docs.geoserver.org/stable/en/user/services/wfs/webadmin.html
-
-
-# OGC HTTP URL — http://www.opengis.net/gml/srs/epsg.xml#XXX
-# OGC Experimental URN - urn:x-ogc:def:crs:EPSG:XXXX (e.g. urn:x-ogc:def:crs:EPSG:4326).
-#     This format was the original GML 3 SRS convention.
-# OGC URN — (WFS 1.1.1 only) urn:ogc:def:crs:EPSG::XXXX (e.g urn:ogc:def:crs:EPSG::4326).
-#     This is the revised GML 3 SRS convention, and is the default for GML 3.2
-# OGC HTTP URI - http://www.opengis.net/def/crs/EPSG/0/XXXX
+#
+# EPSG Code - EPSG:XXXX - x/y
+# OGC HTTP URL - http://www.opengis.net/gml/srs/epsg.xml#XXXX - x/y
+# OGC Experimental URN - urn:x-ogc:def:crs:EPSG:XXXX - y/x
+# OGC URN - urn:ogc:def:crs:EPSG::XXXX - y/x
+# OGC HTTP URI - http://www.opengis.net/def/crs/EPSG/0/XXXX - y/x
 
 
 _formats = {
@@ -124,6 +122,25 @@ _formats = {
     'urnx': 'urn:x-ogc:def:crs:EPSG:%d',
     'urn': 'urn:ogc:def:crs:EPSG::%d',
 }
+
+
+def format(p, fmt):
+    p = _check(p)
+    return getattr(p, fmt)
+
+
+_invert_axis = {
+    'epsg': False,
+    'url': False,
+    'uri': True,
+    'urnx': True,
+    'urn': True,
+}
+
+
+def invert_axis(fmt):
+    return _invert_axis.get(fmt, False)
+
 
 _res = {
     'epsg': r'^epsg:(\d+)$',
@@ -138,7 +155,7 @@ _res = {
 _aliases = {
     'crs:84': 4326,
     'crs84': 4326,
-    'urn:ogc:def:crs:ogc:1.3:crs84': 4326,
+    'urn:ogc:def:crs:ogc:1.3:crs84': 'urn:ogc:def:crs:EPSG::4326',
     'wgs84': 4326,
     'epsg:900913': 3857,
     'epsg:102100': 3857,
@@ -147,19 +164,19 @@ _aliases = {
 
 
 def parse(p):
+    if p in _aliases:
+        p = _aliases[p]
+
     if isinstance(p, int):
-        return 'srid', p
+        return 'epsg', p
 
     if isinstance(p, bytes):
         p = p.decode('ascii')
 
     if p.isdigit():
-        return 'srid', int(p)
+        return 'epsg', int(p)
 
     p = p.lower()
-
-    if p in _aliases:
-        return 'other', _aliases[p]
 
     for k, r in _res.items():
         m = re.match(r, p)
@@ -189,7 +206,7 @@ _dbpath = os.path.dirname(__file__) + '/crs.sqlite'
 
 
 def _load_proj(p):
-    fmt, srid = parse(p)
+    _, srid = parse(p)
     if not srid:
         gws.log.warn(f'proj: cannot parse {p!r}')
         return

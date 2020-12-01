@@ -181,7 +181,8 @@ class Object(ows.Base):
             features,
             rd,
             target_crs=bounds.crs,
-            invert_axis_if_geographic=self.request_version(rd) >= '1.3.0'
+            invert_axis_if_geographic=self.request_version(rd) >= '1.3.0',
+            crs_format='urn',
         )
 
         return self.template_response(
