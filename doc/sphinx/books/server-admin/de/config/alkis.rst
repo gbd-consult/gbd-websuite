@@ -47,7 +47,7 @@ Die Optionen für diese Aktion sind:
     ``buchung`` | Zugang zu Grundbuchung Daten (z.B. Blattnummer)
     ``eigentuemer`` | Zugang zu Eigentümerdaten (z.B. Name, Adresse)
     ``export`` | Konfiguration der CSV-Export Funktion. Für diese Funktion muss auch den CSV Helper konfiguriert werden (s. ^csv)
-    ``featureTemplates`` | Format-Vorlagen für Flurstückdaten
+    ``templates`` | Format-Vorlagen für Flurstückdaten
     ``limit`` | max. Anzahl von Ergebnissen
     ``printTemplate`` | Druckvorlage für Flurstückdaten
     ``ui`` | Einstellungen der Benutzeroberfläche
