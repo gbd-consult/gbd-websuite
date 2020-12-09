@@ -1,6 +1,6 @@
 import os
 
-VERSION='6.1.4'
+VERSION='6.1.5'
 
 APP_DIR = '/gws-app'
 VAR_DIR = '/gws-var'
