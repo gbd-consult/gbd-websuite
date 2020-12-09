@@ -66,6 +66,44 @@ def is_datetime(x) -> bool:
     return isinstance(x, datetime.datetime)
 
 
+# @TODO
+
+def parse(s):
+    if not s:
+        return None
+    if isinstance(s, datetime.datetime):
+        return s
+    s = str(s)
+    if re.match(r'^\d{4}', s):
+        return from_iso(s)
+    if re.match(r'^\d{1,2}', s):
+        return from_dmy(s)
+
+
+_dmy_re = r'''(?x)
+    ^
+        (?P<d> \d{1,2}) 
+        [./\s]
+        (?P<m> \d{1,2}) 
+        [./\s]
+        (?P<Y> \d{2,4})
+    $ 
+'''
+
+
+def from_dmy(s: str) -> Optional[datetime.datetime]:
+    m = re.match(_dmy_re, s)
+    if not m:
+        return None
+    g = m.groupdict()
+    return datetime.datetime(
+        int(g['Y']),
+        int(g['m']),
+        int(g['d']),
+        0, 0, 0
+    )
+
+
 _iso_re = r'''(?x)
     ^
     

@@ -78,16 +78,17 @@ class XMLRuntime(chartreux.Runtime):
             if s not in self.namespaces:
                 self.namespaces[s] = None
 
-    def _date_value(self, val):
-        if val and not gws.tools.date.is_datetime(val):
-            val = gws.tools.date.from_iso(val)
-        return val or gws.tools.date.now()
-
     def filter_datetime(self, val):
-        return gws.tools.date.to_iso(self._date_value(val), with_tz=False, sep='T')
+        d = gws.tools.date.parse(val)
+        if d:
+            return gws.tools.date.to_iso(d, with_tz=False, sep='T')
+        return ''
 
     def filter_date(self, val):
-        return gws.tools.date.to_iso_date(self._date_value(val))
+        d = gws.tools.date.parse(val)
+        if d:
+            return gws.tools.date.to_iso_date(d)
+        return ''
 
 
 class XMLCommands():
