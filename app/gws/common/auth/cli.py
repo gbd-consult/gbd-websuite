@@ -72,8 +72,8 @@ def sessions():
 
     rs = [{
         'user': r['user_uid'],
-        'login': dt.to_iso(dt.from_timestamp(r['created'])),
-        'activity': dt.to_iso(dt.from_timestamp(r['updated'])),
+        'login': dt.to_iso_local(dt.from_timestamp(r['created'])),
+        'activity': dt.to_iso_local(dt.from_timestamp(r['updated'])),
         'duration': r['updated'] - r['created']
     } for r in auth.stored_session_records()]
 

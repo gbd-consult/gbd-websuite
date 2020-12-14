@@ -30,6 +30,10 @@ def to_iso_date(d: datetime.datetime) -> str:
     return d.strftime(fmt)
 
 
+def to_iso_local(d: datetime.datetime, with_tz='+', sep='T') -> str:
+    return to_iso(d.astimezone())
+
+
 def now() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
