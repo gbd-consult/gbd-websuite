@@ -257,10 +257,15 @@ def _create_addr_index(conn: AlkisConnection):
         'ST_Y(ST_Centroid(wkb_geometry)) AS y'
     ])
 
+    exclude_gemarkung = set(conn.exclude_gemarkung)
+
     total = conn.count(f'{dat}.ax_flurstueck')
 
     with ProgressIndicator('adresse: index', total) as pi:
         for fs in rs:
+            if fs.get('gemarkungsnummer') in exclude_gemarkung:
+                continue
+
             fs_id = fs.pop('gml_id')
 
             for lage_id in (fs['zeigtauf'] or []) + (fs['weistauf'] or []):
