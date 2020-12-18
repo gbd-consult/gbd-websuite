@@ -153,7 +153,7 @@ def _all_buchungsstelle(conn: AlkisConnection):
             if gml_id is None:
                 continue
             if gml_id not in stellen:
-                gws.log.warn('invalid "an" reference: ' + str(id))
+                gws.log.warn(f'invalid "an" reference: {gml_id!r}')
                 continue
             target = stellen[gml_id]
             if '_an' not in target:
