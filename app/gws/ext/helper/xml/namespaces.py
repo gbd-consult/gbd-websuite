@@ -20,7 +20,7 @@ ALL = [
     ('dct', 'http://purl.org/dc/terms/', 'http://schemas.opengis.net/csw/2.0.2/rec-dcterms.xsd'),
     ('fes', 'http://www.opengis.net/fes/2.0', 'http://schemas.opengis.net/filter/2.0/filterAll.xsd'),
     ('gco', 'http://www.isotc211.org/2005/gco', 'http://schemas.opengis.net/iso/19139/20070417/gco/gco.xsd'),
-    ('gmd', 'http://www.isotc211.org/2005/gmd', 'http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd'),
+    ('gmd', 'http://www.isotc211.org/2005/gmd', 'http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd'),
     ('gml', 'http://www.opengis.net/gml/3.2', 'http://schemas.opengis.net/gml/3.2.1/gml.xsd'),
     ('gmlcov', 'http://www.opengis.net/gmlcov/1.0', 'http://schemas.opengis.net/gmlcov/1.0/gmlcovAll.xsd'),
     ('gmx', 'http://www.isotc211.org/2005/gmx', 'http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd'),
