@@ -198,10 +198,12 @@ class AttributeType(Enum):
     date = 'date'
     datetime = 'datetime'
     float = 'float'
+    floatlist = 'floatlist'
     geometry = 'geometry'
     int = 'int'
-    list = 'list'
+    intlist = 'intlist'
     str = 'str'
+    strlist = 'strlist'
     text = 'text'
     time = 'time'
 
@@ -226,7 +228,7 @@ class Attribute(Data):
     name: str
     title: str = ''
     type: AttributeType = 'str'
-    value: Any = None
+    value: Optional[Any]
     editable: bool = True
 
 
@@ -234,7 +236,7 @@ class Attribute(Data):
 
 class Params(Data):
     projectUid: Optional[str]  #: project uid
-    locale: Optional[str]  #: locale for this request
+    localeUid: Optional[str]  #: locale for this request
 
 
 class NoParams(Data):

@@ -10,7 +10,7 @@ Beispiel für die Gebietsschema-Konfiguration ::
     "locales": ["de_DE", "en_US"],
     "timeZone": "Europe/Berlin"
 
-Für Druckvorlagen bieten wir lokale ``date`` und ``time`` Objekte, mit den Eigenschaften ``long``, ``medium`` und ``short``. Ausgabebeispiele für das Gebietsschema ``de_DE``:
+Für Vorlagen bieten wir lokale ``date`` und ``time`` Objekte, mit den Eigenschaften ``long``, ``medium`` und ``short``. Ausgabebeispiele für das Gebietsschema ``de_DE``:
 
 {TABLE}
     ``date.short`` | 08.12.18

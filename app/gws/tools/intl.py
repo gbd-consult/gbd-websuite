@@ -24,11 +24,11 @@ class Locale(t.Data):
     numberGroup: str
 
 
-def locale_data(locale_name: str) -> t.Optional[Locale]:
-    if not locale_name:
+def locale(locale_uid: str) -> t.Optional[Locale]:
+    if not locale_uid:
         return
 
-    locale_name = locale_name.lower().strip().replace('-', '_')
+    locale_name = locale_uid.lower().strip().replace('-', '_')
 
     try:
         p = babel.Locale.parse(locale_name, resolve_likely_subtags=True)

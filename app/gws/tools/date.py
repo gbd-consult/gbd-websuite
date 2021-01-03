@@ -127,12 +127,17 @@ def from_iso(s: str) -> Optional[datetime.datetime]:
 
 
 class DateFormatter:
-    def __init__(self, locale):
-        self.locale = locale
+    def __init__(self, locale_uid):
+        self.locale_uid = locale_uid
 
     def format(self, fmt, d=None):
-        d = babel.dates.parse_date(d, self.locale) if d else datetime.datetime.now()
-        return babel.dates.format_date(d, locale=self.locale, format=fmt)
+        if not d:
+            d = datetime.datetime.now()
+        elif isinstance(d, str):
+            d = babel.dates.parse_date(d, self.locale_uid)
+        if fmt == 'iso':
+            return d.isoformat()
+        return babel.dates.format_date(d, locale=self.locale_uid, format=fmt)
 
     @property
     def short(self):
@@ -144,16 +149,20 @@ class DateFormatter:
 
     @property
     def long(self):
-        return self.format('medium')
+        return self.format('long')
+
+    @property
+    def iso(self):
+        return self.format('iso')
 
 
 class TimeFormatter:
-    def __init__(self, locale):
-        self.locale = locale
+    def __init__(self, locale_uid):
+        self.locale_uid = locale_uid
 
     def format(self, fmt, d=None):
-        d = babel.dates.parse_time(d, self.locale) if d else datetime.datetime.now()
-        return babel.dates.format_time(d, locale=self.locale, format=fmt)
+        d = babel.dates.parse_time(d, self.locale_uid) if d else datetime.datetime.now()
+        return babel.dates.format_time(d, locale=self.locale_uid, format=fmt)
 
     @property
     def short(self):
@@ -165,4 +174,14 @@ class TimeFormatter:
 
     @property
     def long(self):
-        return self.format('medium')
+        return self.format('long')
+
+
+@gws.global_var
+def date_formatter(locale_uid):
+    return DateFormatter(locale_uid)
+
+
+@gws.global_var
+def time_formatter(locale_uid):
+    return TimeFormatter(locale_uid)

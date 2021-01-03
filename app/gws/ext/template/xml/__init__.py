@@ -208,13 +208,6 @@ class Object(gws.common.template.Object):
         return t.TemplateOutput(content=xml, mime=gws.tools.mime.get('xml'))
 
     def _render_as_tag(self, context):
-        context = context or {}
-
-        context['gws'] = {
-            'version': gws.VERSION,
-            'endpoint': gws.SERVER_ENDPOINT,
-        }
-
         if self.root.application.developer_option('template.reparse') and self.path:
             self.text = gws.read_file(self.path)
 
@@ -236,7 +229,7 @@ class Object(gws.common.template.Object):
 
         chartreux.render(
             self.text,
-            context,
+            self.prepare_context(context),
             path=self.path or '<string>',
             error=err,
             strip=True,

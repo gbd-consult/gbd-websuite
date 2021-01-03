@@ -15,13 +15,6 @@ class Config(gws.common.template.Config):
 class Object(gws.common.template.Object):
 
     def render(self, context, format=None):
-        context = context or {}
-
-        context['gws'] = {
-            'version': gws.VERSION,
-            'endpoint': gws.SERVER_ENDPOINT,
-        }
-
         def err(e, path, line):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
@@ -32,7 +25,7 @@ class Object(gws.common.template.Object):
 
         content = chartreux.render(
             text,
-            context,
+            self.prepare_context(context),
             path=self.path or '<string>',
             error=err,
         )

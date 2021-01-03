@@ -1,6 +1,8 @@
 import os
 import gws.common.model
 import gws.tools.mime
+import gws.tools.intl
+import gws.tools.date
 
 import gws.types as t
 
@@ -23,14 +25,13 @@ class Config(t.WithType):
     title: str = ''  #: template title
 
 
-#:export
 class TemplateProps(t.Props):
     uid: str
     title: str
     qualityLevels: t.List[t.TemplateQualityLevel]
     mapHeight: int
     mapWidth: int
-    dataModel: t.ModelProps
+    dataModel: gws.common.model.ModelProps
 
 
 #:export
@@ -71,7 +72,7 @@ class Object(gws.Object, t.ITemplate):
 
     @property
     def props(self):
-        return t.TemplateProps(
+        return TemplateProps(
             uid=self.uid,
             title=self.title,
             qualityLevels=self.var('qualityLevels', default=[]),
@@ -113,11 +114,21 @@ class Object(gws.Object, t.ITemplate):
             return q[quality].dpi
         return 0
 
-    def normalize_context(self, context: dict) -> dict:
-        if not self.data_model:
-            return context
-        atts = self.data_model.apply_to_dict(context)
-        return {a.name: a.value for a in atts}
+    def prepare_context(self, context: dict) -> dict:
+        ext = {
+            'gws': {
+                'version': gws.VERSION,
+                'endpoint': gws.SERVER_ENDPOINT,
+            }
+        }
+
+        locale_uid = context.get('localeUid')
+        if locale_uid:
+            ext['locale'] = gws.tools.intl.locale(locale_uid)
+            ext['date'] = gws.tools.date.date_formatter(locale_uid)
+            ext['time'] = gws.tools.date.time_formatter(locale_uid)
+
+        return gws.extend(context, ext)
 
     def render(self, context: dict, mro: t.MapRenderOutput = None, out_path: str = None, legends: dict = None, format: str = None) -> t.TemplateOutput:
         pass
@@ -192,7 +203,6 @@ def bundle(
         configs: t.List[t.ext.template.Config],
         defaults: t.List[t.ext.template.Config] = None,
 ) -> t.List[t.ITemplate]:
-
     ts = []
 
     for cfg in (configs or []):
@@ -207,8 +217,8 @@ def bundle(
 def find(templates: t.List[t.ITemplate], subject: str = None, category: str = None, mime: str = None) -> t.Optional[t.ITemplate]:
     for tpl in templates:
         ok = (
-            (not subject or subject == tpl.subject)
-            and (not category or category == tpl.category)
-            and (not mime or mime in tpl.mime_types))
+                (not subject or subject == tpl.subject)
+                and (not category or category == tpl.category)
+                and (not mime or mime in tpl.mime_types))
         if ok:
             return tpl

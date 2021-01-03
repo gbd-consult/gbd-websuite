@@ -198,10 +198,12 @@ class AttributeType(Enum):
     date = 'date'
     datetime = 'datetime'
     float = 'float'
+    floatlist = 'floatlist'
     geometry = 'geometry'
     int = 'int'
-    list = 'list'
+    intlist = 'intlist'
     str = 'str'
+    strlist = 'strlist'
     text = 'text'
     time = 'time'
 
@@ -226,7 +228,7 @@ class Attribute(Data):
     name: str
     title: str = ''
     type: AttributeType = 'str'
-    value: Any = None
+    value: Optional[Any]
     editable: bool = True
 
 
@@ -234,7 +236,7 @@ class Attribute(Data):
 
 class Params(Data):
     projectUid: Optional[str]  #: project uid
-    locale: Optional[str]  #: locale for this request
+    localeUid: Optional[str]  #: locale for this request
 
 
 class NoParams(Data):
@@ -810,12 +812,19 @@ class MetaLink(Data):
     url: 'Url'
 
 
-class ModelProps(Props):
-    rules: List['ModelRule']
+class ModelEditor(Data):
+    accept: Optional[str]
+    items: Optional[list]
+    max: Optional[float]
+    min: Optional[float]
+    multiple: Optional[bool]
+    pattern: Optional[str]
+    type: str
 
 
 class ModelRule(Data):
     editable: bool
+    editor: Optional['ModelEditor']
     expression: str
     format: 'FormatStr'
     name: str
@@ -1103,15 +1112,6 @@ class TemplateOutput(Data):
     path: str
 
 
-class TemplateProps(Props):
-    dataModel: 'ModelProps'
-    mapHeight: int
-    mapWidth: int
-    qualityLevels: List['TemplateQualityLevel']
-    title: str
-    uid: str
-
-
 class TemplateQualityLevel(Data):
     dpi: int
     name: str
@@ -1301,7 +1301,7 @@ class IProject(IObject):
     api: Optional['IApi']
     assets_root: Optional['DocumentRoot']
     client: Optional['IClient']
-    locales: List[str]
+    locale_uids: List[str]
     map: Optional['IMap']
     meta: 'MetaData'
     overview_map: Optional['IMap']
@@ -1370,7 +1370,7 @@ class ITemplate(IObject):
     title: str
     def add_headers_and_footers(self, context: dict, in_path: str, out_path: str, format: str) -> str: pass
     def dpi_for_quality(self, quality): pass
-    def normalize_context(self, context: dict) -> dict: pass
+    def prepare_context(self, context: dict) -> dict: pass
     def render(self, context: dict, mro: 'MapRenderOutput' = None, out_path: str = None, legends: dict = None, format: str = None) -> 'TemplateOutput': pass
 
 

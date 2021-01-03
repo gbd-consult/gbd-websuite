@@ -67,6 +67,10 @@ class Object(gws.common.action.Object):
         tpl = gws.common.template.from_path(self.root, rpath)
 
         if tpl:
+            locale_uid = p.localeUid
+            if project and locale_uid not in project.locale_uids:
+                locale_uid = project.locale_uids[0]
+
             # give the template an empty response to manipulate (e.g. add 'location')
             r = t.HttpResponse()
             context = {
@@ -76,6 +80,7 @@ class Object(gws.common.action.Object):
                 'user': req.user,
                 'params': p,
                 'response': r,
+                'localeUid': locale_uid,
             }
 
             out = tpl.render(context)

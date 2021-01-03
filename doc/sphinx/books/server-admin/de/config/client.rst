@@ -60,10 +60,9 @@ Hier ist ein Vorlage der Client-Seite, die Sie nach Ihren Bedürfnissen anpassen
     </body>
     </html>
 
-Um diese Vorlage für mehrere Projekte zu verwenden, ersetzen Sie den ``script`` Abschnitt mit dynamischen Werten: ::
+Um diese Vorlage für mehrere Projekte zu verwenden, setzen Sie den ``GWS_PROJECT_UID`` auf einen dynamischen Wert: ::
 
     GWS_PROJECT_UID = "{project.uid}";
-    GWS_LOCALE = "{project.locales[0]}";
 
 und speichern Sie die Vorlage als z.B. "project.html" in Ihren ``assets`` Ordner. Dann kann diese Seit im Browser wie folgt aufgerufen werden: ::
 

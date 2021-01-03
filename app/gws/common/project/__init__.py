@@ -62,7 +62,7 @@ class Object(gws.Object, t.IProject):
         self.meta.title = title
         self.title: str = title
 
-        self.locales: t.List[str] = self.var('locales', parent=True, default=['en_CA'])
+        self.locale_uids: t.List[str] = self.var('locales', parent=True, default=['en_CA'])
         self.assets_root: t.Optional[t.DocumentRoot] = gws.web.site.document_root(self.var('assets'))
 
         p = self.var('map')

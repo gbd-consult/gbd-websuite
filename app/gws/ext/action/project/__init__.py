@@ -29,11 +29,11 @@ class Object(gws.common.action.Object):
 
         project = req.require_project(p.projectUid)
 
-        lo = gws.tools.intl.locale_data(p.locale)
-        if not lo:
-            lo = gws.tools.intl.locale_data(project.locales[0])
+        locale_uid = p.localeUid
+        if locale_uid not in project.locale_uids:
+            locale_uid = project.locale_uids[0]
 
         return InfoResponse(
             project=project.props_for(req.user),
-            locale=lo,
+            locale=gws.tools.intl.locale(locale_uid),
             user=None if req.user.is_guest else req.user.props)

@@ -544,6 +544,24 @@ def set_global(name, value):
     return _global_vars[name]
 
 
+def global_var(fn):
+    """Decorator for a global var."""
+
+    def wrap(*args, **kwargs):
+        global _global_vars
+
+        name = repr(args) + repr(kwargs)
+        if name in _global_vars:
+            return _global_vars[name]
+        with global_lock():
+            if name in _global_vars:
+                return _global_vars[name]
+            _global_vars[name] = fn(*args, **kwargs)
+        return _global_vars[name]
+
+    return wrap
+
+
 def get_cached_object(name, init_fn, max_age: int):
     """Return a cached object pickled in gws.OBJECT_CACHE_DIR.
 

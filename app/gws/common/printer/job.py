@@ -118,9 +118,9 @@ class _Worker:
 
         self.project = t.cast(t.IProject, self.acquire('gws.common.project', job.project_uid))
 
-        self.locale = p.locale
-        if self.locale not in self.project.locales:
-            self.locale = self.project.locales[0]
+        self.locale_uid = p.localeUid
+        if self.locale_uid not in self.project.locale_uids:
+            self.locale_uid = self.project.locale_uids[0]
 
         self.view_scale = p.scale or 1
         self.view_rotation = p.rotation or 0
@@ -160,10 +160,7 @@ class _Worker:
             'user': self.user,
             'scale': self.view_scale,
             'rotation': self.view_rotation,
-            'locale': self.locale,
-            'lang': self.locale.split('_')[0],
-            'date': gws.tools.date.DateFormatter(self.locale),
-            'time': gws.tools.date.TimeFormatter(self.locale),
+            'localeUid': self.locale_uid,
         }
 
         nsec = len(self.sections)
@@ -298,8 +295,9 @@ class _Worker:
 
     def prepare_section(self, sec: pt.PrintSection):
         context = sec.get('context', {})
-        if self.template and context:
-            context = self.template.normalize_context(context)
+        if self.template and self.template.data_model and context:
+            atts = self.template.data_model.apply_to_dict(context)
+            context = {a.name: a.value for a in atts}
         return PreparedSection(
             center=sec.center,
             context=context,
