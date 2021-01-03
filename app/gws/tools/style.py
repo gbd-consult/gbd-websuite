@@ -350,3 +350,7 @@ def from_css_text(text) -> t.StyleValues:
         r = r.split(':')
         d[r[0].strip()] = r[1].strip()
     return from_css_dict(d)
+
+
+def parse_icon(val):
+    return _icon(val)

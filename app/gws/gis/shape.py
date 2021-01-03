@@ -198,6 +198,8 @@ class Shape(t.IShape):
     def to_type(self, new_type: t.GeometryType) -> t.IShape:
         if new_type == self.type:
             return self
+        if new_type == t.GeometryType.geometry:
+            return self
         if self.type == t.GeometryType.point and new_type == t.GeometryType.multipoint:
             return self.to_multi()
         if self.type == t.GeometryType.linestring and new_type == t.GeometryType.multilinestring:

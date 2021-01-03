@@ -105,7 +105,7 @@ class Props(t.Props):
     exportGroups: dict
     gemarkungen: t.List[gws.ext.helper.alkis.Gemarkung]
     limit: int
-    printTemplate: t.TemplateProps
+    printTemplate: gws.common.template.TemplateProps
     ui: UiConfig
     withBuchung: bool
     withControl: bool

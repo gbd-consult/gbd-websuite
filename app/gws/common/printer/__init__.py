@@ -10,7 +10,7 @@ class Config(t.Config):
 
 
 class Props(t.Data):
-    templates: t.List[t.TemplateProps]
+    templates: t.List[gws.common.template.TemplateProps]
 
 
 #:export IPrinter
