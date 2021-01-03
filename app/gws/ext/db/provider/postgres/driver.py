@@ -20,7 +20,7 @@ Error = psycopg2.Error
 # http://initd.org/psycopg/docs/usage.html?highlight=smallint#adaptation-of-python-values-to-sql-types
 
 _type_map = {
-    'array': t.AttributeType.list,
+    'array': t.AttributeType.strlist,
     'bigint': t.AttributeType.int,
     'bigserial': t.AttributeType.int,
     'bit': t.AttributeType.int,

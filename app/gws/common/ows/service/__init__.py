@@ -30,7 +30,6 @@ _XML_SCHEMA_TYPES = {
     t.AttributeType.float: 'xsd:decimal',
     t.AttributeType.geometry: None,
     t.AttributeType.int: 'xsd:integer',
-    t.AttributeType.list: None,
     t.AttributeType.str: 'xsd:string',
     t.AttributeType.text: 'xsd:string',
     t.AttributeType.time: 'xsd:time',

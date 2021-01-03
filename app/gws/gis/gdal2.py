@@ -86,11 +86,11 @@ def _value(feature, k, fdef, encoding):
     if ft in (osgeo.ogr.OFTInteger, osgeo.ogr.OFTInteger64):
         return t.AttributeType.int, feature.GetFieldAsInteger(k)
     if ft in (osgeo.ogr.OFTIntegerList, osgeo.ogr.OFTInteger64List):
-        return t.AttributeType.list, feature.GetFieldAsIntegerList(k)
+        return t.AttributeType.intlist, feature.GetFieldAsIntegerList(k)
     if ft in (osgeo.ogr.OFTReal, osgeo.ogr.OFSTFloat32):
         return t.AttributeType.float, feature.GetFieldAsDouble(k)
     if ft == osgeo.ogr.OFTRealList:
-        return t.AttributeType.list, feature.GetFieldAsDoubleList(k)
+        return t.AttributeType.floatlist, feature.GetFieldAsDoubleList(k)
     if ft == osgeo.ogr.OFTBinary:
         return t.AttributeType.bytes, feature.GetFieldAsBinary(k)
 

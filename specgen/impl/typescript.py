@@ -134,6 +134,7 @@ type _int = number;
 type _float = number;
 type _bytes = any;
 type _dict = {[k: string]: any};
+type _list = Array<any>;
 
 _ifaces_
 
