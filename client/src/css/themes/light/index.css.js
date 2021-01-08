@@ -305,6 +305,7 @@ let rules = [
     require('./mod/toolbox.css'),
     require('./mod/user.css'),
     require('./mod/zoom.css'),
+    require('./mod/fsinfo.css'),
 
     require('./extras.css'),
     require('./responsive.css'),
