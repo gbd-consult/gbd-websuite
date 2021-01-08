@@ -7,6 +7,10 @@ module.exports = v => ({
         ...v.ROUND_FORM_BUTTON(v.SEARCH_ICON)
     },
 
+    '.modFsinfoSearchResetButton': {
+        ...v.ROUND_FORM_BUTTON('google:content/delete_sweep')
+    },
+
     '.modFsinfoLoading': {
         textAlign: 'center',
         color: v.DISABLED_COLOR,

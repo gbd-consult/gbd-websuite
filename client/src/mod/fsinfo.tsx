@@ -211,8 +211,15 @@ class FsinfoSearchForm extends gws.View<FsinfoViewProps> {
                 <Cell>
                     <gws.ui.Button
                         {...gws.tools.cls('modFsinfoSearchSubmitButton')}
-                        tooltip={cc.STRINGS.submitButton}
+                        tooltip={cc.STRINGS.searchButton}
                         whenTouched={() => cc.formSearch()}
+                    />
+                </Cell>
+                <Cell>
+                    <gws.ui.Button
+                        {...gws.tools.cls('modFsinfoSearchResetButton')}
+                        tooltip={cc.STRINGS.resetButton}
+                        whenTouched={() => cc.formReset()}
                     />
                 </Cell>
             </Row>
@@ -568,7 +575,8 @@ class FsinfoController extends gws.Controller {
             flurLabel: 'Flur',
             flurstueckLabel: 'Flurstück',
 
-            submitButton: '',
+            searchButton: 'Suche',
+            resetButton: 'Neue Anfrage',
             errorGeneric: 'Es ist ein Fehler aufgetreten',
             errorTooMany: 'Es ist ein Fehler aufgetreten',
 
@@ -600,6 +608,19 @@ class FsinfoController extends gws.Controller {
     formSearch() {
         this.search();
     }
+
+    formReset() {
+        this.update({
+            fsinfoSearchFormValues: {},
+            fsinfoFoundFeatures: [],
+            fsinfoFoundFeatureCount: 0,
+            fsinfoDetails: null,
+            marker: null,
+
+        });
+        this.goTo('search')
+    }
+
 
     async search() {
 
@@ -675,24 +696,6 @@ class FsinfoController extends gws.Controller {
                 mode: 'zoom draw'
             }
         })
-    }
-
-
-    clearResults() {
-        this.update({
-            fsinfoFoundFeatureCount: 0,
-            fsinfoFoundFeatures: [],
-            marker: null,
-        });
-    }
-
-    reset() {
-        this.update({
-            fsinfoSearchFormValues: {},
-            fsinfoStrasseListItems: [],
-        });
-        this.clearResults();
-        this.goTo('search')
     }
 
     goTo(tab: FsinfoTabName) {
