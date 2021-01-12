@@ -90,7 +90,7 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste <sidebar
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <infobar>`
 
-Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gws.gbd-consult.de/
+Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gbd-websuite.de/
 
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
      :width: 30em

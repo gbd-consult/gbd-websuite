@@ -30,7 +30,7 @@ import refgen
 with open(DOC_ROOT + '/words.json') as fp:
     WORDS = json.load(fp)
 
-HELP_BASE_URL = 'https://gws.gbd-consult.de/doc/{release}/books/client-user/{lang}/overview'
+HELP_BASE_URL = 'https://gbd-websuite.de/doc/{release}/books/client-user/{lang}/overview'
 
 
 ##
