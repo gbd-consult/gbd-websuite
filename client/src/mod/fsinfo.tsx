@@ -592,10 +592,10 @@ class FsinfoController extends gws.Controller {
 
             fsinfoSearchFormValues: {},
             fsinfoDocumentFormValues: {},
-            fsinfoGemarkungListItems: r1.names.map(g => ({
+            fsinfoGemarkungListItems: (r1.names || []).map(g => ({
                 text: g, value: g
             })),
-            fsinfoDocuments: r2.documents
+            fsinfoDocuments: (r2.documents || []),
         });
     }
 
