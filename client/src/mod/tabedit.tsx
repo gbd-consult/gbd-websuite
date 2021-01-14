@@ -28,6 +28,7 @@ interface TabeditViewProps extends gws.types.ViewProps {
     tabeditDirtyFields: object;
     tabeditSelectRecord: number;
     tabeditError: boolean;
+    appDialogZoomed: boolean;
 }
 
 const TabeditStoreKeys = [
@@ -40,6 +41,7 @@ const TabeditStoreKeys = [
     'tabeditDirtyFields',
     'tabeditSelectRecord',
     'tabeditError',
+    'appDialogZoomed',
 ];
 
 
@@ -218,11 +220,24 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
         />;
 
         return <gws.ui.Dialog
-            className="modTabeditDialog"
+            {...gws.tools.cls('modTabeditDialog', this.props.appDialogZoomed && 'isZoomed')}
             title={this.props.controller.tableTitle()}
             whenClosed={() => this.close()}
+            whenZoomed={() => this.props.controller.update({appDialogZoomed: !this.props.appDialogZoomed})}
             footer={footer}
         >{table}</gws.ui.Dialog>
+    }
+
+    loadingDialog() {
+        return <gws.ui.Dialog
+            className="modTabeditDialog"
+        >
+            <gws.ui.Text
+                className="modTabeditDialogLoading"
+                content={this.__('modTabeditDialogLoading')}
+            />
+            <gws.ui.Loader/>
+        </gws.ui.Dialog>
     }
 
     render() {
@@ -233,25 +248,8 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
         if (mode === 'open')
             return this.tableDialog()
 
-
-        if (mode === 'wait') {
-            return <gws.ui.Dialog
-                className="modTabeditDialog"
-                title={this.props.controller.tableTitle()}
-            >
-                <gws.ui.Text
-                    className="modTabeditDialogLoading"
-                    content={this.__('modTabeditDialogLoading')}
-                />
-                <gws.ui.Loader/>
-            </gws.ui.Dialog>
-        }
-
-        return <gws.ui.Dialog
-            className='modTabeditSmallDialog'
-            whenClosed={() => this.close()}
-        >{this.message(mode)}</gws.ui.Dialog>
-
+        if (mode === 'loading')
+            return this.loadingDialog()
     }
 }
 
@@ -333,7 +331,7 @@ class TabeditController extends gws.Controller {
 
     async startEdit(tableUid) {
         this.update({
-            tabeditDialogMode: 'wait',
+            tabeditDialogMode: 'loading',
         })
 
         console.time('TABEDIT: load');

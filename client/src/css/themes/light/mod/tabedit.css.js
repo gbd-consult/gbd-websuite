@@ -5,6 +5,9 @@ module.exports = v => ({
     '.uiDialog.modTabeditDialog': {
         [v.MEDIA('large+')]: {
             ...v.CENTER_BOX(720, 700),
+            '&.isZoomed': {
+                ...v.FIT_SCREEN()
+            }
         },
     },
 

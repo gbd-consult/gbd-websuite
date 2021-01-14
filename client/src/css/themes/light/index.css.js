@@ -262,6 +262,15 @@ v.CENTER_BOX = (w, h) => ({
     marginTop: -(h >> 1),
 });
 
+v.FIT_SCREEN = () => ({
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+    paddingBottom: v.CONTROL_SIZE,
+    margin: 0,
+});
+
 //
 
 let rules = [
