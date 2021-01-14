@@ -92,7 +92,7 @@ class TableForm extends gws.View<ViewProps> {
     render() {
         let bind = name => value => this.props.controller.update({[name]: value});
 
-        let row = r => [
+        let getRow = r => [
             String(r),
             <gws.ui.Select
                 value={this.props.uiDemoName}
@@ -130,7 +130,7 @@ class TableForm extends gws.View<ViewProps> {
             />,
         ];
 
-        let tp = {row}, s;
+        let tp = {getRow}, s;
 
         let split = s => s.trim().split(' ').map(p => p.trim());
 
@@ -139,7 +139,7 @@ class TableForm extends gws.View<ViewProps> {
         }
 
         if (s = this.props.uiDemoTableFixedCols) {
-            tp['fixedCols'] = s
+            tp['fixedColumns'] = s
         }
 
         if (s = this.props.uiDemoTableHeaders) {

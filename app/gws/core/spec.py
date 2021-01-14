@@ -277,7 +277,7 @@ def _property_value(rd, prop_val, spec):
     # no value?
 
     if prop_val is None:
-        if not spec['optional']:
+        if not spec['optional'] and default is not None:
             return rd.error('ERR_MISSING_PROP', f"required property missing: {spec['name']!r}", 'nothing')
 
         # no default as well

@@ -72,8 +72,8 @@ module.exports = v => ({
         paddingLeft: v.UNIT8,
         paddingRight: v.UNIT8,
         '.uiRow': {
-            marginTop: v.UNIT8,
-            marginBottom: v.UNIT8,
+            marginTop: v.UNIT4,
+            marginBottom: v.UNIT4,
         },
         '.uiCell': {
             paddingLeft: v.UNIT4,

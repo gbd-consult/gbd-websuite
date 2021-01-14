@@ -35,6 +35,14 @@ module.exports = v => ({
         },
     },
 
+    '.uiTableCell .uiControl.hasFocus' : {
+        backgroundColor: v.SELECTED_ITEM_BACKGROUND,
+    },
+
+    '.uiTableCell .uiControl.isDirty input' : {
+        fontWeight: 800,
+    },
+
     '.uiTableFixed .uiTableCell': {
         backgroundColor: v.COLOR.blueGrey50,
     },
@@ -45,6 +53,32 @@ module.exports = v => ({
         alignItems: 'center',
         paddingLeft: v.UNIT * 2,
         paddingRight: v.UNIT * 2,
-    }
+    },
+
+    '.uiTableBody .uiTableStaticText': {
+        color: v.DISABLED_COLOR,
+    },
+
+    '.uiPagerFirst': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('small'),
+        ...v.SVG('google:navigation/first_page', v.INFOBOX_BUTTON_COLOR),
+    },
+    '.uiPagerPrev': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('small'),
+        ...v.SVG('google:navigation/chevron_left', v.INFOBOX_BUTTON_COLOR),
+    },
+    '.uiPagerNext': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('small'),
+        ...v.SVG('google:navigation/chevron_right', v.INFOBOX_BUTTON_COLOR),
+    },
+    '.uiPagerLast': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('small'),
+        ...v.SVG('google:navigation/last_page', v.INFOBOX_BUTTON_COLOR),
+    },
+
 
 });
