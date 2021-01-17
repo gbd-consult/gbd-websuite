@@ -14,7 +14,7 @@ class Config(gws.common.template.Config):
 
 class Object(gws.common.template.Object):
 
-    def render(self, context, format=None):
+    def render(self, context: dict, mro: t.MapRenderOutput = None, out_path: str = None, legends: dict = None, format: str = None) -> t.TemplateOutput:
         def err(e, path, line):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
@@ -30,4 +30,5 @@ class Object(gws.common.template.Object):
             error=err,
         )
 
-        return t.Data({'content': content})
+        mime = self.mime_types[0] if self.mime_types else 'text/plain'
+        return t.TemplateOutput(content=content, mime=mime)
