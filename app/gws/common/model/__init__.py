@@ -6,17 +6,30 @@ import gws.tools.misc
 
 import gws.types as t
 
-_py_type_to_attr_type = {
-    bool: t.AttributeType.bool,
-    bytes: t.AttributeType.bytes,
-    datetime.date: t.AttributeType.date,
-    datetime.datetime: t.AttributeType.datetime,
-    datetime.time: t.AttributeType.time,
-    float: t.AttributeType.float,
-    int: t.AttributeType.int,
-    list: t.AttributeType.list,
-    str: t.AttributeType.str,
+_default_editor = {
+    t.AttributeType.bool: 'checkbox',
+    t.AttributeType.bytes: 'file',
+    t.AttributeType.date: 'date',
+    t.AttributeType.datetime: 'datetime',
+    t.AttributeType.float: 'float',
+    t.AttributeType.geometry: '',
+    t.AttributeType.int: 'int',
+    t.AttributeType.intlist: 'list',
+    t.AttributeType.str: 'str',
+    t.AttributeType.text: 'text',
+    t.AttributeType.time: 'time',
 }
+
+
+#:export
+class ModelEditor(t.Data):
+    accept: t.Optional[str]
+    items: t.Optional[list]
+    max: t.Optional[float]
+    min: t.Optional[float]
+    multiple: t.Optional[bool]
+    pattern: t.Optional[str]
+    type: str
 
 
 #:export
@@ -24,6 +37,7 @@ class ModelRule(t.Data):
     """Attribute conversion rule"""
 
     editable: bool = True  #: attribute is editable
+    editor: t.Optional[ModelEditor]
     expression: str = ''  #: attribute conversion expression
     format: t.FormatStr = ''  #: attribute formatter
     name: str = ''  #: target attribute name
@@ -36,14 +50,23 @@ class ModelRule(t.Data):
 class Config(t.Config):
     """Data model"""
 
-    rules: t.List[ModelRule] #: attribute conversion rules
-    geometryType: t.Optional[t.GeometryType] #: specific geometry type
-    crs: t.Optional[t.Crs] #: CRS for this model
+    crs: t.Optional[t.Crs]  #: CRS for this model
+    geometryType: t.Optional[t.GeometryType]  #: specific geometry type
+    rules: t.List[ModelRule]  #: attribute conversion rules
 
 
-#:export
+class ModelRuleProps(t.Props):
+    editable: bool
+    editor: ModelEditor
+    name: str
+    title: str
+    type: str
+
+
 class ModelProps(t.Props):
-    rules: t.List[ModelRule]
+    geometryType: str
+    crs: str
+    rules: t.List[ModelRuleProps]
 
 
 #:export IModel
@@ -58,7 +81,19 @@ class Object(gws.Object, t.IModel):
 
     @property
     def props(self):
-        return t.ModelProps(rules=self.rules)
+        return ModelProps(
+            rules=[
+                ModelRuleProps(
+                    name=r.name,
+                    editable=r.editable,
+                    editor=r.editor,
+                    title=r.title,
+                    type=r.type,
+                ) for r in self.rules
+            ],
+            geometryType=self.geometry_type,
+            crs=self.geometry_crs,
+        )
 
     def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
         return self.apply_to_dict({a.name: a.value for a in atts})
@@ -94,6 +129,9 @@ class Object(gws.Object, t.IModel):
             return s
         s = rule.get('source')
         if s:
+            # @TODO
+            if rule.get('type') == 'bytes':
+                return None
             return d.get(s)
         s = rule.get('format')
         if s:
@@ -119,5 +157,8 @@ class Object(gws.Object, t.IModel):
         rule.title = title or name
 
         rule.type = rule.get('type') or t.AttributeType.str
+
+        if not rule.editor:
+            rule.editor = ModelEditor(type=_default_editor.get(rule.type, 'str'))
 
         return rule
