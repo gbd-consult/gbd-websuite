@@ -18,6 +18,11 @@ class Config(gws.common.template.Config):
     pass
 
 
+class _InsertedTag:
+    tag = None
+    namespaces = None
+
+
 class XMLRuntime(chartreux.Runtime):
     def __init__(self):
         super().__init__()
@@ -39,11 +44,13 @@ class XMLRuntime(chartreux.Runtime):
         self.tags.pop()
 
     def append_tag(self, val):
-        # if isinstance(val, _TagWithNamespaces):
-        #     self.namespaces.update(val.namespaces)
-        #     val = val.tag
-        tag = self.tags[-1]
-        tag.append(val)
+        # "_InsertedTag" instance, maybe with namespaces
+        if hasattr(val, 'tag'):
+            if hasattr(val, 'namespaces'):
+                self.namespaces.update(val.namespaces)
+            val = val.tag
+
+        self.tags[-1].append(val)
 
     def set_attr(self, name, val):
         self._add_ns(name)
@@ -71,16 +78,17 @@ class XMLRuntime(chartreux.Runtime):
             if s not in self.namespaces:
                 self.namespaces[s] = None
 
-    def _date_value(self, val):
-        if val and not gws.tools.date.is_datetime(val):
-            val = gws.tools.date.from_iso(val)
-        return val or gws.tools.date.now()
-
     def filter_datetime(self, val):
-        return gws.tools.date.to_iso(self._date_value(val), with_tz=False, sep='T')
+        d = gws.tools.date.parse(val)
+        if d:
+            return gws.tools.date.to_iso(d, with_tz=False, sep='T')
+        return ''
 
     def filter_date(self, val):
-        return gws.tools.date.to_iso_date(self._date_value(val))
+        d = gws.tools.date.parse(val)
+        if d:
+            return gws.tools.date.to_iso_date(d)
+        return ''
 
 
 class XMLCommands():
@@ -190,16 +198,15 @@ class Object(gws.common.template.Object):
         rt = self._render_as_tag(context)
         root = rt.root
 
+        if format == 'tag':
+            ins_tag = _InsertedTag()
+            ins_tag.tag = root
+            if rt.namespaces:
+                ins_tag.namespaces = rt.namespaces
+            return t.TemplateOutput(content=ins_tag)
+
         if rt.namespaces:
             self._insert_namespaces(root, rt.namespaces, rt.default_namespace)
-
-        if format == 'tag':
-            content = root
-            # if rt.namespaces:
-            #     content = _TagWithNamespaces()
-            #     content.namespaces = rt.namespaces
-            #     content.tag = root
-            return t.TemplateOutput(content=content)
 
         xml = gws.tools.xml2.as_string(root)
         if not xml.startswith('<?'):

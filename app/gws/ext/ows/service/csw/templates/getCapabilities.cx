@@ -15,25 +15,39 @@
             @ows_service_url post=True
 
             @tag ows:Parameter name="typeName"
-                @t ows:Value csw:Record
+                @tag ows:AllowedValues
+                    @t ows:Value csw:Record
+                @end
             @end
             @tag ows:Parameter name="outputFormat"
-                @t ows:Value application/xml
+                @tag ows:AllowedValues
+                    @t ows:Value application/xml
+                @end
             @end
             @tag ows:Parameter name="outputSchema"
-                @t ows:Value http://www.opengis.net/cat/csw/2.0.2
+                @tag ows:AllowedValues
+                    @t ows:Value http://www.opengis.net/cat/csw/2.0.2
+                @end
             @end
             @tag ows:Parameter name="resultType"
-                @t ows:Value results
+                @tag ows:AllowedValues
+                    @t ows:Value results
+                @end
             @end
             @tag ows:Parameter name="ElementSetName"
-                @t ows:Value full
+                @tag ows:AllowedValues
+                    @t ows:Value full
+                @end
             @end
             @tag ows:Parameter name="CONSTRAINTLANGUAGE"
-                @t ows:Value Filter
+                @tag ows:AllowedValues
+                    @t ows:Value Filter
+                @end
             @end
             @tag ows:Parameter name="version"
-                @t ows:Value {version}
+                @tag ows:AllowedValues
+                    @t ows:Value {version}
+                @end
             @end
         @end
 
@@ -41,18 +55,26 @@
             @ows_service_url
 
             @tag ows:Parameter name="typeName"
-                @t ows:Value gmd:MD_Metadata
+                @tag ows:AllowedValues
+                    @t ows:Value gmd:MD_Metadata
+                @end
             @end
             @tag ows:Parameter name="outputFormat"
-                @t ows:Value application/xml
+                @tag ows:AllowedValues
+                    @t ows:Value application/xml
+                @end
             @end
             @tag ows:Parameter name="schemaLanguage"
-                @t ows:Value http://www.w3.org/XML/Schema
+                @tag ows:AllowedValues
+                    @t ows:Value http://www.w3.org/XML/Schema
+                @end
             @end
         @end
 
         @tag ows:Constraint name="IsoProfiles"
-            @t ows:Value http://www.isotc211.org/2005/gmd
+            @tag ows:AllowedValues
+                @t ows:Value http://www.isotc211.org/2005/gmd
+            @end
         @end
 
         @tag inspire_vs:ExtendedCapabilities

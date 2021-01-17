@@ -69,7 +69,7 @@ class AlkisConnection(gws.ext.db.provider.postgres.driver.Connection):
         return self.select(sql)
 
     def make_select_from_ax(self, table_name, columns=None, conditions=None):
-        all_cols = set(c['name'] for c in self.columns(table_name))
+        all_cols = set(c['name'] for c in self.columns(f'{self.data_schema}.{table_name}'))
 
         def v3_name(c):
             # handle norbit plugin rename issues, e.g.

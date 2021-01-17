@@ -12,43 +12,60 @@ import gws.ext.db.provider.postgres
 import gws.common.action
 import gws.common.db
 import gws.gis.feature
+import gws.web.error
 
 import gws.types as t
 
 
-class ProjectConfig(t.Config):
-    """QGIS project"""
-
-    template: t.FilePath  #: source qgis project
-    path: str  #: target path
-    datePattern: t.Regex  #: regular expression for dates
+class TableConfig(t.Config):
+    title: t.Optional[str]
+    table: gws.common.db.SqlTableConfig  #: sql table configurations
+    sort: t.Optional[str]  #: sort expression
+    dataModel: t.Optional[gws.common.model.Config]  #: user-editable template attributes
 
 
 class Config(t.WithTypeAndAccess):
     """Table Editor action"""
 
     db: t.Optional[str]  #: database provider uid
-    table: gws.common.db.SqlTableConfig  #: sql table configuration
-    sort: t.Optional[str]  #: sort expression
-    dataModel: t.Optional[gws.common.model.Config]  #: user-editable template attributes
-    project: t.Optional[ProjectConfig]  #: qgis project template
+    tables: t.List[TableConfig]
 
 
-class LoadParams(t.Params):
-    table: t.Optional[str]
+class TableProps(t.Props):
+    uid: str
+    title: str
 
 
-class LoadResponse(t.Response):
-    features: t.List[t.FeatureProps]
+class GetTablesRepsponse(t.Response):
+    tables: t.List[TableProps]
 
 
-class SaveParams(t.Params):
-    features: t.List[t.FeatureProps]
-    date: str
+class LoadDataParams(t.Params):
+    tableUid: str
 
 
-class SaveResponse(t.Response):
+class LoadDataResponse(t.Response):
+    tableUid: str
+    key: str
+    attributes: t.List[t.Attribute]
+    records: t.List[t.Any]
+
+
+class SaveDataParams(t.Params):
+    tableUid: str
+    attributes: t.List[t.Attribute]
+    records: t.List[t.Any]
+
+
+class SaveDataResponse(t.Response):
     pass
+
+
+class Table(t.Data):
+    uid: str
+    title: str
+    table: t.SqlTable
+    data_model: t.IModel
 
 
 class Object(gws.common.action.Object):
@@ -59,47 +76,92 @@ class Object(gws.common.action.Object):
     def configure(self):
         super().configure()
 
-        p = self.var('db')
         self.db: gws.ext.db.provider.postgres.Object = t.cast(
             gws.ext.db.provider.postgres.Object,
-            self.root.find('gws.ext.db.provider', p) if p else self.root.find_first(
-                'gws.ext.db.provider.postgres'))
+            gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
-        self.table: t.SqlTable = self.db.configure_table(self.var('table'))
+        self.tables: t.List[Table] = []
 
-        p = self.var('dataModel') or self.db.table_data_model_config(self.table)
-        self.data_model: t.IModel = t.cast(t.IModel, self.create_child('gws.common.model', p))
+        for p in self.var('tables'):
+            table = self.db.configure_table(p.table)
+            m = p.dataModel or self.db.table_data_model_config(table)
+            self.tables.append(Table(
+                uid=p.uid or gws.as_uid(table.name),
+                title=p.title or table.name,
+                table=table,
+                data_model=t.cast(t.IModel, self.create_child('gws.common.model', m)),
+                sort=p.sort or table.key_column,
+            ))
 
-        p.rules = [r for r in p.rules if r.editable]
-        self.edit_data_model = self.create_child('gws.common.model', p)
+    def api_get_tables(self, req: t.IRequest, p: t.Params) -> GetTablesRepsponse:
+        return GetTablesRepsponse(
+            tables=[t.Props(
+                uid=tbl.uid,
+                title=tbl.title,
+            ) for tbl in self.tables]
+        )
 
-        self.project = self.var('project')
-        if self.project and not os.path.exists(self.project.path):
-            self._update_project('')
+    def api_load_data(self, req: t.IRequest, p: LoadDataParams) -> LoadDataResponse:
+        tbl = self._get_table(p.tableUid)
+        if not tbl:
+            raise gws.web.error.NotFound()
 
-    def api_load(self, req: t.IRequest, p: LoadParams) -> LoadResponse:
         features = self.db.select(t.SelectArgs(
-            table=self.table,
-            sort=self.var('sort'),
+            table=tbl.table,
+            sort=tbl.sort,
             extra_where=['true']
         ))
 
+        attributes = None
+        records = []
+
         for f in features:
-            f.apply_data_model(self.data_model)
-            f.shape = None
+            f.apply_data_model(tbl.data_model)
+            if not attributes:
+                attributes = f.attributes
+            records.append([a.value for a in f.attributes])
 
-        return LoadResponse(
-            features=[f.props for f in features])
+        return LoadDataResponse(
+            tableUid=tbl.uid,
+            key=tbl.table.key_column,
+            attributes=attributes,
+            records=records,
+        )
 
-    def api_save(self, req: t.IRequest, p: SaveParams) -> SaveResponse:
-        features = [gws.gis.feature.from_props(f).apply_data_model(self.edit_data_model) for f in p.features]
-        self.db.edit_operation('update', self.table, features)
-        self._update_project(p.date)
-        return SaveResponse()
+    def api_save_data(self, req: t.IRequest, p: SaveDataParams) -> SaveDataResponse:
+        tbl = self._get_table(p.tableUid)
+        if not tbl:
+            raise gws.web.error.NotFound()
 
-    def _update_project(self, date):
-        with open(self.project.template) as fp:
-            src = fp.read()
-        src = re.sub(self.project.datePattern, str(date), src)
-        with open(self.project.path, 'w') as fp:
-            fp.write(src)
+        upd_features = []
+        ins_features = []
+
+        for rec in p.records:
+            atts = []
+            uid = None
+
+            for a, v in zip(p.attributes, rec):
+                if v is None or v == '':
+                    continue
+                atts.append(t.Attribute(name=a.name, value=v))
+                if a.name == tbl.table.key_column:
+                    uid = v
+
+            f = gws.gis.feature.from_props(t.FeatureProps(uid=uid, attributes=atts))
+            if uid:
+                upd_features.append(f)
+            else:
+                ins_features.append(f)
+
+        if upd_features:
+            self.db.edit_operation('update', tbl.table, upd_features)
+        if ins_features:
+            self.db.edit_operation('insert', tbl.table, ins_features)
+
+
+        return SaveDataResponse()
+
+    def _get_table(self, table_uid: str):
+        for tbl in self.tables:
+            if tbl.uid == table_uid:
+                return tbl

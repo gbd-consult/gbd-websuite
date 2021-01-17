@@ -254,29 +254,41 @@ class AnnotateFeatureForm extends gws.View<ViewProps> {
 
     get defaultPlaceholders() {
         let pcb = ['Polygon', 'Circle', 'Box'];
-        let m = ' (m)', km = ' (km)';
 
         return [
-            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (m\u00b2)', value: '{area | m}'},
-            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (km\u00b2)', value: '{area | km | 2}'},
-            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (ha)', value: '{area | ha | 2}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (10 m\u00b2)', value: '{area | m}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (10.99 m\u00b2)', value: '{area | m | 2}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (10 km\u00b2)', value: '{area | km}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (10.99 km\u00b2)', value: '{area | km | 2}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (10 ha)', value: '{area | ha}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderArea') + ' (10.99 ha)', value: '{area | ha | 2}'},
 
-            {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + m, value: '{len | m}'},
-            {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + km, value: '{len | km | 2}'},
+            {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + ' (10 m)', value: '{len | m}'},
+            {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + ' (10.99 m)', value: '{len | m | 2}'},
+            {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + ' (10 km)', value: '{len | km}'},
+            {shapeTypes: ['Line'], text: this.__('mapPlaceholderLength') + ' (10.99 km)', value: '{len | km | 2}'},
 
-            {shapeTypes: pcb, text: this.__('mapPlaceholderPerimeter') + m, value: '{len | m}'},
-            {shapeTypes: pcb, text: this.__('mapPlaceholderPerimeter') + km, value: '{len | km | 2}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderPerimeter') + ' (10 m)', value: '{len | m}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderPerimeter') + ' (10.99 m)', value: '{len | m | 2}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderPerimeter') + ' (10 km)', value: '{len | km}'},
+            {shapeTypes: pcb, text: this.__('mapPlaceholderPerimeter') + ' (10.99 km)', value: '{len | km | 2}'},
 
-            {shapeTypes: ['Circle'], text: this.__('mapPlaceholderRadius') + m, value: '{radius | m}'},
-            {shapeTypes: ['Circle'], text: this.__('mapPlaceholderRadius') + km, value: '{radius | km | 2}'},
+            {shapeTypes: ['Circle'], text: this.__('mapPlaceholderRadius') + ' (10 m)', value: '{radius | m}'},
+            {shapeTypes: ['Circle'], text: this.__('mapPlaceholderRadius') + ' (10.99 m)', value: '{radius | m | 2}'},
+            {shapeTypes: ['Circle'], text: this.__('mapPlaceholderRadius') + ' (10 km)', value: '{radius | km}'},
+            {shapeTypes: ['Circle'], text: this.__('mapPlaceholderRadius') + ' (10.99 km)', value: '{radius | km | 2}'},
 
-            {shapeTypes: ['Box'], text: this.__('mapPlaceholderWidth') + m, value: '{width | m}'},
-            {shapeTypes: ['Box'], text: this.__('mapPlaceholderWidth') + km, value: '{width | km | 2}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderWidth') + ' (10 m)', value: '{width | m}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderWidth') + ' (10.99 m)', value: '{width | m | 2}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderWidth') + ' (10 km)', value: '{width | km}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderWidth') + ' (10.99 km)', value: '{width | km | 2}'},
 
-            {shapeTypes: ['Box'], text: this.__('mapPlaceholderHeight') + m, value: '{height | m}'},
-            {shapeTypes: ['Box'], text: this.__('mapPlaceholderHeight') + km, value: '{height | km | 2}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderHeight') + ' (10 m)', value: '{height | m}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderHeight') + ' (10.99 m)', value: '{height | m | 2}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderHeight') + ' (10 km)', value: '{height | km}'},
+            {shapeTypes: ['Box'], text: this.__('mapPlaceholderHeight') + ' (10.99 km)', value: '{height | km | 2}'},
 
-            {shapeTypes: ['Point'], text: this.__('mapPlaceholderXY') + m, value: '{xy | m | 2}'},
+            {shapeTypes: ['Point'], text: this.__('mapPlaceholderXY') + ' (m)', value: '{xy | m | 2}'},
             {shapeTypes: ['Point'], text: this.__('mapPlaceholderXY') + ' (deg)', value: '{xy | deg | 5}'},
             {shapeTypes: ['Point'], text: this.__('mapPlaceholderXY') + ' (dms)', value: '{xy | dms}'},
         ];

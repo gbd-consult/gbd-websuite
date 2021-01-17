@@ -94,7 +94,7 @@ class Config(t.WithTypeAndAccess):
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
     buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
     limit: int = 100  #: search results limit
-    featureTemplates: t.Optional[t.List[t.ext.template.Config]]  #: templates for on-screen Flurstueck details
+    templates: t.Optional[t.List[t.ext.template.Config]]  #: templates for on-screen Flurstueck details
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
     ui: t.Optional[UiConfig]  #: ui options
     export: t.Optional[gws.ext.helper.alkis.util.export.Config]  #: csv export configuration

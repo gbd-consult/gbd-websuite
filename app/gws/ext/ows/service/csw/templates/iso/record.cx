@@ -8,6 +8,7 @@
         @tag gmd:{lst}
             @a codeList="{ML_GMX_CODELISTS}#{lst}"
             @a codeListValue="{value}"
+            {value}
         @end
     @end
 @end
@@ -134,8 +135,16 @@
 @end
 
 @def distributionInfo
-    @tag gmd:transferOptions/gmd:MD_DigitalTransferOptions
-        @each meta.links as link
+    @each meta.links as link
+        @with link.formatName
+            @tag gmd:distributionFormat/gmd:MD_Format
+                @t gmd:name/gco:CharacterString {link.formatName}
+                @t gmd:version/gco:CharacterString {link.formatVersion}
+            @end
+        @end
+    @end
+    @each meta.links as link
+        @tag gmd:transferOptions/gmd:MD_DigitalTransferOptions
             @tag gmd:onLine/gmd:CI_OnlineResource
                 @t gmd:linkage/gmd:URL {url_for(link.url)}
                 @CODE "function/CI_OnLineFunctionCode", link.function

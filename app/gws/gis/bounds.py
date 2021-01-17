@@ -14,7 +14,7 @@ class Bounds(t.Data):
     extent: t.Extent
 
 
-def from_request_bbox(s: str, target_crs: t.Crs = None, swap4326: bool = False) -> t.Optional[t.Bounds]:
+def from_request_bbox(s: str, target_crs: t.Crs = None, invert_axis_if_geographic: bool = False) -> t.Optional[t.Bounds]:
     """Create Bounds from a KVP BBOX param.
 
     See:
@@ -34,7 +34,7 @@ def from_request_bbox(s: str, target_crs: t.Crs = None, swap4326: bool = False) 
     proj = gws.gis.proj.as_proj(crs or target_crs)
     ext = gws.gis.extent.valid(ext)
 
-    if proj.srid == 4326 and swap4326:
+    if ext and proj and proj.is_geographic and invert_axis_if_geographic:
         ext = gws.gis.extent.swap_xy(ext)
 
     if ext and proj:

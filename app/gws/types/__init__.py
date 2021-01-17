@@ -807,6 +807,8 @@ class MetaIsoTopicCategory(Enum):
 
 
 class MetaLink(Data):
+    formatName: str
+    formatValue: str
     function: 'MetaIsoOnLineFunction'
     scheme: str
     url: 'Url'

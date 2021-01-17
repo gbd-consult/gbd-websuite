@@ -1,14 +1,14 @@
 Features
 ========
 
-GWS enthält Werkzeuge mit denen die Features aus verschiedenen Quellen einheitlich strukturiert und dargestellt werden können.
+Die GBD WebSuite enthält Werkzeuge mit denen die Features, aus verschiedenen Quellen, einheitlich strukturiert und dargestellt werden können.
 
 Datenmodelle
 ------------
 
 ^REF gws.common.model.Config
 
-Ein *Datenmodel* (``dataModel``) beschreibt wie Attributen eines Quell-Features transformiert werden müssen. Für jedes Attribut eines GWS-Features können Sie eine Regel anlegen, mit der Sie für dieses Attribut folgendes definieren:
+Ein *Datenmodel* (``dataModel``) beschreibt wie Attributen eines Quell-Features transformiert werden müssen. Für jedes Attribut eines GBD WebSuite-Features können Sie eine Regel anlegen, mit der Sie für dieses Attribut folgendes definieren:
 
 - eine Bezeichnung (``name``)
 - einen Titel (``title``)

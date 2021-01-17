@@ -309,8 +309,9 @@ module.exports = {
     modBplanImportStatsNumPngs: 'PNG Daten:',
     modBplanImportStatsNumPdfs: 'PDF Daten:',
 
-    modTabeditToolbarButton: 'Werte editieren',
-    modTabeditDialogTitle: 'Werte editieren',
+    modTabeditSidebarTitle: 'Tabellen editieren',
+    modTabeditDialogTitle: 'Tabelle editieren',
+    modTabeditDialogLoading: 'Daten werden geladen',
     modTabeditDialogSuccess: 'Daten wurden gespeichert',
     modTabeditDialogError: 'Es ist ein Fehler aufgetreten',
 };

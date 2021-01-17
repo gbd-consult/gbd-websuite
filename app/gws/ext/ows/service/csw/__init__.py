@@ -117,6 +117,8 @@ class Object(ows.Base):
                 meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpService/uid/{self.uid}/id/{obj.uid}'
                 meta.urlType = "TC211" if self.profile == 'ISO' else 'DCMI'  ## @TODO
                 meta.urlFormat = "text/xml"
+            elif meta.url == 'SKIP':
+                meta.url = None
 
             extent = gws.get(obj, 'extent') or gws.get(obj, 'map.extent')
             crs = gws.get(obj, 'crs') or gws.get(obj, 'map.crs')
@@ -174,8 +176,18 @@ class Object(ows.Base):
             'count_return': len(metas),
         }
 
+        records = []
+
+        for meta in metas:
+            rec = self.render_template(rd, 'RawRecord', format='tag', context={
+                'meta': meta,
+                'profile': self.profile,
+                'version': self.request_version(rd),
+            })
+            records.append(rec.content)
+
         return self.template_response(rd, 'GetRecords', context={
-            'metas': metas,
+            'records': records,
             'results': results,
             'with_soap': rd.xml_is_soap,
             'profile': self.profile,
@@ -186,8 +198,15 @@ class Object(ows.Base):
         meta = self.metas.get(rd.req.param('id'))
         if not meta:
             raise gws.web.error.NotFound()
-        return self.template_response(rd, 'GetRecordById', context={
+
+        rec = self.render_template(rd, 'RawRecord', format='tag', context={
             'meta': meta,
+            'profile': self.profile,
+            'version': self.request_version(rd),
+        })
+
+        return self.template_response(rd, 'GetRecordById', context={
+            'record': rec.content,
             'with_soap': rd.xml_is_soap,
             'profile': self.profile,
             'version': self.request_version(rd),

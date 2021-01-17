@@ -4,7 +4,7 @@ QGIS Support
 Layer
 -----
 
-Es gibt zwei Möglichkeiten, QGIS Projekte als Layer in Ihren Karten einzubinden: ``qgis`` und ``qgisflat`` Layer. Sie können diese Layers frei mit anderen Layertypen mischen
+Es gibt zwei Möglichkeiten, QGIS Projekte als Layer in Ihren Karten einzubinden: ``qgis`` und ``qgisflat`` Layer. Sie können diese Layers frei mit anderen Layertypen mischen.
 
 qgis
 ~~~~
@@ -67,4 +67,4 @@ GWS Option | QGIS Umgebungsvariable
 ``serverLogLevel`` | ``QGIS_SERVER_LOG_LEVEL``
 {/TABLE}
 
-Die Option ``searchPathsForSVG`` sagt, wo der Server SVG-Bilder in QGIS-Karten und Druckvorlagen findet. Wenn Sie nicht standardmäßige Bilder verwenden, fügen Sie einfach einen Verzeichnispfad für sie zu dieser Einstellung hinzu.
+Die Option ``searchPathsForSVG`` zeigt an, wo der Server SVG-Bilder in QGIS-Karten und Druckvorlagen findet. Wenn Sie nicht standardmäßige Bilder verwenden, fügen Sie einfach einen Verzeichnispfad für sie zu dieser Einstellung hinzu.

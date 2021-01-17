@@ -48,6 +48,16 @@ module.exports = v => ({
         ...v.SVG(v.CLOSE_ICON, v.BUTTON_COLOR),
     },
 
+    '.uiDialogZoomButton': {
+        ...v.ICON_BUTTON(),
+        ...v.ICON_SIZE('medium'),
+        ...v.SVG('google:image/crop_square', v.BUTTON_COLOR),
+    },
+
+    '.isZoomed .uiDialogZoomButton': {
+        ...v.SVG('google:image/crop_7_5', v.BUTTON_COLOR),
+    },
+
     '.uiDialogContent': {
         flex: 1,
         width: '100%',
@@ -72,8 +82,8 @@ module.exports = v => ({
         paddingLeft: v.UNIT8,
         paddingRight: v.UNIT8,
         '.uiRow': {
-            marginTop: v.UNIT8,
-            marginBottom: v.UNIT8,
+            marginTop: v.UNIT4,
+            marginBottom: v.UNIT4,
         },
         '.uiCell': {
             paddingLeft: v.UNIT4,

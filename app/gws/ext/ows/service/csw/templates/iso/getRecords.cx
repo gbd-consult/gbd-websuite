@@ -1,5 +1,3 @@
-@include record.cx
-
 @def response
     @tag csw:GetRecordsResponse version={version}
 
@@ -13,8 +11,8 @@
             @a recordSchema="http://www.isotc211.org/2005/gmd"
             @a elementSet="full"
 
-            @each metas as meta
-                @record meta
+            @each records as record
+                @insert {record}
             @end
         @end
     @end

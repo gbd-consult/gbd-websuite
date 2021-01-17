@@ -84,11 +84,12 @@ module.exports = v => ({
             ...v.SHADOW,
             ...v.CENTER_BOX(800, 500),
 
-            '&.modAlkisSelectDialog': {
-                ...v.CENTER_BOX(300, 200),
+            '&.isZoomed': {
+                ...v.FIT_SCREEN()
             }
         },
     },
+
     '.uiDialog.uiAlert': {
         [v.MEDIA('large+')]: {
             left: '50%',

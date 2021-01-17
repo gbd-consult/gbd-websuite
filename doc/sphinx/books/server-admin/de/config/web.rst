@@ -13,7 +13,7 @@ Sie können mehrere *Webseiten* (``site``) in einer einzigen GBD WebSuite Instal
 Dokument-Ordner
 ---------------
 
-Pro Webseite kann einen ``root`` Ordner konfiguriert werden, wo Sie Ihre statische Inhalte, wie Javascript, CSS Daten und Bilder, platzieren, sowie einen ``assets`` Ordner, der dynamische Inhalte wie Vorlagen enthält.
+Pro Webseite kann ein ``root`` Ordner konfiguriert werden, wo Sie Ihre statische Inhalte, wie Javascript, CSS Daten und Bilder, platzieren, sowie einen ``assets`` Ordner, der dynamische Inhalte, wie Vorlagen, enthält.
 
 Per Default, werden aus diesen Ordnern nur folgende Dateierweiterungen zurückgegeben: ::
 

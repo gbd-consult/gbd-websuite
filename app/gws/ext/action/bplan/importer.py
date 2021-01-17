@@ -200,6 +200,7 @@ def _run2(action, src_dir, replace, au_uid, job):
 
         gws.log.debug(f'copy {fb}.pdf')
         shutil.copyfile(p, f'{dd}/pdf/{fb}.pdf')
+        os2.chown(f'{dd}/pdf/{fb}.pdf')
 
         stats.numPdfs += 1
 
@@ -371,6 +372,7 @@ def _enum_images(action):
                 img = img.convert('RGBA')
                 img = img.convert('P', palette=PIL.Image.ADAPTIVE, colors=action.image_quality)
                 img.save(converted_path)
+                os2.chown(converted_path)
 
                 # copy the pgw along
                 pgw = gws.read_file(f'{dd}/png/{fn}.pgw')
@@ -379,11 +381,17 @@ def _enum_images(action):
                 gws.log.error(f'error converting {path!r}: {e}')
                 continue
 
+        try:
+            palette = _image_palette(converted_path)
+        except Exception as e:
+            gws.log.error(f'error getting palette from {converted_path!r}: {e}')
+            continue
+
         images.append({
             'uid': '_r_' + fn,
             'fname': fn,
             'path': converted_path,
-            'palette': _image_palette(converted_path)
+            'palette': palette
         })
 
     return images

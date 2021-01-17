@@ -1,7 +1,7 @@
 Layer
 =====
 
-Ein *Layer* in einem GBD WebSuite Projekt wird durch seinen ``type`` identifiziert. Grundsätzlich unterteilen sich Layer in  *Raster-* und *Vektorlayern*. Ein Rasterlayer stellt Geoinformation in der Pixelform dar. Die Rasterlayer enthalten keine Sachdaten (Attribute), sie können jedoch mit Suchquellen kombiniert werden, die Sachdaten enthalten. Ein Vektorlayer ist eine Sammlung von *Features*, die geometrische Objekte (Punkte, Linien und Polygone) sind, zu denen auch die Sachdaten zugeordnet sind. Die Darstellung von Vektorlayern können Sie mit Styling (s. ^style) frei gestalten.
+Ein *Layer* in einem GBD WebSuite Projekt wird durch seinen ``type`` identifiziert. Grundsätzlich unterteilen sich Layer in  *Raster-* und *Vektorlayern*. Ein Rasterlayer stellt Geoinformation in der Pixelform dar. Die Rasterlayer enthalten keine Sachdaten (Attribute), sie können jedoch mit Suchquellen kombiniert werden, die Sachdaten enthalten. Ein Vektorlayer ist eine Sammlung von *Features*, aus geometrischen Objekten (Punkte, Linien und Polygone), zu denen auch Sachdaten zugeordnet werden. Die Darstellung von Vektorlayern können Sie mit Styling (s. ^style) frei gestalten.
 
 Layer ``uid``
 -------------

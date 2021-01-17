@@ -12,8 +12,8 @@ def create(conn: AlkisConnection, read_user):
     for tab in conn.table_names(conn.index_schema):
         gws.log.info(f'optimizing {tab!r}')
         conn.exec(f'VACUUM {conn.index_schema}.{tab}')
-    conn.exec(f'GRANT SELECT  ON ALL TABLES    IN SCHEMA {conn.index_schema} TO {read_user}')
-    conn.exec(f'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA {conn.index_schema} TO {read_user}')
+    conn.exec(f'GRANT SELECT  ON ALL TABLES    IN SCHEMA "{conn.index_schema}" TO "{read_user}"')
+    conn.exec(f'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA "{conn.index_schema}" TO "{read_user}"')
 
 
 def ok(conn: AlkisConnection):

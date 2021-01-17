@@ -46,7 +46,7 @@ def parse_envelope(el: gws.tools.xml2.Element) -> t.Optional[t.Bounds]:
         pass
 
 
-def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False):
+def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False, crs_format='urn'):
     def pos(geom, as_list=True):
         cs = []
 
@@ -96,7 +96,8 @@ def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False):
             return tag('gml:MultiSurface', srs, *[tag('gml:surfaceMember', convert(p)) for p in geom])
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
-    return convert(geom, {'srsName': gws.gis.proj.as_urn(shape.crs)})
+    srs = gws.gis.proj.format(shape.crs, crs_format)
+    return convert(geom, {'srsName': srs})
 
 
 def features_from_xml(xml, invert_axis=False):

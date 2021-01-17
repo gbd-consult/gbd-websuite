@@ -523,7 +523,7 @@ def find(conn: AlkisConnection, query: dict):
 
         if k == 'bblatt':
             where.append('FS.bb_number LIKE %s')
-            parms.append('%' + v + ';')
+            parms.append(_prepare_for_like(v))
 
         elif k == 'shape':
             v = v.transformed_to(conn.crs)

@@ -177,10 +177,19 @@ class Object(ows.Base):
 
         features = gws.common.search.runner.run(rd.req, args)
 
-        fmt = rd.req.param('info_format') or 'gml'
-        return self.template_response(rd, 'GetFeatureInfo', fmt, context={
-            'collection': self.feature_collection(features, rd),
-        })
+        coll = self.feature_collection(
+            features,
+            rd,
+            target_crs=bounds.crs,
+            invert_axis_if_geographic=self.request_version(rd) >= '1.3.0',
+            crs_format='urn',
+        )
+
+        return self.template_response(
+            rd,
+            'GetFeatureInfo',
+            ows_format=rd.req.param('info_format') or 'gml',
+            context={'collection': coll})
 
     ###
 
@@ -189,4 +198,4 @@ class Object(ows.Base):
         return gws.gis.bounds.from_request_bbox(
             rd.req.param('bbox'),
             rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
-            swap4326=ver >= '1.3.0')
+            invert_axis_if_geographic=ver >= '1.3.0')

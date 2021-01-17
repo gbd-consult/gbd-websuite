@@ -122,6 +122,8 @@
 
 
 @def ows_wgs84_bounding_box(lc)
+    ## OGC 06-121r9 Table 34
+    ## Ordered sequence of two double values in decimal degrees, with longitude before latitude
     @tag ows:WGS84BoundingBox
         @t ows:LowerCorner {lc.extent4326[0]} {lc.extent4326[1]}
         @t ows:UpperCorner {lc.extent4326[2]} {lc.extent4326[3]}

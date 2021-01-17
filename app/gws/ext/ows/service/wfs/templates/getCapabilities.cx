@@ -1,5 +1,128 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
-@include common.cx
+
+@def wfs_constraint ns, name, value
+    @tag {ns}:Constraint name={name}
+        @t ows:NoValues
+        @t ows:DefaultValue {value | as_str | upper}
+    @end
+@end
+
+@def wfs_versions
+    @each service.supported_versions as v
+        @t ows:Value {v}
+    @end
+@end
+
+@def wfs_basic_operations(default_count=1000)
+    @tag ows:OperationsMetadata
+
+        @tag ows:Operation name="GetCapabilities"
+            @ows_service_url
+            @tag ows:Parameter name="AcceptVersions"
+                @tag ows:AllowedValues
+                    @wfs_versions
+                @end
+            @end
+            @tag ows:Parameter name="AcceptFormats"
+                @tag ows:AllowedValues
+                    @t ows:Value text/xml
+                @end
+            @end
+        @end
+
+        @tag ows:Operation name="DescribeFeatureType"
+            @ows_service_url
+            @tag ows:Parameter name="outputFormat"
+                @tag ows:AllowedValues
+                    @t ows:Value text/xml; subtype=gml/3.2.1
+                @end
+            @end
+        @end
+
+        @tag ows:Operation name="GetFeature"
+            @ows_service_url(get=True, post=True)
+            @tag ows:Parameter name="outputFormat"
+                @tag ows:AllowedValues
+                    @t ows:Value text/xml; subtype=gml/3.2.1
+                @end
+            @end
+            @tag ows:Parameter name="resultType"
+                @tag ows:AllowedValues
+                    @t ows:Value results
+                    @t ows:Value hits
+                @end
+            @end
+        @end
+
+        @tag ows:Parameter name="version"
+            @tag ows:AllowedValues
+                @wfs_versions
+            @end
+        @end
+
+        @wfs_constraint "ows", "ImplementsBasicWFS", True
+        @wfs_constraint "ows", "KVPEncoding", True
+
+        @wfs_constraint "ows", "ImplementsTransactionalWFS", False
+        @wfs_constraint "ows", "ImplementsLockingWFS", False
+        @wfs_constraint "ows", "XMLEncoding", False
+        @wfs_constraint "ows", "SOAPEncoding", False
+        @wfs_constraint "ows", "ImplementsInheritance", False
+        @wfs_constraint "ows", "ImplementsRemoteResolve", False
+        @wfs_constraint "ows", "ImplementsResultPaging", False
+        @wfs_constraint "ows", "ImplementsStandardJoins", False
+        @wfs_constraint "ows", "ImplementsSpatialJoins", False
+        @wfs_constraint "ows", "ImplementsTemporalJoins", False
+        @wfs_constraint "ows", "ImplementsFeatureVersioning", False
+        @wfs_constraint "ows", "ManageStoredQueries", False
+
+        @tag ows:Constraint name="CountDefault"
+            @t ows:NoValues
+            @t ows:DefaultValue {default_count}
+        @end
+
+        @tag ows:Constraint name="QueryExpressions"
+            @tag ows:AllowedValues
+                @t ows:Value wfs:StoredQuery
+            @end
+        @end
+
+        @if with_inspire_meta
+            @tag ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities
+                @inspire_extended_capabilities
+            @end
+        @end
+    @end
+@end
+
+@def wfs_basic_filters
+    @tag fes:Filter_Capabilities
+        @tag fes:Conformance
+            @wfs_constraint "fes", "ImplementsAdHocQuery", True
+            @wfs_constraint "fes", "ImplementsMinSpatialFilter", True
+            @wfs_constraint "fes", "ImplementsQuery", True
+            @wfs_constraint "fes", "ImplementsResourceId", True
+            @wfs_constraint "fes", "ImplementsMinStandardFilter", True
+            @wfs_constraint "fes", "ImplementsMinTemporalFilter", True
+
+            @wfs_constraint "fes", "ImplementsExtendedOperators", False
+            @wfs_constraint "fes", "ImplementsFunctions", False
+            @wfs_constraint "fes", "ImplementsMinimumXPath", False
+            @wfs_constraint "fes", "ImplementsSorting", False
+            @wfs_constraint "fes", "ImplementsSpatialFilter", False
+            @wfs_constraint "fes", "ImplementsStandardFilter", False
+            @wfs_constraint "fes", "ImplementsTemporalFilter", False
+            @wfs_constraint "fes", "ImplementsVersionNav", False
+        @end
+
+        @t fes:Id_Capabilities/fes:ResourceIdentifier name="fes:ResourceId"
+
+        @tag fes:Spatial_Capabilities
+            @t fes:GeometryOperands/fes:GeometryOperand name="gml:Envelope"
+            @t fes:SpatialOperators/fes:SpatialOperator name="BBOX"
+        @end
+    @end
+@end
 
 @tag WFS_Capabilities
     @xmlns wfs default
