@@ -128,7 +128,7 @@ export class Tool extends gws.Tool {
 }
 
 
-class DrawController extends gws.Controller {
+export class DrawController extends gws.Controller {
     uid = MASTER;
     oInteraction: ol.interaction.Draw;
     oFeature: ol.Feature;

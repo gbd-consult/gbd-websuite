@@ -6,6 +6,7 @@ let mods = [
     require('./mod/alkis'),
     require('./mod/annotate'),
     require('./mod/bplan'),
+    require('./mod/collector'),
     require('./mod/decoration'),
     require('./mod/dimension'),
     require('./mod/dprocon'),

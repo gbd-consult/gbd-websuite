@@ -18,14 +18,18 @@ module.exports = v => ({
             //borderWidth: 1,
             borderStyle: 'dotted',
             borderColor: v.BORDER_COLOR,
-            maxWidth: 300,
             textAlign: 'left',
             lineHeight: '120%',
         },
 
+        'td': {
+            maxWidth: 300,
+
+        },
         'th': {
             fontWeight: 'bold',
             paddingRight: v.UNIT2,
+            maxWidth: 100,
 
         },
 
