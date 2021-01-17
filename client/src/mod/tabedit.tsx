@@ -309,7 +309,7 @@ class TabeditController extends gws.Controller {
     async init() {
         let res = await this.app.server.tabeditGetTables({});
         this.update({
-            tabeditTables: res.tables,
+            tabeditTables: res.tables || [],
             tabeditPageSize: DEFAULT_PAGE_SIZE,
             tabeditPage: 0,
         });
