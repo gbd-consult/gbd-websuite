@@ -97,6 +97,10 @@ class GetDocumentsResponse(t.Params):
 
 
 class Object(gws.common.action.Object):
+    @property
+    def props(self):
+        return t.Props(enabled=True)
+
     def configure(self):
         super().configure()
 

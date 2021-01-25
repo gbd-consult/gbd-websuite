@@ -28,6 +28,7 @@ interface TabeditViewProps extends gws.types.ViewProps {
     tabeditDirtyFields: object;
     tabeditSelectRecord: number;
     tabeditError: boolean;
+    tabeditFilter?: object;
     appDialogZoomed: boolean;
 }
 
@@ -41,6 +42,7 @@ const TabeditStoreKeys = [
     'tabeditDirtyFields',
     'tabeditSelectRecord',
     'tabeditError',
+    'tabeditFilter',
     'appDialogZoomed',
 ];
 
@@ -84,10 +86,27 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
     }
 
 
-    tableDialog() {
+    applyFilters(records) {
+        let filter = this.props.tabeditFilter;
 
+        if (!filter)
+            return records;
+
+        for (let [ncol, val] of gws.tools.entries(filter)) {
+            records = records.filter(rec => !val ||
+                (gws.tools.empty(rec[ncol]) ? '' : String(rec[ncol]).toLowerCase()).indexOf(val.toLowerCase()) >= 0
+            );
+        }
+
+        return records;
+    }
+
+
+    tableDialog() {
         let data = this.props.tabeditData,
-            len = data.records.length,
+            records = this.applyFilters(data.records),
+            widths = data.widths,
+            len = records.length,
             pageSize = this.props.tabeditPageSize || 100,
             page = this.props.tabeditPage || 0,
             lastPage = Math.ceil(len / pageSize) - 1,
@@ -165,7 +184,7 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
             let d = {...dirtyFields},
                 key = nrec + '.' + ncol;
 
-            if (value === data.records[nrec][ncol])
+            if (value === records[nrec][ncol])
                 delete d[key];
             else
                 d[key] = value;
@@ -176,32 +195,40 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
             });
         };
 
+        let visibleAtts = data.attributes.map((attr, ncol) => {
+            if (widths && widths[ncol] === 0)
+                return null;
+            return {attr, ncol};
+        }).filter(Boolean);
+
+
         let getRow = nrow => {
             let nrec = page * pageSize + nrow,
-                record = data.records[nrec];
+                record = records[nrec];
 
             if (!record)
                 return;
 
-            return data.attributes.map((a, ncol) => {
-                let key = nrec + '.' + ncol,
+            return visibleAtts.map(a => {
+                let key = nrec + '.' + a.ncol,
                     isDirty = key in dirtyFields,
-                    val = isDirty ? dirtyFields[key] : record[ncol];
+                    val = isDirty ? dirtyFields[key] : record[a.ncol];
 
-                if (!a.editable)
+                if (!a.attr.editable)
                     return String(val);
 
-                if (a.type === gws.api.AttributeType.int)
-                    return <gws.ui.NumberInput
-                        value={val}
-                        className={isDirty ? 'isDirty' : ''}
-                        whenChanged={v => update(nrec, ncol, v)}
-                    />;
+                // if (a.type === gws.api.AttributeType.int)
+                //     return <gws.ui.NumberInput
+                //         value={val}
+                //         className={isDirty ? 'isDirty' : ''}
+                //         whenChanged={v => update(nrec, ncol, v)}
+                //     />;
 
-                return <gws.ui.TextInput
+                return <gws.ui.TextArea
                     value={val}
+                    height={60}
                     className={isDirty ? 'isDirty' : ''}
-                    whenChanged={v => update(nrec, ncol, v)}
+                    whenChanged={v => update(nrec, a.ncol, v)}
                 />;
             });
         }
@@ -211,12 +238,42 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
         if (sel >= 0)
             sel -= page * pageSize;
 
+        let headers: Array<Array<string | React.ReactNode>>  = [
+            visibleAtts.map(a => a.attr.title)
+        ];
+
+        if(this.props.tabeditData.withFilter) {
+            let filter = this.props.tabeditFilter || {};
+
+            let updateFilter = (v, ncol) => this.props.controller.update({
+                tabeditFilter: {...filter, [ncol]: v}
+            });
+
+            let filterBoxes = visibleAtts.map(a => <Row className="modTabeditFilter">
+                    <Cell>
+                        <gws.ui.Button/>
+                    </Cell>
+                    <Cell>
+                        <gws.ui.TextInput
+                            key={a.ncol}
+                            value={filter[a.ncol] || ''}
+                            withClear
+                            whenChanged={v => updateFilter(v, a.ncol)}
+                        />
+                    </Cell>
+                </Row>
+            );
+
+            headers.push(filterBoxes);
+        }
+
         let table = <gws.ui.Table
             numRows={pageSize}
             getRow={getRow}
             fixedColumns={0}
             selectedRow={sel}
-            headers={data.attributes.map(a => a.title)}
+            widths={widths && widths.filter(Boolean)}
+            headers={headers}
         />;
 
         return <gws.ui.Dialog
@@ -306,6 +363,11 @@ const DEFAULT_PAGE_SIZE = 100;
 class TabeditController extends gws.Controller {
     uid = MASTER;
 
+    canInit() {
+        let s = this.app.actionSetup('tabedit');
+        return s && s.enabled;
+    }
+
     async init() {
         let res = await this.app.server.tabeditGetTables({});
         this.update({
@@ -345,6 +407,8 @@ class TabeditController extends gws.Controller {
             tabeditPage: 0,
             tabeditSelectRecord: -1,
             tabeditError: false,
+            tabeditDirtyFields: {},
+            tabeditFilter: null,
         })
     }
 
@@ -362,6 +426,7 @@ class TabeditController extends gws.Controller {
                 records: data.records.concat([rec]),
             },
             tabeditPage: 1e10,
+            tabeditFilter: null,
             tabeditSelectRecord: data.records.length,
         })
     }

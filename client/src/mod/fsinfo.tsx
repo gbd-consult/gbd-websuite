@@ -550,7 +550,13 @@ class FsinfoController extends gws.Controller {
 
     STRINGS = null;
 
+    canInit() {
+        let s = this.app.actionSetup('fsinfo');
+        return s && s.enabled;
+    }
+
     async init() {
+
         this.STRINGS = {
             uploadDialogTitle: 'Dokument hochladen',
             selectFile: 'Datei',

@@ -21,7 +21,9 @@ class TableConfig(t.Config):
     title: t.Optional[str]
     table: gws.common.db.SqlTableConfig  #: sql table configurations
     sort: t.Optional[str]  #: sort expression
-    dataModel: t.Optional[gws.common.model.Config]  #: user-editable template attributes
+    dataModel: t.Optional[gws.common.model.Config]  #: table data model
+    widths: t.Optional[t.List[int]]  #: column widths, 0 to exclude
+    withFilter: t.Optional[bool]  #: use filter boxes
 
 
 class Config(t.WithTypeAndAccess):
@@ -49,6 +51,8 @@ class LoadDataResponse(t.Response):
     key: str
     attributes: t.List[t.Attribute]
     records: t.List[t.Any]
+    widths: t.Optional[t.List[int]]
+    withFilter: bool
 
 
 class SaveDataParams(t.Params):
@@ -66,6 +70,8 @@ class Table(t.Data):
     title: str
     table: t.SqlTable
     data_model: t.IModel
+    widths: t.List[int]
+    with_filter: bool
 
 
 class Object(gws.common.action.Object):
@@ -91,6 +97,8 @@ class Object(gws.common.action.Object):
                 table=table,
                 data_model=t.cast(t.IModel, self.create_child('gws.common.model', m)),
                 sort=p.sort or table.key_column,
+                widths=p.widths or [],
+                with_filter=bool(p.withFilter),
             ))
 
     def api_get_tables(self, req: t.IRequest, p: t.Params) -> GetTablesRepsponse:
@@ -126,6 +134,8 @@ class Object(gws.common.action.Object):
             key=tbl.table.key_column,
             attributes=attributes,
             records=records,
+            widths=tbl.widths or None,
+            withFilter=tbl.with_filter,
         )
 
     def api_save_data(self, req: t.IRequest, p: SaveDataParams) -> SaveDataResponse:
@@ -157,7 +167,6 @@ class Object(gws.common.action.Object):
             self.db.edit_operation('update', tbl.table, upd_features)
         if ins_features:
             self.db.edit_operation('insert', tbl.table, ins_features)
-
 
         return SaveDataResponse()
 
