@@ -290,7 +290,7 @@ class Object(gws.common.action.Object):
     @property
     def props(self):
         return t.Props(
-            ok=True,
+            enabled=True,
         )
 
     def configure(self):

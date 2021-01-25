@@ -816,7 +816,7 @@ class MetaLink(Data):
 
 class ModelEditor(Data):
     accept: Optional[str]
-    items: Optional[list]
+    items: Optional[Any]
     max: Optional[float]
     min: Optional[float]
     multiple: Optional[bool]

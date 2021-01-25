@@ -314,4 +314,8 @@ module.exports = {
     modTabeditDialogLoading: 'Daten werden geladen',
     modTabeditDialogSuccess: 'Daten wurden gespeichert',
     modTabeditDialogError: 'Es ist ein Fehler aufgetreten',
+
+
+    modCollectorSidebarTitle: 'Baustellen',
+
 };

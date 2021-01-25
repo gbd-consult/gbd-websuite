@@ -220,10 +220,6 @@ class AnnotateDrawTool extends draw.Tool {
         _master(this).addAndSelectFeature(this.drawFeature);
     }
 
-    whenCancelled() {
-        _master(this).app.startTool('Tool.Annotate.Modify')
-    }
-
 }
 
 class AnnotateModifyTool extends modify.Tool {

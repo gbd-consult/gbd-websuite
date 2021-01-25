@@ -214,6 +214,9 @@ export class DrawController extends gws.Controller {
         if (state === 'ended') {
             this.currTool.whenEnded(this.shapeType, this.oFeature);
         }
+        if (state === 'drawing') {
+            this.currTool.whenCancelled();
+        }
     }
 
     commit() {

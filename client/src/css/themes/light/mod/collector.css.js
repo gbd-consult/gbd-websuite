@@ -39,6 +39,10 @@ module.exports = v => {
             ...v.SVG('google:navigation/chevron_left', v.TEXT_COLOR),
         },
 
+        '.modCollectorNextButton': {
+            ...v.SVG('google:navigation/chevron_right', v.TEXT_COLOR),
+        },
+
         '.modCollectorDeleteAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')
         },

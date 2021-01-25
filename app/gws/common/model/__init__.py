@@ -24,7 +24,7 @@ _default_editor = {
 #:export
 class ModelEditor(t.Data):
     accept: t.Optional[str]
-    items: t.Optional[list]
+    items: t.Optional[t.Any]
     max: t.Optional[float]
     min: t.Optional[float]
     multiple: t.Optional[bool]
