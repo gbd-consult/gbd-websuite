@@ -22,14 +22,14 @@ wms
 
 ^REF gws.ext.ows.service.wms.Config
 
-Der WMS-Dienst ist vollständig gemäß der Eigenschaften der Version 1.3.0 implementiert.
+Der WMS-Dienst ist vollständig gemäß der Eigenschaften der Version ``1.1.0``, ``1.1.1`` und ``1.3.0`` implementiert.
 
 wfs
 ~~~
 
 ^REF gws.ext.ows.service.wfs.Config
 
-Der WFS-Dienst ist gemäß der Eigenschaften der Version 2.0 implementiert. Derzeit unterstützen wir nur folgenden Funktionen:
+Der WFS-Dienst ist gemäß der Eigenschaften der Version ``2.0`` implementiert. Derzeit unterstützen wir nur folgenden Funktionen:
 
 - ``GetCapabilities``
 - ``DescribeFeatureType``

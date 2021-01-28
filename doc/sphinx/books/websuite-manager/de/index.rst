@@ -68,7 +68,8 @@ Vorhandene Projekte verwalten
 
 Anhand dieser Liste kann man eine Übersicht über die hochgeladenen Projekte gewinnen.
 Das gewählte Projekt kann man über |gws| ``Öffne die WebSuite`` sich in der WebSuite anzeigen lassen.
-Über |link| ``Link anzeigen`` kann man sich den Projektlink anzeigen lassen.
+Über |link| ``Link anzeigen`` kann man sich den Projektlink oder die URLs der OGC-Dienste anzeigen lassen,
+über die das Projekt in andere Anwendungen integriert werden können.
 
 Drei Werkzeuge am unteren Rand.
 Über |help| ``Hilfe`` gelangt man zur ausführlichen Hilfe und Dokumentation.
