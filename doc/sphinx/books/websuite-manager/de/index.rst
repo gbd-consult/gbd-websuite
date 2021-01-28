@@ -46,8 +46,7 @@ Das Plugin prüft automatisch die Authentifizierung und stellt, bei Erfolg, das 
 
 .. note::
 
-  Weitere Informationen bezüglich des QGIS Authentifizierungssystems erhalten Sie in der `QGIS Dokumentation <https://docs.qgis.org/3.16/de/docs/user_manual/auth_system/index.html>`.
-
+  Weitere Informationen bezüglich des QGIS Authentifizierungssystems erhalten Sie in der QGIS Dokumentation: https://docs.qgis.org/3.16/de/docs/user_manual/auth_system/index.html.
 
 Aktuelles Projekt
 -----------------
