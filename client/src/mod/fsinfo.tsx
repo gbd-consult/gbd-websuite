@@ -25,21 +25,27 @@ interface SearchFormValues {
     pn?: string;
 }
 
-interface DocumentFormValues {
-    files?: FileList;
-    title?: string;
-    documentUid?: string;
+interface Upload {
+    title: string;
+    file: File;
+};
+
+interface UploadFormValues {
     personUid?: string;
-    isNew: boolean;
-    returnTab: string;
+    uploads?: Array<Upload>;
+    existingTitles?: Array<string>;
+}
+
+interface DeleteFormValues {
+    document: gws.api.FsinfoDocumentProps;
 }
 
 type FsinfoTabName = 'search' | 'details' | 'documents';
-type FsinfoDialogMode = null | 'uploadDoc' | 'deleteDoc';
+type FsinfoDialogMode = null | 'uploadDoc' | 'deleteDoc' | 'confirmOverwrite';
 
 interface Details {
     feature: gws.types.IMapFeature;
-    html: string;
+    persons: Array<gws.api.FsinfoPersonProps>;
 }
 
 
@@ -47,14 +53,14 @@ interface FsinfoViewProps extends gws.types.ViewProps {
     controller: FsinfoController;
 
     fsinfoTab: FsinfoTabName;
-
     fsinfoLoading: boolean;
     fsinfoError: string;
 
-    fsinfoDocuments: Array<gws.api.FsinfoDocumentProps>;
+    fsinfoPersons: Array<gws.api.FsinfoPersonProps>;
 
     fsinfoSearchFormValues: SearchFormValues;
-    fsinfoDocumentFormValues: DocumentFormValues;
+    fsinfoUploadFormValues: UploadFormValues;
+    fsinfoDeleteFormValues: DeleteFormValues;
 
     fsinfoGemarkungListItems: Array<gws.ui.ListItem>;
 
@@ -64,20 +70,24 @@ interface FsinfoViewProps extends gws.types.ViewProps {
     fsinfoDetails: Details;
 
     fsinfoDialogMode: FsinfoDialogMode;
+
+    fsinfoOpenState: object;
 }
 
 const FsinfoStoreKeys = [
     'fsinfoTab',
     'fsinfoLoading',
     'fsinfoError',
+    'fsinfoPersons',
     'fsinfoSearchFormValues',
-    'fsinfoDocumentFormValues',
+    'fsinfoUploadFormValues',
+    'fsinfoDeleteFormValues',
     'fsinfoGemarkungListItems',
     'fsinfoFoundFeatures',
     'fsinfoFoundFeatureCount',
     'fsinfoDetails',
     'fsinfoDialogMode',
-    'fsinfoDocuments',
+    'fsinfoOpenState',
 ];
 
 class FsinfoSearchAuxButton extends gws.View<FsinfoViewProps> {
@@ -121,27 +131,11 @@ class FsinfoNavigation extends gws.View<FsinfoViewProps> {
     }
 }
 
-class FsinfoLoaderTab extends gws.View<FsinfoViewProps> {
-    render() {
-        return <sidebar.Tab>
-            <sidebar.TabHeader>
-                <gws.ui.Title content={_master(this).STRINGS.formTitle}/>
-            </sidebar.TabHeader>
-            <sidebar.TabBody>
-                <div className="modFsinfoLoading">
-                    {_master(this).STRINGS.loading}
-                    <gws.ui.Loader/>
-                </div>
-            </sidebar.TabBody>
-        </sidebar.Tab>
-    }
-}
-
 class FsinfoSearchForm extends gws.View<FsinfoViewProps> {
 
     render() {
         let cc = _master(this),
-            form = this.props.fsinfoSearchFormValues;
+            form = this.props.fsinfoSearchFormValues || {};
 
         let boundTo = key => ({
             value: form[key],
@@ -212,7 +206,7 @@ class FsinfoSearchForm extends gws.View<FsinfoViewProps> {
                     <gws.ui.Button
                         {...gws.tools.cls('modFsinfoSearchSubmitButton')}
                         tooltip={cc.STRINGS.searchButton}
-                        whenTouched={() => cc.formSearch()}
+                        whenTouched={() => cc.search()}
                     />
                 </Cell>
                 <Cell>
@@ -238,7 +232,17 @@ class FsinfoSearchTab extends gws.View<FsinfoViewProps> {
 
             <sidebar.TabBody>
                 <FsinfoSearchForm {...this.props} />
-                <FsinfoFeatureList {...this.props} />
+
+                {
+                    this.props.fsinfoLoading
+                        ? <div className="modFsinfoLoading">
+                            {_master(this).STRINGS.loading}
+                            <gws.ui.Loader/>
+                        </div>
+                        : <FsinfoFeatureList {...this.props} />
+
+                }
+
 
             </sidebar.TabBody>
 
@@ -277,91 +281,100 @@ class FsinfoFeatureList extends gws.View<FsinfoViewProps> {
 
 }
 
-interface FsinfoDocumentButtonsProps extends FsinfoViewProps {
-    documentUid: string;
-    returnTab: string;
+interface FsinfoInfoBoxProps extends FsinfoViewProps {
+    person: gws.api.FsinfoPersonProps;
+    tab: string;
+    withDescription: boolean;
 }
 
-class FsinfoDocumentButtons extends gws.View<FsinfoDocumentButtonsProps> {
-
-
+class FsinfoInfoBox extends gws.View<FsinfoInfoBoxProps> {
     render() {
         let cc = _master(this);
+        let p = this.props.person;
 
-        return <Row>
-            <Cell>
-                <gws.ui.Button
-                    className="modFsinfoViewDocumentButton"
-                    whenTouched={() => cc.viewDocument(this.props.documentUid, this.props.returnTab)}
-                />
-            </Cell>
-            <Cell>
-                <gws.ui.Button
-                    className="modFsinfoUpdateDocumentButton"
-                    whenTouched={() => cc.updateDocument(this.props.documentUid, this.props.returnTab)}
-                />
-            </Cell>
-            <Cell>
-                <gws.ui.Button
-                    className="modFsinfoDeleteDocumentButton"
-                    whenTouched={() => cc.deleteDocument(this.props.documentUid, this.props.returnTab)}
-                />
-            </Cell>
-        </Row>;
+        let openState = this.props.fsinfoOpenState || {};
+
+        let toggle = k => cc.update({
+            fsinfoOpenState: {
+                ...openState,
+                [k]: !openState[k]
+            }
+        });
+
+        let key = this.props.tab + '/' + p.uid;
+
+        return <div {...gws.tools.cls('modFsinfoRecord', openState[key] && 'isOpen')} key={key}>
+            <div className="modFsinfoRecordHead">
+                <Row>
+                    <Cell flex>
+                        {p.title}
+                    </Cell>
+                    <Cell>
+                        <gws.ui.Button
+                            className="modFsinfoExpandButton"
+                            whenTouched={() => toggle(key)}
+                        />
+                    </Cell>
+                </Row>
+            </div>
+            <div className="modFsinfoRecordContent">
+                {this.props.withDescription && <Row>
+                    <Cell flex>
+                        <gws.ui.TextBlock
+                            className='cmpDescription'
+                            content={p.description}
+                            withHTML={true}/>
+                    </Cell>
+                </Row>}
+                <div className="modFsinfoDocumentList">
+                    {p.documents.map((doc, n) => <Row key={n}>
+                        <Cell flex>
+                            <div className="modFsinfoDocumentName">
+                                {doc.title.replace(/[_-]+/g, '$&\u200B')}
+                            </div>
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                className="modFsinfoViewDocumentButton"
+                                whenTouched={() => cc.viewDocument(doc)}
+                            />
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                className="modFsinfoDeleteDocumentButton"
+                                whenTouched={() => cc.deleteDocument(doc)}
+                            />
+                        </Cell>
+                    </Row>)}
+                    <Row>
+                        <Cell flex/>
+                        {p.documents.length > 0 && <gws.ui.Button
+                            className="modFsinfoDownloadButton"
+                            tooltip={cc.STRINGS.downloadButtonTitle}
+                            whenTouched={() => cc.downloadDocuments(p.uid)}
+                        />}
+                        <Cell>
+                            <gws.ui.Button
+                                className="modFsinfoUploadButton"
+                                tooltip={cc.STRINGS.uploadButtonTitle}
+                                whenTouched={() => cc.startUpload(p.uid)}
+                            />
+                        </Cell>
+                    </Row>
+                </div>
+            </div>
+        </div>
     }
 }
 
+
 class FsinfoDetailsTab extends gws.View<FsinfoViewProps> {
-    ref: React.RefObject<any>;
 
-    constructor(props) {
-        super(props);
-        this.ref = React.createRef();
-    }
-
-    docButtons(id) {
-        return <FsinfoDocumentButtons
-            {...this.props}
-            documentUid={id}
-            returnTab={'details'}
-        />;
-    }
-
-    uploadButton(personUid) {
-        let cc = _master(this);
-        return <Row>
-            <Cell>
-                <gws.ui.Button
-                    className="modFsinfoCreateDocumentButton"
-                    whenTouched={() => cc.createDocument(personUid, 'details')}
-                />
-            </Cell>
-        </Row>;
-    }
-
-    evalTemplate() {
-        for (let bb of this.ref.current.querySelectorAll('.doc-buttons')) {
-            let id = bb.getAttribute('data-document-uid');
-            ReactDOM.render(this.docButtons(id), bb);
-        }
-        for (let bb of this.ref.current.querySelectorAll('.doc-upload-button')) {
-            let id = bb.getAttribute('data-person-uid');
-            ReactDOM.render(this.uploadButton(id), bb);
-        }
-
-    }
-
-    componentDidMount() {
-        this.evalTemplate();
-    }
-
-    componentDidUpdate() {
-        this.evalTemplate();
-    }
 
     render() {
         let details = this.props.fsinfoDetails,
-            feature = details.feature;
+            feature = details.feature,
+            tab = 'details';
 
         return <sidebar.Tab>
 
@@ -370,11 +383,13 @@ class FsinfoDetailsTab extends gws.View<FsinfoViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <div className="cmpDescription" ref={this.ref}>
-                    <gws.ui.TextBlock
-                        content={details.html}
-                        withHTML={true}/>
-                </div>
+                {details.persons.map(p => <FsinfoInfoBox
+                    {...this.props}
+                    key={tab + p.uid}
+                    tab={tab}
+                    person={p}
+                    withDescription={true}
+                />)}
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
@@ -398,6 +413,8 @@ class FsinfoDetailsTab extends gws.View<FsinfoViewProps> {
 
 class FsinfoDocumentsTab extends gws.View<FsinfoViewProps> {
     render() {
+        let tab = 'documents';
+
         return <sidebar.Tab>
 
             <sidebar.TabHeader>
@@ -405,23 +422,13 @@ class FsinfoDocumentsTab extends gws.View<FsinfoViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <div className="cmpDescription">
-                    <table>
-                        <tbody>
-                        {this.props.fsinfoDocuments.map((doc, n) => <tr key={n}>
-                            <td>{doc.title}</td>
-                            <td>{doc.nachname}, {doc.vorname}</td>
-                            <td>
-                                <FsinfoDocumentButtons
-                                    {...this.props}
-                                    documentUid={doc.uid}
-                                    returnTab={'documents'}
-                                />
-                            </td>
-                        </tr>)}
-                        </tbody>
-                    </table>
-                </div>
+                {this.props.fsinfoPersons.map(p => <FsinfoInfoBox
+                    {...this.props}
+                    key={tab + p.uid}
+                    tab={tab}
+                    person={p}
+                    withDescription={false}
+                />)}
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
@@ -437,11 +444,6 @@ class FsinfoDocumentsTab extends gws.View<FsinfoViewProps> {
 
 class FsinfoSidebarView extends gws.View<FsinfoViewProps> {
     render() {
-        let cc = _master(this);
-
-        if (this.props.fsinfoLoading)
-            return <FsinfoLoaderTab {...this.props}/>;
-
         let tab = this.props.fsinfoTab;
 
         if (!tab || tab === 'search')
@@ -470,78 +472,167 @@ class FsinfoSidebar extends gws.Controller implements gws.types.ISidebarItem {
 }
 
 class FsinfoDialog extends gws.View<FsinfoViewProps> {
-    render() {
-        let mode = this.props.fsinfoDialogMode;
-        if (!mode)
-            return null;
+    uploadDialog() {
+        let cc = _master(this);
+        let form = this.props.fsinfoUploadFormValues;
+        let uploads = form.uploads || [];
 
+        let update = uploads =>
+            cc.update({
+                fsinfoUploadFormValues: {...form, uploads}
+            });
 
-        let cc = _master(this),
-            form = this.props.fsinfoDocumentFormValues;
+        let uploaded = (flist: FileList) => {
+            update(uploads.concat(
+                [].slice.call(flist, 0).map(file => ({file, title: file.name}))
+            ));
+        }
 
-        let boundTo = key => ({
-            value: form[key],
-            whenChanged: value => cc.updateForm('fsinfoDocumentFormValues', key, value),
-            whenEntered: () => cc.search()
-        });
+        let titleChanged = (index: number, s: string) => {
+            update(uploads.map((u, n) => index === n
+                ? {file: u.file, title: s}
+                : u
+            ));
+        }
 
-        let close = () => cc.closeDialog();
+        let deleted = (index: number) => {
+            update(uploads.filter((_, n) => index !== n));
+        }
+
+        let canSubmit = !gws.tools.empty(uploads);
+
+        let ok = <gws.ui.Button
+            className="cmpButtonFormOk"
+            disabled={!canSubmit}
+            whenTouched={() => cc.uploadFormCheck()}
+            primary
+        />;
 
         let cancel = <gws.ui.Button
             className="cmpButtonFormCancel"
-            whenTouched={close}
+            whenTouched={() => cc.closeDialog()}
         />;
 
-        if (mode === 'uploadDoc') {
-            let canSubmit = form.files && form.files.length > 0 && (!form.isNew || form.title);
-
-            let ok = <gws.ui.Button
-                className="cmpButtonFormOk"
-                disabled={!canSubmit}
-                whenTouched={() => cc.documentFormSubmit()}
-                primary
-            />;
-
-            return <gws.ui.Dialog
-                className="modFsinfoUploadDialog"
-                title={cc.STRINGS.uploadDialogTitle}
-                buttons={[ok, cancel]}
-                whenClosed={close}
-            >
-
-                <Form tabular>
-                    {form.isNew && <gws.ui.TextInput
-                        label={cc.STRINGS.titleLabel}
-                        {...boundTo('title')}
-                    />}
+        return <gws.ui.Dialog
+            className="modFsinfoUploadDialog"
+            title={cc.STRINGS.uploadDialogTitle}
+            buttons={[ok, cancel]}
+            whenClosed={() => cc.closeDialog()}
+        >
+            <Row>
+                <Cell>
                     <gws.ui.FileInput
                         accept="application/pdf"
-                        multiple={false}
-                        {...boundTo('files')}
-                        label={cc.STRINGS.selectFile}
+                        multiple={true}
+                        whenChanged={fs => uploaded(fs)}
+                        value={null}
                     />
-                </Form>
-            </gws.ui.Dialog>
+                </Cell>
+            </Row>
+
+            <div className="modFsinfoFileList">
+                {uploads.map((u, n) => <Row key={n}>
+                        <Cell flex>
+                            <gws.ui.TextInput
+                                value={u.title}
+                                whenChanged={v => titleChanged(n, v)}
+                            />
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                className="modFsinfoDeleteListButton"
+                                whenTouched={() => deleted(n)}
+                            />
+                        </Cell>
+                    </Row>
+                )}
+            </div>
+        </gws.ui.Dialog>
+    }
+
+    confirmOverwriteDialog() {
+        let cc = _master(this);
+        let form = this.props.fsinfoUploadFormValues;
+        let titles = form.existingTitles || [];
+
+        let ok = <gws.ui.Button
+            className="cmpButtonFormOk"
+            whenTouched={() => cc.uploadFormSubmit()}
+            primary
+        />;
+
+        let cancel = <gws.ui.Button
+            className="cmpButtonFormCancel"
+            whenTouched={() => cc.uploadConfirmCancel()}
+        />;
+        return <gws.ui.Dialog
+            className="modFsinfoUploadDialog"
+            title={cc.STRINGS.uploadDialogTitle}
+            buttons={[ok, cancel]}
+            whenClosed={_ => cc.uploadConfirmCancel()}
+        >
+            <Row>
+                <Cell center>
+                    <div className="modFsinfoDialogMessage">
+                        {cc.STRINGS.confirmOverwriteDialogMessage}
+                    </div>
+                </Cell>
+            </Row>
+
+            <div className="modFsinfoFileList">
+                {titles.map((s, n) => <Row key={n}>
+                        <Cell flex>{s}</Cell>
+                    </Row>
+                )}
+            </div>
+        </gws.ui.Dialog>
+    }
+
+    deleteDialog() {
+        let cc = _master(this);
+        let form = this.props.fsinfoDeleteFormValues;
+
+        let ok = <gws.ui.Button
+            className="cmpButtonFormOk"
+            whenTouched={() => cc.deleteFormSubmit()}
+            primary
+        />;
+
+        let cancel = <gws.ui.Button
+            className="cmpButtonFormCancel"
+            whenTouched={() => cc.closeDialog()}
+        />;
+
+        return <gws.ui.Dialog
+            className="modFsinfoDeleteDialog"
+            title={cc.STRINGS.deleteDialogTitle}
+            buttons={[ok, cancel]}
+            whenClosed={close}
+        >
+            <Row>
+                <Cell center>
+                    <div className="modFsinfoDialogMessage">
+                        {cc.STRINGS.deleteDialogMessage}
+                    </div>
+                </Cell>
+            </Row>
+            <Row>
+                <Cell center>{form.document.title}</Cell>
+            </Row>
+        </gws.ui.Dialog>
+    }
+
+    render() {
+        switch (this.props.fsinfoDialogMode) {
+            case 'uploadDoc':
+                return this.uploadDialog();
+            case 'confirmOverwrite':
+                return this.confirmOverwriteDialog();
+            case 'deleteDoc':
+                return this.deleteDialog();
+            default:
+                return null;
         }
-
-
-        if (mode === 'deleteDoc') {
-            let ok = <gws.ui.Button
-                className="cmpButtonFormOk"
-                whenTouched={() => cc.documentDeleteSubmit()}
-                primary
-            />;
-
-            return <gws.ui.Dialog
-                className="modFsinfoDeleteDialog"
-                title={cc.STRINGS.deleteDialogTitle}
-                buttons={[ok, cancel]}
-                whenClosed={close}
-            >
-                {cc.STRINGS.deleteDialogBody}
-            </gws.ui.Dialog>
-        }
-
     }
 }
 
@@ -558,10 +649,15 @@ class FsinfoController extends gws.Controller {
     async init() {
 
         this.STRINGS = {
-            uploadDialogTitle: 'Dokument hochladen',
+            uploadDialogTitle: 'Dokumente hochladen',
+            confirmOverwriteDialogMessage: 'Diese Dokumente überschreiben?',
+
+            uploadButtonTitle: 'Dokumente hochladen',
+            downloadButtonTitle: 'Documente als ZIP herunterladen',
+
             selectFile: 'Datei',
             deleteDialogTitle: 'Datei löschen',
-            deleteDialogBody: 'Die ausgewählte Datei wird gelöscht',
+            deleteDialogMessage: 'Diese Datei löschen?',
 
             gotoSearch: 'Suche',
             gotoDetails: 'Details',
@@ -585,24 +681,21 @@ class FsinfoController extends gws.Controller {
             resetButton: 'Neue Anfrage',
             errorGeneric: 'Es ist ein Fehler aufgetreten',
             errorTooMany: 'Es ist ein Fehler aufgetreten',
-
-
         };
-
-        let r1 = await this.app.server.fsinfoGetGemarkungen({});
-        let r2 = await this.app.server.fsinfoGetDocuments({});
 
         this.update({
             fsinfoTab: 'search',
-            fsinfoLoading: false,
-
-            fsinfoSearchFormValues: {},
-            fsinfoDocumentFormValues: {},
-            fsinfoGemarkungListItems: (r1.names || []).map(g => ({
-                text: g, value: g
-            })),
-            fsinfoDocuments: (r2.documents || []),
         });
+
+        let res = await this.app.server.fsinfoGetGemarkungen({});
+
+        this.update({
+            fsinfoGemarkungListItems: (res.names || []).map(g => ({
+                text: g, value: g
+            }))
+        });
+
+        await this.loadDocuments();
     }
 
     get appOverlayView() {
@@ -610,10 +703,6 @@ class FsinfoController extends gws.Controller {
             this.connect(FsinfoDialog, FsinfoStoreKeys));
     }
 
-
-    formSearch() {
-        this.search();
-    }
 
     formReset() {
         this.update({
@@ -679,7 +768,7 @@ class FsinfoController extends gws.Controller {
             this.update({
                 fsinfoDetails: {
                     feature: this.map.readFeature(res.feature),
-                    html: res.html,
+                    persons: res.persons,
                 },
             });
 
@@ -687,11 +776,10 @@ class FsinfoController extends gws.Controller {
         }
     }
 
-    async updateDocuments() {
+    async loadDocuments() {
         let res = await this.app.server.fsinfoGetDocuments({});
-
         this.update({
-            fsinfoDocuments: res.documents
+            fsinfoPersons: res.persons,
         });
     }
 
@@ -719,98 +807,130 @@ class FsinfoController extends gws.Controller {
         });
     }
 
-    async documentFormSubmit() {
-        let form = this.getValue('fsinfoDocumentFormValues'),
-            base = {
-                mimeType: 'application/pdf',
-                data: await gws.tools.readFile(form.files[0])
-            },
-            res = null;
+    startUpload(personUid: string) {
+        this.update({
+            fsinfoUploadFormValues: {personUid},
+            fsinfoDialogMode: 'uploadDoc'
+        })
+    }
 
-        if (form.isNew) {
-            let params = {
-                ...base,
-                title: form.title,
-                personUid: form.personUid
-            }
-            res = await this.app.server.fsinfoCreateDocument(params, {binary: true});
-        } else {
-            let params = {
-                ...base,
-                documentUid: form.documentUid,
-            }
-            res = await this.app.server.fsinfoUpdateDocument(params, {binary: true});
+
+    async uploadFormCheck() {
+        let form: UploadFormValues = this.getValue('fsinfoUploadFormValues');
+        let uploads = form.uploads;
+
+        if (gws.tools.empty(uploads))
+            return;
+
+        let params = {
+            titles: uploads.map(u => u.title),
+            personUid: form.personUid,
         }
+
+        let res = await this.app.server.fsinfoCheckUpload(params);
+
+        if (!gws.tools.empty(res.existingTitles)) {
+            this.update({
+                fsinfoUploadFormValues: {...form, existingTitles: res.existingTitles},
+                fsinfoDialogMode: 'confirmOverwrite',
+            });
+            return;
+        }
+
+        await this.uploadFormSubmit();
+    }
+
+    async uploadFormSubmit() {
+        let form: UploadFormValues = this.getValue('fsinfoUploadFormValues');
+        let uploads = form.uploads;
+
+        if (gws.tools.empty(uploads))
+            return;
+
+        let params = {
+            personUid: form.personUid,
+            files: [],
+        }
+
+        for (let u of uploads) {
+            params.files.push({
+                title: u.title,
+                filename: u.file.name,
+                data: await gws.tools.readFile(u.file),
+                mimeType: 'application/pdf',
+            })
+        }
+
+        let res = await this.app.server.fsinfoUpload(params, {binary: true});
         this.afterDialog();
     }
 
-    async documentDeleteSubmit() {
-        let form = this.getValue('fsinfoDocumentFormValues'),
+
+    uploadConfirmCancel() {
+        this.update({fsinfoDialogMode: 'uploadDoc'});
+    }
+
+    downloadDocuments(personUid: string) {
+        this.sendFile(
+            '/_/cmd/fsinfoHttpGetDownload/projectUid/' + this.app.project.uid + '/personUid/' + personUid,
+            personUid + '.zip'
+        );
+    }
+
+    viewDocument(doc: gws.api.FsinfoDocumentProps) {
+        this.sendFile(
+            '/_/cmd/fsinfoHttpGetDocument/projectUid/' + this.app.project.uid + '/documentUid/' + doc.uid,
+            doc.title
+        );
+    }
+
+    sendFile(url, fileName) {
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    deleteDocument(doc: gws.api.FsinfoDocumentProps) {
+        this.update({
+            fsinfoDeleteFormValues: {
+                document: doc,
+            },
+            fsinfoDialogMode: 'deleteDoc'
+        })
+    }
+
+    async deleteFormSubmit() {
+        let form = this.getValue('fsinfoDeleteFormValues'),
             params = {
-                documentUid: form.documentUid
+                documentUid: form.document.uid
             };
         let res = await this.app.server.fsinfoDeleteDocument(params);
         await this.afterDialog();
-
     }
 
     async afterDialog() {
-        await this.updateDocuments();
+        await this.loadDocuments();
         this.closeDialog();
 
-        let form = this.getValue('fsinfoDocumentFormValues');
+        let tab = this.getValue('fsinfoTab');
 
-        if (form.returnTab === 'details') {
+        if (tab === 'details') {
             let details: Details = this.getValue('fsinfoDetails');
             if (details) {
                 await this.showDetails(details.feature, false);
             }
         }
 
-        if (form.returnTab === 'documents') {
+        if (tab === 'documents') {
             this.goTo('documents');
         }
     }
 
     closeDialog() {
         this.update({fsinfoDialogMode: null});
-    }
-
-    viewDocument(documentUid: string, returnTab: string) {
-        let a = document.createElement('a');
-        let url = '/_/cmd/fsinfoHttpGetDocument/projectUid/' + this.app.project.uid + '/documentUid/' + documentUid;
-        a.href = url;
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-
-    updateDocument(documentUid: string, returnTab: string) {
-        this.update({
-            fsinfoDocumentFormValues: {
-                documentUid, returnTab, isNew: false,
-            },
-            fsinfoDialogMode: 'uploadDoc'
-        })
-    }
-
-    createDocument(personUid: string, returnTab: string) {
-        this.update({
-            fsinfoDocumentFormValues: {
-                personUid, returnTab, isNew: true,
-            },
-            fsinfoDialogMode: 'uploadDoc'
-        })
-    }
-
-    deleteDocument(documentUid: string, returnTab: string) {
-        this.update({
-            fsinfoDocumentFormValues: {
-                documentUid, returnTab
-            },
-            fsinfoDialogMode: 'deleteDoc'
-        })
     }
 
 
