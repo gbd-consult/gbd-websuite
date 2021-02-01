@@ -35,11 +35,15 @@ module.exports = v => ({
         },
     },
 
-    '.uiTableCell .uiControl.hasFocus' : {
+    '.uiTableBody .uiTableCell .uiControl.hasFocus' : {
         backgroundColor: v.SELECTED_ITEM_BACKGROUND,
     },
 
     '.uiTableCell .uiControl.isDirty input' : {
+        fontWeight: 800,
+    },
+
+    '.uiTableCell .uiControl.isDirty textarea' : {
         fontWeight: 800,
     },
 
@@ -49,10 +53,14 @@ module.exports = v => ({
 
     '.uiTableStaticText': {
         display: 'flex',
-        height: v.UNIT * 10,
+        height: v.UNIT * 15,
         alignItems: 'center',
         paddingLeft: v.UNIT * 2,
         paddingRight: v.UNIT * 2,
+    },
+
+    '.uiTableHead .uiTableStaticText': {
+        height: v.UNIT * 10,
     },
 
     '.uiTableBody .uiTableStaticText': {
@@ -79,6 +87,5 @@ module.exports = v => ({
         ...v.ICON_SIZE('small'),
         ...v.SVG('google:navigation/last_page', v.INFOBOX_BUTTON_COLOR),
     },
-
 
 });

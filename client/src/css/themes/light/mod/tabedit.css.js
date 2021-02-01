@@ -60,4 +60,11 @@ module.exports = v => ({
 
     },
 
+    '.modTabeditFilter .uiIconButton': {
+        ...v.ICON_SIZE('tiny'),
+        ...v.SVG(v.SEARCH_ICON, v.BORDER_COLOR),
+    },
+
+
+
 });

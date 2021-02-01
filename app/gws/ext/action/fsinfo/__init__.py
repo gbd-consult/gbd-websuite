@@ -1,5 +1,8 @@
 """FS-Info."""
 
+import zipfile
+import io
+
 import gws
 import gws.common.action
 import gws.common.db
@@ -40,10 +43,19 @@ class GetGemarkungenResponse(t.Response):
     names: t.List[str]
 
 
-class RelationProps:
-    link: dict
-    person: dict
-    documents: t.List[dict]
+class DocumentProps(t.Props):
+    uid: str
+    personUid: str
+    title: str
+    size: int
+    filename: str
+
+
+class PersonProps(t.Props):
+    uid: str
+    title: str
+    description: str
+    documents: t.List[DocumentProps]
 
 
 class GetDetailsParams(t.Params):
@@ -52,27 +64,35 @@ class GetDetailsParams(t.Params):
 
 class GetDetailsResponse(t.Response):
     feature: t.FeatureProps
-    html: str
+    persons: t.List[PersonProps]
 
 
-class CreateDocumentParams(t.Params):
+class UploadFile(t.Data):
     data: bytes
     mimeType: str
-    personUid: str
     title: str
+    filename: str
 
 
-class UpdateDocumentParams(t.Params):
-    data: bytes
-    mimeType: str
-    documentUid: str
+class CheckUploadParams(t.Params):
+    personUid: str
+    titles: t.List[str]
+
+
+class CheckUploadResponse(t.Params):
+    existingTitles: t.List[str]
+
+
+class UploadParams(t.Params):
+    personUid: str
+    files: t.List[UploadFile]
+
+
+class UploadResponse(t.Response):
+    documentUids: t.List[str]
 
 
 class GetDocumentParams(t.Params):
-    documentUid: str
-
-
-class DocumentResponse(t.Params):
     documentUid: str
 
 
@@ -84,19 +104,19 @@ class DeleteDocumentResponse(t.Params):
     documentUid: str
 
 
-class DocumentProps(t.Props):
-    uid: str
-    title: str
-    pn: str
-    vorname: str
-    nachname: str
+class GetDocumentsResponse(t.Response):
+    persons: t.List[PersonProps]
 
 
-class GetDocumentsResponse(t.Params):
-    documents: t.List[DocumentProps]
+class DownloadParams(t.Params):
+    personUid: str
 
 
 class Object(gws.common.action.Object):
+    @property
+    def props(self):
+        return t.Props(enabled=True)
+
     def configure(self):
         super().configure()
 
@@ -105,6 +125,7 @@ class Object(gws.common.action.Object):
         self.document_table = self.db.configure_table(self.var('documentTable'))
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
         self.details_template: t.ITemplate = gws.common.template.find(self.templates, subject='fsinfo.details')
+        self.title_template: t.ITemplate = gws.common.template.find(self.templates, subject='fsinfo.title')
 
     def api_find_flurstueck(self, req: t.IRequest, p: FindFlurstueckParams) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
@@ -144,9 +165,12 @@ class Object(gws.common.action.Object):
 
         with self.db.connect() as conn:
             rs = conn.select(f'''
-                SELECT DISTINCT gemarkung
-                FROM {self.data_table.name}
-                ORDER BY gemarkung
+                SELECT 
+                    DISTINCT gemarkung
+                FROM 
+                    {self.data_table.name}
+                ORDER BY 
+                    gemarkung
             ''')
 
             return GetGemarkungenResponse(names=[r['gemarkung'] for r in rs])
@@ -162,41 +186,88 @@ class Object(gws.common.action.Object):
             raise gws.web.error.NotFound()
 
         feature = None
-        records = []
+        persons = []
+        docs = self._all_documents()
 
         for f in fs:
             if not feature:
                 feature = f
-            rec = f.attr_dict
-            rec['documents'] = []
-            records.append(rec)
+            data = f.attr_dict
 
-        for doc in self._get_documents():
-            for rec in records:
-                if rec['pn'] == doc['pn']:
-                    rec['documents'].append(doc)
+            persons.append(PersonProps(
+                uid=str(data['pn']),
+                title=self.title_template.render({
+                    'feature': feature,
+                    'data': data,
+                }).content,
+                description=self.details_template.render({
+                    'feature': feature,
+                    'data': data,
+                }).content,
+                documents=[d for d in docs if d.personUid == str(data['pn'])]
+            ))
 
-        html = self.details_template.render({
-            'feature': feature,
-            'records': records,
-        })
-
-        fprops = f.apply_templates(self.templates).props
+        fprops = feature.apply_templates(self.templates).props
         del fprops.attributes
 
-        return GetDetailsResponse(feature=fprops, html=html.content)
+        return GetDetailsResponse(feature=fprops, persons=persons)
 
-    def api_create_document(self, req: t.IRequest, p: CreateDocumentParams) -> DocumentResponse:
-        uid = self._insert_document(p.personUid, p.title, p, req)
-        return DocumentResponse(documentUid=str(uid))
+    def api_check_upload(self, req: t.IRequest, p: CheckUploadParams) -> CheckUploadResponse:
+        if not p.titles:
+            return CheckUploadResponse(existingTitles=[])
 
-    def api_update_document(self, req: t.IRequest, p: UpdateDocumentParams) -> DocumentResponse:
-        doc = self._get_document(p.documentUid)
-        if not doc:
-            raise gws.web.error.NotFound()
+        with self.db.connect() as conn:
+            rs = conn.select(f'''
+                SELECT 
+                    title
+                FROM
+                    {self.document_table.name}
+                WHERE
+                    title {_IN(p.titles)}
+                    AND deleted=0
+            ''', p.titles)
 
-        uid = self._insert_document(doc['pn'], doc['title'], p, req)
-        return DocumentResponse(documentUid=str(uid))
+            return CheckUploadResponse(existingTitles=[r['title'] for r in rs])
+
+    def api_upload(self, req: t.IRequest, p: UploadParams) -> UploadResponse:
+        titles = [f.title for f in p.files]
+        if not titles:
+            return UploadResponse(documentUids=[])
+
+        uids = []
+
+        with self.db.connect() as conn:
+            with conn.transaction():
+                conn.exec(f'''
+                    UPDATE 
+                        {self.document_table.name}
+                    SET
+                        deleted=1
+                    WHERE
+                    title {_IN(titles)}
+                ''', titles)
+
+                for f in p.files:
+                    rec = {
+                        'pn': p.personUid,
+                        'title': f.title,
+                        'mimetype': 'application/pdf',  ## @TODO
+                        'username': req.user.uid,
+                        'data': f.data,
+                        'filename': f.filename,
+                        'size': len(f.data),
+                    }
+
+                    uid = conn.insert_one(
+                        self.document_table.name,
+                        self.document_table.key_column,
+                        rec,
+                        with_id=True
+                    )
+
+                    uids.append(uid)
+
+        return UploadResponse(documentUids=uids)
 
     def api_delete_document(self, req: t.IRequest, p: DeleteDocumentParams) -> DeleteDocumentResponse:
         uid = p.documentUid
@@ -211,44 +282,96 @@ class Object(gws.common.action.Object):
             return DeleteDocumentResponse(documentUid=str(uid))
 
     def api_get_documents(self, req: t.IRequest, p: t.Params) -> GetDocumentsResponse:
-        docs = self._get_documents()
-        pns = set(str(d['pn']) for d in docs)
+        docs = self._all_documents()
+
+        if not docs:
+            return GetDocumentsResponse(persons=[])
+
+        person_uids = list(set(d.personUid for d in docs))
+        persons = []
 
         with self.db.connect() as conn:
             rs = conn.select(f'''
-                SELECT DISTINCT pn, nachname, vorname
-                FROM {self.data_table.name}
-                WHERE pn IN ({','.join(pns)})
-            ''')
-            pmap = {r['pn']: r for r in rs}
+                SELECT 
+                    *
+                FROM
+                    {self.data_table.name}
+                WHERE 
+                    pn {_IN(person_uids)}
+                ORDER BY
+                    nachname, vorname
+            ''', person_uids)
 
-        for doc in docs:
-            p = pmap[doc['pn']]
-            doc['uid'] = str(doc['uid'])
-            doc['nachname'] = p['nachname']
-            doc['vorname'] = p['vorname']
+            uids = set()
 
-        return GetDocumentsResponse(documents=docs)
+            for data in rs:
+                uid = str(data['pn'])
+
+                if uid in uids:
+                    continue
+                uids.add(uid)
+
+                persons.append(PersonProps(
+                    uid=uid,
+                    title=self.title_template.render({
+                        'data': data,
+                    }).content,
+                    description=self.details_template.render({
+                        'data': data,
+                    }).content,
+                    documents=[d for d in docs if d.personUid == uid]
+                ))
+
+        return GetDocumentsResponse(persons=persons)
 
     def http_get_document(self, req: t.IRequest, p: GetDocumentParams) -> t.HttpResponse:
-        doc = self._get_document(p.documentUid)
+        with self.db.connect() as conn:
+            doc = conn.select_one(f'''
+                SELECT 
+                    * 
+                FROM 
+                    {self.document_table.name} 
+                WHERE 
+                    {self.document_table.key_column} = %s
+                    AND deleted=0
+            ''', [p.documentUid])
+
         if not doc:
             raise gws.web.error.NotFound()
+
         return t.HttpResponse(
             mime=doc['mimetype'],
             content=doc['data']
         )
 
+    def http_get_download(self, req: t.IRequest, p: DownloadParams) -> t.HttpResponse:
+        with self.db.connect() as conn:
+            docs = list(conn.select(f'''
+                SELECT
+                    title, data
+                FROM
+                    {self.document_table.name}
+                WHERE
+                    pn = %s
+                    AND deleted=0
+                ORDER BY
+                    title
+            ''', [p.personUid]))
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+            for d in docs:
+                zf.writestr(d['title'], d['data'])
+
+        return t.HttpResponse(
+            mime='application/zip',
+            content=buf.getvalue(),
+        )
+
     ##
 
-    def _get_document(self, document_uid):
-        with self.db.connect() as conn:
-            return conn.select_one(f'''
-                SELECT * FROM {self.document_table.name} 
-                    WHERE {self.document_table.key_column} = %s
-            ''', [document_uid])
+    def _all_documents(self):
 
-    def _get_documents(self):
         with self.db.connect() as conn:
             rs = conn.select(f'''
                 SELECT
@@ -260,36 +383,17 @@ class Object(gws.common.action.Object):
                 WHERE
                     deleted=0
                 ORDER BY
-                    title,
-                    created DESC
+                    title
             ''')
+            return [
+                DocumentProps(
+                    uid=str(r['uid']),
+                    personUid=str(r['pn']),
+                    title=r['title'],
+                    size=r['size'],
+                    filename=r['filename'],
+                ) for r in rs]
 
-            # ignore previous versions of the same doc (pers-id+title)
-            seen = set()
-            docs = []
 
-            for r in rs:
-                key = (r['pn'], r['title'])
-                if key not in seen:
-                    docs.append(r)
-                    seen.add(key)
-
-            return docs
-
-    def _insert_document(self, person_uid, title, p, req):
-        rec = {
-            'pn': person_uid,
-            'title': title,
-            'mimetype': 'application/pdf',  ## @TODO
-            'username': req.user.uid,
-            'data': p.data,
-        }
-
-        with self.db.connect() as conn:
-            uid = conn.insert_one(
-                self.document_table.name,
-                self.document_table.key_column,
-                rec,
-                with_id=True
-            )
-            return uid
+def _IN(ls):
+    return 'IN(' + ','.join(['%s'] * len(ls)) + ')'
