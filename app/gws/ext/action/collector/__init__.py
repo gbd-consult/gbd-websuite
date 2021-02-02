@@ -218,6 +218,10 @@ class CollectionPrototype(gws.Object):
                     ip = self.item_prototype(itype)
                     if ip:
                         item.apply_data_model(ip.data_model)
+                        # @TODO
+                        for a in item.attributes:
+                            if a.type == 'bytes':
+                                a.value = None
                         iprops = item.props
                         iprops.type = itype
                         props.items.append(iprops)

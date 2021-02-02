@@ -317,5 +317,5 @@ module.exports = {
 
 
     modCollectorSidebarTitle: 'Baustellen',
-
+    modCollectorSaveButton: 'Speichern',
 };

@@ -340,8 +340,9 @@ class CollectorCollectionTab extends gws.View<CollectorViewProps> {
         let content = f => <gws.ui.Link
             whenTouched={() => {
                 cc.app.stopTool('Tool.Collector.Modify');
-                cc.selectItem(f, true)
-                cc.app.startTool('Tool.Collector.Modify');
+                cc.selectItem(f, true);
+                if (f.oFeature)
+                    cc.app.startTool('Tool.Collector.Modify');
 
             }}
             content={f.getAttribute('name') || f.proto.name}
@@ -580,8 +581,6 @@ class CollectorController extends gws.Controller {
                     item = it;
             }
         }
-
-        console.log('XXX', itemUid, item, collUid, coll)
 
         if (item) {
             this.selectItem(item, false);
