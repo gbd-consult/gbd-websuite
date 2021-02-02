@@ -75,7 +75,7 @@ export async function main() {
     let release = options.version.replace(/\.\d+$/, '');
     let lang = options.locale.split('_')[0];
 
-    options.defaultHelpUrl = `https://gws.gbd-consult.de/doc/${release}/help_${lang}.html`;
+    options.defaultHelpUrl = `https://gbd-websuite.de/doc/${release}/help_${lang}.html`;
 
     let app = await gws.Application.create(options);
     if (app) {
