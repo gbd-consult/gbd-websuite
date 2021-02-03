@@ -66,7 +66,7 @@ check
 
 banner "INSTALLING PYTHON PACKAGES"
 
-pip3 install argh Babel beautifulsoup4 Fiona lxml Mako MapProxy OWSLib Pillow psutil psycopg2-binary pycountry PyPDF2 pytest pytest-clarity python-ldap PyYAML requests Shapely uWSGI uwsgitop Wand Werkzeug
+pip3 install pyproj==2.3.1 argh Babel beautifulsoup4 Fiona lxml Mako MapProxy OWSLib Pillow psutil psycopg2-binary pycountry PyPDF2 pytest pytest-clarity python-ldap PyYAML requests Shapely uWSGI uwsgitop Wand Werkzeug
 
 check
 
