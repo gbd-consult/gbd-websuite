@@ -248,7 +248,7 @@ class _Parser:
                         'name': name,
                         'type_name': type(val).__name__,
                         'value': val,
-                        'line': line.strip()
+                        'line': line.strip(),
                     }
             return
 
@@ -261,7 +261,7 @@ class _Parser:
                     'name': name,
                     'type_node': node.annotation,
                     'value': val,
-                    'line': line.strip()
+                    'line': line.strip(),
                 }
             return
 
@@ -275,14 +275,14 @@ class _Parser:
                 return
 
             if node.decorator_list:
-                line = self.lines[node.lineno + 1]  # @TODO assuming a single decorator
+                line = self.lines[node.lineno]  # @TODO assuming a single decorator
                 if node.decorator_list[0].id in ('property', 'cached_property'):
                     if node.returns:
                         stub.members[node.name] = {
                             'kind': 'prop',
                             'name': node.name,
                             'type_node': node.returns,
-                            'line': line.strip()
+                            'line': line.strip(),
                         }
                     return
 
@@ -291,7 +291,7 @@ class _Parser:
                 'name': node.name,
                 'args': node.args,
                 'returns': node.returns,
-                'line': line.strip()
+                'line': line.strip(),
             }
 
     def node_name(self, node):
@@ -306,6 +306,9 @@ class _Parser:
 
         if _cls(node) == 'Str':
             return node.s
+
+        if _cls(node) == 'Constant':
+            return node.value
 
         raise Error('unknown name node', node)
 
@@ -325,7 +328,7 @@ class _Parser:
             return ['void']
 
         # foo: SomeType
-        if _cls(node) in ('Str', 'Name', 'Attribute'):
+        if _cls(node) in ('Str', 'Name', 'Attribute', 'Constant'):
             return [self.qname(node)]
 
         # foo: List[SomeType] => [List, [SomeType]]
@@ -376,6 +379,8 @@ def _value(node, strict=True):
         return node.s
     if cc == 'NameConstant':
         return node.value
+    if cc == 'Constant':
+        return node.value
     if cc == 'List':
         return [_value(e) for e in node.elts]
     if cc == 'Dict':
@@ -401,7 +406,7 @@ def _mod_name(path):
 def _docstring(node):
     try:
         b = node.body[0]
-        if _cls(b) == 'Expr' and _cls(b.value) == 'Str':
+        if _cls(b) == 'Expr' and _cls(b.value) in ('Constant', 'Str'):
             return b.value.s.strip()
     except:
         pass
