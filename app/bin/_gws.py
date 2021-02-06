@@ -23,6 +23,7 @@ import gws.common.auth.cli
 import gws.config.cli
 import gws.ext.action.bplan.cli
 import gws.ext.action.dprocon.cli
+import gws.ext.action.fsinfo.cli
 import gws.ext.action.gekos.cli
 import gws.ext.helper.alkis.cli
 import gws.gis.cache_cli
@@ -34,6 +35,7 @@ COMMANDS['bplan'] = [gws.ext.action.bplan.cli.read, gws.ext.action.bplan.cli.upd
 COMMANDS['cache'] = [gws.gis.cache_cli.clean, gws.gis.cache_cli.drop, gws.gis.cache_cli.seed, gws.gis.cache_cli.status]
 COMMANDS['config'] = [gws.config.cli.dump, gws.config.cli.dumpmeta, gws.config.cli.prepare, gws.config.cli.test]
 COMMANDS['dprocon'] = [gws.ext.action.dprocon.cli.setup]
+COMMANDS['fsinfo'] = [gws.ext.action.fsinfo.cli.read]
 COMMANDS['gekos'] = [gws.ext.action.gekos.cli.setup]
 COMMANDS['server'] = [gws.server.cli.configure, gws.server.cli.reconfigure, gws.server.cli.reload, gws.server.cli.start, gws.server.cli.stop]
 

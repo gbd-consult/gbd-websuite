@@ -16,6 +16,15 @@ function _master(obj: any) {
         return obj.props.controller.app.controller(MASTER) as FsinfoController;
 }
 
+function _formatFileName(s) {
+    return s.replace(/[_-]+/g, '$&\u200B');
+}
+
+function _formatDateDE(d) {
+    d = d.split(' ')[0].split('-');
+    return d[2] + '.' + d[1] + '.' + d[0];
+}
+
 interface SearchFormValues {
     gemarkung?: string;
     flur?: string;
@@ -33,7 +42,7 @@ interface Upload {
 interface UploadFormValues {
     personUid?: string;
     uploads?: Array<Upload>;
-    existingTitles?: Array<string>;
+    existingNames?: Array<string>;
 }
 
 interface DeleteFormValues {
@@ -70,6 +79,7 @@ interface FsinfoViewProps extends gws.types.ViewProps {
     fsinfoDetails: Details;
 
     fsinfoDialogMode: FsinfoDialogMode;
+    fsinfoUploadDialogStatus: string;
 
     fsinfoOpenState: object;
 }
@@ -88,6 +98,7 @@ const FsinfoStoreKeys = [
     'fsinfoDetails',
     'fsinfoDialogMode',
     'fsinfoOpenState',
+    'fsinfoUploadDialogStatus',
 ];
 
 class FsinfoSearchAuxButton extends gws.View<FsinfoViewProps> {
@@ -330,7 +341,10 @@ class FsinfoInfoBox extends gws.View<FsinfoInfoBoxProps> {
                     {p.documents.map((doc, n) => <Row key={n}>
                         <Cell flex>
                             <div className="modFsinfoDocumentName">
-                                {doc.title.replace(/[_-]+/g, '$&\u200B')}
+                                {_formatFileName(doc.title || doc.filename)}
+                            </div>
+                            <div className="modFsinfoDocumentDate">
+                                {_formatDateDE(doc.created)}
                             </div>
                         </Cell>
                         <Cell>
@@ -383,6 +397,9 @@ class FsinfoDetailsTab extends gws.View<FsinfoViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
+                <div className="modFsinfoInfoHead">
+                    {feature.elements.title}
+                </div>
                 {details.persons.map(p => <FsinfoInfoBox
                     {...this.props}
                     key={tab + p.uid}
@@ -475,7 +492,7 @@ class FsinfoDialog extends gws.View<FsinfoViewProps> {
     uploadDialog() {
         let cc = _master(this);
         let form = this.props.fsinfoUploadFormValues;
-        let uploads = form.uploads || [];
+        let uploads: Array<Upload> = form.uploads || [];
 
         let update = uploads =>
             cc.update({
@@ -484,7 +501,7 @@ class FsinfoDialog extends gws.View<FsinfoViewProps> {
 
         let uploaded = (flist: FileList) => {
             update(uploads.concat(
-                [].slice.call(flist, 0).map(file => ({file, title: file.name}))
+                [].slice.call(flist, 0).map(file => ({file}))
             ));
         }
 
@@ -528,6 +545,17 @@ class FsinfoDialog extends gws.View<FsinfoViewProps> {
                         value={null}
                     />
                 </Cell>
+                <Cell flex/>
+                <Cell>
+                    {
+                        this.props.fsinfoUploadDialogStatus === 'wait'
+                        && <gws.ui.Loader/>
+                    }
+                    {
+                        this.props.fsinfoUploadDialogStatus === 'error'
+                        && <gws.ui.Error text={cc.STRINGS.errorGeneric}/>
+                    }
+                </Cell>
             </Row>
 
             <div className="modFsinfoFileList">
@@ -535,8 +563,14 @@ class FsinfoDialog extends gws.View<FsinfoViewProps> {
                         <Cell flex>
                             <gws.ui.TextInput
                                 value={u.title}
+                                placeholder={'Titel'}
                                 whenChanged={v => titleChanged(n, v)}
                             />
+                        </Cell>
+                        <Cell>
+                            <div className="modFsinfoUploadFileName">
+                                {_formatFileName(u.file.name)}
+                            </div>
                         </Cell>
                         <Cell>
                             <gws.ui.Button
@@ -553,7 +587,7 @@ class FsinfoDialog extends gws.View<FsinfoViewProps> {
     confirmOverwriteDialog() {
         let cc = _master(this);
         let form = this.props.fsinfoUploadFormValues;
-        let titles = form.existingTitles || [];
+        let titles = form.existingNames || [];
 
         let ok = <gws.ui.Button
             className="cmpButtonFormOk"
@@ -810,7 +844,8 @@ class FsinfoController extends gws.Controller {
     startUpload(personUid: string) {
         this.update({
             fsinfoUploadFormValues: {personUid},
-            fsinfoDialogMode: 'uploadDoc'
+            fsinfoDialogMode: 'uploadDoc',
+            fsinfoUploadDialogStatus: null,
         })
     }
 
@@ -823,15 +858,15 @@ class FsinfoController extends gws.Controller {
             return;
 
         let params = {
-            titles: uploads.map(u => u.title),
+            names: uploads.map(u => u.file.name || ''),
             personUid: form.personUid,
         }
 
         let res = await this.app.server.fsinfoCheckUpload(params);
 
-        if (!gws.tools.empty(res.existingTitles)) {
+        if (!gws.tools.empty(res.existingNames)) {
             this.update({
-                fsinfoUploadFormValues: {...form, existingTitles: res.existingTitles},
+                fsinfoUploadFormValues: {...form, existingNames: res.existingNames},
                 fsinfoDialogMode: 'confirmOverwrite',
             });
             return;
@@ -841,6 +876,11 @@ class FsinfoController extends gws.Controller {
     }
 
     async uploadFormSubmit() {
+        this.update({
+            fsinfoDialogMode: 'uploadDoc',
+            fsinfoUploadDialogStatus: null,
+        });
+
         let form: UploadFormValues = this.getValue('fsinfoUploadFormValues');
         let uploads = form.uploads;
 
@@ -852,6 +892,10 @@ class FsinfoController extends gws.Controller {
             files: [],
         }
 
+        this.update({
+            fsinfoUploadDialogStatus: 'wait'
+        });
+
         for (let u of uploads) {
             params.files.push({
                 title: u.title,
@@ -862,12 +906,24 @@ class FsinfoController extends gws.Controller {
         }
 
         let res = await this.app.server.fsinfoUpload(params, {binary: true});
+
+        if (res.error) {
+            this.update({
+                fsinfoUploadDialogStatus: 'error'
+            });
+            return;
+        }
+
+
         this.afterDialog();
     }
 
 
     uploadConfirmCancel() {
-        this.update({fsinfoDialogMode: 'uploadDoc'});
+        this.update({
+            fsinfoDialogMode: 'uploadDoc',
+            fsinfoUploadDialogStatus: null,
+        });
     }
 
     downloadDocuments(personUid: string) {
@@ -880,7 +936,7 @@ class FsinfoController extends gws.Controller {
     viewDocument(doc: gws.api.FsinfoDocumentProps) {
         this.sendFile(
             '/_/cmd/fsinfoHttpGetDocument/projectUid/' + this.app.project.uid + '/documentUid/' + doc.uid,
-            doc.title
+            doc.filename
         );
     }
 
