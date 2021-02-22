@@ -39,33 +39,29 @@ def pretty_errors():
         _perr(ln)
         _perr('CONFIGURATION ERROR')
         _perr(e.args[0])
-        _perr('path : %s' % e.args[1])
-        _perr('key  : %s' % e.args[2])
-        _perr('value: %s' % e.args[3])
         _perr(ln)
+        _perr('path  : %s' % e.args[1])
+        _perr('value : %s' % e.args[3])
+        _perr(ln)
+        _perr(e.args[2])
         raise
     except gws.config.error.LoadError as e:
-        _perr(ln)
         _perr('CONFIGURATION ERROR')
         _perr_error(e)
-        _perr(ln)
         raise
     except gws.config.error.MapproxyConfigError as e:
-        _perr(ln)
         _perr('MAPPROXY CONFIGURATION ERROR')
         _perr_error(e)
-        _perr(ln)
         raise
     except Exception as e:
-        _perr(ln)
         _perr('SYSTEM ERROR')
         _perr_error(e)
-        _perr(ln)
         raise
 
 
-def _perr(s):
-    gws.log.error(s)
+def _perr(msg):
+    for s in gws.lines(str(msg)):
+        gws.log.error(s)
 
 
 def _perr_error(e):

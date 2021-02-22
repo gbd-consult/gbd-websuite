@@ -10,18 +10,9 @@ import gws.web.wrappers
 
 import gws.types as t
 
-try:
-    gws.config.loader.load()
-except:
-    gws.log.error('UNABLE TO LOAD CONFIGURATION')
-    gws.log.exception()
-    gws.exit(255)
-
-
 def application(environ, start_response):
     res = t.cast(gws.web.wrappers.BaseResponse, _handle_request(environ))
     return res(environ, start_response)
-
 
 ##
 
@@ -188,3 +179,14 @@ def _find_site(environ, root):
 
     # there must be a '*' site (see application.config)
     raise ValueError('unknown host', host)
+
+
+##
+
+try:
+    root = gws.config.loader.load()
+    gws.log.set_level(root.application.var('server.logLevel'))
+except:
+    gws.log.error('UNABLE TO LOAD CONFIGURATION')
+    gws.log.exception()
+    gws.exit(255)

@@ -2,7 +2,6 @@
 
 import json
 import os
-import re
 
 import yaml
 
@@ -67,11 +66,13 @@ def parse_main(path):
 
 def _read(path):
     if not os.path.isfile(path):
-        raise error.ParseError('file not found', path, '', '')
+        raise error.ParseError('file not found', path, '', None)
     try:
         dct, paths = _read2(path)
+    except error.ParseError:
+        raise
     except Exception as e:
-        raise error.ParseError('read error: %s' % e, path, '', '') from e
+        raise error.ParseError('read error: %s' % e, path, '', None) from e
 
     _save_intermediate(path, json.dumps(dct, indent=4), 'json')
     return dct, paths
@@ -101,9 +102,11 @@ def _read2(path):
 
 def _parse_cx_config(path):
     paths = {path}
+    runtime_exc = []
 
     def _err(exc, path, line):
-        return _syntax_error(gws.read_file(path), repr(exc), line)
+        if not runtime_exc:
+            runtime_exc.append(_syntax_error(path, gws.read_file(path), repr(exc), line))
 
     def _finder(cur_path, p):
         if not os.path.isabs(p):
@@ -119,27 +122,29 @@ def _parse_cx_config(path):
             finder=_finder
         )
     except chartreux.compiler.Error as e:
-        return _syntax_error(gws.read_file(e.path), e.message, e.line)
+        raise _syntax_error(path, gws.read_file(e.path), e.message, e.line)
 
     src = chartreux.call(
         tpl,
         context={'true': True, 'false': False},
         error=_err)
 
+    if runtime_exc:
+        raise runtime_exc[0]
+
     _save_intermediate(path, src, 'slon')
 
     try:
         dct = slon.loads(src, as_object=True)
     except slon.SlonError as e:
-        return _syntax_error(src, e.args[0], e.args[2])
+        raise _syntax_error(path, src, e.args[0], e.args[2])
 
     return dct, list(paths)
 
 
-def _syntax_error(src, message, line, context=10):
-    gws.log.error('CONFIGURATION SYNTAX ERROR')
-    gws.log.error(message)
-    gws.log.error('-' * 40)
+def _syntax_error(path, src, message, line, context=10):
+    lines = []
+
     for n, t in enumerate(src.splitlines(), 1):
         if n < line - context:
             continue
@@ -148,8 +153,9 @@ def _syntax_error(src, message, line, context=10):
         t = str(n) + ': ' + t
         if n == line:
             t = '>>>' + t
-        gws.log.error(t)
-    raise ValueError('syntax error')
+        lines.append(t)
+
+    return error.ParseError(message, path, '\n'.join(lines), None)
 
 
 def _save_intermediate(path, txt, ext):

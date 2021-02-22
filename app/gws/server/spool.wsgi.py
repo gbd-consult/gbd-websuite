@@ -33,6 +33,12 @@ def spooler(env):
     return gws.SPOOL_OK
 
 
-root = gws.config.loader.load()
-root.application.monitor.start()
-uwsgi.spooler = spooler
+try:
+    root = gws.config.loader.load()
+    gws.log.set_level(root.application.var('server.logLevel'))
+    root.application.monitor.start()
+    uwsgi.spooler = spooler
+except:
+    gws.log.error('UNABLE TO LOAD CONFIGURATION')
+    gws.log.exception()
+    gws.exit(255)

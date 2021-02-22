@@ -24,7 +24,7 @@ class SpecValidator:
 
     def read_value(self, val, type_name, path='', strict=True):
         reader = _Reader(self.spec, path, strict)
-        return reader.read(val, type_name)
+        return reader.read_main(val, type_name)
 
 
 ##
@@ -33,15 +33,45 @@ class _Reader:
     def __init__(self, spec, path, strict):
         self.spec = spec
         self.path = path
-        self.keys = []
+        self.stack = []
         self.strict = strict
         self.handlers = _HANDLERS
 
     def error(self, code, msg, val):
-        val = repr(val)
-        if len(val) > 600:
-            val = val[:600] + '...'
-        raise Error(code + ': ' + msg, self.path, '.'.join(str(k) for k in self.keys), val)
+        def _short(v):
+            v = repr(v)
+            if len(v) > 600:
+                v = v[:600] + '...'
+            return v
+
+        def _item(name, v):
+            m = repr(name)
+            if m.isdigit():
+                m = 'item ' + m
+            m = 'in ' + m
+
+            for p in 'uid', 'title', 'type':
+                try:
+                    s = v.get(p)
+                    if s is not None:
+                        return f'{m} ({p}={s!r})'
+                except:
+                    pass
+
+            return m
+
+        raise Error(
+            code + ': ' + msg,
+            self.path,
+            '\n'.join(_item(name, v) for name, v in self.stack),
+            _short(val))
+
+    def read_main(self, val, type_name):
+        self.stack.append((type_name, val))
+        try:
+            return self.read(val, type_name)
+        finally:
+            self.stack.pop()
 
     def read(self, val, type_name):
         if type_name in self.handlers:
@@ -120,17 +150,19 @@ def _read_object(rd, val, spec):
 
     for p in spec['props']:
         name = p['name']
-        rd.keys.append(name)
+        pval = val.get(name if rd.strict else name.lower())
+        rd.stack.append((name, pval))
         try:
-            res[name] = _property_value(rd, val.get(name if rd.strict else name.lower()), p)
+            res[name] = _property_value(rd, pval, p)
         finally:
-            rd.keys.pop()
+            rd.stack.pop()
 
     if rd.strict:
         names = set(p['name'] for p in spec['props'])
-        unknown = [key for key in val if key not in names]
+        unknown = [k for k in val if k not in names]
         if unknown:
-            return rd.error('ERR_UNKNOWN_PROP', f"unknown properties: {_comma(unknown)}, expected {_comma(names)}", val)
+            w = 'property' if len(unknown) == 1 else 'properties'
+            return rd.error('ERR_UNKNOWN_PROP', f"unknown {w}: {_comma(unknown)}, expected {_comma(names)}", val)
 
     return t.Data(res)
 
@@ -165,11 +197,11 @@ def _read_list(rd, val, spec):
     res = []
 
     for n, v in enumerate(val):
-        rd.keys.append(n)
+        rd.stack.append((n, v))
         try:
             res.append(rd.read(v, spec['bases'][0]))
         finally:
-            rd.keys.pop()
+            rd.stack.pop()
 
     return res
 
@@ -187,11 +219,11 @@ def _read_tuple(rd, val, spec):
     res = []
 
     for n, v in enumerate(val):
-        rd.keys.append(n)
+        rd.stack.append((n, v))
         try:
             res.append(rd.read(v, spec['bases'][n]))
         finally:
-            rd.keys.pop()
+            rd.stack.pop()
 
     return res
 

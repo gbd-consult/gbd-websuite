@@ -28,11 +28,16 @@ class Level(t.Enum):
 
 class _Logger(logging.Logger):
     def exception(self, msg='', *args, **kwargs):
-        s = err.string()
-        if msg:
-            s = msg + ':\n' + s
-        for k in s.split('\n'):
-            self.fatal(k, extra={'skip_frames': 1})
+        _, exc, _ = sys.exc_info()
+
+        self.fatal('EXCEPTION: ' + repr(exc), extra={'skip_frames': 1})
+
+        if self.isEnabledFor(Level.DEBUG):
+            s = err.string()
+            if msg:
+                s = msg + ':\n' + s
+            for k in s.split('\n'):
+                self.fatal(k, extra={'skip_frames': 1})
 
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
         if _logger.disabled:
@@ -44,7 +49,7 @@ class _Logger(logging.Logger):
 
         filename, lineno, func = '', 0, ''
 
-        if self.isEnabledFor(logging.DEBUG):
+        if self.isEnabledFor(Level.DEBUG):
             skip_frames = 0
 
             try:
