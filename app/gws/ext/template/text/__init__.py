@@ -14,7 +14,14 @@ class Config(gws.common.template.Config):
 
 class Object(gws.common.template.Object):
 
-    def render(self, context: dict, mro: t.MapRenderOutput = None, out_path: str = None, legends: dict = None, format: str = None) -> t.TemplateOutput:
+    def render(self, context, format=None):
+        context = context or {}
+
+        context['gws'] = {
+            'version': gws.VERSION,
+            'endpoint': gws.SERVER_ENDPOINT,
+        }
+
         def err(e, path, line):
             gws.log.warn(f'TEMPLATE: {e.__class__.__name__}:{e} in {path}:{line}')
 
@@ -25,10 +32,9 @@ class Object(gws.common.template.Object):
 
         content = chartreux.render(
             text,
-            self.prepare_context(context),
+            context,
             path=self.path or '<string>',
             error=err,
         )
 
-        mime = self.mime_types[0] if self.mime_types else 'text/plain'
-        return t.TemplateOutput(content=content, mime=mime)
+        return t.Data({'content': content})

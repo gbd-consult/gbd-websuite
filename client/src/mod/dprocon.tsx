@@ -54,7 +54,7 @@ class DproconToolbarButton extends toolbar.Button {
             });
 
             if (res.url) {
-                this.app.navigate(res.url);
+                this.app.navigate(res.url, '_blank');
             }
         }
     }

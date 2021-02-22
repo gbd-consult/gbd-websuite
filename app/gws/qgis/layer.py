@@ -44,7 +44,7 @@ class Object(gws.common.layer.Group):
         # by default, take the top-level layers as groups
         slf = self.var('rootLayers') or gws.gis.source.LayerFilter(level=1)
         self.root_layers = gws.gis.source.filter_layers(self.provider.source_layers, slf)
-
+        self.exclude_layers = self.var('excludeLayers')
         self.flatten = self.var('flattenLayers')
         self.custom_layer_config = self.var('layerConfig', default=[])
 
@@ -62,7 +62,7 @@ class Object(gws.common.layer.Group):
         self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
 
     def _layer(self, sl: t.SourceLayer, depth: int):
-        if self.var('excludeLayers') and gws.gis.source.layer_matches(sl, self.var('excludeLayers')):
+        if self.exclude_layers and gws.gis.source.layer_matches(sl, self.exclude_layers):
             return
 
         if sl.is_group:

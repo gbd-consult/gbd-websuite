@@ -134,13 +134,30 @@ module.exports = v => ({
 
     '.modFsinfoDocumentName': {
         fontSize: v.SMALL_FONT_SIZE,
-        padding: v.UNIT4,
+        padding: [v.UNIT4, v.UNIT4, 0, v.UNIT4],
+    },
+
+    '.modFsinfoDocumentDate': {
+        fontSize: v.TINY_FONT_SIZE,
+        padding: [v.UNIT4, v.UNIT4, v.UNIT4, v.UNIT4],
     },
 
     '.modFsinfoDialogMessage': {
         fontWeight: 800,
         padding: v.UNIT4,
-    }
+    },
+
+    '.modFsinfoUploadFileName': {
+        width: 150,
+        padding: [0, 10],
+        fontSize: v.SMALL_FONT_SIZE,
+
+    },
+
+    '.modFsinfoInfoHead': {
+        paddingBottom: v.UNIT4,
+        fontWeight: 800,
+    },
 
 
 });

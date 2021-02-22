@@ -55,9 +55,12 @@ class Object(gws.common.layer.ImageTile):
 
     @property
     def own_bounds(self):
-        return t.Bounds(
-            crs=self.service.crs,
-            extent=self.service.extent)
+        # in the "native" projection, use the service extent
+        # otherwise, the map extent
+        if self.service.crs == self.crs:
+            return t.Bounds(
+                crs=self.service.crs,
+                extent=self.service.extent)
 
     def mapproxy_config(self, mc, options=None):
         # we use {x} like in Ol, mapproxy wants %(x)s

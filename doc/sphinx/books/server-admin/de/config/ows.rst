@@ -1,7 +1,7 @@
 OWS Dienste
 ===========
 
-Die GBD WebSuite kann als OWS (OGC Web Services) Server fungieren. Sie können diese Dienste für jedes Projekt frei konfigurieren.
+Die GBD WebSuite kann als OWS (OGC Web Services) Server fungieren. Sie können diese Dienste für jedes Projekt frei konfigurieren. Wenn mehrere Versionen für einen OWS unterstützt werden, antwortet der Server immer mit der Version die angefragt wird, d.h. wenn z.B. http://host.de/wms?service=WMS&version=1.1.1 aufgerufen wird, erfolgt die Ausgabe in der Version 1.1.1.
 
 Aktion ``ows``
 --------------

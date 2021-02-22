@@ -2,6 +2,7 @@
 
 import zipfile
 import io
+import re
 
 import gws
 import gws.common.action
@@ -12,6 +13,7 @@ import gws.ext.helper.alkis
 import gws.gis.proj
 import gws.gis.shape
 import gws.web.error
+import gws.tools.os2
 
 import gws.types as t
 
@@ -49,6 +51,7 @@ class DocumentProps(t.Props):
     title: str
     size: int
     filename: str
+    created: str
 
 
 class PersonProps(t.Props):
@@ -76,11 +79,11 @@ class UploadFile(t.Data):
 
 class CheckUploadParams(t.Params):
     personUid: str
-    titles: t.List[str]
+    names: t.List[str]
 
 
 class CheckUploadResponse(t.Params):
-    existingTitles: t.List[str]
+    existingNames: t.List[str]
 
 
 class UploadParams(t.Params):
@@ -194,18 +197,19 @@ class Object(gws.common.action.Object):
                 feature = f
             data = f.attr_dict
 
-            persons.append(PersonProps(
-                uid=str(data['pn']),
-                title=self.title_template.render({
-                    'feature': feature,
-                    'data': data,
-                }).content,
-                description=self.details_template.render({
-                    'feature': feature,
-                    'data': data,
-                }).content,
-                documents=[d for d in docs if d.personUid == str(data['pn'])]
-            ))
+            if data['pn']:
+                persons.append(PersonProps(
+                    uid=str(data['pn']),
+                    title=self.title_template.render({
+                        'feature': feature,
+                        'data': data,
+                    }).content,
+                    description=self.details_template.render({
+                        'feature': feature,
+                        'data': data,
+                    }).content,
+                    documents=[d for d in docs if d.personUid == str(data['pn'])]
+                ))
 
         fprops = feature.apply_templates(self.templates).props
         del fprops.attributes
@@ -213,60 +217,24 @@ class Object(gws.common.action.Object):
         return GetDetailsResponse(feature=fprops, persons=persons)
 
     def api_check_upload(self, req: t.IRequest, p: CheckUploadParams) -> CheckUploadResponse:
-        if not p.titles:
-            return CheckUploadResponse(existingTitles=[])
+        if not p.names:
+            return CheckUploadResponse(existingNames=[])
 
         with self.db.connect() as conn:
             rs = conn.select(f'''
                 SELECT 
-                    title
+                    filename
                 FROM
                     {self.document_table.name}
                 WHERE
-                    title {_IN(p.titles)}
+                    filename {_IN(p.names)}
                     AND deleted=0
-            ''', p.titles)
+            ''', p.names)
 
-            return CheckUploadResponse(existingTitles=[r['title'] for r in rs])
+            return CheckUploadResponse(existingNames=[r['filename'] for r in rs])
 
     def api_upload(self, req: t.IRequest, p: UploadParams) -> UploadResponse:
-        titles = [f.title for f in p.files]
-        if not titles:
-            return UploadResponse(documentUids=[])
-
-        uids = []
-
-        with self.db.connect() as conn:
-            with conn.transaction():
-                conn.exec(f'''
-                    UPDATE 
-                        {self.document_table.name}
-                    SET
-                        deleted=1
-                    WHERE
-                    title {_IN(titles)}
-                ''', titles)
-
-                for f in p.files:
-                    rec = {
-                        'pn': p.personUid,
-                        'title': f.title,
-                        'mimetype': 'application/pdf',  ## @TODO
-                        'username': req.user.uid,
-                        'data': f.data,
-                        'filename': f.filename,
-                        'size': len(f.data),
-                    }
-
-                    uid = conn.insert_one(
-                        self.document_table.name,
-                        self.document_table.key_column,
-                        rec,
-                        with_id=True
-                    )
-
-                    uids.append(uid)
-
+        uids = self._do_upload(p, req.user.uid)
         return UploadResponse(documentUids=uids)
 
     def api_delete_document(self, req: t.IRequest, p: DeleteDocumentParams) -> DeleteDocumentResponse:
@@ -348,7 +316,7 @@ class Object(gws.common.action.Object):
         with self.db.connect() as conn:
             docs = list(conn.select(f'''
                 SELECT
-                    title, data
+                    filename, data
                 FROM
                     {self.document_table.name}
                 WHERE
@@ -361,14 +329,81 @@ class Object(gws.common.action.Object):
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
             for d in docs:
-                zf.writestr(d['title'], d['data'])
+                zf.writestr(d['filename'], d['data'])
 
         return t.HttpResponse(
             mime='application/zip',
             content=buf.getvalue(),
         )
 
+    def do_read(self, base_dir):
+        by_pn = {}
+
+        for path in gws.tools.os2.find_files(base_dir, ext='pdf'):
+            rp = gws.tools.os2.rel_path(path, base_dir)
+            m = re.match(r'^(\d+)/', rp)
+            if not m:
+                gws.log.warn(f'{path!r} - no pn found')
+                continue
+            pn = m.group(1)
+            if pn not in by_pn:
+                by_pn[pn] = []
+            by_pn[pn].append(path)
+
+        for pn, paths in by_pn.items():
+            params = UploadParams(
+                personUid=pn,
+                files=[]
+            )
+            for path in paths:
+                params.files.append(UploadFile(
+                    data=gws.read_file_b(path),
+                    mimeType='application/pdf',
+                    title='',
+                    filename=gws.tools.os2.parse_path(path)['filename'],
+                ))
+            self._do_upload(params, 'script')
+
     ##
+
+    def _do_upload(self, p: UploadParams, user_uid):
+
+        names = [f.filename for f in p.files]
+        uids = []
+
+        with self.db.connect() as conn:
+            with conn.transaction():
+                conn.exec(f'''
+                    UPDATE 
+                        {self.document_table.name}
+                    SET
+                        deleted=1
+                    WHERE
+                        filename {_IN(names)}
+                ''', names)
+
+                for f in p.files:
+                    rec = {
+                        'pn': p.personUid,
+                        'title': f.title,
+                        'mimetype': 'application/pdf',  ## @TODO
+                        'username': user_uid,
+                        'data': f.data,
+                        'filename': f.filename,
+                        'size': len(f.data),
+                    }
+
+                    uid = conn.insert_one(
+                        self.document_table.name,
+                        self.document_table.key_column,
+                        rec,
+                        with_id=True
+                    )
+
+                    gws.log.info(f'INSERT pn={p.personUid!r} file={f.filename!r} uid={uid!r}')
+                    uids.append(uid)
+
+        return uids
 
     def _all_documents(self):
 
@@ -392,6 +427,7 @@ class Object(gws.common.action.Object):
                     title=r['title'],
                     size=r['size'],
                     filename=r['filename'],
+                    created=r['created'],
                 ) for r in rs]
 
 
