@@ -410,9 +410,12 @@ class Object(gws.common.action.Object):
         with self.db.connect() as conn:
             rs = conn.select(f'''
                 SELECT
-                    *,
                     {self.document_table.key_column} as uid,
-                    '' AS data
+                    pn,
+                    title,
+                    size,
+                    filename,
+                    created
                 FROM
                     {self.document_table.name}
                 WHERE
