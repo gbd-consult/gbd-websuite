@@ -258,38 +258,72 @@ class HomeLinkWidget extends LinkWidget {
     }
 }
 
-const ABOUT_URL = 'https://gws.gbd-consult.de/';
+interface AboutViewProps extends gws.types.ViewProps {
+    controller: AboutWidget;
+    aboutDialogMode: string;
+}
 
-class AboutWidget extends LinkWidget {
+const AboutStoreKeys = [
+    'aboutDialogMode',
+];
 
-    get defaultView() {
-        this.options = {
-            ...this.options,
-            href: ABOUT_URL,
-            target: 'blank',
-            title: this.__('modInfobarAboutTitle'),
-            className: 'modInfobarAboutButton',
-        };
-        return this.createElement(LinkButtonView, this.options);
+
+class AboutDialog extends gws.View<AboutViewProps> {
+    render() {
+        let cc = this.props.controller;
+
+        let mode = this.props.aboutDialogMode;
+        if (!mode)
+            return null;
+
+        let close = () => cc.update({aboutDialogMode: null});
+        let ok = <gws.ui.Button
+            className="cmpButtonFormOk"
+            whenTouched={close}
+            primary
+        />;
+
+        let content = <div className="modAboutDialogContent">
+            <Row>
+                <Cell flex/>
+                <Cell><gws.ui.Button/></Cell>
+                <Cell flex/>
+            </Row>
+
+            <div className="p1">GBD WebSuite</div>
+            <div className="p3">Version {this.app.options.version}</div>
+            <div className="p4">&copy; Geoinformatikbüro Dassau GmbH 2006–2021</div>
+            <div className="p2">
+                <a href="https://gbd-websuite.de/" target="_blank">gbd-websuite.de</a>
+            </div>
+        </div>;
+
+        return <gws.ui.Dialog
+            className="modAboutDialog"
+            buttons={[ok]}
+        >{content}</gws.ui.Dialog>
     }
 }
 
-// class LeftSide extends gws.Controller {
-//
-//     get defaultView() {
-//         return <React.Fragment>
-//             {this.renderChildren()}
-//             <Cell flex/>
-//         </React.Fragment>
-//     }
-// }
-//
-// class RightSide extends gws.Controller {
-//
-//     get defaultView() {
-//         return this.renderChildren();
-//     }
-// }
+
+class AboutWidget extends gws.Controller {
+
+    get appOverlayView() {
+        return this.createElement(
+            this.connect(AboutDialog, AboutStoreKeys));
+    }
+
+    touched() {
+        this.update({aboutDialogMode: 'on'})
+    }
+
+    get defaultView() {
+        let options = {
+            className: 'modInfobarAboutButton',
+        };
+        return this.createElement(LinkButtonView, options);
+    }
+}
 
 class InfobarController extends gws.Controller {
 
@@ -298,12 +332,16 @@ class InfobarController extends gws.Controller {
             {this.renderChildren()}
         </div>;
     }
+
+    get appOverlayView() {
+        return <div>
+            {this.renderChildren('appOverlayView')}
+        </div>;
+    }
 }
 
 export const tags = {
     'Infobar': InfobarController,
-    // 'Infobar.LeftSide': LeftSide,
-    // 'Infobar.RightSide': RightSide,
     'Infobar.Link': LinkWidget,
     'Infobar.Help': HelpWidget,
     'Infobar.About': AboutWidget,

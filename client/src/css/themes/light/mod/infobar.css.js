@@ -139,6 +139,43 @@ module.exports = v => ({
         backgroundPosition: 'center center',
         backgroundSize: [20, 20],
         ...v.SVG('gws_logo'),
-    }
+    },
+
+    '.uiDialog.modAboutDialog': {
+        [v.MEDIA('large+')]: {
+            ...v.CENTER_BOX(400, 350),
+        },
+        '.modAboutDialogContent': {
+            textAlign: 'center',
+            '.uiIconButton': {
+                width: 80,
+                opacity: 1,
+                height: 80,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center center',
+                backgroundSize: [80, 80],
+                ...v.SVG('gws_logo'),
+                marginBottom: 20,
+            },
+            '.p1': {
+                fontSize: v.BIG_FONT_SIZE,
+                marginTop: 10,
+            },
+            '.p2': {
+                fontSize: v.NORMAL_FONT_SIZE,
+                marginTop: 10,
+            },
+            '.p3': {
+                fontSize: v.SMALL_FONT_SIZE,
+                fontWeight: 800,
+                marginTop: 10,
+            },
+            '.p4': {
+                fontSize: v.SMALL_FONT_SIZE,
+                marginTop: 10,
+            },
+        }
+    },
+
 
 });
