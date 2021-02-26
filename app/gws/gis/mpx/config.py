@@ -9,9 +9,14 @@ import gws.tools.json2
 
 import gws.types as t
 
+_TMP_DIR = gws.TMP_DIR + '/mpx'
+
+
 class _Config:
     def __init__(self):
         self.c = 0
+
+        gws.ensure_dir(_TMP_DIR)
 
         self.services = {
             'wms': {
@@ -33,8 +38,8 @@ class _Config:
             },
             'cache': {
                 'base_dir': gws.MAPPROXY_CACHE_DIR,
-                'lock_dir': gws.TMP_DIR + '/mpx/locks_' + gws.random_string(16),
-                'tile_lock_dir': gws.TMP_DIR + '/mpx/tile_locks_' + gws.random_string(16),
+                'lock_dir': _TMP_DIR + '/locks_' + gws.random_string(16),
+                'tile_lock_dir': _TMP_DIR + '/tile_locks_' + gws.random_string(16),
                 'concurrent_tile_creators': 1,
                 'max_tile_limit': 5000,
 
@@ -125,7 +130,7 @@ def create(root: t.IRootObject):
     mc = _Config()
 
     r: t.ILayer
-    for r  in root.find_all('gws.ext.layer'):
+    for r in root.find_all('gws.ext.layer'):
         r.mapproxy_config(mc)
 
     cfg = mc.as_dict()
