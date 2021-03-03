@@ -125,9 +125,11 @@ class Object(gws.common.action.Object):
 
         for f in features:
             f.apply_data_model(tbl.data_model)
-            if not attributes:
-                attributes = f.attributes
             records.append([a.value for a in f.attributes])
+            if not attributes:
+                for a in f.attributes:
+                    del a.value
+                attributes = f.attributes
 
         return LoadDataResponse(
             tableUid=tbl.uid,

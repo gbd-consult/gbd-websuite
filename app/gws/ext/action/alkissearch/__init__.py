@@ -69,6 +69,13 @@ class UiStrasseListMode(t.Enum):
     withGemarkungIfRepeated = 'withGemarkungIfRepeated'  #: "strasse" ("gemarkung"), when needed for disambiguation
 
 
+class UiBblattSearchMode(t.Enum):
+    start = 'start'  #: search from the beginning
+    end = 'end'  #: search from the end
+    any = 'any'  #: search anywhere
+    exact = 'exact'  #: exact search
+
+
 class UiStrasseSearchMode(t.Enum):
     start = 'start'  #: search from the beginning
     any = 'any'  #: search anywhere
@@ -86,6 +93,7 @@ class UiConfig(t.Config):
     strasseListMode: UiStrasseListMode = 'plain'  #: strasse list entry format
     strasseSearchMode: UiStrasseSearchMode = 'start'  #: strasse search mode
     autoSpatialSearch: bool = False  #: activate spatial search after submit
+    bblattSearchMode: UiBblattSearchMode = 'any'  #: buchungsblatt search mode
 
 
 class Config(t.WithTypeAndAccess):
@@ -490,6 +498,8 @@ class Object(gws.common.action.Object):
 
         if soft_limit:
             fq.limit = soft_limit
+
+        fq.bblattMode = self.ui.get('bblattSearchMode', 'any')
 
         res = self.alkis.find_flurstueck(fq)
 

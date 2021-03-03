@@ -60,6 +60,7 @@ class FindFlurstueckQuery(BaseQuery):
     withBuchung: bool = False
 
     bblatt: str = ''
+    bblattMode: str = ''
     flaecheBis: str = ''
     flaecheVon: str = ''
     flurnummer: str = ''

@@ -522,8 +522,36 @@ def find(conn: AlkisConnection, query: dict):
             continue
 
         if k == 'bblatt':
-            where.append('FS.bb_number LIKE %s')
-            parms.append(_prepare_for_like(v))
+            # bblatt numbers are ; separated, see above
+            # @TODO should start with ';' as well
+            # the input can be ; or , or space separated
+
+            nums = []
+            for s in v.replace(';', ' ').replace(',', ' ').strip().split():
+                if not s.isdigit():
+                    gws.log.warn('invalid bblatt', v)
+                    return 0, []
+                nums.append(s)
+
+            if not nums:
+                gws.log.warn('invalid bblatt', v)
+                return 0, []
+
+            bbmode = query.get('bblattMode', 'any')
+            d = ';'
+            for n in nums:
+                if bbmode == 'exact':
+                    where.append(f"('{d}' || FS.bb_number LIKE %s)")
+                    parms.append(f'%{d}{n}{d}%')
+                if bbmode == 'start':
+                    where.append(f"('{d}' || FS.bb_number LIKE %s)")
+                    parms.append(f'%{d}{n}%')
+                if bbmode == 'end':
+                    where.append(f"FS.bb_number LIKE %s")
+                    parms.append(f'%{n}{d}%')
+                if bbmode == 'any':
+                    where.append(f"FS.bb_number LIKE %s")
+                    parms.append(f'%{n}%')
 
         elif k == 'shape':
             v = v.transformed_to(conn.crs)

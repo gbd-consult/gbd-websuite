@@ -180,11 +180,11 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
             </Cell>
         </Row>;
 
-        let update = (nrec, ncol, value) => {
+        let update = (record, ncol, value) => {
             let d = {...dirtyFields},
-                key = nrec + '.' + ncol;
+                key = record['_uid'] + '.' + ncol;
 
-            if (value === records[nrec][ncol])
+            if (value === record[ncol])
                 delete d[key];
             else
                 d[key] = value;
@@ -210,7 +210,7 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
                 return;
 
             return visibleAtts.map(a => {
-                let key = nrec + '.' + a.ncol,
+                let key = record['_uid'] + '.' + a.ncol,
                     isDirty = key in dirtyFields,
                     val = isDirty ? dirtyFields[key] : record[a.ncol];
 
@@ -228,7 +228,7 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
                     value={val}
                     height={60}
                     className={isDirty ? 'isDirty' : ''}
-                    whenChanged={v => update(nrec, a.ncol, v)}
+                    whenChanged={v => update(record, a.ncol, v)}
                 />;
             });
         }
@@ -238,11 +238,11 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
         if (sel >= 0)
             sel -= page * pageSize;
 
-        let headers: Array<Array<string | React.ReactNode>>  = [
+        let headers: Array<Array<string | React.ReactNode>> = [
             visibleAtts.map(a => a.attr.title)
         ];
 
-        if(this.props.tabeditData.withFilter) {
+        if (this.props.tabeditData.withFilter) {
             let filter = this.props.tabeditFilter || {};
 
             let updateFilter = (v, ncol) => this.props.controller.update({
@@ -400,6 +400,10 @@ class TabeditController extends gws.Controller {
         let res = await this.app.server.tabeditLoadData({tableUid});
         console.timeEnd('TABEDIT: load');
 
+        let n = 0;
+        for(let rec of res.records)
+            rec['_uid'] = ++n;
+
         this.update({
             tabeditTableUid: tableUid,
             tabeditData: res,
@@ -420,6 +424,8 @@ class TabeditController extends gws.Controller {
             rec.push('');
         }
 
+        rec['_uid'] = gws.tools.uniqId('tabedit');
+
         this.update({
             tabeditData: {
                 ...data,
@@ -433,20 +439,24 @@ class TabeditController extends gws.Controller {
 
     async saveData() {
         let data = this.getValue('tabeditData'),
-            dirtyFields = this.getValue('tabeditDirtyFields') || {},
-            recMap = {};
+            dirtyFields = this.getValue('tabeditDirtyFields') || {};
 
+        let recMap = {};
+        for (let record of data.records) {
+            recMap[record['_uid']] = record;
+        }
+
+        let updRecs = {};
         for (let [key, val] of gws.tools.entries(dirtyFields)) {
-            let [nrec, ncol] = key.split('.');
-            if (!recMap[nrec])
-                recMap[nrec] = data.records[nrec];
-            recMap[nrec][ncol] = val;
+            let [uid, ncol] = key.split('.');
+            updRecs[uid] = recMap[uid];
+            updRecs[uid][ncol] = val;
         }
 
         let params: gws.api.TabeditSaveDataParams = {
             tableUid: this.getValue('tabeditTableUid'),
             attributes: data.attributes,
-            records: Object.values(recMap),
+            records: Object.values(updRecs),
         };
 
         let res = await this.app.server.tabeditSaveData(params);
