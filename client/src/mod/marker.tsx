@@ -50,6 +50,13 @@ class MarkerController extends gws.Controller {
         this.app.whenChanged('marker', content => this.show(content));
 
         this.app.whenLoaded(async () => {
+            let opt = this.app.options['markFeatures'];
+
+            if (opt) {
+                this.showJson(opt);
+                return;
+            }
+
             let x = Number(this.app.urlParams['x']),
                 y = Number(this.app.urlParams['y']),
                 z = Number(this.app.urlParams['z']);
@@ -65,6 +72,27 @@ class MarkerController extends gws.Controller {
             }
 
         });
+    }
+
+    showJson(featuresProps) {
+        let features = this.map.readFeatures(featuresProps);
+        this.show({features, mode: 'zoom draw'});
+
+        let desc = [];
+
+        for (let f of features) {
+            if (f.elements['description'])
+                desc.push(f.elements['description']);
+        }
+
+
+        if (desc.length > 0) {
+            this.update({
+                infoboxContent: <gws.components.Infobox controller={this}>
+                    <gws.ui.HtmlBlock content={desc.join("\n")}/>
+                </gws.components.Infobox>
+            })
+        }
     }
 
     showXYZ(x, y, z) {

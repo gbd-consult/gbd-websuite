@@ -62,7 +62,8 @@ export async function main() {
         defaultHelpUrl: '',
         defaultHomeUrl: '/',
         version: require('./version').VERSION,
-        domNode
+        domNode,
+        markFeatures: glob['GWS_MARK_FEATURES'],
     };
 
     if (glob['GWS_LABELS']) {
