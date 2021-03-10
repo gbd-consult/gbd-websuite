@@ -100,6 +100,16 @@ module.exports = v => ({
         },
     },
 
+    '.uiDialog.uiConfirm': {
+        [v.MEDIA('large+')]: {
+            left: '50%',
+            top: '50%',
+            margin: 'auto',
+            ...v.SHADOW,
+            ...v.CENTER_BOX(300, 300),
+        },
+    },
+
     '.modDecorationScaleRuler': {
         display: 'none',
         [v.MEDIA('medium+')]: {

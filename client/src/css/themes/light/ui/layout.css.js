@@ -1,9 +1,29 @@
 module.exports = v => ({
+    '.uiVBox': {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        height: '100%',
+    },
+
+    '.uiVRow': {
+        width: '100%',
+        overflowY: 'auto',
+        marginBottom: v.UNIT4,
+        paddingRight: v.UNIT2,
+        '> .uiCell': {
+            marginLeft: v.UNIT4,
+            '&:first-child': {
+                marginLeft: 0,
+            },
+        }
+    },
+
+
     '.uiRow': {
         display: 'flex',
         alignItems: 'center',
         width: '100%',
-
     },
 
     '.uiDivider': {
@@ -19,6 +39,10 @@ module.exports = v => ({
         borderBottomWidth: 2,
         borderBottomStyle: 'dotted',
         borderBottomColor: v.BORDER_COLOR,
+    },
+
+    '.uiCell.isSpaced': {
+        marginLeft: v.UNIT4,
     },
 
     '.uiForm': {

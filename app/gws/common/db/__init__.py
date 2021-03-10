@@ -44,6 +44,7 @@ class SelectArgs(t.Data):
     sort: t.Optional[str]
     table: t.SqlTable
     uids: t.Optional[t.List[str]]
+    columns: t.Optional[t.List[str]]
 
 
 #:export

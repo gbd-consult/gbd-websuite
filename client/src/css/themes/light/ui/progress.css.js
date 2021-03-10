@@ -5,6 +5,12 @@ module.exports = v => ({
         width: '100%',
         backgroundImage: v.IMAGE('ajax.gif'),
     },
+    '.isLoading': {
+        backgroundImage: v.IMAGE('ajax.gif'),
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right center',
+        backgroundSize: [16, 16],
+    },
 
 
     '.uiProgress': {

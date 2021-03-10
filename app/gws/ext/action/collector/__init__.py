@@ -8,6 +8,7 @@ import gws.common.model
 import gws.common.style
 import gws.common.template
 import gws.tools.style
+import gws.tools.mime
 import gws.gis.feature
 import gws.web.error
 import gws.ext.db.provider.postgres
@@ -21,9 +22,14 @@ class ItemProps(t.FeatureProps):
     collectionUid: str
 
 
+class DocumentProps(t.FeatureProps):
+    collectionUid: str
+
+
 class CollectionProps(t.FeatureProps):
     type: str
     items: t.List[ItemProps]
+    documents: t.List[DocumentProps]
 
 
 ##
@@ -86,10 +92,11 @@ class ItemPrototype(gws.Object):
             value=self.type,
         ))
         if str(f.uid).isdigit():
-            self.db.edit_operation('update', self.table, [f])
+            fs = self.db.edit_operation('update', self.table, [f])
         else:
             f.uid = None
-            self.db.edit_operation('insert', self.table, [f])
+            fs = self.db.edit_operation('insert', self.table, [f])
+        return fs[0]
 
     def delete(self, item_uid):
         with self.db.connect() as conn:
@@ -109,6 +116,7 @@ class CollectionPrototypeConfig(t.Config):
     db: t.Optional[str]  #: database provider uid
     collectionTable: gws.common.db.SqlTableConfig  #: sql table configuration
     itemTable: gws.common.db.SqlTableConfig  #: sql table configuration
+    documentTable: gws.common.db.SqlTableConfig  #: sql table configuration
     dataModel: t.Optional[gws.common.model.Config]
     items: t.List[ItemPrototypeConfig]
     linkColumn: str = 'collection_id'
@@ -121,6 +129,13 @@ class CollectionPrototypeProps(t.Props):
     itemPrototypes: t.List[ItemPrototypeProps]
 
 
+class UploadFile(t.Data):
+    data: bytes
+    mimeType: str
+    title: str
+    filename: str
+
+
 class CollectionPrototype(gws.Object):
     def configure(self):
         super().configure()
@@ -128,6 +143,7 @@ class CollectionPrototype(gws.Object):
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
         self.table = self.db.configure_table(self.var('collectionTable'))
         self.item_table = self.db.configure_table(self.var('itemTable'))
+        self.document_table = self.db.configure_table(self.var('documentTable'))
 
         self.link_col = self.var('linkColumn')
         self.type_col = 'type'
@@ -162,10 +178,11 @@ class CollectionPrototype(gws.Object):
             value=self.type,
         ))
         if str(f.uid).isdigit():
-            self.db.edit_operation('update', self.table, [f])
+            fs = self.db.edit_operation('update', self.table, [f])
         else:
             f.uid = None
-            self.db.edit_operation('insert', self.table, [f])
+            fs = self.db.edit_operation('insert', self.table, [f])
+        return fs[0]
 
     def delete(self, collection_uid):
         with self.db.connect() as conn:
@@ -175,6 +192,13 @@ class CollectionPrototype(gws.Object):
                 WHERE 
                     {conn.quote_ident(self.link_col)} = %s
                 ''', [collection_uid])
+
+                conn.execute(f'''DELETE FROM 
+                    {conn.quote_table(self.document_table.name)}
+                WHERE 
+                    {conn.quote_ident(self.link_col)} = %s
+                ''', [collection_uid])
+
                 conn.execute(f'''DELETE FROM 
                     {conn.quote_table(self.table.name)}
                 WHERE 
@@ -191,29 +215,51 @@ class CollectionPrototype(gws.Object):
                     AND {conn.quote_ident(self.item_table.key_column)} = %s
                 ''', [collection_uid, item_uid])
 
-    def get_object_ids(self):
+    def delete_document(self, collection_uid, document_uid):
+        with self.db.connect() as conn:
+            with conn.transaction():
+                conn.execute(f'''DELETE FROM 
+                    {conn.quote_table(self.document_table.name)}
+                WHERE 
+                    {conn.quote_ident(self.link_col)} = %s
+                    AND {conn.quote_ident(self.document_table.key_column)} = %s
+                ''', [collection_uid, document_uid])
+
+    def get_collection_ids(self):
         colls = self.db.select(t.SelectArgs(table=self.table, extra_where=['type=%s', self.type]))
         return [str(c.uid) for c in colls]
 
-    def get_objects(self):
+    def get_collections(self):
         res = []
 
-        colls = self.db.select(t.SelectArgs(table=self.table, extra_where=['type=%s', self.type]))
+        collections = self.db.select(t.SelectArgs(table=self.table, extra_where=['type=%s', self.type]))
         items = []
-        uids = [c.uid for c in colls]
+        documents = []
+        uids = [c.uid for c in collections]
         if uids:
-            cond = self.link_col + ' IN (%s)' % ','.join('%s' for _ in colls)
-            items = self.db.select(t.SelectArgs(table=self.item_table, extra_where=[cond] + uids))
+            cond = self.link_col + ' IN (%s)' % ','.join('%s' for _ in collections)
 
-        for c in colls:
-            c.apply_data_model(self.data_model)
-            props = c.props
+            items = self.db.select(t.SelectArgs(
+                table=self.item_table,
+                extra_where=[cond] + uids,
+            ))
+
+            documents = self.db.select(t.SelectArgs(
+                table=self.document_table,
+                extra_where=[cond] + uids,
+                columns=['id', self.link_col, 'title', 'mimetype', 'size'],
+            ))
+
+        for coll in collections:
+            coll.apply_data_model(self.data_model)
+            props = coll.props
             props.type = self.type
 
             props.items = []
+            props.documents = []
 
             for item in items:
-                if str(item.attr(self.link_col)) == str(c.uid):
+                if str(item.attr(self.link_col)) == str(coll.uid):
                     itype = item.attr(self.type_col)
                     ip = self.item_prototype(itype)
                     if ip:
@@ -226,6 +272,10 @@ class CollectionPrototype(gws.Object):
                         iprops.type = itype
                         props.items.append(iprops)
 
+            for doc in documents:
+                if str(doc.attr(self.link_col)) == str(coll.uid):
+                    props.documents.append(doc.props)
+
             res.append(props)
 
         return res
@@ -234,6 +284,33 @@ class CollectionPrototype(gws.Object):
         for ip in self.item_prototypes:
             if ip.type == type:
                 return ip
+
+    def upload_documents(self, collection_uid, files: t.List[UploadFile]):
+        with self.db.connect() as conn:
+            with conn.transaction():
+                for f in files:
+                    rec = {
+                        self.link_col: collection_uid,
+                        'title': f.title or f.filename,
+                        'mimetype': gws.tools.mime.for_path(f.filename),
+                        'data': f.data,
+                        'filename': f.filename,
+                        'size': len(f.data),
+                    }
+
+                    conn.insert_one(
+                        self.document_table.name,
+                        self.document_table.key_column,
+                        rec,
+                    )
+
+    def get_document(self, collection_uid, document_uid):
+        documents = self.db.select(t.SelectArgs(
+            table=self.document_table,
+            uids=[document_uid]
+        ))
+        for doc in documents:
+            return doc
 
 
 ##
@@ -265,10 +342,19 @@ class SaveCollectionParams(t.Params):
     feature: t.FeatureProps
 
 
+class SaveCollectionResponse(t.Response):
+    collectionUid: str
+
+
 class SaveItemParams(t.Params):
     type: str
     collectionUid: str
     feature: t.FeatureProps
+
+
+class SaveItemResponse(t.Response):
+    collectionUid: str
+    itemUid: str
 
 
 class DeleteCollectionParams(t.Params):
@@ -278,6 +364,25 @@ class DeleteCollectionParams(t.Params):
 class DeleteItemParams(t.Params):
     collectionUid: str
     itemUid: str
+
+
+class DeleteDocumentParams(t.Params):
+    collectionUid: str
+    documentUid: str
+
+
+class GetDocumentParams(t.Params):
+    collectionUid: str
+    documentUid: str
+
+
+class UploadDocumentsParams(t.Params):
+    collectionUid: str
+    files: t.List[UploadFile]
+
+
+class UploadDocumentsResponse(t.Response):
+    pass
 
 
 ##
@@ -312,17 +417,17 @@ class Object(gws.common.action.Object):
     def api_get_collections(self, req: t.IRequest, p: GetCollectionsParams) -> GetCollectionsResponse:
         for cp in self.collection_prototypes:
             if cp.type == p.type:
-                return GetCollectionsResponse(collections=cp.get_objects())
+                return GetCollectionsResponse(collections=cp.get_collections())
         raise gws.web.error.NotFound()
 
-    def api_save_collection(self, req: t.IRequest, p: SaveCollectionParams) -> t.Response:
+    def api_save_collection(self, req: t.IRequest, p: SaveCollectionParams) -> SaveCollectionResponse:
         for cp in self.collection_prototypes:
             if cp.type == p.type:
-                cp.save(p.feature)
-                return t.Response()
+                coll = cp.save(p.feature)
+                return SaveCollectionResponse(collectionUid=coll.uid)
         raise gws.web.error.NotFound()
 
-    def api_save_item(self, req: t.IRequest, p: SaveItemParams) -> t.Response:
+    def api_save_item(self, req: t.IRequest, p: SaveItemParams) -> SaveItemResponse:
         cp = self.collection_proto_from_collection_uid(p.collectionUid)
         if not cp:
             raise gws.web.error.NotFound()
@@ -331,8 +436,11 @@ class Object(gws.common.action.Object):
         if not ip:
             raise gws.web.error.NotFound()
 
-        ip.save(p.collectionUid, p.feature)
-        return t.Response()
+        item = ip.save(p.collectionUid, p.feature)
+        return SaveItemResponse(
+            collectionUid=p.collectionUid,
+            itemUid=item.uid
+        )
 
     def api_delete_collection(self, req: t.IRequest, p: DeleteCollectionParams) -> t.Response:
         cp = self.collection_proto_from_collection_uid(p.collectionUid)
@@ -349,7 +457,36 @@ class Object(gws.common.action.Object):
         cp.delete_item(p.collectionUid, p.itemUid)
         return t.Response()
 
+    def api_upload_documents(self, req: t.IRequest, p: UploadDocumentsParams) -> t.Response:
+        cp = self.collection_proto_from_collection_uid(p.collectionUid)
+        if not cp:
+            raise gws.web.error.NotFound()
+        cp.upload_documents(p.collectionUid, p.files)
+        return t.Response();
+
+    def api_delete_document(self, req: t.IRequest, p: DeleteDocumentParams) -> t.Response:
+        cp = self.collection_proto_from_collection_uid(p.collectionUid)
+        if not cp:
+            raise gws.web.error.NotFound()
+
+        cp.delete_document(p.collectionUid, p.documentUid)
+        return t.Response()
+
+    def http_get_document(self, req: t.IRequest, p: GetDocumentParams) -> t.HttpResponse:
+        cp = self.collection_proto_from_collection_uid(p.collectionUid)
+        if not cp:
+            raise gws.web.error.NotFound()
+
+        doc = cp.get_document(p.collectionUid, p.documentUid)
+        if not doc:
+            raise gws.web.error.NotFound()
+
+        return t.HttpResponse(
+            mime=doc.attr('mimetype'),
+            content=doc.attr('data')
+        )
+
     def collection_proto_from_collection_uid(self, collection_uid) -> CollectionPrototype:
         for cp in self.collection_prototypes:
-            if collection_uid in cp.get_object_ids():
+            if collection_uid in cp.get_collection_ids():
                 return cp

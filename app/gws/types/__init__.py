@@ -891,6 +891,7 @@ class SearchSpatialContext(Enum):
 
 
 class SelectArgs(Data):
+    columns: Optional[List[str]]
     extra_where: Optional[list]
     keyword: Optional[str]
     limit: Optional[int]

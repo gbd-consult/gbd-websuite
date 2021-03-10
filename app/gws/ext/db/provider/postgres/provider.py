@@ -126,7 +126,11 @@ class Object(gws.common.db.provider.Sql):
             if args.get('limit'):
                 limit = 'LIMIT %d' % args.get('limit')
 
-            sql = f'SELECT * FROM {conn.quote_table(args.table.name)} WHERE {where} {sort} {limit}'
+            cols = '*'
+            if args.get('columns'):
+                cols = ','.join(args.columns)
+
+            sql = f'SELECT {cols} FROM {conn.quote_table(args.table.name)} WHERE {where} {sort} {limit}'
 
             gws.log.debug(f'SELECT_FEATURES_START {sql} p={values}')
             recs = list(r for r in conn.select(sql, values))

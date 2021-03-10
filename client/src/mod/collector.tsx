@@ -1,34 +1,86 @@
 import * as React from 'react';
+import * as ol from 'openlayers';
 
 import * as gws from 'gws';
-import * as style from 'gws/map/style';
 
 import * as sidebar from './sidebar';
 import * as modify from './modify';
 import * as draw from './draw';
-import * as toolbox from './toolbox';
 
-let {Form, Row, Cell} = gws.ui.Layout;
+let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
 
 const MASTER = 'Shared.Collector';
+
+const STRINGS = {
+    backButton: 'zurück',
+    deleteCollectionButtonTitle: 'Baustelle löschen',
+    deleteCollectionDetails: 'Es werden sämtliche Objekte und Dokumente gelöscht',
+    deleteCollectionText: 'Löschen diese Baustelle',
+    deleteCollectionTitle: 'Baustelle löschen?',
+    deleteDocumentButtonTitle: 'Dokument löschen',
+    deleteDocumentDetails: '',
+    deleteDocumentText: 'Diese Datei wird gelöscht',
+    deleteDocumentTitle: 'Dokument löschen?',
+    deleteItemButtonTitle: 'Objekt löschen',
+    deleteItemDetails: '',
+    deleteItemText: 'Das ausgewählte Objekt wird gelöscht',
+    deleteItemTitle: 'Objekt löschen?',
+    drawNewCollectionText: 'Wählen Sie die Position der Baustelle in der Karte',
+    drawNewCollectionTitle: 'Neue Baustelle',
+    drawNewItemText: 'Zeichnen Sie die Geometrie in der Karte',
+    drawNewItemTitle: 'Objekt anlegen',
+    newCollection: 'Neue Baustelle',
+    newCollectionTitle: 'Neue Baustelle',
+    newDocument: 'Dokumente hochladen',
+    newObject: 'Objekt anlegen',
+    objectPlaceholder: 'Objektart',
+    overviewTitle: 'Baustellen',
+    saveButtonTitle: 'Daten speichern',
+    selectObject: 'Baustellenobjekt in der Karte wählen',
+    titlePlaceholder: 'Titel',
+    uploadDialogTitle: 'Dokumente hochladen',
+    uploadWaitMessage: 'Daten werden geladen',
+};
+
+//
 
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as CollectorController;
 
-type CollectorTab = 'list' | 'collection' | 'item' | 'newItemSelect' | 'newItemDraw'
+enum Mode {
+    overview = 'overview',
+    collectionDetails = 'collectionDetails',
+    newCollectionDraw = 'newCollectionDraw',
+    newItemDraw = 'newItemDraw',
+    itemDetails = 'itemDetails',
+    confirmDeleteCollection = 'confirmDeleteCollection',
+    confirmDeleteItem = 'confirmDeleteItem',
+    confirmDeleteDocument = 'confirmDeleteDocument',
+    uploadDialog = 'uploadDialog',
+    wait = 'upload',
+}
+
+interface UploadElement {
+    title: string;
+    file: File;
+}
+
 
 interface CollectorViewProps extends gws.types.ViewProps {
     controller: CollectorController;
-    collectorCollections: Array<gws.types.IMapFeature>;
+    collectorCollectionActiveTab: number;
+    collectorCollectionAttributes: gws.api.AttributeList;
+    collectorCollections: Array<CollectorCollection>;
+    collectorItemAttributes: gws.api.AttributeList;
+    collectorLoading: boolean;
+    collectorMode: Mode;
+    collectorNewItem: CollectorItem;
+    collectorNewItemProtoIndex: string;
+    collectorSearch: string;
     collectorSelectedCollection: CollectorCollection;
     collectorSelectedItem: CollectorItem;
-    collectorTab: CollectorTab;
-    collectorCollectionAttributes: gws.api.AttributeList;
-    collectorItemAttributes: gws.api.AttributeList;
-    collectorNewItemProto: gws.api.CollectorItemPrototypeProps;
-    collectorNewItem: CollectorItem;
-    collectorCollectionActiveTab: number;
-    collectorSearch: string;
+    collectorSelectedDocument: CollectorDocument;
+    collectorUploads: Array<UploadElement>;
     drawMode: boolean;
     appActiveTool: string;
 
@@ -37,14 +89,17 @@ interface CollectorViewProps extends gws.types.ViewProps {
 const CollectorStoreKeys = [
     'collectorCollectionActiveTab',
     'collectorCollectionAttributes',
-    'collectorItemAttributes',
     'collectorCollections',
+    'collectorItemAttributes',
+    'collectorLoading',
+    'collectorMode',
+    'collectorNewItem',
+    'collectorNewItemProtoIndex',
+    'collectorSearch',
     'collectorSelectedCollection',
     'collectorSelectedItem',
-    'collectorTab',
-    'collectorNewItemProto',
-    'collectorNewItem',
-    'collectorSearch',
+    'collectorSelectedDocument',
+    'collectorUploads',
     'drawMode',
     'appActiveTool',
 ];
@@ -58,9 +113,25 @@ function shapeTypeFromGeomType(gt) {
         return 'Polygon';
 }
 
+const SELECTED_STYLE = {
+    'marker': gws.api.StyleMarker.circle,
+    'marker_stroke': 'rgba(173, 20, 87, 0.3)',
+    'marker_stroke_width': 5,
+    'marker_size': 10,
+    'marker_fill': 'rgba(173, 20, 87, 0.9)',
+}
+
+const COLLECTION_STYLE = {
+    'marker': gws.api.StyleMarker.circle,
+    'marker_size': 10,
+    'marker_fill': 'rgba(200,100,100,0.5)',
+}
+
+//
 
 class CollectorCollection extends gws.map.Feature {
     items: Array<CollectorItem>;
+    documents: Array<gws.types.IMapFeature>;
     proto: gws.api.CollectorCollectionPrototypeProps;
 
     constructor(map, props: gws.api.CollectorCollectionProps, proto: gws.api.CollectorCollectionPrototypeProps) {
@@ -71,6 +142,19 @@ class CollectorCollection extends gws.map.Feature {
         for (let f of props.items) {
             this.addItem(f)
         }
+        this.documents = this.map.readFeatures(props.documents);
+
+        this.setStyles({
+            normal: {
+                type: 'css',
+                values: COLLECTION_STYLE
+            },
+            selected: {
+                type: 'css',
+                values: SELECTED_STYLE,
+            }
+        });
+
     }
 
     addItem(f: gws.api.CollectorItemProps) {
@@ -89,7 +173,6 @@ class CollectorCollection extends gws.map.Feature {
     }
 }
 
-
 class CollectorItem extends gws.map.Feature {
     proto: gws.api.CollectorItemPrototypeProps;
     collection: CollectorCollection;
@@ -99,58 +182,128 @@ class CollectorItem extends gws.map.Feature {
         this.proto = proto;
         this.collection = collection;
 
-        let selected = {
-            type: 'css',
-            values: {
-                ...proto.style.values,
-                'marker': gws.api.StyleMarker.circle,
-                'marker_stroke': 'rgba(173, 20, 87, 0.3)',
-                'marker_stroke_width': 5,
-                'marker_size': 10,
-                'marker_fill': 'rgba(173, 20, 87, 0.9)',
-            }
-        }
-
-
         this.setStyles({
             normal: proto.style,
-            selected
+            selected: {
+                type: 'css',
+                values: {...proto.style.values, ...SELECTED_STYLE}
+            }
         });
     }
 }
 
+class CollectorDocument extends gws.map.Feature {
 
-class CollectorDrawTool extends draw.Tool {
+}
+
+
+class CollectorLayer extends gws.map.layer.FeatureLayer {
+
+}
+
+//
+
+
+interface UploadGridProps extends gws.types.ViewProps {
+    uploads: Array<UploadElement>;
+    withTitle?: boolean;
+    whenChanged: (uploads: Array<UploadElement>) => void;
+}
+
+class UploadGrid extends gws.View<UploadGridProps> {
+
+    render() {
+        let uploads = this.props.uploads || [];
+
+        let update = uploads => this.props.whenChanged(uploads);
+
+        let uploaded = (flist: FileList) => {
+            update(uploads.concat(
+                [].slice.call(flist, 0).map(file => ({file}))
+            ));
+        }
+
+        let titleChanged = (index: number, s: string) => {
+            update(uploads.map((u, n) => index === n
+                ? {file: u.file, title: s}
+                : u
+            ));
+        }
+
+        let deleted = (index: number) => {
+            update(uploads.filter((_, n) => index !== n));
+        }
+
+        function _formatFileName(s) {
+            return s.replace(/[_-]+/g, '$&\u200B');
+        }
+
+
+        return <div>
+            <Row>
+                <Cell>
+                    <gws.ui.FileInput
+                        multiple={true}
+                        whenChanged={fs => uploaded(fs)}
+                        value={null}
+                    />
+                </Cell>
+            </Row>
+
+            <div className="modFsinfoFileList">
+                {uploads.map((u, n) => <Row key={n}>
+                        {this.props.withTitle && <Cell flex>
+                            <gws.ui.TextInput
+                                value={u.title}
+                                placeholder={STRINGS.titlePlaceholder}
+                                whenChanged={v => titleChanged(n, v)}
+                            />
+                        </Cell>}
+                        <Cell>
+                            <div className="modFsinfoUploadFileName">
+                                {_formatFileName(u.file.name)}
+                            </div>
+                        </Cell>
+                        <Cell>
+                            <gws.ui.Button
+                                className="modFsinfoDeleteListButton"
+                                whenTouched={() => deleted(n)}
+                            />
+                        </Cell>
+                    </Row>
+                )}
+            </div>
+        </div>;
+    }
+}
+
+
+//
+
+class DrawTool extends draw.Tool {
     styleName = '.modCollectorDraw';
 
-    get title() {
-        let ip: gws.api.CollectorItemPrototypeProps = _master(this).getValue('collectorNewItemProto');
-        return ip ? ip.name : '';
-    }
-
     enabledShapes() {
-        let ip: gws.api.CollectorItemPrototypeProps = _master(this).getValue('collectorNewItemProto');
-        if (ip)
-            return [shapeTypeFromGeomType(ip.dataModel.geometryType)]
+        let p = _master(this).getValue('drawCurrentShape');
+        if (p)
+            return [p]
     }
-
 
     whenStarted(shapeType, oFeature) {
-        _master(this).newItemCreate(oFeature);
+        _master(this).whenDrawStarted(oFeature);
     }
 
-    whenEnded() {
-        _master(this).newItemSubmit();
+    whenEnded(shapeType, oFeature) {
+        _master(this).whenDrawEnded(oFeature);
     }
-
 
     whenCancelled() {
-        _master(this).newItemCancel();
+        _master(this).whenDrawCancelled();
     }
 
 }
 
-class CollectorModifyTool extends modify.Tool {
+class ModifyTool extends modify.Tool {
 
     get layer() {
         return _master(this).layer;
@@ -165,336 +318,416 @@ class CollectorModifyTool extends modify.Tool {
     }
 
     whenSelected(f) {
-        _master(this).selectItem(f, false);
+        _master(this).whenModifySelected(f);
     }
 
     whenUnselected() {
-        _master(this).unselectItem();
+        _master(this).whenModifyUnselected();
     }
 
     whenEnded(f) {
-        _master(this).saveGeometry(f)
+        _master(this).whenModifyEnded(f);
     }
 
+    whenCancelled() {
+        _master(this).whenModifyCancelled();
+    }
+
+
 }
 
-class CollectorLayer extends gws.map.layer.FeatureLayer {
+//
+
+class Header extends gws.View<CollectorViewProps & { title: string }> {
+    render() {
+        return <sidebar.TabHeader>
+            <Row className={this.props.collectorLoading ? 'isLoading' : ''}>
+                <Cell flex>
+                    <gws.ui.Title content={this.props.title}/>
+                </Cell>
+            </Row>
+        </sidebar.TabHeader>
+    }
+
 
 }
 
-class CollectorListTab extends gws.View<CollectorViewProps> {
+class BackButton extends gws.View<CollectorViewProps> {
     render() {
         let cc = _master(this.props.controller);
 
-        let content = f => <gws.ui.Link
-            whenTouched={() => cc.selectCollection(f)}
-            content={f.getAttribute('name') || '...'}
+        return <sidebar.AuxButton
+            className="modCollectorBackButton"
+            whenTouched={() => cc.whenBackButtonTouched()}
+            tooltip={STRINGS.backButton}
+        />
+    }
+}
+
+class ModifyButton extends gws.View<CollectorViewProps> {
+    render() {
+        let cc = _master(this.props.controller);
+        return <sidebar.AuxButton
+            {...gws.tools.cls('modAnnotateEditAuxButton', this.props.appActiveTool === 'Tool.Collector.Modify' && 'isActive')}
+            whenTouched={() => cc.whenModifyButtonTouched()}
+            tooltip={STRINGS.selectObject}
+        />
+    }
+}
+
+//
+
+
+class OverviewTab extends gws.View<CollectorViewProps> {
+    render() {
+        let cc = _master(this.props.controller);
+
+        let content = coll => <gws.ui.Link
+            whenTouched={() => cc.whenCollectionNameTouched(coll)}
+            content={coll.getAttribute('name') || '...'}
         />;
 
         let search = (this.props.collectorSearch || '').trim().toLowerCase();
 
-        let collections = (this.props.collectorCollections || []).filter(f =>
-            !search || (f.getAttribute('name') || '').toLowerCase().indexOf(search) >= 0
-        );
+        let collections = (this.props.collectorCollections || []).filter(coll =>
+            !search || (coll.getAttribute('name') || '').toLowerCase().indexOf(search) >= 0
+        ).sort((a, b) => {
+            let an = a.getAttribute('name').toLowerCase(),
+                bn = b.getAttribute('name').toLowerCase();
+            return Number(an > bn) - Number(an < bn);
+        });
 
         return <sidebar.Tab>
-            <sidebar.TabHeader>
-                <gws.ui.Title content="Baustellen"/>
-            </sidebar.TabHeader>
+            <Header {...this.props} title={STRINGS.overviewTitle}/>
 
             <sidebar.TabBody>
-                <Row>
-                    <Cell>
-                        <gws.ui.Button className='modSearchIcon'/>
-                    </Cell>
-                    <Cell flex>
-                        <gws.ui.TextInput
-                            placeholder={this.__('modSearchPlaceholder')}
-                            withClear={true}
-                            {...this.props.controller.bind('collectorSearch')}
+                <VBox>
+                    <Row>
+                        <Cell>
+                            <gws.ui.Button className='modSearchIcon'/>
+                        </Cell>
+                        <Cell flex>
+                            <gws.ui.TextInput
+                                placeholder={this.__('modSearchPlaceholder')}
+                                withClear={true}
+                                {...this.props.controller.bind('collectorSearch')}
+                            />
+                        </Cell>
+                    </Row>
+                    <VRow flex>
+                        <gws.components.feature.List
+                            controller={cc}
+                            features={collections}
+                            content={content}
+                            isSelected={coll => coll === this.props.collectorSelectedCollection}
+                            withZoom
                         />
-                    </Cell>
-                </Row>
-                <gws.components.feature.List
-                    controller={cc}
-                    features={collections}
-                    content={content}
-                    isSelected={f => f === this.props.collectorSelectedCollection}
-                    withZoom
-                />
+                    </VRow>
+                    <Row>
+                        <Cell flex/>
+                        <Cell>
+                            <gws.ui.Button
+                                className="modCollectorAddButton"
+                                tooltip={STRINGS.newCollection}
+                                whenTouched={() => cc.whenNewCollectionButtonTouched()}
+                            />
+                        </Cell>
+                    </Row>
+                </VBox>
             </sidebar.TabBody>
 
             <sidebar.AuxToolbar>
                 <Cell flex/>
-                <sidebar.AuxButton
-                    {...gws.tools.cls('modAnnotateEditAuxButton', this.props.appActiveTool === 'Tool.Collector.Modify' && 'isActive')}
-                    tooltip={this.__('modAnnotateEditAuxButton')}
-                    whenTouched={() => cc.app.startTool('Tool.Collector.Modify')}
-                />
-                <sidebar.AuxButton
-                    className="modCollectorAddAuxButton"
-                    whenTouched={() => cc.newCollection()}
-                    tooltip={"Neu"}
-                />
+                <ModifyButton {...this.props}/>
             </sidebar.AuxToolbar>
-
-
         </sidebar.Tab>
     }
 }
 
-class CollectorItemPrototypeList extends gws.components.list.List<gws.api.CollectorItemPrototypeProps> {
-}
-
-class CollectorNewItemSelectTab extends gws.View<CollectorViewProps> {
+class DrawNewItemTab extends gws.View<CollectorViewProps> {
     render() {
-        let cc = _master(this.props.controller);
-        let collection = this.props.collectorSelectedCollection;
-
         return <sidebar.Tab>
-            <sidebar.TabHeader>
-                <gws.ui.Title content={'Neues Objekt'}/>
-            </sidebar.TabHeader>
-
-            <sidebar.TabBody>
-                <CollectorItemPrototypeList
-                    controller={cc}
-                    items={collection.proto.itemPrototypes}
-                    content={ip => <gws.ui.Link
-                        whenTouched={() => cc.newItemStart(ip)}
-                        content={ip.name}
-                    />}
-                    rightButton={ip => <gws.components.list.Button
-                        className="modCollectorNextButton"
-                        whenTouched={() => cc.newItemStart(ip)}
-                    />}
-
-                />
-            </sidebar.TabBody>
-
-            <sidebar.TabFooter>
-                <sidebar.AuxToolbar>
-                    <sidebar.AuxButton
-                        className="modCollectorBackButton"
-                        whenTouched={() => cc.newItemCancel()}
-                        tooltip={"zurück"}
-                    />
-                    <Cell flex/>
-
-                </sidebar.AuxToolbar>
-            </sidebar.TabFooter>
-
-
-        </sidebar.Tab>
-
-
-    }
-}
-
-class CollectorNewItemDrawTab extends gws.View<CollectorViewProps> {
-    render() {
-        let cc = _master(this.props.controller);
-
-        return <sidebar.Tab>
-            <sidebar.TabHeader>
-                <gws.ui.Title content={'Neues Objekt'}/>
-            </sidebar.TabHeader>
+            <Header {...this.props} title={STRINGS.drawNewItemTitle}/>
 
             <sidebar.TabBody>
                 <Row>
                     <Cell center>
-                        Objekt zeichnen
+                        {STRINGS.drawNewItemText}
                     </Cell>
                 </Row>
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
-                    <sidebar.AuxButton
-                        className="modCollectorBackButton"
-                        whenTouched={() => cc.newItemCancel()}
-                        tooltip={"zurück"}
-                    />
+                    <BackButton {...this.props}/>
                     <Cell flex/>
-
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
-
-
         </sidebar.Tab>
-
-
     }
 }
 
-class CollectorCollectionTab extends gws.View<CollectorViewProps> {
+class DrawNewCollectionTab extends gws.View<CollectorViewProps> {
     render() {
+        return <sidebar.Tab>
+            <Header {...this.props} title={STRINGS.drawNewCollectionTitle}/>
 
+            <sidebar.TabBody>
+                <Row>
+                    <Cell center>
+                        {STRINGS.drawNewCollectionText}
+                    </Cell>
+                </Row>
+            </sidebar.TabBody>
+
+            <sidebar.TabFooter>
+                <sidebar.AuxToolbar>
+                    <BackButton {...this.props}/>
+                    <Cell flex/>
+                </sidebar.AuxToolbar>
+            </sidebar.TabFooter>
+        </sidebar.Tab>
+    }
+}
+
+class CollectionEditForm extends gws.View<CollectorViewProps> {
+    render() {
         let cc = _master(this.props.controller);
-        let collection = this.props.collectorSelectedCollection;
+        let coll = this.props.collectorSelectedCollection;
 
-        if (!collection)
-            return null;
+        let changed = (name, val) => cc.updateAttribute(coll.proto.dataModel, 'collectorCollectionAttributes', name, val);
+        let submit = () => cc.whenSaveCollectionButtonTouched();
 
+
+        return <VBox>
+            <VRow flex>
+                <Cell flex>
+                    <gws.components.Form
+                        dataModel={coll.proto.dataModel}
+                        attributes={this.props.collectorCollectionAttributes}
+                        locale={this.app.locale}
+                        whenChanged={changed}
+                        whenEntered={submit}
+                    />
+                </Cell>
+            </VRow>
+            <Row>
+                <Cell flex/>
+                <Cell>
+                    <gws.ui.Button
+                        className="cmpButtonFormOk"
+                        tooltip={STRINGS.saveButtonTitle}
+                        whenTouched={submit}
+                    />
+                </Cell>
+                <Cell spaced>
+                    <gws.ui.Button
+                        className="modCollectorRemoveButton"
+                        tooltip={STRINGS.deleteCollectionButtonTitle}
+                        whenTouched={() => cc.whenDeleteCollectionButtonTouched()}
+                    />
+                </Cell>
+            </Row>
+        </VBox>
+    }
+}
+
+class CollectionDetailsTab extends gws.View<CollectorViewProps> {
+
+    newItemRow() {
+        let cc = _master(this.props.controller);
+        let coll = this.props.collectorSelectedCollection;
+        let idx = this.props.collectorNewItemProtoIndex || '0';
+
+        let items = coll.proto.itemPrototypes.map((ip, n) => ({text: ip.name, value: String(n)}));
+
+        return <Row>
+            <Cell flex>
+                <gws.ui.Select
+                    dropUp
+                    placeholder={STRINGS.objectPlaceholder}
+                    items={items}
+                    value={idx}
+                    whenChanged={value => cc.update({collectorNewItemProtoIndex: value})}
+                />
+            </Cell>
+            <Cell spaced>
+                <gws.ui.Button
+                    className="modCollectorAddButton"
+                    tooltip={STRINGS.newObject}
+                    disabled={gws.tools.empty(idx)}
+                    whenTouched={() => cc.whenNewItemButtonTouched()}
+                />
+            </Cell>
+        </Row>
+    }
+
+    itemList() {
+        let cc = _master(this.props.controller);
+        let coll = this.props.collectorSelectedCollection;
 
         let content = f => <gws.ui.Link
-            whenTouched={() => {
-                cc.app.stopTool('Tool.Collector.Modify');
-                cc.selectItem(f, true);
-                if (f.oFeature)
-                    cc.app.startTool('Tool.Collector.Modify');
-
-            }}
+            whenTouched={() => cc.whenItemNameTouched(f)}
             content={f.getAttribute('name') || f.proto.name}
         />;
 
-        let changed = (name, val) => cc.updateAttribute(collection.proto.dataModel, 'collectorCollectionAttributes', name, val);
+        return <gws.components.feature.List
+            controller={cc}
+            features={coll.items}
+            content={content}
+            withZoom
+        />;
+    }
 
-        let submit = () => cc.collectionDetailsSubmit();
+    documentList() {
+        let cc = _master(this.props.controller);
+        let coll = this.props.collectorSelectedCollection;
+
+        let content = f => <gws.ui.Link
+            whenTouched={() => cc.whenDocumentNameTouched(f)}
+            content={f.getAttribute('title')}
+        />;
+
+        return <gws.components.feature.List
+            controller={cc}
+            features={coll.documents}
+            content={content}
+            rightButton={f => <gws.ui.Button
+                className="modCollectorListRemoveButton"
+                tooltip={STRINGS.deleteDocumentButtonTitle}
+                whenTouched={() => cc.whenDocumentDeleteButtonTouched(f as CollectorDocument)}
+            />}
+        />;
+    }
+
+    newDocumentRow() {
+        let cc = _master(this.props.controller);
+        let coll = this.props.collectorSelectedCollection;
+
+        return <Row>
+            <Cell flex/>
+            <Cell>
+                <gws.ui.Button
+                    className="modCollectorAddButton"
+                    tooltip={STRINGS.newDocument}
+                    whenTouched={() => cc.whenUploadButtonTouched()}
+                />
+            </Cell>
+        </Row>
+    }
+
+
+    render() {
+
+        let cc = _master(this.props.controller);
+        let coll = this.props.collectorSelectedCollection;
+
+        if (!coll)
+            return null;
 
         let activeTab = cc.getValue('collectorCollectionActiveTab') || 0;
 
         return <sidebar.Tab>
-            <sidebar.TabHeader>
-                <gws.ui.Title content={collection.getAttribute('name')}/>
-            </sidebar.TabHeader>
-
-            <sidebar.TabBody>
+            <Header {...this.props} title={coll.getAttribute('name')}/>
+            <sidebar.TabBody className="hasVBox">
                 <gws.ui.Tabs
                     active={activeTab}
+                    className='hasVBox'
                     whenChanged={n => cc.update({collectorCollectionActiveTab: n})}>
 
                     <gws.ui.Tab label={"Daten"}>
-                        <Form>
-                            <Row>
-                                <Cell flex>
-                                    <gws.components.Form
-                                        dataModel={collection.proto.dataModel}
-                                        attributes={this.props.collectorCollectionAttributes}
-                                        locale={this.app.locale}
-                                        whenChanged={changed}
-                                        whenEntered={submit}
-                                    />
-                                </Cell>
-                            </Row>
-                            <Row>
-                                <Cell flex/>
-                                <Cell>
-                                    <gws.ui.Button
-                                        className="cmpButtonFormOk"
-                                        tooltip={this.__('modCollectorSaveButton')}
-                                        whenTouched={submit}
-                                    />
-                                </Cell>
-                                <Cell>
-                                    <gws.ui.Button
-                                        className="modAnnotateRemoveButton"
-                                        tooltip={this.__('modAnnotateRemoveButton')}
-                                        whenTouched={() => cc.collectionDetailsDelete()}
-                                    />
-                                </Cell>
-                            </Row>
-                        </Form>
+                        <CollectionEditForm {...this.props}/>
                     </gws.ui.Tab>
 
                     <gws.ui.Tab label={"Objekte"}>
-                        <gws.components.feature.List
-                            controller={cc}
-                            features={collection.items}
-                            content={content}
-                            isSelected={f => f === this.props.collectorSelectedItem}
-                            withZoom
-                        />
+                        <VBox>
+                            <VRow flex>{this.itemList()}</VRow>
+                            {this.newItemRow()}
+                        </VBox>
+                    </gws.ui.Tab>
+
+                    <gws.ui.Tab label={"Dokumente"}>
+                        <VBox>
+                            <VRow flex>{this.documentList()}</VRow>
+                            {this.newDocumentRow()}
+                        </VBox>
                     </gws.ui.Tab>
                 </gws.ui.Tabs>
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
-                    <sidebar.AuxButton
-                        className="modCollectorBackButton"
-                        whenTouched={() => cc.unselectCollection()}
-                        tooltip={"zurück"}
-                    />
+                    <BackButton {...this.props}/>
                     <Cell flex/>
-
-                    <sidebar.AuxButton
-                        {...gws.tools.cls('modAnnotateEditAuxButton', this.props.appActiveTool === 'Tool.Collector.Modify' && 'isActive')}
-                        tooltip={this.__('modAnnotateEditAuxButton')}
-                        whenTouched={() => cc.app.startTool('Tool.Collector.Modify')}
-                    />
-                    <sidebar.AuxButton
-                        className="modCollectorAddAuxButton"
-                        whenTouched={() => cc.goTo('newItemSelect')}
-                        tooltip={"neues Objekt"}
-                    />
-
+                    <ModifyButton {...this.props}/>
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
-
-
-        </sidebar.Tab>
+        </sidebar.Tab>;
     }
 }
 
-class CollectorItemTab extends gws.View<CollectorViewProps> {
+//
+
+class ItemEditForm extends gws.View<CollectorViewProps> {
     render() {
         let cc = _master(this.props.controller);
-        let f = this.props.collectorSelectedItem;
+        let item = this.props.collectorSelectedItem;
 
-        if (!f)
+        let changed = (name, val) => cc.updateAttribute(item.proto.dataModel, 'collectorItemAttributes', name, val);
+
+        let submit = () => cc.whenSaveItemButtonTouched();
+
+        return <Form>
+            <Row>
+                <Cell flex>
+                    <gws.components.Form
+                        dataModel={item.proto.dataModel}
+                        attributes={this.props.collectorItemAttributes}
+                        locale={this.app.locale}
+                        whenChanged={changed}
+                        whenEntered={submit}
+                    />
+                </Cell>
+            </Row>
+            <Row>
+                <Cell flex/>
+                <Cell>
+                    <gws.ui.Button
+                        className="cmpButtonFormOk"
+                        tooltip={STRINGS.saveButtonTitle}
+                        whenTouched={submit}
+                    />
+                </Cell>
+                {cc.getMode() === Mode.itemDetails && <Cell>
+                    <gws.ui.Button
+                        className="modCollectorRemoveButton"
+                        tooltip={STRINGS.deleteItemButtonTitle}
+                        whenTouched={() => cc.whenDeleteItemButtonTouched()}
+                    />
+                </Cell>}
+            </Row>
+        </Form>
+    }
+}
+
+class ItemDetailsTab extends gws.View<CollectorViewProps> {
+    render() {
+        let item = this.props.collectorSelectedItem;
+        if (!item)
             return null;
 
-        let changed = (name, val) => cc.updateAttribute(f.proto.dataModel, 'collectorItemAttributes', name, val);
-
-        let submit = () => cc.itemDetailsSubmit();
-
         return <sidebar.Tab>
-            <sidebar.TabHeader>
-                <gws.ui.Title content={f.proto.name}/>
-            </sidebar.TabHeader>
+            <Header {...this.props} title={item.getAttribute('name') || item.proto.name}/>
 
             <sidebar.TabBody>
-                <Form>
-                    <Row>
-                        <Cell flex>
-                            <gws.components.Form
-                                dataModel={f.proto.dataModel}
-                                attributes={this.props.collectorItemAttributes}
-                                locale={this.app.locale}
-                                whenChanged={changed}
-                                whenEntered={submit}
-                            />
-                        </Cell>
-                    </Row>
-                    <Row>
-                        <Cell flex/>
-                        <Cell>
-                            <gws.ui.Button
-                                className="cmpButtonFormOk"
-                                tooltip={"Ok"}
-                                whenTouched={submit}
-                            />
-                        </Cell>
-                        <Cell>
-                            <gws.ui.Button
-                                className="modAnnotateRemoveButton"
-                                tooltip={this.__('modAnnotateRemoveButton')}
-                                whenTouched={() => cc.deleteItem()}
-                            />
-                        </Cell>
-                    </Row>
-                </Form>
+                <ItemEditForm {...this.props}/>
             </sidebar.TabBody>
 
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
-                    <sidebar.AuxButton
-                        className="modCollectorBackButton"
-                        whenTouched={() => cc.unselectItemAndStopModify()}
-                        tooltip={"zurück"}
-                    />
+                    <BackButton {...this.props}/>
                     <Cell flex/>
+                    <ModifyButton {...this.props}/>
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
 
@@ -507,19 +740,22 @@ class CollectorItemTab extends gws.View<CollectorViewProps> {
 
 class CollectorSidebarView extends gws.View<CollectorViewProps> {
     render() {
-        switch (this.props.collectorTab) {
-            case 'collection':
-                return <CollectorCollectionTab {...this.props}/>;
-            case 'newItemSelect':
-                return <CollectorNewItemSelectTab {...this.props}/>;
-            case 'newItemDraw':
-                return <CollectorNewItemDrawTab {...this.props}/>;
-            case 'item':
-                return <CollectorItemTab {...this.props}/>;
-            case 'list':
-            default:
-                return <CollectorListTab {...this.props}/>;
+        switch (this.props.collectorMode) {
+            case Mode.overview:
+                return <OverviewTab {...this.props}/>;
+
+            case Mode.newCollectionDraw:
+                return <DrawNewCollectionTab {...this.props}/>;
+            case Mode.collectionDetails:
+                return <CollectionDetailsTab {...this.props}/>;
+
+            case Mode.newItemDraw:
+                return <DrawNewItemTab {...this.props}/>;
+            case Mode.itemDetails:
+                return <ItemDetailsTab {...this.props}/>;
         }
+
+        return null;
     }
 
 }
@@ -539,6 +775,106 @@ class CollectorSidebar extends gws.Controller implements gws.types.ISidebarItem 
 }
 
 
+//
+
+
+class Dialog extends gws.View<CollectorViewProps> {
+    uploadDialog() {
+        let cc = _master(this.props.controller);
+
+        let uploads = this.props.collectorUploads;
+        let canSubmit = !gws.tools.empty(uploads);
+
+        let ok = <gws.ui.Button
+            className="cmpButtonFormOk"
+            disabled={!canSubmit}
+            whenTouched={() => cc.whenUploadSubmitted()}
+            primary
+        />;
+
+        let cancel = <gws.ui.Button
+            className="cmpButtonFormCancel"
+            whenTouched={() => cc.whenUploadCancelled()}
+        />;
+
+        return <gws.ui.Dialog
+            className="modCollectorUploadDialog"
+            title={STRINGS.uploadDialogTitle}
+            buttons={[ok, cancel]}
+            whenClosed={() => cc.whenUploadCancelled()}
+        >
+            <UploadGrid
+                controller={cc}
+                uploads={uploads}
+                withTitle
+                whenChanged={u => cc.update({collectorUploads: u})}
+            />
+        </gws.ui.Dialog>
+    }
+
+    waitDialog() {
+        return <gws.ui.Dialog
+            className="modCollectorUploadDialog"
+            title={STRINGS.uploadDialogTitle}
+        >
+            <Row>
+                <Cell center>
+                    {STRINGS.uploadWaitMessage}
+                </Cell>
+            </Row>
+            <Row>
+                <Cell center>
+                    <gws.ui.Loader/>
+                </Cell>
+            </Row>
+        </gws.ui.Dialog>
+    }
+
+    render() {
+        let cc = _master(this.props.controller);
+
+        let coll = this.props.collectorSelectedCollection,
+            item = this.props.collectorSelectedItem,
+            doc = this.props.collectorSelectedDocument;
+
+        switch (this.props.collectorMode) {
+            case Mode.confirmDeleteCollection:
+                return coll && <gws.ui.Confirm
+                    title={STRINGS.deleteCollectionTitle}
+                    text={STRINGS.deleteCollectionText}
+                    details={STRINGS.deleteCollectionDetails}
+                    whenConfirmed={() => cc.whenDeleteCollectionConfirmed()}
+                    whenRejected={() => cc.whenDeleteCollectionRejected()}
+                />;
+
+            case Mode.confirmDeleteItem:
+                return item && <gws.ui.Confirm
+                    title={STRINGS.deleteItemTitle}
+                    text={STRINGS.deleteItemText}
+                    details={STRINGS.deleteItemDetails}
+                    whenConfirmed={() => cc.whenDeleteItemConfirmed()}
+                    whenRejected={() => cc.whenDeleteItemRejected()}
+                />;
+
+            case Mode.confirmDeleteDocument:
+                return doc && <gws.ui.Confirm
+                    title={STRINGS.deleteDocumentTitle}
+                    text={STRINGS.deleteDocumentText}
+                    details={doc.getAttribute('title')}
+                    whenConfirmed={() => cc.whenDeleteDocumentConfirmed()}
+                    whenRejected={() => cc.whenDeleteDocumentRejected()}
+                />;
+
+            case Mode.uploadDialog:
+                if (this.props.collectorLoading)
+                    return this.waitDialog();
+                return this.uploadDialog();
+        }
+        return null;
+    }
+}
+
+
 class CollectorController extends gws.Controller {
     uid = MASTER;
     collectionProtos: Array<gws.api.CollectorCollectionPrototypeProps>;
@@ -546,8 +882,11 @@ class CollectorController extends gws.Controller {
 
     async init() {
         let setup = this.app.actionSetup('collector');
-        if (!setup)
+        if (!setup) {
             return;
+        }
+
+        this.setMode(Mode.overview);
 
         this.layer = this.map.addServiceLayer(new CollectorLayer(this.map, {
             uid: '_collector',
@@ -560,45 +899,69 @@ class CollectorController extends gws.Controller {
     }
 
     async reload() {
-        let collUid = '', itemUid = '';
+        this.update({collectorLoading: true})
 
-        if (this.getValue('collectorSelectedItem'))
-            itemUid = this.getValue('collectorSelectedItem').uid;
-        if (this.getValue('collectorSelectedCollection'))
-            collUid = this.getValue('collectorSelectedCollection').uid;
+        let collUid = this.selectedCollection ? this.selectedCollection.uid : '',
+            itemUid = this.selectedItem ? this.selectedItem.uid : '';
 
         await this.loadCollections(this.collectionProtos[0]);
 
-        let coll = null, item = null;
+        let coll = this.findCollection(collUid);
+        let item = coll ? this.findItem(collUid, itemUid) : null;
 
-        for (let c of this.getValue('collectorCollections'))
-            if (c.uid === collUid)
-                coll = c;
-
-        if (coll) {
-            for (let it of coll.items) {
-                if (it.uid === itemUid)
-                    item = it;
-            }
-        }
+        this.unselectCollection();
 
         if (item) {
-            this.selectItem(item, false);
+            this.selectItem(item);
         } else if (coll) {
             this.selectCollection(coll);
-        } else {
-            this.unselectCollection();
         }
 
         this.map.forceUpdate();
-
+        this.update({collectorLoading: false})
     }
 
-    async loadCollections(cp: gws.api.CollectorCollectionPrototypeProps) {
-        let res = await this.app.server.collectorGetCollections({type: cp.type});
-        let collections = res.collections.map(z => new CollectorCollection(this.map, z, cp));
+    //
+
+
+    get appOverlayView() {
+        return this.createElement(
+            this.connect(Dialog, CollectorStoreKeys));
+    }
+
+
+    //
+
+    get selectedCollection(): CollectorCollection | null {
+        return this.getValue('collectorSelectedCollection') as CollectorCollection;
+    }
+
+    selectCollection(coll: CollectorCollection) {
+        this.resetSelection();
+        coll.setMode('selected');
+        this.update({
+            collectorSelectedCollection: coll,
+            collectorCollectionAttributes: coll.attributes,
+        })
+    }
+
+    unselectCollection() {
+        this.resetSelection();
+        this.update({
+            collectorSelectedCollection: null,
+            collectorCollectionAttributes: {},
+            collectorSelectedItem: null,
+            collectorItemAttributes: {},
+        })
+    }
+
+
+    async loadCollections(cproto: gws.api.CollectorCollectionPrototypeProps) {
+        let res = await this.app.server.collectorGetCollections({type: cproto.type});
+        let collections = res.collections.map(props => new CollectorCollection(this.map, props, cproto));
         this.layer.clear();
         for (let collection of collections) {
+            this.layer.addFeature(collection);
             this.layer.addFeatures(collection.items);
         }
         this.update({
@@ -606,249 +969,195 @@ class CollectorController extends gws.Controller {
         });
     }
 
-    goTo(tab: CollectorTab) {
-        this.update({
-            collectorTab: tab
-        });
-    }
-
-    selectCollection(f: CollectorCollection) {
-        this.update({
-            collectorSelectedCollection: f,
-            collectorCollectionAttributes: f.attributes,
-        })
-        this.goTo('collection');
-    }
-
-    unselectCollection() {
-        this.unselectItemAndStopModify();
-        this.update({
-            collectorSelectedCollection: null,
-            collectorCollectionAttributes: {},
-        })
-        this.goTo('list');
-    }
-
-    selectItem(f: CollectorItem, panTo: boolean) {
-        if (panTo) {
-            this.update({
-                marker: {
-                    features: [f],
-                    mode: 'pan',
-                }
-            });
+    newCollectionFromFeature(oFeature) {
+        let props = {
+            type: this.collectionProtos[0].name,
+            attributes: [
+                {name: 'name', value: STRINGS.newCollectionTitle}
+            ],
+            items: [],
+            documents: [],
+            shape: this.map.geom2shape(oFeature.getGeometry())
         }
+        return new CollectorCollection(this.map, props, this.collectionProtos[0]);
+    }
 
-        this.layer.features.forEach(f => f.setMode('normal'));
-        f.setMode('selected');
+    async saveCollection(coll: CollectorCollection) {
+        if (!coll)
+            return;
 
-        this.update({
-            collectorSelectedItem: f,
-            collectorSelectedCollection: f.collection,
-            collectorCollectionAttributes: f.collection.attributes,
-            collectorItemAttributes: f.attributes,
+        this.update({collectorLoading: true});
+
+        coll.attributes = this.getValue('collectorCollectionAttributes');
+
+        let res = await this.app.server.collectorSaveCollection({
+            feature: coll.getProps(),
+            type: this.collectionProtos[0].type,
+        }, {binary: false});
+
+        this.update({collectorLoading: false});
+        return res;
+
+
+    }
+
+    async deleteSelectedCollection() {
+        let coll = this.selectedCollection;
+        if (!coll)
+            return;
+
+        let res = await this.app.server.collectorDeleteCollection({
+            collectionUid: coll.uid,
         });
 
-        this.goTo('item');
+        await this.reload();
+    }
+
+    //
+
+    findCollection(collectionUid: string): CollectorCollection | null {
+        for (let c of this.getValue('collectorCollections'))
+            if (c.uid === collectionUid)
+                return c;
+
+    }
+
+    findItem(collectionUid: string, itemUid: string): CollectorItem | null {
+        let coll = this.findCollection(collectionUid);
+
+        if (coll) {
+            for (let it of coll.items) {
+                if (it.uid === itemUid)
+                    return it;
+            }
+        }
     }
 
 
-    unselectItemAndStopModify() {
-        this.app.stopTool('Tool.Collector.Modify');
-        this.unselectItem();
+    //
+
+    get selectedItem(): CollectorItem | null {
+        return this.getValue('collectorSelectedItem') as CollectorItem;
     }
 
+    selectItem(item: CollectorItem) {
+        this.resetSelection();
+        item.setMode('selected');
+        this.update({
+            collectorSelectedItem: item,
+            collectorSelectedCollection: item.collection,
+            collectorCollectionAttributes: item.collection.attributes,
+            collectorItemAttributes: item.attributes,
+        });
+    }
 
     unselectItem() {
-        this.layer.features.forEach(f => f.setMode('normal'));
-
+        this.resetSelection();
         this.update({
             collectorSelectedItem: null,
             collectorItemAttributes: {},
         });
-
-        if (this.getValue('collectorSelectedCollection'))
-            this.goTo('collection');
-        else
-            this.goTo('list');
     }
 
 
-    newCollection() {
-        let props = {
-            uid: gws.tools.uniqId('collector'),
-            type: this.collectionProtos[0].name,
-            attributes: [
-                {name: 'name', value: 'Neue Baustelle'}
-            ],
-            items: [],
-        }
-        let f = new CollectorCollection(this.map, props, this.collectionProtos[0]);
-        this.update({
-            collectorCollections: [...this.getValue('collectorCollections'), f],
-        });
-        this.selectCollection(f);
-    }
+    newItemFromFeature(oFeature: ol.Feature): CollectorItem | null {
+        let coll = this.selectedCollection;
+        if (!coll)
+            return;
 
-    newItemStart(ip: gws.api.CollectorItemPrototypeProps) {
-        this.update({
-            collectorNewItemProto: ip,
-            collectorNewItem: null,
-        });
+        let idx = this.getValue('collectorNewItemProtoIndex');
+        let ip = coll.proto.itemPrototypes[Number(idx)];
 
-        if (ip.dataModel.geometryType) {
-            let draw = this.app.controller('Shared.Draw') as draw.DrawController;
-            this.app.startTool('Tool.Collector.Draw');
-            draw.setShapeType(shapeTypeFromGeomType(ip.dataModel.geometryType));
-            this.goTo('newItemDraw');
-        } else {
-            this.newItemCreate();
-            this.newItemSubmit();
-        }
-    }
-
-    newItemCreate(oFeature?: ol.Feature) {
-        let collection = this.getValue('collectorSelectedCollection') as CollectorCollection;
-        let ip = this.getValue('collectorNewItemProto');
-        let f = new CollectorItem(this.map, {
+        return new CollectorItem(this.map, {
             type: ip.type,
-            collectionUid: collection.uid
-        }, oFeature, collection, ip);
-        this.update({
-            collectorNewItem: f
-        })
+            collectionUid: coll.uid
+        }, oFeature, coll, ip);
     }
 
-    newItemSubmit() {
-        this.app.stopTool('Tool.Collector.Draw');
-        let f = this.getValue('collectorNewItem');
-        if (f) {
-            let collection = f.collection;
-            collection.items.push(f);
-            if (f.oFeature)
-                this.layer.addFeature(f);
-            this.selectItem(f, false);
-        }
-    }
+    async saveItem(item: CollectorItem) {
+        if (!item)
+            return;
 
-    newItemCancel() {
-        this.app.stopTool('Tool.Collector.Draw');
-        this.update({
-            collectorNewItem: null,
-        });
-        this.goTo('collection');
-    }
+        this.update({collectorLoading: true});
 
-
-    async collectionDetailsSubmit() {
-        await this.saveCollection();
-        await this.reload();
-        this.unselectCollection();
-    }
-
-    async saveCollection() {
-        let f: CollectorCollection = this.getValue('collectorSelectedCollection');
-        f.attributes = this.getValue('collectorCollectionAttributes');
-
-
-        let files: Array<Uint8Array> = [],
-            fileAttr: gws.api.Attribute,
-            fileList: FileList;
-
-        for (let a of f.attributes) {
-            if (a.type === 'bytes') {
-                fileAttr = a;
-                fileList = a.value;
-                break;
-            }
-        }
-
-        if (fileList && fileList.length) {
-            let fs: Array<File> = [].slice.call(fileList, 0);
-            files = await Promise.all(fs.map(gws.tools.readFile));
-        }
-
-        let atts = [];
-
-        for (let a of f.attributes) {
-            if (fileAttr && a.name === fileAttr.name) {
-                atts.push({
-                    name: a.name,
-                    value: files[0],
-                })
-            } else {
-                atts.push(a)
-            }
-        }
-
-        let fprops = f.getProps();
-        fprops.attributes = atts;
-
-        let r = await this.app.server.collectorSaveCollection({
-            feature: fprops,
-            type: this.collectionProtos[0].type,
-
-        }, {binary: true})
-    }
-
-    async collectionDetailsDelete() {
-        await this.deleteCollection();
-        await this.reload();
-        this.unselectCollection();
-    }
-
-    async deleteCollection() {
-        let f = this.getValue('collectorSelectedCollection');
-        let r = await this.app.server.collectorDeleteCollection({
-            collectionUid: f.uid,
-        })
-    }
-
-    async itemDetailsSubmit() {
-        await this.saveItem();
-        await this.reload();
-        this.unselectItemAndStopModify();
-    }
-
-    async saveItem() {
-        let f: CollectorItem = this.getValue('collectorSelectedItem');
         let p = {
             attributes: await this.prepareAttributes(this.getValue('collectorItemAttributes')),
-            uid: f.uid,
-            shape: f.shape,
+            uid: item.uid,
+            shape: item.shape,
         }
-        let r = await this.app.server.collectorSaveItem({
-            collectionUid: f.collection.uid,
+
+        let res = await this.app.server.collectorSaveItem({
+            collectionUid: item.collection.uid,
             feature: p,
-            type: f.proto.type,
+            type: item.proto.type,
         }, {binary: true});
 
-        this.map.forceUpdate();
+        this.update({collectorLoading: false});
+
+        return res;
     }
 
-    geomTimer: any = 0;
-
-    saveGeometry(f: gws.types.IMapFeature) {
-        clearTimeout(this.geomTimer);
-        this.geomTimer = setTimeout(() => this.saveItem(), 500);
-    }
-
-
-    async deleteItem() {
-        let f: CollectorItem = this.getValue('collectorSelectedItem');
-
-        if (!f) {
+    async deleteSelectedItem() {
+        let item = this.selectedItem;
+        if (!item)
             return;
+
+        let res = await this.app.server.collectorDeleteItem({
+            collectionUid: item.collection.uid,
+            itemUid: item.uid,
+        })
+    }
+
+    //
+
+    async deleteSelectedDocument() {
+        let coll = this.selectedCollection;
+        if (!coll)
+            return;
+        let doc = this.getValue('collectorSelectedDocument');
+        if (!doc)
+            return;
+
+        let params = {
+            collectionUid: coll.uid,
+            documentUid: doc.uid,
+
+        }
+        let res = await this.app.server.collectorDeleteDocument(params);
+    }
+
+    async uploadDocuments() {
+        let coll = this.selectedCollection;
+        if (!coll)
+            return;
+
+        this.update({collectorLoading: true});
+
+        let uploads = this.getValue('collectorUploads');
+
+        let params = {
+            collectionUid: coll.uid,
+            files: [],
         }
 
-        let r = await this.app.server.collectorDeleteItem({
-            collectionUid: f.collection.uid,
-            itemUid: f.uid,
-        })
+        for (let u of uploads) {
+            params.files.push({
+                title: u.title,
+                filename: u.file.name,
+                mimeType: '',
+                data: await gws.tools.readFile(u.file),
+            })
+        }
 
-        await this.reload();
-        this.unselectItemAndStopModify();
+        let res = await this.app.server.collectorUploadDocuments(params, {binary: true});
+        this.update({collectorLoading: false})
+
+        this.setMode(Mode.collectionDetails);
+
     }
+
+
+    //
 
 
     async prepareAttributes(atts: Array<gws.api.Attribute>) {
@@ -891,12 +1200,285 @@ class CollectorController extends gws.Controller {
         this.update({[key]: atts})
     }
 
+    startDrawing(shapeType) {
+        let draw = this.app.controller('Shared.Draw') as draw.DrawController;
+        this.app.startTool('Tool.Collector.Draw');
+        draw.setShapeType(shapeType);
+    }
+
+    startModify() {
+        this.app.startTool('Tool.Collector.Modify');
+    }
+
+
+    stopTools() {
+        this.app.stopTool('*');
+    }
+
+    resetSelection() {
+        this.layer.features.forEach(f => f.setMode('normal'));
+    }
+
+    //
+
+    setMode(mode: Mode) {
+        gws.tools.nextTick(() => this.update({collectorMode: mode}));
+    }
+
+    getMode(): Mode {
+        return this.getValue('collectorMode');
+    }
+
+    //
+
+    whenBackButtonTouched() {
+
+        this.stopTools();
+
+        switch (this.getMode()) {
+
+            case Mode.collectionDetails:
+                this.unselectCollection();
+                this.setMode(Mode.overview);
+                return;
+
+            case Mode.itemDetails:
+                this.unselectItem();
+                this.setMode(Mode.collectionDetails);
+                return;
+        }
+    }
+
+
+    //
+
+    whenDrawStarted(oFeature: ol.Feature) {
+    }
+
+    async whenDrawEnded(oFeature: ol.Feature) {
+        this.stopTools();
+
+        switch (this.getMode()) {
+            case Mode.newCollectionDraw: {
+                let coll = this.newCollectionFromFeature(oFeature);
+                this.selectCollection(coll);
+                let res = await this.saveCollection(coll);
+                await this.reload();
+                this.selectCollection(this.findCollection(res.collectionUid));
+                this.update({collectorCollectionActiveTab: 0});
+                this.setMode(Mode.collectionDetails);
+                this.startModify();
+                break;
+            }
+            case Mode.newItemDraw: {
+                let item = this.newItemFromFeature(oFeature);
+                this.selectItem(item);
+                let res = await this.saveItem(item);
+                await this.reload();
+                this.selectItem(this.findItem(res.collectionUid, res.itemUid));
+                this.setMode(Mode.itemDetails);
+                this.startModify();
+                break;
+            }
+        }
+
+    }
+
+    whenDrawCancelled() {
+        let mode = this.getMode();
+
+        this.stopTools();
+
+        switch (this.getMode()) {
+            case Mode.newCollectionDraw:
+                this.setMode(Mode.overview);
+                break;
+            case Mode.newItemDraw:
+                this.setMode(Mode.collectionDetails);
+        }
+    }
+
+    //
+
+    whenModifyButtonTouched() {
+        this.startModify();
+    }
+
+    whenModifySelected(f) {
+        if (f instanceof CollectorCollection) {
+            this.unselectItem();
+            this.selectCollection(f);
+            this.setMode(Mode.collectionDetails);
+        }
+        if (f instanceof CollectorItem) {
+            this.selectItem(f);
+            this.setMode(Mode.itemDetails);
+        }
+    }
+
+    whenModifyUnselected() {
+        this.unselectItem();
+        if (this.selectedCollection)
+            this.setMode(Mode.collectionDetails);
+        else
+            this.setMode(Mode.overview);
+
+        this.app.stopTool('Tool.Collector.Modify');
+
+    }
+
+    geometrySaveTimer: any = 0;
+    geometrySaveDelay = 500;
+
+    whenModifyEnded(f) {
+        let save = async () => {
+            if (f instanceof CollectorCollection) {
+                await this.saveCollection(f);
+                this.map.forceUpdate();
+            }
+            if (f instanceof CollectorItem) {
+                await this.saveItem(f);
+                this.map.forceUpdate();
+            }
+        }
+
+        clearTimeout(this.geometrySaveTimer);
+        this.geometrySaveTimer = setTimeout(save, this.geometrySaveDelay);
+    }
+
+    whenModifyCancelled() {
+    }
+
+
+    //
+
+    whenNewCollectionButtonTouched() {
+        let st = this.collectionProtos[0].dataModel.geometryType;
+        st = st[0].toUpperCase() + st.slice(1).toLowerCase();
+        this.startDrawing(st);
+        this.setMode(Mode.newCollectionDraw);
+    }
+
+    async whenSaveCollectionButtonTouched() {
+        await this.saveCollection(this.selectedCollection);
+        await this.reload();
+        this.unselectCollection();
+        this.setMode(Mode.overview);
+    }
+
+
+    whenCollectionNameTouched(coll: CollectorCollection) {
+        this.selectCollection(coll);
+        this.setMode(Mode.collectionDetails);
+    }
+
+    whenDeleteCollectionButtonTouched() {
+        this.setMode(Mode.confirmDeleteCollection);
+    }
+
+    async whenDeleteCollectionConfirmed() {
+        await this.deleteSelectedCollection();
+        this.unselectCollection();
+        this.setMode(Mode.overview);
+
+    }
+
+    whenDeleteCollectionRejected() {
+        this.setMode(Mode.collectionDetails);
+    }
+
+    //
+
+    whenUploadButtonTouched() {
+        this.setMode(Mode.uploadDialog)
+    }
+
+    async whenUploadSubmitted() {
+        await this.uploadDocuments();
+        await this.reload();
+    }
+
+    whenUploadCancelled() {
+        this.setMode(Mode.collectionDetails);
+    }
+
+    whenDocumentNameTouched(doc: CollectorDocument) {
+        let coll = this.selectedCollection;
+        if (!coll)
+            return;
+        let url = `/_/cmd/collectorHttpGetDocument/projectUid/${this.app.project.uid}/collectionUid/${coll.uid}/documentUid/${doc.uid}`;
+        gws.tools.downloadUrl(url, doc.getAttribute('filename'));
+    }
+
+    whenDocumentDeleteButtonTouched(doc: CollectorDocument) {
+        this.update({collectorSelectedDocument: doc});
+        this.setMode(Mode.confirmDeleteDocument);
+    }
+
+    async whenDeleteDocumentConfirmed() {
+        await this.deleteSelectedDocument();
+        this.update({collectorSelectedDocument: null});
+        await this.reload();
+        this.setMode(Mode.collectionDetails);
+    }
+
+    whenDeleteDocumentRejected() {
+        this.setMode(Mode.collectionDetails);
+    }
+
+    //
+
+    whenNewItemButtonTouched() {
+        let coll = this.selectedCollection;
+        let idx = this.getValue('collectorNewItemProtoIndex');
+        let ip = coll.proto.itemPrototypes[Number(idx)];
+        let st = shapeTypeFromGeomType(ip.dataModel.geometryType);
+        this.startDrawing(st);
+        this.setMode(Mode.newItemDraw);
+    }
+
+    async whenSaveItemButtonTouched() {
+        await this.saveItem(this.selectedItem);
+        await this.reload();
+        this.setMode(Mode.collectionDetails);
+    }
+
+    whenItemNameTouched(item: CollectorItem) {
+        this.selectItem(item);
+
+        this.update({
+            marker: {
+                features: [item],
+                mode: 'pan',
+            }
+        });
+
+        this.setMode(Mode.itemDetails)
+    }
+
+
+    whenDeleteItemButtonTouched() {
+        this.setMode(Mode.confirmDeleteItem);
+    }
+
+    async whenDeleteItemConfirmed() {
+        await this.deleteSelectedItem();
+        this.unselectItem();
+        await this.reload();
+        this.setMode(Mode.collectionDetails);
+    }
+
+    whenDeleteItemRejected() {
+        this.setMode(Mode.itemDetails);
+    }
+
+
 }
 
 export const
     tags = {
         [MASTER]: CollectorController,
         'Sidebar.Collector': CollectorSidebar,
-        'Tool.Collector.Modify': CollectorModifyTool,
-        'Tool.Collector.Draw': CollectorDrawTool,
+        'Tool.Collector.Modify': ModifyTool,
+        'Tool.Collector.Draw': DrawTool,
     };

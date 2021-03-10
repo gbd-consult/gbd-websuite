@@ -14,6 +14,28 @@ module.exports = v => {
             ...v.SIDEBAR_AUX_BUTTON('cursor')
         },
 
+        '.modCollectorAddButton': {
+            ...v.ROUND_FORM_BUTTON('google:content/add_circle_outline')
+        },
+
+        '.modCollectorRemoveButton': {
+            ...v.ROUND_FORM_BUTTON('google:action/delete')
+        },
+
+
+        '.modCollectorListRemoveButton': {
+            ...v.LIST_BUTTON('google:action/delete')
+        },
+
+        '.uiDialog.modCollectorUploadDialog': {
+            [v.MEDIA('large+')]: {
+                ...v.CENTER_BOX(800, 500),
+            },
+
+
+        },
+
+
         '.modCollectorDrawAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('google:content/gesture'),
         },
@@ -25,10 +47,6 @@ module.exports = v => {
 
         '.modCollectorLensAuxButton': {
             ...v.SIDEBAR_AUX_BUTTON('spatialsearch'),
-        },
-
-        '.modCollectorRemoveButton': {
-            ...v.ROUND_FORM_BUTTON('google:action/delete')
         },
 
         '.modCollectorStyleButton': {

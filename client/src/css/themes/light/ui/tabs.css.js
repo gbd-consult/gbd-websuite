@@ -6,6 +6,10 @@ module.exports = v => ({
         height: '100%',
     },
 
+    '.uiTabs.hasVBox .uiTabContent': {
+        overflow: 'hidden'
+    },
+
     '.uiTabsHead': {
         display: 'flex',
         alignItems: 'center',
@@ -21,7 +25,7 @@ module.exports = v => ({
         ...v.TRANSITION(),
 
         '.uiRawButton': {
-            padding: [v.UNIT4, v.UNIT8, v.UNIT4, v.UNIT8],
+            padding: [v.UNIT4, v.UNIT4, v.UNIT4, v.UNIT4],
         },
 
         '&:hover': {
@@ -41,7 +45,7 @@ module.exports = v => ({
     '.uiTabContent': {
         overflow: 'auto',
         flex: 1,
-        paddingRight: v.UNIT * 4,
+        // paddingRight: v.UNIT * 4,
     }
 
 });

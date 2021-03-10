@@ -23,6 +23,9 @@ export class Tool extends gws.Tool {
     whenEnded(f: gws.types.IMapFeature) {
     }
 
+    whenCancelled() {
+    }
+
     selectFeature(f: gws.types.IMapFeature) {
         if (this.oFeatureCollection) {
             this.oFeatureCollection.clear();
@@ -76,7 +79,7 @@ export class Tool extends gws.Tool {
 
     stop() {
         this.oFeatureCollection = null;
-        this.whenUnselected();
+        this.whenCancelled();
     }
 
 }
