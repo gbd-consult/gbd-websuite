@@ -26,22 +26,15 @@ def real_config_path(config_path=None):
             return p
 
 
-def parse_and_activate(path=None) -> t.IRootObject:
+def parse(path=None):
     path = real_config_path(path)
     gws.log.info(f'using config "{path}"...')
-    cfg, cfg_paths = parser.parse_main(path)
+    return parser.parse_main(path)
+
+
+def parse_and_activate(path=None) -> t.IRootObject:
+    cfg = parse(path)
     root = activate(cfg)
-
-    for p in set(cfg_paths):
-        root.application.monitor.add_path(p)
-    for p in cfg.projectPaths:
-        root.application.monitor.add_path(p)
-    for d in cfg.projectDirs:
-        root.application.monitor.add_directory(d, parser.config_path_pattern)
-
-    if root.application.developer_option('server.auto_reload'):
-        root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
-
     return root
 
 
@@ -50,11 +43,22 @@ def activate(cfg) -> t.IRootObject:
         root = gwsroot.create()
         root.initialize(cfg)
         root.post_initialize()
-        return root
     except error.ParseError:
         raise
     except Exception as e:
         raise error.LoadError(*e.args)
+
+    for p in set(cfg.configPaths):
+        root.application.monitor.add_path(p)
+    for p in set(cfg.projectPaths):
+        root.application.monitor.add_path(p)
+    for d in set(cfg.projectDirs):
+        root.application.monitor.add_directory(d, parser.config_path_pattern)
+
+    if root.application.developer_option('server.auto_reload'):
+        root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
+
+    return root
 
 
 def store(root: t.IRootObject, path=None):

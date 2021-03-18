@@ -42,6 +42,7 @@ def parse_main(path):
     gws.log.info('parsing main configuration...')
     app = parse(dct, 'gws.common.application.Config', path)
 
+    app.configPaths = cfg_paths
     app.projectPaths = app.projectPaths or []
     app.projectDirs = app.projectDirs or []
 
@@ -62,7 +63,7 @@ def parse_main(path):
         gws.log.info(f'parsing project {uid!r}...')
         app.projects.append(parse(pc, 'gws.common.project.Config', prj_path))
 
-    return app, cfg_paths
+    return app
 
 
 def _read(path):
