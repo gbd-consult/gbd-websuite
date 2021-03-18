@@ -236,7 +236,7 @@ def http_request(url, **kwargs) -> Response:
 
     method = kwargs.pop('method', 'GET').upper()
 
-    if url.startswith('https') and 'verify' not in kwargs:
+    if 'verify' not in kwargs:
         kwargs['verify'] = CA_CERTS_PATH
 
     timeout = kwargs.pop('timeout', (60, 120))  # (connect, read)
