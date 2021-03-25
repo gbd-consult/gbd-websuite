@@ -408,6 +408,11 @@ class BplanController extends gws.Controller {
         });
     }
 
+    refresh() {
+        this.selectAu(this.getValue('bplanAuUid'));
+        this.map.forceUpdate();
+    }
+
     openImportDialog() {
         if (!this.getValue('bplanAuUid')) {
             return;
@@ -447,7 +452,7 @@ class BplanController extends gws.Controller {
     async submitDelete(f) {
         let res = await this.app.server.bplanDeleteFeature({uid: f.uid});
         this.update({bplanDialog: null});
-        await this.selectAu(this.getValue('bplanAuUid'));
+        await this.refresh();
     }
 
     async chunkedUpload(name: string, buf: Uint8Array, chunkSize: number): Promise<string> {
@@ -546,6 +551,7 @@ class BplanController extends gws.Controller {
 
             case gws.api.JobState.complete:
                 this.stop()
+                gws.tools.nextTick(() => this.refresh());
                 return this.update({
                     bplanImportStats: job.stats,
                     bplanDialog: 'ok'

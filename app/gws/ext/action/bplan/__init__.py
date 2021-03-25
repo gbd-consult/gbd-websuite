@@ -190,16 +190,12 @@ class Object(gws.common.action.Object):
                 WHERE _uid = %s
             ''', [p.uid])
 
-            if not r:
-                raise gws.web.error.NotFound()
+        if not r:
+            raise gws.web.error.NotFound()
 
-            self._check_au(req, r['_au'])
+        self._check_au(req, r['_au'])
 
-            conn.execute(f'''
-                DELETE
-                FROM {conn.quote_table(self.plan_table.name)}
-                WHERE _uid = %s
-            ''', [r['_uid']])
+        importer.delete_feature(self, r['_uid'])
 
         return DeleteFeatureResponse()
 
