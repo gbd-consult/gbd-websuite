@@ -278,7 +278,7 @@ class Object(gws.common.action.Object):
 
         p = self.var('helper')
         if p:
-             self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_by_uid(p))
+             self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find('gws.ext.helper.alkis', p))
         else:
             self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
 
