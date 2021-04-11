@@ -20,10 +20,13 @@ def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
 
     for layer in el.all('Layer'):
         for feature in layer.all('Feature'):
-            atts = {
-                e.attr('name'): e.attr('value')
-                for e in feature.all('Attribute')
-            }
+            atts = {}
+
+            for e in feature.all('Attribute'):
+                name = e.attr('name')
+                value = e.attr('value')
+                if gws.as_str(value).lower() != 'null':
+                    atts[name] = value
 
             shape = None
             if 'geometry' in atts:
