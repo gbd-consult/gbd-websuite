@@ -120,6 +120,7 @@ class CollectionPrototypeConfig(t.Config):
     dataModel: t.Optional[gws.common.model.Config]
     items: t.List[ItemPrototypeConfig]
     linkColumn: str = 'collection_id'
+    style: t.Optional[gws.common.style.Config]  #: style for collection center point
 
 
 class CollectionPrototypeProps(t.Props):
@@ -127,6 +128,7 @@ class CollectionPrototypeProps(t.Props):
     name: str
     dataModel: gws.common.model.ModelProps
     itemPrototypes: t.List[ItemPrototypeProps]
+    style: gws.common.style.StyleProps
 
 
 class UploadFile(t.Data):
@@ -162,13 +164,20 @@ class CollectionPrototype(gws.Object):
             ip.link_col = self.link_col
             self.item_prototypes.append(ip)
 
+        p = self.var('style')
+        self.style: t.IStyle = (
+            gws.common.style.from_config(p) if p
+            else gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
+
+
     @property
     def props(self):
         return CollectionPrototypeProps(
             type=self.type,
             name=self.name,
             dataModel=self.data_model.props,
-            itemPrototypes=[f.props for f in self.item_prototypes]
+            itemPrototypes=[f.props for f in self.item_prototypes],
+            style=self.style.props,
         )
 
     def save(self, fprops: t.FeatureProps):

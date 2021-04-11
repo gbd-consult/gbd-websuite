@@ -121,12 +121,6 @@ const SELECTED_STYLE = {
     'marker_fill': 'rgba(173, 20, 87, 0.9)',
 }
 
-const COLLECTION_STYLE = {
-    'marker': gws.api.StyleMarker.circle,
-    'marker_size': 10,
-    'marker_fill': 'rgba(200,100,100,0.5)',
-}
-
 //
 
 class CollectorCollection extends gws.map.Feature {
@@ -145,13 +139,10 @@ class CollectorCollection extends gws.map.Feature {
         this.documents = this.map.readFeatures(props.documents);
 
         this.setStyles({
-            normal: {
-                type: 'css',
-                values: COLLECTION_STYLE
-            },
+            normal: proto.style,
             selected: {
                 type: 'css',
-                values: SELECTED_STYLE,
+                values: {...proto.style.values, ...SELECTED_STYLE}
             }
         });
 
@@ -532,6 +523,12 @@ class CollectionEditForm extends gws.View<CollectorViewProps> {
     }
 }
 
+function _formatFileName(s) {
+    return s.replace(/[_-]+/g, '$&\u200B');
+}
+
+
+
 class CollectionDetailsTab extends gws.View<CollectorViewProps> {
 
     newItemRow() {
@@ -585,7 +582,7 @@ class CollectionDetailsTab extends gws.View<CollectorViewProps> {
 
         let content = f => <gws.ui.Link
             whenTouched={() => cc.whenDocumentNameTouched(f)}
-            content={f.getAttribute('title')}
+            content={_formatFileName(f.getAttribute('title'))}
         />;
 
         return <gws.components.feature.List
