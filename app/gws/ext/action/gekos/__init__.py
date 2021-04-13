@@ -61,18 +61,21 @@ class PositionConfig(t.Config):
     distance: int = 0  #: radius for points repelling
     angle: int = 0  #: angle for points repelling
 
+class SourceConfig(t.Config):
+    url: t.Url  #: gek-online base url
+    params: dict  #: additional parameters for gek-online calls
+    instance: str #: instance name for this source
+
 
 class Config(t.WithTypeAndAccess):
     """GekoS action"""
 
     crs: t.Crs = ''  #: CRS for gekos data
     db: t.Optional[str]  #: database provider uid
-    instances: t.Optional[t.List[str]]  #: gek-online instances
-    params: dict  #: additional parameters for gek-online calls
+    sources: t.Optional[t.List[SourceConfig]]  #: gek-online instances
     position: t.Optional[PositionConfig]  #: position correction for points
     table: gws.common.db.SqlTableConfig  #: sql table configuration
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
-    url: t.Url  #: gek-online base url
 
 
 _DEFAULT_TEMPLATES = [
@@ -150,19 +153,18 @@ class Object(gws.common.action.Object):
         gws.log.info(f'saved {count} records')
 
     def _load_gekos_data(self):
-
-        options = t.Data(
-            crs=self.crs,
-            url=self.var('url'),
-            params=self.var('params'),
-            position=self.var('position'))
-
         recs = []
 
-        for instance in self.var('instances', default=['none']):
-            gr = request.GekosRequest(options, instance, cache_lifetime=0)
+        for source in self.var('sources'):
+            options = t.Data(
+                crs=self.crs,
+                url=source.url,
+                params=source.params,
+                position=self.var('position')
+            )
+            gr = request.GekosRequest(options, source.instance, cache_lifetime=0)
             rs = gr.run()
-            gws.log.info(f'loaded {len(rs)} records from {instance!r}')
+            gws.log.info(f'loaded {len(rs)} records from {source.instance!r}')
             recs.extend(rs)
 
         return recs
