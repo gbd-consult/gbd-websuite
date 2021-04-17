@@ -71,6 +71,7 @@ interface CollectorViewProps extends gws.types.ViewProps {
     collectorCollectionActiveTab: number;
     collectorCollectionAttributes: gws.api.AttributeList;
     collectorCollections: Array<CollectorCollection>;
+    collectorValidationErrors: gws.types.StrDict;
     collectorItemAttributes: gws.api.AttributeList;
     collectorLoading: boolean;
     collectorMode: Mode;
@@ -90,6 +91,7 @@ const CollectorStoreKeys = [
     'collectorCollectionActiveTab',
     'collectorCollectionAttributes',
     'collectorCollections',
+    'collectorValidationErrors',
     'collectorItemAttributes',
     'collectorLoading',
     'collectorMode',
@@ -497,6 +499,7 @@ class CollectionEditForm extends gws.View<CollectorViewProps> {
                         dataModel={coll.proto.dataModel}
                         attributes={this.props.collectorCollectionAttributes}
                         locale={this.app.locale}
+                        errors={this.props.collectorValidationErrors}
                         whenChanged={changed}
                         whenEntered={submit}
                     />
@@ -526,7 +529,6 @@ class CollectionEditForm extends gws.View<CollectorViewProps> {
 function _formatFileName(s) {
     return s.replace(/[_-]+/g, '$&\u200B');
 }
-
 
 
 class CollectionDetailsTab extends gws.View<CollectorViewProps> {
@@ -681,6 +683,7 @@ class ItemEditForm extends gws.View<CollectorViewProps> {
                         dataModel={item.proto.dataModel}
                         attributes={this.props.collectorItemAttributes}
                         locale={this.app.locale}
+                        errors={this.props.collectorValidationErrors}
                         whenChanged={changed}
                         whenEntered={submit}
                     />
@@ -939,6 +942,7 @@ class CollectorController extends gws.Controller {
         this.update({
             collectorSelectedCollection: coll,
             collectorCollectionAttributes: coll.attributes,
+            collectorValidationErrors: null,
         })
     }
 
@@ -990,12 +994,28 @@ class CollectorController extends gws.Controller {
         let res = await this.app.server.collectorSaveCollection({
             feature: coll.getProps(),
             type: this.collectionProtos[0].type,
-        }, {binary: false});
+        });
 
         this.update({collectorLoading: false});
         return res;
+    }
 
+    async validateCollection(coll: CollectorCollection) {
+        if (!coll)
+            return;
 
+        let p = {
+            attributes: await this.prepareAttributes(this.getValue('collectorCollectionAttributes')),
+            uid: coll.uid,
+            shape: coll.shape,
+        }
+
+        let res = await this.app.server.collectorValidateCollection({
+            feature: p,
+            type: this.collectionProtos[0].type,
+        });
+
+        return res;
     }
 
     async deleteSelectedCollection() {
@@ -1045,6 +1065,7 @@ class CollectorController extends gws.Controller {
             collectorSelectedCollection: item.collection,
             collectorCollectionAttributes: item.collection.attributes,
             collectorItemAttributes: item.attributes,
+            collectorValidationErrors: null,
         });
     }
 
@@ -1090,6 +1111,25 @@ class CollectorController extends gws.Controller {
         }, {binary: true});
 
         this.update({collectorLoading: false});
+
+        return res;
+    }
+
+    async validateItem(item: CollectorItem) {
+        if (!item)
+            return;
+
+        let p = {
+            attributes: await this.prepareAttributes(this.getValue('collectorItemAttributes')),
+            uid: item.uid,
+            shape: item.shape,
+        }
+
+        let res = await this.app.server.collectorValidateItem({
+            collectionUid: item.collection.uid,
+            feature: p,
+            type: item.proto.type,
+        }, {binary: true});
 
         return res;
     }
@@ -1228,6 +1268,18 @@ class CollectorController extends gws.Controller {
 
     //
 
+    doValidation(res: gws.api.CollectorValidationResponse) {
+        if (res && res.failures.length > 0) {
+            let err = {};
+            for (let f of res.failures)
+                err[f.name] = f.message;
+            this.update({collectorValidationErrors: err});
+            return false;
+        }
+        this.update({collectorValidationErrors: null});
+        return true;
+    }
+
     whenBackButtonTouched() {
 
         this.stopTools();
@@ -1357,6 +1409,10 @@ class CollectorController extends gws.Controller {
     }
 
     async whenSaveCollectionButtonTouched() {
+        let ok = this.doValidation(await this.validateCollection(this.selectedCollection));
+        if (!ok)
+            return;
+
         await this.saveCollection(this.selectedCollection);
         await this.reload();
         this.unselectCollection();
@@ -1435,6 +1491,10 @@ class CollectorController extends gws.Controller {
     }
 
     async whenSaveItemButtonTouched() {
+        let ok = this.doValidation(await this.validateItem(this.selectedItem));
+        if (!ok)
+            return;
+
         await this.saveItem(this.selectedItem);
         await this.reload();
         this.setMode(Mode.collectionDetails);

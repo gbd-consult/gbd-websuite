@@ -283,6 +283,7 @@ let rules = [
     require('./components/description.css'),
     require('./components/list.css'),
     require('./components/feature.css'),
+    require('./components/form.css'),
     require('./components/infobox.css'),
 
     require('./mod/alkis.css'),

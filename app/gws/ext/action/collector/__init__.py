@@ -81,6 +81,10 @@ class ItemPrototype(gws.Object):
             icon=self.icon
         )
 
+    def validate(self, fprops: t.FeatureProps) -> t.List[t.AttributeValidationFailure]:
+        f = gws.gis.feature.from_props(fprops)
+        return self.data_model.validate(f.attributes)
+
     def save(self, collection_uid: str, fprops: t.FeatureProps):
         f = gws.gis.feature.from_props(fprops)
         f.attributes.append(t.Attribute(
@@ -169,7 +173,6 @@ class CollectionPrototype(gws.Object):
             gws.common.style.from_config(p) if p
             else gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
 
-
     @property
     def props(self):
         return CollectionPrototypeProps(
@@ -179,6 +182,10 @@ class CollectionPrototype(gws.Object):
             itemPrototypes=[f.props for f in self.item_prototypes],
             style=self.style.props,
         )
+
+    def validate(self, fprops: t.FeatureProps) -> t.List[t.AttributeValidationFailure]:
+        f = gws.gis.feature.from_props(fprops)
+        return self.data_model.validate(f.attributes)
 
     def save(self, fprops: t.FeatureProps):
         f = gws.gis.feature.from_props(fprops)
@@ -355,6 +362,10 @@ class SaveCollectionResponse(t.Response):
     collectionUid: str
 
 
+class ValidationResponse(t.Response):
+    failures: t.List[t.AttributeValidationFailure]
+
+
 class SaveItemParams(t.Params):
     type: str
     collectionUid: str
@@ -429,6 +440,13 @@ class Object(gws.common.action.Object):
                 return GetCollectionsResponse(collections=cp.get_collections())
         raise gws.web.error.NotFound()
 
+    def api_validate_collection(self, req: t.IRequest, p: SaveCollectionParams) -> ValidationResponse:
+        for cp in self.collection_prototypes:
+            if cp.type == p.type:
+                failures = cp.validate(p.feature)
+                return ValidationResponse(failures=failures)
+        raise gws.web.error.NotFound()
+
     def api_save_collection(self, req: t.IRequest, p: SaveCollectionParams) -> SaveCollectionResponse:
         for cp in self.collection_prototypes:
             if cp.type == p.type:
@@ -436,15 +454,13 @@ class Object(gws.common.action.Object):
                 return SaveCollectionResponse(collectionUid=coll.uid)
         raise gws.web.error.NotFound()
 
+    def api_validate_item(self, req: t.IRequest, p: SaveItemParams) -> ValidationResponse:
+        cp, ip = self.collection_and_item(p)
+        failures = ip.validate(p.feature)
+        return ValidationResponse(failures=failures)
+
     def api_save_item(self, req: t.IRequest, p: SaveItemParams) -> SaveItemResponse:
-        cp = self.collection_proto_from_collection_uid(p.collectionUid)
-        if not cp:
-            raise gws.web.error.NotFound()
-
-        ip = cp.item_prototype(p.type)
-        if not ip:
-            raise gws.web.error.NotFound()
-
+        cp, ip = self.collection_and_item(p)
         item = ip.save(p.collectionUid, p.feature)
         return SaveItemResponse(
             collectionUid=p.collectionUid,
@@ -494,6 +510,17 @@ class Object(gws.common.action.Object):
             mime=doc.attr('mimetype'),
             content=doc.attr('data')
         )
+
+    def collection_and_item(self, p: SaveItemParams):
+        cp = self.collection_proto_from_collection_uid(p.collectionUid)
+        if not cp:
+            raise gws.web.error.NotFound()
+
+        ip = cp.item_prototype(p.type)
+        if not ip:
+            raise gws.web.error.NotFound()
+
+        return cp, ip
 
     def collection_proto_from_collection_uid(self, collection_uid) -> CollectionPrototype:
         for cp in self.collection_prototypes:

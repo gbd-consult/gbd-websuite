@@ -273,6 +273,21 @@ class Props(Data):
     pass
 
 
+class AttributeEditor(Data):
+    accept: Optional[str]
+    items: Optional[Any]
+    max: Optional[float]
+    min: Optional[float]
+    multiple: Optional[bool]
+    pattern: Optional[str]
+    type: str
+
+
+class AttributeValidationFailure(Data):
+    message: str
+    name: str
+
+
 class Bounds(Data):
     crs: 'Crs'
     extent: 'Extent'
@@ -814,25 +829,16 @@ class MetaLink(Data):
     url: 'Url'
 
 
-class ModelEditor(Data):
-    accept: Optional[str]
-    items: Optional[Any]
-    max: Optional[float]
-    min: Optional[float]
-    multiple: Optional[bool]
-    pattern: Optional[str]
-    type: str
-
-
 class ModelRule(Data):
     editable: bool
-    editor: Optional['ModelEditor']
+    editor: Optional['AttributeEditor']
     expression: str
     format: 'FormatStr'
     name: str
     source: str
     title: str
     type: 'AttributeType'
+    validators: Optional[List['AttributeValidator']]
     value: Optional[str]
 
 
@@ -1262,8 +1268,9 @@ class IModel(IObject):
     geometry_crs: 'Crs'
     geometry_type: 'GeometryType'
     rules: List['ModelRule']
-    def apply(self, atts: List[Attribute]) -> List[Attribute]: pass
-    def apply_to_dict(self, d: dict) -> List[Attribute]: pass
+    def apply(self, attributes: List[Attribute]) -> List[Attribute]: pass
+    def apply_to_dict(self, attr_values: dict) -> List[Attribute]: pass
+    def validate(self, attributes: List[Attribute]) -> List['AttributeValidationFailure']: pass
 
 
 class IMonitor(IObject):

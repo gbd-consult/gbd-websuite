@@ -21,15 +21,31 @@ _default_editor = {
 }
 
 
+class AttributeValidator(t.Data):
+    type: str
+    message: str
+    min: t.Optional[float]
+    max: t.Optional[float]
+    minLength: t.Optional[int]
+    maxLength: t.Optional[int]
+    attribute: t.Optional[str]
+
+
 #:export
-class ModelEditor(t.Data):
+class AttributeValidationFailure(t.Data):
+    name: str
+    message: str
+
+
+#:export
+class AttributeEditor(t.Data):
+    type: str
     accept: t.Optional[str]
     items: t.Optional[t.Any]
     max: t.Optional[float]
     min: t.Optional[float]
     multiple: t.Optional[bool]
     pattern: t.Optional[str]
-    type: str
 
 
 #:export
@@ -37,7 +53,8 @@ class ModelRule(t.Data):
     """Attribute conversion rule"""
 
     editable: bool = True  #: attribute is editable
-    editor: t.Optional[ModelEditor]
+    editor: t.Optional[AttributeEditor]
+    validators: t.Optional[t.List[AttributeValidator]]
     expression: str = ''  #: attribute conversion expression
     format: t.FormatStr = ''  #: attribute formatter
     name: str = ''  #: target attribute name
@@ -57,7 +74,7 @@ class Config(t.Config):
 
 class ModelRuleProps(t.Props):
     editable: bool
-    editor: ModelEditor
+    editor: AttributeEditor
     name: str
     title: str
     type: str
@@ -95,17 +112,27 @@ class Object(gws.Object, t.IModel):
             crs=self.geometry_crs,
         )
 
-    def apply(self, atts: t.List[t.Attribute]) -> t.List[t.Attribute]:
-        return self.apply_to_dict({a.name: a.value for a in atts})
+    def apply(self, attributes: t.List[t.Attribute]) -> t.List[t.Attribute]:
+        attr_values = {a.name: a.value for a in attributes}
+        return self.apply_to_dict(attr_values)
 
-    def apply_to_dict(self, d: dict) -> t.List[t.Attribute]:
+    def apply_to_dict(self, attr_values: dict) -> t.List[t.Attribute]:
         return [t.Attribute(
             title=r.title,
             name=r.name,
-            value=self._apply_rule(r, d),
+            value=self._apply_rule(r, attr_values),
             type=r.type,
             editable=r.editable,
         ) for r in self.rules]
+
+    def validate(self, attributes: t.List[t.Attribute]) -> t.List[AttributeValidationFailure]:
+        attr_values = {a.name: a.value for a in attributes}
+        errors = []
+        for r in self.rules:
+            err = self._validate_rule(r, attr_values)
+            if err:
+                errors.append(err)
+        return errors
 
     @property
     def attribute_names(self) -> t.List[str]:
@@ -123,7 +150,7 @@ class Object(gws.Object, t.IModel):
             names.add(r.name)
         return sorted(names)
 
-    def _apply_rule(self, rule: t.ModelRule, d: dict):
+    def _apply_rule(self, rule: t.ModelRule, attr_values: dict):
         s = rule.get('value')
         if s is not None:
             return s
@@ -132,14 +159,46 @@ class Object(gws.Object, t.IModel):
             # @TODO
             if rule.get('type') == 'bytes':
                 return None
-            return d.get(s)
+            return attr_values.get(s)
         s = rule.get('format')
         if s:
             if '{' not in s:
                 return s
-            return gws.tools.misc.format_placeholders(s, d)
+            return gws.tools.misc.format_placeholders(s, attr_values)
         # no value/source/format present - return values[name]
-        return d.get(rule.name, '')
+        return attr_values.get(rule.name, '')
+
+    def _validate_rule(self, rule: t.ModelRule, attr_values: dict) -> t.Optional[AttributeValidationFailure]:
+        v = attr_values.get(rule.name)
+        for val in rule.validators:
+            if not self._validate(val, v, attr_values):
+                return AttributeValidationFailure(name=rule.name, message=val.message)
+
+    def _validate(self, validator: AttributeValidator, value, attr_values) -> bool:
+        if validator.type == 'required':
+            return not gws.is_empty(value)
+
+        if validator.type == 'minLength':
+            s = gws.as_str(value).strip()
+            return len(s) >= validator.minLength
+
+        if validator.type == 'maxLength':
+            s = gws.as_str(value).strip()
+            return len(s) <= validator.maxLength
+
+        if validator.type == 'greaterThan':
+            other = attr_values.get(validator.attribute)
+            try:
+                return value > other
+            except TypeError:
+                return False
+
+        if validator.type == 'lessThan':
+            other = attr_values.get(validator.attribute)
+            try:
+                return value < other
+            except TypeError:
+                return False
 
     def _configure_rule(self, r):
         rule = t.ModelRule(r)
@@ -159,6 +218,8 @@ class Object(gws.Object, t.IModel):
         rule.type = rule.get('type') or t.AttributeType.str
 
         if not rule.editor:
-            rule.editor = ModelEditor(type=_default_editor.get(rule.type, 'str'))
+            rule.editor = AttributeEditor(type=_default_editor.get(rule.type, 'str'))
+
+        rule.validators = r.get('validators') or []
 
         return rule
