@@ -148,7 +148,7 @@ class Object(gws.common.layer.Group):
             return
 
         return {
-            'type': 'wms',
+            'type': 'wmsflat',
             'sourceLayers': {
                 'names': ds['layers']
             },
