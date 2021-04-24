@@ -263,7 +263,7 @@ class CollectionPrototype(gws.Object):
             documents = self.db.select(t.SelectArgs(
                 table=self.document_table,
                 extra_where=[cond] + uids,
-                columns=['id', self.link_col, 'title', 'mimetype', 'size'],
+                columns=['id', self.link_col, 'title', 'mimetype', 'filename', 'size'],
             ))
 
         for coll in collections:

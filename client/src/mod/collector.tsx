@@ -1459,8 +1459,12 @@ class CollectorController extends gws.Controller {
         let coll = this.selectedCollection;
         if (!coll)
             return;
-        let url = `/_/cmd/collectorHttpGetDocument/projectUid/${this.app.project.uid}/collectionUid/${coll.uid}/documentUid/${doc.uid}`;
-        gws.tools.downloadUrl(url, doc.getAttribute('filename'));
+        let url = ['/_/cmd/collectorHttpGetDocument',
+            'projectUid', this.app.project.uid,
+            'collectionUid', coll.uid,
+            'documentUid', doc.uid,
+        ].join('/');
+        gws.tools.downloadUrl(url, doc.getAttribute('filename'), '_blank');
     }
 
     whenDocumentDeleteButtonTouched(doc: CollectorDocument) {
