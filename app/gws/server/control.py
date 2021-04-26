@@ -25,7 +25,7 @@ def start(config_path=None):
     stop()
 
     root = configure(config_path)
-    gws.tools.date.set_system_time_zone(root.var('timeZone'))
+    gws.tools.date.set_system_time_zone(root.var('server.timeZone'))
 
     for p in gws.tools.os2.find_files(gws.SERVER_DIR, '.*'):
         gws.tools.os2.unlink(p)

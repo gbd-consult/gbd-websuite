@@ -70,7 +70,6 @@ class Config(t.WithAccess):
     projects: t.Optional[t.List[gws.common.project.Config]]  #: project configurations
     seeding: SeedingConfig = {}  #: configuration for seeding jobs
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
-    timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
     web: t.Optional[WebConfig] = {}  #: webserver configuration
 
 

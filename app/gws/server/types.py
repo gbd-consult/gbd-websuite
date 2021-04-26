@@ -55,8 +55,9 @@ class Config(t.Config):
     log: str = ''  #: log path
     logLevel: gws.log.Level = 'INFO'  #: logging level
     mapproxy: MapproxyConfig = {}  #: bundled Mapproxy module
+    monitor: MonitorConfig = {}  #: monitor configuation
     qgis: QgisConfig = {}  #: bundled Qgis module
     spool: SpoolConfig = {}  #: spool server module
     timeout: t.Duration = 60  #: server timeout
-    monitor: MonitorConfig = {}  #: monitor configuation
+    timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
     web: WebConfig = {}  #: web server module
