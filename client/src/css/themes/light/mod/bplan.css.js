@@ -28,7 +28,9 @@ module.exports = v => ({
     '.modBplanMetaAuxButton': {
         ...v.SIDEBAR_AUX_BUTTON('google:content/content_paste'),
     },
-
+    '.modBplanCSVAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('google:image/grid_on'),
+    },
     '.modBplanInfoAuxButton': {
         ...v.SIDEBAR_AUX_BUTTON('google:action/language'),
     },
