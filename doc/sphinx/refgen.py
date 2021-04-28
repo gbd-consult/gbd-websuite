@@ -61,6 +61,9 @@ class ConfigRefGenerator:
         elif t['type'] == 'alias':
             self.obj_type(t)
 
+        elif t['type'] == 'any':
+            pass
+
         else:
             raise ValueError('unhandled type %s' % t['type'])
 

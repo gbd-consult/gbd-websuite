@@ -53,3 +53,12 @@ Version 6.1
 
 - bundled QGIS upgraded to 3.10
 
+
+Version 7.0
+--------------------------------------------
+
+- "wms" layers are now trees, flat wms renamed to "wmsflat"
+- new options in data models for custom editors and validators
+- new extension for editable attribute tables
+- support for grouped feature editors
+- "timeZone" setting moved to the server config

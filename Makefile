@@ -43,7 +43,7 @@ doc: spec
 	$(PYTHON) $(DOC)/sphinx/conf.py post
 
 doc-dev: doc
-	sphinx-autobuild -B $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
+	sphinx-autobuild --open-browser $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
 
 image:
 	$(PYTHON) $(BASE)install/build.py docker release $(IMAGE_NAME) && cd $(CWD)

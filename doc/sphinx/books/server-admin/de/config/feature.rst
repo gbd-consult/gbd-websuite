@@ -26,6 +26,67 @@ Zum Beispiel, wenn eine Postgres Tabelle ``user`` die Spalten ``first_name``, ``
 
 Außerdem können Sie angeben welche Attribute editierbar (``editable``) sind. Wenn Sie eine Editierfunktion verwenden (s. ^digitize und ^tabedit), werden nur editierbare Attribute eines Feature für Editieren freigeschaltet.
 
+Seit der Version 7, besteht die Möglichkeit, den Attributen spezielle Editoren bzw Validierungsregel zuzuordnen. Ein Editor kann mit ``editor`` konfiguriert werden: ::
+
+    "dataModel": {
+        "rules": [
+            {
+                "name": "Kommentar",
+                "editor": {"type": "text" }
+            },
+            {
+                "name": "Rolle",
+                "editor": {"type": "select", "items": [
+                    ["admin", "Administrator"],
+                    ["user", "Nutzer"],
+                    ["guest", "Gast"]
+                 ]}
+            }
+            ...
+
+Es werden folgende Editor-Typen unterstützt:
+
+{TABLE}
+   ``string`` | HTML ``<input>`` Element
+   ``int`` bzw ``float`` | HTML ``<input type=number>`` Element
+    ``text`` | HTML ``<textarea>`` Element
+   ``select`` bzw. ``combo`` | ``<select>`` Element, die Werte müssen mit ``items`` als eine Liste von Wert-Titel Paaren konfiguriert werden
+   ``checkbox`` | ``<input type=checkbox>`` Element für boolesche Attributen
+   ``date`` | Datums-Eingabefeld
+{/TABLE}
+
+Wenn kein Editor konfiguriert ist, wird vom Server einen am besten geeigneten Typ gewählt.
+
+Für die Validierungsregel kann eine Liste ``validators`` einem Attribut zugeordnet werden: ::
+
+    "dataModel": {
+        "rules": [
+            {
+                "name": "Kommentar",
+                "editor": {"type": "text" },
+                "validators": [
+                    {"type": "length", "min": 0, "max": 300}
+                ]
+            },
+            {
+                "name": "Email",
+                "validators": [
+                    {"type": "required"},
+                    {"type": "regex", "pattern": "^[a-zA-Z0-9.]+@[a-zA-Z.]+$" }
+                ]
+            },
+            ...
+
+Es werden folgende Regel unterstützt:
+
+{TABLE head}
+Typ | Parameter |
+``required`` |  | der Wert darf nicht leer sein
+``range`` | ``min`` und ``max`` | der Wert muss eine Zahl zwischen ``min`` und ``max`` sein
+``length`` | ``min`` und ``max`` | die Länge des Stringwerts muss zwischen ``min`` und ``max`` sein
+``regex`` | ``pattern`` | der Wert muss mit dem regulären Ausdruck übereinstimmen
+{/TABLE}
+
 Client-Vorlagen
 ---------------
 
