@@ -58,7 +58,7 @@ class _Writer:
         return self.h.row_delimiter.join(rows)
 
     def as_bytes(self, encoding=None):
-        return self.as_str().encode(encoding or self.h.encoding)
+        return self.as_str().encode(encoding or self.h.encoding, errors='replace')
 
     def _format(self, val, type):
         if val is None:
