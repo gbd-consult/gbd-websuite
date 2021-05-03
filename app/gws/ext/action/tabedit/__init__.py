@@ -160,8 +160,9 @@ class Object(gws.common.action.Object):
             uid = None
 
             for a, v in zip(p.attributes, rec):
-                if v is None or v == '':
-                    continue
+                # Normalize empty inputs to insert NULL into the database.
+                if v == '':
+                    v = None
                 atts.append(t.Attribute(name=a.name, value=v))
                 if a.name == tbl.table.key_column:
                     uid = v
