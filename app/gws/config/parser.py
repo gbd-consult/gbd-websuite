@@ -1,6 +1,5 @@
 """Parse and validate the main cfg and project configs"""
 
-import json
 import os
 
 import yaml
@@ -9,8 +8,11 @@ import gws
 import gws.core.spec
 import gws.tools.misc
 import gws.tools.os2
+import gws.tools.json2
 import gws.tools.vendor.chartreux as chartreux
 import gws.tools.vendor.slon as slon
+
+import gws.types as t
 
 from . import error, spec
 
@@ -74,7 +76,7 @@ def _read(path):
     except Exception as e:
         raise error.ParseError('read error: %s' % e, path, '', None) from e
 
-    _save_intermediate(path, json.dumps(dct, indent=4), 'json')
+    _save_intermediate(path, gws.tools.json2.to_pretty_string(dct), 'json')
     return dct, paths
 
 
@@ -84,12 +86,12 @@ def _read2(path):
         mod = gws.tools.misc.load_source(path, mod_name)
         fn = getattr(mod, config_function_name)
         dct = fn()
+        if not isinstance(dct, dict):
+            dct = _as_dict(dct)
         return dct, [path]
 
     if path.endswith('.json'):
-        with open(path, encoding='utf8') as fp:
-            dct = json.load(fp)
-        return dct, [path]
+        return gws.tools.json2.from_path(path), [path]
 
     if path.endswith('.yaml'):
         with open(path, encoding='utf8') as fp:
@@ -170,3 +172,15 @@ def _as_flat_list(ls):
     else:
         for x in ls:
             yield from _as_flat_list(x)
+
+
+def _as_dict(val):
+    if isinstance(val, list):
+        return [_as_dict(x) for x in val]
+    if isinstance(val, tuple):
+        return tuple(_as_dict(x) for x in val)
+    if isinstance(val, t.Data):
+        val = vars(val)
+    if isinstance(val, dict):
+        return {k: _as_dict(v) for k, v in val.items()}
+    return val
