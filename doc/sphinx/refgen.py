@@ -245,9 +245,9 @@ _title_rules = {
 
 
 def _title(tname):
-    for k, v in _title_rules.items():
-        if re.match(k, tname):
-            return re.sub(k, v, tname)
+    # for k, v in _title_rules.items():
+    #     if re.match(k, tname):
+    #         return re.sub(k, v, tname)
     return tname
 
 
