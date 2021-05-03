@@ -279,7 +279,7 @@ class AttributeEditor(Data):
     max: Optional[float]
     min: Optional[float]
     multiple: Optional[bool]
-    pattern: Optional[str]
+    pattern: Optional['Regex']
     type: str
 
 

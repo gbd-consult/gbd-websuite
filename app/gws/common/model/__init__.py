@@ -26,9 +26,8 @@ class AttributeValidator(t.Data):
     message: str
     min: t.Optional[float]
     max: t.Optional[float]
-    minLength: t.Optional[int]
-    maxLength: t.Optional[int]
     attribute: t.Optional[str]
+    pattern: t.Optional[t.Regex]
 
 
 #:export
@@ -45,7 +44,7 @@ class AttributeEditor(t.Data):
     max: t.Optional[float]
     min: t.Optional[float]
     multiple: t.Optional[bool]
-    pattern: t.Optional[str]
+    pattern: t.Optional[t.Regex]
 
 
 #:export
@@ -178,13 +177,13 @@ class Object(gws.Object, t.IModel):
         if validator.type == 'required':
             return not gws.is_empty(value)
 
-        if validator.type == 'minLength':
+        if validator.type == 'length':
             s = gws.as_str(value).strip()
-            return len(s) >= validator.minLength
+            return validator.min <= len(s) <= validator.max
 
-        if validator.type == 'maxLength':
+        if validator.type == 'regex':
             s = gws.as_str(value).strip()
-            return len(s) <= validator.maxLength
+            return bool(re.search(validator.pattern, s))
 
         if validator.type == 'greaterThan':
             other = attr_values.get(validator.attribute)
