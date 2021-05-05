@@ -497,7 +497,7 @@ class Object(gws.common.action.Object):
         cp.delete_document(p.collectionUid, p.documentUid)
         return t.Response()
 
-    def http_get_document(self, req: t.IRequest, p: GetDocumentParams) -> t.HttpResponse:
+    def http_get_document(self, req: t.IRequest, p: GetDocumentParams) -> t.FileResponse:
         cp = self.collection_proto_from_collection_uid(p.collectionUid)
         if not cp:
             raise gws.web.error.NotFound()
@@ -506,9 +506,10 @@ class Object(gws.common.action.Object):
         if not doc:
             raise gws.web.error.NotFound()
 
-        return t.HttpResponse(
+        return t.FileResponse(
             mime=doc.attr('mimetype'),
-            content=doc.attr('data')
+            content=doc.attr('data'),
+            attachment_name=doc.attr('filename')
         )
 
     def collection_and_item(self, p: SaveItemParams):
