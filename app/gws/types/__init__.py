@@ -260,8 +260,9 @@ class HttpResponse(Response):
 
 class FileResponse(Response):
     mime: str
-    path: str
+    content: bytes
     status: int
+    path: str
     attachment_name: str
 
 
@@ -328,7 +329,7 @@ class IBaseRequest:
     def cookie(self, key: str, default: str = None) -> str: pass
     def env(self, key: str, default: str = None) -> str: pass
     def error_response(self, err) -> 'IResponse': pass
-    def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> 'IResponse': pass
+    def file_response(self, path: str, content: bytes, mimetype: str, status: int = 200, attachment_name: str = None) -> 'IResponse': pass
     def has_param(self, key: str) -> bool: pass
     def header(self, key: str, default: str = None) -> str: pass
     def init(self): pass

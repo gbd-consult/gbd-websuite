@@ -130,7 +130,7 @@ def _handle_action(root: t.IRootObject, req: t.IRequest) -> t.IResponse:
         return req.response(r.content, r.mime, r.get('status', 200))
 
     if isinstance(r, t.FileResponse):
-        return req.file_response(r.path, r.mime, r.get('status', 200), r.get('attachment_name'))
+        return req.file_response(r.path, r.content, r.mime, r.get('status', 200), r.get('attachment_name'))
 
     return req.struct_response(r)
 

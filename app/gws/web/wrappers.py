@@ -150,17 +150,20 @@ class BaseRequest(t.IBaseRequest):
     def redirect_response(self, location, status=302):
         return werkzeug.utils.redirect(location, status)
 
-    def file_response(self, path: str, mimetype: str, status: int = 200, attachment_name: str = None) -> t.IResponse:
-        headers = {
-            'Content-Length': os.path.getsize(path)
-        }
+    def file_response(self, path: str, content: bytes, mimetype: str, status: int = 200, attachment_name: str = None) -> t.IResponse:
+        headers = {}
+
         if attachment_name:
             headers['Content-Disposition'] = f'attachment; filename="{attachment_name}"'
 
-        fp = werkzeug.wsgi.wrap_file(self.environ, open(path, 'rb'))
+        if path:
+            res = werkzeug.wsgi.wrap_file(self.environ, open(path, 'rb'))
+            headers['Content-Length'] = os.path.getsize(path)
+        else:
+            res = content
 
         return BaseResponse(
-            response=fp,
+            response=res,
             mimetype=mimetype,
             status=status,
             headers=headers,

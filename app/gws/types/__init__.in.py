@@ -260,8 +260,9 @@ class HttpResponse(Response):
 
 class FileResponse(Response):
     mime: str
-    path: str
+    content: bytes
     status: int
+    path: str
     attachment_name: str
 
 
