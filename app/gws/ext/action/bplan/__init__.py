@@ -2,14 +2,16 @@
 
 import gws
 import gws.common.action
-import gws.common.metadata
-import gws.tools.date
 import gws.common.db
+import gws.common.metadata
+import gws.common.model
 import gws.common.template
 import gws.ext.db.provider.postgres
-import gws.server.spool
-import gws.tools.job
+import gws.ext.helper.csv
 import gws.gis.shape
+import gws.server.spool
+import gws.tools.date
+import gws.tools.job
 import gws.tools.json2
 import gws.tools.upload
 import gws.web.error
@@ -39,11 +41,12 @@ class Config(t.WithTypeAndAccess):
     planTable: gws.common.db.SqlTableConfig  #: plan table configuration
     metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
     dataDir: t.DirPath  #: data directory
-    templates: t.List[t.ext.template.Config] #: templates
-    administrativeUnits: t.List[AdministrativeUnitConfig] #: Administrative Units
-    planTypes: t.List[PlanTypeConfig] #: Plan Types
+    templates: t.List[t.ext.template.Config]  #: templates
+    administrativeUnits: t.List[AdministrativeUnitConfig]  #: Administrative Units
+    planTypes: t.List[PlanTypeConfig]  #: Plan Types
     imageQuality: int = 24  #: palette size for optimized images
     uploadChunkSize: int  #: upload chunk size in mb
+    exportDataModel: t.Optional[gws.common.model.Config]  #: data model for csv export
 
 
 class AdministrativeUnit(t.Data):
@@ -115,6 +118,16 @@ class LoadInfoResponse(t.Response):
     info: str
 
 
+class ExportParams(t.Params):
+    auUid: str
+
+
+class ExportResponse(t.Response):
+    fileName: str
+    content: str
+    mime: str
+
+
 _RELOAD_FILE = gws.VAR_DIR + '/bplan.reload'
 
 
@@ -139,6 +152,9 @@ class Object(gws.common.action.Object):
         self.au_list = self.var('administrativeUnits')
         self.type_list = self.var('planTypes')
         self.image_quality = self.var('imageQuality')
+
+        p = self.var('exportDataModel')
+        self.export_data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
         for sub in 'png', 'pdf', 'cnv', 'qgs':
             gws.ensure_dir(self.data_dir + '/' + sub)
@@ -190,16 +206,12 @@ class Object(gws.common.action.Object):
                 WHERE _uid = %s
             ''', [p.uid])
 
-            if not r:
-                raise gws.web.error.NotFound()
+        if not r:
+            raise gws.web.error.NotFound()
 
-            self._check_au(req, r['_au'])
+        self._check_au(req, r['_au'])
 
-            conn.execute(f'''
-                DELETE
-                FROM {conn.quote_table(self.plan_table.name)}
-                WHERE _uid = %s
-            ''', [r['_uid']])
+        importer.delete_feature(self, r['_uid'])
 
         return DeleteFeatureResponse()
 
@@ -304,6 +316,35 @@ class Object(gws.common.action.Object):
     def api_load_info(self, req: t.IRequest, p: LoadInfoParams) -> LoadInfoResponse:
         res = self.info_template.render({'auUid': p.auUid})
         return LoadInfoResponse(info=res.content)
+
+    def api_csv_export(self, req: t.IRequest, p: ExportParams) -> ExportResponse:
+        au_uid = self._check_au(req, p.auUid)
+
+        features = self.db.select(t.SelectArgs(
+            table=self.plan_table,
+            extra_where=[f'_au = %s', au_uid],
+            sort='name',
+        ))
+
+        helper: gws.ext.helper.csv.Object = t.cast(
+            gws.ext.helper.csv.Object,
+            self.root.find_first('gws.ext.helper.csv'))
+        writer = helper.writer()
+        has_headers = False
+
+        for f in features:
+            if self.export_data_model:
+                f.apply_data_model(self.export_data_model)
+            if not has_headers:
+                writer.write_headers([a.name for a in f.attributes])
+                has_headers = True
+            writer.write_attributes(f.attributes)
+
+        return ExportResponse(
+            fileName='bauplaene_' + au_uid + '.csv',
+            content=writer.as_bytes(),
+            mime='text/csv'
+        )
 
     def do_import(self, path, replace):
         importer.run(self, path, replace)

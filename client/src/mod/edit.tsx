@@ -60,6 +60,7 @@ class EditModifyTool extends modify.Tool {
     }
 
     whenSelected(f) {
+        _master(this).unselectFeature2();
         _master(this).selectFeature2(f, false);
     }
 

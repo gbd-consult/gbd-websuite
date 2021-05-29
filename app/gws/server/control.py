@@ -1,4 +1,5 @@
 import time
+import shlex
 
 import gws
 import gws.config.loader
@@ -12,11 +13,27 @@ from . import ini
 _START_SCRIPT = gws.VAR_DIR + '/server.sh'
 
 
-def configure(config_path=None):
-    root = gws.config.loader.parse_and_activate(config_path)
+def configure(config_path=None, is_starting=False):
+    cfg = gws.config.loader.parse(config_path)
+
+    if is_starting:
+        autorun = gws.get(cfg, 'server.autoRun')
+        if autorun:
+            gws.log.info(f'AUTORUN: {autorun!r}')
+            cmds = shlex.split(autorun)
+            gws.tools.os2.run(cmds, echo=True)
+
+        timezone = gws.get(cfg, 'timeZone')
+        if timezone:
+            gws.tools.date.set_system_time_zone(timezone)
+
+    root = gws.config.loader.activate(cfg)
+
     if root.var('server.mapproxy.enabled'):
         gws.gis.mpx.config.create_and_save(root, ini.MAPPROXY_YAML_PATH)
+
     gws.config.loader.store(root)
+
     gws.log.info('CONFIGURATION OK')
     return root
 
@@ -24,18 +41,13 @@ def configure(config_path=None):
 def start(config_path=None):
     stop()
 
-    root = configure(config_path)
-    gws.tools.date.set_system_time_zone(root.var('server.timeZone'))
+    root = configure(config_path, is_starting=True)
 
     for p in gws.tools.os2.find_files(gws.SERVER_DIR, '.*'):
         gws.tools.os2.unlink(p)
 
     pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     commands = ini.create(root, gws.SERVER_DIR, pid_dir)
-
-    s = root.var('server.autoRun')
-    if s:
-        commands.insert(0, s)
 
     with open(_START_SCRIPT, 'wt') as fp:
         fp.write('echo "----------------------------------------------------------"\n')

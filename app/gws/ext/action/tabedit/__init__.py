@@ -24,6 +24,7 @@ class TableConfig(t.Config):
     dataModel: t.Optional[gws.common.model.Config]  #: table data model
     widths: t.Optional[t.List[int]]  #: column widths, 0 to exclude
     withFilter: t.Optional[bool]  #: use filter boxes
+    disableAddButton: t.Optional[bool]  #: disable the 'add' button
 
 
 class Config(t.WithTypeAndAccess):
@@ -38,7 +39,7 @@ class TableProps(t.Props):
     title: str
 
 
-class GetTablesRepsponse(t.Response):
+class GetTablesResponse(t.Response):
     tables: t.List[TableProps]
 
 
@@ -53,6 +54,8 @@ class LoadDataResponse(t.Response):
     records: t.List[t.Any]
     widths: t.Optional[t.List[int]]
     withFilter: bool
+    withAdd: bool
+    withDelete: bool
 
 
 class SaveDataParams(t.Params):
@@ -99,10 +102,12 @@ class Object(gws.common.action.Object):
                 sort=p.sort or table.key_column,
                 widths=p.widths or [],
                 with_filter=bool(p.withFilter),
+                with_add=not bool(p.disableAddButton),
+                with_delete=False,
             ))
 
-    def api_get_tables(self, req: t.IRequest, p: t.Params) -> GetTablesRepsponse:
-        return GetTablesRepsponse(
+    def api_get_tables(self, req: t.IRequest, p: t.Params) -> GetTablesResponse:
+        return GetTablesResponse(
             tables=[t.Props(
                 uid=tbl.uid,
                 title=tbl.title,
@@ -138,6 +143,8 @@ class Object(gws.common.action.Object):
             records=records,
             widths=tbl.widths or None,
             withFilter=tbl.with_filter,
+            withAdd=tbl.with_add,
+            withDelete=tbl.with_delete,
         )
 
     def api_save_data(self, req: t.IRequest, p: SaveDataParams) -> SaveDataResponse:
@@ -164,6 +171,10 @@ class Object(gws.common.action.Object):
                 upd_features.append(f)
             else:
                 ins_features.append(f)
+
+        if ins_features and not tbl.with_add:
+            # @TODO: this must be done in the dataModel
+            raise gws.web.error.Forbidden()
 
         if upd_features:
             self.db.edit_operation('update', tbl.table, upd_features)

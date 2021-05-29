@@ -80,15 +80,11 @@ class GekosRequest:
             yield rec
 
     def load_data(self):
-        params = dict(self.options.params)
-        if self.instance != 'none':
-            params['instance'] = self.instance
-
+        params = dict(self.options.params or {})
         res = gws.tools.net.http_request(
             self.options.url,
             params=params
         )
-
         return (res.text or '').strip()
 
     def free_point(self, x, y, points):

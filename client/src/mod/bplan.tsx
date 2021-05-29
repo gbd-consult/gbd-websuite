@@ -156,6 +156,13 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                     </Cell>
                     <Cell>
                         <sidebar.AuxButton
+                            {...gws.tools.cls('modBplanCSVAuxButton')}
+                            tooltip={this.props.controller.__('modBplanTitleCSV')}
+                            whenTouched={() => cc.csvExport()}
+                        />
+                    </Cell>
+                    <Cell>
+                        <sidebar.AuxButton
                             {...gws.tools.cls('modBplanInfoAuxButton')}
                             tooltip={this.props.controller.__('modBplanTitleInfo')}
                             whenTouched={() => cc.openInfoDialog()}
@@ -408,6 +415,11 @@ class BplanController extends gws.Controller {
         });
     }
 
+    refresh() {
+        this.selectAu(this.getValue('bplanAuUid'));
+        this.map.forceUpdate();
+    }
+
     openImportDialog() {
         if (!this.getValue('bplanAuUid')) {
             return;
@@ -447,7 +459,7 @@ class BplanController extends gws.Controller {
     async submitDelete(f) {
         let res = await this.app.server.bplanDeleteFeature({uid: f.uid});
         this.update({bplanDialog: null});
-        await this.selectAu(this.getValue('bplanAuUid'));
+        await this.refresh();
     }
 
     async chunkedUpload(name: string, buf: Uint8Array, chunkSize: number): Promise<string> {
@@ -474,6 +486,24 @@ class BplanController extends gws.Controller {
         }
 
         return uid;
+    }
+
+    async csvExport() {
+        let res = await this.app.server.bplanCsvExport({
+            auUid: this.getValue('bplanAuUid'),
+        }, {binary: true});
+
+        if (res.error) {
+            return;
+        }
+
+        let a = document.createElement('a');
+        a.href = window.URL.createObjectURL(new Blob([res.content], {type: res.mime}));
+        a.download = res.fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(a.href);
+        document.body.removeChild(a);
     }
 
     async submitMeta() {
@@ -546,6 +576,7 @@ class BplanController extends gws.Controller {
 
             case gws.api.JobState.complete:
                 this.stop()
+                gws.tools.nextTick(() => this.refresh());
                 return this.update({
                     bplanImportStats: job.stats,
                     bplanDialog: 'ok'

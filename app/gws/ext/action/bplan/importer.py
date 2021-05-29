@@ -55,6 +55,24 @@ def update(action):
     _create_qgis_projects(action, au_uids)
 
 
+def delete_feature(action, uid):
+    if not uid:
+        return
+
+    with action.db.connect() as conn:
+        conn.execute(f'''
+            DELETE
+            FROM {conn.quote_table(action.plan_table.name)}
+            WHERE _uid = %s
+        ''', [uid])
+
+    dd = action.data_dir
+
+    _delete_feature_assets(dd + '/pdf', uid)
+    _delete_feature_assets(dd + '/png', uid)
+    _delete_feature_assets(dd + '/cnv', uid)
+
+
 ##
 
 def _run2(action, src_dir, replace, au_uid, job):
@@ -490,3 +508,11 @@ def _update_job(job, **kwargs):
         raise gws.tools.job.PrematureTermination(f'WRONG_STATE={j.state}')
 
     j.update(**kwargs)
+
+
+def _delete_feature_assets(dir, uid):
+    for p in os2.find_files(dir, ext=['pdf', 'png', 'pgw']):
+        fn = _filename(p)
+        if fn.startswith(uid):
+            gws.log.debug(f'DELETE {p}')
+            os2.unlink(p)

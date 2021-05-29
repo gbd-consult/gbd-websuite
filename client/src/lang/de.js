@@ -303,6 +303,7 @@ module.exports = {
     modBplanTitleMeta: 'Metadaten editieren',
     modBplanTitleInfo: 'Dienste',
     modBplanTitleDelete: 'Bauleitplan löschen?',
+    modBplanTitleCSV: 'Als CSV exportieren',
 
     modBplanTitleImportComplete: 'Import abgeschlossen',
     modBplanImportStatsNumRecords: 'Baupläne:',

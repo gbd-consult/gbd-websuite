@@ -23,6 +23,8 @@ In diesem Helper (s. ^helper) werden allgemeine ALKIS Einstellungen konfiguriert
    ``indexSchema`` | Postgres Schema in dem die Indexe geschrieben werden
 {/TABLE}
 
+Sie können bei Bedarf auch mehrere Alkis Helper einrichten, z.B. für verschiedene Zuständigkeitsbereiche. In diesem Fall muss jeder Helper eine eindeutige ID haben.
+
 Indizierung
 -----------
 
@@ -44,6 +46,7 @@ Aktion ``alkissearch``
 Die Optionen für diese Aktion sind:
 
 {TABLE}
+    ``helper`` | ALKIS Helper ID (falls Sie mehrere Helper konfiguriert haben)
     ``buchung`` | Zugang zu Grundbuchung Daten (z.B. Blattnummer)
     ``eigentuemer`` | Zugang zu Eigentümerdaten (z.B. Name, Adresse)
     ``export`` | Konfiguration der CSV-Export Funktion. Für diese Funktion muss auch den CSV Helper konfiguriert werden (s. ^csv)

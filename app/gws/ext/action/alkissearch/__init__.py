@@ -99,6 +99,7 @@ class UiConfig(t.Config):
 class Config(t.WithTypeAndAccess):
     """Flurstückssuche (cadaster parlcels search) action"""
 
+    helper: t.Optional[str] #: ALKIS helper uid
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
     buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
     limit: int = 100  #: search results limit
@@ -268,12 +269,19 @@ _EF_FAIL = -1  # access to Eigentümer granted, control check failed
 
 
 class Object(gws.common.action.Object):
+    alkis: gws.ext.helper.alkis.Object
+
     def configure(self):
         super().configure()
 
         self.valid: bool = False
 
-        self.alkis: gws.ext.helper.alkis.Object = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
+        p = self.var('helper')
+        if p:
+             self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find('gws.ext.helper.alkis', p))
+        else:
+            self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
+
         if not self.alkis:
             gws.log.warn('alkissearch cannot init, alkis helper not found')
             return

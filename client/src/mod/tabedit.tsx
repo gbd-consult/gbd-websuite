@@ -159,12 +159,12 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
                 {this.props.tabeditError && <gws.ui.Error text={this.__('modTabeditDialogError')}/>}
             </Cell>
             <Cell flex/>
-            <Cell>
+            {this.props.tabeditData.withAdd && <Cell>
                 <gws.ui.Button
                     className="modTabeditButtonAdd"
                     whenTouched={() => this.props.controller.addRecord()}
                 />
-            </Cell>
+            </Cell>}
             <Cell>
                 <gws.ui.Button
                     className="modTabeditButtonSave"
