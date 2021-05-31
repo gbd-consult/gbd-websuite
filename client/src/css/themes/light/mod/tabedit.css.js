@@ -22,7 +22,6 @@ module.exports = v => ({
     },
 
     '.modTabeditListTitle': {
-        opacity: 0.6,
         lineHeight: 1.3,
         overflow: 'hidden',
         '.uiRawButton': {
@@ -45,7 +44,6 @@ module.exports = v => ({
         '&.isDisabled': {
             opacity: 0.3
         }
-
     },
 
     '.uiIconButton.modTabeditButtonAdd': {
@@ -62,7 +60,7 @@ module.exports = v => ({
 
     '.modTabeditFilter .uiIconButton': {
         ...v.ICON_SIZE('tiny'),
-        ...v.SVG(v.SEARCH_ICON, v.BORDER_COLOR),
+        ...v.SVG(v.SEARCH_ICON, v.TEXT_COLOR),
     },
 
 

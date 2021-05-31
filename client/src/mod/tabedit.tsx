@@ -103,7 +103,8 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
 
 
     tableDialog() {
-        let data = this.props.tabeditData,
+        let cc = this.props.controller,
+            data = this.props.tabeditData,
             records = this.applyFilters(data.records),
             widths = data.widths,
             len = records.length,
@@ -117,7 +118,7 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
         if (page > lastPage)
             page = lastPage;
 
-        let goTo = p => this.props.controller.update({
+        let goTo = p => cc.update({
             tabeditPage: p,
             tabeditSelectRecord: -1,
         });
@@ -162,14 +163,14 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
             {this.props.tabeditData.withAdd && <Cell>
                 <gws.ui.Button
                     className="modTabeditButtonAdd"
-                    whenTouched={() => this.props.controller.addRecord()}
+                    whenTouched={() => cc.addRecord()}
                 />
             </Cell>}
             <Cell>
                 <gws.ui.Button
                     className="modTabeditButtonSave"
                     disabled={gws.tools.empty(dirtyFields)}
-                    whenTouched={() => this.props.controller.saveData()}
+                    whenTouched={() => cc.saveData()}
                 />
             </Cell>
             <Cell>
@@ -181,17 +182,17 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
         </Row>;
 
         let update = (record, ncol, value) => {
-            let d = {...dirtyFields},
+            let dirty = {...dirtyFields},
                 key = record['_uid'] + '.' + ncol;
 
             if (value === record[ncol])
-                delete d[key];
+                delete dirty[key];
             else
-                d[key] = value;
+                dirty[key] = value;
 
-            this.props.controller.update({
+            cc.update({
                 tabeditSelectRecord: -1,
-                tabeditDirtyFields: d
+                tabeditDirtyFields: dirty,
             });
         };
 

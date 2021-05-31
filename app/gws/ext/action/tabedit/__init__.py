@@ -19,12 +19,14 @@ import gws.types as t
 
 class TableConfig(t.Config):
     title: t.Optional[str]
-    table: gws.common.db.SqlTableConfig  #: sql table configurations
+    table: gws.common.db.SqlTableConfig  #: sql table configuration
     sort: t.Optional[str]  #: sort expression
     dataModel: t.Optional[gws.common.model.Config]  #: table data model
     widths: t.Optional[t.List[int]]  #: column widths, 0 to exclude
     withFilter: t.Optional[bool]  #: use filter boxes
-    disableAddButton: t.Optional[bool]  #: disable the 'add' button
+    withAdd: t.Optional[bool]  #: use the 'add' button
+    # @TODO
+    # withDelete: t.Optional[bool]  #: use the 'delete' button
 
 
 class Config(t.WithTypeAndAccess):
@@ -102,7 +104,7 @@ class Object(gws.common.action.Object):
                 sort=p.sort or table.key_column,
                 widths=p.widths or [],
                 with_filter=bool(p.withFilter),
-                with_add=not bool(p.disableAddButton),
+                with_add=bool(p.withAdd),
                 with_delete=False,
             ))
 
