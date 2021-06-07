@@ -3,6 +3,7 @@
 import gws.common.action
 import gws.common.printer.job as pj
 import gws.tools.job
+import gws.tools.mime
 import gws.common.printer.types as pt
 import gws.web.error
 
@@ -53,5 +54,6 @@ class Object(gws.common.action.Object):
         if not job or job.state != gws.tools.job.State.complete:
             raise gws.web.error.NotFound()
 
-        return t.FileResponse(mime='application/pdf', path=job.result['path'])
+        path = job.result['path']
+        return t.FileResponse(mime=gws.tools.mime.for_path(path), path=path)
 
