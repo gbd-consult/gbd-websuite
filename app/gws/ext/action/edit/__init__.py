@@ -45,5 +45,9 @@ class Object(gws.common.action.Object):
             raise gws.web.error.Forbidden()
 
         features = layer.edit_operation(op, p.features)
+        for f in features:
+            f.transform_to(layer.map.crs)
+            f.apply_templates()
+            f.apply_data_model()
 
-        return EditResponse(features=[f.apply_templates().apply_data_model().props for f in features])
+        return EditResponse(features=[f.props for f in features])
