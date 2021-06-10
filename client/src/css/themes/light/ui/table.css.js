@@ -67,6 +67,12 @@ module.exports = v => ({
         color: v.DISABLED_COLOR,
     },
 
+    '.uiTableReadonlyValue': {
+        color: v.DISABLED_COLOR,
+        padding: v.UNIT2,
+        height: v.UNIT * 15,
+    },
+
     '.uiPagerFirst': {
         ...v.ICON_BUTTON(),
         ...v.ICON_SIZE('small'),

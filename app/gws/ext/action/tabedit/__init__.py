@@ -127,16 +127,21 @@ class Object(gws.common.action.Object):
             extra_where=['true']
         ))
 
-        attributes = None
+        attributes = [
+            t.Attribute(
+                name=r.name,
+                title=r.title,
+                type=r.type,
+                editable=r.editable,
+            ) for r in tbl.data_model.rules
+        ]
+
         records = []
 
         for f in features:
             f.apply_data_model(tbl.data_model)
-            records.append([a.value for a in f.attributes])
-            if not attributes:
-                for a in f.attributes:
-                    del a.value
-                attributes = f.attributes
+            attr_dict = f.attr_dict
+            records.append([attr_dict.get(a.name) for a in attributes])
 
         return LoadDataResponse(
             tableUid=tbl.uid,
