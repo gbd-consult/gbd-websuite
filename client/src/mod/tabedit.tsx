@@ -214,8 +214,11 @@ class TabeditDialog extends gws.View<TabeditViewProps> {
                     isDirty = key in dirtyFields,
                     val = isDirty ? dirtyFields[key] : record[a.ncol];
 
-                if (!a.attr.editable)
-                    return String(val);
+                if (!a.attr.editable) {
+                    return <div className="uiTableReadonlyValue">
+                        {val === null ? '' : String(val)}
+                    </div>
+                }
 
                 // if (a.type === gws.api.AttributeType.int)
                 //     return <gws.ui.NumberInput
