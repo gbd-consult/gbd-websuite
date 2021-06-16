@@ -1,3 +1,4 @@
+___*
 *.bak
 *.iml
 *.pyc
@@ -11,14 +12,10 @@
 .idea
 .mypy*
 .pytest_cache
-/app/spec/gen
-/app/www
-/client/_build
-/client/_docs
-/client/node_modules
-/doc/_build
-/doc/sphinx/ref
-/install/_build
-___*
 __pycache__
+__build*
+node_modules
+/app/gws/spec/gen
+/app/www
+/doc/sphinx/ref
 _autosummary
