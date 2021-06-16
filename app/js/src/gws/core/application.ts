@@ -7,8 +7,8 @@ import {StyleManager} from '../map/style';
 import {Tool} from './controller';
 import {RootController} from './root';
 
-import * as api from '../core/gws-api';
-import * as tools from '../tools';
+import * as api from './api';
+import * as lib from '../lib';
 
 class DefaultTool extends Tool {
     start() {
@@ -69,7 +69,7 @@ export class Application implements types.IApplication {
 
         this.server.whenChanged = () => this.store.update({'appRequestCount': this.server.requestCount});
 
-        this.cssBreakpoints = tools.entries(this.options.cssBreakpoints).sort((a, b) => a[1] - b[1]);
+        this.cssBreakpoints = lib.entries(this.options.cssBreakpoints).sort((a, b) => a[1] - b[1]);
         this.domNode = options.domNode;
     }
 
@@ -319,7 +319,7 @@ export class Application implements types.IApplication {
     }
 
     controllerByTag(tag) {
-        for (let [_, c] of tools.entries(this.controllers)) {
+        for (let [_, c] of lib.entries(this.controllers)) {
             if (c.tag === tag)
                 return c;
         }

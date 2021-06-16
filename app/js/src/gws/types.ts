@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
-import * as api from './core/gws-api';
+import * as api from './core/api';
 
 export interface Dict {
     [key: string]: any;

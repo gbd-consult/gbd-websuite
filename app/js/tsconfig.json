@@ -1,18 +1,25 @@
 {
     "compilerOptions": {
-        "outDir": "_build",
-        "sourceMap": true,
-        "noImplicitAny": false,
-        "module": "commonjs",
-        "target": "es5",
+        "baseUrl": "./",
+        "incremental": true,
+        "inlineSourceMap": true,
+        "jsx": "react",
         "lib": [
-            "es5",
-            "es6",
+            "es2019",
             "dom"
         ],
-        "jsx": "react"
-    },
-    "include": [
-        "./src/**/*"
-    ]
+        "module": "CommonJS",
+        "noEmitOnError": true,
+        "noImplicitAny": false,
+        "outDir": "./__build",
+        "paths": {
+            "*": [
+                "./src/*",
+                "./node_modules/*"
+            ]
+        },
+        "preserveWatchOutput": true,
+        "rootDir": "/",
+        "target": "es2019"
+    }
 }

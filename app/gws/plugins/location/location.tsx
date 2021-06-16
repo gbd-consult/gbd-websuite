@@ -109,7 +109,7 @@ class LocationToolbarButton extends toolbar.Button {
 
 }
 
-export const tags = {
+gws.registerTags({
     'Shared.Location': LocationController,
     'Toolbar.Location': LocationToolbarButton,
-};
+});

@@ -1,8 +1,8 @@
 import * as ol from 'openlayers';
 
 import * as types from '../types';
-import * as tools from '../tools';
-import * as api from '../core/gws-api';
+import * as lib from '../lib';
+import * as api from '../core/api';
 
 const DEFAULT_TILE_TRANSITION = 700;
 
@@ -402,7 +402,7 @@ abstract class BaseVectorLayer extends OlBackedLayer<ol.layer.Vector> implements
 export class FeatureLayer extends BaseVectorLayer implements types.IMapFeatureLayer {
 
     get printItem(): api.PrintItem {
-        let fs = tools.compact(this.features.map(f => f.getProps()));
+        let fs = lib.compact(this.features.map(f => f.getProps()));
 
         if (fs.length === 0)
             return null;

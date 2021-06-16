@@ -2,8 +2,8 @@ import * as ol from 'openlayers';
 import * as proj4 from 'proj4';
 
 import * as types from '../types';
-import * as api from '../core/gws-api';
-import * as tools from '../tools';
+import * as api from '../core/api';
+import * as lib from '../lib';
 
 import * as layer from './layer';
 
@@ -77,9 +77,9 @@ export class MapManager implements types.IMapManager {
                 centerX: c[0],
                 centerY: c[1],
                 resolution: res,
-                scale: tools.res2scale(res),
+                scale: lib.res2scale(res),
                 rotation: rot,
-                angle: tools.rad2deg(rot),
+                angle: lib.rad2deg(rot),
             }
         }
     }
@@ -276,24 +276,24 @@ export class MapManager implements types.IMapManager {
     //
 
     constrainScale(scale: number): number {
-        let res = tools.clamp(
-            tools.scale2res(scale),
+        let res = lib.clamp(
+            lib.scale2res(scale),
             Math.min(...this.resolutions),
             Math.max(...this.resolutions),
         );
-        return tools.res2scale(res);
+        return lib.res2scale(res);
     }
 
     protected prepareViewState(vs: any) {
         let p: any = {};
 
         if ('scale' in vs) {
-            vs.resolution = tools.scale2res(vs.scale);
+            vs.resolution = lib.scale2res(vs.scale);
         }
 
         if ('resolution' in vs) {
-            p.resolution = tools.clamp(
-                tools.asNumber(vs.resolution),
+            p.resolution = lib.clamp(
+                lib.asNumber(vs.resolution),
                 Math.min(...this.resolutions),
                 Math.max(...this.resolutions),
             );
@@ -306,17 +306,17 @@ export class MapManager implements types.IMapManager {
 
         if ('centerX' in vs && 'centerY' in vs) {
             p.center = this.oView.constrainCenter([
-                tools.asNumber(vs.centerX),
-                tools.asNumber(vs.centerY)
+                lib.asNumber(vs.centerX),
+                lib.asNumber(vs.centerY)
             ]);
         }
 
         if ('angle' in vs) {
-            vs.rotation = tools.deg2rad(tools.asNumber(vs.angle));
+            vs.rotation = lib.deg2rad(lib.asNumber(vs.angle));
         }
 
         if ('rotation' in vs) {
-            let r = tools.clamp(tools.asNumber(vs.rotation), 0, Math.PI * 2);
+            let r = lib.clamp(lib.asNumber(vs.rotation), 0, Math.PI * 2);
             p.rotation = this.oView.constrainRotation(r);
         }
 
@@ -391,7 +391,7 @@ export class MapManager implements types.IMapManager {
 
         this.setViewState({
             center: ol.extent.getCenter(extent),
-            resolution: tools.clamp(res,
+            resolution: lib.clamp(res,
                 Math.min(...this.resolutions),
                 Math.max(...this.resolutions))
         }, animate);
@@ -580,7 +580,7 @@ export class MapManager implements types.IMapManager {
     }
 
     formatCoordinate(n) {
-        return tools.toFixedMax(n, this.coordinatePrecision)
+        return lib.toFixedMax(n, this.coordinatePrecision)
 
     }
 
@@ -588,11 +588,11 @@ export class MapManager implements types.IMapManager {
         let xs = [
             this.formatCoordinate(vs.centerX),
             this.formatCoordinate(vs.centerY),
-            tools.res2scale(vs.resolution),
+            lib.res2scale(vs.resolution),
         ];
 
         if (vs.rotation) {
-            xs.push(tools.rad2deg(vs.rotation))
+            xs.push(lib.rad2deg(vs.rotation))
         }
 
         return xs.join(',');
@@ -615,8 +615,8 @@ export class MapManager implements types.IMapManager {
         return {
             centerX: xs[0],
             centerY: xs[1],
-            resolution: tools.scale2res(xs[2]),
-            rotation: tools.deg2rad(xs[3]),
+            resolution: lib.scale2res(xs[2]),
+            rotation: lib.deg2rad(xs[3]),
         };
     }
 
@@ -668,7 +668,7 @@ export class MapManager implements types.IMapManager {
         this.updatePointerPosition([vs.centerX, vs.centerY]);
         this.viewChanged('init');
 
-        this.oMap.on('pointermove', tools.debounce(
+        this.oMap.on('pointermove', lib.debounce(
             e => this.updatePointerPosition(e.coordinate),
             POINTER_UPDATE_INTERVAL));
 
@@ -769,7 +769,7 @@ export class MapManager implements types.IMapManager {
         let params: api.SearchParams = {
             bbox: this.bbox,
             keyword: args.keyword || '',
-            layerUids: tools.compact(ls.map(la => la.uid)),
+            layerUids: lib.compact(ls.map(la => la.uid)),
             resolution: this.viewState.resolution,
             limit: args.limit || 999
         };
@@ -805,7 +805,7 @@ export class MapManager implements types.IMapManager {
                 layers.push(layer)
         }));
 
-        return tools.uniq(layers);
+        return lib.uniq(layers);
     }
 
     protected async printItems(boxRect, dpi): Promise<Array<api.PrintItem>> {
@@ -858,7 +858,7 @@ export class MapManager implements types.IMapManager {
 
             let bmp: api.PrintItem;
 
-            await tools.delay(200, () => {
+            await lib.delay(200, () => {
                 console.time('creating_bitmap');
                 bmp = makeBitmap2();
                 console.timeEnd('creating_bitmap');
@@ -940,8 +940,8 @@ export class MapManager implements types.IMapManager {
 
         return {
             items: await this.printItems(boxRect, dpi),
-            rotation: Math.round(tools.rad2deg(vs.rotation)),
-            scale: tools.res2scale(vs.resolution),
+            rotation: Math.round(lib.rad2deg(vs.rotation)),
+            scale: lib.res2scale(vs.resolution),
             legendLayers,
         }
     }
@@ -956,7 +956,7 @@ export class MapManager implements types.IMapManager {
                 a.push(layer.attribution);
         });
 
-        return tools.uniq(tools.compact(a));
+        return lib.uniq(lib.compact(a));
     }
 
     protected insertLayer(layer, where, parent) {

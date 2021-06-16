@@ -1,82 +1,88 @@
 module.exports = {
-    version: require('fs').readFileSync(__dirname + '/../VERSION', 'utf8').trim(),
+    version: require('fs').readFileSync(__dirname + '/../../VERSION', 'utf8').trim(),
 
     appName: "gws-client",
-    dist: "_build",
-    gwsServerUrl: "http://127.0.0.1:3333",
+    buildDir: "__build",
+    bundleFileName: "__build.client.json",
+
+    development: {
+        serverPort: 8080,
+        proxyUrl: "http://127.0.0.1:3333",
+        openBrowser: false
+    },
 
     vendors: [
         {
-            "key": "react",
+            "module": "react",
             "name": "React",
             "path": "./node_modules/react/umd/react.production.min.js",
-            "uid": "r"
+            "devPath": "./node_modules/react/umd/react.development.js",
         },
         {
-            "key": "react-dom",
+            "module": "react-dom",
             "name": "ReactDOM",
             "path": "./node_modules/react-dom/umd/react-dom.production.min.js",
-            "uid": "rd"
+            "devPath": "./node_modules/react-dom/umd/react-dom.development.js",
         },
         {
-            "key": "redux",
+            "module": "redux",
             "name": "Redux",
             "path": "./node_modules/redux/dist/redux.min.js",
-            "uid": "x"
+            "devPath": "./node_modules/redux/dist/redux.js",
         },
         {
-            "key": "react-redux",
+            "module": "react-redux",
             "name": "ReactRedux",
             "path": "./node_modules/react-redux/dist/react-redux.min.js",
-            "uid": "rx"
+            "devPath": "./node_modules/react-redux/dist/react-redux.js",
         },
         {
-            "key": "openlayers",
+            "module": "openlayers",
             "name": "ol",
             "path": "./node_modules/openlayers/dist/ol.js",
-            "uid": "ol"
+            "devPath": "./node_modules/openlayers/dist/ol-debug.js",
         },
         {
-            "key": "axios",
+            "module": "axios",
             "name": "axios",
             "path": "./node_modules/axios/dist/axios.min.js",
-            "uid": "a"
+            "devPath": "./node_modules/axios/dist/axios.js",
         },
         {
-            "key": "lodash",
+            "module": "lodash",
             "name": "_",
             "path": "./node_modules/lodash/lodash.min.js",
-            "uid": "l"
+            "devPath": "./node_modules/lodash/lodash.js",
         },
         {
-            "key": "proj4",
+            "module": "proj4",
             "name": "proj4",
             "path": "./node_modules/proj4/dist/proj4.js",
-            "uid": "j"
+            "devPath": "./node_modules/proj4/dist/proj4-src.js",
         },
         {
-            "key": "geographiclib",
+            "module": "geographiclib",
             "name": "GeographicLib",
             "path": "./node_modules/geographiclib/geographiclib.min.js",
-            "uid": "g"
+            "devPath": "./node_modules/geographiclib/geographiclib.min.js",
         },
         {
-            "key": "msgpack",
-            "name": "@ygoe/msgpack",
+            "module": "@ygoe/msgpack",
+            "name": "msgpack",
             "path": "./node_modules/@ygoe/msgpack/msgpack.min.js",
-            "uid": "mp"
+            "devPath": "./node_modules/@ygoe/msgpack/msgpack.js",
         },
         {
-            "key": "tinycolor",
-            "name": "tinycolor2",
+            "module": "tinycolor2",
+            "name": "tinycolor",
             "path": "./node_modules/tinycolor2/dist/tinycolor-min.js",
-            "uid": "tc"
+            "devPath": "./node_modules/tinycolor2/tinycolor.js",
         },
         {
-            "key": "moment",
+            "module": "moment",
             "name": "moment",
             "path": "./node_modules/moment/min/moment.min.js",
-            "uid": "m"
+            "devPath": "./node_modules/moment/min/moment.min.js",
         },
     ],
 
@@ -85,5 +91,9 @@ module.exports = {
             name: "light",
             path: "./src/css/themes/light/index.css.js"
         }
+    ],
+
+    locales: [
+        'de_DE', 'en_CA'
     ]
 };

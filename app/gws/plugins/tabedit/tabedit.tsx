@@ -479,7 +479,7 @@ class TabeditController extends gws.Controller {
 
 }
 
-export const tags = {
+gws.registerTags({
     [MASTER]: TabeditController,
     'Sidebar.Tabedit': TabeditSidebar,
-};
+});

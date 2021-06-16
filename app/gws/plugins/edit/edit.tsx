@@ -536,9 +536,9 @@ class EditController extends gws.Controller {
 
 }
 
-export const tags = {
+gws.registerTags({
     'Shared.Edit': EditController,
     'Sidebar.Edit': EditSidebar,
     'Tool.Edit.Modify': EditModifyTool,
     'Tool.Edit.Draw': EditDrawTool,
-};
+});

@@ -1,8 +1,8 @@
 import * as ol from 'openlayers';
 
 import * as types from '../types';
-import * as api from '../core/gws-api';
-import * as tools from '../tools';
+import * as api from '../core/api';
+import * as lib from '../lib';
 
 export const DEFAULT_VALUES: api.StyleValues = {
     with_label: api.StyleLabelOption.none,
@@ -139,7 +139,7 @@ export class StyleManager implements types.IStyleManager {
     }
 
     protected create(values: api.StyleValues, name = null) {
-        name = name || tools.uniqId('style');
+        name = name || lib.uniqId('style');
         let s = new Style(name, values);
         this.styles[name] = s;
         console.log('STYLE:created', name, values);
@@ -315,9 +315,9 @@ export class Style extends BaseStyle {
                 this.cache.labelMaxResolution = 1e20;
 
                 if ('label_min_scale' in sv)
-                    this.cache.labelMinResolution = tools.scale2res(sv.label_min_scale);
+                    this.cache.labelMinResolution = lib.scale2res(sv.label_min_scale);
                 if ('label_max_scale' in sv)
-                    this.cache.labelMaxResolution = tools.scale2res(sv.label_max_scale);
+                    this.cache.labelMaxResolution = lib.scale2res(sv.label_max_scale);
 
                 this.cache.labelPlacement = sv.label_placement;
             }
@@ -530,7 +530,7 @@ export function parseCssSelector(selector: string): [api.StyleValues, string] {
     return [null, ''];
 }
 
-// below is what we have in tools/style.py
+// below is what we have in lib/style.py
 
 
 let _color_patterns = [

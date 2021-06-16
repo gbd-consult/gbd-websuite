@@ -833,7 +833,7 @@ class SidebarUIDemoController extends gws.Controller implements gws.types.ISideb
     }
 }
 
-export const tags = {
+gws.registerTags({
     'Shared.UIDemo': SidebarUIDemoController,
     'Sidebar.UIDemo': SidebarUIDemoController
-};
+});

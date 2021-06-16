@@ -803,11 +803,11 @@ class AnnotateController extends gws.Controller {
 
 }
 
-export const tags = {
+gws.registerTags({
     [MASTER]: AnnotateController,
     'Sidebar.Annotate': AnnotateSidebar,
     'Toolbar.Annotate.Draw': AnnotateDrawToolbarButton,
     'Tool.Annotate.Modify': AnnotateModifyTool,
     'Tool.Annotate.Draw': AnnotateDrawTool,
 
-};
+});

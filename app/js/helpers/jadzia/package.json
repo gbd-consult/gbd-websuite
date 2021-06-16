@@ -1,0 +1,21 @@
+{
+    "name": "jadzia",
+    "version": "0.0.1",
+    "author": {
+        "name": "Georg Barikin",
+        "email": "georg@merribithouse.net"
+    },
+    "dependencies": {},
+    "description": "Create CSS from javascript objects",
+    "homepage": "https://github.com/gebrkn/jadzia",
+    "keywords": ["css", "preprocessor", "generator", "css-in-js"],
+    "license": "MIT",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/gebrkn/jadzia.git"
+    },
+    "scripts": {
+        "test": "node ./test.js"
+    }
+}

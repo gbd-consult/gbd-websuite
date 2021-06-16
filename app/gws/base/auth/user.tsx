@@ -147,6 +147,6 @@ class SidebarUserTab extends gws.Controller implements gws.types.ISidebarItem {
 
 }
 
-export const tags = {
+gws.registerTags({
     'Sidebar.User': SidebarUserTab,
-};
+});

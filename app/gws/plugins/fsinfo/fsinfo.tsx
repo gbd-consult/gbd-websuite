@@ -992,7 +992,7 @@ class FsinfoController extends gws.Controller {
 
 }
 
-export const tags = {
+gws.registerTags({
     [MASTER]: FsinfoController,
     'Sidebar.Fsinfo': FsinfoSidebar,
-};
+});

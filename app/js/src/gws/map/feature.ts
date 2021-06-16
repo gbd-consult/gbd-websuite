@@ -1,8 +1,8 @@
 import * as ol from 'openlayers';
 
 import * as types from '../types';
-import * as api from '../core/gws-api';
-import * as tools from '../tools';
+import * as api from '../core/api';
+import * as lib from '../lib';
 
 export class Feature implements types.IMapFeature {
     uid: string = '';
@@ -32,7 +32,7 @@ export class Feature implements types.IMapFeature {
             this.layerUid = args.props.layerUid || '';
         }
 
-        this.uid = this.uid || tools.uniqId(this.layerUid || '_feature_');
+        this.uid = this.uid || lib.uniqId(this.layerUid || '_feature_');
 
         let oFeature = this.oFeatureFromArgs(args);
         if (oFeature) {

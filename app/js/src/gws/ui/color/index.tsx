@@ -1,0 +1,186 @@
+import * as React from 'react';
+import * as tinycolor from 'tinycolor2'
+
+import * as base from '../base';
+
+import {Touchable} from '../button';
+import {Tracker} from '../tracker';
+import {Form, Row, Cell} from '../layout';
+
+
+type ColorPickerProps = base.InputProps<string>;
+
+interface RGBA {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+}
+
+
+export class ColorPicker extends base.Control<ColorPickerProps> {
+    render() {
+        let clr = this.props.value ? tinycolor(this.props.value) : null;
+        let sample = clr
+            ? <div style={{backgroundColor: clr.toRgbString()}}/>
+            : <div className='uiColorPickerNoColor'/>;
+
+        let buttonProps = {
+            ref: this.focusRef,
+            tabIndex: 0,
+            className: 'uiColorPickerSample',
+            onClick: () => this.toggle()
+        };
+
+        return <base.Content of={this} withClass="uiColorPicker">
+            <base.Box>
+                <button {...buttonProps}>{sample}</button>
+                <Touchable
+                    className="uiClearButton"
+                    whenTouched={() => this.clear()}/>
+                <Touchable
+                    className="uiDropDownToggleButton"
+                    whenTouched={() => this.toggle()}/>
+            </base.Box>
+
+            <base.DropDown>
+                <ColorPickerDropDown
+                    rgba={clr ? clr.toRgb() : {r:0, g:0, b:0, a:0}}
+                    whenChanged={rgba => this.whenDropDownChanged(rgba)}
+                />
+            </base.DropDown>
+        </base.Content>
+    }
+
+    //
+
+    protected toggle() {
+        this.grabFocus();
+        this.toggleOpen();
+    }
+
+    protected clear() {
+        this.grabFocus();
+        this.props.whenChanged('');
+    }
+
+    protected whenDropDownChanged(rgba: RGBA) {
+        this.props.whenChanged(tinycolor(rgba).toRgbString());
+    }
+}
+
+//
+
+interface ColorPickerDropDownProps {
+    rgba: RGBA;
+    whenChanged: (rgba: RGBA) => void;
+}
+
+class ColorPickerDropDown extends base.Pure<ColorPickerDropDownProps> {
+    ref: {[key: string]: React.RefObject<HTMLDivElement>};
+
+    constructor(props) {
+        super(props);
+        this.ref = {
+            r: React.createRef(),
+            g: React.createRef(),
+            b: React.createRef(),
+            a: React.createRef(),
+        }
+    }
+
+    render() {
+        return <div className="uiDropDownContent">
+            <Form>
+                <Row>
+                    <Cell flex>
+                        <div className="uiColorPickerBar uiColorPickerBarR" ref={this.ref.r}>
+                            <canvas/>
+                            <Tracker
+                                xValueMin={0}
+                                xValueMax={255}
+                                xValue={this.props.rgba.r}
+                                whenChanged={(x, y) => this.props.whenChanged({...this.props.rgba, r: x})}
+                            />
+                        </div>
+                    </Cell>
+                </Row>
+                <Row>
+                    <Cell flex>
+                        <div className="uiColorPickerBar uiColorPickerBarG" ref={this.ref.g}>
+                            <canvas/>
+                            <Tracker
+                                xValueMin={0}
+                                xValueMax={255}
+                                xValue={this.props.rgba.g}
+                                whenChanged={(x, y) => this.props.whenChanged({...this.props.rgba, g: x})}
+                            />
+                        </div>
+                    </Cell>
+                </Row>
+                <Row>
+                    <Cell flex>
+                        <div className="uiColorPickerBar uiColorPickerBarB" ref={this.ref.b}>
+                            <canvas/>
+                            <Tracker
+                                xValueMin={0}
+                                xValueMax={255}
+                                xValue={this.props.rgba.b}
+                                whenChanged={(x, y) => this.props.whenChanged({...this.props.rgba, b: x})}
+                            />
+                        </div>
+                    </Cell>
+                </Row>
+                <Row>
+                    <Cell flex>
+                        <div className="uiColorPickerBar uiColorPickerBarA" ref={this.ref.a}>
+                            <canvas/>
+                            <Tracker
+                                xValueMin={0}
+                                xValueMax={1}
+                                xValue={this.props.rgba.a}
+                                whenChanged={(x, y) => this.props.whenChanged({...this.props.rgba, a: x})}
+                            />
+                        </div>
+                    </Cell>
+                </Row>
+            </Form>
+        </div>
+    }
+
+    componentDidMount() {
+        this.draw();
+    }
+
+    componentDidUpdate() {
+        this.draw();
+    }
+
+    protected draw() {
+        let
+            r = this.props.rgba.r,
+            g = this.props.rgba.g,
+            b = this.props.rgba.b;
+
+        this.drawBar(this.ref.r, 0, g, b, 1, 255, g, b, 1);
+        this.drawBar(this.ref.g, r, 0, b, 1, r, 255, b, 1);
+        this.drawBar(this.ref.b, r, g, 0, 1, r, g, 255, 1);
+        this.drawBar(this.ref.a, r, g, b, 0, r, g, b, 1);
+    }
+
+    protected drawBar(ref, r0, g0, b0, a0, r1, g1, b1, a1) {
+        let
+            cnv = ref.current.querySelector('canvas'),
+            w = cnv.width = cnv.offsetWidth,
+            h = cnv.height = cnv.offsetHeight,
+            ctx = cnv.getContext('2d');
+
+        let grad = ctx.createLinearGradient(0, 0, w, 0);
+        grad.addColorStop(0, `rgba(${r0}, ${g0}, ${b0}, ${a0})`);
+        grad.addColorStop(1, `rgba(${r1}, ${g1}, ${b1}, ${a1})`);
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+    }
+}

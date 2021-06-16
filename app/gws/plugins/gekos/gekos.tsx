@@ -171,8 +171,8 @@ class GekosToolbarButton extends toolbar.Button {
 
 }
 
-export const tags = {
+gws.registerTags({
     'Shared.Gekos': GekosController,
     'Toolbar.Gekos': GekosToolbarButton,
     'Tool.Gekos': GekosTool,
-};
+});

@@ -1,6 +1,6 @@
 import * as ol from 'openlayers';
 import * as types from '../types';
-import * as tools from '../tools';
+import * as lib from '../lib';
 
 export function draw(map: types.IMapManager, options: types.IMapDrawInteractionOptions) {
 
@@ -185,7 +185,7 @@ export function pointer(map: types.IMapManager, options: types.IMapPointerIntera
         handleDownEvent: down,
         handleUpEvent: up,
         handleDragEvent: drag,
-        handleMoveEvent: tools.debounce(move, HOVER_DELAY)
+        handleMoveEvent: lib.debounce(move, HOVER_DELAY)
     };
 
     let ix = new ol.interaction.Pointer(opts);

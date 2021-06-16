@@ -1,11 +1,16 @@
-let helpers = require('helpers');
-
+let lib = require('../../lib');
 
 let v = {};
+let preRules = [];
+let postRules = [];
+
+module.exports = [preRules, postRules, v];
+
+//
 
 v.COLOR = {
-    ...helpers.materialColors,
-    ...helpers.colorTransforms,
+    ...lib.materialColors,
+    ...lib.colorTransforms,
 };
 
 v.COLOR.gbdBlue = '#0086c9';
@@ -14,7 +19,7 @@ v.COLOR.gbdGreenDark = '#63a026';
 
 v.COLOR.mapBackground = '#FAFCF5';
 
-v.MEDIA = helpers.mediaSelector;
+v.MEDIA = lib.mediaSelector;
 
 v.UNIT = 4;
 v.UNIT2 = v.UNIT * 2;
@@ -60,7 +65,6 @@ v.CONTROL_FONT_SIZE = v.NORMAL_FONT_SIZE;
 
 v.BORDER_RADIUS = v.UNIT * 8;
 
-
 v.TOOLBAR_HEIGHT = v.CONTROL_SIZE + v.UNIT4;
 v.TOOLBAR_BACKGROUND = 'transparent';
 v.TOOLBAR_BUTTON_COLOR = v.COLOR.white;
@@ -87,7 +91,6 @@ v.TOOLBOX_ICON = img => ({
     // borderRadius: v.BORDER_RADIUS,
 
 });
-
 
 v.ALTBAR_WIDTH = v.UNIT * 50;
 
@@ -120,17 +123,14 @@ v.SIDEBAR_AUX_BUTTON = img => ({
     },
 });
 
-
 v.DRAWBOX_BACKGROUND = v.COLOR.white;
 v.DRAWBOX_BUTTON_COLOR = v.COLOR.blueGrey300;
 v.DRAWBOX_ACTIVE_BUTTON_COLOR = v.COLOR.blue300;
-
 
 v.INFOBOX_BACKGROUND = v.COLOR.white;
 v.INFOBOX_COLOR = v.COLOR.grey800;
 v.INFOBOX_BUTTON_COLOR = v.COLOR.blueGrey500;
 v.INFOBOX_WIDTH = 300;
-
 
 v.INFOBAR_HEIGHT = v.CONTROL_SIZE;
 v.INFOBAR_LABEL_COLOR = v.COLOR.white;
@@ -156,14 +156,11 @@ v.PROGRESS_ACTIVE_COLOR = v.COLOR.blue300;
 
 v.PRINT_BOX_BORDER = v.COLOR.gbdBlue;
 
-
 v.TOOLBOX_BACKGROUND = v.INFOBAR_BACKGROUND;
 v.TOOLBOX_TEXT_COLOR = v.COLOR.blueGrey400;
 v.TOOLBOX_HEIGHT = 120;
 
-
 v.ZOOM_BOX_COLOR = v.COLOR.gbdBlue;
-
 
 //
 
@@ -187,13 +184,12 @@ v.ICON_SIZE = (size = 'normal') => ({
     backgroundSize: [iconSize[size], iconSize[size]],
 });
 
-
-v.SVG = (name, color = v.ICON_COLOR) => {
-    let m = name.match(/^google:(.+)$/),
+v.SVG = (path, color = v.ICON_COLOR) => {
+    let m = path.match(/^google:(.+)$/),
         opts = {color, size: iconSize.normal},
         img = m
-            ? helpers.googleIcon(m[1], opts)
-            : helpers.localIcon(`themes/light/img/${name}.svg`, opts);
+            ? lib.googleIcon(m[1], opts)
+            : lib.localIcon(path + '.svg', opts);
     return {'backgroundImage': img}
 };
 
@@ -205,18 +201,15 @@ v.LIST_BUTTON = img => ({
     ...v.SVG(img, v.LIST_BUTTON_COLOR)
 });
 
-
 v.CLOSE_ICON = 'google:navigation/close';
 v.BACK_ICON = 'google:navigation/chevron_left';
 v.CHECK_ICON = 'google:navigation/check';
 v.ZOOM_ICON = 'google:image/center_focus_weak';
 v.SEARCH_ICON = 'google:action/search';
 
-
 v.FORM_BUTTON_BACKGROUND = v.COLOR.blueGrey200;
 v.FORM_PRIMARY_BUTTON_BACKGROUND = v.FOCUS_COLOR;
 v.FORM_BUTTON_COLOR = v.COLOR.white;
-
 
 v.ROUND_FORM_BUTTON = img => ({
     ...v.ICON_BUTTON(),
@@ -243,7 +236,7 @@ v.ROUND_CLOSE_BUTTON = (icon) => ({
 });
 
 v.IMAGE = (path) =>
-    helpers.dataUrl(`src/css/themes/light/img/${path}`);
+    lib.dataUrl(path);
 
 v.TRANSITION = (...props) => ({
     transition: (props.length ? props : ['all'])
@@ -270,57 +263,3 @@ v.FIT_SCREEN = () => ({
     paddingBottom: v.CONTROL_SIZE,
     margin: 0,
 });
-
-//
-
-let rules = [
-    require('./base/app.css'),
-
-    require('./ui/index.css'),
-
-    require('./components/buttons.css'),
-    require('./components/sheet.css'),
-    require('./components/description.css'),
-    require('./components/list.css'),
-    require('./components/feature.css'),
-    require('./components/form.css'),
-    require('./components/infobox.css'),
-
-    require('./mod/alkis.css'),
-    require('./mod/altbar.css'),
-    require('./mod/annotate.css'),
-    require('./mod/bplan.css'),
-    require('./mod/collector.css'),
-    require('./mod/decoration.css'),
-    require('./mod/dimension.css'),
-    require('./mod/dprocon.css'),
-    require('./mod/draw.css'),
-    require('./mod/edit.css'),
-    require('./mod/gekos.css'),
-    require('./mod/identify.css'),
-    require('./mod/infobar.css'),
-    require('./mod/layers.css'),
-    require('./mod/lens.css'),
-    require('./mod/location.css'),
-    require('./mod/marker.css'),
-    require('./mod/overview.css'),
-    require('./mod/print.css'),
-    require('./mod/search.css'),
-    require('./mod/select.css'),
-    require('./mod/sidebar.css'),
-    require('./mod/storage.css'),
-    require('./mod/style.css'),
-    require('./mod/task.css'),
-    require('./mod/tabedit.css'),
-    require('./mod/toolbar.css'),
-    require('./mod/toolbox.css'),
-    require('./mod/user.css'),
-    require('./mod/zoom.css'),
-    require('./mod/fsinfo.css'),
-
-    require('./extras.css'),
-    require('./responsive.css'),
-    // require('./base/debug.css'),
-];
-
-module.exports = [rules, v];

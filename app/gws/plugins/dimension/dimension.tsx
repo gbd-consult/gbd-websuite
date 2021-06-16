@@ -1125,7 +1125,7 @@ class DimensionToolbarButton extends toolbar.Button {
 
 }
 
-export const tags = {
+gws.registerTags({
     [MASTER]: DimensionController,
 
     'Sidebar.Dimension': DimensionSidebar,
@@ -1133,4 +1133,4 @@ export const tags = {
     'Tool.Dimension.Modify': DimensionModifyTool,
     'Tool.Dimension.Line': DimensionLineTool,
 
-};
+});

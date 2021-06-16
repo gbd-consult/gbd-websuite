@@ -1,6 +1,6 @@
 import axios, {Canceler, ResponseType} from 'axios';
 import * as msgpack from '@ygoe/msgpack';
-import * as api from './gws-api';
+import * as api from './api';
 
 function errorResponse(err) {
     console.log('AXIOS ERROR', err);

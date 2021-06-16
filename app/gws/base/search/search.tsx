@@ -203,9 +203,9 @@ class SearchController extends gws.Controller {
 
 }
 
-export const tags = {
+gws.registerTags({
     [MASTER]: SearchController,
     'Sidebar.Search': SearchSidebar,
     'Altbar.Search': SearchAltbar,
-};
+});
 

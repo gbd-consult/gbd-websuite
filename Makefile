@@ -1,49 +1,46 @@
 CWD    = $(shell pwd)
 BASE   = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 DOC    = $(BASE)doc
+APP    = $(BASE)app
 
 PYTHON = python3
 
 SPHINXOPTS = -v -n -b html -j auto -c $(DOC)/sphinx
 
-.PHONY: help spec client-dev client doc doc-dev image image-debug clean
+.PHONY: help spec client client-dev client-dev-server doc doc-dev-server image image-debug clean
 
 help:
-	echo 'base', $(BASE)
 	@echo ""
-	@echo "commands"
-	@echo "--------"
-	@echo "spec        - build the Server spec files"
-	@echo "client      - build the Client in client/_build"
-	@echo "client-dev  - start the Client dev server"
-	@echo "doc         - build the Docs in doc/_build"
-	@echo "doc-dev     - start the Docs dev server"
-	@echo "image       - build the Docker Image (with optional IMAGE_NAME=...)"
-	@echo "image-debug - build the debug Docker Image (with optional IMAGE_NAME=...)"
+	@echo "spec [MANIFEST=<manifest>]               - build the Specs"
+	@echo "client [MANIFEST=<manifest>]             - build the Client for production"
+	@echo "client-dev [MANIFEST=<manifest>]         - build the Client for development"
+	@echo "client-dev-server [MANIFEST=<manifest>]  - start the Client dev server"
+	@echo "doc [MANIFEST=<manifest>]                - build the Docs"
+	@echo "doc-dev-server [MANIFEST=<manifest>]     - start the Docs dev server"
+	@echo "image [IMAGE_NAME=<name>]                - build the Docker Image"
+	@echo "image-debug [IMAGE_NAME=<name>]          - build the debug Docker Image"
 	@echo ""
 
 
 spec:
-	$(PYTHON) $(BASE)specgen/run.py
+	$(PYTHON) $(APP)/gws/spec/generator/run.py --manifest "$(MANIFEST)"
 
 client-dev: spec
-	cd $(BASE)client && npm run dev-server && cd $(CWD)
+	cd $(APP)/js && npm run dev -- --manifest "$(MANIFEST)" && cd $(CWD)
+
+client-dev-server: spec
+	cd $(APP)/js && npm run dev-server -- --manifest "$(MANIFEST)" && cd $(CWD)
 
 client: spec
-	cd $(BASE)client && \
-	npm run production && \
-	rm -fr $(BASE)app/www/gws-client && \
-	mkdir -p $(BASE)app/www/gws-client && \
-	mv $(BASE)client/_build/* $(BASE)app/www/gws-client && \
-	cd $(CWD)
+	cd $(APP)/js && npm run production -- --manifest "$(MANIFEST)" && cd $(CWD)
 
 doc: spec
 	$(PYTHON) $(DOC)/sphinx/conf.py pre && \
 	sphinx-build -E -a $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build && \
 	$(PYTHON) $(DOC)/sphinx/conf.py post
 
-doc-dev: doc
-	sphinx-autobuild --open-browser $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
+doc-dev-server: doc
+	sphinx-autobuild -B $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
 
 image:
 	$(PYTHON) $(BASE)install/build.py docker release $(IMAGE_NAME) && cd $(CWD)
@@ -52,6 +49,5 @@ image-debug:
 	$(PYTHON) $(BASE)install/build.py docker debug $(IMAGE_NAME) && cd $(CWD)
 
 clean:
-	rm -rf $(BASE)client/_build
-	rm -rf $(BASE)doc/_build
-	rm -rf $(BASE)install/_build
+	find $(BASE)app/ -name '__build*'
+

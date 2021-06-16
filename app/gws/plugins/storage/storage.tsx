@@ -300,7 +300,7 @@ class StorageButtonsController extends gws.Controller {
 }
 
 
-export const tags = {
+gws.registerTags({
     [MASTER]: StorageController,
     'Storage.Buttons': StorageButtonsController,
-};
+});

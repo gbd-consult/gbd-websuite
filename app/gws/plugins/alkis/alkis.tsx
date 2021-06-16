@@ -1403,9 +1403,9 @@ class AlkisController extends gws.Controller {
     }
 }
 
-export const tags = {
+gws.registerTags({
     [MASTER]: AlkisController,
     'Sidebar.Alkis': AlkisSidebar,
     'Tool.Alkis.Lens': AlkisLensTool,
     'Tool.Alkis.Pick': AlkisPickTool,
-};
+});

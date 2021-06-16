@@ -1,14 +1,22 @@
-export {Application} from './app/application';
-export {Controller, Tool} from './app/controller';
-export {View} from './app/view';
+export {Application} from './core/application';
+export {Controller, Tool} from './core/controller';
+export {View} from './core/view';
 export {MapManager} from './map/manager';
 
 import * as types from './types';
-import * as api from './core/gws-api';
+import * as api from './core/api';
 import * as map from './map';
 import * as ui from './ui';
-import * as tools from './tools';
-import * as components from './components';
+import * as lib from './lib';
 
-export {types, api, map, ui, tools, components};
+export {types, api, map, ui, lib};
+
+export function registerTags(tags) {
+    Object.assign(registerTags.tags, tags)
+}
+registerTags.tags = {}
+
+export function getRegisteredTags() {
+    return registerTags.tags
+}
 
