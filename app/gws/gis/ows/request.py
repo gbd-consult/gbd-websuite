@@ -1,5 +1,5 @@
-import gws.tools.net
-import gws.tools.xml2
+import gws.lib.net
+import gws.lib.xml2
 
 from . import error
 
@@ -13,8 +13,8 @@ def raw_get(url, **kwargs):
     kwargs['lax'] = True
 
     try:
-        resp = gws.tools.net.http_request(url, **kwargs)
-    except gws.tools.net.Error as e:
+        resp = gws.lib.net.http_request(url, **kwargs)
+    except gws.lib.net.Error as e:
         raise error.Error('http error') from e
 
     status = resp.status_code

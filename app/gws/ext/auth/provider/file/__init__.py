@@ -3,20 +3,20 @@
 import json
 
 import gws
-import gws.common.auth
-import gws.common.auth.provider
-import gws.common.auth.user
-import gws.tools.password
+import gws.base.auth
+import gws.base.auth.provider
+import gws.base.auth.user
+import gws.lib.password
 import gws.types as t
 
 
-class Config(gws.common.auth.provider.Config):
+class Config(gws.base.auth.provider.Config):
     """File-based authorization provider"""
 
     path: t.FilePath  #: path to the users json file
 
 
-class Object(gws.common.auth.provider.Object):
+class Object(gws.base.auth.provider.Object):
     def configure(self):
         super().configure()
         self.path = self.var('path')
@@ -26,15 +26,15 @@ class Object(gws.common.auth.provider.Object):
         found = []
 
         for rec in self._db():
-            login_ok = gws.tools.password.cmp(login, rec['login'])
-            password_ok = gws.tools.password.check(password, rec['password'])
+            login_ok = gws.lib.password.cmp(login, rec['login'])
+            password_ok = gws.lib.password.check(password, rec['password'])
             if login_ok and password_ok:
                 found.append(rec)
             if login_ok and not password_ok:
                 wrong_password += 1
 
         if wrong_password:
-            raise gws.common.auth.error.WrongPassword()
+            raise gws.base.auth.error.WrongPassword()
 
         if len(found) == 1:
             return self._make_user(found[0])
@@ -45,7 +45,7 @@ class Object(gws.common.auth.provider.Object):
                 return self._make_user(rec)
 
     def _make_user(self, rec):
-        return gws.common.auth.user.ValidUser().init_from_source(
+        return gws.base.auth.user.ValidUser().init_from_source(
             provider=self,
             uid=rec['login'],
             roles=rec.get('roles', []),

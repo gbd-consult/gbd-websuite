@@ -3,17 +3,17 @@
 import re
 
 import gws
-import gws.common.template
-import gws.tools.date
-import gws.tools.vendor.chartreux as chartreux
-import gws.tools.xml2
-import gws.tools.mime
+import gws.base.template
+import gws.lib.date
+import gws.lib.vendor.chartreux as chartreux
+import gws.lib.xml2
+import gws.lib.mime
 import gws.ext.helper.xml
 
 import gws.types as t
 
 
-class Config(gws.common.template.Config):
+class Config(gws.base.template.Config):
     """XML template"""
     pass
 
@@ -79,15 +79,15 @@ class XMLRuntime(chartreux.Runtime):
                 self.namespaces[s] = None
 
     def filter_datetime(self, val):
-        d = gws.tools.date.parse(val)
+        d = gws.lib.date.parse(val)
         if d:
-            return gws.tools.date.to_iso(d, with_tz=False, sep='T')
+            return gws.lib.date.to_iso(d, with_tz=False, sep='T')
         return ''
 
     def filter_date(self, val):
-        d = gws.tools.date.parse(val)
+        d = gws.lib.date.parse(val)
         if d:
-            return gws.tools.date.to_iso_date(d)
+            return gws.lib.date.to_iso_date(d)
         return ''
 
 
@@ -184,7 +184,7 @@ class XMLCommands():
             cnt -= 1
 
 
-class Object(gws.common.template.Object):
+class Object(gws.base.template.Object):
 
     def configure(self):
         super().configure()
@@ -208,11 +208,11 @@ class Object(gws.common.template.Object):
         if rt.namespaces:
             self._insert_namespaces(root, rt.namespaces, rt.default_namespace)
 
-        xml = gws.tools.xml2.as_string(root)
+        xml = gws.lib.xml2.as_string(root)
         if not xml.startswith('<?'):
             xml = '<?xml version="1.0" encoding="utf-8"?>' + xml
 
-        return t.TemplateOutput(content=xml, mime=gws.tools.mime.get('xml'))
+        return t.TemplateOutput(content=xml, mime=gws.lib.mime.get('xml'))
 
     def _render_as_tag(self, context):
         if self.root.application.developer_option('template.reparse') and self.path:

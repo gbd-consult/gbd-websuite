@@ -1,7 +1,7 @@
 Applikation Konfiguration
 =========================
 
-^REF gws.common.application.Config
+^REF gws.base.application.Config
 
 Die wichtigsten Teile der App-Konfiguration sind die folgenden Abschnitte, welche weiter im Detail beschrieben werden:
 

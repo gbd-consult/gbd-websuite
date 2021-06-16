@@ -1,24 +1,24 @@
-import gws.common.search.provider
-import gws.common.db
+import gws.base.search.provider
+import gws.base.db
 
 import gws.types as t
 
 from . import provider
 
 
-class Config(gws.common.search.provider.Config):
+class Config(gws.base.search.provider.Config):
     """Database-based search"""
 
     db: t.Optional[str]  #: database provider uid
-    table: gws.common.db.SqlTableConfig  #: sql table configuration
+    table: gws.base.db.SqlTableConfig  #: sql table configuration
     sort: t.Optional[str]  #: sort expression
 
 
-class Object(gws.common.search.provider.Object):
+class Object(gws.base.search.provider.Object):
     def configure(self):
         super().configure()
 
-        self.provider: provider.Object = t.cast(provider.Object, gws.common.db.require_provider(self, provider.Object))
+        self.provider: provider.Object = t.cast(provider.Object, gws.base.db.require_provider(self, provider.Object))
         try:
             self.table: t.SqlTable = self.provider.configure_table(self.var('table'))
         except gws.Error:
@@ -26,11 +26,11 @@ class Object(gws.common.search.provider.Object):
             self.active = False
             return
 
-        self.capabilties = gws.common.search.provider.CAPS_FILTER
+        self.capabilties = gws.base.search.provider.CAPS_FILTER
         if self.table.geometry_column:
-            self.capabilties |= gws.common.search.provider.CAPS_GEOMETRY
+            self.capabilties |= gws.base.search.provider.CAPS_GEOMETRY
         if self.table.search_column:
-            self.capabilties |= gws.common.search.provider.CAPS_KEYWORD
+            self.capabilties |= gws.base.search.provider.CAPS_KEYWORD
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         n, u = args.tolerance or self.tolerance

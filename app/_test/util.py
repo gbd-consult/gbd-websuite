@@ -12,10 +12,10 @@ import gws
 import gws.ext.db.provider.postgres
 import gws.gis.feature
 import gws.gis.proj
-import gws.tools.json2
-import gws.tools.xml2
-import gws.tools.os2
-import gws.tools.vendor.umsgpack as umsgpack
+import gws.lib.json2
+import gws.lib.xml2
+import gws.lib.os2
+import gws.lib.vendor.umsgpack as umsgpack
 
 import gws.types as t
 
@@ -41,7 +41,7 @@ def read(path, mode='rt'):
 def json(src):
     """Encode `src` as pretty json."""
 
-    return gws.tools.json2.to_pretty_string(src)
+    return gws.lib.json2.to_pretty_string(src)
 
 
 _replace_attributes = {
@@ -70,7 +70,7 @@ def xml(src, save_to=None):
 
         s = i1 + '<' + el.qname
         for k, v in sorted(el.attr_dict.items()):
-            s += '\n' + i2 + k + '="' + gws.tools.xml2.encode(_replace_attributes.get(k, v)) + '"'
+            s += '\n' + i2 + k + '="' + gws.lib.xml2.encode(_replace_attributes.get(k, v)) + '"'
         if not el.text and not el.children:
             s += '/>'
             return s
@@ -83,7 +83,7 @@ def xml(src, save_to=None):
         return s
 
     try:
-        root = gws.tools.xml2.from_string(text)
+        root = gws.lib.xml2.from_string(text)
     except Exception as e:
         return f'INVALID XML:\n{e}\nRAW CONTENT :\n{text}\nFROM {src!r}'
     return as_str(root, 0)
@@ -132,7 +132,7 @@ def cmd(command, params=None, binary=False, **kwargs):
         data = umsgpack.dumps(p)
         ct = 'application/msgpack'
     else:
-        data = gws.tools.json2.to_string(p)
+        data = gws.lib.json2.to_string(p)
         ct = 'application/json'
 
     headers = {
@@ -209,7 +209,7 @@ def short_features(fs, trace=False):
         rs.append(r)
     if trace:
         print('-' * 40)
-        print(gws.tools.json2.to_string(rs, pretty=True))
+        print(gws.lib.json2.to_string(rs, pretty=True))
         print('-' * 40)
     return rs
 
@@ -249,7 +249,7 @@ def make_features(target, geom_type, prop_schema, crs, xy, rows, cols, gap):
         with prov.connect() as conn:
             conn.execute(f"ALTER SEQUENCE {name}_id_seq RESTART WITH {next_id}")
     else:
-        name = gws.tools.os2.parse_path(target)['name']
+        name = gws.lib.os2.parse_path(target)['name']
         features = _make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap)
         srid = crs.split(':')[-1]
 
@@ -274,7 +274,7 @@ def make_features(target, geom_type, prop_schema, crs, xy, rows, cols, gap):
                 "properties": props
             })
 
-        gws.tools.json2.to_path(target, js, pretty=True)
+        gws.lib.json2.to_path(target, js, pretty=True)
 
 
 ##
@@ -320,7 +320,7 @@ def _postgres_create_table(prov, name, prop_schema, geom_type, crs):
 
 def _test_config():
     # see cmd.py/start_container
-    return gws.tools.json2.from_path(gws.VAR_DIR + '/cmd.ini.json')
+    return gws.lib.json2.from_path(gws.VAR_DIR + '/cmd.ini.json')
 
 
 def _make_geom_features(name, geom_type, prop_schema, crs, xy, rows, cols, gap):

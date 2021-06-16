@@ -3,17 +3,17 @@
 import time
 
 import gws
-import gws.common.action
-import gws.common.layer
+import gws.base.action
+import gws.base.layer
 import gws.config
 import gws.gis.cache
 import gws.gis.feature
 import gws.gis.render
 import gws.gis.renderview
-import gws.tools.json2
-import gws.tools.misc
-import gws.tools.net
-import gws.tools.units as units
+import gws.lib.json2
+import gws.lib.misc
+import gws.lib.net
+import gws.lib.units as units
 import gws.web.error
 
 import gws.types as t
@@ -65,7 +65,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
 
     def api_render_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
         """Render a part of the map inside a bounding box"""
@@ -93,7 +93,7 @@ class Object(gws.common.action.Object):
             gws.log.exception()
         gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(rv), time.time() - ts))
 
-        return t.HttpResponse(mime='image/png', content=img or gws.tools.misc.Pixels.png8)
+        return t.HttpResponse(mime='image/png', content=img or gws.lib.misc.Pixels.png8)
 
     def api_render_xyz(self, req: t.IRequest, p: RenderXyzParams) -> t.HttpResponse:
         """Render an XYZ tile"""
@@ -114,20 +114,20 @@ class Object(gws.common.action.Object):
         if img and layer.is_public and layer.has_cache:
             gws.gis.cache.store_in_web_cache(layer, p.x, p.y, p.z, img)
 
-        return t.HttpResponse(mime='image/png', content=img or gws.tools.misc.Pixels.png8)
+        return t.HttpResponse(mime='image/png', content=img or gws.lib.misc.Pixels.png8)
 
     def api_render_legend(self, req: t.IRequest, p: RenderLegendParams) -> t.HttpResponse:
         """Render a legend for a layer"""
 
         path = self._legend_path(req, p)
-        content = gws.read_file_b(path) if path else gws.tools.misc.Pixels.png8
+        content = gws.read_file_b(path) if path else gws.lib.misc.Pixels.png8
         return t.HttpResponse(mime='image/png', content=content)
 
     def http_get_legend(self, req: t.IRequest, p: RenderLegendParams) -> t.Response:
         path = self._legend_path(req, p)
         if path:
             return t.FileResponse(mime='image/png', path=path)
-        return t.HttpResponse(mime='image/png', content=gws.tools.misc.Pixels.png8)
+        return t.HttpResponse(mime='image/png', content=gws.lib.misc.Pixels.png8)
 
     def _legend_path(self, req: t.IRequest, p: RenderLegendParams):
         layer = req.require_layer(p.layerUid)
@@ -168,4 +168,4 @@ class Object(gws.common.action.Object):
 
     def http_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> t.HttpResponse:
         res = self.api_get_features(req, p)
-        return t.HttpResponse(mime='application/json', content=gws.tools.json2.to_string(res))
+        return t.HttpResponse(mime='application/json', content=gws.lib.json2.to_string(res))

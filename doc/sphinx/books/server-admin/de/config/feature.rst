@@ -6,7 +6,7 @@ Die GBD WebSuite enthält Werkzeuge mit denen die Features, aus verschiedenen Qu
 Datenmodelle
 ------------
 
-^REF gws.common.model.Config
+^REF gws.base.model.Config
 
 Ein *Datenmodel* (``dataModel``) beschreibt wie Attributen eines Quell-Features transformiert werden müssen. Für jedes Attribut eines GBD WebSuite-Features können Sie eine Regel anlegen, mit der Sie für dieses Attribut folgendes definieren:
 

@@ -1,7 +1,7 @@
 """Provide configuration for the client Dimension module."""
 
 import gws
-import gws.common.action
+import gws.base.action
 
 import gws.types as t
 
@@ -19,7 +19,7 @@ class Config(t.WithTypeAndAccess):
     pixelTolerance: int = 10  #: pixel tolerance
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     @property
     def props(self):
         return Props(

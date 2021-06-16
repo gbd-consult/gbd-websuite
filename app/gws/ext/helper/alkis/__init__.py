@@ -1,5 +1,5 @@
 import gws
-import gws.common.db
+import gws.base.db
 import gws.ext.db.provider.postgres
 import gws.gis.feature
 import gws.gis.shape
@@ -133,7 +133,7 @@ class Object(gws.Object):
         self.crs = self.var('crs')
         self.db = t.cast(
             gws.ext.db.provider.postgres.Object,
-            gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+            gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
         self.index_schema = self.var('indexSchema')
         self.data_schema = self.var('dataSchema')

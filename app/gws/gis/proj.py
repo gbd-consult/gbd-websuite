@@ -6,7 +6,7 @@ import osgeo.osr
 import pyproj
 
 import gws
-import gws.tools.sqlite
+import gws.lib.sqlite
 
 import gws.types as t
 
@@ -216,7 +216,7 @@ def _load_proj(p):
         gws.log.warn(f'proj: cannot parse {p!r}')
         return
 
-    with gws.tools.sqlite.connect(_dbpath) as conn:
+    with gws.lib.sqlite.connect(_dbpath) as conn:
         r = conn.execute('SELECT * FROM crs WHERE srid=?', (srid,)).fetchone()
 
     if not r:

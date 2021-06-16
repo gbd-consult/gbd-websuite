@@ -1,25 +1,25 @@
 import gws
-import gws.common.metadata
-import gws.common.search.runner
+import gws.base.metadata
+import gws.base.search.runner
 import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.gml
 import gws.gis.legend
 import gws.gis.proj
 import gws.gis.shape
-import gws.tools.date
-import gws.tools.misc
-import gws.tools.mime
-import gws.tools.os2
-import gws.tools.xml2
+import gws.lib.date
+import gws.lib.misc
+import gws.lib.mime
+import gws.lib.os2
+import gws.lib.xml2
 import gws.web.error
 
 import gws.types as t
 
-import gws.common.ows.service as ows
+import gws.base.ows.service as ows
 
 
-class Config(gws.common.ows.service.Config):
+class Config(gws.base.ows.service.Config):
     """WMS Service configuration"""
     pass
 
@@ -88,7 +88,7 @@ class Object(ows.Base):
             gws.log.debug(f'service={self.uid!r}: no layer_root_caps')
             raise gws.web.error.NotFound()
 
-        fmt = rd.req.param('format') or gws.tools.mime.get('xml')
+        fmt = rd.req.param('format') or gws.lib.mime.get('xml')
 
         supported_formats = self.enum_template_formats()
         supported_formats['getmap'] = ['image/png']
@@ -132,7 +132,7 @@ class Object(ows.Base):
             raise gws.web.error.NotFound('No layers found')
         paths = [lc.layer.render_legend() for lc in lcs if lc.has_legend]
         out = gws.gis.legend.combine_legend_paths(paths)
-        return t.HttpResponse(mime='image/png', content=out or gws.tools.misc.Pixels.png8)
+        return t.HttpResponse(mime='image/png', content=out or gws.lib.misc.Pixels.png8)
 
     def handle_getfeatureinfo(self, rd: ows.Request):
         bounds = self._request_bounds(rd)
@@ -175,7 +175,7 @@ class Object(ows.Base):
             tolerance=(pixel_tolerance, 'px'),
         )
 
-        features = gws.common.search.runner.run(rd.req, args)
+        features = gws.base.search.runner.run(rd.req, args)
 
         coll = self.feature_collection(
             features,

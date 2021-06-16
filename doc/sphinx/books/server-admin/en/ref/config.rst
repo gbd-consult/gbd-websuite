@@ -3,7 +3,7 @@ Configuration reference
 
 This section formally describes the GBD WebSuite configuration, which is nested key-value structure. The *keys* are always strings, the *values* should belong to one of the types listed below.
 
-The top-level configuration is of type :ref:`en_configref_gws_common_application_Config`.
+The top-level configuration is of type :ref:`en_configref_gws.base_application_Config`.
 
 Basic types
 -----------

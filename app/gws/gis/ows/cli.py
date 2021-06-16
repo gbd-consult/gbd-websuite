@@ -3,8 +3,8 @@ from argh import arg
 
 import gws
 import gws.types as t
-import gws.tools.json2
-import gws.tools.clihelpers
+import gws.lib.json2
+import gws.lib.clihelpers
 #
 # import gws.qgis
 # import gws.ows.wms
@@ -43,5 +43,5 @@ COMMAND = 'ows'
 #
 #     srv = _get_service(type, src)
 #     if srv:
-#         print(gws.tools.json2.to_tagged_string(srv, pretty=True))
+#         print(gws.lib.json2.to_tagged_string(srv, pretty=True))
 #

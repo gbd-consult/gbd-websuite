@@ -232,13 +232,13 @@ def _list(ls):
 
 _title_rules = {
     r'^gws.types.(\w+)$': r'\1',
-    r'^gws.common.(\w+).types.(\w+)$': r'\1.\2',
-    r'^gws.common.(\w+).(\w+)$': r'\1.\2',
+    r'^gws.base.(\w+).types.(\w+)$': r'\1.\2',
+    r'^gws.base.(\w+).(\w+)$': r'\1.\2',
     r'^gws.types.ext.(\w+).(\w+)$': r'\1.\2',
     r'^gws.ext.action.(\w+).(\w+)$': r'action.\1.\2',
     r'^gws.(\w+).types.(\w+)$': r'\1.\2',
     r'^gws.ext.': r'',
-    r'^gws.common.': r'',
+    r'^gws.base.': r'',
     r'^gws.types.ext.': r'',
     r'^gws.': r'',
 }

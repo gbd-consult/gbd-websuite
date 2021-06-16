@@ -2,13 +2,13 @@
 
 import gws.types as t
 
-import gws.common.action
-import gws.common.db
-import gws.common.model
-import gws.common.style
-import gws.common.template
-import gws.tools.style
-import gws.tools.mime
+import gws.base.action
+import gws.base.db
+import gws.base.model
+import gws.base.style
+import gws.base.template
+import gws.lib.style
+import gws.lib.mime
 import gws.gis.feature
 import gws.web.error
 import gws.ext.db.provider.postgres
@@ -37,16 +37,16 @@ class CollectionProps(t.FeatureProps):
 class ItemPrototypeConfig(t.Config):
     type: str
     name: str
-    dataModel: gws.common.model.Config
-    style: t.Optional[gws.common.style.Config]  #: style for features
+    dataModel: gws.base.model.Config
+    style: t.Optional[gws.base.style.Config]  #: style for features
     icon: str = ''
 
 
 class ItemPrototypeProps(t.Props):
     type: str
     name: str
-    dataModel: gws.common.model.ModelProps
-    style: gws.common.style.StyleProps
+    dataModel: gws.base.model.ModelProps
+    style: gws.base.style.StyleProps
     icon: str
 
 
@@ -60,16 +60,16 @@ class ItemPrototype(gws.Object):
         self.link_col: str = ''
         self.type_col: str = 'type'
 
-        self.data_model: t.IModel = t.cast(t.IModel, self.create_child('gws.common.model', self.var('dataModel')))
+        self.data_model: t.IModel = t.cast(t.IModel, self.create_child('gws.base.model', self.var('dataModel')))
 
         self.type = self.var('type')
         self.name = self.var('name')
-        self.icon = gws.tools.style.parse_icon(self.var('icon'))
+        self.icon = gws.lib.style.parse_icon(self.var('icon'))
 
         p = self.var('style')
         self.style: t.IStyle = (
-            gws.common.style.from_config(p) if p
-            else gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
+            gws.base.style.from_config(p) if p
+            else gws.base.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
 
     @property
     def props(self):
@@ -118,21 +118,21 @@ class CollectionPrototypeConfig(t.Config):
     type: str
     name: str
     db: t.Optional[str]  #: database provider uid
-    collectionTable: gws.common.db.SqlTableConfig  #: sql table configuration
-    itemTable: gws.common.db.SqlTableConfig  #: sql table configuration
-    documentTable: gws.common.db.SqlTableConfig  #: sql table configuration
-    dataModel: t.Optional[gws.common.model.Config]
+    collectionTable: gws.base.db.SqlTableConfig  #: sql table configuration
+    itemTable: gws.base.db.SqlTableConfig  #: sql table configuration
+    documentTable: gws.base.db.SqlTableConfig  #: sql table configuration
+    dataModel: t.Optional[gws.base.model.Config]
     items: t.List[ItemPrototypeConfig]
     linkColumn: str = 'collection_id'
-    style: t.Optional[gws.common.style.Config]  #: style for collection center point
+    style: t.Optional[gws.base.style.Config]  #: style for collection center point
 
 
 class CollectionPrototypeProps(t.Props):
     type: str
     name: str
-    dataModel: gws.common.model.ModelProps
+    dataModel: gws.base.model.ModelProps
     itemPrototypes: t.List[ItemPrototypeProps]
-    style: gws.common.style.StyleProps
+    style: gws.base.style.StyleProps
 
 
 class UploadFile(t.Data):
@@ -146,7 +146,7 @@ class CollectionPrototype(gws.Object):
     def configure(self):
         super().configure()
 
-        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
         self.table = self.db.configure_table(self.var('collectionTable'))
         self.item_table = self.db.configure_table(self.var('itemTable'))
         self.document_table = self.db.configure_table(self.var('documentTable'))
@@ -155,7 +155,7 @@ class CollectionPrototype(gws.Object):
         self.type_col = 'type'
 
         p = self.var('dataModel') or self.db.table_data_model_config(self.table)
-        self.data_model: t.IModel = t.cast(t.IModel, self.create_child('gws.common.model', p))
+        self.data_model: t.IModel = t.cast(t.IModel, self.create_child('gws.base.model', p))
 
         self.type = self.var('type')
         self.name = self.var('name')
@@ -170,8 +170,8 @@ class CollectionPrototype(gws.Object):
 
         p = self.var('style')
         self.style: t.IStyle = (
-            gws.common.style.from_config(p) if p
-            else gws.common.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
+            gws.base.style.from_config(p) if p
+            else gws.base.style.from_props(t.StyleProps(type='css', values=_DEFAULT_STYLE_VALUES)))
 
     @property
     def props(self):
@@ -308,7 +308,7 @@ class CollectionPrototype(gws.Object):
                     rec = {
                         self.link_col: collection_uid,
                         'title': f.title or f.filename,
-                        'mimetype': gws.tools.mime.for_path(f.filename),
+                        'mimetype': gws.lib.mime.for_path(f.filename),
                         'data': f.data,
                         'filename': f.filename,
                         'size': len(f.data),
@@ -414,7 +414,7 @@ _DEFAULT_STYLE_VALUES = {
 }
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
 
     @property
     def props(self):
@@ -425,7 +425,7 @@ class Object(gws.common.action.Object):
     def configure(self):
         super().configure()
 
-        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
         self.collection_prototypes: t.List[CollectionPrototype] = []
         for p in self.var('collections'):

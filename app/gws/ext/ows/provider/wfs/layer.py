@@ -1,5 +1,5 @@
 import gws
-import gws.common.layer
+import gws.base.layer
 import gws.gis.ows
 import gws.gis.proj
 import gws.gis.source
@@ -10,11 +10,11 @@ import gws.types as t
 from . import provider, util
 
 
-class Config(gws.common.layer.VectorConfig, util.WfsServiceConfig):
+class Config(gws.base.layer.VectorConfig, util.WfsServiceConfig):
     pass
 
 
-class Object(gws.common.layer.Vector):
+class Object(gws.base.layer.Vector):
     def configure(self):
         super().configure()
 

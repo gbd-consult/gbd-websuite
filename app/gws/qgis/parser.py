@@ -4,9 +4,9 @@ import urllib.parse
 
 import gws
 import gws.types as t
-import gws.tools.xml2
-import gws.tools.net
-import gws.common.ows.provider.parseutil as u
+import gws.lib.xml2
+import gws.lib.net
+import gws.base.ows.provider.parseutil as u
 import gws.gis.source
 
 from . import types
@@ -15,7 +15,7 @@ _bigval = 1e10
 
 
 def parse(prov, xml):
-    root = gws.tools.xml2.from_string(xml)
+    root = gws.lib.xml2.from_string(xml)
 
     prov.properties = _properties(root.first('properties'))
     prov.meta = _project_meta_from_props(prov.properties)
@@ -365,7 +365,7 @@ def _data_source(provider, source):
         url = params.pop('url', '')
         if not url:
             return {}
-        p = gws.tools.net.parse_url(url)
+        p = gws.lib.net.parse_url(url)
         typename = params.pop('typename', '') or p['params'].get('typename')
         return {
             'url': url,

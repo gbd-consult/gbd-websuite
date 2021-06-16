@@ -3,8 +3,8 @@ import re
 
 import gws
 import gws.config
-import gws.tools.os2
-import gws.tools.net
+import gws.lib.os2
+import gws.lib.net
 
 import gws.types as t
 
@@ -35,7 +35,7 @@ def _make_ini(root, base_dir):
 
     proxy = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
     if proxy:
-        p = gws.tools.net.parse_url(proxy)
+        p = gws.lib.net.parse_url(proxy)
         ini += f'''
             [proxy]
             proxyEnabled=true
@@ -111,7 +111,7 @@ def environ(root: t.IRootObject):
 
 
 def version():
-    _, txt = gws.tools.os2.run([EXEC_PATH])
+    _, txt = gws.lib.os2.run([EXEC_PATH])
     m = re.search(r'QGis version (.+)', gws.as_str(txt))
     if m:
         return m.group(1).strip()
@@ -125,4 +125,4 @@ def request(root: t.IRootObject, params, **kwargs):
         root.var('server.qgis.host'),
         root.var('server.qgis.port'))
 
-    return gws.tools.net.http_request(url, params=params, **kwargs)
+    return gws.lib.net.http_request(url, params=params, **kwargs)

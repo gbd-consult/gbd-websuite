@@ -1,8 +1,8 @@
 import base64
 
 import gws
-import gws.common.auth.method
-import gws.common.auth.error
+import gws.base.auth.method
+import gws.base.auth.error
 
 import gws.types as t
 
@@ -15,7 +15,7 @@ class Config(t.WithType):
     secure: bool = True  #: use only with SSL
 
 
-class Object(gws.common.auth.method.Object):
+class Object(gws.base.auth.method.Object):
 
     def configure(self):
         super().configure()
@@ -34,7 +34,7 @@ class Object(gws.common.auth.method.Object):
             return auth.new_session(type='http-basic', method=self, user=user)
 
         # if the header is provided, it has to be correct
-        raise gws.common.auth.error.LoginNotFound()
+        raise gws.base.auth.error.LoginNotFound()
 
     def _parse_header(self, req: t.IRequest):
         h = req.header('Authorization')

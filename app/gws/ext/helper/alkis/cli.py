@@ -5,8 +5,8 @@ from argh import arg
 import gws
 import gws.config
 import gws.config.loader
-import gws.tools.clihelpers as clihelpers
-import gws.tools.json2
+import gws.lib.clihelpers as clihelpers
+import gws.lib.json2
 
 import gws.ext.helper.alkis as alkis
 
@@ -26,7 +26,7 @@ def parse(path=None):
     # under "Das externe Modell, Datenaustausch"
 
     props = nas.parse_properties(path)
-    print(gws.tools.json2.to_string(props, pretty=True))
+    print(gws.lib.json2.to_string(props, pretty=True))
 
 
 def setup():

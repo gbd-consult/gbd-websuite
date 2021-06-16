@@ -1,8 +1,8 @@
-import gws.common.layer
+import gws.base.layer
 import gws.gis.shape
 import gws.gis.feature
-import gws.common.db
-import gws.common.search.provider
+import gws.base.db
+import gws.base.search.provider
 import gws.gis.extent
 import gws.gis.shape
 
@@ -11,27 +11,27 @@ import gws.types as t
 from . import provider
 
 
-class Config(gws.common.layer.VectorConfig):
+class Config(gws.base.layer.VectorConfig):
     """SQL-based layer"""
 
     db: t.Optional[str]  #: database provider uid
-    table: gws.common.db.SqlTableConfig  #: sql table configuration
+    table: gws.base.db.SqlTableConfig  #: sql table configuration
 
 
-class Object(gws.common.layer.Vector):
+class Object(gws.base.layer.Vector):
 
     def configure(self):
         super().configure()
 
         self.is_editable = True
 
-        self.provider = t.cast(provider.Object, gws.common.db.require_provider(self, provider.Object))
+        self.provider = t.cast(provider.Object, gws.base.db.require_provider(self, provider.Object))
         self.table = self.provider.configure_table(self.var('table'))
 
         if not self.data_model:
             p = self.provider.table_data_model_config(self.table)
             if p:
-                self.data_model = t.cast(t.IModel, self.create_child('gws.common.model', p))
+                self.data_model = t.cast(t.IModel, self.create_child('gws.base.model', p))
 
     @property
     def own_bounds(self):

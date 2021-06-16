@@ -1,4 +1,4 @@
-@include /gws-app/gws/common/ows/service/templates/common.cx
+@include /gws-app/gws.base/ows/service/templates/common.cx
 
 @def wms_layer_capabilities(lc)
     @tag Layer queryable="{1 if lc.has_search else 0}"

@@ -9,10 +9,10 @@ import gws.gis.extent
 import gws.gis.gdal2
 import gws.gis.shape
 import gws.qgis.project
-import gws.tools.json2
-import gws.tools.date
-import gws.tools.os2 as os2
-import gws.tools.job
+import gws.lib.json2
+import gws.lib.date
+import gws.lib.os2 as os2
+import gws.lib.job
 
 import gws.types as t
 
@@ -23,7 +23,7 @@ class Stats(t.Data):
     numPdfs: int
 
 
-def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.tools.job.Job = None) -> Stats:
+def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.lib.job.Job = None) -> Stats:
     """"Import bplan data from a file or a directory."""
 
     tmp_dir = None
@@ -37,7 +37,7 @@ def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.tools
 
     try:
         stats = _run2(action, tmp_dir or src_path, replace, au_uid, job)
-    except gws.tools.job.PrematureTermination as e:
+    except gws.lib.job.PrematureTermination as e:
         pass
 
     if tmp_dir:
@@ -106,7 +106,7 @@ def _run2(action, src_dir, replace, au_uid, job):
                 # convert all attributes to strings
                 for a in f.attributes:
                     if a.type == t.AttributeType.datetime:
-                        val = gws.tools.date.to_iso_date(a.value)
+                        val = gws.lib.date.to_iso_date(a.value)
                     else:
                         val = str(a.value)
                     r[a.name.lower()] = val
@@ -232,7 +232,7 @@ def _run2(action, src_dir, replace, au_uid, job):
     #
 
     _create_qgis_projects(action, au_uids)
-    _update_job(job, state=gws.tools.job.State.complete)
+    _update_job(job, state=gws.lib.job.State.complete)
 
     gws.log.debug(f'END {src_dir!r}')
 
@@ -499,13 +499,13 @@ def _update_job(job, **kwargs):
     if not job:
         return
 
-    j = gws.tools.job.get(job.uid)
+    j = gws.lib.job.get(job.uid)
 
     if not j:
-        raise gws.tools.job.PrematureTermination('NOT_FOUND')
+        raise gws.lib.job.PrematureTermination('NOT_FOUND')
 
-    if j.state != gws.tools.job.State.running:
-        raise gws.tools.job.PrematureTermination(f'WRONG_STATE={j.state}')
+    if j.state != gws.lib.job.State.running:
+        raise gws.lib.job.PrematureTermination(f'WRONG_STATE={j.state}')
 
     j.update(**kwargs)
 

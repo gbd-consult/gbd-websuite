@@ -1,8 +1,8 @@
 import gws
-import gws.common.ows.provider.parseutil as u
-import gws.tools.net
-import gws.tools.xml2
-import gws.tools.units as units
+import gws.base.ows.provider.parseutil as u
+import gws.lib.net
+import gws.lib.xml2
+import gws.lib.units as units
 import gws.types as t
 
 from . import types
@@ -12,7 +12,7 @@ from . import types
 
 
 def parse(prov, xml):
-    el = gws.tools.xml2.from_string(xml)
+    el = gws.lib.xml2.from_string(xml)
 
     prov.meta = t.MetaData(u.get_meta(el.first('ServiceIdentification')))
     prov.meta.contact = t.MetaContact(u.get_meta_contact(el.first('ServiceProvider.ServiceContact')))

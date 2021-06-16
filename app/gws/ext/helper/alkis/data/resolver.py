@@ -1,7 +1,7 @@
 import os
 
 import gws
-import gws.tools.json2
+import gws.lib.json2
 
 from ..util import indexer
 from ..util.connection import AlkisConnection
@@ -239,7 +239,7 @@ PLACE_INDEX = 'idx_resolver_place'
 
 
 def _create_props_index(conn):
-    props = gws.tools.json2.from_path(os.path.dirname(__file__) + '/nasprops.json')
+    props = gws.lib.json2.from_path(os.path.dirname(__file__) + '/nasprops.json')
     data = []
 
     for ident, value in props.items():

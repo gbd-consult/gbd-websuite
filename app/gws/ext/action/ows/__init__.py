@@ -1,8 +1,8 @@
 """OWS server."""
 
 import gws
-import gws.common.action
-import gws.common.ows.service
+import gws.base.action
+import gws.base.ows.service
 import gws.web.error
 
 import gws.types as t
@@ -14,7 +14,7 @@ class Config(t.WithTypeAndAccess):
     services: t.Optional[t.List[t.ext.ows.service.Config]]  #: services configuration
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     def configure(self):
         super().configure()
 

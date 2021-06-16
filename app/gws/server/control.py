@@ -4,9 +4,9 @@ import shlex
 import gws
 import gws.config.loader
 import gws.gis.mpx.config
-import gws.tools.date
-import gws.tools.json2
-import gws.tools.os2
+import gws.lib.date
+import gws.lib.json2
+import gws.lib.os2
 
 from . import ini
 
@@ -21,11 +21,11 @@ def configure(config_path=None, is_starting=False):
         if autorun:
             gws.log.info(f'AUTORUN: {autorun!r}')
             cmds = shlex.split(autorun)
-            gws.tools.os2.run(cmds, echo=True)
+            gws.lib.os2.run(cmds, echo=True)
 
         timezone = gws.get(cfg, 'timeZone')
         if timezone:
-            gws.tools.date.set_system_time_zone(timezone)
+            gws.lib.date.set_system_time_zone(timezone)
 
     root = gws.config.loader.activate(cfg)
 
@@ -43,8 +43,8 @@ def start(config_path=None):
 
     root = configure(config_path, is_starting=True)
 
-    for p in gws.tools.os2.find_files(gws.SERVER_DIR, '.*'):
-        gws.tools.os2.unlink(p)
+    for p in gws.lib.os2.find_files(gws.SERVER_DIR, '.*'):
+        gws.lib.os2.unlink(p)
 
     pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     commands = ini.create(root, gws.SERVER_DIR, pid_dir)
@@ -72,7 +72,7 @@ def _stop(proc_name):
             return
         time.sleep(5)
 
-    pids = gws.tools.os2.pids_of(proc_name)
+    pids = gws.lib.os2.pids_of(proc_name)
     if pids:
         raise ValueError(f'failed to stop {proc_name} pids={pids!r}')
 
@@ -89,13 +89,13 @@ def reload_uwsgi(module):
     pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     pattern = f'({module}).uwsgi.pid'
 
-    for p in gws.tools.os2.find_files(pid_dir, pattern):
+    for p in gws.lib.os2.find_files(pid_dir, pattern):
         gws.log.info(f'reloading {p}...')
-        gws.tools.os2.run(['uwsgi', '--reload', p])
+        gws.lib.os2.run(['uwsgi', '--reload', p])
 
 
 def _reload(reconf, config_path, modules=None):
-    pid = gws.tools.os2.pids_of('uwsgi')
+    pid = gws.lib.os2.pids_of('uwsgi')
     if not pid:
         gws.log.info('server not running, starting...')
         start(config_path)
@@ -110,10 +110,10 @@ def _reload(reconf, config_path, modules=None):
 
 
 def _kill_name(proc_name, sig_name):
-    pids = gws.tools.os2.pids_of(proc_name)
+    pids = gws.lib.os2.pids_of(proc_name)
     if not pids:
         return True
     for pid in pids:
         gws.log.debug(f'stopping {proc_name} pid={pid}')
-        gws.tools.os2.kill_pid(pid, sig_name)
+        gws.lib.os2.kill_pid(pid, sig_name)
     return False

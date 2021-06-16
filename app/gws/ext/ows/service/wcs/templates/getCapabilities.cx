@@ -1,4 +1,4 @@
-@include /gws-app/gws/common/ows/service/templates/common.cx
+@include /gws-app/gws.base/ows/service/templates/common.cx
 
 @if version == '1.0.0'
     @include getCapabilities.1.cx

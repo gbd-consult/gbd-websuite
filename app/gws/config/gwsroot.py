@@ -10,7 +10,7 @@ class Object(gws.core.tree.RootObject):
     def configure(self):
         super().configure()
         self.validator = spec.validator()
-        self.application = t.cast(t.IApplication, self.create_child('gws.common.application', self.config))
+        self.application = t.cast(t.IApplication, self.create_child('gws.base.application', self.config))
 
 
 def create() -> t.IRootObject:

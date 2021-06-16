@@ -6,8 +6,8 @@ import gws.gis.feature
 import gws.gis.proj
 import gws.gis.shape
 import gws.gis.proj
-import gws.common.db.provider
-import gws.tools.json2
+import gws.base.db.provider
+import gws.lib.json2
 
 import gws.types as t
 
@@ -29,7 +29,7 @@ def create_shared(root: t.IRootObject, cfg) -> 'Object':
         cfg))
 
 
-class Object(gws.common.db.provider.Sql):
+class Object(gws.base.db.provider.Sql):
     error = driver.Error
 
     @property
@@ -168,7 +168,7 @@ class Object(gws.common.db.provider.Sql):
 
             return []
 
-    def configure_table(self, cfg: gws.common.db.SqlTableConfig) -> t.SqlTable:
+    def configure_table(self, cfg: gws.base.db.SqlTableConfig) -> t.SqlTable:
         table = t.SqlTable(
             name=cfg.get('name'),
             geometry_column=None,

@@ -1,23 +1,23 @@
 import gws
 
-import gws.common.metadata
-import gws.common.metadata.inspire
-import gws.common.model
-import gws.common.ows.service
-import gws.common.search.runner
+import gws.base.metadata
+import gws.base.metadata.inspire
+import gws.base.model
+import gws.base.ows.service
+import gws.base.search.runner
 import gws.gis.gml
 import gws.gis.extent
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
-import gws.tools.date
-import gws.tools.xml2
-import gws.tools.mime
+import gws.lib.date
+import gws.lib.xml2
+import gws.lib.mime
 import gws.web.error
 
 import gws.types as t
 
-import gws.common.ows.service as ows
+import gws.base.ows.service as ows
 
 from . import filter
 
@@ -27,7 +27,7 @@ class Profile(t.Enum):
     DCMI = 'DCMI'
 
 
-class Config(gws.common.ows.service.Config):
+class Config(gws.base.ows.service.Config):
     """CSW Service configuration"""
 
     profile: Profile = 'ISO'  #: metadata profile
@@ -141,8 +141,8 @@ class Object(ows.Base):
         # CSW should accept POST'ed xml, which can be wrapped in a SOAP envelope
 
         try:
-            rd.xml = gws.tools.xml2.from_string(req.text)
-        except gws.tools.xml2.Error:
+            rd.xml = gws.lib.xml2.from_string(req.text)
+        except gws.lib.xml2.Error:
             raise gws.web.error.BadRequest()
 
         if rd.xml.name.lower() == 'envelope':
@@ -170,7 +170,7 @@ class Object(ows.Base):
         metas = self._find_metas(rd)
 
         results = {
-            'timestamp': gws.tools.date.now_iso(with_tz=False),
+            'timestamp': gws.lib.date.now_iso(with_tz=False),
             'next': 0,
             'count_total': len(metas),
             'count_return': len(metas),

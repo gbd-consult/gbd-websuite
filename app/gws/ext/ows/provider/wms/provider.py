@@ -22,12 +22,12 @@ OGC 06-042, 7.3.3.3
 """
 
 import gws
-import gws.common.ows.provider
+import gws.base.ows.provider
 import gws.gis.ows
 import gws.gis.util
 import gws.gis.source
-import gws.tools.net
-import gws.tools.xml2
+import gws.lib.net
+import gws.lib.xml2
 import gws.types as t
 
 from . import caps
@@ -43,7 +43,7 @@ class Config(t.Config):
     url: t.Url  #: service url
 
 
-class Object(gws.common.ows.provider.Object):
+class Object(gws.base.ows.provider.Object):
     def __init__(self):
         super().__init__()
         self.type = 'WMS'

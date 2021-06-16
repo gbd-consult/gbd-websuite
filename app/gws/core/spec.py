@@ -2,8 +2,8 @@
 
 import os
 import re
-import gws.tools.units
-import gws.tools.date
+import gws.lib.units
+import gws.lib.date
 
 import gws.types as t
 
@@ -254,7 +254,7 @@ def _read_filepath(rd, val, spec):
 
 def _read_duration(rd, val, spec):
     try:
-        return gws.tools.units.parse_duration(val)
+        return gws.lib.units.parse_duration(val)
     except ValueError:
         rd.error('ERR_BAD_DURATION', 'invalid duration', val)
 
@@ -283,17 +283,17 @@ def _read_color(rd, val, spec):
 
 
 def _read_date(rd, val, spec):
-    d = gws.tools.date.from_iso(str(val))
+    d = gws.lib.date.from_iso(str(val))
     if not d:
         return rd.error('ERR_INVALID_DATE', 'invalid date', val)
-    return gws.tools.date.to_iso_date(d)
+    return gws.lib.date.to_iso_date(d)
 
 
 def _read_datetime(rd, val, spec):
-    d = gws.tools.date.from_iso(str(val))
+    d = gws.lib.date.from_iso(str(val))
     if not d:
         return rd.error('ERR_INVALID_DATE', 'invalid date', val)
-    return gws.tools.date.to_iso(d)
+    return gws.lib.date.to_iso(d)
 
 
 def _read_url(rd, val, spec):

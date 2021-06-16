@@ -1,19 +1,19 @@
 """Manage construction plans."""
 
 import gws
-import gws.common.action
-import gws.common.db
-import gws.common.metadata
-import gws.common.model
-import gws.common.template
+import gws.base.action
+import gws.base.db
+import gws.base.metadata
+import gws.base.model
+import gws.base.template
 import gws.ext.db.provider.postgres
 import gws.ext.helper.csv
 import gws.gis.shape
 import gws.server.spool
-import gws.tools.date
-import gws.tools.job
-import gws.tools.json2
-import gws.tools.upload
+import gws.lib.date
+import gws.lib.job
+import gws.lib.json2
+import gws.lib.upload
 import gws.web.error
 
 import gws.types as t
@@ -38,15 +38,15 @@ class Config(t.WithTypeAndAccess):
 
     db: str = ''  #: database provider ID
     crs: t.Crs  #: CRS for the bplan data
-    planTable: gws.common.db.SqlTableConfig  #: plan table configuration
-    metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
+    planTable: gws.base.db.SqlTableConfig  #: plan table configuration
+    metaTable: gws.base.db.SqlTableConfig  #: meta table configuration
     dataDir: t.DirPath  #: data directory
     templates: t.List[t.ext.template.Config]  #: templates
     administrativeUnits: t.List[AdministrativeUnitConfig]  #: Administrative Units
     planTypes: t.List[PlanTypeConfig]  #: Plan Types
     imageQuality: int = 24  #: palette size for optimized images
     uploadChunkSize: int  #: upload chunk size in mb
-    exportDataModel: t.Optional[gws.common.model.Config]  #: data model for csv export
+    exportDataModel: t.Optional[gws.base.model.Config]  #: data model for csv export
 
 
 class AdministrativeUnit(t.Data):
@@ -67,7 +67,7 @@ class StatusParams(t.Params):
 class StatusResponse(t.Response):
     jobUid: str
     progress: int
-    state: gws.tools.job.State
+    state: gws.lib.job.State
     stats: importer.Stats
 
 
@@ -131,7 +131,7 @@ class ExportResponse(t.Response):
 _RELOAD_FILE = gws.VAR_DIR + '/bplan.reload'
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
 
     def configure(self):
         super().configure()
@@ -139,11 +139,11 @@ class Object(gws.common.action.Object):
         self.crs = self.var('crs')
         self.db = t.cast(
             gws.ext.db.provider.postgres.Object,
-            gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+            gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
-        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
-        self.qgis_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.qgis')
-        self.info_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.info')
+        self.templates: t.List[t.ITemplate] = gws.base.template.bundle(self, self.var('templates'))
+        self.qgis_template: t.ITemplate = gws.base.template.find(self.templates, subject='bplan.qgis')
+        self.info_template: t.ITemplate = gws.base.template.find(self.templates, subject='bplan.info')
 
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))
@@ -154,7 +154,7 @@ class Object(gws.common.action.Object):
         self.image_quality = self.var('imageQuality')
 
         p = self.var('exportDataModel')
-        self.export_data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
+        self.export_data_model: t.Optional[t.IModel] = self.create_child('gws.base.model', p) if p else None
 
         for sub in 'png', 'pdf', 'cnv', 'qgs':
             gws.ensure_dir(self.data_dir + '/' + sub)
@@ -215,13 +215,13 @@ class Object(gws.common.action.Object):
 
         return DeleteFeatureResponse()
 
-    def api_upload_chunk(self, req: t.IRequest, p: gws.tools.upload.UploadChunkParams) -> gws.tools.upload.UploadChunkResponse:
-        return gws.tools.upload.upload_chunk(p)
+    def api_upload_chunk(self, req: t.IRequest, p: gws.lib.upload.UploadChunkParams) -> gws.lib.upload.UploadChunkResponse:
+        return gws.lib.upload.upload_chunk(p)
 
     def api_import(self, req: t.IRequest, p: ImportParams) -> StatusResponse:
         try:
-            rec = gws.tools.upload.get(p.uploadUid)
-        except gws.tools.upload.Error as e:
+            rec = gws.lib.upload.get(p.uploadUid)
+        except gws.lib.upload.Error as e:
             gws.log.error(e)
             raise gws.web.error.BadRequest()
 
@@ -234,10 +234,10 @@ class Object(gws.common.action.Object):
             'replace': p.replace,
         }
 
-        job = gws.tools.job.create(
+        job = gws.lib.job.create(
             uid=job_uid,
             user=req.user,
-            args=gws.tools.json2.to_string(args),
+            args=gws.lib.json2.to_string(args),
             worker=__name__ + '._worker')
 
         gws.server.spool.add(job)
@@ -248,7 +248,7 @@ class Object(gws.common.action.Object):
         )
 
     def api_import_status(self, req: t.IRequest, p: StatusParams) -> StatusResponse:
-        job = gws.tools.job.get_for(req.user, p.jobUid)
+        job = gws.lib.job.get_for(req.user, p.jobUid)
         if not job:
             raise gws.web.error.NotFound()
 
@@ -262,7 +262,7 @@ class Object(gws.common.action.Object):
     def api_import_cancel(self, req: t.IRequest, p: StatusParams) -> StatusResponse:
         """Cancel a print job"""
 
-        job = gws.tools.job.get_for(req.user, p.jobUid)
+        job = gws.lib.job.get_for(req.user, p.jobUid)
         if not job:
             raise gws.web.error.NotFound()
 
@@ -285,7 +285,7 @@ class Object(gws.common.action.Object):
                 WHERE _au=%s
             ''', [au_uid])
             for r in rs:
-                return LoadUserMetaResponse(meta=gws.tools.json2.from_string(r['meta']))
+                return LoadUserMetaResponse(meta=gws.lib.json2.from_string(r['meta']))
 
         return LoadUserMetaResponse(meta={})
 
@@ -306,7 +306,7 @@ class Object(gws.common.action.Object):
                     INTO {conn.quote_table(self.meta_table.name)}
                     (_au, user_id, meta)
                     VALUES(%s, %s, %s)
-                ''', [au_uid, req.user.fid, gws.tools.json2.to_pretty_string(p.meta)])
+                ''', [au_uid, req.user.fid, gws.lib.json2.to_pretty_string(p.meta)])
 
         self._load_db_meta()
         self.signal_reload('metadata')
@@ -377,13 +377,13 @@ class Object(gws.common.action.Object):
         meta_dates = {}
 
         def _date(s):
-            return gws.tools.date.to_iso(gws.tools.date.to_utc(s), with_tz='Z')
+            return gws.lib.date.to_iso(gws.lib.date.to_utc(s), with_tz='Z')
 
         with self.db.connect() as conn:
             rs = conn.select(f'''SELECT * FROM {conn.quote_table(self.meta_table.name)}''')
             for r in rs:
                 au_uid = r['_au']
-                metas[au_uid] = gws.common.metadata.from_dict(gws.tools.json2.from_string(r['meta']))
+                metas[au_uid] = gws.base.metadata.from_dict(gws.lib.json2.from_string(r['meta']))
                 meta_dates[au_uid] = _date(r['_updated'])
 
             rs = conn.select(f'''
@@ -419,15 +419,15 @@ class Object(gws.common.action.Object):
             if uid and gws.get(obj, 'meta'):
                 for au_uid, meta in metas.items():
                     if uid.endswith(au_uid):
-                        obj.meta = gws.common.metadata.extend(meta, obj.meta)
+                        obj.meta = gws.base.metadata.extend(meta, obj.meta)
                         if gws.get(obj, 'update_sequence'):
                             obj.update_sequence = meta.dateUpdated
 
 
-def _worker(root: t.IRootObject, job: gws.tools.job.Job):
-    args = gws.tools.json2.from_string(job.args)
+def _worker(root: t.IRootObject, job: gws.lib.job.Job):
+    args = gws.lib.json2.from_string(job.args)
     action = t.cast(Object, root.find('gws.ext.action', args['actionUid']))
-    job.update(state=gws.tools.job.State.running)
+    job.update(state=gws.lib.job.State.running)
     stats = importer.run(action, args['path'], args['replace'], args['auUid'], job)
     job.update(result={'stats': stats})
     action.signal_reload('worker')

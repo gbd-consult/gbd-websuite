@@ -1,9 +1,9 @@
 """Interface with GekoS-Bau software."""
 
 import gws
-import gws.common.action
-import gws.common.db
-import gws.common.template
+import gws.base.action
+import gws.base.db
+import gws.base.template
 import gws.ext.db.provider.postgres
 import gws.ext.helper.alkis
 import gws.gis.proj
@@ -74,7 +74,7 @@ class Config(t.WithTypeAndAccess):
     db: t.Optional[str]  #: database provider uid
     sources: t.Optional[t.List[SourceConfig]]  #: gek-online instances
     position: t.Optional[PositionConfig]  #: position correction for points
-    table: gws.common.db.SqlTableConfig  #: sql table configuration
+    table: gws.base.db.SqlTableConfig  #: sql table configuration
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
 
 
@@ -92,14 +92,14 @@ _DEFAULT_TEMPLATES = [
 ]
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     def configure(self):
         super().configure()
 
         self.alkis = t.cast(gws.ext.helper.alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
         self.crs: t.Crs = self.var('crs')
-        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
-        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+        self.templates: t.List[t.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
     def api_find_fs(self, req: t.IRequest, p: GetFsParams) -> GetFsResponse:
         if not self.alkis:

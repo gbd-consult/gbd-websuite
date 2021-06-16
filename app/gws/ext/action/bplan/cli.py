@@ -1,6 +1,6 @@
 from argh import arg
 
-import gws.tools.clihelpers as clihelpers
+import gws.lib.clihelpers as clihelpers
 
 COMMAND = 'bplan'
 

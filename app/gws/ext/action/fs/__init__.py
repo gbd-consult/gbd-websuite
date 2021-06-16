@@ -4,12 +4,12 @@ import re
 import os
 
 import gws
-import gws.common.action
-import gws.tools.os2
+import gws.base.action
+import gws.lib.os2
 import gws.web.error
-import gws.tools.json2
-import gws.tools.date
-import gws.tools.sqlite
+import gws.lib.json2
+import gws.lib.date
+import gws.lib.sqlite
 
 import gws.types as t
 
@@ -77,7 +77,7 @@ TRASH_NAME = '__fs_trash'
 DB_NAME = '__fs_meta6.sqlite'
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     def configure(self):
         super().configure()
         self.root_dir = gws.ensure_dir(self.var('root'))
@@ -109,14 +109,14 @@ class Object(gws.common.action.Object):
         if not meta:
             meta = {
                 'created_by': req.user.fid,
-                'created_time': gws.tools.date.now(),
+                'created_time': gws.lib.date.now(),
             }
 
         if meta.get('deleted'):
             self._unlink(path)
 
         meta['updated_by'] = req.user.fid
-        meta['updated_time'] = gws.tools.date.now()
+        meta['updated_time'] = gws.lib.date.now()
         meta['deleted'] = False
 
         gws.write_file_b(path, p.data)
@@ -130,7 +130,7 @@ class Object(gws.common.action.Object):
         dp, fname = self._check_file_path(p.path)
         path = dp + '/' + fname
 
-        if not gws.tools.os2.is_file(path):
+        if not gws.lib.os2.is_file(path):
             raise gws.web.error.NotFound()
 
         meta = self._read_metadata(path) or self._metadata_from_path(path)
@@ -144,7 +144,7 @@ class Object(gws.common.action.Object):
         dp, fname = self._check_file_path(p.path)
         path = dp + '/' + fname
 
-        if not gws.tools.os2.is_file(path):
+        if not gws.lib.os2.is_file(path):
             raise gws.web.error.NotFound()
 
         meta = self._read_metadata(path) or self._metadata_from_path(path)
@@ -161,8 +161,8 @@ class Object(gws.common.action.Object):
 
         entries = []
 
-        for p in gws.tools.os2.find_files(self.root_dir):
-            p = gws.tools.os2.rel_path(p, self.root_dir)
+        for p in gws.lib.os2.find_files(self.root_dir):
+            p = gws.lib.os2.rel_path(p, self.root_dir)
             if p.startswith('__'):
                 continue
             entries.append(ListEntry(path=p))
@@ -202,16 +202,16 @@ class Object(gws.common.action.Object):
 
         with self._connect() as conn:
             conn.execute('DELETE FROM meta WHERE deleted=1')
-        for p in gws.tools.os2.find_files(self.trash_dir):
-            gws.tools.os2.unlink(p)
+        for p in gws.lib.os2.find_files(self.trash_dir):
+            gws.lib.os2.unlink(p)
 
         return EmptyTrashResponse()
 
     ##
 
     def _check_file_path(self, path):
-        pp = gws.tools.os2.parse_path(path)
-        dp = gws.tools.os2.abs_path(pp['dirname'], self.root_dir)
+        pp = gws.lib.os2.parse_path(path)
+        dp = gws.lib.os2.abs_path(pp['dirname'], self.root_dir)
 
         if not dp:
             raise gws.web.error.BadRequest('invalid path')
@@ -231,14 +231,14 @@ class Object(gws.common.action.Object):
                 return dict(r)
 
     def _metadata_from_path(self, path):
-        if not gws.tools.os2.is_file(path):
+        if not gws.lib.os2.is_file(path):
             return None
         return {
             'path': path,
             'created_by': 'sys::root',
-            'created_time': gws.tools.date.now(),
+            'created_time': gws.lib.date.now(),
             'updated_by': 'sys::root',
-            'updated_time': gws.tools.date.now(),
+            'updated_time': gws.lib.date.now(),
             'deleted': False,
         }
 
@@ -253,7 +253,7 @@ class Object(gws.common.action.Object):
 
     def _unlink(self, path):
         p = self._trash_path(path)
-        gws.tools.os2.unlink(p)
+        gws.lib.os2.unlink(p)
         with self._connect() as conn:
             conn.execute('DELETE FROM meta WHERE path=?', [path])
 
@@ -261,4 +261,4 @@ class Object(gws.common.action.Object):
         return self.trash_dir + '/' + re.sub(r'\W', '__', path)
 
     def _connect(self):
-        return gws.tools.sqlite.connect(self.db_path)
+        return gws.lib.sqlite.connect(self.db_path)

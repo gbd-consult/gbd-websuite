@@ -1,26 +1,26 @@
-import gws.common.layer
+import gws.base.layer
 import gws.gis.shape
 import gws.gis.feature
 import gws.gis.proj
-import gws.common.db
-import gws.tools.json2
+import gws.base.db
+import gws.lib.json2
 
 import gws.types as t
 
 
-class Config(gws.common.layer.VectorConfig):
+class Config(gws.base.layer.VectorConfig):
     """GeoJson layer"""
 
     path: t.FilePath  #: geojson file
     keyProp: str = 'id'  #: property name for unique ids
 
 
-class Object(gws.common.layer.Vector):
+class Object(gws.base.layer.Vector):
     def configure(self):
         super().configure()
 
         self.path = self.var('path')
-        js = gws.tools.json2.from_path(self.path)
+        js = gws.lib.json2.from_path(self.path)
         self.own_crs = gws.gis.proj.as_epsg(_get_crs(js) or gws.EPSG_4326)
         self.features = [
             gws.gis.feature.from_geojson(f, self.crs, self.var('keyProp'))

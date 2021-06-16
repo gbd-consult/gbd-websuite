@@ -5,7 +5,7 @@ import gws
 import gws.gis.proj
 import gws.gis.feature
 import gws.gis.shape
-import gws.tools.xml2
+import gws.lib.xml2
 import gws.types as t
 
 
@@ -13,7 +13,7 @@ def tag(*args):
     return args
 
 
-def parse_envelope(el: gws.tools.xml2.Element) -> t.Optional[t.Bounds]:
+def parse_envelope(el: gws.lib.xml2.Element) -> t.Optional[t.Bounds]:
     """Parse a gml:Envelope.
 
     See:

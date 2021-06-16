@@ -1,8 +1,8 @@
 import io
 
 import gws
-import gws.common.metadata
-import gws.common.search.runner
+import gws.base.metadata
+import gws.base.search.runner
 import gws.gis.extent
 import gws.gis.gml
 import gws.gis.legend
@@ -10,18 +10,18 @@ import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
 import gws.gis.bounds
-import gws.tools.misc
-import gws.tools.os2
-import gws.tools.xml2
-import gws.tools.mime
+import gws.lib.misc
+import gws.lib.os2
+import gws.lib.xml2
+import gws.lib.mime
 import gws.web.error
 
 import gws.types as t
 
-import gws.common.ows.service as ows
+import gws.base.ows.service as ows
 
 
-class Config(gws.common.ows.service.Config):
+class Config(gws.base.ows.service.Config):
     """WCS Service configuration"""
     pass
 

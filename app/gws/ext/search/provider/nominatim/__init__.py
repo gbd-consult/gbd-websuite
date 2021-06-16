@@ -1,13 +1,13 @@
 # http://wiki.openstreetmap.org/wiki/Nominatim
 
 import gws
-import gws.common.search.provider
-import gws.common.template
+import gws.base.search.provider
+import gws.base.template
 import gws.gis.extent
 import gws.gis.feature
 import gws.gis.shape
-import gws.tools.json2
-import gws.tools.net
+import gws.lib.json2
+import gws.lib.net
 
 import gws.types as t
 
@@ -33,19 +33,19 @@ _DEFAULT_TEMPLATES = [
 ]
 
 
-class Config(gws.common.search.provider.Config):
+class Config(gws.base.search.provider.Config):
     """Nominatim (OSM) search provider"""
 
     country: t.Optional[str]  #: country to limit the search
     language: t.Optional[str]  #: language to return the results in
 
 
-class Object(gws.common.search.provider.Object):
+class Object(gws.base.search.provider.Object):
     def configure(self):
         super().configure()
 
-        self.capabilties = gws.common.search.provider.CAPS_KEYWORD
-        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.capabilties = gws.base.search.provider.CAPS_KEYWORD
+        self.templates: t.List[t.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
     def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         params = {
@@ -95,9 +95,9 @@ class Object(gws.common.search.provider.Object):
 
 def _query(params):
     try:
-        res = gws.tools.net.http_request(_NOMINATIM_URL, params=params)
-        return gws.tools.json2.from_string(res.text)
-    except gws.tools.net.Error as e:
+        res = gws.lib.net.http_request(_NOMINATIM_URL, params=params)
+        return gws.lib.json2.from_string(res.text)
+    except gws.lib.net.Error as e:
         gws.log.error('nominatim request error', e)
         return []
 

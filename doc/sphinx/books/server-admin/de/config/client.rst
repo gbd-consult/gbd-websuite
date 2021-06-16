@@ -84,7 +84,7 @@ Für mehr Info s. ^web.
 UI-Konfiguration
 ----------------
 
-^REF gws.common.client.Config
+^REF gws.base.client.Config
 
 Jedes GBD WebSuite Projekt, wie auch die Hauptanwendung, kann ein ``client`` Objekt enthalten, das verschiedene Optionen für den Client und dessen UI-Layout beschreibt, so dass Sie bestimmte UI-Elemente pro Projekt ein- und ausschalten können. Dieses Objekt besteht aus zwei Teilen: ``options`` (generelle Optionen) und ``elements`` (Auflistung der UI Elemente).
 
@@ -161,7 +161,7 @@ Tag | Bedeutung
 Layer flags
 -----------
 
-^REF gws.common.layer.types.ClientOptions
+^REF gws.base.layer.types.ClientOptions
 
 Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll.
 

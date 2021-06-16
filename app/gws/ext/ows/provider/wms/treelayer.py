@@ -1,6 +1,6 @@
 import gws
 import gws.config.parser
-import gws.common.layer
+import gws.base.layer
 import gws.gis.legend
 import gws.gis.ows
 import gws.gis.source
@@ -13,14 +13,14 @@ import gws.types as t
 from . import provider
 
 
-class Config(gws.common.layer.ImageConfig, provider.Config):
+class Config(gws.base.layer.ImageConfig, provider.Config):
     rootLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use as roots
     excludeLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to exclude
-    flattenLayers: t.Optional[gws.common.layer.types.FlattenConfig]  #: flatten the layer hierarchy
-    layerConfig: t.Optional[t.List[gws.common.layer.CustomConfig]]  #: custom configurations for specific layers
+    flattenLayers: t.Optional[gws.base.layer.types.FlattenConfig]  #: flatten the layer hierarchy
+    layerConfig: t.Optional[t.List[gws.base.layer.CustomConfig]]  #: custom configurations for specific layers
 
 
-class Object(gws.common.layer.Group):
+class Object(gws.base.layer.Group):
     def configure(self):
         super().configure()
 
@@ -49,7 +49,7 @@ class Object(gws.common.layer.Group):
         }
 
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
-        self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
+        self.layers = gws.base.layer.add_layers_to_object(self, top_cfg.layers)
 
     def _layer(self, sl: t.SourceLayer, depth: int):
         if self.exclude_layers and gws.gis.source.layer_matches(sl, self.exclude_layers):

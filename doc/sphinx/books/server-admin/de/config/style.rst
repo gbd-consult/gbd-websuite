@@ -29,7 +29,7 @@ Vektor-Feature-Stile können über CSS angepasst werden. Die GBD WebSuite unters
 Styling von Vektorlayern
 ------------------------
 
-^REF gws.common.style.Config
+^REF gws.base.style.Config
 
 Für Vektorlayer können Sie Ihre CSS-Regeln direkt in der Konfigurationsdatei unter ``style`` einfügen: ::
 

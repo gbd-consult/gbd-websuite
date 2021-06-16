@@ -1,13 +1,13 @@
 """Search API."""
 
 import gws
-import gws.common.action
-import gws.common.search.runner
-import gws.common.template
+import gws.base.action
+import gws.base.search.runner
+import gws.base.template
 import gws.gis.feature
 import gws.gis.shape
-import gws.tools.json2
-import gws.tools.units
+import gws.lib.json2
+import gws.lib.units
 import gws.web.error
 
 import gws.types as t
@@ -36,7 +36,7 @@ class Params(t.Params):
     shapes: t.Optional[t.List[t.ShapeProps]]
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     limit = 0
 
     def configure(self):
@@ -63,11 +63,11 @@ class Object(gws.common.action.Object):
             resolution=p.resolution,
             shapes=[gws.gis.shape.from_props(s) for s in p.shapes] if p.get('shapes') else [],
             tolerance=(
-                gws.tools.units.parse(p.tolerance, units=['px', 'm'], default='px')
+                gws.lib.units.parse(p.tolerance, units=['px', 'm'], default='px')
                 if p.get('tolerance') else None),
         )
 
-        found = gws.common.search.runner.run(req, args)
+        found = gws.base.search.runner.run(req, args)
 
         for f in found:
             # @TODO only pull specified props from a feature

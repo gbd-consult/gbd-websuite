@@ -1,6 +1,6 @@
 import itertools
 import gws.ext.helper.csv
-import gws.common.model
+import gws.base.model
 
 import gws
 import gws.types as t
@@ -22,7 +22,7 @@ class GroupConfig(t.Config):
     title: str  #: title for this group
     eigentuemer: bool = False #: include Eigentuemer (owner) data
     buchung: bool = False  #: include Grundbuch (register) data
-    dataModel: t.Optional[gws.common.model.Config] #: data model for this group
+    dataModel: t.Optional[gws.base.model.Config] #: data model for this group
 
 
 class Config(t.WithAccess):
@@ -96,7 +96,7 @@ DEFAULT_GROUPS = [
 ]
 
 
-def as_csv(target_object: t.IObject, fs_features: t.List[t.IFeature], model: gws.common.model.Object):
+def as_csv(target_object: t.IObject, fs_features: t.List[t.IFeature], model: gws.base.model.Object):
     helper: gws.ext.helper.csv.Object = t.cast(
         gws.ext.helper.csv.Object,
         target_object.root.find_first('gws.ext.helper.csv'))

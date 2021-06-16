@@ -4,7 +4,7 @@ import collections
 import re
 
 import gws
-from gws.tools.console import ProgressIndicator
+from gws.lib.console import ProgressIndicator
 
 from . import resolver, adresse, nutzung, grundbuch
 from ..util import indexer

@@ -2,8 +2,8 @@ from argh import arg
 import gws
 import gws.config
 import gws.config.loader
-import gws.tools.clihelpers
-import gws.tools.json2
+import gws.lib.clihelpers
+import gws.lib.json2
 import gws.gis.mpx.config
 
 COMMAND = 'config'
@@ -37,7 +37,7 @@ def dump(path=None, out=None):
     else:
         root = gws.config.loader.load()
 
-    r = gws.tools.json2.to_tagged_string(root, pretty=True, ascii=False)
+    r = gws.lib.json2.to_tagged_string(root, pretty=True, ascii=False)
 
     if not out:
         print(r)
@@ -69,5 +69,5 @@ def dumpmeta(path=None, out=None):
                 'meta': meta
             })
 
-    r = gws.tools.json2.to_pretty_string(ls, ascii=False)
+    r = gws.lib.json2.to_pretty_string(ls, ascii=False)
     print(r)

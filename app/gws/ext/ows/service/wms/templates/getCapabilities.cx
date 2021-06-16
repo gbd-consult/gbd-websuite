@@ -1,4 +1,4 @@
-@include /gws-app/gws/common/ows/service/templates/common.cx
+@include /gws-app/gws.base/ows/service/templates/common.cx
 
 @def wms_contact_metadata
     @with service.meta.contact as co

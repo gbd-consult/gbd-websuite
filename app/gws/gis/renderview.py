@@ -2,7 +2,7 @@ import math
 
 import gws
 import gws.gis.extent
-import gws.tools.units as units
+import gws.lib.units as units
 
 import gws.types as t
 

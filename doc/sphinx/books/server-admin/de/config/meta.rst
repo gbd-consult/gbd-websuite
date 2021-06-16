@@ -1,7 +1,7 @@
 Metadaten
 =========
 
-^REF gws.common.metadata.Config
+^REF gws.base.metadata.Config
 
 GBD WebSuite Metadata konfiguration ist umfangreich und beinhaltet folgende Themen:
 

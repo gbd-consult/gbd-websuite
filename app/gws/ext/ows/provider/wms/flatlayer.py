@@ -1,5 +1,5 @@
 import gws
-import gws.common.layer
+import gws.base.layer
 import gws.gis.legend
 import gws.gis.ows
 import gws.gis.source
@@ -12,11 +12,11 @@ import gws.types as t
 from . import provider
 
 
-class Config(gws.common.layer.ImageConfig, provider.Config):
+class Config(gws.base.layer.ImageConfig, provider.Config):
     sourceLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use
 
 
-class Object(gws.common.layer.Image):
+class Object(gws.base.layer.Image):
     def configure(self):
         super().configure()
 

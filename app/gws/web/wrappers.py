@@ -9,10 +9,10 @@ import werkzeug.wsgi
 from werkzeug.utils import cached_property
 
 import gws
-import gws.tools.date
-import gws.tools.json2
-import gws.tools.net
-import gws.tools.vendor.umsgpack as umsgpack
+import gws.lib.date
+import gws.lib.json2
+import gws.lib.net
+import gws.lib.vendor.umsgpack as umsgpack
 import gws.web.error
 
 import gws.types as t
@@ -96,7 +96,7 @@ class BaseRequest(t.IBaseRequest):
         data = self._wz.get_data(as_text=False, parse_form_data=False)
 
         if self.root.application.developer_option('request.log_all'):
-            gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.tools.date.timestamp_msec()}', data)
+            gws.write_file_b(f'{gws.VAR_DIR}/debug_request_{gws.lib.date.timestamp_msec()}', data)
 
         if self.header('content-encoding') == 'gzip':
             with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
@@ -202,7 +202,7 @@ class BaseRequest(t.IBaseRequest):
 
     def _encode_struct(self, data, typ):
         if typ == _JSON:
-            return gws.tools.json2.to_string(data, pretty=True)
+            return gws.lib.json2.to_string(data, pretty=True)
         if typ == _MSGPACK:
             return umsgpack.dumps(data, default=gws.as_dict)
         raise ValueError('invalid struct type')
@@ -211,8 +211,8 @@ class BaseRequest(t.IBaseRequest):
         if typ == _JSON:
             try:
                 s = self.data.decode(encoding='utf-8', errors='strict')
-                return gws.tools.json2.from_string(s)
-            except (UnicodeDecodeError, gws.tools.json2.Error):
+                return gws.lib.json2.from_string(s)
+            except (UnicodeDecodeError, gws.lib.json2.Error):
                 gws.log.error('malformed json request')
                 raise gws.web.error.BadRequest()
 

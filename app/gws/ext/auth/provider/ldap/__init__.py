@@ -3,10 +3,10 @@ import ldap.filter
 import contextlib
 
 import gws
-import gws.common.auth.provider
-import gws.common.auth.user
-import gws.tools.net
-import gws.tools.misc as misc
+import gws.base.auth.provider
+import gws.base.auth.user
+import gws.lib.net
+import gws.lib.misc as misc
 
 import gws.types as t
 
@@ -44,7 +44,7 @@ class UserSpec(t.Data):
     memberOf: t.Optional[str]  #: LDAP group the account has to be a member of
 
 
-class Config(gws.common.auth.provider.Config):
+class Config(gws.base.auth.provider.Config):
     """LDAP authorization provider"""
 
     activeDirectory: bool = True  #: true if the LDAP server is ActiveDirectory
@@ -56,13 +56,13 @@ class Config(gws.common.auth.provider.Config):
     url: str  #: LDAP server url "ldap://host:port/baseDN?searchAttribute"
 
 
-class Object(gws.common.auth.provider.Object):
+class Object(gws.base.auth.provider.Object):
     def configure(self):
         super().configure()
 
         # the URL is a simplified form of https://httpd.apache.org/docs/2.4/mod/mod_authnz_ldap.html#authldapurl
 
-        p = gws.tools.net.parse_url(self.var('url'))
+        p = gws.lib.net.parse_url(self.var('url'))
 
         self.server = 'ldap://' + p['netloc']
         self.base_dn = p['path'].strip('/')
@@ -90,16 +90,16 @@ class Object(gws.common.auth.provider.Object):
             if uac and uac.isdigit():
                 if int(uac) & _MS_ACCOUNTDISABLE:
                     gws.log.warn('ACCOUNTDISABLE on, FAIL')
-                    raise gws.common.auth.error.AccessDenied()
+                    raise gws.base.auth.error.AccessDenied()
 
             try:
                 ld.simple_bind_s(user_data['dn'], password)
             except ldap.INVALID_CREDENTIALS:
                 gws.log.warn('wrong password, FAIL')
-                raise gws.common.auth.error.WrongPassword()
+                raise gws.base.auth.error.WrongPassword()
             except ldap.LDAPError:
                 gws.log.error('generic fault, FAIL')
-                raise gws.common.auth.error.LoginFailed()
+                raise gws.base.auth.error.LoginFailed()
 
             return self._make_user(ld, user_data)
 
@@ -175,7 +175,7 @@ class Object(gws.common.auth.provider.Object):
                 self.var('displayNameFormat'),
                 user_data)
 
-        return gws.common.auth.user.ValidUser().init_from_source(
+        return gws.base.auth.user.ValidUser().init_from_source(
             provider=self,
             uid=user_data[self.login_attr],
             roles=self._find_roles(ld, user_data),

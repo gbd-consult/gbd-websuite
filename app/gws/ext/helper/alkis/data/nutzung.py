@@ -1,7 +1,7 @@
 """Interface for Objektbereich:Tatsächliche Nutzung"""
 
 import gws
-from gws.tools.console import ProgressIndicator
+from gws.lib.console import ProgressIndicator
 
 from . import resolver
 from ..util import indexer

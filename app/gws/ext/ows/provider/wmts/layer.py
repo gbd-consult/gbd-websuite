@@ -1,19 +1,19 @@
 import gws
-import gws.common.layer
+import gws.base.layer
 import gws.gis.source
 import gws.gis.util
 import gws.gis.mpx
 import gws.gis.ows
-import gws.tools.net
-import gws.tools.json2
-import gws.tools.units as units
+import gws.lib.net
+import gws.lib.json2
+import gws.lib.units as units
 
 import gws.types as t
 
 from . import types, provider
 
 
-class Config(gws.common.layer.ImageTileConfig):
+class Config(gws.base.layer.ImageTileConfig):
     """WMTS layer"""
 
     capsCacheMaxAge: t.Duration = '1d'  #: max cache age for capabilities documents
@@ -24,7 +24,7 @@ class Config(gws.common.layer.ImageTileConfig):
     url: t.Url  #: service url
 
 
-class Object(gws.common.layer.ImageTile):
+class Object(gws.base.layer.ImageTile):
     def configure(self):
         super().configure()
 
@@ -120,14 +120,14 @@ class Object(gws.common.layer.ImageTile):
             if self.source_style:
                 params['STYLE'] = self.source_style
 
-            p = gws.tools.net.parse_url(url)
+            p = gws.lib.net.parse_url(url)
             params.update(p['params'])
 
             # NB cannot use as_query_string because of the MP's percent formatting
 
             p['params'] = {}
             qs = '&'.join(k + '=' + str(v or '') for k, v in params.items())
-            url = gws.tools.net.make_url(p) + '?' + qs
+            url = gws.lib.net.make_url(p) + '?' + qs
 
             return url
 

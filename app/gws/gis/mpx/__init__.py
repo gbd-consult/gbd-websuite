@@ -4,7 +4,7 @@ from PIL import Image
 
 import gws
 import gws.config
-import gws.tools.net
+import gws.lib.net
 
 import gws.types as t
 
@@ -20,13 +20,13 @@ def _call(service, params):
     )
 
     try:
-        resp = gws.tools.net.http_request(url, params=params)
+        resp = gws.lib.net.http_request(url, params=params)
         if resp.content_type.startswith('image'):
             return resp.content
         text = resp.text
         if 'Exception' in text:
             raise ServiceException(text)
-    except gws.tools.net.Error as e:
+    except gws.lib.net.Error as e:
         gws.log.error('mapproxy http error', e)
         return
     except ServiceException as e:

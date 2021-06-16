@@ -6,7 +6,7 @@ import gws
 
 import gws.gis.bounds
 import gws.gis.shape
-import gws.tools.xml2
+import gws.lib.xml2
 import gws.types as t
 
 
@@ -52,13 +52,13 @@ _SUPPORTED_OPS = {
 
 def from_fes_string(src: str) -> SearchFilter:
     try:
-        el = gws.tools.xml2.from_string(src)
-    except gws.tools.xml2.Error:
+        el = gws.lib.xml2.from_string(src)
+    except gws.lib.xml2.Error:
         raise Error('invalid xml')
     return from_fes_element(el)
 
 
-def from_fes_element(el: gws.tools.xml2.Element) -> SearchFilter:
+def from_fes_element(el: gws.lib.xml2.Element) -> SearchFilter:
     op = el.name.lower()
 
     if op == 'filter':

@@ -3,7 +3,7 @@ import gws
 import gws.gis.proj
 import gws.gis.gml
 import gws.gis.extent
-import gws.tools.xml2
+import gws.lib.xml2
 
 import gws.types as t
 
@@ -44,7 +44,7 @@ def from_request_bbox(s: str, target_crs: t.Crs = None, invert_axis_if_geographi
         return b
 
 
-def from_gml_envelope_element(el: gws.tools.xml2.Element):
+def from_gml_envelope_element(el: gws.lib.xml2.Element):
     """Create Bounds from a gml:Envelope"""
 
     return gws.gis.gml.parse_envelope(el)

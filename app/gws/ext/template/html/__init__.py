@@ -3,23 +3,23 @@
 import re
 
 import gws
-import gws.common.template
+import gws.base.template
 import gws.gis.feature
 import gws.gis.render
-import gws.tools.mime
-import gws.tools.os2
-import gws.tools.pdf
-import gws.tools.vendor.chartreux as chartreux
+import gws.lib.mime
+import gws.lib.os2
+import gws.lib.pdf
+import gws.lib.vendor.chartreux as chartreux
 
 import gws.types as t
 
 
-class Config(gws.common.template.Config):
+class Config(gws.base.template.Config):
     """HTML template"""
     pass
 
 
-class Object(gws.common.template.Object):
+class Object(gws.base.template.Object):
 
     def configure(self):
         super().configure()
@@ -55,30 +55,30 @@ class Object(gws.common.template.Object):
         if format == 'pdf':
             if not out_path:
                 raise ValueError('out_path required for pdf')
-            gws.tools.pdf.render_html(
+            gws.lib.pdf.render_html(
                 html,
                 page_size=self.page_size,
                 margin=self.margin,
                 out_path=out_path
             )
-            return t.TemplateOutput(mime=gws.tools.mime.get('pdf'), path=out_path)
+            return t.TemplateOutput(mime=gws.lib.mime.get('pdf'), path=out_path)
 
         if format == 'png':
             if not out_path:
                 raise ValueError('out_path required for png')
-            gws.tools.pdf.render_html_to_png(
+            gws.lib.pdf.render_html_to_png(
                 html,
                 page_size=self.page_size,
                 margin=self.margin,
                 out_path=out_path
             )
-            return t.TemplateOutput(mime=gws.tools.mime.get('png'), path=out_path)
+            return t.TemplateOutput(mime=gws.lib.mime.get('png'), path=out_path)
 
         if out_path:
             gws.write_file(out_path, html)
-            return t.TemplateOutput(mime=gws.tools.mime.get('html'), path=out_path)
+            return t.TemplateOutput(mime=gws.lib.mime.get('html'), path=out_path)
 
-        return t.TemplateOutput(mime=gws.tools.mime.get('html'), content=html)
+        return t.TemplateOutput(mime=gws.lib.mime.get('html'), content=html)
 
     def add_headers_and_footers(self, context, in_path, out_path, format):
         if not self.header and not self.footer:
@@ -88,13 +88,13 @@ class Object(gws.common.template.Object):
         html = self._render_html(text, context)
 
         if format == 'pdf':
-            frame = gws.tools.pdf.render_html(
+            frame = gws.lib.pdf.render_html(
                 html=html,
                 page_size=self.page_size,
                 margin=None,
                 out_path=out_path + '-frame'
             )
-            return gws.tools.pdf.merge(in_path, frame, out_path)
+            return gws.lib.pdf.merge(in_path, frame, out_path)
 
         return in_path
 

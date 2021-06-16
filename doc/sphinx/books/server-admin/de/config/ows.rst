@@ -70,7 +70,7 @@ CSW Dienst ist für alle OWS und ISO Metadaten zuständig. Sobald Sie den Dienst
 Layer-Konfiguration
 -------------------
 
-^REF gws.common.layer.types.OwsConfig
+^REF gws.base.layer.types.OwsConfig
 
 Zusätzlich zur der Aktion Konfiguration, können Sie bei jedem Layer definieren, ob dieser Layer überhaupt für OWS Dienste berücksichtigt wird (``enabled``), wenn ja, für welche (``enabledServices``) und welchen Namen der Layer selbst (``name``) und die Features, die sich auf diesem Layer befinden (``featureName``) haben.
 

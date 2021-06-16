@@ -3,14 +3,14 @@ import os
 
 import gws
 import gws.web
-import gws.tools.date
-import gws.common.model
+import gws.lib.date
+import gws.base.model
 import gws.gis.shape
-import gws.tools.net
-import gws.tools.misc
+import gws.lib.net
+import gws.lib.misc
 import gws.ext.db.provider.postgres
-import gws.common.action
-import gws.common.db
+import gws.base.action
+import gws.base.db
 import gws.gis.feature
 import gws.web.error
 
@@ -19,9 +19,9 @@ import gws.types as t
 
 class TableConfig(t.Config):
     title: t.Optional[str]
-    table: gws.common.db.SqlTableConfig  #: sql table configuration
+    table: gws.base.db.SqlTableConfig  #: sql table configuration
     sort: t.Optional[str]  #: sort expression
-    dataModel: t.Optional[gws.common.model.Config]  #: table data model
+    dataModel: t.Optional[gws.base.model.Config]  #: table data model
     widths: t.Optional[t.List[int]]  #: column widths, 0 to exclude
     withFilter: t.Optional[bool]  #: use filter boxes
     withAdd: t.Optional[bool]  #: use the 'add' button
@@ -79,7 +79,7 @@ class Table(t.Data):
     with_filter: bool
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     @property
     def props(self):
         return t.Props(enabled=True)
@@ -89,7 +89,7 @@ class Object(gws.common.action.Object):
 
         self.db: gws.ext.db.provider.postgres.Object = t.cast(
             gws.ext.db.provider.postgres.Object,
-            gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+            gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
 
         self.tables: t.List[Table] = []
 
@@ -100,7 +100,7 @@ class Object(gws.common.action.Object):
                 uid=p.uid or gws.as_uid(table.name),
                 title=p.title or table.name,
                 table=table,
-                data_model=t.cast(t.IModel, self.create_child('gws.common.model', m)),
+                data_model=t.cast(t.IModel, self.create_child('gws.base.model', m)),
                 sort=p.sort or table.key_column,
                 widths=p.widths or [],
                 with_filter=bool(p.withFilter),

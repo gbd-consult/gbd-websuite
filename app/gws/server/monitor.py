@@ -5,8 +5,8 @@ import psutil
 import gws
 import gws.core.tree
 import gws.config
-import gws.tools.misc
-import gws.tools.os2
+import gws.lib.misc
+import gws.lib.os2
 
 import gws.types as t
 
@@ -76,7 +76,7 @@ class Object(gws.Object, t.IMonitor):
         gws.log.info(f'MONITOR: started, frequency={self.frequency}')
 
     def _worker(self, signo):
-        with gws.tools.misc.lock(_lockfile) as ok:
+        with gws.lib.misc.lock(_lockfile) as ok:
             if not ok:
                 try:
                     pid = int(gws.read_file(_lockfile))
@@ -144,7 +144,7 @@ class Object(gws.Object, t.IMonitor):
 
         for dirname, pattern in self.watch_dirs.items():
             if not self._ignored(dirname):
-                for filename in gws.tools.os2.find_files(dirname, pattern):
+                for filename in gws.lib.os2.find_files(dirname, pattern):
                     if not self._ignored(filename):
                         new_stats[filename] = self._stats(filename)
 

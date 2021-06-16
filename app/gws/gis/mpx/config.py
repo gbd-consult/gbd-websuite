@@ -4,8 +4,8 @@ from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
 import gws.config
-import gws.tools.os2
-import gws.tools.json2
+import gws.lib.os2
+import gws.lib.json2
 
 import gws.types as t
 
@@ -77,7 +77,7 @@ class _Config:
             if isinstance(v, tuple):
                 c[k] = list(v)
 
-        uid = kind + '_' + gws.tools.json2.to_hash(c)
+        uid = kind + '_' + gws.lib.json2.to_hash(c)
 
         # clients might add their hash params starting with '$'
         c = {
@@ -138,7 +138,7 @@ def create(root: t.IRootObject):
         return
 
     crs = set()
-    for p in root.find_all('gws.common.map'):
+    for p in root.find_all('gws.base.map'):
         crs.add(gws.get(p, 'crs'))
     for p in root.find_all('gws.ext.ows.service'):
         crs.update(gws.get(p, 'supported_crs', default=[]))
@@ -149,12 +149,12 @@ def create(root: t.IRootObject):
 
 def create_and_save(root: t.IRootObject, path):
     test_path = path + '.test.yaml'
-    gws.tools.os2.unlink(test_path)
+    gws.lib.os2.unlink(test_path)
 
     cfg = create(root)
     if not cfg:
         gws.log.warn('mapproxy: NO CONFIG')
-        gws.tools.os2.unlink(path)
+        gws.lib.os2.unlink(path)
         return
 
     gws.write_file(test_path, yaml.dump(cfg))
@@ -165,5 +165,5 @@ def create_and_save(root: t.IRootObject, path):
     except Exception as e:
         raise gws.config.MapproxyConfigError(*e.args) from e
 
-    gws.tools.os2.unlink(test_path)
+    gws.lib.os2.unlink(test_path)
     gws.write_file(path, yaml.dump(cfg))

@@ -58,7 +58,7 @@ Here's a code snippet that illustrates the above concepts ::
 
     # import the generic Action object
 
-    import gws.common.action
+    import gws.base.action
 
     # import web errors
 
@@ -88,7 +88,7 @@ Here's a code snippet that illustrates the above concepts ::
 
     # define the action object. It extends the generic action Object which is an IObject
 
-    class Object(gws.common.action.Object):
+    class Object(gws.base.action.Object):
 
         # the mandatory configuration method
 

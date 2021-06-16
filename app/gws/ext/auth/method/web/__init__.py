@@ -1,5 +1,5 @@
-import gws.common.auth.method
-import gws.common.auth.error
+import gws.base.auth.method
+import gws.base.auth.error
 
 import gws.types as t
 
@@ -16,7 +16,7 @@ _ST_STORED = 'web:stored'
 _ST_DELETED = 'web:deleted'
 
 
-class Object(gws.common.auth.method.Object):
+class Object(gws.base.auth.method.Object):
 
     def configure(self):
         super().configure()

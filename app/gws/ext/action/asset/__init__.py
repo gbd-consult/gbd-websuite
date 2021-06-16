@@ -3,13 +3,13 @@
 import os
 
 import gws
-import gws.common.action
-import gws.common.template
+import gws.base.action
+import gws.base.template
 import gws.config
 import gws.server
-import gws.tools.job
-import gws.tools.mime
-import gws.tools.os2
+import gws.lib.job
+import gws.lib.mime
+import gws.lib.os2
 import gws.web.error
 
 import gws.types as t
@@ -28,7 +28,7 @@ class GetResultParams(t.Params):
     jobUid: str
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
 
     def api_get(self, req: t.IRequest, p: GetPathParams) -> t.HttpResponse:
         """Return an asset under the given path and project"""
@@ -64,7 +64,7 @@ class Object(gws.common.action.Object):
         if not rpath:
             raise gws.web.error.NotFound()
 
-        tpl = gws.common.template.from_path(self.root, rpath)
+        tpl = gws.base.template.from_path(self.root, rpath)
 
         if tpl:
             locale_uid = p.localeUid
@@ -91,7 +91,7 @@ class Object(gws.common.action.Object):
 
             return r
 
-        mime = gws.tools.mime.for_path(rpath)
+        mime = gws.lib.mime.for_path(rpath)
 
         if not _valid_mime_type(mime, project_assets, site_assets):
             gws.log.error(f'invalid mime path={rpath!r} mime={mime!r}')
@@ -103,8 +103,8 @@ class Object(gws.common.action.Object):
         attachment_name = None
 
         if as_attachment:
-            p = gws.tools.os2.parse_path(spath)
-            attachment_name = p['name'] + '.' + gws.tools.mime.extension(mime)
+            p = gws.lib.os2.parse_path(spath)
+            attachment_name = p['name'] + '.' + gws.lib.mime.extension(mime)
 
         return t.FileResponse(mime=mime, path=rpath, attachment_name=attachment_name)
 
@@ -112,7 +112,7 @@ class Object(gws.common.action.Object):
 def _projects_for_user(user):
     ps = [
         p
-        for p in gws.config.root().find_all('gws.common.project')
+        for p in gws.config.root().find_all('gws.base.project')
         if user.can_use(p)
     ]
     return sorted(ps, key=lambda p: p.title)
@@ -143,7 +143,7 @@ def _valid_mime_type(mt, project_assets: t.DocumentRoot, site_assets: t.Document
         return mt in project_assets.allow_mime
     if site_assets and site_assets.allow_mime:
         return mt in site_assets.allow_mime
-    if mt not in gws.tools.mime.DEFAULT_ALLOWED:
+    if mt not in gws.lib.mime.DEFAULT_ALLOWED:
         return False
     if project_assets and project_assets.deny_mime:
         return mt not in project_assets.deny_mime

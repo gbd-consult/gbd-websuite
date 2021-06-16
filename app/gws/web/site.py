@@ -1,8 +1,8 @@
 import re
 
 import gws
-import gws.common.template
-import gws.tools.net
+import gws.base.template
+import gws.lib.net
 
 import gws.types as t
 
@@ -80,7 +80,7 @@ class Object(gws.Object, t.IWebSite):
 
         self.rewrite_rules: t.List[t.RewriteRule] = self.var('rewrite', default=[])
         for r in self.rewrite_rules:
-            if not gws.tools.net.is_abs_url(r.target):
+            if not gws.lib.net.is_abs_url(r.target):
                 # ensure rewriting from root
                 r.target = '/' + r.target.lstrip('/')
 
@@ -100,7 +100,7 @@ class Object(gws.Object, t.IWebSite):
         })
 
     def url_for(self, req, url):
-        if gws.tools.net.is_abs_url(url):
+        if gws.lib.net.is_abs_url(url):
             return url
 
         proto = 'https' if self.ssl else 'http'
@@ -113,7 +113,7 @@ class Object(gws.Object, t.IWebSite):
             m = re.match(rule.match, u)
             if m:
                 s = re.sub(rule.match, rule.target, u)
-                if gws.tools.net.is_abs_url(s):
+                if gws.lib.net.is_abs_url(s):
                     return s
                 return base + s
 

@@ -2,7 +2,7 @@ import io
 import math
 
 import gws
-import gws.common.metadata
+import gws.base.metadata
 import gws.gis.extent
 import gws.gis.gml
 import gws.gis.legend
@@ -10,21 +10,21 @@ import gws.gis.proj
 import gws.gis.render
 import gws.gis.renderview
 import gws.gis.shape
-import gws.tools.misc
-import gws.tools.os2
-import gws.tools.xml2
-import gws.tools.units
-import gws.tools.mime
+import gws.lib.misc
+import gws.lib.os2
+import gws.lib.xml2
+import gws.lib.units
+import gws.lib.mime
 import gws.web.error
 
 import gws.types as t
 
-import gws.common.ows.service as ows
+import gws.base.ows.service as ows
 
 from gws.ext.ows.provider.wmts.types import TileMatrix, TileMatrixSet
 
 
-class Config(gws.common.ows.service.Config):
+class Config(gws.base.ows.service.Config):
     """WMTS Service configuration"""
     pass
 
@@ -136,7 +136,7 @@ class Object(ows.Base):
 
         out = renderer.output
         if not out.items:
-            img = gws.tools.misc.Pixels.png8
+            img = gws.lib.misc.Pixels.png8
         else:
             buf = io.BytesIO()
             out.items[0].image.save(buf, format='png')
@@ -154,7 +154,7 @@ class Object(ows.Base):
 
         paths = [lc.layer.render_legend() for lc in lcs if lc.has_legend]
         out = gws.gis.legend.combine_legend_paths(paths)
-        return t.HttpResponse(mime='image/png', content=out or gws.tools.misc.Pixels.png8)
+        return t.HttpResponse(mime='image/png', content=out or gws.lib.misc.Pixels.png8)
 
     ##
 
@@ -203,7 +203,7 @@ def _tile_matrices(extent, min_zoom, max_zoom, tile_size=256):
         res = w / (tile_size * size)
         ms.append(TileMatrix(
             uid='%02d' % z,
-            scale=gws.tools.units.res2scale(res),
+            scale=gws.lib.units.res2scale(res),
             x=extent[0],
             y=extent[1],
             tile_width=tile_size,

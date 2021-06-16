@@ -2,21 +2,21 @@
 
 import gws
 import gws.config.parser
-import gws.common.search.provider
+import gws.base.search.provider
 import gws.ext.db.provider.postgres
 import gws.types as t
 import gws.core.tree
 
 
-class Config(gws.common.search.provider.Config):
+class Config(gws.base.search.provider.Config):
     dataSource: dict  #: qgis data source
 
 
-class Object(gws.common.search.provider.Object):
+class Object(gws.base.search.provider.Object):
     def configure(self):
         super().configure()
 
-        self.capabilties = gws.common.search.provider.CAPS_GEOMETRY
+        self.capabilties = gws.base.search.provider.CAPS_GEOMETRY
 
         ds = self.var('dataSource')
 

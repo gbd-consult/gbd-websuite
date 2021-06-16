@@ -3,7 +3,7 @@ import sys
 import argh
 
 import gws
-import gws.tools.clihelpers as ch
+import gws.lib.clihelpers as ch
 
 gws.ensure_dir(gws.MAPPROXY_CACHE_DIR)
 gws.ensure_dir(gws.LEGEND_CACHE_DIR)

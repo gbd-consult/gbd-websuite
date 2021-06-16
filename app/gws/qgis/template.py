@@ -3,23 +3,23 @@
 import re
 
 import gws
-import gws.common.template
+import gws.base.template
 import gws.gis.render
-import gws.tools.mime
-import gws.tools.net
-import gws.tools.pdf
-import gws.tools.units as units
+import gws.lib.mime
+import gws.lib.net
+import gws.lib.pdf
+import gws.lib.units as units
 
 import gws.types as t
 
 from . import types, provider, writer, server
 
 
-class Config(gws.common.template.Config):
+class Config(gws.base.template.Config):
     path: t.FilePath
 
 
-class Object(gws.common.template.Object):
+class Object(gws.base.template.Object):
     def configure(self):
         super().configure()
 
@@ -90,7 +90,7 @@ class Object(gws.common.template.Object):
         html = f'<div style="{css}">{map_html}</div>'
 
         map_path = out_path + '.map.pdf'
-        gws.tools.pdf.render_html(
+        gws.lib.pdf.render_html(
             html,
             page_size=self.page_size,
             margin=None,
@@ -100,9 +100,9 @@ class Object(gws.common.template.Object):
         # merge qgis pdfs + map pdf
         # NB: qgis is ABOVE our map, so the qgis template/map must be transparent!
 
-        gws.tools.pdf.merge(map_path, qgis_pdf_path, out_path)
+        gws.lib.pdf.merge(map_path, qgis_pdf_path, out_path)
 
-        return t.TemplateOutput(mime=gws.tools.mime.get('pdf'), path=out_path)
+        return t.TemplateOutput(mime=gws.lib.mime.get('pdf'), path=out_path)
 
     def add_headers_and_footers(self, context, in_path, out_path, format):
         # @TODO
@@ -205,8 +205,8 @@ def _num_pair(s):
 
 
 def _parse_size(size):
-    w, uw = gws.tools.units.parse(size[0], default='mm')
-    h, uh = gws.tools.units.parse(size[1], default='mm')
+    w, uw = gws.lib.units.parse(size[0], default='mm')
+    h, uh = gws.lib.units.parse(size[1], default='mm')
     # @TODO inches etc
     return int(w), int(h)
 

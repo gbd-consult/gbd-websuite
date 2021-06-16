@@ -8,9 +8,9 @@ import yaml
 
 import gws
 import gws.config
-import gws.tools.os2
+import gws.lib.os2
 import gws.gis.mpx.config
-import gws.common.layer
+import gws.base.layer
 
 import gws.types as t
 
@@ -21,7 +21,7 @@ def status(root: t.IRootObject, layer_uids=None):
 
     st = {}
 
-    layer: gws.common.layer.Image
+    layer: gws.base.layer.Image
     for layer, cc in _cached_layers(root, mc):
         uid = cc['name']
         if uid not in st:
@@ -70,7 +70,7 @@ def seed(root: t.IRootObject, layer_uids=None, max_time=None, concurrency=1, lev
     mc = gws.gis.mpx.config.create(root)
     seeds = {}
 
-    layer: gws.common.layer.Image
+    layer: gws.base.layer.Image
     for layer, cc in _cached_layers(root, mc, layer_uids):
         seeds[layer.cache_uid] = _seed_config(layer, cc, levels)
 
@@ -92,8 +92,8 @@ def seed(root: t.IRootObject, layer_uids=None, max_time=None, concurrency=1, lev
         path
     ]
     try:
-        gws.tools.os2.run(cmd, echo=True, timeout=max_time)
-    except gws.tools.os2.TimeoutError:
+        gws.lib.os2.run(cmd, echo=True, timeout=max_time)
+    except gws.lib.os2.TimeoutError:
         return False
     except KeyboardInterrupt:
         return False
@@ -155,7 +155,7 @@ def _file_counts_by_zoom_level(cc, mc, files):
 
 def _cached_layers(root: t.IRootObject, mc, layer_uids=None):
     for layer in root.find_all('gws.ext.layer'):
-        cc = _cache_for_layer(t.cast(gws.common.layer.Image, layer), mc)
+        cc = _cache_for_layer(t.cast(gws.base.layer.Image, layer), mc)
         if not cc:
             continue
         if layer_uids and layer.uid not in layer_uids:
@@ -163,7 +163,7 @@ def _cached_layers(root: t.IRootObject, mc, layer_uids=None):
         yield layer, cc
 
 
-def _cache_for_layer(layer: gws.common.layer.Image, mc):
+def _cache_for_layer(layer: gws.base.layer.Image, mc):
     for name, cc in mc['caches'].items():
         if layer.has_cache and name == layer.cache_uid and not cc['disable_storage']:
             return gws.merge(cc, {
@@ -203,7 +203,7 @@ def _calc_grids(grid):
 
 
 def _get_files():
-    return list(gws.tools.os2.find_files(gws.MAPPROXY_CACHE_DIR))
+    return list(gws.lib.os2.find_files(gws.MAPPROXY_CACHE_DIR))
 
 
 def _get_dirs():
@@ -221,5 +221,5 @@ def _get_dirs():
 
 def _remove_dir(dirname):
     cmd = ['rm', '-fr', dirname]
-    gws.tools.os2.run(cmd, echo=True)
+    gws.lib.os2.run(cmd, echo=True)
     gws.log.info(f'removed {dirname}')

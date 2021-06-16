@@ -1,4 +1,4 @@
-import gws.common.search.provider
+import gws.base.search.provider
 import gws.gis.shape
 import gws.gis.ows
 import gws.gis.source
@@ -8,16 +8,16 @@ import gws.types as t
 from . import provider, util
 
 
-class Config(gws.common.search.provider.Config, util.WfsServiceConfig):
+class Config(gws.base.search.provider.Config, util.WfsServiceConfig):
     pass
 
 
-class Object(gws.common.search.provider.Object):
+class Object(gws.base.search.provider.Object):
     def configure(self):
         super().configure()
 
         # @TODO support filters
-        self.capabilties = gws.common.search.provider.CAPS_GEOMETRY
+        self.capabilties = gws.base.search.provider.CAPS_GEOMETRY
 
         layer = self.var('layer')
         if layer:

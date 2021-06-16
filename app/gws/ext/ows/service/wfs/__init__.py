@@ -1,7 +1,7 @@
 import gws
-import gws.common.model
-import gws.common.ows.service as ows
-import gws.common.search.runner
+import gws.base.model
+import gws.base.ows.service as ows
+import gws.base.search.runner
 import gws.gis.bounds
 import gws.gis.extent
 import gws.gis.filter
@@ -9,9 +9,9 @@ import gws.gis.gml
 import gws.gis.proj
 import gws.gis.render
 import gws.gis.shape
-import gws.tools.os2
-import gws.tools.xml2
-import gws.tools.mime
+import gws.lib.os2
+import gws.lib.xml2
+import gws.lib.mime
 import gws.web.error
 
 import gws.types as t
@@ -152,7 +152,7 @@ class Object(ows.Base):
             resolution=1,
         )
 
-        features = gws.common.search.runner.run(rd.req, args)
+        features = gws.base.search.runner.run(rd.req, args)
 
         coll = self.feature_collection(
             features,

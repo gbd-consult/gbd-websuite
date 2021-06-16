@@ -1,5 +1,5 @@
 import gws
-import gws.common.auth
+import gws.base.auth
 
 import gws.types as t
 
@@ -23,7 +23,7 @@ class Request(wrappers.BaseRequest, t.IRequest):
     def auth_open(self):
         try:
             self.session = self.auth.open_session(self)
-        except gws.common.auth.Error as e:
+        except gws.base.auth.Error as e:
             raise error.Forbidden() from e
 
     def auth_close(self, res: t.IResponse):
@@ -41,7 +41,7 @@ class Request(wrappers.BaseRequest, t.IRequest):
 
         try:
             self.session = self.auth.login(method, login, password, self)
-        except gws.common.auth.Error as e:
+        except gws.base.auth.Error as e:
             raise error.Forbidden() from e
 
     def logout(self):
@@ -58,7 +58,7 @@ class Request(wrappers.BaseRequest, t.IRequest):
         return node
 
     def require_project(self, uid: str) -> t.IProject:
-        return t.cast(t.IProject, self.require('gws.common.project', uid))
+        return t.cast(t.IProject, self.require('gws.base.project', uid))
 
     def require_layer(self, uid: str) -> t.ILayer:
         return t.cast(t.ILayer, self.require('gws.ext.layer', uid))

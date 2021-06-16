@@ -1,7 +1,7 @@
 """web application root"""
 
 import gws
-import gws.common.template
+import gws.base.template
 import gws.config.loader
 import gws.core.spec
 import gws.web.auth

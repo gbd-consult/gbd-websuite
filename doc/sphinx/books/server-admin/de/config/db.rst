@@ -45,7 +45,7 @@ Wir empfehlen Ihrem Datenbank-Nutzer möglichst wenige Rechte zu vergeben. Für 
 Datenbank-Tabellen
 ------------------
 
-^REF gws.common.db.SqlTableConfig
+^REF gws.base.db.SqlTableConfig
 
 Bei einigen GBD WebSuite Funktionen wie z.B. ^search oder ^digitize ist eine Tabellen-Konfiguration notwendig. Minimal ist ein Tabellen-Namen anzugeben (optional mit einem Schema). Sie können auch die Namen für Primärschlüssel (``keyColumn``) und Geometrie-Spalte (``geometryColumn``) angeben, per Default versucht das System diese Werte aus ``INFORMATION_SCHEMA`` und ``GEOMETRY_COLUMNS`` automatisch zu ermitteln.
 

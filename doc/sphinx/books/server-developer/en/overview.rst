@@ -26,14 +26,14 @@ The server application is located in the ``/app`` folder in the GWS source tree.
 - ``_test`` - tests
 - ``bin`` - the server startup script
 - ``gws`` - main application package
-- ``gws/common`` - common objects
+- ``gws.base`` - common objects
 - ``gws/config`` - configuration-related code
 - ``gws/core`` - code functions and utilities
 - ``gws/ext`` - server "extensions"
 - ``gws/gis`` - gis related functions (e.g. projections, geometry etc)
 - ``gws/qgis`` - QGIS support functions
 - ``gws/server`` - server control and monitor functions
-- ``gws/tools`` - tools and utilities
+- ``gws.lib`` - tools and utilities
 - ``gws/types`` - type declarations and basic structures
 - ``gws/web`` - front end web application
 - ``spec`` - generated config and request specifications

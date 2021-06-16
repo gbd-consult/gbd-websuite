@@ -1,4 +1,4 @@
-@include /gws-app/gws/common/ows/service/templates/common.cx
+@include /gws-app/gws.base/ows/service/templates/common.cx
 
 @def formatter(feature_caps)
     @tag {feature_caps.name.q} gml:id="{feature_caps.feature.uid}"

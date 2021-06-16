@@ -2,7 +2,7 @@
 
 import gws.types as t
 
-import gws.common.action
+import gws.base.action
 import gws.ext.helper.alkis as alkis
 
 
@@ -30,7 +30,7 @@ class GeocoderResponse(t.Response):
     coordinates: t.List[t.Point]
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     alkis: alkis.Object
 
     def configure(self):

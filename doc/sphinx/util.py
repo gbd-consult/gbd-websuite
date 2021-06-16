@@ -133,7 +133,7 @@ def format_special(txt, book, lang):
 
 def make_config_ref(lang):
     page = 'configref'
-    root_type = 'gws.common.application.Config'
+    root_type = 'gws.base.application.Config'
     gen = refgen.ConfigRefGenerator(lang, page, _load_spec(lang, APP_DIR), root_type)
     text = gen.run()
     out = GEN_ROOT + '/' + lang + '.' + page + '.txt'

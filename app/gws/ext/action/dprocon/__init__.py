@@ -5,16 +5,16 @@ import time
 import os
 
 import gws
-import gws.common.action
-import gws.common.db
-import gws.common.layer
-import gws.common.template
+import gws.base.action
+import gws.base.db
+import gws.base.layer
+import gws.base.template
 import gws.ext.helper.alkis
 import gws.gis.feature
 import gws.gis.proj
 import gws.gis.shape
-import gws.tools.date
-import gws.tools.net
+import gws.lib.date
+import gws.lib.net
 import gws.web.error
 
 import gws.types as t
@@ -73,7 +73,7 @@ class GetDataResponse(t.Data):
     feature: t.FeatureProps
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     def configure(self):
         super().configure()
 
@@ -81,7 +81,7 @@ class Object(gws.common.action.Object):
         self.data_table_name: str = self.var('dataTableName')
         self.request_table_name: str = self.var('requestTableName')
         self.request_url: str = self.var('requestUrl')
-        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
+        self.templates: t.List[t.ITemplate] = gws.base.template.bundle(self, self.var('templates'), _DEFAULT_TEMPLATES)
 
         self.alkis: gws.ext.helper.alkis.Object = t.cast(
             gws.ext.helper.alkis.Object,
@@ -251,7 +251,7 @@ class Object(gws.common.action.Object):
             }
             d['request_id'] = request_id
             d['selection'] = shape.transformed_to(self.alkis.crs).ewkb_hex
-            d['ts'] = gws.tools.date.now()
+            d['ts'] = gws.lib.date.now()
             data.append(d)
 
         with self.alkis.db.connect() as conn:

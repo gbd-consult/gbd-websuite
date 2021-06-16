@@ -103,7 +103,7 @@ Für einen Layer können Sie eine Vorlage mit dem ``subject`` ``layer.descriptio
 Legenden
 --------
 
-^REF gws.common.layer.types.LegendConfig
+^REF gws.base.layer.types.LegendConfig
 
 Mit der Option ``legend`` können Sie die Legende für den Layer konfigurieren. Sie haben die Wahl zwischen:
 

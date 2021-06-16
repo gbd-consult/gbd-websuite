@@ -1,8 +1,8 @@
 """Project information action."""
 
-import gws.common.action
-import gws.common.project
-import gws.tools.intl
+import gws.base.action
+import gws.base.project
+import gws.lib.intl
 import gws.web.error
 
 import gws.types as t
@@ -18,12 +18,12 @@ class InfoParams(t.Params):
 
 
 class InfoResponse(t.Response):
-    project: gws.common.project.Props
-    locale: gws.tools.intl.Locale
+    project: gws.base.project.Props
+    locale: gws.lib.intl.Locale
     user: t.Optional[t.UserProps]
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     def api_info(self, req: t.IRequest, p: InfoParams) -> InfoResponse:
         """Return the project configuration"""
 
@@ -35,5 +35,5 @@ class Object(gws.common.action.Object):
 
         return InfoResponse(
             project=project.props_for(req.user),
-            locale=gws.tools.intl.locale(locale_uid),
+            locale=gws.lib.intl.locale(locale_uid),
             user=None if req.user.is_guest else req.user.props)

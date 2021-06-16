@@ -2,7 +2,7 @@
 
 import gws.types as t
 
-import gws.common.action
+import gws.base.action
 
 
 class Config(t.WithTypeAndAccess):
@@ -19,7 +19,7 @@ class LoginParams(t.Params):
     password: str
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
 
     def api_check(self, req: t.IRequest, p: t.Params) -> Response:
         """Check the authorization status"""

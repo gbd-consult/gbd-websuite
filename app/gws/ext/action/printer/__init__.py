@@ -1,10 +1,10 @@
 """Provides the printing API."""
 
-import gws.common.action
-import gws.common.printer.job as pj
-import gws.tools.job
-import gws.tools.mime
-import gws.common.printer.types as pt
+import gws.base.action
+import gws.base.printer.job as pj
+import gws.lib.job
+import gws.lib.mime
+import gws.base.printer.types as pt
 import gws.web.error
 
 import gws.types as t
@@ -15,7 +15,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
 
     def api_print(self, req: t.IRequest, p: pt.PrintParams) -> pj.StatusResponse:
         """Start a backround print job"""
@@ -32,7 +32,7 @@ class Object(gws.common.action.Object):
     def api_status(self, req: t.IRequest, p: pj.StatusParams) -> pj.StatusResponse:
         """Query the print job status"""
 
-        job = gws.tools.job.get_for(req.user, p.jobUid)
+        job = gws.lib.job.get_for(req.user, p.jobUid)
         if not job:
             raise gws.web.error.NotFound()
 
@@ -41,7 +41,7 @@ class Object(gws.common.action.Object):
     def api_cancel(self, req: t.IRequest, p: pj.StatusParams) -> pj.StatusResponse:
         """Cancel a print job"""
 
-        job = gws.tools.job.get_for(req.user, p.jobUid)
+        job = gws.lib.job.get_for(req.user, p.jobUid)
         if not job:
             raise gws.web.error.NotFound()
 
@@ -50,10 +50,10 @@ class Object(gws.common.action.Object):
         return pj.status(job)
 
     def http_get_result(self, req: t.IRequest, p: pj.StatusParams) -> t.Response:
-        job = gws.tools.job.get_for(req.user, p.jobUid)
-        if not job or job.state != gws.tools.job.State.complete:
+        job = gws.lib.job.get_for(req.user, p.jobUid)
+        if not job or job.state != gws.lib.job.State.complete:
             raise gws.web.error.NotFound()
 
         path = job.result['path']
-        return t.FileResponse(mime=gws.tools.mime.for_path(path), path=path)
+        return t.FileResponse(mime=gws.lib.mime.for_path(path), path=path)
 

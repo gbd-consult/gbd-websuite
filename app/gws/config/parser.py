@@ -6,11 +6,11 @@ import yaml
 
 import gws
 import gws.core.spec
-import gws.tools.misc
-import gws.tools.os2
-import gws.tools.json2
-import gws.tools.vendor.chartreux as chartreux
-import gws.tools.vendor.slon as slon
+import gws.lib.misc
+import gws.lib.os2
+import gws.lib.json2
+import gws.lib.vendor.chartreux as chartreux
+import gws.lib.vendor.slon as slon
 
 import gws.types as t
 
@@ -41,7 +41,7 @@ def parse_main(path):
             prj_configs.append([pc, path])
 
     gws.log.info('parsing main configuration...')
-    app = parse(dct, 'gws.common.application.Config', path)
+    app = parse(dct, 'gws.base.application.Config', path)
 
     app.configPaths = cfg_paths
     app.projectPaths = app.projectPaths or []
@@ -49,7 +49,7 @@ def parse_main(path):
 
     prj_paths = app.projectPaths
     for dirname in app.projectDirs:
-        prj_paths.extend(gws.tools.os2.find_files(dirname, config_path_pattern))
+        prj_paths.extend(gws.lib.os2.find_files(dirname, config_path_pattern))
 
     for prj_path in sorted(set(prj_paths)):
         prj_cfg, prj_cfg_paths = _read(prj_path)
@@ -62,7 +62,7 @@ def parse_main(path):
     for pc, prj_path in prj_configs:
         uid = pc.get('uid') or pc.get('title') or '???'
         gws.log.info(f'parsing project {uid!r}...')
-        app.projects.append(parse(pc, 'gws.common.project.Config', prj_path))
+        app.projects.append(parse(pc, 'gws.base.project.Config', prj_path))
 
     return app
 
@@ -77,14 +77,14 @@ def _read(path):
     except Exception as e:
         raise error.ParseError('read error: %s' % e, path, '', None) from e
 
-    _save_intermediate(path, gws.tools.json2.to_pretty_string(dct), 'json')
+    _save_intermediate(path, gws.lib.json2.to_pretty_string(dct), 'json')
     return dct, paths
 
 
 def _read2(path):
     if path.endswith('.py'):
         mod_name = 'gws.cfg.' + gws.as_uid(path)
-        mod = gws.tools.misc.load_source(path, mod_name)
+        mod = gws.lib.misc.load_source(path, mod_name)
         fn = getattr(mod, config_function_name)
         dct = fn()
         if not isinstance(dct, dict):
@@ -92,7 +92,7 @@ def _read2(path):
         return dct, [path]
 
     if path.endswith('.json'):
-        return gws.tools.json2.from_path(path), [path]
+        return gws.lib.json2.from_path(path), [path]
 
     if path.endswith('.yaml'):
         with open(path, encoding='utf8') as fp:
@@ -162,7 +162,7 @@ def _syntax_error(path, src, message, line, context=10):
 
 
 def _save_intermediate(path, txt, ext):
-    p = gws.tools.os2.parse_path(path)
+    p = gws.lib.os2.parse_path(path)
     d = gws.VAR_DIR + '/config'
     gws.write_file(f"{d}/{p['name']}.parsed.{ext}", txt)
 

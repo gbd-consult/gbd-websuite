@@ -1,21 +1,21 @@
 """QGIS Project layer, retains QGIS options and hierarchy."""
 
 import gws
-import gws.common.layer
-import gws.common.layer.types
-import gws.common.metadata
+import gws.base.layer
+import gws.base.layer.types
+import gws.base.metadata
 import gws.config.parser
 import gws.gis.extent
 import gws.gis.legend
 import gws.gis.source
-import gws.tools.net
+import gws.lib.net
 
 import gws.types as t
 
 from . import provider
 
 
-class Config(gws.common.layer.ImageConfig):
+class Config(gws.base.layer.ImageConfig):
     """QGIS Project layer"""
 
     directRender: t.Optional[t.List[str]]  #: QGIS providers that should be rendered directly
@@ -23,11 +23,11 @@ class Config(gws.common.layer.ImageConfig):
     path: t.FilePath  #: path to a qgs project file
     rootLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use as roots
     excludeLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to exclude
-    flattenLayers: t.Optional[gws.common.layer.types.FlattenConfig]  #: flatten the layer hierarchy
-    layerConfig: t.Optional[t.List[gws.common.layer.CustomConfig]]  #: custom configurations for specific layers
+    flattenLayers: t.Optional[gws.base.layer.types.FlattenConfig]  #: flatten the layer hierarchy
+    layerConfig: t.Optional[t.List[gws.base.layer.CustomConfig]]  #: custom configurations for specific layers
 
 
-class Object(gws.common.layer.Group):
+class Object(gws.base.layer.Group):
     def configure(self):
         super().configure()
 
@@ -59,7 +59,7 @@ class Object(gws.common.layer.Group):
         }
 
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
-        self.layers = gws.common.layer.add_layers_to_object(self, top_cfg.layers)
+        self.layers = gws.base.layer.add_layers_to_object(self, top_cfg.layers)
 
     def _layer(self, sl: t.SourceLayer, depth: int):
         if self.exclude_layers and gws.gis.source.layer_matches(sl, self.exclude_layers):
@@ -303,4 +303,4 @@ class Object(gws.common.layer.Group):
             'sld_body',
         }
         p = {k: v for k, v in params.items() if k.lower() not in _std_params}
-        return gws.tools.net.add_params(url, p)
+        return gws.lib.net.add_params(url, p)

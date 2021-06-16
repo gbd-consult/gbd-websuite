@@ -1,9 +1,9 @@
 import gws
 import gws.types as t
 import gws.gis.shape
-import gws.common.style
-import gws.tools.svg
-import gws.tools.xml2
+import gws.base.style
+import gws.lib.svg
+import gws.lib.xml2
 
 _COMBINED_UID_DELIMITER = '___'
 
@@ -116,14 +116,14 @@ class Feature(t.IFeature):
         if not style and self.layer:
             style = self.layer.style
         shape = self.shape.transformed_to(rv.bounds.crs)
-        return gws.tools.svg.geometry_tags(
+        return gws.lib.svg.geometry_tags(
             t.cast(gws.gis.shape.Shape, shape).geom,
             rv,
             style.values,
             self.elements.get('label', ''))
 
     def to_svg(self, rv: t.MapRenderView, style: t.IStyle = None) -> str:
-        return gws.tools.svg.as_xml(self.to_svg_tags(rv, style))
+        return gws.lib.svg.as_xml(self.to_svg_tags(rv, style))
 
     def to_geojson(self) -> dict:
         props = {a.name: a.value for a in self.attributes}
@@ -172,4 +172,4 @@ class Feature(t.IFeature):
         if style:
             if isinstance(style, dict):
                 style = t.StyleProps(style)
-            self.style = gws.common.style.from_props(style)
+            self.style = gws.base.style.from_props(style)

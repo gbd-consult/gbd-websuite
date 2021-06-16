@@ -3,8 +3,8 @@ import time
 
 import gws
 import gws.config
-import gws.tools.json2
-import gws.tools.sqlite
+import gws.lib.json2
+import gws.lib.sqlite
 
 import gws.types as t
 
@@ -78,4 +78,4 @@ class Object(gws.Object):
             conn.execute('DELETE FROM storage')
 
     def _connect(self):
-        return gws.tools.sqlite.connect(self.path)
+        return gws.lib.sqlite.connect(self.path)

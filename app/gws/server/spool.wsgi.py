@@ -1,6 +1,6 @@
 import gws.config.loader
 import gws
-import gws.tools.job
+import gws.lib.job
 
 # noinspection PyUnresolvedReferences
 import uwsgi
@@ -14,7 +14,7 @@ def _spooler(env):
     job_uid = env.get(b'job_uid')
     if not job_uid:
         raise ValueError('no job_uid found')
-    job = gws.tools.job.get(gws.as_str(job_uid))
+    job = gws.lib.job.get(gws.as_str(job_uid))
     if not job:
         raise ValueError('invalid job_uid', job_uid)
     gws.log.debug('running job', job.uid)

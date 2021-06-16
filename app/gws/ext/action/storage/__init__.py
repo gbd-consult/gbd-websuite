@@ -1,7 +1,7 @@
 """Storage API."""
 
 import gws
-import gws.common.action
+import gws.base.action
 import gws.ext.helper.storage
 import gws.web.error
 
@@ -48,7 +48,7 @@ class Config(t.WithTypeAndAccess):
     pass
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
 
     @gws.cached_property
     def storage(self) -> gws.ext.helper.storage.Object:

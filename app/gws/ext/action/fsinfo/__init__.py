@@ -5,15 +5,15 @@ import io
 import re
 
 import gws
-import gws.common.action
-import gws.common.db
-import gws.common.template
+import gws.base.action
+import gws.base.db
+import gws.base.template
 import gws.ext.db.provider.postgres
 import gws.ext.helper.alkis
 import gws.gis.proj
 import gws.gis.shape
 import gws.web.error
-import gws.tools.os2
+import gws.lib.os2
 
 import gws.types as t
 
@@ -22,8 +22,8 @@ class Config(t.WithTypeAndAccess):
     """FSInfo action"""
 
     db: t.Optional[str]  #: database provider uid
-    dataTable: gws.common.db.SqlTableConfig
-    documentTable: gws.common.db.SqlTableConfig
+    dataTable: gws.base.db.SqlTableConfig
+    documentTable: gws.base.db.SqlTableConfig
     templates: t.Optional[t.List[t.ext.template.Config]]  #: client templates
 
 
@@ -115,7 +115,7 @@ class DownloadParams(t.Params):
     personUid: str
 
 
-class Object(gws.common.action.Object):
+class Object(gws.base.action.Object):
     @property
     def props(self):
         return t.Props(enabled=True)
@@ -123,12 +123,12 @@ class Object(gws.common.action.Object):
     def configure(self):
         super().configure()
 
-        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+        self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
         self.data_table = self.db.configure_table(self.var('dataTable'))
         self.document_table = self.db.configure_table(self.var('documentTable'))
-        self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
-        self.details_template: t.ITemplate = gws.common.template.find(self.templates, subject='fsinfo.details')
-        self.title_template: t.ITemplate = gws.common.template.find(self.templates, subject='fsinfo.title')
+        self.templates: t.List[t.ITemplate] = gws.base.template.bundle(self, self.var('templates'))
+        self.details_template: t.ITemplate = gws.base.template.find(self.templates, subject='fsinfo.details')
+        self.title_template: t.ITemplate = gws.base.template.find(self.templates, subject='fsinfo.title')
 
     def api_find_flurstueck(self, req: t.IRequest, p: FindFlurstueckParams) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
@@ -339,8 +339,8 @@ class Object(gws.common.action.Object):
     def do_read(self, base_dir):
         by_pn = {}
 
-        for path in gws.tools.os2.find_files(base_dir, ext='pdf'):
-            rp = gws.tools.os2.rel_path(path, base_dir)
+        for path in gws.lib.os2.find_files(base_dir, ext='pdf'):
+            rp = gws.lib.os2.rel_path(path, base_dir)
             m = re.match(r'^(\d+)/', rp)
             if not m:
                 gws.log.warn(f'{path!r} - no pn found')
@@ -360,7 +360,7 @@ class Object(gws.common.action.Object):
                     data=gws.read_file_b(path),
                     mimeType='application/pdf',
                     title='',
-                    filename=gws.tools.os2.parse_path(path)['filename'],
+                    filename=gws.lib.os2.parse_path(path)['filename'],
                 ))
             self._do_upload(params, 'script')
 

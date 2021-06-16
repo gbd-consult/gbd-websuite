@@ -3,8 +3,8 @@
 import math
 
 import gws
-import gws.tools.net
-import gws.tools.xml2
+import gws.lib.net
+import gws.lib.xml2
 
 
 """
@@ -72,7 +72,7 @@ class GekosRequest:
         if not src:
             return []
 
-        xml = gws.tools.xml2.from_string(src)
+        xml = gws.lib.xml2.from_string(src)
         for node in xml.all('Vorgang'):
             rec = {}
             for tag in node.children:
@@ -81,7 +81,7 @@ class GekosRequest:
 
     def load_data(self):
         params = dict(self.options.params or {})
-        res = gws.tools.net.http_request(
+        res = gws.lib.net.http_request(
             self.options.url,
             params=params
         )

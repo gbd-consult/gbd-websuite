@@ -1,8 +1,8 @@
 import gws
 
-import gws.common.layer
-import gws.common.metadata
-import gws.common.search
+import gws.base.layer
+import gws.base.metadata
+import gws.base.search
 import gws.config
 import gws.gis.mpx
 import gws.gis.proj
@@ -10,21 +10,21 @@ import gws.gis.shape
 import gws.gis.source
 import gws.gis.util
 import gws.gis.zoom
-import gws.tools.os2
+import gws.lib.os2
 
 import gws.types as t
 
 from . import provider, wmssearch
 
 
-class Config(gws.common.layer.ImageConfig):
+class Config(gws.base.layer.ImageConfig):
     """WMS layer from a Qgis project"""
 
     path: t.FilePath  #: qgis project path
     sourceLayers: t.Optional[gws.gis.source.LayerFilter]  #: source layers to use
 
 
-class Object(gws.common.layer.Image):
+class Object(gws.base.layer.Image):
     @property
     def description(self):
         context = {
@@ -103,7 +103,7 @@ class Object(gws.common.layer.Image):
             },
             # add the file checksum to the config, so that the source and cache ids
             # in the mpx config are recalculated when the file changes
-            '$hash': gws.tools.os2.file_checksum(self.provider.path)
+            '$hash': gws.lib.os2.file_checksum(self.provider.path)
         })
 
         self.mapproxy_layer_config(mc, source)

@@ -1,4 +1,4 @@
-import gws.tools.upload
+import gws.lib.upload
 import _test.util as u
 
 def test_chunks():
@@ -7,7 +7,7 @@ def test_chunks():
     name = 'foo'
 
     for n, b in enumerate(buf):
-        r = gws.tools.upload.upload_chunk(gws.tools.upload.UploadChunkParams(
+        r = gws.lib.upload.upload_chunk(gws.lib.upload.UploadChunkParams(
             uid=uid,
             name=name,
             totalSize=len(buf),
@@ -18,7 +18,7 @@ def test_chunks():
 
         uid = r.uid
 
-    a = gws.tools.upload.get(uid)
+    a = gws.lib.upload.get(uid)
 
     assert a.uid == uid
     assert a.name == name

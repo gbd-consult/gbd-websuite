@@ -1,11 +1,11 @@
 import zipfile
 
 import gws
-import gws.common.ows.provider
+import gws.base.ows.provider
 import gws.gis.ows
 import gws.config
-import gws.tools.xml2
-import gws.tools.net
+import gws.lib.xml2
+import gws.lib.net
 import gws.gis.util
 
 import gws.types as t
@@ -45,7 +45,7 @@ _DEFAULT_LEGEND_PARAMS = {
 }
 
 
-class Object(gws.common.ows.provider.Object):
+class Object(gws.base.ows.provider.Object):
     legend_params: dict
     path: str
     print_templates: t.List[types.PrintTemplate]

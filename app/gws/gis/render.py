@@ -3,12 +3,12 @@ import io
 import math
 
 import gws
-import gws.common.layer
-import gws.common.style
+import gws.base.layer
+import gws.base.style
 import gws.gis.feature
 import gws.gis.extent
-import gws.tools.svg
-import gws.tools.xml2
+import gws.lib.svg
+import gws.lib.xml2
 import gws.gis.renderview
 
 import gws.types as t
@@ -139,7 +139,7 @@ class Renderer:
             return
 
         if item.type == t.MapRenderInputItemType.fragment:
-            tags = gws.tools.svg.fragment_tags(item.fragment, self.ri.view)
+            tags = gws.lib.svg.fragment_tags(item.fragment, self.ri.view)
             self._add_svg_tags(tags)
             return
 
@@ -196,7 +196,7 @@ def output_html(ro: MapRenderOutput) -> str:
         if item.type == 'path':
             tags.append(('img', {'style': css, 'src': item.path}))
         if item.type == 'svg':
-            gws.tools.svg.sort_by_z_index(item.tags)
-            tags.append(('svg', gws.tools.svg.SVG_ATTRIBUTES, {'style': css, 'viewBox': vbox}, *item.tags))
+            gws.lib.svg.sort_by_z_index(item.tags)
+            tags.append(('svg', gws.lib.svg.SVG_ATTRIBUTES, {'style': css, 'viewBox': vbox}, *item.tags))
 
-    return ''.join(gws.tools.xml2.as_string(tag) for tag in tags)
+    return ''.join(gws.lib.xml2.as_string(tag) for tag in tags)

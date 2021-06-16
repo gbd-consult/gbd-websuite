@@ -1,18 +1,18 @@
 """CX templates for Text-Only."""
 
 import gws
-import gws.common.template
-import gws.tools.vendor.chartreux as chartreux
+import gws.base.template
+import gws.lib.vendor.chartreux as chartreux
 
 import gws.types as t
 
 
-class Config(gws.common.template.Config):
+class Config(gws.base.template.Config):
     """text-only template"""
     pass
 
 
-class Object(gws.common.template.Object):
+class Object(gws.base.template.Object):
 
     def render(self, context: dict, mro: t.MapRenderOutput = None, out_path: str = None, legends: dict = None, format: str = None) -> t.TemplateOutput:
         context = context or {}

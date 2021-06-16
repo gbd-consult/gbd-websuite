@@ -1,5 +1,5 @@
 import gws
-import gws.tools.json2
+import gws.lib.json2
 
 import gws.types as t
 
@@ -96,12 +96,12 @@ class Object(gws.Object):
             raise NotFound()
         return StorageElement(
             entry=StorageEntry(category=rec.category, name=rec.name),
-            data=gws.tools.json2.from_string(rec.data))
+            data=gws.lib.json2.from_string(rec.data))
 
     def write(self, entry: StorageEntry, user: t.IUser, data: dict) -> StorageEntry:
         if not self.can_write_category(entry.category, user):
             raise AccessDenied()
-        rec = self.backend.write(entry, user, gws.tools.json2.to_string(data))
+        rec = self.backend.write(entry, user, gws.lib.json2.to_string(data))
         return StorageEntry(category=rec.category, name=rec.name)
 
     def dir(self, category: str, user: t.IUser) -> t.List[t.StorageEntry]:

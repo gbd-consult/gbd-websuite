@@ -3,7 +3,7 @@ import re
 import gws
 import gws.gis.proj
 import gws.gis.extent
-import gws.common.metadata
+import gws.base.metadata
 
 import gws.types as t
 

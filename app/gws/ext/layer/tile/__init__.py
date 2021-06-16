@@ -2,10 +2,10 @@ import re
 import math
 
 import gws
-import gws.common.layer
+import gws.base.layer
 import gws.types as t
 import gws.gis.source
-import gws.tools.json2
+import gws.lib.json2
 
 _EPSG_3857_RADIUS = 6378137
 
@@ -26,7 +26,7 @@ class ServiceConfig:
     tileSize: int = 256  #: tile size
 
 
-class Config(gws.common.layer.ImageTileConfig):
+class Config(gws.base.layer.ImageTileConfig):
     """Tile layer"""
 
     maxRequests: int = 0  #: max concurrent requests to this source
@@ -34,7 +34,7 @@ class Config(gws.common.layer.ImageTileConfig):
     url: t.Url  #: rest url with placeholders {x}, {y} and {z}
 
 
-class Object(gws.common.layer.ImageTile):
+class Object(gws.base.layer.ImageTile):
     def configure(self):
         super().configure()
 

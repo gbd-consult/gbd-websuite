@@ -1,7 +1,7 @@
 import gws.gis.extent
 import gws.gis.proj
 import gws.gis.shape
-import gws.tools.json2
+import gws.lib.json2
 
 import _test.util as u
 import _test.common.const as cc

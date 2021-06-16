@@ -5,7 +5,7 @@ import grp
 
 import gws.config
 import gws.qgis.server
-import gws.tools.os2
+import gws.lib.os2
 
 import gws.types as t
 
@@ -40,8 +40,8 @@ def create(root: t.IRootObject, base_dir, pid_dir):
             fp.write(s + '\n')
         return p
 
-    for p in gws.tools.os2.find_files(base_dir, '(conf|ini)$'):
-        gws.tools.os2.unlink(p)
+    for p in gws.lib.os2.find_files(base_dir, '(conf|ini)$'):
+        gws.lib.os2.unlink(p)
 
     commands = []
     frontends = []

@@ -1,6 +1,6 @@
 import gws
-import gws.common.ows.provider
-import gws.tools.xml2
+import gws.base.ows.provider
+import gws.lib.xml2
 import gws.gis.ows
 
 import gws.types as t
@@ -8,7 +8,7 @@ import gws.types as t
 from . import caps, types
 
 
-class Object(gws.common.ows.provider.Object):
+class Object(gws.base.ows.provider.Object):
     def __init__(self):
         super().__init__()
 

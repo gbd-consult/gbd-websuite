@@ -1,4 +1,4 @@
-@include /gws-app/gws/common/ows/service/templates/common.cx
+@include /gws-app/gws.base/ows/service/templates/common.cx
 
 @let ML_GMX_CODELISTS "https://standards.iso.org/iso/19139/resources/gmxCodelists.xml"
 
