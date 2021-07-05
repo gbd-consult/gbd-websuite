@@ -15,6 +15,7 @@ import gws.tools.job
 import gws.tools.json2
 import gws.tools.upload
 import gws.web.error
+import gws.gis.gml
 
 import gws.types as t
 
@@ -173,6 +174,7 @@ class Object(gws.common.action.Object):
     def post_configure(self):
         super().post_configure()
         self._load_db_meta()
+        self._compute_bounding_polygons()
 
     def props_for(self, user):
         return {
@@ -422,6 +424,29 @@ class Object(gws.common.action.Object):
                         obj.meta = gws.common.metadata.extend(meta, obj.meta)
                         if gws.get(obj, 'update_sequence'):
                             obj.update_sequence = meta.dateUpdated
+
+
+    def _compute_bounding_polygons(self):
+        with self.db.connect() as conn:
+            for obj in self.root.find_all():
+                ows_name = gws.get(obj, 'ows_name')
+                if not ows_name or not ows_name.startswith('bauleitplanung_'):
+                    continue
+                ags = ows_name.split('_')[1]
+                sql = f'''
+                    SELECT ST_Collect(p.g) FROM (
+                        SELECT
+                            (ST_Dump(_geom_p)).geom AS g 
+                        FROM 
+                            {conn.quote_table(self.plan_table.name)}
+                        WHERE 
+                            ags = '{ags}' AND _geom_p IS NOT NULL
+                    ) AS p
+                '''
+                geom = conn.select_value(sql)
+                shape = gws.gis.shape.from_wkb_hex(geom).transformed_to(gws.EPSG_4326)
+                obj.meta.boundingPolygonTag = gws.gis.gml.shape_to_tag(
+                    shape, precision=5, invert_axis=False, crs_format='epsg', uid='boundingPolygon' + ags)
 
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):
