@@ -46,7 +46,7 @@ def parse_envelope(el: gws.tools.xml2.Element) -> t.Optional[t.Bounds]:
         pass
 
 
-def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False, crs_format='urn'):
+def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False, crs_format='urn', uid=None):
     def pos(geom, as_list=True):
         cs = []
 
@@ -69,35 +69,38 @@ def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False, crs_format='ur
             {'srsDimension': 2},
             ' '.join(str(c) for c in cs))
 
-    def convert(geom, srs=None):
+    def convert(geom, atts=None):
         typ = geom.type
 
         if typ == 'Point':
-            return tag('gml:Point', srs, pos(geom, False))
+            return tag('gml:Point', atts, pos(geom, False))
 
         if typ == 'LineString':
-            return tag('gml:LineString', srs, pos(geom))
+            return tag('gml:LineString', atts, pos(geom))
 
         if typ == 'Polygon':
             return tag(
                 'gml:Polygon',
-                srs,
+                atts,
                 tag('gml:exterior', tag('gml:LinearRing', pos(geom.exterior))),
                 *[tag('gml:interior', tag('gml:LinearRing', pos(p))) for p in geom.interiors]
             )
 
         if typ == 'MultiPoint':
-            return tag('gml:MultiPoint', srs, *[tag('gml:pointMember', convert(p)) for p in geom])
+            return tag('gml:MultiPoint', atts, *[tag('gml:pointMember', convert(p)) for p in geom])
 
         if typ == 'MultiLineString':
-            return tag('gml:MultiCurve', srs, *[tag('gml:curveMember', convert(p)) for p in geom])
+            return tag('gml:MultiCurve', atts, *[tag('gml:curveMember', convert(p)) for p in geom])
 
         if typ == 'MultiPolygon':
-            return tag('gml:MultiSurface', srs, *[tag('gml:surfaceMember', convert(p)) for p in geom])
+            return tag('gml:MultiSurface', atts, *[tag('gml:surfaceMember', convert(p)) for p in geom])
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
     srs = gws.gis.proj.format(shape.crs, crs_format)
-    return convert(geom, {'srsName': srs})
+    atts = {'srsName': srs}
+    if uid:
+        atts['gml:id'] = uid
+    return convert(geom, atts)
 
 
 def features_from_xml(xml, invert_axis=False):
