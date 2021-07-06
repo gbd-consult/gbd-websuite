@@ -18,6 +18,26 @@ Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
   :align: center
 
+Optionale Konfigurationen zur Darstellung der Gemarkungsliste
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* keine Gemarkungsliste anzeigen
+* die Gemarkungsliste anzeigen als eine Liste von Gemarkungsnamen
+* die Gemarkungsliste anzeigen als eine Liste von Gemarkung- und Gemeindenamen in Klammern
+* die Gemarkungsliste wird in einer Baumansicht angezeigt (erst Gemeinde, darunter eingerückt Gemarkung)
+
+Optionale Konfigurationen zur Darstellung der Straßenliste
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* nur Straßennamen
+* Straßenname und Gemeindenamen in Klammern:
+
+Optionale Konfigurationen zur Straßensuche
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Die Eingabe "Mar" sucht am Anfang der Straßennamen und findet nur "Marktstraße"
+* Die Eingabe "Mar" sucht überall in den Straßennamen und findet "Marktstraße" und "Neuer Markt"
+
 .. note::
     Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten, die je nach Bundesland unterschiedlich sein kann. Für die Suche nach einer Adresse ist aktuell eine Eingrenzung über eine Gemarkung vorzunehmen.
 
@@ -71,7 +91,7 @@ Exportieren und Drucken
 -----------------------
 
 Exportieren als CSV
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 Die Flurstückinformationen bestehen aus unterschiedlichen Teilbereichen. Beim Export in das CSV Format können Sie eine Auswahl treffen und dann auf den Button ``Exportieren`` klicken.
 
@@ -82,7 +102,7 @@ Die Flurstückinformationen bestehen aus unterschiedlichen Teilbereichen. Beim E
    Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen. Das ist u.a. dann der Fall, wenn ein Flurstück mehrere Eigentümer hat.
 
 Drucken der Flurstückinformationen
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Über das |print| Symbol können Sie die ausgewählten Flurstückinformationen drucken. Der Inhalt des Ausdrucks kann individuell über ein Template vorbereitet werden. Dieses kann auch einen Kartendarstellung des jeweiligen Flurstücks beinhalten.
 
@@ -92,7 +112,7 @@ Arbeiten mit der Ablage
 Die |tab| Ablage ist ein Bereich, der genutzt werden kann, um bestimmte Flurstücke einer Suchanfrage und/oder Ergebnisse mehrerer Suchanfragen abzulegen. Man kann es als eine Art Sammelstelle verstehen, deren Inhalt letztlich für die Beauskunftung verwendet werden kann.
 
 Speichern
-^^^^^^^^^
+~~~~~~~~~
 
 Über das |save| Symbol können Sie ausgewählte Flurstücke oder Flurstücke der Ablage in einer benutzerspefischen Ablage speichern. Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
 
@@ -100,7 +120,7 @@ Speichern
   :align: center
 
 Laden
-^^^^^
+~~~~~
 
 Über das |load| Symbol kann eine benutzerspefische Ablage wieder geladen werden. Wählen Sie einen Ablagenamen und laden Sie diese durch Klicken auf das Häckchen.
 

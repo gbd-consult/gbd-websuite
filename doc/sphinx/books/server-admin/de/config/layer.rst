@@ -164,7 +164,7 @@ tile
 Rasterlayer, zeigt Kachel aus einer XYZ-Kachelquelle (wie z.B. OSM). Sie müssen die URL mit Platzhaltern ``{x}``, ``{y}`` und ``{z}`` angeben ::
 
     {
-        "type": "title",
+        "type": "tile",
         "title": "Open Street Map",
         "url": "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
     }
