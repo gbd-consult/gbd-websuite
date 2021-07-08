@@ -25,6 +25,15 @@ function _formatDateDE(d) {
     return d[2] + '.' + d[1] + '.' + d[0];
 }
 
+function _sortDocuments(docs: Array<gws.api.FsinfoDocumentProps>): Array<gws.api.FsinfoDocumentProps> {
+    return docs.slice(0).sort(function(a, b) {
+        let ta = (a.title || a.filename).toUpperCase();
+        let tb = (b.title || b.filename).toUpperCase();
+        return tb.localeCompare(ta);
+    })
+}
+
+
 interface SearchFormValues {
     gemarkung?: string;
     flur?: string;
@@ -338,7 +347,7 @@ class FsinfoInfoBox extends gws.View<FsinfoInfoBoxProps> {
                     </Cell>
                 </Row>}
                 <div className="modFsinfoDocumentList">
-                    {p.documents.map((doc, n) => <Row key={n}>
+                    {_sortDocuments(p.documents).map((doc, n) => <Row key={n}>
                         <Cell flex>
                             <div className="modFsinfoDocumentName">
                                 {_formatFileName(doc.title || doc.filename)}
