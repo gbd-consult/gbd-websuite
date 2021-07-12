@@ -1,15 +1,14 @@
-import re
 import os
+import re
+
 import psutil
 
 import gws
-import gws.core.tree
+import gws.types as t
 import gws.config
+import gws.core.tree
 import gws.lib.misc
 import gws.lib.os2
-
-import gws.types as t
-
 from . import control
 
 try:
@@ -21,14 +20,13 @@ except:
 _lockfile = '/tmp/monitor.lock'
 
 
-def _m() -> t.IMonitor:
+def _m() -> gws.IMonitor:
     return gws.config.root().application.monitor
 
 
-#:export IMonitor
-class Object(gws.Object, t.IMonitor):
+class Object(gws.Node, gws.IMonitor):
     def configure(self):
-        super().configure()
+
         self.watch_dirs = {}
         self.watch_files = {}
         self.path_stats = {}

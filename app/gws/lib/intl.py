@@ -2,10 +2,12 @@
 
 import babel
 
+import gws
 import gws.types as t
 
 
-class Locale(t.Data):
+
+class Locale(gws.Data):
     id: str
     dateFormatLong: str
     dateFormatMedium: str
@@ -26,14 +28,14 @@ class Locale(t.Data):
 
 def locale(locale_uid: str) -> t.Optional[Locale]:
     if not locale_uid:
-        return
+        return None
 
     locale_name = locale_uid.lower().strip().replace('-', '_')
 
     try:
         p = babel.Locale.parse(locale_name, resolve_likely_subtags=True)
     except (ValueError, babel.UnknownLocaleError):
-        return
+        return None
 
     lo = Locale()
 

@@ -1,25 +1,25 @@
 """Provide configuration for the client Dimension module."""
 
 import gws
-import gws.base.action
-
 import gws.types as t
+import gws.base.api
 
 
-class Props(t.Props):
-    type: t.Literal = 'dimensions'
+class Props(gws.Props):
     layerUids: t.Optional[t.List[str]]
     pixelTolerance: int
 
 
-class Config(t.WithTypeAndAccess):
+@gws.ext.Config('action.dimension')
+class Config(gws.WithAccess):
     """Dimension action"""
 
     layers: t.Optional[t.List[str]]  #: target layer uids
     pixelTolerance: int = 10  #: pixel tolerance
 
 
-class Object(gws.base.action.Object):
+@gws.ext.Object('action.dimension')
+class Object(gws.base.api.Action):
     @property
     def props(self):
         return Props(

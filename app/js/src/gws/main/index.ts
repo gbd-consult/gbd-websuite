@@ -2,7 +2,6 @@ import * as ReactDOM from 'react-dom';
 
 import * as gws from 'gws';
 
-import * as BUILD_INFO from './__build.info';
 
 
 export async function main(win, strings) {
@@ -31,12 +30,12 @@ export async function main(win, strings) {
             large: 992,
             xlarge: 1200,
         },
-        labels: strings,
+        strings,
         locale: win['GWS_LOCALE'] || 'en_CA',
         tags,
         defaultHelpUrl: '',
         defaultHomeUrl: '/',
-        version: BUILD_INFO.VERSION,
+        version: gws.api.VERSION,
         domNode,
         markFeatures: win['GWS_MARK_FEATURES'],
     };

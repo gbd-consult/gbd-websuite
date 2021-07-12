@@ -3,26 +3,44 @@
 import mimetypes
 import os
 
+CSS = 'text/css'
+CSV = 'text/csv'
+GIF = 'image/gif'
+HTML = 'text/html'
+JPEG = 'image/jpeg'
+JPG = 'image/jpeg'
+JS = 'application/javascript'
+JSON = 'application/json'
+PDF = 'application/pdf'
+PNG = 'image/png'
+SVG = 'image/svg+xml'
+TTF = 'application/x-font-ttf'
+TXT = 'text/plain'
+XML = 'application/xml'
+ZIP = 'application/zip'
+GML = 'application/vnd.ogc.gml'
+GML3 = 'application/vnd.ogc.gml/3.1.1'
+
+BIN = 'application/octet-stream'
 
 _common = {
-    'css': 'text/css',
-    'csv': 'text/csv',
-    'gif': 'image/gif',
-    'html': 'text/html',
-    'jpeg': 'image/jpeg',
-    'jpg': 'image/jpeg',
-    'js': 'application/javascript',
-    'json': 'application/json',
-    'pdf': 'application/pdf',
-    'png': 'image/png',
-    'svg': 'image/svg+xml',
-    'ttf': 'application/x-font-ttf',
-    'txt': 'text/plain',
-    'xml': 'application/xml',
-    'zip': 'application/zip',
-
-    'gml': 'application/vnd.ogc.gml',
-    'gml3': 'application/vnd.ogc.gml/3.1.1',
+    'css': CSS,
+    'csv': CSV,
+    'gif': GIF,
+    'html': HTML,
+    'jpeg': JPEG,
+    'jpg': JPG,
+    'js': JS,
+    'json': JSON,
+    'pdf': PDF,
+    'png': PNG,
+    'svg': SVG,
+    'ttf': TTF,
+    'txt': TXT,
+    'xml': XML,
+    'zip': ZIP,
+    'gml': GML,
+    'gml3': GML3,
 }
 
 _aliases = {

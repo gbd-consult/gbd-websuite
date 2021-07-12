@@ -1,7 +1,8 @@
 import re
-import gws
 
+import gws
 import gws.types as t
+
 
 MM_PER_IN = 25.4
 PT_PER_IN = 72
@@ -95,7 +96,7 @@ _METRIC = {
 }
 
 
-def parse(s: str, units: t.List = [], default=None) -> t.Measurement:
+def parse(s: str, units: t.List = [], default=None) -> gws.Measurement:
     if isinstance(s, (int, float)):
         if not default:
             raise ValueError(f'invalid unit value: {s!r}')

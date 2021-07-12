@@ -26,13 +26,13 @@ spec:
 	$(PYTHON) $(APP)/gws/spec/generator/run.py --manifest "$(MANIFEST)"
 
 client-dev: spec
-	cd $(APP)/js && npm run dev -- --manifest "$(MANIFEST)" && cd $(CWD)
+	cd $(APP)/js && npm run dev && cd $(CWD)
 
 client-dev-server: spec
-	cd $(APP)/js && npm run dev-server -- --manifest "$(MANIFEST)" && cd $(CWD)
+	cd $(APP)/js && npm run dev-server && cd $(CWD)
 
 client: spec
-	cd $(APP)/js && npm run production -- --manifest "$(MANIFEST)" && cd $(CWD)
+	cd $(APP)/js && npm run production && cd $(CWD)
 
 doc: spec
 	$(PYTHON) $(DOC)/sphinx/conf.py pre && \

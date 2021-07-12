@@ -1,10 +1,12 @@
 import re
-import gws
-import gws.base.ows.provider
-import gws.gis.proj
-import gws.lib.xml2 as xml2
-import gws.types as t
 
+import gws
+import gws.types as t
+import gws.lib.metadata
+import gws.lib.source
+import gws.lib.proj
+import gws.lib.xml2 as xml2
+from . import core
 
 def get_operations(el):
     if _is(el, 'OperationsMetadata'):
@@ -17,7 +19,7 @@ def get_operations(el):
     ls = []
 
     for e in ops:
-        op = t.OwsOperation()
+        op = core.OwsOperation()
         op.name = e.attr('name') or e.name
         op.formats = text_list(e, 'Format')
         op.get_url = get_url(one_of(e, 'DCP.HTTP.Get', 'DCPType.HTTP.Get'))
@@ -72,7 +74,7 @@ def get_bounds_list(el):
     for e in el.all('BoundingBox'):
         crs = e.attr('srs') or e.attr('crs')
         if crs:
-            proj = gws.gis.proj.as_proj(crs)
+            proj = gws.lib.proj.as_proj(crs)
             if proj:
                 d[proj.epsg] = _bbox_value(e)
 
@@ -81,13 +83,13 @@ def get_bounds_list(el):
     if e:
         d[gws.EPSG_4326] = _bbox_value(e)
 
-    return [t.Bounds(crs=k, extent=v) for k, v in d.items()]
+    return [gws.Bounds(crs=k, extent=v) for k, v in d.items()]
 
 
 def get_style(el):
-    oo = t.SourceStyle()
+    oo = gws.lib.source.Style()
 
-    oo.meta = t.MetaData(get_meta(el))
+    oo.meta = gws.lib.metadata.Data(get_meta(el))
     oo.name = oo.meta.name.lower()
     oo.legend = get_url(el.first('LegendURL'))
     oo.is_default = (

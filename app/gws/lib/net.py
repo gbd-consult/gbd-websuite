@@ -10,6 +10,8 @@ import requests
 import requests.structures
 
 import gws
+import gws.types as t
+
 
 # https://urllib3.readthedocs.org/en/latest/security.html#using-your-system-s-root-certificates
 CA_CERTS_PATH = '/etc/ssl/certs/ca-certificates.crt'
@@ -139,17 +141,20 @@ def add_params(url, params):
 
 
 class Response:
-    def __init__(self, resp: requests.Response):
-        self.status_code = resp.status_code
-        self.content = resp.content
-        self.content_type, self.content_type_encoding = self._parse_content_type(resp.headers)
-        self._text = None
+    def __init__(self, res: requests.Response):
+        self.res = res
+        self.status_code = res.status_code
+        self.content_type, self.content_type_encoding = self._parse_content_type(res.headers)
 
     @property
-    def text(self):
-        if self._text is None:
-            self._text = self._get_text()
-        return self._text
+    def content(self) -> bytes:
+        return self.res.content
+
+    @property
+    def text(self) -> str:
+        if not hasattr(self, '_text'):
+            setattr(self, '_text', self._get_text())
+        return getattr(self, '_text')
 
     def _get_text(self):
 
@@ -206,13 +211,17 @@ class Response:
         return ctype, enc
 
 
-class FailedResponse:
+class FailedResponse(Response):
     def __init__(self, err):
         self.status_code = 500
         self.content = repr(err).encode('utf8')
         self.content_type = 'text/plain'
         self.content_type_encoding = 'utf8'
-        self.text = repr(err)
+        self._repr_err = repr(err)
+
+    @property
+    def text(self):
+        return self._repr_err
 
 
 def http_request(url, **kwargs) -> Response:
@@ -247,7 +256,7 @@ def http_request(url, **kwargs) -> Response:
     lax = kwargs.pop('lax', False)
     ts = time.time()
 
-    err = None
+    err: t.Optional[requests.RequestException] = None
     resp = None
 
     try:

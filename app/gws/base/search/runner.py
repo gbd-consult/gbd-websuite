@@ -1,20 +1,19 @@
 import gws
 import gws.types as t
 
-from . import provider
 
 
 class _LimitExceeded(Exception):
     pass
 
+
 _DEFAULT_LIMIT = 10 * 1000
 
 
-def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
+def run(req: gws.IWebRequest, args: gws.SearchArgs) -> t.List[gws.IFeature]:
     total_limit = args.limit or _DEFAULT_LIMIT
     used_layer_ids = set()
-    features: t.List[t.IFeature] = []
-    prov: provider.Object
+    features: t.List[gws.IFeature] = []
 
     dbg = [
         f'SEARCH ARGS',
@@ -37,20 +36,20 @@ def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
         if args.layers:
             for layer in args.layers:
                 used_layer_ids.add(layer.uid)
-                for prov in layer.get_children('gws.ext.search.provider'):
-                    _run(req, layer, prov, args, total_limit, features)
+                for prov in layer.search_providers:
+                    _run(req, args, prov, layer, total_limit, features)
 
             for layer in args.layers:
-                for par in _parents(layer):
-                    if par.uid not in used_layer_ids:
-                        used_layer_ids.add(par.uid)
-                        gws.log.debug(f'search parent={par.uid} for={layer.uid}')
-                        for prov in par.get_children('gws.ext.search.provider'):
-                            _run(req, par, prov, args, total_limit, features)
+                for anc_layer in layer.ancestors:
+                    if anc_layer.uid not in used_layer_ids:
+                        used_layer_ids.add(anc_layer.uid)
+                        gws.log.debug(f'search ancestor={anc_layer.uid} for={layer.uid}')
+                        for prov in anc_layer.search_providers:
+                            _run(req, args, prov, anc_layer, total_limit, features)
 
         if args.project:
-            for prov in args.project.get_children('gws.ext.search.provider'):
-                _run(req, None, prov, args, total_limit, features)
+            for prov in args.project.search_providers:
+                _run(req, args, prov, None, total_limit, features)
 
     except _LimitExceeded:
         pass
@@ -58,44 +57,35 @@ def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
     return features[:total_limit]
 
 
-def _parents(layer: t.ILayer) -> t.List[t.ILayer]:
-    ps = []
-    p = layer.parent
-    while p.is_a('gws.ext.layer'):
-        ps.append(t.cast(t.ILayer, p))
-        p = p.parent
-    return ps
-
-
-def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.SearchArgs, total_limit, features):
+def _run(req: gws.IWebRequest, args: gws.SearchArgs, provider: gws.ISearchProvider, layer: t.Optional[gws.ILayer], total_limit, features):
     args.limit = total_limit - len(features)
     if args.limit <= 0:
         raise _LimitExceeded()
 
     gws.log.debug(
-        'SEARCH_BEGIN: prov=%r layer=%r limit=%d' % (gws.get(prov, 'uid'), gws.get(layer, 'uid'), args.limit))
+        'SEARCH_BEGIN: prov=%r layer=%r limit=%d' % (gws.get(provider, 'uid'), gws.get(layer, 'uid'), args.limit))
 
-    if not req.user.can_use(prov):
+    if not req.user.can_use(provider):
         gws.log.debug('SEARCH_END: NO_ACCESS')
         return
 
-    if not prov.can_run(args):
+    if not provider.can_run(args):
         gws.log.debug(f'SEARCH_END: N_A')
         return
 
     try:
-        fs: t.List[t.IFeature] = prov.run(layer, args) or []
-    except Exception:
+        fs: t.List[gws.IFeature] = provider.run(args, layer) or []
+    except:
         gws.log.exception()
         gws.log.debug('SEARCH_FAILED')
         return
 
-    tt = prov.templates or (layer.templates if layer else None)
-    dm = prov.data_model or (layer.data_model if layer else None)
+    tt = provider.templates or (layer.templates if layer else None)
+    dm = provider.data_model or (layer.data_model if layer else None)
 
     for f in fs:
         f.layer = layer
-        f.category = prov.title or (layer.title if layer else '')
+        f.category = provider.title or (layer.title if layer else '')
         f.templates = tt
         f.data_model = dm
 

@@ -19,7 +19,7 @@ Hier ein kurzer Überblick über die unterstützten Aktionstypen:
     ``gekos`` | GekoS Anbindung (s. ^gekos)
     ``map`` | Render von Kartenbildern (s. ^map)
     ``ows`` | OWS Dienste wie WMS, WMTS oder WFS (s. ^ows)
-    ``printer`` | Drucken (s. ^print)
+    ``print`` | Drucken (s. ^print)
     ``project`` | Projektbeschreibung und Konfiguration für den Client (s. ^project)
     ``search`` | allgemeine Such-Anfragen (s. ^search)
     ``storage`` | Datenaustausch mit der Datenablage (s. ^storage)

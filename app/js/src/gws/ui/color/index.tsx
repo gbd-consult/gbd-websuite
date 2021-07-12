@@ -5,7 +5,7 @@ import * as base from '../base';
 
 import {Touchable} from '../button';
 import {Tracker} from '../tracker';
-import {Form, Row, Cell} from '../layout';
+import {Cell, Form, Row} from '../layout';
 
 
 type ColorPickerProps = base.InputProps<string>;

@@ -76,7 +76,7 @@ class ConfigRefGenerator:
             '',
             _h2(sname),
             '',
-            t.get('doc', ''),
+            gws.get('doc', ''),
             ''
         ]
         if text:
@@ -145,7 +145,7 @@ class CliRefGenerator:
                 c.get('doc', '')
             ]
             if c.get('args'):
-                t.extend([
+                gws.extend([
                     '',
                     _i(self.w('options') + ':'),
                     '',

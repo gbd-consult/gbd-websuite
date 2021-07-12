@@ -1,2 +1,2 @@
-from .error import *
-from .gwsroot import root
+from .error import Error, ParseError
+from .loader import root

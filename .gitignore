@@ -10,8 +10,9 @@ ___*
 .DS_Store
 .directory
 .idea
-.mypy*
+.mypy_cache
 .pytest_cache
+.dmypy.json
 __pycache__
 __build*
 node_modules

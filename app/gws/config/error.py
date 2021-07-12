@@ -1,4 +1,5 @@
 import gws
+import gws.types as t
 
 
 class Error(gws.Error):
@@ -6,6 +7,10 @@ class Error(gws.Error):
 
 
 class ParseError(Error):
+    pass
+
+
+class ConfigError(Error):
     pass
 
 

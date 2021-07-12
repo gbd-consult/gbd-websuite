@@ -4,7 +4,7 @@ import * as base from '../base';
 import * as util from '../util';
 
 import {Touchable} from '../button';
-import {Row, Cell} from '../layout';
+import {Cell} from '../layout';
 
 export interface ListItem {
     text: string;

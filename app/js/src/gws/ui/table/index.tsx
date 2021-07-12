@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as base from '../base';
 import * as util from '../util';
 
-import {Row, Cell} from '../layout';
+import {Cell, Row} from '../layout';
 
 
 interface GridProps {

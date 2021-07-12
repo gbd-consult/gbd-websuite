@@ -1,6 +1,5 @@
 """Debuggging tools"""
 
-import collections
 import re
 import socket
 import sys
@@ -36,7 +35,7 @@ def _repr(x):
     return s
 
 
-def _dump(x, name, depth, max_depth, all_props):
+def _dump(x, name, depth, max_depth, all_props, seen):
     pfx = '    ' * depth
 
     if name:
@@ -55,6 +54,12 @@ def _dump(x, name, depth, max_depth, all_props):
         yield pfx + ' = ' + _repr(x)
         return
 
+    if x in seen:
+        yield pfx + ' = ' + _repr(x)
+        return
+
+    seen.append(x)
+
     if not all_props and str(type(x)) in _noexpand:
         yield pfx + ' = ' + _repr(x)
         return
@@ -63,16 +68,16 @@ def _dump(x, name, depth, max_depth, all_props):
         yield pfx + '...'
         return
 
-    if isinstance(x, collections.Mapping) and x:
+    if isinstance(x, dict) and x:
         yield pfx + ' = '
         for k in x:
-            for s in _dump(x[k], repr(k), depth + 1, max_depth, all_props):
+            for s in _dump(x[k], repr(k), depth + 1, max_depth, all_props, seen):
                 yield s
 
-    elif isinstance(x, (collections.Set, collections.Sequence)) and x:
+    elif isinstance(x, (set, list, tuple)) and x:
         yield pfx + ' = '
         for k, v in enumerate(x):
-            for s in _dump(v, str(k), depth + 1, max_depth, all_props):
+            for s in _dump(v, str(k), depth + 1, max_depth, all_props, seen):
                 yield s
 
     else:
@@ -84,14 +89,14 @@ def _dump(x, name, depth, max_depth, all_props):
         except Exception as e:
             v = '?' + repr(e)
         if all_props or _should_list(k, v):
-            for s in _dump(v, k, depth + 1, max_depth, all_props):
+            for s in _dump(v, k, depth + 1, max_depth, all_props, seen):
                 yield s
 
 
 def inspect(arg, max_depth=1, all_props=False):
     """Inspect the argument upto the given depth"""
 
-    for s in _dump(arg, None, 0, max_depth or 1, all_props):
+    for s in _dump(arg, None, 0, max_depth or 1, all_props, []):
         yield s
 
 
@@ -116,7 +121,7 @@ def p(*args, **kwargs):
             log.debug(s.replace('\n', ' '), extra={'skip_frames': 1})
 
 
-_timers = {}
+_timers: dict = {}
 
 
 def time_start(label):

@@ -1,15 +1,15 @@
 import contextlib
-import os
 import getpass
+import os
 
 import argh
 
-import gws.config.loader
 import gws.config.error
-import gws.gis.mpx.config
+import gws.config.loader
+import gws.lib.mpx.config
 import gws.lib.json2 as json2
-import gws.lib.os2
 import gws.lib.misc
+import gws.lib.os2
 
 
 def find_commands():
@@ -38,6 +38,7 @@ def pretty_errors():
     except gws.config.error.ParseError as e:
         _perr(ln)
         _perr('CONFIGURATION ERROR')
+        print(e.args)
         _perr(e.args[0])
         _perr(ln)
         _perr('path  : %s' % e.args[1])
@@ -170,40 +171,3 @@ def find_action(action_type, project_uid=None, fail=True):
     gws.log.warn(msg)
 
 
-def text_table(data, header=None):
-    """Format a list of dicts as a text-mode table."""
-
-    data = list(data)
-
-    if not data:
-        return ''
-
-    header = header or sorted(data[0].keys())
-    widths = [len(h) for h in header]
-
-    for d in data:
-        widths = [
-            max(a, b)
-            for a, b in zip(
-                widths,
-                [len(str(d.get(h, ''))) for h in header]
-            )
-        ]
-
-    def field(n, v):
-        if isinstance(v, (int, float)):
-            return str(v).rjust(widths[n])
-        return str(v).ljust(widths[n])
-
-    def make_row(a):
-        return ' | '.join(a)
-
-    rows = []
-
-    rows.append(make_row(field(n, h) for n, h in enumerate(header)))
-    rows.append('-' * len(rows[0]))
-
-    for d in data:
-        rows.append(make_row(field(n, d.get(h, '')) for n, h in enumerate(header)))
-
-    return '\n'.join(rows)

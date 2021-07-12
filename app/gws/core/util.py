@@ -4,6 +4,8 @@ Most common function which are needed everywhere. These function are exported in
 """
 
 import hashlib
+import importlib.machinery
+import importlib.util
 import os
 import pickle
 import random
@@ -12,8 +14,9 @@ import sys
 import threading
 import time
 
-import gws.core.const
-import gws.types as t
+from . import const
+from .data import Data, is_data_object
+from gws.types import List, cast
 
 
 def exit(code: int = 255):
@@ -24,10 +27,6 @@ def exit(code: int = 255):
     """
 
     sys.exit(code)
-
-
-def is_data_object(x):
-    return isinstance(x, t.Data)
 
 
 def get(x, key, default=None):
@@ -69,36 +68,22 @@ def has(x, key) -> bool:
     return ok
 
 
-def merge(x, *args, **kwargs):
-    """Create a dict/Data object with the values from dicts/Datas or kwargs, overwriting keys.
+def merge_lists(*args):
+    """Merge iterables together, removing repeated elements"""
 
-    Args:
-        x: A dict or a Data.
-        *args: Dicts or Datas.
-        **kwargs: Keyword args.
-
-    Returns:
-        A new object (dict or Data).
-    """
-
-    x = x or {}
-    d = dict(as_dict(x))
-
+    r = []
     for a in args:
-        d.update(as_dict(a))
-    d.update(kwargs)
-
-    if isinstance(x, dict):
-        return d
-
-    return type(x)(d)
+        for x in as_list(a):
+            if x not in r:
+                r.append(x)
+    return r
 
 
-def extend(x, *args, **kwargs):
-    """Create a dict/Data object with the values from dicts/Datas or kwargs, do not overwrite keys unless they're None.
+def merge(*args, **kwargs):
+    """Create a new dict/Data object by merging values from dicts/Datas or kwargs.
+    Latter vales overwrite former ones unless None.
 
     Args:
-        x: A dict or a Data.
         *args: Dicts or Datas.
         **kwargs: Keyword args.
 
@@ -106,23 +91,24 @@ def extend(x, *args, **kwargs):
         A new object (dict or Data).
     """
 
-    x = x or {}
     d = {}
 
     for a in args:
-        d.update(as_dict(a))
-    d.update(kwargs)
+        for k, v in as_dict(a).items():
+            if v is not None:
+                d[k] = v
 
-    e = dict(as_dict(x))
+    for k, v in kwargs.items():
+        if v is not None:
+            d[k] = v
 
-    for k, v in d.items():
-        if e.get(k) is None:
-            e[k] = v
+    if not args:
+        return d
 
-    if isinstance(x, dict):
-        return e
+    if isinstance(args[0], dict):
+        return d
 
-    return type(x)(e)
+    return type(args[0])(d)
 
 
 def filter(x, fn=None):
@@ -183,7 +169,7 @@ def deep_merge(x, *args, **kwargs):
             p = o
             for k in keys[:-1]:
                 if getattr(p, k, None) is None:
-                    setattr(p, k, t.Data())
+                    setattr(p, k, Data())
                 p = getattr(p, k)
             setattr(p, keys[-1], v)
 
@@ -195,7 +181,7 @@ def deep_merge(x, *args, **kwargs):
     for k, v in kwargs.items():
         flat[(k,)] = v
 
-    d = t.Data()
+    d = Data()
     unflatten(d, flat)
     return d
 
@@ -271,7 +257,7 @@ def as_float(x) -> float:
         return 0.0
 
 
-def as_str(x, encodings: t.List[str] = None) -> str:
+def as_str(x, encodings: List[str] = None) -> str:
     """Convert a value to a string.
 
     Args:
@@ -341,7 +327,7 @@ def as_dict(x) -> dict:
 
     if isinstance(x, dict):
         return x
-    if isinstance(x, t.Data):
+    if is_data_object(x):
         return vars(x)
     return {}
 
@@ -386,7 +372,7 @@ def as_query_string(x) -> str:
     return (b'&'.join(p)).decode('ascii')
 
 
-def lines(txt: str, comment: str = None) -> t.List[str]:
+def lines(txt: str, comment: str = None) -> List[str]:
     """Convert a multiline string into a list of strings.
 
     Strip each line, skip empty lines, if `comment` is given, also remove lines starting with it.
@@ -443,7 +429,7 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
     if base_dir:
         if os.path.isabs(dir_path):
             raise ValueError(f'cannot use an absolute path {dir_path!r} with a base dir')
-        bpath = os.path.join(base_dir.encode('utf8'), dir_path.encode('utf8'))
+        bpath = cast(bytes, os.path.join(base_dir.encode('utf8'), dir_path.encode('utf8')))
     else:
         if not os.path.isabs(dir_path):
             raise ValueError(f'cannot use a relative path {dir_path!r} without a base dir')
@@ -463,7 +449,7 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
 
 def _chown(path, user, group):
     try:
-        os.chown(path, user or gws.core.const.UID, group or gws.core.const.GID)
+        os.chown(path, user or const.UID, group or const.GID)
     except OSError:
         pass
 
@@ -494,7 +480,7 @@ class cached_property:
 
 
 _global_lock = threading.RLock()
-_global_vars = {}
+_global_vars: dict = {}
 
 
 def global_lock():
@@ -574,7 +560,7 @@ def get_cached_object(name, init_fn, max_age: int):
          The value.
     """
 
-    path = gws.core.const.OBJECT_CACHE_DIR + '/' + as_uid(name)
+    path = const.OBJECT_CACHE_DIR + '/' + as_uid(name)
 
     with global_lock():
 
@@ -602,6 +588,16 @@ def get_cached_object(name, init_fn, max_age: int):
                 pickle.dump(obj, fp)
 
         return obj
+
+
+def import_from_path(module_name, module_path):
+    # see https://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3
+    loader = importlib.machinery.SourceFileLoader(module_name, module_path)
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    mod = importlib.util.module_from_spec(spec)
+    loader.exec_module(mod)
+    sys.modules[module_name] = mod
+    return mod
 
 
 ####################################################################################################

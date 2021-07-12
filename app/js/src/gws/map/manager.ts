@@ -512,7 +512,6 @@ export class MapManager implements types.IMapManager {
     }
 
     protected initLayers() {
-
         this.root = this.initLayer({
             type: 'root',
             uid: '_root',

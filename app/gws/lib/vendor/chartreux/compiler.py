@@ -27,7 +27,7 @@ ERROR_NOT_SUPPORTED = 'syntax not supported'
 ERROR_ARG_NOT_SUPPORTED = 'argument syntax not supported'
 ERROR_FILTER = 'invalid or unknown filter'
 
-_DEFAULT_OPTIONS = {
+_DEFAULT_OPTIONS = {  # type: ignore
     'syntax': {
         'command': r'^\s*@(\w+)(.*)',
         'comment': r'^\s*##',
@@ -1186,7 +1186,7 @@ def _relpath(cur_path, path):
 
 def _read(path, cc=None):
     try:
-        with open(path) as fp:
+        with open(path, 'rt', encoding='utf8') as fp:
             return fp.read()
     except OSError:
         if cc:

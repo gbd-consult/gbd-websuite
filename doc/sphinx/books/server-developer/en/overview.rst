@@ -17,7 +17,7 @@ Internally, there are other servers running in the background:
 Code structure
 --------------
 
-We try to keep our python code as "typed" as possible. To achieve this we use type annotations and some code generation to create stubs for type checking. Almost every GWS source file includes the line ``import gws.types as t`` which imports generated type stubs.
+We try to keep our python code as "typed" as possible. To achieve this we use type annotations and some code generation to create stubs for type checking. Almost every GWS source file includes the line ``import gws`` which imports generated type stubs.
 
 Apart from type stubs, the code generator (located in ``/specgen`` and invoked as ``make spec``) creates specifications for configuration and request structures. These structures are typechecked by the server before being forwarded to specific requests handlers.
 
@@ -55,17 +55,17 @@ The "extensions" are parts of the application that provide the actual functional
 Configuration and the Tree
 --------------------------
 
-When the GWS server starts up, it locates and reads the configuration file. The configuration is normally a very nested structure, but at the top level it corresponds to the ``Config`` object as defined in ``common/application``. The ``Application`` object is instantiated and its ``configure`` method is invoked. This method, in turn, instantiates and configures further objects and so on, recursively. As a result, an object tree is created in memory and stays there until the server stops or reloads. Every node in the tree implements ``t.IObject`` and represents a ``common`` or an ``ext`` object. ``t.IObject`` defines a mandatory ``configure`` method, which is invoked during configuration, the ``root`` property which is the Tree's root and a set of navigation methods. Specific objects (e.g. layers) provide methods defined by their respective interfaces (e.g. ``t.ILayer``). Some objects also provide the ``props`` getter, which exposes selected  properties to our client application.
+When the GWS server starts up, it locates and reads the configuration file. The configuration is normally a very nested structure, but at the top level it corresponds to the ``Config`` object as defined in ``common/application``. The ``Application`` object is instantiated and its ``configure`` method is invoked. This method, in turn, instantiates and configures further objects and so on, recursively. As a result, an object tree is created in memory and stays there until the server stops or reloads. Every node in the tree implements ``gws.IObject`` and represents a ``common`` or an ``ext`` object. ``gws.IObject`` defines a mandatory ``configure`` method, which is invoked during configuration, the ``root`` property which is the Tree's root and a set of navigation methods. Specific objects (e.g. layers) provide methods defined by their respective interfaces (e.g. ``gws.ILayer``). Some objects also provide the ``props`` getter, which exposes selected  properties to our client application.
 
 Data and friends
 ----------------
 
-All non-object structures in GWS inherit from ``t.Data``, which is a dictionary-alike bag of values. ``t.Data`` has some descendants for specific purposes:
+All non-object structures in GWS inherit from ``gws.Data``, which is a dictionary-alike bag of values. ``gws.Data`` has some descendants for specific purposes:
 
-- ``t.Config`` - configuration objects
-- ``t.Params`` - request parameters
-- ``t.Response`` - request responses
-- ``t.Props`` - structures returned by ``props`` getters
+- ``gws.Config`` - configuration objects
+- ``gws.Params`` - request parameters
+- ``gws.Response`` - request responses
+- ``gws.Props`` - structures returned by ``props`` getters
 
 All data structures used in GWS should extend one of these. Each structure must provide type annotations and, if appropriate, defaults for each member.
 
@@ -83,7 +83,7 @@ Imports must be structured like this:
 - ``import gws``
 - import gws modules
 - blank line
-- ``import gws.types as t``
+- ``import gws``
 - blank line
 - local (inter-package) imports
 

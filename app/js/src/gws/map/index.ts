@@ -2,4 +2,5 @@ export {Layer} from './layer';
 export {Feature} from './feature';
 
 import * as layer from './layer';
+
 export {layer};

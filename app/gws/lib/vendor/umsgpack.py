@@ -1,4 +1,6 @@
-#@@gws: patched _pack3 because we desperately need the 'default' option like in json
+# type: ignore
+#
+# #@@gws: patched _pack3 because we desperately need the 'default' option like in json
 
 # u-msgpack-python v2.5.1 - v at sergeev.io
 # https://github.com/vsergeev/u-msgpack-python
@@ -45,11 +47,11 @@ types.
 
 License: MIT
 """
-import struct
 import collections
 import datetime
-import sys
 import io
+import struct
+import sys
 
 __version__ = "2.5.1"
 "Module version string"

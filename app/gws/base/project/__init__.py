@@ -1,115 +1,156 @@
+import gws
 import gws.base.api
+import gws.base.auth
 import gws.base.client
 import gws.base.map
-import gws.base.metadata
-import gws.base.printer
+import gws.base.print
 import gws.base.search
 import gws.base.template
-import gws.gis.extent
-import gws.gis.proj
+import gws.base.web
+import gws.lib.extent
+import gws.lib.intl
+import gws.lib.metadata
+import gws.lib.proj
 import gws.lib.units
-import gws.web.site
-
 import gws.types as t
 
 
-class ApiConfig(t.WithAccess):
-    """Project-specific server actions"""
-
-    actions: t.Optional[t.List[t.ext.action.Config]]  #: available actions
-
-
-class Config(t.WithAccess):
+class Config(gws.WithAccess):
     """Project configuration"""
 
     api: t.Optional[gws.base.api.Config]  #: project-specific actions
-    assets: t.Optional[gws.web.site.DocumentRootConfig]  #: project-specific assets options
+    assets: t.Optional[gws.base.web.DocumentRootConfig]  #: project-specific assets options
     client: t.Optional[gws.base.client.Config]  #: project-specific gws client configuration
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.base.map.Config]  #: Map configuration
-    meta: t.Optional[gws.base.metadata.Config] = {}  #: project metadata
+    meta: t.Optional[gws.lib.metadata.Config]  #: project metadata
     overviewMap: t.Optional[gws.base.map.Config]  #: Overview map configuration
-    printer: t.Optional[gws.base.printer.Config]  #: printer configuration
-    search: t.Optional[gws.base.search.Config] = {}  #: project-wide search configuration
-    templates: t.Optional[t.List[t.ext.template.Config]]  #: project info templates
+    print: t.Optional[gws.base.print.Config]  #: print configuration
+    search: t.Optional[gws.base.search.Config] = {}  # type: ignore #: project-wide search configuration
+    templates: t.Optional[t.List[gws.ext.template.Config]]  #: project info templates
     title: str = ''  #: project title
-    uid: t.Optional[str]  #: unique id
 
 
-class Props(t.Data):
-    actions: t.List[t.ext.action.Props]
+class Props(gws.Props):
+    actions: t.List[gws.ext.action.Props]
     client: t.Optional[gws.base.client.Props]
     description: str
     locales: t.List[str]
     map: gws.base.map.Props
-    meta: gws.base.metadata.Props
+    meta: gws.lib.metadata.Props
     overviewMap: gws.base.map.Props
-    printer: gws.base.printer.Props
+    print: gws.base.print.Props
     title: str
     uid: str
 
 
-#:export IProject
-class Object(gws.Object, t.IProject):
-    def configure(self):
-        super().configure()
+class Object(gws.Node):
+    api: gws.base.api.Object
+    assets_root: t.Optional[gws.base.web.DocumentRoot]
+    client: t.Optional[gws.base.client.Object]
+    locale_uids: t.List[str]
+    map: gws.base.map.Object
+    meta: gws.lib.metadata.Object
+    overview_map: gws.base.map.Object
+    print: gws.base.print.Object
+    templates: gws.base.template.Bundle
+    title: str
 
-        self.meta: t.MetaData = gws.base.metadata.from_config(self.var('meta'))
-        gws.log.info(f'configuring project {self.uid!r}')
+    def configure(self):
+        p = self.var('meta')
+        self.meta = self.create_child(gws.lib.metadata.Object, p)
 
         # title at the top level config preferred
-        title = self.var('title') or self.meta.title or self.uid
+        title = self.var('title') or self.meta.data.title or self.uid
         self.meta.title = title
         self.title: str = title
 
-        self.locale_uids: t.List[str] = self.var('locales', parent=True, default=['en_CA'])
-        self.assets_root: t.Optional[t.DocumentRoot] = gws.web.site.document_root(self.var('assets'))
+        self.set_uid(self.title)
 
-        p = self.var('map')
-        self.map: t.Optional[t.IMap] = self.create_child(gws.base.map.Object, p) if p else None
-
-        p = self.var('overviewMap')
-        self.overview_map: t.Optional[t.IMap] = self.create_child(gws.base.map.Object, p) if p else None
-        if self.overview_map:
-            self.overview_map.uid = 'overview'
-
-        p = self.var('printer')
-        self.printer: t.Optional[t.IPrinter] = self.create_child(gws.base.printer.Object, p) if p else None
-
-        self.templates: t.List[t.ITemplate] = gws.base.template.bundle(self, self.var('templates'), gws.base.template.BUILTINS)
-
-        p = self.var('search')
-        if p and p.enabled and p.providers:
-            for s in p.providers:
-                self.create_child('gws.ext.search.provider', s)
+        gws.log.info(f'configuring project {self.uid!r}')
 
         p = self.var('api')
-        self.api: t.Optional[t.IApi] = self.create_child(gws.base.api.Object, p) if p else None
+        self.api = self.create_child(gws.base.api.Object, p) if p else None
+
+        self.locale_uids = self.var('locales', with_parent=True, default=['en_CA'])
+
+        p = self.var('assets')
+        self.assets_root = self.create_child(gws.base.web.DocumentRoot, p) if p else None
+
+        p = self.var('map')
+        self.map = self.create_child(gws.base.map.Object, p) if p else None
+
+        p = self.var('overviewMap')
+        self.overview_map = self.create_child(gws.base.map.Object, p) if p else None
+        if self.overview_map:
+            self.overview_map.set_uid(self.uid + '.overview')
+
+        p = self.var('print')
+        self.print = self.create_child(gws.base.print.Object, p) if p else None
+
+        p = self.var('templates')
+        self.templates = t.cast(
+            gws.base.template.Bundle,
+            self.create_child(
+                gws.base.template.Bundle,
+                gws.Config(templates=p, defaults=gws.base.template.BUILTINS)))
+        #
+        # p = self.var('search')
+        # if p and p.enabled and p.providers:
+        #     for s in p.providers:
+        #         self.create_child('gws.ext.search.provider', s)
 
         p = self.var('client')
         if p:
             p.parentClient = self.parent.var('client')
-        self.client: t.Optional[t.IClient] = self.create_child(gws.base.client.Object, p) if p else None
+        self.client = self.create_child(gws.base.client.Object, p) if p else None
 
     @property
     def description(self):
-        context = {'project': self, 'meta': self.meta}
-        tpl = gws.base.template.find(self.templates, subject='project.description')
-        return tpl.render(context).content
+        context = {'project': self, 'meta': self.meta.data}
+        tpl = self.templates.find(subject='project.description')
+        return tpl.render(context).content if tpl else ''
 
     @property
     def props(self):
+        actions = gws.merge(
+            {},
+            gws.get(self.parent, 'api.actions'),
+            gws.get(self, 'api.actions'))
         return Props(
-            actions=gws.merge(
-                {},
-                self.root.application.api.actions,
-                self.api.actions if self.api else {}),
+            actions=list(actions.values()),
             client=self.client or getattr(self.parent, 'client', None),
             description=self.description,
             map=self.map,
-            meta=gws.base.metadata.props(self.meta),
+            meta=self.meta,
             overviewMap=self.overview_map,
-            printer=self.printer,
+            print=self.print,
             title=self.title,
             uid=self.uid,
         )
+
+
+class InfoResponse(gws.Response):
+    project: gws.base.project.Props
+    locale: gws.lib.intl.Locale
+    user: t.Optional[gws.base.auth.UserProps]
+
+
+@gws.ext.Object('action.project')
+class Object(gws.base.api.Action):
+    """Project information action"""
+
+    @gws.ext.command('api.project.info')
+    def info(self, req: gws.IWebRequest, p: gws.Params) -> InfoResponse:
+        """Return the project configuration"""
+
+        project = req.require_project(p.projectUid)
+
+        locale_uid = p.localeUid
+        if locale_uid not in project.locale_uids:
+            locale_uid = project.locale_uids[0]
+
+        return InfoResponse(
+            project=project.props_for(req.user),
+            locale=gws.lib.intl.locale(locale_uid),
+            user=None if req.user.is_guest else req.user.props)

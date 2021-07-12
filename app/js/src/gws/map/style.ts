@@ -4,19 +4,19 @@ import * as types from '../types';
 import * as api from '../core/api';
 import * as lib from '../lib';
 
-export const DEFAULT_VALUES: api.StyleValues = {
-    with_label: api.StyleLabelOption.none,
-    with_geometry: api.StyleGeometryOption.all,
-    label_align: api.StyleLabelAlign.center,
+export const DEFAULT_VALUES: types.Dict = {
+    with_label: 'none',
+    with_geometry: 'all',
+    label_align: 'center',
     label_font_family: 'sans-serif',
     label_font_size: 12,
-    label_font_style: api.StyleLabelFontStyle.normal,
-    label_font_weight: api.StyleLabelFontWeight.normal,
+    label_font_style: 'normal',
+    label_font_weight: 'normal',
     label_line_height: 1,
     label_max_scale: 1000000000,
     label_min_scale: 0,
-    label_placement: api.StyleLabelPlacement.middle,
-    label_stroke_linejoin: api.StyleStrokeLineJoin.round,
+    label_placement: 'middle',
+    label_stroke_linejoin: 'round',
 };
 
 
@@ -138,7 +138,7 @@ export class StyleManager implements types.IStyleManager {
         return null;
     }
 
-    protected create(values: api.StyleValues, name = null) {
+    protected create(values: types.Dict, name = null) {
         name = name || lib.uniqId('style');
         let s = new Style(name, values);
         this.styles[name] = s;
@@ -150,7 +150,7 @@ export class StyleManager implements types.IStyleManager {
 
 abstract class BaseStyle implements types.IStyle {
     name: string;
-    values: api.StyleValues;
+    values: types.Dict;
     source: string = '';
 
     get olFunction() {
@@ -165,12 +165,12 @@ abstract class BaseStyle implements types.IStyle {
         return null;
     }
 
-    update(values: api.StyleValues) {
+    update(values: types.Dict) {
     }
 }
 
 
-export class Style extends BaseStyle {
+export class Style extends BaseStyle  implements types.IStyle {
 
     protected cache: {
         markerImage?: ol.style.Image;
@@ -180,10 +180,10 @@ export class Style extends BaseStyle {
         labelOptions?: types.Dict;
         labelMaxResolution?: number;
         labelMinResolution?: number;
-        labelPlacement?: api.StyleLabelPlacement;
+        labelPlacement?: string;
     };
 
-    constructor(name: string, values: api.StyleValues) {
+    constructor(name: string, values: types.Dict) {
         super();
         this.name = name;
         this.values = values;
@@ -197,7 +197,7 @@ export class Style extends BaseStyle {
         }
     }
 
-    update(values: api.StyleValues) {
+    update(values: types.Dict) {
         this.values = {...this.values, ...values};
         this.reset();
     }
@@ -252,7 +252,7 @@ export class Style extends BaseStyle {
                     opts['offsetY'] = 20;
                 }
                 if (!lp) {
-                    lp = api.StyleLabelPlacement.end;
+                    lp = 'end';
                 }
             }
 
@@ -264,9 +264,9 @@ export class Style extends BaseStyle {
                 r['geometry'] = geom;
             } else if (gt === 'Circle') {
                 r['geometry'] = new ol.geom.Point(geom.getCenter());
-            } else if (lp === api.StyleLabelPlacement.start) {
+            } else if (lp === 'start') {
                 r['geometry'] = new ol.geom.Point(geom.getFirstCoordinate());
-            } else if (lp === api.StyleLabelPlacement.end) {
+            } else if (lp === 'end') {
                 r['geometry'] = new ol.geom.Point(geom.getLastCoordinate());
             }
 
@@ -281,7 +281,7 @@ export class Style extends BaseStyle {
 
         let sv = {...DEFAULT_VALUES, ...this.values};
 
-        if (sv.with_geometry === api.StyleGeometryOption.all) {
+        if (sv.with_geometry === 'all') {
 
             let fill = olMakeFill(sv),
                 stroke = olMakeStroke(sv);
@@ -305,7 +305,7 @@ export class Style extends BaseStyle {
             }
         }
 
-        if (sv.with_label === api.StyleLabelOption.all) {
+        if (sv.with_label === 'all') {
 
             this.cache.labelOptions = olLabelOptions(sv);
 
@@ -398,7 +398,7 @@ export class CascadedStyle extends BaseStyle {
 
 //
 
-function olMakeFill(sv: api.StyleValues, prefix = '') {
+function olMakeFill(sv: types.Dict, prefix = '') {
     let r = compact({
         color: sv[prefix + 'fill'],
     });
@@ -406,7 +406,7 @@ function olMakeFill(sv: api.StyleValues, prefix = '') {
         return new ol.style.Fill(r);
 }
 
-function olMakeStroke(sv: api.StyleValues, prefix = '') {
+function olMakeStroke(sv: types.Dict, prefix = '') {
     let r = compact({
         color: sv[prefix + 'stroke'],
         lineDash: sv[prefix + 'stroke_dasharray'],
@@ -421,7 +421,7 @@ function olMakeStroke(sv: api.StyleValues, prefix = '') {
         return new ol.style.Stroke(r);
 }
 
-function olMakeMarker(sv: api.StyleValues) {
+function olMakeMarker(sv: types.Dict) {
     let marker = sv.marker,
         size = sv.marker_size;
 
@@ -436,7 +436,7 @@ function olMakeMarker(sv: api.StyleValues) {
     }
 }
 
-function olLabelOptions(sv: api.StyleValues) {
+function olLabelOptions(sv: types.Dict) {
     let font = `
         ${sv.label_font_style} ${sv.label_font_weight} ${sv.label_font_size}px/${sv.label_line_height} ${sv.label_font_family}
     `;
@@ -485,7 +485,7 @@ function compact(obj): any {
 
 // 
 
-export function parseCssSelector(selector: string): [api.StyleValues, string] {
+export function parseCssSelector(selector: string): [types.Dict, string] {
 
 
     function getStyleSheets() {
@@ -578,13 +578,6 @@ let _padding = (val) => {
     }
 };
 
-let _enum = (cls) => {
-    return (val) => {
-        if (val in cls)
-            return val
-    }
-};
-
 let _str = (val) => {
     val = val.trim()
     return val || (void 0);
@@ -609,41 +602,41 @@ _Parser.fill = _color;
 _Parser.stroke = _color;
 _Parser.stroke_dasharray = _intlist;
 _Parser.stroke_dashoffset = _px;
-_Parser.stroke_linecap = _enum(api.StyleStrokeLineCap);
-_Parser.stroke_linejoin = _enum(api.StyleStrokeLineJoin);
+_Parser.stroke_linecap = _str;
+_Parser.stroke_linejoin = _str;
 _Parser.stroke_miterLimit = _px;
 _Parser.stroke_width = _px;
-_Parser.marker = _enum(api.StyleMarker);
+_Parser.marker = _str;
 _Parser.marker_fill = _color;
 _Parser.marker_size = _px;
 _Parser.marker_stroke = _color;
 _Parser.marker_stroke_dasharray = _intlist;
 _Parser.marker_stroke_dashoffset = _px;
-_Parser.marker_stroke_linecap = _enum(api.StyleStrokeLineCap);
-_Parser.marker_stroke_linejoin = _enum(api.StyleStrokeLineJoin);
+_Parser.marker_stroke_linecap = _str;
+_Parser.marker_stroke_linejoin = _str;
 _Parser.marker_stroke_miterLimit = _px;
 _Parser.marker_stroke_width = _px;
-_Parser.with_geometry = _enum(api.StyleGeometryOption);
-_Parser.with_label = _enum(api.StyleLabelOption);
-_Parser.label_align = _enum(api.StyleLabelAlign);
+_Parser.with_geometry = _str;
+_Parser.with_label = _str;
+_Parser.label_align = _str;
 _Parser.label_background = _color;
 _Parser.label_fill = _color;
 _Parser.label_font_family = _str;
 _Parser.label_font_size = _px;
-_Parser.label_font_style = _enum(api.StyleLabelFontStyle);
-_Parser.label_font_weight = _enum(api.StyleLabelFontWeight);
+_Parser.label_font_style = _str;
+_Parser.label_font_weight = _str;
 _Parser.label_line_height = _int;
 _Parser.label_max_scale = _int;
 _Parser.label_min_scale = _int;
 _Parser.label_offset_x = _px;
 _Parser.label_offset_y = _px;
 _Parser.label_padding = _padding;
-_Parser.label_placement = _enum(api.StyleLabelPlacement);
+_Parser.label_placement = _str;
 _Parser.label_stroke = _color;
 _Parser.label_stroke_dasharray = _intlist;
 _Parser.label_stroke_dashoffset = _px;
-_Parser.label_stroke_linecap = _enum(api.StyleStrokeLineCap);
-_Parser.label_stroke_linejoin = _enum(api.StyleStrokeLineJoin);
+_Parser.label_stroke_linecap = _str;
+_Parser.label_stroke_linejoin = _str;
 _Parser.label_stroke_miterLimit = _px;
 _Parser.label_stroke_width = _px;
 _Parser.point_size = _px;
@@ -654,7 +647,7 @@ _Parser.offset_y = _px;
 
 //
 
-function valuesFromCssDict(d: types.Dict): api.StyleValues {
+function valuesFromCssDict(d: types.Dict): types.Dict {
     let values = {};
 
     Object.keys(d).forEach(k => {
@@ -672,10 +665,10 @@ function valuesFromCssDict(d: types.Dict): api.StyleValues {
         }
     });
 
-    return values as api.StyleValues;
+    return values as types.Dict;
 }
 
-export function valuesFromCssText(text: string): api.StyleValues {
+export function valuesFromCssText(text: string): types.Dict {
     let d = {};
 
     each((text || '').split(';'), r => {

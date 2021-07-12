@@ -1,11 +1,12 @@
+import gws
 import gws.types as t
 
 
-#:export
+
 class OwsOperation:
     def __init__(self):
         self.name = ''
         self.formats: t.List[str] = []
-        self.get_url: t.Url = ''
-        self.post_url: t.Url = ''
+        self.get_url: gws.Url = ''
+        self.post_url: gws.Url = ''
         self.parameters: dict = {}

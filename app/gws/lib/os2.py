@@ -1,13 +1,15 @@
 """Utilities for os/shell scripting"""
 
-import subprocess
+import hashlib
 import os
 import re
 import signal
-import hashlib
+import subprocess
+
 import psutil
 
 import gws
+import gws.types as t
 
 
 class Error(gws.Error):
@@ -96,51 +98,10 @@ def is_dir(path):
     return os.path.isdir(path)
 
 
-try:
-    _signals = {
-        'ABRT': signal.SIGABRT,
-        'ALRM': signal.SIGALRM,
-        'BUS': signal.SIGBUS,
-        'CHLD': signal.SIGCHLD,
-        'CLD': signal.SIGCLD,
-        'CONT': signal.SIGCONT,
-        'FPE': signal.SIGFPE,
-        'HUP': signal.SIGHUP,
-        'ILL': signal.SIGILL,
-        'INT': signal.SIGINT,
-        'IO': signal.SIGIO,
-        'IOT': signal.SIGIOT,
-        'KILL': signal.SIGKILL,
-        'PIPE': signal.SIGPIPE,
-        'POLL': signal.SIGPOLL,
-        'PROF': signal.SIGPROF,
-        'PWR': signal.SIGPWR,
-        'QUIT': signal.SIGQUIT,
-        'RTMAX': signal.SIGRTMAX,
-        'RTMIN': signal.SIGRTMIN,
-        'SEGV': signal.SIGSEGV,
-        'STOP': signal.SIGSTOP,
-        'SYS': signal.SIGSYS,
-        'TERM': signal.SIGTERM,
-        'TRAP': signal.SIGTRAP,
-        'TSTP': signal.SIGTSTP,
-        'TTIN': signal.SIGTTIN,
-        'TTOU': signal.SIGTTOU,
-        'URG': signal.SIGURG,
-        'USR1': signal.SIGUSR1,
-        'USR2': signal.SIGUSR2,
-        'VTALRM': signal.SIGVTALRM,
-        'WINCH': signal.SIGWINCH,
-        'XCPU': signal.SIGXCPU,
-        'XFSZ': signal.SIGXFSZ,
-    }
-except:
-    _signals = {}
-
-
 def kill_pid(pid, sig_name='TERM'):
+    sig = getattr(signal, sig_name, None) or getattr(signal, 'SIG' + sig_name)
     try:
-        psutil.Process(pid).send_signal(_signals[sig_name])
+        psutil.Process(pid).send_signal(sig)
         return True
     except psutil.NoSuchProcess:
         return True
@@ -159,7 +120,7 @@ def pids_of(proc_name):
     return pids
 
 
-def find_files(dirname, pattern=None, ext=None):
+def find_files(dirname, pattern=None, ext=None, deep=True):
     if not pattern and ext:
         if isinstance(ext, (list, tuple)):
             ext = '|'.join(ext)
@@ -171,7 +132,7 @@ def find_files(dirname, pattern=None, ext=None):
 
         path = os.path.join(dirname, fname)
 
-        if os.path.isdir(path):
+        if os.path.isdir(path) and deep:
             yield from find_files(path, pattern)
             continue
 
@@ -193,29 +154,25 @@ def parse_path(path):
     return d
 
 
-def abs_path(path, basedir):
-    """Absolutize a relative path with respect to a base dir."""
+def abs_path(path, base):
+    """Absolutize a relative path with respect to a base directory or file path"""
 
-    p = path.strip('/')
+    if os.path.isabs(path):
+        return path
 
-    if p.startswith('.') or '/.' in p:
-        return None
+    if is_file(base):
+        base = os.path.dirname(base)
 
-    p = os.path.abspath(os.path.join(basedir, p))
-
-    if not p.startswith(basedir):
-        return None
-
-    return p
+    return os.path.abspath(os.path.join(base, path))
 
 
-def rel_path(path, basedir):
-    """Relativize an absolute path with respect to a base dir."""
+def rel_path(path, base):
+    """Relativize an absolute path with respect to a base directory or file path"""
 
-    if not path.startswith(basedir):
-        return None
+    if is_file(base):
+        base = os.path.dirname(base)
 
-    return os.path.relpath(path, basedir)
+    return os.path.relpath(path, base)
 
 
 def chown(path, user=None, group=None):

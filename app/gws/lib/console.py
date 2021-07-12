@@ -1,8 +1,9 @@
+import math
 import sys
 import time
-import math
 
 import gws
+import gws.types as t
 
 
 class ProgressIndicator:

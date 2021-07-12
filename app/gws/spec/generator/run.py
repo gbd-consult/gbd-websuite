@@ -1,37 +1,62 @@
-import sys
+"""Spec generator CLI tool
+
+This tool is supposed to be invoked on the _host_ (developer) system
+to generate developer specs (python stubs, typescript interfaces etc)
+"""
+
 import os
-import re
+import sys
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/..'))
+
+__package__ = 'generator'
+
+from . import base, main
 
 
-# def inject_version(version, path):
-#     with open(path) as fp:
-#         t = fp.read()
-#     t = re.sub(r'VERSION\s*=\s*.+', 'VERSION=%r' % version, t)
-#     with open(path, 'w') as fp:
-#         fp.write(t)
-#
-#
-# if __name__ == '__main__':
-#
-#     cdir = os.path.dirname(__file__)
-#     base = os.path.abspath(cdir + '/..')
-#
-#     with open(cdir + '/../VERSION') as fp:
-#         VERSION = fp.read().strip()
-#
-#     paths = [
-#         base + '/app/gws/core/const.py',
-#         base + '/client/src/version.js',
-#     ]
-#
-#     for path in paths:
-#         inject_version(VERSION, path)
-#
-#     source_dir = os.path.abspath(base + '/app/gws')
-#     out_dir = os.path.abspath(base + '/app/spec/gen')
-#     os.makedirs(out_dir, exist_ok=True)
-#
-#     sys.path.append(cdir)
-#     import impl.main
-#
-#     impl.main.run(source_dir, out_dir, VERSION)
+def parse_args(argv):
+    args = []
+    kwargs = {}
+    key = None
+
+    for a in argv:
+        if a.startswith('--'):
+            key = a[2:]
+            kwargs[key] = True
+        elif a.startswith('-'):
+            key = a[1:]
+            kwargs[key] = True
+        elif key:
+            kwargs[key] = a
+            key = None
+        else:
+            args.append(a)
+
+    return args, base.Data(**kwargs)
+
+
+_COMMANDS = ('server', 'dev')
+
+if __name__ == '__main__':
+    args, opts = parse_args(sys.argv[1:])
+
+    cmd = args[0] if args else 'dev'
+    if cmd not in _COMMANDS:
+        print(f'invalid command, expected {_COMMANDS!r}')
+        sys.exit(1)
+
+    try:
+        if cmd == 'dev':
+            main.generate_for_development(opts)
+        if cmd == 'server':
+            main.generate_for_server(opts)
+    except base.Error as e:
+        print('-' * 40)
+        print('SPEC GENERATOR ERROR:', e.args[0])
+        print('-' * 40)
+        raise
+    except Exception as e:
+        print('-' * 40)
+        print('UNHANDLED SPEC GENERATOR ERROR:', repr(e))
+        print('-' * 40)
+        raise

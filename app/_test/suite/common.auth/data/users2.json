@@ -1,9 +1,0 @@
-[
-    {
-        "login": "basic-login",
-        "password": "$sha512$DAoCWW8T$7RHQY02aWZZFnT53ebCqgrrFUdbHxplswTdGN29bUbv9AVuqmFZO51gBSKL8IxvmHspph22qjckGhYOQfTOOmw==",
-        "roles": [
-            "testrole"
-        ]
-    }
-]

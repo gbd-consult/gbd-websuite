@@ -1,10 +1,10 @@
 import importlib
 
 import gws
-import gws.config
-import gws.lib.json2
-
 import gws.types as t
+import gws.config
+import gws.base.auth
+import gws.lib.json2
 
 from . import storage
 
@@ -26,10 +26,11 @@ class PrematureTermination(Exception):
     pass
 
 
-def create(uid, user: t.IUser, worker: str, project_uid=None, args=None):
+def create(uid, user: gws.IUser, worker: str, project_uid=None, args=None):
     if user:
         fid = user.fid
-        str_user = gws.config.root().application.auth.serialize_user(user)
+        auth = t.cast(gws.base.auth.Manager, gws.config.root().application.auth)
+        str_user = auth.serialize_user(user)
     else:
         fid = str_user = ''
     gws.log.debug('creating job', worker, fid)
@@ -94,9 +95,13 @@ class Job:
         self.result = gws.lib.json2.from_string(self.result)
 
     @property
-    def user(self) -> t.Optional[t.IUser]:
+    def user(self) -> gws.IUser:
+        auth = t.cast(gws.base.auth.Manager, gws.config.root().application.auth)
         if self.str_user:
-            return gws.config.root().application.auth.unserialize_user(self.str_user)
+            user = auth.unserialize_user(self.str_user)
+            if user:
+                return user
+        return auth.guest_user
 
     @property
     def progress(self) -> int:
@@ -111,7 +116,7 @@ class Job:
             gws.log.error(f'job={self.uid!r} invalid state for run={self.state!r}')
             return
 
-        mod_name, _, fn_name = self.worker.rpartition('.')
+        mod_name, _, fn_name = self.worker.rsplit('.', 1)
         mod = importlib.import_module(mod_name)
         fn = getattr(mod, fn_name)
 

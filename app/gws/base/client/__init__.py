@@ -2,7 +2,7 @@ import gws
 import gws.types as t
 
 
-class ElementConfig(t.WithAccess):
+class ElementConfig(gws.WithAccess):
     """GWS client UI element configuration"""
 
     tag: str  #: element tag
@@ -10,7 +10,7 @@ class ElementConfig(t.WithAccess):
     after: str = ''  #: insert after this tag
 
 
-class Config(t.WithAccess):
+class Config(gws.WithAccess):
     """GWS client configuration"""
 
     options: t.Optional[dict]  #: client options
@@ -19,16 +19,16 @@ class Config(t.WithAccess):
     removeElements: t.Optional[t.List[ElementConfig]]  #: remove elements from the parent element list
 
 
-class ElementProps(t.Data):
+class ElementProps(gws.Data):
     tag: str
 
 
-class Props(t.Data):
+class Props(gws.Data):
     options: t.Optional[dict]
     elements: t.Optional[t.List[ElementProps]]
 
 
-class Element(gws.Object):
+class Element(gws.Node):
     @property
     def props(self):
         return ElementProps({
@@ -36,11 +36,14 @@ class Element(gws.Object):
         })
 
 
-#:export IClient
-class Object(gws.Object, t.IClient):
-    def configure(self):
-        super().configure()
+class Object(gws.Node):
+    options: dict
 
+    @property
+    def props(self):
+        return Props(options=self.options or {}, elements=self.children)
+
+    def configure(self):
         parent_client = self.var('parentClient')
 
         for c in self._get_elements(parent_client):
@@ -81,10 +84,6 @@ class Object(gws.Object, t.IClient):
         remove = self.var('removeElements', default=[])
         remove_tags = [c.tag for c in remove]
         return [e for e in elements if e.tag not in remove_tags]
-
-    @property
-    def props(self):
-        return Props(options=self.options or {}, elements=self.children)
 
 
 def _find_element(elements, tag):

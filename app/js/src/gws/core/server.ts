@@ -77,7 +77,7 @@ class QueuedRequest {
 
 const MSGPACK_MIME = 'application/msgpack';
 
-export class Server extends api.GwsServer {
+export class Server extends api.BaseServer {
     url: string;
     whenChanged: () => void;
     commandCount = 0;

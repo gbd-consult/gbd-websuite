@@ -5,31 +5,32 @@ import os
 import yaml
 
 import gws
-import gws.core.spec
-import gws.lib.misc
-import gws.lib.os2
 import gws.lib.json2
+import gws.lib.os2
 import gws.lib.vendor.chartreux as chartreux
 import gws.lib.vendor.slon as slon
-
-import gws.types as t
-
-from . import error, spec
+import gws.spec.runtime
+from . import error
 
 config_path_pattern = r'\bconfig\.(py|json|yaml|cx)$'
 config_function_name = 'config'
 
 
-def parse(dct, type_name, source_path=''):
+def parse(specs: gws.spec.runtime.Object, value, type_name, source_path=''):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
-        return spec.validator().read_value(dct, type_name, source_path)
-    except gws.core.spec.Error as e:
-        raise error.ParseError(*e.args)
+        return specs.read_value(value, type_name, source_path, strict=True, with_error_details=True)
+    except gws.spec.runtime.Error as e:
+        code, msg, _, details = e.args
+        raise error.ParseError(
+            code + ': ' + msg,
+            details.get('path'),
+            details.get('formatted_value'),
+            details.get('formatted_stack'))
 
 
-def parse_main(path):
+def parse_main(specs: gws.spec.runtime.Object, path):
     """Read and parse the main config file"""
 
     dct, cfg_paths = _read(path)
@@ -41,7 +42,7 @@ def parse_main(path):
             prj_configs.append([pc, path])
 
     gws.log.info('parsing main configuration...')
-    app = parse(dct, 'gws.base.application.Config', path)
+    app = parse(specs, dct, 'gws.base.application.Config', path)
 
     app.configPaths = cfg_paths
     app.projectPaths = app.projectPaths or []
@@ -62,7 +63,7 @@ def parse_main(path):
     for pc, prj_path in prj_configs:
         uid = pc.get('uid') or pc.get('title') or '???'
         gws.log.info(f'parsing project {uid!r}...')
-        app.projects.append(parse(pc, 'gws.base.project.Config', prj_path))
+        app.projects.append(parse(specs, pc, 'gws.base.project.Config', prj_path))
 
     return app
 
@@ -84,7 +85,7 @@ def _read(path):
 def _read2(path):
     if path.endswith('.py'):
         mod_name = 'gws.cfg.' + gws.as_uid(path)
-        mod = gws.lib.misc.load_source(path, mod_name)
+        mod = gws.import_from_path(path, mod_name)
         fn = getattr(mod, config_function_name)
         dct = fn()
         if not isinstance(dct, dict):
@@ -180,7 +181,7 @@ def _as_dict(val):
         return [_as_dict(x) for x in val]
     if isinstance(val, tuple):
         return tuple(_as_dict(x) for x in val)
-    if isinstance(val, t.Data):
+    if isinstance(val, gws.Data):
         val = vars(val)
     if isinstance(val, dict):
         return {k: _as_dict(v) for k, v in val.items()}

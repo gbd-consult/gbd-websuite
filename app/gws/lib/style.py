@@ -1,166 +1,197 @@
-import re
 import base64
+import re
 
 import gws
+import gws.types as t
 import gws.lib.net
 
-import gws.types as t
+
+class Type(t.Enum):
+    css = 'css'
+    cssSelector = 'cssSelector'
 
 
-#:export
-class StyleStrokeLineCap(t.Enum):
-    butt = 'butt'
-    round = 'round'
-    square = 'square'
+class Values(gws.Data):
+    fill: gws.Color
+
+    stroke: gws.Color
+    stroke_dasharray: t.List[int]
+    stroke_dashoffset: int
+    stroke_linecap: t.Literal['butt', 'round', 'square']
+    stroke_linejoin: t.Literal['bevel', 'round', 'miter']
+    stroke_miterlimit: int
+    stroke_width: int
+
+    marker: t.Literal['circle', 'square', 'arrow', 'cross']
+    marker_fill: gws.Color
+    marker_size: int
+    marker_stroke: gws.Color
+    marker_stroke_dasharray: t.List[int]
+    marker_stroke_dashoffset: int
+    marker_stroke_linecap: t.Literal['butt', 'round', 'square']
+    marker_stroke_linejoin: t.Literal['bevel', 'round', 'miter']
+    marker_stroke_miterlimit: int
+    marker_stroke_width: int
+
+    with_geometry: t.Literal['all', 'none']
+    with_label: t.Literal['all', 'none']
+
+    label_align: t.Literal['left', 'right', 'center']
+    label_background: gws.Color
+    label_fill: gws.Color
+    label_font_family: str
+    label_font_size: int
+    label_font_style: t.Literal['normal', 'italic']
+    label_font_weight: t.Literal['normal', 'bold']
+    label_line_height: int
+    label_max_scale: int
+    label_min_scale: int
+    label_offset_x: int
+    label_offset_y: int
+    label_padding: t.List[int]
+    label_placement: t.Literal['start', 'end', 'middle']
+    label_stroke: gws.Color
+    label_stroke_dasharray: t.List[int]
+    label_stroke_dashoffset: int
+    label_stroke_linecap: t.Literal['butt', 'round', 'square']
+    label_stroke_linejoin: t.Literal['bevel', 'round', 'miter']
+    label_stroke_miterlimit: int
+    label_stroke_width: int
+
+    point_size: int
+    icon: str
+
+    offset_x: int
+    offset_y: int
 
 
-#:export
-class StyleStrokeLineJoin(t.Enum):
-    bevel = 'bevel'
-    round = 'round'
-    miter = 'miter'
+class Data(gws.StyleData):
+    name: str
+    type: Type
+    text: str
+    values: Values
 
 
-#:export
-class StyleMarker(t.Enum):
-    circle = 'circle'
-    square = 'square'
-    arrow = 'arrow'
-    cross = 'cross'
+class Config(gws.Config):
+    """Feature style"""
+
+    type: Type  #: style type
+    name: t.Optional[str]  #: style name
+    text: t.Optional[str]  #: raw style content
+    values: t.Optional[dict]  #: style values
 
 
-#:export
-class StyleLabelOption(t.Enum):
-    all = 'all'
-    none = 'none'
+class Props(gws.Props):
+    type: Type
+    values: dict
+    text: str = ''
+    name: str = ''
 
 
-#:export
-class StyleGeometryOption(t.Enum):
-    all = 'all'
-    none = 'none'
+class Object(gws.Node, gws.IStyle):
+    data: gws.StyleData
+
+    @property
+    def props(self):
+        d = t.cast(Data, self.data)
+        return gws.Props(
+            type=d.type,
+            values=vars(d.values),
+            text=d.text or '',
+            name=d.name or '')
 
 
-#:export
-class StyleLabelAlign(t.Enum):
-    left = 'left'
-    right = 'right'
-    center = 'center'
+def from_config(cfg: Config) -> Object:
+    return from_props(t.cast(gws.Props, cfg))
 
 
-#:export
-class StyleLabelPlacement(t.Enum):
-    start = 'start'
-    end = 'end'
-    middle = 'middle'
+def from_props(p: gws.Props) -> Object:
+    typ = p.get('type', 'css')
+    data = gws.StyleData(p, type=typ)
+
+    if typ == 'css':
+        val = p.get('values')
+        if val:
+            data.set('values', values_from_dict(gws.as_dict(val)))
+        else:
+            data.set('values', values_from_text(p.get('text')))
+
+    obj = Object()
+    obj.data = data
+    return obj
 
 
-#:export
-class StyleLabelFontStyle(t.Enum):
-    normal = 'normal'
-    italic = 'italic'
+def values_from_dict(d: dict) -> Values:
+    values = Values(_DEFAULT_VALUES)
+
+    for k, v in d.items():
+        if v is None:
+            continue
+        k = k.replace('-', '_')
+        if k.startswith('__'):
+            k = k[2:]
+        fn = gws.get(_Parser, k)
+        if fn:
+            v = fn(v)
+            if v is not None:
+                setattr(values, k, v)
+
+    return values
 
 
-#:export
-class StyleLabelFontWeight(t.Enum):
-    normal = 'normal'
-    bold = 'bold'
+# @TODO use a real parser
+def values_from_text(text) -> Values:
+    d = {}
+    for r in text.split(';'):
+        r = r.strip()
+        if not r:
+            continue
+        r = r.split(':')
+        d[r[0].strip()] = r[1].strip()
+    return values_from_dict(d)
 
 
-#:export
-class StyleValues(t.Data):
-    fill: t.Optional[t.Color]
-
-    stroke: t.Optional[t.Color]
-    stroke_dasharray: t.Optional[t.List[int]]
-    stroke_dashoffset: t.Optional[int]
-    stroke_linecap: t.Optional[StyleStrokeLineCap]
-    stroke_linejoin: t.Optional[StyleStrokeLineJoin]
-    stroke_miterlimit: t.Optional[int]
-    stroke_width: t.Optional[int]
-
-    marker: t.Optional[StyleMarker]
-    marker_fill: t.Optional[t.Color]
-    marker_size: t.Optional[int]
-    marker_stroke: t.Optional[t.Color]
-    marker_stroke_dasharray: t.Optional[t.List[int]]
-    marker_stroke_dashoffset: t.Optional[int]
-    marker_stroke_linecap: t.Optional[StyleStrokeLineCap]
-    marker_stroke_linejoin: t.Optional[StyleStrokeLineJoin]
-    marker_stroke_miterlimit: t.Optional[int]
-    marker_stroke_width: t.Optional[int]
-
-    with_geometry: t.Optional[StyleGeometryOption]
-    with_label: t.Optional[StyleLabelOption]
-
-    label_align: t.Optional[StyleLabelAlign]
-    label_background: t.Optional[t.Color]
-    label_fill: t.Optional[t.Color]
-    label_font_family: t.Optional[str]
-    label_font_size: t.Optional[int]
-    label_font_style: t.Optional[StyleLabelFontStyle]
-    label_font_weight: t.Optional[StyleLabelFontWeight]
-    label_line_height: t.Optional[int]
-    label_max_scale: t.Optional[int]
-    label_min_scale: t.Optional[int]
-    label_offset_x: t.Optional[int]
-    label_offset_y: t.Optional[int]
-    label_padding: t.Optional[t.List[int]]
-    label_placement: t.Optional[StyleLabelPlacement]
-    label_stroke: t.Optional[t.Color]
-    label_stroke_dasharray: t.Optional[t.List[int]]
-    label_stroke_dashoffset: t.Optional[int]
-    label_stroke_linecap: t.Optional[StyleStrokeLineCap]
-    label_stroke_linejoin: t.Optional[StyleStrokeLineJoin]
-    label_stroke_miterlimit: t.Optional[int]
-    label_stroke_width: t.Optional[int]
-
-    point_size: t.Optional[int]
-    icon: t.Optional[str]
-
-    offset_x: t.Optional[int]
-    offset_y: t.Optional[int]
+def parse_icon(val):
+    return _icon(val)
 
 
-##
-
-_DEFAULT_VALUES = dict(
+_DEFAULT_VALUES = gws.Data(
     fill=None,
 
     stroke=None,
     stroke_dasharray=[],
     stroke_dashoffset=0,
-    stroke_linecap=StyleStrokeLineCap.butt,
-    stroke_linejoin=StyleStrokeLineJoin.miter,
+    stroke_linecap='butt',
+    stroke_linejoin='miter',
     stroke_miterlimit=0,
     stroke_width=0,
 
     marker_size=0,
     marker_stroke_dasharray=[],
     marker_stroke_dashoffset=0,
-    marker_stroke_linecap=StyleStrokeLineCap.butt,
-    marker_stroke_linejoin=StyleStrokeLineJoin.miter,
+    marker_stroke_linecap='butt',
+    marker_stroke_linejoin='miter',
     marker_stroke_miterlimit=0,
     marker_stroke_width=0,
 
-    with_geometry=StyleGeometryOption.all,
-    with_label=StyleLabelOption.all,
+    with_geometry='all',
+    with_label='all',
 
-    label_align=StyleLabelAlign.center,
+    label_align='center',
     label_font_family='sans-serif',
     label_font_size=12,
-    label_font_style=StyleLabelFontStyle.normal,
-    label_font_weight=StyleLabelFontWeight.normal,
+    label_font_style='normal',
+    label_font_weight='normal',
     label_line_height=1,
     label_max_scale=1000000000,
     label_min_scale=0,
     label_offset_x=0,
     label_offset_y=0,
-    label_placement=StyleLabelPlacement.middle,
+    label_placement='middle',
     label_stroke_dasharray=[],
     label_stroke_dashoffset=0,
-    label_stroke_linecap=StyleStrokeLineCap.butt,
-    label_stroke_linejoin=StyleStrokeLineJoin.miter,
+    label_stroke_linecap='butt',
+    label_stroke_linejoin='miter',
     label_stroke_miterlimit=0,
     label_stroke_width=0,
 
@@ -170,8 +201,6 @@ _DEFAULT_VALUES = dict(
     offset_x=0,
     offset_y=0,
 )
-
-##
 
 _color_patterns = (
     r'^#[0-9a-fA-F]{3}$',
@@ -266,52 +295,50 @@ def _str(val):
     return val or None
 
 
-##
-
 class _Parser:
     fill = _color
 
     stroke = _color
     stroke_dasharray = _intlist
     stroke_dashoffset = _px
-    stroke_linecap = _enum(StyleStrokeLineCap)
-    stroke_linejoin = _enum(StyleStrokeLineJoin)
+    stroke_linecap = _enum('stroke_linecap')
+    stroke_linejoin = _enum('stroke_linejoin')
     stroke_miterlimit = _px
     stroke_width = _px
 
-    marker = _enum(StyleMarker)
+    marker = _enum('marker')
     marker_fill = _color
     marker_size = _px
     marker_stroke = _color
     marker_stroke_dasharray = _intlist
     marker_stroke_dashoffset = _px
-    marker_stroke_linecap = _enum(StyleStrokeLineCap)
-    marker_stroke_linejoin = _enum(StyleStrokeLineJoin)
+    marker_stroke_linecap = _enum('stroke_linecap')
+    marker_stroke_linejoin = _enum('stroke_linejoin')
     marker_stroke_miterlimit = _px
     marker_stroke_width = _px
 
-    with_geometry = _enum(StyleGeometryOption)
-    with_label = _enum(StyleLabelOption)
+    with_geometry = _enum('x')
+    with_label = _enum('x')
 
-    label_align = _enum(StyleLabelAlign)
+    label_align = _enum('x')
     label_background = _color
     label_fill = _color
     label_font_family = _str
     label_font_size = _px
-    label_font_style = _enum(StyleLabelFontStyle)
-    label_font_weight = _enum(StyleLabelFontWeight)
+    label_font_style = _enum('x')
+    label_font_weight = _enum('x')
     label_line_height = _int
     label_max_scale = _int
     label_min_scale = _int
     label_offset_x = _px
     label_offset_y = _px
     label_padding = _padding
-    label_placement = _enum(StyleLabelPlacement)
+    label_placement = _enum('x')
     label_stroke = _color
     label_stroke_dasharray = _intlist
     label_stroke_dashoffset = _px
-    label_stroke_linecap = _enum(StyleStrokeLineCap)
-    label_stroke_linejoin = _enum(StyleStrokeLineJoin)
+    label_stroke_linecap = _enum('x')
+    label_stroke_linejoin = _enum('x')
     label_stroke_miterlimit = _px
     label_stroke_width = _px
 
@@ -320,37 +347,3 @@ class _Parser:
 
     offset_x = _px
     offset_y = _px
-
-
-def from_css_dict(d: dict) -> t.StyleValues:
-    values = t.StyleValues(_DEFAULT_VALUES)
-
-    for k, v in d.items():
-        if v is None:
-            continue
-        k = k.replace('-', '_')
-        if k.startswith('__'):
-            k = k[2:]
-        fn = gws.get(_Parser, k)
-        if fn:
-            v = fn(v)
-            if v is not None:
-                setattr(values, k, v)
-
-    return values
-
-
-# @TODO use a real parser
-def from_css_text(text) -> t.StyleValues:
-    d = {}
-    for r in text.split(';'):
-        r = r.strip()
-        if not r:
-            continue
-        r = r.split(':')
-        d[r[0].strip()] = r[1].strip()
-    return from_css_dict(d)
-
-
-def parse_icon(val):
-    return _icon(val)

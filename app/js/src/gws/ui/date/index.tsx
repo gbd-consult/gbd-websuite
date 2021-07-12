@@ -1,12 +1,10 @@
 import * as React from 'react';
-import * as moment from 'moment';
 
 import * as base from '../base';
 import * as util from '../util';
 
 import {Touchable} from '../button';
-import {NumberInputBox} from '../number';
-import {Row, Cell} from '../layout';
+import {Cell, Row} from '../layout';
 
 
 // like en_US but with Monday=0

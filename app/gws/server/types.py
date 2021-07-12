@@ -2,7 +2,7 @@ import gws
 import gws.types as t
 
 
-class ModuleConfig(t.Config):
+class ModuleConfig(gws.Config):
     enabled: bool = True  #: the module is enabled
     threads: int = 0  #: number of threads for this module
     workers: int = 4  #: number of processes for this module
@@ -11,7 +11,7 @@ class ModuleConfig(t.Config):
 class SpoolConfig(ModuleConfig):
     """Spool server module"""
 
-    jobFrequency: t.Duration = 3  #: background jobs checking frequency
+    jobFrequency: gws.Duration = '3'  #: background jobs checking frequency
 
 
 class WebConfig(ModuleConfig):
@@ -27,10 +27,10 @@ class MapproxyConfig(ModuleConfig):
     port: int = 5000  #: port number
 
 
-class MonitorConfig(t.Config):
+class MonitorConfig(gws.Config):
     enabled: bool = True  #: the module is enabled
-    frequency: t.Duration = 30  #: filesystem changes check frequency
-    ignore: t.Optional[t.List[t.Regex]]  #: ignore paths that match these regexes
+    frequency: gws.Duration = '30'  #: filesystem changes check frequency
+    ignore: t.Optional[t.List[gws.Regex]]  #: ignore paths that match these regexes
 
 
 class QgisConfig(ModuleConfig):
@@ -44,20 +44,27 @@ class QgisConfig(ModuleConfig):
     serverLogLevel: int = 2  #: QGIS_SERVER_LOG_LEVEL (env. variable)
     serverCacheSize: int = 10000000  #: QGIS_SERVER_CACHE_SIZE (env. variable)
     maxCacheLayers: int = 4000  #: MAX_CACHE_LAYERS (env. variable)
-    searchPathsForSVG: t.Optional[t.List[t.DirPath]]  #: searchPathsForSVG (ini setting)
+    searchPathsForSVG: t.Optional[t.List[gws.DirPath]]  #: searchPathsForSVG (ini setting)
     legend: t.Optional[dict]  #: default legend settings
 
 
-class Config(t.Config):
+class LogConfig(gws.Config):
+    """Logging configuration"""
+
+    path: str = ''  #: log path
+    level: t.Literal['ERROR', 'INFO', 'DEBUG'] = 'INFO'  #: logging level
+
+
+class Config(gws.Config):
     """Server module configuation"""
 
+    mapproxy: MapproxyConfig = {}  # type: ignore #: bundled Mapproxy module
+    monitor: MonitorConfig = {}  # type: ignore #: monitor configuation
+    log: LogConfig = {}  # type: ignore #: logging configuation
+    qgis: QgisConfig = {}  # type: ignore #: bundled Qgis module
+    spool: SpoolConfig = {}  # type: ignore #: spool server module
+    web: WebConfig = {}  # type: ignore #: web server module
+
     autoRun: str = ''  #: shell command to run before server start
-    log: str = ''  #: log path
-    logLevel: gws.log.Level = 'INFO'  #: logging level
-    mapproxy: MapproxyConfig = {}  #: bundled Mapproxy module
-    monitor: MonitorConfig = {}  #: monitor configuation
-    qgis: QgisConfig = {}  #: bundled Qgis module
-    spool: SpoolConfig = {}  #: spool server module
-    timeout: t.Duration = 60  #: server timeout
-    timeZone: t.Optional[str] = 'UTC'  #: timezone for this server
-    web: WebConfig = {}  #: web server module
+    timeout: gws.Duration = '60'  #: server timeout
+    timeZone: str = 'UTC'  #: timezone for this server

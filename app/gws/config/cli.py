@@ -1,10 +1,12 @@
 from argh import arg
+
 import gws
+import gws.types as t
 import gws.config
 import gws.config.loader
+import gws.lib.mpx.config
 import gws.lib.clihelpers
 import gws.lib.json2
-import gws.gis.mpx.config
 
 COMMAND = 'config'
 
@@ -14,8 +16,8 @@ def test(path=None):
     """Run a configuration file test"""
 
     root = gws.config.loader.parse_and_activate(path)
-    if root.var('server.mapproxy.enabled'):
-        gws.gis.mpx.config.create_and_save(root, '/tmp/mapproxy-check')
+    if root.application.var('server.mapproxy.enabled'):
+        gws.lib.mpx.config.create_and_save(root, '/tmp/mapproxy-check')
     gws.log.info('CONFIGURATION OK')
 
 

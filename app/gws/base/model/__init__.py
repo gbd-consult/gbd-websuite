@@ -1,77 +1,98 @@
-import datetime
 import re
 
 import gws
+import gws.types as t
 import gws.lib.misc
 
-import gws.types as t
+_DEFAULT_EDITOR = {
+    gws.AttributeType.bool: 'checkbox',
+    gws.AttributeType.bytes: 'file',
+    gws.AttributeType.date: 'date',
+    gws.AttributeType.datetime: 'datetime',
+    gws.AttributeType.float: 'float',
+    gws.AttributeType.geometry: '',
+    gws.AttributeType.int: 'int',
+    gws.AttributeType.intlist: 'list',
+    gws.AttributeType.str: 'str',
+    gws.AttributeType.text: 'text',
+    gws.AttributeType.time: 'time',
+}
 
-_default_editor = {
-    t.AttributeType.bool: 'checkbox',
-    t.AttributeType.bytes: 'file',
-    t.AttributeType.date: 'date',
-    t.AttributeType.datetime: 'datetime',
-    t.AttributeType.float: 'float',
-    t.AttributeType.geometry: '',
-    t.AttributeType.int: 'int',
-    t.AttributeType.intlist: 'list',
-    t.AttributeType.str: 'str',
-    t.AttributeType.text: 'text',
-    t.AttributeType.time: 'time',
+_XML_SCHEMA_TYPES = {
+    gws.AttributeType.bool: 'xsd:boolean',
+    gws.AttributeType.bytes: None,
+    gws.AttributeType.date: 'xsd:date',
+    gws.AttributeType.datetime: 'datetime',
+    gws.AttributeType.float: 'xsd:decimal',
+    gws.AttributeType.geometry: None,
+    gws.AttributeType.int: 'xsd:integer',
+    gws.AttributeType.str: 'xsd:string',
+    gws.AttributeType.text: 'xsd:string',
+    gws.AttributeType.time: 'xsd:time',
+    gws.GeometryType.curve: 'gml:CurvePropertyType',
+    gws.GeometryType.geomcollection: 'gml:MultiGeometryPropertyType',
+    gws.GeometryType.geometry: 'gml:MultiGeometryPropertyType',
+    gws.GeometryType.linestring: 'gml:CurvePropertyType',
+    gws.GeometryType.multicurve: 'gml:MultiCurvePropertyType',
+    gws.GeometryType.multilinestring: 'gml:MultiCurvePropertyType',
+    gws.GeometryType.multipoint: 'gml:MultiPointPropertyType',
+    gws.GeometryType.multipolygon: 'gml:MultiSurfacePropertyType',
+    gws.GeometryType.multisurface: 'gml:MultiGeometryPropertyType',
+    gws.GeometryType.point: 'gml:PointPropertyType',
+    gws.GeometryType.polygon: 'gml:PolygonPropertyType',
+    gws.GeometryType.polyhedralsurface: 'gml:SurfacePropertyType',
+    gws.GeometryType.surface: 'gml:SurfacePropertyType',
 }
 
 
-class AttributeValidator(t.Data):
+class AttributeValidator(gws.Data):
     type: str
     message: str
     min: t.Optional[float]
     max: t.Optional[float]
     attribute: t.Optional[str]
-    pattern: t.Optional[t.Regex]
+    pattern: t.Optional[gws.Regex]
 
 
-#:export
-class AttributeValidationFailure(t.Data):
+class AttributeValidationFailure(gws.Data):
     name: str
     message: str
 
 
-#:export
-class AttributeEditor(t.Data):
+class AttributeEditor(gws.Data):
     type: str
     accept: t.Optional[str]
     items: t.Optional[t.Any]
     max: t.Optional[float]
     min: t.Optional[float]
     multiple: t.Optional[bool]
-    pattern: t.Optional[t.Regex]
+    pattern: t.Optional[gws.Regex]
 
 
-#:export
-class ModelRule(t.Data):
+class Rule(gws.Data):
     """Attribute conversion rule"""
 
     editable: bool = True  #: attribute is editable
     editor: t.Optional[AttributeEditor]
     validators: t.Optional[t.List[AttributeValidator]]
     expression: str = ''  #: attribute conversion expression
-    format: t.FormatStr = ''  #: attribute formatter
+    format: gws.FormatStr = ''  #: attribute formatter
     name: str = ''  #: target attribute name
     source: str = ''  #: source attribute name
     title: str = ''  #: target attribute title
-    type: t.AttributeType = 'str'  #: target attribute type
+    type: gws.AttributeType = gws.AttributeType.str  #: target attribute type
     value: t.Optional[str]  #: constant value
 
 
-class Config(t.Config):
+class Config(gws.Config):
     """Data model"""
 
-    crs: t.Optional[t.Crs]  #: CRS for this model
-    geometryType: t.Optional[t.GeometryType]  #: specific geometry type
-    rules: t.List[ModelRule]  #: attribute conversion rules
+    crs: t.Optional[gws.Crs]  #: CRS for this model
+    geometryType: t.Optional[gws.GeometryType]  #: specific geometry type
+    rules: t.List[Rule]  #: attribute conversion rules
 
 
-class ModelRuleProps(t.Props):
+class RuleProps(gws.Props):
     editable: bool
     editor: AttributeEditor
     name: str
@@ -79,27 +100,25 @@ class ModelRuleProps(t.Props):
     type: str
 
 
-class ModelProps(t.Props):
+class Props(gws.Props):
     geometryType: str
     crs: str
-    rules: t.List[ModelRuleProps]
+    rules: t.List[RuleProps]
 
 
-#:export IModel
-class Object(gws.Object, t.IModel):
+class Object(gws.Node, gws.IDataModel):
     def configure(self):
-        super().configure()
 
         p = self.var('rules', default=[])
-        self.rules: t.List[t.ModelRule] = [self._configure_rule(r) for r in p]
-        self.geometry_type: t.GeometryType = self.var('geometryType')
-        self.geometry_crs: t.Crs = self.var('crs')
+        self.rules: t.List[Rule] = [self._configure_rule(r) for r in p]
+        self.geometry_type: gws.GeometryType = self.var('geometryType')
+        self.geometry_crs: gws.Crs = self.var('crs')
 
     @property
     def props(self):
-        return ModelProps(
+        return gws.Props(
             rules=[
-                ModelRuleProps(
+                gws.Props(
                     name=r.name,
                     editable=r.editable,
                     editor=r.editor,
@@ -111,31 +130,9 @@ class Object(gws.Object, t.IModel):
             crs=self.geometry_crs,
         )
 
-    def apply(self, attributes: t.List[t.Attribute]) -> t.List[t.Attribute]:
-        attr_values = {a.name: a.value for a in attributes}
-        return self.apply_to_dict(attr_values)
-
-    def apply_to_dict(self, attr_values: dict) -> t.List[t.Attribute]:
-        return [t.Attribute(
-            title=r.title,
-            name=r.name,
-            value=self._apply_rule(r, attr_values),
-            type=r.type,
-            editable=r.editable,
-        ) for r in self.rules]
-
-    def validate(self, attributes: t.List[t.Attribute]) -> t.List[AttributeValidationFailure]:
-        attr_values = {a.name: a.value for a in attributes}
-        errors = []
-        for r in self.rules:
-            err = self._validate_rule(r, attr_values)
-            if err:
-                errors.append(err)
-        return errors
-
     @property
     def attribute_names(self) -> t.List[str]:
-        """List of attributes used by the model."""
+        """t.List of attributes used by the model."""
         names = set()
         for r in self.rules:
             if r.get('value'):
@@ -149,7 +146,42 @@ class Object(gws.Object, t.IModel):
             names.add(r.name)
         return sorted(names)
 
-    def _apply_rule(self, rule: t.ModelRule, attr_values: dict):
+    def xml_schema(self, geometry_name='geometry') -> dict:
+        schema = {}
+        for rule in self.rules:
+            typ = _XML_SCHEMA_TYPES.get(rule.type)
+            if typ:
+                schema[rule.name] = typ
+
+        typ = _XML_SCHEMA_TYPES.get(self.geometry_type)
+        if typ:
+            schema[geometry_name] = typ
+
+        return schema
+
+    def apply(self, attributes: t.List[gws.Attribute]) -> t.List[gws.Attribute]:
+        attr_values = {a.name: a.value for a in attributes}
+        return self.apply_to_dict(attr_values)
+
+    def apply_to_dict(self, attr_values: dict) -> t.List[gws.Attribute]:
+        return [gws.Attribute(
+            title=r.title,
+            name=r.name,
+            value=self._apply_rule(r, attr_values),
+            type=r.type,
+            editable=r.editable,
+        ) for r in self.rules]
+
+    def validate(self, attributes: t.List[gws.Attribute]) -> t.List[AttributeValidationFailure]:
+        attr_values = {a.name: a.value for a in attributes}
+        errors = []
+        for r in self.rules:
+            err = self._validate_rule(r, attr_values)
+            if err:
+                errors.append(err)
+        return errors
+
+    def _apply_rule(self, rule: Rule, attr_values: dict):
         s = rule.get('value')
         if s is not None:
             return s
@@ -167,11 +199,13 @@ class Object(gws.Object, t.IModel):
         # no value/source/format present - return values[name]
         return attr_values.get(rule.name, '')
 
-    def _validate_rule(self, rule: t.ModelRule, attr_values: dict) -> t.Optional[AttributeValidationFailure]:
+    def _validate_rule(self, rule: Rule, attr_values: dict) -> t.Optional[AttributeValidationFailure]:
         v = attr_values.get(rule.name)
-        for val in rule.validators:
-            if not self._validate(val, v, attr_values):
-                return AttributeValidationFailure(name=rule.name, message=val.message)
+        if rule.validators:
+            for val in rule.validators:
+                if not self._validate(val, v, attr_values):
+                    return AttributeValidationFailure(name=rule.name, message=val.message)
+        return None
 
     def _validate(self, validator: AttributeValidator, value, attr_values) -> bool:
         if validator.type == 'required':
@@ -179,28 +213,28 @@ class Object(gws.Object, t.IModel):
 
         if validator.type == 'length':
             s = gws.as_str(value).strip()
-            return validator.min <= len(s) <= validator.max
+            return t.cast(float, validator.min) <= len(s) <= t.cast(float, validator.max)
 
         if validator.type == 'regex':
             s = gws.as_str(value).strip()
-            return bool(re.search(validator.pattern, s))
+            return bool(re.search(t.cast(str, validator.pattern), s))
 
         if validator.type == 'greaterThan':
-            other = attr_values.get(validator.attribute)
+            other = attr_values.get(t.cast(str, validator.attribute))
             try:
                 return value > other
             except TypeError:
                 return False
 
         if validator.type == 'lessThan':
-            other = attr_values.get(validator.attribute)
+            other = attr_values.get(t.cast(str, validator.attribute))
             try:
                 return value < other
             except TypeError:
                 return False
 
     def _configure_rule(self, r):
-        rule = t.ModelRule(r)
+        rule = Rule(r)
 
         name = rule.get('name')
         title = rule.get('title')
@@ -214,10 +248,10 @@ class Object(gws.Object, t.IModel):
         rule.name = name
         rule.title = title or name
 
-        rule.type = rule.get('type') or t.AttributeType.str
+        rule.type = rule.get('type') or gws.AttributeType.str
 
         if not rule.editor:
-            rule.editor = AttributeEditor(type=_default_editor.get(rule.type, 'str'))
+            rule.editor = AttributeEditor(type=_DEFAULT_EDITOR.get(rule.type, 'str'))
 
         rule.validators = r.get('validators') or []
 

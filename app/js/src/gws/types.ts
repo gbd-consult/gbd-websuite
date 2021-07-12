@@ -20,7 +20,7 @@ export interface IStoreWrapper {
     wrap(element);
 }
 
-interface IServer extends api.GwsServerApi {
+interface IServer extends api.Api {
     queueLoad(layerUid: string, url: string, responseType: string): Promise<any>;
     dequeueLoad(layerUid: string);
     requestCount: number;
@@ -207,7 +207,7 @@ export interface IStyle {
     source: string;
     olFunction: ol.StyleFunction;
     apply(geom: ol.geom.Geometry, label: string, resolution: number): Array<ol.style.Style>;
-    update(values: api.StyleValues);
+    update(values: Dict);
 }
 
 export interface IMapDrawInteractionOptions {

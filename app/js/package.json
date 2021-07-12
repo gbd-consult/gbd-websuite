@@ -4,8 +4,8 @@
     "main": "index.js",
     "scripts": {
         "dev-server": "node helpers/index.js dev-server",
-        "dev": "node helpers/index.js dev-bundle",
-        "production": "node helpers/index.js bundle"
+        "dev": "node helpers/index.js dev",
+        "production": "node helpers/index.js production"
     },
     "author": "gbd-consult.de",
     "license": "Apache License",

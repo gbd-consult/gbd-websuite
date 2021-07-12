@@ -1,84 +1,57 @@
 import io
 
 import gws
-import gws.base.metadata
-import gws.base.metadata.inspire
+import gws.types as t
 import gws.base.model
 import gws.base.search.runner
 import gws.base.template
-import gws.gis.bounds
-import gws.gis.extent
-import gws.gis.render
-import gws.gis.renderview
-import gws.gis.gml
-import gws.gis.proj
-import gws.lib.units as units
-import gws.lib.xml2
+import gws.base.web.error
 import gws.lib.date
+import gws.lib.bounds
+import gws.lib.extent
+import gws.lib.gml
+import gws.lib.img
+import gws.lib.proj
+import gws.lib.render
+import gws.lib.metadata
 import gws.lib.mime
 import gws.lib.misc
-import gws.web.error
-import gws.ext.helper.xml
+import gws.lib.units as units
+import gws.lib.xml2
+import gws.lib.xml2.helper
 
-import gws.types as t
-
-_XML_SCHEMA_TYPES = {
-    t.AttributeType.bool: 'xsd:boolean',
-    t.AttributeType.bytes: None,
-    t.AttributeType.date: 'xsd:date',
-    t.AttributeType.datetime: 'datetime',
-    t.AttributeType.float: 'xsd:decimal',
-    t.AttributeType.geometry: None,
-    t.AttributeType.int: 'xsd:integer',
-    t.AttributeType.str: 'xsd:string',
-    t.AttributeType.text: 'xsd:string',
-    t.AttributeType.time: 'xsd:time',
-    t.GeometryType.curve: 'gml:CurvePropertyType',
-    t.GeometryType.geomcollection: 'gml:MultiGeometryPropertyType',
-    t.GeometryType.geometry: 'gml:MultiGeometryPropertyType',
-    t.GeometryType.linestring: 'gml:CurvePropertyType',
-    t.GeometryType.multicurve: 'gml:MultiCurvePropertyType',
-    t.GeometryType.multilinestring: 'gml:MultiCurvePropertyType',
-    t.GeometryType.multipoint: 'gml:MultiPointPropertyType',
-    t.GeometryType.multipolygon: 'gml:MultiSurfacePropertyType',
-    t.GeometryType.multisurface: 'gml:MultiGeometryPropertyType',
-    t.GeometryType.point: 'gml:PointPropertyType',
-    t.GeometryType.polygon: 'gml:PolygonPropertyType',
-    t.GeometryType.polyhedralsurface: 'gml:SurfacePropertyType',
-    t.GeometryType.surface: 'gml:SurfacePropertyType',
-}
 
 _DEFAULT_FEATURE_NAME = 'feature'
 _DEFAULT_GEOMETRY_NAME = 'geometry'
 
 
-class Config(t.WithTypeAndAccess):
-    meta: t.Optional[gws.base.metadata.Config]  #: service metadata
+class Config(gws.WithAccess):
+    meta: t.Optional[gws.lib.metadata.Config]  #: service metadata
     root: str = ''  #: root layer uid
     name: str = ''  #: service name
-    supportedCrs: t.Optional[t.List[t.Crs]]  #: supported CRS for this service
-    templates: t.Optional[t.List[t.ext.template.Config]]  #: service XML templates
+    supportedCrs: t.Optional[t.List[gws.Crs]]  #: supported CRS for this service
+    templates: t.Optional[t.List[gws.ext.template.Config]]  #: service XML templates
     updateSequence: t.Optional[str]  #: service update sequence
     withInspireMeta: bool = False  #: use INSPIRE Metadata
     strictParams: bool = False  #: strict parameter parsing
     forceFeatureName: str = ''
 
 
-class Request(t.Data):
-    req: t.IRequest
-    project: t.IProject
-    service: t.IOwsService
-    xml: gws.lib.xml2.Element = None
+class Request(gws.Data):
+    req: gws.IWebRequest
+    project: gws.IProject
+    service: gws.IOwsService
+    xml: t.Optional[gws.lib.xml2.Element] = None
     xml_is_soap: bool = False
 
 
-class Projection(t.Data):
+class Projection(gws.Data):
     crs: str
-    proj: gws.gis.proj.Proj
-    extent: t.Extent
+    proj: gws.lib.proj.Proj
+    extent: gws.Extent
 
 
-class Name(t.Data):
+class Name(gws.Data):
     p: str  # plain name
     q: str  # qualified name
     ns: str  # namespace
@@ -87,24 +60,24 @@ class Name(t.Data):
     ns_schema_location: str  # namespace schema location
 
 
-class FeatureSchemaAttribute(t.Data):
+class FeatureSchemaAttribute(gws.Data):
     type: str
     name: Name
 
 
-class LayerCaps(t.Data):
-    layer: t.ILayer
+class LayerCaps(gws.Data):
+    layer: gws.ILayer
 
     has_legend: bool
     has_search: bool
-    meta: t.MetaData
+    meta: gws.IMeta
     title: str
 
     layer_name: Name
     feature_name: Name
 
-    extent: t.Extent
-    extent4326: t.Extent
+    extent: gws.Extent
+    extent4326: gws.Extent
     max_scale: int
     min_scale: int
     projections: t.List[Projection]
@@ -113,40 +86,39 @@ class LayerCaps(t.Data):
     feature_schema: t.List[FeatureSchemaAttribute]
 
 
-class FeatureCaps(t.Data):
-    feature: t.IFeature
-    shape_tag: t.Tag
+class FeatureCaps(gws.Data):
+    feature: gws.IFeature
+    shape_tag: gws.Tag
     name: Name
 
 
-class FeatureCollection(t.Data):
+class FeatureCollection(gws.Data):
     caps: t.List[FeatureCaps]
-    features: t.List[t.IFeature]
+    features: t.List[gws.IFeature]
     time_stamp: str
     num_matched: int
     num_returned: int
 
 
-#:export IOwsService
-class Object(gws.Object, t.IOwsService):
-    """OWS service interface."""
-
-    def configure(self):
-        super().configure()
-
-        self.type = ''
-        self.version = ''
-        self.meta: t.MetaData = t.MetaData()
-
-    def handle(self, req: t.IRequest) -> t.HttpResponse:
-        pass
-
-    def error_response(self, err: Exception) -> t.HttpResponse:
-        pass
-
-
-class Base(Object):
+class Object(gws.Node, gws.IOwsService):
     """Baseclass for OWS services."""
+
+    meta: gws.IMeta
+    name: str
+    service_type: str
+    supported_crs: t.List[gws.Crs]
+    supported_versions: t.List[str]
+    templates: gws.ITemplateBundle
+    version: str
+    with_inspire_meta: bool
+    with_strict_params: bool
+
+    xml_helper: gws.lib.xml2.helper.Object
+    project: t.Optional[gws.IProject]
+
+    root_layer_uid: str
+    update_sequence: str
+    force_feature_name: str
 
     @property
     def service_link(self):
@@ -169,44 +141,41 @@ class Base(Object):
     # Configuration
 
     def configure(self):
-        super().configure()
-
+        self.meta = self.configure_metadata()
         self.name = self.var('name') or self.default_name
-        self.supported_versions = []
+        self.supported_crs = self.var('supportedCrs', default=[])
 
-        self.xml_helper: gws.ext.helper.xml.Object = t.cast(
-            gws.ext.helper.xml.Object,
-            self.root.application.require_helper('xml'))
+        p = self.var('templates')
+        self.templates = t.cast(gws.base.template.Bundle, self.create_child(
+            gws.base.template.Bundle,
+            gws.Config(templates=p)))
 
-        self.project: t.Optional[t.IProject] = t.cast(t.IProject, self.get_closest('gws.base.project'))
+        self.with_inspire_meta = self.var('withInspireMeta')
+        self.with_strict_params = self.var('withStrictParams')
 
-        self.meta: t.MetaData = self.configure_metadata()
+        self.xml_helper = t.cast(
+            gws.lib.xml2.helper.Object,
+            self.root.application.helper('xml'))
+
+        self.project = t.cast(gws.IProject, self.get_closest('gws.base.project'))
 
         self.root_layer_uid = self.var('root')
-        self.supported_crs: t.List[t.Crs] = self.var('supportedCrs', default=[])
         self.update_sequence = self.var('updateSequence')
-        self.with_inspire_meta = self.var('withInspireMeta')
-        self.strict_params = self.var('strictParams')
         self.force_feature_name = self.var('forceFeatureName', default='')
 
-        self.templates: t.List[t.ITemplate] = gws.base.template.bundle(self, self.var('templates'), self.default_templates)
+    def configure_metadata(self) -> gws.IMeta:
+        meta = t.cast(gws.IMeta, self.create_child(gws.lib.metadata.Object, self.var('meta')))
+        meta.extend(self.project.meta if self.project else self.root.application.meta)
 
-    def configure_metadata(self):
-        meta = gws.base.metadata.from_config(self.var('meta'))
-        if self.project:
-            meta = gws.base.metadata.extend(meta, self.project.meta)
-        else:
-            meta = gws.base.metadata.extend(meta, self.root.application.meta)
+        if not meta.data.get('links') and self.service_link:
+            meta.data.set('links', [self.service_link])
 
-        if not meta.links and self.service_link:
-            meta.links = [self.service_link]
-
-        meta = gws.extend(meta, self.default_metadata)
+        meta.extend(self.default_metadata)
         return meta
 
     # Request handling
 
-    def handle(self, req) -> t.HttpResponse:
+    def handle_request(self, req: gws.IWebRequest) -> gws.ContentResponse:
         # services can be configured globally (in which case, self.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (self.project != None)
@@ -218,7 +187,7 @@ class Base(Object):
             project = req.require_project(p)
             if self.project and project != self.project:
                 gws.log.debug(f'service={self.uid!r}: wrong project={p!r}')
-                raise gws.web.error.NotFound('Project not found')
+                raise gws.base.web.error.NotFound('Project not found')
         elif self.project:
             # for in-project services, ensure the user can access the project
             project = req.require_project(self.project.uid)
@@ -231,7 +200,7 @@ class Base(Object):
         h = getattr(self, 'handle_' + request_param.lower(), None)
         if not h:
             gws.log.debug(f'service={self.uid!r}: request={request_param!r} not found')
-            raise gws.web.error.BadRequest('Invalid REQUEST parameter')
+            raise gws.base.web.error.BadRequest('Invalid REQUEST parameter')
         return h(rd)
 
     def request_version(self, rd: Request) -> str:
@@ -245,7 +214,7 @@ class Base(Object):
             # the first supported version is the default
             return self.supported_versions[0]
 
-        raise gws.web.error.BadRequest('Unsupported service version')
+        raise gws.base.web.error.BadRequest('Unsupported service version')
 
     # Rendering and responses
 
@@ -256,18 +225,18 @@ class Base(Object):
 
     def template_response(self, rd: Request, ows_request: str, ows_format: str = None, context=None):
         out = self.render_template(rd, ows_request, ows_format, context)
-        return t.HttpResponse(content=out.content, mime=out.mime)
+        return gws.ContentResponse(content=out.content, mime=out.mime)
 
     def render_template(self, rd: Request, ows_request: str, ows_format: str = None, context=None, format=None):
         mime = gws.lib.mime.get(ows_format)
         if ows_format and not mime:
             gws.log.debug(f'no mime: ows_request={ows_request!r} ows_format={ows_format!r}')
-            raise gws.web.error.BadRequest('Invalid FORMAT')
+            raise gws.base.web.error.BadRequest('Invalid FORMAT')
 
-        tpl = gws.base.template.find(self.templates, subject='ows.' + ows_request.lower(), mime=mime)
+        tpl = self.templates.find(subject='ows.' + ows_request.lower(), mime=mime)
         if not tpl:
             gws.log.debug(f'no template: ows_request={ows_request!r} ows_format={ows_format!r}')
-            raise gws.web.error.BadRequest('Unsupported FORMAT')
+            raise gws.base.web.error.BadRequest('Unsupported FORMAT')
 
         gws.log.debug(f'ows_request={ows_request!r} ows_format={ows_format!r} template={tpl.uid!r}')
 
@@ -275,23 +244,23 @@ class Base(Object):
             'project': rd.project,
             'meta': self.meta,
             'with_inspire_meta': self.with_inspire_meta,
-            'url_for': rd.req.url_for,
+            'url_for': rd.req.site.url_for,
             'service': self,
             'service_url': self.url_for_project(rd.project),
         }, context)
 
-        return tpl.render(context, format=format)
+        return tpl.render(context, gws.TemplateRenderArgs(format=format))
 
     def enum_template_formats(self):
         fs = {}
-        for tpl in self.templates:
+        for tpl in self.templates.all():
             for m in tpl.mime_types:
                 fs.setdefault(tpl.key, [])
                 if m not in fs[tpl.key]:
                     fs[tpl.key].append(m)
         return fs
 
-    def xml_error_response(self, status, description) -> t.HttpResponse:
+    def xml_error_response(self, status, description) -> gws.ContentResponse:
         description = gws.lib.xml2.encode(description)
         content = (f'<?xml version="1.0" encoding="UTF-8"?>'
                    + f'<ServiceExceptionReport>'
@@ -301,9 +270,9 @@ class Base(Object):
         # return self.xml_response(content, status)
         return self.xml_response(content, 200)
 
-    def xml_response(self, content, status=200) -> t.HttpResponse:
-        return t.HttpResponse(
-            mime=gws.lib.mime.get('xml'),
+    def xml_response(self, content, status=200) -> gws.ContentResponse:
+        return gws.ContentResponse(
+            mime=gws.lib.mime.XML,
             content=gws.lib.xml2.as_string(content),
             status=status,
         )
@@ -314,7 +283,7 @@ class Base(Object):
         """Return the root layer caps for a project."""
 
         def enum(layer_uid):
-            layer = t.cast(t.ILayer, rd.req.acquire('gws.ext.layer', layer_uid))
+            layer = t.cast(gws.ILayer, rd.req.acquire('gws.ext.layer', layer_uid))
             if not self.is_layer_enabled(layer):
                 return
             sub = []
@@ -323,7 +292,7 @@ class Base(Object):
             return self._layer_caps(layer, sub)
 
         if not rd.project:
-            return
+            return None
 
         if self.root_layer_uid:
             root = enum(self.root_layer_uid)
@@ -394,7 +363,7 @@ class Base(Object):
 
         return self.layer_caps_list(rd, layer_names)
 
-    def _layer_caps(self, layer: t.ILayer, sub_caps=None) -> LayerCaps:
+    def _layer_caps(self, layer: gws.ILayer, sub_caps=None) -> LayerCaps:
 
         lc = LayerCaps()
 
@@ -406,7 +375,7 @@ class Base(Object):
         lc.sub_caps = sub_caps or []
 
         lc.extent = layer.extent
-        lc.extent4326 = gws.gis.extent.transform_to_4326(layer.extent, layer.crs)
+        lc.extent4326 = gws.lib.extent.transform_to_4326(layer.extent, layer.crs)
         lc.has_legend = layer.has_legend or any(s.has_legend for s in lc.sub_caps)
         lc.has_search = layer.has_search or any(s.has_search for s in lc.sub_caps)
 
@@ -417,33 +386,26 @@ class Base(Object):
         lc.projections = [
             Projection(
                 crs=crs,
-                proj=gws.gis.proj.as_projection(crs),
-                extent=gws.gis.extent.transform(layer.extent, layer.crs, crs)
+                proj=gws.lib.proj.as_projection(crs),
+                extent=gws.lib.extent.transform(layer.extent, layer.crs, crs)
             )
             for crs in self.supported_crs or [layer.crs]
         ]
 
-        lc.feature_schema = []
-        dm = layer.data_model
+        schema = t.cast(gws.base.model.Object, layer.data_model).xml_schema(_DEFAULT_GEOMETRY_NAME)
 
-        if dm:
-            for rule in dm.rules:
-                schema_type = _XML_SCHEMA_TYPES.get(rule.type)
-                if schema_type:
-                    lc.feature_schema.append(FeatureSchemaAttribute(
-                        type=schema_type,
-                        name=self._parse_name(rule.name, lc.feature_name.ns)))
-
-            if dm.geometry_type:
-                lc.feature_schema.append(FeatureSchemaAttribute(
-                    type=_XML_SCHEMA_TYPES.get(dm.geometry_type),
-                    name=self._parse_name(_DEFAULT_GEOMETRY_NAME, lc.feature_name.ns)))
+        lc.feature_schema = [
+            FeatureSchemaAttribute(
+                type=typ,
+                name=self._parse_name(name, lc.feature_name.ns))
+            for name, typ in schema.items()
+        ]
 
         return lc
 
     # FeatureCaps and collections
 
-    def feature_collection(self, features: t.List[t.IFeature], rd: Request, populate=True, target_crs=None, invert_axis_if_geographic=False, crs_format='uri') -> FeatureCollection:
+    def feature_collection(self, features: t.List[gws.IFeature], rd: Request, populate=True, target_crs=None, invert_axis_if_geographic=False, crs_format='uri') -> FeatureCollection:
         coll = FeatureCollection(
             caps=[],
             features=[],
@@ -460,7 +422,7 @@ class Base(Object):
         target_proj = None
 
         if target_crs:
-            target_proj = gws.gis.proj.as_proj(target_crs)
+            target_proj = gws.lib.proj.as_proj(target_crs)
             if target_proj and target_proj.is_geographic:
                 prec = 6
 
@@ -471,7 +433,7 @@ class Base(Object):
             gs = None
             if f.shape:
                 inv = target_proj and target_proj.is_geographic and invert_axis_if_geographic
-                gs = gws.gis.gml.shape_to_tag(f.shape, precision=prec, invert_axis=inv, crs_format=crs_format)
+                gs = gws.lib.gml.shape_to_tag(f.shape, precision=prec, invert_axis=inv, crs_format=crs_format)
 
             f.apply_data_model()
 
@@ -497,20 +459,20 @@ class Base(Object):
             u += f'/projectUid/{project.uid}'
         return u
 
-    def render_map_bbox_from_layer_caps_list(self, lcs: t.List[LayerCaps], bounds: t.Bounds, rd: Request) -> t.HttpResponse:
+    def render_map_bbox_from_layer_caps_list(self, lcs: t.List[LayerCaps], bounds: gws.Bounds, rd: Request) -> gws.ContentResponse:
         try:
             px_width = int(rd.req.param('width'))
             px_height = int(rd.req.param('height'))
         except:
-            raise gws.web.error.BadRequest()
+            raise gws.base.web.error.BadRequest()
 
         if not bounds or not px_width or not px_height:
-            raise gws.web.error.BadRequest()
+            raise gws.base.web.error.BadRequest()
 
-        render_input = t.MapRenderInput(
+        render_input = gws.MapRenderInput(
             background_color=0 if rd.req.param('transparent', '').lower() == 'false' else None,
             items=[],
-            view=gws.gis.renderview.from_bbox(
+            view=gws.lib.render.view_from_bbox(
                 crs=bounds.crs,
                 bbox=bounds.extent,
                 out_size=(px_width, px_height),
@@ -520,26 +482,24 @@ class Base(Object):
         )
 
         for lc in lcs:
-            render_input.items.append(t.MapRenderInputItem(
-                type=t.MapRenderInputItemType.image_layer,
+            render_input.items.append(gws.MapRenderInputItem(
+                type=gws.MapRenderInputItemType.image_layer,
                 layer=lc.layer))
 
-        renderer = gws.gis.render.Renderer()
+        renderer = gws.lib.render.Renderer()
         for _ in renderer.run(render_input):
             pass
 
         out = renderer.output
         if not out.items:
-            img = gws.lib.misc.Pixels.png8
+            content = gws.lib.misc.Pixels.png8
         else:
-            buf = io.BytesIO()
-            out.items[0].image.save(buf, format='png')
-            img = buf.getvalue()
+            content = gws.lib.img.image_to_bytes(out.items[0].image, format='png')
 
-        return t.HttpResponse(mime='image/png', content=img)
+        return gws.ContentResponse(mime='image/png', content=content)
 
     def is_layer_enabled(self, layer):
-        return layer and layer.ows_enabled(self)
+        return layer and layer.enabled_for_ows(self)
 
     def _parse_name(self, name, nsid=None) -> Name:
         if ':' in name:

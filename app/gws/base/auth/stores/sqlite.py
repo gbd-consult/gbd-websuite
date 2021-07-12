@@ -1,11 +1,9 @@
-import os
-
 import gws
+import gws.lib.date
 import gws.lib.os2
 import gws.lib.sqlite
-import gws.lib.date
 
-DB_PATH = gws.MISC_DIR + '/sessions6.sqlite'
+DB_PATH = gws.MISC_DIR + '/sessions8.sqlite'
 
 
 class SessionStore:
@@ -18,7 +16,7 @@ class SessionStore:
             conn.execute('''CREATE TABLE IF NOT EXISTS sess(
                 uid TEXT PRIMARY KEY,
                 method_type TEXT,
-                session_type TEXT,
+                session_kind TEXT,
                 provider_uid TEXT,
                 user_uid TEXT,
                 str_user TEXT,
@@ -40,7 +38,7 @@ class SessionStore:
             for r in conn.execute('SELECT * FROM sess WHERE uid=?', [uid]):
                 return dict(r)
 
-    def create(self, method_type, session_type, provider_uid, user_uid, str_user, str_data=''):
+    def create(self, method_type, session_kind, provider_uid, user_uid, str_user, str_data=''):
         uid = gws.random_string(64)
 
         with self._connection as conn:
@@ -48,7 +46,7 @@ class SessionStore:
                 INTO sess(
                     uid,
                     method_type,
-                    session_type,
+                    session_kind,
                     provider_uid,
                     user_uid,
                     str_user,
@@ -60,7 +58,7 @@ class SessionStore:
             ''', [
                 uid,
                 method_type,
-                session_type,
+                session_kind,
                 provider_uid,
                 user_uid,
                 str_user,

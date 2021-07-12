@@ -1,28 +1,20 @@
-import PIL.Image
-import io
-
 import gws
-import gws.gis.mpx as mpx
-import gws.gis.extent
-
 import gws.types as t
-
-from . import layer, types
-
-
-class Config(layer.Config):
-    cache: types.CacheConfig = {}  #: cache configuration
-    grid: types.GridConfig = {}  #: grid configuration
-    imageFormat: types.ImageFormat = 'png8'  #: image format
+import gws.base.map.action
+import gws.lib.extent
+import gws.lib.mpx as mpx
+import gws.lib.img
+from . import core
 
 
-class Image(layer.Layer):
-    def configure(self):
-        super().configure()
+class Config(core.Config):
+    cache: core.CacheConfig = {}  # type: ignore #: cache configuration
+    grid: core.GridConfig = {}  # type: ignore #: grid configuration
+    imageFormat: core.ImageFormat = core.ImageFormat.png8  #: image format
 
-        self.can_render_box = True
-        self.can_render_xyz = True
-        self.supports_wms = True
+
+class Object(core.Object):
+    """Base image layer"""
 
     @property
     def props(self):
@@ -31,17 +23,22 @@ class Image(layer.Layer):
         if self.display == 'tile':
             return gws.merge(p, {
                 'type': 'tile',
-                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetXyz/layerUid/' + self.uid + '/z/{z}/x/{x}/y/{y}/t.png',
+                'url': gws.base.map.action.url_for_render_tile(self.uid),
                 'tileSize': self.grid.tileSize,
             })
 
         if self.display == 'box':
             return gws.merge(p, {
                 'type': 'box',
-                'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetBox/layerUid/' + self.uid,
+                'url': gws.base.map.action.url_for_render_box(self.uid),
             })
 
         return p
+
+    def configure(self):
+        self.can_render_box = True
+        self.can_render_xyz = True
+        self.supports_wms = True
 
     def render_box(self, rv, extra_params=None):
         uid = self.uid
@@ -49,24 +46,24 @@ class Image(layer.Layer):
             uid += '_NOCACHE'
 
         if not rv.rotation:
-            return gws.gis.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1], forward=extra_params)
+            return gws.lib.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1], forward=extra_params)
 
         # rotation: render a circumsquare around the wanted extent
 
-        circ = gws.gis.extent.circumsquare(rv.bounds.extent)
+        circ = gws.lib.extent.circumsquare(rv.bounds.extent)
         w, h = rv.size_px
-        d = gws.gis.extent.diagonal((0, 0, w, h))
+        d = gws.lib.extent.diagonal((0, 0, w, h))
 
-        r = gws.gis.mpx.wms_request(uid, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d, forward=extra_params)
+        r = gws.lib.mpx.wms_request(uid, gws.Bounds(crs=rv.bounds.crs, extent=circ), d, d, forward=extra_params)
         if not r:
             return
 
-        img: PIL.Image.Image = PIL.Image.open(io.BytesIO(r))
+        img = gws.lib.img.image_from_bytes(r)
 
         # rotate the square (NB: PIL rotations are counter-clockwise)
         # and crop the square back to the wanted extent
 
-        img = img.rotate(-rv.rotation, resample=PIL.Image.BICUBIC)
+        img = img.rotate(-rv.rotation, resample=gws.lib.img.image_api.BICUBIC)
         img = img.crop((
             d / 2 - w / 2,
             d / 2 - h / 2,
@@ -74,12 +71,10 @@ class Image(layer.Layer):
             d / 2 + h / 2,
         ))
 
-        with io.BytesIO() as out:
-            img.save(out, format='png')
-            return out.getvalue()
+        return gws.lib.img.image_to_bytes(img, format='PNG')
 
     def render_xyz(self, x, y, z):
-        return gws.gis.mpx.wmts_request(
+        return gws.lib.mpx.wmts_request(
             self.uid,
             x, y, z,
             tile_matrix=self.grid_uid,
@@ -96,7 +91,7 @@ class Image(layer.Layer):
     
         Basically, the source is wrapped in a no-store BACK cache, which is then given to the front mpx layer
         
-        2. then, configure the layer. Create the FRONT cache, which is store or no-store, depending on the cache setting.
+        2. then, configure the core. Create the FRONT cache, which is store or no-store, depending on the cache setting.
         Also, configure the _NOCACHE variant for the layer, which skips the DST cache
     """
 

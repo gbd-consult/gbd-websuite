@@ -3,8 +3,6 @@ import * as React from 'react';
 import * as base from '../base';
 import * as util from '../util';
 
-import {Touchable} from '../button';
-
 export interface FileInputProps extends base.InputProps<FileList> {
     multiple?: boolean;
     accept?: string;

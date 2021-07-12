@@ -1,18 +1,20 @@
-import math
 import base64
-import shapely.ops
+import math
+
 import shapely.geometry
-from PIL import ImageFont
+import shapely.ops
 import wand.image
 
 import gws
+import gws.types as t
+import gws.lib.extent
+import gws.lib.render
+import gws.lib.img
+import gws.lib.style
 import gws.lib.units as units
 import gws.lib.xml2 as xml2
-import gws.gis.extent
-import gws.gis.renderview
-import gws.lib.style
 
-import gws.types as t
+from gws.lib.style import Values as StyleValues
 
 DEFAULT_FONT_SIZE = 10
 DEFAULT_MARKER_SIZE = 10
@@ -24,17 +26,19 @@ SVG_ATTRIBUTES = {
 }
 
 
-def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: t.MapRenderView, sv: t.StyleValues, label: str) -> t.List[t.Tag]:
+def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: gws.MapRenderView, style_data: t.Optional[gws.StyleData], label: str) -> t.List[gws.Tag]:
     if geom.is_empty:
         return []
 
-    trans = gws.gis.renderview.pixel_transformer(rv)
+    trans = gws.lib.render.pixel_transformer(rv)
     geom = shapely.ops.transform(trans, geom)
 
-    if not sv:
+    if not style_data:
         return [_geometry(geom, {})]
 
-    with_geometry = sv.with_geometry == gws.lib.style.StyleGeometryOption.all
+    sv: StyleValues = t.cast(gws.lib.style.Data, style_data).values
+
+    with_geometry = sv.with_geometry == 'all'
     with_label = _is_label_visible(rv, sv)
 
     text = None
@@ -58,6 +62,7 @@ def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: t.MapRenderView,
         marker = _marker(marker_id, sv)
 
     icon = None
+    atts: dict = {}
 
     if with_geometry and sv.icon:
         res = _parse_icon_url(sv.icon, rv.dpi)
@@ -75,8 +80,6 @@ def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: t.MapRenderView,
     body = None
 
     if with_geometry:
-        atts = {}
-
         _fill_stroke_props(atts, sv)
 
         if marker:
@@ -93,7 +96,7 @@ def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: t.MapRenderView,
     return gws.compact([marker, body, icon, text])
 
 
-def sort_by_z_index(tags: t.List[t.Tag]):
+def sort_by_z_index(tags: t.List[gws.Tag]):
     def key(tag):
         for e in tag:
             if isinstance(e, dict) and 'z-index' in e:
@@ -103,18 +106,18 @@ def sort_by_z_index(tags: t.List[t.Tag]):
     tags.sort(key=key)
 
 
-def as_xml(tags: t.List[t.Tag]) -> str:
+def as_xml(tags: t.List[gws.Tag]) -> str:
     return ''.join(gws.lib.xml2.as_string(tag) for tag in tags)
 
 
-def as_png(tags: t.List[t.Tag], size: t.Size) -> bytes:
+def as_png(tags: t.List[gws.Tag], size: gws.Size) -> bytes:
     sort_by_z_index(tags)
     svg = gws.lib.xml2.as_string(('svg', SVG_ATTRIBUTES, *tags))
     with wand.image.Image(blob=svg.encode('utf8'), format='svg', background='None', width=size[0], height=size[1]) as image:
         return image.make_blob('png')
 
 
-def fragment_tags(fragment: t.SvgFragment, rv: t.MapRenderView) -> t.List[t.Tag]:
+def fragment_tags(fragment: gws.SvgFragment, rv: gws.MapRenderView) -> t.List[gws.Tag]:
     """Convert an SvgFragment to a list of Tags.
 
     A fragment has three components:
@@ -141,7 +144,13 @@ def fragment_tags(fragment: t.SvgFragment, rv: t.MapRenderView) -> t.List[t.Tag]
 
     trans = _pixel_transform(rv)
     pixels = [trans(*p) for p in fragment.points]
-    style_map = {s.name: s.values for s in (fragment.styles or []) if s.name}
+
+    style_map = {}
+    if fragment.styles:
+        for s in fragment.styles:
+            sd = t.cast(gws.lib.style.Data, s)
+            if sd.name:
+                style_map[sd.name] = sd.values
 
     def eval_func(v):
         if v[0] == '':
@@ -175,7 +184,7 @@ def fragment_tags(fragment: t.SvgFragment, rv: t.MapRenderView) -> t.List[t.Tag]
 
 ##
 
-def _pixel_transform(rv: t.MapRenderView):
+def _pixel_transform(rv: gws.MapRenderView):
     def translate(x, y):
         x = x - rv.bounds.extent[0]
         y = rv.bounds.extent[3] - y
@@ -195,19 +204,19 @@ def _pixel_transform(rv: t.MapRenderView):
             x, y = rotate(x, y)
         return x, y
 
-    ox, oy = translate(*gws.gis.extent.center(rv.bounds.extent))
+    ox, oy = translate(*gws.lib.extent.center(rv.bounds.extent))
     cosa = math.cos(math.radians(rv.rotation))
     sina = math.sin(math.radians(rv.rotation))
 
     return fn
 
 
-def _marker(uid, sv) -> t.Tag:
+def _marker(uid, sv) -> gws.Tag:
     size = sv.marker_size or DEFAULT_MARKER_SIZE
     size2 = size // 2
 
     content = None
-    atts = {}
+    atts: dict = {}
 
     _fill_stroke_props(atts, sv, 'marker_')
 
@@ -231,8 +240,8 @@ def _marker(uid, sv) -> t.Tag:
         }, content
 
 
-def _is_label_visible(rv: t.MapRenderView, sv: t.StyleValues) -> bool:
-    if sv.with_label != gws.lib.style.StyleLabelOption.all:
+def _is_label_visible(rv: gws.MapRenderView, sv: StyleValues) -> bool:
+    if sv.with_label != 'all':
         return False
     if rv.scale < int(sv.get('label_min_scale', 0)):
         return False
@@ -241,12 +250,12 @@ def _is_label_visible(rv: t.MapRenderView, sv: t.StyleValues) -> bool:
     return True
 
 
-def _label(geom, label, sv: t.StyleValues, extra_y_offset=0) -> t.Tag:
+def _label(geom, label, sv: StyleValues, extra_y_offset=0) -> gws.Tag:
     cx, cy = _label_position(geom, sv, extra_y_offset)
     return _text(cx, cy, label, sv)
 
 
-def _label_position(geom, sv: t.StyleValues, extra_y_offset=0):
+def _label_position(geom, sv: StyleValues, extra_y_offset=0):
     if sv.label_placement == 'start':
         x, y = _get_points(geom)[0]
     elif sv.label_placement == 'end':
@@ -260,12 +269,12 @@ def _label_position(geom, sv: t.StyleValues, extra_y_offset=0):
     )
 
 
-def _text(cx, cy, label, sv: t.StyleValues) -> t.Tag:
+def _text(cx, cy, label, sv: StyleValues) -> gws.Tag:
     # @TODO label positioning needs more work
 
     font_name = _map_font(sv)
     font_size = sv.label_font_size or DEFAULT_FONT_SIZE
-    font = ImageFont.truetype(font=font_name, size=font_size)
+    font = gws.lib.img.font_api.truetype(font=font_name, size=font_size)
 
     anchor = 'start'
 
@@ -422,7 +431,7 @@ def _clean(el: xml2.Element) -> t.Optional[xml2.Element]:
     # @TODO: security! since icons are arbitrary content, check for valid tag names and values
 
     if el.name not in _ALLOWED_TAGS:
-        return
+        return None
 
     el.attributes = gws.compact(_clean_attr(a) for a in el.attributes)
     el.children = gws.compact(_clean(c) for c in el.children)
@@ -501,7 +510,7 @@ def _map_font(sv, prefix=''):
     return DEFAULT_FONT
 
 
-def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict) -> t.Tag:
+def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict) -> gws.Tag:
     def _xy(xy):
         return str(xy[0]) + ' ' + str(xy[1])
 
@@ -539,7 +548,7 @@ def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict) -> t.Tag:
     raise ValueError(f'unknown type {geom.type!r}')
 
 
-def _slope(a: t.Point, b: t.Point) -> float:
+def _slope(a: gws.Point, b: gws.Point) -> float:
     # slope between two points
     dx = b[0] - a[0]
     dy = b[1] - a[1]
@@ -550,7 +559,7 @@ def _slope(a: t.Point, b: t.Point) -> float:
     return math.atan(dy / dx)
 
 
-def _rotate(p: t.Point, o: t.Point, a: float) -> t.Point:
+def _rotate(p: gws.Point, o: gws.Point, a: float) -> gws.Point:
     # rotate P(oint) about O(rigin) by A(ngle)
     return (
         o[0] + (p[0] - o[0]) * math.cos(a) - (p[1] - o[1]) * math.sin(a),

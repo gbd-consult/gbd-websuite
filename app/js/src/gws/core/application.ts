@@ -30,13 +30,14 @@ export class Application implements types.IApplication {
     tags: types.Dict;
     urlParams: types.Dict;
     localeUid = '';
+    languageUid = '';
     locale: api.IntlLocale;
 
 
     protected controllers: { [key: string]: types.IController } = {};
     protected cssBreakpoints: Array<[string, number]>;
     protected initialState: types.Dict = {};
-    protected labels = {};
+    protected strings = {};
     protected tempTools = [];
     protected tools: types.Dict = {};
     protected uid = 0;
@@ -53,7 +54,7 @@ export class Application implements types.IApplication {
     }
 
     constructor(options) {
-        console.log(options)
+        console.log('OPTIONS', options);
         this.options = options;
 
         this.store = new StoreWrapper({});
@@ -61,8 +62,10 @@ export class Application implements types.IApplication {
         this.tags = this.options.tags;
         this.tags['Tool.Default'] = DefaultTool;
 
-        this.labels = this.options.labels;
         this.localeUid = this.options.locale || 'en_CA';
+        this.languageUid = this.localeUid.split('_')[0];
+
+        this.strings = this.options.strings;
 
         let url = this.options.serverUrl || '/_';
         this.server = new Server(this, url);
@@ -271,7 +274,8 @@ export class Application implements types.IApplication {
     }
 
     __(key) {
-        let s = this.labels[this.localeUid][key];
+        let s = this.strings[key];
+
         if (s || s === '') {
             return s;
         }

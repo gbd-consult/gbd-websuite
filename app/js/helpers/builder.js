@@ -16,44 +16,61 @@ const DOC = `
 GWS Client Builder
 ~~~~~~~~~~~~~~~~~~
 
-builder dev-server [--manifest <PATH-TO-MANIFEST>]
+builder dev-server
     start the dev server on port 8080
     
-builder dev-bundle [--manifest <PATH-TO-MANIFEST>]
+builder dev
     compile development bundles for plugins in the manifest 
     
-builder bundle [--manifest <PATH-TO-MANIFEST>]
+builder production
     compile production bundles for plugins in the manifest 
     
-builder clean [--manifest <PATH-TO-MANIFEST>]
+builder clean
     remove all compiled bundles and builds 
 
-See the Client Developer documentation for details.
+The builder expects the dev spec generator to be run 
+and uses the generated stuff from 'app/gws/spec/___build'
 `;
 
 //
+
+const APP_DIR = path.resolve(__dirname, '../..');
+const SPEC_DIR = path.join(APP_DIR, '/gws/spec/___build/');
+const JS_DIR = path.resolve(__dirname, '..');
+const BUILD_ROOT = path.join(JS_DIR, '___build');
+
+const SOURCE_MAP_REGEX = /\/\/#\s*sourceMappingURL.*/g;
+
+const BUNDLE_KEY_TEMPLATE = 'TEMPLATE'
+const BUNDLE_KEY_MODULES = 'MODULES'
+const BUNDLE_KEY_STRINGS = 'STRINGS'
+const BUNDLE_KEY_CSS = 'CSS'
+
+const STRINGS_KEY_DELIM = '::'
+const STRINGS_RECORD_DELIM = ';;'
 
 module.exports.Builder = class {
 
     constructor() {
         this.commands = {
-            'dev-bundle': () => this.commandDevBundle(),
             'dev-server': () => this.commandDevServer(),
-            'bundle': () => this.commandBundle(),
+            'dev': () => this.commandDev(),
+            'production': () => this.commandProduction(),
             'clean': () => this.commandClean(),
             'help': () => this.commandHelp(),
         }
 
-        this.options = null;
-        this.manifest = null;
-        this.JS_ROOT = path.resolve(__dirname, '..');
+        this.settings = require(path.join(JS_DIR, 'settings.js'));
+        this.specOptions = require(path.join(SPEC_DIR, 'options.spec.json')); // see spec/generator/main
+
+        // @TODO support plugin vendors
+        this.vendors = this.settings.vendors;
+
         this.sources = [];
         this.chunks = [];
 
-        this.tsConfigPath = path.join(this.JS_ROOT, 'tsconfig.json');
+        this.tsConfigPath = path.join(JS_DIR, 'tsconfig.json');
 
-        this.missingModules = [];
-        this.compileCore = true;
     }
 
     run(args) {
@@ -66,14 +83,17 @@ module.exports.Builder = class {
     }
 
     commandDevServer() {
-        init(this);
+        clearBuild(this);
         initBuild(this);
         startBrowserSync(this);
     }
 
-    commandDevBundle() {
-        init(this);
+    commandDev() {
+        clearBuild(this);
         initBuild(this);
+
+        if (!writeVendors(this))
+            this.fail();
 
         if (!runTypescript(this))
             this.fail();
@@ -82,16 +102,21 @@ module.exports.Builder = class {
         if (!bundles)
             this.fail();
 
-        writeBundles(this, bundles);
+        if (!writeBundles(this, bundles))
+            this.fail();
+
+        if (!writeVendors(this))
+            this.fail();
+
     }
 
-    commandBundle() {
+    commandProduction() {
         // @TODO
-        this.commandDevBundle()
+        this.commandDev()
     }
 
     commandClean() {
-        // @TODO
+        clearBuild(this);
     }
 
     commandHelp() {
@@ -105,663 +130,44 @@ module.exports.Builder = class {
 
 // init and loading
 
-function init(bb) {
-    bb.options = require(path.join(bb.JS_ROOT, 'options.js'));
-    bb.manifest = bb.args.manifest ? loadManifest(bb) : null;
-
-    if (!bb.options.buildDir)
-        throw new Error(`"options.buildDir" not found`);
-
-    bb.BUILD_ROOT = path.resolve(bb.JS_ROOT, bb.options.buildDir);
-}
-
-function loadManifest(bb) {
-
-    function absPaths(obj, dirname) {
-        if (Array.isArray(obj))
-            return obj.map(e => absPaths(e, dirname))
-
-        for (let [key, val] of Object.entries(obj)) {
-            if (key.toLowerCase().endsWith('path') && typeof val === 'string') {
-                val = replaceEnv(val);
-                if (val.startsWith('.'))
-                    val = path.resolve(dirname, val);
-                obj[key] = val;
-            } else if (val && typeof val === 'object') {
-                obj[key] = absPaths(obj[key], dirname);
-            }
-        }
-
-        return obj;
-    }
-
-    let p = bb.args.manifest;
-    let text = readFile(p).replace(/\/\/.*/g, '');
-
-    return absPaths(JSON.parse(text), path.dirname(p));
+function clearBuild(bb) {
+    fs.rmSync(BUILD_ROOT, {recursive: true, force: true});
+    fs.mkdirSync(BUILD_ROOT, {recursive: true});
 }
 
 function initBuild(bb) {
-    fs.rmSync(bb.BUILD_ROOT, {recursive: true, force: true});
-    fs.mkdirSync(bb.BUILD_ROOT, {recursive: true});
-    writeFile(
-        path.join(bb.JS_ROOT, 'src/gws/main/__build.info.ts'),
-        `
-            export const VERSION = ${JSON.stringify(bb.options.version)};
-        `
-    );
-    prepareBuild(bb);
-}
 
-function prepareBuild(bb) {
-    enumSources(bb);
-}
-
-function enumSources(bb) {
-    bb.sources = [];
     bb.chunks = [];
+    bb.sources = [];
 
-    if (bb.compileCore) {
-        bb.chunks.push({
-            name: 'gws',
-            dir: path.join(bb.JS_ROOT, 'src/gws'),
-        })
-    }
+    for (let chunk of bb.specOptions.chunks) {
+        let n = 0;
 
-    if (bb.manifest && bb.manifest.plugins) {
-        for (let plugin of bb.manifest.plugins) {
-            bb.chunks.push({
-                name: path.basename(plugin.path),
-                dir: plugin.path,
-            })
-        }
-    }
-
-    for (let chunk of bb.chunks) {
-        for (let p of enumDir(chunk.dir)) {
-            let b = path.basename(p),
-                kind = ''
-
-            if (b === 'index.tsx' || b === 'index.ts')
-                kind = 'ts'
-            else if (b === 'index.css.js')
-                kind = 'css'
-            else if (b === 'strings.ini')
-                kind = 'strings'
-
-            if (kind) {
+        for (let kind of Object.keys(chunk.paths)) {
+            if (kind === 'python')
+                continue;
+            for (let p of chunk.paths[kind]) {
+                n++;
                 bb.sources.push({
                     chunk: chunk.name,
                     kind,
                     path: p,
-                    buildRoot: path.join(bb.BUILD_ROOT, chunk.dir),
+                    buildRoot: path.join(BUILD_ROOT, chunk.sourceDir),
                 })
             }
         }
-    }
 
-    for (let theme of bb.options.themes) {
-        let p = path.resolve(bb.JS_ROOT, theme.path);
-        bb.sources.push({
-            chunk: '__theme',
-            kind: 'theme',
-            name: theme.name,
-            path: p,
-        })
+        if (n > 0) {
+            bb.chunks.push({
+                name: chunk.name,
+                sourceDir: chunk.sourceDir,
+                bundleDir: chunk.bundleDir,
+            })
+        }
     }
-
 }
 
 // dev server
-
-function devHTML(bb, url) {
-    let tplVars = {}
-
-    // dev server can be invoked as /project/name or /project/de_DE/name
-
-    let u = url.split('/').slice(1);
-    tplVars.ENV = u.length === 2
-        ? `window['GWS_LOCALE']="${u[0]}"; window['GWS_PROJECT_UID']="${u[1]}"`
-        : `window['GWS_LOCALE']="de_DE";   window['GWS_PROJECT_UID']="${u[0]}"`;
-
-    tplVars.SCRIPTS = ''
-    for (let vendor of bb.options.vendors) {
-        let p = vendor.devPath.slice(1);
-        tplVars.SCRIPTS += `<script src="${p}"></script>\n`;
-    }
-
-    tplVars.RANDOM = String(Math.random()).slice(2);
-
-    return template(DEV_INDEX_HTML_TEMPLATE, tplVars);
-}
-
-function devJS(bb) {
-    bb.missingModules = []
-
-    let mods = jsModules(bb);
-    if (!mods || !checkMissingModules(bb))
-        return;
-
-    let strs = stringsModules(bb);
-    if (!strs)
-        return;
-
-    mods = jsVendorModules(bb).concat(mods);
-
-    return template(JS_BUNDLE_TEMPLATE, {
-        MODULES: mods.map(m => m.text).join(','),
-        STRINGS: strs.map(m => m.text).join(','),
-    })
-}
-
-function devCSS(bb) {
-    let mods = cssModules(bb);
-    if (mods)
-        return mods.map(m => m.text).join('\n');
-}
-
-function startBrowserSync(bb) {
-    let bs = browserSync.create();
-
-    const RELOAD_DEBOUNCE = 100;
-
-    let reloadTimer = 0;
-    let reloadQueue = [];
-    let reloading = false;
-
-    let content = {};
-
-    //
-
-    function update(all) {
-        let ts = all, strings = all, css = all;
-        let js = false;
-        let ok = true;
-
-        while (reloadQueue.length) {
-            let file = reloadQueue.shift();
-            if (file.endsWith('ts') || file.endsWith('tsx'))
-                ts = 1;
-            if (file.endsWith('css.js'))
-                css = 1;
-            if (file.endsWith('strings.ini'))
-                strings = 1;
-        }
-
-        prepareBuild(bb);
-
-        if (strings) {
-            content.js = null;
-            js = true;
-        }
-        if (ts) {
-            content.js = null;
-            js = runTypescript(bb);
-        }
-        if (js)
-            content.js = devJS(bb);
-        if (css)
-            content.css = devCSS(bb);
-
-        return content.js && content.css;
-    }
-
-    function reload() {
-        if (reloading)
-            return debounceReload();
-
-        reloading = true;
-        if (update())
-            bs.reload();
-        reloading = false;
-    }
-
-    function debounceReload() {
-        clearTimeout(reloadTimer);
-        reloadTimer = setTimeout(reload, RELOAD_DEBOUNCE);
-    }
-
-    function dirsToWatch() {
-        let dirs = [];
-
-        for (let chunk of bb.chunks)
-            dirs.push(chunk.dir);
-
-        dirs.push(path.join(bb.JS_ROOT, 'css'));
-
-        for (let src of bb.sources)
-            if (src.kind === 'theme')
-                dirs.push(path.dirname(src.path));
-
-        return dirs;
-    }
-
-    function watch(event, file) {
-        logInfo('watch:', event, file);
-        reloadQueue.push(file);
-        if (bs.active)
-            debounceReload();
-    }
-
-    function send(res, str, contentType) {
-        let buf = Buffer.from(str || 'ERROR');
-        res.writeHead(200, {
-            'Content-Type': contentType,
-            'Content-Length': buf.byteLength,
-            'Cache-Control': 'no-store',
-        });
-        res.end(buf);
-    }
-
-    function onStart() {
-        for (let dir of dirsToWatch()) {
-            bs.watch(dir + '/**/*.ts', watch);
-            bs.watch(dir + '/**/*.tsx', watch);
-            bs.watch(dir + '/**/*.js', watch);
-            bs.watch(dir + '/**/*.ini', watch);
-        }
-    }
-
-    let options = {
-        proxy: bb.options.development.proxyUrl,
-        port: bb.options.development.serverPort,
-        open: bb.options.development.openBrowser,
-        reloadOnRestart: true,
-        serveStatic: [{
-            route: '/node_modules',
-            dir: './node_modules'
-        }],
-        middleware: [
-            {
-                route: "/project",
-                handle(req, res, next) {
-                    send(res, devHTML(bb, req.url), 'text/html')
-                }
-            },
-            {
-                route: "/DEV-CSS",
-                handle(req, res, next) {
-                    send(res, content.css, 'text/css')
-                }
-            },
-            {
-                route: "/DEV-JS",
-                handle(req, res, next) {
-                    send(res, content.js, 'application/javascript')
-                }
-            },
-        ]
-    };
-
-    bs.init(options, onStart);
-
-}
-
-// JS bundler
-
-function jsModules(bb) {
-    try {
-        let m = jsModulesImpl(bb);
-        logInfo(`Javascript: ${m.length} module(s) ok`);
-        return m;
-    } catch (e) {
-        logError(`Javascript bundler error:`);
-        logException(e);
-    }
-}
-
-function jsVendorModules(bb) {
-    let mods = [];
-
-    for (let vendor of bb.options.vendors) {
-        mods.push({
-            chunk: '__vendor',
-            name: vendor.module,
-            text: `["${vendor.module}",(require,exports,module)=>{module.exports=${vendor.name}}]`,
-        })
-    }
-
-    return mods;
-}
-
-function jsModuleName(bb, modPath) {
-    let dir = path.dirname(modPath)
-    for (let src of bb.sources) {
-        if (dir.startsWith(src.buildRoot)) {
-            let rel = path.relative(src.buildRoot, modPath)
-            rel = rel.replace(/\/?index\.js$/, '')
-            rel = rel.replace(/\.js$/, '')
-            if (!rel)
-                return src.chunk;
-            return src.chunk + '/' + rel
-        }
-    }
-}
-
-function jsModulesImpl(bb) {
-
-    let funcTable = {};
-    let deps = [];
-
-    // read each compiled file and create a table moduleName => moduleSourceCode
-    // process require() calls in moduleSourceCode and build the dependency graph
-
-    for (let modPath of enumDir(bb.BUILD_ROOT)) {
-        if (!modPath.endsWith('.js'))
-            continue;
-        let modName = jsModuleName(bb, modPath)
-        if (!modName)
-            throw new Error(`cannot compute module name for "${modPath}"`)
-
-        let modJS = readFile(modPath);
-
-        modJS = modJS.replace(/\brequire\s*\((.+?)\)/g, (_, r) => {
-            let reqName = r.replace(/^[\s"']+/, '').replace(/[\s"']+$/, '');
-
-            if (reqName.startsWith('.')) {
-                let abs = path.resolve(path.dirname(modPath), reqName)
-                reqName = jsModuleName(bb, abs) || jsModuleName(bb, abs + '/index.js');
-                if (!reqName)
-                    throw new Error(`cannot resolve require("${reqName}") in "${modPath}"`)
-            }
-
-            deps.push([modName, reqName])
-            return `require("${reqName}")`
-        })
-
-        funcTable[modName] = modJS;
-    }
-
-    // now, for each module in dependency order,
-    // create a module record, which source text is an array of
-    // moduleName and a wrapper: (require, exports) => { moduleSourceCode }
-    // also, populate the missing modules list with require's not found in the table
-
-    let mods = [];
-
-    for (let modName of topSort(deps)) {
-        if (modName in funcTable) {
-            mods.push({
-                chunk: modName.split('/')[0],
-                name: modName,
-                text: `["${modName}",(require,exports)=>{${funcTable[modName]}\n}]`,
-            });
-        } else {
-            bb.missingModules.push(modName);
-        }
-    }
-
-    return mods;
-}
-
-function checkMissingModules(bb) {
-    // check for required() modules which are not vendors
-
-    let vendors = bb.options.vendors.map(v => v.module);
-    let missing = bb.missingModules.filter(e => vendors.indexOf(e) < 0);
-
-    if (missing.length > 0) {
-        for (let mod of missing)
-            logError(`Module not found: ${mod}`);
-        return false;
-    }
-
-    return true;
-}
-
-// strings bundler
-
-function stringsModules(bb) {
-    try {
-        let m = stringsModulesImpl(bb);
-        logInfo(`Strings: ${m.length} module(s) ok`);
-        return m;
-    } catch (e) {
-        logError(`Strings bundler error:`);
-        logException(e);
-    }
-}
-
-function stringsModulesImpl(bb) {
-
-    function localeForIniKey(modPath, key) {
-        for (let loc of bb.options.locales)
-            if (loc === key || loc.split('_')[0] === key)
-                return loc;
-        throw new Error(`Unsupported locale "${key}" in "${modPath}"`)
-    }
-
-    // first, collect all strings.ini files and store them under chunk/locale
-
-    let coll = {};
-
-    for (let src of bb.sources) {
-        if (src.kind !== 'strings')
-            continue;
-
-        let parsed = ini.parse(readFile(src.path))
-
-        for (let [key, val] of Object.entries(parsed)) {
-            let k = src.chunk + '/' + localeForIniKey(src.path, key)
-            coll[k] = Object.assign(coll[k] || {}, val);
-        }
-    }
-
-    // now, for each combination of chunk/locale, create a module record
-    // with the text [locale, {strings}]
-
-    let mods = [];
-
-    for (let chunk of bb.chunks) {
-        for (let loc of bb.options.locales) {
-            let k = chunk.name + '/' + loc;
-            let strings = coll[k] || {}
-            mods.push({
-                chunk: chunk.name,
-                locale: loc,
-                text: JSON.stringify([loc, strings]),
-            })
-        }
-    }
-
-    return mods;
-}
-
-// css bundler
-
-function cssModules(bb) {
-    try {
-        let m = cssModulesImpl(bb);
-        logInfo(`CSS: ${m.length} module(s) ok`);
-        return m;
-    } catch (e) {
-        logError(`CSS compiler error:`);
-        logException(e);
-    }
-}
-
-function cssModulesImpl(bb) {
-
-    const CSS_DEFAULTS = {
-        unit: 'px',
-        sort: true,
-        rootSelector: '.gws',
-    };
-
-    for (let k of Object.keys(require.cache)) {
-        if (k.includes('.css.js'))
-            delete require.cache[k];
-    }
-
-    // first, load themes css.js, which is supposed to export
-    // a triple [pre-rules, post-rules, theme-options]
-
-    let themes = [];
-
-    for (let src of bb.sources) {
-        if (src.kind === 'theme')
-            themes.push([src.name, require(src.path)]);
-    }
-
-    // browse css.js files and load each one into rules
-    // apply each theme to rules and create a module record
-    // with text equal to raw css
-
-    let mods = [];
-
-    for (let chunk of bb.chunks) {
-
-        let rules = [];
-
-        for (let src of bb.sources) {
-            if (src.chunk === chunk.name && src.kind === 'css') {
-                rules.push(require(src.path));
-            }
-        }
-
-        for (let [name, module] of themes) {
-            let [pre, post, opts] = module;
-            opts = {...CSS_DEFAULTS, ...opts}
-            let css = jadzia.css(
-                {[opts.rootSelector]: [pre, rules, post]},
-                opts);
-            mods.push({
-                chunk: chunk.name,
-                theme: name,
-                text: css
-            })
-        }
-    }
-
-    return mods;
-}
-
-// common bundler
-
-function createBundles(bb) {
-    let bundles = {};
-
-    for (let chunk of bb.chunks) {
-        let bundle = {JS: JS_BUNDLE_TEMPLATE, MODULES: ''};
-
-        for (let loc of bb.options.locales)
-            bundle['STRINGS_' + loc] = ''
-
-        for (let theme of bb.options.themes)
-            bundle['CSS_' + theme.name] = ''
-
-        bundles[chunk.name] = bundle;
-    }
-
-    bb.missingModules = [];
-
-    let mods = {
-        js: jsModules(bb),
-        strings: stringsModules(bb),
-        css: cssModules(bb),
-    };
-
-    if (mods.js)
-        for (let mod of mods.js) {
-            bundles[mod.chunk].MODULES += mod.text + ',';
-        }
-
-    if (mods.strings)
-        for (let mod of mods.strings) {
-            bundles[mod.chunk]['STRINGS_' + mod.locale] += mod.text + ',';
-        }
-
-    if (mods.css)
-        for (let mod of mods.css) {
-            bundles[mod.chunk]['CSS_' + mod.theme] += mod.text + '\n';
-        }
-
-    if (mods.js && mods.strings && mods.css && checkMissingModules(bb))
-        return bundles;
-}
-
-function writeBundles(bb, bundles) {
-    for (let chunk of bb.chunks) {
-        let p = path.join(chunk.dir, bb.options.bundleFileName);
-        writeFile(p, JSON.stringify(bundles[chunk.name]));
-        logInfo(`created bundle "${p}"`);
-    }
-}
-
-// typescript
-
-function runTypescript(bb) {
-    // @TODO use the compiler API
-    // https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API
-
-    let time = new Date;
-
-    logInfo('running TypeScript...');
-
-    let tsConfig = require(bb.tsConfigPath);
-    let tsConfigBuildPath = path.join(bb.JS_ROOT, '__build.tsconfig.json');
-
-    tsConfig.files = [];
-
-    for (let src of bb.sources) {
-        if (src.kind === 'ts')
-            tsConfig.files.push(src.path)
-    }
-
-    tsConfig.compilerOptions.outDir = bb.BUILD_ROOT;
-    writeFile(tsConfigBuildPath, JSON.stringify(tsConfig, null, 4))
-
-    let args = [
-        path.join(bb.JS_ROOT, 'node_modules/.bin/tsc'),
-        '--project',
-        tsConfigBuildPath,
-    ];
-
-    let res = child_process.spawnSync('node', args, {
-        cwd: bb.JS_ROOT,
-        stdio: 'pipe'
-    });
-
-    let out = '',
-        err = 0,
-        msg = [];
-
-    for (let s of res.output) {
-        out += String(s || '');
-    }
-
-    for (let s of out.split('\n')) {
-        if (!s.trim())
-            continue;
-
-        let m = s.match(/^(.+?)\((\d+),(\d+)\):(\s+error.+)/);
-        if (m) {
-            err++;
-            msg.push(
-                COLOR_ERROR('[TS] ') +
-                COLOR_ERROR_FILE(path.resolve(bb.JS_ROOT, m[1]) + ':' + m[2] + ':' + m[3]) +
-                COLOR_ERROR(m[4])
-            );
-        } else {
-            msg.push(COLOR_ERROR(s));
-        }
-    }
-
-    if (err > 0)
-        logError(`TypeScript: ${err} error(s):`);
-
-    if (msg.length)
-        console.log(msg.join('\n'));
-
-    if (res.status === 0) {
-        time = ((new Date - time) / 1000).toFixed(2);
-        logInfo(`TypeScript ok in ${time} s.`);
-    }
-
-    return res.status === 0;
-}
-
-// templates
 
 const DEV_INDEX_HTML_TEMPLATE = String.raw`
 <!DOCTYPE html>
@@ -803,6 +209,189 @@ const DEV_INDEX_HTML_TEMPLATE = String.raw`
 </html>
 `;
 
+function startBrowserSync(bb) {
+    let bs = browserSync.create();
+
+    const RELOAD_DEBOUNCE = 100;
+
+    let reloadTimer = 0;
+    let reloadQueue = [];
+    let reloading = false;
+
+    let content = {};
+
+    //
+
+    function makeHTML(url) {
+        let tplVars = {}
+
+        // dev server can be invoked as /project/name or /project/de_DE/name
+
+        let u = url.split('/').filter(s => s.length > 0 && s[0] !== '@');
+
+        tplVars.ENV = u.length === 2
+            ? `window['GWS_LOCALE']="${u[0]}"; window['GWS_PROJECT_UID']="${u[1]}"`
+            : `window['GWS_LOCALE']="de_DE";   window['GWS_PROJECT_UID']="${u[0]}"`;
+
+        tplVars.SCRIPTS = ''
+        for (let vendor of bb.vendors) {
+            tplVars.SCRIPTS += `<script src="/DEV-VENDOR/${vendor.name}.js"></script>\n`;
+        }
+
+        tplVars.RANDOM = String(Math.random()).slice(2);
+
+        return formatTemplate(DEV_INDEX_HTML_TEMPLATE, tplVars);
+    }
+
+    function makeJS() {
+        let js = jsModules(bb);
+        let strings = stringsModules(bb);
+        let stubs = vendorStubs(bb);
+
+        if (!js || !strings)
+            return;
+
+        return formatTemplate(JS_BUNDLE_TEMPLATE, {
+            MODULES: stubs.modules.concat(js.modules).map(m => m.text).join(','),
+            STRINGS: strings.modules.map(m => m.text).join(STRINGS_RECORD_DELIM),
+        })
+    }
+
+    function makeCSS() {
+        // @TODO: support themes
+        let css = cssModules(bb);
+        if (!css)
+            return;
+        return css.modules.map(m => m.text).join('\n');
+    }
+
+    function vendorJS(url) {
+        // req.url is like `/React.js`
+        let name = url.split('/')[1].split('.')[0];
+        for (let vendor of bb.vendors) {
+            if (vendor.name === name) {
+                return readFile(vendor.devPath);
+            }
+        }
+    }
+
+    function update(all) {
+        let ts = all, strings = all, css = all;
+        let js = false;
+        let ok = true;
+
+        while (reloadQueue.length) {
+            let file = reloadQueue.shift();
+            if (file.endsWith('ts') || file.endsWith('tsx'))
+                ts = 1;
+            if (file.endsWith('css.js'))
+                css = 1;
+            if (file.endsWith('strings.ini'))
+                strings = 1;
+        }
+
+        initBuild(bb);
+
+        if (strings) {
+            content.js = null;
+            js = true;
+        }
+        if (ts) {
+            content.js = null;
+            js = runTypescript(bb);
+        }
+        if (js)
+            content.js = makeJS();
+        if (css)
+            content.css = makeCSS(bb);
+
+        return content.js && content.css;
+    }
+
+    function reload() {
+        if (reloading)
+            return debounceReload();
+
+        reloading = true;
+        if (update())
+            bs.reload();
+        reloading = false;
+    }
+
+    function debounceReload() {
+        clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(reload, RELOAD_DEBOUNCE);
+    }
+
+    function dirsToWatch() {
+        return bb.chunks.map(c => c.sourceDir);
+    }
+
+    function watch(event, file) {
+        logInfo('watch:', event, file);
+        reloadQueue.push(file);
+        if (bs.active)
+            debounceReload();
+    }
+
+    function send(res, str, contentType) {
+        let buf = Buffer.from(str || 'ERROR');
+        res.writeHead(200, {
+            'Content-Type': contentType,
+            'Content-Length': buf.byteLength,
+            'Cache-Control': 'no-store',
+        });
+        res.end(buf);
+    }
+
+    function onStart() {
+        for (let dir of dirsToWatch()) {
+            bs.watch(dir + '/**/*.ts', watch);
+            bs.watch(dir + '/**/*.tsx', watch);
+            bs.watch(dir + '/**/*.js', watch);
+            bs.watch(dir + '/**/*.ini', watch);
+        }
+    }
+
+    let settings = {
+        proxy: bb.settings.development.proxyUrl,
+        port: bb.settings.development.serverPort,
+        open: bb.settings.development.openBrowser,
+        reloadOnRestart: true,
+        middleware: [
+            {
+                route: "/project",
+                handle(req, res, next) {
+                    send(res, makeHTML(req.url), 'text/html')
+                }
+            },
+            {
+                route: "/DEV-CSS",
+                handle(req, res, next) {
+                    send(res, content.css, 'text/css')
+                }
+            },
+            {
+                route: "/DEV-JS",
+                handle(req, res, next) {
+                    send(res, content.js, 'application/javascript')
+                }
+            },
+            {
+                route: "/DEV-VENDOR",
+                handle(req, res, next) {
+                    send(res, vendorJS(req.url), 'application/javascript');
+                }
+            },
+        ]
+    };
+
+    bs.init(settings, onStart);
+
+}
+
+// JS bundler
+
 const JS_BUNDLE_FUNCTION = String.raw`
 function (modules, strings) {
     let M = {}, S = {}, require = name => M[name];
@@ -813,8 +402,10 @@ function (modules, strings) {
         M[name] = module.exports;
     }
 
-    for (let [locale, s] of strings)
-        S[locale] = Object.assign(S[locale] || {}, s);
+    for (let rec of strings.split("${STRINGS_RECORD_DELIM}")) {
+        let s = rec.split("${STRINGS_KEY_DELIM}");
+        S[s[0] || ""] = s[1] || "";
+    }
 
     require("gws/main").main(window, S);
 }
@@ -822,25 +413,456 @@ function (modules, strings) {
 
 const JS_BUNDLE_FUNCTION_MIN = JS_BUNDLE_FUNCTION.trim().replace(/\n/g, '').replace(/\s+/g, ' ');
 
-const JS_BUNDLE_TEMPLATE = `(${JS_BUNDLE_FUNCTION_MIN})([__MODULES__],[__STRINGS__])`
+const JS_BUNDLE_TEMPLATE = `(${JS_BUNDLE_FUNCTION_MIN})([__MODULES__],"__STRINGS__")`
+
+function jsModules(bb) {
+
+    function moduleName(compiledPath) {
+        let dir = path.dirname(compiledPath)
+        for (let src of bb.sources) {
+            if (dir.startsWith(src.buildRoot)) {
+                let rel = path.relative(src.buildRoot, compiledPath)
+                rel = rel.replace(/\/?index\.js$/, '')
+                rel = rel.replace(/\.js$/, '')
+                if (!rel)
+                    return src.chunk;
+                return src.chunk + '/' + rel
+            }
+        }
+    }
+
+    function make() {
+
+        let sources = {};
+        let sourceMaps = {};
+        let deps = [];
+
+        // read each compiled file and create a table moduleName => moduleSourceCode
+        // process require() calls in moduleSourceCode and build the dependency graph
+
+        for (let compiledPath of enumDir(BUILD_ROOT)) {
+            if (!compiledPath.endsWith('.js'))
+                continue;
+            let modName = moduleName(compiledPath)
+            if (!modName)
+                throw new Error(`cannot compute module name for "${compiledPath}"`)
+
+            let src = readFile(compiledPath);
+
+            src = src.replace(/\brequire\s*\((.+?)\)/g, (_, r) => {
+                let reqName = r.replace(/^[\s"']+/, '').replace(/[\s"']+$/, '');
+
+                if (reqName.startsWith('.')) {
+                    let abs = path.resolve(path.dirname(compiledPath), reqName)
+                    reqName = moduleName(abs) || moduleName(abs + '/index.js');
+                    if (!reqName)
+                        throw new Error(`cannot resolve require("${reqName}") in "${compiledPath}"`)
+                }
+
+                deps.push([modName, reqName])
+                return `require("${reqName}")`
+            });
+
+            src = src.replace(SOURCE_MAP_REGEX, m => {
+                sourceMaps[modName] = m;
+                return '';
+            });
+
+            sources[modName] = src;
+        }
+
+        // now, for each module in dependency order,
+        // create a module record, which source text is an array of
+        // moduleName and a wrapper: (require, exports) => { moduleSourceCode }
+
+        let modules = [];
+        let missing = [];
+
+        for (let modName of topSort(deps)) {
+            let text = sources[modName];
+            if (text) {
+                modules.push({
+                    chunk: modName.split('/')[0],
+                    name: modName,
+                    sourceMap: sourceMaps[modName],
+                    text: `['${modName}',(require,exports)=>{${sources[modName]}\n}]`,
+                });
+            } else {
+                missing.push(modName);
+            }
+        }
+
+        // check for missing modules
+
+        let vendors = bb.vendors.map(v => v.module);
+        missing = missing.filter(e => vendors.indexOf(e) < 0);
+        if (missing.length > 0)
+            throw new Error(`missing modules: ${missing.join()}`)
+
+        return {modules};
+    }
+
+    try {
+        let m = make();
+        logInfo(`Javascript: ${m.modules.length} modules ok`);
+        return m;
+    } catch (e) {
+        logError(`Javascript bundler error:`);
+        logException(e);
+    }
+}
+
+// JS vendor bundler
+
+function vendorStubs(bb) {
+    let modules = [];
+
+    for (let vendor of bb.vendors) {
+        modules.push({
+            chunk: '__vendor',
+            name: vendor.module,
+            text: `['${vendor.module}',(require,exports,module)=>{module.exports=${vendor.name}}]`,
+        })
+    }
+
+    return {modules};
+}
+
+function writeVendors(bb) {
+    try {
+        let sources = [];
+        for (let vendor of bb.vendors) {
+            let src = readFile(vendor.path);
+            src = src.replace(SOURCE_MAP_REGEX, '');
+            sources.push(src);
+        }
+        writeFile(bb.specOptions.VENDOR_BUNDLE_PATH, sources.join('\n;;\n'));
+        return true;
+    } catch (e) {
+        logError(`Bundler error:`);
+        logException(e);
+    }
+}
+
+// strings bundler
+
+function stringsModules(bb) {
+
+    function encode(obj) {
+        if (!obj)
+            return '';
+
+        // must match JS_BUNDLE_FUNCTION
+        let s = [];
+        for (let [key, val] of Object.entries(obj))
+            s.push(key + STRINGS_KEY_DELIM + val);
+
+        if(!s.length)
+            return '';
+
+        s = JSON.stringify(s.join(STRINGS_RECORD_DELIM));
+        return s.slice(1, -1);
+    }
+
+    function make() {
+
+        // first, collect all strings.ini files and store them under chunk/lang
+
+        let coll = {};
+        let langSet = {};
+
+        for (let src of bb.sources) {
+            if (src.kind !== 'strings')
+                continue;
+
+            let parsed = ini.parse(readFile(src.path));
+
+            for (let [lang, val] of Object.entries(parsed)) {
+                langSet[lang] = 1;
+                let key = src.chunk + '/' + lang;
+                coll[key] = Object.assign(coll[key] || {}, val);
+            }
+        }
+
+        // now, for each combination of chunk/lang, create a module record
+        // with the text [lang, {strings}]
+
+        let modules = [];
+        let langs = Object.keys(langSet).sort();
+
+        for (let chunk of bb.chunks) {
+            for (let lang of langs) {
+                let key = chunk.name + '/' + lang;
+                let text = encode(coll[key]);
+                if (text) {
+                    modules.push({
+                        chunk: chunk.name,
+                        lang,
+                        text,
+                    })
+                }
+            }
+        }
+
+        return {langs, modules};
+    }
+
+    try {
+        let m = make();
+        logInfo(`Strings: ${m.modules.length} modules ok`);
+        return m;
+    } catch (e) {
+        logError(`Strings bundler error:`);
+        logException(e);
+    }
+}
+
+// css bundler
+
+function cssModules(bb) {
+    function make() {
+
+        const CSS_DEFAULTS = {
+            unit: 'px',
+            sort: true,
+            rootSelector: '.gws',
+        };
+
+        for (let k of Object.keys(require.cache)) {
+            if (k.includes('.css.js'))
+                delete require.cache[k];
+        }
+
+        // first, load themes css.js, which is supposed to export
+        // a triple [pre-rules, post-rules, theme-settings]
+
+        let themeRecs = [];
+
+        for (let src of bb.sources) {
+            if (src.kind === 'theme') {
+                themeRecs.push({
+                    name: path.basename(src.path).split('.')[0],
+                    mod: require(src.path)
+                });
+            }
+        }
+
+        // browse css.js files and load each one into rules
+        // apply each theme to rules and create a module record
+        // with text equal to raw css
+
+        let themes = [];
+        let modules = [];
+
+        for (let chunk of bb.chunks) {
+
+            let rules = [];
+
+            for (let src of bb.sources) {
+                if (src.chunk === chunk.name && src.kind === 'css') {
+                    rules.push(require(src.path));
+                }
+            }
+
+            for (let rec of themeRecs) {
+                themes.push(rec.name);
+                let [pre, post, opts] = rec.mod;
+                opts = {...CSS_DEFAULTS, ...opts}
+                let css = jadzia.css(
+                    {[opts.rootSelector]: [pre, rules, post]},
+                    opts);
+                modules.push({
+                    chunk: chunk.name,
+                    theme: rec.name,
+                    text: css
+                })
+            }
+        }
+
+        return {themes, modules};
+    }
+
+    try {
+        let m = make();
+        logInfo(`CSS: ${m.modules.length} modules ok`);
+        return m;
+    } catch (e) {
+        logError(`CSS compiler error:`);
+        logException(e);
+    }
+}
+
+// common bundler
+
+function createBundles(bb) {
+
+    function make() {
+        let bundles = {};
+
+        let js = jsModules(bb),
+            strings = stringsModules(bb),
+            css = cssModules(bb);
+
+        let stubs = vendorStubs(bb);
+
+        if (!js || !strings || !css)
+            return;
+
+        let dirMap = {};
+
+        for (let chunk of bb.chunks)
+            dirMap[chunk.name] = chunk.bundleDir;
+
+        function bundleFor(chunkName) {
+            let dir = dirMap[chunkName];
+
+            if (bundles[dir])
+                return bundles[dir];
+
+            let b = {};
+
+            if (Object.keys(bundles).length === 0) {
+                b[BUNDLE_KEY_TEMPLATE] = JS_BUNDLE_TEMPLATE
+                b[BUNDLE_KEY_MODULES] = stubs.modules.map(mod => mod.text).join(',') + ','
+            }
+
+            return bundles[dir] = b;
+        }
+
+        for (let mod of js.modules) {
+            let b = bundleFor(mod.chunk);
+            b[BUNDLE_KEY_MODULES] = (b[BUNDLE_KEY_MODULES] || '') + mod.text + ','
+        }
+
+        for (let mod of strings.modules) {
+            let b = bundleFor(mod.chunk);
+            let key = BUNDLE_KEY_STRINGS + '_' + mod.lang;
+            b[key] = (b[key] || '') + mod.text + STRINGS_RECORD_DELIM
+        }
+
+        for (let mod of css.modules) {
+            let b = bundleFor(mod.chunk);
+            let key = BUNDLE_KEY_CSS + '_' + mod.theme;
+            b[key] = (b[key] || '') + mod.text + '\n'
+        }
+
+        return bundles;
+    }
+
+    try {
+        return make();
+    } catch (e) {
+        logError(`Bundler error:`);
+        logException(e);
+    }
+}
+
+function writeBundles(bb, bundles) {
+    try {
+        for (let dir of Object.keys(bundles)) {
+            let p = path.join(dir, bb.specOptions.BUNDLE_FILENAME);
+            writeFile(p, JSON.stringify(bundles[dir], null, 4));
+            logInfo(`created bundle "${p}"`);
+        }
+        return true;
+    } catch (e) {
+        logError(`Bundler error:`);
+        logException(e);
+    }
+}
+
+// typescript
+
+function runTypescript(bb) {
+    // @TODO use the compiler API
+    // https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API
+
+    let time = new Date;
+
+    logInfo('running TypeScript...');
+
+    let tsConfig = require(bb.tsConfigPath);
+    let tsConfigBuildPath = path.join(JS_DIR, '__build.tsconfig.json');
+
+    tsConfig.files = [];
+
+    for (let src of bb.sources) {
+        if (src.kind === 'ts')
+            tsConfig.files.push(src.path)
+    }
+
+    tsConfig.compilerOptions.outDir = BUILD_ROOT;
+    writeFile(tsConfigBuildPath, JSON.stringify(tsConfig, null, 4))
+
+    let args = [
+        path.join(JS_DIR, 'node_modules/.bin/tsc'),
+        '--project',
+        tsConfigBuildPath,
+    ];
+
+    let res = child_process.spawnSync('node', args, {
+        cwd: JS_DIR,
+        stdio: 'pipe'
+    });
+
+    let out = '',
+        err = 0,
+        msg = [];
+
+    for (let s of res.output) {
+        out += String(s || '');
+    }
+
+    for (let s of out.split('\n')) {
+        if (!s.trim())
+            continue;
+
+        let m = s.match(/^(.+?)\((\d+),(\d+)\):(\s+error.+)/);
+        if (m) {
+            err++;
+            msg.push(
+                COLOR.ERROR('[TS] ') +
+                COLOR.ERROR_FILE(path.resolve(JS_DIR, m[1]) + ':' + m[2] + ':' + m[3]) +
+                COLOR.ERROR(m[4])
+            );
+        } else {
+            msg.push(COLOR.ERROR(s));
+        }
+    }
+
+    if (err > 0)
+        logError(`TypeScript: ${err} error(s):`);
+
+    if (msg.length)
+        console.log(msg.join('\n'));
+
+    if (res.status === 0) {
+        time = ((new Date - time) / 1000).toFixed(2);
+        logInfo(`TypeScript ok in ${time} s.`);
+    }
+
+    return res.status === 0;
+}
 
 // tools
 
-const COLOR_INFO = chalk.cyan;
-const COLOR_ERROR = chalk.red;
-const COLOR_ERROR_HEAD = chalk.bold.red;
-const COLOR_ERROR_FILE = chalk.bold.yellow;
+const COLOR = {
+    INFO: chalk.cyan,
+    ERROR: chalk.red,
+    ERROR_HEAD: chalk.bold.red,
+    ERROR_FILE: chalk.bold.yellow,
+}
 
 function logInfo(...args) {
-    console.log(COLOR_INFO('[GWS]', ...args))
+    console.log(COLOR.INFO('[GWS]', ...args))
 }
 
 function logError(...args) {
-    console.log(COLOR_ERROR_HEAD('\n[GWS]', ...args, '\n'))
+    console.log(COLOR.ERROR_HEAD('\n[GWS]', ...args, '\n'))
 }
 
 function logException(exc) {
-    console.log(COLOR_ERROR(exc.stack));
+    console.log(COLOR.ERROR(exc.stack));
 }
 
 function enumDir(dir) {
@@ -880,11 +902,11 @@ function topSort(deps) {
     }
 }
 
-function replaceEnv(str) {
-    return str.replace(/\${(\w+)}/g, (_, v) => {
-        if (v in process.env)
-            return process.env[v]
-        throw new Error(`unknown variable "${v}" in "${str}"`)
+function formatTemplate(tpl, vars) {
+    return tpl.replace(/__([A-Z]+)__/g, (_, $1) => {
+        if ($1 in vars)
+            return vars[$1];
+        throw new Error(`template variable "$1" not found`)
     })
 }
 
@@ -894,13 +916,5 @@ function readFile(p) {
 
 function writeFile(p, s) {
     return fs.writeFileSync(p, s, {encoding: 'utf8'})
-}
-
-function template(tpl, vars) {
-    return tpl.replace(/__([A-Z]+)__/g, (_, $1) => {
-        if ($1 in vars)
-            return vars[$1];
-        throw new Error(`template variable "$1" not found`)
-    })
 }
 

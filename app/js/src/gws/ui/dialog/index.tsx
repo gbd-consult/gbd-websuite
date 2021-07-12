@@ -3,8 +3,8 @@ import * as React from 'react';
 import * as base from '../base';
 import * as util from '../util';
 
-import {Touchable, Button} from '../button';
-import {Row, Cell} from '../layout';
+import {Button, Touchable} from '../button';
+import {Cell, Row} from '../layout';
 import {Error, Info} from '../text';
 
 

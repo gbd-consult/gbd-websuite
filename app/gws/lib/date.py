@@ -1,10 +1,11 @@
-from typing import Optional
-import re
 import datetime
+import re
 import time
+
 import babel.dates
 
 import gws.lib.os2
+import gws.types as t
 
 
 def set_system_time_zone(tz):
@@ -95,7 +96,7 @@ _dmy_re = r'''(?x)
 '''
 
 
-def from_dmy(s: str) -> Optional[datetime.datetime]:
+def from_dmy(s: str) -> t.Optional[datetime.datetime]:
     m = re.match(_dmy_re, s)
     if not m:
         return None
@@ -142,7 +143,7 @@ _iso_re = r'''(?x)
 '''
 
 
-def from_iso(s: str) -> Optional[datetime.datetime]:
+def from_iso(s: str) -> t.Optional[datetime.datetime]:
     m = re.match(_iso_re, s)
     if not m:
         return None
@@ -219,11 +220,9 @@ class TimeFormatter:
         return self.format('long')
 
 
-@gws.global_var
 def date_formatter(locale_uid):
     return DateFormatter(locale_uid)
 
 
-@gws.global_var
 def time_formatter(locale_uid):
     return TimeFormatter(locale_uid)

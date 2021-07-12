@@ -5,15 +5,13 @@ import logging
 import logging.config
 import sys
 
-import gws.types as t
-
 from . import error as err
 from . import util
 
 _gws_logger_name = 'gws'
 
 
-class Level(t.Enum):
+class Level:
     CRITICAL = 50
     ERROR = 40
     WARN = 30

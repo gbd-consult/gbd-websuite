@@ -1,12 +1,12 @@
 import gws
 import gws.types as t
-
-import gws.gis.proj
-import gws.gis.zoom
-import gws.gis.extent
 import gws.base.layer
-import gws.base.layer.types
+import gws.lib.extent
+import gws.lib.proj
+import gws.lib.zoom
 import gws.lib.units as units
+
+
 
 # https://wiki.openstreetmap.org/wiki/Zoom_levels
 
@@ -33,75 +33,49 @@ _DEFAULT_RESOLUTIONS = [
 ]
 
 
-class Config(t.Config):
+class Config(gws.Config):
     """Map configuration"""
 
-    center: t.Optional[t.Point]  #: map center
+    center: t.Optional[gws.Point]  #: map center
     coordinatePrecision: t.Optional[int]  #: precision for coordinates
-    crs: t.Optional[t.Crs] = 'EPSG:3857'  #: crs for this map
-    extent: t.Optional[t.Extent]  #: map extent
+    crs: t.Optional[gws.Crs] = 'EPSG:3857'  #: crs for this map
+    extent: t.Optional[gws.Extent]  #: map extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    layers: t.List[t.ext.layer.Config]  #: collection of layers for this map
-    title: str = ''  #: map title
+    layers: t.List[gws.ext.layer.Config]  #: collection of layers for this map
     skipInvalidLayers: bool = False  #: remove invalid layers from the map
-    uid: t.Optional[str]  #: unique id
-    zoom: t.Optional[gws.gis.zoom.Config]  #: map scales and resolutions
+    title: str = ''  #: map title
+    zoom: t.Optional[gws.lib.zoom.Config]  #: map scales and resolutions
 
 
-class Props(t.Data):
+class Props(gws.Data):
     crs: str
     crsDef: t.Optional[str]
     coordinatePrecision: int
-    extent: t.Extent
-    center: t.Point
+    extent: gws.Extent
+    center: gws.Point
     initResolution: float
-    layers: t.List[gws.base.layer.types.LayerProps]
+    layers: t.List[gws.base.layer.Props]
     resolutions: t.List[float]
     title: str = ''
 
 
-#:export IMap
-class Object(gws.Object, t.IMap):
+class Object(gws.Node):
+    layers: t.List[gws.ILayer]
+
+    center: gws.Point
+    coordinate_precision: int
+    crs: gws.Crs
+    extent: gws.Extent
+    init_resolution: float
+    resolutions: t.List[float]
+
     @property
-    def bounds(self) -> t.Bounds:
-        return t.Bounds(crs=self.crs, extent=self.extent)
-
-    def configure(self):
-        super().configure()
-
-        uid = self.var('uid') or 'map'
-        p = t.cast(t.IProject, self.get_closest('gws.base.project'))
-        if p:
-            uid = p.uid + '.' + uid
-        self.set_uid(uid)
-
-        self.crs: t.Crs = self.var('crs')
-
-        self.resolutions: t.List[float] = _DEFAULT_RESOLUTIONS
-        self.init_resolution: float = _DEFAULT_RESOLUTIONS[-1]
-
-        zoom = self.var('zoom')
-        if zoom:
-            self.resolutions = gws.gis.zoom.resolutions_from_config(zoom)
-            self.init_resolution = gws.gis.zoom.init_resolution(zoom, self.resolutions)
-
-        self.layers: t.List[t.ILayer] = gws.base.layer.add_layers_to_object(self, self.var('layers'))
-
-        self.extent: t.Extent = _configure_extent(self, self.crs, None)
-        if not self.extent:
-            raise gws.Error(f'no extent found for {self.uid!r}')
-        _set_default_extent(self, self.extent)
-
-        self.center: t.Point = self.var('center') or gws.gis.extent.center(self.extent)
-
-        self.coordinate_precision: float = self.var('coordinatePrecision')
-        if self.coordinate_precision is None:
-            proj = gws.gis.proj.as_proj(self.crs)
-            self.coordinate_precision = 2 if proj.units == 'm' else 7
+    def bounds(self) -> gws.Bounds:
+        return gws.Bounds(crs=self.crs, extent=self.extent)
 
     @property
     def props(self):
-        proj = gws.gis.proj.as_proj(self.crs)
+        proj = gws.lib.proj.as_proj(self.crs)
         return Props({
             'crs': proj.epsg,
             'crsDef': proj.proj4text,
@@ -114,6 +88,37 @@ class Object(gws.Object, t.IMap):
             'title': self.var('titie'),
         })
 
+    def configure(self):
+        uid = self.var('uid') or 'map'
+        p = self.get_closest('gws.base.project')
+        if p:
+            uid = p.uid + '.' + uid
+        self.set_uid(uid)
+
+        self.crs = self.var('crs')
+
+        self.resolutions = _DEFAULT_RESOLUTIONS
+        self.init_resolution = _DEFAULT_RESOLUTIONS[-1]
+
+        zoom = self.var('zoom')
+        if zoom:
+            self.resolutions = gws.lib.zoom.resolutions_from_config(zoom)
+            self.init_resolution = gws.lib.zoom.init_resolution(zoom, self.resolutions)
+
+        self.layers = gws.base.layer.add_layers_to_object(self, self.var('layers'))
+
+        self.extent = _configure_extent(self, self.crs, None)
+        if not self.extent:
+            raise gws.Error(f'no extent found for {self.uid!r}')
+        _set_default_extent(self, self.extent)
+
+        self.center = self.var('center') or gws.lib.extent.center(self.extent)
+
+        self.coordinate_precision = self.var('coordinatePrecision')
+        if self.coordinate_precision is None:
+            proj = gws.lib.proj.as_proj(self.crs)
+            self.coordinate_precision = 2 if proj.units == 'm' else 7
+
 
 def _configure_extent(obj, target_crs, default_ext):
     layers = gws.get(obj, 'layers') or []
@@ -123,14 +128,15 @@ def _configure_extent(obj, target_crs, default_ext):
     config_ext = obj.var('extent')
 
     if config_ext:
-        if not gws.gis.extent.valid(config_ext):
+        ext = gws.lib.extent.from_list(config_ext)
+        if not ext:
             raise gws.Error(f'{obj.uid!r}: invalid extent {config_ext!r}')
 
         # configure sublayers using config_ext as a default
         for la in layers:
-            _configure_extent(la, target_crs, config_ext)
+            _configure_extent(la, target_crs, ext)
 
-        obj.extent = config_ext
+        obj.extent = ext
         return obj.extent
 
     if layers:
@@ -144,7 +150,7 @@ def _configure_extent(obj, target_crs, default_ext):
                 layer_ext_list.append(layer_ext)
 
         if layer_ext_list:
-            obj.extent = gws.gis.extent.merge(layer_ext_list)
+            obj.extent = gws.lib.extent.merge(layer_ext_list)
         else:
             obj.extent = default_ext
         return obj.extent
@@ -152,14 +158,14 @@ def _configure_extent(obj, target_crs, default_ext):
     # obj is a leaf layer and has no configured extent
     # check if it has an own extent (from its source)
 
-    own_bounds: t.Bounds = gws.get(obj, 'own_bounds')
+    own_bounds: gws.Bounds = gws.get(obj, 'own_bounds')
 
     if own_bounds:
         own_ext = own_bounds.extent
-        buf = obj.var('extentBuffer', parent=True)
+        buf = obj.var('extentBuffer', with_parent=True)
         if buf:
-            own_ext = gws.gis.extent.buffer(own_ext, buf)
-        own_ext = gws.gis.extent.transform(own_ext, own_bounds.crs, target_crs)
+            own_ext = gws.lib.extent.buffer(own_ext, buf)
+        own_ext = gws.lib.extent.transform(own_ext, own_bounds.crs, target_crs)
         obj.extent = own_ext
         return obj.extent
 

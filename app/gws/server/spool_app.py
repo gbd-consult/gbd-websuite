@@ -1,0 +1,54 @@
+# noinspection PyUnresolvedReferences
+import uwsgi
+
+import gws
+import gws.types as t
+import gws.config.loader
+import gws.lib.job
+
+
+def main():
+    try:
+        gws.log.info('starting SPOOL application')
+        root = gws.config.loader.load()
+        gws.log.set_level(root.application.var('server.logLevel'))
+        root.application.monitor.start()
+        uwsgi.spooler = _spooler
+    except:
+        gws.log.error('UNABLE TO LOAD CONFIGURATION')
+        gws.log.exception()
+        gws.exit(255)
+
+
+def application(environ, start_response):
+    pass
+
+
+if __name__ == '__main__':
+    main()
+
+
+##
+
+
+def _spooler(env):
+    try:
+        _spooler2(env)
+    except:
+        gws.log.exception()
+
+    # even if it's failed, return OK so the spooler can clean up
+    # if we ever provide retry, this will on the app level, no automatic spooler retries
+
+    return gws.SPOOL_OK
+
+
+def _spooler2(env):
+    job_uid = env.get(b'job_uid')
+    if not job_uid:
+        raise ValueError('no job_uid found')
+    job = gws.lib.job.get(gws.as_str(job_uid))
+    if not job:
+        raise ValueError('invalid job_uid', job_uid)
+    gws.log.debug('running job', job.uid)
+    job.run()
