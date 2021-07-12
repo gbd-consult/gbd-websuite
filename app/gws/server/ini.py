@@ -286,6 +286,10 @@ def create(root: t.IRootObject, base_dir, pid_dir):
                     root {d};
                     try_files $uri @cache;
                 }}
+                location /dop {{
+                    root {d};
+                    add_header Access-Control-Allow-Origin *;
+                }}
             """
             # @TODO multisites
             break
