@@ -33,14 +33,18 @@ function _sortDocuments(docs: Array<gws.api.FsinfoDocumentProps>): Array<gws.api
     })
 }
 
+function _sortPersons(infos: Array<gws.api.FsinfoPersonInfo>): Array<gws.api.FsinfoPersonInfo> {
+    return infos.slice(0).sort(function (a, b) {
+        return a.sortKey.localeCompare(b.sortKey);
+    })
+}
+
 
 interface SearchFormValues {
     gemarkung?: string;
     flur?: string;
     flurstueck?: string;
-    nachname?: string;
-    vorname?: string;
-    pn?: string;
+    personUid?: string;
 }
 
 interface Upload {
@@ -81,6 +85,7 @@ interface FsinfoViewProps extends gws.types.ViewProps {
     fsinfoDeleteFormValues: DeleteFormValues;
 
     fsinfoGemarkungListItems: Array<gws.ui.ListItem>;
+    fsinfoPersonListItems: Array<gws.ui.ListItem>;
 
     fsinfoFoundFeatures: Array<gws.types.IMapFeature>;
     fsinfoFoundFeatureCount: number;
@@ -102,6 +107,7 @@ const FsinfoStoreKeys = [
     'fsinfoUploadFormValues',
     'fsinfoDeleteFormValues',
     'fsinfoGemarkungListItems',
+    'fsinfoPersonListItems',
     'fsinfoFoundFeatures',
     'fsinfoFoundFeatureCount',
     'fsinfoDetails',
@@ -166,37 +172,23 @@ class FsinfoSearchForm extends gws.View<FsinfoViewProps> {
         return <Form>
             <Row>
                 <Cell flex>
-                    <gws.ui.TextInput
-                        placeholder={cc.STRINGS.vornameLabel}
-                        {...boundTo('vorname')}
-                        withClear
-                    />
-                </Cell>
-                <Cell flex>
-                    <gws.ui.TextInput
-                        placeholder={cc.STRINGS.nachnameLabel}
-                        {...boundTo('nachname')}
+                    <gws.ui.Select
+                        placeholder={cc.STRINGS.personLabel}
+                        items={this.props.fsinfoPersonListItems}
+                        {...boundTo('personUid')}
+                        searchMode={{anySubstring: true, caseSensitive: false}}
+                        withSearch
                         withClear
                     />
                 </Cell>
             </Row>
-            <Row>
-                <Cell flex>
-                    <gws.ui.TextInput
-                        placeholder={cc.STRINGS.pnLabel}
-                        {...boundTo('pn')}
-                        withClear
-                    />
-                </Cell>
-            </Row>
-
             <Row>
                 <Cell flex>
                     <gws.ui.Select
                         placeholder={cc.STRINGS.gemarkungLabel}
                         items={this.props.fsinfoGemarkungListItems}
-                        value={form.gemarkung}
                         {...boundTo('gemarkung')}
+                        searchMode={{anySubstring: false, caseSensitive: false}}
                         withSearch
                         withClear
                     />
@@ -716,6 +708,7 @@ class FsinfoController extends gws.Controller {
             vornameLabel: 'Vorname',
             nachnameLabel: 'Name',
             pnLabel: 'Personennummer',
+            personLabel: 'Name, Vorname, Personennummer',
             gemarkungLabel: 'Gemarkung',
             flurLabel: 'Flur',
             flurstueckLabel: 'Flurstück',
@@ -730,12 +723,17 @@ class FsinfoController extends gws.Controller {
             fsinfoTab: 'search',
         });
 
-        let res = await this.app.server.fsinfoGetGemarkungen({});
+        let res = await this.app.server.fsinfoGetLists({});
 
         this.update({
-            fsinfoGemarkungListItems: (res.names || []).map(g => ({
-                text: g, value: g
-            }))
+            fsinfoGemarkungListItems: (res.gemarkungen || []).map(g => ({
+                text: g,
+                value: g
+            })),
+            fsinfoPersonListItems: _sortPersons(res.personen || []).map(p => ({
+                text: p.text,
+                value: p.personUid
+            })),
         });
 
         await this.loadDocuments();

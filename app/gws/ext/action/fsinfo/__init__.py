@@ -13,6 +13,7 @@ import gws.ext.helper.alkis
 import gws.gis.proj
 import gws.gis.shape
 import gws.web.error
+import gws.tools.misc
 import gws.tools.os2
 
 import gws.types as t
@@ -24,6 +25,9 @@ class Config(t.WithTypeAndAccess):
     db: t.Optional[str]  #: database provider uid
     dataTable: gws.common.db.SqlTableConfig
     documentTable: gws.common.db.SqlTableConfig
+    personTable: gws.common.db.SqlTableConfig
+    personFormat: t.FormatStr
+    personSort: t.FormatStr
     templates: t.Optional[t.List[t.ext.template.Config]]  #: client templates
 
 
@@ -31,9 +35,7 @@ class FindFlurstueckParams(t.Params):
     gemarkung: str = ''
     flur: str = ''
     flurstueck: str = ''
-    nachname: str = ''
-    vorname: str = ''
-    pn: str = ''
+    personUid: str = ''
 
 
 class FindFlurstueckResponse(t.Response):
@@ -41,8 +43,17 @@ class FindFlurstueckResponse(t.Response):
     total: int
 
 
-class GetGemarkungenResponse(t.Response):
-    names: t.List[str]
+class PersonInfo(t.Props):
+    personUid: str
+    nachname: str
+    vorname: str
+    text: str
+    sortKey: str
+
+
+class GetListsResponse(t.Response):
+    gemarkungen: t.List[str]
+    personen: t.List[PersonInfo]
 
 
 class DocumentProps(t.Props):
@@ -126,6 +137,9 @@ class Object(gws.common.action.Object):
         self.db = t.cast(gws.ext.db.provider.postgres.Object, gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
         self.data_table = self.db.configure_table(self.var('dataTable'))
         self.document_table = self.db.configure_table(self.var('documentTable'))
+        self.person_table = self.db.configure_table(self.var('personTable'))
+        self.person_format = self.var('personFormat')
+        self.person_sort = self.var('personSort')
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
         self.details_template: t.ITemplate = gws.common.template.find(self.templates, subject='fsinfo.details')
         self.title_template: t.ITemplate = gws.common.template.find(self.templates, subject='fsinfo.title')
@@ -139,6 +153,8 @@ class Object(gws.common.action.Object):
         for key in vars(FindFlurstueckParams):
             v = p.get(key)
             if v and v.strip():
+                if key == 'personUid':
+                    key = 'pn'
                 conds.append(f'{key}=%s')
                 params.append(v)
 
@@ -163,20 +179,25 @@ class Object(gws.common.action.Object):
             features=list(features.values()),
             total=len(features))
 
-    def api_get_gemarkungen(self, req: t.IRequest, p: t.Params) -> GetGemarkungenResponse:
-        """Return a list of Gemarkung names"""
+    def api_get_lists(self, req: t.IRequest, p: t.Params) -> GetListsResponse:
+        """Return Gemarkungen and Personen lists"""
 
         with self.db.connect() as conn:
-            rs = conn.select(f'''
-                SELECT 
-                    DISTINCT gemarkung
-                FROM 
-                    {self.data_table.name}
-                ORDER BY 
-                    gemarkung
-            ''')
+            rs = conn.select(f'SELECT DISTINCT gemarkung FROM {self.data_table.name}')
+            gemarkungen = sorted(r['gemarkung'] for r in rs)
 
-            return GetGemarkungenResponse(names=[r['gemarkung'] for r in rs])
+            rs = conn.select(f'SELECT DISTINCT * FROM {self.person_table.name}')
+            personen = [
+                PersonInfo(
+                    personUid=str(r['pn']),
+                    vorname=r['vorname'],
+                    nachname=r['nachname'],
+                    text=gws.tools.misc.format_placeholders(self.person_format, r),
+                    sortKey=gws.tools.misc.format_placeholders(self.person_sort, r).lower(),
+                ) for r in rs
+            ]
+
+            return GetListsResponse(gemarkungen=gemarkungen, personen=personen)
 
     def api_get_details(self, req: t.IRequest, p: GetDetailsParams) -> GetDetailsResponse:
         fs_key = self.data_table.key_column
