@@ -14,7 +14,7 @@ from . import types
 _bigval = 1e10
 
 
-def parse(prov, xml):
+def parse(prov, path, xml):
     root = gws.tools.xml2.from_string(xml)
 
     prov.properties = _properties(root.first('properties'))
@@ -34,15 +34,17 @@ def parse(prov, xml):
     root_group = _tree(root.first('layer-tree-group'), map_layers)
     prov.source_layers = u.flatten_source_layers(root_group.layers)
 
-    crs = None
-
+    project_crs = None
     if prov.version.startswith('2'):
-        crs = _pval(prov.properties, 'SpatialRefSys.ProjectCrs')
+        project_crs = _pval(prov.properties, 'SpatialRefSys.ProjectCrs')
     if prov.version.startswith('3'):
-        crs = root.get_text('projectCrs.spatialrefsys.authid')
+        project_crs = root.get_text('projectCrs.spatialrefsys.authid')
 
-    if crs:
-        prov.supported_crs = [crs]
+    if project_crs:
+        prov.supported_crs = [project_crs]
+    else:
+        prov.supported_crs = gws.filter(crs for ml in map_layers.values() for crs in ml.supported_crs)
+        gws.log.warn(f'project CRS not configured, using layer CRS in {path!r}')
 
 
 def _project_meta_from_props(props):
@@ -200,11 +202,11 @@ def _map_layer(el):
 
     crs = el.get_text('srs.spatialrefsys.authid')
 
-    sl.supported_crs = [crs]
+    sl.supported_crs = [crs] if crs else []
     sl.supported_bounds = []
 
     e = el.first('extent')
-    if e:
+    if crs and e:
         sl.supported_bounds.append(t.Bounds(
             crs=crs,
             extent=(
@@ -317,23 +319,23 @@ _COMP3_LAYOUT_TYPE_FIRST = _QGraphicsItem_UserType + 100
 
 _COMP3_LAYOUT_TYPES = {
     _COMP3_LAYOUT_TYPE_FIRST + n: s for n, s in enumerate(
-    [
-        'LayoutItem',
-        'LayoutGroup',
-        'LayoutPage',
-        'LayoutMap',
-        'LayoutPicture',
-        'LayoutLabel',
-        'LayoutLegend',
-        'LayoutShape',
-        'LayoutPolygon',
-        'LayoutPolyline',
-        'LayoutScaleBar',
-        'LayoutFrame',
-        'LayoutHtml',
-        'LayoutAttributeTable',
-        'LayoutTextTable',
-    ])
+        [
+            'LayoutItem',
+            'LayoutGroup',
+            'LayoutPage',
+            'LayoutMap',
+            'LayoutPicture',
+            'LayoutLabel',
+            'LayoutLegend',
+            'LayoutShape',
+            'LayoutPolygon',
+            'LayoutPolyline',
+            'LayoutScaleBar',
+            'LayoutFrame',
+            'LayoutHtml',
+            'LayoutAttributeTable',
+            'LayoutTextTable',
+        ])
 }
 
 

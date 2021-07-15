@@ -70,7 +70,7 @@ class Object(gws.common.ows.provider.Object):
 
         self.source_text = self._read(self.path)
 
-        parser.parse(self, self.source_text)
+        parser.parse(self, self.path, self.source_text)
 
     def find_features(self, args: t.SearchArgs) -> t.List[t.IFeature]:
         if not args.shapes:
