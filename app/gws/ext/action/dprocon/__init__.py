@@ -30,7 +30,7 @@ _DEFAULT_TEMPLATES = [
         type='html',
         text='''
             <p class="head">{title}</p>
-            
+
             <table>
             @each attributes as k, v
                 <tr>
@@ -176,7 +176,7 @@ class Object(gws.common.action.Object):
                 ''',
                 f'''
                     INSERT INTO {index_table_name}
-                        SELECT 
+                        SELECT
                             h.gml_id,
                             h.lage || ' ' || h.hausnummer AS meso_key,
                             h.land,
@@ -255,8 +255,7 @@ class Object(gws.common.action.Object):
             data.append(d)
 
         with self.alkis.db.connect() as conn:
-            for d in data:
-                conn.insert_one(self.request_table_name, 'request_id', d)
+            conn.insert_many(self.request_table_name, data)
 
         return request_id
 
@@ -268,7 +267,7 @@ class Object(gws.common.action.Object):
             data_fields = ','.join(k + ' ' + v for k, v in self._data_fields.items())
 
             conn.exec(f'''
-                CREATE TABLE IF NOT EXISTS {request_table_name} ( 
+                CREATE TABLE IF NOT EXISTS {request_table_name} (
                     id SERIAL PRIMARY KEY,
                     request_id CHARACTER VARYING,
                     {data_fields},
@@ -279,15 +278,15 @@ class Object(gws.common.action.Object):
 
             # clean up obsolete request records
             conn.exec(f'''
-                DELETE FROM {request_table_name} 
-                WHERE ts < CURRENT_DATE - INTERVAL '%s seconds' 
+                DELETE FROM {request_table_name}
+                WHERE ts < CURRENT_DATE - INTERVAL '%s seconds'
             ''', [self.var('cacheTime')])
 
     def _selection_for_request(self, request_id):
         with self.alkis.db.connect() as conn:
             return conn.select_value(f'''
-                SELECT selection 
-                FROM {conn.quote_table(self.request_table_name)} 
+                SELECT selection
+                FROM {conn.quote_table(self.request_table_name)}
                 WHERE request_id=%s
             ''', [request_id])
 
@@ -306,9 +305,9 @@ class Object(gws.common.action.Object):
                     continue
 
                 cols = ','.join(
-                    c
-                    for c in conn.columns(data_schema + '.' + tab)
-                    if c not in exclude_fields)
+                    col['name']
+                    for col in conn.columns(data_schema + '.' + tab)
+                    if col['name'] not in exclude_fields)
 
                 if not cols:
                     continue
@@ -332,7 +331,7 @@ class Object(gws.common.action.Object):
             tmp = f"{self.data_table_name}{_rand_id()}"
 
             conn.exec(f'''
-                CREATE TABLE IF NOT EXISTS {conn.quote_table(tmp)} ( 
+                CREATE TABLE IF NOT EXISTS {conn.quote_table(tmp)} (
                     table_name CHARACTER VARYING,
                     request_id CHARACTER VARYING,
                     field CHARACTER VARYING,
@@ -350,8 +349,8 @@ class Object(gws.common.action.Object):
 
         with self.alkis.db.connect() as conn:
             rs = conn.select(f'''
-                SELECT * 
-                FROM {conn.quote_table(self.data_table_name)} 
+                SELECT *
+                FROM {conn.quote_table(self.data_table_name)}
                 WHERE request_id=%s
             ''', [request_id])
 
