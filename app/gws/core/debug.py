@@ -5,8 +5,87 @@ import socket
 import sys
 import time
 import traceback
+import uuid
 
 from . import log
+
+
+def inspect(arg, max_depth=1, all_props=False):
+    """Inspect the argument upto the given depth"""
+
+    yield from _dump(arg, None, 0, max_depth or 1, all_props, [])
+
+
+def p(*args, lines=False, stack=False, d=3, all=False):
+    """Log an inspection of the arguments"""
+
+    sep = '-' * 60
+
+    if lines:
+        for arg in args:
+            for s in enumerate(str(arg).split('\n'), 1):
+                log.debug('%06d:%s' % s, extra={'skip_frames': 1})
+            log.debug(sep, extra={'skip_frames': 1})
+        return
+
+    if stack:
+        for s in traceback.format_stack()[:-1]:
+            log.debug(s.replace('\n', ' '), extra={'skip_frames': 1})
+        return
+
+    for arg in args:
+        for s in inspect(arg, max_depth=d, all_props=all):
+            log.debug(s, extra={'skip_frames': 1})
+        log.debug(sep, extra={'skip_frames': 1})
+
+
+def time_start(label):
+    u = uuid.uuid4()
+    log.debug(f'@PROFILE_BGN {u} {label}', extra={'skip_frames': 1})
+    return [u, time.time(), label]
+
+
+def time_end(ts):
+    u, t, label = ts
+    t = time.time() - t
+    log.debug(f'@PROFILE_END {u} {label} :: {t:.2f}', extra={'skip_frames': 1})
+
+
+def pycharm_debugger_check(path_to_pycharm_debug_egg, host, port, suspend=False):
+    """Check for pycharm debugger listeniing.
+
+    Attempt to open the debugger socket first and return that socket when pydevd asks for it.
+    If there is no socket, then IDEA is not listening, return quickly.
+    """
+
+    sock = None
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((host, port))
+    except:
+        sock = None
+
+    if not sock:
+        return False
+
+    if not path_to_pycharm_debug_egg.endswith('.egg'):
+        if sys.version_info >= (3, 0):
+            path_to_pycharm_debug_egg += '/pycharm-debug-py3k.egg'
+        else:
+            path_to_pycharm_debug_egg += '/pycharm-debug.egg'
+
+    sys.path.append(path_to_pycharm_debug_egg)
+    pydevd = __import__('pydevd')
+
+    pydevd.StartClient = lambda h, p: sock
+    pydevd.start_client = lambda h, p: sock
+    pydevd.settrace(host, port=port, stdoutToServer=True, stderrToServer=True, suspend=suspend)
+
+    return True
+
+
+##
+
 
 _noexpand = {
     "<class 'datetime.datetime'>",
@@ -50,38 +129,34 @@ def _dump(x, name, depth, max_depth, all_props, seen):
     except (TypeError, AttributeError):
         pass
 
-    if x is None or isinstance(x, (bool, int, float, str, bytes)):
-        yield pfx + ' = ' + _repr(x)
-        return
+    head = pfx + ' = ' + _repr(x)
 
-    if x in seen:
-        yield pfx + ' = ' + _repr(x)
+    if not x or isinstance(x, (bool, int, float, str, bytes)) or x in seen:
+        yield head
         return
 
     seen.append(x)
 
     if not all_props and str(type(x)) in _noexpand:
-        yield pfx + ' = ' + _repr(x)
+        yield head
         return
 
     if depth >= max_depth:
         yield pfx + '...'
         return
 
-    if isinstance(x, dict) and x:
+    if isinstance(x, dict):
         yield pfx + ' = '
         for k in x:
-            for s in _dump(x[k], repr(k), depth + 1, max_depth, all_props, seen):
-                yield s
+            yield from _dump(x[k], repr(k), depth + 1, max_depth, all_props, seen)
+        return
 
-    elif isinstance(x, (set, list, tuple)) and x:
+    if isinstance(x, (set, list, tuple)):
         yield pfx + ' = '
         for k, v in enumerate(x):
-            for s in _dump(v, str(k), depth + 1, max_depth, all_props, seen):
-                yield s
+            yield from _dump(v, str(k), depth + 1, max_depth, all_props, seen)
 
-    else:
-        yield pfx + ' = ' + _repr(x)
+    yield head
 
     for k in dir(x):
         try:
@@ -89,79 +164,4 @@ def _dump(x, name, depth, max_depth, all_props, seen):
         except Exception as e:
             v = '?' + repr(e)
         if all_props or _should_list(k, v):
-            for s in _dump(v, k, depth + 1, max_depth, all_props, seen):
-                yield s
-
-
-def inspect(arg, max_depth=1, all_props=False):
-    """Inspect the argument upto the given depth"""
-
-    for s in _dump(arg, None, 0, max_depth or 1, all_props, []):
-        yield s
-
-
-def p(*args, **kwargs):
-    sep = '-' * 60
-
-    if kwargs.get('lines'):
-        for arg in args:
-            for s in enumerate(str(arg).split('\n'), 1):
-                log.debug('%06d:%s' % s, extra={'skip_frames': 1})
-            log.debug(sep, extra={'skip_frames': 1})
-    else:
-        max_depth = kwargs.get('d', 3)
-        all_props = kwargs.get('all', False)
-        for arg in args:
-            for s in inspect(arg, max_depth=max_depth, all_props=all_props):
-                log.debug(s, extra={'skip_frames': 1})
-            log.debug(sep, extra={'skip_frames': 1})
-
-    if kwargs.get('stack'):
-        for s in traceback.format_stack()[:-1]:
-            log.debug(s.replace('\n', ' '), extra={'skip_frames': 1})
-
-
-_timers: dict = {}
-
-
-def time_start(label):
-    _timers[label] = time.time()
-
-
-def time_end(label):
-    if label in _timers:
-        ts = time.time() - _timers.pop(label)
-        log.debug('TIMER %s=%.2f', label, ts, extra={'skip_frames': 1})
-
-
-def pycharm_debugger_check(path_to_pycharm_debug_egg, host, port, suspend=False):
-    """Check for pycharm debugger listeniing.
-
-    Attempt to open the debugger socket first and return that socket when pydevd asks for it.
-    If there is no socket, then IDEA is not listening, return quickly.
-    """
-
-    sock = None
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((host, port))
-    except:
-        sock = None
-
-    if not sock:
-        return False
-
-    if not path_to_pycharm_debug_egg.endswith('.egg'):
-        if sys.version_info >= (3, 0):
-            path_to_pycharm_debug_egg += '/pycharm-debug-py3k.egg'
-        else:
-            path_to_pycharm_debug_egg += '/pycharm-debug.egg'
-
-    sys.path.append(path_to_pycharm_debug_egg)
-    pydevd = __import__('pydevd')
-
-    pydevd.StartClient = lambda h, p: sock
-    pydevd.start_client = lambda h, p: sock
-    pydevd.settrace(host, port=port, stdoutToServer=True, stderrToServer=True, suspend=suspend)
-
-    return True
+            yield from _dump(v, k, depth + 1, max_depth, all_props, seen)

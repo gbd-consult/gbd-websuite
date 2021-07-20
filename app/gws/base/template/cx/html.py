@@ -13,6 +13,11 @@ import gws.lib.pdf
 import gws.lib.vendor.chartreux as chartreux
 
 
+@gws.ext.Config('template.html')
+class Config(gws.base.template.Config):
+    pass
+
+
 @gws.ext.Object('template.html')
 class Object(gws.base.template.Object):
     header: str

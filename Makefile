@@ -1,7 +1,8 @@
-CWD    = $(shell pwd)
-BASE   = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
-DOC    = $(BASE)doc
-APP    = $(BASE)app
+CWD     = $(shell pwd)
+ROOT    = $(realpath $(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
+DOC     = $(ROOT)/doc
+APP     = $(ROOT)/app
+INSTALL = $(ROOT)/install
 
 PYTHON = python3
 
@@ -19,11 +20,12 @@ help:
 	@echo "doc-dev-server [MANIFEST=<manifest>]     - start the Docs dev server"
 	@echo "image [IMAGE_NAME=<name>]                - build the Docker Image"
 	@echo "image-debug [IMAGE_NAME=<name>]          - build the debug Docker Image"
+	@echo "clean                                    - remove all build artifacts"
 	@echo ""
 
 
 spec:
-	$(PYTHON) $(APP)/gws/spec/generator/run.py --manifest "$(MANIFEST)"
+	$(PYTHON) $(APP)/gws/spec/generator/run.py build --manifest "$(MANIFEST)"
 
 client-dev: spec
 	cd $(APP)/js && npm run dev && cd $(CWD)
@@ -43,11 +45,10 @@ doc-dev-server: doc
 	sphinx-autobuild -B $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
 
 image:
-	$(PYTHON) $(BASE)install/build.py docker release $(IMAGE_NAME) && cd $(CWD)
+	cd $(INSTALL) && $(PYTHON) build.py docker release $(IMAGE_NAME) && cd $(CWD)
 
 image-debug:
-	$(PYTHON) $(BASE)install/build.py docker debug $(IMAGE_NAME) && cd $(CWD)
+	cd $(INSTALL) && $(PYTHON) build.py docker debug $(IMAGE_NAME) && cd $(CWD)
 
 clean:
-	find $(BASE)app/ -name '__build*'
-
+	find $(ROOT) -name '__build*' -prune -exec rm -rf {} \;

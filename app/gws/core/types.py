@@ -73,7 +73,7 @@ class Config(Data):
     uid: str = ''  #: unique ID
 
 
-class Access(Config):
+class Access(Data):
     """Access rights definition for authorization roles"""
 
     type: Literal['allow', 'deny']  #: access type (deny or allow)
@@ -116,7 +116,7 @@ class INode(IObject, Protocol):
     def create_child(self, klass: Klass, cfg: Optional[Any]) -> 'IObject': ...
 
 
-class ExtDescriptor(Data):
+class ExtObjectDescriptor(Data):
     name: str
     ext_type: str
     module_name: str
@@ -126,10 +126,13 @@ class ExtDescriptor(Data):
 
 
 class ExtCommandDescriptor(Data):
-    params: 'Params'
-    action_type: str
-    function_name: str
     class_name: str
+    cmd_action: str
+    cmd_command: str
+    cmd_method: str
+    cmd_name: str
+    function_name: str
+    params: 'Params'
 
 
 class ISpecRuntime(Protocol):
@@ -137,13 +140,13 @@ class ISpecRuntime(Protocol):
 
     def read_value(self, value, type_name: str, path='', strict=True) -> Any: ...
 
-    def get_ext_descriptor(self, class_name: str) -> Optional[ExtDescriptor]: ...
-
-    def objects(self, pattern: str) -> List[Data]: ...
+    def ext_object_descriptor(self, class_name: str) -> Optional[ExtObjectDescriptor]: ...
 
     def client_vendor_bundle_path(self) -> str: ...
 
     def client_bundle_paths(self) -> List[str]: ...
+
+    def cli_docs(self, lang) -> Dict: ...
 
 
 class IRootObject(IObject, Protocol):
@@ -770,9 +773,7 @@ class IOwsProvider(INode, Protocol):
 
 class CliParams(Data):
     """CLI params"""
-
-    verbose: bool = False
-    manifest: str = ''
+    pass
 
 
 # ----------------------------------------------------------------------------------------------------------------------

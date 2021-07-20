@@ -2,10 +2,9 @@ import shlex
 import time
 
 import gws
-import gws.config.loader
+import gws.config
 import gws.lib.date
 import gws.lib.json2
-import gws.lib.mpx.config
 import gws.lib.os2
 import gws.types as t
 from . import ini
@@ -16,9 +15,9 @@ _START_SCRIPT = gws.VAR_DIR + '/server.sh'
 def start(manifest_path=None, config_path=None):
     stop()
 
-    root = _configure(manifest_path, config_path, is_starting=True)
-    gws.config.loader.store(root)
-    gws.config.loader.activate(root)
+    root = _configure(manifest_path, config_path, is_starting=True, with_fallback=True, with_spec_cache=True)
+    gws.config.store(root)
+    gws.config.activate(root)
 
     for p in gws.lib.os2.find_files(gws.SERVER_DIR, '.*'):
         gws.lib.os2.unlink(p)
@@ -34,37 +33,38 @@ def start(manifest_path=None, config_path=None):
 
 
 def stop():
-    _stop('uwsgi')
-    _stop('nginx')
-    _stop('qgis_mapserv.fcgi')
-    _stop('rsyslogd')
+    _stop(['uwsgi', 'qgis_mapserv.fcgi', 'nginx'], signals=['INT', 'KILL'])
+    _stop(['rsyslogd'], signals=['KILL'])
 
 
-def configure(manifest_path=None, config_path=None, store=False):
-    root = _configure(manifest_path, config_path, is_starting=False)
-    if store:
-        gws.config.loader.store(root)
+def configure(manifest_path=None, config_path=None):
+    root = _configure(manifest_path, config_path, is_starting=False, with_fallback=False, with_spec_cache=True)
+    gws.config.store(root)
 
 
 def reconfigure(manifest_path=None, config_path=None):
-    pid = gws.lib.os2.pids_of('uwsgi')
-    if not pid:
+    if not _uwsgi_is_running():
         gws.log.info('server not running, starting...')
         start(manifest_path, config_path)
         return
 
-    root = _configure(manifest_path, config_path, is_starting=False)
-    gws.config.loader.store(root)
-
-    for m in ('qgis', 'mapproxy', 'web', 'spool'):
-        reload_uwsgi(m)
+    root = _configure(manifest_path, config_path, is_starting=False, with_fallback=False, with_spec_cache=True)
+    gws.config.store(root)
+    reload()
 
 
 def reload(modules=None):
-    _reload(False, None, modules)
+    if not _uwsgi_is_running():
+        return False
+    for m in ('qgis', 'mapproxy', 'web', 'spool'):
+        if not modules or m in modules:
+            _reload_uwsgi(m)
+    return True
 
 
-def reload_uwsgi(module):
+##
+
+def _reload_uwsgi(module):
     pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
     pattern = f'({module}).uwsgi.pid'
 
@@ -73,8 +73,43 @@ def reload_uwsgi(module):
         gws.lib.os2.run(['uwsgi', '--reload', p])
 
 
-def _configure(manifest_path, config_path, is_starting):
-    cfg = gws.config.loader.parse(manifest_path, config_path)
+def _uwsgi_is_running():
+    return bool(gws.lib.os2.pids_of('uwsgi'))
+
+
+def _report_config_error(exc):
+    def prn(a):
+        if isinstance(a, (list, tuple)):
+            for item in a:
+                prn(item)
+        elif a is not None:
+            for s in gws.lines(str(a)):
+                gws.log.error(s)
+
+    if isinstance(exc, gws.config.ParseError):
+        prn('CONFIGURATION PARSE ERROR:')
+    elif isinstance(exc, gws.config.ConfigurationError):
+        prn('CONFIGURATION ERROR:')
+    elif isinstance(exc, gws.config.LoadError):
+        prn('CONFIGURATION LOAD ERROR:')
+    elif isinstance(exc, gws.config.MapproxyConfigurationError):
+        prn('MAPPROXY CONFIGURATION ERROR:')
+
+    prn(exc.args)
+
+
+def _configure(manifest_path: str, config_path: str, is_starting: bool, with_fallback: bool, with_spec_cache: bool) -> gws.RootObject:
+    cfg = None
+    try:
+        cfg = gws.config.parse(manifest_path, config_path, with_spec_cache)
+    except gws.config.Error as exc:
+        _report_config_error(exc)
+        if not with_fallback:
+            raise ValueError('configuration failed') from exc
+
+    if not cfg:
+        gws.log.warn(f'parse error: using fallback config')
+        cfg = gws.config.fallback_config()
 
     if is_starting:
         autorun = gws.get(cfg, 'server.autoRun')
@@ -87,52 +122,64 @@ def _configure(manifest_path, config_path, is_starting):
         if timezone:
             gws.lib.date.set_system_time_zone(timezone)
 
-    root = gws.config.loader.initialize(cfg)
+    root = None
+    try:
+        root = gws.config.initialize(cfg)
+    except gws.config.Error as exc:
+        _report_config_error(exc)
+        if not with_fallback:
+            raise ValueError('configuration failed') from exc
 
-    if root.application.var('server.mapproxy.enabled'):
-        gws.lib.mpx.config.create_and_save(root, ini.MAPPROXY_YAML_PATH)
+    if not root:
+        gws.log.warn(f'configuration error: using fallback config')
+        cfg = gws.config.fallback_config()
+        root = gws.config.initialize(cfg)
 
     gws.log.info('CONFIGURATION OK')
     return root
 
 
-def _stop(proc_name):
-    if _kill_name(proc_name, 'INT'):
-        return
-
-    for _ in range(10):
-        if _kill_name(proc_name, 'KILL'):
-            return
-        time.sleep(5)
-
-    pids = gws.lib.os2.pids_of(proc_name)
-    if pids:
-        raise ValueError(f'failed to stop {proc_name} pids={pids!r}')
+_STOP_RETRY = 20
+_STOP_PAUSE = 1
 
 
-def _kill_name(proc_name, sig_name):
+def _stop(names, signals):
+    for sig in signals:
+        for _ in range(_STOP_RETRY):
+            if all(_stop_name(name, sig) for name in names):
+                return
+            time.sleep(_STOP_PAUSE)
+
+    err = ''
+
+    for name in names:
+        pids = gws.lib.os2.pids_of(name)
+        if pids:
+            err += f' {name}={pids!r}'
+
+    if err:
+        raise ValueError(f'failed to stop processes: {err}')
+
+
+def _stop_name(proc_name, sig):
     pids = gws.lib.os2.pids_of(proc_name)
     if not pids:
         return True
     for pid in pids:
         gws.log.debug(f'stopping {proc_name} pid={pid}')
-        gws.lib.os2.kill_pid(pid, sig_name)
+        gws.lib.os2.kill_pid(pid, sig)
     return False
 
 
 ##
 
 class StartParams(gws.CliParams):
-    config: t.Optional[str]
+    config: t.Optional[str]  #: configuration file
+    manifest: t.Optional[str]   #: manifest file
 
 
-class DumpParams(gws.CliParams):
-    config: t.Optional[str]
-    out: t.Optional[str]
-
-
-class ReloadParams(gws.CliParams):
-    modules: t.Optional[t.List[str]]
+class ReloadParams(StartParams):
+    modules: t.Optional[t.List[str]] #: list of modules to reload ('qgis', 'mapproxy', 'web', 'spool')
 
 
 @gws.ext.Object('cli.server')
@@ -140,29 +187,37 @@ class Cli(gws.Object):
 
     @gws.ext.command('cli.server.start')
     def start(self, p: StartParams):
-        return start(p.manifest, p.config)
+        """Configure and start the server"""
+        start(p.manifest, p.config)
+
+    @gws.ext.command('cli.server.restart')
+    def restart(self, p: StartParams):
+        """Stop and start the server"""
+        self.start(p)
 
     @gws.ext.command('cli.server.stop')
     def stop(self, p: gws.NoParams):
-        return stop()
+        """Stop the server"""
+        stop()
+
+    @gws.ext.command('cli.server.reload')
+    def reload(self, p: ReloadParams):
+        """Reload specific (or all) server modules"""
+        if not reload(p.modules):
+            gws.log.info('server not running, starting')
+            self.start(t.cast(StartParams, p))
+
+    @gws.ext.command('cli.server.reconfigure')
+    def reconfigure(self, p: StartParams):
+        """Reconfigure and restart the server"""
+        reconfigure(p.manifest, p.config)
 
     @gws.ext.command('cli.server.configure')
     def configure(self, p: StartParams):
-        return configure(p.manifest, p.config, store=True)
+        """Configure the server, but do not restart"""
+        configure(p.manifest, p.config)
 
     @gws.ext.command('cli.server.configtest')
     def configtest(self, p: StartParams):
-        return configure(p.manifest, p.config, store=False)
-
-    @gws.ext.command('cli.server.configdump')
-    def configdump(self, p: DumpParams):
-        if p.config:
-            root = gws.config.loader.initialize(gws.config.loader.parse(p.manifest, p.config))
-        else:
-            root = gws.config.loader.load()
-
-        json = gws.lib.json2.to_tagged_string(root, pretty=True, ascii=False)
-        if p.out:
-            gws.write_file(p.out, json)
-        else:
-            print(json)
+        """Test the configuration"""
+        _configure(p.manifest or '', p.config or '', is_starting=False, with_fallback=False, with_spec_cache=False)

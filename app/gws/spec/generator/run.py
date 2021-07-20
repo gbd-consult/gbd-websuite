@@ -35,21 +35,23 @@ def parse_args(argv):
     return args, base.Data(**kwargs)
 
 
-_COMMANDS = ('server', 'dev')
+_COMMANDS = ('build', 'server')
 
 if __name__ == '__main__':
     args, opts = parse_args(sys.argv[1:])
 
-    cmd = args[0] if args else 'dev'
+    cmd = args[0] if args else _COMMANDS[0]
     if cmd not in _COMMANDS:
         print(f'invalid command, expected {_COMMANDS!r}')
         sys.exit(1)
 
+    base.log.set_level('DEBUG' if opts.v or opts.verbose else (opts.loglevel or 'INFO'))
+
     try:
-        if cmd == 'dev':
-            main.generate_for_development(opts)
+        if cmd == 'build':
+            main.generate_for_build(opts.manifest)
         if cmd == 'server':
-            main.generate_for_server(opts)
+            main.generate_for_server(opts.manifest)
     except base.Error as e:
         print('-' * 40)
         print('SPEC GENERATOR ERROR:', e.args[0])

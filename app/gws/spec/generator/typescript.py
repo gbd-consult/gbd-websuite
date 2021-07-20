@@ -7,45 +7,43 @@ from typing import List
 from . import base
 
 
-def generate(specs, options):
-    g = _Generator(specs, options)
+def generate(state: base.ParserState, meta):
+    g = _Generator(state, meta)
     return g.run()
 
 
 ##
 
 class _Generator:
-    def __init__(self, specs, options):
-        self.specs = specs
-        self.options = options
-        self.commands = []
-        self.decls = []
+    def __init__(self, state, meta):
+        self.state = state
+        self.meta = meta
+        self.commands = {}
+        self.declarations = []
         self.stub = []
         self.done = {}
-        self.rec = {}
-        self.rec_cnt = 0
+        self.tmp_names = {}
         self.object_names = {}
 
     def run(self):
-        for _, spec in sorted(self.specs.items()):
-
+        for t in self.state.types.values():
             # export all API commands
-            if spec.abc == base.ABC.command and spec.method == 'api':
-                self.commands.append(base.Data(
-                    spec=spec,
-                    arg_type=self.type_name(spec.arg),
-                    ret_type=self.type_name(spec.ret)
-                ))
+            if isinstance(t, base.TCommand) and t.cmd_method == 'api':
+                self.commands[t.cmd_name] = base.Data(
+                    cmd_name=t.cmd_name,
+                    doc=t.doc,
+                    arg=self.make(t.arg_t),
+                    ret=self.make(t.ret_t)
+                )
 
-            # export all Props
-            if spec.abc == base.ABC.object and self.is_instance(spec, 'gws.Props'):
-                self.type_name(spec.name)
+            # # export all Props
+            # if spec.abc == base.ABC.object and self.is_instance(spec, 'gws.Props'):
+            #     self.make(spec.name)
 
         text = _indent(self.write_api()) + '\n\n' + _indent(self.write_stub())
-        for k, v in self.rec.items():
-            text = text.replace(k, v)
+        for tmp, name in self.tmp_names.items():
+            text = text.replace(tmp, name)
         return text
-
 
     def write_api(self):
         api_tpl = """
@@ -62,7 +60,7 @@ class _Generator:
             type _bytes = any;
             type _dict = {[k: string]: any};
             
-            $decls
+            $declarations
             
             export interface Api {
                 $actions
@@ -75,19 +73,11 @@ class _Generator:
         """
 
         actions = [
-            self.format(
-                action_tpl,
-                name=cc.spec.cmd_name,
-                doc=cc.spec.doc,
-                arg=cc.arg_type,
-                ret=cc.ret_type,
-            )
-            for cc in self.commands
+            self.format(action_tpl, name=cc.cmd_name, doc=cc.doc, arg=cc.arg, ret=cc.ret)
+            for _, cc in sorted(self.commands.items())
         ]
-        return self.format(
-            api_tpl,
-            decls=_nl2(self.decls),
-            actions=_nl2(actions))
+
+        return self.format(api_tpl, declarations=_nl2(self.declarations), actions=_nl2(actions))
 
     def write_stub(self):
         stub_tpl = """
@@ -97,183 +87,164 @@ class _Generator:
             } 
         """
         action_tpl = """
-            async $name(p: $arg, options?: any): Promise<$ret> {
-                return await this._call("$name", p, options);
+            $name(p: $arg, options?: any): Promise<$ret> {
+                return this._call("$name", p, options);
             }
         """
 
         actions = [
-            self.format(
-                action_tpl,
-                name=cc.spec.cmd_name,
-                doc=cc.spec.doc,
-                arg=cc.arg_type,
-                ret=cc.ret_type,
-            )
-            for cc in self.commands
+            self.format(action_tpl, name=cc.cmd_name, doc=cc.doc, arg=cc.arg, ret=cc.ret)
+            for _, cc in sorted(self.commands.items())
         ]
-        return self.format(
-            stub_tpl,
-            actions=_nl(actions))
+
+        return self.format(stub_tpl, actions=_nl(actions))
 
     _builtins_map = {
-        base.BUILTIN.any: 'any',
-        base.BUILTIN.bool: 'boolean',
-        base.BUILTIN.bytes: '_bytes',
-        base.BUILTIN.float: '_float',
-        base.BUILTIN.int: '_int',
-        base.BUILTIN.str: 'string',
+        'any': 'any',
+        'bool': 'boolean',
+        'bytes': '_bytes',
+        'float': '_float',
+        'int': '_int',
+        'str': 'string',
     }
 
-    def type_name(self, ref):
+    def make(self, name):
+        if name in self._builtins_map:
+            return self._builtins_map[name]
+        if name in self.done:
+            return self.done[name]
 
-        if isinstance(ref, list):
-            return self.complex_type_name(ref)
+        t = self.state.types[name]
 
-        if ref in self._builtins_map:
-            return self._builtins_map[ref]
+        tmp_name = f'[TMP:%d]' % (len(self.tmp_names) + 1)
+        self.done[name] = self.tmp_names[tmp_name] = tmp_name
 
-        if ref in self.done:
-            return self.done[ref]
+        type_name = self.make_type(t)
 
-        if ref in self.specs:
-            # the rec dict hold circular references
-            self.rec_cnt += 1
-            rec = f'[__REC__{self.rec_cnt}]'
-            self.done[ref] = rec
-            name = self.spec_type_name(self.specs[ref])
-            self.done[ref] = name
-            self.rec[rec] = name
-            return name
+        self.done[name] = self.tmp_names[tmp_name] = type_name
+        return type_name
 
-        raise base.Error(f'unhandled type {ref!r}')
-
-    def complex_type_name(self, ref):
-        t, s = ref
-
-        if t == base.T.dict:
-            k = self.type_name(s[0])
-            v = self.type_name(s[1])
+    def make_type(self, t):
+        if isinstance(t, base.TDict):
+            k = self.make(t.key_t)
+            v = self.make(t.value_t)
             if k == 'string' and v == 'any':
                 return '_dict'
             return '{[key: %s]: %s}' % (k, v)
 
-        if t == base.T.list:
-            return f'Array<%s>' % self.type_name(s)
+        if isinstance(t, base.TList):
+            return 'Array<%s>' % self.make(t.item_t)
 
-        if t == base.T.literal:
-            return _pipe(_val(v) for v in s)
+        if isinstance(t, base.TLiteral):
+            return _pipe(_val(v) for v in t.values)
 
-        if t == base.T.tuple:
-            return '[%s]' % _comma(self.type_name(e) for e in s)
+        if isinstance(t, base.TOptional):
+            return _pipe([self.make(t.target_t), 'null'])
 
-        if t == base.T.union:
-            return _pipe(sorted(self.type_name(e) for e in s))
+        if isinstance(t, base.TTuple):
+            return '[%s]' % _comma(self.make(it) for it in t.items)
 
-        if t == base.T.variant:
-            return _pipe(sorted(self.type_name(v) for v in s.values()))
+        if isinstance(t, base.TUnion):
+            return _pipe(self.make(it) for it in t.items)
 
-    def spec_type_name(self, spec):
-        if spec.abc == base.ABC.alias:
-            if isinstance(spec.target, str):
-                return self.type_name(spec.target)
+        if isinstance(t, base.TVariant):
+            return _pipe(self.make(it) for it in t.members.values())
 
-            tpl = '''
-                /// $doc
-                export type $name = $target;
-            '''
-            name = self.object_name(spec.name)
-            self.decls.append(self.format(
-                tpl,
-                name=name,
-                doc=spec.doc,
-                target=self.type_name(spec.target)
-            ))
-            return name
-
-        if spec.abc == base.ABC.object:
+        if isinstance(t, base.TObject):
             tpl = """
                 /// $doc
                 export interface $name$ext {
                     $props
                 }
             """
-            name = self.object_name(spec.name)
-            self.decls.append(self.format(
+            name = self.object_name(t.name)
+            self.declarations.append(self.format(
                 tpl,
                 name=name,
-                doc=spec.doc,
-                ext=' extends ' + self.type_name(spec.super) if spec.super else '',
-                props=self.make_props(spec)
+                doc=t.doc,
+                ext=' extends ' + self.make(t.super_t) if t.super_t else '',
+                props=self.make_props(t)
             ))
             return name
 
-        if spec.abc == base.ABC.enum:
+        if isinstance(t, base.TEnum):
             tpl = '''
                 /// $doc
                 export enum $name {
                     $items
                 }
             '''
-            name = self.object_name(spec.name)
-            self.decls.append(self.format(
+            name = self.object_name(t.name)
+            self.declarations.append(self.format(
                 tpl,
                 name=name,
-                doc=spec.doc,
-                items=_nl('%s = %s,' % (k, _val(v)) for k, v in sorted(spec.values.items()))
+                doc=t.doc,
+                items=_nl('%s = %s,' % (k, _val(v)) for k, v in sorted(t.values.items()))
             ))
             return name
 
-        raise base.Error(f'unhandled type {spec.name!r}')
+        if isinstance(t, base.TAlias):
+            tpl = '''
+                /// $doc
+                export type $name = $target;
+            '''
+            name = self.object_name(t.name)
+            self.declarations.append(self.format(
+                tpl,
+                name=name,
+                doc=t.doc,
+                target=self.make(t.target_t)
+            ))
+            return name
 
-    _REMOVE_NAME_PARTS = ['gws', 'core', 'base', 'lib', 'types', 'action', 'plugins']
+        raise base.Error(f'unhandled type {t.name!r}')
+
+    def make_props(self, t):
+        tpl = """
+            /// $doc
+            $name$opt: $type
+        """
+
+        props = []
+
+        for name, key in t.props.items():
+            property_type = self.state.types[key]
+            if property_type.owner_t == t.name:
+                props.append(self.format(
+                    tpl,
+                    name=name,
+                    doc=property_type.doc,
+                    opt='?' if property_type.has_default else '',
+                    type=self.make(property_type.property_t)))
+
+        return _nl(props)
+
+    _replace = [
+        [r'^gws\.core\.(data|ext|types)\.', ''],
+        [r'^gws\.base.(\w+).(action|core|types).', r'\1'],
+        [r'^gws\.(base|core|lib)\.', ''],
+        [r'^gws\.ext\.', ''],
+        [r'^gws\.', ''],
+
+    ]
 
     def object_name(self, name):
-        name = name.replace('_', '.')
-        for g in base.GLOBAL_MODULES:
-            if name.startswith(g):
-                return name[len(g):]
-
-        # 'gws.base.print.types.Params' => 'BasePrinterTypesParams'
-        parts = name.split('.')
-        res = ''.join(_ucfirst(s) for s in parts if s not in self._REMOVE_NAME_PARTS)
+        res = name.replace('_', '.')
+        for k, v in self._replace:
+            res = re.sub(k, v, res)
+        res = ''.join(_ucfirst(s) for s in res.split('.'))
         if res in self.object_names and self.object_names[res] != name:
             raise base.Error(f'name conflict: {res!r} for {name!r} and {self.object_names[res]!r}')
         self.object_names[res] = name
         return res
 
-    def make_props(self, spec):
-        tpl = """
-            /// $doc
-            $name$opt: $type
-        """
-        ps = []
-        for name, key in spec.props.items():
-            p = self.specs[key]
-            if p.owner == spec.name:
-                ps.append(self.format(
-                    tpl,
-                    name=name,
-                    doc=p.doc,
-                    opt='?' if p.has_default else '',
-                    type=self.type_name(p.type)))
-        return _nl(ps)
-
     def format(self, template, **kwargs):
-        kwargs['VERSION'] = self.options.version
+        kwargs['VERSION'] = self.meta.version
         return re.sub(
             r'\$(\w+)',
             lambda m: kwargs[m.group(1)],
             template
         ).strip()
-
-    def is_instance(self, spec, class_name):
-        while True:
-            if spec.super == class_name:
-                return True
-            if not spec.super:
-                return False
-            spec = self.specs[spec.super]
 
 
 _pipe = ' | '.join

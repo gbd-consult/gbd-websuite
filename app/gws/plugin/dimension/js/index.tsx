@@ -842,7 +842,7 @@ class DimensionController extends gws.Controller {
     uid = MASTER;
     layer: DimensionLayer;
     oOverlay: ol.Overlay;
-    setup: gws.api.DimensionProps;
+    setup: gws.api.ActionDimensionProps;
     model: DimensionModel;
     targetUpdateCount = 0;
     snapUpdateCount = 0;

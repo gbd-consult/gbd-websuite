@@ -201,14 +201,14 @@ class RootObject(Object, types.IRootObject):
         return cls(desc.name, desc.ext_type)
 
 
-def load_ext(specs, class_name) -> types.ExtDescriptor:
-    desc = specs.get_ext_descriptor(class_name)
+def load_ext(specs, class_name) -> types.ExtObjectDescriptor:
+    desc = specs.ext_object_descriptor(class_name)
     if desc.module_name in sys.modules:
         log.debug(f'load_ext: {class_name!r}: found')
         mod = sys.modules[desc.module_name]
     else:
         log.debug(f'load_ext: {class_name!r}: loading from spec: {desc!r}')
-        mod = util.import_from_path(desc.module_name, desc.module_path)
+        mod = util.import_from_path(desc.module_path, desc.module_name)
     desc.class_ptr = getattr(mod, desc.ident)
     return desc
 

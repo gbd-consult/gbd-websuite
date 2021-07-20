@@ -1,7 +1,7 @@
 import sys
 
 import gws
-import gws.config.error
+import gws.config
 import gws.server.control
 import gws.spec.generator
 import gws.spec.runtime
@@ -18,22 +18,14 @@ gws.ensure_dir(gws.PRINT_DIR)
 gws.ensure_dir(gws.SERVER_DIR)
 gws.ensure_dir(gws.SPOOL_DIR)
 
-_cached_specs = None
-
 
 def load_specs(params):
-    global _cached_specs
+    return gws.spec.runtime.create(params.get('manifest'), with_cache=not params.get('skipSpecCache'))
 
-    if _cached_specs:
-        return _cached_specs
 
-    opts = {
-        'manifest_path': params.get('manifest'),
-        'cache_path': gws.OBJECT_CACHE_DIR + '/server.spec.json',
-    }
-
-    _cached_specs = gws.spec.runtime.from_dict(gws.spec.generator.generate_for_server(opts))
-    return _cached_specs
+def camelize(p):
+    ls = p.split('-')
+    return ls[0] + ''.join(s[0].upper() + s[1:] for s in ls[1:])
 
 
 def parse_args(argv):
@@ -43,10 +35,10 @@ def parse_args(argv):
 
     for a in argv:
         if a.startswith('--'):
-            key = a[2:]
+            key = camelize(a[2:])
             kwargs[key] = True
         elif a.startswith('-'):
-            key = a[1:]
+            key = camelize(a[1:])
             kwargs[key] = True
         elif key:
             kwargs[key] = a
@@ -57,37 +49,22 @@ def parse_args(argv):
     return args, gws.Data(kwargs)
 
 
-def print_error(exc):
-    def prn(a):
-        if isinstance(a, (list, tuple)):
-            for item in a:
-                prn(item)
-        elif a is not None:
-            for s in gws.lines(str(a)):
-                print(s)
+def print_usage_and_fail(ext_type, cmd, params):
+    docs = load_specs(params).cli_docs('en')
 
-    prn('-' * 60)
+    print('')
+    print(f'GWS version {gws.VERSION}')
+    print('')
 
-    if isinstance(exc, gws.config.error.ParseError):
-        prn('CONFIGURATION PARSE ERROR:')
-    elif isinstance(exc, gws.config.error.ConfigError):
-        prn('CONFIGURATION ERROR:')
-    elif isinstance(exc, gws.config.error.LoadError):
-        prn('CONFIGURATION LOAD ERROR:')
-    elif isinstance(exc, gws.config.error.MapproxyConfigError):
-        prn('MAPPROXY CONFIGURATION ERROR:')
-    else:
-        prn('SYSTEM ERROR:')
+    disp = [d for d in docs if d[0] == ext_type and d[1] == cmd]
+    if not disp:
+        disp = [d for d in docs if d[0] == ext_type]
+    if not disp:
+        disp = docs
 
-    prn(exc.args)
-    prn('-' * 60)
+    for d in sorted(disp):
+        print(d[2])
 
-
-def print_usage_and_fail(ext_type, params):
-    for s in load_specs(params).objects('CLI/'):
-        print(s)
-
-    print('USAGE', ext_type)
     return 1
 
 
@@ -97,20 +74,20 @@ def dispatch(ext_type, cmd, params):
         cli = gws.server.control.Cli()
         fn = getattr(cli, cmd, None)
         if not fn:
-            return print_usage_and_fail('server', params)
+            return print_usage_and_fail(ext_type, cmd, params)
         return fn(params)
 
     specs = load_specs(params)
     # e.g. 'gws auth password' => 'authPassword'
-    cmd_name = ext_type + cmd[0].upper() + cmd[1:]
+    cmd_name = camelize(ext_type + '-' + cmd)
 
     try:
         command_desc = specs.check_command(cmd_name, 'cli', params, strict=False)
     except gws.spec.runtime.Error:
-        return print_usage_and_fail(ext_type, params)
+        return print_usage_and_fail(ext_type, cmd, params)
 
     if not command_desc:
-        return print_usage_and_fail(ext_type, params)
+        return print_usage_and_fail(ext_type, cmd, params)
 
     object_desc = gws.load_ext(specs, command_desc.class_name)
     handler = object_desc.class_ptr()
@@ -119,28 +96,39 @@ def dispatch(ext_type, cmd, params):
 
 def main():
     args, params = parse_args(sys.argv[1:])
+
     verbose = params.get('v') or params.get('verbose')
-    gws.log.set_level('DEBUG' if verbose else 'INFO')
+    if verbose:
+        params.set('logLevel', 'DEBUG')
+    elif not params.get('logLevel'):
+        params.set('logLevel', 'INFO')
 
-    # all cli actions are "ext_type cmd --opt1 val --opt2 ...."
+    gws.log.set_level(params.get('logLevel'))
 
-    if len(args) == 0 or len(args) > 2:
-        return print_usage_and_fail(None, params)
+    # all cli command lines are "gws ext_type command_name --opt1 val --opt2 ...."
+
+    if len(args) == 0:
+        return print_usage_and_fail(None, None, params)
 
     if len(args) == 1:
-        return print_usage_and_fail(args[0], params)
+        return print_usage_and_fail(args[0], None, params)
 
-    if len(args) == 2 and args[0] == 'help':
-        return print_usage_and_fail(args[1], params)
+    if len(args) > 2:
+        return print_usage_and_fail(args[0], args[1], params)
+
+    if params.get('h') or params.get('help'):
+        return print_usage_and_fail(args[0], args[1], params)
+
 
     try:
         return dispatch(args[0], args[1], params)
-    except Exception as e:
+    except Exception as exc:
         sys.stdout.flush()
-        print_error(e)
-        if verbose:
+        if params.get('loglevel') == 'DEBUG':
             gws.log.exception()
-        return 255
+        else:
+            print(exc)
+        gws.exit(255)
 
 
 if __name__ == '__main__':

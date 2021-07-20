@@ -68,3 +68,16 @@ class Config(gws.Config):
     autoRun: str = ''  #: shell command to run before server start
     timeout: gws.Duration = '60'  #: server timeout
     timeZone: str = 'UTC'  #: timezone for this server
+
+
+FALLBACK_CONFIG = {
+    'mapproxy': {'enabled': False},
+    'monitor': {'enabled': False},
+    'log': {'level': 'INFO'},
+    'qgis': {'enabled': False},
+    'spool': {'enabled': False},
+    'web': {'enabled': True, 'workers': 1},
+    'autoRun': '',
+    'timeout': '60',
+    'timeZone': 'UTC',
+}

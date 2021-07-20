@@ -10,7 +10,7 @@ class ParseError(Error):
     pass
 
 
-class ConfigError(Error):
+class ConfigurationError(Error):
     pass
 
 
@@ -18,5 +18,5 @@ class LoadError(Error):
     pass
 
 
-class MapproxyConfigError(Error):
+class MapproxyConfigurationError(Error):
     pass

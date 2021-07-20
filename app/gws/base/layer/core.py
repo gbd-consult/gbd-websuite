@@ -149,6 +149,7 @@ class Config(gws.WithAccess):
 
 
 class Props(gws.Props):
+    dataModel: t.Optional[gws.base.model.Props]
     editAccess: t.Optional[t.List[str]]
     editStyle: t.Optional[gws.lib.style.Props]
     extent: t.Optional[gws.Extent]

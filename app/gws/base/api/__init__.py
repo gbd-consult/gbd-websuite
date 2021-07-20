@@ -2,6 +2,10 @@ import gws
 import gws.types as t
 
 
+class ActionProps(gws.Props):
+    enabled: bool = True
+
+
 class Config(gws.WithAccess):
     """Server actions"""
 

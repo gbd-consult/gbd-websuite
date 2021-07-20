@@ -2,19 +2,19 @@ import yaml
 from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
-import gws.types as t
 import gws.config.error
 import gws.lib.json2
 import gws.lib.os2
 
-_TMP_DIR = gws.TMP_DIR + '/mpx'
+CONFIG_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
+TMP_DIR = gws.TMP_DIR + '/mpx'
 
 
 class _Config:
     def __init__(self):
         self.c = 0
 
-        gws.ensure_dir(_TMP_DIR)
+        gws.ensure_dir(TMP_DIR)
 
         self.services = {
             'wms': {
@@ -36,8 +36,8 @@ class _Config:
             },
             'cache': {
                 'base_dir': gws.MAPPROXY_CACHE_DIR,
-                'lock_dir': _TMP_DIR + '/locks_' + gws.random_string(16),
-                'tile_lock_dir': _TMP_DIR + '/tile_locks_' + gws.random_string(16),
+                'lock_dir': TMP_DIR + '/locks_' + gws.random_string(16),
+                'tile_lock_dir': TMP_DIR + '/tile_locks_' + gws.random_string(16),
                 'concurrent_tile_creators': 1,
                 'max_tile_limit': 5000,
 
@@ -146,23 +146,26 @@ def create(root: gws.RootObject):
     return cfg
 
 
-def create_and_save(root: gws.RootObject, path):
-    test_path = path + '.test.yaml'
-    gws.lib.os2.unlink(test_path)
-
+def create_and_save(root: gws.RootObject):
     cfg = create(root)
     if not cfg:
         gws.log.warn('mapproxy: NO CONFIG')
-        gws.lib.os2.unlink(path)
+        gws.lib.os2.unlink(CONFIG_PATH)
         return
 
-    gws.write_file(test_path, yaml.dump(cfg))
+    cfg_str = yaml.dump(cfg)
 
     # make sure the config is ok before starting the server!
+    test_path = CONFIG_PATH + '.test.yaml'
+    gws.write_file(test_path, cfg_str)
+
     try:
         make_wsgi_app(test_path)
     except Exception as e:
-        raise gws.config.error.MapproxyConfigError(*e.args) from e
+        raise gws.config.error.MapproxyConfigurationError(*e.args) from e
 
     gws.lib.os2.unlink(test_path)
-    gws.write_file(path, yaml.dump(cfg))
+
+    # write into the real config path
+
+    gws.write_file(CONFIG_PATH, cfg_str)

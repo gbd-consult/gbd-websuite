@@ -9,6 +9,7 @@ import gws.base.project
 import gws.base.web
 import gws.lib.cache
 import gws.lib.metadata
+import gws.lib.mpx.config
 import gws.lib.os2
 import gws.server
 import gws.server.monitor
@@ -39,7 +40,7 @@ class Config(gws.WithAccess):
     fonts: t.Optional[FontConfig]  #: fonts configuration
     helpers: t.Optional[t.List[gws.ext.helper.Config]]  #: helpers configurations
     locales: t.Optional[t.List[str]]  #: default locales for all projects
-    meta: t.Optional[gws.lib.metadata.Config] = {}  # type: ignore #: application metadata
+    meta: t.Optional[gws.lib.metadata.Config]  # type: ignore #: application metadata
     projectDirs: t.Optional[t.List[gws.DirPath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[gws.FilePath]]  #: additional project paths
     projects: t.Optional[t.List[gws.base.project.Config]]  #: project configurations
@@ -118,6 +119,21 @@ class Object(gws.Node, gws.IApplication):
 
         for p in self.var('projects', default=[]):
             self.create_child(gws.base.project.Object, p)
+
+    def post_configure(self):
+        if self.var('server.mapproxy.enabled'):
+            gws.lib.mpx.config.create_and_save(self.root)
+
+        pass
+        # for p in set(cfg.configPaths):
+        #     root.application.monitor.add_path(p)
+        # for p in set(cfg.projectPaths):
+        #     root.application.monitor.add_path(p)
+        # for d in set(cfg.projectDirs):
+        #     root.application.monitor.add_directory(d, parser.config_path_pattern)
+        #
+        # if root.application.developer_option('server.auto_reload'):
+        #     root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
 
     def find_action(self, action_type: str, project_uid: str = None) -> t.Optional[gws.IObject]:
         if project_uid:

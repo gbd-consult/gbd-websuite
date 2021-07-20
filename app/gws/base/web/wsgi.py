@@ -15,7 +15,6 @@ import gws.lib.net
 import gws.lib.mime
 import gws.lib.vendor.umsgpack as umsgpack
 
-
 from . import error
 
 _JSON = 1
@@ -197,27 +196,44 @@ class WebRequest(gws.IWebRequest):
         return self.response_object(wz=err.get_response(self._wz.environ))
 
     def _parse_params(self):
-        if self.input_struct_type:
-            return self._decode_struct(self.input_struct_type)
+        # the server only understands requests to /_ or /_/commandName
+        # GET params can be given as query string or encoded in the path
+        # like _/commandName/param1/value1/param2/value2 etc
 
-        args = {k: v for k, v in self._wz.args.items()}
         path = self._wz.path
-
-        # the server only understands requests to /_/...
-        # the params can be given as query string or encoded in the path
-        # like _/cmd/command/layer/la/x/12/y/34 etc
+        path_parts = None
 
         if path == gws.SERVER_ENDPOINT:
-            return args
+            # example.com/_
+            # the cmd param is expected to be in the query string or json
+            cmd = None
+        elif path.startswith(gws.SERVER_ENDPOINT + '/'):
+            # example.com/_/someCommand
+            # the cmd param is in the url
+            # if 'cmd' is also in the query string or json, they must match!
+            path_parts = path.split('/')
+            cmd = path_parts[2]
+            path_parts = path_parts[3:]
+        else:
+            gws.log.error(f'invalid request path: {path!r}')
+            raise error.NotFound()
 
-        if path.startswith(gws.SERVER_ENDPOINT + '/'):
-            p = path.split('/')
-            for n in range(3, len(p), 2):
-                args[p[n - 1]] = p[n]
-            return args
+        if self.input_struct_type:
+            args = self._decode_struct(self.input_struct_type)
+        else:
+            args = dict(self._wz.args)
+            if path_parts:
+                for n in range(1, len(path_parts), 2):
+                    args[path_parts[n - 1]] = path_parts[n]
 
-        gws.log.error(f'invalid request path: {path!r}')
-        raise error.NotFound()
+        if cmd:
+            cmd2 = args.get('cmd')
+            if cmd2 and cmd2 != cmd:
+                gws.log.error(f'cmd params do not match: {cmd!r} {cmd2!r}')
+                raise error.BadRequest()
+            args['cmd'] = cmd
+
+        return args
 
     def _encode_struct(self, data, typ):
         if typ == _JSON:

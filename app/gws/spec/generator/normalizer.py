@@ -1,67 +1,125 @@
+import re
+from typing import cast
+
 from . import base
 
 
-def normalize(specs, options):
-    _add_core_aliases(specs)
-    _check_enums(specs)
-    _check_variants(specs)
-    _create_config_and_props(specs)
-    _create_ext_variants(specs)
-    _create_commands_variant(specs)
-    _make_prop_lists(specs)
+def normalize(state: base.ParserState, meta):
+    _add_system_aliases(state)
+    _check_enums(state)
+    _check_variants(state)
+    _synthesize_ext_configs_and_props(state)
+    _synthesize_ext_type_props(state)
+    _synthesize_ext_variants(state)
+    _resolve_aliases(state)
+    _make_props(state)
 
+
+def prepare_for_server(state: base.ParserState, meta):
+    objs = {}
+    cmds = {}
+
+    deps = {'gws.base.application.Config'}
+
+    for t in state.types.values():
+        if isinstance(t, base.TObject) and t.ext_kind == 'Object':
+            objs[t.name] = dict(
+                _='ExtObject',
+                ext_category=t.ext_category,
+                ext_type=t.ext_type,
+                ident=t.ident,
+                module_name=t.pos['module_name'],
+                module_path=t.pos['module_path'],
+                name=t.name,
+            )
+
+        if isinstance(t, base.TCommand):
+            owner_type = cast(base.TObject, _get_type(state, t.owner_t))
+            cmds[t.name] = dict(
+                _='ExtCommand',
+                arg=t.arg_t,
+                class_name=owner_type.name,
+                cmd_action=t.cmd_action,
+                cmd_command=t.cmd_command,
+                cmd_method=t.cmd_method,
+                cmd_name=t.cmd_name,
+                function_name=t.ident,
+                name=t.name,
+            )
+            deps.add(t.arg_t)
+
+    specs = _select_dependent(state, deps)
+    specs.update(objs)
+    specs.update(cmds)
     return specs
 
 
-_SERVER_ROOTS = ['gws.base.application.Config', 'gws.ext.Command', 'gws.ext.Object']
-
-
-def prepare_for_server(specs, options):
-    obj_desc = _ext_objects_descriptors(specs)
-    cmd_desc = _ext_commands_descriptors(specs)
-    specs = _select_dependent(specs, _SERVER_ROOTS)
-    specs.update(obj_desc)
-    specs.update(cmd_desc)
-    return specs
-
-
-##
-
-def _select_dependent(specs, bases):
-    queue = list(bases)
+def _select_dependent(state, names):
+    queue = list(names)
     selected = {}
 
     while queue:
-        s = queue.pop(0)
-        if not s:
+        q = queue.pop(0)
+        t = _get_type(state, q) if isinstance(q, str) else cast(base.Type, q)
+
+        if not t:
+            raise base.Error(f'unresolved reference {q!r}')
+
+        if t.name in selected:
             continue
 
-        if isinstance(s, list):
-            if s[0] == base.T.list:
-                queue.append(s[1])
-            elif s[0] in {base.T.tuple, base.T.dict, base.T.union}:
-                queue.extend(s[1])
-            elif s[0] == base.T.variant:
-                queue.extend(s[1].values())
+        if isinstance(t, base.TAtom):
             continue
 
-        if s in selected or s in base.BUILTINS:
-            continue
+        if isinstance(t, base.TDict):
+            queue.append(t.key_t)
+            queue.append(t.value_t)
 
-        if s not in specs:
-            raise base.Error(f'type not found: {s!r}')
+        if isinstance(t, base.TList):
+            queue.append(t.item_t)
 
-        spec = specs[s]
-        selected[s] = spec
+        if isinstance(t, base.TOptional):
+            queue.append(t.target_t)
 
-        queue.append(spec.type)
-        queue.append(spec.arg)
-        queue.append(spec.ret)
-        queue.append(spec.super)
-        queue.append(spec.target)
+        if isinstance(t, base.TTuple):
+            queue.extend(t.items)
 
-        if spec.props:
-            queue.extend(spec.props.values())
+        if isinstance(t, base.TUnion):
+            queue.extend(t.items)
+
+        if isinstance(t, base.TVariant):
+            queue.extend(t.members.values())
+
+        if isinstance(t, base.TObject):
+            selected[t.name] = dict(
+                name=t.name,
+                props=t.props,
+            )
+            queue.extend(t.props.values())
+
+        if isinstance(t, base.TProperty):
+            selected[t.name] = dict(
+                default=t.default,
+                has_default=t.has_default,
+                name=t.name,
+                ident=t.ident,
+                property_t=t.property_t,
+            )
+            queue.append(t.property_t)
+
+        if isinstance(t, base.TAlias):
+            selected[t.name] = dict(
+                target_t=t.target_t,
+            )
+            queue.append(t.target_t)
+
+        if isinstance(t, base.TEnum):
+            selected[t.name] = dict(
+                values=t.values,
+            )
+
+        selected.setdefault(t.name, dict(vars(t)))
+        selected[t.name]['_'] = type(t).__name__
 
     return selected
 
@@ -69,225 +127,277 @@ def _select_dependent(specs, bases):
 ##
 
 
-def _get_with_alias(specs, name):
-    s = specs.get(name)
-    if s and s.abc == base.ABC.alias and isinstance(s.target, str):
-        return _get_with_alias(specs, s.target)
-    return s
+def _add_system_aliases(state):
+    # alias global short names (e.g. `gws.Crs`) to long names (`gws.core.types.Crs`)
+
+    for t in state.types.values():
+        if t.name.startswith('gws.core.'):
+            alias = re.sub(r'^[a-z.]+', '', t.name)
+            if alias:
+                state.aliases['gws.' + alias] = t.name
 
 
+def _resolve_aliases(state):
+    resolved = {}
+    newtypes = {}
+    stack = []
+
+    def _visit(t):
+        if isinstance(t, (base.TAtom, base.TLiteral, base.TEnum)):
+            return t
+
+        if isinstance(t, base.TDict):
+            return base.TDict(key_t=_resolve(t.key_t), value_t=_resolve(t.value_t))
+
+        if isinstance(t, base.TList):
+            return base.TList(item_t=_resolve(t.item_t))
+
+        if isinstance(t, base.TOptional):
+            return base.TOptional(target_t=_resolve(t.target_t))
+
+        if isinstance(t, base.TTuple):
+            return base.TTuple(items=[_resolve(it) for it in t.items])
+
+        if isinstance(t, base.TUnion):
+            return base.TUnion(items=[_resolve(it) for it in t.items])
+
+        if isinstance(t, base.TVariant):
+            return base.TVariant(members={k: _resolve(v) for k, v in t.members.items()})
+
+        if isinstance(t, base.TCommand):
+            t.arg_t = _resolve(t.arg_t)
+            t.ret_t = _resolve(t.ret_t)
+            t.owner_t = _resolve(t.owner_t)
+            return t
+
+        if isinstance(t, base.TObject):
+            t.super_t = _resolve(t.super_t)
+            return t
+
+        if isinstance(t, base.TProperty):
+            t.owner_t = _resolve(t.owner_t)
+            t.property_t = _resolve(t.property_t)
+            return t
+
+        if isinstance(t, base.TAlias):
+            t.target_t = _resolve(t.target_t)
+            return t
+
+    def _resolve(name):
+        if not name:
+            return name
+        if name in resolved:
+            return resolved[name]
+        if name in stack:
+            raise ValueError(f'circular reference {stack!r}->{name!r}')
+
+        t = _get_type(state, name)
+
+        if not t:
+            base.log.debug(f'unbound reference {name!r}')
+            return name
+
+        if isinstance(t, base.TUnresolvedReference):
+            base.log.debug(f'unresolved reference {name!r}')
+            return name
+
+        stack.append(t.name)
+        t2 = _visit(t)
+        stack.pop()
+
+        resolved[name] = t2.name
+        newtypes[t2.name] = t2
+        return t2.name
+
+    for name in state.types:
+        _resolve(name)
+
+    state.types = newtypes
 
 
-def _add_core_aliases(specs):
-    ext = {}
-    for s in specs.values():
-        for g in base.GLOBAL_MODULES:
-            if s.name.startswith(g):
-                alias = 'gws.' + s.name[len(g):]
-                ext[alias] = base.Data(
-                    abc=base.ABC.alias,
-                    name=alias,
-                    target=s.name,
-                )
-                break
-
-    specs.update(ext)
-
-
-def _check_enums(specs):
-    for s in specs.values():
-        # @TODO enums can appear in other contexts as well
-        if s.default and isinstance(s.default, list) and s.default[0] == base.T.unchecked_enum:
-            parts = s.default[1].split('.')
-            key = parts.pop()
-            spec = _get_with_alias(specs, '.'.join(parts))
-            if spec and spec.abc == base.ABC.enum and key in spec.values:
-                s.default = spec.values[key]
+def _check_enums(state):
+    for t in state.types.values():
+        default = getattr(t, 'default', None)
+        if isinstance(default, list) and len(default) == 2 and default[0] == base.UNCHECKED_ENUM:
+            name = default[1]
+            obj_name, _, item_name = name.rpartition('.')
+            enum_spec = _get_type(state, obj_name)
+            if enum_spec and isinstance(enum_spec, base.TEnum) and item_name in enum_spec.values:
+                t.default = enum_spec.values[item_name]
             else:
-                base.warn('invalid value', s.default)
-                s.default = None
-                s.has_default = False
+                t.default = None
+                t.has_default = False
+                base.log.debug(f'invalid enum value {name!r}')
 
 
-def _check_variant(specs, names):
-    variants = {}
-    for name in names:
-        try:
-            obj_spec = specs[name]
-            type_prop_spec = specs[obj_spec.name + '.type']
-            variants[type_prop_spec.type[1][0]] = name
-        except:
-            raise base.Error(f'{name!r}: invalid Variant member')
-    return [base.T.variant, variants]
+def _check_variants(state):
+    upd = {}
 
-
-def _check_variants(specs):
-    for spec in specs.values():
-        for p in 'arg', 'ret', 'target', 'type':
-            t = getattr(spec, p)
-            if isinstance(t, list) and t[0] == base.T.unchecked_variant:
-                setattr(spec, p, _check_variant(specs, t[1]))
-
-
-#
-
-
-def _create_config_and_props(specs):
-    ext = {}
-
-    ext_names = set(s.name for s in specs.values() if s.ext_kind)
-
-    for s in specs.values():
-        if s.ext_kind != 'Object':
+    for t in state.types.values():
+        if not isinstance(t, base.TVariantStub):
             continue
 
-        ext_name = base.GWS_EXT_PREFIX + s.ext_category + '.' + s.ext_type + '.Config'
-        if ext_name not in ext_names:
-            ext[ext_name] = base.Data(
-                abc=base.ABC.object,
-                doc=s.doc,
-                ext_category=s.ext_category,
-                ext_kind='Config',
-                ext_type=s.ext_type,
-                ident='Config',
-                name=ext_name,
-                super='gws.WithAccess',
-            )
+        members = {}
 
-        ext_name = base.GWS_EXT_PREFIX + s.ext_category + '.' + s.ext_type + '.Props'
-        if ext_name not in ext_names:
-            ext[ext_name] = base.Data(
-                abc=base.ABC.object,
-                doc=s.doc,
-                ext_category=s.ext_category,
-                ext_kind='Props',
-                ext_name=ext_name,
-                ext_type=s.ext_type,
-                ident='Props',
-                name=ext_name,
-                super='gws.Props',
-            )
+        for item_name in t.items:
+            try:
+                item_type = _get_type(state, item_name)
+                tag_prop = _get_type(state, item_type.name + '.' + base.GWS_TAG_PROPERTY)
+                tag_prop_type = _get_type(state, tag_prop.property_t)
+                if isinstance(tag_prop_type, base.TLiteral) and len(tag_prop_type.values) == 1:
+                    members[tag_prop_type.values[0]] = item_name
+                else:
+                    raise ValueError()
+            except Exception:
+                raise base.Error(f'invalid Variant: {t.pos!r}')
 
-    specs.update(ext)
+        upd[t.name] = base.TVariant(members=members)
+
+    state.types.update(upd)
 
 
-def _create_ext_variants(specs):
-    ext = {}
+_synthesized_pos = {
+    'lineno': 0,
+    'module_name': '<synthesized>',
+    'module_path': '',
+}
 
-    for s in specs.values():
-        if s.abc != base.ABC.object or not s.ext_type:
+
+def _synthesize_ext_configs_and_props(state):
+    upd = {}
+
+    existing_names = set(t.name for t in state.types.values() if hasattr(t, 'ext_kind'))
+
+    super_types = {
+        'Config': _get_type(state, 'gws.WithAccess'),
+        'Props': _get_type(state, 'gws.Props'),
+    }
+
+    for t in state.types.values():
+        if getattr(t, 'ext_kind', None) != 'Object':
             continue
 
-        # gws.ext.db.provider.foo.Object => gws.ext.db.provider.Object
-        variant_name = base.GWS_EXT_PREFIX + s.ext_category + '.' + s.ext_kind
-
-        if variant_name not in ext:
-            ext[variant_name] = base.Data(
-                abc=base.ABC.alias,
-                name=variant_name,
-                target=[base.T.variant, {}]
+        for kind in ['Config', 'Props']:
+            name = _dot(base.GWS_EXT_PREFIX, t.ext_category, t.ext_type, kind)
+            if name in existing_names:
+                continue
+            upd[name] = base.TObject(
+                doc=t.doc,
+                ident=kind,
+                name=name,
+                pos=_synthesized_pos,
+                super_t=super_types[kind].name,
+                ext_category=t.ext_category,
+                ext_kind=kind,
+                ext_type=t.ext_type,
             )
-        ext[variant_name].target[1][s.ext_type] = s.name
+            # base.log.debug(f'synthesized {name!r}')
 
-        # synthetize the 'type' property
-        prop_key = s.name + '.' + 'type'
-        ext[prop_key] = base.Data(
-            abc=base.ABC.property,
+    state.types.update(upd)
+
+
+def _synthesize_ext_type_props(state):
+    upd = {}
+
+    for t in state.types.values():
+        if getattr(t, 'ext_kind', None) not in ('Config', 'Props'):
+            continue
+
+        literal = base.TLiteral(values=[t.ext_type])
+        upd[literal.name] = literal
+
+        name = _dot(t.name, base.GWS_TAG_PROPERTY)
+        upd[name] = base.TProperty(
+            doc='',
+            ident=t.ext_type,
+            name=name,
+            pos=_synthesized_pos,
             default=None,
-            doc='object type',
             has_default=False,
-            ident='type',
-            name=prop_key,
-            owner=s.name,
-            type=[base.T.literal, [s.ext_type]],
+            property_t=literal.name,
+            owner_t=t.name,
         )
 
-        # gws.ext.db.provider.foo.Object => gws.ext.Object
-        top_name = base.GWS_EXT_PREFIX + s.ext_kind
-
-        if top_name not in ext:
-            ext[top_name] = base.Data(
-                abc=base.ABC.alias,
-                name=top_name,
-                target=[base.T.union, []]
-            )
-        ext[top_name].target[1].append(variant_name)
-
-    specs.update(ext)
+    state.types.update(upd)
 
 
-def _create_commands_variant(specs):
-    ls = [k for k, s in specs.items() if s.abc == base.ABC.command]
-    key = 'gws.ext.Command'
-    specs[key] = base.Data(abc=base.ABC.alias, name=key, target=[base.T.union, ls])
+def _synthesize_ext_variants(state):
+    variants = {}
+
+    for t in state.types.values():
+        if not isinstance(t, base.TObject) or not getattr(t, 'ext_type', None):
+            continue
+        # gws.ext.db.provider.foo.Object => gws.ext.db.provider.Object
+        variant_name = _dot(base.GWS_EXT_PREFIX, t.ext_category, t.ext_kind)
+        variants.setdefault(variant_name, {})[t.ext_type] = t.name
+
+    upd = {}
+
+    for name, members in variants.items():
+        variant_type = base.TVariant(members=members)
+        upd[variant_type.name] = variant_type
+
+        alias_type = base.TAlias(
+            doc='',
+            ident=name.split('.')[-1],
+            name=name,
+            pos=_synthesized_pos,
+            target_t=variant_type.name,
+        )
+        upd[alias_type.name] = alias_type
+
+    state.types.update(upd)
 
 
-def _ext_objects_descriptors(specs):
-    desc = {}
+def _make_props(state):
+    done = {}
+    own_props = {}
+    stack = []
 
-    for s in specs.values():
-        if s.abc == base.ABC.object and s.ext_kind == 'Object':
-            mod = specs[s.module]
-            desc[s.name] = base.Data(
-                abc=base.ABC.descriptor,
-                ext_kind=s.ext_kind,
-                ext_type=s.ext_type,
-                ident=s.ident,
-                name=s.name,
-                module_name=mod.name,
-                module_path=mod.path,
-            )
+    for t in state.types.values():
+        if isinstance(t, base.TProperty):
+            obj_name, _, prop_name = t.name.rpartition('.')
+            own_props.setdefault(obj_name, {})[prop_name] = t.name
 
-    return desc
+    def _make(t):
+        name = t.name
 
+        if name in done:
+            return done[name]
+        if name in stack:
+            raise base.Error(f'circular inheritance {stack!r}->{name!r}')
 
-def _ext_commands_descriptors(specs):
-    desc = {}
+        props = {}
 
-    for s in specs.values():
-        if s.abc == base.ABC.command:
-            owner = specs[s.owner]
-            desc[s.name] = base.Data(
-                abc=base.ABC.command,
-                action_type=owner.ext_type,
-                function_name=s.ident,
-                arg=s.arg,
-                class_name=s.owner,
-            )
+        if isinstance(t, base.TObject):
+            if t.super_t:
+                super_type = _get_type(state, t.super_t)
+                if super_type:
+                    stack.append(name)
+                    props.update(_make(super_type))
+                    stack.pop()
+                else:
+                    base.log.debug(f'unknown super type {t.super_t!r}')
+            if name in own_props:
+                props.update(own_props[name])
+            t.props = props
 
-    return desc
+        done[name] = props
+        return props
 
-
-#
-
-def _own_props(specs, spec):
-    prefix = spec.name + '.'
-    return [s for s in specs.values() if s.name.startswith(prefix) and s.abc == base.ABC.property]
+    for t in state.types.values():
+        if isinstance(t, base.TObject):
+            _make(t)
 
 
-def _make_prop_lists(specs):
-    done = set()
+def _get_type(state, name):
+    while name in state.aliases:
+        a = state.aliases.get(name)
+        if not a or a == name:
+            break
+        name = a
+    return state.types.get(name)
 
-    def _make_props(spec, stack):
-        if not spec:
-            return {}
-        if spec.abc == base.ABC.alias and isinstance(spec.target, str):
-            return _make_props(specs.get(spec.target), stack)
-        if spec.abc != base.ABC.object:
-            return {}
-        if spec.name in done:
-            return spec.props
-        if spec.name in stack:
-            raise base.Error(f'inheritance cycle in {spec.name!r}')
-        if spec.super in specs:
-            props = dict(_make_props(specs[spec.super], stack + [spec.name]))
-        else:
-            props = {}
-        for p in _own_props(specs, spec):
-            props[p.ident] = p.name
-        spec.props = props
-        done.add(spec.name)
-        return spec.props
 
-    for s in specs.values():
-        _make_props(s, [])
+def _dot(*args):
+    return '.'.join(args)

@@ -55,9 +55,9 @@ class Object(core.Object):
 
     def render_box(self, rv, extra_params=None):
         tags = self.render_svg_tags(rv)
-        gws.core.debug.time_start('render_box:to_png')
+        ts = gws.time_start('render_box:to_png')
         png = gws.lib.svg.as_png(tags, size=rv.size_px)
-        gws.core.debug.time_start('render_box:to_png')
+        gws.time_end(ts)
         return png
 
     def render_svg_tags(self, rv, style=None):
@@ -65,18 +65,18 @@ class Object(core.Object):
         if rv.rotation:
             bounds = gws.Bounds(crs=bounds.crs, extent=gws.lib.extent.circumsquare(bounds.extent))
 
-        gws.core.debug.time_start('render_svg:get_features')
+        ts = gws.time_start('render_svg:get_features')
         found = self.get_features(bounds)
-        gws.core.debug.time_end('render_svg:get_features')
+        gws.time_end(ts)
 
-        gws.core.debug.time_start('render_svg:convert')
+        ts = gws.time_start('render_svg:convert')
         for f in found:
             f.transform_to(rv.bounds.crs)
             f.apply_templates(keys=['label'])
-        gws.core.debug.time_end('render_svg:convert')
+        gws.time_end(ts)
 
-        gws.core.debug.time_start('render_svg:to_svg')
+        ts = gws.time_start('render_svg:to_svg')
         tags = [tag for f in found for tag in f.to_svg_tags(rv, style or self.style)]
-        gws.core.debug.time_end('render_svg:to_svg')
+        ts = gws.time_end(ts)
 
         return tags

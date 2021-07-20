@@ -131,13 +131,13 @@ class Object(gws.Node):
 
 
 class InfoResponse(gws.Response):
-    project: gws.base.project.Props
+    project: Props
     locale: gws.lib.intl.Locale
     user: t.Optional[gws.base.auth.UserProps]
 
 
 @gws.ext.Object('action.project')
-class Object(gws.base.api.Action):
+class Action(gws.base.api.Action):
     """Project information action"""
 
     @gws.ext.command('api.project.info')

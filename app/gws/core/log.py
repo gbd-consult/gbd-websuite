@@ -21,6 +21,40 @@ class Level:
     ALL = 0
 
 
+def _caller_info(skip_frames):
+    try:
+        frame = getattr(sys, '_getframe')()
+    except:
+        frame = sys.exc_info()[2].tb_frame
+
+    if not frame:
+        return ['?', 0, '?']
+
+    while 1:
+        co = getattr(frame, 'f_code', None)
+        filename = co.co_filename if co else ''
+        if filename != __file__ and 'logging' not in filename:
+            break
+        back = getattr(frame, 'f_back', None)
+        if not back or back == frame:
+            break
+        frame = back
+
+    while skip_frames > 0:
+        back = getattr(frame, 'f_back', None)
+        if not back or back == frame:
+            break
+        frame = back
+        skip_frames -= 1
+
+    co = getattr(frame, 'f_code', None)
+    return [
+        co.co_filename if co else '',
+        getattr(frame, 'f_lineno', 0),
+        co.co_name if co else ''
+    ]
+
+
 # borrowed from logging.py
 # added support for skip_frames, and avoid the costly caller lookup unless debugging
 
@@ -28,14 +62,14 @@ class _Logger(logging.Logger):
     def exception(self, msg='', *args, **kwargs):
         _, exc, _ = sys.exc_info()
 
-        self.fatal('EXCEPTION: ' + repr(exc), extra={'skip_frames': 1})
+        self.fatal('EXCEPTION: ' + repr(exc))
 
         if self.isEnabledFor(Level.DEBUG):
             s = err.string()
             if msg:
                 s = msg + ':\n' + s
             for k in s.split('\n'):
-                self.fatal(k, extra={'skip_frames': 1})
+                self.fatal(k)
 
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
         if _logger.disabled:
@@ -55,13 +89,7 @@ class _Logger(logging.Logger):
             except (AttributeError, KeyError):
                 pass
 
-            # lazily rely on logging to call _log directly from info/warn/debug etc
-            # noinspection PyProtectedMember
-            f = sys._getframe(2 + skip_frames)
-
-            if f and hasattr(f, 'f_code'):
-                co = f.f_code
-                filename, lineno, func = (co.co_filename, f.f_lineno, co.co_name)
+            filename, lineno, func = _caller_info(skip_frames)
 
         if exc_info and not isinstance(exc_info, tuple):
             exc_info = sys.exc_info()
@@ -85,11 +113,12 @@ class _Formatter(logging.Formatter):
         tn = str(r.threadName or '').replace('uWSGIWorker', '').replace('Core', '/').replace('MainThread', '0')
 
         return (
-                str(r.process)
+                'GWS['
+                + str(r.process)
                 + '/'
                 + (tn or '')
                 + (' %s:%d' % (r.pathname, r.lineno) if r.pathname else '')
-                + ' ' + r.levelname + ':: '
+                + '] ' + r.levelname + ':: '
                 + msg
         )
 

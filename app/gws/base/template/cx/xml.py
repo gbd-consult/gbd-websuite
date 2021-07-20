@@ -12,8 +12,6 @@ import gws.lib.xml2
 import gws.lib.xml2.helper
 
 
-
-
 @gws.ext.Config('template.xml')
 class Config(gws.base.template.Config):
     """XML template"""

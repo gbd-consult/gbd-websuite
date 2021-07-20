@@ -14,7 +14,7 @@ import sys
 import threading
 import time
 
-from . import const
+from . import const, log
 from .data import Data, is_data_object
 from gws.types import List, cast
 
@@ -590,7 +590,7 @@ def get_cached_object(name, init_fn, max_age: int):
         return obj
 
 
-def import_from_path(module_name, module_path):
+def import_from_path(module_path, module_name):
     # see https://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3
     loader = importlib.machinery.SourceFileLoader(module_name, module_path)
     spec = importlib.util.spec_from_loader(loader.name, loader)

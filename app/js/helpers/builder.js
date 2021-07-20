@@ -29,15 +29,15 @@ builder clean
     remove all compiled bundles and builds 
 
 The builder expects the dev spec generator to be run 
-and uses the generated stuff from 'app/gws/spec/___build'
+and uses the generated stuff from 'app/gws/spec/__build'
 `;
 
 //
 
 const APP_DIR = path.resolve(__dirname, '../..');
-const SPEC_DIR = path.join(APP_DIR, '/gws/spec/___build/');
+const SPEC_DIR = path.join(APP_DIR, '/gws/spec/__build/');
 const JS_DIR = path.resolve(__dirname, '..');
-const BUILD_ROOT = path.join(JS_DIR, '___build');
+const BUILD_ROOT = path.join(JS_DIR, '__build');
 
 const SOURCE_MAP_REGEX = /\/\/#\s*sourceMappingURL.*/g;
 
@@ -60,11 +60,11 @@ module.exports.Builder = class {
             'help': () => this.commandHelp(),
         }
 
-        this.settings = require(path.join(JS_DIR, 'settings.js'));
-        this.specOptions = require(path.join(SPEC_DIR, 'options.spec.json')); // see spec/generator/main
+        this.options = require(path.join(JS_DIR, 'options.js'));
+        this.meta = require(path.join(SPEC_DIR, 'meta.spec.json')); // see spec/generator/main
 
         // @TODO support plugin vendors
-        this.vendors = this.settings.vendors;
+        this.vendors = this.options.vendors;
 
         this.sources = [];
         this.chunks = [];
@@ -140,7 +140,7 @@ function initBuild(bb) {
     bb.chunks = [];
     bb.sources = [];
 
-    for (let chunk of bb.specOptions.chunks) {
+    for (let chunk of bb.meta.chunks) {
         let n = 0;
 
         for (let kind of Object.keys(chunk.paths)) {
@@ -353,10 +353,10 @@ function startBrowserSync(bb) {
         }
     }
 
-    let settings = {
-        proxy: bb.settings.development.proxyUrl,
-        port: bb.settings.development.serverPort,
-        open: bb.settings.development.openBrowser,
+    let options = {
+        proxy: bb.options.development.proxyUrl,
+        port: bb.options.development.serverPort,
+        open: bb.options.development.openBrowser,
         reloadOnRestart: true,
         middleware: [
             {
@@ -386,7 +386,7 @@ function startBrowserSync(bb) {
         ]
     };
 
-    bs.init(settings, onStart);
+    bs.init(options, onStart);
 
 }
 
@@ -536,7 +536,7 @@ function writeVendors(bb) {
             src = src.replace(SOURCE_MAP_REGEX, '');
             sources.push(src);
         }
-        writeFile(bb.specOptions.VENDOR_BUNDLE_PATH, sources.join('\n;;\n'));
+        writeFile(bb.meta.VENDOR_BUNDLE_PATH, sources.join('\n;;\n'));
         return true;
     } catch (e) {
         logError(`Bundler error:`);
@@ -557,7 +557,7 @@ function stringsModules(bb) {
         for (let [key, val] of Object.entries(obj))
             s.push(key + STRINGS_KEY_DELIM + val);
 
-        if(!s.length)
+        if (!s.length)
             return '';
 
         s = JSON.stringify(s.join(STRINGS_RECORD_DELIM));
@@ -569,7 +569,7 @@ function stringsModules(bb) {
         // first, collect all strings.ini files and store them under chunk/lang
 
         let coll = {};
-        let langSet = {};
+        let langs = [];
 
         for (let src of bb.sources) {
             if (src.kind !== 'strings')
@@ -578,7 +578,7 @@ function stringsModules(bb) {
             let parsed = ini.parse(readFile(src.path));
 
             for (let [lang, val] of Object.entries(parsed)) {
-                langSet[lang] = 1;
+                langs.push(lang);
                 let key = src.chunk + '/' + lang;
                 coll[key] = Object.assign(coll[key] || {}, val);
             }
@@ -588,7 +588,8 @@ function stringsModules(bb) {
         // with the text [lang, {strings}]
 
         let modules = [];
-        let langs = Object.keys(langSet).sort();
+
+        langs = uniq(langs).sort();
 
         for (let chunk of bb.chunks) {
             for (let lang of langs) {
@@ -634,13 +635,13 @@ function cssModules(bb) {
         }
 
         // first, load themes css.js, which is supposed to export
-        // a triple [pre-rules, post-rules, theme-settings]
+        // a triple [pre-rules, post-rules, theme-options]
 
-        let themeRecs = [];
+        let themes = [];
 
         for (let src of bb.sources) {
             if (src.kind === 'theme') {
-                themeRecs.push({
+                themes.push({
                     name: path.basename(src.path).split('.')[0],
                     mod: require(src.path)
                 });
@@ -651,7 +652,6 @@ function cssModules(bb) {
         // apply each theme to rules and create a module record
         // with text equal to raw css
 
-        let themes = [];
         let modules = [];
 
         for (let chunk of bb.chunks) {
@@ -664,22 +664,25 @@ function cssModules(bb) {
                 }
             }
 
-            for (let rec of themeRecs) {
-                themes.push(rec.name);
-                let [pre, post, opts] = rec.mod;
-                opts = {...CSS_DEFAULTS, ...opts}
-                let css = jadzia.css(
-                    {[opts.rootSelector]: [pre, rules, post]},
-                    opts);
-                modules.push({
-                    chunk: chunk.name,
-                    theme: rec.name,
-                    text: css
-                })
+            for (let theme of themes) {
+                let [pre, post, opts] = theme.mod;
+                opts = {...CSS_DEFAULTS, ...opts};
+                let src = {[opts.rootSelector]: [pre, rules, post]};
+                let css = jadzia.css(src, opts).trim();
+                if (css) {
+                    modules.push({
+                        chunk: chunk.name,
+                        theme: theme.name,
+                        text: css
+                    })
+                }
             }
         }
 
-        return {themes, modules};
+        return {
+            themes: uniq(themes.map(t => t.name)).sort(),
+            modules
+        };
     }
 
     try {
@@ -760,7 +763,7 @@ function createBundles(bb) {
 function writeBundles(bb, bundles) {
     try {
         for (let dir of Object.keys(bundles)) {
-            let p = path.join(dir, bb.specOptions.BUNDLE_FILENAME);
+            let p = path.join(dir, bb.meta.BUNDLE_FILENAME);
             writeFile(p, JSON.stringify(bundles[dir], null, 4));
             logInfo(`created bundle "${p}"`);
         }
@@ -908,6 +911,10 @@ function formatTemplate(tpl, vars) {
             return vars[$1];
         throw new Error(`template variable "$1" not found`)
     })
+}
+
+function uniq(a) {
+    return Array.from(new Set(a));
 }
 
 function readFile(p) {

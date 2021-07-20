@@ -1,22 +1,22 @@
 """Parse py source files and create a list of units of interest"""
 
 import ast
-import re
-from typing import List, Dict, cast
+from typing import Dict, List, cast
 
 from . import base
 
 
-def parse(options):
-    specs = {}
+def parse(state: base.ParserState, meta):
+    for b in base.BUILTINS:
+        state.types[b] = base.TAtom(name=b)
 
-    for chunk in options.chunks:
+    for chunk in meta.chunks:
         for path in chunk.paths['python']:
             parser = None
             try:
                 mod_name = _module_name(chunk, path)
                 text = read_file(path)
-                parser = _Parser(specs, mod_name, path, text, options)
+                parser = _Parser(state, mod_name, path, text, meta)
                 parser.run()
             except Exception as e:
                 lineno = '?'
@@ -27,7 +27,17 @@ def parse(options):
                     msg = str(e.args[0])
                 raise base.Error(f'{msg} in {path}:{lineno}')
 
-    return specs
+
+##
+
+def read_file(path):
+    with open(path, 'rt', encoding='utf8') as fp:
+        return fp.read().strip()
+
+
+def write_file(path, text):
+    with open(path, 'wt', encoding='utf8') as fp:
+        fp.write(text)
 
 
 ##
@@ -43,15 +53,15 @@ class _Parser:
     docs: Dict[int, str]
     imports: Dict[str, str]
 
-    def __init__(self, specs, module_name: str, path: str, text: str, options):
-        self.specs = specs
+    def __init__(self, state, module_name: str, path: str, text: str, meta):
+        self.state: base.ParserState = state
         self.module_name = module_name
-        self.path = path
+        self.module_path = path
         self.text = text
         self.lines = [''] + self.text.splitlines()
         self.is_init = path.endswith('__init__.py')
         self.context: List = []
-        self.options = options
+        self.meta = meta
 
     def run(self):
         tree = ast.parse(self.text)
@@ -63,20 +73,14 @@ class _Parser:
         else:
             raise ValueError('module node not found')
 
-        self.add(self.spec(
-            abc=base.ABC.module,
-            name=self.module_name,
-            path=self.path,
-        ))
-
         self.docs = self.prepare_docs()
         self.imports = self.prepare_imports()
 
         for node in self.nodes('module', 'ClassDef'):
-            self.create_class_spec(node)
+            self.parse_class(node)
 
         for node in self.nodes('module', 'Assign'):
-            self.create_alias_spec(node)
+            self.parse_type_alias(node)
 
     ##
 
@@ -128,20 +132,15 @@ class _Parser:
                 imp[nn.asname or nn.name] = m + DOT + nn.name
 
         # create alias specs for imported types
-        for alias, mod in imp.items():
+        for alias, target in imp.items():
             if _is_type_name(alias):
-                self.add(self.spec(
-                    abc=base.ABC.alias,
-                    ident=alias,
-                    name=self.module_name + DOT + alias,
-                    target=mod,
-                ))
+                self.state.aliases[self.module_name + DOT + alias] = target
 
         return imp
 
     ##
 
-    def create_alias_spec(self, node):
+    def parse_type_alias(self, node):
         """Parse a type alias TypeA = TypeB"""
 
         name_node = node.targets[0]
@@ -154,41 +153,46 @@ class _Parser:
         if not doc:
             return
 
-        spec = self.spec(
-            abc=base.ABC.alias,
-            ident=name_node.id,
-            name=self.qname(name_node),
-            doc=doc,
-            target=self.type_ref(node.value),
-        )
+        target_type = self.type_from_node(node.value)
 
         # mypy doesn't accept aliases to special forms,
         # so we cannot use Variant = Union
         # instead, if the type is Union, look in the comment string for 'Variant'
+        if isinstance(target_type, base.TUnion) and 'Variant' in doc:
+            target_type = base.TVariantStub(items=target_type.items, pos=self.pos)
 
-        if (
-                isinstance(spec.target, list)
-                and spec.target[0] == base.T.union
-                and 'Variant' in spec.doc):
-            spec.target[0] = base.T.unchecked_variant
+        self.add(target_type)
 
-        self.add(spec)
+        self.add(base.TAlias(
+            doc=doc,
+            ident=name_node.id,
+            name=self.qname(name_node),
+            pos=self.pos,
+            target_t=target_type.name,
+        ))
 
-    def create_class_spec(self, node):
+    def parse_class(self, node):
         if not _is_type_name(node.name):
             return
 
-        sup = self.type_ref(node.bases[0]) if len(node.bases) > 0 else ''
-        if _is_a(sup, 'Enum'):
-            return self.create_enum_spec(node)
+        sup = self.qname(node.bases[0]) if len(node.bases) > 0 else None
+        if sup and (sup == 'Enum' or sup.endswith('.Enum')):
+            return self.parse_enum(node)
 
-        spec = self.spec(
-            abc=base.ABC.object,
+        spec = base.TObject(
+            doc=_docstring(node),
             ident=node.name,
             name=self.qname(node),
-            doc=_docstring(node),
-            super=sup,
+            pos=self.pos,
+            ext_category='',
+            ext_kind='',
+            ext_type='',
+            super_t='',
         )
+
+        if sup:
+            super_type = self.type_from_name(sup)
+            spec.super_t = super_type.name
 
         d = self.class_decorator(node)
         if d:
@@ -197,107 +201,111 @@ class _Parser:
             spec.ext_type = d.type
             spec.name = d.name
 
+        self.add(spec)
+
         for nn in self.nodes(node.body, 'Assign'):
-            self.create_property_spec(spec, nn, annotated=False)
+            self.parse_property(spec, nn, annotated=False)
 
         for nn in self.nodes(node.body, 'AnnAssign'):
-            self.create_property_spec(spec, nn, annotated=True)
+            self.parse_property(spec, nn, annotated=True)
 
         for nn in self.nodes(node.body, 'FunctionDef'):
             d = self.function_decorator(nn)
-            if not d:
-                continue
-            if d.kind == 'command':
-                self.create_command_spec(spec, nn, d.name)
+            if d and d.kind == 'command':
+                self.parse_command(spec, nn, d.name)
 
-        self.add(spec)
-
-    def create_enum_spec(self, node):
-        spec = self.spec(
-            abc=base.ABC.enum,
-            ident=node.name,
-            name=self.qname(node),
-            doc=_docstring(node),
-            docs={},
-            values={},
-        )
+    def parse_enum(self, node):
+        docs = {}
+        values = {}
 
         for nn in self.nodes(node.body, 'Assign'):
             ident = nn.targets[0].id
             ok, val = self.parse_value(nn.value)
             if not ok or not _is_scalar(val):
                 raise ValueError(f'invalid Enum item {ident!r}')
-            spec.docs[ident] = self.doc_for(nn)
-            spec.values[ident] = val
+            docs[ident] = self.doc_for(nn)
+            values[ident] = val
 
-        self.add(spec)
+        self.add(base.TEnum(
+            doc=_docstring(node),
+            ident=node.name,
+            name=self.qname(node),
+            pos=self.pos,
+            docs=docs,
+            values=values,
+        ))
 
-    def create_property_spec(self, owner_spec, node, annotated):
+    def parse_property(self, owner_type: base.Type, node, annotated: bool):
         ident = node.target.id if annotated else node.targets[0].id
         if ident.startswith('_'):
             return
 
         has_default, default = self.parse_value(node.value)
 
-        spec = self.spec(
-            abc=base.ABC.property,
-            owner=owner_spec.name,
-            ident=ident,
-            name=owner_spec.name + DOT + ident,
+        spec = base.TProperty(
             doc=self.doc_for(node),
+            ident=ident,
+            name=owner_type.name + DOT + ident,
+            pos=self.pos,
+            default=None,
             has_default=has_default,
+            owner_t=owner_type.name,
+            property_t='any',
         )
 
         if has_default:
             spec.default = default
 
-        type_ref = None
+        property_type = None
         if hasattr(node, 'annotation'):
-            type_ref = self.type_ref(node.annotation)
+            property_type = self.type_from_node(node.annotation)
 
-        if not type_ref:
-            type_name = 'any'
+        if not property_type:
+            typ = 'any'
             if spec.has_default and spec.default is not None:
-                type_name = type(spec.default).__name__
-            type_ref = self.type_ref_from_name(type_name)
+                typ = type(spec.default).__name__
+            property_type = self.type_from_name(typ)
 
-        if isinstance(type_ref, list) and type_ref[0] == base.T.optional:
-            spec.type = type_ref[1]
-            if not spec.has_default:
-                spec.has_default = True
-                spec.default = None
-        else:
-            spec.type = type_ref
+        if property_type:
+            if isinstance(property_type, base.TOptional):
+                spec.property_t = property_type.target_t
+                if not spec.has_default:
+                    spec.has_default = True
+                    spec.default = None
+            else:
+                spec.property_t = property_type.name
 
         self.add(spec)
 
-    def create_command_spec(self, owner_spec, node, command_name):
-        method = command_name.split(DOT)[0].lower()
+    def parse_command(self, owner_type: base.Type, node, command_name: str):
+        # command names are strictly three parts: method . action . name
+        # e.g. 'cli.server.restart
+        method, action, cmd = command_name.split(DOT)
 
-        # 'api.map.renderBox' => 'mapRenderBox'
-        s = command_name.split(DOT)
-        cmd_name = s[1] + ''.join(_ucfirst(p) for p in s[2:])
-
-        spec = self.spec(
-            abc=base.ABC.command,
-            owner=owner_spec.name,
-            ident=node.name,
-            name=method + DOT + cmd_name,
-            cmd_name=cmd_name,
-            ext_type=owner_spec.ext_type,
-            method=method,
+        spec = base.TCommand(
             doc=_docstring(node),
-            arg='any',
-            ret='any',
+            ident=node.name,
+            name=method + DOT + action + _ucfirst(cmd),  # cli.serverRestart
+            pos=self.pos,
+            owner_t=owner_type.name,
+            cmd_action=action,  # server
+            cmd_command=cmd,  # restart
+            cmd_method=method,
+            cmd_name=action + _ucfirst(cmd),  # serverRestart
+            ext_type=cast(base.TObject, owner_type).ext_type,
+            arg_t='any',
+            ret_t='any',
         )
 
         # action methods have only one spec'able arg (the last one)
         arg_node = node.args.args[-1]
         if arg_node.annotation:
-            spec.arg = self.type_ref(arg_node.annotation)
+            arg_type = self.type_from_node(arg_node.annotation)
+            spec.arg_t = arg_type.name if arg_type else 'any'
 
         if node.returns:
-            spec.ret = self.type_ref(node.returns)
+            ret_type = self.type_from_node(node.returns)
+            spec.ret_t = ret_type.name if ret_type else 'any'
 
         self.add(spec)
 
@@ -341,79 +349,64 @@ class _Parser:
 
     def gws_decorator(self, node):
         for d in getattr(node, 'decorator_list', []):
-            if _cls(d) == 'Call' and self.qname(d.func).startswith(base.GWS_EXT_PREFIX):
+            if _cls(d) == 'Call' and self.qname(d.func).startswith(base.GWS_EXT_PREFIX + DOT):
                 return d
 
     ##
 
-    def type_ref(self, node):
-        return self._type_ref(self.type_spec(node))
-
-    def type_ref_from_name(self, name):
-        return self._type_ref(self.type_spec_from_name(name))
-
-    def _type_ref(self, spec):
-        if not isinstance(spec, base.Data):
-            return spec
-        self.add(spec)
-        return spec.name
-
-    def type_spec(self, node):
+    def type_from_node(self, node) -> base.Type:
         # here, node is a type declaration (an alias or an annotation)
-        if node is None:
-            return
 
         cc = _cls(node)
 
         # foo: SomeType
         if cc in {'Str', 'Name', 'Attribute', 'Constant'}:
-            return self.type_spec_from_name(self.qname(node), None)
+            return self.type_from_name(self.qname(node))
 
-        # foo: List[SomeType]
+        # foo: Generic[SomeType]
         if cc == 'Subscript':
-            return self.type_spec_from_name(self.qname(node.value), node.slice.value)
+            return self.type_from_name(self.qname(node.value), node.slice.value)
 
         # foo: [SomeType, SomeType]
         if cc in {'List', 'Tuple'}:
-            elts = [self.type_ref(e) for e in node.elts]
-            return ['tuple', elts]
+            items = [self.type_from_node(e) for e in node.elts]
+            return self.add(base.TTuple(items=[it.name for it in items]))
 
         raise ValueError(f'unsupported type: {cc!r}')
 
-    def type_spec_from_name(self, name, param=None):
-        if name in base.BUILTINS:
-            return name
-
-        if name in self.specs and self.specs[name].abc != base.ABC.stub:
-            return name
+    def type_from_name(self, name: str, param=None) -> base.Type:
+        if name in self.state.types:
+            return self.state.types[name]
 
         g = name.split(DOT)[-1].lower()
 
         if g == 'any':
-            return 'any'
+            return self.state.types['any']
 
         # literal - 'param' is a value or a tuple of values
         if g == 'literal':
+            if not param:
+                raise ValueError('invalid literal')
             values = []
             elts = param.elts if _cls(param) == 'Tuple' else [param]
             for elt in elts:
                 values.append(self.parse_literal_value(elt))
-            return [base.T.literal, values]
+            return self.add(base.TLiteral(values=values))
 
         # in other cases, 'param' is a type or  a tuple of types
 
-        param_ref = self.type_ref(param)
+        param_type = self.type_from_node(param) if param else None
         param_tuple = None
-        if isinstance(param_ref, list) and param_ref[0] == 'tuple':
-            param_tuple = param_ref[1]
+        if isinstance(param_type, base.TTuple):
+            param_tuple = param_type.items
 
         if g == 'optional':
-            if not param_ref:
+            if not param_type:
                 raise ValueError('invalid optional type')
-            return [base.T.optional, param_ref]
+            return self.add(base.TOptional(target_t=param_type.name))
 
         if g == 'list':
-            return [base.T.list, param_ref or 'any']
+            return self.add(base.TList(item_t=param_type.name if param_type else 'any'))
 
         if g == 'dict':
             if param_tuple:
@@ -422,46 +415,44 @@ class _Parser:
                 key, val = param_tuple
                 if key != 'str':
                     raise ValueError('Dict keys must be str')
-            elif param_ref:
+            elif param_type:
                 key = 'str'
-                val = param_ref
+                val = param_type.name
             else:
                 key = 'str'
                 val = 'any'
-
-            return [base.T.dict, [key, val]]
+            return self.add(base.TDict(key_t=key, value_t=val))
 
         if g == 'union':
             if not param_tuple:
                 raise ValueError('invalid Union')
-            return [base.T.union, param_tuple]
+            return self.add(base.TUnion(items=param_tuple))
 
         if g == 'tuple':
-            if not param_ref:
-                return [base.T.tuple, []]
+            if not param_type:
+                return self.add(base.TTuple(items=[]))
             if not param_tuple:
                 raise ValueError('invalid Tuple')
-            return param_ref
+            return self.add(base.TTuple(items=param_tuple))
 
         if param:
             raise ValueError('invalid generic type')
 
-        return self.spec(abc=base.ABC.stub, name=name)
+        return self.add(base.TUnresolvedReference(name=name))
 
     ##
 
-    def add(self, spec, key=None):
-        if not spec:
-            return
-        key = key or spec.get('name')
-        self.specs[key] = spec
-        return key
+    @property
+    def pos(self):
+        return {
+            'module_name': self.module_name,
+            'module_path': self.module_path,
+            'lineno': self.context[-1].lineno if self.context else 0,
+        }
 
-    def spec(self, **kwargs):
-        lineno = 0
-        if self.context:
-            lineno = self.context[-1].lineno
-        return base.Data(module=self.module_name, lineno=lineno, **kwargs)
+    def add(self, t: base.Type) -> base.Type:
+        self.state.types[t.name] = t
+        return t
 
     def doc_for(self, node):
         if node.lineno in self.docs:
@@ -552,9 +543,9 @@ class _Parser:
 
         if cc == 'Attribute':
             # Something.someKey - possible enum value
-            return True, [base.T.unchecked_enum, self.qname(node)]
+            return True, [base.UNCHECKED_ENUM, self.qname(node)]
 
-        base.warn('unparsed value', cc, self.module_name)
+        base.log.debug('unparsed value', cc, self.module_name)
         return False, None
 
     def parse_literal_value(self, node):
@@ -567,17 +558,11 @@ class _Parser:
             return node.value
         raise ValueError(f'invalid literal value of type {cc!r}')
 
+    def type_id(self, type_obj):
+        return register_type(self.state, type_obj)
 
-##
-
-def read_file(path):
-    with open(path, 'rt', encoding='utf8') as fp:
-        return fp.read().strip()
-
-
-def write_file(path, text):
-    with open(path, 'wt', encoding='utf8') as fp:
-        fp.write(text)
+    def type_object(self, uid):
+        return self.state.type_refs[uid]
 
 
 ##

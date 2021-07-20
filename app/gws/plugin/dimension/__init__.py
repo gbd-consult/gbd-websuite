@@ -5,7 +5,8 @@ import gws.types as t
 import gws.base.api
 
 
-class Props(gws.Props):
+@gws.ext.Props('action.dimension')
+class Props(gws.base.api.ActionProps):
     layerUids: t.Optional[t.List[str]]
     pixelTolerance: int
 

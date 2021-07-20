@@ -3,6 +3,7 @@ import os
 import pwd
 
 import gws.base.qgis.server
+import gws.lib.mpx.config
 import gws
 import gws.types as t
 import gws.config
@@ -10,8 +11,6 @@ import gws.lib.os2
 import gws.base.web
 
 
-
-MAPPROXY_YAML_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
 
 # https://uwsgi-docs.readthedocs.io/en/latest/Nginx.html
 # HTTPS is to ensure that the backend werkzeug can see secure requests
@@ -76,7 +75,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
     spool_dir = gws.SPOOL_DIR
     spool_freq = root.application.var('server.spool.jobFrequency')
 
-    mapproxy_enabled = root.application.var('server.mapproxy.enabled') and os.path.exists(MAPPROXY_YAML_PATH)
+    mapproxy_enabled = root.application.var('server.mapproxy.enabled') and os.path.exists(gws.lib.mpx.config.CONFIG_PATH)
     mapproxy_port = root.application.var('server.mapproxy.port')
     mapproxy_workers = root.application.var('server.mapproxy.workers')
     mapproxy_threads = root.application.var('server.mapproxy.threads')
@@ -147,12 +146,12 @@ def create(root: gws.RootObject, base_dir, pid_dir):
             )
             
             template(name="gws" type="list") {{
-                property(name="timestamp" dateFormat="rfc3339")
+                property(name="timestamp" dateFormat="mysql")
                 constant(value=" ")
                 property(name="syslogtag")
                 constant(value=" ")
-                property(name="msg" spifno1stsp="on" )
-                property(name="msg" droplastlf="on" )
+                property(name="msg" spifno1stsp="on")
+                property(name="msg" droplastlf="on")
                 constant(value="\\n")
             }}
     

@@ -113,9 +113,9 @@ export class Server extends api.BaseServer {
 
     async _call2(cmd, params, options) {
         let req: any = {
-            url: this.url,
+            url: this.url + '/' + cmd,
             method: 'POST',
-            data: {cmd, params},
+            data: {params},
             withCredentials: true
         };
 

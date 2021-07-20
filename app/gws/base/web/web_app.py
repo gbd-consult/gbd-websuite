@@ -9,35 +9,21 @@ import gws.spec.runtime
 from gws.base.auth.wsgi import WebRequest, WebResponse
 from gws.base.web import core
 
-
-def main():
-    try:
-        gws.log.info('starting WEB application')
-        root = gws.config.loader.load()
-        gws.log.set_level(root.application.var('server.log.level'))
-    except:
-        gws.log.error('UNABLE TO LOAD CONFIGURATION')
-        gws.log.exception()
-        gws.exit(255)
+_inited = False
 
 
 def application(environ, start_response):
-    response = _handle_request(environ)
+    global _inited
+
+    if not _inited:
+        _init()
+        _inited = True
+
+    response = handle_request(environ)
     return response(environ, start_response)
 
 
-main()
-
-##
-
-_DEFAULT_CMD = 'assetGet'
-
-
-class _DispatchError(gws.Error):
-    pass
-
-
-def _handle_request(environ) -> WebResponse:
+def handle_request(environ) -> WebResponse:
     root = gws.config.root()
     req = WebRequest(root, environ, _find_site(environ, root))
     try:
@@ -50,11 +36,30 @@ def _handle_request(environ) -> WebResponse:
         return _handle_error(req, gws.base.web.error.InternalServerError())
 
 
+##
+
+
+def _init():
+    try:
+        gws.log.info('initializing WEB application')
+        root = gws.config.loader.load()
+        gws.log.set_level(root.application.var('server.log.level'))
+    except:
+        gws.log.error('UNABLE TO LOAD CONFIGURATION')
+        gws.log.exception()
+        gws.exit(255)
+
+
+##
+
+class _DispatchError(gws.Error):
+    pass
+
+
 def _handle_request2(req: WebRequest) -> WebResponse:
     site = t.cast(core.Site, req.site)
 
     cors = site.cors_options
-
     if cors and req.method == 'OPTIONS':
         return _with_cors_headers(cors, req.content_response(gws.ContentResponse(content='', mime='text/plain')))
 
@@ -97,7 +102,9 @@ def _handle_error(req: WebRequest, err: gws.base.web.error.HTTPException) -> Web
 
 
 def _handle_action(req: WebRequest) -> WebResponse:
-    cmd = req.param('cmd', _DEFAULT_CMD)
+    cmd = req.param('cmd')
+    if not cmd:
+        raise gws.base.web.error.NotFound()
 
     if req.input_struct_type:
         method = 'api'
