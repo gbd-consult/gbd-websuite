@@ -1,22 +1,20 @@
 """Search API."""
 
 import gws
-import gws.types as t
-import gws
-import gws.types as t
-import gws.base.api
+import gws.base.api.action
 import gws.base.template
 import gws.lib.feature
-import gws.lib.shape
 import gws.lib.json2
+import gws.lib.shape
 import gws.lib.units
-
+import gws.types as t
 from . import runner
 
 MAX_LIMIT = 1000
 
 
-class Config(gws.WithAccess):
+@gws.ext.Config('action.search')
+class Config(gws.base.api.action.Config):
     """Search action"""
 
     limit: int = 1000  #: search results limit
@@ -38,7 +36,7 @@ class Params(gws.Params):
 
 
 @gws.ext.Object('action.search')
-class Object(gws.base.api.Action):
+class Object(gws.base.api.action.Object):
     limit = 0
 
     def configure(self):

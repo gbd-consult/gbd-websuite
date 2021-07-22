@@ -18,7 +18,7 @@ _DESCRIBE_CACHE_LIFETIME = 3600
 _ext_class = 'gws.ext.db.provider.postgres'
 
 
-def shared_provider(root: gws.RootObject, cfg) -> 'Object':
+def shared_object(root: gws.RootObject, cfg) -> 'Object':
     key = '-'.join([
         f'h={cfg.host}',
         f'p={cfg.port}',
@@ -28,7 +28,7 @@ def shared_provider(root: gws.RootObject, cfg) -> 'Object':
     return t.cast('Object', root.create_shared_object(_ext_class, gws.as_uid(key), cfg))
 
 
-def require_provider(obj: gws.INode) -> 'Object':
+def require(obj: gws.INode) -> 'Object':
     uid = obj.var('db')
     if uid:
         prov = obj.root.find(klass=_ext_class, uid=uid)

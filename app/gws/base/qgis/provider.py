@@ -5,7 +5,7 @@ import gws.types as t
 import gws.base.ows.provider
 import gws.config
 import gws.lib.ows
-import gws.lib.gisutil
+import gws.lib.gis
 import gws.lib.net
 import gws.lib.xml2
 from . import types, parser
@@ -79,14 +79,14 @@ class Object(gws.base.ows.provider.Object):
         if shape.type != gws.GeometryType.point:
             return []
 
-        our_crs = gws.lib.gisutil.best_crs(shape.crs, self.supported_crs)
+        our_crs = gws.lib.gis.best_crs(shape.crs, self.supported_crs)
         shape = shape.transformed_to(our_crs)
 
         #  draw a 1000x1000 bbox around a point
         width = 1000
         height = 1000
 
-        bbox = gws.lib.gisutil.make_bbox(
+        bbox = gws.lib.gis.make_bbox(
             shape.x,
             shape.y,
             our_crs,

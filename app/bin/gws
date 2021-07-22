@@ -52,6 +52,12 @@ chmod 750 $GWS_VAR_DIR
 
 
 if [ "$1" == "server" ]; then
+
+    if [ "$2" == "stop" ]; then
+      $PYTHON $MAIN "$@"
+      exit $?
+    fi
+
     ensure_xvfb
 
     rm -f $SERVER_CMD

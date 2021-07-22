@@ -5,7 +5,7 @@ import re
 
 import gws
 import gws.types as t
-import gws.base.api
+import gws.base.api.action
 import gws.base.client.bundles
 import gws.base.template
 import gws.lib.mime
@@ -29,7 +29,7 @@ class SysAssetParams(gws.Params):
 
 
 @gws.ext.Object('action.web')
-class Object(gws.base.api.Action):
+class Object(gws.base.api.action.Object):
     """Web action"""
 
     @gws.ext.command('api.web.asset')
@@ -48,7 +48,7 @@ class Object(gws.base.api.Action):
 
     @gws.ext.command('get.web.sysAsset')
     def sys_asset(self, req: gws.IWebRequest, p: SysAssetParams) -> gws.ContentResponse:
-        locale_uid = p.localeUid or self.root.application.localeUids[0]
+        locale_uid = p.localeUid or self.root.application.locale_uids[0]
 
         if p.path.startswith('vendor'):
             return gws.ContentResponse(

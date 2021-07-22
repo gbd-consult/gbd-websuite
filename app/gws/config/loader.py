@@ -61,10 +61,7 @@ def initialize(parse_result) -> gws.RootObject:
     except Exception as e:
         raise error.ConfigurationError(*e.args)
 
-    try:
-        r.post_initialize()
-    except Exception as e:
-        raise error.ConfigurationError(*e.args)
+    r.post_initialize()
 
     return r
 

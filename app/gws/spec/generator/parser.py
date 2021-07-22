@@ -175,8 +175,8 @@ class _Parser:
         if not _is_type_name(node.name):
             return
 
-        sup = self.qname(node.bases[0]) if len(node.bases) > 0 else None
-        if sup and (sup == 'Enum' or sup.endswith('.Enum')):
+        supers = [self.qname(b) for b in node.bases]
+        if supers and (supers[0] == 'Enum' or supers[0].endswith('.Enum')):
             return self.parse_enum(node)
 
         spec = base.TObject(
@@ -187,12 +187,8 @@ class _Parser:
             ext_category='',
             ext_kind='',
             ext_type='',
-            super_t='',
+            supers=[self.type_from_name(s).name for s in supers],
         )
-
-        if sup:
-            super_type = self.type_from_name(sup)
-            spec.super_t = super_type.name
 
         d = self.class_decorator(node)
         if d:

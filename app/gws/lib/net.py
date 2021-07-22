@@ -12,7 +12,6 @@ import requests.structures
 import gws
 import gws.types as t
 
-
 # https://urllib3.readthedocs.org/en/latest/security.html#using-your-system-s-root-certificates
 CA_CERTS_PATH = '/etc/ssl/certs/ca-certificates.crt'
 
@@ -137,177 +136,146 @@ def add_params(url, params):
     return make_url(p)
 
 
-# @TODO locking for caches
+##
 
 
-class Response:
-    def __init__(self, res: requests.Response):
+class HTTPResponse:
+    def __init__(self, ok: bool, res: requests.Response = None, text: str = None, status_code=0):
+        self._text = None
+        self.ok = ok
         self.res = res
-        self.status_code = res.status_code
-        self.content_type, self.content_type_encoding = self._parse_content_type(res.headers)
-
-    @property
-    def content(self) -> bytes:
-        return self.res.content
+        if res:
+            self.content_type, self.content_encoding = _parse_content_type(res.headers)
+            self.content = res.content
+            self.status_code = res.status_code
+        else:
+            self.content_type, self.content_encoding = 'text/plain', 'utf8'
+            self.content = text.encode('utf8') if text is not None else b'???'
+            self.status_code = status_code
 
     @property
     def text(self) -> str:
-        if not hasattr(self, '_text'):
-            setattr(self, '_text', self._get_text())
-        return getattr(self, '_text')
+        if self._text is None:
+            self._text = _get_text(self.content, self.content_encoding)
+        return self._text
 
-    def _get_text(self):
 
-        if self.content_type_encoding:
-            try:
-                return str(self.content, encoding=self.content_type_encoding, errors='strict')
-            except UnicodeDecodeError:
-                pass
-
-        # some guys serve utf8 content without a header, in which case requests thinks it's ISO-8859-1
-        # (see http://docs.python-requests.org/en/master/user/advanced/#encodings)
-        #
-        # 'apparent_encoding' is not always reliable
-        #
-        # therefore when there's no header, we try utf8 first, and then ISO-8859-1
-
+def _get_text(content, encoding):
+    if encoding:
         try:
-            return str(self.content, encoding='utf8', errors='strict')
+            return str(content, encoding=encoding, errors='strict')
         except UnicodeDecodeError:
             pass
 
-        try:
-            return str(self.content, encoding='ISO-8859-1', errors='strict')
-        except UnicodeDecodeError:
-            pass
+    # some guys serve utf8 content without a header, in which case requests thinks it's ISO-8859-1
+    # (see http://docs.python-requests.org/en/master/user/advanced/#encodings)
+    #
+    # 'apparent_encoding' is not always reliable
+    #
+    # therefore when there's no header, we try utf8 first, and then ISO-8859-1
 
-        # both failed, do utf8 with replace
+    try:
+        return str(content, encoding='utf8', errors='strict')
+    except UnicodeDecodeError:
+        pass
 
-        gws.log.warn(f'decode failed')
-        return str(self.content, encoding='utf8', errors='replace')
+    try:
+        return str(content, encoding='ISO-8859-1', errors='strict')
+    except UnicodeDecodeError:
+        pass
 
-    def _parse_content_type(self, headers):
-        # copied from requests.utils.get_encoding_from_headers, but with no ISO-8859-1 default
+    # both failed, do utf8 with replace
 
-        content_type = headers.get('content-type')
-
-        if not content_type:
-            # https://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.2.1
-            return 'application/octet-stream', None
-
-        ctype, params = cgi.parse_header(content_type)
-        if 'charset' not in params:
-            return ctype, None
-
-        enc = params['charset'].strip("'\"")
-
-        # make sure this is a valid python encoding
-        try:
-            str(b'.', encoding=enc, errors='strict')
-        except LookupError:
-            gws.log.warn(f'invalid content-type encoding {enc!r}')
-            return ctype, None
-
-        return ctype, enc
+    gws.log.warn(f'decode failed')
+    return str(content, encoding='utf8', errors='replace')
 
 
-class FailedResponse(Response):
-    def __init__(self, err):
-        self.status_code = 500
-        self.content = repr(err).encode('utf8')
-        self.content_type = 'text/plain'
-        self.content_type_encoding = 'utf8'
-        self._repr_err = repr(err)
+def _parse_content_type(headers):
+    # copied from requests.utils.get_encoding_from_headers, but with no ISO-8859-1 default
 
-    @property
-    def text(self):
-        return self._repr_err
+    content_type = headers.get('content-type')
+
+    if not content_type:
+        # https://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.2.1
+        return 'application/octet-stream', None
+
+    ctype, params = cgi.parse_header(content_type)
+    if 'charset' not in params:
+        return ctype, None
+
+    enc = params['charset'].strip("'\"")
+
+    # make sure this is a valid python encoding
+    try:
+        str(b'.', encoding=enc, errors='strict')
+    except LookupError:
+        gws.log.warn(f'invalid content-type encoding {enc!r}')
+        return ctype, None
+
+    return ctype, enc
 
 
-def http_request(url, **kwargs) -> Response:
-    if 'params' in kwargs:
-        url = add_params(url, kwargs.pop('params'))
-    cache_path = None
-    max_age = kwargs.pop('max_age', 0)
+##
 
-    gws.log.debug(f'REQUEST_BEGIN: url={url!r} max_age={max_age}')
+# @TODO locking for caches
+
+
+def http_request(url, **kwargs) -> HTTPResponse:
+    kwargs = dict(kwargs)
+
+    max_age = int(kwargs.pop('max_age', 0))
 
     if max_age:
         cache_path = _cache_path(url)
-        ag = _file_age(cache_path)
-        if ag < max_age:
-            gws.log.debug(f'REQUEST_CACHED: path={cache_path!r} age={ag}')
+        age = _file_age(cache_path)
+        if age < max_age:
+            gws.log.debug(f'REQUEST_CACHED: url={url!r} path={cache_path!r} age={age}')
             return _read_cache(cache_path)
-        gws.log.debug('not_cached', cache_path, ag, max_age)
 
-    kwargs = dict(kwargs or {})
+    ts = gws.time_start(f'HTTP_REQUEST={url!r}')
+    resp = _http_request(url, kwargs)
+    gws.time_end(ts)
+
+    if max_age and resp.ok:
+        _store_cache(resp, _cache_path(url))
+
+    return resp
+
+
+_DEFAULT_CONNECT_TIMEOUT = 60
+_DEFAULT_READ_TIMEOUT = 60
+
+
+def _http_request(url, kwargs) -> HTTPResponse:
+    if 'params' in kwargs:
+        url = add_params(url, kwargs.pop('params'))
+
     kwargs['stream'] = False
-
     method = kwargs.pop('method', 'GET').upper()
 
     if 'verify' not in kwargs:
         kwargs['verify'] = CA_CERTS_PATH
 
-    timeout = kwargs.pop('timeout', (60, 120))  # (connect, read)
+    timeout = kwargs.get('timeout', (_DEFAULT_CONNECT_TIMEOUT, _DEFAULT_READ_TIMEOUT))
     if isinstance(timeout, (int, float)):
         timeout = int(timeout), int(timeout)
     kwargs['timeout'] = timeout
 
-    lax = kwargs.pop('lax', False)
-    ts = time.time()
-
-    err: t.Optional[requests.RequestException] = None
-    resp = None
-
     try:
-        resp = requests.request(method, url, **kwargs)
-    except requests.Timeout as e:
-        gws.log.debug(f'REQUEST_FAILED: timeout url={url!r}')
-        if cache_path:
-            err = e
-        else:
-            raise Timeout() from e
-    except requests.RequestException as e:
-        gws.log.debug(f'REQUEST_FAILED: generic url={url!r}')
-        if cache_path:
-            err = e
-        else:
-            raise HTTPError(500, str(e)) from e
-
-    if resp and not lax:
-        try:
-            resp.raise_for_status()
-        except requests.RequestException as e:
-            gws.log.debug(f'REQUEST_FAILED: http url={url!r}')
-            raise HTTPError(resp.status_code, resp.text)
-
-    ts = time.time() - ts
-    if resp and not err:
-        gws.log.debug(f'REQUEST_DONE: code={resp.status_code} len={len(resp.content)} time={ts:.3f}')
-        r = Response(resp)
-    else:
-        gws.log.debug(f'REQUEST_DONE: resp=FAILED time={ts:.3f}')
-        r = FailedResponse(err)
-
-    if cache_path:
-        _store_cache(r, cache_path)
-
-    return r
+        res = requests.request(method, url, **kwargs)
+        if res.status_code >= 400:
+            gws.log.debug(f'HTTP_REQUEST_FAILED: (status) url={url!r} status={res.status_code!r}')
+        return HTTPResponse(ok=(res.status_code < 400), res=res)
+    except requests.Timeout as exc:
+        gws.log.debug(f'HTTP_REQUEST_FAILED: (timeout) url={url!r}')
+        return HTTPResponse(ok=False, text=repr(exc), status_code=500)
+    except requests.RequestException as exc:
+        gws.log.debug(f'HTTP_REQUEST_FAILED: (generic) url={url!r} err={exc!r}')
+        return HTTPResponse(ok=False, text=repr(exc), status_code=500)
 
 
 def _cache_path(url):
-    return gws.NET_CACHE_DIR + '/' + _cache_key(url)
-
-
-def _cache_key(url):
-    m = re.search(r'^(https?://)(.+?)(\?.+)?$', url)
-    if not m:
-        return _hash(url)
-    return gws.as_uid(m.group(2)) + '_' + _hash(m.group(3))
-
-
-def _hash(s):
-    return hashlib.md5(gws.as_bytes(s)).hexdigest()
+    return gws.NET_CACHE_DIR + '/' + gws.as_uid(url)
 
 
 def _file_age(path):

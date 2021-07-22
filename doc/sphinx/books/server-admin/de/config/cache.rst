@@ -22,7 +22,7 @@ grid
 
 ^REF gws.base.layer.types.GridConfig
 
-Geben Sie hier an, wie der Kachelgrid für diesen Layer aussieht. Bei den Layern die keine Kachel liefern, wie ``wms`` oder ``qgisflat`` ist es wichtig einen ausreichenen Puffer (``metaBuffer``) zu setzen, damit die Beschriftungen richtig positioniert werden.
+Geben Sie hier an, wie der Kachelgrid für diesen Layer aussieht. Bei den Layern die keine Kachel liefern, wie ``wms`` oder ``qgisflat`` ist es wichtig einen ausreichenen Puffer (``reqBuffer``) zu setzen, damit die Beschriftungen richtig positioniert werden.
 
 Seeding
 -------

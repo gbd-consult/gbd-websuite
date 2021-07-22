@@ -8,25 +8,25 @@ class ServiceException(Exception):
     pass
 
 
+_base_url = None
+
+
 def _call(service, params):
-    url = 'http://%s:%s/%s' % (
-        gws.config.root().var('server.mapproxy.host'),
-        gws.config.root().var('server.mapproxy.port'),
-        service
-    )
+    global _base_url
+
+    if not _base_url:
+        _base_url = 'http://%s:%s' % (
+            gws.config.root().application.var('server.mapproxy.host'),
+            gws.config.root().application.var('server.mapproxy.port'),
+        )
 
     try:
-        resp = gws.lib.net.http_request(url, params=params)
+        resp = gws.lib.net.http_request(_base_url + '/' + service, params=params)
         if resp.content_type.startswith('image'):
             return resp.content
-        text = resp.text
-        if 'Exception' in text:
-            raise ServiceException(text)
-    except gws.lib.net.Error as e:
-        gws.log.error('mapproxy http error', e)
-        return
-    except ServiceException as e:
-        gws.log.error('mapproxy service exception', e)
+        raise ServiceException(resp.text)
+    except Exception:
+        gws.log.exception()
         return
 
 

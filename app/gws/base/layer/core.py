@@ -1,18 +1,21 @@
 import re
 
 import gws
-import gws.types as t
 import gws.base.map.action
-import gws.lib.metadata
+import gws.base.metadata
 import gws.base.model
 import gws.base.search
 import gws.base.template
+import gws.lib.legend
+import gws.lib.extent
+import gws.lib.gis
+import gws.lib.img
 import gws.lib.ows
-import gws.lib.source
-import gws.lib.zoom
 import gws.lib.style
 import gws.lib.svg
 import gws.lib.units
+import gws.lib.zoom
+import gws.types as t
 
 _DEFAULT_STYLE = gws.Config(
     type='css',
@@ -65,8 +68,8 @@ class GridConfig(gws.Config):
 
     origin: str = 'nw'  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
-    metaSize: int = 0  #: number of meta-tiles to fetch
-    metaBuffer: int = 0  #: pixel buffer
+    reqSize: int = 0  #: number of metatiles to fetch
+    reqBuffer: int = 0  #: pixel buffer
 
 
 class EditConfig(gws.WithAccess):
@@ -111,41 +114,40 @@ class OwsConfig(gws.Config):
 class Config(gws.WithAccess):
     """Layer configuration"""
 
-    clientOptions: ClientOptions = {}  # type: ignore  #: options for the layer display in the client
-    legend: LegendConfig = {}  # type: ignore  #: legend configuration
-    ows: OwsConfig = {}  # type: ignore #: OWS services options
-    search: gws.base.search.Config = {}  # type: ignore  #: layer search configuration
-
+    clientOptions: ClientOptions = {}  #: options for the layer display in the client
     dataModel: t.Optional[gws.base.model.Config]  #: layer data model
     display: DisplayMode = DisplayMode.box  #: layer display mode
     edit: t.Optional[EditConfig]  #: editing permissions
     extent: t.Optional[gws.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    meta: t.Optional[gws.lib.metadata.Config]  #: layer meta data
+    legend: LegendConfig = {}  #: legend configuration
+    metaData: t.Optional[gws.base.metadata.Config]  #: layer metadata
     opacity: float = 1  #: layer opacity
+    ows: OwsConfig = {}  #: OWS services options
+    search: gws.base.search.Config = {}  #: layer search configuration
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
     title: str = ''  #: layer title
     zoom: t.Optional[gws.lib.zoom.Config]  #: layer resolutions and scales
 
 
-# class CustomConfig(gws.WithAccess):
-#     """Custom layer configuration"""
-#
-#     applyTo: t.Optional[gws.lib.source.Filter]  #: source layers this configuration applies to
-#     clientOptions: t.Optional[ClientOptions]  #: options for the layer display in the client
-#     dataModel: t.Optional[gws.base.model.Config]  #: layer data model
-#     display: t.Optional[DisplayMode]  #: layer display mode
-#     edit: t.Optional[EditConfig]  #: editing permissions
-#     extent: t.Optional[gws.Extent]  #: layer extent
-#     extentBuffer: t.Optional[int]  #: extent buffer
-#     legend: t.Optional[LegendConfig]  #: legend configuration
-#     meta: t.Optional[gws.lib.metadata.Config]  #: layer meta data
-#     opacity: t.Optional[float]  #: layer opacity
-#     ows: t.Optional[OwsConfig]  #: OWS services options
-#     search: t.Optional[gws.base.search.Config]  #: layer search configuration
-#     templates: t.Optional[t.List[gws.ext.template.Config]]  #:client templates
-#     title: t.Optional[str]  #: layer title
-#     zoom: t.Optional[gws.lib.zoom.Config]  #: layer resolutions and scales
+class CustomConfig(gws.WithAccess):
+    """Custom layer configuration"""
+
+    applyTo: t.Optional[gws.lib.gis.LayerFilter]  #: source layers this configuration applies to
+    clientOptions: t.Optional[ClientOptions]  # options for the layer display in the client
+    dataModel: t.Optional[gws.base.model.Config]  #: layer data model
+    display: t.Optional[DisplayMode]  #: layer display mode
+    edit: t.Optional[EditConfig]  #: editing permissions
+    extent: t.Optional[gws.Extent]  #: layer extent
+    extentBuffer: t.Optional[int]  #: extent buffer
+    legend: t.Optional[LegendConfig]  # #: legend configuration
+    metaData: t.Optional[gws.base.metadata.Config]  #: layer metadata
+    opacity: t.Optional[float]  #: layer opacity
+    ows: t.Optional[OwsConfig]  #: OWS services options
+    search: t.Optional[gws.base.search.Config]  #: layer search configuration
+    templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
+    title: t.Optional[str]  #: layer title
+    zoom: t.Optional[gws.lib.zoom.Config]  #: layer resolutions and scales
 
 
 class Props(gws.Props):
@@ -156,7 +158,7 @@ class Props(gws.Props):
     geometryType: t.Optional[gws.GeometryType]
     layers: t.Optional[t.List['Props']]
     loadingStrategy: t.Optional[str]
-    meta: gws.lib.metadata.Props
+    metaData: gws.base.metadata.Props
     opacity: t.Optional[float]
     options: ClientOptions
     resolutions: t.Optional[t.List[float]]
@@ -168,9 +170,17 @@ class Props(gws.Props):
     url: str = ''
 
 
+class ConfiguredFlags(gws.Data):
+    extent: bool
+    layers: bool
+    legend: bool
+    metadata: bool
+    resolutions: bool
+    search: bool
+
+
 class Object(gws.Node, gws.ILayer):
     map: gws.IMap
-    meta: gws.IMeta
 
     can_render_box: bool = False
     can_render_xyz: bool = False
@@ -183,48 +193,43 @@ class Object(gws.Node, gws.ILayer):
     supports_wms: bool = False
     supports_wfs: bool = False
 
-    legend: gws.Legend
-
-    image_format: str
-    display: str
-
-    layers: t.List[gws.ILayer] = []
-
-    templates: gws.ITemplateBundle
-    data_model: t.Optional[gws.IDataModel]
-    style: t.Optional[gws.IStyle]
-    search_providers: t.List[gws.ISearchProvider]
-
-    resolutions: t.List[float]
-    extent: gws.Extent
-    opacity: float
-    geometry_type: t.Optional[gws.GeometryType]
-    crs: gws.Crs
-
+    cache: CacheConfig
+    cache_uid: str
     client_options: gws.Data
-
-    ows_name: str
-    ows_feature_name: str
-
+    crs: gws.Crs
+    data_model: t.Optional[gws.IDataModel]
+    description_template: gws.ITemplate
+    display: str
     edit_data_model: t.Optional[gws.IDataModel]
     edit_options: t.Optional[gws.Data]
     edit_style: t.Optional[gws.IStyle]
-
-    description_template: gws.ITemplate
-    ows_enabled: bool
-    ows_enabled_services_uids: t.List[str]
-    ows_enabled_services_pattern: gws.Regex
-
-    cache: CacheConfig
+    extent: gws.Extent
+    geometry_type: t.Optional[gws.GeometryType]
     grid: GridConfig
-    cache_uid: str = ''
-    grid_uid: str = ''
+    grid_uid: str
+    image_format: str
+    layers: t.List[gws.ILayer]
+    legend: gws.Legend
+    legend_output: t.Optional[gws.LegendRenderOutput]
+    metadata: gws.IMetaData
+    opacity: float
+    ows_enabled: bool
+    ows_enabled_services_pattern: gws.Regex
+    ows_enabled_services_uids: t.List[str]
+    ows_feature_name: str
+    ows_name: str
+    resolutions: t.List[float]
+    search_providers: t.List[gws.ISearchProvider]
+    style: t.Optional[gws.IStyle]
+    templates: gws.ITemplateBundle
+
+    has_configured: ConfiguredFlags
 
     @property
     def props(self):
         return gws.Props(
-            extent=self.extent if self.extent != self.map.extent else None,
-            meta=self.meta,
+            extent=self.extent,
+            metaData=self.metadata,
             opacity=self.opacity,
             options=self.client_options,
             resolutions=self.resolutions,
@@ -259,7 +264,7 @@ class Object(gws.Node, gws.ILayer):
 
     @property
     def legend_url(self):
-        return gws.base.map.action.url_for_render_legend(self.uid)
+        return gws.base.map.action.url_for_get_legend(self.uid)
 
     @property
     def ancestors(self) -> t.List[gws.ILayer]:
@@ -271,125 +276,121 @@ class Object(gws.Node, gws.ILayer):
         return ps
 
     def configure(self):
+        self.has_configured = ConfiguredFlags()
+
         self.map = t.cast(gws.IMap, self.get_closest('gws.base.map'))
-        self.crs = self.var('crs') or self.map.crs
 
-        self.meta = self.configure_metadata()
-        self.title = ''  ### self.meta.data.title
-
-        uid = self.var('uid') or gws.as_uid(self.title) or 'layer'
+        uid = self.var('uid') or gws.as_uid(self.var('title'))
         if self.map:
             uid = self.map.uid + '.' + uid
         self.set_uid(uid)
 
         self.is_public = self.root.application.auth.get_role('all').can_use(self)
-
-        self.legend = gws.Legend(enabled=False)
-
-        self.image_format = self.var('imageFormat')
-        self.display = self.var('display')
-
         self.cache = self.var('cache', default=CacheConfig(enabled=False))
+        self.cache_uid = ''
+        self.client_options = self.var('clientOptions')
+        self.crs = self.var('crs') or (self.map.crs if self.map else gws.EPSG_3857)
+        self.display = self.var('display')
+        self.edit_options = self.var('edit')
+        self.geometry_type = None
         self.grid = self.var('grid', default=GridConfig())
-
+        self.grid_uid = ''
+        self.image_format = self.var('imageFormat')
         self.layers = []
+        self.legend = gws.Legend(enabled=False)
+        self.legend_output = None
+        self.metadata = t.cast(gws.IMetaData, None)
+        self.opacity = self.var('opacity')
+        self.ows_enabled = self.var('ows.enabled')
+        self.ows_enabled_services_uids = self.var('ows.enabledServices.uids') or []
+        self.ows_enabled_services_pattern = self.var('ows.enabledServices.pattern')
+        self.ows_feature_name = ''
+        self.ows_name = ''
+        self.resolutions = []
+        self.search_providers = []
+
+        p = self.var('dataModel')
+        self.data_model = self.create_child(gws.base.model.Object, p) if p else None
+
+        p = self.var('editDataModel')
+        self.edit_data_model = self.create_child(gws.base.model.Object, p) if p else None
 
         p = self.var('templates')
         self.templates = t.cast(
             gws.base.template.Bundle,
             self.create_child(gws.base.template.Bundle, gws.Config(templates=p, defaults=gws.base.template.BUILTINS)))
-        self.description_template = t.cast(
-            gws.base.template.Object,
-            self.templates.find(subject='layer.description'))
-
-        p = self.var('dataModel')
-        self.data_model = self.create_child(gws.base.model.Object, p) if p else None
-
-        self.resolutions = gws.lib.zoom.resolutions_from_config(self.var('zoom'), self.map.resolutions)
-        if not self.resolutions:
-            raise gws.Error(f'no resolutions')
-
-        # NB: the extent will be configured later on in map._configure_extent
-        self.extent = t.cast(gws.Extent, None)
-
-        self.opacity = self.var('opacity')
-        self.client_options = self.var('clientOptions')
-
-        self.geometry_type = None
+        self.description_template = self.templates.find(subject='layer.description')
 
         p = self.var('style') or _DEFAULT_STYLE
         self.style = t.cast(gws.IStyle, self.create_child(gws.lib.style.Object, p))
 
-        p = self.var('editDataModel')
-        self.edit_data_model = self.create_child(gws.base.model.Object, p) if p else None
-        self.edit_options = self.var('edit')
-
         p = self.var('editStyle')
         self.edit_style = self.create_child(gws.lib.style.Object, p) if p else self.style
 
-        self.ows_name = self.var('ows.name') or self.uid.split('.')[-1]
-        self.ows_feature_name = self.var('ows.featureName') or self.ows_name
-        self.ows_enabled = self.var('ows.enabled')
-        self.ows_enabled_services_uids = self.var('ows.enabledServices.uids') or []
-        self.ows_enabled_services_pattern = self.var('ows.enabledServices.pattern')
+        p = self.var('metaData')
+        if p:
+            self.configure_metadata_from(p)
+            self.has_configured.metadata = True
 
-    def post_configure(self):
-        try:
-            self.configure_search()
-        except Exception as e:
-            gws.log.exception()
+        p = self.var('extent')
+        if p:
+            self.extent = gws.lib.extent.from_list(p)
+            if not self.extent:
+                raise gws.Error(f'invalid extent {p!r} in layer={self.uid!r}')
+            self.has_configured.extent = True
 
-        legend = self.configure_legend()
-        if legend:
-            self.legend = legend
-            self.legend.options = self.var('legend.options', default={})
-
-    def configure_metadata(self, provider_meta=None) -> gws.IMeta:
-        """Load metadata from the config or from a provider, whichever comes first."""
-
-        title = self.var('title')
-
-        # use, in order 1) configured metadata, 2) provider meta, 3) dummy meta with title only
-        m = self.var('meta')
-
-        if not m and provider_meta:
-            m = gws.Config(provider_meta)
-
-        if not m:
-            if title:
-                m = gws.Config(title=title)
-            elif self.var('uid'):
-                m = gws.Config(title=self.var('uid'))
-            else:
-                m = gws.Config()
-
-        if title:
-            # title at the top level config overrides meta title
-            m.title = title
-
-        return t.cast(gws.IMeta, self.create_child(gws.lib.metadata.Object, m))
-
-    def configure_search(self):
-        # search can be
-        # 1) missing = use default provider
-        # 2) disabled (enabled=False) = skip
-        # 3) just enabled = use default provider
-        # 4) enabled with explicit providers = use these
+        p = self.var('zoom')
+        if p:
+            self.resolutions = gws.lib.zoom.resolutions_from_config(p, self.map.resolutions if self.map else [])
+            if not self.resolutions:
+                raise gws.Error(f'invalid zoom configuration in layer={self.uid!r}')
+            self.has_configured.resolutions = True
 
         p = self.var('search')
+        if p:
+            if not p.enabled:
+                self.search_providers = []
+                self.has_configured.search = True
+            elif p.providers:
+                self.search_providers = [
+                    t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider', c))
+                    for c in p.providers]
+                self.has_configured.search = True
 
-        if p and not p.enabled:
-            return
+        p = self.var('legend')
+        if p:
+            if not p.enabled:
+                self.legend = gws.Legend(enabled=False)
+                self.has_configured.legend = True
+            elif p.path:
+                self.legend = gws.Legend(enabled=True, path=p.path, options=p.options or {})
+                self.has_configured.legend = True
+            elif p.url:
+                self.legend = gws.Legend(enabled=True, url=p.url, options=p.options or {})
+                self.has_configured.legend = True
+            elif p.template:
+                tpl = self.create_child('gws.ext.template', p.template)
+                self.legend = gws.Legend(enabled=True, template=tpl, options=p.options or {})
+                self.has_configured.legend = True
 
-        if not p or not p.providers:
-            prov = self.default_search_provider
-            if prov:
-                self.search_providers.append(prov)
-            return
+    def configure_metadata_from(self, m: gws.base.metadata.Values):
+        self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, m))
+        self.title = self.var('title') or self.metadata.title
+        self.ows_name = self.var('ows.name') or self.uid.split('.')[-1]
+        self.ows_feature_name = self.var('ows.featureName') or self.ows_name
+        self.has_configured.metadata = True
 
-        for cfg in p.providers:
-            self.search_providers.append(
-                t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider', cfg)))
+    def post_configure(self):
+        if not self.resolutions:
+            if self.map:
+                self.resolutions = self.map.resolutions
+
+        if not self.resolutions:
+            raise gws.Error(f'no resolutions defined in layer={self.uid!r}')
+
+        if not self.metadata:
+            self.configure_metadata_from(gws.base.metadata.Values(
+                title=self.var('title') or self.var('uid') or 'layer'))
 
     def edit_access(self, user):
         # @TODO granular edit access
@@ -421,74 +422,33 @@ class Object(gws.Node, gws.ILayer):
     def render_svg_tags(self, rv: gws.MapRenderView, style: gws.IStyle = None) -> t.List[gws.Tag]:
         return []
 
-    def configure_legend(self) -> gws.Legend:
-        p = self.var('legend')
-        if not p.enabled:
-            return gws.Legend(enabled=False)
+    _LEGEND_CACHE_LIFETIME = 3600
 
-        if p.path:
-            return gws.Legend(enabled=True, path=p.path)
-
-        if p.url:
-            return gws.Legend(enabled=True, url=p.url)
-
-        if p.template:
-            return gws.Legend(enabled=True, template=self.create_child('gws.ext.template', p.template))
-
-    def render_legend_to_path(self, context=None) -> t.Optional[str]:
+    def get_legend(self, context=None) -> t.Optional[gws.LegendRenderOutput]:
         """Render a legend and return the path to the legend image."""
 
-        if self.legend.path:
-            return self.legend.path
+        if not self.legend.enabled:
+            return None
 
-        cache_path = gws.LEGEND_CACHE_DIR + '/' + self.uid + '.png'
-
-        if self.legend.url:
-            try:
-                r = gws.lib.ows.request.raw_get(self.legend.url)
-            except gws.lib.ows.error.Error as e:
-                gws.log.error(f'layer {self.uid!r}: legend download failed: {e!r}')
+        def _get():
+            out = self.render_legend(context)
+            if not context and not out:
                 self.legend.enabled = False
-                return None
+            return out
 
-            gws.write_file_b(cache_path, r.content)
-            self.legend.path = cache_path
-            return self.legend.path
+        if not context:
+            return gws.get_cached_object('LEGEND_' + self.uid, _get, self._LEGEND_CACHE_LIFETIME)
 
-        if self.legend.template:
-            self.legend.template.render(context, gws.TemplateRenderArgs(out_path=cache_path, format='png'))
-            self.legend.path = cache_path
-            return self.legend.path
+        return self.render_legend(context)
 
-        img = self.render_legend_to_image(context)
-        if img:
-            gws.write_file_b(cache_path, img)
-            self.legend.path = cache_path
-            return self.legend.path
-
-        self.legend.enabled = False
-        return None
-
-    def render_legend_to_image(self, context=None) -> t.Optional[bytes]:
-        pass
-
-    def render_legend_to_html(self, context=None) -> t.Optional[str]:
-        """Render a legend in the html format."""
-
-        if self.legend.template:
-            return self.legend.template.render(context).content
-
-        path = self.render_legend_to_path(context)
-        if path:
-            return _DEFAULT_LEGEND_HTML.replace('{path}', path)
-
-        return ''
+    def render_legend(self, context=None):
+        return gws.lib.legend.render(self.legend, context)
 
     def get_features(self, bounds: gws.Bounds, limit: int = 0) -> t.List[gws.IFeature]:
         return []
 
     def enabled_for_ows(self, service: gws.IOwsService) -> bool:
-        if not self.enabled_for_ows:
+        if not self.ows_enabled:
             return False
         if self.ows_enabled_services_uids:
             return service.uid in self.ows_enabled_services_uids
@@ -501,19 +461,3 @@ class Object(gws.Node, gws.ILayer):
         if self.layers:
             return any(la.enabled_for_ows(service) for la in self.layers)
         return False
-
-
-def add_layers_to_object(target: gws.Node, layer_configs):
-    ls = []
-    skip_invalid = target.var('skipInvalidLayers', with_parent=True)
-    for p in layer_configs:
-        try:
-            ls.append(target.create_child('gws.ext.layer', p))
-        except Exception as e:
-            uid = gws.get(p, 'uid')
-            gws.log.error(f'FAILED LAYER: parent={target.uid!r} layer={uid!r} error={e!r}')
-            if skip_invalid:
-                gws.log.exception()
-            else:
-                raise
-    return ls

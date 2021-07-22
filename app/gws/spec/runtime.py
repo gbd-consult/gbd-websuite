@@ -22,28 +22,30 @@ def create(manifest_path, with_cache=True):
 
     if with_cache:
         h = gws.lib.json2.to_hash([manifest_path])
-        cache_path = gws.VAR_DIR + '/' + h + '.spec.json'
+        cache_path = gws.TMP_DIR + '/' + h + '.spec.json'
         try:
             genres = gws.lib.json2.from_path(cache_path)
             gws.log.debug(f'spec.create: loaded from {cache_path!r}')
-        except Exception as e:
-            gws.log.debug(f'spec.create: load failed: {e!r}')
+        except Exception as exc:
+            gws.log.debug(f'spec.create: load failed: {exc!r}')
 
     if not genres:
         ts = gws.time_start('SPEC GENERATOR')
-        genres = gws.spec.generator.generate_for_server(manifest_path)
+        try:
+            genres = gws.spec.generator.generate_for_server(manifest_path)
+        except Exception as exc:
+            raise Error(f'system error, spec generator failed : {exc!r}') from exc
         gws.time_end(ts)
 
     specs = Object(genres['meta'], genres['specs'], genres['strings'])
-    gws.log.debug(f'spec.create: generated')
 
     if with_cache:
         try:
             gws.lib.json2.to_path(cache_path, genres, pretty=True)
             gws.log.debug(f'spec.create: store to {cache_path!r}')
             return specs
-        except Exception as e:
-            gws.log.debug(f'spec.create: store failed: {e!r}')
+        except Exception as exc:
+            gws.log.debug(f'spec.create: store failed: {exc!r}')
 
     return specs
 
@@ -71,12 +73,13 @@ class Object(ISpecRuntime):
             return None
 
         cmd_spec = self.specs[name]
-        p = Params(self.read_value(params, cmd_spec['arg'], '', strict))
+        p = Params(self.read_value(params, cmd_spec['arg'], '', strict, with_error_details=False))
 
         return ExtCommandDescriptor(
-            action_type=cmd_spec['cmd_action'],
-            function_name=cmd_spec['function_name'],
             class_name=cmd_spec['class_name'],
+            cmd_action=cmd_spec['cmd_action'],
+            cmd_name=cmd_spec['cmd_name'],
+            function_name=cmd_spec['function_name'],
             params=p or Params(),
         )
 
@@ -233,22 +236,33 @@ class _Reader:
         return dct
 
     def _read_list(self, val, spec):
-        return self._read_list_of_type(val, spec['item_t'])
+        lst = self._read_any_list(val)
+        res = []
+        for n, v in enumerate(lst):
+            self.push([v, n])
+            res.append(self.read(v, spec['item_t']))
+            self.pop()
+        return res
 
-    def _read_list_of_type(self, val, item_type):
+    def _read_tuple(self, val, spec):
+        lst = self._read_any_list(val)
+        items = spec['items']
+
+        if len(lst) != len(items):
+            raise Error('ERR_BAD_TYPE', f"expected {_comma(items)}", val)
+
+        res = []
+        for n, v in enumerate(lst):
+            self.push([v, n])
+            res.append(self.read(v, items[n]))
+            self.pop()
+        return res
+
+    def _read_any_list(self, val):
         if not self.strict and isinstance(val, str):
             val = val.strip()
             val = [v.strip() for v in val.split(',')] if val else []
-
-        val = _ensure(val, list)
-        lst = []
-
-        for n, v in enumerate(val):
-            self.push([v, n])
-            lst.append(self.read(v, item_type))
-            self.pop()
-
-        return lst
+        return _ensure(val, list)
 
     def _read_literal(self, val, spec):
         s = self._read_str(val, spec)
@@ -260,22 +274,6 @@ class _Reader:
         if val is None:
             return val
         return self.read(val, spec['target_t'])
-
-    def _read_tuple(self, val, spec):
-        lst = self._read_list_of_type(val, 'any')
-        items = spec['items']
-
-        if len(lst) != len(items):
-            raise Error('ERR_BAD_TYPE', f"expected {_comma(items)}", val)
-
-        lst = []
-
-        for n, v in enumerate(val):
-            self.push([v, n])
-            lst.append(self.read(v, items[n]))
-            self.pop()
-
-        return lst
 
     def _read_union(self, val, spec):
         # @TODO no untyped unions yet
@@ -292,7 +290,7 @@ class _Reader:
 
         target_type = spec['members'].get(type_name)
         if not target_type:
-            raise Error('ERR_BAD_TYPE', f"illegal type: {type_name!r}, expected {_comma(spec['members'].values())}", val)
+            raise Error('ERR_BAD_TYPE', f"illegal type: {type_name!r}, expected {_comma(spec['members'])}", val)
         return self.read(val, target_type)
 
     # named types

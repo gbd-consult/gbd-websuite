@@ -3,9 +3,9 @@ import re
 import urllib.parse
 
 import gws
-import gws.types as t
 import gws.base.ows.provider.parseutil as u
-import gws.lib.source
+import gws.lib.gis
+import gws.lib.metadata
 import gws.lib.net
 import gws.lib.xml2
 from . import types
@@ -17,7 +17,7 @@ def parse(prov, xml):
     root = gws.lib.xml2.from_string(xml)
 
     prov.properties = _properties(root.first('properties'))
-    prov.meta = _project_meta_from_props(prov.properties)
+    prov.metadata = _project_meta_from_props(prov.properties)
     prov.version = root.attr('version', '').split('-')[0]
 
     if prov.version.startswith('2'):
@@ -45,30 +45,21 @@ def parse(prov, xml):
 
 
 def _project_meta_from_props(props):
-    p = gws.strip({
+    d = gws.strip({
         'abstract': _pval(props, 'WMSServiceAbstract'),
         'attribution': _pval(props, 'CopyrightLabel.Label'),
         'keywords': _pval(props, 'WMSKeywordList'),
         'title': _pval(props, 'WMSServiceTitle'),
+        'contact': gws.strip({
+            'email': _pval(props, 'WMSContactMail'),
+            'organization': _pval(props, 'WMSContactOrganization'),
+            'person': _pval(props, 'WMSContactPerson'),
+            'phone': _pval(props, 'WMSContactPhone'),
+            'position': _pval(props, 'WMSContactPosition'),
+        })
     })
 
-    if not p:
-        return
-
-    meta = gws.MetaData(p)
-
-    p = gws.strip({
-        'email': _pval(props, 'WMSContactMail'),
-        'organization': _pval(props, 'WMSContactOrganization'),
-        'person': _pval(props, 'WMSContactPerson'),
-        'phone': _pval(props, 'WMSContactPhone'),
-        'position': _pval(props, 'WMSContactPosition'),
-
-    })
-    if p:
-        meta.contact = gws.MetaContact(p)
-
-    return meta
+    return gws.lib.metadata.from_dict(d) if d else None
 
 
 def _pval(props, key):
@@ -108,8 +99,8 @@ def _tree(el, map_layers):
         # qgis doesn't write 'id' for groups but our generators might
         name = el.attr('id') or title
 
-        sl = gws.SourceLayer(title=title, name=name)
-        sl.meta = gws.MetaData(title=title, name=name)
+        sl = gws.lib.gis.SourceLayer(title=title, name=name)
+        sl.metadata = gws.lib.metadata.Values(title=title, name=name)
 
         sl.is_visible = visible
         sl.is_expanded = expanded
@@ -145,7 +136,7 @@ def _map_layers(root, props):
 
         # no_wms_layers always contains titles, not ids (=names)
 
-        if sl.meta.title in no_wms_layers:
+        if sl.metadata.title in no_wms_layers:
             continue
 
         # ggis2: non-queryable layers are on the identify.disabledlayers list
@@ -157,11 +148,11 @@ def _map_layers(root, props):
         elif s == '0':
             sl.is_queryable = False
         else:
-            sl.is_queryable = sl.meta.name not in disabled_layers
+            sl.is_queryable = sl.metadata.name not in disabled_layers
 
-        sl.title = sl.meta.title
+        sl.title = sl.metadata.title
         sl.name = el.get_text('id') if use_layer_ids else (el.get_text('shortname') or el.get_text('layername'))
-        sl.meta.name = sl.name
+        sl.metadata.name = sl.name
 
         map_layers[el.get_text('id')] = sl
 
@@ -169,33 +160,25 @@ def _map_layers(root, props):
 
 
 def _layer_meta(el):
-    p = gws.strip({
+    d = gws.strip({
         'abstract': el.get_text('resourceMetadata.abstract'),
         'keywords': gws.compact(e.text for e in el.all('keywordList.value')),
         'title': el.get_text('layername'),
         'name': el.get_text('id'),
         'url': el.get_text('metadataUrl'),
-    })
-    if not p:
-        return
-
-    meta = gws.MetaData(p)
-
-    p = gws.strip({
-        k: el.get_text('resourceMetadata.contact.' + k)
-        for k in ('name', 'organization', 'position', 'voice', 'fax', 'email', 'role')
+        'contact': gws.strip({
+            k: el.get_text('resourceMetadata.contact.' + k)
+            for k in ('name', 'organization', 'position', 'voice', 'fax', 'email', 'role')
+        })
     })
 
-    if p:
-        meta.contact = gws.MetaContact(p)
-
-    return meta
+    return gws.lib.metadata.from_dict(d) if d else None
 
 
 def _map_layer(el):
-    sl = gws.SourceLayer()
+    sl = gws.lib.gis.SourceLayer()
 
-    sl.meta = _layer_meta(el)
+    sl.metadata = _layer_meta(el)
 
     crs = el.get_text('srs.spatialrefsys.authid')
 
@@ -316,23 +299,23 @@ _COMP3_LAYOUT_TYPE_FIRST = _QGraphicsItem_UserType + 100
 
 _COMP3_LAYOUT_TYPES = {
     _COMP3_LAYOUT_TYPE_FIRST + n: s for n, s in enumerate(
-    [
-        'LayoutItem',
-        'LayoutGroup',
-        'LayoutPage',
-        'LayoutMap',
-        'LayoutPicture',
-        'LayoutLabel',
-        'LayoutLegend',
-        'LayoutShape',
-        'LayoutPolygon',
-        'LayoutPolyline',
-        'LayoutScaleBar',
-        'LayoutFrame',
-        'LayoutHtml',
-        'LayoutAttributeTable',
-        'LayoutTextTable',
-    ])
+        [
+            'LayoutItem',
+            'LayoutGroup',
+            'LayoutPage',
+            'LayoutMap',
+            'LayoutPicture',
+            'LayoutLabel',
+            'LayoutLegend',
+            'LayoutShape',
+            'LayoutPolygon',
+            'LayoutPolyline',
+            'LayoutScaleBar',
+            'LayoutFrame',
+            'LayoutHtml',
+            'LayoutAttributeTable',
+            'LayoutTextTable',
+        ])
 }
 
 

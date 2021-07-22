@@ -41,14 +41,14 @@ def p(*args, lines=False, stack=False, d=3, all=False):
 
 def time_start(label):
     u = uuid.uuid4()
-    log.debug(f'@PROFILE_BGN {u} {label}', extra={'skip_frames': 1})
+    log.debug(f'@PROFILE_A {u} {label}', extra={'skip_frames': 1})
     return [u, time.time(), label]
 
 
 def time_end(ts):
     u, t, label = ts
     t = time.time() - t
-    log.debug(f'@PROFILE_END {u} {label} :: {t:.2f}', extra={'skip_frames': 1})
+    log.debug(f'@PROFILE_Z {u} {label} :: {t:.2f}', extra={'skip_frames': 1})
 
 
 def pycharm_debugger_check(path_to_pycharm_debug_egg, host, port, suspend=False):

@@ -40,7 +40,7 @@ def status(job) -> types.StatusResponse:
         progress=job.progress,
         steptype=job.steptype or '',
         stepname=job.stepname or '',
-        url=f'{gws.SERVER_ENDPOINT}/cmd/printerHttpGetResult/jobUid/{job.uid}/projectUid/{job.project_uid}',
+        url=f'{gws.SERVER_ENDPOINT}/printGetResult/jobUid/{job.uid}/projectUid/{job.project_uid}',
     )
 
 ##

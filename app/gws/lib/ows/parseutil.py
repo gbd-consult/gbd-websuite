@@ -1,12 +1,11 @@
 import re
 
 import gws
-import gws.types as t
+import gws.lib.gis
 import gws.lib.metadata
-import gws.lib.source
 import gws.lib.proj
 import gws.lib.xml2 as xml2
-from . import core
+
 
 def get_operations(el):
     if _is(el, 'OperationsMetadata'):
@@ -19,16 +18,13 @@ def get_operations(el):
     ls = []
 
     for e in ops:
-        op = core.OwsOperation()
-        op.name = e.attr('name') or e.name
-        op.formats = text_list(e, 'Format')
-        op.get_url = get_url(one_of(e, 'DCP.HTTP.Get', 'DCPType.HTTP.Get'))
-        op.post_url = get_url(one_of(e, 'DCP.HTTP.Post', 'DCPType.HTTP.Post'))
-        op.parameters = {
-            p.attr('name'): text_list(p, 'Value')
-            for p in e.all('Parameter')
-        }
-        ls.append(op)
+        ls.append({
+            'name': e.attr('name') or e.name,
+            'formats': text_list(e, 'Format'),
+            'get_url': get_url(one_of(e, 'DCP.HTTP.Get', 'DCPType.HTTP.Get')),
+            'post_url': get_url(one_of(e, 'DCP.HTTP.Post', 'DCPType.HTTP.Post')),
+            'parameters': {p.attr('name'): text_list(p, 'Value') for p in e.all('Parameter')}
+        })
 
     return ls
 
@@ -87,10 +83,10 @@ def get_bounds_list(el):
 
 
 def get_style(el):
-    oo = gws.lib.source.Style()
+    oo = gws.lib.gis.SourceStyle()
 
-    oo.meta = gws.lib.metadata.Data(get_meta(el))
-    oo.name = oo.meta.name.lower()
+    oo.metadata = gws.lib.metadata.from_dict(get_meta(el))
+    oo.name = oo.metadata.name.lower()
     oo.legend = get_url(el.first('LegendURL'))
     oo.is_default = (
             el.get_text('Identifier').lower() == 'default'
@@ -135,7 +131,7 @@ def flatten_source_layers(layers):
         for sl in ls:
             if not sl:
                 continue
-            sl.a_uid = gws.as_uid(sl.name or sl.meta.title)
+            sl.a_uid = gws.as_uid(sl.name or sl.metadata.title)
             sl.a_path = parent_path + '/' + sl.a_uid
             sl.a_level = level
             res.append(sl)

@@ -3,6 +3,7 @@
         "baseUrl": "./",
         "incremental": true,
         "inlineSourceMap": true,
+        "inlineSources": true,
         "jsx": "react",
         "lib": [
             "es2019",

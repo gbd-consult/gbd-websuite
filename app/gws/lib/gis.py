@@ -1,21 +1,101 @@
+"""Miscellaneous GIS-related utilities"""
+
 import re
 
 import gws
-import gws.types as t
-import gws.lib.metadata
 import gws.lib.extent
+import gws.lib.metadata
 import gws.lib.proj
+import gws.lib.proj
+import gws.types as t
+
+
+def make_bbox(x, y, crs, resolution, pixel_width, pixel_height):
+    """Given a point (in crs units), make a widthXheight pixel bbox around it."""
+
+    # @TODO
+
+    # is_geographic = gws.lib.proj.is_geographic(crs)
+    #
+    # if is_geographic:
+    #     x, y = gws.lib.proj.transform_xy(x, y, crs, 'EPSG:3857')
+
+    bbox = [
+        x - (pixel_width * resolution) / 2,
+        y - (pixel_height * resolution) / 2,
+        x + (pixel_width * resolution) / 2,
+        y + (pixel_height * resolution) / 2,
+    ]
+
+    # if is_geographic:
+    #     bbox = gws.lib.proj.transform_extent(bbox, 'EPSG:3857', crs)
+
+    return bbox
+
+
+def invert_bbox(bbox):
+    return [bbox[1], bbox[0], bbox[3], bbox[2]]
+
+
+def best_axis(crs, inverted_axis_crs_list, service_name, service_version):
+    # inverted_axis_crs_list - list of EPSG crs'es which are known to have an inverted axis for this service
+    # crs - crs we're going to use with the service
+
+    proj = gws.lib.proj.as_proj(crs)
+    if inverted_axis_crs_list and proj.epsg in inverted_axis_crs_list:
+        return 'yx'
+
+    # @TODO some logic to guess the axis, based on crs, service_name and service_version
+    # see https://docs.geoserver.org/latest/en/user/services/wfs/basics.html#wfs-basics-axis
+    return 'xy'
+
+
+def best_crs(target_crs, supported_crs):
+    # find the best matching crs for the target crs and the list of supported crs.
+
+    # if target_crs is in the list, we're fine
+
+    crs = gws.lib.proj.find(target_crs, supported_crs)
+    if crs:
+        return crs
+
+    # @TODO find a projection with less errors
+
+    # if webmercator is supported, use it
+
+    crs = gws.lib.proj.find(gws.EPSG_3857, supported_crs)
+    if crs:
+        gws.log.debug(f'best_crs: using {crs!r} for {target_crs!r}')
+        return crs
+
+    # return first non-geographic CRS
+
+    for crs in supported_crs:
+        p = gws.lib.proj.as_proj(crs)
+        if p and not p.is_geographic:
+            gws.log.debug(f'best_crs: using {p.epsg!r} for {target_crs!r}')
+            return p.epsg
+
+    raise gws.Error(f'no match for crs={target_crs!r} in {supported_crs!r}')
+
+
+def best_crs_and_shape(request_crs, supported_crs, shape):
+    crs = best_crs(request_crs, supported_crs)
+    return crs, shape.transformed_to(crs)
 
 
 
-class Style(gws.Data):
+
+
+
+class SourceStyle(gws.Data):
     is_default: bool
     legend: gws.Url
-    meta: gws.lib.metadata.Data
+    metadata: gws.lib.metadata.Values
     name: str
 
 
-class Layer(gws.Data):
+class SourceLayer(gws.Data):
     a_level: int
     a_path: str
     a_uid: str
@@ -31,20 +111,20 @@ class Layer(gws.Data):
     is_queryable: bool
     is_visible: bool
 
-    layers: t.List['Layer']
+    layers: t.List['SourceLayer']
 
-    meta: gws.lib.metadata.Data
+    metadata: gws.lib.metadata.Values
     name: str
     title: str
 
     opacity: int
     scale_range: t.List[float]
-    styles: t.List[Style]
+    styles: t.List[SourceStyle]
     legend: str
     resource_urls: dict
 
 
-class Filter(gws.Data):
+class LayerFilter(gws.Data):
     """Source layer filter"""
 
     level: int = 0  #: match only layers at this level
@@ -52,7 +132,7 @@ class Filter(gws.Data):
     pattern: gws.Regex = ''  #: match layers whose full path matches a pattern
 
 
-def layer_matches(sl: Layer, slf: Filter) -> bool:
+def layer_matches(sl: SourceLayer, slf: LayerFilter) -> bool:
     """Check if a source layer matches the filter"""
 
     if not slf:
@@ -73,8 +153,8 @@ def layer_matches(sl: Layer, slf: Filter) -> bool:
     return True
 
 
-def filter_layers(layers: t.List[Layer], slf: Filter, image_only=False, queryable_only=False) -> t.List[Layer]:
-    """Filter source layers by the given layer filter."""
+def filter_layers(layers: t.List[SourceLayer], slf: LayerFilter, image_only=False, queryable_only=False) -> t.List[SourceLayer]:
+    """LayerFilter source layers by the given layer filter."""
 
     if slf:
         s = gws.get(slf, 'level')
@@ -105,7 +185,7 @@ def filter_layers(layers: t.List[Layer], slf: Filter, image_only=False, queryabl
     return layers
 
 
-def image_layers(sl: Layer) -> t.List[Layer]:
+def image_layers(sl: SourceLayer) -> t.List[SourceLayer]:
     if sl.is_image:
         return [sl]
     if sl.layers:
@@ -113,7 +193,7 @@ def image_layers(sl: Layer) -> t.List[Layer]:
     return []
 
 
-def bounds_from_layers(source_layers: t.List[Layer], target_crs) -> gws.Bounds:
+def bounds_from_layers(source_layers: t.List[SourceLayer], target_crs) -> gws.Bounds:
     """Return merged bounds from a list of source layers in the target_crs."""
 
     exts = []
@@ -133,7 +213,7 @@ def bounds_from_layers(source_layers: t.List[Layer], target_crs) -> gws.Bounds:
             extent=gws.lib.extent.merge(exts))
 
 
-def crs_from_layers(source_layers: t.List[Layer]) -> t.List[gws.Crs]:
+def crs_from_layers(source_layers: t.List[SourceLayer]) -> t.List[gws.Crs]:
     """Return an intersection of crs supported by each source layer."""
 
     cs: t.Set[str] = set()

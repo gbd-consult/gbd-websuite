@@ -102,7 +102,7 @@ class Object(ows.Base):
         self.metas = {}
 
         for obj in self.root.find_all():
-            meta: gws.MetaData = gws.get(obj, 'meta')
+            meta: gws.Values = gws.get(obj, 'meta')
             if not meta:
                 continue
             if not meta.catalogUid:

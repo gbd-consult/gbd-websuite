@@ -398,7 +398,7 @@ class Object(gws.base.api.Action):
             for r in rs:
                 au_uid = r['_au']
                 if au_uid not in metas:
-                    metas[au_uid] = gws.MetaData()
+                    metas[au_uid] = gws.Values()
 
                 metas[au_uid].dateCreated = _date(r['min_updated'])
                 metas[au_uid].dateUpdated = _date(r['max_updated'])

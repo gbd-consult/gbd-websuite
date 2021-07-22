@@ -6,39 +6,59 @@ import gws.lib.ows.request
 import gws.lib.img
 
 
+def render(legend: gws.Legend, context: dict = None) -> t.Optional[gws.LegendRenderOutput]:
+    if legend.path:
+        return gws.LegendRenderOutput(image_path=legend.path)
 
-def combine_legend_urls(urls: t.List[str]) -> t.Optional[bytes]:
-    content = []
-
-    for url in urls:
+    if legend.url:
         try:
-            resp = gws.lib.ows.request.raw_get(url)
-            content.append(resp.content)
-        except gws.lib.ows.error.Error:
-            gws.log.exception()
-            continue
+            res = gws.lib.ows.request.raw_get(legend.url)
+            if not res.content_type.startswith('image/'):
+                raise gws.lib.ows.error.Error(f'wrong content type {res.content_type!r}')
+        except gws.lib.ows.error.Error as exc:
+            gws.log.error(f'render_legend: download failed url={legend.url!r} error={exc!r}')
+            return None
 
-    return combine_legend_images(content)
+        return gws.LegendRenderOutput(image=res.content)
 
+    if legend.template:
+        html = legend.template.render(context).content
+        return gws.LegendRenderOutput(html=html)
 
-def combine_legend_paths(paths: t.List[str]) -> t.Optional[bytes]:
-    content = []
-
-    for path in paths:
-        try:
-            if path:
-                content.append(gws.read_file_b(path))
-        except:
-            gws.log.exception()
-            continue
-
-    return combine_legend_images(content)
+    return None
 
 
-def combine_legend_images(content: t.List[bytes]) -> t.Optional[bytes]:
-    images = [gws.lib.img.image_from_bytes(c) for c in content if c]
+def as_bytes(out: gws.LegendRenderOutput) -> t.Optional[bytes]:
+    if not out:
+        return None
+    if out.image:
+        return out.image
+    if out.image_path:
+        return gws.read_file_b(out.image_path)
+    if out.html:
+        # @TODO render html as image
+        pass
+    return None
+
+
+def combine_urls(urls: t.List[str], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
+    outs = [render(gws.Legend(url=url)) for url in urls]
+    return combine_outputs(outs, options)
+
+
+def combine_outputs(outs: t.List[gws.LegendRenderOutput], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
+    buf = gws.filter(as_bytes(out) for out in outs)
+    img = _combine_images(buf, options)
+    if not img:
+        return None
+    return gws.LegendRenderOutput(image=img)
+
+
+def _combine_images(buf: t.List[bytes], options: dict = None) -> t.Optional[bytes]:
+    images = [gws.lib.img.image_from_bytes(b) for b in buf if b]
     if not images:
         return None
+    # @TODO other combination options
     return _combine_vertically(images)
 
 

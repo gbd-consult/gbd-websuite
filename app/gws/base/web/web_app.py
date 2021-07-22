@@ -129,27 +129,27 @@ def _handle_action(req: WebRequest) -> WebResponse:
         raise gws.base.web.error.BadRequest()
 
     if not command_desc:
-        gws.log.error('command not found', cmd)
+        gws.log.error(f'command not found cmd={cmd!r} method={method!r}')
         raise gws.base.web.error.NotFound()
 
     project_uid = command_desc.params.get('projectUid')
 
-    gws.log.debug(f'DISPATCH a={command_desc.action_type!r} f={command_desc.function_name!r} projectUid={project_uid!r}')
+    gws.log.debug(f'DISPATCH c={command_desc.cmd_name!r} a={command_desc.cmd_action!r} f={command_desc.function_name!r} projectUid={project_uid!r}')
 
-    action = req.root.application.find_action(command_desc.action_type, project_uid)
+    action = req.root.application.find_action(command_desc.cmd_action, project_uid)
 
     if not action:
-        gws.log.error('handler not found', cmd)
+        gws.log.error(f'action not found cmd={cmd!r} method={method!r}')
         raise gws.base.web.error.NotFound()
 
     if not req.user.can_use(action):
-        gws.log.error('permission denied', cmd)
+        gws.log.error(f'permission denied cmd={cmd!r} method={method!r}')
         raise gws.base.web.error.Forbidden()
 
     res = getattr(action, command_desc.function_name)(req, command_desc.params)
 
     if res is None:
-        gws.log.error('action not handled', cmd)
+        gws.log.error(f'action not handled cmd={cmd!r} method={method!r}')
         raise gws.base.web.error.NotFound()
 
     if isinstance(res, gws.ContentResponse):

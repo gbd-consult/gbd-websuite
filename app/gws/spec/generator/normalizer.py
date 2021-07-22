@@ -55,15 +55,15 @@ def prepare_for_server(state: base.ParserState, meta):
 
 
 def _select_dependent(state, names):
-    queue = list(names)
+    queue = [['root', n] for n in names]
     selected = {}
 
     while queue:
-        q = queue.pop(0)
+        parent, q = queue.pop(0)
         t = _get_type(state, q) if isinstance(q, str) else cast(base.Type, q)
 
         if not t:
-            raise base.Error(f'unresolved reference {q!r}')
+            raise base.Error(f'unresolved reference {q!r} in {parent!r}')
 
         if t.name in selected:
             continue
@@ -71,52 +71,37 @@ def _select_dependent(state, names):
         if isinstance(t, base.TAtom):
             continue
 
+        nxt = []
+
         if isinstance(t, base.TDict):
-            queue.append(t.key_t)
-            queue.append(t.value_t)
-
+            nxt = [t.key_t, t.value_t]
         if isinstance(t, base.TList):
-            queue.append(t.item_t)
-
+            nxt = [t.item_t]
         if isinstance(t, base.TOptional):
-            queue.append(t.target_t)
-
-        if isinstance(t, base.TTuple):
-            queue.extend(t.items)
-
-        if isinstance(t, base.TUnion):
-            queue.extend(t.items)
-
+            nxt = t.target_t
+        if isinstance(t, (base.TTuple, base.TUnion)):
+            nxt = t.items
         if isinstance(t, base.TVariant):
-            queue.extend(t.members.values())
+            nxt = t.members.values()
 
         if isinstance(t, base.TObject):
-            selected[t.name] = dict(
-                name=t.name,
-                props=t.props,
-            )
-            queue.extend(t.props.values())
+            selected[t.name] = dict(name=t.name, props=t.props)
+            nxt = t.props.values()
 
         if isinstance(t, base.TProperty):
             selected[t.name] = dict(
-                default=t.default,
-                has_default=t.has_default,
-                name=t.name,
-                ident=t.ident,
-                property_t=t.property_t,
-            )
-            queue.append(t.property_t)
+                default=t.default, has_default=t.has_default, name=t.name, ident=t.ident, property_t=t.property_t)
+            nxt = [t.property_t]
 
         if isinstance(t, base.TAlias):
-            selected[t.name] = dict(
-                target_t=t.target_t,
-            )
-            queue.append(t.target_t)
+            selected[t.name] = dict(target_t=t.target_t)
+            nxt = [t.target_t]
 
         if isinstance(t, base.TEnum):
-            selected[t.name] = dict(
-                values=t.values,
-            )
+            selected[t.name] = dict(values=t.values)
+
+        for it in nxt:
+            queue.append([t.name, it])
 
         selected.setdefault(t.name, dict(vars(t)))
         selected[t.name]['_'] = type(t).__name__
@@ -171,7 +156,8 @@ def _resolve_aliases(state):
             return t
 
         if isinstance(t, base.TObject):
-            t.super_t = _resolve(t.super_t)
+            if t.supers:
+                t.supers = [_resolve(s) for s in t.supers]
             return t
 
         if isinstance(t, base.TProperty):
@@ -286,7 +272,7 @@ def _synthesize_ext_configs_and_props(state):
                 ident=kind,
                 name=name,
                 pos=_synthesized_pos,
-                super_t=super_types[kind].name,
+                supers=[super_types[kind].name],
                 ext_category=t.ext_category,
                 ext_kind=kind,
                 ext_type=t.ext_type,
@@ -370,14 +356,14 @@ def _make_props(state):
         props = {}
 
         if isinstance(t, base.TObject):
-            if t.super_t:
-                super_type = _get_type(state, t.super_t)
+            for sup in t.supers:
+                super_type = _get_type(state, sup)
                 if super_type:
                     stack.append(name)
                     props.update(_make(super_type))
                     stack.pop()
                 else:
-                    base.log.debug(f'unknown super type {t.super_t!r}')
+                    base.log.debug(f'unknown supertype {sup!r}')
             if name in own_props:
                 props.update(own_props[name])
             t.props = props

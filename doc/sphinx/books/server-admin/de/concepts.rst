@@ -20,7 +20,7 @@ Eine dynamische GET-Anfrage (z. B. ein Kartenbild): ::
 
 Bei dynamischen GET-Anfragen unterstützt die GBD WebSuite eine alternative Schreibweise mit der die Parameter und Werte mit einem Slash ``/`` getrennt werden: ::
 
-    http://example.com/_/cmd/mapHttpGetBox/projectUid/london/layerUid/london.map.metro/width/100/height/200
+    http://example.com/_/mapGetBox/projectUid/london/layerUid/london.map.metro/width/100/height/200
 
 Eine dynamische POST-Anfrage (z.B. Suche): ::
 

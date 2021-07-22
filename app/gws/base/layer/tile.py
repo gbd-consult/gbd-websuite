@@ -4,7 +4,7 @@ import re
 import gws
 import gws.types as t
 import gws.base.layer
-import gws.lib.source
+import gws.lib.gis
 import gws.lib.json2
 
 from . import core, image
@@ -32,7 +32,7 @@ class Config(image.Config):
     """Tile layer"""
     display: core.DisplayMode = core.DisplayMode.tile  #: layer display mode
     maxRequests: int = 0  #: max concurrent requests to this source
-    service: t.Optional[ServiceConfig] = {}  # type: ignore #: service configuration
+    service: t.Optional[ServiceConfig] = {}  #: service configuration
     url: gws.Url  #: rest url with placeholders {x}, {y} and {z}
 
 
@@ -57,14 +57,14 @@ class Object(image.Object):
                 extent=self.service.extent)
 
     def configure(self):
-        # with meta=1 MP will request the same tile multiple times
-        # meta=4 is more efficient, however, meta=1 yields the first tile faster
+        # with reqSize=1 MP will request the same tile multiple times
+        # reqSize=4 is more efficient, however, meta=1 yields the first tile faster
         # which is crucial when browsing non-cached low resoltions
         # so, let's use 1 as default, overridable in the config
         #
         # @TODO make MP cache network requests
 
-        self.grid.metaSize = self.grid.metaSize or 1
+        self.grid.reqSize = self.grid.reqSize or 1
 
         self.url = self.var('url')
         self.service: ServiceConfig = self.var('service')

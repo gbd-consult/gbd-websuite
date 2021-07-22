@@ -77,6 +77,41 @@ def _uwsgi_is_running():
     return bool(gws.lib.os2.pids_of('uwsgi'))
 
 
+def _configure(manifest_path: str, config_path: str, is_starting: bool, with_fallback: bool, with_spec_cache: bool) -> gws.RootObject:
+    try:
+        cfg = gws.config.parse(manifest_path, config_path, with_spec_cache)
+    except Exception as exc:
+        return _handle_config_error(exc, with_fallback)
+
+    if is_starting:
+        autorun = gws.get(cfg, 'server.autoRun')
+        if autorun:
+            gws.log.info(f'AUTORUN: {autorun!r}')
+            cmds = shlex.split(autorun)
+            gws.lib.os2.run(cmds, echo=True)
+
+        timezone = gws.get(cfg, 'server.timeZone')
+        if timezone:
+            gws.lib.date.set_system_time_zone(timezone)
+
+    try:
+        root = gws.config.initialize(cfg)
+        gws.log.info('CONFIGURATION OK')
+        return root
+    except Exception as exc:
+        return _handle_config_error(exc, with_fallback)
+
+
+def _handle_config_error(exc, with_fallback):
+    _report_config_error(exc)
+    if with_fallback:
+        gws.log.warn(f'configuration error: using fallback config')
+        cfg = gws.config.fallback_config()
+        return gws.config.initialize(cfg)
+    else:
+        raise ValueError('configuration failed') from exc
+
+
 def _report_config_error(exc):
     def prn(a):
         if isinstance(a, (list, tuple)):
@@ -92,51 +127,8 @@ def _report_config_error(exc):
         prn('CONFIGURATION ERROR:')
     elif isinstance(exc, gws.config.LoadError):
         prn('CONFIGURATION LOAD ERROR:')
-    elif isinstance(exc, gws.config.MapproxyConfigurationError):
-        prn('MAPPROXY CONFIGURATION ERROR:')
 
     prn(exc.args)
-
-
-def _configure(manifest_path: str, config_path: str, is_starting: bool, with_fallback: bool, with_spec_cache: bool) -> gws.RootObject:
-    cfg = None
-    try:
-        cfg = gws.config.parse(manifest_path, config_path, with_spec_cache)
-    except gws.config.Error as exc:
-        _report_config_error(exc)
-        if not with_fallback:
-            raise ValueError('configuration failed') from exc
-
-    if not cfg:
-        gws.log.warn(f'parse error: using fallback config')
-        cfg = gws.config.fallback_config()
-
-    if is_starting:
-        autorun = gws.get(cfg, 'server.autoRun')
-        if autorun:
-            gws.log.info(f'AUTORUN: {autorun!r}')
-            cmds = shlex.split(autorun)
-            gws.lib.os2.run(cmds, echo=True)
-
-        timezone = gws.get(cfg, 'server.timeZone')
-        if timezone:
-            gws.lib.date.set_system_time_zone(timezone)
-
-    root = None
-    try:
-        root = gws.config.initialize(cfg)
-    except gws.config.Error as exc:
-        _report_config_error(exc)
-        if not with_fallback:
-            raise ValueError('configuration failed') from exc
-
-    if not root:
-        gws.log.warn(f'configuration error: using fallback config')
-        cfg = gws.config.fallback_config()
-        root = gws.config.initialize(cfg)
-
-    gws.log.info('CONFIGURATION OK')
-    return root
 
 
 _STOP_RETRY = 20
@@ -175,11 +167,11 @@ def _stop_name(proc_name, sig):
 
 class StartParams(gws.CliParams):
     config: t.Optional[str]  #: configuration file
-    manifest: t.Optional[str]   #: manifest file
+    manifest: t.Optional[str]  #: manifest file
 
 
 class ReloadParams(StartParams):
-    modules: t.Optional[t.List[str]] #: list of modules to reload ('qgis', 'mapproxy', 'web', 'spool')
+    modules: t.Optional[t.List[str]]  #: list of modules to reload ('qgis', 'mapproxy', 'web', 'spool')
 
 
 @gws.ext.Object('cli.server')

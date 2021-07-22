@@ -41,7 +41,6 @@ export class StoreWrapper {
     listenHooks: Array<Hook> = [];
 
     constructor(init) {
-        console.log('STORE_INIT', init);
         this.store = Redux.createStore(
             this._reducer.bind(this),
             init,

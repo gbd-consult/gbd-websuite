@@ -221,10 +221,10 @@ class TObject(TNamedType):
             ext_category: str,
             ext_kind: str,
             ext_type: str,
-            super_t: TypeName,
+            supers: List[TypeName],
     ):
         super().__init__(doc, ident, name, pos)
-        self.super_t = super_t
+        self.supers = supers or []
         self.ext_category = ext_category
         self.ext_kind = ext_kind
         self.ext_type = ext_type

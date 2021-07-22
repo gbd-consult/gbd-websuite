@@ -9,7 +9,7 @@ import gws.lib.metadata
 import gws.config.parser
 import gws.lib.extent
 import gws.lib.legend
-import gws.lib.source
+import gws.lib.gis
 import gws.lib.net
 from . import provider
 
@@ -20,10 +20,10 @@ class Config(gws.base.layer.image.Config):
     directRender: t.Optional[t.List[str]]  #: QGIS providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS providers that should be searched directly
     path: gws.FilePath  #: path to a qgs project file
-    rootLayers: t.Optional[gws.lib.source.Filter]  #: source layers to use as roots
-    excludeLayers: t.Optional[gws.lib.source.Filter]  #: source layers to exclude
-    flattenLayers: t.Optional[gws.base.layer.core.FlattenConfig]  #: flatten the layer hierarchy
-    # layerConfig: t.Optional[t.List[gws.base.layer.core.CustomConfig]]  #: custom configurations for specific layers
+    rootLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use as roots
+    excludeLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to exclude
+    flattenLayers: t.Optional[gws.base.layer.types.FlattenConfig]  #: flatten the layer hierarchy
+    layerConfig: t.Optional[t.List[gws.base.layer.base.CustomConfig]]  #: custom configurations for specific layers
 
 
 class Object(gws.base.layer.group.Object):
@@ -34,15 +34,15 @@ class Object(gws.base.layer.group.Object):
         self.provider: provider.Object = provider.create_shared(self.root, self.config)
         self.own_crs = self.provider.supported_crs[0]
 
-        # self.meta = self.configure_metadata(self.provider.meta)
-        self.title = self.meta.title
+        self.metadata = self.configure_metadata(self.provider.metadata)
+        self.title = self.metadata.title
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))
 
         # by default, take the top-level layers as groups
-        slf = self.var('rootLayers') or gws.lib.source.Filter(level=1)
-        self.root_layers = gws.lib.source.filter_layers(self.provider.source_layers, slf)
+        slf = self.var('rootLayers') or gws.lib.gis.LayerFilter(level=1)
+        self.root_layers = gws.lib.gis.filter_layers(self.provider.source_layers, slf)
         self.exclude_layers = self.var('excludeLayers')
         self.flatten = self.var('flattenLayers')
         self.custom_layer_config = self.var('layerConfig', default=[])
@@ -58,10 +58,11 @@ class Object(gws.base.layer.group.Object):
         }
 
         top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
-        self.layers = gws.base.layer.add_layers_to_object(self, top_cfg.layers)
+        self.layers = [t.cast(gws.ILayer, self.create_child('gws.ext.layer', c)) for c in top_cfg.layers]
 
-    def _layer(self, sl: gws.lib.source.Layer, depth: int):
-        if self.exclude_layers and gws.lib.source.layer_matches(sl, self.exclude_layers):
+
+    def _layer(self, sl: gws.lib.gis.SourceLayer, depth: int):
+        if self.exclude_layers and gws.lib.gis.layer_matches(sl, self.exclude_layers):
             return
 
         if sl.is_group:
@@ -96,7 +97,7 @@ class Object(gws.base.layer.group.Object):
         if p:
             la['templates'] = p
 
-        custom = [gws.strip(c) for c in self.custom_layer_config if gws.lib.source.layer_matches(sl, c.applyTo)]
+        custom = [gws.strip(c) for c in self.custom_layer_config if gws.lib.gis.layer_matches(sl, c.applyTo)]
         if custom:
             la = gws.deep_merge(la, *custom)
             if la.applyTo:
@@ -104,7 +105,7 @@ class Object(gws.base.layer.group.Object):
 
         return gws.compact(la)
 
-    def _image_layer(self, sl: gws.lib.source.Layer):
+    def _image_layer(self, sl: gws.lib.gis.SourceLayer):
         prov = sl.data_source['provider']
 
         if prov not in self.direct_render:
@@ -139,7 +140,7 @@ class Object(gws.base.layer.group.Object):
 
         return la
 
-    def _wms_based_layer(self, sl: gws.lib.source.Layer):
+    def _wms_based_layer(self, sl: gws.lib.gis.SourceLayer):
         ds = sl.data_source
 
         layers = ds['layers']
@@ -155,7 +156,7 @@ class Object(gws.base.layer.group.Object):
             'getMapParams': ds['params'],
         }
 
-    def _wmts_based_layer(self, sl: gws.lib.source.Layer):
+    def _wmts_based_layer(self, sl: gws.lib.gis.SourceLayer):
         ds = sl.data_source
 
         layers = ds['layers']
@@ -171,7 +172,7 @@ class Object(gws.base.layer.group.Object):
             'sourceStyle': opts.get('styles'),
         })
 
-    def _qgis_based_layer(self, sl: gws.lib.source.Layer):
+    def _qgis_based_layer(self, sl: gws.lib.gis.SourceLayer):
         return {
             'type': 'qgisflat',
             'sourceLayers': {
@@ -180,11 +181,11 @@ class Object(gws.base.layer.group.Object):
             'path': self.path,
         }
 
-    def _flat_group_layer(self, sl: gws.lib.source.Layer):
+    def _flat_group_layer(self, sl: gws.lib.gis.SourceLayer):
         if self.flatten.useGroups:
             names = [sl.name]
         else:
-            ls = gws.lib.source.image_layers(sl)
+            ls = gws.lib.gis.image_layers(sl)
             if not ls:
                 return
             names = [s.name for s in ls]
@@ -199,7 +200,7 @@ class Object(gws.base.layer.group.Object):
 
         return la
 
-    def _layer_search_provider(self, sl: gws.lib.source.Layer):
+    def _layer_search_provider(self, sl: gws.lib.gis.SourceLayer):
         p = self.var('search')
         if not p.enabled or p.providers:
             return
@@ -267,7 +268,7 @@ class Object(gws.base.layer.group.Object):
 
         return cfg
 
-    def _group_layer(self, sl: gws.lib.source.Layer, depth: int):
+    def _group_layer(self, sl: gws.lib.gis.SourceLayer, depth: int):
         layers = gws.compact(self._layer(la, depth + 1) for la in sl.layers)
         if not layers:
             return

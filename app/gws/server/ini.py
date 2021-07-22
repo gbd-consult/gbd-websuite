@@ -405,7 +405,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
             vacuum = true
             worker-reload-mercy = {mercy}
             wsgi-disable-file-wrapper = true
-            wsgi-file = {gws.APP_DIR}/gws/gis/mpx/mpx_app.py
+            wsgi-file = {gws.APP_DIR}/gws/lib/mpx/mpx_app.py
             {stdenv}
         """
 

@@ -76,26 +76,27 @@ class Object(gws.Node):
     @property
     def props(self):
         proj = gws.lib.proj.as_proj(self.crs)
-        return Props({
-            'crs': proj.epsg,
-            'crsDef': proj.proj4text,
-            'coordinatePrecision': self.coordinate_precision,
-            'extent': self.extent,
-            'center': self.center,
-            'initResolution': self.init_resolution,
-            'layers': self.layers,
-            'resolutions': self.resolutions,
-            'title': self.var('titie'),
-        })
+        return Props(
+            crs=proj.epsg,
+            crsDef=proj.proj4text,
+            coordinatePrecision=self.coordinate_precision,
+            extent=self.extent,
+            center=self.center,
+            initResolution=self.init_resolution,
+            layers=self.layers,
+            resolutions=self.resolutions,
+            title=self.title,
+        )
 
     def configure(self):
         uid = self.var('uid') or 'map'
-        p = self.get_closest('gws.base.project')
-        if p:
-            uid = p.uid + '.' + uid
+        project = self.get_closest('gws.base.project')
+        if project:
+            uid = project.uid + '.' + uid
         self.set_uid(uid)
 
         self.crs = self.var('crs')
+        self.title = self.var('title') or self.uid
 
         self.resolutions = _DEFAULT_RESOLUTIONS
         self.init_resolution = _DEFAULT_RESOLUTIONS[-1]
@@ -105,7 +106,7 @@ class Object(gws.Node):
             self.resolutions = gws.lib.zoom.resolutions_from_config(zoom)
             self.init_resolution = gws.lib.zoom.init_resolution(zoom, self.resolutions)
 
-        self.layers = gws.base.layer.add_layers_to_object(self, self.var('layers'))
+        self.layers = [t.cast(gws.ILayer, self.create_child('gws.ext.layer', c)) for c in self.var('layers')]
 
         self.extent = _configure_extent(self, self.crs, None)
         if not self.extent:

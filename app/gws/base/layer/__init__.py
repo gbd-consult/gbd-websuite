@@ -1,1 +1,1 @@
-from .core import Object, Props, add_layers_to_object
+from .core import Config, Object, Props

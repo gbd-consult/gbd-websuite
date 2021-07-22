@@ -7,7 +7,7 @@ import gws.lib.extent
 import gws.lib.feature
 import gws.lib.shape
 
-from . import provider as provider_mod
+from . import provider as prov
 
 
 @gws.ext.Config('layer.postgres')
@@ -20,11 +20,11 @@ class Config(gws.base.layer.vector.Config):
 
 @gws.ext.Object('layer.postgres')
 class Object(gws.base.layer.vector.Object):
-    provider: provider_mod.Object
+    provider: prov.Object
     table: gws.SqlTable
 
     def configure(self):
-        self.provider = provider_mod.require_provider(self)
+        self.provider = prov.require(self)
         self.table = self.provider.configure_table(self.var('table'))
         self.is_editable = True
         if not self.data_model:

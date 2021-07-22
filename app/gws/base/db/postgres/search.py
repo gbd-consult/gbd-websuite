@@ -1,12 +1,12 @@
 import gws
 import gws.types as t
-import gws.base.search
+import gws.base.search.provider
 
-from . import provider as provider_mod
+from . import provider as prov
 
 
 @gws.ext.Config('search.provider.postgres')
-class Config(gws.base.search.ProviderConfig):
+class Config(gws.base.search.provider.Config):
     """Database-based search"""
 
     db: t.Optional[str]  #: database provider uid
@@ -15,12 +15,12 @@ class Config(gws.base.search.ProviderConfig):
 
 
 @gws.ext.Object('search.provider.postgres')
-class Object(gws.base.search.Provider):
-    provider: provider_mod.Object
+class Object(gws.base.search.provider.Object):
+    provider: prov.Object
     table: gws.SqlTable
 
     def configure(self):
-        self.provider = provider_mod.require_provider(self)
+        self.provider = prov.require(self)
         self.table = self.provider.configure_table(self.var('table'))
         if self.table.search_column:
             self.supports_keyword = True

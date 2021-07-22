@@ -3,36 +3,37 @@
 import time
 
 import gws
-import gws.types as t
-import gws.base.api
+import gws.base.api.action
+import gws.lib.legend
 import gws.lib.cache
 import gws.lib.feature
+import gws.lib.img
 import gws.lib.json2
-import gws.lib.misc
 import gws.lib.render
 import gws.lib.units
+import gws.types as t
 
 
-def url_for_render_box(layer_uid) -> str:
-    return gws.SERVER_ENDPOINT + '/cmd/mapRenderBox/layerUid/' + layer_uid
+def url_for_get_box(layer_uid) -> str:
+    return f'{gws.SERVER_ENDPOINT}/mapGetBox/layerUid/{layer_uid}'
 
 
-def url_for_render_tile(layer_uid, xyz=None) -> str:
-    pfx = gws.SERVER_ENDPOINT + '/cmd/mapRenderXyz/layerUid/' + layer_uid
+def url_for_get_tile(layer_uid, xyz=None) -> str:
+    pfx = f'{gws.SERVER_ENDPOINT}/mapGetXyz/layerUid/{layer_uid}'
     if xyz:
         return pfx + f'/z/{xyz.z}/x/{xyz.x}/y/{xyz.y}/gws.png'
     return pfx + '/z/{z}/x/{x}/y/{y}/gws.png'
 
 
-def url_for_render_legend(layer_uid) -> str:
-    return gws.SERVER_ENDPOINT + '/cmd/mapRenderLegend/layerUid/' + layer_uid + '/gws.png'
+def url_for_get_legend(layer_uid) -> str:
+    return f'{gws.SERVER_ENDPOINT}/mapGetLegend/layerUid/{layer_uid}/gws.png'
 
 
 def url_for_get_features(layer_uid) -> str:
-    return gws.SERVER_ENDPOINT + '/cmd/mapGetFeatures/layerUid/' + layer_uid
+    return f'{gws.SERVER_ENDPOINT}/mapGetFeatures/layerUid/{layer_uid}'
 
 
-class RenderBoxParams(gws.Params):
+class GetBoxParams(gws.Params):
     bbox: gws.Extent
     width: int
     height: int
@@ -42,14 +43,14 @@ class RenderBoxParams(gws.Params):
     layers: t.Optional[t.List[str]]
 
 
-class RenderXyzParams(gws.Params):
+class GetXyzParams(gws.Params):
     layerUid: str
     x: int
     y: int
     z: int
 
 
-class RenderLegendParams(gws.Params):
+class GetLegendParams(gws.Params):
     layerUid: str
 
 
@@ -74,14 +75,63 @@ class GetFeaturesResponse(gws.Response):
 
 
 @gws.ext.Object('action.map')
-class Object(gws.base.api.Action):
+class Object(gws.base.api.action.Object):
 
-    @gws.ext.command('api.map.renderBox')
-    def api_render_box(self, req: gws.IWebRequest, p: RenderBoxParams) -> gws.ContentResponse:
-        """Render a part of the map inside a bounding box"""
+    @gws.ext.command('api.map.getBox')
+    def api_get_box(self, req: gws.IWebRequest, p: GetBoxParams) -> gws.BytesResponse:
+        """Get a part of the map inside a bounding box"""
+        r = self._get_box(req, p)
+        return gws.BytesResponse(mime=r.mime, content=r.content)
 
+    @gws.ext.command('get.map.getBox')
+    def http_get_box(self, req: gws.IWebRequest, p: GetBoxParams) -> gws.ContentResponse:
+        r = self._get_box(req, p)
+        return gws.ContentResponse(mime=r.mime, content=r.content)
+
+    @gws.ext.command('api.map.getXYZ')
+    def api_get_xyz(self, req: gws.IWebRequest, p: GetXyzParams) -> gws.BytesResponse:
+        """Get an XYZ tile"""
+        r = self._get_xyz(req, p)
+        return gws.BytesResponse(mime=r.mime, content=r.content)
+
+    @gws.ext.command('get.map.getXYZ')
+    def http_get_xyz(self, req: gws.IWebRequest, p: GetXyzParams) -> gws.ContentResponse:
+        r = self._get_xyz(req, p)
+        return gws.ContentResponse(mime=r.mime, content=r.content)
+
+    @gws.ext.command('api.map.getLegend')
+    def api_get_legend(self, req: gws.IWebRequest, p: GetLegendParams) -> gws.BytesResponse:
+        """Get a legend for a layer"""
+        r = self._get_legend(req, p)
+        return gws.BytesResponse(mime=r.mime, content=r.content)
+
+    @gws.ext.command('get.map.getLegend')
+    def http_get_legend(self, req: gws.IWebRequest, p: GetLegendParams) -> gws.ContentResponse:
+        r = self._get_legend(req, p)
+        return gws.ContentResponse(mime=r.mime, content=r.content)
+
+    @gws.ext.command('api.map.describeLayer')
+    def describe_layer(self, req: gws.IWebRequest, p: DescribeLayerParams) -> DescribeLayerResponse:
         layer = req.require_layer(p.layerUid)
-        img = None
+        return DescribeLayerResponse(description=layer.description)
+
+    @gws.ext.command('api.map.getFeatures')
+    def api_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
+        """Get a list of features in a bounding box"""
+        found = self._get_features(req, p)
+        return GetFeaturesResponse(features=[f.props for f in found])
+
+    @gws.ext.command('get.map.getFeatures')
+    def http_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> gws.ContentResponse:
+        # @TODO the response should be geojson FeatureCollection
+        found = self._get_features(req, p)
+        return gws.ContentResponse(mime='application/json', content=gws.lib.json2.to_string(found))
+
+    ##
+
+    def _get_box(self, req: gws.IWebRequest, p: GetBoxParams) -> gws.BytesResponse:
+        layer = req.require_layer(p.layerUid)
+        content = None
 
         extra_params = {}
         if p.layers:
@@ -96,78 +146,47 @@ class Object(gws.base.api.Action):
             rotation=0
         )
 
-        ts = time.time()
+        ts = gws.time_start(f'RENDER_BOX layer={p.layerUid} view={rv!r}')
         try:
-            img = layer.render_box(rv, extra_params)
+            content = layer.render_box(rv, extra_params)
         except:
             gws.log.exception()
-        gws.log.debug('RENDER_PROFILE: %s - %s - %.2f' % (p.layerUid, repr(rv), time.time() - ts))
+        gws.time_end(ts)
 
-        return gws.ContentResponse(mime='image/png', content=img or gws.lib.misc.Pixels.png8)
+        return self._image_response(content)
 
-    @gws.ext.command('get.map.renderBox')
-    def http_render_box(self, req: gws.IWebRequest, p: RenderBoxParams) -> gws.ContentResponse:
-        return self.api_render_box(req, p)
-
-    @gws.ext.command('api.map.renderXYZ')
-    def api_render_xyz(self, req: gws.IWebRequest, p: RenderXyzParams) -> gws.ContentResponse:
-        """Render an XYZ tile"""
-
+    def _get_xyz(self, req: gws.IWebRequest, p: GetXyzParams) -> gws.BytesResponse:
         layer = req.require_layer(p.layerUid)
-        img = None
+        content = None
 
-        ts = time.time()
+        ts = gws.time_start(f'RENDER_XYZ layer={p.layerUid} xyz={p.x}/{p.y}/{p.z}')
         try:
-            img = layer.render_xyz(p.x, p.y, p.z)
+            content = layer.render_xyz(p.x, p.y, p.z)
         except:
             gws.log.exception()
-        gws.log.debug('RENDER_PROFILE: %s - %s %s %s - %.2f' % (p.layerUid, p.x, p.y, p.z, time.time() - ts))
+        gws.time_end(ts)
 
         # for public tiled layers, write tiles to the web cache
         # so they will be subsequently served directly by nginx
 
-        if img and layer.is_public and layer.has_cache:
-            gws.lib.cache.store_in_web_cache(url_for_render_tile(layer.uid, p), img)
+        if content and layer.is_public and layer.has_cache:
+            gws.lib.cache.store_in_web_cache(url_for_get_tile(layer.uid, p), content)
 
-        return gws.ContentResponse(mime='image/png', content=img or gws.lib.misc.Pixels.png8)
+        return self._image_response(content)
 
-    @gws.ext.command('get.map.renderXYZ')
-    def http_render_xyz(self, req: gws.IWebRequest, p: RenderXyzParams) -> gws.ContentResponse:
-        return self.api_render_xyz(req, p)
-
-    @gws.ext.command('api.map.renderLegend')
-    def api_render_legend(self, req: gws.IWebRequest, p: RenderLegendParams) -> gws.ContentResponse:
-        """Render a legend for a layer"""
-
-        path = self._legend_path(req, p)
-        content = gws.read_file_b(path) if path else gws.lib.misc.Pixels.png8
-        return gws.ContentResponse(mime='image/png', content=content)
-
-    @gws.ext.command('get.map.renderLegend')
-    def http_render_legend(self, req: gws.IWebRequest, p: RenderLegendParams) -> gws.ContentResponse:
-        path = self._legend_path(req, p)
-        if path:
-            return gws.ContentResponse(mime='image/png', path=path)
-        return gws.ContentResponse(mime='image/png', content=gws.lib.misc.Pixels.png8)
-
-    def _legend_path(self, req: gws.IWebRequest, p: RenderLegendParams):
+    def _get_legend(self, req: gws.IWebRequest, p: GetLegendParams) -> gws.BytesResponse:
         layer = req.require_layer(p.layerUid)
-        if layer.has_legend:
-            try:
-                return layer.render_legend_to_path()
-            except:
-                gws.log.exception()
+        content = gws.lib.legend.as_bytes(layer.get_legend())
+        return self._image_response(content)
 
-    @gws.ext.command('api.map.describeLayer')
-    def describe_layer(self, req: gws.IWebRequest, p: DescribeLayerParams) -> DescribeLayerResponse:
-        layer = req.require_layer(p.layerUid)
+    def _image_response(self, content) -> gws.BytesResponse:
+        # @TODO content-dependent mime type
+        # @TODO in-image errors
+        if content:
+            return gws.BytesResponse(mime='image/png', content=content)
+        return gws.BytesResponse(mime='image/png', content=gws.lib.img.PIXEL_PNG8)
 
-        return DescribeLayerResponse(description=layer.description)
-
-    @gws.ext.command('api.map.getFeatures')
-    def api_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
-        """Get a list of features in a bounding box"""
-
+    def _get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> t.List[gws.IFeature]:
         layer = req.require_layer(p.layerUid)
         bounds = gws.Bounds(
             crs=p.crs or layer.map.crs,
@@ -181,9 +200,4 @@ class Object(gws.base.api.Action):
             f.apply_templates(keys=['label', 'title'])
             f.apply_data_model()
 
-        return GetFeaturesResponse(features=[f.props for f in found])
-
-    @gws.ext.command('get.map.getFeatures')
-    def http_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> gws.ContentResponse:
-        res = self.api_get_features(req, p)
-        return gws.ContentResponse(mime='application/json', content=gws.lib.json2.to_string(res))
+        return found

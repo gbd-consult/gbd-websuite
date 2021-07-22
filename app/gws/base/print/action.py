@@ -2,7 +2,7 @@
 
 import gws
 import gws.types as t
-import gws.base.api
+import gws.base.api.action
 import gws.base.web.error
 import gws.lib.job
 import gws.lib.mime
@@ -10,7 +10,7 @@ from . import types, job
 
 
 @gws.ext.Object('action.print')
-class Object(gws.base.api.Action):
+class Object(gws.base.api.action.Object):
 
     @gws.ext.command('api.print.startPrint')
     def start_print(self, req: gws.IWebRequest, p: types.Params) -> types.StatusResponse:

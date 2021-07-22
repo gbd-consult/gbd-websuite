@@ -2,7 +2,6 @@ import gws
 import gws.types as t
 import gws.base.map.action
 import gws.base.model
-import gws.core.debug
 import gws.lib.extent
 import gws.lib.style
 import gws.lib.svg
@@ -23,6 +22,12 @@ class Config(core.Config):
 class Object(core.Object):
     """Base vector layer"""
 
+    can_render_box = True
+    can_render_svg = True
+    supports_wms = True
+    supports_wfs = True
+
+
     @property
     def props(self):
         p = super().props
@@ -30,7 +35,7 @@ class Object(core.Object):
         if self.display == 'box':
             return gws.merge(p, {
                 'type': 'box',
-                'url': gws.base.map.action.url_for_render_box(self.uid),
+                'url': gws.base.map.action.url_for_get_box(self.uid),
             })
 
         return gws.merge(p, {
@@ -40,12 +45,6 @@ class Object(core.Object):
             'editStyle': self.edit_style,
             'url': gws.base.map.action.url_for_get_features(self.uid),
         })
-
-    def configure(self):
-        self.can_render_box = True
-        self.can_render_svg = True
-        self.supports_wms = True
-        self.supports_wfs = True
 
     def connect_feature(self, feature: gws.IFeature) -> gws.IFeature:
         feature.layer = self

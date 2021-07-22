@@ -162,7 +162,7 @@ class _Generator:
                 tpl,
                 name=name,
                 doc=t.doc,
-                ext=' extends ' + self.make(t.super_t) if t.super_t else '',
+                ext=' extends ' + self.make(t.supers[0]) if t.supers else '',
                 props=self.make_props(t)
             ))
             return name

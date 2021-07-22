@@ -4,6 +4,7 @@ import gws.base.ows.provider.parseutil as u
 import gws.lib.net
 import gws.lib.units as units
 import gws.lib.xml2
+import gws.lib.metadata
 from . import types
 
 
@@ -13,8 +14,8 @@ from . import types
 def parse(prov, xml):
     el = gws.lib.xml2.from_string(xml)
 
-    prov.meta = gws.MetaData(u.get_meta(el.first('ServiceIdentification')))
-    prov.meta.contact = gws.MetaContact(u.get_meta_contact(el.first('ServiceProvider.ServiceContact')))
+    prov.metadata = gws.lib.metadata.Values(u.get_meta(el.first('ServiceIdentification')))
+    prov.metadata.contact = gws.lib.metadata.Contact(u.get_meta_contact(el.first('ServiceProvider.ServiceContact')))
 
     if not prov.meta.url:
         prov.meta.url = u.get_url(el.first('ServiceMetadataURL'))
@@ -36,7 +37,7 @@ def parse(prov, xml):
 def _layer(el):
     oo = types.SourceLayer()
 
-    oo.meta = gws.MetaData(u.get_meta(el))
+    oo.meta = gws.lib.metadata.Values(u.get_meta(el))
     oo.name = oo.meta.name
     oo.title = oo.meta.title
 

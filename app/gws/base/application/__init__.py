@@ -1,14 +1,15 @@
 """Core application object"""
 
 import gws
-import gws.base.api
+import gws.base.api.action
 import gws.base.auth
 import gws.base.client
 import gws.base.db
+import gws.base.metadata
 import gws.base.project
 import gws.base.web
 import gws.lib.cache
-import gws.lib.metadata
+import gws.lib.font
 import gws.lib.mpx.config
 import gws.lib.os2
 import gws.server
@@ -40,7 +41,7 @@ class Config(gws.WithAccess):
     fonts: t.Optional[FontConfig]  #: fonts configuration
     helpers: t.Optional[t.List[gws.ext.helper.Config]]  #: helpers configurations
     locales: t.Optional[t.List[str]]  #: default locales for all projects
-    meta: t.Optional[gws.lib.metadata.Config]  # type: ignore #: application metadata
+    metaData: t.Optional[gws.base.metadata.Config]  # type: ignore #: application metadata
     projectDirs: t.Optional[t.List[gws.DirPath]]  #: directories with additional projects
     projectPaths: t.Optional[t.List[gws.FilePath]]  #: additional project paths
     projects: t.Optional[t.List[gws.base.project.Config]]  #: project configurations
@@ -53,10 +54,10 @@ class Object(gws.Node, gws.IApplication):
 
     api: gws.base.api.Object
     auth: gws.base.auth.Manager
+    locale_uids: t.List[str]
+    metadata: gws.base.metadata.Object
     monitor: gws.server.monitor.Object
-    meta: gws.lib.metadata.Object
     web_sites: t.List[gws.IWebSite]
-    localeUids: t.List[str]
 
     _devopts: dict
 
@@ -75,16 +76,13 @@ class Object(gws.Node, gws.IApplication):
         # gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
         # gws.log.info('*' * 40)
 
-        self.localeUids = self.var('locales') or ['en_CA']
-
+        self.locale_uids = self.var('locales') or ['en_CA']
         self.monitor = self.create_child(gws.server.monitor.Object, self.var('server.monitor'))
+        self.metadata = self.create_child(gws.base.metadata.Object, self.var('metaData'))
 
-        p = self.var('meta')
-        self.meta = self.create_child(gws.lib.metadata.Object, p)
-
-        s = self.var('fonts.dir')
-        if s:
-            _install_fonts(s)
+        p = self.var('fonts.dir')
+        if p:
+            gws.lib.font.install_fonts(p)
 
         # NB the order of initialization is important
         # - db
@@ -107,7 +105,6 @@ class Object(gws.Node, gws.IApplication):
         #
 
         self.auth = t.cast(gws.base.auth.Manager, self.create_child(gws.base.auth.Manager, self.var('auth')))
-
         self.api = self.create_child(gws.base.api.Object, self.var('api'))
 
         self.web_sites = []
@@ -154,61 +151,3 @@ class Object(gws.Node, gws.IApplication):
             gws.log.debug(f'created an ad-hoc helper, key={key!r} cfg={cfg!r}')
             p = self.create_child(base, cfg)
         return p
-
-
-def _install_fonts(source_dir):
-    target_dir = '/usr/local/share/fonts'
-    gws.lib.os2.run(['mkdir', '-p', target_dir], echo=True)
-    for p in gws.lib.os2.find_files(source_dir):
-        gws.lib.os2.run(['cp', '-v', p, target_dir], echo=True)
-
-    gws.lib.os2.run(['fc-cache', '-fv'], echo=True)
-
-#
-#
-#
-#
-#
-# import gws.base.auth
-# import gws.base.client
-# import gws.base.layer
-# import gws.lib.metadata
-# import gws.base.project
-# import gws.base.search
-# import gws.base.template
-# import gws.lib.zoom
-# import gws.lib.os2
-# import gws.server.monitor
-# import gws.server.types
-# import gws.base.web.site
-#
-#
-#
-#
-#
-# class Config(gws.WithAccess):
-#     """Main application configuration"""
-#
-#
-#
-# _DEFAULT_SITE = gws.Data(host='*', root=gws.Data(dir='/data/web'))
-#
-#
-# class Object(gws.Node, gws.IApplication):
-#     """Main Appilication object"""
-#
-#     def configure(self):
-#         self.api = self.create_child(gws.base.api.Object, self.var('api', default=gws.Data()))
-#
-#
-#     def ___configure(self):
-#
-#
-#
-#
-#     def developer_option(self, name):
-#         return self._devopts.get(name)
-#
-#
-#
-#

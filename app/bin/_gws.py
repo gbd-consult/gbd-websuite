@@ -69,13 +69,10 @@ def print_usage_and_fail(ext_type, cmd, params):
 
 
 def dispatch(ext_type, cmd, params):
-    if ext_type == 'server':
-        # server commands are special and don't depend on specs
+    if ext_type == 'server' and cmd == 'stop':
+        # skip the spec stuff when stopping the server
         cli = gws.server.control.Cli()
-        fn = getattr(cli, cmd, None)
-        if not fn:
-            return print_usage_and_fail(ext_type, cmd, params)
-        return fn(params)
+        return cli.stop(params)
 
     specs = load_specs(params)
     # e.g. 'gws auth password' => 'authPassword'

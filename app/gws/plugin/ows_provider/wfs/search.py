@@ -3,7 +3,7 @@ import gws.types as t
 import gws.base.search.provider
 import gws.lib.ows
 import gws.lib.shape
-import gws.lib.source
+import gws.lib.gis
 from . import provider, util
 
 
@@ -25,7 +25,7 @@ class Object(gws.base.search.provider.Object):
             self.url = layer.url
         else:
             self.provider: provider.Object = gws.lib.ows.shared_provider(provider.Object, self, self.config)
-            self.source_layers = gws.lib.source.filter_layers(
+            self.source_layers = gws.lib.gis.filter_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers'))
             if not self.source_layers:

@@ -27,6 +27,10 @@ builder production
     
 builder clean
     remove all compiled bundles and builds 
+    
+Options:
+
+    --incremental   - do not clear the build directory
 
 The builder expects the dev spec generator to be run 
 and uses the generated stuff from 'app/gws/spec/__build'
@@ -83,13 +87,15 @@ module.exports.Builder = class {
     }
 
     commandDevServer() {
-        clearBuild(this);
+        if (!this.args.incremental)
+            clearBuild(this);
         initBuild(this);
         startBrowserSync(this);
     }
 
     commandDev() {
-        clearBuild(this);
+        if (!this.args.incremental)
+            clearBuild(this);
         initBuild(this);
 
         if (!writeVendors(this))
@@ -141,13 +147,13 @@ function initBuild(bb) {
     bb.sources = [];
 
     for (let chunk of bb.meta.chunks) {
-        let n = 0;
+        let numSources = 0;
 
         for (let kind of Object.keys(chunk.paths)) {
             if (kind === 'python')
                 continue;
             for (let p of chunk.paths[kind]) {
-                n++;
+                numSources++;
                 bb.sources.push({
                     chunk: chunk.name,
                     kind,
@@ -157,7 +163,7 @@ function initBuild(bb) {
             }
         }
 
-        if (n > 0) {
+        if (numSources > 0) {
             bb.chunks.push({
                 name: chunk.name,
                 sourceDir: chunk.sourceDir,
@@ -176,7 +182,7 @@ const DEV_INDEX_HTML_TEMPLATE = String.raw`
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <title>gws client</title>
-    <link rel="stylesheet" href="/DEV-CSS/__RANDOM__.css">
+    <link rel="stylesheet" href="/DEV-CSS/style.css?r=__RANDOM__">
     
     <style>
         html, body {
@@ -198,13 +204,16 @@ const DEV_INDEX_HTML_TEMPLATE = String.raw`
     </style>
 </head>
 <body>
-    <script>__ENV__</script>
 
-    <script>process = {env: {NODE_ENV: "development"}}</script>
+<script>
+process = {env: {NODE_ENV: "development"}}
+__ENV__
+</script>
 
-    __SCRIPTS__
+__SCRIPTS__
 
-    <script src="/DEV-JS/__RANDOM__.js"></script>
+<script src="/DEV-JS/script.js?r=__RANDOM__"></script>
+
 </body>
 </html>
 `;
@@ -234,9 +243,8 @@ function startBrowserSync(bb) {
             : `window['GWS_LOCALE']="de_DE";   window['GWS_PROJECT_UID']="${u[0]}"`;
 
         tplVars.SCRIPTS = ''
-        for (let vendor of bb.vendors) {
+        for (let vendor of bb.vendors)
             tplVars.SCRIPTS += `<script src="/DEV-VENDOR/${vendor.name}.js"></script>\n`;
-        }
 
         tplVars.RANDOM = String(Math.random()).slice(2);
 
@@ -251,10 +259,33 @@ function startBrowserSync(bb) {
         if (!js || !strings)
             return;
 
-        return formatTemplate(JS_BUNDLE_TEMPLATE, {
+        let code = formatTemplate(JS_BUNDLE_TEMPLATE, {
             MODULES: stubs.modules.concat(js.modules).map(m => m.text).join(','),
             STRINGS: strings.modules.map(m => m.text).join(STRINGS_RECORD_DELIM),
-        })
+        });
+
+        let combinedSourceMap = {
+            version: 3,
+            file: 'script.js',
+            sections: [],
+        };
+
+        // JS_BUNDLE_TEMPLATE doesn't contain newlines before the first module, so the start offset is 0
+        // since we concatenate just by a comma, the offset of the second mod is numLines(first mod) - 1 and so on
+
+        let line = 0, column = 0;
+
+        for (let mod of js.modules) {
+            combinedSourceMap.sections.push({
+                offset: {line, column},
+                map: mod.sourceMap
+            });
+            line += mod.text.split('\n').length - 1;
+        }
+
+        code += '\n' + '//# sourceMappingURL=/DEV-SOURCEMAP/sourcemap.json'
+        content.js = code;
+        content.sourceMap = JSON.stringify(combinedSourceMap);
     }
 
     function makeCSS() {
@@ -262,56 +293,50 @@ function startBrowserSync(bb) {
         let css = cssModules(bb);
         if (!css)
             return;
-        return css.modules.map(m => m.text).join('\n');
+        content.css = css.modules.map(m => m.text).join('\n');
     }
 
-    function vendorJS(url) {
-        // req.url is like `/React.js`
-        let name = url.split('/')[1].split('.')[0];
+    function vendorJS(name) {
         for (let vendor of bb.vendors) {
             if (vendor.name === name) {
-                return readFile(vendor.devPath);
+                // @TODO support vendor source maps
+                return readFile(vendor.devPath).replace(SOURCE_MAP_REGEX, '');
             }
         }
     }
 
-    function update(all) {
-        let ts = all, strings = all, css = all;
-        let js = false;
-        let ok = true;
+    function update() {
+        let runTs = false;
 
         while (reloadQueue.length) {
             let file = reloadQueue.shift();
-            if (file.endsWith('ts') || file.endsWith('tsx'))
-                ts = 1;
+            if (file.endsWith('ts') || file.endsWith('tsx')) {
+                content.js = null;
+                runTs = true;
+            }
             if (file.endsWith('css.js'))
-                css = 1;
+                content.css = null;
             if (file.endsWith('strings.ini'))
-                strings = 1;
+                content.js = null;
         }
 
         initBuild(bb);
 
-        if (strings) {
-            content.js = null;
-            js = true;
-        }
-        if (ts) {
-            content.js = null;
-            js = runTypescript(bb);
-        }
-        if (js)
-            content.js = makeJS();
-        if (css)
-            content.css = makeCSS(bb);
+        if (runTs && !runTypescript(bb))
+            return false;
 
-        return content.js && content.css;
+        if (!content.js)
+            makeJS();
+
+        if (!content.css)
+            makeCSS();
+
+        return !!content.js && !!content.css;
     }
 
     function reload() {
         if (reloading)
             return debounceReload();
-
         reloading = true;
         if (update())
             bs.reload();
@@ -378,9 +403,17 @@ function startBrowserSync(bb) {
                 }
             },
             {
+                route: "/DEV-SOURCEMAP",
+                handle(req, res, next) {
+                    send(res, content.sourceMap, 'application/json')
+                }
+            },
+            {
                 route: "/DEV-VENDOR",
                 handle(req, res, next) {
-                    send(res, vendorJS(req.url), 'application/javascript');
+                    // req.url is like `/React.js`
+                    let name = url.split('/')[1].split('.')[0];
+                    send(res, vendorJS(name), 'application/javascript');
                 }
             },
         ]
@@ -463,8 +496,9 @@ function jsModules(bb) {
                 return `require("${reqName}")`
             });
 
+            // NB we use inlineSourceMaps in tsconfig
             src = src.replace(SOURCE_MAP_REGEX, m => {
-                sourceMaps[modName] = m;
+                sourceMaps[modName] = JSON.parse(Buffer.from(m.split(',')[1], 'base64').toString('utf8'));
                 return '';
             });
 
@@ -533,7 +567,7 @@ function writeVendors(bb) {
         let sources = [];
         for (let vendor of bb.vendors) {
             let src = readFile(vendor.path);
-            src = src.replace(SOURCE_MAP_REGEX, '');
+            src = src.replace(SOURCE_MAP_REGEX, '\n');
             sources.push(src);
         }
         writeFile(bb.meta.VENDOR_BUNDLE_PATH, sources.join('\n;;\n'));

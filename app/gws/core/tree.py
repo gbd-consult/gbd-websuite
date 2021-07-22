@@ -4,14 +4,13 @@ import gws.types as t
 from . import error, log, types, util
 
 
-
 class Object(types.IObject):
     access: t.Optional[types.Access]
     uid: str
     title: str
     class_name: str
     ext_type: str
-    configured: bool
+    config_error: str
 
     @property
     def props(self) -> types.Props:
@@ -23,7 +22,7 @@ class Object(types.IObject):
         self.ext_type = ext_type or ''
         self.title = ''
         self.uid = ''
-        self.configured = False
+        self.config_error = ''
 
     def is_a(self, klass: types.Klass):
         if isinstance(klass, type):
@@ -62,22 +61,15 @@ class Node(Object, types.INode):
 
         log.debug(f'BEGIN config {self.class_name}')
 
+        # call all super 'configure' methods
+        mro = [cls for cls in type(self).mro() if hasattr(cls, 'configure')]
         try:
-            # call all super 'configure' methods
-
-            mro = []
-
-            for cls in type(self).mro():
-                if hasattr(cls, 'configure'):
-                    mro.append(cls)
-
             for cls in reversed(mro):
                 cls.configure(self)  # type: ignore
-
-        except Exception as e:
-            raise _error(self, e)
-
-        self.configured = True
+        except Exception as exc:
+            self.config_error = _exc_name_for_error(exc)
+            log.error(self.config_error)
+            log.exception()
 
         log.debug(f'END config {self.class_name} uid={self.uid}')
 
@@ -121,11 +113,13 @@ class RootObject(Object, types.IRootObject):
         self.root = self
 
     def post_initialize(self):
-        try:
-            for obj in reversed(self.all_nodes):
+        for obj in reversed(self.all_nodes):
+            try:
                 obj.post_configure()
-        except Exception as e:
-            raise _error(self, e)
+            except Exception as exc:
+                obj.config_error = _exc_name_for_error(exc)
+                log.error(obj.config_error)
+                log.exception()
 
     def create_application(self, klass, cfg):
         app = self._create(klass)
@@ -203,6 +197,8 @@ class RootObject(Object, types.IRootObject):
 
 def load_ext(specs, class_name) -> types.ExtObjectDescriptor:
     desc = specs.ext_object_descriptor(class_name)
+    if not desc:
+        raise error.Error(f'load_ext: class {class_name!r} not found')
     if desc.module_name in sys.modules:
         log.debug(f'load_ext: {class_name!r}: found')
         mod = sys.modules[desc.module_name]

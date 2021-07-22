@@ -162,10 +162,9 @@ def create_and_save(root: gws.RootObject):
     try:
         make_wsgi_app(test_path)
     except Exception as e:
-        raise gws.config.error.MapproxyConfigurationError(*e.args) from e
+        raise gws.config.error.ConfigurationError(f'MAPPROXY ERROR: {e!r}') from e
 
     gws.lib.os2.unlink(test_path)
 
     # write into the real config path
-
     gws.write_file(CONFIG_PATH, cfg_str)

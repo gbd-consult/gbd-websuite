@@ -1,29 +1,43 @@
 """WMS Capabilities parser."""
 
 import gws
-import gws.types as t
-import gws.lib.metadata
-import gws.base.ows.provider.parseutil as u
+import gws.base.ows.provider
 import gws.lib.bounds
+import gws.lib.gis
+import gws.lib.metadata
+import gws.lib.ows.parseutil as u
 import gws.lib.proj
-import gws.lib.source
 import gws.lib.xml2
+import gws.types as t
 
 
-def parse(prov, xml):
+class WMSCaps(gws.Data):
+    metadata: gws.lib.metadata.Values
+    version: str
+    operations: t.List[gws.OwsOperation]
+    source_layers: t.List[gws.lib.gis.SourceLayer]
+    supported_crs: t.List[gws.Crs]
+
+
+def parse(xml) -> WMSCaps:
     el = gws.lib.xml2.from_string(xml)
 
-    prov.type = 'WMS'
-    prov.meta = gws.MetaData(u.get_meta(el.first('Service')))
-    prov.meta.contact = gws.MetaContact(u.get_meta_contact(el.first('Service.ContactInformation')))
-    prov.version = el.attr('version')
-    prov.operations = u.get_operations(el.first('Capability'))
-    prov.source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Capability.Layer'))
-    prov.supported_crs = gws.lib.source.crs_from_layers(prov.source_layers)
+    metadata = u.get_meta(el.first('Service'))
+    metadata['contact'] = u.get_meta_contact(el.first('Service.ContactInformation'))
+
+    source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Capability.Layer'))
+
+    return WMSCaps(
+        metadata=metadata,
+        version=el.attr('version'),
+        operations=[gws.OwsOperation(e) for e in u.get_operations(el.first('Capability'))],
+        source_layers=source_layers,
+        supported_crs=gws.lib.gis.crs_from_layers(source_layers),
+    )
 
 
-def _layer(el, parent=None):
-    oo = gws.SourceLayer()
+def _layer(el, parent=None) -> gws.lib.gis.SourceLayer:
+    oo = gws.lib.gis.SourceLayer()
 
     oo.supported_bounds = u.get_bounds_list(el)
 
@@ -39,9 +53,9 @@ def _layer(el, parent=None):
     oo.styles = [u.get_style(e) for e in el.all('Style')]
     oo.is_queryable = el.attr('queryable') == '1'
     oo.is_visible = True
-    oo.meta = gws.MetaData(u.get_meta(el))
-    oo.name = oo.meta.name
-    oo.title = oo.meta.title
+    oo.metadata = gws.lib.metadata.Values(u.get_meta(el))
+    oo.name = oo.metadata.name
+    oo.title = oo.metadata.title
 
     if not oo.name:
         # some folks have unnamed layers in their caps
@@ -73,7 +87,7 @@ def _layer(el, parent=None):
             if s.name not in cs:
                 oo.styles.append(s)
 
-        oo.meta = gws.merge(parent.meta, oo.meta)
+        oo.metadata = gws.lib.metadata.merge(parent.metadata, oo.metadata)
 
     oo.supported_crs = [b.crs for b in oo.supported_bounds]
 

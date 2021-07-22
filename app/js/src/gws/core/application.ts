@@ -46,6 +46,7 @@ export class Application implements types.IApplication {
 
     static async create(options): Promise<Application> {
         let app = new this(options);
+        console.log(app)
         return await app.init();
     }
 
@@ -131,7 +132,6 @@ export class Application implements types.IApplication {
     }
 
     async init() {
-
         let res = await this.server.projectInfo({
             projectUid: this.options.projectUid
         });

@@ -16,7 +16,3 @@ class ConfigurationError(Error):
 
 class LoadError(Error):
     pass
-
-
-class MapproxyConfigurationError(Error):
-    pass

@@ -7,10 +7,12 @@ function main(argv) {
     let key = 'command'
 
     for (let a of argv.slice(2)) {
-        if (a.startsWith('--'))
+        if (a.startsWith('--')) {
             key = a.slice(2)
-        else
+            args[key] = true
+        } else {
             args[key] = a
+        }
     }
 
     let b = new builder.Builder()

@@ -128,8 +128,6 @@ class ExtObjectDescriptor(Data):
 class ExtCommandDescriptor(Data):
     class_name: str
     cmd_action: str
-    cmd_command: str
-    cmd_method: str
     cmd_name: str
     function_name: str
     params: 'Params'
@@ -194,6 +192,11 @@ class ContentResponse(Response):
     mime: str
     path: str
     status: int
+
+
+class BytesResponse(Response):
+    content: bytes
+    mime: str
 
 
 # noinspection PyPropertyDefinition
@@ -591,14 +594,13 @@ class IStyle(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # metadata
 
-class MetaData(Data):
-    pass  # the actual object is in lib.meta
+# noinspection PyPropertyDefinition
+class IMetaData(INode, Protocol):
+    def extend(self, other): ...
 
+    def set(self, key: str, value): ...
 
-class IMeta(INode, Protocol):
-    data: MetaData
-
-    def extend(self, meta): ...
+    def get(self, key: str): ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -654,14 +656,23 @@ class IMap(INode):
 class Legend(Data):
     enabled: bool
     path: str
-    url: str
+    url: Url
     template: Optional['ITemplate']
+    source_urls: List[Url]
+    options: dict
+
+
+class LegendRenderOutput(Data):
+    html: str
+    image: bytes
+    image_path: str
+    image_mime: str
 
 
 # noinspection PyPropertyDefinition
 class ILayer(INode, Protocol):
     map: 'IMap'
-    meta: 'IMeta'
+    metadata: 'IMetaData'
 
     can_render_box: bool
     can_render_xyz: bool
@@ -730,11 +741,9 @@ class ILayer(INode, Protocol):
 
     def render_svg_tags(self, rv: 'MapRenderView', style: Optional['IStyle']) -> List['Tag']: ...
 
-    def render_legend_to_path(self, context: dict = None) -> Optional[str]: ...
+    def get_legend(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
 
-    def render_legend_to_image(self, context: dict = None) -> Optional[bytes]: ...
-
-    def render_legend_to_html(self, context: dict = None) -> Optional[str]: ...
+    def render_legend(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
 
     def get_features(self, bounds: Bounds, limit: int = 0) -> List['IFeature']: ...
 
@@ -744,8 +753,16 @@ class ILayer(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # OWS
 
+class OwsOperation(Data):
+    formats: List[str]
+    get_url: Url
+    name: str
+    parameters: Dict
+    post_url: Url
+
+
 class IOwsService(INode, Protocol):
-    meta: 'IMeta'
+    metadata: 'IMetaData'
     name: str
     service_type: str
     supported_crs: List[Crs]
@@ -761,11 +778,12 @@ class IOwsService(INode, Protocol):
 
 
 class IOwsProvider(INode, Protocol):
-    meta: 'IMeta'
+    metadata: 'IMetaData'
+    operations: List[OwsOperation]
     service_type: str
+    service_version: str
     supported_crs: List[Crs]
     url: Url
-    version: str
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -791,9 +809,9 @@ class IMonitor(INode):
 class IProject(INode, Protocol):
     assets_root: Optional['IDocumentRoot']
     locale_uids: List[str]
-    search_providers: List['ISearchProvider']
     map: 'IMap'
-    meta: 'IMeta'
+    metadata: 'IMetaData'
+    search_providers: List['ISearchProvider']
     templates: 'ITemplateBundle'
 
     def find_action(self, action_type: str) -> Optional[IObject]: ...
@@ -801,10 +819,9 @@ class IProject(INode, Protocol):
 
 class IApplication(INode, Protocol):
     auth: 'IAuthManager'
+    locale_uids: List[str]
+    metadata: 'IMetaData'
     monitor: 'IMonitor'
-    meta: 'IMeta'
-    localeUids: List[str]
-
     web_sites: List['IWebSite']
 
     def developer_option(self, name: str) -> Any: ...

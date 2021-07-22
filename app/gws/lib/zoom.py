@@ -1,7 +1,7 @@
 import gws
 import gws.types as t
 import gws.lib.units as units
-import gws.lib.source
+import gws.lib.gis
 
 
 
@@ -39,7 +39,7 @@ def resolutions_from_config(cfg, parent_resolultions=None):
     return sorted(res, reverse=True)
 
 
-def config_from_source_layers(source_layers: t.List[gws.lib.source.Layer]):
+def config_from_source_layers(source_layers: t.List[gws.lib.gis.SourceLayer]):
     min_scale = max_scale = None
 
     for sl in source_layers:

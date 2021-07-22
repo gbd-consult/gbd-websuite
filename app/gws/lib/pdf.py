@@ -36,37 +36,6 @@ def render_html(html, page_size, margin, out_path):
     return out_path
 
 
-def render_html_to_png(html, page_size, margin, out_path):
-    if margin:
-        html = f"""
-            <body style="margin:{margin[0]}px {margin[1]}px {margin[2]}px {margin[3]}px">
-                {html}
-            </body>
-        """
-
-    if 'charset' not in html:
-        html = '<meta charset="utf8"/>' + html
-    gws.write_file_b(out_path + '.html', gws.as_bytes(html))
-
-    cmd = [
-        'wkhtmltoimage',
-        '--disable-javascript',
-        '--disable-smart-width',
-        '--width', str(page_size[0]),
-        '--height', str(page_size[1]),
-        '--crop-w', str(page_size[0]),
-        '--crop-h', str(page_size[1]),
-        '--transparent',
-        out_path + '.html',
-        out_path,
-    ]
-
-    gws.log.debug(cmd)
-    gws.lib.os2.run(cmd, echo=False)
-
-    return out_path
-
-
 def merge(a_path, b_path, out_path):
     fa = open(a_path, 'rb')
     fb = open(b_path, 'rb')

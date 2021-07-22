@@ -7,8 +7,8 @@ import gws.config
 import gws.lib.mpx
 import gws.lib.proj
 import gws.lib.shape
-import gws.lib.source
-import gws.lib.gisutil
+import gws.lib.gis
+import gws.lib.gis
 import gws.lib.zoom
 import gws.lib.os2
 from . import provider
@@ -18,7 +18,7 @@ class Config(gws.base.layer.image.Config):
     """WMS layer from a Qgis project"""
 
     path: gws.FilePath  #: qgis project path
-    sourceLayers: t.Optional[gws.lib.source.Filter]  #: source layers to use
+    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
 
 
 class Object(gws.base.layer.image.Object):
@@ -26,17 +26,17 @@ class Object(gws.base.layer.image.Object):
     def description(self):
         context = {
             'layer': self,
-            'provider': self.provider.meta
+            'provider': self.provider.metadata
         }
         return self.description_template.render(context).content
 
     @property
     def own_bounds(self):
-        return gws.lib.source.bounds_from_layers(self.source_layers, self.map.crs)
+        return gws.lib.gis.bounds_from_layers(self.source_layers, self.map.crs)
 
     @property
     def default_search_provider(self):
-        source_layers = gws.lib.source.filter_layers(
+        source_layers = gws.lib.gis.filter_layers(
             self.provider.source_layers,
             self.var('sourceLayers'),
             queryable_only=True
@@ -51,9 +51,9 @@ class Object(gws.base.layer.image.Object):
         
 
         self.provider: provider.Object = provider.create_shared(self.root, self.config)
-        self.source_crs = gws.lib.gisutil.best_crs(self.map.crs, self.provider.supported_crs)
+        self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
 
-        self.source_layers = gws.lib.source.filter_layers(
+        self.source_layers = gws.lib.gis.filter_layers(
             self.provider.source_layers,
             self.var('sourceLayers'),
         )
@@ -61,9 +61,9 @@ class Object(gws.base.layer.image.Object):
         if not self.source_layers:
             raise gws.Error(f'no layers found in {self.uid!r}')
 
-        self.meta = self.configure_metadata(
-            self.source_layers[0].meta if len(self.source_layers) == 1 else None)
-        self.title = self.meta.title
+        self.metadata = self.configure_metadata(
+            self.source_layers[0].metadata if len(self.source_layers) == 1 else None)
+        self.title = self.metadata.title
 
         if not self.var('zoom'):
             zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
@@ -78,7 +78,7 @@ class Object(gws.base.layer.image.Object):
         return super().render_box(rv, extra_params)
 
     def configure_legend(self):
-        return super().configure_legend() or gws.LayerLegend(enabled=True)
+        return super().configure_legend() or gws.Legend(enabled=True)
 
     def render_legend_image(self, context=None):
         return self.provider.get_legend(self.source_layers, self.legend.options)

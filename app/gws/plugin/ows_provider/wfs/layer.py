@@ -3,8 +3,8 @@ import gws.types as t
 import gws.base.layer
 import gws.lib.ows
 import gws.lib.proj
-import gws.lib.source
-import gws.lib.gisutil
+import gws.lib.gis
+import gws.lib.gis
 from . import provider, util
 
 
@@ -19,10 +19,10 @@ class Object(gws.base.layer.Vector):
         self.url: str = self.var('url')
         self.provider: provider.Object = gws.lib.ows.shared_provider(provider.Object, self, self.config)
 
-        self.meta = self.configure_metadata(self.provider.meta)
-        self.title = self.meta.title
+        self.metadata = self.configure_metadata(self.provider.metadata)
+        self.title = self.metadata.title
 
-        self.source_layers: t.List[gws.SourceLayer] = gws.lib.source.filter_layers(
+        self.source_layers: t.List[gws.SourceLayer] = gws.lib.gis.filter_layers(
             self.provider.source_layers,
             self.var('sourceLayers'))
         if not self.source_layers:
@@ -32,7 +32,7 @@ class Object(gws.base.layer.Vector):
     def description(self):
         context = {
             'layer': self,
-            'service': self.provider.meta,
+            'service': self.provider.metadata,
             'sub_layers': self.source_layers
         }
         return self.description_template.render(context).content

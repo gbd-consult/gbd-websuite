@@ -17,7 +17,7 @@ import gws.base.ows.provider
 import gws.lib.extent
 import gws.lib.ows
 import gws.lib.shape
-import gws.lib.gisutil
+import gws.lib.gis
 import gws.lib.net
 import gws.lib.xml2
 from . import caps
@@ -63,15 +63,15 @@ class Object(gws.base.ows.provider.Object):
             shape = gws.lib.shape.union(args.shapes).tolerance_polygon(map_tolerance)
             bounds = shape.bounds
 
-        our_crs = gws.lib.gisutil.best_crs(bounds.crs, self.supported_crs)
+        our_crs = gws.lib.gis.best_crs(bounds.crs, self.supported_crs)
         bbox = gws.lib.extent.transform(bounds.extent, bounds.crs, our_crs)
-        axis = gws.lib.gisutil.best_axis(our_crs, self.invert_axis_crs, 'WFS', self.version)
+        axis = gws.lib.gis.best_axis(our_crs, self.invert_axis_crs, 'WFS', self.version)
         invert_axis = axis == 'yx'
 
         p = {}
 
         if invert_axis:
-            bbox = gws.lib.gisutil.invert_bbox(bbox)
+            bbox = gws.lib.gis.invert_bbox(bbox)
         p['BBOX'] = bbox
 
         if args.source_layer_names:

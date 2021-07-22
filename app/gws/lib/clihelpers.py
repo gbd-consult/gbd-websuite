@@ -50,10 +50,6 @@ def pretty_errors():
         _perr('CONFIGURATION ERROR')
         _perr_error(e)
         raise
-    except gws.config.error.MapproxyConfigurationError as e:
-        _perr('MAPPROXY CONFIGURATION ERROR')
-        _perr_error(e)
-        raise
     except Exception as e:
         _perr('SYSTEM ERROR')
         _perr_error(e)

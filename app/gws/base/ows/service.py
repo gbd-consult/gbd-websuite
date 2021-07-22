@@ -1,32 +1,31 @@
 import io
 
 import gws
-import gws.types as t
+import gws.base.metadata
 import gws.base.model
 import gws.base.search.runner
 import gws.base.template
 import gws.base.web.error
-import gws.lib.date
 import gws.lib.bounds
+import gws.lib.date
 import gws.lib.extent
 import gws.lib.gml
 import gws.lib.img
-import gws.lib.proj
-import gws.lib.render
-import gws.lib.metadata
 import gws.lib.mime
 import gws.lib.misc
+import gws.lib.proj
+import gws.lib.render
 import gws.lib.units as units
 import gws.lib.xml2
 import gws.lib.xml2.helper
-
+import gws.types as t
 
 _DEFAULT_FEATURE_NAME = 'feature'
 _DEFAULT_GEOMETRY_NAME = 'geometry'
 
 
 class Config(gws.WithAccess):
-    meta: t.Optional[gws.lib.metadata.Config]  #: service metadata
+    metaData: t.Optional[gws.base.metadata.Config]  #: service metadata
     root: str = ''  #: root layer uid
     name: str = ''  #: service name
     supportedCrs: t.Optional[t.List[gws.Crs]]  #: supported CRS for this service
@@ -70,7 +69,7 @@ class LayerCaps(gws.Data):
 
     has_legend: bool
     has_search: bool
-    meta: gws.IMeta
+    metadata: gws.IMetaData
     title: str
 
     layer_name: Name
@@ -103,7 +102,7 @@ class FeatureCollection(gws.Data):
 class Object(gws.Node, gws.IOwsService):
     """Baseclass for OWS services."""
 
-    meta: gws.IMeta
+    metadata: gws.IMetaData
     name: str
     service_type: str
     supported_crs: t.List[gws.Crs]
@@ -141,7 +140,7 @@ class Object(gws.Node, gws.IOwsService):
     # Configuration
 
     def configure(self):
-        self.meta = self.configure_metadata()
+        self.metadata = self.configure_metadata()
         self.name = self.var('name') or self.default_name
         self.supported_crs = self.var('supportedCrs', default=[])
 
@@ -163,15 +162,15 @@ class Object(gws.Node, gws.IOwsService):
         self.update_sequence = self.var('updateSequence')
         self.force_feature_name = self.var('forceFeatureName', default='')
 
-    def configure_metadata(self) -> gws.IMeta:
-        meta = t.cast(gws.IMeta, self.create_child(gws.lib.metadata.Object, self.var('meta')))
-        meta.extend(self.project.meta if self.project else self.root.application.meta)
+    def configure_metadata(self) -> gws.IMetaData:
+        m = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, self.var('metaData')))
+        m.extend(self.project.metadata if self.project else self.root.application.metadata)
 
-        if not meta.data.get('links') and self.service_link:
-            meta.data.set('links', [self.service_link])
+        if not m.data.get('links') and self.service_link:
+            m.data.set('links', [self.service_link])
 
-        meta.extend(self.default_metadata)
-        return meta
+        m.extend(self.default_metadata)
+        return m
 
     # Request handling
 
@@ -242,7 +241,7 @@ class Object(gws.Node, gws.IOwsService):
 
         context = gws.merge({
             'project': rd.project,
-            'meta': self.meta,
+            'meta': self.metadata,
             'with_inspire_meta': self.with_inspire_meta,
             'url_for': rd.req.site.url_for,
             'service': self,
@@ -371,7 +370,7 @@ class Object(gws.Node, gws.IOwsService):
         lc.title = layer.title
         lc.layer_name = self._parse_name(layer.ows_name)
         lc.feature_name = self._parse_name(self.force_feature_name or layer.ows_feature_name)
-        lc.meta = layer.meta
+        lc.metadata = layer.metadata
         lc.sub_caps = sub_caps or []
 
         lc.extent = layer.extent
@@ -454,7 +453,7 @@ class Object(gws.Node, gws.IOwsService):
     # Utils
 
     def url_for_project(self, project):
-        u = gws.SERVER_ENDPOINT + '/cmd/owsHttpService/uid/' + self.uid
+        u = gws.SERVER_ENDPOINT + '/owsService/uid/' + self.uid
         if project:
             u += f'/projectUid/{project.uid}'
         return u

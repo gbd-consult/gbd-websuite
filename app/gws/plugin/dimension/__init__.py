@@ -2,11 +2,11 @@
 
 import gws
 import gws.types as t
-import gws.base.api
+import gws.base.api.action
 
 
 @gws.ext.Props('action.dimension')
-class Props(gws.base.api.ActionProps):
+class Props(gws.base.api.action.Props):
     layerUids: t.Optional[t.List[str]]
     pixelTolerance: int
 
@@ -20,7 +20,7 @@ class Config(gws.WithAccess):
 
 
 @gws.ext.Object('action.dimension')
-class Object(gws.base.api.Action):
+class Object(gws.base.api.action.Object):
     @property
     def props(self):
         return Props(

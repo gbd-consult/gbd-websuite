@@ -516,7 +516,7 @@ export class MapManager implements types.IMapManager {
             type: 'root',
             uid: '_root',
             title: this.props.title,
-            meta: null,
+            metaData: null,
 
             layers: this.props.layers,
 
@@ -948,7 +948,7 @@ export class MapManager implements types.IMapManager {
     //
 
     protected visibleAttributions() {
-        let a = [this.app.project.meta.attribution];
+        let a = [this.app.project.metaData.attribution];
 
         this.walk(this.root, (layer: types.IMapLayer) => {
             if (layer.shouldDraw)

@@ -1,5 +1,16 @@
 """WMS provder."""
 
+import gws
+import gws.base.metadata
+import gws.base.ows.provider
+import gws.lib.feature
+import gws.lib.gis
+import gws.lib.net
+import gws.lib.ows
+import gws.lib.xml2
+import gws.types as t
+from . import caps
+
 """
 OGC documents:
     - OGC 01-068r3: WMS 1.1.1
@@ -21,34 +32,18 @@ the order of GetMap is always bottomUp:
 OGC 06-042, 7.3.3.3 
 """
 
-import gws
-import gws.types as t
-import gws.base.ows.provider
-import gws.lib.ows
-import gws.lib.source
-import gws.lib.gisutil
-import gws.lib.net
-import gws.lib.xml2
-from . import caps
 
-
-class Config(gws.Config):
+class Config(gws.base.ows.provider.Config):
     capsCacheMaxAge: gws.Duration = '1d'  #: max cache age for capabilities documents
     capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
-    getCapabilitiesParams: t.Optional[dict]  #: additional parameters for GetCapabilities requests
-    getMapParams: t.Optional[dict]  #: additional parameters for GetMap requests
-    invertAxis: t.Optional[t.List[gws.Crs]]  #: projections that have an inverted axis (yx)
-    maxRequests: int = 0  #: max concurrent requests to this source
-    url: gws.Url  #: service url
+    getCapabilitiesParams: t.Optional[t.Dict]  #: additional parameters for GetCapabilities requests
+    getMapParams: t.Optional[t.Dict]  #: additional parameters for GetMap requests
 
 
 class Object(gws.base.ows.provider.Object):
-    def __init__(self):
-        super().__init__()
-        self.type = 'WMS'
+    service_type = 'WMS'
 
     def configure(self):
-        
 
         xml = gws.lib.ows.request.get_text(
             self.url,
@@ -57,9 +52,15 @@ class Object(gws.base.ows.provider.Object):
             params=self.var('getCapabilitiesParams'),
             max_age=self.var('capsCacheMaxAge'))
 
-        caps.parse(self, xml)
+        cc = caps.parse(xml)
 
-    def find_features(self, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+        self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
+        self.service_version = cc.version
+        self.operations = cc.operations
+        self.source_layers = cc.source_layers
+        self.supported_crs = cc.supported_crs
+
+    def find_features(self, args: gws.SearchArgs) -> t.List[gws.lib.feature.Feature]:
         operation = self.operation('GetFeatureInfo')
         if not operation or not args.shapes:
             return []
@@ -68,15 +69,15 @@ class Object(gws.base.ows.provider.Object):
         if shape.type != gws.GeometryType.point:
             return []
 
-        our_crs = gws.lib.gisutil.best_crs(shape.crs, self.supported_crs)
+        our_crs = gws.lib.gis.best_crs(shape.crs, self.supported_crs)
         shape = shape.transformed_to(our_crs)
-        axis = gws.lib.gisutil.best_axis(our_crs, self.invert_axis_crs, 'WMS', self.version)
+        axis = gws.lib.gis.best_axis(our_crs, self.invert_axis_crs, 'WMS', self.service_version)
 
         #  draw a 1000x1000 bbox around a point
         width = 1000
         height = 1000
 
-        bbox = gws.lib.gisutil.make_bbox(
+        bbox = gws.lib.gis.make_bbox(
             shape.x,
             shape.y,
             our_crs,
@@ -87,25 +88,25 @@ class Object(gws.base.ows.provider.Object):
 
         invert_axis = axis == 'yx'
         if invert_axis:
-            bbox = gws.lib.gisutil.invert_bbox(bbox)
+            bbox = gws.lib.gis.invert_bbox(bbox)
 
         p = {
             'BBOX': bbox,
             'WIDTH': width,
             'HEIGHT': height,
-            'CRS' if self.version >= '1.3' else 'SRS': our_crs,
+            'CRS' if self.service_version >= '1.3' else 'SRS': our_crs,
             'INFO_FORMAT': self._info_format,
             'LAYERS': args.source_layer_names,
             'QUERY_LAYERS': args.source_layer_names,
             'STYLES': [''] * len(args.source_layer_names),
-            'VERSION': self.version,
+            'VERSION': self.service_version,
         }
 
         if args.limit:
             p['FEATURE_COUNT'] = args.limit
 
-        p['I' if self.version >= '1.3' else 'X'] = width >> 1
-        p['J' if self.version >= '1.3' else 'Y'] = height >> 1
+        p['I' if self.service_version >= '1.3' else 'X'] = width >> 1
+        p['J' if self.service_version >= '1.3' else 'Y'] = height >> 1
 
         p = gws.merge(p, args.params)
 

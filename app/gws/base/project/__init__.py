@@ -1,15 +1,16 @@
 import gws
-import gws.base.api
+import gws.base.api.action
+import gws.base.api.action
 import gws.base.auth
 import gws.base.client
 import gws.base.map
+import gws.base.metadata
 import gws.base.print
 import gws.base.search
 import gws.base.template
 import gws.base.web
 import gws.lib.extent
 import gws.lib.intl
-import gws.lib.metadata
 import gws.lib.proj
 import gws.lib.units
 import gws.types as t
@@ -23,7 +24,7 @@ class Config(gws.WithAccess):
     client: t.Optional[gws.base.client.Config]  #: project-specific gws client configuration
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.base.map.Config]  #: Map configuration
-    meta: t.Optional[gws.lib.metadata.Config]  #: project metadata
+    metaData: t.Optional[gws.base.metadata.Config]  #: project metadata
     overviewMap: t.Optional[gws.base.map.Config]  #: Overview map configuration
     print: t.Optional[gws.base.print.Config]  #: print configuration
     search: t.Optional[gws.base.search.Config] = {}  # type: ignore #: project-wide search configuration
@@ -37,7 +38,7 @@ class Props(gws.Props):
     description: str
     locales: t.List[str]
     map: gws.base.map.Props
-    meta: gws.lib.metadata.Props
+    metaData: gws.base.metadata.Props
     overviewMap: gws.base.map.Props
     print: gws.base.print.Props
     title: str
@@ -50,19 +51,19 @@ class Object(gws.Node):
     client: t.Optional[gws.base.client.Object]
     locale_uids: t.List[str]
     map: gws.base.map.Object
-    meta: gws.lib.metadata.Object
+    metadata: gws.base.metadata.Object
     overview_map: gws.base.map.Object
     print: gws.base.print.Object
     templates: gws.base.template.Bundle
     title: str
 
     def configure(self):
-        p = self.var('meta')
-        self.meta = self.create_child(gws.lib.metadata.Object, p)
+        p = self.var('metaData')
+        self.metadata = self.create_child(gws.base.metadata.Object, p)
 
         # title at the top level config preferred
-        title = self.var('title') or self.meta.data.title or self.uid
-        self.meta.title = title
+        title = self.var('title') or self.metadata.get('title') or self.uid
+        self.metadata.set('title', title)
         self.title: str = title
 
         self.set_uid(self.title)
@@ -107,7 +108,7 @@ class Object(gws.Node):
 
     @property
     def description(self):
-        context = {'project': self, 'meta': self.meta.data}
+        context = {'project': self, 'meta': self.metadata.values}
         tpl = self.templates.find(subject='project.description')
         return tpl.render(context).content if tpl else ''
 
@@ -122,7 +123,7 @@ class Object(gws.Node):
             client=self.client or getattr(self.parent, 'client', None),
             description=self.description,
             map=self.map,
-            meta=self.meta,
+            metaData=self.metadata,
             overviewMap=self.overview_map,
             print=self.print,
             title=self.title,
@@ -137,7 +138,7 @@ class InfoResponse(gws.Response):
 
 
 @gws.ext.Object('action.project')
-class Action(gws.base.api.Action):
+class Action(gws.base.api.action.Object):
     """Project information action"""
 
     @gws.ext.command('api.project.info')

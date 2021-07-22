@@ -8,37 +8,38 @@ from . import core
 
 
 class Config(core.Config):
-    cache: core.CacheConfig = {}  # type: ignore #: cache configuration
-    grid: core.GridConfig = {}  # type: ignore #: grid configuration
+    cache: core.CacheConfig = {}  #: cache configuration
+    grid: core.GridConfig = {}  #: grid configuration
     imageFormat: core.ImageFormat = core.ImageFormat.png8  #: image format
 
 
 class Object(core.Object):
     """Base image layer"""
 
+    can_render_box = True
+    can_render_xyz = True
+    supports_wms = True
+
     @property
     def props(self):
         p = super().props
 
         if self.display == 'tile':
-            return gws.merge(p, {
-                'type': 'tile',
-                'url': gws.base.map.action.url_for_render_tile(self.uid),
-                'tileSize': self.grid.tileSize,
-            })
+            return gws.merge(
+                p,
+                type='tile',
+                url=gws.base.map.action.url_for_get_tile(self.uid),
+                tileSize=self.grid.tileSize,
+            )
 
         if self.display == 'box':
-            return gws.merge(p, {
-                'type': 'box',
-                'url': gws.base.map.action.url_for_render_box(self.uid),
-            })
+            return gws.merge(
+                p,
+                type='box',
+                url=gws.base.map.action.url_for_get_box(self.uid),
+            )
 
         return p
-
-    def configure(self):
-        self.can_render_box = True
-        self.can_render_xyz = True
-        self.supports_wms = True
 
     def render_box(self, rv, extra_params=None):
         uid = self.uid
@@ -91,7 +92,7 @@ class Object(core.Object):
     
         Basically, the source is wrapped in a no-store BACK cache, which is then given to the front mpx layer
         
-        2. then, configure the core. Create the FRONT cache, which is store or no-store, depending on the cache setting.
+        2. then, configure the base. Create the FRONT cache, which is store or no-store, depending on the cache setting.
         Also, configure the _NOCACHE variant for the layer, which skips the DST cache
     """
 
@@ -114,7 +115,7 @@ class Object(core.Object):
             'bbox': self.extent,
         }))
 
-        meta_size = self.grid.metaSize or 4
+        meta_size = self.grid.reqSize or 4
 
         front_cache_config = {
             'sources': [source_uid],
@@ -124,7 +125,7 @@ class Object(core.Object):
                 'directory_layout': 'mp'
             },
             'meta_size': [meta_size, meta_size],
-            'meta_buffer': self.grid.metaBuffer,
+            'meta_buffer': self.grid.reqBuffer,
             'disable_storage': not self.has_cache,
             'minimize_meta_requests': True,
             'format': self.image_format,

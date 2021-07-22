@@ -3,8 +3,8 @@ import gws.types as t
 import gws.base.layer
 import gws.lib.mpx
 import gws.lib.ows
-import gws.lib.source
-import gws.lib.gisutil
+import gws.lib.gis
+import gws.lib.gis
 import gws.lib.json2
 import gws.lib.net
 import gws.lib.units as units
@@ -32,7 +32,7 @@ class Object(gws.base.layer.ImageTile):
         self.meta = self.configure_metadata(self.provider.meta)
         self.title = self.meta.title
 
-        self.source_crs = gws.lib.gisutil.best_crs(self.map.crs, self.provider.supported_crs)
+        self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
         self.source_layer: types.SourceLayer = self._get_layer(self.var('sourceLayer'))
         self.matrix_set: types.TileMatrixSet = self._get_matrix_set()
 
@@ -40,10 +40,10 @@ class Object(gws.base.layer.ImageTile):
 
     @property
     def own_bounds(self):
-        return gws.lib.source.bounds_from_layers([self.source_layer], self.source_crs)
+        return gws.lib.gis.bounds_from_layers([self.source_layer], self.source_crs)
 
     def configure_legend(self):
-        return super().configure_legend() or gws.LayerLegend(
+        return super().configure_legend() or gws.Legend(
             enabled=bool(self.source_layer.legend),
             url=self.source_layer.legend)
 

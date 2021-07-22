@@ -2,12 +2,21 @@
 import uwsgi
 
 import gws
-import gws.types as t
 import gws.config.loader
 import gws.lib.job
 
+_inited: bool = False
 
-def main():
+
+def application(environ, start_response):
+    global _inited
+
+    if not _inited:
+        _init()
+        _inited = True
+
+
+def _init():
     try:
         gws.log.info('starting SPOOL application')
         root = gws.config.loader.load()
@@ -18,14 +27,6 @@ def main():
         gws.log.error('UNABLE TO LOAD CONFIGURATION')
         gws.log.exception()
         gws.exit(255)
-
-
-def application(environ, start_response):
-    pass
-
-
-if __name__ == '__main__':
-    main()
 
 
 ##

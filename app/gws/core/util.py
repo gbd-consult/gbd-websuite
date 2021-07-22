@@ -14,7 +14,7 @@ import sys
 import threading
 import time
 
-from . import const, log
+from . import const
 from .data import Data, is_data_object
 from gws.types import List, cast
 
@@ -45,8 +45,10 @@ def get(x, key, default=None):
         return default
     if isinstance(key, str):
         key = key.split('.')
-    val, ok = _get(x, key)
-    return val if ok else default
+    try:
+        return _get(x, key)
+    except (KeyError, IndexError, AttributeError, ValueError):
+        return default
 
 
 def has(x, key) -> bool:
@@ -64,8 +66,29 @@ def has(x, key) -> bool:
         return False
     if isinstance(key, str):
         key = key.split('.')
-    _, ok = _get(x, key)
-    return ok
+    try:
+        _get(x, key)
+        return True
+    except (KeyError, IndexError, AttributeError, ValueError):
+        return False
+
+
+def _get(x, keys):
+    for k in keys:
+        if isinstance(x, dict):
+            x = x[k]
+        elif _is_list(x):
+            x = x[int(k)]
+        elif is_data_object(x):
+            v = getattr(x, k)
+            if v is None:
+                # special case: raise a KeyError if the attribute is truly missing in a Data
+                # (and not just equals to None)
+                v = vars(x)[k]
+            x = v
+        else:
+            x = getattr(x, k)
+    return x
 
 
 def merge_lists(*args):
@@ -601,27 +624,6 @@ def import_from_path(module_path, module_name):
 
 
 ####################################################################################################
-
-
-def _get(x, keys):
-    try:
-        for k in keys:
-            if isinstance(x, dict):
-                x = x[k]
-            elif _is_list(x):
-                x = x[int(k)]
-            elif is_data_object(x):
-                v = getattr(x, k)
-                if v is None:
-                    # special case: raise a KeyError if the attribute is truly missing in a Data
-                    # (and not just equals to None)
-                    v = vars(x)[k]
-                x = v
-            else:
-                x = getattr(x, k)
-        return x, True
-    except (KeyError, IndexError, AttributeError, ValueError):
-        return None, False
 
 
 def _is_list(x):

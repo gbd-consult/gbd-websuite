@@ -12,7 +12,7 @@ In simpler words, static content is being served unless the request url starts w
 
 When a GET request lands in the web app, it's expected to provide parameters, either in the usual way (e.g. the query string), or encoded in the path, which is assumed to be like ``/parameter/value/parameter2/value2...``. For example, this url ::
 
-    /_/cmd/mapHttpGetBox/layerUid/test.one?bbox=11,22,33,44
+    /_/mapGetBox/layerUid/test.one?bbox=11,22,33,44
 
 results in this ::
 

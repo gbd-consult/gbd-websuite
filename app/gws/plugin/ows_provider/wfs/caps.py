@@ -1,31 +1,32 @@
-import gws.lib.source
+import gws.lib.gis
+import gws.lib.metadata
 import gws.base.ows.provider.parseutil as u
-import gws.lib.source
+import gws.lib.gis
 import gws.lib.xml2
 
 
 def parse(prov, xml):
     el = gws.lib.xml2.from_string(xml)
 
-    prov.meta = gws.MetaData(u.get_meta(
+    prov.metadata = gws.lib.metadata.Values(u.get_meta(
         u.one_of(el, 'Service', 'ServiceIdentification')))
 
-    prov.meta.contact = gws.MetaContact(u.get_meta_contact(
+    prov.metadata.contact = gws.lib.metadata.Contact(u.get_meta_contact(
         u.one_of(el, 'Service.ContactInformation', 'ServiceProvider.ServiceContact')))
 
-    if not prov.meta.url:
-        prov.meta.url = u.get_url(el.first('ServiceMetadataURL'))
+    if not prov.metadata.url:
+        prov.metadata.url = u.get_url(el.first('ServiceMetadataURL'))
 
     prov.operations = u.get_operations(
         u.one_of(el, 'OperationsMetadata', 'Capability'))
 
     prov.version = el.attr('version')
     prov.source_layers = u.flatten_source_layers(_feature_type(e) for e in el.all('FeatureTypeList.FeatureType'))
-    prov.supported_crs = gws.lib.source.crs_from_layers(prov.source_layers)
+    prov.supported_crs = gws.lib.gis.crs_from_layers(prov.source_layers)
 
 
 def _feature_type(el):
-    oo = gws.SourceLayer()
+    oo = gws.lib.gis.SourceLayer()
 
     n = el.get_text('Name')
     if ':' in n:
@@ -34,7 +35,7 @@ def _feature_type(el):
     else:
         oo.title = oo.name = n
 
-    oo.meta = gws.MetaData(u.get_meta(el))
+    oo.metadata = gws.lib.metadata.Values(u.get_meta(el))
     oo.supported_bounds = u.get_bounds_list(el)
 
     oo.is_queryable = True
