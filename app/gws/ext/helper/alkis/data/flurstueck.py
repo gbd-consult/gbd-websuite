@@ -304,6 +304,8 @@ def _create_main_index(conn: AlkisConnection):
             data.append(_fs_data(conn, fs, cache))
             pi.update(1)
 
+    data = [d for d in data if d.get('gemarkung')]
+
     gws.log.info('flurstueck: writing')
 
     conn.create_index_table(main_index, f'''

@@ -352,6 +352,8 @@ def _create_addr_index(conn: AlkisConnection):
                 d['fs_id'] = fs_id
                 la_buf.append(d)
 
+    la_buf = [d for d in la_buf if d.get('gemarkung')]
+
     gws.log.info(f'adresse: writing ({len(la_buf)})')
 
     conn.create_index_table(addr_index, f'''
