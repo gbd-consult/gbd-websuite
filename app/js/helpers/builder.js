@@ -6,6 +6,7 @@ let child_process = require('child_process');
 let fs = require('fs');
 let ini = require('ini');
 let path = require('path');
+let terser = require('terser');
 
 let jadzia = require('./jadzia');
 
@@ -56,14 +57,6 @@ const STRINGS_RECORD_DELIM = ';;'
 module.exports.Builder = class {
 
     constructor() {
-        this.commands = {
-            'dev-server': () => this.commandDevServer(),
-            'dev': () => this.commandDev(),
-            'production': () => this.commandProduction(),
-            'clean': () => this.commandClean(),
-            'help': () => this.commandHelp(),
-        }
-
         this.options = require(path.join(JS_DIR, 'options.js'));
         this.meta = require(path.join(SPEC_DIR, 'meta.spec.json')); // see spec/generator/main
 
@@ -78,55 +71,52 @@ module.exports.Builder = class {
     }
 
     run(args) {
-        let cmd = args.command;
-        if (!this.commands[cmd])
-            cmd = 'help';
+        switch (args.command) {
+            case 'dev-server':
+                if (!args.incremental)
+                    clearBuild(this);
+                initBuild(this);
+                startBrowserSync(this);
+                break;
 
-        this.args = args;
-        this.commands[cmd]();
+            case 'dev':
+                this.options.minify = false;
+                if (!args.incremental)
+                    clearBuild(this);
+                this.bundle();
+                break;
+
+            case 'production':
+                this.options.minify = true;
+                clearBuild(this);
+                this.bundle();
+                break;
+
+            case 'clear':
+                clearBuild(this);
+                break;
+
+            default:
+                console.log(DOC);
+                break;
+        }
     }
 
-    commandDevServer() {
-        if (!this.args.incremental)
-            clearBuild(this);
-        initBuild(this);
-        startBrowserSync(this);
-    }
+    async bundle(opts) {
+        initBuild(this, opts);
 
-    commandDev() {
-        if (!this.args.incremental)
-            clearBuild(this);
-        initBuild(this);
-
-        if (!writeVendors(this))
+        if (!await runTypescript(this))
             this.fail();
 
-        if (!runTypescript(this))
+        if (!await writeVendors(this))
             this.fail();
 
-        let bundles = createBundles(this);
+        let bundles = await createBundles(this);
         if (!bundles)
             this.fail();
 
-        if (!writeBundles(this, bundles))
+        if (!await writeBundles(this, bundles))
             this.fail();
-
-        if (!writeVendors(this))
-            this.fail();
-
-    }
-
-    commandProduction() {
-        // @TODO
-        this.commandDev()
-    }
-
-    commandClean() {
-        clearBuild(this);
-    }
-
-    commandHelp() {
-        console.log(DOC);
     }
 
     fail() {
@@ -138,10 +128,11 @@ module.exports.Builder = class {
 
 function clearBuild(bb) {
     fs.rmSync(BUILD_ROOT, {recursive: true, force: true});
-    fs.mkdirSync(BUILD_ROOT, {recursive: true});
 }
 
 function initBuild(bb) {
+
+    fs.mkdirSync(BUILD_ROOT, {recursive: true});
 
     bb.chunks = [];
     bb.sources = [];
@@ -251,10 +242,10 @@ function startBrowserSync(bb) {
         return formatTemplate(DEV_INDEX_HTML_TEMPLATE, tplVars);
     }
 
-    function makeJS() {
-        let js = jsModules(bb);
-        let strings = stringsModules(bb);
-        let stubs = vendorStubs(bb);
+    async function makeJS() {
+        let js = await jsModules(bb);
+        let strings = await stringsModules(bb);
+        let stubs = await vendorStubs(bb);
 
         if (!js || !strings)
             return;
@@ -288,7 +279,7 @@ function startBrowserSync(bb) {
         content.sourceMap = JSON.stringify(combinedSourceMap);
     }
 
-    function makeCSS() {
+    async function makeCSS() {
         // @TODO: support themes
         let css = cssModules(bb);
         if (!css)
@@ -305,7 +296,7 @@ function startBrowserSync(bb) {
         }
     }
 
-    function update() {
+    async function update() {
         let runTs = false;
 
         while (reloadQueue.length) {
@@ -322,14 +313,14 @@ function startBrowserSync(bb) {
 
         initBuild(bb);
 
-        if (runTs && !runTypescript(bb))
+        if (runTs && !await runTypescript(bb))
             return false;
 
         if (!content.js)
-            makeJS();
+            await makeJS();
 
         if (!content.css)
-            makeCSS();
+            await makeCSS();
 
         return !!content.js && !!content.css;
     }
@@ -338,9 +329,11 @@ function startBrowserSync(bb) {
         if (reloading)
             return debounceReload();
         reloading = true;
-        if (update())
-            bs.reload();
-        reloading = false;
+        update().then(ok => {
+            if (ok)
+                bs.reload()
+            reloading = false;
+        });
     }
 
     function debounceReload() {
@@ -412,7 +405,7 @@ function startBrowserSync(bb) {
                 route: "/DEV-VENDOR",
                 handle(req, res, next) {
                     // req.url is like `/React.js`
-                    let name = url.split('/')[1].split('.')[0];
+                    let name = req.url.split('/')[1].split('.')[0];
                     send(res, vendorJS(name), 'application/javascript');
                 }
             },
@@ -448,7 +441,7 @@ const JS_BUNDLE_FUNCTION_MIN = JS_BUNDLE_FUNCTION.trim().replace(/\n/g, '').repl
 
 const JS_BUNDLE_TEMPLATE = `(${JS_BUNDLE_FUNCTION_MIN})([__MODULES__],"__STRINGS__")`
 
-function jsModules(bb) {
+async function jsModules(bb) {
 
     function moduleName(compiledPath) {
         let dir = path.dirname(compiledPath)
@@ -464,7 +457,7 @@ function jsModules(bb) {
         }
     }
 
-    function make() {
+    async function make() {
 
         let sources = {};
         let sourceMaps = {};
@@ -506,24 +499,29 @@ function jsModules(bb) {
         }
 
         // now, for each module in dependency order,
-        // create a module record, which source text is an array of
-        // moduleName and a wrapper: (require, exports) => { moduleSourceCode }
+        // create a module record, which source text is an array:
+        // [ moduleName, (require, exports) => { moduleSourceCode } ]
 
         let modules = [];
         let missing = [];
 
         for (let modName of topSort(deps)) {
-            let text = sources[modName];
-            if (text) {
-                modules.push({
-                    chunk: modName.split('/')[0],
-                    name: modName,
-                    sourceMap: sourceMaps[modName],
-                    text: `['${modName}',(require,exports)=>{${sources[modName]}\n}]`,
-                });
-            } else {
+            let src = sources[modName];
+
+            if (!src) {
                 missing.push(modName);
+                continue;
             }
+
+            if (bb.options.minify)
+                src = (await terser.minify(src, bb.options.terserOptions)).code;
+
+            modules.push({
+                chunk: modName.split('/')[0],
+                name: modName,
+                sourceMap: sourceMaps[modName],
+                text: `['${modName}',(require,exports)=>{${src}\n}]`,
+            });
         }
 
         // check for missing modules
@@ -537,7 +535,7 @@ function jsModules(bb) {
     }
 
     try {
-        let m = make();
+        let m = await make();
         logInfo(`Javascript: ${m.modules.length} modules ok`);
         return m;
     } catch (e) {
@@ -731,16 +729,16 @@ function cssModules(bb) {
 
 // common bundler
 
-function createBundles(bb) {
+async function createBundles(bb) {
 
-    function make() {
+    async function make() {
         let bundles = {};
 
-        let js = jsModules(bb),
-            strings = stringsModules(bb),
-            css = cssModules(bb);
+        let js = await jsModules(bb),
+            strings = await stringsModules(bb),
+            css = await cssModules(bb);
 
-        let stubs = vendorStubs(bb);
+        let stubs = await vendorStubs(bb);
 
         if (!js || !strings || !css)
             return;
@@ -792,6 +790,30 @@ function createBundles(bb) {
         logError(`Bundler error:`);
         logException(e);
     }
+}
+
+async function compressBundles(bb, bundles) {
+    for (let dir of Object.keys(bundles)) {
+        console.log(dir, '--------------------------------------------------------')
+        console.log(bundles[dir][BUNDLE_KEY_MODULES])
+        console.log('--------------------------------------------------------')
+    }
+
+    let mods = []
+
+    for (let dir of Object.keys(bundles)) {
+        mods.push(bundles[dir][BUNDLE_KEY_MODULES])
+        break
+    }
+
+    mods = await Promise.all(mods.map(mod => terser.minify(mod)))
+
+    for (let dir of Object.keys(bundles)) {
+        bundles[dir][BUNDLE_KEY_MODULES] = mods.shift()
+    }
+
+    console.log(JSON.stringify(bundles, 0, 4))
+
 }
 
 function writeBundles(bb, bundles) {

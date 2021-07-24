@@ -17,7 +17,7 @@ class MethodConfig(gws.Config):
     secure: bool = True  #: use only with SSL
 
 
-class Method(gws.Node):
+class Method(gws.Object):
     secure: bool
 
     def configure(self):
@@ -45,7 +45,7 @@ class ProviderConfig(gws.Config):
     allowedMethods: t.Optional[t.List[str]]  #: allowed authorization methods
 
 
-class Provider(gws.Node):
+class Provider(gws.Object):
     allowed_methods: t.List[str]
 
     def configure(self):
@@ -284,7 +284,7 @@ class Config(gws.Config):
     sessionStorage: str = 'sqlite'  #: session storage engine
 
 
-class Manager(gws.Node, gws.IAuthManager):
+class Manager(gws.Object, gws.IAuthManager):
     """Authorization manager."""
 
     session_life_time: int

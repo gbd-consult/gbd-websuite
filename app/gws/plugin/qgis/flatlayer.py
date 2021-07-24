@@ -77,9 +77,6 @@ class Object(gws.base.layer.image.Object):
             extra_params['DPI__gws'] = str(rv.dpi)
         return super().render_box(rv, extra_params)
 
-    def configure_legend(self):
-        return super().configure_legend() or gws.Legend(enabled=True)
-
     def render_legend_image(self, context=None):
         return self.provider.get_legend(self.source_layers, self.legend.options)
 

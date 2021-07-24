@@ -20,7 +20,7 @@ class Config(gws.Config):
 
 class Entry(gws.Data):
     uid: str
-    layers: t.List[gws.INode]
+    layers: t.List[gws.IObject]
     mpx_cache: t.Dict
     mpx_grids: t.List[t.Dict]
     config: t.Dict

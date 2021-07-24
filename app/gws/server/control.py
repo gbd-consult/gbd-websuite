@@ -2,12 +2,13 @@ import shlex
 import time
 
 import gws
+import gws.spec.runtime
 import gws.config
 import gws.lib.date
 import gws.lib.json2
 import gws.lib.os2
 import gws.types as t
-from . import ini
+from . import ini, types
 
 _START_SCRIPT = gws.VAR_DIR + '/server.sh'
 
@@ -15,7 +16,7 @@ _START_SCRIPT = gws.VAR_DIR + '/server.sh'
 def start(manifest_path=None, config_path=None):
     stop()
 
-    root = _configure(manifest_path, config_path, is_starting=True, with_fallback=True, with_spec_cache=True)
+    root = _configure(manifest_path, config_path, is_starting=True, with_spec_cache=True)
     gws.config.store(root)
     gws.config.activate(root)
 
@@ -38,7 +39,7 @@ def stop():
 
 
 def configure(manifest_path=None, config_path=None):
-    root = _configure(manifest_path, config_path, is_starting=False, with_fallback=False, with_spec_cache=True)
+    root = _configure(manifest_path, config_path, is_starting=False, with_spec_cache=True)
     gws.config.store(root)
 
 
@@ -48,7 +49,7 @@ def reconfigure(manifest_path=None, config_path=None):
         start(manifest_path, config_path)
         return
 
-    root = _configure(manifest_path, config_path, is_starting=False, with_fallback=False, with_spec_cache=True)
+    root = _configure(manifest_path, config_path, is_starting=False, with_spec_cache=True)
     gws.config.store(root)
     reload()
 
@@ -77,13 +78,23 @@ def _uwsgi_is_running():
     return bool(gws.lib.os2.pids_of('uwsgi'))
 
 
-def _configure(manifest_path: str, config_path: str, is_starting: bool, with_fallback: bool, with_spec_cache: bool) -> gws.RootObject:
-    try:
-        cfg = gws.config.parse(manifest_path, config_path, with_spec_cache)
-    except Exception as exc:
-        return _handle_config_error(exc, with_fallback)
+_FALLBACK_CONFIG = {
+    'server': {
+        'mapproxy': {'enabled': False},
+        'monitor': {'enabled': False},
+        'log': {'level': 'INFO'},
+        'qgis': {'enabled': False},
+        'spool': {'enabled': False},
+        'web': {'enabled': True, 'workers': 1},
+        'autoRun': '',
+        'timeout': 60,
+        'timeZone': 'UTC',
+    }
+}
 
-    if is_starting:
+
+def _configure(manifest_path, config_path, is_starting=False, with_spec_cache=True):
+    def _before_init(cfg):
         autorun = gws.get(cfg, 'server.autoRun')
         if autorun:
             gws.log.info(f'AUTORUN: {autorun!r}')
@@ -94,41 +105,13 @@ def _configure(manifest_path: str, config_path: str, is_starting: bool, with_fal
         if timezone:
             gws.lib.date.set_system_time_zone(timezone)
 
-    try:
-        root = gws.config.initialize(cfg)
-        gws.log.info('CONFIGURATION OK')
-        return root
-    except Exception as exc:
-        return _handle_config_error(exc, with_fallback)
-
-
-def _handle_config_error(exc, with_fallback):
-    _report_config_error(exc)
-    if with_fallback:
-        gws.log.warn(f'configuration error: using fallback config')
-        cfg = gws.config.fallback_config()
-        return gws.config.initialize(cfg)
-    else:
-        raise ValueError('configuration failed') from exc
-
-
-def _report_config_error(exc):
-    def prn(a):
-        if isinstance(a, (list, tuple)):
-            for item in a:
-                prn(item)
-        elif a is not None:
-            for s in gws.lines(str(a)):
-                gws.log.error(s)
-
-    if isinstance(exc, gws.config.ParseError):
-        prn('CONFIGURATION PARSE ERROR:')
-    elif isinstance(exc, gws.config.ConfigurationError):
-        prn('CONFIGURATION ERROR:')
-    elif isinstance(exc, gws.config.LoadError):
-        prn('CONFIGURATION LOAD ERROR:')
-
-    prn(exc.args)
+    return gws.config.loader.configure_server(
+        manifest_path=manifest_path,
+        config_path=config_path,
+        before_init=_before_init if is_starting else None,
+        fallback_config= _FALLBACK_CONFIG,
+        with_spec_cache=with_spec_cache
+    )
 
 
 _STOP_RETRY = 20
@@ -175,7 +158,7 @@ class ReloadParams(StartParams):
 
 
 @gws.ext.Object('cli.server')
-class Cli(gws.Object):
+class Cli:
 
     @gws.ext.command('cli.server.start')
     def start(self, p: StartParams):
@@ -212,4 +195,4 @@ class Cli(gws.Object):
     @gws.ext.command('cli.server.configtest')
     def configtest(self, p: StartParams):
         """Test the configuration"""
-        _configure(p.manifest or '', p.config or '', is_starting=False, with_fallback=False, with_spec_cache=False)
+        _configure(p.manifest or '', p.config or '', is_starting=False, with_spec_cache=False)

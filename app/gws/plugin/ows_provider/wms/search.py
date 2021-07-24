@@ -1,6 +1,6 @@
 import gws
-import gws.base.search.provider
-import gws.base.ows.provider
+import gws.base.ows
+import gws.base.search
 import gws.lib.gis
 import gws.lib.ows
 import gws.types as t
@@ -32,14 +32,14 @@ class Object(gws.base.search.provider.Object):
                 self.var('sourceLayers'),
                 queryable_only=True)
 
-        if gws.is_empty(self.source_layers):
+        if not self.source_layers:
             raise gws.Error(f'no source layers in {self.uid!r}')
 
     def can_run(self, args):
         return (
                 super().can_run(args)
-                and self.provider.operation('GetFeatureInfo')
-                and args.shapes
+                and bool(self.provider.operation('GetFeatureInfo'))
+                and bool(args.shapes)
                 and len(args.shapes) == 1
                 and args.shapes[0].type == gws.GeometryType.point)
 

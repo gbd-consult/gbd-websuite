@@ -3,7 +3,7 @@
 import gws
 import gws.types as t
 
-import gws.base.api.action
+import gws.base.api
 import gws.base.web.error
 
 from . import core, wsgi

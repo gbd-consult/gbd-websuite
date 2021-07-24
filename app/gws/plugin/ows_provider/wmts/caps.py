@@ -1,50 +1,86 @@
 import gws
 import gws.types as t
-import gws.base.ows.provider.parseutil as u
+import gws.lib.ows.parseutil as u
 import gws.lib.net
+import gws.lib.gis
 import gws.lib.units as units
 import gws.lib.xml2
 import gws.lib.metadata
-from . import types
 
 
 # http://portal.opengeospatial.org/files/?artifact_id=35326
 
 
-def parse(prov, xml):
+class TileMatrix(gws.Data):
+    uid: str
+    scale: float
+    x: float
+    y: float
+    width: float
+    height: float
+    tile_width: float
+    tile_height: float
+    extent: gws.Extent
+
+
+class TileMatrixSet(gws.Data):
+    uid: str
+    crs: gws.Crs
+    matrices: t.List[TileMatrix]
+
+
+class SourceLayer(gws.lib.gis.SourceLayer):
+    matrix_sets: t.List[TileMatrixSet]
+    matrix_ids: t.List[str]
+    format: str
+
+
+class WMTSCaps(gws.Data):
+    matrix_sets: t.List[TileMatrixSet]
+    metadata: gws.lib.metadata.Record
+    operations: t.List[gws.OwsOperation]
+    source_layers: t.List[SourceLayer]
+    supported_crs: t.List[gws.Crs]
+    version: str
+
+
+def parse(xml):
     el = gws.lib.xml2.from_string(xml)
 
-    prov.metadata = gws.lib.metadata.Values(u.get_meta(el.first('ServiceIdentification')))
-    prov.metadata.contact = gws.lib.metadata.Contact(u.get_meta_contact(el.first('ServiceProvider.ServiceContact')))
+    meta = u.get_meta(el.first('ServiceIdentification'))
+    meta['contact'] = u.get_meta_contact(el.first('ServiceProvider.ServiceContact'))
+    meta['url'] = u.get_url(el.first('ServiceMetadataURL'))
 
-    if not prov.meta.url:
-        prov.meta.url = u.get_url(el.first('ServiceMetadataURL'))
+    source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Contents.Layer'))
+    matrix_sets = [_tile_matrix_set(e) for e in el.all('Contents.TileMatrixSet')]
 
-    prov.operations = u.get_operations(el.first('OperationsMetadata'))
-    prov.version = el.attr('version')
+    tms_map = {ms.uid: ms for ms in matrix_sets}
 
-    prov.source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Contents.Layer'))
-    prov.matrix_sets = [_tile_matrix_set(e) for e in el.all('Contents.TileMatrixSet')]
-    prov.supported_crs = sorted(set(ms.crs for ms in prov.matrix_sets))
-
-    tms_map = {ms.uid: ms for ms in prov.matrix_sets}
-
-    for sl in prov.source_layers:
+    for sl in source_layers:
         sl.matrix_sets = [tms_map[tid] for tid in sl.matrix_ids]
         sl.supported_crs = sorted(ms.crs for ms in sl.matrix_sets)
 
+    return WMTSCaps(
+        matrix_sets=matrix_sets,
+        metadata=gws.lib.metadata.Record(meta),
+        operations=[gws.OwsOperation(e) for e in u.get_operations(el.first('OperationsMetadata'))],
+        source_layers=source_layers,
+        supported_crs=sorted(set(ms.crs for ms in matrix_sets)),
+        version=el.attr('version'),
+    )
+
 
 def _layer(el):
-    oo = types.SourceLayer()
+    oo = SourceLayer()
 
-    oo.meta = gws.lib.metadata.Values(u.get_meta(el))
-    oo.name = oo.meta.name
-    oo.title = oo.meta.title
+    oo.metadata = gws.lib.metadata.Record(u.get_meta(el))
+    oo.name = oo.metadata.name
+    oo.title = oo.metadata.title
 
     oo.styles = [u.get_style(e) for e in el.all('Style')]
     ds = u.default_style(oo.styles)
     if ds:
-        oo.legend = ds.legend
+        oo.legend_url = ds.legend_url
 
     oo.supported_bounds = u.get_bounds_list(el)
 
@@ -63,7 +99,7 @@ def _layer(el):
 
 
 def _tile_matrix_set(el):
-    oo = types.TileMatrixSet()
+    oo = TileMatrixSet()
 
     oo.uid = el.get_text('Identifier')
     oo.crs = el.get_text('SupportedCRS')
@@ -75,7 +111,7 @@ def _tile_matrix_set(el):
 
 
 def _tile_matrix(el):
-    oo = types.TileMatrix()
+    oo = TileMatrix()
     oo.uid = el.get_text('Identifier')
     oo.scale = float(el.get_text('ScaleDenominator'))
 
@@ -97,7 +133,7 @@ def _tile_matrix(el):
 # compute a bbox for a TileMatrix
 # see http://portal.opengeospatial.org/files/?artifact_id=35326 page 8
 
-def _extent_for_matrix(m: types.TileMatrix):
+def _extent_for_matrix(m: TileMatrix):
     res = units.scale2res(m.scale)
 
     return [

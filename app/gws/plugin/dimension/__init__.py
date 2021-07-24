@@ -2,7 +2,7 @@
 
 import gws
 import gws.types as t
-import gws.base.api.action
+import gws.base.api
 
 
 @gws.ext.Props('action.dimension')

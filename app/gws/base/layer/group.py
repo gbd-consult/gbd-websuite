@@ -1,10 +1,10 @@
 """Generic group layer."""
 
 import gws
-import gws.types as t
+import gws.lib.gis
 import gws.lib.legend
-
-from . import core
+import gws.types as t
+from . import core, types
 
 
 class BaseGroup(core.Object):
@@ -16,25 +16,26 @@ class BaseGroup(core.Object):
             super().props,
             type='group',
             layers=self.layers,
-            resolutions=self.resolutions,
         )
 
-    def configure_layers_from(self, configs: t.List[gws.Config]):
-        self.layers = [self.create_child('gws.ext.layer', c) for c in configs]
+    def configure_layers(self, configs: t.List[gws.Config]):
+        self.layers = [t.cast(gws.ILayer, self.create_child('gws.ext.layer', c)) for c in configs]
 
-        if not self.has_configured.legend:
+        if not self.has_configured_legend:
             self.legend = gws.Legend(enabled=any(la.has_legend for la in self.layers))
-            self.has_configured.legend = True
+            self.has_configured_legend = True
 
-        if not self.has_configured.resolutions:
+        if not self.has_configured_resolutions:
             resolutions = set()
             for la in self.layers:
                 resolutions.update(la.resolutions)
             self.resolutions = sorted(resolutions)
-            self.has_configured.resolutions = True
+            self.has_configured_resolutions = True
 
         self.supports_wms = any(la.supports_wms for la in self.layers)
         self.supports_wfs = any(la.supports_wfs for la in self.layers)
+
+        self.has_configured_layers = True
 
     def render_legend(self, context=None):
         sup = super().render_legend(context)
@@ -43,8 +44,81 @@ class BaseGroup(core.Object):
         return gws.lib.legend.combine_outputs([la.get_legend(context) for la in self.layers], self.legend.options)
 
 
+def layer_tree_configuration(
+        source_layers: t.List[gws.lib.gis.SourceLayer],
+        roots_slf: gws.lib.gis.LayerFilter,
+        exclude_slf: gws.lib.gis.LayerFilter,
+        flatten: types.FlattenConfig,
+        custom_configs: t.List[types.CustomConfig],
+        create_leaf_layer: t.Callable[[t.List[gws.lib.gis.SourceLayer]], dict]
+):
+    def _make_config(sl, depth):
+        cfg = _base_config(sl, depth)
+        if not cfg:
+            return
+
+        cfg = gws.merge(cfg, {
+            'uid': gws.as_uid(sl.name),
+            'title': sl.title,
+            'clientOptions': {
+                'visible': sl.is_visible,
+                'expanded': sl.is_expanded,
+            },
+            'opacity': sl.opacity or 1,
+        })
+
+        if sl.scale_range:
+            cfg['zoom'] = {
+                'minScale': sl.scale_range[0],
+                'maxScale': sl.scale_range[1],
+            }
+
+        if custom_configs:
+            custom = [cc for cc in custom_configs if gws.lib.gis.layer_matches(sl, cc.applyTo)]
+            if custom:
+                cfg = gws.deep_merge(cfg, *custom)
+                cfg.pop('applyTo', None)
+
+        return gws.compact(cfg)
+
+    def _base_config(sl, depth):
+        if exclude_slf and gws.lib.gis.layer_matches(sl, exclude_slf):
+            return None
+
+        if not sl.is_group:
+            # leaf layer
+            return create_leaf_layer([sl])
+
+        if flatten and sl.a_level >= flatten.level:
+            # flattened group layer
+            # NB use the absolute level to compute flatness, could also use relative (=depth)
+            if flatten.useGroups:
+                return create_leaf_layer([sl])
+            image_layers = [sub for sub in gws.lib.gis.flat_layer_list(sl) if sub.is_image]
+            if image_layers:
+                return create_leaf_layer(image_layers)
+            return None
+
+        # ordinary group layer
+        configs = gws.compact(_make_config(sub, depth + 1) for sub in sl.layers)
+        if configs:
+            return {
+                'type': 'group',
+                'uid': gws.as_uid(sl.name),
+                'layers': configs
+            }
+
+    # by default, take top-level layers as roots
+
+    roots = gws.lib.gis.filter_layers(
+        source_layers,
+        roots_slf or gws.lib.gis.LayerFilter(level=1))
+
+    return gws.compact(_make_config(sl, 0) for sl in roots)
+
+
 @gws.ext.Config('layer.group')
-class Config(core.Config):
+class Config(types.Config):
     """Group layer"""
 
     layers: t.List[gws.ext.layer.Config]  #: layers in this group
@@ -54,5 +128,4 @@ class Config(core.Config):
 class Object(BaseGroup):
 
     def configure(self):
-        self.configure_layers_from(self.var('layers'))
-
+        self.configure_layers(self.var('layers'))

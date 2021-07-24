@@ -87,7 +87,7 @@ def get_style(el):
 
     oo.metadata = gws.lib.metadata.from_dict(get_meta(el))
     oo.name = oo.metadata.name.lower()
-    oo.legend = get_url(el.first('LegendURL'))
+    oo.legend_url = get_url(el.first('LegendURL'))
     oo.is_default = (
             el.get_text('Identifier').lower() == 'default'
             or el.attr('IsDefault') == 'true'

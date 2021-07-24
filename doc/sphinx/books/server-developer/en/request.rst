@@ -86,7 +86,7 @@ Here's a code snippet that illustrates the above concepts ::
     class HelloResponse(gws.Response):
         message: str
 
-    # define the action object. It extends the generic action Object which is an IObject
+    # define the action object. It extends the generic action Object which is an IBaseObject
 
     class Object(gws.base.api.Action):
 

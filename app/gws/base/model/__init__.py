@@ -106,7 +106,7 @@ class Props(gws.Props):
     rules: t.List[RuleProps]
 
 
-class Object(gws.Node, gws.IDataModel):
+class Object(gws.Object, gws.IDataModel):
     def configure(self):
 
         p = self.var('rules', default=[])

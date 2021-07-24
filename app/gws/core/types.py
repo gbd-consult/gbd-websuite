@@ -1,6 +1,8 @@
+import gws
 from gws.types import Any, Dict, Enum, List, Literal, Optional, Protocol, Tuple, Union
 from .data import Data
 
+# ----------------------------------------------------------------------------------------------------------------------
 # custom types, used everywhere
 
 
@@ -53,12 +55,27 @@ DateTime = str
 Url = str
 
 
-##
-
-
 class Bounds(Data):
     crs: Crs
     extent: Extent
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# application manifest
+
+
+class ManifestPlugin(Data):
+    path: FilePath
+    name: str = ''
+
+
+class Manifest(Data):
+    addPlugins: Optional[List[ManifestPlugin]]
+    excludePlugins: Optional[List[str]]
+    plugins: Optional[List[ManifestPlugin]]
+
+    withFallbackConfig: bool = False
+    withStrictConfig: bool = False
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -90,13 +107,12 @@ class Props(Data):
 
 
 # noinspection PyPropertyDefinition
-class IObject(Protocol):
+class IBaseObject(Protocol):
     access: Optional['Access']
     class_name: str
     ext_type: str
     title: str
     uid: str
-    configured: bool
 
     @property
     def props(self) -> 'Props': ...
@@ -107,9 +123,9 @@ class IObject(Protocol):
 
 
 # noinspection PyPropertyDefinition
-class INode(IObject, Protocol):
+class IObject(IBaseObject, Protocol):
     root: 'IRootObject'
-    parent: 'INode'
+    parent: 'IObject'
 
     def var(self, key: str, default=None, with_parent=False): ...
 
@@ -134,9 +150,11 @@ class ExtCommandDescriptor(Data):
 
 
 class ISpecRuntime(Protocol):
+    manifest: Manifest
+
     def check_command(self, cmd: str, method: str, params, strict=True) -> Optional[ExtCommandDescriptor]: ...
 
-    def read_value(self, value, type_name: str, path='', strict=True) -> Any: ...
+    def read_value(self, value, type_name: str, path='', strict=True, with_error_details=True) -> Any: ...
 
     def ext_object_descriptor(self, class_name: str) -> Optional[ExtObjectDescriptor]: ...
 
@@ -147,13 +165,13 @@ class ISpecRuntime(Protocol):
     def cli_docs(self, lang) -> Dict: ...
 
 
-class IRootObject(IObject, Protocol):
+class IRootObject(IBaseObject, Protocol):
     application: 'IApplication'
     specs: 'ISpecRuntime'
 
-    def find_all(self, klass: Klass = None, uid: str = None, ext_type: str = None) -> List['INode']: ...
+    def find_all(self, klass: Klass = None, uid: str = None, ext_type: str = None) -> List['IObject']: ...
 
-    def find(self, klass: Klass = None, uid: str = None, ext_type: str = None) -> Optional['INode']: ...
+    def find(self, klass: Klass = None, uid: str = None, ext_type: str = None) -> Optional['IObject']: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -240,14 +258,14 @@ class IWebResponse(Protocol):
 # web sites
 
 
-class IDocumentRoot(INode, Protocol):
+class DocumentRoot(Data):
     dir: DirPath
     allow_mime: Optional[List[str]]
     deny_mime: Optional[List[str]]
 
 
-class IWebSite(INode, Protocol):
-    assets_root: Optional['IDocumentRoot']
+class IWebSite(IObject, Protocol):
+    assets_root: Optional['DocumentRoot']
 
     def url_for(self, req: 'IWebRequest', url: Url) -> Url: ...
 
@@ -256,7 +274,7 @@ class IWebSite(INode, Protocol):
 # authorization
 
 # noinspection PyPropertyDefinition
-class IAuthManager(INode, Protocol):
+class IAuthManager(IObject, Protocol):
     guest_user: 'IUser'
 
     def get_user(self, user_fid: str) -> Optional['IUser']: ...
@@ -289,7 +307,7 @@ class IUser(Protocol):
     @property
     def fid(self) -> str: ...
 
-    def can_use(self, obj: IObject, parent: IObject = None) -> bool: ...
+    def can_use(self, obj: IBaseObject, parent: IObject = None) -> bool: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -335,7 +353,7 @@ class Attribute(Data):
     editable: bool = True
 
 
-class IDataModel(INode, Protocol):
+class IDataModel(IObject, Protocol):
     def apply(self, attributes: List['Attribute']) -> List['Attribute']: ...
 
     def apply_to_dict(self, attr_values: dict) -> List['Attribute']: ...
@@ -344,17 +362,19 @@ class IDataModel(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # shapes and features
 
-
 # noinspection PyPropertyDefinition
-class IShape(IObject, Protocol):
+class IShape(Protocol):
     crs: str
     srid: int
+
+    @property
+    def props(self) -> 'Props': ...
 
     @property
     def area(self) -> float: ...
 
     @property
-    def bounds(self) -> 'Bounds': ...
+    def bounds(self) -> Bounds: ...
 
     @property
     def centroid(self) -> 'IShape': ...
@@ -400,15 +420,20 @@ class IShape(IObject, Protocol):
     def transformed_to(self, to_crs, **kwargs) -> 'IShape': ...
 
 
-class IFeature(IObject, Protocol):
+# noinspection PyPropertyDefinition
+class IFeature(Protocol):
+    attributes: List['Attribute']
+    category: str
     data_model: Optional['IDataModel']
+    elements: dict
     layer: Optional['ILayer']
     shape: Optional['IShape']
     style: Optional['IStyle']
     templates: Optional['ITemplateBundle']
+    uid: str
 
-    attributes: List['Attribute']
-    category: str
+    @property
+    def props(self) -> 'Props': ...
 
     def apply_data_model(self, model: 'IDataModel' = None) -> 'IFeature': ...
 
@@ -423,6 +448,8 @@ class IFeature(IObject, Protocol):
     def to_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: ...
 
     def transform_to(self, crs: Crs) -> 'IFeature': ...
+
+    def connect_to(self, layer: 'ILayer') -> 'IFeature': ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -460,7 +487,7 @@ class SqlTableColumn(Data):
     is_geometry: bool
 
 
-class IDbProvider(INode, Protocol):
+class IDbProvider(IObject, Protocol):
     pass
 
 
@@ -512,8 +539,8 @@ class MapRenderInputItem(Data):
 
 
 class MapRenderView(Data):
-    bounds: 'Bounds'
-    center: 'Point'
+    bounds: Bounds
+    center: Point
     dpi: int
     rotation: int
     scale: int
@@ -560,13 +587,13 @@ class TemplateOutput(Data):
     path: str
 
 
-class ITemplateBundle(INode, Protocol):
+class ITemplateBundle(IObject, Protocol):
     def all(self) -> List['ITemplate']: ...
 
     def find(self, subject: str = None, category: str = None, mime: str = None) -> Optional['ITemplate']: ...
 
 
-class ITemplate(INode, Protocol):
+class ITemplate(IObject, Protocol):
     category: str
     key: str
     mime_types: List[str]
@@ -583,19 +610,20 @@ class ITemplate(INode, Protocol):
 # styles
 
 
-class StyleData(Data):
-    pass  # the actual object is in lib.style
-
-
-class IStyle(INode, Protocol):
-    data: StyleData
+# noinspection PyPropertyDefinition
+class IStyle(IObject, Protocol):
+    @property
+    def values(self) -> Data: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # metadata
 
 # noinspection PyPropertyDefinition
-class IMetaData(INode, Protocol):
+class IMetaData(IObject, Protocol):
+    @property
+    def values(self) -> Data: ...
+
     def extend(self, other): ...
 
     def set(self, key: str, value): ...
@@ -630,7 +658,7 @@ class SearchArgs(Data):
 
 
 class ISearchProvider(IObject, Protocol):
-    templates: 'ITemplateBundle'
+    templates: Optional['ITemplateBundle']
     data_model: Optional['IDataModel']
 
     def run(self, args: SearchArgs, layer: 'ILayer' = None) -> List['IFeature']: ...
@@ -641,7 +669,7 @@ class ISearchProvider(IObject, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # maps and layers
 
-class IMap(INode):
+class IMap(IObject):
     layers: List['ILayer']
 
     center: Point
@@ -654,23 +682,22 @@ class IMap(INode):
 
 
 class Legend(Data):
+    cache_max_age: int
     enabled: bool
-    path: str
-    url: Url
-    template: Optional['ITemplate']
-    source_urls: List[Url]
     options: dict
+    path: str
+    template: Optional['ITemplate']
+    urls: List[Url]
 
 
 class LegendRenderOutput(Data):
     html: str
     image: bytes
     image_path: str
-    image_mime: str
 
 
 # noinspection PyPropertyDefinition
-class ILayer(INode, Protocol):
+class ILayer(IObject, Protocol):
     map: 'IMap'
     metadata: 'IMetaData'
 
@@ -761,7 +788,7 @@ class OwsOperation(Data):
     post_url: Url
 
 
-class IOwsService(INode, Protocol):
+class IOwsService(IObject, Protocol):
     metadata: 'IMetaData'
     name: str
     service_type: str
@@ -777,16 +804,21 @@ class IOwsService(INode, Protocol):
     def error_response(self, err: Exception) -> ContentResponse: ...
 
 
-class IOwsProvider(INode, Protocol):
+class IOwsProvider(IObject, Protocol):
     metadata: 'IMetaData'
-    operations: List[OwsOperation]
     service_type: str
     service_version: str
     supported_crs: List[Crs]
     url: Url
 
+    def find_features(self, args: SearchArgs) -> List[IFeature]: ...
+
+    def operation(self, name: str) -> Optional[OwsOperation]: ...
+
 
 # ----------------------------------------------------------------------------------------------------------------------
+
+
 # CLI
 
 class CliParams(Data):
@@ -798,7 +830,7 @@ class CliParams(Data):
 # projects and application
 
 
-class IMonitor(INode):
+class IMonitor(IObject):
     def add_directory(self, path: str, pattern: Regex): ...
 
     def add_path(self, path: str): ...
@@ -806,8 +838,8 @@ class IMonitor(INode):
     def start(self): ...
 
 
-class IProject(INode, Protocol):
-    assets_root: Optional['IDocumentRoot']
+class IProject(IObject, Protocol):
+    assets_root: Optional['DocumentRoot']
     locale_uids: List[str]
     map: 'IMap'
     metadata: 'IMetaData'
@@ -817,7 +849,7 @@ class IProject(INode, Protocol):
     def find_action(self, action_type: str) -> Optional[IObject]: ...
 
 
-class IApplication(INode, Protocol):
+class IApplication(IObject, Protocol):
     auth: 'IAuthManager'
     locale_uids: List[str]
     metadata: 'IMetaData'
@@ -828,4 +860,4 @@ class IApplication(INode, Protocol):
 
     def find_action(self, action_type: str, project_uid: str = None) -> Optional[IObject]: ...
 
-    def helper(self, key: str) -> INode: ...
+    def helper(self, key: str) -> IObject: ...

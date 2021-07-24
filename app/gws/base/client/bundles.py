@@ -30,7 +30,7 @@ def load(root: gws.RootObject):
     if root.application.developer_option('reload_bundles'):
         return _load()
 
-    return gws.get_global('CLIENT_BUNDLES', _load)
+    return gws.get_server_global('CLIENT_BUNDLES', _load)
 
 
 def javascript(root: gws.RootObject, locale_uid: str):

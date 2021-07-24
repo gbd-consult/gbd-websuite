@@ -28,7 +28,7 @@ def shared_object(root: gws.RootObject, cfg) -> 'Object':
     return t.cast('Object', root.create_shared_object(_ext_class, gws.as_uid(key), cfg))
 
 
-def require(obj: gws.INode) -> 'Object':
+def require(obj: gws.IObject) -> 'Object':
     uid = obj.var('db')
     if uid:
         prov = obj.root.find(klass=_ext_class, uid=uid)
@@ -55,7 +55,7 @@ class Config(gws.Config):
 
 
 @gws.ext.Object('db.provider.postgres')
-class Object(gws.Node, gws.ISqlDbProvider):
+class Object(gws.Object, gws.ISqlDbProvider):
     error = driver.Error
 
     @property
@@ -87,16 +87,16 @@ class Object(gws.Node, gws.ISqlDbProvider):
             except driver.Error as e:
                 raise gws.Error(f'cannot open db connection "{self.uid}"', e.args[0]) from e
 
-        gws.get_global(f'db_ping_{self.uid}', ping)
+        gws.get_app_global(f'db_ping_{self.uid}', ping)
 
     def describe(self, table: gws.SqlTable) -> t.Dict[str, gws.SqlTableColumn]:
-        def f():
+        def _get():
             gws.log.debug(f'db: describe {key!r}')
             with self.connect() as conn:
                 return {c['name']: gws.SqlTableColumn(c) for c in conn.columns(table.name)}
 
-        key = _ext_class + '.describe.' + table.name
-        return gws.get_cached_object(key, f, _DESCRIBE_CACHE_LIFETIME)
+        key = _ext_class + '_describe_' + table.name
+        return gws.get_server_global(key, _get)
 
     def select(self, args: gws.SqlSelectArgs, extra_connect_params=None) -> t.List[gws.IFeature]:
 
@@ -292,7 +292,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
         if not uid:
             uid = gws.random_string(16)
 
-        return gws.lib.feature.new(uid=uid, attributes=rec, shape=shape)
+        return gws.lib.feature.Feature(uid=uid, attributes=rec, shape=shape)
 
     def _get_by_uids(self, table, uids):
         return self.select(gws.SqlSelectArgs({

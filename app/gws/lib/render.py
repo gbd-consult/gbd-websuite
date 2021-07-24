@@ -53,10 +53,9 @@ class Renderer:
             #  use the item's dpi
             self.ri.view.dpi = item.dpi or self.default_dpi
             self._render_item2(item)
-        except Exception:
+        except:
             # swallow exceptions so that we still can render if some layer fails
-            gws.log.error('input item failed')
-            gws.log.exception()
+            gws.log.exception('input item failed')
 
     def _render_item2(self, item: gws.MapRenderInputItem):
         # @TODO opacity for svgs

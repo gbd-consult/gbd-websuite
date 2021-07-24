@@ -24,8 +24,7 @@ def _init():
         root.application.monitor.start()
         uwsgi.spooler = _spooler
     except:
-        gws.log.error('UNABLE TO LOAD CONFIGURATION')
-        gws.log.exception()
+        gws.log.exception('UNABLE TO LOAD CONFIGURATION')
         gws.exit(255)
 
 

@@ -3,7 +3,7 @@ import re
 import urllib.parse
 
 import gws
-import gws.base.ows.provider.parseutil as u
+import gws.base.ows.parseutil as u
 import gws.lib.gis
 import gws.lib.metadata
 import gws.lib.net
@@ -100,7 +100,7 @@ def _tree(el, map_layers):
         name = el.attr('id') or title
 
         sl = gws.lib.gis.SourceLayer(title=title, name=name)
-        sl.metadata = gws.lib.metadata.Values(title=title, name=name)
+        sl.metadata = gws.lib.metadata.Record(title=title, name=name)
 
         sl.is_visible = visible
         sl.is_expanded = expanded

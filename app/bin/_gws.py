@@ -6,26 +6,23 @@ import gws.server.control
 import gws.spec.generator
 import gws.spec.runtime
 
-gws.ensure_dir(gws.MAPPROXY_CACHE_DIR)
-gws.ensure_dir(gws.LEGEND_CACHE_DIR)
-gws.ensure_dir(gws.NET_CACHE_DIR)
-gws.ensure_dir(gws.OBJECT_CACHE_DIR)
-gws.ensure_dir(gws.WEB_CACHE_DIR)
-gws.ensure_dir(gws.CONFIG_DIR)
-gws.ensure_dir(gws.LOG_DIR)
-gws.ensure_dir(gws.MISC_DIR)
-gws.ensure_dir(gws.PRINT_DIR)
-gws.ensure_dir(gws.SERVER_DIR)
-gws.ensure_dir(gws.SPOOL_DIR)
+gws.ensure_system_dirs()
 
 
-def load_specs(params):
+def spec_runtime(params):
     return gws.spec.runtime.create(params.get('manifest'), with_cache=not params.get('skipSpecCache'))
 
 
 def camelize(p):
-    ls = p.split('-')
-    return ls[0] + ''.join(s[0].upper() + s[1:] for s in ls[1:])
+    parts = []
+    for s in p.split('-'):
+        s = s.strip()
+        if s:
+            parts.append(s[0].upper() + s[1:])
+    if not parts:
+        return ''
+    s = ''.join(parts)
+    return s[0].lower() + s[1:]
 
 
 def parse_args(argv):
@@ -50,7 +47,7 @@ def parse_args(argv):
 
 
 def print_usage_and_fail(ext_type, cmd, params):
-    docs = load_specs(params).cli_docs('en')
+    docs = spec_runtime(params).cli_docs('en')
 
     print('')
     print(f'GWS version {gws.VERSION}')
@@ -74,7 +71,7 @@ def dispatch(ext_type, cmd, params):
         cli = gws.server.control.Cli()
         return cli.stop(params)
 
-    specs = load_specs(params)
+    specs = spec_runtime(params)
     # e.g. 'gws auth password' => 'authPassword'
     cmd_name = camelize(ext_type + '-' + cmd)
 
@@ -116,15 +113,11 @@ def main():
     if params.get('h') or params.get('help'):
         return print_usage_and_fail(args[0], args[1], params)
 
-
     try:
         return dispatch(args[0], args[1], params)
     except Exception as exc:
         sys.stdout.flush()
-        if params.get('loglevel') == 'DEBUG':
-            gws.log.exception()
-        else:
-            print(exc)
+        gws.log.exception()
         gws.exit(255)
 
 

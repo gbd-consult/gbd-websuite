@@ -4,13 +4,13 @@ import gws.types as t
 from . import error, log, types, util
 
 
-class Object(types.IObject):
+class BaseObject(types.IBaseObject):
     access: t.Optional[types.Access]
     uid: str
     title: str
     class_name: str
     ext_type: str
-    config_error: str
+    configuration_error: str
 
     @property
     def props(self) -> types.Props:
@@ -22,7 +22,7 @@ class Object(types.IObject):
         self.ext_type = ext_type or ''
         self.title = ''
         self.uid = ''
-        self.config_error = ''
+        self.configuration_error = ''
 
     def is_a(self, klass: types.Klass):
         if isinstance(klass, type):
@@ -43,14 +43,14 @@ class Object(types.IObject):
         pass
 
 
-class Node(Object, types.INode):
+class Object(BaseObject, types.IObject):
     root: 'RootObject'
-    parent: 'Node'
+    parent: 'Object'
     config: types.Config
 
     def __init__(self, klass: types.Klass = None, ext_type: str = None):
         super().__init__(klass, ext_type)
-        self.children: t.List['Node'] = []
+        self.children: t.List['Object'] = []
         for s in ('root', 'parent', 'config'):
             setattr(self, s, None)
 
@@ -67,9 +67,9 @@ class Node(Object, types.INode):
             for cls in reversed(mro):
                 cls.configure(self)  # type: ignore
         except Exception as exc:
-            self.config_error = _exc_name_for_error(exc)
-            log.error(self.config_error)
-            log.exception()
+            self.configuration_error = _error_name(exc)
+            self.root.configuration_errors.append([self.configuration_error, _error_stack(self)])
+            log.exception(self.configuration_error)
 
         log.debug(f'END config {self.class_name} uid={self.uid}')
 
@@ -84,15 +84,20 @@ class Node(Object, types.INode):
             return self.parent.var(key, default, with_parent=True)
         return default
 
-    def create_child(self, klass: types.Klass, cfg: t.Optional[t.Any]) -> 'Node':
+    def create_child(self, klass: types.Klass, cfg: t.Optional[t.Any]) -> 'Object':
         return self.append_child(self.root.create_node(klass, cfg, parent=self))
 
-    def append_child(self, obj: 'Node') -> 'Node':
+    def create_child_if_config(self, klass: types.Klass, cfg: t.Optional[t.Any]) -> t.Optional['Object']:
+        if cfg:
+            return self.append_child(self.root.create_node(klass, cfg, parent=self))
+        return None
+
+    def append_child(self, obj: 'Object') -> 'Object':
         obj.parent = self
         self.children.append(obj)
         return obj
 
-    def get_closest(self, klass: types.Klass) -> t.Optional['Node']:
+    def get_closest(self, klass: types.Klass) -> t.Optional['Object']:
         obj = self.parent
         while obj:
             if obj.is_a(klass):
@@ -101,7 +106,7 @@ class Node(Object, types.INode):
         return None
 
 
-class RootObject(Object, types.IRootObject):
+class RootObject(BaseObject, types.IRootObject):
     application: types.IApplication
     specs: types.ISpecRuntime
 
@@ -111,22 +116,23 @@ class RootObject(Object, types.IRootObject):
         self.all_nodes = []
         self.shared_objects = {}
         self.root = self
+        self.configuration_errors = []
 
     def post_initialize(self):
         for obj in reversed(self.all_nodes):
             try:
                 obj.post_configure()
             except Exception as exc:
-                obj.config_error = _exc_name_for_error(exc)
-                log.error(obj.config_error)
-                log.exception()
+                obj.configuration_error = _error_name(exc)
+                log.exception(obj.configuration_error)
+                self.configuration_errors.append([obj.configuration_error, _error_stack(obj)])
 
     def create_application(self, klass, cfg):
         app = self._create(klass)
         app.root = self
         self.all_nodes.append(app)
         self.application = app
-        t.cast('Node', self.application).initialize(cfg)
+        t.cast('Object', self.application).initialize(cfg)
 
     def create_node(self, klass, cfg, parent=None):
         cfg = _to_config(cfg)
@@ -150,17 +156,17 @@ class RootObject(Object, types.IRootObject):
             # log.debug(f'SHARED: FOUND {klass} {uid}')
             return self.shared_objects[uid]
 
-        with util.global_lock():
+        with util.app_lock():
             log.debug(f'create_shared_object: klass={klass!r} uid={uid!r}')
             obj = self.create_node(klass, util.merge(cfg, uid=uid))
             self.shared_objects[uid] = obj
 
         return obj
 
-    def find_all(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.List[types.INode]:
+    def find_all(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.List[types.IObject]:
         return list(_find_all(self.all_nodes, klass, uid, ext_type))
 
-    def find(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.Optional[types.INode]:
+    def find(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.Optional[types.IObject]:
         for p in _find_all(self.all_nodes, klass, uid, ext_type):
             return p
         return None
@@ -188,7 +194,7 @@ class RootObject(Object, types.IRootObject):
         else:
             desc = load_ext(self.specs, class_name)
             if not desc:
-                raise _error(self, ValueError(f'class not found: {class_name!r}'))
+                raise ValueError(f'class not found: {class_name!r}')
             self.all_types[class_name] = desc
 
         cls = desc.class_ptr
@@ -242,47 +248,48 @@ def _class_name(s):
     return mod + '.' + name
 
 
-def _exc_name_for_error(e):
+def _error_name(exc):
     cls = 'Error'
     try:
-        cls = e.__class__.__name__
+        cls = exc.__class__.__name__
     except:
         pass
     a = '?'
     try:
-        a = e.args[0]
+        a = exc.args[0]
     except:
         pass
-    if isinstance(e, error.Error):
+    if isinstance(exc, error.Error):
         return a
-    return '%s: %s' % (cls, a)
+    return f'{cls}: {a}'
 
 
-def _object_name_for_error(x):
-    cls = getattr(x, 'klass', '')
-    if not cls:
-        try:
-            cls = x.__class__.__name__
-        except:
-            cls = 'object'
+def _error_stack(obj):
+    stack = []
 
-    uid = getattr(x, 'uid', '')
-    if uid:
-        return '%s(%s)' % (cls, uid)
+    while obj:
+        name = getattr(obj, 'class_name', '')
+        if not name:
+            try:
+                name = obj.__class__.__name__
+            except:
+                name = 'object'
 
-    return cls
+        uid = getattr(obj, 'uid', '')
+        if uid:
+            name += ' (' + str(uid) + ')'
+        stack.append('in ' + name)
 
+        obj = getattr(obj, 'parent', None)
 
-def _error(obj, exc):
-    msg = '%s\nin %s' % (_exc_name_for_error(exc), _object_name_for_error(obj))
-    raise error.Error(msg)
+    return stack
 
 
 def _make_props(obj, user):
     if obj is None or isinstance(obj, (int, float, bool, str, bytes)):
         return obj
 
-    if isinstance(obj, Object):
+    if isinstance(obj, BaseObject):
         return _make_props(obj.props_for(user), user)
 
     if util.is_data_object(obj):
@@ -345,7 +352,7 @@ def _set_uid(obj, uid):
     if not uid or uid == obj.uid:
         return
 
-    with util.global_lock():
+    with util.app_lock():
         if obj.uid:
             _UIDS.discard(obj.uid)
         obj.uid = _new_uid(uid)

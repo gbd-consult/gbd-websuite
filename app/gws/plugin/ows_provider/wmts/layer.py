@@ -1,51 +1,66 @@
 import gws
-import gws.types as t
 import gws.base.layer
-import gws.lib.mpx
-import gws.lib.ows
+import gws.base.ows
 import gws.lib.gis
 import gws.lib.gis
 import gws.lib.json2
+import gws.lib.mpx
 import gws.lib.net
+import gws.lib.ows
 import gws.lib.units as units
-from . import types, provider
+import gws.types as t
+from . import provider, caps
 
 
-class Config(gws.base.layer.ImageTileConfig):
+@gws.ext.Config('layer.wmts')
+class Config(gws.base.layer.image.Config, provider.Config):
     """WMTS layer"""
-
-    capsCacheMaxAge: gws.Duration = '1d'  #: max cache age for capabilities documents
-    maxRequests: int = 0  #: max concurrent requests to this source
-    params: t.Optional[dict]  #: query string parameters
+    display: gws.base.layer.types.DisplayMode = gws.base.layer.types.DisplayMode.tile  #: layer display mode
     sourceLayer: t.Optional[str]  #: WMTS layer name
     sourceStyle: str = ''  #: WMTS style name
-    url: gws.Url  #: service url
 
 
-class Object(gws.base.layer.ImageTile):
+@gws.ext.Object('layer.wmts')
+class Object(gws.base.layer.image.Object):
+    matrix_set: caps.TileMatrixSet
+    provider: provider.Object
+    source_crs: gws.Crs
+    source_layer: caps.SourceLayer
+    source_style: str
+
     def configure(self):
-        
+        self.provider = gws.base.ows.provider.shared_object(self.root, provider.Object, self.config)
 
-        self.url = self.var('url')
-        self.provider: provider.Object = gws.lib.ows.shared_provider(provider.Object, self, self.config)
+        self.grid.reqSize = self.grid.reqSize or 1
 
-        self.meta = self.configure_metadata(self.provider.meta)
-        self.title = self.meta.title
+        if not self.has_configured_metadata:
+            self.configure_metadata_from(self.provider.metadata)
 
-        self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
-        self.source_layer: types.SourceLayer = self._get_layer(self.var('sourceLayer'))
-        self.matrix_set: types.TileMatrixSet = self._get_matrix_set()
+        self.source_crs = self.provider.source_crs or gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
+        self.source_layer = self.get_source_layer(self.var('sourceLayer'))
+        self.matrix_set = self.get_matrix_set_for_crs(self.source_crs)
 
         self.source_style = self.var('sourceStyle')
+
+        if not self.has_configured_legend and self.source_layer.legend_url:
+            self.legend = gws.Legend(
+                enabled=True,
+                urls=[self.source_layer.legend_url],
+                cache_max_age=self.var('legend.cacheMaxAge', default=0),
+                options=self.var('legend.options', default={}))
+            self.has_configured_legend = True
 
     @property
     def own_bounds(self):
         return gws.lib.gis.bounds_from_layers([self.source_layer], self.source_crs)
 
-    def configure_legend(self):
-        return super().configure_legend() or gws.Legend(
-            enabled=bool(self.source_layer.legend),
-            url=self.source_layer.legend)
+    @property
+    def description(self):
+        context = {
+            'layer': self,
+            'service': self.provider.metadata,
+        }
+        return self.description_template.render(context).content
 
     def mapproxy_config(self, mc):
         m0 = self.matrix_set.matrices[0]
@@ -62,18 +77,10 @@ class Object(gws.base.layer.ImageTile):
             'tile_size': [m0.tile_width, m0.tile_height],
         }))
 
-        src = self.mapproxy_back_cache_config(mc, self._get_tile_url(), grid_uid)
+        src = self.mapproxy_back_cache_config(mc, self.get_tile_url(), grid_uid)
         self.mapproxy_layer_config(mc, src)
 
-    @property
-    def description(self):
-        context = {
-            'layer': self,
-            'service': self.provider.meta,
-        }
-        return self.description_template.render(context).content
-
-    def _get_layer(self, layer_name) -> types.SourceLayer:
+    def get_source_layer(self, layer_name) -> caps.SourceLayer:
         if layer_name:
             for sl in self.provider.source_layers:
                 if sl.name == layer_name:
@@ -85,48 +92,46 @@ class Object(gws.base.layer.ImageTile):
 
         raise gws.Error(f'no layers found')
 
-    def _get_matrix_set(self):
+    def get_matrix_set_for_crs(self, crs):
         for ms in self.source_layer.matrix_sets:
-            if ms.crs == self.source_crs:
+            if ms.crs == crs:
                 return ms
         raise gws.Error(f'no suitable tile matrix set found')
 
-    def _get_tile_url(self):
-        url = gws.get(self.source_layer.resource_urls, 'tile')
-        if url:
-            url = url.replace('{TileMatrixSet}', self.matrix_set.uid)
-            url = url.replace('{TileMatrix}', '%(z)02d')
-            url = url.replace('{TileCol}', '%(x)d')
-            url = url.replace('{TileRow}', '%(y)d')
-            return url
+    def get_tile_url(self):
+        resource_url = gws.get(self.source_layer, 'resource_urls.tile')
 
-        url = self.provider.operation('GetTile').get_url
-        if url:
-            params = {
-                'SERVICE': 'WMTS',
-                'REQUEST': 'GetTile',
-                'VERSION': self.provider.version,
-                'LAYER': self.source_layer.name,
-                'FORMAT': self.source_layer.format or 'image/jpeg',
-                'STYLE': self.var('sourceStyle'),
-                'TILEMATRIXSET': self.matrix_set.uid,
-                'TILEMATRIX': '%(z)02d',
-                'TILECOL': '%(x)d',
-                'TILEROW': '%(y)d',
-            }
+        if resource_url:
+            return (resource_url
+                    .replace('{TileMatrixSet}', self.matrix_set.uid)
+                    .replace('{TileMatrix}', '%(z)02d')
+                    .replace('{TileCol}', '%(x)d')
+                    .replace('{TileRow}', '%(y)d'))
 
-            if self.source_style:
-                params['STYLE'] = self.source_style
+        operation = self.provider.operation('GetTile')
 
-            p = gws.lib.net.parse_url(url)
-            params.update(p['params'])
+        params = {
+            'SERVICE': 'WMTS',
+            'REQUEST': 'GetTile',
+            'VERSION': self.provider.version,
+            'LAYER': self.source_layer.name,
+            'FORMAT': self.source_layer.format or 'image/jpeg',
+            'STYLE': self.var('sourceStyle'),
+            'TILEMATRIXSET': self.matrix_set.uid,
+            'TILEMATRIX': '%(z)02d',
+            'TILECOL': '%(x)d',
+            'TILEROW': '%(y)d',
+        }
 
-            # NB cannot use as_query_string because of the MP's percent formatting
+        if self.source_style:
+            params['STYLE'] = self.source_style
 
-            p['params'] = {}
-            qs = '&'.join(k + '=' + str(v or '') for k, v in params.items())
-            url = gws.lib.net.make_url(p) + '?' + qs
+        p = gws.lib.net.parse_url(operation.get_url)
+        params.update(p['params'])
 
-            return url
+        # NB cannot use as_query_string because of the MP's percent formatting
 
-        raise gws.Error('no GetTile url found')
+        p['params'] = {}
+        qs = '&'.join(k + '=' + str(v or '') for k, v in params.items())
+
+        return gws.lib.net.make_url(p) + '?' + qs

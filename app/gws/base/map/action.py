@@ -3,7 +3,7 @@
 import time
 
 import gws
-import gws.base.api.action
+import gws.base.api
 import gws.lib.legend
 import gws.lib.cache
 import gws.lib.feature
@@ -19,7 +19,7 @@ def url_for_get_box(layer_uid) -> str:
 
 
 def url_for_get_tile(layer_uid, xyz=None) -> str:
-    pfx = f'{gws.SERVER_ENDPOINT}/mapGetXyz/layerUid/{layer_uid}'
+    pfx = f'{gws.SERVER_ENDPOINT}/mapGetXYZ/layerUid/{layer_uid}'
     if xyz:
         return pfx + f'/z/{xyz.z}/x/{xyz.x}/y/{xyz.y}/gws.png'
     return pfx + '/z/{z}/x/{x}/y/{y}/gws.png'
@@ -125,7 +125,11 @@ class Object(gws.base.api.action.Object):
     def http_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> gws.ContentResponse:
         # @TODO the response should be geojson FeatureCollection
         found = self._get_features(req, p)
-        return gws.ContentResponse(mime='application/json', content=gws.lib.json2.to_string(found))
+        return gws.ContentResponse(
+            mime='application/json',
+            content=gws.lib.json2.to_string({
+                'features': [f.props for f in found]
+            }))
 
     ##
 

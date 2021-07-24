@@ -1,57 +1,46 @@
 import gws
 import gws.lib.metadata
-from gws.lib.metadata import Values
-import gws.types as t
+from gws.lib.metadata import Record, Props
 
 
-class Config(Values):
+class Config(Record):
     """Metadata configuration"""
     pass
 
 
-class Props(gws.Props):
-    abstract: str
-    attribution: str
-    dateCreated: str
-    dateUpdated: str
-    keywords: t.List[str]
-    language: str
-    title: str
-
-
-class Object(gws.Node, gws.IMetaData):
-    _values: Values
+class Object(gws.Object, gws.IMetaData):
+    _rec: Record
 
     @property
     def props(self):
-        return gws.Props(
-            abstract=self._values.abstract or '',
-            attribution=self._values.attribution or '',
-            dateCreated=self._values.dateCreated,
-            dateUpdated=self._values.dateUpdated,
-            keywords=self._values.keywords or [],
-            language=self._values.language or '',
-            title=self._values.title or '',
+        return Props(
+            abstract=self._rec.abstract or '',
+            attribution=self._rec.attribution or '',
+            dateCreated=self._rec.dateCreated,
+            dateUpdated=self._rec.dateUpdated,
+            keywords=self._rec.keywords or [],
+            language=self._rec.language or '',
+            title=self._rec.title or '',
         )
 
     @property
-    def values(self) -> Values:
-        return self._values
+    def record(self) -> Record:
+        return self._rec
 
     def configure(self):
-        self._values = gws.lib.metadata.from_dict(gws.as_dict(self.config))
+        self._rec = gws.lib.metadata.from_dict(gws.as_dict(self.config))
 
     def extend(self, other):
-        self._values = gws.lib.metadata.merge(self._values, other)
+        self._rec = gws.lib.metadata.merge(self._rec, other)
 
     def get(self, key):
-        return gws.get(self._values, key)
+        return gws.get(self._rec, key)
 
     def set(self, key, val):
         if '.' in key:
             ks = key.split('.')
-            d = self._values.get(ks[0])
+            d = self._rec.get(ks[0])
         else:
-            d = self._values
+            d = self._rec
         if d:
             d.set(key, val)

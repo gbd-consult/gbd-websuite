@@ -84,14 +84,10 @@ def best_crs_and_shape(request_crs, supported_crs, shape):
     return crs, shape.transformed_to(crs)
 
 
-
-
-
-
 class SourceStyle(gws.Data):
     is_default: bool
-    legend: gws.Url
-    metadata: gws.lib.metadata.Values
+    legend_url: gws.Url
+    metadata: gws.lib.metadata.Record
     name: str
 
 
@@ -113,14 +109,14 @@ class SourceLayer(gws.Data):
 
     layers: t.List['SourceLayer']
 
-    metadata: gws.lib.metadata.Values
+    metadata: gws.lib.metadata.Record
     name: str
     title: str
 
     opacity: int
     scale_range: t.List[float]
     styles: t.List[SourceStyle]
-    legend: str
+    legend_url: gws.Url
     resource_urls: dict
 
 
@@ -185,12 +181,13 @@ def filter_layers(layers: t.List[SourceLayer], slf: LayerFilter, image_only=Fals
     return layers
 
 
-def image_layers(sl: SourceLayer) -> t.List[SourceLayer]:
-    if sl.is_image:
-        return [sl]
+def flat_layer_list(sl: SourceLayer) -> t.List[SourceLayer]:
     if sl.layers:
-        return [s for sub in sl.layers for s in image_layers(sub)]
-    return []
+        ls = []
+        for sub in sl.layers:
+            ls.extend(flat_layer_list(sub))
+        return ls
+    return [sl]
 
 
 def bounds_from_layers(source_layers: t.List[SourceLayer], target_crs) -> gws.Bounds:

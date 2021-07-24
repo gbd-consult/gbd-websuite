@@ -105,7 +105,7 @@ class WebRequest(gws.IWebRequest):
     def __init__(self, root: gws.RootObject, environ: dict, site: gws.IWebSite):
         self._wz = werkzeug.wrappers.Request(environ)
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
-        self._wz.max_content_length = root.application.var('server.web.maxRequestLength') * 1024 * 1024
+        self._wz.max_content_length = int(root.application.var('server.web.maxRequestLength', default=1)) * 1024 * 1024
 
         self.params: t.Dict[str, t.Any] = {}
         self._lower_params: t.Dict[str, t.Any] = {}

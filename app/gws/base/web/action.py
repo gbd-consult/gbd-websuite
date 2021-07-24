@@ -5,7 +5,7 @@ import re
 
 import gws
 import gws.types as t
-import gws.base.api.action
+import gws.base.api
 import gws.base.client.bundles
 import gws.base.template
 import gws.lib.mime
@@ -172,7 +172,7 @@ def _abs_path(path, basedir):
     return p
 
 
-def _valid_mime_type(mt, project_assets: t.Optional[gws.IDocumentRoot], site_assets: t.Optional[gws.IDocumentRoot]):
+def _valid_mime_type(mt, project_assets: t.Optional[gws.DocumentRoot], site_assets: t.Optional[gws.DocumentRoot]):
     if project_assets and project_assets.allow_mime:
         return mt in project_assets.allow_mime
     if site_assets and site_assets.allow_mime:

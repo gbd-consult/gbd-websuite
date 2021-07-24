@@ -5,9 +5,9 @@ import gws.types as t
 import gws.config.loader
 import gws.base.web.error
 import gws.spec.runtime
+import gws.base.web.site
 
 from gws.base.auth.wsgi import WebRequest, WebResponse
-from gws.base.web import core
 
 _inited = False
 
@@ -45,8 +45,7 @@ def _init():
         root = gws.config.loader.load()
         gws.log.set_level(root.application.var('server.log.level'))
     except:
-        gws.log.error('UNABLE TO LOAD CONFIGURATION')
-        gws.log.exception()
+        gws.log.exception('UNABLE TO LOAD CONFIGURATION')
         gws.exit(255)
 
 
@@ -57,7 +56,7 @@ class _DispatchError(gws.Error):
 
 
 def _handle_request2(req: WebRequest) -> WebResponse:
-    site = t.cast(core.Site, req.site)
+    site = t.cast(gws.base.web.site.Object, req.site)
 
     cors = site.cors_options
     if cors and req.method == 'OPTIONS':
@@ -76,7 +75,7 @@ def _handle_request2(req: WebRequest) -> WebResponse:
 def _handle_error(req: WebRequest, err: gws.base.web.error.HTTPException) -> WebResponse:
     # @TODO: image errors
 
-    site = t.cast(core.Site, req.site)
+    site = t.cast(gws.base.web.site.Object, req.site)
 
     if req.output_struct_type:
         return req.struct_response(gws.Response(

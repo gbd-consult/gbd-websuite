@@ -28,7 +28,7 @@ class Props(gws.Data):
     elements: t.Optional[t.List[ElementProps]]
 
 
-class Element(gws.Node):
+class Element(gws.Object):
     @property
     def props(self):
         return ElementProps({
@@ -36,7 +36,7 @@ class Element(gws.Node):
         })
 
 
-class Object(gws.Node):
+class Object(gws.Object):
     options: dict
 
     @property

@@ -1,5 +1,18 @@
 """WFS provider."""
 
+import gws
+import gws.base.metadata
+import gws.base.ows
+import gws.lib.feature
+import gws.lib.extent
+import gws.lib.gis
+import gws.lib.net
+import gws.lib.ows
+import gws.lib.xml2
+import gws.lib.shape
+import gws.types as t
+from . import caps
+
 """
     References
 
@@ -11,40 +24,24 @@
     
 """
 
-import gws
-import gws.types as t
-import gws.base.ows.provider
-import gws.lib.extent
-import gws.lib.ows
-import gws.lib.shape
-import gws.lib.gis
-import gws.lib.net
-import gws.lib.xml2
-from . import caps
+
+class Config(gws.base.ows.provider.Config):
+    pass
 
 
 class Object(gws.base.ows.provider.Object):
-    def __init__(self):
-        super().__init__()
-        self.type = 'WFS'
+    service_type = 'WFS'
 
     def configure(self):
-        
+        cc = caps.parse(self.get_capabilities())
 
-        if self.url:
-            xml = gws.lib.ows.request.get_text(
-                self.url,
-                service='WFS',
-                request='GetCapabilities',
-                params=self.var('params'),
-                max_age=self.var('capsCacheMaxAge'))
-        else:
-            # @TODO offline caps not implemented yet
-            xml = self.var('xml')
+        self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
+        self.service_version = cc.version
+        self.operations = cc.operations
+        self.source_layers = cc.source_layers
+        self.supported_crs = cc.supported_crs
 
-        caps.parse(self, xml)
-
-    def find_features(self, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+    def find_features(self, args):
         # first, find features within the bounds of given shapes,
         # then, filter features precisely
         # this is more performant than WFS spatial ops (at least for qgis)
@@ -63,44 +60,49 @@ class Object(gws.base.ows.provider.Object):
             shape = gws.lib.shape.union(args.shapes).tolerance_polygon(map_tolerance)
             bounds = shape.bounds
 
-        our_crs = gws.lib.gis.best_crs(bounds.crs, self.supported_crs)
-        bbox = gws.lib.extent.transform(bounds.extent, bounds.crs, our_crs)
-        axis = gws.lib.gis.best_axis(our_crs, self.invert_axis_crs, 'WFS', self.version)
+        our_crs = bounds.crs
+        source_crs = self.source_crs or gws.lib.gis.best_crs(our_crs, self.supported_crs)
+        bbox = gws.lib.extent.transform(bounds.extent, our_crs, source_crs)
+        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, 'WFS', self.service_version)
         invert_axis = axis == 'yx'
 
-        p = {}
+        params = {}
 
         if invert_axis:
             bbox = gws.lib.gis.invert_bbox(bbox)
-        p['BBOX'] = bbox
+        params['BBOX'] = bbox
 
         if args.source_layer_names:
-            p['TYPENAMES' if self.version >= '2.0.0' else 'TYPENAME'] = args.source_layer_names
+            params['TYPENAMES' if self.service_version >= '2.0.0' else 'TYPENAME'] = args.source_layer_names
 
         if args.limit:
-            p['COUNT' if self.version >= '2.0.0' else 'MAXFEATURES'] = args.limit
+            params['COUNT' if self.service_version >= '2.0.0' else 'MAXFEATURES'] = args.limit
 
-        p['SRSNAME'] = our_crs
-        p['VERSION'] = self.version
+        params['SRSNAME'] = source_crs
+        params['VERSION'] = self.service_version
 
-        p = gws.merge(p, args.get('params'))
+        params = gws.merge(params, args.get('params'))
 
-        url = self.operation('GetFeature').get_url
-        text = gws.lib.ows.request.get_text(url, service='WFS', request='GetFeature', params=p)
-        res = found = gws.lib.ows.formats.read(text, invert_axis=invert_axis)
+        operation = self.operation('GetFeature')
+        text = gws.lib.ows.request.get_text(operation.get_url, service='WFS', verb='GetFeature', params=params)
+        features = gws.lib.ows.formats.read(text, crs=source_crs, invert_axis=invert_axis)
 
-        if found and shape:
-            res = []
-            for f in found:
-                if not f.shape:
-                    continue
-                f.transform_to(shape.crs)
-                if f.shape.intersects(shape):
-                    res.append(f)
-
-        if found is None:
-            gws.p('WFS QUERY', p, 'NOT PARSED')
+        if features is None:
+            gws.log.error(f'WFS response not parsed, params={params!r}')
             return []
 
-        gws.p('WFS QUERY', p, f'FOUND={len(found)} FILTERED={len(res)}')
-        return res
+        if not shape:
+            return features
+
+        flt = []
+        for f in features:
+            if not f.shape:
+                continue
+            f.transform_to(our_crs)
+            if f.shape.intersects(shape):
+                flt.append(f)
+
+        if len(flt) != len(features):
+            gws.log.debug(f'WFS filter before={len(features)} after={len(flt)}')
+
+        return flt

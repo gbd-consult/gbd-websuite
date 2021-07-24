@@ -1,7 +1,7 @@
 """Core application object"""
 
 import gws
-import gws.base.api.action
+import gws.base.api
 import gws.base.auth
 import gws.base.client
 import gws.base.db
@@ -15,12 +15,6 @@ import gws.lib.os2
 import gws.server
 import gws.server.monitor
 import gws.types as t
-
-
-# try:
-#     import gws.plugins.qgis.server as qgis_server
-# except ImportError:
-#     qgis_server = None
 
 
 class FontConfig(gws.Config):
@@ -49,7 +43,7 @@ class Config(gws.WithAccess):
     web: t.Optional[gws.base.web.Config]  #: web server options
 
 
-class Object(gws.Node, gws.IApplication):
+class Object(gws.Object, gws.IApplication):
     """Main Appilication object"""
 
     api: gws.base.api.Object
@@ -58,23 +52,33 @@ class Object(gws.Node, gws.IApplication):
     metadata: gws.base.metadata.Object
     monitor: gws.server.monitor.Object
     web_sites: t.List[gws.IWebSite]
+    version: str
+    qgis_version: str
 
     _devopts: dict
 
     def configure(self):
+        self.version = gws.VERSION
+        self.qgis_version = ''
+
         self._devopts = self.var('developer') or {}
         if self._devopts:
-            gws.log.warn('DEVELOPER MODE ENABLED')
+            gws.log.warn('developer mode enabled')
 
         self.set_uid('APP')
 
-        # self.version: str = gws.VERSION
-        #
-        # self.qgis_version: str = qgis_server.version() if qgis_server else ''
-        #
-        # gws.log.info('*' * 40)
-        # gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
-        # gws.log.info('*' * 40)
+        if self.var('server.qgis.enabled'):
+            qgis_server = gws.import_from_path(
+                gws.APP_DIR + '/gws/plugin/qgis/server.py',
+                'gws.plugin.qgis.server')
+            self.qgis_version = qgis_server.version()
+
+        gws.log.info('*' * 40)
+        if self.qgis_version:
+            gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
+        else:
+            gws.log.info(f'GWS version {self.version}')
+        gws.log.info('*' * 40)
 
         self.locale_uids = self.var('locales') or ['en_CA']
         self.monitor = self.create_child(gws.server.monitor.Object, self.var('server.monitor'))
@@ -112,7 +116,7 @@ class Object(gws.Node, gws.IApplication):
         p = self.var('web.sites', default=[gws.base.web.DEFAULT_SITE])
         for s in p:
             s.ssl = True if self.var('web.ssl') else False
-            self.web_sites.append(self.root.create_object(gws.base.web.Site, s))
+            self.web_sites.append(self.root.create_object(gws.base.web.site.Object, s))
 
         for p in self.var('projects', default=[]):
             self.create_child(gws.base.project.Object, p)
@@ -132,7 +136,7 @@ class Object(gws.Node, gws.IApplication):
         # if root.application.developer_option('server.auto_reload'):
         #     root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
 
-    def find_action(self, action_type: str, project_uid: str = None) -> t.Optional[gws.IObject]:
+    def find_action(self, action_type, project_uid=None):
         if project_uid:
             project = t.cast(gws.base.project.Object, self.root.find(klass='gws.base.project', uid=project_uid))
             if project and project.api:
@@ -143,7 +147,7 @@ class Object(gws.Node, gws.IApplication):
         if self.api:
             return self.api.find_action(action_type)
 
-    def helper(self, key: str) -> gws.INode:
+    def helper(self, key):
         base = 'gws.ext.helper'
         p = self.root.find(f'{base}.{key}')
         if not p:

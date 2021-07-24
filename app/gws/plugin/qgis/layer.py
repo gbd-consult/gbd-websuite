@@ -23,7 +23,7 @@ class Config(gws.base.layer.image.Config):
     rootLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use as roots
     excludeLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to exclude
     flattenLayers: t.Optional[gws.base.layer.types.FlattenConfig]  #: flatten the layer hierarchy
-    layerConfig: t.Optional[t.List[gws.base.layer.base.CustomConfig]]  #: custom configurations for specific layers
+    layerConfig: t.Optional[t.List[gws.base.layer.types.CustomConfig]]  #: custom configurations for specific layers
 
 
 class Object(gws.base.layer.group.Object):
@@ -185,7 +185,7 @@ class Object(gws.base.layer.group.Object):
         if self.flatten.useGroups:
             names = [sl.name]
         else:
-            ls = gws.lib.gis.image_layers(sl)
+            ls = gws.lib.gis.flat_layer_list(sl)
             if not ls:
                 return
             names = [s.name for s in ls]

@@ -24,7 +24,7 @@ def _m() -> gws.IMonitor:
     return gws.config.root().application.monitor
 
 
-class Object(gws.Node, gws.IMonitor):
+class Object(gws.Object, gws.IMonitor):
     def configure(self):
 
         self.watch_dirs = {}
@@ -112,9 +112,8 @@ class Object(gws.Node, gws.IMonitor):
         if reconf:
             try:
                 control.configure()
-            except Exception:
-                gws.log.error('MONITOR: configuration error')
-                gws.log.exception()
+            except:
+                gws.log.exception('MONITOR: configuration error')
                 return False
 
         try:
@@ -123,8 +122,7 @@ class Object(gws.Node, gws.IMonitor):
             control.reload_uwsgi('web')
             return True
         except Exception:
-            gws.log.error('MONITOR: reload error')
-            gws.log.exception()
+            gws.log.exception('MONITOR: reload error')
             return False
 
     def _prepare(self):

@@ -3,10 +3,10 @@
 import gws.ext.db.provider.postgres
 
 import gws
-import gws.types as t
-import gws.base.search.provider
+import gws.base.search
 import gws.config.parser
 import gws.core.tree
+import gws.types as t
 
 
 class Config(gws.base.search.provider.Config):
@@ -43,11 +43,10 @@ class Object(gws.base.search.provider.Object):
         try:
             self.table: gws.SqlTable = self.db.configure_table(gws.Config(name=ds['table'], geometryColumn=ds['geometryColumn']))
         except gws.Error:
-            gws.log.warn(f"table {ds['table']!r} not found or invalid")
-            gws.log.exception()
+            gws.log.exception(f"table {ds['table']!r} not found or invalid")
             self.active = False
 
-    def run(self, layer: gws.ILayer, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+    def run(self, args, layer=None):
         if not self.table:
             return []
         n, u = args.tolerance or self.tolerance

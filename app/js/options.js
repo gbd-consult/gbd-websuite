@@ -3,7 +3,6 @@ let path = require('path');
 
 let absPath = p => path.resolve(__dirname, p);
 
-
 module.exports = {
     version: fs.readFileSync(absPath('../../VERSION'), 'utf8').trim(),
 
@@ -13,6 +12,14 @@ module.exports = {
         serverPort: 8080,
         proxyUrl: "http://127.0.0.1:3333",
         openBrowser: false
+    },
+
+    minify: false,
+
+    terserOptions: {
+        compress: {
+            drop_console: true,
+        }
     },
 
     vendors: [

@@ -9,7 +9,7 @@ class Props(gws.Props):
     enabled: bool = True
 
 
-class Object(gws.Node):
+class Object(gws.Object):
     """Generic action object, the parent of all action objects."""
 
     @property

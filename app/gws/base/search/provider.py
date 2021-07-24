@@ -23,7 +23,7 @@ class Config(gws.WithAccess):
     withKeyword: bool = True  #: enable keyword search
 
 
-class Object(gws.Node, gws.ISearchProvider):
+class Object(gws.Object, gws.ISearchProvider):
     supports_keyword: bool = False
     supports_geometry: bool = False
     supports_filter: bool = False
@@ -33,20 +33,21 @@ class Object(gws.Node, gws.ISearchProvider):
     with_filter: bool = False
 
     data_model: t.Optional[gws.IDataModel]
-    templates: gws.ITemplateBundle
+    templates: t.Optional[gws.ITemplateBundle]
     tolerance: gws.Measurement
 
     spatial_context: SpatialContext
     title: str
 
     def configure(self):
-        p = self.var('dataModel')
-        self.data_model = self.create_child(gws.base.model.Object, p) if p else None
+        self.data_model = self.create_child_if_config(gws.base.model.Object, self.var('dataModel'))
 
+        self.templates = None
         p = self.var('templates')
-        self.templates = t.cast(
-            gws.base.template.Bundle,
-            self.create_child(gws.base.template.Bundle, gws.Config(templates=p))) if p else None
+        if p:
+            self.templates = t.cast(
+                gws.base.template.Bundle,
+                self.create_child(gws.base.template.Bundle, gws.Config(templates=p)))
 
         p = self.var('tolerance')
         self.tolerance = (
@@ -69,7 +70,7 @@ class Object(gws.Node, gws.ISearchProvider):
         if p.filter and not self.supports_filter:
             return False
 
-        return p.keyword or p.shapes or p.filter
+        return bool(p.keyword or p.shapes or p.filter)
 
     def context_shape(self, p: gws.SearchArgs) -> gws.IShape:
         if p.shapes:

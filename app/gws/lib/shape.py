@@ -25,7 +25,7 @@ def from_wkt(s: str, crs=None) -> gws.IShape:
     if not crs:
         raise ValueError('missing crs')
     geom = geos.WKTReader(geos.lgeos).read(s)
-    return new(geom, crs)
+    return Shape(geom, crs)
 
 
 def from_wkb(s: bytes, crs=None) -> gws.IShape:
@@ -42,12 +42,12 @@ def _from_wkb(g, crs):
         crs = srid
         geos.lgeos.GEOSSetSRID(g._geom, 0)
     if not crs:
-        raise ValueError('missing crs')
-    return new(g, crs)
+        raise gws.Error('missing crs for WKB')
+    return Shape(g, crs)
 
 
 def from_geometry(geometry, crs) -> gws.IShape:
-    if geometry.get('type').lower() == 'circle':
+    if geometry.get('type').upper() == 'CIRCLE':
         geom = shapely.geometry.Point(geometry.get('center'))
         geom = geom.buffer(
             geometry.get('radius'),
@@ -56,7 +56,7 @@ def from_geometry(geometry, crs) -> gws.IShape:
             join_style=shapely.geometry.JOIN_STYLE.round)
     else:
         geom = shapely.geometry.shape(geometry)
-    return new(geom, crs)
+    return Shape(geom, crs)
 
 
 def from_props(props: gws.Data) -> gws.IShape:
@@ -66,15 +66,15 @@ def from_props(props: gws.Data) -> gws.IShape:
 
 
 def from_extent(extent: gws.Extent, crs) -> gws.IShape:
-    return new(shapely.geometry.box(*extent), crs)
+    return Shape(shapely.geometry.box(*extent), crs)
 
 
 def from_bounds(bounds: gws.Bounds) -> gws.IShape:
-    return new(shapely.geometry.box(*bounds.extent), bounds.crs)
+    return Shape(shapely.geometry.box(*bounds.extent), bounds.crs)
 
 
 def from_xy(x, y, crs) -> gws.IShape:
-    return new(shapely.geometry.Point(x, y), crs)
+    return Shape(shapely.geometry.Point(x, y), crs)
 
 
 def union(shapes) -> gws.IShape:
@@ -93,16 +93,7 @@ def union(shapes) -> gws.IShape:
     shapes = [s.transformed_to(crs) for s in shapes]
     geom = shapely.ops.unary_union([getattr(s, 'geom') for s in shapes])
 
-    return new(geom, crs)
-
-
-def new(geom, crs) -> gws.IShape:
-    obj = Shape()
-    p = gws.lib.proj.as_proj(crs)
-    obj.crs = p.epsg
-    obj.srid = p.srid
-    obj.geom = geom
-    return obj
+    return Shape(geom, crs)
 
 
 class Props(gws.Props):
@@ -110,16 +101,16 @@ class Props(gws.Props):
     geometry: dict
 
 
-class Shape(gws.Object, gws.IShape):
-    def __init__(self):
-        super().__init__()
-        self.crs = ''
-        self.srid = 0
-        self.geom: shapely.geometry.base.BaseGeometry = None  # type: ignore
+class Shape(gws.IShape):
+    def __init__(self, geom, crs):
+        self.geom: shapely.geometry.base.BaseGeometry = geom  # type: ignore
+        p = gws.lib.proj.as_proj(crs)
+        self.crs = p.epsg
+        self.srid = p.srid
 
     @property
     def type(self) -> gws.GeometryType:
-        return self.geom.type.upper()
+        return gws.GeometryType[self.geom.type.lower()]
 
     @property
     def props(self):
@@ -176,7 +167,7 @@ class Shape(gws.Object, gws.IShape):
 
     @property
     def centroid(self) -> gws.IShape:
-        return new(self.geom.centroid, self.crs)
+        return Shape(self.geom.centroid, self.crs)
 
     def intersects(self, shape: gws.IShape) -> bool:
         return self.geom.intersects(t.cast(Shape, shape).geom)
@@ -199,7 +190,7 @@ class Shape(gws.Object, gws.IShape):
             js = shapely.geometry.JOIN_STYLE.round
 
         geom = self.geom.buffer(tolerance, resolution, cap_style=cs, join_style=js)
-        return new(geom, self.crs)
+        return Shape(geom, self.crs)
 
     def to_type(self, new_type: gws.GeometryType) -> gws.IShape:
         if new_type == self.type:
@@ -216,11 +207,11 @@ class Shape(gws.Object, gws.IShape):
 
     def to_multi(self) -> gws.IShape:
         if self.type == gws.GeometryType.point:
-            return new(shapely.geometry.MultiPoint([self.geom]), self.crs)
+            return Shape(shapely.geometry.MultiPoint([self.geom]), self.crs)
         if self.type == gws.GeometryType.linestring:
-            return new(shapely.geometry.MultiLineString([self.geom]), self.crs)
+            return Shape(shapely.geometry.MultiLineString([self.geom]), self.crs)
         if self.type == gws.GeometryType.polygon:
-            return new(shapely.geometry.MultiPolygon([self.geom]), self.crs)
+            return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
         return self
 
     def transformed_to(self, to_crs, **kwargs) -> gws.IShape:
@@ -229,4 +220,4 @@ class Shape(gws.Object, gws.IShape):
         to_crs = gws.lib.proj.as_proj(to_crs).epsg
         sg = shapely.geometry.mapping(self.geom)
         dg = fiona.transform.transform_geom(self.crs, to_crs, sg, **kwargs)
-        return new(shapely.geometry.shape(dg), to_crs)
+        return Shape(shapely.geometry.shape(dg), to_crs)

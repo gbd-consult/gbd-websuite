@@ -16,19 +16,19 @@ TMP_DIR = os.getenv('GWS_TMP_DIR', TMP_DIR)
 UID = int(os.getenv('GWS_UID', UID))
 GID = int(os.getenv('GWS_GID', GID))
 
+CONFIG_DIR = VAR_DIR + '/config'
+GLOBALS_DIR = TMP_DIR + '/globals'
 LEGEND_CACHE_DIR = VAR_DIR + '/cache/legend'
+LOCKS_DIR = TMP_DIR + '/lock'
+LOG_DIR = VAR_DIR + '/log'
 MAPPROXY_CACHE_DIR = VAR_DIR + '/cache/mpx'
+MISC_DIR = VAR_DIR + '/misc'
 NET_CACHE_DIR = VAR_DIR + '/cache/net'
 OBJECT_CACHE_DIR = VAR_DIR + '/cache/object'
-WEB_CACHE_DIR = TMP_DIR + '/webcache'
-
-LOG_DIR = VAR_DIR + '/log'
-MISC_DIR = VAR_DIR + '/misc'
-CONFIG_DIR = VAR_DIR + '/config'
-SERVER_DIR = VAR_DIR + '/server'
-
 PRINT_DIR = TMP_DIR + '/print'
+SERVER_DIR = VAR_DIR + '/server'
 SPOOL_DIR = TMP_DIR + '/spool'
+WEB_CACHE_DIR = TMP_DIR + '/webcache'
 
 SERVER_ENDPOINT = '/_'
 

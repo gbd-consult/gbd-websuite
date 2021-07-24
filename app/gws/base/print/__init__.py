@@ -14,7 +14,7 @@ class Props(gws.Data):
     templates: t.List[gws.base.template.Props]
 
 
-class Object(gws.Node):
+class Object(gws.Object):
     templates: gws.base.template.Bundle
 
     @property

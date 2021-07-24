@@ -62,13 +62,10 @@ class _Logger(logging.Logger):
     def exception(self, msg='', *args, **kwargs):
         _, exc, _ = sys.exc_info()
 
-        self.fatal('EXCEPTION: ' + repr(exc))
+        self.fatal('EXCEPTION: ' + (msg or repr(exc)))
 
         if self.isEnabledFor(Level.DEBUG):
-            s = err.string()
-            if msg:
-                s = msg + ':\n' + s
-            for k in s.split('\n'):
+            for k in err.string().split('\n'):
                 self.fatal(k)
 
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
@@ -160,7 +157,7 @@ def _init():
     return logging.getLogger(_gws_logger_name)
 
 
-_logger = util.get_global('gws.logger', _init)
+_logger = util.get_app_global('gws.logger', _init)
 
 fatal = _logger.fatal
 warn = _logger.warn

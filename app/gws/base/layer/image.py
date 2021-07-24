@@ -4,13 +4,13 @@ import gws.base.map.action
 import gws.lib.extent
 import gws.lib.mpx as mpx
 import gws.lib.img
-from . import core
+from . import core, types
 
 
-class Config(core.Config):
-    cache: core.CacheConfig = {}  #: cache configuration
-    grid: core.GridConfig = {}  #: grid configuration
-    imageFormat: core.ImageFormat = core.ImageFormat.png8  #: image format
+class Config(types.Config):
+    cache: types.CacheConfig = {}  # type:ignore #: cache configuration
+    grid: types.GridConfig = {}  # type:ignore #: grid configuration
+    imageFormat: types.ImageFormat = types.ImageFormat.png8  #: image format
 
 
 class Object(core.Object):
@@ -92,7 +92,7 @@ class Object(core.Object):
     
         Basically, the source is wrapped in a no-store BACK cache, which is then given to the front mpx layer
         
-        2. then, configure the base. Create the FRONT cache, which is store or no-store, depending on the cache setting.
+        2. then, configure the layer. Create the FRONT cache, which is store or no-store, depending on the cache setting.
         Also, configure the _NOCACHE variant for the layer, which skips the DST cache
     """
 

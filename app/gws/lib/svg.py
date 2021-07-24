@@ -26,17 +26,15 @@ SVG_ATTRIBUTES = {
 }
 
 
-def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: gws.MapRenderView, style_data: t.Optional[gws.StyleData], label: str) -> t.List[gws.Tag]:
+def geometry_tags(geom: shapely.geometry.base.BaseGeometry, rv: gws.MapRenderView, sv: t.Optional[gws.lib.style.Values], label: str) -> t.List[gws.Tag]:
     if geom.is_empty:
         return []
 
     trans = gws.lib.render.pixel_transformer(rv)
     geom = shapely.ops.transform(trans, geom)
 
-    if not style_data:
+    if not sv:
         return [_geometry(geom, {})]
-
-    sv: StyleValues = t.cast(gws.lib.style.Data, style_data).values
 
     with_geometry = sv.with_geometry == 'all'
     with_label = _is_label_visible(rv, sv)
@@ -148,7 +146,7 @@ def fragment_tags(fragment: gws.SvgFragment, rv: gws.MapRenderView) -> t.List[gw
     style_map = {}
     if fragment.styles:
         for s in fragment.styles:
-            sd = t.cast(gws.lib.style.Data, s)
+            sd = t.cast(gws.lib.style.Record, s)
             if sd.name:
                 style_map[sd.name] = sd.values
 

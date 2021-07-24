@@ -1,9 +1,9 @@
 """Internal QGIS/WMS search provider."""
 
 import gws
-import gws.types as t
-import gws.base.search.provider
+import gws.base.search
 import gws.lib.gis
+import gws.types as t
 from . import provider
 
 

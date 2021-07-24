@@ -59,7 +59,7 @@ class Props(gws.Data):
     title: str = ''
 
 
-class Object(gws.Node):
+class Object(gws.Object):
     layers: t.List[gws.ILayer]
 
     center: gws.Point

@@ -630,7 +630,6 @@ class DimensionModel {
         this.elements.map(e => e.createTag(fragment));
 
         let styles = gws.lib.entries(this.styles).map(([name, s]) => ({
-            type: gws.api.StyleType.css,
             values: s.values,
             name,
         }));

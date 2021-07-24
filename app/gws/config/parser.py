@@ -16,7 +16,7 @@ config_path_pattern = r'\bconfig\.(py|json|yaml|cx)$'
 config_function_name = 'config'
 
 
-def parse(specs: gws.spec.runtime.Object, value, type_name, source_path=''):
+def parse(specs: gws.ISpecRuntime, value, type_name, source_path=''):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
@@ -30,7 +30,7 @@ def parse(specs: gws.spec.runtime.Object, value, type_name, source_path=''):
             details.get('formatted_stack'))
 
 
-def parse_main(specs: gws.spec.runtime.Object, path):
+def parse_main(specs: gws.ISpecRuntime, path):
     """Read and parse the main config file"""
 
     dct, cfg_paths = _read(path)
@@ -164,8 +164,7 @@ def _syntax_error(path, src, message, line, context=10):
 
 def _save_intermediate(path, txt, ext):
     p = gws.lib.os2.parse_path(path)
-    d = gws.VAR_DIR + '/config'
-    gws.write_file(f"{d}/{p['name']}.parsed.{ext}", txt)
+    gws.write_file(f"{gws.CONFIG_DIR}/{p['name']}.parsed.{ext}", txt)
 
 
 def _as_flat_list(ls):

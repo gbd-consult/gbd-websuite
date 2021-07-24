@@ -1,34 +1,30 @@
+"""WMTS provider"""
+
 import gws
 import gws.types as t
-import gws.base.ows.provider
+import gws.base.ows
+import gws.base.metadata
 import gws.lib.ows
 import gws.lib.xml2
-from . import caps, types
+from . import caps
+
+
+class Config(gws.base.ows.provider.Config):
+    pass
 
 
 class Object(gws.base.ows.provider.Object):
-    def __init__(self):
-        super().__init__()
+    service_type = 'WMTS'
 
-        self.type = 'WMTS'
-        self.url = ''
-
-        self.source_layers: t.List[types.SourceLayer] = []
-        self.matrix_sets: t.List[types.TileMatrixSet] = []
+    matrix_sets: t.List[caps.TileMatrixSet]
+    source_layers: t.List[caps.SourceLayer]
 
     def configure(self):
-        
+        cc = caps.parse(self.get_capabilities())
 
-        self.url = self.var('url')
-
-        if self.url:
-            xml = gws.lib.ows.request.get_text(
-                self.url,
-                service='WMTS',
-                request='GetCapabilities',
-                params=self.var('params'),
-                max_age=self.var('capsCacheMaxAge'))
-        else:
-            xml = self.var('xml')
-
-        caps.parse(self, xml)
+        self.matrix_sets = cc.matrix_sets
+        self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
+        self.operations = cc.operations
+        self.service_version = cc.version
+        self.source_layers = cc.source_layers
+        self.supported_crs = cc.supported_crs

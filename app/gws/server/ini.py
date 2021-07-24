@@ -2,15 +2,12 @@ import grp
 import os
 import pwd
 
-import gws.base.qgis.server
-import gws.lib.mpx.config
 import gws
-import gws.types as t
-import gws.config
-import gws.lib.os2
 import gws.base.web
-
-
+import gws.config
+import gws.lib.mpx.config
+import gws.lib.os2
+import gws.types as t
 
 # https://uwsgi-docs.readthedocs.io/en/latest/Nginx.html
 # HTTPS is to ensure that the backend werkzeug can see secure requests
@@ -111,7 +108,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
     mercy = 5
 
     # @TODO: do we need more granular timeout configuration?
-    qgis_timeout = root.application.var('server.timeout', 600)
+    qgis_timeout = int(root.application.var('server.timeout', default=600))
     qgis_front_timeout = qgis_timeout + 10
     mapproxy_timeout = qgis_front_timeout + 10
     web_timeout = mapproxy_timeout + 10
@@ -175,6 +172,11 @@ def create(root: gws.RootObject, base_dir, pid_dir):
 
     if qgis_enabled:
 
+        qgis_server = gws.import_from_path(
+            gws.APP_DIR + '/gws/plugin/qgis/server.py',
+            'gws.plugin.qgis.server')
+
+
         # partially inspired by
         # https://github.com/elpaso/qgis2-server-vagrant/blob/master/docs/index.rst
 
@@ -182,7 +184,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
         # besides, it's a bad idea anyways, because killing them prematurely
         # doesn't give them a chance to fully preload a project
 
-        srv = gws.base.qgis.server.EXEC_PATH
+        srv = qgis_server.EXEC_PATH
         ini = f"""
             [uwsgi]
             uid = {gws.UID}
@@ -201,7 +203,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
             {stdenv}
         """
 
-        for k, v in gws.base.qgis.server.environ(root).items():
+        for k, v in qgis_server.environ(root).items():
             ini += f'env = {k}={v}\n'
 
         path = _write('uwsgi_qgis.ini', ini)
@@ -274,7 +276,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
 
         app = gws.config.root().application
         for s in app.web_sites:
-            site = t.cast(gws.base.web.Site, s)
+            site = t.cast(gws.base.web.site.Object, s)
             for r in site.rewrite_rules:
                 rewr += f'rewrite {r.match} {r.target} last;\n'
 
@@ -293,7 +295,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
             break
 
         # this is in MB
-        max_body_size = root.application.var('server.web.maxRequestLength')
+        max_body_size = int(root.application.var('server.web.maxRequestLength', default=1))
 
         client_buffer_size = 4  # MB
         client_tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/nginx')

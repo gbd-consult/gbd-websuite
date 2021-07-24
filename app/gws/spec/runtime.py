@@ -3,11 +3,10 @@
 import re
 
 import gws.lib.date
+import gws.lib.json2
 import gws.lib.os2
 import gws.lib.units
-import gws.lib.json2
 import gws.spec.generator
-import gws.types as t
 from gws.core.data import Data, is_data_object
 from gws.core.types import ExtCommandDescriptor, ExtObjectDescriptor, ISpecRuntime, Params
 
@@ -16,43 +15,51 @@ class Error(Exception):
     pass
 
 
-def create(manifest_path, with_cache=True):
-    cache_path = ''
-    genres = None
+def create(manifest_path: str = None, with_cache: bool = True) -> 'Object':
+    genres = _load(manifest_path) if with_cache else _generate(manifest_path)
+    return Object(genres['meta'], genres['specs'], genres['strings'])
 
-    if with_cache:
-        h = gws.lib.json2.to_hash([manifest_path])
-        cache_path = gws.TMP_DIR + '/' + h + '.spec.json'
+
+def _load(manifest_path):
+    cache_path = gws.TMP_DIR + '/' + gws.lib.json2.to_hash([manifest_path]) + '.spec.json'
+
+    if gws.is_file(cache_path):
         try:
             genres = gws.lib.json2.from_path(cache_path)
             gws.log.debug(f'spec.create: loaded from {cache_path!r}')
-        except Exception as exc:
-            gws.log.debug(f'spec.create: load failed: {exc!r}')
+            return genres
+        except:
+            gws.log.exception(f'spec.create: load failed')
 
-    if not genres:
-        ts = gws.time_start('SPEC GENERATOR')
-        try:
-            genres = gws.spec.generator.generate_for_server(manifest_path)
-        except Exception as exc:
-            raise Error(f'system error, spec generator failed : {exc!r}') from exc
-        gws.time_end(ts)
+    genres = _generate(manifest_path)
 
-    specs = Object(genres['meta'], genres['specs'], genres['strings'])
+    try:
+        gws.lib.json2.to_path(cache_path, genres, pretty=True)
+        gws.log.debug(f'spec.create: store to {cache_path!r}')
+    except:
+        gws.log.exception(f'spec.create: store failed')
 
-    if with_cache:
-        try:
-            gws.lib.json2.to_path(cache_path, genres, pretty=True)
-            gws.log.debug(f'spec.create: store to {cache_path!r}')
-            return specs
-        except Exception as exc:
-            gws.log.debug(f'spec.create: store failed: {exc!r}')
+    return genres
 
-    return specs
+
+def _generate(manifest_path):
+    ts = gws.time_start('SPEC GENERATOR')
+    try:
+        genres = gws.spec.generator.generate_for_server(manifest_path)
+    except Exception as exc:
+        raise Error(f'system error, spec generator failed') from exc
+    gws.time_end(ts)
+
+    return genres
+
+
+##
 
 
 class Object(ISpecRuntime):
     def __init__(self, meta, specs, strings):
         self.meta = meta
+        self.manifest = gws.Manifest(self.meta['manifest'])
         self.specs = specs
         self.strings = strings
 
@@ -63,7 +70,7 @@ class Object(ISpecRuntime):
         paths = []
         for chunk in self.meta['chunks']:
             path = chunk['bundleDir'] + '/' + self.meta['BUNDLE_FILENAME']
-            if gws.lib.os2.is_file(path) and path not in paths:
+            if gws.is_file(path) and path not in paths:
                 paths.append(path)
         return paths
 
@@ -102,8 +109,10 @@ class Object(ISpecRuntime):
             for name, key in self.specs[spec['arg']]['props'].items():
                 prop_spec = self.specs[key]
                 ln = f"{tab}{tab}--{name:15} {strings.get(prop_spec['name'], '')}"
-                if prop_spec['default'] is not None:
+                if not gws.is_empty(prop_spec['default']):
                     ln += f" (default {prop_spec['default']})"
+                if not prop_spec['has_default']:
+                    ln += " (*)"
                 args.append(ln)
 
             if args:
@@ -368,7 +377,7 @@ class _Reader:
 
     def _read_dirpath(self, val, spec):
         path = gws.lib.os2.abs_path(val, self.path)
-        if not gws.lib.os2.is_dir(path):
+        if not gws.is_dir(path):
             raise Error('ERR_DIR_NOT_FOUND', 'directory not found', path)
         return path
 
@@ -380,7 +389,7 @@ class _Reader:
 
     def _read_filepath(self, val, spec):
         path = gws.lib.os2.abs_path(val, self.path)
-        if not gws.lib.os2.is_file(path):
+        if not gws.is_file(path):
             raise Error('ERR_FILE_NOT_FOUND', 'file not found', path)
         return path
 

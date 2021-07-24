@@ -76,8 +76,7 @@ def _run(req: gws.IWebRequest, args: gws.SearchArgs, provider: gws.ISearchProvid
     try:
         fs: t.List[gws.IFeature] = provider.run(args, layer) or []
     except:
-        gws.log.exception()
-        gws.log.debug('SEARCH_FAILED')
+        gws.log.exception('SEARCH_FAILED')
         return
 
     tt = provider.templates or (layer.templates if layer else None)

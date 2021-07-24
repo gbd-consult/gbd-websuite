@@ -1,32 +1,47 @@
 import gws
 import gws.types as t
 import gws.base.layer
+import gws.base.ows
 import gws.lib.ows
 import gws.lib.proj
 import gws.lib.gis
 import gws.lib.gis
-from . import provider, util
+from . import provider
 
 
-class Config(gws.base.layer.VectorConfig, util.WfsServiceConfig):
-    pass
+@gws.ext.Config('layer.wfs')
+class Config(gws.base.layer.vector.Config, provider.Config):
+    """WFS layer"""
+    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
 
 
-class Object(gws.base.layer.Vector):
+@gws.ext.Object('layer.wfs')
+class Object(gws.base.layer.vector.Object):
+    provider: provider.Object
+    source_crs: gws.Crs
+    source_layers: t.List[gws.lib.gis.SourceLayer]
+    source_style: str
+
     def configure(self):
-        
+        self.provider = gws.base.ows.provider.shared_object(self.root, provider.Object, self.config)
 
-        self.url: str = self.var('url')
-        self.provider: provider.Object = gws.lib.ows.shared_provider(provider.Object, self, self.config)
+        if not self.has_configured_metadata:
+            self.configure_metadata_from(self.provider.metadata)
 
-        self.metadata = self.configure_metadata(self.provider.metadata)
-        self.title = self.metadata.title
-
-        self.source_layers: t.List[gws.SourceLayer] = gws.lib.gis.filter_layers(
+        self.source_layers = gws.lib.gis.filter_layers(
             self.provider.source_layers,
             self.var('sourceLayers'))
+
         if not self.source_layers:
-            raise gws.Error(f'no source layers found for {self.uid!r}')
+            raise gws.Error(f'no source layers found in layer={self.uid!r}')
+
+        if not self.has_configured_search:
+            self.search_providers.append(
+                t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider.wfs', gws.Config(
+                    uid=self.uid + '.default_search',
+                    layer=self,
+                ))))
+            self.has_configured_search = True
 
     @property
     def description(self):
@@ -37,16 +52,10 @@ class Object(gws.base.layer.Vector):
         }
         return self.description_template.render(context).content
 
-    @property
-    def default_search_provider(self):
-        return self.root.create_object('gws.ext.search.provider.wfs', gws.Config(
-            uid=self.uid + '.default_search',
-            layer=self))
-
     def get_features(self, bounds, limit=0):
-        fs = self.provider.find_features(gws.SearchArgs(
+        features = self.provider.find_features(gws.SearchArgs(
             bounds=bounds,
             limit=limit,
             source_layer_names=[sl.name for sl in self.source_layers]
         ))
-        return [self.connect_feature(f) for f in fs]
+        return [f.connect_to(self) for f in features]

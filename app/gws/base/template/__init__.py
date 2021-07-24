@@ -41,7 +41,7 @@ class LegendMode(t.Enum):
     image = 'image'
 
 
-class Object(gws.Node, gws.ITemplate):
+class Object(gws.Object, gws.ITemplate):
     key: str
     path: str
     subject: str
@@ -83,8 +83,7 @@ class Object(gws.Node, gws.ITemplate):
         uid = self.var('uid') or (gws.sha256(self.path) if self.path else self.class_name.replace('.', '_'))
         self.set_uid(uid)
 
-        p = self.var('dataModel')
-        self.data_model = self.create_child('gws.base.model', p) if p else None
+        self.data_model = self.create_child_if_config('gws.base.model', self.var('dataModel'))
 
         self.subject = self.var('subject', default='').lower()
         p = self.subject.split('.')
@@ -183,7 +182,7 @@ class BundleConfig(gws.Config):
     defaults: t.List[Config]
 
 
-class Bundle(gws.Node, gws.ITemplateBundle):
+class Bundle(gws.Object, gws.ITemplateBundle):
     templates: t.List[gws.ITemplate]
 
     @property

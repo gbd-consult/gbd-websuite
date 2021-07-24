@@ -1,6 +1,6 @@
 import gws
-import gws.base.api.action
-import gws.base.api.action
+import gws.base.api
+import gws.base.api
 import gws.base.auth
 import gws.base.client
 import gws.base.map
@@ -45,49 +45,42 @@ class Props(gws.Props):
     uid: str
 
 
-class Object(gws.Node):
+class Object(gws.Object):
     api: gws.base.api.Object
-    assets_root: t.Optional[gws.base.web.DocumentRoot]
+    assets_root: t.Optional[gws.DocumentRoot]
     client: t.Optional[gws.base.client.Object]
     locale_uids: t.List[str]
     map: gws.base.map.Object
     metadata: gws.base.metadata.Object
     overview_map: gws.base.map.Object
     print: gws.base.print.Object
+    search_providers: t.List[gws.ISearchProvider]
     templates: gws.base.template.Bundle
     title: str
 
     def configure(self):
-        p = self.var('metaData')
-        self.metadata = self.create_child(gws.base.metadata.Object, p)
+        self.metadata = self.create_child(
+            gws.base.metadata.Object,
+            self.var('metaData', with_parent=True) or gws.base.metadata.Config(title=self.var('title')))
 
         # title at the top level config preferred
         title = self.var('title') or self.metadata.get('title') or self.uid
         self.metadata.set('title', title)
-        self.title: str = title
+        self.title = title
 
         self.set_uid(self.title)
 
         gws.log.info(f'configuring project {self.uid!r}')
 
-        p = self.var('api')
-        self.api = self.create_child(gws.base.api.Object, p) if p else None
-
+        self.api = self.create_child_if_config(gws.base.api.Object, self.var('api'))
+        self.assets_root = gws.base.web.document_root_from_config(self.var('assets'))
         self.locale_uids = self.var('locales', with_parent=True, default=['en_CA'])
+        self.map = self.create_child_if_config(gws.base.map.Object, self.var('map'))
+        self.print = self.create_child_if_config(gws.base.print.Object, self.var('print'))
 
-        p = self.var('assets')
-        self.assets_root = self.create_child(gws.base.web.DocumentRoot, p) if p else None
-
-        p = self.var('map')
-        self.map = self.create_child(gws.base.map.Object, p) if p else None
-
-        p = self.var('overviewMap')
-        self.overview_map = self.create_child(gws.base.map.Object, p) if p else None
+        self.overview_map = self.create_child_if_config(gws.base.map.Object, self.var('overviewMap'))
         if self.overview_map:
             self.overview_map.set_uid(self.uid + '.overview')
-
-        p = self.var('print')
-        self.print = self.create_child(gws.base.print.Object, p) if p else None
 
         p = self.var('templates')
         self.templates = t.cast(
@@ -95,27 +88,29 @@ class Object(gws.Node):
             self.create_child(
                 gws.base.template.Bundle,
                 gws.Config(templates=p, defaults=gws.base.template.BUILTINS)))
-        #
-        # p = self.var('search')
-        # if p and p.enabled and p.providers:
-        #     for s in p.providers:
-        #         self.create_child('gws.ext.search.provider', s)
+
+        self.search_providers = []
+
+        p = self.var('search')
+        if p and p.enabled and p.providers:
+            for s in p.providers:
+                self.search_providers.append(
+                    t.cast('gws.ISearchProvider', self.create_child('gws.ext.search.provider', s)))
 
         p = self.var('client')
         if p:
             p.parentClient = self.parent.var('client')
-        self.client = self.create_child(gws.base.client.Object, p) if p else None
+        self.client = self.create_child_if_config(gws.base.client.Object, p)
 
     @property
     def description(self):
-        context = {'project': self, 'meta': self.metadata.values}
+        context = {'project': self, 'meta': self.metadata.record}
         tpl = self.templates.find(subject='project.description')
         return tpl.render(context).content if tpl else ''
 
     @property
     def props(self):
         actions = gws.merge(
-            {},
             gws.get(self.parent, 'api.actions'),
             gws.get(self, 'api.actions'))
         return Props(

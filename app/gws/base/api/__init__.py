@@ -1,6 +1,6 @@
 import gws
 import gws.types as t
-
+from . import action
 
 class Config(gws.WithAccess):
     """Server actions"""
@@ -8,7 +8,7 @@ class Config(gws.WithAccess):
     actions: t.Optional[t.List[gws.ext.action.Config]]  #: available actions
 
 
-class Object(gws.Node):
+class Object(gws.Object):
     actions: t.Dict
 
     def configure(self):

@@ -2,12 +2,11 @@ import math
 import re
 
 import gws
-import gws.types as t
 import gws.base.layer
 import gws.lib.gis
 import gws.lib.json2
-
-from . import core, image
+import gws.types as t
+from . import image, types
 
 _EPSG_3857_RADIUS = 6378137
 
@@ -30,9 +29,9 @@ class ServiceConfig:
 @gws.ext.Config('layer.tile')
 class Config(image.Config):
     """Tile layer"""
-    display: core.DisplayMode = core.DisplayMode.tile  #: layer display mode
+    display: types.DisplayMode = types.DisplayMode.tile  #: layer display mode
     maxRequests: int = 0  #: max concurrent requests to this source
-    service: t.Optional[ServiceConfig] = {}  #: service configuration
+    service: t.Optional[ServiceConfig] = {}  # type:ignore #: service configuration
     url: gws.Url  #: rest url with placeholders {x}, {y} and {z}
 
 
@@ -58,7 +57,7 @@ class Object(image.Object):
 
     def configure(self):
         # with reqSize=1 MP will request the same tile multiple times
-        # reqSize=4 is more efficient, however, meta=1 yields the first tile faster
+        # reqSize=4 is more efficient, however, reqSize=1 yields the first tile faster
         # which is crucial when browsing non-cached low resoltions
         # so, let's use 1 as default, overridable in the config
         #

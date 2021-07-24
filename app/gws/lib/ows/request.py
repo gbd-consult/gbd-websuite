@@ -11,8 +11,8 @@ def raw_get(url, **kwargs):
 
     status = res.status_code
 
-    # check for an ows error (no matter what status code says)
-    # we can get big image responses here, so be careful and don't blindly decode them
+    # check for an ows error (no matter what the status code says)
+    # we can get big image responses here, so be careful and don't blindly decode everything
 
     if res.content.startswith(b'<') or 'xml' in res.content_type:
         text = str(res.content[:1024], encoding='utf8', errors='ignore').lower()
@@ -26,22 +26,21 @@ def raw_get(url, **kwargs):
     return res
 
 
-def get(url, service, request, **kwargs):
+def get(url, service, verb, **kwargs):
     """Get a raw service response"""
 
-    params = kwargs.get('params') or {}
-    params['SERVICE'] = service.upper()
-    params['REQUEST'] = request
+    params = kwargs.pop('params', None) or {}
 
     # some guys accept only uppercase params
     params = {k.upper(): v for k, v in params.items()}
 
-    kwargs['params'] = params
+    params.setdefault('SERVICE', service.upper())
+    params.setdefault('REQUEST', verb)
 
-    return raw_get(url, **kwargs)
+    return raw_get(url, params=params, **kwargs)
 
 
-def get_text(url, service, request, **kwargs) -> str:
-    res = get(url, service, request, **kwargs)
+def get_text(url, service, verb, **kwargs) -> str:
+    res = get(url, service, verb, **kwargs)
     return res.text
 

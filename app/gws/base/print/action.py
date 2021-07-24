@@ -2,7 +2,7 @@
 
 import gws
 import gws.types as t
-import gws.base.api.action
+import gws.base.api
 import gws.base.web.error
 import gws.lib.job
 import gws.lib.mime

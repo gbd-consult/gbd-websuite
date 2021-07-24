@@ -99,7 +99,7 @@ class FeatureCollection(gws.Data):
     num_returned: int
 
 
-class Object(gws.Node, gws.IOwsService):
+class Object(gws.Object, gws.IOwsService):
     """Baseclass for OWS services."""
 
     metadata: gws.IMetaData
@@ -166,8 +166,8 @@ class Object(gws.Node, gws.IOwsService):
         m = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, self.var('metaData')))
         m.extend(self.project.metadata if self.project else self.root.application.metadata)
 
-        if not m.data.get('links') and self.service_link:
-            m.data.set('links', [self.service_link])
+        if not m.get('links') and self.service_link:
+            m.set('links', [self.service_link])
 
         m.extend(self.default_metadata)
         return m
@@ -491,7 +491,7 @@ class Object(gws.Node, gws.IOwsService):
 
         out = renderer.output
         if not out.items:
-            content = gws.lib.misc.Pixels.png8
+            content = gws.lib.img.PIXEL_PNG8
         else:
             content = gws.lib.img.image_to_bytes(out.items[0].image, format='png')
 

@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.metadata
-import gws.base.ows.provider
+import gws.base.ows
 import gws.lib.feature
 import gws.lib.gis
 import gws.lib.net
@@ -34,25 +34,14 @@ OGC 06-042, 7.3.3.3
 
 
 class Config(gws.base.ows.provider.Config):
-    capsCacheMaxAge: gws.Duration = '1d'  #: max cache age for capabilities documents
     capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
-    getCapabilitiesParams: t.Optional[t.Dict]  #: additional parameters for GetCapabilities requests
-    getMapParams: t.Optional[t.Dict]  #: additional parameters for GetMap requests
 
 
 class Object(gws.base.ows.provider.Object):
     service_type = 'WMS'
 
     def configure(self):
-
-        xml = gws.lib.ows.request.get_text(
-            self.url,
-            service='WMS',
-            request='GetCapabilities',
-            params=self.var('getCapabilitiesParams'),
-            max_age=self.var('capsCacheMaxAge'))
-
-        cc = caps.parse(xml)
+        cc = caps.parse(self.get_capabilities())
 
         self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
         self.service_version = cc.version
@@ -60,18 +49,15 @@ class Object(gws.base.ows.provider.Object):
         self.source_layers = cc.source_layers
         self.supported_crs = cc.supported_crs
 
-    def find_features(self, args: gws.SearchArgs) -> t.List[gws.lib.feature.Feature]:
-        operation = self.operation('GetFeatureInfo')
-        if not operation or not args.shapes:
-            return []
-
+    def find_features(self, args):
         shape = args.shapes[0]
         if shape.type != gws.GeometryType.point:
             return []
 
-        our_crs = gws.lib.gis.best_crs(shape.crs, self.supported_crs)
-        shape = shape.transformed_to(our_crs)
-        axis = gws.lib.gis.best_axis(our_crs, self.invert_axis_crs, 'WMS', self.service_version)
+        our_crs = shape.crs
+        source_crs = self.source_crs or gws.lib.gis.best_crs(our_crs, self.supported_crs)
+        shape = shape.transformed_to(source_crs)
+        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, 'WMS', self.service_version)
 
         #  draw a 1000x1000 bbox around a point
         width = 1000
@@ -80,7 +66,7 @@ class Object(gws.base.ows.provider.Object):
         bbox = gws.lib.gis.make_bbox(
             shape.x,
             shape.y,
-            our_crs,
+            source_crs,
             args.resolution,
             width,
             height
@@ -90,11 +76,11 @@ class Object(gws.base.ows.provider.Object):
         if invert_axis:
             bbox = gws.lib.gis.invert_bbox(bbox)
 
-        p = {
+        params = {
             'BBOX': bbox,
             'WIDTH': width,
             'HEIGHT': height,
-            'CRS' if self.service_version >= '1.3' else 'SRS': our_crs,
+            'CRS' if self.service_version >= '1.3' else 'SRS': source_crs,
             'INFO_FORMAT': self._info_format,
             'LAYERS': args.source_layer_names,
             'QUERY_LAYERS': args.source_layer_names,
@@ -103,33 +89,34 @@ class Object(gws.base.ows.provider.Object):
         }
 
         if args.limit:
-            p['FEATURE_COUNT'] = args.limit
+            params['FEATURE_COUNT'] = args.limit
 
-        p['I' if self.service_version >= '1.3' else 'X'] = width >> 1
-        p['J' if self.service_version >= '1.3' else 'Y'] = height >> 1
+        params['I' if self.service_version >= '1.3' else 'X'] = width >> 1
+        params['J' if self.service_version >= '1.3' else 'Y'] = height >> 1
 
-        p = gws.merge(p, args.params)
+        params = gws.merge(params, args.params)
 
-        text = gws.lib.ows.request.get_text(operation.get_url, service='WMS', request='GetFeatureInfo', params=p)
-        found = gws.lib.ows.formats.read(text, crs=our_crs, invert_axis=invert_axis)
+        operation = self.operation('GetFeatureInfo')
+        text = gws.lib.ows.request.get_text(operation.get_url, service='WMS', verb='GetFeatureInfo', params=params)
+        features = gws.lib.ows.formats.read(text, crs=source_crs, invert_axis=invert_axis)
 
-        if found is None:
-            gws.p('WMS QUERY', p, 'NOT PARSED')
+        if features is None:
+            gws.log.error(f'WMS response not parsed, params={params!r}')
             return []
 
-        gws.p('WMS QUERY', p, f'FOUND={len(found)}')
-        return found
+        return [f.transform_to(our_crs) for f in features]
 
     @gws.cached_property
     def _info_format(self):
-        op = self.operation('GetFeatureInfo')
-        if not op:
+        operation = self.operation('GetFeatureInfo')
+        if not operation:
             return
+
         preferred = 'gml', 'text/xml', 'text/plain'
 
         for fmt in preferred:
-            for f in op.formats:
+            for f in operation.formats:
                 if fmt in f:
                     return f
 
-        return op.formats[0]
+        return operation.formats[0]

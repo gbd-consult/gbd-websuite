@@ -68,6 +68,10 @@ def unlink(path):
         pass
 
 
+def rename(src, dst):
+    os.replace(src, dst)
+
+
 def file_mtime(path):
     try:
         return os.stat(path).st_mtime
@@ -88,14 +92,6 @@ def file_checksum(path):
             return hashlib.sha256(fp.read()).hexdigest()
     except OSError:
         return '0'
-
-
-def is_file(path):
-    return os.path.isfile(path)
-
-
-def is_dir(path):
-    return os.path.isdir(path)
 
 
 def kill_pid(pid, sig_name='TERM'):
@@ -160,7 +156,7 @@ def abs_path(path, base):
     if os.path.isabs(path):
         return path
 
-    if is_file(base):
+    if os.path.isfile(base):
         base = os.path.dirname(base)
 
     return os.path.abspath(os.path.join(base, path))
@@ -169,7 +165,7 @@ def abs_path(path, base):
 def rel_path(path, base):
     """Relativize an absolute path with respect to a base directory or file path"""
 
-    if is_file(base):
+    if os.path.isfile(base):
         base = os.path.dirname(base)
 
     return os.path.relpath(path, base)

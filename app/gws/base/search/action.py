@@ -1,7 +1,7 @@
 """Search API."""
 
 import gws
-import gws.base.api.action
+import gws.base.api
 import gws.base.template
 import gws.lib.feature
 import gws.lib.json2

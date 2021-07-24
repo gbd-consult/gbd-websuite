@@ -62,22 +62,21 @@ class Object(gws.base.layer.vector.Object):
     def get_features(self, bounds, limit=0) -> t.List[gws.IFeature]:
         shape = gws.lib.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)
 
-        fs = self.provider.select(gws.SqlSelectArgs(
+        features = self.provider.select(gws.SqlSelectArgs(
             table=self.table,
             shape=shape,
             limit=limit,
         ))
 
-        return [self.connect_feature(f) for f in fs]
+        return [f.connect_to(self) for f in features]
 
     def edit_operation(self, operation: str, feature_props: t.List[gws.lib.feature.Props]) -> t.List[gws.IFeature]:
-        features = []
+        src_features = []
 
         for p in feature_props:
             if p.attributes and self.edit_data_model:
                 p.attributes = self.edit_data_model.apply(p.attributes)
+            src_features.append(gws.lib.feature.from_props(p))
 
-            features.append(gws.lib.feature.from_props(p))
-
-        fs = self.provider.edit_operation(operation, self.table, features)
-        return [self.connect_feature(f) for f in fs]
+        features = self.provider.edit_operation(operation, self.table, src_features)
+        return [f.connect_to(self) for f in features]

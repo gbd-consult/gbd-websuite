@@ -102,7 +102,17 @@ _literals = {
 }
 
 
-class Values(gws.Data):
+class Props(gws.Props):
+    abstract: str
+    attribution: str
+    dateCreated: str
+    dateUpdated: str
+    keywords: t.List[str]
+    language: str
+    title: str
+
+
+class Record(gws.Data):
     abstract: t.Optional[str]  #: object abstract description
     accessConstraints: t.Optional[str]
     attribution: t.Optional[str]  #: attribution (copyright) string
@@ -129,8 +139,8 @@ class Values(gws.Data):
     title: t.Optional[str]  #: object title
 
 
-def from_dict(d: dict) -> Values:
-    m = Values()
+def from_dict(d: dict) -> Record:
+    m = Record()
 
     for k, v in d.items():
         if '.' in k:
@@ -153,11 +163,11 @@ def from_dict(d: dict) -> Values:
     return m
 
 
-def merge(a, b) -> Values:
+def merge(a, b) -> Record:
     ad = gws.as_dict(a)
     bd = gws.as_dict(b)
 
-    m = Values()
+    m = Record()
 
     for p in ad.keys() | bd.keys():
         if p in _list_props:

@@ -1,7 +1,6 @@
 import cgi
 import hashlib
 import os
-import pickle
 import re
 import time
 import urllib.parse
@@ -141,7 +140,6 @@ def add_params(url, params):
 
 class HTTPResponse:
     def __init__(self, ok: bool, res: requests.Response = None, text: str = None, status_code=0):
-        self._text = None
         self.ok = ok
         self.res = res
         if res:
@@ -155,12 +153,12 @@ class HTTPResponse:
 
     @property
     def text(self) -> str:
-        if self._text is None:
-            self._text = _get_text(self.content, self.content_encoding)
-        return self._text
+        if not hasattr(self, '_text'):
+            setattr(self, '_text', _get_text(self.content, self.content_encoding))
+        return getattr(self, '_text')
 
 
-def _get_text(content, encoding):
+def _get_text(content, encoding) -> str:
     if encoding:
         try:
             return str(content, encoding=encoding, errors='strict')
@@ -230,14 +228,14 @@ def http_request(url, **kwargs) -> HTTPResponse:
         age = _file_age(cache_path)
         if age < max_age:
             gws.log.debug(f'REQUEST_CACHED: url={url!r} path={cache_path!r} age={age}')
-            return _read_cache(cache_path)
+            return gws.unserialize_from_path(cache_path)
 
     ts = gws.time_start(f'HTTP_REQUEST={url!r}')
     resp = _http_request(url, kwargs)
     gws.time_end(ts)
 
     if max_age and resp.ok:
-        _store_cache(resp, _cache_path(url))
+        gws.serialize_to_path(resp, _cache_path(url))
 
     return resp
 
@@ -263,14 +261,16 @@ def _http_request(url, kwargs) -> HTTPResponse:
 
     try:
         res = requests.request(method, url, **kwargs)
-        if res.status_code >= 400:
-            gws.log.debug(f'HTTP_REQUEST_FAILED: (status) url={url!r} status={res.status_code!r}')
-        return HTTPResponse(ok=(res.status_code < 400), res=res)
+        if res.status_code < 400:
+            gws.log.debug(f'HTTP_REQUEST: url={url!r} status={res.status_code!r}')
+            return HTTPResponse(ok=True, res=res)
+        gws.log.error(f'HTTP_REQUEST_FAILED: (status) url={url!r} status={res.status_code!r}')
+        return HTTPResponse(ok=False, res=res)
     except requests.Timeout as exc:
-        gws.log.debug(f'HTTP_REQUEST_FAILED: (timeout) url={url!r}')
+        gws.log.exception(f'HTTP_REQUEST_FAILED: (timeout) url={url!r}')
         return HTTPResponse(ok=False, text=repr(exc), status_code=500)
     except requests.RequestException as exc:
-        gws.log.debug(f'HTTP_REQUEST_FAILED: (generic) url={url!r} err={exc!r}')
+        gws.log.exception(f'HTTP_REQUEST_FAILED: (generic) url={url!r}')
         return HTTPResponse(ok=False, text=repr(exc), status_code=500)
 
 
@@ -285,10 +285,3 @@ def _file_age(path):
         return 1e20
     return int(time.time() - st.st_mtime)
 
-
-def _store_cache(resp, path):
-    gws.write_file_b(path, pickle.dumps(resp))
-
-
-def _read_cache(path):
-    return pickle.loads(gws.read_file_b(path))

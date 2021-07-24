@@ -5,7 +5,7 @@ import io
 from PIL import Image as image_api, ImageFont as font_api
 from PIL.Image import Image as ImageObject
 
-_imports = [image_api, font_api, ImageObject]
+_keep_imports = [image_api, font_api, ImageObject]
 
 
 def image_from_bytes(r: bytes) -> ImageObject:

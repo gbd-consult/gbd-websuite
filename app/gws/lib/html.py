@@ -2,8 +2,8 @@ import gws
 import gws.lib.os2
 
 
-def render_to_png(html, page_size: gws.Size = None, margin: gws.Extent = None) -> bytes:
-    path = gws.TMP_DIR + '/' + gws.random_string(64)
+def render_to_png(html, out_path: str, page_size: gws.Size = None, margin: gws.Extent = None) -> str:
+    tmp = gws.TMP_DIR + '/' + gws.random_string(64)
 
     if margin:
         html = f"""
@@ -12,31 +12,33 @@ def render_to_png(html, page_size: gws.Size = None, margin: gws.Extent = None) -
             </body>
         """
 
-
     if 'charset' not in html:
         html = '<meta charset="utf8"/>' + html
-    gws.write_file_b(path + '.html', gws.as_bytes(html))
+    gws.write_file_b(tmp + '.html', gws.as_bytes(html))
 
+    cmd = ['wkhtmltoimage']
 
-    cmd = [
-        'wkhtmltoimage',
+    if page_size:
+        w, h = page_size
+        cmd.extend([
+            '--width', str(w),
+            '--height', str(h),
+            '--crop-w', str(w),
+            '--crop-h', str(h),
+        ])
+
+    cmd.extend([
         '--disable-javascript',
         '--disable-smart-width',
-        '--width', str(page_size[0]),
-        '--height', str(page_size[1]),
-        '--crop-w', str(page_size[0]),
-        '--crop-h', str(page_size[1]),
         '--transparent',
-        path + '.html',
-        path + '.png',
-    ]
+        tmp + '.html',
+        tmp + '.png',
+    ])
 
     gws.log.debug(cmd)
     gws.lib.os2.run(cmd, echo=False)
 
-    res = gws.read_file_b(path + '.png')
+    gws.lib.os2.unlink(tmp + '.html')
+    gws.lib.os2.rename(tmp + '.png', out_path)
 
-    gws.lib.os2.unlink(path + '.html')
-    gws.lib.os2.unlink(path + '.png')
-
-    return res
+    return out_path

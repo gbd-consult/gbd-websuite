@@ -10,25 +10,29 @@ def render(legend: gws.Legend, context: dict = None) -> t.Optional[gws.LegendRen
     if legend.path:
         return gws.LegendRenderOutput(image_path=legend.path)
 
-    if legend.url:
-        try:
-            res = gws.lib.ows.request.raw_get(legend.url)
-            if not res.content_type.startswith('image/'):
-                raise gws.lib.ows.error.Error(f'wrong content type {res.content_type!r}')
-        except gws.lib.ows.error.Error as exc:
-            gws.log.error(f'render_legend: download failed url={legend.url!r} error={exc!r}')
-            return None
+    if legend.urls:
+        buf = []
 
-        return gws.LegendRenderOutput(image=res.content)
+        for url in legend.urls:
+            try:
+                res = gws.lib.ows.request.raw_get(url, max_age=legend.cache_max_age)
+                if not res.content_type.startswith('image/'):
+                    raise gws.lib.ows.error.Error(f'wrong content type {res.content_type!r}')
+                buf.append(res.content)
+            except gws.lib.ows.error.Error as exc:
+                gws.log.exception(f'render_legend: download failed url={url!r}')
+
+        # NB even if there's only one image, it's not a bad idea to run it through the image converter
+        return gws.LegendRenderOutput(image=_combine_images(buf, legend.options))
 
     if legend.template:
-        html = legend.template.render(context).content
+        html = legend.template.render(context or {}).content
         return gws.LegendRenderOutput(html=html)
 
     return None
 
 
-def as_bytes(out: gws.LegendRenderOutput) -> t.Optional[bytes]:
+def as_bytes(out: t.Optional[gws.LegendRenderOutput]) -> t.Optional[bytes]:
     if not out:
         return None
     if out.image:
@@ -42,7 +46,7 @@ def as_bytes(out: gws.LegendRenderOutput) -> t.Optional[bytes]:
 
 
 def combine_urls(urls: t.List[str], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
-    outs = [render(gws.Legend(url=url)) for url in urls]
+    outs = gws.compact(render(gws.Legend(url=url)) for url in urls)
     return combine_outputs(outs, options)
 
 

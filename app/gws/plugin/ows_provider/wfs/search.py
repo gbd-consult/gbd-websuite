@@ -1,41 +1,43 @@
 import gws
-import gws.types as t
-import gws.base.search.provider
-import gws.lib.ows
-import gws.lib.shape
+import gws.base.ows
+import gws.base.search
 import gws.lib.gis
-from . import provider, util
+import gws.lib.shape
+import gws.types as t
+from . import provider
 
 
-class Config(gws.base.search.provider.Config, util.WfsServiceConfig):
-    pass
+@gws.ext.Config('search.provider.wfs')
+class Config(gws.base.search.Config, provider.Config):
+    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
 
 
+@gws.ext.Object('search.provider.wfs')
 class Object(gws.base.search.provider.Object):
+    # @TODO support filters
+    supports_geometry = True
+
+    source_layers: t.List[gws.lib.gis.SourceLayer]
+    provider: provider.Object
+
     def configure(self):
-        
-
-        # @TODO support filters
-        self.capabilties = gws.base.search.provider.CAPS_GEOMETRY
-
         layer = self.var('layer')
         if layer:
-            self.provider: provider.Object = layer.provider
+            self.provider = layer.provider
             self.source_layers = layer.source_layers
-            self.url = layer.url
         else:
-            self.provider: provider.Object = gws.lib.ows.shared_provider(provider.Object, self, self.config)
+            self.provider = gws.base.ows.provider.shared_object(provider.Object, self, self.config)
             self.source_layers = gws.lib.gis.filter_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers'))
-            if not self.source_layers:
-                raise gws.Error(f'no source layers found for {self.uid!r}')
-            self.url = self.var('url')
+
+        if not self.source_layers:
+            raise gws.Error(f'no source layers in {self.uid!r}')
 
     def can_run(self, args):
-        return super().can_run(args) and self.provider.operation('GetFeature')
+        return super().can_run(args) and bool(self.provider.operation('GetFeature'))
 
-    def run(self, layer: gws.ILayer, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+    def run(self, args, layer=None):
         args.source_layer_names = [sl.name for sl in self.source_layers]
         args.tolerance = args.tolerance or self.tolerance
         return self.provider.find_features(args)

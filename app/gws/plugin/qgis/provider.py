@@ -2,7 +2,7 @@ import zipfile
 
 import gws
 import gws.types as t
-import gws.base.ows.provider
+import gws.base.ows
 import gws.config
 import gws.lib.ows
 import gws.lib.gis
@@ -125,7 +125,7 @@ class Object(gws.base.ows.provider.Object):
 
         p = gws.merge(p, args.params)
 
-        text = gws.lib.ows.request.get_text(self.url, service='WMS', request='GetFeatureInfo', params=p)
+        text = gws.lib.ows.request.get_text(self.url, service='WMS', verb='GetFeatureInfo', params=p)
         found = gws.lib.ows.formats.read(text, crs=our_crs)
 
         if found is None:

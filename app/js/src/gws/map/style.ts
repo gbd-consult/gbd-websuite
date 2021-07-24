@@ -52,24 +52,18 @@ export class StyleManager implements types.IStyleManager {
         if (typeof style === 'object') {
             let props = style as api.StyleProps;
 
-            if (props.type === api.StyleType.cssSelector) {
-                return this.getFromNameOrSelector(props.name);
+            if (props.selector) {
+                return this.getFromNameOrSelector(props.selector);
             }
 
-            if (props.type === api.StyleType.css) {
-                if (props.values) {
-                    return this.create(props.values);
-                }
-
-                let values = valuesFromCssText(props.text || '');
-
-                if (values) {
-                    return this.create(values);
-                }
-
-                console.warn('STYLE:invalid css', style);
-                return null;
+            if (props.text) {
+                return this.create(valuesFromCssText(props.text));
             }
+
+            if (props.values) {
+                return this.create(props.values);
+            }
+
         }
 
         console.warn('STYLE:invalid style', style);
@@ -170,7 +164,7 @@ abstract class BaseStyle implements types.IStyle {
 }
 
 
-export class Style extends BaseStyle  implements types.IStyle {
+export class Style extends BaseStyle implements types.IStyle {
 
     protected cache: {
         markerImage?: ol.style.Image;
@@ -192,7 +186,6 @@ export class Style extends BaseStyle  implements types.IStyle {
 
     get props() {
         return {
-            'type': api.StyleType.css,
             'values': this.values,
         }
     }

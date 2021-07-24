@@ -1,7 +1,6 @@
 import gws
+import gws.base.search
 import gws.types as t
-import gws.base.search.provider
-
 from . import provider as prov
 
 

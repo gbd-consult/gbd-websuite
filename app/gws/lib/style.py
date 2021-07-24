@@ -2,13 +2,8 @@ import base64
 import re
 
 import gws
-import gws.types as t
 import gws.lib.net
-
-
-class Type(t.Enum):
-    css = 'css'
-    cssSelector = 'cssSelector'
+import gws.types as t
 
 
 class Values(gws.Data):
@@ -65,64 +60,42 @@ class Values(gws.Data):
     offset_y: int
 
 
-class Data(gws.StyleData):
+class Props(gws.Props):
+    name: str = ''
+    values: dict
+    selector: str = ''
+    text: str = ''
+
+
+class Record(gws.Data):
     name: str
-    type: Type
+    selector: str
     text: str
     values: Values
 
 
-class Config(gws.Config):
-    """Feature style"""
-
-    type: Type  #: style type
-    name: t.Optional[str]  #: style name
-    text: t.Optional[str]  #: raw style content
-    values: t.Optional[dict]  #: style values
+def from_props(p: gws.Props) -> Record:
+    return from_dict(gws.as_dict(p))
 
 
-class Props(gws.Props):
-    type: Type
-    values: dict
-    text: str = ''
-    name: str = ''
+def from_dict(d: dict) -> Record:
+    rec = Record(
+        name=d.get('name', ''),
+        values=Values(),
+        selector=d.get('selector', ''),
+        text=d.get('text', ''),
+    )
 
+    if d.get('text'):
+        rec.values = values_from_text(d.get('text'))
+    elif d.get('values'):
+        rec.values = values_from_dict(gws.as_dict(d.get('values')))
 
-class Object(gws.Node, gws.IStyle):
-    data: gws.StyleData
-
-    @property
-    def props(self):
-        d = t.cast(Data, self.data)
-        return gws.Props(
-            type=d.type,
-            values=vars(d.values),
-            text=d.text or '',
-            name=d.name or '')
-
-
-def from_config(cfg: Config) -> Object:
-    return from_props(t.cast(gws.Props, cfg))
-
-
-def from_props(p: gws.Props) -> Object:
-    typ = p.get('type', 'css')
-    data = gws.StyleData(p, type=typ)
-
-    if typ == 'css':
-        val = p.get('values')
-        if val:
-            data.set('values', values_from_dict(gws.as_dict(val)))
-        else:
-            data.set('values', values_from_text(p.get('text')))
-
-    obj = Object()
-    obj.data = data
-    return obj
+    return rec
 
 
 def values_from_dict(d: dict) -> Values:
-    values = Values(_DEFAULT_VALUES)
+    props = Values(_DEFAULTS)
 
     for k, v in d.items():
         if v is None:
@@ -134,9 +107,9 @@ def values_from_dict(d: dict) -> Values:
         if fn:
             v = fn(v)
             if v is not None:
-                setattr(values, k, v)
+                setattr(props, k, v)
 
-    return values
+    return props
 
 
 # @TODO use a real parser
@@ -151,11 +124,11 @@ def values_from_text(text) -> Values:
     return values_from_dict(d)
 
 
-def parse_icon(val):
+def parse_icon(val) -> t.Optional[gws.Url]:
     return _icon(val)
 
 
-_DEFAULT_VALUES = gws.Data(
+_DEFAULTS = gws.Data(
     fill=None,
 
     stroke=None,

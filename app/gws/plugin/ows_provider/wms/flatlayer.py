@@ -1,8 +1,7 @@
 import gws
 import gws.types as t
-import gws.base.ows.provider
+import gws.base.ows
 import gws.base.layer
-import gws.base.layer.image
 import gws.lib.legend
 import gws.lib.gis
 import gws.lib.zoom
@@ -18,12 +17,15 @@ class Config(gws.base.layer.image.Config, provider.Config):
 class Object(gws.base.layer.image.Object):
     source_layers: t.List[gws.lib.gis.SourceLayer]
     provider: provider.Object
+    source_crs: gws.Crs
 
     def configure(self):
         self.provider = gws.base.ows.provider.shared_object(self.root, provider.Object, self.config)
 
-        if not self.has_configured.metadata:
+        if not self.has_configured_metadata:
             self.configure_metadata_from(self.provider.metadata)
+
+        self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
 
         self.source_layers = gws.lib.gis.filter_layers(
             self.provider.source_layers,
@@ -32,13 +34,13 @@ class Object(gws.base.layer.image.Object):
         if not self.source_layers:
             raise gws.Error(f'no source layers found in layer={self.uid!r}')
 
-        if not self.has_configured.resolutions:
+        if not self.has_configured_resolutions:
             zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
             if zoom:
                 self.resolutions = gws.lib.zoom.resolutions_from_config(zoom, self.resolutions)
-                self.has_configured.resolutions = True
+                self.has_configured_resolutions = True
 
-        if not self.has_configured.search:
+        if not self.has_configured_search:
             queryable_layers = gws.lib.gis.filter_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers'),
@@ -51,19 +53,21 @@ class Object(gws.base.layer.image.Object):
                         layer=self,
                         source_layers=queryable_layers
                     ))))
-                self.has_configured.search = True
+                self.has_configured_search = True
 
-        if not self.has_configured.legend:
-            self.legend = gws.Legend(
-                enabled=True,
-                source_urls=[sl.legend for sl in self.source_layers if sl.legend],
-                options=self.var('legend.options', default={}))
-            self.has_configured.legend = True
+        if not self.has_configured_legend:
+            urls = [sl.legend_url for sl in self.source_layers if sl.legend_url]
+            if urls:
+                self.legend = gws.Legend(
+                    enabled=True,
+                    urls=urls,
+                    cache_max_age=self.var('legend.cacheMaxAge', default=0),
+                    options=self.var('legend.options', default={}))
+            self.has_configured_legend = True
 
     @property
     def own_bounds(self):
-        our_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
-        return gws.lib.gis.bounds_from_layers(self.source_layers, our_crs)
+        return gws.lib.gis.bounds_from_layers(self.source_layers, self.source_crs)
 
     @property
     def description(self):
@@ -79,8 +83,6 @@ class Object(gws.base.layer.image.Object):
         if not self.var('capsLayersBottomUp'):
             layers = reversed(layers)
 
-        our_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
-
         req = gws.merge({
             'url': self.provider.operation('GetMap').get_url,
             'transparent': True,
@@ -89,15 +91,9 @@ class Object(gws.base.layer.image.Object):
 
         source_uid = mc.source(gws.compact({
             'type': 'wms',
-            'supported_srs': [our_crs],
+            'supported_srs': [self.source_crs],
             'concurrent_requests': self.var('maxRequests'),
             'req': req
         }))
 
         self.mapproxy_layer_config(mc, source_uid)
-
-    def render_legend(self, context=None):
-        sup = super().render_legend(context)
-        if sup:
-            return sup
-        return gws.lib.legend.combine_urls(self.legend.source_urls, self.legend.options)

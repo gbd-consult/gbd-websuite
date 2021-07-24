@@ -20,7 +20,7 @@ class Config(gws.Config):
 
 
 @gws.ext.Object('helper.xml')
-class Object(gws.Node):
+class Object(gws.Object):
     def configure(self):
 
         self.namespaces = {}

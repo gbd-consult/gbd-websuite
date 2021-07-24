@@ -14,7 +14,8 @@ import sys
 import threading
 import time
 
-from . import const
+import gws
+from . import const, log
 from .data import Data, is_data_object
 from gws.types import List, cast
 
@@ -166,8 +167,8 @@ def compact(x):
     return filter(x, lambda v: v is not None)
 
 
-def deep_merge(x, *args, **kwargs):
-    """Deeply merge dicts/Datas into a Data object.
+def deep_merge(x, *args, **kwargs) -> dict:
+    """Deeply merge dicts/Datas into a nested dict.
 
     Args:
         x: A dict or a Data.
@@ -175,38 +176,38 @@ def deep_merge(x, *args, **kwargs):
         **kwargs: Keyword args.
 
     Returns:
-        A new object (dict or Data).
+        A new dict.
     """
 
-    def flatten(o, keys, f):
-        if is_data_object(o):
-            o = vars(o)
-        if isinstance(o, dict):
-            for k, v in o.items():
-                flatten(v, keys + (k,), f)
-            return
-        f[keys] = o
-
-    def unflatten(o, f):
-        for keys, v in f.items():
-            p = o
-            for k in keys[:-1]:
-                if getattr(p, k, None) is None:
-                    setattr(p, k, Data())
-                p = getattr(p, k)
-            setattr(p, keys[-1], v)
-
     flat = {}
+    nested: dict = {}
 
-    flatten(x, (), flat)
+    def flatten(obj, keys):
+        if is_data_object(obj):
+            obj = vars(obj)
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                flatten(v, keys + (k,))
+        else:
+            flat[keys] = obj
+
+    def unflatten():
+        for keys, val in flat.items():
+            p = nested
+            for k in keys[:-1]:
+                if p.get(k) is None:
+                    p[k] = {}
+                p = p[k]
+            p[keys[-1]] = val
+
+    flatten(x, ())
     for a in args:
-        flatten(a, (), flat)
+        flatten(a, ())
     for k, v in kwargs.items():
         flat[(k,)] = v
 
-    d = Data()
-    unflatten(d, flat)
-    return d
+    unflatten()
+    return nested
 
 
 def map(x, fn):
@@ -413,6 +414,14 @@ def lines(txt: str, comment: str = None) -> List[str]:
     return ls
 
 
+def is_file(path):
+    return os.path.isfile(path)
+
+
+def is_dir(path):
+    return os.path.isdir(path)
+
+
 def read_file(path: str) -> str:
     with open(path, 'rt', encoding='utf8') as fp:
         return fp.read()
@@ -470,6 +479,22 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
     return bpath.decode('utf8')
 
 
+def ensure_system_dirs():
+    ensure_dir(gws.CONFIG_DIR)
+    ensure_dir(gws.GLOBALS_DIR)
+    ensure_dir(gws.LEGEND_CACHE_DIR)
+    ensure_dir(gws.LOCKS_DIR)
+    ensure_dir(gws.LOG_DIR)
+    ensure_dir(gws.MAPPROXY_CACHE_DIR)
+    ensure_dir(gws.MISC_DIR)
+    ensure_dir(gws.NET_CACHE_DIR)
+    ensure_dir(gws.OBJECT_CACHE_DIR)
+    ensure_dir(gws.PRINT_DIR)
+    ensure_dir(gws.SERVER_DIR)
+    ensure_dir(gws.SPOOL_DIR)
+    ensure_dir(gws.WEB_CACHE_DIR)
+
+
 def _chown(path, user, group):
     try:
         os.chown(path, user or const.UID, group or const.GID)
@@ -502,118 +527,144 @@ class cached_property:
         return value
 
 
-_global_lock = threading.RLock()
-_global_vars: dict = {}
+# application lock/globals are global to one application
+# server locks lock the whole server
+# server globals are pickled in /tmp
 
 
-def global_lock():
-    return _global_lock
+_app_lock = threading.RLock()
 
 
-def get_global(name, init_fn):
-    """Get a global variable in a thread-safe way.
-
-    Args:
-        name: Variable name
-        init_fn: Function that returns the value if the name doesn't exist.
-
-    Returns:
-        The variable value
-    """
-
-    global _global_vars
-
-    if name in _global_vars:
-        return _global_vars[name]
-
-    with global_lock():
-        if name in _global_vars:
-            return _global_vars[name]
-        _global_vars[name] = init_fn()
-
-    return _global_vars[name]
+def app_lock(name=''):
+    return _app_lock
 
 
-def set_global(name, value):
-    """Set a global variable in a thread-safe way.
-
-    Args:
-        name: Variable name.
-        value: Variable value.
-
-    Returns:
-        The value
-    """
-
-    global _global_vars
-
-    with global_lock():
-        _global_vars[name] = value
-
-    return _global_vars[name]
+_app_globals: dict = {}
 
 
-def global_var(fn):
-    """Decorator for a global var."""
+def get_app_global(name, init_fn):
+    if name in _app_globals:
+        return _app_globals[name]
 
-    def wrap(*args, **kwargs):
-        global _global_vars
+    with app_lock(name):
+        if name not in _app_globals:
+            _app_globals[name] = init_fn()
 
-        name = repr(args) + repr(kwargs)
-        if name in _global_vars:
-            return _global_vars[name]
-        with global_lock():
-            if name in _global_vars:
-                return _global_vars[name]
-            _global_vars[name] = fn(*args, **kwargs)
-        return _global_vars[name]
-
-    return wrap
+    return _app_globals[name]
 
 
-def get_cached_object(name, init_fn, max_age: int):
-    """Return a cached object pickled in gws.OBJECT_CACHE_DIR.
+def set_app_global(name, value):
+    with app_lock(name):
+        _app_globals[name] = value
+    return _app_globals[name]
 
-    Args:
-        name: Object name
-        init_fn: Function that returns the value if the cache doesn't exist or is too old
-        max_age: Cache max age in seconds.
 
-    Returns:
-         The value.
-    """
+##
 
-    path = const.OBJECT_CACHE_DIR + '/' + as_uid(name)
+def serialize_to_path(obj, path):
+    tmp = path + random_string(64)
+    with open(tmp, 'wb') as fp:
+        pickle.dump(obj, fp)
+    os.replace(tmp, path)
 
-    with global_lock():
+
+def unserialize_from_path(path):
+    with open(path, 'rb') as fp:
+        return pickle.load(fp)
+
+
+_server_globals = {}
+
+
+def get_server_global(name, init_fn):
+    uid = as_uid(name)
+    path = gws.GLOBALS_DIR + '/' + uid
+
+    def _get():
+        if uid in _server_globals:
+            log.debug(f'get_server_global {uid!r} - found')
+            return True
+
+        if os.path.isfile(path):
+            try:
+                _server_globals[uid] = unserialize_from_path(path)
+                log.debug(f'get_server_global {uid!r} - loaded')
+                return True
+            except:
+                log.exception(f'get_server_global {uid!r} LOAD ERROR')
+
+    if _get():
+        return _server_globals[uid]
+
+    with server_lock(uid):
+
+        if _get():
+            return _server_globals[uid]
+
+        _server_globals[uid] = init_fn()
 
         try:
-            age = time.time() - os.stat(path).st_mtime
+            serialize_to_path(_server_globals[uid], path)
+            log.debug(f'get_server_global {uid!r} - stored')
         except:
-            age = -1
+            log.exception(f'get_server_global {uid!r} STORE ERROR')
 
-        if 0 <= age < max_age:
+        return _server_globals[uid]
+
+
+class _FileLock:
+    _PAUSE = 2
+    _TIMEOUT = 60
+
+    def __init__(self, uid):
+        self.uid = as_uid(uid)
+        self.path = gws.LOCKS_DIR + '/' + self.uid
+
+    def __enter__(self):
+        self.acquire()
+        log.debug(f'server lock {self.uid!r} ACQUIRED')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.release()
+
+    def acquire(self):
+        ts = time.time()
+
+        while True:
             try:
-                with open(path, 'rb') as fp:
-                    return pickle.load(fp)
+                fp = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.write(fp, bytes(os.getpid()))
+                os.close(fp)
+                return
             except:
                 pass
 
+            t = time.time() - ts
+
+            if t > self._TIMEOUT:
+                raise ValueError('lock timeout', self.uid)
+
+            log.debug(f'server lock {self.uid!r} WAITING time={t:.3f}')
+            time.sleep(self._PAUSE)
+
+    def release(self):
         try:
-            os.unlink(path)
+            os.unlink(self.path)
+            log.debug(f'server lock {self.uid!r} RELEASED')
         except:
-            pass
-
-        obj = init_fn()
-
-        if obj:
-            with open(path, 'wb') as fp:
-                pickle.dump(obj, fp)
-
-        return obj
+            log.exception(f'server lock {self.uid!r} RELEASE ERROR')
 
 
-def import_from_path(module_path, module_name):
+def server_lock(uid):
+    return _FileLock(uid)
+
+
+##
+
+def import_from_path(module_path, module_name, cache=True):
+    if cache and module_name in sys.modules:
+        return sys.modules[module_name]
+
     # see https://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3
     loader = importlib.machinery.SourceFileLoader(module_name, module_path)
     spec = importlib.util.spec_from_loader(loader.name, loader)
@@ -623,7 +674,7 @@ def import_from_path(module_path, module_name):
     return mod
 
 
-####################################################################################################
+##
 
 
 def _is_list(x):

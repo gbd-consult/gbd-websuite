@@ -1,7 +1,7 @@
 """Base types"""
 
-from typing import Any, Dict, List, Optional, Set, Tuple, Union, cast
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union, cast
 
 # Variant is tagged Union, discriminated by the 'type' property
 # mypy doesn't accept aliases to special forms,
@@ -31,5 +31,4 @@ except ImportError:
 #
 
 # avoid 'unused imports'
-__all__ = ['Any', 'Dict', 'Enum', 'List', 'Literal', 'Optional', 'Protocol', 'Set', 'Tuple', 'Union', 'cast']
-
+__all__ = ['Any', 'Callable', 'Dict', 'Enum', 'List', 'Literal', 'Optional', 'Protocol', 'Set', 'Tuple', 'Union', 'cast']

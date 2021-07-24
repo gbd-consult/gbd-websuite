@@ -1,10 +1,9 @@
 import gws
-import gws.types as t
-import gws.lib.style
 import gws.lib.shape
+import gws.lib.style
 import gws.lib.svg
 import gws.lib.xml2
-
+import gws.types as t
 
 _COMBINED_UID_DELIMITER = '___'
 
@@ -18,7 +17,7 @@ def from_geojson(js, crs, key_column='id') -> gws.IFeature:
         else:
             atts[k] = v
 
-    return new(
+    return Feature(
         uid=uid,
         attributes=atts,
         shape=gws.lib.shape.from_geometry(js['geometry'], crs),
@@ -26,40 +25,13 @@ def from_geojson(js, crs, key_column='id') -> gws.IFeature:
 
 
 def from_props(p: gws.Data) -> gws.IFeature:
-    return new(
+    return Feature(
         uid=p.get('uid'),
         attributes=p.get('attributes'),
         elements=p.get('elements'),
         shape=p.get('shape'),
         style=p.get('style'),
     )
-
-
-def new(uid, attributes=None, elements=None, shape=None, style=None):
-    if isinstance(uid, str) and _COMBINED_UID_DELIMITER in uid:
-        uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
-
-    obj = Feature()
-
-    obj.uid = uid
-    obj.elements = elements or {}
-
-    obj.attributes = []
-    if attributes:
-        if isinstance(attributes, dict):
-            attributes = [gws.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
-        obj.attributes = attributes
-
-    if shape:
-        if isinstance(shape, gws.lib.shape.Shape):
-            obj.shape = shape
-        else:
-            obj.shape = gws.lib.shape.from_props(shape)
-
-    if style:
-        obj.style = gws.lib.style.from_props(gws.Props(style))
-
-    return obj
 
 
 class Props(gws.Props):
@@ -71,22 +43,49 @@ class Props(gws.Props):
     uid: t.Optional[str]
 
 
+class Feature(gws.IFeature):
+    # attributes: t.List[gws.Attribute]
+    # category: str
+    # data_model: t.Optional[gws.IDataModel]
+    # elements: dict
+    # layer: t.Optional[gws.ILayer]
+    # shape: t.Optional[gws.IShape]
+    # style: t.Optional[gws.IStyle]
+    # templates: t.Optional[gws.ITemplateBundle]
+    # uid: str
 
-class Feature(gws.Object, gws.IFeature):
-
-    def __init__(self):
-        super().__init__()
-
+    def __init__(self, uid, attributes=None, category=None, elements=None, shape=None, style=None):
         self.attributes = []
-        self.category = ''
+        self.category = category or ''
+        self.data_model = None
         self.elements = {}
+        self.layer = None
+        self.shape = None
+        self.style = None
+        self.templates = None
         self.uid = ''
 
-        self.layer: t.Optional[gws.ILayer] = None
-        self.shape: t.Optional[gws.IShape] = None
-        self.style: t.Optional[gws.IStyle] = None
-        self.templates: t.Optional[gws.ITemplateBundle] = None
-        self.data_model: t.Optional[gws.IDataModel] = None
+        if isinstance(uid, str) and _COMBINED_UID_DELIMITER in uid:
+            uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
+
+        self.uid = gws.as_str(uid)
+
+        if attributes:
+            if isinstance(attributes, dict):
+                attributes = [gws.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
+            self.attributes = attributes
+
+        if elements:
+            self.elements = elements
+
+        if shape:
+            if isinstance(shape, gws.lib.shape.Shape):
+                self.shape = shape
+            else:
+                self.shape = gws.lib.shape.from_props(shape)
+
+        if style:
+            self.style = gws.lib.style.from_props(gws.Props(style))
 
     @property
     def props(self):
@@ -141,14 +140,12 @@ class Feature(gws.Object, gws.IFeature):
     def to_svg_tags(self, rv: gws.MapRenderView, style: gws.IStyle = None) -> t.List[gws.Tag]:
         if not self.shape:
             return []
-        style = self.style or style
-        if not style and self.layer:
-            style = self.layer.style
+        style = style or self.style or (self.layer.style if self.layer else None)
         shape = self.shape.transformed_to(rv.bounds.crs)
         return gws.lib.svg.geometry_tags(
             t.cast(gws.lib.shape.Shape, shape).geom,
             rv,
-            style.data if style else None,
+            t.cast(gws.lib.style.Values, style.values) if style else None,
             self.elements.get('label', ''))
 
     def to_svg(self, rv: gws.MapRenderView, style: gws.IStyle = None) -> str:
@@ -163,14 +160,18 @@ class Feature(gws.Object, gws.IFeature):
             'geometry': self.shape.props.get('geometry') if self.shape else None
         }
 
+    def connect_to(self, layer):
+        self.layer = layer
+        return self
+
     def apply_data_model(self, model: gws.IDataModel = None) -> gws.IFeature:
-        model = model or self.data_model
+        model = model or self.data_model or (self.layer.data_model if self.layer else None)
         if model:
             self.attributes = model.apply(self.attributes)
         return self
 
     def apply_templates(self, templates: gws.ITemplateBundle = None, extra_context: dict = None, keys: t.List[str] = None) -> gws.IFeature:
-        templates = templates or self.templates
+        templates = templates or self.templates or (self.layer.templates if self.layer else None)
         if templates:
             used = set()
             ctx = gws.merge(self.template_context, extra_context)
