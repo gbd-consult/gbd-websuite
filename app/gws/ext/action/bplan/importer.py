@@ -75,6 +75,39 @@ def delete_feature(action, uid):
 
 ##
 
+_DATE_FIELDS = [
+    'AKT_DATENB',
+    'AKT_DATENS',
+    'AKT_RECHT',
+    'AUFSTELLB',
+    'EINLEITB',
+    'FESTSTELLB',
+    'OFFENLEGB',
+    'RECHTSKR',
+    'SATZBESCHL',
+]
+
+
+def _to_date_str(val):
+    if not val:
+        return ''
+
+    val = str(val).strip()
+    if not val:
+        return ''
+
+    m = re.match(r'^(\d+)-(\d+)-(\d+)$', val)
+    if m:
+        return '%04d-%02d-%02d' % (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+    m = re.match(r'^(\d+)\.(\d+).(\d+)$', val)
+    if m:
+        return '%04d-%02d-%02d' % (int(m.group(3)), int(m.group(2)), int(m.group(1)))
+
+    gws.log.warn(f'invalid date: {val!r}')
+    return ''
+
+
 def _run2(action, src_dir, replace, au_uid, job):
     gws.log.debug(f'BEGIN {src_dir!r} au={au_uid!r}')
 
@@ -107,6 +140,8 @@ def _run2(action, src_dir, replace, au_uid, job):
                 for a in f.attributes:
                     if a.type == t.AttributeType.datetime:
                         val = gws.tools.date.to_iso_date(a.value)
+                    elif a.name in _DATE_FIELDS:
+                        val = _to_date_str(a.value)
                     else:
                         val = str(a.value)
                     r[a.name.lower()] = val
