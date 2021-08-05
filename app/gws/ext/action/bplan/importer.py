@@ -489,9 +489,10 @@ def _extract(zip_path, target_dir):
 
 
 def _encoding(path):
-    if os2.is_file(path.replace('.shp', '.cpg')):
-        # have a cpg file, let gdal handle the encoding
-        return
+    # actually, a .cpg can contain 'System', which isn't really helpful
+    # if os2.is_file(path.replace('.shp', '.cpg')):
+    #     # have a cpg file, let gdal handle the encoding
+    #     return
     return 'utf8' if 'utf8' in path else 'ISO-8859–1'
 
 
