@@ -219,11 +219,9 @@ class TimeFormatter:
         return self.format('long')
 
 
-@gws.global_var
 def date_formatter(locale_uid):
     return DateFormatter(locale_uid)
 
 
-@gws.global_var
 def time_formatter(locale_uid):
     return TimeFormatter(locale_uid)
