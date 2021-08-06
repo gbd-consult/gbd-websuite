@@ -40,7 +40,7 @@ class Object(gws.common.search.provider.Object):
             self.root.create_shared_object('gws.ext.db.provider.postgres', db_uid, cfg))
 
         try:
-            self.table: t.SqlTable = self.db.configure_table(t.Config(name=ds['table'], geometryColumn=ds['geometryColumn']))
+            self.table: t.SqlTable = self.db.configure_table(t.Config(name=ds['table'], geometryColumn=ds.get('geometryColumn')))
         except gws.Error:
             gws.log.warn(f"table {ds['table']!r} not found or invalid")
             gws.log.exception()
