@@ -141,12 +141,12 @@ def from_path(root: gws.RootObject, path, shared=True) -> t.Optional[Object]:
     return from_config(root, cfg, shared=shared)
 
 
-def from_config(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> Object:
+def from_config(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> t.Optional[Object]:
     if not shared:
-        return root.create_node('gws.ext.template', cfg, parent)
+        return t.cast(Object, root.create_object('gws.ext.template', cfg, parent))
 
     uid = gws.get(cfg, 'uid') or gws.get(cfg, 'path') or gws.sha256(gws.get(cfg, 'text') or '')
-    return root.create_shared_object('gws.ext.template', uid, cfg)
+    return t.cast(Object, root.create_shared_object('gws.ext.template', uid, cfg))
 
 
 _dir = os.path.dirname(__file__) + '/builtin_templates/'
@@ -187,22 +187,14 @@ class Bundle(gws.Object, gws.ITemplateBundle):
 
     @property
     def props(self):
-        return [t.props for t in self.templates]
+        return [tpl.props for tpl in self.templates]
 
     def configure(self):
-        subjects = set()
-        self.templates = []
-
-        for cfg in self.var('templates', default=[]):
-            tpl = t.cast(Object, self.create_child('gws.ext.template', cfg))
-            self.templates.append(tpl)
-            subjects.add(tpl.subject)
-
-        for cfg in self.var('defaults', default=[]):
-            if cfg.get('subject') in subjects:
-                continue
-            tpl = t.cast(Object, self.create_child('gws.ext.template', cfg))
-            self.templates.append(tpl)
+        self.templates = t.cast(t.List[gws.ITemplate], self.create_children('gws.ext.template', self.var('templates')))
+        subjects = set(tpl.subject for tpl in self.templates)
+        defaults = [cfg for cfg in self.var('defaults', default=[]) if cfg.get('subject') not in subjects]
+        self.templates.extend(
+            t.cast(t.List[gws.ITemplate], self.create_children('gws.ext.template', defaults)))
 
     def all(self) -> t.List[gws.ITemplate]:
         return self.templates

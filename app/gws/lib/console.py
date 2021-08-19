@@ -39,3 +39,44 @@ class ProgressIndicator:
 
     def write(self, s):
         gws.log.info(self.title + ': ' + s, extra={'skip_frames': 2})
+
+
+def text_table(data, header=None, delim=' | '):
+    """Format a list of dicts as a text-mode table."""
+
+    data = list(data)
+
+    if not data:
+        return ''
+
+    print_header = header is not None
+    if header is None or header == 'auto':
+        header = sorted(data[0].keys())
+
+    widths = [len(h) if print_header else 1 for h in header]
+
+    for d in data:
+        widths = [
+            max(a, b)
+            for a, b in zip(
+                widths,
+                [len(str(d.get(h, ''))) for h in header]
+            )
+        ]
+
+    def field(n, v):
+        if isinstance(v, (int, float)):
+            return str(v).rjust(widths[n])
+        return str(v).ljust(widths[n])
+
+    rows = []
+
+    if print_header:
+        hdr = delim.join(field(n, h) for n, h in enumerate(header))
+        rows.append(hdr)
+        rows.append('-' * len(hdr))
+
+    for d in data:
+        rows.append(delim.join(field(n, d.get(h, '')) for n, h in enumerate(header)))
+
+    return '\n'.join(rows)

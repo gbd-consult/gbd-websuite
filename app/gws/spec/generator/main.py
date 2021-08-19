@@ -4,8 +4,7 @@ import re
 
 from . import base, manifest, parser, normalizer, strings, typescript
 
-# EXCLUDE_PATHS = ['___', '/vendor/']
-EXCLUDE_PATHS = ['/vendor/']
+EXCLUDE_PATHS = ['___', '/vendor/', '_test.py']
 
 CONST_PATH = base.APP_DIR + '/gws/core/const.py'
 STRINGS_PATH = base.APP_DIR + '/gws/spec/strings.ini'
@@ -131,15 +130,23 @@ def _enum_sources(chunk):
                 break
 
 
-def _find_files(where):
-    for fname in os.listdir(where):
-        if fname.startswith('.'):
+def _find_files(dirname, pattern=None, ext=None, deep=True):
+    if not pattern and ext:
+        if isinstance(ext, (list, tuple)):
+            ext = '|'.join(ext)
+        pattern = '\\.(' + ext + ')$'
+
+    de: os.DirEntry
+    for de in os.scandir(dirname):
+        if de.name.startswith('.'):
             continue
-        path = os.path.join(where, fname)
-        if os.path.isdir(path):
-            yield from _find_files(path)
+
+        if de.is_dir() and deep:
+            yield from _find_files(de.path, pattern)
             continue
-        yield path
+
+        if de.is_file() and (pattern is None or re.search(pattern, de.path)):
+            yield de.path
 
 
 def _as_json(x):

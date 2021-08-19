@@ -2,6 +2,7 @@ import gws
 import gws.types as t
 from . import action
 
+
 class Config(gws.WithAccess):
     """Server actions"""
 
@@ -16,7 +17,8 @@ class Object(gws.Object):
 
         for p in self.var('actions', []):
             a = self.create_child('gws.ext.action', p)
-            self.actions[a.ext_type] = a
+            if a:
+                self.actions[a.ext_type] = a
 
     def find_action(self, action_type: str):
         return self.actions.get(action_type)

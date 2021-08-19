@@ -4,7 +4,6 @@ import gws.ext.db.provider.postgres
 
 import gws
 import gws.base.search
-import gws.config.parser
 import gws.core.tree
 import gws.types as t
 

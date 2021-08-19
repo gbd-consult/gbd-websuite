@@ -295,7 +295,7 @@ def _synthesize_ext_type_props(state):
         name = _dot(t.name, base.GWS_TAG_PROPERTY)
         upd[name] = base.TProperty(
             doc='',
-            ident=t.ext_type,
+            ident=base.GWS_TAG_PROPERTY,
             name=name,
             pos=_synthesized_pos,
             default=None,

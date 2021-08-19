@@ -1,7 +1,6 @@
 import gws
 import gws.base.layer
 import gws.base.ows
-import gws.config.parser
 import gws.lib.gis
 import gws.lib.legend
 import gws.lib.ows
@@ -28,7 +27,7 @@ class Object(gws.base.layer.group.BaseGroup):
         if not self.has_configured_metadata:
             self.configure_metadata_from(self.provider.metadata)
 
-        layer_cfgs = gws.base.layer.group.layer_tree_configuration(
+        cfgs = self.layer_tree_configuration(
             source_layers=self.provider.source_layers,
             roots_slf=self.var('rootLayers'),
             exclude_slf=self.var('excludeLayers'),
@@ -37,13 +36,10 @@ class Object(gws.base.layer.group.BaseGroup):
             create_leaf_layer=self.create_leaf_layer
         )
 
-        if not layer_cfgs:
-            raise gws.Error(f'no source layers in {self.uid!r}')
+        if not cfgs:
+            raise gws.ConfigurationError(f'no source layers in {self.uid!r}')
 
-        self.configure_layers([
-            gws.config.parser.parse(self.root.specs, cfg, 'gws.ext.layer.Config')
-            for cfg in layer_cfgs
-        ])
+        self.configure_layers(cfgs)
 
     _copy_keys = (
         'capsLayersBottomUp',

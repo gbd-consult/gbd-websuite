@@ -6,7 +6,7 @@ import gws.base.layer.core
 import gws.base.layer.image
 import gws.base.layer.group
 import gws.lib.metadata
-import gws.config.parser
+import gws.config
 import gws.lib.extent
 import gws.lib.legend
 import gws.lib.gis
@@ -57,7 +57,7 @@ class Object(gws.base.layer.group.Object):
             'layers': layer_cfgs
         }
 
-        top_cfg = gws.config.parser.parse(top_group, 'gws.ext.layer.group.Config')
+        top_cfg = gws.config.parse(top_group, 'gws.ext.layer.group.Config')
         self.layers = [t.cast(gws.ILayer, self.create_child('gws.ext.layer', c)) for c in top_cfg.layers]
 
 

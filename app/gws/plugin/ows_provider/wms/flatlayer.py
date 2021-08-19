@@ -4,6 +4,7 @@ import gws.base.ows
 import gws.base.layer
 import gws.lib.legend
 import gws.lib.gis
+import gws.lib.net
 import gws.lib.zoom
 from . import provider
 
@@ -29,7 +30,7 @@ class Object(gws.base.layer.image.Object):
 
         self.source_layers = gws.lib.gis.filter_layers(
             self.provider.source_layers,
-            self.var('sourceLayers'))
+            self.var('sourceLayers', default=gws.lib.gis.LayerFilter(level=1)))
 
         if not self.source_layers:
             raise gws.Error(f'no source layers found in layer={self.uid!r}')
@@ -41,11 +42,7 @@ class Object(gws.base.layer.image.Object):
                 self.has_configured_resolutions = True
 
         if not self.has_configured_search:
-            queryable_layers = gws.lib.gis.filter_layers(
-                self.provider.source_layers,
-                self.var('sourceLayers'),
-                queryable_only=True
-            )
+            queryable_layers = [sl for sl in self.source_layers if sl.is_queryable]
             if queryable_layers:
                 self.search_providers.append(
                     t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider.wms', gws.Config(

@@ -5,6 +5,7 @@ import time
 import gws
 import gws.base.api
 import gws.lib.legend
+import gws.base.layer
 import gws.lib.cache
 import gws.lib.feature
 import gws.lib.img
@@ -12,25 +13,6 @@ import gws.lib.json2
 import gws.lib.render
 import gws.lib.units
 import gws.types as t
-
-
-def url_for_get_box(layer_uid) -> str:
-    return f'{gws.SERVER_ENDPOINT}/mapGetBox/layerUid/{layer_uid}'
-
-
-def url_for_get_tile(layer_uid, xyz=None) -> str:
-    pfx = f'{gws.SERVER_ENDPOINT}/mapGetXYZ/layerUid/{layer_uid}'
-    if xyz:
-        return pfx + f'/z/{xyz.z}/x/{xyz.x}/y/{xyz.y}/gws.png'
-    return pfx + '/z/{z}/x/{x}/y/{y}/gws.png'
-
-
-def url_for_get_legend(layer_uid) -> str:
-    return f'{gws.SERVER_ENDPOINT}/mapGetLegend/layerUid/{layer_uid}/gws.png'
-
-
-def url_for_get_features(layer_uid) -> str:
-    return f'{gws.SERVER_ENDPOINT}/mapGetFeatures/layerUid/{layer_uid}'
 
 
 class GetBoxParams(gws.Params):
@@ -174,7 +156,7 @@ class Object(gws.base.api.action.Object):
         # so they will be subsequently served directly by nginx
 
         if content and layer.is_public and layer.has_cache:
-            gws.lib.cache.store_in_web_cache(url_for_get_tile(layer.uid, p), content)
+            gws.lib.cache.store_in_web_cache(gws.base.layer.url_for_get_tile(layer.uid, p), content)
 
         return self._image_response(content)
 

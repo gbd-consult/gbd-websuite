@@ -1,4 +1,3 @@
-___*
 *.bak
 *.iml
 *.pyc
@@ -7,16 +6,17 @@ ___*
 *.swp
 ._*
 .cache
-.DS_Store
 .directory
+.dmypy.json
+.DS_Store
 .idea
 .mypy_cache
 .pytest_cache
-.dmypy.json
-__pycache__
-__build*
-node_modules
 /app/gws/spec/gen
 /app/www
 /doc/sphinx/ref
+___*
+__build*
+__pycache__
 _autosummary
+node_modules

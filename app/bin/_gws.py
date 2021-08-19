@@ -1,16 +1,11 @@
 import sys
 
 import gws
-import gws.config
 import gws.server.control
 import gws.spec.generator
 import gws.spec.runtime
 
 gws.ensure_system_dirs()
-
-
-def spec_runtime(params):
-    return gws.spec.runtime.create(params.get('manifest'), with_cache=not params.get('skipSpecCache'))
 
 
 def camelize(p):
@@ -46,8 +41,8 @@ def parse_args(argv):
     return args, gws.Data(kwargs)
 
 
-def print_usage_and_fail(ext_type, cmd, params):
-    docs = spec_runtime(params).cli_docs('en')
+def print_usage_and_fail(specs, ext_type, cmd):
+    docs = specs.cli_docs('en')
 
     print('')
     print(f'GWS version {gws.VERSION}')
@@ -65,23 +60,17 @@ def print_usage_and_fail(ext_type, cmd, params):
     return 1
 
 
-def dispatch(ext_type, cmd, params):
-    if ext_type == 'server' and cmd == 'stop':
-        # skip the spec stuff when stopping the server
-        cli = gws.server.control.Cli()
-        return cli.stop(params)
-
-    specs = spec_runtime(params)
+def dispatch(specs, ext_type, cmd, params):
     # e.g. 'gws auth password' => 'authPassword'
     cmd_name = camelize(ext_type + '-' + cmd)
 
     try:
         command_desc = specs.check_command(cmd_name, 'cli', params, strict=False)
     except gws.spec.runtime.Error:
-        return print_usage_and_fail(ext_type, cmd, params)
+        return print_usage_and_fail(specs, ext_type, cmd)
 
     if not command_desc:
-        return print_usage_and_fail(ext_type, cmd, params)
+        return print_usage_and_fail(specs, ext_type, cmd)
 
     object_desc = gws.load_ext(specs, command_desc.class_name)
     handler = object_desc.class_ptr()
@@ -101,25 +90,36 @@ def main():
 
     # all cli command lines are "gws ext_type command_name --opt1 val --opt2 ...."
 
-    if len(args) == 0:
-        return print_usage_and_fail(None, None, params)
-
-    if len(args) == 1:
-        return print_usage_and_fail(args[0], None, params)
-
-    if len(args) > 2:
-        return print_usage_and_fail(args[0], args[1], params)
-
-    if params.get('h') or params.get('help'):
-        return print_usage_and_fail(args[0], args[1], params)
-
     try:
-        return dispatch(args[0], args[1], params)
-    except Exception as exc:
+        if args[0] == 'spec':
+            gws.spec.runtime.create_and_store(params.get('manifest'))
+            return 0
+        else:
+            specs = gws.spec.runtime.load(params.get('manifest'))
+    except:
         sys.stdout.flush()
         gws.log.exception()
-        gws.exit(255)
+        return 255
+
+    if len(args) == 0:
+        return print_usage_and_fail(specs, None, None)
+
+    if len(args) == 1:
+        return print_usage_and_fail(specs, args[0], None)
+
+    if len(args) > 2:
+        return print_usage_and_fail(specs, args[0], args[1])
+
+    if params.get('h') or params.get('help'):
+        return print_usage_and_fail(specs, args[0], args[1])
+
+    try:
+        return dispatch(specs, args[0], args[1], params)
+    except:
+        sys.stdout.flush()
+        gws.log.exception()
+        return 255
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(main() or 0)

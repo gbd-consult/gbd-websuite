@@ -10,7 +10,6 @@ class BaseObject(types.IBaseObject):
     title: str
     class_name: str
     ext_type: str
-    configuration_error: str
 
     @property
     def props(self) -> types.Props:
@@ -22,7 +21,6 @@ class BaseObject(types.IBaseObject):
         self.ext_type = ext_type or ''
         self.title = ''
         self.uid = ''
-        self.configuration_error = ''
 
     def is_a(self, klass: types.Klass):
         if isinstance(klass, type):
@@ -57,24 +55,27 @@ class Object(BaseObject, types.IObject):
     def initialize(self, cfg):
         self.config = cfg
         self.access = self.var('access')
-        self.set_uid(_auto_uid(self))
+        self.set_uid()
 
         log.debug(f'BEGIN config {self.class_name}')
 
         # call all super 'configure' methods
         mro = [cls for cls in type(self).mro() if hasattr(cls, 'configure')]
         try:
+
             for cls in reversed(mro):
                 cls.configure(self)  # type: ignore
+            log.debug(f'END config {self.class_name} uid={self.uid}')
+            return True
         except Exception as exc:
-            self.configuration_error = _error_name(exc)
-            self.root.configuration_errors.append([self.configuration_error, _error_stack(self)])
-            log.exception(self.configuration_error)
+            info = _error_info(exc, self)
+            self.root.configuration_errors.append(info)
+            log.exception(info.replace('\n', ' '))
+            log.debug(f'FAILED config {self.class_name}')
+            return False
 
-        log.debug(f'END config {self.class_name} uid={self.uid}')
-
-    def set_uid(self, uid: str):
-        _set_uid(self, uid)
+    def set_uid(self, uid: str = ''):
+        self.root.set_object_uid(self, uid)
 
     def var(self, key: str, default=None, with_parent=False):
         v = util.get(self.config, key)
@@ -84,18 +85,23 @@ class Object(BaseObject, types.IObject):
             return self.parent.var(key, default, with_parent=True)
         return default
 
-    def create_child(self, klass: types.Klass, cfg: t.Optional[t.Any]) -> 'Object':
-        return self.append_child(self.root.create_node(klass, cfg, parent=self))
+    def create_child(self, klass: types.Klass, cfg: t.Optional[t.Any]) -> t.Optional['Object']:
+        return self.root.create_object(klass, cfg, parent=self)
 
     def create_child_if_config(self, klass: types.Klass, cfg: t.Optional[t.Any]) -> t.Optional['Object']:
         if cfg:
-            return self.append_child(self.root.create_node(klass, cfg, parent=self))
+            return self.root.create_object(klass, cfg, parent=self)
         return None
 
-    def append_child(self, obj: 'Object') -> 'Object':
-        obj.parent = self
-        self.children.append(obj)
-        return obj
+    def create_children(self, klass: types.Klass, cfgs: t.List[t.Any]) -> t.List['Object']:
+        if not cfgs:
+            return []
+        ls = []
+        for cfg in cfgs:
+            obj = self.create_child(klass, cfg)
+            if obj:
+                ls.append(obj)
+        return ls
 
     def get_closest(self, klass: types.Klass) -> t.Optional['Object']:
         obj = self.parent
@@ -112,20 +118,51 @@ class RootObject(BaseObject, types.IRootObject):
 
     def __init__(self):
         super().__init__()
-        self.all_types = {}
         self.all_nodes = []
-        self.shared_objects = {}
-        self.root = self
+        self.all_types = {}
         self.configuration_errors = []
+        self.root = self
+        self.shared_objects = {}
+        self.uids = set()
+
+    def set_object_uid(self, obj: Object, uid=None):
+
+        def _auto():
+            u = obj.var('uid')
+            if u:
+                return u
+            u = obj.var('title')
+            if u:
+                return util.as_uid(u)
+            return obj.class_name.replace('.', '_')
+
+        def _new(uid):
+            n = 0
+            u = uid
+            while u in self.uids:
+                n += 1
+                u = uid + str(n)
+            self.uids.add(u)
+            return u
+
+        if obj.uid and obj.uid == uid:
+            return
+
+        uid = uid or _auto()
+
+        with util.app_lock():
+            if obj.uid:
+                self.uids.discard(obj.uid)
+            obj.uid = _new(uid)
 
     def post_initialize(self):
         for obj in reversed(self.all_nodes):
             try:
                 obj.post_configure()
             except Exception as exc:
-                obj.configuration_error = _error_name(exc)
-                log.exception(obj.configuration_error)
-                self.configuration_errors.append([obj.configuration_error, _error_stack(obj)])
+                info = _error_info(exc, self)
+                self.root.configuration_errors.append(info)
+                log.exception(info.replace('\n', ' '))
 
     def create_application(self, klass, cfg):
         app = self._create(klass)
@@ -134,18 +171,16 @@ class RootObject(BaseObject, types.IRootObject):
         self.application = app
         t.cast('Object', self.application).initialize(cfg)
 
-    def create_node(self, klass, cfg, parent=None):
+    def create_object(self, klass, cfg, parent: 'Object' = None) -> t.Optional['Object']:
         cfg = _to_config(cfg)
         obj = self._create(klass, cfg)
-        obj.parent = parent
-        obj.initialize(cfg)
+        if parent:
+            obj.parent = parent
+        if not obj.initialize(cfg):
+            return None
+        if parent:
+            parent.children.append(obj)
         self.all_nodes.append(obj)
-        return obj
-
-    def create_object(self, klass, cfg):
-        cfg = _to_config(cfg)
-        obj = self._create(klass, cfg)
-        obj.initialize(cfg)
         return obj
 
     def create_shared_object(self, klass, uid, cfg):
@@ -158,8 +193,9 @@ class RootObject(BaseObject, types.IRootObject):
 
         with util.app_lock():
             log.debug(f'create_shared_object: klass={klass!r} uid={uid!r}')
-            obj = self.create_node(klass, util.merge(cfg, uid=uid))
-            self.shared_objects[uid] = obj
+            obj = self.create_object(klass, util.merge(cfg, uid=uid))
+            if obj:
+                self.shared_objects[uid] = obj
 
         return obj
 
@@ -191,14 +227,30 @@ class RootObject(BaseObject, types.IRootObject):
 
         if class_name in self.all_types:
             desc = self.all_types[class_name]
+        elif class_name in _ADHOC_TYPES:
+            desc = _ADHOC_TYPES[class_name]
         else:
             desc = load_ext(self.specs, class_name)
             if not desc:
-                raise ValueError(f'class not found: {class_name!r}')
+                raise error.Error(f'class not found: {class_name!r}')
             self.all_types[class_name] = desc
 
         cls = desc.class_ptr
         return cls(desc.name, desc.ext_type)
+
+
+_ADHOC_TYPES = {}
+
+
+def register_ext(class_name: str, cls: type):
+    _ADHOC_TYPES[class_name] = types.ExtObjectDescriptor(
+        name=class_name,
+        ext_type=class_name.split('.')[-2],  # class_name is like "gws.ext.auth.provider.mock.Object"
+        class_ptr=cls)
+
+
+def unregister_ext():
+    _ADHOC_TYPES.clear()
 
 
 def load_ext(specs, class_name) -> types.ExtObjectDescriptor:
@@ -248,24 +300,18 @@ def _class_name(s):
     return mod + '.' + name
 
 
-def _error_name(exc):
-    cls = 'Error'
+def _error_info(exc, obj):
     try:
         cls = exc.__class__.__name__
     except:
-        pass
-    a = '?'
+        cls = 'Error'
+
     try:
-        a = exc.args[0]
+        info = cls + ': ' + exc.args[0]
     except:
-        pass
-    if isinstance(exc, error.Error):
-        return a
-    return f'{cls}: {a}'
+        info = cls
 
-
-def _error_stack(obj):
-    stack = []
+    stack = ''
 
     while obj:
         name = getattr(obj, 'class_name', '')
@@ -278,11 +324,14 @@ def _error_stack(obj):
         uid = getattr(obj, 'uid', '')
         if uid:
             name += ' (' + str(uid) + ')'
-        stack.append('in ' + name)
+        stack += 'in ' + name + '\n'
 
         obj = getattr(obj, 'parent', None)
 
-    return stack
+    if stack:
+        info += '\n' + stack.strip()
+
+    return info
 
 
 def _make_props(obj, user):
@@ -316,43 +365,3 @@ def _make_props(obj, user):
 
     if obj:
         return str(obj)
-
-
-##
-
-
-_UIDS: t.Set[str] = set()
-
-
-def _new_uid(uid):
-    global _UIDS
-
-    n = 0
-    u = uid
-    while u in _UIDS:
-        n += 1
-        u = uid + str(n)
-    _UIDS.add(u)
-    return u
-
-
-def _auto_uid(obj):
-    u = obj.var('uid')
-    if u:
-        return u
-    u = obj.var('title')
-    if u:
-        return util.as_uid(u)
-    return obj.class_name.replace('.', '_')
-
-
-def _set_uid(obj, uid):
-    global _UIDS
-
-    if not uid or uid == obj.uid:
-        return
-
-    with util.app_lock():
-        if obj.uid:
-            _UIDS.discard(obj.uid)
-        obj.uid = _new_uid(uid)

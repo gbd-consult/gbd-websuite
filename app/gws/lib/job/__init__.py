@@ -28,16 +28,16 @@ class PrematureTermination(Exception):
 
 def create(uid, user: gws.IUser, worker: str, project_uid=None, args=None):
     if user:
-        fid = user.fid
-        auth = t.cast(gws.base.auth.Manager, gws.config.root().application.auth)
+        user_uid = user.uid
+        auth = gws.config.root().application.auth
         str_user = auth.serialize_user(user)
     else:
-        fid = str_user = ''
-    gws.log.debug('creating job', worker, fid)
+        user_uid = str_user = ''
+    gws.log.debug('creating job', worker, user_uid)
     storage.create(uid)
     storage.update(
         uid,
-        user_fid=fid,
+        user_uid=user_uid,
         str_user=str_user,
         project_uid=project_uid,
         worker=worker,
@@ -64,8 +64,8 @@ def get_for(user, uid):
     if not job:
         gws.log.error(f'job={uid!r}: not found')
         return
-    if job.user_fid != user.fid:
-        gws.log.error(f'job={uid!r} wrong user (job={job.user_fid!r} user={user.fid!r})')
+    if job.user_uid != user.uid:
+        gws.log.error(f'job={uid!r} wrong user (job={job.user_uid!r} user={user.uid!r})')
         return
     return job
 
@@ -73,7 +73,7 @@ def get_for(user, uid):
 class Job:
     def __init__(self, rec):
         self.uid = ''
-        self.user_fid = ''
+        self.user_uid = ''
         self.str_user = ''
         self.project_uid = ''
         self.worker = ''
@@ -96,7 +96,7 @@ class Job:
 
     @property
     def user(self) -> gws.IUser:
-        auth = t.cast(gws.base.auth.Manager, gws.config.root().application.auth)
+        auth = gws.config.root().application.auth
         if self.str_user:
             user = auth.unserialize_user(self.str_user)
             if user:

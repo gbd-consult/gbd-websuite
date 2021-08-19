@@ -25,6 +25,7 @@ class MapproxyConfig(ModuleConfig):
 
     host: str = 'localhost'  #: host to run the module on
     port: int = 5000  #: port number
+    forceStart: bool = False #: start even if no configuration is defined
 
 
 class MonitorConfig(gws.Config):

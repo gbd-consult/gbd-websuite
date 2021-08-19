@@ -1,7 +1,6 @@
 import re
 
 import gws
-import gws.base.map.action
 import gws.base.metadata
 import gws.base.model
 import gws.base.search
@@ -29,6 +28,29 @@ _DEFAULT_STYLE = gws.Config(
 
 _DEFAULT_LEGEND_HTML = """<div class="legend"><img src="{path}"/></div>"""
 
+
+# layer urls, handled by the map action (base/map/action.py)
+
+def url_for_get_box(layer_uid) -> str:
+    return f'{gws.SERVER_ENDPOINT}/mapGetBox/layerUid/{layer_uid}'
+
+
+def url_for_get_tile(layer_uid, xyz=None) -> str:
+    pfx = f'{gws.SERVER_ENDPOINT}/mapGetXYZ/layerUid/{layer_uid}'
+    if xyz:
+        return pfx + f'/z/{xyz.z}/x/{xyz.x}/y/{xyz.y}/gws.png'
+    return pfx + '/z/{z}/x/{x}/y/{y}/gws.png'
+
+
+def url_for_get_legend(layer_uid) -> str:
+    return f'{gws.SERVER_ENDPOINT}/mapGetLegend/layerUid/{layer_uid}/gws.png'
+
+
+def url_for_get_features(layer_uid) -> str:
+    return f'{gws.SERVER_ENDPOINT}/mapGetFeatures/layerUid/{layer_uid}'
+
+
+#
 
 class Object(gws.Object, gws.ILayer):
     map: gws.IMap
@@ -119,7 +141,7 @@ class Object(gws.Object, gws.ILayer):
 
     @property
     def legend_url(self):
-        return gws.base.map.action.url_for_get_legend(self.uid)
+        return url_for_get_legend(self.uid)
 
     @property
     def ancestors(self) -> t.List[gws.ILayer]:

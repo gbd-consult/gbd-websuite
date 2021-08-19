@@ -167,7 +167,7 @@ def compact(x):
     return filter(x, lambda v: v is not None)
 
 
-def deep_merge(x, *args, **kwargs) -> dict:
+def deep_merge(*args, **kwargs) -> dict:
     """Deeply merge dicts/Datas into a nested dict.
 
     Args:
@@ -179,35 +179,33 @@ def deep_merge(x, *args, **kwargs) -> dict:
         A new dict.
     """
 
-    flat = {}
-    nested: dict = {}
-
-    def flatten(obj, keys):
+    def flatten(target, obj, keys):
         if is_data_object(obj):
             obj = vars(obj)
         if isinstance(obj, dict):
             for k, v in obj.items():
-                flatten(v, keys + (k,))
-        else:
-            flat[keys] = obj
+                flatten(target, v, keys + (k,))
+        elif keys:
+            target[keys] = obj
 
-    def unflatten():
-        for keys, val in flat.items():
+    def unflatten(source):
+        nested = {}
+        for keys, val in source.items():
             p = nested
             for k in keys[:-1]:
                 if p.get(k) is None:
                     p[k] = {}
                 p = p[k]
             p[keys[-1]] = val
+        return nested
 
-    flatten(x, ())
+    flat: dict = {}
     for a in args:
-        flatten(a, ())
+        flatten(flat, a, ())
     for k, v in kwargs.items():
         flat[(k,)] = v
 
-    unflatten()
-    return nested
+    return unflatten(flat)
 
 
 def map(x, fn):
@@ -557,6 +555,11 @@ def set_app_global(name, value):
     with app_lock(name):
         _app_globals[name] = value
     return _app_globals[name]
+
+
+def delete_app_global(name):
+    with app_lock(name):
+        _app_globals.pop(name, None)
 
 
 ##

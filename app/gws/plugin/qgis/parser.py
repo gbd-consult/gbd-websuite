@@ -348,7 +348,7 @@ def _data_source(provider, source):
         if not url:
             return {}
         p = gws.lib.net.parse_url(url)
-        typename = params.pop('typename', '') or p['params'].get('typename')
+        typename = params.pop('typename', '') or p.params.get('typename')
         return {
             'url': url,
             'typeName': typename,

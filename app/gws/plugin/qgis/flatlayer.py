@@ -3,7 +3,6 @@ import gws.types as t
 import gws.base.layer.image
 import gws.lib.metadata
 import gws.base.search
-import gws.config
 import gws.lib.mpx
 import gws.lib.proj
 import gws.lib.shape

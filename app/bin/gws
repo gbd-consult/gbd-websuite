@@ -9,6 +9,7 @@ GWS_GID=${GWS_GID:-1000}
 PYTHON=python3
 
 MAIN=$GWS_APP_DIR/bin/_gws.py
+TEST=$GWS_APP_DIR/bin/_test.py
 
 XVFB=/usr/bin/Xvfb
 XVFBARGS='-dpi 96 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -nolisten tcp'
@@ -66,6 +67,12 @@ if [ "$1" == "server" ]; then
     [ $? -eq 0 ] || exit $?
 
     [ -f $SERVER_CMD ] && source $SERVER_CMD
+    exit $?
+fi
+
+if [ "$1" == "test" ]; then
+    shift
+    $PYTHON $TEST "$@"
     exit $?
 fi
 

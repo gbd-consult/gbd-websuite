@@ -106,7 +106,7 @@ class Object(gws.Object):
             self.resolutions = gws.lib.zoom.resolutions_from_config(zoom)
             self.init_resolution = gws.lib.zoom.init_resolution(zoom, self.resolutions)
 
-        self.layers = [t.cast(gws.ILayer, self.create_child('gws.ext.layer', c)) for c in self.var('layers')]
+        self.layers = t.cast(t.List[gws.ILayer], self.create_children('gws.ext.layer', self.var('layers')))
 
         self.extent = _configure_extent(self, self.crs, None)
         if not self.extent:

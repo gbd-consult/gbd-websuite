@@ -2,7 +2,7 @@
 import uwsgi
 
 import gws
-import gws.config.loader
+import gws.config
 import gws.lib.job
 
 _inited: bool = False
@@ -19,7 +19,7 @@ def application(environ, start_response):
 def _init():
     try:
         gws.log.info('starting SPOOL application')
-        root = gws.config.loader.load()
+        root = gws.config.load()
         gws.log.set_level(root.application.var('server.logLevel'))
         root.application.monitor.start()
         uwsgi.spooler = _spooler

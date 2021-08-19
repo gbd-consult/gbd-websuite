@@ -1,1 +1,3 @@
-from .core import Config, Manager, UserProps
+from .manager import Config
+from .user import UserProps
+

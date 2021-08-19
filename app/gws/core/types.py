@@ -129,7 +129,7 @@ class IObject(IBaseObject, Protocol):
 
     def var(self, key: str, default=None, with_parent=False): ...
 
-    def create_child(self, klass: Klass, cfg: Optional[Any]) -> 'IObject': ...
+    def create_child(self, klass: Klass, cfg: Optional[Any]) -> Optional['IObject']: ...
 
 
 class ExtObjectDescriptor(Data):
@@ -246,7 +246,11 @@ class IWebRequest(Protocol):
     def env(self, key: str, default: str = None) -> str: ...
 
 
+# noinspection PyPropertyDefinition
 class IWebResponse(Protocol):
+    @property
+    def status_code(self) -> int: ...
+
     def set_cookie(self, key: str, **kwargs): ...
 
     def delete_cookie(self, key: str, **kwargs): ...
@@ -277,14 +281,64 @@ class IWebSite(IObject, Protocol):
 class IAuthManager(IObject, Protocol):
     guest_user: 'IUser'
 
-    def get_user(self, user_fid: str) -> Optional['IUser']: ...
+    def authenticate(self, method: 'IAuthMethod', credentials: Data) -> Optional['IUser']: ...
+
+    def get_user(self, user_uid: str) -> Optional['IUser']: ...
 
     def get_role(self, name: str) -> 'IRole': ...
+
+    def get_provider(self, uid: str = None, ext_type: str = None) -> Optional['IAuthProvider']: ...
+
+    def get_method(self, uid: str = None, ext_type: str = None) -> Optional['IAuthMethod']: ...
+
+    def serialize_user(self, user: 'IUser') -> str: ...
+
+    def unserialize_user(self, ser: str) -> Optional['IUser']: ...
+
+    def open_session(self, req: 'IWebRequest') -> 'IAuthSession': ...
+
+    def close_session(self, sess: 'IAuthSession', req: 'IWebRequest', res: 'IWebResponse') -> 'IAuthSession': ...
+
+
+class IAuthMethod(IObject, Protocol):
+    secure: bool
+
+    def open_session(self, auth: 'IAuthManager', req: 'IWebRequest') -> Optional['IAuthSession']: ...
+
+    def close_session(self, auth: IAuthManager, sess: 'IAuthSession', req: IWebRequest, res: IWebResponse): ...
+
+    def login(self, auth: IAuthManager, credentials: Data, req: IWebRequest) -> Optional['IAuthSession']: ...
+
+    def logout(self, auth: IAuthManager, sess: 'IAuthSession', req: IWebRequest) -> 'IAuthSession': ...
+
+
+class IAuthProvider(IObject, Protocol):
+    allowed_methods: List[str]
+
+    def get_user(self, local_uid: str) -> Optional['IUser']: ...
+
+    def authenticate(self, method: 'IAuthMethod', credentials: Data) -> Optional['IUser']: ...
+
+    def serialize_user(self, user: 'IUser') -> str: ...
+
+    def unserialize_user(self, ser: str) -> Optional['IUser']: ...
+
+
+class IAuthSession(Protocol):
+    changed: bool
+    data: dict
+    method: Optional['IAuthMethod']
+    typ: str
+    uid: str
+    user: 'IUser'
+
+    def get(self, key: str, default=None): ...
+
+    def set(self, key: str, val: Any): ...
 
 
 class IRole(Protocol):
     name: str
-    uid: str
 
     def can_use(self, obj: IObject, parent: IObject = None) -> bool: ...
 
@@ -292,8 +346,13 @@ class IRole(Protocol):
 # noinspection PyPropertyDefinition
 class IUser(Protocol):
     name: str
-    uid: str
+    local_uid: str
     attributes: Dict[str, Any]
+    roles: List[str]
+    provider: 'IAuthProvider'
+
+    @property
+    def uid(self) -> str: ...
 
     @property
     def props(self) -> 'Props': ...
@@ -392,7 +451,10 @@ class IShape(Protocol):
     def extent(self) -> Extent: ...
 
     @property
-    def type(self) -> 'GeometryType': ...
+    def geometry_type(self) -> 'GeometryType': ...
+
+    @property
+    def geometry_type_string(self) -> str: ...
 
     @property
     def wkb(self) -> bytes: ...
@@ -855,6 +917,7 @@ class IApplication(IObject, Protocol):
     metadata: 'IMetaData'
     monitor: 'IMonitor'
     web_sites: List['IWebSite']
+    mpx_url: str
 
     def developer_option(self, name: str) -> Any: ...
 

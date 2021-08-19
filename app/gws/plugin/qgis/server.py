@@ -3,7 +3,6 @@ import re
 
 import gws
 import gws.types as t
-import gws.config
 import gws.lib.net
 import gws.lib.os2
 
@@ -39,10 +38,10 @@ def _make_ini(root, base_dir):
             [proxy]
             proxyEnabled=true
             proxyType=HttpProxy
-            proxyHost={p['hostname']}
-            proxyPort={p['port']}
-            proxyUser={p['username']}
-            proxyPassword={p['password']}
+            proxyHost={p.hostname}
+            proxyPort={p.port}
+            proxyUser={p.username}
+            proxyPassword={p.password}
         '''
 
     return '\n'.join(x.strip() for x in ini.splitlines())

@@ -1,21 +1,20 @@
 import gws
-import gws.types as t
-import gws.base.web.wsgi
-from gws.base.web.wsgi import WebResponse
 import gws.base.web.error
-
-from . import core, error
+import gws.base.web.wsgi
+import gws.types as t
+from gws.base.web.wsgi import WebResponse
+from . import error
 
 
 class WebRequest(gws.base.web.wsgi.WebRequest, gws.IWebRequest):
-    session: core.Session = t.cast(core.Session, None)
+    session: gws.IAuthSession = None  # type: ignore
 
     @property
-    def auth(self) -> core.Manager:
-        return t.cast(core.Manager, getattr(self.root.application, 'auth'))
+    def auth(self):
+        return self.root.application.auth
 
     @property
-    def user(self) -> core.User:
+    def user(self) -> gws.IUser:
         if not self.session:
             raise gws.Error('session not opened')
         return self.session.user
@@ -23,21 +22,23 @@ class WebRequest(gws.base.web.wsgi.WebRequest, gws.IWebRequest):
     def auth_open(self):
         try:
             self.session = self.auth.open_session(self)
+            gws.log.debug(f'auth_open: typ={self.session.typ!r} user={self.session.user.uid!r}')
         except error.Error as e:
             raise gws.base.web.error.Forbidden() from e
 
     def auth_close(self, res: WebResponse):
+        gws.log.debug(f'auth_close: typ={self.session.typ!r} user={self.session.user.uid!r}')
         self.session = self.auth.close_session(self.session, self, res)
 
     def require(self, klass: str, uid: t.Optional[str]) -> gws.IObject:
-        node = self.root.find(klass, uid)
-        if not node:
+        obj = self.root.find(klass, uid)
+        if not obj:
             gws.log.error('require: not found', klass, uid)
             raise gws.base.web.error.NotFound()
-        if not self.user.can_use(node):
+        if not self.user.can_use(obj):
             gws.log.error('require: denied', klass, uid)
             raise gws.base.web.error.Forbidden()
-        return node
+        return obj
 
     def require_project(self, uid: t.Optional[str]) -> gws.IProject:
         return t.cast(gws.IProject, self.require('gws.base.project', uid))

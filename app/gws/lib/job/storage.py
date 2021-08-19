@@ -14,7 +14,7 @@ def _db():
 def _ensure_table(conn):
     conn.execute('''CREATE TABLE IF NOT EXISTS jobs(
         uid TEXT PRIMARY KEY,
-        user_fid TEXT,
+        user_uid TEXT,
         str_user TEXT,
         project_uid TEXT,
         worker TEXT,

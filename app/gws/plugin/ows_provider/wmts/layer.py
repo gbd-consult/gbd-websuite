@@ -126,12 +126,11 @@ class Object(gws.base.layer.image.Object):
         if self.source_style:
             params['STYLE'] = self.source_style
 
-        p = gws.lib.net.parse_url(operation.get_url)
-        params.update(p['params'])
+        pu = gws.lib.net.parse_url(operation.get_url)
+        params.update(pu.params)
 
         # NB cannot use as_query_string because of the MP's percent formatting
 
-        p['params'] = {}
         qs = '&'.join(k + '=' + str(v or '') for k, v in params.items())
 
-        return gws.lib.net.make_url(p) + '?' + qs
+        return gws.lib.net.make_url(pu, params={}) + '?' + qs

@@ -10,7 +10,6 @@ import gws
 import gws.types as t
 import gws.lib.proj
 
-
 _DEFAULT_POINT_BUFFER_RESOLUTION = 6
 _MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections
 _CIRCLE_RESOLUTION = 64
@@ -109,8 +108,12 @@ class Shape(gws.IShape):
         self.srid = p.srid
 
     @property
-    def type(self) -> gws.GeometryType:
+    def geometry_type(self) -> gws.GeometryType:
         return gws.GeometryType[self.geom.type.lower()]
+
+    @property
+    def geometry_type_string(self) -> str:
+        return self.geometry_type.value
 
     @property
     def props(self):
@@ -173,7 +176,7 @@ class Shape(gws.IShape):
         return self.geom.intersects(t.cast(Shape, shape).geom)
 
     def tolerance_polygon(self, tolerance, resolution=None) -> gws.IShape:
-        is_poly = self.type in (gws.GeometryType.polygon, gws.GeometryType.multipolygon)
+        is_poly = self.geometry_type in (gws.GeometryType.polygon, gws.GeometryType.multipolygon)
 
         if not tolerance and is_poly:
             return self
@@ -193,24 +196,26 @@ class Shape(gws.IShape):
         return Shape(geom, self.crs)
 
     def to_type(self, new_type: gws.GeometryType) -> gws.IShape:
-        if new_type == self.type:
+        gt = self.geometry_type
+        if new_type == gt:
             return self
         if new_type == gws.GeometryType.geometry:
             return self
-        if self.type == gws.GeometryType.point and new_type == gws.GeometryType.multipoint:
+        if gt == gws.GeometryType.point and new_type == gws.GeometryType.multipoint:
             return self.to_multi()
-        if self.type == gws.GeometryType.linestring and new_type == gws.GeometryType.multilinestring:
+        if gt == gws.GeometryType.linestring and new_type == gws.GeometryType.multilinestring:
             return self.to_multi()
-        if self.type == gws.GeometryType.polygon and new_type == gws.GeometryType.multipolygon:
+        if gt == gws.GeometryType.polygon and new_type == gws.GeometryType.multipolygon:
             return self.to_multi()
-        raise ValueError(f'cannot convert {self.type!r} to {new_type!r}')
+        raise ValueError(f'cannot convert {gt!r} to {new_type!r}')
 
     def to_multi(self) -> gws.IShape:
-        if self.type == gws.GeometryType.point:
+        gt = self.geometry_type
+        if gt == gws.GeometryType.point:
             return Shape(shapely.geometry.MultiPoint([self.geom]), self.crs)
-        if self.type == gws.GeometryType.linestring:
+        if gt == gws.GeometryType.linestring:
             return Shape(shapely.geometry.MultiLineString([self.geom]), self.crs)
-        if self.type == gws.GeometryType.polygon:
+        if gt == gws.GeometryType.polygon:
             return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
         return self
 

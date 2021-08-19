@@ -131,15 +131,22 @@ def _dump(x, name, depth, max_depth, all_props, seen):
 
     head = pfx + ' = ' + _repr(x)
 
-    if not x or isinstance(x, (bool, int, float, str, bytes)) or x in seen:
+    if not x or isinstance(x, (bool, int, float, str, bytes)):
         yield head
         return
-
-    seen.append(x)
 
     if not all_props and str(type(x)) in _noexpand:
         yield head
         return
+
+    try:
+        if x in seen:
+            yield head
+            return
+        seen.append(x)
+    except:
+        pass
+
 
     if depth >= max_depth:
         yield pfx + '...'
@@ -155,6 +162,7 @@ def _dump(x, name, depth, max_depth, all_props, seen):
         yield pfx + ' = '
         for k, v in enumerate(x):
             yield from _dump(v, str(k), depth + 1, max_depth, all_props, seen)
+        return
 
     yield head
 

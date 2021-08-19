@@ -6,7 +6,6 @@ import time
 import gws
 import gws.types as t
 import gws.base.template
-import gws.config
 import gws.lib.date
 import gws.lib.feature
 import gws.lib.img

@@ -4,7 +4,6 @@ import gws
 import gws.types as t
 import gws.base.db
 import gws.base.model
-import gws.config
 import gws.lib.feature
 import gws.lib.proj
 import gws.lib.proj

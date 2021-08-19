@@ -10,73 +10,96 @@ import gws.lib.os2
 import gws.lib.vendor.chartreux as chartreux
 import gws.lib.vendor.slon as slon
 import gws.spec.runtime
-from . import error
 
-config_path_pattern = r'\bconfig\.(py|json|yaml|cx)$'
-config_function_name = 'config'
+CONFIG_PATH_PATTERN = r'\bconfig\.(py|json|yaml|cx)$'
+CONFIG_FUNCTION_NAME = 'config'
+
+DEFAULT_CONFIG_PATHS = [
+    '/data/config.cx',
+    '/data/config.json',
+    '/data/config.yaml',
+    '/data/config.py',
+]
 
 
-def parse(specs: gws.ISpecRuntime, value, type_name, source_path=''):
+def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path=''):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
         return specs.read_value(value, type_name, source_path, strict=True, with_error_details=True)
     except gws.spec.runtime.Error as e:
         code, msg, _, details = e.args
-        raise error.ParseError(
+        raise gws.ConfigurationError(
             code + ': ' + msg,
             details.get('path'),
             details.get('formatted_value'),
             details.get('formatted_stack'))
 
 
-def parse_main(specs: gws.ISpecRuntime, path):
+def real_config_path(config_path=None):
+    p = config_path or os.getenv('GWS_CONFIG')
+    if p:
+        return p
+    for p in DEFAULT_CONFIG_PATHS:
+        if gws.is_file(p):
+            return p
+
+
+def parse_main(specs: gws.ISpecRuntime, config_path=None) -> gws.Config:
     """Read and parse the main config file"""
 
-    dct, cfg_paths = _read(path)
+    config_path = real_config_path(config_path)
+    if not config_path:
+        raise gws.ConfigurationError('no configuration file found')
+    gws.log.info(f'using config {config_path!r}...')
+    dct, paths = _read(config_path)
+    return parse_main_from_dict(specs, dct, paths)
 
-    prj_configs = []
+
+def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Config:
+    config_path = config_paths[0]
+    prj_dicts = []
 
     for prj_cfg in dct.pop('projects', []):
-        for pc in _as_flat_list(prj_cfg):
-            prj_configs.append([pc, path])
+        for prj_dict in _as_flat_list(prj_cfg):
+            prj_dicts.append([prj_dict, config_path])
 
     gws.log.info('parsing main configuration...')
-    app = parse(specs, dct, 'gws.base.application.Config', path)
+    app_cfg = parse(specs, dct, 'gws.base.application.Config', config_path)
 
-    app.configPaths = cfg_paths
-    app.projectPaths = app.projectPaths or []
-    app.projectDirs = app.projectDirs or []
+    app_cfg.configPaths = config_paths
+    app_cfg.projectPaths = app_cfg.projectPaths or []
+    app_cfg.projectDirs = app_cfg.projectDirs or []
 
-    prj_paths = app.projectPaths
-    for dirname in app.projectDirs:
-        prj_paths.extend(gws.lib.os2.find_files(dirname, config_path_pattern))
+    prj_paths = list(app_cfg.projectPaths)
+    for dirname in app_cfg.projectDirs:
+        prj_paths.extend(gws.lib.os2.find_files(dirname, CONFIG_PATH_PATTERN))
 
     for prj_path in sorted(set(prj_paths)):
-        prj_cfg, prj_cfg_paths = _read(prj_path)
-        cfg_paths.extend(prj_cfg_paths)
-        for pc in _as_flat_list(prj_cfg):
-            prj_configs.append([pc, prj_path])
+        prj_cfg, paths = _read(prj_path)
+        config_paths.extend(paths)
+        for prj_dict in _as_flat_list(prj_cfg):
+            prj_dicts.append([prj_dict, prj_path])
 
-    app.projects = []
+    app_cfg.projects = []
 
-    for pc, prj_path in prj_configs:
-        uid = pc.get('uid') or pc.get('title') or '???'
+    for prj_dict, prj_path in prj_dicts:
+        uid = prj_dict.get('uid') or prj_dict.get('title') or '???'
         gws.log.info(f'parsing project {uid!r}...')
-        app.projects.append(parse(specs, pc, 'gws.base.project.Config', prj_path))
+        app_cfg.projects.append(parse(specs, prj_dict, 'gws.base.project.Config', prj_path))
 
-    return app
+    return app_cfg
 
 
 def _read(path):
     if not os.path.isfile(path):
-        raise error.ParseError('file not found', path, '', None)
+        raise gws.ConfigurationError('file not found', path, '', None)
     try:
         dct, paths = _read2(path)
-    except error.ParseError:
+    except gws.ConfigurationError:
         raise
-    except Exception as e:
-        raise error.ParseError('read error: %s' % e, path, '', None) from e
+    except Exception as exc:
+        raise gws.ConfigurationError('read error: %s' % e, path, '', None) from exc
 
     _save_intermediate(path, gws.lib.json2.to_pretty_string(dct), 'json')
     return dct, paths
@@ -86,7 +109,7 @@ def _read2(path):
     if path.endswith('.py'):
         mod_name = 'gws.cfg.' + gws.as_uid(path)
         mod = gws.import_from_path(path, mod_name)
-        fn = getattr(mod, config_function_name)
+        fn = getattr(mod, CONFIG_FUNCTION_NAME)
         dct = fn()
         if not isinstance(dct, dict):
             dct = _as_dict(dct)
@@ -159,7 +182,7 @@ def _syntax_error(path, src, message, line, context=10):
             t = '>>>' + t
         lines.append(t)
 
-    return error.ParseError(message, path, '\n'.join(lines), None)
+    return gws.ConfigurationError(message, path, '\n'.join(lines), None)
 
 
 def _save_intermediate(path, txt, ext):

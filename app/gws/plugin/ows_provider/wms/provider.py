@@ -51,7 +51,7 @@ class Object(gws.base.ows.provider.Object):
 
     def find_features(self, args):
         shape = args.shapes[0]
-        if shape.type != gws.GeometryType.point:
+        if shape.geometry_type != gws.GeometryType.point:
             return []
 
         our_crs = shape.crs
@@ -109,8 +109,12 @@ class Object(gws.base.ows.provider.Object):
     @gws.cached_property
     def _info_format(self):
         operation = self.operation('GetFeatureInfo')
+
         if not operation:
             return
+
+        if not operation.formats:
+            return 'text/xml'
 
         preferred = 'gml', 'text/xml', 'text/plain'
 

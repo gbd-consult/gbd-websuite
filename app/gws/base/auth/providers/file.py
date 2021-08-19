@@ -5,29 +5,36 @@ import getpass
 import gws
 import gws.lib.json2
 import gws.lib.password
-from .. import core, error
+import gws.types as t
+from .. import error, provider, user
 
 
 @gws.ext.Config('auth.provider.file')
-class Config(core.ProviderConfig):
+class Config(provider.Config):
     """File-based authorization provider"""
 
     path: gws.FilePath  #: path to the users json file
 
 
 @gws.ext.Object('auth.provider.file')
-class Object(core.Provider):
+class Object(provider.Object):
     path: str
+    db: t.List[dict]
 
     def configure(self):
         self.path = self.var('path')
+        self.db = gws.lib.json2.from_path(self.path)
 
     def authenticate(self, method, credentials):
         wrong_password = 0
         found = []
 
-        for rec in self._db():
-            login_ok = gws.lib.password.cmp(credentials.get('username'), rec['login'])
+        username = credentials.get('username')
+        if not username:
+            return
+
+        for rec in self.db:
+            login_ok = gws.lib.password.cmp(username, rec['login'])
             password_ok = gws.lib.password.check(credentials.get('password'), rec['password'])
             if login_ok and password_ok:
                 found.append(rec)
@@ -35,26 +42,28 @@ class Object(core.Provider):
                 wrong_password += 1
 
         if wrong_password:
-            raise error.WrongPassword()
+            gws.log.error(f'wrong password for {username!r}')
+            return
+
+        if len(found) > 1:
+            gws.log.error(f'multiple entries for {username!r}')
+            return
 
         if len(found) == 1:
             return self._make_user(found[0])
 
-    def get_user(self, user_uid):
-        for rec in self._db():
-            if rec['login'] == user_uid:
+    def get_user(self, local_uid):
+        for rec in self.db:
+            if rec['login'] == local_uid:
                 return self._make_user(rec)
 
     def _make_user(self, rec):
-        return core.ValidUser().init_from_source(
+        return user.AuthorizedUser().init_from_source(
             provider=self,
-            uid=rec['login'],
+            local_uid=rec['login'],
             roles=rec.get('roles', []),
             attributes={'displayName': rec.get('name', rec['login'])}
         )
-
-    def _db(self):
-        return gws.lib.json2.from_path(self.path)
 
     @gws.ext.command('cli.auth.password')
     def passwd(self, p: gws.NoParams):
@@ -71,5 +80,3 @@ class Object(core.Provider):
             p = gws.lib.password.encode(p1)
             print(p)
             break
-
-

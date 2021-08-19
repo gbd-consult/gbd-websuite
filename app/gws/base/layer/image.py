@@ -1,9 +1,7 @@
 import gws
-import gws.types as t
-import gws.base.map.action
 import gws.lib.extent
-import gws.lib.mpx as mpx
 import gws.lib.img
+import gws.lib.mpx as mpx
 from . import core, types
 
 
@@ -28,7 +26,7 @@ class Object(core.Object):
             return gws.merge(
                 p,
                 type='tile',
-                url=gws.base.map.action.url_for_get_tile(self.uid),
+                url=core.url_for_get_tile(self.uid),
                 tileSize=self.grid.tileSize,
             )
 
@@ -36,7 +34,7 @@ class Object(core.Object):
             return gws.merge(
                 p,
                 type='box',
-                url=gws.base.map.action.url_for_get_box(self.uid),
+                url=core.url_for_get_box(self.uid),
             )
 
         return p

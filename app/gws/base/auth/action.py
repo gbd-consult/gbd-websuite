@@ -6,11 +6,12 @@ import gws.types as t
 import gws.base.api
 import gws.base.web.error
 
-from . import core, wsgi
+from . import wsgi
+from . import user as user_api
 
 
 class Response(gws.Response):
-    user: core.UserProps
+    user: user_api.UserProps
 
 
 class LoginParams(gws.Params):
@@ -36,7 +37,7 @@ class Object(gws.base.api.action.Object):
             raise gws.base.web.error.Forbidden()
 
         wr = t.cast(wsgi.WebRequest, req)
-        web_method: t.Optional[core.Method] = wr.auth.get_method('web')
+        web_method = wr.auth.get_method(ext_type='web')
         if not web_method:
             gws.log.error('web method not configured')
             raise gws.base.web.error.Forbidden()
@@ -56,7 +57,7 @@ class Object(gws.base.api.action.Object):
             return Response(user=req.user.props)
 
         wr = t.cast(wsgi.WebRequest, req)
-        web_method: t.Optional[core.Method] = wr.auth.get_method('web')
+        web_method = wr.auth.get_method(ext_type='web')
         if not web_method:
             gws.log.error('web method not configured')
             raise gws.base.web.error.Forbidden()

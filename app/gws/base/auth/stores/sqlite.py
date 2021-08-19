@@ -3,20 +3,20 @@ import gws.lib.date
 import gws.lib.os2
 import gws.lib.sqlite
 
-DB_PATH = gws.MISC_DIR + '/sessions8.sqlite'
-
 
 class SessionStore:
-    @property
-    def _connection(self):
-        return gws.lib.sqlite.connect(DB_PATH)
+    db_path: str
+
+    def __init__(self, db_path: str):
+        self.db_path = db_path
+        self.init()
 
     def init(self):
         with self._connection as conn:
             conn.execute('''CREATE TABLE IF NOT EXISTS sess(
                 uid TEXT PRIMARY KEY,
-                method_type TEXT,
-                session_kind TEXT,
+                method_uid TEXT,
+                typ TEXT,
                 provider_uid TEXT,
                 user_uid TEXT,
                 str_user TEXT,
@@ -24,6 +24,10 @@ class SessionStore:
                 created INTEGER,
                 updated INTEGER
             ) WITHOUT ROWID''')
+
+    @property
+    def _connection(self):
+        return gws.lib.sqlite.connect(self.db_path)
 
     def count(self):
         with self._connection as conn:
@@ -38,15 +42,15 @@ class SessionStore:
             for r in conn.execute('SELECT * FROM sess WHERE uid=?', [uid]):
                 return dict(r)
 
-    def create(self, method_type, session_kind, provider_uid, user_uid, str_user, str_data=''):
+    def create(self, method_uid, typ, provider_uid, user_uid, str_user, str_data=''):
         uid = gws.random_string(64)
 
         with self._connection as conn:
             conn.execute('''INSERT 
                 INTO sess(
                     uid,
-                    method_type,
-                    session_kind,
+                    method_uid,
+                    typ,
                     provider_uid,
                     user_uid,
                     str_user,
@@ -57,8 +61,8 @@ class SessionStore:
                 VALUES(?,?,?,?,?,?,?,?,?)
             ''', [
                 uid,
-                method_type,
-                session_kind,
+                method_uid,
+                typ,
                 provider_uid,
                 user_uid,
                 str_user,
@@ -87,7 +91,7 @@ class SessionStore:
             conn.execute('DELETE FROM sess WHERE uid = ?', [uid])
 
     def delete_all(self):
-        gws.lib.os2.unlink(DB_PATH)
+        gws.lib.os2.unlink(self.db_path)
         self.init()
 
     def get_all(self):

@@ -3,6 +3,7 @@
 import gws
 import gws.base.api
 import gws.base.auth
+import gws.base.auth.manager
 import gws.base.client
 import gws.base.db
 import gws.base.metadata
@@ -27,7 +28,7 @@ class Config(gws.WithAccess):
     """Main application configuration"""
 
     api: t.Optional[gws.base.api.Config]  #: system-wide server actions
-    auth: t.Optional[gws.base.auth.Config]  #: authorization methods and options
+    auth: t.Optional[gws.base.auth.Config] = {}  # type: ignore #: authorization methods and options
     cache: t.Optional[gws.lib.cache.Config] = {}  # type: ignore #: global cache configuration
     client: t.Optional[gws.base.client.Config]  #: gws client configuration
     db: t.Optional[gws.base.db.Config]  #: database configuration
@@ -47,13 +48,14 @@ class Object(gws.Object, gws.IApplication):
     """Main Appilication object"""
 
     api: gws.base.api.Object
-    auth: gws.base.auth.Manager
+    auth: gws.base.auth.manager.Object
     locale_uids: t.List[str]
     metadata: gws.base.metadata.Object
     monitor: gws.server.monitor.Object
     web_sites: t.List[gws.IWebSite]
     version: str
     qgis_version: str
+    mpx_url: str
 
     _devopts: dict
 
@@ -73,11 +75,11 @@ class Object(gws.Object, gws.IApplication):
                 'gws.plugin.qgis.server')
             self.qgis_version = qgis_server.version()
 
-        gws.log.info('*' * 40)
+        s = f'GWS version {self.version}'
         if self.qgis_version:
-            gws.log.info(f'GWS version {self.version}, QGis {self.qgis_version}')
-        else:
-            gws.log.info(f'GWS version {self.version}')
+            s += f', QGis {self.qgis_version}'
+        gws.log.info('*' * 40)
+        gws.log.info(s)
         gws.log.info('*' * 40)
 
         self.locale_uids = self.var('locales') or ['en_CA']
@@ -101,31 +103,30 @@ class Object(gws.Object, gws.IApplication):
         #         for p in self.var('helpers', default=[]):
         #             self.create_child('gws.ext.helper', p)
         #
-        #         self.auth: gws.IAuthManager = t.cast(gws.IAuthManager, self.create_child(gws.base.auth.Object, self.var('auth', default=gws.Data())))
-        #         self.api: gws.IApi = t.cast(gws.IApi, self.create_child(gws.base.api.Object, self.var('api', default=gws.Data())))
         #
         #         p = self.var('client')
         #         self.client: t.Optional[gws.IClient] = self.create_child(gws.base.client.Object, p) if p else None
         #
 
-        self.auth = t.cast(gws.base.auth.Manager, self.create_child(gws.base.auth.Manager, self.var('auth')))
+        self.auth = self.create_child(gws.base.auth.manager.Object, self.var('auth'))
         self.api = self.create_child(gws.base.api.Object, self.var('api'))
 
-        self.web_sites = []
+        cfgs = [
+            gws.merge(cfg, ssl=bool(self.var('web.ssl')))
+            for cfg in self.var('web.sites', default=[gws.base.web.DEFAULT_SITE])
+        ]
+        self.web_sites = t.cast(t.List[gws.IWebSite], self.create_children(gws.base.web.site.Object, cfgs))
 
-        p = self.var('web.sites', default=[gws.base.web.DEFAULT_SITE])
-        for s in p:
-            s.ssl = True if self.var('web.ssl') else False
-            self.web_sites.append(self.root.create_object(gws.base.web.site.Object, s))
-
-        for p in self.var('projects', default=[]):
-            self.create_child(gws.base.project.Object, p)
+        for cfg in self.var('projects', default=[]):
+            # @TODO: parallel config?
+            self.create_child(gws.base.project.Object, cfg)
 
     def post_configure(self):
+        self.mpx_url = ''
         if self.var('server.mapproxy.enabled'):
             gws.lib.mpx.config.create_and_save(self.root)
+            self.mpx_url = f"http://{self.var('server.mapproxy.host')}:{self.var('server.mapproxy.port')}"
 
-        pass
         # for p in set(cfg.configPaths):
         #     root.application.monitor.add_path(p)
         # for p in set(cfg.projectPaths):
@@ -155,3 +156,6 @@ class Object(gws.Object, gws.IApplication):
             gws.log.debug(f'created an ad-hoc helper, key={key!r} cfg={cfg!r}')
             p = self.create_child(base, cfg)
         return p
+
+    def developer_option(self, name):
+        return self._devopts.get(name)

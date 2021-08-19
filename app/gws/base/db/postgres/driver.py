@@ -8,7 +8,6 @@ import psycopg2.sql
 
 import gws
 import gws.types as t
-import gws.lib.shape
 
 
 # noinspection PyArgumentList

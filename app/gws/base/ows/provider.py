@@ -31,7 +31,6 @@ class Object(gws.Object, gws.IOwsProvider):
     def configure(self):
         self.invert_axis_crs = self.var('invertAxis', default=[])
         self.operations = []
-        self.service_type = ''
         self.service_version = ''
         self.source_crs = self.var('sourceCrs')
         self.source_layers = []

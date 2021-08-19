@@ -4,7 +4,7 @@ import re
 import os
 import gws
 import gws.types as t
-import gws.config.loader
+import gws.config
 import gws.lib.mpx.config
 import gws.lib.os2
 

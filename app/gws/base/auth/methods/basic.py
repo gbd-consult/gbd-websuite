@@ -2,21 +2,21 @@ import base64
 
 import gws
 import gws.types as t
-from .. import core, wsgi, error
+from .. import error, manager, method
 
 
 # @TODO support WWW-Authenticate at some point
 
 @gws.ext.Config('auth.method.basic')
-class Config(core.MethodConfig):
+class Config(method.Config):
     """HTTP-basic authorization options"""
     pass
 
 
 @gws.ext.Object('auth.method.basic')
-class Object(core.Method):
+class Object(method.Object):
 
-    def open_session(self, auth: core.Manager, req: gws.IWebRequest):
+    def open_session(self, auth, req):
         if self.secure and not req.is_secure:
             return
 
@@ -26,7 +26,7 @@ class Object(core.Method):
 
         user = auth.authenticate(self, gws.Data(username=login_pass[0], password=login_pass[1]))
         if user:
-            return auth.new_session(kind='http-basic', method=self, user=user)
+            return t.cast(manager.Object, auth).new_session('http-basic', method=self, user=user)
 
         # if the header is provided, it has to be correct
         raise error.LoginNotFound()

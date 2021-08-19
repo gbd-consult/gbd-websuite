@@ -1,6 +1,5 @@
 import gws
 import gws.types as t
-import gws.base.map.action
 import gws.base.model
 import gws.lib.extent
 import gws.base.style
@@ -34,7 +33,7 @@ class Object(core.Object):
         if self.display == 'box':
             return gws.merge(p, {
                 'type': 'box',
-                'url': gws.base.map.action.url_for_get_box(self.uid),
+                'url': core.url_for_get_box(self.uid),
             })
 
         return gws.merge(p, {
@@ -42,7 +41,7 @@ class Object(core.Object):
             'loadingStrategy': self.var('loadingStrategy'),
             'style': self.style,
             'editStyle': self.edit_style,
-            'url': gws.base.map.action.url_for_get_features(self.uid),
+            'url': core.url_for_get_features(self.uid),
         })
 
     def render_box(self, rv, extra_params=None):

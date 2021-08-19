@@ -8,7 +8,7 @@ PYTHON = python3
 
 SPHINXOPTS = -v -n -b html -j auto -c $(DOC)/sphinx
 
-.PHONY: help spec client client-dev client-dev-server doc doc-dev-server image image-debug clean
+.PHONY: help spec client client-dev client-dev-server doc doc-dev-server test image image-debug clean
 
 help:
 	@echo ""
@@ -18,6 +18,7 @@ help:
 	@echo "client-dev-server [MANIFEST=<manifest>]  - start the Client dev server"
 	@echo "doc [MANIFEST=<manifest>]                - build the Docs"
 	@echo "doc-dev-server [MANIFEST=<manifest>]     - start the Docs dev server"
+	@echo "test [MANIFEST=<manifest>]               - run Server tests"
 	@echo "image [IMAGE_NAME=<name>]                - build the Docker Image"
 	@echo "image-debug [IMAGE_NAME=<name>]          - build the debug Docker Image"
 	@echo "clean                                    - remove all build artifacts"
@@ -43,6 +44,9 @@ doc: spec
 
 doc-dev-server: doc
 	sphinx-autobuild -B $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
+
+test:
+	$(PYTHON) $(APP)/test.py go --manifest "$(MANIFEST)"
 
 image:
 	cd $(INSTALL) && $(PYTHON) build.py docker release $(IMAGE_NAME) && cd $(CWD)

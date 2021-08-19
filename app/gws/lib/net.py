@@ -27,25 +27,6 @@ class Timeout(Error):
     pass
 
 
-_parse_url_keys = (
-    'dir',
-    'ext',
-    'filename',
-    'fnbody',
-    'fragment',
-    'hostname',
-    'netloc',
-    'params',
-    'password',
-    'path',
-    'port',
-    'qs',
-    'query',
-    'scheme',
-    'username',
-)
-
-
 def quote(s, safe='/'):
     return urllib.parse.quote(s, safe)
 
@@ -58,81 +39,101 @@ def is_abs_url(url):
     return re.match(r'^([a-z]+:|)//', url)
 
 
-def parse_url(url):
-    p = {k: '' for k in _parse_url_keys}
+class Url(gws.Data):
+    fragment: str
+    hostname: str
+    netloc: str
+    params: dict
+    password: str
+    path: str
+    pathparts: dict
+    port: str
+    qs: dict
+    query: str
+    scheme: str
+    url: str
+    username: str
 
-    # NB force an absolute url
+
+def parse_url(url: str, **kwargs) -> Url:
+    """Parse a string url and return an Url object"""
 
     if not is_abs_url(url):
         url = '//' + url
 
-    res = urllib.parse.urlsplit(url)
+    us = urllib.parse.urlsplit(url)
+    u = Url(
+        fragment=us.fragment or '',
+        hostname=us.hostname or '',
+        netloc=us.netloc or '',
+        params={},
+        password=us.password or '',
+        path=us.path or '',
+        pathparts={},
+        port=str(us.port or ''),
+        qs={},
+        query=us.query or '',
+        scheme=us.scheme or '',
+        url=url,
+        username=us.username or '',
+    )
 
-    for k in _parse_url_keys:
-        p[k] = getattr(res, k, '') or ''
-
-    if p['path']:
-        p['dir'], p['filename'] = os.path.split(p['path'])
-        if p['filename'].startswith('.'):
-            p['fnbody'], p['ext'] = p['filename'], ''
+    if u.path:
+        pp = {}
+        pp['dirname'], pp['filename'] = os.path.split(u.path)
+        if pp['filename'].startswith('.'):
+            pp['name'], pp['ext'] = pp['filename'], ''
         else:
-            p['fnbody'], _, p['ext'] = p['filename'].partition('.')
+            pp['name'], _, pp['ext'] = pp['filename'].rpartition('.')
+        u.pathparts = pp
 
-    if p['query']:
-        p['qs'] = urllib.parse.parse_qs(p['query'])
-        r = {k: v[0] for k, v in p['qs'].items()}
-    else:
-        r = {}
+    if u.query:
+        u.qs = urllib.parse.parse_qs(u.query)
+        u.params = {k.lower(): v[0] for k, v in u.qs.items()}
 
-    p['params'] = requests.structures.CaseInsensitiveDict(r)
+    if u.username:
+        u.username = unquote(u.username)
+        u.password = unquote(u.get('password', ''))
 
-    if p['username']:
-        p['username'] = unquote(p['username'])
-        p['password'] = unquote(p.get('password', ''))
-
-    return p
+    u.update(**kwargs)
+    return u
 
 
-def make_url(p):
+def make_url(u: t.Union[Url, dict], **kwargs) -> str:
+    p = vars(u) if isinstance(u, gws.Data) else u
+    p.update(kwargs)
+
     s = ''
 
     if p.get('scheme'):
-        s += p['scheme']
-        s += '://'
-    else:
-        s += '//'
+        s += p['scheme'] + ':'
+
+    s += '//'
 
     if p.get('username'):
-        s += quote(p.get('username'))
-        s += ':'
-        s += quote(p.get('password', ''))
-        s += '@'
+        s += quote(p.get('username')) + ':' + quote(p.get('password', '')) + '@'
 
     s += p['hostname']
 
     if p.get('port'):
-        s += ':'
-        s += str(p['port'])
+        s += ':' + str(p['port'])
 
     if p.get('path'):
-        s += '/'
-        s += p['path'].lstrip('/')
+        s += '/' + p['path'].lstrip('/')
 
     if p.get('params'):
-        s += '?'
-        s += gws.as_query_string(dict(p['params']))
+        s += '?' + gws.as_query_string(dict(p['params']))
 
     if p.get('fragment'):
-        s += '#'
-        s += p['fragment'].lstrip('#')
+        s += '#' + p['fragment'].lstrip('#')
 
     return s
 
 
-def add_params(url, params):
-    p = parse_url(url)
-    p['params'].update(params)
-    return make_url(p)
+def add_params(url: str, params: dict) -> str:
+    u = parse_url(url)
+    u.params.update(params)
+    return make_url(u)
 
 
 ##
@@ -221,10 +222,13 @@ def _parse_content_type(headers):
 def http_request(url, **kwargs) -> HTTPResponse:
     kwargs = dict(kwargs)
 
-    max_age = int(kwargs.pop('max_age', 0))
+    if 'params' in kwargs:
+        url = add_params(url, kwargs.pop('params'))
+
+    max_age = kwargs.pop('max_age', 0)
+    cache_path = _cache_path(url)
 
     if max_age:
-        cache_path = _cache_path(url)
         age = _file_age(cache_path)
         if age < max_age:
             gws.log.debug(f'REQUEST_CACHED: url={url!r} path={cache_path!r} age={age}')
@@ -235,7 +239,7 @@ def http_request(url, **kwargs) -> HTTPResponse:
     gws.time_end(ts)
 
     if max_age and resp.ok:
-        gws.serialize_to_path(resp, _cache_path(url))
+        gws.serialize_to_path(resp, cache_path)
 
     return resp
 
@@ -245,9 +249,6 @@ _DEFAULT_READ_TIMEOUT = 60
 
 
 def _http_request(url, kwargs) -> HTTPResponse:
-    if 'params' in kwargs:
-        url = add_params(url, kwargs.pop('params'))
-
     kwargs['stream'] = False
     method = kwargs.pop('method', 'GET').upper()
 
@@ -264,13 +265,13 @@ def _http_request(url, kwargs) -> HTTPResponse:
         if res.status_code < 400:
             gws.log.debug(f'HTTP_REQUEST: url={url!r} status={res.status_code!r}')
             return HTTPResponse(ok=True, res=res)
-        gws.log.error(f'HTTP_REQUEST_FAILED: (status) url={url!r} status={res.status_code!r}')
+        gws.log.error(f'HTTP_REQUEST_FAILED: ({res.status_code!r}) url={url!r}')
         return HTTPResponse(ok=False, res=res)
     except requests.Timeout as exc:
         gws.log.exception(f'HTTP_REQUEST_FAILED: (timeout) url={url!r}')
         return HTTPResponse(ok=False, text=repr(exc), status_code=500)
     except requests.RequestException as exc:
-        gws.log.exception(f'HTTP_REQUEST_FAILED: (generic) url={url!r}')
+        gws.log.exception(f'HTTP_REQUEST_FAILED: ({exc!r}) url={url!r}')
         return HTTPResponse(ok=False, text=repr(exc), status_code=500)
 
 
@@ -284,4 +285,3 @@ def _file_age(path):
     except:
         return 1e20
     return int(time.time() - st.st_mtime)
-

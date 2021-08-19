@@ -3,7 +3,6 @@ import zipfile
 import gws
 import gws.types as t
 import gws.base.ows
-import gws.config
 import gws.lib.ows
 import gws.lib.gis
 import gws.lib.net
@@ -76,7 +75,7 @@ class Object(gws.base.ows.provider.Object):
             return []
 
         shape = args.shapes[0]
-        if shape.type != gws.GeometryType.point:
+        if shape.geometry_type != gws.GeometryType.point:
             return []
 
         our_crs = gws.lib.gis.best_crs(shape.crs, self.supported_crs)

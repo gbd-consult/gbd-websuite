@@ -9,7 +9,7 @@ class Data:
     """Basic data object"""
 
     def __init__(self, *args, **kwargs):
-        self._extend(args, kwargs)
+        self.update(*args, **kwargs)
 
     def __repr__(self):
         return repr(vars(self))
@@ -20,7 +20,7 @@ class Data:
     def set(self, k, v):
         return setattr(self, k, v)
 
-    def _extend(self, args, kwargs):
+    def update(self, *args, **kwargs):
         d = {}
         for a in args:
             if isinstance(a, dict):

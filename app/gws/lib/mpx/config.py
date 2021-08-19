@@ -2,12 +2,33 @@ import yaml
 from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
-import gws.config.error
 import gws.lib.json2
 import gws.lib.os2
 
 CONFIG_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
 TMP_DIR = gws.TMP_DIR + '/mpx'
+
+DEFAULT_CONFIG = {
+    "services": {
+        "wmts": {
+        }
+    },
+    "sources": {
+        "test": {
+            "type": "tile",
+            "url": "https://osmtiles.gbd-consult.de/ows/%(z)s/%(x)s/%(y)s.png",
+        }
+    },
+    "layers": [
+        {
+            "name": "test",
+            "title": "test",
+            "sources": [
+                "test"
+            ]
+        }
+    ]
+}
 
 
 class _Config:
@@ -148,10 +169,16 @@ def create(root: gws.RootObject):
 
 def create_and_save(root: gws.RootObject):
     cfg = create(root)
+
     if not cfg:
-        gws.log.warn('mapproxy: NO CONFIG')
-        gws.lib.os2.unlink(CONFIG_PATH)
-        return
+        force = root.application.var('server.mapproxy.forceStart')
+        if force:
+            gws.log.warn('mapproxy: no configuration, using default')
+            cfg = DEFAULT_CONFIG
+        else:
+            gws.log.warn('mapproxy: no configuration, not starting')
+            gws.lib.os2.unlink(CONFIG_PATH)
+            return
 
     cfg_str = yaml.dump(cfg)
 
@@ -162,7 +189,7 @@ def create_and_save(root: gws.RootObject):
     try:
         make_wsgi_app(test_path)
     except Exception as e:
-        raise gws.config.error.ConfigurationError(f'MAPPROXY ERROR: {e!r}') from e
+        raise gws.ConfigurationError(f'MAPPROXY ERROR: {e!r}') from e
 
     gws.lib.os2.unlink(test_path)
 

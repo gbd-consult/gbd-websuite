@@ -33,6 +33,10 @@ class WebResponse(gws.IWebResponse):
         else:
             self._wz = werkzeug.wrappers.Response(**kwargs)
 
+    @property
+    def status_code(self):
+        return self._wz.status_code
+
     def __call__(self, environ, start_response):
         return self._wz(environ, start_response)
 

@@ -15,10 +15,7 @@ def _call(service, params):
     global _base_url
 
     if not _base_url:
-        _base_url = 'http://%s:%s' % (
-            gws.config.root().application.var('server.mapproxy.host'),
-            gws.config.root().application.var('server.mapproxy.port'),
-        )
+        _base_url = gws.config.root().application.mpx_url
 
     try:
         resp = gws.lib.net.http_request(_base_url + '/' + service, params=params)

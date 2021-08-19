@@ -2,7 +2,7 @@
 
 import gws
 import gws.types as t
-import gws.config.loader
+import gws.config
 import gws.base.web.error
 import gws.spec.runtime
 import gws.base.web.site
@@ -23,17 +23,16 @@ def application(environ, start_response):
     return response(environ, start_response)
 
 
+def reload():
+    global _inited
+    _inited = False
+
+
 def handle_request(environ) -> WebResponse:
     root = gws.config.root()
     req = WebRequest(root, environ, _find_site(environ, root))
-    try:
-        req.parse_input()
-        return _handle_request2(req)
-    except gws.base.web.error.HTTPException as err:
-        return _handle_error(req, err)
-    except:
-        gws.log.exception()
-        return _handle_error(req, gws.base.web.error.InternalServerError())
+    req.parse_input()
+    return _handle_request2(req)
 
 
 ##
@@ -42,7 +41,7 @@ def handle_request(environ) -> WebResponse:
 def _init():
     try:
         gws.log.info('initializing WEB application')
-        root = gws.config.loader.load()
+        root = gws.config.load()
         gws.log.set_level(root.application.var('server.log.level'))
     except:
         gws.log.exception('UNABLE TO LOAD CONFIGURATION')
@@ -63,7 +62,13 @@ def _handle_request2(req: WebRequest) -> WebResponse:
         return _with_cors_headers(cors, req.content_response(gws.ContentResponse(content='', mime='text/plain')))
 
     req.auth_open()
-    res = _handle_action(req)
+    try:
+        res = _handle_action(req)
+    except gws.base.web.error.HTTPException as err:
+        res = _handle_error(req, err)
+    except:
+        gws.log.exception()
+        res = _handle_error(req, gws.base.web.error.InternalServerError())
     req.auth_close(res)
 
     if cors and req.method == 'POST':

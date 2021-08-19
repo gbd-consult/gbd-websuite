@@ -2,35 +2,39 @@ import shlex
 import time
 
 import gws
-import gws.spec.runtime
 import gws.config
 import gws.lib.date
 import gws.lib.json2
 import gws.lib.os2
+import gws.spec.runtime
 import gws.types as t
-from . import ini, types
+from . import ini
 
 _START_SCRIPT = gws.VAR_DIR + '/server.sh'
 
 
 def start(manifest_path=None, config_path=None):
     stop()
-
-    root = _configure(manifest_path, config_path, is_starting=True, with_spec_cache=True)
+    root = _configure(manifest_path, config_path, is_starting=True)
     gws.config.store(root)
     gws.config.activate(root)
+    return start_configured()
 
+
+def start_configured():
     for p in gws.lib.os2.find_files(gws.SERVER_DIR, '.*'):
         gws.lib.os2.unlink(p)
 
     pid_dir = gws.ensure_dir('pids', gws.TMP_DIR)
-    commands = ini.create(root, gws.SERVER_DIR, pid_dir)
+    commands = ini.create(gws.config.root(), gws.SERVER_DIR, pid_dir)
 
     with open(_START_SCRIPT, 'wt') as fp:
         fp.write('echo "----------------------------------------------------------"\n')
         fp.write('echo "SERVER START"\n')
         fp.write('echo "----------------------------------------------------------"\n')
         fp.write('\n'.join(commands))
+
+    return _START_SCRIPT
 
 
 def stop():
@@ -39,7 +43,7 @@ def stop():
 
 
 def configure(manifest_path=None, config_path=None):
-    root = _configure(manifest_path, config_path, is_starting=False, with_spec_cache=True)
+    root = _configure(manifest_path, config_path, is_starting=False)
     gws.config.store(root)
 
 
@@ -49,7 +53,7 @@ def reconfigure(manifest_path=None, config_path=None):
         start(manifest_path, config_path)
         return
 
-    root = _configure(manifest_path, config_path, is_starting=False, with_spec_cache=True)
+    root = _configure(manifest_path, config_path, is_starting=False)
     gws.config.store(root)
     reload()
 
@@ -93,7 +97,7 @@ _FALLBACK_CONFIG = {
 }
 
 
-def _configure(manifest_path, config_path, is_starting=False, with_spec_cache=True):
+def _configure(manifest_path, config_path, is_starting=False):
     def _before_init(cfg):
         autorun = gws.get(cfg, 'server.autoRun')
         if autorun:
@@ -105,12 +109,11 @@ def _configure(manifest_path, config_path, is_starting=False, with_spec_cache=Tr
         if timezone:
             gws.lib.date.set_system_time_zone(timezone)
 
-    return gws.config.loader.configure_server(
+    return gws.config.configure(
         manifest_path=manifest_path,
         config_path=config_path,
         before_init=_before_init if is_starting else None,
-        fallback_config= _FALLBACK_CONFIG,
-        with_spec_cache=with_spec_cache
+        fallback_config=_FALLBACK_CONFIG,
     )
 
 
@@ -195,4 +198,4 @@ class Cli:
     @gws.ext.command('cli.server.configtest')
     def configtest(self, p: StartParams):
         """Test the configuration"""
-        _configure(p.manifest or '', p.config or '', is_starting=False, with_spec_cache=False)
+        _configure(p.manifest or '', p.config or '', is_starting=False)

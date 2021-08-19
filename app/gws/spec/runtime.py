@@ -15,31 +15,36 @@ class Error(Exception):
     pass
 
 
-def create(manifest_path: str = None, with_cache: bool = True) -> 'Object':
-    genres = _load(manifest_path) if with_cache else _generate(manifest_path)
-    return Object(genres['meta'], genres['specs'], genres['strings'])
-
-
-def _load(manifest_path):
-    cache_path = gws.TMP_DIR + '/' + gws.lib.json2.to_hash([manifest_path]) + '.spec.json'
-
-    if gws.is_file(cache_path):
-        try:
-            genres = gws.lib.json2.from_path(cache_path)
-            gws.log.debug(f'spec.create: loaded from {cache_path!r}')
-            return genres
-        except:
-            gws.log.exception(f'spec.create: load failed')
-
+def create(manifest_path: str = None) -> 'Object':
     genres = _generate(manifest_path)
+    return Object(genres)
+
+
+def create_and_store(manifest_path: str = None) -> 'Object':
+    genres = _generate(manifest_path)
+    cc = _cache_path(manifest_path)
 
     try:
-        gws.lib.json2.to_path(cache_path, genres, pretty=True)
-        gws.log.debug(f'spec.create: store to {cache_path!r}')
+        gws.lib.json2.to_path(cc, genres, pretty=True)
+        gws.log.debug(f'spec.create: stored to {cc!r}')
     except:
         gws.log.exception(f'spec.create: store failed')
 
-    return genres
+    return Object(genres)
+
+
+def load(manifest_path: str = None) -> 'Object':
+    cc = _cache_path(manifest_path)
+
+    if gws.is_file(cc):
+        try:
+            genres = gws.lib.json2.from_path(cc)
+            gws.log.debug(f'spec.load: loaded from {cc!r}')
+            return Object(genres)
+        except:
+            gws.log.exception(f'spec.load: load failed')
+
+    return create_and_store(manifest_path)
 
 
 def _generate(manifest_path):
@@ -49,19 +54,22 @@ def _generate(manifest_path):
     except Exception as exc:
         raise Error(f'system error, spec generator failed') from exc
     gws.time_end(ts)
-
     return genres
+
+
+def _cache_path(manifest_path):
+    return gws.TMP_DIR + '/spec_' + gws.sha256(manifest_path or '') + '.json'
 
 
 ##
 
 
 class Object(ISpecRuntime):
-    def __init__(self, meta, specs, strings):
-        self.meta = meta
+    def __init__(self, genres):
+        self.meta = genres['meta']
         self.manifest = gws.Manifest(self.meta['manifest'])
-        self.specs = specs
-        self.strings = strings
+        self.specs = genres['specs']
+        self.strings = genres['strings']
 
     def client_vendor_bundle_path(self):
         return self.meta['VENDOR_BUNDLE_PATH']

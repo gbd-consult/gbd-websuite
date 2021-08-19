@@ -66,7 +66,7 @@ class _Logger(logging.Logger):
 
         if self.isEnabledFor(Level.DEBUG):
             for k in err.string().split('\n'):
-                self.fatal(k)
+                self.debug(k)
 
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
         if _logger.disabled:

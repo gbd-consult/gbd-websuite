@@ -122,18 +122,17 @@ def find_files(dirname, pattern=None, ext=None, deep=True):
             ext = '|'.join(ext)
         pattern = '\\.(' + ext + ')$'
 
-    for fname in os.listdir(dirname):
-        if fname.startswith('.'):
+    de: os.DirEntry
+    for de in os.scandir(dirname):
+        if de.name.startswith('.'):
             continue
 
-        path = os.path.join(dirname, fname)
-
-        if os.path.isdir(path) and deep:
-            yield from find_files(path, pattern)
+        if de.is_dir() and deep:
+            yield from find_files(de.path, pattern)
             continue
 
-        if pattern is None or re.search(pattern, path):
-            yield path
+        if de.is_file() and (pattern is None or re.search(pattern, de.path)):
+            yield de.path
 
 
 def parse_path(path):
