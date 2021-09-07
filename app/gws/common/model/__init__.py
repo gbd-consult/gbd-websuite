@@ -192,10 +192,24 @@ class Object(gws.Object, t.IModel):
             except TypeError:
                 return False
 
+        if validator.type == 'greaterThanOrEqual':
+            other = attr_values.get(validator.attribute)
+            try:
+                return value >= other
+            except TypeError:
+                return False
+
         if validator.type == 'lessThan':
             other = attr_values.get(validator.attribute)
             try:
                 return value < other
+            except TypeError:
+                return False
+
+        if validator.type == 'lessThanOrEqual':
+            other = attr_values.get(validator.attribute)
+            try:
+                return value <= other
             except TypeError:
                 return False
 
