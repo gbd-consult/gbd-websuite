@@ -276,12 +276,11 @@ def http_request(url, **kwargs) -> Response:
     if resp and not err:
         gws.log.debug(f'REQUEST_DONE: code={resp.status_code} len={len(resp.content)} time={ts:.3f}')
         r = Response(resp)
+        if cache_path:
+            _store_cache(r, cache_path)
     else:
         gws.log.debug(f'REQUEST_DONE: resp=FAILED time={ts:.3f}')
         r = FailedResponse(err)
-
-    if cache_path:
-        _store_cache(r, cache_path)
 
     return r
 
