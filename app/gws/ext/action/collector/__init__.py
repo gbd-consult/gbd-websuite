@@ -125,6 +125,7 @@ class CollectionPrototypeConfig(t.Config):
     items: t.List[ItemPrototypeConfig]
     linkColumn: str = 'collection_id'
     style: t.Optional[gws.common.style.Config]  #: style for collection center point
+    hideExpired: bool = False #: hide expired collections
 
 
 class CollectionPrototypeProps(t.Props):
@@ -150,9 +151,12 @@ class CollectionPrototype(gws.Object):
         self.table = self.db.configure_table(self.var('collectionTable'))
         self.item_table = self.db.configure_table(self.var('itemTable'))
         self.document_table = self.db.configure_table(self.var('documentTable'))
+        self.hide_expired = self.var('hideExpired')
 
         self.link_col = self.var('linkColumn')
         self.type_col = 'type'
+        self.time_start_col = 'beginn'
+        self.time_end_col = 'ende'
 
         p = self.var('dataModel') or self.db.table_data_model_config(self.table)
         self.data_model: t.IModel = t.cast(t.IModel, self.create_child('gws.common.model', p))
@@ -241,14 +245,19 @@ class CollectionPrototype(gws.Object):
                     AND {conn.quote_ident(self.document_table.key_column)} = %s
                 ''', [collection_uid, document_uid])
 
+    def get_collection_rows(self):
+        extra_where = ['type=%s', self.type]
+        if self.hide_expired:
+            extra_where[0] += f' AND COALESCE({self.time_end_col}, CURRENT_DATE) >= CURRENT_DATE'
+        return self.db.select(t.SelectArgs(table=self.table, extra_where=extra_where))
+
     def get_collection_ids(self):
-        colls = self.db.select(t.SelectArgs(table=self.table, extra_where=['type=%s', self.type]))
-        return [str(c.uid) for c in colls]
+        return [str(c.uid) for c in self.get_collection_rows()]
 
     def get_collections(self):
         res = []
 
-        collections = self.db.select(t.SelectArgs(table=self.table, extra_where=['type=%s', self.type]))
+        collections = self.get_collection_rows()
         items = []
         documents = []
         uids = [c.uid for c in collections]
