@@ -1,5 +1,9 @@
 """Manage construction plans."""
 
+import smtplib
+import email.message
+import email.policy
+
 import gws
 import gws.common.action
 import gws.common.db
@@ -48,6 +52,11 @@ class Config(t.WithTypeAndAccess):
     imageQuality: int = 24  #: palette size for optimized images
     uploadChunkSize: int  #: upload chunk size in mb
     exportDataModel: t.Optional[gws.common.model.Config]  #: data model for csv export
+
+    emailFrom: str = ''
+    emailServerHost: str = ''
+    emailSubject: str = ''
+    emailTo: str = ''
 
 
 class AdministrativeUnit(t.Data):
@@ -145,6 +154,7 @@ class Object(gws.common.action.Object):
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
         self.qgis_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.qgis')
         self.info_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.info')
+        self.email_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.email')
 
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))
@@ -358,6 +368,26 @@ class Object(gws.common.action.Object):
         gws.log.debug(f'bplan reload signal {source!r}')
         gws.write_file(_RELOAD_FILE, gws.random_string(16))
 
+    def email_notify(self, auUid, stats):
+        if not self.var('emailTo'):
+            return
+
+        msg = email.message.EmailMessage(email.policy.EmailPolicy(cte_type='7bit', utf8=False))
+
+        res = self.email_template.render({'auUid': auUid, 'stats': stats})
+        msg.set_content(res.content.lstrip())
+
+        msg['Subject'] = self.var('emailSubject')
+        msg['From'] = self.var('emailFrom')
+        msg['To'] = self.var('emailTo')
+
+        try:
+            with smtplib.SMTP(self.var('emailServerHost')) as smtp:
+                smtp.set_debuglevel(2)
+                smtp.send_message(msg)
+        except smtplib.SMTPException:
+            gws.log.exception()
+
     def _au_list_for(self, user):
         return [
             t.Data(uid=au.uid, name=au.name)
@@ -425,7 +455,6 @@ class Object(gws.common.action.Object):
                         if gws.get(obj, 'update_sequence'):
                             obj.update_sequence = meta.dateUpdated
 
-
     def _compute_bounding_polygons(self):
         with self.db.connect() as conn:
             for obj in self.root.find_all():
@@ -456,3 +485,4 @@ def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     stats = importer.run(action, args['path'], args['replace'], args['auUid'], job)
     job.update(result={'stats': stats})
     action.signal_reload('worker')
+    action.email_notify(args['auUid'], stats)
