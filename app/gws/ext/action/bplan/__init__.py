@@ -244,6 +244,8 @@ class Object(gws.common.action.Object):
             'auUid': self._check_au(req, p.auUid),
             'path': rec.path,
             'replace': p.replace,
+            'userName': req.user.display_name,
+            'userIP': req.env('REMOTE_ADDR'),
         }
 
         job = gws.tools.job.create(
@@ -368,13 +370,16 @@ class Object(gws.common.action.Object):
         gws.log.debug(f'bplan reload signal {source!r}')
         gws.write_file(_RELOAD_FILE, gws.random_string(16))
 
-    def email_notify(self, auUid, stats):
+    def email_notify(self, args, stats):
         if not self.var('emailTo'):
             return
 
         msg = email.message.EmailMessage(email.policy.EmailPolicy(cte_type='7bit', utf8=False))
 
-        res = self.email_template.render({'auUid': auUid, 'stats': stats})
+        res = self.email_template.render({
+            'args': args,
+            'stats': stats
+        })
         msg.set_content(res.content.lstrip())
 
         msg['Subject'] = self.var('emailSubject')
@@ -485,4 +490,4 @@ def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     stats = importer.run(action, args['path'], args['replace'], args['auUid'], job)
     job.update(result={'stats': stats})
     action.signal_reload('worker')
-    action.email_notify(args['auUid'], stats)
+    action.email_notify(args, stats)
