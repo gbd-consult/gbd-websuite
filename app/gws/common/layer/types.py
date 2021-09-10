@@ -101,3 +101,4 @@ class LayerProps(t.Data):
     type: str
     uid: str
     url: str = ''
+    isClient: bool = False
