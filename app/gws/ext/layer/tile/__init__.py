@@ -22,7 +22,7 @@ class ServiceConfig:
 
     extent: t.Optional[t.Extent]  #: service extent
     crs: t.Crs = 'EPSG:3857'  #: service CRS
-    origin: str = 'nw'  #: position of the first tile (nw or sw)
+    origin: str = ''  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
 
 
@@ -47,6 +47,9 @@ class Object(gws.common.layer.ImageTile):
             else:
                 raise gws.Error(r'service extent required for crs {self.service.crs!r}')
 
+        if not self.service.origin:
+            self.service.origin = 'sw' if '{-y}' in self.url else 'nw'
+
     @property
     def props(self):
         if self.display == 'client':
@@ -64,10 +67,11 @@ class Object(gws.common.layer.ImageTile):
 
     def mapproxy_config(self, mc, options=None):
         # we use {x} like in Ol, mapproxy wants %(x)s
-        url = re.sub(
-            r'{([xyz])}',
-            r'%(\1)s',
-            self.url)
+        url = self.url
+        url = url.replace('{x}', '%(x)s')
+        url = url.replace('{y}', '%(y)s')
+        url = url.replace('{-y}', '%(y)s')
+        url = url.replace('{z}', '%(z)s')
 
         grid_uid = mc.grid(gws.compact({
             'origin': self.service.origin,
