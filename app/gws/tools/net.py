@@ -239,10 +239,15 @@ def http_request(url, **kwargs) -> Response:
     if 'verify' not in kwargs:
         kwargs['verify'] = CA_CERTS_PATH
 
-    timeout = kwargs.pop('timeout', (60, 120))  # (connect, read)
-    if isinstance(timeout, (int, float)):
-        timeout = int(timeout), int(timeout)
-    kwargs['timeout'] = timeout
+    timeout = kwargs.pop('timeout', None)
+    if timeout != 0:
+        # timeout=0 means no timeout
+        # timeout=None means default
+        if timeout is None:
+            timeout = 60, 120
+        elif isinstance(timeout, (int, float)):
+            timeout = int(timeout), int(timeout)
+        kwargs['timeout'] = timeout
 
     lax = kwargs.pop('lax', False)
     ts = time.time()

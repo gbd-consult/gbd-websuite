@@ -250,6 +250,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
             die-on-term = true
             harakiri = {web_timeout}
             harakiri-verbose = true
+            http-timeout = {web_timeout}
             {uwsgi_web_log}
             pidfile = {pid_dir}/web.uwsgi.pid
             post-buffering = 65535
@@ -395,6 +396,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
             die-on-term = true
             harakiri = {mapproxy_timeout}
             harakiri-verbose = true
+            http-timeout = {mapproxy_timeout}
             http = :{mapproxy_port}
             http-to = {mapproxy_socket}
             {uwsgi_mapproxy_log}

@@ -20,7 +20,7 @@ def _call(service, params):
     )
 
     try:
-        resp = gws.tools.net.http_request(url, params=params)
+        resp = gws.tools.net.http_request(url, params=params, timeout=0)
         if resp.content_type.startswith('image'):
             return resp.content
         text = resp.text
