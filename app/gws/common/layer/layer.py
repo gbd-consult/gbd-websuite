@@ -94,7 +94,7 @@ class Layer(gws.Object, t.ILayer):
             resolutions=self.resolutions,
             title=self.title,
             uid=self.uid,
-            isClient=self.display == 'client'
+            isClient=False,
         )
 
     @property
