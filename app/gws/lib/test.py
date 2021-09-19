@@ -6,6 +6,7 @@ import inspect
 import os.path
 import shutil
 import sys
+import time
 
 import psycopg2
 import psycopg2.extras
@@ -77,7 +78,7 @@ def main():
     if spec:
         gws.spec.runtime.create_and_store()
 
-    pytest_args = ['-c', CONFIG['PATH_TO_PYTEST_INI'], '--rootdir', rootdir]
+    pytest_args = ['-c', CONFIG['PYTEST_INI_PATH'], '--rootdir', rootdir]
     pytest_args.extend(args)
     pytest_args.extend(files)
     pytest.main(pytest_args)
@@ -100,6 +101,8 @@ def teardown():
 
     gws.core.tree.unregister_ext()
     gws.config.deactivate()
+
+    web_server_command('reset')
 
 
 ##
@@ -223,11 +226,8 @@ def web_server_command(cmd, params=None):
     return gws.lib.json2.from_string(res.text)
 
 
-def web_server_poke(pattern, text):
-    return web_server_command('poke', {
-        'pattern': pattern,
-        'text': text,
-    })
+def web_server_poke(pattern, response):
+    return web_server_command('poke', {'pattern': pattern, 'response': response})
 
 
 def web_server_begin_capture():
@@ -235,8 +235,12 @@ def web_server_begin_capture():
 
 
 def web_server_end_capture():
-    urls = web_server_command('end_capture')
-    return [gws.lib.net.parse_url(u) for u in urls]
+    paths = web_server_command('end_capture')
+    return [gws.lib.net.parse_url('http://host' + p) for p in paths]
+
+
+def web_server_create_wms(config):
+    web_server_command('create_wms', {'config': config})
 
 
 def web_server_url(url):
@@ -419,6 +423,14 @@ def copy_file(path, dir):
 def rel_path(path):
     f = inspect.stack(2)[1].filename
     return os.path.join(os.path.dirname(f), path)
+
+
+def sleep(n):
+    time.sleep(n)
+
+
+def raises(exc):
+    return pytest.raises(exc)
 
 
 # div. geodata

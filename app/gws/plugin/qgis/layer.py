@@ -20,8 +20,8 @@ class Config(gws.base.layer.image.Config):
     directRender: t.Optional[t.List[str]]  #: QGIS providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS providers that should be searched directly
     path: gws.FilePath  #: path to a qgs project file
-    rootLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use as roots
-    excludeLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to exclude
+    rootLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use as roots
+    excludeLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to exclude
     flattenLayers: t.Optional[gws.base.layer.types.FlattenConfig]  #: flatten the layer hierarchy
     layerConfig: t.Optional[t.List[gws.base.layer.types.CustomConfig]]  #: custom configurations for specific layers
 
@@ -41,8 +41,8 @@ class Object(gws.base.layer.group.Object):
         self.direct_search = set(self.var('directSearch', default=[]))
 
         # by default, take the top-level layers as groups
-        slf = self.var('rootLayers') or gws.lib.gis.LayerFilter(level=1)
-        self.root_layers = gws.lib.gis.filter_layers(self.provider.source_layers, slf)
+        slf = self.var('rootLayers') or gws.lib.gis.SourceLayerFilter(level=1)
+        self.root_layers = gws.lib.gis.filter_source_layers(self.provider.source_layers, slf)
         self.exclude_layers = self.var('excludeLayers')
         self.flatten = self.var('flattenLayers')
         self.custom_layer_config = self.var('layerConfig', default=[])
@@ -62,7 +62,7 @@ class Object(gws.base.layer.group.Object):
 
 
     def _layer(self, sl: gws.lib.gis.SourceLayer, depth: int):
-        if self.exclude_layers and gws.lib.gis.layer_matches(sl, self.exclude_layers):
+        if self.exclude_layers and gws.lib.gis.source_layer_matches(sl, self.exclude_layers):
             return
 
         if sl.is_group:
@@ -97,7 +97,7 @@ class Object(gws.base.layer.group.Object):
         if p:
             la['templates'] = p
 
-        custom = [gws.strip(c) for c in self.custom_layer_config if gws.lib.gis.layer_matches(sl, c.applyTo)]
+        custom = [gws.strip(c) for c in self.custom_layer_config if gws.lib.gis.source_layer_matches(sl, c.applyTo)]
         if custom:
             la = gws.deep_merge(la, *custom)
             if la.applyTo:
@@ -185,7 +185,7 @@ class Object(gws.base.layer.group.Object):
         if self.flatten.useGroups:
             names = [sl.name]
         else:
-            ls = gws.lib.gis.flat_layer_list(sl)
+            ls = gws.lib.gis.enum_source_layers([sl])
             if not ls:
                 return
             names = [s.name for s in ls]

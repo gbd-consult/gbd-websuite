@@ -11,7 +11,7 @@ class Config(gws.base.search.provider.Config):
     """Qgis/WMS automatic search provider"""
 
     path: gws.FilePath  #: project path
-    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
+    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
 class Object(gws.base.search.provider.Object):
@@ -27,7 +27,7 @@ class Object(gws.base.search.provider.Object):
             self.source_layers = self.var('source_layers')
         else:
             self.provider = provider.create_shared(self.root, self.config)
-            self.source_layers = gws.lib.gis.filter_layers(
+            self.source_layers = gws.lib.gis.filter_source_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers'),
                 queryable_only=True)

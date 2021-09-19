@@ -9,28 +9,25 @@ from . import provider
 
 @gws.ext.Config('search.provider.wms')
 class Config(gws.base.search.Config, provider.Config):
-    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
+    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
 @gws.ext.Object('search.provider.wms')
 class Object(gws.base.search.provider.Object):
     supports_geometry = True
-
     source_layers: t.List[gws.lib.gis.SourceLayer]
     provider: provider.Object
 
     def configure(self):
-        layer = self.var('layer')
-
+        layer = self.var('direct_layer_object')
         if layer:
             self.provider = layer.provider
-            self.source_layers = self.var('source_layers')
+            self.source_layers = self.var('direct_source_layers')
         else:
             self.provider = gws.base.ows.provider.shared_object(provider.Object, self, self.config)
-            self.source_layers = gws.lib.gis.filter_layers(
-                self.provider.source_layers,
-                self.var('sourceLayers'),
-                queryable_only=True)
+            self.source_layers = gws.lib.gis.enum_source_layers(
+                gws.lib.gis.filter_source_layers(self.provider.source_layers, self.var('sourceLayers')),
+                is_queryable=True)
 
         if not self.source_layers:
             raise gws.Error(f'no source layers in {self.uid!r}')

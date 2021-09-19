@@ -9,7 +9,7 @@ from . import provider
 
 @gws.ext.Config('search.provider.wfs')
 class Config(gws.base.search.Config, provider.Config):
-    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
+    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
 @gws.ext.Object('search.provider.wfs')
@@ -27,7 +27,7 @@ class Object(gws.base.search.provider.Object):
             self.source_layers = layer.source_layers
         else:
             self.provider = gws.base.ows.provider.shared_object(provider.Object, self, self.config)
-            self.source_layers = gws.lib.gis.filter_layers(
+            self.source_layers = gws.lib.gis.filter_source_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers'))
 

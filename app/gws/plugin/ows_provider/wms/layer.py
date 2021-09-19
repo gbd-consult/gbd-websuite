@@ -11,8 +11,8 @@ from . import provider
 
 @gws.ext.Config('layer.wms')
 class Config(gws.base.layer.image.Config, provider.Config):
-    rootLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use as roots
-    excludeLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to exclude
+    rootLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use as roots
+    excludeLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to exclude
     flattenLayers: t.Optional[gws.base.layer.types.FlattenConfig]  #: flatten the layer hierarchy
     layerConfig: t.Optional[t.List[gws.base.layer.types.CustomConfig]]  #: custom configurations for specific layers
 
@@ -33,7 +33,7 @@ class Object(gws.base.layer.group.BaseGroup):
             exclude_slf=self.var('excludeLayers'),
             flatten=self.var('flattenLayers'),
             custom_configs=self.var('layerConfig'),
-            create_leaf_layer=self.create_leaf_layer
+            layer_factory=self.layer_factory
         )
 
         if not cfgs:
@@ -50,7 +50,7 @@ class Object(gws.base.layer.group.BaseGroup):
         'url',
     )
 
-    def create_leaf_layer(self, source_layers):
+    def layer_factory(self, source_layers):
         cfg = gws.compact({k: self.config.get(k) for k in self._copy_keys})
         cfg['type'] = 'wmsflat'
         cfg['sourceLayers'] = {'names': [sl.name for sl in source_layers]}

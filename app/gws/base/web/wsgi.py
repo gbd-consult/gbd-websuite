@@ -122,19 +122,19 @@ class WebRequest(gws.IWebRequest):
         self.params = self._parse_params() or {}
         self._lower_params = {k.lower(): v for k, v in self.params.items()}
 
-    def env(self, key: str, default: str = None) -> str:
+    def env(self, key: str, default: str = '') -> str:
         return self._wz.environ.get(key, default)
 
-    def param(self, key: str, default: str = None) -> str:
+    def param(self, key: str, default: str = '') -> str:
         return self._lower_params.get(key.lower(), default)
 
     def has_param(self, key: str) -> bool:
         return key.lower() in self._lower_params
 
-    def header(self, key: str, default: str = None) -> str:
+    def header(self, key: str, default: str = '') -> str:
         return self._wz.headers.get(key, default)
 
-    def cookie(self, key: str, default: str = None) -> str:
+    def cookie(self, key: str, default: str = '') -> str:
         return self._wz.cookies.get(key, default)
 
     def url_for(self, url: gws.Url) -> gws.Url:
@@ -149,9 +149,13 @@ class WebRequest(gws.IWebRequest):
         if res.location:
             return WebResponse(wz=werkzeug.utils.redirect(res.location, res.status or 302))
 
-        headers = {}
-        mime = res.mime
-        direct_passthrough = False
+        args: t.Dict = {
+            'response': res.content,
+            'mimetype': res.mime,
+            'status': res.status or 200,
+            'headers': {},
+            'direct_passthrough': False,
+        }
 
         if res.attachment_name or res.as_attachment:
             if res.attachment_name:
@@ -163,27 +167,16 @@ class WebRequest(gws.IWebRequest):
             else:
                 raise gws.Error('missing attachment_name or mime type')
 
-            headers = {
-                'Content-Disposition': f'attachment; filename="{attachment_name}"'
-            }
-
-            mime = mime or gws.lib.mime.for_path(attachment_name)
+            args['headers']['Content-Disposition'] = f'attachment; filename="{attachment_name}"'
+            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(attachment_name)
 
         if res.path:
-            r = werkzeug.wsgi.wrap_file(self.environ, open(res.path, 'rb'))
-            headers['Content-Length'] = str(os.path.getsize(res.path))
-            mime = mime or gws.lib.mime.for_path(res.path)
-            direct_passthrough = True
-        else:
-            r = res.content
+            args['response'] = werkzeug.wsgi.wrap_file(self.environ, open(res.path, 'rb'))
+            args['headers']['Content-Length'] = str(os.path.getsize(res.path))
+            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(res.path)
+            args['direct_passthrough'] = True
 
-        return self.response_object(
-            response=r,
-            mimetype=mime,
-            status=res.status or 200,
-            headers=headers,
-            direct_passthrough=direct_passthrough
-        )
+        return self.response_object(**args)
 
     def struct_response(self, res: gws.Response) -> WebResponse:
         typ = self.output_struct_type or _JSON

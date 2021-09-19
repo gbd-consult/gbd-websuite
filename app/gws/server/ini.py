@@ -115,6 +115,21 @@ def create(root: gws.RootObject, base_dir, pid_dir):
     web_front_timeout = web_timeout + 10
     spool_timeout = 120
 
+
+    # DEFAULT_BASE_TIMEOUT = 60
+    # DEFAULT_SPOOL_TIMEOUT = 300
+    #
+    # base_timeout = root.var('server.timeout') or DEFAULT_BASE_TIMEOUT
+    #
+    # qgis_timeout = root.var('server.qgis.timeout') or base_timeout + 10
+    # qgis_front_timeout = qgis_timeout + 10
+    # mapproxy_timeout = root.var('server.mapproxy.timeout') or qgis_front_timeout + 10
+    # web_timeout = root.var('server.web.timeout') or mapproxy_timeout + 10
+    # web_front_timeout = web_timeout + 10
+    # spool_timeout = root.var('server.spool.timeout') or DEFAULT_SPOOL_TIMEOUT
+    #
+    # gws.log.debug(f'TIMEOUTS: {[qgis_timeout, qgis_front_timeout, mapproxy_timeout, web_timeout, web_front_timeout, spool_timeout]}')
+
     stdenv = '\n'.join(
         f'env = {k}={v}'
         for k, v in os.environ.items()

@@ -11,7 +11,7 @@ from . import provider
 
 @gws.ext.Config('layer.wmsflat')
 class Config(gws.base.layer.image.Config, provider.Config):
-    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
+    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
 @gws.ext.Object('layer.wmsflat')
@@ -28,9 +28,9 @@ class Object(gws.base.layer.image.Object):
 
         self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
 
-        self.source_layers = gws.lib.gis.filter_layers(
+        self.source_layers = gws.lib.gis.filter_source_layers(
             self.provider.source_layers,
-            self.var('sourceLayers', default=gws.lib.gis.LayerFilter(level=1)))
+            self.var('sourceLayers', default=gws.lib.gis.SourceLayerFilter(level=1)))
 
         if not self.source_layers:
             raise gws.Error(f'no source layers found in layer={self.uid!r}')
@@ -42,13 +42,13 @@ class Object(gws.base.layer.image.Object):
                 self.has_configured_resolutions = True
 
         if not self.has_configured_search:
-            queryable_layers = [sl for sl in self.source_layers if sl.is_queryable]
+            queryable_layers = gws.lib.gis.enum_source_layers(self.source_layers, is_queryable=True)
             if queryable_layers:
                 self.search_providers.append(
                     t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider.wms', gws.Config(
                         uid=self.uid + '.default_search',
-                        layer=self,
-                        source_layers=queryable_layers
+                        direct_layer_object=self,
+                        direct_source_layers=queryable_layers
                     ))))
                 self.has_configured_search = True
 
@@ -64,7 +64,7 @@ class Object(gws.base.layer.image.Object):
 
     @property
     def own_bounds(self):
-        return gws.lib.gis.bounds_from_layers(self.source_layers, self.source_crs)
+        return gws.lib.gis.bounds_from_source_layers(self.source_layers, self.source_crs)
 
     @property
     def description(self):

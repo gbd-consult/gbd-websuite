@@ -120,7 +120,7 @@ class SourceLayer(gws.Data):
     resource_urls: dict
 
 
-class LayerFilter(gws.Data):
+class SourceLayerFilter(gws.Data):
     """Source layer filter"""
 
     level: int = 0  #: match only layers at this level
@@ -128,7 +128,7 @@ class LayerFilter(gws.Data):
     pattern: gws.Regex = ''  #: match layers whose full path matches a pattern
 
 
-def layer_matches(sl: SourceLayer, slf: LayerFilter) -> bool:
+def source_layer_matches(sl: SourceLayer, slf: SourceLayerFilter) -> bool:
     """Check if a source layer matches the filter"""
 
     if not slf:
@@ -149,8 +149,8 @@ def layer_matches(sl: SourceLayer, slf: LayerFilter) -> bool:
     return True
 
 
-def filter_layers(layers: t.List[SourceLayer], slf: LayerFilter, image_only=False, queryable_only=False) -> t.List[SourceLayer]:
-    """LayerFilter source layers by the given layer filter."""
+def filter_source_layers(layers: t.List[SourceLayer], slf: SourceLayerFilter) -> t.List[SourceLayer]:
+    """Filter source layers by the given layer filter."""
 
     if slf:
         s = gws.get(slf, 'level')
@@ -173,24 +173,24 @@ def filter_layers(layers: t.List[SourceLayer], slf: LayerFilter, image_only=Fals
         if s:
             layers = [sl for sl in layers if re.search(s, sl.a_path)]
 
-    if image_only:
-        layers = [sl for sl in layers if sl.is_image]
-    if queryable_only:
-        layers = [sl for sl in layers if sl.is_queryable]
-
     return layers
 
 
-def flat_layer_list(sl: SourceLayer) -> t.List[SourceLayer]:
-    if sl.layers:
-        ls = []
-        for sub in sl.layers:
-            ls.extend(flat_layer_list(sub))
-        return ls
-    return [sl]
+def enum_source_layers(layers: t.List[SourceLayer], is_image=False, is_queryable=False) -> t.List[SourceLayer]:
+    found = []
+
+    for sl in layers:
+        if is_image and sl.is_image:
+            found.append(sl)
+        elif is_queryable and sl.is_queryable:
+            found.append(sl)
+        else:
+            found.extend(enum_source_layers(sl.layers, is_image, is_queryable))
+
+    return found
 
 
-def bounds_from_layers(source_layers: t.List[SourceLayer], target_crs) -> gws.Bounds:
+def bounds_from_source_layers(source_layers: t.List[SourceLayer], target_crs) -> gws.Bounds:
     """Return merged bounds from a list of source layers in the target_crs."""
 
     exts = []
@@ -210,7 +210,7 @@ def bounds_from_layers(source_layers: t.List[SourceLayer], target_crs) -> gws.Bo
             extent=gws.lib.extent.merge(exts))
 
 
-def crs_from_layers(source_layers: t.List[SourceLayer]) -> t.List[gws.Crs]:
+def crs_from_source_layers(source_layers: t.List[SourceLayer]) -> t.List[gws.Crs]:
     """Return an intersection of crs supported by each source layer."""
 
     cs: t.Set[str] = set()

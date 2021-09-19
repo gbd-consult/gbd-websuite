@@ -10,7 +10,6 @@ import gws.lib.extent
 import gws.lib.xml2
 
 
-
 def tag(*args):
     return args
 

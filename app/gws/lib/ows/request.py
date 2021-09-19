@@ -6,41 +6,40 @@ from . import error
 _ows_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionReport'
 
 
-def raw_get(url, **kwargs):
-    res: gws.lib.net.HTTPResponse = gws.lib.net.http_request(url, **kwargs)
+def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
+    res = gws.lib.net.http_request(url, **kwargs)
 
-    status = res.status_code
-
-    # check for an ows error (no matter what the status code says)
+    # some folks serve OWS error documents with the status 200
+    # therefore, we check for an ows error message, no matter what the status code says
     # we can get big image responses here, so be careful and don't blindly decode everything
 
     if res.content.startswith(b'<') or 'xml' in res.content_type:
-        text = str(res.content[:1024], encoding='utf8', errors='ignore').lower()
-        for msg in _ows_error_strings:
-            if msg.lower() in text:
-                raise error.Error(res.text[:1024])
+        text = str(res.content[:1024], encoding='utf8', errors='ignore')
+        text_lower = text.lower()
+        for err_string in _ows_error_strings:
+            if err_string.lower() in text_lower:
+                raise error.Error(text)
 
-    if status != 200:
-        raise error.Error(f'HTTP error: {res.status_code!r}')
+    if not res.ok:
+        raise error.Error(f'HTTP error: {res.status_code!r} {res.text!r}')
 
     return res
 
 
-def get(url, service, verb, **kwargs):
+def get(url: str, service: str, verb: str, **kwargs) -> gws.lib.net.HTTPResponse:
     """Get a raw service response"""
 
     params = kwargs.pop('params', None) or {}
 
-    # some guys accept only uppercase params
+    # some folks only accept uppercase params
     params = {k.upper(): v for k, v in params.items()}
 
     params.setdefault('SERVICE', service.upper())
     params.setdefault('REQUEST', verb)
 
-    return raw_get(url, params=params, **kwargs)
+    return get_url(url, params=params, **kwargs)
 
 
-def get_text(url, service, verb, **kwargs) -> str:
+def get_text(url: str, service: str, verb: str, **kwargs) -> str:
     res = get(url, service, verb, **kwargs)
     return res.text
-

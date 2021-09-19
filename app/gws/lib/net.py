@@ -9,11 +9,14 @@ import requests
 import requests.structures
 
 import gws
+import gws.lib.os2
 import gws.types as t
 
 # https://urllib3.readthedocs.org/en/latest/security.html#using-your-system-s-root-certificates
 CA_CERTS_PATH = '/etc/ssl/certs/ca-certificates.crt'
 
+
+##
 
 class Error(gws.Error):
     pass
@@ -27,17 +30,7 @@ class Timeout(Error):
     pass
 
 
-def quote(s, safe='/'):
-    return urllib.parse.quote(s, safe)
-
-
-def unquote(s):
-    return urllib.parse.unquote(s)
-
-
-def is_abs_url(url):
-    return re.match(r'^([a-z]+:|)//', url)
-
+##
 
 class Url(gws.Data):
     fragment: str
@@ -79,13 +72,7 @@ def parse_url(url: str, **kwargs) -> Url:
     )
 
     if u.path:
-        pp = {}
-        pp['dirname'], pp['filename'] = os.path.split(u.path)
-        if pp['filename'].startswith('.'):
-            pp['name'], pp['ext'] = pp['filename'], ''
-        else:
-            pp['name'], _, pp['ext'] = pp['filename'].rpartition('.')
-        u.pathparts = pp
+        u.pathparts = gws.lib.os2.parse_path(u.path)
 
     if u.query:
         u.qs = urllib.parse.parse_qs(u.query)
@@ -100,7 +87,7 @@ def parse_url(url: str, **kwargs) -> Url:
 
 
 def make_url(u: t.Union[Url, dict], **kwargs) -> str:
-    p = vars(u) if isinstance(u, gws.Data) else u
+    p = gws.as_dict(u)
     p.update(kwargs)
 
     s = ''
@@ -111,7 +98,7 @@ def make_url(u: t.Union[Url, dict], **kwargs) -> str:
     s += '//'
 
     if p.get('username'):
-        s += quote(p.get('username')) + ':' + quote(p.get('password', '')) + '@'
+        s += quote_param(p['username']) + ':' + quote_param(p.get('password', '')) + '@'
 
     s += p['hostname']
 
@@ -119,15 +106,68 @@ def make_url(u: t.Union[Url, dict], **kwargs) -> str:
         s += ':' + str(p['port'])
 
     if p.get('path'):
-        s += '/' + p['path'].lstrip('/')
+        s += '/' + quote_path(p['path'].lstrip('/'))
 
     if p.get('params'):
-        s += '?' + gws.as_query_string(dict(p['params']))
+        s += '?' + make_qs(p['params'])
 
     if p.get('fragment'):
         s += '#' + p['fragment'].lstrip('#')
 
     return s
+
+
+def parse_qs(x) -> dict:
+    return urllib.parse.parse_qs(x)
+
+
+def make_qs(x) -> str:
+    """Convert a dict/list to a query string.
+
+    For each item in x, if it's a list, join it with a comma, stringify and in utf8.
+
+    Args:
+        x: Value, which can be a dict'able or a list of key,value pairs.
+
+    Returns:
+        The query string.
+    """
+
+    p = []
+    items = x if isinstance(x, (list, tuple)) else gws.as_dict(x).items()
+
+    def _value(v):
+        if isinstance(v, (bytes, bytearray)):
+            return v
+        if isinstance(v, str):
+            return v.encode('utf8')
+        if v is True:
+            return b'true'
+        if v is False:
+            return b'false'
+        try:
+            return b','.join(_value(y) for y in v)
+        except TypeError:
+            return str(v).encode('utf8')
+
+    for k, v in items:
+        k = urllib.parse.quote_from_bytes(_value(k))
+        v = urllib.parse.quote_from_bytes(_value(v))
+        p.append(k + '=' + v)
+
+    return '&'.join(p)
+
+
+def quote_param(s: str) -> str:
+    return urllib.parse.quote(s, safe='')
+
+
+def quote_path(s: str) -> str:
+    return urllib.parse.quote(s, safe='/')
+
+
+def unquote(s: str) -> str:
+    return urllib.parse.unquote(s)
 
 
 def add_params(url: str, params: dict) -> str:
@@ -136,20 +176,23 @@ def add_params(url: str, params: dict) -> str:
     return make_url(u)
 
 
+def is_abs_url(url):
+    return re.match(r'^([a-z]+:|)//', url)
+
+
 ##
 
 
 class HTTPResponse:
     def __init__(self, ok: bool, res: requests.Response = None, text: str = None, status_code=0):
         self.ok = ok
-        self.res = res
-        if res:
+        if res is not None:
             self.content_type, self.content_encoding = _parse_content_type(res.headers)
             self.content = res.content
             self.status_code = res.status_code
         else:
             self.content_type, self.content_encoding = 'text/plain', 'utf8'
-            self.content = text.encode('utf8') if text is not None else b'???'
+            self.content = text.encode('utf8') if text is not None else b''
             self.status_code = status_code
 
     @property
@@ -157,6 +200,10 @@ class HTTPResponse:
         if not hasattr(self, '_text'):
             setattr(self, '_text', _get_text(self.content, self.content_encoding))
         return getattr(self, '_text')
+
+    def raise_if_failed(self):
+        if not self.ok:
+            raise HTTPError(self.status_code, self.text)
 
 
 def _get_text(content, encoding) -> str:
@@ -166,7 +213,7 @@ def _get_text(content, encoding) -> str:
         except UnicodeDecodeError:
             pass
 
-    # some guys serve utf8 content without a header, in which case requests thinks it's ISO-8859-1
+    # some folks serve utf8 content without a header, in which case requests thinks it's ISO-8859-1
     # (see http://docs.python-requests.org/en/master/user/advanced/#encodings)
     #
     # 'apparent_encoding' is not always reliable
@@ -229,19 +276,19 @@ def http_request(url, **kwargs) -> HTTPResponse:
     cache_path = _cache_path(url)
 
     if max_age:
-        age = _file_age(cache_path)
-        if age < max_age:
+        age = gws.lib.os2.file_age(cache_path)
+        if 0 <= age < max_age:
             gws.log.debug(f'REQUEST_CACHED: url={url!r} path={cache_path!r} age={age}')
             return gws.unserialize_from_path(cache_path)
 
     ts = gws.time_start(f'HTTP_REQUEST={url!r}')
-    resp = _http_request(url, kwargs)
+    res = _http_request(url, kwargs)
     gws.time_end(ts)
 
-    if max_age and resp.ok:
-        gws.serialize_to_path(resp, cache_path)
+    if max_age and res.ok:
+        gws.serialize_to_path(res, cache_path)
 
-    return resp
+    return res
 
 
 _DEFAULT_CONNECT_TIMEOUT = 60
@@ -262,26 +309,18 @@ def _http_request(url, kwargs) -> HTTPResponse:
 
     try:
         res = requests.request(method, url, **kwargs)
-        if res.status_code < 400:
-            gws.log.debug(f'HTTP_REQUEST: url={url!r} status={res.status_code!r}')
+        if 200 <= res.status_code < 300:
+            gws.log.debug(f'HTTP_REQUEST_OK: url={url!r} status={res.status_code!r}')
             return HTTPResponse(ok=True, res=res)
         gws.log.error(f'HTTP_REQUEST_FAILED: ({res.status_code!r}) url={url!r}')
         return HTTPResponse(ok=False, res=res)
     except requests.Timeout as exc:
         gws.log.exception(f'HTTP_REQUEST_FAILED: (timeout) url={url!r}')
-        return HTTPResponse(ok=False, text=repr(exc), status_code=500)
+        return HTTPResponse(ok=False, text=repr(exc))
     except requests.RequestException as exc:
         gws.log.exception(f'HTTP_REQUEST_FAILED: ({exc!r}) url={url!r}')
-        return HTTPResponse(ok=False, text=repr(exc), status_code=500)
+        return HTTPResponse(ok=False, text=repr(exc))
 
 
 def _cache_path(url):
     return gws.NET_CACHE_DIR + '/' + gws.as_uid(url)
-
-
-def _file_age(path):
-    try:
-        st = os.stat(path)
-    except:
-        return 1e20
-    return int(time.time() - st.st_mtime)

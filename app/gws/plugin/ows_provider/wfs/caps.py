@@ -27,7 +27,7 @@ def parse(xml) -> WFSCaps:
         metadata=gws.lib.metadata.Record(meta),
         operations=[gws.OwsOperation(e) for e in u.get_operations(u.one_of(el, 'OperationsMetadata', 'Capability'))],
         source_layers=source_layers,
-        supported_crs=gws.lib.gis.crs_from_layers(source_layers),
+        supported_crs=gws.lib.gis.crs_from_source_layers(source_layers),
         version=el.attr('version'),
     )
 

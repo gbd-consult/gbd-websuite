@@ -82,7 +82,7 @@ _MAX_LIFETIME = 3600 * 1
 def cleanup():
     for p in os.listdir(gws.PRINT_DIR):
         d = gws.PRINT_DIR + '/' + p
-        age = int(time.time() - gws.lib.os2.file_mtime(d))
+        age = gws.lib.os2.file_age(d)
         if age > _MAX_LIFETIME:
             gws.lib.os2.run(['rm', '-fr', d])
             gws.lib.job.remove(p)

@@ -1,6 +1,7 @@
 """Utilities for os/shell scripting"""
 
 import hashlib
+import time
 import os
 import re
 import signal
@@ -72,18 +73,32 @@ def rename(src, dst):
     os.replace(src, dst)
 
 
+def chown(path, user=None, group=None):
+    try:
+        os.chown(path, user or gws.UID, group or gws.GID)
+    except OSError:
+        pass
+
+
 def file_mtime(path):
     try:
         return os.stat(path).st_mtime
     except OSError:
-        return 0
+        return -1
+
+
+def file_age(path):
+    try:
+        return int(time.time() - os.stat(path).st_mtime)
+    except OSError:
+        return -1
 
 
 def file_size(path):
     try:
         return os.stat(path).st_size
     except OSError:
-        return 0
+        return -1
 
 
 def file_checksum(path):
@@ -91,7 +106,7 @@ def file_checksum(path):
         with open(path, 'rb') as fp:
             return hashlib.sha256(fp.read()).hexdigest()
     except OSError:
-        return '0'
+        return ''
 
 
 def kill_pid(pid, sig_name='TERM'):
@@ -135,43 +150,52 @@ def find_files(dirname, pattern=None, ext=None, deep=True):
             yield de.path
 
 
-def parse_path(path):
+_Path = t.Union[str, bytes]
+
+
+def parse_path(path: _Path) -> t.Dict[str, str]:
     """Parse a path into a dict(path,dirname,filename,name,extension)"""
 
-    d = {'path': path}
+    str_path = path if isinstance(path, str) else path.decode('utf8')
+    sp = os.path.split(str_path)
 
-    d['dirname'], d['filename'] = os.path.split(path)
+    d = {
+        'dirname': sp[0],
+        'filename': sp[1],
+        'name': '',
+        'extension': '',
+    }
+
     if d['filename'].startswith('.'):
-        d['name'], d['extension'] = d['filename'], ''
+        d['name'] = d['filename']
     else:
-        d['name'], _, d['extension'] = d['filename'].partition('.')
+        par = d['filename'].partition('.')
+        d['name'] = par[0]
+        d['extension'] = par[2]
 
     return d
 
 
-def abs_path(path, base):
+def abs_path(path: _Path, base: str) -> str:
     """Absolutize a relative path with respect to a base directory or file path"""
 
-    if os.path.isabs(path):
-        return path
+    str_path = path if isinstance(path, str) else path.decode('utf8')
+
+    if os.path.isabs(str_path):
+        return str_path
 
     if os.path.isfile(base):
         base = os.path.dirname(base)
 
-    return os.path.abspath(os.path.join(base, path))
+    return os.path.abspath(os.path.join(base, str_path))
 
 
-def rel_path(path, base):
+def rel_path(path: _Path, base: str) -> str:
     """Relativize an absolute path with respect to a base directory or file path"""
 
     if os.path.isfile(base):
         base = os.path.dirname(base)
 
-    return os.path.relpath(path, base)
+    str_path = path if isinstance(path, str) else path.decode('utf8')
 
-
-def chown(path, user=None, group=None):
-    try:
-        os.chown(path, user or gws.UID, group or gws.GID)
-    except OSError:
-        pass
+    return os.path.relpath(str_path, base)

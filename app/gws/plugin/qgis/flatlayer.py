@@ -17,7 +17,7 @@ class Config(gws.base.layer.image.Config):
     """WMS layer from a Qgis project"""
 
     path: gws.FilePath  #: qgis project path
-    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
+    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
 class Object(gws.base.layer.image.Object):
@@ -31,11 +31,11 @@ class Object(gws.base.layer.image.Object):
 
     @property
     def own_bounds(self):
-        return gws.lib.gis.bounds_from_layers(self.source_layers, self.map.crs)
+        return gws.lib.gis.bounds_from_source_layers(self.source_layers, self.map.crs)
 
     @property
     def default_search_provider(self):
-        source_layers = gws.lib.gis.filter_layers(
+        source_layers = gws.lib.gis.filter_source_layers(
             self.provider.source_layers,
             self.var('sourceLayers'),
             queryable_only=True
@@ -52,7 +52,7 @@ class Object(gws.base.layer.image.Object):
         self.provider: provider.Object = provider.create_shared(self.root, self.config)
         self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
 
-        self.source_layers = gws.lib.gis.filter_layers(
+        self.source_layers = gws.lib.gis.filter_source_layers(
             self.provider.source_layers,
             self.var('sourceLayers'),
         )

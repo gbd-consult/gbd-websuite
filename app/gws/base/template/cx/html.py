@@ -5,7 +5,7 @@ import re
 import gws
 import gws.base.template
 import gws.lib.feature
-import gws.lib.html
+import gws.lib.html2
 import gws.lib.mime
 import gws.lib.os2
 import gws.lib.pdf
@@ -69,7 +69,7 @@ class Object(gws.base.template.Object):
         if args and args.format == 'png':
             if not args.out_path:
                 raise ValueError('out_path required for png')
-            gws.lib.html.render_to_png(
+            gws.lib.html2.render_to_png(
                 html,
                 page_size=self.page_size,
                 margin=self.margin,

@@ -12,7 +12,7 @@ from . import provider
 @gws.ext.Config('layer.wfs')
 class Config(gws.base.layer.vector.Config, provider.Config):
     """WFS layer"""
-    sourceLayers: t.Optional[gws.lib.gis.LayerFilter]  #: source layers to use
+    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
 @gws.ext.Object('layer.wfs')
@@ -28,7 +28,7 @@ class Object(gws.base.layer.vector.Object):
         if not self.has_configured_metadata:
             self.configure_metadata_from(self.provider.metadata)
 
-        self.source_layers = gws.lib.gis.filter_layers(
+        self.source_layers = gws.lib.gis.filter_source_layers(
             self.provider.source_layers,
             self.var('sourceLayers'))
 

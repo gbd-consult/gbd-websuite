@@ -15,7 +15,7 @@ def render(legend: gws.Legend, context: dict = None) -> t.Optional[gws.LegendRen
 
         for url in legend.urls:
             try:
-                res = gws.lib.ows.request.raw_get(url, max_age=legend.cache_max_age)
+                res = gws.lib.ows.request.get_url(url, max_age=legend.cache_max_age)
                 if not res.content_type.startswith('image/'):
                     raise gws.lib.ows.error.Error(f'wrong content type {res.content_type!r}')
                 buf.append(res.content)

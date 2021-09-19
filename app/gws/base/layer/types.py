@@ -114,7 +114,7 @@ class Config(gws.WithAccess):
 class CustomConfig(gws.WithAccess):
     """Custom layer configuration"""
 
-    applyTo: t.Optional[gws.lib.gis.LayerFilter]  #: source layers this configuration applies to
+    applyTo: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers this configuration applies to
     clientOptions: t.Optional[ClientOptions]  # options for the layer display in the client
     dataModel: t.Optional[gws.base.model.Config]  #: layer data model
     display: t.Optional[DisplayMode]  #: layer display mode

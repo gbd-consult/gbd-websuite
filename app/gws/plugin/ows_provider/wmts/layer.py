@@ -52,7 +52,7 @@ class Object(gws.base.layer.image.Object):
 
     @property
     def own_bounds(self):
-        return gws.lib.gis.bounds_from_layers([self.source_layer], self.source_crs)
+        return gws.lib.gis.bounds_from_source_layers([self.source_layer], self.source_crs)
 
     @property
     def description(self):

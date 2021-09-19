@@ -2,6 +2,7 @@ import configparser
 import json
 import os
 import subprocess
+import shutil
 import sys
 
 import yaml
@@ -61,11 +62,14 @@ def main():
         if args and args[0]:
             CONFIG['MANIFEST'] = json.loads(read_file(args.pop(0)))
 
+    CONFIG['COMPOSE_YAML_PATH'] = CONFIG['runner.work_dir'] + '/DOCKER_COMPOSE.yml'
+
     return fn(args)
 
 
 def cmd_go(args):
     compose_stop()
+    reset_work_dir()
     compose_configure()
     compose_start()
     runner_configure()
@@ -74,6 +78,7 @@ def cmd_go(args):
 
 
 def cmd_start(args):
+    reset_work_dir()
     compose_configure()
     compose_start()
 
@@ -84,6 +89,7 @@ def cmd_stop(args):
 
 def cmd_restart(args):
     compose_stop()
+    reset_work_dir()
     compose_configure()
     compose_start()
 
@@ -94,6 +100,7 @@ def cmd_run(args):
 
 
 def cmd_configure(args):
+    reset_work_dir()
     compose_configure()
     runner_configure()
 
@@ -107,8 +114,8 @@ def runner_configure():
     ensure_dir(f'{wd}/gws-tmp')
     ensure_dir(f'{wd}/web')
 
-    CONFIG['PATH_TO_PYTEST_INI'] = '/gws-var/PYTEST.ini'
-    create_pytest_ini(wd + CONFIG['PATH_TO_PYTEST_INI'])
+    CONFIG['PYTEST_INI_PATH'] = '/gws-var/PYTEST.ini'
+    create_pytest_ini(wd + CONFIG['PYTEST_INI_PATH'])
 
     write_file(f"{wd}/gws-var/TEST_CONFIG.json", json.dumps(CONFIG, indent=4))
 
@@ -121,32 +128,28 @@ def runner_run(args):
 
 def compose_configure():
     write_file(
-        compose_yaml_path(),
+        CONFIG['COMPOSE_YAML_PATH'],
         yaml.dump(compose_config()))
 
 
 def compose_start():
-    path = compose_yaml_path()
-    run_cmd(f'''docker-compose --file {path} up --detach''')
+    run_cmd(f'''docker-compose --file {CONFIG['COMPOSE_YAML_PATH']} up --detach''')
 
 
 def compose_stop():
-    path = compose_yaml_path()
     try:
-        run_cmd(f'''docker-compose --file {path} down''')
+        run_cmd(f'''docker-compose --file {CONFIG['COMPOSE_YAML_PATH']} down''')
     except:
         pass
 
 
-def compose_yaml_path():
-    return CONFIG['runner.work_dir'] + '/DOCKER_COMPOSE.yml'
-
-
 def compose_config():
+    wd = CONFIG['runner.work_dir']
+
     services = {}
 
     for s in CONFIG['runner.services'].split():
-        cfg = globals()[f'{s}_service_config']()
+        cfg = globals()[f'service_{s}_config']()
         cname = CONFIG[f'service.{s}.container_name']
 
         cfg.setdefault('image', CONFIG[f'service.{s}.image'])
@@ -157,9 +160,7 @@ def compose_config():
         ])
 
         cfg.setdefault('container_name', cname)
-        cfg.setdefault('volumes', []).append(
-            f"{CONFIG['runner.work_dir']}:{CONFIG['runner.work_dir']}"
-        )
+        cfg.setdefault('volumes', []).append(f"{wd}:{wd}")
 
         services[cname] = cfg
 
@@ -171,12 +172,12 @@ def compose_config():
 
 # services
 
-def gws_service_config():
+def service_gws_config():
     wd = CONFIG['runner.work_dir']
 
     ensure_dir(f'{wd}/gws-var')
 
-    gws_config = {
+    bootstrap_cfg = {
         'server': {
             'mapproxy': {'enabled': True, 'workers': 1, 'forceStart': True},
             'monitor': {'enabled': False},
@@ -188,7 +189,9 @@ def gws_service_config():
         },
     }
 
-    write_file(f'{wd}/gws-var/INITIAL_GWS_CONFIG.json', json.dumps(gws_config, indent=4))
+    bootstrap_cfg_path = '/gws-var/bootstrap_cfg.json'
+
+    write_file(f'{wd}/{bootstrap_cfg_path}', json.dumps(bootstrap_cfg, indent=4))
 
     return {
         'ports': [
@@ -199,7 +202,7 @@ def gws_service_config():
         ],
         'command': CONFIG['service.gws.command'],
         'environment': {
-            'GWS_CONFIG': '/gws-var/INITIAL_GWS_CONFIG.json',
+            'GWS_CONFIG': bootstrap_cfg_path,
         },
         'volumes': [
             f"{APP_DIR}:{APP_DIR}",
@@ -210,7 +213,7 @@ def gws_service_config():
     }
 
 
-def postgres_service_config():
+def service_postgres_config():
     # https://hub.docker.com/r/kartoza/postgis
 
     extra_conf = r"log_destination='stderr'\nlog_statement='all'\nlog_duration=1"
@@ -228,7 +231,7 @@ def postgres_service_config():
     }
 
 
-def web_service_config():
+def service_web_config():
     wd = CONFIG['runner.work_dir']
 
     code = read_file(APP_DIR + '/gws/lib/test_web_server.py')
@@ -300,6 +303,16 @@ def run_cmd(cmd, **kwargs):
 
 def ensure_dir(path):
     os.makedirs(path, exist_ok=True)
+
+
+def reset_work_dir():
+    wd = CONFIG['runner.work_dir']
+    de: os.DirEntry
+    for de in os.scandir(wd):
+        if de.is_dir():
+            shutil.rmtree(de.path)
+        else:
+            os.unlink(de.path)
 
 
 def write_file(path, text):

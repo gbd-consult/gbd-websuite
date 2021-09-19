@@ -47,11 +47,11 @@ class BaseGroup(core.Object):
     def layer_tree_configuration(
             self,
             source_layers: t.List[gws.lib.gis.SourceLayer],
-            roots_slf: gws.lib.gis.LayerFilter,
-            exclude_slf: gws.lib.gis.LayerFilter,
+            roots_slf: gws.lib.gis.SourceLayerFilter,
+            exclude_slf: gws.lib.gis.SourceLayerFilter,
             flatten: types.FlattenConfig,
             custom_configs: t.List[types.CustomConfig],
-            create_leaf_layer: t.Callable[[t.List[gws.lib.gis.SourceLayer]], dict]
+            layer_factory: t.Callable[[t.List[gws.lib.gis.SourceLayer]], dict]
     ):
         def _make_config(sl, depth):
             cfg = _base_config(sl, depth)
@@ -75,7 +75,7 @@ class BaseGroup(core.Object):
                 }
 
             if custom_configs:
-                custom = [cc for cc in custom_configs if gws.lib.gis.layer_matches(sl, cc.applyTo)]
+                custom = [cc for cc in custom_configs if gws.lib.gis.source_layer_matches(sl, cc.applyTo)]
                 if custom:
                     cfg = gws.deep_merge(cfg, *custom)
                     cfg.pop('applyTo', None)
@@ -83,21 +83,21 @@ class BaseGroup(core.Object):
             return gws.compact(cfg)
 
         def _base_config(sl, depth):
-            if exclude_slf and gws.lib.gis.layer_matches(sl, exclude_slf):
+            if exclude_slf and gws.lib.gis.source_layer_matches(sl, exclude_slf):
                 return None
 
             if not sl.is_group:
                 # leaf layer
-                return create_leaf_layer([sl])
+                return layer_factory([sl])
 
             if flatten and sl.a_level >= flatten.level:
                 # flattened group layer
                 # NB use the absolute level to compute flatness, could also use relative (=depth)
                 if flatten.useGroups:
-                    return create_leaf_layer([sl])
-                image_layers = [sub for sub in gws.lib.gis.flat_layer_list(sl) if sub.is_image]
+                    return layer_factory([sl])
+                image_layers = gws.lib.gis.enum_source_layers([sl], is_image=True)
                 if image_layers:
-                    return create_leaf_layer(image_layers)
+                    return layer_factory(image_layers)
                 return None
 
             # ordinary group layer
@@ -111,9 +111,9 @@ class BaseGroup(core.Object):
 
         # by default, take top-level layers as roots
 
-        roots = gws.lib.gis.filter_layers(
+        roots = gws.lib.gis.filter_source_layers(
             source_layers,
-            roots_slf or gws.lib.gis.LayerFilter(level=1))
+            roots_slf or gws.lib.gis.SourceLayerFilter(level=1))
 
         cfgs = []
         for sl in roots:

@@ -371,29 +371,6 @@ def as_uid(x) -> str:
     return x.strip('_')
 
 
-def as_query_string(x) -> str:
-    """Convert a dict/list to a query string.
-
-    For each item in x, if it's a list, join it with a comma, stringify and in utf8.
-
-    Args:
-        x: Value, which can be a dict'able or a list of key,value pairs.
-
-    Returns:
-        The query string.
-    """
-
-    p = []
-    items = x if _is_list(x) else as_dict(x).items()
-
-    for k, v in sorted(items):
-        k = _qs_quote(k)
-        v = _qs_quote(v)
-        p.append(k + b'=' + v)
-
-    return (b'&'.join(p)).decode('ascii')
-
-
 def lines(txt: str, comment: str = None) -> List[str]:
     """Convert a multiline string into a list of strings.
 
@@ -692,30 +669,3 @@ def _is_bytes(x):
 
 def _is_dict(x):
     return isinstance(x, dict)
-
-
-_QS_SAFE = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-'
-
-_QS_MAP = {
-    c: bytes([c]) if c in _QS_SAFE else b'%%%02X' % c
-    for c in range(256)
-}
-
-
-def _qs_quote(x):
-    return b''.join(_QS_MAP[c] for c in _qs_bytes(x))
-
-
-def _qs_bytes(x):
-    if _is_bytes(x):
-        return x
-    if isinstance(x, str):
-        return x.encode('utf8')
-    if x is True:
-        return b'true'
-    if x is False:
-        return b'false'
-    try:
-        return b','.join(_qs_bytes(y) for y in x)
-    except TypeError:
-        return str(x).encode('utf8')
