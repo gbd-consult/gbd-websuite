@@ -272,20 +272,21 @@ def http_request(url, **kwargs) -> HTTPResponse:
     if 'params' in kwargs:
         url = add_params(url, kwargs.pop('params'))
 
+    method = kwargs.pop('method', 'GET').upper()
     max_age = kwargs.pop('max_age', 0)
     cache_path = _cache_path(url)
 
-    if max_age:
+    if method == 'GET' and max_age:
         age = gws.lib.os2.file_age(cache_path)
         if 0 <= age < max_age:
-            gws.log.debug(f'REQUEST_CACHED: url={url!r} path={cache_path!r} age={age}')
+            gws.log.debug(f'HTTP_CACHED_{method}: url={url!r} path={cache_path!r} age={age}')
             return gws.unserialize_from_path(cache_path)
 
-    ts = gws.time_start(f'HTTP_REQUEST={url!r}')
-    res = _http_request(url, kwargs)
+    ts = gws.time_start(f'HTTP_{method}={url!r}')
+    res = _http_request(method, url, kwargs)
     gws.time_end(ts)
 
-    if max_age and res.ok:
+    if method == 'GET' and max_age and res.ok:
         gws.serialize_to_path(res, cache_path)
 
     return res
@@ -295,9 +296,8 @@ _DEFAULT_CONNECT_TIMEOUT = 60
 _DEFAULT_READ_TIMEOUT = 60
 
 
-def _http_request(url, kwargs) -> HTTPResponse:
+def _http_request(method, url, kwargs) -> HTTPResponse:
     kwargs['stream'] = False
-    method = kwargs.pop('method', 'GET').upper()
 
     if 'verify' not in kwargs:
         kwargs['verify'] = CA_CERTS_PATH
@@ -310,15 +310,15 @@ def _http_request(url, kwargs) -> HTTPResponse:
     try:
         res = requests.request(method, url, **kwargs)
         if 200 <= res.status_code < 300:
-            gws.log.debug(f'HTTP_REQUEST_OK: url={url!r} status={res.status_code!r}')
+            gws.log.debug(f'HTTP_OK_{method}: url={url!r} status={res.status_code!r}')
             return HTTPResponse(ok=True, res=res)
-        gws.log.error(f'HTTP_REQUEST_FAILED: ({res.status_code!r}) url={url!r}')
+        gws.log.error(f'HTTP_FAILED_{method}: ({res.status_code!r}) url={url!r}')
         return HTTPResponse(ok=False, res=res)
     except requests.Timeout as exc:
-        gws.log.exception(f'HTTP_REQUEST_FAILED: (timeout) url={url!r}')
+        gws.log.exception(f'HTTP_FAILED_{method}: (timeout) url={url!r}')
         return HTTPResponse(ok=False, text=repr(exc))
     except requests.RequestException as exc:
-        gws.log.exception(f'HTTP_REQUEST_FAILED: ({exc!r}) url={url!r}')
+        gws.log.exception(f'HTTP_FAILED_{method}: ({exc!r}) url={url!r}')
         return HTTPResponse(ok=False, text=repr(exc))
 
 

@@ -51,7 +51,7 @@ class BaseGroup(core.Object):
             exclude_slf: gws.lib.gis.SourceLayerFilter,
             flatten: types.FlattenConfig,
             custom_configs: t.List[types.CustomConfig],
-            layer_factory: t.Callable[[t.List[gws.lib.gis.SourceLayer]], dict]
+            layer_config_factory: t.Callable[[t.List[gws.lib.gis.SourceLayer]], dict]
     ):
         def _make_config(sl, depth):
             cfg = _base_config(sl, depth)
@@ -88,16 +88,16 @@ class BaseGroup(core.Object):
 
             if not sl.is_group:
                 # leaf layer
-                return layer_factory([sl])
+                return layer_config_factory([sl])
 
             if flatten and sl.a_level >= flatten.level:
                 # flattened group layer
                 # NB use the absolute level to compute flatness, could also use relative (=depth)
                 if flatten.useGroups:
-                    return layer_factory([sl])
+                    return layer_config_factory([sl])
                 image_layers = gws.lib.gis.enum_source_layers([sl], is_image=True)
                 if image_layers:
-                    return layer_factory(image_layers)
+                    return layer_config_factory(image_layers)
                 return None
 
             # ordinary group layer

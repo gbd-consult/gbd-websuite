@@ -341,7 +341,7 @@ class _Reader:
         if self.strict:
             unknown = [k for k in val if k not in props]
             if unknown:
-                raise Error('ERR_UNKNOWN_PROP', f"unknown keys: {_comma(unknown)}, expected {_comma(props)}", val)
+                raise Error('ERR_UNKNOWN_PROP', f"unknown keys: {_comma(unknown)}, expected: {_comma(props)}", val)
 
         return Data(res)
 
@@ -446,7 +446,7 @@ def _classname(cls):
 
 
 def _comma(ls):
-    return ', '.join(sorted(repr(x) for x in ls))
+    return ', '.join(sorted(str(x) for x in ls))
 
 
 def _add_error_details(e: Error, path: str, stack):

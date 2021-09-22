@@ -19,10 +19,9 @@ class Object(gws.base.search.provider.Object):
     provider: provider.Object
 
     def configure(self):
-        layer = self.var('direct_layer_object')
-        if layer:
-            self.provider = layer.provider
-            self.source_layers = self.var('direct_source_layers')
+        if self.var('_provider'):
+            self.provider = self.var('_provider')
+            self.source_layers = self.var('_source_layers')
         else:
             self.provider = gws.base.ows.provider.shared_object(provider.Object, self, self.config)
             self.source_layers = gws.lib.gis.enum_source_layers(
@@ -38,7 +37,7 @@ class Object(gws.base.search.provider.Object):
                 and bool(self.provider.operation('GetFeatureInfo'))
                 and bool(args.shapes)
                 and len(args.shapes) == 1
-                and args.shapes[0].type == gws.GeometryType.point)
+                and args.shapes[0].geometry_type == gws.GeometryType.point)
 
     def run(self, args: gws.SearchArgs, layer: gws.ILayer = None) -> t.List[gws.IFeature]:
         args.source_layer_names = [sl.name for sl in self.source_layers]

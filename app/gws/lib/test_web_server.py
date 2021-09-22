@@ -348,7 +348,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         ls = list(STATE['capture'] or [])
         STATE['capture'] = []
         STATE['capturing'] = False
-        return ls
+        return {'urls': ls}
 
     def cmd_create_wms(self, post):
         config = post['config']

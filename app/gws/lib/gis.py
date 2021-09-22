@@ -204,10 +204,7 @@ def bounds_from_source_layers(source_layers: t.List[SourceLayer], target_crs) ->
             exts.append(e)
 
     if exts:
-        # gws.p('BOUNDS', [sl.name for sl in source_layers], target_crs, exts, gws.lib.extent.merge(exts))
-        return gws.Bounds(
-            crs=target_crs,
-            extent=gws.lib.extent.merge(exts))
+        return gws.Bounds(crs=target_crs, extent=gws.lib.extent.merge(exts))
 
 
 def crs_from_source_layers(source_layers: t.List[SourceLayer]) -> t.List[gws.Crs]:

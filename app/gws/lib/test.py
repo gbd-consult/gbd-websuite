@@ -136,8 +136,22 @@ def configure(config, parse=True):
 
 
 def configure_and_reload(config, parse=True):
+    def _wait_for_port(kind):
+        while 1:
+            port = CONFIG[f'service.gws.{kind}_port']
+            url = 'http://' + CONFIG['runner.host_name'] + ':' + str(port)
+            res = gws.lib.net.http_request(url)
+            if res.ok:
+                return
+            gws.log.debug(f'TEST:waiting for {kind}:{port}')
+            sleep(2)
+
     r = configure(config, parse)
     gws.server.control.reload(['mapproxy', 'web'])
+
+    for kind in 'http', 'mpx':
+        _wait_for_port(kind)
+
     return r
 
 
@@ -235,8 +249,8 @@ def web_server_begin_capture():
 
 
 def web_server_end_capture():
-    paths = web_server_command('end_capture')
-    return [gws.lib.net.parse_url('http://host' + p) for p in paths]
+    res = web_server_command('end_capture')
+    return [gws.lib.net.parse_url('http://host' + u) for u in res['urls']]
 
 
 def web_server_create_wms(config):

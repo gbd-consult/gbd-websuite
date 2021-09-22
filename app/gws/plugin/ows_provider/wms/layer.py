@@ -33,7 +33,7 @@ class Object(gws.base.layer.group.BaseGroup):
             exclude_slf=self.var('excludeLayers'),
             flatten=self.var('flattenLayers'),
             custom_configs=self.var('layerConfig'),
-            layer_factory=self.layer_factory
+            layer_config_factory=self.layer_config_factory
         )
 
         if not cfgs:
@@ -50,7 +50,7 @@ class Object(gws.base.layer.group.BaseGroup):
         'url',
     )
 
-    def layer_factory(self, source_layers):
+    def layer_config_factory(self, source_layers):
         cfg = gws.compact({k: self.config.get(k) for k in self._copy_keys})
         cfg['type'] = 'wmsflat'
         cfg['sourceLayers'] = {'names': [sl.name for sl in source_layers]}

@@ -60,22 +60,22 @@ class Object(gws.Object, gws.ISearchProvider):
         self.spatial_context = self.var('defaultContext', default=SpatialContext.map)
         self.title = self.var('title', default='')
 
-    def can_run(self, p: gws.SearchArgs):
-        if p.keyword and (not self.supports_keyword or not self.with_keyword):
+    def can_run(self, args: gws.SearchArgs):
+        if args.keyword and (not self.supports_keyword or not self.with_keyword):
             return False
 
-        if p.shapes and (not self.supports_geometry or not self.with_geometry):
+        if args.shapes and (not self.supports_geometry or not self.with_geometry):
             return False
 
-        if p.filter and not self.supports_filter:
+        if args.filter and not self.supports_filter:
             return False
 
-        return bool(p.keyword or p.shapes or p.filter)
+        return bool(args.keyword or args.shapes or args.filter)
 
-    def context_shape(self, p: gws.SearchArgs) -> gws.IShape:
-        if p.shapes:
-            return gws.lib.shape.union(p.shapes)
-        if self.spatial_context == SpatialContext.view and p.bounds:
-            return gws.lib.shape.from_bounds(p.bounds)
-        if p.project:
-            return gws.lib.shape.from_bounds(p.project.map.bounds)
+    def context_shape(self, args: gws.SearchArgs) -> gws.IShape:
+        if args.shapes:
+            return gws.lib.shape.union(args.shapes)
+        if self.spatial_context == SpatialContext.view and args.bounds:
+            return gws.lib.shape.from_bounds(args.bounds)
+        if args.project:
+            return gws.lib.shape.from_bounds(args.project.map.bounds)

@@ -21,19 +21,22 @@ class Object(gws.base.layer.image.Object):
     source_crs: gws.Crs
 
     def configure(self):
-        self.provider = gws.base.ows.provider.shared_object(self.root, provider.Object, self.config)
+        if self.var('_provider'):
+            self.provider = self.var('_provider')
+            self.source_layers = self.var('_source_layers')
+        else:
+            self.provider = gws.base.ows.provider.shared_object(self.root, provider.Object, self.config)
+            self.source_layers = gws.lib.gis.filter_source_layers(
+                self.provider.source_layers,
+                self.var('sourceLayers', default=gws.lib.gis.SourceLayerFilter(level=1)))
+
+        if not self.source_layers:
+            raise gws.Error(f'no source layers found in layer={self.uid!r}')
 
         if not self.has_configured_metadata:
             self.configure_metadata_from(self.provider.metadata)
 
         self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
-
-        self.source_layers = gws.lib.gis.filter_source_layers(
-            self.provider.source_layers,
-            self.var('sourceLayers', default=gws.lib.gis.SourceLayerFilter(level=1)))
-
-        if not self.source_layers:
-            raise gws.Error(f'no source layers found in layer={self.uid!r}')
 
         if not self.has_configured_resolutions:
             zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
@@ -47,8 +50,8 @@ class Object(gws.base.layer.image.Object):
                 self.search_providers.append(
                     t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider.wms', gws.Config(
                         uid=self.uid + '.default_search',
-                        direct_layer_object=self,
-                        direct_source_layers=queryable_layers
+                        _provider=self.provider,
+                        _source_layers=queryable_layers
                     ))))
                 self.has_configured_search = True
 
