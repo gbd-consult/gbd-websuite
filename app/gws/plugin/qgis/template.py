@@ -10,7 +10,7 @@ import gws.lib.mime
 import gws.lib.net
 import gws.lib.pdf
 import gws.lib.units as units
-from . import provider, writer, server
+from . import provider, types, writer, server
 
 
 class Config(gws.base.template.Config):
@@ -18,20 +18,24 @@ class Config(gws.base.template.Config):
 
 
 class Object(gws.base.template.Object):
-    def configure(self):
-        
+    provider: provider.Object
+    template: types.PrintTemplate
+    source_text: str
 
-        self.provider = provider.create_shared(self.root, self.config)
+    def configure(self):
+        if self.var('_provider'):
+            self.provider = self.var('_provider')
+        else:
+            self.provider = provider.shared_object(self.root, self.config)
 
         s = self.var('title')
-        self.template = self._find_template(s)
+        self.template = self.provider.print_template(s)
         if not self.template:
             raise gws.Error(f'print template {s!r} not found')
 
-        uid = self.var('uid') or '%s_%d' % (gws.sha256(self.provider.path), self.template.index)
+        uid = self.var('uid') or (gws.sha256(self.provider.path) + '_' + str(self.template.index))
         self.set_uid(uid)
 
-        self.source_text = self.provider.source_text
         self._parse()
 
     def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
@@ -54,9 +58,9 @@ class Object(gws.base.template.Object):
         # NB we still need map0:xxxx for scale bars to work
 
         params = {
-            'service': 'WMS',
+            'service': gws.OwsProtocol.WMS,
             'version': '1.3',
-            'request': 'GetPrint',
+            'request': gws.OwsVerb.GetPrint,
             'format': 'pdf',
             'transparent': 'true',
             'template': self.template.title,
@@ -106,22 +110,6 @@ class Object(gws.base.template.Object):
         # @TODO
         return in_path
 
-    def _find_template(self, ref: str):
-        pts = self.provider.print_templates
-
-        if not pts:
-            return
-
-        if not ref:
-            return pts[0]
-
-        if ref.isdigit() and int(ref) < len(pts):
-            return pts[int(ref)]
-
-        for tpl in pts:
-            if tpl.title == ref:
-                return tpl
-
     def _parse(self):
         self.title = self.template.title
         self.page_size = _page_size(self.template)
@@ -137,7 +125,10 @@ class Object(gws.base.template.Object):
             (<|&lt;) (?P<tag1> gws:\w+) (?P<atts1> .*?) / (>|&gt;) 
         '''
 
-        self.source_text = re.sub(tags_re, lambda m: self._parse_tag(m.groupdict()), self.source_text)
+        self.source_text = re.sub(
+            tags_re,
+            lambda m: self._parse_tag(m.groupdict()),
+            self.provider.source_text)
 
         if self.legend_use_all:
             self.legend_layer_uids = []
@@ -148,7 +139,7 @@ class Object(gws.base.template.Object):
         atts = _parse_atts(m.get('atts1') or m.get('atts2') or '')
 
         if name == 'gws:legend':
-            self.legend_mode = gws.TemplateLegendMode.html
+            self.legend_mode = gws.base.template.LegendMode.html
             if 'layer' in atts:
                 html = ''
                 for layer_uid in gws.as_list(atts['layer']):

@@ -404,6 +404,9 @@ class _Parser:
         if g == 'list':
             return self.add(base.TList(item_t=param_type.name if param_type else 'any'))
 
+        if g == 'set':
+            return self.add(base.TSet(item_t=param_type.name if param_type else 'any'))
+
         if g == 'dict':
             if param_tuple:
                 if len(param_tuple) != 2:

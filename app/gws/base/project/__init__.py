@@ -64,11 +64,11 @@ class Object(gws.Object):
             self.var('metaData', with_parent=True) or gws.base.metadata.Config(title=self.var('title')))
 
         # title at the top level config preferred
-        title = self.var('title') or self.metadata.get('title') or self.uid
+        title = self.var('title') or self.metadata.get('title') or self.var('uid')
         self.metadata.set('title', title)
         self.title = title
 
-        self.set_uid(self.title)
+        self.set_uid(self.var('uid') or gws.as_uid(self.title))
 
         gws.log.info(f'configuring project {self.uid!r}')
 

@@ -31,7 +31,6 @@ def reload():
 def handle_request(environ) -> WebResponse:
     root = gws.config.root()
     req = WebRequest(root, environ, _find_site(environ, root))
-    req.parse_input()
     return _handle_request2(req)
 
 
@@ -62,19 +61,24 @@ def _handle_request2(req: WebRequest) -> WebResponse:
         return _with_cors_headers(cors, req.content_response(gws.ContentResponse(content='', mime='text/plain')))
 
     req.auth_open()
-    try:
-        res = _handle_action(req)
-    except gws.base.web.error.HTTPException as err:
-        res = _handle_error(req, err)
-    except:
-        gws.log.exception()
-        res = _handle_error(req, gws.base.web.error.InternalServerError())
+    res = _handle_request3(req)
     req.auth_close(res)
 
     if cors and req.method == 'POST':
         res = _with_cors_headers(cors, res)
 
     return res
+
+
+def _handle_request3(req: WebRequest):
+    try:
+        req.parse_input()
+        return _handle_action(req)
+    except gws.base.web.error.HTTPException as err:
+        return _handle_error(req, err)
+    except:
+        gws.log.exception()
+        return _handle_error(req, gws.base.web.error.InternalServerError())
 
 
 def _handle_error(req: WebRequest, err: gws.base.web.error.HTTPException) -> WebResponse:
@@ -127,7 +131,7 @@ def _handle_action(req: WebRequest) -> WebResponse:
         raise gws.base.web.error.MethodNotAllowed()
 
     try:
-        command_desc = req.root.specs.check_command(cmd, method, params, strict)
+        command_desc = req.root.specs.check_command(cmd, method, params, with_strict_mode=strict)
     except gws.spec.runtime.Error as e:
         gws.log.error('ACTION ERROR', e)
         raise gws.base.web.error.BadRequest()

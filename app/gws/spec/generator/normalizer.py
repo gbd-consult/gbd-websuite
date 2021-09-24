@@ -137,6 +137,9 @@ def _resolve_aliases(state):
         if isinstance(t, base.TList):
             return base.TList(item_t=_resolve(t.item_t))
 
+        if isinstance(t, base.TSet):
+            return base.TSet(item_t=_resolve(t.item_t))
+
         if isinstance(t, base.TOptional):
             return base.TOptional(target_t=_resolve(t.target_t))
 

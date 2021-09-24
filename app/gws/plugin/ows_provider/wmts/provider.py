@@ -14,7 +14,7 @@ class Config(gws.base.ows.provider.Config):
 
 
 class Object(gws.base.ows.provider.Object):
-    service_type = 'WMTS'
+    protocol = gws.OwsProtocol.WMTS
 
     matrix_sets: t.List[caps.TileMatrixSet]
     source_layers: t.List[caps.SourceLayer]
@@ -25,6 +25,6 @@ class Object(gws.base.ows.provider.Object):
         self.matrix_sets = cc.matrix_sets
         self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
         self.operations = cc.operations
-        self.service_version = cc.version
+        self.version = cc.version
         self.source_layers = cc.source_layers
         self.supported_crs = cc.supported_crs

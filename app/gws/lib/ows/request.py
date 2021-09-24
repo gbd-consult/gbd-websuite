@@ -26,7 +26,7 @@ def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
     return res
 
 
-def get(url: str, service: str, verb: str, **kwargs) -> gws.lib.net.HTTPResponse:
+def get(url: str, protocol: gws.OwsProtocol, verb: gws.OwsVerb, **kwargs) -> gws.lib.net.HTTPResponse:
     """Get a raw service response"""
 
     params = kwargs.pop('params', None) or {}
@@ -34,12 +34,12 @@ def get(url: str, service: str, verb: str, **kwargs) -> gws.lib.net.HTTPResponse
     # some folks only accept uppercase params
     params = {k.upper(): v for k, v in params.items()}
 
-    params.setdefault('SERVICE', service.upper())
+    params.setdefault('SERVICE', str(protocol).upper())
     params.setdefault('REQUEST', verb)
 
     return get_url(url, params=params, **kwargs)
 
 
-def get_text(url: str, service: str, verb: str, **kwargs) -> str:
-    res = get(url, service, verb, **kwargs)
+def get_text(url: str, protocol: gws.OwsProtocol, verb: gws.OwsVerb, **kwargs) -> str:
+    res = get(url, protocol, verb, **kwargs)
     return res.text

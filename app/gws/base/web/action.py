@@ -50,18 +50,20 @@ class Object(gws.base.api.action.Object):
     def sys_asset(self, req: gws.IWebRequest, p: SysAssetParams) -> gws.ContentResponse:
         locale_uid = p.localeUid or self.root.application.locale_uids[0]
 
-        if p.path.startswith('vendor'):
+        # eg. '8.0.0.light.css, 8.0.0.vendor.js etc
+
+        if p.path.endswith('.vendor.js'):
             return gws.ContentResponse(
                 content=gws.base.client.bundles.vendor_javascript(self.root),
                 mime=gws.lib.mime.JS)
 
-        if p.path.startswith('script'):
+        if p.path.endswith('.client.js'):
             return gws.ContentResponse(
                 content=gws.base.client.bundles.javascript(self.root, locale_uid),
                 mime=gws.lib.mime.JS)
 
         if p.path.endswith('.css'):
-            theme = p.path.split('.')[0]
+            theme = p.path.split('.')[-2]
             return gws.ContentResponse(
                 content=gws.base.client.bundles.css(self.root, theme),
                 mime=gws.lib.mime.CSS)

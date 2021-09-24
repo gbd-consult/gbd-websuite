@@ -1,4 +1,3 @@
-import gws
 from gws.types import Any, Dict, Enum, List, Literal, Optional, Protocol, Tuple, Union
 from .data import Data
 
@@ -152,9 +151,9 @@ class ExtCommandDescriptor(Data):
 class ISpecRuntime(Protocol):
     manifest: Manifest
 
-    def check_command(self, cmd: str, method: str, params, strict=True) -> Optional[ExtCommandDescriptor]: ...
+    def check_command(self, cmd: str, method: str, params, with_strict_mode=True) -> Optional[ExtCommandDescriptor]: ...
 
-    def read_value(self, value, type_name: str, path='', strict=True, with_error_details=True) -> Any: ...
+    def read_value(self, value, type_name: str, path='', with_strict_mode=True, with_error_details=True, with_internal_objects=False) -> Any: ...
 
     def ext_object_descriptor(self, class_name: str) -> Optional[ExtObjectDescriptor]: ...
 
@@ -454,9 +453,6 @@ class IShape(Protocol):
     def geometry_type(self) -> 'GeometryType': ...
 
     @property
-    def geometry_type_string(self) -> str: ...
-
-    @property
     def wkb(self) -> bytes: ...
 
     @property
@@ -750,6 +746,7 @@ class Legend(Data):
     path: str
     template: Optional['ITemplate']
     urls: List[Url]
+    layers: List['ILayer']
 
 
 class LegendRenderOutput(Data):
@@ -842,18 +839,46 @@ class ILayer(IObject, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # OWS
 
+class OwsProtocol(Enum):
+    WMS = 'WMS'
+    WMTS = 'WMTS'
+    WCS = 'WCS'
+    WFS = 'WFS'
+    CSW = 'CSW'
+
+
+class OwsVerb(Enum):
+    CreateStoredQuery = 'CreateStoredQuery'
+    DescribeFeatureType = 'DescribeFeatureType'
+    DescribeLayer = 'DescribeLayer'
+    DescribeStoredQueries = 'DescribeStoredQueries'
+    DropStoredQuery = 'DropStoredQuery'
+    GetCapabilities = 'GetCapabilities'
+    GetFeature = 'GetFeature'
+    GetFeatureInfo = 'GetFeatureInfo'
+    GetFeatureWithLock = 'GetFeatureWithLock'
+    GetLegendGraphic = 'GetLegendGraphic'
+    GetMap = 'GetMap'
+    GetPrint = 'GetPrint'
+    GetPropertyValue = 'GetPropertyValue'
+    GetTile = 'GetTile'
+    ListStoredQueries = 'ListStoredQueries'
+    LockFeature = 'LockFeature'
+    Transaction = 'Transaction'
+
+
 class OwsOperation(Data):
     formats: List[str]
     get_url: Url
-    name: str
-    parameters: Dict
+    params: Dict
     post_url: Url
+    verb: OwsVerb
 
 
 class IOwsService(IObject, Protocol):
     metadata: 'IMetaData'
     name: str
-    service_type: str
+    protocol: OwsProtocol
     supported_crs: List[Crs]
     supported_versions: List[str]
     templates: 'ITemplateBundle'
@@ -868,14 +893,10 @@ class IOwsService(IObject, Protocol):
 
 class IOwsProvider(IObject, Protocol):
     metadata: 'IMetaData'
-    service_type: str
-    service_version: str
+    protocol: OwsProtocol
     supported_crs: List[Crs]
     url: Url
-
-    def find_features(self, args: SearchArgs) -> List[IFeature]: ...
-
-    def operation(self, name: str) -> Optional[OwsOperation]: ...
+    version: str
 
 
 # ----------------------------------------------------------------------------------------------------------------------

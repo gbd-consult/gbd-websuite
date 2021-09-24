@@ -35,7 +35,9 @@ class Object(gws.base.search.provider.Object):
             raise gws.Error(f'no source layers in {self.uid!r}')
 
     def can_run(self, args):
-        return super().can_run(args) and bool(self.provider.operation('GetFeature'))
+        return (
+                super().can_run(args)
+                and self.provider.operation(gws.OwsVerb.GetFeature))
 
     def run(self, args, layer=None):
         args.source_layer_names = [sl.name for sl in self.source_layers]

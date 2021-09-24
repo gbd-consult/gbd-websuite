@@ -3,7 +3,7 @@ import re
 import urllib.parse
 
 import gws
-import gws.base.ows.parseutil as u
+import gws.lib.ows.parseutil as u
 import gws.lib.gis
 import gws.lib.metadata
 import gws.lib.net
@@ -13,35 +13,38 @@ from . import types
 _bigval = 1e10
 
 
-def parse(prov, xml):
+def parse(xml) -> types.ProjectCaps:
     root = gws.lib.xml2.from_string(xml)
+    caps = types.ProjectCaps()
 
-    prov.properties = _properties(root.first('properties'))
-    prov.metadata = _project_meta_from_props(prov.properties)
-    prov.version = root.attr('version', '').split('-')[0]
+    caps.properties = _properties(root.first('properties'))
+    caps.metadata = _project_meta_from_props(caps.properties)
+    caps.version = root.attr('version', '').split('-')[0]
 
-    if prov.version.startswith('2'):
-        prov.print_templates = _print_v2(root)
-    if prov.version.startswith('3'):
-        prov.print_templates = _print_v3(root)
+    if caps.version.startswith('2'):
+        caps.print_templates = _print_v2(root)
+    if caps.version.startswith('3'):
+        caps.print_templates = _print_v3(root)
 
-    for n, cc in enumerate(prov.print_templates):
+    for n, cc in enumerate(caps.print_templates):
         cc.index = n
 
-    map_layers = _map_layers(root, prov.properties)
+    map_layers = _map_layers(root, caps.properties)
 
     root_group = _tree(root.first('layer-tree-group'), map_layers)
-    prov.source_layers = u.flatten_source_layers(root_group.layers)
+    caps.source_layers = u.flatten_source_layers(root_group.layers)
 
     crs = None
 
-    if prov.version.startswith('2'):
-        crs = _pval(prov.properties, 'SpatialRefSys.ProjectCrs')
-    if prov.version.startswith('3'):
+    if caps.version.startswith('2'):
+        crs = _pval(caps.properties, 'SpatialRefSys.ProjectCrs')
+    if caps.version.startswith('3'):
         crs = root.get_text('projectCrs.spatialrefsys.authid')
 
     if crs:
-        prov.supported_crs = [crs]
+        caps.supported_crs = [crs]
+
+    return caps
 
 
 def _project_meta_from_props(props):

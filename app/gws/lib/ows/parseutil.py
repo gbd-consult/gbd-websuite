@@ -19,11 +19,11 @@ def get_operations(el):
 
     for e in ops:
         ls.append({
-            'name': e.attr('name') or e.name,
+            'verb': e.attr('name') or e.name,
             'formats': text_list(e, 'Format'),
             'get_url': get_url(one_of(e, 'DCP.HTTP.Get', 'DCPType.HTTP.Get')),
             'post_url': get_url(one_of(e, 'DCP.HTTP.Post', 'DCPType.HTTP.Post')),
-            'parameters': {p.attr('name'): text_list(p, 'Value') for p in e.all('Parameter')}
+            'params': {p.attr('name'): text_list(p, 'Value') for p in e.all('Parameter')}
         })
 
     return ls

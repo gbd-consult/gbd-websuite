@@ -3,11 +3,12 @@
 import gws
 import gws.lib.json2
 import gws.lib.ows
+import gws.types as t
 
 
 class CapsParams:
     url: gws.Url  #: service URL or an XML file name
-    service: str = ''  #: service name, e.g. WMS
+    protocol: str = ''  #: service name, e.g. WMS
     out: str = ''  #: output filename
 
 
@@ -18,30 +19,31 @@ class Cli:
     def caps(self, p: CapsParams):
         """Print the capabilities of a service in JSON format"""
 
-        service = None
+        protocol = None
 
-        if p.service:
-            service = p.service.lower()
+        if p.protocol:
+            protocol = p.protocol.lower()
         else:
             u = p.url.lower()
             for s in ('wms', 'wmts', 'wfs'):
                 if s in u:
-                    service = s
+                    protocol = s
                     break
 
-        if not service:
-            raise gws.Error('cannot guess the service name')
-
-        gws.log.info(f'using service {service}...')
+        if not protocol:
+            raise gws.Error('unknown protocol')
 
         if p.url.startswith(('http:', 'https:')):
-            xml = gws.lib.ows.request.get_text(p.url, service=service, verb='GetCapabilities')
+            xml = gws.lib.ows.request.get_text(
+                p.url,
+                protocol=t.cast(gws.OwsProtocol, protocol.upper()),
+                verb=gws.OwsVerb.GetCapabilities)
         else:
             xml = gws.read_file(p.url)
 
         mod = gws.import_from_path(
-            f'{gws.APP_DIR}/gws/plugin/ows_provider/{service}/caps.py',
-            f'gws.plugin.ows_provider.{service}.caps'
+            f'{gws.APP_DIR}/gws/plugin/ows_provider/{protocol}/caps.py',
+            f'gws.plugin.ows_provider.{protocol}.caps'
         )
 
         res = mod.parse(xml)

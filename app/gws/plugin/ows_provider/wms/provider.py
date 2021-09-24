@@ -38,16 +38,16 @@ class Config(gws.base.ows.provider.Config):
 
 
 class Object(gws.base.ows.provider.Object):
-    service_type = 'WMS'
+    protocol = gws.OwsProtocol.WMS
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())
 
         self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
-        self.service_version = cc.version
-        self.operations = cc.operations
         self.source_layers = cc.source_layers
         self.supported_crs = cc.supported_crs
+        self.version = cc.version
+        self.operations.extend(cc.operations)
 
     def find_features(self, args):
         shape = args.shapes[0]
@@ -57,7 +57,7 @@ class Object(gws.base.ows.provider.Object):
         our_crs = shape.crs
         source_crs = self.source_crs or gws.lib.gis.best_crs(our_crs, self.supported_crs)
         shape = shape.transformed_to(source_crs)
-        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, 'WMS', self.service_version)
+        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, self.protocol, self.version)
 
         #  draw a 1000x1000 bbox around a point
         width = 1000
@@ -80,24 +80,23 @@ class Object(gws.base.ows.provider.Object):
             'BBOX': bbox,
             'WIDTH': width,
             'HEIGHT': height,
-            'CRS' if self.service_version >= '1.3' else 'SRS': source_crs,
+            'CRS' if self.version >= '1.3' else 'SRS': source_crs,
             'INFO_FORMAT': self._info_format,
             'LAYERS': args.source_layer_names,
             'QUERY_LAYERS': args.source_layer_names,
             'STYLES': [''] * len(args.source_layer_names),
-            'VERSION': self.service_version,
+            'VERSION': self.version,
         }
 
         if args.limit:
             params['FEATURE_COUNT'] = args.limit
 
-        params['I' if self.service_version >= '1.3' else 'X'] = width >> 1
-        params['J' if self.service_version >= '1.3' else 'Y'] = height >> 1
+        params['I' if self.version >= '1.3' else 'X'] = width >> 1
+        params['J' if self.version >= '1.3' else 'Y'] = height >> 1
 
         params = gws.merge(params, args.params)
 
-        operation = self.operation('GetFeatureInfo')
-        text = gws.lib.ows.request.get_text(operation.get_url, service='WMS', verb='GetFeatureInfo', params=params)
+        text = gws.lib.ows.request.get_text(**self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params))
         features = gws.lib.ows.formats.read(text, crs=source_crs, invert_axis=invert_axis)
 
         if features is None:
@@ -108,19 +107,19 @@ class Object(gws.base.ows.provider.Object):
 
     @gws.cached_property
     def _info_format(self):
-        operation = self.operation('GetFeatureInfo')
+        op = self.operation(gws.OwsVerb.GetFeatureInfo)
 
-        if not operation:
+        if not op:
             return
 
-        if not operation.formats:
+        if not op.formats:
             return 'text/xml'
 
         preferred = 'gml', 'text/xml', 'text/plain'
 
         for fmt in preferred:
-            for f in operation.formats:
+            for f in op.formats:
                 if fmt in f:
                     return f
 
-        return operation.formats[0]
+        return op.formats[0]

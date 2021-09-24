@@ -33,7 +33,7 @@ class Object(gws.base.layer.group.BaseGroup):
             exclude_slf=self.var('excludeLayers'),
             flatten=self.var('flattenLayers'),
             custom_configs=self.var('layerConfig'),
-            layer_config_factory=self.layer_config_factory
+            leaf_config=self.leaf_config
         )
 
         if not cfgs:
@@ -41,17 +41,9 @@ class Object(gws.base.layer.group.BaseGroup):
 
         self.configure_layers(cfgs)
 
-    _copy_keys = (
-        'capsLayersBottomUp',
-        'capsParams',
-        'getMapParams',
-        'invertAxis',
-        'maxRequests',
-        'url',
-    )
-
-    def layer_config_factory(self, source_layers):
-        cfg = gws.compact({k: self.config.get(k) for k in self._copy_keys})
-        cfg['type'] = 'wmsflat'
-        cfg['sourceLayers'] = {'names': [sl.name for sl in source_layers]}
-        return cfg
+    def leaf_config(self, source_layers):
+        return {
+            'type': 'wmsflat',
+            '_provider': self.provider,
+            '_source_layers': source_layers,
+        }

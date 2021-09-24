@@ -37,7 +37,7 @@ def invert_bbox(bbox):
     return [bbox[1], bbox[0], bbox[3], bbox[2]]
 
 
-def best_axis(crs, inverted_axis_crs_list, service_name, service_version):
+def best_axis(crs, inverted_axis_crs_list, protocol: gws.OwsProtocol, protocol_version):
     # inverted_axis_crs_list - list of EPSG crs'es which are known to have an inverted axis for this service
     # crs - crs we're going to use with the service
 
@@ -45,7 +45,7 @@ def best_axis(crs, inverted_axis_crs_list, service_name, service_version):
     if inverted_axis_crs_list and proj.epsg in inverted_axis_crs_list:
         return 'yx'
 
-    # @TODO some logic to guess the axis, based on crs, service_name and service_version
+    # @TODO some logic to guess the axis, based on crs, service protocol and version
     # see https://docs.geoserver.org/latest/en/user/services/wfs/basics.html#wfs-basics-axis
     return 'xy'
 

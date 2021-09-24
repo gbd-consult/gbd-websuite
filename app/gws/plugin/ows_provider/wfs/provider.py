@@ -30,13 +30,13 @@ class Config(gws.base.ows.provider.Config):
 
 
 class Object(gws.base.ows.provider.Object):
-    service_type = 'WFS'
+    protocol = gws.OwsProtocol.WFS
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())
 
         self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
-        self.service_version = cc.version
+        self.version = cc.version
         self.operations = cc.operations
         self.source_layers = cc.source_layers
         self.supported_crs = cc.supported_crs
@@ -63,7 +63,7 @@ class Object(gws.base.ows.provider.Object):
         our_crs = bounds.crs
         source_crs = self.source_crs or gws.lib.gis.best_crs(our_crs, self.supported_crs)
         bbox = gws.lib.extent.transform(bounds.extent, our_crs, source_crs)
-        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, 'WFS', self.service_version)
+        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, 'WFS', self.version)
         invert_axis = axis == 'yx'
 
         params = {}
@@ -73,18 +73,17 @@ class Object(gws.base.ows.provider.Object):
         params['BBOX'] = bbox
 
         if args.source_layer_names:
-            params['TYPENAMES' if self.service_version >= '2.0.0' else 'TYPENAME'] = args.source_layer_names
+            params['TYPENAMES' if self.version >= '2.0.0' else 'TYPENAME'] = args.source_layer_names
 
         if args.limit:
-            params['COUNT' if self.service_version >= '2.0.0' else 'MAXFEATURES'] = args.limit
+            params['COUNT' if self.version >= '2.0.0' else 'MAXFEATURES'] = args.limit
 
         params['SRSNAME'] = source_crs
-        params['VERSION'] = self.service_version
+        params['VERSION'] = self.version
 
         params = gws.merge(params, args.get('params'))
 
-        operation = self.operation('GetFeature')
-        text = gws.lib.ows.request.get_text(operation.get_url, service='WFS', verb='GetFeature', params=params)
+        text = gws.lib.ows.request.get_text(**self.operation_args(gws.OwsVerb.GetFeature, params=params))
         features = gws.lib.ows.formats.read(text, crs=source_crs, invert_axis=invert_axis)
 
         if features is None:

@@ -102,16 +102,6 @@ class FeatureCollection(gws.Data):
 class Object(gws.Object, gws.IOwsService):
     """Baseclass for OWS services."""
 
-    metadata: gws.IMetaData
-    name: str
-    service_type: str
-    supported_crs: t.List[gws.Crs]
-    supported_versions: t.List[str]
-    templates: gws.ITemplateBundle
-    version: str
-    with_inspire_meta: bool
-    with_strict_params: bool
-
     xml_helper: gws.lib.xml2.helper.Object
     project: t.Optional[gws.IProject]
 

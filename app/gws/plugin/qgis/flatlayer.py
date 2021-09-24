@@ -13,62 +13,69 @@ import gws.lib.os2
 from . import provider
 
 
-class Config(gws.base.layer.image.Config):
-    """WMS layer from a Qgis project"""
+@gws.ext.Config('layer.qgisflat')
+class Config(gws.base.layer.image.Config, provider.Config):
+    """Flat Qgis layer"""
 
-    path: gws.FilePath  #: qgis project path
     sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
+@gws.ext.Object('layer.qgisflat')
 class Object(gws.base.layer.image.Object):
+    provider: provider.Object
+    source_crs: gws.Crs
+    source_layers: t.List[gws.lib.gis.SourceLayer]
+
+    def configure(self):
+        if self.var('_provider'):
+            self.provider = self.var('_provider')
+            self.source_layers = self.var('_source_layers')
+        else:
+            self.provider = provider.shared_object(self.root, self.config)
+            self.source_layers = gws.lib.gis.filter_source_layers(
+                self.provider.source_layers,
+                self.var('sourceLayers', default=gws.lib.gis.SourceLayerFilter(level=1)))
+
+        if not self.source_layers:
+            raise gws.Error(f'no source layers found in layer={self.uid!r}')
+
+        if not self.has_configured_metadata:
+            self.configure_metadata_from(self.provider.metadata)
+
+        self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
+
+        if not self.has_configured_resolutions:
+            zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
+            if zoom:
+                self.resolutions = gws.lib.zoom.resolutions_from_config(zoom, self.resolutions)
+                self.has_configured_resolutions = True
+
+        if not self.has_configured_search:
+            cfg = self.provider.search_config(self.source_layers)
+            if cfg:
+                self.search_providers.append(
+                    t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider', cfg)))
+                self.has_configured_search = True
+
+        if not self.has_configured_legend:
+            self.legend = gws.Legend(
+                enabled=True,
+                urls=[self.provider.legend_url(self.source_layers, self.var('legend.options'))]
+            )
+            self.has_configured_legend = True
+
+    @property
+    def own_bounds(self):
+        return gws.lib.gis.bounds_from_source_layers(self.source_layers, self.source_crs)
+
     @property
     def description(self):
         context = {
             'layer': self,
-            'provider': self.provider.metadata
+            'service_metadata': self.provider.metadata,
+            'sub_layers': self.source_layers
         }
         return self.description_template.render(context).content
-
-    @property
-    def own_bounds(self):
-        return gws.lib.gis.bounds_from_source_layers(self.source_layers, self.map.crs)
-
-    @property
-    def default_search_provider(self):
-        source_layers = gws.lib.gis.filter_source_layers(
-            self.provider.source_layers,
-            self.var('sourceLayers'),
-            queryable_only=True
-        )
-        if source_layers:
-            return self.root.create_object('gws.ext.search.provider.qgiswms', gws.Config(
-                uid=self.uid + '.default_search',
-                layer=self,
-                source_layers=source_layers))
-
-    def configure(self):
-        
-
-        self.provider: provider.Object = provider.create_shared(self.root, self.config)
-        self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
-
-        self.source_layers = gws.lib.gis.filter_source_layers(
-            self.provider.source_layers,
-            self.var('sourceLayers'),
-        )
-
-        if not self.source_layers:
-            raise gws.Error(f'no layers found in {self.uid!r}')
-
-        self.metadata = self.configure_metadata(
-            self.source_layers[0].metadata if len(self.source_layers) == 1 else None)
-        self.title = self.metadata.title
-
-        if not self.var('zoom'):
-            zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
-            if zoom:
-                self.resolutions = gws.lib.zoom.resolutions_from_config(
-                    zoom, self.resolutions)
 
     def render_box(self, rv: gws.MapRenderView, extra_params=None):
         extra_params = extra_params or {}

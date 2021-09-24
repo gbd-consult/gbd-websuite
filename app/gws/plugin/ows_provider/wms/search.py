@@ -20,7 +20,7 @@ class Object(gws.base.search.provider.Object):
 
     def configure(self):
         if self.var('_provider'):
-            self.provider = self.var('_provider')
+            self.provider = t.cast(provider.Object, self.var('_provider'))
             self.source_layers = self.var('_source_layers')
         else:
             self.provider = gws.base.ows.provider.shared_object(provider.Object, self, self.config)
@@ -34,7 +34,7 @@ class Object(gws.base.search.provider.Object):
     def can_run(self, args):
         return (
                 super().can_run(args)
-                and bool(self.provider.operation('GetFeatureInfo'))
+                and self.provider.operation(gws.OwsVerb.GetFeatureInfo)
                 and bool(args.shapes)
                 and len(args.shapes) == 1
                 and args.shapes[0].geometry_type == gws.GeometryType.point)

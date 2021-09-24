@@ -12,9 +12,7 @@ import gws.lib.json2
 
 from . import driver
 
-_DESCRIBE_CACHE_LIFETIME = 3600
-
-_ext_class = 'gws.ext.db.provider.postgres'
+_EXT_CLASS = 'gws.ext.db.provider.postgres'
 
 
 def shared_object(root: gws.RootObject, cfg) -> 'Object':
@@ -24,19 +22,19 @@ def shared_object(root: gws.RootObject, cfg) -> 'Object':
         f'u={cfg.user}',
         f'd={cfg.database}'
     ])
-    return t.cast('Object', root.create_shared_object(_ext_class, gws.as_uid(key), cfg))
+    return t.cast('Object', root.create_shared_object(_EXT_CLASS, gws.as_uid(key), cfg))
 
 
 def require(obj: gws.IObject) -> 'Object':
     uid = obj.var('db')
     if uid:
-        prov = obj.root.find(klass=_ext_class, uid=uid)
+        prov = obj.root.find(klass=_EXT_CLASS, uid=uid)
         if not prov:
             raise gws.Error(f'{obj.uid}: db provider {uid!r} not found')
     else:
-        prov = obj.root.find(klass=_ext_class)
+        prov = obj.root.find(klass=_EXT_CLASS)
         if not prov:
-            raise gws.Error(f'{obj.uid}: db provider {_ext_class!r} not found')
+            raise gws.Error(f'{obj.uid}: db provider {_EXT_CLASS!r} not found')
     return t.cast('Object', prov)
 
 
@@ -94,7 +92,7 @@ class Object(gws.Object, gws.ISqlDbProvider):
             with self.connect() as conn:
                 return {c['name']: gws.SqlTableColumn(c) for c in conn.columns(table.name)}
 
-        key = _ext_class + '_describe_' + table.name
+        key = _EXT_CLASS + '_describe_' + table.name
         return gws.get_server_global(key, _get)
 
     def select(self, args: gws.SqlSelectArgs, extra_connect_params=None) -> t.List[gws.IFeature]:

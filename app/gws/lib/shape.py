@@ -109,11 +109,7 @@ class Shape(gws.IShape):
 
     @property
     def geometry_type(self) -> gws.GeometryType:
-        return gws.GeometryType[self.geom.type.lower()]
-
-    @property
-    def geometry_type_string(self) -> str:
-        return self.geometry_type.value
+        return self.geom.type.upper()
 
     @property
     def props(self):

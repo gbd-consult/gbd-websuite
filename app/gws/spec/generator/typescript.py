@@ -135,6 +135,9 @@ class _Generator:
         if isinstance(t, base.TList):
             return 'Array<%s>' % self.make(t.item_t)
 
+        if isinstance(t, base.TSet):
+            return 'Array<%s>' % self.make(t.item_t)
+
         if isinstance(t, base.TLiteral):
             return _pipe(_val(v) for v in t.values)
 

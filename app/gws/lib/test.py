@@ -136,21 +136,21 @@ def configure(config, parse=True):
 
 
 def configure_and_reload(config, parse=True):
-    def _wait_for_port(kind):
+    def _wait_for_port(service):
         while 1:
-            port = CONFIG[f'service.gws.{kind}_port']
+            port = CONFIG[f'service.gws.{service}_port']
             url = 'http://' + CONFIG['runner.host_name'] + ':' + str(port)
             res = gws.lib.net.http_request(url)
             if res.ok:
                 return
-            gws.log.debug(f'TEST:waiting for {kind}:{port}')
+            gws.log.debug(f'TEST:waiting for {service}:{port}')
             sleep(2)
 
     r = configure(config, parse)
     gws.server.control.reload(['mapproxy', 'web'])
 
-    for kind in 'http', 'mpx':
-        _wait_for_port(kind)
+    for service in 'http', 'mpx':
+        _wait_for_port(service)
 
     return r
 
@@ -356,7 +356,7 @@ def postgres_make_features(name, geom_type, columns, crs, xy, rows, cols, gap):
     shape = features[0].shape
     if shape:
         colnames.append('p_geom')
-        coldefs.append(f'p_geom GEOMETRY({shape.geometry_type_string},{shape.srid})')
+        coldefs.append(f'p_geom GEOMETRY({shape.geometry_type},{shape.srid})')
 
     data = []
     for f in features:

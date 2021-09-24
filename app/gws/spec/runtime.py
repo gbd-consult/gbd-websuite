@@ -82,13 +82,13 @@ class Object(ISpecRuntime):
                 paths.append(path)
         return paths
 
-    def check_command(self, cmd_name, cmd_method, params, strict=True):
+    def check_command(self, cmd_name, cmd_method, params, with_strict_mode=True):
         name = cmd_method + '.' + cmd_name
         if name not in self.specs:
             return None
 
         cmd_spec = self.specs[name]
-        p = Params(self.read_value(params, cmd_spec['arg'], '', strict, with_error_details=False))
+        p = Params(self.read_value(params, cmd_spec['arg'], '', with_strict_mode, with_error_details=False))
 
         return ExtCommandDescriptor(
             class_name=cmd_spec['class_name'],
@@ -131,9 +131,13 @@ class Object(ISpecRuntime):
 
         return docs
 
-    def read_value(self, value, type_name, path='', strict=True, with_error_details=True):
-        stack = [[value, type_name]] if with_error_details else None
-        rd = _Reader(self.specs, path, strict, stack)
+    def read_value(self, value, type_name, path='', with_strict_mode=True, with_error_details=True, with_internal_objects=False):
+        stack = None
+
+        if with_error_details:
+            stack = [[value, type_name]]
+
+        rd = _Reader(self.specs, path, stack, with_strict_mode, with_error_details, with_internal_objects)
 
         if not with_error_details:
             return rd.read(value, type_name)
@@ -141,61 +145,65 @@ class Object(ISpecRuntime):
         try:
             return rd.read(value, type_name)
         except Error as e:
-            raise _add_error_details(e, path, rd.stack)
+            raise _add_error_details(e, path, stack)
 
 
 ##
 
+_READERS = {
+    'any': '_read_any',
+    'bool': '_read_bool',
+    'bytes': '_read_bytes',
+    'float': '_read_float',
+    'int': '_read_int',
+    'str': '_read_str',
+
+    'TDict': '_read_dict',
+    'TList': '_read_list',
+    'TSet': '_read_set',
+    'TLiteral': '_read_literal',
+    'TOptional': '_read_optional',
+    'TTuple': '_read_tuple',
+    'TUnion': '_read_union',
+    'TVariant': '_read_variant',
+
+    'TAlias': '_read_alias',
+    'TEnum': '_read_enum',
+    'TObject': '_read_object',
+
+    'gws.core.types.Color': '_read_color',
+    'gws.core.types.Crs': '_read_crs',
+    'gws.core.types.Date': '_read_date',
+    'gws.core.types.DateTime': '_read_datetime',
+    'gws.core.types.DirPath': '_read_dirpath',
+    'gws.core.types.Duration': '_read_duration',
+    'gws.core.types.FilePath': '_read_filepath',
+    'gws.core.types.FormatStr': '_read_formatstr',
+    'gws.core.types.Regex': '_read_regex',
+    'gws.core.types.Url': '_read_url',
+}
+
+
 class _Reader:
-    _handlers = {
-        'any': '_read_any',
-        'bool': '_read_bool',
-        'bytes': '_read_bytes',
-        'float': '_read_float',
-        'int': '_read_int',
-        'str': '_read_str',
-
-        'TDict': '_read_dict',
-        'TList': '_read_list',
-        'TLiteral': '_read_literal',
-        'TOptional': '_read_optional',
-        'TTuple': '_read_tuple',
-        'TUnion': '_read_union',
-        'TVariant': '_read_variant',
-
-        'TAlias': '_read_alias',
-        'TEnum': '_read_enum',
-        'TObject': '_read_object',
-
-        'gws.core.types.Color': '_read_color',
-        'gws.core.types.Crs': '_read_crs',
-        'gws.core.types.Date': '_read_date',
-        'gws.core.types.DateTime': '_read_datetime',
-        'gws.core.types.DirPath': '_read_dirpath',
-        'gws.core.types.Duration': '_read_duration',
-        'gws.core.types.FilePath': '_read_filepath',
-        'gws.core.types.FormatStr': '_read_formatstr',
-        'gws.core.types.Regex': '_read_regex',
-        'gws.core.types.Url': '_read_url',
-    }
-
-    def __init__(self, specs, path, strict, stack):
+    def __init__(self, specs, path, stack, with_strict_mode, with_error_details, with_internal_objects):
         self.specs = specs
         self.path = path
-        self.strict = strict
         self.stack = stack
         self.push = stack.append if stack else lambda x: ...
         self.pop = stack.pop if stack else lambda: ...
+        self.with_strict_mode = with_strict_mode
+        self.with_error_details = with_error_details
+        self.with_internal_objects = with_internal_objects
 
     def read(self, val, type_name):
-        if type_name in self._handlers:
-            return getattr(self, self._handlers[type_name])(val, None)
+        if type_name in _READERS:
+            return getattr(self, _READERS[type_name])(val, None)
 
         spec = self.specs.get(type_name)
         if not spec:
             raise Error('ERR_UNKNOWN', f'unknown type {type_name!r}', val)
 
-        return getattr(self, self._handlers[spec['_']])(val, spec)
+        return getattr(self, _READERS[spec['_']])(val, spec)
 
     # built-ins
 
@@ -203,7 +211,7 @@ class _Reader:
         return val
 
     def _read_bool(self, val, spec):
-        if self.strict:
+        if self.with_strict_mode:
             return _ensure(val, bool)
         try:
             return bool(val)
@@ -219,7 +227,7 @@ class _Reader:
             raise Error('ERR_MUST_BE_BYTES', 'must be a byte buffer', val)
 
     def _read_float(self, val, spec):
-        if self.strict:
+        if self.with_strict_mode:
             if isinstance(val, int):
                 return float(val)
             return _ensure(val, float)
@@ -229,7 +237,7 @@ class _Reader:
             raise Error('ERR_MUST_BE_FLOAT', 'must be a float', val)
 
     def _read_int(self, val, spec):
-        if self.strict:
+        if self.with_strict_mode:
             return _ensure(val, int)
         try:
             return int(val)
@@ -237,7 +245,7 @@ class _Reader:
             raise Error('ERR_MUST_BE_INT', 'must be an integer', val)
 
     def _read_str(self, val, spec):
-        if self.strict:
+        if self.with_strict_mode:
             return _ensure(val, str)
         try:
             return _to_string(val)
@@ -261,12 +269,16 @@ class _Reader:
             self.pop()
         return res
 
+    def _read_set(self, val, spec):
+        lst = self._read_list(val, spec)
+        return set(lst)
+
     def _read_tuple(self, val, spec):
         lst = self._read_any_list(val)
         items = spec['items']
 
         if len(lst) != len(items):
-            raise Error('ERR_BAD_TYPE', f"expected {_comma(items)}", val)
+            raise Error('ERR_BAD_TYPE', f"expected: {_comma(items)}", val)
 
         res = []
         for n, v in enumerate(lst):
@@ -276,7 +288,7 @@ class _Reader:
         return res
 
     def _read_any_list(self, val):
-        if not self.strict and isinstance(val, str):
+        if not self.with_strict_mode and isinstance(val, str):
             val = val.strip()
             val = [v.strip() for v in val.split(',')] if val else []
         return _ensure(val, list)
@@ -284,7 +296,7 @@ class _Reader:
     def _read_literal(self, val, spec):
         s = self._read_str(val, spec)
         if s not in spec['values']:
-            raise Error('ERR_INVALID_CONST', f"expected {_comma(spec['values'])}, found {s!r}", val)
+            raise Error('ERR_INVALID_CONST', f"invalid value: {s!r}, expected: {_comma(spec['values'])}", val)
         return s
 
     def _read_optional(self, val, spec):
@@ -298,7 +310,7 @@ class _Reader:
 
     def _read_variant(self, val, spec):
         val = _ensure(val, dict)
-        if not self.strict:
+        if not self.with_strict_mode:
             val = {k.lower(): v for k, v in val.items()}
 
         type_name = val.get('type')
@@ -307,7 +319,7 @@ class _Reader:
 
         target_type = spec['members'].get(type_name)
         if not target_type:
-            raise Error('ERR_BAD_TYPE', f"illegal type: {type_name!r}, expected {_comma(spec['members'])}", val)
+            raise Error('ERR_BAD_TYPE', f"illegal type: {type_name!r}, expected: {_comma(spec['members'])}", val)
         return self.read(val, target_type)
 
     # named types
@@ -318,30 +330,39 @@ class _Reader:
     def _read_enum(self, val, spec):
         # NB: our Enums accept both names (for configs) and values (for api calls)
         # this prevents silly things like Enum{foo=bar bar=123} but we don't care
+        #
+        # this reader returns a value, it's up to the caller to convert it to the actual enum
 
         for k, v in spec['values'].items():
             if val == k or val == v:
                 return v
-        raise Error('ERR_BAD_ENUM', f"invalid value, expected {_comma(spec['values'])}", val)
+        raise Error('ERR_BAD_ENUM', f"invalid value: {val!r}, expected: {_comma(spec['values'])}", val)
 
     def _read_object(self, val, spec):
         val = _ensure(val, dict)
-        if not self.strict:
+        if not self.with_strict_mode:
             val = {k.lower(): v for k, v in val.items()}
 
         props = spec['props']
         res = {}
 
         for prop_name, prop_key in props.items():
-            prop_val = val.get(prop_name if self.strict else prop_name.lower())
+            prop_val = val.get(prop_name if self.with_strict_mode else prop_name.lower())
             self.push([prop_val, prop_name])
             res[prop_name] = self._read_property(prop_val, prop_key)
             self.pop()
 
-        if self.strict:
-            unknown = [k for k in val if k not in props]
-            if unknown:
-                raise Error('ERR_UNKNOWN_PROP', f"unknown keys: {_comma(unknown)}, expected: {_comma(props)}", val)
+        unknown = []
+
+        for k in val:
+            if k not in props:
+                if self.with_internal_objects:
+                    res[k] = val[k]
+                elif self.with_strict_mode:
+                    unknown.append(k)
+
+        if unknown:
+            raise Error('ERR_UNKNOWN_PROP', f"unknown keys: {_comma(unknown)}, expected: {_comma(props)}", val)
 
         return Data(res)
 
@@ -351,7 +372,7 @@ class _Reader:
         if val is not None:
             return self.read(val, prop_spec['property_t'])
 
-        if not prop_spec['has_default']:
+        if not prop_spec['has_default'] and not self.with_internal_objects:
             raise Error('ERR_MISSING_PROP', f"required property missing: {prop_spec['ident']!r}", None)
 
         if prop_spec['default'] is None:
@@ -374,31 +395,31 @@ class _Reader:
     def _read_date(self, val, spec):
         d = gws.lib.date.from_iso(str(val))
         if not d:
-            raise Error('ERR_INVALID_DATE', 'invalid date', val)
+            raise Error('ERR_INVALID_DATE', f'invalid date: {val!r}', val)
         return gws.lib.date.to_iso_date(d)
 
     def _read_datetime(self, val, spec):
         d = gws.lib.date.from_iso(str(val))
         if not d:
-            raise Error('ERR_INVALID_DATE', 'invalid date', val)
+            raise Error('ERR_INVALID_DATE', f'invalid date: {val!r}', val)
         return gws.lib.date.to_iso(d)
 
     def _read_dirpath(self, val, spec):
         path = gws.lib.os2.abs_path(val, self.path)
         if not gws.is_dir(path):
-            raise Error('ERR_DIR_NOT_FOUND', 'directory not found', path)
+            raise Error('ERR_DIR_NOT_FOUND', f'directory not found: {path!r}', path)
         return path
 
     def _read_duration(self, val, spec):
         try:
             return gws.lib.units.parse_duration(val)
         except ValueError:
-            raise Error('ERR_BAD_DURATION', 'invalid duration', val)
+            raise Error('ERR_BAD_DURATION', f'invalid duration: {val!r}', val)
 
     def _read_filepath(self, val, spec):
         path = gws.lib.os2.abs_path(val, self.path)
         if not gws.is_file(path):
-            raise Error('ERR_FILE_NOT_FOUND', 'file not found', path)
+            raise Error('ERR_FILE_NOT_FOUND', f'file not found: {path!r}', path)
         return path
 
     def _read_formatstr(self, val, spec):
@@ -410,7 +431,7 @@ class _Reader:
             re.compile(val)
             return val
         except re.error as e:
-            raise Error('ERR_BAD_REGEX', f"invalid regular expression: {e!r}", val)
+            raise Error('ERR_BAD_REGEX', f'invalid regular expression: {val!r}: {e!r}', val)
 
     def _read_url(self, val, spec):
         # @TODO: url validation
@@ -427,7 +448,7 @@ def _ensure(val, klass):
         return list(val)
     if klass == dict and is_data_object(val):
         return vars(val)
-    raise Error('ERR_WRONG_TYPE', f"wrong type {_classname(type(val))!r}, expected {_classname(klass)!r}", val)
+    raise Error('ERR_WRONG_TYPE', f"wrong type: {_classname(type(val))!r}, expected: {_classname(klass)!r}", val)
 
 
 def _to_string(x):
@@ -446,7 +467,7 @@ def _classname(cls):
 
 
 def _comma(ls):
-    return ', '.join(sorted(str(x) for x in ls))
+    return repr(', '.join(sorted(str(x) for x in ls)))
 
 
 def _add_error_details(e: Error, path: str, stack):

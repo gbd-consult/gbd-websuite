@@ -26,14 +26,14 @@ def layer_from_root():
             map.crs 'EPSG:3857'
             map.layers+ {{
                 type 'wmsflat'
-                uid 'rootlayer'
+                uid 'layer_from_root'
                 capsCacheMaxAge 0
                 url {fixtures.SERVICE_URL!r}
             }}
         }}
     ''')
 
-    yield root.find(uid='one.map.rootlayer')
+    yield root.find(uid='one.map.layer_from_root')
 
 
 @test.fixture(scope='module')
@@ -44,7 +44,7 @@ def layer_from_a_b():
             map.crs 'EPSG:3857'
             map.layers+ {{
                 type 'wmsflat'
-                uid 'ablayer'
+                uid 'layer_from_a_b'
                 capsCacheMaxAge 0
                 url {fixtures.SERVICE_URL!r}
                 sourceLayers.names [A B]
@@ -52,7 +52,7 @@ def layer_from_a_b():
         }}
     ''')
 
-    yield root.find(uid='one.map.ablayer')
+    yield root.find(uid='one.map.layer_from_a_b')
 
 
 @test.fixture(scope='module')

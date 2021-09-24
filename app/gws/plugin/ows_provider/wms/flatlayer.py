@@ -73,7 +73,7 @@ class Object(gws.base.layer.image.Object):
     def description(self):
         context = {
             'layer': self,
-            'service': self.provider.metadata,
+            'service_metadata': self.provider.metadata,
             'sub_layers': self.source_layers
         }
         return self.description_template.render(context).content
@@ -83,11 +83,13 @@ class Object(gws.base.layer.image.Object):
         if not self.var('capsLayersBottomUp'):
             layers = reversed(layers)
 
-        req = gws.merge({
-            'url': self.provider.operation('GetMap').get_url,
+        args = self.provider.operation_args(gws.OwsVerb.GetMap)
+
+        req = gws.merge(args['params'], {
             'transparent': True,
-            'layers': ','.join(layers)
-        }, self.var('getMapParams'))
+            'layers': ','.join(layers),
+            'url': args['url'],
+        })
 
         source_uid = mc.source(gws.compact({
             'type': 'wms',

@@ -23,8 +23,10 @@ class BaseGroup(core.Object):
         self.layers = t.cast(t.List[gws.ILayer], self.create_children('gws.ext.layer', cfgs))
 
         if not self.has_configured_legend:
-            self.legend = gws.Legend(enabled=any(la.has_legend for la in self.layers))
-            self.has_configured_legend = True
+            legend_layers = [la for la in self.layers if la.has_legend]
+            if legend_layers:
+                self.legend = gws.Legend(enabled=True, layers=legend_layers)
+                self.has_configured_legend = True
 
         if not self.has_configured_resolutions:
             resolutions = set()
@@ -38,12 +40,6 @@ class BaseGroup(core.Object):
 
         self.has_configured_layers = True
 
-    def render_legend(self, context=None):
-        sup = super().render_legend(context)
-        if sup:
-            return sup
-        return gws.lib.legend.combine_outputs([la.get_legend(context) for la in self.layers], self.legend.options)
-
     def layer_tree_configuration(
             self,
             source_layers: t.List[gws.lib.gis.SourceLayer],
@@ -51,7 +47,7 @@ class BaseGroup(core.Object):
             exclude_slf: gws.lib.gis.SourceLayerFilter,
             flatten: types.FlattenConfig,
             custom_configs: t.List[types.CustomConfig],
-            layer_config_factory: t.Callable[[t.List[gws.lib.gis.SourceLayer]], dict]
+            leaf_config: t.Callable[[t.List[gws.lib.gis.SourceLayer]], dict]
     ):
         def _make_config(sl, depth):
             cfg = _base_config(sl, depth)
@@ -88,16 +84,16 @@ class BaseGroup(core.Object):
 
             if not sl.is_group:
                 # leaf layer
-                return layer_config_factory([sl])
+                return leaf_config([sl])
 
             if flatten and sl.a_level >= flatten.level:
                 # flattened group layer
                 # NB use the absolute level to compute flatness, could also use relative (=depth)
                 if flatten.useGroups:
-                    return layer_config_factory([sl])
+                    return leaf_config([sl])
                 image_layers = gws.lib.gis.enum_source_layers([sl], is_image=True)
                 if image_layers:
-                    return layer_config_factory(image_layers)
+                    return leaf_config(image_layers)
                 return None
 
             # ordinary group layer
@@ -119,7 +115,7 @@ class BaseGroup(core.Object):
         for sl in roots:
             cfg = _make_config(sl, 0)
             if cfg:
-                cfgs.append(gws.config.parse(self.root.specs, cfg, 'gws.ext.layer.Config'))
+                cfgs.append(gws.config.parse(self.root.specs, cfg, 'gws.ext.layer.Config', with_internal_objects=True))
         return cfgs
 
 

@@ -21,6 +21,7 @@ class Config(gws.WithAccess):
     tolerance: str = '10px'  #: tolerance, in pixels or map units
     withGeometry: bool = True  #: enable geometry search
     withKeyword: bool = True  #: enable keyword search
+    withFilter: bool = True  #: enable filter search
 
 
 class Object(gws.Object, gws.ISearchProvider):
@@ -28,9 +29,9 @@ class Object(gws.Object, gws.ISearchProvider):
     supports_geometry: bool = False
     supports_filter: bool = False
 
-    with_keyword: bool = False
-    with_geometry: bool = False
-    with_filter: bool = False
+    with_keyword: bool
+    with_geometry: bool
+    with_filter: bool
 
     data_model: t.Optional[gws.IDataModel]
     templates: t.Optional[gws.ITemplateBundle]
@@ -54,20 +55,21 @@ class Object(gws.Object, gws.ISearchProvider):
             gws.lib.units.parse(p, units=['px', 'm'], default='px') if p
             else (_DEFAULT_PIXEL_TOLERANCE, 'px'))
 
-        self.with_keyword = self.var('withKeyword', default=True)
-        self.with_geometry = self.var('withGeometry', default=True)
+        self.with_keyword = self.supports_keyword and self.var('withKeyword', default=True)
+        self.with_geometry = self.supports_geometry and self.var('withGeometry', default=True)
+        self.with_filter = self.supports_filter and self.var('withFilter', default=True)
 
         self.spatial_context = self.var('defaultContext', default=SpatialContext.map)
         self.title = self.var('title', default='')
 
     def can_run(self, args: gws.SearchArgs):
-        if args.keyword and (not self.supports_keyword or not self.with_keyword):
+        if args.keyword and not self.with_keyword:
             return False
 
-        if args.shapes and (not self.supports_geometry or not self.with_geometry):
+        if args.shapes and not self.with_geometry:
             return False
 
-        if args.filter and not self.supports_filter:
+        if args.filter and not self.with_filter:
             return False
 
         return bool(args.keyword or args.shapes or args.filter)

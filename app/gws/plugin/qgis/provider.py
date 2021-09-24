@@ -2,19 +2,24 @@ import zipfile
 
 import gws
 import gws.types as t
-import gws.base.ows
-import gws.lib.ows
+import gws.base.metadata
 import gws.lib.gis
+import gws.lib.ows
 import gws.lib.net
 import gws.lib.xml2
 from . import types, parser
 
 
-def create_shared(root: gws.RootObject, cfg) -> 'Object':
+class Config(gws.Config):
+    path: gws.FilePath  #: path to a Qgis project file
+    directRender: t.Optional[t.List[str]]  #: QGIS data providers that should be rendered directly
+    directSearch: t.Optional[t.List[str]]  #: QGIS data providers that should be searched directly
+
+
+def shared_object(root: gws.RootObject, cfg: Config) -> 'Object':
     path = cfg.get('path')
-    uid = path
     root.application.monitor.add_path(path)
-    return root.create_shared_object(Object, uid, gws.Config(path=path))
+    return root.create_shared_object(Object, uid=path, cfg=gws.Config(path=path))
 
 
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
@@ -42,33 +47,39 @@ _DEFAULT_LEGEND_PARAMS = {
 }
 
 
-class Object(gws.base.ows.provider.Object):
-    legend_params: dict
+class Object(gws.Object):
+    version = ''
+
+    metadata: gws.IMetaData
     path: str
     print_templates: t.List[types.PrintTemplate]
     properties: dict
+    source_layers: t.List[gws.lib.gis.SourceLayer]
     source_text: str
+    supported_crs: t.List[gws.Crs]
+    url: str
+
+    direct_render: t.Set[str]
+    direct_search: t.Set[str]
 
     def configure(self):
-        self.supported_crs: t.List[gws.Crs] = []
-
-
-        self.legend_params = gws.merge(_DEFAULT_LEGEND_PARAMS, self.root.application.var('server.qgis.legend'))
-
         self.path = self.var('path')
         self.url = 'http://%s:%s' % (
             self.root.application.var('server.qgis.host'),
             self.root.application.var('server.qgis.port'))
 
-        self.type = 'QGIS/WMS'
-        self.version = '1.3.0'  # as of QGIS 3.4
-
-        self.print_templates = []
-        self.properties = {}
-
         self.source_text = self._read(self.path)
+        cc = parser.parse(self.source_text)
 
-        parser.parse(self, self.source_text)
+        self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
+        self.print_templates = cc.print_templates
+        self.properties = cc.properties
+        self.source_layers = cc.source_layers
+        self.supported_crs = cc.supported_crs
+        self.version = cc.version
+
+        self.direct_render = set(self.var('directRender', default=[]))
+        self.direct_search = set(self.var('directSearch', default=[]))
 
     def find_features(self, args: gws.SearchArgs) -> t.List[gws.IFeature]:
         if not args.shapes:
@@ -94,7 +105,7 @@ class Object(gws.base.ows.provider.Object):
             height
         )
 
-        p = {
+        params = {
             'BBOX': bbox,
             'CRS': self.supported_crs[0],
 
@@ -120,25 +131,25 @@ class Object(gws.base.ows.provider.Object):
         }
 
         if args.limit:
-            p['FEATURE_COUNT'] = args.limit
+            params['FEATURE_COUNT'] = args.limit
 
-        p = gws.merge(p, args.params)
+        params = gws.merge(params, args.params)
 
-        text = gws.lib.ows.request.get_text(self.url, service='WMS', verb='GetFeatureInfo', params=p)
+        text = gws.lib.ows.request.get_text(self.url, gws.OwsProtocol.WMS, gws.OwsVerb.GetFeatureInfo, params=params)
         found = gws.lib.ows.formats.read(text, crs=our_crs)
 
         if found is None:
-            gws.p('QGIS/WMS QUERY', p, 'NOT PARSED')
+            gws.log.debug(f'QGIS/WMS NOT_PARSED params={params!r}')
             return []
 
-        gws.p('QGIS/WMS QUERY', p, f'FOUND={len(found)}')
+        gws.log.debug(f'QGIS/WMS FOUND={len(found)} params={params!r}')
         return found
 
-    def get_legend(self, source_layers, options=None):
+    def legend_url(self, source_layers, params=None):
         # qgis legends are rendered bottom-up (rightmost first)
         # we need the straight order (leftmost first), like in the config
 
-        params = gws.merge(self.legend_params, {
+        params = gws.merge(_DEFAULT_LEGEND_PARAMS, {
             'MAP': self.path,
             'LAYER': ','.join(sl.name for sl in reversed(source_layers)),
             'FORMAT': 'image/png',
@@ -146,23 +157,162 @@ class Object(gws.base.ows.provider.Object):
             'STYLE': '',
             'VERSION': '1.1.1',
             'DPI': 96,
-        }, options)
+            'SERVICE': 'WMS',
+            'REQUEST': gws.OwsVerb.GetLegendGraphic,
+        }, params)
 
-        resp = gws.lib.ows.request.get(
-            self.url,
-            service='WMS',
-            request='GetLegendGraphic',
-            params=params)
+        return gws.lib.net.add_params(self.url, params)
 
-        return resp.content
+    def leaf_config(self, source_layers):
+        default = {
+            'type': 'qgisflat',
+            '_provider': self,
+            '_source_layers': source_layers
+        }
+
+        if len(source_layers) > 1 or source_layers[0].is_group:
+            return default
+
+        sl = source_layers[0]
+        ds = sl.data_source
+        prov = ds.get('provider')
+
+        if prov not in self.direct_render:
+            return default
+
+        if prov == 'wms':
+            layers = ds.get('layers')
+            if not layers:
+                return
+            return {
+                'type': 'wmsflat',
+                'sourceLayers': {
+                    'names': ds['layers']
+                },
+                'url': self.make_wms_url(ds['url'], ds['params']),
+            }
+
+        if prov == 'wmts':
+            layers = ds.get('layers')
+            if not layers:
+                return
+            return gws.compact({
+                'type': 'wmts',
+                'url': ds['url'].split('?')[0],
+                'sourceLayer': ds['layers'][0],
+                'sourceStyle': (ds['options'] or {}).get('styles'),
+            })
+
+        gws.log.warn(f'directRender not supported for {prov!r}')
+        return default
+
+    def search_config(self, source_layers):
+        default = {
+            'type': 'qgiswms',
+            '_provider': self,
+            '_source_layers': source_layers,
+        }
+
+        if len(self.source_layers) > 1 or self.source_layers[0].is_group:
+            return default
+
+        sl = source_layers[0]
+        ds = sl.data_source
+        prov = ds.get('provider')
+
+        if prov not in self.direct_search:
+            return default
+
+        if prov == 'wms':
+            layers = ds.get('layers')
+            if layers:
+                return {
+                    'type': 'wms',
+                    'sourceLayers': {
+                        'names': ds['layers']
+                    },
+                    'url': self.make_wms_url(ds['url'], ds['params']),
+                }
+
+        if prov == 'postgres':
+            tab = sl.data_source.get('table')
+
+            # 'table' can also be a select statement, in which case it might be enclosed in parens
+            if not tab or tab.startswith('(') or tab.upper().startswith('SELECT '):
+                return
+
+            return {
+                'type': 'qgispostgres',
+                '_data_source': ds
+            }
+
+        if prov == 'wfs':
+            cfg = {
+                'type': 'wfs',
+                'url': ds['url'],
+            }
+            if gws.get(ds, 'typeName'):
+                cfg['sourceLayers'] = {
+                    'names': [ds['typeName']]
+                }
+            crs = gws.get(ds, 'params.srsname')
+            inv = gws.get(ds, 'params.InvertAxisOrientation')
+            if inv == '1' and crs:
+                cfg['invertAxis'] = [crs]
+
+            return cfg
+
+        gws.log.warn(f'directSearch not supported for {prov!r}')
+        return default
+
+    def make_wms_url(self, url, params):
+        # a wms url can be like "server?service=WMS....&bbox=.... &some-non-std-param=...
+        # we need to keep non-std params for caps requests
+
+        _std_params = {
+            'service',
+            'version',
+            'request',
+            'layers',
+            'styles',
+            'srs',
+            'crs',
+            'bbox',
+            'width',
+            'height',
+            'format',
+            'transparent',
+            'bgcolor',
+            'exceptions',
+            'time',
+            'sld',
+            'sld_body',
+        }
+        p = {k: v for k, v in params.items() if k.lower() not in _std_params}
+        return gws.lib.net.add_params(url, p)
+
+    def print_template(self, ref: str):
+        pts = self.print_templates
+
+        if not self.print_templates:
+            return
+
+        if not ref:
+            return pts[0]
+
+        if ref.isdigit() and int(ref) < len(pts):
+            return pts[int(ref)]
+
+        for tpl in pts:
+            if tpl.title == ref:
+                return tpl
 
     def _read(self, path):
-        if path.endswith('.qgz'):
-            with zipfile.ZipFile(path) as zf:
-                for info in zf.infolist():
-                    if info.filename.endswith('.qgs'):
-                        with zf.open(info) as fp:
-                            return fp.read()
+        if not path.endswith('.qgz'):
+            return gws.read_file(path)
 
-        with open(self.path) as fp:
-            return fp.read()
+        with zipfile.ZipFile(path) as zf:
+            for info in zf.infolist():
+                if info.filename.endswith('.qgs'):
+                    with zf.open(info, 'rt') as fp:
+                        return fp.read()

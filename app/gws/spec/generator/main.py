@@ -4,7 +4,7 @@ import re
 
 from . import base, manifest, parser, normalizer, strings, typescript
 
-EXCLUDE_PATHS = ['___', '/vendor/', '_test.py']
+EXCLUDE_PATHS = ['___', '/vendor/', '/_test', 'core/ext']
 
 CONST_PATH = base.APP_DIR + '/gws/core/const.py'
 STRINGS_PATH = base.APP_DIR + '/gws/spec/strings.ini'

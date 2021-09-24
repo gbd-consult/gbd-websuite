@@ -31,11 +31,11 @@ def configure(
         _print('-' * 20)
         _print(_args)
 
-    def _fallback(_exc):
+    def _fallback(_exc, msg):
         if fallback_config and specs.manifest.withFallbackConfig:
             gws.log.warn(f'configuration error: using fallback config')
             return configure(config=fallback_config)
-        raise gws.ConfigurationError('configuration failed') from _exc
+        raise gws.ConfigurationError(msg) from _exc
 
     if manifest_path:
         gws.log.info(f'using manifest {manifest_path!r}...')
@@ -52,32 +52,32 @@ def configure(
             config = parser.parse_main(specs, config_path)
         except Exception as exc:
             _report(exc.args)
-            return _fallback(exc)
+            return _fallback(exc, 'parse error')
 
     if before_init:
         try:
             before_init(config)
         except Exception as exc:
             _report(exc.args)
-            return _fallback(exc)
+            return _fallback(exc, 'pre-init error')
 
     try:
         root_object = initialize(specs, config)
     except Exception as exc:
         _report(exc.args)
-        return _fallback(exc)
+        return _fallback(exc, 'init error')
 
     if not root_object.configuration_errors:
-        gws.log.info(f'configuration ok')
+        gws.log.info('configuration ok')
         return root_object
 
     for err in root_object.configuration_errors:
         _report(err)
 
     if specs.manifest.withStrictConfig:
-        return _fallback(gws.ConfigurationError('configuration failed'))
+        return _fallback(gws.ConfigurationError(), 'configuration failed')
 
-    gws.log.warn(f'{len(root_object.configuration_errors)} CONFIGURATION ERRORS!')
+    gws.log.warn(f'CONFIGURATION ERRORS: {len(root_object.configuration_errors)}')
     return root_object
 
 

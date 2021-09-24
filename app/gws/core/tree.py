@@ -131,9 +131,6 @@ class RootObject(BaseObject, types.IRootObject):
             u = obj.var('uid')
             if u:
                 return u
-            u = obj.var('title')
-            if u:
-                return util.as_uid(u)
             return obj.class_name.replace('.', '_')
 
         def _new(uid):

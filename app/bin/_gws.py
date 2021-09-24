@@ -65,7 +65,7 @@ def dispatch(specs, ext_type, cmd, params):
     cmd_name = camelize(ext_type + '-' + cmd)
 
     try:
-        command_desc = specs.check_command(cmd_name, 'cli', params, strict=False)
+        command_desc = specs.check_command(cmd_name, 'cli', params, with_strict_mode=False)
     except gws.spec.runtime.Error:
         return print_usage_and_fail(specs, ext_type, cmd)
 

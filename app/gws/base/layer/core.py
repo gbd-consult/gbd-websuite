@@ -320,9 +320,9 @@ class Object(gws.Object, gws.ILayer):
             return service.uid in self.ows_enabled_services_uids
         if self.ows_enabled_services_pattern:
             return re.search(self.ows_enabled_services_pattern, service.uid) is not None
-        if service.service_type == 'wms' and self.supports_wms:
+        if service.protocol == gws.OwsProtocol.WMS and self.supports_wms:
             return True
-        if service.service_type == 'wfs' and self.supports_wfs:
+        if service.protocol == gws.OwsProtocol.WFS and self.supports_wfs:
             return True
         if self.layers:
             return any(la.enabled_for_ows(service) for la in self.layers)

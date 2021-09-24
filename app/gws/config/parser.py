@@ -22,11 +22,11 @@ DEFAULT_CONFIG_PATHS = [
 ]
 
 
-def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path=''):
+def parse(specs: gws.ISpecRuntime, value, type_name: str, source_path='', with_internal_objects=False):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
-        return specs.read_value(value, type_name, source_path, strict=True, with_error_details=True)
+        return specs.read_value(value, type_name, source_path, with_strict_mode=True, with_error_details=True, with_internal_objects=with_internal_objects)
     except gws.spec.runtime.Error as e:
         code, msg, _, details = e.args
         raise gws.ConfigurationError(

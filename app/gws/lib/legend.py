@@ -1,5 +1,3 @@
-from io import BytesIO
-
 import gws
 import gws.types as t
 import gws.lib.ows.request
@@ -29,6 +27,9 @@ def render(legend: gws.Legend, context: dict = None) -> t.Optional[gws.LegendRen
         html = legend.template.render(context or {}).content
         return gws.LegendRenderOutput(html=html)
 
+    if legend.layers:
+        return _combine_outputs(gws.compact(la.get_legend(context) for la in legend.layers), legend.options)
+
     return None
 
 
@@ -45,12 +46,12 @@ def as_bytes(out: t.Optional[gws.LegendRenderOutput]) -> t.Optional[bytes]:
     return None
 
 
-def combine_urls(urls: t.List[str], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
+def _combine_urls(urls: t.List[str], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
     outs = gws.compact(render(gws.Legend(url=url)) for url in urls)
-    return combine_outputs(outs, options)
+    return _combine_outputs(outs, options)
 
 
-def combine_outputs(outs: t.List[gws.LegendRenderOutput], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
+def _combine_outputs(outs: t.List[gws.LegendRenderOutput], options: dict = None) -> t.Optional[gws.LegendRenderOutput]:
     buf = gws.filter(as_bytes(out) for out in outs)
     img = _combine_images(buf, options)
     if not img:

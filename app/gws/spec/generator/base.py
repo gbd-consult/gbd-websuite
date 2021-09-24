@@ -105,6 +105,12 @@ class TList(Type):
         self.name = f'List[{self.item_t}]'
 
 
+class TSet(Type):
+    def __init__(self, item_t: TypeName):
+        self.item_t = item_t
+        self.name = f'Set[{self.item_t}]'
+
+
 class TLiteral(Type):
     def __init__(self, values: List[LiteralValue]):
         self.values = values

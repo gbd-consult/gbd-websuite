@@ -10,43 +10,6 @@ EXEC_PATH = '/usr/bin/qgis_mapserv.fcgi'
 SVG_SEARCH_PATHS = ['/usr/share/qgis/svg', '/usr/share/alkisplugin/svg']
 
 
-def _make_ini(root, base_dir):
-    ini = ''
-
-    paths = []
-    s = root.application.var('server.qgis.searchPathsForSVG')
-    if s:
-        paths.extend(s)
-    paths.extend(SVG_SEARCH_PATHS)
-    ini += f'''
-        [svg]
-        searchPathsForSVG={','.join(paths)}        
-    '''
-
-    # set the cache dir and size=4096Kb
-    gws.ensure_dir('netcache', base_dir)
-    ini += fr'''
-        [cache]
-        directory={base_dir}/netcache
-        size=@Variant(\0\0\0\x81\0\0\0\0\0@\0\0)
-    '''
-
-    proxy = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
-    if proxy:
-        p = gws.lib.net.parse_url(proxy)
-        ini += f'''
-            [proxy]
-            proxyEnabled=true
-            proxyType=HttpProxy
-            proxyHost={p.hostname}
-            proxyPort={p.port}
-            proxyUser={p.username}
-            proxyPassword={p.password}
-        '''
-
-    return '\n'.join(x.strip() for x in ini.splitlines())
-
-
 def environ(root: gws.RootObject):
     base_dir = gws.ensure_dir(gws.TMP_DIR + '/qqq')
 
@@ -124,3 +87,40 @@ def request(root: gws.RootObject, params, **kwargs):
         root.application.var('server.qgis.port'))
 
     return gws.lib.net.http_request(url, params=params, **kwargs)
+
+
+def _make_ini(root, base_dir):
+    ini = ''
+
+    paths = []
+    s = root.application.var('server.qgis.searchPathsForSVG')
+    if s:
+        paths.extend(s)
+    paths.extend(SVG_SEARCH_PATHS)
+    ini += f'''
+        [svg]
+        searchPathsForSVG={','.join(paths)}        
+    '''
+
+    # set the cache dir and size=4096Kb
+    gws.ensure_dir('netcache', base_dir)
+    ini += fr'''
+        [cache]
+        directory={base_dir}/netcache
+        size=@Variant(\0\0\0\x81\0\0\0\0\0@\0\0)
+    '''
+
+    proxy = os.getenv('HTTPS_PROXY') or os.getenv('HTTP_PROXY')
+    if proxy:
+        p = gws.lib.net.parse_url(proxy)
+        ini += f'''
+            [proxy]
+            proxyEnabled=true
+            proxyType=HttpProxy
+            proxyHost={p.hostname}
+            proxyPort={p.port}
+            proxyUser={p.username}
+            proxyPassword={p.password}
+        '''
+
+    return '\n'.join(x.strip() for x in ini.splitlines())

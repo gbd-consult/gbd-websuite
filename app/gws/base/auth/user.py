@@ -147,11 +147,11 @@ class AuthorizedUser(User):
 
 def _can_use(roles, target, parent):
     if not target:
-        gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r}: empty')
+        gws.log.debug(f'PERMS:deny: query: t={_repr(target)} roles={roles!r}: empty')
         return False
 
     if ROLE_ADMIN in roles:
-        gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: ROLE_ADMIN')
+        gws.log.debug(f'PERMS:allow query: t={_repr(target)} roles={roles!r} found: ROLE_ADMIN')
         return True
 
     c = _check_access(roles, target, target)
@@ -166,7 +166,7 @@ def _can_use(roles, target, parent):
             return c
         current = gws.get(current, 'parent')
 
-    gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r}: not found')
+    gws.log.debug(f'PERMS:deny query: t={_repr(target)} roles={roles!r}: not found')
     return False
 
 
@@ -178,7 +178,7 @@ def _check_access(roles, target, current):
 
     for a in access:
         if a.role in roles:
-            gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {a.role}:{a.type} in {_repr(current)}')
+            gws.log.debug(f'PERMS:{a.type}: query: t={_repr(target)} roles={roles!r} found: {a.role}:{a.type} in {_repr(current)}')
             return a.type == 'allow'
 
 
