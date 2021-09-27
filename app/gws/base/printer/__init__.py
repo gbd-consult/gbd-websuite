@@ -3,7 +3,6 @@ import gws.types as t
 import gws.base.template
 
 
-
 class Config(gws.Config):
     """Printer configuration"""
 
@@ -11,7 +10,7 @@ class Config(gws.Config):
 
 
 class Props(gws.Data):
-    templates: t.List[gws.base.template.Props]
+    templates: gws.base.template.BundleProps
 
 
 class Object(gws.Object):
@@ -22,7 +21,4 @@ class Object(gws.Object):
         return Props(templates=self.templates)
 
     def configure(self):
-        p = self.var('templates')
-        self.templates = t.cast(gws.base.template.Bundle, self.create_child(
-            gws.base.template.Bundle,
-            gws.Config(templates=p)))
+        self.templates = gws.base.template.create_bundle(self, self.var('templates'))

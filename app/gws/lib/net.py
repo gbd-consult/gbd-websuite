@@ -1,8 +1,5 @@
 import cgi
-import hashlib
-import os
 import re
-import time
 import urllib.parse
 
 import requests

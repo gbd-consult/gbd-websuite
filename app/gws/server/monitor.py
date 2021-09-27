@@ -9,13 +9,8 @@ import gws.config
 import gws.core.tree
 import gws.lib.misc
 import gws.lib.os2
+import gws.server.uwsgi_module
 from . import control
-
-try:
-    # noinspection PyUnresolvedReferences
-    import uwsgi
-except:
-    pass
 
 _lockfile = '/tmp/monitor.lock'
 
@@ -68,8 +63,10 @@ class Object(gws.Object, gws.IMonitor):
 
         self._poll()
 
+        uwsgi = gws.server.uwsgi_module.load()
+
         # only one worker is allowed to do that
-        uwsgi.register_signal(42, 'worker1', self._worker)
+        uwsgi.register_signal(42, 'worker2', self._worker)
         uwsgi.add_timer(42, self.frequency)
         gws.log.info(f'MONITOR: started, frequency={self.frequency}')
 
@@ -106,7 +103,7 @@ class Object(gws.Object, gws.IMonitor):
 
         # finally, reload ourselves
         gws.log.info(f'MONITOR: bye bye')
-        control.reload_uwsgi('spool')
+        control.reload('spool')
 
     def _reload(self, reconf):
         if reconf:
@@ -117,11 +114,11 @@ class Object(gws.Object, gws.IMonitor):
                 return False
 
         try:
-            control.reload_uwsgi('qgis')
-            control.reload_uwsgi('mapproxy')
-            control.reload_uwsgi('web')
+            control.reload('qgis')
+            control.reload('mapproxy')
+            control.reload('web')
             return True
-        except Exception:
+        except:
             gws.log.exception('MONITOR: reload error')
             return False
 

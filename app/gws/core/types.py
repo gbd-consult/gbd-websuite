@@ -640,7 +640,7 @@ class TemplateRenderArgs(Data):
 
 
 class TemplateOutput(Data):
-    content: str
+    content: Union[bytes, str]
     mime: str
     path: str
 

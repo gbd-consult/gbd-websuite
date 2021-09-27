@@ -8,8 +8,6 @@ import gws.lib.intl
 import gws.lib.mime
 
 
-
-
 class QualityLevel(gws.Data):
     """Quality level for a template"""
 
@@ -33,7 +31,7 @@ class Props(gws.Props):
     qualityLevels: t.List[QualityLevel]
     mapHeight: int
     mapWidth: int
-    # dataModel: gws.base.model.ModelProps
+    dataModel: gws.base.model.Props
 
 
 class LegendMode(t.Enum):
@@ -77,9 +75,6 @@ class Object(gws.Object, gws.ITemplate):
         self.text: str = self.var('text')
         self.title: str = self.var('title')
 
-        if self.path and not self.root.application.developer_option('template.reparse'):
-            self.root.application.monitor.add_path(self.path)
-
         uid = self.var('uid') or (gws.sha256(self.path) if self.path else self.class_name.replace('.', '_'))
         self.set_uid(uid)
 
@@ -116,6 +111,9 @@ class Object(gws.Object, gws.ITemplate):
 
         return gws.merge(ext, context)
 
+    def add_page_elements(self, context: dict, in_path: str, out_path: str, format: str):
+        return in_path
+
 
 # @TODO template types should be configurable
 
@@ -150,60 +148,99 @@ def from_config(root: gws.RootObject, cfg: gws.Config, shared: bool = False, par
 
 
 _dir = os.path.dirname(__file__) + '/builtin_templates/'
+_public = [{'role': 'all', 'type': 'allow'}]
 
 BUILTINS = [
     gws.Config(
         type='html',
         path=_dir + '/layer_description.cx.html',
         subject='layer.description',
+        access=_public,
     ),
     gws.Config(
         type='html',
         path=_dir + '/project_description.cx.html',
         subject='project.description',
+        access=_public,
     ),
     gws.Config(
         type='html',
         path=_dir + '/feature_description.cx.html',
         subject='feature.description',
+        access=_public,
     ),
     gws.Config(
         type='html',
         path=_dir + '/feature_teaser.cx.html',
         subject='feature.teaser',
+        access=_public,
     ),
 ]
 
 
 #
 
+
 class BundleConfig(gws.Config):
     templates: t.List[Config]
     defaults: t.List[Config]
 
 
+class BundleProps:
+    items: t.List[Props]
+
+
 class Bundle(gws.Object, gws.ITemplateBundle):
-    templates: t.List[gws.ITemplate]
+    items: t.List[gws.ITemplate]
 
     @property
     def props(self):
-        return [tpl.props for tpl in self.templates]
+        return gws.Props(items=self.items)
 
     def configure(self):
-        self.templates = t.cast(t.List[gws.ITemplate], self.create_children('gws.ext.template', self.var('templates')))
-        subjects = set(tpl.subject for tpl in self.templates)
-        defaults = [cfg for cfg in self.var('defaults', default=[]) if cfg.get('subject') not in subjects]
-        self.templates.extend(
-            t.cast(t.List[gws.ITemplate], self.create_children('gws.ext.template', defaults)))
+        self.items = []
+
+        p = self.var('templates')
+        if p:
+            for cfg in p:
+                self.items.append(self._create_template(cfg))
+
+        subjects = set(tpl.subject for tpl in self.items)
+
+        p = self.var('defaults')
+        if p:
+            for cfg in p:
+                if cfg.get('subject') not in subjects:
+                    self.items.append(self._create_template(cfg))
+
+    def _create_template(self, cfg):
+        if cfg.get('access'):
+            return from_config(self.root, cfg, shared=True)
+        return from_config(self.root, cfg, shared=False, parent=self)
 
     def all(self) -> t.List[gws.ITemplate]:
-        return self.templates
+        return self.items
 
     def find(self, subject: str = None, category: str = None, mime: str = None) -> t.Optional[gws.ITemplate]:
-        for tpl in self.templates:
+        for tpl in self.items:
             ok = (
                     (not subject or subject == tpl.subject)
                     and (not category or category == tpl.category)
                     and (not mime or mime in tpl.mime_types))
             if ok:
                 return tpl
+
+
+def create_bundle(
+        parent: gws.Object,
+        templates: t.List[Config],
+        defaults: t.List[Config] = None,
+        with_builtins: bool = False) -> Bundle:
+    if with_builtins:
+        defaults = BUILTINS
+
+    return t.cast(
+        Bundle,
+        parent.create_child(
+            Bundle,
+            BundleConfig(templates=templates, defaults=defaults)))

@@ -16,7 +16,7 @@ This file must export a single object ``message identifier : translated text``:
     module.exports = {
         modUserLoginButton: 'Einloggen',
         modUserLogoutButton: 'Ausloggen',
-        modPrintButton: 'Drucken',
+        printerButton: 'Drucken',
 
         // etc
     }

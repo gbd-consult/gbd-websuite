@@ -83,7 +83,7 @@ class Object(gws.base.template.Object):
 
         return gws.TemplateOutput(mime=gws.lib.mime.HTML, content=html)
 
-    def add_headers_and_footers(self, context, in_path, out_path, format):
+    def add_page_elements(self, context, in_path, out_path, format):
         if not self.header and not self.footer:
             return in_path
 

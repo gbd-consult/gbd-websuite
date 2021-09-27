@@ -134,10 +134,7 @@ class Object(gws.Object, gws.IOwsService):
         self.name = self.var('name') or self.default_name
         self.supported_crs = self.var('supportedCrs', default=[])
 
-        p = self.var('templates')
-        self.templates = t.cast(gws.base.template.Bundle, self.create_child(
-            gws.base.template.Bundle,
-            gws.Config(templates=p)))
+        self.templates = gws.base.template.create_bundle(self, self.var('templates'))
 
         self.with_inspire_meta = self.var('withInspireMeta')
         self.with_strict_params = self.var('withStrictParams')

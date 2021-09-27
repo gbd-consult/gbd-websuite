@@ -1,10 +1,7 @@
 import base64
 import os
-import pickle
-import time
 
 import gws
-import gws.types as t
 import gws.base.template
 import gws.lib.date
 import gws.lib.feature
@@ -16,7 +13,7 @@ import gws.lib.render
 import gws.lib.style
 import gws.lib.units as units
 import gws.server.spool
-
+import gws.types as t
 from . import types
 
 
@@ -26,10 +23,16 @@ class PreparedSection(gws.Data):
     items: t.List[gws.MapRenderInputItem]
 
 
-def start(req: gws.IWebRequest, p: types.Params) -> gws.lib.job.Job:
-    job = _create(req, p)
+def start(req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
+    job = _create(req, params)
     gws.server.spool.add(job)
     return job
+
+
+def run(root: gws.RootObject, params: types.Params, project_uid: str, user: gws.IUser):
+    base_dir = gws.ensure_dir(gws.PRINT_DIR + '/' + gws.random_string(64))
+    w = _Worker(root, '', project_uid, base_dir, params, user)
+    return w.run()
 
 
 def status(job) -> types.StatusResponse:
@@ -39,25 +42,26 @@ def status(job) -> types.StatusResponse:
         progress=job.progress,
         steptype=job.steptype or '',
         stepname=job.stepname or '',
-        url=f'{gws.SERVER_ENDPOINT}/printGetResult/jobUid/{job.uid}/projectUid/{job.project_uid}',
+        url=gws.action_url('printerGetResult', jobUid=job.uid, projectUid=job.project_uid)
     )
+
 
 ##
 
 
-def _create(req: gws.IWebRequest, p: types.Params) -> gws.lib.job.Job:
+def _create(req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
     cleanup()
 
     job_uid = gws.random_string(64)
     base_dir = gws.ensure_dir(gws.PRINT_DIR + '/' + job_uid)
 
-    req_path = base_dir + '/request.pickle'
-    gws.write_file_b(req_path, pickle.dumps(p))
+    params_path = base_dir + '/params.pickle'
+    gws.serialize_to_path(params, params_path)
 
     return gws.lib.job.create(
         uid=job_uid,
         user=req.user,
-        project_uid=p.projectUid,
+        project_uid=params.projectUid,
         worker=__name__ + '._worker')
 
 
@@ -65,13 +69,16 @@ def _worker(root: gws.RootObject, job: gws.lib.job.Job):
     job_uid = job.uid
     base_dir = gws.PRINT_DIR + '/' + job_uid
 
-    req_path = base_dir + '/request.pickle'
-    params = pickle.loads(gws.read_file_b(req_path))
+    params_path = base_dir + '/params.pickle'
+    params = gws.unserialize_from_path(params_path)
 
     job.update(state=gws.lib.job.State.running)
 
-    w = _Worker(root, job, base_dir, params, job.user)
-    w.run()
+    w = _Worker(root, job.uid, job.project_uid, base_dir, params, job.user)
+    try:
+        w.run()
+    except gws.lib.job.PrematureTermination as e:
+        gws.log.warn(f'job={job.uid} TERMINATED {e.args!r}')
 
 
 # remove jobs older than that
@@ -93,55 +100,54 @@ _PAPER_COLOR = 'white'
 
 
 class _Worker:
-    def __init__(self, root: gws.RootObject, job: gws.lib.job.Job, base_dir, p: types.Params, user: gws.IUser):
+    def __init__(self, root: gws.RootObject, job_uid: str, project_uid: str, base_dir: str, params: types.Params, user: gws.IUser):
         self.root = root
-        self.job = job
         self.base_dir = base_dir
         self.user = user
+        self.job_uid = job_uid
+        self.project = t.cast(gws.IProject, self.acquire('gws.base.project', project_uid))
+        self.format = params.format or 'pdf'
+        self.legends = {}
 
-        self.format = p.format or 'pdf'
-
-        self.project = t.cast(gws.IProject, self.acquire('gws.base.project', job.project_uid))
-
-        self.locale_uid = p.localeUid
+        self.locale_uid = params.localeUid
         if self.locale_uid not in self.project.locale_uids:
             self.locale_uid = self.project.locale_uids[0]
 
-        self.view_scale = p.scale or 1
-        self.view_rotation = p.rotation or 0
+        self.view_scale = params.scale or 1
+        self.view_rotation = params.rotation or 0
 
-        c = p.crs
+        self.view_crs = params.crs
         if not self.view_crs and self.project:
-            c = self.project.map.crs
-        if not c:
+            self.view_crs = self.project.map.crs
+        if not self.view_crs:
             raise ValueError('no crs can be found')
-        self.view_crs: gws.Crs = c
 
         self.template: t.Optional[gws.base.template.Object] = None
 
-        self.legend_layer_uids = p.legendLayers or []
+        self.legend_layer_uids = params.legendLayers or []
 
-        if p.type == 'template':
-            self.template = t.cast(gws.base.template.Object, self.acquire('gws.ext.template', p.templateUid))
+        if params.type == 'template':
+            uid = params.templateUid
+            self.template = t.cast(gws.base.template.Object, self.acquire('gws.ext.template', uid))
             if not self.template:
-                raise ValueError(f'cannot find template uid={p.templateUid!r}')
+                raise ValueError(f'cannot find template uid={uid!r}')
 
             # force dpi=OGC_SCREEN_PPI for low-res printing (dpi < OGC_SCREEN_PPI)
-            self.view_dpi = max(self.template.dpi_for_quality(p.quality or 0), units.OGC_SCREEN_PPI)
+            self.view_dpi = max(self.template.dpi_for_quality(params.quality or 0), units.OGC_SCREEN_PPI)
             self.view_size_mm = self.template.map_size
 
-        elif p.type == 'map':
-            self.view_dpi = max(gws.as_int(p.dpi), units.OGC_SCREEN_PPI)
-            self.view_size_mm = units.point_px2mm((p.mapWidth, p.mapHeight), units.OGC_SCREEN_PPI)
+        elif params.type == 'map':
+            self.view_dpi = max(gws.as_int(params.dpi), units.OGC_SCREEN_PPI)
+            self.view_size_mm = units.point_px2mm((params.mapWidth, params.mapHeight), units.OGC_SCREEN_PPI)
 
         else:
-            raise ValueError('invalid print params type')
+            raise ValueError(f'invalid print params type: {params.type!r}')
 
-        self.common_render_items = self.prepare_render_items(p.items)
+        self.common_render_items = self.prepare_render_items(params.items)
 
         self.sections: t.List[PreparedSection] = []
-        if p.sections:
-            self.sections = [self.prepare_section(sec) for sec in p.sections]
+        if params.sections:
+            self.sections = [self.prepare_section(sec) for sec in params.sections]
 
         self.default_context = {
             'project': self.project,
@@ -161,12 +167,6 @@ class _Worker:
         self.job_step(steps=steps)
 
     def run(self):
-        try:
-            self.run2()
-        except gws.lib.job.PrematureTermination as e:
-            gws.log.warn(f'job={self.job.uid} TERMINATED {e.args!r}')
-
-    def run2(self):
 
         section_paths = []
 
@@ -185,7 +185,7 @@ class _Worker:
         if self.template:
             ctx = gws.merge(self.default_context, self.sections[0].context)
             ctx['page_count'] = gws.lib.pdf.page_count(comb_path)
-            res_path = self.template.add_headers_and_footers(
+            res_path = self.template.add_page_elements(
                 context=ctx,
                 in_path=comb_path,
                 out_path=f'{self.base_dir}/res.pdf',
@@ -206,7 +206,11 @@ class _Worker:
                 format='png'
             )
 
-        self.get_job().update(state=gws.lib.job.State.complete, result={'path': res_path})
+        job = self.get_job()
+        if job:
+            job.update(state=gws.lib.job.State.complete, result={'path': res_path})
+
+        return res_path
 
     def run_section(self, sec: PreparedSection, n: int):
         renderer = gws.lib.render.Renderer()
@@ -254,7 +258,7 @@ class _Worker:
 
     def render_legends(self):
         if not self.template or not self.template.legend_mode:
-            return
+            return {}
 
         ls = {}
 
@@ -271,11 +275,14 @@ class _Worker:
             if not layer or not layer.has_legend:
                 continue
 
-            s = None
+            lro = layer.render_legend()
+            if not lro:
+                continue
+
             if self.template.legend_mode == gws.base.template.LegendMode.image:
-                s = layer.render_legend_to_path()
+                s = lro.image_path
             elif self.template.legend_mode == gws.base.template.LegendMode.html:
-                s = layer.render_legend_to_html()
+                s = lro.html
             if s:
                 ls[layer.uid] = s
 
@@ -398,16 +405,20 @@ class _Worker:
             return obj
 
     def get_job(self):
-        job = gws.lib.job.get(self.job.uid)
+        if not self.job_uid:
+            return
+
+        job = gws.lib.job.get(self.job_uid)
 
         if not job:
-            raise gws.lib.job.PrematureTermination('NOT_FOUND')
+            raise gws.lib.job.PrematureTermination('JOB_NOT_FOUND')
 
         if job.state != gws.lib.job.State.running:
-            raise gws.lib.job.PrematureTermination(f'WRONG_STATE={job.state}')
+            raise gws.lib.job.PrematureTermination(f'JOB_WRONG_STATE={job.state!r}')
 
         return job
 
     def job_step(self, **kwargs):
         job = self.get_job()
-        job.update(state=gws.lib.job.State.running, step=job.step + 1, **kwargs)
+        if job:
+            job.update(state=gws.lib.job.State.running, step=job.step + 1, **kwargs)

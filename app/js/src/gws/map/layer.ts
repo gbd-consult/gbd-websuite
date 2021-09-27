@@ -145,7 +145,7 @@ abstract class OlBackedLayer<T extends ol.layer.Layer> extends Layer {
 
     abstract createOLayer(): T;
 
-    get printItem(): api.PrintItem {
+    get printItem(): api.PrinterItem {
         return {
             type: 'raster',
             opacity: this.computedOpacity,
@@ -401,7 +401,7 @@ abstract class BaseVectorLayer extends OlBackedLayer<ol.layer.Vector> implements
 
 export class FeatureLayer extends BaseVectorLayer implements types.IMapFeatureLayer {
 
-    get printItem(): api.PrintItem {
+    get printItem(): api.PrinterItem {
         let fs = lib.compact(this.features.map(f => f.getProps()));
 
         if (fs.length === 0)
@@ -452,7 +452,7 @@ export class FeatureLayer extends BaseVectorLayer implements types.IMapFeatureLa
 export class VectorLayer extends BaseVectorLayer implements types.IMapFeatureLayer {
     updateCount = 0;
 
-    get printItem(): api.PrintItem {
+    get printItem(): api.PrinterItem {
         let style = this.map.style.at(this.styleNames.normal);
 
         return {

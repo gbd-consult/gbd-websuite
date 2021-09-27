@@ -61,7 +61,7 @@ export class RootController extends Controller {
         this.appClasses = this.app.domNode.className.split(' ');
 
         this.app.whenChanged('altbarVisible', v => this.setClass(v, 'withAltbar'));
-        this.app.whenChanged('printState', v => this.setClass(v, 'withPrintPreview'));
+        this.app.whenChanged('printerState', v => this.setClass(v, 'withPrintPreview'));
         this.app.whenChanged('appActiveTool', v => this.setClass(v !== 'Tool.Default', 'withToolbox'));
     }
 

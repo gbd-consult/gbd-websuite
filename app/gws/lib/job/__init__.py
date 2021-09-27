@@ -116,7 +116,7 @@ class Job:
             gws.log.error(f'job={self.uid!r} invalid state for run={self.state!r}')
             return
 
-        mod_name, _, fn_name = self.worker.rsplit('.', 1)
+        mod_name, _, fn_name = self.worker.rpartition('.')
         mod = importlib.import_module(mod_name)
         fn = getattr(mod, fn_name)
 

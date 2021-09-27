@@ -32,10 +32,5 @@ WEB_CACHE_DIR = TMP_DIR + '/webcache'
 
 SERVER_ENDPOINT = '/_'
 
-# from uwsgi
-SPOOL_OK = -2
-SPOOL_RETRY = -1
-SPOOL_IGNORE = 0
-
 EPSG_3857 = 'EPSG:3857'
 EPSG_4326 = 'EPSG:4326'

@@ -807,11 +807,11 @@ export class MapManager implements types.IMapManager {
         return lib.uniq(layers);
     }
 
-    protected async printItems(boxRect, dpi): Promise<Array<api.PrintItem>> {
+    protected async printItems(boxRect, dpi): Promise<Array<api.PrinterItem>> {
         let _this = this;
-        let items: Array<api.PrintItem> = [];
+        let items: Array<api.PrinterItem> = [];
 
-        function makeBitmap2(): api.PrintItem {
+        function makeBitmap2(): api.PrinterItem {
             let canvas = _this.oMap.getViewport().firstChild as HTMLCanvasElement;
 
             let rc = canvas.getBoundingClientRect(),
@@ -845,7 +845,7 @@ export class MapManager implements types.IMapManager {
             };
         }
 
-        async function makeBitmap(layers): Promise<api.PrintItem> {
+        async function makeBitmap(layers): Promise<api.PrinterItem> {
             let hidden = [];
 
             _this.walk(_this.root, la => {
@@ -855,7 +855,7 @@ export class MapManager implements types.IMapManager {
                 }
             });
 
-            let bmp: api.PrintItem;
+            let bmp: api.PrinterItem;
 
             await lib.delay(200, () => {
                 console.time('creating_bitmap');

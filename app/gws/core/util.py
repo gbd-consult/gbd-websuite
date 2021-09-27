@@ -13,11 +13,12 @@ import re
 import sys
 import threading
 import time
+import urllib.parse
 
 import gws
-from . import const, log
-from .data import Data, is_data_object
 from gws.types import List, cast
+from . import const, log
+from .data import is_data_object
 
 
 def exit(code: int = 255):
@@ -656,6 +657,20 @@ def import_from_path(module_path, module_name, cache=True):
 
 ##
 
+def action_url(name: str, **kwargs) -> str:
+    rest = []
+
+    for k, v in kwargs.items():
+        rest.append(urllib.parse.quote(k))
+        rest.append(urllib.parse.quote(as_str(v)))
+
+    url = gws.SERVER_ENDPOINT + '/' + name
+    if rest:
+        url += '/' + '/'.join(rest)
+    return url
+
+
+##
 
 def _is_list(x):
     return isinstance(x, (tuple, list))

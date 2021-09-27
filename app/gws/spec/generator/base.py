@@ -138,14 +138,14 @@ class TUnion(Type):
 class TVariant(Type):
     def __init__(self, members: Dict[str, TypeName]):
         self.members = members
-        self.name = 'Union[' + ','.join(self.members.values()) + ']'
+        self.name = 'Variant[' + ','.join(sorted(self.members.values())) + ']'
 
 
 class TVariantStub(Type):
     def __init__(self, items: List[TypeName], pos: dict):
         self.items = items
         self.pos = pos
-        self.name = 'VariantStub[' + ','.join(self.items) + ']'
+        self.name = 'Variant[' + ','.join(sorted(self.items)) + ']'
 
 
 class TNamedType(Type):

@@ -61,12 +61,13 @@ def _caller_info(skip_frames):
 class _Logger(logging.Logger):
     def exception(self, msg='', *args, **kwargs):
         _, exc, _ = sys.exc_info()
+        pfx = 'EXCEPTION:: '
 
-        self.fatal('EXCEPTION: ' + (msg or repr(exc)))
+        self.fatal(pfx + (msg or repr(exc)))
 
         if self.isEnabledFor(Level.DEBUG):
             for k in err.string().split('\n'):
-                self.debug(k)
+                self.debug(pfx + k)
 
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
         if _logger.disabled:

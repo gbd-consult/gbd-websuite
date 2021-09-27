@@ -1,37 +1,15 @@
-# noinspection PyUnresolvedReferences
-import uwsgi
-
 import gws
 import gws.config
 import gws.lib.job
-
-_inited: bool = False
+import gws.server.uwsgi_module
+import gws.server.spool
 
 
 def application(environ, start_response):
-    global _inited
-
-    if not _inited:
-        _init()
-        _inited = True
+    pass
 
 
-def _init():
-    try:
-        gws.log.info('starting SPOOL application')
-        root = gws.config.load()
-        gws.log.set_level(root.application.var('server.logLevel'))
-        root.application.monitor.start()
-        uwsgi.spooler = _spooler
-    except:
-        gws.log.exception('UNABLE TO LOAD CONFIGURATION')
-        gws.exit(255)
-
-
-##
-
-
-def _spooler(env):
+def spooler(env):
     try:
         _spooler2(env)
     except:
@@ -39,8 +17,33 @@ def _spooler(env):
 
     # even if it's failed, return OK so the spooler can clean up
     # if we ever provide retry, this will on the app level, no automatic spooler retries
+    return gws.server.spool.OK
 
-    return gws.SPOOL_OK
+
+def init():
+    root = None
+
+    try:
+        gws.log.info('starting SPOOL application')
+        root = gws.config.load()
+    except:
+        gws.log.exception('UNABLE TO LOAD CONFIGURATION')
+        gws.exit(255)
+
+    try:
+        gws.log.set_level(root.application.var('server.log.level'))
+        root.application.monitor.start()
+    except:
+        gws.log.exception('SPOOL INIT ERROR')
+        gws.exit(255)
+
+    gws.server.uwsgi_module.load().spooler = spooler
+
+
+init()
+
+
+##
 
 
 def _spooler2(env):

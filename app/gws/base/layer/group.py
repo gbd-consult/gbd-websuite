@@ -73,7 +73,7 @@ class BaseGroup(core.Object):
             if custom_configs:
                 custom = [cc for cc in custom_configs if gws.lib.gis.source_layer_matches(sl, cc.applyTo)]
                 if custom:
-                    cfg = gws.deep_merge(cfg, *custom)
+                    cfg = gws.deep_merge(*custom, cfg)
                     cfg.pop('applyTo', None)
 
             return gws.compact(cfg)

@@ -34,9 +34,10 @@ class CorsOptions(gws.Data):
 
 
 class RewriteRule(gws.Data):
-    match: gws.Regex  #: expression to match the url against
+    pattern: gws.Regex  #: expression to match the url against
     target: str  #: target url with placeholders
     options: t.Optional[dict]  #: additional options
+    reversed: bool = False #: reversed rewrite rule
 
 
 class SSLConfig(gws.Config):

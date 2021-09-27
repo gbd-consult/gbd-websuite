@@ -142,7 +142,7 @@ export interface IMapLayer {
     isSystem: boolean;
 
     oLayer?: ol.layer.Layer;
-    printItem?: api.PrintItem;
+    printItem?: api.PrinterItem;
 
     show();
     hide();
@@ -252,7 +252,7 @@ export interface IFeatureSearchArgs {
 }
 
 export interface IBasicPrintParams {
-    items: Array<api.PrintItem>,
+    items: Array<api.PrinterItem>,
     rotation: number,
     scale: number
 }

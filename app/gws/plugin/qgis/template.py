@@ -3,20 +3,21 @@
 import re
 
 import gws
-import gws.types as t
 import gws.base.template
-import gws.lib.render
 import gws.lib.mime
 import gws.lib.net
 import gws.lib.pdf
+import gws.lib.render
 import gws.lib.units as units
-from . import provider, types, writer, server
+from . import provider, server, types, writer
 
 
+@gws.ext.Config('template.qgis')
 class Config(gws.base.template.Config):
     path: gws.FilePath
 
 
+@gws.ext.Object('template.qgis')
 class Object(gws.base.template.Object):
     provider: provider.Object
     template: types.PrintTemplate
@@ -38,20 +39,20 @@ class Object(gws.base.template.Object):
 
         self._parse()
 
-    def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
+    def render(self, context: dict, args: gws.TemplateRenderArgs = None) -> gws.TemplateOutput:
 
         # rewrite the project and replace variables within
         # @TODO fails if there are relative paths in the project
 
-        if legends and self.legend_mode:
+        if args.legends and self.legend_mode:
             ctx = {}
-            for layer_uid, s in legends.items():
+            for layer_uid, s in args.legends.items():
                 ctx['GWS_LEGEND_' + gws.sha256(layer_uid)] = s
-            ctx['GWS_LEGEND'] = ''.join(legends.values())
+            ctx['GWS_LEGEND'] = ''.join(args.legends.values())
 
             context = gws.merge(ctx, context)
 
-        temp_prj_path = out_path + '.qgs'
+        temp_prj_path = args.out_path + '.qgs'
         gws.write_file(temp_prj_path, writer.add_variables(self.source_text, context))
 
         # ask qgis to render the template, without the map
@@ -68,17 +69,17 @@ class Object(gws.base.template.Object):
             'map': temp_prj_path,
         }
 
-        if mro:
-            params['map0:scale'] = mro.view.scale
-            params['map0:extent'] = mro.view.bounds.extent
-            params['map0:rotation'] = mro.view.rotation
+        if args.mro:
+            params['map0:scale'] = args.mro.view.scale
+            params['map0:extent'] = args.mro.view.bounds.extent
+            params['map0:rotation'] = args.mro.view.rotation
 
         r = server.request(self.root, params)
-        qgis_pdf_path = out_path + '_qgis.pdf'
+        qgis_pdf_path = args.out_path + '_qgis.pdf'
         gws.write_file_b(qgis_pdf_path, r.content)
 
-        if not mro:
-            return qgis_pdf_path
+        if not args.mro:
+            return gws.TemplateOutput(mime=gws.lib.mime.PDF, path=qgis_pdf_path)
 
         css = ';'.join([
             f'position: absolute',
@@ -88,10 +89,10 @@ class Object(gws.base.template.Object):
             f'height: {self.map_size[1]}mm',
         ])
 
-        map_html = gws.lib.render.output_html(mro)
+        map_html = gws.lib.render.output_html(args.mro)
         html = f'<div style="{css}">{map_html}</div>'
 
-        map_path = out_path + '.map.pdf'
+        map_path = args.out_path + '.map.pdf'
         gws.lib.pdf.render_html(
             html,
             page_size=self.page_size,
@@ -102,11 +103,11 @@ class Object(gws.base.template.Object):
         # merge qgis pdfs + map pdf
         # NB: qgis is ABOVE our map, so the qgis template/map must be transparent!
 
-        gws.lib.pdf.merge(map_path, qgis_pdf_path, out_path)
+        gws.lib.pdf.merge(map_path, qgis_pdf_path, args.out_path)
 
-        return gws.TemplateOutput(mime=gws.lib.mime.get('pdf'), path=out_path)
+        return gws.TemplateOutput(mime=gws.lib.mime.PDF, path=args.out_path)
 
-    def add_headers_and_footers(self, context, in_path, out_path, format):
+    def add_page_elements(self, context, in_path, out_path, format):
         # @TODO
         return in_path
 

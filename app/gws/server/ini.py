@@ -293,7 +293,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
         for s in app.web_sites:
             site = t.cast(gws.base.web.site.Object, s)
             for r in site.rewrite_rules:
-                rewr += f'rewrite {r.match} {r.target} last;\n'
+                rewr += f'rewrite {r.pattern} {r.target} last;\n'
 
             d = site.static_root.dir
             roots += f"""

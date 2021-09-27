@@ -32,22 +32,26 @@ _DEFAULT_LEGEND_HTML = """<div class="legend"><img src="{path}"/></div>"""
 # layer urls, handled by the map action (base/map/action.py)
 
 def url_for_get_box(layer_uid) -> str:
-    return f'{gws.SERVER_ENDPOINT}/mapGetBox/layerUid/{layer_uid}'
+    return gws.action_url('mapGetBox', layerUid=layer_uid)
 
 
 def url_for_get_tile(layer_uid, xyz=None) -> str:
-    pfx = f'{gws.SERVER_ENDPOINT}/mapGetXYZ/layerUid/{layer_uid}'
+    args = {
+        'layerUid': layer_uid
+    }
     if xyz:
-        return pfx + f'/z/{xyz.z}/x/{xyz.x}/y/{xyz.y}/gws.png'
-    return pfx + '/z/{z}/x/{x}/y/{y}/gws.png'
+        args['z'] = xyz.z
+        args['x'] = xyz.x
+        args['y'] = xyz.y
+    return gws.action_url('mapGetXYZ', **args) + '/gws.png'
 
 
 def url_for_get_legend(layer_uid) -> str:
-    return f'{gws.SERVER_ENDPOINT}/mapGetLegend/layerUid/{layer_uid}/gws.png'
+    return gws.action_url('mapGetLegend', layerUid=layer_uid) + '/gws.png'
 
 
 def url_for_get_features(layer_uid) -> str:
-    return f'{gws.SERVER_ENDPOINT}/mapGetFeatures/layerUid/{layer_uid}'
+    return gws.action_url('mapGetFeatures', layerUid=layer_uid)
 
 
 #
@@ -187,9 +191,7 @@ class Object(gws.Object, gws.ILayer):
         self.edit_data_model = self.create_child_if_config(gws.base.model.Object, self.var('editDataModel'))
 
         p = self.var('templates')
-        self.templates = t.cast(
-            gws.base.template.Bundle,
-            self.create_child(gws.base.template.Bundle, gws.Config(templates=p, defaults=gws.base.template.BUILTINS)))
+        self.templates = gws.base.template.create_bundle(self, p, with_builtins=True)
         self.description_template = self.templates.find(subject='layer.description')
 
         self.style = t.cast(gws.IStyle, self.create_child(gws.base.style.Object, self.var('style') or _DEFAULT_STYLE))

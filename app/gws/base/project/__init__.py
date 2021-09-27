@@ -5,7 +5,7 @@ import gws.base.auth
 import gws.base.client
 import gws.base.map
 import gws.base.metadata
-import gws.base.print
+import gws.base.printer
 import gws.base.search
 import gws.base.template
 import gws.base.web
@@ -26,7 +26,7 @@ class Config(gws.WithAccess):
     map: t.Optional[gws.base.map.Config]  #: Map configuration
     metaData: t.Optional[gws.base.metadata.Config]  #: project metadata
     overviewMap: t.Optional[gws.base.map.Config]  #: Overview map configuration
-    print: t.Optional[gws.base.print.Config]  #: print configuration
+    printer: t.Optional[gws.base.printer.Config]  #: print configuration
     search: t.Optional[gws.base.search.Config] = {}  # type: ignore #: project-wide search configuration
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: project info templates
     title: str = ''  #: project title
@@ -40,7 +40,7 @@ class Props(gws.Props):
     map: gws.base.map.Props
     metaData: gws.base.metadata.Props
     overviewMap: gws.base.map.Props
-    print: gws.base.print.Props
+    printer: gws.base.printer.Props
     title: str
     uid: str
 
@@ -53,7 +53,7 @@ class Object(gws.Object):
     map: gws.base.map.Object
     metadata: gws.base.metadata.Object
     overview_map: gws.base.map.Object
-    print: gws.base.print.Object
+    printer: gws.base.printer.Object
     search_providers: t.List[gws.ISearchProvider]
     templates: gws.base.template.Bundle
     title: str
@@ -76,18 +76,13 @@ class Object(gws.Object):
         self.assets_root = gws.base.web.document_root_from_config(self.var('assets'))
         self.locale_uids = self.var('locales', with_parent=True, default=['en_CA'])
         self.map = self.create_child_if_config(gws.base.map.Object, self.var('map'))
-        self.print = self.create_child_if_config(gws.base.print.Object, self.var('print'))
+        self.printer = self.create_child_if_config(gws.base.printer.Object, self.var('printer'))
 
         self.overview_map = self.create_child_if_config(gws.base.map.Object, self.var('overviewMap'))
         if self.overview_map:
             self.overview_map.set_uid(self.uid + '.overview')
 
-        p = self.var('templates')
-        self.templates = t.cast(
-            gws.base.template.Bundle,
-            self.create_child(
-                gws.base.template.Bundle,
-                gws.Config(templates=p, defaults=gws.base.template.BUILTINS)))
+        self.templates = gws.base.template.create_bundle(self, self.var('templates'), with_builtins=True)
 
         self.search_providers = []
 
@@ -120,7 +115,7 @@ class Object(gws.Object):
             map=self.map,
             metaData=self.metadata,
             overviewMap=self.overview_map,
-            print=self.print,
+            printer=self.printer,
             title=self.title,
             uid=self.uid,
         )

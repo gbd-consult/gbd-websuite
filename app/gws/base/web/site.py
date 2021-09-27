@@ -14,27 +14,24 @@ class Config(gws.Config):
     errorPage: t.Optional[gws.ext.template.Config]  #: error page template
     host: str = '*'  #: host name
     rewrite: t.Optional[t.List[core.RewriteRule]]  #: rewrite rules
-    reversedHost: str = ''  #: hostname for reversed rewriting
-    reversedRewrite: t.Optional[t.List[core.RewriteRule]]  #: reversed rewrite rules
+    canonicalHost: str = ''  #: hostname for reversed rewriting
     root: core.DocumentRootConfig  #: document root location and options
 
 
 class Object(gws.Object, gws.IWebSite):
     assets_root: t.Optional[gws.DocumentRoot]
+    canonical_host: str
     cors_options: core.CorsOptions
     error_page: t.Optional[gws.ITemplate]
     host: str
-    reversed_host: str
+    rewrite_rules: t.List[core.RewriteRule]
     ssl: bool
     static_root: gws.DocumentRoot
-
-    rewrite_rules: t.List[core.RewriteRule]
-    reversed_rewrite_rules: t.List[core.RewriteRule]
 
     def configure(self):
 
         self.host = self.var('host', default='*')
-        self.reversed_host = self.var('reversedHost')
+        self.canonical_host = self.var('canonicalHost')
 
         self.static_root = core.document_root_from_config(self.var('root'))
         self.assets_root = core.document_root_from_config(self.var('assets'))
@@ -47,12 +44,6 @@ class Object(gws.Object, gws.IWebSite):
             if not gws.lib.net.is_abs_url(r.target):
                 # ensure rewriting from root
                 r.target = '/' + r.target.lstrip('/')
-
-        self.reversed_rewrite_rules = self.var('reversedRewrite', default=[])
-        for r in self.reversed_rewrite_rules:
-            r.match = str(r.match).strip('/')
-            # we use nginx syntax $1, need python's \1
-            r.target = r.target.replace('$', '\\')
 
         self.error_page = self.create_child_if_config('gws.ext.template', self.var('errorPage'))
 
@@ -67,17 +58,16 @@ class Object(gws.Object, gws.IWebSite):
             return url
 
         proto = 'https' if self.ssl else 'http'
-        host = self.reversed_host or (req.env('HTTP_HOST') if self.host == '*' else self.host)
+        host = self.canonical_host or (req.env('HTTP_HOST') if self.host == '*' else self.host)
         base = proto + '://' + host
 
-        u = url.lstrip('/')
+        for rule in self.rewrite_rules:
+            if rule.reversed:
+                m = re.match(rule.pattern, url)
+                if m:
+                    # we use nginx syntax $1, need python's \1
+                    t = rule.target.replace('$', '\\')
+                    s = re.sub(rule.pattern, t, url)
+                    return s if gws.lib.net.is_abs_url(s) else base + s
 
-        for rule in self.reversed_rewrite_rules:
-            m = re.match(rule.match, u)
-            if m:
-                s = re.sub(rule.match, rule.target, u)
-                if gws.lib.net.is_abs_url(s):
-                    return s
-                return base + s
-
-        return base + '/' + u
+        return base + '/' + url.lstrip('/')

@@ -1,5 +1,5 @@
 module.exports = v => ({
-    '.modPrintPreviewBox': {
+    '.printerPreviewBox': {
         boxShadow: '0 0 0 4000px rgba(0, 0, 0, 0.5)',
         borderWidth: 2,
         borderStyle: 'dotted',
@@ -11,36 +11,36 @@ module.exports = v => ({
         pointerEvents: 'none',
     },
 
-    '.modPrintPreviewBoxHandle': {
+    '.printerPreviewBoxHandle': {
         position: 'absolute',
         left: '50%',
         top: '50%',
         ...v.ICON_BUTTON(),
         ...v.ICON_SIZE('normal'),
-        ...v.SVG('move', v.COLOR.white),
+        ...v.SVG(__dirname + '/move', v.COLOR.white),
         borderRadius: v.BORDER_RADIUS,
         border: '3px solid white',
         backgroundColor: v.COLOR.blueGrey400,
 
     },
 
-    '.modPrintPrintToolbarButton': {
-        ...v.TOOLBAR_BUTTON('print')
+    '.printerPrintToolbarButton': {
+        ...v.TOOLBAR_BUTTON(__dirname + '/print')
     },
 
-    '.modPrintSnapshotToolbarButton': {
-        ...v.TOOLBAR_BUTTON('snapshot')
+    '.printerSnapshotToolbarButton': {
+        ...v.TOOLBAR_BUTTON(__dirname + '/snapshot')
     },
 
-    '.modPrintPreviewPrintButton': {
+    '.printerPreviewPrintButton': {
         ...v.ROUND_OK_BUTTON('google:action/print'),
     },
 
-    '.modPrintPreviewSnapshotButton': {
+    '.printerPreviewSnapshotButton': {
         ...v.ROUND_OK_BUTTON('google:image/crop_original'),
     },
 
-    '.modPrintPreviewDialog': {
+    '.printerPreviewDialog': {
         position: 'absolute',
         padding: v.UNIT4,
         backgroundColor: v.INFOBOX_BACKGROUND,
@@ -64,7 +64,7 @@ module.exports = v => ({
         },
     },
 
-    '.uiDialog.modPrintProgressDialog': {
+    '.uiDialog.printerProgressDialog': {
         [v.MEDIA('large+')]: {
             ...v.CENTER_BOX(400, 290),
         }
