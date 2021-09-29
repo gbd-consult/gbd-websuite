@@ -21,6 +21,9 @@ class Stats(t.Data):
     numRecords: int
     numPngs: int
     numPdfs: int
+    recordIds: t.List[str]
+    recordNames: t.List[str]
+    pdfPaths: t.List[str]
 
 
 def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.tools.job.Job = None) -> Stats:
@@ -75,10 +78,50 @@ def delete_feature(action, uid):
 
 ##
 
+_DATE_FIELDS = [
+    'AKT_DATENB',
+    'AKT_DATENS',
+    'AKT_RECHT',
+    'AUFSTELLB',
+    'EINLEITB',
+    'FESTSTELLB',
+    'OFFENLEGB',
+    'RECHTSKR',
+    'SATZBESCHL',
+]
+
+
+def _to_date_str(val):
+    if not val:
+        return ''
+
+    val = str(val).strip()
+    if not val:
+        return ''
+
+    m = re.match(r'^(\d+)-(\d+)-(\d+)$', val)
+    if m:
+        return '%04d-%02d-%02d' % (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+    m = re.match(r'^(\d+)\.(\d+).(\d+)$', val)
+    if m:
+        return '%04d-%02d-%02d' % (int(m.group(3)), int(m.group(2)), int(m.group(1)))
+
+    gws.log.warn(f'invalid date: {val!r}')
+    return ''
+
+
 def _run2(action, src_dir, replace, au_uid, job):
     gws.log.debug(f'BEGIN {src_dir!r} au={au_uid!r}')
 
-    stats = Stats(numRecords=0, numPngs=0, numPdfs=0)
+    stats = Stats(
+        numRecords=0,
+        numPngs=0,
+        numPdfs=0,
+        recordIds=[],
+        recordNames=[],
+        pdfPaths=[],
+    )
 
     _update_job(job, step=0, steps=6)
 
@@ -107,6 +150,8 @@ def _run2(action, src_dir, replace, au_uid, job):
                 for a in f.attributes:
                     if a.type == t.AttributeType.datetime:
                         val = gws.tools.date.to_iso_date(a.value)
+                    elif a.name in _DATE_FIELDS:
+                        val = _to_date_str(a.value)
                     else:
                         val = str(a.value)
                     r[a.name.lower()] = val
@@ -162,6 +207,8 @@ def _run2(action, src_dir, replace, au_uid, job):
 
                 gws.log.debug(f'insert {a!r} ({len(au_recs)})')
                 stats.numRecords += len(au_recs)
+                stats.recordNames.extend(r['name'] for r in au_recs)
+                stats.recordIds.extend(r['_uid'] for r in au_recs)
 
                 if replace:
                     conn.execute(f'DELETE FROM {conn.quote_table(src)} WHERE _au = %s', [a])
@@ -221,6 +268,7 @@ def _run2(action, src_dir, replace, au_uid, job):
         os2.chown(f'{dd}/pdf/{fb}.pdf')
 
         stats.numPdfs += 1
+        stats.pdfPaths.append(f'{fb}.pdf')
 
     _update_job(job, step=4)
 
@@ -454,9 +502,10 @@ def _extract(zip_path, target_dir):
 
 
 def _encoding(path):
-    if os2.is_file(path.replace('.shp', '.cpg')):
-        # have a cpg file, let gdal handle the encoding
-        return
+    # actually, a .cpg can contain 'System', which isn't really helpful
+    # if os2.is_file(path.replace('.shp', '.cpg')):
+    #     # have a cpg file, let gdal handle the encoding
+    #     return
     return 'utf8' if 'utf8' in path else 'ISO-8859–1'
 
 

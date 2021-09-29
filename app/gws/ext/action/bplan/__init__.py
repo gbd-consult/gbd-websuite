@@ -1,5 +1,9 @@
 """Manage construction plans."""
 
+import smtplib
+import email.message
+import email.policy
+
 import gws
 import gws.common.action
 import gws.common.db
@@ -15,6 +19,7 @@ import gws.tools.job
 import gws.tools.json2
 import gws.tools.upload
 import gws.web.error
+import gws.gis.gml
 
 import gws.types as t
 
@@ -47,6 +52,11 @@ class Config(t.WithTypeAndAccess):
     imageQuality: int = 24  #: palette size for optimized images
     uploadChunkSize: int  #: upload chunk size in mb
     exportDataModel: t.Optional[gws.common.model.Config]  #: data model for csv export
+
+    emailFrom: str = ''
+    emailServerHost: str = ''
+    emailSubject: str = ''
+    emailTo: str = ''
 
 
 class AdministrativeUnit(t.Data):
@@ -144,6 +154,7 @@ class Object(gws.common.action.Object):
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
         self.qgis_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.qgis')
         self.info_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.info')
+        self.email_template: t.ITemplate = gws.common.template.find(self.templates, subject='bplan.email')
 
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))
@@ -173,6 +184,7 @@ class Object(gws.common.action.Object):
     def post_configure(self):
         super().post_configure()
         self._load_db_meta()
+        self._compute_bounding_polygons()
 
     def props_for(self, user):
         return {
@@ -232,6 +244,8 @@ class Object(gws.common.action.Object):
             'auUid': self._check_au(req, p.auUid),
             'path': rec.path,
             'replace': p.replace,
+            'userName': req.user.display_name,
+            'userIP': req.env('REMOTE_ADDR'),
         }
 
         job = gws.tools.job.create(
@@ -356,6 +370,29 @@ class Object(gws.common.action.Object):
         gws.log.debug(f'bplan reload signal {source!r}')
         gws.write_file(_RELOAD_FILE, gws.random_string(16))
 
+    def email_notify(self, args, stats):
+        if not self.var('emailTo'):
+            return
+
+        msg = email.message.EmailMessage(email.policy.EmailPolicy(cte_type='7bit', utf8=False))
+
+        res = self.email_template.render({
+            'args': args,
+            'stats': stats
+        })
+        msg.set_content(res.content.lstrip())
+
+        msg['Subject'] = self.var('emailSubject')
+        msg['From'] = self.var('emailFrom')
+        msg['To'] = self.var('emailTo')
+
+        try:
+            with smtplib.SMTP(self.var('emailServerHost')) as smtp:
+                smtp.set_debuglevel(2)
+                smtp.send_message(msg)
+        except smtplib.SMTPException:
+            gws.log.exception()
+
     def _au_list_for(self, user):
         return [
             t.Data(uid=au.uid, name=au.name)
@@ -423,6 +460,28 @@ class Object(gws.common.action.Object):
                         if gws.get(obj, 'update_sequence'):
                             obj.update_sequence = meta.dateUpdated
 
+    def _compute_bounding_polygons(self):
+        with self.db.connect() as conn:
+            for obj in self.root.find_all():
+                ows_name = gws.get(obj, 'ows_name')
+                if not ows_name or not ows_name.startswith('bauleitplanung_'):
+                    continue
+                ags = ows_name.split('_')[1]
+                sql = f'''
+                    SELECT ST_Collect(p.g) FROM (
+                        SELECT
+                            (ST_Dump(_geom_p)).geom AS g 
+                        FROM 
+                            {conn.quote_table(self.plan_table.name)}
+                        WHERE 
+                            ags = '{ags}' AND _geom_p IS NOT NULL
+                    ) AS p
+                '''
+                geom = conn.select_value(sql)
+                shape = gws.gis.shape.from_wkb_hex(geom).transformed_to(gws.EPSG_4326)
+                obj.meta.boundingPolygonTag = gws.gis.gml.shape_to_tag(
+                    shape, precision=5, invert_axis=False, crs_format='epsg', uid='boundingPolygon' + ags)
+
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     args = gws.tools.json2.from_string(job.args)
@@ -431,3 +490,4 @@ def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     stats = importer.run(action, args['path'], args['replace'], args['auUid'], job)
     job.update(result={'stats': stats})
     action.signal_reload('worker')
+    action.email_notify(args, stats)
