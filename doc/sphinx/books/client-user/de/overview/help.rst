@@ -17,6 +17,7 @@ Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren 
     :maxdepth: 2
 
 **Werkzeugleiste**
+==================
 
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 | **Symbol**             | **Funktion**                                     |        **Funktionsbeschreibung**                          |

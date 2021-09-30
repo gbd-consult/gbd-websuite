@@ -51,8 +51,7 @@ Symbol				               Function
 |authorization|			Sign in
 |search|			Search
 |alkis|				Parcel search
-|zoom_layer| 			Zoom on entire layer
-====================================
+========================
 
 .. note:: You can find out more about the individual functions under: `Menu`
 
