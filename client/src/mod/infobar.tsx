@@ -320,6 +320,7 @@ class AboutWidget extends gws.Controller {
     get defaultView() {
         let options = {
             className: 'modInfobarAboutButton',
+            title: this.__('modInfobarAboutTitle'),
         };
         return this.createElement(LinkButtonView, options);
     }
