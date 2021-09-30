@@ -23,3 +23,5 @@ Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst
     measure.rst
     print.rst
     screenshot.rst
+    table_editing.rst
+    location_manager.rst
