@@ -52,6 +52,7 @@ class Config(t.WithTypeAndAccess):
     templates: t.Optional[t.List[t.ext.template.Config]]  #: client templates
     title: str = ''  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
+    order: t.Optional[int]  #: layer order
 
 
 class CustomConfig(t.WithAccess):
@@ -72,6 +73,7 @@ class CustomConfig(t.WithAccess):
     templates: t.Optional[t.List[t.ext.template.Config]]  #:client templates
     title: t.Optional[str]  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
+    order: t.Optional[int]  #: layer order
 
 
 #:export
