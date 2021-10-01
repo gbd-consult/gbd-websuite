@@ -13,6 +13,9 @@ let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as BplanC
 
 interface BplanViewProps extends gws.types.ViewProps {
     controller: BplanController;
+
+    bplanAdminMode: boolean;
+
     bplanJob?: gws.api.JobStatusResponse;
     bplanDialog: string;
 
@@ -36,6 +39,8 @@ interface BplanViewProps extends gws.types.ViewProps {
 }
 
 const BplanStoreKeys = [
+    'bplanAdminMode',
+
     'bplanJob',
     'bplanDialog',
 
@@ -89,7 +94,10 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
         });
 
 
-        let rightButton = f => <gws.components.list.Button
+        let rightButton = null;
+
+        if (this.props.bplanAdminMode)
+            rightButton = f => <gws.components.list.Button
                 className="modAnnotateDeleteListButton"
                 whenTouched={() => cc.deleteFeature(f)}
             />
@@ -109,6 +117,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
             features={fs}
             content={content}
             rightButton={rightButton}
+            withZoom
         />
     }
 
@@ -138,7 +147,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                 </Row>
             </sidebar.TabBody>
 
-            <sidebar.TabFooter>
+            { this.props.bplanAdminMode && <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell>
                         <sidebar.AuxButton
@@ -170,7 +179,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                     </Cell>
                     <Cell flex/>
                 </sidebar.AuxToolbar>
-            </sidebar.TabFooter>
+            </sidebar.TabFooter>}
         </sidebar.Tab>
     }
 }
@@ -385,6 +394,10 @@ class BplanController extends gws.Controller {
 
         if (!this.setup)
             return;
+
+        this.update({
+            bplanAdminMode: this.setup.adminMode
+        })
 
         let auList = this.setup.auList.map(a => ({value: a.uid, text: a.name}));
 

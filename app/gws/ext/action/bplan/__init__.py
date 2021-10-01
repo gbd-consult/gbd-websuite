@@ -41,6 +41,8 @@ class PlanTypeConfig(t.Config):
 class Config(t.WithTypeAndAccess):
     """Construction plans management action"""
 
+    adminMode: bool = False
+
     db: str = ''  #: database provider ID
     crs: t.Crs  #: CRS for the bplan data
     planTable: gws.common.db.SqlTableConfig  #: plan table configuration
@@ -50,7 +52,7 @@ class Config(t.WithTypeAndAccess):
     administrativeUnits: t.List[AdministrativeUnitConfig]  #: Administrative Units
     planTypes: t.List[PlanTypeConfig]  #: Plan Types
     imageQuality: int = 24  #: palette size for optimized images
-    uploadChunkSize: int  #: upload chunk size in mb
+    uploadChunkSize: int = 10  #: upload chunk size in mb
     exportDataModel: t.Optional[gws.common.model.Config]  #: data model for csv export
 
     emailFrom: str = ''
@@ -66,6 +68,7 @@ class AdministrativeUnit(t.Data):
 
 class Props(t.Props):
     type: t.Literal = 'bplan'
+    adminMode: bool
     auList: t.List[AdministrativeUnit]
     uploadChunkSize: int
 
@@ -146,6 +149,8 @@ class Object(gws.common.action.Object):
     def configure(self):
         super().configure()
 
+        self.admin_mode = bool(self.var('adminMode'))
+
         self.crs = self.var('crs')
         self.db = t.cast(
             gws.ext.db.provider.postgres.Object,
@@ -167,9 +172,6 @@ class Object(gws.common.action.Object):
         p = self.var('exportDataModel')
         self.export_data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
-        for sub in 'png', 'pdf', 'cnv', 'qgs':
-            gws.ensure_dir(self.data_dir + '/' + sub)
-
         self.key_col = 'plan_id'
         self.au_key_col = 'ags'
         self.au_name_col = 'gemeinde'
@@ -178,8 +180,12 @@ class Object(gws.common.action.Object):
         self.x_coord_col = 'utm_ost'
         self.y_coord_col = 'utm_nord'
 
-        gws.write_file(_RELOAD_FILE, gws.random_string(16))
-        self.root.application.monitor.add_path(_RELOAD_FILE)
+        if self.admin_mode:
+            for sub in 'png', 'pdf', 'cnv', 'qgs':
+                gws.ensure_dir(self.data_dir + '/' + sub)
+
+            gws.write_file(_RELOAD_FILE, gws.random_string(16))
+            self.root.application.monitor.add_path(_RELOAD_FILE)
 
     def post_configure(self):
         super().post_configure()
@@ -190,6 +196,7 @@ class Object(gws.common.action.Object):
         return {
             'type': self.type,
             'auList': self._au_list_for(user),
+            'adminMode': self.admin_mode,
             'uploadChunkSize': self.var('uploadChunkSize') * 1024 * 1024,
         }
 
@@ -211,6 +218,8 @@ class Object(gws.common.action.Object):
         return GetFeaturesResponse(features=[f.props for f in features])
 
     def api_delete_feature(self, req: t.IRequest, p: DeleteFeatureParams) -> DeleteFeatureResponse:
+        self._require_admin()
+
         with self.db.connect() as conn:
             r = conn.select_one(f'''
                 SELECT *
@@ -228,9 +237,12 @@ class Object(gws.common.action.Object):
         return DeleteFeatureResponse()
 
     def api_upload_chunk(self, req: t.IRequest, p: gws.tools.upload.UploadChunkParams) -> gws.tools.upload.UploadChunkResponse:
+        self._require_admin()
         return gws.tools.upload.upload_chunk(p)
 
     def api_import(self, req: t.IRequest, p: ImportParams) -> StatusResponse:
+        self._require_admin()
+
         try:
             rec = gws.tools.upload.get(p.uploadUid)
         except gws.tools.upload.Error as e:
@@ -262,6 +274,8 @@ class Object(gws.common.action.Object):
         )
 
     def api_import_status(self, req: t.IRequest, p: StatusParams) -> StatusResponse:
+        self._require_admin()
+
         job = gws.tools.job.get_for(req.user, p.jobUid)
         if not job:
             raise gws.web.error.NotFound()
@@ -275,6 +289,8 @@ class Object(gws.common.action.Object):
 
     def api_import_cancel(self, req: t.IRequest, p: StatusParams) -> StatusResponse:
         """Cancel a print job"""
+
+        self._require_admin()
 
         job = gws.tools.job.get_for(req.user, p.jobUid)
         if not job:
@@ -290,6 +306,7 @@ class Object(gws.common.action.Object):
     def api_load_user_meta(self, req: t.IRequest, p: LoadUserMetaParams) -> LoadUserMetaResponse:
         """Return the user metadata"""
 
+        self._require_admin()
         au_uid = self._check_au(req, p.auUid)
 
         with self.db.connect() as conn:
@@ -305,6 +322,7 @@ class Object(gws.common.action.Object):
 
     def api_save_user_meta(self, req: t.IRequest, p: SaveUserMetaParams) -> SaveUserMetaResponse:
 
+        self._require_admin()
         au_uid = self._check_au(req, p.auUid)
 
         with self.db.connect() as conn:
@@ -316,7 +334,7 @@ class Object(gws.common.action.Object):
                 ''', [au_uid])
 
                 conn.execute(f'''
-                    INSERT 
+                    INSERT
                     INTO {conn.quote_table(self.meta_table.name)}
                     (_au, user_id, meta)
                     VALUES(%s, %s, %s)
@@ -328,10 +346,12 @@ class Object(gws.common.action.Object):
         return SaveUserMetaResponse()
 
     def api_load_info(self, req: t.IRequest, p: LoadInfoParams) -> LoadInfoResponse:
+        self._require_admin()
         res = self.info_template.render({'auUid': p.auUid})
         return LoadInfoResponse(info=res.content)
 
     def api_csv_export(self, req: t.IRequest, p: ExportParams) -> ExportResponse:
+        self._require_admin()
         au_uid = self._check_au(req, p.auUid)
 
         features = self.db.select(t.SelectArgs(
@@ -408,6 +428,10 @@ class Object(gws.common.action.Object):
             raise gws.web.error.Forbidden()
 
         return au_uid
+
+    def _require_admin(self):
+        if not self.admin_mode:
+            raise gws.web.error.Forbidden()
 
     def _load_db_meta(self):
         metas = {}
