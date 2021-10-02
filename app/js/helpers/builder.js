@@ -111,6 +111,9 @@ module.exports.Builder = class {
         if (!await writeVendors(this))
             this.fail();
 
+        if (!await writeUtil(this))
+            this.fail();
+
         let bundles = await createBundles(this);
         if (!bundles)
             this.fail();
@@ -569,12 +572,29 @@ function writeVendors(bb) {
             sources.push(src);
         }
         writeFile(bb.meta.VENDOR_BUNDLE_PATH, sources.join('\n;;\n'));
+        logInfo(`created ${bb.meta.VENDOR_BUNDLE_PATH}`);
         return true;
     } catch (e) {
         logError(`Bundler error:`);
         logException(e);
     }
 }
+
+// JS util bundler
+
+function writeUtil(bb) {
+    try {
+        let source = readFile(JS_DIR + '/src/util.js');
+        source = source.replace('__VERSION__', bb.meta.version);
+        writeFile(bb.meta.UTIL_BUNDLE_PATH, source);
+        logInfo(`created ${bb.meta.UTIL_BUNDLE_PATH}`);
+        return true;
+    } catch (e) {
+        logError(`Bundler error:`);
+        logException(e);
+    }
+}
+
 
 // strings bundler
 
@@ -790,30 +810,6 @@ async function createBundles(bb) {
         logError(`Bundler error:`);
         logException(e);
     }
-}
-
-async function compressBundles(bb, bundles) {
-    for (let dir of Object.keys(bundles)) {
-        console.log(dir, '--------------------------------------------------------')
-        console.log(bundles[dir][BUNDLE_KEY_MODULES])
-        console.log('--------------------------------------------------------')
-    }
-
-    let mods = []
-
-    for (let dir of Object.keys(bundles)) {
-        mods.push(bundles[dir][BUNDLE_KEY_MODULES])
-        break
-    }
-
-    mods = await Promise.all(mods.map(mod => terser.minify(mod)))
-
-    for (let dir of Object.keys(bundles)) {
-        bundles[dir][BUNDLE_KEY_MODULES] = mods.shift()
-    }
-
-    console.log(JSON.stringify(bundles, 0, 4))
-
 }
 
 function writeBundles(bb, bundles) {

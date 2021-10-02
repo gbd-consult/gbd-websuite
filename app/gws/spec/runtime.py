@@ -71,16 +71,18 @@ class Object(ISpecRuntime):
         self.specs = genres['specs']
         self.strings = genres['strings']
 
-    def client_vendor_bundle_path(self):
-        return self.meta['VENDOR_BUNDLE_PATH']
-
-    def client_bundle_paths(self):
-        paths = []
-        for chunk in self.meta['chunks']:
-            path = chunk['bundleDir'] + '/' + self.meta['BUNDLE_FILENAME']
-            if gws.is_file(path) and path not in paths:
-                paths.append(path)
-        return paths
+    def bundle_paths(self, category):
+        if category == 'vendor':
+            return [self.meta['VENDOR_BUNDLE_PATH']]
+        if category == 'util':
+            return [self.meta['UTIL_BUNDLE_PATH']]
+        if category == 'app':
+            paths = []
+            for chunk in self.meta['chunks']:
+                path = chunk['bundleDir'] + '/' + self.meta['BUNDLE_FILENAME']
+                if gws.is_file(path) and path not in paths:
+                    paths.append(path)
+            return paths
 
     def check_command(self, cmd_name, cmd_method, params, with_strict_mode=True):
         name = cmd_method + '.' + cmd_name

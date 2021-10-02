@@ -54,18 +54,23 @@ class Object(gws.base.api.action.Object):
 
         if p.path.endswith('.vendor.js'):
             return gws.ContentResponse(
-                content=gws.base.client.bundles.vendor_javascript(self.root),
+                content=gws.base.client.bundles.javascript(self.root, 'vendor', locale_uid),
                 mime=gws.lib.mime.JS)
 
-        if p.path.endswith('.client.js'):
+        if p.path.endswith('.util.js'):
             return gws.ContentResponse(
-                content=gws.base.client.bundles.javascript(self.root, locale_uid),
+                content=gws.base.client.bundles.javascript(self.root, 'util', locale_uid),
+                mime=gws.lib.mime.JS)
+
+        if p.path.endswith('.app.js'):
+            return gws.ContentResponse(
+                content=gws.base.client.bundles.javascript(self.root, 'app', locale_uid),
                 mime=gws.lib.mime.JS)
 
         if p.path.endswith('.css'):
             theme = p.path.split('.')[-2]
             return gws.ContentResponse(
-                content=gws.base.client.bundles.css(self.root, theme),
+                content=gws.base.client.bundles.css(self.root, 'app', theme),
                 mime=gws.lib.mime.CSS)
 
 

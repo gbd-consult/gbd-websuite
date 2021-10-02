@@ -13,11 +13,40 @@ DEFAULT_LANG = 'de'
 DEFAULT_THEME = 'light'
 
 
-def load(root: gws.RootObject):
+def javascript(root: gws.RootObject, category: str, locale_uid: str = '') -> str:
+    if category == 'vendor':
+        return gws.read_file(root.specs.bundle_paths('vendor')[0])
+
+    if category == 'util':
+        return gws.read_file(root.specs.bundle_paths('util')[0])
+
+    if category == 'app':
+        bundles = _load_app_bundles(root)
+        lang = locale_uid.split('_')[0]
+        modules = bundles[BUNDLE_KEY_MODULES]
+        strings = bundles.get(BUNDLE_KEY_STRINGS + '_' + lang) or bundles.get(BUNDLE_KEY_STRINGS + '_' + DEFAULT_LANG)
+
+        js = bundles[BUNDLE_KEY_TEMPLATE]
+        js = js.replace('__MODULES__', modules)
+        js = js.replace('__STRINGS__', strings)
+
+        return js
+
+
+def css(root: gws.RootObject, category: str, theme: str):
+    if category == 'app':
+        bundles = _load_app_bundles(root)
+        return bundles.get(BUNDLE_KEY_CSS + '_' + theme) or bundles.get(BUNDLE_KEY_CSS + '_' + DEFAULT_THEME)
+    return ''
+
+
+##
+
+def _load_app_bundles(root: gws.RootObject):
     def _load():
         bundles = {}
 
-        for path in root.specs.client_bundle_paths():
+        for path in root.specs.bundle_paths('app'):
             gws.log.info(f'loading bundle {path!r}')
             bundle = gws.lib.json2.from_path(path)
             for key, val in bundle.items():
@@ -30,26 +59,4 @@ def load(root: gws.RootObject):
     if root.application.developer_option('reload_bundles'):
         return _load()
 
-    return gws.get_server_global('CLIENT_BUNDLES', _load)
-
-
-def javascript(root: gws.RootObject, locale_uid: str):
-    bundles = load(root)
-    lang = locale_uid.split('_')[0]
-    modules = bundles[BUNDLE_KEY_MODULES]
-    strings = bundles.get(BUNDLE_KEY_STRINGS + '_' + lang) or bundles.get(BUNDLE_KEY_STRINGS + '_' + DEFAULT_LANG)
-
-    js = bundles[BUNDLE_KEY_TEMPLATE]
-    js = js.replace('__MODULES__', modules)
-    js = js.replace('__STRINGS__', strings)
-
-    return js
-
-
-def vendor_javascript(root: gws.RootObject):
-    return gws.read_file(root.specs.client_vendor_bundle_path())
-
-
-def css(root: gws.RootObject, theme: str):
-    bundles = load(root)
-    return bundles.get(BUNDLE_KEY_CSS + '_' + theme) or bundles.get(BUNDLE_KEY_CSS + '_' + DEFAULT_THEME)
+    return gws.get_server_global('APP_BUNDLES', _load)

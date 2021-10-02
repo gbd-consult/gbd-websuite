@@ -10,8 +10,9 @@ CONST_PATH = base.APP_DIR + '/gws/core/const.py'
 STRINGS_PATH = base.APP_DIR + '/gws/spec/strings.ini'
 TYPESCRIPT_PATH = base.APP_DIR + '/js/src/gws/core/__build.gwsapi.ts'
 
-BUNDLE_FILENAME = "__build.client.json"
+BUNDLE_FILENAME = "__build.app.json"
 VENDOR_BUNDLE_PATH = base.APP_DIR + '/gws/__build.vendor.js'
+UTIL_BUNDLE_PATH = base.APP_DIR + '/gws/__build.util.js'
 
 SPEC_BUILD_DIR = base.APP_DIR + '/gws/spec/__build'
 PLUGIN_DIR = base.APP_DIR + '/gws/plugin'
@@ -100,6 +101,7 @@ def _init_meta(mode, manifest_path):
 
     meta.BUNDLE_FILENAME = BUNDLE_FILENAME
     meta.VENDOR_BUNDLE_PATH = VENDOR_BUNDLE_PATH
+    meta.UTIL_BUNDLE_PATH = UTIL_BUNDLE_PATH
 
     return meta
 
