@@ -5,14 +5,6 @@ import gws.lib.ows
 import gws.types as t
 
 
-def shared_object(root, klass, cfg):
-    uid = cfg.get('url')
-    params = cfg.get('params')
-    if params:
-        uid += '_' + gws.lib.json2.to_hash(params)
-    return root.create_shared_object(klass, uid, cfg)
-
-
 class OperationConfig(gws.Config):
     formats: t.Optional[t.List[str]]
     url: gws.Url

@@ -10,15 +10,18 @@ class Config(gws.Config):
 
 
 class Props(gws.Data):
-    templates: gws.base.template.BundleProps
+    templates: gws.base.template.bundle.Props
 
 
 class Object(gws.Object):
-    templates: gws.base.template.Bundle
+    templates: gws.base.template.bundle.Object
 
     @property
     def props(self):
         return Props(templates=self.templates)
 
     def configure(self):
-        self.templates = gws.base.template.create_bundle(self, self.var('templates'))
+        self.templates = gws.base.template.bundle.create(
+            self.root,
+            gws.Config(templates=self.var('templates')),
+            parent=self)

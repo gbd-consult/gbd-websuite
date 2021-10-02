@@ -3,12 +3,9 @@
 import gws
 import gws.base.metadata
 import gws.base.ows
-import gws.lib.feature
 import gws.lib.extent
 import gws.lib.gis
-import gws.lib.net
 import gws.lib.ows
-import gws.lib.xml2
 import gws.lib.shape
 import gws.types as t
 from . import caps
@@ -63,7 +60,7 @@ class Object(gws.base.ows.provider.Object):
         our_crs = bounds.crs
         source_crs = self.source_crs or gws.lib.gis.best_crs(our_crs, self.supported_crs)
         bbox = gws.lib.extent.transform(bounds.extent, our_crs, source_crs)
-        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, 'WFS', self.version)
+        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, gws.OwsProtocol.WFS, self.version)
         invert_axis = axis == 'yx'
 
         params = {}
@@ -105,3 +102,11 @@ class Object(gws.base.ows.provider.Object):
             gws.log.debug(f'WFS filter before={len(features)} after={len(flt)}')
 
         return flt
+
+
+##
+
+def create(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> Object:
+    if not shared:
+        return t.cast(Object, root.create_object(Object, cfg, parent))
+    return t.cast(Object, root.create_shared_object(Object, cfg, uid=gws.sha256(cfg)))

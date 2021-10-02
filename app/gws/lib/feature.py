@@ -175,7 +175,7 @@ class Feature(gws.IFeature):
         if templates:
             used = set()
             ctx = gws.merge(self.template_context, extra_context)
-            for tpl in templates.all():
+            for tpl in templates.items:
                 if tpl.category == 'feature' and (tpl.key not in used) and (not keys or tpl.key in keys):
                     self.elements[tpl.key] = tpl.render(context=ctx).content
                     used.add(tpl.key)

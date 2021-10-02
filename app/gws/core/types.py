@@ -646,7 +646,7 @@ class TemplateOutput(Data):
 
 
 class ITemplateBundle(IObject, Protocol):
-    def all(self) -> List['ITemplate']: ...
+    items: List['ITemplate']
 
     def find(self, subject: str = None, category: str = None, mime: str = None) -> Optional['ITemplate']: ...
 

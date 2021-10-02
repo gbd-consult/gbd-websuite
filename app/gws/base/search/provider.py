@@ -46,7 +46,7 @@ class Object(gws.Object, gws.ISearchProvider):
         self.templates = None
         p = self.var('templates')
         if p:
-            self.templates = gws.base.template.create_bundle(self, p)
+            self.templates = gws.base.template.bundle.create(self.root, gws.Config(templates=p))
 
         p = self.var('tolerance')
         self.tolerance = (

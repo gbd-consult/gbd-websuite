@@ -86,7 +86,7 @@ def parse_main_from_dict(specs: gws.ISpecRuntime, dct, config_paths) -> gws.Conf
     for prj_dict, prj_path in prj_dicts:
         uid = prj_dict.get('uid') or prj_dict.get('title') or '???'
         gws.log.info(f'parsing project {uid!r}...')
-        app_cfg.projects.append(parse(specs, prj_dict, 'gws.base.project.Config', prj_path))
+        app_cfg.projects.append(parse(specs, prj_dict, 'gws.base.project.core.Config', prj_path))
 
     return app_cfg
 

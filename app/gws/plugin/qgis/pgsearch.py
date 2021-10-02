@@ -31,7 +31,7 @@ class Object(gws.base.search.provider.Object):
         if sql:
             self.extra_where = [sql.replace('%', '%%')]
 
-        self.db = gws.base.db.postgres.provider.shared_object(self.root, cfg)
+        self.db = gws.base.db.postgres.provider.create(self.root, cfg, shared=True)
         self.table = self.db.configure_table(gws.Config(name=ds.get('table'), geometryColumn=ds.get('geometryColumn')))
 
     def run(self, args, layer=None):

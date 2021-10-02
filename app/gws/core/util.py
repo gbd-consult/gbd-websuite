@@ -9,6 +9,7 @@ import importlib.util
 import os
 import pickle
 import random
+import json
 import re
 import sys
 import threading
@@ -486,8 +487,26 @@ def random_string(size: int) -> str:
     return ''.join(r.choice(a) for _ in range(size))
 
 
-def sha256(s):
-    return hashlib.sha256(as_bytes(s)).hexdigest()
+def sha256(x):
+    def _bytes(x):
+        if _is_bytes(x):
+            return bytes(x)
+        if isinstance(x, (int, float, bool)):
+            return str(x).encode('utf8')
+        if isinstance(x, str):
+            return x.encode('utf8')
+
+    def _default(x):
+        if gws.is_data_object(x):
+            return vars(x)
+        return str(x)
+
+    c = _bytes(x)
+    if c is None:
+        j = json.dumps(x, default=_default, sort_keys=True, ensure_ascii=True)
+        c = j.encode('utf8')
+
+    return hashlib.sha256(c).hexdigest()
 
 
 class cached_property:

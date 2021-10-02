@@ -28,3 +28,11 @@ class Object(gws.base.ows.provider.Object):
         self.version = cc.version
         self.source_layers = cc.source_layers
         self.supported_crs = cc.supported_crs
+
+
+##
+
+def create(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> Object:
+    if not shared:
+        return t.cast(Object, root.create_object(Object, cfg, parent))
+    return t.cast(Object, root.create_shared_object(Object, cfg, uid=gws.sha256(cfg)))

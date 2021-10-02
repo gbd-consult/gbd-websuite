@@ -31,7 +31,7 @@ class Object(gws.base.layer.image.Object):
             self.provider = self.var('_provider')
             self.source_layers = self.var('_source_layers')
         else:
-            self.provider = provider.shared_object(self.root, self.config)
+            self.provider = provider.create(self.root, self.config, shared=True)
             self.source_layers = gws.lib.gis.filter_source_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers', default=gws.lib.gis.SourceLayerFilter(level=1)))

@@ -96,7 +96,7 @@ class _Config:
             if isinstance(v, tuple):
                 c[k] = list(v)
 
-        uid = kind + '_' + gws.lib.json2.to_hash(c)
+        uid = kind + '_' + gws.sha256(c)
 
         # clients might add their hash params starting with '$'
         c = {

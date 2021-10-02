@@ -180,7 +180,7 @@ class RootObject(BaseObject, types.IRootObject):
         self.all_nodes.append(obj)
         return obj
 
-    def create_shared_object(self, klass, uid, cfg):
+    def create_shared_object(self, klass, cfg, uid):
         cfg = _to_config(cfg)
         uid = util.as_uid(_class_name(klass) + '_' + uid)
 

@@ -1,8 +1,6 @@
-import hashlib
 import json
 
 import gws
-import gws.types as t
 
 
 class Error(gws.Error):
@@ -47,11 +45,6 @@ def to_string(x, pretty=False, ascii=True):
 
 def to_pretty_string(x, ascii=True):
     return to_string(x, pretty=True, ascii=ascii)
-
-
-def to_hash(x):
-    s = json.dumps(x, default=_json_default, sort_keys=True)
-    return hashlib.sha256(s.encode('utf8')).hexdigest()
 
 
 def to_tagged_dict(x):

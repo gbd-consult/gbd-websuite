@@ -23,7 +23,7 @@ class Object(gws.base.layer.vector.Object):
     source_style: str
 
     def configure(self):
-        self.provider = gws.base.ows.provider.shared_object(self.root, provider.Object, self.config)
+        self.provider = provider.create(self.root, self.config, shared=True)
 
         if not self.has_configured_metadata:
             self.configure_metadata_from(self.provider.metadata)

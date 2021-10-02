@@ -16,12 +16,6 @@ class Config(gws.Config):
     directSearch: t.Optional[t.List[str]]  #: QGIS data providers that should be searched directly
 
 
-def shared_object(root: gws.RootObject, cfg: Config) -> 'Object':
-    path = cfg.get('path')
-    root.application.monitor.add_path(path)
-    return root.create_shared_object(Object, uid=path, cfg=gws.Config(path=path))
-
-
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
 
 _DEFAULT_LEGEND_PARAMS = {
@@ -316,3 +310,18 @@ class Object(gws.Object):
                 if info.filename.endswith('.qgs'):
                     with zf.open(info, 'rt') as fp:
                         return fp.read()
+
+
+##
+
+
+def create_from_path(root: gws.RootObject, path: str, shared: bool = False, parent: gws.Object = None) -> Object:
+    return create(root, gws.Config(path=path), shared, parent)
+
+
+def create(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> Object:
+    path = cfg.get('path')
+    root.application.monitor.add_path(path)
+    if not shared:
+        return t.cast(Object, root.create_object(Object, cfg, parent))
+    return root.create_shared_object(Object, cfg, uid=path)

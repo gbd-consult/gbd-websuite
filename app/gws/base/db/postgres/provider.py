@@ -15,29 +15,6 @@ from . import driver
 _EXT_CLASS = 'gws.ext.db.provider.postgres'
 
 
-def shared_object(root: gws.RootObject, cfg) -> 'Object':
-    key = '-'.join([
-        f'h={cfg.host}',
-        f'p={cfg.port}',
-        f'u={cfg.user}',
-        f'd={cfg.database}'
-    ])
-    return t.cast('Object', root.create_shared_object(_EXT_CLASS, gws.as_uid(key), cfg))
-
-
-def require(obj: gws.IObject) -> 'Object':
-    uid = obj.var('db')
-    if uid:
-        prov = obj.root.find(klass=_EXT_CLASS, uid=uid)
-        if not prov:
-            raise gws.Error(f'{obj.uid}: db provider {uid!r} not found')
-    else:
-        prov = obj.root.find(klass=_EXT_CLASS)
-        if not prov:
-            raise gws.Error(f'{obj.uid}: db provider {_EXT_CLASS!r} not found')
-    return t.cast('Object', prov)
-
-
 @gws.ext.Config('db.provider.postgres')
 class Config(gws.Config):
     """Postgres/Postgis database provider"""
@@ -296,3 +273,31 @@ class Object(gws.Object, gws.ISqlDbProvider):
             'table': table,
             'uids': list(uids),
         }))
+
+
+##
+
+
+def create(root: gws.RootObject, cfg, shared: bool = False, parent: gws.Object = None) -> Object:
+    if not shared:
+        return t.cast(Object, root.create_object(_EXT_CLASS, cfg, parent))
+    uid = f"""
+        h={cfg.host}
+        p={cfg.port}
+        u={cfg.user}
+        d={cfg.database}
+    """
+    return t.cast(Object, root.create_shared_object(_EXT_CLASS, cfg, uid))
+
+
+def require(obj: gws.IObject) -> Object:
+    uid = obj.var('db')
+    if uid:
+        prov = obj.root.find(klass=_EXT_CLASS, uid=uid)
+        if not prov:
+            raise gws.Error(f'{obj.uid}: db provider {uid!r} not found')
+    else:
+        prov = obj.root.find(klass=_EXT_CLASS)
+        if not prov:
+            raise gws.Error(f'{obj.uid}: db provider {_EXT_CLASS!r} not found')
+    return t.cast(Object, prov)

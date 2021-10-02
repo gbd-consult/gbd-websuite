@@ -27,7 +27,7 @@ class Object(gws.base.template.Object):
         if self.var('_provider'):
             self.provider = self.var('_provider')
         else:
-            self.provider = provider.shared_object(self.root, self.config)
+            self.provider = provider.create(self.root, self.config, shared=True)
 
         s = self.var('title')
         self.template = self.provider.print_template(s)

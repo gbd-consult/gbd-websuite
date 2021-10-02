@@ -23,7 +23,7 @@ class Object(gws.base.search.provider.Object):
             self.provider = t.cast(provider.Object, self.var('_provider'))
             self.source_layers = self.var('_source_layers')
         else:
-            self.provider = gws.base.ows.provider.shared_object(provider.Object, self, self.config)
+            self.provider = provider.create(self.root, self.config, shared=True)
             self.source_layers = gws.lib.gis.enum_source_layers(
                 gws.lib.gis.filter_source_layers(self.provider.source_layers, self.var('sourceLayers')),
                 is_queryable=True)
