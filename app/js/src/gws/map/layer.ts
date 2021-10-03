@@ -12,7 +12,7 @@ export class Layer implements types.IMapLayer {
     title = '';
     attributes = {};
 
-    props: api.LayerProps;
+    props: api.base.layer.Props;
 
     parent: types.IMapLayer = null;
     children = [];
@@ -80,7 +80,7 @@ export class Layer implements types.IMapLayer {
         return String(this.uid)[0] === '_';
     }
 
-    constructor(map: types.IMapManager, props: api.LayerProps) {
+    constructor(map: types.IMapManager, props: api.base.layer.Props) {
         this.map = map;
         this.props = props;
 
@@ -145,7 +145,7 @@ abstract class OlBackedLayer<T extends ol.layer.Layer> extends Layer {
 
     abstract createOLayer(): T;
 
-    get printItem(): api.PrinterItem {
+    get printItem(): api.base.printer.Item {
         return {
             type: 'raster',
             opacity: this.computedOpacity,
@@ -401,7 +401,7 @@ abstract class BaseVectorLayer extends OlBackedLayer<ol.layer.Vector> implements
 
 export class FeatureLayer extends BaseVectorLayer implements types.IMapFeatureLayer {
 
-    get printItem(): api.PrinterItem {
+    get printItem(): api.base.printer.Item {
         let fs = lib.compact(this.features.map(f => f.getProps()));
 
         if (fs.length === 0)
@@ -452,7 +452,7 @@ export class FeatureLayer extends BaseVectorLayer implements types.IMapFeatureLa
 export class VectorLayer extends BaseVectorLayer implements types.IMapFeatureLayer {
     updateCount = 0;
 
-    get printItem(): api.PrinterItem {
+    get printItem(): api.base.printer.Item {
         let style = this.map.style.at(this.styleNames.normal);
 
         return {

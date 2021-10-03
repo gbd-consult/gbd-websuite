@@ -33,13 +33,13 @@ export interface IApplication {
     style: IStyleManager;
     overviewMap: IMapManager;
     options: Dict;
-    project: api.ProjectProps;
+    project: api.base.project.Props;
     server: IServer;
     store: IStoreWrapper;
     tags: Dict;
     urlParams: Dict;
     localeUid: string;
-    locale: api.IntlLocale;
+    locale: api.lib.intl.Locale;
 
     __(key);
 
@@ -142,7 +142,7 @@ export interface IMapLayer {
     isSystem: boolean;
 
     oLayer?: ol.layer.Layer;
-    printItem?: api.PrinterItem;
+    printItem?: api.base.printer.Item;
 
     show();
     hide();
@@ -157,7 +157,7 @@ export interface IMapFeatureLayer extends IMapLayer {
     geometryType: string;
     source: ol.source.Vector;
     styleNames?: StyleNameMap;
-    dataModel: Array<api.Attribute>;
+    dataModel: Array<api.core.Attribute>;
 
     addFeature(feature: IMapFeature): boolean;
     addFeatures(features: Array<IMapFeature>): number;
@@ -181,7 +181,7 @@ export interface MapViewState {
 
 export type FeatureMode = 'normal' | 'selected' | 'edit';
 
-export type StyleArg = string | api.StyleProps | IStyle;
+export type StyleArg = string | api.lib.style.Props | IStyle;
 
 export type StyleNameMap = {[m in FeatureMode]: string};
 export type StyleMapArgs = {[m in FeatureMode]: StyleArg};
@@ -203,7 +203,7 @@ export interface IStyleManager {
 export interface IStyle {
     name: string;
     values: Dict;
-    props: api.StyleProps;
+    props: api.lib.style.Props;
     source: string;
     olFunction: ol.StyleFunction;
     apply(geom: ol.geom.Geometry, label: string, resolution: number): Array<ol.style.Style>;
@@ -252,7 +252,7 @@ export interface IFeatureSearchArgs {
 }
 
 export interface IBasicPrintParams {
-    items: Array<api.PrinterItem>,
+    items: Array<api.base.printer.Item>,
     rotation: number,
     scale: number
 }
@@ -274,7 +274,7 @@ export interface IMapManager {
     size: ol.Size;
     viewState: MapViewState;
 
-    init(props: api.MapProps, appLoc: object);
+    init(props: api.base.map.Props, appLoc: object);
     update(args: any);
     changed();
     forceUpdate();
@@ -328,12 +328,12 @@ export interface IMapManager {
     pointerInteraction(opts: IMapPointerInteractionOptions): ol.interaction.Pointer;
 
     newFeature(args: IMapFeatureArgs);
-    readFeature(fs: api.FeatureProps): IMapFeature;
-    readFeatures(fs: Array<api.FeatureProps>): Array<IMapFeature>;
-    writeFeatures(fs: Array<IMapFeature>): Array<api.FeatureProps>;
+    readFeature(fs: api.lib.feature.Props): IMapFeature;
+    readFeatures(fs: Array<api.lib.feature.Props>): Array<IMapFeature>;
+    writeFeatures(fs: Array<IMapFeature>): Array<api.lib.feature.Props>;
 
-    geom2shape(geom: ol.geom.Geometry): api.ShapeProps;
-    shape2geom(shape: api.ShapeProps): ol.geom.Geometry;
+    geom2shape(geom: ol.geom.Geometry): api.lib.shape.Props;
+    shape2geom(shape: api.lib.shape.Props): ol.geom.Geometry;
 
     basicPrintParams(boxRect: ClientRect | null, dpi: number): Promise<IBasicPrintParams>;
 
@@ -348,17 +348,17 @@ export interface IMapManager {
 
 export interface IMapFeature {
     uid: string;
-    attributes: Array<api.Attribute>;
+    attributes: Array<api.core.Attribute>;
     elements: Dict;
     layerUid: string;
-    shape?: api.ShapeProps;
+    shape?: api.lib.shape.Props;
     styleNames?: StyleNameMap;
     geometry?: ol.geom.Geometry;
     label: string;
     oFeature?: ol.Feature;
 
     getAttribute(name: string): any;
-    getProps(): api.FeatureProps
+    getProps(): api.lib.feature.Props
 
     setMode(mode: FeatureMode);
     setStyles(src: StyleMapArgs);
@@ -368,7 +368,7 @@ export interface IMapFeature {
 }
 
 export interface IMapFeatureArgs {
-    props?: api.FeatureProps;
+    props?: api.lib.feature.Props;
     geometry?: ol.geom.Geometry;
     oFeature?: ol.Feature;
     style?: StyleArg;

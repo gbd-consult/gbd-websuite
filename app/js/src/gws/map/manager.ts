@@ -51,7 +51,7 @@ export class MapManager implements types.IMapManager {
     protected updateCount = 0;
     protected intrStack = [];
     protected standardInteractions = {};
-    protected props: api.MapProps;
+    protected props: api.base.map.Props;
 
     // @TODO this should be 'viewExtent' actually
     get bbox() {
@@ -531,7 +531,7 @@ export class MapManager implements types.IMapManager {
         this.computeOpacities();
     }
 
-    protected initLayer(props: api.LayerProps, parent = null): types.IMapLayer {
+    protected initLayer(props: api.base.layer.Props, parent = null): types.IMapLayer {
         let cls = layerTypes[props.type];
         if (!cls)
             throw new Error('unknown layer type: ' + props.type);
@@ -765,7 +765,7 @@ export class MapManager implements types.IMapManager {
     async searchForFeatures(args) {
 
         let ls = this.searchLayers();
-        let params: api.SearchParams = {
+        let params: api.base.search.action.Params = {
             bbox: this.bbox,
             keyword: args.keyword || '',
             layerUids: lib.compact(ls.map(la => la.uid)),
@@ -807,11 +807,11 @@ export class MapManager implements types.IMapManager {
         return lib.uniq(layers);
     }
 
-    protected async printItems(boxRect, dpi): Promise<Array<api.PrinterItem>> {
+    protected async printItems(boxRect, dpi): Promise<Array<api.base.printer.Item>> {
         let _this = this;
-        let items: Array<api.PrinterItem> = [];
+        let items: Array<api.base.printer.Item> = [];
 
-        function makeBitmap2(): api.PrinterItem {
+        function makeBitmap2(): api.base.printer.Item {
             let canvas = _this.oMap.getViewport().firstChild as HTMLCanvasElement;
 
             let rc = canvas.getBoundingClientRect(),
@@ -845,7 +845,7 @@ export class MapManager implements types.IMapManager {
             };
         }
 
-        async function makeBitmap(layers): Promise<api.PrinterItem> {
+        async function makeBitmap(layers): Promise<api.base.printer.Item> {
             let hidden = [];
 
             _this.walk(_this.root, la => {
@@ -855,7 +855,7 @@ export class MapManager implements types.IMapManager {
                 }
             });
 
-            let bmp: api.PrinterItem;
+            let bmp: api.base.printer.Item;
 
             await lib.delay(200, () => {
                 console.time('creating_bitmap');

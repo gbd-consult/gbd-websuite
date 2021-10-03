@@ -6,7 +6,7 @@ import * as lib from '../lib';
 
 export class Feature implements types.IMapFeature {
     uid: string = '';
-    attributes: Array<api.Attribute> = [];
+    attributes: Array<api.core.Attribute> = [];
     elements: types.Dict = {};
     layerUid: string = '';
     mode: types.FeatureMode;

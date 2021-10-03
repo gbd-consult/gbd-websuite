@@ -17,7 +17,7 @@ const MAX_SNAPSHOT_DPI = 600;
 
 interface ViewProps extends gws.types.ViewProps {
     controller: Controller;
-    printerJob?: gws.api.PrinterStatusResponse;
+    printerJob?: gws.api.base.printer.StatusResponse;
     printerQuality: string;
     printerState?: 'preview' | 'running' | 'error' | 'complete';
     printerTemplateIndex: string;
@@ -437,14 +437,14 @@ class Controller extends gws.Controller {
 
         let vs = this.map.viewState;
 
-        let params: gws.api.PrinterParamsWithTemplate = {
+        let params: gws.api.base.printer.ParamsWithTemplate = {
             type: 'template',
             templateUid: this.selectedTemplate.uid,
             quality,
             ...basicParams,
             sections: [
                 {
-                    center: [vs.centerX, vs.centerY] as gws.api.Point,
+                    center: [vs.centerX, vs.centerY] as gws.api.core.Point,
                     context: this.getValue('printerData')
                 }
             ]
@@ -463,7 +463,7 @@ class Controller extends gws.Controller {
 
         let vs = this.map.viewState;
 
-        let params: gws.api.PrinterParamsWithMap = {
+        let params: gws.api.base.printer.ParamsWithMap = {
             type: 'map',
             ...basicParams,
             format: 'png',
@@ -472,7 +472,7 @@ class Controller extends gws.Controller {
             mapHeight: Number(this.getValue('printerSnapshotHeight')) || DEFAULT_SNAPSHOT_SIZE,
             sections: [
                 {
-                    center: [vs.centerX, vs.centerY] as gws.api.Point,
+                    center: [vs.centerX, vs.centerY] as gws.api.core.Point,
                 }
             ]
         };
@@ -483,7 +483,7 @@ class Controller extends gws.Controller {
 
     async startJob(res) {
         this.update({
-            printerJob: {state: gws.api.JobState.init}
+            printerJob: {state: gws.api.lib.job.State}
         });
 
         let job = await res;
@@ -523,21 +523,21 @@ class Controller extends gws.Controller {
 
         switch (job.state) {
 
-            case gws.api.JobState.init:
+            case gws.api.lib.job.State.init:
                 this.update({printerState: 'running'});
                 break;
 
-            case gws.api.JobState.open:
-            case gws.api.JobState.running:
+            case gws.api.lib.job.State.open:
+            case gws.api.lib.job.State.running:
                 this.update({printerState: 'running'});
                 this.jobTimer = setTimeout(() => this.poll(), JOB_POLL_INTERVAL);
                 break;
 
-            case gws.api.JobState.cancel:
+            case gws.api.lib.job.State.cancel:
                 this.stop();
                 break;
 
-            case gws.api.JobState.complete:
+            case gws.api.lib.job.State.complete:
                 if (this.getValue('printerSnapshotMode')) {
                     let a = document.createElement('a');
                     a.href = job.url;
@@ -550,7 +550,7 @@ class Controller extends gws.Controller {
                     this.update({printerState: job.state});
                 }
                 break;
-            case gws.api.JobState.error:
+            case gws.api.lib.job.State.error:
                 this.update({printerState: job.state});
         }
     }

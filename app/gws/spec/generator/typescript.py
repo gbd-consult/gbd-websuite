@@ -2,8 +2,7 @@
 
 import json
 import re
-from typing import List
-
+import collections
 from . import base
 
 
@@ -19,7 +18,7 @@ class _Generator:
         self.state = state
         self.meta = meta
         self.commands = {}
-        self.declarations = []
+        self.declarations = collections.defaultdict(list)
         self.stub = []
         self.done = {}
         self.tmp_names = {}
@@ -77,7 +76,20 @@ class _Generator:
             for _, cc in sorted(self.commands.items())
         ]
 
-        return self.format(api_tpl, declarations=_nl2(self.declarations), actions=_nl2(actions))
+        namespace_tpl = """
+            export namespace $ns {
+                $declarations
+            }
+        """
+
+        decls = []
+        d = self.declarations.pop('core')
+        decls.append(self.format(namespace_tpl, ns='core', declarations=_nl2(d)))
+
+        for ns, d in sorted(self.declarations.items()):
+            decls.append(self.format(namespace_tpl, ns=ns, declarations=_nl2(d)))
+
+        return self.format(api_tpl, declarations=_nl2(decls), actions=_nl2(actions))
 
     def write_stub(self):
         stub_tpl = """
@@ -160,15 +172,15 @@ class _Generator:
                     $props
                 }
             """
-            name = self.object_name(t.name)
-            self.declarations.append(self.format(
+            ns, name, full = self.object_name_parts(t.name)
+            self.declarations[ns].append(self.format(
                 tpl,
                 name=name,
                 doc=t.doc,
                 ext=' extends ' + self.make(t.supers[0]) if t.supers else '',
                 props=self.make_props(t)
             ))
-            return name
+            return full
 
         if isinstance(t, base.TEnum):
             tpl = '''
@@ -177,28 +189,28 @@ class _Generator:
                     $items
                 }
             '''
-            name = self.object_name(t.name)
-            self.declarations.append(self.format(
+            ns, name, full = self.object_name_parts(t.name)
+            self.declarations[ns].append(self.format(
                 tpl,
                 name=name,
                 doc=t.doc,
                 items=_nl('%s = %s,' % (k, _val(v)) for k, v in sorted(t.values.items()))
             ))
-            return name
+            return full
 
         if isinstance(t, base.TAlias):
             tpl = '''
                 /// $doc
                 export type $name = $target;
             '''
-            name = self.object_name(t.name)
-            self.declarations.append(self.format(
+            ns, name, full = self.object_name_parts(t.name)
+            self.declarations[ns].append(self.format(
                 tpl,
                 name=name,
                 doc=t.doc,
                 target=self.make(t.target_t)
             ))
-            return name
+            return full
 
         raise base.Error(f'unhandled type {t.name!r}')
 
@@ -230,6 +242,19 @@ class _Generator:
         [r'^gws\.', ''],
 
     ]
+
+    def object_name_parts(self, name):
+        els = [
+            e for e in name.replace('_', '.').split('.')
+            if e not in {'gws', 'core', 'types'}
+        ]
+        if len(els) == 1:
+            els.insert(0, 'core')
+        if len(els) == 2 and els[0] == 'data':
+            els[0] = 'core'
+
+
+        return '.'.join(els[:-1]), els[-1], '.'.join(els)
 
     def object_name(self, name):
         res = name.replace('_', '.')

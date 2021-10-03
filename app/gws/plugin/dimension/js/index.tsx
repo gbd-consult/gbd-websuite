@@ -623,7 +623,7 @@ class DimensionModel {
         </svg>`;
     }
 
-    printItem(): gws.api.PrinterItem {
+    printItem(): gws.api.base.printer.Item {
         let fragment = {points: [], tags: [], styles: []};
 
         this.createDefsTag(fragment);
@@ -647,7 +647,7 @@ class DimensionModel {
 class DimensionLayer extends gws.map.layer.FeatureLayer {
     master: DimensionController;
 
-    get printItem(): gws.api.PrinterItem {
+    get printItem(): gws.api.base.printer.Item {
         if (this.master.model.empty)
             return null;
         return this.master.model.printItem()
@@ -841,7 +841,7 @@ class DimensionController extends gws.Controller {
     uid = MASTER;
     layer: DimensionLayer;
     oOverlay: ol.Overlay;
-    setup: gws.api.ActionDimensionProps;
+    setup: gws.api.ext.action.dimension.Props;
     model: DimensionModel;
     targetUpdateCount = 0;
     snapUpdateCount = 0;

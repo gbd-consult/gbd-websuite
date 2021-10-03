@@ -50,7 +50,7 @@ export class StyleManager implements types.IStyleManager {
         }
 
         if (typeof style === 'object') {
-            let props = style as api.StyleProps;
+            let props = style as api.lib.style.Props;
 
             if (props.selector) {
                 return this.getFromNameOrSelector(props.selector);

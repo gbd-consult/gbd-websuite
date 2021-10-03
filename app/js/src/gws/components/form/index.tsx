@@ -5,8 +5,8 @@ import * as gws from 'gws';
 const EDITOR_HEIGHT = 90;
 
 interface FormProps {
-    dataModel: gws.api.ModelProps;
-    attributes: Array<gws.api.Attribute>;
+    dataModel: gws.api.base.model.Props;
+    attributes: Array<gws.api.core.Attribute>;
     errors?: gws.types.StrDict;
     whenChanged: (key: string, value: any) => void;
     whenEntered?: (key: string, value: any) => void;
@@ -15,11 +15,11 @@ interface FormProps {
 
 export class Form extends React.PureComponent<FormProps> {
 
-    control(r: gws.api.ModelRuleProps, value) {
+    control(r: gws.api.base.model.RuleProps, value) {
         let entered = this.props.whenEntered || (() => null);
         let changed = v => this.props.whenChanged(r.name, v);
 
-        let editor: gws.api.ModelAttributeEditor = r.editor || {type: 'str'};
+        let editor: gws.api.base.model.AttributeEditor = r.editor || {type: 'str'};
 
         let items = () => editor.items.map(e => ({
             value: e[0],
