@@ -33,7 +33,7 @@ module.exports = v => ({
     },
 
     '.modLensOverlayAnchorButton': {
-        ...v.SVG('move', v.COLOR.white),
+        ...v.SVG(__dirname + '/move', v.COLOR.white),
     },
 
     '.modLensOverlayDrawButton': {
@@ -46,7 +46,7 @@ module.exports = v => ({
 
 
     '.modLensToolbarButton': {
-        ...v.TOOLBAR_BUTTON('spatialsearch')
+        ...v.TOOLBAR_BUTTON(__dirname + '/spatialsearch')
     }
 
 });

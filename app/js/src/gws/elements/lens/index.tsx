@@ -1,24 +1,25 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from '../gws';
+import * as gws from 'gws';
+import * as components from 'gws/components';
 
-import * as draw from './draw';
-import * as toolbar from './toolbar';
-import * as toolbox from './toolbox';
+import * as draw from 'gws/elements/draw';
+import * as toolbar from 'gws/elements/toolbar';
+import * as toolbox from 'gws/elements/toolbox';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Lens';
 
-let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as LensController;
+let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Controller;
 
-interface LensViewProps extends gws.types.ViewProps {
-    controller: LensTool;
+interface ViewProps extends gws.types.ViewProps {
+    controller: Tool;
     lensShapeType: string;
 }
 
-const LensStoreKeys = [
+const StoreKeys = [
     'lensShapeType',
 ];
 
@@ -28,7 +29,7 @@ class LensLayer extends gws.map.layer.FeatureLayer {
     }
 }
 
-class LensToolboxView extends gws.View<LensViewProps> {
+class ToolboxView extends gws.View<ViewProps> {
     render() {
         let button = (type, cls, tooltip) => {
             return <Cell>
@@ -58,7 +59,7 @@ class LensToolboxView extends gws.View<LensViewProps> {
 
 }
 
-export class LensTool extends gws.Tool {
+export class Tool extends gws.Tool {
 
     layerPtr: LensLayer;
     oOverlay: ol.Overlay;
@@ -87,7 +88,7 @@ export class LensTool extends gws.Tool {
 
     get toolboxView() {
         return this.createElement(
-            this.connect(LensToolboxView, LensStoreKeys)
+            this.connect(ToolboxView, StoreKeys)
         );
     }
 
@@ -155,7 +156,7 @@ export class LensTool extends gws.Tool {
                     features,
                     mode: 'draw',
                 },
-                infoboxContent: <gws.components.feature.InfoList controller={this} features={features}/>
+                infoboxContent: <components.feature.InfoList controller={this} features={features}/>
             });
         } else {
             this.update({
@@ -271,22 +272,22 @@ export class LensTool extends gws.Tool {
 
 }
 
-class LensToolbarButton extends toolbar.Button {
-    iconClass = 'modLensToolbarButton';
+class ToolbarButton extends toolbar.Button {
+    iconClass = 'modToolbarButton';
     tool = 'Tool.Lens';
 
     get tooltip() {
-        return this.__('modLensToolbarButton');
+        return this.__('modToolbarButton');
     }
 }
 
-class LensController extends gws.Controller implements gws.types.IController {
+class Controller extends gws.Controller implements gws.types.IController {
     uid = MASTER;
 
     toolTag: string;
 
-    get tool(): LensTool {
-        return this.app.tool(this.toolTag) as LensTool;
+    get tool(): Tool {
+        return this.app.tool(this.toolTag) as Tool;
     }
 
     oFeature: ol.Feature;
@@ -309,7 +310,7 @@ class LensController extends gws.Controller implements gws.types.IController {
 }
 
 gws.registerTags({
-    //[MASTER]: LensController,
-    'Toolbar.Lens': LensToolbarButton,
-    'Tool.Lens': LensTool,
+    [MASTER]: Controller,
+    'Toolbar.Lens': ToolbarButton,
+    'Tool.Lens': Tool,
 });
