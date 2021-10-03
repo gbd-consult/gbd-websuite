@@ -49,13 +49,17 @@ class Object(gws.Object, gws.IApplication):
 
     api: gws.base.api.Object
     auth: gws.base.auth.manager.Object
+    client: t.Optional[gws.base.client.Object]
+    dbs: t.List[gws.ISqlDbProvider]
+    helpers: t.List[gws.Object]
     locale_uids: t.List[str]
     metadata: gws.base.metadata.Object
     monitor: gws.server.monitor.Object
-    web_sites: t.List[gws.IWebSite]
-    version: str
-    qgis_version: str
     mpx_url: str
+    projects: t.List[gws.base.project.Object]
+    qgis_version: str
+    version: str
+    web_sites: t.List[gws.IWebSite]
 
     _devopts: dict
 
@@ -96,30 +100,32 @@ class Object(gws.Object, gws.IApplication):
         # - auth providers
         # - actions, client, web
         # - finally, projects
-        #
-        #         for p in self.var('db.providers', default=[]):
-        #             self.create_child('gws.ext.db.provider', p)
-        #
-        #         for p in self.var('helpers', default=[]):
-        #             self.create_child('gws.ext.helper', p)
-        #
-        #
-        #         p = self.var('client')
-        #         self.client: t.Optional[gws.IClient] = self.create_child(gws.base.client.Object, p) if p else None
-        #
+
+        self.dbs = t.cast(
+            t.List[gws.ISqlDbProvider],
+            self.create_children('gws.ext.db.provider', self.var('db.providers')))
+
+        self.helpers = self.create_children('gws.ext.helper', self.var('helpers'))
 
         self.auth = self.create_child(gws.base.auth.manager.Object, self.var('auth'))
+
         self.api = self.create_child(gws.base.api.Object, self.var('api'))
 
-        cfgs = [
-            gws.merge(cfg, ssl=bool(self.var('web.ssl')))
-            for cfg in self.var('web.sites', default=[gws.base.web.DEFAULT_SITE])
-        ]
-        self.web_sites = t.cast(t.List[gws.IWebSite], self.create_children(gws.base.web.site.Object, cfgs))
+        p = self.var('web.sites') or [gws.base.web.DEFAULT_SITE]
+        ssl = bool(self.var('web.ssl'))
+        cfgs = [gws.merge(c, ssl=ssl) for c in p]
+        self.web_sites = t.cast(
+            t.List[gws.IWebSite],
+            self.create_children(gws.base.web.site.Object, cfgs))
 
+        self.client = t.cast(
+            gws.base.client.Object,
+            self.create_child_if_config(gws.base.client.Object, self.var('client')))
+
+        self.projects = []
         for cfg in self.var('projects', default=[]):
             # @TODO: parallel config?
-            self.create_child(gws.base.project.Object, cfg)
+            self.projects.append(self.create_child(gws.base.project.Object, cfg))
 
     def post_configure(self):
         self.mpx_url = ''

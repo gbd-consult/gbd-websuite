@@ -6,6 +6,7 @@ from . import core
 
 class Config(gws.Config):
     templates: t.List[core.Config]
+    defaults: t.Optional[t.List[core.Config]]
     withBuiltins: bool
 
 
@@ -26,12 +27,17 @@ class Object(gws.Object, gws.ITemplateBundle):
         for cfg in self.var('templates', default=[]):
             self.items.append(core.create(self.root, cfg, parent=self))
 
-        subjects = set(tpl.subject for tpl in self.items)
-
+        self._merge(self.var('defaults'), shared=False)
         if self.var('withBuiltins'):
-            for cfg in _BUILTINS:
-                if cfg.get('subject') not in subjects:
-                    self.items.append(core.create(self.root, cfg, shared=True))
+            self._merge(_BUILTINS, shared=True)
+
+    def _merge(self, cfgs, shared):
+        if not cfgs:
+            return
+        for c in cfgs:
+            if any(item.subject == c.get('subject') for item in self.items):
+                continue
+            self.items.append(core.create(self.root, c, shared=shared))
 
     def find(self, subject: str = None, category: str = None, mime: str = None) -> t.Optional[gws.ITemplate]:
         for tpl in self.items:

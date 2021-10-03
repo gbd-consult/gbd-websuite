@@ -10,6 +10,7 @@ import gws.lib.mime
 import gws.lib.os2
 import gws.lib.pdf
 import gws.lib.render
+import gws.lib.extent
 import gws.lib.vendor.chartreux as chartreux
 
 
@@ -238,9 +239,9 @@ def _parse_size(atts):
 def _parse_margin(atts):
     m = [int(x) for x in atts['margin'].split()]
     if len(m) == 1:
-        return gws.Extent(m[0], m[0], m[0], m[0])
+        return [m[0], m[0], m[0], m[0]]
     if len(m) == 2:
-        return gws.Extent(m[0], m[1], m[0], m[1])
+        return [m[0], m[1], m[0], m[1]]
     if len(m) == 4:
-        return gws.Extent(m[0], m[1], m[2], m[3])
+        return [m[0], m[1], m[2], m[3]]
     raise ValueError('invalid margin spec')

@@ -290,7 +290,7 @@ def create(root: gws.RootObject, cfg, shared: bool = False, parent: gws.Object =
     return t.cast(Object, root.create_shared_object(_EXT_CLASS, cfg, uid))
 
 
-def require(obj: gws.IObject) -> Object:
+def require_for(obj: gws.IObject) -> Object:
     uid = obj.var('db')
     if uid:
         prov = obj.root.find(klass=_EXT_CLASS, uid=uid)

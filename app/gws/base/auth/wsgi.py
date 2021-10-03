@@ -41,7 +41,7 @@ class WebRequest(gws.base.web.wsgi.WebRequest, gws.IWebRequest):
         return obj
 
     def require_project(self, uid: t.Optional[str]) -> gws.IProject:
-        return t.cast(gws.IProject, self.require('gws.base.project', uid))
+        return t.cast(gws.IProject, self.require('gws.base.project.core', uid))
 
     def require_layer(self, uid: t.Optional[str]) -> gws.ILayer:
         return t.cast(gws.ILayer, self.require('gws.ext.layer', uid))

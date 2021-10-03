@@ -19,7 +19,7 @@ class Object(gws.base.search.provider.Object):
     table: gws.SqlTable
 
     def configure(self):
-        self.provider = prov.require(self)
+        self.provider = prov.require_for(self)
         self.table = self.provider.configure_table(self.var('table'))
         if self.table.search_column:
             self.supports_keyword = True

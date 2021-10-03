@@ -24,7 +24,7 @@ class Object(gws.base.layer.vector.Object):
     table: gws.SqlTable
 
     def configure(self):
-        self.provider = prov.require(self)
+        self.provider = prov.require_for(self)
         self.table = self.provider.configure_table(self.var('table'))
         self.is_editable = True
         if not self.data_model:

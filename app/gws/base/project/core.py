@@ -82,8 +82,7 @@ class Object(gws.Object):
         if self.overview_map:
             self.overview_map.set_uid(self.uid + '.overview')
 
-        p = self.var('templates')
-        self.templates = gws.base.template.bundle.create(self.root, gws.Config(templates=p, withBuiltins=True))
+        self.templates = gws.base.template.bundle.create(self.root, gws.Config(templates=self.var('templates'), withBuiltins=True))
 
         self.search_providers = []
 
