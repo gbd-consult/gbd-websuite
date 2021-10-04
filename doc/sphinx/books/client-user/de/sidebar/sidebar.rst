@@ -15,6 +15,7 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs.
     cadastral_unit_searching.rst
     marking.rst
     editing.rst
+    table_editing.rst
     inspire.rst
     sign_in.rst
     search.rst
