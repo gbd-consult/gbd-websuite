@@ -18,6 +18,8 @@ Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
   :align: center
 
+Es gibt verschiedene Möglichkeiten zur Konfiguration der Flurstücksuche. Sie müssen zum Beispiel keine Gemarkung eintragen, um nach einer Strassen zu suchen. So ist die Suche auch bei großen Datenmengen performant möglich. Es kann konfiguriert werden, ob zum Beispiel die Suche nach Straßen mit oder ohne Vorauswahl der Gemarkung stattfinden soll oder nicht. Folgende Konfigurationen stehen zur Verfügung:
+
 Optionale Konfigurationen zur Darstellung der Gemarkungsliste
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

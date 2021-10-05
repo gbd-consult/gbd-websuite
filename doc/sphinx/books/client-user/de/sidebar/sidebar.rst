@@ -13,6 +13,7 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs.
     select.rst
     dimensions.rst
     cadastral_unit_searching.rst
+    person_info.rst
     marking.rst
     editing.rst
     table_editing.rst
