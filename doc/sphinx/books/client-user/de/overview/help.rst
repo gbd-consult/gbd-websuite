@@ -68,6 +68,8 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapf
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |edit|            |   :ref:`Editieren <editing>`                         |Liste der editierbaren Objekte           |
 +------------------------+------------------------------------------------------+-----------------------------------------+
+|      |table_edit|      |   :ref:`Tabelle editieren <table_editing>`           |Öffnet Tabelle zum Attribute editieren   |
++------------------------+------------------------------------------------------+-----------------------------------------+
 |      |authorization|   |   :ref:`Anmeldung <sign_in>`                         |An- und Abmelden von Benutzern           |
 +------------------------+------------------------------------------------------+-----------------------------------------+
 
@@ -95,6 +97,8 @@ Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie
 
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
      :width: 30em
+   .. |table_edit| image:: ../../../images/table_view_black_24dp.svg
+     :width: 30em    
    .. |options| image:: ../../../images/round-settings-24px.svg
      :width: 30em
    .. |mouseover| image:: ../../../images/gbd-icon-anzeige-01.svg

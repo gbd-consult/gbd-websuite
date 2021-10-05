@@ -10,7 +10,5 @@ Den Objekten können individuelle SVG Icons zugeordnet werden. Außerdem können
 Ein Beispiel bei dem dieses Werkzeug verwendet wird, findet sich auf unserer Homepage. Das Projekt "Baustellenverwaltung Düsseldorf" zeigt das Aufkommen von Baustellen in Düsseldorf.
 Hier können Baustellen eingetragen werden und anhand eines Formulars Eigenschaften und Informationen über diese eingetragen werden. Außerdem können in diesem Beispiel Umleitungen eingerichtet werden, durch das Zichnen von Linien. Der Stil dieser Linien kann beliebig definiert werden. In diesem Beispiel sind die Linien geld markiert, wie gewöhnlich für Umleitungsinformationen.
 
-.. note::
- Auf Wunsch kann das ``Auswählen``-Werkzeug und der dazu gehörige Menüpunkt deaktiviert werden. Es wäre zum Beispiel auch möglich, dass mit diesem Werkzeug nur Objekte von gewissen Layern ausgewählt werden können.
 
 .. Konfigurierbare Eingabefelder
