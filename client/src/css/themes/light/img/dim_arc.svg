@@ -1,12 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
-<g>
-	<path d="M7.456,17.021c-0.81-0.854-1.421-1.917-1.733-3.137c-0.975-3.813,1.326-7.696,5.14-8.671
-		c3.223-0.824,6.488,0.697,8.013,3.489c0.559-0.135,1.131-0.274,1.723-0.417c-1.787-3.725-6.006-5.797-10.161-4.735
-		c-4.732,1.21-7.588,6.028-6.378,10.76c0.42,1.645,1.283,3.054,2.419,4.153L7.456,17.021z"/>
-</g>
-<circle cx="7.195" cy="17.412" r="2.569"/>
-<circle cx="19.686" cy="8.054" r="2.569"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.456 17.021a7.128 7.128 0 013.407-11.808c3.223-.824 6.488.697 8.013 3.489l1.723-.417A8.845 8.845 0 004.06 14.31a8.782 8.782 0 002.419 4.153l.977-1.442z"/><circle cx="7.195" cy="17.412" r="2.569"/><circle cx="19.686" cy="8.054" r="2.569"/></svg>
