@@ -1,11 +1,11 @@
 import re
 
-import gws.ext.db.provider.postgres.driver
+import gws.base.db.postgres.driver
 
 from ..data import version
 
 
-class AlkisConnection(gws.ext.db.provider.postgres.driver.Connection):
+class AlkisConnection(gws.base.db.postgres.driver.Connection):
     def __init__(self, params, index_schema, data_schema, crs, exclude_gemarkung):
         super().__init__(params)
         self.index_schema = index_schema

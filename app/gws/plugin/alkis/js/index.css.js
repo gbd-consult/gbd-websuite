@@ -1,29 +1,29 @@
 module.exports = v => ({
-    '.modAlkisSidebarIcon': {
-        ...v.ROUND_FORM_BUTTON('searchparcel')
+    '.alkisSidebarIcon': {
+        ...v.ROUND_FORM_BUTTON(__dirname + '/searchparcel')
     },
 
-    '.modAlkisSearchSubmitButton': {
+    '.alkisSearchSubmitButton': {
         ...v.ROUND_FORM_BUTTON(v.SEARCH_ICON)
     },
 
-    '.modAlkisSearchLensButton': {
-        ...v.ROUND_FORM_BUTTON('spatialsearch')
+    '.alkisSearchLensButton': {
+        ...v.ROUND_FORM_BUTTON(__dirname + '/spatialsearch')
     },
 
-    '.modAlkisPickButton': {
-        ...v.ROUND_FORM_BUTTON('select')
+    '.alkisPickButton': {
+        ...v.ROUND_FORM_BUTTON(__dirname + '/select')
     },
 
-    '.modAlkisSearchSelectionButton': {
-        ...v.ROUND_FORM_BUTTON('search_selection')
+    '.alkisSearchSelectionButton': {
+        ...v.ROUND_FORM_BUTTON(__dirname + '/search_selection')
     },
-    '.modAlkisSearchResetButton': {
+    '.alkisSearchResetButton': {
         ...v.ROUND_FORM_BUTTON('google:content/delete_sweep')
     },
 
 
-    '.modAlkisLoading': {
+    '.alkisLoading': {
         textAlign: 'center',
         color: v.DISABLED_COLOR,
         padding: [v.UNIT2 * 8, v.UNIT4, v.UNIT4, v.UNIT4],
@@ -31,7 +31,7 @@ module.exports = v => ({
     },
 
 
-    '.modAlkisLensFeature': {
+    '.alkisLensFeature': {
         stroke: v.COLOR.cyan100,
         strokeWidth: 3,
         strokeDasharray: '5,5',
@@ -39,28 +39,28 @@ module.exports = v => ({
     },
 
 
-    '.modAlkisExportAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:image/grid_on')},
-    '.modAlkisPrintAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/print')},
-    '.modAlkisHighlightAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.ZOOM_ICON)},
-    '.modAlkisSelectAuxButton': {...v.SIDEBAR_AUX_BUTTON('stacker_all')},
-    '.modAlkisUnselectAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/remove_circle_outline')},
-    '.modAlkisFormAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.SEARCH_ICON)},
-    '.modAlkisListAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/reorder')},
-    '.modAlkisSelectionAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/bookmark_border')},
-    '.modAlkisClearAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')},
-    '.modAlkisLoadAuxButton': {...v.SIDEBAR_AUX_BUTTON('open')},
-    '.modAlkisSaveAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/save')},
-    '.modAlkisResetAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/delete_sweep')},
+    '.alkisExportAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:image/grid_on')},
+    '.alkisPrintAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/print')},
+    '.alkisHighlightAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.ZOOM_ICON)},
+    '.alkisSelectAuxButton': {...v.SIDEBAR_AUX_BUTTON(__dirname + '/stacker_all')},
+    '.alkisUnselectAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/remove_circle_outline')},
+    '.alkisFormAuxButton': {...v.SIDEBAR_AUX_BUTTON(v.SEARCH_ICON)},
+    '.alkisListAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/reorder')},
+    '.alkisSelectionAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/bookmark_border')},
+    '.alkisClearAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')},
+    '.alkisLoadAuxButton': {...v.SIDEBAR_AUX_BUTTON(__dirname + '/open')},
+    '.alkisSaveAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/save')},
+    '.alkisResetAuxButton': {...v.SIDEBAR_AUX_BUTTON('google:content/delete_sweep')},
 
-    '.modAlkisSelectListButton.uiIconButton': {
+    '.alkisSelectListButton.uiIconButton': {
         ...v.LIST_BUTTON('google:content/add_circle_outline')
     },
 
-    '.modAlkisUnselectListButton.uiIconButton': {
+    '.alkisUnselectListButton.uiIconButton': {
         ...v.LIST_BUTTON('google:content/remove_circle_outline')
     },
 
-    '.modAlkisSelectFeature': {
+    '.alkisSelectFeature': {
         stroke: v.COLOR.cyan100,
         strokeWidth: 3,
         strokeDasharray: "5,5",

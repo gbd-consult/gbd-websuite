@@ -19,6 +19,7 @@ module.exports = {
     terserOptions: {
         compress: {
             drop_console: true,
+            unused: false, // we compile separately and don't know if anything is used elsewhere
         }
     },
 

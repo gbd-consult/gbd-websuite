@@ -222,7 +222,7 @@ class Controller extends gws.Controller {
     }
 
     async doRequest(params: Params, args: object): Promise<gws.api.base.storage.Response> {
-        let res: gws.api.base.storage.Response = this.app.server[params.actionName](args);
+        let res: gws.api.base.storage.Response = await this.app.server[params.actionName](args);
 
         if (res.error) {
             this.update({

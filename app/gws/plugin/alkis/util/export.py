@@ -1,10 +1,9 @@
 import itertools
 
-import gws.ext.helper.csv
-
 import gws
-import gws.types as t
+import gws.base.csv
 import gws.base.model
+import gws.types as t
 
 """
 A fs structure, as created by our indexer, is deeply nested.
@@ -97,12 +96,10 @@ DEFAULT_GROUPS = [
 ]
 
 
-def as_csv(target_object: gws.IObject, fs_features: t.List[gws.IFeature], model: gws.base.model.Object):
-    helper: gws.ext.helper.csv.Object = t.cast(
-        gws.ext.helper.csv.Object,
-        target_object.root.find_first('gws.ext.helper.csv'))
-    writer = helper.writer()
+def as_csv(action: gws.IObject, fs_features: t.List[gws.IFeature], model: gws.base.model.Object):
+    helper = t.cast(gws.base.csv.Object, action.root.application.require_helper('csv'))
 
+    writer = helper.writer()
     writer.write_headers([r.title for r in model.rules])
 
     for fs in fs_features:

@@ -324,7 +324,7 @@ def _load_places(conn: AlkisConnection):
 
 
 def attributes(conn: AlkisConnection, table, rec):
-    cc = gws.get_global(
+    cc = gws.get_app_global(
         'alkis_resolver_props_' + table,
         lambda: _load_props_for_table(conn, table))
 
@@ -342,7 +342,7 @@ def attributes(conn: AlkisConnection, table, rec):
 
 
 def places(conn: AlkisConnection, rec):
-    cc = gws.get_global(
+    cc = gws.get_app_global(
         'alkis_resolver_places',
         lambda: _load_places(conn))
 

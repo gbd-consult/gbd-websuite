@@ -1,17 +1,14 @@
-import gws.ext.db.provider.postgres
-
 import gws
-import gws.types as t
-import gws.base.db
+import gws.base.db.postgres
 import gws.lib.feature
 import gws.lib.shape
-from .data import index, adresse, flurstueck
-from .util import export
+import gws.types as t
+from .data import adresse, flurstueck, index
 from .util.connection import AlkisConnection
 
 
-class Config(gws.WithType):
-    """ALKIS helper."""
+class Config(gws.Config):
+    """Basic ALKIS configuration"""
 
     db: str = ''  #: database provider ID
     crs: gws.Crs  #: CRS for the ALKIS data
@@ -116,8 +113,8 @@ _COMBINED_AD_PARAMS = ['strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnumme
 _COMBINED_PARAMS_DELIM = '_'
 
 
-class Object(gws.Node):
-    db: gws.ext.db.provider.postgres.Object
+class Object(gws.Object):
+    db: gws.base.db.postgres.provider.Object
     has_index = False
     has_source = False
     has_flurnummer = False
@@ -127,12 +124,9 @@ class Object(gws.Node):
     index_schema = ''
 
     def configure(self):
-        
 
         self.crs = self.var('crs')
-        self.db = t.cast(
-            gws.ext.db.provider.postgres.Object,
-            gws.base.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+        self.db = gws.base.db.postgres.provider.require_for(self)
 
         self.index_schema = self.var('indexSchema')
         self.data_schema = self.var('dataSchema')
@@ -276,3 +270,10 @@ class Object(gws.Node):
 
     def _query_to_dict(self, query):
         return {k: v for k, v in gws.as_dict(query).items() if not gws.is_empty(v)}
+
+
+##
+
+def create(root: gws.RootObject, cfg: gws.Config, parent: gws.Object = None, shared: bool = False) -> Object:
+    key = gws.pick(cfg, 'db', 'crs', 'dataSchema', 'indexSchema', 'excludeGemarkung')
+    return t.cast(Object, root.create_object(Object, cfg, parent, shared, key))

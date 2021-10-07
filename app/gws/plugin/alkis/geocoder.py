@@ -1,12 +1,13 @@
 """ALKIS Geocoder action."""
 
-import gws.ext.helper.alkis as alkis
-
 import gws
 import gws.types as t
 import gws.base.api
 
+from . import provider, util
 
+
+@gws.ext.Config('action.alkisgeocoder')
 class Config(gws.WithAccess):
     """ALKIS Geocoder action."""
     pass
@@ -31,15 +32,14 @@ class GeocoderResponse(gws.Response):
     coordinates: t.List[gws.Point]
 
 
-class Object(gws.base.api.Action):
-    alkis: alkis.Object
+@gws.ext.Object('action.alkisgeocoder')
+class Object(gws.base.api.action.Object):
+    provider: provider.Object
 
     def configure(self):
-        
-        self.alkis = t.cast(alkis.Object, self.root.find_first('gws.ext.helper.alkis'))
-        if not self.alkis:
-            raise ValueError('alkis helper not found')
+        self.provider = provider.create(self.root, self.config, shared=True)
 
+    @gws.ext.command('api.alkisgeocoder.decode')
     def api_decode(self, req: gws.IWebRequest, p: GeocoderParams) -> GeocoderResponse:
 
         coords = []
@@ -53,7 +53,7 @@ class Object(gws.base.api.Action):
 
             q['limit'] = 1
 
-            res = self.alkis.find_adresse(alkis.FindAdresseQuery(q))
+            res = self.provider.find_adresse(provider.FindAdresseQuery(q))
 
             if not res.total:
                 coords.append(None)
