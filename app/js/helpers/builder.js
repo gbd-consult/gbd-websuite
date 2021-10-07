@@ -17,21 +17,22 @@ const DOC = `
 GWS Client Builder
 ~~~~~~~~~~~~~~~~~~
 
-builder dev-server
+npm run dev-server
     start the dev server on port 8080
     
-builder dev
+npm run dev
     compile development bundles for plugins in the manifest 
     
-builder production
+npm run production
     compile production bundles for plugins in the manifest 
     
-builder clean
+npm run clean
     remove all compiled bundles and builds 
     
 Options:
 
     --incremental   - do not clear the build directory
+    --locale        - dev server locale
 
 The builder expects the dev spec generator to be run 
 and uses the generated stuff from 'app/gws/spec/__build'
@@ -54,9 +55,11 @@ const BUNDLE_KEY_CSS = 'CSS'
 const STRINGS_KEY_DELIM = '::'
 const STRINGS_RECORD_DELIM = ';;'
 
+const DEFAULT_DEV_LOCALE = 'de_DE';
+
 module.exports.Builder = class {
 
-    constructor() {
+    init() {
         this.options = require(path.join(JS_DIR, 'options.js'));
         this.meta = require(path.join(SPEC_DIR, 'meta.spec.json')); // see spec/generator/main
 
@@ -67,12 +70,13 @@ module.exports.Builder = class {
         this.chunks = [];
 
         this.tsConfigPath = path.join(JS_DIR, 'tsconfig.json');
-
     }
 
     run(args) {
         switch (args.command) {
             case 'dev-server':
+                this.init();
+                this.locale = args.locale || DEFAULT_DEV_LOCALE;
                 if (!args.incremental)
                     clearBuild(this);
                 initBuild(this);
@@ -80,6 +84,7 @@ module.exports.Builder = class {
                 break;
 
             case 'dev':
+                this.init();
                 this.options.minify = false;
                 if (!args.incremental)
                     clearBuild(this);
@@ -87,12 +92,14 @@ module.exports.Builder = class {
                 break;
 
             case 'production':
+                this.init();
                 this.options.minify = true;
                 clearBuild(this);
                 this.bundle();
                 break;
 
             case 'clear':
+                this.init();
                 clearBuild(this);
                 break;
 
@@ -204,7 +211,7 @@ process = {env: {NODE_ENV: "development"}}
 __ENV__
 </script>
 
-__SCRIPTS__
+__VENDORS__
 
 <script src="/DEV-JS/script.js?r=__RANDOM__"></script>
 
@@ -228,17 +235,20 @@ function startBrowserSync(bb) {
     function makeHTML(url) {
         let tplVars = {}
 
-        // dev server can be invoked as /project/name or /project/de_DE/name
+        // the dev server url is localhost:8080/project/name?opts@opts
+        // we get "/name..." from the router
 
-        let u = url.split('/').filter(s => s.length > 0 && s[0] !== '@');
+        let m = url.match(/^\/*(\w+)/);
+        if (!m) {
+            logError(`cannot get the project name, URL=${url}`)
+            return '';
+        }
 
-        tplVars.ENV = u.length === 2
-            ? `window['GWS_LOCALE']="${u[0]}"; window['GWS_PROJECT_UID']="${u[1]}"`
-            : `window['GWS_LOCALE']="de_DE";   window['GWS_PROJECT_UID']="${u[0]}"`;
+        tplVars.ENV = `window['GWS_LOCALE']="${bb.locale}"; window['GWS_PROJECT_UID']="${m[1]}"`;
 
-        tplVars.SCRIPTS = ''
+        tplVars.VENDORS = ''
         for (let vendor of bb.vendors)
-            tplVars.SCRIPTS += `<script src="/DEV-VENDOR/${vendor.name}.js"></script>\n`;
+            tplVars.VENDORS += `<script src="/DEV-VENDOR/${vendor.name}.js"></script>\n`;
 
         tplVars.RANDOM = String(Math.random()).slice(2);
 
@@ -253,9 +263,14 @@ function startBrowserSync(bb) {
         if (!js || !strings)
             return;
 
+        let lang = bb.locale.split('_')[0];
+
         let code = formatTemplate(JS_BUNDLE_TEMPLATE, {
             MODULES: stubs.modules.concat(js.modules).map(m => m.text).join(','),
-            STRINGS: strings.modules.map(m => m.text).join(STRINGS_RECORD_DELIM),
+            STRINGS: strings.modules
+                .filter(m => m.lang === lang)
+                .map(m => m.text)
+                .join(STRINGS_RECORD_DELIM),
         });
 
         let combinedSourceMap = {
@@ -594,7 +609,6 @@ function writeUtil(bb) {
         logException(e);
     }
 }
-
 
 // strings bundler
 

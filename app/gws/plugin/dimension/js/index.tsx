@@ -1001,7 +1001,7 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
             master.selectElement(null)
         };
 
-        let hasElements = !gws.lib.empty(model.elements);
+        let hasElements = !gws.lib.isEmpty(model.elements);
 
         let body;
 

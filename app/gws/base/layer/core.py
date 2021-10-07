@@ -190,8 +190,10 @@ class Object(gws.Object, gws.ILayer):
         self.data_model = self.create_child_if_config(gws.base.model.Object, self.var('dataModel'))
         self.edit_data_model = self.create_child_if_config(gws.base.model.Object, self.var('editDataModel'))
 
-        p = self.var('templates')
-        self.templates = gws.base.template.bundle.create(self.root, gws.Config(templates=p, withBuiltins=True))
+        self.templates = gws.base.template.bundle.create(
+            self.root,
+            gws.Config(templates=self.var('templates'), withBuiltins=True),
+            parent=self)
         self.description_template = self.templates.find(subject='layer.description')
 
         self.style = t.cast(gws.IStyle, self.create_child(gws.base.style.Object, self.var('style') or _DEFAULT_STYLE))

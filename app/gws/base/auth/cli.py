@@ -1,5 +1,31 @@
 import gws
+import gws.config
+import gws.types as t
+import gws.lib.date
+import gws.lib.console
+from . import manager
 
+
+@gws.ext.Object('cli.auth')
+class Object:
+
+    @gws.ext.command('cli.auth.sessions')
+    def sessions(self, p: gws.NoParams):
+        """Print currently active sessions"""
+
+        root = gws.config.load()
+        auth = t.cast(manager.Object, root.application.auth)
+
+        rs = [{
+            'user': r['user_uid'],
+            'login': gws.lib.date.to_iso_local(gws.lib.date.from_timestamp(r['created'])),
+            'activity': gws.lib.date.to_iso_local(gws.lib.date.from_timestamp(r['updated'])),
+            'duration': r['updated'] - r['created']
+        } for r in auth.stored_session_records()]
+
+        print(f'{len(rs)} active sessions\n')
+        print(gws.lib.console.text_table(rs, header=('user', 'login', 'activity', 'duration')))
+        print('\n')
 
 # @gws.ext.Object('cli.auth')
 # class Object(gws.Object):

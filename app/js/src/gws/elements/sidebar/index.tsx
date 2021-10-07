@@ -166,7 +166,7 @@ class Body extends gws.View<SidebarProps> {
         let items = this.props.controller.children;
         let active = items.filter(cc => cc.tag === this.props.sidebarActiveTab)
 
-        if (gws.lib.empty(active))
+        if (gws.lib.isEmpty(active))
             return null;
 
         return active[0].tabView;

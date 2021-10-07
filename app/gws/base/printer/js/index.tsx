@@ -252,8 +252,6 @@ class PreviewBox extends gws.View<ViewProps> {
     render() {
         let ps = this.props.printerState;
 
-        console.log('PPPP', this.props)
-
         if (ps !== 'preview')
             return null;
 

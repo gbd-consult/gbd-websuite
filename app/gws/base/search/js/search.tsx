@@ -1,7 +1,8 @@
 import * as React from 'react';
 
-import * as gws from '../gws';
-import * as sidebar from './sidebar';
+import * as gws from 'gws';
+import * as sidebar from 'gws/elements/sidebar';
+import * as components from 'gws/components';
 
 const MASTER = 'Shared.Search';
 
@@ -35,7 +36,7 @@ class SearchResults extends gws.View<SearchViewProps> {
         if (!this.props.searchResults || !this.props.searchResults.length)
             return null;
         return <div className="modSearchResults">
-            <gws.components.feature.List
+            <components.feature.List
                 controller={this.props.controller}
                 features={this.props.searchResults}
                 content={f => <gws.ui.TextBlock
@@ -195,7 +196,7 @@ class SearchController extends gws.Controller {
                 features: [f],
                 mode: 'zoom draw',
             },
-            infoboxContent: <gws.components.feature.InfoList controller={this} features={[f]}/>
+            infoboxContent: <components.feature.InfoList controller={this} features={[f]}/>
 
         });
 

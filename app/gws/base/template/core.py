@@ -128,14 +128,12 @@ _types = {
 }
 
 
-def create_from_path(root: gws.RootObject, path, shared: bool = False, parent: gws.Object = None) -> t.Optional['Object']:
+def create_from_path(root: gws.RootObject, path, parent: gws.Object = None, shared: bool = False) -> t.Optional['Object']:
     for ext, typ in _types.items():
         if path.endswith(ext):
-            return create(root, gws.Config(type=typ, path=path), shared=shared, parent=parent)
+            return create(root, gws.Config(type=typ, path=path), parent, shared)
 
 
-def create(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> 'Object':
-    if not shared:
-        return t.cast(Object, root.create_object('gws.ext.template', cfg, parent))
-    uid = gws.get(cfg, 'uid') or gws.get(cfg, 'path') or gws.sha256(gws.get(cfg, 'text', default=''))
-    return t.cast(Object, root.create_shared_object('gws.ext.template', cfg, uid))
+def create(root: gws.RootObject, cfg: gws.Config, parent: gws.Object = None, shared: bool = False) -> 'Object':
+    key = gws.get(cfg, 'uid') or gws.get(cfg, 'path') or gws.sha256(gws.get(cfg, 'text', default=''))
+    return t.cast(Object, root.create_object('gws.ext.template', cfg, parent, shared, key))

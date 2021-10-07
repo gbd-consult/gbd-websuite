@@ -45,7 +45,7 @@ class Props(gws.Props):
     uid: str
 
 
-class Object(gws.Object):
+class Object(gws.Object, gws.IProject):
     api: gws.base.api.Object
     assets_root: t.Optional[gws.DocumentRoot]
     client: t.Optional[gws.base.client.Object]
@@ -82,7 +82,10 @@ class Object(gws.Object):
         if self.overview_map:
             self.overview_map.set_uid(self.uid + '.overview')
 
-        self.templates = gws.base.template.bundle.create(self.root, gws.Config(templates=self.var('templates'), withBuiltins=True))
+        self.templates = gws.base.template.bundle.create(
+            self.root,
+            gws.Config(templates=self.var('templates'), withBuiltins=True),
+            parent=self)
 
         self.search_providers = []
 
@@ -105,11 +108,8 @@ class Object(gws.Object):
 
     @property
     def props(self):
-        actions = gws.merge(
-            gws.get(self.parent, 'api.actions'),
-            gws.get(self, 'api.actions'))
         return Props(
-            actions=list(actions.values()),
+            actions=self.api.get_actions(self.root.application.api),
             client=self.client or getattr(self.parent, 'client', None),
             description=self.description,
             map=self.map,

@@ -315,13 +315,11 @@ class Object(gws.Object):
 ##
 
 
-def create_from_path(root: gws.RootObject, path: str, shared: bool = False, parent: gws.Object = None) -> Object:
-    return create(root, gws.Config(path=path), shared, parent)
+def create_from_path(root: gws.RootObject, path: str, parent: gws.Object = None, shared: bool = False) -> Object:
+    return create(root, gws.Config(path=path), parent, shared)
 
 
-def create(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> Object:
+def create(root: gws.RootObject, cfg: gws.Config, parent: gws.Object = None, shared: bool = False) -> Object:
     path = cfg.get('path')
     root.application.monitor.add_path(path)
-    if not shared:
-        return t.cast(Object, root.create_object(Object, cfg, parent))
-    return root.create_shared_object(Object, cfg, uid=path)
+    return t.cast(Object, root.create_object(Object, cfg, parent, shared, key=path))

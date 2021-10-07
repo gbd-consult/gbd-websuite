@@ -107,12 +107,9 @@ class Props(gws.Props):
 
 
 class Object(gws.Object, gws.IDataModel):
-    def configure(self):
-
-        p = self.var('rules', default=[])
-        self.rules: t.List[Rule] = [self._configure_rule(r) for r in p]
-        self.geometry_type: gws.GeometryType = self.var('geometryType')
-        self.geometry_crs: gws.Crs = self.var('crs')
+    rules: t.List[Rule]
+    geometry_type: gws.GeometryType
+    geometry_crs: gws.Crs
 
     @property
     def props(self):
@@ -146,6 +143,11 @@ class Object(gws.Object, gws.IDataModel):
             names.add(r.name)
         return sorted(names)
 
+    def configure(self):
+        self.rules = [self._configure_rule(r) for r in self.var('rules', default=[])]
+        self.geometry_type = self.var('geometryType')
+        self.geometry_crs = self.var('crs')
+
     def xml_schema(self, geometry_name='geometry') -> dict:
         schema = {}
         for rule in self.rules:
@@ -159,11 +161,11 @@ class Object(gws.Object, gws.IDataModel):
 
         return schema
 
-    def apply(self, attributes: t.List[gws.Attribute]) -> t.List[gws.Attribute]:
+    def apply(self, attributes):
         attr_values = {a.name: a.value for a in attributes}
         return self.apply_to_dict(attr_values)
 
-    def apply_to_dict(self, attr_values: dict) -> t.List[gws.Attribute]:
+    def apply_to_dict(self, attr_values):
         return [gws.Attribute(
             title=r.title,
             name=r.name,

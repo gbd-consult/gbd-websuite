@@ -6,7 +6,8 @@ import gws.types as t
 
 # @TODO use locale-dependent formatting
 
-class Config(gws.WithType):
+@gws.ext.Config('helper.csv')
+class Config(gws.Config):
     """CSV format settings"""
 
     decimal: str = '.'  #: decimal sign
@@ -15,14 +16,13 @@ class Config(gws.WithType):
     formulaHack: bool = True  #: prepend numeric strings with an equal sign
     precision: int = 2  #: precision for floats
     quote: str = '"'  #: quote sign
-    quoteAll: bool = False #: quote all fields
+    quoteAll: bool = False  #: quote all fields
     rowDelimiter: str = '\n'  #: row delimiter
 
 
-class Object(gws.Node):
+@gws.ext.Object('helper.csv')
+class Object(gws.Object):
     def configure(self):
-        
-
         self.decimal = self.var('decimal')
         self.delimiter = self.var('delimiter')
         self.encoding = self.var('encoding')

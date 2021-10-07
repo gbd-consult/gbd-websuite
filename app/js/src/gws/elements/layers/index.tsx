@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
-import * as sidebar from '../sidebar';
+import * as sidebar from 'gws/elements/sidebar';
 import * as components from 'gws/components';
 
 let {Form, Row, Cell} = gws.ui.Layout;
@@ -41,7 +41,7 @@ class LayersCheckButton extends gws.View<ViewProps> {
         let layer = this.props.layer,
             isExclusive = layer.parent && layer.parent.exclusive,
             isChecked = layer.checked,
-            isGroup = !gws.lib.empty(layer.children);
+            isGroup = !gws.lib.isEmpty(layer.children);
 
         if (!layer.inResolution) {
             return <gws.ui.Button

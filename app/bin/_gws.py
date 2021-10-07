@@ -8,6 +8,11 @@ import gws.spec.runtime
 gws.ensure_system_dirs()
 
 
+def prn(msg):
+    sys.stdout.write(msg + '\n')
+    sys.stdout.flush()
+
+
 def camelize(p):
     parts = []
     for s in p.split('-'):
@@ -44,9 +49,7 @@ def parse_args(argv):
 def print_usage_and_fail(specs, ext_type, cmd):
     docs = specs.cli_docs('en')
 
-    print('')
-    print(f'GWS version {gws.VERSION}')
-    print('')
+    prn(f'\nGWS version {gws.VERSION}\n')
 
     disp = [d for d in docs if d[0] == ext_type and d[1] == cmd]
     if not disp:
@@ -55,7 +58,7 @@ def print_usage_and_fail(specs, ext_type, cmd):
         disp = docs
 
     for d in sorted(disp):
-        print(d[2])
+        prn(d[2])
 
     return 1
 
@@ -74,7 +77,10 @@ def dispatch(specs, ext_type, cmd, params):
 
     object_desc = gws.load_ext(specs, command_desc.class_name)
     handler = object_desc.class_ptr()
-    return getattr(handler, command_desc.function_name)(command_desc.params)
+    prn('')
+    res = getattr(handler, command_desc.function_name)(command_desc.params)
+    prn('')
+    return res
 
 
 def main():

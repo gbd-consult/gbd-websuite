@@ -211,8 +211,10 @@ export class Application implements types.IApplication {
         return this;
     }
 
-    actionSetup(name) {
-        return this.project.actions[name];
+    actionSetup(type) {
+        for (let action of this.project.actions)
+            if (action.type === type)
+                return action
     }
 
     initState(args) {

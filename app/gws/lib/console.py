@@ -8,7 +8,6 @@ import gws.types as t
 
 class ProgressIndicator:
     def __init__(self, title, total, resolution=10):
-        self.isatty = sys.stderr.isatty()
         self.resolution = resolution
         self.title = title
         self.total = total
@@ -16,16 +15,14 @@ class ProgressIndicator:
         self.lastd = 0
 
     def __enter__(self):
-        self.write('START (total=%d)' % self.total)
+        self.log(f'START (total={self.total})')
         self.starttime = time.time()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type:
-            self.write('\n')
-        else:
-            t = time.time() - self.starttime
-            self.write('END (time=%.2f rps=%.1f)' % (t, self.total / t))
+        if not exc_type:
+            ts = time.time() - self.starttime
+            self.log(f'END (time={ts:.2f}) sec')
 
     def update(self, add=1):
         self.progress += add
@@ -34,11 +31,11 @@ class ProgressIndicator:
             p = 100
         d = round(p / self.resolution) * self.resolution
         if d > self.lastd:
-            self.write(str(d) + '%%')
+            self.log(f'{d}%')
         self.lastd = d
 
-    def write(self, s):
-        gws.log.info(self.title + ': ' + s, extra={'skip_frames': 2})
+    def log(self, s):
+        gws.log.info(f'{self.title}: {s}')
 
 
 def text_table(data, header=None, delim=' | '):

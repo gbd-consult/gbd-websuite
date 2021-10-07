@@ -84,6 +84,13 @@ class Object(ISpecRuntime):
                     paths.append(path)
             return paths
 
+    def ext_type_list(self, category):
+        return [
+            spec.get('ext_type')
+            for spec in self.specs.values()
+            if spec.get('ext_category') == category
+        ]
+
     def check_command(self, cmd_name, cmd_method, params, with_strict_mode=True):
         name = cmd_method + '.' + cmd_name
         if name not in self.specs:

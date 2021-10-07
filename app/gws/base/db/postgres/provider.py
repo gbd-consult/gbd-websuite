@@ -278,16 +278,9 @@ class Object(gws.Object, gws.ISqlDbProvider):
 ##
 
 
-def create(root: gws.RootObject, cfg, shared: bool = False, parent: gws.Object = None) -> Object:
-    if not shared:
-        return t.cast(Object, root.create_object(_EXT_CLASS, cfg, parent))
-    uid = f"""
-        h={cfg.host}
-        p={cfg.port}
-        u={cfg.user}
-        d={cfg.database}
-    """
-    return t.cast(Object, root.create_shared_object(_EXT_CLASS, cfg, uid))
+def create(root: gws.RootObject, cfg, parent: gws.Object = None, shared: bool = False) -> Object:
+    key = gws.pick(cfg, 'host', 'port', 'user', 'database')
+    return t.cast(Object, root.create_object(_EXT_CLASS, cfg, parent, shared, key))
 
 
 def require_for(obj: gws.IObject) -> Object:

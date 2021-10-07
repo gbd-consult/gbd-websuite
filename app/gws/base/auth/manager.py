@@ -168,24 +168,3 @@ class Object(gws.Object, gws.IAuthManager):
 
     def stored_session_records(self) -> t.List[dict]:
         return self.store.get_all()
-
-
-@gws.ext.Object('cli.auth')
-class Cli:
-
-    @gws.ext.command('cli.auth.sessions')
-    def sessions(self, p: gws.NoParams):
-        """Print currently active sessions"""
-
-        auth = t.cast(Object, gws.config.load().application.auth)
-
-        rs = [{
-            'user': r['user_uid'],
-            'login': gws.lib.date.to_iso_local(gws.lib.date.from_timestamp(r['created'])),
-            'activity': gws.lib.date.to_iso_local(gws.lib.date.from_timestamp(r['updated'])),
-            'duration': r['updated'] - r['created']
-        } for r in auth.stored_session_records()]
-
-        print(f'{len(rs)} active sessions\n')
-        print(gws.lib.console.text_table(rs, header=('user', 'login', 'activity', 'duration')))
-        print('\n')

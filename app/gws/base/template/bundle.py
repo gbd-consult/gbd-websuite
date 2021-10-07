@@ -37,7 +37,8 @@ class Object(gws.Object, gws.ITemplateBundle):
         for c in cfgs:
             if any(item.subject == c.get('subject') for item in self.items):
                 continue
-            self.items.append(core.create(self.root, c, shared=shared))
+            self.items.append(core.create(
+                self.root, c, parent=None if shared else self, shared=shared))
 
     def find(self, subject: str = None, category: str = None, mime: str = None) -> t.Optional[gws.ITemplate]:
         for tpl in self.items:
@@ -51,14 +52,8 @@ class Object(gws.Object, gws.ITemplateBundle):
 
 ##
 
-def create(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> Object:
-    if not shared:
-        return t.cast(Object, root.create_object(Object, cfg, parent))
-
-    uids = []
-    for c in cfg.get('templates', default=[]):
-        uids.append(c.get('uid') or c.get('path') or gws.sha256(c.get('text')))
-    return t.cast(Object, root.create_shared_object(Object, cfg, gws.sha256(sorted(uids))))
+def create(root: gws.RootObject, cfg: gws.Config, parent: gws.Object = None, shared: bool = False) -> Object:
+    return t.cast(Object, root.create_object(Object, cfg, parent, shared))
 
 
 ##

@@ -2,7 +2,12 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 import * as types from './types';
 
-export function empty(x) {
+export function isNull(x) {
+    return typeof x === 'undefined'
+        || x === null
+}
+
+export function isEmpty(x) {
     return typeof x === 'undefined'
         || x === null
         || x === ''
@@ -23,12 +28,8 @@ export function find(ary, p) {
     return found;
 }
 
-export function strNoEmpty(x) {
-    return empty(x) ? '' : String(x);
-}
-
 export function compact(xs) {
-    return xs.filter(x => !empty(x));
+    return xs.filter(x => !isEmpty(x));
 }
 
 export function uniq(xs) {

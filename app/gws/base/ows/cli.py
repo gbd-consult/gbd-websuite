@@ -6,7 +6,7 @@ import gws.lib.ows
 import gws.types as t
 
 
-class CapsParams:
+class CapsParams(gws.CliParams):
     url: gws.Url  #: service URL or an XML file name
     protocol: str = ''  #: service name, e.g. WMS
     out: str = ''  #: output filename

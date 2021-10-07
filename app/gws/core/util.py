@@ -94,6 +94,30 @@ def _get(x, keys):
     return x
 
 
+def pop(x, key, default=None):
+    if isinstance(x, dict):
+        return x.pop(key, default)
+    if is_data_object(x):
+        return vars(x).pop(key, default)
+    return default
+
+
+def pick(x, *keys):
+    if isinstance(x, dict):
+        return _pick(x, keys)
+    if is_data_object(x):
+        return type(x)(_pick(vars(x), keys))
+    return {}
+
+
+def _pick(d, keys):
+    r = {}
+    for k in keys:
+        if k in d:
+            r[k] = d[k]
+    return r
+
+
 def merge_lists(*args):
     """Merge iterables together, removing repeated elements"""
 

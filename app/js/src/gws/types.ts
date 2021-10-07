@@ -53,7 +53,7 @@ export interface IApplication {
 
     mounted();
 
-    actionSetup(name): any;
+    actionSetup(type: string): any;
 
     whenLoaded(fn: (value: any) => void);
     whenChanged(prop: string, fn: (value: any) => void);

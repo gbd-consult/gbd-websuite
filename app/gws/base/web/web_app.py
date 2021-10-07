@@ -147,11 +147,11 @@ def _handle_action(req: WebRequest) -> WebResponse:
     action = req.root.application.find_action(command_desc.cmd_action, project_uid)
 
     if not action:
-        gws.log.error(f'action not found cmd={cmd!r} method={method!r}')
+        gws.log.error(f'action not found a={command_desc.cmd_action!r} method={method!r}')
         raise gws.base.web.error.NotFound()
 
     if not req.user.can_use(action):
-        gws.log.error(f'permission denied cmd={cmd!r} method={method!r}')
+        gws.log.error(f'permission denied a={command_desc.cmd_action!r} method={method!r}')
         raise gws.base.web.error.Forbidden()
 
     res = getattr(action, command_desc.function_name)(req, command_desc.params)

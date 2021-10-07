@@ -105,7 +105,12 @@ class Object(gws.Object, gws.IApplication):
             t.List[gws.ISqlDbProvider],
             self.create_children('gws.ext.db.provider', self.var('db.providers')))
 
-        self.helpers = self.create_children('gws.ext.helper', self.var('helpers'))
+        # helpers are always created, no matter configured or not
+        cnf = {c.get('type'): c for c in self.var('helpers') or []}
+        for typ in self.root.specs.ext_type_list('helper'):
+            if typ not in cnf:
+                cnf[typ] = gws.Config(type=typ)
+        self.helpers = self.create_children('gws.ext.helper', list(cnf.values()))
 
         self.auth = self.create_child(gws.base.auth.manager.Object, self.var('auth'))
 
@@ -143,25 +148,22 @@ class Object(gws.Object, gws.IApplication):
         # if root.application.developer_option('server.auto_reload'):
         #     root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
 
-    def find_action(self, action_type, project_uid=None):
+    def find_action(self, ext_type, project_uid=None):
         if project_uid:
-            project = t.cast(gws.base.project.Object, self.root.find(klass='gws.base.project', uid=project_uid))
+            project = t.cast(gws.base.project.Object, self.root.find('gws.base.project', project_uid))
             if project and project.api:
-                action = project.api.find_action(action_type)
+                action = project.api.find_action(ext_type)
                 if action:
                     return action
 
         if self.api:
-            return self.api.find_action(action_type)
+            return self.api.find_action(ext_type)
 
-    def helper(self, key):
-        base = 'gws.ext.helper'
-        p = self.root.find(f'{base}.{key}')
-        if not p:
-            cfg = self.root.specs.read_value({'type': key}, f'{base}.{key}.Config')
-            gws.log.debug(f'created an ad-hoc helper, key={key!r} cfg={cfg!r}')
-            p = self.create_child(base, cfg)
-        return p
+    def require_helper(self, ext_type):
+        for obj in self.helpers:
+            if obj.ext_type == ext_type:
+                return obj
+        raise gws.Error(f'helper {ext_type!r} not found')
 
     def developer_option(self, name):
         return self._devopts.get(name)

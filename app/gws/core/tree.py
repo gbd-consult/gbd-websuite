@@ -162,14 +162,41 @@ class RootObject(BaseObject, types.IRootObject):
                 log.exception(info.replace('\n', ' '))
 
     def create_application(self, klass, cfg):
-        app = self._create(klass)
+        cfg = _to_config(cfg)
+        app = self._create(klass, _to_config({}))
         app.root = self
         self.all_nodes.append(app)
         self.application = app
         t.cast('Object', self.application).initialize(cfg)
 
-    def create_object(self, klass, cfg, parent: 'Object' = None) -> t.Optional['Object']:
+    def create_object(self, klass, cfg, parent: 'Object' = None, shared: bool = False, key=None) -> t.Optional['Object']:
         cfg = _to_config(cfg)
+
+        if not shared:
+            return self._create_and_initialize(klass, cfg, parent)
+
+        if not key:
+            key = util.sha256(cfg)
+        elif isinstance(key, str):
+            key = util.as_uid(key)
+        else:
+            key = util.sha256(key)
+
+        key = util.as_uid(_class_name(klass)) + '_' + key
+
+        if key in self.shared_objects:
+            # log.debug(f'SHARED: FOUND {klass} {uid}')
+            return self.shared_objects[key]
+
+        with util.app_lock():
+            log.debug(f'create_shared_object: klass={klass!r} key={key!r}')
+            obj = self._create_and_initialize(klass, cfg, parent)
+            if obj:
+                self.shared_objects[key] = obj
+
+        return obj
+
+    def _create_and_initialize(self, klass, cfg, parent: 'Object' = None) -> t.Optional['Object']:
         obj = self._create(klass, cfg)
         if parent:
             obj.parent = parent
@@ -180,39 +207,12 @@ class RootObject(BaseObject, types.IRootObject):
         self.all_nodes.append(obj)
         return obj
 
-    def create_shared_object(self, klass, cfg, uid):
-        cfg = _to_config(cfg)
-        uid = util.as_uid(_class_name(klass) + '_' + uid)
-
-        if uid in self.shared_objects:
-            # log.debug(f'SHARED: FOUND {klass} {uid}')
-            return self.shared_objects[uid]
-
-        with util.app_lock():
-            log.debug(f'create_shared_object: klass={klass!r} uid={uid!r}')
-            obj = self.create_object(klass, util.merge(cfg, uid=uid))
-            if obj:
-                self.shared_objects[uid] = obj
-
-        return obj
-
-    def find_all(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.List[types.IObject]:
-        return list(_find_all(self.all_nodes, klass, uid, ext_type))
-
-    def find(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.Optional[types.IObject]:
-        for p in _find_all(self.all_nodes, klass, uid, ext_type):
-            return p
-        return None
-
-    def _create(self, klass, cfg=None):
-        obj = self._create2(klass, _to_config(cfg))
+    def _create(self, klass, cfg):
+        obj = klass() if isinstance(klass, type) else self._create_from_string_type(klass, cfg)
         obj.root = self
         return obj
 
-    def _create2(self, klass, cfg):
-        if isinstance(klass, type):
-            return klass()
-
+    def _create_from_string_type(self, klass, cfg):
         # gws.ext.action + type=auth -> gws.ext.action.auth.Object
         c = str(klass).split('.')
         ext_type = cfg.get('type')
@@ -234,6 +234,14 @@ class RootObject(BaseObject, types.IRootObject):
 
         cls = desc.class_ptr
         return cls(desc.name, desc.ext_type)
+
+    def find_all(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.List[types.IObject]:
+        return list(_find_all(self.all_nodes, klass, uid, ext_type))
+
+    def find(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.Optional[types.IObject]:
+        for p in _find_all(self.all_nodes, klass, uid, ext_type):
+            return p
+        return None
 
 
 _ADHOC_TYPES = {}

@@ -155,6 +155,8 @@ class ISpecRuntime(Protocol):
 
     def read_value(self, value, type_name: str, path='', with_strict_mode=True, with_error_details=True, with_internal_objects=False) -> Any: ...
 
+    def ext_type_list(self, category: str) -> List[str]: ...
+
     def ext_object_descriptor(self, class_name: str) -> Optional[ExtObjectDescriptor]: ...
 
     def bundle_paths(self, category: str) -> List[str]: ...
@@ -490,6 +492,9 @@ class IFeature(Protocol):
 
     @property
     def props(self) -> 'Props': ...
+
+    @property
+    def template_context(self) -> dict: ...
 
     def apply_data_model(self, model: 'IDataModel' = None) -> 'IFeature': ...
 
@@ -919,7 +924,14 @@ class IMonitor(IObject):
     def start(self): ...
 
 
+class IApi(IObject, Protocol):
+    def find_action(self, ext_type: str) -> Optional[IObject]: ...
+
+    def get_actions(self, other: 'IApi' = None) -> List[IObject]: ...
+
+
 class IProject(IObject, Protocol):
+    api: 'IApi'
     assets_root: Optional['DocumentRoot']
     locale_uids: List[str]
     map: 'IMap'
@@ -931,6 +943,7 @@ class IProject(IObject, Protocol):
 
 
 class IApplication(IObject, Protocol):
+    api: 'IApi'
     auth: 'IAuthManager'
     locale_uids: List[str]
     metadata: 'IMetaData'
@@ -940,6 +953,6 @@ class IApplication(IObject, Protocol):
 
     def developer_option(self, name: str) -> Any: ...
 
-    def find_action(self, action_type: str, project_uid: str = None) -> Optional[IObject]: ...
+    def find_action(self, ext_type: str, project_uid: str = None) -> Optional[IObject]: ...
 
-    def helper(self, key: str) -> IObject: ...
+    def require_helper(self, ext_type: str) -> IObject: ...

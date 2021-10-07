@@ -146,8 +146,8 @@ class AuthorizedUser(User):
 def _can_use(roles, obj, parent):
     def _repr(x):
         r = repr(gws.get(x, 'uid') or x)
-        if len(r) > 20:
-            r = r[:20] + '...'
+        if len(r) > 200:
+            r = r[:200] + '...'
         return r
 
     if not obj:

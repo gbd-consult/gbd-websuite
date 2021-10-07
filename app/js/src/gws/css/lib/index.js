@@ -2,7 +2,6 @@ let fs = require('fs');
 let path = require('path');
 let mime = require('mime-types');
 let tinycolor = require('tinycolor2');
-let svgo = require('svgo');
 
 const NODE_MODULES = path.resolve(__dirname, '../../../../node_modules')
 
@@ -30,61 +29,8 @@ module.exports.dataUrl = function(fileName) {
     return encode(fileName, fs.readFileSync(fileName));
 }
 
-let svgoOptions = {
-    plugins: [
-        {cleanupAttrs: true},
-        {cleanupEnableBackground: true},
-        {cleanupIDs: true},
-        {cleanupNumericValues: true},
-        {collapseGroups: true},
-        {convertColors: true},
-        {convertPathData: true},
-        {convertShapeToPath: true},
-        {convertStyleToAttrs: true},
-        {convertTransform: true},
-        {mergePaths: true},
-        {moveElemsAttrsToGroup: true},
-        {moveGroupAttrsToElems: true},
-        //{removeAttrs: {attrs: '(stroke|fill)'}},
-        {removeComments: true},
-        {removeDesc: true},
-        {removeDimensions: true},
-        {removeDoctype: true},
-        {removeEditorsNSData: true},
-        {removeEmptyAttrs: true},
-        {removeEmptyContainers: true},
-        {removeEmptyText: true},
-        {removeHiddenElems: true},
-        {removeMetadata: true},
-        {removeNonInheritableGroupAttrs: true},
-        {removeRasterImages: false},
-        {removeTitle: true},
-        {removeUnknownsAndDefaults: true},
-        {removeUnusedNS: true},
-        {removeUselessDefs: true},
-        {removeUselessStrokeAndFill: true},
-        {removeViewBox: false},
-        //{removeXMLNS: true},
-        {removeXMLProcInst: true},
-        {sortAttrs: true},
-    ]
-};
-
-// let svgoSync = deasync((s, cb) => {
-//     let g = new svgo(svgoOptions);
-//     g.optimize(s)
-//         .then(res => cb(null, res.data))
-//         .catch(err => cb(err, null));
-// });
-
-function icon(fileName, color, optimize) {
+function icon(fileName, color) {
     let s = fs.readFileSync(fileName).toString('utf8');
-
-    if (optimize) {
-        // console.log(`BEFORE: ${s}\n\n`);
-        // s = svgoSync(s);
-        // console.log(`AFTER: ${s}\n\n`);
-    }
 
     if (color) {
         let c = tinycolor(color).toRgbString();
@@ -98,11 +44,11 @@ module.exports.googleIcon = function(name, opts = {}) {
     let [category, n] = name.split('/');
     let size = opts.size || 24;
     let fileName = NODE_MODULES + `/material-design-icons/${category}/svg/production/ic_${n}_${size}px.svg`;
-    return icon(fileName, opts.color, false);
+    return icon(fileName, opts.color);
 };
 
 module.exports.localIcon = function(path, opts = {}) {
-    return icon(path, opts.color, true);
+    return icon(path, opts.color);
 };
 
 /*
