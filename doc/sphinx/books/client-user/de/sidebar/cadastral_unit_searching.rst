@@ -41,7 +41,7 @@ Optionale Konfigurationen zur Straßensuche
 * Die Eingabe "Mar" sucht überall in den Straßennamen und findet "Marktstraße" und "Neuer Markt"
 
 .. note::
-    Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten, die je nach Bundesland unterschiedlich sein kann. Für die Suche nach einer Adresse ist aktuell eine Eingrenzung über eine Gemarkung vorzunehmen.
+ Die Abfrage nach einer Buchungsblattnummer über das Buchungsblatt-Feld kann konfiguriert werden. So kann eine Plausibilität geprüft und frei definiert werden, welche Werte eingetragen werden, z.B. Zahlen oder Buchstaben, ob Bestimmte Werte am Anfang oder Ende oder grundsätzlich in dem Feld enthalten sein müssen.
 
 Anzeigen der Ergebnisse
 -----------------------

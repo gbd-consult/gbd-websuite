@@ -64,6 +64,8 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapf
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |person_info|     |    :ref:`Personen Informationen <person_info>`       |Personenbezogene Flurstücksinformationen |
 +------------------------+------------------------------------------------------+-----------------------------------------+
+|      |bplan|           |    :ref:`Bauleitplanung <bplan>`                     |INSPIRE Bereitstellung Bauleitplanung    |
++------------------------+------------------------------------------------------+-----------------------------------------+
 |      |measure|         |   :ref:`Markierungen <markings>`                     |Liste der ausgewählten Markierungen      |
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |dimensions|      |   :ref:`Bemaßung <dimensions>`                       |Auflistung der erstellten Bemaßungen     |
@@ -99,6 +101,8 @@ Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie
 
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
      :width: 30em
+   .. |bplan| image:: ../../../images/bplan.svg
+     :width: 30em   
    .. |person_info| image:: ../../../images/person_search_black_24dp.svg
      :width: 30em
    .. |table_edit| image:: ../../../images/table_view_black_24dp.svg
