@@ -3,9 +3,9 @@
 Layer
 =====
 
-In der Menüebene |layers| ``Layer`` findet man eine Auflistung der implementierten Layer und Layergruppen des Projekts
-(Layergruppen können in der Konfiguration der GBD WebSuite erstellt und implementiert werden).
-Anhand dieser Auflistung kann jederzeit ein Überblick über die Sichtbarkeit der einzelnen Layer gewonnen werden.
+In der Menüebene |layers| ``Layer`` findet man eine Auflistung der implementierten Layer und Layergruppen des Projekts.
+Wenn die Zugriffrechte vorhanden sind, ist das individuelle Implementieren und Konfigurieren von einzelnen Layern, sowie das Erstellen von Layergruppen in der GBD WebSuite möglich. Dieses Konfigurieren findet über dazugehörige QGIS Projekte statt.
+Anhand der Auflistung unter diesem Menüpunkt kann zusätzlich, ein Überblick über die Sichtbarkeit der einzelnen Layer gewonnen werden.
 
 .. figure:: ../../../screenshots/de/client-user/layer.png
   :align: center

@@ -102,7 +102,7 @@ Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
      :width: 30em
    .. |bplan| image:: ../../../images/bplan.svg
-     :width: 30em   
+     :width: 30em
    .. |person_info| image:: ../../../images/person_search_black_24dp.svg
      :width: 30em
    .. |table_edit| image:: ../../../images/table_view_black_24dp.svg
