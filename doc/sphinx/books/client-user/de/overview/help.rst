@@ -11,7 +11,7 @@ Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
 
 Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren Verlauf dieser Dokumentation.
 
-Übersicht der Bedienelemente in der GBD WebSuite
+Übersicht der Bedienelemente in der GBD WebSuite:
 
 .. toctree::
     :maxdepth: 2
@@ -62,6 +62,10 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapf
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |cadastralunit|   |    :ref:`Flurstückssuche <cadastral_unit_searching>` |Liste der ausgewählten Flurstücke        |
 +------------------------+------------------------------------------------------+-----------------------------------------+
+|      |person_info|     |    :ref:`Personen Informationen <person_info>`       |Personenbezogene Flurstücksinformationen |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |bplan|           |    :ref:`Bauleitplanung <bplan>`                     |INSPIRE Bereitstellung Bauleitplanung    |
++------------------------+------------------------------------------------------+-----------------------------------------+
 |      |measure|         |   :ref:`Markierungen <markings>`                     |Liste der ausgewählten Markierungen      |
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |dimensions|      |   :ref:`Bemaßung <dimensions>`                       |Auflistung der erstellten Bemaßungen     |
@@ -97,8 +101,12 @@ Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie
 
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
      :width: 30em
+   .. |bplan| image:: ../../../images/bplan.svg
+     :width: 30em
+   .. |person_info| image:: ../../../images/person_search_black_24dp.svg
+     :width: 30em
    .. |table_edit| image:: ../../../images/table_view_black_24dp.svg
-     :width: 30em    
+     :width: 30em
    .. |options| image:: ../../../images/round-settings-24px.svg
      :width: 30em
    .. |mouseover| image:: ../../../images/gbd-icon-anzeige-01.svg

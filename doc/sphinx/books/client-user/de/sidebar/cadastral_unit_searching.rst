@@ -11,12 +11,14 @@ Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandt
 Starten der Flurstücksuche
 --------------------------
 
-Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske für Flurstücke zu sehen. Hier stehen verschiedene Suchfelder zur Auswahl die individuell konfiguriert werden können. So kann man Flurstücke nach Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
+Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske der Flurstücksuche zu sehen. Hier stehen verschiedene Parameter zur Auswahl die individuell konfiguriert werden können. So kann man Flurstücke anhand von Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
 
 Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden. Dabei werden die Inhalte aller Felder gelöscht.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
   :align: center
+
+Es gibt verschiedene Möglichkeiten zur Konfiguration der Flurstücksuche. Es müssen nicht alle Parameter definiert werden. So können Sie definieren ob die Suche nach einem speziellen Flurstück oder nach allen Flurstücken einer Straße erfolgen soll. Um nach einer Straße zu suchen, muss auch keine Gemarkung eingetragen werden. So ist die Suche auch bei großen Datenmengen performant möglich. Ob die Suche nach Straßen mit oder ohne Vorauswahl der Gemarkung stattfinden soll, kann ebenfalls konfiguriert werden. Bei der Suche anhand von Mindest- und Maximalfläche in Quadratmetern, können Kommastellen für das Eintragen von Zentimeter Werten verwendet werden.  Folgende Konfigurationen stehen zur Verfügung:
 
 Optionale Konfigurationen zur Darstellung der Gemarkungsliste
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -39,7 +41,7 @@ Optionale Konfigurationen zur Straßensuche
 * Die Eingabe "Mar" sucht überall in den Straßennamen und findet "Marktstraße" und "Neuer Markt"
 
 .. note::
-    Bei der Suche nach ``Flur-Zähler/Nenner`` ist explizit auf die Syntax zu achten, die je nach Bundesland unterschiedlich sein kann. Für die Suche nach einer Adresse ist aktuell eine Eingrenzung über eine Gemarkung vorzunehmen.
+ Die Abfrage nach einer Buchungsblattnummer über das Buchungsblatt-Feld kann konfiguriert werden. So kann eine Plausibilität geprüft und frei definiert werden, welche Werte eingetragen werden, z.B. Zahlen oder Buchstaben, ob Bestimmte Werte am Anfang oder Ende oder grundsätzlich in dem Feld enthalten sein müssen.
 
 Anzeigen der Ergebnisse
 -----------------------

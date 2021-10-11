@@ -13,6 +13,9 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs.
     select.rst
     dimensions.rst
     cadastral_unit_searching.rst
+    person_info.rst
+    bplan.rst
+    location_manager.rst
     marking.rst
     editing.rst
     table_editing.rst

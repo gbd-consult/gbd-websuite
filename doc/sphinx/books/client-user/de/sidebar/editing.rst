@@ -5,7 +5,7 @@ Editieren
 
 In der Menüleiste |menu| ist ebenfalls der Unterpunkt |edit| ``Editieren`` zu finden.
 
-Unter diesem Menüpunkt ist es möglich, verschiedene Objekte auszuwählen und zu editieren. Dafür müssen Sie in diesem Menüpunkt zuerst den Typ des Objektes auswählen welchen Sie editieren möchten. Wählen Sie zwischen Punkt, Linie oder Polygon.
+Unter diesem Menüpunkt ist es möglich, verschiedene Objekte auszuwählen und zu editieren. Dafür müssen Sie in diesem Menüpunkt zuerst den Typ des Objektes auswählen, welchen Sie editieren möchten. Wählen Sie zwischen Punkt, Linie oder Polygon.
 
 .. figure:: ../../../screenshots/de/client-user/editing_1.png
  :align: center
@@ -15,7 +15,7 @@ Als nächstes muss das gewünschte Objekt ausgewählt werden. Es kann über |fok
 .. figure:: ../../../screenshots/de/client-user/editing_2.png
  :align: center
 
-Wenn ein Objekt ausgewählt ist, können Attribute wie zum Beispiel id, Name, Bezeichnung und Adresse bearbeitet werden. Über das Menü |settings| ``Aufgaben`` können weitere Funktionen ausgewählt werden. Man kann zu einem Objekt ``Hinzoomen``.  Desweiteren können die vorher erstellten Objekte für die Funktionen ``Räumliche Suche``, ``Markieren und Messen`` oder ``Auswahl`` verwendet werden. Über |delete_editing| ist es möglich ein Objekt zu löschen und über |cancel| kommt man wieder ins vorherige Menü.
+Wenn ein Objekt ausgewählt ist, können Attribute wie zum Beispiel id, Name, Bezeichnung und Adresse bearbeitet werden. Es kann sein, dass gewisse Felder eine Eingabe erfordern, um das Objekt abzuspeichern. Ebenfalls können vorgegebene Wertebereich definiert sein, in denen die Eingabe liegen muss. Über das Menü |settings| ``Aufgaben`` können weitere Funktionen ausgewählt werden. Man kann zu einem Objekt ``Hinzoomen``.  Desweiteren können die vorher erstellten Objekte für die Funktionen ``Räumliche Suche``, ``Markieren und Messen`` oder ``Auswahl`` verwendet werden. Über |delete_editing| ist es möglich ein Objekt zu löschen und über |cancel| kommt man wieder ins vorherige Menü.
 
 .. figure:: ../../../screenshots/de/client-user/editing_3.png
   :align: center

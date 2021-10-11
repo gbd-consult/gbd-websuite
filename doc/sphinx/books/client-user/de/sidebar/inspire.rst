@@ -17,7 +17,9 @@ Unterstützt wird die Bereitstellung folgender INSPIRE Dienste:
 Bauleitpläne anzeigen, suchen und löschen
 -----------------------------------------
 
-Nachdem sich der Benutzer anmeldet hat, wird er direkt in das INSPIRE |bplan| Modul weitergeleitet. Falls die Berechtigung vorhanden ist, mehrere Datensätze zu bearbeiten, muss zuerst eine Auswahl stattfinden. Danach werden dann alle Daten zum Thema Bauleitplanung angezeigt für die der Benutzer Zugriffsrechte hat. Mit einem Klick auf den Namen eines Eintrags wird auf diesen gezoomt und das dazugehörige Informationsfenster öffnet sich.
+Wenn ein authorisierter Benutzer anmeldet ist, kann er das INSPIRE Modul |bplan| ``Bauleitplanung`` nutzen, um Bauleitpläne zu verwalten. (Falls die Berechtigung vorhanden ist, verschiedene INSPIRE-Datensätze zu bearbeiten, muss vorab eine Auswahl des Themas stattfinden.) Die Bauleitpläne werden in Form von Rasterbildern integriert und sind mit Flurstücksflächen des eingebundenen Liegenschaftskatatasters verknüpft. Das Thema Bauleitplanung gehört zu den von der EU vorgegeben Themen, welche in INSPIRE-konformer Bereitstellung erfolgen sollen. Im Rahmen eines IKZ-Projektes des LK Marburg-Biedenkopf wurden bis Anfang 2021 nun die ersten beiden INSPIRE Themen Bauleitplanung und Schulstandorte umgesetzt. Die Dienste werden dynamisch über das Geoservice-Portal des LK Marburg-Biedenkopf bereitgestellt und sind in das Geoportal Hessen integriert.
+
+Wenn Sie das Bauleitplanung Modul auswählen, öffnet sich eine Liste mit den implementierten Bauplänen. Über die oben angeordnete Suchleiste können Sie nach einem gewünschten Bauleitplan suchen. Beim Auswählen eines Bauplans wird automatisch das dazugehörige Flurstück mit dem darüberliegenden Rasterbild des Bauplans fokussiert. Die Ausdehnung des Flurstücks wird markiert. Außerdem öffnet sich ein Fenster, in dem Information in INSPIRE-konformer Bereitstellung zu dem jeweiligen Bauplan eingesehen werden können.
 
 .. figure:: ../../../screenshots/de/client-user/inspire_show.png
  :align: center
