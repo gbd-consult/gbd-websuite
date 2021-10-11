@@ -125,7 +125,7 @@ class CollectionPrototypeConfig(t.Config):
     items: t.List[ItemPrototypeConfig]
     linkColumn: str = 'collection_id'
     style: t.Optional[gws.common.style.Config]  #: style for collection center point
-    hideExpired: bool = False #: hide expired collections
+    showWhere: str = ''  #: extra condition to show collections
 
 
 class CollectionPrototypeProps(t.Props):
@@ -151,7 +151,7 @@ class CollectionPrototype(gws.Object):
         self.table = self.db.configure_table(self.var('collectionTable'))
         self.item_table = self.db.configure_table(self.var('itemTable'))
         self.document_table = self.db.configure_table(self.var('documentTable'))
-        self.hide_expired = self.var('hideExpired')
+        self.show_where = self.var('showWhere')
 
         self.link_col = self.var('linkColumn')
         self.type_col = 'type'
@@ -247,8 +247,8 @@ class CollectionPrototype(gws.Object):
 
     def get_collection_rows(self):
         extra_where = ['type=%s', self.type]
-        if self.hide_expired:
-            extra_where[0] += f' AND COALESCE({self.time_end_col}, CURRENT_DATE) >= CURRENT_DATE'
+        if self.show_where:
+            extra_where[0] += f' AND ({self.show_where})'
         return self.db.select(t.SelectArgs(table=self.table, extra_where=extra_where))
 
     def get_collection_ids(self):
@@ -439,6 +439,10 @@ class Object(gws.common.action.Object):
         self.collection_prototypes: t.List[CollectionPrototype] = []
         for p in self.var('collections'):
             self.collection_prototypes.append(t.cast(CollectionPrototype, self.create_child(CollectionPrototype, p)))
+
+        # validate configured `where` conditions
+        for cp in self.collection_prototypes:
+            cp.get_collection_ids()
 
     def api_get_prototypes(self, req: t.IRequest, p: t.Params) -> GetPrototypesResponse:
         return GetPrototypesResponse(collectionPrototypes=[cp.props for cp in self.collection_prototypes])
