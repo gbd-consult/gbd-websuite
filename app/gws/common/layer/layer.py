@@ -74,6 +74,7 @@ class CustomConfig(t.WithAccess):
     title: t.Optional[str]  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
     order: t.Optional[int]  #: layer order
+    cache: t.Optional[types.CacheConfig]  #: cache configuration
 
 
 #:export
