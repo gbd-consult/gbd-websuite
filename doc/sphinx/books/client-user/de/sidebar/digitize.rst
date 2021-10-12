@@ -28,7 +28,7 @@ Symbol                        Funktion
 |editstyl|			Stil/Farbe bearbeiten
 |labelon|			Beschriftung an
 |labeloff|			Beschriftung aus
-======================================
+=============================
 
  .. |newpoint| image:: ../../../images/points-24px.svg
    :width: 30em
