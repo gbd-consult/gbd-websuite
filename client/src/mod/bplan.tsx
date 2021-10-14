@@ -85,15 +85,6 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
     featureList() {
         let cc = _master(this.props.controller);
 
-        let show = f => cc.update({
-            marker: {
-                features: [f],
-                mode: 'zoom draw',
-            },
-            infoboxContent: <gws.components.feature.InfoList controller={cc} features={[f]}/>
-        });
-
-
         let rightButton = null;
 
         if (this.props.bplanAdminMode)
@@ -105,7 +96,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
 
         let content = f => <gws.ui.Link
             content={f.elements.title}
-            whenTouched={() => show(f)}
+            whenTouched={() => cc.showFeatureInfo(f)}
         />;
 
         let search = (this.props.bplanSearch || '').toLowerCase(),
@@ -147,7 +138,7 @@ class BplanSidebarView extends gws.View<BplanViewProps> {
                 </Row>
             </sidebar.TabBody>
 
-            { this.props.bplanAdminMode && <sidebar.TabFooter>
+            {this.props.bplanAdminMode && <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell>
                         <sidebar.AuxButton
@@ -460,6 +451,39 @@ class BplanController extends gws.Controller {
             bplanInfo: res.info,
             bplanDialog: 'info',
         })
+    }
+
+    showFeatureInfo(f: gws.types.IMapFeature) {
+        let type = f.getAttribute('type'),
+            au = f.getAttribute('au'),
+            geometryTypes = f.getAttribute('geometryTypes'),
+            groupLayerUid = f.getAttribute('groupLayerUid'),
+            mapUid = this.app.project.uid + '.map.';
+
+        // hide the main B-Plan group and show only layer related to this feature
+        // layer uids are: <project-uid>.map.<feature-type>_<geom-type>_<au-uid>
+
+        let groupLayer = this.app.map.getLayer(mapUid + groupLayerUid);
+        if (groupLayer)
+            this.app.map.walk(groupLayer, la => la.checked = la.visible = false);
+
+        for (let geomType of geometryTypes) {
+            let uid = mapUid + type + '_' + geomType + '_' + au;
+            let layer = this.app.map.getLayer(uid);
+            if (layer)
+                this.app.map.setLayerChecked(layer, true);
+        }
+
+        // zoom to the feature and show its infobox
+
+        this.update({
+            marker: {
+                features: [f],
+                mode: 'zoom draw',
+            },
+            infoboxContent: <gws.components.feature.InfoList controller={this} features={[f]}/>
+        });
+
     }
 
     deleteFeature(f) {

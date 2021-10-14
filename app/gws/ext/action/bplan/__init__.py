@@ -60,6 +60,8 @@ class Config(t.WithTypeAndAccess):
     emailSubject: str = ''
     emailTo: str = ''
 
+    groupLayerUid: str #: uid of the B-Plan group layer
+
 
 class AdministrativeUnit(t.Data):
     uid: str
@@ -213,7 +215,12 @@ class Object(gws.common.action.Object):
             g = f.attr('_geom_p') or f.attr('_geom_l') or f.attr('_geom_x')
             if g:
                 f.shape = gws.gis.shape.from_wkb_hex(g, self.plan_table.geometry_crs)
-            f.attributes = []
+            f.attributes = [
+                t.Attribute(name='type', value=f.attr('_type').lower()),
+                t.Attribute(name='au', value=f.attr('_au')),
+                t.Attribute(name='geometryTypes', value='plxr'),
+                t.Attribute(name='groupLayerUid', value=self.var('groupLayerUid')),
+            ]
 
         return GetFeaturesResponse(features=[f.props for f in features])
 
