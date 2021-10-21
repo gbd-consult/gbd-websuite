@@ -45,6 +45,7 @@ class Config(t.WithTypeAndAccess):
     crs: t.Crs  #: CRS for the bplan data
     planTable: gws.common.db.SqlTableConfig  #: plan table configuration
     metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
+    boundsTable: gws.common.db.SqlTableConfig  #: bounds table (AU boundaries)
     dataDir: t.DirPath  #: data directory
     templates: t.List[t.ext.template.Config]  #: templates
     administrativeUnits: t.List[AdministrativeUnitConfig]  #: Administrative Units
@@ -158,6 +159,7 @@ class Object(gws.common.action.Object):
 
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))
+        self.bounds_table = self.db.configure_table(self.var('boundsTable'))
         self.data_dir = self.var('dataDir')
 
         self.au_list = self.var('administrativeUnits')
@@ -461,26 +463,25 @@ class Object(gws.common.action.Object):
                             obj.update_sequence = meta.dateUpdated
 
     def _compute_bounding_polygons(self):
+        bounds = {}
+
         with self.db.connect() as conn:
-            for obj in self.root.find_all():
-                ows_name = gws.get(obj, 'ows_name')
-                if not ows_name or not ows_name.startswith('bauleitplanung_'):
-                    continue
-                ags = ows_name.split('_')[1]
-                sql = f'''
-                    SELECT ST_Collect(p.g) FROM (
-                        SELECT
-                            (ST_Dump(_geom_p)).geom AS g 
-                        FROM 
-                            {conn.quote_table(self.plan_table.name)}
-                        WHERE 
-                            ags = '{ags}' AND _geom_p IS NOT NULL
-                    ) AS p
-                '''
-                geom = conn.select_value(sql)
-                shape = gws.gis.shape.from_wkb_hex(geom).transformed_to(gws.EPSG_4326)
-                obj.meta.boundingPolygonTag = gws.gis.gml.shape_to_tag(
+            rs = conn.select(f'''
+                SELECT ags, geom
+                FROM {conn.quote_table(self.bounds_table.name)}
+            ''')
+            for r in rs:
+                ags = r['ags']
+                shape = gws.gis.shape.from_wkb_hex(r['geom']).transformed_to(gws.EPSG_4326)
+                bounds[ags] = gws.gis.gml.shape_to_tag(
                     shape, precision=5, invert_axis=False, crs_format='epsg', uid='boundingPolygon' + ags)
+
+        for obj in self.root.find_all():
+            ows_name = gws.get(obj, 'ows_name')
+            if not ows_name or not ows_name.startswith('bauleitplanung_'):
+                continue
+            ags = ows_name.split('_')[1]
+            obj.meta.boundingPolygonTag = bounds[ags]
 
 
 def _worker(root: t.IRootObject, job: gws.tools.job.Job):
