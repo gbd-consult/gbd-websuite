@@ -28,7 +28,7 @@ class Object:
         print('\n')
 
 # @gws.ext.Object('cli.auth')
-# class Object(gws.Object):
+# class Object(gws.Node):
 #
 #     @gws.ext.command()
 #     def test(self, login=None, password=None):

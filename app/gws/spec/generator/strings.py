@@ -9,8 +9,8 @@ def generate(state, server_specs, text):
     type_names = set()
 
     for type_name in server_specs:
-        t = state.types[type_name]
-        if not isinstance(t, base.TNamedType):
+        t = state.types.get(type_name)
+        if not t or not isinstance(t, base.TNamedType):
             continue
         type_names.add(type_name)
         if not t.doc:
@@ -26,9 +26,9 @@ def generate(state, server_specs, text):
     # for lang, entries in ini.items():
     #     es = set(entries)
     #     for e in sorted(type_names.difference(es)):
-    #         base.log.debug(f'strings: [{lang}] MISSING: {e}')
+    #         base.debug_log(f'strings: [{lang}] MISSING: {e}')
     #     for e in sorted(es.difference(type_names)):
-    #         base.log.debug(f'strings: [{lang}] INVALID: {e}')
+    #         base.debug_log(f'strings: [{lang}] INVALID: {e}')
 
     return {
         k: dict(sorted(v.items()))

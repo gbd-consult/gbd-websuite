@@ -2,13 +2,12 @@
 
 import re
 
+import gws
 import gws.lib.date
 import gws.lib.json2
 import gws.lib.os2
 import gws.lib.units
 import gws.spec.generator
-from gws.core.data import Data, is_data_object
-from gws.core.types import ExtCommandDescriptor, ExtObjectDescriptor, ISpecRuntime, Params
 
 
 class Error(Exception):
@@ -64,12 +63,13 @@ def _cache_path(manifest_path):
 ##
 
 
-class Object(ISpecRuntime):
+class Object(gws.ISpecRuntime):
     def __init__(self, genres):
         self.meta = genres['meta']
         self.manifest = gws.Manifest(self.meta['manifest'])
         self.specs = genres['specs']
         self.strings = genres['strings']
+        self.isa_map = {k: set(v) for k, v in self.specs['ISA_MAP'].items()}
 
     def bundle_paths(self, category):
         if category == 'vendor':
@@ -91,25 +91,37 @@ class Object(ISpecRuntime):
             if spec.get('ext_category') == category
         ]
 
-    def check_command(self, cmd_name, cmd_method, params, with_strict_mode=True):
+    def parse_command(self, cmd_name, cmd_method, params, with_strict_mode=True):
         name = cmd_method + '.' + cmd_name
         if name not in self.specs:
             return None
 
         cmd_spec = self.specs[name]
-        p = Params(self.read_value(params, cmd_spec['arg'], '', with_strict_mode, with_error_details=False))
+        p = gws.Params(self.read_value(params, cmd_spec['arg'], '', with_strict_mode, with_error_details=False))
 
-        return ExtCommandDescriptor(
+        return gws.ExtCommandDescriptor(
             class_name=cmd_spec['class_name'],
             cmd_action=cmd_spec['cmd_action'],
             cmd_name=cmd_spec['cmd_name'],
             function_name=cmd_spec['function_name'],
-            params=p or Params(),
+            params=p or gws.Params(),
         )
 
-    def ext_object_descriptor(self, class_name):
+    def is_a(self, class_name, class_name_part):
+        for cnames in self.isa_map.values():
+            if class_name in cnames and class_name_part in cnames:
+                return True
+
+    def real_class_names(self, class_name):
+        return [
+            name
+            for name, cnames in self.isa_map.items()
+            if class_name in cnames
+        ]
+
+    def object_descriptor(self, class_name):
         s = self.specs.get(class_name)
-        return ExtObjectDescriptor(s) if s else None
+        return gws.ExtObjectDescriptor(s) if s else None
 
     def cli_docs(self, lang):
         strings = self.strings.get(lang) or self.strings['en']
@@ -178,7 +190,8 @@ _READERS = {
 
     'TAlias': '_read_alias',
     'TEnum': '_read_enum',
-    'TObject': '_read_object',
+    'TNode': '_read_object',
+    'TRecord': '_read_object',
 
     'gws.core.types.Color': '_read_color',
     'gws.core.types.Crs': '_read_crs',
@@ -373,7 +386,7 @@ class _Reader:
         if unknown:
             raise Error('ERR_UNKNOWN_PROP', f"unknown keys: {_comma(unknown)}, expected: {_comma(props)}", val)
 
-        return Data(res)
+        return gws.Data(res)
 
     def _read_property(self, val, key):
         prop_spec = self.specs[key]
@@ -455,7 +468,7 @@ def _ensure(val, klass):
         return val
     if klass == list and isinstance(val, tuple):
         return list(val)
-    if klass == dict and is_data_object(val):
+    if klass == dict and gws.is_data_object(val):
         return vars(val)
     raise Error('ERR_WRONG_TYPE', f"wrong type: {_classname(type(val))!r}, expected: {_classname(klass)!r}", val)
 

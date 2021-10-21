@@ -23,6 +23,7 @@ def layer_from_root():
     root = test.configure_and_reload(f'''
         projects+ {{
             uid 'one'
+            access+ {{ role all type allow }}
             map.crs 'EPSG:3857'
             map.layers+ {{
                 type 'wmsflat'
@@ -41,6 +42,7 @@ def layer_from_a_b():
     root = test.configure_and_reload(f'''
         projects+ {{
             uid 'one'
+            access+ {{ role all type allow }}
             map.crs 'EPSG:3857'
             map.layers+ {{
                 type 'wmsflat'
@@ -57,7 +59,8 @@ def layer_from_a_b():
 
 @test.fixture(scope='module')
 def web_request():
-    return gws.Data(user=gws.base.auth.user.System())
+    user = test.root().find(klass='gws.ext.auth.provider.system.Object').users['system']
+    return gws.Data(user=user)
 
 
 def search_args(layer):

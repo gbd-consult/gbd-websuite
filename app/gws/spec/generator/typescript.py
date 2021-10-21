@@ -165,7 +165,7 @@ class _Generator:
         if isinstance(t, base.TVariant):
             return _pipe(self.make(it) for it in t.members.values())
 
-        if isinstance(t, base.TObject):
+        if isinstance(t, base.TRecord):
             tpl = """
                 /// $doc
                 export interface $name$ext {

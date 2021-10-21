@@ -11,35 +11,13 @@ import gws.lib.metadata
 # http://portal.opengeospatial.org/files/?artifact_id=35326
 
 
-class TileMatrix(gws.Data):
-    uid: str
-    scale: float
-    x: float
-    y: float
-    width: float
-    height: float
-    tile_width: float
-    tile_height: float
-    extent: gws.Extent
-
-
-class TileMatrixSet(gws.Data):
-    uid: str
-    crs: gws.Crs
-    matrices: t.List[TileMatrix]
-
-
-class SourceLayer(gws.lib.gis.SourceLayer):
-    matrix_sets: t.List[TileMatrixSet]
-    matrix_ids: t.List[str]
-    format: str
 
 
 class WMTSCaps(gws.Data):
-    matrix_sets: t.List[TileMatrixSet]
+    matrix_sets: t.List[gws.lib.gis.TileMatrixSet]
     metadata: gws.lib.metadata.Record
     operations: t.List[gws.OwsOperation]
-    source_layers: t.List[SourceLayer]
+    source_layers: t.List[gws.lib.gis.SourceLayer]
     supported_crs: t.List[gws.Crs]
     version: str
 
@@ -71,7 +49,7 @@ def parse(xml):
 
 
 def _layer(el):
-    oo = SourceLayer()
+    oo = gws.lib.gis.SourceLayer()
 
     oo.metadata = gws.lib.metadata.Record(u.get_meta(el))
     oo.name = oo.metadata.name
@@ -99,7 +77,7 @@ def _layer(el):
 
 
 def _tile_matrix_set(el):
-    oo = TileMatrixSet()
+    oo = gws.lib.gis.TileMatrixSet()
 
     oo.uid = el.get_text('Identifier')
     oo.crs = el.get_text('SupportedCRS')
@@ -111,7 +89,7 @@ def _tile_matrix_set(el):
 
 
 def _tile_matrix(el):
-    oo = TileMatrix()
+    oo = gws.lib.gis.TileMatrix()
     oo.uid = el.get_text('Identifier')
     oo.scale = float(el.get_text('ScaleDenominator'))
 
@@ -133,7 +111,7 @@ def _tile_matrix(el):
 # compute a bbox for a TileMatrix
 # see http://portal.opengeospatial.org/files/?artifact_id=35326 page 8
 
-def _extent_for_matrix(m: TileMatrix):
+def _extent_for_matrix(m: gws.lib.gis.TileMatrix):
     res = units.scale2res(m.scale)
 
     return [

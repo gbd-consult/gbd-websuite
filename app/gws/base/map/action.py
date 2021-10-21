@@ -101,7 +101,7 @@ class Object(gws.base.api.action.Object):
     def api_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
         found = self._get_features(req, p)
-        return GetFeaturesResponse(features=[f.props for f in found])
+        return GetFeaturesResponse(features=[gws.props(f, req.user) for f in found])
 
     @gws.ext.command('get.map.getFeatures')
     def http_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> gws.ContentResponse:
@@ -110,7 +110,7 @@ class Object(gws.base.api.action.Object):
         return gws.ContentResponse(
             mime='application/json',
             content=gws.lib.json2.to_string({
-                'features': [f.props for f in found]
+                'features': [gws.props(f, req.user) for f in found]
             }))
 
     ##

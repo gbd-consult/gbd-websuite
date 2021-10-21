@@ -91,6 +91,24 @@ class SourceStyle(gws.Data):
     name: str
 
 
+class TileMatrix(gws.Data):
+    uid: str
+    scale: float
+    x: float
+    y: float
+    width: float
+    height: float
+    tile_width: float
+    tile_height: float
+    extent: gws.Extent
+
+
+class TileMatrixSet(gws.Data):
+    uid: str
+    crs: gws.Crs
+    matrices: t.List[TileMatrix]
+
+
 class SourceLayer(gws.Data):
     a_level: int
     a_path: str
@@ -112,12 +130,16 @@ class SourceLayer(gws.Data):
     metadata: gws.lib.metadata.Record
     name: str
     title: str
+    format: str
 
     opacity: int
     scale_range: t.List[float]
     styles: t.List[SourceStyle]
     legend_url: gws.Url
     resource_urls: dict
+
+    matrix_sets: t.List[TileMatrixSet]
+    matrix_ids: t.List[str]
 
 
 class SourceLayerFilter(gws.Data):

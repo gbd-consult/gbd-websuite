@@ -34,3 +34,8 @@ SERVER_ENDPOINT = '/_'
 
 EPSG_3857 = 'EPSG:3857'
 EPSG_4326 = 'EPSG:4326'
+
+ROLE_ADMIN = 'admin'
+ROLE_USER = 'user'
+ROLE_GUEST = 'guest'
+ROLE_ALL = 'all'

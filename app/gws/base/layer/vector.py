@@ -26,15 +26,14 @@ class Object(core.Object):
     supports_wms = True
     supports_wfs = True
 
-    @property
-    def props(self):
-        p = super().props
+    def props_for(self, user):
+        p = super().props_for(user)
 
         if self.display == 'box':
-            return gws.merge(p, {
-                'type': 'box',
-                'url': core.url_for_get_box(self.uid),
-            })
+            return gws.merge(
+                p,
+                type='box',
+                url=core.url_for_get_box(self.uid))
 
         return gws.merge(p, {
             'type': 'vector',

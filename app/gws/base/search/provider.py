@@ -24,21 +24,8 @@ class Config(gws.WithAccess):
     withFilter: bool = True  #: enable filter search
 
 
-class Object(gws.Object, gws.ISearchProvider):
-    supports_keyword: bool = False
-    supports_geometry: bool = False
-    supports_filter: bool = False
-
-    with_keyword: bool
-    with_geometry: bool
-    with_filter: bool
-
-    data_model: t.Optional[gws.IDataModel]
-    templates: t.Optional[gws.ITemplateBundle]
-    tolerance: gws.Measurement
-
+class Object(gws.Node, gws.ISearchProvider):
     spatial_context: SpatialContext
-    title: str
 
     def configure(self):
         self.data_model = self.create_child_if_config(gws.base.model.Object, self.var('dataModel'))

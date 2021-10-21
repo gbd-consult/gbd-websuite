@@ -26,7 +26,7 @@ def run(req: gws.IWebRequest, args: gws.SearchArgs) -> t.List[gws.IFeature]:
         f"params={args.params}",
         f"project={args.project.uid if args.project else None}",
         f"resolution={args.resolution}",
-        f"shapes={[p.props for p in (args.shapes or [])]}",
+        f"shapes={[gws.props(p, req.user) for p in (args.shapes or [])]}",
         f"tolerance={args.tolerance}",
     ]
 

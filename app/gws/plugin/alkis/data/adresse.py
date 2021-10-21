@@ -429,14 +429,14 @@ def find(conn: AlkisConnection, query):
             elif query.get('hausnummerNotNull'):
                 where.append('AD.hausnummer IS NOT NULL')
 
-    where = ('WHERE ' + ' AND '.join(where)) if where else ''
+    where_str = ('WHERE ' + ' AND '.join(where)) if where else ''
     limit = 'LIMIT %d' % (query.get('limit', _DEFAULT_LIMIT))
     tables = f'{conn.index_schema}.{addr_index} AS AD'
 
-    count_sql = f'SELECT COUNT(DISTINCT AD.*) FROM {tables} {where}'
+    count_sql = f'SELECT COUNT(DISTINCT AD.*) FROM {tables} {where_str}'
     count = conn.select_value(count_sql, parms)
 
-    data_sql = f'SELECT DISTINCT AD.* FROM {tables} {where} {limit}'
+    data_sql = f'SELECT DISTINCT AD.* FROM {tables} {where_str} {limit}'
     gws.log.debug(f'sql={data_sql!r} parms={parms!r}')
 
     data = conn.select(data_sql, parms)

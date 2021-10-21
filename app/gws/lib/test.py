@@ -14,6 +14,7 @@ import pytest
 import werkzeug.test
 import werkzeug.wrappers
 
+import gws
 import gws.base.web.web_app
 import gws.config
 import gws.core.tree
@@ -23,6 +24,7 @@ import gws.lib.net
 import gws.lib.os2
 import gws.lib.password
 import gws.lib.vendor.slon
+import gws.lib.mpx.config
 import gws.server.control
 import gws.spec.runtime
 
@@ -32,7 +34,9 @@ fixture = pytest.fixture
 
 CONFIG = {}
 
-MANIFEST_PATH = '/tmp/gws_test_manifest.json'
+TEMP_DIR = '/tmp'
+
+MANIFEST_PATH = TEMP_DIR + '/gws_test_manifest.json'
 
 DEFAULT_MANIFEST = {
     'withStrictConfig': True,
@@ -48,6 +52,7 @@ GWS_CONFIG_PATH = '/gws-var/gws_test_gws_config.json'
 GWS_CONFIG_DEFAULTS = {
     'server': {
         'log': {'level': 'DEBUG'},
+        'mapproxy': {'forceStart': True},
     },
     'auth': {
         'sessionStore': 'sqlite',
@@ -58,13 +63,12 @@ GWS_CONFIG_DEFAULTS = {
 
 # test runner
 
-def main():
+def main(args):
     CONFIG.update(gws.lib.json2.from_path('/gws-var/TEST_CONFIG.json'))
     gws.lib.json2.to_path(MANIFEST_PATH, CONFIG.get('MANIFEST', DEFAULT_MANIFEST))
 
-    args = sys.argv[1:]
     rootdir = gws.APP_DIR + '/gws'
-    files = gws.lib.os2.find_files(rootdir, r'_test\.py')
+    files = list(gws.lib.os2.find_files(rootdir, r'_test\.py'))
     spec = True
 
     if args and not args[0].startswith('-'):
@@ -75,12 +79,27 @@ def main():
         if pattern:
             files = [f for f in files if pattern in f]
 
+    if not files:
+        gws.log.error(f'no files to test')
+        return
+
+    _sort_order = ['/core/', '/lib/', '/base/', '/plugin/']
+
+    def _sort_key(path):
+        for n, s in enumerate(_sort_order):
+            if s in path:
+                return n, path
+        return 99, path
+
+    files.sort(key=_sort_key)
+
     if spec:
         gws.spec.runtime.create_and_store()
 
     pytest_args = ['-c', CONFIG['PYTEST_INI_PATH'], '--rootdir', rootdir]
     pytest_args.extend(args)
     pytest_args.extend(files)
+    gws.log.debug(f'running pytest with args: {pytest_args}')
     pytest.main(pytest_args)
 
 
@@ -415,6 +434,9 @@ def register_ext(class_name, cls):
 
 
 def write_file(path, text):
+    pp = gws.lib.os2.parse_path(path)
+    if pp['dirname'].startswith(TEMP_DIR):
+        gws.ensure_dir(pp['dirname'])
     with open(path, 'wt', encoding='utf8') as fp:
         fp.write(text)
 
@@ -445,6 +467,13 @@ def sleep(n):
 
 def raises(exc):
     return pytest.raises(exc)
+
+
+def dict_of(x):
+    if gws.is_data_object(x):
+        # noinspection PyTypeChecker
+        return dict(sorted(vars(x).items()))
+    return x
 
 
 # div. geodata

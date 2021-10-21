@@ -3,17 +3,18 @@ import gws.base.layer
 import gws.base.ows
 import gws.lib.gis
 import gws.lib.gis
+import gws.lib.gis
 import gws.lib.json2
 import gws.lib.mpx
 import gws.lib.net
 import gws.lib.ows
 import gws.lib.units as units
 import gws.types as t
-from . import provider, caps
+from . import provider as provider_module
 
 
 @gws.ext.Config('layer.wmts')
-class Config(gws.base.layer.image.Config, provider.Config):
+class Config(gws.base.layer.image.Config, provider_module.Config):
     """WMTS layer"""
     display: gws.base.layer.types.DisplayMode = gws.base.layer.types.DisplayMode.tile  #: layer display mode
     sourceLayer: t.Optional[str]  #: WMTS layer name
@@ -22,14 +23,14 @@ class Config(gws.base.layer.image.Config, provider.Config):
 
 @gws.ext.Object('layer.wmts')
 class Object(gws.base.layer.image.Object):
-    matrix_set: caps.TileMatrixSet
-    provider: provider.Object
+    matrix_set: gws.lib.gis.TileMatrixSet
+    provider: provider_module.Object
     source_crs: gws.Crs
-    source_layer: caps.SourceLayer
+    source_layer: gws.lib.gis.SourceLayer
     source_style: str
 
     def configure(self):
-        self.provider = provider.create(self.root, self.config, shared=True)
+        self.provider = provider_module.create(self.root, self.config, shared=True)
 
         self.grid.reqSize = self.grid.reqSize or 1
 
@@ -80,7 +81,7 @@ class Object(gws.base.layer.image.Object):
         src = self.mapproxy_back_cache_config(mc, self.get_tile_url(), grid_uid)
         self.mapproxy_layer_config(mc, src)
 
-    def get_source_layer(self, layer_name) -> caps.SourceLayer:
+    def get_source_layer(self, layer_name) -> gws.lib.gis.SourceLayer:
         if layer_name:
             for sl in self.provider.source_layers:
                 if sl.name == layer_name:

@@ -16,15 +16,16 @@ def normalize(state: base.ParserState, meta):
 
 
 def prepare_for_server(state: base.ParserState, meta):
-    objs = {}
-    cmds = {}
+    objects: dict = {}
+    commands: dict = {}
+    isa_map: dict = {}
 
     deps = {'gws.base.application.Config'}
 
     for t in state.types.values():
-        if isinstance(t, base.TObject) and t.ext_kind == 'Object':
-            objs[t.name] = dict(
-                _='ExtObject',
+        if isinstance(t, base.TRecord) and _is_a(state, t, 'gws.core.tree.Node'):
+            commands[t.name] = dict(
+                _='TNode',
                 ext_category=t.ext_category,
                 ext_type=t.ext_type,
                 ident=t.ident,
@@ -33,10 +34,26 @@ def prepare_for_server(state: base.ParserState, meta):
                 name=t.name,
             )
 
+            isa = [t.name]
+            if t.name.endswith('.Object'):
+                isa.append(t.name.rpartition('.')[0])
+
+            for src, dst in state.aliases.items():
+                if dst == t.name:
+                    isa.append(src)
+                    isa.append(src.rpartition('.')[0])
+
+            if t.ext_type:
+                isa.append(f'{base.GWS_EXT_PREFIX}.{t.ext_category}')
+                isa.append(f'{base.GWS_EXT_PREFIX}.{t.ext_category}.{t.ext_type}')
+                isa.append(f'{base.GWS_EXT_PREFIX}.{t.ext_category}.{t.ext_type}.Object')
+
+            isa_map[t.name] = sorted(isa)
+
         if isinstance(t, base.TCommand):
-            owner_type = cast(base.TObject, _get_type(state, t.owner_t))
-            cmds[t.name] = dict(
-                _='ExtCommand',
+            owner_type = cast(base.TRecord, _get_type(state, t.owner_t))
+            commands[t.name] = dict(
+                _='TCommand',
                 arg=t.arg_t,
                 class_name=owner_type.name,
                 cmd_action=t.cmd_action,
@@ -48,13 +65,27 @@ def prepare_for_server(state: base.ParserState, meta):
             )
             deps.add(t.arg_t)
 
-    specs = _select_dependent(state, deps)
-    specs.update(objs)
-    specs.update(cmds)
+    specs: dict = {}
+
+    specs.update(_dependent_specs(state, deps))
+    specs.update(objects)
+    specs.update(commands)
+    specs['ISA_MAP'] = isa_map
+
     return specs
 
 
-def _select_dependent(state, names):
+def _is_a(state, t, cls):
+    if t.name == cls or cls in t.supers:
+        return True
+    for s in t.supers:
+        st = state.types.get(s)
+        if st and isinstance(st, base.TRecord) and _is_a(state, st, cls):
+            return True
+    return False
+
+
+def _dependent_specs(state, names):
     queue = [['root', n] for n in names]
     selected = {}
 
@@ -63,7 +94,7 @@ def _select_dependent(state, names):
         t = _get_type(state, q) if isinstance(q, str) else cast(base.Type, q)
 
         if not t:
-            raise base.Error(f'unresolved reference {q!r} in {parent!r}')
+            raise base.Error(f'not found {q!r} in {parent!r}')
 
         if t.name in selected:
             continue
@@ -84,7 +115,7 @@ def _select_dependent(state, names):
         if isinstance(t, base.TVariant):
             nxt = t.members.values()
 
-        if isinstance(t, base.TObject):
+        if isinstance(t, base.TRecord):
             selected[t.name] = dict(name=t.name, props=t.props)
             nxt = t.props.values()
 
@@ -158,7 +189,7 @@ def _resolve_aliases(state):
             t.owner_t = _resolve(t.owner_t)
             return t
 
-        if isinstance(t, base.TObject):
+        if isinstance(t, base.TRecord):
             if t.supers:
                 t.supers = [_resolve(s) for s in t.supers]
             return t
@@ -178,16 +209,17 @@ def _resolve_aliases(state):
         if name in resolved:
             return resolved[name]
         if name in stack:
-            raise ValueError(f'circular reference {stack!r}->{name!r}')
+            raise base.Error(f'circular reference {stack!r}->{name!r}')
 
         t = _get_type(state, name)
 
         if not t:
-            base.log.debug(f'unbound reference {name!r}')
+            base.debug_log(f'unbound reference {name!r}', state.types[name])
             return name
 
         if isinstance(t, base.TUnresolvedReference):
-            base.log.debug(f'unresolved reference {name!r}')
+            if 'vendor' not in name:
+                base.debug_log(f'unresolved reference {name!r}', t)
             return name
 
         stack.append(t.name)
@@ -207,16 +239,18 @@ def _resolve_aliases(state):
 def _check_enums(state):
     for t in state.types.values():
         default = getattr(t, 'default', None)
-        if isinstance(default, list) and len(default) == 2 and default[0] == base.UNCHECKED_ENUM:
-            name = default[1]
+        if isinstance(default, base.TUncheckedEnum):
+            name = default.name
             obj_name, _, item_name = name.rpartition('.')
             enum_spec = _get_type(state, obj_name)
             if enum_spec and isinstance(enum_spec, base.TEnum) and item_name in enum_spec.values:
                 t.default = enum_spec.values[item_name]
+                t.property_t = enum_spec.name
             else:
-                t.default = None
+                t.default = name
                 t.has_default = False
-                base.log.debug(f'invalid enum value {name!r}')
+                t.property_t = 'str'
+                base.debug_log(f'invalid enum value {name!r}', t)
 
 
 def _check_variants(state):
@@ -267,10 +301,10 @@ def _synthesize_ext_configs_and_props(state):
             continue
 
         for kind in ['Config', 'Props']:
-            name = _dot(base.GWS_EXT_PREFIX, t.ext_category, t.ext_type, kind)
+            name = '.'.join(t.name.split('.')[:-1]) + '.' + kind
             if name in existing_names:
                 continue
-            upd[name] = base.TObject(
+            upd[name] = base.TRecord(
                 doc=t.doc,
                 ident=kind,
                 name=name,
@@ -280,7 +314,6 @@ def _synthesize_ext_configs_and_props(state):
                 ext_kind=kind,
                 ext_type=t.ext_type,
             )
-            # base.log.debug(f'synthesized {name!r}')
 
     state.types.update(upd)
 
@@ -314,7 +347,7 @@ def _synthesize_ext_variants(state):
     variants = {}
 
     for t in state.types.values():
-        if not isinstance(t, base.TObject) or not getattr(t, 'ext_type', None):
+        if not isinstance(t, base.TRecord) or not getattr(t, 'ext_type', None):
             continue
         # gws.ext.db.provider.foo.Object => gws.ext.db.provider.Object
         variant_name = _dot(base.GWS_EXT_PREFIX, t.ext_category, t.ext_kind)
@@ -346,7 +379,7 @@ def _make_props(state):
     for t in state.types.values():
         if isinstance(t, base.TProperty):
             obj_name, _, prop_name = t.name.rpartition('.')
-            own_props.setdefault(obj_name, {})[prop_name] = t.name
+            own_props.setdefault(obj_name, {})[prop_name] = t
 
     def _make(t):
         name = t.name
@@ -358,25 +391,38 @@ def _make_props(state):
 
         props = {}
 
-        if isinstance(t, base.TObject):
+        if isinstance(t, base.TRecord):
             for sup in t.supers:
                 super_type = _get_type(state, sup)
                 if super_type:
                     stack.append(name)
                     props.update(_make(super_type))
                     stack.pop()
-                else:
-                    base.log.debug(f'unknown supertype {sup!r}')
+                elif 'vendor' not in sup:
+                    base.debug_log(f'unknown supertype {sup!r}', t)
             if name in own_props:
+                _check_property_overrides(state, t, props, own_props[name])
                 props.update(own_props[name])
-            t.props = props
+            t.props = {k: v.name for k, v in props.items()}
 
         done[name] = props
         return props
 
     for t in state.types.values():
-        if isinstance(t, base.TObject):
+        if isinstance(t, base.TRecord):
             _make(t)
+
+
+def _check_property_overrides(state, t, super_props, own_props):
+    for k in own_props:
+        if k in super_props:
+            old = super_props[k]
+            new = own_props[k]
+            if old.property_t != new.property_t:
+                # @TODO check extended types and literals vs strings
+                pass
+            elif not old.has_default and not new.has_default:
+                base.debug_log(f'unnecessary property override: {k!r} in {t.name!r}', t)
 
 
 def _get_type(state, name):

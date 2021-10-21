@@ -84,4 +84,4 @@ class Object(gws.base.api.action.Object):
             f.apply_templates()
             f.apply_data_model()
 
-        return Response(features=[f.props for f in found])
+        return Response(features=[gws.props(f, req.user) for f in found])

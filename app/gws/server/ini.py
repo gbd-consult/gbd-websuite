@@ -30,7 +30,7 @@ _uwsgi_params = """
 """
 
 
-def create(root: gws.RootObject, base_dir, pid_dir):
+def create(root: gws.IRoot, base_dir, pid_dir):
     def _write(p, s):
         p = base_dir + '/' + p
         s = '\n'.join(x.strip() for x in s.strip().splitlines())
@@ -187,9 +187,7 @@ def create(root: gws.RootObject, base_dir, pid_dir):
 
     if qgis_enabled:
 
-        qgis_server = gws.import_from_path(
-            gws.APP_DIR + '/gws/plugin/qgis/server.py',
-            'gws.plugin.qgis.server')
+        qgis_server = gws.import_from_path('gws/plugin/qgis/server.py')
 
 
         # partially inspired by

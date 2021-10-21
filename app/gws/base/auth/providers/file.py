@@ -58,7 +58,8 @@ class Object(provider.Object):
                 return self._make_user(rec)
 
     def _make_user(self, rec):
-        return user.AuthorizedUser().init_from_source(
+        return user.create(
+            user.AuthorizedUser,
             provider=self,
             local_uid=rec['login'],
             roles=rec.get('roles', []),

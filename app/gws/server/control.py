@@ -75,7 +75,7 @@ def _reload_uwsgi(module):
 
     for p in gws.lib.os2.find_files(pid_dir, pattern):
         gws.log.info(f'reloading {p}...')
-        gws.lib.os2.run(['uwsgi', '--reload', p])
+        gws.lib.os2.run(['/usr/local/bin/uwsgi', '--reload', p])
 
 
 def _uwsgi_is_running():
@@ -161,41 +161,41 @@ class ReloadParams(StartParams):
 
 
 @gws.ext.Object('cli.server')
-class Cli:
+class Cli(gws.Node):
 
     @gws.ext.command('cli.server.start')
-    def start(self, p: StartParams):
+    def do_start(self, p: StartParams):
         """Configure and start the server"""
         start(p.manifest, p.config)
 
     @gws.ext.command('cli.server.restart')
-    def restart(self, p: StartParams):
+    def do_restart(self, p: StartParams):
         """Stop and start the server"""
-        self.start(p)
+        self.do_start(p)
 
     @gws.ext.command('cli.server.stop')
-    def stop(self, p: gws.NoParams):
+    def do_stop(self, p: gws.NoParams):
         """Stop the server"""
         stop()
 
     @gws.ext.command('cli.server.reload')
-    def reload(self, p: ReloadParams):
+    def do_reload(self, p: ReloadParams):
         """Reload specific (or all) server modules"""
         if not reload(p.modules):
             gws.log.info('server not running, starting')
-            self.start(t.cast(StartParams, p))
+            self.do_start(t.cast(StartParams, p))
 
     @gws.ext.command('cli.server.reconfigure')
-    def reconfigure(self, p: StartParams):
+    def do_reconfigure(self, p: StartParams):
         """Reconfigure and restart the server"""
         reconfigure(p.manifest, p.config)
 
     @gws.ext.command('cli.server.configure')
-    def configure(self, p: StartParams):
+    def do_configure(self, p: StartParams):
         """Configure the server, but do not restart"""
         configure(p.manifest, p.config)
 
     @gws.ext.command('cli.server.configtest')
-    def configtest(self, p: StartParams):
+    def do_configtest(self, p: StartParams):
         """Test the configuration"""
         _configure(p.manifest or '', p.config or '', is_starting=False)

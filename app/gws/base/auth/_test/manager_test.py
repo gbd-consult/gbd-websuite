@@ -20,7 +20,7 @@ class MockProvider(provider.Object):
 
     def get_user(self, local_uid):
         if local_uid == 'user1':
-            return user.AuthorizedUser().init_from_source(self, 'user1', ['role1'], {'displayName': 'USER_1'})
+            return user.create(user.AuthorizedUser, self, 'user1', ['role1'], {'displayName': 'USER_1'})
 
 
 @test.fixture(scope='module')

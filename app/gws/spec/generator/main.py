@@ -4,7 +4,7 @@ import re
 
 from . import base, manifest, parser, normalizer, strings, typescript
 
-EXCLUDE_PATHS = ['___', '/vendor/', '/_test', 'core/ext']
+EXCLUDE_PATHS = ['___', '/vendor/', 'test', 'core/ext']
 
 CONST_PATH = base.APP_DIR + '/gws/core/const.py'
 STRINGS_PATH = base.APP_DIR + '/gws/spec/strings.ini'
@@ -86,7 +86,7 @@ def _init_meta(mode, manifest_path):
 
     if manifest_path:
         try:
-            base.log.debug('loading manifest', manifest_path)
+            base.debug_log(f'loading manifest {manifest_path!r}')
             meta.manifest_path = manifest_path
             meta.manifest = manifest.load(manifest_path)
         except Exception as e:

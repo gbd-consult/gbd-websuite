@@ -31,7 +31,7 @@ class Directory(gws.Data):
 class Record(gws.Data):
     category: str
     name: str
-    user_fid: str
+    user_uid: str
     data: str
     created: int
     updated: int

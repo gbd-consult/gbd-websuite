@@ -48,11 +48,11 @@ class Object(gws.base.layer.image.Object):
             queryable_layers = gws.lib.gis.enum_source_layers(self.source_layers, is_queryable=True)
             if queryable_layers:
                 self.search_providers.append(
-                    t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider.wms', gws.Config(
+                    self.require_child('gws.ext.search.provider.wms', gws.Config(
                         uid=self.uid + '.default_search',
                         _provider=self.provider,
                         _source_layers=queryable_layers
-                    ))))
+                    )))
                 self.has_configured_search = True
 
         if not self.has_configured_legend:

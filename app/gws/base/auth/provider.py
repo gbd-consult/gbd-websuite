@@ -10,9 +10,7 @@ class Config(gws.Config):
     allowedMethods: t.Optional[t.List[str]]  #: allowed authorization methods
 
 
-class Object(gws.Object, gws.IAuthProvider):
-    allowed_methods: t.List[str]
-
+class Object(gws.Node, gws.IAuthProvider):
     def configure(self):
         self.allowed_methods = self.var('allowedMethods', default=[])
 
@@ -28,4 +26,4 @@ class Object(gws.Object, gws.IAuthProvider):
 
     def unserialize_user(self, ser):
         d = gws.lib.json2.from_string(ser)
-        return user_api.AuthorizedUser().init_from_data(self, d['local_uid'], d['roles'], d['attributes'])
+        return user_api.create(user_api.AuthorizedUser, self, d['local_uid'], set(d['roles']), d['attributes'])

@@ -21,7 +21,7 @@ import gws.lib.shape
 import gws.lib.style
 import gws.base.web.error
 
-from . import provider as prov, util
+from . import provider as provider_module, util, types
 
 STORAGE_CATEGORY = 'Alkis'
 
@@ -61,67 +61,125 @@ class BuchungConfig(gws.WithAccess):
     pass
 
 
-class UiGemarkungListMode(t.Enum):
-    none = 'none'  #: do not show the list
-    plain = 'plain'  #: only "gemarkung"
-    combined = 'combined'  #: "gemarkung (gemeinde)"
-    tree = 'tree'  # a tree with level 1 = "gemeinde" and level 2 = "gemarkung"
+class ExportGroupConfig(gws.Config):
+    """Export group configuration"""
+
+    dataModel: t.Optional[gws.base.model.Config]  #: data model for this group
+    title: str  #: title for this group
+    withBuchung: bool = False  #: include Grundbuch (register) data
+    withEigentuemer: bool = False  #: include Eigentuemer (owner) data
 
 
-class UiStrasseListMode(t.Enum):
-    plain = 'plain'  #: just "strasse"
-    withGemeinde = 'withGemeinde'  #: "strasse" ("gemeinde")
-    withGemarkung = 'withGemarkung'  #: "strasse" ("gemarkung")
-    withGemeindeIfRepeated = 'withGemeindeIfRepeated'  #: "strasse" ("gemeinde"), when needed for disambiguation
-    withGemarkungIfRepeated = 'withGemarkungIfRepeated'  #: "strasse" ("gemarkung"), when needed for disambiguation
+class ExportConfig(gws.Config):
+    """CSV Export configuration"""
 
-
-class UiBblattSearchMode(t.Enum):
-    start = 'start'  #: search from the beginning
-    end = 'end'  #: search from the end
-    any = 'any'  #: search anywhere
-    exact = 'exact'  #: exact search
-
-
-class UiStrasseSearchMode(t.Enum):
-    start = 'start'  #: search from the beginning
-    any = 'any'  #: search anywhere
-
-
-class UiConfig(gws.Config):
-    """Flurstückssuche UI configuration."""
-
-    useExport: bool = False  #: export function enabled
-    useSelect: bool = False  #: select mode enabled
-    usePick: bool = False  #: pick mode enabled
-    searchSelection: bool = False  #: search in selection enabled
-    searchSpatial: bool = False  #: spatial search enabled
-    gemarkungListMode: UiGemarkungListMode = 'combined'  #: gemarkung list mode
-    strasseListMode: UiStrasseListMode = 'plain'  #: strasse list entry format
-    strasseSearchMode: UiStrasseSearchMode = 'start'  #: strasse search mode
-    autoSpatialSearch: bool = False  #: activate spatial search after submit
-    bblattSearchMode: UiBblattSearchMode = 'any'  #: buchungsblatt search mode
+    groups: t.Optional[t.List[ExportGroupConfig]]  #: export groups
 
 
 @gws.ext.Config('action.alkissearch')
-class Config(prov.Config):
+class Config(provider_module.Config):
     """Flurstückssuche (cadaster parlcels search) action"""
 
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
     buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
     limit: int = 100  #: search results limit
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: templates for Flurstueck details
-    ui: t.Optional[UiConfig]  #: ui options
-    export: t.Optional[util.export.Config]  #: csv export configuration
+    ui: t.Optional[types.UiOptions]  #: ui options
+    export: t.Optional[ExportConfig]  #: csv export configuration
 
+
+##
+
+class ExportGroup(gws.Node):
+    """Export group"""
+
+    data_model: gws.base.model.Object
+    with_buchung: bool
+    with_eigentuemer: bool
+
+    def configure(self):
+        self.data_model = self.require_child(gws.base.model.Object, self.var('dataModel'))
+        self.with_buchung = self.var('withBuchung')
+        self.with_eigentuemer = self.var('withEigentuemer')
+        self.title = self.var('title')
+
+
+class ExportGroupProps(gws.Props):
+    index: int
+    title: str
+
+
+_DEFAULT_EXPORT_GROUPS = [
+    gws.Config(
+        title='Basisdaten',
+        dataModel=gws.Config(rules=[
+            gws.Config(source='gemeinde', title='Gemeinde'),
+            gws.Config(source='gemarkung_id', title='Gemarkung ID'),
+            gws.Config(source='gemarkung', title='Gemarkung'),
+            gws.Config(source='flurnummer', title='Flurnummer', type=gws.AttributeType.int),
+            gws.Config(source='zaehler', title='Zähler', type=gws.AttributeType.int),
+            gws.Config(source='nenner', title='Nenner'),
+            gws.Config(source='flurstuecksfolge', title='Folge'),
+            gws.Config(source='amtlicheflaeche', title='Fläche', type=gws.AttributeType.float),
+            gws.Config(source='x', title='X', type=gws.AttributeType.float),
+            gws.Config(source='y', title='Y', type=gws.AttributeType.float),
+        ])
+    ),
+    gws.Config(
+        title='Lage',
+        dataModel=gws.Config(rules=[
+            gws.Config(source='lage_strasse', title='FS Strasse'),
+            gws.Config(source='lage_hausnummer', title='FS Hnr'),
+        ])
+    ),
+    gws.Config(
+        title='Gebäude',
+        dataModel=gws.Config(rules=[
+            gws.Config(source='gebaeude_area', title='Gebäude Fläche', type=gws.AttributeType.float),
+            gws.Config(source='gebaeude_gebaeudefunktion', title='Gebäude Funktion'),
+        ])
+    ),
+    gws.Config(
+        title='Buchungsblatt', withBuchung=True,
+        dataModel=gws.Config(rules=[
+            gws.Config(source='buchung_buchungsart', title='Buchungsart'),
+            gws.Config(source='buchung_buchungsblatt_blattart', title='Blattart'),
+            gws.Config(source='buchung_buchungsblatt_buchungsblattkennzeichen', title='Blattkennzeichen'),
+            gws.Config(source='buchung_buchungsblatt_buchungsblattnummermitbuchstabenerweiterung', title='Blattnummer'),
+            gws.Config(source='buchung_laufendenummer', title='Laufende Nummer'),
+        ])
+    ),
+    gws.Config(
+        title='Eigentümer', withEigentuemer=True, withBuchung=True,
+        dataModel=gws.Config(rules=[
+            gws.Config(source='buchung_eigentuemer_person_vorname', title='Vorname'),
+            gws.Config(source='buchung_eigentuemer_person_nachnameoderfirma', title='Name'),
+            gws.Config(source='buchung_eigentuemer_person_geburtsdatum', title='Geburtsdatum'),
+            gws.Config(source='buchung_eigentuemer_person_anschrift_strasse', title='Strasse'),
+            gws.Config(source='buchung_eigentuemer_person_anschrift_hausnummer', title='Hnr'),
+            gws.Config(source='buchung_eigentuemer_person_anschrift_postleitzahlpostzustellung', title='PLZ'),
+            gws.Config(source='buchung_eigentuemer_person_anschrift_ort_post', title='Ort'),
+        ])
+    ),
+    gws.Config(
+        title='Nutzung',
+        dataModel=gws.Config(rules=[
+            gws.Config(source='nutzung_a_area', title='Nutzung Fläche', type=gws.AttributeType.float),
+            gws.Config(source='nutzung_type', title='Nutzung Typ'),
+        ])
+    ),
+]
+
+
+##
 
 @gws.ext.Props('action.alkissearch')
 class Props(gws.base.api.action.Props):
-    exportGroups: dict
-    gemarkungen: t.List[prov.Gemarkung]
+    exportGroups: t.List[ExportGroupProps]
+    gemarkungen: t.List[types.Gemarkung]
     limit: int
     printTemplate: gws.base.template.Props
-    ui: UiConfig
+    ui: types.UiOptions
     withBuchung: bool
     withControl: bool
     withEigentuemer: bool
@@ -136,7 +194,7 @@ class BaseFindParams(gws.Params):
     gemeinde: str = ''
     gemeindeUid: str = ''
     strasse: str = ''
-    strasseMode: t.Optional[prov.StrasseQueryMode]
+    strasseMode: t.Optional[types.StrasseQueryMode]
 
 
 class GetToponymsParams(gws.Params):
@@ -225,7 +283,7 @@ class PrintParams(gws.Params):
 
 class ExportParams(gws.Params):
     findParams: FindFlurstueckParams
-    groups: t.List[str]
+    groupIndexes: t.List[int]
 
 
 class ExportResponse(gws.Response):
@@ -276,20 +334,20 @@ _EF_FAIL = -1  # access to Eigentümer granted, control check failed
 
 @gws.ext.Object('action.alkissearch')
 class Object(gws.base.api.action.Object):
-    provider: prov.Object
+    provider: provider_module.Object
     limit: int
     templates: gws.ITemplateBundle
-    ui: UiConfig
-    export: util.export.Config
-    buchung: BuchungConfig
-    eigentuemer: EigentuemerConfig
+    ui: types.UiOptions
+    export_groups: t.List[ExportGroup]
+    buchung_cfg: BuchungConfig
+    eigentuemer_cfg: EigentuemerConfig
     control_mode: bool
     log_table: str
     control_rules: t.List[str]
     print_template: gws.ITemplate
 
     def configure(self):
-        self.provider = prov.create(self.root, self.config, shared=True)
+        self.provider = provider_module.create(self.root, self.config, shared=True)
 
         if not self.provider.has_index:
             raise gws.Error('alkissearch cannot init, no alkis index')
@@ -302,29 +360,29 @@ class Object(gws.base.api.action.Object):
             parent=self)
 
         self.print_template = self.templates.find(subject='print')
-
         self.ui = self.var('ui')
 
         p = self.var('export')
-        groups = util.export.DEFAULT_GROUPS
-        if not p and self.ui.useExport:
-            p = gws.Config(groups=groups)
-        elif p:
-            p.groups = p.groups or groups
-        self.export = p
+        if p:
+            groups = p.groups or _DEFAULT_EXPORT_GROUPS
+        elif self.ui.useExport:
+            groups = _DEFAULT_EXPORT_GROUPS
+        else:
+            groups = []
+        self.export_groups = [self.require_child(ExportGroup, g) for g in groups]
 
-        self.buchung = self.var('buchung')
+        self.buchung_cfg = self.var('buchung')
 
-        self.eigentuemer = self.var('eigentuemer')
+        self.eigentuemer_cfg = self.var('eigentuemer')
         self.control_mode = False
         self.log_table = ''
         self.control_rules = []
 
-        if self.eigentuemer:
-            self.log_table = self.eigentuemer.get('logTable')
-            if self.eigentuemer.get('controlMode'):
+        if self.eigentuemer_cfg:
+            self.log_table = self.eigentuemer_cfg.get('logTable')
+            if self.eigentuemer_cfg.get('controlMode'):
                 self.control_mode = True
-                self.control_rules = self.eigentuemer.get('controlRules') or []
+                self.control_rules = self.eigentuemer_cfg.get('controlRules') or []
 
         if self.log_table:
             with self.provider.db.connect() as conn:
@@ -335,22 +393,23 @@ class Object(gws.base.api.action.Object):
         with_eigentuemer = self._can_read_eigentuemer(user)
         with_buchung = self._can_read_buchung(user)
 
-        eg = {}
+        export_groups = []
 
-        if self.export and self._can_use_export(user):
-            for n, g in enumerate(self.export.groups):
-                if g.get('eigentuemer') and not with_eigentuemer:
-                    continue
-                if g.get('buchung') and not with_buchung:
-                    continue
-                eg[n] = g.get('title')
+        for i, group in enumerate(self.export_groups):
+            if group.with_eigentuemer and not with_eigentuemer:
+                continue
+            if group.with_buchung and not with_buchung:
+                continue
+            export_groups.append(ExportGroupProps(
+                index=i, title=group.title
+            ))
 
         return gws.merge(
             super().props_for(user),
-            exportGroups=eg,
+            exportGroups=sorted(export_groups, key=lambda g: g.title),
             gemarkungen=self.provider.gemarkung_list(),
             limit=self.limit,
-            printTemplate=self.print_template.props,
+            printTemplate=self.print_template,
             ui=self.ui,
             withBuchung=with_buchung,
             withControl=with_eigentuemer and self.control_mode,
@@ -363,7 +422,7 @@ class Object(gws.base.api.action.Object):
         """Return all Toponyms (Gemeinde/Gemarkung/Strasse) in the area"""
 
         req.require_project(p.projectUid)
-        res = self.provider.find_strasse(prov.FindStrasseQuery(p))
+        res = self.provider.find_strasse(types.FindStrasseQuery(p))
 
         gemeinde = {}
         gemarkung = {}
@@ -374,11 +433,9 @@ class Object(gws.base.api.action.Object):
             if s.gemarkungUid not in gemarkung:
                 gemarkung[s.gemarkungUid] = ToponymGemarkung(name=s.gemarkung, uid=s.gemarkungUid, gemeindeUid=s.gemeindeUid)
 
-        by_name = lambda x: x.name
-
         return GetToponymsResponse(
-            gemeinden=sorted(gemeinde.values(), key=by_name),
-            gemarkungen=sorted(gemarkung.values(), key=by_name),
+            gemeinden=sorted(gemeinde.values(), key=lambda x: x.name),
+            gemarkungen=sorted(gemarkung.values(), key=lambda x: x.name),
             strasseNames=[s.strasse for s in res.strassen],
             strasseGemarkungUids=[s.gemarkungUid for s in res.strassen],
         )
@@ -415,16 +472,17 @@ class Object(gws.base.api.action.Object):
         if not res.features:
             raise gws.base.web.error.NotFound()
 
-        combined_rules = []
+        combined_rules: t.List[gws.base.model.Rule] = []
+        group_indexes = sorted(int(i) for i in p.groupIndexes)
 
-        for g in sorted(int(g) for g in p.groups):
-            combined_rules.extend(self.export.groups[g].dataModel.rules)
+        for i in group_indexes:
+            combined_rules.extend(self.export_groups[i].data_model.rules)
 
-        combined_model = self.root.create_object(
+        combined_model =self.root.create_object(
             gws.base.model.Object,
             gws.Config(rules=combined_rules),
             shared=True,
-            key=p.groups)
+            key=group_indexes)
 
         csv_bytes = util.export.as_csv(self, res.features, combined_model)
 
@@ -438,7 +496,7 @@ class Object(gws.base.api.action.Object):
 
         fp = p.findParams
         fp.projectUid = project.uid
-        fp.locale = p.localeUid
+        fp.localeUid = p.localeUid
 
         res = self._fetch(req, fp, self.limit)
 
@@ -447,11 +505,14 @@ class Object(gws.base.api.action.Object):
 
         pp = p.printParams
         pp.projectUid = p.projectUid
-        pp.locale = p.localeUid
+        pp.localeUid = p.localeUid
         pp.templateUid = self.print_template.uid
         pp.sections = []
 
         for feature in res.features:
+            if not feature.shape:
+                gws.log.warn(f'feature {feature.uid!r} has no shape')
+                continue
             center = feature.shape.centroid
             pp.sections.append(gws.base.printer.types.Section(
                 center=[center.x, center.y],
@@ -459,7 +520,7 @@ class Object(gws.base.api.action.Object):
                 items=[
                     gws.base.printer.types.ItemFeatures(
                         type='features',
-                        features=[feature.props],
+                        features=[feature],
                         style=p.highlightStyle,
                     )
                 ]
@@ -470,28 +531,29 @@ class Object(gws.base.api.action.Object):
 
     @gws.ext.command('api.alkissearch.storage')
     def storage(self, req: gws.IWebRequest, p: gws.base.storage.Params) -> gws.base.storage.Response:
-        helper = t.cast(gws.base.storage.Object, self.root.application.require_helper('storage'))
+        helper: gws.base.storage.Object = self.root.application.require_helper('storage')
         return helper.handle_action(req, p, STORAGE_CATEGORY)
 
     ##
 
     def _fetch_and_format(self, req, p: FindFlurstueckParams, template_keys: t.List[str], soft_limit, hard_limit) -> FindFlurstueckResponse:
-        fprops = []
+        feature_props_list = []
         res = self._fetch(req, p, soft_limit, hard_limit)
 
-        for f in res.features:
-            f.apply_templates(self.templates, keys=template_keys)
-            props = f.props
-            gws.pop(props, 'attributes')
-            fprops.append(props)
+        for feature in res.features:
+            feature.apply_templates(self.templates, keys=template_keys)
+            f = gws.props(feature, req.user, parent=self)
+            if f:
+                gws.pop(f, 'attributes')
+                feature_props_list.append(f)
 
         return FindFlurstueckResponse(
             total=res.total,
-            features=sorted(fprops, key=lambda f: f.elements['title']))
+            features=sorted(feature_props_list, key=lambda f: f.elements['title']))
 
-    def _fetch(self, req, p: FindFlurstueckParams, soft_limit=0, hard_limit=0) -> prov.FindFlurstueckResult:
+    def _fetch(self, req, p: FindFlurstueckParams, soft_limit=0, hard_limit=0) -> types.FindFlurstueckResult:
 
-        fq = prov.FindFlurstueckQuery(p)
+        fq = types.FindFlurstueckQuery(p)
 
         eigentuemer_flag = self._eigentuemer_flag(req, p)
         if eigentuemer_flag == _EF_FAIL:
@@ -591,15 +653,12 @@ class Object(gws.base.api.action.Object):
 
         return False
 
-    def _can_read_eigentuemer(self, user: gws.IUser):
-        b = user.can_use(self.eigentuemer)
-        gws.log.debug(f'_can_read_eigentuemer user={user.fid!r} res={b}')
+    def _can_read_eigentuemer(self, user):
+        b = user.can_use(self.eigentuemer_cfg)
+        gws.log.debug(f'_can_read_eigentuemer res={b}')
         return b
 
-    def _can_read_buchung(self, user: gws.IUser):
-        b = user.can_use(self.buchung)
-        gws.log.debug(f'_can_read_buchung user={user.fid!r} res={b}')
+    def _can_read_buchung(self, user):
+        b = user.can_use(self.buchung_cfg)
+        gws.log.debug(f'_can_read_buchung res={b}')
         return b
-
-    def _can_use_export(self, user: gws.IUser):
-        return user.can_use(self.export, parent=self)

@@ -43,7 +43,7 @@ class Object(gws.base.ows.provider.Object):
     def configure(self):
         cc = caps.parse(self.get_capabilities())
 
-        self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
+        self.metadata = self.require_child(gws.base.metadata.Object, cc.metadata)
         self.source_layers = cc.source_layers
         self.supported_crs = cc.supported_crs
         self.version = cc.version
@@ -127,5 +127,5 @@ class Object(gws.base.ows.provider.Object):
 
 ##
 
-def create(root: gws.RootObject, cfg: gws.Config, shared: bool = False, parent: gws.Object = None) -> Object:
-    return t.cast(Object, root.create_object(Object, cfg, shared=shared, parent=parent))
+def create(root: gws.IRoot, cfg: gws.Config, shared: bool = False, parent: gws.Node = None) -> Object:
+    return root.create_object(Object, cfg, shared=shared, parent=parent)

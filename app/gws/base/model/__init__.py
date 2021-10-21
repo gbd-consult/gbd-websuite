@@ -106,16 +106,15 @@ class Props(gws.Props):
     rules: t.List[RuleProps]
 
 
-class Object(gws.Object, gws.IDataModel):
+class Object(gws.Node, gws.IDataModel):
     rules: t.List[Rule]
     geometry_type: gws.GeometryType
     geometry_crs: gws.Crs
 
-    @property
-    def props(self):
-        return gws.Props(
+    def props_for(self, user):
+        return Props(
             rules=[
-                gws.Props(
+                RuleProps(
                     name=r.name,
                     editable=r.editable,
                     editor=r.editor,

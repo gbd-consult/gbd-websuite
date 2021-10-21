@@ -145,7 +145,7 @@ class _Config:
         return d
 
 
-def create(root: gws.RootObject):
+def create(root: gws.IRoot):
     mc = _Config()
 
     for layer in root.find_all('gws.ext.layer'):
@@ -167,7 +167,7 @@ def create(root: gws.RootObject):
     return cfg
 
 
-def create_and_save(root: gws.RootObject):
+def create_and_save(root: gws.IRoot):
     cfg = create(root)
 
     if not cfg:

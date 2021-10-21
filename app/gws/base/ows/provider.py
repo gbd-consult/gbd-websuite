@@ -21,7 +21,7 @@ class Config(gws.Config):
     url: gws.Url  #: service url
 
 
-class Object(gws.Object, gws.IOwsProvider):
+class Object(gws.Node, gws.IOwsProvider):
     invert_axis_crs: t.List[str]
     source_layers: t.List[gws.lib.gis.SourceLayer]
     source_crs: gws.Crs
@@ -50,8 +50,6 @@ class Object(gws.Object, gws.IOwsProvider):
         self.supported_crs = []
         self.url = self.var('url')
         self.version = ''
-
-        p: gws.OwsVerb = gws.OwsVerb.GetCapabilities
 
     def operation(self, verb: gws.OwsVerb, method='GET'):
         for op in reversed(self.operations):

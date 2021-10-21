@@ -9,6 +9,7 @@ import gws.base.db
 import gws.base.metadata
 import gws.base.project
 import gws.base.web
+import gws.config
 import gws.lib.cache
 import gws.lib.font
 import gws.lib.mpx.config
@@ -44,22 +45,12 @@ class Config(gws.WithAccess):
     web: t.Optional[gws.base.web.Config]  #: web server options
 
 
-class Object(gws.Object, gws.IApplication):
+class Object(gws.Node, gws.IApplication):
     """Main Appilication object"""
 
-    api: gws.base.api.Object
-    auth: gws.base.auth.manager.Object
-    client: t.Optional[gws.base.client.Object]
     dbs: t.List[gws.ISqlDbProvider]
-    helpers: t.List[gws.Object]
-    locale_uids: t.List[str]
-    metadata: gws.base.metadata.Object
-    monitor: gws.server.monitor.Object
-    mpx_url: str
+    helpers: t.List[gws.Node]
     projects: t.List[gws.base.project.Object]
-    qgis_version: str
-    version: str
-    web_sites: t.List[gws.IWebSite]
 
     _devopts: dict
 
@@ -74,9 +65,7 @@ class Object(gws.Object, gws.IApplication):
         self.set_uid('APP')
 
         if self.var('server.qgis.enabled'):
-            qgis_server = gws.import_from_path(
-                gws.APP_DIR + '/gws/plugin/qgis/server.py',
-                'gws.plugin.qgis.server')
+            qgis_server = gws.import_from_path('gws/plugin/qgis/server.py')
             self.qgis_version = qgis_server.version()
 
         s = f'GWS version {self.version}'
@@ -87,8 +76,8 @@ class Object(gws.Object, gws.IApplication):
         gws.log.info('*' * 40)
 
         self.locale_uids = self.var('locales') or ['en_CA']
-        self.monitor = self.create_child(gws.server.monitor.Object, self.var('server.monitor'))
-        self.metadata = self.create_child(gws.base.metadata.Object, self.var('metaData'))
+        self.monitor = self.require_child(gws.server.monitor.Object, self.var('server.monitor'))
+        self.metadata = self.require_child(gws.base.metadata.Object, self.var('metaData'))
 
         p = self.var('fonts.dir')
         if p:
@@ -101,31 +90,29 @@ class Object(gws.Object, gws.IApplication):
         # - actions, client, web
         # - finally, projects
 
-        self.dbs = t.cast(
-            t.List[gws.ISqlDbProvider],
-            self.create_children('gws.ext.db.provider', self.var('db.providers')))
+        self.dbs = self.create_children('gws.ext.db.provider', self.var('db.providers'))
 
         # helpers are always created, no matter configured or not
-        cnf = {c.get('type'): c for c in self.var('helpers') or []}
-        for typ in self.root.specs.ext_type_list('helper'):
-            if typ not in cnf:
-                cnf[typ] = gws.Config(type=typ)
+        cnf = {c.get('type'): c for c in self.var('helpers', default=[])}
+        for class_name in self.root.specs.real_class_names('gws.ext.helper'):
+            desc = self.root.specs.object_descriptor(class_name)
+            if desc.ext_type not in cnf:
+                gws.log.debug(f'ad-hoc helper {desc.ext_type!r} will be created')
+                cfg = gws.Config(type=desc.ext_type)
+                cnf[desc.ext_type] = gws.config.parse(self.root.specs, cfg, 'gws.ext.helper.Config')
         self.helpers = self.create_children('gws.ext.helper', list(cnf.values()))
 
-        self.auth = self.create_child(gws.base.auth.manager.Object, self.var('auth'))
+        self.auth = self.require_child(gws.base.auth.manager.Object, self.var('auth'))
 
-        self.api = self.create_child(gws.base.api.Object, self.var('api'))
+        # @TODO default API
+        self.api = self.require_child(gws.base.api.Object, self.var('api'))
 
         p = self.var('web.sites') or [gws.base.web.DEFAULT_SITE]
         ssl = bool(self.var('web.ssl'))
         cfgs = [gws.merge(c, ssl=ssl) for c in p]
-        self.web_sites = t.cast(
-            t.List[gws.IWebSite],
-            self.create_children(gws.base.web.site.Object, cfgs))
+        self.web_sites = self.create_children(gws.base.web.site.Object, cfgs)
 
-        self.client = t.cast(
-            gws.base.client.Object,
-            self.create_child_if_config(gws.base.client.Object, self.var('client')))
+        self.client = self.create_child_if_config(gws.base.client.Object, self.var('client'))
 
         self.projects = []
         for cfg in self.var('projects', default=[]):
@@ -148,16 +135,18 @@ class Object(gws.Object, gws.IApplication):
         # if root.application.developer_option('server.auto_reload'):
         #     root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
 
-    def find_action(self, ext_type, project_uid=None):
-        if project_uid:
-            project = t.cast(gws.base.project.Object, self.root.find('gws.base.project', project_uid))
-            if project and project.api:
-                action = project.api.find_action(ext_type)
-                if action:
-                    return action
+    def find_action(self, user, ext_type, project_uid=None):
+        actions = {}
 
-        if self.api:
-            return self.api.find_action(ext_type)
+        if project_uid:
+            project: gws.base.project.Object = self.root.find('gws.base.project', project_uid)
+            if project and project.api:
+                actions = project.api.actions_for(user, parent=self.api)
+
+        if not actions:
+            actions = self.api.actions_for(user)
+
+        return actions.get(ext_type)
 
     def require_helper(self, ext_type):
         for obj in self.helpers:

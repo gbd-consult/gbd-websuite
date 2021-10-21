@@ -8,13 +8,12 @@ import * as sidebar from 'gws/elements/sidebar';
 import * as toolbar from 'gws/elements/toolbar';
 import * as toolbox from 'gws/elements/toolbox';
 import * as components from 'gws/components';
-// import * as storage from 'gws/elements/storage';
+import * as storage from 'gws/elements/storage';
 
 
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
-const STORAGE_CATEGORY = 'Dimension';
 const MASTER = 'Shared.Dimension';
 
 let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as DimensionController;
@@ -841,7 +840,7 @@ class DimensionController extends gws.Controller {
     uid = MASTER;
     layer: DimensionLayer;
     oOverlay: ol.Overlay;
-    setup: gws.api.ext.action.dimension.Props;
+    setup: gws.api.plugin.dimension.Props;
     model: DimensionModel;
     targetUpdateCount = 0;
     snapUpdateCount = 0;
@@ -965,14 +964,14 @@ class DimensionElementList extends components.list.List<DimensionElement> {
 class DimensionSidebarView extends gws.View<DimensionViewProps> {
     render() {
 
-        let master = _master(this.props.controller),
-            model = master.model;
+        let cc = _master(this.props.controller),
+            model = cc.model;
 
-        let selectedElement = master.getValue('dimensionSelectedElement');
+        let selectedElement = cc.getValue('dimensionSelectedElement');
 
 
         let zoom = (e: DimensionElement, mode) => {
-            let f = master.map.newFeature({
+            let f = cc.map.newFeature({
                 geometry: new ol.geom.MultiPoint(e.coordinates)
             });
             this.props.controller.update({
@@ -985,20 +984,20 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
 
         let focus = (e: DimensionElement) => {
             zoom(e, 'pan fade');
-            master.selectElement(e);
+            cc.selectElement(e);
         };
 
         let remove = (e: DimensionElement) => {
             model.removeElement(e)
         };
 
-        let changed = (key, val) => master.update({dimensionSelectedText: val});
+        let changed = (key, val) => cc.update({dimensionSelectedText: val});
 
         let submit = () => {
             if (selectedElement)
-                selectedElement.text = master.getValue('dimensionSelectedText');
+                selectedElement.text = cc.getValue('dimensionSelectedText');
             model.changed();
-            master.selectElement(null)
+            cc.selectElement(null)
         };
 
         let hasElements = !gws.lib.isEmpty(model.elements);
@@ -1038,7 +1037,7 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
                             <gws.ui.Button
                                 className="cmpButtonFormCancel"
                                 whenTouched={() => {
-                                    master.selectElement(null);
+                                    cc.selectElement(null);
                                 }}
                             />
                         </Cell>
@@ -1084,17 +1083,18 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
                     <Cell flex/>
-                    {/*{storage.auxButtons(master, {*/}
-                    {/*    category: STORAGE_CATEGORY,*/}
-                    {/*    hasData: hasElements,*/}
-                    {/*    getData: name => master.model.serialize(),*/}
-                    {/*    dataReader: (name, data) => master.model.deserialize(data)*/}
-                    {/*})}*/}
+                    <storage.AuxButtons
+                        controller={cc}
+                        actionName="dimensionStorage"
+                        hasData={hasElements}
+                        dataWriter={name => cc.model.serialize()}
+                        dataReader={(name, data) => cc.model.deserialize(data)}
+                    />
                     <sidebar.AuxButton
                         disabled={!hasElements}
-                        className="modSelectClearAuxButton"
+                        className="modDimensionClearAuxButton"
                         tooltip={this.__('modDimensionClearAuxButton')}
-                        whenTouched={() => master.clear()}
+                        whenTouched={() => cc.clear()}
                     />
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>

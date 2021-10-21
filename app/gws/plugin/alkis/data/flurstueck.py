@@ -15,12 +15,12 @@ name_index = 'idx_name'
 
 
 class _Cache:
-    addr = {}
-    gebaeude = {}
-    gemarkung = {}
-    name = {}
-    nutzung = {}
-    buchungsstelle = {}
+    addr: t.Dict[str, t.List[dict]] = {}
+    gebaeude: t.Dict[str, t.List[dict]] = {}
+    gemarkung: t.Dict[str, str] = {}
+    name: t.List[dict] = []
+    nutzung: t.Dict[str, t.List[dict]] = {}
+    buchungsstelle: t.Dict[str, dict] = {}
 
 
 # vollnummer = flur-zaeher/nenner (folge)
@@ -109,7 +109,7 @@ def _cache(conn: AlkisConnection):
 
     gws.log.info('fs index: nutzung cache')
 
-    nu_parts = {}
+    nu_parts: t.Dict[str, dict] = {}
     rs = conn.select(f'SELECT * FROM {idx}.{nutzung.parts_index}')
 
     for r in rs:
@@ -139,10 +139,10 @@ def _cache(conn: AlkisConnection):
             nu_parts[fs_id][k]['a_area'] += nu['a_area']
             nu_parts[fs_id][k]['count'] += 1
 
-    for fs_id in nu_parts:
-        nu_parts[fs_id] = sorted(nu_parts[fs_id].values(), key=lambda x: -x['area'])
+    cache.nutzung = {}
 
-    cache.nutzung = nu_parts
+    for fs_id, recs in nu_parts.items():
+        cache.nutzung[fs_id] = sorted(recs, key=lambda x: -x['area'])
 
     gws.log.info('fs index: grundbuch cache')
 
@@ -429,7 +429,7 @@ def strasse_list(conn: AlkisConnection, query: dict):
 
     _add_strasse_param(query, where, parms)
 
-    where = ' AND '.join(where)
+    where_str = ' AND '.join(where)
 
     rs = conn.select(f'''
         SELECT DISTINCT 
@@ -439,7 +439,7 @@ def strasse_list(conn: AlkisConnection, query: dict):
             gemarkung_id as "gemarkungUid",
             gemarkung
         FROM {conn.index_schema}.{adresse.addr_index} as AD
-        WHERE {where}
+        WHERE {where_str}
         ORDER BY strasse
     ''', parms)
 
@@ -572,17 +572,14 @@ def find(conn: AlkisConnection, query: dict):
             where.append('FS.gml_id IN (' + ','.join(['%s'] * len(v)) + ')')
             parms.extend(v)
 
-    tables = ','.join(
-        f'{conn.index_schema}.{v} AS {k}'
-        for k, v in tables.items())
+    from_str = ','.join(f'{conn.index_schema}.{v} AS {k}' for k, v in tables.items())
+    where_str = ('WHERE ' + ' AND '.join(where)) if where else ''
+    limit_str = 'LIMIT ' + str(query.get('limit') or _DEFAULT_LIMIT)
 
-    where = ('WHERE ' + ' AND '.join(where)) if where else ''
-    limit = 'LIMIT %d' % (query.get('limit') or _DEFAULT_LIMIT)
-
-    count_sql = f'SELECT COUNT(DISTINCT FS.*) FROM {tables} {where}'
+    count_sql = f'SELECT COUNT(DISTINCT FS.*) FROM {from_str} {where_str}'
     count = conn.select_value(count_sql, parms)
 
-    data_sql = f'SELECT DISTINCT FS.* FROM {tables} {where} {limit}'
+    data_sql = f'SELECT DISTINCT FS.* FROM {from_str} {where_str} {limit_str}'
     gws.log.debug(f'sql={data_sql!r} parms={parms!r}')
 
     data = conn.select(data_sql, parms)

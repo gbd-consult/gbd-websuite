@@ -100,8 +100,9 @@ class Props(gws.Props):
     geometry: dict
 
 
-class Shape(gws.IShape):
+class Shape(gws.Object, gws.IShape):
     def __init__(self, geom, crs):
+        super().__init__()
         self.geom: shapely.geometry.base.BaseGeometry = geom  # type: ignore
         p = gws.lib.proj.as_proj(crs)
         self.crs = p.epsg
@@ -111,9 +112,8 @@ class Shape(gws.IShape):
     def geometry_type(self) -> gws.GeometryType:
         return self.geom.type.upper()
 
-    @property
-    def props(self):
-        return gws.Props(
+    def props_for(self, user):
+        return Props(
             crs=self.crs,
             geometry=shapely.geometry.mapping(self.geom))
 
@@ -214,6 +214,10 @@ class Shape(gws.IShape):
         if gt == gws.GeometryType.polygon:
             return Shape(shapely.geometry.MultiPolygon([self.geom]), self.crs)
         return self
+
+    def to_geojson(self):
+        # @TODO
+        return "..."
 
     def transformed_to(self, to_crs, **kwargs) -> gws.IShape:
         if gws.lib.proj.equal(self.crs, to_crs):

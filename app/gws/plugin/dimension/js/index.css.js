@@ -25,19 +25,18 @@ module.exports = v => {
         '.modDimensionCircleButton': button(__dirname + '/dim_circle'),
         '.modDimensionRemoveButton': button('google:action/delete'),
 
-
-
+        '.modDimensionClearAuxButton': {
+            ...v.SIDEBAR_AUX_BUTTON('google:action/delete_forever')
+        },
 
         '.modDimensionFeature': {
             pointSize: 20,
             fill: v.COLOR.opacity(v.COLOR.pink100, 0.3),
         },
 
-
         '.modDimensionPoint': {
             fill: v.COLOR.opacity(v.COLOR.orange500, 0.6),
         },
-
 
         '.modDimensionControlPoint': {
             fill: v.COLOR.opacity(v.COLOR.lightGreen500, 0.6),
@@ -55,7 +54,6 @@ module.exports = v => {
             strokeWidth: 2,
             strokeDasharray: '3,3',
         },
-
 
         '.modDimensionDraftLine': {
             stroke: v.COLOR.pink500,
@@ -103,10 +101,6 @@ module.exports = v => {
             fill: 'transparent',
             height: 10,
         },
-
-
-
-
 
     }
 }

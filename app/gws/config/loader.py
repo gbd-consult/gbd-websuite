@@ -14,7 +14,7 @@ def configure(
         config=None,
         before_init=None,
         fallback_config=None
-) -> gws.RootObject:
+) -> gws.Root:
     """Configure the server"""
 
     def _print(a):
@@ -81,21 +81,20 @@ def configure(
     return root_object
 
 
-def initialize(specs, parsed_config) -> gws.RootObject:
-    r = gws.RootObject()
-    r.specs = specs
+def initialize(specs, parsed_config) -> gws.Root:
+    r = gws.create_root_object(specs)
 
-    try:
-        ts = gws.time_start('loading application')
-        mod = gws.import_from_path(gws.APP_DIR + '/gws/base/application/__init__.py', 'gws.base.application')
-        app = getattr(mod, 'Object')
-        gws.time_end(ts)
-    except Exception as e:
-        raise gws.ConfigurationError(*e.args)
+    # try:
+    #     ts = gws.time_start('loading application')
+    #     mod = gws.import_from_path('gws/base/application')
+    #     app = getattr(mod, 'Object')
+    #     gws.time_end(ts)
+    # except Exception as e:
+    #     raise gws.ConfigurationError(*e.args)
 
     try:
         ts = gws.time_start('configuring application')
-        r.create_application(app, parsed_config)
+        r.create_application(parsed_config)
         gws.time_end(ts)
     except Exception as e:
         raise gws.ConfigurationError(*e.args)
@@ -105,7 +104,7 @@ def initialize(specs, parsed_config) -> gws.RootObject:
     return r
 
 
-def activate(r: gws.RootObject):
+def activate(r: gws.IRoot):
     return gws.set_app_global(ROOT_NAME, r)
 
 
@@ -113,7 +112,7 @@ def deactivate():
     return gws.delete_app_global(ROOT_NAME)
 
 
-def store(r: gws.RootObject, path=None):
+def store(r: gws.IRoot, path=None):
     path = path or STORE_PATH
     gws.log.debug(f'writing config to {path!r}')
     try:
@@ -122,7 +121,7 @@ def store(r: gws.RootObject, path=None):
         raise gws.ConfigurationError('unable to store configuration') from e
 
 
-def load(path=None) -> gws.RootObject:
+def load(path=None) -> gws.Root:
     path = path or STORE_PATH
     gws.log.debug(f'loading config from {path!r}')
     try:
@@ -132,7 +131,7 @@ def load(path=None) -> gws.RootObject:
         raise gws.ConfigurationError('unable to load configuration') from e
 
 
-def root() -> gws.RootObject:
+def root() -> gws.Root:
     def _err():
         raise gws.Error('no configuration root found')
 

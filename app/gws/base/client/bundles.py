@@ -13,7 +13,7 @@ DEFAULT_LANG = 'de'
 DEFAULT_THEME = 'light'
 
 
-def javascript(root: gws.RootObject, category: str, locale_uid: str = '') -> str:
+def javascript(root: gws.IRoot, category: str, locale_uid: str = '') -> str:
     if category == 'vendor':
         return gws.read_file(root.specs.bundle_paths('vendor')[0])
 
@@ -33,7 +33,7 @@ def javascript(root: gws.RootObject, category: str, locale_uid: str = '') -> str
         return js
 
 
-def css(root: gws.RootObject, category: str, theme: str):
+def css(root: gws.IRoot, category: str, theme: str):
     if category == 'app':
         bundles = _load_app_bundles(root)
         return bundles.get(BUNDLE_KEY_CSS + '_' + theme) or bundles.get(BUNDLE_KEY_CSS + '_' + DEFAULT_THEME)
@@ -42,7 +42,7 @@ def css(root: gws.RootObject, category: str, theme: str):
 
 ##
 
-def _load_app_bundles(root: gws.RootObject):
+def _load_app_bundles(root: gws.IRoot):
     def _load():
         bundles = {}
 

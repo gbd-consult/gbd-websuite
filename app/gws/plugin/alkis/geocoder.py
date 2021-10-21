@@ -1,14 +1,13 @@
 """ALKIS Geocoder action."""
 
 import gws
-import gws.types as t
 import gws.base.api
-
-from . import provider, util
+import gws.types as t
+from . import provider as provider_module, types
 
 
 @gws.ext.Config('action.alkisgeocoder')
-class Config(gws.WithAccess):
+class Config(provider_module.Config):
     """ALKIS Geocoder action."""
     pass
 
@@ -34,34 +33,37 @@ class GeocoderResponse(gws.Response):
 
 @gws.ext.Object('action.alkisgeocoder')
 class Object(gws.base.api.action.Object):
-    provider: provider.Object
+    provider: provider_module.Object
 
     def configure(self):
-        self.provider = provider.create(self.root, self.config, shared=True)
+        self.provider = provider_module.create(self.root, self.config, shared=True)
 
     @gws.ext.command('api.alkisgeocoder.decode')
     def api_decode(self, req: gws.IWebRequest, p: GeocoderParams) -> GeocoderResponse:
-
-        coords = []
-
-        for ad in p.adressen:
-            q = {k: ad.get(k) for k in _GEOCODER_ADDR_KEYS if ad.get(k)}
-
-            if not q:
-                coords.append(None)
-                continue
-
-            q['limit'] = 1
-
-            res = self.provider.find_adresse(provider.FindAdresseQuery(q))
-
-            if not res.total:
-                coords.append(None)
-                continue
-
-            coords.append([
-                round(res.features[0].shape.x, 2),
-                round(res.features[0].shape.y, 2)
+        return GeocoderResponse(
+            coordinates=[
+                self.coords(adresse)
+                for adresse in p.adressen
             ])
 
-        return GeocoderResponse(coordinates=coords)
+    def coords(self, adresse):
+        q = {k: adresse.get(k) for k in _GEOCODER_ADDR_KEYS if adresse.get(k)}
+
+        if not q:
+            return
+
+        q['limit'] = 1
+
+        res = self.provider.find_adresse(types.FindAdresseQuery(q))
+
+        if not res.total:
+            return
+
+        for feature in res.features:
+            if not feature.shape:
+                gws.log.warn(f'feature {feature.uid!r} has no shape')
+                continue
+            return (
+                round(feature.shape.x, 2),
+                round(feature.shape.y, 2)
+            )

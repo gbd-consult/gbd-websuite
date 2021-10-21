@@ -41,7 +41,7 @@ _DEFAULT_LEGEND_PARAMS = {
 }
 
 
-class Object(gws.Object):
+class Object(gws.Node):
     version = ''
 
     metadata: gws.IMetaData
@@ -65,7 +65,7 @@ class Object(gws.Object):
         self.source_text = self._read(self.path)
         cc = parser.parse(self.source_text)
 
-        self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, cc.metadata))
+        self.metadata = self.require_child(gws.base.metadata.Object, cc.metadata)
         self.print_templates = cc.print_templates
         self.properties = cc.properties
         self.source_layers = cc.source_layers
@@ -315,11 +315,11 @@ class Object(gws.Object):
 ##
 
 
-def create_from_path(root: gws.RootObject, path: str, parent: gws.Object = None, shared: bool = False) -> Object:
+def create_from_path(root: gws.IRoot, path: str, parent: gws.Node = None, shared: bool = False) -> Object:
     return create(root, gws.Config(path=path), parent, shared)
 
 
-def create(root: gws.RootObject, cfg: gws.Config, parent: gws.Object = None, shared: bool = False) -> Object:
+def create(root: gws.IRoot, cfg: gws.Config, parent: gws.Node = None, shared: bool = False) -> Object:
     path = cfg.get('path')
     root.application.monitor.add_path(path)
-    return t.cast(Object, root.create_object(Object, cfg, parent, shared, key=path))
+    return root.create_object(Object, cfg, parent, shared, key=path)

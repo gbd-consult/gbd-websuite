@@ -107,8 +107,7 @@ def _read(path):
 
 def _read2(path):
     if path.endswith('.py'):
-        mod_name = 'gws.cfg.' + gws.as_uid(path)
-        mod = gws.import_from_path(path, mod_name)
+        mod = gws.import_from_path(path)
         fn = getattr(mod, CONFIG_FUNCTION_NAME)
         dct = fn()
         if not isinstance(dct, dict):

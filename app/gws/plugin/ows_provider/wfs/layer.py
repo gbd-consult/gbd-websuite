@@ -37,10 +37,10 @@ class Object(gws.base.layer.vector.Object):
 
         if not self.has_configured_search:
             self.search_providers.append(
-                t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider.wfs', gws.Config(
+                self.require_child('gws.ext.search.provider.wfs', gws.Config(
                     uid=self.uid + '.default_search',
                     layer=self,
-                ))))
+                )))
             self.has_configured_search = True
 
     @property

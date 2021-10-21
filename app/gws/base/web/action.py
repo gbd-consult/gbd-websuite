@@ -74,7 +74,7 @@ class Object(gws.base.api.action.Object):
                 mime=gws.lib.mime.CSS)
 
 
-def _serve_path(root: gws.RootObject, req: gws.IWebRequest, p: GetAssetParams, as_attachment=False):
+def _serve_path(root: gws.IRoot, req: gws.IWebRequest, p: GetAssetParams, as_attachment=False):
     spath = str(p.get('path') or '')
     if not spath:
         raise gws.base.web.error.NotFound()

@@ -45,23 +45,13 @@ class Props(gws.Props):
     uid: str
 
 
-class Object(gws.Object, gws.IProject):
-    api: gws.base.api.Object
-    assets_root: t.Optional[gws.DocumentRoot]
-    client: t.Optional[gws.base.client.Object]
-    locale_uids: t.List[str]
-    map: gws.base.map.Object
-    metadata: gws.base.metadata.Object
+class Object(gws.Node, gws.IProject):
     overview_map: gws.base.map.Object
     printer: gws.base.printer.Object
-    search_providers: t.List[gws.ISearchProvider]
-    templates: gws.base.template.bundle.Object
-    title: str
 
     def configure(self):
-        self.metadata = self.create_child(
-            gws.base.metadata.Object,
-            self.var('metaData', with_parent=True) or gws.base.metadata.Config(title=self.var('title')))
+        p = self.var('metaData', with_parent=True) or gws.base.metadata.Config(title=self.var('title'))
+        self.metadata = self.require_child(gws.base.metadata.Object, p)
 
         # title at the top level config preferred
         title = self.var('title') or self.metadata.get('title') or self.var('uid')
@@ -73,7 +63,7 @@ class Object(gws.Object, gws.IProject):
         gws.log.info(f'configuring project {self.uid!r}')
 
         self.api = self.create_child_if_config(gws.base.api.Object, self.var('api'))
-        self.assets_root = gws.base.web.document_root_from_config(self.var('assets'))
+        self.assets_root = gws.base.web.create_document_root(self.var('assets'))
         self.locale_uids = self.var('locales', with_parent=True, default=['en_CA'])
         self.map = self.create_child_if_config(gws.base.map.Object, self.var('map'))
         self.printer = self.create_child_if_config(gws.base.printer.Object, self.var('printer'))
@@ -88,29 +78,29 @@ class Object(gws.Object, gws.IProject):
             parent=self)
 
         self.search_providers = []
-
         p = self.var('search')
         if p and p.enabled and p.providers:
-            for s in p.providers:
-                self.search_providers.append(
-                    t.cast('gws.ISearchProvider', self.create_child('gws.ext.search.provider', s)))
+            self.search_providers = self.create_children('gws.ext.search.provider', p.providers)
 
         p = self.var('client')
         if p:
-            p.parentClient = self.parent.var('client')
-        self.client = self.create_child_if_config(gws.base.client.Object, p)
+            self.client = self.create_child(
+                gws.base.client.Object,
+                gws.merge(p, parentClient=self.parent.var('client')))
 
     @property
     def description(self):
-        context = {'project': self, 'meta': self.metadata.record}
+        context = {'project': self, 'meta': self.metadata.values}
         tpl = self.templates.find(subject='project.description')
         return tpl.render(context).content if tpl else ''
 
-    @property
-    def props(self):
+    def props_for(self, user):
+        app_api = self.root.application.api
+        actions = self.api.actions_for(user, app_api) if self.api else app_api.actions_for(user)
+
         return Props(
-            actions=self.api.get_actions(self.root.application.api),
-            client=self.client or getattr(self.parent, 'client', None),
+            actions=list(actions.values()),
+            client=self.client or self.root.application.client,
             description=self.description,
             map=self.map,
             metaData=self.metadata,

@@ -40,6 +40,8 @@ class Object(gws.base.template.Object):
         self._parse()
 
     def render(self, context: dict, args: gws.TemplateRenderArgs = None) -> gws.TemplateOutput:
+        if not args or not args.out_path:
+            raise gws.Error('args are required for qgis templates')
 
         # rewrite the project and replace variables within
         # @TODO fails if there are relative paths in the project

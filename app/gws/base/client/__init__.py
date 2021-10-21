@@ -28,31 +28,27 @@ class Props(gws.Data):
     elements: t.Optional[t.List[ElementProps]]
 
 
-class Element(gws.Object):
-    @property
-    def props(self):
-        return ElementProps({
-            'tag': self.var('tag'),
-        })
+class Element(gws.Node):
+    def props_for(self, user):
+        return ElementProps(tag=self.var('tag'))
 
 
-class Object(gws.Object):
+class Object(gws.Node, gws.IClient):
     options: dict
+    elements: t.List[Element]
 
-    @property
-    def props(self):
-        return Props(options=self.options or {}, elements=self.children)
+    def props_for(self, user):
+        return Props(options=self.options, elements=self.elements)
 
     def configure(self):
         parent_client = self.var('parentClient')
 
-        for c in self._get_elements(parent_client):
-            self.create_child(Element, c)
+        self.elements = self.create_children(Element, self._get_elements(parent_client))
 
-        self.options = self.var('options')
-
-        if not self.options and parent_client:
-            self.options = gws.get(parent_client, 'options', {})
+        opts = self.var('options')
+        if not opts and parent_client:
+            opts = gws.get(parent_client, 'options', {})
+        self.options = opts or {}
 
     def _get_elements(self, parent_client):
         elements = self.var('elements')

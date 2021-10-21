@@ -13,11 +13,10 @@ class Config(gws.Config):
     values: t.Optional[dict]  #: style values
 
 
-class Object(gws.Object, gws.IStyle):
+class Object(gws.Node, gws.IStyle):
     _rec: Record
 
-    @property
-    def props(self):
+    def props_for(self, user):
         return Props(
             values=vars(self._rec.values),
             text=self._rec.text or '',

@@ -19,14 +19,25 @@ class Config(gws.Config):
     permissions: t.Optional[t.List[types.PermissionRule]]  #: permission rules
 
 
-@gws.ext.Object('helper.storage')
-class Object(gws.Object):
-    provider: sqlite.Object
-    permissions: t.List[types.PermissionRule]
+class Permission(gws.Node):
+    category: str
+    mode: types.PermissionMode
 
     def configure(self):
-        self.permissions = self.var('permissions', default=[])
-        self.provider = self.create_child(sqlite.Object, self.config)
+        self.category = self.var('category')
+        self.mode = self.var('mode')
+
+
+
+
+@gws.ext.Object('helper.storage')
+class Object(gws.Node):
+    provider: sqlite.Object
+    permissions: t.List[Permission]
+
+    def configure(self):
+        self.permissions = self.create_children(Permission, self.var('permissions'))
+        self.provider = self.require_child(sqlite.Object, self.config)
 
     def handle_action(self, req: gws.IWebRequest, p: types.Params, category: str) -> types.Response:
         readable, writable = self._category_permissions(category, req.user)
@@ -48,7 +59,7 @@ class Object(gws.Object):
             if not writable or not p.entryName or not p.entryData:
                 raise gws.base.web.error.Forbidden()
             d = gws.lib.json2.to_string(p.entryData)
-            self.provider.write(category, p.entryName, d, req.user.fid)
+            self.provider.write(category, p.entryName, d, req.user.uid)
 
         if p.verb == types.Verb.delete:
             if not writable or not p.entryName:

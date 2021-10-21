@@ -2,8 +2,9 @@ import gws
 import gws.types as t
 
 
-class Session(gws.IAuthSession):
+class Session(gws.Object, gws.IAuthSession):
     def __init__(self, typ: str, user: gws.IUser, method: t.Optional[gws.IAuthMethod], uid=None, data=None):
+        super().__init__()
         self.changed = False
         self.data = data or {}
         self.method = method

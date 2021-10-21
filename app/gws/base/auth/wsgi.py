@@ -30,7 +30,7 @@ class WebRequest(gws.base.web.wsgi.WebRequest, gws.IWebRequest):
         gws.log.debug(f'auth_close: typ={self.session.typ!r} user={self.session.user.uid!r}')
         self.session = self.auth.close_session(self.session, self, res)
 
-    def require(self, klass: str, uid: t.Optional[str]) -> gws.IObject:
+    def require(self, klass, uid):
         obj = self.root.find(klass, uid)
         if not obj:
             gws.log.error('require: not found', klass, uid)
@@ -40,13 +40,13 @@ class WebRequest(gws.base.web.wsgi.WebRequest, gws.IWebRequest):
             raise gws.base.web.error.Forbidden()
         return obj
 
-    def require_project(self, uid: t.Optional[str]) -> gws.IProject:
+    def require_project(self, uid):
         return t.cast(gws.IProject, self.require('gws.base.project', uid))
 
-    def require_layer(self, uid: t.Optional[str]) -> gws.ILayer:
+    def require_layer(self, uid):
         return t.cast(gws.ILayer, self.require('gws.ext.layer', uid))
 
-    def acquire(self, klass: str, uid: t.Optional[str]) -> t.Optional[gws.IObject]:
+    def acquire(self, klass, uid):
         obj = self.root.find(klass, uid)
         if obj and self.user.can_use(obj):
             return obj

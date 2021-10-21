@@ -56,48 +56,17 @@ def url_for_get_features(layer_uid) -> str:
 
 #
 
-class Object(gws.Object, gws.ILayer):
-    map: gws.IMap
-
-    can_render_box: bool = False
-    can_render_xyz: bool = False
-    can_render_svg: bool = False
-
-    is_group: bool = False
-    is_public: bool = False
-    is_editable: bool = False
-
-    supports_wms: bool = False
-    supports_wfs: bool = False
-
+class Object(gws.Node, gws.ILayer):
     cache: types.CacheConfig
     cache_uid: str
-    client_options: gws.Data
-    crs: gws.Crs
-    data_model: t.Optional[gws.IDataModel]
-    description_template: gws.ITemplate
-    display: str
-    edit_data_model: t.Optional[gws.IDataModel]
-    edit_options: t.Optional[gws.Data]
-    edit_style: t.Optional[gws.IStyle]
-    extent: gws.Extent
-    geometry_type: t.Optional[gws.GeometryType]
     grid: types.GridConfig
     grid_uid: str
-    image_format: str
-    layers: t.List[gws.ILayer]
-    legend: gws.Legend
-    metadata: gws.IMetaData
-    opacity: float
+
     ows_enabled: bool
     ows_enabled_services_pattern: gws.Regex
     ows_enabled_services_uids: t.List[str]
-    ows_feature_name: str
-    ows_name: str
-    resolutions: t.List[float]
-    search_providers: t.List[gws.ISearchProvider]
-    style: t.Optional[gws.IStyle]
-    templates: gws.ITemplateBundle
+
+    description_template: t.Optional[gws.ITemplate]
 
     has_configured_extent = False
     has_configured_layers = False
@@ -107,21 +76,11 @@ class Object(gws.Object, gws.ILayer):
     has_configured_search = False
 
     @property
-    def props(self):
-        return gws.Props(
-            extent=self.extent,
-            metaData=self.metadata,
-            opacity=self.opacity,
-            options=self.client_options,
-            resolutions=self.resolutions,
-            title=self.title,
-            uid=self.uid,
-        )
-
-    @property
     def description(self) -> str:
+        if not self.description_template:
+            return ''
         context = {'layer': self}
-        return self.description_template.render(context).content
+        return gws.as_str(self.description_template.render(context).content)
 
     @property
     def has_cache(self) -> bool:
@@ -148,36 +107,34 @@ class Object(gws.Object, gws.ILayer):
         return url_for_get_legend(self.uid)
 
     @property
-    def ancestors(self) -> t.List[gws.ILayer]:
+    def ancestors(self):
         ps = []
         p = self.parent
-        while p.is_a('gws.ext.layer'):
-            ps.append(t.cast(gws.ILayer, p))
+        while p and p.is_a('gws.ext.layer'):
+            ps.append(p)
             p = p.parent
         return ps
 
     def configure(self):
-        self.map = t.cast(gws.IMap, self.get_closest('gws.base.map'))
+        self.map = self.get_closest('gws.base.map')
 
         uid = self.var('uid') or gws.as_uid(self.var('title'))
         if self.map:
             uid = self.map.uid + '.' + uid
         self.set_uid(uid)
 
-        self.is_public = self.root.application.auth.get_role('all').can_use(self)
+        self.is_public = gws.is_public_object(self)
         self.cache = self.var('cache', default=types.CacheConfig(enabled=False))
         self.cache_uid = ''
         self.client_options = self.var('clientOptions')
         self.crs = self.var('crs') or (self.map.crs if self.map else gws.EPSG_3857)
         self.display = self.var('display')
         self.edit_options = self.var('edit')
-        self.geometry_type = None
         self.grid = self.var('grid', default=types.GridConfig())
         self.grid_uid = ''
         self.image_format = self.var('imageFormat')
         self.layers = []
         self.legend = gws.Legend(enabled=False)
-        self.metadata = t.cast(gws.IMetaData, None)
         self.opacity = self.var('opacity')
         self.ows_enabled = self.var('ows.enabled')
         self.ows_enabled_services_uids = self.var('ows.enabledServices.uids') or []
@@ -196,7 +153,7 @@ class Object(gws.Object, gws.ILayer):
             parent=self)
         self.description_template = self.templates.find(subject='layer.description')
 
-        self.style = t.cast(gws.IStyle, self.create_child(gws.base.style.Object, self.var('style') or _DEFAULT_STYLE))
+        self.style = self.require_child(gws.base.style.Object, self.var('style') or _DEFAULT_STYLE)
         self.edit_style = self.create_child_if_config(gws.base.style.Object, self.var('editStyle'))
 
         p = self.var('metaData')
@@ -224,9 +181,7 @@ class Object(gws.Object, gws.ILayer):
                 self.search_providers = []
                 self.has_configured_search = True
             elif p.providers:
-                self.search_providers = [
-                    t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider', c))
-                    for c in p.providers]
+                self.search_providers = self.create_children('gws.ext.search.provider', p.providers)
                 self.has_configured_search = True
 
         p = self.var('legend')
@@ -241,12 +196,12 @@ class Object(gws.Object, gws.ILayer):
                 self.legend = gws.Legend(enabled=True, urls=[p.url], cache_max_age=p.cacheMaxAge or 0, options=p.options or {})
                 self.has_configured_legend = True
             elif p.template:
-                tpl = self.create_child('gws.ext.template', p.template)
+                tpl = self.require_child('gws.ext.template', p.template)
                 self.legend = gws.Legend(enabled=True, template=tpl, options=p.options or {})
                 self.has_configured_legend = True
 
     def configure_metadata_from(self, m: gws.base.metadata.Record):
-        self.metadata = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, m))
+        self.metadata = self.require_child(gws.base.metadata.Object, m)
         self.title = self.var('title') or self.metadata.title
         self.ows_name = self.var('ows.name') or self.uid.split('.')[-1]
         self.ows_feature_name = self.var('ows.featureName') or self.ows_name
@@ -274,10 +229,16 @@ class Object(gws.Object, gws.ILayer):
     #     pass
     # 
     def props_for(self, user):
-        p = super().props_for(user)
-        if p:
-            p.editAccess = self.edit_access(user)
-        return p
+        return types.Props(
+            extent=self.extent,
+            metaData=self.metadata,
+            editAccess=self.edit_access(user),
+            opacity=self.opacity,
+            options=self.client_options,
+            resolutions=self.resolutions,
+            title=self.title,
+            uid=self.uid,
+        )
 
     def mapproxy_config(self, mc):
         pass

@@ -19,7 +19,7 @@ def _m() -> gws.IMonitor:
     return gws.config.root().application.monitor
 
 
-class Object(gws.Object, gws.IMonitor):
+class Object(gws.Node, gws.IMonitor):
     def configure(self):
 
         self.watch_dirs = {}

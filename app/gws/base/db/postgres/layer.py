@@ -7,7 +7,7 @@ import gws.lib.extent
 import gws.lib.feature
 import gws.lib.shape
 
-from . import provider as prov
+from . import provider as provider_module
 
 
 @gws.ext.Config('layer.postgres')
@@ -20,17 +20,17 @@ class Config(gws.base.layer.vector.Config):
 
 @gws.ext.Object('layer.postgres')
 class Object(gws.base.layer.vector.Object):
-    provider: prov.Object
+    provider: provider_module.Object
     table: gws.SqlTable
 
     def configure(self):
-        self.provider = prov.require_for(self)
+        self.provider = provider_module.require_for(self)
         self.table = self.provider.configure_table(self.var('table'))
         self.is_editable = True
         if not self.data_model:
             p = self.provider.table_data_model_config(self.table)
             if p:
-                self.data_model = t.cast(gws.IDataModel, self.create_child('gws.base.model', p))
+                self.data_model = self.require_child('gws.base.model', p)
 
     @property
     def own_bounds(self):
@@ -47,9 +47,8 @@ class Object(gws.base.layer.vector.Object):
             crs=self.table.geometry_crs,
             extent=gws.lib.extent.from_box(r))
 
-    @property
-    def props(self):
-        return gws.merge(super().props, geometryType=self.table.geometry_type)
+    def props_for(self, user):
+        return gws.merge(super().props_for(user), geometryType=self.table.geometry_type)
 
     @property
     def default_search_provider(self):

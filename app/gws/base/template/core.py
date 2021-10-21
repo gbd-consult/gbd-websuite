@@ -39,15 +39,7 @@ class LegendMode(t.Enum):
     image = 'image'
 
 
-class Object(gws.Object, gws.ITemplate):
-    key: str
-    path: str
-    subject: str
-    text: str
-    title: str
-
-    data_model: t.Optional[gws.IDataModel]
-
+class Object(gws.Node, gws.ITemplate):
     legend_layer_uids: t.List[str]
     legend_mode: t.Optional['LegendMode']
     legend_use_all: bool
@@ -56,8 +48,7 @@ class Object(gws.Object, gws.ITemplate):
     page_size: gws.Size
     margin: gws.Extent
 
-    @property
-    def props(self):
+    def props_for(self, user):
         return Props(
             uid=self.uid,
             title=self.title,
@@ -128,12 +119,12 @@ _types = {
 }
 
 
-def create_from_path(root: gws.RootObject, path, parent: gws.Object = None, shared: bool = False) -> t.Optional['Object']:
+def create_from_path(root: gws.IRoot, path, parent: gws.Node = None, shared: bool = False) -> t.Optional['Object']:
     for ext, typ in _types.items():
         if path.endswith(ext):
             return create(root, gws.Config(type=typ, path=path), parent, shared)
 
 
-def create(root: gws.RootObject, cfg: gws.Config, parent: gws.Object = None, shared: bool = False) -> 'Object':
+def create(root: gws.IRoot, cfg: gws.Config, parent: gws.Node = None, shared: bool = False) -> Object:
     key = gws.get(cfg, 'uid') or gws.get(cfg, 'path') or gws.sha256(gws.get(cfg, 'text', default=''))
-    return t.cast(Object, root.create_object('gws.ext.template', cfg, parent, shared, key))
+    return root.create_object('gws.ext.template', cfg, parent, shared, key)

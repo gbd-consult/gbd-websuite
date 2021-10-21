@@ -11,16 +11,11 @@ from . import core, types
 class BaseGroup(core.Object):
     is_group = True
 
-    @property
-    def props(self):
-        return gws.merge(
-            super().props,
-            type='group',
-            layers=self.layers,
-        )
+    def props_for(self, user):
+        return gws.merge(super().props_for(user), type='group', layers=self.layers)
 
     def configure_layers(self, cfgs: t.List[gws.Config]):
-        self.layers = t.cast(t.List[gws.ILayer], self.create_children('gws.ext.layer', cfgs))
+        self.layers = self.create_children('gws.ext.layer', cfgs)
 
         if not self.has_configured_legend:
             legend_layers = [la for la in self.layers if la.has_legend]

@@ -5,6 +5,7 @@ import gws.lib.shape
 import gws.types as t
 from .data import adresse, flurstueck, index
 from .util.connection import AlkisConnection
+from . import types
 
 
 class Config(gws.Config):
@@ -17,109 +18,19 @@ class Config(gws.Config):
     excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (Administrative Unit) IDs to exclude from search
 
 
-class Gemarkung(gws.Data):
-    """Gemarkung (Administrative Unit) object"""
-
-    gemarkung: str  #: Gemarkung name
-    gemarkungUid: str  #: Gemarkung uid
-    gemeinde: str  #: Gemeinde name
-    gemeindeUid: str  #: Gemeinde uid
-
-
-class Strasse(gws.Data):
-    """Strasse (street) object"""
-
-    strasse: str  #: name
-    gemarkung: str  #: Gemarkung name
-    gemarkungUid: str  #: Gemarkung uid
-    gemeinde: str  #: Gemeinde name
-    gemeindeUid: str  #: Gemeinde uid
-
-
-class StrasseQueryMode(t.Enum):
-    exact = 'exact'  #: exact match (up to denormalization)
-    substring = 'substring'  #: substring match
-    start = 'start'  #: string start match
-
-
-class BaseQuery(gws.Data):
-    gemarkung: str = ''
-    gemarkungUid: str = ''
-    gemeinde: str = ''
-    gemeindeUid: str = ''
-    strasse: str = ''
-    strasseMode: StrasseQueryMode = ''
-
-
-class FindFlurstueckQuery(BaseQuery):
-    withEigentuemer: bool = False
-    withBuchung: bool = False
-
-    bblatt: str = ''
-    bblattMode: str = ''
-    flaecheBis: str = ''
-    flaecheVon: str = ''
-    flurnummer: str = ''
-    flurstuecksfolge: str = ''
-    fsUids: t.List[str] = []
-    hausnummer: str = ''
-    name: str = ''
-    nenner: str = ''
-    strasse: str = ''
-    vnum: str = ''
-    vorname: str = ''
-    zaehler: str = ''
-
-    shape: gws.IShape = None
-    limit: str = 0
-
-
-class FindFlurstueckResult(gws.Data):
-    features: t.List[gws.IFeature] = []
-    total: int = 0
-
-
-class FindAdresseQuery(BaseQuery):
-    bisHausnummer: str = ''
-    hausnummer: str = ''
-    hausnummerNotNull: t.Optional[bool]
-    kreis: str = ''
-    kreisUid: str = ''
-    land: str = ''
-    landUid: str = ''
-    regierungsbezirk: str = ''
-    regierungsbezirkUid: str = ''
-    strasse: str = ''
-
-    limit: int = 0
-
-
-class FindAdresseResult(gws.Data):
-    features: t.List[gws.IFeature] = []
-    total: int = 0
-
-
-class FindStrasseQuery(BaseQuery):
-    pass
-
-
-class FindStrasseResult(gws.Data):
-    strassen: t.List[Strasse]
-
-
 _COMBINED_FS_PARAMS = ['landUid', 'gemarkungUid', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge']
 _COMBINED_AD_PARAMS = ['strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnummer']
 
 _COMBINED_PARAMS_DELIM = '_'
 
 
-class Object(gws.Object):
+class Object(gws.Node):
     db: gws.base.db.postgres.provider.Object
     has_index = False
     has_source = False
     has_flurnummer = False
     crs = ''
-    connect_args = {}
+    connect_args: t.Dict = {}
     data_schema = ''
     index_schema = ''
 
@@ -171,11 +82,11 @@ class Object(gws.Object):
 
     # public search tools
 
-    def gemarkung_list(self) -> t.List[Gemarkung]:
+    def gemarkung_list(self) -> t.List[types.Gemarkung]:
         with self.connect() as conn:
-            return [Gemarkung(r) for r in flurstueck.gemarkung_list(conn)]
+            return [types.Gemarkung(r) for r in flurstueck.gemarkung_list(conn)]
 
-    def find_flurstueck(self, query: FindFlurstueckQuery, **kwargs) -> FindFlurstueckResult:
+    def find_flurstueck(self, query: types.FindFlurstueckQuery, **kwargs) -> types.FindFlurstueckResult:
         features = []
 
         q = self._query_to_dict(query)
@@ -192,14 +103,14 @@ class Object(gws.Object):
                     shape=gws.lib.shape.from_wkb_hex(rec['geom'], self.crs)
                 ))
 
-        return FindFlurstueckResult(features=features, total=total)
+        return types.FindFlurstueckResult(features=features, total=total)
 
-    def find_flurstueck_combined(self, combined_param: str, **kwargs) -> FindFlurstueckResult:
+    def find_flurstueck_combined(self, combined_param: str, **kwargs) -> types.FindFlurstueckResult:
         q = self._expand_combined_params(combined_param, _COMBINED_FS_PARAMS)
         q.update(kwargs)
-        return self.find_flurstueck(FindFlurstueckQuery(q))
+        return self.find_flurstueck(types.FindFlurstueckQuery(q))
 
-    def find_adresse(self, query: FindAdresseQuery, **kwargs) -> FindAdresseResult:
+    def find_adresse(self, query: types.FindAdresseQuery, **kwargs) -> types.FindAdresseResult:
         features = []
 
         q = self._query_to_dict(query)
@@ -214,19 +125,19 @@ class Object(gws.Object):
                     shape=gws.lib.shape.from_xy(rec['x'], rec['y'], self.crs)
                 ))
 
-        return FindAdresseResult(features=features, total=total)
+        return types.FindAdresseResult(features=features, total=total)
 
-    def find_adresse_combined(self, combined_param: str, **kwargs) -> FindAdresseResult:
+    def find_adresse_combined(self, combined_param: str, **kwargs) -> types.FindAdresseResult:
         q = self._expand_combined_params(combined_param, _COMBINED_AD_PARAMS)
         q.update(kwargs)
-        return self.find_adresse(FindAdresseQuery(q))
+        return self.find_adresse(types.FindAdresseQuery(q))
 
-    def find_strasse(self, query: FindStrasseQuery, **kwargs) -> FindStrasseResult:
+    def find_strasse(self, query: types.FindStrasseQuery, **kwargs) -> types.FindStrasseResult:
         q = self._query_to_dict(query)
         q.update(kwargs)
         with self.connect() as conn:
             rs = flurstueck.strasse_list(conn, q)
-        return FindStrasseResult(strassen=[Strasse(r) for r in rs])
+        return types.FindStrasseResult(strassen=[types.Strasse(r) for r in rs])
 
     def connect(self):
         return AlkisConnection(**self.connect_args)
@@ -274,6 +185,6 @@ class Object(gws.Object):
 
 ##
 
-def create(root: gws.RootObject, cfg: gws.Config, parent: gws.Object = None, shared: bool = False) -> Object:
+def create(root: gws.IRoot, cfg: gws.Config, parent: gws.Node = None, shared: bool = False) -> Object:
     key = gws.pick(cfg, 'db', 'crs', 'dataSchema', 'indexSchema', 'excludeGemarkung')
-    return t.cast(Object, root.create_object(Object, cfg, parent, shared, key))
+    return root.create_object(Object, cfg, parent, shared, key)

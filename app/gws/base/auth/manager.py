@@ -24,15 +24,11 @@ class Config(gws.Config):
     sessionStorePath: t.Optional[str]  #: session storage path
 
 
-class Object(gws.Object, gws.IAuthManager):
+class Object(gws.Node, gws.IAuthManager):
     """Authorization manager."""
 
     session_life_time: int
-    guest_user: gws.IUser
-
     store: sqlite.SessionStore
-    providers: t.List[gws.IAuthProvider]
-    methods: t.List[gws.IAuthMethod]
 
     def configure(self):
 
@@ -47,14 +43,14 @@ class Object(gws.Object, gws.IAuthManager):
         # always create the System provider
         sys_provider = gws.config.parse(self.root.specs, {'type': 'system'}, 'gws.ext.auth.provider.Config')
         p = self.var('providers', default=[]) + [sys_provider]
-        self.providers = t.cast(t.List[gws.IAuthProvider], self.create_children('gws.ext.auth.provider', p))
+        self.providers = self.create_children('gws.ext.auth.provider', p)
 
         self.guest_user = self.providers[-1].get_user('guest')
 
         # if no methods configured, enable the Web method
         web_method = gws.config.parse(self.root.specs, {'type': 'web'}, 'gws.ext.auth.method.Config')
         p = self.var('methods', default=[web_method])
-        self.methods = t.cast(t.List[gws.IAuthMethod], self.create_children('gws.ext.auth.method', p))
+        self.methods = self.create_children('gws.ext.auth.method', p)
 
     @property
     def guest_session(self):
@@ -86,9 +82,6 @@ class Object(gws.Object, gws.IAuthManager):
         prov = self.get_provider(provider_uid)
         if prov:
             return prov.get_user(local_uid)
-
-    def get_role(self, name):
-        return user_api.Role(name)
 
     def get_provider(self, uid=None, ext_type=None):
         for obj in self.providers:

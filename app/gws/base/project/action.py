@@ -1,6 +1,6 @@
 import gws
 import gws.base.api
-import gws.base.auth
+import gws.base.auth.user
 import gws.lib.intl
 import gws.types as t
 from . import core
@@ -9,11 +9,11 @@ from . import core
 class InfoResponse(gws.Response):
     project: core.Props
     locale: gws.lib.intl.Locale
-    user: t.Optional[gws.base.auth.UserProps]
+    user: t.Optional[gws.base.auth.user.Props]
 
 
 @gws.ext.Object('action.project')
-class Action(gws.base.api.action.Object):
+class Object(gws.base.api.action.Object):
     """Project information action"""
 
     @gws.ext.command('api.project.info')
@@ -27,6 +27,6 @@ class Action(gws.base.api.action.Object):
             locale_uid = project.locale_uids[0]
 
         return InfoResponse(
-            project=project.props_for(req.user),
+            project=gws.props(project, req.user),
             locale=gws.lib.intl.locale(locale_uid),
-            user=None if req.user.is_guest else req.user.props)
+            user=None if req.user.is_guest else gws.props(req.user, req.user))

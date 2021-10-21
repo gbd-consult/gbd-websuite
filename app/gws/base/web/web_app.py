@@ -131,7 +131,7 @@ def _handle_action(req: WebRequest) -> WebResponse:
         raise gws.base.web.error.MethodNotAllowed()
 
     try:
-        command_desc = req.root.specs.check_command(cmd, method, params, with_strict_mode=strict)
+        command_desc = req.root.specs.parse_command(cmd, method, params, with_strict_mode=strict)
     except gws.spec.runtime.Error as e:
         gws.log.error('ACTION ERROR', e)
         raise gws.base.web.error.BadRequest()
@@ -144,7 +144,7 @@ def _handle_action(req: WebRequest) -> WebResponse:
 
     gws.log.debug(f'DISPATCH c={command_desc.cmd_name!r} a={command_desc.cmd_action!r} f={command_desc.function_name!r} projectUid={project_uid!r}')
 
-    action = req.root.application.find_action(command_desc.cmd_action, project_uid)
+    action = req.root.application.find_action(req.user, command_desc.cmd_action, project_uid)
 
     if not action:
         gws.log.error(f'action not found a={command_desc.cmd_action!r} method={method!r}')

@@ -10,7 +10,7 @@ EXEC_PATH = '/usr/bin/qgis_mapserv.fcgi'
 SVG_SEARCH_PATHS = ['/usr/share/qgis/svg', '/usr/share/alkisplugin/svg']
 
 
-def environ(root: gws.RootObject):
+def environ(root: gws.IRoot):
     base_dir = gws.ensure_dir(gws.TMP_DIR + '/qqq')
 
     # it's all a bit blurry, but the server appears to read 'ini' from OPTIONS_DIR
@@ -79,7 +79,7 @@ def version():
     return 'unknown'
 
 
-def request(root: gws.RootObject, params, **kwargs):
+def request(root: gws.IRoot, params, **kwargs):
     """Make a request to the local qgis server"""
 
     url = 'http://%s:%s' % (

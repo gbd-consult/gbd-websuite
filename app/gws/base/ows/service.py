@@ -99,7 +99,7 @@ class FeatureCollection(gws.Data):
     num_returned: int
 
 
-class Object(gws.Object, gws.IOwsService):
+class Object(gws.Node, gws.IOwsService):
     """Baseclass for OWS services."""
 
     xml_helper: gws.lib.xml2.helper.Object
@@ -141,18 +141,16 @@ class Object(gws.Object, gws.IOwsService):
         self.with_inspire_meta = self.var('withInspireMeta')
         self.with_strict_params = self.var('withStrictParams')
 
-        self.xml_helper = t.cast(
-            gws.lib.xml2.helper.Object,
-            self.root.application.helper('xml'))
+        self.xml_helper = self.root.application.require_helper('xml')
 
-        self.project = t.cast(gws.IProject, self.get_closest('gws.base.project'))
+        self.project = self.get_closest('gws.base.project')
 
         self.root_layer_uid = self.var('root')
         self.update_sequence = self.var('updateSequence')
         self.force_feature_name = self.var('forceFeatureName', default='')
 
     def configure_metadata(self) -> gws.IMetaData:
-        m = t.cast(gws.IMetaData, self.create_child(gws.base.metadata.Object, self.var('metaData')))
+        m: gws.IMetaData = self.require_child(gws.base.metadata.Object, self.var('metaData'))
         m.extend(self.project.metadata if self.project else self.root.application.metadata)
 
         if not m.get('links') and self.service_link:
@@ -271,7 +269,7 @@ class Object(gws.Object, gws.IOwsService):
         """Return the root layer caps for a project."""
 
         def enum(layer_uid):
-            layer = t.cast(gws.ILayer, rd.req.acquire('gws.ext.layer', layer_uid))
+            layer: gws.ILayer = rd.req.acquire('gws.ext.layer', layer_uid)
             if not self.is_layer_enabled(layer):
                 return
             sub = []

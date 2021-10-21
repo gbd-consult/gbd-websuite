@@ -10,16 +10,13 @@ class Config(gws.Config):
     withBuiltins: bool
 
 
-class Props:
+class Props(gws.Props):
     items: t.List[core.Props]
 
 
-class Object(gws.Object, gws.ITemplateBundle):
-    items: t.List[gws.ITemplate]
-
-    @property
-    def props(self):
-        return gws.Props(items=self.items)
+class Object(gws.Node, gws.ITemplateBundle):
+    def props_for(self, user):
+        return Props(items=self.items)
 
     def configure(self):
         self.items = []
@@ -52,8 +49,8 @@ class Object(gws.Object, gws.ITemplateBundle):
 
 ##
 
-def create(root: gws.RootObject, cfg: gws.Config, parent: gws.Object = None, shared: bool = False) -> Object:
-    return t.cast(Object, root.create_object(Object, cfg, parent, shared))
+def create(root: gws.IRoot, cfg: gws.Config, parent: gws.Node = None, shared: bool = False) -> Object:
+    return root.create_object(Object, cfg, parent, shared)
 
 
 ##

@@ -18,9 +18,8 @@ class Object(core.Object):
     can_render_xyz = True
     supports_wms = True
 
-    @property
-    def props(self):
-        p = super().props
+    def props_for(self, user):
+        p = super().props_for(user)
 
         if self.display == 'tile':
             return gws.merge(

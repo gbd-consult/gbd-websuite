@@ -10,6 +10,8 @@ def parse(state: base.ParserState, meta):
     for b in base.BUILTINS:
         state.types[b] = base.TAtom(name=b)
 
+    state.types['TUncheckedEnum'] = base.TAtom(name='str')
+
     for chunk in meta.chunks:
         for path in chunk.paths['python']:
             parser = None
@@ -179,7 +181,7 @@ class _Parser:
         if supers and (supers[0] == 'Enum' or supers[0].endswith('.Enum')):
             return self.parse_enum(node)
 
-        spec = base.TObject(
+        spec = base.TRecord(
             doc=_docstring(node),
             ident=node.name,
             name=self.qname(node),
@@ -195,7 +197,6 @@ class _Parser:
             spec.ext_category = d.category
             spec.ext_kind = d.kind
             spec.ext_type = d.type
-            spec.name = d.name
 
         self.add(spec)
 
@@ -288,7 +289,7 @@ class _Parser:
             cmd_command=cmd,  # restart
             cmd_method=method,
             cmd_name=action + _ucfirst(cmd),  # serverRestart
-            ext_type=cast(base.TObject, owner_type).ext_type,
+            ext_type=cast(base.TRecord, owner_type).ext_type,
             arg_t='any',
             ret_t='any',
         )
@@ -425,7 +426,7 @@ class _Parser:
         if g == 'union':
             if not param_tuple:
                 raise ValueError('invalid Union')
-            return self.add(base.TUnion(items=param_tuple))
+            return self.add(base.TUnion(items=sorted(param_tuple)))
 
         if g == 'tuple':
             if not param_type:
@@ -450,6 +451,8 @@ class _Parser:
         }
 
     def add(self, t: base.Type) -> base.Type:
+        if not hasattr(t, 'pos'):
+            setattr(t, 'pos', self.pos)
         self.state.types[t.name] = t
         return t
 
@@ -542,9 +545,9 @@ class _Parser:
 
         if cc == 'Attribute':
             # Something.someKey - possible enum value
-            return True, [base.UNCHECKED_ENUM, self.qname(node)]
+            return True, base.TUncheckedEnum(name=self.qname(node))
 
-        base.log.debug('unparsed value', cc, self.module_name)
+        base.debug_log(f'unparsed value {cc!r}', base.Data(pos=self.pos))
         return False, None
 
     def parse_literal_value(self, node):
@@ -556,12 +559,6 @@ class _Parser:
         if cc in ('Constant', 'NameConstant'):
             return node.value
         raise ValueError(f'invalid literal value of type {cc!r}')
-
-    def type_id(self, type_obj):
-        return register_type(self.state, type_obj)
-
-    def type_object(self, uid):
-        return self.state.type_refs[uid]
 
 
 ##

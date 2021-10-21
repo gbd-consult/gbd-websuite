@@ -87,5 +87,5 @@ class Object:
         action = root.find(uid=uid) if uid else root.find(klass='gws.ext.action.alkissearch')
         if not action:
             gws.log.error('no ALKIS action found')
-            return
+            return None
         return t.cast(search.Object, action).provider

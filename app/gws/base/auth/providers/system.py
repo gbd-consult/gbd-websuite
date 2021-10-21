@@ -6,12 +6,12 @@ from .. import provider, user
 
 @gws.ext.Object('auth.provider.system')
 class Object(provider.Object):
-    users: t.Dict[str, gws.IUser]
+    users: t.Dict[str, user.User]
 
     def configure(self):
         self.users = {
-            'guest': user.Guest().init_from_source(self, 'guest'),
-            'system': user.System().init_from_source(self, 'system'),
+            'guest': user.create(user.Guest, self, 'guest', [gws.ROLE_GUEST]),
+            'system': user.create(user.System, self, 'system', []),
         }
 
     def authenticate(self, method, credentials):

@@ -8,9 +8,7 @@ class Config(gws.Config):
     secure: bool = True  #: use only with SSL
 
 
-class Object(gws.Object, gws.IAuthMethod):
-    secure: bool
-
+class Object(gws.Node, gws.IAuthMethod):
     def configure(self):
         self.secure = self.var('secure')
 

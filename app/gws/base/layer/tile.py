@@ -40,11 +40,11 @@ class Object(image.Object):
     url: gws.Url
     service: ServiceConfig
 
-    @property
-    def props(self):
+    def props_for(self, user):
+        p = super().props_for(user)
         if self.display == 'client':
-            return gws.merge(super().props, type='xyz', url=self.url)
-        return super().props
+            return gws.merge(p, type='xyz', url=self.url)
+        return p
 
     @property
     def own_bounds(self):

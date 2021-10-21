@@ -16,88 +16,8 @@ We flatten it first, creating a list 'some.nested.key, list positions, value'
 """
 
 
-class GroupConfig(gws.Config):
-    """Export group configuration"""
-
-    title: str  #: title for this group
-    eigentuemer: bool = False #: include Eigentuemer (owner) data
-    buchung: bool = False  #: include Grundbuch (register) data
-    dataModel: t.Optional[gws.base.model.Config] #: data model for this group
-
-
-class Config(gws.WithAccess):
-    """CSV Export configuration"""
-
-    groups: t.Optional[t.List[GroupConfig]] #: export groups
-
-
-# default export groups configuration
-
-
-DEFAULT_GROUPS = [
-    gws.Config(
-        title='Basisdaten', eigentuemer=False, buchung=False,
-        dataModel=gws.Config(rules=[
-            gws.Config(source='gemeinde', title='Gemeinde'),
-            gws.Config(source='gemarkung_id', title='Gemarkung ID'),
-            gws.Config(source='gemarkung', title='Gemarkung'),
-            gws.Config(source='flurnummer', title='Flurnummer', type=gws.AttributeType.int),
-            gws.Config(source='zaehler', title='Zähler', type=gws.AttributeType.int),
-            gws.Config(source='nenner', title='Nenner'),
-            gws.Config(source='flurstuecksfolge', title='Folge'),
-            gws.Config(source='amtlicheflaeche', title='Fläche', type=gws.AttributeType.float),
-            gws.Config(source='x', title='X', type=gws.AttributeType.float),
-            gws.Config(source='y', title='Y', type=gws.AttributeType.float),
-        ])
-    ),
-    gws.Config(
-        title='Lage', eigentuemer=False, buchung=False,
-        dataModel=gws.Config(rules=[
-            gws.Config(source='lage_strasse', title='FS Strasse'),
-            gws.Config(source='lage_hausnummer', title='FS Hnr'),
-        ])
-    ),
-    gws.Config(
-        title='Gebäude', eigentuemer=False, buchung=False,
-        dataModel=gws.Config(rules=[
-            gws.Config(source='gebaeude_area', title='Gebäude Fläche', type=gws.AttributeType.float),
-            gws.Config(source='gebaeude_gebaeudefunktion', title='Gebäude Funktion'),
-        ])
-    ),
-    gws.Config(
-        title='Buchungsblatt', eigentuemer=False, buchung=True,
-        dataModel=gws.Config(rules=[
-            gws.Config(source='buchung_buchungsart', title='Buchungsart'),
-            gws.Config(source='buchung_buchungsblatt_blattart', title='Blattart'),
-            gws.Config(source='buchung_buchungsblatt_buchungsblattkennzeichen', title='Blattkennzeichen'),
-            gws.Config(source='buchung_buchungsblatt_buchungsblattnummermitbuchstabenerweiterung', title='Blattnummer'),
-            gws.Config(source='buchung_laufendenummer', title='Laufende Nummer'),
-        ])
-    ),
-    gws.Config(
-        title='Eigentümer', eigentuemer=True, buchung=True,
-        dataModel=gws.Config(rules=[
-            gws.Config(source='buchung_eigentuemer_person_vorname', title='Vorname'),
-            gws.Config(source='buchung_eigentuemer_person_nachnameoderfirma', title='Name'),
-            gws.Config(source='buchung_eigentuemer_person_geburtsdatum', title='Geburtsdatum'),
-            gws.Config(source='buchung_eigentuemer_person_anschrift_strasse', title='Strasse'),
-            gws.Config(source='buchung_eigentuemer_person_anschrift_hausnummer', title='Hnr'),
-            gws.Config(source='buchung_eigentuemer_person_anschrift_postleitzahlpostzustellung', title='PLZ'),
-            gws.Config(source='buchung_eigentuemer_person_anschrift_ort_post', title='Ort'),
-        ])
-    ),
-    gws.Config(
-        title='Nutzung', eigentuemer=False, buchung=False,
-        dataModel=gws.Config(rules=[
-            gws.Config(source='nutzung_a_area', title='Nutzung Fläche', type=gws.AttributeType.float),
-            gws.Config(source='nutzung_type', title='Nutzung Typ'),
-        ])
-    ),
-]
-
-
-def as_csv(action: gws.IObject, fs_features: t.List[gws.IFeature], model: gws.base.model.Object):
-    helper = t.cast(gws.base.csv.Object, action.root.application.require_helper('csv'))
+def as_csv(action: gws.INode, fs_features: t.List[gws.IFeature], model: gws.base.model.Object):
+    helper: gws.base.csv.Object = action.root.application.require_helper('csv')
 
     writer = helper.writer()
     writer.write_headers([r.title for r in model.rules])
@@ -120,7 +40,7 @@ def _recs_from_feature(fs: gws.IFeature, att_names: t.List[str]):
 
     # compute max index for each list from 'pos' elements
 
-    max_index = {}
+    max_index: t.Dict[str, int] = {}
 
     for e in flat:
         for k, v in e['pos'].items():

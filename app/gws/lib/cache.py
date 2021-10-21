@@ -20,7 +20,7 @@ class Config(gws.Config):
 
 class Entry(gws.Data):
     uid: str
-    layers: t.List[gws.IObject]
+    layers: t.List[gws.INode]
     mpx_cache: t.Dict
     mpx_grids: t.List[t.Dict]
     config: t.Dict
@@ -28,7 +28,7 @@ class Entry(gws.Data):
     dirname: str
 
 
-def status(root: gws.RootObject, layer_uids=None, with_counts=True):
+def status(root: gws.IRoot, layer_uids=None, with_counts=True):
     mpx_config = gws.lib.mpx.config.create(root)
     entries = _entries(root, mpx_config, layer_uids)
 
@@ -44,7 +44,7 @@ def status(root: gws.RootObject, layer_uids=None, with_counts=True):
     }
 
 
-def seed(root: gws.RootObject, layer_uids=None, max_time=None, concurrency=1, levels=None):
+def seed(root: gws.IRoot, layer_uids=None, max_time=None, concurrency=1, levels=None):
     pass
 
 
@@ -138,7 +138,7 @@ def _update_file_counts(entries):
     # return out
 
 
-def _entries(root: gws.RootObject, mpx_config, layer_uids=None):
+def _entries(root: gws.IRoot, mpx_config, layer_uids=None):
     caches: gws.Dict[str, Entry] = {}
 
     for layer in root.find_all('gws.ext.layer'):
@@ -205,7 +205,7 @@ def _remove_dir(dirname):
 #
 #
 # @gws.ext.Object('cli.cache')
-# class Cli(gws.Object):
+# class Cli(gws.Node):
 #
 #     @gws.ext.command()
 #     def status(self, p: StatusParams):
@@ -253,13 +253,13 @@ def _remove_dir(dirname):
 #         print()
 #
 #
-# def clean(root: gws.RootObject):
+# def clean(root: gws.IRoot):
 #     st = status(root)
 #     for d in st['dangling_dirs']:
 #         _remove_dir(gws.MAPPROXY_CACHE_DIR + '/' + d)
 #
 #
-# def drop(root: gws.RootObject, layer_uids=None):
+# def drop(root: gws.IRoot, layer_uids=None):
 #     mc = gws.lib.mpx.config.create(root)
 #
 #     for layer, cc in _cached_layers(root, mc, layer_uids):

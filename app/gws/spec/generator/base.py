@@ -67,6 +67,14 @@ except ImportError:
 
     log = _Logger()  # type: ignore
 
+
+def debug_log(msg, obj=None):
+    if obj and hasattr(obj, 'pos'):
+        pos = getattr(obj, 'pos')
+        msg += f" ({pos['module_path']}:{pos['lineno']})"
+    log.debug(msg)
+
+
 try:
     from gws.core.const import VERSION
 except ImportError:
@@ -95,6 +103,11 @@ class TDict(Type):
 
 
 class TUnresolvedReference(Type):
+    def __init__(self, name: str):
+        self.name = name
+
+
+class TUncheckedEnum(Type):
     def __init__(self, name: str):
         self.name = name
 
@@ -217,7 +230,7 @@ class TEnum(TNamedType):
         self.values = values
 
 
-class TObject(TNamedType):
+class TRecord(TNamedType):
     def __init__(
             self,
             doc: str,

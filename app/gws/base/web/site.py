@@ -6,19 +6,7 @@ import gws.types as t
 from . import core
 
 
-class Config(gws.Config):
-    """Site (virtual host) configuration"""
-
-    assets: t.Optional[core.DocumentRootConfig]  #: assets location and options
-    cors: t.Optional[core.CorsConfig]  #: cors configuration
-    errorPage: t.Optional[gws.ext.template.Config]  #: error page template
-    host: str = '*'  #: host name
-    rewrite: t.Optional[t.List[core.RewriteRule]]  #: rewrite rules
-    canonicalHost: str = ''  #: hostname for reversed rewriting
-    root: core.DocumentRootConfig  #: document root location and options
-
-
-class Object(gws.Object, gws.IWebSite):
+class Object(gws.Node, gws.IWebSite):
     assets_root: t.Optional[gws.DocumentRoot]
     canonical_host: str
     cors_options: core.CorsOptions
@@ -33,8 +21,8 @@ class Object(gws.Object, gws.IWebSite):
         self.host = self.var('host', default='*')
         self.canonical_host = self.var('canonicalHost')
 
-        self.static_root = core.document_root_from_config(self.var('root'))
-        self.assets_root = core.document_root_from_config(self.var('assets'))
+        self.static_root = core.create_document_root(self.var('root'))
+        self.assets_root = core.create_document_root(self.var('assets'))
 
         # config.ssl is populated in the application init
         self.ssl = self.var('ssl')

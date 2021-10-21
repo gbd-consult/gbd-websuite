@@ -41,11 +41,7 @@ class Cli:
         else:
             xml = gws.read_file(p.url)
 
-        mod = gws.import_from_path(
-            f'{gws.APP_DIR}/gws/plugin/ows_provider/{protocol}/caps.py',
-            f'gws.plugin.ows_provider.{protocol}.caps'
-        )
-
+        mod = gws.import_from_path(f'gws/plugin/ows_provider/{protocol}/caps.py')
         res = mod.parse(xml)
         js = gws.lib.json2.to_pretty_string(res)
 

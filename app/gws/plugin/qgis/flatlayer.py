@@ -53,8 +53,7 @@ class Object(gws.base.layer.image.Object):
         if not self.has_configured_search:
             cfg = self.provider.search_config(self.source_layers)
             if cfg:
-                self.search_providers.append(
-                    t.cast(gws.ISearchProvider, self.create_child('gws.ext.search.provider', cfg)))
+                self.search_providers.append(self.require_child('gws.ext.search.provider', cfg))
                 self.has_configured_search = True
 
         if not self.has_configured_legend:

@@ -63,20 +63,19 @@ def print_usage_and_fail(specs, ext_type, cmd):
     return 1
 
 
-def dispatch(specs, ext_type, cmd, params):
+def dispatch(root, ext_type, cmd, params):
     # e.g. 'gws auth password' => 'authPassword'
     cmd_name = camelize(ext_type + '-' + cmd)
 
     try:
-        command_desc = specs.check_command(cmd_name, 'cli', params, with_strict_mode=False)
+        command_desc = root.specs.parse_command(cmd_name, 'cli', params, with_strict_mode=False)
     except gws.spec.runtime.Error:
-        return print_usage_and_fail(specs, ext_type, cmd)
+        return print_usage_and_fail(root.specs, ext_type, cmd)
 
     if not command_desc:
-        return print_usage_and_fail(specs, ext_type, cmd)
+        return print_usage_and_fail(root.specs, ext_type, cmd)
 
-    object_desc = gws.load_ext(specs, command_desc.class_name)
-    handler = object_desc.class_ptr()
+    handler = root.create_object(command_desc.class_name)
     prn('')
     res = getattr(handler, command_desc.function_name)(command_desc.params)
     prn('')
@@ -120,7 +119,7 @@ def main():
         return print_usage_and_fail(specs, args[0], args[1])
 
     try:
-        return dispatch(specs, args[0], args[1], params)
+        return dispatch(gws.create_root_object(specs), args[0], args[1], params)
     except:
         sys.stdout.flush()
         gws.log.exception()

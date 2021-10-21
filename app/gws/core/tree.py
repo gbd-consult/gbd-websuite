@@ -1,56 +1,54 @@
 import sys
 
 import gws.types as t
-from . import error, log, types, util
+from . import const, error, log, types, util
+
+_ALLOW = 'allow'
+_DENY = 'deny'
 
 
-class BaseObject(types.IBaseObject):
-    access: t.Optional[types.Access]
-    uid: str
-    title: str
-    class_name: str
-    ext_type: str
-
-    @property
-    def props(self) -> types.Props:
-        return t.cast(types.Props, None)
-
-    def __init__(self, klass: types.Klass = None, ext_type: str = None):
+class Object(types.IObject):
+    def __init__(self):
+        _create_attributes(self)
+        self.class_name = _class_name(self)
         self.access = None
-        self.class_name = _class_name(klass or self.__class__)
-        self.ext_type = ext_type or ''
-        self.title = ''
-        self.uid = ''
+
+    def props_for(self, user):
+        return None
+
+    def access_for(self, user):
+        if self.access:
+            for a in self.access:
+                if a.role in user.roles:
+                    return a.type == _ALLOW
 
     def is_a(self, klass: types.Klass):
         if isinstance(klass, type):
             return isinstance(self, klass)
         return self.class_name == klass or self.class_name.startswith(klass + '.')
 
-    def props_for(self, user: types.IUser) -> t.Optional[types.Props]:
-        if not user.can_use(self):
-            return None
-        return types.Props(_make_props(self.props, user))
 
-    def configure(self):
-        # this is intended to be overridden
-        pass
+##
 
-    def post_configure(self):
-        # this is intended to be overridden
-        pass
-
-
-class Object(BaseObject, types.IObject):
-    root: 'RootObject'
-    parent: 'Object'
+class Node(Object, types.INode):
     config: types.Config
 
-    def __init__(self, klass: types.Klass = None, ext_type: str = None):
-        super().__init__(klass, ext_type)
-        self.children: t.List['Object'] = []
-        for s in ('root', 'parent', 'config'):
-            setattr(self, s, None)
+    def __init__(self):
+        super().__init__()
+        self.children = []
+
+    def is_a(self, klass: types.Klass):
+        if isinstance(klass, type):
+            return isinstance(self, klass)
+        return self.root.specs.is_a(self.class_name, klass)
+
+    ##
+
+    def post_configure(self):
+        pass
+
+    def configure(self):
+        pass
 
     def initialize(self, cfg):
         self.config = cfg
@@ -62,7 +60,6 @@ class Object(BaseObject, types.IObject):
         # call all super 'configure' methods
         mro = [cls for cls in type(self).mro() if hasattr(cls, 'configure')]
         try:
-
             for cls in reversed(mro):
                 cls.configure(self)  # type: ignore
             log.debug(f'END config {self.class_name} uid={self.uid}')
@@ -85,15 +82,21 @@ class Object(BaseObject, types.IObject):
             return self.parent.var(key, default, with_parent=True)
         return default
 
-    def create_child(self, klass: types.Klass, cfg: t.Optional[t.Any]) -> t.Optional['Object']:
+    def create_child(self, klass, cfg):
         return self.root.create_object(klass, cfg, parent=self)
 
-    def create_child_if_config(self, klass: types.Klass, cfg: t.Optional[t.Any]) -> t.Optional['Object']:
+    def create_child_if_config(self, klass, cfg):
         if cfg:
-            return self.root.create_object(klass, cfg, parent=self)
+            return self.create_child(klass, cfg)
         return None
 
-    def create_children(self, klass: types.Klass, cfgs: t.List[t.Any]) -> t.List['Object']:
+    def require_child(self, klass, cfg):
+        obj = self.create_child(klass, cfg)
+        if not obj:
+            raise error.Error(f'{klass!r} failed to initialize')
+        return obj
+
+    def create_children(self, klass, cfgs):
         if not cfgs:
             return []
         ls = []
@@ -103,7 +106,7 @@ class Object(BaseObject, types.IObject):
                 ls.append(obj)
         return ls
 
-    def get_closest(self, klass: types.Klass) -> t.Optional['Object']:
+    def get_closest(self, klass):
         obj = self.parent
         while obj:
             if obj.is_a(klass):
@@ -112,20 +115,24 @@ class Object(BaseObject, types.IObject):
         return None
 
 
-class RootObject(BaseObject, types.IRootObject):
-    application: types.IApplication
-    specs: types.ISpecRuntime
+##
+
+
+class Root(types.IRoot):
 
     def __init__(self):
         super().__init__()
-        self.all_nodes = []
-        self.all_types = {}
-        self.configuration_errors = []
-        self.root = self
-        self.shared_objects = {}
-        self.uids = set()
 
-    def set_object_uid(self, obj: Object, uid=None):
+        self.specs = ...  # to be populated in create_root_object
+        self.root = self
+        self.configuration_errors = []
+
+        self._descriptors: t.Dict[str, types.ExtObjectDescriptor] = {}
+        self._objects: t.List['Node'] = []
+        self._shared_objects: t.Dict[str, 'Node'] = {}
+        self._uids = set()
+
+    def set_object_uid(self, obj, uid=None):
 
         def _auto():
             u = obj.var('uid')
@@ -136,10 +143,10 @@ class RootObject(BaseObject, types.IRootObject):
         def _new(uid):
             n = 0
             u = uid
-            while u in self.uids:
+            while u in self._uids:
                 n += 1
                 u = uid + str(n)
-            self.uids.add(u)
+            self._uids.add(u)
             return u
 
         if obj.uid and obj.uid == uid:
@@ -149,27 +156,26 @@ class RootObject(BaseObject, types.IRootObject):
 
         with util.app_lock():
             if obj.uid:
-                self.uids.discard(obj.uid)
+                self._uids.discard(obj.uid)
             obj.uid = _new(uid)
 
     def post_initialize(self):
-        for obj in reversed(self.all_nodes):
+        for obj in reversed(self._objects):
             try:
                 obj.post_configure()
             except Exception as exc:
                 info = _error_info(exc, self)
-                self.root.configuration_errors.append(info)
+                self.configuration_errors.append(info)
                 log.exception(info.replace('\n', ' '))
 
-    def create_application(self, klass, cfg):
+    def create_application(self, cfg):
         cfg = _to_config(cfg)
-        app = self._create(klass, _to_config({}))
-        app.root = self
-        self.all_nodes.append(app)
+        app = self._create_from_klass_and_config('gws.base.application', _to_config({}))
+        self._objects.append(app)
         self.application = app
-        t.cast('Object', self.application).initialize(cfg)
+        t.cast('Node', self.application).initialize(cfg)
 
-    def create_object(self, klass, cfg, parent: 'Object' = None, shared: bool = False, key=None) -> t.Optional['Object']:
+    def create_object(self, klass, cfg=None, parent=None, shared=False, key=None):
         cfg = _to_config(cfg)
 
         if not shared:
@@ -184,65 +190,97 @@ class RootObject(BaseObject, types.IRootObject):
 
         key = util.as_uid(_class_name(klass)) + '_' + key
 
-        if key in self.shared_objects:
-            # log.debug(f'SHARED: FOUND {klass} {uid}')
-            return self.shared_objects[key]
+        if key in self._shared_objects:
+            return self._shared_objects[key]
 
         with util.app_lock():
             log.debug(f'create_shared_object: klass={klass!r} key={key!r}')
             obj = self._create_and_initialize(klass, cfg, parent)
             if obj:
-                self.shared_objects[key] = obj
+                self._shared_objects[key] = obj
 
         return obj
 
-    def _create_and_initialize(self, klass, cfg, parent: 'Object' = None) -> t.Optional['Object']:
-        obj = self._create(klass, cfg)
+    ##
+
+    def _create_and_initialize(self, klass: types.Klass, cfg, parent: 'Node' = None) -> t.Optional['Node']:
+        obj = self._create_from_klass_and_config(klass, cfg)
         if parent:
             obj.parent = parent
         if not obj.initialize(cfg):
             return None
         if parent:
             parent.children.append(obj)
-        self.all_nodes.append(obj)
+        self._objects.append(obj)
         return obj
 
-    def _create(self, klass, cfg):
-        obj = klass() if isinstance(klass, type) else self._create_from_string_type(klass, cfg)
+    def _create_from_klass_and_config(self, klass: types.Klass, cfg):
+        desc = self._find_descriptor(klass, cfg)
+        obj = desc.class_ptr()
         obj.root = self
+        obj.ext_category = desc.ext_category
+        obj.ext_type = desc.ext_type
         return obj
 
-    def _create_from_string_type(self, klass, cfg):
-        # gws.ext.action + type=auth -> gws.ext.action.auth.Object
-        c = str(klass).split('.')
-        ext_type = cfg.get('type')
-        if ext_type:
-            c.append(ext_type)
-        if not c[-1][0].isupper():
-            c.append('Object')
-        class_name = '.'.join(c)
+    def _find_descriptor(self, klass: types.Klass, cfg):
+        class_name = _class_name(klass) if isinstance(klass, type) else klass
 
-        if class_name in self.all_types:
-            desc = self.all_types[class_name]
-        elif class_name in _ADHOC_TYPES:
-            desc = _ADHOC_TYPES[class_name]
-        else:
-            desc = load_ext(self.specs, class_name)
-            if not desc:
-                raise error.Error(f'class not found: {class_name!r}')
-            self.all_types[class_name] = desc
+        cs = class_name.split('.')
+        if not cs[-1][0].isupper():
+            # not a fully qualified name
+            if class_name.startswith('gws.ext') and cfg.get('type'):
+                # e.g. 'gws.ext.action' + type=auth -> gws.ext.action.auth.Object
+                cs.append(cfg.get('type'))
+            cs.append('Object')
+            class_name = '.'.join(cs)
 
-        cls = desc.class_ptr
-        return cls(desc.name, desc.ext_type)
+        if class_name in self._descriptors:
+            return self._descriptors[class_name]
+        if class_name in _ADHOC_TYPES:
+            return _ADHOC_TYPES[class_name]
 
-    def find_all(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.List[types.IObject]:
-        return list(_find_all(self.all_nodes, klass, uid, ext_type))
+        rcs = self.specs.real_class_names(class_name)
+        if len(rcs) != 1:
+            raise error.Error(f'_find_descriptor: invalid class {class_name!r} (found {rcs!r})')
 
-    def find(self, klass: types.Klass = None, uid: str = None, ext_type: str = None) -> t.Optional[types.IObject]:
-        for p in _find_all(self.all_nodes, klass, uid, ext_type):
-            return p
-        return None
+        desc = self.specs.object_descriptor(rcs[0])
+        if not desc:
+            raise error.Error(f'_find_descriptor: class {class_name!r} ({rcs!r}) not found')
 
+        if not desc.class_ptr:
+            if desc.module_name in sys.modules:
+                log.debug(f'_find_descriptor: {class_name!r}: already loaded')
+                mod = sys.modules[desc.module_name]
+            else:
+                log.debug(f'_find_descriptor: {class_name!r}: loading from spec: {desc!r}')
+                mod = util.import_from_path(desc.module_path)
+            desc.class_ptr = getattr(mod, desc.ident)
+
+        self._descriptors[class_name] = desc
+        return desc
+
+    def find_all(self, klass=None, uid=None):
+        ls = self._objects
+        if klass:
+            ls = [obj for obj in ls if obj.is_a(klass)]
+        if uid:
+            ls = [obj for obj in ls if obj.uid == uid]
+        return ls
+
+    def find(self, klass=None, uid=None):
+        ls = self.find_all(klass, uid)
+        return ls[0] if ls else None
+
+
+##
+
+def create_root_object(specs: types.ISpecRuntime):
+    r = Root()
+    r.specs = specs
+    return r
+
+
+##
 
 _ADHOC_TYPES = {}
 
@@ -250,7 +288,7 @@ _ADHOC_TYPES = {}
 def register_ext(class_name: str, cls: type):
     _ADHOC_TYPES[class_name] = types.ExtObjectDescriptor(
         name=class_name,
-        ext_type=class_name.split('.')[-2],  # class_name is like "gws.ext.auth.provider.mock.Object"
+        ext_type=class_name.split('.')[-2],  # class_name is like "gws.ext.auth.provider.mock.Node"
         class_ptr=cls)
 
 
@@ -258,18 +296,115 @@ def unregister_ext():
     _ADHOC_TYPES.clear()
 
 
-def load_ext(specs, class_name) -> types.ExtObjectDescriptor:
-    desc = specs.ext_object_descriptor(class_name)
-    if not desc:
-        raise error.Error(f'load_ext: class {class_name!r} not found')
-    if desc.module_name in sys.modules:
-        log.debug(f'load_ext: {class_name!r}: found')
-        mod = sys.modules[desc.module_name]
-    else:
-        log.debug(f'load_ext: {class_name!r}: loading from spec: {desc!r}')
-        mod = util.import_from_path(desc.module_path, desc.module_name)
-    desc.class_ptr = getattr(mod, desc.ident)
-    return desc
+##
+
+_ACCCESS_ALLOWED = 1
+_ACCCESS_DENIED = 2
+_ACCCESS_UNKNOWN = 3
+
+
+def can_use(user, obj, parent=None):
+    return _access(user, obj, parent) == _ACCCESS_ALLOWED
+
+
+def _access(user, obj, parent):
+    if not obj:
+        log.debug(f'PERMS:False: o={_object_name(obj)} r={user.roles!r}: NONE')
+        return _ACCCESS_DENIED
+
+    if obj == user:
+        log.debug(f'PERMS:True: o={_object_name(obj)} r={user.roles!r}: SELF')
+        return _ACCCESS_ALLOWED
+
+    if const.ROLE_ADMIN is user.roles:
+        log.debug(f'PERMS:True: o={_object_name(obj)} r={user.roles!r}: ADMIN')
+        return _ACCCESS_ALLOWED
+
+    fn = getattr(obj, 'access_for', None)
+    c = fn(user) if fn else None
+
+    if c is not None:
+        log.debug(f'PERMS:{c} o={_object_name(obj)} r={user.roles!r}: FOUND')
+        return _ACCCESS_ALLOWED if c else _ACCCESS_DENIED
+
+    curr = parent or util.get(obj, 'parent')
+    hist = []
+
+    while curr:
+        hist.append(curr)
+
+        fn = getattr(curr, 'access_for', None)
+        c = fn(user) if fn else None
+
+        if c is not None:
+            log.debug(f'PERMS:{c} o={_object_name(obj)} r={user.roles!r}: IN={[_object_name(x) for x in hist]}')
+            return _ACCCESS_ALLOWED if c else _ACCCESS_DENIED
+
+        curr = util.get(curr, 'parent')
+
+    log.debug(f'PERMS:None: o={_object_name(obj)} r={user.roles!r}: IN={[_object_name(x) for x in hist]}: NOT_FOUND')
+    return _ACCCESS_UNKNOWN
+
+
+_all_user = t.cast(types.IGrantee, types.Data(roles={const.ROLE_ALL}))
+
+
+def is_public_object(obj):
+    return _access(_all_user, obj, None) == _ACCCESS_ALLOWED
+
+
+##
+
+
+def props(obj: types.IObject, user: types.IGrantee, parent: t.Optional[types.INode] = None) -> t.Optional[types.Props]:
+    if not user.can_use(obj, parent):
+        return None
+    p = _make_props(obj.props_for(user), user)
+    if p is None or util.is_data_object(p):
+        return p
+    if isinstance(p, dict):
+        return types.Props(p)
+    raise error.Error('invalid props type')
+
+
+def _make_props(obj: t.Any, user):
+    if util.is_atom(obj):
+        return obj
+
+    if isinstance(obj, (Object, Node)):
+        if _access(user, obj, None) == _ACCCESS_DENIED:
+            return None
+        obj = obj.props_for(user)
+
+    if util.is_data_object(obj):
+        obj = vars(obj)
+
+    if util.is_dict(obj):
+        return util.compact({k: _make_props(v, user) for k, v in obj.items()})
+
+    if util.is_list(obj):
+        return util.compact([_make_props(v, user) for v in obj])
+
+    return None
+
+
+##
+
+def _attribute_names_for(obj):
+    names = set()
+    cls = type(obj)
+
+    for c in cls.mro():
+        ann = getattr(c, '__annotations__', None)
+        if ann:
+            names.update(ann)
+
+    return set(n for n in names if not hasattr(cls, n))
+
+
+def _create_attributes(obj):
+    for n in _attribute_names_for(obj):
+        setattr(obj, n, None)
 
 
 def _to_config(cfg):
@@ -282,27 +417,29 @@ def _to_config(cfg):
     return cfg
 
 
-def _find_all(objects, klass, uid, ext_type):
-    for obj in objects:
-        ok = (
-                (not klass or obj.is_a(klass))
-                and (not uid or obj.uid == uid)
-                and (not ext_type or obj.ext_type == ext_type)
-        )
-        if ok:
-            yield obj
-
-
 def _class_name(s):
     if isinstance(s, str):
         return s
     if not isinstance(s, type):
-        s = s.__class__
-    mod = s.__module__
-    name = s.__name__
-    if name == 'Object':
-        return mod
-    return mod + '.' + name
+        s = type(s)
+    m = getattr(s, '__module__', '__unknown_module')
+    n = getattr(s, '__name__', '__unknown_name')
+    return m + '.' + n
+
+
+def _object_name(obj):
+    name = getattr(obj, 'class_name', '')
+    if not name:
+        try:
+            name = obj.__class__.__name__
+        except:
+            name = 'object'
+
+    uid = getattr(obj, 'uid', '')
+    if uid:
+        name += ' (' + str(uid) + ')'
+
+    return name
 
 
 def _error_info(exc, obj):
@@ -319,54 +456,11 @@ def _error_info(exc, obj):
     stack = ''
 
     while obj:
-        name = getattr(obj, 'class_name', '')
-        if not name:
-            try:
-                name = obj.__class__.__name__
-            except:
-                name = 'object'
-
-        uid = getattr(obj, 'uid', '')
-        if uid:
-            name += ' (' + str(uid) + ')'
+        name = _object_name(obj)
         stack += 'in ' + name + '\n'
-
         obj = getattr(obj, 'parent', None)
 
     if stack:
         info += '\n' + stack.strip()
 
     return info
-
-
-def _make_props(obj, user):
-    if obj is None or isinstance(obj, (int, float, bool, str, bytes)):
-        return obj
-
-    if isinstance(obj, BaseObject):
-        return _make_props(obj.props_for(user), user)
-
-    if util.is_data_object(obj):
-        obj = vars(obj)
-
-    if isinstance(obj, dict):
-        ls = {}
-        for k, v in obj.items():
-            v = _make_props(v, user)
-            if v is not None:
-                ls[k] = v
-        return ls
-
-    if isinstance(obj, (list, tuple)):
-        ls = []
-        for v in obj:
-            v = _make_props(v, user)
-            if v is not None:
-                ls.append(v)
-        return ls
-
-    if util.has(obj, 'props'):
-        return _make_props(util.get(obj, 'props'), user)
-
-    if obj:
-        return str(obj)

@@ -6,10 +6,12 @@ import gws.lib.sqlite
 import gws.types as t
 from .. import types
 
-_DEFAULT_PATH = gws.MISC_DIR + '/storage8.sqlite'
+# NB, for compatibility, the DB is 'storage5' and the user column is called 'user_fid'
+
+_DEFAULT_PATH = gws.MISC_DIR + '/storage5.sqlite'
 
 
-class Object(gws.Object):
+class Object(gws.Node):
     path: str
 
     def configure(self):
@@ -32,9 +34,9 @@ class Object(gws.Object):
                 'SELECT * FROM storage WHERE category=? AND name=? LIMIT 1',
                 [category, name])
             for r in rs:
-                return types.Record(**r)
+                return self._record(r)
 
-    def write(self, category: str, name: str, data: str, user_fid: str):
+    def write(self, category: str, name: str, data: str, user_uid: str):
         with self._connect() as conn:
             conn.execute('''INSERT OR REPLACE INTO storage(
                 category, name, user_fid, data, created)
@@ -42,7 +44,7 @@ class Object(gws.Object):
             ''', [
                 category,
                 name,
-                user_fid,
+                user_uid,
                 data,
                 int(time.time()),
             ])
@@ -56,7 +58,7 @@ class Object(gws.Object):
                 ''',
                 [category]
             )
-            return [types.Record(**r) for r in rs]
+            return [self._record(r) for r in rs]
 
     def delete(self, category: str, name: str):
         with self._connect() as conn:
@@ -68,3 +70,9 @@ class Object(gws.Object):
 
     def _connect(self):
         return gws.lib.sqlite.connect(self.path)
+
+    def _record(self, r):
+        r = dict(r)
+        if 'user_fid' in r:
+            r['user_uid'] = r.pop('user_fid')
+        return types.Record(r)

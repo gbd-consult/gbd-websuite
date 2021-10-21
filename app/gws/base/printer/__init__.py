@@ -13,11 +13,10 @@ class Props(gws.Data):
     templates: gws.base.template.bundle.Props
 
 
-class Object(gws.Object):
+class Object(gws.Node):
     templates: gws.base.template.bundle.Object
 
-    @property
-    def props(self):
+    def props_for(self, user):
         return Props(templates=self.templates)
 
     def configure(self):

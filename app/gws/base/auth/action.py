@@ -11,7 +11,7 @@ from . import user as user_api
 
 
 class Response(gws.Response):
-    user: user_api.UserProps
+    user: user_api.Props
 
 
 class LoginParams(gws.Params):
@@ -26,7 +26,7 @@ class Object(gws.base.api.action.Object):
     def check(self, req: gws.IWebRequest, p: gws.Params) -> Response:
         """Check the authorization status"""
 
-        return Response(user=req.user.props)
+        return self._resp(req)
 
     @gws.ext.command('api.auth.login')
     def login(self, req: gws.IWebRequest, p: LoginParams) -> Response:
@@ -47,14 +47,14 @@ class Object(gws.base.api.action.Object):
             raise gws.base.web.error.Forbidden()
 
         wr.session = new_session
-        return Response(user=req.user.props)
+        return self._resp(req)
 
     @gws.ext.command('api.auth.logout')
     def logout(self, req: gws.IWebRequest, p: gws.Params) -> Response:
         """Perform a logout"""
 
         if req.user.is_guest:
-            return Response(user=req.user.props)
+            return self._resp(req)
 
         wr = t.cast(wsgi.WebRequest, req)
         web_method = wr.auth.get_method(ext_type='web')
@@ -68,5 +68,7 @@ class Object(gws.base.api.action.Object):
             raise gws.base.web.error.Forbidden()
 
         wr.session = web_method.logout(wr.auth, session, req)
-        return Response(user=req.user.props)
+        return self._resp(req)
 
+    def _resp(self, req):
+        return Response(user=gws.props(req.user, req.user))

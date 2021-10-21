@@ -8,11 +8,10 @@ class Config(Record):
     pass
 
 
-class Object(gws.Object, gws.IMetaData):
+class Object(gws.Node, gws.IMetaData):
     _rec: Record
 
-    @property
-    def props(self):
+    def props_for(self, user):
         return Props(
             abstract=self._rec.abstract or '',
             attribution=self._rec.attribution or '',
@@ -24,7 +23,7 @@ class Object(gws.Object, gws.IMetaData):
         )
 
     @property
-    def record(self) -> Record:
+    def values(self):
         return self._rec
 
     def configure(self):

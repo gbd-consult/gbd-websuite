@@ -10,7 +10,7 @@ COMMAND = 'ows'
 # def _get_service(type, src):
 #     is_url = re.match(r'^https?:', src)
 #
-#     r = gws.RootObject()
+#     r = gws.Root()
 #
 #     if not is_url and src.endswith('.qgs'):
 #         return r.create_object(gws.qgis.Service, gws.Config({'path': src}))

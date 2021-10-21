@@ -6,12 +6,11 @@ class Config(gws.WithAccess):
 
 
 class Props(gws.Props):
-    enabled: bool = True
+    type: str
 
 
-class Object(gws.Object):
+class Object(gws.Node):
     """Generic action object, the parent of all action objects."""
 
-    @property
-    def props(self):
-        return Props(enabled=True, type=self.ext_type)
+    def props_for(self, user):
+        return Props(type=self.ext_type)

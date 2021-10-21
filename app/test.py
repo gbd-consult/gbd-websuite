@@ -12,7 +12,9 @@ APP_DIR = os.path.realpath(os.path.dirname(__file__))
 CONFIG = {}
 
 HELP = """
-GWS test runner.
+
+GWS test runner
+~~~~~~~~~~~~~~~
 
 Usage (on the host machine):
 
@@ -35,6 +37,7 @@ Test options are: [pattern] [pytest-options]
 
     - pattern        : only run test files that contain the pattern
     - pytest-options : https://docs.pytest.org/en/6.2.x/reference.html#command-line-flags
+
 """
 
 
@@ -62,47 +65,40 @@ def main():
         if args and args[0]:
             CONFIG['MANIFEST'] = json.loads(read_file(args.pop(0)))
 
-    CONFIG['COMPOSE_YAML_PATH'] = CONFIG['runner.work_dir'] + '/DOCKER_COMPOSE.yml'
+    CONFIG['COMPOSE_YAML_PATH'] = CONFIG['runner.work_dir'] + '/docker-compose.yml'
 
     return fn(args)
-
-
-def cmd_go(args):
-    compose_stop()
-    reset_work_dir()
-    compose_configure()
-    compose_start()
-    runner_configure()
-    runner_run(args)
-    compose_stop()
-
-
-def cmd_start(args):
-    reset_work_dir()
-    compose_configure()
-    compose_start()
 
 
 def cmd_stop(args):
     compose_stop()
 
 
-def cmd_restart(args):
-    compose_stop()
+def cmd_configure(args):
     reset_work_dir()
     compose_configure()
+    runner_configure()
+
+
+def cmd_go(args):
+    cmd_restart(args)
+    runner_run(args)
+    cmd_stop(args)
+
+
+def cmd_start(args):
+    cmd_configure(args)
     compose_start()
+
+
+def cmd_restart(args):
+    cmd_stop(args)
+    cmd_start(args)
 
 
 def cmd_run(args):
     runner_configure()
     runner_run(args)
-
-
-def cmd_configure(args):
-    reset_work_dir()
-    compose_configure()
-    runner_configure()
 
 
 #
@@ -189,7 +185,7 @@ def service_gws_config():
         },
     }
 
-    bootstrap_cfg_path = '/gws-var/bootstrap_cfg.json'
+    bootstrap_cfg_path = '/gws-var/BOOTSTRAP_CONFIG.json'
 
     write_file(f'{wd}/{bootstrap_cfg_path}', json.dumps(bootstrap_cfg, indent=4))
 

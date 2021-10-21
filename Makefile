@@ -53,7 +53,7 @@ help:
 	@echo "$$HELP"
 
 spec:
-	$(PYTHON) $(APP)/gws/spec/generator/run.py build --manifest "$(MANIFEST)"
+	$(PYTHON) $(APP)/gws/spec/generator/run.py build --manifest "$(MANIFEST)" $(ARGS)
 
 client-help:
 	cd $(APP)/js && npm run help && cd $(CWD)

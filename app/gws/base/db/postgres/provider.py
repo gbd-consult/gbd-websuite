@@ -12,8 +12,6 @@ import gws.lib.json2
 
 from . import driver
 
-_EXT_CLASS = 'gws.ext.db.provider.postgres'
-
 
 @gws.ext.Config('db.provider.postgres')
 class Config(gws.Config):
@@ -29,9 +27,7 @@ class Config(gws.Config):
 
 
 @gws.ext.Object('db.provider.postgres')
-class Object(gws.Object, gws.ISqlDbProvider):
-    error = driver.Error
-
+class Object(gws.Node, gws.ISqlDbProvider):
     @property
     def connect_params(self):
         params = {
@@ -69,7 +65,7 @@ class Object(gws.Object, gws.ISqlDbProvider):
             with self.connect() as conn:
                 return {c['name']: gws.SqlTableColumn(c) for c in conn.columns(table.name)}
 
-        key = _EXT_CLASS + '_describe_' + table.name
+        key = self.class_name + '_describe_' + table.name
         return gws.get_server_global(key, _get)
 
     def select(self, args: gws.SqlSelectArgs, extra_connect_params=None) -> t.List[gws.IFeature]:
@@ -278,19 +274,19 @@ class Object(gws.Object, gws.ISqlDbProvider):
 ##
 
 
-def create(root: gws.RootObject, cfg, parent: gws.Object = None, shared: bool = False) -> Object:
+def create(root: gws.IRoot, cfg, parent: gws.Node = None, shared: bool = False) -> Object:
     key = gws.pick(cfg, 'host', 'port', 'user', 'database')
-    return t.cast(Object, root.create_object(_EXT_CLASS, cfg, parent, shared, key))
+    return root.create_object(Object, cfg, parent, shared, key)
 
 
-def require_for(obj: gws.IObject) -> Object:
+def require_for(obj: gws.INode) -> Object:
     uid = obj.var('db')
     if uid:
-        prov = obj.root.find(klass=_EXT_CLASS, uid=uid)
+        prov = obj.root.find(klass=Object, uid=uid)
         if not prov:
             raise gws.Error(f'{obj.uid}: db provider {uid!r} not found')
     else:
-        prov = obj.root.find(klass=_EXT_CLASS)
+        prov = obj.root.find(klass=Object)
         if not prov:
-            raise gws.Error(f'{obj.uid}: db provider {_EXT_CLASS!r} not found')
-    return t.cast(Object, prov)
+            raise gws.Error(f'{obj.uid}: db provider postgres not found')
+    return prov

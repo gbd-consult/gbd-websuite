@@ -43,7 +43,7 @@ class Props(gws.Props):
     uid: t.Optional[str]
 
 
-class Feature(gws.IFeature):
+class Feature(gws.Object, gws.IFeature):
     # attributes: t.List[gws.Attribute]
     # category: str
     # data_model: t.Optional[gws.IDataModel]
@@ -55,6 +55,7 @@ class Feature(gws.IFeature):
     # uid: str
 
     def __init__(self, uid, attributes=None, category=None, elements=None, shape=None, style=None):
+        super().__init__()
         self.attributes = []
         self.category = category or ''
         self.data_model = None
@@ -87,23 +88,13 @@ class Feature(gws.IFeature):
         if style:
             self.style = gws.lib.style.from_props(gws.Props(style))
 
-    @property
-    def props(self):
-        return gws.Props(
+    def props_for(self, user):
+        return Props(
             uid=self.full_uid,
             attributes=self.attributes,
-            shape=self.shape.props if self.shape else None,
+            shape=self.shape,
             style=self.style,
             elements=self.elements,
-            layerUid=self.layer.uid if self.layer else None,
-        )
-
-    @property
-    def props_for_render(self):
-        return gws.Props(
-            uid=self.full_uid,
-            attributes=[],
-            shape=self.shape.props if self.shape else None,
             layerUid=self.layer.uid if self.layer else None,
         )
 
@@ -152,12 +143,12 @@ class Feature(gws.IFeature):
         return gws.lib.svg.as_xml(self.to_svg_tags(rv, style))
 
     def to_geojson(self) -> dict:
-        props = {a.name: a.value for a in self.attributes}
-        props['id'] = self.uid
+        ps = {a.name: a.value for a in self.attributes}
+        ps['id'] = self.uid
         return {
             'type': 'Feature',
-            'properties': props,
-            'geometry': self.shape.props.get('geometry') if self.shape else None
+            'properties': ps,
+            'geometry': self.shape.to_geojson() if self.shape else None
         }
 
     def connect_to(self, layer):

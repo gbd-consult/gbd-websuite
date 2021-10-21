@@ -29,7 +29,7 @@ def start(req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
     return job
 
 
-def run(root: gws.RootObject, params: types.Params, project_uid: str, user: gws.IUser):
+def run(root: gws.IRoot, params: types.Params, project_uid: str, user: gws.IUser):
     base_dir = gws.ensure_dir(gws.PRINT_DIR + '/' + gws.random_string(64))
     w = _Worker(root, '', project_uid, base_dir, params, user)
     return w.run()
@@ -65,7 +65,7 @@ def _create(req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
         worker=__name__ + '._worker')
 
 
-def _worker(root: gws.RootObject, job: gws.lib.job.Job):
+def _worker(root: gws.IRoot, job: gws.lib.job.Job):
     job_uid = job.uid
     base_dir = gws.PRINT_DIR + '/' + job_uid
 
@@ -100,14 +100,13 @@ _PAPER_COLOR = 'white'
 
 
 class _Worker:
-    def __init__(self, root: gws.RootObject, job_uid: str, project_uid: str, base_dir: str, params: types.Params, user: gws.IUser):
+    def __init__(self, root: gws.IRoot, job_uid: str, project_uid: str, base_dir: str, params: types.Params, user: gws.IUser):
         self.root = root
         self.base_dir = base_dir
         self.user = user
         self.job_uid = job_uid
-        self.project = t.cast(gws.IProject, self.acquire('gws.base.project', project_uid))
+        self.project: gws.IProject = self.acquire('gws.base.project', project_uid)
         self.format = params.format or 'pdf'
-        self.legends = {}
 
         self.locale_uid = params.localeUid
         if self.locale_uid not in self.project.locale_uids:
@@ -116,19 +115,21 @@ class _Worker:
         self.view_scale = params.scale or 1
         self.view_rotation = params.rotation or 0
 
-        self.view_crs = params.crs
-        if not self.view_crs and self.project:
-            self.view_crs = self.project.map.crs
-        if not self.view_crs:
+        crs = params.crs
+        if not crs and self.project:
+            crs = self.project.map.crs
+        if not crs:
             raise ValueError('no crs can be found')
+        self.view_crs = crs
 
         self.template: t.Optional[gws.base.template.Object] = None
 
+        self.legends: t.Dict[str, str] = {}
         self.legend_layer_uids = params.legendLayers or []
 
         if params.type == 'template':
             uid = params.templateUid
-            self.template = t.cast(gws.base.template.Object, self.acquire('gws.ext.template', uid))
+            self.template = self.acquire('gws.ext.template', uid)
             if not self.template:
                 raise ValueError(f'cannot find template uid={uid!r}')
 
@@ -271,7 +272,7 @@ class _Worker:
             uids = set(s for s in uids if s in self.template.legend_layer_uids)
 
         for layer_uid in uids:
-            layer = t.cast(gws.ILayer, self.acquire('gws.ext.layer', layer_uid))
+            layer: gws.ILayer = self.acquire('gws.ext.layer', layer_uid)
             if not layer or not layer.has_legend:
                 continue
 
@@ -280,11 +281,9 @@ class _Worker:
                 continue
 
             if self.template.legend_mode == gws.base.template.LegendMode.image:
-                s = lro.image_path
+                ls[layer.uid] = lro.image_path
             elif self.template.legend_mode == gws.base.template.LegendMode.html:
-                s = lro.html
-            if s:
-                ls[layer.uid] = s
+                ls[layer.uid] = lro.html
 
         return ls
 
@@ -330,7 +329,7 @@ class _Worker:
             ii.style = s
 
         if item.type == 'raster':
-            ii.layer = t.cast(gws.ILayer, self.acquire('gws.ext.layer', item.layerUid))
+            ii.layer = self.acquire('gws.ext.layer', item.layerUid)
 
             if ii.layer and ii.layer.can_render_box:
                 ii.type = gws.MapRenderInputItemType.image_layer
@@ -340,7 +339,7 @@ class _Worker:
             return
 
         if item.type == 'vector':
-            ii.layer = t.cast(gws.ILayer, self.acquire('gws.ext.layer', item.layerUid))
+            ii.layer = self.acquire('gws.ext.layer', item.layerUid)
 
             if ii.layer and ii.layer.can_render_svg:
                 ii.type = gws.MapRenderInputItemType.svg_layer

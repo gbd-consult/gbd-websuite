@@ -21,7 +21,7 @@ class Config(gws.Config):
 
 
 @gws.ext.Object('helper.csv')
-class Object(gws.Object):
+class Object(gws.Node):
     def configure(self):
         self.decimal = self.var('decimal')
         self.delimiter = self.var('delimiter')
@@ -30,7 +30,7 @@ class Object(gws.Object):
         self.precision = self.var('precision')
         self.quote = self.var('quote')
         self.quote_all = self.var('quoteAll')
-        self.row_delimiter = self.var('rowDelimiter').replace('CR', '\r').replace('LF', '\n')
+        self.row_delimiter = self.var('rowDelimiter', default='\n').replace('CR', '\r').replace('LF', '\n')
 
     def writer(self):
         return _Writer(self)

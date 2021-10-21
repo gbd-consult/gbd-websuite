@@ -32,6 +32,30 @@ def exit(code: int = 255):
     sys.exit(code)
 
 
+##
+
+# @TODO use ABC
+
+def is_list(x):
+    return isinstance(x, (list, tuple))
+
+
+def is_dict(x):
+    return isinstance(x, dict)
+
+
+def is_bytes(x):
+    return isinstance(x, (bytes, bytearray))
+    # @TODO how to handle bytes-alikes?
+    # return hasattr(x, 'decode')
+
+
+def is_atom(x):
+    return x is None or isinstance(x, (int, float, bool, str, bytes))
+
+
+##
+
 def get(x, key, default=None):
     """Get a nested value/attribute from a structure.
 
@@ -80,7 +104,7 @@ def _get(x, keys):
     for k in keys:
         if isinstance(x, dict):
             x = x[k]
-        elif _is_list(x):
+        elif is_list(x):
             x = x[int(k)]
         elif is_data_object(x):
             v = getattr(x, k)
@@ -179,7 +203,7 @@ def filter(x, fn=None):
 
     fn = fn or _is_not_empty_or_blank
 
-    if isinstance(x, dict):
+    if is_dict(x):
         return {k: v for k, v in x.items() if fn(v)}
     if is_data_object(x):
         d = {k: v for k, v in vars(x).items() if fn(v)}
@@ -190,7 +214,12 @@ def filter(x, fn=None):
 def compact(x):
     """Remove all None values from a collection."""
 
-    return filter(x, lambda v: v is not None)
+    if is_dict(x):
+        return {k: v for k, v in x.items() if v is not None}
+    if is_data_object(x):
+        d = {k: v for k, v in vars(x).items() if v is not None}
+        return type(x)(d)
+    return [v for v in x if v is not None]
 
 
 def deep_merge(*args, **kwargs) -> dict:
@@ -319,7 +348,7 @@ def as_str(x, encodings: List[str] = None) -> str:
 
     if isinstance(x, str):
         return x
-    if not _is_bytes(x):
+    if not is_bytes(x):
         return str(x)
     if encodings:
         for enc in encodings:
@@ -333,7 +362,7 @@ def as_str(x, encodings: List[str] = None) -> str:
 def as_bytes(x) -> bytes:
     """Convert a value to bytes by converting it to string and encoding in utf8."""
 
-    if _is_bytes(x):
+    if is_bytes(x):
         return bytes(x)
     if not isinstance(x, str):
         x = str(x)
@@ -355,7 +384,7 @@ def as_list(x, delimiter: str = ',') -> list:
         return x
     if is_empty(x):
         return []
-    if _is_bytes(x):
+    if is_bytes(x):
         x = as_str(x)
     if isinstance(x, str):
         if delimiter:
@@ -379,6 +408,8 @@ def as_dict(x) -> dict:
         return vars(x)
     return {}
 
+
+##
 
 _UID_DE_TRANS = {
     ord('ä'): 'ae',
@@ -513,7 +544,7 @@ def random_string(size: int) -> str:
 
 def sha256(x):
     def _bytes(x):
-        if _is_bytes(x):
+        if is_bytes(x):
             return bytes(x)
         if isinstance(x, (int, float, bool)):
             return str(x).encode('utf8')
@@ -685,17 +716,46 @@ def server_lock(uid):
 
 ##
 
-def import_from_path(module_path, module_name, cache=True):
-    if cache and module_name in sys.modules:
-        return sys.modules[module_name]
+def import_from_path(path):
+    in_path, root, mod = _find_import_root_and_module_name(path)
+    gws.log.debug(f'import_from_path: in_path={in_path} path={path!r} root={root!r} mod={mod!r}')
+    if not in_path:
+        sys.path.insert(0, root)
+    return importlib.import_module(mod)
 
-    # see https://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3
-    loader = importlib.machinery.SourceFileLoader(module_name, module_path)
-    spec = importlib.util.spec_from_loader(loader.name, loader)
-    mod = importlib.util.module_from_spec(spec)
-    loader.exec_module(mod)
-    sys.modules[module_name] = mod
-    return mod
+
+def _find_import_root_and_module_name(path):
+    if not os.path.isabs(path):
+        path = gws.APP_DIR + '/' + path
+
+    init = '__init__.py'
+    path = os.path.normpath(path)
+
+    if os.path.isdir(path):
+        path += '/' + init
+    if not os.path.isfile(path):
+        raise ValueError(f'import_from_path: {path!r}: not found')
+
+    dirname, filename = os.path.split(path)
+    lastmod = [] if filename == init else [filename.split('.')[0]]
+    dirs = dirname.strip('/').split('/')
+
+    # first, try to locate the longest directory root in sys.path
+
+    for n in range(len(dirs), 0, -1):
+        root = '/' + '/'.join(dirs[:n])
+        if root in sys.path:
+            return True, root, '.'.join(dirs[n:] + lastmod)
+
+    # second, find the longest path that doesn't contain __init__.py
+    # this will be a new root
+
+    for n in range(len(dirs), 0, -1):
+        root = '/' + '/'.join(dirs[:n])
+        if not os.path.isfile(root + '/' + init):
+            return False, root, '.'.join(dirs[n:] + lastmod)
+
+    raise ValueError(f'import_from_path: {path!r}: cannot be imported')
 
 
 ##
@@ -711,19 +771,3 @@ def action_url(name: str, **kwargs) -> str:
     if rest:
         url += '/' + '/'.join(rest)
     return url
-
-
-##
-
-def _is_list(x):
-    return isinstance(x, (tuple, list))
-
-
-def _is_bytes(x):
-    return isinstance(x, (bytes, bytearray))
-    # @TODO how to handle bytes-alikes?
-    # return hasattr(x, 'decode')
-
-
-def _is_dict(x):
-    return isinstance(x, dict)

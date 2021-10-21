@@ -187,14 +187,12 @@ class XMLCommands():
 
 @gws.ext.Object('template.xml')
 class Object(gws.base.template.Object):
-    helper: t.Optional[gws.lib.xml2.helper.Object]
+    helper: gws.lib.xml2.helper.Object
 
     def configure(self):
         if self.path:
             self.text = gws.read_file(self.path)
-        self.helper = t.cast(
-            gws.lib.xml2.helper.Object,
-            self.root.application.helper('xml'))
+        self.helper = self.root.application.require_helper('xml')
 
     def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
         rt = self._render_as_tag(context)

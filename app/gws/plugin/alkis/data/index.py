@@ -8,8 +8,12 @@ mods = [resolver, adresse, nutzung, grundbuch, flurstueck]
 
 
 def create(conn: AlkisConnection, read_user):
-    for mod in mods:
-        mod.create_index(conn)
+    resolver.create_index(conn)
+    adresse.create_index(conn)
+    nutzung.create_index(conn)
+    grundbuch.create_index(conn)
+    flurstueck.create_index(conn)
+
     for tab in conn.table_names(conn.index_schema):
         gws.log.info(f'optimizing {tab!r}')
         conn.exec(f'VACUUM {conn.index_schema}.{tab}')
@@ -18,7 +22,13 @@ def create(conn: AlkisConnection, read_user):
 
 
 def ok(conn: AlkisConnection):
-    return all(mod.index_ok(conn) for mod in mods)
+    return all([
+        resolver.index_ok(conn),
+        adresse.index_ok(conn),
+        nutzung.index_ok(conn),
+        grundbuch.index_ok(conn),
+        flurstueck.index_ok(conn),
+    ])
 
 
 def drop(conn: AlkisConnection):

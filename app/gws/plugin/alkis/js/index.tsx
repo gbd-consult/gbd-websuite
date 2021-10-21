@@ -64,7 +64,7 @@ interface ViewProps extends gws.types.ViewProps {
     alkisFsLoading: boolean;
     alkisFsError: string;
 
-    alkisFsExportGroups: Array<string>;
+    alkisFsExportGroupIndexes: Array<number>;
     alkisFsExportFeatures: Array<gws.types.IMapFeature>;
 
     alkisFsFormValues: FormValues;
@@ -98,7 +98,7 @@ const StoreKeys = [
     'alkisFsSetup',
     'alkisFsLoading',
     'alkisFsError',
-    'alkisFsExportGroups',
+    'alkisFsExportGroupIndexes',
     'alkisFsExportFeatures',
     'alkisFsFormValues',
     'alkisFsStrasseListItems',
@@ -353,7 +353,7 @@ class SearchForm extends gws.View<ViewProps> {
             gemarkungListValue = _PREFIX_GEMEINDE + ':' + form.gemeindeUid;
 
         let strasseSearchMode = {
-            anySubstring: setup.ui.strasseSearchMode === gws.api.plugin.alkis.search.UiStrasseSearchMode.any,
+            anySubstring: setup.ui.strasseSearchMode === gws.api.plugin.alkis.UiStrasseSearchMode.any,
             withExtra: true,
             caseSensitive: false,
         }
@@ -383,11 +383,11 @@ class SearchForm extends gws.View<ViewProps> {
             </Row>}
 
 
-            {gemarkungListMode !== gws.api.plugin.alkis.search.UiGemarkungListMode.none && <Row>
+            {gemarkungListMode !== gws.api.plugin.alkis.UiGemarkungListMode.none && <Row>
                 <Cell flex>
                     <gws.ui.Select
                         placeholder={
-                            gemarkungListMode === gws.api.plugin.alkis.search.UiGemarkungListMode.tree
+                            gemarkungListMode === gws.api.plugin.alkis.UiGemarkungListMode.tree
                                 ? cc.__('alkisGemeindeGemarkung')
                                 : cc.__('alkisGemarkung')
                         }
@@ -499,14 +499,14 @@ class SearchForm extends gws.View<ViewProps> {
                 </Cell>}
                 {setup.ui.searchSpatial && <Cell>
                     <gws.ui.Button
-                        {...gws.lib.cls('alkisSearchLensButton', this.props.appActiveTool === 'Tool..Lens' && 'isActive')}
+                        {...gws.lib.cls('alkisSearchLensButton', this.props.appActiveTool === 'Tool.Alkis.Lens' && 'isActive')}
                         tooltip={cc.__('alkisLensButton')}
                         whenTouched={() => cc.startLens()}
                     />
                 </Cell>}
                 {setup.ui.usePick && <Cell>
                     <gws.ui.Button
-                        {...gws.lib.cls('alkisPickButton', this.props.appActiveTool === 'Tool..Pick' && 'isActive')}
+                        {...gws.lib.cls('alkisPickButton', this.props.appActiveTool === 'Tool.Alkis.Pick' && 'isActive')}
                         tooltip={cc.__('alkisPickButton')}
                         whenTouched={() => cc.startPick()}
                     />
@@ -718,11 +718,11 @@ class ExportTab extends gws.View<ViewProps> {
     render() {
         let cc = _master(this);
 
-        let availGroups = cc.setup.exportGroups,
-            selectedGroupIds = this.props.alkisFsExportGroups;
+        let allGroups = cc.setup.exportGroups,
+            selectedGroupIndexes = this.props.alkisFsExportGroupIndexes;
 
         let changed = (gid, value) => cc.update({
-            alkisFsExportGroups: selectedGroupIds.filter(g => g !== gid).concat(value ? [gid] : [])
+            alkisFsExportGroupIndexes: selectedGroupIndexes.filter(g => g !== gid).concat(value ? [gid] : [])
         });
 
         return <sidebar.Tab>
@@ -735,13 +735,13 @@ class ExportTab extends gws.View<ViewProps> {
                         <Row>
                             <Cell flex>
                                 <gws.ui.Group vertical>
-                                    {Object.keys(availGroups).map(gid => <gws.ui.Toggle
-                                            key={gid}
+                                    {allGroups.map(g => <gws.ui.Toggle
+                                            key={g.index}
                                             type="checkbox"
                                             inline
-                                            label={availGroups[gid]}
-                                            value={selectedGroupIds.includes(gid)}
-                                            whenChanged={value => changed(gid, value)}
+                                            label={g.title}
+                                            value={selectedGroupIndexes.includes(g.index)}
+                                            whenChanged={value => changed(g.index, value)}
                                         />
                                     )}
                                 </gws.ui.Group>
@@ -752,7 +752,7 @@ class ExportTab extends gws.View<ViewProps> {
                             <Cell width={120}>
                                 <gws.ui.Button
                                     primary
-                                    whenTouched={() => cc.submitExport(this.props.alkisFsExportFeatures)}
+                                    whenTouched={() => cc.submitExport()}
                                     label={cc.__('alkisExportButton')}
                                 />
                             </Cell>
@@ -854,7 +854,7 @@ class Controller extends gws.Controller {
     uid = MASTER;
     history: Array<string>;
     selectionLayer: gws.types.IMapFeatureLayer;
-    setup: gws.api.ext.action.alkissearch.Props;
+    setup: gws.api.plugin.alkis.search.Props;
     toponyms: Toponyms;
 
     async init() {
@@ -875,7 +875,7 @@ class Controller extends gws.Controller {
             alkisFsLoading: false,
 
             alkisFsFormValues: {},
-            alkisFsExportGroups: [],
+            alkisFsExportGroupIndexes: [],
 
             alkisFsGemarkungListItems: this.gemarkungListItems(),
             alkisFsStrasseListItems: this.strasseListItems(this.toponyms.strassen),
@@ -919,7 +919,7 @@ class Controller extends gws.Controller {
 
         switch (this.setup.ui.gemarkungListMode) {
 
-            case gws.api.plugin.alkis.search.UiGemarkungListMode.plain:
+            case gws.api.plugin.alkis.UiGemarkungListMode.plain:
                 for (let g of this.toponyms.gemarkungen) {
                     items.push({
                         text: g.name,
@@ -928,7 +928,7 @@ class Controller extends gws.Controller {
                 }
                 break;
 
-            case gws.api.plugin.alkis.search.UiGemarkungListMode.combined:
+            case gws.api.plugin.alkis.UiGemarkungListMode.combined:
                 for (let g of this.toponyms.gemarkungen) {
                     items.push({
                         text: g.name,
@@ -938,7 +938,7 @@ class Controller extends gws.Controller {
                 }
                 break;
 
-            case gws.api.plugin.alkis.search.UiGemarkungListMode.tree:
+            case gws.api.plugin.alkis.UiGemarkungListMode.tree:
                 for (let gd of this.toponyms.gemeinden) {
                     items.push({
                         text: gd.name,
@@ -970,7 +970,7 @@ class Controller extends gws.Controller {
 
         switch (this.setup.ui.strasseListMode) {
 
-            case gws.api.plugin.alkis.search.UiStrasseListMode.plain:
+            case gws.api.plugin.alkis.UiStrasseListMode.plain:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.uid,
@@ -978,7 +978,7 @@ class Controller extends gws.Controller {
                 }));
                 break;
 
-            case gws.api.plugin.alkis.search.UiStrasseListMode.withGemarkung:
+            case gws.api.plugin.alkis.UiStrasseListMode.withGemarkung:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.uid,
@@ -986,7 +986,7 @@ class Controller extends gws.Controller {
                 }));
                 break;
 
-            case gws.api.plugin.alkis.search.UiStrasseListMode.withGemarkungIfRepeated:
+            case gws.api.plugin.alkis.UiStrasseListMode.withGemarkungIfRepeated:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.uid,
@@ -996,7 +996,7 @@ class Controller extends gws.Controller {
                 }));
                 break;
 
-            case gws.api.plugin.alkis.search.UiStrasseListMode.withGemeinde:
+            case gws.api.plugin.alkis.UiStrasseListMode.withGemeinde:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.uid,
@@ -1004,7 +1004,7 @@ class Controller extends gws.Controller {
                 }));
                 break;
 
-            case gws.api.plugin.alkis.search.UiStrasseListMode.withGemeindeIfRepeated:
+            case gws.api.plugin.alkis.UiStrasseListMode.withGemeindeIfRepeated:
                 ls = strassen.map(s => ({
                     text: s.name,
                     value: s.uid,
@@ -1078,15 +1078,15 @@ class Controller extends gws.Controller {
     }
 
     startLens() {
-        this.app.startTool('Tool..Lens');
+        this.app.startTool('Tool.Alkis.Lens');
     }
 
     stopTools() {
-        this.app.stopTool('Tool..*');
+        this.app.stopTool('Tool.Alkis.*');
     }
 
     startPick() {
-        this.app.startTool('Tool..Pick');
+        this.app.startTool('Tool.Alkis.Pick');
     }
 
     async pickTouched(coord: ol.Coordinate) {
@@ -1346,10 +1346,12 @@ class Controller extends gws.Controller {
         this.goTo('export')
     }
 
-    async submitExport(fs: Array<gws.types.IMapFeature>) {
+    async submitExport() {
+        let fs: Array<gws.types.IMapFeature> = this.getValue('alkisFsExportFeatures');
+
         let q = {
             findParams: this.paramsForFeatures(fs),
-            groups: this.getValue('alkisFsExportGroups'),
+            groupIndexes: this.getValue('alkisFsExportGroupIndexes'),
         };
 
         // NB: must use binary because csv doesn't neccessary come in utf8

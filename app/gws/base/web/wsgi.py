@@ -26,8 +26,9 @@ _struct_mime = {
 }
 
 
-class WebResponse(gws.IWebResponse):
+class WebResponse(gws.Object, gws.IWebResponse):
     def __init__(self, **kwargs):
+        super().__init__()
         if 'wz' in kwargs:
             self._wz = kwargs['wz']
         else:
@@ -50,7 +51,7 @@ class WebResponse(gws.IWebResponse):
         self._wz.headers.add(key, value)
 
 
-class WebRequest(gws.IWebRequest):
+class WebRequest(gws.Object, gws.IWebRequest):
     @property
     def environ(self) -> dict:
         return self._wz.environ
@@ -106,7 +107,9 @@ class WebRequest(gws.IWebRequest):
     def is_secure(self) -> bool:
         return self._wz.is_secure
 
-    def __init__(self, root: gws.RootObject, environ: dict, site: gws.IWebSite):
+    def __init__(self, root: gws.IRoot, environ: dict, site: gws.IWebSite):
+        super().__init__()
+
         self._wz = werkzeug.wrappers.Request(environ)
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
         self._wz.max_content_length = int(root.application.var('server.web.maxRequestLength', default=1)) * 1024 * 1024
@@ -114,7 +117,7 @@ class WebRequest(gws.IWebRequest):
         self.params: t.Dict[str, t.Any] = {}
         self._lower_params: t.Dict[str, t.Any] = {}
 
-        self.root: gws.RootObject = root
+        self.root: gws.IRoot = root
         self.site: gws.IWebSite = site
         self.method: str = self._wz.method
 
