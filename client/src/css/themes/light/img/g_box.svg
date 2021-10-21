@@ -1,11 +1,1 @@
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="24px" height="24px" viewBox="0.5 48.5 24 24" enable-background="new 0.5 48.5 24 24" xml:space="preserve">
-<circle cx="19.104" cy="54.46" r="3"/>
-<circle cx="6.296" cy="54.295" r="3"/>
-<circle cx="18.773" cy="66.358" r="3"/>
-<circle cx="6.461" cy="66.606" r="3"/>
-<rect x="5.063" y="52.548" width="2.562" height="16.122"/>
-<rect x="17.706" y="52.465" width="2.562" height="16.122"/>
-<rect x="4.978" y="52.801" width="16.122" height="2.562"/>
-<rect x="5.061" y="65.443" width="16.122" height="2.562"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.5 48.5 24 24"><circle cx="19.104" cy="54.46" r="3"/><circle cx="6.296" cy="54.295" r="3"/><circle cx="18.773" cy="66.358" r="3"/><circle cx="6.461" cy="66.606" r="3"/><path d="M5.063 52.548h2.562V68.67H5.063zm12.643-.083h2.562v16.122h-2.562z"/><path d="M4.978 52.801H21.1v2.562H4.978zm.083 12.642h16.122v2.562H5.061z"/></svg>
