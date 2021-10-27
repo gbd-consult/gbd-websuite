@@ -63,6 +63,7 @@ class Config(t.WithTypeAndAccess):
     withInspireMeta: bool = False  #: use INSPIRE Metadata
     strictParams: bool = False  #: strict parameter parsing
     forceFeatureName: str = ''
+    forceFeatureTitle: str = ''
 
 
 class Request(t.Data):
@@ -189,6 +190,7 @@ class Base(Object):
         self.with_inspire_meta = self.var('withInspireMeta')
         self.strict_params = self.var('strictParams')
         self.force_feature_name = self.var('forceFeatureName', default='')
+        self.force_feature_title = self.var('forceFeatureTitle', default='')
 
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), self.default_templates)
 
@@ -400,7 +402,7 @@ class Base(Object):
         lc = LayerCaps()
 
         lc.layer = layer
-        lc.title = layer.title
+        lc.title = self.force_feature_title or layer.title
         lc.layer_name = self._parse_name(layer.ows_name)
         lc.feature_name = self._parse_name(self.force_feature_name or layer.ows_feature_name)
         lc.meta = layer.meta

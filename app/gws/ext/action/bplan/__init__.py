@@ -457,7 +457,7 @@ class Object(gws.common.action.Object):
             uid = gws.get(obj, 'uid') or ''
             if uid and gws.get(obj, 'meta'):
                 for au_uid, meta in metas.items():
-                    if uid.endswith(au_uid):
+                    if uid.endswith(au_uid) or uid.endswith(au_uid + '_inspire'):
                         obj.meta = gws.common.metadata.extend(meta, obj.meta)
                         if gws.get(obj, 'update_sequence'):
                             obj.update_sequence = meta.dateUpdated

@@ -29,7 +29,7 @@
     @with meta.keywords or meta.inspireTheme or meta.isoTopicCategory
         @tag {container}
             @with meta.keywords
-                @each meta.keywords as kw
+                @each sorted(meta.keywords) as kw
                     @t {tag} {kw}
                 @end
             @end
