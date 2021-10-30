@@ -68,5 +68,3 @@ class lock:
                 os.unlink(self.path)
             except OSError:
                 pass
-
-

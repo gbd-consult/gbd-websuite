@@ -1,5 +1,4 @@
 import gws.lib.net
-import gws.lib.xml2
 
 from . import error
 

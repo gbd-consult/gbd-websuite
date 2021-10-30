@@ -1,12 +1,12 @@
-import time
-import os
 import getpass
+import os
+import time
 
 import gws
-import gws.types as t
 import gws.config
-import gws.base.project
 import gws.lib.json2
+import gws.types as t
+
 from . import provider, search
 from .util import nas
 

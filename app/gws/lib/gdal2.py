@@ -2,15 +2,13 @@
 
 import contextlib
 import datetime
-
 import osgeo.gdal
 import osgeo.ogr
 
 import gws
-import gws.types as t
 import gws.lib.feature
 import gws.lib.shape
-
+import gws.types as t
 
 @contextlib.contextmanager
 def from_string(s, **opts):

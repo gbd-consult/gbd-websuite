@@ -3,7 +3,6 @@ import re
 import gws
 import gws.types as t
 
-
 MM_PER_IN = 25.4
 PT_PER_IN = 72
 

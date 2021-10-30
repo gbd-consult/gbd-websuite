@@ -3,14 +3,12 @@
 import math
 
 import gws
-import gws.types as t
 import gws.lib.extent
-import gws.lib.feature
 import gws.lib.image
 import gws.lib.svg
 import gws.lib.units as units
 import gws.lib.xml2
-
+import gws.types as t
 
 
 class Renderer:

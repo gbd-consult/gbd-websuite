@@ -1,11 +1,11 @@
 """web application root"""
 
 import gws
-import gws.types as t
-import gws.config
 import gws.base.web.error
-import gws.spec.runtime
 import gws.base.web.site
+import gws.config
+import gws.spec.runtime
+import gws.types as t
 
 from gws.base.auth.wsgi import WebRequest, WebResponse
 

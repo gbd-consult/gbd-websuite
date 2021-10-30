@@ -2,10 +2,8 @@ import math
 import re
 
 import gws
-import gws.base.layer
-import gws.lib.gis
-import gws.lib.json2
 import gws.types as t
+
 from . import image, types
 
 _EPSG_3857_RADIUS = 6378137

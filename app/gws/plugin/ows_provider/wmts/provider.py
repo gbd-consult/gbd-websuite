@@ -1,11 +1,9 @@
 """WMTS provider"""
 
 import gws
-import gws.types as t
-import gws.lib.metadata
-import gws.lib.ows
 import gws.lib.gis
-import gws.lib.xml2
+import gws.types as t
+
 from . import caps
 from .. import core
 

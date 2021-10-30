@@ -1,7 +1,7 @@
 import gws
-import gws.types as t
 import gws.config
 import gws.lib.net
+import gws.types as t
 
 
 class ServiceException(Exception):

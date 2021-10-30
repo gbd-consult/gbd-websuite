@@ -1,6 +1,6 @@
 import gws
-import gws.lib.metadata
 import gws.lib.gis
+import gws.lib.metadata
 import gws.types as t
 
 

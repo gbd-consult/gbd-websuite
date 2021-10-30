@@ -2,16 +2,11 @@ import gws
 import gws.base.search.runner
 import gws.base.web.error
 import gws.lib.bounds
-import gws.lib.date
-import gws.lib.extent
-import gws.lib.gml
 import gws.lib.image
 import gws.lib.legend
 import gws.lib.mime
-import gws.lib.os2
-import gws.lib.proj
 import gws.lib.shape
-import gws.lib.xml2
+
 from .. import core
 
 

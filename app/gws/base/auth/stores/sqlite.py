@@ -46,7 +46,7 @@ class SessionStore:
         uid = gws.random_string(64)
 
         with self._connection as conn:
-            conn.execute('''INSERT 
+            conn.execute('''INSERT
                 INTO sess(
                     uid,
                     method_uid,
@@ -57,7 +57,7 @@ class SessionStore:
                     str_data,
                     created,
                     updated
-                ) 
+                )
                 VALUES(?,?,?,?,?,?,?,?,?)
             ''', [
                 uid,

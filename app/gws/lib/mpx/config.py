@@ -1,8 +1,8 @@
 import yaml
+
 from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
-import gws.lib.json2
 import gws.lib.os2
 
 CONFIG_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'

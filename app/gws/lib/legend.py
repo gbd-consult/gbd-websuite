@@ -1,7 +1,7 @@
 import gws
-import gws.types as t
-import gws.lib.ows.request
 import gws.lib.image
+import gws.lib.ows.request
+import gws.types as t
 
 
 def render(legend: gws.Legend, context: dict = None) -> t.Optional[gws.LegendRenderOutput]:

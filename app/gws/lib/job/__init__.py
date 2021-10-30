@@ -1,10 +1,9 @@
 import importlib
 
 import gws
-import gws.types as t
 import gws.config
-import gws.base.auth
 import gws.lib.json2
+import gws.types as t
 
 from . import storage
 

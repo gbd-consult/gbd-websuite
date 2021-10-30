@@ -1,4 +1,3 @@
-
 # basic data type
 
 def is_data_object(x):
@@ -41,4 +40,3 @@ def _data_getattr(self, attr):
 
 
 setattr(Data, '__getattr__', _data_getattr)
-

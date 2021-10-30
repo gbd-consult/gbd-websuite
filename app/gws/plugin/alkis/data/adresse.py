@@ -3,10 +3,11 @@ import re
 
 import gws
 import gws.types as t
-from gws.lib.console import ProgressIndicator
+
 from . import resolver
 from ..util import indexer
 from ..util.connection import AlkisConnection
+from gws.lib.console import ProgressIndicator
 
 addr_index = 'idx_adresse'
 gebs_index = 'idx_gebaeude'
@@ -157,7 +158,7 @@ def _create_gebs_index(conn: AlkisConnection):
         for n in range(0, cnt, step):
             n1 = n + step
             conn.exec(f'''
-                INSERT INTO {idx}.{gebs_index} 
+                INSERT INTO {idx}.{gebs_index}
                         (gml_id, fs_id, attributes, fs_geom, gb_geom)
                     SELECT
                         gb.gml_id,

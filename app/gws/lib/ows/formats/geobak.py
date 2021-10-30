@@ -1,9 +1,7 @@
 import re
 
 import gws.lib.feature
-import gws.lib.shape
 import gws.lib.xml2
-
 
 # GeoBAK (https://www.egovernment.sachsen.de/geodaten.html)
 #

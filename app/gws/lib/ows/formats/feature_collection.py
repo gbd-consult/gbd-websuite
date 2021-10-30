@@ -1,6 +1,6 @@
 import gws
-import gws.types as t
 import gws.lib.gml
+import gws.types as t
 
 
 def parse(text, first_el, crs=None, invert_axis=None, **kwargs):

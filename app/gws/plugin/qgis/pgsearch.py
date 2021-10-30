@@ -3,7 +3,6 @@
 import gws
 import gws.base.db.postgres.provider
 import gws.base.search
-import gws.core.tree
 import gws.types as t
 
 

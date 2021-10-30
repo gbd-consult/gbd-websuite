@@ -2,12 +2,12 @@ import osgeo.gdal
 import shapely.geometry
 
 import gws
-import gws.types as t
+import gws.lib.extent
 import gws.lib.feature
 import gws.lib.proj
 import gws.lib.shape
-import gws.lib.extent
 import gws.lib.xml2
+import gws.types as t
 
 
 def tag(*args):

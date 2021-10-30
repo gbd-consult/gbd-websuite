@@ -4,10 +4,9 @@ import time
 import gws
 import gws.config
 import gws.lib.date
-import gws.lib.json2
 import gws.lib.os2
-import gws.spec.runtime
 import gws.types as t
+
 from . import ini
 
 _START_SCRIPT = gws.VAR_DIR + '/server.sh'

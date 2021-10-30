@@ -1,9 +1,8 @@
 import gws
-import gws.lib.metadata
 import gws.base.model
 import gws.base.search
 import gws.lib.gis
-import gws.lib.legend
+import gws.lib.metadata
 import gws.lib.style
 import gws.lib.zoom
 import gws.types as t

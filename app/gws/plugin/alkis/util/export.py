@@ -8,9 +8,9 @@ import gws.types as t
 """
 A fs structure, as created by our indexer, is deeply nested.
 We flatten it first, creating a list 'some.nested.key, list positions, value'
-    
+
     ...then filter out unwanted keys
-    
+
     ...then create a product of all list positions, so if there are 3 'lage' lists
     and 2 'eigentuemer' lists, there will be 3x2=6 rows
 """

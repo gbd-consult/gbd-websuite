@@ -2,7 +2,6 @@ import gws
 import gws.types as t
 
 
-
 class _LimitExceeded(Exception):
     pass
 
@@ -58,13 +57,13 @@ def run(req: gws.IWebRequest, args: gws.SearchArgs) -> t.List[gws.IFeature]:
 
 
 def _run(
-        req: gws.IWebRequest, 
-        args: gws.SearchArgs, 
-        provider: gws.ISearchProvider, 
-        total_limit, 
+        req: gws.IWebRequest,
+        args: gws.SearchArgs,
+        provider: gws.ISearchProvider,
+        total_limit,
         features,
-        layer: t.Optional[gws.ILayer] = None, 
-        project: t.Optional[gws.IProject] = None, 
+        layer: t.Optional[gws.ILayer] = None,
+        project: t.Optional[gws.IProject] = None,
 ):
     args.limit = total_limit - len(features)
     if args.limit <= 0:

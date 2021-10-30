@@ -1,8 +1,8 @@
 import re
 
 import gws
-import gws.types as t
 import gws.lib.misc
+import gws.types as t
 
 _DEFAULT_EDITOR = {
     gws.AttributeType.bool: 'checkbox',

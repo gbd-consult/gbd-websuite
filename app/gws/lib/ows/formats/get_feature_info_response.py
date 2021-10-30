@@ -2,7 +2,6 @@ import gws.lib.feature
 import gws.lib.shape
 import gws.lib.xml2
 
-
 # geoserver
 #
 # <GetFeatureInfoResponse>

@@ -2,8 +2,8 @@ import base64
 
 import gws
 import gws.types as t
-from .. import error, manager, method
 
+from .. import error, manager, method
 
 # @TODO support WWW-Authenticate at some point
 

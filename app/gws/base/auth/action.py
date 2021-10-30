@@ -1,13 +1,12 @@
 """Check user logins and logouts."""
 
 import gws
-import gws.types as t
-
 import gws.base.api
 import gws.base.web.error
+import gws.types as t
 
-from . import wsgi
 from . import user as user_api
+from . import wsgi
 
 
 class Response(gws.Response):

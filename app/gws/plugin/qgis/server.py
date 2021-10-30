@@ -2,9 +2,9 @@ import os
 import re
 
 import gws
-import gws.types as t
 import gws.lib.net
 import gws.lib.os2
+import gws.types as t
 
 EXEC_PATH = '/usr/bin/qgis_mapserv.fcgi'
 SVG_SEARCH_PATHS = ['/usr/share/qgis/svg', '/usr/share/alkisplugin/svg']
@@ -99,7 +99,7 @@ def _make_ini(root, base_dir):
     paths.extend(SVG_SEARCH_PATHS)
     ini += f'''
         [svg]
-        searchPathsForSVG={','.join(paths)}        
+        searchPathsForSVG={','.join(paths)}
     '''
 
     # set the cache dir and size=4096Kb

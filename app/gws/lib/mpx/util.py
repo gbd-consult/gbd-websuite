@@ -1,7 +1,6 @@
 from PIL import ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
 
-
 # see https://mapproxy.org/docs/nightly/decorate_img.html
 
 def annotate(image, service, layers, environ, query_extent, **kw):

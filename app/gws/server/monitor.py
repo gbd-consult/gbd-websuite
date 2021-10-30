@@ -1,15 +1,14 @@
 import os
+import psutil
 import re
 
-import psutil
-
 import gws
-import gws.types as t
 import gws.config
-import gws.core.tree
 import gws.lib.misc
 import gws.lib.os2
 import gws.server.uwsgi_module
+import gws.types as t
+
 from . import control
 
 _lockfile = '/tmp/monitor.lock'

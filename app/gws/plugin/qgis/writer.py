@@ -14,7 +14,7 @@ def add_variables(source_text: str, d: dict) -> str:
 
     """
     The vars are stored like this in both 2 and 3:
-    
+
     <qgis>
     ....
         <properties>
@@ -31,7 +31,7 @@ def add_variables(source_text: str, d: dict) -> str:
             </Variables>
         </properties>
     </qgis>
-    
+
     """
 
     props = bs.properties
@@ -69,5 +69,3 @@ def add_variables(source_text: str, d: dict) -> str:
             vvals.append(tag)
 
     return str(bs)
-
-

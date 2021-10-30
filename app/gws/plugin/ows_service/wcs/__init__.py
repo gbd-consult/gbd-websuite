@@ -1,18 +1,8 @@
 import gws
-import gws.types as t
-import gws.base.search.runner
-import gws.lib.bounds
-import gws.lib.extent
-import gws.lib.gml
-import gws.lib.legend
-import gws.lib.proj
-import gws.lib.render
-import gws.lib.shape
-import gws.lib.mime
-import gws.lib.misc
-import gws.lib.os2
-import gws.lib.xml2
 import gws.base.web.error
+import gws.lib.bounds
+import gws.types as t
+
 from .. import core
 
 

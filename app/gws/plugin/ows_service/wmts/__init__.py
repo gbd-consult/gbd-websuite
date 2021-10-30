@@ -4,16 +4,10 @@ import gws
 import gws.base.web.error
 import gws.lib.extent
 import gws.lib.gis
-import gws.lib.gml
 import gws.lib.image
 import gws.lib.legend
-import gws.lib.mime
-import gws.lib.os2
-import gws.lib.proj
 import gws.lib.render
-import gws.lib.shape
 import gws.lib.units
-import gws.lib.xml2
 import gws.types as t
 
 from .. import core

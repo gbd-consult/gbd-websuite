@@ -2,10 +2,9 @@
 
 import gws
 import gws.config
-import gws.lib.console
-import gws.types as t
 import gws.lib.date
 import gws.lib.json2
+import gws.types as t
 
 from . import session
 from . import user as user_api

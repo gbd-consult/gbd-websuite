@@ -6,7 +6,6 @@ import gws
 import gws.lib.extent
 import gws.lib.metadata
 import gws.lib.proj
-import gws.lib.proj
 import gws.types as t
 
 

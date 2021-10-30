@@ -1,12 +1,12 @@
 """WFS provider."""
 
 import gws
-import gws.lib.mime
 import gws.lib.extent
 import gws.lib.gis
 import gws.lib.ows
 import gws.lib.shape
 import gws.types as t
+
 from . import caps
 from .. import core
 
@@ -16,9 +16,9 @@ from .. import core
     wfs 1.0.0: http://portal.opengeospatial.org/files/?artifact_id=7176 Sec 13.7.3
     wfs 1.1.0: http://portal.opengeospatial.org/files/?artifact_id=8339 Sec 14.7.3
     wfs 2.0.0: http://docs.opengeospatial.org/is/09-025r2/09-025r2.html Sec 11.1.3
-    
+
     see also https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
-    
+
 """
 
 

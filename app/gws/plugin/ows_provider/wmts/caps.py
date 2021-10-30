@@ -1,12 +1,10 @@
 import gws
-import gws.types as t
-import gws.lib.ows.parseutil as u
-import gws.lib.net
 import gws.lib.gis
+import gws.lib.metadata
+import gws.lib.ows.parseutil as u
 import gws.lib.units as units
 import gws.lib.xml2
-import gws.lib.metadata
-
+import gws.types as t
 
 # http://portal.opengeospatial.org/files/?artifact_id=35326
 

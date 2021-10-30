@@ -1,8 +1,7 @@
 import gws
-import gws.types as t
-import gws.lib.units as units
 import gws.lib.gis
-
+import gws.lib.units as units
+import gws.types as t
 
 
 class Config(gws.Config):

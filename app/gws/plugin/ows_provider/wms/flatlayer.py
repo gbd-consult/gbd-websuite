@@ -1,10 +1,9 @@
 import gws
-import gws.types as t
 import gws.base.layer
-import gws.lib.legend
 import gws.lib.gis
-import gws.lib.net
 import gws.lib.zoom
+import gws.types as t
+
 from . import provider as provider_module
 
 

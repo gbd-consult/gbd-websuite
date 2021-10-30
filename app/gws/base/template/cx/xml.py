@@ -3,12 +3,12 @@
 import re
 
 import gws
-import gws.types as t
 import gws.base.template
 import gws.lib.date
 import gws.lib.mime
 import gws.lib.vendor.chartreux as chartreux
 import gws.lib.xml2
+import gws.types as t
 
 
 @gws.ext.Config('template.xml')

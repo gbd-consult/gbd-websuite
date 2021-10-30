@@ -4,13 +4,10 @@ import re
 
 import gws
 import gws.base.template
-import gws.lib.feature
 import gws.lib.html2
 import gws.lib.mime
-import gws.lib.os2
 import gws.lib.pdf
 import gws.lib.render
-import gws.lib.extent
 import gws.lib.vendor.chartreux as chartreux
 
 

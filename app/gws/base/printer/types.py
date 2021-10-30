@@ -1,9 +1,8 @@
 import gws
-import gws.types as t
 import gws.lib.feature
-import gws.lib.style
 import gws.lib.job
-
+import gws.lib.style
+import gws.types as t
 
 
 class StatusParams(gws.Params):

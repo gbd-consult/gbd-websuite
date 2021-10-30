@@ -1,12 +1,10 @@
+import fiona.transform
 import math
 import re
 
-import fiona.transform
-
 import gws
-import gws.types as t
 import gws.lib.proj
-import gws.lib.shape
+import gws.types as t
 
 
 def from_string(s: str) -> t.Optional[gws.Extent]:

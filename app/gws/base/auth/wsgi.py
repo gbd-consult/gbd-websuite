@@ -2,8 +2,9 @@ import gws
 import gws.base.web.error
 import gws.base.web.wsgi
 import gws.types as t
-from gws.base.web.wsgi import WebResponse
+
 from . import error
+from gws.base.web.wsgi import WebResponse
 
 
 class WebRequest(gws.base.web.wsgi.WebRequest, gws.IWebRequest):

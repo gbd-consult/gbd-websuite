@@ -1,19 +1,13 @@
 import gws
-import gws.types as t
-import gws.lib.metadata
-import gws.lib.metadata.inspire
-import gws.base.model
-import gws.base.search.runner
-import gws.lib.extent
-import gws.lib.gml
-import gws.lib.proj
-import gws.lib.net
-import gws.lib.render
-import gws.lib.shape
-import gws.lib.date
-import gws.lib.mime
-import gws.lib.xml2
 import gws.base.web.error
+import gws.lib.date
+import gws.lib.extent
+import gws.lib.metadata
+import gws.lib.mime
+import gws.lib.proj
+import gws.lib.xml2
+import gws.types as t
+
 from . import filter
 from .. import core
 

@@ -3,9 +3,10 @@ import gws.base.db.postgres
 import gws.lib.feature
 import gws.lib.shape
 import gws.types as t
+
+from . import types
 from .data import adresse, flurstueck, index
 from .util.connection import AlkisConnection
-from . import types
 
 
 class Config(gws.Config):

@@ -31,5 +31,3 @@ GatewayTimeout = werkzeug.exceptions.GatewayTimeout
 HTTPVersionNotSupported = werkzeug.exceptions.HTTPVersionNotSupported
 
 HTTPException = werkzeug.exceptions.HTTPException
-
-

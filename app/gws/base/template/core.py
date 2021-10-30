@@ -1,11 +1,11 @@
 import os
 
 import gws
-import gws.types as t
 import gws.base.model
 import gws.lib.date
 import gws.lib.intl
 import gws.lib.mime
+import gws.types as t
 
 
 class QualityLevel(gws.Data):

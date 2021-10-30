@@ -3,11 +3,10 @@
 import re
 
 import gws
-import gws.types as t
 import gws.lib.bounds
 import gws.lib.shape
 import gws.lib.xml2
-
+import gws.types as t
 
 
 class Error(gws.Error):
@@ -16,13 +15,13 @@ class Error(gws.Error):
 
 """
 OGC fes 2.0 filter
- 
+
 http://docs.opengeospatial.org/is/09-026r2/09-026r2.html
 
 Supports
 
     - Minimum Standard Filter
-        PropertyIsEqualTo, PropertyIsNotEqualTo, PropertyIsLessThan, PropertyIsGreaterThan, 
+        PropertyIsEqualTo, PropertyIsNotEqualTo, PropertyIsLessThan, PropertyIsGreaterThan,
         PropertyIsLessThanOrEqualTo, PropertyIsGreaterThanOrEqualTo.
         Implements the logical operators. Does not implement any additional functions.
 

@@ -1,8 +1,6 @@
 import sys
 
 import gws
-import gws.server.control
-import gws.spec.generator
 import gws.spec.runtime
 
 gws.ensure_system_dirs()

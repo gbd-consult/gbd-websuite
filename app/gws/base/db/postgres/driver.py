@@ -1,14 +1,13 @@
-from contextlib import contextmanager
-
 import psycopg2
 import psycopg2.extensions
 import psycopg2.extras
 import psycopg2.pool
 import psycopg2.sql
 
+from contextlib import contextmanager
+
 import gws
 import gws.types as t
-
 
 # noinspection PyArgumentList
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
@@ -162,8 +161,8 @@ class Connection:
 
     def table_names(self, schema):
         rs = self.select('''
-            SELECT table_name 
-                FROM information_schema.tables 
+            SELECT table_name
+                FROM information_schema.tables
                 WHERE table_schema = %s
         ''', [schema])
 
@@ -175,9 +174,9 @@ class Connection:
         # NB: assume postgis installed and working
 
         rs = self.select('''
-            SELECT f_geometry_column, srid, type 
+            SELECT f_geometry_column, srid, type
             FROM geometry_columns
-            WHERE f_table_schema = %s AND f_table_name = %s 
+            WHERE f_table_schema = %s AND f_table_name = %s
         ''', [schema, tab])
 
         geom_cols = {
@@ -202,8 +201,8 @@ class Connection:
         key_cols = set(r['name'] for r in rs)
 
         rs = self.select('''
-            SELECT column_name, data_type, udt_name 
-            FROM information_schema.columns 
+            SELECT column_name, data_type, udt_name
+            FROM information_schema.columns
             WHERE table_schema = %s AND table_name = %s
         ''', [schema, tab])
 
@@ -250,8 +249,8 @@ class Connection:
                 values.append(v)
 
         sql = f'''
-            INSERT INTO {self.quote_table(table_name)} 
-            ({_comma(fields)}) 
+            INSERT INTO {self.quote_table(table_name)}
+            ({_comma(fields)})
             VALUES ({_comma(placeholders)})
         '''
 
@@ -287,7 +286,7 @@ class Connection:
         values.append(uid)
 
         sql = f'''
-            UPDATE {self.quote_table(table_name)} 
+            UPDATE {self.quote_table(table_name)}
             SET {_comma(sets)}
             WHERE {self.quote_ident(key_column)}=%s
         '''
@@ -301,7 +300,7 @@ class Connection:
 
         placeholders = _comma('%s' for _ in values)
         sql = f'''
-            DELETE FROM {self.quote_table(table_name)} 
+            DELETE FROM {self.quote_table(table_name)}
             WHERE {self.quote_ident(key_column)} IN ({placeholders})
         '''
 
@@ -339,12 +338,12 @@ class Connection:
     def user_can(self, privilege, table_name):
         schema, tab = self.schema_and_table(table_name)
         return self.select_value('''
-            SELECT COUNT(*) FROM information_schema.role_table_grants 
-                WHERE 
+            SELECT COUNT(*) FROM information_schema.role_table_grants
+                WHERE
                     table_schema = %s
                     AND table_name = %s
                     AND grantee = %s
-                    AND privilege_type = %s 
+                    AND privilege_type = %s
         ''', [schema, tab, self.params['user'], privilege])
 
     def quote_table(self, table_name, schema=None):

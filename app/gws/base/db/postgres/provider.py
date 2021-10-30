@@ -1,14 +1,11 @@
 import re
 
 import gws
-import gws.types as t
 import gws.base.db
 import gws.base.model
 import gws.lib.feature
-import gws.lib.proj
-import gws.lib.proj
 import gws.lib.shape
-import gws.lib.json2
+import gws.types as t
 
 from . import driver
 

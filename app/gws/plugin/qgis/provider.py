@@ -1,11 +1,11 @@
 import zipfile
 
 import gws
-import gws.types as t
 import gws.lib.gis
-import gws.lib.ows
 import gws.lib.net
-import gws.lib.xml2
+import gws.lib.ows
+import gws.types as t
+
 from . import types, parser
 
 

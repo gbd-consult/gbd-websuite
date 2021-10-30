@@ -1,19 +1,16 @@
 import re
 
 import gws
-import gws.lib.metadata
 import gws.base.model
-import gws.base.search
-import gws.lib.style
 import gws.base.template
 import gws.lib.extent
-import gws.lib.gis
 import gws.lib.legend
-import gws.lib.ows
+import gws.lib.metadata
+import gws.lib.style
 import gws.lib.svg
-import gws.lib.units
 import gws.lib.zoom
 import gws.types as t
+
 from . import types
 
 _DEFAULT_STYLE = gws.Config(

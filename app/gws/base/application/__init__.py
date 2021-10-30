@@ -6,14 +6,13 @@ import gws.base.auth
 import gws.base.auth.manager
 import gws.base.client
 import gws.base.db
-import gws.lib.metadata
 import gws.base.project
 import gws.base.web
 import gws.config
 import gws.lib.cache
 import gws.lib.font
+import gws.lib.metadata
 import gws.lib.mpx.config
-import gws.lib.os2
 import gws.server
 import gws.server.monitor
 import gws.types as t

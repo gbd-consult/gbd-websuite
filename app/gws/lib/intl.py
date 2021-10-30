@@ -6,7 +6,6 @@ import gws
 import gws.types as t
 
 
-
 class Locale(gws.Data):
     id: str
     dateFormatLong: str

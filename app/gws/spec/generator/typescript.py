@@ -1,8 +1,9 @@
 """Generate typescript API files from the server spec"""
 
+import collections
 import json
 import re
-import collections
+
 from . import base
 
 
@@ -51,16 +52,16 @@ class _Generator:
              * Version $VERSION
              *
              */
-             
-            export const VERSION = '$VERSION'; 
-            
+
+            export const VERSION = '$VERSION';
+
             type _int = number;
             type _float = number;
             type _bytes = any;
             type _dict = {[k: string]: any};
-            
+
             $declarations
-            
+
             export interface Api {
                 $actions
             }
@@ -96,7 +97,7 @@ class _Generator:
             export abstract class BaseServer implements Api {
                 abstract _call(cmd, p, options): Promise<any>;
                 $actions
-            } 
+            }
         """
         action_tpl = """
             $name(p: $arg, options?: any): Promise<$ret> {

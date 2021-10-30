@@ -1,18 +1,12 @@
 import gws
 import gws.base.api
-import gws.base.api
-import gws.base.auth
 import gws.base.client
 import gws.base.map
-import gws.lib.metadata
 import gws.base.printer
 import gws.base.search
 import gws.base.template
 import gws.base.web
-import gws.lib.extent
-import gws.lib.intl
-import gws.lib.proj
-import gws.lib.units
+import gws.lib.metadata
 import gws.types as t
 
 

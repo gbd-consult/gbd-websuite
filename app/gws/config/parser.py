@@ -1,7 +1,6 @@
 """Parse and validate the main cfg and project configs"""
 
 import os
-
 import yaml
 
 import gws

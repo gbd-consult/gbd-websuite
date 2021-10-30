@@ -1,7 +1,9 @@
 import os
+
 import gws
-import gws.types as t
 import gws.lib.mime
+import gws.types as t
+
 from . import core
 
 

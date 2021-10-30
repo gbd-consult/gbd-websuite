@@ -2,7 +2,6 @@
 
 import gws
 import gws.lib.country
-import gws.lib.date
 import gws.types as t
 
 from . import inspire

@@ -1,8 +1,7 @@
 import gws
 import gws.lib.gis
-import gws.lib.json2
-import gws.lib.ows
 import gws.lib.mime
+import gws.lib.ows
 import gws.types as t
 
 

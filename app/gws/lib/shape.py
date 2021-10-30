@@ -4,11 +4,10 @@ import shapely.geos as geos
 import shapely.ops
 import shapely.wkb
 import shapely.wkt
-import shapely.wkt
 
 import gws
-import gws.types as t
 import gws.lib.proj
+import gws.types as t
 
 _DEFAULT_POINT_BUFFER_RESOLUTION = 6
 _MIN_TOLERANCE_POLYGON = 0.01  # 1 cm for metric projections

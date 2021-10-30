@@ -5,10 +5,11 @@ import re
 
 import gws
 import gws.types as t
-from gws.lib.console import ProgressIndicator
+
 from . import resolver, adresse, nutzung, grundbuch
 from ..util import indexer
 from ..util.connection import AlkisConnection
+from gws.lib.console import ProgressIndicator
 
 main_index = 'idx_flurstueck'
 name_index = 'idx_name'
@@ -50,13 +51,13 @@ _vnum_re = r'''^(?x)
         (?P<flurnummer> [0-9]+)
         -
     )?
-    (      
+    (
         (?P<zaehler> [0-9]+)
-        (/ 
+        (/
             (?P<nenner> \w+)
         )?
     )?
-    (   
+    (
         \(
             (?P<flurstuecksfolge> [0-9]+)
         \)
@@ -312,14 +313,14 @@ def _create_main_index(conn: AlkisConnection):
         land CHARACTER VARYING,
         regierungsbezirk CHARACTER VARYING,
         kreis CHARACTER VARYING,
-        
+
         gemeinde_id CHARACTER VARYING,
         gemeinde CHARACTER VARYING,
-        
+
         gemarkung_id CHARACTER VARYING,
         gemarkung CHARACTER VARYING,
         gemarkung_v CHARACTER VARYING,
-        
+
         anlass CHARACTER VARYING,
         endet CHARACTER VARYING,
         zeitpunktderentstehung CHARACTER VARYING,
@@ -328,10 +329,10 @@ def _create_main_index(conn: AlkisConnection):
         zaehler INTEGER,
         nenner CHARACTER VARYING,
         flurstuecksfolge CHARACTER VARYING,
-        
+
         zaehlernenner CHARACTER VARYING,
         vollnummer CHARACTER VARYING,
-        
+
         flurstueckskennzeichen CHARACTER(20),
 
         lage CHARACTER VARYING,
@@ -343,7 +344,7 @@ def _create_main_index(conn: AlkisConnection):
 
         buchung CHARACTER VARYING,
         c_buchung INTEGER,
-        
+
         bb_number CHARACTER VARYING,
 
         nutzung CHARACTER VARYING,
@@ -432,10 +433,10 @@ def strasse_list(conn: AlkisConnection, query: dict):
     where_str = ' AND '.join(where)
 
     rs = conn.select(f'''
-        SELECT DISTINCT 
-            strasse, 
-            gemeinde_id as "gemeindeUid", 
-            gemeinde, 
+        SELECT DISTINCT
+            strasse,
+            gemeinde_id as "gemeindeUid",
+            gemeinde,
             gemarkung_id as "gemarkungUid",
             gemarkung
         FROM {conn.index_schema}.{adresse.addr_index} as AD

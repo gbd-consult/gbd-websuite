@@ -3,8 +3,8 @@
 import gws
 import gws.config
 import gws.lib.gis
-import gws.lib.legend
 import gws.types as t
+
 from . import core, types
 
 

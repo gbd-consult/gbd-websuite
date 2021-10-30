@@ -4,6 +4,7 @@ import time
 import gws
 import gws.lib.sqlite
 import gws.types as t
+
 from .. import types
 
 # NB, for compatibility, the DB is 'storage5' and the user column is called 'user_fid'
@@ -53,7 +54,7 @@ class Object(gws.Node):
         with self._connect() as conn:
             rs = conn.execute(
                 '''
-                    SELECT category,name,user_fid, NULL as data, created, updated 
+                    SELECT category,name,user_fid, NULL as data, created, updated
                     FROM storage WHERE category=? ORDER BY name
                 ''',
                 [category]

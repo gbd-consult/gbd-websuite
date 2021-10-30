@@ -2,11 +2,11 @@
 
 import gws
 import gws.types as t
-from gws.lib.console import ProgressIndicator
 
 from . import resolver
 from ..util import indexer
 from ..util.connection import AlkisConnection
+from gws.lib.console import ProgressIndicator
 
 parts_index = 'idx_nutzung_parts'
 all_index = 'idx_nutzung_all'
@@ -128,7 +128,7 @@ def _create_parts_index(conn: AlkisConnection):
         for n in range(0, max_id, step):
             n1 = n + step
             conn.exec(f'''
-                INSERT INTO {idx}.{parts_index} 
+                INSERT INTO {idx}.{parts_index}
                         (fs_id, nu_id, type, type_id, attributes, fs_geom, nu_geom)
                     SELECT
                         fs.gml_id,

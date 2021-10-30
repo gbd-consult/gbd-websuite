@@ -1,9 +1,8 @@
 import cgi
 import re
-import urllib.parse
-
 import requests
 import requests.structures
+import urllib.parse
 
 import gws
 import gws.lib.os2

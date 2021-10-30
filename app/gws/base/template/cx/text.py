@@ -1,9 +1,9 @@
 """CX templates for Text-Only."""
 
 import gws
-import gws.types as t
 import gws.base.template
 import gws.lib.vendor.chartreux as chartreux
+import gws.types as t
 
 
 @gws.ext.Config('template.text')

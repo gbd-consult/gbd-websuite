@@ -1,8 +1,8 @@
 import time
 
 import gws
-import gws.types as t
 import gws.lib.sqlite
+import gws.types as t
 
 _DB_PATH = gws.PRINT_DIR + '/jobs.sqlite'
 

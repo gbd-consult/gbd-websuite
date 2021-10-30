@@ -1,7 +1,7 @@
 """Parser for manifest files."""
 
-import os
 import json
+import os
 import re
 
 from . import base

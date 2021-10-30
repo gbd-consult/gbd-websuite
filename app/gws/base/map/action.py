@@ -4,13 +4,13 @@ import time
 
 import gws
 import gws.base.api
-import gws.lib.legend
-import gws.lib.mime
 import gws.base.layer
 import gws.lib.cache
 import gws.lib.feature
 import gws.lib.image
 import gws.lib.json2
+import gws.lib.legend
+import gws.lib.mime
 import gws.lib.render
 import gws.lib.units
 import gws.types as t

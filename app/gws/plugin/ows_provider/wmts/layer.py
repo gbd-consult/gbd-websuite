@@ -1,14 +1,10 @@
 import gws
 import gws.base.layer
 import gws.lib.gis
-import gws.lib.gis
-import gws.lib.gis
-import gws.lib.json2
-import gws.lib.mpx
 import gws.lib.net
-import gws.lib.ows
 import gws.lib.units as units
 import gws.types as t
+
 from . import provider as provider_module
 
 

@@ -1,2 +1,2 @@
-from .core import Config, Object
 from . import action
+from .core import Config, Object

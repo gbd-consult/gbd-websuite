@@ -1,11 +1,10 @@
 import gws
-import gws.types as t
 import gws.base.db
 import gws.base.layer.vector
-import gws.base.search
 import gws.lib.extent
 import gws.lib.feature
 import gws.lib.shape
+import gws.types as t
 
 from . import provider as provider_module
 

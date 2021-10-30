@@ -1,11 +1,9 @@
 import gws
-import gws.types as t
-import gws
-import gws.types as t
 import gws.lib.extent
 import gws.lib.gml
 import gws.lib.proj
 import gws.lib.xml2
+import gws.types as t
 
 
 def from_request_bbox(s: str, target_crs: gws.Crs = None, invert_axis_if_geographic: bool = False) -> t.Optional[gws.Bounds]:

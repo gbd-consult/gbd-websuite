@@ -1,5 +1,5 @@
-from gws.types import Any, Dict, Enum, List, Literal, Optional, Protocol, Set, Tuple, Union
 from .data import Data
+from gws.types import Any, Dict, Enum, List, Literal, Optional, Protocol, Set, Tuple, Union
 
 # ----------------------------------------------------------------------------------------------------------------------
 # custom types, used everywhere

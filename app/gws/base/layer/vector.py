@@ -1,9 +1,9 @@
 import gws
-import gws.types as t
 import gws.base.model
 import gws.lib.extent
 import gws.lib.style
 import gws.lib.svg
+import gws.types as t
 
 from . import core, types
 

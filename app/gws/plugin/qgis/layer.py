@@ -1,16 +1,11 @@
 """QGIS Project layer, retains QGIS options and hierarchy."""
 
 import gws
-import gws.types as t
-import gws.base.layer.core
-import gws.base.layer.image
 import gws.base.layer.group
-import gws.lib.metadata
-import gws.config
-import gws.lib.extent
-import gws.lib.legend
+import gws.base.layer.image
 import gws.lib.gis
-import gws.lib.net
+import gws.types as t
+
 from . import provider
 
 

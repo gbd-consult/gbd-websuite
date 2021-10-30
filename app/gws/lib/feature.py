@@ -2,7 +2,6 @@ import gws
 import gws.lib.shape
 import gws.lib.style
 import gws.lib.svg
-import gws.lib.xml2
 import gws.types as t
 
 _COMBINED_UID_DELIMITER = '___'

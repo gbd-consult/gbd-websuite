@@ -1,10 +1,10 @@
 import gws
-import gws.types as t
 import gws.base.layer
 import gws.lib.extent
 import gws.lib.proj
-import gws.lib.zoom
 import gws.lib.units as units
+import gws.lib.zoom
+import gws.types as t
 
 # https://wiki.openstreetmap.org/wiki/Zoom_levels
 

@@ -3,11 +3,12 @@ import re
 import urllib.parse
 
 import gws
-import gws.lib.ows.parseutil as u
 import gws.lib.gis
 import gws.lib.metadata
 import gws.lib.net
+import gws.lib.ows.parseutil as u
 import gws.lib.xml2
+
 from . import types
 
 _bigval = 1e10

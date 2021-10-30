@@ -1,6 +1,7 @@
 """Parse py source files and create a list of units of interest"""
 
 import ast
+
 from typing import Dict, List, cast
 
 from . import base

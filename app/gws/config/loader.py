@@ -2,6 +2,7 @@ import os
 
 import gws
 import gws.spec.runtime
+
 from . import parser
 
 STORE_PATH = gws.CONFIG_DIR + '/config.pickle'

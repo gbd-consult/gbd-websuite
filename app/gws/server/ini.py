@@ -145,17 +145,17 @@ def create(root: gws.IRoot, base_dir, pid_dir):
         #  based on /etc/rsyslog.conf
         syslog_conf = f"""
             ##
-            
+
             module(
                 load="imuxsock"
                 SysSock.UsePIDFromSystem="on"
             )
-    
+
             module(
-                load="imklog" 
+                load="imklog"
                 PermitNonKernelFacility="on"
             )
-            
+
             template(name="gws" type="list") {{
                 property(name="timestamp" dateFormat="mysql")
                 constant(value=" ")
@@ -165,16 +165,16 @@ def create(root: gws.IRoot, base_dir, pid_dir):
                 property(name="msg" droplastlf="on")
                 constant(value="\\n")
             }}
-    
+
             module(
-                load="builtin:omfile" 
+                load="builtin:omfile"
                 Template="gws"
             )
-    
-    
+
+
             # *.*;kern.none /dev/stdout
             # kern.*	      -/var/log/kern.log
-            
+
             *.* /dev/stdout
         """
 
@@ -223,22 +223,22 @@ def create(root: gws.IRoot, base_dir, pid_dir):
         frontends.append(f"""
             server {{
                 listen {qgis_port};
-            
+
                 server_name qgis;
                 error_log {nginx_qgis_log} {nginx_log_level};
                 access_log {nginx_qgis_log};
                 rewrite_log {nginx_rewrite_log};
-            
+
                 location / {{
                     gzip off;
                     fastcgi_pass unix:{qgis_socket};
                     fastcgi_read_timeout {qgis_front_timeout};
-                    
+
                     # add_header 'Access-Control-Allow-Origin' *;
                     # add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
-                    
+
                     # replace mapproxy forward params (e.g. LAYERS__gws) with their real names
-                    
+
                     if ($args ~* (.*?)(layers=-)(.*)) {{
                         set $args $1$3;
                     }}
@@ -259,7 +259,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             [uwsgi]
             uid = {gws.UID}
             gid = {gws.GID}
-            buffer-size = 65535 
+            buffer-size = 65535
             chmod-socket = 777
             die-on-term = true
             harakiri = {web_timeout}
@@ -270,7 +270,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             processes = {web_workers}
             pythonpath = {gws.APP_DIR}
             reload-mercy = {mercy}
-            spooler-external = {spool_dir}   
+            spooler-external = {spool_dir}
             threads = {web_threads}
             uwsgi-socket = {web_socket}
             vacuum = true
@@ -315,16 +315,16 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             error_log {nginx_web_log} {nginx_log_level};
             access_log {nginx_web_log} apm;
             rewrite_log {nginx_rewrite_log};
-        
+
             client_max_body_size {max_body_size}m;
             client_body_buffer_size {client_buffer_size}m;
             client_body_temp_path {client_tmp_dir};
-            
+
             # @TODO: optimize, disallow _ rewriting
 
             {rewr}
             {roots}
-            
+
             location @cache {{
                 root {gws.WEB_CACHE_DIR};
                 try_files $uri @app;
@@ -351,7 +351,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
         gzip = """
             gzip on;
             gzip_types text/plain text/css application/json application/javascript text/javascript;
-        
+
             # gzip_vary on;
             # gzip_proxied any;
             # gzip_comp_level 6;
@@ -370,7 +370,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
                 server {{
                     listen 443 ssl default_server;
                     server_name gws;
-    
+
                     ssl_certificate     {ssl_crt};
                     ssl_certificate_key {ssl_key};
                     {ssl_hsts}
@@ -387,7 +387,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
                     server_name gws;
                     {gzip}
                     {web_common}
-                    
+
                 }}
         """)
 
@@ -473,16 +473,16 @@ def create(root: gws.IRoot, base_dir, pid_dir):
         worker_processes auto;
         pid {pid_dir}/nginx.pid;
         user {u} {g};
-        
+
         events {{
             worker_connections 768;
             # multi_accept on;
         }}
-        
+
         {daemon}
 
         error_log {nginx_main_log} {nginx_log_level};
-        
+
         http {{
             log_format apm '$remote_addr'
                            ' method=$request_method request="$request"'
@@ -494,10 +494,10 @@ def create(root: gws.IRoot, base_dir, pid_dir):
                            ' upstream_response_time=$upstream_response_time'
                            ' upstream_connect_time=$upstream_connect_time'
                            ' upstream_header_time=$upstream_header_time';
-            
+
 
             access_log {nginx_main_log};
-        
+
             sendfile on;
             tcp_nopush on;
             tcp_nodelay on;
@@ -506,10 +506,10 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
             include /etc/nginx/mime.types;
             default_type application/octet-stream;
-        
+
             ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
             ssl_prefer_server_ciphers on;
-        
+
             {frontends_str}
         }}
     """

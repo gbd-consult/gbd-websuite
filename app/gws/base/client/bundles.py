@@ -1,7 +1,6 @@
 """Deal with client bundles created by the js bundler (app/js/helpers/builder.js)"""
 
 import gws
-import gws.lib.os2
 import gws.lib.json2
 
 BUNDLE_KEY_TEMPLATE = 'TEMPLATE'

@@ -10,8 +10,8 @@ import xml.parsers.expat
 import gws
 import gws.types as t
 
-from .types import Namespace
 from . import helper
+from .types import Namespace
 
 
 class Error(Exception):

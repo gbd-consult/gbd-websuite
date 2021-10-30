@@ -1,10 +1,7 @@
 import gws
-import gws.types as t
 import gws.lib.bounds
 import gws.lib.extent
-import gws.lib.proj
-import gws.lib.shape
-import gws.lib.xml2
+import gws.types as t
 
 
 class Filter:

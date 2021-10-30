@@ -1,6 +1,6 @@
-import gws.lib.os2
-
 import PIL.ImageFont
+
+import gws.lib.os2
 
 
 def install_fonts(source_dir):

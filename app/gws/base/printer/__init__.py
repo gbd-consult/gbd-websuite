@@ -1,6 +1,6 @@
 import gws
-import gws.types as t
 import gws.base.template
+import gws.types as t
 
 
 class Config(gws.Config):

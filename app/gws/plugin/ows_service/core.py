@@ -1,19 +1,14 @@
 import re
 
 import gws
-import gws.lib.metadata
-import gws.lib.legend
-import gws.base.model
-import gws.base.search.runner
 import gws.base.template
 import gws.base.web.error
-import gws.lib.bounds
 import gws.lib.date
 import gws.lib.extent
 import gws.lib.gml
 import gws.lib.image
+import gws.lib.metadata
 import gws.lib.mime
-import gws.lib.misc
 import gws.lib.proj
 import gws.lib.render
 import gws.lib.units as units

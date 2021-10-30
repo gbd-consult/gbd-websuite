@@ -3,7 +3,6 @@
 import gws
 import gws.types as t
 
-
 # @TODO use locale-dependent formatting
 
 @gws.ext.Config('helper.csv')

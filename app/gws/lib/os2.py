@@ -1,13 +1,12 @@
 """Utilities for os/shell scripting"""
 
 import hashlib
-import time
 import os
+import psutil
 import re
 import signal
 import subprocess
-
-import psutil
+import time
 
 import gws
 import gws.types as t

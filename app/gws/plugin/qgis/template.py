@@ -5,10 +5,10 @@ import re
 import gws
 import gws.base.template
 import gws.lib.mime
-import gws.lib.net
 import gws.lib.pdf
 import gws.lib.render
 import gws.lib.units as units
+
 from . import provider, server, types, writer
 
 
@@ -125,7 +125,7 @@ class Object(gws.base.template.Object):
         # @TODO use a real parser, merge with the html template
 
         tags_re = r'''(?xs)
-            (<|&lt;) (?P<tag1> gws:\w+) (?P<atts1> .*?) / (>|&gt;) 
+            (<|&lt;) (?P<tag1> gws:\w+) (?P<atts1> .*?) / (>|&gt;)
         '''
 
         self.source_text = re.sub(

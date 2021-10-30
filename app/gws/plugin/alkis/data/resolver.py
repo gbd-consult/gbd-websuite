@@ -1,8 +1,9 @@
 import os
 
 import gws
-import gws.types as t
 import gws.lib.json2
+import gws.types as t
+
 from ..util import indexer
 from ..util.connection import AlkisConnection
 

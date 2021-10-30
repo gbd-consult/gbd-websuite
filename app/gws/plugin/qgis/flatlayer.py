@@ -1,14 +1,7 @@
 import gws
-
 import gws.base.layer.image
-import gws.base.search
 import gws.lib.gis
-import gws.lib.gis
-import gws.lib.metadata
-import gws.lib.mpx
 import gws.lib.os2
-import gws.lib.proj
-import gws.lib.shape
 import gws.lib.zoom
 import gws.types as t
 

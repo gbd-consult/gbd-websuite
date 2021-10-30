@@ -1,13 +1,12 @@
 import os
+import osgeo.osr
+import pyproj
 import re
 import threading
 
-import osgeo.osr
-import pyproj
-
 import gws
-import gws.types as t
 import gws.lib.sqlite
+import gws.types as t
 
 osgeo.osr.UseExceptions()
 
@@ -17,7 +16,7 @@ All functions accept:
 int/numeric EPSG Code
 4326
 
-EPSG Code 
+EPSG Code
 EPSG:4326
 
 OGC HTTP URL

@@ -4,14 +4,12 @@ import os
 import re
 
 import gws
-import gws.types as t
 import gws.base.api
 import gws.base.client.bundles
 import gws.base.template
-import gws.lib.mime
-import gws.lib.os2
-import gws.lib.json2
 import gws.base.web.error
+import gws.lib.mime
+import gws.types as t
 
 
 class GetAssetParams(gws.Params):

@@ -1,8 +1,7 @@
+import babel.dates
 import datetime
 import re
 import time
-
-import babel.dates
 
 import gws.lib.os2
 import gws.types as t
@@ -87,12 +86,12 @@ def parse(s):
 
 _dmy_re = r'''(?x)
     ^
-        (?P<d> \d{1,2}) 
+        (?P<d> \d{1,2})
         [./\s]
-        (?P<m> \d{1,2}) 
+        (?P<m> \d{1,2})
         [./\s]
         (?P<Y> \d{2,4})
-    $ 
+    $
 '''
 
 
@@ -111,33 +110,33 @@ def from_dmy(s: str) -> t.Optional[datetime.datetime]:
 
 _iso_re = r'''(?x)
     ^
-    
+
     # date
-    (?P<Y> \d{4}) - (?P<m> \d{1,2}) - (?P<d> \d{1,2})    
-    
+    (?P<Y> \d{4}) - (?P<m> \d{1,2}) - (?P<d> \d{1,2})
+
     # time?
     (
         # separator
         [ T]
-        
+
         # time
-        (?P<H> \d{1,2}) : (?P<M> \d{1,2}) : (?P<S> \d{1,2})         
-        
+        (?P<H> \d{1,2}) : (?P<M> \d{1,2}) : (?P<S> \d{1,2})
+
         # fraction?
         (
-            \. 
-            (?P<f> \d+) 
+            \.
+            (?P<f> \d+)
         )?
-        
+
         # time zone?
         (
             Z
             |
-            ( 
+            (
                 (?P<zsign> [+-]) (?P<zh> \d{2}) :? (?P<zm> \d{2})
             )
-        )?   
-    
+        )?
+
     )?
     $
 '''

@@ -2,12 +2,11 @@
 
 import gws
 import gws.base.api
-import gws.base.template
 import gws.lib.feature
-import gws.lib.json2
 import gws.lib.shape
 import gws.lib.units
 import gws.types as t
+
 from . import runner
 
 MAX_LIMIT = 1000

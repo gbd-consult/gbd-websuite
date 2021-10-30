@@ -1,18 +1,17 @@
 import base64
 import math
-
 import shapely.geometry
 import shapely.ops
 import wand.image
 
 import gws
-import gws.types as t
 import gws.lib.extent
-import gws.lib.render
 import gws.lib.font
+import gws.lib.render
 import gws.lib.style
 import gws.lib.units as units
 import gws.lib.xml2 as xml2
+import gws.types as t
 
 from gws.lib.style import Values as StyleValues
 

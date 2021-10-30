@@ -1,6 +1,7 @@
 """Base types"""
 
 import enum
+
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union, cast
 
 # Variant is tagged Union, discriminated by the 'type' property

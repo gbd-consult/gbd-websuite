@@ -1,9 +1,9 @@
 """OWS server."""
 
 import gws
-import gws.types as t
 import gws.base.api
 import gws.base.web.error
+import gws.types as t
 
 
 class ServiceParams(gws.Params):

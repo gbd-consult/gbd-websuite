@@ -1,13 +1,10 @@
 """WMS provder."""
 
 import gws
-import gws.lib.metadata
-import gws.lib.feature
 import gws.lib.gis
-import gws.lib.net
 import gws.lib.ows
-import gws.lib.xml2
 import gws.types as t
+
 from . import caps
 from .. import core
 
@@ -22,14 +19,14 @@ NB: layer order
 our configuration lists layers top-to-bottom,
 this also applies by default to WMS caps (like in qgis)
 
-for servers with bottom-up caps, set capsLayersBottomUp=True 
+for servers with bottom-up caps, set capsLayersBottomUp=True
 
 the order of GetMap is always bottomUp:
 
-> A WMS shall render the requested layers by drawing the leftmost in the list bottommost, 
+> A WMS shall render the requested layers by drawing the leftmost in the list bottommost,
 > the next one over that, and so on.
 
-OGC 06-042, 7.3.3.3 
+OGC 06-042, 7.3.3.3
 """
 
 
