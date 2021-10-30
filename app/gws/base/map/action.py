@@ -5,10 +5,11 @@ import time
 import gws
 import gws.base.api
 import gws.lib.legend
+import gws.lib.mime
 import gws.base.layer
 import gws.lib.cache
 import gws.lib.feature
-import gws.lib.img
+import gws.lib.image
 import gws.lib.json2
 import gws.lib.render
 import gws.lib.units
@@ -101,17 +102,20 @@ class Object(gws.base.api.action.Object):
     def api_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
         found = self._get_features(req, p)
-        return GetFeaturesResponse(features=[gws.props(f, req.user) for f in found])
+        return GetFeaturesResponse(features=[gws.props(f, req.user, context=self) for f in found])
 
     @gws.ext.command('get.map.getFeatures')
     def http_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> gws.ContentResponse:
         # @TODO the response should be geojson FeatureCollection
         found = self._get_features(req, p)
-        return gws.ContentResponse(
-            mime='application/json',
+        ts = gws.time_start('get_features')
+        res = gws.ContentResponse(
+            mime=gws.lib.mime.JSON,
             content=gws.lib.json2.to_string({
-                'features': [gws.props(f, req.user) for f in found]
+                'features': [gws.props(f, req.user, context=self) for f in found]
             }))
+        gws.time_end(ts)
+        return res
 
     ##
 
@@ -155,14 +159,18 @@ class Object(gws.base.api.action.Object):
         # for public tiled layers, write tiles to the web cache
         # so they will be subsequently served directly by nginx
 
-        if content and layer.is_public and layer.has_cache:
-            gws.lib.cache.store_in_web_cache(gws.base.layer.url_for_get_tile(layer.uid, p), content)
+        if content and gws.is_public_object(layer) and layer.has_cache:
+            path = gws.base.layer.layer_url_path(layer.uid, kind='tile')
+            path = path.replace('{x}', str(p.x))
+            path = path.replace('{y}', str(p.y))
+            path = path.replace('{z}', str(p.z))
+            gws.lib.cache.store_in_web_cache(path, content)
 
         return self._image_response(content)
 
     def _get_legend(self, req: gws.IWebRequest, p: GetLegendParams) -> gws.BytesResponse:
         layer = req.require_layer(p.layerUid)
-        content = gws.lib.legend.as_bytes(layer.get_legend())
+        content = gws.lib.legend.to_bytes(layer.render_legend_with_cache())
         return self._image_response(content)
 
     def _image_response(self, content) -> gws.BytesResponse:
@@ -170,7 +178,7 @@ class Object(gws.base.api.action.Object):
         # @TODO in-image errors
         if content:
             return gws.BytesResponse(mime='image/png', content=content)
-        return gws.BytesResponse(mime='image/png', content=gws.lib.img.PIXEL_PNG8)
+        return gws.BytesResponse(mime='image/png', content=gws.lib.image.PIXEL_PNG8)
 
     def _get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> t.List[gws.IFeature]:
         layer = req.require_layer(p.layerUid)

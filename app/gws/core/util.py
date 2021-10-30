@@ -4,8 +4,7 @@ Most common function which are needed everywhere. These function are exported in
 """
 
 import hashlib
-import importlib.machinery
-import importlib.util
+import importlib
 import os
 import pickle
 import random
@@ -19,7 +18,7 @@ import urllib.parse
 import gws
 from gws.types import List, cast
 from . import const, log
-from .data import is_data_object
+from .data import Data, is_data_object
 
 
 def exit(code: int = 255):
@@ -52,6 +51,22 @@ def is_bytes(x):
 
 def is_atom(x):
     return x is None or isinstance(x, (int, float, bool, str, bytes))
+
+
+def is_empty(x) -> bool:
+    """Check if the value is empty (None, empty list/dict/object)."""
+
+    if x is None:
+        return True
+    try:
+        return len(x) == 0
+    except TypeError:
+        pass
+    try:
+        return not vars(x)
+    except TypeError:
+        pass
+    return False
 
 
 ##
@@ -102,7 +117,7 @@ def has(x, key) -> bool:
 
 def _get(x, keys):
     for k in keys:
-        if isinstance(x, dict):
+        if is_dict(x):
             x = x[k]
         elif is_list(x):
             x = x[int(k)]
@@ -119,7 +134,7 @@ def _get(x, keys):
 
 
 def pop(x, key, default=None):
-    if isinstance(x, dict):
+    if is_dict(x):
         return x.pop(key, default)
     if is_data_object(x):
         return vars(x).pop(key, default)
@@ -127,38 +142,27 @@ def pop(x, key, default=None):
 
 
 def pick(x, *keys):
-    if isinstance(x, dict):
+    def _pick(d, keys):
+        r = {}
+        for k in keys:
+            if k in d:
+                r[k] = d[k]
+        return r
+
+    if is_dict(x):
         return _pick(x, keys)
     if is_data_object(x):
         return type(x)(_pick(vars(x), keys))
     return {}
 
 
-def _pick(d, keys):
-    r = {}
-    for k in keys:
-        if k in d:
-            r[k] = d[k]
-    return r
-
-
-def merge_lists(*args):
-    """Merge iterables together, removing repeated elements"""
-
-    r = []
-    for a in args:
-        for x in as_list(a):
-            if x not in r:
-                r.append(x)
-    return r
-
-
-def merge(*args, **kwargs):
+def merge(x, *args, **kwargs):
     """Create a new dict/Data object by merging values from dicts/Datas or kwargs.
     Latter vales overwrite former ones unless None.
 
     Args:
-        *args: Dicts or Datas.
+        x: dict or Data.
+        *args: dicts or Datas.
         **kwargs: Keyword args.
 
     Returns:
@@ -167,48 +171,49 @@ def merge(*args, **kwargs):
 
     d = {}
 
-    for a in args:
-        for k, v in as_dict(a).items():
+    for a in [x, *args, kwargs]:
+        for k, v in to_dict(a).items():
             if v is not None:
                 d[k] = v
 
-    for k, v in kwargs.items():
-        if v is not None:
-            d[k] = v
-
-    if not args:
-        return d
-
-    if isinstance(args[0], dict):
-        return d
-
-    return type(args[0])(d)
+    return d if is_dict(x) else type(x)(d)
 
 
-def filter(x, fn=None):
-    """Apply a filter to a collection.
+def deep_merge(x, y, concat_lists=True):
+    """Deeply merge dicts/Datas into a nested dict/Data.
+    Latter vales overwrite former ones unless None.
 
     Args:
-        x: A dict/Data or an iterable.
-        fn: Filtering function, if omitted, blank strings and empty values are removed.
+        *x: dict or Data.
+        *y: dict or Data.
+        *concat_lists: if true, list will be concatenated, otherwise merged
 
     Returns:
-        A filtered object.
+        A new object (dict or Data).
     """
 
-    def _is_not_empty_or_blank(x):
-        if isinstance(x, (str, bytes, bytearray)):
-            x = x.strip()
-        return not is_empty(x)
+    def _merge(x1, y1):
+        if (is_dict(x1) or is_data_object(x1)) and (is_dict(y1) or is_data_object(y1)):
+            return deep_merge(x1, y1, concat_lists)
 
-    fn = fn or _is_not_empty_or_blank
+        if is_list(x1) and is_list(y1):
+            x1 = compact(x1)
+            y1 = compact(y1)
+            if concat_lists:
+                return x1 + y1
+            return [_merge(x2, y2) for x2, y2 in zip(x1, y1)]
 
-    if is_dict(x):
-        return {k: v for k, v in x.items() if fn(v)}
-    if is_data_object(x):
-        d = {k: v for k, v in vars(x).items() if fn(v)}
-        return type(x)(d)
-    return [v for v in x if fn(v)]
+        return y1 if y1 is not None else x1
+
+    xd = to_dict(x)
+    yd = to_dict(y)
+
+    d = {
+        k: _merge(xd.get(k), yd.get(k))
+        for k in xd.keys() | yd.keys()
+    }
+
+    return d if is_dict(x) else type(x)(d)
 
 
 def compact(x):
@@ -222,101 +227,52 @@ def compact(x):
     return [v for v in x if v is not None]
 
 
-def deep_merge(*args, **kwargs) -> dict:
-    """Deeply merge dicts/Datas into a nested dict.
-
-    Args:
-        x: A dict or a Data.
-        *args: Dicts or Datas.
-        **kwargs: Keyword args.
-
-    Returns:
-        A new dict.
-    """
-
-    def flatten(target, obj, keys):
-        if is_data_object(obj):
-            obj = vars(obj)
-        if isinstance(obj, dict):
-            for k, v in obj.items():
-                flatten(target, v, keys + (k,))
-        elif keys:
-            target[keys] = obj
-
-    def unflatten(source):
-        nested = {}
-        for keys, val in source.items():
-            p = nested
-            for k in keys[:-1]:
-                if p.get(k) is None:
-                    p[k] = {}
-                p = p[k]
-            p[keys[-1]] = val
-        return nested
-
-    flat: dict = {}
-    for a in args:
-        flatten(flat, a, ())
-    for k, v in kwargs.items():
-        flat[(k,)] = v
-
-    return unflatten(flat)
-
-
-def map(x, fn):
-    """Apply a function to a collection.
-
-    Args:
-        x: A dict/Data or an iterable.
-        fn: A function.
-
-    Returns:
-        A mapped object.
-    """
-
-    if isinstance(x, dict):
-        return {k: fn(v) for k, v in x.items()}
-    if is_data_object(x):
-        d = {k: fn(v) for k, v in vars(x).items()}
-        return type(x)(d)
-    return [fn(v) for v in x]
-
-
 def strip(x):
-    """Strip all str values in a collection and remove empty values.
-
-    Args:
-        x: A dict/Data or an iterable.
-
-    Returns:
-        The stripped object.
-     """
+    """Strip all strings and remove empty values from a collection."""
 
     def _strip(v):
         if isinstance(v, (str, bytes, bytearray)):
             return v.strip()
         return v
 
-    return filter(map(x, _strip))
+    def _dict(x1):
+        d = {}
+        for k, v in x1.items():
+            v = _strip(v)
+            if not is_empty(v):
+                d[k] = v
+        return d
+
+    if is_dict(x):
+        return _dict(x)
+    if is_data_object(x):
+        return type(x)(_dict(vars(x)))
+
+    r = [_strip(v) for v in x]
+    return [v for v in r if not is_empty(v)]
 
 
-def is_empty(x) -> bool:
-    """Check if the value is empty (None, empty list/dict/object)."""
+def uniq(x):
+    """Remove duplicate elements from a collection."""
 
-    if x is None:
-        return True
-    try:
-        return len(x) == 0
-    except TypeError:
-        pass
-    try:
-        return not vars(x)
-    except TypeError:
-        pass
-    return False
+    s = set()
+    r = []
+
+    for y in x:
+        try:
+            if y not in s:
+                s.add(y)
+                r.append(y)
+        except TypeError:
+            if y not in r:
+                r.append(y)
+
+    return r
 
 
-def as_int(x) -> int:
+##
+
+def to_int(x) -> int:
     """Convert a value to an int or 0 if this fails."""
 
     try:
@@ -325,7 +281,7 @@ def as_int(x) -> int:
         return 0
 
 
-def as_float(x) -> float:
+def to_float(x) -> float:
     """Convert a value to a float or 0.0 if this fails."""
 
     try:
@@ -334,7 +290,7 @@ def as_float(x) -> float:
         return 0.0
 
 
-def as_str(x, encodings: List[str] = None) -> str:
+def to_str(x, encodings: List[str] = None) -> str:
     """Convert a value to a string.
 
     Args:
@@ -359,7 +315,7 @@ def as_str(x, encodings: List[str] = None) -> str:
     return x.decode(encoding='utf-8', errors='ignore')
 
 
-def as_bytes(x) -> bytes:
+def to_bytes(x) -> bytes:
     """Convert a value to bytes by converting it to string and encoding in utf8."""
 
     if is_bytes(x):
@@ -369,7 +325,7 @@ def as_bytes(x) -> bytes:
     return x.encode('utf8')
 
 
-def as_list(x, delimiter: str = ',') -> list:
+def to_list(x, delimiter: str = ',') -> list:
     """Convert a value to a list.
 
     Args:
@@ -385,7 +341,7 @@ def as_list(x, delimiter: str = ',') -> list:
     if is_empty(x):
         return []
     if is_bytes(x):
-        x = as_str(x)
+        x = to_str(x)
     if isinstance(x, str):
         if delimiter:
             ls = [s.strip() for s in x.split(delimiter)]
@@ -399,14 +355,34 @@ def as_list(x, delimiter: str = ',') -> list:
         return []
 
 
-def as_dict(x) -> dict:
+def to_dict(x) -> dict:
     """Convert a value to a dict. If the argument is a Data object, return its `dict`."""
 
-    if isinstance(x, dict):
+    if is_dict(x):
         return x
     if is_data_object(x):
         return vars(x)
     return {}
+
+
+def to_upper_dict(x) -> dict:
+    x = to_dict(x)
+    return {k.upper(): v for k, v in x.items()}
+
+
+def to_lower_dict(x) -> dict:
+    x = to_dict(x)
+    return {k.lower(): v for k, v in x.items()}
+
+
+def to_data(x) -> Data:
+    """Convert a value to a Data. If the argument is a Data object, return it."""
+
+    if is_data_object(x):
+        return x
+    if is_dict(x):
+        return gws.Data(x)
+    return gws.Data()
 
 
 ##
@@ -419,16 +395,17 @@ _UID_DE_TRANS = {
 }
 
 
-def as_uid(x) -> str:
+def to_uid(x) -> str:
     """Convert a value to an uid (alphanumeric string)."""
+
     if not x:
         return ''
-    x = as_str(x).lower().strip().translate(_UID_DE_TRANS)
+    x = to_str(x).lower().strip().translate(_UID_DE_TRANS)
     x = re.sub(r'[^a-z0-9]+', '_', x)
     return x.strip('_')
 
 
-def lines(txt: str, comment: str = None) -> List[str]:
+def to_lines(txt: str, comment: str = None) -> List[str]:
     """Convert a multiline string into a list of strings.
 
     Strip each line, skip empty lines, if `comment` is given, also remove lines starting with it.
@@ -437,13 +414,16 @@ def lines(txt: str, comment: str = None) -> List[str]:
     ls = []
 
     for s in txt.splitlines():
-        if comment:
+        if comment and comment in s:
             s = s.split(comment)[0]
         s = s.strip()
         if s:
             ls.append(s)
 
     return ls
+
+
+##
 
 
 def is_file(path):
@@ -474,6 +454,10 @@ def write_file_b(path: str, s: bytes, user: int = None, group: int = None):
     with open(path, 'wb') as fp:
         fp.write(s)
     _chown(path, user, group)
+
+
+def dirname(path):
+    return os.path.dirname(path)
 
 
 def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int = None, group: int = None) -> str:
@@ -632,7 +616,7 @@ _server_globals = {}
 
 
 def get_server_global(name, init_fn):
-    uid = as_uid(name)
+    uid = to_uid(name)
     path = gws.GLOBALS_DIR + '/' + uid
 
     def _get():
@@ -672,7 +656,7 @@ class _FileLock:
     _TIMEOUT = 60
 
     def __init__(self, uid):
-        self.uid = as_uid(uid)
+        self.uid = to_uid(uid)
         self.path = gws.LOCKS_DIR + '/' + self.uid
 
     def __enter__(self):
@@ -760,14 +744,15 @@ def _find_import_root_and_module_name(path):
 
 ##
 
-def action_url(name: str, **kwargs) -> str:
-    rest = []
+def action_url_path(name: str, **kwargs) -> str:
+    ls = []
 
     for k, v in kwargs.items():
-        rest.append(urllib.parse.quote(k))
-        rest.append(urllib.parse.quote(as_str(v)))
+        if not is_empty(v):
+            ls.append(urllib.parse.quote(k))
+            ls.append(urllib.parse.quote(to_str(v)))
 
-    url = gws.SERVER_ENDPOINT + '/' + name
-    if rest:
-        url += '/' + '/'.join(rest)
-    return url
+    path = gws.SERVER_ENDPOINT + '/' + name
+    if ls:
+        path += '/' + '/'.join(ls)
+    return path

@@ -1,0 +1,7 @@
+@include ../../templatelib.cx
+
+@if version == '1.0.0'
+    @include describeCoverage.1.cx
+@elif version == '2.0.1'
+    @include describeCoverage.2.cx
+@end

@@ -145,7 +145,7 @@ class Object(gws.base.template.Object):
             self.legend_mode = gws.base.template.LegendMode.html
             if 'layer' in atts:
                 html = ''
-                for layer_uid in gws.as_list(atts['layer']):
+                for layer_uid in gws.to_list(atts['layer']):
                     if layer_uid not in self.legend_layer_uids:
                         self.legend_layer_uids.append(layer_uid)
                     html += '[% @GWS_LEGEND_' + gws.sha256(layer_uid) + '%]'

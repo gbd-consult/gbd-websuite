@@ -1,0 +1,26 @@
+@def record(md)
+
+    @t dc:identifier {md.catalogUid}
+    @t dc:title {md.title}
+    @t dc:type {md.isoScope}
+
+    @each md.keywords as kw
+        @t dc:subject {kw}
+    @end
+
+    @each md.extraLinks as link
+        @t dct:references scheme="{link.scheme}" {ARGS.url_for(link.url)}
+    @end
+
+    @t dct:abstract {md.abstract}
+    @t dct:modified {md.dateUpdated}
+    @t dc:date {md.dateCreated}
+    @t dc:language {md.language3}
+
+    @with md.extent4326 as e
+        @tag ows:BoundingBox
+            @t ows:LowerCorner {e[0]} {e[1]}
+            @t ows:UpperCorner {e[2]} {e[3]}
+        @end
+    @end
+@end

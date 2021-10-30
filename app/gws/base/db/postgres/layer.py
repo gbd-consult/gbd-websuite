@@ -23,15 +23,6 @@ class Object(gws.base.layer.vector.Object):
     provider: provider_module.Object
     table: gws.SqlTable
 
-    def configure(self):
-        self.provider = provider_module.require_for(self)
-        self.table = self.provider.configure_table(self.var('table'))
-        self.is_editable = True
-        if not self.data_model:
-            p = self.provider.table_data_model_config(self.table)
-            if p:
-                self.data_model = self.require_child('gws.base.model', p)
-
     @property
     def own_bounds(self):
         if not self.table.geometry_column:
@@ -50,13 +41,34 @@ class Object(gws.base.layer.vector.Object):
     def props_for(self, user):
         return gws.merge(super().props_for(user), geometryType=self.table.geometry_type)
 
-    @property
-    def default_search_provider(self):
-        return self.root.create_object('gws.ext.search.provider.postgres', gws.Config(
-            uid=self.uid + '.default_search',
-            db=self.provider.uid,
-            table=self.var('table'),
-        ))
+    def configure(self):
+        pass
+
+    def configure_source(self):
+        if self.var('_provider'):
+            self.provider = self.var('_provider')
+            self.table = self.var('_table')
+        else:
+            self.provider = provider_module.require_for(self)
+            self.table = self.provider.configure_table(self.var('table'))
+
+        self.is_editable = True
+
+        if not self.data_model:
+            p = self.provider.table_data_model_config(self.table)
+            if p:
+                self.data_model = self.require_child('gws.base.model', p)
+
+    def configure_search(self):
+        if not super().configure_search():
+            self.search_providers.append(
+                self.root.create_object(
+                    'gws.ext.search.provider.postgres',
+                    gws.Config(_provider=self.provider, _table=self.table),
+                    shared=True,
+                    key=[self.provider.uid, self.table.name]
+                ))
+            return True
 
     def get_features(self, bounds, limit=0) -> t.List[gws.IFeature]:
         shape = gws.lib.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)

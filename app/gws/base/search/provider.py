@@ -40,24 +40,32 @@ class Object(gws.Node, gws.ISearchProvider):
             gws.lib.units.parse(p, units=['px', 'm'], default='px') if p
             else (_DEFAULT_PIXEL_TOLERANCE, 'px'))
 
-        self.with_keyword = self.supports_keyword and self.var('withKeyword', default=True)
-        self.with_geometry = self.supports_geometry and self.var('withGeometry', default=True)
-        self.with_filter = self.supports_filter and self.var('withFilter', default=True)
+        self.with_keyword = self.var('withKeyword', default=True)
+        self.with_geometry = self.var('withGeometry', default=True)
+        self.with_filter = self.var('withFilter', default=True)
 
         self.spatial_context = self.var('defaultContext', default=SpatialContext.map)
         self.title = self.var('title', default='')
 
     def can_run(self, args: gws.SearchArgs):
-        if args.keyword and not self.with_keyword:
-            return False
+        has_param = False
 
-        if args.shapes and not self.with_geometry:
-            return False
+        if args.keyword:
+            if not self.supports_keyword or not self.with_keyword:
+                return False
+            has_param = True
 
-        if args.filter and not self.with_filter:
-            return False
+        if args.shapes:
+            if not self.supports_geometry or not self.with_geometry:
+                return False
+            has_param = True
 
-        return bool(args.keyword or args.shapes or args.filter)
+        if args.filter:
+            if not self.supports_filter or not self.with_filter:
+                return False
+            has_param = True
+
+        return has_param
 
     def context_shape(self, args: gws.SearchArgs) -> gws.IShape:
         if args.shapes:

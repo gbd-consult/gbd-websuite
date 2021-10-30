@@ -190,3 +190,7 @@ def enable():
 
 def disable():
     _logger.disabled = True
+
+
+def is_debug():
+    return _logger.isEnabledFor(Level.DEBUG)

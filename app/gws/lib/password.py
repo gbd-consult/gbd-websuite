@@ -25,7 +25,7 @@ def check(password, enc):
     return cmp(h1, h2)
 
 
-def as_hash(s, algo='sha512'):
+def to_hash(s, algo='sha512'):
     h = hashlib.new(algo)
     if not isinstance(s, bytes):
         s = str(s).encode('utf8')

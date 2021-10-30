@@ -10,48 +10,75 @@ import gws.lib.proj
 import gws.types as t
 
 
-def make_bbox(x, y, crs, resolution, pixel_width, pixel_height):
-    """Given a point (in crs units), make a widthXheight pixel bbox around it."""
-
-    # @TODO
-
-    # is_geographic = gws.lib.proj.is_geographic(crs)
-    #
-    # if is_geographic:
-    #     x, y = gws.lib.proj.transform_xy(x, y, crs, 'EPSG:3857')
-
-    bbox = [
-        x - (pixel_width * resolution) / 2,
-        y - (pixel_height * resolution) / 2,
-        x + (pixel_width * resolution) / 2,
-        y + (pixel_height * resolution) / 2,
-    ]
-
-    # if is_geographic:
-    #     bbox = gws.lib.proj.transform_extent(bbox, 'EPSG:3857', crs)
-
-    return bbox
+class PreparedWmsSearch(gws.Data):
+    params: dict
+    request_crs: gws.Crs
+    axis: gws.Axis
 
 
-def invert_bbox(bbox):
-    return [bbox[1], bbox[0], bbox[3], bbox[2]]
+def prepare_wms_search(
+        shape: gws.IShape,
+        protocol_version,
+        force_crs: t.Optional[gws.Crs] = None,
+        supported_crs: t.Optional[t.List[gws.Crs]] = None,
+        invert_axis_crs: t.Optional[t.List[gws.Crs]] = None
+) -> t.Optional[PreparedWmsSearch]:
+    if not shape:
+        return None
+
+    if shape.geometry_type != gws.GeometryType.point:
+        return None
+
+    request_crs = force_crs or best_crs(shape.crs, supported_crs)
+    axis = best_axis(request_crs, gws.OwsProtocol.WMS, protocol_version, invert_axis_crs)
+    shape = shape.transformed_to(request_crs)
+
+    box_size_m = 500
+    box_size_px = 500
+
+    bbox = (
+        shape.x - (box_size_m >> 1),
+        shape.y - (box_size_m >> 1),
+        shape.x + (box_size_m >> 1),
+        shape.y + (box_size_m >> 1),
+    )
+
+    if axis == gws.AXIS_YX:
+        bbox = gws.lib.extent.swap_xy(bbox)
+
+    v3 = protocol_version >= '1.3'
+
+    params = {
+        'BBOX': bbox,
+        'WIDTH': box_size_px,
+        'HEIGHT': box_size_px,
+        'I' if v3 else 'X': box_size_px >> 1,
+        'J' if v3 else 'Y': box_size_px >> 1,
+        'CRS' if v3 else 'SRS': request_crs,
+        'VERSION': protocol_version,
+    }
+
+    return PreparedWmsSearch(params=params, request_crs=request_crs, axis=axis)
 
 
-def best_axis(crs, inverted_axis_crs_list, protocol: gws.OwsProtocol, protocol_version):
+def best_axis(crs: gws.Crs, protocol: gws.OwsProtocol, protocol_version, invert_axis_crs: t.Optional[t.List[gws.Crs]] = None) -> gws.Axis:
     # inverted_axis_crs_list - list of EPSG crs'es which are known to have an inverted axis for this service
     # crs - crs we're going to use with the service
 
-    proj = gws.lib.proj.as_proj(crs)
-    if inverted_axis_crs_list and proj.epsg in inverted_axis_crs_list:
-        return 'yx'
+    proj = gws.lib.proj.to_proj(crs)
+    if invert_axis_crs and proj.epsg in invert_axis_crs:
+        return gws.AXIS_YX
 
     # @TODO some logic to guess the axis, based on crs, service protocol and version
     # see https://docs.geoserver.org/latest/en/user/services/wfs/basics.html#wfs-basics-axis
-    return 'xy'
+    return gws.AXIS_XY
 
 
-def best_crs(target_crs, supported_crs):
+def best_crs(target_crs: gws.Crs, supported_crs: t.Optional[t.List[gws.Crs]]) -> gws.Crs:
     # find the best matching crs for the target crs and the list of supported crs.
+
+    if not supported_crs:
+        return target_crs
 
     # if target_crs is in the list, we're fine
 
@@ -71,7 +98,7 @@ def best_crs(target_crs, supported_crs):
     # return first non-geographic CRS
 
     for crs in supported_crs:
-        p = gws.lib.proj.as_proj(crs)
+        p = gws.lib.proj.to_proj(crs)
         if p and not p.is_geographic:
             gws.log.debug(f'best_crs: using {p.epsg!r} for {target_crs!r}')
             return p.epsg
@@ -79,15 +106,10 @@ def best_crs(target_crs, supported_crs):
     raise gws.Error(f'no match for crs={target_crs!r} in {supported_crs!r}')
 
 
-def best_crs_and_shape(request_crs, supported_crs, shape):
-    crs = best_crs(request_crs, supported_crs)
-    return crs, shape.transformed_to(crs)
-
-
 class SourceStyle(gws.Data):
     is_default: bool
     legend_url: gws.Url
-    metadata: gws.lib.metadata.Record
+    metadata: gws.lib.metadata.Metadata
     name: str
 
 
@@ -127,7 +149,7 @@ class SourceLayer(gws.Data):
 
     layers: t.List['SourceLayer']
 
-    metadata: gws.lib.metadata.Record
+    metadata: gws.lib.metadata.Metadata
     name: str
     title: str
     format: str

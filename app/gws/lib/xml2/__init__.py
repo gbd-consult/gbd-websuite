@@ -10,6 +10,8 @@ import xml.parsers.expat
 import gws
 import gws.types as t
 
+from .types import Namespace
+from . import helper
 
 
 class Error(Exception):
@@ -20,11 +22,11 @@ def tag(*args) -> gws.Tag:
     return args
 
 
-def as_string(p) -> str:
+def to_string(p) -> str:
     if _is_list(p):
         return _string(p)
     if _is_elem(p):
-        return _string(p.as_tag())
+        return _string(p.to_tag())
     return str(p)
 
 
@@ -103,7 +105,7 @@ class Element:
         self.text = ''
         self.pos = [0, 0]
 
-    def as_tag(self):
+    def to_tag(self):
         atts = {a.qname: a.value for a in self.attributes}
         if self.default_namespace:
             atts[_NS_PREFIX] = self.default_namespace
@@ -112,7 +114,7 @@ class Element:
         tag = [self.qname]
         if atts:
             tag.append(atts)
-        tag.extend(c.as_tag() for c in self.children)
+        tag.extend(c.to_tag() for c in self.children)
         if self.text:
             tag.append(self.text)
         return tuple(tag)

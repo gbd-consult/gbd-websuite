@@ -16,24 +16,23 @@ class BaseGroup(core.Object):
 
     def configure_layers(self, cfgs: t.List[gws.Config]):
         self.layers = self.create_children('gws.ext.layer', cfgs)
+        self.supports_raster_ows = any(la.supports_raster_ows for la in self.layers)
+        self.supports_vector_ows = any(la.supports_vector_ows for la in self.layers)
 
-        if not self.has_configured_legend:
+    def configure_legend(self):
+        if not super().configure_legend():
             legend_layers = [la for la in self.layers if la.has_legend]
             if legend_layers:
                 self.legend = gws.Legend(enabled=True, layers=legend_layers)
-                self.has_configured_legend = True
+                return True
 
-        if not self.has_configured_resolutions:
+    def configure_zoom(self):
+        if not super().configure_zoom():
             resolutions = set()
             for la in self.layers:
                 resolutions.update(la.resolutions)
             self.resolutions = sorted(resolutions)
-            self.has_configured_resolutions = True
-
-        self.supports_wms = any(la.supports_wms for la in self.layers)
-        self.supports_wfs = any(la.supports_wfs for la in self.layers)
-
-        self.has_configured_layers = True
+            return True
 
     def layer_tree_configuration(
             self,
@@ -50,7 +49,7 @@ class BaseGroup(core.Object):
                 return
 
             cfg = gws.merge(cfg, {
-                'uid': gws.as_uid(sl.name),
+                'uid': gws.to_uid(sl.name),
                 'title': sl.title,
                 'clientOptions': {
                     'visible': sl.is_visible,
@@ -96,7 +95,7 @@ class BaseGroup(core.Object):
             if configs:
                 return {
                     'type': 'group',
-                    'uid': gws.as_uid(sl.name),
+                    'uid': gws.to_uid(sl.name),
                     'layers': configs
                 }
 

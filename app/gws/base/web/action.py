@@ -134,13 +134,7 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequest, p: GetAssetParams, as_att
 
     gws.log.debug(f'serving {rpath!r} for {spath!r}')
 
-    attachment_name = None
-
-    if as_attachment:
-        pp = gws.lib.os2.parse_path(spath)
-        attachment_name = pp['name'] + '.' + gws.lib.mime.extension(mime)
-
-    return gws.ContentResponse(mime=mime, path=rpath, attachment_name=attachment_name)
+    return gws.ContentResponse(mime=mime, path=rpath, as_attachment=as_attachment)
 
 
 def _projects_for_user(root, user):
@@ -179,12 +173,34 @@ def _abs_path(path, basedir):
     return p
 
 
+_DEFAULT_ALLOWED_MIME_TYPES = {
+    gws.lib.mime.CSS,
+    gws.lib.mime.CSV,
+    gws.lib.mime.GEOJSON,
+    gws.lib.mime.GIF,
+    gws.lib.mime.GML,
+    gws.lib.mime.GML3,
+    gws.lib.mime.GZIP,
+    gws.lib.mime.HTML,
+    gws.lib.mime.JPEG,
+    gws.lib.mime.JS,
+    gws.lib.mime.JSON,
+    gws.lib.mime.PDF,
+    gws.lib.mime.PNG,
+    gws.lib.mime.SVG,
+    gws.lib.mime.TTF,
+    gws.lib.mime.TXT,
+    gws.lib.mime.XML,
+    gws.lib.mime.ZIP,
+}
+
+
 def _valid_mime_type(mt, project_assets: t.Optional[gws.DocumentRoot], site_assets: t.Optional[gws.DocumentRoot]):
     if project_assets and project_assets.allow_mime:
         return mt in project_assets.allow_mime
     if site_assets and site_assets.allow_mime:
         return mt in site_assets.allow_mime
-    if mt not in gws.lib.mime.DEFAULT_ALLOWED:
+    if mt not in _DEFAULT_ALLOWED_MIME_TYPES:
         return False
     if project_assets and project_assets.deny_mime:
         return mt not in project_assets.deny_mime

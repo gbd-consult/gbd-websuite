@@ -72,9 +72,10 @@ class Object(gws.Node, gws.ITemplate):
         self.data_model = self.create_child_if_config('gws.base.model', self.var('dataModel'))
 
         self.subject = self.var('subject', default='').lower()
-        p = self.subject.split('.')
-        self.category = p[0] if len(p) > 1 else ''
-        self.key = p[-1]
+        if '.' in self.subject:
+            self.category, _, self.name = self.subject.partition('.')
+        else:
+            self.category, self.name = '', self.subject
 
         self.mime_types = []
         for p in self.var('mimeTypes', default=[]):

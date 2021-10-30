@@ -87,7 +87,7 @@ export class Layer implements types.IMapLayer {
         this.type = this.props.type;
         this.title = this.props.title;
         this.uid = this.props.uid;
-        this.attribution = this.props.metaData ? this.props.metaData.attribution : '';
+        this.attribution = this.props.metadata ? this.props.metadata.attribution : '';
         this.editAccess = this.props.editAccess;
 
         this.resolutions = props.resolutions || this.map.resolutions;

@@ -9,7 +9,7 @@ import gws.lib.units
 def render_html(html, page_size, margin, out_path):
     if 'charset' not in html:
         html = '<meta charset="utf8"/>' + html
-    gws.write_file_b(out_path + '.html', gws.as_bytes(html))
+    gws.write_file_b(out_path + '.html', gws.to_bytes(html))
 
     if not margin:
         margin = [0, 0, 0, 0]

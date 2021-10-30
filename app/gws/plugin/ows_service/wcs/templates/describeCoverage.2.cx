@@ -1,0 +1,31 @@
+@tag CoverageDescriptions
+    @xmlns wcs default
+
+    @each layer_caps_list as lc
+        @tag CoverageDescription gml:id="{lc.layer_xname.p}"
+            @t gml:name {lc.layer_xname.p}
+
+            @tag gml:boundedBy/gml:Envelope srsName="{lc.proj.uri}" axisLabels="x y" uomLabels="m m" srsDimension="2"
+                @t gml:lowerCorner {lc.extent[0]} {lc.extent[2]}
+                @t gml:upperCorner {lc.extent[2]} {lc.extent[1]}
+            @end
+
+            @tag gml:domainSet/gml:RectifiedGrid gml:id="{lc.layer_xname.p}" dimension="2"
+                @tag gml:limits/gml:GridEnvelope
+                    @t gml:low 0 0
+                    @t gml:high 215323 125027
+                @end
+                @t gml:axisLabels x y
+                @t gml:origin/gml:Point/gml:pos {lc.extent[0]} {lc.extent[3]}
+                @t gml:offsetVector 0 1
+                @t gml:offsetVector 1 0
+            @end
+
+            @tag ServiceParameters
+                @t CoverageSubtype RectifiedGridCoverage
+                @t nativeFormat image/png
+            @end
+
+        @end
+    @end
+@end

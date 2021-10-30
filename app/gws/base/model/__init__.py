@@ -147,7 +147,7 @@ class Object(gws.Node, gws.IDataModel):
         self.geometry_type = self.var('geometryType')
         self.geometry_crs = self.var('crs')
 
-    def xml_schema(self, geometry_name='geometry') -> dict:
+    def xml_schema(self, name_for_geometry='geometry') -> dict:
         schema = {}
         for rule in self.rules:
             typ = _XML_SCHEMA_TYPES.get(rule.type)
@@ -156,7 +156,7 @@ class Object(gws.Node, gws.IDataModel):
 
         typ = _XML_SCHEMA_TYPES.get(self.geometry_type)
         if typ:
-            schema[geometry_name] = typ
+            schema[name_for_geometry] = typ
 
         return schema
 
@@ -213,11 +213,11 @@ class Object(gws.Node, gws.IDataModel):
             return not gws.is_empty(value)
 
         if validator.type == 'length':
-            s = gws.as_str(value).strip()
+            s = gws.to_str(value).strip()
             return t.cast(float, validator.min) <= len(s) <= t.cast(float, validator.max)
 
         if validator.type == 'regex':
-            s = gws.as_str(value).strip()
+            s = gws.to_str(value).strip()
             return bool(re.search(t.cast(str, validator.pattern), s))
 
         if validator.type == 'greaterThan':
@@ -241,7 +241,7 @@ class Object(gws.Node, gws.IDataModel):
         title = rule.get('title')
 
         if not name:
-            name = gws.as_uid(title) if title else rule.get('source')
+            name = gws.to_uid(title) if title else rule.get('source')
 
         if not name:
             raise gws.Error('missing attribute name')

@@ -220,12 +220,12 @@ def _fs_data(conn, fs, cache):
 
     p = cache.addr.get(fs_id, [])
     p.sort(key=lambda x: x.get('strasse_v', ''))
-    d['lage'] = indexer.as_json(p)
+    d['lage'] = indexer.to_json(p)
     d['c_lage'] = len(p)
 
     p = cache.gebaeude.get(fs_id, [])
     p.sort(key=lambda x: -x.get('area'))
-    d['gebaeude'] = indexer.as_json(p)
+    d['gebaeude'] = indexer.to_json(p)
     d['c_gebaeude'] = len(p)
     d['gebaeude_area'] = sum(x['area'] for x in p)
 
@@ -247,12 +247,12 @@ def _fs_data(conn, fs, cache):
                     })
 
     d['c_buchung'] = len(stellen)
-    d['buchung'] = indexer.as_json(stellen)
+    d['buchung'] = indexer.to_json(stellen)
 
     d['bb_number'] = ';'.join(bb_number) + ';' if bb_number else ''
 
     p = cache.nutzung.get(fs_id, [])
-    d['nutzung'] = indexer.as_json(p)
+    d['nutzung'] = indexer.to_json(p)
     d['c_nutzung'] = len(p)
 
     return d

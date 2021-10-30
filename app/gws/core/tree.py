@@ -184,11 +184,11 @@ class Root(types.IRoot):
         if not key:
             key = util.sha256(cfg)
         elif isinstance(key, str):
-            key = util.as_uid(key)
+            key = util.to_uid(key)
         else:
             key = util.sha256(key)
 
-        key = util.as_uid(_class_name(klass)) + '_' + key
+        key = util.to_uid(_class_name(klass)) + '_' + key
 
         if key in self._shared_objects:
             return self._shared_objects[key]
@@ -303,46 +303,46 @@ _ACCCESS_DENIED = 2
 _ACCCESS_UNKNOWN = 3
 
 
-def can_use(user, obj, parent=None):
-    return _access(user, obj, parent) == _ACCCESS_ALLOWED
+def can_use(user, obj, context=None):
+    return _access(user, obj, context) == _ACCCESS_ALLOWED
 
 
-def _access(user, obj, parent):
+def _access(user, obj, context):
+    def _log(res, why, where=None):
+        # log.debug(f'PERMS:{res}: o={_object_name(obj)} r={user.roles!r}: why={why} where={_object_name(where)}')
+        pass
+
     if not obj:
-        log.debug(f'PERMS:False: o={_object_name(obj)} r={user.roles!r}: NONE')
+        _log(False, 'empty')
         return _ACCCESS_DENIED
 
     if obj == user:
-        log.debug(f'PERMS:True: o={_object_name(obj)} r={user.roles!r}: SELF')
+        _log(True, 'self')
         return _ACCCESS_ALLOWED
 
-    if const.ROLE_ADMIN is user.roles:
-        log.debug(f'PERMS:True: o={_object_name(obj)} r={user.roles!r}: ADMIN')
+    if const.ROLE_ADMIN in user.roles:
+        _log(True, 'admin')
         return _ACCCESS_ALLOWED
 
     fn = getattr(obj, 'access_for', None)
     c = fn(user) if fn else None
 
     if c is not None:
-        log.debug(f'PERMS:{c} o={_object_name(obj)} r={user.roles!r}: FOUND')
+        _log(c, 'found')
         return _ACCCESS_ALLOWED if c else _ACCCESS_DENIED
 
-    curr = parent or util.get(obj, 'parent')
-    hist = []
+    curr = context or util.get(obj, 'parent')
 
     while curr:
-        hist.append(curr)
-
         fn = getattr(curr, 'access_for', None)
         c = fn(user) if fn else None
-
         if c is not None:
-            log.debug(f'PERMS:{c} o={_object_name(obj)} r={user.roles!r}: IN={[_object_name(x) for x in hist]}')
+            _log(c, 'found', curr)
             return _ACCCESS_ALLOWED if c else _ACCCESS_DENIED
 
         curr = util.get(curr, 'parent')
 
-    log.debug(f'PERMS:None: o={_object_name(obj)} r={user.roles!r}: IN={[_object_name(x) for x in hist]}: NOT_FOUND')
+    _log(None, 'end')
     return _ACCCESS_UNKNOWN
 
 
@@ -356,8 +356,8 @@ def is_public_object(obj):
 ##
 
 
-def props(obj: types.IObject, user: types.IGrantee, parent: t.Optional[types.INode] = None) -> t.Optional[types.Props]:
-    if not user.can_use(obj, parent):
+def props(obj: types.IObject, user: types.IGrantee, context: t.Optional[types.INode] = None) -> t.Optional[types.Props]:
+    if not user.can_use(obj, context):
         return None
     p = _make_props(obj.props_for(user), user)
     if p is None or util.is_data_object(p):
@@ -371,7 +371,7 @@ def _make_props(obj: t.Any, user):
     if util.is_atom(obj):
         return obj
 
-    if isinstance(obj, (Object, Node)):
+    if isinstance(obj, Object):
         if _access(user, obj, None) == _ACCCESS_DENIED:
             return None
         obj = obj.props_for(user)

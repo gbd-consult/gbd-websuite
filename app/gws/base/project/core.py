@@ -4,7 +4,7 @@ import gws.base.api
 import gws.base.auth
 import gws.base.client
 import gws.base.map
-import gws.base.metadata
+import gws.lib.metadata
 import gws.base.printer
 import gws.base.search
 import gws.base.template
@@ -24,7 +24,7 @@ class Config(gws.WithAccess):
     client: t.Optional[gws.base.client.Config]  #: project-specific gws client configuration
     locales: t.Optional[t.List[str]]  #: project locales
     map: t.Optional[gws.base.map.Config]  #: Map configuration
-    metaData: t.Optional[gws.base.metadata.Config]  #: project metadata
+    metadata: t.Optional[gws.lib.metadata.Config]  #: project metadata
     overviewMap: t.Optional[gws.base.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.base.printer.Config]  #: print configuration
     search: t.Optional[gws.base.search.Config] = {}  # type: ignore #: project-wide search configuration
@@ -38,7 +38,7 @@ class Props(gws.Props):
     description: str
     locales: t.List[str]
     map: gws.base.map.Props
-    metaData: gws.base.metadata.Props
+    metadata: gws.lib.metadata.Props
     overviewMap: gws.base.map.Props
     printer: gws.base.printer.Props
     title: str
@@ -50,15 +50,14 @@ class Object(gws.Node, gws.IProject):
     printer: gws.base.printer.Object
 
     def configure(self):
-        p = self.var('metaData', with_parent=True) or gws.base.metadata.Config(title=self.var('title'))
-        self.metadata = self.require_child(gws.base.metadata.Object, p)
+        self.metadata = gws.lib.metadata.from_config(self.var('metadata')).extend(self.root.application.metadata)
 
         # title at the top level config preferred
         title = self.var('title') or self.metadata.get('title') or self.var('uid')
         self.metadata.set('title', title)
         self.title = title
 
-        self.set_uid(self.var('uid') or gws.as_uid(self.title))
+        self.set_uid(self.var('uid') or gws.to_uid(self.title))
 
         gws.log.info(f'configuring project {self.uid!r}')
 
@@ -90,7 +89,7 @@ class Object(gws.Node, gws.IProject):
 
     @property
     def description(self):
-        context = {'project': self, 'meta': self.metadata.values}
+        context = {'project': self, 'meta': t.cast(gws.lib.metadata.Metadata, self.metadata).values}
         tpl = self.templates.find(subject='project.description')
         return tpl.render(context).content if tpl else ''
 
@@ -103,7 +102,7 @@ class Object(gws.Node, gws.IProject):
             client=self.client or self.root.application.client,
             description=self.description,
             map=self.map,
-            metaData=self.metadata,
+            metadata=self.metadata,
             overviewMap=self.overview_map,
             printer=self.printer,
             title=self.title,

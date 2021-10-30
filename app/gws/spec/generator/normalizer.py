@@ -24,7 +24,7 @@ def prepare_for_server(state: base.ParserState, meta):
 
     for t in state.types.values():
         if isinstance(t, base.TRecord) and _is_a(state, t, 'gws.core.tree.Node'):
-            commands[t.name] = dict(
+            objects[t.name] = dict(
                 _='TNode',
                 ext_category=t.ext_category,
                 ext_type=t.ext_type,
@@ -50,8 +50,11 @@ def prepare_for_server(state: base.ParserState, meta):
 
             isa_map[t.name] = sorted(isa)
 
+    for t in state.types.values():
         if isinstance(t, base.TCommand):
             owner_type = cast(base.TRecord, _get_type(state, t.owner_t))
+            if owner_type.name not in objects:
+                raise ValueError(f'object {owner_type.name!r} is not a Node')
             commands[t.name] = dict(
                 _='TCommand',
                 arg=t.arg_t,

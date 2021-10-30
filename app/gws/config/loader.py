@@ -22,7 +22,7 @@ def configure(
             for item in a:
                 _print(item)
         elif a is not None:
-            for s in gws.lines(str(a)):
+            for s in gws.to_lines(str(a)):
                 gws.log.error(s)
 
     def _report(_args):
@@ -84,14 +84,6 @@ def configure(
 def initialize(specs, parsed_config) -> gws.Root:
     r = gws.create_root_object(specs)
 
-    # try:
-    #     ts = gws.time_start('loading application')
-    #     mod = gws.import_from_path('gws/base/application')
-    #     app = getattr(mod, 'Object')
-    #     gws.time_end(ts)
-    # except Exception as e:
-    #     raise gws.ConfigurationError(*e.args)
-
     try:
         ts = gws.time_start('configuring application')
         r.create_application(parsed_config)
@@ -125,7 +117,9 @@ def load(path=None) -> gws.Root:
     path = path or STORE_PATH
     gws.log.debug(f'loading config from {path!r}')
     try:
+        ts = gws.time_start('loading config')
         r = gws.unserialize_from_path(path)
+        gws.time_end(ts)
         return gws.set_app_global(ROOT_NAME, r)
     except Exception as e:
         raise gws.ConfigurationError('unable to load configuration') from e

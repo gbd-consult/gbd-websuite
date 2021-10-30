@@ -11,11 +11,9 @@ import gws.lib.metadata
 # http://portal.opengeospatial.org/files/?artifact_id=35326
 
 
-
-
 class WMTSCaps(gws.Data):
     matrix_sets: t.List[gws.lib.gis.TileMatrixSet]
-    metadata: gws.lib.metadata.Record
+    metadata: gws.lib.metadata.Metadata
     operations: t.List[gws.OwsOperation]
     source_layers: t.List[gws.lib.gis.SourceLayer]
     supported_crs: t.List[gws.Crs]
@@ -23,14 +21,9 @@ class WMTSCaps(gws.Data):
 
 
 def parse(xml):
-    el = gws.lib.xml2.from_string(xml)
-
-    meta = u.get_meta(el.first('ServiceIdentification'))
-    meta['contact'] = u.get_meta_contact(el.first('ServiceProvider.ServiceContact'))
-    meta['url'] = u.get_url(el.first('ServiceMetadataURL'))
-
-    source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Contents.Layer'))
-    matrix_sets = [_tile_matrix_set(e) for e in el.all('Contents.TileMatrixSet')]
+    root_el = gws.lib.xml2.from_string(xml)
+    source_layers = u.flatten_source_layers(_layer(e) for e in root_el.all('Contents.Layer'))
+    matrix_sets = [_tile_matrix_set(e) for e in root_el.all('Contents.TileMatrixSet')]
 
     tms_map = {ms.uid: ms for ms in matrix_sets}
 
@@ -40,72 +33,72 @@ def parse(xml):
 
     return WMTSCaps(
         matrix_sets=matrix_sets,
-        metadata=gws.lib.metadata.Record(meta),
-        operations=[gws.OwsOperation(e) for e in u.get_operations(el.first('OperationsMetadata'))],
+        metadata=u.get_service_metadata(root_el),
+        operations=u.get_operations(root_el),
         source_layers=source_layers,
         supported_crs=sorted(set(ms.crs for ms in matrix_sets)),
-        version=el.attr('version'),
+        version=root_el.attr('version'),
     )
 
 
 def _layer(el):
-    oo = gws.lib.gis.SourceLayer()
+    sl = gws.lib.gis.SourceLayer()
 
-    oo.metadata = gws.lib.metadata.Record(u.get_meta(el))
-    oo.name = oo.metadata.name
-    oo.title = oo.metadata.title
+    sl.metadata = u.get_metadata(el)
+    sl.name = sl.metadata.get('name', '')
+    sl.title = sl.metadata.get('title', '')
 
-    oo.styles = [u.get_style(e) for e in el.all('Style')]
-    ds = u.default_style(oo.styles)
+    sl.styles = [u.get_style(e) for e in el.all('Style')]
+    ds = u.default_style(sl.styles)
     if ds:
-        oo.legend_url = ds.legend_url
+        sl.legend_url = ds.legend_url
 
-    oo.supported_bounds = u.get_bounds_list(el)
+    sl.supported_bounds = u.get_bounds_list(el)
 
-    oo.is_image = True
-    oo.is_visible = True
+    sl.is_image = True
+    sl.is_visible = True
 
-    oo.matrix_ids = [e.get_text('TileMatrixSet') for e in el.all('TileMatrixSetLink')]
-    oo.format = el.get_text('Format')
+    sl.matrix_ids = [e.get_text('TileMatrixSet') for e in el.all('TileMatrixSetLink')]
+    sl.format = el.get_text('Format')
 
-    oo.resource_urls = {
+    sl.resource_urls = {
         rs.attr('resourceType'): rs.attr('template')
         for rs in el.all('ResourceURL')
     }
 
-    return oo
+    return sl
 
 
 def _tile_matrix_set(el):
-    oo = gws.lib.gis.TileMatrixSet()
+    tms = gws.lib.gis.TileMatrixSet()
 
-    oo.uid = el.get_text('Identifier')
-    oo.crs = el.get_text('SupportedCRS')
-    oo.matrices = sorted(
+    tms.uid = el.get_text('Identifier')
+    tms.crs = el.get_text('SupportedCRS')
+    tms.matrices = sorted(
         [_tile_matrix(e) for e in el.all('TileMatrix')],
         key=lambda m: int('1' + m.uid))
 
-    return oo
+    return tms
 
 
 def _tile_matrix(el):
-    oo = gws.lib.gis.TileMatrix()
-    oo.uid = el.get_text('Identifier')
-    oo.scale = float(el.get_text('ScaleDenominator'))
+    tm = gws.lib.gis.TileMatrix()
+    tm.uid = el.get_text('Identifier')
+    tm.scale = float(el.get_text('ScaleDenominator'))
 
-    p = u.as_float_pair(el.get_text('TopLeftCorner'))
-    oo.x = p[0]
-    oo.y = p[1]
+    p = u.to_float_pair(el.get_text('TopLeftCorner'))
+    tm.x = p[0]
+    tm.y = p[1]
 
-    oo.width = int(el.get_text('MatrixWidth'))
-    oo.height = int(el.get_text('MatrixHeight'))
+    tm.width = int(el.get_text('MatrixWidth'))
+    tm.height = int(el.get_text('MatrixHeight'))
 
-    oo.tile_width = int(el.get_text('TileWidth'))
-    oo.tile_height = int(el.get_text('TileHeight'))
+    tm.tile_width = int(el.get_text('TileWidth'))
+    tm.tile_height = int(el.get_text('TileHeight'))
 
-    oo.extent = _extent_for_matrix(oo)
+    tm.extent = _extent_for_matrix(tm)
 
-    return oo
+    return tm
 
 
 # compute a bbox for a TileMatrix

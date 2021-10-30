@@ -14,7 +14,7 @@ def render_to_png(html, out_path: str, page_size: gws.Size = None, margin: gws.E
 
     if 'charset' not in html:
         html = '<meta charset="utf8"/>' + html
-    gws.write_file_b(tmp + '.html', gws.as_bytes(html))
+    gws.write_file_b(tmp + '.html', gws.to_bytes(html))
 
     cmd = ['wkhtmltoimage']
 

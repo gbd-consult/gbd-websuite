@@ -32,7 +32,7 @@ def get(url: str, protocol: gws.OwsProtocol, verb: gws.OwsVerb, **kwargs) -> gws
     params = kwargs.pop('params', None) or {}
 
     # some folks only accept uppercase params
-    params = {k.upper(): v for k, v in params.items()}
+    params = gws.to_upper_dict(params)
 
     params.setdefault('SERVICE', str(protocol).upper())
     params.setdefault('REQUEST', verb)

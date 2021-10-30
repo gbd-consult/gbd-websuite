@@ -484,7 +484,7 @@ class Object(gws.base.api.action.Object):
             shared=True,
             key=group_indexes)
 
-        csv_bytes = util.export.as_csv(self, res.features, combined_model)
+        csv_bytes = util.export.to_csv(self, res.features, combined_model)
 
         return ExportResponse(content=csv_bytes, mime='text/csv')
 
@@ -542,7 +542,7 @@ class Object(gws.base.api.action.Object):
 
         for feature in res.features:
             feature.apply_templates(self.templates, keys=template_keys)
-            f = gws.props(feature, req.user, parent=self)
+            f = gws.props(feature, req.user, context=self)
             if f:
                 gws.pop(f, 'attributes')
                 feature_props_list.append(f)

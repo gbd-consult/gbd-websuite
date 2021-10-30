@@ -1,6 +1,7 @@
 import os
 import gws
 import gws.types as t
+import gws.lib.mime
 from . import core
 
 
@@ -37,14 +38,23 @@ class Object(gws.Node, gws.ITemplateBundle):
             self.items.append(core.create(
                 self.root, c, parent=None if shared else self, shared=shared))
 
-    def find(self, subject: str = None, category: str = None, mime: str = None) -> t.Optional[gws.ITemplate]:
-        for tpl in self.items:
-            ok = (
-                    (not subject or subject == tpl.subject)
-                    and (not category or category == tpl.category)
-                    and (not mime or mime in tpl.mime_types))
-            if ok:
-                return tpl
+    def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> t.Optional[gws.ITemplate]:
+        items = self.items
+
+        if mime:
+            mime = gws.lib.mime.get(mime)
+            items = [tpl for tpl in items if mime in tpl.mime_types]
+        if subject:
+            s = subject.lower()
+            items = [tpl for tpl in items if s == tpl.subject]
+        if category:
+            s = category.lower()
+            items = [tpl for tpl in items if s == tpl.category]
+        if name:
+            s = name.lower()
+            items = [tpl for tpl in items if s == tpl.name]
+
+        return items[0] if items else None
 
 
 ##

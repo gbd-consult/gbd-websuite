@@ -41,9 +41,9 @@ class Object(gws.Node, gws.IWebSite):
             allow_headers=self.var('cors.allowHeaders'),
         )
 
-    def url_for(self, req, url):
-        if gws.lib.net.is_abs_url(url):
-            return url
+    def url_for(self, req, path, **params):
+        if gws.lib.net.is_abs_url(path):
+            return gws.lib.net.add_params(path, params)
 
         proto = 'https' if self.ssl else 'http'
         host = self.canonical_host or (req.env('HTTP_HOST') if self.host == '*' else self.host)
@@ -51,11 +51,13 @@ class Object(gws.Node, gws.IWebSite):
 
         for rule in self.rewrite_rules:
             if rule.reversed:
-                m = re.match(rule.pattern, url)
+                m = re.match(rule.pattern, path)
                 if m:
                     # we use nginx syntax $1, need python's \1
                     t = rule.target.replace('$', '\\')
-                    s = re.sub(rule.pattern, t, url)
-                    return s if gws.lib.net.is_abs_url(s) else base + s
+                    s = re.sub(rule.pattern, t, path)
+                    url = s if gws.lib.net.is_abs_url(s) else base + '/' + s.lstrip('/')
+                    return gws.lib.net.add_params(url, params)
 
-        return base + '/' + url.lstrip('/')
+        url = base + '/' + path.lstrip('/')
+        return gws.lib.net.add_params(url, params)

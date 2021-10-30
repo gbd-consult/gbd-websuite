@@ -2,7 +2,6 @@ import zipfile
 
 import gws
 import gws.types as t
-import gws.base.metadata
 import gws.lib.gis
 import gws.lib.ows
 import gws.lib.net
@@ -44,7 +43,7 @@ _DEFAULT_LEGEND_PARAMS = {
 class Object(gws.Node):
     version = ''
 
-    metadata: gws.IMetaData
+    metadata: gws.IMetadata
     path: str
     print_templates: t.List[types.PrintTemplate]
     properties: dict
@@ -65,7 +64,7 @@ class Object(gws.Node):
         self.source_text = self._read(self.path)
         cc = parser.parse(self.source_text)
 
-        self.metadata = self.require_child(gws.base.metadata.Object, cc.metadata)
+        self.metadata = cc.metadata
         self.print_templates = cc.print_templates
         self.properties = cc.properties
         self.source_layers = cc.source_layers
@@ -79,35 +78,20 @@ class Object(gws.Node):
         if not args.shapes:
             return []
 
-        shape = args.shapes[0]
-        if shape.geometry_type != gws.GeometryType.point:
-            return []
+        our_crs = args.shapes[0].crs
 
-        our_crs = gws.lib.gis.best_crs(shape.crs, self.supported_crs)
-        shape = shape.transformed_to(our_crs)
-
-        #  draw a 1000x1000 bbox around a point
-        width = 1000
-        height = 1000
-
-        bbox = gws.lib.gis.make_bbox(
-            shape.x,
-            shape.y,
-            our_crs,
-            args.resolution,
-            width,
-            height
+        ps = gws.lib.gis.prepare_wms_search(
+            args.shapes[0],
+            protocol_version='1.3.0',
+            force_crs=None,
+            supported_crs=self.supported_crs,
+            invert_axis_crs=None
         )
 
-        params = {
-            'BBOX': bbox,
-            'CRS': self.supported_crs[0],
+        if not ps:
+            return []
 
-            'WIDTH': width,
-            'HEIGHT': height,
-            'I': width >> 1,
-            'J': height >> 1,
-
+        params = gws.merge(ps.params, {
             'INFO_FORMAT': 'text/xml',
             'LAYERS': args.source_layer_names,
             'MAP': self.path,
@@ -122,7 +106,7 @@ class Object(gws.Node):
 
             # see https://github.com/qgis/qwc2-demo-app/issues/55
             'WITH_GEOMETRY': 1,
-        }
+        })
 
         if args.limit:
             params['FEATURE_COUNT'] = args.limit
@@ -130,14 +114,14 @@ class Object(gws.Node):
         params = gws.merge(params, args.params)
 
         text = gws.lib.ows.request.get_text(self.url, gws.OwsProtocol.WMS, gws.OwsVerb.GetFeatureInfo, params=params)
-        found = gws.lib.ows.formats.read(text, crs=our_crs)
+        features = gws.lib.ows.formats.read(text, crs=ps.request_crs)
 
-        if found is None:
+        if features is None:
             gws.log.debug(f'QGIS/WMS NOT_PARSED params={params!r}')
             return []
 
-        gws.log.debug(f'QGIS/WMS FOUND={len(found)} params={params!r}')
-        return found
+        gws.log.debug(f'QGIS/WMS FOUND={len(features)} params={params!r}')
+        return [f.transform_to(our_crs) for f in features]
 
     def legend_url(self, source_layers, params=None):
         # qgis legends are rendered bottom-up (rightmost first)

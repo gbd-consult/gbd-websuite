@@ -5,7 +5,7 @@ import gws
 import gws.base.template
 import gws.lib.date
 import gws.lib.feature
-import gws.lib.img
+import gws.lib.image
 import gws.lib.job
 import gws.lib.os2
 import gws.lib.pdf
@@ -42,7 +42,7 @@ def status(job) -> types.StatusResponse:
         progress=job.progress,
         steptype=job.steptype or '',
         stepname=job.stepname or '',
-        url=gws.action_url('printerGetResult', jobUid=job.uid, projectUid=job.project_uid)
+        url=gws.action_url_path('printerGetResult', jobUid=job.uid, projectUid=job.project_uid)
     )
 
 
@@ -138,7 +138,7 @@ class _Worker:
             self.view_size_mm = self.template.map_size
 
         elif params.type == 'map':
-            self.view_dpi = max(gws.as_int(params.dpi), units.OGC_SCREEN_PPI)
+            self.view_dpi = max(gws.to_int(params.dpi), units.OGC_SCREEN_PPI)
             self.view_size_mm = units.point_px2mm((params.mapWidth, params.mapHeight), units.OGC_SCREEN_PPI)
 
         else:
@@ -386,17 +386,12 @@ class _Worker:
         if not ii.layer:
             return
 
-    def prepare_bitmap(self, item: types.ItemBitmap):
+    def prepare_bitmap(self, item: types.ItemBitmap) -> t.Optional[gws.lib.image.Image]:
         if item.mode in ('RGBA', 'RGB'):
-            return gws.lib.img.image_api.frombytes(item.mode, (item.width, item.height), item.data)
+            return gws.lib.image.from_raw_data(item.data, item.mode, (item.width, item.height))
 
-    def prepare_bitmap_url(self, url):
-        data_png = 'data:image/png;base64,'
-        if url.startswith(data_png):
-            s = url[len(data_png):]
-            img = gws.lib.img.image_from_bytes(base64.decodebytes(s.encode('utf8')))
-            img.load()
-            return img
+    def prepare_bitmap_url(self, url) -> t.Optional[gws.lib.image.Image]:
+        return gws.lib.image.from_data_url(url)
 
     def acquire(self, klass, uid):
         obj = self.root.find(klass, uid)

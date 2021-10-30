@@ -1,15 +1,17 @@
 import gws
-import gws.types as t
+
 import gws.base.layer.image
-import gws.lib.metadata
 import gws.base.search
+import gws.lib.gis
+import gws.lib.gis
+import gws.lib.metadata
 import gws.lib.mpx
+import gws.lib.os2
 import gws.lib.proj
 import gws.lib.shape
-import gws.lib.gis
-import gws.lib.gis
 import gws.lib.zoom
-import gws.lib.os2
+import gws.types as t
+
 from . import provider
 
 
@@ -27,6 +29,9 @@ class Object(gws.base.layer.image.Object):
     source_layers: t.List[gws.lib.gis.SourceLayer]
 
     def configure(self):
+        pass
+
+    def configure_source(self):
         if self.var('_provider'):
             self.provider = self.var('_provider')
             self.source_layers = self.var('_source_layers')
@@ -39,29 +44,35 @@ class Object(gws.base.layer.image.Object):
         if not self.source_layers:
             raise gws.Error(f'no source layers found in layer={self.uid!r}')
 
-        if not self.has_configured_metadata:
-            self.configure_metadata_from(self.provider.metadata)
-
         self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
+        return True
 
-        if not self.has_configured_resolutions:
+    def configure_metadata(self):
+        if not super().configure_metadata():
+            self.set_metadata(self.provider.metadata)
+            return True
+
+    def configure_zoom(self):
+        if not super().configure_zoom():
             zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
             if zoom:
                 self.resolutions = gws.lib.zoom.resolutions_from_config(zoom, self.resolutions)
-                self.has_configured_resolutions = True
+                return True
 
-        if not self.has_configured_search:
+    def configure_search(self):
+        if not super().configure_search():
             cfg = self.provider.search_config(self.source_layers)
             if cfg:
                 self.search_providers.append(self.require_child('gws.ext.search.provider', cfg))
-                self.has_configured_search = True
+                return True
 
-        if not self.has_configured_legend:
+    def configure_legend(self):
+        if not super().configure_legend():
             self.legend = gws.Legend(
                 enabled=True,
                 urls=[self.provider.legend_url(self.source_layers, self.var('legend.options'))]
             )
-            self.has_configured_legend = True
+            return True
 
     @property
     def own_bounds(self):
@@ -81,9 +92,6 @@ class Object(gws.base.layer.image.Object):
         if rv.dpi > 90:
             extra_params['DPI__gws'] = str(rv.dpi)
         return super().render_box(rv, extra_params)
-
-    def render_legend_image(self, context=None):
-        return self.provider.get_legend(self.source_layers, self.legend.options)
 
     def mapproxy_config(self, mc, options=None):
         # NB: qgis caps layers are always top-down

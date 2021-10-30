@@ -166,7 +166,7 @@ def _all_buchungsstelle(conn: AlkisConnection):
         ls = _make_list(stellen, r, set())
         data.append({
             'gml_id': r['gml_id'],
-            'stellen': indexer.as_json(ls)
+            'stellen': indexer.to_json(ls)
         })
 
     return data

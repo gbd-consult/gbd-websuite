@@ -1,8 +1,7 @@
 """WMS provder."""
 
 import gws
-import gws.base.metadata
-import gws.base.ows
+import gws.lib.metadata
 import gws.lib.feature
 import gws.lib.gis
 import gws.lib.net
@@ -10,13 +9,14 @@ import gws.lib.ows
 import gws.lib.xml2
 import gws.types as t
 from . import caps
+from .. import core
 
 """
 OGC documents:
     - OGC 01-068r3: WMS 1.1.1
     - OGC 06-042: WMS 1.3.0
 
-see also https://docs.geoserver.org/latest/en/user/services/wms/basics.html
+see also https://docs.geoserver.org/latest/en/user/services/wms/reference.html
 
 NB: layer order
 our configuration lists layers top-to-bottom,
@@ -33,99 +33,60 @@ OGC 06-042, 7.3.3.3
 """
 
 
-class Config(gws.base.ows.provider.Config):
+class Config(core.ProviderConfig):
     capsLayersBottomUp: bool = False  #: layers are listed from bottom to top in the GetCapabilities document
 
 
-class Object(gws.base.ows.provider.Object):
+class Object(core.Provider):
     protocol = gws.OwsProtocol.WMS
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())
 
-        self.metadata = self.require_child(gws.base.metadata.Object, cc.metadata)
+        self.metadata = cc.metadata
         self.source_layers = cc.source_layers
         self.supported_crs = cc.supported_crs
         self.version = cc.version
         self.operations.extend(cc.operations)
 
-    def find_features(self, args):
-        shape = args.shapes[0]
-        if shape.geometry_type != gws.GeometryType.point:
+    def find_features(self, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+        if not args.shapes:
             return []
 
-        our_crs = shape.crs
-        source_crs = self.source_crs or gws.lib.gis.best_crs(our_crs, self.supported_crs)
-        shape = shape.transformed_to(source_crs)
-        axis = gws.lib.gis.best_axis(source_crs, self.invert_axis_crs, self.protocol, self.version)
+        our_crs = args.shapes[0].crs
 
-        #  draw a 1000x1000 bbox around a point
-        width = 1000
-        height = 1000
-
-        bbox = gws.lib.gis.make_bbox(
-            shape.x,
-            shape.y,
-            source_crs,
-            args.resolution,
-            width,
-            height
+        ps = gws.lib.gis.prepare_wms_search(
+            args.shapes[0],
+            protocol_version=self.version,
+            force_crs=self.source_crs,
+            supported_crs=self.supported_crs,
+            invert_axis_crs=self.invert_axis_crs
         )
 
-        invert_axis = axis == 'yx'
-        if invert_axis:
-            bbox = gws.lib.gis.invert_bbox(bbox)
+        if not ps:
+            return []
 
-        params = {
-            'BBOX': bbox,
-            'WIDTH': width,
-            'HEIGHT': height,
-            'CRS' if self.version >= '1.3' else 'SRS': source_crs,
-            'INFO_FORMAT': self._info_format,
+        params = gws.merge(ps.params, {
             'LAYERS': args.source_layer_names,
             'QUERY_LAYERS': args.source_layer_names,
             'STYLES': [''] * len(args.source_layer_names),
-            'VERSION': self.version,
-        }
+        })
 
         if args.limit:
             params['FEATURE_COUNT'] = args.limit
 
-        params['I' if self.version >= '1.3' else 'X'] = width >> 1
-        params['J' if self.version >= '1.3' else 'Y'] = height >> 1
-
         params = gws.merge(params, args.params)
 
+        fmt = self.preferred_formats.get(str(gws.OwsVerb.GetFeatureInfo))
+        if fmt:
+            params.setdefault('INFO_FORMAT', fmt)
+
         text = gws.lib.ows.request.get_text(**self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params))
-        features = gws.lib.ows.formats.read(text, crs=source_crs, invert_axis=invert_axis)
+        features = gws.lib.ows.formats.read(text, crs=ps.request_crs, axis=ps.axis)
 
         if features is None:
-            gws.log.error(f'WMS response not parsed, params={params!r}')
+            gws.log.debug(f'WMS NOT_PARSED params={params!r}')
             return []
 
+        gws.log.debug(f'WMS FOUND={len(features)} params={params!r}')
         return [f.transform_to(our_crs) for f in features]
-
-    @gws.cached_property
-    def _info_format(self):
-        op = self.operation(gws.OwsVerb.GetFeatureInfo)
-
-        if not op:
-            return
-
-        if not op.formats:
-            return 'text/xml'
-
-        preferred = 'gml', 'text/xml', 'text/plain'
-
-        for fmt in preferred:
-            for f in op.formats:
-                if fmt in f:
-                    return f
-
-        return op.formats[0]
-
-
-##
-
-def create(root: gws.IRoot, cfg: gws.Config, shared: bool = False, parent: gws.Node = None) -> Object:
-    return root.create_object(Object, cfg, shared=shared, parent=parent)

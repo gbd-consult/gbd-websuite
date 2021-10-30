@@ -100,6 +100,7 @@ def to_tagged_string(x, pretty=False, ascii=True):
 
 
 def _json_default(x):
-    if gws.is_data_object(x):
+    try:
         return vars(x)
-    return str(x)
+    except TypeError:
+        return str(x)

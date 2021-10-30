@@ -73,7 +73,7 @@ def environ(root: gws.IRoot):
 
 def version():
     _, txt = gws.lib.os2.run([EXEC_PATH])
-    m = re.search(r'QGis version (.+)', gws.as_str(txt))
+    m = re.search(r'QGis version (.+)', gws.to_str(txt))
     if m:
         return m.group(1).strip()
     return 'unknown'

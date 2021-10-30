@@ -20,7 +20,7 @@ class IndexParams(gws.CliParams):
 
 
 @gws.ext.Object('cli.alkis')
-class Object:
+class Object(gws.Node):
 
     @gws.ext.command('cli.alkis.parse')
     def parse(self, p: ParseParams):

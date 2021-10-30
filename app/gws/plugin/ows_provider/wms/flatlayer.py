@@ -1,31 +1,33 @@
 import gws
 import gws.types as t
-import gws.base.ows
 import gws.base.layer
 import gws.lib.legend
 import gws.lib.gis
 import gws.lib.net
 import gws.lib.zoom
-from . import provider
+from . import provider as provider_module
 
 
 @gws.ext.Config('layer.wmsflat')
-class Config(gws.base.layer.image.Config, provider.Config):
+class Config(gws.base.layer.image.Config, provider_module.Config):
     sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
 @gws.ext.Object('layer.wmsflat')
 class Object(gws.base.layer.image.Object):
     source_layers: t.List[gws.lib.gis.SourceLayer]
-    provider: provider.Object
+    provider: provider_module.Object
     source_crs: gws.Crs
 
     def configure(self):
+        pass
+
+    def configure_source(self):
         if self.var('_provider'):
             self.provider = self.var('_provider')
             self.source_layers = self.var('_source_layers')
         else:
-            self.provider = provider.create(self.root, self.config, shared=True)
+            self.provider = self.root.create_object(provider_module.Object, self.config, shared=True)
             self.source_layers = gws.lib.gis.filter_source_layers(
                 self.provider.source_layers,
                 self.var('sourceLayers', default=gws.lib.gis.SourceLayerFilter(level=1)))
@@ -33,18 +35,23 @@ class Object(gws.base.layer.image.Object):
         if not self.source_layers:
             raise gws.Error(f'no source layers found in layer={self.uid!r}')
 
-        if not self.has_configured_metadata:
-            self.configure_metadata_from(self.provider.metadata)
-
         self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
+        return True
 
-        if not self.has_configured_resolutions:
+    def configure_metadata(self):
+        if not super().configure_metadata():
+            self.set_metadata(self.var('metadata'), self.provider.metadata)
+            return True
+
+    def configure_zoom(self):
+        if not super().configure_zoom():
             zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
             if zoom:
                 self.resolutions = gws.lib.zoom.resolutions_from_config(zoom, self.resolutions)
-                self.has_configured_resolutions = True
+                return True
 
-        if not self.has_configured_search:
+    def configure_search(self):
+        if not super().configure_search():
             queryable_layers = gws.lib.gis.enum_source_layers(self.source_layers, is_queryable=True)
             if queryable_layers:
                 self.search_providers.append(
@@ -53,9 +60,10 @@ class Object(gws.base.layer.image.Object):
                         _provider=self.provider,
                         _source_layers=queryable_layers
                     )))
-                self.has_configured_search = True
+                return True
 
-        if not self.has_configured_legend:
+    def configure_legend(self):
+        if not super().configure_legend():
             urls = [sl.legend_url for sl in self.source_layers if sl.legend_url]
             if urls:
                 self.legend = gws.Legend(
@@ -63,7 +71,7 @@ class Object(gws.base.layer.image.Object):
                     urls=urls,
                     cache_max_age=self.var('legend.cacheMaxAge', default=0),
                     options=self.var('legend.options', default={}))
-            self.has_configured_legend = True
+                return True
 
     @property
     def own_bounds(self):

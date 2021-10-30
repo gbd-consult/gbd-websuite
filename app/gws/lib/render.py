@@ -6,29 +6,11 @@ import gws
 import gws.types as t
 import gws.lib.extent
 import gws.lib.feature
-import gws.lib.img
+import gws.lib.image
 import gws.lib.svg
 import gws.lib.units as units
 import gws.lib.xml2
 
-
-
-class Composition:
-    def __init__(self, size_px, color=None):
-        self.image = gws.lib.img.image_api.new('RGBA', size_px, color)
-
-    def add_image(self, img: gws.lib.img.ImageObject, opacity=1):
-        img = img.convert('RGBA')
-
-        if img.size != self.image.size:
-            gws.log.debug(f'NEEDS_RESIZE self={self.image.size} img={img.size}')
-            img = img.resize(size=self.image.size, resample=gws.lib.img.image_api.BILINEAR)
-
-        if opacity < 1:
-            alpha = img.getchannel('A').point(lambda x: x * opacity)
-            img.putalpha(alpha)
-
-        self.image = gws.lib.img.image_api.alpha_composite(self.image, img)
 
 
 class Renderer:
@@ -40,7 +22,7 @@ class Renderer:
             base_dir=base_dir,
         )
         self.default_dpi = self.ri.view.dpi
-        self.composition = None
+        self.composed_image = None
 
         # NB: items are top-to-bottom
 
@@ -94,7 +76,7 @@ class Renderer:
                 extra_params = {'layers': item.sub_layers}
             r = item.layer.render_box(self.ri.view, extra_params)
             if r:
-                self._add_image(gws.lib.img.image_from_bytes(r), opacity)
+                self._add_image(gws.lib.image.from_bytes(r), opacity)
 
     def _last_item_is(self, type):
         return self.output.items and self.output.items[-1].type == type
@@ -105,10 +87,10 @@ class Renderer:
             background = self.ri.background_color
             if any(item.type == gws.MapRenderOutputItemType.image for item in self.output.items):
                 background = None
-            self.composition = Composition(self.ri.view.size_px, background)
+            self.composed_image = gws.lib.image.from_size(self.ri.view.size_px, background)
             self.output.items.append(gws.MapRenderOutputItem(type=gws.MapRenderOutputItemType.image))
-        self.composition.add_image(img, opacity)
-        self.output.items[-1].image = self.composition.image
+        self.composed_image.compose(img, opacity)
+        self.output.items[-1].image = self.composed_image
 
     def _add_svg_tags(self, tags):
         if not self._last_item_is(gws.MapRenderOutputItemType.svg):
@@ -131,7 +113,7 @@ def output_html(ro: gws.MapRenderOutput) -> str:
     for item in ro.items:
         if item.type == gws.MapRenderOutputItemType.image:
             path = ro.base_dir + '/' + gws.random_string(64) + '.png'
-            t.cast(gws.lib.img.ImageObject, item.image).save(path, 'png')
+            item.image.to_path(path)
             tags.append(('img', {'style': css, 'src': path}))
         if item.type == gws.MapRenderOutputItemType.path:
             tags.append(('img', {'style': css, 'src': item.path}))
@@ -139,7 +121,7 @@ def output_html(ro: gws.MapRenderOutput) -> str:
             gws.lib.svg.sort_by_z_index(item.tags)
             tags.append(('svg', gws.lib.svg.SVG_ATTRIBUTES, {'style': css, 'viewBox': vbox}, *item.tags))
 
-    return ''.join(gws.lib.xml2.as_string(tag) for tag in tags)
+    return ''.join(gws.lib.xml2.to_string(tag) for tag in tags)
 
 
 def pixel_transformer(view: gws.MapRenderView):

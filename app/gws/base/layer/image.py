@@ -1,6 +1,6 @@
 import gws
 import gws.lib.extent
-import gws.lib.img
+import gws.lib.image
 import gws.lib.mpx as mpx
 from . import core, types
 
@@ -16,7 +16,7 @@ class Object(core.Object):
 
     can_render_box = True
     can_render_xyz = True
-    supports_wms = True
+    supports_raster_ows = True
 
     def props_for(self, user):
         p = super().props_for(user)
@@ -25,7 +25,7 @@ class Object(core.Object):
             return gws.merge(
                 p,
                 type='tile',
-                url=core.url_for_get_tile(self.uid),
+                url=core.layer_url_path(self.uid, kind='tile'),
                 tileSize=self.grid.tileSize,
             )
 
@@ -33,7 +33,7 @@ class Object(core.Object):
             return gws.merge(
                 p,
                 type='box',
-                url=core.url_for_get_box(self.uid),
+                url=core.layer_url_path(self.uid, kind='box'),
             )
 
         return p
@@ -56,20 +56,19 @@ class Object(core.Object):
         if not r:
             return
 
-        img = gws.lib.img.image_from_bytes(r)
+        img = gws.lib.image.from_bytes(r)
 
         # rotate the square (NB: PIL rotations are counter-clockwise)
         # and crop the square back to the wanted extent
 
-        img = img.rotate(-rv.rotation, resample=gws.lib.img.image_api.BICUBIC)
-        img = img.crop((
+        img.rotate(-rv.rotation).crop((
             d / 2 - w / 2,
             d / 2 - h / 2,
             d / 2 + w / 2,
             d / 2 + h / 2,
         ))
 
-        return gws.lib.img.image_to_bytes(img, format='PNG')
+        return img.to_bytes()
 
     def render_xyz(self, x, y, z):
         return gws.lib.mpx.wmts_request(

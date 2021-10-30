@@ -1,16 +1,15 @@
 import gws
 import gws.base.layer
-import gws.base.ows
 import gws.lib.gis
 import gws.lib.legend
 import gws.lib.ows
 import gws.lib.zoom
 import gws.types as t
-from . import provider
+from . import provider as provider_module
 
 
 @gws.ext.Config('layer.wms')
-class Config(gws.base.layer.image.Config, provider.Config):
+class Config(gws.base.layer.image.Config, provider_module.Config):
     rootLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use as roots
     excludeLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to exclude
     flattenLayers: t.Optional[gws.base.layer.types.FlattenConfig]  #: flatten the layer hierarchy
@@ -19,13 +18,13 @@ class Config(gws.base.layer.image.Config, provider.Config):
 
 @gws.ext.Object('layer.wms')
 class Object(gws.base.layer.group.BaseGroup):
-    provider: provider.Object
+    provider: provider_module.Object
 
     def configure(self):
-        self.provider = provider.create(self.root, self.config, shared=True)
+        pass
 
-        if not self.has_configured_metadata:
-            self.configure_metadata_from(self.provider.metadata)
+    def configure_source(self):
+        self.provider = self.root.create_object(provider_module.Object, self.config, shared=True)
 
         cfgs = self.layer_tree_configuration(
             source_layers=self.provider.source_layers,
@@ -40,6 +39,12 @@ class Object(gws.base.layer.group.BaseGroup):
             raise gws.ConfigurationError(f'no source layers in {self.uid!r}')
 
         self.configure_layers(cfgs)
+        return True
+
+    def configure_metadata(self):
+        if not super().configure_metadata():
+            self.set_metadata(self.provider.metadata)
+            return True
 
     def leaf_config(self, source_layers):
         return {

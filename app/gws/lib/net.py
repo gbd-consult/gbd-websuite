@@ -84,7 +84,7 @@ def parse_url(url: str, **kwargs) -> Url:
 
 
 def make_url(u: t.Union[Url, dict], **kwargs) -> str:
-    p = gws.as_dict(u)
+    p = gws.to_dict(u)
     p.update(kwargs)
 
     s = ''
@@ -131,7 +131,7 @@ def make_qs(x) -> str:
     """
 
     p = []
-    items = x if isinstance(x, (list, tuple)) else gws.as_dict(x).items()
+    items = x if isinstance(x, (list, tuple)) else gws.to_dict(x).items()
 
     def _value(v):
         if isinstance(v, (bytes, bytearray)):
@@ -168,6 +168,8 @@ def unquote(s: str) -> str:
 
 
 def add_params(url: str, params: dict) -> str:
+    if not params:
+        return url
     u = parse_url(url)
     u.params.update(params)
     return make_url(u)
@@ -320,4 +322,4 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
 
 
 def _cache_path(url):
-    return gws.NET_CACHE_DIR + '/' + gws.as_uid(url)
+    return gws.NET_CACHE_DIR + '/' + gws.to_uid(url)

@@ -16,7 +16,7 @@ We flatten it first, creating a list 'some.nested.key, list positions, value'
 """
 
 
-def as_csv(action: gws.INode, fs_features: t.List[gws.IFeature], model: gws.base.model.Object):
+def to_csv(action: gws.INode, fs_features: t.List[gws.IFeature], model: gws.base.model.Object):
     helper: gws.base.csv.Object = action.root.application.require_helper('csv')
 
     writer = helper.writer()
@@ -26,7 +26,7 @@ def as_csv(action: gws.INode, fs_features: t.List[gws.IFeature], model: gws.base
         for rec in _recs_from_feature(fs, model.attribute_names):
             writer.write_attributes(model.apply_to_dict(rec))
 
-    return writer.as_bytes()
+    return writer.to_bytes()
 
 
 def _recs_from_feature(fs: gws.IFeature, att_names: t.List[str]):

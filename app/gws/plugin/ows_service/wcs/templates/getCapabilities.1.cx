@@ -1,0 +1,65 @@
+@tag WCS_Capabilities
+    @xmlns wcs default
+    @a version={version}
+
+    @tag Service
+        @t Name {service.name}
+        @t Title {service_meta.title}
+
+        @with service_meta.abstract
+            @t Abstract {service_meta.abstract}
+        @end
+
+        @keywords service_meta
+
+        @with service_meta.fees
+            @t Fees {service_meta.fees}
+        @end
+
+        @with service_meta.accessConstraints
+            @t AccessConstraints {service_meta.accessConstraints}
+        @end
+
+        @with service_meta.contact as co
+            @tag responsibleParty
+                @t individualName {co.person}
+                @t organisationName {co.organization}
+                @t positionName {co.position}
+                @tag contactInfo
+                    @t phone/voice {co.phone}
+                    @t deliveryPoint {co.address}
+                    @t city {co.city}
+                    @t administrativeArea {co.area}
+                    @t postalCode {co.zip}
+                    @t country {co.country}
+                    @t electronicMailAddress {co.email}
+                @end
+            @end
+        @end
+    @end
+
+    @tag Capability/Request
+        @tag GetCapabilities
+            @dcp_service_url
+        @end
+        @tag DescribeCoverage
+            @dcp_service_url
+        @end
+        @tag GetCoverage
+            @dcp_service_url
+        @end
+    @end
+
+    @tag ContentMetadata
+        @each layer_caps_list as lc
+            @tag CoverageOfferingBrief
+                @t label {lc.title}
+                @t name {lc.layer_xname.p}
+                @tag lonLatEnvelope srsName="urn:ogc:def:crs:OGC:1.3:CRS84"
+                    @t gml:pos {lc.extent4326[0]} {lc.extent4326[1]}
+                    @t gml:pos {lc.extent4326[2]} {lc.extent4326[3]}
+                @end
+            @end
+        @end
+    @end
+@end

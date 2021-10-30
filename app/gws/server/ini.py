@@ -115,7 +115,6 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     web_front_timeout = web_timeout + 10
     spool_timeout = 120
 
-
     # DEFAULT_BASE_TIMEOUT = 60
     # DEFAULT_SPOOL_TIMEOUT = 300
     #
@@ -132,8 +131,8 @@ def create(root: gws.IRoot, base_dir, pid_dir):
 
     stdenv = '\n'.join(
         f'env = {k}={v}'
-        for k, v in os.environ.items()
-        if k.startswith('GWS_')
+            for k, v in os.environ.items()
+            if k.startswith('GWS_')
     )
 
     stdenv += f'\nTMP={gws.TMP_DIR}'
@@ -188,7 +187,6 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     if qgis_enabled:
 
         qgis_server = gws.import_from_path('gws/plugin/qgis/server.py')
-
 
         # partially inspired by
         # https://github.com/elpaso/qgis2-server-vagrant/blob/master/docs/index.rst

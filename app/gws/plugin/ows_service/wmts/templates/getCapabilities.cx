@@ -1,0 +1,80 @@
+@include ../../templatelib.cx
+
+
+@def wmts_layer(lc)
+    @tag Layer
+        @t ows:Title {lc.title}
+
+        @with lc.meta.abstract
+            @t ows:Abstract {lc.meta.abstract}
+        @end
+
+        @ows_wgs84_bounding_box lc
+
+        @t ows:Identifier {lc.layer_xname.p}
+
+        @if lc.has_legend
+            @tag Style
+                @t ows:Identifier default
+                @t ows:Title default
+                @legend_url lc
+            @end
+        @end
+
+        @t Format image/png
+
+        @each ARGS.matrix_sets as tms
+            @t TileMatrixSetLink/TileMatrixSet {tms.uid}
+        @end
+    @end
+@end
+
+@def wmts_matrix_set(tms)
+    @tag TileMatrixSet
+        @t ows:Identifier {tms.uid}
+        @t ows:SupportedCRS {tms.crs}
+
+        @each tms.matrices as tm
+            @tag TileMatrix
+                @t ows:Identifier {tm.uid}
+                @t ScaleDenominator {tm.scale}
+                @t TopLeftCorner {tm.x} {tm.y}
+                @t TileWidth {tm.tile_width}
+                @t TileHeight {tm.tile_height}
+                @t MatrixWidth {tm.width}
+                @t MatrixHeight {tm.height}
+            @end
+        @end
+    @end
+@end
+
+@tag Capabilities version={ARGS.version}
+    @xmlns wmts default
+
+    @ows_service_identification
+    @ows_service_provider
+
+    @tag ows:OperationsMetadata
+        @tag ows:Operation name="GetCapabilities"
+            @ows_service_url
+        @end
+
+        @tag ows:Operation name="GetTile"
+            @ows_service_url
+        @end
+    @end
+
+    @tag Contents
+        @each ARGS.layer_caps_list as lc
+            @wmts_layer lc
+        @end
+        @each ARGS.matrix_sets as tms
+            @wmts_matrix_set tms
+        @end
+    @end
+
+    @with ARGS.service_meta.url as s
+        @t ServiceMetadataURL xlink:href="{ARGS.url_for(s)}"
+    @end
+
+@end

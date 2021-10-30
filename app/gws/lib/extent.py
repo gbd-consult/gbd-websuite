@@ -12,12 +12,18 @@ import gws.lib.shape
 def from_string(s: str) -> t.Optional[gws.Extent]:
     """Create an extent from a comma-separated string "1000,2000,20000 40000" """
 
+    return from_str_list(s.split(','))
+
+
+def from_str_list(ls: t.List[str]) -> t.Optional[gws.Extent]:
+    """Create an extent from a list of numeric strings"""
+
     try:
-        ls = [float(n) for n in s.split(',')]
+        ns = [float(n) for n in ls]
     except:
         return None
 
-    return _valid(ls)
+    return _valid(ns)
 
 
 def from_list(ls: t.List[t.Any]) -> t.Optional[gws.Extent]:
@@ -143,8 +149,8 @@ def transform(e: gws.Extent, src: str, dst: str) -> gws.Extent:
     if gws.lib.proj.equal(src, dst):
         return e
 
-    src_proj = gws.lib.proj.as_proj(src)
-    dst_proj = gws.lib.proj.as_proj(dst)
+    src_proj = gws.lib.proj.to_proj(src)
+    dst_proj = gws.lib.proj.to_proj(dst)
 
     ax, ay, bx, by = _sort(e)
 

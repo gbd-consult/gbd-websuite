@@ -11,7 +11,7 @@ def default(o):
         return o.isoformat()
 
 
-def as_json(s):
+def to_json(s):
     if s is None:
         return None
     return json.dumps(s, ensure_ascii=False, indent=4, sort_keys=True, default=default)

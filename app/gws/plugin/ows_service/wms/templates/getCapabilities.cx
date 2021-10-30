@@ -1,0 +1,278 @@
+@include ../../templatelib.cx
+
+@def wms_meta_links(md)
+    @each md.metaLinks as ml
+        @tag MetadataURL type="{ml.type}"
+            @t Format {ml.formatName}
+            @t OnlineResource xlink:type="simple" xlink:href="{ARGS.url_for(ml.url)}"
+        @end
+    @end
+@end
+
+@def wms_service_metadata
+    @let md = ARGS.service_meta
+
+    @t Name {md.name}
+    @t Title {md.title}
+
+    @with md.abstract
+        @t Abstract {md.abstract}
+    @end
+
+    @keywords md
+
+    @t OnlineResource xlink:type="simple" xlink:href="{ARGS.service_url}"
+
+    @tag ContactInformation
+        @tag ContactPersonPrimary
+            @t ContactPerson {md.contactPerson}
+            @t ContactOrganization {md.contactOrganization}
+        @end
+        @t ContactPosition {md.contactPosition}
+        @tag ContactAddress
+            @t AddressType postal
+            @t Address {md.contactAddress}
+            @t City {md.contactCity}
+            @t StateOrProvince {md.contactArea}
+            @t PostCode {md.contactZip}
+            @t Country {md.contactCountry}
+        @end
+        @t ContactVoiceTelephone {md.contactPhone}
+        @t ContactElectronicMailAddress {md.contactEmail}
+    @end
+
+    @t Fees {md.fees}
+    @t AccessConstraints {md.accessConstraints}
+    
+    @wms_meta_links md
+@end
+
+@def wms_layer_metadata(lc)
+    @t Name {lc.layer_xname.p}
+    @t Title {lc.title}
+
+    @with lc.meta.abstract
+        @t Abstract {lc.meta.abstract}
+    @end
+
+    @keywords lc.meta
+
+    @with lc.meta.attribution
+        @t Attribution/Title {lc.meta.attribution}
+    @end
+
+    @with lc.meta.authorityUrl
+        @tag AuthorityURL name="{lc.meta.authorityName}"
+            @t OnlineResource xlink:href="{lc.meta.authorityUrl}"
+        @end
+    @end
+
+    @with lc.meta.authorityIdentifier
+        @t Identifier authority="{lc.meta.authorityName}" {lc.meta.authorityIdentifier}
+    @end
+
+    @wms_meta_links lc.meta
+@end
+
+@def wms_formats(verb)
+    @each ARGS.supported_formats[verb] as f
+        @t Format {f}
+    @end
+@end
+
+##
+
+@def wms_layer_caps_11(lc)
+    @tag Layer queryable="{1 if lc.has_search else 0}"
+
+        @wms_layer_metadata lc
+
+        @each lc.projections as p
+            @t SRS {p.proj.epsg}
+        @end
+
+        ## OGC 01-068r3, 6.5.6
+        ## When the SRS is a Platte Carrée projection of longitude and latitude coordinates,
+        ## X refers to the longitudinal axis and Y to the latitudinal axis.
+        @t LatLonBoundingBox minx="{lc.extent4326[0]}" miny="{lc.extent4326[1]}" maxx="{lc.extent4326[2]}" maxy="{lc.extent4326[3]}"
+
+        @each lc.projections as p
+            @t BoundingBox SRS="{p.proj.epsg}" minx="{p.extent[0]}" miny="{p.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
+        @end
+
+        @if lc.has_legend
+            @tag Style
+                @t Name default
+                @t Title default
+                @legend_url lc
+            @end
+        @end
+
+        ## OGC 01-068r3, 7.1.4.5.8
+        ## pixel diagonal, assuming 72dpi screen
+        @t ScaleHint min="{lc.min_scale * (1.41421 / 72 * 0.0254)}" max="{lc.max_scale * (1.41421 / 72 * 0.0254)}"
+
+        @each reversed(lc.children) as s
+            @wms_layer_caps_11 s
+        @end
+    @end
+@end
+
+@def wms_caps_11
+    @tag WMT_MS_Capabilities version="{ARGS.version}"
+
+        @with ARGS.service.update_sequence as s
+            @a updateSequence={s}
+        @end
+
+        @tag Service
+            @wms_service_metadata
+        @end
+
+        @tag Capability
+            @tag Request
+                @tag GetCapabilities
+                    @wms_formats 'getcapabilities'
+                    @dcp_service_url
+                @end
+                @tag GetMap
+                    @wms_formats 'getmap'
+                    @dcp_service_url
+                @end
+                @tag GetFeatureInfo
+                    @wms_formats 'getfeatureinfo'
+                    @dcp_service_url
+                @end
+                @tag GetLegendGraphic
+                    @wms_formats 'getlegendgraphic'
+                    @dcp_service_url
+                @end
+            @end
+
+            @t Exception/Format XML
+
+            @if ARGS.with_inspire_meta
+                @tag VendorSpecificCapabilities/inspire_vs:ExtendedCapabilities
+                    @inspire_extended_capabilities
+                @end
+            @end
+
+            @wms_layer_caps_11 ARGS.layer_root_caps
+        @end
+    @end
+@end
+
+
+##
+
+@def wms_layer_caps_13(lc)
+    @tag Layer queryable="{1 if lc.has_search else 0}"
+
+        @wms_layer_metadata lc
+
+        @each lc.projections as p
+            @t CRS {p.proj.epsg}
+        @end
+
+        @tag EX_GeographicBoundingBox
+            @t westBoundLongitude {lc.extent4326[0]}
+            @t eastBoundLongitude {lc.extent4326[2]}
+            @t southBoundLatitude {lc.extent4326[1]}
+            @t northBoundLatitude {lc.extent4326[3]}
+        @end
+
+        @each lc.projections as p
+            @if p.proj.is_geographic
+                ## OGC 06-042, 6.7.3.3
+                ## EPSG:4326 refers to WGS 84 geographic latitude, then longitude. That is, in this CRS the x axis corresponds
+                ## to latitude, and the y axis to longitude.
+                @t BoundingBox CRS="{p.proj.epsg}" minx="{p.extent[1]}" miny="{p.extent[0]}" maxx="{p.extent[3]}" maxy="{p.extent[2]}"
+            @else
+                @t BoundingBox CRS="{p.proj.epsg}" minx="{p.extent[0]}" miny="{p.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
+            @end
+        @end
+
+        @if lc.has_legend
+            @tag Style
+                @t Name default
+                @t Title default
+                @legend_url lc
+            @end
+        @end
+
+        @if not lc.children
+            @t MinScaleDenominator {lc.min_scale}
+            @t MaxScaleDenominator {lc.max_scale}
+        @end
+
+        @each reversed(lc.children) as s
+            @wms_layer_caps_13 s
+        @end
+    @end
+@end
+
+
+@def wms_caps_13
+    @tag WMS_Capabilities version="{ARGS.version}"
+        @xmlns wms default
+        @xmlns xlink
+
+        @with ARGS.service.update_sequence as s
+            @a updateSequence={s}
+        @end
+
+        @tag Service
+            @wms_service_metadata
+
+            @with ARGS.service.wms_layer_limit
+                @t LayerLimit {ARGS.service.wms_layer_limit}
+            @end
+
+            @with ARGS.service.wms_max_size as s
+                @t MaxWidth  {s[0]}
+                @t MaxHeight {s[1]}
+            @end
+        @end
+
+        @tag Capability
+            @tag Request
+                @tag GetCapabilities
+                    @wms_formats 'getcapabilities'
+                    @dcp_service_url
+                @end
+                @tag GetMap
+                    @wms_formats 'getmap'
+                    @dcp_service_url
+                @end
+                @tag GetFeatureInfo
+                    @wms_formats 'getfeatureinfo'
+                    @dcp_service_url
+                @end
+                @tag sld:GetLegendGraphic
+                    @wms_formats 'getlegendgraphic'
+                    @dcp_service_url
+                @end
+            @end
+
+            @t Exception/Format XML
+
+            @if ARGS.with_inspire_meta
+                @tag inspire_vs:ExtendedCapabilities
+                    @inspire_extended_capabilities
+                @end
+            @end
+
+            @wms_layer_caps_13 ARGS.layer_root_caps
+        @end
+    @end
+@end
+
+##
+
+@if ARGS.version == '1.1.0'
+    @wms_caps_11
+@elif ARGS.version == '1.1.1'
+    @wms_caps_11
+@elif ARGS.version == '1.3.0'
+    @wms_caps_13
+@end

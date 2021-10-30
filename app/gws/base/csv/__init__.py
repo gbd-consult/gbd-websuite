@@ -50,15 +50,15 @@ class _Writer:
         self.rows.append(self.h.delimiter.join(self._format(a.value, a.type) for a in attributes))
         return self
 
-    def as_str(self):
+    def to_str(self):
         rows = []
         if self.headers:
             rows.append(self.headers)
         rows.extend(self.rows)
         return self.h.row_delimiter.join(rows)
 
-    def as_bytes(self, encoding=None):
-        return self.as_str().encode(encoding or self.h.encoding, errors='replace')
+    def to_bytes(self, encoding=None):
+        return self.to_str().encode(encoding or self.h.encoding, errors='replace')
 
     def _format(self, val, type):
         if val is None:
@@ -73,7 +73,7 @@ class _Writer:
             s = str(val)
             return self._quote(s) if self.h.quote_all else s
 
-        val = gws.as_str(val)
+        val = gws.to_str(val)
 
         if val and val.isdigit() and self.h.formula_hack:
             val = '=' + self._quote(val)
@@ -82,5 +82,5 @@ class _Writer:
 
     def _quote(self, val):
         q = self.h.quote
-        s = gws.as_str(val).replace(q, q + q)
+        s = gws.to_str(val).replace(q, q + q)
         return q + s + q

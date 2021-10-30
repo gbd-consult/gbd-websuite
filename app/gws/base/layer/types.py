@@ -1,5 +1,5 @@
 import gws
-import gws.base.metadata
+import gws.lib.metadata
 import gws.base.model
 import gws.base.search
 import gws.lib.gis
@@ -76,22 +76,6 @@ class FlattenConfig(gws.Config):
     useGroups: bool = False  #: use group names (true) or image layer names (false)
 
 
-class OwsEnabledServicesConfig(gws.Config):
-    """Configuration for enabled OWS services"""
-
-    uids: t.Optional[t.List[str]]  #: enabled services uids
-    pattern: gws.Regex = ''  #: pattern for enabled service uids
-
-
-class OwsConfig(gws.Config):
-    """OWS services confuguration"""
-
-    name: t.Optional[str]  #: layer name for ows services
-    featureName: t.Optional[str]  #: feature name for ows services
-    enabled: bool = True  #: enable this layer for ows services
-    enabledServices: t.Optional[OwsEnabledServicesConfig]  #: enabled OWS services
-
-
 class Config(gws.WithAccess):
     """Layer configuration"""
 
@@ -102,9 +86,9 @@ class Config(gws.WithAccess):
     extent: t.Optional[gws.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
     legend: LegendConfig = {}  # type:ignore #: legend configuration
-    metaData: t.Optional[gws.base.metadata.Config]  #: layer metadata
+    metadata: t.Optional[gws.lib.metadata.Config]  #: layer metadata
     opacity: float = 1  #: layer opacity
-    ows: OwsConfig = {}  # type:ignore #: OWS services options
+    ows: bool = True  # layer is enabled for OWS services
     search: gws.base.search.Config = {}  # type:ignore #: layer search configuration
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
     title: str = ''  #: layer title
@@ -122,9 +106,9 @@ class CustomConfig(gws.WithAccess):
     extent: t.Optional[gws.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
     legend: t.Optional[LegendConfig]  # #: legend configuration
-    metaData: t.Optional[gws.base.metadata.Config]  #: layer metadata
+    metadata: t.Optional[gws.lib.metadata.Config]  #: layer metadata
     opacity: t.Optional[float]  #: layer opacity
-    ows: t.Optional[OwsConfig]  #: OWS services options
+    ows: bool = True  # layer is enabled for OWS services
     search: t.Optional[gws.base.search.Config]  #: layer search configuration
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
     title: t.Optional[str]  #: layer title
@@ -139,7 +123,7 @@ class Props(gws.Props):
     geometryType: t.Optional[gws.GeometryType]
     layers: t.Optional[t.List['Props']]
     loadingStrategy: t.Optional[str]
-    metaData: gws.base.metadata.Props
+    metadata: gws.lib.metadata.Props
     opacity: t.Optional[float]
     options: ClientOptions
     resolutions: t.Optional[t.List[float]]

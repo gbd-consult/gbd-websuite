@@ -2,19 +2,19 @@
 
 import gws
 import gws.types as t
-import gws.base.ows
-import gws.base.metadata
+import gws.lib.metadata
 import gws.lib.ows
 import gws.lib.gis
 import gws.lib.xml2
 from . import caps
+from .. import core
 
 
-class Config(gws.base.ows.provider.Config):
+class Config(core.ProviderConfig):
     pass
 
 
-class Object(gws.base.ows.provider.Object):
+class Object(core.Provider):
     protocol = gws.OwsProtocol.WMTS
 
     matrix_sets: t.List[gws.lib.gis.TileMatrixSet]
@@ -23,14 +23,8 @@ class Object(gws.base.ows.provider.Object):
         cc = caps.parse(self.get_capabilities())
 
         self.matrix_sets = cc.matrix_sets
-        self.metadata = self.require_child(gws.base.metadata.Object, cc.metadata)
+        self.metadata = cc.metadata
         self.operations = cc.operations
         self.version = cc.version
         self.source_layers = cc.source_layers
         self.supported_crs = cc.supported_crs
-
-
-##
-
-def create(root: gws.IRoot, cfg: gws.Config, parent: gws.Node = None, shared: bool = False) -> Object:
-    return root.create_object(Object, cfg, parent, shared)

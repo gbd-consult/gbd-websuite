@@ -127,7 +127,7 @@ class _Config:
         c['title'] = ''
         return self._add('layer', c)
 
-    def as_dict(self):
+    def to_dict(self):
         d = {
             'services': self.services,
             'globals': self.globals,
@@ -153,7 +153,7 @@ def create(root: gws.IRoot):
         if m:
             m(mc)
 
-    cfg = mc.as_dict()
+    cfg = mc.to_dict()
     if not cfg.get('layers'):
         return
 

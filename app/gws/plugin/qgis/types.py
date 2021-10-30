@@ -21,7 +21,7 @@ class PrintTemplate:
 
 
 class ProjectCaps(gws.Data):
-    metadata: gws.lib.metadata.Record
+    metadata: gws.lib.metadata.Metadata
     print_templates: t.List[PrintTemplate]
     properties: dict
     source_layers: t.List[gws.lib.gis.SourceLayer]

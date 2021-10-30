@@ -95,7 +95,7 @@ def _collect_gebs(conn):
         gebs.append({
             'gml_id': r.pop('gml_id'),
             'geom': r.pop('wkb_geometry'),
-            'attributes': indexer.as_json(r)
+            'attributes': indexer.to_json(r)
 
         })
 

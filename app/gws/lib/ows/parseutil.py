@@ -5,72 +5,128 @@ import gws.lib.gis
 import gws.lib.metadata
 import gws.lib.proj
 import gws.lib.xml2 as xml2
+import gws.types as t
 
 
-def get_operations(el):
-    if _is(el, 'OperationsMetadata'):
-        ops = el.all('Operation')
-    elif _is(el, 'Capability'):
-        ops = el.first('Request').all()
-    else:
-        return {}
+def get_operations(root_el) -> t.List[gws.OwsOperation]:
+    els = root_el.all('OperationsMetadata.Operation')
+    if els:
+        return [get_operation(e) for e in els]
 
-    ls = []
+    el = root_el.first('Capability.Request')
+    if el:
+        return [get_operation(e) for e in el.all()]
 
-    for e in ops:
-        ls.append({
-            'verb': e.attr('name') or e.name,
-            'formats': text_list(e, 'Format'),
-            'get_url': get_url(one_of(e, 'DCP.HTTP.Get', 'DCPType.HTTP.Get')),
-            'post_url': get_url(one_of(e, 'DCP.HTTP.Post', 'DCPType.HTTP.Post')),
-            'params': {p.attr('name'): text_list(p, 'Value') for p in e.all('Parameter')}
+    return []
+
+
+def get_operation(el) -> gws.OwsOperation:
+    params = {}
+    for p in el.all('Parameter'):
+        values = text_list(p, 'Value', 'AllowedValues.Value')
+        if values:
+            params[p.attr('name')] = values
+
+    op = gws.OwsOperation(
+        verb=el.attr('name') or el.name,
+        formats=text_list(el, 'Format'),
+        get_url=get_url(one_of(el, 'DCP.HTTP.Get', 'DCPType.HTTP.Get')),
+        post_url=get_url(one_of(el, 'DCP.HTTP.Post', 'DCPType.HTTP.Post')),
+        params=params,
+    )
+
+    if 'outputFormat' in params:
+        op.formats.extend(params['outputFormat'])
+
+    return op
+
+
+_contact_mapping = [
+    # wms
+
+    ('contactArea', 'StateOrProvince'),
+    ('contactCity', 'City'),
+    ('contactCountry', 'Country'),
+    ('contactEmail', 'ContactElectronicMailAddress'),
+    ('contactFax', 'ContactFacsimileTelephone'),
+    ('contactOrganization', 'ContactOrganization'),
+    ('contactPerson', 'ContactPerson'),
+    ('contactPhone', 'ContactVoiceTelephone'),
+    ('contactPosition', 'ContactPosition'),
+    ('contactZip', 'PostCode'),
+
+    # ows
+
+    ('contactArea', 'AdministrativeArea'),
+    ('contactCity', 'City'),
+    ('contactCountry', 'Country'),
+    ('contactEmail', 'ElectronicMailAddress'),
+    ('contactFax', 'Facsimile'),
+    ('contactOrganization', 'ProviderName'),
+    ('contactPerson', 'IndividualName'),
+    ('contactPhone', 'Voice'),
+    ('contactPosition', 'PositionName'),
+    ('contactZip', 'PostalCode'),
+]
+
+
+def get_service_metadata(root_el) -> gws.lib.metadata.Metadata:
+    md = get_metadata(one_of(root_el, 'Service', 'ServiceIdentification'))
+
+    el = one_of(root_el, 'Service.ContactInformation', 'ServiceProvider.ServiceContact')
+    if el:
+        texts = extract_text_rec(el)
+        contact = {}
+        for dst, src in _contact_mapping:
+            contact[dst] = texts.get(src)
+        md.extend(gws.strip(contact))
+
+    ml = get_link(root_el.first('ServiceMetadataURL'))
+    if ml:
+        md.extend({
+            'metaLinks': [ml]
         })
 
-    return ls
+    return md
 
 
-def get_meta(el):
+def get_metadata(el) -> gws.lib.metadata.Metadata:
     if not el:
-        return {}
+        return gws.lib.metadata.from_dict({})
 
     d = {
         'abstract': compact_ws(el.get_text('Abstract')),
-        'access_constraints': check_none(el.get_text('AccessConstraints')),
+        'accessConstraints': el.get_text('AccessConstraints'),
         'attribution': compact_ws(el.get_text('Attribution.Title')),
-        'fees': check_none(el.get_text('Fees')),
-        'keywords': text_list(el, 'Keywords.Keyword') or text_list(el, 'KeywordList.Keyword'),
+        'fees': el.get_text('Fees'),
+        'keywords': text_list(el, 'Keywords.Keyword', 'KeywordList.Keyword'),
         'name': compact_ws(el.get_text('Name') or el.get_text('Identifier')),
         'title': compact_ws(el.get_text('Title')),
-        'url': get_url(el.first('MetadataURL')),
+        'metaLinks': gws.compact(get_link(e) for e in el.all('MetadataURL')),
     }
-    return d
+
+    e = el.first('AuthorityURL')
+    if e:
+        d['authorityUrl'] = get_url(e)
+        d['authorityName'] = e.attr('name')
+
+    e = el.first('Identifier')
+    if e:
+        d['authorityIdentifier'] = e.text
+
+    return gws.lib.metadata.from_dict(gws.strip(d))
 
 
-def get_meta_contact(el):
-    if not _is(el, 'ContactInformation', 'ServiceProvider'):
-        return {}
-
-    texts = extract_text_rec(el)
-    d = {}
-
-    for k, v in _contact_mapping:
-        v = texts.get(v)
-        if v:
-            d[k] = v
-
-    return d
-
-
-def get_bounds_list(el):
+def get_bounds_list(el) -> t.List[gws.Bounds]:
     if not el:
-        return {}
+        return []
 
     d = {}
 
     for e in el.all('BoundingBox'):
         crs = e.attr('srs') or e.attr('crs')
         if crs:
-            proj = gws.lib.proj.as_proj(crs)
+            proj = gws.lib.proj.to_proj(crs)
             if proj:
                 d[proj.epsg] = _bbox_value(e)
 
@@ -82,39 +138,55 @@ def get_bounds_list(el):
     return [gws.Bounds(crs=k, extent=v) for k, v in d.items()]
 
 
-def get_style(el):
-    oo = gws.lib.gis.SourceStyle()
+def get_style(el) -> gws.lib.gis.SourceStyle:
+    st = gws.lib.gis.SourceStyle()
 
-    oo.metadata = gws.lib.metadata.from_dict(get_meta(el))
-    oo.name = oo.metadata.name.lower()
-    oo.legend_url = get_url(el.first('LegendURL'))
-    oo.is_default = (
+    st.metadata = get_metadata(el)
+    st.name = st.metadata.get('name', '').lower()
+    st.legend_url = get_url(el.first('LegendURL'))
+    st.is_default = (
             el.get_text('Identifier').lower() == 'default'
             or el.attr('IsDefault') == 'true'
-            or oo.name == 'default')
-    return oo
+            or st.name == 'default')
+    return st
 
 
-def default_style(styles):
+def default_style(styles) -> t.Optional[gws.lib.gis.SourceStyle]:
     for s in styles:
         if s.is_default:
             return s
     return styles[0] if styles else None
 
 
-def get_url(el):
+def get_link(el) -> t.Optional[gws.lib.metadata.Link]:
+    # el is a MetadataURL element
+
+    if not el:
+        return None
+
+    d = gws.strip({
+        'url': get_url(el),
+        'type': el.attr('type'),
+        'formatName': el.get_text('Format'),
+    })
+
+    if d:
+        return gws.lib.metadata.Link(d)
+
+
+def get_url(el) -> str:
+    # el can be HTTP.Get or HTTP.Post or similar
+
     if not el:
         return ''
 
-    # el can be HTTP.Get or HTTP.Post or similar
-
     p = el.attr('href') or el.attr('onlineResource')
     if p:
-        return as_url(p)
+        return to_url(p)
 
     e = el.first('OnlineResource')
     if e:
-        return as_url(e.attr('href') or e.text)
+        return to_url(e.attr('href') or e.text)
 
     return ''
 
@@ -131,7 +203,7 @@ def flatten_source_layers(layers):
         for sl in ls:
             if not sl:
                 continue
-            sl.a_uid = gws.as_uid(sl.name or sl.metadata.title)
+            sl.a_uid = gws.to_uid(sl.name or sl.metadata.get('title'))
             sl.a_path = parent_path + '/' + sl.a_uid
             sl.a_level = level
             res.append(sl)
@@ -157,63 +229,34 @@ def extract_text_rec(el):
     return d
 
 
-def text_list(el, path):
-    return gws.compact(e.text.strip() for e in el.all(path))
-
-
-def check_none(s):
-    return '' if s.lower() == 'none' else s
+def text_list(el, *paths):
+    for path in paths:
+        ls = el.all(path)
+        if ls:
+            return gws.strip(e.text for e in ls)
+    return []
 
 
 def compact_ws(s):
     return re.sub(r'\s+', ' ', s).strip()
 
 
-def as_url(s):
+def to_url(s):
     return (s or '').strip(' ?&')
 
 
-def as_float(s, default=0.0):
+def to_float(s, default=0.0):
     return float(s or default)
 
 
-def as_int(s, default=0):
+def to_int(s, default=0):
     # accept floats as well, but convert to int
     return int(float(s or default))
 
 
-def as_float_pair(s):
+def to_float_pair(s):
     s = s.split()
     return float(s[0]), float(s[1])
-
-
-_contact_mapping = [
-    # wms
-
-    ('area', 'StateOrProvince'),
-    ('city', 'City'),
-    ('country', 'Country'),
-    ('email', 'ContactElectronicMailAddress'),
-    ('fax', 'ContactFacsimileTelephone'),
-    ('organization', 'ContactOrganization'),
-    ('person', 'ContactPerson'),
-    ('phone', 'ContactVoiceTelephone'),
-    ('position', 'ContactPosition'),
-    ('zip', 'PostCode'),
-
-    # ows
-
-    ('area', 'AdministrativeArea'),
-    ('city', 'City'),
-    ('country', 'Country'),
-    ('email', 'ElectronicMailAddress'),
-    ('fax', 'Facsimile'),
-    ('organization', 'ProviderName'),
-    ('person', 'IndividualName'),
-    ('phone', 'Voice'),
-    ('position', 'PositionName'),
-    ('zip', 'PostalCode'),
-]
 
 
 # note: bboxes are always converted to (x1, y1, x2, y2) with x1 < x2, y1 < y2
@@ -223,10 +266,10 @@ def _bbox_value(el):
     # <LatLonBoundingBox minx="-71.63" miny="41.75" maxx="-70.78" maxy="42.90"/>
     if el.attr('minx'):
         return [
-            as_float(el.attr('minx')),
-            as_float(el.attr('miny')),
-            as_float(el.attr('maxx')),
-            as_float(el.attr('maxy')),
+            to_float(el.attr('minx')),
+            to_float(el.attr('miny')),
+            to_float(el.attr('maxx')),
+            to_float(el.attr('maxy')),
         ]
 
     # <ows:BoundingBox>
@@ -234,8 +277,8 @@ def _bbox_value(el):
     # 	<ows:UpperCorner>-20037508.3427892 20037508.3427892</ows:UpperCorner>
     # </ows:BoundingBox>
     if el.get('LowerCorner'):
-        x1, y1 = as_float_pair(el.get_text('LowerCorner'))
-        x2, y2 = as_float_pair(el.get_text('UpperCorner'))
+        x1, y1 = to_float_pair(el.get_text('LowerCorner'))
+        x2, y2 = to_float_pair(el.get_text('UpperCorner'))
         return [
             min(x1, x2),
             min(y1, y2),
@@ -250,10 +293,10 @@ def _bbox_value(el):
     #     <northBoundLatitude>42.90</northBoundLatitude>
     # </EX_GeographicBoundingBox>
     if el.get('westBoundLongitude'):
-        x1 = as_float(el.get_text('eastBoundLongitude'))
-        y1 = as_float(el.get_text('southBoundLatitude'))
-        x2 = as_float(el.get_text('westBoundLongitude'))
-        y2 = as_float(el.get_text('northBoundLatitude'))
+        x1 = to_float(el.get_text('eastBoundLongitude'))
+        y1 = to_float(el.get_text('southBoundLatitude'))
+        x2 = to_float(el.get_text('westBoundLongitude'))
+        y2 = to_float(el.get_text('northBoundLatitude'))
         return [
             min(x1, x2),
             min(y1, y2),

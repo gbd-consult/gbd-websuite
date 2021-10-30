@@ -155,7 +155,7 @@ class Object(gws.base.template.Object):
             self.legend_mode = gws.base.template.LegendMode.html
             if 'layer' in atts:
                 html = ''
-                for layer_uid in gws.as_list(atts['for']):
+                for layer_uid in gws.to_list(atts['for']):
                     if layer_uid not in self.legend_layer_uids:
                         self.legend_layer_uids.append(layer_uid)
                     html += f'{{GWS_LEGEND({layer_uid!r})|raw}}'
@@ -213,7 +213,7 @@ class Object(gws.base.template.Object):
 
         if self.root.application.developer_option('template.save_compiled'):
             gws.write_file(
-                gws.VAR_DIR + '/debug_template_' + gws.as_uid(self.path),
+                gws.VAR_DIR + '/debug_template_' + gws.to_uid(self.path),
                 chartreux.translate(
                     text,
                     path=self.path or '<string>'))

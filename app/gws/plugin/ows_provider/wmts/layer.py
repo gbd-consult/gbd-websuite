@@ -1,6 +1,5 @@
 import gws
 import gws.base.layer
-import gws.base.ows
 import gws.lib.gis
 import gws.lib.gis
 import gws.lib.gis
@@ -30,26 +29,34 @@ class Object(gws.base.layer.image.Object):
     source_style: str
 
     def configure(self):
-        self.provider = provider_module.create(self.root, self.config, shared=True)
+        pass
+
+    def configure_source(self):
+        self.provider = self.root.create_object(provider_module.Object, self.config, shared=True)
 
         self.grid.reqSize = self.grid.reqSize or 1
-
-        if not self.has_configured_metadata:
-            self.configure_metadata_from(self.provider.metadata)
 
         self.source_crs = self.provider.source_crs or gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
         self.source_layer = self.get_source_layer(self.var('sourceLayer'))
         self.matrix_set = self.get_matrix_set_for_crs(self.source_crs)
-
         self.source_style = self.var('sourceStyle')
 
-        if not self.has_configured_legend and self.source_layer.legend_url:
-            self.legend = gws.Legend(
-                enabled=True,
-                urls=[self.source_layer.legend_url],
-                cache_max_age=self.var('legend.cacheMaxAge', default=0),
-                options=self.var('legend.options', default={}))
-            self.has_configured_legend = True
+        return True
+
+    def configure_metadata(self):
+        if not super().configure_metadata():
+            self.set_metadata(self.provider.metadata)
+            return True
+
+    def configure_legend(self):
+        if not super().configure_legend():
+            if self.source_layer.legend_url:
+                self.legend = gws.Legend(
+                    enabled=True,
+                    urls=[self.source_layer.legend_url],
+                    cache_max_age=self.var('legend.cacheMaxAge', default=0),
+                    options=self.var('legend.options', default={}))
+                return True
 
     @property
     def own_bounds(self):
@@ -109,7 +116,7 @@ class Object(gws.base.layer.image.Object):
                     .replace('{TileCol}', '%(x)d')
                     .replace('{TileRow}', '%(y)d'))
 
-        operation = self.provider.operation('GetTile')
+        operation = self.provider.operation(gws.OwsVerb.GetTile)
 
         params = {
             'SERVICE': 'WMTS',

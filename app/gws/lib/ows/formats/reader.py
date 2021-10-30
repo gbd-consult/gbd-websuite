@@ -2,7 +2,6 @@ import gws
 import gws.types as t
 import gws.lib.xml2
 
-
 from . import (
     feature_collection,
     feature_info_response,
@@ -23,8 +22,10 @@ text_formats = [
 ]
 
 
-def read(text, crs=None, invert_axis=None, **kwargs) -> t.List[gws.IFeature]:
+def read(text, crs: t.Optional[gws.Crs] = None, axis: t.Optional[gws.Axis] = gws.AXIS_XY, **kwargs) -> t.List[gws.IFeature]:
     first_el = gws.lib.xml2.peek(text)
+
+    invert_axis = axis == gws.AXIS_YX
 
     if first_el:
         # remove the xml declaration, in order not to confuse gdal with non-utf8 encodings

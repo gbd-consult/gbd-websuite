@@ -7,7 +7,7 @@ from . import manager
 
 
 @gws.ext.Object('cli.auth')
-class Object:
+class Object(gws.Node):
 
     @gws.ext.command('cli.auth.sessions')
     def sessions(self, p: gws.NoParams):

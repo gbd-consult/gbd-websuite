@@ -1,7 +1,6 @@
 """WMS Capabilities parser."""
 
 import gws
-import gws.base.ows
 import gws.lib.bounds
 import gws.lib.gis
 import gws.lib.metadata
@@ -12,7 +11,7 @@ import gws.types as t
 
 
 class WMSCaps(gws.Data):
-    metadata: gws.lib.metadata.Record
+    metadata: gws.lib.metadata.Metadata
     operations: t.List[gws.OwsOperation]
     source_layers: t.List[gws.lib.gis.SourceLayer]
     supported_crs: t.List[gws.Crs]
@@ -20,79 +19,74 @@ class WMSCaps(gws.Data):
 
 
 def parse(xml) -> WMSCaps:
-    el = gws.lib.xml2.from_string(xml)
-
-    meta = u.get_meta(el.first('Service'))
-    meta['contact'] = u.get_meta_contact(el.first('Service.ContactInformation'))
-
-    source_layers = u.flatten_source_layers(_layer(e) for e in el.all('Capability.Layer'))
-
+    root_el = gws.lib.xml2.from_string(xml)
+    source_layers = u.flatten_source_layers(_layer(e) for e in root_el.all('Capability.Layer'))
     return WMSCaps(
-        metadata=gws.lib.metadata.Record(meta),
-        operations=[gws.OwsOperation(e) for e in u.get_operations(el.first('Capability'))],
+        metadata=u.get_service_metadata(root_el),
+        operations=u.get_operations(root_el),
         source_layers=source_layers,
         supported_crs=gws.lib.gis.crs_from_source_layers(source_layers),
-        version=el.attr('version'),
+        version=root_el.attr('version'),
     )
 
 
 def _layer(el, parent=None) -> gws.lib.gis.SourceLayer:
-    oo = gws.lib.gis.SourceLayer()
+    sl = gws.lib.gis.SourceLayer()
 
-    oo.supported_bounds = u.get_bounds_list(el)
+    sl.supported_bounds = u.get_bounds_list(el)
 
-    if oo.supported_bounds:
+    if sl.supported_bounds:
         # in addition to specific bounds (above), add crs listed in CRS/SRS tags
-        cs = set(b.crs for b in oo.supported_bounds)
+        cs = set(b.crs for b in sl.supported_bounds)
         for e in el.all('crs') or el.all('srs'):
-            proj = gws.lib.proj.as_proj(e.text)
+            proj = gws.lib.proj.to_proj(e.text)
             if proj and proj.epsg not in cs:
-                oo.supported_bounds.append(gws.lib.bounds.transformed_to(oo.supported_bounds[0], proj))
+                sl.supported_bounds.append(gws.lib.bounds.transformed_to(sl.supported_bounds[0], proj))
                 cs.add(proj.epsg)
 
-    oo.styles = [u.get_style(e) for e in el.all('Style')]
-    oo.is_queryable = el.attr('queryable') == '1'
-    oo.is_visible = True
-    oo.metadata = gws.lib.metadata.Record(u.get_meta(el))
-    oo.name = oo.metadata.name or ''
-    oo.title = oo.metadata.title or ''
+    sl.styles = [u.get_style(e) for e in el.all('Style')]
+    sl.is_queryable = el.attr('queryable') == '1'
+    sl.is_visible = True
+    sl.metadata = u.get_metadata(el)
+    sl.name = sl.metadata.get('name', '')
+    sl.title = sl.metadata.get('title', '')
 
-    if not oo.name:
+    if not sl.name:
         # some folks have unnamed layers in their caps
         # we can't render or query them
-        oo.is_queryable = False
-        oo.is_image = False
+        sl.is_queryable = False
+        sl.is_image = False
 
     smin = el.get_text('MinScaleDenominator')
     smax = el.get_text('MaxScaleDenominator')
     if smax:
-        oo.scale_range = [u.as_int(smin), u.as_int(smax)]
+        sl.scale_range = [u.to_int(smin), u.to_int(smax)]
 
     # @TODO: support ScaleHint (WMS 1.1)
 
-    oo.layers = [_layer(e, oo) for e in el.all('Layer')]
-    oo.is_group = len(oo.layers) > 0
-    oo.is_image = len(oo.layers) == 0
+    sl.layers = [_layer(e, sl) for e in el.all('Layer')]
+    sl.is_group = len(sl.layers) > 0
+    sl.is_image = len(sl.layers) == 0
 
     # OGC 06-042, 7.2.4.8 Inheritance of layer properties
 
     if parent:
-        crs = set(b.crs for b in oo.supported_bounds)
+        crs = set(b.crs for b in sl.supported_bounds)
         for b in parent.supported_bounds:
             if b.crs not in crs:
-                oo.supported_bounds.append(b)
+                sl.supported_bounds.append(b)
 
-        names = set(s.name for s in oo.styles)
+        names = set(s.name for s in sl.styles)
         for s in parent.styles:
             if s.name not in names:
-                oo.styles.append(s)
+                sl.styles.append(s)
 
-        oo.metadata = gws.lib.metadata.merge(parent.metadata, oo.metadata)
+        sl.metadata.extend(parent.metadata)
 
-    oo.supported_crs = [b.crs for b in oo.supported_bounds]
+    sl.supported_crs = [b.crs for b in sl.supported_bounds]
 
-    ds = u.default_style(oo.styles)
+    ds = u.default_style(sl.styles)
     if ds:
-        oo.legend_url = ds.legend_url
+        sl.legend_url = ds.legend_url
 
-    return oo
+    return sl

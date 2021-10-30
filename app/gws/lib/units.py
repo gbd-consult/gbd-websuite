@@ -102,7 +102,7 @@ def parse(s: str, units: t.List = [], default=None) -> gws.Measurement:
             raise ValueError(f'invalid unit value: {s!r}')
         return s, default
 
-    s = gws.as_str(s).strip()
+    s = gws.to_str(s).strip()
     m = _unit_re.match(s)
     if not m:
         raise ValueError(f'invalid unit value: {s!r}')

@@ -50,37 +50,37 @@ def equal(p, q):
     if p == q:
         return True
 
-    p = as_proj(p)
-    q = as_proj(q)
+    p = to_proj(p)
+    q = to_proj(q)
 
     return p and q and p.srid == q.srid
 
 
-def as_epsg(p):
+def to_epsg(p):
     return _check(p).epsg
 
 
-def as_srid(p):
+def to_srid(p):
     return _check(p).srid
 
 
-def as_proj4text(p):
+def to_proj4text(p):
     return _check(p).proj4text
 
 
-def as_urn(p):
+def to_urn(p):
     return _check(p).urn
 
 
-def as_urnx(p):
+def to_urnx(p):
     return _check(p).urnx
 
 
-def as_url(p):
+def to_url(p):
     return _check(p).url
 
 
-def as_uri(p):
+def to_uri(p):
     return _check(p).uri
 
 
@@ -193,15 +193,14 @@ def parse(p):
 ##
 
 _cache: dict = {}
-_lock = threading.RLock()
 
 
-def as_proj(p):
+def to_proj(p):
     if isinstance(p, Proj):
         return p
     if p in _cache:
         return _cache[p]
-    with _lock:
+    with gws.app_lock('load_proj'):
         _cache[p] = _load_proj(p)
     return _cache[p]
 
@@ -238,9 +237,9 @@ class Projection(gws.Data):
     urnx: str
 
 
-def as_projection(p):
-    p = as_proj(p)
-    return gws.Projection(
+def to_projection(p):
+    p = to_proj(p)
+    return Projection(
         epsg=p.epsg,
         is_geographic=p.is_geographic,
         proj4text=p.proj4text,
@@ -270,7 +269,7 @@ class Proj:
 
 
 def _check(p):
-    prj = as_proj(p)
+    prj = to_proj(p)
     if not prj:
         raise ValueError(f'proj: invalid CRS {p!r}')
     return prj

@@ -180,7 +180,7 @@ class Object(gws.Node):
         return AlkisConnection(**connect_args)
 
     def _query_to_dict(self, query):
-        return {k: v for k, v in gws.as_dict(query).items() if not gws.is_empty(v)}
+        return {k: v for k, v in gws.to_dict(query).items() if not gws.is_empty(v)}
 
 
 ##

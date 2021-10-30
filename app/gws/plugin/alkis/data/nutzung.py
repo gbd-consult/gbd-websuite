@@ -35,7 +35,7 @@ def _collect_from_nutzung_tables(conn: AlkisConnection):
                 'type': type,
                 'type_id': type_id,
                 'geom': r['wkb_geometry'],
-                'attributes': indexer.as_json(a)
+                'attributes': indexer.to_json(a)
             })
     return data
 

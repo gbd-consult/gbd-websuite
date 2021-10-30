@@ -104,7 +104,7 @@ class Shape(gws.Object, gws.IShape):
     def __init__(self, geom, crs):
         super().__init__()
         self.geom: shapely.geometry.base.BaseGeometry = geom  # type: ignore
-        p = gws.lib.proj.as_proj(crs)
+        p = gws.lib.proj.to_proj(crs)
         self.crs = p.epsg
         self.srid = p.srid
 
@@ -222,7 +222,7 @@ class Shape(gws.Object, gws.IShape):
     def transformed_to(self, to_crs, **kwargs) -> gws.IShape:
         if gws.lib.proj.equal(self.crs, to_crs):
             return self
-        to_crs = gws.lib.proj.as_proj(to_crs).epsg
+        to_crs = gws.lib.proj.to_proj(to_crs).epsg
         sg = shapely.geometry.mapping(self.geom)
         dg = fiona.transform.transform_geom(self.crs, to_crs, sg, **kwargs)
         return Shape(shapely.geometry.shape(dg), to_crs)

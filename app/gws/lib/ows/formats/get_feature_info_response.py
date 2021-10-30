@@ -25,7 +25,7 @@ def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
             for e in feature.all('Attribute'):
                 name = e.attr('name')
                 value = e.attr('value')
-                if gws.as_str(value).lower() != 'null':
+                if gws.to_str(value).lower() != 'null':
                     atts[name] = value
 
             shape = None

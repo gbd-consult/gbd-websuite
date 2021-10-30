@@ -9,7 +9,6 @@ import gws.lib.date
 import gws.lib.mime
 import gws.lib.vendor.chartreux as chartreux
 import gws.lib.xml2
-import gws.lib.xml2.helper
 
 
 @gws.ext.Config('template.xml')
@@ -27,7 +26,7 @@ class XMLRuntime(chartreux.Runtime):
     def __init__(self):
         super().__init__()
         self.tags = []
-        self.namespaces = {}
+        self.namespaces = set()
         self.default_namespace = None
         self.root = None
 
@@ -63,20 +62,19 @@ class XMLRuntime(chartreux.Runtime):
 
     def register_namespace(self, text):
         s = text.strip().split()
-        if s:
-            if s[-1] == 'default':
-                self.default_namespace = s[0]
-                s.pop()
-            self.namespaces[s[0]] = s[1:]
+        if not s:
+            return
+        if s[-1] == 'default':
+            self.default_namespace = s[0]
+            s.pop()
+        self.namespaces.add(s[0])
 
-    def as_text(self, *vals):
+    def to_text(self, *vals):
         return ''.join(str(v) for v in vals if v is not None)
 
     def _add_ns(self, name):
         if ':' in name:
-            s = name.split(':')[0]
-            if s not in self.namespaces:
-                self.namespaces[s] = None
+            self.namespaces.add(name.split(':')[0])
 
     def filter_datetime(self, val):
         d = gws.lib.date.parse(val)
@@ -127,9 +125,7 @@ class XMLCommands():
         compiler.code.add(f'_RT.append_tag({chunks[0]})')
 
     def command_xmlns(self, compiler: chartreux.Compiler, arg):
-        # @xmlns wms default
-        # @xmlns gml
-        # @xmlns myNs http://url http://schema
+        # @xmlns <name> [default]
         text = self.interpolate(compiler, arg)
         compiler.code.add(f"_RT.register_namespace({text})")
 
@@ -140,7 +136,7 @@ class XMLCommands():
             v if is_expr else repr(v)
             for is_expr, v in compiler.command.parse_interpolations(s, with_default_filter=True)
         ]
-        return '_RT.as_text(' + ','.join(vals) + ')'
+        return '_RT.to_text(' + ','.join(vals) + ')'
 
     attr_re = r'''(?x)
         ([^\s=]+) = (
@@ -201,14 +197,14 @@ class Object(gws.base.template.Object):
         if format == 'tag':
             ins_tag = _InsertedTag()
             ins_tag.tag = root
-            if rt.namespaces:
-                ins_tag.namespaces = rt.namespaces
+            ins_tag.namespaces = rt.namespaces
             return gws.TemplateOutput(content=ins_tag)
 
-        if rt.namespaces:
-            self._insert_namespaces(root, rt.namespaces, rt.default_namespace)
+        ns_atts = self._namespace_attributes(rt.namespaces, rt.default_namespace)
+        if ns_atts:
+            root.append(ns_atts)
 
-        xml = gws.lib.xml2.as_string(root)
+        xml = gws.lib.xml2.to_string(root)
         if not xml.startswith('<?'):
             xml = '<?xml version="1.0" encoding="utf-8"?>' + xml
 
@@ -220,7 +216,7 @@ class Object(gws.base.template.Object):
 
         if self.root.application.developer_option('template.save_compiled'):
             gws.write_file(
-                gws.VAR_DIR + '/debug_template_' + gws.as_uid(self.path),
+                gws.VAR_DIR + '/debug_template_' + gws.to_uid(self.path),
                 chartreux.translate(
                     self.text,
                     path=self.path or '<string>',
@@ -246,34 +242,24 @@ class Object(gws.base.template.Object):
 
         return rt
 
-    def _insert_namespaces(self, target_node, nsdict, default_namespace):
-        # a namespace can
-
+    def _namespace_attributes(self, namespaces, default_namespace):
         atts = {}
         schemas = []
 
-        for id, ns in sorted(nsdict.items()):
-            ns = ns or self.helper.namespaces.get(id)
+        for id in sorted(namespaces):
+            ns = self.helper.namespace(id)
             if not ns:
                 gws.log.warn(f'unknown namespace {id!r}')
                 continue
 
-            if isinstance(ns, str):
-                uri, schema = ns, None
-            elif len(ns) == 1:
-                uri, schema = ns[0], None
-            else:
-                uri, schema = ns
+            atts['xmlns' if id == default_namespace else 'xmlns:' + ns.name] = ns.uri
 
-            atts['xmlns' if id == default_namespace else 'xmlns:' + id] = uri
-
-            if schema:
-                schemas.append(uri)
-                schemas.append(schema)
+            if ns.schema:
+                schemas.append(ns.uri)
+                schemas.append(ns.schema)
 
         if schemas:
-            atts['xmlns:xsi'] = self.helper.namespaces['xsi'][0]
+            atts['xmlns:xsi'] = self.helper.namespace('xsi').uri
             atts['xsi:schemaLocation'] = ' '.join(schemas)
 
-        if atts:
-            target_node.append(atts)
+        return atts

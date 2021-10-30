@@ -53,8 +53,8 @@ class User(gws.IUser):
         self.display_name = str(self.attributes.get('displayName', ''))
         gws.log.debug(f'inited user: prov={provider.uid!r} local_uid={local_uid!r} roles={roles!r}')
 
-    def can_use(self, obj, parent=None):
-        return gws.core.tree.can_use(self, obj, parent)
+    def can_use(self, obj, context=None):
+        return gws.core.tree.can_use(self, obj, context)
 
 
 class Guest(User):
@@ -65,12 +65,12 @@ class Guest(User):
 
 
 class System(User):
-    def can_use(self, obj, parent=None):
+    def can_use(self, obj, context=None):
         return True
 
 
 class Nobody(User):
-    def can_use(self, obj, parent=None):
+    def can_use(self, obj, context=None):
         return False
 
 
@@ -80,7 +80,7 @@ class AuthorizedUser(User):
 
 
 class Admin(AuthorizedUser):
-    def can_use(self, obj, parent=None):
+    def can_use(self, obj, context=None):
         return True
 
 

@@ -42,7 +42,7 @@ def _parse_header(req: gws.IWebRequest):
         return
 
     try:
-        b = gws.as_str(base64.decodebytes(gws.as_bytes(a[1])))
+        b = gws.to_str(base64.decodebytes(gws.to_bytes(a[1])))
     except ValueError:
         return
 

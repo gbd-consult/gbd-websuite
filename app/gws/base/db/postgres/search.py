@@ -1,7 +1,7 @@
 import gws
 import gws.base.search
 import gws.types as t
-from . import provider as prov
+from . import provider as provider_module
 
 
 @gws.ext.Config('search.provider.postgres')
@@ -15,12 +15,17 @@ class Config(gws.base.search.provider.Config):
 
 @gws.ext.Object('search.provider.postgres')
 class Object(gws.base.search.provider.Object):
-    provider: prov.Object
+    provider: provider_module.Object
     table: gws.SqlTable
 
     def configure(self):
-        self.provider = prov.require_for(self)
-        self.table = self.provider.configure_table(self.var('table'))
+        if self.var('_provider'):
+            self.provider = self.var('_provider')
+            self.table = self.var('_table')
+        else:
+            self.provider = provider_module.require_for(self)
+            self.table = self.provider.configure_table(self.var('table'))
+
         if self.table.search_column:
             self.supports_keyword = True
         if self.table.geometry_column:

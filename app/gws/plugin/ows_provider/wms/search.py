@@ -1,14 +1,13 @@
 import gws
-import gws.base.ows
 import gws.base.search
 import gws.lib.gis
 import gws.lib.ows
 import gws.types as t
-from . import provider
+from . import provider as provider_module
 
 
 @gws.ext.Config('search.provider.wms')
-class Config(gws.base.search.Config, provider.Config):
+class Config(gws.base.search.Config, provider_module.Config):
     sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
 
 
@@ -16,14 +15,14 @@ class Config(gws.base.search.Config, provider.Config):
 class Object(gws.base.search.provider.Object):
     supports_geometry = True
     source_layers: t.List[gws.lib.gis.SourceLayer]
-    provider: provider.Object
+    provider: provider_module.Object
 
     def configure(self):
         if self.var('_provider'):
-            self.provider = t.cast(provider.Object, self.var('_provider'))
+            self.provider = self.var('_provider')
             self.source_layers = self.var('_source_layers')
         else:
-            self.provider = provider.create(self.root, self.config, shared=True)
+            self.provider = self.root.create_object(provider_module.Object, self.config, shared=True)
             self.source_layers = gws.lib.gis.enum_source_layers(
                 gws.lib.gis.filter_source_layers(self.provider.source_layers, self.var('sourceLayers')),
                 is_queryable=True)

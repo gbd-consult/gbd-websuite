@@ -69,7 +69,7 @@ class Feature(gws.Object, gws.IFeature):
         if isinstance(uid, str) and _COMBINED_UID_DELIMITER in uid:
             uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
 
-        self.uid = gws.as_str(uid)
+        self.uid = gws.to_str(uid)
 
         if attributes:
             if isinstance(attributes, dict):
@@ -140,7 +140,7 @@ class Feature(gws.Object, gws.IFeature):
             self.elements.get('label', ''))
 
     def to_svg(self, rv: gws.MapRenderView, style: gws.IStyle = None) -> str:
-        return gws.lib.svg.as_xml(self.to_svg_tags(rv, style))
+        return gws.lib.svg.to_xml(self.to_svg_tags(rv, style))
 
     def to_geojson(self) -> dict:
         ps = {a.name: a.value for a in self.attributes}
@@ -161,13 +161,13 @@ class Feature(gws.Object, gws.IFeature):
             self.attributes = model.apply(self.attributes)
         return self
 
-    def apply_templates(self, templates: gws.ITemplateBundle = None, extra_context: dict = None, keys: t.List[str] = None) -> gws.IFeature:
+    def apply_templates(self, templates: gws.ITemplateBundle = None, extra_context: dict = None, template_names: t.List[str] = None) -> gws.IFeature:
         templates = templates or self.templates or (self.layer.templates if self.layer else None)
         if templates:
             used = set()
             ctx = gws.merge(self.template_context, extra_context)
             for tpl in templates.items:
-                if tpl.category == 'feature' and (tpl.key not in used) and (not keys or tpl.key in keys):
-                    self.elements[tpl.key] = tpl.render(context=ctx).content
-                    used.add(tpl.key)
+                if tpl.category == 'feature' and (tpl.name not in used) and (not template_names or tpl.name in template_names):
+                    self.elements[tpl.name] = tpl.render(context=ctx).content
+                    used.add(tpl.name)
         return self

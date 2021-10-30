@@ -25,7 +25,7 @@ def parse_envelope(el: gws.lib.xml2.Element) -> t.Optional[gws.Bounds]:
     if not el:
         return None
 
-    prj = gws.lib.proj.as_proj(el.attr('srsName') or 4326)
+    prj = gws.lib.proj.to_proj(el.attr('srsName') or 4326)
     if not prj:
         return None
 

@@ -8,23 +8,6 @@ import gws.types as t
 from . import inspire
 
 
-class Contact(gws.Data):
-    """Contact metadata"""
-
-    address: t.Optional[str]
-    area: t.Optional[str]
-    city: t.Optional[str]
-    country: t.Optional[str]
-    email: t.Optional[str]
-    fax: t.Optional[str]
-    organization: t.Optional[str]
-    person: t.Optional[str]
-    phone: t.Optional[str]
-    position: t.Optional[str]
-    zip: t.Optional[str]
-    url: t.Optional[gws.Url]
-
-
 class Link(gws.Data):
     """Link metadata"""
 
@@ -36,71 +19,78 @@ class Link(gws.Data):
     type: t.Optional[str]  #: metadata url type like "TC211"
 
 
-class AuthorityConfig(gws.Data):
-    name: t.Optional[str]
-    url: t.Optional[gws.Url]
-    identifier: t.Optional[str]
+class Values(gws.Data):
+    abstract: t.Optional[str]  #: object abstract description
+    accessConstraints: t.Optional[str]
+    attribution: t.Optional[str]  #: attribution (copyright) string
+
+    authorityIdentifier: t.Optional[str]
+    authorityName: t.Optional[str]
+    authorityUrl: t.Optional[gws.Url]
+
+    catalogCitationUid: t.Optional[str]  #: catalog citation identifier
+    catalogUid: t.Optional[str]  #: catalog identifier
+
+    contactAddress: t.Optional[str]
+    contactArea: t.Optional[str]
+    contactCity: t.Optional[str]
+    contactCountry: t.Optional[str]
+    contactEmail: t.Optional[str]
+    contactFax: t.Optional[str]
+    contactOrganization: t.Optional[str]
+    contactPerson: t.Optional[str]
+    contactPhone: t.Optional[str]
+    contactPosition: t.Optional[str]
+    contactZip: t.Optional[str]
+    contactUrl: t.Optional[gws.Url]
+
+    dateBegin: t.Optional[gws.Date]  #: temporal extent begin
+    dateCreated: t.Optional[gws.Date]  #: publication date
+    dateEnd: t.Optional[gws.Date]  #: temporal extent end
+    dateUpdated: t.Optional[gws.Date]  #: modification date
+
+    fees: t.Optional[str]
+    image: t.Optional[gws.Url]  #: image (logo) url
+
+    inspireKeywords: t.List[str] = []  #: INSPIRE keywords
+    inspireMandatoryKeyword: t.Optional[str]  #: INSPIRE mandatory keyword
+    inspireDegreeOfConformity: t.Optional[str]  #: INSPIRE degree of conformity
+    inspireResourceType: t.Optional[str]  #: INSPIRE resource type
+    inspireSpatialDataServiceType: t.Optional[str]  #: INSPIRE spatial data service type
+    inspireSpatialScope: t.Optional[str]  #: INSPIRE spatial scope
+    inspireSpatialScopeName: t.Optional[str]  #: INSPIRE spatial scope localized name
+    inspireTheme: t.Optional[str]  #: INSPIRE theme, see http://inspire.ec.europa.eu/theme/
+    inspireThemeName: t.Optional[str]  #: INSPIRE theme name, in the project language
+    inspireThemeNameEn: t.Optional[str]  #: INSPIRE theme name, in English
+
+    isoMaintenanceFrequencyCode: t.Optional[str]  #: ISO-19139 maintenance frequency code
+    isoQualityConformanceExplanation: t.Optional[str]
+    isoQualityConformanceQualityPass: t.Optional[bool]
+    isoQualityConformanceSpecificationDate: t.Optional[str]
+    isoQualityConformanceSpecificationTitle: t.Optional[str]
+    isoQualityLineageSource: t.Optional[str]
+    isoQualityLineageSourceScale: t.Optional[int]
+    isoQualityLineageStatement: t.Optional[str]
+    isoRestrictionCode: t.Optional[str]  #: ISO-19139 restriction code
+    isoScope: t.Optional[str]  #: ISO-19139 scope code
+    isoScopeName: t.Optional[str]  #: ISO-19139 scope name
+    isoSpatialRepresentationType: t.Optional[str]  #: ISO-19139 spatial type
+    isoTopicCategory: t.Optional[str]  #: ISO-19139 topic category
+    isoSpatialResolution: t.Optional[str]  #: ISO-19139 spatial resolution
+
+    keywords: t.List[str] = []  #: keywords
+    language3: t.Optional[str]  #: object language (bibliographic)
+    language: t.Optional[str]  #: object language
+    languageName: t.Optional[str]  #: localized language name
+    license: t.Optional[str]
+    name: t.Optional[str]  #: object internal name
+    title: t.Optional[str]  #: object title
+
+    metaLinks: t.List[Link] = []  #: metadata links
+    extraLinks: t.List[Link] = []  #: additional links
 
 
-class InspireMeta(gws.Data):
-    """INSPIRE metadata"""
-
-    keywords: t.Optional[t.List[str]]  #: INSPIRE keywords
-    mandatoryKeyword: t.Optional[str]  #: INSPIRE mandatory keyword
-    degreeOfConformity: t.Optional[str]  #: INSPIRE degree of conformity
-    resourceType: t.Optional[str]  #: INSPIRE resource type
-    spatialDataServiceType: t.Optional[str]  #: INSPIRE spatial data service type
-    spatialScope: t.Optional[str]  #: INSPIRE spatial scope
-    theme: t.Optional[str]  #: INSPIRE theme, see http://inspire.ec.europa.eu/theme/
-    themeName: t.Optional[str]  #: INSPIRE theme name, in the project language
-    themeNameEn: t.Optional[str]  #: INSPIRE theme name, in English
-
-
-class IsoQualityConformance(gws.Data):
-    specificationTitle: str
-    specificationDate: str
-    explanation: str = ''
-    qualityPass: bool
-
-
-class IsoQualityLineage(gws.Data):
-    statement: str
-    source: str
-    sourceScale: int
-
-
-class IsoMeta(gws.Data):
-    """ISO-19139 metadata"""
-
-    maintenanceFrequencyCode: t.Optional[str]  #: ISO-19139 maintenance frequency code
-    scope: t.Optional[str]  #: ISO-19139 scope code
-    scopeName: t.Optional[str]  #: ISO-19139 scope name
-    spatialRepresentationType: t.Optional[str]  #: ISO-19139 spatial type
-    topicCategory: t.Optional[str]  #: ISO-19139 topic category
-    qualityConformance: t.Optional[t.List[IsoQualityConformance]]  #: ISO-19139 quality conformance record
-    qualityLineage: t.Optional[IsoQualityLineage]  #: ISO-19139 quality lineage record
-    restrictionCode: t.Optional[str]  #: ISO-19139 restriction code
-
-
-_list_props = ['keywords', 'links', ]
-_obj_props = ['authority', 'contact', 'inspire', 'iso', 'metaLink', 'serviceLink', ]
-
-# literal values for INSPIRE/ISO props
-_literals = {
-    'InspireMeta.theme': 'ac,ad,af,am,au,br,bu,cp,ef,el,er,ge,gg,gn,hb,hh,hy,lc,lu,mf,mr,nz,of,oi,pd,pf,ps,rs,sd,so,sr,su,tn,us',
-    'InspireMeta.resourceType': 'dataset,series,service',
-    'InspireMeta.spatialDataServiceType': 'discovery,view,download,transformation,invoke,other',
-    'InspireMeta.spatialScope': 'national,regional,local,global,european',
-    'InspireMeta.degreeOfConformity': 'conformant,notConformant,notEvaluated',
-    'InspireMeta.mandatoryKeyword': 'chainDefinitionService,comEncodingService,comGeographicCompressionService,comGeographicFormatConversionService,comMessagingService,comRemoteFileAndExecutableManagement,comService,comTransferService,humanCatalogueViewer,humanChainDefinitionEditor,humanFeatureGeneralizationEditor,humanGeographicDataStructureViewer,humanGeographicFeatureEditor,humanGeographicSpreadsheetViewer,humanGeographicSymbolEditor,humanGeographicViewer,humanInteractionService,humanServiceEditor,humanWorkflowEnactmentManager,infoCatalogueService,infoCoverageAccessService,infoFeatureAccessService,infoFeatureTypeService,infoGazetteerService,infoManagementService,infoMapAccessService,infoOrderHandlingService,infoProductAccessService,infoRegistryService,infoSensorDescriptionService,infoStandingOrderService,metadataGeographicAnnotationService,metadataProcessingService,metadataStatisticalCalculationService,spatialCoordinateConversionService,spatialCoordinateTransformationService,spatialCoverageVectorConversionService,spatialDimensionMeasurementService,spatialFeatureGeneralizationService,spatialFeatureManipulationService,spatialFeatureMatchingService,spatialImageCoordinateConversionService,spatialImageGeometryModelConversionService,spatialOrthorectificationService,spatialPositioningService,spatialProcessingService,spatialProximityAnalysisService,spatialRectificationService,spatialRouteDeterminationService,spatialSamplingService,spatialSensorGeometryModelAdjustmentService,spatialSubsettingService,spatialTilingChangeService,subscriptionService,taskManagementService,temporalProcessingService,temporalProximityAnalysisService,temporalReferenceSystemTransformationService,temporalSamplingService,temporalSubsettingService,thematicChangeDetectionService,thematicClassificationService,thematicFeatureGeneralizationService,thematicGeocodingService,thematicGeographicInformationExtractionService,thematicGeoparsingService,thematicGoparameterCalculationService,thematicImageManipulationService,thematicImageProcessingService,thematicImageSynthesisService,thematicImageUnderstandingService,thematicMultibandImageManipulationService,thematicObjectDetectionService,thematicProcessingService,thematicReducedResolutionGenerationService,thematicSpatialCountingService,thematicSubsettingService,workflowEnactmentService',
-    'IsoMeta.scope': 'attribute,attributeType,collectionHardware,collectionSession,dataset,series,nonGeographicDataset,dimensionGroup,feature,featureType,propertyType,fieldSession,software,service,model,tile,initiative,stereomate,sensor,platformSeries,sensorSeries,productionSeries,transferAggregate,otherAggregate',
-    'IsoMeta.maintenanceFrequencyCode': 'continual,daily,weekly,fortnightly,monthly,quarterly,biannually,annually,asNeeded,irregular,notPlanned,unknown',
-    'IsoMeta.spatialRepresentationType': 'vector,grid,textTable,tin,stereoModel,video',
-    'Link.function': 'download,information,offlineAccess,order,search',
-    'IsoMeta.topicCategory': 'farming,biota,boundaries,climatologyMeteorologyAtmosphere,economy,elevation,environment,geoscientificInformation,health,imageryBaseMapsEarthCover,intelligenceMilitary,inlandWaters,location,oceans,planningCadastre,society,structure,transportation,utilitiesCommunication',
-    'IsoMeta.restrictionCode': 'copyright,patent,patentPending,trademark,license,intellectualPropertyRights,restricted,otherRestrictions',
-}
-
+##
 
 class Props(gws.Props):
     abstract: str
@@ -112,69 +102,102 @@ class Props(gws.Props):
     title: str
 
 
-class Record(gws.Data):
-    abstract: t.Optional[str]  #: object abstract description
-    accessConstraints: t.Optional[str]
-    attribution: t.Optional[str]  #: attribution (copyright) string
-    authority: t.Optional[AuthorityConfig]
-    catalogCitationUid: t.Optional[str]  #: catalog citation identifier
-    catalogUid: t.Optional[str]  #: catalog identifier
-    contact: t.Optional[Contact]  #: contact information
-    dateBegin: t.Optional[gws.Date]  #: temporal extent begin
-    dateCreated: t.Optional[gws.Date]  #: publication date
-    dateEnd: t.Optional[gws.Date]  #: temporal extent end
-    dateUpdated: t.Optional[gws.Date]  #: modification date
-    fees: t.Optional[str]
-    image: t.Optional[gws.Url]  #: image (logo) url
-    inspire: t.Optional[InspireMeta]
-    iso: t.Optional[IsoMeta]
-    keywords: t.List[str] = []  #: keywords
-    language: t.Optional[str]  #: object language
-    language3: t.Optional[str]  #: object language (bibliographic)
-    license: t.Optional[str]
-    links: t.List[Link] = []  #: additional links
-    metaLink: t.Optional[Link]  #: metadata url
-    name: t.Optional[str]  #: object internal name
-    serviceLink: t.Optional[Link]  #: service url
-    title: t.Optional[str]  #: object title
+class ExtendOption(t.Enum):
+    app = 'app'  #: substutute missing metadata from the project or application config
+    source = 'source'  #: substutute missing metadata from the source
 
 
-def from_dict(d: dict) -> Record:
-    m = Record()
+class Config(Values):
+    """Metadata configuration"""
 
-    for k, v in d.items():
-        if '.' in k:
-            k1, k2 = k.split('.', maxsplit=1)
-            if not m.get(k1):
-                m.set(k1, gws.Data())
-            m.get(k1).set(v)
-        else:
-            m.set(k, v)
-
-    for p in _obj_props:
-        m.set(p, gws.Data(m.get(p) or {}))
-
-    if m.language:
-        m.language3 = gws.lib.country.bibliographic_name(language=m.language)
-    if m.inspire and m.inspire.theme:
-        m.inspire.themeName = inspire.theme_name(m.inspire.theme, m.language)
-        m.inspire.themeNameEn = inspire.theme_name(m.inspire.theme, 'en')
-
-    return m
+    extend: t.Optional[ExtendOption]
 
 
-def merge(a, b) -> Record:
-    ad = gws.as_dict(a)
-    bd = gws.as_dict(b)
+##
 
-    m = Record()
+def from_dict(d: dict) -> 'Metadata':
+    return Metadata(d)
 
-    for p in ad.keys() | bd.keys():
-        if p in _list_props:
-            m.set(p, gws.merge_lists(ad.get(p), bd.get(p)))
-        elif p in _obj_props:
-            m.set(p, gws.merge(ad.get(p), bd.get(p)))
-        else:
-            m.set(p, ad.get(p, bd.get(p)))
 
-    return m
+def from_args(**kwargs) -> 'Metadata':
+    return from_dict(kwargs)
+
+
+def from_config(cfg: gws.Config) -> 'Metadata':
+    return from_dict(gws.to_dict(cfg))
+
+
+def from_props(props: gws.Props) -> 'Metadata':
+    return from_dict(gws.to_dict(props))
+
+
+##
+
+
+_LIST_PROPS = {'metaLinks', 'extraLinks'}
+_EXT_LIST_PROPS = {'keywords', 'inspireKeywords'}
+_NO_EXT_PROPS = {'authorityIdentifier', 'catalogUid'}
+
+class Metadata(gws.Object, gws.IMetadata):
+    values: Values
+
+    def __init__(self, d):
+        super().__init__()
+        self._update(d)
+
+    def props_for(self, user):
+        return Props(
+            abstract=self.values.abstract or '',
+            attribution=self.values.attribution or '',
+            dateCreated=self.values.dateCreated,
+            dateUpdated=self.values.dateUpdated,
+            keywords=self.values.keywords or [],
+            language=self.values.language or '',
+            title=self.values.title or '',
+        )
+
+    def extend(self, *others):
+        d = gws.to_dict(self.values)
+
+        for o in others:
+            if not o:
+                continue
+
+            if isinstance(o, Metadata):
+                o = o.values
+
+            for k, new in gws.to_dict(o).items():
+                if k in _NO_EXT_PROPS or gws.is_empty(new):
+                    continue
+                old = d.get(k)
+                if old is None:
+                    d[k] = new
+                elif k in _EXT_LIST_PROPS:
+                    old.extend(new)
+
+        self._update(d)
+        return self
+
+    def get(self, key, default=None):
+        return self.values.get(key, default)
+
+    def set(self, key, val):
+        d = gws.to_dict(self.values)
+        d[key] = val
+        self._update(d)
+        return self
+
+    def _update(self, d):
+        for k in _EXT_LIST_PROPS:
+            d[k] = sorted(set(d.get(k, [])))
+        for k in _LIST_PROPS:
+            d[k] = d.get(k, [])
+
+        if d.get('language'):
+            d['language3'] = gws.lib.country.bibliographic_name(language=d['language'])
+
+        if d.get('inspireTheme'):
+            d['inspireThemeName'] = inspire.theme_name(d['inspireTheme'], d.get('language'))
+            d['inspireThemeNameEn'] = inspire.theme_name(d['inspireTheme'], 'en')
+
+        self.values = Values(d)

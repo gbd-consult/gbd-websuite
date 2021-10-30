@@ -21,7 +21,10 @@ Measurement = Tuple[float, str]
 Tag = tuple
 
 #: Axis orientation
-Axis = Literal['xy', 'yx']
+Axis = int
+
+AXIS_XY = 1
+AXIS_YX = 2
 
 #: Valid readable file path on the server
 FilePath = str
@@ -122,7 +125,7 @@ class IObject(Protocol):
 class IGrantee(Protocol):
     roles: Set[str]
 
-    def can_use(self, obj: 'IObject', parent: 'IObject' = None) -> bool: ...
+    def can_use(self, obj: 'IObject', context: 'IObject' = None) -> bool: ...
 
 
 class INode(IObject, Protocol):
@@ -253,12 +256,34 @@ class IWebRequest(IObject, Protocol):
     site: 'IWebSite'
 
     @property
+    def environ(self) -> dict: ...
+
+    @property
+    def data(self) -> Optional[bytes]: ...
+
+    @property
+    def text(self) -> Optional[str]: ...
+
+    @property
     def is_secure(self) -> bool: ...
+
+    @property
+    def method(self) -> str: ...
 
     @property
     def user(self) -> 'IUser': ...
 
     def acquire(self, klass: str, uid: Optional[str]): ...
+
+    def cookie(self, key: str, default: str = '') -> str: ...
+
+    def env(self, key: str, default: str = '') -> str: ...
+
+    def has_param(self, key: str) -> bool: ...
+
+    def header(self, key: str, default: str = '') -> str: ...
+
+    def param(self, key: str, default: str = '') -> str: ...
 
     def require(self, klass: str, uid: Optional[str]): ...
 
@@ -266,15 +291,7 @@ class IWebRequest(IObject, Protocol):
 
     def require_project(self, uid: Optional[str]) -> 'IProject': ...
 
-    def has_param(self, key: str) -> bool: ...
-
-    def param(self, key: str, default: str = '') -> str: ...
-
-    def cookie(self, key: str, default: str = '') -> str: ...
-
-    def header(self, key: str, default: str = '') -> str: ...
-
-    def env(self, key: str, default: str = '') -> str: ...
+    def url_for(self, path: str, **params) -> Url: ...
 
 
 # noinspection PyPropertyDefinition
@@ -302,7 +319,7 @@ class DocumentRoot(Data):
 class IWebSite(INode, Protocol):
     assets_root: Optional['DocumentRoot']
 
-    def url_for(self, req: 'IWebRequest', url: Url) -> Url: ...
+    def url_for(self, req: 'IWebRequest', path: str, **params) -> Url: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -425,6 +442,8 @@ class IDataModel(INode, Protocol):
     def apply(self, attributes: List['Attribute']) -> List['Attribute']: ...
 
     def apply_to_dict(self, attr_values: dict) -> List['Attribute']: ...
+
+    def xml_schema(self, name_for_geometry) -> dict: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -574,8 +593,28 @@ class ISqlDbProvider(IDbProvider, Protocol):
 # templates and rendering
 
 
+# noinspection PyPropertyDefinition
 class IImage(IObject, Protocol):
-    pass
+    @property
+    def size(self) -> Size: ...
+
+    def add_box(self, color=None) -> 'IImage': ...
+
+    def add_text(self, text: str, x=0, y=0, color=None) -> 'IImage': ...
+
+    def compose(self, other: 'IImage', opacity=1) -> 'IImage': ...
+
+    def crop(self, box) -> 'IImage': ...
+
+    def paste(self, other: 'IImage', where=None) -> 'IImage': ...
+
+    def resize(self, size: Size, **kwargs) -> 'IImage': ...
+
+    def rotate(self, angle: int, **kwargs) -> 'IImage': ...
+
+    def to_bytes(self, format: str = None) -> bytes: ...
+
+    def to_path(self, path: str, format: str = None) -> str: ...
 
 
 class SvgFragment(Data):
@@ -657,13 +696,12 @@ class TemplateOutput(Data):
 class ITemplateBundle(INode, Protocol):
     items: List['ITemplate']
 
-    def find(self, subject: str = None, category: str = None, mime: str = None) -> Optional['ITemplate']: ...
-
+    def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional['ITemplate']: ...
 
 class ITemplate(INode, Protocol):
     category: str
     data_model: Optional['IDataModel']
-    key: str
+    name: str
     mime_types: List[str]
     path: str
     subject: str
@@ -677,24 +715,21 @@ class ITemplate(INode, Protocol):
 
 
 # noinspection PyPropertyDefinition
-class IStyle(INode, Protocol):
-    @property
-    def values(self) -> Data: ...
+class IStyle(IObject, Protocol):
+    values: Data
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # metadata
 
-# noinspection PyPropertyDefinition
-class IMetaData(INode, Protocol):
-    @property
-    def values(self) -> Data: ...
+class IMetadata(IObject, Protocol):
+    values: Data
 
-    def extend(self, other): ...
+    def extend(self, *others) -> 'IMetadata': ...
 
-    def set(self, key: str, value): ...
+    def set(self, key: str, value) -> 'IMetadata': ...
 
-    def get(self, key: str): ...
+    def get(self, key: str, default=None): ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -772,25 +807,24 @@ class Legend(Data):
 
 class LegendRenderOutput(Data):
     html: str
-    image: bytes
+    image: 'IImage'
     image_path: str
 
 
 # noinspection PyPropertyDefinition
 class ILayer(INode, Protocol):
     map: 'IMap'
-    metadata: 'IMetaData'
+    metadata: 'IMetadata'
 
     can_render_box: bool
     can_render_xyz: bool
     can_render_svg: bool
 
     is_group: bool
-    is_public: bool
     is_editable: bool
 
-    supports_wms: bool
-    supports_wfs: bool
+    supports_raster_ows: bool
+    supports_vector_ows: bool
 
     legend: 'Legend'
 
@@ -812,8 +846,7 @@ class ILayer(INode, Protocol):
 
     client_options: Data
 
-    ows_name: str
-    ows_feature_name: str
+    ows_enabled: bool
 
     edit_data_model: Optional['IDataModel']
     edit_options: Optional[Data]
@@ -848,13 +881,11 @@ class ILayer(INode, Protocol):
 
     def render_svg_tags(self, rv: 'MapRenderView', style: Optional['IStyle']) -> List['Tag']: ...
 
-    def get_legend(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
+    def render_legend_with_cache(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
 
     def render_legend(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
 
     def get_features(self, bounds: Bounds, limit: int = 0) -> List['IFeature']: ...
-
-    def enabled_for_ows(self, service: 'IOwsService') -> bool: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -870,8 +901,10 @@ class OwsProtocol(Enum):
 
 class OwsVerb(Enum):
     CreateStoredQuery = 'CreateStoredQuery'
+    DescribeCoverage = 'DescribeCoverage'
     DescribeFeatureType = 'DescribeFeatureType'
     DescribeLayer = 'DescribeLayer'
+    DescribeRecord = 'DescribeRecord'
     DescribeStoredQueries = 'DescribeStoredQueries'
     DropStoredQuery = 'DropStoredQuery'
     GetCapabilities = 'GetCapabilities'
@@ -882,6 +915,8 @@ class OwsVerb(Enum):
     GetMap = 'GetMap'
     GetPrint = 'GetPrint'
     GetPropertyValue = 'GetPropertyValue'
+    GetRecordById = 'GetRecordById'
+    GetRecords = 'GetRecords'
     GetTile = 'GetTile'
     ListStoredQueries = 'ListStoredQueries'
     LockFeature = 'LockFeature'
@@ -891,13 +926,13 @@ class OwsVerb(Enum):
 class OwsOperation(Data):
     formats: List[str]
     get_url: Url
-    params: Dict
+    params: Dict[str, List[str]]
     post_url: Url
     verb: OwsVerb
 
 
 class IOwsService(INode, Protocol):
-    metadata: 'IMetaData'
+    metadata: 'IMetadata'
     name: str
     protocol: OwsProtocol
     supported_crs: List[Crs]
@@ -913,7 +948,7 @@ class IOwsService(INode, Protocol):
 
 
 class IOwsProvider(INode, Protocol):
-    metadata: 'IMetaData'
+    metadata: 'IMetadata'
     protocol: OwsProtocol
     supported_crs: List[Crs]
     url: Url
@@ -956,7 +991,7 @@ class IProject(INode, Protocol):
     client: 'IClient'
     locale_uids: List[str]
     map: 'IMap'
-    metadata: 'IMetaData'
+    metadata: 'IMetadata'
     search_providers: List['ISearchProvider']
     templates: 'ITemplateBundle'
 
@@ -966,7 +1001,7 @@ class IApplication(INode, Protocol):
     auth: 'IAuthManager'
     client: 'IClient'
     locale_uids: List[str]
-    metadata: 'IMetaData'
+    metadata: 'IMetadata'
     monitor: 'IMonitor'
     mpx_url: str
     web_sites: List['IWebSite']

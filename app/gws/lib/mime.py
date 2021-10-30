@@ -1,14 +1,19 @@
 """Mime types."""
 
 import mimetypes
-import os
 
+import gws.types as t
+
+BIN = 'application/octet-stream'
 CSS = 'text/css'
 CSV = 'text/csv'
+GEOJSON = 'application/geojson'
 GIF = 'image/gif'
+GML = 'application/vnd.ogc.gml'
+GML3 = 'application/vnd.ogc.gml/3.1.1'
+GZIP = 'application/gzip'
 HTML = 'text/html'
 JPEG = 'image/jpeg'
-JPG = 'image/jpeg'
 JS = 'application/javascript'
 JSON = 'application/json'
 PDF = 'application/pdf'
@@ -18,18 +23,38 @@ TTF = 'application/x-font-ttf'
 TXT = 'text/plain'
 XML = 'application/xml'
 ZIP = 'application/zip'
-GML = 'application/vnd.ogc.gml'
-GML3 = 'application/vnd.ogc.gml/3.1.1'
-
-BIN = 'application/octet-stream'
 
 _common = {
+    BIN,
+    CSS,
+    CSV,
+    GEOJSON,
+    GIF,
+    GML,
+    GML3,
+    GZIP,
+    HTML,
+    JPEG,
+    JS,
+    JSON,
+    PDF,
+    PNG,
+    SVG,
+    TTF,
+    TXT,
+    XML,
+    ZIP,
+}
+
+_common_extensions = {
     'css': CSS,
     'csv': CSV,
     'gif': GIF,
+    'gml': GML,
+    'gml3': GML3,
     'html': HTML,
     'jpeg': JPEG,
-    'jpg': JPG,
+    'jpg': JPEG,
     'js': JS,
     'json': JSON,
     'pdf': PDF,
@@ -39,50 +64,73 @@ _common = {
     'txt': TXT,
     'xml': XML,
     'zip': ZIP,
-    'gml': GML,
-    'gml3': GML3,
 }
 
 _aliases = {
-    'text/xml': 'xml',
-    'application/xml': 'xml',
+    'application/gml+xml': GML,
+    'application/gml+xml; version=2': GML,
+    'application/gml+xml; version=3': GML3,
+    'application/gml:3': GML3,
+    'application/xml; subtype=gml/2': GML,
+    'application/xml; subtype=gml/3': GML3,
+
+    'application/html': HTML,
+    'application/x-gzip': GZIP,
+    'application/x-pdf': PDF,
+    'image/jpg': JPEG,
+    'text/xhmtl': HTML,
+    'text/xml': XML,
 }
 
-DEFAULT_ALLOWED = list(_common.values())
 
+def get(mt: str) -> t.Optional[str]:
+    if not mt:
+        return None
 
-def get(key):
-    if not key:
-        return
+    mt = mt.lower()
 
-    key = key.lower()
+    s = _get_quick(mt)
+    if s:
+        return s
 
-    # literal mime type
-    if '/' in key:
-        if key in _aliases:
-            return _common[_aliases[key]]
-        return key
+    for s, m in _aliases.items():
+        if mt.startswith(s):
+            return m
 
-    # shortcut
-    if key in _common:
-        return _common[key]
+    if ';' in mt:
+        p = mt.partition(';')
+        s = _get_quick(p[1].strip())
+        if s:
+            return s
 
-    t, _ = mimetypes.guess_type('x.' + key)
+    if '/' in mt and mimetypes.guess_extension(mt):
+        return mt
+
+    t, _ = mimetypes.guess_type('x.' + mt)
     return t
 
 
-def for_path(path):
-    _, ext = os.path.splitext(path)
-    if ext[1:] in _common:
-        return _common[ext[1:]]
+def _get_quick(mt):
+    if mt in _common:
+        return mt
+    if mt in _common_extensions:
+        return _common_extensions[mt]
+    if mt in _aliases:
+        return _aliases[mt]
+
+
+def for_path(path: str) -> str:
+    _, _, e = path.rpartition('.')
+    if e in _common_extensions:
+        return _common_extensions[e]
     t, _ = mimetypes.guess_type(path)
-    return t
+    return t or BIN
 
 
-def extension(type):
-    for k, v in _common.items():
-        if v == type:
-            return k
-    t = mimetypes.guess_extension(type)
-    if t:
-        return t[1:]
+def extension_for(mt) -> t.Optional[str]:
+    for ext, t in _common_extensions.items():
+        if t == mt:
+            return ext
+    s = mimetypes.guess_extension(mt)
+    if s:
+        return s[1:]

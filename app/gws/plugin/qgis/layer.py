@@ -29,10 +29,10 @@ class Object(gws.base.layer.group.BaseGroup):
     provider: provider.Object
 
     def configure(self):
-        self.provider = provider.create(self.root, self.config, shared=True)
+        pass
 
-        if not self.has_configured_metadata:
-            self.configure_metadata_from(self.provider.metadata)
+    def configure_source(self):
+        self.provider = provider.create(self.root, self.config, shared=True)
 
         cfgs = self.layer_tree_configuration(
             source_layers=self.provider.source_layers,
@@ -47,5 +47,8 @@ class Object(gws.base.layer.group.BaseGroup):
             raise gws.ConfigurationError(f'no source layers in {self.uid!r}')
 
         self.configure_layers(cfgs)
+        return True
 
-
+    def configure_metadata(self):
+        if super().configure_metadata():
+            self.set_metadata(self.provider.metadata)

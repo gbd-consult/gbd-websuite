@@ -9,7 +9,7 @@ import gws
 import gws.types as t
 import gws.lib.extent
 import gws.lib.render
-import gws.lib.img
+import gws.lib.font
 import gws.lib.style
 import gws.lib.units as units
 import gws.lib.xml2 as xml2
@@ -104,13 +104,13 @@ def sort_by_z_index(tags: t.List[gws.Tag]):
     tags.sort(key=key)
 
 
-def as_xml(tags: t.List[gws.Tag]) -> str:
-    return ''.join(gws.lib.xml2.as_string(tag) for tag in tags)
+def to_xml(tags: t.List[gws.Tag]) -> str:
+    return ''.join(gws.lib.xml2.to_string(tag) for tag in tags)
 
 
-def as_png(tags: t.List[gws.Tag], size: gws.Size) -> bytes:
+def to_png(tags: t.List[gws.Tag], size: gws.Size) -> bytes:
     sort_by_z_index(tags)
-    svg = gws.lib.xml2.as_string(('svg', SVG_ATTRIBUTES, *tags))
+    svg = gws.lib.xml2.to_string(('svg', SVG_ATTRIBUTES, *tags))
     with wand.image.Image(blob=svg.encode('utf8'), format='svg', background='None', width=size[0], height=size[1]) as image:
         return image.make_blob('png')
 
@@ -146,7 +146,7 @@ def fragment_tags(fragment: gws.SvgFragment, rv: gws.MapRenderView) -> t.List[gw
     style_map = {}
     if fragment.styles:
         for s in fragment.styles:
-            sd = t.cast(gws.lib.style.Record, s)
+            sd = t.cast(gws.lib.style.Style, s)
             if sd.name:
                 style_map[sd.name] = sd.values
 
@@ -272,7 +272,7 @@ def _text(cx, cy, label, sv: StyleValues) -> gws.Tag:
 
     font_name = _map_font(sv)
     font_size = sv.label_font_size or DEFAULT_FONT_SIZE
-    font = gws.lib.img.font_api.truetype(font=font_name, size=font_size)
+    font = gws.lib.font.from_name(font_name, font_size)
 
     anchor = 'start'
 
@@ -389,7 +389,7 @@ def _parse_icon_url(url, dpi):
 
     sub = gws.compact(_clean(c) for c in svg.children)
 
-    return xml2.tag('svg', *(c.as_tag() for c in sub)), w, h
+    return xml2.tag('svg', *(c.to_tag() for c in sub)), w, h
 
 
 _ALLOWED_TAGS = {

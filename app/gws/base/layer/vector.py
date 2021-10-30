@@ -2,7 +2,7 @@ import gws
 import gws.types as t
 import gws.base.model
 import gws.lib.extent
-import gws.base.style
+import gws.lib.style
 import gws.lib.svg
 
 from . import core, types
@@ -13,9 +13,9 @@ _FEATURE_FULL_FORMAT_THRESHOLD = 500
 class Config(types.Config):
     display: types.DisplayMode = types.DisplayMode.client  #: layer display mode
     editDataModel: t.Optional[gws.base.model.Config]  #: data model for input data
-    editStyle: t.Optional[gws.base.style.Config]  #: style for features being edited
+    editStyle: t.Optional[gws.lib.style.Config]  #: style for features being edited
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
-    style: t.Optional[gws.base.style.Config]  #: style for features
+    style: t.Optional[gws.lib.style.Config]  #: style for features
 
 
 class Object(core.Object):
@@ -23,8 +23,8 @@ class Object(core.Object):
 
     can_render_box = True
     can_render_svg = True
-    supports_wms = True
-    supports_wfs = True
+    supports_raster_ows = True
+    supports_vector_ows = True
 
     def props_for(self, user):
         p = super().props_for(user)
@@ -33,20 +33,20 @@ class Object(core.Object):
             return gws.merge(
                 p,
                 type='box',
-                url=core.url_for_get_box(self.uid))
+                url=core.layer_url_path(self.uid, kind='box'))
 
-        return gws.merge(p, {
-            'type': 'vector',
-            'loadingStrategy': self.var('loadingStrategy'),
-            'style': self.style,
-            'editStyle': self.edit_style,
-            'url': core.url_for_get_features(self.uid),
-        })
+        return gws.merge(
+            p,
+            type='vector',
+            loadingStrategy=self.var('loadingStrategy'),
+            style=self.style,
+            editStyle=self.edit_style,
+            url=core.layer_url_path(self.uid, kind='features'))
 
     def render_box(self, rv, extra_params=None):
         tags = self.render_svg_tags(rv)
         ts = gws.time_start('render_box:to_png')
-        png = gws.lib.svg.as_png(tags, size=rv.size_px)
+        png = gws.lib.svg.to_png(tags, size=rv.size_px)
         gws.time_end(ts)
         return png
 

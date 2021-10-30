@@ -1,7 +1,7 @@
 import gws
 import gws.types as t
 
-from . import namespaces
+from . import namespaces, types
 
 
 class NamespaceConfig(gws.Data):
@@ -21,16 +21,23 @@ class Config(gws.Config):
 
 @gws.ext.Object('helper.xml')
 class Object(gws.Node):
+    fallback_namespace: types.Namespace
+    namespaces: t.Dict[str, types.Namespace]
+
     def configure(self):
+        self.fallback_namespace = types.Namespace(
+            name='gws',
+            uri='http://gbd-websuite.de/namespaces/gws',
+            schema='', )
 
-        self.namespaces = {}
+        self.namespaces = {
+            self.fallback_namespace.name: self.fallback_namespace,
+        }
 
-        for ns in namespaces.ALL:
-            self.namespaces[ns[0]] = ns[1:]
-
+        for name, uri, schema in namespaces.ALL:
+            self.namespaces[name] = types.Namespace(name=name, uri=uri, schema=schema)
         for ns in self.var('namespaces', default=[]):
-            self.namespaces[ns.name] = [ns.uri, ns.get('schemaLocation', '')]
+            self.namespaces[ns.name] = types.Namespace(name=ns.name, uri=ns.uri, schema=ns.get('schemaLocation', ''))
 
-    def namespace(self, name):
-        p = self.namespaces.get(name)
-        return p or ['', '']
+    def namespace(self, name) -> t.Optional[types.Namespace]:
+        return self.namespaces.get(name)

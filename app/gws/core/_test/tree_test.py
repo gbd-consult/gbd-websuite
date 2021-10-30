@@ -132,7 +132,7 @@ def test_access_with_explicit_parent():
     a.access = _access('X allow')
 
     assert _user('X').can_use(b) is False
-    assert _user('X').can_use(b, parent=a) is True
+    assert _user('X').can_use(b, context=a) is True
 
 
 def test_basic_props():

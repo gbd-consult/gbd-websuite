@@ -62,7 +62,7 @@ def _project_meta_from_props(props):
         })
     })
 
-    return gws.lib.metadata.from_dict(d) if d else None
+    return gws.lib.metadata.from_dict(d)
 
 
 def _pval(props, key):
@@ -103,7 +103,7 @@ def _tree(el, map_layers):
         name = el.attr('id') or title
 
         sl = gws.lib.gis.SourceLayer(title=title, name=name)
-        sl.metadata = gws.lib.metadata.Record(title=title, name=name)
+        sl.metadata = gws.lib.metadata.from_args(title=title, name=name)
 
         sl.is_visible = visible
         sl.is_expanded = expanded
@@ -139,7 +139,7 @@ def _map_layers(root, props):
 
         # no_wms_layers always contains titles, not ids (=names)
 
-        if sl.metadata.title in no_wms_layers:
+        if sl.metadata.get('title') in no_wms_layers:
             continue
 
         # ggis2: non-queryable layers are on the identify.disabledlayers list
@@ -151,11 +151,11 @@ def _map_layers(root, props):
         elif s == '0':
             sl.is_queryable = False
         else:
-            sl.is_queryable = sl.metadata.name not in disabled_layers
+            sl.is_queryable = sl.metadata.get('name') not in disabled_layers
 
-        sl.title = sl.metadata.title
+        sl.title = sl.metadata.get('title')
         sl.name = el.get_text('id') if use_layer_ids else (el.get_text('shortname') or el.get_text('layername'))
-        sl.metadata.name = sl.name
+        sl.metadata.set('name', sl.name)
 
         map_layers[el.get_text('id')] = sl
 

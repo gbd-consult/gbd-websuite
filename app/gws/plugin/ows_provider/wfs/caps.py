@@ -8,7 +8,7 @@ import gws.types as t
 
 
 class WFSCaps(gws.Data):
-    metadata: gws.lib.metadata.Record
+    metadata: gws.lib.metadata.Metadata
     operations: t.List[gws.OwsOperation]
     source_layers: t.List[gws.lib.gis.SourceLayer]
     supported_crs: t.List[gws.Crs]
@@ -16,37 +16,32 @@ class WFSCaps(gws.Data):
 
 
 def parse(xml) -> WFSCaps:
-    el = gws.lib.xml2.from_string(xml)
-
-    meta = u.get_meta(u.one_of(el, 'Service', 'ServiceIdentification'))
-    meta['contact'] = u.get_meta_contact(u.one_of(el, 'Service.ContactInformation', 'ServiceProvider.ServiceContact'))
-    meta['url'] = u.get_url(el.first('ServiceMetadataURL'))
-
-    source_layers = u.flatten_source_layers(_feature_type(e) for e in el.all('FeatureTypeList.FeatureType'))
+    root_el = gws.lib.xml2.from_string(xml)
+    source_layers = u.flatten_source_layers(_feature_type(e) for e in root_el.all('FeatureTypeList.FeatureType'))
 
     return WFSCaps(
-        metadata=gws.lib.metadata.Record(meta),
-        operations=[gws.OwsOperation(e) for e in u.get_operations(u.one_of(el, 'OperationsMetadata', 'Capability'))],
+        metadata=u.get_service_metadata(root_el),
+        operations=u.get_operations(root_el),
         source_layers=source_layers,
         supported_crs=gws.lib.gis.crs_from_source_layers(source_layers),
-        version=el.attr('version'),
+        version=root_el.attr('version'),
     )
 
 
 def _feature_type(el):
-    oo = gws.lib.gis.SourceLayer()
+    sl = gws.lib.gis.SourceLayer()
 
     n = el.get_text('Name')
     if ':' in n:
-        oo.name = n
-        oo.title = n.split(':')[1]
+        sl.name = n
+        sl.title = n.split(':')[1]
     else:
-        oo.title = oo.name = n
+        sl.title = sl.name = n
 
-    oo.metadata = gws.lib.metadata.Record(u.get_meta(el))
-    oo.supported_bounds = u.get_bounds_list(el)
+    sl.metadata = u.get_metadata(el)
+    sl.supported_bounds = u.get_bounds_list(el)
 
-    oo.is_queryable = True
+    sl.is_queryable = True
 
     cs = []
     e = u.one_of(el, 'DefaultSRS', 'DefaultCRS', 'SRS', 'CRS')
@@ -56,6 +51,6 @@ def _feature_type(el):
     cs.extend(e.text for e in el.all('OtherSRS'))
     cs.extend(e.text for e in el.all('OtherCRS'))
 
-    oo.supported_crs = gws.compact(cs)
+    sl.supported_crs = gws.compact(cs)
 
-    return oo
+    return sl
