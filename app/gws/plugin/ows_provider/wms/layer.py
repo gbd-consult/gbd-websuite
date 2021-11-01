@@ -2,8 +2,6 @@
 
 import gws
 import gws.base.layer
-import gws.base.layer
-import gws.lib.gis.source
 import gws.types as t
 
 from . import provider as provider_module
@@ -35,4 +33,3 @@ class Object(gws.base.layer.group.Object):
         if not super().configure_metadata():
             self.set_metadata(self.provider.metadata)
             return True
-

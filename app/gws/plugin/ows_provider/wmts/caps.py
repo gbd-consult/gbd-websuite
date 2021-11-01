@@ -1,13 +1,11 @@
 import gws
-import gws.lib.gis
 import gws.lib.crs
-import gws.lib.metadata
 import gws.lib.ows.parseutil as u
 import gws.lib.units as units
 import gws.lib.xml2
 import gws.types as t
-from .. import core
 
+from .. import core
 
 # http://portal.opengeospatial.org/files/?artifact_id=35326
 

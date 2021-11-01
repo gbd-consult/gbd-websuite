@@ -3,7 +3,6 @@ import re
 import urllib.parse
 
 import gws
-import gws.lib.gis
 import gws.lib.crs
 import gws.lib.metadata
 import gws.lib.net

@@ -1,9 +1,9 @@
 import gws
+import gws.lib.crs
 import gws.lib.gis.source
+import gws.lib.metadata
 import gws.lib.mime
 import gws.lib.ows
-import gws.lib.metadata
-import gws.lib.crs
 import gws.types as t
 
 

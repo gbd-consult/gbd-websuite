@@ -3,8 +3,8 @@ import yaml
 from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
-import gws.types as t
 import gws.lib.os2
+import gws.types as t
 
 CONFIG_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
 TMP_DIR = gws.TMP_DIR + '/mpx'

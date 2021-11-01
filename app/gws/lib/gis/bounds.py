@@ -1,9 +1,9 @@
 """Utilities to work with Bounds objects."""
 
 import gws
+import gws.lib.crs
 import gws.lib.extent
 import gws.lib.gml
-import gws.lib.crs
 import gws.lib.xml2
 import gws.types as t
 

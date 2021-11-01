@@ -2,13 +2,12 @@ import math
 
 import gws
 import gws.base.web.error
+import gws.lib.crs
 import gws.lib.extent
-import gws.lib.gis
 import gws.lib.image
 import gws.lib.legend
 import gws.lib.render
 import gws.lib.units
-import gws.lib.crs
 import gws.types as t
 
 from .. import core

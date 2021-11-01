@@ -1,6 +1,6 @@
 import gws
-import gws.lib.gis.source
 import gws.base.layer
+import gws.lib.gis.source
 import gws.lib.gis.util
 import gws.lib.net
 import gws.lib.units as units

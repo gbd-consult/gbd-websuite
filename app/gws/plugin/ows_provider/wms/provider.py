@@ -2,7 +2,6 @@
 
 import gws
 import gws.lib.gis.util
-import gws.lib.gis.source
 import gws.lib.ows
 import gws.types as t
 

@@ -3,14 +3,13 @@ import re
 import gws
 import gws.base.model
 import gws.base.template
+import gws.lib.crs
 import gws.lib.extent
+import gws.lib.gis.zoom
 import gws.lib.legend
 import gws.lib.metadata
-import gws.lib.crs
 import gws.lib.style
 import gws.lib.svg
-import gws.lib.gis.zoom
-import gws.lib.gis.source
 import gws.types as t
 
 from . import types

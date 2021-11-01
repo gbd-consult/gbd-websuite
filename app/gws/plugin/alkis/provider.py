@@ -1,8 +1,8 @@
 import gws
 import gws.base.db.postgres
+import gws.lib.crs
 import gws.lib.feature
 import gws.lib.shape
-import gws.lib.crs
 import gws.types as t
 
 from . import types

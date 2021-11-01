@@ -1,8 +1,8 @@
 import re
 
 import gws
-import gws.lib.misc
 import gws.lib.crs
+import gws.lib.misc
 import gws.types as t
 
 _DEFAULT_EDITOR = {

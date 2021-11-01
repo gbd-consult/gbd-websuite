@@ -4,7 +4,6 @@ import gws
 import gws.config
 import gws.lib.gis.source
 import gws.types as t
-import gws.lib.json2
 
 from . import core, types
 

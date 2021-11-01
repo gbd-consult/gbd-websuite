@@ -2,9 +2,9 @@ import osgeo.gdal
 import shapely.geometry
 
 import gws
+import gws.lib.crs
 import gws.lib.extent
 import gws.lib.feature
-import gws.lib.crs
 import gws.lib.shape
 import gws.lib.xml2
 import gws.types as t

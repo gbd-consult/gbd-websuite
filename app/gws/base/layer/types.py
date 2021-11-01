@@ -2,9 +2,9 @@ import gws
 import gws.base.model
 import gws.base.search
 import gws.lib.gis.source
+import gws.lib.gis.zoom
 import gws.lib.metadata
 import gws.lib.style
-import gws.lib.gis.zoom
 import gws.types as t
 
 

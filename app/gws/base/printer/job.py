@@ -3,10 +3,10 @@ import os
 
 import gws
 import gws.base.template
+import gws.lib.crs
 import gws.lib.feature
 import gws.lib.image
 import gws.lib.job
-import gws.lib.crs
 import gws.lib.os2
 import gws.lib.pdf
 import gws.lib.render

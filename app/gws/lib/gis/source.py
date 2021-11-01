@@ -1,10 +1,9 @@
 import re
+
 import gws
-import gws.types as t
-import gws.lib.metadata
 import gws.lib.extent
 import gws.lib.gis.util
-
+import gws.types as t
 
 ##
 

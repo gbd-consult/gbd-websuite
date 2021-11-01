@@ -3,13 +3,13 @@ import re
 import gws
 import gws.base.template
 import gws.base.web.error
+import gws.lib.crs
 import gws.lib.date
 import gws.lib.extent
 import gws.lib.gml
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
-import gws.lib.crs
 import gws.lib.render
 import gws.lib.units as units
 import gws.lib.xml2

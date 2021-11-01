@@ -1,11 +1,10 @@
 import re
 
 import gws
-import gws.lib.gis.source
+import gws.lib.crs
 import gws.lib.extent
 import gws.lib.gis.util
 import gws.lib.metadata
-import gws.lib.crs
 import gws.lib.xml2 as xml2
 import gws.types as t
 

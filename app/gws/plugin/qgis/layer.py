@@ -3,7 +3,6 @@
 import gws
 import gws.base.layer.group
 import gws.base.layer.image
-import gws.lib.gis.source
 import gws.types as t
 
 from . import provider

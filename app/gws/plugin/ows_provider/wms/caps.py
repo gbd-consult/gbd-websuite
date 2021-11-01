@@ -1,13 +1,10 @@
 """WMS Capabilities parser."""
 
 import gws
-import gws.lib.gis.bounds
-import gws.lib.gis
-import gws.lib.metadata
 import gws.lib.ows.parseutil as u
-import gws.lib.crs
 import gws.lib.xml2
 import gws.types as t
+
 from .. import core
 
 

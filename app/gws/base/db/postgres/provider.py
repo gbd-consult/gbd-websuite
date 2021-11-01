@@ -3,9 +3,9 @@ import re
 import gws
 import gws.base.db
 import gws.base.model
+import gws.lib.crs
 import gws.lib.feature
 import gws.lib.shape
-import gws.lib.crs
 import gws.types as t
 
 from . import driver

@@ -1,7 +1,6 @@
 import gws
 import gws.base.layer
 import gws.lib.gis.source
-import gws.lib.gis.zoom
 import gws.lib.gis.util
 import gws.types as t
 

@@ -1,5 +1,4 @@
 import gws
-import gws.lib.gis.source
 import gws.lib.units as units
 import gws.types as t
 

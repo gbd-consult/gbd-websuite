@@ -3,11 +3,10 @@
 import re
 
 import gws
-import gws.lib.gis.zoom
-import gws.lib.extent
-import gws.lib.metadata
 import gws.lib.crs
+import gws.lib.extent
 import gws.lib.gis.source
+import gws.lib.gis.zoom
 import gws.types as t
 
 

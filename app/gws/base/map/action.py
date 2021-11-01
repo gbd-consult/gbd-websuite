@@ -3,10 +3,10 @@
 import time
 
 import gws
-import gws.lib.crs
 import gws.base.api
 import gws.base.layer
 import gws.lib.cache
+import gws.lib.crs
 import gws.lib.feature
 import gws.lib.image
 import gws.lib.json2

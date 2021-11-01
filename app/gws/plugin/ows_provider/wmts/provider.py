@@ -1,7 +1,6 @@
 """WMTS provider"""
 
 import gws
-import gws.lib.gis
 import gws.types as t
 
 from . import caps
