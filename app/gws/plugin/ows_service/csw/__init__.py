@@ -96,7 +96,7 @@ class Object(core.Service):
         rd = core.Request(req=req, project=None, service=self)
 
         if req.method == 'GET':
-            return self.dispatch(rd, req.param('request', 'rawrecord'))
+            return self.dispatch_request(rd, req.param('request', 'rawrecord'))
 
         # CSW should accept POST'ed xml, which can be wrapped in a SOAP envelope
 
@@ -112,7 +112,7 @@ class Object(core.Service):
             except AttributeError:
                 raise gws.base.web.error.BadRequest()
 
-        return self.dispatch(rd, rd.xml.name.lower())
+        return self.dispatch_request(rd, rd.xml.name.lower())
 
     def handle_getcapabilities(self, rd: core.Request):
         return self.template_response(rd, gws.OwsVerb.GetCapabilities, context={

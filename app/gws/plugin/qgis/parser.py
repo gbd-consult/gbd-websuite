@@ -4,47 +4,48 @@ import urllib.parse
 
 import gws
 import gws.lib.gis
+import gws.lib.crs
 import gws.lib.metadata
 import gws.lib.net
 import gws.lib.ows.parseutil as u
 import gws.lib.xml2
+import gws.types as t
 
 from . import types
 
 _bigval = 1e10
 
 
-def parse(xml) -> types.ProjectCaps:
-    root = gws.lib.xml2.from_string(xml)
-    caps = types.ProjectCaps()
+class Caps(gws.Data):
+    metadata: gws.lib.metadata.Metadata
+    print_templates: t.List[types.PrintTemplate]
+    properties: dict
+    source_layers: t.List[gws.SourceLayer]
+    project_crs: t.Optional[gws.ICrs]
+    version: str
 
-    caps.properties = _properties(root.first('properties'))
+
+def parse(xml) -> Caps:
+    root_el = gws.lib.xml2.from_string(xml)
+
+    caps = Caps()
+
+    caps.properties = _properties(root_el.first('properties'))
     caps.metadata = _project_meta_from_props(caps.properties)
-    caps.version = root.attr('version', '').split('-')[0]
+    caps.version = root_el.attr('version', '').split('-')[0]
 
-    if caps.version.startswith('2'):
-        caps.print_templates = _print_v2(root)
-    if caps.version.startswith('3'):
-        caps.print_templates = _print_v3(root)
+    if not caps.version.startswith('3'):
+        raise gws.Error(f'unsupported QGIS version')
 
+    caps.print_templates = _print_layouts(root_el)
     for n, cc in enumerate(caps.print_templates):
         cc.index = n
 
-    map_layers = _map_layers(root, caps.properties)
+    map_layers = _map_layers(root_el, caps.properties)
+    root_group = _tree(root_el.first('layer-tree-group'), map_layers)
+    caps.source_layers = u.enum_source_layers(root_group.layers)
 
-    root_group = _tree(root.first('layer-tree-group'), map_layers)
-    caps.source_layers = u.flatten_source_layers(root_group.layers)
-
-    crs = None
-
-    if caps.version.startswith('2'):
-        crs = _pval(caps.properties, 'SpatialRefSys.ProjectCrs')
-    if caps.version.startswith('3'):
-        crs = root.get_text('projectCrs.spatialrefsys.authid')
-
-    if crs:
-        caps.supported_crs = [crs]
-
+    caps.project_crs = gws.lib.crs.get(root_el.get_text('projectCrs.spatialrefsys.authid'))
     return caps
 
 
@@ -54,15 +55,12 @@ def _project_meta_from_props(props):
         'attribution': _pval(props, 'CopyrightLabel.Label'),
         'keywords': _pval(props, 'WMSKeywordList'),
         'title': _pval(props, 'WMSServiceTitle'),
-        'contact': gws.strip({
-            'email': _pval(props, 'WMSContactMail'),
-            'organization': _pval(props, 'WMSContactOrganization'),
-            'person': _pval(props, 'WMSContactPerson'),
-            'phone': _pval(props, 'WMSContactPhone'),
-            'position': _pval(props, 'WMSContactPosition'),
-        })
+        'contactEmail': _pval(props, 'WMSContactMail'),
+        'contactOrganization': _pval(props, 'WMSContactOrganization'),
+        'contactPerson': _pval(props, 'WMSContactPerson'),
+        'contactPhone': _pval(props, 'WMSContactPhone'),
+        'contactPosition': _pval(props, 'WMSContactPosition'),
     })
-
     return gws.lib.metadata.from_dict(d)
 
 
@@ -103,7 +101,7 @@ def _tree(el, map_layers):
         # qgis doesn't write 'id' for groups but our generators might
         name = el.attr('id') or title
 
-        sl = gws.lib.gis.SourceLayer(title=title, name=name)
+        sl = gws.SourceLayer(title=title, name=name)
         sl.metadata = gws.lib.metadata.from_args(title=title, name=name)
 
         sl.is_visible = visible
@@ -180,24 +178,23 @@ def _layer_meta(el):
 
 
 def _map_layer(el):
-    sl = gws.lib.gis.SourceLayer()
+    sl = gws.SourceLayer()
 
     sl.metadata = _layer_meta(el)
 
-    crs = el.get_text('srs.spatialrefsys.authid')
-
-    sl.supported_crs = [crs]
     sl.supported_bounds = []
 
-    e = el.first('extent')
-    if e:
+    crs = gws.lib.crs.get(el.get_text('srs.spatialrefsys.authid'))
+    ext = el.first('extent')
+
+    if crs and ext:
         sl.supported_bounds.append(gws.Bounds(
             crs=crs,
             extent=(
-                _float(e.get_text('xmin')),
-                _float(e.get_text('ymin')),
-                _float(e.get_text('xmax')),
-                _float(e.get_text('ymax')),
+                _float(ext.get_text('xmin')),
+                _float(ext.get_text('ymin')),
+                _float(ext.get_text('xmax')),
+                _float(ext.get_text('ymax')),
             )
         ))
 
@@ -223,59 +220,6 @@ def _map_layer(el):
         sl.opacity = _float(s)
 
     return sl
-
-
-"""
-print templates in qgis-2:
-
-<Composer title="..."
-   <Composition ...
-      <ComposerPicture elementAttrs...
-          <ComposerItem itemAttrs...
-          other tags
-      <ComposerArrow elementAttrs...
-          <ComposerItem itemAttrs...
-          other tag
-
-<Composer title="..."
-      etc
-
-we merge elementAttrs+itemAttrs and ignore other tags within elements
-
-"""
-
-
-def _print_v2(root):
-    return [_print_v2_composer(el) for el in root.all('Composer')]
-
-
-def _print_v2_composer(composer):
-    oo = types.PrintTemplate()
-
-    oo.title = composer.attr('title', '')
-
-    composition = composer.first('Composition')
-    oo.attrs = _lower_attrs(composition)
-
-    oo.elements = [
-        _print_v2_element(el)
-        for el in composition.all()
-        if el.name.startswith('Composer')
-    ]
-
-    return oo
-
-
-def _print_v2_element(el):
-    oo = types.PrintTemplateElement()
-    oo.type = el.name[len('Composer'):].lower()
-    oo.attrs = _lower_attrs(el)
-
-    for item in el.all():
-        if item.name == 'ComposerItem':
-            oo.attrs.update(_lower_attrs(item))
-
-    return oo
 
 
 """
@@ -323,22 +267,22 @@ _COMP3_LAYOUT_TYPES = {
 }
 
 
-def _print_v3(root):
-    return [_print_v3_layout(el) for el in root.all('Layouts.Layout')]
+def _print_layouts(root):
+    return [_print_layout(el) for el in root.all('Layouts.Layout')]
 
 
-def _print_v3_layout(layout):
+def _print_layout(layout):
     oo = types.PrintTemplate()
     oo.title = layout.attr('name', '')
     oo.attrs = _lower_attrs(layout)
 
-    oo.elements = [_print_v3_item(item) for item in layout.all('PageCollection.LayoutItem')]
-    oo.elements.extend(_print_v3_item(item) for item in layout.all('LayoutItem'))
+    oo.elements = [_print_item(item) for item in layout.all('PageCollection.LayoutItem')]
+    oo.elements.extend(_print_item(item) for item in layout.all('LayoutItem'))
 
     return oo
 
 
-def _print_v3_item(el):
+def _print_item(el):
     oo = types.PrintTemplateElement()
     oo.type = _COMP3_LAYOUT_TYPES[int(el.attr('type'))][len('Layout'):].lower()
     oo.attrs = _lower_attrs(el)

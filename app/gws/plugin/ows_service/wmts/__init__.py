@@ -8,6 +8,7 @@ import gws.lib.image
 import gws.lib.legend
 import gws.lib.render
 import gws.lib.units
+import gws.lib.crs
 import gws.types as t
 
 from .. import core
@@ -25,7 +26,7 @@ class Object(core.Service):
     supported_versions = ['1.0.0']
     is_raster_ows = True
 
-    matrix_sets: t.List[gws.lib.gis.TileMatrixSet]
+    tile_matrix_sets: t.List[gws.TileMatrixSet]
 
     @property
     def service_link(self):
@@ -59,12 +60,12 @@ class Object(core.Service):
     def configure(self):
         # @TODO more crs
         # @TODO different matrix sets per layer
-        self.matrix_sets = [
+        self.tile_matrix_sets = [
             # see https://docs.opengeospatial.org/is/13-082r2/13-082r2.html#29
-            gws.lib.gis.TileMatrixSet(
+            gws.TileMatrixSet(
                 uid='EPSG_3857',
-                crs='EPSG:3857',
-                matrices=_tile_matrices(EPSG3857_EXTENT, 0, 16),
+                crs=gws.lib.crs.get3857(),
+                matrices=self._tile_matrices(gws.lib.crs.c3857_extent, 0, 16),
             )
         ]
 
@@ -75,7 +76,7 @@ class Object(core.Service):
         return self.template_response(rd, gws.OwsVerb.GetCapabilities, context={
             'layer_caps_list': tree.leaves,
             'version': self.request_version(rd),
-            'matrix_sets': self.matrix_sets
+            'tile_matrix_sets': self.tile_matrix_sets
         })
 
     def handle_gettile(self, rd: core.Request):
@@ -144,7 +145,7 @@ class Object(core.Service):
         tms = None
         tm = None
 
-        for m in self.matrix_sets:
+        for m in self.tile_matrix_sets:
             if m.uid == matrix_set_uid:
                 tms = m
 
@@ -167,32 +168,27 @@ class Object(core.Service):
         bbox = x, y - span, x + span, y
         return tms.crs, bbox
 
+    def _tile_matrices(self, extent, min_zoom, max_zoom, tile_size=256):
+        ms = []
 
-EPSG3857_RADIUS = 6378137
+        # north origin
+        extent = extent[0], extent[3], extent[2], extent[1]
 
-EPSG3857_EXTENT = [
-    -math.pi * EPSG3857_RADIUS, math.pi * EPSG3857_RADIUS,
-    math.pi * EPSG3857_RADIUS, -math.pi * EPSG3857_RADIUS
-]
+        w, h = gws.lib.extent.size(extent)
 
+        for z in range(min_zoom, max_zoom + 1):
+            size = 1 << z
+            res = w / (tile_size * size)
+            ms.append(gws.TileMatrix(
+                uid='%02d' % z,
+                scale=gws.lib.units.res2scale(res),
+                x=extent[0],
+                y=extent[1],
+                tile_width=tile_size,
+                tile_height=tile_size,
+                width=size,
+                height=size,
+                extent=extent,
+            ))
 
-def _tile_matrices(extent, min_zoom, max_zoom, tile_size=256):
-    ms = []
-    w, h = gws.lib.extent.size(extent)
-
-    for z in range(min_zoom, max_zoom + 1):
-        size = 1 << z
-        res = w / (tile_size * size)
-        ms.append(gws.lib.gis.TileMatrix(
-            uid='%02d' % z,
-            scale=gws.lib.units.res2scale(res),
-            x=extent[0],
-            y=extent[1],
-            tile_width=tile_size,
-            tile_height=tile_size,
-            width=size,
-            height=size,
-            extent=extent,
-        ))
-
-    return ms
+        return ms

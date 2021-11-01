@@ -9,7 +9,7 @@ import gws.lib.gml
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
-import gws.lib.proj
+import gws.lib.crs
 import gws.lib.render
 import gws.lib.units as units
 import gws.lib.xml2
@@ -43,7 +43,7 @@ class ServiceConfig(gws.WithAccess):
     metadata: t.Optional[gws.lib.metadata.Config]  #: service metadata
     rootLayer: str = ''  #: root layer uid
     strictParams: bool = False  #: strict parameter parsing
-    supportedCrs: t.Optional[t.List[gws.Crs]]  #: supported CRS for this service
+    supportedCrs: t.Optional[t.List[gws.CrsId]]  #: supported CRS for this service
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: service XML templates
     updateSequence: t.Optional[str]  #: service update sequence
     withInspireMeta: bool = False  #: use INSPIRE Metadata
@@ -58,12 +58,6 @@ class Request(gws.Data):
     service: gws.IOwsService
     xml: t.Optional[gws.lib.xml2.Element] = None
     xml_is_soap: bool = False
-
-
-class Projection(gws.Data):
-    crs: str
-    proj: gws.lib.proj.Proj
-    extent: gws.Extent
 
 
 class XmlName(gws.Data):
@@ -102,7 +96,7 @@ class LayerCaps(gws.Data):
     extent4326: gws.Extent
     max_scale: int
     min_scale: int
-    projections: t.List[Projection]
+    bounds: t.List[gws.Bounds]
 
     children: t.List['LayerCaps']
     ancestors: t.List['LayerCaps']
@@ -145,6 +139,8 @@ class Service(gws.Node, gws.IOwsService):
     is_raster_ows: bool = False
     is_vector_ows: bool = False
 
+    supported_crs: t.List[gws.ICrs]
+
     @property
     def service_link(self):
         # NB: for project-based services, e.g. WMS,
@@ -165,12 +161,12 @@ class Service(gws.Node, gws.IOwsService):
         self.project = self.get_closest('gws.base.project')
         self.metadata = self.configure_metadata()
 
-        self.supported_crs = self.var('supportedCrs', default=[])
+        self.root_layer_uid = self.var('rootLayer')
+        self.supported_crs = [gws.lib.crs.require(s) for s in self.var('supportedCrs', default=[])]
         self.update_sequence = self.var('updateSequence')
         self.with_inspire_meta = self.var('withInspireMeta')
         self.with_strict_params = self.var('withStrictParams')
         self.xml_helper = self.root.application.require_helper('xml')
-        self.root_layer_uid = self.var('rootLayer')
 
         self.templates = gws.base.template.bundle.create(
             self.root,
@@ -181,6 +177,7 @@ class Service(gws.Node, gws.IOwsService):
             parent=self)
 
         self.layer_options = []
+
         for cfg in self.var('layerConfig', default=[]):
             lo = LayerOptions()
             apply = cfg.applyTo or gws.Data()
@@ -225,9 +222,9 @@ class Service(gws.Node, gws.IOwsService):
 
         rd = Request(req=req, project=project)
 
-        return self.dispatch(rd, req.param('request', ''))
+        return self.dispatch_request(rd, req.param('request', ''))
 
-    def dispatch(self, rd: Request, request_param):
+    def dispatch_request(self, rd: Request, request_param):
         h = getattr(self, 'handle_' + request_param.lower(), None)
         if not h:
             gws.log.debug(f'service={self.uid!r}: request={request_param!r} not found')
@@ -456,10 +453,9 @@ class Service(gws.Node, gws.IOwsService):
         lc.min_scale = int(min(scales))
         lc.max_scale = int(max(scales))
 
-        lc.projections = [
-            Projection(
+        lc.bounds = [
+            gws.Bounds(
                 crs=crs,
-                proj=gws.lib.proj.to_projection(crs),
                 extent=gws.lib.extent.transform(layer.extent, layer.crs, crs)
             )
             for crs in self.supported_crs or [layer.crs]
@@ -478,7 +474,17 @@ class Service(gws.Node, gws.IOwsService):
 
     # FeatureCaps and collections
 
-    def feature_collection(self, rd: Request, features: t.List[gws.IFeature], lcs: t.List[LayerCaps], populate=True, target_crs=None, invert_axis_if_geographic=False, crs_format='uri') -> FeatureCollection:
+    def feature_collection(
+            self,
+            rd: Request,
+            features: t.List[gws.IFeature],
+            lcs: t.List[LayerCaps],
+            target_crs: gws.ICrs,
+            populate=True,
+            invert_axis_if_geographic=False,
+            crs_format: gws.CrsFormat = gws.CrsFormat.URI
+    ) -> FeatureCollection:
+        ##
         coll = FeatureCollection(
             caps=[],
             features=[],
@@ -493,22 +499,13 @@ class Service(gws.Node, gws.IOwsService):
         layer_to_caps: t.Dict[str, LayerCaps] = {lc.layer.uid: lc for lc in lcs}
 
         default_xname = self._parse_xname(self._default_feature_name)
-        prec = 2
-        target_proj = None
-
-        if target_crs:
-            target_proj = gws.lib.proj.to_proj(target_crs)
-            if target_proj and target_proj.is_geographic:
-                prec = 6
+        invert_axis = target_crs.is_geographic and invert_axis_if_geographic
+        precision = 6 if target_crs.is_geographic else 2
 
         for f in features:
-            if target_proj:
-                f.transform_to(target_proj.epsg)
+            f.transform_to(target_crs)
 
-            gs = None
-            if f.shape:
-                inv = target_proj and target_proj.is_geographic and invert_axis_if_geographic
-                gs = gws.lib.gml.shape_to_tag(f.shape, precision=prec, invert_axis=inv, crs_format=crs_format)
+            shape_tag = gws.lib.gml.shape_to_tag(f.shape, precision, invert_axis, crs_format) if f.shape else None
 
             f.apply_data_model()
 
@@ -518,7 +515,7 @@ class Service(gws.Node, gws.IOwsService):
 
             coll.caps.append(FeatureCaps(
                 feature=f,
-                shape_tag=gs,
+                shape_tag=shape_tag,
                 xname=xname
             ))
 

@@ -32,8 +32,6 @@ class Object(types.IObject):
 ##
 
 class Node(Object, types.INode):
-    config: types.Config
-
     def __init__(self):
         super().__init__()
         self.children = []
@@ -58,8 +56,19 @@ class Node(Object, types.INode):
 
         log.debug(f'BEGIN config {self.class_name}')
 
-        # call all super 'configure' methods
-        mro = [cls for cls in type(self).mro() if hasattr(cls, 'configure')]
+        # since `super().configure` is mandatory in `configure` methods,
+        # let's automate this by collecting all super 'configure' methods upto 'Node'
+
+        mro = []
+        for cls in type(self).mro():
+            if cls == Node:
+                break
+            try:
+                if 'configure' in vars(cls):
+                    mro.append(cls)
+            except TypeError:
+                pass
+
         try:
             for cls in reversed(mro):
                 cls.configure(self)  # type: ignore

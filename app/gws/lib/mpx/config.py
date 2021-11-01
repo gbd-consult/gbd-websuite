@@ -3,6 +3,7 @@ import yaml
 from mapproxy.wsgiapp import make_wsgi_app
 
 import gws
+import gws.types as t
 import gws.lib.os2
 
 CONFIG_PATH = gws.CONFIG_DIR + '/mapproxy.yaml'
@@ -157,12 +158,12 @@ def create(root: gws.IRoot):
     if not cfg.get('layers'):
         return
 
-    crs = set()
+    crs: t.List[gws.ICrs] = []
     for p in root.find_all('gws.base.map'):
-        crs.add(gws.get(p, 'crs'))
+        crs.append(gws.get(p, 'crs'))
     for p in root.find_all('gws.ext.ows.service'):
-        crs.update(gws.get(p, 'supported_crs', default=[]))
-    cfg['services']['wms']['srs'] = sorted(crs)
+        crs.extend(gws.get(p, 'supported_crs', default=[]))
+    cfg['services']['wms']['srs'] = sorted(set(c.epsg for c in crs))
 
     return cfg
 

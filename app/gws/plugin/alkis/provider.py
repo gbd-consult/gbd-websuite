@@ -2,6 +2,7 @@ import gws
 import gws.base.db.postgres
 import gws.lib.feature
 import gws.lib.shape
+import gws.lib.crs
 import gws.types as t
 
 from . import types
@@ -13,7 +14,7 @@ class Config(gws.Config):
     """Basic ALKIS configuration"""
 
     db: str = ''  #: database provider ID
-    crs: gws.Crs  #: CRS for the ALKIS data
+    crs: gws.CrsId  #: CRS for the ALKIS data
     dataSchema: str = 'public'  #: schema where ALKIS tables are stored
     indexSchema: str = 'gws'  #: schema to store GWS internal indexes
     excludeGemarkung: t.Optional[t.List[str]]  #: Gemarkung (Administrative Unit) IDs to exclude from search
@@ -30,14 +31,14 @@ class Object(gws.Node):
     has_index = False
     has_source = False
     has_flurnummer = False
-    crs = ''
+    crs: gws.ICrs
     connect_args: t.Dict = {}
     data_schema = ''
     index_schema = ''
 
     def configure(self):
 
-        self.crs = self.var('crs')
+        self.crs = gws.lib.crs.get(self.var('crs'))
         self.db = gws.base.db.postgres.provider.require_for(self)
 
         self.index_schema = self.var('indexSchema')

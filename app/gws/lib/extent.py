@@ -1,9 +1,8 @@
-import fiona.transform
 import math
 import re
 
 import gws
-import gws.lib.proj
+import gws.lib.crs
 import gws.types as t
 
 
@@ -22,6 +21,10 @@ def from_str_list(ls: t.List[str]) -> t.Optional[gws.Extent]:
         return None
 
     return _valid(ns)
+
+
+def from_inverted_str_list(ls: t.List[str]) -> t.Optional[gws.Extent]:
+    return from_str_list([ls[1], ls[0], ls[3], ls[2]])
 
 
 def from_list(ls: t.List[t.Any]) -> t.Optional[gws.Extent]:
@@ -143,41 +146,12 @@ def intersect(a: gws.Extent, b: gws.Extent) -> bool:
     return a[0] <= b[2] and a[2] >= b[0] and a[1] <= b[3] and a[3] >= b[1]
 
 
-def transform(e: gws.Extent, src: str, dst: str) -> gws.Extent:
-    if gws.lib.proj.equal(src, dst):
-        return e
-
-    src_proj = gws.lib.proj.to_proj(src)
-    dst_proj = gws.lib.proj.to_proj(dst)
-
-    ax, ay, bx, by = _sort(e)
-
-    sg = {
-        'type': 'Polygon',
-        'coordinates': [
-            [(bx, ay), (bx, by), (ax, by), (ax, ay), (bx, ay)]
-        ]
-    }
-
-    dg = fiona.transform.transform_geom(src_proj.epsg, dst_proj.epsg, sg)
-    cc = dg['coordinates'][0]
-
-    return (
-        min(cc[0][0], cc[1][0], cc[2][0], cc[3][0], cc[4][0]),
-        min(cc[0][1], cc[1][1], cc[2][1], cc[3][1], cc[4][1]),
-        max(cc[0][0], cc[1][0], cc[2][0], cc[3][0], cc[4][0]),
-        max(cc[0][1], cc[1][1], cc[2][1], cc[3][1], cc[4][1]),
-    )
+def transform(e: gws.Extent, source: gws.ICrs, target: gws.ICrs) -> gws.Extent:
+    return source.transform_extent(e, target)
 
 
-def transform_to_4326(e: gws.Extent, crs: str) -> gws.Extent:
-    e = transform(e, crs, gws.EPSG_4326)
-    return (
-        round(e[0], 5),
-        round(e[1], 5),
-        round(e[2], 5),
-        round(e[3], 5),
-    )
+def transform_to_4326(e: gws.Extent, source: gws.ICrs) -> gws.Extent:
+    return source.transform_extent(e, gws.lib.crs.get4326())
 
 
 def swap_xy(e: gws.Extent) -> gws.Extent:

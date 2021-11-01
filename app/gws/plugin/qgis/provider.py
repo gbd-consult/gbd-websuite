@@ -2,6 +2,8 @@ import zipfile
 
 import gws
 import gws.lib.gis
+import gws.lib.crs
+import gws.lib.gis.util
 import gws.lib.net
 import gws.lib.ows
 import gws.types as t
@@ -13,6 +15,7 @@ class Config(gws.Config):
     path: gws.FilePath  #: path to a Qgis project file
     directRender: t.Optional[t.List[str]]  #: QGIS data providers that should be rendered directly
     directSearch: t.Optional[t.List[str]]  #: QGIS data providers that should be searched directly
+    forceCrs: t.Optional[gws.CrsId]  #: use this CRS for requests
 
 
 # see https://docs.qgis.org/2.18/en/docs/user_manual/working_with_ogc/ogc_server_support.html#getlegendgraphics-request
@@ -40,63 +43,65 @@ _DEFAULT_LEGEND_PARAMS = {
 }
 
 
-class Object(gws.Node):
-    version = ''
-
-    metadata: gws.IMetadata
+class Object(gws.Node, gws.IOwsProvider):
     path: str
     print_templates: t.List[types.PrintTemplate]
     properties: dict
-    source_layers: t.List[gws.lib.gis.SourceLayer]
     source_text: str
-    supported_crs: t.List[gws.Crs]
     url: str
 
     direct_render: t.Set[str]
     direct_search: t.Set[str]
 
+    project_crs: gws.ICrs
+    crs: gws.ICrs
+
     def configure(self):
         self.path = self.var('path')
+        self.root.application.monitor.add_path(self.path)
+
         self.url = 'http://%s:%s' % (
             self.root.application.var('server.qgis.host'),
             self.root.application.var('server.qgis.port'))
 
         self.source_text = self._read(self.path)
-        cc = parser.parse(self.source_text)
+        caps = parser.parse(self.source_text)
 
-        self.metadata = cc.metadata
-        self.print_templates = cc.print_templates
-        self.properties = cc.properties
-        self.source_layers = cc.source_layers
-        self.supported_crs = cc.supported_crs
-        self.version = cc.version
+        self.metadata = caps.metadata
+        self.print_templates = caps.print_templates
+        self.properties = caps.properties
+        self.source_layers = caps.source_layers
+        self.version = caps.version
+
+        self.force_crs = gws.lib.crs.get(self.var('forceCrs'))
+        self.project_crs = caps.project_crs
+        self.crs = self.force_crs or self.project_crs
+        if not self.crs:
+            raise gws.Error(f'unknown CRS for in {self.path!r}')
 
         self.direct_render = set(self.var('directRender', default=[]))
         self.direct_search = set(self.var('directSearch', default=[]))
 
-    def find_features(self, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+    def find_features(self, args, source_layers):
         if not args.shapes:
             return []
 
-        our_crs = args.shapes[0].crs
-
-        ps = gws.lib.gis.prepare_wms_search(
-            args.shapes[0],
-            protocol_version='1.3.0',
-            force_crs=None,
-            supported_crs=self.supported_crs,
-            invert_axis_crs=None
-        )
-
-        if not ps:
+        shape = args.shapes[0]
+        if shape.geometry_type != gws.GeometryType.point:
             return []
 
-        params = gws.merge(ps.params, {
+        ps = gws.lib.gis.util.prepared_ows_search(
+            limit=args.limit,
+            point=shape,
+            protocol=gws.OwsProtocol.WMS,
+            protocol_version='1.3.0',
+            request_crs=self.force_crs,
+            source_layers=source_layers,
+        )
+
+        qgis_defaults = {
             'INFO_FORMAT': 'text/xml',
-            'LAYERS': args.source_layer_names,
             'MAP': self.path,
-            'QUERY_LAYERS': args.source_layer_names,
-            'STYLES': [''] * len(args.source_layer_names),
 
             # @TODO should be configurable
 
@@ -106,12 +111,9 @@ class Object(gws.Node):
 
             # see https://github.com/qgis/qwc2-demo-app/issues/55
             'WITH_GEOMETRY': 1,
-        })
+        }
 
-        if args.limit:
-            params['FEATURE_COUNT'] = args.limit
-
-        params = gws.merge(params, args.params)
+        params = gws.merge(qgis_defaults, ps.params, args.params)
 
         text = gws.lib.ows.request.get_text(self.url, gws.OwsProtocol.WMS, gws.OwsVerb.GetFeatureInfo, params=params)
         features = gws.lib.ows.formats.read(text, crs=ps.request_crs)
@@ -121,13 +123,13 @@ class Object(gws.Node):
             return []
 
         gws.log.debug(f'QGIS/WMS FOUND={len(features)} params={params!r}')
-        return [f.transform_to(our_crs) for f in features]
+        return [f.transform_to(shape.crs) for f in features]
 
     def legend_url(self, source_layers, params=None):
         # qgis legends are rendered bottom-up (rightmost first)
         # we need the straight order (leftmost first), like in the config
 
-        params = gws.merge(_DEFAULT_LEGEND_PARAMS, {
+        std_params = gws.merge(_DEFAULT_LEGEND_PARAMS, {
             'MAP': self.path,
             'LAYER': ','.join(sl.name for sl in reversed(source_layers)),
             'FORMAT': 'image/png',
@@ -135,13 +137,13 @@ class Object(gws.Node):
             'STYLE': '',
             'VERSION': '1.1.1',
             'DPI': 96,
-            'SERVICE': 'WMS',
+            'SERVICE': gws.OwsProtocol.WMS,
             'REQUEST': gws.OwsVerb.GetLegendGraphic,
-        }, params)
+        })
 
-        return gws.lib.net.add_params(self.url, params)
+        return gws.lib.net.add_params(self.url, gws.merge(std_params, params))
 
-    def leaf_config(self, source_layers):
+    def leaf_layer_config(self, source_layers):
         default = {
             'type': 'qgisflat',
             '_provider': self,
@@ -294,16 +296,3 @@ class Object(gws.Node):
                 if info.filename.endswith('.qgs'):
                     with zf.open(info, 'rt') as fp:
                         return fp.read()
-
-
-##
-
-
-def create_from_path(root: gws.IRoot, path: str, parent: gws.Node = None, shared: bool = False) -> Object:
-    return create(root, gws.Config(path=path), parent, shared)
-
-
-def create(root: gws.IRoot, cfg: gws.Config, parent: gws.Node = None, shared: bool = False) -> Object:
-    path = cfg.get('path')
-    root.application.monitor.add_path(path)
-    return root.create_object(Object, cfg, parent, shared, key=path)

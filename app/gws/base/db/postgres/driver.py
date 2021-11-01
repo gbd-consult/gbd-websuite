@@ -182,7 +182,7 @@ class Connection:
         geom_cols = {
             r['f_geometry_column']: {
                 'type': r['type'].lower(),
-                'crs': 'EPSG:%s' % r['srid']
+                'srid': r['srid'],
             }
             for r in rs
         }
@@ -214,11 +214,11 @@ class Connection:
                 'name': name,
                 'is_key': name in key_cols,
                 'geom_type': None,
-                'crs': None,
+                'srid': None,
                 'is_geometry': False,
             }
             if name in geom_cols:
-                col['crs'] = geom_cols[name]['crs']
+                col['srid'] = geom_cols[name]['srid']
                 col['type'] = gws.AttributeType.geometry
                 col['native_type'] = geom_cols[name]['type'].upper()
                 col['geom_type'] = col['native_type']

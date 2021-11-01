@@ -1,56 +1,41 @@
 import gws
 import gws.base.layer.image
-import gws.lib.gis
+import gws.lib.gis.source
+import gws.lib.gis.util
 import gws.lib.os2
-import gws.lib.zoom
+import gws.lib.gis.zoom
 import gws.types as t
 
-from . import provider
+from . import provider as provider_module
 
 
 @gws.ext.Config('layer.qgisflat')
-class Config(gws.base.layer.image.Config, provider.Config):
+class Config(gws.base.layer.image.Config, provider_module.Config):
     """Flat Qgis layer"""
 
-    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
+    sourceLayers: t.Optional[gws.lib.gis.source.LayerFilterConfig]  #: source layers to use
 
 
 @gws.ext.Object('layer.qgisflat')
-class Object(gws.base.layer.image.Object):
-    provider: provider.Object
-    source_crs: gws.Crs
-    source_layers: t.List[gws.lib.gis.SourceLayer]
-
-    def configure(self):
-        pass
+class Object(gws.base.layer.image.Object, gws.IOwsClient):
+    provider: provider_module.Object
+    source_crs: gws.ICrs
 
     def configure_source(self):
-        if self.var('_provider'):
-            self.provider = self.var('_provider')
-            self.source_layers = self.var('_source_layers')
-        else:
-            self.provider = provider.create(self.root, self.config, shared=True)
-            self.source_layers = gws.lib.gis.filter_source_layers(
-                self.provider.source_layers,
-                self.var('sourceLayers', default=gws.lib.gis.SourceLayerFilter(level=1)))
-
-        if not self.source_layers:
-            raise gws.Error(f'no source layers found in layer={self.uid!r}')
-
-        self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
+        gws.lib.gis.util.configure_ows_client_layers(self, provider_module.Object, is_image=True)
+        self.source_crs = gws.lib.gis.util.best_crs(
+            self.provider.crs or self.crs,
+            gws.lib.gis.source.supported_crs_list(self.source_layers))
         return True
 
     def configure_metadata(self):
         if not super().configure_metadata():
-            self.set_metadata(self.provider.metadata)
+            self.set_metadata(self.var('metadata'), self.provider.metadata)
             return True
 
     def configure_zoom(self):
         if not super().configure_zoom():
-            zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
-            if zoom:
-                self.resolutions = gws.lib.zoom.resolutions_from_config(zoom, self.resolutions)
-                return True
+            return gws.lib.gis.util.configure_ows_client_zoom(self)
 
     def configure_search(self):
         if not super().configure_search():
@@ -69,7 +54,7 @@ class Object(gws.base.layer.image.Object):
 
     @property
     def own_bounds(self):
-        return gws.lib.gis.bounds_from_source_layers(self.source_layers, self.source_crs)
+        return gws.lib.gis.source.combined_bounds(self.source_layers, self.source_crs)
 
     @property
     def description(self):
@@ -92,7 +77,7 @@ class Object(gws.base.layer.image.Object):
 
         source = mc.source({
             'type': 'wms',
-            'supported_srs': self.provider.supported_crs,
+            'supported_srs': [self.source_crs.epsg],
             'forward_req_params': ['DPI__gws'],
             'concurrent_requests': self.root.application.var('server.qgis.maxRequests', default=0),
             'req': {

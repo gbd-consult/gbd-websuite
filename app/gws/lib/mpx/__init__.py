@@ -32,7 +32,7 @@ def wms_request(layer_uid, bounds: gws.Bounds, width, height, forward=None):
         'bbox': bounds.extent,
         'width': width,
         'height': height,
-        'crs': bounds.crs,
+        'crs': bounds.crs.epsg,
         'service': 'WMS',
         'request': 'GetMap',
         'version': '1.3.0',

@@ -24,8 +24,8 @@
             @end
 
             @tag supportedCRSs
-                @each lc.projections as p
-                    @t requestResponseCRSs {p.proj.epsg}
+                @each lc.bounds as b
+                    @t requestResponseCRSs {b.crs.epsg}
                 @end
             @end
 

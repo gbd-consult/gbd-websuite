@@ -77,7 +77,7 @@ class Section(gws.Data):
 
 
 class ParamsBase(gws.Params):
-    crs: t.Optional[gws.Crs]
+    crs: t.Optional[gws.CrsId]
     format: t.Optional[str]
     items: t.List[Item]
     legendLayers: t.Optional[t.List[str]]

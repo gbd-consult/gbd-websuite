@@ -1,7 +1,9 @@
 import gws
-import gws.lib.gis
+import gws.lib.gis.source
 import gws.lib.mime
 import gws.lib.ows
+import gws.lib.metadata
+import gws.lib.crs
 import gws.types as t
 
 
@@ -14,22 +16,31 @@ class OperationConfig(gws.Config):
 
 class ProviderConfig(gws.Config):
     capsCacheMaxAge: gws.Duration = '1d'  #: max cache age for capabilities documents
-    operations: t.Optional[t.List[OperationConfig]]
-    invertAxis: t.Optional[t.List[gws.Crs]]  #: projections that have an inverted axis (yx)
+    invertAxis: t.Optional[t.List[gws.CrsId]]  #: projections that are known to have an inverted axis (yx)
     maxRequests: int = 0  #: max concurrent requests to this source
-    sourceCrs: t.Optional[gws.Crs]  #: use this CRS for requests
+    operations: t.Optional[t.List[OperationConfig]]
+    forceCrs: t.Optional[gws.CrsId]  #: use this CRS for requests
+    sourceLayers: t.Optional[gws.lib.gis.source.LayerFilterConfig]  #: source layers to use
     url: gws.Url  #: service url
 
 
-class Provider(gws.Node, gws.IOwsProvider):
-    invert_axis_crs: t.List[str]
-    source_layers: t.List[gws.lib.gis.SourceLayer]
-    source_crs: gws.Crs
+class Caps(gws.Data):
+    metadata: gws.lib.metadata.Metadata
     operations: t.List[gws.OwsOperation]
-    preferred_formats: t.Dict[str, t.Optional[str]]
+    source_layers: t.List[gws.SourceLayer]
+    version: str
+
+
+class Provider(gws.Node, gws.IOwsProvider):
+    inverted_crs: t.List[gws.ICrs]
+    preferred_formats: t.Dict[gws.OwsVerb, t.Optional[str]]
 
     def configure(self):
-        self.invert_axis_crs = self.var('invertAxis', default=[])
+        self.force_crs = gws.lib.crs.get(self.var('forceCrs'))
+        self.inverted_crs = gws.compact(gws.lib.crs.get(c) for c in self.var('invertAxis', default=[]))
+        self.source_layers = []
+        self.url = self.var('url')
+        self.version = ''
 
         # operations from config, if any + a mandatory Caps operation.
         # operations from the caps document will be added to this list,
@@ -77,13 +88,7 @@ class Provider(gws.Node, gws.IOwsProvider):
             return None
 
         for op in self.operations:
-            self.preferred_formats[str(op.verb)] = _best_format(op)
-
-        self.source_crs = self.var('sourceCrs')
-        self.source_layers = []
-        self.supported_crs = []
-        self.url = self.var('url')
-        self.version = ''
+            self.preferred_formats[op.verb] = _best_format(op)
 
     def operation(self, verb: gws.OwsVerb, method='GET'):
         for op in self.operations:
@@ -105,31 +110,34 @@ class Provider(gws.Node, gws.IOwsProvider):
     def operation_params(self, op: gws.OwsOperation, params: dict) -> dict:
         """Merge Operation.params and request params."""
 
-        ps = {
+        pmap = {
             name.upper(): [name, allowed, None]
             for name, allowed in op.params.items()
         }
 
         for name, val in params.items():
             name = name.upper()
-            if name in ps:
-                ps[name][2] = val
+            if name in pmap:
+                pmap[name][2] = val
             else:
-                ps[name] = [name, None, val]
+                pmap[name] = [name, None, val]
 
-        d = {}
+        res = {}
 
-        for name, allowed, val in ps.values():
+        for name, allowed, val in pmap.values():
             if not allowed or val in allowed:
-                d[name] = val
+                res[name] = val
             elif val is None:
-                d[name] = allowed[0]
+                res[name] = allowed[0]
             else:
                 raise gws.Error(f'invalid param {name!r}, value={val!r}, allowed={allowed!r}')
 
-        return d
+        return res
 
     def get_capabilities(self):
         return gws.lib.ows.request.get_text(
             **self.operation_args(gws.OwsVerb.GetCapabilities),
             max_age=self.var('capsCacheMaxAge'))
+
+    def find_features(self, args: gws.SearchArgs, source_layers: t.List[gws.SourceLayer]) -> t.List[gws.IFeature]:
+        return []

@@ -3,6 +3,7 @@
 import time
 
 import gws
+import gws.lib.crs
 import gws.base.api
 import gws.base.layer
 import gws.lib.cache
@@ -21,7 +22,7 @@ class GetBoxParams(gws.Params):
     width: int
     height: int
     layerUid: str
-    crs: t.Optional[gws.Crs]
+    crs: t.Optional[gws.CrsId]
     dpi: t.Optional[int]
     layers: t.Optional[t.List[str]]
 
@@ -48,7 +49,7 @@ class DescribeLayerResponse(gws.Params):
 class GetFeaturesParams(gws.Params):
     bbox: t.Optional[gws.Extent]
     layerUid: str
-    crs: t.Optional[gws.Crs]
+    crs: t.Optional[gws.CrsId]
     resolution: t.Optional[float]
     limit: int = 0
 
@@ -128,7 +129,7 @@ class Object(gws.base.api.action.Object):
             extra_params['layers'] = p.layers
 
         rv = gws.lib.render.view_from_bbox(
-            crs=p.crs or layer.map.crs,
+            crs=gws.lib.crs.get(p.crs) or layer.map.crs,
             bbox=p.bbox,
             out_size=(p.width, p.height),
             out_size_unit='px',
@@ -183,7 +184,7 @@ class Object(gws.base.api.action.Object):
     def _get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> t.List[gws.IFeature]:
         layer = req.require_layer(p.layerUid)
         bounds = gws.Bounds(
-            crs=p.crs or layer.map.crs,
+            crs=gws.lib.crs.get(p.crs) or layer.map.crs,
             extent=p.get('bbox') or layer.map.extent
         )
 
@@ -191,7 +192,7 @@ class Object(gws.base.api.action.Object):
 
         for f in found:
             f.transform_to(bounds.crs)
-            f.apply_templates(keys=['label', 'title'])
+            f.apply_templates(subjects=['label', 'title'])
             f.apply_data_model()
 
         return found

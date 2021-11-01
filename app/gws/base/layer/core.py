@@ -6,9 +6,11 @@ import gws.base.template
 import gws.lib.extent
 import gws.lib.legend
 import gws.lib.metadata
+import gws.lib.crs
 import gws.lib.style
 import gws.lib.svg
-import gws.lib.zoom
+import gws.lib.gis.zoom
+import gws.lib.gis.source
 import gws.types as t
 
 from . import types
@@ -26,7 +28,7 @@ _DEFAULT_STYLE = gws.Config(
 _suffix = '/gws.png'
 
 
-def layer_url_path(layer_uid, kind:t.Literal['box', 'tile', 'legend', 'features']) -> str:
+def layer_url_path(layer_uid, kind: t.Literal['box', 'tile', 'legend', 'features']) -> str:
     if kind == 'box':
         return gws.action_url_path('mapGetBox', layerUid=layer_uid) + _suffix
     if kind == 'tile':
@@ -95,10 +97,13 @@ class Object(gws.Node, gws.ILayer):
             uid = self.map.uid + '.' + uid
         self.set_uid(uid)
 
+        p = self.var('crs')
+        self.crs = gws.lib.crs.require(p) if p else (
+            self.map.crs if self.map else gws.lib.crs.get3857())
+
         self.cache = self.var('cache', default=types.CacheConfig(enabled=False))
         self.cache_uid = ''
         self.client_options = self.var('clientOptions')
-        self.crs = self.var('crs') or (self.map.crs if self.map else gws.EPSG_3857)
         self.display = self.var('display')
         self.edit_options = self.var('edit')
         self.grid = self.var('grid', default=types.GridConfig())
@@ -163,7 +168,8 @@ class Object(gws.Node, gws.ILayer):
         p = self.var('zoom')
         if not p:
             return
-        self.resolutions = gws.lib.zoom.resolutions_from_config(p, self.map.resolutions if self.map else [])
+        self.resolutions = gws.lib.gis.zoom.resolutions_from_config(
+            p, self.map.resolutions if self.map else [])
         if not self.resolutions:
             raise gws.Error(f'invalid zoom configuration in layer={self.uid!r}')
         return True

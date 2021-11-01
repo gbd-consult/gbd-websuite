@@ -1,7 +1,8 @@
 """WMS provder."""
 
 import gws
-import gws.lib.gis
+import gws.lib.gis.util
+import gws.lib.gis.source
 import gws.lib.ows
 import gws.types as t
 
@@ -42,48 +43,40 @@ class Object(core.Provider):
 
         self.metadata = cc.metadata
         self.source_layers = cc.source_layers
-        self.supported_crs = cc.supported_crs
         self.version = cc.version
         self.operations.extend(cc.operations)
 
-    def find_features(self, args: gws.SearchArgs) -> t.List[gws.IFeature]:
+    def find_features(self, args, source_layers):
         if not args.shapes:
             return []
 
-        our_crs = args.shapes[0].crs
-
-        ps = gws.lib.gis.prepare_wms_search(
-            args.shapes[0],
-            protocol_version=self.version,
-            force_crs=self.source_crs,
-            supported_crs=self.supported_crs,
-            invert_axis_crs=self.invert_axis_crs
-        )
-
-        if not ps:
+        shape = args.shapes[0]
+        if shape.geometry_type != gws.GeometryType.point:
             return []
 
-        params = gws.merge(ps.params, {
-            'LAYERS': args.source_layer_names,
-            'QUERY_LAYERS': args.source_layer_names,
-            'STYLES': [''] * len(args.source_layer_names),
-        })
+        ps = gws.lib.gis.util.prepared_ows_search(
+            inverted_crs=self.inverted_crs,
+            limit=args.limit,
+            point=shape,
+            protocol=self.protocol,
+            protocol_version=self.version,
+            request_crs=self.force_crs,
+            source_layers=source_layers,
+        )
 
-        if args.limit:
-            params['FEATURE_COUNT'] = args.limit
+        params = gws.merge(ps.params, args.params)
 
-        params = gws.merge(params, args.params)
-
-        fmt = self.preferred_formats.get(str(gws.OwsVerb.GetFeatureInfo))
+        fmt = self.preferred_formats.get(gws.OwsVerb.GetFeatureInfo)
         if fmt:
             params.setdefault('INFO_FORMAT', fmt)
 
-        text = gws.lib.ows.request.get_text(**self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params))
+        op_args = self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params)
+        text = gws.lib.ows.request.get_text(**op_args)
         features = gws.lib.ows.formats.read(text, crs=ps.request_crs, axis=ps.axis)
 
         if features is None:
             gws.log.debug(f'WMS NOT_PARSED params={params!r}')
             return []
-
         gws.log.debug(f'WMS FOUND={len(features)} params={params!r}')
-        return [f.transform_to(our_crs) for f in features]
+
+        return [f.transform_to(shape.crs) for f in features]

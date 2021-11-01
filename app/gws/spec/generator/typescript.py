@@ -22,6 +22,7 @@ class _Generator:
         self.declarations = collections.defaultdict(list)
         self.stub = []
         self.done = {}
+        self.stack = []
         self.tmp_names = {}
         self.object_names = {}
 
@@ -132,12 +133,14 @@ class _Generator:
         tmp_name = f'[TMP:%d]' % (len(self.tmp_names) + 1)
         self.done[name] = self.tmp_names[tmp_name] = tmp_name
 
-        type_name = self.make_type(t)
+        self.stack.append(t.name)
+        type_name = self.make2(t)
+        self.stack.pop()
 
         self.done[name] = self.tmp_names[tmp_name] = type_name
         return type_name
 
-    def make_type(self, t):
+    def make2(self, t):
         if isinstance(t, base.TDict):
             k = self.make(t.key_t)
             v = self.make(t.value_t)
@@ -213,7 +216,7 @@ class _Generator:
             ))
             return full
 
-        raise base.Error(f'unhandled type {t.name!r}')
+        raise base.Error(f'unhandled type {t.name!r} in {self.stack!r}')
 
     def make_props(self, t):
         tpl = """

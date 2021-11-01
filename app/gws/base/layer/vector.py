@@ -53,7 +53,7 @@ class Object(core.Object):
     def render_svg_tags(self, rv, style=None):
         bounds = rv.bounds
         if rv.rotation:
-            bounds = gws.Bounds(crs=bounds.crs, extent=gws.lib.extent.circumsquare(bounds.extent))
+            bounds = gws.Bounds(crs=rv.bounds.crs, extent=gws.lib.extent.circumsquare(bounds.extent))
 
         ts = gws.time_start('render_svg:get_features')
         found = self.get_features(bounds)
@@ -61,8 +61,8 @@ class Object(core.Object):
 
         ts = gws.time_start('render_svg:convert')
         for f in found:
-            f.transform_to(rv.bounds.crs)
-            f.apply_templates(keys=['label'])
+            f.transform_to(bounds.crs)
+            f.apply_templates(subjects=['label'])
         gws.time_end(ts)
 
         ts = gws.time_start('render_svg:to_svg')

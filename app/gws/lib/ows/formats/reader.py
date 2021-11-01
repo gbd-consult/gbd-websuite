@@ -23,7 +23,7 @@ text_formats = [
 ]
 
 
-def read(text, crs: t.Optional[gws.Crs] = None, axis: t.Optional[gws.Axis] = gws.AXIS_XY, **kwargs) -> t.List[gws.IFeature]:
+def read(text, crs: t.Optional[gws.ICrs] = None, axis: t.Optional[gws.Axis] = gws.AXIS_XY, **kwargs) -> t.List[gws.IFeature]:
     first_el = gws.lib.xml2.peek(text)
 
     invert_axis = axis == gws.AXIS_YX

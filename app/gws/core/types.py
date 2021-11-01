@@ -20,12 +20,6 @@ Measurement = Tuple[float, str]
 #: An XML generator tag
 Tag = tuple
 
-#: Axis orientation
-Axis = int
-
-AXIS_XY = 1
-AXIS_YX = 2
-
 #: Valid readable file path on the server
 FilePath = str
 
@@ -44,9 +38,6 @@ Regex = str
 #: String with {attribute} placeholders
 FormatStr = str
 
-#: CRS code like "EPSG:3857
-Crs = str
-
 #: ISO date like "2019-01-30"
 Date = str
 
@@ -55,11 +46,6 @@ DateTime = str
 
 #: Http or https URL
 Url = str
-
-
-class Bounds(Data):
-    crs: Crs
-    extent: Extent
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -130,6 +116,7 @@ class IGrantee(Protocol):
 
 class INode(IObject, Protocol):
     children: List['INode']
+    config: Config
     ext_category: str
     ext_type: str
     parent: Optional['INode']
@@ -447,12 +434,124 @@ class IDataModel(INode, Protocol):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# CRS
+
+#: Axis orientation
+Axis = int
+
+AXIS_XY = 1
+AXIS_YX = 2
+
+#: CRS code like "EPSG:3857" or a srid like 3857
+CrsId = Union[str, int]
+
+
+class CrsFormat(Enum):
+    SRID = 'SRID'
+    EPSG = 'EPSG'
+    URL = 'URL'
+    URI = 'URI'
+    URNX = 'URNX'
+    URN = 'URN'
+
+
+class Bounds(Data):
+    crs: 'ICrs'
+    extent: Extent
+
+
+# noinspection PyPropertyDefinition
+class ICrs(IObject, Protocol):
+    srid: str
+    proj4text: int
+    units: str
+    is_geographic: bool
+    is_projected: bool
+    format: CrsFormat
+
+    epsg: str
+    urn: str
+    urnx: str
+    url: str
+    uri: str
+
+    def same_as(self, other: 'ICrs') -> bool: ...
+
+    def transform_extent(self, ext: Extent, target: 'ICrs') -> Extent: ...
+
+    def transform_geometry(self, geom: dict, target: 'ICrs') -> dict: ...
+
+    def to_string(self, fmt: CrsFormat = None) -> str: ...
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Geodata sources
+
+class TileMatrix(Data):
+    uid: str
+    scale: float
+    x: float
+    y: float
+    width: float
+    height: float
+    tile_width: float
+    tile_height: float
+    extent: Extent
+
+
+class TileMatrixSet(Data):
+    uid: str
+    crs: 'ICrs'
+    matrices: List[TileMatrix]
+
+
+class SourceStyle(Data):
+    is_default: bool
+    legend_url: Url
+    metadata: 'IMetadata'
+    name: str
+
+
+class SourceLayer(Data):
+    a_level: int
+    a_path: str
+    a_uid: str
+
+    data_source: dict
+
+    supported_bounds: List[Bounds]
+
+    is_expanded: bool
+    is_group: bool
+    is_image: bool
+    is_queryable: bool
+    is_visible: bool
+
+    layers: List['SourceLayer']
+
+    metadata: 'IMetadata'
+    name: str
+    title: str
+
+    legend_url: Url
+    opacity: int
+    scale_range: List[float]
+
+    styles: List[SourceStyle]
+    default_style: Optional[SourceStyle]
+
+    tile_matrix_ids: List[str]
+    tile_matrix_sets: List[TileMatrixSet]
+    image_format: str
+    resource_urls: dict
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # shapes and features
 
 # noinspection PyPropertyDefinition
 class IShape(IObject, Protocol):
-    crs: str
-    srid: int
+    crs: 'ICrs'
 
     @property
     def area(self) -> float: ...
@@ -503,7 +602,7 @@ class IShape(IObject, Protocol):
 
     def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': ...
 
-    def transformed_to(self, to_crs, **kwargs) -> 'IShape': ...
+    def transformed_to(self, crs: 'ICrs') -> 'IShape': ...
 
 
 # noinspection PyPropertyDefinition
@@ -523,7 +622,7 @@ class IFeature(IObject, Protocol):
 
     def apply_data_model(self, model: 'IDataModel' = None) -> 'IFeature': ...
 
-    def apply_templates(self, templates: 'ITemplateBundle' = None, extra_context: dict = None, keys: List[str] = None) -> 'IFeature': ...
+    def apply_templates(self, templates: 'ITemplateBundle' = None, extra_context: dict = None, subjects: List[str] = None) -> 'IFeature': ...
 
     def attr(self, name: str): ...
 
@@ -533,7 +632,7 @@ class IFeature(IObject, Protocol):
 
     def to_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: ...
 
-    def transform_to(self, crs: Crs) -> 'IFeature': ...
+    def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
 
     def connect_to(self, layer: 'ILayer') -> 'IFeature': ...
 
@@ -548,7 +647,7 @@ class SqlTable(Data):
     search_column: str
     geometry_column: str
     geometry_type: GeometryType
-    geometry_crs: Crs
+    geometry_crs: 'ICrs'
 
 
 class SqlSelectArgs(Data):
@@ -568,7 +667,8 @@ class SqlTableColumn(Data):
     type: AttributeType
     geom_type: GeometryType
     native_type: str
-    crs: Crs
+    crs: 'ICrs'
+    srid: int
     is_key: bool
     is_geometry: bool
 
@@ -698,6 +798,7 @@ class ITemplateBundle(INode, Protocol):
 
     def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional['ITemplate']: ...
 
+
 class ITemplate(INode, Protocol):
     category: str
     data_model: Optional['IDataModel']
@@ -786,7 +887,7 @@ class IMap(INode, Protocol):
 
     center: Point
     coordinate_precision: int
-    crs: Crs
+    crs: 'ICrs'
     extent: Extent
     init_resolution: float
     resolutions: List[float]
@@ -842,7 +943,7 @@ class ILayer(INode, Protocol):
     extent: Extent
     opacity: float
     geometry_type: Optional[GeometryType]
-    crs: Crs
+    crs: 'ICrs'
 
     client_options: Data
 
@@ -935,7 +1036,7 @@ class IOwsService(INode, Protocol):
     metadata: 'IMetadata'
     name: str
     protocol: OwsProtocol
-    supported_crs: List[Crs]
+    supported_bounds: List[Bounds]
     supported_versions: List[str]
     templates: 'ITemplateBundle'
     version: str
@@ -949,10 +1050,17 @@ class IOwsService(INode, Protocol):
 
 class IOwsProvider(INode, Protocol):
     metadata: 'IMetadata'
+    operations: List['OwsOperation']
     protocol: OwsProtocol
-    supported_crs: List[Crs]
+    source_layers: List['SourceLayer']
     url: Url
     version: str
+    force_crs: 'ICrs'
+
+
+class IOwsClient(INode, Protocol):
+    provider: 'IOwsProvider'
+    source_layers: List['SourceLayer']
 
 
 # ----------------------------------------------------------------------------------------------------------------------

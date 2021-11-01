@@ -4,7 +4,7 @@ import shapely.geometry
 import gws
 import gws.lib.extent
 import gws.lib.feature
-import gws.lib.proj
+import gws.lib.crs
 import gws.lib.shape
 import gws.lib.xml2
 import gws.types as t
@@ -25,8 +25,8 @@ def parse_envelope(el: gws.lib.xml2.Element) -> t.Optional[gws.Bounds]:
     if not el:
         return None
 
-    prj = gws.lib.proj.to_proj(el.attr('srsName') or 4326)
-    if not prj:
+    crs = gws.lib.crs.get(el.attr('srsName') or 4326)
+    if not crs:
         return None
 
     def pair(s):
@@ -37,12 +37,12 @@ def parse_envelope(el: gws.lib.xml2.Element) -> t.Optional[gws.Bounds]:
         x1, y1 = pair(el.get_text('LowerCorner'))
         x2, y2 = pair(el.get_text('UpperCorner'))
         ext = gws.lib.extent.from_list([x1, y1, x2, y2])
-        return gws.Bounds(extent=ext, crs=prj.epsg)
+        return gws.Bounds(crs=crs, extent=ext)
     except (IndexError, TypeError):
         pass
 
 
-def shape_to_tag(shape: gws.IShape, precision=0, invert_axis=False, crs_format='urn'):
+def shape_to_tag(shape: gws.IShape, precision=0, invert_axis=False, crs_format: gws.CrsFormat = gws.CrsFormat.URN):
     def pos(geom, as_list=True):
         cs = []
 
@@ -92,7 +92,7 @@ def shape_to_tag(shape: gws.IShape, precision=0, invert_axis=False, crs_format='
             return tag('gml:MultiSurface', srs, *[tag('gml:surfaceMember', convert(p)) for p in geom])
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
-    srs = gws.lib.proj.format(shape.crs, crs_format)
+    srs = shape.crs.to_string(crs_format)
     return convert(geom, {'srsName': srs})
 
 
@@ -150,6 +150,6 @@ def _shape_from_gdal(geom):
     sr = geom.GetSpatialReference()
     if not sr:
         return
-    crs = sr.GetAuthorityName(None) + ':' + sr.GetAuthorityCode(None)
+    crs = gws.lib.crs.get(sr.GetAuthorityCode(None))
     wkt = geom.ExportToWkt()
     return gws.lib.shape.from_wkt(wkt, crs)

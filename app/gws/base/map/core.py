@@ -1,9 +1,9 @@
 import gws
 import gws.base.layer
 import gws.lib.extent
-import gws.lib.proj
+import gws.lib.crs
 import gws.lib.units as units
-import gws.lib.zoom
+import gws.lib.gis.zoom
 import gws.types as t
 
 # https://wiki.openstreetmap.org/wiki/Zoom_levels
@@ -36,13 +36,13 @@ class Config(gws.Config):
 
     center: t.Optional[gws.Point]  #: map center
     coordinatePrecision: t.Optional[int]  #: precision for coordinates
-    crs: t.Optional[gws.Crs] = 'EPSG:3857'  #: crs for this map
+    crs: t.Optional[gws.CrsId] = 'EPSG:3857'  #: crs for this map
     extent: t.Optional[gws.Extent]  #: map extent
     extentBuffer: t.Optional[int]  #: extent buffer
     layers: t.List[gws.ext.layer.Config]  #: collection of layers for this map
     skipInvalidLayers: bool = False  #: remove invalid layers from the map
     title: str = ''  #: map title
-    zoom: t.Optional[gws.lib.zoom.Config]  #: map scales and resolutions
+    zoom: t.Optional[gws.lib.gis.zoom.Config]  #: map scales and resolutions
 
 
 class Props(gws.Data):
@@ -63,10 +63,9 @@ class Object(gws.Node, gws.IMap):
         return gws.Bounds(crs=self.crs, extent=self.extent)
 
     def props_for(self, user):
-        proj = gws.lib.proj.to_proj(self.crs)
         return Props(
-            crs=proj.epsg,
-            crsDef=proj.proj4text,
+            crs=self.crs.epsg,
+            crsDef=self.crs.proj4text,
             coordinatePrecision=self.coordinate_precision,
             extent=self.extent,
             center=self.center,
@@ -83,7 +82,9 @@ class Object(gws.Node, gws.IMap):
             uid = project.uid + '.' + uid
         self.set_uid(uid)
 
-        self.crs = self.var('crs')
+        p = self.var('crs')
+        self.crs = gws.lib.crs.require(p) if p else gws.lib.crs.get3857()
+
         self.title = self.var('title') or self.uid
 
         self.resolutions = _DEFAULT_RESOLUTIONS
@@ -91,8 +92,8 @@ class Object(gws.Node, gws.IMap):
 
         zoom = self.var('zoom')
         if zoom:
-            self.resolutions = gws.lib.zoom.resolutions_from_config(zoom)
-            self.init_resolution = gws.lib.zoom.init_resolution(zoom, self.resolutions)
+            self.resolutions = gws.lib.gis.zoom.resolutions_from_config(zoom)
+            self.init_resolution = gws.lib.gis.zoom.init_resolution(zoom, self.resolutions)
 
         self.layers = self.create_children('gws.ext.layer', self.var('layers'))
 
@@ -105,11 +106,10 @@ class Object(gws.Node, gws.IMap):
 
         self.coordinate_precision = self.var('coordinatePrecision')
         if self.coordinate_precision is None:
-            proj = gws.lib.proj.to_proj(self.crs)
-            self.coordinate_precision = 2 if proj.units == 'm' else 7
+            self.coordinate_precision = 2 if self.crs.units == 'm' else 7
 
 
-def _configure_extent(obj, target_crs, default_ext):
+def _configure_extent(obj, crs: gws.ICrs, default_ext):
     layers = gws.get(obj, 'layers') or []
 
     # we have an explicit extent provided in the config
@@ -123,7 +123,7 @@ def _configure_extent(obj, target_crs, default_ext):
 
         # configure sublayers using config_ext as a default
         for la in layers:
-            _configure_extent(la, target_crs, ext)
+            _configure_extent(la, crs, ext)
 
         obj.extent = ext
         return obj.extent
@@ -134,7 +134,7 @@ def _configure_extent(obj, target_crs, default_ext):
 
         layer_ext_list = []
         for la in layers:
-            layer_ext = _configure_extent(la, target_crs, default_ext)
+            layer_ext = _configure_extent(la, crs, default_ext)
             if layer_ext:
                 layer_ext_list.append(layer_ext)
 
@@ -154,7 +154,7 @@ def _configure_extent(obj, target_crs, default_ext):
         buf = obj.var('extentBuffer', with_parent=True)
         if buf:
             own_ext = gws.lib.extent.buffer(own_ext, buf)
-        own_ext = gws.lib.extent.transform(own_ext, own_bounds.crs, target_crs)
+        own_ext = gws.lib.extent.transform(own_ext, own_bounds.crs, crs)
         obj.extent = own_ext
         return obj.extent
 

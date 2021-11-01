@@ -4,6 +4,7 @@ import re
 
 import gws
 import gws.lib.date
+import gws.lib.crs
 import gws.lib.json2
 import gws.lib.os2
 import gws.lib.units
@@ -194,7 +195,7 @@ _READERS = {
     'TRecord': '_read_object',
 
     'gws.core.types.Color': '_read_color',
-    'gws.core.types.Crs': '_read_crs',
+    'gws.core.types.CrsId': '_read_crs',
     'gws.core.types.Date': '_read_date',
     'gws.core.types.DateTime': '_read_datetime',
     'gws.core.types.DirPath': '_read_dirpath',
@@ -411,8 +412,10 @@ class _Reader:
         return self._read_str(val, spec)
 
     def _read_crs(self, val, spec):
-        # @TODO: crs validation
-        return self._read_str(val, spec)
+        crs = gws.lib.crs.get(val)
+        if not crs:
+            raise Error('ERR_INVALID_CRS', f'invalid crs: {val!r}', val)
+        return crs.srid
 
     def _read_date(self, val, spec):
         d = gws.lib.date.from_iso(str(val))

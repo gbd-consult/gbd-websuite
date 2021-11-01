@@ -1,9 +1,9 @@
 import gws
 import gws.base.search.runner
 import gws.base.web.error
-import gws.lib.bounds
+import gws.lib.gis.bounds
 import gws.lib.ows.filter
-import gws.lib.proj
+import gws.lib.crs
 import gws.lib.shape
 import gws.types as t
 
@@ -100,18 +100,16 @@ class Object(core.Service):
             raise gws.base.web.error.BadRequest('Invalid COUNT value')
 
         request_crs = rd.project.map.crs
-        crs_format = 'uri'
 
         p = rd.req.param('srsName')
         if p:
-            fmt, srid = gws.lib.proj.parse(p)
-            if not srid:
+            crs = gws.lib.crs.get(p)
+            if not crs:
                 raise gws.base.web.error.BadRequest('Invalid CRS')
-            request_crs = gws.lib.proj.format(srid, 'epsg')
-            crs_format = fmt
+            request_crs = crs
 
         if rd.req.has_param('bbox'):
-            bounds = gws.lib.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
+            bounds = gws.lib.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
             if not bounds:
                 raise gws.base.web.error.BadRequest('Invalid BBOX')
             shape = gws.lib.shape.from_bounds(bounds)
@@ -127,12 +125,11 @@ class Object(core.Service):
             except gws.lib.ows.filter.Error as err:
                 gws.log.error(f'FILTER ERROR: {err!r} filter={src!r}')
                 raise gws.base.web.error.BadRequest('Invalid FILTER value')
-            gws.p('FILTER', flt)
 
         result_type = rd.req.param('resultType', default='results').lower()
         if result_type not in ('hits', 'results'):
             raise gws.base.web.error.BadRequest('Invalid RESULTTYPE value')
-        with_results = result_type == 'results'
+        populate = result_type == 'results'
 
         args = gws.SearchArgs(
             project=rd.project,
@@ -146,14 +143,16 @@ class Object(core.Service):
 
         features = gws.base.search.runner.run(rd.req, args)
 
+        # @TODO axis logic
+
         coll = self.feature_collection(
             rd,
             features,
             lcs,
-            populate=with_results,
+            populate=populate,
             target_crs=request_crs,
-            invert_axis_if_geographic=gws.lib.proj.invert_axis(crs_format),
-            crs_format=crs_format)
+            invert_axis_if_geographic=True,
+            crs_format=request_crs.format)
 
         fmt = rd.req.param('output_format', default='gml')
         return self.template_response(rd, gws.OwsVerb.GetFeatureInfo, format=fmt, context={'collection': coll})

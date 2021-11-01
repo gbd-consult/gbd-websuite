@@ -53,7 +53,12 @@ class Object(core.Object):
         w, h = rv.size_px
         d = gws.lib.extent.diagonal((0, 0, w, h))
 
-        r = gws.lib.mpx.wms_request(uid, gws.Bounds(crs=rv.bounds.crs, extent=circ), d, d, forward=extra_params)
+        r = gws.lib.mpx.wms_request(
+            uid,
+            gws.Bounds(crs=rv.bounds.crs, extent=circ),
+            width=d,
+            height=d,
+            forward=extra_params)
         if not r:
             return
 
@@ -108,7 +113,7 @@ class Object(core.Object):
             'origin': self.grid.origin,
             'tile_size': [self.grid.tileSize, self.grid.tileSize],
             'res': res,
-            'srs': self.map.crs,
+            'srs': self.map.crs.epsg,
             'bbox': self.extent,
         }))
 

@@ -1,34 +1,25 @@
 import gws
 import gws.base.layer
-import gws.lib.gis
+import gws.lib.gis.util
+import gws.lib.gis.source
 import gws.types as t
 
 from . import provider as provider_module
+from . import search
 
 
 @gws.ext.Config('layer.wfs')
 class Config(gws.base.layer.vector.Config, provider_module.Config):
     """WFS layer"""
-    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
+    pass
 
 
 @gws.ext.Object('layer.wfs')
-class Object(gws.base.layer.vector.Object):
+class Object(gws.base.layer.vector.Object, gws.IOwsClient):
     provider: provider_module.Object
-    source_crs: gws.Crs
-    source_layers: t.List[gws.lib.gis.SourceLayer]
-    source_style: str
-
-    def configure(self):
-        pass
 
     def configure_source(self):
-        self.provider = self.root.create_object(provider_module.Object, self.config, shared=True)
-        self.source_layers = gws.lib.gis.filter_source_layers(
-            self.provider.source_layers,
-            self.var('sourceLayers'))
-        if not self.source_layers:
-            raise gws.Error(f'no source layers found in layer={self.uid!r}')
+        gws.lib.gis.util.configure_ows_client_layers(self, provider_module.Object)
         return True
 
     def configure_metadata(self):
@@ -38,12 +29,7 @@ class Object(gws.base.layer.vector.Object):
 
     def configure_search(self):
         if not super().configure_search():
-            self.search_providers.append(
-                self.require_child('gws.ext.search.provider.wfs', gws.Config(
-                    uid=self.uid + '.default_search',
-                    layer=self,
-                )))
-            return True
+            return gws.lib.gis.util.configure_ows_client_search(self, search.Object)
 
     @property
     def description(self):
@@ -55,9 +41,7 @@ class Object(gws.base.layer.vector.Object):
         return self.description_template.render(context).content
 
     def get_features(self, bounds, limit=0):
-        features = self.provider.find_features(gws.SearchArgs(
-            bounds=bounds,
-            limit=limit,
-            source_layer_names=[sl.name for sl in self.source_layers]
-        ))
+        features = self.provider.find_features(
+            gws.SearchArgs(bounds=bounds, limit=limit),
+            self.source_layers)
         return [f.connect_to(self) for f in features]

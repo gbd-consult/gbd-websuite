@@ -163,7 +163,7 @@ def pixel_viewbox(view: gws.MapRenderView):
     return [0, 0, b[0] - a[0], a[1] - b[1]]
 
 
-def view_from_center(crs: gws.Crs, center: gws.Point, scale: int, out_size: gws.Size, out_size_unit: str, rotation=0, dpi=0):
+def view_from_center(crs: gws.ICrs, center: gws.Point, scale: int, out_size: gws.Size, out_size_unit: str, rotation=0, dpi=0):
     """Create a view based on a center point"""
 
     view = _base(out_size, out_size_unit, rotation, dpi)
@@ -188,7 +188,7 @@ def view_from_center(crs: gws.Crs, center: gws.Point, scale: int, out_size: gws.
     return view
 
 
-def view_from_bbox(crs: gws.Crs, bbox: gws.Extent, out_size: gws.Size, out_size_unit: str, rotation=0, dpi=0):
+def view_from_bbox(crs: gws.ICrs, bbox: gws.Extent, out_size: gws.Size, out_size_unit: str, rotation=0, dpi=0):
     """Create a view based on a bounding box"""
 
     view = _base(out_size, out_size_unit, rotation, dpi)

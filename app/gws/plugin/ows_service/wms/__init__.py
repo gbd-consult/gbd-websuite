@@ -1,13 +1,18 @@
 import gws
 import gws.base.search.runner
 import gws.base.web.error
-import gws.lib.bounds
+import gws.lib.crs
+import gws.lib.gis.bounds
 import gws.lib.image
 import gws.lib.legend
 import gws.lib.mime
 import gws.lib.shape
 
 from .. import core
+
+_WMS_130 = '1.3.0'
+_WMS_111 = '1.1.1'
+_WMS_110 = '1.1.0'
 
 
 @gws.ext.Config('ows.service.wms')
@@ -19,7 +24,7 @@ class Config(core.ServiceConfig):
 @gws.ext.Object('ows.service.wms')
 class Object(core.Service):
     protocol = gws.OwsProtocol.WMS
-    supported_versions = ['1.3.0', '1.1.1', '1.1.0']
+    supported_versions = [_WMS_130, _WMS_111, _WMS_110]
     is_raster_ows = True
 
     search_max_limit = 100
@@ -122,8 +127,11 @@ class Object(core.Service):
         lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'], self.SCOPE_LAYER)
         if not lcs:
             raise gws.base.web.error.NotFound('No layers found')
+
         out = gws.lib.legend.render(gws.Legend(layers=[lc.layer for lc in lcs if lc.has_legend]))
-        return gws.ContentResponse(mime='image/png', content=gws.lib.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
+        return gws.ContentResponse(
+            mime=gws.lib.mime.PNG,
+            content=gws.lib.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
 
     def handle_getfeatureinfo(self, rd: core.Request):
         bounds = self._request_bounds(rd)
@@ -172,10 +180,10 @@ class Object(core.Service):
             rd,
             features,
             lcs,
-            populate=True,
             target_crs=bounds.crs,
-            invert_axis_if_geographic=self.request_version(rd) >= '1.3.0',
-            crs_format='urn',
+            populate=True,
+            invert_axis_if_geographic=self.request_version(rd) >= _WMS_130,
+            crs_format=gws.CrsFormat.URN,
         )
 
         fmt = rd.req.param('info_format', default='gml')
@@ -184,8 +192,7 @@ class Object(core.Service):
     ###
 
     def _request_bounds(self, rd: core.Request):
-        ver = self.request_version(rd)
-        return gws.lib.bounds.from_request_bbox(
+        return gws.lib.gis.bounds.from_request_bbox(
             rd.req.param('bbox'),
-            rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
-            invert_axis_if_geographic=ver >= '1.3.0')
+            gws.lib.crs.get(rd.req.param('crs') or rd.req.param('srs')) or rd.project.map.crs,
+            invert_axis_if_geographic=self.request_version(rd) >= _WMS_130)

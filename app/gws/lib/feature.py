@@ -154,19 +154,28 @@ class Feature(gws.Object, gws.IFeature):
         self.layer = layer
         return self
 
-    def apply_data_model(self, model: gws.IDataModel = None) -> gws.IFeature:
+    def apply_data_model(self, model=None):
         model = model or self.data_model or (self.layer.data_model if self.layer else None)
         if model:
             self.attributes = model.apply(self.attributes)
         return self
 
-    def apply_templates(self, templates: gws.ITemplateBundle = None, extra_context: dict = None, template_names: t.List[str] = None) -> gws.IFeature:
+    def apply_templates(self, templates=None, extra_context=None, subjects=None):
         templates = templates or self.templates or (self.layer.templates if self.layer else None)
-        if templates:
-            used = set()
-            ctx = gws.merge(self.template_context, extra_context)
-            for tpl in templates.items:
-                if tpl.category == 'feature' and (tpl.name not in used) and (not template_names or tpl.name in template_names):
-                    self.elements[tpl.name] = tpl.render(context=ctx).content
-                    used.add(tpl.name)
+        if not templates:
+            return self
+
+        used = set()
+        ctx = gws.merge(self.template_context, extra_context)
+
+        if subjects:
+            templates = [tpl for tpl in templates.items if tpl.subject in subjects]
+        else:
+            templates = [tpl for tpl in templates.items if tpl.category == 'feature']
+
+        for tpl in templates:
+            if tpl.name not in used:
+                self.elements[tpl.name] = tpl.render(context=ctx).content
+                used.add(tpl.name)
+
         return self

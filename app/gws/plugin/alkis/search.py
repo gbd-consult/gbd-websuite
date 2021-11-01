@@ -223,7 +223,7 @@ class GetToponymsResponse(gws.Response):
 class FindFlurstueckParams(BaseFindParams):
     wantEigentuemer: t.Optional[bool]
     controlInput: t.Optional[str]
-    crs: t.Optional[gws.Crs]
+    crs: t.Optional[gws.CrsId]
     shapes: t.Optional[t.List[gws.lib.shape.Props]]
 
     bblatt: str = ''
@@ -246,7 +246,7 @@ class FindFlurstueckResponse(gws.Response):
 
 
 class FindAdresseParams(BaseFindParams):
-    crs: t.Optional[gws.Crs]
+    crs: t.Optional[gws.CrsId]
 
     bisHausnummer: str = ''
     hausnummer: str = ''
@@ -537,7 +537,7 @@ class Object(gws.base.api.action.Object):
         res = self._fetch(req, p, soft_limit, hard_limit)
 
         for feature in res.features:
-            feature.apply_templates(self.templates, keys=template_keys)
+            feature.apply_templates(self.templates, subjects=template_keys)
             f = gws.props(feature, req.user, context=self)
             if f:
                 gws.pop(f, 'attributes')
@@ -560,7 +560,7 @@ class Object(gws.base.api.action.Object):
         fq.withBuchung = self._can_read_buchung(req.user)
 
         if p.get('shapes'):
-            shape = gws.lib.shape.union(gws.lib.shape.from_props(s) for s in p.get('shapes'))
+            shape = gws.lib.shape.union([gws.lib.shape.from_props(s) for s in p.get('shapes')])
             if shape:
                 fq.shape = shape.transformed_to(self.provider.crs)
 

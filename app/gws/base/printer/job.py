@@ -6,6 +6,7 @@ import gws.base.template
 import gws.lib.feature
 import gws.lib.image
 import gws.lib.job
+import gws.lib.crs
 import gws.lib.os2
 import gws.lib.pdf
 import gws.lib.render
@@ -115,9 +116,9 @@ class _Worker:
         self.view_scale = params.scale or 1
         self.view_rotation = params.rotation or 0
 
-        crs = params.crs
+        crs = gws.lib.crs.get(params.crs)
         if not crs and self.project:
-            crs = self.project.map.crs
+            crs = self.project.map.crs  # type: ignore
         if not crs:
             raise ValueError('no crs can be found')
         self.view_crs = crs

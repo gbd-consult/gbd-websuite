@@ -25,7 +25,7 @@ _GEOCODER_ADDR_KEYS = 'gemeinde', 'gemarkung', 'strasse', 'hausnummer'
 
 class GeocoderParams(gws.Data):
     adressen: t.List[GeocoderAddress]
-    crs: gws.Crs
+    crs: gws.CrsId
 
 
 class GeocoderResponse(gws.Response):

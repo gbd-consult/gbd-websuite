@@ -25,7 +25,7 @@ class Response(gws.Response):
 
 class Params(gws.Params):
     bbox: t.Optional[gws.Extent]
-    crs: t.Optional[gws.Crs]
+    crs: t.Optional[gws.CrsId]
     keyword: str = ''
     layerUids: t.List[str]
     limit: t.Optional[int]

@@ -414,8 +414,6 @@ class _Parser:
                 if len(param_tuple) != 2:
                     raise ValueError('invalid Dict arguments')
                 key, val = param_tuple
-                if key != 'str':
-                    raise ValueError('Dict keys must be str')
             elif param_type:
                 key = 'str'
                 val = param_type.name
@@ -547,6 +545,10 @@ class _Parser:
         if cc == 'Attribute':
             # Something.someKey - possible enum value
             return True, base.TUncheckedEnum(name=self.qname(node))
+
+        if cc == 'Name':
+            # SomeConstant - consider unresolved
+            return True, base.TUnresolvedReference(name=node.id)
 
         base.debug_log(f'unparsed value {cc!r}', base.Data(pos=self.pos))
         return False, None

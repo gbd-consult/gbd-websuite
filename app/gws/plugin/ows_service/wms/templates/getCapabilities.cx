@@ -87,8 +87,8 @@
 
         @wms_layer_metadata lc
 
-        @each lc.projections as p
-            @t SRS {p.proj.epsg}
+        @each lc.bounds as b
+            @t SRS {b.crs.epsg}
         @end
 
         ## OGC 01-068r3, 6.5.6
@@ -96,8 +96,15 @@
         ## X refers to the longitudinal axis and Y to the latitudinal axis.
         @t LatLonBoundingBox minx="{lc.extent4326[0]}" miny="{lc.extent4326[1]}" maxx="{lc.extent4326[2]}" maxy="{lc.extent4326[3]}"
 
-        @each lc.projections as p
-            @t BoundingBox SRS="{p.proj.epsg}" minx="{p.extent[0]}" miny="{p.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
+        @each lc.bounds as b
+            @if b.crs.is_geographic
+                ## OGC 06-042, 6.7.3.3
+                ## EPSG:4326 refers to WGS 84 geographic latitude, then longitude. That is, in this CRS the x axis corresponds
+                ## to latitude, and the y axis to longitude.
+                @t BoundingBox SRS="{b.crs.epsg}" minx="{b.extent[1]}" miny="{b.extent[0]}" maxx="{b.extent[3]}" maxy="{b.extent[2]}"
+            @else
+                @t BoundingBox SRS="{b.crs.epsg}" minx="{b.extent[0]}" miny="{b.extent[1]}" maxx="{b.extent[2]}" maxy="{b.extent[3]}"
+            @end
         @end
 
         @if lc.has_legend
@@ -170,8 +177,8 @@
 
         @wms_layer_metadata lc
 
-        @each lc.projections as p
-            @t CRS {p.proj.epsg}
+        @each lc.bounds as b
+            @t CRS {b.crs.epsg}
         @end
 
         @tag EX_GeographicBoundingBox
@@ -181,14 +188,14 @@
             @t northBoundLatitude {lc.extent4326[3]}
         @end
 
-        @each lc.projections as p
-            @if p.proj.is_geographic
+        @each lc.bounds as b
+            @if b.crs.is_geographic
                 ## OGC 06-042, 6.7.3.3
                 ## EPSG:4326 refers to WGS 84 geographic latitude, then longitude. That is, in this CRS the x axis corresponds
                 ## to latitude, and the y axis to longitude.
-                @t BoundingBox CRS="{p.proj.epsg}" minx="{p.extent[1]}" miny="{p.extent[0]}" maxx="{p.extent[3]}" maxy="{p.extent[2]}"
+                @t BoundingBox CRS="{b.crs.epsg}" minx="{b.extent[1]}" miny="{b.extent[0]}" maxx="{b.extent[3]}" maxy="{b.extent[2]}"
             @else
-                @t BoundingBox CRS="{p.proj.epsg}" minx="{p.extent[0]}" miny="{p.extent[1]}" maxx="{p.extent[2]}" maxy="{p.extent[3]}"
+                @t BoundingBox CRS="{b.crs.epsg}" minx="{b.extent[0]}" miny="{b.extent[1]}" maxx="{b.extent[2]}" maxy="{b.extent[3]}"
             @end
         @end
 

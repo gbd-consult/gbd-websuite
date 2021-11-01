@@ -1,40 +1,29 @@
 import gws
 import gws.base.layer
-import gws.lib.gis
-import gws.lib.zoom
+import gws.lib.gis.source
+import gws.lib.gis.zoom
+import gws.lib.gis.util
 import gws.types as t
 
 from . import provider as provider_module
+from . import search
 
 
 @gws.ext.Config('layer.wmsflat')
 class Config(gws.base.layer.image.Config, provider_module.Config):
-    sourceLayers: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers to use
+    pass
 
 
 @gws.ext.Object('layer.wmsflat')
-class Object(gws.base.layer.image.Object):
-    source_layers: t.List[gws.lib.gis.SourceLayer]
+class Object(gws.base.layer.image.Object, gws.IOwsClient):
     provider: provider_module.Object
-    source_crs: gws.Crs
-
-    def configure(self):
-        pass
+    source_crs: gws.ICrs
 
     def configure_source(self):
-        if self.var('_provider'):
-            self.provider = self.var('_provider')
-            self.source_layers = self.var('_source_layers')
-        else:
-            self.provider = self.root.create_object(provider_module.Object, self.config, shared=True)
-            self.source_layers = gws.lib.gis.filter_source_layers(
-                self.provider.source_layers,
-                self.var('sourceLayers', default=gws.lib.gis.SourceLayerFilter(level=1)))
-
-        if not self.source_layers:
-            raise gws.Error(f'no source layers found in layer={self.uid!r}')
-
-        self.source_crs = gws.lib.gis.best_crs(self.map.crs, self.provider.supported_crs)
+        gws.lib.gis.util.configure_ows_client_layers(self, provider_module.Object, is_image=True)
+        self.source_crs = gws.lib.gis.util.best_crs(
+            self.provider.force_crs or self.crs,
+            gws.lib.gis.source.supported_crs_list(self.source_layers))
         return True
 
     def configure_metadata(self):
@@ -44,22 +33,11 @@ class Object(gws.base.layer.image.Object):
 
     def configure_zoom(self):
         if not super().configure_zoom():
-            zoom = gws.lib.zoom.config_from_source_layers(self.source_layers)
-            if zoom:
-                self.resolutions = gws.lib.zoom.resolutions_from_config(zoom, self.resolutions)
-                return True
+            return gws.lib.gis.util.configure_ows_client_zoom(self)
 
     def configure_search(self):
         if not super().configure_search():
-            queryable_layers = gws.lib.gis.enum_source_layers(self.source_layers, is_queryable=True)
-            if queryable_layers:
-                self.search_providers.append(
-                    self.require_child('gws.ext.search.provider.wms', gws.Config(
-                        uid=self.uid + '.default_search',
-                        _provider=self.provider,
-                        _source_layers=queryable_layers
-                    )))
-                return True
+            return gws.lib.gis.util.configure_ows_client_search(self, search.Object)
 
     def configure_legend(self):
         if not super().configure_legend():
@@ -74,7 +52,7 @@ class Object(gws.base.layer.image.Object):
 
     @property
     def own_bounds(self):
-        return gws.lib.gis.bounds_from_source_layers(self.source_layers, self.source_crs)
+        return gws.lib.gis.source.combined_bounds(self.source_layers, self.source_crs)
 
     @property
     def description(self):
@@ -100,7 +78,7 @@ class Object(gws.base.layer.image.Object):
 
         source_uid = mc.source(gws.compact({
             'type': 'wms',
-            'supported_srs': [self.source_crs],
+            'supported_srs': [self.source_crs.epsg],
             'concurrent_requests': self.var('maxRequests'),
             'req': req
         }))

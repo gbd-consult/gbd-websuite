@@ -23,7 +23,7 @@
 
         @t Format image/png
 
-        @each ARGS.matrix_sets as tms
+        @each ARGS.tile_matrix_sets as tms
             @t TileMatrixSetLink/TileMatrixSet {tms.uid}
         @end
     @end
@@ -32,7 +32,7 @@
 @def wmts_matrix_set(tms)
     @tag TileMatrixSet
         @t ows:Identifier {tms.uid}
-        @t ows:SupportedCRS {tms.crs}
+        @t ows:SupportedCRS {tms.crs.epsg}
 
         @each tms.matrices as tm
             @tag TileMatrix
@@ -68,7 +68,7 @@
         @each ARGS.layer_caps_list as lc
             @wmts_layer lc
         @end
-        @each ARGS.matrix_sets as tms
+        @each ARGS.tile_matrix_sets as tms
             @wmts_matrix_set tms
         @end
     @end

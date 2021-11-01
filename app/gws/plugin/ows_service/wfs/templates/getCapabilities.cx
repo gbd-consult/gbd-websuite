@@ -131,11 +131,11 @@
         @with lc.meta.abstract
             @t Abstract {lc.meta.abstract}
         @end
-        @each lc.projections as p index n
+        @each lc.bounds as b index n
             @if n == 1
-                @t DefaultCRS {p.proj.urn}
+                @t DefaultCRS {b.crs.urn}
             @else
-                @t OtherCRS {p.proj.urn}
+                @t OtherCRS {b.crs.urn}
             @end
         @end
         @ows_wgs84_bounding_box lc

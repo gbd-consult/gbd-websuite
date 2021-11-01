@@ -1,27 +1,25 @@
-import math
 import re
 
 import gws
+import gws.lib.crs
 import gws.types as t
 
 from . import image, types
-
-_EPSG_3857_RADIUS = 6378137
-
-_EPSG_3857_EXTENT = [
-    -(math.pi * _EPSG_3857_RADIUS),
-    -(math.pi * _EPSG_3857_RADIUS),
-    +(math.pi * _EPSG_3857_RADIUS),
-    +(math.pi * _EPSG_3857_RADIUS),
-]
 
 
 class ServiceConfig:
     """Tile service configuration"""
     extent: t.Optional[gws.Extent]  #: service extent
-    crs: gws.Crs = 'EPSG:3857'  #: service CRS
+    crs: gws.CrsId = 'EPSG:3857'  #: service CRS
     origin: str = 'nw'  #: position of the first tile (nw or sw)
     tileSize: int = 256  #: tile size
+
+
+class Service(gws.Data):
+    extent: gws.Extent
+    crs: gws.ICrs
+    origin: str
+    tile_size: int
 
 
 @gws.ext.Config('layer.tile')
@@ -36,7 +34,7 @@ class Config(image.Config):
 @gws.ext.Object('layer.tile')
 class Object(image.Object):
     url: gws.Url
-    service: ServiceConfig
+    service: Service
 
     def props_for(self, user):
         p = super().props_for(user)
@@ -48,10 +46,8 @@ class Object(image.Object):
     def own_bounds(self):
         # in the "native" projection, use the service extent
         # otherwise, the map extent
-        if self.service.crs == self.crs:
-            return gws.Bounds(
-                crs=self.service.crs,
-                extent=self.service.extent)
+        if self.service.crs.same_as(self.crs):
+            return gws.Bounds(crs=self.service.crs, extent=self.service.extent)
 
     def configure(self):
         # with reqSize=1 MP will request the same tile multiple times
@@ -62,15 +58,20 @@ class Object(image.Object):
         # @TODO make MP cache network requests
 
         self.grid.reqSize = self.grid.reqSize or 1
-
         self.url = self.var('url')
-        self.service: ServiceConfig = self.var('service')
+
+        p = self.var('service', default=gws.Data())
+        self.service = Service(
+            crs=gws.lib.crs.get(p.crs) or gws.lib.crs.get3857(),
+            origin=p.origin,
+            tile_size=p.tileSize,
+            extent=p.extent)
 
         if not self.service.extent:
-            if self.service.crs == gws.EPSG_3857:
-                self.service.extent = _EPSG_3857_EXTENT
+            if self.service.crs.srid == gws.lib.crs.c3857:
+                self.service.extent = gws.lib.crs.c3857_extent
             else:
-                raise gws.Error(r'service extent required for crs {self.service.crs!r}')
+                raise gws.Error(f'service extent required for crs {self.service.crs.srid!r}')
 
     def mapproxy_config(self, mc, options=None):
         # we use {x} like in Ol, mapproxy wants %(x)s
@@ -83,8 +84,8 @@ class Object(image.Object):
             'origin': self.service.origin,
             'bbox': self.service.extent,
             # 'res': res,
-            'srs': self.service.crs,
-            'tile_size': [self.service.tileSize, self.service.tileSize],
+            'srs': self.service.crs.epsg,
+            'tile_size': [self.service.tile_size, self.service.tile_size],
         }))
 
         src = self.mapproxy_back_cache_config(mc, url, grid_uid)

@@ -1,10 +1,10 @@
 import gws
 import gws.base.model
 import gws.base.search
-import gws.lib.gis
+import gws.lib.gis.source
 import gws.lib.metadata
 import gws.lib.style
-import gws.lib.zoom
+import gws.lib.gis.zoom
 import gws.types as t
 
 
@@ -68,13 +68,6 @@ class LegendConfig(gws.Config):
     url: t.Optional[gws.Url]  #: url of the legend image
 
 
-class FlattenConfig(gws.Config):
-    """Layer hierarchy flattening"""
-
-    level: int  #: flatten level
-    useGroups: bool = False  #: use group names (true) or image layer names (false)
-
-
 class Config(gws.WithAccess):
     """Layer configuration"""
 
@@ -91,13 +84,13 @@ class Config(gws.WithAccess):
     search: gws.base.search.Config = {}  # type:ignore #: layer search configuration
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
     title: str = ''  #: layer title
-    zoom: t.Optional[gws.lib.zoom.Config]  #: layer resolutions and scales
+    zoom: t.Optional[gws.lib.gis.zoom.Config]  #: layer resolutions and scales
 
 
 class CustomConfig(gws.WithAccess):
     """Custom layer configuration"""
 
-    applyTo: t.Optional[gws.lib.gis.SourceLayerFilter]  #: source layers this configuration applies to
+    applyTo: t.Optional[gws.lib.gis.source.LayerFilterConfig]  #: source layers this configuration applies to
     clientOptions: t.Optional[ClientOptions]  # options for the layer display in the client
     dataModel: t.Optional[gws.base.model.Config]  #: layer data model
     display: t.Optional[DisplayMode]  #: layer display mode
@@ -111,7 +104,7 @@ class CustomConfig(gws.WithAccess):
     search: t.Optional[gws.base.search.Config]  #: layer search configuration
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
     title: t.Optional[str]  #: layer title
-    zoom: t.Optional[gws.lib.zoom.Config]  #: layer resolutions and scales
+    zoom: t.Optional[gws.lib.gis.zoom.Config]  #: layer resolutions and scales
 
 
 class Props(gws.Props):

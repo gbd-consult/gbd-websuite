@@ -1,9 +1,11 @@
 import re
 
 import gws
-import gws.lib.gis
+import gws.lib.gis.source
+import gws.lib.extent
+import gws.lib.gis.util
 import gws.lib.metadata
-import gws.lib.proj
+import gws.lib.crs
 import gws.lib.xml2 as xml2
 import gws.types as t
 
@@ -117,29 +119,58 @@ def get_metadata(el) -> gws.lib.metadata.Metadata:
     return gws.lib.metadata.from_dict(gws.strip(d))
 
 
-def get_bounds_list(el) -> t.List[gws.Bounds]:
+def get_supported_bounds(el, extra_crsids=None) -> t.List[gws.Bounds]:
+    # el is a Layer or FeatureType element
+
     if not el:
         return []
 
-    d = {}
+    crs_to_b = {}
+
+    # enumerate explicitly listed bounds (WMS)
 
     for e in el.all('BoundingBox'):
-        crs = e.attr('srs') or e.attr('crs')
-        if crs:
-            proj = gws.lib.proj.to_proj(crs)
-            if proj:
-                d[proj.epsg] = _bbox_value(e)
+        crs = gws.lib.crs.get(e.attr('srs') or e.attr('crs'))
+        bbox = _bbox_value(e)
+        if crs and bbox:
+            crs_to_b[crs] = gws.Bounds(crs=crs, extent=bbox)
 
     # NB prefer these for 4326 to avoid axis issues
+
     e = one_of(el, 'EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
     if e:
-        d[gws.EPSG_4326] = _bbox_value(e)
+        bbox = _bbox_value(e)
+        if bbox:
+            wgs = gws.lib.crs.get4326()
+            crs_to_b[wgs] = gws.Bounds(crs=wgs, extent=bbox)
 
-    return [gws.Bounds(crs=k, extent=v) for k, v in d.items()]
+    # add bounds for all supported crs
+
+    def add(new_crs):
+        if not new_crs or new_crs in crs_to_b:
+            return
+
+        for crs, b in crs_to_b.items():
+            if new_crs.same_as(crs):
+                crs_to_b[new_crs] = gws.Bounds(crs=new_crs, extent=b.extent)
+                return
+
+        best = gws.lib.gis.util.best_bounds(new_crs, list(crs_to_b.values()), prefer_projected=False)
+        gws.log.debug(f'using {best.crs.srid!r} for missing bounds {new_crs.srid!r}')
+        ext = gws.lib.extent.transform(best.extent, best.crs, new_crs)
+        crs_to_b[new_crs] = gws.Bounds(crs=new_crs, extent=ext)
+
+    if extra_crsids:
+        for c in extra_crsids:
+            crs = gws.lib.crs.get(c)
+            if crs:
+                add(crs)
+
+    return list(crs_to_b.values())
 
 
-def get_style(el) -> gws.lib.gis.SourceStyle:
-    st = gws.lib.gis.SourceStyle()
+def get_style(el) -> gws.SourceStyle:
+    st = gws.SourceStyle()
 
     st.metadata = get_metadata(el)
     st.name = st.metadata.get('name', '').lower()
@@ -151,7 +182,7 @@ def get_style(el) -> gws.lib.gis.SourceStyle:
     return st
 
 
-def default_style(styles) -> t.Optional[gws.lib.gis.SourceStyle]:
+def default_style(styles) -> t.Optional[gws.SourceStyle]:
     for s in styles:
         if s.is_default:
             return s
@@ -198,20 +229,17 @@ def one_of(el, *tags):
             return e
 
 
-def flatten_source_layers(layers):
-    def _collect(ls, res, parent_path, level):
-        for sl in ls:
-            if not sl:
-                continue
-            sl.a_uid = gws.to_uid(sl.name or sl.metadata.get('title'))
-            sl.a_path = parent_path + '/' + sl.a_uid
-            sl.a_level = level
-            res.append(sl)
-            if sl.layers:
-                _collect(sl.layers, res, sl.a_path, level + 1)
-        return res
+def enum_source_layers(layers):
+    def walk(sl, parent_path, level):
+        if not sl:
+            return
+        sl.a_uid = gws.to_uid(sl.name or sl.metadata.get('title'))
+        sl.a_path = parent_path + '/' + sl.a_uid
+        sl.a_level = level
+        sl.layers = gws.compact(walk(sl2, sl.a_path, level + 1) for sl2 in (sl.layers or []))
+        return sl
 
-    return _collect(layers, [], '', 1)
+    return gws.compact(walk(sl, '', 1) for sl in layers)
 
 
 def extract_text_rec(el):

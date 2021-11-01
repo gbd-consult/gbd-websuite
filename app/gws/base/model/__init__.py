@@ -2,6 +2,7 @@ import re
 
 import gws
 import gws.lib.misc
+import gws.lib.crs
 import gws.types as t
 
 _DEFAULT_EDITOR = {
@@ -87,7 +88,7 @@ class Rule(gws.Data):
 class Config(gws.Config):
     """Data model"""
 
-    crs: t.Optional[gws.Crs]  #: CRS for this model
+    crs: t.Optional[gws.CrsId]  #: CRS for this model
     geometryType: t.Optional[gws.GeometryType]  #: specific geometry type
     rules: t.List[Rule]  #: attribute conversion rules
 
@@ -109,7 +110,7 @@ class Props(gws.Props):
 class Object(gws.Node, gws.IDataModel):
     rules: t.List[Rule]
     geometry_type: gws.GeometryType
-    geometry_crs: gws.Crs
+    geometry_crs: gws.ICrs
 
     def props_for(self, user):
         return Props(
@@ -145,7 +146,7 @@ class Object(gws.Node, gws.IDataModel):
     def configure(self):
         self.rules = [self._configure_rule(r) for r in self.var('rules', default=[])]
         self.geometry_type = self.var('geometryType')
-        self.geometry_crs = self.var('crs')
+        self.geometry_crs = gws.lib.crs.get(self.var('crs'))
 
     def xml_schema(self, name_for_geometry='geometry') -> dict:
         schema = {}

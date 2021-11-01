@@ -5,6 +5,7 @@ import gws.base.db
 import gws.base.model
 import gws.lib.feature
 import gws.lib.shape
+import gws.lib.crs
 import gws.types as t
 
 from . import driver
@@ -59,8 +60,17 @@ class Object(gws.Node, gws.ISqlDbProvider):
     def describe(self, table: gws.SqlTable) -> t.Dict[str, gws.SqlTableColumn]:
         def _get():
             gws.log.debug(f'db: describe {key!r}')
+
+            d = {}
+
             with self.connect() as conn:
-                return {c['name']: gws.SqlTableColumn(c) for c in conn.columns(table.name)}
+                for c in conn.columns(table.name):
+                    col = gws.SqlTableColumn(c)
+                    if col.srid:
+                        col.crs = gws.lib.crs.get(col.srid)
+                    d[c['name']] = col
+
+            return d
 
         key = self.class_name + '_describe_' + table.name
         return gws.get_server_global(key, _get)
@@ -161,15 +171,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
             return []
 
     def configure_table(self, cfg: gws.base.db.SqlTableConfig) -> gws.SqlTable:
-        table = gws.SqlTable(
-            name=cfg.get('name'),
-            geometry_column=None,
-            geometry_crs=None,
-            geometry_type=None,
-            key_column=None,
-            search_column=None
-        )
-
+        table = gws.SqlTable(name=cfg.get('name'))
         cols = self.describe(table)
 
         if not cols:
@@ -228,7 +230,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
         return gws.Config(
             rules=rules,
             geometryType=table.geometry_type,
-            crs=table.geometry_crs,
+            crs=table.geometry_crs.epsg,
         )
 
     def _feature_to_record(self, table: gws.SqlTable, feature: gws.IFeature) -> dict:
