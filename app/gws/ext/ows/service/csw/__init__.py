@@ -109,9 +109,9 @@ class Object(ows.Base):
             meta: t.MetaData = gws.get(obj, 'meta')
             if not meta:
                 continue
-            if not meta.catalogUid:
-                meta.catalogUid = meta.authorityIdentifier or obj.uid
-                meta.catalogCitationUid = meta.catalogUid
+            if not meta.catalogUid or 'admin' in obj.uid:
+                continue
+            meta.catalogCitationUid = meta.catalogUid
             if not meta.url:
                 # when using CSW, set meta urls of all objects (that don't have meta.url set) to our "raw record" url
                 meta.url = f'{gws.SERVER_ENDPOINT}/cmd/owsHttpService/uid/{self.uid}/id/{obj.uid}'
