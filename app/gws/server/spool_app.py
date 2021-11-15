@@ -4,14 +4,13 @@ import gws.lib.job
 import gws.server.spool
 import gws.server.uwsgi_module
 
-
 def application(environ, start_response):
     pass
 
 
 def spooler(env):
     try:
-        _spooler2(env)
+        gws.server.spool.run(gws.config.root(), env)
     except:
         gws.log.exception()
 
@@ -39,19 +38,6 @@ def init():
 
     gws.server.uwsgi_module.load().spooler = spooler
 
+# NB: spooler must be inited right away
 
 init()
-
-
-##
-
-
-def _spooler2(env):
-    job_uid = env.get(b'job_uid')
-    if not job_uid:
-        raise ValueError('no job_uid found')
-    job = gws.lib.job.get(gws.to_str(job_uid))
-    if not job:
-        raise ValueError('invalid job_uid', job_uid)
-    gws.log.debug('running job', job.uid)
-    job.run()

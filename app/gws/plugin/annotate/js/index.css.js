@@ -31,15 +31,15 @@ module.exports = v => {
 
 
         '.modAnnotateSidebarIcon': {
-            ...v.SIDEBAR_ICON('markandmeasure')
+            ...v.SIDEBAR_ICON(__dirname + '/markandmeasure')
         },
 
         '.modAnnotateDrawToolbarButton': {
-            ...v.TOOLBAR_BUTTON('markandmeasure')
+            ...v.TOOLBAR_BUTTON(__dirname + '/markandmeasure')
         },
 
         '.modAnnotateEditAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON('cursor')
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/cursor')
         },
 
         '.modAnnotateDrawAuxButton': {
@@ -52,7 +52,7 @@ module.exports = v => {
         },
 
         '.modAnnotateLensAuxButton': {
-            ...v.SIDEBAR_AUX_BUTTON('spatialsearch'),
+            ...v.SIDEBAR_AUX_BUTTON(__dirname + '/spatialsearch'),
         },
 
         '.modAnnotateRemoveButton': {

@@ -27,7 +27,7 @@ ERROR_NOT_SUPPORTED = 'syntax not supported'
 ERROR_ARG_NOT_SUPPORTED = 'argument syntax not supported'
 ERROR_FILTER = 'invalid or unknown filter'
 
-_DEFAULT_OPTIONS = {  # type: ignore
+_DEFAULT_OPTIONS = {
     'syntax': {
         'command': r'^\s*@(\w+)(.*)',
         'comment': r'^\s*##',
@@ -243,6 +243,8 @@ class Expression:
 
         if t == 'NameConstant':
             return repr(n.value)
+        if t == 'Constant':
+            return repr(n.value)
         if t == 'Num':
             return repr(n.n)
         if t == 'Str':
@@ -304,6 +306,17 @@ class Expression:
 
         return self.cc.error(ERROR_NOT_SUPPORTED, t)
 
+    def constant(self, n):
+        t = _cname(n)
+        if t == 'NameConstant':
+            return n.value
+        if t == 'Constant':
+            return n.value
+        if t == 'Num':
+            return n.n
+        if t == 'Str':
+            return n.s
+
     def fix_args(self, args):
         args = args.strip()
 
@@ -353,8 +366,12 @@ class Expression:
             return self.filter_call(func.id, _comma(args))
 
         # xyz | '{:1f}'
+        fmt = None
         if t == 'Str':
             fmt = ri.s
+        if t == 'Constant' and isinstance(ri.value, str):
+            fmt = ri.value
+        if fmt:
             if '{' not in fmt:
                 fmt = '{' + fmt + '}'
             args = [self.walk(le), repr(fmt)]
@@ -706,23 +723,24 @@ class Command:
 
         self.cc.code.try_block(_dedent(buf))
 
-    def parse_quote(self, arg, emit=True):
-        label = arg
+    def extract_text(self, label):
+        text = []
         while True:
             ln = self.cc.parser.read_line()
             cmd, arg = self.cc.parser.parse_line(ln)
             if cmd == 'end' and arg == label:
                 break
-            if emit:
-                self.cc.code.string(ln)
+            text.append(ln)
+        return '\n'.join(text)
 
     def command_quote(self, arg):
         # @quote label ...flow... @end label
-        self.parse_quote(arg, emit=True)
+        text = self.extract_text(arg)
+        self.cc.code.string(text)
 
     def command_comment(self, arg):
         # @comment label ...flow... @end label
-        self.parse_quote(arg, emit=False)
+        self.extract_text(arg)
 
     let_re = r'''(?x)
         ^

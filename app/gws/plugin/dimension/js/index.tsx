@@ -128,14 +128,14 @@ class DimensionElement {
         }
     }
 
-    createTag(fragment) {
+    createTag(soup) {
         if (this.type === 'Line') {
-            return this.createLineTag(fragment)
+            return this.createLineTag(soup)
         }
         return [];
     }
 
-    createLineTag(fragment) {
+    createLineTag(soup) {
 
         /*
                                                      label
@@ -173,36 +173,36 @@ class DimensionElement {
         let q1 = rotate(q1r, p1, a);
         let q2 = rotate(q2r, p1, a);
 
-        let p1ref = vpush(fragment.points, p1);
-        let p2ref = vpush(fragment.points, p2);
-        let q1ref = vpush(fragment.points, q1);
-        let q2ref = vpush(fragment.points, q2);
-        let cpref = vpush(fragment.points, cp);
+        let p1ref = vpush(soup.points, p1);
+        let p2ref = vpush(soup.points, p2);
+        let q1ref = vpush(soup.points, q1);
+        let q2ref = vpush(soup.points, q2);
+        let cpref = vpush(soup.points, cp);
 
-        fragment.tags.push(['line', {
+        soup.tags.push(['line', {
             class: "modDimensionDimLine",
             'marker-start': 'url(#lineStart)',
             'marker-end': 'url(#lineEnd)',
-            x1: ['', q1ref, 0],
-            y1: ['', q1ref, 1],
-            x2: ['', q2ref, 0],
-            y2: ['', q2ref, 1],
+            x1: ['x', q1ref],
+            y1: ['y', q1ref],
+            x2: ['x', q2ref],
+            y2: ['y', q2ref],
         }]);
 
-        fragment.tags.push(['line', {
+        soup.tags.push(['line', {
             class: "modDimensionDimPlumb",
-            x1: ['', p1ref, 0],
-            y1: ['', p1ref, 1],
-            x2: ['', q1ref, 0],
-            y2: ['', q1ref, 1],
+            x1: ['x', p1ref],
+            y1: ['y', p1ref],
+            x2: ['x', q1ref],
+            y2: ['y', q1ref],
         }]);
 
-        fragment.tags.push(['line', {
+        soup.tags.push(['line', {
             class: "modDimensionDimPlumb",
-            x1: ['', p2ref, 0],
-            y1: ['', p2ref, 1],
-            x2: ['', q2ref, 0],
-            y2: ['', q2ref, 1],
+            x1: ['x', p2ref],
+            y1: ['y', p2ref],
+            x2: ['x', q2ref],
+            y2: ['y', q2ref],
         }]);
 
         let x1 = q1r[0], x2 = q2r[0];
@@ -223,23 +223,23 @@ class DimensionElement {
         let anchor = 'middle';
 
         if (cpr[0] < minx) {
-            fragment.tags.push(['line', {
+            soup.tags.push(['line', {
                 class: 'modDimensionDimExt',
-                x1: ['', minref, 0],
-                y1: ['', minref, 1],
-                x2: ['', cpref, 0],
-                y2: ['', cpref, 1],
+                x1: ['x', minref],
+                y1: ['y', minref],
+                x2: ['x', cpref],
+                y2: ['y', cpref],
             }]);
             anchor = 'start';
         }
 
         if (cpr[0] > maxx) {
-            fragment.tags.push(['line', {
+            soup.tags.push(['line', {
                 class: 'modDimensionDimExt',
-                x1: ['', cpref, 0],
-                y1: ['', cpref, 1],
-                x2: ['', maxref, 0],
-                y2: ['', maxref, 1],
+                x1: ['x', cpref],
+                y1: ['y', cpref],
+                x2: ['x', maxref],
+                y2: ['y', maxref],
             }]);
             anchor = 'end';
         }
@@ -247,12 +247,12 @@ class DimensionElement {
         let s = this.model.styles['.modDimensionDimLabel'];
         let labelOffset = s ? (s.values.offset_y || 0) : 0;
 
-        fragment.tags.push(['text', {
+        soup.tags.push(['text', {
             class: 'modDimensionDimLabel',
             'text-anchor': anchor,
-            x: ['', cpref, 0],
-            y: ['', cpref, 1],
-            transform: ['rotate', p1ref, p2ref, cpref],
+            x: ['x', cpref],
+            y: ['y', cpref],
+            transform: ['r', p1ref, p2ref, cpref],
         },
             ['tspan', {}, ''],
             ['tspan', {dy: -labelOffset}, this.label],
@@ -292,10 +292,10 @@ class DimensionModel {
             this.styles[s] = this.map.style.get(s);
         });
 
-        let fragment = {points: [], tags: []};
-        this.createDefsTag(fragment);
-        console.log(fragment);
-        this.svgDefs = this.toSvg(fragment.tags[0], []);
+        let soup = {points: [], tags: []};
+        this.createDefsTag(soup);
+        console.log(soup);
+        this.svgDefs = this.toSvg(soup.tags[0], []);
     }
 
     get empty() {
@@ -454,10 +454,13 @@ class DimensionModel {
 
                 if (Array.isArray(val)) {
                     switch (val[0]) {
-                        case '':
-                            val = pixels[val[1]][val[2]];
+                        case 'x':
+                            val = pixels[val[1]][0];
                             break;
-                        case 'rotate':
+                        case 'y':
+                            val = pixels[val[1]][1];
+                            break;
+                        case 'r':
                             let a = slope(pixels[val[1]], pixels[val[2]])
                             let adeg = a / (Math.PI / 180);
                             let r = pixels[val[3]];
@@ -522,7 +525,7 @@ class DimensionModel {
         return `<circle class="${cls}" cx="${x}" cy="${y}" r="${r}" />`;
     }
 
-    createDefsTag(fragment) {
+    createDefsTag(soup) {
         let buf = [], defs = [];
 
         let lineStyle = this.styles['.modDimensionDimLine'];
@@ -591,7 +594,7 @@ class DimensionModel {
 
         }
 
-        fragment.tags.push(['defs', {}, ...defs]);
+        soup.tags.push(['defs', {}, ...defs]);
 
         // return '<defs>' + buf.join('') + '</defs>';
 
@@ -606,11 +609,11 @@ class DimensionModel {
         if (!mapSize)
             return '';
 
-        let fragment = {points: [], tags: []};
-        this.elements.map(e => e.createTag(fragment));
+        let soup = {points: [], tags: []};
+        this.elements.map(e => e.createTag(soup));
 
-        let pixels = fragment.points.map(c => this.toPx(c));
-        let svg = fragment.tags.map(el => this.toSvg(el, pixels)).join('');
+        let pixels = soup.points.map(c => this.toPx(c));
+        let svg = soup.tags.map(el => this.toSvg(el, pixels)).join('');
         let points = this.isInteractive ? this.points.map(p => this.drawPoint(p)).join('') : '';
         let draft = this.drawDraft();
 
@@ -622,11 +625,11 @@ class DimensionModel {
         </svg>`;
     }
 
-    printItem(): gws.api.base.printer.Item {
-        let fragment = {points: [], tags: [], styles: []};
+    printPlane(): gws.api.base.printer.Plane {
+        let soup = {points: [], tags: [], styles: []};
 
-        this.createDefsTag(fragment);
-        this.elements.map(e => e.createTag(fragment));
+        this.createDefsTag(soup);
+        this.elements.map(e => e.createTag(soup));
 
         let styles = gws.lib.entries(this.styles).map(([name, s]) => ({
             values: s.values,
@@ -634,9 +637,9 @@ class DimensionModel {
         }));
 
         return {
-            type: 'fragment',
-            points: fragment.points,
-            tags: fragment.tags,
+            type: 'soup',
+            points: soup.points,
+            tags: soup.tags,
             styles
         }
     }
@@ -646,10 +649,10 @@ class DimensionModel {
 class DimensionLayer extends gws.map.layer.FeatureLayer {
     master: DimensionController;
 
-    get printItem(): gws.api.base.printer.Item {
+    get printPlane(): gws.api.base.printer.Plane {
         if (this.master.model.empty)
             return null;
-        return this.master.model.printItem()
+        return this.master.model.printPlane()
     }
 
 }

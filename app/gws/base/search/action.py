@@ -62,7 +62,7 @@ class Object(gws.base.api.action.Object):
 
         tolerance = None
         if p.tolerance:
-            tolerance = gws.lib.units.parse(p.tolerance, units=['px', 'm'], default='px')
+            tolerance = gws.lib.units.parse(p.tolerance, default=gws.lib.units.PX)
 
         args = gws.SearchArgs(
             bounds=bounds,

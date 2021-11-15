@@ -43,17 +43,17 @@ class Object(core.Object):
             editStyle=self.edit_style,
             url=core.layer_url_path(self.uid, kind='features'))
 
-    def render_box(self, rv, extra_params=None):
-        tags = self.render_svg_tags(rv)
+    def render_box(self, view, extra_params=None):
+        fr = self.render_svg_fragment(view)
         ts = gws.time_start('render_box:to_png')
-        png = gws.lib.svg.to_png(tags, size=rv.size_px)
+        img = gws.lib.svg.fragment_to_image(fr, size=view.size_px, format='png')
         gws.time_end(ts)
-        return png
+        return img.to_bytes()
 
-    def render_svg_tags(self, rv, style=None):
-        bounds = rv.bounds
-        if rv.rotation:
-            bounds = gws.Bounds(crs=rv.bounds.crs, extent=gws.lib.extent.circumsquare(bounds.extent))
+    def render_svg_fragment(self, view, style=None):
+        bounds = view.bounds
+        if view.rotation:
+            bounds = gws.Bounds(crs=view.bounds.crs, extent=gws.lib.extent.circumsquare(bounds.extent))
 
         ts = gws.time_start('render_svg:get_features')
         found = self.get_features(bounds)
@@ -66,7 +66,7 @@ class Object(core.Object):
         gws.time_end(ts)
 
         ts = gws.time_start('render_svg:to_svg')
-        tags = [tag for f in found for tag in f.to_svg_tags(rv, style or self.style)]
+        tags = [tag for f in found for tag in f.to_svg_fragment(view, style or self.style)]
         gws.time_end(ts)
 
         return tags

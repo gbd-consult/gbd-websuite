@@ -1,24 +1,24 @@
 import * as React from 'react';
 
-import * as gws from '../gws';
-import * as style from '../gws/map/style';
+import * as gws from 'gws';
+import * as style from 'gws/map/style';
 
-import * as sidebar from './sidebar';
+import * as sidebar from 'gws/elements/sidebar';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
 const MASTER = 'Shared.Style';
 
-let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as StyleController;
+let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Controller;
 
 
 interface ViewProps extends gws.types.ViewProps {
-    controller: StyleController;
+    controller: Controller;
     styleEditorActiveTab: number;
     styleEditorLabelEnabled: boolean;
     styleEditorCurrentName: string;
     styleEditorNewName: string;
-    styleEditorValues: gws.api.StyleValues;
+    styleEditorValues: object;
 }
 
 
@@ -73,8 +73,8 @@ class StyleForm extends gws.View<ViewProps> {
             )}/>,
         );
 
-        let noLabel = this.props.styleEditorValues.with_label !== gws.api.StyleLabelOption.all;
-        let noGeom = this.props.styleEditorValues.with_geometry !== gws.api.StyleGeometryOption.all;
+        let noLabel = false // this.props.styleEditorValues.with_label !== gws.api.StyleLabelOption.all;
+        let noGeom = false // this.props.styleEditorValues.with_geometry !== gws.api.StyleGeometryOption.all;
 
         return <gws.ui.Tabs
             active={cc.getValue('styleEditorActiveTab')}
@@ -226,7 +226,7 @@ class StyleSidebar extends gws.Controller implements gws.types.ISidebarItem {
 const UPDATE_DELAY = 200;
 
 
-export class StyleController extends gws.Controller {
+export class Controller extends gws.Controller {
     uid = MASTER;
 
     updateTimer: any;
@@ -294,8 +294,8 @@ export class StyleController extends gws.Controller {
 }
 
 
-export const tags = {
-
-    [MASTER]: StyleController,
+gws.registerTags({
+    [MASTER]: Controller,
     'Sidebar.Style': StyleSidebar,
-}
+});
+

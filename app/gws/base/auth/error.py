@@ -35,3 +35,8 @@ class UnknownMethod(Error):
 class UnknownProvider(Error):
     """Unknown authorization provider"""
     pass
+
+
+class ObjectNotFound(Error):
+    """Required object not found"""
+    pass

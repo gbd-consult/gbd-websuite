@@ -7,88 +7,6 @@ import gws.types as t
 from . import inspire
 
 
-class Link(gws.Data):
-    """Link metadata"""
-
-    scheme: t.Optional[str]  #: link scheme
-    url: gws.Url  #: link url
-    formatName: t.Optional[str]  #: link format
-    formatVersion: t.Optional[str]  #: link format version
-    function: t.Optional[str]  #: ISO-19115 online function code
-    type: t.Optional[str]  #: metadata url type like "TC211"
-
-
-class Values(gws.Data):
-    abstract: t.Optional[str]  #: object abstract description
-    accessConstraints: t.Optional[str]
-    attribution: t.Optional[str]  #: attribution (copyright) string
-
-    authorityIdentifier: t.Optional[str]
-    authorityName: t.Optional[str]
-    authorityUrl: t.Optional[gws.Url]
-
-    catalogCitationUid: t.Optional[str]  #: catalog citation identifier
-    catalogUid: t.Optional[str]  #: catalog identifier
-
-    contactAddress: t.Optional[str]
-    contactArea: t.Optional[str]
-    contactCity: t.Optional[str]
-    contactCountry: t.Optional[str]
-    contactEmail: t.Optional[str]
-    contactFax: t.Optional[str]
-    contactOrganization: t.Optional[str]
-    contactPerson: t.Optional[str]
-    contactPhone: t.Optional[str]
-    contactPosition: t.Optional[str]
-    contactZip: t.Optional[str]
-    contactUrl: t.Optional[gws.Url]
-
-    dateBegin: t.Optional[gws.Date]  #: temporal extent begin
-    dateCreated: t.Optional[gws.Date]  #: publication date
-    dateEnd: t.Optional[gws.Date]  #: temporal extent end
-    dateUpdated: t.Optional[gws.Date]  #: modification date
-
-    fees: t.Optional[str]
-    image: t.Optional[gws.Url]  #: image (logo) url
-
-    inspireKeywords: t.List[str] = []  #: INSPIRE keywords
-    inspireMandatoryKeyword: t.Optional[str]  #: INSPIRE mandatory keyword
-    inspireDegreeOfConformity: t.Optional[str]  #: INSPIRE degree of conformity
-    inspireResourceType: t.Optional[str]  #: INSPIRE resource type
-    inspireSpatialDataServiceType: t.Optional[str]  #: INSPIRE spatial data service type
-    inspireSpatialScope: t.Optional[str]  #: INSPIRE spatial scope
-    inspireSpatialScopeName: t.Optional[str]  #: INSPIRE spatial scope localized name
-    inspireTheme: t.Optional[str]  #: INSPIRE theme, see http://inspire.ec.europa.eu/theme/
-    inspireThemeName: t.Optional[str]  #: INSPIRE theme name, in the project language
-    inspireThemeNameEn: t.Optional[str]  #: INSPIRE theme name, in English
-
-    isoMaintenanceFrequencyCode: t.Optional[str]  #: ISO-19139 maintenance frequency code
-    isoQualityConformanceExplanation: t.Optional[str]
-    isoQualityConformanceQualityPass: t.Optional[bool]
-    isoQualityConformanceSpecificationDate: t.Optional[str]
-    isoQualityConformanceSpecificationTitle: t.Optional[str]
-    isoQualityLineageSource: t.Optional[str]
-    isoQualityLineageSourceScale: t.Optional[int]
-    isoQualityLineageStatement: t.Optional[str]
-    isoRestrictionCode: t.Optional[str]  #: ISO-19139 restriction code
-    isoScope: t.Optional[str]  #: ISO-19139 scope code
-    isoScopeName: t.Optional[str]  #: ISO-19139 scope name
-    isoSpatialRepresentationType: t.Optional[str]  #: ISO-19139 spatial type
-    isoTopicCategory: t.Optional[str]  #: ISO-19139 topic category
-    isoSpatialResolution: t.Optional[str]  #: ISO-19139 spatial resolution
-
-    keywords: t.List[str] = []  #: keywords
-    language3: t.Optional[str]  #: object language (bibliographic)
-    language: t.Optional[str]  #: object language
-    languageName: t.Optional[str]  #: localized language name
-    license: t.Optional[str]
-    name: t.Optional[str]  #: object internal name
-    title: t.Optional[str]  #: object title
-
-    metaLinks: t.List[Link] = []  #: metadata links
-    extraLinks: t.List[Link] = []  #: additional links
-
-
 ##
 
 class Props(gws.Props):
@@ -106,7 +24,7 @@ class ExtendOption(t.Enum):
     source = 'source'  #: substutute missing metadata from the source
 
 
-class Config(Values):
+class Config(gws.MetadataValues):
     """Metadata configuration"""
 
     extend: t.Optional[ExtendOption]
@@ -137,15 +55,14 @@ _LIST_PROPS = {'metaLinks', 'extraLinks'}
 _EXT_LIST_PROPS = {'keywords', 'inspireKeywords'}
 _NO_EXT_PROPS = {'authorityIdentifier', 'catalogUid'}
 
-class Metadata(gws.Object, gws.IMetadata):
-    values: Values
 
+class Metadata(gws.Object, gws.IMetadata):
     def __init__(self, d):
         super().__init__()
         self._update(d)
 
     def props_for(self, user):
-        return Props(
+        return gws.Data(
             abstract=self.values.abstract or '',
             attribution=self.values.attribution or '',
             dateCreated=self.values.dateCreated,
@@ -199,4 +116,4 @@ class Metadata(gws.Object, gws.IMetadata):
             d['inspireThemeName'] = inspire.theme_name(d['inspireTheme'], d.get('language'))
             d['inspireThemeNameEn'] = inspire.theme_name(d['inspireTheme'], 'en')
 
-        self.values = Values(d)
+        self.values = gws.MetadataValues(d)

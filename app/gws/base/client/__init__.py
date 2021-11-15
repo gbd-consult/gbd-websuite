@@ -30,7 +30,7 @@ class Props(gws.Data):
 
 class Element(gws.Node):
     def props_for(self, user):
-        return ElementProps(tag=self.var('tag'))
+        return gws.Data(tag=self.var('tag'))
 
 
 class Object(gws.Node, gws.IClient):
@@ -38,7 +38,9 @@ class Object(gws.Node, gws.IClient):
     elements: t.List[Element]
 
     def props_for(self, user):
-        return Props(options=self.options, elements=self.elements)
+        return gws.Data(
+            options=self.options,
+            elements=self.elements)
 
     def configure(self):
         parent_client = self.var('parentClient')
@@ -63,15 +65,15 @@ class Object(gws.Node, gws.IClient):
         add = self.var('addElements', default=[])
 
         for c in add:
-            n = _find_element(elements, c.tag)
+            n = self._find_element(elements, c.tag)
             if n >= 0:
                 elements.pop(n)
             if c.before:
-                n = _find_element(elements, c.before)
+                n = self._find_element(elements, c.before)
                 if n >= 0:
                     elements.insert(n, c)
             elif c.after:
-                n = _find_element(elements, c.after)
+                n = self._find_element(elements, c.after)
                 if n >= 0:
                     elements.insert(n + 1, c)
             else:
@@ -82,8 +84,8 @@ class Object(gws.Node, gws.IClient):
         return [e for e in elements if e.tag not in remove_tags]
 
 
-def _find_element(elements, tag):
-    for n, el in enumerate(elements):
-        if el.tag == tag:
-            return n
-    return -1
+    def _find_element(self, elements, tag):
+        for n, el in enumerate(elements):
+            if el.tag == tag:
+                return n
+        return -1

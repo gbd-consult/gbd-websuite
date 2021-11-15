@@ -83,15 +83,21 @@ class Object(gws.Node, gws.IProject):
 
     @property
     def description(self):
-        context = {'project': self, 'meta': t.cast(gws.lib.metadata.Metadata, self.metadata).values}
         tpl = self.templates.find(subject='project.description')
-        return tpl.render(context).content if tpl else ''
+        if not tpl:
+            return ''
+        context = {
+            'project': self,
+            'meta': self.metadata.values
+        }
+        tro = tpl.render(gws.TemplateRenderInput(context=context))
+        return tro.content
 
     def props_for(self, user):
         app_api = self.root.application.api
         actions = self.api.actions_for(user, app_api) if self.api else app_api.actions_for(user)
 
-        return Props(
+        return gws.Data(
             actions=list(actions.values()),
             client=self.client or self.root.application.client,
             description=self.description,

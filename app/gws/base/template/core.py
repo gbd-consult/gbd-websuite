@@ -5,70 +5,52 @@ import gws.base.model
 import gws.lib.date
 import gws.lib.intl
 import gws.lib.mime
+import gws.lib.os2
 import gws.types as t
-
-
-class QualityLevel(gws.Data):
-    """Quality level for a template"""
-
-    name: str = ''  #: level name
-    dpi: int  #: dpi value
 
 
 class Config(gws.Config):
     dataModel: t.Optional[gws.base.model.Config]  #: user-editable template attributes
+    mapSize: t.Optional[gws.MSize]
     mimeTypes: t.Optional[t.List[str]]  #: mime types this template can generate
+    pageSize: t.Optional[gws.MSize]
     path: t.Optional[gws.FilePath]  #: path to a template file
+    qualityLevels: t.Optional[t.List[gws.TemplateQualityLevel]]  #: quality levels supported by the template
     subject: str = ''  #: template purpose
-    qualityLevels: t.Optional[t.List[QualityLevel]]  #: quality levels supported by the template
     text: str = ''  #: template content
     title: str = ''  #: template title
 
 
 class Props(gws.Props):
-    uid: str
-    title: str
-    qualityLevels: t.List[QualityLevel]
-    mapHeight: int
-    mapWidth: int
     dataModel: gws.base.model.Props
-
-
-class LegendMode(t.Enum):
-    html = 'html'
-    image = 'image'
+    mapSize: t.Optional[gws.MSize]
+    pageSize: t.Optional[gws.MSize]
+    qualityLevels: t.List[gws.TemplateQualityLevel]
+    title: str
+    uid: str
 
 
 class Object(gws.Node, gws.ITemplate):
-    legend_layer_uids: t.List[str]
-    legend_mode: t.Optional['LegendMode']
-    legend_use_all: bool
-
-    map_size: gws.Size
-    page_size: gws.Size
-    margin: gws.Extent
 
     def props_for(self, user):
-        return Props(
-            uid=self.uid,
-            title=self.title,
-            qualityLevels=self.var('qualityLevels', default=[]),
+        return gws.Data(
             dataModel=self.data_model,
-            mapWidth=self.map_size[0],
-            mapHeight=self.map_size[1],
-            pageWidth=self.page_size[0],
-            pageHeight=self.page_size[1],
+            mapSize=self.map_size,
+            pageSize=self.page_size,
+            qualityLevels=self.quality_levels,
+            title=self.title,
+            uid=self.uid,
         )
 
     def configure(self):
-
-        self.path: str = self.var('path')
-        self.text: str = self.var('text')
-        self.title: str = self.var('title')
+        self.path = self.var('path')
+        self.text = self.var('text', default='')
+        self.title = self.var('title', default='')
 
         uid = self.var('uid') or (gws.sha256(self.path) if self.path else self.class_name.replace('.', '_'))
         self.set_uid(uid)
 
+        self.quality_levels = self.var('qualityLevels') or [gws.TemplateQualityLevel(name='default', dpi=0)]
         self.data_model = self.create_child_if_config('gws.base.model', self.var('dataModel'))
 
         self.subject = self.var('subject', default='').lower()
@@ -77,34 +59,29 @@ class Object(gws.Node, gws.ITemplate):
         else:
             self.category, self.name = '', self.subject
 
-        self.mime_types = []
+        self.mimes = []
         for p in self.var('mimeTypes', default=[]):
-            self.mime_types.append(gws.lib.mime.get(p))
+            self.mimes.append(gws.lib.mime.get(p))
 
-    def dpi_for_quality(self, quality):
-        q = self.var('qualityLevels')
-        if q and quality < len(q):
-            return q[quality].dpi
-        return 0
+        self.map_size = self.var('mapSize')
+        self.page_size = self.var('pageSize')
 
     def prepare_context(self, context: dict) -> dict:
-        ext: t.Dict[str, t.Any] = {
+        ctx = context or {}
+        ext = {
             'gws': {
                 'version': gws.VERSION,
                 'endpoint': gws.SERVER_ENDPOINT,
             }
         }
 
-        locale_uid = context.get('localeUid')
+        locale_uid = ctx.get('localeUid')
         if locale_uid:
             ext['locale'] = gws.lib.intl.locale(locale_uid)
             ext['date'] = gws.lib.date.date_formatter(locale_uid)
             ext['time'] = gws.lib.date.time_formatter(locale_uid)
 
-        return gws.merge(ext, context)
-
-    def add_page_elements(self, context: dict, in_path: str, out_path: str, format: str):
-        return in_path
+        return gws.merge(ext, ctx)
 
 
 ##

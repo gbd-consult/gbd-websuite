@@ -15,7 +15,7 @@ class Object(types.IObject):
         self.access = None
 
     def props_for(self, user):
-        return None
+        return types.Props()
 
     def access_for(self, user):
         if self.access:

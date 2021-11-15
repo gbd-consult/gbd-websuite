@@ -1,18 +1,17 @@
 import * as React from 'react';
 import * as ol from 'openlayers';
 
-import * as gws from '../gws';
-import * as template from '../gws/map/template';
-import * as measure from '../gws/map/measure';
-import * as style from '../gws/map/style';
+import * as gws from 'gws';
+import * as measure from 'gws/map/measure';
+import * as template from 'gws/map/template';
+import * as style from 'gws/map/style';
+import * as styler from 'gws/elements/styler';
+import * as draw from 'gws/elements/draw';
+import * as modify from 'gws/elements/modify';
+import * as sidebar from 'gws/elements/sidebar';
+import * as toolbar from 'gws/elements/toolbar';
+import * as components from 'gws/components';
 
-import * as sidebar from './sidebar';
-import * as toolbar from './toolbar';
-import * as modify from './modify';
-import * as draw from './draw';
-import * as storage from './storage';
-
-import {StyleController} from './style';
 
 const MASTER = 'Shared.Annotate';
 const STORAGE_CATEGORY = 'Annotate';
@@ -416,7 +415,7 @@ class AnnotateFeatureTabFooter extends gws.View<ViewProps> {
                 </Cell>
                 <Cell flex/>
                 <Cell>
-                    <gws.components.feature.TaskButton
+                    <components.feature.TaskButton
                         controller={this.props.controller}
                         feature={selectedFeature}
                         source="annotate"
@@ -454,7 +453,7 @@ class AnnotateFeatureFormTab extends gws.View<ViewProps> {
 class AnnotateFeatureStyleTab extends gws.View<ViewProps> {
     render() {
         let cc = _master(this.props.controller),
-            sc = cc.app.controller('Shared.Style') as StyleController;
+            sc = cc.app.controller('Shared.Style') as styler.Controller;
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -484,7 +483,7 @@ class AnnotateListTab extends gws.View<ViewProps> {
 
             <sidebar.TabBody>
                 {cc.hasFeatures
-                    ? <gws.components.feature.List
+                    ? <components.feature.List
                         controller={cc}
                         features={this.props.annotateFeatures || []}
                         isSelected={f => f === selectedFeature}
@@ -498,7 +497,7 @@ class AnnotateListTab extends gws.View<ViewProps> {
                             content={f.label || '...'}
                         />}
 
-                        rightButton={f => <gws.components.list.Button
+                        rightButton={f => <components.list.Button
                             className="modAnnotateDeleteListButton"
                             whenTouched={() => cc.removeFeature(f)}
                         />}
@@ -525,12 +524,12 @@ class AnnotateListTab extends gws.View<ViewProps> {
                         whenTouched={() => cc.app.toggleTool('Tool.Annotate.Draw')}
                     />
                     <Cell flex/>
-                    {storage.auxButtons(cc, {
-                        category: STORAGE_CATEGORY,
-                        hasData: hasFeatures,
-                        getData: name => cc.storageGetData(name),
-                        dataReader: (name, data) => cc.storageReader(name, data)
-                    })}
+                    {/*{storage.auxButtons(cc, {*/}
+                    {/*    category: STORAGE_CATEGORY,*/}
+                    {/*    hasData: hasFeatures,*/}
+                    {/*    getData: name => cc.storageGetData(name),*/}
+                    {/*    dataReader: (name, data) => cc.storageReader(name, data)*/}
+                    {/*})}*/}
                 </sidebar.AuxToolbar>
             </sidebar.TabFooter>
         </sidebar.Tab>

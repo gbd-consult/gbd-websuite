@@ -46,16 +46,22 @@ class Object(core.Object):
 
     def configure_layer_tree(self, source_layers: t.List[gws.SourceLayer], leaf_layer_config_fn: t.Callable):
         cfgs = _layer_tree_configuration(
-            self,
             source_layers=source_layers,
             roots_slf=self.var('rootLayers'),
             exclude_slf=self.var('excludeLayers'),
             flatten=self.var('flattenLayers'),
-            custom_configs=self.var('layerConfig'),
+            custom_configs=self.var('layerConfig', default=[]),
             leaf_layer_config_fn=leaf_layer_config_fn
         )
         if not cfgs:
             raise gws.ConfigurationError(f'no source layers in {self.uid!r}')
+
+        # configs need to be reparsed so that defaults can be injected
+        cfgs = [
+            gws.config.parse(self.root.specs, c, 'gws.ext.layer.Config', with_internal_objects=True)
+            for c in cfgs
+        ]
+
         self.configure_layers(cfgs)
 
     def configure_legend(self):
@@ -80,7 +86,6 @@ class Object(core.Object):
 ##
 
 def _layer_tree_configuration(
-        target: Object,
         source_layers: t.List[gws.SourceLayer],
         roots_slf: gws.lib.gis.source.LayerFilter,
         exclude_slf: gws.lib.gis.source.LayerFilter,
@@ -142,9 +147,9 @@ def _layer_tree_configuration(
                 'maxScale': sl.scale_range[1],
             }
 
-        for f, cc in zip(custom_filters, custom_configs):
-            if gws.lib.gis.source.layer_matches(sl, f):
-                cfg = gws.deep_merge(cc, cfg)
+        for flt, cc in zip(custom_filters, custom_configs):
+            if gws.lib.gis.source.layer_matches(sl, flt):
+                cfg = gws.deep_merge(vars(cc), cfg)
             cfg.pop('applyTo', None)
 
         return gws.compact(cfg)
@@ -164,13 +169,4 @@ def _layer_tree_configuration(
 
     # make configs...
 
-    cfgs = gws.compact(walk(sl, 0) for sl in roots)
-
-    # configs need to be reparsed so that defaults can be injected
-
-    cfgs = [
-        gws.config.parse(target.root.specs, c, 'gws.ext.layer.Config', with_internal_objects=True)
-        for c in cfgs
-    ]
-
-    return cfgs
+    return gws.compact(walk(sl, 0) for sl in roots)

@@ -6,9 +6,10 @@ import gws.lib.gis
 import gws.lib.gis.util
 import gws.lib.net
 import gws.lib.ows
+
 import gws.types as t
 
-from . import types, parser
+from . import caps
 
 
 class Config(gws.Config):
@@ -45,7 +46,7 @@ _DEFAULT_LEGEND_PARAMS = {
 
 class Object(gws.Node, gws.IOwsProvider):
     path: str
-    print_templates: t.List[types.PrintTemplate]
+    print_templates: t.List[caps.PrintTemplate]
     properties: dict
     source_text: str
     url: str
@@ -65,16 +66,16 @@ class Object(gws.Node, gws.IOwsProvider):
             self.root.application.var('server.qgis.port'))
 
         self.source_text = self._read(self.path)
-        caps = parser.parse(self.source_text)
+        cc = caps.parse(self.source_text)
 
-        self.metadata = caps.metadata
-        self.print_templates = caps.print_templates
-        self.properties = caps.properties
-        self.source_layers = caps.source_layers
-        self.version = caps.version
+        self.metadata = cc.metadata
+        self.print_templates = cc.print_templates
+        self.properties = cc.properties
+        self.source_layers = cc.source_layers
+        self.version = cc.version
 
         self.force_crs = gws.lib.crs.get(self.var('forceCrs'))
-        self.project_crs = caps.project_crs
+        self.project_crs = cc.project_crs
         self.crs = self.force_crs or self.project_crs
         if not self.crs:
             raise gws.Error(f'unknown CRS for in {self.path!r}')
@@ -90,7 +91,7 @@ class Object(gws.Node, gws.IOwsProvider):
         if shape.geometry_type != gws.GeometryType.point:
             return []
 
-        ps = gws.lib.gis.util.prepared_ows_search(
+        ps = gws.lib.ows.client.prepared_search(
             limit=args.limit,
             point=shape,
             protocol=gws.OwsProtocol.WMS,
@@ -271,7 +272,7 @@ class Object(gws.Node, gws.IOwsProvider):
         p = {k: v for k, v in params.items() if k.lower() not in _std_params}
         return gws.lib.net.add_params(url, p)
 
-    def print_template(self, ref: str):
+    def print_template(self, ref: str) -> t.Optional[caps.PrintTemplate]:
         pts = self.print_templates
 
         if not self.print_templates:

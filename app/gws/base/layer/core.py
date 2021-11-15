@@ -18,7 +18,7 @@ _DEFAULT_STYLE = gws.Config(
     values={
         'fill': 'rgba(0,0,0,1)',
         'stroke': 'rgba(0,0,0,1)',
-        'stoke_width': 1,
+        'stroke-width': 1,
     }
 )
 
@@ -46,14 +46,19 @@ class Object(gws.Node, gws.ILayer):
     cache_uid: str
     grid: types.GridConfig
     grid_uid: str
-    description_template: t.Optional[gws.ITemplate]
 
     @property
     def description(self) -> str:
-        if not self.description_template:
+        tpl = self.templates.find(subject='layer.description')
+        if not tpl:
             return ''
-        context = {'layer': self}
-        return gws.to_str(self.description_template.render(context).content)
+        context = {
+            'layer': self,
+            'service_metadata': gws.get(self, 'provider.metadata.values'),
+            'source_layers': gws.get(self, 'source_layers'),
+        }
+        tro = tpl.render(gws.TemplateRenderInput(context=context))
+        return tro.content
 
     @property
     def has_cache(self) -> bool:
@@ -123,7 +128,6 @@ class Object(gws.Node, gws.ILayer):
             self.root,
             gws.Config(templates=self.var('templates'), withBuiltins=True),
             parent=self)
-        self.description_template = self.templates.find(subject='layer.description')
 
         self.style = gws.lib.style.from_config(self.var('style', default=_DEFAULT_STYLE))
         p = self.var('editStyle')
@@ -235,12 +239,12 @@ class Object(gws.Node, gws.ILayer):
     #     pass
     #
     def props_for(self, user):
-        return types.Props(
+        return gws.Data(
             extent=self.extent,
             metadata=self.metadata,
             editAccess=self.edit_access(user),
             opacity=self.opacity,
-            options=self.client_options,
+            clientOptions=self.client_options,
             resolutions=self.resolutions,
             title=self.title,
             uid=self.uid,
@@ -249,16 +253,18 @@ class Object(gws.Node, gws.ILayer):
     def mapproxy_config(self, mc):
         pass
 
-    def render_box(self, rv: gws.MapRenderView, extra_params=None):
+    def render_box(self, view, extra_params=None):
         return None
 
     def render_xyz(self, x, y, z):
         return None
 
-    def render_svg(self, rv: gws.MapRenderView, style: gws.IStyle = None) -> str:
-        return gws.lib.svg.to_xml(self.render_svg_tags(rv, style))
+    def render_svg_element(self, view, style=None):
+        fr = self.render_svg_fragment(view, style)
+        if fr:
+            return gws.lib.svg.fragment_to_element(fr)
 
-    def render_svg_tags(self, rv: gws.MapRenderView, style: gws.IStyle = None) -> t.List[gws.Tag]:
+    def render_svg_fragment(self, view, style = None):
         return []
 
     def render_legend_with_cache(self, context=None) -> t.Optional[gws.LegendRenderOutput]:

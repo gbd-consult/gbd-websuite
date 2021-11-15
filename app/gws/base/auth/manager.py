@@ -40,11 +40,13 @@ class Object(gws.Node, gws.IAuthManager):
             raise gws.ConfigurationError('invalid session store type')
 
         # always create the System provider
-        sys_provider = gws.config.parse(self.root.specs, {'type': 'system'}, 'gws.ext.auth.provider.Config')
-        p = self.var('providers', default=[]) + [sys_provider]
+        p = self.var('providers', default=[]) + [
+            gws.config.parse(self.root.specs, {'type': 'system'}, 'gws.ext.auth.provider.Config')
+        ]
         self.providers = self.create_children('gws.ext.auth.provider', p)
 
         self.guest_user = self.providers[-1].get_user('guest')
+        self.system_user = self.providers[-1].get_user('system')
 
         # if no methods configured, enable the Web method
         web_method = gws.config.parse(self.root.specs, {'type': 'web'}, 'gws.ext.auth.method.Config')

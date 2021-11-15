@@ -2,41 +2,14 @@ import PyPDF2
 
 import gws
 import gws.lib.os2
+import gws.lib.mime
 import gws.lib.units
 import gws.types as t
 
 
-def render_html(html, page_size, margin, out_path):
-    if 'charset' not in html:
-        html = '<meta charset="utf8"/>' + html
-    gws.write_file_b(out_path + '.html', gws.to_bytes(html))
+def overlay(a_path, b_path, out_path):
+    """Overlay two pdfs page-wise."""
 
-    if not margin:
-        margin = [0, 0, 0, 0]
-
-    cmd = [
-        'wkhtmltopdf',
-        '--disable-javascript',
-        '--disable-smart-shrinking',
-        '--dpi', str(gws.lib.units.PDF_DPI),
-        '--margin-top', str(margin[0]),
-        '--margin-right', str(margin[1]),
-        '--margin-bottom', str(margin[2]),
-        '--margin-left', str(margin[3]),
-        '--page-width', str(page_size[0]),
-        '--page-height', str(page_size[1]),
-        'page',
-        out_path + '.html',
-        out_path,
-    ]
-
-    gws.log.debug(cmd)
-    gws.lib.os2.run(cmd, echo=False)
-
-    return out_path
-
-
-def merge(a_path, b_path, out_path):
     fa = open(a_path, 'rb')
     fb = open(b_path, 'rb')
 
@@ -47,7 +20,13 @@ def merge(a_path, b_path, out_path):
 
     for n in range(ra.getNumPages()):
         page = ra.getPage(n)
-        page.mergePage(rb.getPage(n))
+        other = None
+        try:
+            other = rb.getPage(n)
+        except IndexError:
+            pass
+        if other:
+            page.mergePage(other)
         w.addPage(page)
 
     with open(out_path, 'wb') as out_fp:
@@ -60,6 +39,8 @@ def merge(a_path, b_path, out_path):
 
 
 def concat(paths, out_path):
+    """Concatenate multiple pfds into one."""
+
     # only one path given - just return it
     if len(paths) == 1:
         return paths[0]
@@ -89,10 +70,10 @@ def page_count(path):
         return r.getNumPages()
 
 
-def to_image(in_path, out_path, size, format):
-    if format == 'png':
+def to_image(in_path, out_path, size, mime):
+    if mime == gws.lib.mime.PNG:
         device = 'png16m'
-    elif format == 'jpeg' or format == 'jpg':
+    elif mime == gws.lib.mime.JPEG:
         device = 'jpeg'
     else:
         raise ValueError(f'uknown format {format!r}')

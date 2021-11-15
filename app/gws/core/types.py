@@ -1,5 +1,5 @@
 from .data import Data
-from gws.types import Any, Dict, Enum, List, Literal, Optional, Protocol, Set, Tuple, Union
+from gws.types import Any, Callable, Dict, Enum, List, Literal, Optional, Protocol, Set, Tuple, Union
 
 # ----------------------------------------------------------------------------------------------------------------------
 # custom types, used everywhere
@@ -16,6 +16,12 @@ Size = Tuple[float, float]
 
 #: A value with a unit
 Measurement = Tuple[float, str]
+
+#: A Point with a unit
+MPoint = Tuple[float, float, str]
+
+#: A Size with a unit
+MSize = Tuple[float, float, str]
 
 #: An XML generator tag
 Tag = tuple
@@ -101,7 +107,7 @@ class IObject(Protocol):
     class_name: str
     access: Optional[List[Access]]
 
-    def props_for(self, user: 'IGrantee') -> Optional[Props]: ...
+    def props_for(self, user: 'IGrantee') -> Props: ...
 
     def access_for(self, user: 'IGrantee') -> Optional[bool]: ...
 
@@ -112,6 +118,10 @@ class IGrantee(Protocol):
     roles: Set[str]
 
     def can_use(self, obj: 'IObject', context: 'IObject' = None) -> bool: ...
+
+    def require(self, klass: Optional[Klass], uid: Optional[str]): ...
+
+    def acquire(self, klass: Optional[Klass], uid: Optional[str]): ...
 
 
 class INode(IObject, Protocol):
@@ -272,7 +282,7 @@ class IWebRequest(IObject, Protocol):
 
     def param(self, key: str, default: str = '') -> str: ...
 
-    def require(self, klass: str, uid: Optional[str]): ...
+    def require(self, klass: Optional[Klass], uid: Optional[str]): ...
 
     def require_layer(self, uid: Optional[str]) -> 'ILayer': ...
 
@@ -314,6 +324,7 @@ class IWebSite(INode, Protocol):
 
 class IAuthManager(INode, Protocol):
     guest_user: 'IUser'
+    system_user: 'IUser'
     providers: List['IAuthProvider']
     methods: List['IAuthMethod']
 
@@ -371,7 +382,6 @@ class IAuthSession(IObject, Protocol):
     def set(self, key: str, val: Any): ...
 
 
-# noinspection PyPropertyDefinition
 class IUser(IObject, IGrantee, Protocol):
     attributes: Dict[str, Any]
     display_name: str
@@ -423,6 +433,16 @@ class Attribute(Data):
     type: AttributeType = AttributeType.str
     value: Optional[Any]
     editable: bool = True
+
+
+class AttributeEditor(Data):
+    type: str
+    accept: Optional[str]
+    items: Optional[Any]
+    max: Optional[float]
+    min: Optional[float]
+    multiple: Optional[bool]
+    pattern: Optional[Regex]
 
 
 class IDataModel(INode, Protocol):
@@ -477,11 +497,13 @@ class ICrs(IObject, Protocol):
 
     def same_as(self, other: 'ICrs') -> bool: ...
 
-    def transform_extent(self, ext: Extent, target: 'ICrs') -> Extent: ...
+    def transform_extent(self, extent: Extent, target: 'ICrs') -> Extent: ...
 
     def transform_geometry(self, geom: dict, target: 'ICrs') -> dict: ...
 
     def to_string(self, fmt: CrsFormat = None) -> str: ...
+
+    def to_geojson(self) -> dict: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -547,6 +569,17 @@ class SourceLayer(Data):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# XML
+
+class XmlElement(Data):
+    name: str
+    children: List['XmlElement']
+    attributes: Dict[str, Any]
+    text: str
+    tail: str
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # shapes and features
 
 # noinspection PyPropertyDefinition
@@ -598,7 +631,7 @@ class IShape(IObject, Protocol):
 
     def to_type(self, new_type: 'GeometryType') -> 'IShape': ...
 
-    def to_geojson(self) -> str: ...
+    def to_geojson(self) -> dict: ...
 
     def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': ...
 
@@ -628,9 +661,9 @@ class IFeature(IObject, Protocol):
 
     def to_geojson(self) -> dict: ...
 
-    def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: ...
+    def to_svg_element(self, view: 'MapView', style: 'IStyle' = None) -> Optional[XmlElement]: ...
 
-    def to_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: ...
+    def to_svg_fragment(self, view: 'MapView', style: 'IStyle' = None) -> List[XmlElement]: ...
 
     def transform_to(self, crs: 'ICrs') -> 'IFeature': ...
 
@@ -692,7 +725,6 @@ class ISqlDbProvider(IDbProvider, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # templates and rendering
 
-
 # noinspection PyPropertyDefinition
 class IImage(IObject, Protocol):
     @property
@@ -712,85 +744,125 @@ class IImage(IObject, Protocol):
 
     def rotate(self, angle: int, **kwargs) -> 'IImage': ...
 
-    def to_bytes(self, format: str = None) -> bytes: ...
+    def to_bytes(self, mime: str = None) -> bytes: ...
 
-    def to_path(self, path: str, format: str = None) -> str: ...
-
-
-class SvgFragment(Data):
-    points: List['Point']
-    styles: Optional[List['IStyle']]
-    tags: List['Tag']
+    def to_path(self, path: str, mime: str = None) -> str: ...
 
 
-class MapRenderInputItemType(Enum):
-    features = 'features'
-    fragment = 'fragment'
-    image = 'image'
-    image_layer = 'image_layer'
-    svg_layer = 'svg_layer'
-
-
-class MapRenderInputItem(Data):
-    dpi: int
-    features: List['IFeature']
-    fragment: 'SvgFragment'
-    layer: 'ILayer'
-    opacity: float
-    print_as_vector: bool
-    style: 'IStyle'
-    sub_layers: List[str]
-    image: 'IImage'
-    type: 'MapRenderInputItemType'
-
-
-class MapRenderView(Data):
+class MapView(Data):
     bounds: Bounds
     center: Point
-    dpi: int
     rotation: int
     scale: int
     size_mm: Size
     size_px: Size
+    dpi: int
+
+
+class MapRenderInputPlane(Data):
+    type: Literal['features', 'image', 'image_layer', 'svg_layer', 'svg_soup']
+    features: List['IFeature']
+    image: 'IImage'
+    layer: 'ILayer'
+    opacity: float
+    print_as_vector: bool
+    soup_points: List[Point]
+    soup_tags: List[Any]
+    style: 'IStyle'
+    sub_layers: List[str]
 
 
 class MapRenderInput(Data):
     background_color: int
-    items: List['MapRenderInputItem']
-    view: 'MapRenderView'
+    bbox: Extent
+    center: Point
+    crs: 'ICrs'
+    dpi: int
+    out_size: MSize
+    out_path: str
+    planes: List['MapRenderInputPlane']
+    rotation: int
+    scale: int
 
 
-class MapRenderOutputItemType(Enum):
-    image = 'image'
-    path = 'path'
-    svg = 'svg'
-
-
-class MapRenderOutputItem(Data):
+class MapRenderOutputPlane(Data):
+    type: Literal['image', 'path', 'svg']
     path: str
-    tags: List['Tag']
+    elements: List[XmlElement]
     image: 'IImage'
-    type: 'MapRenderOutputItemType'
 
 
 class MapRenderOutput(Data):
-    base_dir: str
-    items: List['MapRenderOutputItem']
-    view: 'MapRenderView'
+    path: str
+    planes: List['MapRenderOutputPlane']
+    view: MapView
 
 
-class TemplateRenderArgs(Data):
-    mro: Optional['MapRenderOutput']
+class TemplateRenderInputMap(Data):
+    background_color: int
+    bbox: Extent
+    center: Point
+    planes: List['MapRenderInputPlane']
+    rotation: int
+    scale: int
+    visible_layers: Optional[List['ILayer']]
+
+
+class TemplateRenderInput(Data):
+    context: Optional[dict]
+    crs: 'ICrs'
+    dpi: Optional[int]
+    locale_uid: Optional[str]
+    maps: Optional[List[TemplateRenderInputMap]]
+    out_mime: Optional[str]
     out_path: Optional[str]
-    in_path: Optional[str]
-    legends: Optional[dict]
-    format: Optional[str]
+    user: Optional['IUser']
 
 
-class TemplateOutput(Data):
+class TemplateRenderOutput(Data):
     content: Union[bytes, str]
     mime: str
     path: str
+
+
+class TemplateQualityLevel(Data):
+    name: str
+    dpi: int
+
+
+class Legend(Data):
+    cache_max_age: int
+    enabled: bool
+    options: dict
+    path: str
+    template: Optional['ITemplate']
+    urls: List[Url]
+    layers: List['ILayer']
+
+
+class LegendRenderOutput(Data):
+    html: str
+    image: 'IImage'
+    image_path: str
+    size: Size
+
+
+class ITemplate(INode, Protocol):
+    category: str
+    data_model: Optional['IDataModel']
+    mimes: List[str]
+    name: str
+    path: str
+    subject: str
+    text: str
+    quality_levels: List[TemplateQualityLevel]
+
+    map_size: Optional[MSize]
+    page_size: Optional[MSize]
+
+    def render(self, tri: TemplateRenderInput, notify: Callable = None) -> TemplateRenderOutput: ...
+
+    def reload(self, force=False): ...
 
 
 class ITemplateBundle(INode, Protocol):
@@ -799,32 +871,163 @@ class ITemplateBundle(INode, Protocol):
     def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional['ITemplate']: ...
 
 
-class ITemplate(INode, Protocol):
-    category: str
-    data_model: Optional['IDataModel']
-    name: str
-    mime_types: List[str]
-    path: str
-    subject: str
-    text: str
-
-    def render(self, context: dict, args: TemplateRenderArgs = None) -> TemplateOutput: ...
+class IPrinter(INode, Protocol):
+    pass
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # styles
 
+class StyleValues(Data):
+    fill: Color
 
-# noinspection PyPropertyDefinition
+    stroke: Color
+    stroke_dasharray: List[int]
+    stroke_dashoffset: int
+    stroke_linecap: Literal['butt', 'round', 'square']
+    stroke_linejoin: Literal['bevel', 'round', 'miter']
+    stroke_miterlimit: int
+    stroke_width: int
+
+    marker: Literal['circle', 'square', 'arrow', 'cross']
+    marker_fill: Color
+    marker_size: int
+    marker_stroke: Color
+    marker_stroke_dasharray: List[int]
+    marker_stroke_dashoffset: int
+    marker_stroke_linecap: Literal['butt', 'round', 'square']
+    marker_stroke_linejoin: Literal['bevel', 'round', 'miter']
+    marker_stroke_miterlimit: int
+    marker_stroke_width: int
+
+    with_geometry: Literal['all', 'none']
+    with_label: Literal['all', 'none']
+
+    label_align: Literal['left', 'right', 'center']
+    label_background: Color
+    label_fill: Color
+    label_font_family: str
+    label_font_size: int
+    label_font_style: Literal['normal', 'italic']
+    label_font_weight: Literal['normal', 'bold']
+    label_line_height: int
+    label_max_scale: int
+    label_min_scale: int
+    label_offset_x: int
+    label_offset_y: int
+    label_padding: List[int]
+    label_placement: Literal['start', 'end', 'middle']
+    label_stroke: Color
+    label_stroke_dasharray: List[int]
+    label_stroke_dashoffset: int
+    label_stroke_linecap: Literal['butt', 'round', 'square']
+    label_stroke_linejoin: Literal['bevel', 'round', 'miter']
+    label_stroke_miterlimit: int
+    label_stroke_width: int
+
+    point_size: int
+    icon: str
+
+    offset_x: int
+    offset_y: int
+
+
 class IStyle(IObject, Protocol):
-    values: Data
+    name: str
+    selector: str
+    text: str
+    values: StyleValues
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # metadata
 
+
+class MetadataLink(Data):
+    """Link metadata"""
+
+    scheme: Optional[str]  #: link scheme
+    url: Url  #: link url
+    formatName: Optional[str]  #: link format
+    formatVersion: Optional[str]  #: link format version
+    function: Optional[str]  #: ISO-19115 online function code
+    type: Optional[str]  #: metadata url type like "TC211"
+
+
+class MetadataValues(Data):
+    abstract: Optional[str]  #: object abstract description
+    accessConstraints: Optional[str]
+    attribution: Optional[str]  #: attribution (copyright) string
+
+    authorityIdentifier: Optional[str]
+    authorityName: Optional[str]
+    authorityUrl: Optional[Url]
+
+    catalogCitationUid: Optional[str]  #: catalog citation identifier
+    catalogUid: Optional[str]  #: catalog identifier
+
+    contactAddress: Optional[str]
+    contactArea: Optional[str]
+    contactCity: Optional[str]
+    contactCountry: Optional[str]
+    contactEmail: Optional[str]
+    contactFax: Optional[str]
+    contactOrganization: Optional[str]
+    contactPerson: Optional[str]
+    contactPhone: Optional[str]
+    contactPosition: Optional[str]
+    contactRole: Optional[str]
+    contactZip: Optional[str]
+    contactUrl: Optional[Url]
+
+    dateBegin: Optional[Date]  #: temporal extent begin
+    dateCreated: Optional[Date]  #: publication date
+    dateEnd: Optional[Date]  #: temporal extent end
+    dateUpdated: Optional[Date]  #: modification date
+
+    fees: Optional[str]
+    image: Optional[Url]  #: image (logo) url
+
+    inspireKeywords: Optional[List[str]]  #: INSPIRE keywords
+    inspireMandatoryKeyword: Optional[str]  #: INSPIRE mandatory keyword
+    inspireDegreeOfConformity: Optional[str]  #: INSPIRE degree of conformity
+    inspireResourceType: Optional[str]  #: INSPIRE resource type
+    inspireSpatialDataServiceType: Optional[str]  #: INSPIRE spatial data service type
+    inspireSpatialScope: Optional[str]  #: INSPIRE spatial scope
+    inspireSpatialScopeName: Optional[str]  #: INSPIRE spatial scope localized name
+    inspireTheme: Optional[str]  #: INSPIRE theme, see http://inspire.ec.europa.eu/theme/
+    inspireThemeName: Optional[str]  #: INSPIRE theme name, in the project language
+    inspireThemeNameEn: Optional[str]  #: INSPIRE theme name, in English
+
+    isoMaintenanceFrequencyCode: Optional[str]  #: ISO-19139 maintenance frequency code
+    isoQualityConformanceExplanation: Optional[str]
+    isoQualityConformanceQualityPass: Optional[bool]
+    isoQualityConformanceSpecificationDate: Optional[str]
+    isoQualityConformanceSpecificationTitle: Optional[str]
+    isoQualityLineageSource: Optional[str]
+    isoQualityLineageSourceScale: Optional[int]
+    isoQualityLineageStatement: Optional[str]
+    isoRestrictionCode: Optional[str]  #: ISO-19139 restriction code
+    isoScope: Optional[str]  #: ISO-19139 scope code
+    isoScopeName: Optional[str]  #: ISO-19139 scope name
+    isoSpatialRepresentationType: Optional[str]  #: ISO-19139 spatial type
+    isoTopicCategory: Optional[str]  #: ISO-19139 topic category
+    isoSpatialResolution: Optional[str]  #: ISO-19139 spatial resolution
+
+    keywords: Optional[List[str]]  #: keywords
+    language3: Optional[str]  #: object language (bibliographic)
+    language: Optional[str]  #: object language
+    languageName: Optional[str]  #: localized language name
+    license: Optional[str]
+    name: Optional[str]  #: object internal name
+    title: Optional[str]  #: object title
+
+    metaLinks: Optional[List[MetadataLink]]  #: metadata links
+    extraLinks: Optional[List[MetadataLink]]  #: additional links
+
+
 class IMetadata(IObject, Protocol):
-    values: Data
+    values: MetadataValues
 
     def extend(self, *others) -> 'IMetadata': ...
 
@@ -881,6 +1084,7 @@ class ISearchProvider(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # maps and layers
 
+
 # noinspection PyPropertyDefinition
 class IMap(INode, Protocol):
     layers: List['ILayer']
@@ -894,22 +1098,6 @@ class IMap(INode, Protocol):
 
     @property
     def bounds(self) -> 'Bounds': ...
-
-
-class Legend(Data):
-    cache_max_age: int
-    enabled: bool
-    options: dict
-    path: str
-    template: Optional['ITemplate']
-    urls: List[Url]
-    layers: List['ILayer']
-
-
-class LegendRenderOutput(Data):
-    html: str
-    image: 'IImage'
-    image_path: str
 
 
 # noinspection PyPropertyDefinition
@@ -974,13 +1162,13 @@ class ILayer(INode, Protocol):
     @property
     def ancestors(self) -> List['ILayer']: ...
 
-    def render_box(self, rv: MapRenderView, extra_params=None) -> bytes: ...
+    def render_box(self, view: MapView, extra_params=None) -> bytes: ...
 
     def render_xyz(self, x: int, y: int, z: int) -> bytes: ...
 
-    def render_svg(self, rv: 'MapRenderView', style: Optional['IStyle']) -> str: ...
+    def render_svg_element(self, view: 'MapView', style: Optional['IStyle']) -> Optional[XmlElement]: ...
 
-    def render_svg_tags(self, rv: 'MapRenderView', style: Optional['IStyle']) -> List['Tag']: ...
+    def render_svg_fragment(self, view: 'MapView', style: Optional['IStyle']) -> List[XmlElement]: ...
 
     def render_legend_with_cache(self, context: dict = None) -> Optional[LegendRenderOutput]: ...
 
@@ -1074,23 +1262,23 @@ class CliParams(Data):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# projects and application
+# actions and apis
 
 
-class IMonitor(INode, Protocol):
-    def add_directory(self, path: str, pattern: Regex): ...
-
-    def add_path(self, path: str): ...
-
-    def start(self): ...
-
-
-class IClient(INode, Protocol):
+class IAction(INode, Protocol):
     pass
 
 
 class IApi(INode, Protocol):
     def actions_for(self, user: 'IGrantee', parent: 'IApi' = None) -> Dict[str, INode]: ...
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# projects
+
+
+class IClient(INode, Protocol):
+    pass
 
 
 class IProject(INode, Protocol):
@@ -1102,6 +1290,17 @@ class IProject(INode, Protocol):
     metadata: 'IMetadata'
     search_providers: List['ISearchProvider']
     templates: 'ITemplateBundle'
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# application
+
+class IMonitor(INode, Protocol):
+    def add_directory(self, path: str, pattern: Regex): ...
+
+    def add_path(self, path: str): ...
+
+    def start(self): ...
 
 
 class IApplication(INode, Protocol):

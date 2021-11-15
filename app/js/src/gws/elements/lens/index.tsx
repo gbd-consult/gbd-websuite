@@ -24,7 +24,7 @@ const StoreKeys = [
 ];
 
 class LensLayer extends gws.map.layer.FeatureLayer {
-    get printItem() {
+    get printPlane() {
         return null;
     }
 }

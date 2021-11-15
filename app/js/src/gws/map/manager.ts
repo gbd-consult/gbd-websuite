@@ -520,7 +520,7 @@ export class MapManager implements types.IMapManager {
 
             layers: this.props.layers,
 
-            options: {
+            clientOptions: {
                 expanded: true,
                 visible: true,
                 selected: false,
@@ -807,11 +807,11 @@ export class MapManager implements types.IMapManager {
         return lib.uniq(layers);
     }
 
-    protected async printItems(boxRect, dpi): Promise<Array<api.base.printer.Item>> {
+    protected async printPlanes(boxRect, dpi): Promise<Array<api.base.printer.Plane>> {
         let _this = this;
-        let items: Array<api.base.printer.Item> = [];
+        let planes: Array<api.base.printer.Plane> = [];
 
-        function makeBitmap2(): api.base.printer.Item {
+        function makeBitmap2(): api.base.printer.Plane {
             let canvas = _this.oMap.getViewport().firstChild as HTMLCanvasElement;
 
             let rc = canvas.getBoundingClientRect(),
@@ -845,7 +845,7 @@ export class MapManager implements types.IMapManager {
             };
         }
 
-        async function makeBitmap(layers): Promise<api.base.printer.Item> {
+        async function makeBitmap(layers): Promise<api.base.printer.Plane> {
             let hidden = [];
 
             _this.walk(_this.root, la => {
@@ -855,7 +855,7 @@ export class MapManager implements types.IMapManager {
                 }
             });
 
-            let bmp: api.base.printer.Item;
+            let bmp: api.base.printer.Plane;
 
             await lib.delay(200, () => {
                 console.time('creating_bitmap');
@@ -874,14 +874,14 @@ export class MapManager implements types.IMapManager {
             let bmpLayers = [];
 
             this.walk(this.root, la => {
-                let pi = la.shouldDraw && la.printItem;
+                let pi = la.shouldDraw && la.printPlane;
                 if (pi) {
                     bmpLayers.push(la);
                 }
             });
 
-            items.push(await makeBitmap(bmpLayers));
-            return items;
+            planes.push(await makeBitmap(bmpLayers));
+            return planes;
         }
 
         if (boxRect && dpi <= BITMAP_PRINT_DPI_THRESHOLD) {
@@ -890,58 +890,58 @@ export class MapManager implements types.IMapManager {
             let bmpLayers = [];
 
             this.walk(this.root, la => {
-                let pi = la.shouldDraw && la.printItem;
+                let pi = la.shouldDraw && la.printPlane;
                 if (pi) {
                     if (pi.type === 'raster') {
-                        items.push(null);
+                        planes.push(null);
                         bmpLayers.push(la);
                     } else {
-                        items.push(pi);
+                        planes.push(pi);
                     }
                 }
             });
 
-            if (items.every(it => it === null)) {
-                items = [await makeBitmap(bmpLayers)];
+            if (planes.every(it => it === null)) {
+                planes = [await makeBitmap(bmpLayers)];
             } else {
-                for (let i = 0; i < items.length; i++) {
-                    if (!items[i]) {
-                        items[i] = await makeBitmap([bmpLayers.shift()]);
+                for (let i = 0; i < planes.length; i++) {
+                    if (!planes[i]) {
+                        planes[i] = await makeBitmap([bmpLayers.shift()]);
                     }
                 }
             }
 
-            return items;
+            return planes;
         }
 
-        // normal printing, pass each layer's printItem as is
+        // normal printing, pass each layer's printPlane as is
 
         this.walk(this.root, la => {
-            let pi = la.shouldDraw && la.printItem;
+            let pi = la.shouldDraw && la.printPlane;
             if (pi) {
-                items.push(pi);
+                planes.push(pi);
             }
         });
 
-        return items;
+        return planes;
     }
 
-    async basicPrintParams(boxRect, dpi) {
+    async printParams(boxRect, dpi) {
         let vs = this.viewState,
-            legendLayers = [];
+            visibleLayers = [];
 
         this.walk(this.root, la => {
-            let pi = la.shouldDraw && la.printItem;
+            let pi = la.shouldDraw && la.printPlane;
             if (pi) {
-                legendLayers.push(la.uid);
+                visibleLayers.push(la.uid);
             }
         });
 
         return {
-            items: await this.printItems(boxRect, dpi),
+            planes: await this.printPlanes(boxRect, dpi),
             rotation: Math.round(lib.rad2deg(vs.rotation)),
             scale: lib.res2scale(vs.resolution),
-            legendLayers,
+            visibleLayers,
         }
     }
 

@@ -1,6 +1,7 @@
 import gws
 import gws.core.tree
 import gws.types as t
+from . import error
 
 _DELIM = '___'
 
@@ -53,8 +54,30 @@ class User(gws.IUser):
         self.display_name = str(self.attributes.get('displayName', ''))
         gws.log.debug(f'inited user: prov={provider.uid!r} local_uid={local_uid!r} roles={roles!r}')
 
+    def props_for(self, user):
+        return gws.Data(displayName=self.display_name)
+
     def can_use(self, obj, context=None):
         return gws.core.tree.can_use(self, obj, context)
+
+    def require(self, klass=None, uid=None):
+        obj = self.provider.root.find(klass, uid)
+        if not obj:
+            raise error.ObjectNotFound(klass, uid)
+        if not self.can_use(obj):
+            raise error.AccessDenied(klass, uid)
+        return obj
+
+    def require_project(self, uid):
+        return t.cast(gws.IProject, self.require('gws.base.project', uid))
+
+    def require_layer(self, uid):
+        return t.cast(gws.ILayer, self.require('gws.ext.layer', uid))
+
+    def acquire(self, klass=None, uid=None):
+        obj = self.provider.root.find(klass, uid)
+        if obj and self.can_use(obj):
+            return obj
 
 
 class Guest(User):
@@ -75,9 +98,7 @@ class Nobody(User):
 
 
 class AuthorizedUser(User):
-    def props_for(self, user):
-        return Props(displayName=self.display_name)
-
+    pass
 
 class Admin(AuthorizedUser):
     def can_use(self, obj, context=None):

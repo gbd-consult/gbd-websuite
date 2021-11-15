@@ -201,7 +201,7 @@ class Object(core.Service):
             if md.get('metaLinks'):
                 continue
 
-            csw_link = gws.lib.metadata.Link(
+            csw_link = gws.MetadataLink(
                 url=gws.action_url_path('owsService', serviceUid=self.uid, id=cid),
                 formatName=gws.lib.mime.XML,
                 type='TC211' if self.profile == 'ISO' else 'DCMI'

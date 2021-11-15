@@ -269,8 +269,8 @@ class PreviewBox extends gws.View<ViewProps> {
             if (!tpl)
                 return null;
 
-            w = gws.lib.mm2px(tpl.mapWidth);
-            h = gws.lib.mm2px(tpl.mapHeight);
+            w = gws.lib.mm2px(tpl.mapSize[0]);
+            h = gws.lib.mm2px(tpl.mapSize[1]);
         }
 
         let style = {
@@ -315,7 +315,10 @@ class ProgressDialog extends gws.View<ViewProps> {
 
             let label = '';
 
-            if (job.steptype === 'layer' && job.stepname)
+            if (job.steptype === 'begin_plane' && job.stepname)
+                label = gws.lib.shorten(job.stepname, 40);
+
+            if (job.steptype === 'begin_page' && job.stepname)
                 label = gws.lib.shorten(job.stepname, 40);
 
 
@@ -424,28 +427,24 @@ class Controller extends gws.Controller {
     }
 
     async startPrinting() {
-        let quality = Number(this.getValue('printerQuality')) || 0,
-            level = this.selectedTemplate.qualityLevels[quality],
+        let qualityLevel = Number(this.getValue('printerQuality')) || 0,
+            level = this.selectedTemplate.qualityLevels[qualityLevel],
             dpi = level ? level.dpi : 0;
 
-        let basicParams = await this.map.basicPrintParams(
+        let mapParams = await this.map.printParams(
             this.previewBox.getBoundingClientRect(),
             dpi
         );
 
         let vs = this.map.viewState;
+        mapParams.center = [vs.centerX, vs.centerY] as gws.api.core.Point;
 
         let params: gws.api.base.printer.ParamsWithTemplate = {
-            type: 'template',
+            context: this.getValue('printerData'),
+            maps: [mapParams],
+            qualityLevel,
             templateUid: this.selectedTemplate.uid,
-            quality,
-            ...basicParams,
-            sections: [
-                {
-                    center: [vs.centerX, vs.centerY] as gws.api.core.Point,
-                    context: this.getValue('printerData')
-                }
-            ]
+            type: 'template',
         };
 
         await this.startJob(this.app.server.printerStartPrint(params, {binary: true}));
@@ -454,28 +453,34 @@ class Controller extends gws.Controller {
     async startSnapshot() {
         let dpi = Number(this.getValue('printerSnapshotDpi')) || MIN_SNAPSHOT_DPI;
 
-        let basicParams = await this.map.basicPrintParams(
+        let mapParams = await this.map.printParams(
             this.previewBox.getBoundingClientRect(),
             dpi
         );
 
+        let w = Number(this.getValue('printerSnapshotWidth')) || DEFAULT_SNAPSHOT_SIZE;
+        let h = Number(this.getValue('printerSnapshotHeight')) || DEFAULT_SNAPSHOT_SIZE;
+
         let vs = this.map.viewState;
+        let res = vs.resolution;
+
+        mapParams.bbox = [
+            vs.centerX - (w / 2) * res,
+            vs.centerY - (h / 2) * res,
+            vs.centerX + (w / 2) * res,
+            vs.centerY + (h / 2) * res,
+        ];
 
         let params: gws.api.base.printer.ParamsWithMap = {
+            context: this.getValue('printerData'),
+            dpi,
+            maps: [mapParams],
+            outputFormat: 'png',
+            outputSize: [w, h],
             type: 'map',
-            ...basicParams,
-            format: 'png',
-            dpi: dpi,
-            mapWidth: Number(this.getValue('printerSnapshotWidth')) || DEFAULT_SNAPSHOT_SIZE,
-            mapHeight: Number(this.getValue('printerSnapshotHeight')) || DEFAULT_SNAPSHOT_SIZE,
-            sections: [
-                {
-                    center: [vs.centerX, vs.centerY] as gws.api.core.Point,
-                }
-            ]
         };
 
-        await this.startJob(this.app.server.printerStartSnapshot(params, {binary: true}));
+        await this.startJob(this.app.server.printerStartPrint(params, {binary: true}));
 
     }
 

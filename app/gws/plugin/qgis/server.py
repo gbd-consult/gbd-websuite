@@ -79,16 +79,6 @@ def version():
     return 'unknown'
 
 
-def request(root: gws.IRoot, params, **kwargs):
-    """Make a request to the local qgis server"""
-
-    url = 'http://%s:%s' % (
-        root.application.var('server.qgis.host'),
-        root.application.var('server.qgis.port'))
-
-    return gws.lib.net.http_request(url, params=params, **kwargs)
-
-
 def _make_ini(root, base_dir):
     ini = ''
 

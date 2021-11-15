@@ -316,7 +316,7 @@ _DEFAULT_TEMPLATES = [
         pageHeight=297,
         mapWidth=100,
         mapHeight=100,
-        qualityLevels=[gws.base.template.QualityLevel(name='default', dpi=150)]
+        qualityLevels=[gws.TemplateQualityLevel(name='default', dpi=150)]
     )
 ]
 

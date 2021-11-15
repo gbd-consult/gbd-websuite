@@ -25,11 +25,10 @@ class PrematureTermination(Exception):
     pass
 
 
-def create(uid, user: gws.IUser, worker: str, project_uid=None, args=None):
+def create(root: gws.IRoot, uid, user: gws.IUser, worker: str, project_uid=None, args=None):
     if user:
         user_uid = user.uid
-        auth = gws.config.root().application.auth
-        str_user = auth.serialize_user(user)
+        str_user = root.application.auth.serialize_user(user)
     else:
         user_uid = str_user = ''
     gws.log.debug('creating job', worker, user_uid)
@@ -45,21 +44,29 @@ def create(uid, user: gws.IUser, worker: str, project_uid=None, args=None):
         step=0,
         state=State.open,
     )
-    return get(uid)
+    return get(root, uid)
 
 
-def get(uid):
+def run(root: gws.IRoot, uid):
+    job = get(root, uid)
+    if not job:
+        raise ValueError('invalid job_uid {uid!r}')
+    gws.log.debug('running job', job.uid)
+    job.run()
+
+
+def get(root: gws.IRoot, uid):
     rec = storage.find(uid)
     if rec:
-        return Job(rec)
+        return Job(root, rec)
 
 
 def remove(uid):
     storage.remove(uid)
 
 
-def get_for(user, uid):
-    job = get(uid)
+def get_for(root: gws.IRoot, user, uid):
+    job = get(root, uid)
     if not job:
         gws.log.error(f'job={uid!r}: not found')
         return
@@ -70,7 +77,9 @@ def get_for(user, uid):
 
 
 class Job:
-    def __init__(self, rec):
+    def __init__(self, root: gws.IRoot, rec):
+        self.root = root
+
         self.uid = ''
         self.user_uid = ''
         self.str_user = ''
@@ -95,7 +104,7 @@ class Job:
 
     @property
     def user(self) -> gws.IUser:
-        auth = gws.config.root().application.auth
+        auth = self.root.application.auth
         if self.str_user:
             user = auth.unserialize_user(self.str_user)
             if user:
@@ -119,10 +128,8 @@ class Job:
         mod = importlib.import_module(mod_name)
         fn = getattr(mod, fn_name)
 
-        root = gws.config.root()
-
         try:
-            fn(root, self)
+            fn(self.root, self)
         except Exception as e:
             gws.log.error('job: FAILED', self.uid)
             self.update(state=State.error, error=repr(e))

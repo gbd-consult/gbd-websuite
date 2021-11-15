@@ -117,7 +117,7 @@ class Props(gws.Props):
     loadingStrategy: t.Optional[str]
     metadata: gws.lib.metadata.Props
     opacity: t.Optional[float]
-    options: ClientOptions
+    clientOptions: ClientOptions
     resolutions: t.Optional[t.List[float]]
     style: t.Optional[gws.lib.style.Props]
     tileSize: int = 0

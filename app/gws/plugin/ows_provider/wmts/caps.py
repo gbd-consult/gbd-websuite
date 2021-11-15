@@ -98,7 +98,7 @@ def _tile_matrix(el):
 # see http://portal.opengeospatial.org/files/?artifact_id=35326 page 8
 
 def _extent_for_matrix(m: gws.TileMatrix):
-    res = units.scale2res(m.scale)
+    res = units.scale_to_res(m.scale)
 
     return [
         m.x,

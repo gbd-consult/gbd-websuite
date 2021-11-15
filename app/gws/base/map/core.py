@@ -9,25 +9,25 @@ import gws.types as t
 # https://wiki.openstreetmap.org/wiki/Zoom_levels
 
 _DEFAULT_RESOLUTIONS = [
-    units.scale2res(150 * 1e6),
-    units.scale2res(70 * 1e6),
-    units.scale2res(35 * 1e6),
-    units.scale2res(15 * 1e6),
-    units.scale2res(10 * 1e6),
-    units.scale2res(4 * 1e6),
-    units.scale2res(2 * 1e6),
-    units.scale2res(1 * 1e6),
-    units.scale2res(500 * 1e3),
-    units.scale2res(250 * 1e3),
-    units.scale2res(150 * 1e3),
-    units.scale2res(70 * 1e3),
-    units.scale2res(35 * 1e3),
-    units.scale2res(15 * 1e3),
-    units.scale2res(8 * 1e3),
-    units.scale2res(4 * 1e3),
-    units.scale2res(2 * 1e3),
-    units.scale2res(1 * 1e3),
-    units.scale2res(500),
+    units.scale_to_res(150 * 1e6),
+    units.scale_to_res(70 * 1e6),
+    units.scale_to_res(35 * 1e6),
+    units.scale_to_res(15 * 1e6),
+    units.scale_to_res(10 * 1e6),
+    units.scale_to_res(4 * 1e6),
+    units.scale_to_res(2 * 1e6),
+    units.scale_to_res(1 * 1e6),
+    units.scale_to_res(500 * 1e3),
+    units.scale_to_res(250 * 1e3),
+    units.scale_to_res(150 * 1e3),
+    units.scale_to_res(70 * 1e3),
+    units.scale_to_res(35 * 1e3),
+    units.scale_to_res(15 * 1e3),
+    units.scale_to_res(8 * 1e3),
+    units.scale_to_res(4 * 1e3),
+    units.scale_to_res(2 * 1e3),
+    units.scale_to_res(1 * 1e3),
+    units.scale_to_res(500),
 ]
 
 
@@ -63,7 +63,7 @@ class Object(gws.Node, gws.IMap):
         return gws.Bounds(crs=self.crs, extent=self.extent)
 
     def props_for(self, user):
-        return Props(
+        return gws.Data(
             crs=self.crs.epsg,
             crsDef=self.crs.proj4text,
             coordinatePrecision=self.coordinate_precision,

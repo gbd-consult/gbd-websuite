@@ -98,7 +98,7 @@ def _read(path):
     except gws.ConfigurationError:
         raise
     except Exception as exc:
-        raise gws.ConfigurationError('read error: %s' % e, path, '', None) from exc
+        raise gws.ConfigurationError(f'read error: {exc!r}', path, '', None) from exc
 
     _save_intermediate(path, gws.lib.json2.to_pretty_string(dct), 'json')
     return dct, paths

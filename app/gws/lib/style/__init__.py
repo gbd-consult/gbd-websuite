@@ -1,105 +1,59 @@
 import gws
 import gws.types as t
 
-from . import parser
-
-
-class Values(gws.Data):
-    fill: gws.Color
-
-    stroke: gws.Color
-    stroke_dasharray: t.List[int]
-    stroke_dashoffset: int
-    stroke_linecap: t.Literal['butt', 'round', 'square']
-    stroke_linejoin: t.Literal['bevel', 'round', 'miter']
-    stroke_miterlimit: int
-    stroke_width: int
-
-    marker: t.Literal['circle', 'square', 'arrow', 'cross']
-    marker_fill: gws.Color
-    marker_size: int
-    marker_stroke: gws.Color
-    marker_stroke_dasharray: t.List[int]
-    marker_stroke_dashoffset: int
-    marker_stroke_linecap: t.Literal['butt', 'round', 'square']
-    marker_stroke_linejoin: t.Literal['bevel', 'round', 'miter']
-    marker_stroke_miterlimit: int
-    marker_stroke_width: int
-
-    with_geometry: t.Literal['all', 'none']
-    with_label: t.Literal['all', 'none']
-
-    label_align: t.Literal['left', 'right', 'center']
-    label_background: gws.Color
-    label_fill: gws.Color
-    label_font_family: str
-    label_font_size: int
-    label_font_style: t.Literal['normal', 'italic']
-    label_font_weight: t.Literal['normal', 'bold']
-    label_line_height: int
-    label_max_scale: int
-    label_min_scale: int
-    label_offset_x: int
-    label_offset_y: int
-    label_padding: t.List[int]
-    label_placement: t.Literal['start', 'end', 'middle']
-    label_stroke: gws.Color
-    label_stroke_dasharray: t.List[int]
-    label_stroke_dashoffset: int
-    label_stroke_linecap: t.Literal['butt', 'round', 'square']
-    label_stroke_linejoin: t.Literal['bevel', 'round', 'miter']
-    label_stroke_miterlimit: int
-    label_stroke_width: int
-
-    point_size: int
-    icon: str
-
-    offset_x: int
-    offset_y: int
-
-
-class Props(gws.Props):
-    name: str = ''
-    values: dict
-    selector: str = ''
-    text: str = ''
+from . import parser, icon
 
 
 ##
 
-def from_dict(d: dict) -> 'Style':
+# parsing depends on whenever the context is `trusted` (=config) or not (=request)
+
+def from_dict(d: dict, trusted=False, with_strict_mode=True) -> 'Style':
     vals = {}
 
-    if d.get('text'):
-        vals.update(parser.parse_text(gws.to_str(d.get('text'))))
-    if d.get('values'):
-        vals.update(parser.parse_dict(gws.to_dict(d.get('values'))))
+    s = d.get('text')
+    if s:
+        vals.update(parser.parse_text(s, trusted, with_strict_mode))
+
+    s = d.get('values')
+    if s:
+        vals.update(parser.parse_dict(gws.to_dict(s), trusted, with_strict_mode))
 
     return Style(
         name=d.get('name', ''),
-        values=Values(vals),
+        values=gws.StyleValues(vals),
         selector=d.get('selector', ''),
         text=d.get('text', ''),
     )
 
 
 def from_args(**kwargs) -> 'Style':
-    return from_dict({'values': kwargs})
+    d = {'values': kwargs}
+    return from_dict(d, trusted=True, with_strict_mode=True)
 
 
 def from_config(cfg: gws.Config) -> 'Style':
-    return from_dict(gws.to_dict(cfg))
+    d = gws.to_dict(cfg)
+    return from_dict(d, trusted=True, with_strict_mode=True)
 
 
 def from_props(props: gws.Props) -> 'Style':
-    return from_dict(gws.to_dict(props))
+    d = gws.to_dict(props)
+    return from_dict(d, trusted=False, with_strict_mode=False)
 
 
 def from_text(text: str) -> 'Style':
-    return from_dict({'text': text})
+    d = {'text': text}
+    return from_dict(d, trusted=True, with_strict_mode=True)
 
 
 ##
+class Props(gws.Props):
+    name: t.Optional[str]
+    values: t.Optional[dict]
+    selector: t.Optional[str]
+    text: t.Optional[str]
+
 
 class Config(gws.Config):
     """Feature style"""
@@ -111,11 +65,6 @@ class Config(gws.Config):
 
 
 class Style(gws.Object, gws.IStyle):
-    name: str
-    selector: str
-    text: str
-    values: Values
-
     def __init__(self, name, selector, text, values):
         super().__init__()
         self.name = name
@@ -124,9 +73,15 @@ class Style(gws.Object, gws.IStyle):
         self.values = values
 
     def props_for(self, user):
-        return Props(
-            values=vars(self.values),
-            text=self.text or '',
+        ico = self.values.icon
+        if ico and isinstance(ico, icon.ParsedIcon):
+            ico = icon.to_data_url(ico)
+        else:
+            # NB if icon is not parsed, don't give it back
+            ico = ''
+
+        return gws.Data(
+            values=gws.merge(self.values, icon=ico),
             name=self.name or '',
             selector=self.selector or '',
         )

@@ -1,44 +1,84 @@
 import gws
 import gws.lib.os2
+import gws.lib.units as units
+import gws.types as t
 
 
-def render_to_png(html, out_path: str, page_size: gws.Size = None, margin: gws.Extent = None) -> str:
-    tmp = gws.TMP_DIR + '/' + gws.random_string(64)
+def render_to_pdf(html, out_path: str, page_size: gws.MSize = None, page_margin: t.List[int] = None) -> str:
+    if 'charset' not in html:
+        html = '<meta charset="utf8"/>' + html
+    gws.write_file_b(out_path + '.html', gws.to_bytes(html))
 
-    if margin:
+    mar = page_margin or [0, 0, 0, 0]
+
+    # page sizes need to be in mm!
+    psz = (210, 297, units.MM)
+    if page_size:
+        psz = units.msize_to_mm(page_size, units.PDF_DPI)
+
+    def f(x):
+        return str(int(x))
+
+    cmd = [
+        'wkhtmltopdf',
+        '--disable-javascript',
+        '--disable-smart-shrinking',
+        '--dpi', f(gws.lib.units.PDF_DPI),
+        '--margin-top', f(mar[0]),
+        '--margin-right', f(mar[1]),
+        '--margin-bottom', f(mar[2]),
+        '--margin-left', f(mar[3]),
+        '--page-width', f(psz[0]),
+        '--page-height', f(psz[1]),
+        'page',
+        out_path + '.html',
+        out_path,
+    ]
+
+    gws.log.debug(cmd)
+    gws.lib.os2.run(cmd, echo=False)
+
+    return out_path
+
+
+def render_to_png(html, out_path: str, page_size: gws.MSize = None, page_margin: t.List[int] = None) -> str:
+    if page_margin:
+        mar = page_margin
         html = f"""
-            <body style="margin:{margin[0]}px {margin[1]}px {margin[2]}px {margin[3]}px">
+            <body style="margin:{mar[0]}px {mar[1]}px {mar[2]}px {mar[3]}px">
                 {html}
             </body>
         """
 
     if 'charset' not in html:
         html = '<meta charset="utf8"/>' + html
-    gws.write_file_b(tmp + '.html', gws.to_bytes(html))
+    gws.write_file_b(out_path + '.html', gws.to_bytes(html))
 
     cmd = ['wkhtmltoimage']
 
+    def f(x):
+        return str(int(x))
+
     if page_size:
-        w, h = page_size
+        # page sizes need to be in px!
+        psz = units.msize_to_px(page_size, units.PDF_DPI)
+        w, h, _ = psz
         cmd.extend([
-            '--width', str(w),
-            '--height', str(h),
-            '--crop-w', str(w),
-            '--crop-h', str(h),
+            '--width', f(w),
+            '--height', f(h),
+            '--crop-w', f(w),
+            '--crop-h', f(h),
         ])
 
     cmd.extend([
         '--disable-javascript',
         '--disable-smart-width',
         '--transparent',
-        tmp + '.html',
-        tmp + '.png',
+        out_path + '.html',
+        out_path,
     ])
 
     gws.log.debug(cmd)
     gws.lib.os2.run(cmd, echo=False)
-
-    gws.lib.os2.unlink(tmp + '.html')
-    gws.lib.os2.rename(tmp + '.png', out_path)
 
     return out_path

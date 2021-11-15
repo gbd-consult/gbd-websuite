@@ -53,7 +53,7 @@ class Object(core.Provider):
         if shape.geometry_type != gws.GeometryType.point:
             return []
 
-        ps = gws.lib.gis.util.prepared_ows_search(
+        ps = gws.lib.ows.client.prepared_search(
             inverted_crs=self.inverted_crs,
             limit=args.limit,
             point=shape,

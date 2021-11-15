@@ -193,28 +193,23 @@ def deep_merge(x, y, concat_lists=True):
         A new object (dict or Data).
     """
 
-    def _merge(x1, y1):
-        if (is_dict(x1) or is_data_object(x1)) and (is_dict(y1) or is_data_object(y1)):
-            return deep_merge(x1, y1, concat_lists)
+    if (is_dict(x) or is_data_object(x)) and (is_dict(y) or is_data_object(y)):
+        xd = to_dict(x)
+        yd = to_dict(y)
+        d = {
+            k: deep_merge(xd.get(k), yd.get(k), concat_lists)
+            for k in xd.keys() | yd.keys()
+        }
+        return d if is_dict(x) else type(x)(d)
 
-        if is_list(x1) and is_list(y1):
-            x1 = compact(x1)
-            y1 = compact(y1)
-            if concat_lists:
-                return x1 + y1
-            return [_merge(x2, y2) for x2, y2 in zip(x1, y1)]
+    if is_list(x) and is_list(y):
+        xc = compact(x)
+        yc = compact(y)
+        if concat_lists:
+            return xc + yc
+        return [deep_merge(x1, y1, concat_lists) for x1, y1 in zip(xc, yc)]
 
-        return y1 if y1 is not None else x1
-
-    xd = to_dict(x)
-    yd = to_dict(y)
-
-    d = {
-        k: _merge(xd.get(k), yd.get(k))
-        for k in xd.keys() | yd.keys()
-    }
-
-    return d if is_dict(x) else type(x)(d)
+    return y if y is not None else x
 
 
 def compact(x):

@@ -72,7 +72,7 @@ def _explicit_resolutions(cfg):
 
     ls = gws.get(cfg, 'scales')
     if ls:
-        return [units.scale2res(x) for x in ls]
+        return [units.scale_to_res(x) for x in ls]
 
 
 def _res_or_scale(cfg, r, s):
@@ -81,4 +81,4 @@ def _res_or_scale(cfg, r, s):
         return x
     x = gws.get(cfg, s)
     if x:
-        return units.scale2res(x)
+        return units.scale_to_res(x)

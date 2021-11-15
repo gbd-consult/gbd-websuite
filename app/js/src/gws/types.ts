@@ -142,7 +142,7 @@ export interface IMapLayer {
     isSystem: boolean;
 
     oLayer?: ol.layer.Layer;
-    printItem?: api.base.printer.Item;
+    printPlane?: api.base.printer.Plane;
 
     show();
     hide();
@@ -252,7 +252,7 @@ export interface IFeatureSearchArgs {
 }
 
 export interface IBasicPrintParams {
-    items: Array<api.base.printer.Item>,
+    planes: Array<api.base.printer.Plane>,
     rotation: number,
     scale: number
 }
@@ -335,7 +335,7 @@ export interface IMapManager {
     geom2shape(geom: ol.geom.Geometry): api.lib.shape.Props;
     shape2geom(shape: api.lib.shape.Props): ol.geom.Geometry;
 
-    basicPrintParams(boxRect: ClientRect | null, dpi: number): Promise<IBasicPrintParams>;
+    printParams(boxRect: ClientRect | null, dpi: number): Promise<api.base.printer.MapParams>;
 
     searchForFeatures(args: IFeatureSearchArgs): Promise<Array<IMapFeature>>;
 

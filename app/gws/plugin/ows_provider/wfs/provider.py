@@ -54,7 +54,7 @@ class Object(core.Provider):
             search_shape = gws.lib.shape.union(args.shapes).tolerance_polygon(map_tolerance)
             bounds = search_shape.bounds
 
-        ps = gws.lib.gis.util.prepared_ows_search(
+        ps = gws.lib.ows.client.prepared_search(
             inverted_crs=self.inverted_crs,
             limit=args.limit,
             bounds=bounds,

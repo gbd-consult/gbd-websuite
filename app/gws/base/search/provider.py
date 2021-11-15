@@ -37,8 +37,8 @@ class Object(gws.Node, gws.ISearchProvider):
 
         p = self.var('tolerance')
         self.tolerance = (
-            gws.lib.units.parse(p, units=['px', 'm'], default='px') if p
-            else (_DEFAULT_PIXEL_TOLERANCE, 'px'))
+            gws.lib.units.parse(p, default=gws.lib.units.PX) if p
+            else (_DEFAULT_PIXEL_TOLERANCE, gws.lib.units.PX))
 
         self.with_keyword = self.var('withKeyword', default=True)
         self.with_geometry = self.var('withGeometry', default=True)

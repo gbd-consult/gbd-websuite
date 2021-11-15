@@ -18,12 +18,12 @@ class StatusResponse(gws.Response):
     url: str
 
 
-class ItemBase(gws.Data):
+class PlaneBase(gws.Data):
     opacity: t.Optional[float]
     style: t.Optional[gws.lib.style.Props]
 
 
-class ItemBitmap(ItemBase):
+class PlaneBitmap(PlaneBase):
     type: t.Literal['bitmap']
     data: bytes
     mode: str
@@ -31,72 +31,72 @@ class ItemBitmap(ItemBase):
     height: int
 
 
-class ItemUrl(ItemBase):
+class PlaneUrl(PlaneBase):
     type: t.Literal['url']
     url: str
 
 
-class ItemFeatures(ItemBase):
+class PlaneFeatures(PlaneBase):
     type: t.Literal['features']
     features: t.List[gws.lib.feature.Props]
 
 
-class ItemRaster(ItemBase):
+class PlaneRaster(PlaneBase):
     type: t.Literal['raster']
     layerUid: str
     subLayers: t.Optional[t.List[str]]
 
 
-class ItemVector(ItemBase):
+class PlaneVector(PlaneBase):
     type: t.Literal['vector']
     layerUid: str
 
 
-class ItemFragment(ItemBase):
-    type: t.Literal['fragment']
+class PlaneSoup(PlaneBase):
+    type: t.Literal['soup']
     points: t.List[gws.Point]
-    styles: t.Optional[t.List[gws.lib.style.Props]]
     tags: t.List[t.Any]
+    styles: t.Optional[t.List[gws.lib.style.Props]]
 
 
-#: Print item (Variant)
-Item = t.Union[
-    ItemBitmap,
-    ItemUrl,
-    ItemFeatures,
-    ItemRaster,
-    ItemVector,
-    ItemFragment
+#: Print plane (Variant)
+Plane = t.Union[
+    PlaneBitmap,
+    PlaneUrl,
+    PlaneFeatures,
+    PlaneRaster,
+    PlaneVector,
+    PlaneSoup,
 ]
 
 
-class Section(gws.Data):
-    center: gws.Point
-    context: t.Optional[dict]
-    items: t.Optional[t.List[Item]]
+class MapParams(gws.Data):
+    background_color: t.Optional[int]
+    bbox: t.Optional[gws.Extent]
+    center: t.Optional[gws.Point]
+    planes: t.List[Plane]
+    rotation: t.Optional[int]
+    scale: int
+    visibleLayers: t.Optional[t.List[str]]
 
 
 class ParamsBase(gws.Params):
+    context: t.Optional[dict]
     crs: t.Optional[gws.CrsId]
-    format: t.Optional[str]
-    items: t.List[Item]
-    legendLayers: t.Optional[t.List[str]]
-    rotation: int = 0
-    scale: int
-    sections: t.Optional[t.List[Section]]
+    outputFormat: t.Optional[str]
+    maps: t.Optional[t.List[MapParams]]
 
 
 class ParamsWithTemplate(ParamsBase):
     type: t.Literal['template']
-    quality: int
+    qualityLevel: int
     templateUid: str
 
 
 class ParamsWithMap(ParamsBase):
     type: t.Literal['map']
     dpi: int
-    mapHeight: int
-    mapWidth: int
+    outputSize: gws.Size
 
 
 #: Print params (Variant)

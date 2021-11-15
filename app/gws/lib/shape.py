@@ -113,7 +113,7 @@ class Shape(gws.Object, gws.IShape):
         return self.geom.type.upper()
 
     def props_for(self, user):
-        return Props(
+        return gws.Data(
             crs=self.crs.epsg,
             geometry=shapely.geometry.mapping(self.geom))
 
@@ -216,8 +216,7 @@ class Shape(gws.Object, gws.IShape):
         return self
 
     def to_geojson(self):
-        # @TODO
-        return "..."
+        return shapely.geometry.mapping(self.geom)
 
     def transformed_to(self, target):
         sg = shapely.geometry.mapping(self.geom)

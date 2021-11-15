@@ -1,5 +1,6 @@
 import gws
 import gws.base.web.error
+import gws.base.auth.error
 import gws.base.web.wsgi
 import gws.types as t
 
@@ -32,14 +33,14 @@ class WebRequest(gws.base.web.wsgi.WebRequest, gws.IWebRequest):
         self.session = self.auth.close_session(self.session, self, res)
 
     def require(self, klass, uid):
-        obj = self.root.find(klass, uid)
-        if not obj:
+        try:
+            return self.user.require(klass, uid)
+        except gws.base.auth.error.ObjectNotFound:
             gws.log.error('require: not found', klass, uid)
             raise gws.base.web.error.NotFound()
-        if not self.user.can_use(obj):
+        except gws.base.auth.error.AccessDenied:
             gws.log.error('require: denied', klass, uid)
             raise gws.base.web.error.Forbidden()
-        return obj
 
     def require_project(self, uid):
         return t.cast(gws.IProject, self.require('gws.base.project', uid))
@@ -48,6 +49,4 @@ class WebRequest(gws.base.web.wsgi.WebRequest, gws.IWebRequest):
         return t.cast(gws.ILayer, self.require('gws.ext.layer', uid))
 
     def acquire(self, klass, uid):
-        obj = self.root.find(klass, uid)
-        if obj and self.user.can_use(obj):
-            return obj
+        return self.user.acquire(klass, uid)

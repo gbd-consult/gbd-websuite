@@ -3,19 +3,20 @@
 import gws
 import gws.lib.ows.parseutil as u
 import gws.lib.xml2
+import gws.lib.xml3 as xml3
 import gws.types as t
 
 from .. import core
 
 
 def parse(xml) -> core.Caps:
-    root_el = gws.lib.xml2.from_string(xml)
+    root_el = xml3.from_string(xml)
     source_layers = u.enum_source_layers(_layer(e) for e in root_el.all('Capability.Layer'))
     return core.Caps(
         metadata=u.get_service_metadata(root_el),
         operations=u.get_operations(root_el),
         source_layers=source_layers,
-        version=root_el.attr('version'))
+        version=xml3.attr(root_el, 'version'))
 
 
 def _layer(el, parent=None) -> gws.SourceLayer:

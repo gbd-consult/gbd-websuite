@@ -4,6 +4,8 @@ import os
 import gws
 import gws.base.template
 import gws.lib.crs
+import gws.lib.html2
+import gws.lib.mime
 import gws.lib.feature
 import gws.lib.image
 import gws.lib.job
@@ -18,14 +20,8 @@ import gws.types as t
 from . import types
 
 
-class PreparedSection(gws.Data):
-    center: gws.Point
-    context: dict
-    items: t.List[gws.MapRenderInputItem]
-
-
-def start(req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
-    job = _create(req, params)
+def start(root: gws.IRoot, req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
+    job = _create(root, req, params)
     gws.server.spool.add(job)
     return job
 
@@ -36,7 +32,7 @@ def run(root: gws.IRoot, params: types.Params, project_uid: str, user: gws.IUser
     return w.run()
 
 
-def status(job) -> types.StatusResponse:
+def status(job: gws.lib.job.Job) -> types.StatusResponse:
     return types.StatusResponse(
         jobUid=job.uid,
         state=job.state,
@@ -50,7 +46,7 @@ def status(job) -> types.StatusResponse:
 ##
 
 
-def _create(req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
+def _create(root: gws.IRoot, req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
     cleanup()
 
     job_uid = gws.random_string(64)
@@ -60,6 +56,7 @@ def _create(req: gws.IWebRequest, params: types.Params) -> gws.lib.job.Job:
     gws.serialize_to_path(params, params_path)
 
     return gws.lib.job.create(
+        root,
         uid=job_uid,
         user=req.user,
         project_uid=params.projectUid,
@@ -102,308 +99,203 @@ _PAPER_COLOR = 'white'
 
 class _Worker:
     def __init__(self, root: gws.IRoot, job_uid: str, project_uid: str, base_dir: str, params: types.Params, user: gws.IUser):
-        self.root = root
         self.base_dir = base_dir
-        self.user = user
         self.job_uid = job_uid
-        self.project: gws.IProject = self.acquire('gws.base.project', project_uid)
-        self.format = params.format or 'pdf'
+        self.project: gws.IProject = user.require('gws.base.project', project_uid)
+        self.root = root
+        self.user = user
 
-        self.locale_uid = params.localeUid
-        if self.locale_uid not in self.project.locale_uids:
-            self.locale_uid = self.project.locale_uids[0]
+        self.page_count = 0
 
-        self.view_scale = params.scale or 1
-        self.view_rotation = params.rotation or 0
+        self.tri = gws.TemplateRenderInput()
+        self.tri.user = self.user
 
-        crs = gws.lib.crs.get(params.crs)
-        if not crs and self.project:
-            crs = self.project.map.crs  # type: ignore
-        if not crs:
-            raise ValueError('no crs can be found')
-        self.view_crs = crs
+        fmt = params.outputFormat or 'pdf'
+        if fmt.lower() == 'pdf' or fmt == gws.lib.mime.PDF:
+            self.tri.out_mime = gws.lib.mime.PDF
+            self.tri.out_path = self.base_dir + '/out.pdf'
+        elif fmt.lower() == 'png' or fmt == gws.lib.mime.PNG:
+            self.tri.out_mime = gws.lib.mime.PNG
+            self.tri.out_path = self.base_dir + '/out.png'
+        else:
+            raise gws.Error(f'invalid outputFormat {fmt!r}')
 
-        self.template: t.Optional[gws.base.template.Object] = None
+        s = params.localeUid or ''
+        self.tri.locale_uid = s if s in self.project.locale_uids else self.project.locale_uids[0]
 
-        self.legends: t.Dict[str, str] = {}
-        self.legend_layer_uids = params.legendLayers or []
+        self.tri.crs = gws.lib.crs.get(params.crs) or self.project.map.crs
+        self.tri.maps = [self.prepare_map(m) for m in (params.maps or [])]
 
         if params.type == 'template':
-            uid = params.templateUid
-            self.template = self.acquire('gws.ext.template', uid)
-            if not self.template:
-                raise ValueError(f'cannot find template uid={uid!r}')
-
-            # force dpi=OGC_SCREEN_PPI for low-res printing (dpi < OGC_SCREEN_PPI)
-            self.view_dpi = max(self.template.dpi_for_quality(params.quality or 0), units.OGC_SCREEN_PPI)
-            self.view_size_mm = self.template.map_size
-
-        elif params.type == 'map':
-            self.view_dpi = max(gws.to_int(params.dpi), units.OGC_SCREEN_PPI)
-            self.view_size_mm = units.point_px2mm((params.mapWidth, params.mapHeight), units.OGC_SCREEN_PPI)
-
+            self.template: gws.ITemplate = self.user.require('gws.ext.template', params.templateUid)
+            try:
+                ql = self.template.quality_levels[params.qualityLevel or 0]
+            except IndexError:
+                ql = self.template.quality_levels[0]
+            self.tri.dpi = ql.dpi
         else:
-            raise ValueError(f'invalid print params type: {params.type!r}')
+            self.tri.dpi = min(gws.lib.render.MAX_DPI, max(params.dpi, gws.lib.units.OGC_SCREEN_PPI))
+            mm = gws.lib.units.size_px_to_mm(params.outputSize, gws.lib.units.OGC_SCREEN_PPI)
+            px = gws.lib.units.size_mm_to_px(mm, self.tri.dpi)
+            w, h = px
+            self.template: gws.ITemplate = self.root.create_object(
+                'gws.ext.template.map',
+                gws.Config(pageSize=(w, h, units.PX)))
 
-        self.common_render_items = self.prepare_render_items(params.items)
+        ctx = params.context or {}
+        if self.template.data_model:
+            atts = self.template.data_model.apply_to_dict(ctx)
+            ctx = {a.name: a.value for a in atts}
 
-        self.sections: t.List[PreparedSection] = []
-        if params.sections:
-            self.sections = [self.prepare_section(sec) for sec in params.sections]
-
-        self.default_context = {
+        extra = {
             'project': self.project,
             'user': self.user,
-            'scale': self.view_scale,
-            'rotation': self.view_rotation,
-            'localeUid': self.locale_uid,
+            'localeUid': self.tri.locale_uid,
         }
 
-        nsec = len(self.sections)
-        steps = (
-                nsec * len(self.common_render_items) +
-                sum(len(s.items) for s in self.sections) +
-                nsec +
-                3)
+        if self.tri.maps:
+            extra['scale'] = self.tri.maps[0].scale
+            extra['rotation'] = self.tri.maps[0].rotation
 
-        self.job_step(steps=steps)
+        self.tri.context = gws.merge(ctx, extra)
 
-    def run(self):
+        steps = sum(len(mp.planes) for mp in self.tri.maps) + 1
+        self.update_job(steps=steps)
 
-        section_paths = []
-
-        self.job_step(steptype='begin')
-
-        self.legends = self.render_legends()
-
-        for n, sec in enumerate(self.sections):
-            section_paths.append(self.run_section(sec, n))
-            self.job_step(steptype='page', stepname=str(n))
-
-        self.job_step(steptype='end')
-
-        comb_path = gws.lib.pdf.concat(section_paths, f'{self.base_dir}/comb.pdf')
-
-        if self.template:
-            ctx = gws.merge(self.default_context, self.sections[0].context)
-            ctx['page_count'] = gws.lib.pdf.page_count(comb_path)
-            res_path = self.template.add_page_elements(
-                context=ctx,
-                in_path=comb_path,
-                out_path=f'{self.base_dir}/res.pdf',
-                format='pdf',
-            )
-        else:
-            res_path = comb_path
-
-        if self.format == 'png':
-            if self.template:
-                size = units.point_mm2px(self.template.page_size, units.PDF_DPI)
-            else:
-                size = units.point_mm2px(self.view_size_mm, self.view_dpi)
-            res_path = gws.lib.pdf.to_image(
-                in_path=res_path,
-                out_path=res_path + '.png',
-                size=size,
-                format='png'
-            )
+    def notify(self, event, details=None):
+        gws.log.debug(f'print.worker.notify {event!r} {details!r}')
 
         job = self.get_job()
+        if not job:
+            return
+
+        if event == 'begin_plane':
+            name = gws.get(details, 'layer.title')
+            job.update(step=job.step + 1, steptype='begin_plane', stepname=name or '')
+            return
+
+        if event == 'finalize_print':
+            job.update(step=job.step + 1)
+            return
+
+        if event == 'begin_page':
+            self.page_count += 1
+            job.update(step=0, steptype='begin_page', stepname=str(self.page_count))
+            return
+
+    def run(self):
+        tro = self.template.render(self.tri, self.notify)
+        job = self.get_job()
         if job:
-            job.update(state=gws.lib.job.State.complete, result={'path': res_path})
+            job.update(state=gws.lib.job.State.complete, result={'path': tro.path})
+        return tro.path
 
-        return res_path
+    def prepare_map(self, mp: types.MapParams) -> gws.TemplateRenderInputMap:
+        planes = []
 
-    def run_section(self, sec: PreparedSection, n: int):
-        renderer = gws.lib.render.Renderer()
-        out_path = f'{self.base_dir}/sec-{n}.pdf'
+        if mp.planes:
+            for n, p in enumerate(mp.planes):
+                pp = self.prepare_plane(p)
+                if not pp:
+                    gws.log.warn(f'render plane {n} FAILED')
+                    continue
+                planes.append(pp)
 
-        ri = gws.MapRenderInput(
-            items=sec.items + self.common_render_items,
+        return gws.TemplateRenderInputMap(
             background_color=_PAPER_COLOR,
-            view=gws.lib.render.view_from_center(
-                crs=self.view_crs,
-                center=sec.center,
-                scale=self.view_scale,
-                out_size=self.view_size_mm,
-                out_size_unit='mm',
-                rotation=self.view_rotation,
-                dpi=self.view_dpi,
-            )
+            bbox=mp.bbox,
+            center=mp.center,
+            planes=planes,
+            rotation=mp.rotation or 0,
+            scale=mp.scale,
+            visible_layers=gws.compact(self.user.acquire('gws.ext.layer', uid) for uid in (mp.visibleLayers or []))
         )
 
-        for item in renderer.run(ri, self.base_dir):
-            self.job_step(steptype='layer', stepname=item.layer.title if item.get('layer') else '')
-
-        if self.template:
-            tr = self.template.render(
-                gws.merge({}, self.default_context, sec.context),
-                gws.TemplateRenderArgs(
-                    format='pdf',
-                    mro=renderer.output,
-                    legends=self.legends,
-                    out_path=out_path + '.pdf',
-                )
-            )
-            return tr.path
-
-        map_html = gws.lib.render.output_html(renderer.output)
-
-        gws.lib.pdf.render_html(
-            '<meta charset="UTF-8"/>' + map_html,
-            page_size=self.view_size_mm,
-            margin=None,
-            out_path=out_path
-        )
-
-        return out_path
-
-    def render_legends(self):
-        if not self.template or not self.template.legend_mode:
-            return {}
-
-        ls = {}
-
-        # @TODO options to print legends even if their layers are hidden
-        # @TODO should support printing legends from other maps
-
-        uids = set(self.legend_layer_uids)
-        if self.template.legend_layer_uids:
-            uids.update(self.template.legend_layer_uids)
-            uids = set(s for s in uids if s in self.template.legend_layer_uids)
-
-        for layer_uid in uids:
-            layer: gws.ILayer = self.acquire('gws.ext.layer', layer_uid)
-            if not layer or not layer.has_legend:
-                continue
-
-            lro = layer.render_legend()
-            if not lro:
-                continue
-
-            if self.template.legend_mode == gws.base.template.LegendMode.image:
-                ls[layer.uid] = lro.image_path
-            elif self.template.legend_mode == gws.base.template.LegendMode.html:
-                ls[layer.uid] = lro.html
-
-        return ls
-
-    def prepare_section(self, sec: types.Section):
-        context = sec.get('context', {})
-        if self.template and self.template.data_model and context:
-            atts = self.template.data_model.apply_to_dict(context)
-            context = {a.name: a.value for a in atts}
-        return PreparedSection(
-            center=sec.center,
-            context=context,
-            items=self.prepare_render_items(sec.get('items') or []),
-        )
-
-    def prepare_render_items(self, items: t.List[types.Item]):
-
-        rs = []
-
-        for n, item in enumerate(items):
-            ii = self.prepare_render_item(item)
-            if not ii:
-                gws.log.warn(f'render item {n} FAILED')
-                continue
-            rs.append(ii)
-
-        return rs
-
-    def prepare_render_item(self, item: types.Item):
-        ii = gws.MapRenderInputItem()
-
-        s = item.get('opacity')
+    def prepare_plane(self, plane: types.Plane) -> t.Optional[gws.MapRenderInputPlane]:
+        opacity = 1
+        s = plane.get('opacity')
         if s is not None:
-            ii.opacity = float(s)
-            if ii.opacity == 0:
+            opacity = float(s)
+            if opacity == 0:
                 return
 
-        # NB: svgs must use the PDF document dpi, not the image dpi!
-
-        s = item.get('style')
+        style = None
+        s = plane.get('style')
         if s:
-            s = gws.lib.style.from_props(s)
-        if s:
-            ii.style = s
+            style = gws.lib.style.from_props(s)
 
-        if item.type == 'raster':
-            ii.layer = self.acquire('gws.ext.layer', item.layerUid)
+        if plane.type == 'raster':
+            layer = self.user.acquire('gws.ext.layer', plane.layerUid)
+            if not layer or not layer.can_render_box:
+                return
+            return gws.MapRenderInputPlane(
+                type='image_layer',
+                layer=layer,
+                opacity=opacity,
+                style=style,
+                sub_layers=plane.get('subLayers'))
 
-            if ii.layer and ii.layer.can_render_box:
-                ii.type = gws.MapRenderInputItemType.image_layer
-                ii.sub_layers = item.get('subLayers')
-                return ii
+        if plane.type == 'vector':
+            layer = self.user.acquire('gws.ext.layer', plane.layerUid)
+            if not layer or not layer.can_render_svg:
+                return
+            return gws.MapRenderInputPlane(
+                type='svg_layer',
+                layer=layer,
+                opacity=opacity,
+                style=style)
 
-            return
-
-        if item.type == 'vector':
-            ii.layer = self.acquire('gws.ext.layer', item.layerUid)
-
-            if ii.layer and ii.layer.can_render_svg:
-                ii.type = gws.MapRenderInputItemType.svg_layer
-                ii.dpi = units.PDF_DPI
-                return ii
-
-            return
-
-        if item.type == 'bitmap':
-            img = self.prepare_bitmap(item)
+        if plane.type == 'bitmap':
+            img = None
+            if plane.mode in ('RGBA', 'RGB'):
+                img = gws.lib.image.from_raw_data(plane.data, plane.mode, (plane.width, plane.height))
             if not img:
                 return
-            ii.type = gws.MapRenderInputItemType.image
-            ii.image = img
-            return ii
+            return gws.MapRenderInputPlane(
+                type='image',
+                image=img,
+                opacity=opacity,
+                style=style)
 
-        if item.type == 'url':
-            img = self.prepare_bitmap_url(item.url)
+        if plane.type == 'url':
+            img = gws.lib.image.from_data_url(plane.url)
             if not img:
                 return
-            ii.type = gws.MapRenderInputItemType.image
-            ii.image = img
-            return ii
+            return gws.MapRenderInputPlane(
+                type='image',
+                image=img,
+                opacity=opacity,
+                style=style)
 
-        if item.type == 'features':
-            features = [gws.lib.feature.from_props(p) for p in item.features]
-            features = [f for f in features if f and f.shape]
-            if not features:
+        if plane.type == 'features':
+            fs = []
+            for p in plane.features:
+                f = gws.lib.feature.from_props(p)
+                if f and f.shape:
+                    fs.append(f)
+            if not fs:
                 return
-            ii.type = gws.MapRenderInputItemType.features
-            ii.features = features
-            ii.dpi = units.PDF_DPI
-            return ii
+            return gws.MapRenderInputPlane(
+                type='features',
+                features=fs,
+                opacity=opacity,
+                style=style)
 
-        if item.type == 'fragment':
-            ii.type = gws.MapRenderInputItemType.fragment
-            ii.fragment = gws.SvgFragment(
-                points=item.points or [],
-                tags=item.tags or [],
-                styles=[gws.lib.style.from_props(s) for s in (item.styles or [])])
-            ii.dpi = units.PDF_DPI
-            return ii
+        if plane.type == 'soup':
+            return gws.MapRenderInputPlane(
+                type='svg_soup',
+                soup_points=plane.points,
+                soup_tags=plane.tags,
+                opacity=opacity,
+                style=style)
 
-        if not ii.layer:
-            return
-
-    def prepare_bitmap(self, item: types.ItemBitmap) -> t.Optional[gws.lib.image.Image]:
-        if item.mode in ('RGBA', 'RGB'):
-            return gws.lib.image.from_raw_data(item.data, item.mode, (item.width, item.height))
-
-    def prepare_bitmap_url(self, url) -> t.Optional[gws.lib.image.Image]:
-        return gws.lib.image.from_data_url(url)
-
-    def acquire(self, klass, uid):
-        obj = self.root.find(klass, uid)
-        if obj and self.user.can_use(obj):
-            return obj
+        raise gws.Error(f'invalid plane type {plane.type!r}')
 
     def get_job(self):
         if not self.job_uid:
             return
 
-        job = gws.lib.job.get(self.job_uid)
+        job = gws.lib.job.get_for(self.root, self.user, self.job_uid)
 
         if not job:
             raise gws.lib.job.PrematureTermination('JOB_NOT_FOUND')
@@ -413,7 +305,7 @@ class _Worker:
 
         return job
 
-    def job_step(self, **kwargs):
+    def update_job(self, **kwargs):
         job = self.get_job()
         if job:
-            job.update(state=gws.lib.job.State.running, step=job.step + 1, **kwargs)
+            job.update(state=gws.lib.job.State.running, **kwargs)

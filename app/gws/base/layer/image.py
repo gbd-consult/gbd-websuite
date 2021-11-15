@@ -39,23 +39,23 @@ class Object(core.Object):
 
         return p
 
-    def render_box(self, rv, extra_params=None):
+    def render_box(self, view, extra_params=None):
         uid = self.uid
         if not self.has_cache:
             uid += '_NOCACHE'
 
-        if not rv.rotation:
-            return gws.lib.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1], forward=extra_params)
+        if not view.rotation:
+            return gws.lib.mpx.wms_request(uid, view.bounds, view.size_px[0], view.size_px[1], forward=extra_params)
 
         # rotation: render a circumsquare around the wanted extent
 
-        circ = gws.lib.extent.circumsquare(rv.bounds.extent)
-        w, h = rv.size_px
+        circ = gws.lib.extent.circumsquare(view.bounds.extent)
+        w, h = view.size_px
         d = gws.lib.extent.diagonal((0, 0, w, h))
 
         r = gws.lib.mpx.wms_request(
             uid,
-            gws.Bounds(crs=rv.bounds.crs, extent=circ),
+            gws.Bounds(crs=view.bounds.crs, extent=circ),
             width=d,
             height=d,
             forward=extra_params)
@@ -67,7 +67,7 @@ class Object(core.Object):
         # rotate the square (NB: PIL rotations are counter-clockwise)
         # and crop the square back to the wanted extent
 
-        img.rotate(-rv.rotation).crop((
+        img.rotate(-view.rotation).crop((
             d / 2 - w / 2,
             d / 2 - h / 2,
             d / 2 + w / 2,

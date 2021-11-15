@@ -1195,16 +1195,16 @@ class Controller extends gws.Controller {
             marker: null,
         });
 
-        let quality = 0;
-        let level = this.setup.printTemplate.qualityLevels[quality];
+        let qualityLevel = 0;
+        let level = this.setup.printTemplate.qualityLevels[qualityLevel];
         let dpi = level ? level.dpi : 0;
 
-        let basicParams = await this.map.basicPrintParams(null, dpi);
+        let mapParams = await this.map.printParams(null, dpi);
         let printParams: gws.api.base.printer.ParamsWithTemplate = {
             type: 'template',
             templateUid: this.setup.printTemplate.uid,
-            quality,
-            ...basicParams,
+            qualityLevel,
+            maps: [mapParams]
         };
 
         let q = {

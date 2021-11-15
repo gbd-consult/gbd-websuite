@@ -4,9 +4,13 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 
 export class Tool extends gws.Tool {
-    layer: gws.types.IMapFeatureLayer;
     oFeatureCollection: ol.Collection<ol.Feature>;
     snap: boolean = true;
+
+
+    get layer(): gws.types.IMapFeatureLayer {
+        return null;
+    }
 
     get editStyle(): gws.types.IStyle {
         return null;

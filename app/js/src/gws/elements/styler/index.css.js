@@ -48,8 +48,8 @@ module.exports = v => {
         ...ICON_RADIO('label_align_left', 'google:editor/format_align_left'),
         ...ICON_RADIO('label_align_center', 'google:editor/format_align_center'),
         ...ICON_RADIO('label_align_right', 'google:editor/format_align_right'),
-        ...ICON_RADIO('label_placement_start', 'placement_start'),
-        ...ICON_RADIO('label_placement_middle', 'placement_middle'),
-        ...ICON_RADIO('label_placement_end', 'placement_end'),
+        ...ICON_RADIO('label_placement_start', __dirname + '/placement_start'),
+        ...ICON_RADIO('label_placement_middle', __dirname + '/placement_middle'),
+        ...ICON_RADIO('label_placement_end', __dirname + '/placement_end'),
     }
 };

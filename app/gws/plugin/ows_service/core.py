@@ -86,7 +86,7 @@ class LayerCaps(gws.Data):
 
     has_legend: bool
     has_search: bool
-    meta: gws.lib.metadata.Values
+    meta: gws.MetadataValues
     title: str
 
     layer_xname: XmlName
@@ -280,13 +280,13 @@ class Service(gws.Node, gws.IOwsService):
             'with_inspire_meta': self.with_inspire_meta,
         }, context)
 
-        return tpl.render({'ARGS': context})
+        return tpl.render(gws.TemplateRenderInput(context={'ARGS': context}))
 
     def enum_template_formats(self):
         fs = {}
 
         for tpl in self.templates.items:
-            for mime in tpl.mime_types:
+            for mime in tpl.mimes:
                 fs.setdefault(tpl.name, set())
                 fs[tpl.name].add(mime)
 
@@ -441,7 +441,7 @@ class Service(gws.Node, gws.IOwsService):
         lc.layer_xname = self._parse_xname(lo.layer_name)
         lc.feature_xname = self._parse_xname(lo.feature_name)
 
-        lc.meta = t.cast(gws.lib.metadata.Values, layer.metadata.values)
+        lc.meta = layer.metadata.values
         lc.children = children
 
         lc.extent = layer.extent
@@ -449,7 +449,7 @@ class Service(gws.Node, gws.IOwsService):
         lc.has_legend = layer.has_legend or any(s.has_legend for s in lc.children)
         lc.has_search = layer.has_search or any(s.has_search for s in lc.children)
 
-        scales = [gws.lib.units.res2scale(r) for r in layer.resolutions]
+        scales = [gws.lib.units.res_to_scale(r) for r in layer.resolutions]
         lc.min_scale = int(min(scales))
         lc.max_scale = int(max(scales))
 
@@ -544,15 +544,14 @@ class Service(gws.Node, gws.IOwsService):
             view=gws.lib.render.view_from_bbox(
                 crs=bounds.crs,
                 bbox=bounds.extent,
-                out_size=(px_width, px_height),
-                out_size_unit='px',
+                out_size_px=(px_width, px_height),
                 rotation=0,
                 dpi=0)
         )
 
         for lc in lcs:
-            render_input.items.append(gws.MapRenderInputItem(
-                type=gws.MapRenderInputItemType.image_layer,
+            render_input.items.append(gws.MapRenderInputPlane(
+                type=gws.MapRenderInputPlaneType.image_layer,
                 layer=lc.layer))
 
         renderer = gws.lib.render.Renderer()

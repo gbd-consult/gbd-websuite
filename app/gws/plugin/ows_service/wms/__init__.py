@@ -38,11 +38,17 @@ class Object(core.Service):
     def default_templates(self):
         return [
             gws.Config(
-                type='xml',
-                path=gws.dirname(__file__) + '/templates/getCapabilities.cx',
+                type='pyxml',
+                path=gws.dirname(__file__) + '/templates/getCapabilities.cx.py',
                 subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
             ),
+            # gws.Config(
+            #     type='xml',
+            #     path=gws.dirname(__file__) + '/templates/getCapabilities.cx',
+            #     subject='ows.GetCapabilities',
+            #     mimeTypes=['xml'],
+            # ),
             gws.Config(
                 type='xml',
                 path=gws.dirname(__file__) + '/templates/getFeatureInfo.cx',

@@ -96,13 +96,14 @@ def _handle_error(req: WebRequest, err: gws.base.web.error.HTTPException) -> Web
         return req.error_response(err)
 
     try:
-        r = site.error_page.render({
+        context = {
             'request': req,
             'error': err.code
-        })
+        }
+        tro = site.error_page.render(gws.TemplateRenderInput(context=context))
         return req.content_response(gws.ContentResponse(
-            content=r.content,
-            mime=r.mime,
+            content=tro.content,
+            mime=tro.mime,
             status=err.code))
     except:
         gws.log.exception()

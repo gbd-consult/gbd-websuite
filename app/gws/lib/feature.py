@@ -4,8 +4,6 @@ import gws.lib.style
 import gws.lib.svg
 import gws.types as t
 
-_COMBINED_UID_DELIMITER = '___'
-
 
 def from_geojson(js, crs, key_column='id') -> gws.IFeature:
     atts = {}
@@ -40,6 +38,9 @@ class Props(gws.Props):
     shape: t.Optional[gws.lib.shape.Props]
     style: t.Optional[gws.lib.style.Props]
     uid: t.Optional[str]
+
+
+_COMBINED_UID_DELIMITER = '___'
 
 
 class Feature(gws.Object, gws.IFeature):
@@ -88,7 +89,7 @@ class Feature(gws.Object, gws.IFeature):
             self.style = gws.lib.style.from_props(gws.Props(style))
 
     def props_for(self, user):
-        return Props(
+        return gws.Data(
             uid=self.full_uid,
             attributes=self.attributes,
             shape=self.shape,
@@ -127,28 +128,26 @@ class Feature(gws.Object, gws.IFeature):
             self.shape = self.shape.transformed_to(crs)
         return self
 
-    def to_svg_tags(self, rv: gws.MapRenderView, style: gws.IStyle = None) -> t.List[gws.Tag]:
+    def to_svg_fragment(self, view, style=None):
         if not self.shape:
             return []
         style = style or self.style or (self.layer.style if self.layer else None)
-        shape = self.shape.transformed_to(rv.bounds.crs)
-        return gws.lib.svg.geometry_tags(
-            t.cast(gws.lib.shape.Shape, shape).geom,
-            rv,
-            t.cast(gws.lib.style.Values, style.values) if style else None,
-            self.elements.get('label', ''))
+        shape = self.shape.transformed_to(view.bounds.crs)
+        return gws.lib.svg.shape_to_fragment(shape, view, style, self.elements.get('label'))
 
-    def to_svg(self, rv: gws.MapRenderView, style: gws.IStyle = None) -> str:
-        return gws.lib.svg.to_xml(self.to_svg_tags(rv, style))
+    def to_svg_element(self, view, style=None):
+        fr = self.to_svg_fragment(view, style)
+        if fr:
+            return gws.lib.svg.fragment_to_element(fr)
 
-    def to_geojson(self) -> dict:
+    def to_geojson(self):
         ps = {a.name: a.value for a in self.attributes}
         ps['id'] = self.uid
-        return {
-            'type': 'Feature',
-            'properties': ps,
-            'geometry': self.shape.to_geojson() if self.shape else None
-        }
+        d = {'type': 'Feature', 'properties': ps}
+        if self.shape:
+            d['geometry'] = self.shape.to_geojson()
+            d['crs'] = self.shape.crs.to_geojson()
+        return d
 
     def connect_to(self, layer):
         self.layer = layer
@@ -175,7 +174,7 @@ class Feature(gws.Object, gws.IFeature):
 
         for tpl in templates:
             if tpl.name not in used:
-                self.elements[tpl.name] = tpl.render(context=ctx).content
+                self.elements[tpl.name] = tpl.render().content
                 used.add(tpl.name)
 
         return self

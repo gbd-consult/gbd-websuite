@@ -234,7 +234,7 @@ def _remove_dir(dirname):
 #             for r in info['counts']:
 #                 data.append({
 #                     'zoom': r['z'],
-#                     'scale': round(units.res2scale(r['res'])),
+#                     'scale': round(units.res_to_scale(r['res'])),
 #                     'grid': str(r['maxx']) + 'x' + str(r['maxy']),
 #                     'total': r['maxx'] * r['maxy'],
 #                     'cached': r['num_files'],

@@ -6,6 +6,14 @@ import gws.types as t
 MM_PER_IN = 25.4
 PT_PER_IN = 72
 
+MM = 'mm'
+PX = 'px'
+FT = 'ft'
+IN = 'in'
+PT = 'pt'
+M = 'm'
+KM = 'km'
+
 # OGC's 1px = 0.28mm
 # OGC 06-042, 7.2.4.6.9
 
@@ -14,65 +22,106 @@ OGC_SCREEN_PPI = MM_PER_IN / (OGC_M_PER_PX * 1000)  # 90.71
 
 PDF_DPI = 96
 
+_number = t.Union[int, float]
 
-def scale2res(x):
+
+def scale_to_res(x: _number) -> float:
     return x * OGC_M_PER_PX
 
 
-def res2scale(x):
+def res_to_scale(x: _number) -> float:
     return x / OGC_M_PER_PX
 
 
-def mm2in(x):
-    return x / MM_PER_IN
+# @TODO imperial units not used yet
+#
+# def mm_to_in(x: _number) -> float:
+#     return x / MM_PER_IN
+#
+#
+# def m_to_in(x: _number) -> float:
+#     return (x / MM_PER_IN) * 1000
+#
+#
+# def in_to_mm(x: _number) -> float:
+#     return x * MM_PER_IN
+#
+#
+# def in_to_m(x: _number) -> float:
+#     return (x * MM_PER_IN) / 1000
+#
+#
+# def in_to_px(x, ppi):
+#     return x * ppi
+#
+#
+# def mm_to_pt(x: _number) -> float:
+#     return (x / MM_PER_IN) * PT_PER_IN
+#
+#
+# def pt_to_mm(x: _number) -> float:
+#     return (x / PT_PER_IN) * MM_PER_IN
+#
 
+##
 
-def m2in(x):
-    return (x / MM_PER_IN) * 1000
-
-
-def in2mm(x):
-    return x * MM_PER_IN
-
-
-def in2m(x):
-    return (x * MM_PER_IN) / 1000
-
-
-def in2px(x, ppi):
-    return x * ppi
-
-
-def mm2px(x, ppi):
-    return int((x * ppi) / MM_PER_IN)
-
-
-def mm2px_f(x, ppi):
+def mm_to_px(x: _number, ppi: int) -> float:
     return (x * ppi) / MM_PER_IN
 
 
-def px2mm(x, ppi):
-    return int((x / ppi) * MM_PER_IN)
+def to_px(xu: gws.Measurement, ppi: int) -> gws.Measurement:
+    x, u = xu
+    if u == PX:
+        return xu
+    if u == MM:
+        return mm_to_px(x, ppi), PX
+    raise ValueError(f'invalid unit {u!r}')
 
 
-def point_mm2px(xy, ppi):
-    return mm2px(xy[0], ppi), mm2px(xy[1], ppi)
+def size_mm_to_px(xy: gws.Size, ppi: int) -> gws.Size:
+    x, y = xy
+    return mm_to_px(x, ppi), mm_to_px(y, ppi)
 
 
-def point_mm2px_f(xy, ppi):
-    return mm2px_f(xy[0], ppi), mm2px_f(xy[1], ppi)
+def msize_to_px(xyu: gws.MSize, ppi: int) -> gws.MSize:
+    x, y, u = xyu
+    if u == PX:
+        return xyu
+    if u == MM:
+        return mm_to_px(x, ppi), mm_to_px(y, ppi), PX
+    raise ValueError(f'invalid unit {u!r}')
 
 
-def point_px2mm(xy, ppi):
-    return px2mm(xy[0], ppi), px2mm(xy[1], ppi)
+##
+
+def px_to_mm(x: _number, ppi: int) -> float:
+    return (x / ppi) * MM_PER_IN
 
 
-def mm2pt(x):
-    return (x / MM_PER_IN) * PT_PER_IN
+def to_mm(xu: gws.Measurement, ppi: int) -> gws.Measurement:
+    x, u = xu
+    if u == MM:
+        return xu
+    if u == PX:
+        return px_to_mm(x, ppi), MM
+    raise ValueError(f'invalid unit {u!r}')
 
 
-def pt2mm(x):
-    return (x / PT_PER_IN) * MM_PER_IN
+def size_px_to_mm(xy: gws.Size, ppi: int) -> gws.Size:
+    x, y = xy
+    return px_to_mm(x, ppi), px_to_mm(y, ppi)
+
+
+def msize_to_mm(xyu: gws.MSize, ppi: int) -> gws.MSize:
+    x, y, u = xyu
+    if u == MM:
+        return xyu
+    if u == PX:
+        return px_to_mm(x, ppi), px_to_mm(y, ppi), MM
+    raise ValueError(f'invalid unit {u!r}')
+
+
+##
 
 
 _unit_re = re.compile(r'''(?x)
@@ -83,7 +132,7 @@ _unit_re = re.compile(r'''(?x)
             |
             (\.\d+)
         )
-        (?P<rest> .*)
+        (?P<unit> \s* [a-zA-Z]*)
     $
 ''')
 
@@ -95,42 +144,26 @@ _METRIC = {
 }
 
 
-def parse(s: str, units: t.List = [], default=None) -> gws.Measurement:
+def parse(s: str, default=None) -> gws.Measurement:
     if isinstance(s, (int, float)):
         if not default:
-            raise ValueError(f'invalid unit value: {s!r}')
+            raise ValueError(f'invalid unit {s!r}')
         return s, default
 
     s = gws.to_str(s).strip()
     m = _unit_re.match(s)
     if not m:
-        raise ValueError(f'invalid unit value: {s!r}')
+        raise ValueError(f'invalid unit {s!r}')
 
     n = float(m.group('number'))
-    u = m.group('rest').strip().lower()
-
-    if not units and default:
-        units = [default]
+    u = m.group('unit').strip().lower()
 
     if not u:
         if not default:
-            raise ValueError(f'invalid unit value: {s!r}')
+            raise ValueError(f'invalid unit {s!r}')
         return n, default
 
-    if u in units:
-        return n, u
-
-    # e.g. 1cm given, but only mm allowed
-
-    if u in _METRIC:
-        mm = n * _METRIC[u]
-        for unit, f in _METRIC.items():
-            if unit in units:
-                return mm / f, unit
-
-    # @TODO: in, ft etc
-
-    raise ValueError(f'invalid unit value: {s!r}')
+    return n, u
 
 
 _durations = {

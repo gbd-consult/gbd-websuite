@@ -3,7 +3,7 @@ import gws.base.search
 import gws.lib.gis.source
 import gws.lib.gis.util
 import gws.types as t
-
+import gws.lib.ows
 from . import provider as provider_module
 
 
@@ -18,7 +18,7 @@ class Object(gws.base.search.provider.Object, gws.IOwsClient):
     provider: provider_module.Object
 
     def configure(self):
-        gws.lib.gis.util.configure_ows_client_layers(self, provider_module.Object, is_queryable=True)
+        gws.lib.ows.client.configure_layers(self, provider_module.Object, is_queryable=True)
 
     def can_run(self, args):
         return (

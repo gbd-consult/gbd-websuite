@@ -13,7 +13,7 @@ import gws.lib.json2
 import gws.lib.legend
 import gws.lib.mime
 import gws.lib.render
-import gws.lib.units
+import gws.lib.units as units
 import gws.types as t
 
 
@@ -124,22 +124,25 @@ class Object(gws.base.api.action.Object):
         layer = req.require_layer(p.layerUid)
         content = None
 
+        mri = gws.MapRenderInput(
+
+        )
+
         extra_params = {}
         if p.layers:
             extra_params['layers'] = p.layers
 
-        rv = gws.lib.render.view_from_bbox(
+        view = gws.lib.render.map_view_from_bbox(
             crs=gws.lib.crs.get(p.crs) or layer.map.crs,
             bbox=p.bbox,
-            out_size=(p.width, p.height),
-            out_size_unit='px',
-            dpi=p.dpi or gws.lib.units.OGC_SCREEN_PPI,
+            size=(p.width, p.height, units.PX),
+            dpi=units.OGC_SCREEN_PPI,
             rotation=0
         )
 
-        ts = gws.time_start(f'RENDER_BOX layer={p.layerUid} view={rv!r}')
+        ts = gws.time_start(f'RENDER_BOX layer={p.layerUid} view={view!r}')
         try:
-            content = layer.render_box(rv, extra_params)
+            content = layer.render_box(view, extra_params)
         except:
             gws.log.exception()
         gws.time_end(ts)

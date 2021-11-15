@@ -5,216 +5,258 @@ import math
 import gws
 import gws.lib.extent
 import gws.lib.image
+import gws.lib.style
 import gws.lib.svg
 import gws.lib.units as units
-import gws.lib.xml2
+import gws.lib.xml3 as xml3
+import gws.lib.html2
 import gws.types as t
 
-
-class Renderer:
-    def run(self, ri: gws.MapRenderInput, base_dir=None):
-        self.ri: gws.MapRenderInput = ri
-        self.output = gws.MapRenderOutput(
-            view=self.ri.view,
-            items=[],
-            base_dir=base_dir,
-        )
-        self.default_dpi = self.ri.view.dpi
-        self.composed_image = None
-
-        # NB: items are top-to-bottom
-
-        for item in reversed(self.ri.items):
-            yield item
-            self._render_item(item)
-
-    def _render_item(self, item: gws.MapRenderInputItem):
-        try:
-            #  use the item's dpi
-            self.ri.view.dpi = item.dpi or self.default_dpi
-            self._render_item2(item)
-        except:
-            # swallow exceptions so that we still can render if some layer fails
-            gws.log.exception('input item failed')
-
-    def _render_item2(self, item: gws.MapRenderInputItem):
-        # @TODO opacity for svgs
-
-        s = item.opacity
-        if s is not None:
-            opacity = s
-        elif item.layer:
-            opacity = item.layer.opacity
-        else:
-            opacity = 1
-
-        if item.type == gws.MapRenderInputItemType.image:
-            self._add_image(item.image, opacity)
-            return
-
-        if item.type == gws.MapRenderInputItemType.features:
-            for feature in item.features:
-                tags = feature.to_svg_tags(self.ri.view, item.style)
-                self._add_svg_tags(tags)
-            return
-
-        if item.type == gws.MapRenderInputItemType.fragment:
-            tags = gws.lib.svg.fragment_tags(item.fragment, self.ri.view)
-            self._add_svg_tags(tags)
-            return
-
-        if item.type == gws.MapRenderInputItemType.svg_layer:
-            tags = item.layer.render_svg_tags(self.ri.view, item.style)
-            self._add_svg_tags(tags)
-            return
-
-        if item.type == gws.MapRenderInputItemType.image_layer:
-            extra_params = {}
-            if item.sub_layers:
-                extra_params = {'layers': item.sub_layers}
-            r = item.layer.render_box(self.ri.view, extra_params)
-            if r:
-                self._add_image(gws.lib.image.from_bytes(r), opacity)
-
-    def _last_item_is(self, type):
-        return self.output.items and self.output.items[-1].type == type
-
-    def _add_image(self, img, opacity):
-        if not self._last_item_is(gws.MapRenderOutputItemType.image):
-            # NB use background for the first composition only
-            background = self.ri.background_color
-            if any(item.type == gws.MapRenderOutputItemType.image for item in self.output.items):
-                background = None
-            self.composed_image = gws.lib.image.from_size(self.ri.view.size_px, background)
-            self.output.items.append(gws.MapRenderOutputItem(type=gws.MapRenderOutputItemType.image))
-        self.composed_image.compose(img, opacity)
-        self.output.items[-1].image = self.composed_image
-
-    def _add_svg_tags(self, tags):
-        if not self._last_item_is(gws.MapRenderOutputItemType.svg):
-            self.output.items.append(gws.MapRenderOutputItem(type=gws.MapRenderOutputItemType.svg, tags=[]))
-        self.output.items[-1].tags.extend(tags)
+MAX_DPI = 1200
+MIN_DPI = units.PDF_DPI
 
 
-def output_html(ro: gws.MapRenderOutput) -> str:
-    w, h = ro.view.size_mm
-    css = ';'.join([
-        f'position:absolute',
-        f'left:0',
-        f'top:0',
-        f'width:{w}mm',
-        f'height:{h}mm',
-    ])
-    vbox = ' '.join(str(s) for s in pixel_viewbox(ro.view))
-    tags: t.List[gws.Tag] = []
+# Map Views
 
-    for item in ro.items:
-        if item.type == gws.MapRenderOutputItemType.image:
-            path = ro.base_dir + '/' + gws.random_string(64) + '.png'
-            item.image.to_path(path)
-            tags.append(('img', {'style': css, 'src': path}))
-        if item.type == gws.MapRenderOutputItemType.path:
-            tags.append(('img', {'style': css, 'src': item.path}))
-        if item.type == gws.MapRenderOutputItemType.svg:
-            gws.lib.svg.sort_by_z_index(item.tags)
-            tags.append(('svg', gws.lib.svg.SVG_ATTRIBUTES, {'style': css, 'viewBox': vbox}, *item.tags))
-
-    return ''.join(gws.lib.xml2.to_string(tag) for tag in tags)
+def map_view_from_center(
+        size: gws.MSize,
+        center: gws.Point,
+        crs: gws.ICrs,
+        dpi,
+        scale,
+        rotation=0,
+) -> gws.MapView:
+    return _map_view(None, center, crs, dpi, rotation, scale, size)
 
 
-def pixel_transformer(view: gws.MapRenderView):
+def map_view_from_bbox(
+        size: gws.MSize,
+        bbox: gws.Extent,
+        crs: gws.ICrs,
+        dpi,
+        rotation=0,
+) -> gws.MapView:
+    return _map_view(bbox, None, crs, dpi, rotation, None, size)
+
+
+def _map_view(bbox, center, crs, dpi, rotation, scale, size):
+    view = gws.MapView(
+        crs=crs,
+        dpi=dpi,
+        rotation=rotation,
+    )
+
+    w, h, u = size
+    if u == units.MM:
+        view.size_mm = w, h
+        view.size_px = units.size_mm_to_px(view.size_mm, view.dpi)
+    if u == units.PX:
+        view.size_px = w, h
+        view.size_mm = units.size_px_to_mm(view.size_px, view.dpi)
+
+    if bbox:
+        view.bounds = gws.Bounds(crs=crs, extent=bbox)
+        view.center = gws.lib.extent.center(bbox)
+        bw, bh = gws.lib.extent.size(bbox)
+        view.scale = units.res_to_scale(bw / view.size_px[0])
+
+    if center:
+        view.center = center
+        view.scale = scale
+
+        # @TODO assuming projection units are 'm'
+        projection_units_per_mm = scale / 1000.0
+        size = view.size_mm[0] * projection_units_per_mm, view.size_mm[1] * projection_units_per_mm
+        bbox = gws.lib.extent.from_center(center, size)
+        view.bounds = gws.Bounds(crs=crs, extent=bbox)
+
+    return view
+
+
+def map_view_transformer(view: gws.MapView):
     """Create a pixel transformer f(map_x, map_y) -> (pixel_x, pixel_y) for a view"""
 
     # @TODO cache the transformer
 
     def translate(x, y):
-        x = x - view.bounds.extent[0]
-        y = view.bounds.extent[3] - y
+        x = x - ext[0]
+        y = ext[3] - y
+        return x * m2px, y * m2px
 
-        return (
-            units.mm2px_f((x / view.scale) * 1000, view.dpi),
-            units.mm2px_f((y / view.scale) * 1000, view.dpi))
+    def translate_int(x, y):
+        x, y = translate(x, y)
+        return int(x), int(y)
 
     def rotate(x, y):
         return (
             cosa * (x - ox) - sina * (y - oy) + ox,
             sina * (x - ox) + cosa * (y - oy) + oy)
 
-    def fn(x, y):
+    def translate_rotate_int(x, y):
         x, y = translate(x, y)
-        if view.rotation:
-            x, y = rotate(x, y)
-        return x, y
+        x, y = rotate(x, y)
+        return int(x), int(y)
 
-    ox, oy = translate(*gws.lib.extent.center(view.bounds.extent))
+    # (x_map*1000)/scale MM * (dpi/MM_PER_IN) PX/MM => PX
+    m2px = (1000.0 / view.scale) * (view.dpi / units.MM_PER_IN)
+
+    ext = view.bounds.extent
+
+    if not view.rotation:
+        return translate_int
+
+    ox, oy = translate(*gws.lib.extent.center(ext))
     cosa = math.cos(math.radians(view.rotation))
     sina = math.sin(math.radians(view.rotation))
 
-    return fn
+    return translate_rotate_int
 
 
-def pixel_viewbox(view: gws.MapRenderView):
-    """Compute the pixel viewBox for a view"""
-
-    trans = pixel_transformer(view)
-    ext = view.bounds.extent
-    a = trans(ext[0], ext[1])
-    b = trans(ext[2], ext[3])
-    return [0, 0, b[0] - a[0], a[1] - b[1]]
+# Rendering
 
 
-def view_from_center(crs: gws.ICrs, center: gws.Point, scale: int, out_size: gws.Size, out_size_unit: str, rotation=0, dpi=0):
-    """Create a view based on a center point"""
-
-    view = _base(out_size, out_size_unit, rotation, dpi)
-
-    view.center = center
-    view.scale = scale
-
-    # @TODO assuming projection units are 'm'
-    unit_per_mm = scale / 1000.0
-
-    w = units.px2mm(view.size_px[0], view.dpi)
-    h = units.px2mm(view.size_px[1], view.dpi)
-
-    ext = [
-        view.center[0] - (w * unit_per_mm) / 2,
-        view.center[1] - (h * unit_per_mm) / 2,
-        view.center[0] + (w * unit_per_mm) / 2,
-        view.center[1] + (h * unit_per_mm) / 2,
-    ]
-    view.bounds = gws.Bounds(crs=crs, extent=ext)
-
-    return view
+class _Renderer(gws.Data):
+    mri: gws.MapRenderInput
+    mro: gws.MapRenderOutput
+    raster_view: gws.MapView
+    vector_view: gws.MapView
+    img_count: int
+    svg_count: int
 
 
-def view_from_bbox(crs: gws.ICrs, bbox: gws.Extent, out_size: gws.Size, out_size_unit: str, rotation=0, dpi=0):
-    """Create a view based on a bounding box"""
+def render_map(mri: gws.MapRenderInput, notify: t.Callable = None) -> gws.MapRenderOutput:
+    rd = _Renderer(
+        mri=mri,
+        mro=gws.MapRenderOutput(path=mri.out_path, planes=[]),
+        img_count=0,
+        svg_count=0
+    )
 
-    view = _base(out_size, out_size_unit, rotation, dpi)
+    # vectors always use PDF_DPI
+    rd.vector_view = _map_view(mri.bbox, mri.center, mri.crs, units.PDF_DPI, mri.rotation, mri.scale, mri.out_size)
+    rd.mro.view = rd.vector_view
 
-    view.center = [
-        bbox[0] + (bbox[2] - bbox[0]) / 2,
-        bbox[1] - (bbox[3] - bbox[1]) / 2,
-    ]
-    view.scale = units.res2scale((bbox[2] - bbox[0]) / view.size_px[0])
-    view.bounds = gws.Bounds(crs=crs, extent=bbox)
+    if mri.out_size[2] == units.PX:
+        # if they want pixels, use PDF_PDI for rasters as well
+        rd.raster_view = rd.raster_view
 
-    return view
+    elif mri.out_size[2] == units.MM:
+        # if they want mm, rasters should use they own dpi
+        raster_dpi = min(MAX_DPI, max(MIN_DPI, rd.mri.dpi))
+        rd.raster_view = _map_view(mri.bbox, mri.center, mri.crs, raster_dpi, mri.rotation, mri.scale, mri.out_size)
+
+    else:
+        raise gws.Error(f'invalid size {mri.out_size!r}')
+
+    # NB: planes are top-to-bottom
+
+    for p in reversed(mri.planes):
+        if notify:
+            notify('begin_plane', p)
+        try:
+            _render_plane(rd, p)
+        except Exception:
+            # swallow exceptions so that we still can render if some layer fails
+            gws.log.exception('render: input plane failed')
+        if notify:
+            notify('end_plane', p)
+
+    return rd.mro
 
 
-def _base(out_size, out_size_unit, rotation, dpi):
-    view = gws.MapRenderView()
+def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
+    s = plane.opacity
+    if s is not None:
+        opacity = s
+    elif plane.layer:
+        opacity = plane.layer.opacity
+    else:
+        opacity = 1
 
-    view.dpi = max(units.OGC_SCREEN_PPI, int(dpi))
-    view.rotation = rotation
+    if plane.type == 'image_layer':
+        extra_params = {}
+        if plane.sub_layers:
+            extra_params = {'layers': plane.sub_layers}
+        r = plane.layer.render_box(rd.raster_view, extra_params)
+        if r:
+            _add_image(rd, gws.lib.image.from_bytes(r), opacity)
 
-    if out_size_unit == 'px':
-        view.size_px = out_size
-        view.size_mm = units.point_px2mm(out_size, view.dpi)
+    if plane.type == 'image':
+        _add_image(rd, plane.image, opacity)
+        return
 
-    if out_size_unit == 'mm':
-        view.size_mm = out_size
-        view.size_px = units.point_mm2px(out_size, view.dpi)
+    if plane.type == 'svg_layer':
+        els = plane.layer.render_svg_fragment(rd.vector_view, plane.style)
+        _add_svg_elements(rd, els, opacity)
+        return
 
-    return view
+    if plane.type == 'features':
+        for feature in plane.features:
+            els = feature.to_svg_fragment(rd.vector_view, plane.style)
+            _add_svg_elements(rd, els, opacity)
+        return
+
+    if plane.type == 'svg_soup':
+        els = gws.lib.svg.soup_to_fragment(rd.vector_view, plane.soup_points, plane.soup_tags)
+        _add_svg_elements(rd, els, opacity)
+        return
+
+
+def _add_image(rd: _Renderer, img, opacity):
+    last = rd.mro.planes[-1].type if rd.mro.planes else None
+
+    if last != 'image':
+        # NB use background for the first composition only
+        background = rd.mri.background_color if rd.img_count == 0 else None
+        rd.mro.planes.append(gws.MapRenderOutputPlane(
+            type='image',
+            image=gws.lib.image.from_size(rd.raster_view.size_px, background)))
+
+    rd.mro.planes[-1].image = rd.mro.planes[-1].image.compose(img, opacity)
+    rd.img_count += 1
+
+
+def _add_svg_elements(rd: _Renderer, elements, opacity):
+    # @TODO opacity for svgs
+
+    last = rd.mro.planes[-1].type if rd.mro.planes else None
+
+    if last != 'svg':
+        rd.mro.planes.append(gws.MapRenderOutputPlane(
+            type='svg',
+            elements=[]))
+
+    rd.mro.planes[-1].elements.extend(elements)
+    rd.svg_count += 1
+
+
+# Output
+
+
+def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.XmlElement:
+    w, h = mro.view.size_mm
+
+    css_size = f'left:0;top:0;width:{int(w)}mm;height:{int(h)}mm'
+    css_abs = f'position:absolute;{css_size}'
+
+    tags: t.List[gws.XmlElement] = []
+
+    for plane in mro.planes:
+        if plane.type == 'image':
+            path = mro.path + '.png'
+            plane.image.to_path(path)
+            tags.append(xml3.tag('img', {'style': css_abs, 'src': path}))
+        if plane.type == 'path':
+            tags.append(xml3.tag('img', {'style': css_abs, 'src': plane.path}))
+        if plane.type == 'svg':
+            tags.append(gws.lib.svg.fragment_to_element(plane.elements, {'style': css_abs}))
+
+    css_div = None
+    if wrap and wrap in {'relative', 'absolute', 'fixed'}:
+        css_div = f'position:{wrap};overflow:hidden;{css_size}'
+    return xml3.tag('div', {'style': css_div}, *tags)
+
+
+def output_to_html_string(mro: gws.MapRenderOutput, wrap='relative') -> str:
+    div = output_to_html_element(mro, wrap)
+    return xml3.to_string(div)

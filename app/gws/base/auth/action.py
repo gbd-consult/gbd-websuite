@@ -5,12 +5,11 @@ import gws.base.api
 import gws.base.web.error
 import gws.types as t
 
-from . import user as user_api
-from . import wsgi
+from . import wsgi, user
 
 
 class Response(gws.Response):
-    user: user_api.Props
+    user: user.Props
 
 
 class LoginParams(gws.Params):

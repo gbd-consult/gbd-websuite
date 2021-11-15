@@ -56,7 +56,6 @@ c3857_extent = [
     +(math.pi * c3857_radius),
 ]
 
-
 ##
 
 _cache: dict = {}
@@ -175,6 +174,18 @@ class Crs(gws.Object, gws.ICrs):
 
     def to_string(self, format=None):
         return getattr(self, str(format or self.format).lower())
+
+    def to_geojson(self):
+        # https://geojson.org/geojson-spec#named-crs
+        return {
+            'type': 'name',
+            'properties': {
+                'name': self.urn,
+            }
+        }
+
+    def __repr__(self):
+        return f'<crs:{self.srid}>'
 
 
 ##

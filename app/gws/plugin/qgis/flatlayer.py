@@ -4,6 +4,7 @@ import gws.lib.gis.source
 import gws.lib.gis.util
 import gws.lib.os2
 import gws.types as t
+import gws.lib.ows
 
 from . import provider as provider_module
 
@@ -21,7 +22,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
     source_crs: gws.ICrs
 
     def configure_source(self):
-        gws.lib.gis.util.configure_ows_client_layers(self, provider_module.Object, is_image=True)
+        gws.lib.ows.client.configure_layers(self, provider_module.Object, is_image=True)
         self.source_crs = gws.lib.gis.util.best_crs(
             self.provider.crs or self.crs,
             gws.lib.gis.source.supported_crs_list(self.source_layers))
@@ -34,7 +35,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
 
     def configure_zoom(self):
         if not super().configure_zoom():
-            return gws.lib.gis.util.configure_ows_client_zoom(self)
+            return gws.lib.ows.client.configure_zoom(self)
 
     def configure_search(self):
         if not super().configure_search():
@@ -55,20 +56,11 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
     def own_bounds(self):
         return gws.lib.gis.source.combined_bounds(self.source_layers, self.source_crs)
 
-    @property
-    def description(self):
-        context = {
-            'layer': self,
-            'service_metadata': self.provider.metadata,
-            'sub_layers': self.source_layers
-        }
-        return self.description_template.render(context).content
-
-    def render_box(self, rv: gws.MapRenderView, extra_params=None):
+    def render_box(self, view, extra_params=None):
         extra_params = extra_params or {}
-        if rv.dpi > 90:
-            extra_params['DPI__gws'] = str(rv.dpi)
-        return super().render_box(rv, extra_params)
+        if view.dpi > 90:
+            extra_params['DPI__gws'] = str(view.dpi)
+        return super().render_box(view, extra_params)
 
     def mapproxy_config(self, mc, options=None):
         # NB: qgis caps layers are always top-down

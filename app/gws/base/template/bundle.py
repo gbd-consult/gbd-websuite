@@ -19,7 +19,7 @@ class Props(gws.Props):
 
 class Object(gws.Node, gws.ITemplateBundle):
     def props_for(self, user):
-        return Props(items=self.items)
+        return gws.Data(items=self.items)
 
     def configure(self):
         self.items = []
@@ -45,7 +45,7 @@ class Object(gws.Node, gws.ITemplateBundle):
 
         if mime:
             mime = gws.lib.mime.get(mime)
-            items = [tpl for tpl in items if mime in tpl.mime_types]
+            items = [tpl for tpl in items if mime in tpl.mimes]
         if subject:
             s = subject.lower()
             items = [tpl for tpl in items if s == tpl.subject]

@@ -5,7 +5,7 @@ import gws.lib.gis.util
 import gws.lib.net
 import gws.lib.units as units
 import gws.types as t
-
+import gws.lib.ows
 from . import provider as provider_module
 
 
@@ -25,7 +25,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
     style_name: str
 
     def configure_source(self):
-        gws.lib.gis.util.configure_ows_client_layers(self, provider_module.Object)
+        gws.lib.ows.client.configure_layers(self, provider_module.Object)
 
         self.source_crs = gws.lib.gis.util.best_crs(
             self.provider.force_crs or self.crs,
@@ -54,7 +54,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
 
     def configure_zoom(self):
         if not super().configure_zoom():
-            return gws.lib.gis.util.configure_ows_client_zoom(self)
+            return gws.lib.ows.client.configure_zoom(self)
 
     def configure_legend(self):
         if not super().configure_legend():
@@ -70,18 +70,10 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
     def own_bounds(self):
         return gws.lib.gis.source.combined_bounds(self.source_layers, self.source_crs)
 
-    @property
-    def description(self):
-        context = {
-            'layer': self,
-            'service': self.provider.metadata,
-        }
-        return self.description_template.render(context).content
-
     def mapproxy_config(self, mc):
         m0 = self.tile_matrix_set.matrices[0]
         res = [
-            units.scale2res(m.scale)
+            units.scale_to_res(m.scale)
             for m in self.tile_matrix_set.matrices
         ]
 

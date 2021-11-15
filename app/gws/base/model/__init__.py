@@ -113,9 +113,9 @@ class Object(gws.Node, gws.IDataModel):
     geometry_crs: gws.ICrs
 
     def props_for(self, user):
-        return Props(
+        return gws.Data(
             rules=[
-                RuleProps(
+                gws.Data(
                     name=r.name,
                     editable=r.editable,
                     editor=r.editor,

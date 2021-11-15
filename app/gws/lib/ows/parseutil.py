@@ -1,3 +1,5 @@
+"""Parse utilities for OWS and QGIS XML files."""
+
 import re
 
 import gws
@@ -188,7 +190,7 @@ def default_style(styles) -> t.Optional[gws.SourceStyle]:
     return styles[0] if styles else None
 
 
-def get_link(el) -> t.Optional[gws.lib.metadata.Link]:
+def get_link(el) -> t.Optional[gws.MetadataLink]:
     # el is a MetadataURL element
 
     if not el:
@@ -201,7 +203,7 @@ def get_link(el) -> t.Optional[gws.lib.metadata.Link]:
     })
 
     if d:
-        return gws.lib.metadata.Link(d)
+        return gws.MetadataLink(d)
 
 
 def get_url(el) -> str:
@@ -235,7 +237,7 @@ def enum_source_layers(layers):
         sl.a_uid = gws.to_uid(sl.name or sl.metadata.get('title'))
         sl.a_path = parent_path + '/' + sl.a_uid
         sl.a_level = level
-        sl.layers = gws.compact(walk(sl2, sl.a_path, level + 1) for sl2 in (sl.layers or []))
+        sl.layers = gws.compact(walk(c, sl.a_path, level + 1) for c in (sl.layers or []))
         return sl
 
     return gws.compact(walk(sl, '', 1) for sl in layers)

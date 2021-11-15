@@ -65,7 +65,7 @@ module.exports = v => {
             strokeWidth: 2,
             stroke: BASE_COLOR,
             fill: 'transparent',
-            marker: 'arrow',
+            __marker: 'arrow',
         },
 
         '.modDimensionDimPlumb': {

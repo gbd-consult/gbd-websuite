@@ -103,15 +103,14 @@ class Object(core.Service):
             view=gws.lib.render.view_from_bbox(
                 crs=crs,
                 bbox=bbox,
-                out_size=(256, 256),
-                out_size_unit='px',
+                out_size_px=(256, 256),
                 rotation=0,
                 dpi=0)
         )
 
         for lc in lcs:
-            render_input.items.append(gws.MapRenderInputItem(
-                type=gws.MapRenderInputItemType.image_layer,
+            render_input.items.append(gws.MapRenderInputPlane(
+                type=gws.MapRenderInputPlaneType.image_layer,
                 layer=lc.layer))
 
         renderer = gws.lib.render.Renderer()
@@ -180,7 +179,7 @@ class Object(core.Service):
             res = w / (tile_size * size)
             ms.append(gws.TileMatrix(
                 uid='%02d' % z,
-                scale=gws.lib.units.res2scale(res),
+                scale=gws.lib.units.res_to_scale(res),
                 x=extent[0],
                 y=extent[1],
                 tile_width=tile_size,
