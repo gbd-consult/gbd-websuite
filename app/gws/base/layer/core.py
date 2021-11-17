@@ -22,6 +22,27 @@ _DEFAULT_STYLE = gws.Config(
     }
 )
 
+_DEFAULT_TEMPLATES = [
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/layer_description.cx.html',
+        subject='layer.description',
+        access='all:allow',
+    ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/feature_description.cx.html',
+        subject='feature.description',
+        access='all:allow',
+    ),
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/feature_teaser.cx.html',
+        subject='feature.teaser',
+        access='all:allow',
+    ),
+]
+
 # layer urls, handled by the map action (base/map/action.py)
 
 _suffix = '/gws.png'
@@ -57,8 +78,7 @@ class Object(gws.Node, gws.ILayer):
             'service_metadata': gws.get(self, 'provider.metadata.values'),
             'source_layers': gws.get(self, 'source_layers'),
         }
-        tro = tpl.render(gws.TemplateRenderInput(context=context))
-        return tro.content
+        return tpl.render(gws.TemplateRenderInput(context=context)).content
 
     @property
     def has_cache(self) -> bool:
@@ -126,7 +146,8 @@ class Object(gws.Node, gws.ILayer):
 
         self.templates = gws.base.template.bundle.create(
             self.root,
-            gws.Config(templates=self.var('templates'), withBuiltins=True),
+            items=self.var('templates'),
+            defaults=_DEFAULT_TEMPLATES,
             parent=self)
 
         self.style = gws.lib.style.from_config(self.var('style', default=_DEFAULT_STYLE))
@@ -149,14 +170,9 @@ class Object(gws.Node, gws.ILayer):
         if not p:
             return
 
-        if not p.get('extend'):
-            self.set_metadata(p)
-            return True
+        # @TODO: implement metadata extension, e.g. "order=layer,project,provider"
 
-        if p.get('extend') == gws.lib.metadata.ExtendOption.app:
-            project: gws.IProject = self.get_closest('gws.base.project')
-            self.set_metadata(p, project.metadata)
-            return True
+        self.set_metadata(p)
 
     def configure_extent(self):
         p = self.var('extent')
@@ -213,9 +229,11 @@ class Object(gws.Node, gws.ILayer):
             return True
 
     def set_metadata(self, *args):
-        self.metadata = gws.lib.metadata.from_args(title=self.var('title'))
-        for a in args:
-            self.metadata.extend(a)
+        if not args:
+            self.metadata = gws.lib.metadata.from_args(title=self.var('title') or self.var('uid') or 'layer')
+            return
+        self.metadata = gws.lib.metadata.from_dict(gws.to_dict(args[0]))
+        self.metadata.extend(*args[1:])
         self.title = self.metadata.get('title')
 
     def post_configure(self):
@@ -225,9 +243,7 @@ class Object(gws.Node, gws.ILayer):
             raise gws.Error(f'no resolutions defined in layer={self.uid!r}')
 
         if not self.metadata:
-            self.set_metadata(gws.lib.metadata.from_args(
-                title=self.var('title') or self.var('uid') or 'layer'
-            ))
+            self.set_metadata()
 
     def edit_access(self, user):
         # @TODO granular edit access
@@ -264,7 +280,7 @@ class Object(gws.Node, gws.ILayer):
         if fr:
             return gws.lib.svg.fragment_to_element(fr)
 
-    def render_svg_fragment(self, view, style = None):
+    def render_svg_fragment(self, view, style=None):
         return []
 
     def render_legend_with_cache(self, context=None) -> t.Optional[gws.LegendRenderOutput]:

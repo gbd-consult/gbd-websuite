@@ -58,7 +58,7 @@ class User(gws.IUser):
         return gws.Data(displayName=self.display_name)
 
     def can_use(self, obj, context=None):
-        return gws.core.tree.can_use(self, obj, context)
+        return gws.core.tree.user_can_use(self, obj, context)
 
     def require(self, klass=None, uid=None):
         obj = self.provider.root.find(klass, uid)

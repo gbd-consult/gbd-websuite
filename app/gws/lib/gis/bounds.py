@@ -15,6 +15,9 @@ def from_request_bbox(bbox: str, target_crs: gws.ICrs = None, invert_axis_if_geo
         OGC 06-121r9, 10.2.3 Bounding box KVP encoding
     """
 
+    if not bbox:
+        return None
+
     source_crs = target_crs
 
     # x,y,x,y,crs

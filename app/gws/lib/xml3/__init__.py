@@ -12,5 +12,10 @@ from .core import (
     text_dict,
     iter_all,
     namespaces,
+    split_name,
+    qualify_name,
+    unqualify_name,
+    requalify_name,
+    encode,
     Error,
 )

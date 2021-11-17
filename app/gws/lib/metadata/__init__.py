@@ -24,10 +24,95 @@ class ExtendOption(t.Enum):
     source = 'source'  #: substutute missing metadata from the source
 
 
-class Config(gws.MetadataValues):
+# NB this must be kept in sync with gws.MetadataValues
+
+class MetadataLinkConfig(gws.Data):
+    """Link metadata"""
+
+    scheme: t.Optional[str]  #: link scheme
+    url: gws.Url  #: link url
+    formatName: t.Optional[str]  #: link format
+    formatVersion: t.Optional[str]  #: link format version
+    function: t.Optional[str]  #: ISO-19115 online function code
+    type: t.Optional[str]  #: metadata url type like "TC211"
+
+
+class Config(gws.Config):
     """Metadata configuration"""
 
-    extend: t.Optional[ExtendOption]
+    abstract: t.Optional[str]  #: object abstract description
+    accessConstraints: t.Optional[str]
+    attribution: t.Optional[str]  #: attribution (copyright) string
+
+    authorityIdentifier: t.Optional[str]
+    authorityName: t.Optional[str]
+    authorityUrl: t.Optional[gws.Url]
+
+    catalogCitationUid: t.Optional[str]  #: catalog citation identifier
+    catalogUid: t.Optional[str]  #: catalog identifier
+
+    contactAddress: t.Optional[str]
+    contactArea: t.Optional[str]
+    contactCity: t.Optional[str]
+    contactCountry: t.Optional[str]
+    contactEmail: t.Optional[str]
+    contactFax: t.Optional[str]
+    contactOrganization: t.Optional[str]
+    contactPerson: t.Optional[str]
+    contactPhone: t.Optional[str]
+    contactPosition: t.Optional[str]
+    contactProviderName: t.Optional[str]
+    contactProviderSite: t.Optional[str]
+    contactRole: t.Optional[str]  #: https://standards.iso.org/iso/19139/resources/gmxCodet.Lists.xml#CI_RoleCode
+    contactUrl: t.Optional[gws.Url]
+    contactZip: t.Optional[str]
+
+    dateBegin: t.Optional[gws.Date]  #: temporal extent begin
+    dateCreated: t.Optional[gws.Date]  #: publication date
+    dateEnd: t.Optional[gws.Date]  #: temporal extent end
+    dateUpdated: t.Optional[gws.Date]  #: modification date
+
+    fees: t.Optional[str]
+    image: t.Optional[gws.Url]  #: image (logo) url
+
+    inspireKeywords: t.Optional[t.List[str]]  #: INSPIRE keywords
+    inspireMandatoryKeyword: t.Optional[str]  #: INSPIRE mandatory keyword
+    inspireDegreeOfConformity: t.Optional[str]  #: INSPIRE degree of conformity
+    inspireResourceType: t.Optional[str]  #: INSPIRE resource type
+    inspireSpatialDataServiceType: t.Optional[str]  #: INSPIRE spatial data service type
+    inspireSpatialScope: t.Optional[str]  #: INSPIRE spatial scope
+    inspireSpatialScopeName: t.Optional[str]  #: INSPIRE spatial scope localized name
+    inspireTheme: t.Optional[str]  #: INSPIRE theme, see http://inspire.ec.europa.eu/theme/
+    inspireThemeName: t.Optional[str]  #: INSPIRE theme name, in the project language
+    inspireThemeNameEn: t.Optional[str]  #: INSPIRE theme name, in English
+
+    isoMaintenanceFrequencyCode: t.Optional[str]  #: ISO-19139 maintenance frequency code
+    isoQualityConformanceExplanation: t.Optional[str]
+    isoQualityConformanceQualityPass: t.Optional[bool]
+    isoQualityConformanceSpecificationDate: t.Optional[gws.Date]
+    isoQualityConformanceSpecificationTitle: t.Optional[str]
+    isoQualityLineageSource: t.Optional[str]
+    isoQualityLineageSourceScale: t.Optional[int]
+    isoQualityLineageStatement: t.Optional[str]
+    isoRestrictionCode: t.Optional[str]  #: ISO-19139 restriction code
+    isoScope: t.Optional[str]  #: ISO-19139 scope code
+    isoScopeName: t.Optional[str]  #: ISO-19139 scope name
+    isoSpatialRepresentationType: t.Optional[str]  #: ISO-19139 spatial type
+    isoTopicCategory: t.Optional[str]  #: ISO-19139 topic category
+    isoSpatialResolution: t.Optional[str]  #: ISO-19139 spatial resolution
+
+    keywords: t.Optional[t.List[str]]  #: keywords
+
+    language3: t.Optional[str]  #: object language (bibliographic)
+    language: t.Optional[str]  #: object language
+    languageName: t.Optional[str]  #: localized language name
+
+    license: t.Optional[str]
+    name: t.Optional[str]  #: object internal name
+    title: t.Optional[str]  #: object title
+
+    metaLinks: t.Optional[t.List[MetadataLinkConfig]]  #: metadata links
+    extraLinks: t.Optional[t.List[MetadataLinkConfig]]  #: additional links
 
 
 ##
@@ -51,15 +136,16 @@ def from_props(props: gws.Props) -> 'Metadata':
 ##
 
 
-_LIST_PROPS = {'metaLinks', 'extraLinks'}
-_EXT_LIST_PROPS = {'keywords', 'inspireKeywords'}
-_NO_EXT_PROPS = {'authorityIdentifier', 'catalogUid'}
+_LIST_PROPS = {'metaLinks', 'extraLinks', 'keywords', 'inspireKeywords'}
+_EXTENDABLE_LIST_PROPS = {'keywords', 'inspireKeywords'}
+_NON_EXTENDABLE_PROPS = {'authorityIdentifier', 'catalogUid'}
 
 
 class Metadata(gws.Object, gws.IMetadata):
     def __init__(self, d):
         super().__init__()
-        self._update(d)
+        self.values = gws.MetadataValues(d)
+        self._ensure_consistency()
 
     def props_for(self, user):
         return gws.Data(
@@ -73,47 +159,43 @@ class Metadata(gws.Object, gws.IMetadata):
         )
 
     def extend(self, *others):
-        d = gws.to_dict(self.values)
+        vs = vars(self.values)
 
-        for o in others:
-            if not o:
+        for other in others:
+            if not other:
                 continue
+            if isinstance(other, Metadata):
+                other = other.values
 
-            if isinstance(o, Metadata):
-                o = o.values
-
-            for k, new in gws.to_dict(o).items():
-                if k in _NO_EXT_PROPS or gws.is_empty(new):
+            for k, new in gws.to_dict(other).items():
+                if k in _NON_EXTENDABLE_PROPS or gws.is_empty(new):
                     continue
-                old = d.get(k)
+                old = vs.get(k)
                 if old is None:
-                    d[k] = new
-                elif k in _EXT_LIST_PROPS:
-                    old.extend(new)
+                    vs[k] = new
+                elif k in _EXTENDABLE_LIST_PROPS:
+                    vs[k] = sorted(set(old + new))
 
-        self._update(d)
+        self._ensure_consistency()
         return self
 
     def get(self, key, default=None):
         return self.values.get(key, default)
 
     def set(self, key, val):
-        d = gws.to_dict(self.values)
-        d[key] = val
-        self._update(d)
+        vars(self.values)[key] = val
+        self._ensure_consistency()
         return self
 
-    def _update(self, d):
-        for k in _EXT_LIST_PROPS:
-            d[k] = sorted(set(d.get(k, [])))
+    def _ensure_consistency(self):
+        vs = vars(self.values)
+
         for k in _LIST_PROPS:
-            d[k] = d.get(k, [])
+            vs[k] = vs.get(k) or []
 
-        if d.get('language'):
-            d['language3'] = gws.lib.country.bibliographic_name(language=d['language'])
+        if vs.get('language'):
+            vs['language3'] = gws.lib.country.bibliographic_name(language=vs['language'])
 
-        if d.get('inspireTheme'):
-            d['inspireThemeName'] = inspire.theme_name(d['inspireTheme'], d.get('language'))
-            d['inspireThemeNameEn'] = inspire.theme_name(d['inspireTheme'], 'en')
-
-        self.values = gws.MetadataValues(d)
+        if vs.get('inspireTheme'):
+            vs['inspireThemeName'] = inspire.theme_name(vs['inspireTheme'], vs.get('language'))
+            vs['inspireThemeNameEn'] = inspire.theme_name(vs['inspireTheme'], 'en')

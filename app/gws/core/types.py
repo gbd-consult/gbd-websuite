@@ -450,7 +450,7 @@ class IDataModel(INode, Protocol):
 
     def apply_to_dict(self, attr_values: dict) -> List['Attribute']: ...
 
-    def xml_schema(self, name_for_geometry) -> dict: ...
+    def xml_schema_dict(self, name_for_geometry) -> dict: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -819,12 +819,6 @@ class TemplateRenderInput(Data):
     user: Optional['IUser']
 
 
-class TemplateRenderOutput(Data):
-    content: Union[bytes, str]
-    mime: str
-    path: str
-
-
 class TemplateQualityLevel(Data):
     name: str
     dpi: int
@@ -860,9 +854,7 @@ class ITemplate(INode, Protocol):
     map_size: Optional[MSize]
     page_size: Optional[MSize]
 
-    def render(self, tri: TemplateRenderInput, notify: Callable = None) -> TemplateRenderOutput: ...
-
-    def reload(self, force=False): ...
+    def render(self, tri: TemplateRenderInput, notify: Callable = None) -> ContentResponse: ...
 
 
 class ITemplateBundle(INode, Protocol):
@@ -946,84 +938,90 @@ class IStyle(IObject, Protocol):
 class MetadataLink(Data):
     """Link metadata"""
 
-    scheme: Optional[str]  #: link scheme
-    url: Url  #: link url
-    formatName: Optional[str]  #: link format
-    formatVersion: Optional[str]  #: link format version
-    function: Optional[str]  #: ISO-19115 online function code
-    type: Optional[str]  #: metadata url type like "TC211"
+    scheme: str
+    url: Url
+    formatName: str
+    formatVersion: str
+    function: str
+    type: str
 
 
 class MetadataValues(Data):
-    abstract: Optional[str]  #: object abstract description
-    accessConstraints: Optional[str]
-    attribution: Optional[str]  #: attribution (copyright) string
+    abstract: str
+    accessConstraints: str
+    attribution: str
 
-    authorityIdentifier: Optional[str]
-    authorityName: Optional[str]
-    authorityUrl: Optional[Url]
+    authorityIdentifier: str
+    authorityName: str
+    authorityUrl: str
 
-    catalogCitationUid: Optional[str]  #: catalog citation identifier
-    catalogUid: Optional[str]  #: catalog identifier
+    catalogCitationUid: str
+    catalogUid: str
 
-    contactAddress: Optional[str]
-    contactArea: Optional[str]
-    contactCity: Optional[str]
-    contactCountry: Optional[str]
-    contactEmail: Optional[str]
-    contactFax: Optional[str]
-    contactOrganization: Optional[str]
-    contactPerson: Optional[str]
-    contactPhone: Optional[str]
-    contactPosition: Optional[str]
-    contactRole: Optional[str]
-    contactZip: Optional[str]
-    contactUrl: Optional[Url]
+    contactAddress: str
+    contactArea: str
+    contactCity: str
+    contactCountry: str
+    contactEmail: str
+    contactFax: str
+    contactOrganization: str
+    contactPerson: str
+    contactPhone: str
+    contactPosition: str
+    contactProviderName: str
+    contactProviderSite: str
+    contactRole: str
+    contactUrl: str
+    contactZip: str
 
-    dateBegin: Optional[Date]  #: temporal extent begin
-    dateCreated: Optional[Date]  #: publication date
-    dateEnd: Optional[Date]  #: temporal extent end
-    dateUpdated: Optional[Date]  #: modification date
+    dateBegin: str
+    dateCreated: str
+    dateEnd: str
+    dateUpdated: str
 
-    fees: Optional[str]
-    image: Optional[Url]  #: image (logo) url
+    fees: str
+    image: str
 
-    inspireKeywords: Optional[List[str]]  #: INSPIRE keywords
-    inspireMandatoryKeyword: Optional[str]  #: INSPIRE mandatory keyword
-    inspireDegreeOfConformity: Optional[str]  #: INSPIRE degree of conformity
-    inspireResourceType: Optional[str]  #: INSPIRE resource type
-    inspireSpatialDataServiceType: Optional[str]  #: INSPIRE spatial data service type
-    inspireSpatialScope: Optional[str]  #: INSPIRE spatial scope
-    inspireSpatialScopeName: Optional[str]  #: INSPIRE spatial scope localized name
-    inspireTheme: Optional[str]  #: INSPIRE theme, see http://inspire.ec.europa.eu/theme/
-    inspireThemeName: Optional[str]  #: INSPIRE theme name, in the project language
-    inspireThemeNameEn: Optional[str]  #: INSPIRE theme name, in English
+    inspireKeywords: List[str]
+    inspireMandatoryKeyword: str
+    inspireDegreeOfConformity: str
+    inspireResourceType: str
+    inspireSpatialDataServiceType: str
+    inspireSpatialScope: str
+    inspireSpatialScopeName: str
+    inspireTheme: str
+    inspireThemeName: str
+    inspireThemeNameEn: str
 
-    isoMaintenanceFrequencyCode: Optional[str]  #: ISO-19139 maintenance frequency code
-    isoQualityConformanceExplanation: Optional[str]
-    isoQualityConformanceQualityPass: Optional[bool]
-    isoQualityConformanceSpecificationDate: Optional[str]
-    isoQualityConformanceSpecificationTitle: Optional[str]
-    isoQualityLineageSource: Optional[str]
-    isoQualityLineageSourceScale: Optional[int]
-    isoQualityLineageStatement: Optional[str]
-    isoRestrictionCode: Optional[str]  #: ISO-19139 restriction code
-    isoScope: Optional[str]  #: ISO-19139 scope code
-    isoScopeName: Optional[str]  #: ISO-19139 scope name
-    isoSpatialRepresentationType: Optional[str]  #: ISO-19139 spatial type
-    isoTopicCategory: Optional[str]  #: ISO-19139 topic category
-    isoSpatialResolution: Optional[str]  #: ISO-19139 spatial resolution
+    isoMaintenanceFrequencyCode: str
+    isoQualityConformanceExplanation: str
+    isoQualityConformanceQualityPass: bool
+    isoQualityConformanceSpecificationDate: str
+    isoQualityConformanceSpecificationTitle: str
+    isoQualityLineageSource: str
+    isoQualityLineageSourceScale: int
+    isoQualityLineageStatement: str
+    isoRestrictionCode: str
+    isoScope: str
+    isoScopeName: str
+    isoSpatialRepresentationType: str
+    isoTopicCategory: str
+    isoSpatialResolution: str
 
-    keywords: Optional[List[str]]  #: keywords
-    language3: Optional[str]  #: object language (bibliographic)
-    language: Optional[str]  #: object language
-    languageName: Optional[str]  #: localized language name
-    license: Optional[str]
-    name: Optional[str]  #: object internal name
-    title: Optional[str]  #: object title
+    keywords: List[str]
+    language3: str
+    language: str
+    languageName: str
+    license: str
+    name: str
+    title: str
 
-    metaLinks: Optional[List[MetadataLink]]  #: metadata links
-    extraLinks: Optional[List[MetadataLink]]  #: additional links
+    metaLinks: List[MetadataLink]
+    extraLinks: List[MetadataLink]
+
+    crs: 'ICrs'
+    extent4326: Extent
+    boundingPolygonElement: XmlElement
 
 
 class IMetadata(IObject, Protocol):
@@ -1232,8 +1230,6 @@ class IOwsService(INode, Protocol):
     with_strict_params: bool
 
     def handle_request(self, req: 'IWebRequest') -> ContentResponse: ...
-
-    def error_response(self, err: Exception) -> ContentResponse: ...
 
 
 class IOwsProvider(INode, Protocol):

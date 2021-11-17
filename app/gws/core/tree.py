@@ -1,5 +1,6 @@
 import sys
 
+import gws
 import gws.types as t
 
 from . import const, error, log, types, util
@@ -7,12 +8,15 @@ from . import const, error, log, types, util
 _ALLOW = 'allow'
 _DENY = 'deny'
 
+PUBLIC = 'all:allow'
+
 
 class Object(types.IObject):
     def __init__(self):
         _create_attributes(self)
         self.class_name = _class_name(self)
         self.access = None
+        self.is_shared = False
 
     def props_for(self, user):
         return types.Props()
@@ -51,7 +55,17 @@ class Node(Object, types.INode):
 
     def initialize(self, cfg):
         self.config = cfg
-        self.access = self.var('access')
+
+        a = self.var('access')
+        if isinstance(a, str):
+            # access in the sting format `role:type,role:type...`
+            self.access = []
+            for s in a.lower().split(','):
+                r, t = s.split(':')
+                self.access.append(gws.Access(role=r.strip(), type=t.strip()))
+        else:
+            self.access = a
+
         self.set_uid()
 
         log.debug(f'BEGIN config {self.class_name}')
@@ -206,6 +220,7 @@ class Root(types.IRoot):
         with util.app_lock():
             log.debug(f'create_shared_object: klass={klass!r} key={key!r}')
             obj = self._create_and_initialize(klass, cfg, parent)
+            setattr(obj, 'is_shared', True)
             if obj:
                 self._shared_objects[key] = obj
 
@@ -313,7 +328,7 @@ _ACCCESS_DENIED = 2
 _ACCCESS_UNKNOWN = 3
 
 
-def can_use(user, obj, context=None):
+def user_can_use(user, obj, context=None):
     return _access(user, obj, context) == _ACCCESS_ALLOWED
 
 
@@ -342,6 +357,8 @@ def _access(user, obj, context):
         return _ACCCESS_ALLOWED if c else _ACCCESS_DENIED
 
     curr = context or util.get(obj, 'parent')
+    if not curr and getattr(obj, 'is_shared', False):
+        raise error.Error(f'no access context found for {_object_name(obj)}')
 
     while curr:
         fn = getattr(curr, 'access_for', None)

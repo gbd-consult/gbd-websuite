@@ -7,6 +7,7 @@ import gws.lib.extent
 import gws.lib.feature
 import gws.lib.shape
 import gws.lib.xml2
+import gws.lib.xml3 as xml3
 import gws.types as t
 
 
@@ -42,7 +43,13 @@ def parse_envelope(el: gws.lib.xml2.Element) -> t.Optional[gws.Bounds]:
         pass
 
 
-def shape_to_tag(shape: gws.IShape, precision=0, invert_axis=False, crs_format: gws.CrsFormat = gws.CrsFormat.URN):
+def shape_to_element(
+    shape: gws.IShape,
+    precision=0,
+    invert_axis=False,
+    crs_format: gws.CrsFormat = gws.CrsFormat.URN
+) -> gws.XmlElement:
+
     def pos(geom, as_list=True):
         cs = []
 
@@ -60,7 +67,7 @@ def shape_to_tag(shape: gws.IShape, precision=0, invert_axis=False, crs_format: 
         else:
             cs = [int(c) for c in cs]
 
-        return tag(
+        return (
             'gml:posList' if as_list else 'gml:pos',
             {'srsDimension': 2},
             ' '.join(str(c) for c in cs))
@@ -69,31 +76,31 @@ def shape_to_tag(shape: gws.IShape, precision=0, invert_axis=False, crs_format: 
         typ = geom.type
 
         if typ == 'Point':
-            return tag('gml:Point', srs, pos(geom, False))
+            return 'gml:Point', srs, pos(geom, False)
 
         if typ == 'LineString':
-            return tag('gml:LineString', srs, pos(geom))
+            return 'gml:LineString', srs, pos(geom)
 
         if typ == 'Polygon':
-            return tag(
+            return (
                 'gml:Polygon',
                 srs,
-                tag('gml:exterior', tag('gml:LinearRing', pos(geom.exterior))),
-                *[tag('gml:interior', tag('gml:LinearRing', pos(p))) for p in geom.interiors]
+                ('gml:exterior gml:LinearRing', pos(geom.exterior)),
+                [('gml:interior gml:LinearRing', pos(p)) for p in geom.interiors]
             )
 
         if typ == 'MultiPoint':
-            return tag('gml:MultiPoint', srs, *[tag('gml:pointMember', convert(p)) for p in geom])
+            return 'gml:MultiPoint', srs, [('gml:pointMember', convert(p)) for p in geom]
 
         if typ == 'MultiLineString':
-            return tag('gml:MultiCurve', srs, *[tag('gml:curveMember', convert(p)) for p in geom])
+            return 'gml:MultiCurve', srs, [('gml:curveMember', convert(p)) for p in geom]
 
         if typ == 'MultiPolygon':
-            return tag('gml:MultiSurface', srs, *[tag('gml:surfaceMember', convert(p)) for p in geom])
+            return 'gml:MultiSurface', srs, [('gml:surfaceMember', convert(p)) for p in geom]
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
     srs = shape.crs.to_string(crs_format)
-    return convert(geom, {'srsName': srs})
+    return xml3.tag(*convert(geom, {'srsName': srs}))
 
 
 def features_from_xml(xml, invert_axis=False):

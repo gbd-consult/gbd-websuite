@@ -56,7 +56,7 @@ class Object(gws.base.template.Object):
 
         if not tri.out_mime or tri.out_mime == gws.lib.mime.HTML:
             notify('end_print')
-            return gws.TemplateRenderOutput(mime=gws.lib.mime.HTML, content=html)
+            return gws.ContentResponse(mime=gws.lib.mime.HTML, content=html)
 
         if tri.out_mime == gws.lib.mime.PDF:
             gws.lib.html2.render_to_pdf(
@@ -65,7 +65,7 @@ class Object(gws.base.template.Object):
                 page_size=self.page_size,
             )
             notify('end_print')
-            return gws.TemplateRenderOutput(mime=gws.lib.mime.PDF, path=tri.out_path)
+            return gws.ContentResponse(mime=gws.lib.mime.PDF, path=tri.out_path)
 
         if tri.out_mime == gws.lib.mime.PNG:
             gws.lib.html2.render_to_png(
@@ -74,6 +74,6 @@ class Object(gws.base.template.Object):
                 page_size=self.page_size,
             )
             notify('end_print')
-            return gws.TemplateRenderOutput(mime=gws.lib.mime.PDF, path=tri.out_path)
+            return gws.ContentResponse(mime=gws.lib.mime.PDF, path=tri.out_path)
 
         raise gws.Error(f'invalid output mime: {tri.out_mime!r}')

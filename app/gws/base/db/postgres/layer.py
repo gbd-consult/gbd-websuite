@@ -40,9 +40,6 @@ class Object(gws.base.layer.vector.Object):
     def props_for(self, user):
         return gws.merge(super().props_for(user), geometryType=self.table.geometry_type)
 
-    def configure(self):
-        pass
-
     def configure_source(self):
         if self.var('_provider'):
             self.provider = self.var('_provider')

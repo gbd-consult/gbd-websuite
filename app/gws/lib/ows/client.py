@@ -67,14 +67,16 @@ def prepared_search(**kwargs) -> PreparedOwsSearch:
     params = {}
 
     wms_box_size_m = 500
+    wms_box_size_deg = 1
     wms_box_size_px = 500
 
     if ps.protocol == gws.OwsProtocol.WMS:
+        s = wms_box_size_m if ps.point.crs.is_projected else wms_box_size_deg
         bbox = (
-            ps.point.x - (wms_box_size_m >> 1),
-            ps.point.y - (wms_box_size_m >> 1),
-            ps.point.x + (wms_box_size_m >> 1),
-            ps.point.y + (wms_box_size_m >> 1),
+            ps.point.x - (s >> 1),
+            ps.point.y - (s >> 1),
+            ps.point.x + (s >> 1),
+            ps.point.y + (s >> 1),
         )
         ps.bounds = gws.Bounds(crs=ps.point.crs, extent=bbox)
 

@@ -31,7 +31,6 @@ class Props(gws.Props):
 
 
 class Object(gws.Node, gws.ITemplate):
-
     def props_for(self, user):
         return gws.Data(
             dataModel=self.data_model,

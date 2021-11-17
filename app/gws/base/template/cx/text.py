@@ -15,7 +15,7 @@ class Config(gws.base.template.Config):
 class Object(gws.base.template.Object):
     """Text-only template"""
 
-    def render(self, context: dict, args: gws.TemplateRenderInput = None) -> gws.TemplateRenderOutput:
+    def render(self, context: dict, args: gws.TemplateRenderInput = None) -> gws.ContentResponse:
         context = context or {}
 
         context['gws'] = {
@@ -39,4 +39,4 @@ class Object(gws.base.template.Object):
         )
 
         mime = self.mimes[0] if self.mimes else 'text/plain'
-        return gws.TemplateRenderOutput(content=content, mime=mime)
+        return gws.ContentResponse(content=content, mime=mime)

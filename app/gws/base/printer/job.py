@@ -184,11 +184,11 @@ class _Worker:
             return
 
     def run(self):
-        tro = self.template.render(self.tri, self.notify)
+        resp = self.template.render(self.tri, self.notify)
         job = self.get_job()
         if job:
-            job.update(state=gws.lib.job.State.complete, result={'path': tro.path})
-        return tro.path
+            job.update(state=gws.lib.job.State.complete, result={'path': resp.path})
+        return resp.path
 
     def prepare_map(self, mp: types.MapParams) -> gws.TemplateRenderInputMap:
         planes = []

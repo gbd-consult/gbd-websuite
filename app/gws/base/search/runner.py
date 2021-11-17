@@ -14,23 +14,6 @@ def run(req: gws.IWebRequest, args: gws.SearchArgs) -> t.List[gws.IFeature]:
     used_layer_ids = set()
     features: t.List[gws.IFeature] = []
 
-    dbg = [
-        f'SEARCH ARGS',
-        f"axis={args.axis}",
-        f"bounds={args.bounds}",
-        f"filter={args.filter}",
-        f"keyword={args.keyword}",
-        f"layers={[p.uid for p in args.layers]}",
-        f"limit={args.limit}",
-        f"params={args.params}",
-        f"project={args.project.uid if args.project else None}",
-        f"resolution={args.resolution}",
-        f"shapes={[gws.props(p, req.user) for p in (args.shapes or [])]}",
-        f"tolerance={args.tolerance}",
-    ]
-
-    gws.p(dbg)
-
     try:
         if args.layers:
             for layer in args.layers:

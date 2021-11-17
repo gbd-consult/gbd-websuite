@@ -115,11 +115,10 @@ def _serve_path(root: gws.IRoot, req: gws.IWebRequest, p: GetAssetParams, as_att
             'localeUid': locale_uid,
         }
 
-        tro = tpl.render(gws.TemplateRenderInput(context=context))
+        render_res = tpl.render(gws.TemplateRenderInput(context=context))
 
         if gws.is_empty(res):
-            res.mime = tro.mime
-            res.content = tro.content
+            res = render_res
 
         return res
 

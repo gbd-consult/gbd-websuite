@@ -60,7 +60,7 @@ def _map_view(bbox, center, crs, dpi, rotation, scale, size):
         bw, bh = gws.lib.extent.size(bbox)
         view.scale = units.res_to_scale(bw / view.size_px[0])
 
-    if center:
+    elif center:
         view.center = center
         view.scale = scale
 
@@ -138,7 +138,7 @@ def render_map(mri: gws.MapRenderInput, notify: t.Callable = None) -> gws.MapRen
 
     if mri.out_size[2] == units.PX:
         # if they want pixels, use PDF_PDI for rasters as well
-        rd.raster_view = rd.raster_view
+        rd.raster_view = rd.vector_view
 
     elif mri.out_size[2] == units.MM:
         # if they want mm, rasters should use they own dpi

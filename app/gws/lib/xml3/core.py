@@ -34,30 +34,47 @@ def tag(names: str, *args, **kwargs) -> gws.XmlElement:
         raise Error('invalid name for tag', names)
 
     for arg in args:
-        if arg is None:
-            continue
-        if isinstance(arg, gws.XmlElement):
-            el.children.append(arg)
-        elif isinstance(arg, str):
-            _tag_add_text(el, arg)
-        elif isinstance(arg, (int, float, bool)):
-            _tag_add_text(el, str(arg).lower())
-        elif isinstance(arg, dict):
-            for k, v in arg.items():
-                if v is not None:
-                    el.attributes[k] = v
-        else:
-            try:
-                it = iter(arg)  # type: ignore
-            except TypeError:
-                raise Error('invalid argument for tag', arg)
-            el.children.append(tag(*it))
+        _tag_add(el, arg)
 
-    for k, v in kwargs.items():
-        if v is not None:
-            el.attributes[k] = v
+    _tag_add(el, kwargs)
 
     return root
+
+
+def _tag_add(el, arg):
+    if arg is None:
+        return
+
+    if isinstance(arg, gws.XmlElement):
+        el.children.append(arg)
+        return
+
+    if isinstance(arg, str):
+        if arg:
+            _tag_add_text(el, arg)
+        return
+
+    if isinstance(arg, (int, float, bool)):
+        _tag_add_text(el, str(arg).lower())
+        return
+
+    if isinstance(arg, dict):
+        for k, v in arg.items():
+            if v is not None:
+                el.attributes[k] = v
+        return
+
+    try:
+        ls = arg if isinstance(arg, (list, tuple)) else list(arg)
+    except TypeError as exc:
+        raise Error('invalid argument for tag', arg) from exc
+
+    if ls and isinstance(ls[0], str):
+        el.children.append(tag(*ls))
+        return
+
+    for arg2 in ls:
+        _tag_add(el, arg2)
 
 
 def _tag_add_text(el, s):
@@ -74,13 +91,13 @@ class Error(Exception):
 
 
 def to_string(
-        el: gws.XmlElement,
-        compact_ws=False,
-        keep_ws=False,
-        to_lower=False,
-        with_xml=False,
-        with_xmlns=False,
-        with_schemas=False,
+    el: gws.XmlElement,
+    compact_ws=False,
+    keep_ws=False,
+    to_lower=False,
+    with_xml=False,
+    with_xmlns=False,
+    with_schemas=False,
 ) -> str:
     def text(s):
         if isinstance(s, bool):
@@ -91,9 +108,7 @@ def to_string(
             s = s.strip()
         if compact_ws:
             s = _compact_ws(s)
-        return _encode(s)
-        s = s.replace('\n', '&#xa;')
-        return s
+        return encode(s)
 
     def to_str(el, with_xmlns):
         atts = {}
@@ -282,71 +297,60 @@ def _filter(name, atts=None, els=None):
 
 class Namespaces:
     def __init__(self):
-        self.pfx_to_ns = {}
-        self.ns_to_pfx = {}
-        self.schema_location = {}
-        self.adhoc_ns_count = 0
+        self._pfx_to_uri = {}
+        self._uri_to_pfx = {}
+        self._schema = {}
+        self._adhoc_ns_count = 0
 
-        for pfx, ns, sl in known_namespaces.ALL:
-            self.add(pfx, ns, sl)
+        for pfx, uri, schema in known_namespaces.ALL:
+            self.add(pfx, uri, schema)
 
-    def add(self, pfx, ns, schema_location=''):
-        self.pfx_to_ns[pfx] = ns
-        self.ns_to_pfx[ns] = pfx
-        if schema_location:
-            self.schema_location[ns] = schema_location
+    def add(self, pfx, uri, schema=''):
+        self._pfx_to_uri[pfx] = uri
+        self._uri_to_pfx[uri] = pfx
+        if schema:
+            self._schema[uri] = self._schema[pfx] = schema
 
-    def prefix(self, ns, generate_missing=False):
-        pfx = self.ns_to_pfx.get(ns)
+    def prefix(self, uri, generate_missing=False):
+        pfx = self._uri_to_pfx.get(uri)
         if pfx or not generate_missing:
             return pfx
-        self.adhoc_ns_count += 1
-        pfx = 'ns' + str(self.adhoc_ns_count)
-        self.add(pfx, ns)
+        self._adhoc_ns_count += 1
+        pfx = 'ns' + str(self._adhoc_ns_count)
+        self.add(pfx, uri)
         return pfx
 
-    def ns(self, pfx):
-        return self.pfx_to_ns.get(pfx)
+    def uri(self, pfx):
+        return self._pfx_to_uri.get(pfx)
 
-    def schema(self, ns):
-        return self.schema_location.get(ns)
+    def schema(self, uri_or_pfx):
+        return self._schema.get(uri_or_pfx)
 
-    def declarations(self, ns=None, default=None, with_schemas=True, for_element=None):
-        pfxs = set()
-
-        def collect(el):
-            pfx, name = _split_ns(el.name)
-            if pfx:
-                pfxs.add(pfx)
-            for k in el.attributes:
-                pfx, name = _split_ns(k)
-                if pfx:
-                    pfxs.add(pfx)
-            for c in el.children:
-                collect(c)
+    def declarations(self, namespaces=None, default=None, with_schemas=True, for_element=None):
+        pset = set()
 
         if for_element:
-            collect(for_element)
-        if ns:
-            pfxs.update(ns)
+            _collect_ns_prefixes(for_element, pset)
+        if namespaces:
+            pset.update(namespaces)
         if default:
-            pfxs.add(default)
+            pset.add(default)
 
         atts = []
         schemas = []
 
-        for pfx in pfxs:
-            ns = self.pfx_to_ns.get(pfx)
-            if not ns and pfx in self.ns_to_pfx:
+        for pfx in pset:
+            uri = self._pfx_to_uri.get(pfx)
+            if not uri and pfx in self._uri_to_pfx:
                 # ns URI given instead of a prefix?
-                ns = pfx
-            if not ns:
+                uri = pfx
+            if not uri:
                 raise Error(f'unknown namespace {pfx!r}')
-            atts.append((_XMLNS if pfx == default else _XMLNS + ':' + pfx, ns))
+            atts.append((_XMLNS if pfx == default else _XMLNS + ':' + pfx, uri))
             if with_schemas:
-                sch = self.schema(ns)
+                sch = self._schema.get(uri)
                 if sch:
-                    schemas.append(ns)
+                    schemas.append(uri)
                     schemas.append(sch)
 
         if schemas:
@@ -359,16 +363,28 @@ class Namespaces:
 namespaces = Namespaces()
 
 
+def _collect_ns_prefixes(el, prefixes):
+    pfx, name = split_name(el.name)
+    if pfx:
+        prefixes.add(pfx)
+    for k in el.attributes:
+        pfx, name = split_name(k)
+        if pfx:
+            prefixes.add(name if pfx == _XMLNS else pfx)
+    for c in el.children:
+        _collect_ns_prefixes(c, prefixes)
+
+
 ##
 
 class _Parser:
     def __init__(
-            self,
-            compact_ws,
-            keep_ws,
-            sort_atts,
-            strip_ns,
-            to_lower,
+        self,
+        compact_ws,
+        keep_ws,
+        sort_atts,
+        strip_ns,
+        to_lower,
 
     ):
         self.p = None
@@ -422,7 +438,7 @@ class _Parser:
         for attr_name, val in attributes.items():
             if self.to_lower:
                 attr_name = attr_name.lower()
-            pfx, name = _split_ns(attr_name)
+            pfx, name = split_name(attr_name)
             if not pfx and name == _XMLNS:
                 ns_new[''] = val
             elif pfx == _XMLNS:
@@ -446,7 +462,7 @@ class _Parser:
         if self.to_lower:
             tag_name = tag_name.lower()
 
-        pfx, name = _split_ns(tag_name)
+        pfx, name = split_name(tag_name)
         el = element(name=self._qname(pfx, name), attributes=atts)
         el.pos = [self.p.CurrentLineNumber - 1, self.p.CurrentColumnNumber]
 
@@ -474,30 +490,42 @@ class _Parser:
             top.children[-1].tail += data
 
 
+##
+
+
 _NSDELIM = ':'
 
 
-def _split_ns(s):
+def split_name(s):
     if _NSDELIM not in s:
         return '', s
     a, _, b = s.partition(':')
     return a, b
 
 
-def _strip_ns(s):
+def unqualify_name(s):
     if _NSDELIM not in s:
         return s
-    a, _, b = s.partition(':')
+    _, _, b = s.partition(':')
     return b
 
 
-def _uname(ns, name):
-    if not ns:
-        return name
-    return '{' + ns + '}' + name
+def qualify_name(s, prefix):
+    if _NSDELIM not in s:
+        return prefix + _NSDELIM + s
+    return s
 
 
-def _encode(v) -> str:
+def requalify_name(s, prefix):
+    if _NSDELIM not in s:
+        return prefix + _NSDELIM + s
+    _, _, b = s.partition(':')
+    return prefix + _NSDELIM + s
+
+
+##
+
+def encode(v) -> str:
     s = str(v)
     s = s.replace("&", "&amp;")
     s = s.replace(">", "&gt;")
@@ -506,18 +534,7 @@ def _encode(v) -> str:
     return s
 
 
-def _compact_ws(s: str) -> str:
-    if not s:
-        return s
-    lspace = s[0].isspace()
-    rspace = s[-1].isspace()
-    s = ' '.join(s.strip().split())
-    if lspace:
-        s = ' ' + s
-    if rspace:
-        s = s + ' '
-    return s
-
+##
 
 # https://github.com/python/cpython/blob/main/Modules/expat/expat.h
 
@@ -572,3 +589,18 @@ _XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'
 _XMLNS = 'xmlns'
 _XSI = 'xsi'
 _XSI_URL = 'http://www.w3.org/2001/XMLSchema-instance'
+
+
+##
+
+def _compact_ws(s: str) -> str:
+    if not s:
+        return s
+    lspace = s[0].isspace()
+    rspace = s[-1].isspace()
+    s = ' '.join(s.strip().split())
+    if lspace:
+        s = ' ' + s
+    if rspace:
+        s = s + ' '
+    return s

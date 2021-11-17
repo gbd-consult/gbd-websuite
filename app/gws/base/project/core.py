@@ -9,6 +9,15 @@ import gws.base.web
 import gws.lib.metadata
 import gws.types as t
 
+_DEFAULT_TEMPLATES = [
+    gws.Config(
+        type='html',
+        path=gws.dirname(__file__) + '/templates/project_description.cx.html',
+        subject='project.description',
+        access=[{'role': 'all', 'type': 'allow'}],
+    ),
+]
+
 
 class Config(gws.WithAccess):
     """Project configuration"""
@@ -67,7 +76,8 @@ class Object(gws.Node, gws.IProject):
 
         self.templates = gws.base.template.bundle.create(
             self.root,
-            gws.Config(templates=self.var('templates'), withBuiltins=True),
+            items=self.var('templates'),
+            defaults=_DEFAULT_TEMPLATES,
             parent=self)
 
         self.search_providers = []
@@ -90,8 +100,7 @@ class Object(gws.Node, gws.IProject):
             'project': self,
             'meta': self.metadata.values
         }
-        tro = tpl.render(gws.TemplateRenderInput(context=context))
-        return tro.content
+        return tpl.render(gws.TemplateRenderInput(context=context)).content
 
     def props_for(self, user):
         app_api = self.root.application.api

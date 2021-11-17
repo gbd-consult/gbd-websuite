@@ -55,7 +55,7 @@ def _load_app_bundles(root: gws.IRoot):
 
         return bundles
 
-    if root.application.developer_option('reload_bundles'):
+    if root.application.developer_option('web.reload_bundles'):
         return _load()
 
     return gws.get_server_global('APP_BUNDLES', _load)

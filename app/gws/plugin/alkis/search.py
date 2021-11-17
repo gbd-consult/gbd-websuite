@@ -352,7 +352,8 @@ class Object(gws.base.api.action.Object):
 
         self.templates = gws.base.template.bundle.create(
             self.root,
-            gws.Config(templates=self.var('templates'), defaults=_DEFAULT_TEMPLATES),
+            items=self.var('templates'),
+            defaults=_DEFAULT_TEMPLATES,
             parent=self)
 
         self.print_template = self.templates.find(subject='print')

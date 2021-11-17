@@ -198,7 +198,7 @@ class Object(gws.base.template.Object):
             ins_tag = _InsertedTag()
             ins_tag.tag = root
             ins_tag.namespaces = rt.namespaces
-            return gws.TemplateRenderOutput(content=ins_tag)
+            return gws.ContentResponse(content=ins_tag)
 
         ns_atts = self._namespace_attributes(rt.namespaces, rt.default_namespace)
         if ns_atts:
@@ -208,7 +208,7 @@ class Object(gws.base.template.Object):
         if not xml.startswith('<?'):
             xml = '<?xml version="1.0" encoding="utf-8"?>' + xml
 
-        return gws.TemplateRenderOutput(content=xml, mime=gws.lib.mime.XML)
+        return gws.ContentResponse(content=xml, mime=gws.lib.mime.XML)
 
     def _render_as_tag(self, context):
         if self.root.application.developer_option('template.reparse') and self.path:

@@ -148,7 +148,7 @@ class Object(gws.Node, gws.IDataModel):
         self.geometry_type = self.var('geometryType')
         self.geometry_crs = gws.lib.crs.get(self.var('crs'))
 
-    def xml_schema(self, name_for_geometry='geometry') -> dict:
+    def xml_schema_dict(self, name_for_geometry='geometry') -> dict:
         schema = {}
         for rule in self.rules:
             typ = _XML_SCHEMA_TYPES.get(rule.type)

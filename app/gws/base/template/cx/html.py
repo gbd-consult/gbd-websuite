@@ -68,18 +68,18 @@ class Object(gws.base.template.Object):
 
         if mime == gws.lib.mime.HTML:
             notify('end_print')
-            return gws.TemplateRenderOutput(mime=mime, content=html)
+            return gws.ContentResponse(mime=mime, content=html)
 
         if mime == gws.lib.mime.PDF:
             out_path = self._finalize_pdf(tri, html, parser)
             notify('end_print')
-            return gws.TemplateRenderOutput(mime=mime, path=out_path)
+            return gws.ContentResponse(mime=mime, path=out_path)
 
         if mime == gws.lib.mime.PNG:
 
             out_path = self._finalize_png(tri, html, parser)
             notify('end_print')
-            return gws.TemplateRenderOutput(mime=mime, path=out_path)
+            return gws.ContentResponse(mime=mime, path=out_path)
 
         raise gws.Error(f'invalid output mime: {tri.out_mime!r}')
 

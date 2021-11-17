@@ -22,5 +22,5 @@ class Object(gws.Node):
     def configure(self):
         self.templates = gws.base.template.bundle.create(
             self.root,
-            gws.Config(templates=self.var('templates')),
+            items=self.var('templates'),
             parent=self)

@@ -86,7 +86,7 @@ class Object(gws.base.template.Object):
             gws.lib.pdf.overlay(map_path, qgis_path, tri.out_path)
 
         notify('end_print')
-        return gws.TemplateRenderOutput(mime=gws.lib.mime.PDF, path=tri.out_path)
+        return gws.ContentResponse(mime=gws.lib.mime.PDF, path=tri.out_path)
 
     def _render_map(self, tri: gws.TemplateRenderInput, notify, out_path):
         if not tri.maps:
