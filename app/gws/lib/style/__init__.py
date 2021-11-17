@@ -3,7 +3,6 @@ import gws.types as t
 
 from . import parser, icon
 
-
 ##
 
 # parsing depends on whenever the context is `trusted` (=config) or not (=request)

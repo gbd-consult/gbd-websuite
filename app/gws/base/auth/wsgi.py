@@ -1,6 +1,6 @@
 import gws
-import gws.base.web.error
 import gws.base.auth.error
+import gws.base.web.error
 import gws.base.web.wsgi
 import gws.types as t
 

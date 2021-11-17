@@ -1,7 +1,6 @@
 """WMS provder."""
 
 import gws
-import gws.lib.gis.util
 import gws.lib.ows
 import gws.types as t
 

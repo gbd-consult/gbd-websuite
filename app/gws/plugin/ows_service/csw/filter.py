@@ -1,6 +1,6 @@
 import gws
-import gws.lib.gis.bounds
 import gws.lib.extent
+import gws.lib.gis.bounds
 import gws.types as t
 
 

@@ -2,7 +2,6 @@
 
 import gws
 import gws.lib.ows.parseutil as u
-import gws.lib.xml2
 import gws.lib.xml3 as xml3
 import gws.types as t
 

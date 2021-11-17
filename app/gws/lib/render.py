@@ -5,11 +5,9 @@ import math
 import gws
 import gws.lib.extent
 import gws.lib.image
-import gws.lib.style
 import gws.lib.svg
 import gws.lib.units as units
 import gws.lib.xml3 as xml3
-import gws.lib.html2
 import gws.types as t
 
 MAX_DPI = 1200

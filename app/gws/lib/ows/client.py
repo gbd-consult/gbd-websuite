@@ -1,14 +1,11 @@
 """Common functions for OWS client objects."""
 
 import gws
-import gws.lib.crs
 import gws.lib.extent
 import gws.lib.gis.source
-import gws.lib.gis.zoom
 import gws.lib.gis.util
+import gws.lib.gis.zoom
 import gws.types as t
-
-
 
 
 def configure_layers(obj: gws.IOwsClient, provider_class, **filter_args):

@@ -3,8 +3,8 @@ import gws.base.layer.image
 import gws.lib.gis.source
 import gws.lib.gis.util
 import gws.lib.os2
-import gws.types as t
 import gws.lib.ows
+import gws.types as t
 
 from . import provider as provider_module
 

@@ -9,10 +9,6 @@ import re
 
 import gws
 import gws.base.template
-import gws.lib.date
-import gws.lib.mime
-import gws.lib.xml3
-import gws.lib.os2
 import gws.types as t
 
 

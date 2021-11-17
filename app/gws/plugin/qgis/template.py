@@ -1,16 +1,13 @@
 """QGIS Print template"""
 
-import re
-
 import gws
 import gws.base.template
-import gws.lib.mime
-import gws.lib.pdf
 import gws.lib.html2
-import gws.lib.render
+import gws.lib.mime
 import gws.lib.ows
+import gws.lib.pdf
+import gws.lib.render
 import gws.lib.xml3 as xml3
-import gws.lib.units as units
 import gws.types as t
 
 from . import provider, caps

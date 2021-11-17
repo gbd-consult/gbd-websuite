@@ -1,8 +1,8 @@
 import gws
 import gws.config
-import gws.lib.job
 import gws.server.spool
 import gws.server.uwsgi_module
+
 
 def application(environ, start_response):
     pass

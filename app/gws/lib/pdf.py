@@ -1,9 +1,8 @@
 import PyPDF2
 
 import gws
-import gws.lib.os2
 import gws.lib.mime
-import gws.lib.units
+import gws.lib.os2
 import gws.types as t
 
 

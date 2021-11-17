@@ -4,7 +4,6 @@ import gws
 import gws.lib.mime
 import gws.lib.xml3 as xml3
 
-
 # OGC 06-121r9 Table 34
 # Ordered sequence of two double values in decimal degrees, with longitude before latitude
 def ows_wgs84_bounding_box(lc):

@@ -1,7 +1,6 @@
 """WFS provider."""
 
 import gws
-import gws.lib.gis.util
 import gws.lib.ows
 import gws.lib.shape
 import gws.types as t

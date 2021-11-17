@@ -6,7 +6,6 @@ import gws.types as t
 
 from . import inspire
 
-
 ##
 
 class Props(gws.Props):

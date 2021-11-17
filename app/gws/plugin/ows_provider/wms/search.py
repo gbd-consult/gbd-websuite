@@ -1,9 +1,9 @@
 import gws
 import gws.base.search
 import gws.lib.gis.source
-import gws.lib.gis.util
-import gws.types as t
 import gws.lib.ows
+import gws.types as t
+
 from . import provider as provider_module
 
 

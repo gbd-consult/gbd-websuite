@@ -2,11 +2,8 @@ import zipfile
 
 import gws
 import gws.lib.crs
-import gws.lib.gis
-import gws.lib.gis.util
 import gws.lib.net
 import gws.lib.ows
-
 import gws.types as t
 
 from . import caps

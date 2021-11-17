@@ -1,7 +1,6 @@
 import importlib
 
 import gws
-import gws.config
 import gws.lib.json2
 import gws.types as t
 

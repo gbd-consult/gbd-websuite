@@ -4,12 +4,7 @@ import re
 
 import gws
 import gws.lib.crs
-import gws.lib.extent
-import gws.lib.gis.source
-import gws.lib.gis.zoom
 import gws.types as t
-
-
 
 
 def best_axis(

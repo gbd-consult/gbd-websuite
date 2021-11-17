@@ -1,6 +1,6 @@
 import gws
-import gws.server.uwsgi_module
 import gws.lib.job
+import gws.server.uwsgi_module
 
 # from uwsgi
 OK = -2

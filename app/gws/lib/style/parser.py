@@ -2,8 +2,8 @@ import base64
 import re
 
 import gws
-import gws.lib.net
 import gws.types as t
+
 from . import icon
 
 

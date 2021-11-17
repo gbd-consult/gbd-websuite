@@ -1,10 +1,10 @@
-import re
 import base64
+import re
 
 import gws
 import gws.lib.net
-import gws.lib.xml3 as xml3
 import gws.lib.svg
+import gws.lib.xml3 as xml3
 import gws.types as t
 
 

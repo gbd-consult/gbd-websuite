@@ -5,7 +5,6 @@ import gws.base.model
 import gws.lib.date
 import gws.lib.intl
 import gws.lib.mime
-import gws.lib.os2
 import gws.types as t
 
 

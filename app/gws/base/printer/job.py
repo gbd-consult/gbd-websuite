@@ -2,15 +2,12 @@ import base64
 import os
 
 import gws
-import gws.base.template
 import gws.lib.crs
-import gws.lib.html2
-import gws.lib.mime
 import gws.lib.feature
 import gws.lib.image
 import gws.lib.job
+import gws.lib.mime
 import gws.lib.os2
-import gws.lib.pdf
 import gws.lib.render
 import gws.lib.style
 import gws.lib.units as units

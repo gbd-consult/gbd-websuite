@@ -1,12 +1,11 @@
 """Wrapper for PIL objects"""
 
-import base64
-import io
-import re
-
 import PIL.Image
 import PIL.ImageDraw
 import PIL.ImageFont
+import base64
+import io
+import re
 import wand.image
 
 import gws

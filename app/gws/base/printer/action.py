@@ -1,9 +1,9 @@
 """Provides the printing API."""
 
 import gws
-import gws.config
 import gws.base.api
 import gws.base.web.error
+import gws.config
 import gws.lib.job
 import gws.lib.json2
 import gws.lib.mime

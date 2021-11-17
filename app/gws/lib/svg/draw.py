@@ -4,10 +4,9 @@ import shapely.geometry
 import shapely.ops
 
 import gws
-import gws.lib.extent
 import gws.lib.font
-import gws.lib.shape
 import gws.lib.render
+import gws.lib.shape
 import gws.lib.units as units
 import gws.lib.xml3 as xml3
 import gws.types as t

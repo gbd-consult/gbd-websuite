@@ -4,14 +4,9 @@ import re
 
 import gws
 import gws.base.template
-import gws.lib.legend
 import gws.lib.html2
-import gws.lib.os2
 import gws.lib.mime
-import gws.lib.pdf
 import gws.lib.render
-import gws.lib.units as units
-import gws.types as t
 
 
 @gws.ext.Config('template.map')

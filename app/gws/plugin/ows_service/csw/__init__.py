@@ -4,7 +4,6 @@ import gws.lib.date
 import gws.lib.extent
 import gws.lib.metadata
 import gws.lib.mime
-import gws.lib.crs
 import gws.lib.xml3 as xml3
 import gws.types as t
 

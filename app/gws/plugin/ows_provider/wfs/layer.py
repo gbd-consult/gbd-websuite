@@ -1,8 +1,8 @@
 import gws
 import gws.base.layer
-import gws.lib.gis.util
-import gws.types as t
 import gws.lib.ows
+import gws.types as t
+
 from . import provider as provider_module
 from . import search
 
