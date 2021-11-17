@@ -1,9 +1,9 @@
 import gws
 import gws.base.db
 import gws.base.layer.vector
-import gws.lib.extent
-import gws.lib.feature
-import gws.lib.shape
+import gws.gis.extent
+import gws.gis.feature
+import gws.gis.shape
 import gws.types as t
 
 from . import provider as provider_module
@@ -35,7 +35,7 @@ class Object(gws.base.layer.vector.Object):
             return None
         return gws.Bounds(
             crs=self.table.geometry_crs,
-            extent=gws.lib.extent.from_box(r))
+            extent=gws.gis.extent.from_box(r))
 
     def props_for(self, user):
         return gws.merge(super().props_for(user), geometryType=self.table.geometry_type)
@@ -67,7 +67,7 @@ class Object(gws.base.layer.vector.Object):
             return True
 
     def get_features(self, bounds, limit=0) -> t.List[gws.IFeature]:
-        shape = gws.lib.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)
+        shape = gws.gis.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)
 
         features = self.provider.select(gws.SqlSelectArgs(
             table=self.table,
@@ -77,13 +77,13 @@ class Object(gws.base.layer.vector.Object):
 
         return [f.connect_to(self) for f in features]
 
-    def edit_operation(self, operation: str, feature_props: t.List[gws.lib.feature.Props]) -> t.List[gws.IFeature]:
+    def edit_operation(self, operation: str, feature_props: t.List[gws.gis.feature.Props]) -> t.List[gws.IFeature]:
         src_features = []
 
         for p in feature_props:
             if p.attributes and self.edit_data_model:
                 p.attributes = self.edit_data_model.apply(p.attributes)
-            src_features.append(gws.lib.feature.from_props(p))
+            src_features.append(gws.gis.feature.from_props(p))
 
         features = self.provider.edit_operation(operation, self.table, src_features)
         return [f.connect_to(self) for f in features]

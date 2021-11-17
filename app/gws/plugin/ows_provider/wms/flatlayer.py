@@ -1,8 +1,8 @@
 import gws
 import gws.base.layer
-import gws.lib.gis.source
-import gws.lib.gis.util
-import gws.lib.ows
+import gws.gis.source
+import gws.gis.util
+import gws.gis.ows
 import gws.types as t
 
 from . import provider as provider_module
@@ -20,10 +20,10 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
     source_crs: gws.ICrs
 
     def configure_source(self):
-        gws.lib.ows.client.configure_layers(self, provider_module.Object, is_image=True)
-        self.source_crs = gws.lib.gis.util.best_crs(
+        gws.gis.ows.client.configure_layers(self, provider_module.Object, is_image=True)
+        self.source_crs = gws.gis.util.best_crs(
             self.provider.force_crs or self.crs,
-            gws.lib.gis.source.supported_crs_list(self.source_layers))
+            gws.gis.source.supported_crs_list(self.source_layers))
         return True
 
     def configure_metadata(self):
@@ -33,11 +33,11 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
 
     def configure_zoom(self):
         if not super().configure_zoom():
-            return gws.lib.ows.client.configure_zoom(self)
+            return gws.gis.ows.client.configure_zoom(self)
 
     def configure_search(self):
         if not super().configure_search():
-            return gws.lib.ows.client.configure_search(self, search.Object)
+            return gws.gis.ows.client.configure_search(self, search.Object)
 
     def configure_legend(self):
         if not super().configure_legend():
@@ -52,7 +52,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
 
     @property
     def own_bounds(self):
-        return gws.lib.gis.source.combined_bounds(self.source_layers, self.source_crs)
+        return gws.gis.source.combined_bounds(self.source_layers, self.source_crs)
 
     def mapproxy_config(self, mc, options=None):
         layers = [sl.name for sl in self.source_layers if sl.name]

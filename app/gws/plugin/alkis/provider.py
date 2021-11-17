@@ -1,8 +1,8 @@
 import gws
 import gws.base.db.postgres
-import gws.lib.crs
-import gws.lib.feature
-import gws.lib.shape
+import gws.gis.crs
+import gws.gis.feature
+import gws.gis.shape
 import gws.types as t
 
 from . import types
@@ -38,7 +38,7 @@ class Object(gws.Node):
 
     def configure(self):
 
-        self.crs = gws.lib.crs.get(self.var('crs'))
+        self.crs = gws.gis.crs.get(self.var('crs'))
         self.db = gws.base.db.postgres.provider.require_for(self)
 
         self.index_schema = self.var('indexSchema')
@@ -99,10 +99,10 @@ class Object(gws.Node):
             total, rs = flurstueck.find(conn, q)
             for rec in rs:
                 rec = self._remove_restricted_data(q, rec)
-                features.append(gws.lib.feature.Feature(
+                features.append(gws.gis.feature.Feature(
                     uid=rec['gml_id'],
                     attributes=rec,
-                    shape=gws.lib.shape.from_wkb_hex(rec['geom'], self.crs)
+                    shape=gws.gis.shape.from_wkb_hex(rec['geom'], self.crs)
                 ))
 
         return types.FindFlurstueckResult(features=features, total=total)
@@ -121,10 +121,10 @@ class Object(gws.Node):
         with self.connect() as conn:
             total, rs = adresse.find(conn, q)
             for rec in rs:
-                features.append(gws.lib.feature.Feature(
+                features.append(gws.gis.feature.Feature(
                     uid=rec['gml_id'],
                     attributes=rec,
-                    shape=gws.lib.shape.from_xy(rec['x'], rec['y'], self.crs)
+                    shape=gws.gis.shape.from_xy(rec['x'], rec['y'], self.crs)
                 ))
 
         return types.FindAdresseResult(features=features, total=total)

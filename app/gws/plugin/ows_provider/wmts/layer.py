@@ -1,9 +1,9 @@
 import gws
 import gws.base.layer
-import gws.lib.gis.source
-import gws.lib.gis.util
+import gws.gis.source
+import gws.gis.util
 import gws.lib.net
-import gws.lib.ows
+import gws.gis.ows
 import gws.lib.units as units
 import gws.types as t
 
@@ -26,11 +26,11 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
     style_name: str
 
     def configure_source(self):
-        gws.lib.ows.client.configure_layers(self, provider_module.Object)
+        gws.gis.ows.client.configure_layers(self, provider_module.Object)
 
-        self.source_crs = gws.lib.gis.util.best_crs(
+        self.source_crs = gws.gis.util.best_crs(
             self.provider.force_crs or self.crs,
-            gws.lib.gis.source.supported_crs_list(self.source_layers))
+            gws.gis.source.supported_crs_list(self.source_layers))
 
         if len(self.source_layers) > 1:
             gws.log.warn(f'multiple layers found for {self.uid!r}, using the first one')
@@ -55,7 +55,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
 
     def configure_zoom(self):
         if not super().configure_zoom():
-            return gws.lib.ows.client.configure_zoom(self)
+            return gws.gis.ows.client.configure_zoom(self)
 
     def configure_legend(self):
         if not super().configure_legend():
@@ -69,7 +69,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
 
     @property
     def own_bounds(self):
-        return gws.lib.gis.source.combined_bounds(self.source_layers, self.source_crs)
+        return gws.gis.source.combined_bounds(self.source_layers, self.source_crs)
 
     def mapproxy_config(self, mc):
         m0 = self.tile_matrix_set.matrices[0]

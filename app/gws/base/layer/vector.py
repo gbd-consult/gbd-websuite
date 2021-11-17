@@ -1,6 +1,6 @@
 import gws
 import gws.base.model
-import gws.lib.extent
+import gws.gis.extent
 import gws.lib.style
 import gws.lib.svg
 import gws.types as t
@@ -53,7 +53,7 @@ class Object(core.Object):
     def render_svg_fragment(self, view, style=None):
         bounds = view.bounds
         if view.rotation:
-            bounds = gws.Bounds(crs=view.bounds.crs, extent=gws.lib.extent.circumsquare(bounds.extent))
+            bounds = gws.Bounds(crs=view.bounds.crs, extent=gws.gis.extent.circumsquare(bounds.extent))
 
         ts = gws.time_start('render_svg:get_features')
         found = self.get_features(bounds)

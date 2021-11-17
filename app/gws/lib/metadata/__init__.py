@@ -1,7 +1,7 @@
 """Metadata structures and related utilities"""
 
 import gws
-import gws.lib.country
+import gws.lib.intl
 import gws.types as t
 
 from . import inspire
@@ -193,7 +193,7 @@ class Metadata(gws.Object, gws.IMetadata):
             vs[k] = vs.get(k) or []
 
         if vs.get('language'):
-            vs['language3'] = gws.lib.country.bibliographic_name(language=vs['language'])
+            vs['language3'] = gws.lib.intl.bibliographic_name(language=vs['language'])
 
         if vs.get('inspireTheme'):
             vs['inspireThemeName'] = inspire.theme_name(vs['inspireTheme'], vs.get('language'))

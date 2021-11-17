@@ -9,10 +9,10 @@ import gws.base.db
 import gws.base.project
 import gws.base.web
 import gws.config
-import gws.lib.cache
+import gws.gis.cache
 import gws.lib.font
 import gws.lib.metadata
-import gws.lib.mpx.config
+import gws.gis.mpx.config
 import gws.server
 import gws.server.monitor
 import gws.types as t
@@ -29,7 +29,7 @@ class Config(gws.WithAccess):
 
     api: t.Optional[gws.base.api.Config]  #: system-wide server actions
     auth: t.Optional[gws.base.auth.Config] = {}  # type: ignore #: authorization methods and options
-    cache: t.Optional[gws.lib.cache.Config] = {}  # type: ignore #: global cache configuration
+    cache: t.Optional[gws.gis.cache.Config] = {}  # type: ignore #: global cache configuration
     client: t.Optional[gws.base.client.Config]  #: gws client configuration
     db: t.Optional[gws.base.db.Config]  #: database configuration
     developer: t.Optional[dict]  #: developer options
@@ -121,7 +121,7 @@ class Object(gws.Node, gws.IApplication):
     def post_configure(self):
         self.mpx_url = ''
         if self.var('server.mapproxy.enabled'):
-            gws.lib.mpx.config.create_and_save(self.root)
+            gws.gis.mpx.config.create_and_save(self.root)
             self.mpx_url = f"http://{self.var('server.mapproxy.host')}:{self.var('server.mapproxy.port')}"
 
         # for p in set(cfg.configPaths):

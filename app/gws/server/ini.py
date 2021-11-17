@@ -5,7 +5,7 @@ import pwd
 import gws
 import gws.base.web
 import gws.config
-import gws.lib.mpx.config
+import gws.gis.mpx.config
 import gws.lib.os2
 import gws.types as t
 
@@ -72,7 +72,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
     spool_dir = gws.SPOOL_DIR
     spool_freq = root.application.var('server.spool.jobFrequency')
 
-    mapproxy_enabled = root.application.var('server.mapproxy.enabled') and os.path.exists(gws.lib.mpx.config.CONFIG_PATH)
+    mapproxy_enabled = root.application.var('server.mapproxy.enabled') and os.path.exists(gws.gis.mpx.config.CONFIG_PATH)
     mapproxy_port = root.application.var('server.mapproxy.port')
     mapproxy_workers = root.application.var('server.mapproxy.workers')
     mapproxy_threads = root.application.var('server.mapproxy.threads')
@@ -411,7 +411,7 @@ def create(root: gws.IRoot, base_dir, pid_dir):
             vacuum = true
             worker-reload-mercy = {mercy}
             wsgi-disable-file-wrapper = true
-            wsgi-file = {gws.APP_DIR}/gws/lib/mpx/mpx_app.py
+            wsgi-file = {gws.APP_DIR}/gws/gis/mpx/mpx_app.py
             {stdenv}
         """
 

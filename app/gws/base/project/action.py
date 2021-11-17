@@ -9,7 +9,7 @@ from . import core
 
 class InfoResponse(gws.Response):
     project: core.Props
-    locale: gws.lib.intl.Locale
+    locale: gws.Locale
     user: t.Optional[gws.base.auth.user.Props]
 
 

@@ -1,8 +1,8 @@
 """WFS provider."""
 
 import gws
-import gws.lib.ows
-import gws.lib.shape
+import gws.gis.ows
+import gws.gis.shape
 import gws.types as t
 
 from . import caps
@@ -50,10 +50,10 @@ class Object(core.Provider):
                 n, u = args.tolerance
                 map_tolerance = n * (args.resolution or 1) if u == 'px' else n
 
-            search_shape = gws.lib.shape.union(args.shapes).tolerance_polygon(map_tolerance)
+            search_shape = gws.gis.shape.union(args.shapes).tolerance_polygon(map_tolerance)
             bounds = search_shape.bounds
 
-        ps = gws.lib.ows.client.prepared_search(
+        ps = gws.gis.ows.client.prepared_search(
             inverted_crs=self.inverted_crs,
             limit=args.limit,
             bounds=bounds,
@@ -69,8 +69,8 @@ class Object(core.Provider):
 
         params = gws.merge(ps.params, args.params)
 
-        text = gws.lib.ows.request.get_text(**self.operation_args(gws.OwsVerb.GetFeature, params=params))
-        features = gws.lib.ows.formats.read(text, crs=ps.request_crs, axis=ps.axis)
+        text = gws.gis.ows.request.get_text(**self.operation_args(gws.OwsVerb.GetFeature, params=params))
+        features = gws.gis.ows.formats.read(text, crs=ps.request_crs, axis=ps.axis)
 
         if features is None:
             gws.log.debug(f'WFS NOT_PARSED params={params!r}')

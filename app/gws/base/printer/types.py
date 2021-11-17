@@ -1,5 +1,5 @@
 import gws
-import gws.lib.feature
+import gws.gis.feature
 import gws.lib.job
 import gws.lib.style
 import gws.types as t
@@ -38,7 +38,7 @@ class PlaneUrl(PlaneBase):
 
 class PlaneFeatures(PlaneBase):
     type: t.Literal['features']
-    features: t.List[gws.lib.feature.Props]
+    features: t.List[gws.gis.feature.Props]
 
 
 class PlaneRaster(PlaneBase):

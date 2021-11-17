@@ -1,7 +1,7 @@
 """WMS provder."""
 
 import gws
-import gws.lib.ows
+import gws.gis.ows
 import gws.types as t
 
 from . import caps
@@ -52,7 +52,7 @@ class Object(core.Provider):
         if shape.geometry_type != gws.GeometryType.point:
             return []
 
-        ps = gws.lib.ows.client.prepared_search(
+        ps = gws.gis.ows.client.prepared_search(
             inverted_crs=self.inverted_crs,
             limit=args.limit,
             point=shape,
@@ -69,8 +69,8 @@ class Object(core.Provider):
             params.setdefault('INFO_FORMAT', fmt)
 
         op_args = self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params)
-        text = gws.lib.ows.request.get_text(**op_args)
-        features = gws.lib.ows.formats.read(text, crs=ps.request_crs, axis=ps.axis)
+        text = gws.gis.ows.request.get_text(**op_args)
+        features = gws.gis.ows.formats.read(text, crs=ps.request_crs, axis=ps.axis)
 
         if features is None:
             gws.log.debug(f'WMS NOT_PARSED params={params!r}')

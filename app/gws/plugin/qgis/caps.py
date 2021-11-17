@@ -3,10 +3,10 @@ import re
 import urllib.parse
 
 import gws
-import gws.lib.crs
+import gws.gis.crs
 import gws.lib.metadata
 import gws.lib.net
-import gws.lib.ows.parseutil as u
+import gws.gis.ows.parseutil as u
 import gws.lib.xml3 as xml3
 import gws.types as t
 
@@ -48,7 +48,7 @@ def parse(xml: str) -> Caps:
 
     caps.properties = _properties(xml3.first(root_el, 'properties'))
     caps.metadata = _project_meta_from_props(caps.properties)
-    caps.project_crs = gws.lib.crs.get(xml3.text(root_el, 'projectCrs.spatialrefsys.authid'))
+    caps.project_crs = gws.gis.crs.get(xml3.text(root_el, 'projectCrs.spatialrefsys.authid'))
     caps.print_templates = _layouts(root_el)
 
     map_layers = _map_layers(root_el, caps.properties)
@@ -163,7 +163,7 @@ def _map_layer(layer_el: gws.XmlElement):
 
     sl.supported_bounds = []
 
-    crs = gws.lib.crs.get(xml3.text(layer_el, 'srs.spatialrefsys.authid'))
+    crs = gws.gis.crs.get(xml3.text(layer_el, 'srs.spatialrefsys.authid'))
     ext = xml3.first(layer_el, 'extent')
 
     if crs and ext:

@@ -1,6 +1,6 @@
 import gws
-import gws.lib.extent
-import gws.lib.gis.bounds
+import gws.gis.extent
+import gws.gis.bounds
 import gws.types as t
 
 
@@ -26,13 +26,13 @@ class Filter:
         return [r for r in recs if r.index in ns]
 
     def _bbox(self, flt, recs):
-        b = gws.lib.gis.bounds.from_gml_envelope_element(flt.first('Envelope'))
+        b = gws.gis.bounds.from_gml_envelope_element(flt.first('Envelope'))
         if not b:
             return []
-        b = gws.lib.gis.bounds.transformed_to(b, gws.EPSG_4326)
+        b = gws.gis.bounds.transformed_to(b, gws.EPSG_4326)
         return [
             r for r in recs
-            if not r.get('extent4326') or gws.lib.extent.intersect(r.extent4326, b.extent)
+            if not r.get('extent4326') or gws.gis.extent.intersect(r.extent4326, b.extent)
         ]
 
     def _propertyislike(self, flt, recs):

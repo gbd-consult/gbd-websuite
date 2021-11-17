@@ -1,9 +1,9 @@
 import zipfile
 
 import gws
-import gws.lib.crs
+import gws.gis.crs
 import gws.lib.net
-import gws.lib.ows
+import gws.gis.ows
 import gws.types as t
 
 from . import caps
@@ -71,7 +71,7 @@ class Object(gws.Node, gws.IOwsProvider):
         self.source_layers = cc.source_layers
         self.version = cc.version
 
-        self.force_crs = gws.lib.crs.get(self.var('forceCrs'))
+        self.force_crs = gws.gis.crs.get(self.var('forceCrs'))
         self.project_crs = cc.project_crs
         self.crs = self.force_crs or self.project_crs
         if not self.crs:
@@ -88,7 +88,7 @@ class Object(gws.Node, gws.IOwsProvider):
         if shape.geometry_type != gws.GeometryType.point:
             return []
 
-        ps = gws.lib.ows.client.prepared_search(
+        ps = gws.gis.ows.client.prepared_search(
             limit=args.limit,
             point=shape,
             protocol=gws.OwsProtocol.WMS,
@@ -113,8 +113,8 @@ class Object(gws.Node, gws.IOwsProvider):
 
         params = gws.merge(qgis_defaults, ps.params, args.params)
 
-        text = gws.lib.ows.request.get_text(self.url, gws.OwsProtocol.WMS, gws.OwsVerb.GetFeatureInfo, params=params)
-        features = gws.lib.ows.formats.read(text, crs=ps.request_crs)
+        text = gws.gis.ows.request.get_text(self.url, gws.OwsProtocol.WMS, gws.OwsVerb.GetFeatureInfo, params=params)
+        features = gws.gis.ows.formats.read(text, crs=ps.request_crs)
 
         if features is None:
             gws.log.debug(f'QGIS/WMS NOT_PARSED params={params!r}')

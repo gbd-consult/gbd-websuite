@@ -1,6 +1,6 @@
 import gws
 import gws.lib.net
-import gws.lib.shape
+import gws.gis.shape
 import gws.base.search.runner
 import gws.base.auth.user
 import gws.lib.test as test

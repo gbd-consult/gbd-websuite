@@ -19,7 +19,7 @@ interface IMarkerContent {
 class MarkerLayer extends gws.map.layer.FeatureLayer {
     controller: MarkerController;
 
-    super_printItem(): gws.api.base.printer.Plane {
+    super_printItem(): gws.api.printer.Plane {
         let fs = gws.lib.compact(this.features.map(f => f.getProps()));
 
         if (fs.length === 0)

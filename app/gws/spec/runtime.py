@@ -3,7 +3,7 @@
 import re
 
 import gws
-import gws.lib.crs
+import gws.gis.crs
 import gws.lib.date
 import gws.lib.json2
 import gws.lib.os2
@@ -412,7 +412,7 @@ class _Reader:
         return self._read_str(val, spec)
 
     def _read_crs(self, val, spec):
-        crs = gws.lib.crs.get(val)
+        crs = gws.gis.crs.get(val)
         if not crs:
             raise Error('ERR_INVALID_CRS', f'invalid crs: {val!r}', val)
         return crs.srid

@@ -2,7 +2,7 @@
 
 import gws
 import gws.config
-import gws.lib.gis.source
+import gws.gis.source
 import gws.types as t
 
 from . import core, types
@@ -23,8 +23,8 @@ class FlattenOption(gws.Config):
 
 
 class TreeConfig(types.Config):
-    rootLayers: t.Optional[gws.lib.gis.source.LayerFilterConfig]  #: source layers to use as roots
-    excludeLayers: t.Optional[gws.lib.gis.source.LayerFilterConfig]  #: source layers to exclude
+    rootLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use as roots
+    excludeLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to exclude
     flattenLayers: t.Optional[FlattenOption]  #: flatten the layer hierarchy
     layerConfig: t.Optional[t.List[types.CustomConfig]]  #: custom configurations for specific layers
 
@@ -87,8 +87,8 @@ class Object(core.Object):
 
 def _layer_tree_configuration(
         source_layers: t.List[gws.SourceLayer],
-        roots_slf: gws.lib.gis.source.LayerFilter,
-        exclude_slf: gws.lib.gis.source.LayerFilter,
+        roots_slf: gws.gis.source.LayerFilter,
+        exclude_slf: gws.gis.source.LayerFilter,
         flatten: FlattenOption,
         custom_configs: t.List[types.CustomConfig],
         leaf_layer_config_fn: t.Callable,
@@ -96,7 +96,7 @@ def _layer_tree_configuration(
     ##
 
     def walk(sl: gws.SourceLayer, depth: int):
-        if exclude_slf and gws.lib.gis.source.layer_matches(sl, exclude_slf):
+        if exclude_slf and gws.gis.source.layer_matches(sl, exclude_slf):
             return None
 
         cfg = None
@@ -111,8 +111,8 @@ def _layer_tree_configuration(
             if flatten.useGroups:
                 cfg = leaf_layer_config_fn([sl])
             else:
-                slf = gws.lib.gis.source.LayerFilter(is_image=True)
-                image_layers = gws.lib.gis.source.filter_layers([sl], slf)
+                slf = gws.gis.source.LayerFilter(is_image=True)
+                image_layers = gws.gis.source.filter_layers([sl], slf)
                 if not image_layers:
                     return None
                 cfg = leaf_layer_config_fn(image_layers)
@@ -148,7 +148,7 @@ def _layer_tree_configuration(
             }
 
         for flt, cc in zip(custom_filters, custom_configs):
-            if gws.lib.gis.source.layer_matches(sl, flt):
+            if gws.gis.source.layer_matches(sl, flt):
                 cfg = gws.deep_merge(vars(cc), cfg)
             cfg.pop('applyTo', None)
 
@@ -157,15 +157,15 @@ def _layer_tree_configuration(
     ##
 
     custom_filters = [
-        gws.lib.gis.source.layer_filter_from_config(cc.applyTo)
+        gws.gis.source.layer_filter_from_config(cc.applyTo)
         for cc in custom_configs
     ]
 
     # by default, take top-level layers as roots
 
-    roots = gws.lib.gis.source.filter_layers(
+    roots = gws.gis.source.filter_layers(
         source_layers,
-        roots_slf or gws.lib.gis.source.LayerFilter(level=1))
+        roots_slf or gws.gis.source.LayerFilter(level=1))
 
     # make configs...
 

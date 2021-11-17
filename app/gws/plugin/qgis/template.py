@@ -4,9 +4,9 @@ import gws
 import gws.base.template
 import gws.lib.html2
 import gws.lib.mime
-import gws.lib.ows
+import gws.gis.ows
 import gws.lib.pdf
-import gws.lib.render
+import gws.gis.render
 import gws.lib.xml3 as xml3
 import gws.types as t
 
@@ -104,8 +104,8 @@ class Object(gws.base.template.Object):
             scale=mp.scale,
         )
 
-        mro = gws.lib.render.render_map(mri, notify)
-        html = gws.lib.render.output_to_html_string(mro)
+        mro = gws.gis.render.render_map(mri, notify)
+        html = gws.gis.render.output_to_html_string(mro)
 
         # create an empty page with the map positioned at the right place
         # @TODO the position is a couple mm off
@@ -198,7 +198,7 @@ class Object(gws.base.template.Object):
             params['map0:rotation'] = mro.view.rotation
             params['crs'] = mro.view.bounds.crs.epsg
 
-        res = gws.lib.ows.request.get(
+        res = gws.gis.ows.request.get(
             self.provider.url,
             gws.OwsProtocol.WMS,
             gws.OwsVerb.GetPrint,

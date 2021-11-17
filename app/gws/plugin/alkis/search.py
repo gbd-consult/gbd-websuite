@@ -12,8 +12,8 @@ import gws.base.storage
 import gws.base.template
 import gws.base.web.error
 import gws.lib.date
-import gws.lib.feature
-import gws.lib.shape
+import gws.gis.feature
+import gws.gis.shape
 import gws.lib.style
 import gws.types as t
 
@@ -224,7 +224,7 @@ class FindFlurstueckParams(BaseFindParams):
     wantEigentuemer: t.Optional[bool]
     controlInput: t.Optional[str]
     crs: t.Optional[gws.CrsId]
-    shapes: t.Optional[t.List[gws.lib.shape.Props]]
+    shapes: t.Optional[t.List[gws.gis.shape.Props]]
 
     bblatt: str = ''
     flaecheBis: str = ''
@@ -241,7 +241,7 @@ class FindFlurstueckParams(BaseFindParams):
 
 
 class FindFlurstueckResponse(gws.Response):
-    features: t.List[gws.lib.feature.Props]
+    features: t.List[gws.gis.feature.Props]
     total: int
 
 
@@ -259,7 +259,7 @@ class FindAdresseParams(BaseFindParams):
 
 
 class FindAdresseResponse(gws.Response):
-    features: t.List[gws.lib.feature.Props]
+    features: t.List[gws.gis.feature.Props]
     total: int
 
 
@@ -268,7 +268,7 @@ class GetDetailsParams(FindFlurstueckParams):
 
 
 class GetDetailsResponse(gws.Response):
-    feature: gws.lib.feature.Props
+    feature: gws.gis.feature.Props
 
 
 class PrintParams(gws.Params):
@@ -561,7 +561,7 @@ class Object(gws.base.api.action.Object):
         fq.withBuchung = self._can_read_buchung(req.user)
 
         if p.get('shapes'):
-            shape = gws.lib.shape.union([gws.lib.shape.from_props(s) for s in p.get('shapes')])
+            shape = gws.gis.shape.union([gws.gis.shape.from_props(s) for s in p.get('shapes')])
             if shape:
                 fq.shape = shape.transformed_to(self.provider.crs)
 

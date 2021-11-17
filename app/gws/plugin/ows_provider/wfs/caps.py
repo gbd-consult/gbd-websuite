@@ -1,5 +1,5 @@
 import gws
-import gws.lib.ows.parseutil as u
+import gws.gis.ows.parseutil as u
 import gws.lib.xml2
 import gws.types as t
 

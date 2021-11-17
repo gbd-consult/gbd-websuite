@@ -24,14 +24,14 @@ export class Application implements types.IApplication {
     overviewMap: MapManager;
     options: types.Dict;
     actions: types.Dict;
-    project: api.base.project.Props;
+    project: api.project.Props;
     server: Server;
     store: StoreWrapper;
     tags: types.Dict;
     urlParams: types.Dict;
     localeUid = '';
     languageUid = '';
-    locale: api.lib.intl.Locale;
+    locale: api.core.Locale;
 
 
     protected controllers: { [key: string]: types.IController } = {};

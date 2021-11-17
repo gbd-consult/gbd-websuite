@@ -1,6 +1,6 @@
 import gws
-import gws.lib.crs
-import gws.lib.ows.parseutil as u
+import gws.gis.crs
+import gws.gis.ows.parseutil as u
 import gws.lib.units as units
 import gws.lib.xml2
 import gws.types as t
@@ -66,7 +66,7 @@ def _tile_matrix_set(el):
     tms = gws.TileMatrixSet()
 
     tms.uid = el.get_text('Identifier')
-    tms.crs = gws.lib.crs.require(el.get_text('SupportedCRS'))
+    tms.crs = gws.gis.crs.require(el.get_text('SupportedCRS'))
     tms.matrices = sorted(
         [_tile_matrix(e) for e in el.all('TileMatrix')],
         key=lambda m: int('1' + m.uid))

@@ -5,8 +5,8 @@ import shapely.ops
 
 import gws
 import gws.lib.font
-import gws.lib.render
-import gws.lib.shape
+import gws.gis.render
+import gws.gis.shape
 import gws.lib.units as units
 import gws.lib.xml3 as xml3
 import gws.types as t
@@ -20,11 +20,11 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = 
     if not shape:
         return []
 
-    geom = t.cast(gws.lib.shape.Shape, shape).geom
+    geom = t.cast(gws.gis.shape.Shape, shape).geom
     if geom.is_empty:
         return []
 
-    trans = gws.lib.render.map_view_transformer(view)
+    trans = gws.gis.render.map_view_transformer(view)
     geom = shapely.ops.transform(trans, geom)
 
     if not style:
@@ -108,7 +108,7 @@ def soup_to_fragment(view: gws.MapView, points: t.List[gws.Point], tags: t.List[
 
     """
 
-    trans = gws.lib.render.map_view_transformer(view)
+    trans = gws.gis.render.map_view_transformer(view)
     px = [trans(*p) for p in points]
 
     def eval_func(v):

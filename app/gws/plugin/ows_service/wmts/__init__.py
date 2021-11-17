@@ -2,11 +2,11 @@ import math
 
 import gws
 import gws.base.web.error
-import gws.lib.crs
-import gws.lib.extent
+import gws.gis.crs
+import gws.gis.extent
 import gws.lib.image
-import gws.lib.legend
-import gws.lib.render
+import gws.gis.legend
+import gws.gis.render
 import gws.lib.units as units
 import gws.types as t
 
@@ -64,8 +64,8 @@ class Object(core.Service):
             # see https://docs.opengeospatial.org/is/13-082r2/13-082r2.html#29
             gws.TileMatrixSet(
                 uid='EPSG_3857',
-                crs=gws.lib.crs.get3857(),
-                matrices=self._tile_matrices(gws.lib.crs.c3857_extent, 0, 16),
+                crs=gws.gis.crs.get3857(),
+                matrices=self._tile_matrices(gws.gis.crs.c3857_extent, 0, 16),
             )
         ]
 
@@ -97,7 +97,7 @@ class Object(core.Service):
             raise gws.base.web.error.BadRequest()
 
         # crs = rd.project.map.crs
-        # bbox = gws.lib.extent.transform(bbox, tm_crs, crs)
+        # bbox = gws.gis.extent.transform(bbox, tm_crs, crs)
 
         mri = gws.MapRenderInput(
             background_color=None,
@@ -110,7 +110,7 @@ class Object(core.Service):
             ]
         )
 
-        mro = gws.lib.render.render_map(mri)
+        mro = gws.gis.render.render_map(mri)
 
         if mro.planes and mro.planes[0].image:
             content = mro.planes[0].image.to_bytes()
@@ -129,8 +129,8 @@ class Object(core.Service):
         lcs = self.layer_caps_list_from_request(rd, ['layer', 'layers'], self.SCOPE_LEAF)
         if not lcs:
             raise gws.base.web.error.NotFound('No layers found')
-        out = gws.lib.legend.render(gws.Legend(layers=[lc.layer for lc in lcs if lc.has_legend]))
-        return gws.ContentResponse(mime='image/png', content=gws.lib.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
+        out = gws.gis.legend.render(gws.Legend(layers=[lc.layer for lc in lcs if lc.has_legend]))
+        return gws.ContentResponse(mime='image/png', content=gws.gis.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
 
     ##
 
@@ -152,7 +152,7 @@ class Object(core.Service):
         if not tm:
             return
 
-        w, h = gws.lib.extent.size(tm.extent)
+        w, h = gws.gis.extent.size(tm.extent)
         span = w / tm.width
 
         x = tm.x + col * span
@@ -167,7 +167,7 @@ class Object(core.Service):
         # north origin
         extent = extent[0], extent[3], extent[2], extent[1]
 
-        w, h = gws.lib.extent.size(extent)
+        w, h = gws.gis.extent.size(extent)
 
         for z in range(min_zoom, max_zoom + 1):
             size = 1 << z

@@ -1,9 +1,9 @@
 import gws
-import gws.lib.crs
-import gws.lib.gis.source
+import gws.gis.crs
+import gws.gis.source
 import gws.lib.metadata
 import gws.lib.mime
-import gws.lib.ows
+import gws.gis.ows
 import gws.types as t
 
 
@@ -20,7 +20,7 @@ class ProviderConfig(gws.Config):
     maxRequests: int = 0  #: max concurrent requests to this source
     operations: t.Optional[t.List[OperationConfig]]
     forceCrs: t.Optional[gws.CrsId]  #: use this CRS for requests
-    sourceLayers: t.Optional[gws.lib.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
     url: gws.Url  #: service url
 
 
@@ -36,8 +36,8 @@ class Provider(gws.Node, gws.IOwsProvider):
     preferred_formats: t.Dict[gws.OwsVerb, t.Optional[str]]
 
     def configure(self):
-        self.force_crs = gws.lib.crs.get(self.var('forceCrs'))
-        self.inverted_crs = gws.compact(gws.lib.crs.get(c) for c in self.var('invertAxis', default=[]))
+        self.force_crs = gws.gis.crs.get(self.var('forceCrs'))
+        self.inverted_crs = gws.compact(gws.gis.crs.get(c) for c in self.var('invertAxis', default=[]))
         self.source_layers = []
         self.url = self.var('url')
         self.version = ''
@@ -135,7 +135,7 @@ class Provider(gws.Node, gws.IOwsProvider):
         return res
 
     def get_capabilities(self):
-        return gws.lib.ows.request.get_text(
+        return gws.gis.ows.request.get_text(
             **self.operation_args(gws.OwsVerb.GetCapabilities),
             max_age=self.var('capsCacheMaxAge'))
 

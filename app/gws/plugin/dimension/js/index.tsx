@@ -625,7 +625,7 @@ class DimensionModel {
         </svg>`;
     }
 
-    printPlane(): gws.api.base.printer.Plane {
+    printPlane(): gws.api.printer.Plane {
         let soup = {points: [], tags: [], styles: []};
 
         this.createDefsTag(soup);
@@ -649,7 +649,7 @@ class DimensionModel {
 class DimensionLayer extends gws.map.layer.FeatureLayer {
     master: DimensionController;
 
-    get printPlane(): gws.api.base.printer.Plane {
+    get printPlane(): gws.api.printer.Plane {
         if (this.master.model.empty)
             return null;
         return this.master.model.printPlane()

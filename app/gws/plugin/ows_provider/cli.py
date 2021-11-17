@@ -2,7 +2,7 @@
 
 import gws
 import gws.lib.json2
-import gws.lib.ows
+import gws.gis.ows
 import gws.types as t
 
 
@@ -34,7 +34,7 @@ class Object(gws.Node):
             raise gws.Error('unknown protocol')
 
         if p.src.startswith(('http:', 'https:')):
-            xml = gws.lib.ows.request.get_text(
+            xml = gws.gis.ows.request.get_text(
                 p.src,
                 protocol=t.cast(gws.OwsProtocol, protocol.upper()),
                 verb=gws.OwsVerb.GetCapabilities)

@@ -1,7 +1,7 @@
 import gws
 import gws.base.search
-import gws.lib.gis.source
-import gws.lib.ows
+import gws.gis.source
+import gws.gis.ows
 import gws.types as t
 
 from . import provider as provider_module
@@ -9,7 +9,7 @@ from . import provider as provider_module
 
 @gws.ext.Config('search.provider.wms')
 class Config(gws.base.search.Config, provider_module.Config):
-    sourceLayers: t.Optional[gws.lib.gis.source.LayerFilterConfig]  #: source layers to use
+    sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
 
 
 @gws.ext.Object('search.provider.wms')
@@ -18,7 +18,7 @@ class Object(gws.base.search.provider.Object, gws.IOwsClient):
     provider: provider_module.Object
 
     def configure(self):
-        gws.lib.ows.client.configure_layers(self, provider_module.Object, is_queryable=True)
+        gws.gis.ows.client.configure_layers(self, provider_module.Object, is_queryable=True)
 
     def can_run(self, args):
         return (

@@ -1,6 +1,6 @@
 import gws
 import gws.base.layer
-import gws.lib.ows
+import gws.gis.ows
 import gws.types as t
 
 from . import provider as provider_module
@@ -18,7 +18,7 @@ class Object(gws.base.layer.vector.Object, gws.IOwsClient):
     provider: provider_module.Object
 
     def configure_source(self):
-        gws.lib.ows.client.configure_layers(self, provider_module.Object)
+        gws.gis.ows.client.configure_layers(self, provider_module.Object)
         return True
 
     def configure_metadata(self):
@@ -28,7 +28,7 @@ class Object(gws.base.layer.vector.Object, gws.IOwsClient):
 
     def configure_search(self):
         if not super().configure_search():
-            return gws.lib.ows.client.configure_search(self, search.Object)
+            return gws.gis.ows.client.configure_search(self, search.Object)
 
     def get_features(self, bounds, limit=0):
         features = self.provider.find_features(

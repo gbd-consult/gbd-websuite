@@ -1,6 +1,6 @@
 import gws
 import gws.lib.net
-import gws.lib.shape
+import gws.gis.shape
 import gws.base.search.runner
 import gws.base.auth.user
 import gws.lib.test as test
@@ -69,7 +69,7 @@ def search_args(layer):
         resolution=10,
         layers=[layer],
         shapes=[
-            gws.lib.shape.from_geometry({
+            gws.gis.shape.from_geometry({
                 'type': 'point',
                 'coordinates': [100, 200]
             }, 'EPSG:3857')

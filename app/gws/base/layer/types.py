@@ -1,8 +1,8 @@
 import gws
 import gws.base.model
 import gws.base.search
-import gws.lib.gis.source
-import gws.lib.gis.zoom
+import gws.gis.source
+import gws.gis.zoom
 import gws.lib.metadata
 import gws.lib.style
 import gws.types as t
@@ -84,13 +84,13 @@ class Config(gws.WithAccess):
     search: gws.base.search.Config = {}  # type:ignore #: layer search configuration
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
     title: str = ''  #: layer title
-    zoom: t.Optional[gws.lib.gis.zoom.Config]  #: layer resolutions and scales
+    zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
 class CustomConfig(gws.WithAccess):
     """Custom layer configuration"""
 
-    applyTo: t.Optional[gws.lib.gis.source.LayerFilterConfig]  #: source layers this configuration applies to
+    applyTo: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers this configuration applies to
     clientOptions: t.Optional[ClientOptions]  # options for the layer display in the client
     dataModel: t.Optional[gws.base.model.Config]  #: layer data model
     display: t.Optional[DisplayMode]  #: layer display mode
@@ -104,7 +104,7 @@ class CustomConfig(gws.WithAccess):
     search: t.Optional[gws.base.search.Config]  #: layer search configuration
     templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
     title: t.Optional[str]  #: layer title
-    zoom: t.Optional[gws.lib.gis.zoom.Config]  #: layer resolutions and scales
+    zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
 class Props(gws.Props):

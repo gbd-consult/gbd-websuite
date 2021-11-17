@@ -3,9 +3,9 @@ import re
 import gws
 import gws.base.db
 import gws.base.model
-import gws.lib.crs
-import gws.lib.feature
-import gws.lib.shape
+import gws.gis.crs
+import gws.gis.feature
+import gws.gis.shape
 import gws.types as t
 
 from . import driver
@@ -67,7 +67,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
                 for c in conn.columns(table.name):
                     col = gws.SqlTableColumn(c)
                     if col.srid:
-                        col.crs = gws.lib.crs.get(col.srid)
+                        col.crs = gws.gis.crs.get(col.srid)
                     d[c['name']] = col
 
             return d
@@ -251,7 +251,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
             g = rec.pop(table.geometry_column, None)
             if g:
                 # assuming geometries are returned in hex
-                shape = gws.lib.shape.from_wkb_hex(g, table.geometry_crs)
+                shape = gws.gis.shape.from_wkb_hex(g, table.geometry_crs)
 
         uid = None
         if table.key_column:
@@ -259,7 +259,7 @@ class Object(gws.Node, gws.ISqlDbProvider):
         if not uid:
             uid = gws.random_string(16)
 
-        return gws.lib.feature.Feature(uid=uid, attributes=rec, shape=shape)
+        return gws.gis.feature.Feature(uid=uid, attributes=rec, shape=shape)
 
     def _get_by_uids(self, table, uids):
         return self.select(gws.SqlSelectArgs({

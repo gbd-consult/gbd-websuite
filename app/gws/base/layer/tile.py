@@ -1,7 +1,7 @@
 import re
 
 import gws
-import gws.lib.crs
+import gws.gis.crs
 import gws.types as t
 
 from . import image, types
@@ -62,14 +62,14 @@ class Object(image.Object):
 
         p = self.var('service', default=gws.Data())
         self.service = Service(
-            crs=gws.lib.crs.get(p.crs) or gws.lib.crs.get3857(),
+            crs=gws.gis.crs.get(p.crs) or gws.gis.crs.get3857(),
             origin=p.origin,
             tile_size=p.tileSize,
             extent=p.extent)
 
         if not self.service.extent:
-            if self.service.crs.srid == gws.lib.crs.c3857:
-                self.service.extent = gws.lib.crs.c3857_extent
+            if self.service.crs.srid == gws.gis.crs.c3857:
+                self.service.extent = gws.gis.crs.c3857_extent
             else:
                 raise gws.Error(f'service extent required for crs {self.service.crs.srid!r}')
 

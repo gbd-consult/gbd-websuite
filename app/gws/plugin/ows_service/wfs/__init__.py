@@ -1,10 +1,10 @@
 import gws
 import gws.base.search.runner
 import gws.base.web.error
-import gws.lib.crs
-import gws.lib.gis.bounds
-import gws.lib.ows.filter
-import gws.lib.shape
+import gws.gis.crs
+import gws.gis.bounds
+import gws.gis.ows.filter
+import gws.gis.shape
 import gws.types as t
 
 from .. import core
@@ -100,26 +100,26 @@ class Object(core.Service):
 
         p = rd.req.param('srsName')
         if p:
-            crs = gws.lib.crs.get(p)
+            crs = gws.gis.crs.get(p)
             if not crs:
                 raise gws.base.web.error.BadRequest('Invalid CRS')
             request_crs = crs
 
         if rd.req.has_param('bbox'):
-            bounds = gws.lib.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
+            bounds = gws.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
             if not bounds:
                 raise gws.base.web.error.BadRequest('Invalid BBOX')
-            shape = gws.lib.shape.from_bounds(bounds)
+            shape = gws.gis.shape.from_bounds(bounds)
             request_crs = shape.crs
         else:
-            shape = gws.lib.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
+            shape = gws.gis.shape.from_extent(extent=rd.project.map.extent, crs=rd.project.map.crs)
 
         flt: t.Optional[gws.SearchFilter] = None
         if rd.req.has_param('filter'):
             src = rd.req.param('filter')
             try:
-                flt = gws.lib.ows.filter.from_fes_string(src)
-            except gws.lib.ows.filter.Error as err:
+                flt = gws.gis.ows.filter.from_fes_string(src)
+            except gws.gis.ows.filter.Error as err:
                 gws.log.error(f'FILTER ERROR: {err!r} filter={src!r}')
                 raise gws.base.web.error.BadRequest('Invalid FILTER value')
 

@@ -2,13 +2,13 @@ import base64
 import os
 
 import gws
-import gws.lib.crs
-import gws.lib.feature
+import gws.gis.crs
+import gws.gis.feature
 import gws.lib.image
 import gws.lib.job
 import gws.lib.mime
 import gws.lib.os2
-import gws.lib.render
+import gws.gis.render
 import gws.lib.style
 import gws.lib.units as units
 import gws.server.spool
@@ -120,7 +120,7 @@ class _Worker:
         s = params.localeUid or ''
         self.tri.locale_uid = s if s in self.project.locale_uids else self.project.locale_uids[0]
 
-        self.tri.crs = gws.lib.crs.get(params.crs) or self.project.map.crs
+        self.tri.crs = gws.gis.crs.get(params.crs) or self.project.map.crs
         self.tri.maps = [self.prepare_map(m) for m in (params.maps or [])]
 
         if params.type == 'template':
@@ -131,7 +131,7 @@ class _Worker:
                 ql = self.template.quality_levels[0]
             self.tri.dpi = ql.dpi
         else:
-            self.tri.dpi = min(gws.lib.render.MAX_DPI, max(params.dpi, gws.lib.units.OGC_SCREEN_PPI))
+            self.tri.dpi = min(gws.gis.render.MAX_DPI, max(params.dpi, gws.lib.units.OGC_SCREEN_PPI))
             mm = gws.lib.units.size_px_to_mm(params.outputSize, gws.lib.units.OGC_SCREEN_PPI)
             px = gws.lib.units.size_mm_to_px(mm, self.tri.dpi)
             w, h = px
@@ -267,7 +267,7 @@ class _Worker:
         if plane.type == 'features':
             fs = []
             for p in plane.features:
-                f = gws.lib.feature.from_props(p)
+                f = gws.gis.feature.from_props(p)
                 if f and f.shape:
                     fs.append(f)
             if not fs:

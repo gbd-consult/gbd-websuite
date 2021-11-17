@@ -1,12 +1,12 @@
 import gws
 import gws.base.search.runner
 import gws.base.web.error
-import gws.lib.crs
-import gws.lib.gis.bounds
+import gws.gis.crs
+import gws.gis.bounds
 import gws.lib.image
-import gws.lib.legend
+import gws.gis.legend
 import gws.lib.mime
-import gws.lib.shape
+import gws.gis.shape
 
 from .. import core
 
@@ -126,10 +126,10 @@ class Object(core.Service):
         if not lcs:
             raise gws.base.web.error.NotFound('No layers found')
 
-        out = gws.lib.legend.render(gws.Legend(layers=[lc.layer for lc in lcs if lc.has_legend]))
+        out = gws.gis.legend.render(gws.Legend(layers=[lc.layer for lc in lcs if lc.has_legend]))
         return gws.ContentResponse(
             mime=gws.lib.mime.PNG,
-            content=gws.lib.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
+            content=gws.gis.legend.to_bytes(out) or gws.lib.image.PIXEL_PNG8)
 
     def handle_getfeatureinfo(self, rd: core.Request):
         bounds = self._request_bounds(rd)
@@ -150,7 +150,7 @@ class Object(core.Service):
             raise gws.base.web.error.BadRequest('Invalid parameter')
 
         request_crs = bounds.crs
-        bounds = gws.lib.gis.bounds.transformed_to(bounds, rd.project.map.crs)
+        bounds = gws.gis.bounds.transformed_to(bounds, rd.project.map.crs)
 
         bbox = bounds.extent
         xres = (bbox[2] - bbox[0]) / px_width
@@ -158,7 +158,7 @@ class Object(core.Service):
         x = bbox[0] + (x * xres)
         y = bbox[3] - (y * yres)
 
-        point = gws.lib.shape.from_geometry({
+        point = gws.gis.shape.from_geometry({
             'type': 'Point',
             'coordinates': [x, y]
         }, bounds.crs)
@@ -193,7 +193,7 @@ class Object(core.Service):
     ###
 
     def _request_bounds(self, rd: core.Request):
-        return gws.lib.gis.bounds.from_request_bbox(
+        return gws.gis.bounds.from_request_bbox(
             rd.req.param('bbox'),
-            gws.lib.crs.get(rd.req.param('crs') or rd.req.param('srs')) or rd.project.map.crs,
+            gws.gis.crs.get(rd.req.param('crs') or rd.req.param('srs')) or rd.project.map.crs,
             invert_axis_if_geographic=self.request_version(rd) >= _WMS_130)

@@ -3,10 +3,10 @@ import re
 import gws
 import gws.base.model
 import gws.base.template
-import gws.lib.crs
-import gws.lib.extent
-import gws.lib.gis.zoom
-import gws.lib.legend
+import gws.gis.crs
+import gws.gis.extent
+import gws.gis.zoom
+import gws.gis.legend
 import gws.lib.metadata
 import gws.lib.style
 import gws.lib.svg
@@ -122,8 +122,8 @@ class Object(gws.Node, gws.ILayer):
         self.set_uid(uid)
 
         p = self.var('crs')
-        self.crs = gws.lib.crs.require(p) if p else (
-            self.map.crs if self.map else gws.lib.crs.get3857())
+        self.crs = gws.gis.crs.require(p) if p else (
+            self.map.crs if self.map else gws.gis.crs.get3857())
 
         self.cache = self.var('cache', default=types.CacheConfig(enabled=False))
         self.cache_uid = ''
@@ -178,7 +178,7 @@ class Object(gws.Node, gws.ILayer):
         p = self.var('extent')
         if not p:
             return
-        self.extent = gws.lib.extent.from_list(p)
+        self.extent = gws.gis.extent.from_list(p)
         if not self.extent:
             raise gws.Error(f'invalid extent {p!r} in layer={self.uid!r}')
         return True
@@ -187,7 +187,7 @@ class Object(gws.Node, gws.ILayer):
         p = self.var('zoom')
         if not p:
             return
-        self.resolutions = gws.lib.gis.zoom.resolutions_from_config(
+        self.resolutions = gws.gis.zoom.resolutions_from_config(
             p, self.map.resolutions if self.map else [])
         if not self.resolutions:
             raise gws.Error(f'invalid zoom configuration in layer={self.uid!r}')
@@ -251,7 +251,7 @@ class Object(gws.Node, gws.ILayer):
         if self.is_editable and self.edit_options and user.can_use(self.edit_options, parent=self):
             return ['all']
 
-    # def edit_operation(self, operation: str, feature_props: t.List[gws.lib.feature.Props]) -> t.List[gws.IFeature]:
+    # def edit_operation(self, operation: str, feature_props: t.List[gws.gis.feature.Props]) -> t.List[gws.IFeature]:
     #     pass
     #
     def props_for(self, user):
@@ -301,7 +301,7 @@ class Object(gws.Node, gws.ILayer):
         return self.render_legend(context)
 
     def render_legend(self, context=None):
-        return gws.lib.legend.render(self.legend, context)
+        return gws.gis.legend.render(self.legend, context)
 
     def get_features(self, bounds: gws.Bounds, limit: int = 0) -> t.List[gws.IFeature]:
         return []

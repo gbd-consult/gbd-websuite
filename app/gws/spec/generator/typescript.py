@@ -238,15 +238,6 @@ class _Generator:
 
         return _nl(props)
 
-    _replace = [
-        [r'^gws\.core\.(data|ext|types)\.', ''],
-        [r'^gws\.base.(\w+).(action|core|types).', r'\1'],
-        [r'^gws\.(base|core|lib)\.', ''],
-        [r'^gws\.ext\.', ''],
-        [r'^gws\.', ''],
-
-    ]
-
     def object_name_parts(self, name):
         els = [
             e for e in name.replace('_', '.').split('.')
@@ -256,19 +247,10 @@ class _Generator:
             els.insert(0, 'core')
         if len(els) == 2 and els[0] == 'data':
             els[0] = 'core'
-
+        if els[0] in {'base', 'gis', 'lib'}:
+            els = els[1:]
 
         return '.'.join(els[:-1]), els[-1], '.'.join(els)
-
-    def object_name(self, name):
-        res = name.replace('_', '.')
-        for k, v in self._replace:
-            res = re.sub(k, v, res)
-        res = ''.join(_ucfirst(s) for s in res.split('.'))
-        if res in self.object_names and self.object_names[res] != name:
-            raise base.Error(f'name conflict: {res!r} for {name!r} and {self.object_names[res]!r}')
-        self.object_names[res] = name
-        return res
 
     def format(self, template, **kwargs):
         kwargs['VERSION'] = self.meta.version

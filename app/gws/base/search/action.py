@@ -2,8 +2,8 @@
 
 import gws
 import gws.base.api
-import gws.lib.feature
-import gws.lib.shape
+import gws.gis.feature
+import gws.gis.shape
 import gws.lib.units
 import gws.types as t
 
@@ -20,7 +20,7 @@ class Config(gws.base.api.action.Config):
 
 
 class Response(gws.Response):
-    features: t.List[gws.lib.feature.Props]
+    features: t.List[gws.gis.feature.Props]
 
 
 class Params(gws.Params):
@@ -31,7 +31,7 @@ class Params(gws.Params):
     limit: t.Optional[int]
     tolerance: t.Optional[str]
     resolution: float
-    shapes: t.Optional[t.List[gws.lib.shape.Props]]
+    shapes: t.Optional[t.List[gws.gis.shape.Props]]
 
 
 @gws.ext.Object('action.search')
@@ -58,7 +58,7 @@ class Object(gws.base.api.action.Object):
 
         shapes = []
         if p.shapes:
-            shapes = [gws.lib.shape.from_props(s) for s in p.shapes]
+            shapes = [gws.gis.shape.from_props(s) for s in p.shapes]
 
         tolerance = None
         if p.tolerance:

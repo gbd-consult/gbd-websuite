@@ -1,7 +1,7 @@
 import re
 
 import gws
-import gws.lib.crs
+import gws.gis.crs
 import gws.lib.misc
 import gws.types as t
 
@@ -146,7 +146,7 @@ class Object(gws.Node, gws.IDataModel):
     def configure(self):
         self.rules = [self._configure_rule(r) for r in self.var('rules', default=[])]
         self.geometry_type = self.var('geometryType')
-        self.geometry_crs = gws.lib.crs.get(self.var('crs'))
+        self.geometry_crs = gws.gis.crs.get(self.var('crs'))
 
     def xml_schema_dict(self, name_for_geometry='geometry') -> dict:
         schema = {}

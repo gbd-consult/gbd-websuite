@@ -3,14 +3,14 @@ import re
 import gws
 import gws.base.template
 import gws.base.web.error
-import gws.lib.crs
+import gws.gis.crs
 import gws.lib.date
-import gws.lib.extent
-import gws.lib.gml
+import gws.gis.extent
+import gws.gis.gml
 import gws.lib.image
 import gws.lib.metadata
 import gws.lib.mime
-import gws.lib.render
+import gws.gis.render
 import gws.lib.units as units
 import gws.lib.xml3 as xml3
 import gws.types as t
@@ -160,7 +160,7 @@ class Service(gws.Node, gws.IOwsService):
         self.metadata = self.configure_metadata()
 
         self.root_layer_uid = self.var('rootLayer')
-        self.supported_crs = [gws.lib.crs.require(s) for s in self.var('supportedCrs', default=[])]
+        self.supported_crs = [gws.gis.crs.require(s) for s in self.var('supportedCrs', default=[])]
         self.update_sequence = self.var('updateSequence')
         self.with_inspire_meta = self.var('withInspireMeta')
         self.with_strict_params = self.var('withStrictParams')
@@ -424,7 +424,7 @@ class Service(gws.Node, gws.IOwsService):
         lc.children = children
 
         lc.extent = layer.extent
-        lc.extent4326 = gws.lib.extent.transform_to_4326(layer.extent, layer.crs)
+        lc.extent4326 = gws.gis.extent.transform_to_4326(layer.extent, layer.crs)
         lc.has_legend = layer.has_legend or any(s.has_legend for s in lc.children)
         lc.has_search = layer.has_search or any(s.has_search for s in lc.children)
 
@@ -435,7 +435,7 @@ class Service(gws.Node, gws.IOwsService):
         lc.bounds = [
             gws.Bounds(
                 crs=crs,
-                extent=gws.lib.extent.transform(layer.extent, layer.crs, crs)
+                extent=gws.gis.extent.transform(layer.extent, layer.crs, crs)
             )
             for crs in self.supported_crs or [layer.crs]
         ]
@@ -482,7 +482,7 @@ class Service(gws.Node, gws.IOwsService):
 
             shape_element = None
             if f.shape:
-                shape_element = gws.lib.gml.shape_to_element(f.shape, precision, invert_axis, crs_format)
+                shape_element = gws.gis.gml.shape_to_element(f.shape, precision, invert_axis, crs_format)
 
             f.apply_data_model()
 
@@ -526,7 +526,7 @@ class Service(gws.Node, gws.IOwsService):
             ]
         )
 
-        mro = gws.lib.render.render_map(mri)
+        mro = gws.gis.render.render_map(mri)
 
         if mro.planes and mro.planes[0].image:
             content = mro.planes[0].image.to_bytes()

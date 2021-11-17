@@ -1,7 +1,7 @@
 import gws
 import gws.base.model
 import gws.base.template
-import gws.lib.shape
+import gws.gis.shape
 import gws.lib.units
 import gws.types as t
 
@@ -69,8 +69,8 @@ class Object(gws.Node, gws.ISearchProvider):
 
     def context_shape(self, args: gws.SearchArgs) -> gws.IShape:
         if args.shapes:
-            return gws.lib.shape.union(args.shapes)
+            return gws.gis.shape.union(args.shapes)
         if self.spatial_context == SpatialContext.view and args.bounds:
-            return gws.lib.shape.from_bounds(args.bounds)
+            return gws.gis.shape.from_bounds(args.bounds)
         if args.project:
-            return gws.lib.shape.from_bounds(args.project.map.bounds)
+            return gws.gis.shape.from_bounds(args.project.map.bounds)

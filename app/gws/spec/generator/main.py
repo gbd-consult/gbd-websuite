@@ -21,6 +21,7 @@ SYSTEM_CHUNKS = [
     base.Data(name='gws', sourceDir=base.APP_DIR + '/js/src/gws', bundleDir=base.APP_DIR + '/gws'),
     base.Data(name='gws.core', sourceDir=base.APP_DIR + '/gws/core', bundleDir=base.APP_DIR + '/gws'),
     base.Data(name='gws.base', sourceDir=base.APP_DIR + '/gws/base', bundleDir=base.APP_DIR + '/gws'),
+    base.Data(name='gws.gis', sourceDir=base.APP_DIR + '/gws/gis', bundleDir=base.APP_DIR + '/gws'),
     base.Data(name='gws.lib', sourceDir=base.APP_DIR + '/gws/lib', bundleDir=base.APP_DIR + '/gws'),
     base.Data(name='gws.server', sourceDir=base.APP_DIR + '/gws/server', bundleDir=base.APP_DIR + '/gws'),
 ]

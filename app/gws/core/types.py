@@ -932,6 +932,28 @@ class IStyle(IObject, Protocol):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# locale
+
+class Locale(Data):
+    id: str
+    dateFormatLong: str
+    dateFormatMedium: str
+    dateFormatShort: str
+    dateUnits: str  #: date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'
+    dayNamesLong: List[str]
+    dayNamesShort: List[str]
+    dayNamesNarrow: List[str]
+    firstWeekDay: int
+    language: str
+    languageName: str
+    monthNamesLong: List[str]
+    monthNamesShort: List[str]
+    monthNamesNarrow: List[str]
+    numberDecimal: str
+    numberGroup: str
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # metadata
 
 

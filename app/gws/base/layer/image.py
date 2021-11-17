@@ -1,7 +1,7 @@
 import gws
-import gws.lib.extent
+import gws.gis.extent
 import gws.lib.image
-import gws.lib.mpx as mpx
+import gws.gis.mpx as mpx
 
 from . import core, types
 
@@ -45,15 +45,15 @@ class Object(core.Object):
             uid += '_NOCACHE'
 
         if not view.rotation:
-            return gws.lib.mpx.wms_request(uid, view.bounds, view.size_px[0], view.size_px[1], forward=extra_params)
+            return gws.gis.mpx.wms_request(uid, view.bounds, view.size_px[0], view.size_px[1], forward=extra_params)
 
         # rotation: render a circumsquare around the wanted extent
 
-        circ = gws.lib.extent.circumsquare(view.bounds.extent)
+        circ = gws.gis.extent.circumsquare(view.bounds.extent)
         w, h = view.size_px
-        d = gws.lib.extent.diagonal((0, 0, w, h))
+        d = gws.gis.extent.diagonal((0, 0, w, h))
 
-        r = gws.lib.mpx.wms_request(
+        r = gws.gis.mpx.wms_request(
             uid,
             gws.Bounds(crs=view.bounds.crs, extent=circ),
             width=d,
@@ -77,7 +77,7 @@ class Object(core.Object):
         return img.to_bytes()
 
     def render_xyz(self, x, y, z):
-        return gws.lib.mpx.wmts_request(
+        return gws.gis.mpx.wmts_request(
             self.uid,
             x, y, z,
             tile_matrix=self.grid_uid,

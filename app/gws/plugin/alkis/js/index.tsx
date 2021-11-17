@@ -38,7 +38,7 @@ interface FormValues {
     vnum?: string;
     vorname?: string;
     wantEigentuemer?: boolean;
-    shapes?: Array<gws.api.lib.shape.Props>;
+    shapes?: Array<gws.api.shape.Props>;
 }
 
 interface Strasse {
@@ -1191,7 +1191,7 @@ class Controller extends gws.Controller {
 
     async startPrint(fs: Array<gws.types.IMapFeature>) {
         this.update({
-            printJob: {state: gws.api.lib.job.State.init},
+            printJob: {state: gws.api.job.State.init},
             marker: null,
         });
 
@@ -1200,7 +1200,7 @@ class Controller extends gws.Controller {
         let dpi = level ? level.dpi : 0;
 
         let mapParams = await this.map.printParams(null, dpi);
-        let printParams: gws.api.base.printer.ParamsWithTemplate = {
+        let printParams: gws.api.printer.ParamsWithTemplate = {
             type: 'template',
             templateUid: this.setup.printTemplate.uid,
             qualityLevel,
