@@ -3,6 +3,8 @@
 import gws
 import gws.base.api
 import gws.base.web.error
+import gws.lib.xml3 as xml3
+import gws.lib.mime
 import gws.types as t
 
 
@@ -34,17 +36,36 @@ class Object(gws.base.api.action.Object):
         gws.log.debug(f'found service={srv.uid}')
 
         if not req.user.can_use(srv):
-            return srv.error_response(gws.base.web.error.Forbidden())
+            return self._xml_error(gws.base.web.error.Forbidden())
 
         try:
             return srv.handle_request(req)
         except gws.base.web.error.HTTPException as err:
-            return srv.error_response(err)
-        except:
+            # @TODO image errors
+            return self._xml_error(err)
+        except Exception:
             gws.log.exception()
-            return srv.error_response(gws.base.web.error.InternalServerError())
+            return self._xml_error(gws.base.web.error.InternalServerError())
 
     def _find_service(self, service_uid) -> gws.IOwsService:
         for srv in self.services:
             if srv.uid == service_uid:
                 return srv
+
+    def _xml_error(self, err: Exception):
+        try:
+            status = int(gws.get(err, 'code', 500))
+        except Exception:
+            status = 500
+
+        description = xml3.encode(gws.get(err, 'description') or f'Error {status}')
+
+        xml = (
+                f'<?xml version="1.0" encoding="UTF-8"?>'
+                + f'<ServiceExceptionReport>'
+                + f'<ServiceException code="{status}">{description}</ServiceException>'
+                + f'</ServiceExceptionReport>')
+
+        # @TODO status, check OGC 17-007r1
+
+        return gws.ContentResponse(mime=gws.lib.mime.XML, content=xml, status=200)

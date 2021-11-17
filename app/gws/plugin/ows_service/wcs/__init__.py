@@ -1,6 +1,7 @@
 import gws
 import gws.base.web.error
-import gws.lib.bounds
+import gws.lib.gis.bounds
+import gws.lib.crs
 import gws.types as t
 
 from .. import core
@@ -16,6 +17,7 @@ class Config(core.ServiceConfig):
 class Object(core.Service):
     protocol = gws.OwsProtocol.WCS
     supported_versions = ['2.0.1', '1.0.0']
+    is_raster_ows = True
 
     @property
     def service_link(self):
@@ -26,16 +28,18 @@ class Object(core.Service):
     def default_templates(self):
         return [
             gws.Config(
-                type='xml',
-                path=gws.dirname(__file__) + '/templates/getCapabilities.cx',
+                type='py',
+                path=gws.dirname(__file__) + '/templates/getCapabilities.py',
                 subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
+                access='all:allow',
             ),
             gws.Config(
-                type='xml',
-                path=gws.dirname(__file__) + '/templates/describeCoverage.cx',
+                type='py',
+                path=gws.dirname(__file__) + '/templates/describeCoverage.py',
                 subject='ows.DescribeCoverage',
                 mimeTypes=['xml'],
+                access='all:allow',
             ),
         ]
 
@@ -52,10 +56,7 @@ class Object(core.Service):
 
     ##
 
-    def configure(self):
-        pass
-
-    ##
+    # @TODO wcs needs more work
 
     def handle_getcapabilities(self, rd: core.Request):
         lcs = self.layer_caps_list(rd)
@@ -74,11 +75,15 @@ class Object(core.Service):
         })
 
     def handle_getcoverage(self, rd: core.Request):
-        bounds = gws.lib.bounds.from_request_bbox(
-            rd.req.param('bbox'),
-            rd.req.param('crs') or rd.req.param('srs') or rd.project.map.crs,
-            invert_axis_if_geographic=True
-        )
+        request_crs = rd.project.map.crs
+        p = rd.req.param('srsName')
+        if p:
+            crs = gws.lib.crs.get(p)
+            if not crs:
+                raise gws.base.web.error.BadRequest('Invalid CRS')
+            request_crs = crs
+
+        bounds = gws.lib.gis.bounds.from_request_bbox(rd.req.param('bbox'), request_crs, invert_axis_if_geographic=True)
         if not bounds:
             raise gws.base.web.error.BadRequest('Invalid BBOX')
 
@@ -86,4 +91,4 @@ class Object(core.Service):
         if not lcs:
             raise gws.base.web.error.NotFound('No layers found')
 
-        return self.render_map_bbox_from_layer_caps_list(lcs, bounds, rd)
+        return self.render_map_bbox_from_layer_caps_list(rd, lcs, bounds)

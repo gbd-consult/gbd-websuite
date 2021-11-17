@@ -7,7 +7,7 @@ import gws.lib.extent
 import gws.lib.image
 import gws.lib.legend
 import gws.lib.render
-import gws.lib.units
+import gws.lib.units as units
 import gws.types as t
 
 from .. import core
@@ -36,10 +36,11 @@ class Object(core.Service):
     def default_templates(self):
         return [
             gws.Config(
-                type='xml',
-                path=gws.dirname(__file__) + '/templates/getCapabilities.cx',
+                type='py',
+                path=gws.dirname(__file__) + '/templates/getCapabilities.py',
                 subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
+                access='all:allow',
             ),
         ]
 
@@ -80,52 +81,46 @@ class Object(core.Service):
 
     def handle_gettile(self, rd: core.Request):
         try:
-            tile = {
-                'matrix_set_uid': rd.req.param('TILEMATRIXSET'),
-                'matrix_uid': rd.req.param('TILEMATRIX'),
-                'row': int(rd.req.param('TILEROW')),
-                'col': int(rd.req.param('TILECOL')),
-            }
-        except:
+            matrix_set_uid = rd.req.param('TILEMATRIXSET')
+            matrix_uid = rd.req.param('TILEMATRIX')
+            row = int(rd.req.param('TILEROW'))
+            col = int(rd.req.param('TILECOL'))
+        except Exception:
             raise gws.base.web.error.BadRequest()
 
         lcs = self.layer_caps_list_from_request(rd, ['layer'], self.SCOPE_LEAF)
         if not lcs:
             raise gws.base.web.error.NotFound()
 
-        tm_crs, bbox = self._tile_to_bbox(**tile)
-        crs = rd.project.map.crs
-        bbox = gws.lib.extent.transform(bbox, tm_crs, crs)
+        bounds = self._bounds_for_tile(matrix_set_uid, matrix_uid, row, col)
+        if not bounds:
+            raise gws.base.web.error.BadRequest()
 
-        render_input = gws.MapRenderInput(
+        # crs = rd.project.map.crs
+        # bbox = gws.lib.extent.transform(bbox, tm_crs, crs)
+
+        mri = gws.MapRenderInput(
             background_color=None,
-            items=[],
-            view=gws.lib.render.view_from_bbox(
-                crs=crs,
-                bbox=bbox,
-                out_size_px=(256, 256),
-                rotation=0,
-                dpi=0)
+            bbox=bounds.extent,
+            crs=bounds.crs,
+            out_size=(256, 256, units.PX),
+            planes=[
+                gws.MapRenderInputPlane(type='image_layer', layer=lc.layer)
+                for lc in lcs
+            ]
         )
 
-        for lc in lcs:
-            render_input.items.append(gws.MapRenderInputPlane(
-                type=gws.MapRenderInputPlaneType.image_layer,
-                layer=lc.layer))
+        mro = gws.lib.render.render_map(mri)
 
-        renderer = gws.lib.render.Renderer()
-        for _ in renderer.run(render_input):
-            pass
-
-        out = renderer.output
-        if out.items and out.items[0].image:
-            content = out.items[0].image.to_bytes()
+        if mro.planes and mro.planes[0].image:
+            content = mro.planes[0].image.to_bytes()
         else:
             content = gws.lib.image.PIXEL_PNG8
 
         if self.root.application.developer_option('ows.annotate_wmts'):
             img = gws.lib.image.from_bytes(content)
-            text = f"{tile['matrix_uid']} {tile['row']} {tile['col']}\n{bbox[0]}\n{bbox[1]}\n{bbox[2]}\n{bbox[3]}"
+            e = bounds.extent
+            text = f"{matrix_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}"
             content = img.add_text(text, x=10, y=10).add_box().to_bytes()
 
         return gws.ContentResponse(mime='image/png', content=content)
@@ -139,7 +134,7 @@ class Object(core.Service):
 
     ##
 
-    def _tile_to_bbox(self, matrix_set_uid, matrix_uid, row, col):
+    def _bounds_for_tile(self, matrix_set_uid, matrix_uid, row, col):
         tms = None
         tm = None
 
@@ -164,7 +159,7 @@ class Object(core.Service):
         y = tm.y - row * span
 
         bbox = x, y - span, x + span, y
-        return tms.crs, bbox
+        return gws.Bounds(crs=tms.crs, extent=bbox)
 
     def _tile_matrices(self, extent, min_zoom, max_zoom, tile_size=256):
         ms = []

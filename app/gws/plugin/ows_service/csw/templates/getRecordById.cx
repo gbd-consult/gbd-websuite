@@ -1,8 +1,0 @@
-@if ARGS.profile == 'ISO'
-    @include iso/getRecordById.cx
-@end
-
-## @if profile == 'DCMI'
-## @TODO
-## @end
-

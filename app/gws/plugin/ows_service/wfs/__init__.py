@@ -32,20 +32,21 @@ class Object(core.Service):
     def default_templates(self):
         return [
             gws.Config(
-                type='xml',
-                path=gws.dirname(__file__) + '/templates/getCapabilities.cx',
+                type='py',
+                path=gws.dirname(__file__) + '/templates/getCapabilities.py',
                 subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
+                access='all:allow',
             ),
             gws.Config(
-                type='xml',
-                path=gws.dirname(__file__) + '/templates/describeFeatureType.cx',
+                type='py',
+                path=gws.dirname(__file__) + '/templates/describeFeatureType.py',
                 subject='ows.DescribeFeatureType',
                 mimeTypes=['xml'],
             ),
             gws.Config(
-                type='xml',
-                path=gws.dirname(__file__) + '/templates/getFeature.cx',
+                type='py',
+                path=gws.dirname(__file__) + '/templates/getFeature.py',
                 subject='ows.GetFeatureInfo',
                 mimeTypes=['xml', 'gml', 'gml3'],
             ),
@@ -63,9 +64,6 @@ class Object(core.Service):
         )
 
     ##
-
-    def configure(self):
-        pass
 
     def handle_getcapabilities(self, rd: core.Request):
         lcs = self.layer_caps_list(rd)
@@ -85,7 +83,6 @@ class Object(core.Service):
 
         return self.template_response(rd, gws.OwsVerb.DescribeFeatureType, context={
             'layer_caps_list': lcs,
-            'namespace': lcs[0].feature_xname.ns,
             'version': self.request_version(rd),
         })
 
@@ -96,7 +93,7 @@ class Object(core.Service):
 
         try:
             limit = int(rd.req.param('count') or rd.req.param('maxFeatures') or 0)
-        except:
+        except Exception:
             raise gws.base.web.error.BadRequest('Invalid COUNT value')
 
         request_crs = rd.project.map.crs

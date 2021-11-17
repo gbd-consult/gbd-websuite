@@ -12,8 +12,13 @@ import gws.lib.metadata
 import gws.lib.mime
 import gws.lib.render
 import gws.lib.units as units
-import gws.lib.xml2
+import gws.lib.xml3 as xml3
 import gws.types as t
+
+_DEFAULT_NAMESPACE_PREFIX = 'gwsns'
+_DEFAULT_NAMESPACE_URI = 'http://gbd-websuite.de'
+_DEFAULT_FEATURE_NAME = 'feature'
+_DEFAULT_GEOMETRY_NAME = 'geometry'
 
 
 class Error(gws.Error):
@@ -56,19 +61,11 @@ class Request(gws.Data):
     req: gws.IWebRequest
     project: gws.IProject
     service: gws.IOwsService
-    xml: t.Optional[gws.lib.xml2.Element] = None
+    xml_element: t.Optional[gws.XmlElement] = None
     xml_is_soap: bool = False
 
 
-class XmlName(gws.Data):
-    p: str  # plain name
-    q: str  # qualified name
-    ns: gws.lib.xml2.Namespace  # namespace
-
-
-class FeatureSchemaAttribute(gws.Data):
-    type: str
-    xname: XmlName
+FeatureSchemaAttribute = t.Tuple[str, str]  # type, name
 
 
 class LayerOptions(gws.Data):
@@ -89,8 +86,10 @@ class LayerCaps(gws.Data):
     meta: gws.MetadataValues
     title: str
 
-    layer_xname: XmlName
-    feature_xname: XmlName
+    layer_pname: str
+    layer_qname: str
+    feature_pname: str
+    feature_qname: str
 
     extent: gws.Extent
     extent4326: gws.Extent
@@ -101,7 +100,7 @@ class LayerCaps(gws.Data):
     children: t.List['LayerCaps']
     ancestors: t.List['LayerCaps']
 
-    adhoc_feature_schema: t.Optional[t.List[FeatureSchemaAttribute]]
+    adhoc_feature_schema: t.Optional[dict]
 
 
 class LayerCapsTree(gws.Data):
@@ -111,8 +110,8 @@ class LayerCapsTree(gws.Data):
 
 class FeatureCaps(gws.Data):
     feature: gws.IFeature
-    shape_tag: gws.Tag
-    xname: XmlName
+    shape_element: gws.XmlElement
+    qname: str
 
 
 class FeatureCollection(gws.Data):
@@ -129,7 +128,6 @@ class FeatureCollection(gws.Data):
 class Service(gws.Node, gws.IOwsService):
     """Baseclass for OWS services."""
 
-    xml_helper: gws.lib.xml2.helper.Object
     project: t.Optional[gws.IProject]
 
     root_layer_uid: str
@@ -166,14 +164,11 @@ class Service(gws.Node, gws.IOwsService):
         self.update_sequence = self.var('updateSequence')
         self.with_inspire_meta = self.var('withInspireMeta')
         self.with_strict_params = self.var('withStrictParams')
-        self.xml_helper = self.root.application.require_helper('xml')
 
         self.templates = gws.base.template.bundle.create(
             self.root,
-            gws.Config(
-                templates=self.var('templates'),
-                defaults=self.default_templates
-            ),
+            items=self.var('templates'),
+            defaults=self.default_templates,
             parent=self)
 
         self.layer_options = []
@@ -204,6 +199,9 @@ class Service(gws.Node, gws.IOwsService):
     # Request handling
 
     def handle_request(self, req: gws.IWebRequest) -> gws.ContentResponse:
+        # @TODO there must be a way to do that once
+        xml3.namespaces.add(_DEFAULT_NAMESPACE_PREFIX, _DEFAULT_NAMESPACE_URI)
+
         # services can be configured globally (in which case, self.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (self.project != None)
@@ -246,16 +244,7 @@ class Service(gws.Node, gws.IOwsService):
 
     # Rendering and responses
 
-    def error_response(self, err: Exception):
-        status = gws.get(err, 'code') or 500
-        description = gws.get(err, 'description') or f'Error {status}'
-        return self.xml_error_response(status, description)
-
     def template_response(self, rd: Request, verb: gws.OwsVerb, format: str = None, context=None):
-        out = self.render_template(rd, verb, format, context)
-        return gws.ContentResponse(content=out.content, mime=out.mime)
-
-    def render_template(self, rd: Request, verb: gws.OwsVerb, format: str = None, context=None):
         mime = None
 
         if format:
@@ -280,7 +269,7 @@ class Service(gws.Node, gws.IOwsService):
             'with_inspire_meta': self.with_inspire_meta,
         }, context)
 
-        return tpl.render(gws.TemplateRenderInput(context={'ARGS': context}))
+        return tpl.render(gws.TemplateRenderInput(context=context))
 
     def enum_template_formats(self):
         fs = {}
@@ -291,23 +280,6 @@ class Service(gws.Node, gws.IOwsService):
                 fs[tpl.name].add(mime)
 
         return {k: sorted(v) for k, v in fs.items()}
-
-    def xml_error_response(self, status, description) -> gws.ContentResponse:
-        description = gws.lib.xml2.encode(description)
-        content = (f'<?xml version="1.0" encoding="UTF-8"?>'
-                   + f'<ServiceExceptionReport>'
-                   + f'<ServiceException code="{status}">{description}</ServiceException>'
-                   + f'</ServiceExceptionReport>')
-        # @TODO, check OGC 17-007r1
-        # return self.xml_response(content, status)
-        return self.xml_response(content, 200)
-
-    def xml_response(self, content, status=200) -> gws.ContentResponse:
-        return gws.ContentResponse(
-            mime=gws.lib.mime.XML,
-            content=gws.lib.xml2.to_string(content),
-            status=status,
-        )
 
     # LayerCaps and lists
 
@@ -374,7 +346,7 @@ class Service(gws.Node, gws.IOwsService):
                 lc
                 for name in name_list
                 for lc in tree.leaves
-                if any(self._xname_matches(a.layer_xname, name) for a in lc.ancestors)
+                if any(self._qname_matches(a.layer_qname, name) for a in lc.ancestors)
             ]
 
         if scope == self.SCOPE_FEATURE:
@@ -382,7 +354,7 @@ class Service(gws.Node, gws.IOwsService):
                 lc
                 for name in name_list
                 for lc in tree.leaves
-                if self._xname_matches(lc.feature_xname, name)
+                if self._qname_matches(lc.feature_qname, name)
             ]
 
         if scope == self.SCOPE_LEAF:
@@ -390,8 +362,14 @@ class Service(gws.Node, gws.IOwsService):
                 lc
                 for name in name_list
                 for lc in tree.leaves
-                if self._xname_matches(lc.layer_xname, name)
+                if self._qname_matches(lc.layer_qname, name)
             ]
+
+    def _qname_matches(self, qname: str, s: str) -> bool:
+        if ':' in s:
+            return qname == s
+        pfx, n = qname.split(':')
+        return n == s and pfx == _DEFAULT_NAMESPACE_PREFIX
 
     def layer_caps_list_from_request(self, rd: Request, param_names: t.List[str], scope: int, fallback_to_all=True) -> t.List[LayerCaps]:
         """Return a list of leaf layer caps matching request parameters."""
@@ -432,14 +410,15 @@ class Service(gws.Node, gws.IOwsService):
 
         return defaults
 
-    _default_feature_name = 'feature'
-    _default_geometry_name = 'geometry'
-
     def _populate_layer_caps(self, lc: LayerCaps, layer: gws.ILayer, lo: LayerOptions, children: t.List[LayerCaps]):
         lc.layer = layer
         lc.title = layer.title
-        lc.layer_xname = self._parse_xname(lo.layer_name)
-        lc.feature_xname = self._parse_xname(lo.feature_name)
+
+        lc.layer_qname = xml3.qualify_name(lo.layer_name, _DEFAULT_NAMESPACE_PREFIX)
+        lc.layer_pname = xml3.unqualify_name(lc.layer_qname)
+
+        lc.feature_qname = xml3.qualify_name(lo.feature_name, _DEFAULT_NAMESPACE_PREFIX)
+        lc.feature_pname = xml3.unqualify_name(lc.feature_qname)
 
         lc.meta = layer.metadata.values
         lc.children = children
@@ -461,28 +440,24 @@ class Service(gws.Node, gws.IOwsService):
             for crs in self.supported_crs or [layer.crs]
         ]
 
-        if not lc.feature_xname.ns.schema and layer.data_model:
-            schema = layer.data_model.xml_schema(self._default_geometry_name)
-            lc.adhoc_feature_schema = [
-                FeatureSchemaAttribute(
-                    type=typ,
-                    xname=self._parse_xname(name, lc.feature_xname.ns.name))
-                for name, typ in schema.items()
-            ]
+        pfx, n = xml3.split_name(lc.feature_qname)
+
+        if not xml3.namespaces.schema(pfx) and layer.data_model:
+            lc.adhoc_feature_schema = layer.data_model.xml_schema_dict(name_for_geometry=_DEFAULT_GEOMETRY_NAME)
 
         return lc
 
     # FeatureCaps and collections
 
     def feature_collection(
-            self,
-            rd: Request,
-            features: t.List[gws.IFeature],
-            lcs: t.List[LayerCaps],
-            target_crs: gws.ICrs,
-            populate=True,
-            invert_axis_if_geographic=False,
-            crs_format: gws.CrsFormat = gws.CrsFormat.URI
+        self,
+        rd: Request,
+        features: t.List[gws.IFeature],
+        lcs: t.List[LayerCaps],
+        target_crs: gws.ICrs,
+        populate=True,
+        invert_axis_if_geographic=False,
+        crs_format: gws.CrsFormat = gws.CrsFormat.URI
     ) -> FeatureCollection:
         ##
         coll = FeatureCollection(
@@ -498,25 +473,27 @@ class Service(gws.Node, gws.IOwsService):
 
         layer_to_caps: t.Dict[str, LayerCaps] = {lc.layer.uid: lc for lc in lcs}
 
-        default_xname = self._parse_xname(self._default_feature_name)
+        default_qname = xml3.qualify_name(_DEFAULT_FEATURE_NAME, _DEFAULT_NAMESPACE_PREFIX)
         invert_axis = target_crs.is_geographic and invert_axis_if_geographic
         precision = 6 if target_crs.is_geographic else 2
 
         for f in features:
             f.transform_to(target_crs)
 
-            shape_tag = gws.lib.gml.shape_to_tag(f.shape, precision, invert_axis, crs_format) if f.shape else None
+            shape_element = None
+            if f.shape:
+                shape_element = gws.lib.gml.shape_to_element(f.shape, precision, invert_axis, crs_format)
 
             f.apply_data_model()
 
-            xname = default_xname
+            qname = default_qname
             if f.layer and f.layer.uid in layer_to_caps:
-                xname = layer_to_caps[f.layer.uid].feature_xname
+                qname = layer_to_caps[f.layer.uid].feature_qname
 
             coll.caps.append(FeatureCaps(
                 feature=f,
-                shape_tag=shape_tag,
-                xname=xname
+                shape_element=shape_element,
+                qname=qname
             ))
 
             coll.features.append(f)
@@ -528,7 +505,7 @@ class Service(gws.Node, gws.IOwsService):
     def service_url_path(self, project: t.Optional[gws.IProject] = None) -> str:
         return gws.action_url_path('owsService', serviceUid=self.uid, projectUid=project.uid if project else None)
 
-    def render_map_bbox_from_layer_caps_list(self, lcs: t.List[LayerCaps], bounds: gws.Bounds, rd: Request) -> gws.ContentResponse:
+    def render_map_bbox_from_layer_caps_list(self, rd: Request, lcs: t.List[LayerCaps], bounds: gws.Bounds) -> gws.ContentResponse:
         try:
             px_width = int(rd.req.param('width'))
             px_height = int(rd.req.param('height'))
@@ -538,51 +515,22 @@ class Service(gws.Node, gws.IOwsService):
         if not bounds or not px_width or not px_height:
             raise gws.base.web.error.BadRequest()
 
-        render_input = gws.MapRenderInput(
+        mri = gws.MapRenderInput(
             background_color=0 if rd.req.param('transparent', '').lower() == 'false' else None,
-            items=[],
-            view=gws.lib.render.view_from_bbox(
-                crs=bounds.crs,
-                bbox=bounds.extent,
-                out_size_px=(px_width, px_height),
-                rotation=0,
-                dpi=0)
+            bbox=bounds.extent,
+            crs=bounds.crs,
+            out_size=(px_width, px_height, units.PX),
+            planes=[
+                gws.MapRenderInputPlane(type='image_layer', layer=lc.layer)
+                for lc in lcs
+            ]
         )
 
-        for lc in lcs:
-            render_input.items.append(gws.MapRenderInputPlane(
-                type=gws.MapRenderInputPlaneType.image_layer,
-                layer=lc.layer))
+        mro = gws.lib.render.render_map(mri)
 
-        renderer = gws.lib.render.Renderer()
-        for _ in renderer.run(render_input):
-            pass
-
-        out = renderer.output
-        if out.items and out.items[0].image:
-            content = out.items[0].image.to_bytes()
+        if mro.planes and mro.planes[0].image:
+            content = mro.planes[0].image.to_bytes()
         else:
             content = gws.lib.image.PIXEL_PNG8
 
-        return gws.ContentResponse(mime='image/png', content=content)
-
-    def _parse_xname(self, name: str, nsid: str = None) -> XmlName:
-        if ':' in name:
-            nsid, name = name.split(':')
-
-        if nsid:
-            ns = self.xml_helper.namespace(nsid)
-            if not ns:
-                raise gws.Error(f'unknown namespace {nsid!r} for name {name!r}')
-        else:
-            ns = self.xml_helper.fallback_namespace
-
-        return XmlName(
-            p=name,
-            q=ns.name + ':' + name,
-            ns=ns)
-
-    def _xname_matches(self, xname: XmlName, s: str) -> bool:
-        if ':' in s:
-            return xname.q == s
-        return xname.p == s and xname.ns == self.xml_helper.fallback_namespace
+        return gws.ContentResponse(mime=gws.lib.mime.PNG, content=content)

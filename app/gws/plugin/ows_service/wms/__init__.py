@@ -38,22 +38,19 @@ class Object(core.Service):
     def default_templates(self):
         return [
             gws.Config(
-                type='pyxml',
-                path=gws.dirname(__file__) + '/templates/getCapabilities.cx.py',
+                type='py',
+                path=gws.dirname(__file__) + '/templates/getCapabilities.py',
                 subject='ows.GetCapabilities',
                 mimeTypes=['xml'],
+                access='all:allow',
             ),
-            # gws.Config(
-            #     type='xml',
-            #     path=gws.dirname(__file__) + '/templates/getCapabilities.cx',
-            #     subject='ows.GetCapabilities',
-            #     mimeTypes=['xml'],
-            # ),
+            # NB use the wfs template
             gws.Config(
-                type='xml',
-                path=gws.dirname(__file__) + '/templates/getFeatureInfo.cx',
+                type='py',
+                path=gws.dirname(__file__) + '/../wfs/templates/getFeature.py',
                 subject='ows.GetFeatureInfo',
                 mimeTypes=['xml', 'gml', 'gml3'],
+                access='all:allow',
             ),
         ]
 
@@ -67,11 +64,6 @@ class Object(core.Service):
             isoScope='dataset',
             isoSpatialRepresentationType='vector',
         )
-
-    ##
-
-    def configure(self):
-        pass
 
     ##
 
@@ -124,7 +116,7 @@ class Object(core.Service):
         if not lcs:
             raise gws.base.web.error.NotFound('No layers found')
 
-        return self.render_map_bbox_from_layer_caps_list(lcs, bounds, rd)
+        return self.render_map_bbox_from_layer_caps_list(rd, lcs, bounds)
 
     def handle_getlegendgraphic(self, rd: core.Request):
         # https://docs.geoserver.org/stable/en/user/services/wms/get_legend_graphic/index.html
@@ -157,6 +149,9 @@ class Object(core.Service):
         except:
             raise gws.base.web.error.BadRequest('Invalid parameter')
 
+        request_crs = bounds.crs
+        bounds = gws.lib.gis.bounds.transformed_to(bounds, rd.project.map.crs)
+
         bbox = bounds.extent
         xres = (bbox[2] - bbox[0]) / px_width
         yres = (bbox[3] - bbox[1]) / px_height
@@ -186,7 +181,7 @@ class Object(core.Service):
             rd,
             features,
             lcs,
-            target_crs=bounds.crs,
+            target_crs=request_crs,
             populate=True,
             invert_axis_if_geographic=self.request_version(rd) >= _WMS_130,
             crs_format=gws.CrsFormat.URN,

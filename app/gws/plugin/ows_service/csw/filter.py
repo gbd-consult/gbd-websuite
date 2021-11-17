@@ -1,5 +1,5 @@
 import gws
-import gws.lib.bounds
+import gws.lib.gis.bounds
 import gws.lib.extent
 import gws.types as t
 
@@ -26,10 +26,10 @@ class Filter:
         return [r for r in recs if r.index in ns]
 
     def _bbox(self, flt, recs):
-        b = gws.lib.bounds.from_gml_envelope_element(flt.first('Envelope'))
+        b = gws.lib.gis.bounds.from_gml_envelope_element(flt.first('Envelope'))
         if not b:
             return []
-        b = gws.lib.bounds.transformed_to(b, gws.EPSG_4326)
+        b = gws.lib.gis.bounds.transformed_to(b, gws.EPSG_4326)
         return [
             r for r in recs
             if not r.get('extent4326') or gws.lib.extent.intersect(r.extent4326, b.extent)
