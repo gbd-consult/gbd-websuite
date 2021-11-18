@@ -6,7 +6,7 @@ import gws.gis.shape
 import gws.types as t
 
 from . import caps
-from .. import core
+from .. import core, featureinfo
 
 """
     References
@@ -60,6 +60,7 @@ class Object(core.Provider):
             protocol=self.protocol,
             protocol_version=self.version,
             request_crs=self.force_crs,
+            request_crs_format=gws.CrsFormat.EPSG,
             source_layers=source_layers,
         )
 
@@ -70,7 +71,7 @@ class Object(core.Provider):
         params = gws.merge(ps.params, args.params)
 
         text = gws.gis.ows.request.get_text(**self.operation_args(gws.OwsVerb.GetFeature, params=params))
-        features = gws.gis.ows.formats.read(text, crs=ps.request_crs, axis=ps.axis)
+        features = featureinfo.parse(text, crs=ps.request_crs, axis=ps.axis)
 
         if features is None:
             gws.log.debug(f'WFS NOT_PARSED params={params!r}')

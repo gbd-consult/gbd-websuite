@@ -9,35 +9,7 @@ import gws
 import gws.lib.sqlite
 import gws.types as t
 
-osgeo.osr.UseExceptions()
-
-"""
-
-Projections can be referenced by:
-
-
-int/numeric SRID
-4326
-
-EPSG Code
-EPSG:4326
-
-OGC HTTP URL
-http://www.opengis.net/gml/srs/epsg.xml#4326
-
-OGC Experimental URN
-urn:x-ogc:def:crs:EPSG:4326
-
-OGC URN
-urn:ogc:def:crs:EPSG::4326
-
-OGC HTTP URI
-http://www.opengis.net/def/crs/EPSG/0/4326
-
-# https://docs.geoserver.org/stable/en/user/services/wfs/webadmin.html#gml
-
-
-"""
+# osgeo.osr.UseExceptions()
 
 # https://epsg.io/4326
 
@@ -62,7 +34,7 @@ _cache: dict = {}
 
 
 # NB since Crs objects are often compared for equality,
-# it's imperative that every (format, srid) object is a singleton
+# it's imperative that they are singletons
 
 def get(crsid: t.Optional[gws.CrsId]) -> t.Optional['Crs']:
     if not crsid:
@@ -80,24 +52,23 @@ def _get(crsid):
         _cache[crsid] = None
         return None
 
-    key = fmt, srid
-    if key in _cache:
-        return _cache[key]
+    if srid in _cache:
+        return _cache[srid]
 
     rec = _load(srid)
 
     if not rec:
-        _cache[crsid] = _cache[key] = _cache[srid] = None
+        _cache[crsid] = _cache[srid] = None
         return None
 
-    crs = Crs(rec, fmt)
+    crs = Crs(rec)
 
     with gws.app_lock('crs'):
-        if key in _cache:
-            return _cache[key]
-        _cache[key] = crs
+        if srid in _cache:
+            return _cache[srid]
+        _cache[crsid] = _cache[srid] = crs
 
-    return _cache[key]
+    return _cache[srid]
 
 
 def get3857():
@@ -117,9 +88,110 @@ def require(crsid: gws.CrsId) -> 'Crs':
 
 ##
 
+def best_match(crs: gws.ICrs, supported_crs: t.List[gws.ICrs]) -> gws.ICrs:
+    """Return a crs from the list that most closely matches the given crs.
+
+    Args:
+        crs: target CRS
+        supported_crs: CRS list
+
+    Returns:
+        A CRS object
+    """
+
+    for sup in supported_crs:
+        if sup == crs:
+            return crs
+
+    bst = _best_match(crs, supported_crs)
+    gws.log.debug(f'best_crs: using {bst.srid!r} for {crs.srid!r}')
+    return bst
+
+
+def _best_match(crs, supported_crs):
+    # @TODO find a projection with less errors
+    # @TODO find a projection with same units
+
+    if crs.is_projected:
+        # for a projected crs, find webmercator
+        for sup in supported_crs:
+            if sup.srid == c3857:
+                return sup
+
+        # not found, return the first projected crs
+        for sup in supported_crs:
+            if sup.is_projected:
+                return sup
+
+    if crs.is_geographic:
+
+        # for a geographic crs, try wgs first
+        for sup in supported_crs:
+            if sup.srid == c4326:
+                return sup
+
+        # not found, return the first geographic crs
+        for sup in supported_crs:
+            if sup.is_geographic:
+                return sup
+
+    # should never be here, but...
+
+    for sup in supported_crs:
+        return sup
+
+
+def best_bounds(crs: gws.ICrs, supported_bounds: t.List[gws.Bounds]) -> gws.Bounds:
+    """Return the best one from the list of supported bounds.
+
+    Args:
+        crs: target CRS
+        supported_bounds:
+
+    Returns:
+        A Bounds object
+    """
+
+    bst = best_match(crs, [b.crs for b in supported_bounds])
+    for b in supported_bounds:
+        if b.crs == bst:
+            return b
+
+
+def best_axis(
+    crs: gws.ICrs,
+    protocol: gws.OwsProtocol = None,
+    protocol_version: str = None,
+    crs_format: gws.CrsFormat = None,
+    inverted_crs: t.Optional[t.List[gws.ICrs]] = None
+) -> gws.Axis:
+    """Return the 'best guess' axis under given circumstances.
+
+    Args:
+        crs: target CRS
+        protocol: OWS protocol (WMS, WFS...)
+        protocol_version: protocol version
+        crs_format: the format the target_crs was obtained from
+        inverted_crs: user-provided list of CRSes known to have an inverted (YX) axis
+
+    Returns:
+        An axis
+    """
+
+    # @TODO some logic to guess the axis, based on crs, service protocol and version
+    # see https://docs.geoserver.org/latest/en/user/services/wfs/basics.html#wfs-basics-axis
+
+    if inverted_crs and crs in inverted_crs:
+        return gws.AXIS_YX
+
+    return gws.AXIS_XY
+
+
+##
+
 
 class Crs(gws.Object, gws.ICrs):
-    def __init__(self, rec, fmt):
+    def __init__(self, rec):
         super().__init__()
 
         self.srid = rec['srid']
@@ -134,15 +206,10 @@ class Crs(gws.Object, gws.ICrs):
         self.url = _formats[gws.CrsFormat.URL] % self.srid
         self.uri = _formats[gws.CrsFormat.URI] % self.srid
 
-        self.format = fmt
-
         # self.pp = pyproj.Proj(self.epsg)
 
-    def same_as(self, other):
-        return self.srid == other.srid
-
     def transform_extent(self, ext, target):
-        if self.same_as(target):
+        if target == self:
             return ext
 
         ax = min(ext[0], ext[2])
@@ -168,12 +235,12 @@ class Crs(gws.Object, gws.ICrs):
         )
 
     def transform_geometry(self, geom, target):
-        if self.same_as(target):
+        if target == self:
             return geom
         return fiona.transform.transform_geom(self.epsg, target.epsg, geom)
 
-    def to_string(self, format=None):
-        return getattr(self, str(format or self.format).lower())
+    def to_string(self, fmt):
+        return getattr(self, str(fmt).lower())
 
     def to_geojson(self):
         # https://geojson.org/geojson-spec#named-crs
@@ -189,6 +256,30 @@ class Crs(gws.Object, gws.ICrs):
 
 
 ##
+
+"""
+Projections can be referenced by:
+
+int/numeric SRID
+4326
+
+EPSG Code
+EPSG:4326
+
+OGC HTTP URL
+http://www.opengis.net/gml/srs/epsg.xml#4326
+
+OGC Experimental URN
+urn:x-ogc:def:crs:EPSG:4326
+
+OGC URN
+urn:ogc:def:crs:EPSG::4326
+
+OGC HTTP URI
+http://www.opengis.net/def/crs/EPSG/0/4326
+
+# https://docs.geoserver.org/stable/en/user/services/wfs/webadmin.html#gml
+"""
 
 _formats = {
     gws.CrsFormat.EPSG: 'EPSG:%d',
@@ -251,19 +342,3 @@ _dbpath = gws.dirname(__file__) + '/crs.sqlite'
 def _load(srid):
     with gws.lib.sqlite.connect(_dbpath) as conn:
         return conn.execute('SELECT * FROM crs WHERE srid=?', (srid,)).fetchone()
-
-
-##
-
-
-_invert_axis = {
-    'epsg': False,
-    'url': False,
-    'uri': True,
-    'urnx': True,
-    'urn': True,
-}
-
-
-def invert_axis(fmt):
-    return _invert_axis.get(fmt, False)

@@ -487,7 +487,6 @@ class ICrs(IObject, Protocol):
     units: str
     is_geographic: bool
     is_projected: bool
-    format: CrsFormat
 
     epsg: str
     urn: str
@@ -495,13 +494,11 @@ class ICrs(IObject, Protocol):
     url: str
     uri: str
 
-    def same_as(self, other: 'ICrs') -> bool: ...
-
     def transform_extent(self, extent: Extent, target: 'ICrs') -> Extent: ...
 
     def transform_geometry(self, geom: dict, target: 'ICrs') -> dict: ...
 
-    def to_string(self, fmt: CrsFormat = None) -> str: ...
+    def to_string(self, fmt: CrsFormat) -> str: ...
 
     def to_geojson(self) -> dict: ...
 
@@ -571,7 +568,7 @@ class SourceLayer(Data):
 # ----------------------------------------------------------------------------------------------------------------------
 # XML
 
-class XmlElement(Data):
+class XmlElement:
     name: str
     children: List['XmlElement']
     attributes: Dict[str, Any]

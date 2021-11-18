@@ -2,8 +2,8 @@ import re
 
 import gws
 import gws.gis.extent
-import gws.gis.util
 import gws.types as t
+
 
 ##
 
@@ -70,6 +70,19 @@ def layer_matches(sl: gws.SourceLayer, slf: t.Optional[LayerFilter]) -> bool:
     return True
 
 
+def check_layers(layers) -> t.List[gws.SourceLayer]:
+    def walk(sl, parent_path, level):
+        if not sl:
+            return
+        sl.a_uid = gws.to_uid(sl.name or sl.metadata.get('title'))
+        sl.a_path = parent_path + '/' + sl.a_uid
+        sl.a_level = level
+        sl.layers = gws.compact(walk(c, sl.a_path, level + 1) for c in (sl.layers or []))
+        return sl
+
+    return gws.compact(walk(sl, '', 1) for sl in layers)
+
+
 def filter_layers(layers: t.List[gws.SourceLayer], slf: LayerFilter) -> t.List[gws.SourceLayer]:
     """Filter source layers by the given layer filter."""
 
@@ -107,10 +120,9 @@ def combined_bounds(layers: t.List[gws.SourceLayer], target_crs: gws.ICrs) -> gw
     for sl in layers:
         if not sl.supported_bounds:
             continue
-        b = gws.gis.util.best_bounds(target_crs, sl.supported_bounds)
-        if b:
-            ext = gws.gis.extent.transform(b.extent, b.crs, target_crs)
-            exts.append(ext)
+        bb = gws.gis.crs.best_bounds(target_crs, sl.supported_bounds)
+        ext = gws.gis.extent.transform(bb.extent, bb.crs, target_crs)
+        exts.append(ext)
 
     if exts:
         return gws.Bounds(crs=target_crs, extent=gws.gis.extent.merge(exts))

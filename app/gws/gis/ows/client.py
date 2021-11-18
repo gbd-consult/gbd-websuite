@@ -3,7 +3,6 @@
 import gws
 import gws.gis.extent
 import gws.gis.source
-import gws.gis.util
 import gws.gis.zoom
 import gws.types as t
 
@@ -55,6 +54,7 @@ class PreparedOwsSearch(gws.Data):
     protocol: gws.OwsProtocol
     protocol_version: str
     request_crs: gws.ICrs
+    request_crs_format: gws.CrsFormat
     source_layers: t.List[gws.SourceLayer]
 
 
@@ -79,13 +79,13 @@ def prepared_search(**kwargs) -> PreparedOwsSearch:
 
     our_crs = ps.bounds.crs
 
-    ps.request_crs = ps.request_crs or gws.gis.util.best_crs(
+    ps.request_crs = ps.request_crs or gws.gis.crs.best_match(
         our_crs,
         gws.gis.source.supported_crs_list(ps.source_layers))
 
     bbox = gws.gis.extent.transform(ps.bounds.extent, our_crs, ps.request_crs)
 
-    ps.axis = gws.gis.util.best_axis(ps.request_crs, ps.protocol, ps.protocol_version, ps.inverted_crs)
+    ps.axis = gws.gis.crs.best_axis(ps.request_crs, protocol=ps.protocol, protocol_version=ps.protocol_version, inverted_crs=ps.inverted_crs)
     if ps.axis == gws.AXIS_YX:
         bbox = gws.gis.extent.swap_xy(bbox)
 
@@ -95,7 +95,7 @@ def prepared_search(**kwargs) -> PreparedOwsSearch:
         v3 = ps.protocol_version >= '1.3'
         params = {
             'BBOX': bbox,
-            'CRS' if v3 else 'SRS': ps.request_crs.to_string(),
+            'CRS' if v3 else 'SRS': ps.request_crs.to_string(ps.request_crs_format),
             'WIDTH': wms_box_size_px,
             'HEIGHT': wms_box_size_px,
             'I' if v3 else 'X': wms_box_size_px >> 1,
@@ -112,7 +112,7 @@ def prepared_search(**kwargs) -> PreparedOwsSearch:
         v2 = ps.protocol_version >= '2.0.0'
         params = {
             'BBOX': bbox,
-            'SRSNAME': ps.request_crs.to_string(),
+            'SRSNAME': ps.request_crs.to_string(ps.request_crs_format),
             'TYPENAMES' if v2 else 'TYPENAME': layer_names,
             'VERSION': ps.protocol_version,
         }

@@ -48,7 +48,7 @@ def _from_wkb(g, crs):
     return Shape(g, crs)
 
 
-def from_geometry(geometry, crs: gws.ICrs) -> gws.IShape:
+def from_geometry(geometry: dict, crs: gws.ICrs) -> gws.IShape:
     if geometry.get('type').upper() == 'CIRCLE':
         geom = shapely.geometry.Point(geometry.get('center'))
         geom = geom.buffer(

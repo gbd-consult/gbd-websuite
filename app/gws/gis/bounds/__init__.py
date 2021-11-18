@@ -4,7 +4,6 @@ import gws
 import gws.gis.crs
 import gws.gis.extent
 import gws.gis.gml
-import gws.lib.xml2
 import gws.types as t
 
 
@@ -43,14 +42,14 @@ def from_request_bbox(bbox: str, target_crs: gws.ICrs = None, invert_axis_if_geo
     return gws.Bounds(crs=source_crs, extent=ext)
 
 
-def from_gml_envelope_element(el: gws.lib.xml2.Element):
+def from_gml_envelope_element(el: gws.XmlElement, fallback_crs: gws.ICrs = None):
     """Create Bounds from a gml:Envelope"""
 
-    return gws.gis.gml.parse_envelope(el)
+    return gws.gis.gml.parse_envelope(el, fallback_crs)
 
 
 def transformed_to(b: gws.Bounds, target_crs: gws.ICrs) -> gws.Bounds:
-    if target_crs.same_as(b.crs):
+    if b.crs == target_crs:
         return b
 
     return gws.Bounds(

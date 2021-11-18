@@ -1,7 +1,6 @@
 import gws
 import gws.base.layer
 import gws.gis.source
-import gws.gis.util
 import gws.gis.ows
 import gws.types as t
 
@@ -21,7 +20,7 @@ class Object(gws.base.layer.image.Object, gws.IOwsClient):
 
     def configure_source(self):
         gws.gis.ows.client.configure_layers(self, provider_module.Object, is_image=True)
-        self.source_crs = gws.gis.util.best_crs(
+        self.source_crs = gws.gis.crs.best_match(
             self.provider.force_crs or self.crs,
             gws.gis.source.supported_crs_list(self.source_layers))
         return True

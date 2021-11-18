@@ -6,7 +6,6 @@ import gws
 import gws.gis.crs
 import gws.lib.metadata
 import gws.lib.net
-import gws.gis.ows.parseutil as u
 import gws.lib.xml3 as xml3
 import gws.types as t
 
@@ -53,7 +52,7 @@ def parse(xml: str) -> Caps:
 
     map_layers = _map_layers(root_el, caps.properties)
     root_group = _map_layer_tree(xml3.first(root_el, 'layer-tree-group'), map_layers)
-    caps.source_layers = u.enum_source_layers(root_group.layers)
+    caps.source_layers = gws.gis.source.check_layers(root_group.layers)
 
     return caps
 

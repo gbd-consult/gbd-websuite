@@ -474,7 +474,11 @@ class Service(gws.Node, gws.IOwsService):
         layer_to_caps: t.Dict[str, LayerCaps] = {lc.layer.uid: lc for lc in lcs}
 
         default_qname = xml3.qualify_name(_DEFAULT_FEATURE_NAME, _DEFAULT_NAMESPACE_PREFIX)
-        invert_axis = target_crs.is_geographic and invert_axis_if_geographic
+
+        axis = gws.AXIS_XY
+        if target_crs.is_geographic and invert_axis_if_geographic:
+            axis = gws.AXIS_YX
+
         precision = 6 if target_crs.is_geographic else 2
 
         for f in features:
@@ -482,7 +486,8 @@ class Service(gws.Node, gws.IOwsService):
 
             shape_element = None
             if f.shape:
-                shape_element = gws.gis.gml.shape_to_element(f.shape, precision, invert_axis, crs_format)
+                shape_element = gws.gis.gml.shape_to_element(
+                    f.shape, precision, axis, crs_format, with_ns='gml')
 
             f.apply_data_model()
 

@@ -1,11 +1,13 @@
 import gws
 import gws.gis.crs
-import gws.gis.ows.parseutil as u
+import gws.gis.source
 import gws.lib.units as units
-import gws.lib.xml2
+import gws.lib.xml3 as xml3
 import gws.types as t
 
 from .. import core
+from .. import parseutil as u
+
 
 # http://portal.opengeospatial.org/files/?artifact_id=35326
 
@@ -15,79 +17,94 @@ class Caps(core.Caps):
 
 
 def parse(xml):
-    root_el = gws.lib.xml2.from_string(xml)
-
-    tile_matrix_sets = [_tile_matrix_set(e) for e in root_el.all('Contents.TileMatrixSet')]
+    root_el = xml3.from_string(xml, compact_ws=True, strip_ns=True)
+    tile_matrix_sets = [_tile_matrix_set(e) for e in xml3.all(root_el, 'Contents.TileMatrixSet')]
     tms_map = {tms.uid: tms for tms in tile_matrix_sets}
-
-    source_layers = u.enum_source_layers(_layer(e, tms_map) for e in root_el.all('Contents.Layer'))
-
+    source_layers = gws.gis.source.check_layers(
+        _layer(e, tms_map) for e in xml3.all(root_el, 'Contents.Layer'))
     return Caps(
         tile_matrix_sets=tile_matrix_sets,
-        metadata=u.get_service_metadata(root_el),
-        operations=u.get_operations(root_el),
+        metadata=u.service_metadata(root_el),
+        operations=u.service_operations(root_el),
         source_layers=source_layers,
-        version=root_el.attr('version'),
-    )
+        version=xml3.attr(root_el, 'version'))
 
 
-def _layer(el, tms_map):
+def _layer(el: gws.XmlElement, tms_map):
+    # <Layer>
+    #   <ows:Title>...
+    #   <Style>...
+    #   <Format>...
+    #   <TileMatrixSetLink>
+    #     <TileMatrixSet>...
+
     sl = gws.SourceLayer()
 
-    sl.metadata = u.get_metadata(el)
+    sl.metadata = u.element_metadata(el)
     sl.name = sl.metadata.get('name', '')
     sl.title = sl.metadata.get('title', '')
 
-    sl.styles = [u.get_style(e) for e in el.all('Style')]
+    sl.styles = [u.parse_style(e) for e in xml3.all(el, 'Style')]
     sl.default_style = u.default_style(sl.styles)
     if sl.default_style:
         sl.legend_url = sl.default_style.legend_url
 
-    sl.tile_matrix_ids = [e.get_text('TileMatrixSet') for e in el.all('TileMatrixSetLink')]
+    sl.tile_matrix_ids = [xml3.text(e, 'TileMatrixSet') for e in xml3.all(el, 'TileMatrixSetLink')]
     sl.tile_matrix_sets = [tms_map[tid] for tid in sl.tile_matrix_ids]
 
-    extra_crsids = set(tms.crs.srid for tms in sl.tile_matrix_sets)
-    sl.supported_bounds = u.get_supported_bounds(el, extra_crsids)
+    extra_crsids = [tms.crs.srid for tms in sl.tile_matrix_sets]
+    sl.supported_bounds = u.supported_bounds(el, extra_crsids)
 
     sl.is_image = True
     sl.is_visible = True
 
-    sl.image_format = el.get_text('Format')
+    sl.image_format = xml3.text(el, 'Format')
 
     sl.resource_urls = {
-        rs.attr('resourceType'): rs.attr('template')
-        for rs in el.all('ResourceURL')
+        xml3.attr(e, 'resourceType'): xml3.attr(e, 'template')
+        for e in xml3.all(el, 'ResourceURL')
     }
 
     return sl
 
 
-def _tile_matrix_set(el):
+def _tile_matrix_set(el: gws.XmlElement):
+    # <TileMatrixSet>
+    #   <ows:Identifier>...
+    #   <ows:SupportedCRS>...
+    #   <TileMatrix>
+    #     ...
+    
     tms = gws.TileMatrixSet()
 
-    tms.uid = el.get_text('Identifier')
-    tms.crs = gws.gis.crs.require(el.get_text('SupportedCRS'))
+    tms.uid = xml3.text(el, 'Identifier')
+    tms.crs = gws.gis.crs.require(xml3.text(el, 'SupportedCRS'))
     tms.matrices = sorted(
-        [_tile_matrix(e) for e in el.all('TileMatrix')],
+        [_tile_matrix(e) for e in xml3.all(el, 'TileMatrix')],
         key=lambda m: int('1' + m.uid))
 
     return tms
 
 
-def _tile_matrix(el):
+def _tile_matrix(el: gws.XmlElement):
+    # <TileMatrix>
+    #   <ows:Identifier>
+    #   <ScaleDenominator>
+    #   ...
+    
     tm = gws.TileMatrix()
-    tm.uid = el.get_text('Identifier')
-    tm.scale = float(el.get_text('ScaleDenominator'))
+    tm.uid = xml3.text(el, 'Identifier')
+    tm.scale = u.to_float(xml3.text(el, 'ScaleDenominator'))
 
-    p = u.to_float_pair(el.get_text('TopLeftCorner'))
+    p = u.to_float_pair(xml3.text(el, 'TopLeftCorner'))
     tm.x = p[0]
     tm.y = p[1]
 
-    tm.width = int(el.get_text('MatrixWidth'))
-    tm.height = int(el.get_text('MatrixHeight'))
+    tm.width = u.to_int(xml3.text(el, 'MatrixWidth'))
+    tm.height = u.to_int(xml3.text(el, 'MatrixHeight'))
 
-    tm.tile_width = int(el.get_text('TileWidth'))
-    tm.tile_height = int(el.get_text('TileHeight'))
+    tm.tile_width = u.to_int(xml3.text(el, 'TileWidth'))
+    tm.tile_height = u.to_int(xml3.text(el, 'TileHeight'))
 
     tm.extent = _extent_for_matrix(tm)
 

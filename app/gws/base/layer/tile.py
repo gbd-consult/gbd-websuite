@@ -46,7 +46,7 @@ class Object(image.Object):
     def own_bounds(self):
         # in the "native" projection, use the service extent
         # otherwise, the map extent
-        if self.service.crs.same_as(self.crs):
+        if self.service.crs == self.crs:
             return gws.Bounds(crs=self.service.crs, extent=self.service.extent)
 
     def configure(self):

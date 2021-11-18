@@ -1,36 +1,32 @@
 import gws
-import gws.gis.ows.parseutil as u
-import gws.lib.xml2
+import gws.lib.xml3 as xml3
+import gws.gis.source
 import gws.types as t
 
 from .. import core
+from .. import parseutil as u
 
+
+# @TODO check support caps (we need at least BBOX)
 
 def parse(xml) -> core.Caps:
-    root_el = gws.lib.xml2.from_string(xml)
-    source_layers = u.enum_source_layers(_feature_type(e) for e in root_el.all('FeatureTypeList.FeatureType'))
+    root_el = xml3.from_string(xml, compact_ws=True, strip_ns=True)
+    source_layers = gws.gis.source.check_layers(
+        _feature_type(e) for e in xml3.all(root_el, 'FeatureTypeList.FeatureType'))
     return core.Caps(
-        metadata=u.get_service_metadata(root_el),
-        operations=u.get_operations(root_el),
+        metadata=u.service_metadata(root_el),
+        operations=u.service_operations(root_el),
         source_layers=source_layers,
-        version=root_el.attr('version'),
-    )
+        version=xml3.attr(root_el, 'version'))
 
 
 def _feature_type(el):
     sl = gws.SourceLayer()
 
-    sl.name = el.get_text('Name')
-    if ':' in sl.name:
-        _, _, sl.title = sl.name.rpartition(':')
-    else:
-        sl.title = sl.name
-
-    sl.metadata = u.get_metadata(el)
+    sl.name = xml3.text(el, 'Name')
+    sl.title = xml3.unqualify_name(sl.name)
+    sl.metadata = u.element_metadata(el)
     sl.is_queryable = True
-
-    crs_tags = 'DefaultSRS', 'DefaultCRS', 'SRS', 'CRS', 'OtherSRS'
-    extra_crsids = set(e.text for tag in crs_tags for e in el.all(tag))
-    sl.supported_bounds = u.get_supported_bounds(el, extra_crsids)
+    sl.supported_bounds = u.supported_bounds(el)
 
     return sl

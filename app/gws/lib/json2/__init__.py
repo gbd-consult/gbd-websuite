@@ -34,17 +34,25 @@ def to_path(path, x, pretty=False):
         raise Error()
 
 
-def to_string(x, pretty=False, ascii=True):
+def to_string(x, pretty=False, ascii=True, default=None):
     try:
         if pretty:
-            return json.dumps(x, default=_json_default, indent=4, sort_keys=True, ensure_ascii=ascii)
-        return json.dumps(x, default=_json_default, ensure_ascii=ascii)
+            return json.dumps(
+                x,
+                default=default or _json_default,
+                indent=4,
+                sort_keys=True,
+                ensure_ascii=ascii)
+        return json.dumps(
+            x,
+            default=default or _json_default,
+            ensure_ascii=ascii)
     except Exception as e:
         raise Error() from e
 
 
-def to_pretty_string(x, ascii=True):
-    return to_string(x, pretty=True, ascii=ascii)
+def to_pretty_string(x, ascii=True, default=None):
+    return to_string(x, pretty=True, ascii=ascii, default=default)
 
 
 def to_tagged_dict(x):

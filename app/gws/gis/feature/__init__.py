@@ -21,6 +21,10 @@ def from_geojson(js, crs, key_column='id') -> gws.IFeature:
     )
 
 
+def from_args(**kwargs) -> gws.IFeature:
+    return Feature(**kwargs)
+
+
 def from_props(p: gws.Data) -> gws.IFeature:
     return Feature(
         uid=p.get('uid'),

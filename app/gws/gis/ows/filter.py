@@ -5,7 +5,7 @@ import re
 import gws
 import gws.gis.bounds
 import gws.gis.shape
-import gws.lib.xml2
+import gws.lib.xml3 as xml3
 import gws.types as t
 
 
@@ -42,26 +42,26 @@ _SUPPORTED_OPS = {
 
 def from_fes_string(src: str) -> gws.SearchFilter:
     try:
-        el = gws.lib.xml2.from_string(src)
-    except gws.lib.xml2.Error:
-        raise Error('invalid xml')
+        el = xml3.from_string(src)
+    except Exception as exc:
+        raise Error('invalid XML') from exc
     return from_fes_element(el)
 
 
-def from_fes_element(el: gws.lib.xml2.Element) -> gws.SearchFilter:
+def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
     op = el.name.lower()
 
     if op == 'filter':
         # root element, only allow a single child predicate
         if len(el.children) != 1:
             raise Error(f'invalid root predicate')
-        return from_fes_element(el.first())
+        return from_fes_element(el.children[0])
 
     if op in ('and', 'or'):
         return gws.SearchFilter(operator=op, sub=[from_fes_element(c) for c in el.children])
 
     if op not in _SUPPORTED_OPS:
-        raise Error(f'unsupported filter operation {op!r}')
+        raise Error(f'unsupported filter operation {el.name!r}')
 
     f = gws.SearchFilter(
         operator=_SUPPORTED_OPS[op],
@@ -69,7 +69,7 @@ def from_fes_element(el: gws.lib.xml2.Element) -> gws.SearchFilter:
 
     # @TODO support "prop = prop"
 
-    v = el.first('ValueReference') or el.first('PropertyName')
+    v = xml3.first(el, 'ValueReference', 'PropertyName')
     if not v or not v.text:
         raise Error(f'invalid property name')
 
@@ -80,13 +80,13 @@ def from_fes_element(el: gws.lib.xml2.Element) -> gws.SearchFilter:
     f.name = m.group(2)
 
     if op == 'bbox':
-        bounds = gws.gis.bounds.from_gml_envelope_element(el.first('Envelope'))
-        if not bounds:
-            raise Error(f'invalid BBOX')
-        f.shape = gws.gis.shape.from_bounds(bounds)
-        return f
+        v = xml3.first(el, 'Envelope')
+        if v:
+            bounds = gws.gis.bounds.from_gml_envelope_element()
+            f.shape = gws.gis.shape.from_bounds(bounds)
+            return f
 
-    v = el.first('t.Literal')
+    v = xml3.first(el, 'Literal')
     if v:
         f.value = v.text.strip()
         return f

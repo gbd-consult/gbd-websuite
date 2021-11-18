@@ -3,7 +3,6 @@ import zipfile
 import gws
 import gws.gis.crs
 import gws.lib.net
-import gws.gis.ows
 import gws.types as t
 
 from . import caps
@@ -94,6 +93,7 @@ class Object(gws.Node, gws.IOwsProvider):
             protocol=gws.OwsProtocol.WMS,
             protocol_version='1.3.0',
             request_crs=self.force_crs,
+            request_crs_format=gws.CrsFormat.EPSG,
             source_layers=source_layers,
         )
 
@@ -114,7 +114,7 @@ class Object(gws.Node, gws.IOwsProvider):
         params = gws.merge(qgis_defaults, ps.params, args.params)
 
         text = gws.gis.ows.request.get_text(self.url, gws.OwsProtocol.WMS, gws.OwsVerb.GetFeatureInfo, params=params)
-        features = gws.gis.ows.formats.read(text, crs=ps.request_crs)
+        features = [] # gws.gis.ows.formats.read(text, crs=ps.request_crs)
 
         if features is None:
             gws.log.debug(f'QGIS/WMS NOT_PARSED params={params!r}')

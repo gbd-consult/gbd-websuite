@@ -8,7 +8,7 @@ import gws.types as t
 
 class CapsParams(gws.CliParams):
     src: str  #: service URL or an XML file name
-    protocol: str = ''  #: service name, e.g. WMS
+    type: str = ''  #: service type, e.g. WMS
     out: str = ''  #: output filename
 
 
@@ -21,8 +21,8 @@ class Object(gws.Node):
 
         protocol = None
 
-        if p.protocol:
-            protocol = p.protocol.lower()
+        if p.type:
+            protocol = p.type.lower()
         else:
             u = p.src.lower()
             for s in ('wms', 'wmts', 'wfs'):
@@ -31,7 +31,7 @@ class Object(gws.Node):
                     break
 
         if not protocol:
-            raise gws.Error('unknown protocol')
+            raise gws.Error('unknown service')
 
         if p.src.startswith(('http:', 'https:')):
             xml = gws.gis.ows.request.get_text(
@@ -43,7 +43,18 @@ class Object(gws.Node):
 
         mod = gws.import_from_path(f'gws/plugin/ows_provider/{protocol}/caps.py')
         res = mod.parse(xml)
-        js = gws.lib.json2.to_pretty_string(res)
+
+        def js(x):
+            if isinstance(x, gws.IMetadata):
+                return vars(x.values)
+            if isinstance(x, gws.ICrs):
+                return x.epsg
+            try:
+                return vars(x)
+            except TypeError:
+                return repr(x)
+
+        js = gws.lib.json2.to_pretty_string(res, default=js)
 
         if p.out:
             gws.write_file(p.out, js)

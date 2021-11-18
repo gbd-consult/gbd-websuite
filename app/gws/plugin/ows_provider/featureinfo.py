@@ -1,0 +1,232 @@
+"""Parse WMS/WFS FeatureInfo responses."""
+
+import gws
+import gws.gis.shape
+import gws.gis.gml
+import gws.lib.xml3 as xml3
+import gws.types as t
+
+
+def parse(
+    text,
+    fallback_crs: t.Optional[gws.ICrs] = None,
+    **kwargs
+) -> t.List[gws.IFeature]:
+    try:
+        xml_el = xml3.from_string(text, strip_ns=True)
+    except xml3.Error:
+        xml_el = None
+
+    if xml_el:
+        for fn in _XML_FORMATS:
+            res = fn(xml_el, fallback_crs, **kwargs)
+            if res is not None:
+                gws.log.debug(f'parsed with {fn!r}')
+                return res
+
+    # fallback for non-xml formats
+    for fn in _TEXT_FORMATS:
+        res = fn(text, fallback_crs, **kwargs)
+        if res is not None:
+            gws.log.debug(f'parsed with {fn!r}')
+            return res
+
+
+##
+
+def _f_FeatureCollection(el: gws.XmlElement, fallback_crs, **kwargs):
+    # wfs FeatureCollection
+    #
+    # <FeatureCollection...
+    #     <featureMember>...
+    #         <...>
+
+    if not xml3.element_is(el, 'FeatureCollection'):
+        return None
+
+    features = []
+
+    for member_el in xml3.all(el, 'featureMember'):
+        if not member_el.children:
+            continue
+
+        content_el = member_el.children[0] if len(member_el.children) == 1 else member_el
+
+        atts = []
+        shapes = []
+        uid = xml3.attr(content_el, 'id', 'fid')
+
+        for c in content_el.children:
+            _fc_walk(c, '', atts, shapes, fallback_crs)
+
+        shapes = []
+
+        # like GDAL does:
+        # "When reading a feature, the driver will by default only take into account
+        # the last recognized GML geometry found..." (https://gdal.org/drivers/vector/gml.html)
+
+        shape = shapes[-1] if shapes else None
+
+        features.append(gws.gis.feature.from_args(
+            uid=uid,
+            category=content_el.name,
+            shape=shape,
+            attributes=atts
+        ))
+
+    return features
+
+
+def _fc_walk(el: gws.XmlElement, path, atts, shapes, fallback_crs):
+    path = (path + '.' + el.name) if path else el.name
+
+    if not el.children and el.text:
+        atts.append(gws.Attribute(name=path, value=el.text))
+        return
+
+    if gws.gis.gml.element_is_gml(el):
+        shapes.append(gws.gis.gml.parse_to_shape(el, fallback_crs=fallback_crs))
+        return
+
+    for c in el.children:
+        _fc_walk(c, path, atts, shapes)
+
+
+##
+
+def _f_GetFeatureInfoResponse(el: gws.XmlElement, fallback_crs, **kwargs):
+    # geoserver/qgis
+    #
+    # <GetFeatureInfoResponse>
+    #      <Layer name="....">
+    #          <Feature id="...">
+    #              <Attribute name="..." value="..."/>
+    #              <Attribute name="geometry" value="<wkt>"/>
+
+    if not xml3.element_is(el, 'GetFeatureInfoResponse'):
+        return None
+
+    features = []
+
+    for layer_el in xml3.all(el, 'Layer'):
+
+        layer_name = xml3.attr(layer_el, 'name')
+
+        for feature_el in xml3.all(layer_el, 'Feature'):
+
+            uid = xml3.attr(feature_el, 'id', 'fid')
+            atts = []
+            shape = None
+
+            for attr_el in xml3.all(feature_el, 'Attribute'):
+                name = xml3.attr(attr_el, 'name')
+                value = xml3.attr(attr_el, 'value')
+
+                if value == 'null':
+                    continue
+
+                if name.lower() == 'geometry':
+                    try:
+                        shape = gws.gis.shape.from_wkt(value, fallback_crs)
+                    except Exception:
+                        gws.log.exception()
+                        continue
+
+                if name.lower() in {'id', 'uid', 'fid'}:
+                    uid = value
+                    continue
+
+                atts.append(gws.Attribute(name=name, value=value))
+
+            features.append(gws.gis.feature.from_args(
+                uid=uid,
+                category=layer_name or '',
+                shape=shape,
+                attributes=atts
+            ))
+
+    return features
+
+
+##
+
+def _f_FeatureInfoResponse(el: gws.XmlElement, fallback_crs, **kwargs):
+    # esri
+    #
+    # <FeatureInfoResponse...
+    #     <fields objectid="15111" shape="polygon"...
+    #     <fields objectid="15111" shape="polygon"...
+
+    if not xml3.element_is(el, 'GetFeatureInfoResponse'):
+        return None
+
+    features = []
+
+    for field_el in xml3.all(el, 'Fields'):
+        atts = []
+        uid = ''
+
+        for k, v in field_el.attributes:
+            if k.lower() == 'objectid':
+                uid = v
+            else:
+                atts.append(gws.Attribute(name=k, value=v))
+
+        features.append(gws.gis.feature.from_args(
+            uid=uid,
+            attributes=atts
+        ))
+
+    return features
+
+
+##
+
+def _f_GeoBAK(el: gws.XmlElement, fallback_crs, **kwargs):
+    # GeoBAK (https://www.egovernment.sachsen.de/geodaten.html)
+    #
+    # <geobak_20:Sachdatenabfrage...
+    #     <geobak_20:Kartenebene>....
+    #     <geobak_20:Inhalt>
+    #         <geobak_20:Datensatz>
+    #             <geobak_20:Attribut>
+    #                 <geobak_20:Name>...
+    #                 <geobak_20:Wert>...
+    #     <geobak_20:Inhalt>
+    #         <geobak_20:Datensatz>
+    #           ...
+    #
+
+    if not xml3.element_is(el, 'Sachdatenabfrage'):
+        return None
+
+    features = []
+
+    layer_name = xml3.text(el, 'Kartenebene')
+
+    for content_el in xml3.all(el, 'Inhalt'):
+        for feature_el in xml3.all(content_el, 'Datensatz'):
+            atts = {
+                xml3.text(a, 'Name').strip(): xml3.text(a, 'Wert').strip()
+                for a in xml3.all(feature_el, 'Attribut')
+            }
+            features.append(gws.gis.feature.from_args(
+                category=layer_name,
+                attributes=atts
+            ))
+
+    return features
+
+
+##
+
+
+_XML_FORMATS = [
+    _f_FeatureCollection,
+    _f_GetFeatureInfoResponse,
+    _f_FeatureInfoResponse,
+    _f_GeoBAK,
+]
+
+_TEXT_FORMATS = [
+]

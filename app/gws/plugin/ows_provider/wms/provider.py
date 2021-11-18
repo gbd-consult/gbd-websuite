@@ -6,6 +6,7 @@ import gws.types as t
 
 from . import caps
 from .. import core
+from .. import featureinfo
 
 """
 OGC documents:
@@ -59,6 +60,7 @@ class Object(core.Provider):
             protocol=self.protocol,
             protocol_version=self.version,
             request_crs=self.force_crs,
+            request_crs_format=gws.CrsFormat.EPSG,
             source_layers=source_layers,
         )
 
@@ -70,7 +72,9 @@ class Object(core.Provider):
 
         op_args = self.operation_args(gws.OwsVerb.GetFeatureInfo, params=params)
         text = gws.gis.ows.request.get_text(**op_args)
-        features = gws.gis.ows.formats.read(text, crs=ps.request_crs, axis=ps.axis)
+        gws.write_file('/gws-var/res.xml', text)
+        features = featureinfo.parse(text, crs=ps.request_crs, axis=ps.axis)
+
 
         if features is None:
             gws.log.debug(f'WMS NOT_PARSED params={params!r}')

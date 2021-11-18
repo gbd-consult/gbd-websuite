@@ -33,6 +33,10 @@ def from_list(ls: t.List[t.Any]) -> t.Optional[gws.Extent]:
     return _valid(ls)
 
 
+def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
+    return _valid([a[0], a[1], b[0], b[1]])
+
+
 def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
     return (
         xy[0] - size[0] / 2,
