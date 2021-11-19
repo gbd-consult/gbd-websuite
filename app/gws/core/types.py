@@ -164,6 +164,8 @@ class IRoot(Protocol):
 
     def create_object(self, klass, cfg=None, parent: 'INode' = None, shared: bool = False, key=None): ...
 
+    def activate(self): ...
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # spec runtime
