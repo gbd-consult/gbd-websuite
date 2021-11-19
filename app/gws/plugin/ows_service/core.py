@@ -196,12 +196,12 @@ class Service(gws.Node, gws.IOwsService):
 
         return m
 
+    def activate(self):
+        xml3.namespaces.add(_DEFAULT_NAMESPACE_PREFIX, _DEFAULT_NAMESPACE_URI)
+
     # Request handling
 
     def handle_request(self, req: gws.IWebRequest) -> gws.ContentResponse:
-        # @TODO there must be a way to do that once
-        xml3.namespaces.add(_DEFAULT_NAMESPACE_PREFIX, _DEFAULT_NAMESPACE_URI)
-
         # services can be configured globally (in which case, self.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (self.project != None)
