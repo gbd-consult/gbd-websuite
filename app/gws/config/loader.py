@@ -98,6 +98,7 @@ def initialize(specs, parsed_config) -> gws.Root:
 
 
 def activate(r: gws.IRoot):
+    r.activate()
     return gws.set_app_global(ROOT_NAME, r)
 
 
@@ -121,7 +122,7 @@ def load(path=None) -> gws.Root:
         ts = gws.time_start('loading config')
         r = gws.unserialize_from_path(path)
         gws.time_end(ts)
-        return gws.set_app_global(ROOT_NAME, r)
+        return activate(r)
     except Exception as e:
         raise gws.ConfigurationError('unable to load configuration') from e
 

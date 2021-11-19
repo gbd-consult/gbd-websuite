@@ -47,10 +47,13 @@ class Node(Object, types.INode):
 
     ##
 
+    def configure(self):
+        pass
+
     def post_configure(self):
         pass
 
-    def configure(self):
+    def activate(self):
         pass
 
     def initialize(self, cfg):
@@ -191,6 +194,10 @@ class Root(types.IRoot):
                 info = _error_info(exc, self)
                 self.configuration_errors.append(info)
                 log.exception(info.replace('\n', ' '))
+
+    def activate(self):
+        for obj in self._objects:
+            obj.activate()
 
     def create_application(self, cfg):
         cfg = _to_config(cfg)
