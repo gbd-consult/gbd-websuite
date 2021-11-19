@@ -778,7 +778,6 @@ class MapRenderInput(Data):
     crs: 'ICrs'
     dpi: int
     out_size: MSize
-    out_path: str
     planes: List['MapRenderInputPlane']
     rotation: int
     scale: int
@@ -792,7 +791,6 @@ class MapRenderOutputPlane(Data):
 
 
 class MapRenderOutput(Data):
-    path: str
     planes: List['MapRenderOutputPlane']
     view: MapView
 
@@ -814,7 +812,6 @@ class TemplateRenderInput(Data):
     locale_uid: Optional[str]
     maps: Optional[List[TemplateRenderInputMap]]
     out_mime: Optional[str]
-    out_path: Optional[str]
     user: Optional['IUser']
 
 

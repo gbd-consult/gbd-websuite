@@ -56,34 +56,35 @@ class Object(gws.base.template.Object):
             raise gws.Error('cannot read page or map size')
 
     def render(self, tri, notify=None):
-        if not tri.out_path:
-            raise gws.Error(f'output path required')
-
         notify = notify or _dummy_fn
 
         notify('begin_print')
 
         notify('begin_map')
-        map_path = tri.out_path + '.map.pdf'
-        mro = self._render_map(tri, notify, map_path)
+        map_pdf_path = gws.tempname('q.map.pdf')
+        mro = self._render_map(tri, notify, map_pdf_path)
         notify('end_map')
 
         notify('begin_page')
-        qgis_path = tri.out_path + '.qgis.pdf'
-        self._render_qgis(tri, notify, mro, qgis_path if mro else tri.out_path)
+        qgis_pdf_path = gws.tempname('q.qgis.pdf')
+        self._render_qgis(tri, notify, mro, qgis_pdf_path)
         notify('end_page')
 
-        if mro:
-            # merge qgis pdfs + map pdf
-            # NB: qgis is ABOVE our map, so the qgis template and map must be transparent!
-            # (this is because we need qgis to draw grids above the map)
-            # @TODO automatic transparency
+        if not mro:
+            notify('end_print')
+            return gws.ContentResponse(path=qgis_pdf_path)
 
-            notify('finalize_print')
-            gws.lib.pdf.overlay(map_path, qgis_path, tri.out_path)
+        # merge qgis pdfs + map pdf
+        # NB: qgis is ABOVE our map, so the qgis template and map must be transparent!
+        # (this is because we need qgis to draw grids above the map)
+        # @TODO automatic transparency
+
+        notify('finalize_print')
+        comb_path = gws.tempname('q.comb.pdf')
+        gws.lib.pdf.overlay(map_pdf_path, qgis_pdf_path, comb_path)
 
         notify('end_print')
-        return gws.ContentResponse(mime=gws.lib.mime.PDF, path=tri.out_path)
+        return gws.ContentResponse(path=comb_path)
 
     def _render_map(self, tri: gws.TemplateRenderInput, notify, out_path):
         if not tri.maps:
@@ -98,7 +99,6 @@ class Object(gws.base.template.Object):
             crs=tri.crs,
             dpi=tri.dpi,
             out_size=self.map_size,
-            out_path=tri.out_path,
             planes=mp.planes,
             rotation=mp.rotation,
             scale=mp.scale,
@@ -132,15 +132,18 @@ class Object(gws.base.template.Object):
         # once html blocks are filtered, we create a copy of the qgs file with substituted html blocks
         # @TODO relative paths should be corrected
 
-        prj_path = self.provider.path
+        project_path = self.provider.path
         boxes = self._render_html_boxes(tri)
         if boxes:
-            prj_path = tri.out_path + '.labels.qgs'
-            self._inject_html_boxes(tri, boxes, prj_path)
+            project_path = gws.tempname('q.boxes.qgs')
+            self._inject_html_boxes(tri, boxes, project_path)
 
-        return self._render_qgis_to_pdf(tri, mro, prj_path, out_path)
+        return self._render_qgis_to_pdf(tri, mro, project_path, out_path)
 
     def _render_html_boxes(self, tri):
+        # iterate the template XML tree, find `LayoutHtml` blocks
+        # and create a dict block.uuid -> rendered_html
+
         tri_for_boxes = gws.TemplateRenderInput(
             context=tri.context,
             crs=tri.crs,
@@ -148,7 +151,6 @@ class Object(gws.base.template.Object):
             locale_uid=tri.locale_uid,
             maps=tri.maps,
             out_mime=gws.lib.mime.HTML,
-            out_path=tri.out_path + '_boxes_',
             user=tri.user
         )
 
@@ -165,8 +167,8 @@ class Object(gws.base.template.Object):
 
         return boxes
 
-    def _inject_html_boxes(self, tri, boxes, prj_path):
-        # iterate the parsed XML tree and inject our boxes
+    def _inject_html_boxes(self, tri, boxes, project_path):
+        # iterate the template XML tree and inject our boxes
         # see `caps.py` for the print layout structure
 
         root_el = xml2.from_path(self.provider.path)
@@ -176,9 +178,10 @@ class Object(gws.base.template.Object):
                 if uuid in boxes:
                     item_el.attributes['html'] = boxes[uuid]
 
-        gws.write_file(prj_path, xml2.to_string(root_el))
+        gws.write_file(project_path, xml2.to_string(root_el))
 
-    def _render_qgis_to_pdf(self, tri, mro, prj_path, out_path):
+    def _render_qgis_to_pdf(self, tri, mro, project_path, out_path):
+        # invoke the qgis server and make them render a pdf from the template (without a map)
 
         params = {
             'version': '1.3.0',
@@ -186,7 +189,7 @@ class Object(gws.base.template.Object):
             'transparent': 'true',
             'template': self.template.title,
             'crs': 'EPSG:3857',  # crs doesn't matter, but required
-            'map': prj_path,
+            'map': project_path,
         }
 
         # NB we still need map0:xxxx for scale bars to work

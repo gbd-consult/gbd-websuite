@@ -24,7 +24,7 @@ class PrematureTermination(Exception):
     pass
 
 
-def create(root: gws.IRoot, uid, user: gws.IUser, worker: str, project_uid=None, args=None):
+def create(root: gws.IRoot, uid, user: gws.IUser, worker: str, payload=None) -> 'Job':
     if user:
         user_uid = user.uid
         str_user = root.application.auth.serialize_user(user)
@@ -36,12 +36,10 @@ def create(root: gws.IRoot, uid, user: gws.IUser, worker: str, project_uid=None,
         uid,
         user_uid=user_uid,
         str_user=str_user,
-        project_uid=project_uid,
         worker=worker,
-        args=gws.lib.json2.to_string(args),
-        steps=0,
-        step=0,
+        payload=gws.lib.json2.to_string(payload),
         state=State.open,
+        error='',
     )
     return get(root, uid)
 
@@ -49,12 +47,12 @@ def create(root: gws.IRoot, uid, user: gws.IUser, worker: str, project_uid=None,
 def run(root: gws.IRoot, uid):
     job = get(root, uid)
     if not job:
-        raise ValueError('invalid job_uid {uid!r}')
+        raise gws.Error('invalid job_uid {uid!r}')
     gws.log.debug('running job', job.uid)
     job.run()
 
 
-def get(root: gws.IRoot, uid):
+def get(root: gws.IRoot, uid) -> t.Optional['Job']:
     rec = storage.find(uid)
     if rec:
         return Job(root, rec)
@@ -64,59 +62,42 @@ def remove(uid):
     storage.remove(uid)
 
 
-def get_for(root: gws.IRoot, user, uid):
+def get_for(root: gws.IRoot, user, uid) -> t.Optional['Job']:
     job = get(root, uid)
     if not job:
         gws.log.error(f'job={uid!r}: not found')
         return
-    if job.user_uid != user.uid:
-        gws.log.error(f'job={uid!r} wrong user (job={job.user_uid!r} user={user.uid!r})')
+    if job.user.uid != user.uid:
+        gws.log.error(f'job={uid!r} wrong user (job={job.user.uid!r} user={user.uid!r})')
         return
     return job
 
 
 class Job:
+    uid: str
+    user: gws.IUser
+    state: State
+    error: str
+    payload: gws.Data
+    worker: str
+
     def __init__(self, root: gws.IRoot, rec):
         self.root = root
 
-        self.uid = ''
-        self.user_uid = ''
-        self.str_user = ''
-        self.project_uid = ''
-        self.worker = ''
-        self.args = ''
-        self.steps = 0
-        self.step = 0
-        self.state = ''
-        self.steptype = ''
-        self.stepname = ''
-        self.error = ''
-        self.result = ''
-        self.created = 0
-        self.updated = 0
+        self.uid = rec['uid']
+        self.user = self._get_user(rec)
+        self.worker = rec['worker']
+        self.payload = gws.Data(gws.lib.json2.from_string(rec.get('payload', '')))
+        self.state = rec['state']
+        self.error = rec['error']
 
-        for k, v in rec.items():
-            setattr(self, k, v)
-
-        self.args = gws.lib.json2.from_string(self.args)
-        self.result = gws.lib.json2.from_string(self.result)
-
-    @property
-    def user(self) -> gws.IUser:
+    def _get_user(self, rec) -> gws.IUser:
         auth = self.root.application.auth
-        if self.str_user:
-            user = auth.unserialize_user(self.str_user)
+        if rec.get('str_user'):
+            user = auth.unserialize_user(rec.get('str_user'))
             if user:
                 return user
         return auth.guest_user
-
-    @property
-    def progress(self) -> int:
-        if self.state == State.complete:
-            return 100
-        if self.steps and self.state == State.running:
-            return min(100, int((self.step or 0) * 100 / self.steps))
-        return 0
 
     def run(self):
         if self.state != State.open:
@@ -134,14 +115,17 @@ class Job:
             self.update(state=State.error, error=repr(e))
             raise
 
-    def update(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
+    def update(self, payload=None, state=None, error=None):
+        rec = {}
 
-        if 'result' in kwargs:
-            kwargs['result'] = gws.lib.json2.to_string(kwargs['result'])
+        if payload is not None:
+            rec['payload'] = gws.lib.json2.to_string(payload)
+        if state:
+            rec['state'] = state
+        if error:
+            rec['error'] = error
 
-        storage.update(self.uid, **kwargs)
+        storage.update(self.uid, **rec)
 
     def cancel(self):
         self.update(state=State.cancel)

@@ -160,3 +160,22 @@ class Object(gws.Node, gws.IMonitor):
 
     def _ignored(self, filename):
         return self.ignore and any(re.search(p, filename) for p in self.ignore)
+
+
+#
+#
+# # remove jobs older than that
+#
+# _MAX_LIFETIME = 3600 * 1
+#
+#
+# def cleanup():
+#     for p in os.listdir(gws.PRINT_DIR):
+#         d = gws.PRINT_DIR + '/' + p
+#         age = gws.lib.os2.file_age(d)
+#         if age > _MAX_LIFETIME:
+#             gws.lib.os2.run(['rm', '-fr', d])
+#             gws.lib.job.remove(p)
+#             gws.log.debug(f'cleaned up job {p} age={age}')
+#
+#

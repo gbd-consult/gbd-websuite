@@ -30,10 +30,8 @@ def render(legend: gws.Legend, context: dict = None) -> t.Optional[gws.LegendRen
 
     if legend.template:
         # @TODO return html legends as html
-        out_path = gws.TMP_DIR + '/' + gws.random_string(64) + '.png'
         res = legend.template.render(gws.TemplateRenderInput(
             context=context,
-            out_path=out_path,
             out_mime=gws.lib.mime.PNG))
         img = gws.lib.image.from_path(res.path)
         return gws.LegendRenderOutput(image=img, size=img.size)
@@ -59,9 +57,10 @@ def to_image(lro: gws.LegendRenderOutput) -> t.Optional[gws.IImage]:
         return None
 
 
-def to_image_path(lro: gws.LegendRenderOutput, out_path: str) -> t.Optional[str]:
+def to_image_path(lro: gws.LegendRenderOutput) -> t.Optional[str]:
     if lro.image:
-        return lro.image.to_path(out_path + '.png', gws.lib.mime.PNG)
+        img_path = gws.tempname('legend.png')
+        return lro.image.to_path(img_path, gws.lib.mime.PNG)
     if lro.image_path:
         return lro.image_path
     if lro.html:

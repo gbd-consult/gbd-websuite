@@ -1,4 +1,5 @@
 import gws
+import gws.gis.crs
 import gws.gis.extent
 import gws.gis.bounds
 import gws.types as t
@@ -29,7 +30,7 @@ class Filter:
         b = gws.gis.bounds.from_gml_envelope_element(flt.first('Envelope'))
         if not b:
             return []
-        b = gws.gis.bounds.transformed_to(b, gws.EPSG_4326)
+        b = gws.gis.bounds.transformed_to(b, gws.gis.crs.get4326())
         return [
             r for r in recs
             if not r.get('extent4326') or gws.gis.extent.intersect(r.extent4326, b.extent)

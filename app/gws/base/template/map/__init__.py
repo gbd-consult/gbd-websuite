@@ -18,9 +18,6 @@ class Config(gws.base.template.Config):
 class Object(gws.base.template.Object):
 
     def render(self, tri, notify=None):
-        if not tri.out_path:
-            raise gws.Error(f'output path required')
-
         mp = tri.maps[0]
 
         mri = gws.MapRenderInput(
@@ -30,7 +27,6 @@ class Object(gws.base.template.Object):
             crs=tri.crs,
             dpi=tri.dpi,
             out_size=self.page_size,
-            out_path=tri.out_path,
             planes=mp.planes,
             rotation=mp.rotation,
             scale=mp.scale,
@@ -54,21 +50,23 @@ class Object(gws.base.template.Object):
             return gws.ContentResponse(mime=gws.lib.mime.HTML, content=html)
 
         if tri.out_mime == gws.lib.mime.PDF:
+            res_path = gws.tempname('map.pdf')
             gws.lib.html2.render_to_pdf(
                 html,
-                out_path=tri.out_path,
+                out_path=res_path,
                 page_size=self.page_size,
             )
             notify('end_print')
-            return gws.ContentResponse(mime=gws.lib.mime.PDF, path=tri.out_path)
+            return gws.ContentResponse(path=res_path)
 
         if tri.out_mime == gws.lib.mime.PNG:
+            res_path = gws.tempname('map.png')
             gws.lib.html2.render_to_png(
                 html,
-                out_path=tri.out_path,
+                out_path=res_path,
                 page_size=self.page_size,
             )
             notify('end_print')
-            return gws.ContentResponse(mime=gws.lib.mime.PDF, path=tri.out_path)
+            return gws.ContentResponse(path=res_path)
 
         raise gws.Error(f'invalid output mime: {tri.out_mime!r}')

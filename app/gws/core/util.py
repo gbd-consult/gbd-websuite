@@ -493,18 +493,21 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
 
 def ensure_system_dirs():
     ensure_dir(gws.CONFIG_DIR)
-    ensure_dir(gws.GLOBALS_DIR)
     ensure_dir(gws.LEGEND_CACHE_DIR)
-    ensure_dir(gws.LOCKS_DIR)
     ensure_dir(gws.LOG_DIR)
     ensure_dir(gws.MAPPROXY_CACHE_DIR)
     ensure_dir(gws.MISC_DIR)
     ensure_dir(gws.NET_CACHE_DIR)
     ensure_dir(gws.OBJECT_CACHE_DIR)
-    ensure_dir(gws.PRINT_DIR)
     ensure_dir(gws.SERVER_DIR)
     ensure_dir(gws.SPOOL_DIR)
     ensure_dir(gws.WEB_CACHE_DIR)
+
+    ensure_dir(gws.TMP_DIR)
+    ensure_dir(gws.LOCKS_DIR)
+    ensure_dir(gws.GLOBALS_DIR)
+    ensure_dir(gws.SPOOL_DIR)
+    ensure_dir(gws.EPH_DIR)
 
 
 def _chown(path, user, group):
@@ -512,6 +515,15 @@ def _chown(path, user, group):
         os.chown(path, user or const.UID, group or const.GID)
     except OSError:
         pass
+
+
+def tempname(name: str) -> str:
+    """Creates a cleanable path name based on the given name"""
+
+    dir = ensure_dir(gws.EPH_DIR)
+    n, _, e = name.rpartition('.')
+    name = str(os.getpid()) + '_' + n + '_' + random_string(10) + '.' + e
+    return dir + '/' + name
 
 
 def random_string(size: int) -> str:

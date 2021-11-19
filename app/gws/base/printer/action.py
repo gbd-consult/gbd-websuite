@@ -9,7 +9,7 @@ import gws.lib.json2
 import gws.lib.mime
 import gws.types as t
 
-from . import job, types
+from . import core, types
 
 
 class CliPrintParams(gws.CliParams):
@@ -25,48 +25,54 @@ class Object(gws.base.api.action.Object):
     def start_print(self, req: gws.IWebRequest, p: types.Params) -> types.StatusResponse:
         """Start a backround print job"""
 
-        j = job.start(self.root, req, p)
-        return job.status(j)
+        job = core.start_job(self.root, req, p)
+        return core.job_status(job)
 
     @gws.ext.command('api.printer.getStatus')
     def get_status(self, req: gws.IWebRequest, p: types.StatusParams) -> types.StatusResponse:
         """Query the print job status"""
 
-        j = gws.lib.job.get_for(self.root, req.user, p.jobUid)
+        job = gws.lib.job.get_for(self.root, req.user, p.jobUid)
         if not job:
             raise gws.base.web.error.NotFound()
 
-        return job.status(j)
+        return core.job_status(job)
 
     @gws.ext.command('api.printer.cancelPrinting')
     def cancel(self, req: gws.IWebRequest, p: types.StatusParams) -> types.StatusResponse:
         """Cancel a print job"""
 
-        j = gws.lib.job.get_for(self.root, req.user, p.jobUid)
-        if not j:
+        job = gws.lib.job.get_for(self.root, req.user, p.jobUid)
+        if not job:
             raise gws.base.web.error.NotFound()
 
-        j.cancel()
-
-        return job.status(j)
+        job.cancel()
+        return core.job_status(job)
 
     @gws.ext.command('get.printer.getResult')
     def get_result(self, req: gws.IWebRequest, p: types.StatusParams) -> gws.ContentResponse:
-        j = gws.lib.job.get_for(self.root, req.user, p.jobUid)
-        if not j or j.state != gws.lib.job.State.complete:
+        """Get the result of a print job as a byte stream"""
+
+        job = gws.lib.job.get_for(self.root, req.user, p.jobUid)
+        if not job or job.state != gws.lib.job.State.complete:
             raise gws.base.web.error.NotFound()
 
-        path = j.result['path']
-        return gws.ContentResponse(mime=gws.lib.mime.for_path(path), path=path)
+        res_path = core.job_result_path(job)
+        if not res_path:
+            raise gws.base.web.error.NotFound()
+
+        return gws.ContentResponse(path=res_path)
 
     @gws.ext.command('cli.printer.print')
     def print(self, p: CliPrintParams):
+        """Print using the specified params"""
+
         root = gws.config.load()
         params = root.specs.read_value(
             gws.lib.json2.from_path(p.params),
             'gws.base.printer.types.Params',
             p.params
         )
-        res_path = job.run(root, params, p.project, user=root.application.auth.system_user)
+        res_path = core.run_job(root, params, p.project, user=root.application.auth.system_user)
         res = gws.read_file_b(res_path)
         gws.write_file_b(p.output, res)

@@ -17,23 +17,21 @@ UID = int(os.getenv('GWS_UID', UID))
 GID = int(os.getenv('GWS_GID', GID))
 
 CONFIG_DIR = VAR_DIR + '/config'
-GLOBALS_DIR = TMP_DIR + '/globals'
 LEGEND_CACHE_DIR = VAR_DIR + '/cache/legend'
-LOCKS_DIR = TMP_DIR + '/lock'
 LOG_DIR = VAR_DIR + '/log'
 MAPPROXY_CACHE_DIR = VAR_DIR + '/cache/mpx'
 MISC_DIR = VAR_DIR + '/misc'
 NET_CACHE_DIR = VAR_DIR + '/cache/net'
 OBJECT_CACHE_DIR = VAR_DIR + '/cache/object'
-PRINT_DIR = TMP_DIR + '/print'
 SERVER_DIR = VAR_DIR + '/server'
-SPOOL_DIR = TMP_DIR + '/spool'
 WEB_CACHE_DIR = TMP_DIR + '/webcache'
 
-SERVER_ENDPOINT = '/_'
+LOCKS_DIR = TMP_DIR + '/locks'
+GLOBALS_DIR = TMP_DIR + '/globals'
+SPOOL_DIR = TMP_DIR + '/spool'
+EPH_DIR = TMP_DIR + '/ephemeral'
 
-EPSG_3857 = 'EPSG:3857'
-EPSG_4326 = 'EPSG:4326'
+SERVER_ENDPOINT = '/_'
 
 ROLE_ADMIN = 'admin'
 ROLE_USER = 'user'

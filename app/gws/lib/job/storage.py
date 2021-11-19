@@ -4,7 +4,7 @@ import gws
 import gws.lib.sqlite
 import gws.types as t
 
-_DB_PATH = gws.PRINT_DIR + '/jobs.sqlite'
+_DB_PATH = gws.TMP_DIR + '/jobs.sqlite'
 
 
 def _db():
@@ -16,16 +16,10 @@ def _ensure_table(conn):
         uid TEXT PRIMARY KEY,
         user_uid TEXT,
         str_user TEXT,
-        project_uid TEXT,
         worker TEXT,
-        args TEXT,
-        steps INTEGER,
-        step INTEGER DEFAULT 0,
+        payload TEXT,
         state TEXT,
-        steptype TEXT DEFAULT '',
-        stepname TEXT DEFAULT '',
         error TEXT DEFAULT '',
-        result TEXT DEFAULT '',
         created INTEGER,
         updated INTEGER
     ) WITHOUT ROWID''')

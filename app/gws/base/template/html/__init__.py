@@ -70,15 +70,14 @@ class Object(gws.base.template.Object):
             return gws.ContentResponse(mime=mime, content=html)
 
         if mime == gws.lib.mime.PDF:
-            out_path = self._finalize_pdf(tri, html, parser)
+            res_path = self._finalize_pdf(tri, html, parser)
             notify('end_print')
-            return gws.ContentResponse(mime=mime, path=out_path)
+            return gws.ContentResponse(path=res_path)
 
         if mime == gws.lib.mime.PNG:
-
-            out_path = self._finalize_png(tri, html, parser)
+            res_path = self._finalize_png(tri, html, parser)
             notify('end_print')
-            return gws.ContentResponse(mime=mime, path=out_path)
+            return gws.ContentResponse(path=res_path)
 
         raise gws.Error(f'invalid output mime: {tri.out_mime!r}')
 
@@ -107,52 +106,46 @@ class Object(gws.base.template.Object):
         )
 
     def _finalize_pdf(self, tri, html, parser):
-        if not tri.out_path:
-            raise gws.Error(f'out_path required')
-        out_path = tri.out_path + '.pdf'
-
+        content_path = gws.tempname('final.pdf')
         has_frame = parser.header or parser.footer
 
-        content_path = tri.out_path + '.content.pdf'
         gws.lib.html2.render_to_pdf(
             html,
-            out_path=content_path if has_frame else out_path,
+            out_path=content_path,
             page_size=parser.page_size,
             page_margin=parser.page_margin,
         )
 
         if not has_frame:
-            return out_path
+            return content_path
 
         context = gws.merge(tri.context, page_count=gws.lib.pdf.page_count(content_path))
         frame_text = self._page_frame_template(parser.header or '', parser.footer or '', parser.page_size)
         frame_html = self._do_render(frame_text, context, None, None)
-        frame_path = out_path + '.frame.pdf'
+        frame_path = gws.tempname('frame.pdf')
         gws.lib.html2.render_to_pdf(
             frame_html,
             out_path=frame_path,
             page_size=parser.page_size,
             page_margin=None,
         )
-        gws.lib.pdf.overlay(frame_path, content_path, out_path)
 
-        return out_path
+        comb_path = gws.tempname('comb.pdf')
+        gws.lib.pdf.overlay(frame_path, content_path, comb_path)
+        return comb_path
 
     def _finalize_png(self, tri, html, parser):
-        if not tri.out_path:
-            raise gws.Error(f'out_path required')
-        out_path = tri.out_path + '.pdf'
-
+        res_path = gws.tempname('final.png')
         gws.lib.html2.render_to_png(
             html,
-            out_path=out_path,
+            out_path=res_path,
             page_size=parser.page_size,
             page_margin=parser.page_margin,
         )
-        return out_path
+        return res_path
 
     def _page_frame_template(self, header, footer, page_size):
-        w, h = page_size
+        w, h, _ = page_size
 
         return f'''
             <html>
@@ -297,10 +290,6 @@ class _Runtime(chartreux.Runtime):
         # these are mandatory
         width = int(opts['width'])
         height = int(opts['height'])
-
-        if not self.tri.out_path:
-            raise gws.Error(f'out_path required')
-
         return gws.MapRenderInput(
             background_color=rim.background_color,
             bbox=opts.get('bbox', rim.bbox),
@@ -308,7 +297,6 @@ class _Runtime(chartreux.Runtime):
             crs=self.tri.crs,
             dpi=self.tri.dpi,
             out_size=(width, height, units.MM),
-            out_path=self.tri.out_path,
             planes=rim.planes,
             rotation=opts.get('scale', rim.rotation),
             scale=opts.get('scale', rim.scale),
@@ -331,10 +319,7 @@ class _Runtime(chartreux.Runtime):
         if not lro:
             raise gws.Error('no legend output')
 
-        if not self.tri.out_path:
-            raise gws.Error(f'out_path required')
-
-        img_path = gws.gis.legend.to_image_path(lro, self.tri.out_path + '_legend_' + str(self.legend_count))
+        img_path = gws.gis.legend.to_image_path(lro)
         if not img_path:
             raise gws.Error('no legend image path')
 

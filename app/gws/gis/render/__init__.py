@@ -125,7 +125,7 @@ class _Renderer(gws.Data):
 def render_map(mri: gws.MapRenderInput, notify: t.Callable = None) -> gws.MapRenderOutput:
     rd = _Renderer(
         mri=mri,
-        mro=gws.MapRenderOutput(path=mri.out_path, planes=[]),
+        mro=gws.MapRenderOutput(planes=[]),
         img_count=0,
         svg_count=0
     )
@@ -241,9 +241,9 @@ def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.Xml
 
     for plane in mro.planes:
         if plane.type == 'image':
-            path = mro.path + '.png'
-            plane.image.to_path(path)
-            tags.append(xml2.tag('img', {'style': css_abs, 'src': path}))
+            img_path = gws.tempname('mro.png')
+            plane.image.to_path(img_path)
+            tags.append(xml2.tag('img', {'style': css_abs, 'src': img_path}))
         if plane.type == 'path':
             tags.append(xml2.tag('img', {'style': css_abs, 'src': plane.path}))
         if plane.type == 'svg':
