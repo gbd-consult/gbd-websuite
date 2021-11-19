@@ -1,4 +1,4 @@
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.plugin.ows_service.templatelib as tpl
 
 
@@ -32,19 +32,19 @@ def main(ARGS):
         }
 
     def schema():
-        pfx, _ = xml3.split_name(ARGS.layer_caps_list[0].feature_qname)
+        pfx, _ = xml2.split_name(ARGS.layer_caps_list[0].feature_qname)
         yield {
             'xmlns:xsd': '',
             'xmlns:gml': '',
             'xmlns:' + pfx: '',
-            'targetNamespace': xml3.namespaces.uri(pfx),
+            'targetNamespace': xml2.namespaces.uri(pfx),
             'elementFormDefault': 'qualified',
         }
 
         yield (
             'xsd:import', {
-                'namespace': xml3.namespaces.uri('gml'),
-                'schemaLocation': xml3.namespaces.schema('gml')
+                'namespace': xml2.namespaces.uri('gml'),
+                'schemaLocation': xml2.namespaces.schema('gml')
             })
         for lc in ARGS.layer_caps_list:
             if lc.adhoc_feature_schema:

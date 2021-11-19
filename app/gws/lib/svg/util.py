@@ -1,6 +1,6 @@
 # sanitizer
 import gws
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 import gws.lib.image
 
@@ -11,18 +11,18 @@ _SVG_TAG_ATTS = {
 
 def fragment_to_element(fragment: t.List[gws.XmlElement], atts: dict = None) -> gws.XmlElement:
     fr = sorted(fragment, key=lambda el: el.attributes.get('z-index', 0))
-    return xml3.tag('svg', _SVG_TAG_ATTS, atts, *fr)
+    return xml2.tag('svg', _SVG_TAG_ATTS, atts, *fr)
 
 
 def fragment_to_image(fragment: t.List[gws.XmlElement], size: gws.Size, format='png') -> gws.lib.image.Image:
     el = fragment_to_element(fragment)
-    return gws.lib.image.from_svg(xml3.to_string(el), size, format)
+    return gws.lib.image.from_svg(xml2.to_string(el), size, format)
 
 
 def sanitize_element(el: gws.XmlElement) -> t.Optional[gws.XmlElement]:
     children = gws.compact(_sanitize(c) for c in el.children)
     if children:
-        return xml3.tag('svg', _sanitize_atts(el.attributes), *children)
+        return xml2.tag('svg', _sanitize_atts(el.attributes), *children)
 
 
 _ALLOWED_TAGS = {
@@ -129,7 +129,7 @@ _ALLOWED_ATTRIBUTES = {
 
 def _sanitize(el: gws.XmlElement) -> t.Optional[gws.XmlElement]:
     if el.name in _ALLOWED_TAGS:
-        return xml3.element(
+        return xml2.element(
             el.name,
             _sanitize_atts(el.attributes),
             gws.compact(_sanitize(c) for c in el.children))

@@ -7,7 +7,7 @@ import gws.gis.extent
 import gws.lib.image
 import gws.lib.svg
 import gws.lib.units as units
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 MAX_DPI = 1200
@@ -243,18 +243,18 @@ def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.Xml
         if plane.type == 'image':
             path = mro.path + '.png'
             plane.image.to_path(path)
-            tags.append(xml3.tag('img', {'style': css_abs, 'src': path}))
+            tags.append(xml2.tag('img', {'style': css_abs, 'src': path}))
         if plane.type == 'path':
-            tags.append(xml3.tag('img', {'style': css_abs, 'src': plane.path}))
+            tags.append(xml2.tag('img', {'style': css_abs, 'src': plane.path}))
         if plane.type == 'svg':
             tags.append(gws.lib.svg.fragment_to_element(plane.elements, {'style': css_abs}))
 
     css_div = None
     if wrap and wrap in {'relative', 'absolute', 'fixed'}:
         css_div = f'position:{wrap};overflow:hidden;{css_size}'
-    return xml3.tag('div', {'style': css_div}, *tags)
+    return xml2.tag('div', {'style': css_div}, *tags)
 
 
 def output_to_html_string(mro: gws.MapRenderOutput, wrap='relative') -> str:
     div = output_to_html_element(mro, wrap)
-    return xml3.to_string(div)
+    return xml2.to_string(div)

@@ -4,7 +4,7 @@ import gws.lib.date
 import gws.gis.extent
 import gws.lib.metadata
 import gws.lib.mime
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 from . import filter
@@ -102,18 +102,18 @@ class Object(core.Service):
         # CSW should accept POST'ed xml, which can be wrapped in a SOAP envelope
 
         try:
-            rd.xml_element = xml3.from_string(req.text)
-        except xml3.Error:
+            rd.xml_element = xml2.from_string(req.text)
+        except xml2.Error:
             raise gws.base.web.error.BadRequest()
 
         if rd.xml_element.name.lower() == 'envelope':
             rd.xml_is_soap = True
             try:
-                rd.xml_element = xml3.first(xml3.first('body'))
+                rd.xml_element = xml2.first(xml2.first('body'))
             except Exception:
                 raise gws.base.web.error.BadRequest()
 
-        return self.dispatch_request(rd, xml3.unqualify_name(rd.xml_element.name.lower()))
+        return self.dispatch_request(rd, xml2.unqualify_name(rd.xml_element.name.lower()))
 
     def handle_getcapabilities(self, rd: core.Request):
         return self.template_response(rd, gws.OwsVerb.GetCapabilities, context={
@@ -238,7 +238,7 @@ class Object(core.Service):
     def _find_records(self, rd: core.Request):
         flt = None
         if rd.xml_element:
-            flt = xml3.first(xml3.first('Query.Constraint.Filter'))
+            flt = xml2.first(xml2.first('Query.Constraint.Filter'))
         if not flt:
             return self.records.values()
         f = filter.Filter(self.index)

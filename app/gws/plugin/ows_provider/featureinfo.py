@@ -3,7 +3,7 @@
 import gws
 import gws.gis.shape
 import gws.gis.gml
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 
@@ -13,8 +13,8 @@ def parse(
     **kwargs
 ) -> t.List[gws.IFeature]:
     try:
-        xml_el = xml3.from_string(text, strip_ns=True)
-    except xml3.Error:
+        xml_el = xml2.from_string(text, strip_ns=True)
+    except xml2.Error:
         xml_el = None
 
     if xml_el:
@@ -41,12 +41,12 @@ def _f_FeatureCollection(el: gws.XmlElement, fallback_crs, **kwargs):
     #     <featureMember>...
     #         <...>
 
-    if not xml3.element_is(el, 'FeatureCollection'):
+    if not xml2.element_is(el, 'FeatureCollection'):
         return None
 
     features = []
 
-    for member_el in xml3.all(el, 'featureMember'):
+    for member_el in xml2.all(el, 'featureMember'):
         if not member_el.children:
             continue
 
@@ -54,7 +54,7 @@ def _f_FeatureCollection(el: gws.XmlElement, fallback_crs, **kwargs):
 
         atts = []
         shapes = []
-        uid = xml3.attr(content_el, 'id', 'fid')
+        uid = xml2.attr(content_el, 'id', 'fid')
 
         for c in content_el.children:
             _fc_walk(c, '', atts, shapes, fallback_crs)
@@ -103,24 +103,24 @@ def _f_GetFeatureInfoResponse(el: gws.XmlElement, fallback_crs, **kwargs):
     #              <Attribute name="..." value="..."/>
     #              <Attribute name="geometry" value="<wkt>"/>
 
-    if not xml3.element_is(el, 'GetFeatureInfoResponse'):
+    if not xml2.element_is(el, 'GetFeatureInfoResponse'):
         return None
 
     features = []
 
-    for layer_el in xml3.all(el, 'Layer'):
+    for layer_el in xml2.all(el, 'Layer'):
 
-        layer_name = xml3.attr(layer_el, 'name')
+        layer_name = xml2.attr(layer_el, 'name')
 
-        for feature_el in xml3.all(layer_el, 'Feature'):
+        for feature_el in xml2.all(layer_el, 'Feature'):
 
-            uid = xml3.attr(feature_el, 'id', 'fid')
+            uid = xml2.attr(feature_el, 'id', 'fid')
             atts = []
             shape = None
 
-            for attr_el in xml3.all(feature_el, 'Attribute'):
-                name = xml3.attr(attr_el, 'name')
-                value = xml3.attr(attr_el, 'value')
+            for attr_el in xml2.all(feature_el, 'Attribute'):
+                name = xml2.attr(attr_el, 'name')
+                value = xml2.attr(attr_el, 'value')
 
                 if value == 'null':
                     continue
@@ -157,12 +157,12 @@ def _f_FeatureInfoResponse(el: gws.XmlElement, fallback_crs, **kwargs):
     #     <fields objectid="15111" shape="polygon"...
     #     <fields objectid="15111" shape="polygon"...
 
-    if not xml3.element_is(el, 'GetFeatureInfoResponse'):
+    if not xml2.element_is(el, 'GetFeatureInfoResponse'):
         return None
 
     features = []
 
-    for field_el in xml3.all(el, 'Fields'):
+    for field_el in xml2.all(el, 'Fields'):
         atts = []
         uid = ''
 
@@ -197,18 +197,18 @@ def _f_GeoBAK(el: gws.XmlElement, fallback_crs, **kwargs):
     #           ...
     #
 
-    if not xml3.element_is(el, 'Sachdatenabfrage'):
+    if not xml2.element_is(el, 'Sachdatenabfrage'):
         return None
 
     features = []
 
-    layer_name = xml3.text(el, 'Kartenebene')
+    layer_name = xml2.text(el, 'Kartenebene')
 
-    for content_el in xml3.all(el, 'Inhalt'):
-        for feature_el in xml3.all(content_el, 'Datensatz'):
+    for content_el in xml2.all(el, 'Inhalt'):
+        for feature_el in xml2.all(content_el, 'Datensatz'):
             atts = {
-                xml3.text(a, 'Name').strip(): xml3.text(a, 'Wert').strip()
-                for a in xml3.all(feature_el, 'Attribut')
+                xml2.text(a, 'Name').strip(): xml2.text(a, 'Wert').strip()
+                for a in xml2.all(feature_el, 'Attribut')
             }
             features.append(gws.gis.feature.from_args(
                 category=layer_name,

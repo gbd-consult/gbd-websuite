@@ -6,7 +6,7 @@ import gws
 import gws.gis.crs
 import gws.lib.metadata
 import gws.lib.net
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 _bigval = 1e10
@@ -37,7 +37,7 @@ class Caps(gws.Data):
 
 
 def parse(xml: str) -> Caps:
-    root_el = xml3.from_string(xml, sort_atts=True, strip_ns=True, to_lower=True)
+    root_el = xml2.from_string(xml, sort_atts=True, strip_ns=True, to_lower=True)
 
     ver = root_el.attributes.get('version', '').split('-')[0]
     if not ver.startswith('3'):
@@ -45,13 +45,13 @@ def parse(xml: str) -> Caps:
 
     caps = Caps(version=ver)
 
-    caps.properties = _properties(xml3.first(root_el, 'properties'))
+    caps.properties = _properties(xml2.first(root_el, 'properties'))
     caps.metadata = _project_meta_from_props(caps.properties)
-    caps.project_crs = gws.gis.crs.get(xml3.text(root_el, 'projectCrs.spatialrefsys.authid'))
+    caps.project_crs = gws.gis.crs.get(xml2.text(root_el, 'projectCrs.spatialrefsys.authid'))
     caps.print_templates = _layouts(root_el)
 
     map_layers = _map_layers(root_el, caps.properties)
-    root_group = _map_layer_tree(xml3.first(root_el, 'layer-tree-group'), map_layers)
+    root_group = _map_layer_tree(xml2.first(root_el, 'layer-tree-group'), map_layers)
     caps.source_layers = gws.gis.source.check_layers(root_group.layers)
 
     return caps
@@ -79,7 +79,7 @@ def _properties(el: gws.XmlElement):
     #   <value>three</value>
     # </WMSKeywordList>
 
-    ty = xml3.attr(el, 'type')
+    ty = xml2.attr(el, 'type')
 
     if not ty:
         return gws.strip({c.name.lower(): _properties(c) for c in el.children})
@@ -91,7 +91,7 @@ def _properties(el: gws.XmlElement):
     #   <value>C</value>
 
     if ty == 'QStringList':
-        return xml3.text_list(el)
+        return xml2.text_list(el)
     if ty == 'QString':
         return el.text
     if ty == 'bool':
@@ -128,7 +128,7 @@ def _map_layers(root_el: gws.XmlElement, props) -> t.Dict[str, gws.SourceLayer]:
 
     map_layers = {}
 
-    for el in xml3.all(root_el, 'projectlayers.maplayer'):
+    for el in xml2.all(root_el, 'projectlayers.maplayer'):
         sl = _map_layer(el)
 
         if not sl:
@@ -140,11 +140,11 @@ def _map_layers(root_el: gws.XmlElement, props) -> t.Dict[str, gws.SourceLayer]:
         if title in no_wms_layers:
             continue
 
-        uid = xml3.text(el, 'id')
+        uid = xml2.text(el, 'id')
         if use_layer_ids:
             name = uid
         else:
-            name = xml3.text(el, 'shortname') or xml3.text(el, 'layername')
+            name = xml2.text(el, 'shortname') or xml2.text(el, 'layername')
 
         sl.title = title
         sl.name = name
@@ -162,17 +162,17 @@ def _map_layer(layer_el: gws.XmlElement):
 
     sl.supported_bounds = []
 
-    crs = gws.gis.crs.get(xml3.text(layer_el, 'srs.spatialrefsys.authid'))
-    ext = xml3.first(layer_el, 'extent')
+    crs = gws.gis.crs.get(xml2.text(layer_el, 'srs.spatialrefsys.authid'))
+    ext = xml2.first(layer_el, 'extent')
 
     if crs and ext:
         sl.supported_bounds.append(gws.Bounds(
             crs=crs,
             extent=(
-                _parse_float(xml3.text(ext, 'xmin')),
-                _parse_float(xml3.text(ext, 'ymin')),
-                _parse_float(xml3.text(ext, 'xmax')),
-                _parse_float(xml3.text(ext, 'ymax')),
+                _parse_float(xml2.text(ext, 'xmin')),
+                _parse_float(xml2.text(ext, 'ymin')),
+                _parse_float(xml2.text(ext, 'xmax')),
+                _parse_float(xml2.text(ext, 'ymax')),
             )
         ))
 
@@ -183,17 +183,17 @@ def _map_layer(layer_el: gws.XmlElement):
         if z > a:
             sl.scale_range = [a, z]
 
-    prov = xml3.text(layer_el, 'provider').lower()
-    ds = _parse_datasource(prov, xml3.text(layer_el, 'datasource'))
+    prov = xml2.text(layer_el, 'provider').lower()
+    ds = _parse_datasource(prov, xml2.text(layer_el, 'datasource'))
     if ds and 'provider' not in ds:
         ds['provider'] = prov
     sl.data_source = ds
 
-    s = xml3.text(layer_el, 'layerOpacity')
+    s = xml2.text(layer_el, 'layerOpacity')
     if s:
         sl.opacity = _parse_float(s)
 
-    s = xml3.text(layer_el, 'flags.Identifiable')
+    s = xml2.text(layer_el, 'flags.Identifiable')
     sl.is_queryable = s == '1'
 
     return sl
@@ -201,7 +201,7 @@ def _map_layer(layer_el: gws.XmlElement):
 
 def _map_layer_metadata(layer_el: gws.XmlElement):
     def tx(s):
-        return xml3.text(layer_el, s)
+        return xml2.text(layer_el, s)
 
     d = gws.strip({
         'abstract': tx('resourceMetadata.abstract'),
@@ -212,7 +212,7 @@ def _map_layer_metadata(layer_el: gws.XmlElement):
         'contactPhone': tx('voice'),
         'contactPosition': tx('position'),
         'contactRole': tx('role'),
-        'keywords': xml3.text_list(layer_el, 'keywordList.value'),
+        'keywords': xml2.text_list(layer_el, 'keywordList.value'),
         'name': tx('id'),
         'title': tx('layername'),
         'url': tx('metadataUrl'),
@@ -304,14 +304,14 @@ _LAYOUT_TYPES = {
 def _layouts(root_el: gws.XmlElement):
     tpls = []
 
-    for layout_el in xml3.all(root_el, 'Layouts.Layout'):
+    for layout_el in xml2.all(root_el, 'Layouts.Layout'):
         tpl = PrintTemplate(
             title=layout_el.attributes.get('name', ''),
             attributes=layout_el.attributes,
             index=len(tpls),
             elements=[],
         )
-        pc_el = xml3.first(layout_el, 'PageCollection')
+        pc_el = xml2.first(layout_el, 'PageCollection')
         if pc_el:
             tpl.elements.extend(gws.compact(_layout_element(c) for c in pc_el.children))
         tpl.elements.extend(gws.compact(_layout_element(c) for c in layout_el.children))

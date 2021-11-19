@@ -7,7 +7,7 @@ import gws.gis.crs
 import gws.gis.extent
 import gws.gis.feature
 import gws.gis.shape
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 
@@ -33,7 +33,7 @@ def shape_to_element(
         ns=ns
     )
 
-    return xml3.tag(*_tag(geom, opts), srsName=srs)
+    return xml2.tag(*_tag(geom, opts), srsName=srs)
 
 
 ##

@@ -6,7 +6,7 @@ import gws
 import gws.gis.crs
 import gws.gis.extent
 import gws.lib.metadata
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 
@@ -17,7 +17,7 @@ def service_operations(root_el: gws.XmlElement) -> t.List[gws.OwsOperation]:
     #         <ows:Parameter name="AcceptVersions">
     #             <ows:AllowedValues><ows:Value>2.0.0</ows:Value></ows:AllowedValues>
 
-    els = xml3.all(root_el, 'OperationsMetadata.Operation')
+    els = xml2.all(root_el, 'OperationsMetadata.Operation')
     if els:
         return [_parse_operation(e) for e in els]
 
@@ -28,7 +28,7 @@ def service_operations(root_el: gws.XmlElement) -> t.List[gws.OwsOperation]:
     #       <Format>application/atom xml</Format>
     #       <DCPType><HTTP><Get><OnlineResource ....
 
-    el = xml3.first(root_el, 'Capability.Request')
+    el = xml2.first(root_el, 'Capability.Request')
     if el:
         return [_parse_operation(e) for e in el.children]
 
@@ -38,16 +38,16 @@ def service_operations(root_el: gws.XmlElement) -> t.List[gws.OwsOperation]:
 def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
     params = {}
 
-    for param_el in xml3.all(el, 'Parameter'):
-        values = xml3.text_list(param_el, 'Value', 'AllowedValues.Value')
+    for param_el in xml2.all(el, 'Parameter'):
+        values = xml2.text_list(param_el, 'Value', 'AllowedValues.Value')
         if values:
-            params[xml3.attr(param_el, 'name')] = values
+            params[xml2.attr(param_el, 'name')] = values
 
     op = gws.OwsOperation(
-        verb=xml3.attr(el, 'name') or el.name,
-        formats=xml3.text_list(el, 'Format'),
-        get_url=_parse_url(xml3.first(el, 'DCP.HTTP.Get', 'DCPType.HTTP.Get')),
-        post_url=_parse_url(xml3.first(el, 'DCP.HTTP.Post', 'DCPType.HTTP.Post')),
+        verb=xml2.attr(el, 'name') or el.name,
+        formats=xml2.text_list(el, 'Format'),
+        get_url=_parse_url(xml2.first(el, 'DCP.HTTP.Get', 'DCPType.HTTP.Get')),
+        post_url=_parse_url(xml2.first(el, 'DCP.HTTP.Post', 'DCPType.HTTP.Post')),
         params=params,
     )
 
@@ -78,15 +78,15 @@ def service_metadata(root_el: gws.XmlElement) -> gws.lib.metadata.Metadata:
     #           <ows:ProviderName>...
     #           <ows:ServiceContact>...
 
-    d = _metadata_dict(xml3.first(root_el, 'Service', 'ServiceIdentification'))
+    d = _metadata_dict(xml2.first(root_el, 'Service', 'ServiceIdentification'))
     d.update(_contact_dict(root_el))
-    d['contactProviderName'] = xml3.text(root_el, 'ServiceProvider.ProviderName')
-    d['contactProviderSite'] = xml3.text(root_el, 'ServiceProvider.ProviderSite')
+    d['contactProviderName'] = xml2.text(root_el, 'ServiceProvider.ProviderName')
+    d['contactProviderSite'] = xml2.text(root_el, 'ServiceProvider.ProviderSite')
 
     #   <Capabilities
     #       <ServiceMetadataURL
 
-    link = _parse_link(xml3.first(root_el, 'ServiceMetadataURL'))
+    link = _parse_link(xml2.first(root_el, 'ServiceMetadataURL'))
     if link:
         d['metaLinks'] = [link]
 
@@ -131,11 +131,11 @@ _contact_mapping = [
 
 
 def _contact_dict(el: gws.XmlElement) -> dict:
-    contact_el = xml3.first(el, 'Service.ContactInformation', 'ServiceProvider.ServiceContact')
+    contact_el = xml2.first(el, 'Service.ContactInformation', 'ServiceProvider.ServiceContact')
     if not contact_el:
         return {}
 
-    texts = xml3.text_dict(contact_el, deep=True)
+    texts = xml2.text_dict(contact_el, deep=True)
     d = {}
 
     for dst, src in _contact_mapping:
@@ -151,22 +151,22 @@ def _metadata_dict(el: gws.XmlElement) -> dict:
         return {}
 
     d = {
-        'abstract': xml3.text(el, 'Abstract'),
-        'accessConstraints': xml3.text(el, 'AccessConstraints'),
-        'attribution': xml3.text(el, 'Attribution.Title'),
-        'fees': xml3.text(el, 'Fees'),
-        'keywords': xml3.text_list(el, 'Keywords', 'KeywordList', deep=True),
-        'name': xml3.text(el, 'Name') or xml3.text(el, 'Identifier'),
-        'title': xml3.text(el, 'Title'),
-        'metaLinks': gws.compact(_parse_link(e) for e in xml3.all(el, 'MetadataURL')),
+        'abstract': xml2.text(el, 'Abstract'),
+        'accessConstraints': xml2.text(el, 'AccessConstraints'),
+        'attribution': xml2.text(el, 'Attribution.Title'),
+        'fees': xml2.text(el, 'Fees'),
+        'keywords': xml2.text_list(el, 'Keywords', 'KeywordList', deep=True),
+        'name': xml2.text(el, 'Name') or xml2.text(el, 'Identifier'),
+        'title': xml2.text(el, 'Title'),
+        'metaLinks': gws.compact(_parse_link(e) for e in xml2.all(el, 'MetadataURL')),
     }
 
-    e = xml3.first(el, 'AuthorityURL')
+    e = xml2.first(el, 'AuthorityURL')
     if e:
         d['authorityUrl'] = _parse_url(e)
-        d['authorityName'] = xml3.attr(e, 'name')
+        d['authorityName'] = xml2.attr(e, 'name')
 
-    e = xml3.first(el, 'Identifier')
+    e = xml2.first(el, 'Identifier')
     if e:
         d['authorityIdentifier'] = e.text
 
@@ -195,15 +195,15 @@ def supported_bounds(layer_el: gws.XmlElement, extra_crsids: t.Optional[t.List[s
 
     # enumerate explicitly listed bounds (WMS)
 
-    for e in xml3.all(layer_el, 'BoundingBox'):
-        crs = gws.gis.crs.get(xml3.attr(e, 'srs') or xml3.attr(e, 'crs'))
+    for e in xml2.all(layer_el, 'BoundingBox'):
+        crs = gws.gis.crs.get(xml2.attr(e, 'srs') or xml2.attr(e, 'crs'))
         bbox = _parse_bbox(e)
         if crs and bbox:
             crs_to_bounds[crs] = gws.Bounds(crs=crs, extent=bbox)
 
     # NB prefer these for 4326 to avoid axis issues
 
-    e = xml3.first(layer_el, 'EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
+    e = xml2.first(layer_el, 'EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
     if e:
         bbox = _parse_bbox(e)
         if bbox:
@@ -220,7 +220,7 @@ def supported_bounds(layer_el: gws.XmlElement, extra_crsids: t.Optional[t.List[s
     crsids = set()
 
     for tag in 'DefaultSRS', 'DefaultCRS', 'OtherSRS', 'OtherCRS', 'SRS', 'CRS':
-        for e in xml3.all(layer_el, tag):
+        for e in xml2.all(layer_el, tag):
             if e.text:
                 crsids.add(e.text)
 
@@ -263,9 +263,9 @@ def parse_style(el: gws.XmlElement) -> gws.SourceStyle:
 
     st.metadata = element_metadata(el)
     st.name = st.metadata.get('name', '').lower()
-    st.legend_url = _parse_url(xml3.first(el, 'LegendURL'))
+    st.legend_url = _parse_url(xml2.first(el, 'LegendURL'))
     st.is_default = (
-            xml3.attr(el, 'IsDefault') == 'true'
+            xml2.attr(el, 'IsDefault') == 'true'
             or st.name == 'default'
             or st.name.endswith(':default'))
     return st
@@ -303,21 +303,21 @@ def _parse_bbox(el: gws.XmlElement):
 
     # <BoundingBox/LatLonBoundingBox CRS="..." minx="0" miny="1" maxx="2" maxy="3"/>
 
-    if xml3.attr(el, 'minx'):
+    if xml2.attr(el, 'minx'):
         return [
-            to_float(xml3.attr(el, 'minx')),
-            to_float(xml3.attr(el, 'miny')),
-            to_float(xml3.attr(el, 'maxx')),
-            to_float(xml3.attr(el, 'maxy')),
+            to_float(xml2.attr(el, 'minx')),
+            to_float(xml2.attr(el, 'miny')),
+            to_float(xml2.attr(el, 'maxx')),
+            to_float(xml2.attr(el, 'maxy')),
         ]
 
     # <ows:BoundingBox/WGS84BoundingBox
     #       <ows:LowerCorner> 0 1
     #       <ows:UpperCorner> 2 3
 
-    if xml3.first(el, 'LowerCorner'):
-        x1, y1 = to_float_pair(xml3.text(el, 'LowerCorner'))
-        x2, y2 = to_float_pair(xml3.text(el, 'UpperCorner'))
+    if xml2.first(el, 'LowerCorner'):
+        x1, y1 = to_float_pair(xml2.text(el, 'LowerCorner'))
+        x2, y2 = to_float_pair(xml2.text(el, 'UpperCorner'))
         return [
             min(x1, x2),
             min(y1, y2),
@@ -331,11 +331,11 @@ def _parse_bbox(el: gws.XmlElement):
     #       <southBoundLatitude> 1
     #       <northBoundLatitude> 3
 
-    if xml3.first(el, 'westBoundLongitude'):
-        x1 = to_float(xml3.text(el, 'eastBoundLongitude'))
-        y1 = to_float(xml3.text(el, 'southBoundLatitude'))
-        x2 = to_float(xml3.text(el, 'westBoundLongitude'))
-        y2 = to_float(xml3.text(el, 'northBoundLatitude'))
+    if xml2.first(el, 'westBoundLongitude'):
+        x1 = to_float(xml2.text(el, 'eastBoundLongitude'))
+        y1 = to_float(xml2.text(el, 'southBoundLatitude'))
+        x2 = to_float(xml2.text(el, 'westBoundLongitude'))
+        y2 = to_float(xml2.text(el, 'northBoundLatitude'))
         return [
             min(x1, x2),
             min(y1, y2),
@@ -352,16 +352,16 @@ def _parse_url(el: gws.XmlElement) -> str:
     #       <ows:HTTP>
     #           <ows:Get xlink:href=... <-- we are here
 
-    s = xml3.attr(el, 'href') or xml3.attr(el, 'onlineResource')
+    s = xml2.attr(el, 'href') or xml2.attr(el, 'onlineResource')
     if s:
         return cleanup(s)
 
     # <whatever <--
     #       <OnlineResource xlink:href=...
 
-    e = xml3.first(el, 'OnlineResource')
+    e = xml2.first(el, 'OnlineResource')
     if e:
-        return cleanup(xml3.attr(e, 'href', default=e.text))
+        return cleanup(xml2.attr(e, 'href', default=e.text))
 
     return ''
 
@@ -376,8 +376,8 @@ def _parse_link(el: gws.XmlElement) -> t.Optional[gws.MetadataLink]:
 
     d = gws.strip({
         'url': _parse_url(el),
-        'type': xml3.attr(el, 'type'),
-        'formatName': xml3.text(el, 'Format'),
+        'type': xml2.attr(el, 'type'),
+        'formatName': xml2.text(el, 'Format'),
     })
 
     if d:

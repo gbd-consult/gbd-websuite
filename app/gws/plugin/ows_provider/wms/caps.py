@@ -1,7 +1,7 @@
 """WMS Capabilities parser."""
 
 import gws
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.gis.source
 import gws.types as t
 
@@ -10,24 +10,24 @@ from .. import parseutil as u
 
 
 def parse(xml) -> core.Caps:
-    root_el = xml3.from_string(xml, compact_ws=True, strip_ns=True)
+    root_el = xml2.from_string(xml, compact_ws=True, strip_ns=True)
     source_layers = gws.gis.source.check_layers(
-        _layer(e) for e in xml3.all(root_el, 'Capability.Layer'))
+        _layer(e) for e in xml2.all(root_el, 'Capability.Layer'))
     return core.Caps(
         metadata=u.service_metadata(root_el),
         operations=u.service_operations(root_el),
         source_layers=source_layers,
-        version=xml3.attr(root_el, 'version'))
+        version=xml2.attr(root_el, 'version'))
 
 
 def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer]=None) -> gws.SourceLayer:
     sl = gws.SourceLayer()
 
-    sl.is_queryable = xml3.attr(el, 'queryable') == '1'
+    sl.is_queryable = xml2.attr(el, 'queryable') == '1'
     sl.is_visible = True
     sl.metadata = u.element_metadata(el)
     sl.name = sl.metadata.get('name', '')
-    sl.styles = [u.parse_style(e) for e in xml3.all(el, 'Style')]
+    sl.styles = [u.parse_style(e) for e in xml2.all(el, 'Style')]
     sl.supported_bounds = u.supported_bounds(el)
     sl.title = sl.metadata.get('title', '')
 
@@ -39,8 +39,8 @@ def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer]=None) -> gws.
 
     # @TODO: support ScaleHint (WMS 1.1)
 
-    smin = xml3.text(el,  'MinScaleDenominator')
-    smax = xml3.text(el,  'MaxScaleDenominator')
+    smin = xml2.text(el,  'MinScaleDenominator')
+    smax = xml2.text(el,  'MaxScaleDenominator')
     if smax:
         sl.scale_range = [u.to_int(smin), u.to_int(smax)]
 
@@ -59,7 +59,7 @@ def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer]=None) -> gws.
 
         sl.metadata.extend(parent.metadata)
 
-    sl.layers = [_layer(e, sl) for e in xml3.all(el, 'Layer')]
+    sl.layers = [_layer(e, sl) for e in xml2.all(el, 'Layer')]
     sl.is_group = len(sl.layers) > 0
     sl.is_image = len(sl.layers) == 0
 

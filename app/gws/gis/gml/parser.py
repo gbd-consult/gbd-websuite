@@ -5,7 +5,7 @@ import gws.gis.crs
 import gws.gis.extent
 import gws.gis.feature
 import gws.gis.shape
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 
@@ -19,7 +19,7 @@ def parse_envelope(el: gws.XmlElement, fallback_crs: gws.ICrs = None) -> gws.Bou
     # GML2: <gml:Box><gml:coordinates>1,2 3,4
     # GML3: <gml:Envelope srsDimension="2"><gml:lowerCorner>1 2  <gml:upperCorner>3 4
 
-    crs = gws.gis.crs.get(xml3.attr(el, 'srsName')) or fallback_crs
+    crs = gws.gis.crs.get(xml2.attr(el, 'srsName')) or fallback_crs
     if not crs:
         raise Error('envelope: no CRS')
 
@@ -71,7 +71,7 @@ def element_is_gml(el: t.Optional[gws.XmlElement]) -> bool:
 def parse_to_shape(el: gws.XmlElement, fallback_crs: gws.ICrs = None) -> gws.IShape:
     """Convert a GML geometry element to a Shape."""
 
-    crs = gws.gis.crs.get(xml3.attr(el, 'srsName')) or fallback_crs
+    crs = gws.gis.crs.get(xml2.attr(el, 'srsName')) or fallback_crs
     if not crs:
         raise Error('shape: no CRS')
 
@@ -176,8 +176,8 @@ def _coords(el):
 def _coords_coordinates(el):
     # <gml:coordinates>1,2 3,4...
 
-    ts = xml3.attr(el, 'ts', default=' ')
-    cs = xml3.attr(el, 'cs', default=',')
+    ts = xml2.attr(el, 'ts', default=' ')
+    cs = xml2.attr(el, 'cs', default=',')
 
     clist = []
 
@@ -202,7 +202,7 @@ def _coords_poslist(el):
     # <gml:posList srsDimension="2">1 2 3...
 
     clist = []
-    dim = int(xml3.attr(el, 'srsDimension', default='2'))
+    dim = int(xml2.attr(el, 'srsDimension', default='2'))
     s = el.text.split()
 
     for n in range(0, len(s), dim):
@@ -214,4 +214,4 @@ def _coords_poslist(el):
 
 
 def _pname(el):
-    return xml3.unqualify_name(el.name).lower()
+    return xml2.unqualify_name(el.name).lower()

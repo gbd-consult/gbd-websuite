@@ -5,7 +5,7 @@ import re
 import gws
 import gws.gis.bounds
 import gws.gis.shape
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 
@@ -42,7 +42,7 @@ _SUPPORTED_OPS = {
 
 def from_fes_string(src: str) -> gws.SearchFilter:
     try:
-        el = xml3.from_string(src)
+        el = xml2.from_string(src)
     except Exception as exc:
         raise Error('invalid XML') from exc
     return from_fes_element(el)
@@ -69,7 +69,7 @@ def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
 
     # @TODO support "prop = prop"
 
-    v = xml3.first(el, 'ValueReference', 'PropertyName')
+    v = xml2.first(el, 'ValueReference', 'PropertyName')
     if not v or not v.text:
         raise Error(f'invalid property name')
 
@@ -80,13 +80,13 @@ def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
     f.name = m.group(2)
 
     if op == 'bbox':
-        v = xml3.first(el, 'Envelope')
+        v = xml2.first(el, 'Envelope')
         if v:
             bounds = gws.gis.bounds.from_gml_envelope_element()
             f.shape = gws.gis.shape.from_bounds(bounds)
             return f
 
-    v = xml3.first(el, 'Literal')
+    v = xml2.first(el, 'Literal')
     if v:
         f.value = v.text.strip()
         return f

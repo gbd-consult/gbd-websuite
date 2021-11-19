@@ -8,7 +8,7 @@ import gws.lib.font
 import gws.gis.render
 import gws.gis.shape
 import gws.lib.units as units
-import gws.lib.xml3 as xml3
+import gws.lib.xml2 as xml2
 import gws.types as t
 
 DEFAULT_FONT_SIZE = 10
@@ -64,7 +64,7 @@ def shape_to_fragment(shape: gws.IShape, view: gws.MapView, style: gws.IStyle = 
                 'width': f'{int(w)}',
                 'height': f'{int(h)}',
             }
-            icon = xml3.element(
+            icon = xml2.element(
                 name=el.name,
                 attributes=gws.merge(el.attributes, atts),
                 children=el.children)
@@ -92,7 +92,7 @@ def soup_to_fragment(view: gws.MapView, points: t.List[gws.Point], tags: t.List[
     A soup has two components:
 
     - a list of points, in the map coordinate system
-    - a list of tuples suitable for `xml3.tag` input (tag-name, {atts}, child1, child2....)
+    - a list of tuples suitable for `xml2.tag` input (tag-name, {atts}, child1, child2....)
 
     The idea is to represent client-side svg drawings (e.g. dimensions) in a resolution-independent way
 
@@ -135,7 +135,7 @@ def soup_to_fragment(view: gws.MapView, points: t.List[gws.Point], tags: t.List[
 
     for tag in tags:
         convert(tag)
-        els.append(xml3.tag(*tag))
+        els.append(xml2.tag(*tag))
 
     return els
 
@@ -183,22 +183,22 @@ def _geometry(geom: shapely.geometry.base.BaseGeometry, atts: dict = None) -> gw
 
     if gt == _TYPE_POINT:
         g = t.cast(shapely.geometry.Point, geom)
-        return xml3.tag('circle', {'cx': int(g.x), 'cy': int(g.y)}, atts)
+        return xml2.tag('circle', {'cx': int(g.x), 'cy': int(g.y)}, atts)
 
     if gt == _TYPE_LINESTRING:
         g = t.cast(shapely.geometry.LineString, geom)
         d = _lpath(g.coords)
-        return xml3.tag('path', {'d': d}, atts)
+        return xml2.tag('path', {'d': d}, atts)
 
     if gt == _TYPE_POLYGON:
         g = t.cast(shapely.geometry.Polygon, geom)
         d = ' '.join(_lpath(interior.coords) + ' z' for interior in g.interiors)
         d = _lpath(g.exterior.coords) + ' z ' + d
-        return xml3.tag('path', {'fill-rule': 'evenodd', 'd': d.strip()}, atts)
+        return xml2.tag('path', {'fill-rule': 'evenodd', 'd': d.strip()}, atts)
 
     if gt > _TYPE_MULTI:
         g = t.cast(shapely.geometry.base.BaseMultipartGeometry, geom)
-        return xml3.tag('g', *[_geometry(p, atts) for p in g.geoms])
+        return xml2.tag('g', *[_geometry(p, atts) for p in g.geoms])
 
 
 def _enum_points(geom):
@@ -253,7 +253,7 @@ def _marker(uid, sv: gws.StyleValues) -> gws.XmlElement:
         content = 'circle', atts
 
     if content:
-        return xml3.tag('marker', {
+        return xml2.tag('marker', {
             'id': uid,
             'viewBox': f'0 0 {size} {size}',
             'refX': size2,
@@ -378,7 +378,7 @@ def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.XmlElement:
     # a hack to move labels forward: emit a (non-supported) z-index attribute
     # and sort elements by it later on (see `fragment_to_element`)
 
-    return xml3.tag('g', {'z-index': 100}, *tags)
+    return xml2.tag('g', {'z-index': 100}, *tags)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -396,8 +396,8 @@ def _parse_icon(icon, dpi):
     if not svg:
         return
 
-    w = xml3.attr(svg, 'width')
-    h = xml3.attr(svg, 'height')
+    w = xml2.attr(svg, 'width')
+    h = xml2.attr(svg, 'height')
 
     if not w or not h:
         gws.log.error(f'xml_icon: width and height required')
