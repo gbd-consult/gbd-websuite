@@ -170,7 +170,7 @@ class Object(gws.base.template.Object):
         # see `caps.py` for the print layout structure
 
         root_el = xml2.from_path(self.provider.path)
-        for layout_el in xml2.all(root_el, 'Layouts.Layout'):
+        for layout_el in xml2.all(root_el, 'Layouts Layout'):
             for item_el in layout_el.children:
                 uuid = item_el.attributes.get('uuid')
                 if uuid in boxes:

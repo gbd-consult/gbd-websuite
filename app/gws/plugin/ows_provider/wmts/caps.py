@@ -18,10 +18,10 @@ class Caps(core.Caps):
 
 def parse(xml):
     root_el = xml2.from_string(xml, compact_ws=True, strip_ns=True)
-    tile_matrix_sets = [_tile_matrix_set(e) for e in xml2.all(root_el, 'Contents.TileMatrixSet')]
+    tile_matrix_sets = [_tile_matrix_set(e) for e in xml2.all(root_el, 'Contents TileMatrixSet')]
     tms_map = {tms.uid: tms for tms in tile_matrix_sets}
     source_layers = gws.gis.source.check_layers(
-        _layer(e, tms_map) for e in xml2.all(root_el, 'Contents.Layer'))
+        _layer(e, tms_map) for e in xml2.all(root_el, 'Contents Layer'))
     return Caps(
         tile_matrix_sets=tile_matrix_sets,
         metadata=u.service_metadata(root_el),

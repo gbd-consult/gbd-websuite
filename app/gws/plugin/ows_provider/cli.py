@@ -44,20 +44,23 @@ class Object(gws.Node):
         mod = gws.import_from_path(f'gws/plugin/ows_provider/{protocol}/caps.py')
         res = mod.parse(xml)
 
-        def js(x):
-            if isinstance(x, gws.IMetadata):
-                return vars(x.values)
-            if isinstance(x, gws.ICrs):
-                return x.epsg
-            try:
-                return vars(x)
-            except TypeError:
-                return repr(x)
-
-        js = gws.lib.json2.to_pretty_string(res, default=js)
+        js = gws.lib.json2.to_pretty_string(res, default=_caps_json)
 
         if p.out:
             gws.write_file(p.out, js)
             gws.log.info(f'saved to {p.out!r}')
         else:
             print(js)
+
+
+def _caps_json(x):
+    if isinstance(x, gws.IMetadata):
+        return vars(x.values)
+    if isinstance(x, gws.ICrs):
+        return x.epsg
+    if isinstance(x, gws.IShape):
+        return x.to_geojson()
+    try:
+        return vars(x)
+    except TypeError:
+        return repr(x)

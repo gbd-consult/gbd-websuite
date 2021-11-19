@@ -149,7 +149,7 @@ class Object(core.Service):
             populate=populate,
             target_crs=request_crs,
             invert_axis_if_geographic=True,
-            crs_format=request_crs.format)
+            crs_format=gws.CrsFormat.URN)
 
         fmt = rd.req.param('output_format', default='gml')
         return self.template_response(rd, gws.OwsVerb.GetFeatureInfo, format=fmt, context={'collection': coll})

@@ -283,7 +283,7 @@ def element_is(el: gws.XmlElement, *names) -> bool:
 
 def _all(el, path):
     if isinstance(path, str):
-        path = path.split('.')
+        path = path.split()
 
     els = [el]
 

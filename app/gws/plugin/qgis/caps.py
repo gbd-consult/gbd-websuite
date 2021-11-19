@@ -47,7 +47,7 @@ def parse(xml: str) -> Caps:
 
     caps.properties = _properties(xml2.first(root_el, 'properties'))
     caps.metadata = _project_meta_from_props(caps.properties)
-    caps.project_crs = gws.gis.crs.get(xml2.text(root_el, 'projectCrs.spatialrefsys.authid'))
+    caps.project_crs = gws.gis.crs.get(xml2.text(root_el, 'projectCrs spatialrefsys authid'))
     caps.print_templates = _layouts(root_el)
 
     map_layers = _map_layers(root_el, caps.properties)
@@ -128,7 +128,7 @@ def _map_layers(root_el: gws.XmlElement, props) -> t.Dict[str, gws.SourceLayer]:
 
     map_layers = {}
 
-    for el in xml2.all(root_el, 'projectlayers.maplayer'):
+    for el in xml2.all(root_el, 'projectlayers maplayer'):
         sl = _map_layer(el)
 
         if not sl:
@@ -162,7 +162,7 @@ def _map_layer(layer_el: gws.XmlElement):
 
     sl.supported_bounds = []
 
-    crs = gws.gis.crs.get(xml2.text(layer_el, 'srs.spatialrefsys.authid'))
+    crs = gws.gis.crs.get(xml2.text(layer_el, 'srs spatialrefsys authid'))
     ext = xml2.first(layer_el, 'extent')
 
     if crs and ext:
@@ -193,7 +193,7 @@ def _map_layer(layer_el: gws.XmlElement):
     if s:
         sl.opacity = _parse_float(s)
 
-    s = xml2.text(layer_el, 'flags.Identifiable')
+    s = xml2.text(layer_el, 'flags Identifiable')
     sl.is_queryable = s == '1'
 
     return sl
@@ -212,7 +212,7 @@ def _map_layer_metadata(layer_el: gws.XmlElement):
         'contactPhone': tx('voice'),
         'contactPosition': tx('position'),
         'contactRole': tx('role'),
-        'keywords': xml2.text_list(layer_el, 'keywordList.value'),
+        'keywords': xml2.text_list(layer_el, 'keywordList value'),
         'name': tx('id'),
         'title': tx('layername'),
         'url': tx('metadataUrl'),
@@ -304,7 +304,7 @@ _LAYOUT_TYPES = {
 def _layouts(root_el: gws.XmlElement):
     tpls = []
 
-    for layout_el in xml2.all(root_el, 'Layouts.Layout'):
+    for layout_el in xml2.all(root_el, 'Layouts Layout'):
         tpl = PrintTemplate(
             title=layout_el.attributes.get('name', ''),
             attributes=layout_el.attributes,

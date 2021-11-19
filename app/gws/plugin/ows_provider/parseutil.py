@@ -17,7 +17,7 @@ def service_operations(root_el: gws.XmlElement) -> t.List[gws.OwsOperation]:
     #         <ows:Parameter name="AcceptVersions">
     #             <ows:AllowedValues><ows:Value>2.0.0</ows:Value></ows:AllowedValues>
 
-    els = xml2.all(root_el, 'OperationsMetadata.Operation')
+    els = xml2.all(root_el, 'OperationsMetadata Operation')
     if els:
         return [_parse_operation(e) for e in els]
 
@@ -28,7 +28,7 @@ def service_operations(root_el: gws.XmlElement) -> t.List[gws.OwsOperation]:
     #       <Format>application/atom xml</Format>
     #       <DCPType><HTTP><Get><OnlineResource ....
 
-    el = xml2.first(root_el, 'Capability.Request')
+    el = xml2.first(root_el, 'Capability Request')
     if el:
         return [_parse_operation(e) for e in el.children]
 
@@ -39,15 +39,15 @@ def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
     params = {}
 
     for param_el in xml2.all(el, 'Parameter'):
-        values = xml2.text_list(param_el, 'Value', 'AllowedValues.Value')
+        values = xml2.text_list(param_el, 'Value', 'AllowedValues Value')
         if values:
             params[xml2.attr(param_el, 'name')] = values
 
     op = gws.OwsOperation(
         verb=xml2.attr(el, 'name') or el.name,
         formats=xml2.text_list(el, 'Format'),
-        get_url=_parse_url(xml2.first(el, 'DCP.HTTP.Get', 'DCPType.HTTP.Get')),
-        post_url=_parse_url(xml2.first(el, 'DCP.HTTP.Post', 'DCPType.HTTP.Post')),
+        get_url=_parse_url(xml2.first(el, 'DCP HTTP Get', 'DCPType HTTP Get')),
+        post_url=_parse_url(xml2.first(el, 'DCP HTTP Post', 'DCPType HTTP Post')),
         params=params,
     )
 
@@ -80,8 +80,8 @@ def service_metadata(root_el: gws.XmlElement) -> gws.lib.metadata.Metadata:
 
     d = _metadata_dict(xml2.first(root_el, 'Service', 'ServiceIdentification'))
     d.update(_contact_dict(root_el))
-    d['contactProviderName'] = xml2.text(root_el, 'ServiceProvider.ProviderName')
-    d['contactProviderSite'] = xml2.text(root_el, 'ServiceProvider.ProviderSite')
+    d['contactProviderName'] = xml2.text(root_el, 'ServiceProvider ProviderName')
+    d['contactProviderSite'] = xml2.text(root_el, 'ServiceProvider ProviderSite')
 
     #   <Capabilities
     #       <ServiceMetadataURL
@@ -131,7 +131,7 @@ _contact_mapping = [
 
 
 def _contact_dict(el: gws.XmlElement) -> dict:
-    contact_el = xml2.first(el, 'Service.ContactInformation', 'ServiceProvider.ServiceContact')
+    contact_el = xml2.first(el, 'Service ContactInformation', 'ServiceProvider ServiceContact')
     if not contact_el:
         return {}
 
@@ -153,7 +153,7 @@ def _metadata_dict(el: gws.XmlElement) -> dict:
     d = {
         'abstract': xml2.text(el, 'Abstract'),
         'accessConstraints': xml2.text(el, 'AccessConstraints'),
-        'attribution': xml2.text(el, 'Attribution.Title'),
+        'attribution': xml2.text(el, 'Attribution Title'),
         'fees': xml2.text(el, 'Fees'),
         'keywords': xml2.text_list(el, 'Keywords', 'KeywordList', deep=True),
         'name': xml2.text(el, 'Name') or xml2.text(el, 'Identifier'),

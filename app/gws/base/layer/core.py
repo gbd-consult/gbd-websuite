@@ -230,11 +230,10 @@ class Object(gws.Node, gws.ILayer):
 
     def set_metadata(self, *args):
         if not args:
-            self.metadata = gws.lib.metadata.from_args(title=self.var('title') or self.var('uid') or 'layer')
+            self.metadata = gws.lib.metadata.from_args(title=self.var('title'))
             return
         self.metadata = gws.lib.metadata.from_dict(gws.to_dict(args[0]))
         self.metadata.extend(*args[1:])
-        self.title = self.metadata.get('title')
 
     def post_configure(self):
         if not self.resolutions and self.map:
@@ -244,6 +243,11 @@ class Object(gws.Node, gws.ILayer):
 
         if not self.metadata:
             self.set_metadata()
+
+        # title at the top level config preferred
+        title = self.var('title') or self.metadata.get('title') or self.var('uid')
+        self.metadata.set('title', title)
+        self.title = title
 
     def edit_access(self, user):
         # @TODO granular edit access

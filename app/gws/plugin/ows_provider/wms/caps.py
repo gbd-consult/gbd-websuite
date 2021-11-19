@@ -12,7 +12,7 @@ from .. import parseutil as u
 def parse(xml) -> core.Caps:
     root_el = xml2.from_string(xml, compact_ws=True, strip_ns=True)
     source_layers = gws.gis.source.check_layers(
-        _layer(e) for e in xml2.all(root_el, 'Capability.Layer'))
+        _layer(e) for e in xml2.all(root_el, 'Capability Layer'))
     return core.Caps(
         metadata=u.service_metadata(root_el),
         operations=u.service_operations(root_el),
@@ -20,7 +20,7 @@ def parse(xml) -> core.Caps:
         version=xml2.attr(root_el, 'version'))
 
 
-def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer]=None) -> gws.SourceLayer:
+def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
     sl = gws.SourceLayer()
 
     sl.is_queryable = xml2.attr(el, 'queryable') == '1'
@@ -39,8 +39,8 @@ def _layer(el: gws.XmlElement, parent: t.Optional[gws.SourceLayer]=None) -> gws.
 
     # @TODO: support ScaleHint (WMS 1.1)
 
-    smin = xml2.text(el,  'MinScaleDenominator')
-    smax = xml2.text(el,  'MaxScaleDenominator')
+    smin = xml2.text(el, 'MinScaleDenominator')
+    smax = xml2.text(el, 'MaxScaleDenominator')
     if smax:
         sl.scale_range = [u.to_int(smin), u.to_int(smax)]
 

@@ -12,7 +12,7 @@ from .. import parseutil as u
 def parse(xml) -> core.Caps:
     root_el = xml2.from_string(xml, compact_ws=True, strip_ns=True)
     source_layers = gws.gis.source.check_layers(
-        _feature_type(e) for e in xml2.all(root_el, 'FeatureTypeList.FeatureType'))
+        _feature_type(e) for e in xml2.all(root_el, 'FeatureTypeList FeatureType'))
     return core.Caps(
         metadata=u.service_metadata(root_el),
         operations=u.service_operations(root_el),
