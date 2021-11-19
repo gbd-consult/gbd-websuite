@@ -1,40 +1,25 @@
 module.exports = v => ({
 
     '.cmpDescription': {
-        'p': {
+        'p, h1, h2, h3': {
             margin: [0, 0, v.UNIT4, 0],
             lineHeight: '120%',
             overflowWrap: 'break-word',
             wordWrap: 'break-word',
+            fontWeight: 'normal'
         },
 
-        '.metaurl': {
-            fontSize: v.SMALL_FONT_SIZE,
-            textAlign: 'right',
-
-            'a': {
-                textDecoration: 'none',
-
-                '&::before': {
-                    content: "'metadata ▹'"
-                }
-            }
+        'li': {
+            lineHeight: '120%',
+            margin: [v.UNIT, 0, v.UNIT, v.UNIT * 8],
         },
 
+        'h1': {
+            fontSize: v.BIG_FONT_SIZE,
+        },
 
-        '.subsection': {
-            paddingTop: v.UNIT4,
-            paddingBottom: v.UNIT4,
-            borderTopWidth: 1,
-            borderTopColor: v.BORDER_COLOR,
-            borderTopStyle: 'dotted',
-            fontSize: v.SMALL_FONT_SIZE,
-
-            '.head': {
-                fontWeight: '800',
-                fontSize: v.NORMAL_FONT_SIZE,
-            }
-
+        'h2': {
+            fontWeight: '800'
         },
 
         'p.head': {
@@ -53,7 +38,6 @@ module.exports = v => ({
             maxWidth: '100%',
         },
 
-
         'table': {
             margin: [0, 0, v.UNIT4, 0],
             borderCollapse: 'collapse',
@@ -62,7 +46,6 @@ module.exports = v => ({
 
         'table tr.thead td': {
             backgroundColor: v.BORDER_COLOR,
-
         },
 
         'td, th': {
@@ -83,8 +66,34 @@ module.exports = v => ({
             fontWeight: 'bold',
         },
 
-    },
+        '.metaurl': {
+            fontSize: v.SMALL_FONT_SIZE,
+            textAlign: 'right',
 
+            'a': {
+                textDecoration: 'none',
+
+                '&::before': {
+                    content: "'metadata ▹'"
+                }
+            }
+        },
+
+        '.subsection': {
+            paddingTop: v.UNIT4,
+            paddingBottom: v.UNIT4,
+            borderTopWidth: 1,
+            borderTopColor: v.BORDER_COLOR,
+            borderTopStyle: 'dotted',
+            fontSize: v.SMALL_FONT_SIZE,
+
+            '.head': {
+                fontWeight: '800',
+                fontSize: v.NORMAL_FONT_SIZE,
+            }
+        },
+
+    },
 
 });
 

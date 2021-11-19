@@ -26,6 +26,7 @@ interface ViewProps extends gws.types.ViewProps {
     printerSnapshotDpi: number;
     printerSnapshotWidth: number;
     printerSnapshotHeight: number;
+    printDialogZoomed: boolean;
 }
 
 const StoreKeys = [
@@ -38,6 +39,7 @@ const StoreKeys = [
     'printerSnapshotDpi',
     'printerSnapshotWidth',
     'printerSnapshotHeight',
+    'printDialogZoomed',
 ];
 
 class PrintTool extends gws.Tool {
@@ -337,8 +339,9 @@ class ProgressDialog extends gws.View<ViewProps> {
 
         if (ps === 'complete') {
             return <gws.ui.Dialog
-                className="printerResultDialog"
+                {...gws.lib.cls('printerResultDialog', this.props.printDialogZoomed && 'isZoomed')}
                 whenClosed={stop}
+                whenZoomed={() => this.props.controller.update({printDialogZoomed: !this.props.printDialogZoomed})}
                 frame={job.url}
             />;
         }
