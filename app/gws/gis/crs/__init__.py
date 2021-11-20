@@ -33,9 +33,6 @@ c3857_extent = [
 _cache: dict = {}
 
 
-# NB since Crs objects are often compared for equality,
-# it's imperative that they are singletons
-
 def get(crsid: t.Optional[gws.CrsId]) -> t.Optional['Crs']:
     if not crsid:
         return None
@@ -99,9 +96,8 @@ def best_match(crs: gws.ICrs, supported_crs: t.List[gws.ICrs]) -> gws.ICrs:
         A CRS object
     """
 
-    for sup in supported_crs:
-        if sup == crs:
-            return crs
+    if crs in supported_crs:
+        return crs
 
     bst = _best_match(crs, supported_crs)
     gws.log.debug(f'best_crs: using {bst.srid!r} for {crs.srid!r}')
@@ -207,6 +203,15 @@ class Crs(gws.Object, gws.ICrs):
         self.uri = _formats[gws.CrsFormat.URI] % self.srid
 
         # self.pp = pyproj.Proj(self.epsg)
+
+    # crs objects with the same srid must be equal
+    # (despite caching, they can be different due to pickling)
+
+    def __hash__(self):
+        return self.srid
+
+    def __eq__(self, other):
+        return isinstance(other, Crs) and other.srid == self.srid
 
     def transform_extent(self, ext, target):
         if target == self:

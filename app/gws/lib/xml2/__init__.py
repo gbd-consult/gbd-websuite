@@ -5,14 +5,18 @@ import gws
 import gws.types as t
 
 
-def from_path(path, compact_ws=False, keep_ws=False, sort_atts=False, strip_ns=False, to_lower=False) -> gws.XmlElement:
+class Error(Exception):
+    pass
+
+
+def from_path(path, keep_ws=False, sort_atts=False, strip_ns=False, to_lower=False) -> gws.XmlElement:
     with open(path, 'rb') as fp:
         inp = fp.read()
-    return _Parser(compact_ws, keep_ws, sort_atts, strip_ns, to_lower).parse(inp)
+    return _Parser().parse(inp, keep_ws, sort_atts, strip_ns, to_lower)
 
 
-def from_string(inp: t.Union[str, bytes], compact_ws=False, keep_ws=False, sort_atts=False, strip_ns=False, to_lower=False) -> gws.XmlElement:
-    return _Parser(compact_ws, keep_ws, sort_atts, strip_ns, to_lower).parse(inp)
+def from_string(inp: t.Union[str, bytes], keep_ws=False, sort_atts=False, strip_ns=False, to_lower=False) -> gws.XmlElement:
+    return _Parser().parse(inp, keep_ws, sort_atts, strip_ns, to_lower)
 
 
 def element(name, attributes=None, children=None, text='', tail='') -> gws.XmlElement:
@@ -23,6 +27,9 @@ def element(name, attributes=None, children=None, text='', tail='') -> gws.XmlEl
     el.text = text or ''
     el.tail = tail or ''
     return el
+
+
+##
 
 
 def tag(names: str, *args, **kwargs) -> gws.XmlElement:
@@ -92,28 +99,25 @@ def _tag_add_text(el, s):
         el.children[-1].tail += s
 
 
-class Error(Exception):
-    pass
-
+##
 
 def to_string(
     el: gws.XmlElement,
-    compact_ws=False,
     keep_ws=False,
+    sort_atts=False,
+    strip_ns=False,
     to_lower=False,
+    with_schemas=False,
     with_xml=False,
     with_xmlns=False,
-    with_schemas=False,
 ) -> str:
     def text(s):
-        if isinstance(s, bool):
-            s = str(s).lower()
-        else:
+        if isinstance(s, (int, float, bool)):
+            return str(s).lower()
+        if not isinstance(s, str):
             s = str(s)
         if not keep_ws:
-            s = s.strip()
-        if compact_ws:
-            s = _compact_ws(s)
+            s = ' '.join(s.strip().split())
         return encode(s)
 
     def to_str(el, with_xmlns):
@@ -121,6 +125,8 @@ def to_string(
         for key, val in el.attributes.items():
             if val is None:
                 continue
+            if strip_ns:
+                key = unqualify_name(key)
             if to_lower:
                 key = key.lower()
             atts[key] = text(val)
@@ -143,12 +149,17 @@ def to_string(
             to_str(c, False)
 
         name = el.name
+        if strip_ns:
+            name = unqualify_name(name)
         if to_lower:
             name = name.lower()
 
         head = name
         if atts:
-            head += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
+            atts_items = atts.items()
+            if sort_atts:
+                atts_items = sorted(atts_items)
+            head += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts_items)
 
         if len(buf) > head_pos + 1:
             buf[head_pos] = '<' + head + '>'
@@ -165,6 +176,15 @@ def to_string(
     if with_xml:
         buf[0] = _XML_DECL
     return ''.join(buf)
+
+
+def encode(v) -> str:
+    s = str(v)
+    s = s.replace("&", "&amp;")
+    s = s.replace(">", "&gt;")
+    s = s.replace("<", "&lt;")
+    s = s.replace('"', "&quot;")
+    return s
 
 
 ##
@@ -207,29 +227,6 @@ def text_list(el: t.Optional[gws.XmlElement], *paths, deep=False) -> t.List[str]
 
 def text_dict(el: t.Optional[gws.XmlElement], *paths, deep=False) -> t.Dict[str, str]:
     return _collect_text(el, paths, deep=deep, as_dict=True)
-
-
-def _collect_text(el, paths, deep, as_dict):
-    if not el:
-        return {} if as_dict else []
-
-    def walk(e):
-        if e.text:
-            buf.append((e.name, e.text))
-        if deep:
-            for c in e.children:
-                walk(c)
-
-    buf = []
-
-    if not paths:
-        walk(el)
-
-    for path in paths:
-        for e in _all(el, path):
-            walk(e)
-
-    return dict(buf) if as_dict else [t for _, t in buf]
 
 
 def iter_all(el: gws.XmlElement):
@@ -278,9 +275,6 @@ def element_is(el: gws.XmlElement, *names) -> bool:
     return False
 
 
-##
-
-
 def _all(el, path):
     if isinstance(path, str):
         path = path.split()
@@ -312,43 +306,267 @@ def _all(el, path):
         return []
 
 
-def _filter(name, atts=None, els=None):
-    """Filter attributes or a list of elements by name."""
+def _collect_text(el, paths, deep, as_dict):
+    if not el:
+        return {} if as_dict else []
 
-    name = name.lower()
-    has_ns = _NSDELIM in name
+    def walk(e):
+        if e.text:
+            buf.append((e.name, e.text))
+        if deep:
+            for c in e.children:
+                walk(c)
 
-    # name only, partial match
+    buf = []
 
-    if not has_ns and atts is not None:
-        nc = ':' + name
-        for k, v in atts.items():
-            k = k.lower()
-            if k == name or k.endswith(nc):
-                return v
-        return
+    if not paths:
+        walk(el)
 
-    if not has_ns and els is not None:
-        ls = []
-        nc = ':' + name
-        for el in els:
-            k = el.name.lower()
-            if k == name or k.endswith(nc):
-                ls.append(el)
-        return ls
+    for path in paths:
+        for e in _all(el, path):
+            walk(e)
 
-    # namespace given, full match
+    return dict(buf) if as_dict else [t for _, t in buf]
 
-    if has_ns and atts is not None:
-        for k, v in atts.items():
-            if k.lower() == name:
-                return v
-        return
 
-    if has_ns and els is not None:
-        return [el for el in els if el.name.lower() == name]
+##
 
-    raise ValueError('invalid params to _filter')
+class _Parser:
+    def parse(
+        self,
+        inp: t.Union[str, bytes],
+        keep_ws,
+        sort_atts,
+        strip_ns,
+        to_lower
+    ):
+
+        self.el_stack = []
+        self.ns_stack = []
+        self.text_buf = []
+
+        self.keep_ws = keep_ws
+        self.sort_atts = sort_atts
+        self.strip_ns = strip_ns
+        self.to_lower = to_lower
+
+        self.el_stack = [element('', children=[])]
+        self.ns_stack = [{'': ''}]
+
+        instr = _decode_input(inp)
+
+        self.p = xml.parsers.expat.ParserCreate()
+        self.p.buffer_text = True
+
+        self.p.StartElementHandler = self.StartElementHandler
+        self.p.EndElementHandler = self.EndElementHandler
+        self.p.CharacterDataHandler = self.CharacterDataHandler
+
+        try:
+            self.p.Parse(instr, True)
+        except xml.parsers.expat.ExpatError as e:
+            raise Error('parse error: ' + _XML_Error[getattr(e, 'code')], self.p.ErrorLineNumber, self.p.ErrorColumnNumber)
+
+        for el in self.el_stack[-1].children:
+            return el
+
+        raise Error('parse error: no element found')
+
+    def StartElementHandler(self, tag_name, attributes):
+        if self.text_buf:
+            self._flush_text()
+
+        ns_cur = self.ns_stack[-1]
+        ns_new = {}
+
+        atts = {}
+        unresolved_atts = []
+
+        for attr_name, val in attributes.items():
+            if self.to_lower:
+                attr_name = attr_name.lower()
+
+            pfx, name = split_name(attr_name)
+
+            if pfx:
+                if pfx == _XMLNS:
+                    ns_new[name] = val
+                elif self.strip_ns:
+                    atts[name] = val
+                else:
+                    unresolved_atts.append((pfx, name, val))
+            else:
+                if name == _XMLNS:
+                    ns_new[''] = val
+                else:
+                    atts[name] = val
+
+        for pfx, name, val in unresolved_atts:
+            atts[self._qname(pfx, name)] = val
+
+        if self.sort_atts:
+            atts = dict(sorted(atts.items()))
+
+        if ns_new:
+            ns_cur = dict(ns_cur)
+            ns_cur.update(ns_new)
+        self.ns_stack.append(ns_cur)
+
+        if self.to_lower:
+            tag_name = tag_name.lower()
+
+        pfx, name = split_name(tag_name)
+        el = element(name=self._qname(pfx, name), attributes=atts)
+        el.pos = [self.p.CurrentLineNumber - 1, self.p.CurrentColumnNumber]
+
+        self.el_stack[-1].children.append(el)
+        self.el_stack.append(el)
+
+    def EndElementHandler(self, tag_name):
+        if self.text_buf:
+            self._flush_text()
+        self.el_stack.pop()
+        self.ns_stack.pop()
+
+    def CharacterDataHandler(self, data):
+        # NB despite `buffer_text` above,
+        # this might be called several times in a row on large inputs
+        self.text_buf.append(data)
+
+    def _qname(self, pfx, name):
+        if self.strip_ns or not pfx:
+            return name
+        ns = self.ns_stack[-1].get(pfx)
+        if ns:
+            pfx = namespaces.prefix(ns) or pfx
+        return pfx + ':' + name
+
+    def _flush_text(self):
+        if len(self.text_buf) == 1:
+            text = self.text_buf[0]
+        else:
+            text = ''.join(self.text_buf)
+
+        self.text_buf = []
+
+        if not self.keep_ws:
+            text = ' '.join(text.strip().split())
+
+        if text:
+            top = self.el_stack[-1]
+            if top.children:
+                top.children[-1].tail = text
+            else:
+                top.text = text
+
+
+def _decode_input(inp: t.Union[str, bytes]) -> str:
+    # the problem is, we can receive a document
+    # that is declared ISO-8859-1, but actually is UTF and vice versa.
+    # therefore, don't let expat do the decoding, always give it a `str`
+    # and remove the xml decl with the (possibly incorrect) encoding
+
+    if isinstance(inp, bytes):
+        encodings = []
+        inp = inp.strip()
+        if inp.startswith(b'<?xml'):
+            try:
+                end = inp.index(b'?>')
+            except ValueError:
+                raise Error('invalid XML declaration')
+
+            head = inp[:end].decode('ascii').lower()
+            m = re.search(r'encoding\s*=\s*(\S+)', head)
+            if m:
+                encodings.append(m.group(1).strip('\'\"'))
+            inp = inp[end + 2:]
+
+        # declared encoding, if any, first, then utf8, then latin
+
+        if 'utf8' not in encodings:
+            encodings.append('utf8')
+        if 'iso-8859-1' not in encodings:
+            encodings.append('iso-8859-1')
+
+        for enc in encodings:
+            try:
+                return inp.decode(encoding=enc, errors='strict')
+            except (LookupError, UnicodeDecodeError):
+                pass
+
+        raise Error(f'invalid encoding, tried {",".join(encodings)}')
+
+    if isinstance(inp, str):
+        inp = inp.strip()
+        if not inp.startswith('<?xml'):
+            return inp
+        try:
+            end = inp.index('?>')
+        except ValueError:
+            raise Error('invalid XML declaration')
+        return inp[end + 2:]
+
+    raise Error(f'invalid input')
+
+
+# https://github.com/python/cpython/blob/main/Modules/expat/expat.h
+
+_XML_Error = [
+    'XML_ERROR_NONE',
+    'XML_ERROR_NO_MEMORY',
+    'XML_ERROR_SYNTAX',
+    'XML_ERROR_NO_ELEMENTS',
+    'XML_ERROR_INVALID_TOKEN',
+    'XML_ERROR_UNCLOSED_TOKEN',
+    'XML_ERROR_PARTIAL_CHAR',
+    'XML_ERROR_TAG_MISMATCH',
+    'XML_ERROR_DUPLICATE_ATTRIBUTE',
+    'XML_ERROR_JUNK_AFTER_DOC_ELEMENT',
+    'XML_ERROR_PARAM_ENTITY_REF',
+    'XML_ERROR_UNDEFINED_ENTITY',
+    'XML_ERROR_RECURSIVE_ENTITY_REF',
+    'XML_ERROR_ASYNC_ENTITY',
+    'XML_ERROR_BAD_CHAR_REF',
+    'XML_ERROR_BINARY_ENTITY_REF',
+    'XML_ERROR_ATTRIBUTE_EXTERNAL_ENTITY_REF',
+    'XML_ERROR_MISPLACED_XML_PI',
+    'XML_ERROR_UNKNOWN_ENCODING',
+    'XML_ERROR_INCORRECT_ENCODING',
+    'XML_ERROR_UNCLOSED_CDATA_SECTION',
+    'XML_ERROR_EXTERNAL_ENTITY_HANDLING',
+    'XML_ERROR_NOT_STANDALONE',
+    'XML_ERROR_UNEXPECTED_STATE',
+    'XML_ERROR_ENTITY_DECLARED_IN_PE',
+    'XML_ERROR_FEATURE_REQUIRES_XML_DTD',
+    'XML_ERROR_CANT_CHANGE_FEATURE_ONCE_PARSING',
+    'XML_ERROR_UNBOUND_PREFIX',
+    'XML_ERROR_UNDECLARING_PREFIX',
+    'XML_ERROR_INCOMPLETE_PE',
+    'XML_ERROR_XML_DECL',
+    'XML_ERROR_TEXT_DECL',
+    'XML_ERROR_PUBLICID',
+    'XML_ERROR_SUSPENDED',
+    'XML_ERROR_NOT_SUSPENDED',
+    'XML_ERROR_ABORTED',
+    'XML_ERROR_FINISHED',
+    'XML_ERROR_SUSPEND_PE',
+    'XML_ERROR_RESERVED_PREFIX_XML',
+    'XML_ERROR_RESERVED_PREFIX_XMLNS',
+    'XML_ERROR_RESERVED_NAMESPACE_URI',
+    'XML_ERROR_INVALID_ARGUMENT',
+    'XML_ERROR_NO_BUFFER',
+    'XML_ERROR_AMPLIFICATION_LIMIT_BREACH',
+]
+
+_XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'
+_XMLNS = 'xmlns'
+_XSI = 'xsi'
+_XSI_URL = 'http://www.w3.org/2001/XMLSchema-instance'
+
+##
+
+
+_NSDELIM = ':'
 
 
 ##
@@ -427,178 +645,6 @@ def _collect_ns_prefixes(el, prefixes):
         _collect_ns_prefixes(c, prefixes)
 
 
-##
-
-class _Parser:
-    def __init__(
-        self,
-        compact_ws,
-        keep_ws,
-        sort_atts,
-        strip_ns,
-        to_lower,
-
-    ):
-        self.p = None
-
-        self.el_stack = []
-        self.ns_stack = []
-
-        self.compact_ws = compact_ws
-        self.keep_ws = keep_ws
-        self.sort_atts = sort_atts
-        self.strip_ns = strip_ns
-        self.to_lower = to_lower
-
-    def parse(self, inp: t.Union[str, bytes]):
-        self.el_stack = [element('', children=[])]
-        self.ns_stack = [{'': ''}]
-
-        instr = _decode_input(inp)
-
-        self.p = xml.parsers.expat.ParserCreate()
-        self.p.buffer_text = True
-
-        self.p.StartElementHandler = self.StartElementHandler
-        self.p.EndElementHandler = self.EndElementHandler
-        self.p.CharacterDataHandler = self.CharacterDataHandler
-
-        try:
-            self.p.Parse(instr, True)
-        except xml.parsers.expat.ExpatError as e:
-            raise Error('parse error: ' + _XML_Error[getattr(e, 'code')], self.p.ErrorLineNumber, self.p.ErrorColumnNumber)
-
-        for el in self.el_stack[-1].children:
-            return el
-
-        raise Error('parse error: no element found')
-
-    def _qname(self, pfx, name):
-        if self.strip_ns or not pfx:
-            return name
-        ns = self.ns_stack[-1].get(pfx)
-        if ns:
-            pfx = namespaces.prefix(ns) or pfx
-        return pfx + ':' + name
-
-    def StartElementHandler(self, tag_name, attributes):
-
-        ns_cur = self.ns_stack[-1]
-        ns_new = {}
-
-        atts = {}
-        unresolved_atts = []
-
-        for attr_name, val in attributes.items():
-            if self.to_lower:
-                attr_name = attr_name.lower()
-            pfx, name = split_name(attr_name)
-            if not pfx and name == _XMLNS:
-                ns_new[''] = val
-            elif pfx == _XMLNS:
-                ns_new[name] = val
-            elif self.strip_ns or not pfx:
-                atts[name] = val
-            else:
-                unresolved_atts.append((pfx, name, val))
-
-        for pfx, name, val in unresolved_atts:
-            atts[self._qname(pfx, name)] = val
-
-        if self.sort_atts:
-            atts = dict(sorted(atts.items()))
-
-        if ns_new:
-            ns_cur = dict(ns_cur)
-            ns_cur.update(ns_new)
-        self.ns_stack.append(ns_cur)
-
-        if self.to_lower:
-            tag_name = tag_name.lower()
-
-        pfx, name = split_name(tag_name)
-        el = element(name=self._qname(pfx, name), attributes=atts)
-        el.pos = [self.p.CurrentLineNumber - 1, self.p.CurrentColumnNumber]
-
-        self.el_stack[-1].children.append(el)
-        self.el_stack.append(el)
-
-    def EndElementHandler(self, tag_name):
-        self.el_stack.pop()
-        self.ns_stack.pop()
-
-    def CharacterDataHandler(self, data):
-        stripped = data.strip()
-        if not stripped:
-            return
-
-        if not self.keep_ws:
-            data = stripped
-        if self.compact_ws:
-            data = _compact_ws(data)
-
-        top = self.el_stack[-1]
-        if not top.children:
-            top.text += data
-        else:
-            top.children[-1].tail += data
-
-
-def _decode_input(inp):
-    # the problem is, we can receive a document
-    # that is declared ISO-8859-1, but actually is UTF
-    # and vice versa
-    # therefore, don't let expat do the decoding, always give it a `str`
-
-    if isinstance(inp, bytes):
-        encodings = []
-        inp = inp.strip()
-        if inp.startswith(b'<?xml'):
-            try:
-                end = inp.index(b'?>')
-            except ValueError:
-                raise Error('invalid XML declaration')
-
-            head = inp[:end].decode('utf8').lower()
-            m = re.search(r'encoding\s*=\s*(\S+)', head)
-            if m:
-                encodings.append(m.group(1).strip('\'\"'))
-            inp = inp[end + 2:]
-
-        # declared encoding, if any, first, then utf8, then latin
-
-        if 'utf8' not in encodings:
-            encodings.append('utf8')
-        if 'iso-8859-1' not in encodings:
-            encodings.append('iso-8859-1')
-
-        for enc in encodings:
-            try:
-                return inp.decode(encoding=enc, errors='strict')
-            except (LookupError, UnicodeDecodeError):
-                pass
-
-        raise Error(f'invalid encoding, tried {",".join(encodings)}')
-
-    if isinstance(inp, str):
-        inp = inp.strip()
-        if not inp.startswith('<?xml'):
-            return inp
-        try:
-            end = inp.index('?>')
-        except ValueError:
-            raise Error('invalid XML declaration')
-        return inp[end + 2:]
-
-    raise Error(f'invalid input')
-
-
-##
-
-
-_NSDELIM = ':'
-
-
 def split_name(s):
     if _NSDELIM not in s:
         return '', s
@@ -628,88 +674,6 @@ def requalify_name(s, prefix):
 
 ##
 
-def encode(v) -> str:
-    s = str(v)
-    s = s.replace("&", "&amp;")
-    s = s.replace(">", "&gt;")
-    s = s.replace("<", "&lt;")
-    s = s.replace('"', "&quot;")
-    return s
-
-
-##
-
-# https://github.com/python/cpython/blob/main/Modules/expat/expat.h
-
-_XML_Error = [
-    'XML_ERROR_NONE',
-    'XML_ERROR_NO_MEMORY',
-    'XML_ERROR_SYNTAX',
-    'XML_ERROR_NO_ELEMENTS',
-    'XML_ERROR_INVALID_TOKEN',
-    'XML_ERROR_UNCLOSED_TOKEN',
-    'XML_ERROR_PARTIAL_CHAR',
-    'XML_ERROR_TAG_MISMATCH',
-    'XML_ERROR_DUPLICATE_ATTRIBUTE',
-    'XML_ERROR_JUNK_AFTER_DOC_ELEMENT',
-    'XML_ERROR_PARAM_ENTITY_REF',
-    'XML_ERROR_UNDEFINED_ENTITY',
-    'XML_ERROR_RECURSIVE_ENTITY_REF',
-    'XML_ERROR_ASYNC_ENTITY',
-    'XML_ERROR_BAD_CHAR_REF',
-    'XML_ERROR_BINARY_ENTITY_REF',
-    'XML_ERROR_ATTRIBUTE_EXTERNAL_ENTITY_REF',
-    'XML_ERROR_MISPLACED_XML_PI',
-    'XML_ERROR_UNKNOWN_ENCODING',
-    'XML_ERROR_INCORRECT_ENCODING',
-    'XML_ERROR_UNCLOSED_CDATA_SECTION',
-    'XML_ERROR_EXTERNAL_ENTITY_HANDLING',
-    'XML_ERROR_NOT_STANDALONE',
-    'XML_ERROR_UNEXPECTED_STATE',
-    'XML_ERROR_ENTITY_DECLARED_IN_PE',
-    'XML_ERROR_FEATURE_REQUIRES_XML_DTD',
-    'XML_ERROR_CANT_CHANGE_FEATURE_ONCE_PARSING',
-    'XML_ERROR_UNBOUND_PREFIX',
-    'XML_ERROR_UNDECLARING_PREFIX',
-    'XML_ERROR_INCOMPLETE_PE',
-    'XML_ERROR_XML_DECL',
-    'XML_ERROR_TEXT_DECL',
-    'XML_ERROR_PUBLICID',
-    'XML_ERROR_SUSPENDED',
-    'XML_ERROR_NOT_SUSPENDED',
-    'XML_ERROR_ABORTED',
-    'XML_ERROR_FINISHED',
-    'XML_ERROR_SUSPEND_PE',
-    'XML_ERROR_RESERVED_PREFIX_XML',
-    'XML_ERROR_RESERVED_PREFIX_XMLNS',
-    'XML_ERROR_RESERVED_NAMESPACE_URI',
-    'XML_ERROR_INVALID_ARGUMENT',
-    'XML_ERROR_NO_BUFFER',
-    'XML_ERROR_AMPLIFICATION_LIMIT_BREACH',
-]
-
-_XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'
-_XMLNS = 'xmlns'
-_XSI = 'xsi'
-_XSI_URL = 'http://www.w3.org/2001/XMLSchema-instance'
-
-
-##
-
-def _compact_ws(s: str) -> str:
-    if not s:
-        return s
-    lspace = s[0].isspace()
-    rspace = s[-1].isspace()
-    s = ' '.join(s.strip().split())
-    if lspace:
-        s = ' ' + s
-    if rspace:
-        s = s + ' '
-    return s
-
-
-##
 # Namespaces used in built-in templates.
 
 # (id, url, schema)

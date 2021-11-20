@@ -188,6 +188,11 @@ def _parse_str(val):
 def _unitint(val):
     if isinstance(val, int):
         return val
+
+    if val.isdigit():
+        # unitless = assume pixels
+        return int(val)
+
     m = re.match(r'^(-?\d+)([a-z]*)', str(val))
     if not m:
         return

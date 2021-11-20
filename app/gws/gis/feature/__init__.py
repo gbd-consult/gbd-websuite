@@ -97,7 +97,7 @@ class Feature(gws.Object, gws.IFeature):
             uid=self.full_uid,
             attributes=self.attributes,
             shape=self.shape,
-            style=self.style,
+            style=self.style or (self.layer.style if self.layer else None),
             elements=self.elements,
             layerUid=self.layer.uid if self.layer else None,
         )
@@ -169,7 +169,7 @@ class Feature(gws.Object, gws.IFeature):
             return self
 
         used = set()
-        ctx = gws.merge(self.template_context, extra_context)
+        tri = gws.TemplateRenderInput(context=gws.merge(self.template_context, extra_context))
 
         if subjects:
             templates = [tpl for tpl in templates.items if tpl.subject in subjects]
@@ -178,7 +178,7 @@ class Feature(gws.Object, gws.IFeature):
 
         for tpl in templates:
             if tpl.name not in used:
-                self.elements[tpl.name] = tpl.render().content
+                self.elements[tpl.name] = tpl.render(tri).content
                 used.add(tpl.name)
 
         return self

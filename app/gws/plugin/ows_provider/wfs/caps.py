@@ -10,7 +10,7 @@ from .. import parseutil as u
 # @TODO check support caps (we need at least BBOX)
 
 def parse(xml) -> core.Caps:
-    root_el = xml2.from_string(xml, compact_ws=True, strip_ns=True)
+    root_el = xml2.from_string(xml, strip_ns=True)
     source_layers = gws.gis.source.check_layers(
         _feature_type(e) for e in xml2.all(root_el, 'FeatureTypeList FeatureType'))
     return core.Caps(

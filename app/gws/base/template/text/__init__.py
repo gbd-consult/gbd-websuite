@@ -15,8 +15,8 @@ class Config(gws.base.template.Config):
 class Object(gws.base.template.Object):
     """Text-only template"""
 
-    def render(self, context: dict, args: gws.TemplateRenderInput = None) -> gws.ContentResponse:
-        context = context or {}
+    def render(self, tri, notify=None):
+        context = tri.context or {}
 
         context['gws'] = {
             'version': gws.VERSION,

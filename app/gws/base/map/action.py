@@ -108,15 +108,13 @@ class Object(gws.base.api.action.Object):
     @gws.ext.command('get.map.getFeatures')
     def http_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> gws.ContentResponse:
         # @TODO the response should be geojson FeatureCollection
+
         found = self._get_features(req, p)
-        ts = gws.time_start('get_features')
-        res = gws.ContentResponse(
-            mime=gws.lib.mime.JSON,
-            content=gws.lib.json2.to_string({
-                'features': [gws.props(f, req.user, context=self) for f in found]
-            }))
-        gws.time_end(ts)
-        return res
+        js = gws.lib.json2.to_string({
+            'features': [gws.props(f, req.user, context=self) for f in found]
+        })
+
+        return gws.ContentResponse(mime=gws.lib.mime.JSON, content=js)
 
     ##
 

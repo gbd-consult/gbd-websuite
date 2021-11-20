@@ -12,6 +12,13 @@ def parse(
     fallback_crs: t.Optional[gws.ICrs] = None,
     **kwargs
 ) -> t.List[gws.IFeature]:
+    ts = gws.time_start('featureinfo:parse')
+    res = _parse(text, fallback_crs, **kwargs)
+    gws.time_end(ts)
+    return res
+
+
+def _parse(text, fallback_crs, **kwargs):
     try:
         xml_el = xml2.from_string(text, strip_ns=True)
     except xml2.Error:
@@ -19,20 +26,23 @@ def parse(
 
     if xml_el:
         for fn in _XML_FORMATS:
-            res = fn(xml_el, fallback_crs, **kwargs)
-            if res is not None:
-                gws.log.debug(f'parsed with {fn!r}')
-                return res
+            features = fn(xml_el, fallback_crs, **kwargs)
+            if features is not None:
+                gws.log.debug(f'parsed with {fn.__name__} count={len(features)}')
+                return features
 
     # fallback for non-xml formats
     for fn in _TEXT_FORMATS:
-        res = fn(text, fallback_crs, **kwargs)
-        if res is not None:
-            gws.log.debug(f'parsed with {fn!r}')
-            return res
+        features = fn(text, fallback_crs, **kwargs)
+        if features is not None:
+            gws.log.debug(f'parsed with {fn.__name__} count={len(features)}')
+            return features
 
 
 ##
+
+_DEEP_PROP_NAME_DELIMITER = '/'
+
 
 def _f_FeatureCollection(el: gws.XmlElement, fallback_crs, **kwargs):
     # wfs FeatureCollection
@@ -46,7 +56,7 @@ def _f_FeatureCollection(el: gws.XmlElement, fallback_crs, **kwargs):
 
     features = []
 
-    for member_el in xml2.all(el, 'featureMember'):
+    for member_el in xml2.all(el, 'member', 'featureMember'):
         if not member_el.children:
             continue
 
@@ -56,10 +66,11 @@ def _f_FeatureCollection(el: gws.XmlElement, fallback_crs, **kwargs):
         shapes = []
         uid = xml2.attr(content_el, 'id', 'fid')
 
+        # flatten a potentially deeply nested structure into a flat list,
+        # with property names = tags joined by the delim
+
         for c in content_el.children:
             _fc_walk(c, '', atts, shapes, fallback_crs)
-
-        shapes = []
 
         # like GDAL does:
         # "When reading a feature, the driver will by default only take into account
@@ -78,7 +89,7 @@ def _f_FeatureCollection(el: gws.XmlElement, fallback_crs, **kwargs):
 
 
 def _fc_walk(el: gws.XmlElement, path, atts, shapes, fallback_crs):
-    path = (path + '.' + el.name) if path else el.name
+    path = (path + _DEEP_PROP_NAME_DELIMITER + el.name) if path else el.name
 
     if not el.children and el.text:
         atts.append(gws.Attribute(name=path, value=el.text))
@@ -88,8 +99,11 @@ def _fc_walk(el: gws.XmlElement, path, atts, shapes, fallback_crs):
         shapes.append(gws.gis.gml.parse_to_shape(el, fallback_crs=fallback_crs))
         return
 
+    if xml2.element_is(el, 'boundedBy'):
+        return
+
     for c in el.children:
-        _fc_walk(c, path, atts, shapes)
+        _fc_walk(c, path, atts, shapes, fallback_crs)
 
 
 ##
