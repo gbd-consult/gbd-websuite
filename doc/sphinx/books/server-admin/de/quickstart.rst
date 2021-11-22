@@ -9,6 +9,8 @@ Hiermit starten Sie den GBD WebSuite Server zum ersten Mal und richten Ihr erste
 
     docker run -it -p 3333:80 --name my-gws-container gbdconsult/gws-server:latest
 
+**Wichtig**: Ersetzten Sie in dem obigen Befehl das Wort ``latest`` bitte mit der aktuellen Version der GBD Websuite, z.B. ``7.0``.
+
 Dies führt den GBD WebSuite Server auf dem Port ``3333`` unter dem Namen ``my-gws-container`` aus (zögern Sie nicht, einen anderen Namen und/oder Port zu verwenden). Bei einigen Setups benötigen Sie möglicherweise Root-Rechte (``sudo``), um dies ausführen zu können.
 
 Wenn alles in Ordnung ist, sollten Sie das Server-Log auf Ihrem Terminal sehen. Gehen Sie in Ihrem Browser auf http://localhost:3333. Es wird die Server-Startseite und unser Beispielprojekt gezeigt.
