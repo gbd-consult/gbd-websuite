@@ -270,7 +270,7 @@ def http_request(url, **kwargs) -> Response:
         else:
             raise HTTPError(500, str(e)) from e
 
-    if resp and not lax:
+    if resp is not None and not lax:
         try:
             resp.raise_for_status()
         except requests.RequestException as e:
