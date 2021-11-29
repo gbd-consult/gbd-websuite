@@ -332,6 +332,9 @@ class Object(gws.common.action.Object):
                     raise ValueError(f'no INSERT acccess to {self.log_table!r}')
 
     def props_for(self, user):
+        if not user.can_use(self):
+            return None
+
         if not self.valid:
             return None
 
