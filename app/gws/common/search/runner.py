@@ -95,6 +95,7 @@ def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.Search
 
     for f in fs:
         f.layer = layer
+        f.search_provider = prov
         f.category = prov.title or (layer.title if layer else '')
         f.templates = tt
         f.data_model = dm
