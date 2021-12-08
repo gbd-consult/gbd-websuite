@@ -41,13 +41,19 @@ class Object(gws.common.template.Object):
         # rewrite the project and replace variables within
         # @TODO fails if there are relative paths in the project
 
-        if legends and self.legend_mode:
-            ctx = {}
-            for layer_uid, s in legends.items():
-                ctx['GWS_LEGEND_' + gws.sha256(layer_uid)] = s
-            ctx['GWS_LEGEND'] = ''.join(legends.values())
+        context = self.prepare_context(context)
 
-            context = gws.extend(context, ctx)
+        if legends and self.legend_mode:
+            for layer_uid, s in legends.items():
+                context['GWS_LEGEND_' + gws.sha256(layer_uid)] = s
+            context['GWS_LEGEND'] = ''.join(legends.values())
+
+        if 'date' in context:
+            context['date_short'] = context['date'].short
+        if 'time' in context:
+            context['time_short'] = context['time'].short
+        if 'user' in context:
+            context['user_name'] = context['user'].display_name
 
         temp_prj_path = out_path + '.qgs'
         gws.write_file(temp_prj_path, writer.add_variables(self.source_text, context))
