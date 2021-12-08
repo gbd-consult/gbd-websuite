@@ -64,9 +64,9 @@ class ManifestPlugin(Data):
 
 
 class Manifest(Data):
-    addPlugins: Optional[List[ManifestPlugin]]
     excludePlugins: Optional[List[str]]
     plugins: Optional[List[ManifestPlugin]]
+    locales: List[str]
 
     withFallbackConfig: bool = False
     withStrictConfig: bool = False

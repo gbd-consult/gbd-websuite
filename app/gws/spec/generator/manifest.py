@@ -13,23 +13,24 @@ def load(path):
     with open(path, 'rt', encoding='utf8') as fp:
         text = fp.read()
 
-    # we allow // comments in manifests
-    text = re.sub(r'//.*', '', text)
+    # we allow newline + // or # comments
 
-    return _convert_value(path, '', json.loads(text))
+    lines = []
+    for s in text.split('\n'):
+        if s.strip().startswith(('//', '#')):
+            s = ''
+        lines.append(s)
+
+    return _convert_value(path, '', json.loads('\n'.join(lines)))
 
 
 def enumerate_plugins(mfst, local_plugin_dir):
     if not mfst:
         return list(_local_plugins(local_plugin_dir))
 
-    lst = mfst.get('plugins')
-    if lst is not None:
-        return list(_manifest_plugins(lst))
-
     cdict = {c.name: c for c in _local_plugins(local_plugin_dir)}
 
-    lst = mfst.get('addPlugins')
+    lst = mfst.get('plugins')
     if lst is not None:
         cdict.update({c.name: c for c in _manifest_plugins(lst)})
 
@@ -62,7 +63,6 @@ def _plugin_name(name):
 
 def _convert_value(path, key, val):
     if isinstance(val, str):
-        val = _replace_env(val)
         if key.lower().endswith('path') and val.startswith('.'):
             val = os.path.abspath(os.path.join(os.path.dirname(path), val))
         return val
@@ -71,16 +71,6 @@ def _convert_value(path, key, val):
     if isinstance(val, dict):
         return {k: _convert_value(path, k, v) for k, v in val.items()}
     return val
-
-
-def _replace_env(s):
-    def _env(m):
-        key = m[1]
-        if key in os.environ:
-            return os.environ[key]
-        raise ValueError(f'unknown variable {key!r} in {s!r}')
-
-    return re.sub(r'\${(\w+)}', _env, s)
 
 
 def _find_dirs(basedir):
