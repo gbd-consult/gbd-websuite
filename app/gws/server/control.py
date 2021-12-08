@@ -23,7 +23,7 @@ def configure(config_path=None, is_starting=False):
             cmds = shlex.split(autorun)
             gws.tools.os2.run(cmds, echo=True)
 
-        timezone = gws.get(cfg, 'timeZone')
+        timezone = gws.get(cfg, 'server.timeZone')
         if timezone:
             gws.tools.date.set_system_time_zone(timezone)
 
