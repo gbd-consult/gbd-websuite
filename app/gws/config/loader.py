@@ -1,3 +1,5 @@
+import sys
+import json
 import os
 import pickle
 
@@ -64,6 +66,7 @@ def activate(cfg) -> t.IRootObject:
 def store(root: t.IRootObject, path=None):
     path = path or DEFAULT_STORE_PATH
     try:
+        gws.write_file(path + '.syspath.json', json.dumps(sys.path))
         gws.write_file_b(path, pickle.dumps(root))
     except Exception as e:
         raise error.LoadError('unable to store configuration') from e
@@ -73,8 +76,8 @@ def load(path=None) -> t.IRootObject:
     path = path or DEFAULT_STORE_PATH
     try:
         gws.log.debug(f'loading config from "{path}"')
-        with open(path, 'rb') as fp:
-            r = pickle.load(fp)
+        sys.path = json.loads(gws.read_file(path + '.syspath.json'))
+        r = pickle.loads(gws.read_file_b(path))
         return gws.set_global('_tree_root', r)
     except Exception as e:
         raise error.LoadError('unable to load configuration') from e

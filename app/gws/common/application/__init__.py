@@ -1,4 +1,7 @@
 """Core application object"""
+import os.path
+import sys
+import importlib
 
 import gws
 
@@ -18,6 +21,8 @@ import gws.tools.os2
 import gws.web.site
 
 import gws.types as t
+
+from . import manifest
 
 
 class DbConfig(t.Config):
@@ -71,6 +76,7 @@ class Config(t.WithAccess):
     seeding: SeedingConfig = {}  #: configuration for seeding jobs
     server: t.Optional[gws.server.types.Config] = {}  #: server engine options
     web: t.Optional[WebConfig] = {}  #: webserver configuration
+    plugins: t.Optional[dict]
 
 
 _DEFAULT_SITE = t.Data(host='*', root=t.Data(dir='/data/web'))
@@ -126,6 +132,8 @@ class Object(gws.Object, t.IApplication):
         for p in self.var('helpers', default=[]):
             self.create_child('gws.ext.helper', p)
 
+        self.load_plugins()
+
         self.auth: t.IAuthManager = t.cast(t.IAuthManager, self.create_child(gws.common.auth.Object, self.var('auth', default=t.Data())))
         self.api: t.IApi = t.cast(t.IApi, self.create_child(gws.common.api.Object, self.var('api', default=t.Data())))
 
@@ -166,6 +174,22 @@ class Object(gws.Object, t.IApplication):
             gws.log.debug(f'created an ad-hoc helper, key={key!r} cfg={cfg!r}')
             p = self.create_child(base, cfg)
         return p
+
+    def load_plugins(self):
+        if not gws.tools.os2.is_file('/MANIFEST.json'):
+            return
+
+        mf = manifest.from_path('/MANIFEST.json')
+        plugins_conf = self.var('plugins', default={})
+
+        for p in mf['plugins']:
+            dirname = os.path.dirname(p['path'])
+            base = os.path.basename(p['path'])
+            if dirname not in sys.path:
+                sys.path.insert(0, dirname)
+            mod = importlib.import_module(base)
+            gws.log.debug(f"plugin: loading {p['name']!r} from {p['path']!r}")
+            obj = self.create_child(mod.Object, plugins_conf.get(p['name'], {}))
 
 
 def _install_fonts(source_dir):
