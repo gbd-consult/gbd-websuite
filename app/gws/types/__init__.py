@@ -1146,6 +1146,7 @@ class IApplication(IObject):
     web_sites: List['IWebSite']
     def developer_option(self, name): pass
     def find_action(self, action_type, project_uid=None): pass
+    def load_plugins(self): pass
     def require_helper(self, key): pass
 
 
