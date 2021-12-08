@@ -1,4 +1,5 @@
 import re
+import time
 
 import gws
 import gws.config
@@ -55,12 +56,19 @@ class Object(gws.common.db.provider.Sql):
         super().configure()
 
         def ping():
-            gws.log.debug(f'db: ping {self.uid!r}')
-            try:
-                with driver.Connection(self.connect_params):
-                    gws.log.debug(f'db connection "{self.uid}": ok')
-            except driver.Error as e:
-                raise gws.Error(f'cannot open db connection "{self.uid}"', e.args[0]) from e
+            attempts = 10
+            pause = 1
+
+            for a in range(1, attempts + 1):
+                try:
+                    with driver.Connection(self.connect_params):
+                        gws.log.debug(f'db: ping {self.uid!r} attempt {a} ok')
+                    return 1
+                except driver.Error as e:
+                    gws.log.debug(f'db: ping {self.uid!r} attempt {a} FAILED {e!r}')
+                time.sleep(pause)
+
+            raise gws.Error(f'cannot open db connection "{self.uid}"')
 
         gws.get_global(f'db_ping_{self.uid}', ping)
 
