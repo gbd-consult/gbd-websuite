@@ -96,13 +96,15 @@ class Object(ows.Base):
             'version': self.request_version(rd),
         })
 
+    _all_features_limit = 999 * 1000
+
     def handle_getfeature(self, rd: ows.Request):
         lcs = self.layer_caps_list_from_request(rd, ['typeName', 'typeNames'])
         if not lcs:
             raise gws.web.error.BadRequest('Invalid type name')
 
         try:
-            limit = int(rd.req.param('count') or rd.req.param('maxFeatures') or 0)
+            limit = int(rd.req.param('count') or rd.req.param('maxFeatures') or self._all_features_limit)
         except:
             raise gws.web.error.BadRequest('Invalid COUNT value')
 
