@@ -20,11 +20,11 @@ config_path_pattern = r'\bconfig\.(py|json|yaml|cx)$'
 config_function_name = 'config'
 
 
-def parse(dct, type_name, source_path=''):
+def parse(dct, type_name, source_path='', strict=True, with_internal_objects=False):
     """Parse a dictionary according to the klass spec and return a config (Data) object"""
 
     try:
-        return spec.validator().read_value(dct, type_name, source_path)
+        return spec.validator().read_value(dct, type_name, source_path, strict=strict, with_internal_objects=with_internal_objects)
     except gws.core.spec.Error as e:
         raise error.ParseError(*e.args)
 

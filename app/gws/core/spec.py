@@ -22,19 +22,20 @@ class SpecValidator:
     def method_spec(self, name):
         return self.spec.get('method:' + name)
 
-    def read_value(self, val, type_name, path='', strict=True):
-        reader = _Reader(self.spec, path, strict)
+    def read_value(self, val, type_name, path='', strict=True, with_internal_objects=False):
+        reader = _Reader(self.spec, path, strict, with_internal_objects=with_internal_objects)
         return reader.read_main(val, type_name)
 
 
 ##
 
 class _Reader:
-    def __init__(self, spec, path, strict):
+    def __init__(self, spec, path, strict, with_internal_objects):
         self.spec = spec
         self.path = path
         self.stack = []
         self.strict = strict
+        self.with_internal_objects = with_internal_objects
         self.handlers = _HANDLERS
 
     def error(self, code, msg, val):
@@ -157,12 +158,19 @@ def _read_object(rd, val, spec):
         finally:
             rd.stack.pop()
 
-    if rd.strict:
-        names = set(p['name'] for p in spec['props'])
-        unknown = [k for k in val if k not in names]
-        if unknown:
-            w = 'property' if len(unknown) == 1 else 'properties'
-            return rd.error('ERR_UNKNOWN_PROP', f"unknown {w}: {_comma(unknown)}, expected {_comma(names)}", val)
+    unknown = []
+    names = set(p['name'] for p in spec['props'])
+
+    for k in val:
+        if k not in names:
+            if rd.with_internal_objects:
+                res[k] = val[k]
+            elif rd.strict:
+                unknown.append(k)
+
+    if rd.strict and unknown:
+        w = 'property' if len(unknown) == 1 else 'properties'
+        return rd.error('ERR_UNKNOWN_PROP', f"unknown {w}: {_comma(unknown)}, expected {_comma(names)}", val)
 
     return t.Data(res)
 

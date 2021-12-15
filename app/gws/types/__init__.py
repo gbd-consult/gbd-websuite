@@ -946,7 +946,7 @@ class SourceStyle(Data):
 
 class SpecValidator:
     def method_spec(self, name): pass
-    def read_value(self, val, type_name, path='', strict=True): pass
+    def read_value(self, val, type_name, path='', strict=True, with_internal_objects=False): pass
 
 
 class SqlTable(Data):
