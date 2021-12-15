@@ -13,7 +13,7 @@ _TMP_DIR = gws.TMP_DIR + '/mpx'
 
 
 class _Config:
-    def __init__(self):
+    def __init__(self, root):
         self.c = 0
 
         gws.ensure_dir(_TMP_DIR)
@@ -43,6 +43,9 @@ class _Config:
                 'concurrent_tile_creators': 1,
                 'max_tile_limit': 5000,
 
+            },
+            'http': {
+                'client_timeout': root.var('server.timeout'),
             },
             'image': {
                 'resampling_method': 'bicubic',
@@ -127,7 +130,7 @@ class _Config:
 
 
 def create(root: t.IRootObject):
-    mc = _Config()
+    mc = _Config(root)
 
     r: t.ILayer
     for r in root.find_all('gws.ext.layer'):
