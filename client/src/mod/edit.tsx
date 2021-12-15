@@ -150,6 +150,16 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
         let feature = this.props.editFeature;
         let attributes = this.props.editAttributes;
 
+        let layer = cc.map.getLayer(this.props.editFeature.layerUid)
+        let model: gws.api.ModelProps = layer && layer['dataModel'];
+
+        if (!model)
+            return null;
+
+        let changed = (name, value) => cc.update({
+            editAttributes: this.props.editAttributes.map(a => a.name === name ? {...a, value} : a)
+        });
+
         return <sidebar.Tab>
             <sidebar.TabHeader>
                 <gws.ui.Title content={cc.featureTitle(feature)}/>
@@ -159,9 +169,12 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                 <Form>
                     <Row>
                         <Cell flex>
-                            <Form tabular>
-                                {attributes.map((a, n) => this.attributeEditor(attributes, a, n))}
-                            </Form>
+                            <gws.components.Form
+                                dataModel={model}
+                                attributes={this.props.editAttributes}
+                                locale={this.app.locale}
+                                whenChanged={changed}
+                            />
                         </Cell>
                     </Row>
                     <Row>
@@ -172,13 +185,6 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                                 whenTouched={() => cc.saveForm(feature, attributes)}
                             />
                         </Cell>
-                        {/*<Cell>*/}
-                        {/*<gws.ui.Button*/}
-                        {/*className="modEditStyleButton"*/}
-                        {/*tooltip={this.props.controller.__('modEditSave')}*/}
-                        {/*whenTouched={() => cc.update({annotateTab: 'style'})}*/}
-                        {/*/>*/}
-                        {/*</Cell>*/}
                         <Cell>
                             <gws.ui.Button
                                 className="modEditRemoveButton"

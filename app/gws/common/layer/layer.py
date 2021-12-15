@@ -277,6 +277,8 @@ class Layer(gws.Object, t.ILayer):
         p = super().props_for(user)
         if p:
             p['editAccess'] = self.edit_access(user)
+            if p['editAccess']:
+                p['dataModel'] = self.data_model
         return p
 
     def mapproxy_config(self, mc):

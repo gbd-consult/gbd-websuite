@@ -1,5 +1,6 @@
 import gws.types as t
 import gws.common.metadata
+import gws.common.model
 
 
 class ImageFormat(t.Enum):
@@ -85,6 +86,7 @@ class OwsConfig(t.Config):
 
 
 class LayerProps(t.Data):
+    dataModel: t.Optional[gws.common.model.ModelProps]
     editAccess: t.Optional[t.List[str]]
     editStyle: t.Optional[t.StyleProps]
     extent: t.Optional[t.Extent]
