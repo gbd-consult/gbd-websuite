@@ -38,6 +38,7 @@ def from_props(p: t.FeatureProps):
 class FeatureProps(t.Data):
     uid: t.Optional[str]
     attributes: t.Optional[t.List[t.Attribute]]
+    category: t.Optional[str]
     elements: t.Optional[dict]
     layerUid: t.Optional[str]
     shape: t.Optional[t.ShapeProps]
@@ -67,6 +68,7 @@ class Feature(t.IFeature):
             shape=self.shape.props if self.shape else None,
             style=self.style,
             elements=self.elements,
+            category=self.category or '',
             layerUid=self.layer.uid if self.layer else None,
         )
 

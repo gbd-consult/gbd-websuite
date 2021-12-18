@@ -21,6 +21,10 @@ interface SearchViewProps extends gws.types.ViewProps {
     searchResults: Array<gws.types.IMapFeature>;
     searchWaiting: boolean;
     searchFailed: boolean;
+    searchCategories: Array<string>;
+    searchSelectedCategories: Array<string>;
+    searchOptionsEnabled: boolean;
+    searchOptionsOpen: boolean;
 }
 
 const SearchStoreKeys = [
@@ -28,21 +32,44 @@ const SearchStoreKeys = [
     'searchResults',
     'searchWaiting',
     'searchFailed',
+    'searchCategories',
+    'searchSelectedCategories',
+    'searchOptionsEnabled',
+    'searchOptionsOpen',
 ];
 
 class SearchResults extends gws.View<SearchViewProps> {
     render() {
         if (!this.props.searchResults || !this.props.searchResults.length)
             return null;
+
+        let fs = [];
+
+        let cats = this.props.searchSelectedCategories;
+
+        if (cats && cats.length)
+            fs = this.props.searchResults.filter(f => cats.indexOf(f.category) >= 0)
+        else
+            fs = this.props.searchResults
+
+        fs.sort((a, b) => {
+            let ka = a.elements.teaser || a.elements.title;
+            let kb = b.elements.teaser || b.elements.title;
+            return ka.localeCompare(kb)
+        });
+
         return <div className="modSearchResults">
             <gws.components.feature.List
                 controller={this.props.controller}
-                features={this.props.searchResults}
+                features={fs}
                 content={f => <gws.ui.TextBlock
                     className="modSearchResultsFeatureText"
                     withHTML
-                    whenTouched={() => _master(this).show(f)}
                     content={f.elements.teaser || f.elements.title}
+                />}
+                leftButton={f => <gws.components.list.Button
+                    className="cmpListZoomListButton"
+                    whenTouched={() => _master(this).show(f)}
                 />}
             />
         </div>;
@@ -64,11 +91,39 @@ class SearchBox extends gws.View<SearchViewProps> {
             />
     }
 
+
     render() {
-        return <div className="modSearchBox">
+        let cc = _master(this);
+
+        let selected = this.props.searchSelectedCategories || [];
+
+        let clearSelected = () => cc.update({searchSelectedCategories: []});
+
+        let toggleSelected = cat => {
+            if (selected.indexOf(cat) >= 0)
+                selected = selected.filter(u => u !== cat);
+            else
+                selected = selected.concat([cat]);
+            cc.update({searchSelectedCategories: selected});
+        }
+
+        let hasOptions = this.props.searchOptionsEnabled && this.props.searchCategories.length > 1;
+        let optCls = '';
+
+        if (hasOptions)
+            optCls = 'withOptions';
+        if (hasOptions && this.props.searchOptionsOpen)
+            optCls = 'withOptions isOpen';
+
+        return <div {...gws.tools.cls('modSearchBox', optCls)}>
             <Row>
                 <Cell>
-                    <gws.ui.Button className='modSearchIcon'/>
+                    <gws.ui.Button
+                        className='modSearchIcon'
+                        whenTouched={_ => cc.update({
+                            searchOptionsOpen: !this.props.searchOptionsOpen
+                        })}
+                    />
                 </Cell>
                 <Cell flex>
                     <gws.ui.TextInput
@@ -79,6 +134,33 @@ class SearchBox extends gws.View<SearchViewProps> {
                 </Cell>
                 <Cell className='modSearchSideButton'>{this.sideButton()}</Cell>
             </Row>
+
+            {hasOptions && <Row className="modSearchOptions">
+                <Cell flex>
+                    <div>
+                        <gws.ui.Toggle
+                            inline
+                            type="checkbox"
+                            label={this.__('modSearchCategoryAll')}
+                            value={selected.length === 0}
+                            whenChanged={_ => clearSelected()}
+                        />
+                    </div>
+
+
+                    {this.props.searchCategories.map((cat, n) =>
+                        <div key={n}>
+                            <gws.ui.Toggle
+                                inline
+                                type="checkbox"
+                                label={cat}
+                                value={selected.indexOf(cat) >= 0}
+                                whenChanged={_ => toggleSelected(cat)}
+                            />
+                        </div>
+                    )}
+                </Cell>
+            </Row>}
         </div>;
     }
 }
@@ -136,6 +218,8 @@ class SearchController extends gws.Controller {
     timer = null;
 
     async init() {
+        this.update({searchCategories: this.app.project.searchCategories})
+
         this.app.whenChanged('searchInput', val => {
             clearTimeout(this.timer);
 
@@ -149,7 +233,6 @@ class SearchController extends gws.Controller {
             this.timer = setTimeout(() => this.run(val), SEARCH_DEBOUNCE);
 
         });
-
     }
 
     protected async run(keyword) {

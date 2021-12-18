@@ -4,6 +4,7 @@ import gws.common.map
 import gws.common.metadata
 import gws.common.printer
 import gws.common.search
+import gws.common.search.provider
 import gws.common.template
 import gws.gis.extent
 import gws.gis.proj
@@ -45,6 +46,7 @@ class Props(t.Data):
     meta: gws.common.metadata.Props
     overviewMap: gws.common.map.Props
     printer: gws.common.printer.Props
+    searchCategories: t.List[str]
     title: str
     uid: str
 
@@ -78,10 +80,12 @@ class Object(gws.Object, t.IProject):
 
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), gws.common.template.BUILTINS)
 
+        self.search_providers = []
+
         p = self.var('search')
         if p and p.enabled and p.providers:
             for s in p.providers:
-                self.create_child('gws.ext.search.provider', s)
+                self.search_providers.append(self.create_child('gws.ext.search.provider', s))
 
         p = self.var('api')
         self.api: t.Optional[t.IApi] = self.create_child(gws.common.api.Object, p) if p else None
@@ -110,6 +114,7 @@ class Object(gws.Object, t.IProject):
             meta=gws.common.metadata.props(self.meta),
             overviewMap=self.overview_map,
             printer=self.printer,
+            searchCategories=sorted(set(c for p in self.search_providers for c in p.categories)),
             title=self.title,
             uid=self.uid,
         )

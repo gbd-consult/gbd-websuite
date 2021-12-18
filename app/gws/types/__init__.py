@@ -308,6 +308,7 @@ class DocumentRoot(Data):
 
 class FeatureProps(Data):
     attributes: Optional[List[Attribute]]
+    category: Optional[str]
     elements: Optional[dict]
     layerUid: Optional[str]
     shape: Optional['ShapeProps']
@@ -1318,6 +1319,7 @@ class IProject(IObject):
     meta: 'MetaData'
     overview_map: Optional['IMap']
     printer: Optional['IPrinter']
+    search_providers: list
     templates: List['ITemplate']
     title: str
 

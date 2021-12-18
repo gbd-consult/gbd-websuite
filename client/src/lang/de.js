@@ -125,6 +125,7 @@ module.exports = {
     modPrintTemplate: 'Druckvorlage',
     modSearchClearButton: 'Löschen',
     modSearchPlaceholder: 'Suchen',
+    modSearchCategoryAll: 'Alles',
     modSearchSidebarTitle: 'Suche',
     modSelectAreaButton: 'Auswahl mithilfe selbstgezeichneter Fläche',
     modSelectClearAuxButton: 'Alle löschen',

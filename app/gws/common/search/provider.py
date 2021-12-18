@@ -55,6 +55,18 @@ class Object(gws.Object, t.ISearchProvider):
         self.spatial_context: SearchSpatialContext = self.var('defaultContext', default=SearchSpatialContext.map)
         self.title: str = self.var('title', default='')
 
+    @property
+    def supports_keyword(self):
+        return CAPS_KEYWORD & self.capabilties
+
+    @property
+    def supports_geometry(self):
+        return CAPS_GEOMETRY & self.capabilties
+
+    @property
+    def categories(self):
+        return [self.title]
+
     def can_run(self, args: t.SearchArgs):
         if not self.active:
             gws.log.debug('can_run: inactive')
