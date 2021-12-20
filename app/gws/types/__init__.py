@@ -1357,6 +1357,7 @@ class IRootObject(IObject):
 class ISearchProvider(IObject):
     active: bool
     capabilties: int
+    category: str
     data_model: Optional['IModel']
     spatial_context: 'SearchSpatialContext'
     templates: List['ITemplate']
