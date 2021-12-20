@@ -13,7 +13,7 @@
     @end
 @end
 
-@def wfs_basic_operations(default_count=1000)
+@def wfs_basic_operations(default_count=100000)
     @tag ows:OperationsMetadata
 
         @tag ows:Operation name="GetCapabilities"
