@@ -19,6 +19,7 @@ class Config(t.WithTypeAndAccess):
     defaultContext: t.Optional[SearchSpatialContext] = 'map'  #: default spatial context
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
     title: t.Optional[str]  #: provider title
+    category: t.Optional[str]  #: provider category
     tolerance: str = '10px'  #: tolerance, in pixels or map units
     withGeometry: bool = True  #: enable geometry search
     withKeyword: bool = True  #: enable keyword search
@@ -54,6 +55,7 @@ class Object(gws.Object, t.ISearchProvider):
         self.with_geometry: bool = self.var('withGeometry', default=True)
         self.spatial_context: SearchSpatialContext = self.var('defaultContext', default=SearchSpatialContext.map)
         self.title: str = self.var('title', default='')
+        self.category: str = self.var('category', default=self.title)
 
     @property
     def supports_keyword(self):
