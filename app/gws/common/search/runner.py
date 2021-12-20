@@ -3,18 +3,15 @@ import gws.types as t
 
 from . import provider
 
-
-class _LimitExceeded(Exception):
-    pass
-
-_DEFAULT_LIMIT = 10 * 1000
+_DEFAULT_LIMIT = 1000
 
 
 def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
-    total_limit = args.limit or _DEFAULT_LIMIT
     used_layer_ids = set()
     features: t.List[t.IFeature] = []
     prov: provider.Object
+
+    args.limit = args.limit or _DEFAULT_LIMIT
 
     dbg = [
         f'SEARCH ARGS',
@@ -33,29 +30,25 @@ def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
 
     gws.p(dbg)
 
-    try:
-        if args.layers:
-            for layer in args.layers:
-                used_layer_ids.add(layer.uid)
-                for prov in layer.get_children('gws.ext.search.provider'):
-                    _run(req, layer, prov, args, total_limit, features)
+    if args.layers:
+        for layer in args.layers:
+            used_layer_ids.add(layer.uid)
+            for prov in layer.get_children('gws.ext.search.provider'):
+                _run(req, layer, prov, args, features)
 
-            for layer in args.layers:
-                for par in _parents(layer):
-                    if par.uid not in used_layer_ids:
-                        used_layer_ids.add(par.uid)
-                        gws.log.debug(f'search parent={par.uid} for={layer.uid}')
-                        for prov in par.get_children('gws.ext.search.provider'):
-                            _run(req, par, prov, args, total_limit, features)
+        for layer in args.layers:
+            for par in _parents(layer):
+                if par.uid not in used_layer_ids:
+                    used_layer_ids.add(par.uid)
+                    gws.log.debug(f'search parent={par.uid} for={layer.uid}')
+                    for prov in par.get_children('gws.ext.search.provider'):
+                        _run(req, par, prov, args, features)
 
-        if args.project:
-            for prov in args.project.get_children('gws.ext.search.provider'):
-                _run(req, None, prov, args, total_limit, features)
+    if args.project:
+        for prov in args.project.get_children('gws.ext.search.provider'):
+            _run(req, None, prov, args, features)
 
-    except _LimitExceeded:
-        pass
-
-    return features[:total_limit]
+    return features
 
 
 def _parents(layer: t.ILayer) -> t.List[t.ILayer]:
@@ -67,13 +60,8 @@ def _parents(layer: t.ILayer) -> t.List[t.ILayer]:
     return ps
 
 
-def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.SearchArgs, total_limit, features):
-    args.limit = total_limit - len(features)
-    if args.limit <= 0:
-        raise _LimitExceeded()
-
-    gws.log.debug(
-        'SEARCH_BEGIN: prov=%r layer=%r limit=%d' % (gws.get(prov, 'uid'), gws.get(layer, 'uid'), args.limit))
+def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.SearchArgs, features):
+    gws.log.debug('SEARCH_BEGIN: prov=%r layer=%r' % (gws.get(prov, 'uid'), gws.get(layer, 'uid')))
 
     if not req.user.can_use(prov):
         gws.log.debug('SEARCH_END: NO_ACCESS')
@@ -96,7 +84,7 @@ def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.Search
     for f in fs:
         f.layer = layer
         f.search_provider = prov
-        f.category = f.category or prov.title or (layer.title if layer else '')
+        f.category = f.category or prov.category or (layer.title if layer else '')
         f.templates = tt
         f.data_model = dm
 
