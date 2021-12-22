@@ -115,6 +115,7 @@ class LayerCaps(t.Data):
 
 class FeatureCaps(t.Data):
     feature: t.IFeature
+    gml_id: str
     shape_tag: t.Tag
     name: Name
 
@@ -479,8 +480,13 @@ class Base(Object):
             if self.force_feature_name:
                 name = self._parse_name(self.force_feature_name)
 
+            gml_id = gws.as_uid(f.uid)
+            if not gml_id[0].isalpha() and not gml_id.startswith('_'):
+                gml_id = '_' + gml_id
+
             coll.caps.append(FeatureCaps(
                 feature=f,
+                gml_id=gml_id,
                 shape_tag=gs,
                 name=name
             ))

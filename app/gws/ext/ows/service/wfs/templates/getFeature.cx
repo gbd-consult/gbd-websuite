@@ -1,7 +1,7 @@
 @include /gws-app/gws/common/ows/service/templates/common.cx
 
 @def formatter(feature_caps)
-    @tag {feature_caps.name.q} gml:id="{feature_caps.feature.uid}"
+    @tag {feature_caps.name.q} gml:id="{feature_caps.gml_id}"
         @each feature_caps.feature.attributes as a
             @t {feature_caps.name.ns_prefix+a.name} {a.value}
         @end

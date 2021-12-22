@@ -263,7 +263,7 @@ class Object(gws.common.db.provider.Sql):
         if table.key_column:
             uid = str(rec.get(table.key_column, None))
         if not uid:
-            uid = gws.random_string(16)
+            uid = '_' + gws.sha256(' '.join(f'{k}={v}' for k, v in sorted(rec.items())))
 
         return gws.gis.feature.Feature(uid=uid, attributes=rec, shape=shape)
 
