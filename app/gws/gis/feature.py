@@ -143,8 +143,11 @@ class Feature(t.IFeature):
         return self
 
     def apply_templates(self, templates: t.List[t.ITemplate] = None, extra_context: dict = None, keys: t.List[str] = None) -> t.IFeature:
-        used = set()
         templates = templates or self.templates
+        if not templates:
+            return self
+
+        used = set()
         ctx = gws.merge(self.template_context, extra_context)
         for tpl in templates:
             if tpl.category == 'feature' and (tpl.key not in used) and (not keys or tpl.key in keys):
