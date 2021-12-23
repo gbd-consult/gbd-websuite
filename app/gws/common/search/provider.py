@@ -108,5 +108,5 @@ class Object(gws.Object, t.ISearchProvider):
             return gws.gis.shape.from_bounds(args.bounds)
         return gws.gis.shape.from_bounds(args.project.map.bounds)
 
-    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
+    def run(self, req: t.IRequest, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         return []

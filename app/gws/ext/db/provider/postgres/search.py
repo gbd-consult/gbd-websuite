@@ -32,7 +32,7 @@ class Object(gws.common.search.provider.Object):
         if self.table.search_column:
             self.capabilties |= gws.common.search.provider.CAPS_KEYWORD
 
-    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
+    def run(self, req: t.IRequest, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         n, u = args.tolerance or self.tolerance
         map_tolerance = n * args.resolution if u == 'px' else n
         return self.provider.select(t.SelectArgs(

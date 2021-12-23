@@ -46,7 +46,7 @@ class Object(gws.common.search.provider.Object):
             gws.log.exception()
             self.active = False
 
-    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
+    def run(self, req: t.IRequest, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         if not self.table:
             return []
         n, u = args.tolerance or self.tolerance

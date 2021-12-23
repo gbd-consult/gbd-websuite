@@ -72,7 +72,7 @@ def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.Search
         return
 
     try:
-        fs: t.List[t.IFeature] = prov.run(layer, args) or []
+        fs: t.List[t.IFeature] = prov.run(req, layer, args) or []
     except Exception:
         gws.log.exception()
         gws.log.debug('SEARCH_FAILED')

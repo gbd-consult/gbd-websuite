@@ -41,6 +41,6 @@ class Object(gws.common.search.provider.Object):
                 and len(args.shapes) == 1
                 and args.shapes[0].type == t.GeometryType.point)
 
-    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
+    def run(self, req: t.IRequest, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         args.source_layer_names = [sl.name for sl in self.source_layers]
         return self.provider.find_features(args)

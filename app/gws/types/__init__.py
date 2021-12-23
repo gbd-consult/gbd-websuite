@@ -1367,7 +1367,7 @@ class ISearchProvider(IObject):
     with_keyword: bool
     def can_run(self, args: 'SearchArgs'): pass
     def context_shape(self, args: 'SearchArgs') -> 'IShape': pass
-    def run(self, layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass
+    def run(self, req: 'IRequest', layer: 'ILayer', args: 'SearchArgs') -> List['IFeature']: pass
 
 
 class ITemplate(IObject):

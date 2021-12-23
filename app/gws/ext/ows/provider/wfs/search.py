@@ -36,7 +36,7 @@ class Object(gws.common.search.provider.Object):
     def can_run(self, args):
         return super().can_run(args) and self.provider.operation('GetFeature')
 
-    def run(self, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
+    def run(self, req: t.IRequest, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         args.source_layer_names = [sl.name for sl in self.source_layers]
         args.tolerance = args.tolerance or self.tolerance
         return self.provider.find_features(args)
