@@ -250,12 +250,23 @@ class Object(gws.common.action.Object):
                 if a.name in self._data_fields
             }
             d['request_id'] = request_id
-            d['selection'] = shape.transformed_to(self.alkis.crs).ewkb_hex
-            d['ts'] = gws.tools.date.now()
             data.append(d)
 
         with self.alkis.db.connect() as conn:
-            conn.insert_many(self.request_table_name, data)
+            conn.insert_many(self.request_table_name, data, page_size=2000)
+
+        with self.alkis.db.connect() as conn:
+            conn.exec(f'''
+                UPDATE {conn.quote_table(self.request_table_name)} SET
+                    selection=%s,
+                    ts=%s
+                WHERE
+                    request_id=%s
+            ''', [
+                shape.transformed_to(self.alkis.crs).ewkb_hex,
+                gws.tools.date.now(),
+                request_id
+            ])
 
         return request_id
 
@@ -271,7 +282,7 @@ class Object(gws.common.action.Object):
                     id SERIAL PRIMARY KEY,
                     request_id CHARACTER VARYING,
                     {data_fields},
-                    selection geometry(GEOMETRY, {srid}) NOT NULL,
+                    selection geometry(GEOMETRY, {srid}),
                     ts TIMESTAMP WITH TIME ZONE
                 )
             ''')
