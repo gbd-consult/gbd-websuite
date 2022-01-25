@@ -398,7 +398,10 @@ class TabeditController extends gws.Controller {
         this.update({
             tabeditDialogMode: 'loading',
         })
+        await this.loadData(tableUid);
+    }
 
+    async loadData(tableUid) {
         console.time('TABEDIT: load');
         let res = await this.app.server.tabeditLoadData({tableUid});
         console.timeEnd('TABEDIT: load');
@@ -473,6 +476,7 @@ class TabeditController extends gws.Controller {
                 tabeditError: false,
                 tabeditDirtyFields: {},
             });
+            await this.loadData(this.getValue('tabeditTableUid'));
         }
     }
 
