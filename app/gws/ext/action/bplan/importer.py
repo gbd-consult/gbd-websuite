@@ -142,7 +142,7 @@ def _run2(action, src_dir, replace, au_uid, job):
         if au_uid and not _path_belongs_to_au(p, [au_uid]):
             continue
 
-        with gws.gis.gdal2.from_path(p) as ds:
+        with gws.gis.gdal2.from_path(p, open_options=['encoding=""']) as ds:
             for f in gws.gis.gdal2.features(ds, action.crs, encoding=_encoding(p)):
                 r = {}
 
