@@ -78,8 +78,7 @@ Individuelle Zugangsdaten (Nutzername, Passwort) werden zu Rollen mittels *Autor
 
 * LDAP/ActiveDirectory
 * file-basiert
-
-^NOTE In der Zukunft sind auch Datenbank Provider geplant.
+* postgres
 
 *Autorisierungsmethoden* (``method``) geben an, wie die Zugangsdaten dem System übergeben werden. Aktuell sind diese Methoden unterstützt:
 

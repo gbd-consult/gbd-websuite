@@ -105,6 +105,8 @@ Autorisierungsanbieter
 
 Die Aufgabe eines Autorisierungsanbieters ist, die Zugangsdaten mit der Quelle zu vergleichen und bei der positiven Antwort, Benutzer Eigenschaften (Vollname, Rollen usw) zurückzugeben.
 
+Die Autorisierungsanbieter sind "verkettet". Wenn ein Login vom ersten Anbieter nicht gefunden wird, wird der zweite konfigurierte Anbieter aufgerufen, und so weiter.  Wird jedoch ein Login gefunden, endet der Autorisierungsvorgang sofort, selbst wenn eine Anmeldung fehlschlagt (z.B. wegen einem falschen Passwort).
+
 file
 ~~~~
 
@@ -167,6 +169,80 @@ Der ldap-Provider kann Benutzer gegen ein ActiveDirectory oder einen OpenLDAP-Se
                 "roles": ["member"]
             }
         ]
+    }
+
+postgres
+~~~~~~~~
+
+^REF gws.ext.auth.provider.postgres.Config
+
+Der postgres-Provider nutzt eine Postrgres Datenbank um die Benutzer zu  autorisieren. Sie sollten zwei SQL ``SELECT`` Abfragen Konfigurieren: eine Autorisierungsabfrage ``authSql`` und eine Ladeabfrage ``uidSql``. Die Autorisierungsabfrage enthält die Platzhalter ``{login}`` und ``{password}`` und muss entweder keine oder exakt eine Zeile zurückgeben, mit folgenden Spalten:
+
+{TABLE}
+    *uid* | String oder Nummer | eindeutige User-ID
+    *roles* | String | eine kommagetrennte Liste der Rollen, die dieser Nutzer besitzt
+    *displayname* | String | Nutzername
+    *validuser* | Bool | ``true`` falls dieser Nutzer anmelden kann (und nicht, z.B., gesperrt ist)
+    *validpassword* | Bool | ``true`` falls das angegebene Passwort valide ist
+{/TABLE}
+
+Die Ergebnisse der Autorisierungsabfrage werden wie folgt ausgewertet:
+
+- keine Zeilen zurückgegeben - zum nächsten Autorisierungsanbieter wechseln
+- eine Zeile zurückgegeben und *validuser*/*validpassword* sind ``true`` - Nutzer anmelden
+- ansonsten, Zugriff verweigern
+
+Die Ladeabfrage soll einen User-ID Platzhalter ``{uid}`` enthalten und exakt eine Zeile zurückgeben mit den Spalten *uid*, *roles* und *displayname* wie oben beschrieben.
+
+Es gelten keine weiteren Anforderungen an die Struktur der SQL Abfragen.
+
+Konkretes Beispiel: angenommen Sie haben Tabellen ``nutzer`` und ``rollen``, mit diesen Daten: ::
+
+        Tabelle nutzer:
+        (Passwörter sind mit ``crypt('...', gen_salt('md5'))`` gehasht)
+
+         id_nutzer | login  |         kennwort_hash              |    vorname     | nachname | aktiv
+        -----------+--------+------------------------------------+----------------+----------+-------
+                 1 | euler  | $1$slHdN9ik$97YERdtxOM2kBJRhQhMDK0 | Leonhard       | Euler    | t
+                 2 | gauss  | $1$4eo7YFb6$.L/WWzqFZgHTRWvWldsBm/ | Carl Friedrich | Gauss    | t
+                 3 | newton | $1$y52sZO9i$WTpuxr/KD1sFaxehTKs8z1 | Isaac          | Newton   | f
+
+        Tabelle rollen:
+        (stellt eine 1:M Verknüpfung zwischen Nutzern und Rollen dar)
+
+         id_nutzer | rolle_bezeichnung
+        -----------+-------------------
+                 1 | member
+                 1 | moderator
+                 1 | expert
+                 2 | member
+                 2 | expert
+                 3 | readonly
+
+In dieser Umgebung kann Ihre Konfiguration wie folgt sein (im ``.cx`` Format): ::
+
+    {
+        type "postgres"
+
+        authSql """
+            SELECT
+                n.id_nutzer AS uid,
+                (SELECT string_agg(rolle_bezeichnung, ',') FROM rollen AS r WHERE r.id_nutzer = n.id_nutzer) AS roles,
+                n.vorname || ' ' || n.nachname AS displayname,
+                n.aktiv AS validuser,
+                n.kennwort_hash = crypt({password}, kennwort_hash) AS validpassword
+            FROM nutzer AS n
+            WHERE n.login = {login}
+        """
+
+        uidSql """
+            SELECT
+                n.id_nutzer AS uid,
+                (SELECT string_agg(rolle_bezeichnung, ',') FROM rollen AS r WHERE r.id_nutzer = n.id_nutzer) AS roles,
+                n.vorname || ' ' || n.nachname AS displayname
+            FROM nutzer AS n
+            WHERE n.id_nutzer = {uid}
+        """
     }
 
 Autorisierungsmethoden
