@@ -334,7 +334,7 @@ class _Parser:
         # foo: List[SomeType] => [List, [SomeType]]
         # foo: Dict[A, B] => [Dict, [A, B]]
         if _cls(node) == 'Subscript':
-            if _cls(node.value) == 'Index':
+            if _cls(node.slice) == 'Index':
                 # 3.8
                 val = node.slice.value
             else:
