@@ -151,7 +151,7 @@ def _can_use(roles, target, parent):
         return False
 
     if _ROLE_ADMIN in roles:
-        gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: _ROLE_ADMIN')
+        # gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: _ROLE_ADMIN')
         return True
 
     c = _check_access(roles, target, target)
@@ -178,7 +178,7 @@ def _check_access(roles, target, current):
 
     for a in access:
         if a.role in roles:
-            gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {a.role}:{a.type} in {_repr(current)}')
+            # gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {a.role}:{a.type} in {_repr(current)}')
             return a.type == 'allow'
 
 
