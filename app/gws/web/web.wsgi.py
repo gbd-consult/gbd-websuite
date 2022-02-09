@@ -17,6 +17,7 @@ def application(environ, start_response):
 ##
 
 _DEFAULT_CMD = 'assetHttpGetPath'
+_WWW_AUTHENTICATE_HEADER = 'Basic realm="Restricted Area"'
 
 
 class _DispatchError(gws.Error):
@@ -65,6 +66,14 @@ def _handle_error(root, req, err) -> t.IResponse:
             {'error': {'status': err.code, 'info': gws.get(err, 'description', '')}},
             status=err.code)
 
+    if err.code == 403 and req.method == 'GET':
+        try:
+            has_basic_auth = any(m.type == 'basic' for m in req.auth.methods)
+        except:
+            has_basic_auth = False
+        if has_basic_auth:
+            err = gws.web.error.Unauthorized()
+
     if not req.site.error_page:
         return req.error_response(err)
 
@@ -73,7 +82,10 @@ def _handle_error(root, req, err) -> t.IResponse:
             'request': req,
             'error': err.code
         })
-        return req.response(r.content, r.mime, err.code)
+        res = req.response(r.content, r.mime, err.code)
+        if err.code == 401:
+            res.add_header('WWW-Authenticate', _WWW_AUTHENTICATE_HEADER)
+        return res
     except:
         gws.log.exception()
         return req.error_response(gws.web.error.InternalServerError())
