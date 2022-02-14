@@ -44,13 +44,13 @@ class Object(core.Provider):
         search_shape = None
 
         if args.shapes:
-            map_tolerance = 0.0
+            geometry_tolerance = 0.0
 
             if args.tolerance:
                 n, u = args.tolerance
-                map_tolerance = n * (args.resolution or 1) if u == 'px' else n
+                geometry_tolerance = n * (args.resolution or 1) if u == 'px' else n
 
-            search_shape = gws.gis.shape.union(args.shapes).tolerance_polygon(map_tolerance)
+            search_shape = gws.gis.shape.union(args.shapes).tolerance_polygon(geometry_tolerance)
             bounds = search_shape.bounds
 
         ps = gws.gis.ows.client.prepared_search(

@@ -6,7 +6,6 @@ import re
 import gws
 import gws.base.api
 import gws.base.model
-import gws.base.printer.job
 import gws.base.printer.types
 import gws.base.storage
 import gws.base.template
@@ -17,7 +16,7 @@ import gws.gis.shape
 import gws.lib.style
 import gws.types as t
 
-from . import provider as provider_module, util, types
+from . import provider, util, types
 
 STORAGE_CATEGORY = 'Alkis'
 
@@ -52,10 +51,29 @@ class EigentuemerConfig(gws.WithAccess):
     logTable: str = ''  #: data access protocol table name
 
 
+class EigentuemerOptions(gws.Node):
+    control_mode: bool
+    control_rules: t.List[str]
+    log_table: str
+
+    def configure(self):
+        self.control_mode = self.var('controlMode')
+        self.control_rules = self.var('controlRules', default=[])
+        self.log_table = self.var('logTable')
+
+
+##
+
 class BuchungConfig(gws.WithAccess):
     """Access to the Grundbuch (register) information"""
     pass
 
+
+class BuchungOptions(gws.Node):
+    pass
+
+
+##
 
 class ExportGroupConfig(gws.Config):
     """Export group configuration"""
@@ -71,20 +89,6 @@ class ExportConfig(gws.Config):
 
     groups: t.Optional[t.List[ExportGroupConfig]]  #: export groups
 
-
-@gws.ext.Config('action.alkissearch')
-class Config(provider_module.Config):
-    """Flurstückssuche (cadaster parlcels search) action"""
-
-    eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
-    buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
-    limit: int = 100  #: search results limit
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: templates for Flurstueck details
-    ui: t.Optional[types.UiOptions]  #: ui options
-    export: t.Optional[ExportConfig]  #: csv export configuration
-
-
-##
 
 class ExportGroup(gws.Node):
     """Export group"""
@@ -165,6 +169,20 @@ _DEFAULT_EXPORT_GROUPS = [
         ])
     ),
 ]
+
+
+##
+
+@gws.ext.Config('action.alkissearch')
+class Config(provider.Config):
+    """Flurstückssuche (cadaster parlcels search) action"""
+
+    eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
+    buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
+    limit: int = 100  #: search results limit
+    templates: t.Optional[t.List[gws.ext.template.Config]]  #: templates for Flurstueck details
+    ui: t.Optional[types.UiOptions]  #: ui options
+    export: t.Optional[ExportConfig]  #: csv export configuration
 
 
 ##
@@ -297,16 +315,19 @@ _DEFAULT_TEMPLATES = [
         subject='feature.title',
         type='html',
         text='{vollnummer}',
+        access='all:allow',
     ),
     gws.Config(
         subject='feature.teaser',
         type='html',
         text='Flurstück {vollnummer}',
+        access='all:allow',
     ),
     gws.Config(
         subject='feature.description',
         type='html',
         path=f'{_dir}/templates/data.cx.html',
+        access='all:allow',
     ),
     gws.Config(
         subject='print',
@@ -316,7 +337,8 @@ _DEFAULT_TEMPLATES = [
         pageHeight=297,
         mapWidth=100,
         mapHeight=100,
-        qualityLevels=[gws.TemplateQualityLevel(name='default', dpi=150)]
+        qualityLevels=[gws.TemplateQualityLevel(name='default', dpi=150)],
+        access='all:allow',
     )
 ]
 
@@ -330,23 +352,17 @@ _EF_FAIL = -1  # access to Eigentümer granted, control check failed
 
 @gws.ext.Object('action.alkissearch')
 class Object(gws.base.api.action.Object):
-    provider: provider_module.Object
+    buchung: BuchungOptions
+    eigentuemer: EigentuemerOptions
+    export_groups: t.List[ExportGroup]
     limit: int
+    print_template: gws.ITemplate
+    provider: provider.Object
     templates: gws.ITemplateBundle
     ui: types.UiOptions
-    export_groups: t.List[ExportGroup]
-    buchung_cfg: BuchungConfig
-    eigentuemer_cfg: EigentuemerConfig
-    control_mode: bool
-    log_table: str
-    control_rules: t.List[str]
-    print_template: gws.ITemplate
 
     def configure(self):
-        self.provider = provider_module.create(self.root, self.config, shared=True)
-
-        if not self.provider.has_index:
-            raise gws.Error('alkissearch cannot init, no alkis index')
+        self.provider = provider.create(self.root, self.config, shared=True)
 
         self.limit = self.var('limit')
 
@@ -368,25 +384,18 @@ class Object(gws.base.api.action.Object):
             groups = []
         self.export_groups = [self.require_child(ExportGroup, g) for g in groups]
 
-        self.buchung_cfg = self.var('buchung')
+        self.buchung = self.root.create_object(BuchungOptions, self.var('buchung'))
+        self.eigentuemer = self.root.create_object(EigentuemerOptions, self.var('eigentuemer'))
 
-        self.eigentuemer_cfg = self.var('eigentuemer')
-        self.control_mode = False
-        self.log_table = ''
-        self.control_rules = []
-
-        if self.eigentuemer_cfg:
-            self.log_table = self.eigentuemer_cfg.get('logTable')
-            if self.eigentuemer_cfg.get('controlMode'):
-                self.control_mode = True
-                self.control_rules = self.eigentuemer_cfg.get('controlRules') or []
-
-        if self.log_table:
-            with self.provider.db.connect() as conn:
-                if not conn.user_can('INSERT', self.log_table):
-                    raise gws.Error(f'no INSERT acccess to {self.log_table!r}')
+        if self.eigentuemer.log_table:
+            with self.provider.connection() as conn:
+                if not conn.user_can('INSERT', self.eigentuemer.log_table):
+                    raise gws.Error(f'no INSERT acccess to {self.eigentuemer.log_table!r}')
 
     def props_for(self, user):
+        if not self.provider.has_index:
+            return None
+
         with_eigentuemer = self._can_read_eigentuemer(user)
         with_buchung = self._can_read_buchung(user)
 
@@ -441,13 +450,13 @@ class Object(gws.base.api.action.Object):
     def find_flurstueck(self, req: gws.IWebRequest, p: FindFlurstueckParams) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
 
-        return self._fetch_and_format(req, p, ['title', 'teaser'], self.limit, self.limit)
+        return self._find_and_format(req, p, ['feature.title', 'feature.teaser'], self.limit, self.limit)
 
     @gws.ext.command('api.alkissearch.getDetails')
     def get_details(self, req: gws.IWebRequest, p: GetDetailsParams) -> GetDetailsResponse:
         """Return a Flurstueck feature with details"""
 
-        res = self._fetch_and_format(req, p, ['title', 'description'], 1, self.limit)
+        res = self._find_and_format(req, p, ['feature.title', 'feature.description'], 1, self.limit)
 
         if not res.features:
             raise gws.base.web.error.NotFound()
@@ -464,7 +473,7 @@ class Object(gws.base.api.action.Object):
         fp.projectUid = project.uid
         fp.localeUid = p.localeUid
 
-        res = self._fetch(req, fp, self.limit)
+        res = self._find(req, fp, self.limit)
 
         if not res.features:
             raise gws.base.web.error.NotFound()
@@ -475,7 +484,7 @@ class Object(gws.base.api.action.Object):
         for i in group_indexes:
             combined_rules.extend(self.export_groups[i].data_model.rules)
 
-        combined_model =self.root.create_object(
+        combined_model = self.root.create_object(
             gws.base.model.Object,
             gws.Config(rules=combined_rules),
             shared=True,
@@ -495,7 +504,7 @@ class Object(gws.base.api.action.Object):
         fp.projectUid = project.uid
         fp.localeUid = p.localeUid
 
-        res = self._fetch(req, fp, self.limit)
+        res = self._find(req, fp, self.limit)
 
         if not res.features:
             raise gws.base.web.error.NotFound()
@@ -533,12 +542,16 @@ class Object(gws.base.api.action.Object):
 
     ##
 
-    def _fetch_and_format(self, req, p: FindFlurstueckParams, template_keys: t.List[str], soft_limit, hard_limit) -> FindFlurstueckResponse:
+    def _ensure_index(self):
+        if not self.provider.has_index:
+            raise gws.Error('alkissearch cannot run, no alkis index')
+
+    def _find_and_format(self, req, p: FindFlurstueckParams, template_subjects: t.List[str], soft_limit, hard_limit) -> FindFlurstueckResponse:
         feature_props_list = []
-        res = self._fetch(req, p, soft_limit, hard_limit)
+        res = self._find(req, p, soft_limit, hard_limit)
 
         for feature in res.features:
-            feature.apply_templates(self.templates, subjects=template_keys)
+            feature.apply_templates(self.templates, subjects=template_subjects)
             f = gws.props(feature, req.user, context=self)
             if f:
                 gws.pop(f, 'attributes')
@@ -548,7 +561,7 @@ class Object(gws.base.api.action.Object):
             total=res.total,
             features=sorted(feature_props_list, key=lambda f: f.elements['title']))
 
-    def _fetch(self, req, p: FindFlurstueckParams, soft_limit=0, hard_limit=0) -> types.FindFlurstueckResult:
+    def _find(self, req, p: FindFlurstueckParams, soft_limit=0, hard_limit=0) -> types.FindFlurstueckResult:
 
         fq = types.FindFlurstueckQuery(p)
 
@@ -633,7 +646,7 @@ class Object(gws.base.api.action.Object):
             'fs_ids': fs_ids
         }
 
-        with self.provider.connect() as conn:
+        with self.provider.connection() as conn:
             conn.insert_one(self.log_table, 'id', data)
 
         gws.log.debug('_log_eigentuemer_access', is_ok, 'ok')
@@ -650,12 +663,12 @@ class Object(gws.base.api.action.Object):
 
         return False
 
-    def _can_read_eigentuemer(self, user):
-        b = user.can_use(self.eigentuemer_cfg)
+    def _can_read_eigentuemer(self, user: gws.IGrantee):
+        b = user.can_use(self.eigentuemer)
         gws.log.debug(f'_can_read_eigentuemer res={b}')
         return b
 
-    def _can_read_buchung(self, user):
-        b = user.can_use(self.buchung_cfg)
+    def _can_read_buchung(self, user: gws.IGrantee):
+        b = user.can_use(self.buchung)
         gws.log.debug(f'_can_read_buchung res={b}')
         return b

@@ -213,7 +213,7 @@ class Connection:
             col = {
                 'name': name,
                 'is_key': name in key_cols,
-                'geom_type': None,
+                'gtype': None,
                 'srid': None,
                 'is_geometry': False,
             }
@@ -221,7 +221,7 @@ class Connection:
                 col['srid'] = geom_cols[name]['srid']
                 col['type'] = gws.AttributeType.geometry
                 col['native_type'] = geom_cols[name]['type'].upper()
-                col['geom_type'] = col['native_type']
+                col['gtype'] = col['native_type']
                 col['is_geometry'] = True
             else:
                 col['native_type'] = (r['udt_name'] if r['data_type'].upper() == 'USER-DEFINED' else r['data_type']).lower()

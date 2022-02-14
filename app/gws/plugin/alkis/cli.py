@@ -64,15 +64,15 @@ class Object(gws.Node):
 
         prov = self._get_provider(p.uid)
         if prov:
-            gws.log.info(f'Database     : {prov.db.uid}')
+            gws.log.info(f"Database     : {prov.connect_params.get('database')}")
             gws.log.info(f'CRS          : {prov.crs}')
             gws.log.info(f'Data schema  : {prov.data_schema}')
             gws.log.info(f'Index schema : {prov.index_schema}')
 
             if prov.index_ok():
-                gws.log.info(f'\nALKIS indexes are ok')
+                gws.log.info(f'ALKIS indexes are ok')
             else:
-                gws.log.info(f'\nALKIS indexes are NOT ok')
+                gws.log.info(f'ALKIS indexes are NOT ok')
 
     def _database_credentials(self):
         if 'PGUSER' in os.environ and 'PGPASSWORD' in os.environ:

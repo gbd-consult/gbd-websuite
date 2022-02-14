@@ -4,7 +4,7 @@ import json
 import gws
 import gws.types as t
 
-from ..data import version
+from . import connection
 
 
 def default(o):
@@ -32,7 +32,7 @@ def validate_geoms(conn, table):
 
 def check_version(conn, table):
     ver = conn.index_table_version(table)
-    if ver == version.INDEX:
+    if ver == connection.INDEX_VERSION:
         gws.log.debug('index %r version %s, ok' % (table, ver))
         return True
     gws.log.warn('index %r version %s, needs update' % (table, ver))

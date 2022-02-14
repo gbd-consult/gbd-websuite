@@ -1,5 +1,5 @@
 import gws
-import gws.base.db.postgres
+import gws.plugin.postgres.provider
 import gws.gis.crs
 import gws.gis.feature
 import gws.gis.shape
@@ -27,78 +27,76 @@ _COMBINED_PARAMS_DELIM = '_'
 
 
 class Object(gws.Node):
-    db: gws.base.db.postgres.provider.Object
     has_index = False
     has_source = False
     has_flurnummer = False
     crs: gws.ICrs
-    connect_args: t.Dict = {}
+    connect_params: t.Dict = {}
     data_schema = ''
     index_schema = ''
 
     def configure(self):
 
         self.crs = gws.gis.crs.get(self.var('crs'))
-        self.db = gws.base.db.postgres.provider.require_for(self)
-
         self.index_schema = self.var('indexSchema')
         self.data_schema = self.var('dataSchema')
 
-        self.connect_args = {
-            'params': self.db.connect_params,
-            'index_schema': self.index_schema,
-            'data_schema': self.data_schema,
-            'crs': self.crs,
-            'exclude_gemarkung': self.var('excludeGemarkung')
-        }
+        db = gws.plugin.postgres.provider.require_for(self)
 
-        with self.connect() as conn:
-            if 'ax_flurstueck' in conn.table_names(self.connect_args['data_schema']):
-                gws.log.debug(f'ALKIS sources in "{self.db.uid}" found')
+        self.connect_params = gws.merge(
+            {},
+            db.config,
+            index_schema=self.index_schema,
+            data_schema=self.data_schema,
+            crs=self.crs,
+            exclude_gemarkung=self.var('excludeGemarkung'),
+        )
+
+        with self.connection() as conn:
+            if 'ax_flurstueck' in conn.table_names(self.data_schema):
+                gws.log.debug(f'ALKIS sources in {db.uid!r} found')
                 self.has_source = True
             else:
-                gws.log.warn(f'ALKIS sources in "{self.db.uid}" NOT found')
+                gws.log.warn(f'ALKIS sources in {db.uid!r} NOT found')
 
             if index.ok(conn):
-                gws.log.debug(f'ALKIS indexes in "{self.db.uid}" found')
+                gws.log.debug(f'ALKIS indexes in {db.uid!r} found')
                 self.has_index = True
                 self.has_flurnummer = flurstueck.has_flurnummer(conn)
             else:
-                gws.log.warn(f'ALKIS indexes in "{self.db.uid}" NOT found')
+                gws.log.warn(f'ALKIS indexes in {db.uid!r} NOT found')
 
     # public index tools
 
     def create_index(self, user, password):
         if not self.has_source:
-            raise ValueError(f'ALKIS sources in "{self.db.uid}" NOT found')
-        with self._connect_for_writing(user, password) as conn:
-            index.create(conn, read_user=self.connect_args['params']['user'])
+            raise ValueError(f'ALKIS sources NOT found')
+        with self.write_connection(user, password) as conn:
+            index.create(conn, read_user=self.connect_params.get('user'))
 
     def drop_index(self, user, password):
-        with self._connect_for_writing(user, password) as conn:
+        with self.write_connection(user, password) as conn:
             index.drop(conn)
 
     def index_ok(self):
-        with self.connect() as conn:
+        with self.connection() as conn:
             return index.ok(conn)
 
     # public search tools
 
     def gemarkung_list(self) -> t.List[types.Gemarkung]:
-        with self.connect() as conn:
+        with self.connection() as conn:
             return [types.Gemarkung(r) for r in flurstueck.gemarkung_list(conn)]
 
     def find_flurstueck(self, query: types.FindFlurstueckQuery, **kwargs) -> types.FindFlurstueckResult:
+
         features = []
+        qdict = self._remove_restricted_params(gws.merge({}, query, kwargs))
 
-        q = self._query_to_dict(query)
-        q.update(kwargs)
-        q = self._remove_restricted_params(q)
-
-        with self.connect() as conn:
-            total, rs = flurstueck.find(conn, q)
+        with self.connection() as conn:
+            total, rs = flurstueck.find(conn, qdict)
             for rec in rs:
-                rec = self._remove_restricted_data(q, rec)
+                rec = self._remove_restricted_data(qdict, rec)
                 features.append(gws.gis.feature.Feature(
                     uid=rec['gml_id'],
                     attributes=rec,
@@ -109,17 +107,13 @@ class Object(gws.Node):
 
     def find_flurstueck_combined(self, combined_param: str, **kwargs) -> types.FindFlurstueckResult:
         q = self._expand_combined_params(combined_param, _COMBINED_FS_PARAMS)
-        q.update(kwargs)
-        return self.find_flurstueck(types.FindFlurstueckQuery(q))
+        return self.find_flurstueck(types.FindFlurstueckQuery(q), **kwargs)
 
     def find_adresse(self, query: types.FindAdresseQuery, **kwargs) -> types.FindAdresseResult:
         features = []
 
-        q = self._query_to_dict(query)
-        q.update(kwargs)
-
-        with self.connect() as conn:
-            total, rs = adresse.find(conn, q)
+        with self.connection() as conn:
+            total, rs = adresse.find(conn, gws.merge({}, query, kwargs))
             for rec in rs:
                 features.append(gws.gis.feature.Feature(
                     uid=rec['gml_id'],
@@ -131,18 +125,24 @@ class Object(gws.Node):
 
     def find_adresse_combined(self, combined_param: str, **kwargs) -> types.FindAdresseResult:
         q = self._expand_combined_params(combined_param, _COMBINED_AD_PARAMS)
-        q.update(kwargs)
-        return self.find_adresse(types.FindAdresseQuery(q))
+        return self.find_adresse(types.FindAdresseQuery(q), **kwargs)
 
     def find_strasse(self, query: types.FindStrasseQuery, **kwargs) -> types.FindStrasseResult:
-        q = self._query_to_dict(query)
-        q.update(kwargs)
-        with self.connect() as conn:
-            rs = flurstueck.strasse_list(conn, q)
+        with self.connection() as conn:
+            rs = flurstueck.strasse_list(conn, gws.merge({}, query, kwargs))
         return types.FindStrasseResult(strassen=[types.Strasse(r) for r in rs])
 
-    def connect(self):
-        return AlkisConnection(**self.connect_args)
+    ##
+
+    def connection(self):
+        return AlkisConnection(self.connect_params)
+
+    def write_connection(self, user, password):
+        params = gws.merge(self.connect_params, {
+            'user': user,
+            'password': password,
+        })
+        return AlkisConnection(params)
 
     ##
 
@@ -172,17 +172,6 @@ class Object(gws.Node):
 
         rec.pop('buchung', None)
         return rec
-
-    def _connect_for_writing(self, user, password):
-        params = gws.merge(self.connect_args['params'], {
-            'user': user,
-            'password': password,
-        })
-        connect_args = gws.merge(self.connect_args, {'params': params})
-        return AlkisConnection(**connect_args)
-
-    def _query_to_dict(self, query):
-        return {k: v for k, v in gws.to_dict(query).items() if not gws.is_empty(v)}
 
 
 ##

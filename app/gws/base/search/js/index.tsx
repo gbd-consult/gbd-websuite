@@ -35,12 +35,12 @@ class SearchResults extends gws.View<SearchViewProps> {
     render() {
         if (!this.props.searchResults || !this.props.searchResults.length)
             return null;
-        return <div className="modSearchResults">
+        return <div className="searchResults">
             <components.feature.List
                 controller={this.props.controller}
                 features={this.props.searchResults}
                 content={f => <gws.ui.TextBlock
-                    className="modSearchResultsFeatureText"
+                    className="searchResultsFeatureText"
                     withHTML
                     whenTouched={() => _master(this).show(f)}
                     content={f.elements.teaser || f.elements.title}
@@ -54,31 +54,31 @@ class SearchBox extends gws.View<SearchViewProps> {
     sideButton() {
         if (this.props.searchWaiting)
             return <gws.ui.Button
-                className="modSearchWaitButton"
+                className="searchWaitButton"
             />;
 
         if (this.props.searchInput)
             return <gws.ui.Button
-                className="modSearchClearButton"
-                tooltip={this.__('modSearchClearButton')}
+                className="searchClearButton"
+                tooltip={this.__('searchClearButton')}
                 whenTouched={() => _master(this).clear()}
             />
     }
 
     render() {
-        return <div className="modSearchBox">
+        return <div className="searchBox">
             <Row>
                 <Cell>
-                    <gws.ui.Button className='modSearchIcon'/>
+                    <gws.ui.Button className='searchIcon'/>
                 </Cell>
                 <Cell flex>
                     <gws.ui.TextInput
                         value={this.props.searchInput}
-                        placeholder={this.__('modSearchPlaceholder')}
+                        placeholder={this.__('searchPlaceholder')}
                         whenChanged={val => _master(this).changed(val)}
                     />
                 </Cell>
-                <Cell className='modSearchSideButton'>{this.sideButton()}</Cell>
+                <Cell className='searchSideButton'>{this.sideButton()}</Cell>
             </Row>
         </div>;
     }
@@ -86,7 +86,7 @@ class SearchBox extends gws.View<SearchViewProps> {
 
 class SearchSidebarView extends gws.View<SearchViewProps> {
     render() {
-        return <sidebar.Tab className="modSearchSidebar">
+        return <sidebar.Tab className="searchSidebar">
 
             <sidebar.TabHeader>
                 <SearchBox {...this.props} />
@@ -102,10 +102,10 @@ class SearchSidebarView extends gws.View<SearchViewProps> {
 class SearchAltbarView extends gws.View<SearchViewProps> {
     render() {
         return <React.Fragment>
-            <div className="modSearchAltbar">
+            <div className="searchAltbar">
                 <SearchBox {...this.props} />
             </div>
-            <div className="modSearchAltbarResults">
+            <div className="searchAltbarResults">
                 <SearchResults {...this.props} />
             </div>
         </React.Fragment>
@@ -120,10 +120,10 @@ class SearchAltbar extends gws.Controller {
 }
 
 class SearchSidebar extends gws.Controller implements gws.types.ISidebarItem {
-    iconClass = 'modSearchSidebarIcon';
+    iconClass = 'searchSidebarIcon';
 
     get tooltip() {
-        return this.__('modSearchSidebarTitle');
+        return this.__('searchSidebarTitle');
     }
 
     get tabView() {

@@ -105,11 +105,10 @@ class Props(Data):
 
 class IObject(Protocol):
     class_name: str
-    access: Optional[List[Access]]
+    access: List[Access]
+    is_shared: bool
 
     def props_for(self, user: 'IGrantee') -> Props: ...
-
-    def access_for(self, user: 'IGrantee') -> Optional[bool]: ...
 
     def is_a(self, klass: Klass) -> bool: ...
 
@@ -194,7 +193,8 @@ class ISpecRuntime(Protocol):
 
     def parse_command(self, cmd: str, method: str, params, with_strict_mode=True) -> Optional[ExtCommandDescriptor]: ...
 
-    def read_value(self, value, type_name: str, path='', with_strict_mode=True, with_error_details=True, with_internal_objects=False): ...
+    def read_value(self, value, type_name: str, path='', with_strict_mode=True, with_error_details=True,
+                   with_internal_objects=False): ...
 
     def real_class_names(self, class_name: str) -> List[str]: ...
 
@@ -672,32 +672,20 @@ class IFeature(IObject, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # database
 
+class Sql:
+    def __init__(self, text, *args, **kwargs):
+        self.text = text
+        self.args = args
+        self.kwargs = kwargs
 
-class SqlTable(Data):
-    name: str
-    key_column: str
-    search_column: str
-    geometry_column: str
-    geometry_type: GeometryType
-    geometry_crs: 'ICrs'
-
-
-class SqlSelectArgs(Data):
-    extra_where: Optional[list]
-    keyword: Optional[str]
-    limit: Optional[int]
-    map_tolerance: Optional[float]
-    shape: Optional['IShape']
-    sort: Optional[str]
-    table: SqlTable
-    uids: Optional[List[str]]
-    columns: Optional[List[str]]
+    def __repr__(self):
+        return repr(vars(self))
 
 
-class SqlTableColumn(Data):
+class SqlColumn(Data):
     name: str
     type: AttributeType
-    geom_type: GeometryType
+    gtype: GeometryType
     native_type: str
     crs: 'ICrs'
     srid: int
@@ -705,12 +693,31 @@ class SqlTableColumn(Data):
     is_geometry: bool
 
 
+class SqlTable(Data):
+    name: str
+    key_column: Optional[SqlColumn]
+    search_column: Optional[SqlColumn]
+    geometry_column: Optional[SqlColumn]
+
+
+class SqlSelectArgs(Data):
+    columns: Optional[List[str]]
+    extra_where: Optional[Sql]
+    geometry_tolerance: Optional[float]
+    keyword: Optional[str]
+    limit: Optional[int]
+    shape: Optional['IShape']
+    sort: Optional[str]
+    table: SqlTable
+    uids: Optional[List[str]]
+
+
 class IDbProvider(INode, Protocol):
     pass
 
 
 class ISqlDbProvider(IDbProvider, Protocol):
-    def select(self, args: 'SqlSelectArgs', extra_connect_params: Optional[dict]) -> List['IFeature']: ...
+    def select_features(self, args: 'SqlSelectArgs') -> List['IFeature']: ...
 
     def insert(self, table: 'SqlTable', features: List['IFeature']) -> List['IFeature']: ...
 
@@ -718,7 +725,7 @@ class ISqlDbProvider(IDbProvider, Protocol):
 
     def delete(self, table: 'SqlTable', features: List['IFeature']) -> List['IFeature']: ...
 
-    def describe(self, table: 'SqlTable') -> Dict[str, 'SqlTableColumn']: ...
+    def describe(self, table: 'SqlTable') -> Dict[str, 'SqlColumn']: ...
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -856,7 +863,8 @@ class ITemplate(INode, Protocol):
 class ITemplateBundle(INode, Protocol):
     items: List['ITemplate']
 
-    def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional['ITemplate']: ...
+    def find(self, subject: str = None, category: str = None, name: str = None, mime: str = None) -> Optional[
+        'ITemplate']: ...
 
 
 class IPrinter(INode, Protocol):

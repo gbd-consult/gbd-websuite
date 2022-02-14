@@ -15,17 +15,11 @@ class Object(types.IObject):
     def __init__(self):
         _create_attributes(self)
         self.class_name = _class_name(self)
-        self.access = None
+        self.access = []
         self.is_shared = False
 
     def props_for(self, user):
         return types.Props()
-
-    def access_for(self, user):
-        if self.access:
-            for a in self.access:
-                if a.role in user.roles:
-                    return a.type == _ALLOW
 
     def is_a(self, klass: types.Klass):
         if isinstance(klass, type):
@@ -344,6 +338,13 @@ def _access(user, obj, context):
         # log.debug(f'PERMS:{res}: o={_object_name(obj)} r={user.roles!r}: why={why} where={_object_name(where)}')
         pass
 
+    def _check(o):
+        acc = util.get(o, 'access')
+        if acc:
+            for a in acc:
+                if a.role in user.roles:
+                    return a.type == _ALLOW
+
     if not obj:
         _log(False, 'empty')
         return _ACCCESS_DENIED
@@ -356,24 +357,20 @@ def _access(user, obj, context):
         _log(True, 'admin')
         return _ACCCESS_ALLOWED
 
-    fn = getattr(obj, 'access_for', None)
-    c = fn(user) if fn else None
-
+    c = _check(obj)
     if c is not None:
         _log(c, 'found')
         return _ACCCESS_ALLOWED if c else _ACCCESS_DENIED
 
     curr = context or util.get(obj, 'parent')
-    if not curr and getattr(obj, 'is_shared', False):
+    if not curr and util.get(obj, 'is_shared'):
         raise error.Error(f'no access context found for {_object_name(obj)}')
 
     while curr:
-        fn = getattr(curr, 'access_for', None)
-        c = fn(user) if fn else None
+        c = _check(curr)
         if c is not None:
             _log(c, 'found', curr)
             return _ACCCESS_ALLOWED if c else _ACCCESS_DENIED
-
         curr = util.get(curr, 'parent')
 
     _log(None, 'end')
@@ -462,16 +459,19 @@ def _class_name(s):
 
 
 def _object_name(obj):
-    name = getattr(obj, 'class_name', '')
+    name = util.get(obj, 'class_name', '')
     if not name:
         try:
             name = obj.__class__.__name__
         except:
             name = 'object'
 
-    uid = getattr(obj, 'uid', '')
+    uid = util.get(obj, 'uid', '')
     if uid:
         name += ' (' + str(uid) + ')'
+
+    if util.get(obj, 'is_shared'):
+        name += ' (SHARED)'
 
     return name
 

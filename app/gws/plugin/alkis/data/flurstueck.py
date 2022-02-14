@@ -66,13 +66,49 @@ _vnum_re = r'''^(?x)
 '''
 
 
+def _parse_vollnummer_element(key, val):
+    if key == 'flurnummer' or key == 'zaehler':
+        try:
+            return int(val)
+        except ValueError:
+            return None
+
+    if key == 'flurstuecksfolge':
+        try:
+            return '%02d' % int(val)
+        except ValueError:
+            return None
+
+    return val
+
+
+def _parse_vollnummer(s):
+    s = re.sub(r'\s+', '', s)
+
+    # search by gml_id
+    if s.startswith('DE'):
+        return {'gml_id': s}
+
+    m = re.match(_vnum_re, s)
+    if not m:
+        return None
+
+    d = {}
+    for k, v in m.groupdict().items():
+        v = _parse_vollnummer_element(k, v)
+        if v is None:
+            return None
+        d[k] = v
+    return d
+
+
 def _add_vnum_param(key, val, where, parms):
     if val:
         where.append(f'FS.' + key + ' = %s')
         if key in ('flurnummer', 'zaehler'):
             parms.append(int(val))
         elif key == 'flurstuecksfolge':
-            parms.append('%02d' % int(val))
+            parms.append()
         else:
             parms.append(val)
 
@@ -142,8 +178,8 @@ def _cache(conn: AlkisConnection):
 
     cache.nutzung = {}
 
-    for fs_id, recs in nu_parts.items():
-        cache.nutzung[fs_id] = sorted(recs, key=lambda x: -x['area'])
+    for fs_id, nu_dict in nu_parts.items():
+        cache.nutzung[fs_id] = sorted(nu_dict.values(), key=lambda nu: -nu['area'])
 
     gws.log.info('fs index: grundbuch cache')
 
@@ -218,6 +254,7 @@ def _fs_data(conn, fs, cache):
 
     d.update(resolver.places(conn, fs))
     d['gemarkung_v'] = cache.gemarkung.get(d.get('gemarkung_id')) or d.get('gemarkung')
+    d.pop('gemarkungsnummer', None)
 
     p = cache.addr.get(fs_id, [])
     p.sort(key=lambda x: x.get('strasse_v', ''))
@@ -250,7 +287,10 @@ def _fs_data(conn, fs, cache):
     d['c_buchung'] = len(stellen)
     d['buchung'] = indexer.to_json(stellen)
 
-    d['bb_number'] = ';'.join(bb_number) + ';' if bb_number else ''
+    # bb_number list must be like ';nnn;nnn;nnn;' (see search below)
+    d['bb_number'] = ''
+    if bb_number:
+        d['bb_number'] = ';' + ';'.join(s.strip() for s in bb_number)
 
     p = cache.nutzung.get(fs_id, [])
     d['nutzung'] = indexer.to_json(p)
@@ -281,7 +321,6 @@ def _create_main_index(conn: AlkisConnection):
         'nenner',
         'flurstueckskennzeichen',
         'flurstuecksfolge',
-        'gemarkungsnummer',
         'amtlicheflaeche',
         'zeitpunktderentstehung',
         'istgebucht',
@@ -311,15 +350,16 @@ def _create_main_index(conn: AlkisConnection):
         gml_id CHARACTER(16) NOT NULL PRIMARY KEY,
 
         land CHARACTER VARYING,
+        land_id CHARACTER VARYING,
         regierungsbezirk CHARACTER VARYING,
-        kreis CHARACTER VARYING,
-
-        gemeinde_id CHARACTER VARYING,
+        regierungsbezirk_id CHARACTER VARYING,
+        kreis  CHARACTER VARYING,
+        kreis_id CHARACTER VARYING,
         gemeinde CHARACTER VARYING,
-
+        gemeinde_id CHARACTER VARYING,
+        gemarkung  CHARACTER VARYING,
         gemarkung_id CHARACTER VARYING,
-        gemarkung CHARACTER VARYING,
-        gemarkung_v CHARACTER VARYING,
+        gemarkung_v  CHARACTER VARYING,
 
         anlass CHARACTER VARYING,
         endet CHARACTER VARYING,
@@ -381,70 +421,66 @@ def index_ok(conn):
 
 
 def gemarkung_list(conn):
-    rs = conn.select(f'''
-        SELECT DISTINCT gemarkung_id as "gemarkungUid", gemarkung, gemeinde_id as "gemeindeUid", gemeinde
+    return conn.select(f'''
+        SELECT DISTINCT 
+            gemarkung_id AS "gemarkungUid", 
+            gemarkung, 
+            gemeinde_id AS "gemeindeUid", 
+            gemeinde
         FROM {conn.index_schema}.{main_index}
         WHERE gemarkung_id IS NOT NULL
     ''')
-    return list(rs)
 
 
-def _add_strasse_param(query, where, parms):
+def _strasse_condition(alias, query) -> t.Optional[gws.Sql]:
     if 'strasse' not in query:
-        return
+        return None
 
     skey = adresse.street_name_key(query['strasse'])
     smode = query.get('strasseMode', 'exact')
 
     if smode == 'exact':
-        where.append('AD.strasse_k = %s')
-        parms.append(skey)
-        return
+        return gws.Sql(alias + '.strasse_k = {}', skey)
 
     if smode == 'start':
-        where.append('AD.strasse_k LIKE %s')
-        parms.append(skey + '%')
-        return
+        return gws.Sql(alias + '.strasse_k = {:like}', ['*%', skey])
 
     if smode == 'substring':
-        where.append('AD.strasse_k LIKE %s')
-        parms.append('%' + skey + '%')
-        return
+        return gws.Sql(alias + '.strasse_k = {:like}', ['%*%', skey])
 
 
 def strasse_list(conn: AlkisConnection, query: dict):
-    where = ["strasse NOT IN ('ohne Lage')"]
-    parms = []
+    where = [
+        gws.Sql("strasse NOT IN ('ohne Lage')")
+    ]
 
     if conn.exclude_gemarkung:
-        where.append('gemarkung_id NOT IN (%s)' % ','.join(['%s'] * len(conn.exclude_gemarkung)))
-        parms.extend(conn.exclude_gemarkung)
+        where.append(gws.Sql('gemarkung_id NOT IN ({:values})', conn.exclude_gemarkung))
 
-    if 'gemeindeUid' in query:
-        where.append('gemeinde_id=%s')
-        parms.append(query['gemeindeUid'])
+    for key, val in query.items():
+        if gws.is_empty(val):
+            continue
 
-    if 'gemarkungUid' in query:
-        where.append('gemarkung_id=%s')
-        parms.append(query['gemarkungUid'])
+        if key == 'gemeindeUid':
+            where.append(gws.Sql('gemeinde_id={}', val))
+        elif key == 'gemarkungUid':
+            where.append(gws.Sql('gemarkung_id={}', val))
 
-    _add_strasse_param(query, where, parms)
+    sk = _strasse_condition('AD', query)
+    if sk:
+        where.append(sk)
 
-    where_str = ' AND '.join(where)
-
-    rs = conn.select(f'''
+    return conn.select('''
         SELECT DISTINCT
             strasse,
             gemeinde_id as "gemeindeUid",
             gemeinde,
             gemarkung_id as "gemarkungUid",
             gemarkung
-        FROM {conn.index_schema}.{adresse.addr_index} as AD
-        WHERE {where_str}
+        FROM {:qname} AS AD
+        WHERE {:and}
         ORDER BY strasse
-    ''', parms)
-
-    return list(rs)
+    ''', [conn.index_schema, adresse.addr_index], where)
 
 
 def has_flurnummer(conn: AlkisConnection):
@@ -456,146 +492,124 @@ def has_flurnummer(conn: AlkisConnection):
     return n > 0
 
 
-_DEFAULT_LIMIT = 100
-
-
 def find(conn: AlkisConnection, query: dict):
     where = []
-    parms = []
 
     tables = {
         'FS': main_index
     }
 
-    if not query:
-        return 0, []
-
-    if query.get('vorname') and not query.get('name'):
-        return 0, []
-
-    def _prepare_for_like(v):
-        return v.lower().replace('%', '').replace('_', '') + '%'
-
-    for k, v in query.items():
-
-        if k == 'gemarkungUid':
-            where.append('FS.gemarkung_id = %s')
-            parms.append(v)
-
-        if k == 'gemeindeUid':
-            where.append('FS.gemeinde_id = %s')
-            parms.append(v)
-
-        elif k == 'strasse':
-            tables['AD'] = adresse.addr_index
-            where.append('AD.fs_id = FS.gml_id')
-
-            _add_strasse_param(query, where, parms)
-
-            hnr = query.get('hausnummer')
-
-            if hnr == '*':
-                where.append('AD.hausnummer IS NOT NULL')
-            elif hnr:
-                where.append('AD.hausnummer = %s')
-                parms.append(adresse.normalize_hausnummer(hnr))
-            # else:
-            #     # if no hausnummer, sort by hnr
-            #     order.append('AD.hausnummer_n')
-
-        elif k == 'name':
-            tables['NA'] = name_index
-            where.append('NA.fs_id = FS.gml_id')
-            where.append('NA.nachname ILIKE %s')
-            parms.append(_prepare_for_like(v))
-
-            if query.get('vorname'):
-                where.append('NA.vorname ILIKE %s')
-                parms.append(_prepare_for_like(query.get('vorname')))
-
-        elif k == 'flaecheVon':
-            where.append('FS.amtlicheflaeche >= %s')
-            parms.append(v)
-
-        elif k == 'flaecheBis':
-            where.append('FS.amtlicheflaeche <= %s')
-            parms.append(v)
+    for key, val in query.items():
+        if gws.is_empty(val):
             continue
 
-        if k == 'bblatt':
-            # bblatt numbers are ; separated, see above
-            # @TODO should start with ';' as well
+        if key == 'gemarkungUid':
+            where.append(gws.Sql('FS.gemarkung_id = {}', val))
+
+        elif key == 'gemeindeUid':
+            where.append(gws.Sql('FS.gemeinde_id = {}', val))
+
+        elif key == 'strasse':
+            tables['AD'] = adresse.addr_index
+            where.append(gws.Sql('AD.fs_id = FS.gml_id'))
+
+            sk = _strasse_condition('AD', query)
+            if sk:
+                where.append(sk)
+
+            hnr = query.get('hausnummer')
+            if hnr == '*':
+                where.append(gws.Sql('AD.hausnummer IS NOT NULL'))
+            elif hnr:
+                where.append(gws.Sql('AD.hausnummer = {}', adresse.normalize_hausnummer(hnr)))
+
+        elif key == 'name':
+            tables['NA'] = name_index
+            where.append(gws.Sql('NA.fs_id = FS.gml_id'))
+            where.append(gws.Sql('NA.nachname ILIKE {:like}', ['*%', val]))
+
+            v = query.get('vorname')
+            if v:
+                where.append(gws.Sql('NA.vorname ILIKE {:like}', ['*%', v]))
+
+        elif key == 'vorname':
+            if not query.get('name'):
+                return 0, []
+
+        elif key == 'flaecheVon':
+            where.append(gws.Sql('FS.amtlicheflaeche >= {}', val))
+
+        elif key == 'flaecheBis':
+            where.append(gws.Sql('FS.amtlicheflaeche <= {}', val))
+
+        elif key == 'bblatt':
+            # bblatt numbers are ';nnn;nnn;nnn;', see above
             # the input can be ; or , or space separated
 
             nums = []
-            for s in v.replace(';', ' ').replace(',', ' ').strip().split():
+            for s in val.replace(';', ' ').replace(',', ' ').strip().split():
                 if not s.isdigit():
-                    gws.log.warn('invalid bblatt', v)
+                    gws.log.warn('invalid bblatt', val)
                     return 0, []
                 nums.append(s)
 
             if not nums:
-                gws.log.warn('invalid bblatt', v)
+                gws.log.warn('invalid bblatt', val)
                 return 0, []
 
             bbmode = query.get('bblattMode', 'any')
-            d = ';'
             for n in nums:
                 if bbmode == 'exact':
-                    where.append(f"('{d}' || FS.bb_number LIKE %s)")
-                    parms.append(f'%{d}{n}{d}%')
+                    where.append(gws.Sql('FS.bb_number LIKE {}', f'%;{n};%'))
                 if bbmode == 'start':
-                    where.append(f"('{d}' || FS.bb_number LIKE %s)")
-                    parms.append(f'%{d}{n}%')
+                    where.append(gws.Sql('FS.bb_number LIKE {}', f'%;{n}%'))
                 if bbmode == 'end':
-                    where.append(f"FS.bb_number LIKE %s")
-                    parms.append(f'%{n}{d}%')
+                    where.append(gws.Sql('FS.bb_number LIKE {}', f'%{n};%'))
                 if bbmode == 'any':
-                    where.append(f"FS.bb_number LIKE %s")
-                    parms.append(f'%{n}%')
+                    where.append(gws.Sql('FS.bb_number LIKE {}', f'%{n}%'))
 
-        elif k == 'shape':
-            v = v.transformed_to(conn.crs)
-            where.append(f'ST_Intersects(ST_SetSRID(%s::geometry,%s), FS.geom)')
-            parms.append(v.wkb_hex)
-            parms.append(conn.srid)
+        elif key == 'shape':
+            where.append(gws.Sql('ST_Intersects({}::geometry, FS.geom)', val.transformed_to(conn.crs).ewkb_hex))
 
-        elif k == 'vnum':
-            ok = _parse_vnum(v, where, parms)
-            if not ok:
-                gws.log.warn('invalid vnum', v)
+        elif key == 'vnum':
+            d = _parse_vollnummer(val)
+            if not d:
+                gws.log.warn('invalid vnum', val)
                 return 0, []
+            for k, v in d:
+                where.append(gws.Sql('FS.{:name}={}', k, v))
 
-        elif k in ('flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge'):
-            _add_vnum_param(k, v, where, parms)
+        elif key in {'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge'}:
+            v = _parse_vollnummer_element(key, val)
+            if v is None:
+                gws.log.warn(f'invalid element {key!r}', val)
+                return 0, []
+            where.append(gws.Sql('FS.{:name}={}', key, v))
 
-        elif k == 'fsUids':
-            where.append('FS.gml_id IN (' + ','.join(['%s'] * len(v)) + ')')
-            parms.extend(v)
+        elif key == 'fsUids':
+            where.append(gws.Sql('FS.gml_id IN ({:values})', val))
 
-    from_str = ','.join(f'{conn.index_schema}.{v} AS {k}' for k, v in tables.items())
-    where_str = ('WHERE ' + ' AND '.join(where)) if where else ''
-    limit_str = 'LIMIT ' + str(query.get('limit') or _DEFAULT_LIMIT)
+    from_part = gws.Sql(','.join(f'{conn.index_schema}.{v} AS {k}' for k, v in tables.items()))
 
-    count_sql = f'SELECT COUNT(DISTINCT FS.*) FROM {from_str} {where_str}'
-    count = conn.select_value(count_sql, parms)
+    count = conn.select_value(
+        'SELECT COUNT(DISTINCT FS.*) FROM {:sql} {:sql}',
+        from_part,
+        gws.Sql('WHERE {:and}', where) if where else None
+    )
 
-    data_sql = f'SELECT DISTINCT FS.* FROM {from_str} {where_str} {limit_str}'
-    gws.log.debug(f'sql={data_sql!r} parms={parms!r}')
+    limit = query.get('limit')
 
-    data = conn.select(data_sql, parms)
+    data = conn.select(
+        'SELECT DISTINCT FS.* FROM {:sql} {:sql} {:sql}',
+        from_part,
+        gws.Sql('WHERE {:and}', where) if where else None,
+        gws.Sql('LIMIT {:int}', limit) if limit else None
+    )
 
-    def _unpack(fs):
+    for fs in data:
         for k in 'lage', 'buchung', 'nutzung', 'gebaeude':
-            fs[k] = indexer.from_json(fs.get(k))
-        return gws.compact(fs)
+            v = indexer.from_json(fs.get(k))
+            if v:
+                fs[k] = v
 
-    return count, [_unpack(fs) for fs in data]
-
-
-def _query_to_dict(query):
-    return {
-        k: v
-        for k, v in vars(query).items()
-        if v not in (None, '')
-    }
+    return count, data

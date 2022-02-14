@@ -18,16 +18,16 @@ def _collect_from_nutzung_tables(conn: AlkisConnection):
     tables = conn.table_names(conn.data_schema)
     data = []
 
-    for type_id, table, type in resolver.nutzung_tables:
-        if table not in tables:
+    for type_id, tab, type in resolver.nutzung_tables:
+        if tab not in tables:
             continue
 
-        rs = conn.select_from_ax(table)
+        rs = conn.select_from_ax(tab)
 
         for r in rs:
             if 'gml_id' not in r or 'wkb_geometry' not in r:
                 continue
-            a = resolver.attributes(conn, table, r)
+            a = resolver.attributes(conn, tab, r)
             k = resolver.nutzung_key(type_id, a) or {'key': type, 'key_id': type_id, 'key_label': 'Typ'}
             a.update(k)
             data.append({
@@ -126,7 +126,6 @@ def _create_parts_index(conn: AlkisConnection):
 
     with ProgressIndicator('nutzung: search', max_id) as pi:
         for n in range(0, max_id, step):
-            n1 = n + step
             conn.exec(f'''
                 INSERT INTO {idx}.{parts_index}
                         (fs_id, nu_id, type, type_id, attributes, fs_geom, nu_geom)
@@ -142,7 +141,7 @@ def _create_parts_index(conn: AlkisConnection):
                         {idx}.{all_index} AS nu,
                         {idx}.{fs_temp} AS fs
                     WHERE
-                        {n} < nu.id AND nu.id <= {n1}
+                        {n} < nu.id AND nu.id <= {n + step}
                         AND ST_Intersects(nu.geom, fs.geom)
             ''')
             pi.update(step)
@@ -153,21 +152,19 @@ def _create_parts_index(conn: AlkisConnection):
 
     with ProgressIndicator('nutzung: intersections', max_id) as pi:
         for n in range(0, max_id, step):
-            n1 = n + step
             conn.exec(f'''
                 UPDATE {idx}.{parts_index} AS nu
                     SET part_geom = ST_Intersection(fs_geom, nu_geom)
-                    WHERE {n} < nu.id AND nu.id <= {n1}
+                    WHERE {n} < nu.id AND nu.id <= {n + step}
             ''')
             pi.update(step)
 
     with ProgressIndicator('nutzung: areas', max_id) as pi:
         for n in range(0, max_id, step):
-            n1 = n + step
             conn.exec(f'''
                 UPDATE {idx}.{parts_index} AS nu
                     SET area = ST_Area(part_geom)
-                    WHERE {n} < nu.id AND nu.id <= {n1}
+                    WHERE {n} < nu.id AND nu.id <= {n + step}
             ''')
             pi.update(step)
 
@@ -187,12 +184,11 @@ def _create_parts_index(conn: AlkisConnection):
 
     with ProgressIndicator('nutzung: correcting', max_id) as pi:
         for n in range(0, max_id, step):
-            n1 = n + step
             conn.exec(f'''
                 UPDATE {idx}.{parts_index} AS nu
                     SET a_area = nu.area * fs.area_factor
                     FROM {idx}.{fs_temp} AS fs
-                    WHERE {n} < nu.id AND nu.id <= {n1}
+                    WHERE {n} < nu.id AND nu.id <= {n + step}
                         AND nu.fs_id = fs.gml_id
             ''')
             pi.update(step)

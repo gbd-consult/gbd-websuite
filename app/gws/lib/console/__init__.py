@@ -22,7 +22,7 @@ class ProgressIndicator:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not exc_type:
             ts = time.time() - self.starttime
-            self.log(f'END (time={ts:.2f}) sec')
+            self.log(f'END ({ts:.2f} sec)')
 
     def update(self, add=1):
         self.progress += add
@@ -31,7 +31,7 @@ class ProgressIndicator:
             p = 100
         d = round(p / self.resolution) * self.resolution
         if d > self.lastd:
-            self.log(f'{d}%')
+            self.log(f'{d}%%')
         self.lastd = d
 
     def log(self, s):

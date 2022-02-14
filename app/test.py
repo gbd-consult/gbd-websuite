@@ -230,13 +230,13 @@ def service_postgres_config():
 def service_web_config():
     wd = CONFIG['runner.work_dir']
 
-    code = read_file(APP_DIR + '/gws/lib/test_web_server.py')
-    write_file(f"{wd}/test_web_server.py", code)
+    code = read_file(APP_DIR + '/gws/lib/test/web_server.py')
+    write_file(f"{wd}/web_server.py", code)
 
     reqs = '\n'.join(CONFIG['service.web.requirements'].split())
-    write_file(f"{wd}/test_web_requirements.txt", reqs + '\n')
+    write_file(f"{wd}/web_server_requirements.txt", reqs + '\n')
 
-    command = f"bash -c 'pip install -r {wd}/test_web_requirements.txt && python {wd}/test_web_server.py'"
+    command = f"bash -c 'pip install -r {wd}/web_server_requirements.txt && python {wd}/web_server.py'"
 
     return {
         'command': command,

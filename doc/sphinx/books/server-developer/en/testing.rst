@@ -34,7 +34,7 @@ Fixtures
 
     u.make_features(
         'postgres:my_table',          # create a postgres table my_table
-        geom_type='square',           # use square geometries
+        gtype='square',           # use square geometries
         prop_schema={                 # generate properties according to this schema
             'property1': 'int',
             'property2': 'text',

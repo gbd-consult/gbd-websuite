@@ -1,40 +1,40 @@
 module.exports = v => ({
-    '.modSearchSidebarIcon': {
+    '.searchSidebarIcon': {
         ...v.SIDEBAR_ICON('google:action/search')
     },
 
-    '.modSearchClearButton.uiIconButton': {
+    '.searchClearButton.uiIconButton': {
         ...v.ICON_SIZE('small'),
         ...v.SVG(v.CLOSE_ICON, v.BORDER_COLOR),
     },
 
-    '.modSearchWaitButton.uiIconButton': {
+    '.searchWaitButton.uiIconButton': {
         ...v.ICON_SIZE('small'),
-        backgroundImage: v.IMAGE('ajax.gif'),
+        // backgroundImage: v.IMAGE(__dirname + '/../../../ui/ajax.gif'),
     },
 
-    '.modSearchBox': {
+    '.searchBox': {
         '.uiInput .uiControlBox': {
             borderWidth: 0
         },
     },
 
-    '.modSearchIcon.uiIconButton': {
+    '.searchIcon.uiIconButton': {
         ...v.ICON_SIZE('normal'),
         ...v.SVG(v.SEARCH_ICON, v.BORDER_COLOR),
     },
 
-    '.modSearchAltbar': {
+    '.searchAltbar': {
         backgroundColor: v.COLOR.white,
         border: [1, 'solid', v.BORDER_COLOR],
     },
 
-    '.modSearchSideButton': {
+    '.searchSideButton': {
         minWidth: v.CONTROL_SIZE,
         maxWidth: v.CONTROL_SIZE,
     },
 
-    '.modSearchAltbarResults .modSearchResults': {
+    '.searchAltbarResults .searchResults': {
         position: 'absolute',
         left: 0,
         right: 0,
@@ -45,17 +45,17 @@ module.exports = v => ({
         ...v.SHADOW,
     },
 
-    '.modSearchResults .cmpListContent': {
+    '.searchResults .cmpListContent': {
         padding: v.UNIT4,
     },
 
-    '.modSearchSidebar': {
+    '.searchSidebar': {
         '.modSidebarTabHeader': {
             padding: [v.UNIT, v.UNIT2, v.UNIT, v.UNIT2],
         }
     },
 
-    '.modSearchResultsFeatureText': {
+    '.searchResultsFeatureText': {
         position: 'relative',
         'p.head': {
             color: v.FOCUS_COLOR,

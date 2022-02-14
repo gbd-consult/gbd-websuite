@@ -363,7 +363,10 @@ class _Parser:
 
         # foo: Generic[SomeType]
         if cc == 'Subscript':
-            return self.type_from_name(self.qname(node.value), node.slice.value)
+            # py 3.8 and 3.9 interpret node.slice differently
+            return self.type_from_name(
+                self.qname(node.value),
+                node.slice.value if _cls(node.slice) == 'Index' else node.slice)
 
         # foo: [SomeType, SomeType]
         if cc in {'List', 'Tuple'}:

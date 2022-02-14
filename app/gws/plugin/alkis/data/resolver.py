@@ -274,12 +274,12 @@ def _create_place_index(conn: AlkisConnection):
 
         fields = place_fields[key]
 
-        for r in conn.select_from_ax(table, fields + ['bezeichnung']):
+        for rec in conn.select_from_ax(table, fields + ['bezeichnung']):
             data.append({
                 'table_name': table,
-                'place_key': ','.join('%s=%s' % (f, r[f]) for f in fields),
-                'place_id': r[fields[0]],
-                'place_name': r['bezeichnung']
+                'place_key': _key(rec, fields),
+                'place_id': rec[fields[0]],
+                'place_name': rec['bezeichnung']
 
             })
 
@@ -305,13 +305,12 @@ def index_ok(conn: AlkisConnection):
     return indexer.check_version(conn, PROPS_INDEX) and indexer.check_version(conn, PLACE_INDEX)
 
 
-def _load_props_for_table(conn: AlkisConnection, table):
+def _load_props_for_table(conn: AlkisConnection, tab):
     idx = conn.index_schema
     d: t.Dict[str, dict] = {}
-    sql = f'SELECT * FROM {idx}.{PROPS_INDEX} WHERE table_name=%s'
-    for r in conn.select(sql, [table]):
-        c = r['column_name']
-        d.setdefault(c, {})[r['property_key']] = r['property_value']
+    rs = conn.select(f"SELECT * FROM {idx}.{PROPS_INDEX} WHERE table_name='{tab}'")
+    for r in rs:
+        d.setdefault(r['column_name'], {})[r['property_key']] = r['property_value']
     return d
 
 
@@ -324,10 +323,10 @@ def _load_places(conn: AlkisConnection):
     return d
 
 
-def attributes(conn: AlkisConnection, table, rec):
+def attributes(conn: AlkisConnection, tab, rec):
     cc = gws.get_app_global(
-        'alkis_resolver_props_' + table,
-        lambda: _load_props_for_table(conn, table))
+        f'alkis_resolver_props_{tab}',
+        lambda: _load_props_for_table(conn, tab))
 
     attr = {}
 
@@ -350,7 +349,7 @@ def places(conn: AlkisConnection, rec):
     attr = {}
 
     for name, fields in place_fields.items():
-        key = ','.join('%s=%s' % (f, rec.get(f, '')) for f in fields)
+        key = _key(rec, fields)
         if key in cc:
             s = 'gemarkung' if name == 'gemarkungsnummer' else name
             attr[s] = cc[key]
@@ -368,3 +367,7 @@ def nutzung_key(type_id, rec):
             'key_id': rec[key + '_id'],
             'key_label': column_labels[key]
         }
+
+
+def _key(rec, fields):
+    return ','.join(f"{f}={rec.get(f, '')}" for f in fields)

@@ -156,7 +156,6 @@ def _create_gebs_index(conn: AlkisConnection):
 
     with ProgressIndicator('gebaeude: search', cnt) as pi:
         for n in range(0, cnt, step):
-            n1 = n + step
             conn.exec(f'''
                 INSERT INTO {idx}.{gebs_index}
                         (gml_id, fs_id, attributes, fs_geom, gb_geom)
@@ -170,7 +169,7 @@ def _create_gebs_index(conn: AlkisConnection):
                         {idx}.{geb_temp} AS gb,
                         {idx}.{fsx_temp} AS fs
                     WHERE
-                        {n} < gb.id AND gb.id <= {n1}
+                        {n} < gb.id AND gb.id <= {n + step}
                         AND ST_Intersects(gb.geom, fs.geom)
             ''')
             pi.update(step)
@@ -180,20 +179,18 @@ def _create_gebs_index(conn: AlkisConnection):
 
     with ProgressIndicator('gebaeude: areas', cnt) as pi:
         for n in range(0, cnt, step):
-            n1 = n + step
             conn.exec(f'''
                 UPDATE {idx}.{gebs_index}
                     SET area = ST_Area(ST_Intersection(fs_geom, gb_geom))
-                    WHERE
-                        {n} < id AND id <= {n1}
+                    WHERE {n} < id AND id <= {n + step}
             ''')
             pi.update(step)
 
     gws.log.info('gebaeude: cleaning up')
 
-    conn.exec(f'DELETE FROM {idx}.{gebs_index} WHERE area < %s', [MIN_GEBAEUDE_AREA])
-    conn.exec(f'DROP TABLE {idx}.{fsx_temp} CASCADE')
+    conn.exec(f'DELETE FROM {idx}.{gebs_index} WHERE area < {MIN_GEBAEUDE_AREA}')
     conn.exec(f'DROP TABLE {idx}.{geb_temp} CASCADE')
+    conn.exec(f'DROP TABLE {idx}.{fsx_temp} CASCADE')
 
     conn.mark_index_table(gebs_index)
 
@@ -217,33 +214,31 @@ def _create_addr_index(conn: AlkisConnection):
 
     for tab in _lage_tables:
         rs = conn.select_from_ax(tab)
-
         for r in rs:
+            la = gws.pick(r, 'gml_id', 'gemeinde', 'kreis', 'regierungsbezirk', 'land')
+
             if r['unverschluesselt']:
-                r['lage_id'] = ''
-                r['lage_schluesselgesamt'] = ''
-                r['strasse'] = r['unverschluesselt']
+                la['lage_id'] = ''
+                la['lage_schluesselgesamt'] = ''
+                la['strasse'] = r['unverschluesselt']
             else:
                 lg = lage_catalog.get(_place_key(r))
                 if lg:
-                    r['lage_id'] = lg[0]
-                    r['lage_schluesselgesamt'] = lg[1]
-                    r['strasse'] = lg[2]
+                    la['lage_id'] = lg[0]
+                    la['lage_schluesselgesamt'] = lg[1]
+                    la['strasse'] = lg[2]
 
-            if 'strasse' not in r or r['strasse'] == 'ohne Lage':
+            if 'strasse' not in la or la['strasse'] == 'ohne Lage':
                 continue
+
+            la['hausnummer'] = ''
 
             for hnr in 'hausnummer', 'pseudonummer', 'laufendenummer':
                 if r.get(hnr):
-                    r['hausnummer'] = normalize_hausnummer(r[hnr])
-                    r['hausnummer_type'] = hnr
+                    la['hausnummer'] = normalize_hausnummer(r[hnr])
                     break
 
-            if not r.get('hausnummer'):
-                r['hausnummer'] = ''
-                r['hausnummer_type'] = ''
-
-            lage[r['gml_id']] = r
+            lage[la['gml_id']] = la
 
     rs = conn.select_from_ax('ax_flurstueck', [
         'gml_id',
@@ -281,7 +276,7 @@ def _create_addr_index(conn: AlkisConnection):
                 la['fs_ids'].append(fs_id)
 
                 if not la.get('gemarkungsnummer'):
-                    la.update(fs)
+                    la.update(gws.pick(fs, 'land', 'gemarkungsnummer', 'gemeinde', 'regierungsbezirk', 'kreis'))
 
                 la['x'] = fs['x']
                 la['y'] = fs['y']
@@ -319,6 +314,7 @@ def _create_addr_index(conn: AlkisConnection):
         la.update(resolver.places(conn, la))
         if 'gemarkung' in la:
             gg[la['gemarkung']].add(la['gemeinde'])
+        la.pop('gemarkungsnummer', None)
 
     gu = {}
 
@@ -350,6 +346,7 @@ def _create_addr_index(conn: AlkisConnection):
         if 'fs_ids' in la:
             for fs_id in la['fs_ids']:
                 d = dict(la)
+                d.pop('fs_ids')
                 d['fs_id'] = fs_id
                 la_buf.append(d)
 
@@ -368,8 +365,8 @@ def _create_addr_index(conn: AlkisConnection):
         gemeinde CHARACTER VARYING,
         gemeinde_id CHARACTER VARYING,
         gemarkung  CHARACTER VARYING,
-        gemarkung_v  CHARACTER VARYING,
         gemarkung_id CHARACTER VARYING,
+        gemarkung_v  CHARACTER VARYING,
 
         strasse CHARACTER VARYING,
         strasse_k CHARACTER VARYING,
@@ -399,47 +396,45 @@ def index_ok(conn: AlkisConnection):
     return indexer.check_version(conn, gebs_index) and indexer.check_version(conn, addr_index)
 
 
-_DEFAULT_LIMIT = 100
-
-
 def find(conn: AlkisConnection, query):
     where = []
-    parms = []
 
-    for k, v in query.items():
+    for key, val in query.items():
+        if gws.is_empty(val):
+            continue
 
-        if k in ('land', 'regierungsbezirk', 'kreis', 'gemeinde', 'gemarkung'):
-            where.append('AD.' + k + ' = %s')
-            parms.append(v)
+        if key in {'land', 'regierungsbezirk', 'kreis', 'gemeinde', 'gemarkung'}:
+            where.append(gws.Sql('AD.{:name}={}', key, val))
 
-        elif k in ('landUid', 'regierungsbezirkUid', 'kreisUid', 'gemeindeUid', 'gemarkungUid'):
-            where.append('AD.' + (k.replace('Uid', '_id')) + ' = %s')
-            parms.append(v)
+        elif key in {'landUid', 'regierungsbezirkUid', 'kreisUid', 'gemeindeUid', 'gemarkungUid'}:
+            where.append(gws.Sql('AD.{:name}={}', key.replace('Uid', '_id'), val))
 
-        elif k == 'strasse':
-            where.append('AD.strasse_k = %s')
-            parms.append(street_name_key(v))
+        elif key == 'strasse':
+            where.append(gws.Sql('AD.strasse_k={}', val))
 
             hnr = query.get('hausnummer')
-
             if hnr == '*':
-                where.append('AD.hausnummer IS NOT NULL')
+                where.append(gws.Sql('AD.hausnummer IS NOT NULL'))
             elif hnr:
-                where.append('AD.hausnummer = %s')
-                parms.append(normalize_hausnummer(hnr))
+                where.append(gws.Sql('AD.hausnummer={}', normalize_hausnummer(hnr)))
             elif query.get('hausnummerNotNull'):
                 where.append('AD.hausnummer IS NOT NULL')
 
-    where_str = ('WHERE ' + ' AND '.join(where)) if where else ''
-    limit = 'LIMIT %d' % (query.get('limit', _DEFAULT_LIMIT))
-    tables = f'{conn.index_schema}.{addr_index} AS AD'
+    from_part = gws.Sql(f'{conn.index_schema}.{addr_index} AS AD')
 
-    count_sql = f'SELECT COUNT(DISTINCT AD.*) FROM {tables} {where_str}'
-    count = conn.select_value(count_sql, parms)
+    count = conn.select_value(
+        'SELECT COUNT(DISTINCT AD.*) {:sql} {:sql}',
+        from_part,
+        gws.Sql('WHERE {:and}', where) if where else None
+    )
 
-    data_sql = f'SELECT DISTINCT AD.* FROM {tables} {where_str} {limit}'
-    gws.log.debug(f'sql={data_sql!r} parms={parms!r}')
+    limit = query.get('limit')
 
-    data = conn.select(data_sql, parms)
+    data = conn.select(
+        'SELECT DISTINCT AD.* {:sql} {:sql} {:sql}',
+        from_part,
+        gws.Sql('WHERE {:and}', where) if where else None,
+        gws.Sql('LIMIT {:int}', limit) if limit else None
+    )
 
-    return count, list(data)
+    return count, data

@@ -1,8 +1,9 @@
 import gws
+import gws.base.db
 import gws.base.search
 import gws.types as t
 
-from . import provider as provider_module
+from . import provider
 
 
 @gws.ext.Config('search.provider.postgres')
@@ -16,7 +17,7 @@ class Config(gws.base.search.provider.Config):
 
 @gws.ext.Object('search.provider.postgres')
 class Object(gws.base.search.provider.Object):
-    provider: provider_module.Object
+    provider: provider.Object
     table: gws.SqlTable
 
     def configure(self):
@@ -24,7 +25,7 @@ class Object(gws.base.search.provider.Object):
             self.provider = self.var('_provider')
             self.table = self.var('_table')
         else:
-            self.provider = provider_module.require_for(self)
+            self.provider = provider.require_for(self)
             self.table = self.provider.configure_table(self.var('table'))
 
         if self.table.search_column:
@@ -34,14 +35,14 @@ class Object(gws.base.search.provider.Object):
 
     def run(self, args, layer=None):
         n, u = args.tolerance or self.tolerance
-        map_tolerance = n * args.resolution if u == 'px' else n
-        return self.provider.select(gws.SqlSelectArgs(
+        geometry_tolerance = n * args.resolution if u == 'px' else n
+        return self.provider.select_features(gws.SqlSelectArgs(
             table=self.table,
             keyword=args.keyword,
             shape=self.context_shape(args),
             sort=self.var('sort'),
             limit=args.limit,
-            map_tolerance=map_tolerance,
+            geometry_tolerance=geometry_tolerance,
             extra_where=self._filter_to_sql(args.filter),
         ))
 

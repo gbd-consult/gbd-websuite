@@ -14,11 +14,13 @@ def create(conn: AlkisConnection, read_user):
     grundbuch.create_index(conn)
     flurstueck.create_index(conn)
 
-    for tab in conn.table_names(conn.index_schema):
+    idx = conn.index_schema
+
+    for tab in conn.table_names(idx):
         gws.log.info(f'optimizing {tab!r}')
-        conn.exec(f'VACUUM {conn.index_schema}.{tab}')
-    conn.exec(f'GRANT SELECT  ON ALL TABLES    IN SCHEMA "{conn.index_schema}" TO "{read_user}"')
-    conn.exec(f'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA "{conn.index_schema}" TO "{read_user}"')
+        conn.exec(f'VACUUM {idx}.{tab}')
+    conn.exec(f'GRANT SELECT  ON ALL TABLES    IN SCHEMA "{idx}" TO "{read_user}"')
+    conn.exec(f'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA "{idx}" TO "{read_user}"')
 
 
 def ok(conn: AlkisConnection):
@@ -32,4 +34,4 @@ def ok(conn: AlkisConnection):
 
 
 def drop(conn: AlkisConnection):
-    conn.drop_all()
+    conn.drop_all_indexes()

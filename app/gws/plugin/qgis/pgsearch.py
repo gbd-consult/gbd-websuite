@@ -35,12 +35,12 @@ class Object(gws.base.search.provider.Object):
 
     def run(self, args, layer=None):
         n, u = args.tolerance or self.tolerance
-        map_tolerance = n * args.resolution if u == 'px' else n
+        geometry_tolerance = n * args.resolution if u == 'px' else n
         return self.db.select(gws.SqlSelectArgs(
             table=self.table,
             keyword=args.keyword,
             shape=self.context_shape(args),
             limit=args.limit,
-            map_tolerance=map_tolerance,
+            geometry_tolerance=geometry_tolerance,
             extra_where=self.extra_where,
         ))

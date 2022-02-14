@@ -3,10 +3,11 @@ import gws.base.db
 import gws.base.layer.vector
 import gws.gis.extent
 import gws.gis.feature
+import gws.gis.crs
 import gws.gis.shape
 import gws.types as t
 
-from . import provider as provider_module
+from . import provider
 
 
 @gws.ext.Config('layer.postgres')
@@ -19,7 +20,7 @@ class Config(gws.base.layer.vector.Config):
 
 @gws.ext.Object('layer.postgres')
 class Object(gws.base.layer.vector.Object):
-    provider: provider_module.Object
+    provider: provider.Object
     table: gws.SqlTable
 
     @property
@@ -27,25 +28,28 @@ class Object(gws.base.layer.vector.Object):
         if not self.table.geometry_column:
             return None
         with self.provider.connect() as conn:
-            r = conn.select_value(f"""
-                SELECT ST_Extent({conn.quote_ident(self.table.geometry_column)})
-                FROM {conn.quote_table(self.table.name)}
-            """)
+            r = conn.select_value(
+                'SELECT ST_Extent({:name}) FROM {:qname}',
+                self.table.geometry_column.name,
+                self.table.name)
         if not r:
             return None
         return gws.Bounds(
-            crs=self.table.geometry_crs,
+            crs=gws.gis.crs.get(self.table.geometry_column.srid),
             extent=gws.gis.extent.from_box(r))
 
     def props_for(self, user):
-        return gws.merge(super().props_for(user), geometryType=self.table.geometry_type)
+        p = super().props_for(user)
+        if self.table.geometry_column:
+            p = gws.merge(p, geometryType=self.table.geometry_column.gtype)
+        return p
 
     def configure_source(self):
         if self.var('_provider'):
             self.provider = self.var('_provider')
             self.table = self.var('_table')
         else:
-            self.provider = provider_module.require_for(self)
+            self.provider = provider.require_for(self)
             self.table = self.provider.configure_table(self.var('table'))
 
         self.is_editable = True
@@ -67,11 +71,10 @@ class Object(gws.base.layer.vector.Object):
             return True
 
     def get_features(self, bounds, limit=0) -> t.List[gws.IFeature]:
-        shape = gws.gis.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)
-
-        features = self.provider.select(gws.SqlSelectArgs(
+        features = self.provider.select_features(gws.SqlSelectArgs(
             table=self.table,
-            shape=shape,
+            shape=gws.gis.shape.from_bounds(bounds),
+            geometry_tolerance=0,
             limit=limit,
         ))
 
