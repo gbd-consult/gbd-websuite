@@ -176,10 +176,10 @@ class Object(gws.Object, t.IApplication):
         return p
 
     def load_plugins(self):
-        if not gws.tools.os2.is_file('/MANIFEST.json'):
+        if not gws.tools.os2.is_file('/data/MANIFEST.json'):
             return
 
-        mf = manifest.from_path('/MANIFEST.json')
+        mf = manifest.from_path('/data/MANIFEST.json')
         plugins_conf = self.var('plugins', default={})
 
         for p in mf['plugins']:

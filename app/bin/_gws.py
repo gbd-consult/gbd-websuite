@@ -54,11 +54,19 @@ def dispatch(argv):
 def main():
     argv = []
     verbose = False
-    for a in sys.argv:
+    n = 0
+    while n < len(sys.argv):
+        a = sys.argv[n]
         if a == '-v' or a == '--verbose':
             verbose = True
-        else:
-            argv.append(a)
+            n += 1
+            continue
+        # --manifest is accepted, but ignored by now
+        if a == '--manifest':
+            n += 2
+            continue
+        argv.append(a)
+        n += 1
 
     gws.log.set_level('DEBUG' if verbose else 'INFO')
 
