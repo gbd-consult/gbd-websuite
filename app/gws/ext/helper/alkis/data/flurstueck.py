@@ -429,6 +429,11 @@ def strasse_list(conn: AlkisConnection, query: dict):
         where.append('gemarkung_id=%s')
         parms.append(query['gemarkungUid'])
 
+    v = query.get('gemarkungFilter')
+    if v:
+        where.append('gemarkung_id IN (' + ','.join(['%s'] * len(v)) + ')')
+        parms.extend(v)
+
     _add_strasse_param(query, where, parms)
 
     where = ' AND '.join(where)
@@ -482,6 +487,10 @@ def find(conn: AlkisConnection, query: dict):
         if k == 'gemarkungUid':
             where.append('FS.gemarkung_id = %s')
             parms.append(v)
+
+        elif k == 'gemarkungFilter':
+            where.append('FS.gemarkung_id IN (' + ','.join(['%s'] * len(v)) + ')')
+            parms.extend(v)
 
         if k == 'gemeindeUid':
             where.append('FS.gemeinde_id = %s')

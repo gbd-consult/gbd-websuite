@@ -53,6 +53,7 @@ class BaseQuery(t.Data):
     gemeindeUid: str = ''
     strasse: str = ''
     strasseMode: StrasseQueryMode = ''
+    gemarkungFilter: t.List[str] = []
 
 
 class FindFlurstueckQuery(BaseQuery):

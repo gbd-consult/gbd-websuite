@@ -107,6 +107,7 @@ class Config(t.WithTypeAndAccess):
     printTemplate: t.Optional[t.ext.template.Config]  #: template for printed Flurstueck details
     ui: t.Optional[UiConfig]  #: ui options
     export: t.Optional[gws.ext.helper.alkis.util.export.Config]  #: csv export configuration
+    gemarkungFilter: t.Optional[t.List[str]]  #: restict the search to these Gemarkungen (AU)
 
 
 class Props(t.Props):
@@ -331,6 +332,8 @@ class Object(gws.common.action.Object):
                 if not conn.user_can('INSERT', self.log_table):
                     raise ValueError(f'no INSERT acccess to {self.log_table!r}')
 
+        self.gemarkung_filter = self.var('gemarkungFilter', default=[])
+
     def props_for(self, user):
         if not user.can_use(self):
             return None
@@ -351,10 +354,16 @@ class Object(gws.common.action.Object):
                     continue
                 eg[n] = g.get('title')
 
+        gemarkungen = []
+        for g in self.alkis.gemarkung_list():
+            if self.gemarkung_filter and g.gemarkungUid not in self.gemarkung_filter:
+                continue
+            gemarkungen.append(g)
+
         return {
             'type': self.type,
             'exportGroups': eg,
-            'gemarkungen': self.alkis.gemarkung_list(),
+            'gemarkungen': gemarkungen,
             'limit': self.limit,
             'printTemplate': self.print_template.props,
             'ui': self.ui,
@@ -368,7 +377,9 @@ class Object(gws.common.action.Object):
         """Return all Toponyms (Gemeinde/Gemarkung/Strasse) in the area"""
 
         self._validate_request(req, p)
-        res = self.alkis.find_strasse(gws.ext.helper.alkis.FindStrasseQuery(p))
+        q = gws.ext.helper.alkis.FindStrasseQuery(p)
+        q.gemarkungFilter = self.gemarkung_filter
+        res = self.alkis.find_strasse(q)
 
         gemeinde = {}
         gemarkung = {}
@@ -511,6 +522,8 @@ class Object(gws.common.action.Object):
             fq.limit = soft_limit
 
         fq.bblattMode = self.ui.get('bblattSearchMode', 'any')
+
+        fq.gemarkungFilter = self.gemarkung_filter
 
         res = self.alkis.find_flurstueck(fq)
 
