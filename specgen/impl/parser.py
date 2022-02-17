@@ -334,7 +334,13 @@ class _Parser:
         # foo: List[SomeType] => [List, [SomeType]]
         # foo: Dict[A, B] => [Dict, [A, B]]
         if _cls(node) == 'Subscript':
-            s = self.type_decl_to_type_list(node.slice.value)
+            if _cls(node.slice) == 'Index':
+                # 3.8
+                val = node.slice.value
+            else:
+                # 3.9
+                val = node.slice
+            s = self.type_decl_to_type_list(val)
             if s[0] == 'tuple':
                 s = s[1]
             return [self.qname(node.value), s]
