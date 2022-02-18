@@ -1,5 +1,6 @@
 import PIL.Image
 import io
+import math
 
 import gws
 import gws.gis.mpx as mpx
@@ -14,6 +15,46 @@ class Config(layer.Config):
     cache: types.CacheConfig = {}  #: cache configuration
     grid: types.GridConfig = {}  #: grid configuration
     imageFormat: types.ImageFormat = 'png8'  #: image format
+
+
+def _box_request(uid, bounds, width, height, forward, tile_size):
+    if width < tile_size and height < tile_size:
+        return gws.gis.mpx.wms_request(uid, bounds, width, height, forward)
+
+    xcount = math.ceil(width / tile_size)
+    ycount = math.ceil(height / tile_size)
+
+    ext = bounds.extent
+
+    bw = (ext[2] - ext[0]) * tile_size / width
+    bh = (ext[3] - ext[1]) * tile_size / height
+
+    gws.log.debug(f'box tiling: uid={uid!r}, ext={ext!r} {width}x{height}')
+
+    grid = []
+
+    for ny in range(ycount):
+        for nx in range(xcount):
+            e = [
+                ext[0] + bw * nx,
+                ext[3] - bh * (ny + 1),
+                ext[0] + bw * (nx + 1),
+                ext[3] - bh * ny,
+            ]
+            bounds = t.Bounds(crs=bounds.crs, extent=e)
+            content = gws.gis.mpx.wms_request(uid, bounds, tile_size, tile_size, forward)
+            grid.append([nx, ny, content])
+
+    out = PIL.Image.new('RGBA', (tile_size * xcount, tile_size * ycount), (0, 0, 0, 0))
+    for nx, ny, content in grid:
+        img = PIL.Image.open(io.BytesIO(content))
+        out.paste(img, (nx * tile_size, ny * tile_size))
+
+    out = out.crop((0, 0, width, height))
+
+    buf = io.BytesIO()
+    out.save(buf, 'PNG')
+    return buf.getvalue()
 
 
 class Image(layer.Layer):
@@ -48,8 +89,11 @@ class Image(layer.Layer):
         if not self.has_cache:
             uid += '_NOCACHE'
 
+        # boxes larger than that will be tiled in _box_request
+        size_threshold = 1000
+
         if not rv.rotation:
-            return gws.gis.mpx.wms_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1], forward=extra_params)
+            return _box_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1], forward=extra_params, tile_size=size_threshold)
 
         # rotation: render a circumsquare around the wanted extent
 
@@ -57,7 +101,7 @@ class Image(layer.Layer):
         w, h = rv.size_px
         d = gws.gis.extent.diagonal((0, 0, w, h))
 
-        r = gws.gis.mpx.wms_request(uid, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d, forward=extra_params)
+        r = _box_request(uid, t.Bounds(crs=rv.bounds.crs, extent=circ), d, d, forward=extra_params, tile_size=size_threshold)
         if not r:
             return
 
