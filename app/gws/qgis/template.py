@@ -54,6 +54,7 @@ class Object(gws.common.template.Object):
             context['time_short'] = context['time'].short
         if 'user' in context:
             context['user_name'] = context['user'].display_name
+            context['user_login'] = context['user'].attributes.get('login')
 
         temp_prj_path = out_path + '.qgs'
         gws.write_file(temp_prj_path, writer.add_variables(self.source_text, context))
