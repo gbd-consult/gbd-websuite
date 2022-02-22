@@ -1,1 +1,1 @@
-module.exports.VERSION='7.0.18'
+module.exports.VERSION='7.0.19'
