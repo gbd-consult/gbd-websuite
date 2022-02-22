@@ -14,7 +14,7 @@ def export(dir=None, project=None):
     """Export reports."""
 
     action = clihelpers.find_action('georisks', project)
-    gws.tools.misc.ensure_dir(dir)
+    gws.ensure_dir(dir)
     n = action.export_reports(dir)
     print(f'{n} report(s) saved')
 

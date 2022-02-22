@@ -25,6 +25,7 @@ import gws.ext.action.bplan.cli
 import gws.ext.action.dprocon.cli
 import gws.ext.action.fsinfo.cli
 import gws.ext.action.gekos.cli
+import gws.ext.action.georisks.cli
 import gws.ext.helper.alkis.cli
 import gws.gis.cache_cli
 import gws.server.cli
@@ -37,6 +38,7 @@ COMMANDS['config'] = [gws.config.cli.dump, gws.config.cli.dumpmeta, gws.config.c
 COMMANDS['dprocon'] = [gws.ext.action.dprocon.cli.setup]
 COMMANDS['fsinfo'] = [gws.ext.action.fsinfo.cli.read]
 COMMANDS['gekos'] = [gws.ext.action.gekos.cli.setup]
+COMMANDS['georisks'] = [gws.ext.action.georisks.cli.aartelink, gws.ext.action.georisks.cli.export]
 COMMANDS['server'] = [gws.server.cli.configure, gws.server.cli.reconfigure, gws.server.cli.reload, gws.server.cli.start, gws.server.cli.stop]
 
 

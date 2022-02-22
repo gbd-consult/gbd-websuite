@@ -1,5 +1,7 @@
 """Utilities for EASD AarteLink push notifications"""
 
+import hashlib
+
 import gws
 import gws.tools.misc
 import gws.tools.date
@@ -193,13 +195,13 @@ def _validate_checksum(action, r, *keys):
 
     h = system_key + ''.join(r[k] for k in keys)
 
-    md5 = gws.tools.misc.md5(h)
+    md5 = hashlib.md5(h).hexdigest()
     if md5 != r['checksum']:
         gws.log.warn(f"checksum mismatch: h={h!r} cs={r['checksum']!r}")
         # raise ValueError(f"checksum mismatch: h={h!r} cs={r['checksum']!r}")
 
 
 def _to_date(r):
-    return gws.tools.date.to_isotz(
-        gws.tools.date.utc_from_timestamp(
+    return gws.tools.date.to_iso(
+        gws.tools.date.from_timestamp(
             int(r['timestamp'])))

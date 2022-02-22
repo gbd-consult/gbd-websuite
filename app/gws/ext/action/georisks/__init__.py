@@ -11,13 +11,15 @@ import gws.tools.net
 import gws.tools.misc
 import gws.ext.db.provider.postgres
 import gws.common.db
+import gws.common.action
+import gws.web.error
+import gws.gis.feature
 
 import gws.types as t
 
 from . import aartelink
 
 # actions for the Georisks app
-# see http://elbe-labe-georisiko.eu
 
 _MAX_IMAGES = 5
 
@@ -31,12 +33,14 @@ _DB_TABLES = """
         kind VARCHAR(254),
         message VARCHAR(254),
         
-        danger_street BOOLEAN,
-        danger_rail BOOLEAN,
-        danger_way BOOLEAN,
-        danger_house BOOLEAN,
-        danger_object BOOLEAN,
-        danger_person BOOLEAN,
+        danger_road BOOLEAN,
+        danger_railway BOOLEAN,
+        danger_path BOOLEAN,
+        danger_buildings BOOLEAN,
+        danger_pasture BOOLEAN,
+        danger_arable BOOLEAN,
+        danger_infrastructure BOOLEAN,
+        danger_casualties BOOLEAN,
         
         image1 BYTEA,
         image2 BYTEA,
@@ -44,8 +48,8 @@ _DB_TABLES = """
         image4 BYTEA,
         image5 BYTEA,
         
-        geom geometry(Point,25833),
-        event_date TIMESTAMP WITH TIME ZONE,
+        geom geometry(Point,32638),
+        _date TIMESTAMP WITH TIME ZONE,
         status INT,
         
         status_reason VARCHAR(254),
@@ -91,7 +95,6 @@ _DB_TABLES = """
     
 """
 
-_DANGERS = ['street', 'rail', 'way', 'house', 'object', 'person']
 
 
 class AarteLinkConfig(t.Config):
@@ -118,7 +121,7 @@ class Config(t.WithTypeAndAccess):
     db: t.Optional[str]  #: database provider uid
 
     report: ReportConfig  #: report function config
-    aarteLink: AarteLinkConfig  #: AarteLink system configuration
+    # aarteLink: AarteLinkConfig  #: AarteLink system configuration
 
 
 class Props(t.Props):
@@ -130,17 +133,37 @@ class ReportFile:
     content: bytes  #: file content as a byte array
 
 
+class ReportCategory(t.Enum):
+    rockfall = 'rockfall'  #: Rockfall
+    mudslide = 'mudslide'  #: Mudslide, debris flow
+    avalanche = 'avalanche'  #: Avalanche
+
+
+class ReportKind(t.Enum):
+    debris = 'debris'  #: debris and mud
+    mud = 'mud'  #: only mud
+
+
+class ReportDanger(t.Enum):
+    road = 'road'  #: road
+    railway = 'railway'  #: railway
+    path = 'path'  #: path
+    buildings = 'buildings'  #: buildings
+    pasture = 'pasture'  #: pasture
+    arable = 'arable'  #: arable land
+    infrastructure = 'infrastructure'  #: critical infrastructure
+    casualties = 'casualties'  #: casualties
+
+
 class CreateReportParams(t.Params):
     """Params for the createReport action"""
 
     shape: t.ShapeProps  #: spatial shape of the report
-    category: str
-    volume: str = ''
-    height: str = ''
-    kind: str = ''
-    dangers: t.List[str]
+    category: ReportCategory  #: category
+    kind: t.Optional[ReportKind]  #: subcategory (kind)
+    dangers: t.List[ReportDanger]  #: dangers
     message: str = ''  #: user message
-    date: str  #: event date
+    date: str  #: event date (ISO Format)
     files: t.Optional[t.List[ReportFile]]  #: attached files
 
 
@@ -203,16 +226,15 @@ class AartelinkResponse(t.Response):
     ok: bool
 
 
-class Object(gws.ActionObject):
+class Object(gws.common.action.Object):
     REPORT_TABLE_NAME = 'gws_report'
     MESSAGE_TABLE_NAME = 'gws_aartelink_message'
     ALARM_TABLE_NAME = 'gws_aartelink_alarm'
     DEVICE_TABLE_NAME = 'gws_aartelink_device'
 
-    def __init__(self):
-        super().__init__()
-        self.db: gws.ext.db.provider.postgres = None
-        self.crs = ''
+    db: gws.ext.db.provider.postgres.Object
+    report_table: t.SqlTable
+    crs: t.Crs
 
     @property
     def props(self):
@@ -223,18 +245,18 @@ class Object(gws.ActionObject):
     def configure(self):
         super().configure()
 
-        p = self.var('db')
-        self.db = self.root.find('gws.ext.db.provider', p) if p else self.root.find_first(
-            'gws.ext.db.provider.postgres')
-        with self.db.connect() as conn:
-            self.crs = conn.crs_for_column(self.REPORT_TABLE_NAME, 'geom')
+        self.db = t.cast(
+            gws.ext.db.provider.postgres.Object,
+            gws.common.db.require_provider(self, 'gws.ext.db.provider.postgres'))
+
+        self.report_table = self.db.configure_table({'name': self.REPORT_TABLE_NAME})
+        self.crs = self.report_table.geometry_crs
 
     def api_create_report(self, req: t.IRequest, p: CreateReportParams) -> CreateReportResponse:
         """Upload a new report"""
 
-        rec = {
+        atts = {
             'message': p.message.strip(),
-            'geom': gws.gis.shape.from_props(p.shape),
             'category': p.category,
             'volume': p.volume,
             'height': p.height,
@@ -254,19 +276,19 @@ class Object(gws.ActionObject):
             except Exception:
                 gws.log.exception()
                 raise gws.web.error.BadRequest()
-            rec[f'image{n}'] = img
+            atts[f'image{n}'] = img
 
         ds = gws.as_list(p.dangers)
-        for d in _DANGERS:
-            rec[f'danger_{d}'] = d in ds
+        for d in vars(ReportDanger):
+            if not d.startswith('_'):
+                atts[f'danger_{d}'] = d in ds
 
-        tbl = gws.common.db.SqlTableConfig({
-            'name': self.REPORT_TABLE_NAME,
-            'keyColumn': 'id',
-            'geometryColumn': 'geom'
-        })
+        f = gws.gis.feature.from_props(t.FeatureProps(
+            attributes=atts,
+            shape=p.shape,
+        ))
 
-        uid = self.db.insert(tbl, [rec])[0]
+        uid = self.db.edit_operation('insert', self.report_table, [f])[0]
 
         return CreateReportResponse({
             'reportUid': uid
@@ -292,7 +314,7 @@ class Object(gws.ActionObject):
                     'reportUid': r['id'],
                     'status': r['status'],
                     'reason': r['status_reason'],
-                    'date': gws.tools.date.to_isotz(r['time_updated']),
+                    'date': gws.tools.date.to_iso(r['time_updated'], with_tz='+', sep='T'),
                 })
 
         return ReportStatusResponse({
@@ -325,7 +347,7 @@ class Object(gws.ActionObject):
                     'message': r['message'],
                     'images': gws.compact(self._image_url(req, r, n) for n in range(1, _MAX_IMAGES + 1)),
                     'dangers': [d for d in _DANGERS if r.get(f'danger_{d}')],
-                    'date': gws.tools.date.to_isotz(r['time_updated']),
+                    'date': gws.tools.date.to_iso(r['time_updated'], with_tz='+', sep=' '),
                 })
 
             return ReportListResponse({

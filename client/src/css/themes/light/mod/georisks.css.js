@@ -26,7 +26,7 @@ module.exports = v => ({
 
     '.uiDialog.modGeorisksSmallDialog': {
         [v.MEDIA('large+')]: {
-            ...v.CENTER_BOX(500, 200),
+            ...v.CENTER_BOX(500, 250),
         },
     }
 });

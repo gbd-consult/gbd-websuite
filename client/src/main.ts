@@ -13,6 +13,7 @@ let mods = [
     require('./mod/draw'),
     require('./mod/edit'),
     require('./mod/gekos'),
+    require('./mod/georisks'),
     require('./mod/identify'),
     require('./mod/infobar'),
     require('./mod/layers'),
