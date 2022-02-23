@@ -2,6 +2,7 @@ import re
 import shutil
 import zipfile
 import PIL.Image
+import datetime
 
 import gws
 import gws.ext.db.provider.postgres
@@ -95,7 +96,12 @@ def _to_date_str(val):
     if not val:
         return ''
 
-    val = str(val).strip()
+    if isinstance(val, bytes):
+        val = val.decode('ISO-8859-1')
+    else:
+        val = str(val)
+
+    val = val.strip()
     if not val:
         return ''
 
@@ -143,17 +149,27 @@ def _run2(action, src_dir, replace, au_uid, job):
             continue
 
         with gws.gis.gdal2.from_path(p, open_options=['encoding=""']) as ds:
-            for f in gws.gis.gdal2.features(ds, action.crs, encoding=_encoding(p)):
+
+            # since shp files can be encoded differently, and cpg files are not always reliable,
+            # we read shps as bytes (encoding=None) and try utf8 and then iso
+
+            for f in gws.gis.gdal2.features(ds, action.crs, encoding=None):
                 r = {}
 
                 # convert all attributes to strings
                 for a in f.attributes:
-                    if a.type == t.AttributeType.datetime:
+                    if isinstance(a.value, datetime.datetime):
                         val = gws.tools.date.to_iso_date(a.value)
                     elif a.name in _DATE_FIELDS:
                         val = _to_date_str(a.value)
+                    elif isinstance(a.value, bytes):
+                        try:
+                            val = a.value.decode('utf8')
+                        except UnicodeError:
+                            val = a.value.decode('ISO-8859-1')
                     else:
                         val = str(a.value)
+
                     r[a.name.lower()] = val
 
                 r['_uid'] = uid = r[action.key_col]
@@ -237,7 +253,9 @@ def _run2(action, src_dir, replace, au_uid, job):
 
         w = re.sub(r'\.png$', '.pgw', p)
         if not os2.is_file(w):
-            continue
+            w = re.sub(r'\.png$', '.wld', p)
+            if not os2.is_file(w):
+                continue
 
         fb = _fnbody(p)
 
@@ -499,14 +517,6 @@ def _extract(zip_path, target_dir):
         with zf.open(fi) as src, open(target_dir + '/' + fn, 'wb') as dst:
             gws.log.debug(f'unzip {fn!r}')
             shutil.copyfileobj(src, dst)
-
-
-def _encoding(path):
-    # actually, a .cpg can contain 'System', which isn't really helpful
-    # if os2.is_file(path.replace('.shp', '.cpg')):
-    #     # have a cpg file, let gdal handle the encoding
-    #     return
-    return 'utf8' if 'utf8' in path else 'ISO-8859–1'
 
 
 def _geom_name(s: t.IShape):

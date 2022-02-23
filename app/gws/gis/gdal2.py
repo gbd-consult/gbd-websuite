@@ -61,14 +61,18 @@ def features(ds, crs=None, encoding=None):
     return fs
 
 
+AUTO_ENCODING = 'auto'
+
+
 def _value(feature, k, fdef, encoding):
     ft = fdef.type
 
     if ft == osgeo.ogr.OFTString:
-        if encoding:
-            return t.AttributeType.str, feature.GetFieldAsBinary(k).decode(encoding)
-        else:
+        if encoding is None:
+            return t.AttributeType.str, feature.GetFieldAsBinary(k)
+        if encoding == AUTO_ENCODING:
             return t.AttributeType.str, feature.GetFieldAsString(k)
+        return t.AttributeType.str, feature.GetFieldAsBinary(k).decode(encoding)
 
     if ft in (osgeo.ogr.OFTDate, osgeo.ogr.OFTTime, osgeo.ogr.OFTDateTime):
         # python GetFieldAsDateTime appears to use float seconds, as in
