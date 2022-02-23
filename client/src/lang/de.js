@@ -9,7 +9,7 @@ module.exports = {
     appInfo: 'Info',
     appFatalError: 'Applikation Fehler',
     cmpFeatureTaskButton: 'Aufgaben',
-    modAlkisSidebarTitle: 'Flurstückssuche',
+    modAlkisSidebarTitle: 'Flurstücksuche',
 
     modAnnotateClearAuxButton: 'Alle löschen',
     modAnnotateDrawAuxButton: 'Neu',
@@ -180,11 +180,11 @@ module.exports = {
     modDimensionToolbarButton: 'Bemaßung',
     modDimensionElementText: 'Beschriftung',
 
-    modAlkisFormTitle: 'Flurstückssuche',
+    modAlkisFormTitle: 'Flurstücksuche',
     modAlkisInfoTitle: "Informationen",
     modAlkisSelectionTitle: "Ablage",
     modAlkisExportTitle: "Als CSV exportieren",
-    modAlkisGotoForm: 'Flurstückssuche starten',
+    modAlkisGotoForm: 'Flurstücksuche starten',
     modAlkisGotoList: 'Suchergebnisse',
     modAlkisGotoSelection: 'Ablage',
     modAlkisPrint: 'Drucken',
