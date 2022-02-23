@@ -60,7 +60,7 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapf
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |select|          |    :ref:`Auswahl <select>`                           |Liste der ausgewählten Objekte           |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |cadastralunit|   |    :ref:`Flurstückssuche <cadastral_unit_searching>` |Liste der ausgewählten Flurstücke        |
+|      |cadastralunit|   |    :ref:`Flurstücksuche <cadastral_unit_searching>` |Liste der ausgewählten Flurstücke        |
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |person_info|     |    :ref:`Personen Informationen <person_info>`       |Personenbezogene Flurstücksinformationen |
 +------------------------+------------------------------------------------------+-----------------------------------------+

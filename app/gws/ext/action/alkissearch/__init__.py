@@ -1,4 +1,4 @@
-"""Backend for the Flurstückssuche (cadaster parlcels search) form."""
+"""Backend for the Flurstücksuche (cadaster parlcels search) form."""
 
 import os
 import re
@@ -82,7 +82,7 @@ class UiStrasseSearchMode(t.Enum):
 
 
 class UiConfig(t.Config):
-    """Flurstückssuche UI configuration."""
+    """Flurstücksuche UI configuration."""
 
     useExport: bool = False  #: export function enabled
     useSelect: bool = False  #: select mode enabled
@@ -97,7 +97,7 @@ class UiConfig(t.Config):
 
 
 class Config(t.WithTypeAndAccess):
-    """Flurstückssuche (cadaster parlcels search) action"""
+    """Flurstücksuche (cadaster parlcels search) action"""
 
     helper: t.Optional[str] #: ALKIS helper uid
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
