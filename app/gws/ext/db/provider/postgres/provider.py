@@ -88,9 +88,8 @@ class Object(gws.common.db.provider.Sql):
             kw = args.keyword
             if kw and search_col:
                 # @TODO search mode (startsWith, contains, exact etc)
-                kw = kw.lower().replace('%', '').replace('_', '')
-                where.append(f'{conn.quote_ident(search_col)} ILIKE %s')
-                values.append('%' + kw + '%')
+                where.append(f'POSITION(%s IN LOWER({conn.quote_ident(search_col)})) > 0')
+                values.append(kw.lower())
 
             shape = args.shape
             if shape and geom_col:

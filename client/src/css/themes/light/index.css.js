@@ -297,6 +297,7 @@ let rules = [
     require('./mod/draw.css'),
     require('./mod/edit.css'),
     require('./mod/gekos.css'),
+    require('./mod/georisks.css'),
     require('./mod/identify.css'),
     require('./mod/infobar.css'),
     require('./mod/layers.css'),

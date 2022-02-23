@@ -16,7 +16,7 @@ Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebu
 * Bemaßung von Segmentlängen in der Karte
 * Benutzer-Authentifizierung (LDAP-, Postgres- und Datei-basiert)
 * Editieren von Punkten, Linien und Flächen
-* ALKIS Integration (Flurstückssuche, Beauskunftung und Druck)
+* ALKIS Integration (Flurstücksuche, Beauskunftung und Druck)
 * Konfigurierbare Suche (Nominatim, ALKIS-Adressen und Postgres)
 * Schnittstelle zur Fachanwendung D-ProCon (Demographische Analysen)
 * Schnittstelle zur Fachanwendung GekoS Online (E-Government)
