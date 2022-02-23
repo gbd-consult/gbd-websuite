@@ -5,7 +5,6 @@ Bauleitplanung
 
 Das |bplan| ``Bauleitplanung`` -Modul dient dem Verwalten von Bauleitplänen. Diese Bauleipläne werden in Form von Rasterbildern integriert und sind mit Flurstücksflächen des eingebundenen Liegenschaftskatatasters verknüpft. Das Thema Bauleitplanung gehört zu den von der EU vorgegeben Themen, welche in INSPIRE-konformer Bereitstellung erfolgen sollen. Im Rahmen eines IKZ-Projektes des LK Marburg-Biedenkopf wurden bis Anfang 2021 nun die ersten beiden INSPIRE Themen Bauleitplanung und Schulstandorte umgesetzt. Die Dienste werden dynamisch über das Geoservice-Portal des LK Marburg-Biedenkopf bereitgestellt und sind in das Geoportal Hessen integriert.
 
-
 Bauleitpläne anzeigen, suchen und löschen
 -----------------------------------------
 
@@ -83,4 +82,3 @@ Das Ergebnis der aktuellen Umsetzung wurde für den Landkreis Marburg-Biedenkopf
    :width: 30em
  .. |world| image:: ../../../images/language-24px.svg
    :width: 30em
-

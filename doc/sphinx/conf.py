@@ -79,8 +79,14 @@ def format_special(app, docname, source):
 
 
 def setup(app):
-    app.add_stylesheet('extras.css')
-    app.add_javascript('extras.js')
+    try:
+        app.app.add_css_file('extras.css')
+    except AttributeError:
+        app.add_stylesheet('extras.css')
+    try:
+        app.add_js_file('extras.js')
+    except AttributeError:
+        app.add_javascript('extras.js')
     app.connect('source-read', format_special)
 
 
