@@ -1,4 +1,4 @@
-"""Backend for the Flurstückssuche (cadaster parlcels search) form."""
+"""Backend for the Flurstücksuche (cadaster parlcels search) form."""
 
 import os
 import re
@@ -175,7 +175,7 @@ _DEFAULT_EXPORT_GROUPS = [
 
 @gws.ext.Config('action.alkissearch')
 class Config(provider.Config):
-    """Flurstückssuche (cadaster parlcels search) action"""
+    """Flurstücksuche (cadaster parlcels search) action"""
 
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
     buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information

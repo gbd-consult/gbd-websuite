@@ -120,7 +120,7 @@ class UiStrasseSearchMode(t.Enum):
 
 
 class UiOptions(gws.Data):
-    """UI options for Flurstückssuche"""
+    """UI options for Flurstücksuche"""
 
     useExport: bool = False  #: export function enabled
     useSelect: bool = False  #: select mode enabled
