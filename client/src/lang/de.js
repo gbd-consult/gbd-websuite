@@ -220,6 +220,7 @@ module.exports = {
     modAlkisSubmitButton: "Suche",
     modAlkisLensButton: "Flurstücke über räumliche Suche finden",
     modAlkisPickButton: "Einzelne Flurstücke in der Karte auswählen",
+    modAlkisInfoButton: "Flurstücksinformationen abfragen",
     modAlkisSelectionSearchButton: "Flurstücke über Ergebnisse des Auswahl-Tools suchen",
     modAlkisResetButton: "Neue Anfrage",
     modAlkisExportButton: "Exportieren",

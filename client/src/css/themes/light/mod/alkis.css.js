@@ -15,6 +15,10 @@ module.exports = v => ({
         ...v.ROUND_FORM_BUTTON('select')
     },
 
+    '.modAlkisInfoButton': {
+        ...v.ROUND_FORM_BUTTON('searchparcel_arrow')
+    },
+
     '.modAlkisSearchSelectionButton': {
         ...v.ROUND_FORM_BUTTON('search_selection')
     },

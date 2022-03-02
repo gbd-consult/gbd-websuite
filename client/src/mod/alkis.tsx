@@ -6,6 +6,7 @@ import * as gws from 'gws';
 import * as lens from './lens';
 import * as sidebar from './sidebar';
 import * as storage from './storage';
+import * as toolbar from './toolbar';
 
 const STORAGE_CATEGORY = 'Alkis';
 const MASTER = 'Shared.Alkis';
@@ -495,6 +496,18 @@ class AlkisSearchForm extends gws.View<AlkisViewProps> {
     }
 }
 
+
+class AlkisInfoToolbarButton extends toolbar.Button {
+    iconClass = 'modAlkisInfoButton';
+    tool = 'Tool.Alkis.Info';
+
+    get tooltip() {
+        return _master(this).STRINGS.infoButton;
+    }
+
+}
+
+
 class AlkisFormTab extends gws.View<AlkisViewProps> {
     render() {
         return <sidebar.Tab>
@@ -809,6 +822,20 @@ class AlkisPickTool extends gws.Tool {
     }
 }
 
+class AlkisInfoTool extends gws.Tool {
+    start() {
+        this.map.prependInteractions([
+            this.map.pointerInteraction({
+                whenTouched: evt => _master(this).infoTouched(evt.coordinate),
+            }),
+        ]);
+    }
+
+    stop() {
+
+    }
+}
+
 class AlkisController extends gws.Controller {
     uid = MASTER;
     history: Array<string>;
@@ -862,6 +889,7 @@ class AlkisController extends gws.Controller {
             submitButton: this.__('modAlkisSubmitButton'),
             lensButton: this.__('modAlkisLensButton'),
             pickButton: this.__('modAlkisPickButton'),
+            infoButton: this.__('modAlkisInfoButton'),
             selectionSearchButton: this.__('modAlkisSelectionSearchButton'),
             resetButton: this.__('modAlkisResetButton'),
             exportButton: this.__('modAlkisExportButton'),
@@ -1120,6 +1148,28 @@ class AlkisController extends gws.Controller {
 
         this.select(features);
         this.goTo('selection');
+    }
+
+    async infoTouched(coord: ol.Coordinate) {
+        let pt = new ol.geom.Point(coord);
+
+        let res = await this.app.server.alkissearchFindFlurstueck({
+            shapes: [this.map.geom2shape(pt)],
+        });
+
+        if (res.error) {
+            return;
+        }
+
+        let features = this.map.readFeatures(res.features);
+
+        if (features.length > 0) {
+            await this.showDetails(features[0], true);
+        } else {
+            _master(this).update({alkisFsResults: []});
+            this.goTo('list');
+        }
+        _master(this).update({sidebarActiveTab: 'Sidebar.Alkis'});
     }
 
     async search() {
@@ -1406,6 +1456,8 @@ class AlkisController extends gws.Controller {
 export const tags = {
     [MASTER]: AlkisController,
     'Sidebar.Alkis': AlkisSidebar,
+    'Toolbar.Alkis.Info': AlkisInfoToolbarButton,
     'Tool.Alkis.Lens': AlkisLensTool,
     'Tool.Alkis.Pick': AlkisPickTool,
+    'Tool.Alkis.Info': AlkisInfoTool,
 };
