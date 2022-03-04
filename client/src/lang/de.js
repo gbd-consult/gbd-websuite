@@ -53,6 +53,7 @@ module.exports = {
     modDrawPolygonButton: 'Fläche',
     modEditCloseAuxButton: 'Beenden',
     modEditDrawAuxButton: 'Zeichnen',
+    modEditAddAuxButton: 'Hinzufügen',
     modEditDrawButton: 'Neues Objekt',
     modEditEndButton: 'Beenden',
     modEditModifyAuxButton: 'Bearbeiten',

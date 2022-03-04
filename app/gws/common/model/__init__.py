@@ -165,7 +165,7 @@ class Object(gws.Object, t.IModel):
                 return s
             return gws.tools.misc.format_placeholders(s, attr_values)
         # no value/source/format present - return values[name]
-        return attr_values.get(rule.name, '')
+        return attr_values.get(rule.name)
 
     def _validate_rule(self, rule: t.ModelRule, attr_values: dict) -> t.Optional[AttributeValidationFailure]:
         v = attr_values.get(rule.name)

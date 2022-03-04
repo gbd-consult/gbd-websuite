@@ -279,6 +279,8 @@ class Layer(gws.Object, t.ILayer):
             p['editAccess'] = self.edit_access(user)
             if p['editAccess']:
                 p['dataModel'] = self.data_model
+                p['url'] = gws.SERVER_ENDPOINT + f'/cmd/editHttpGetFeatures/projectUid/{self.map.parent.uid}/layerUid/{self.uid}'
+
         return p
 
     def mapproxy_config(self, mc):
@@ -359,6 +361,9 @@ class Layer(gws.Object, t.ILayer):
         return ''
 
     def get_features(self, bounds: t.Bounds, limit: int = 0) -> t.List[t.IFeature]:
+        return []
+
+    def get_editable_features(self) -> t.List[t.IFeature]:
         return []
 
     def ows_enabled(self, service: t.IOwsService) -> bool:

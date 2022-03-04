@@ -5,6 +5,7 @@ import gws.common.action
 import gws.gis.feature
 import gws.tools.json2
 import gws.web.error
+import gws.tools.date
 
 import gws.types as t
 
@@ -12,6 +13,14 @@ import gws.types as t
 class Config(t.WithTypeAndAccess):
     """Feature edit action"""
     pass
+
+
+class GetFeaturesParams(t.Params):
+    layerUid: str
+
+
+class GetFeaturesResponse(t.Response):
+    features: t.List[t.FeatureProps]
 
 
 class EditParams(t.Params):
@@ -24,6 +33,26 @@ class EditResponse(t.Response):
 
 
 class Object(gws.common.action.Object):
+    def api_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
+        """Get editable features"""
+
+        layer: t.ILayer = req.require_layer(p.layerUid)
+        if not layer.edit_access(req.user):
+            return GetFeaturesResponse(features=[])
+
+        features = layer.get_editable_features()
+
+        for f in features:
+            f.transform_to(layer.map.crs)
+            f.apply_templates()
+            f.apply_data_model()
+
+        return GetFeaturesResponse(features=[f.props for f in features])
+
+    def http_get_features(self, req: t.IRequest, p: GetFeaturesParams) -> t.HttpResponse:
+        res = self.api_get_features(req, p)
+        return t.HttpResponse(mime='application/json', content=gws.tools.json2.to_string(res))
+
     def api_add_features(self, req: t.IRequest, p: EditParams) -> EditResponse:
         """Add features to the layer"""
 
@@ -40,9 +69,14 @@ class Object(gws.common.action.Object):
         return self._handle('update', req, p)
 
     def _handle(self, op, req, p: EditParams):
-        layer: t.ILayer = req.require('gws.ext.layer', p.layerUid)
+        layer: t.ILayer = req.require_layer(p.layerUid)
         if not layer.edit_access(req.user):
             raise gws.web.error.Forbidden()
+
+        for f in p.features:
+            f.attributes = f.attributes or []
+            f.attributes.append(t.Attribute(name='gws:user_login', value=req.user.attribute('login')))
+            f.attributes.append(t.Attribute(name='gws:current_datetime', value=gws.tools.date.now()))
 
         features = layer.edit_operation(op, p.features)
         for f in features:

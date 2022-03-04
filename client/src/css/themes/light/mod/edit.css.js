@@ -21,6 +21,9 @@ module.exports = v => ({
         ...v.SIDEBAR_AUX_BUTTON('cursor')
     },
     '.modEditDrawAuxButton': {
+        ...v.SIDEBAR_AUX_BUTTON('draw_black_24dp')
+    },
+    '.modEditAddAuxButton': {
         ...v.SIDEBAR_AUX_BUTTON('google:content/add_circle_outline')
     },
     '.modEditRemoveAuxButton': {

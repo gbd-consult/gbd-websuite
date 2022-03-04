@@ -1241,6 +1241,7 @@ class ILayer(IObject):
     def configure_search(self): pass
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
+    def get_editable_features(self) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
     def mapproxy_config(self, mc): pass
     def ows_enabled(self, service: 'IOwsService') -> bool: pass

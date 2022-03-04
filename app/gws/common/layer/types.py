@@ -49,7 +49,7 @@ class ClientOptions(t.Data):
 class EditConfig(t.WithAccess):
     """Edit access for a layer"""
 
-    pass
+    filter: str = ''  #: sql filter for features
 
 
 class LegendConfig(t.Config):

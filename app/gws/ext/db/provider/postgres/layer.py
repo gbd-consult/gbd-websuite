@@ -71,6 +71,15 @@ class Object(gws.common.layer.Vector):
 
         return [self.connect_feature(f) for f in fs]
 
+    def get_editable_features(self) -> t.List[t.IFeature]:
+        where = self.edit_options.filter or '1=1'
+        fs = self.provider.select(t.SelectArgs(
+            table=self.table,
+            extra_where=[where],
+            sort=self.table.search_column,
+        ))
+        return [self.connect_feature(f) for f in fs]
+
     def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:
         features = []
 
