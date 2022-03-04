@@ -17,22 +17,23 @@ Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren 
     :maxdepth: 2
 
 **Werkzeugleiste**
-==================
 
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 | **Symbol**             | **Funktion**                                     |        **Funktionsbeschreibung**                          |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|       |select|         |:ref:`Auswählen <selecting>`                      |Auswählen von Objekten per Mausklick                       |
+|      |select|          |:ref:`Auswählen <selecting>`                      |Auswählen von Objekten per Mausklick                       |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|       |info|           |:ref:`Abfragen <object_identi>`                   |Informationen von Objekten per Mausklick                   |
+|      |info|            |:ref:`Abfragen <object_identi>`                   |Informationen von Objekten per Mausklick                   |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|       |mouseover|      |:ref:`Anzeigen <mouseover>`                       |Informationen von Objekten per Mouseover                   |
+|      |mouseover|       |:ref:`Anzeigen <mouseover>`                       |Informationen von Objekten per Mouseover                   |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|  |geo_search|          |:ref:`Räumliche Suche <searching>`                |Suche mit Hilfe von geometrischen Objekten                 |
+|      |location|        |:ref:`Mein Standort <location>`                   |Informationen zum akutellen Standort                       |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|         |dimensions|   |:ref:`Bemaßung <dimensioning>`                    |Erfassung von Strecken-Distanzen                           |
+|      |geo_search|      |:ref:`Räumliche Suche <searching>`                |Suche mit Hilfe von geometrischen Objekten                 |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|        |measure|       |:ref:`Markieren & Messen <measure>`               |Markieren mit Hilfe von geometrischen Objekten             |
+|      |dimensions|      |:ref:`Bemaßung <dimensioning>`                    |Erfassung von Strecken-Distanzen                           |
++------------------------+--------------------------------------------------+-----------------------------------------------------------+
+|      |measure|         |:ref:`Markieren & Messen <measure>`               |Markieren mit Hilfe von geometrischen Objekten             |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 |      |dpro|            | :ref:`Auswahl an D-ProCon übermittlen <dprocon>` |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
@@ -60,7 +61,7 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapf
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |select|          |    :ref:`Auswahl <select>`                           |Liste der ausgewählten Objekte           |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |cadastralunit|   |    :ref:`Flurstücksuche <cadastral_unit_searching>` |Liste der ausgewählten Flurstücke        |
+|      |cadastralunit|   |    :ref:`Flurstücksuche <cadastral_unit_searching>`  |Liste der ausgewählten Flurstücke        |
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |person_info|     |    :ref:`Personen Informationen <person_info>`       |Personenbezogene Flurstücksinformationen |
 +------------------------+------------------------------------------------------+-----------------------------------------+
@@ -100,6 +101,8 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <infoba
 Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gbd-websuite.de/
 
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
+     :width: 30em
+   .. |location| image:: ../../../images/gps_fixed-24px.svg
      :width: 30em
    .. |bplan| image:: ../../../images/bplan.svg
      :width: 30em

@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 import util
 
 project = 'GBD WebSuite'
-copyright = '2017-2021, Geoinformatikbüro Dassau GmbH'
+copyright = '2017-2022, Geoinformatikbüro Dassau GmbH'
 author = 'Geoinformatikbüro Dassau GmbH'
 version = util.VERSION
 release = util.VERSION
