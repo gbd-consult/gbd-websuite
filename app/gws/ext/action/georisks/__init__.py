@@ -288,10 +288,11 @@ class Object(gws.common.action.Object):
             shape=p.shape,
         ))
 
-        uid = self.db.edit_operation('insert', self.report_table, [f])[0]
+        fs = self.db.edit_operation('insert', self.report_table, [f])
+        uid = fs[0].uid
 
         return CreateReportResponse({
-            'reportUid': uid
+            'reportUid': int(uid)
         })
 
     def api_report_status(self, req: t.IRequest, p: ReportStatusParams) -> ReportStatusResponse:
@@ -334,7 +335,7 @@ class Object(gws.common.action.Object):
             """, [ReportStatus.approved])
 
             for r in rs:
-                shape = gws.gis.shape.from_wkb(r['geom'], self.crs)
+                shape = gws.gis.shape.from_wkb_hex(r['geom'], self.crs)
 
                 ls.append({
                     'shape': shape.props,
@@ -346,7 +347,7 @@ class Object(gws.common.action.Object):
                     'kind': r['kind'],
                     'message': r['message'],
                     'images': gws.compact(self._image_url(req, r, n) for n in range(1, _MAX_IMAGES + 1)),
-                    'dangers': [d for d in _DANGERS if r.get(f'danger_{d}')],
+                    'dangers': [d for d in vars(ReportDanger) if r.get(f'danger_{d}')],
                     'date': gws.tools.date.to_iso(r['time_updated'], with_tz='+', sep=' '),
                 })
 
