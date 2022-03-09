@@ -65,6 +65,7 @@ export async function main() {
         version: require('./version').VERSION,
         domNode,
         markFeatures: glob['GWS_MARK_FEATURES'],
+        showLayers: glob['GWS_SHOW_LAYERS'],
     };
 
     if (glob['GWS_LABELS']) {
