@@ -75,8 +75,9 @@ class Object(gws.common.action.Object):
 
         for f in p.features:
             f.attributes = f.attributes or []
-            f.attributes.append(t.Attribute(name='gws:user_login', value=req.user.attribute('login')))
-            f.attributes.append(t.Attribute(name='gws:current_datetime', value=gws.tools.date.now()))
+            if layer.edit_data_model:
+                f.attributes.append(t.Attribute(name='gws:user_login', value=req.user.attribute('login')))
+                f.attributes.append(t.Attribute(name='gws:current_datetime', value=gws.tools.date.now()))
 
         features = layer.edit_operation(op, p.features)
         for f in features:
