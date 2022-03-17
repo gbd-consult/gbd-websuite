@@ -70,7 +70,7 @@ class Object(gws.common.db.provider.Sql):
             with self.connect() as conn:
                 return {c['name']: t.SqlTableColumn(c) for c in conn.columns(table.name)}
 
-        key = 'gws.ext.provider.postgres.describe.' + table.name
+        key = 'gws.ext.provider.postgres.describe.' + self.uid + '.' + table.name
         return gws.get_cached_object(key, f, _DESCRIBE_CACHE_LIFETIME)
 
     def select(self, args: t.SelectArgs, extra_connect_params=None) -> t.List[t.IFeature]:
