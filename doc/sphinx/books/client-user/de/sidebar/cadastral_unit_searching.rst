@@ -3,22 +3,39 @@
 Flurstücksuche
 ==============
 
-In der Menüleiste |menu| findet man unter |cadastralunit| die ``Flurstücksuche``, welche auf amtliche ALKIS-Daten angewendet werden kann.
-Das Modul und der Zugriff darauf kann individuell projekt- und benutzerspezifisch konfiguriert, Anfragen zum Einhalten des Datenschutzes geloggt werden.
+In der Menüleiste |menu| findet man unter dem Symbol |cadastralunit| die ``Flurstücksuche``.
+Diese kann auf amtliche ALKIS-Daten angewendet werden.
+Das Modul an sich und der Zugriff darauf kann individuell projekt- und benutzerspezifisch konfiguriert.
+Anfragen zum Einhalten des Datenschutzes können geloggt werden.
 
 Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
 
 Starten der Flurstücksuche
 --------------------------
 
-Öffnet man die Flurstücksuche über die Menüleiste, ist als erstes die Suchmaske der Flurstücksuche zu sehen. Hier stehen verschiedene Parameter zur Auswahl die individuell konfiguriert werden können. So kann man Flurstücke anhand von Eigentümern, Adressen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern suchen.
-
-Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden. Dabei werden die Inhalte aller Felder gelöscht.
+Öffnet man die ``Flurstücksuche`` über die Menüleiste, ist als erstes folgende Suchmaske der Flurstücksuche zu sehen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_1.png
   :align: center
 
-Es gibt verschiedene Möglichkeiten zur Konfiguration der Flurstücksuche. Es müssen nicht alle Parameter definiert werden. So können Sie definieren ob die Suche nach einem speziellen Flurstück oder nach allen Flurstücken einer Straße erfolgen soll. Um nach einer Straße zu suchen, muss auch keine Gemarkung eingetragen werden. So ist die Suche auch bei großen Datenmengen performant möglich. Ob die Suche nach Straßen mit oder ohne Vorauswahl der Gemarkung stattfinden soll, kann ebenfalls konfiguriert werden. Bei der Suche anhand von Mindest- und Maximalfläche in Quadratmetern, können Kommastellen für das Eintragen von Zentimeter Werten verwendet werden.  Folgende Konfigurationen stehen zur Verfügung:
+Es stehen verschiedene Flurstück-Parameter zur Auswahl, die individuell konfiguriert werden können.
+So können Flurstücke anhand von Straßen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern gesucht werden.
+Wenn der ``Zugang zu Personendaten`` aktiviert wird, ist es ebenfalls möglich anhand von Vor- und Nachname Flurstücke zu suchen.
+Der Zugang zu persönlichen Daten kann so konfiguriert werden, dass zum Beispiel nur verifizierte Nutzer Zugriff darauf haben.
+Wenn der Zugang aktiviert ist, sieht die Suchmaske wie folgt aus.
+
+.. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_6.png
+  :align: center
+
+Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden.
+Dabei werden die Inhalte aller Felder gelöscht.
+
+Es gibt verschiedene Möglichkeiten zur Konfiguration der Flurstücksuche. Es müssen nicht alle Parameter definiert werden.
+So können Sie definieren, ob die Suche nach einem speziellen Flurstück oder nach allen Flurstücken einer Straße erfolgen soll.
+Um nach einer Straße zu suchen, muss auch keine Gemarkung eingetragen werden. So ist die Suche auch bei großen Datenmengen performant möglich.
+Ob die Suche nach Straßen mit oder ohne Vorauswahl der Gemarkung stattfinden soll, kann ebenfalls konfiguriert werden.
+Bei der Suche anhand von Mindest- und Maximalfläche in Quadratmetern, können Kommastellen für das Eintragen von Zentimeter-Werten verwendet werden.
+Folgende Konfigurationen stehen zur Verfügung:
 
 Optionale Konfigurationen zur Darstellung der Gemarkungsliste
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,8 +48,8 @@ Optionale Konfigurationen zur Darstellung der Gemarkungsliste
 Optionale Konfigurationen zur Darstellung der Straßenliste
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* nur Straßennamen
-* Straßenname und Gemeindenamen in Klammern:
+* nur Straßennamen anzeigen
+* Straßenname und Gemeindenamen in Klammern anzeigen
 
 Optionale Konfigurationen zur Straßensuche
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,7 +58,9 @@ Optionale Konfigurationen zur Straßensuche
 * Die Eingabe "Mar" sucht überall in den Straßennamen und findet "Marktstraße" und "Neuer Markt"
 
 .. note::
- Die Abfrage nach einer Buchungsblattnummer über das Buchungsblatt-Feld kann konfiguriert werden. So kann eine Plausibilität geprüft und frei definiert werden, welche Werte eingetragen werden, z.B. Zahlen oder Buchstaben, ob Bestimmte Werte am Anfang oder Ende oder grundsätzlich in dem Feld enthalten sein müssen.
+ Die Abfrage nach einer Buchungsblattnummer über das Buchungsblatt-Feld kann konfiguriert werden.
+ So kann eine Plausibilität geprüft und frei definiert werden, welche Werte eingetragen werden, z.B. Zahlen oder Buchstaben,
+ ob Bestimmte Werte am Anfang oder Ende oder grundsätzlich in dem Feld enthalten sein müssen.
 
 Anzeigen der Ergebnisse
 -----------------------
@@ -54,7 +73,11 @@ Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Er
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_2.png
   :align: center
 
-Durch Klicken auf die Flurstücksbezeichnung gelangen Sie zu den Flurstücksinformationen. Diese können individuell konfiguriert werden und bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung. Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche. Über die Symbole |add| und |delete| rechts neben der Flurstücksbezeichnung, können einzelne Flurstücke in eine Ablage gelegt werden. Diese kann für einen späteren Zugriff gespeichert werden. Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden.
+Durch Klicken auf die Flurstückbezeichnung, gelangen Sie zu den Flurstückinformationen. Diese können individuell konfiguriert werden und
+bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung.
+Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche.
+Über die Symbole |add| und |delete| rechts neben der Flurstücksbezeichnung, können einzelne Flurstücke in eine Ablage gelegt werden.
+Diese kann für einen späteren Zugriff gespeichert werden. Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
   :align: center
