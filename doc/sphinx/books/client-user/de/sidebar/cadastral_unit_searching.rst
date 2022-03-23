@@ -20,8 +20,11 @@ Starten der Flurstücksuche
 
 Es stehen verschiedene Flurstück-Parameter zur Auswahl, die individuell konfiguriert werden können.
 So können Flurstücke anhand von Straßen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern gesucht werden.
-Wenn der ``Zugang zu Personendaten`` aktiviert wird, ist es ebenfalls möglich anhand von Vor- und Nachname Flurstücke zu suchen.
-Der Zugang zu persönlichen Daten kann so konfiguriert werden, dass zum Beispiel nur verifizierte Nutzer Zugriff darauf haben.
+Wenn der ``Zugang zu Personendaten`` aktiviert wird, ist es ebenfalls möglich anhand von Vor- und Nachname, Flurstücke zu suchen.
+Der Zugang zu persönlichen Daten kann so konfiguriert werden, dass zum Beispiel nur verifizierte Nutzer, Zugriff darauf haben.
+Es ist möglich, dass alle Anfragen nach Personendaten geloggt und in einer PostGIS Datei abgelegt werden. So wird jede Anfrage protokolliert und kann somit kontrolliert werden.
+
+.. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_search_data_rights.png
 Wenn der Zugang aktiviert ist, sieht die Suchmaske wie folgt aus.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_6.png
@@ -68,21 +71,22 @@ Anzeigen der Ergebnisse
 .. note::
  Für die Ausgabe der Ergebnisse kann die maximale Anzahl der Flurstücke konfiguriert werden.
 
-Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter |results| ``Ergebnisse`` aufgelistet.
+Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter dem Reiter |results| ``Ergebnisse`` aufgelistet.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_2.png
   :align: center
 
-Durch Klicken auf die Flurstückbezeichnung, gelangen Sie zu den Flurstückinformationen. Diese können individuell konfiguriert werden und
+Durch ein Klicken auf die Flurstückbezeichnung, gelangen Sie zu den Flurstückinformationen. Diese können individuell konfiguriert werden und
 bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung.
-Falls Sie die Flurstücksinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche.
-Über die Symbole |add| und |delete| rechts neben der Flurstücksbezeichnung, können einzelne Flurstücke in eine Ablage gelegt werden.
-Diese kann für einen späteren Zugriff gespeichert werden. Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden.
+Falls Sie die Flurstückinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche.
+Durch ein Klicken auf |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt. Über die Symbole |add| und |delete| rechts neben der Flurstückbezeichnung,
+können einzelne Flurstücke in eine |tab| Ablage hinzugefügt oder herausgelöscht werden.
+Über das |addall| Icon, welches sich ebenfalls in der Leiste am unteren Fensterrand befindet, können Sie ``Alle zur Ablage`` hinzufügen.
+Diese kann für einen späteren Zugriff gespeichert werden.
+Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
   :align: center
-
-.. Die gewonnenen Ergebnisse können durch klicken des neben dem Objekt stehenden |fokus| Symbol fokussiert werden. Außerdem ist es möglich über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage zu entfernen. Oder über das |addall| Icon ebenfalls in der Leiste am unteren Fensterrand ``Alle zur Ablage`` hinzufügen.  So können Sie in der |tab| ``Ablage`` , welche ebenfalls am unteren Fensterrand der ``Flurstücksuche`` zu finden ist, eine Sammlung gesuchter Flurstücke anlegen und diese |save| ``Speichern``, |load| ``Laden``, |csv| als CSV-Datei exportieren oder |print| ``Drucken``.
 
 Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen und deren Funktion im Ablagefenster ab.
 
@@ -110,7 +114,12 @@ Die nachfolgende Tabelle bildet eine Übersicht der vorhandenen Schaltflächen u
 | |delete_shelf|         | Leeren der Ablage                                                                    |
 +------------------------+--------------------------------------------------------------------------------------+
 
-.. Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind. Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon, ein Objekt wieder aus der Ablage entfernen. Zusätzlich können die Informationen des Objektes gedruckt werden oder weitere Funktionen, ähnlich wie beim ``Auswahl``-Menü, gewählt werden. Die Erklärung für die Funktionen ``Räumliche Suche`` und ``Markieren und Messen`` entnehmen Sie bitte dem jeweiligen Punkt in dieser Hilfe. Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. Über |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt.
+Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen die nur dann möglich sind.
+Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon,
+ein Objekt wieder aus der Ablage entfernen. Zusätzlich, können die Informationen des Objektes gedruckt werden oder
+ähnlich wie bei anderen Werkzeugen, weitere Funktionen gewählt werden.
+Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>`, :ref:`Räumliche Suche <searching>` und :ref:`Auswählen <selecting>`
+entnehmen Sie bitte dem jeweiligen Kapitel in dieser Hilfe.
 
 Exportieren und Drucken
 -----------------------
@@ -118,28 +127,33 @@ Exportieren und Drucken
 Exportieren als CSV
 ~~~~~~~~~~~~~~~~~~~
 
-Die Flurstückinformationen bestehen aus unterschiedlichen Teilbereichen. Beim Export in das CSV Format können Sie eine Auswahl treffen und dann auf den Button ``Exportieren`` klicken.
+Die Flurstückinformationen bestehen aus unterschiedlichen Teilbereichen.
+Beim Export in das CSV Format können Sie eine Auswahl treffen und dann auf den Button ``Exportieren`` klicken.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_csv.png
   :align: center
 
 .. note::
-   Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen. Das ist u.a. dann der Fall, wenn ein Flurstück mehrere Eigentümer hat.
+   Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen.
+   Das ist u.a. dann der Fall, wenn ein Flurstück mehrere Eigentümer hat.
 
 Drucken der Flurstückinformationen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Über das |print| Symbol können Sie die ausgewählten Flurstückinformationen drucken. Der Inhalt des Ausdrucks kann individuell über ein Template vorbereitet werden. Dieses kann auch einen Kartendarstellung des jeweiligen Flurstücks beinhalten.
+Über das |print| Symbol können Sie die ausgewählten Flurstückinformationen drucken.
+Der Inhalt des Ausdrucks, kann individuell über ein Template vorbereitet werden.
+Dieses kann auch eine Kartendarstellung des jeweiligen Flurstücks beinhalten.
 
 Arbeiten mit der Ablage
 -----------------------
 
-Die |tab| Ablage ist ein Bereich, der genutzt werden kann, um bestimmte Flurstücke einer Suchanfrage und/oder Ergebnisse mehrerer Suchanfragen abzulegen. Man kann es als eine Art Sammelstelle verstehen, deren Inhalt letztlich für die Beauskunftung verwendet werden kann.
+Die |tab| Ablage ist ein Bereich, der genutzt werden kann, um bestimmte Flurstücke einer Suchanfrage und/oder Ergebnisse mehrerer Suchanfragen abzulegen.
+Man kann es als eine Art Sammelstelle verstehen, deren Inhalt letztlich für die Beauskunftung verwendet werden kann.
 
 Speichern
 ~~~~~~~~~
 
-Über das |save| Symbol können Sie ausgewählte Flurstücke oder Flurstücke der Ablage in einer benutzerspefischen Ablage speichern. Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
+Über das |save| Symbol können Sie ausgewählte Flurstücke oder Flurstücke der Ablage in einer benutzerspezifischen Ablage speichern. Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
   :align: center
@@ -209,9 +223,3 @@ Das Werkzeug |select| ``Einzelne Flurstücke in der Karte wählen`` ermöglicht 
    :width: 30em
  .. |new_search|  image:: ../../../images/baseline-delete_sweep-24px.svg
    :width: 30em
-
-.. Protokollierter Zugang zu Personendaten
-.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. Zum einbehalten der Datenschutzrechte gibt es folgendes Werkzeug in der Flurstücksuche. Wenn jemand nach personenbezogenen Daten wie Vorname und Name sucht, muss das Häckchen bei  ``Zugang zu Personendaten`` gesetzt werden. Es öffnet sich ein Fenster in dem ein firmeninternes Aktenzeichen vergeben werden muss. Dieses Aktenzeichen verifiziert den Erhalt der personenbezogenen Daten. Außerdem wird jede Anfrag in einer PostGIS Datei abgelegt, sodass jede Anfrage protokolliert und somit kontrolliert werden kann.
-
-.. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_search_data_rights.png
