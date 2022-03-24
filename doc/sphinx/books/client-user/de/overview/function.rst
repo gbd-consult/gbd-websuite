@@ -66,7 +66,8 @@ Um in der nachfolgenden Anleitung kurze Namen verwenden zu können, folgt eine �
 +------------------------+--------------------------------------------------------------------------------------+
 
 Die **GBD WebSuite** ist eine webbasierte Open Source GIS Plattform zur Geodatenverarbeitung.
-Sie beinhaltet den GBD WebSuite Server und GBD WebSuite Client und zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus, externe Anwendungen und neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen.
+Sie beinhaltet den GBD WebSuite Server und GBD WebSuite Client und zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus,
+externe Anwendungen und neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen.
 Die Kern-Bibliotheken von Client und Server sind schlank gehalten. Die gesamte Architektur ist Plugin-basiert.
 Auch die QGIS Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
 
@@ -89,7 +90,8 @@ Die GBD WebSuite als **Applikations Server**:
   *  bietet ein Framework für domänenspezifische Erweiterungen
   *  verfügt über eine modulare Architektur zur einfachen Integration von (Fach)-Anwendungen
 
-Die GBD WebSuite wird als Docker Image bereitgestellt und kann plattformunabhängig in IT-Infrastrukturen integriert werden. Sie kombiniert die Funktionalität zahlreicher Open Source Software, wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
+Die GBD WebSuite wird als Docker Image bereitgestellt und kann plattformunabhängig in IT-Infrastrukturen integriert werden.
+Sie kombiniert die Funktionalität zahlreicher Open Source Software, wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
 
  .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
    :width: 30em

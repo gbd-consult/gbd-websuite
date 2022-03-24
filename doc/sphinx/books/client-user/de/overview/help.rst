@@ -35,13 +35,13 @@ Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren 
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 |      |measure|         |:ref:`Markieren & Messen <measure>`               |Markieren mit Hilfe von geometrischen Objekten             |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |dpro|            | :ref:`Auswahl an D-ProCon übermittlen <dprocon>` |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
+|      |dpro|            |:ref:`Auswahl an D-ProCon übermittlen <dprocon>`  |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |gkos|            | :ref:`Auswahl an GeKos übermittlen <gkos>`       |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
+|      |gkos|            |:ref:`Auswahl an GeKos übermittlen <gkos>`        |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |print|           |    :ref:`Drucken <print>`                        |PDF-Generierung welche gespeichert und gedruckt werden kann|
+|      |print|           |:ref:`Drucken <print>`                            |PDF-Generierung welche gespeichert und gedruckt werden kann|
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |screenshot|      |    :ref:`Screenshot exportieren <screenshot>`    |Abspeichern eines Kartenausschnitts als PNG-Datei          |
+|      |screenshot|      |:ref:`Screenshot exportieren <screenshot>`        |Abspeichern eines Kartenausschnitts als PNG-Datei          |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapfunction>`
@@ -53,29 +53,31 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapf
 +------------------------+------------------------------------------------------+-----------------------------------------+
 |      |menu|            |    Menü ausklappen                                   |Anzeigen des Untermenüs                  |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |project|         |    :ref:`Projektübersicht <project_overview>`        |Übersicht über die Projekteigenschaften  |
+|      |project|         |:ref:`Projektübersicht <project_overview>`            |Übersicht über die Projekteigenschaften  |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |layers|          |    :ref:`Layer <map_element>`                        |Übersicht über die einzelnen Layer       |
+|      |layers|          |:ref:`Layer <map_element>`                            |Übersicht über die einzelnen Layer       |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |search|          |    :ref:`Suche <search>`                             |Liste von Ergebnissen der Suche          |
+|      |search|          |:ref:`Suche <search>`                                 |Liste von Ergebnissen der Suche          |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |select|          |    :ref:`Auswahl <select>`                           |Liste der ausgewählten Objekte           |
+|      |select|          |:ref:`Auswahl <select>`                               |Liste der ausgewählten Objekte           |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |cadastralunit|   |    :ref:`Flurstücksuche <cadastral_unit_searching>`  |Liste der ausgewählten Flurstücke        |
+|      |cadastralunit|   |:ref:`Flurstücksuche <cadastral_unit_searching>`      |Liste der ausgewählten Flurstücke        |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |person_info|     |    :ref:`Personen Informationen <person_info>`       |Personenbezogene Flurstücksinformationen |
+|      |person_info|     |:ref:`Personen Informationen <person_info>`           |Personenbezogene Flurstücksinformationen |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |bplan|           |    :ref:`Bauleitplanung <bplan>`                     |INSPIRE Bereitstellung Bauleitplanung    |
+|      |location_manager||:ref:`Location Manager <location_manager>`            |Verwalten temporärer Ereignisse          |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |measure|         |   :ref:`Markierungen <markings>`                     |Liste der ausgewählten Markierungen      |
+|      |bplan|           |:ref:`Bauleitplanung <bplan>`                         |INSPIRE Bereitstellung Bauleitplanung    |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |dimensions|      |   :ref:`Bemaßung <dimensions>`                       |Auflistung der erstellten Bemaßungen     |
+|      |measure|         |:ref:`Markierungen <markings>`                        |Liste der ausgewählten Markierungen      |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |edit|            |   :ref:`Editieren <editing>`                         |Liste der editierbaren Objekte           |
+|      |dimensions|      |:ref:`Bemaßung <dimensions>`                          |Auflistung der erstellten Bemaßungen     |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |table_edit|      |   :ref:`Tabelle editieren <table_editing>`           |Öffnet Tabelle zum Attribute editieren   |
+|      |edit|            |:ref:`Editieren <editing>`                            |Liste der editierbaren Objekte           |
 +------------------------+------------------------------------------------------+-----------------------------------------+
-|      |authorization|   |   :ref:`Anmeldung <sign_in>`                         |An- und Abmelden von Benutzern           |
+|      |table_edit|      |:ref:`Tabelle editieren <table_editing>`              |Öffnet Tabelle zum Attribute editieren   |
++------------------------+------------------------------------------------------+-----------------------------------------+
+|      |authorization|   |:ref:`Anmeldung <sign_in>`                            |An- und Abmelden von Benutzern           |
 +------------------------+------------------------------------------------------+-----------------------------------------+
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste <sidebar>`
@@ -103,6 +105,8 @@ Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
      :width: 30em
    .. |location| image:: ../../../images/gps_fixed-24px.svg
+     :width: 30em
+   .. |location_manager| image:: ../../../images/directions_black_24dp.svg
      :width: 30em
    .. |bplan| image:: ../../../images/bplan.svg
      :width: 30em
