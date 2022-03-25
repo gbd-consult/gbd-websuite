@@ -60,9 +60,9 @@ Darstellungskonfigurationen
 ---------------------------
 
 Über den Punkt |style| ``Darstellung`` gelangt man zu den ausführlichen Darstellungsoptionen für |1| Geometrie und |2| Beschriftung.
-Beide Darstellungen können über den jeweils obersten Menüpunkt an- oder ausgeschaltet werden.
+Beide Darstellungen können über den jeweils obersten Menüpunkt, an- oder ausgeschaltet werden.
 Bei den Geometrieoptionen kann der Stil der Linien, sowie die Füllung der Geometrie eingestellt werden.
-Die Darstellungsoptionen für die Beschriftung bieten die gleichen Möglichkeiten.
+Die Darstellungsoptionen für die Beschriftung bieten die beide Möglichkeiten.
 Zusätzlich kann jedoch über die Menüpunkte ``Platzierung``, ``Ausrichtung`` und ``Versatz X/Y`` die Beschriftung positioniert werden.
 
 .. figure:: ../../../screenshots/de/client-user/measure_combi.png

@@ -45,7 +45,7 @@ Symbol				               Function
 |menu|				Expand the menu
 |cancel|			Fold in the menu
 |layers|			Layer
-|showother| 			Open up the lower layer
+|showother| 	Open up the lower layer
 |showlayer|			Show layer
 |hidelayer| 			Sign out
 |authorization|			Sign in
@@ -62,13 +62,13 @@ Status bar
 
 Symbol				               Function
 =================================
-|zoomin|			Zoom in
-|zoomout|			Zoom out
-|zoommap|			Show whole project
-|zoomrect|			Pull up the zoom rectangle
-|massstab| 			Changing the scale
-|rotation| 			Changing the rotation
-|xy| 				View the mouse position
+|zoomin|	 Zoom in
+|zoomout|	 Zoom out
+|zoommap|	 Show whole project
+|zoomrect| Pull up the zoom rectangle
+|massstab| Changing the scale
+|rotation| Changing the rotation
+|xy| 			 View the mouse position
 ================================
 
 .. note:: Mehr über die einzelnen Funktionen finden sie unter: `Status bar`
