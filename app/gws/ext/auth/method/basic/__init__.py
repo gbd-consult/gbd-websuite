@@ -50,7 +50,7 @@ class Object(gws.common.auth.method.Object):
         except ValueError:
             return
 
-        h = h.split(':')
+        h = h.split(':', 1)
         if len(h) != 2:
             return
 
