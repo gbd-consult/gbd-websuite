@@ -90,7 +90,7 @@ class Image(layer.Layer):
             uid += '_NOCACHE'
 
         # boxes larger than that will be tiled in _box_request
-        size_threshold = 1000
+        size_threshold = 2500
 
         if not rv.rotation:
             return _box_request(uid, rv.bounds, rv.size_px[0], rv.size_px[1], forward=extra_params, tile_size=size_threshold)
