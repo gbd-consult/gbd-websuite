@@ -66,6 +66,7 @@ export async function main() {
         domNode,
         markFeatures: glob['GWS_MARK_FEATURES'],
         showLayers: glob['GWS_SHOW_LAYERS'],
+        hideLayers: glob['GWS_HIDE_LAYERS'],
     };
 
     if (glob['GWS_LABELS']) {
