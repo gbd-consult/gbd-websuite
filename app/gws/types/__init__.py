@@ -1253,6 +1253,7 @@ class ILayer(IObject):
     def render_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
     def render_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: pass
     def render_xyz(self, x, y, z): pass
+    def select_features(self, args: 'SelectArgs') -> List['IFeature']: pass
 
 
 class IMap(IObject):

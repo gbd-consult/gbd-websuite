@@ -359,6 +359,9 @@ class Layer(gws.Object, t.ILayer):
     def get_features(self, bounds: t.Bounds, limit: int = 0) -> t.List[t.IFeature]:
         return []
 
+    def select_features(self, args: t.SelectArgs) -> t.List[t.IFeature]:
+        return []
+
     def ows_enabled(self, service: t.IOwsService) -> bool:
         if not self._ows_enabled:
             return False

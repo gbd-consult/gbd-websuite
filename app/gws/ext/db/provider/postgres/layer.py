@@ -71,6 +71,12 @@ class Object(gws.common.layer.Vector):
 
         return [self.connect_feature(f) for f in fs]
 
+    def select_features(self, args: t.SelectArgs) -> t.List[t.IFeature]:
+        args = t.SelectArgs(args)
+        args.table = self.table
+        fs = self.provider.select(args)
+        return [self.connect_feature(f) for f in fs]
+
     def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:
         features = []
 

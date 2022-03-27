@@ -6,6 +6,7 @@ import * as gws from 'gws';
 import * as toolbar from './toolbar';
 import * as sidebar from './sidebar';
 import * as storage from './storage';
+import * as toolbox from './toolbox';
 
 let {Form, Row, Cell} = gws.ui.Layout;
 
@@ -18,18 +19,20 @@ let _master = (cc: gws.types.IController) => cc.app.controller(MASTER) as Select
 interface SelectViewProps extends gws.types.ViewProps {
     controller: SelectController;
     selectFeatures: Array<gws.types.IMapFeature>;
+    selectShapeType: string;
 }
 
 const SelectStoreKeys = [
     'selectFeatures',
+    'selectShapeType',
 ];
 
 
 class SelectTool extends gws.Tool {
 
     async run(evt: ol.MapBrowserPointerEvent) {
-        let extend = !evt.originalEvent['altKey'];
-        await _master(this).select(evt.coordinate, extend);
+        let toggle = !evt.originalEvent['altKey'];
+        await _master(this).doSelect(new ol.geom.Point(evt.coordinate), toggle);
     }
 
     start() {
@@ -44,6 +47,72 @@ class SelectTool extends gws.Tool {
     stop() {
     }
 
+}
+
+export class SelectDrawTool extends gws.Tool {
+
+    // layerPtr: LensLayer;
+    ixDraw: ol.interaction.Draw;
+    drawState: string = '';
+    styleName: string;
+
+    title = this.__('modLens');
+
+    async init() {
+        this.styleName = this.app.style.get('.modLensFeature').name;
+        this.update({selectShapeType: 'Polygon'});
+    }
+
+    start() {
+        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Select'});
+
+        this.reset();
+
+        let drawFeature;
+
+        this.ixDraw = this.map.drawInteraction({
+            shapeType: this.getValue('selectShapeType'),
+            style: this.styleName,
+            whenStarted: (oFeatures) => {
+                drawFeature = oFeatures[0];
+                this.drawState = 'drawing';
+            },
+            whenEnded: () => {
+                if (this.drawState === 'drawing') {
+                    this.run(drawFeature.getGeometry());
+                }
+                this.drawState = '';
+            },
+        });
+
+        this.map.appendInteractions([this.ixDraw]);
+    }
+
+    stop() {
+        this.reset();
+    }
+
+    async run(geom) {
+        await _master(this).doSelect(geom, false);
+    }
+
+    setShapeType(st) {
+        this.drawCancel();
+        this.update({selectShapeType: st});
+        this.start();
+    }
+
+    drawCancel() {
+        if (this.drawState === 'drawing') {
+            this.drawState = 'cancel';
+            this.ixDraw.finishDrawing();
+        }
+    }
+
+    reset() {
+        this.map.resetInteractions();
+        this.ixDraw = null;
+    }
 }
 
 class SelectSidebarView extends gws.View<SelectViewProps> {
@@ -85,6 +154,13 @@ class SelectSidebarView extends gws.View<SelectViewProps> {
 
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
+                    {master.setup.exportFormats.length > 0 && <sidebar.AuxButton
+                        className="modSelectExportAuxButton"
+                        tooltip={this.__('modSelectExportAuxButton')}
+                        disabled={!hasSelection}
+                        whenTouched={() => master.doExport()}
+                    />}
+
                     <Cell flex/>
                     {storage.auxButtons(master, {
                         category: STORAGE_CATEGORY,
@@ -129,11 +205,25 @@ class SelectToolbarButton extends toolbar.Button {
 
 }
 
+class SelectDrawToolbarButton extends toolbar.Button {
+    iconClass = 'modSelectDrawToolbarButton';
+    tool = 'Tool.Select.Draw';
+
+    get tooltip() {
+        return this.__('modSelectDrawToolbarButton');
+    }
+
+}
+
+
 class SelectController extends gws.Controller {
     uid = MASTER;
     layer: gws.types.IMapFeatureLayer;
+    setup: gws.api.SelectProps;
 
     async init() {
+        this.setup = this.app.actionSetup('select');
+        console.log('SELECT', this.setup);
         this.update({
             selectFeatures: []
         });
@@ -142,16 +232,35 @@ class SelectController extends gws.Controller {
         });
     }
 
-    async select(center: ol.Coordinate, extend: boolean) {
-        let features = await this.map.searchForFeatures({geometry: new ol.geom.Point(center)});
+    async doSelect(geometry: ol.geom.Geometry, toggle: boolean) {
+        let features = await this.map.searchForFeatures({geometry});
 
         if (gws.tools.empty(features))
             return;
 
-        this.addFeature(features[0], extend);
+        features.forEach(f => this.addFeature(f, toggle));
     }
 
-    addFeature(feature, extend = true) {
+    async doExport() {
+        let features = this.getValue('selectFeatures');
+
+        if (!gws.tools.empty(features)) {
+            let res = await this.app.server.selectExport({
+                exportFormatUid: this.setup.exportFormats[0].uid,
+                featureUids: features.map(f => f.uid),
+            }, {binary: true});
+
+            let a = document.createElement('a');
+            a.href = window.URL.createObjectURL(new Blob([res.content], {type: res.mime}));
+            a.download = 'export.zip';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(a.href);
+            document.body.removeChild(a);
+        }
+    }
+
+    addFeature(feature, toggle = false) {
 
         if (!this.layer) {
             this.layer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
@@ -160,21 +269,17 @@ class SelectController extends gws.Controller {
             }));
         }
 
-        if (!extend)
-            this.layer.clear();
-
         if (!feature.oFeature) {
             let geometry = feature.geometry;
             feature.oFeature = new ol.Feature({geometry});
         }
 
-        console.log(feature);
-
         let f = this.findFeatureByUid(feature.uid);
 
-        if (f)
-            this.layer.removeFeature(f);
-        else
+        if (f) {
+            if (toggle)
+                this.layer.removeFeature(f);
+        } else
             this.layer.addFeatures([feature]);
 
         this.update({
@@ -235,6 +340,8 @@ class SelectController extends gws.Controller {
 export const tags = {
     [MASTER]: SelectController,
     'Toolbar.Select': SelectToolbarButton,
+    'Toolbar.Select.Draw': SelectDrawToolbarButton,
     'Sidebar.Select': SelectSidebar,
     'Tool.Select': SelectTool,
+    'Tool.Select.Draw': SelectDrawTool,
 };
