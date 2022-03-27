@@ -80,7 +80,7 @@ export async function main() {
 
     let app = await gws.Application.create(options);
     if (app) {
-        window['DEBUG_APP'] = app;
+        window['GWS_APP'] = app;
         ReactDOM.render(app.rootController.defaultView, domNode);
     }
 }
