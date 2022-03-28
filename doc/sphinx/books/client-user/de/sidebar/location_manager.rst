@@ -3,9 +3,11 @@
 Location Manager
 ================
 
+.. rubric:: Allgemein
+
 Der Location Manager ist ein universell verwendbares Modul. Es ermöglicht die Darstellung von temporären Ereignissen,
 die aus den unterschiedlichsten Anwendungsfällen kommen können. Es ist sozusagen ein generisches Werkzeug, um temporäre Ereignisse darzustellen.
-Für die gewünschten Ereignisse, können Attributformulare definiert werden. Wie in QGIS kann einzelnen Feldern des Attributformulars,
+Für die gewünschten Ereignisse, können Attributformulare definiert werden. Wie in QGIS, kann einzelnen Feldern des Attributformulars,
 gewisse Funktionen oder Restriktionen vorgegeben werden. So kann zum Beispiel erzwungen werden, dass ohne Eintragen eines Werts für ein gewisses Feld,
 das Abspeichern des neuen Objekts nicht möglich ist. Bereits vorhandene Objekte können später editiert werden.
 Den Objekten können individuelle SVG Icons zugeordnet werden. Außerdem können geometrische Formen, mit eingebunden werden.
@@ -13,7 +15,13 @@ Diese werden in der Regel, für Zusatzinformationen benutzt und können individu
 So können sich zum Beispiel die SVG Icons verändern, wenn ein Wert sich verändert oder ein Datum überschritten wurde.
 Auch maßstabsabhängige Darstellungen können für Beschriftungen, sowie für geometrische Objekte eingestellt werden.
 Diese Gestaltung der Darstellung findet durch den Administrator in QGIS statt.
-Dabei stehen ihm sämtliche Gestaltungsmöglichkeiten für Symbolisierung, Darstellung und Beschriftung aus QGIS zur Verfügung.
+Dabei stehen sämtliche Gestaltungsmöglichkeiten für Symbolisierung, Darstellung und Beschriftung aus QGIS, zur Verfügung.
+QGIS greift dabei auf die verwendete PostGIS Datenbank zu, in der alle Elemente und Objekte gespeichert werden.
+Ein Zugriff und Editieren über ein anderes GIS Programm, wäre somit ebenfalls möglich.
+Die Grundlage stellt somit die PostGIS Datenbank da, welche in einem GIS Projekt symbolisiert und dann in der GBD WebSuite dargestellt wird.
+
+.. rubric:: Beispiel Baustellenverwaltung
+
 Ein Beispiel bei dem dieses Modul verwendet wird, befindet sich auf unserer `Homepage <https://gbd-websuite.de/>`_.
 Das Projekt "Baustellenverwaltung Düsseldorf" zeigt das Aufkommen von Baustellen in Düsseldorf.
 
@@ -71,8 +79,6 @@ Es können verschiedenste Dateitypen bereitgestellt werden.
 
 .. figure:: ../../../screenshots/de/client-user/location_manager_4.png
   :align: center
-
-
 
 .. |location_manager| image:: ../../../images/directions_black_24dp.svg
   :width: 30em

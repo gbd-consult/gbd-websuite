@@ -10,8 +10,7 @@ Anfragen zum Einhalten des Datenschutzes können geloggt werden.
 
 Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandteile genauer erläutert.
 
-Starten der Flurstücksuche
---------------------------
+.. rubric:: Starten der Flurstücksuche
 
 Öffnet man die ``Flurstücksuche`` über die Menüleiste, ist als erstes folgende Suchmaske der Flurstücksuche zu sehen.
 
@@ -25,6 +24,8 @@ Der Zugang zu persönlichen Daten kann so konfiguriert werden, dass zum Beispiel
 Es ist möglich, dass alle Anfragen nach Personendaten geloggt und in einer PostGIS Datei abgelegt werden. So wird jede Anfrage protokolliert und kann somit kontrolliert werden.
 
 .. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_search_data_rights.png
+  :align: center
+
 Wenn der Zugang aktiviert ist, sieht die Suchmaske wie folgt aus.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_6.png
@@ -40,22 +41,19 @@ Ob die Suche nach Straßen mit oder ohne Vorauswahl der Gemarkung stattfinden so
 Bei der Suche anhand von Mindest- und Maximalfläche in Quadratmetern, können Kommastellen für das Eintragen von Zentimeter-Werten verwendet werden.
 Folgende Konfigurationen stehen zur Verfügung:
 
-Optionale Konfigurationen zur Darstellung der Gemarkungsliste
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric:: Optionale Konfigurationen zur Darstellung der Gemarkungsliste
 
 * keine Gemarkungsliste anzeigen
 * die Gemarkungsliste anzeigen als eine Liste von Gemarkungsnamen
 * die Gemarkungsliste anzeigen als eine Liste von Gemarkung- und Gemeindenamen in Klammern
 * die Gemarkungsliste wird in einer Baumansicht angezeigt (erst Gemeinde, darunter eingerückt Gemarkung)
 
-Optionale Konfigurationen zur Darstellung der Straßenliste
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric:: Optionale Konfigurationen zur Darstellung der Straßenliste
 
 * nur Straßennamen anzeigen
 * Straßenname und Gemeindenamen in Klammern anzeigen
 
-Optionale Konfigurationen zur Straßensuche
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric:: Optionale Konfigurationen zur Straßensuche
 
 * Die Eingabe "Mar" sucht am Anfang der Straßennamen und findet nur "Marktstraße"
 * Die Eingabe "Mar" sucht überall in den Straßennamen und findet "Marktstraße" und "Neuer Markt"
@@ -65,11 +63,7 @@ Optionale Konfigurationen zur Straßensuche
  So kann eine Plausibilität geprüft und frei definiert werden, welche Werte eingetragen werden, z.B. Zahlen oder Buchstaben,
  ob Bestimmte Werte am Anfang oder Ende oder grundsätzlich in dem Feld enthalten sein müssen.
 
-Anzeigen der Ergebnisse
------------------------
-
-.. note::
- Für die Ausgabe der Ergebnisse kann die maximale Anzahl der Flurstücke konfiguriert werden.
+.. rubric:: Anzeigen der Ergebnisse
 
 Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Ergebnisse in der Karte markiert und unter dem Reiter |results| ``Ergebnisse`` aufgelistet.
 
@@ -121,11 +115,12 @@ ein Objekt wieder aus der Ablage entfernen. Zusätzlich, können die Information
 Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>`, :ref:`Räumliche Suche <searching>` und :ref:`Auswählen <selecting>`
 entnehmen Sie bitte dem jeweiligen Kapitel in dieser Hilfe.
 
-Exportieren und Drucken
------------------------
+.. note::
+ Für die Ausgabe der Ergebnisse, kann die maximale Anzahl der Flurstücke konfiguriert werden.
 
-Exportieren als CSV
-~~~~~~~~~~~~~~~~~~~
+.. rubric:: Exportieren und Drucken
+
+.. rubric:: Exportieren als CSV
 
 Die Flurstückinformationen bestehen aus unterschiedlichen Teilbereichen.
 Beim Export in das CSV Format können Sie eine Auswahl treffen und dann auf den Button ``Exportieren`` klicken.
@@ -137,29 +132,26 @@ Beim Export in das CSV Format können Sie eine Auswahl treffen und dann auf den 
    Es kann passieren das bei der Auswahl aller Daten in der Ergebnistabelle einige Flurstücke mehrfach auftauchen.
    Das ist u.a. dann der Fall, wenn ein Flurstück mehrere Eigentümer hat.
 
-Drucken der Flurstückinformationen
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. rubric:: Drucken der Flurstückinformationen
 
 Über das |print| Symbol können Sie die ausgewählten Flurstückinformationen drucken.
 Der Inhalt des Ausdrucks, kann individuell über ein Template vorbereitet werden.
 Dieses kann auch eine Kartendarstellung des jeweiligen Flurstücks beinhalten.
 
-Arbeiten mit der Ablage
------------------------
+.. rubric:: Arbeiten mit der Ablage
 
 Die |tab| Ablage ist ein Bereich, der genutzt werden kann, um bestimmte Flurstücke einer Suchanfrage und/oder Ergebnisse mehrerer Suchanfragen abzulegen.
 Man kann es als eine Art Sammelstelle verstehen, deren Inhalt letztlich für die Beauskunftung verwendet werden kann.
 
-Speichern
-~~~~~~~~~
+.. rubric:: Speichern
 
-Über das |save| Symbol können Sie ausgewählte Flurstücke oder Flurstücke der Ablage in einer benutzerspezifischen Ablage speichern. Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
+Über das |save| Symbol können Sie ausgewählte Flurstücke oder Flurstücke der Ablage in einer benutzerspezifischen Ablage speichern.
+Vergeben Sie einen gewünschten Namen und speichern Sie durch Klicken auf das Häckchen.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_print_save.png
   :align: center
 
-Laden
-~~~~~
+.. rubric:: Laden
 
 Über das |load| Symbol kann eine benutzerspefische Ablage wieder geladen werden. Wählen Sie einen Ablagenamen und laden Sie diese durch Klicken auf das Häckchen.
 
@@ -169,22 +161,23 @@ Laden
 .. note::
   Das Speichern benutzerspefischer Ablagen geschieht in einer SQLite Datenbank.
 
-Flurstücke in der Karte suchen
-------------------------------
+.. rubric:: Flurstücke in der Karte suchen
 
-Mit Hilfe des Werkzeuges |spatial_search| ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln. Es öffnet sich in der Toolbar die Leiste für die Räumliche Suche, mit dem Verweis, dass nun in den Flurstücken gesucht wird.
+Mit Hilfe des Werkzeuges |spatial_search| ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln.
+Es öffnet sich in der Toolbar die Leiste für die Räumliche Suche, mit dem Verweis, dass nun in den Flurstücken gesucht wird.
 
 **Beispiel: Auswahl Flurstücke durch Linie**
 
-Wählen Sie das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine Linie und schließen Sie diese mit einem Doppelklick ab. Anschließend werden Ihnen die Flurstücke in den Ergebnissen aufgelistet, welche von der Linie geschnitten werden. Auf dem Screenshot unten sieht man ein mögliches Ergebnis.
+Wählen Sie das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine Linie und schließen Sie diese mit einem Doppelklick ab.
+Anschließend werden Ihnen die Flurstücke in den Ergebnissen aufgelistet, welche von der Linie geschnitten werden. Auf dem Screenshot unten sieht man ein mögliches Ergebnis.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
    :align: center
 
-Flurstücke in der Karte wählen
-------------------------------
+.. rubric:: Flurstücke in der Karte wählen
 
-Das Werkzeug |select| ``Einzelne Flurstücke in der Karte wählen`` ermöglicht die Selektierung einzelner Flurstücke. Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
+Das Werkzeug |select| ``Einzelne Flurstücke in der Karte wählen`` ermöglicht die Selektierung einzelner Flurstücke.
+Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
    :align: center

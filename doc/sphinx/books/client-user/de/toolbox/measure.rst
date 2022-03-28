@@ -44,8 +44,7 @@ Der Radius sowie die Beschriftung können nachträglich verändert werden. Hierz
 Über die Symbole in der Werkzeugleiste können Sie zusätzlich das Zeichnen jeglischer Geometrie bestätigen |savedraw| oder abbrechen |canceldraw|.
 Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| ``Räumliche Suche`` zur Verfügung.
 
-Eigenschaften
--------------
+.. rubric:: Eigenschaften
 
 Jedes Objekt kann nachträglich angepasst werden. Wählen Sie dazu das Objekt im Menü :ref:`Markierungen <markings>` an und es öffnen sich automatisch die Objekteigenschaften.
 Nun können Sie die vorhanden Stützpunkte wieder bewegen und durch einen Doppelklick neue Stützpunkte setzen.
@@ -56,12 +55,11 @@ Dabei ist die Eingabe von Werten mit Nachkommastellen möglich, welche je nach g
 .. figure:: ../../../screenshots/de/client-user/measure_info.png
   :align: center
 
-Platzhalter für die Beschriftung
---------------------------------
+.. rubric:: Platzhalter für die Beschriftung
 
 +------------------------+---------------------------------+
 | **Feld**               | **Erläuterung**                 |
-+------------------------+---------------------------------+
++========================+=================================+
 | {x}                    | gibt die X-Koordinate an        |
 +------------------------+---------------------------------+
 | {y}                    | gibt die Y-Koordinate an        |
@@ -93,8 +91,7 @@ Hier ein paar Beispiele:
 | {area | km}    |Fläche in km2, 0 Dezimalstellen           |
 +----------------+------------------------------------------+
 
-Darstellungskonfigurationen
----------------------------
+.. rubric:: Darstellungskonfigurationen
 
 Über den Punkt |style| ``Darstellung`` gelangt man zu den ausführlichen Darstellungsoptionen für |1| Geometrie und |2| Beschriftung.
 Beide Darstellungen können über den jeweils obersten Menüpunkt an- oder ausgeschaltet werden.

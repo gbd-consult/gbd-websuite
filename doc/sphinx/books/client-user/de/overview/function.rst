@@ -1,8 +1,7 @@
 GBD WebSuite
 ============
 
-Funktionalität
-..............
+.. rubric:: Funktionalität
 
 Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis von Plugins zur Verfügung gestellt und flexibel konfiguriert werden können.
 Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebung angepasst oder in diese integriert werden. Die aktuelle Funktionalität umfasst:
@@ -23,8 +22,7 @@ Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebu
 * Drucken in unterschiedlicher Auflösung inklusive redlining
 * Screenshots erstellen im PNG-Format
 
-GBD WebSuite Server und Client
-..............................
+.. rubric:: GBD WebSuite Server und Client
 
 Der **GBD WebSuite Server** basiert auf Python mit Support für PyQGIS und weiteren GIS Bibliotheken.
 Er läuft in einem WSGI Container hinter einem Caching NGINX Proxy.

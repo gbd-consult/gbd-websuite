@@ -19,8 +19,7 @@ Falls dies auch nicht gewünscht ist, muss lediglich die Formel in dem Beschrift
 .. figure:: ../../../screenshots/de/client-user/measure_info.png
   :align: center
 
-Platzhalter für die Beschriftung
---------------------------------
+.. rubric:: Platzhalter für die Beschriftung
 
 +------------------------+---------------------------------+
 | **Feld**               | **Erläuterung**                 |
@@ -56,8 +55,7 @@ Hier ein paar Beispiele:
 | {area | km}    |Fläche in km2, 0 Dezimalstellen           |
 +----------------+------------------------------------------+
 
-Darstellungskonfigurationen
----------------------------
+.. rubric:: Darstellungskonfigurationen
 
 Über den Punkt |style| ``Darstellung`` gelangt man zu den ausführlichen Darstellungsoptionen für |1| Geometrie und |2| Beschriftung.
 Beide Darstellungen können über den jeweils obersten Menüpunkt, an- oder ausgeschaltet werden.
