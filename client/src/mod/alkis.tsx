@@ -1169,7 +1169,10 @@ class AlkisController extends gws.Controller {
             _master(this).update({alkisFsResults: []});
             this.goTo('list');
         }
-        _master(this).update({sidebarActiveTab: 'Sidebar.Alkis'});
+        _master(this).update({
+            sidebarVisible: true,
+            sidebarActiveTab: 'Sidebar.Alkis'
+        });
     }
 
     async search() {
