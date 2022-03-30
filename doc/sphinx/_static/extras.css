@@ -31,3 +31,11 @@ body.nonav .wy-nav-content-wrap {
     margin-left: 10px;
 
 }
+
+.rubric > .class1 {
+    margin-center: 3px;
+}
+
+.rubric > .class2 {
+    margin-center: 3px;
+}

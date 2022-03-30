@@ -3,29 +3,28 @@
 Bauleitplanung
 ==============
 
-Das |bplan| ``Bauleitplanung`` -Modul dient dem Verwalten von Bauleitplänen.
-Diese Bauleipläne werden in Form von Rasterbildern integriert und sind mit Flurstücksflächen des eingebundenen Liegenschaftskatatasters verknüpft.
+Das |bplan| ``Bauleitplanung`` -Modul dient dem Verwalten von Bauleitplänen. Wenn ein autorisierter Benutzer anmeldet ist,
+kann er das INSPIRE Modul |bplan| ``Bauleitplanung`` nutzen, um Bauleitpläne zu verwalten.
+(Falls die Berechtigung vorhanden ist, verschiedene INSPIRE-Datensätze zu bearbeiten, muss vorab eine Auswahl des Themas stattfinden.)
+Diese Bauleipläne werden in Form von Rasterbildern integriert und sind mit Flurstückflächen, des eingebundenen Liegenschaftskatasters, verknüpft.
 Das Thema Bauleitplanung gehört zu den von der EU vorgegeben Themen, welche in INSPIRE-konformer Bereitstellung erfolgen sollen.
-Im Rahmen eines IKZ-Projektes des LK Marburg-Biedenkopf wurden bis Anfang 2021 nun die ersten beiden INSPIRE Themen Bauleitplanung und Schulstandorte umgesetzt.
+Im Rahmen eines IKZ-Projektes des LK Marburg-Biedenkopf, wurden bis Anfang 2021 nun die ersten beiden INSPIRE Themen, Bauleitplanung und Schulstandorte, umgesetzt.
 Die Dienste werden dynamisch über das Geoservice-Portal des LK Marburg-Biedenkopf bereitgestellt und sind in das Geoportal Hessen integriert.
 
 .. rubric:: Bauleitpläne anzeigen, suchen und löschen
 
-Wenn ein authorisierter Benutzer anmeldet ist, kann er das INSPIRE Modul |bplan| ``Bauleitplanung`` nutzen, um Bauleitpläne zu verwalten.
-(Falls die Berechtigung vorhanden ist, verschiedene INSPIRE-Datensätze zu bearbeiten, muss vorab eine Auswahl des Themas stattfinden.)
-Die Bauleitpläne werden in Form von Rasterbildern integriert und sind mit Flurstücksflächen des eingebundenen Liegenschaftskatatasters verknüpft.
+Die Bauleitpläne werden in Form von Rasterbildern integriert und sind mit Flurstückflächen des eingebundenen Liegenschaftskatasters verknüpft.
 Das Thema Bauleitplanung gehört zu den von der EU vorgegeben Themen, welche in INSPIRE-konformer Bereitstellung erfolgen sollen.
-Im Rahmen eines IKZ-Projektes des LK Marburg-Biedenkopf wurden bis Anfang 2021 nun die ersten beiden INSPIRE Themen Bauleitplanung und Schulstandorte umgesetzt.
-Die Dienste werden dynamisch über das Geoservice-Portal des LK Marburg-Biedenkopf bereitgestellt und sind in das Geoportal Hessen integriert.
 
 Wenn Sie das Bauleitplanung Modul auswählen, öffnet sich eine Liste mit den implementierten Bauplänen.
-Beim Auswählen eines Bauplans wird automatisch das dazugehörige Flurstück mit dem darüberliegenden Rasterbild des Bauplans fokussiert.
-Die Ausdehnung des Flurstücks wird markiert. Außerdem öffnet sich ein Fenster, in dem Information in INSPIRE-konformer Bereitstellung zu dem jeweiligen Bauplan eingesehen werden können.
+Beim Auswählen eines Bauplans, wird automatisch das dazugehörige Flurstück mit dem darüberliegenden Rasterbild des Bauplans fokussiert.
+Die Ausdehnung des Flurstücks wird markiert. Außerdem öffnet sich ein Fenster, in dem Information, in INSPIRE-konformer Bereitstellung,
+zu dem jeweiligen Bauplan eingesehen werden können.
 
 .. figure:: ../../../screenshots/de/client-user/inspire_show.png
  :align: center
 
-Über ein Suchfeld kann man frei nach dem Namen eines Eintrags der Bauleitplanung suchen. Dabei reicht die Eingabe einzelner Buchstaben des Wortes bereits aus.
+Über ein Suchfeld, kann man frei nach dem Namen eines Eintrags der Bauleitplanung suchen. Dabei reicht die Eingabe einzelner Buchstaben des Wortes bereits aus.
 
 .. figure:: ../../../screenshots/de/client-user/inspire_delete.png
  :align: center
@@ -36,21 +35,21 @@ Wenn Sie einen Bebauungsplan löschen wollen, ist dies über das |trash| Icon m�
 
 Nachdem sich der Benutzer anmeldet hat, kann dieser über das Icon |new_bplan| ``Bauleitpläne hochladen`` Daten und deren Metadaten auf den Server laden.
 Die Daten sind dabei in einer vorher definierten Daten- und Dateistruktur als ZIP-Paket vorbereitet.
-Der Ort der Datenablage auf dem Server wird über die Konfiguration des Moduls vorgegeben. Falls das Dateiformat oder der Aufbau der ZIP-Datei nicht stimmen,
-erhält man eine entsprechende Fehlermeldung. Sobald man das Icon anklickt öffnet sich ein neues Dialogfenster. Hier kann man nun durch Anklicken der Büroklammer,
+Der Ort der Datenablage auf dem Server, wird über die Konfiguration des Moduls vorgegeben. Falls das Dateiformat oder der Aufbau der ZIP-Datei nicht stimmen,
+erhält man eine entsprechende Fehlermeldung. Sobald man das Icon anklickt, öffnet sich ein neues Dialogfenster. Hier kann man nun durch Anklicken der Büroklammer,
 auf die lokalen Daten zugreifen und die gewünschte Datei auswählen.
 
 .. figure:: ../../../screenshots/de/client-user/inspire_upload.png
  :align: center
 
-Die Daten des Fachthemas Bauleitplanung umfassen Vektordaten als Punkte, Linien und Flächen (z.B. Satzungen, Bebauungs- und Flächennutzungspläne) sowie dazugehörige Metadaten.
+Die Daten des Fachthemas Bauleitplanung umfassen Vektordaten in Form von Punkten, Linien und Flächen (z.B. Satzungen, Bebauungs- und Flächennutzungspläne) sowie dazugehörige Metadaten.
 Dazu gehören die Bebauungs- und Flächennutzungspläne als Rasterdaten und ergänzende Dokumente als PDF (z.B. Gesamtpläne, Begründungen, Umweltberichte oder textliche Festsetzungen).
 Die Vektordaten werden in eine PostGIS Datenbank importiert.
 
 .. rubric:: Metadaten pflegen
 
 Das Bearbeiten der Metadaten ist über |metadata| ``Metadaten editieren`` möglich. Bereits in der Konfiguration festgelegte oder automatisch erstellbare Informationen,
-wie zum Beispiel: wann war die letzte Änderung werden angezeigt.
+wie zum Beispiel: wann war die letzte Änderung, werden angezeigt.
 
 .. figure:: ../../../screenshots/de/client-user/inspire_metadata.png
  :align: center
@@ -58,7 +57,7 @@ wie zum Beispiel: wann war die letzte Änderung werden angezeigt.
 .. rubric:: Dienste anzeigen
 
 Als weiteres Werkzeug stehen die |world| ``Dienste`` zur Verfügung. Hier wird eine Übersicht über die im System konfigurierten
-und somit bereitgestellten OGC und INSPIRE konformen Dienste angezeigt. Über die URL können diese in eine externe Anwendung eingebunden werden.
+und somit bereitgestellten OGC und INSPIRE konformen Dienste angezeigt. Über die URL können diese, in eine externe Anwendung eingebunden werden.
 Über den Link können die Capabilities aufgerufen werden.
 
 .. figure:: ../../../screenshots/de/client-user/inspire_dienste.png

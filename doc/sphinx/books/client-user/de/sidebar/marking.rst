@@ -41,7 +41,7 @@ Falls dies auch nicht gewünscht ist, muss lediglich die Formel in dem Beschrift
 
 Für die Verwendung der Platzhalter wurde eine Formel entwickelt, wodurch die Einheit und die Präzision individuell bestimmt werden können.
 Diese Formel besitzt folgende Form { |  | }. In den ersten Abschnitt wird der gewünschte Platzhalter eingetragen. In den zweiten Abschnitt wird die Einheit eingetragen.
-Der letzte Abschnitt bestimmt die Präzision bzw wie viele Nachkommastellen vergeben werden sollen.
+Der letzte Abschnitt bestimmt die Präzision bzw. wie viele Nachkommastellen vergeben werden sollen.
 
 Hier ein paar Beispiele:
 

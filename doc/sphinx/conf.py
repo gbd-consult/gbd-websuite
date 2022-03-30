@@ -87,8 +87,7 @@ def setup(app):
         app.add_js_file('extras.js')
     except AttributeError:
         app.add_javascript('extras.js')
-    app.connect('source-read', format_special)
-
+        app.connect('source-read', format_special)
 
 def pre_build():
     util.clear_output()

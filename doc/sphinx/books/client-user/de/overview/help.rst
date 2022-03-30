@@ -9,7 +9,8 @@ neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Kon
 Kern-Bibliotheken von Client und Server sind schlank gehalten. Die gesamte Architektur ist Plugin-basiert. Auch die QGIS
 Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
 
-Die ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren Verlauf dieser Dokumentation.
+Eine ausführliche Hilfe im Umgang mit der GBD WebSuite, erhalten Sie im weiteren Verlauf dieser Dokumentation.
+Hier finden Sie einen Überblick aller Funktionen.
 
 Übersicht der Bedienelemente in der GBD WebSuite:
 
