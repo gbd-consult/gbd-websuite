@@ -1,4 +1,4 @@
-.. location_manager:
+.. _location_manager:
 
 Location Manager
 ================
@@ -79,6 +79,40 @@ Es können verschiedenste Dateitypen bereitgestellt werden.
 
 .. figure:: ../../../screenshots/de/client-user/location_manager_4.png
   :align: center
+
+.. rubric:: Alternative Beispiele
+
+Um die universellen Einsatzmöglichkeiten aufzuzeigen, könnte man sich noch weitere Beispiele vorstellen.
+
+Beispiel Bombenfund:
+
+Eine Möglichkeit wäre die Verwendung des Location Managers, zum Koordinieren und Darstellen von Evakuierungen aufgrund von Bombenfunden.
+Wenn eine Bombe gefunden wird, muss je nach Bombentyp ein unterschiedlicher Radius evakuiert werden.
+Dieser könnte vom verifizierten Nutzer, durch das Zeichnen eines Kreises, eingetragen werden.
+Diese eingezeichnete Geometrie, könnte in Form einer räumlichen Suche auf die ALKIS Datenbank zugreifen.
+So könnten direkt, alle betroffenen Grundstücke ermittelt und beliebig dargestellt werden.
+Eine farbliche Darstellung von rot nach grün, abhängig von der Entfernung zum Fundort der Bombe, wäre zum Beispiel denkbar.
+So würden alle Grundstücke die in unmittelbarer Gefahr ständen rot markiert, die Grundstücke im mittleren Gefahrenbereich gelb und die
+Grundstücke im äußeren Gefahrenbereich grün. Diese Darstellung und somit die Informationen über die Gefahrenbereiche,
+würden über die GBD WebSuite, direkt der Öffentlichkeit zur Verfügung gestellt werden.
+Somit könnte jeder Bürger sofort einsehen, ob er betroffen ist oder nicht.
+Auch für die Ordnungskräfte könnte das Modul, eine weitere Hilfe bieten.
+So wäre zum Beispiel möglich, dass die Ordnungskräfte über ein mobiles Endgerät direkt eintragen könnten, welches Haus bereits evakuiert wurde.
+Bei besonderen Fällen, wie zum Beispiel bettlägerigen Personen oder anderen besonderen Situationen, könnten passende Elemente mit Symbolen, zur Verfügung gestellt werden.
+Das Eintragen von Absperrungen und Umleitungen könnte ebenfalls nützlich sein. Das Eintragen von dieser Elemente, wäre auch spontan über ein mobiles Endgerät möglich.
+
+Beispiel Demonstrationen:
+
+Eine andere Verwendungsmöglichkeit könnte, dass räumliche Darstellen von Demonstrationen sein.
+Die Route könnte mit ihren einzelnen Stationen von einem verifizierten Nutzer eingetragen werden.
+Durch die Verknüpfung mit den ALKIS Daten, könnte eine Ermittlung der Straßen und somit die genaue Route einfach ermittelt werden.
+Die Darstellung der Linien und der Stationen, könnte durch den Administrator gestaltet werden.
+Weitere Elemente wie Straßensperren und Umleitungen einzutragen wäre ebenfalls möglich.
+Eine Verknüpfung mit dem "Mein Standort" Modul würde eine Live Darstellung der gelaufenen Route ermöglichen.
+Dazu müsste ein Nutzer mit der Demonstration mit laufen und die Standortdaten übermitteln.
+
+.. Beispiel Krieg: Einschlag von Bomben, welche Art von Bombe, welche Ausdehnung, etc.
+
 
 .. |location_manager| image:: ../../../images/directions_black_24dp.svg
   :width: 30em
