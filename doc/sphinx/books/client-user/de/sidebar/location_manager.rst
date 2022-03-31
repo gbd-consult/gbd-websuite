@@ -1,13 +1,10 @@
 .. _location_manager:
 
-================
 Location Manager
 ================
 
-
 Allgemein
 .........
-
 
 Der Location Manager ist ein universell verwendbares Modul. Es ermöglicht die Darstellung von temporären Ereignissen,
 die aus den unterschiedlichsten Anwendungsfällen kommen können. Es ist sozusagen ein generisches Werkzeug, um temporäre Ereignisse darzustellen.
@@ -100,18 +97,42 @@ Den einzelnen Kategorien, wie zum Beispiel Lebensmittelstand, Textilstand, Blume
 
 Zusätzlich könnte man eine weitere Informationsebene einbringen, welche zum Beispiel nur für eine gewisse Nutzergruppe, wie die Organisatoren und Standbetreiber, einsehbar wäre.
 Diese Ebene könnte zum Beispiel Informationen über Strom- und Wasseranschlussstellen bereithalten.
-Das Verlegen der Stromkabel und Wasserschläuche könnte damit geplant werden. Die Darstellung der Strom- und Wasseranschlussstellen könnte durch individuelle Punktsignaturen umgesetzt
-werden. Für die Stromkabel und Wasserleitungen könnten jeweils spezielle Liniensignaturen durch den Administrator eingebunden werden.
+Das Verlegen der Stromkabel und Wasserschläuche könnte damit geplant werden. Dabei könnte dies nicht nur durch eine verwaltende Personen geschehen.
+Es wäre auch möglich, dass jeder Standbetreiber einen Benutzeraccount bekommt, dem die Werkzeuge zum Einzeichnen der Leitungen bereitgestellt werden.
+So könnte dies jeder Standbetreiber selber für sich planen und die Verwaltung wäre damit ausgelagert.
+Die Darstellung der Strom- und Wasseranschlussstellen könnte durch individuelle Punktsignaturen umgesetzt
+werden. Für die Stromkabel und Wasserleitungen könnten jeweils, spezielle Liniensignaturen durch den Administrator eingebunden werden.
 
 Wenn die Aufstellung und Darstellung geplant wurde, kann der Plan auf zwei Wegen zur Verfügung gestellt werden.
 Der Plan könnte dann, über die GBD WebSuite online zur Verfügung gestellt werden. Alternativ könnte dieser Plan auch als Bilddatei exportiert werden.
 Diese Datei könnte dann wiederum ausgedruckt und als Lageplan am Wochenmarkt aufgehangen werden. So könnte sich jeder Besucher entweder online oder
 über den Lageplan vor Ort, einen Überblick verschaffen.
 
+Beispiel Karnevalszug:
+
+Eine andere Verwendungsmöglichkeit könnte, dass räumliche Darstellen eines Karnevalszug sein.
+Die Route könnte mit ihren einzelnen Stationen, von einem verifizierten Nutzer eingetragen werden.
+Durch eine Verknüpfung mit den ALKIS Daten, könnte eine Ermittlung der Straßen und somit die genaue Route einfach ermittelt werden.
+Die Darstellung der Linien und der Stationen, könnte durch den Administrator gestaltet werden.
+Weitere Elemente wie Straßensperren und Umleitungen einzutragen wäre ebenfalls möglich.
+Bereiche in denen Glasflaschenverbot und Maskenpflicht gilt, könnten durch das Einzeichnen von Flächen dargestellt werden.
+Die Flächen Schraffur kann durch den Administrator gestaltet werden.
+So wäre eine Schraffur aus roten Linien möglich, um diese Flächen deutlich zu kennzeichnen.
+
+Um in diese besonderen Bereiche zu kommen, muss man in der Regel durch eine Einlasskontrolle.
+Diese könnten ebenfalls in Form von Punktsignaturen dargestellt werden.
+Zu diesen Einlasskontrollen wäre es zum Beispiel denkbar,
+dass weitere relevante Informationen bestehen, die jedoch nicht der Öffentlichkeit zur Verfügung gestellt werden sollen.
+Diese sensiblen Informationen könnten nur verifizierten Nutzer zur Verfügung gestellt werden.
+So könnten zum Beispiel vertrauliche Informationen, zu den Einlasskontrollen hinzugefügt werden.
+Denkbar wären hier zum Beispiel Informationen, die der Veranstalter den Personen die die Einlasskontrolle durchführen, zur Verfügung stellen möchte.
+So was könnten zum Beispiel Einlasskriterien, Hygienekonzept oder auch interne Schichtpläne sein.
+Dies ist aber nur ein Beispiel. Das Hinterlegen von vertraulichen Informationen, wäre für alle Elemente eines GBD WebSuite Projekts möglich.
 
 .. Beispiel Bombenfunde:
 
 .. Eine Möglichkeit wäre die Verwendung des Location Managers, zum Koordinieren und Darstellen von Evakuierungen aufgrund von Bombenfunden.
+.. In modernen Großstädten stellt das Organisieren dieser Evakuierungen, eine große Herausforderung für die Ordnungskräfte da.
 .. Wenn eine Bombe gefunden wird, muss je nach Bombentyp ein unterschiedlicher Radius evakuiert werden.
 .. Dieser könnte vom verifizierten Nutzer, durch das Zeichnen eines Kreises, eingetragen werden.
 .. Diese eingezeichnete Geometrie, könnte in Form einer räumlichen Suche auf die ALKIS Datenbank zugreifen.
@@ -134,9 +155,7 @@ Diese Datei könnte dann wiederum ausgedruckt und als Lageplan am Wochenmarkt au
 .. Die Darstellung der Linien und der Stationen, könnte durch den Administrator gestaltet werden.
 .. Weitere Elemente wie Straßensperren und Umleitungen einzutragen wäre ebenfalls möglich.
 .. Eine Verknüpfung mit dem "Mein Standort" Modul würde eine Live Darstellung der gelaufenen Route ermöglichen.
-.. Dazu müsste ein Nutzer mit der Demonstration mit laufen und die Standortdaten übermitteln. ..
-
-
+.. Dazu müsste ein Nutzer mit der Demonstration mit laufen und die Standortdaten übermitteln.
 
 .. |location_manager| image:: ../../../images/directions_black_24dp.svg
   :width: 30em

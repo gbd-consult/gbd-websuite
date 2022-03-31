@@ -32,7 +32,13 @@ Wenn der Zugang aktiviert ist, sieht die Suchmaske wie folgt aus.
   :align: center
 
 Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden.
-Dabei werden die Inhalte aller Felder gelöscht.
+Dabei werden die Inhalte aller Felder gelöscht. Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>`,
+:ref:`Räumliche Suche <searching>` und :ref:`Auswählen <selecting>` entnehmen Sie bitte dem jeweiligen Kapitel in dieser Hilfe. 
+Auf Wunsch könnten diese Funktionen als Werkzeug, direkt in der Werkzeugleiste platziert werden.
+Wenn Sie zum Beispiel ein GBD WebSuite Projekt nutzen würden, um damit ausschließlich Flurstücke zu verwalten, könnte dies von Nutzen sein.
+Die Flurstück-:ref:`Auswählen <selecting>` Funktion könnte dann zum Beispiel in der Werkzeugleiste integriert sein.
+So wäre ein schnelles Auswählen einzelner Flurstücke möglich, ohne den Menüpunkt ``Flurstücksuche`` auswählen zu müssen.
+Dieser öffnet sich dann automatisch, wenn ein Flurstück ausgewählt wurde.
 
 Es gibt verschiedene Möglichkeiten zur Konfiguration der Flurstücksuche. Es müssen nicht alle Parameter definiert werden.
 So können Sie definieren, ob die Suche nach einem speziellen Flurstück oder nach allen Flurstücken einer Straße erfolgen soll.
@@ -112,8 +118,6 @@ Wenn Sie ein einzelnes Objekt angewählt haben, gibt es zusätzlich Funktionen d
 Sie können zum einen wieder über das Icon |add| ein Objekt der Ablage hinzu zu fügen oder über das |delete| Icon,
 ein Objekt wieder aus der Ablage entfernen. Zusätzlich, können die Informationen des Objektes gedruckt werden oder
 ähnlich wie bei anderen Werkzeugen, weitere Funktionen gewählt werden.
-Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>`, :ref:`Räumliche Suche <searching>` und :ref:`Auswählen <selecting>`
-entnehmen Sie bitte dem jeweiligen Kapitel in dieser Hilfe.
 
 .. note::
  Für die Ausgabe der Ergebnisse, kann die maximale Anzahl der Flurstücke konfiguriert werden.

@@ -35,7 +35,7 @@ für die Funktionen ``Räumliche Suche``, ``Markieren und Messen`` oder ``Auswah
   :align: center
 
 .. note::
-Falls diese Funktion nicht zur Verfügung stehen soll, ist es möglich diese zu deaktivieren. 
+Falls diese Funktion nicht zur Verfügung stehen soll, ist es möglich diese zu deaktivieren.
 Es wäre zum Beispiel möglich, dass die Funktion ``Zeichnen`` nur Linien zeichnen ermöglicht, aber keine Flächen.
 Diese Funktion ganz zu deaktivieren, wäre auch möglich.
 
