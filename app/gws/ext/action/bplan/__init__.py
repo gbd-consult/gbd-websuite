@@ -46,6 +46,7 @@ class Config(t.WithTypeAndAccess):
     planTable: gws.common.db.SqlTableConfig  #: plan table configuration
     metaTable: gws.common.db.SqlTableConfig  #: meta table configuration
     boundsTable: gws.common.db.SqlTableConfig  #: bounds table (AU boundaries)
+    uploadsTable: gws.common.db.SqlTableConfig  #: uploads log table
     dataDir: t.DirPath  #: data directory
     templates: t.List[t.ext.template.Config]  #: templates
     administrativeUnits: t.List[AdministrativeUnitConfig]  #: Administrative Units
@@ -160,6 +161,7 @@ class Object(gws.common.action.Object):
         self.plan_table = self.db.configure_table(self.var('planTable'))
         self.meta_table = self.db.configure_table(self.var('metaTable'))
         self.bounds_table = self.db.configure_table(self.var('boundsTable'))
+        self.uploads_table = self.db.configure_table(self.var('uploadsTable'))
         self.data_dir = self.var('dataDir')
 
         self.au_list = self.var('administrativeUnits')
@@ -169,7 +171,7 @@ class Object(gws.common.action.Object):
         p = self.var('exportDataModel')
         self.export_data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
-        for sub in 'png', 'pdf', 'cnv', 'qgs':
+        for sub in 'png', 'pdf', 'cnv', 'qgs', 'uploads':
             gws.ensure_dir(self.data_dir + '/' + sub)
 
         self.key_col = 'plan_id'
@@ -241,9 +243,17 @@ class Object(gws.common.action.Object):
 
         job_uid = gws.random_string(64)
 
+        au_uid = self._check_au(req, p.auUid)
+        au_name = ''
+
+        for au in self.au_list:
+            if au.uid == au_uid:
+                au_name = au.name
+
         args = {
             'actionUid': self.uid,
-            'auUid': self._check_au(req, p.auUid),
+            'auUid': au_uid,
+            'auName': au_name,
             'path': rec.path,
             'replace': p.replace,
             'userName': req.user.display_name,
@@ -490,5 +500,18 @@ def _worker(root: t.IRootObject, job: gws.tools.job.Job):
     job.update(state=gws.tools.job.State.running)
     stats = importer.run(action, args['path'], args['replace'], args['auUid'], job)
     job.update(result={'stats': stats})
-    action.signal_reload('worker')
+
+    with action.db.connect() as conn:
+        conn.insert_one(action.uploads_table.name, 'id', {
+            'gemeinde': args['auName'],
+            'gemeinde_uid': args['auUid'],
+            'user_name': args['userName'],
+            'user_ip': args['userIP'],
+            'num_records': stats.numRecords,
+            'num_images': stats.numPngs,
+            'num_pdfs': stats.numPdfs,
+            'upload_path': stats.uploadPath,
+        })
+
     action.email_notify(args, stats)
+    action.signal_reload('worker')

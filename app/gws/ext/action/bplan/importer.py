@@ -25,14 +25,22 @@ class Stats(t.Data):
     recordIds: t.List[str]
     recordNames: t.List[str]
     pdfPaths: t.List[str]
+    uploadPath: str
 
 
 def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.tools.job.Job = None) -> Stats:
     """"Import bplan data from a file or a directory."""
 
     tmp_dir = None
+    upload_path = None
 
     if os2.is_file(src_path):
+        # archive the upload
+        pp = os2.parse_path(src_path)
+        ts = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        upload_path = f"{action.data_dir}/uploads/{ts}.zip"
+        shutil.copy(src_path, upload_path)
+
         # a file is given - unpack it into a temp dir
         tmp_dir = gws.ensure_dir(gws.TMP_DIR + '/bplan_' + gws.random_string(32))
         _extract(src_path, tmp_dir)
@@ -41,6 +49,7 @@ def run(action, src_path: str, replace: bool, au_uid: str = None, job: gws.tools
 
     try:
         stats = _run2(action, tmp_dir or src_path, replace, au_uid, job)
+        stats.uploadPath = upload_path
     except gws.tools.job.PrematureTermination as e:
         pass
 
