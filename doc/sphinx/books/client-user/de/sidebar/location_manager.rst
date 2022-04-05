@@ -31,7 +31,7 @@ Das Projekt "Baustellenverwaltung Düsseldorf" zeigt das Aufkommen von Baustelle
 
 Wenn die Berechtigung vorliegt, Daten zu editieren, kann das |location_manager| Location Manager Werkzeug genutzt werden.
 Diese Berechtigung kann zum Beispiel, nur gewissen, beziehungsweise dazu verifizierten Nutzern zur Verfügung gestellt werden.
-In diesem Beispiel können dann Baustellen eingetragen und editiert werden.
+In diesem Beispiel können dann, Baustellen eingetragen und editiert werden.
 Wenn man das Werkzeug über die Menüleiste öffnet, findet man eine Übersicht über die vorhandenen Baustellen.
 
 .. figure:: ../../../screenshots/de/client-user/location_manager_5.png
@@ -80,6 +80,10 @@ Es können verschiedenste Dateitypen bereitgestellt werden.
 
 .. figure:: ../../../screenshots/de/client-user/location_manager_4.png
   :align: center
+
+Das Einbinden von dynamischen Web-Formularen ist ebenfalls möglich.
+Darüber können zum Beispiel Umfragen, Antrags-, Anmelde- und Bestellformulare bereitgestellt werden.
+Diese Formulare können Sie dann auf Ihrer Internet- oder Intranetseite veröffentlichen oder per E-Mail und sozialen Medien weitergeben.
 
 .. rubric:: Alternative Beispiele
 

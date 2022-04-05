@@ -11,7 +11,7 @@ Die GBD WebSuite als **Web Server**:
 
   *  kann statische Inhalte und Vorlagen bereitstellen
   *  unterstützt multi-site Konfigurationen, url routing und rewriting
-  *  unterstützt verschiedene Anmelde- und Autorisierungsmechanismen (File System, Datenbank, LDAP) und bietet ein feinabgestimmtes Rechtemanagement.
+  *  unterstützt verschiedene Anmelde- und Autorisierungsmechanismen (File System, Datenbank, LDAP und Postgres) und bietet ein feinabgestimmtes Rechtemanagement.
 
 Die GBD WebSuite als **Geo Server**:
 

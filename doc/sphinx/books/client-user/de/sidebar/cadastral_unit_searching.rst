@@ -33,7 +33,7 @@ Wenn der Zugang aktiviert ist, sieht die Suchmaske wie folgt aus.
 
 Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden.
 Dabei werden die Inhalte aller Felder gelöscht. Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>`,
-:ref:`Räumliche Suche <searching>` und :ref:`Auswählen <selecting>` entnehmen Sie bitte dem jeweiligen Kapitel in dieser Hilfe. 
+:ref:`Räumliche Suche <searching>` und :ref:`Auswählen <selecting>` entnehmen Sie bitte dem jeweiligen Kapitel in dieser Hilfe.
 Auf Wunsch könnten diese Funktionen als Werkzeug, direkt in der Werkzeugleiste platziert werden.
 Wenn Sie zum Beispiel ein GBD WebSuite Projekt nutzen würden, um damit ausschließlich Flurstücke zu verwalten, könnte dies von Nutzen sein.
 Die Flurstück-:ref:`Auswählen <selecting>` Funktion könnte dann zum Beispiel in der Werkzeugleiste integriert sein.

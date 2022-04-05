@@ -4,7 +4,7 @@ Anmeldung
 =========
 
 Die |authorization| ``Anmeldung`` ist ebenfalls über die |menu| Menüleiste zu erreichen. Hier findet eine Abfrage von Benutzername
-und Passwort per LDAP oder Datei statt. Jedem Benutzer kann individuell, Berechtigungen und Funktionen zugewiesen werden.
+und Passwort per LDAP, Postgres oder durch eine Anmeldedatei statt. Jedem Benutzer kann individuell, Berechtigungen und Funktionen zugewiesen werden.
 So kann zum Beispiel, der Zugriff auf spezielle Projekte oder auch der Zugriff auf gewisse Werkzeuge geregelt werden.
 Auch sensible Inhalte wie zum Beispiel ALKIS Daten können so, nur berechtigten Personen zur Verfügung gestellt werden.
 Das Layout und die Darstellung des GBD WebSuite Clients kann für die angemeldeten Benutzer, personalisiert werden.
