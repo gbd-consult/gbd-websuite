@@ -278,6 +278,9 @@ class _Parser:
                 line = self.lines[node.lineno]  # @TODO assuming a single decorator
                 if node.decorator_list[0].id in ('property', 'cached_property'):
                     if node.returns:
+                        # in ast < 3.9, lineno points to the decorator line
+                        if line.strip().startswith('@'):
+                            line = self.lines[node.lineno + 1]
                         stub.members[node.name] = {
                             'kind': 'prop',
                             'name': node.name,
