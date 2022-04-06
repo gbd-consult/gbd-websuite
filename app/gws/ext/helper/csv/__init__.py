@@ -1,5 +1,7 @@
 """Common csv writer helper."""
 
+import decimal
+
 import gws
 import gws.types as t
 
@@ -47,7 +49,7 @@ class _Writer:
         return self
 
     def write_attributes(self, attributes: t.List[t.Attribute]):
-        self.rows.append(self.h.delimiter.join(self._format(a.value, a.type) for a in attributes))
+        self.rows.append(self.h.delimiter.join(self._format(a.value) for a in attributes))
         return self
 
     def as_str(self):
@@ -60,16 +62,16 @@ class _Writer:
     def as_bytes(self, encoding=None):
         return self.as_str().encode(encoding or self.h.encoding, errors='replace')
 
-    def _format(self, val, type):
+    def _format(self, val):
         if val is None:
             return self._quote('')
 
-        if type == t.AttributeType.float:
+        if isinstance(val, float) or isinstance(val, decimal.Decimal):
             s = '{:.{prec}f}'.format(float(val), prec=self.h.precision)
             s = s.replace('.', self.h.decimal)
             return self._quote(s) if self.h.quote_all else s
 
-        if type == t.AttributeType.int:
+        if isinstance(val, int):
             s = str(val)
             return self._quote(s) if self.h.quote_all else s
 
