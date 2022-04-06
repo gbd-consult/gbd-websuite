@@ -3,8 +3,8 @@
 Location Manager
 ================
 
-Allgemein
-.........
+.. rubric:: Allgemein
+
 
 Der Location Manager ist ein universell verwendbares Modul. Es ermöglicht die Darstellung von temporären Ereignissen,
 die aus den unterschiedlichsten Anwendungsfällen kommen können. Es ist sozusagen ein generisches Werkzeug, um temporäre Ereignisse darzustellen.
@@ -112,9 +112,10 @@ Der Plan könnte dann, über die GBD WebSuite online zur Verfügung gestellt wer
 Diese Datei könnte dann wiederum ausgedruckt und als Lageplan am Wochenmarkt aufgehangen werden. So könnte sich jeder Besucher entweder online oder
 über den Lageplan vor Ort, einen Überblick verschaffen.
 
-Beispiel Karnevalszug:
 
-Eine andere Verwendungsmöglichkeit könnte, dass räumliche Darstellen eines Karnevalszug sein.
+Beispiel Karnevalsumzug:
+
+Eine andere Verwendungsmöglichkeit könnte, dass räumliche Darstellen eines Karnevalsumzug sein.
 Die Route könnte mit ihren einzelnen Stationen, von einem verifizierten Nutzer eingetragen werden.
 Durch eine Verknüpfung mit den ALKIS Daten, könnte eine Ermittlung der Straßen und somit die genaue Route einfach ermittelt werden.
 Die Darstellung der Linien und der Stationen, könnte durch den Administrator gestaltet werden.

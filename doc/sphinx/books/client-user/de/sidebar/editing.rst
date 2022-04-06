@@ -3,7 +3,7 @@
 Editieren
 =========
 
-In der Menüleiste |menu| ist ebenfalls der Punkt |edit| ``Editieren`` zu finden.
+In der Menüleiste |menu| ist der Punkt |edit| ``Editieren`` zu finden.
 Unter diesem Menüpunkt ist es möglich, vorhandene Objekte auszuwählen und zu editieren, sowie neue Objekte hinzuzufügen.
 Wenn Sie die Funktion in der Menüleiste auswählen, öffnet sich eine Liste der vorhandenen Vektorlayer.
 In unserem Beispiel sind die beiden Layer "Restaurants" und "Gewässer" implementiert.
@@ -11,7 +11,7 @@ In unserem Beispiel sind die beiden Layer "Restaurants" und "Gewässer" implemen
 .. figure:: ../../../screenshots/de/client-user/editing_1.png
  :align: center
 
-Durch das Anwählen eines Layers, öffnet sich die Liste mit den dazugehörigen Objekten.
+Durch das Anwählen eines Layers, öffnet sich automatisch die Liste mit den dazugehörigen Objekten.
 Prominent oberhalb der Liste angeordnet, befindet sich die Suchleiste.
 Darüber können Sie nach Objekten suchen.
 
@@ -25,7 +25,7 @@ Mit dem |select_editing| ``Bearbeiten`` Werkzeug ist es möglich, Objekte in der
 Durch ein einfaches Anklicken eines Objektes, öffnen sich die dazugehörigen Objekteigenschaften.
 Jetzt kann durch ein erneutes Anklicken des Objekts, mit halten der linken Maustaste nach dem Anklicken, das Objekt neu platziert werden.
 Alternativ kann die Platzierung über die X und Y Koordinaten angepasst werden.
-Über das Werkzeug ``Zeichnen`` |new_editing| ist es möglich, je nachdem welcher Layertyp vorhanden ist, neue Objekte in Form von Punkten, Linien oder Polygonen hinzuzufügen.
+Über das Werkzeug |new_editing| ``Zeichnen`` ist es möglich, je nachdem welcher Layertyp vorhanden ist, neue Objekte in Form von Punkten, Linien oder Polygonen hinzuzufügen.
 Nach dem Zeichnen der Geometrie, öffnen sich die Objekteigenschaften. Hier können Werte für die verschieden Attribute eingetragen werden.
 Es können restriktive Felder konfiguriert sein, die ein Abspeichern des Objekts erst ermöglichen, wenn ein Wert für diese eingetragen wurde.
 Mit der Funktion |add| ``Hinzufügen`` können Sie neue Objekte durch die Eingabe von Koordinaten erstellen.

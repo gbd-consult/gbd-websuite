@@ -22,6 +22,8 @@ Neben dem Kartenrahmen öffnet sich ebenfalls ein Dialogfenster, in dem die Ausr
 Wird das Drucksymbol |print| erneut gedrückt, öffnet sich die druckfertige PDF. Mit dem QGIS Drucklayout erstellte Legende können hier bereitgestellt und eingebunden werden. Generell können nun PNG und HTML Legenden verwendet werden um im Druck eingebunden zu werden.
 So kann man bei Layern der GBD WebSuite welche keine eigenen Legenden besitzen, Legenden zur druckbaren Karte hinzufügen.
 
+Auch Layer die direkt über den WebSuite :ref:`Client <client>` eingebunden werden, können mit gedruckt werden. Ein Implementieren in den WebSuite Server ist nicht notwendig.
+
  .. |print| image:: ../../../images/baseline-print-24px.svg
    :width: 30em
  .. |cancel| image:: ../../../images/baseline-cancel-24px.svg
