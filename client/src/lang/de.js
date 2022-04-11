@@ -362,9 +362,9 @@ module.exports = {
     modGeorisksReportFormVol_5: '5 - 10',
 
     modGeorisksReportFormDanger_road: 'Straße',
-    modGeorisksReportFormDanger_railway: 'Straße',
+    modGeorisksReportFormDanger_railway: 'Gleis',
     modGeorisksReportFormDanger_path: 'Weg',
-    modGeorisksReportFormDanger_buildings: 'Gebäude',
+    modGeorisksReportFormDanger_buildings: 'Häuser',
     modGeorisksReportFormDanger_pasture: 'Weideland',
     modGeorisksReportFormDanger_arable: 'Ackerland',
     modGeorisksReportFormDanger_infrastructure: 'Kritische Infrastruktur',
