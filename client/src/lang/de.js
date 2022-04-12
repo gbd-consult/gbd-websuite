@@ -343,7 +343,7 @@ module.exports = {
     modGeorisksReportFormCat_veraenderung: 'Veränderungen mir bekannter Fels',
     modGeorisksReportFormCat_hangrutschung: 'Hangrutschung',
     modGeorisksReportFormCat_mudslide: 'Schlammlawine',
-    modGeorisksReportFormCat_avalanche: 'Schneelawine',
+    modGeorisksReportFormCat_avalanche: 'Lawine',
     modGeorisksReportFormKind_allgemein: 'allgemein',
     modGeorisksReportFormKind_tief: 'tief (> 5 m)',
     modGeorisksReportFormKind_flach: 'flach (< 5 m)',
