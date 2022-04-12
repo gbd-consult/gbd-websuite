@@ -26,35 +26,31 @@ _MAX_IMAGES = 5
 _DB_TABLES = """
     CREATE TABLE gws_report
     (
-        id SERIAL NOT NULL PRIMARY KEY,
-        category VARCHAR(254),
-        volume VARCHAR(254),
-        height VARCHAR(254),
-        kind VARCHAR(254),
-        message VARCHAR(254),
-        
-        danger_road BOOLEAN,
-        danger_railway BOOLEAN,
-        danger_path BOOLEAN,
-        danger_buildings BOOLEAN,
-        danger_pasture BOOLEAN,
-        danger_arable BOOLEAN,
-        danger_infrastructure BOOLEAN,
-        danger_casualties BOOLEAN,
-        
-        image1 BYTEA,
-        image2 BYTEA,
-        image3 BYTEA,
-        image4 BYTEA,
-        image5 BYTEA,
-        
+        id bigserial primary key,
+        category character varying(254) COLLATE pg_catalog."default",
+        volume character varying(254) COLLATE pg_catalog."default",
+        height character varying(254) COLLATE pg_catalog."default",
+        kind character varying(254) COLLATE pg_catalog."default",
+        message character varying(254) COLLATE pg_catalog."default",
+        danger_road boolean,
+        danger_railway boolean,
+        danger_path boolean,
+        danger_buildings boolean,
+        danger_pasture boolean,
+        danger_arable boolean,
+        danger_infrastructure boolean,
+        danger_casualties boolean,
+        image1 bytea,
+        image2 bytea,
+        image3 bytea,
+        image4 bytea,
+        image5 bytea,
         geom geometry(Point,32638),
-        _date TIMESTAMP WITH TIME ZONE,
-        status INT,
-        
-        status_reason VARCHAR(254),
-        time_created TIMESTAMP WITH TIME ZONE,
-        time_updated TIMESTAMP WITH TIME ZONE
+        event_date timestamp with time zone,
+        status integer,
+        status_reason character varying(254) COLLATE pg_catalog."default",
+        time_created timestamp with time zone,
+        time_updated timestamp with time zone
     );
 
     CREATE TABLE gws_aartelink_device
