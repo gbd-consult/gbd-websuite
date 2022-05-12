@@ -6,6 +6,7 @@ import gws.gis.feature
 import gws.tools.json2
 import gws.web.error
 import gws.tools.date
+import gws.common.model
 
 import gws.types as t
 
@@ -30,6 +31,7 @@ class EditParams(t.Params):
 
 class EditResponse(t.Response):
     features: t.List[t.FeatureProps]
+    failures: t.Optional[t.List[gws.common.model.AttributeValidationFailure]]
 
 
 class Object(gws.common.action.Object):
@@ -73,9 +75,17 @@ class Object(gws.common.action.Object):
         if not layer.edit_access(req.user):
             raise gws.web.error.Forbidden()
 
+        failures = []
+
         for f in p.features:
             f.attributes = f.attributes or []
             if layer.edit_data_model:
+                if op == 'update':
+                    fs = layer.edit_data_model.validate(f.attributes)
+                    if fs:
+                        failures.extend(fs)
+                        continue
+
                 f.attributes.append(t.Attribute(name='gws:user_login', value=req.user.attribute('login')))
                 f.attributes.append(t.Attribute(name='gws:current_datetime', value=gws.tools.date.now()))
 
@@ -85,4 +95,4 @@ class Object(gws.common.action.Object):
             f.apply_templates()
             f.apply_data_model()
 
-        return EditResponse(features=[f.props for f in features])
+        return EditResponse(features=[f.props for f in features], failures=failures)

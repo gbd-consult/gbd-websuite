@@ -24,6 +24,7 @@ interface EditViewProps extends gws.types.ViewProps {
     editFeatures: Array<gws.types.IMapFeature>;
     editFeature: gws.types.IMapFeature;
     editAttributes: Array<gws.api.Attribute>;
+    editValidationErrors?: gws.types.StrDict;
     editError: boolean;
     editPointX: string;
     editPointY: string;
@@ -38,6 +39,7 @@ const EditStoreKeys = [
     'editFeatures',
     'editFeature',
     'editAttributes',
+    'editValidationErrors',
     'editError',
     'editPointX',
     'editPointY',
@@ -109,7 +111,7 @@ class EditFeatureListTab extends gws.View<EditViewProps> {
     render() {
         let cc = _master(this);
         let layer = this.props.editLayer;
-        let features = this.props.editFeatures;
+        let features = layer.features || [];
         let search = (this.props.editSearch || '').trim().toLowerCase();
 
         if (search) {
@@ -196,6 +198,44 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
             editAttributes: this.props.editAttributes.map(a => a.name === name ? {...a, value} : a)
         });
 
+        let errors = this.props.editValidationErrors || {};
+
+        let geomEditor = null,
+            geomError = errors['shape'];
+
+        //
+
+        if (cc.isPointLayer) {
+            geomEditor = <Row>
+                <Cell flex>
+                    <table className="cmpForm">
+                        <tbody>
+                        <tr className={geomError ? 'isError' : ''}>
+                            <td style={{padding: 8}}>
+                                <gws.ui.TextInput
+                                    value={this.props.editPointX}
+                                    whenChanged={v => cc.update({editPointX: v})}
+                                    label={"X"}
+                                />
+                            </td>
+                            <td style={{padding: 8}}>
+                                <gws.ui.TextInput
+                                    value={this.props.editPointY}
+                                    whenChanged={v => cc.update({editPointY: v})}
+                                    label={"Y"}
+                                />
+
+                            </td>
+                        </tr>
+                        <tr {...gws.tools.cls('cmpFormError', geomError && 'isActive')}>
+                            <td colSpan={2}>{geomError || ''}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </Cell>
+            </Row>
+        }
+
         return <sidebar.Tab>
             <sidebar.TabHeader>
                 <gws.ui.Title content={cc.featureTitle(feature)}/>
@@ -208,34 +248,18 @@ class EditFeatureDetails extends gws.View<EditViewProps> {
                             <gws.components.Form
                                 dataModel={model}
                                 attributes={this.props.editAttributes}
+                                errors={errors}
                                 locale={this.app.locale}
                                 whenChanged={changed}
                             />
                         </Cell>
                     </Row>
-                    {cc.isPointLayer &&
-                        <Row>
-                            <Cell flex>
-                                <gws.ui.TextInput
-                                    value={this.props.editPointX}
-                                    whenChanged={v => cc.update({editPointX: v})}
-                                    label={"X"}
-                                />
-                            </Cell>
-                            <Cell flex>
-                                <gws.ui.TextInput
-                                    value={this.props.editPointY}
-                                    whenChanged={v => cc.update({editPointY: v})}
-                                    label={"Y"}
-                                />
-                            </Cell>
-                        </Row>
-                    }
+                    {geomEditor}
                     <Row>
                         <Cell flex/>
                         <Cell>
                             <gws.ui.Button
-                                className="cmpButtonFormOk"
+                                className="modEditSaveButton"
                                 whenTouched={() => cc.saveForm(feature, attributes)}
                             />
                         </Cell>
@@ -357,6 +381,13 @@ class EditController extends gws.Controller {
     async init() {
         await super.init();
 
+        this.app.whenCalled('editLayer', args => {
+            this.selectLayer(args.layer);
+            this.update({
+                sidebarActiveTab: 'Sidebar.Edit',
+            });
+        });
+
     }
 
 
@@ -389,6 +420,8 @@ class EditController extends gws.Controller {
         this.update({
             editLayer: la,
             editFeatures: fs,
+            editValidationErrors: null
+
         })
 
     }
@@ -431,7 +464,14 @@ class EditController extends gws.Controller {
             let cx = Number(this.getValue('editPointX'));
             let cy = Number(this.getValue('editPointY'));
 
-            if (!Number.isNaN(cx) && !Number.isNaN(cy)) {
+            if (!cx || !cy) {
+                let errors = this.getValue('editValidationErrors') || {};
+                errors = {...errors, shape: 'Ungültige Geometrie'}
+                this.update({
+                    editValidationErrors: errors,
+                });
+                return;
+            } else {
                 let geom = new ol.geom.Point([cx, cy]);
                 f.oFeature.setGeometry(geom);
             }
@@ -454,6 +494,20 @@ class EditController extends gws.Controller {
             this.update({editError: true});
             return;
         }
+
+        if (res.failures && res.failures.length > 0) {
+            let errors = {};
+            for (let f of res.failures)
+                errors[f.name] = f.message;
+            this.update({
+                editValidationErrors: errors
+            })
+            return;
+        }
+
+        this.update({
+            editValidationErrors: null
+        });
 
         await this.selectLayer(this.layer);
         this.unselectFeature();
@@ -550,6 +604,7 @@ class EditController extends gws.Controller {
         this.update({
             editFeature: f,
             editAttributes: f.attributes,
+            editValidationErrors: null,
         });
 
         if (this.isPointLayer) {

@@ -155,11 +155,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                 map.setLayerChecked(layer, true)
             },
             edit() {
-                cc.update({
-                    editLayer: layer,
-                    editFeature: null,
-                    sidebarActiveTab: 'Sidebar.Edit',
-                });
+                cc.app.call('editLayer', {layer})
             },
             close() {
                 map.deselectAllLayers()

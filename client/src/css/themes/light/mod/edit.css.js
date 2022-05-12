@@ -34,7 +34,8 @@ module.exports = v => ({
         ...v.SVG('google:action/done')
     },
     '.modEditSaveButton': {
-        ...v.ROUND_OK_BUTTON(),
+        ...v.ROUND_FORM_BUTTON('google:content/save'),
+        backgroundColor: v.PRIMARY_BACKGROUND,
     },
     '.modEditCancelButton': {
         ...v.ROUND_CLOSE_BUTTON(),
