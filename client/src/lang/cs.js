@@ -42,7 +42,7 @@ module.exports = {
     modEditDrawAuxButton: 'Zakreslit',
     modEditDrawButton: 'Nový objekt',
     modEditEndButton: 'Ukončit',
-    modEditModifyAuxButton: 'Upravit',
+    modEditPointerAuxButton: 'Upravit',
     modEditModifyButton: 'Upravit',
     modEditNewObjectName: 'Nepojmenovaný',
     modEditNoLayer: 'Nebyly vybrány žádné vrstvy k editaci',

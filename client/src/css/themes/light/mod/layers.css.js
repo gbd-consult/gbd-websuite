@@ -68,6 +68,10 @@ module.exports = v => ({
         ...v.SVG('google:image/crop_7_5', v.TEXT_COLOR),
     },
 
+    '.modLayersEditLeafButton': {
+        ...v.SVG('google:image/edit', v.TEXT_COLOR),
+    },
+
     '.modLayersCheckButton': {
         ...v.SVG('google:action/visibility_off', v.TEXT_COLOR),
     } ,

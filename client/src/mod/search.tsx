@@ -18,7 +18,7 @@ const SEARCH_DEBOUNCE = 1000;
 
 interface SearchViewProps extends gws.types.ViewProps {
     searchInput: string;
-    searchResults: Array<gws.types.IMapFeature>;
+    searchResults: Array<gws.types.IFeature>;
     searchWaiting: boolean;
     searchFailed: boolean;
     searchCategories: Array<string>;

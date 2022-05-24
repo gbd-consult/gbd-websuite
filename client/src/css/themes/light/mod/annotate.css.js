@@ -26,7 +26,8 @@ module.exports = v => {
 
     return {
         '.modAnnotateFeature': feature,
-        '.modAnnotateSelected': selected,
+        '.modAnnotateFocus': selected,
+        '.modAnnotateFeature.isFocused': {...feature, ...selected},
         '.modAnnotateDraw': {...feature, ...selected},
 
 

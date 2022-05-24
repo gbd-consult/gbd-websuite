@@ -66,24 +66,24 @@ interface AlkisViewProps extends gws.types.ViewProps {
     alkisFsError: string;
 
     alkisFsExportGroups: Array<string>;
-    alkisFsExportFeatures: Array<gws.types.IMapFeature>;
+    alkisFsExportFeatures: Array<gws.types.IFeature>;
 
     alkisFsFormValues: FormValues;
 
     alkisFsGemarkungListItems: Array<gws.ui.ListItem>;
     alkisFsStrasseListItems: Array<gws.ui.ListItem>;
 
-    alkisFsResults: Array<gws.types.IMapFeature>;
+    alkisFsResults: Array<gws.types.IFeature>;
     alkisFsResultCount: number;
 
-    alkisFsDetailsFeature: gws.types.IMapFeature;
+    alkisFsDetailsFeature: gws.types.IFeature;
     alkisFsDetailsText: string;
 
-    alkisFsSelection: Array<gws.types.IMapFeature>;
+    alkisFsSelection: Array<gws.types.IFeature>;
 
     appActiveTool: string;
 
-    features?: Array<gws.types.IMapFeature>;
+    features?: Array<gws.types.IFeature>;
     showSelection: boolean;
 
 }
@@ -112,7 +112,7 @@ const AlkisStoreKeys = [
     'appActiveTool',
 ];
 
-function featureIn(fs: Array<gws.types.IMapFeature>, f: gws.types.IMapFeature) {
+function featureIn(fs: Array<gws.types.IFeature>, f: gws.types.IFeature) {
     return fs.some(g => g.uid === f.uid);
 }
 
@@ -812,7 +812,7 @@ class AlkisPickTool extends gws.Tool {
 class AlkisController extends gws.Controller {
     uid = MASTER;
     history: Array<string>;
-    selectionLayer: gws.types.IMapFeatureLayer;
+    selectionLayer: gws.types.IFeatureLayer;
     setup: gws.api.AlkissearchProps;
     toponyms: Toponyms;
 
@@ -1072,14 +1072,14 @@ class AlkisController extends gws.Controller {
     }
 
     selectionGeometries() {
-        let sel = this.getValue('selectFeatures') as Array<gws.types.IMapFeature>;
+        let sel = this.getValue('selectFeatures') as Array<gws.types.IFeature>;
 
         if (sel)
             return sel.map(f => f.geometry);
 
         let m = this.getValue('marker');
         if (m && m.features) {
-            let gs = gws.tools.compact(m.features.map((f: gws.types.IMapFeature) => f.geometry));
+            let gs = gws.tools.compact(m.features.map((f: gws.types.IFeature) => f.geometry));
             if (gs.length > 0) {
                 return gs
             }
@@ -1179,7 +1179,7 @@ class AlkisController extends gws.Controller {
         this.update({alkisFsLoading: false});
     }
 
-    paramsForFeatures(fs: Array<gws.types.IMapFeature>) {
+    paramsForFeatures(fs: Array<gws.types.IFeature>) {
         let form = this.getValue('alkisFsFormValues');
         return {
             wantEigentuemer: form.wantEigentuemer,
@@ -1188,7 +1188,7 @@ class AlkisController extends gws.Controller {
         }
     }
 
-    async showDetails(f: gws.types.IMapFeature, highlight = true) {
+    async showDetails(f: gws.types.IFeature, highlight = true) {
         let q = this.paramsForFeatures([f]);
         let res = await this.app.server.alkissearchGetDetails(q);
         let feature = this.map.readFeature(res.feature);
@@ -1205,7 +1205,7 @@ class AlkisController extends gws.Controller {
         }
     }
 
-    async startPrint(fs: Array<gws.types.IMapFeature>) {
+    async startPrint(fs: Array<gws.types.IFeature>) {
         this.update({
             printJob: {state: gws.api.JobState.init},
             marker: null,
@@ -1235,7 +1235,7 @@ class AlkisController extends gws.Controller {
         });
     }
 
-    highlightMany(fs: Array<gws.types.IMapFeature>) {
+    highlightMany(fs: Array<gws.types.IFeature>) {
         this.update({
             marker: {
                 features: fs,
@@ -1244,7 +1244,7 @@ class AlkisController extends gws.Controller {
         })
     }
 
-    highlight(f: gws.types.IMapFeature) {
+    highlight(f: gws.types.IFeature) {
         this.update({
             marker: {
                 features: [f],
@@ -1253,13 +1253,13 @@ class AlkisController extends gws.Controller {
         })
     }
 
-    isSelected(f: gws.types.IMapFeature) {
+    isSelected(f: gws.types.IFeature) {
         let sel = this.getValue('alkisFsSelection') || [];
         return sel.length && featureIn(sel, f);
 
     }
 
-    select(fs: Array<gws.types.IMapFeature>) {
+    select(fs: Array<gws.types.IFeature>) {
         if (!this.selectionLayer) {
             this.selectionLayer = this.map.addServiceLayer(new gws.map.layer.FeatureLayer(this.map, {
                 uid: '_select',
@@ -1283,7 +1283,7 @@ class AlkisController extends gws.Controller {
         this.selectionLayer.addFeatures(this.getValue('alkisFsSelection'));
     }
 
-    unselect(fs: Array<gws.types.IMapFeature>) {
+    unselect(fs: Array<gws.types.IFeature>) {
         let sel = this.getValue('alkisFsSelection') || [];
 
         this.update({
@@ -1352,14 +1352,14 @@ class AlkisController extends gws.Controller {
         this.goTo('form')
     }
 
-    async startExport(fs: Array<gws.types.IMapFeature>) {
+    async startExport(fs: Array<gws.types.IFeature>) {
         this.update({
             alkisFsExportFeatures: fs
         });
         this.goTo('export')
     }
 
-    async submitExport(fs: Array<gws.types.IMapFeature>) {
+    async submitExport(fs: Array<gws.types.IFeature>) {
         let q = {
             findParams: this.paramsForFeatures(fs),
             groups: this.getValue('alkisFsExportGroups'),

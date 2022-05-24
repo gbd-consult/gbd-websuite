@@ -894,7 +894,7 @@ class DimensionController extends gws.Controller {
         if (this.snapFeatures && this.setup.layerUids) {
             this.snapFeatures.clear();
             this.setup.layerUids.forEach(uid => {
-                let la = (this.map.getLayer(uid) as gws.types.IMapFeatureLayer);
+                let la = (this.map.getLayer(uid) as gws.types.IFeatureLayer);
                 if (la && la.features)
                     this.snapFeatures.extend(la.features.map(f => f.oFeature));
             });
@@ -956,9 +956,9 @@ class DimensionController extends gws.Controller {
 
 }
 
-class DimensionElementList extends gws.components.list.List<DimensionElement> {
-
-}
+// class DimensionElementList extends gws.components.list.List<DimensionElement> {
+//
+// }
 
 class DimensionSidebarView extends gws.View<DimensionViewProps> {
     render() {
@@ -970,9 +970,7 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
 
 
         let zoom = (e: DimensionElement, mode) => {
-            let f = master.map.newFeature({
-                geometry: new ol.geom.MultiPoint(e.coordinates)
-            });
+            let f = master.map.featureFromGeometry(new ol.geom.MultiPoint(e.coordinates));
             this.props.controller.update({
                 marker: {
                     features: [f],
@@ -1044,7 +1042,7 @@ class DimensionSidebarView extends gws.View<DimensionViewProps> {
                 </Form>
             </div>
         } else if (hasElements) {
-            body = <DimensionElementList
+            body = <gws.components.list.List
                 controller={this.props.controller}
                 items={model.elements}
 

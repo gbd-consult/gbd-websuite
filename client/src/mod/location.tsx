@@ -67,8 +67,8 @@ class LocationController extends gws.Controller {
             return;
         }
 
-        let geometry = new ol.geom.Point(xy),
-            f = new gws.map.Feature(this.map, {geometry}),
+        let geom = new ol.geom.Point(xy),
+            f = this.map.featureFromGeometry(geom),
             mode = 'draw zoom';
 
         this.update({

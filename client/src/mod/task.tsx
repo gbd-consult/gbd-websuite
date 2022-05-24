@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as gws from 'gws';
 
 interface TaskContext {
-    feature?: gws.types.IMapFeature;
+    feature?: gws.types.IFeature;
     source?: string;
     element: HTMLDivElement;
 }

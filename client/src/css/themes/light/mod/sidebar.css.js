@@ -50,7 +50,7 @@ module.exports = v => ({
     },
 
     '.modSidebarHeader': {
-        background: v.SIDEBAR_HEADER_BACKGROUND,
+        backgroundColor: v.SIDEBAR_HEADER_BACKGROUND,
         padding: [
             v.UNIT4,
             v.UNIT4,

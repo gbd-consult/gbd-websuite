@@ -26,12 +26,12 @@ interface BplanViewProps extends gws.types.ViewProps {
     bplanImportReplace: boolean;
     bplanImportStats: gws.api.ImporterStats;
 
-    bplanFeatureToDelete: gws.types.IMapFeature,
+    bplanFeatureToDelete: gws.types.IFeature,
 
     bplanAuList: Array<gws.ui.ListItem>;
     bplanAuUid: string;
     bplanProgress: number;
-    bplanFeatures: Array<gws.types.IMapFeature>,
+    bplanFeatures: Array<gws.types.IFeature>,
 
     bplanSearch: string;
 
@@ -453,7 +453,7 @@ class BplanController extends gws.Controller {
         })
     }
 
-    showFeatureInfo(f: gws.types.IMapFeature) {
+    showFeatureInfo(f: gws.types.IFeature) {
         let type = f.getAttribute('type'),
             au = f.getAttribute('au'),
             geometryTypes = f.getAttribute('geometryTypes'),

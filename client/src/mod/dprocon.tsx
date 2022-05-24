@@ -46,7 +46,7 @@ class DproconToolbarButton extends toolbar.Button {
     }
 
     protected async run() {
-        let sel = this.getValue('selectFeatures') as Array<gws.types.IMapFeature>;
+        let sel = this.getValue('selectFeatures') as Array<gws.types.IFeature>;
 
         if (sel) {
             let res = await this.app.server.dproconConnect({

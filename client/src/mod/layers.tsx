@@ -81,6 +81,13 @@ class LayersExpandButton extends gws.View<ViewProps> {
 
 class LayersLeafButton extends gws.View<ViewProps> {
     render() {
+        if (this.props.layer.editAccess) {
+            return <gws.ui.Button
+                className='modLayersEditLeafButton'
+                tooltip={this.__('modLayersEditLeafButton')}
+                whenTouched={() => this.props.controller.startEditing(this.props.layer)}
+            />;
+        }
         return <gws.ui.Button
             className='modLayersLeafButton'
             tooltip={this.__('modLayersLeafButton')}
@@ -155,11 +162,7 @@ class LayerSidebarDetails extends gws.View<ViewProps> {
                 map.setLayerChecked(layer, true)
             },
             edit() {
-                cc.update({
-                    editLayer: layer,
-                    editFeature: null,
-                    sidebarActiveTab: 'Sidebar.Edit',
-                });
+                cc.startEditing(layer);
             },
             close() {
                 map.deselectAllLayers()
@@ -267,6 +270,10 @@ class LayersSidebar extends gws.Controller implements gws.types.ISidebarItem {
             this.connect(LayersSidebarView, StoreKeys),
             {map: this.map}
         );
+    }
+
+    startEditing(layer) {
+        this.app.call('editLayer', {layer});
     }
 }
 

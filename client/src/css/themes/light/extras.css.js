@@ -1,50 +1,61 @@
 module.exports = v => {
 
-    let vectorDemo = {
-        stroke: v.COLOR.cyan300,
-        strokeWidth: 1,
-        fill: v.COLOR.opacity(v.COLOR.cyan50, 0.3),
-        labelFill: v.COLOR.cyan500,
-        labelFontSize: 12,
-        labelBackground: v.COLOR.cyan100,
-        labelPadding: 2,
-        //labelMaxResolution: 0.1,
-    };
+    let DARK = v.COLOR.indigo500;
+    let LIGHT = v.COLOR.indigo50;
+    let FOCUS = v.COLOR.purple500;
+    let STROKE = 3;
+
+    let MARKER = {
+        marker: 'circle',
+        markerFill: LIGHT,
+        markerStroke: FOCUS,
+        markerStrokeWidth: 3,
+        markerSize: 15,
+    }
 
 
     return {
 
-        '.modInfobar': {
-            background: v.COLOR.grey800
+        // default geometry styles
+
+        '.defaultGeometry_POINT, .defaultGeometry_MULTIPOINT': {
+            fill: v.COLOR.opacity(DARK, 0.7),
+            stroke: LIGHT,
+            strokeWidth: STROKE,
+            pointSize: 15,
+
+            '&.isFocused': {
+                ...MARKER,
+            }
         },
 
-        '.uiDemoIcon': {
-            ...v.ICON_BUTTON(),
-            ...v.ICON_SIZE('normal'),
-            ...v.SVG('print', v.COLOR.blueGrey400),
+        '.defaultGeometry_LINESTRING, .defaultGeometry_MULTILINESTRING': {
+            stroke: DARK,
+            strokeWidth: STROKE,
+
+            '&.isFocused': {
+                stroke: FOCUS,
+                strokeWidth: STROKE,
+                ...MARKER,
+            }
+        },
+
+        '.defaultGeometry_POLYGON, .defaultGeometry_MULTIPOLYGON': {
+            fill: v.COLOR.opacity(DARK, 0.3),
+            stroke: LIGHT,
+            strokeWidth: STROKE,
+
+            '&.isFocused': {
+                fill: v.COLOR.opacity(FOCUS, 0.3),
+                stroke: FOCUS,
+                strokeWidth: STROKE,
+                ...MARKER,
+            }
         },
 
 
-        '.vectorDemo': vectorDemo,
 
-        '.vectorDemoEdit': {
-            ...vectorDemo,
-            marker: 'circle',
-            markerSize: 8,
-            markerFill: v.COLOR.black,
-        },
 
-        /*
-            // test for framed gws
-            // @TODO: mobile selectors should look the the gws width, not the media
-            '': {
-                width: 800,
-                height: 800,
-                margin: 50,
-                border: '1px solid blue',
-
-            },
-         */
 
 
     }

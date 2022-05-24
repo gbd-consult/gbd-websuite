@@ -7,7 +7,7 @@ const FADE_DURATION = 1500;
 const ZOOM_BUFFER = 150;
 
 interface IMarkerContent {
-    features: Array<gws.types.IMapFeature>;
+    features: Array<gws.types.IFeature>;
     animate?: boolean;
     fade?: boolean;
     highlight?: boolean;
@@ -18,28 +18,28 @@ interface IMarkerContent {
 class MarkerLayer extends gws.map.layer.FeatureLayer {
     controller: MarkerController;
 
-    super_printItem(): gws.api.PrintItem {
-        let fs = gws.tools.compact(this.features.map(f => f.getProps()));
-
-        if (fs.length === 0)
-            return null;
-
-        let style = this.map.style.at(this.styleNames.normal);
-
-        return {
-            type: 'features',
-            opacity: this.computedOpacity,
-            features: fs,
-            style: style ? style.props : null,
-        };
-    }
-
-    get printItem() {
-        // @TODO target es6 and use super.printItem here
-        if (this.controller.getValue('markerPrint'))
-            return this.super_printItem();
-        return null;
-    }
+    // super_printItem(): gws.api.PrintItem {
+    //     let fs = gws.tools.compact(this.features.map(f => f.getProps()));
+    //
+    //     if (fs.length === 0)
+    //         return null;
+    //
+    //     let style = this.styles['normal'];
+    //
+    //     return {
+    //         type: 'features',
+    //         opacity: this.computedOpacity,
+    //         features: fs,
+    //         style: style ? style.props : null,
+    //     };
+    // }
+    //
+    // get printItem() {
+    //     // @TODO target es6 and use super.printItem here
+    //     if (this.controller.getValue('markerPrint'))
+    //         return this.super_printItem();
+    //     return null;
+    // }
 }
 
 class MarkerController extends gws.Controller {
@@ -96,8 +96,8 @@ class MarkerController extends gws.Controller {
     }
 
     showXYZ(x, y, z) {
-        let geometry = new ol.geom.Point([x, y]),
-            f = new gws.map.Feature(this.map, {geometry}),
+        let geom = new ol.geom.Point([x, y]),
+            f = this.map.featureFromGeometry(geom),
             mode = '';
 
         if (z) {
@@ -116,8 +116,8 @@ class MarkerController extends gws.Controller {
     }
 
     showBbox(extent, z) {
-        let geometry = ol.geom.Polygon.fromExtent(extent),
-            f = new gws.map.Feature(this.map, {geometry}),
+        let geom = ol.geom.Polygon.fromExtent(extent),
+            f = this.map.featureFromGeometry(geom),
             mode = '';
 
         if (z) {
@@ -195,19 +195,8 @@ class MarkerController extends gws.Controller {
             uid: '_marker',
         }));
         this.layer.controller = this;
-        this.layer.addFeatures(geoms.map(g => this.makeFeature(g)));
-    }
-
-    makeFeature(g: ol.geom.Geometry) {
-        let args: gws.types.IMapFeatureArgs = {};
-
-        if (g) {
-            args.geometry = g;
-            args.style = this.styleName;
-        }
-        ;
-
-        return new gws.map.Feature(this.map, args);
+        this.layer.cssSelector = '.modMarkerFeature'
+        this.layer.addFeatures(geoms.map(g => this.map.featureFromGeometry(g)));
     }
 
 }

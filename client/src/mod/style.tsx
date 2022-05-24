@@ -17,7 +17,7 @@ interface ViewProps extends gws.types.ViewProps {
     controller: StyleController;
     styleEditorActiveTab: number;
     styleEditorLabelEnabled: boolean;
-    styleEditorCurrentName: string;
+    styleEditorCurrentSelector: string;
     styleEditorNewName: string;
     styleEditorValues: gws.api.StyleValues;
 }
@@ -26,7 +26,7 @@ interface ViewProps extends gws.types.ViewProps {
 const StoreKeys = [
     'styleEditorActiveTab',
     'styleEditorLabelEnabled',
-    'styleEditorCurrentName',
+    'styleEditorCurrentSelector',
     'styleEditorNewName',
     'styleEditorValues',
 ];
@@ -190,7 +190,7 @@ class StyleSidebarView extends gws.View<ViewProps> {
                         <gws.ui.Title content={this.__('modStyleSidebarTitle')}/>
                     </Cell>
                     <Cell>
-                        <gws.ui.Select items={styleNames} {...cc.bind('styleEditorCurrentName')}/>
+                        <gws.ui.Select items={styleNames} {...cc.bind('styleEditorCurrentSelector')}/>
                     </Cell>
                 </Row>
             </sidebar.TabHeader>
@@ -237,7 +237,7 @@ export class StyleController extends gws.Controller {
         this.update({
             styleEditorValues: {}
         });
-        this.whenChanged('styleEditorCurrentName', () => this.loadStyle());
+        this.whenChanged('styleEditorCurrentSelector', () => this.loadStyle());
         this.whenChanged('styleEditorValues', () => this.updateValues());
 
         let s = this.app.style.get('.modAnnotateFeature');
@@ -256,7 +256,7 @@ export class StyleController extends gws.Controller {
 
 
     loadStyle() {
-        let name = this.getValue('styleEditorCurrentName');
+        let name = this.getValue('styleEditorCurrentSelector');
         console.log('LOAD STYLE', name)
         let sty = this.app.style.at(name);
         let values = sty ? sty.values : {}
@@ -268,7 +268,7 @@ export class StyleController extends gws.Controller {
     }
 
     updateValues() {
-        let name = this.getValue('styleEditorCurrentName');
+        let name = this.getValue('styleEditorCurrentSelector');
         let sty = this.app.style.at(name);
         if (sty) {
             sty.update(this.getValue('styleEditorValues'));

@@ -77,6 +77,19 @@ class DialogView extends gws.View<DialogProps> {
 }
 
 class DialogController extends gws.Controller {
+    async init() {
+        this.app.whenCalled('showUrl', async (args) => {
+            let html = await this.app.server.getUrl(args.url);
+            this.update({
+                dialogContent: {
+                    title: args.title,
+                    withZoom: true,
+                    children: [<gws.ui.HtmlBlock content={html}/>]
+                }
+            })
+        });
+    }
+
     get appOverlayView() {
         return this.createElement(
             this.connect(DialogView, ['dialogContent'])

@@ -4,7 +4,7 @@ import * as ol from 'openlayers';
 import * as gws from 'gws';
 
 export class Tool extends gws.Tool {
-    layer: gws.types.IMapFeatureLayer;
+    layer: gws.types.IFeatureLayer;
     oFeatureCollection: ol.Collection<ol.Feature>;
     snap: boolean = true;
 
@@ -13,20 +13,20 @@ export class Tool extends gws.Tool {
         //return this.layer ? this.layer.editStyle : null;
     }
 
-    whenSelected(f: gws.types.IMapFeature) {
+    whenSelected(f: gws.types.IFeature) {
     }
 
     whenUnselected() {
 
     }
 
-    whenEnded(f: gws.types.IMapFeature) {
+    whenEnded(f: gws.types.IFeature) {
     }
 
     whenCancelled() {
     }
 
-    selectFeature(f: gws.types.IMapFeature) {
+    selectFeature(f: gws.types.IFeature) {
         if (this.oFeatureCollection) {
             this.oFeatureCollection.clear();
             this.oFeatureCollection.push(f.oFeature);
