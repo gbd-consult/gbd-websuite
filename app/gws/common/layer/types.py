@@ -1,5 +1,6 @@
 import gws.types as t
 import gws.common.metadata
+import gws.common.model
 
 
 class ImageFormat(t.Enum):
@@ -48,7 +49,8 @@ class ClientOptions(t.Data):
 class EditConfig(t.WithAccess):
     """Edit access for a layer"""
 
-    pass
+    filter: t.Optional[str]
+    model: t.Optional[gws.common.model.Config]
 
 
 class LegendConfig(t.Config):
@@ -86,7 +88,6 @@ class OwsConfig(t.Config):
 
 class LayerProps(t.Data):
     editAccess: t.Optional[t.List[str]]
-    editStyle: t.Optional[t.StyleProps]
     extent: t.Optional[t.Extent]
     geometryType: t.GeometryType = ''
     layers: t.Optional[t.List['LayerProps']]
@@ -102,3 +103,4 @@ class LayerProps(t.Data):
     uid: str
     url: str = ''
     isClient: bool = False
+    isEditable: bool = False

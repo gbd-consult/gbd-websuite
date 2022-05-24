@@ -12,6 +12,7 @@ class Config(gws.common.search.provider.Config):
     db: t.Optional[str]  #: database provider uid
     table: gws.common.db.SqlTableConfig  #: sql table configuration
     sort: t.Optional[str]  #: sort expression
+    keywordColumns: t.Optional[t.List[str]]
 
 
 class Object(gws.common.search.provider.Object):
@@ -29,20 +30,27 @@ class Object(gws.common.search.provider.Object):
         self.capabilties = gws.common.search.provider.CAPS_FILTER
         if self.table.geometry_column:
             self.capabilties |= gws.common.search.provider.CAPS_GEOMETRY
-        if self.table.search_column:
+
+        self.keyword_columns = self.var('keywordColumns')
+        if self.keyword_columns:
             self.capabilties |= gws.common.search.provider.CAPS_KEYWORD
 
     def run(self, req: t.IRequest, layer: t.ILayer, args: t.SearchArgs) -> t.List[t.IFeature]:
         n, u = args.tolerance or self.tolerance
         map_tolerance = n * args.resolution if u == 'px' else n
-        return self.provider.select(t.SelectArgs(
+
+        model = self.model or layer.model
+
+        return model.select(t.SelectArgs(
             table=self.table,
             keyword=args.keyword,
+            keyword_columns=self.keyword_columns,
             shape=self.context_shape(args),
             sort=self.var('sort'),
             limit=args.limit,
             map_tolerance=map_tolerance,
             extra_where=self._filter_to_sql(args.filter),
+            depth=args.relation_depth or 0,
         ))
 
     def _filter_to_sql(self, f: t.SearchFilter):

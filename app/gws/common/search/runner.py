@@ -26,6 +26,7 @@ def run(req, args: t.SearchArgs) -> t.List[t.IFeature]:
         f"resolution={args.resolution}",
         f"shapes={[p.props for p in (args.shapes or [])]}",
         f"tolerance={args.tolerance}",
+        f"relation_depth={args.relation_depth}",
     ]
 
     gws.p(dbg)
@@ -79,14 +80,12 @@ def _run(req, layer: t.Optional[t.ILayer], prov: provider.Object, args: t.Search
         return
 
     tt = prov.templates or (layer.templates if layer else None)
-    dm = prov.data_model or (layer.data_model if layer else None)
 
     for f in fs:
         f.layer = layer
         f.search_provider = prov
         f.category = f.category or prov.category or (layer.title if layer else '')
         f.templates = tt
-        f.data_model = dm
 
     gws.log.debug('SEARCH_END, found=%r', len(fs))
 

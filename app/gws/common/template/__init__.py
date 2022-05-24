@@ -31,7 +31,7 @@ class TemplateProps(t.Props):
     qualityLevels: t.List[t.TemplateQualityLevel]
     mapHeight: int
     mapWidth: int
-    dataModel: gws.common.model.ModelProps
+    dataModel: gws.common.model.Props
 
 
 #:export

@@ -274,21 +274,6 @@ class Props(Data):
     pass
 
 
-class AttributeEditor(Data):
-    accept: Optional[str]
-    items: Optional[Any]
-    max: Optional[float]
-    min: Optional[float]
-    multiple: Optional[bool]
-    pattern: Optional['Regex']
-    type: str
-
-
-class AttributeValidationFailure(Data):
-    message: str
-    name: str
-
-
 class Bounds(Data):
     crs: 'Crs'
     extent: 'Extent'
@@ -306,13 +291,23 @@ class DocumentRoot(Data):
     dir: 'DirPath'
 
 
+class FeatureError(Data):
+    error: str
+    name: str
+
+
 class FeatureProps(Data):
-    attributes: Optional[List[Attribute]]
+    attributes: Optional[dict]
     category: Optional[str]
     elements: Optional[dict]
+    errors: Optional[List[dict]]
+    geometryName: Optional[str]
+    isNew: Optional[bool]
+    keyName: Optional[str]
     layerUid: Optional[str]
-    shape: Optional['ShapeProps']
+    modelUid: Optional[str]
     style: Optional['StyleProps']
+    type: Optional[str]
     uid: Optional[str]
 
 
@@ -342,22 +337,22 @@ class IBaseRequest:
 
 
 class IFeature:
-    attr_dict: dict
-    attributes: List[Attribute]
+    attributes: dict
     category: str
-    data_model: Optional['IModel']
     elements: dict
-    full_uid: str
+    errors: List['FeatureError']
+    geometry_name: str
+    is_new: bool
+    key_name: str
     layer: Optional['ILayer']
+    model: Optional['IModel']
     props: 'FeatureProps'
-    props_for_render: 'FeatureProps'
-    shape: Optional['IShape']
+    shape: 'IShape'
     style: Optional['IStyle']
     template_context: dict
-    templates: Optional[List['ITemplate']]
-    uid: str
-    def apply_data_model(self, model: 'IModel' = None) -> 'IFeature': pass
-    def apply_templates(self, templates: List['ITemplate'] = None, extra_context: dict = None, keys: List[str] = None) -> 'IFeature': pass
+    uid: Any
+    view_props: 'FeatureProps'
+    def apply_template(self, key, templates: List['ITemplate'] = None, extra_context: dict = None) -> 'IFeature': pass
     def attr(self, name: str): pass
     def to_geojson(self) -> dict: pass
     def to_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
@@ -453,6 +448,13 @@ class IUser:
     def has_role(self, role: str) -> bool: pass
     def init_from_data(self, provider, uid, roles, attributes) -> 'IUser': pass
     def init_from_source(self, provider, uid, roles=None, attributes=None) -> 'IUser': pass
+
+
+class LayerEditor(Data):
+    access: 'Access'
+    filter: str
+    model: Optional['IModel']
+    style: Optional['IStyle']
 
 
 class LayerLegend(Data):
@@ -831,17 +833,10 @@ class MetaLink(Data):
     url: 'Url'
 
 
-class ModelRule(Data):
-    editable: bool
-    editor: Optional['AttributeEditor']
-    expression: str
-    format: 'FormatStr'
-    name: str
-    source: str
-    title: str
-    type: 'AttributeType'
-    validators: Optional[List['AttributeValidator']]
-    value: Optional[str]
+class ModelSession:
+    def close(self): pass
+    def commit(self): pass
+    def rollback(self): pass
 
 
 class OwsOperation:
@@ -879,6 +874,7 @@ class SearchArgs(Data):
     limit: int
     params: dict
     project: 'IProject'
+    relation_depth: int
     resolution: float
     shapes: List['IShape']
     source_layer_names: List[str]
@@ -900,8 +896,10 @@ class SearchSpatialContext(Enum):
 
 class SelectArgs(Data):
     columns: Optional[List[str]]
+    depth: Optional[int]
     extra_where: Optional[list]
     keyword: Optional[str]
+    keyword_columns: Optional[List[str]]
     limit: Optional[int]
     map_tolerance: Optional[float]
     shape: Optional['IShape']
@@ -1206,14 +1204,11 @@ class ILayer(IObject):
     can_render_svg: bool
     can_render_xyz: bool
     crs: str
-    data_model: Optional['IModel']
     default_search_provider: Optional['ISearchProvider']
     description: str
     description_template: 'ITemplate'
     display: str
-    edit_data_model: Optional['IModel']
-    edit_options: Data
-    edit_style: Optional['IStyle']
+    editor: Optional['LayerEditor']
     extent: Optional['Extent']
     geometry_type: Optional['GeometryType']
     grid_uid: str
@@ -1228,6 +1223,7 @@ class ILayer(IObject):
     legend: 'LayerLegend'
     map: 'IMap'
     meta: 'MetaData'
+    model: Optional['IModel']
     opacity: float
     own_bounds: Optional['Bounds']
     ows_feature_name: str
@@ -1244,6 +1240,8 @@ class ILayer(IObject):
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
+    def get_features_ex(self, user: 'IUser', model: 'IModel', args: 'SelectArgs') -> List['IFeature']: pass
+    def insert_features(self, features: List['IFeature']) -> List[str]: pass
     def mapproxy_config(self, mc): pass
     def ows_enabled(self, service: 'IOwsService') -> bool: pass
     def render_box(self, rv: 'MapRenderView', extra_params=None): pass
@@ -1253,7 +1251,7 @@ class ILayer(IObject):
     def render_svg(self, rv: 'MapRenderView', style: 'IStyle' = None) -> str: pass
     def render_svg_tags(self, rv: 'MapRenderView', style: 'IStyle' = None) -> List['Tag']: pass
     def render_xyz(self, x, y, z): pass
-    def select_features(self, args: 'SelectArgs') -> List['IFeature']: pass
+    def update_features(self, features: List['IFeature']) -> List[str]: pass
 
 
 class IMap(IObject):
@@ -1268,13 +1266,58 @@ class IMap(IObject):
 
 
 class IModel(IObject):
-    attribute_names: List[str]
-    geometry_crs: 'Crs'
-    geometry_type: 'GeometryType'
-    rules: List['ModelRule']
-    def apply(self, attributes: List[Attribute]) -> List[Attribute]: pass
-    def apply_to_dict(self, attr_values: dict) -> List[Attribute]: pass
-    def validate(self, attributes: List[Attribute]) -> List['AttributeValidationFailure']: pass
+    fields: list
+    geometry_name: str
+    key_name: str
+    layer: Optional['ILayer']
+    def delete(self, fe: 'IFeature'): pass
+    def feature_from_orm(self, obj, exclude=None, depth=0): pass
+    def feature_from_props(self, props: 'FeatureProps', exclude=None, depth=0): pass
+    def feature_from_uid2(self, props: 'FeatureProps', exclude=None, depth=0): pass
+    def feature_props(self, fe): pass
+    def get_class(self): pass
+    def get_db(self): pass
+    def get_feature(self, uid, exclude=None, depth=0): pass
+    def get_field(self, name): pass
+    def get_keys(self): pass
+    def get_object(self, uid): pass
+    def get_table(self) -> 'SqlTable': pass
+    def new_feature(self): pass
+    def reload(self, fe: 'IFeature', depth=0): pass
+    def sa_make_select(self, args: 'SelectArgs'): pass
+    def sa_session(self): pass
+    def save(self, fe: 'IFeature', is_new: bool): pass
+    def select(self, args: 'SelectArgs') -> List['IFeature']: pass
+    def validate(self, fe) -> List['FeatureError']: pass
+
+
+class IModelField(IObject):
+    data_type: str
+    geometry_type: str
+    model: 'IModel'
+    name: str
+    relation_type: str
+    type: str
+    validators: list
+    widget: Optional['IModelWidget']
+    def get_default(self): pass
+    def read_from_orm(self, fe: 'IFeature', obj, exclude, depth): pass
+    def read_from_props(self, fe: 'IFeature', props: 'FeatureProps', exclude, depth): pass
+    def sa_adapt_select(self, state): pass
+    def sa_columns(self, columns): pass
+    def sa_properties(self, properties): pass
+    def validate(self, attributes, errors): pass
+    def validate_value(self, value, attributes): pass
+    def write_to_orm(self, fe: 'IFeature', obj): pass
+    def write_to_props(self, fe: 'IFeature', props: 'FeatureProps'): pass
+
+
+class IModelValidator(IObject):
+    def validate_value(self, field, value, attributes): pass
+
+
+class IModelWidget(IObject):
+    options: dict
 
 
 class IMonitor(IObject):
@@ -1359,7 +1402,7 @@ class ISearchProvider(IObject):
     active: bool
     capabilties: int
     category: str
-    data_model: Optional['IModel']
+    model: Optional['IModel']
     spatial_context: 'SearchSpatialContext'
     templates: List['ITemplate']
     title: str

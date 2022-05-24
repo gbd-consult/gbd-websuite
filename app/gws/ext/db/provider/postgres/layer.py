@@ -2,9 +2,11 @@ import gws.common.layer
 import gws.gis.shape
 import gws.gis.feature
 import gws.common.db
+import gws.common.model
 import gws.common.search.provider
 import gws.gis.extent
 import gws.gis.shape
+import gws.gis.feature
 
 import gws.types as t
 
@@ -19,19 +21,20 @@ class Config(gws.common.layer.VectorConfig):
 
 
 class Object(gws.common.layer.Vector):
+    is_editable = True
 
     def configure(self):
         super().configure()
 
-        self.is_editable = True
 
         self.provider = t.cast(provider.Object, gws.common.db.require_provider(self, provider.Object))
+        self.db = self.provider  # for new models
         self.table = self.provider.configure_table(self.var('table'))
 
-        if not self.data_model:
-            p = self.provider.table_data_model_config(self.table)
-            if p:
-                self.data_model = t.cast(t.IModel, self.create_child('gws.common.model', p))
+        # if not self.data_model:
+        #     p = self.provider.table_data_model_config(self.table)
+        #     if p:
+        #         self.data_model = t.cast(t.IModel, self.create_child('gws.common.model', p))
 
     @property
     def own_bounds(self):
@@ -54,37 +57,19 @@ class Object(gws.common.layer.Vector):
 
     @property
     def default_search_provider(self):
-        return self.root.create_object('gws.ext.search.provider.postgres', t.Config(
+        p = self.root.create_object('gws.ext.search.provider.postgres', t.Config(
             uid=self.uid + '.default_search',
             db=self.provider.uid,
             table=self.var('table'),
         ))
+        p.model = p.model or self.model
+        return p
 
-    def get_features(self, bounds, limit=0) -> t.List[t.IFeature]:
-        shape = gws.gis.shape.from_bounds(bounds).transformed_to(self.table.geometry_crs)
-
-        fs = self.provider.select(t.SelectArgs(
-            table=self.table,
-            shape=shape,
-            limit=limit,
-        ))
-
-        return [self.connect_feature(f) for f in fs]
-
-    def select_features(self, args: t.SelectArgs) -> t.List[t.IFeature]:
-        args = t.SelectArgs(args)
+    def get_features_ex(self, user, model, args):
         args.table = self.table
-        fs = self.provider.select(args)
-        return [self.connect_feature(f) for f in fs]
+        if args.bounds:
+            args.bounds = args.bounds.transformed_to(self.table.geometry_crs)
 
-    def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:
-        features = []
+        args.table = self.table
 
-        for p in feature_props:
-            if p.attributes and self.edit_data_model:
-                p.attributes = self.edit_data_model.apply(p.attributes)
-
-            features.append(gws.gis.feature.from_props(p))
-
-        fs = self.provider.edit_operation(operation, self.table, features)
-        return [self.connect_feature(f) for f in fs]
+        return model.select(args)

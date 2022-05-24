@@ -39,7 +39,7 @@ class Config(t.WithTypeAndAccess):
     """Layer configuration"""
 
     clientOptions: types.ClientOptions = {}  #: options for the layer display in the client
-    dataModel: t.Optional[gws.common.model.Config]  #: layer data model
+    model: t.Optional[gws.common.model.Config]  #: layer data model
     display: types.DisplayMode = 'box'  #: layer display mode
     edit: t.Optional[types.EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
@@ -60,7 +60,7 @@ class CustomConfig(t.WithAccess):
 
     applyTo: t.Optional[gws.gis.source.LayerFilter]  #: source layers this configuration applies to
     clientOptions: t.Optional[types.ClientOptions]  #: options for the layer display in the client
-    dataModel: t.Optional[gws.common.model.Config]  #: layer data model
+    model: t.Optional[gws.common.model.Config]  #: layer data model
     display: t.Optional[types.DisplayMode]  #: layer display mode
     edit: t.Optional[types.EditConfig]  #: editing permissions
     extent: t.Optional[t.Extent]  #: layer extent
@@ -85,8 +85,18 @@ class LayerLegend(t.Data):
     template: t.ITemplate
 
 
+#:export
+class LayerEditor(t.Data):
+    access: t.Access
+    model: t.Optional[t.IModel]
+    style: t.Optional[t.IStyle]
+    filter: str
+
+
 #:export ILayer
 class Layer(gws.Object, t.ILayer):
+    is_editable: bool = False
+
     @property
     def props(self):
         return types.LayerProps(
@@ -145,7 +155,6 @@ class Layer(gws.Object, t.ILayer):
         self.is_group: bool = False
 
         self.is_public: bool = self.root.application.auth.get_role('all').can_use(self)
-        self.is_editable: bool = False
 
         self.legend: t.LayerLegend = t.LayerLegend(enabled=False)
 
@@ -167,8 +176,11 @@ class Layer(gws.Object, t.ILayer):
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'), gws.common.template.BUILTINS)
         self.description_template: t.ITemplate = gws.common.template.find(self.templates, subject='layer.description')
 
-        p = self.var('dataModel')
-        self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
+        self.model: t.Optional[t.IModel] = None
+        p = self.var('model')
+        if p:
+            self.model = t.cast(t.IModel, self.create_child('gws.common.model', p))
+            self.model.layer = self
 
         self.resolutions: t.List[float] = gws.gis.zoom.resolutions_from_config(self.var('zoom'), self.map.resolutions)
         if not self.resolutions:
@@ -198,12 +210,7 @@ class Layer(gws.Object, t.ILayer):
 
         self.crs: str = self.var('crs') or self.map.crs
 
-        p = self.var('editDataModel')
-        self.edit_data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
-        self.edit_options: t.Data = self.var('edit')
-
-        p = self.var('editStyle')
-        self.edit_style: t.Optional[t.IStyle] = gws.common.style.from_config(p) if p else None
+        self.editor: t.Optional[LayerEditor] = None
 
     def post_configure(self):
         super().post_configure()
@@ -217,6 +224,16 @@ class Layer(gws.Object, t.ILayer):
         if legend:
             self.legend = legend
             self.legend.options = self.var('legend.options', default={})
+
+        if self.is_editable:
+            p = self.var('edit')
+            self.editor = LayerEditor(
+                access=p.access if p else [t.Access(role='all', type='deny')],
+                model=self.model,
+                filter=p.filter if p else None)
+            if p and p.model:
+                self.editor.model = t.cast(t.IModel, self.create_child('gws.common.model', p))
+                self.editor.model.layer = self
 
     def configure_metadata(self, provider_meta=None) -> t.MetaData:
         """Load metadata from the config or from a provider, whichever comes first."""
@@ -267,16 +284,26 @@ class Layer(gws.Object, t.ILayer):
     def edit_access(self, user):
         # @TODO granular edit access
 
-        if self.is_editable and self.edit_options and user.can_use(self.edit_options, parent=self):
+        if self.editor and user.can_use(self.editor, parent=self):
             return ['all']
 
     def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:
+        pass
+
+    def insert_features(self, features: t.List[t.IFeature]) -> t.List[str]:
+        pass
+
+    def update_features(self, features: t.List[t.IFeature]) -> t.List[str]:
         pass
 
     def props_for(self, user):
         p = super().props_for(user)
         if p:
             p['editAccess'] = self.edit_access(user)
+            p['isEditable'] = bool(p['editAccess'])
+            # p['form'] = self.form
+            # action = 'edit2' if self.editModel else 'edit'
+            # p['url'] = gws.SERVER_ENDPOINT + f'/cmd/{action}HttpGetFeatures/projectUid/{self.map.parent.uid}/layerUid/{self.uid}'
         return p
 
     def mapproxy_config(self, mc):
@@ -359,7 +386,7 @@ class Layer(gws.Object, t.ILayer):
     def get_features(self, bounds: t.Bounds, limit: int = 0) -> t.List[t.IFeature]:
         return []
 
-    def select_features(self, args: t.SelectArgs) -> t.List[t.IFeature]:
+    def get_features_ex(self, user: t.IUser, model: t.IModel, args: t.SelectArgs) -> t.List[t.IFeature]:
         return []
 
     def ows_enabled(self, service: t.IOwsService) -> bool:

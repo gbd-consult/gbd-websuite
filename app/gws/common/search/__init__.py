@@ -20,3 +20,4 @@ class SearchArgs(t.Data):
     shapes: t.List[t.IShape]
     source_layer_names: t.List[str]
     tolerance: t.Measurement
+    relation_depth: int

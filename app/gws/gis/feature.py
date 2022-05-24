@@ -8,89 +8,94 @@ import gws.tools.xml2
 _COMBINED_UID_DELIMITER = '___'
 
 
-def from_geojson(js, crs, key_column='id'):
-    atts = {}
-    uid = ''
-    for k, v in js.get('properties', {}).items():
-        if k == key_column:
-            uid = v
-        else:
-            atts[k] = v
-
-    return Feature(
-        uid=uid,
-        attributes=atts,
-        shape=gws.gis.shape.from_geometry(js['geometry'], crs),
-    )
+def from_model(model: t.IModel) -> t.IFeature:
+    return model.new_feature()
 
 
-def from_props(p: t.FeatureProps):
-    return Feature(
-        uid=p.get('uid'),
-        attributes=p.get('attributes'),
-        elements=p.get('elements'),
-        shape=p.get('shape'),
-        style=p.get('style'),
-    )
+# def from_geojson(js, crs, key_name='id'):
+#     rec = dict(js.get('properties', {}))
+#     rec['geometry'] = gws.gis.shape.from_geometry(js['geometry'], crs)
+#     f = Feature()
+#     f.attributes = rec
+#     f.key_name = key_name
+#     return f
+
+
+def from_props(model: t.IModel, p: t.FeatureProps, depth=0):
+    feature = model.feature_from_props(p, depth=depth)
+    feature.elements = p.get('elements')
+    feature.category = p.get('category')
+    feature.is_new = bool(p.get('isNew'))
+
+    # s = p.get('style')
+    # if isinstance(s, dict):
+    #     s = t.StyleProps(s)
+    # f.style = gws.common.style.from_props(s)
+
+    return feature
+
+
+#:export
+class FeatureError(t.Data):
+    name: str
+    error: str
 
 
 #:export
 class FeatureProps(t.Data):
-    uid: t.Optional[str]
-    attributes: t.Optional[t.List[t.Attribute]]
+    attributes: t.Optional[dict]
     category: t.Optional[str]
     elements: t.Optional[dict]
+    geometryName: t.Optional[str]
+    isNew: t.Optional[bool]
+    keyName: t.Optional[str]
     layerUid: t.Optional[str]
-    shape: t.Optional[t.ShapeProps]
+    modelUid: t.Optional[str]
     style: t.Optional[t.StyleProps]
+    type: t.Optional[str]
+    uid: t.Optional[str]
+    errors: t.Optional[t.List[dict]]
 
 
 #:export IFeature
 class Feature(t.IFeature):
-    def __init__(self, uid=None, attributes=None, category=None, elements=None, shape=None, style=None):
-        self.attributes: t.List[t.Attribute] = []
-        self.category: str = category
-        self.templates: t.Optional[t.List[t.ITemplate]] = None
-        self.data_model: t.Optional[t.IModel] = None
-        self.elements = {}
+    def __init__(self):
+        self.attributes: dict = {}
+        self.category: str = ''
+        self.elements: dict = {}
+        self.geometry_name: str = ''
+        self.key_name: str = ''
         self.layer: t.Optional[t.ILayer] = None
-        self.shape: t.Optional[t.IShape] = None
+        self.model: t.Optional[t.IModel] = None
         self.style: t.Optional[t.IStyle] = None
-        self.uid: str = ''
-
-        self._init(uid, attributes, elements, shape, style)
+        self.is_new: bool = False
+        self.errors: t.List[t.FeatureError] = []
 
     @property
     def props(self) -> t.FeatureProps:
-        return t.FeatureProps(
-            uid=self.full_uid,
-            attributes=self.attributes,
-            shape=self.shape.props if self.shape else None,
-            style=self.style,
-            elements=self.elements,
-            category=self.category or '',
-            layerUid=self.layer.uid if self.layer else None,
-        )
+        fp = self.model.feature_props(self)
+        fp.category = self.category or ''
+        fp.elements = self.elements or {}
+        fp.isNew = self.is_new
+        fp.uid = self.uid
+        if self.errors:
+            fp.errors = self.errors
+        return fp
 
     @property
-    def props_for_render(self) -> t.FeatureProps:
-        return t.FeatureProps(
-            uid=self.full_uid,
-            attributes=[],
-            shape=self.shape.props if self.shape else None,
-            layerUid=self.layer.uid if self.layer else None,
-        )
-
-    @property
-    def full_uid(self) -> str:
-        uid = self.uid or ''
-        if self.layer:
-            uid = f'{self.layer.uid}{_COMBINED_UID_DELIMITER}{uid}'
-        return uid
+    def view_props(self) -> t.FeatureProps:
+        fp = self.props
+        atts = {}
+        if self.key_name:
+            atts[self.key_name] = fp.attributes[self.key_name]
+        if self.geometry_name:
+            atts[self.geometry_name] = fp.attributes[self.key_name]
+        # del fp.modelUid
+        return fp
 
     @property
     def template_context(self) -> dict:
-        d = {a.name: a.value for a in self.attributes}
+        d = dict(self.attributes)
         d['category'] = self.category
         d['feature'] = self
         d['layer'] = self.layer
@@ -98,23 +103,24 @@ class Feature(t.IFeature):
         return d
 
     @property
-    def attr_dict(self) -> dict:
-        return {a.name: a.value for a in self.attributes}
+    def uid(self) -> t.Any:
+        return self.attributes.get(self.key_name)
+
+    @property
+    def shape(self) -> t.IShape:
+        return self.attributes.get(self.geometry_name)
 
     def attr(self, name: str):
-        for a in self.attributes:
-            if a.name == name:
-                return a.value
+        return self.attributes.get(name)
 
     def transform_to(self, crs) -> t.IFeature:
         if self.shape:
-            self.shape = self.shape.transformed_to(crs)
+            self.attributes[self.geometry_name] = self.shape.transformed_to(crs)
         return self
 
     def to_svg_tags(self, rv: t.MapRenderView, style: t.IStyle = None) -> t.List[t.Tag]:
         if not self.shape:
             return []
-        style = self.style or style
         if not style and self.layer:
             style = self.layer.style
         shape = self.shape.transformed_to(rv.bounds.crs)
@@ -136,45 +142,19 @@ class Feature(t.IFeature):
             'geometry': self.shape.props.geometry if self.shape else None
         }
 
-    def apply_data_model(self, model: t.IModel = None) -> t.IFeature:
-        model = model or self.data_model
-        if model:
-            self.attributes = model.apply(self.attributes)
-        return self
-
-    def apply_templates(self, templates: t.List[t.ITemplate] = None, extra_context: dict = None, keys: t.List[str] = None) -> t.IFeature:
-        templates = templates or self.templates
+    def apply_template(self, key, templates: t.List[t.ITemplate] = None, extra_context: dict = None) -> t.IFeature:
+        if not templates and self.layer:
+            templates = self.layer.templates
         if not templates:
             return self
 
-        used = set()
-        ctx = gws.merge(self.template_context, extra_context)
+        ctx = self.template_context
+        if extra_context:
+            ctx = gws.merge(ctx, extra_context)
+
         for tpl in templates:
-            if tpl.category == 'feature' and (tpl.key not in used) and (not keys or tpl.key in keys):
-                self.elements[tpl.key] = tpl.render(context=ctx).content
-                used.add(tpl.key)
+            if tpl.category == 'feature' and tpl.key == key:
+                self.elements[key] = tpl.render(context=ctx).content
+                return self
+
         return self
-
-    def _init(self, uid, attributes, elements, shape, style):
-        if isinstance(uid, str) and _COMBINED_UID_DELIMITER in uid:
-            uid = uid.split(_COMBINED_UID_DELIMITER)[-1]
-
-        self.uid = uid
-        self.elements = elements or {}
-
-        self.attributes = []
-        if attributes:
-            if isinstance(attributes, dict):
-                attributes = [t.Attribute({'name': k, 'value': v}) for k, v in attributes.items()]
-            self.attributes = attributes
-
-        if shape:
-            if isinstance(shape, gws.gis.shape.Shape):
-                self.shape = shape
-            else:
-                self.shape = gws.gis.shape.from_props(shape)
-
-        if style:
-            if isinstance(style, dict):
-                style = t.StyleProps(style)
-            self.style = gws.common.style.from_props(style)

@@ -38,6 +38,7 @@ class SqlTable(t.Data):
 class SelectArgs(t.Data):
     extra_where: t.Optional[list]
     keyword: t.Optional[str]
+    keyword_columns: t.Optional[t.List[str]]
     limit: t.Optional[int]
     map_tolerance: t.Optional[float]
     shape: t.Optional[t.IShape]
@@ -45,6 +46,7 @@ class SelectArgs(t.Data):
     table: t.SqlTable
     uids: t.Optional[t.List[str]]
     columns: t.Optional[t.List[str]]
+    depth: t.Optional[int]
 
 
 #:export

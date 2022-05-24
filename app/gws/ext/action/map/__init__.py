@@ -15,6 +15,8 @@ import gws.tools.misc
 import gws.tools.net
 import gws.tools.units as units
 import gws.web.error
+import gws.gis.shape
+import gws.common.model
 
 import gws.types as t
 
@@ -151,14 +153,30 @@ class Object(gws.common.action.Object):
             extent=p.get('bbox') or layer.map.extent
         )
 
-        found = layer.get_features(bounds, p.get('limit'))
+        shape = gws.gis.shape.from_bounds(bounds)
 
-        for f in found:
-            f.transform_to(bounds.crs)
-            f.apply_templates(keys=['label', 'title'])
-            f.apply_data_model()
+        args = t.SelectArgs(
+            shape=shape,
+            limit=p.get('limit'),
+        )
 
-        return GetFeaturesResponse(features=[f.props for f in found])
+        gws.debug.time_start('api_get_features_SELECT')
+
+        with gws.common.model.session():
+            flist = layer.get_features_ex(req.user, layer.model, args)
+
+        gws.debug.time_end('api_get_features_SELECT')
+
+        gws.debug.time_start('api_get_features_TRANSFORM')
+
+        for fe in flist:
+            fe.transform_to(bounds.crs)
+            fe.apply_template('label')
+            fe.apply_template('title')
+
+        gws.debug.time_end('api_get_features_TRANSFORM')
+
+        return GetFeaturesResponse(features=[fe.view_props for fe in flist])
 
     def http_get_box(self, req: t.IRequest, p: RenderBoxParams) -> t.HttpResponse:
         return self.api_render_box(req, p)

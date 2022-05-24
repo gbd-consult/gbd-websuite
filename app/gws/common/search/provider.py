@@ -15,7 +15,8 @@ class SearchSpatialContext(t.Enum):
 
 
 class Config(t.WithTypeAndAccess):
-    dataModel: t.Optional[gws.common.model.Config]  #: feature data model
+    model: t.Optional[gws.common.model.Config]  #: feature data model
+    modelUid: t.Optional[str]  #: feature data model
     defaultContext: t.Optional[SearchSpatialContext] = 'map'  #: default spatial context
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
     title: t.Optional[str]  #: provider title
@@ -41,8 +42,8 @@ class Object(gws.Object, t.ISearchProvider):
         # @TODO remove inactive prodivers from the tree
         self.active = True
 
-        p = self.var('dataModel')
-        self.data_model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
+        p = self.var('model')
+        self.model: t.Optional[t.IModel] = self.create_child('gws.common.model', p) if p else None
 
         self.templates: t.List[t.ITemplate] = gws.common.template.bundle(self, self.var('templates'))
 
@@ -56,6 +57,11 @@ class Object(gws.Object, t.ISearchProvider):
         self.spatial_context: SearchSpatialContext = self.var('defaultContext', default=SearchSpatialContext.map)
         self.title: str = self.var('title', default='')
         self.category: str = self.var('category', default=self.title)
+
+    def post_configure(self):
+        p = self.var('modelUid')
+        if p:
+            self.model = gws.common.model.registry().get_model(p)
 
     @property
     def supports_keyword(self):

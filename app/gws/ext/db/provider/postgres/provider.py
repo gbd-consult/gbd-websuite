@@ -145,6 +145,36 @@ class Object(gws.common.db.provider.Sql):
 
             return [self._record_to_feature(args.table, r) for r in recs]
 
+    def insert_features(self, table: t.SqlTable, features: t.List[t.IFeature]) -> t.List[str]:
+        recs = [self.feature_to_record2(table, f) for f in features]
+        uids = []
+
+        with self.connect() as conn:
+            with conn.transaction():
+                for rec in recs:
+                    uids.append(conn.insert_one(table.name, table.key_column, rec, with_id=True))
+
+        return uids
+
+    def update_features(self, table: t.SqlTable, features: t.List[t.IFeature]) -> t.List[str]:
+        recs = [self.feature_to_record2(table, f) for f in features]
+        uids = []
+
+        with self.connect() as conn:
+            with conn.transaction():
+                for rec in recs:
+                    conn.update(table.name, table.key_column, rec)
+                    uids.append(rec.get(table.key_column))
+
+        return uids
+
+    def delete_features(self, table: t.SqlTable, features: t.List[t.IFeature]) -> t.List[str]:
+        uids = [f.uid for f in features]
+        with self.connect() as conn:
+            with conn.transaction():
+                conn.delete_many(table.name, table.key_column, uids)
+        return uids
+
     def edit_operation(self, operation: str, table: t.SqlTable, features: t.List[t.IFeature]) -> t.List[t.IFeature]:
         uids = []
         recs = [self._feature_to_record(table, f) for f in features]
@@ -270,7 +300,7 @@ class Object(gws.common.db.provider.Sql):
         if table.key_column:
             uid = str(rec.get(table.key_column, None))
         if not uid:
-            uid = gws.random_string(16)
+            uid = '_' + gws.sha256(' '.join(f'{k}={v}' for k, v in sorted(rec.items())))
 
         return gws.gis.feature.Feature(uid=uid, attributes=rec, shape=shape)
 
@@ -279,3 +309,33 @@ class Object(gws.common.db.provider.Sql):
             'table': table,
             'uids': list(uids),
         }))
+
+
+
+    def feature_to_record2(self, table: t.SqlTable, feature: t.IFeature) -> dict:
+        rec = dict(feature.attributes2)
+
+        if table.key_column:
+            rec[table.key_column] = feature.uid
+
+        if table.geometry_column and feature.shape:
+            shape = feature.shape.to_type(table.geometry_type).transformed_to(table.geometry_crs)
+            rec[table.geometry_column] = shape.ewkb_hex
+
+        return rec
+
+    def record_to_feature2(self, table: t.SqlTable, rec: dict) -> t.IFeature:
+        shape = None
+        if table.geometry_column:
+            g = rec.pop(table.geometry_column, None)
+            if g:
+                # assuming geometries are returned in hex
+                shape = gws.gis.shape.from_wkb_hex(g, table.geometry_crs)
+
+        uid = None
+        if table.key_column:
+            uid = str(rec.get(table.key_column, None))
+        if not uid:
+            uid = '_' + gws.sha256(' '.join(f'{k}={v}' for k, v in sorted(rec.items())))
+
+        return gws.gis.feature.Feature(uid=uid, attributes=rec, shape=shape)

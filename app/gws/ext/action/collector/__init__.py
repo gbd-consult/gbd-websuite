@@ -45,7 +45,7 @@ class ItemPrototypeConfig(t.Config):
 class ItemPrototypeProps(t.Props):
     type: str
     name: str
-    dataModel: gws.common.model.ModelProps
+    dataModel: gws.common.model.Props
     style: gws.common.style.StyleProps
     icon: str
 
@@ -81,9 +81,9 @@ class ItemPrototype(gws.Object):
             icon=self.icon
         )
 
-    def validate(self, fprops: t.FeatureProps) -> t.List[t.AttributeValidationFailure]:
-        f = gws.gis.feature.from_props(fprops)
-        return self.data_model.validate(f.attributes)
+    # def validate(self, fprops: t.FeatureProps) -> t.List[t.AttributeValidationFailure]:
+    #     f = gws.gis.feature.from_props(fprops)
+    #     return self.data_model.validate(f.attributes)
 
     def save(self, collection_uid: str, fprops: t.FeatureProps):
         f = gws.gis.feature.from_props(fprops)
@@ -131,7 +131,7 @@ class CollectionPrototypeConfig(t.Config):
 class CollectionPrototypeProps(t.Props):
     type: str
     name: str
-    dataModel: gws.common.model.ModelProps
+    dataModel: gws.common.model.Props
     itemPrototypes: t.List[ItemPrototypeProps]
     style: gws.common.style.StyleProps
 
@@ -372,7 +372,7 @@ class SaveCollectionResponse(t.Response):
 
 
 class ValidationResponse(t.Response):
-    failures: t.List[t.AttributeValidationFailure]
+    failures: t.List[t.Data]
 
 
 class SaveItemParams(t.Params):

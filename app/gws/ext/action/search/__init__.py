@@ -65,14 +65,15 @@ class Object(gws.common.action.Object):
             tolerance=(
                 gws.tools.units.parse(p.tolerance, units=['px', 'm'], default='px')
                 if p.get('tolerance') else None),
+            relation_depth=1,
         )
 
         found = gws.common.search.runner.run(req, args)
 
         for f in found:
-            # @TODO only pull specified props from a feature
             f.transform_to(args.bounds.crs)
-            f.apply_templates()
-            f.apply_data_model()
+            f.apply_template('title')
+            f.apply_template('teaser')
+            f.apply_template('description')
 
-        return Response(features=[f.props for f in found])
+        return Response(features=[f.view_props for f in found])

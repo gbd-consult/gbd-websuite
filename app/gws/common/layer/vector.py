@@ -14,9 +14,9 @@ _FEATURE_FULL_FORMAT_THRESHOLD = 500
 class Config(layer.Config):
     display: types.DisplayMode = 'client'  #: layer display mode
     editDataModel: t.Optional[gws.common.model.Config]  #: data model for input data
-    editStyle: t.Optional[gws.common.style.Config]  #: style for features being edited
     loadingStrategy: str = 'all'  #: loading strategy for features ('all', 'bbox')
     style: t.Optional[gws.common.style.Config]  #: style for features
+    cssSelector: t.Optional[str]  #: css selector for features
 
 
 #:export IVectorLayer
@@ -42,8 +42,8 @@ class Vector(layer.Layer, t.IVectorLayer):
         return gws.merge(p, {
             'type': 'vector',
             'loadingStrategy': self.var('loadingStrategy'),
+            'cssSelector': self.var('cssSelector'),
             'style': self.style,
-            'editStyle': self.edit_style,
             'url': gws.SERVER_ENDPOINT + '/cmd/mapHttpGetFeatures/layerUid/' + self.uid,
         })
 
