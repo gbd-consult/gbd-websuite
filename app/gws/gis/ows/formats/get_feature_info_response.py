@@ -1,6 +1,6 @@
 import gws.tools.xml2
 import gws.gis.shape
-import gws.gis.feature
+import gws.common.model
 
 
 # geoserver
@@ -32,7 +32,7 @@ def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
             if 'geometry' in atts:
                 shape = gws.gis.shape.from_wkt(atts.pop('geometry'), crs)
 
-            fs.append(gws.gis.feature.Feature(
+            fs.append(gws.common.model.generic_feature(
                 uid=atts.get('uid') or feature.attr('id'),
                 category=layer.attr('name', ''),
                 shape=shape,

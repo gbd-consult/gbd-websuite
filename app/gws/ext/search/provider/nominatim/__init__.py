@@ -4,7 +4,7 @@ import gws
 import gws.common.search.provider
 import gws.common.template
 import gws.gis.extent
-import gws.gis.feature
+import gws.common.model
 import gws.gis.shape
 import gws.tools.json2
 import gws.tools.net
@@ -84,7 +84,7 @@ class Object(gws.common.search.provider.Object):
                 gws.log.debug(f'SKIP {uid}: no intersection')
                 continue
 
-            features.append(gws.gis.feature.Feature(
+            features.append(gws.common.model.generic_feature(
                 uid=uid,
                 attributes=_normalize(rec),
                 shape=sh

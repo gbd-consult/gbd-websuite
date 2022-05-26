@@ -8,8 +8,6 @@ import gws.tools.xml2
 _COMBINED_UID_DELIMITER = '___'
 
 
-def from_model(model: t.IModel) -> t.IFeature:
-    return model.new_feature()
 
 
 # def from_geojson(js, crs, key_name='id'):
@@ -19,20 +17,6 @@ def from_model(model: t.IModel) -> t.IFeature:
 #     f.attributes = rec
 #     f.key_name = key_name
 #     return f
-
-
-def from_props(model: t.IModel, p: t.FeatureProps, depth=0):
-    feature = model.feature_from_props(p, depth=depth)
-    feature.elements = p.get('elements')
-    feature.category = p.get('category')
-    feature.is_new = bool(p.get('isNew'))
-
-    # s = p.get('style')
-    # if isinstance(s, dict):
-    #     s = t.StyleProps(s)
-    # f.style = gws.common.style.from_props(s)
-
-    return feature
 
 
 #:export
@@ -46,6 +30,7 @@ class FeatureProps(t.Data):
     attributes: t.Optional[dict]
     category: t.Optional[str]
     elements: t.Optional[dict]
+    errors: t.Optional[t.List[dict]]
     geometryName: t.Optional[str]
     isNew: t.Optional[bool]
     keyName: t.Optional[str]
@@ -54,42 +39,35 @@ class FeatureProps(t.Data):
     style: t.Optional[t.StyleProps]
     type: t.Optional[str]
     uid: t.Optional[str]
-    errors: t.Optional[t.List[dict]]
 
 
 #:export IFeature
 class Feature(t.IFeature):
-    def __init__(self):
+    def __init__(self, model: t.IModel):
+        self.model: t.IModel = model
+
         self.attributes: dict = {}
         self.category: str = ''
         self.elements: dict = {}
         self.geometry_name: str = ''
         self.key_name: str = ''
         self.layer: t.Optional[t.ILayer] = None
-        self.model: t.Optional[t.IModel] = None
         self.style: t.Optional[t.IStyle] = None
         self.is_new: bool = False
         self.errors: t.List[t.FeatureError] = []
 
     @property
     def props(self) -> t.FeatureProps:
-        fp = self.model.feature_props(self)
-        fp.category = self.category or ''
-        fp.elements = self.elements or {}
-        fp.isNew = self.is_new
-        fp.uid = self.uid
-        if self.errors:
-            fp.errors = self.errors
-        return fp
+        return self.model.feature_props(self)
 
     @property
     def view_props(self) -> t.FeatureProps:
         fp = self.props
         atts = {}
         if self.key_name:
-            atts[self.key_name] = fp.attributes[self.key_name]
+            atts[self.key_name] = self.uid
         if self.geometry_name:
-            atts[self.geometry_name] = fp.attributes[self.key_name]
+            atts[self.geometry_name] = self.shape
         # del fp.modelUid
         return fp
 

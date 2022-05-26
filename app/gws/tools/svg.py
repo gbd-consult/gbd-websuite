@@ -3,7 +3,7 @@ import base64
 import shapely.ops
 import shapely.geometry
 from PIL import ImageFont
-import wand.image
+# import wand.image
 
 import gws
 import gws.tools.units as units

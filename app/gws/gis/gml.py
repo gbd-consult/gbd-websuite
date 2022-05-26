@@ -3,7 +3,7 @@ import shapely.geometry
 
 import gws
 import gws.gis.proj
-import gws.gis.feature
+import gws.common.model
 import gws.gis.shape
 import gws.tools.xml2
 import gws.types as t
@@ -142,7 +142,7 @@ def _features_from_gdal(ds):
             if not uid and 'fid' in atts:
                 uid = atts.pop('fid')
 
-            yield gws.gis.feature.Feature(
+            yield gws.common.model.generic_feature(
                 uid=uid,
                 category=layer_name,
                 shape=_shape_from_gdal(feature.GetGeomFieldRef(0)),

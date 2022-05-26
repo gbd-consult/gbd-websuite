@@ -227,13 +227,15 @@ class Layer(gws.Object, t.ILayer):
 
         if self.is_editable:
             p = self.var('edit')
-            self.editor = LayerEditor(
-                access=p.access if p else [t.Access(role='all', type='deny')],
-                model=self.model,
-                filter=p.filter if p else None)
-            if p and p.model:
-                self.editor.model = t.cast(t.IModel, self.create_child('gws.common.model', p))
-                self.editor.model.layer = self
+            if p:
+                self.editor = LayerEditor(
+                    access=p.access,
+                    model=self.model,
+                    filter=p.filter
+                )
+                if p.model:
+                    self.editor.model = t.cast(t.IModel, self.create_child('gws.common.model', p))
+                    self.editor.model.layer = self
 
     def configure_metadata(self, provider_meta=None) -> t.MetaData:
         """Load metadata from the config or from a provider, whichever comes first."""

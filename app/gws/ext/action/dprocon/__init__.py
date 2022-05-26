@@ -10,7 +10,7 @@ import gws.common.db
 import gws.common.layer
 import gws.common.template
 import gws.ext.helper.alkis
-import gws.gis.feature
+import gws.common.model
 import gws.gis.proj
 import gws.gis.shape
 import gws.tools.date
@@ -117,7 +117,7 @@ class Object(gws.common.action.Object):
         atts = self._select_data(request_id)
         shape = gws.gis.shape.from_wkb_hex(geom, self.alkis.crs)
 
-        f = gws.gis.feature.Feature(
+        f = gws.common.model.generic_feature(
             uid=f'dprocon_{request_id}',
             attributes=atts,
             shape=shape,

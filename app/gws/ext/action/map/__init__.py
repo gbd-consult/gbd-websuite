@@ -148,22 +148,24 @@ class Object(gws.common.action.Object):
         """Get a list of features in a bounding box"""
 
         layer = req.require_layer(p.layerUid)
+        model = layer.model
+
+        args = t.SelectArgs(
+            limit=p.get('limit'),
+        )
+
         bounds = t.Bounds(
             crs=p.crs or layer.map.crs,
             extent=p.get('bbox') or layer.map.extent
         )
 
-        shape = gws.gis.shape.from_bounds(bounds)
-
-        args = t.SelectArgs(
-            shape=shape,
-            limit=p.get('limit'),
-        )
+        if model.geometry_name:
+            args.shape = gws.gis.shape.from_bounds(bounds)
 
         gws.debug.time_start('api_get_features_SELECT')
 
         with gws.common.model.session():
-            flist = layer.get_features_ex(req.user, layer.model, args)
+            flist = layer.get_features_ex(req.user, model, args)
 
         gws.debug.time_end('api_get_features_SELECT')
 

@@ -7,7 +7,7 @@ import osgeo.gdal
 import osgeo.ogr
 
 import gws
-import gws.gis.feature
+import gws.common.model
 import gws.gis.shape
 
 import gws.types as t
@@ -51,7 +51,7 @@ def features(ds, crs=None, encoding=None):
             if not uid and 'fid' in atts:
                 uid = atts.pop('fid').value
 
-            fs.append(gws.gis.feature.Feature(
+            fs.append(gws.common.model.generic_feature(
                 uid=uid,
                 category=layer_name,
                 shape=_shape(feature.GetGeomFieldRef(0), crs),

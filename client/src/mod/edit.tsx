@@ -552,7 +552,7 @@ class EditToolbarButton extends toolbar.Button {
     tool = 'Tool.Edit.Pointer';
 
     get tooltip() {
-        return this.__('modIdentifyClickToolbarButton');
+        return this.__('modEditToolbarButton');
     }
 
 }
@@ -566,10 +566,19 @@ class Controller extends gws.Controller {
     async init() {
         await super.init();
 
-        let res = await this.app.server.editGetModels({});
-        this.map.loadModels(res.models);
+        let res1 = await this.app.server.editGetModels({});
+        this.map.loadModels(res1.models || []);
 
-        this.editableLayers = this.map.editableLayers();
+        this.editableLayers = [];
+        let res2 = await this.app.server.editGetLayers({});
+        if (res2.layers) {
+            for (let props of res2.layers) {
+                let la = this.map.getLayer(props.uid);
+                if (la)
+                    this.editableLayers.push(la as gws.types.IFeatureLayer);
+            }
+        }
+
 
         this.app.whenCalled('editLayer', args => {
             this.update({
@@ -660,7 +669,7 @@ class Controller extends gws.Controller {
         let es = this.editState;
         let v = es.feature.getAttribute(field.name);
 
-        if (es.feature.getAttribute(field.name)  === value) {
+        if (es.feature.getAttribute(field.name) === value) {
             delete es.feature.editedAttributes[field.name];
         } else {
             es.feature.editedAttributes[field.name] = value;
@@ -1023,7 +1032,7 @@ class Controller extends gws.Controller {
 
         let res = await this.app.server.editWriteFeatures({
             features: [feSave.getProps(onlyGeometry ? 0 : 1)]
-        }, {binary: false});
+        }, {binary: true});
 
 
         if (res.error) {

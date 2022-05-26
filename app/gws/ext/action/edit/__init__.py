@@ -98,7 +98,7 @@ class Object(gws.common.action.Object):
         models = []
 
         for la in self._enum_layers(project.map):
-            if la.editor:
+            if la.editor and la.editor.model:
                 models.append(la.editor.model.props)
 
         return GetModelsResponse(models=models)
@@ -247,7 +247,7 @@ class Object(gws.common.action.Object):
     def _editable_layers(self, req, project):
         ls = []
         for la in self._enum_layers(project.map):
-            if la.edit_access(req.user):
+            if la.edit_access(req.user) and la.editor and la.editor.model:
                 ls.append(la)
         return ls
 

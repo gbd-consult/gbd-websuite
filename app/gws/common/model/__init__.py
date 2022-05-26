@@ -172,7 +172,17 @@ class FieldRelationConfig(t.Config):
     modelUid: str
     fieldName: str
     title: str
-    discriminatorValue: str
+    discriminator: str
+
+
+class FieldNameTypeConfig:
+    type: t.Optional[str]
+    name: str
+
+
+class FieldLinkConfig:
+    tableName: str
+    keyName: str
 
 
 class FieldConfig(t.WithType):
@@ -181,19 +191,12 @@ class FieldConfig(t.WithType):
 
     widget: t.Optional[WidgetConfig]
 
-    relatedModelUid: t.Optional[str]
-    relatedFieldName: t.Optional[str]
-
+    relation: t.Optional[FieldRelationConfig]
     relations: t.Optional[t.List[FieldRelationConfig]]
 
-    foreignKeyName: t.Optional[str]
-    foreignKeyType: t.Optional[str]
-
-    discriminatorName: t.Optional[str]
-    discriminatorType: t.Optional[str]
-
-    linkTableName: t.Optional[str]
-    linkKeyName: t.Optional[str]
+    foreignKey: t.Optional[FieldNameTypeConfig]
+    discriminatorKey: t.Optional[FieldNameTypeConfig]
+    link: t.Optional[FieldLinkConfig]
 
     basePath: t.Optional[str]
 
@@ -242,7 +245,6 @@ class Field(gws.Object, t.IModelField):
     widget: t.Optional[t.IModelWidget]
     validators: t.List[t.IModelValidator]
     data_type: str
-    relation_type: str
     geometry_type: str
 
     def configure(self):
@@ -305,13 +307,13 @@ class Field(gws.Object, t.IModelField):
         if v is not None:
             return EXPRESSIONS[v]()
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, exclude, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth: int):
         pass
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth: int):
         pass
 
-    def read_from_orm(self, fe: t.IFeature, obj, exclude, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
         pass
 
     def write_to_orm(self, fe: t.IFeature, obj):
@@ -362,7 +364,7 @@ class ScalarField(Field):
         col = sa.Column(self.name, _SCALAR_TYPES[self.data_type], primary_key=self.is_primary_key)
         columns.append(col)
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, exclude, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
         if val is not None:
             fe.attributes[self.name] = val
@@ -372,7 +374,7 @@ class ScalarField(Field):
             fe.attributes[self.name] = val
             return
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = fe.attributes.get(self.name)
         if val is not None:
             props.attributes[self.name] = val
@@ -382,7 +384,7 @@ class ScalarField(Field):
             props.attributes[self.name] = val
             return
 
-    def read_from_orm(self, fe: t.IFeature, obj, exclude, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
         val = getattr(obj, self.name, None)
         if val is not None:
             fe.attributes[self.name] = val
@@ -406,6 +408,8 @@ class StringField(ScalarField):
     data_type = 'string'
 
     def sa_adapt_select(self, state):
+        model = t.cast(t.IDbModel, self.model)
+
         ok = (
                 state.args.keyword
                 and state.keyword_columns
@@ -413,8 +417,8 @@ class StringField(ScalarField):
 
         if ok:
             state.keyword_conds.append((
-                getattr(self.model.get_class(), self.name)
-                    .ilike('%' + _escape_like(state.args.keyword) + '%', escape='\\')))
+                getattr(model.get_class(), self.name).ilike(
+                    '%' + _escape_like(state.args.keyword) + '%', escape='\\')))
 
     def validate_value(self, value, attributes):
         v = str(value).strip()
@@ -464,15 +468,22 @@ def _is_record_with_type(val, type):
     return isinstance(val, (dict, t.Data)) and val.get('type') == type
 
 
+class FieldFieldValue(t.Data):
+    name: str
+    content: bytes
+
+
 class FileField(ScalarField):
     data_type = 'string'
 
-    def store_file(self, name, content):
-        p = gws.tools.os2.parse_path(name)
-        file_name = gws.as_uid(p['name']) + '.' + gws.as_uid(p['extension'])
-        file_path = self.var('basePath') + '/' + file_name
+    def normalize_file_name(self, s):
+        p = gws.tools.os2.parse_path(s)
+        return gws.as_uid(p['name']) + '.' + gws.as_uid(p['extension'])
+
+    def store_file(self, fname, content):
+        file_path = self.var('basePath') + '/' + fname
         gws.write_file_b(file_path, content)
-        return file_name
+        return True
 
     def get_file(self, fe: t.IFeature):
         file_name = fe.attr(self.name)
@@ -481,21 +492,31 @@ class FileField(ScalarField):
             path=file_path
         )
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, exclude, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
-        if _is_record_with_type(val, 'File'):
-            fe.attributes[self.name] = val
+        if val is not None:
+            fe.attributes[self.name] = FieldFieldValue(
+                name=gws.get(val, 'name'),
+                content=gws.get(val, 'content'))
 
-    def read_from_orm(self, fe: t.IFeature, obj, exclude, depth):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+        val = fe.attributes.get(self.name)
+        if val:
+            props.attributes[self.name] = FieldFieldValue(name=val.name)
+
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
         val = getattr(obj, self.name, None)
         if val is not None:
-            fe.attributes[self.name] = val
+            fe.attributes[self.name] = FieldFieldValue(name=val)
 
     def write_to_orm(self, fe: t.IFeature, obj):
         val = fe.attributes.get(self.name)
-        if _is_record_with_type(val, 'File'):
-            res = self.store_file(val.get('name'), val.get('content'))
-            setattr(obj, self.name, res)
+        if val is not None:
+            fname = self.normalize_file_name(gws.get(val, 'name'))
+            content = gws.get(val, 'content')
+            if fname and content:
+                self.store_file(fname, content)
+                setattr(obj, self.name, fname)
 
 
 class GeometryField(ScalarField):
@@ -504,96 +525,72 @@ class GeometryField(ScalarField):
 
     def sa_adapt_select(self, state):
         if state.args.shape:
+            model = t.cast(t.IDbModel, self.model)
+
             shape = state.args.shape.tolerance_polygon(state.args.map_tolerance)
-            shape = shape.transformed_to(self.model.get_table().geometry_crs)
+            shape = shape.transformed_to(model.get_table().geometry_crs)
             state.geometry_conds.append(sa.func.st_intersects(
-                getattr(self.model.get_class(), self.name),
+                getattr(model.get_class(), self.name),
                 sa.cast(shape.ewkb_hex, geosa.Geometry())))
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, exclude, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
         if val is not None:
             fe.attributes[self.name] = gws.gis.shape.from_props(val)
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = fe.attributes.get(self.name)
         if val is not None:
             props.attributes[self.name] = val.props
 
-    def read_from_orm(self, fe: t.IFeature, obj, exclude, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
         val = getattr(obj, self.name, None)
         if val is not None:
             fe.attributes[self.name] = gws.gis.shape.from_wkb_hex(val)
 
     def write_to_orm(self, fe: t.IFeature, obj):
         val = fe.attributes.get(self.name)
-        if val:
+        if val is not None:
             setattr(obj, self.name, val.ewkb_hex)
 
 
 ##
 
 
-# def as_feature(s) -> t.IFeature:
-#     if s and isinstance(s, t.IFeature):
-#         return s
-#
-#
-# def as_feature_collection(s) -> t.IFeatureCollection:
-#     if s and isinstance(s, t.IFeatureCollection):
-#         return s
-#
-#
-# def as_feature_props(s) -> t.FeatureProps:
-#     if s:
-#         if isinstance(s, dict):
-#             s = t.Data(s)
-#         if isinstance(s, t.Data) and s.type == 'Feature':
-#             return t.cast(t.FeatureProps, s)
-#
-#
-# def as_feature_collection_props(s) -> t.FeatureCollectionProps:
-#     if s:
-#         if isinstance(s, dict):
-#             s = t.Data(s)
-#         if isinstance(s, t.Data) and s.type == 'FeatureCollection':
-#             return t.cast(t.FeatureCollectionProps, s)
+class RelatedField(Field):
+    model: t.IDbModel
 
-
-##
-
-
-class RelationField(Field):
     def configure(self):
         super().configure()
 
         self.relations = []
 
-        p = self.var('relatedModelUid')
+        self.link_table_name = self.var('link.tableName')
+        self.link_key_name = self.var('link.keyName')
+
+        self.foreign_key_name = self.var('foreignKey.name')
+        self.foreign_key_type = self.var('foreignKey.type')
+
+        self.discriminator_name = self.var('discriminatorKey.name')
+        self.discriminator_type = self.var('discriminatorKey.type')
+
+        self.relations = []
+
+        rels = []
+        p = self.var('relation')
         if p:
-            self.relations.append(t.Data(
-                model_uid=self.var('relatedModelUid'),
-                field_name=self.var('relatedFieldName'),
-            ))
-
-        self.link_table_name = self.var('linkTableName')
-        self.link_key_name = self.var('linkKeyName')
-
-        self.foreign_key_name = self.var('foreignKeyName')
-        self.foreign_key_type = self.var('foreignKeyType')
-
-        self.discriminator_name = self.var('discriminatorName')
-        self.discriminator_type = self.var('discriminatorType')
-
+            rels.append(p)
         p = self.var('relations')
         if p:
-            for r in p:
-                self.relations.append(t.Data(
-                    model_uid=r.modelUid,
-                    field_name=r.fieldName,
-                    title=r.title,
-                    discriminator_value=r.discriminatorValue,
-                ))
+            rels.extend(p)
+
+        for r in rels:
+            self.relations.append(t.Data(
+                model_uid=r.modelUid,
+                field_name=r.fieldName,
+                title=r.title,
+                discriminator=r.discriminator,
+            ))
 
     @property
     def props(self):
@@ -601,7 +598,6 @@ class RelationField(Field):
         p.relations = []
         for r in self.relations:
             p.relations.append(t.Props(
-                type=self.relation_type,
                 modelUid=r.model_uid,
                 fieldName=r.field_name,
                 title=r.title,
@@ -618,9 +614,21 @@ class RelationField(Field):
     def first_related_model(self):
         return registry().get_model(self.relations[0].model_uid)
 
+    def relation_for_model(self, model):
+        for r in self.relations:
+            if r.model_uid == model.uid:
+                return r
+
     ##
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, exclude, depth):
+
+##
+
+
+class RelatedFeatureField(RelatedField):
+    data_type = 'feature'
+
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         if depth <= 0:
             return
 
@@ -629,67 +637,72 @@ class RelationField(Field):
             return
 
         rel_model = self.first_related_model()
+        uid = val.get('attributes').get(rel_model.key_name)
+        fe.attributes[self.name] = rel_model.get_feature(uid, depth - 1)
 
-        if self.data_type == 'feature':
-            uid = val.get('attributes').get(rel_model.key_name)
-            fe.attributes[self.name] = rel_model.get_feature(uid, exclude, depth - 1)
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+        fe2 = fe.attributes.get(self.name)
+        if fe2:
+            props.attributes[self.name] = fe2.model.feature_props(fe2, depth - 1)
 
-        if self.data_type == 'featureList':
-            uids = [f.get('attributes').get(rel_model.key_name) for f in val]
-            fe.attributes[self.name] = [rel_model.get_feature(uid, exclude, depth - 1) for uid in uids]
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
+        if depth <= 0:
+            return
+        rel_model = self.first_related_model()
+        obj2 = getattr(obj, self.name, None)
+        if obj2:
+            # exclude = (exclude or []) + [self.relations[0].field_name]
+            fe.attributes[self.name] = rel_model.feature_from_orm(obj2, depth - 1)
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps):
-        if self.data_type == 'feature':
-            fe2 = fe.attributes.get(self.name)
-            if fe2:
-                props.attributes[self.name] = fe2.props
+    def write_to_orm(self, fe: t.IFeature, obj):
+        rel_model = self.first_related_model()
+        fe2 = fe.attributes.get(self.name)
+        if fe2:
+            setattr(obj, self.name, rel_model.get_object(fe2.uid))
 
-        if self.data_type == 'featureList':
-            flist = fe.attributes.get(self.name)
-            if flist:
-                props.attributes[self.name] = [f.props for f in flist]
 
-    def read_from_orm(self, fe: t.IFeature, obj, exclude, depth):
+class RelatedFeatureListField(RelatedField):
+    data_type = 'featureList'
+
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+        if depth <= 0:
+            return
+        val = props.attributes.get(self.name)
+        if val is None:
+            return
+
+        rel_model = self.first_related_model()
+        uids = [f.get('attributes').get(rel_model.key_name) for f in val]
+        fe.attributes[self.name] = [rel_model.get_feature(uid, depth - 1) for uid in uids]
+
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+        flist = fe.attributes.get(self.name)
+        if flist:
+            props.attributes[self.name] = [fe2.model.feature_props(fe2, depth - 1) for fe2 in flist]
+
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
         if depth <= 0:
             return
 
         rel_model = self.first_related_model()
 
-        if self.data_type == 'feature':
-            obj2 = getattr(obj, self.name, None)
-            if obj2:
-                exclude = (exclude or []) + [self.relations[0].field_name]
-                fe.attributes[self.name] = rel_model.feature_from_orm(obj2, exclude, depth - 1)
-
-        if self.data_type == 'featureList':
-            objlist = getattr(obj, self.name, None)
-            if objlist:
-                exclude = (exclude or []) + [self.relations[0].field_name]
-                fe.attributes[self.name] = [
-                    rel_model.feature_from_orm(o, exclude, depth - 1)
-                    for o in objlist
-                ]
+        objlist = getattr(obj, self.name, None)
+        if objlist:
+            # exclude = (exclude or []) + [self.relations[0].field_name]
+            fe.attributes[self.name] = [
+                rel_model.feature_from_orm(o, depth - 1)
+                for o in objlist
+            ]
 
     def write_to_orm(self, fe: t.IFeature, obj):
-
         rel_model = self.first_related_model()
-
-        if self.data_type == 'feature':
-            fe2 = fe.attributes.get(self.name)
-            if fe2:
-                setattr(obj, self.name, rel_model.get_object(fe2.uid))
-
-        if self.data_type == 'featureList':
-            flist = fe.attributes.get(self.name)
-            if flist:
-                setattr(obj, self.name, [rel_model.get_object(f.uid) for f in flist])
-
-
-##
+        flist = fe.attributes.get(self.name)
+        if flist:
+            setattr(obj, self.name, [rel_model.get_object(f.uid) for f in flist])
 
 
 """
-moRelation   M->1
+relatedFeature   M->1
 
     HOUSE -> street_id -> STREET
 
@@ -701,11 +714,8 @@ moRelation   M->1
 """
 
 
-class Field_moRelation(RelationField):
-    data_type = 'feature'
-    relation_type = 'mo'
-
-    sa_adapt_select = RelationField.sa_adapt_select_selectin
+class Field_relatedFeature(RelatedFeatureField):
+    sa_adapt_select = RelatedFeatureField.sa_adapt_select_selectin
 
     def sa_columns(self, columns):
         rel_model = self.first_related_model()
@@ -722,7 +732,7 @@ class Field_moRelation(RelationField):
 
 
 """
-omRelation   1->M
+childFeatures   1->M
     
     STREET -> HOUSE (list)
 
@@ -734,11 +744,8 @@ omRelation   1->M
 """
 
 
-class Field_omRelation(RelationField):
-    data_type = 'featureList'
-    relation_type = 'om'
-
-    sa_adapt_select = RelationField.sa_adapt_select_selectin
+class Field_relatedFeatureList(RelatedFeatureListField):
+    sa_adapt_select = RelatedFeatureListField.sa_adapt_select_selectin
 
     def sa_properties(self, properties):
         rel_model = self.first_related_model()
@@ -761,18 +768,11 @@ omMultiRelation   1->M
             { modelUid: TREE  title 'Tree' fieldName: street } 
         ]
         
-    symmetric = moRelation
+    symmetric = parentFeature
 """
 
 
-class Field_omMultiRelation(RelationField):
-    data_type = 'featureList'
-    relation_type = 'om'
-
-    def relation_for_model(self, model):
-        for r in self.relations:
-            if r.model_uid == model.uid:
-                return r
+class Field_relatedMultiFeatureList(RelatedFeatureListField):
 
     def sa_properties(self, properties):
         for r in self.relations:
@@ -783,7 +783,7 @@ class Field_omMultiRelation(RelationField):
             key = self.name + ':' + r.model_uid
             properties[key] = sa.orm.relationship(rel_cls, **kwargs)
 
-    def read_from_orm(self, fe: t.IFeature, obj, exclude, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
         if depth <= 0:
             return
 
@@ -794,10 +794,9 @@ class Field_omMultiRelation(RelationField):
             val = getattr(obj, key, None)
             if val is None:
                 continue
-            exclude = (exclude or []) + [r.field_name]
             rel_model = registry().get_model(r.model_uid)
             for obj2 in val:
-                flist.append(rel_model.feature_from_orm(obj2, exclude, depth - 1))
+                flist.append(rel_model.feature_from_orm(obj2, depth - 1))
 
         if flist:
             fe.attributes[self.name] = flist
@@ -845,11 +844,8 @@ mmLinkRelation  STREET <-- <LINK> --> DISTRICT
 """
 
 
-class Field_mmLinkRelation(RelationField):
-    data_type = 'featureList'
-    relation_type = 'mm'
-
-    sa_adapt_select = RelationField.sa_adapt_select_selectin
+class Field_relatedLinkedFeatureList(RelatedFeatureListField):
+    sa_adapt_select = RelatedFeatureListField.sa_adapt_select_selectin
 
     def sa_properties(self, properties):
         rel_model = self.first_related_model()
@@ -884,13 +880,6 @@ def _get_uid(val):
         return val.uid
 
 
-def _generic_feature(uid):
-    fe = _GENERIC_MODEL.new_feature()
-    fe.key_name = 'id'
-    fe.attributes = {'id': uid}
-    return fe
-
-
 """
 omGenericRelation   1->M 
     
@@ -911,9 +900,7 @@ omGenericRelation   1->M
 """
 
 
-class Field_omGenericRelation(RelationField):
-    data_type = 'featureList'
-    relation_type = 'om'
+class Field_relatedGenericFeatureList(RelatedFeatureListField):
 
     def sa_properties(self, properties):
         rel_model = self.first_related_model()
@@ -944,33 +931,31 @@ moGenericRelation   M->1
 """
 
 
-class Field_moGenericRelation(RelationField):
-    data_type = 'feature'
-    relation_type = 'mo'
+class Field_relatedGenericFeature(RelatedFeatureField):
 
     def sa_columns(self, columns):
         col = sa.Column(self.foreign_key_name, _SCALAR_TYPES[self.foreign_key_type])
         columns.append(col)
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, exclude, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
         if val is None:
             return
 
         uid = _get_uid(val)
         if uid:
-            fe.attributes[self.name] = _generic_feature(uid)
+            fe.attributes[self.name] = generic_feature(uid=uid)
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = fe.attributes.get(self.name)
         if val is not None:
-            props.attributes[self.name] = val.props
+            props.attributes[self.name] = val.model.feature_props(val, depth - 1)
             return
 
-    def read_from_orm(self, fe: t.IFeature, obj, exclude, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
         val = getattr(obj, self.foreign_key_name, None)
         if val is not None:
-            fe.attributes[self.name] = _generic_feature(val)
+            fe.attributes[self.name] = generic_feature(uid=val)
             return
 
     def write_to_orm(self, fe: t.IFeature, obj):
@@ -1000,9 +985,7 @@ omDiscriminatedRelation   1->M
 """
 
 
-class Field_omDiscriminatedRelation(RelationField):
-    data_type = 'featureList'
-    relation_type = 'om'
+class Field_relatedDiscriminatedFeatureList(RelatedFeatureListField):
 
     def sa_properties(self, properties):
         rel_model = self.first_related_model()
@@ -1011,6 +994,7 @@ class Field_omDiscriminatedRelation(RelationField):
         rel_cls = rel_model.get_class()
 
         rel_field = rel_model.get_field(self.relations[0].field_name)
+
         rel = rel_field.relation_for_model(self.model)
         own_pk = self.model.get_keys()
         rel_fk_name = rel_field.foreign_key_name
@@ -1018,7 +1002,7 @@ class Field_omDiscriminatedRelation(RelationField):
         kwargs = {}
         kwargs['primaryjoin'] = sa.and_(
             getattr(own_cls, own_pk[0].name) == getattr(rel_cls, rel_fk_name),
-            getattr(rel_cls, rel_field.discriminator_name) == rel.discriminator_value
+            getattr(rel_cls, rel_field.discriminator_name) == rel.discriminator
         )
         kwargs['foreign_keys'] = getattr(rel_cls, rel_fk_name)
 
@@ -1033,7 +1017,7 @@ class Field_omDiscriminatedRelation(RelationField):
             rel_field = rel_model.get_field(self.relations[0].field_name)
             rel = rel_field.relation_for_model(self.model)
             for o in rel_obj_list:
-                setattr(o, rel_field.discriminator_name, rel.discriminator_value)
+                setattr(o, rel_field.discriminator_name, rel.discriminator)
 
 
 """
@@ -1049,36 +1033,19 @@ moDiscriminatedRelation   M->1
         discriminatorName 'object_type'
         discriminatorType 'string'
         relations = [
-            { uid: STREET title 'Street' fieldName: objects discriminatorValue: 'street' } 
-            { uid: HOUSE  title 'House'  fieldName: objects discriminatorValue: 'house'  } 
+            { uid: STREET title 'Street' fieldName: objects discriminator: 'street' } 
+            { uid: HOUSE  title 'House'  fieldName: objects discriminator: 'house'  } 
         ]
         
 """
 
 
-class Field_moDiscriminatedRelation(RelationField):
-    data_type = 'feature'
-    relation_type = 'mo'
+class Field_relatedDiscriminatedFeature(RelatedFeatureField):
 
-    def configure(self):
-        super().configure()
-        self.relations = []
-        for p in self.var('relations'):
-            self.relations.append(t.Data(
-                model_uid=p.uid,
-                field_name=p.fieldName,
-                discriminator_value=p.discriminatorValue
-            ))
-
-    def relation_for_model(self, model):
+    def relation_for_discriminator(self, d):
         for r in self.relations:
-            if r.model_uid == model.uid:
-                return r
-
-    def relation_for_discriminator(self, dv):
-        for r in self.relations:
-            if r.discriminator_value == dv:
-                gws.log.debug(f'found model {r.model_uid!r} for dv={dv!r}')
+            if r.discriminator == d:
+                gws.log.debug(f'found model {r.model_uid!r} for discriminator={d!r}')
                 return r
 
     def sa_columns(self, columns):
@@ -1087,19 +1054,19 @@ class Field_moDiscriminatedRelation(RelationField):
         col = sa.Column(self.discriminator_name, _SCALAR_TYPES[self.discriminator_type])
         columns.append(col)
 
-    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, exclude, depth):
+    def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
         if val is not None:
             rel_model = registry().get_model(val.modelUid)
             uid = val.attributes.get(rel_model.key_name)
             fe.attributes[self.name] = rel_model.feature_from_uid2(uid)
 
-    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps):
+    def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = fe.attributes.get(self.name)
         if val is not None:
             props.attributes[self.name] = val.props
 
-    def read_from_orm(self, fe: t.IFeature, obj, exclude, depth):
+    def read_from_orm(self, fe: t.IFeature, obj, depth):
         val = getattr(obj, self.foreign_key_name, None)
         rel = self.relation_for_discriminator(getattr(obj, self.discriminator_name, None))
         if val is not None:
@@ -1113,8 +1080,8 @@ class Field_moDiscriminatedRelation(RelationField):
         if val is not None:
             rel = self.relation_for_model(val.model)
             setattr(obj, self.foreign_key_name, val.uid)
-            setattr(obj, self.discriminator_name, rel.discriminator_value)
-            gws.log.debug(f'@@ {self.foreign_key_name}={val.uid!r}, {self.discriminator_name}={rel.discriminator_value!r}')
+            setattr(obj, self.discriminator_name, rel.discriminator)
+            gws.log.debug(f'@@ {self.foreign_key_name}={val.uid!r}, {self.discriminator_name}={rel.discriminator!r}')
 
 
 ##
@@ -1144,14 +1111,14 @@ _FIELD_TYPES = {
 
     'geometry': GeometryField,
 
-    'omRelation': Field_omRelation,
-    'omMultiRelation': Field_omMultiRelation,
-    'moRelation': Field_moRelation,
-    'mmLinkRelation': Field_mmLinkRelation,
-    'omGenericRelation': Field_omGenericRelation,
-    'moGenericRelation': Field_moGenericRelation,
-    'omDiscriminatedRelation': Field_omDiscriminatedRelation,
-    'moDiscriminatedRelation': Field_moDiscriminatedRelation,
+    'relatedFeature': Field_relatedFeature,
+    'relatedFeatureList': Field_relatedFeatureList,
+    'relatedMultiFeatureList': Field_relatedMultiFeatureList,
+    'relatedLinkedFeatureList': Field_relatedLinkedFeatureList,
+    'relatedGenericFeatureList': Field_relatedGenericFeatureList,
+    'relatedGenericFeature': Field_relatedGenericFeature,
+    'relatedDiscriminatedFeatureList': Field_relatedDiscriminatedFeatureList,
+    'relatedDiscriminatedFeature': Field_relatedDiscriminatedFeature,
 }
 
 _VALIDATOR_TYPES = {
@@ -1161,12 +1128,343 @@ _VALIDATOR_TYPES = {
 ##
 
 
+##
+
+
+class Config(t.WithAccess):
+    """Model configuration"""
+
+    fields: t.List[FieldConfig]
+    sqlFilter: t.Optional[str]
+
+
+class Props(t.Data):
+    uid: str
+    layerUid: str
+    keyName: str
+    geometryName: str
+    fields: t.List[FieldProps]
+
+
+class SelectState(t.Data):
+    sel: sa.sql.expression.select
+    args: t.SelectArgs
+    keyword_conds: t.List[t.Any]
+    geometry_conds: t.List[t.Any]
+
+
+#:export IModel
+class Object(gws.Object, t.IModel):
+    layer: t.Optional[t.ILayer]
+    fields: t.List[t.IModelField] = []
+    key_name: str = ''
+    geometry_name: str = ''
+
+    def configure(self):
+        super().configure()
+
+        self.layer = None
+
+        self.key_name = ''
+        self.geometry_name = ''
+
+        self.fields = []
+
+        for p in self.var('fields'):
+            cls = _FIELD_TYPES[p.type]
+            if not cls:
+                raise Error(f'no field {p.type!r}')
+
+            f = t.cast(t.IModelField, self.create_child(cls, p))
+            f.model = self
+            self.fields.append(f)
+
+            if isinstance(f, GeometryField) and not self.geometry_name:
+                self.geometry_name = f.name
+            if f.is_primary_key:
+                self.key_name = f.name
+
+    def select(self, args: t.SelectArgs) -> t.List[t.IFeature]:
+        return []
+
+    def save(self, fe: t.IFeature) -> t.IFeature:
+        return fe
+
+    def delete(self, fe: t.IFeature):
+        pass
+
+    def reload(self, fe: t.IFeature, depth: int = 0):
+        pass
+
+    def validate(self, fe: t.IFeature) -> t.List[t.FeatureError]:
+        return []
+
+    def init_feature(self):
+        fe = gws.gis.feature.Feature(self)
+        fe.key_name = self.key_name
+        fe.geometry_name = self.geometry_name
+        if self.layer:
+            fe.layer = self.layer
+        return fe
+
+    def new_feature(self):
+        fe = self.init_feature()
+        fe.is_new = True
+        return fe
+
+    def get_feature(self, uid, depth=0) -> t.Optional[t.IFeature]:
+        return None
+
+    def feature_from_props(self, props: t.FeatureProps, depth=0):
+        fe = self.init_feature()
+        fe.elements = props.get('elements') or {}
+        fe.category = props.get('category') or ''
+        fe.is_new = bool(props.get('isNew'))
+        for f in self.fields:
+            f.read_from_props(fe, props, depth)
+
+        # s = p.get('style')
+        # if isinstance(s, dict):
+        #     s = t.StyleProps(s)
+        # f.style = gws.common.style.from_props(s)
+
+        return fe
+
+    def feature_props(self, fe, depth=0):
+        props = t.FeatureProps(
+            attributes={},
+            keyName=self.key_name,
+            geometryName=self.geometry_name,
+            modelUid=self.uid,
+            layerUid=self.layer.uid if self.layer else None,
+            category=fe.category or '',
+            elements=fe.elements or {},
+            isNew=fe.is_new,
+        )
+
+        for f in self.fields:
+            f.write_to_props(fe, props, depth)
+
+        if fe.errors:
+            props.errors = fe.errors
+
+        return props
+
+    def get_field(self, name: str) -> t.Optional[t.IModelField]:
+        for f in self.fields:
+            if f.name == name:
+                return f
+
+    @property
+    def props(self):
+        p = Props(uid=self.uid, fields=[f.props for f in self.fields])
+        if self.layer:
+            p.layerUid = self.layer.uid
+        if self.key_name:
+            p.keyName = self.key_name
+        if self.geometry_name:
+            p.geometryName = self.geometry_name
+        return p
+
+
+#:export IDbModel
+class DbModel(Object, t.IDbModel):
+    def configure(self):
+        super().configure()
+        self.sql_filter = self.var('sqlFilter')
+
+    def select(self, args: t.SelectArgs) -> t.List[t.IFeature]:
+
+        sel = self.sa_make_select(args)
+        if sel is None:
+            return []
+
+        cls = self.get_class()
+        flist = []
+
+        cursor = self.sa_session().execute(sel)
+        for row in cursor.unique().all():
+            obj = getattr(row, cls.__name__)
+            fe = self.feature_from_orm(obj, depth=args.depth or 0)
+            flist.append(fe)
+
+        return flist
+
+    def save(self, fe: t.IFeature):
+
+        if fe.is_new:
+            obj = self.get_class()()
+        else:
+            obj = self.get_object(fe.uid)
+
+        for f in self.fields:
+            f.write_to_orm(fe, obj)
+
+        if fe.is_new:
+            self.sa_session().add(obj)
+
+        fe._model_data = {'object': obj}
+        return fe
+
+    def delete(self, fe: t.IFeature):
+        self.sa_session().delete(self.get_object(fe.uid))
+
+    def reload(self, fe: t.IFeature, depth: int = 0):
+        md = getattr(fe, '_model_data', None)
+        if md:
+            f2 = self.feature_from_orm(md['object'], depth=depth)
+            fe.attributes = f2.attributes
+        return fe
+
+    def validate(self, fe) -> t.List[t.FeatureError]:
+        errors = []
+        for f in self.fields:
+            f.validate(fe.attributes, errors)
+        return errors
+
+    def get_feature(self, uid, depth=0):
+        obj = self.get_object(uid)
+        if obj:
+            return self.feature_from_orm(obj, depth)
+
+    def feature_from_uid2(self, props: t.FeatureProps, depth=0):
+        fe = self.init_feature()
+        uid = props.attributes.get(self.key_name)
+        obj = self.get_object(uid)
+        return self.feature_from_orm(obj, depth)
+
+    def feature_from_orm(self, obj, depth=0):
+        fe = self.init_feature()
+
+        # gws.log.debug(f"FETCH {self.uid} uid={getattr(obj, self.key_name, '?')}")
+
+        for f in self.fields:
+            f.read_from_orm(fe, obj, depth)
+
+        fe._model_data = {'object': obj}
+        return fe
+
+    def get_db(self):
+        if self.layer:
+            return getattr(self.layer, 'db', None)
+
+    def get_table(self) -> t.SqlTable:
+        if self.layer:
+            return getattr(self.layer, 'table', None)
+
+    def get_class(self):
+        return registry().get_class(self.uid)
+
+    def get_keys(self):
+        return registry().get_keys(self.uid)
+
+    def get_object(self, uid):
+        return self.sa_session().get(self.get_class(), uid)
+
+    def sa_session(self):
+        return registry().session(self.get_db())
+
+    def sa_make_select(self, args: t.SelectArgs):
+        cls = self.get_class()
+
+        state = SelectState(sel=sa.select(cls), args=args, keyword_conds=[], geometry_conds=[])
+
+        for f in self.fields:
+            f.sa_adapt_select(state)
+
+        if args.keyword and not state.keyword_conds:
+            return
+        if state.keyword_conds:
+            state.sel = state.sel.where(sa.or_(*state.keyword_conds))
+
+        if args.shape and not state.geometry_conds:
+            return
+        if state.geometry_conds:
+            state.sel = state.sel.where(sa.or_(*state.geometry_conds))
+
+        if args.uids:
+            state.sel = state.sel.where(getattr(cls, self.key_name).in_(args.uids))
+
+        if args.extra_where:
+            s = sa.text(args.extra_where[0])
+            if len(args.extra_where) > 1:
+                s = s.bindparams(**args.extra_where[1])
+            state.sel = state.sel.where(s)
+
+        if self.sql_filter:
+            state.sel = state.sel.where(sa.text(self.sql_filter))
+
+        gws.log.debug(f'SA_MAKE_SELECT: {str(state.sel)}')
+
+        return state.sel
+
+
+def _escape_like(s, escape='\\'):
+    return (
+        s
+            .replace(escape, escape + escape)
+            .replace('%', escape + '%')
+            .replace('_', escape + '_'))
+
+
+##
+
+class GenericModel(Object):
+    key_name = 'uid'
+    geometry_name = 'geometry'
+    layer = None
+
+    def feature_from_props(self, props: t.FeatureProps, depth=0):
+        fe = super().feature_from_props(props, depth)
+        fe.attributes = gws.get(props, 'attributes', default={})
+        return fe
+
+    def feature_props(self, fe, depth=0):
+        props = super().feature_props(fe, depth)
+        for k, v in fe.attributes.items():
+            if hasattr(v, 'props'):
+                v = v.props
+            props.attributes[k] = v
+        return props
+
+
+_genericModel = GenericModel()
+_genericModel.uid = '_genericModel'
+
+
+def generic():
+    return _genericModel
+
+
+def generic_feature(**args):
+    m = generic()
+    fe = m.new_feature()
+
+    for k, v in args.items():
+        if k == 'uid':
+            fe.attributes[m.key_name] = v
+        elif k == 'shape':
+            fe.attributes[m.geometry_name] = v
+        elif k == 'attributes':
+            fe.attributes.update(v)
+        elif k == 'category':
+            fe.category = v
+
+    return fe
+
+
+##
+
+
+class SaBase:
+    feature: t.IFeature
+
 class ModelRegistry:
     def __init__(self, root):
         self.root = root
         self.ms = {}
-        self.engines = {}
-        self.sessions = {}
+        self.engines: t.Dict[str, sa.engine.Engine] = {}
+        self.sessions: t.Dict[str, sa.orm.Session] = {}
         self.inited = False
         self.initing = False
         self.sa_registry = sa.orm.registry()
@@ -1237,7 +1535,7 @@ class ModelRegistry:
 
         for m in self.ms.values():
             gws.log.debug(f'REGISTRY_INIT CLASS:{m.model.uid}')
-            m.cls = type(f'_SA_{m.model.uid}', (), {})
+            m.cls = type(f'_SA_{m.model.uid}', (SaBase,), {})
             self.sa_registry.map_imperatively(m.cls, m.table)
 
         for m in self.ms.values():
@@ -1264,11 +1562,7 @@ class ModelRegistry:
 
         return sa.Table(name, metadata, *cols, schema=schema)
 
-    def session(self, uid):
-        db = self.ms[uid].model.get_db()
-        if not db:
-            return
-
+    def session(self, db):
         uid = db.uid
 
         if uid not in self.engines:
@@ -1305,6 +1599,9 @@ def registry() -> ModelRegistry:
 
 #:export
 class ModelSession:
+    def open(self):
+        registry().init()
+
     def commit(self):
         registry().commit_all()
 
@@ -1314,277 +1611,9 @@ class ModelSession:
     def close(self):
         registry().close_all()
 
-    def __enter__(self):
-        return self
 
-    def __exit__(self, type_, value, traceback):
-        self.close()
+session = ModelSession()
 
 
-def session():
-    return ModelSession()
-
-
-##
-
-
-class Config(t.WithAccess):
-    """Model configuration"""
-
-    fields: t.List[FieldConfig]
-    sqlFilter: t.Optional[str]
-
-
-class Props(t.Data):
-    uid: str
-    layerUid: str
-    keyName: str
-    geometryName: str
-    fields: t.List[FieldProps]
-
-
-class SelectState(t.Data):
-    sel: sa.sql.expression.select
-    args: t.SelectArgs
-    keyword_conds: t.List[t.Any]
-    geometry_conds: t.List[t.Any]
-
-
-#:export IModel
-class Object(gws.Object, t.IModel):
-    layer: t.Optional[t.ILayer]
-    fields: t.List[t.IModelField]
-    key_name: str
-    geometry_name: str
-
-    def configure(self):
-        super().configure()
-
-        self.layer = None
-
-        self.key_name = ''
-        self.geometry_name = ''
-
-        self.sql_filter = self.var('sqlFilter')
-
-        self.fields = []
-
-        for p in self.var('fields'):
-            cls = _FIELD_TYPES[p.type]
-            if not cls:
-                raise Error(f'no field {p.type!r}')
-
-            f = t.cast(t.IModelField, self.create_child(cls, p))
-            f.model = self
-            self.fields.append(f)
-
-            if isinstance(f, GeometryField) and not self.geometry_name:
-                self.geometry_name = f.name
-            if f.is_primary_key:
-                self.key_name = f.name
-
-    def select(self, args: t.SelectArgs) -> t.List[t.IFeature]:
-        registry().init()
-
-        sel = self.sa_make_select(args)
-        if sel is None:
-            return []
-
-        cls = self.get_class()
-        flist = []
-
-        cursor = self.sa_session().execute(sel)
-        for row in cursor.unique().all():
-            obj = getattr(row, cls.__name__)
-            fe = self.feature_from_orm(obj, depth=args.depth or 0)
-            flist.append(fe)
-
-        return flist
-
-    def save(self, fe: t.IFeature, is_new: bool):
-        registry().init()
-
-        if is_new:
-            obj = self.get_class()()
-        else:
-            obj = self.get_object(fe.uid)
-
-        for f in self.fields:
-            f.write_to_orm(fe, obj)
-
-        if is_new:
-            self.sa_session().add(obj)
-
-        fe._model_data = {'object': obj}
-        return fe
-
-    def delete(self, fe: t.IFeature):
-        registry().init()
-        self.sa_session().delete(self.get_object(fe.uid))
-
-    def reload(self, fe: t.IFeature, depth=0):
-        md = getattr(fe, '_model_data', None)
-        if md:
-            f2 = self.feature_from_orm(md['object'], depth=depth)
-            fe.attributes = f2.attributes
-        return fe
-
-    def validate(self, fe) -> t.List[t.FeatureError]:
-        errors = []
-        for f in self.fields:
-            f.validate(fe.attributes, errors)
-        return errors
-
-    def new_feature(self):
-        registry().init()
-        fe = gws.gis.feature.Feature()
-        fe.model = self
-        fe.key_name = self.key_name
-        fe.geometry_name = self.geometry_name
-        if self.layer:
-            fe.layer = self.layer
-        return fe
-
-    def get_feature(self, uid, exclude=None, depth=0):
-        obj = self.get_object(uid)
-        if obj:
-            return self.feature_from_orm(obj, exclude, depth)
-
-    def feature_from_uid2(self, props: t.FeatureProps, exclude=None, depth=0):
-        fe = self.new_feature()
-        uid = props.attributes.get(self.key_name)
-        obj = self.get_object(uid)
-        return self.feature_from_orm(obj, exclude, depth)
-
-    def feature_from_props(self, props: t.FeatureProps, exclude=None, depth=0):
-        fe = self.new_feature()
-        for f in self.fields:
-            f.read_from_props(fe, props, exclude, depth)
-        return fe
-
-    def feature_from_orm(self, obj, exclude=None, depth=0):
-        fe = self.new_feature()
-
-        for f in self.fields:
-            if exclude and f.name in exclude:
-                continue
-            f.read_from_orm(fe, obj, exclude, depth)
-
-        setattr(fe, '_model_data', {'object': obj})
-        return fe
-
-    def feature_props(self, fe):
-        registry().init()
-        props = t.FeatureProps(
-            type='Feature',
-            attributes={},
-            keyName=self.key_name,
-            geometryName=self.geometry_name,
-            modelUid=self.uid,
-            layerUid=self.layer.uid if self.layer else None,
-        )
-        for f in self.fields:
-            f.write_to_props(fe, props)
-        return props
-
-    ##
-
-    def get_db(self):
-        if self.layer:
-            return getattr(self.layer, 'db', None)
-
-    def get_table(self) -> t.SqlTable:
-        if self.layer:
-            return getattr(self.layer, 'table', None)
-
-    def get_field(self, name):
-        for f in self.fields:
-            if f.name == name:
-                return f
-
-    def get_class(self):
-        return registry().get_class(self.uid)
-
-    def get_keys(self):
-        return registry().get_keys(self.uid)
-
-    def get_object(self, uid):
-        return self.sa_session().get(self.get_class(), uid)
-
-    ##
-
-    def sa_session(self):
-        return registry().session(self.uid)
-
-    def sa_make_select(self, args: t.SelectArgs):
-        cls = self.get_class()
-
-        state = SelectState(sel=sa.select(cls), args=args, keyword_conds=[], geometry_conds=[])
-
-        for f in self.fields:
-            f.sa_adapt_select(state)
-
-        if args.keyword and not state.keyword_conds:
-            return
-        if state.keyword_conds:
-            state.sel = state.sel.where(sa.or_(*state.keyword_conds))
-
-        if args.shape and not state.geometry_conds:
-            return
-        if state.geometry_conds:
-            state.sel = state.sel.where(sa.or_(*state.geometry_conds))
-
-        if args.uids:
-            state.sel = state.sel.where(getattr(cls, self.key_name).in_(args.uids))
-
-        if args.extra_where:
-            state.sel = state.sel.where(sa.text(args.extra_where[0], *args.extra_where[1:]))
-
-        if self.sql_filter:
-            state.sel = state.sel.where(sa.text(self.sql_filter))
-
-        gws.log.debug(f'SA_MAKE_SELECT: {str(state.sel)}')
-
-        return state.sel
-
-    @property
-    def props(self):
-        return Props(
-            uid=self.uid,
-            layerUid=self.layer.uid,
-            keyName=self.key_name,
-            geometryName=self.geometry_name,
-            fields=[f.props for f in self.fields]
-        )
-
-
-class GenericModel(Object):
-    key_name = 'id'
-    geometry_name = ''
-    layer = None
-
-    def feature_from_props(self, props: t.FeatureProps, exclude=None, depth=0):
-        fe = self.new_feature()
-        fe.attributes['id'] = gws.get(props, 'attributes.id')
-        return fe
-
-    def feature_props(self, fe):
-        props = t.FeatureProps(
-            type='Feature',
-            attributes={},
-            keyName='id',
-            geometryName='',
-            layerUid=None,
-        )
-        return props
-
-
-_GENERIC_MODEL = GenericModel()
-
-
-def _escape_like(s, escape='\\'):
-    return (
-        s
-            .replace(escape, escape + escape)
-            .replace('%', escape + '%')
-            .replace('_', escape + '_'))
+def get(uid: str) -> t.Optional[t.IModel]:
+    return registry().get_model(uid)

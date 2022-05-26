@@ -1,9 +1,9 @@
 import gws.tools.xml2
 import gws.gis.shape
-import gws.gis.feature
+import gws.common.model
 
 
 # plain text format
 
 def parse(s, **kwargs):
-    return [gws.gis.feature.Feature(attributes={'text': s})]
+    return [gws.common.model.generic_feature(attributes={'text': s})]

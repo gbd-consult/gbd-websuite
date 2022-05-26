@@ -1,7 +1,7 @@
 import gws
 import gws.common.db
 import gws.ext.db.provider.postgres
-import gws.gis.feature
+import gws.common.model
 import gws.gis.shape
 
 import gws.types as t
@@ -194,7 +194,7 @@ class Object(gws.Object):
             total, rs = flurstueck.find(conn, q)
             for rec in rs:
                 rec = self._remove_restricted_data(q, rec)
-                features.append(gws.gis.feature.Feature(
+                features.append(gws.common.model.generic_feature(
                     uid=rec['gml_id'],
                     attributes=rec,
                     shape=gws.gis.shape.from_wkb_hex(rec['geom'], self.crs)
@@ -216,7 +216,7 @@ class Object(gws.Object):
         with self.connect() as conn:
             total, rs = adresse.find(conn, q)
             for rec in rs:
-                features.append(gws.gis.feature.Feature(
+                features.append(gws.common.model.generic_feature(
                     uid=rec['gml_id'],
                     attributes=rec,
                     shape=gws.gis.shape.from_xy(rec['x'], rec['y'], self.crs)

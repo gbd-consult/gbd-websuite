@@ -345,7 +345,7 @@ class IFeature:
     is_new: bool
     key_name: str
     layer: Optional['ILayer']
-    model: Optional['IModel']
+    model: 'IModel'
     props: 'FeatureProps'
     shape: 'IShape'
     style: Optional['IStyle']
@@ -836,6 +836,7 @@ class MetaLink(Data):
 class ModelSession:
     def close(self): pass
     def commit(self): pass
+    def open(self): pass
     def rollback(self): pass
 
 
@@ -1271,24 +1272,16 @@ class IModel(IObject):
     key_name: str
     layer: Optional['ILayer']
     def delete(self, fe: 'IFeature'): pass
-    def feature_from_orm(self, obj, exclude=None, depth=0): pass
-    def feature_from_props(self, props: 'FeatureProps', exclude=None, depth=0): pass
-    def feature_from_uid2(self, props: 'FeatureProps', exclude=None, depth=0): pass
-    def feature_props(self, fe): pass
-    def get_class(self): pass
-    def get_db(self): pass
-    def get_feature(self, uid, exclude=None, depth=0): pass
-    def get_field(self, name): pass
-    def get_keys(self): pass
-    def get_object(self, uid): pass
-    def get_table(self) -> 'SqlTable': pass
+    def feature_from_props(self, props: 'FeatureProps', depth=0): pass
+    def feature_props(self, fe, depth=0): pass
+    def get_feature(self, uid, depth=0) -> Optional['IFeature']: pass
+    def get_field(self, name: str) -> Optional['IModelField']: pass
+    def init_feature(self): pass
     def new_feature(self): pass
-    def reload(self, fe: 'IFeature', depth=0): pass
-    def sa_make_select(self, args: 'SelectArgs'): pass
-    def sa_session(self): pass
-    def save(self, fe: 'IFeature', is_new: bool): pass
+    def reload(self, fe: 'IFeature', depth: int = 0): pass
+    def save(self, fe: 'IFeature') -> 'IFeature': pass
     def select(self, args: 'SelectArgs') -> List['IFeature']: pass
-    def validate(self, fe) -> List['FeatureError']: pass
+    def validate(self, fe: 'IFeature') -> List['FeatureError']: pass
 
 
 class IModelField(IObject):
@@ -1296,20 +1289,19 @@ class IModelField(IObject):
     geometry_type: str
     model: 'IModel'
     name: str
-    relation_type: str
     type: str
     validators: list
     widget: Optional['IModelWidget']
     def get_default(self): pass
-    def read_from_orm(self, fe: 'IFeature', obj, exclude, depth): pass
-    def read_from_props(self, fe: 'IFeature', props: 'FeatureProps', exclude, depth): pass
+    def read_from_orm(self, fe: 'IFeature', obj, depth): pass
+    def read_from_props(self, fe: 'IFeature', props: 'FeatureProps', depth: int): pass
     def sa_adapt_select(self, state): pass
     def sa_columns(self, columns): pass
     def sa_properties(self, properties): pass
     def validate(self, attributes, errors): pass
     def validate_value(self, value, attributes): pass
     def write_to_orm(self, fe: 'IFeature', obj): pass
-    def write_to_props(self, fe: 'IFeature', props: 'FeatureProps'): pass
+    def write_to_props(self, fe: 'IFeature', props: 'FeatureProps', depth: int): pass
 
 
 class IModelValidator(IObject):
@@ -1444,6 +1436,18 @@ class IWebSite(IObject):
     ssl: bool
     static_root: 'DocumentRoot'
     def url_for(self, req, url): pass
+
+
+class IDbModel(IModel):
+    def feature_from_orm(self, obj, depth=0): pass
+    def feature_from_uid2(self, props: 'FeatureProps', depth=0): pass
+    def get_class(self): pass
+    def get_db(self): pass
+    def get_keys(self): pass
+    def get_object(self, uid): pass
+    def get_table(self) -> 'SqlTable': pass
+    def sa_make_select(self, args: 'SelectArgs'): pass
+    def sa_session(self): pass
 
 
 class ISqlProvider(IDbProvider):

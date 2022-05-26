@@ -1,6 +1,6 @@
 import gws.tools.xml2
 import gws.gis.shape
-import gws.gis.feature
+import gws.common.model
 
 
 # ESRI
@@ -19,6 +19,6 @@ def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
     for item in el.all('Fields'):
         atts = item.attr_dict
         uid = atts.pop('objectid', None) or atts.pop('OBJECTID', None)
-        fs.append(gws.gis.feature.Feature(uid=uid, attributes=atts))
+        fs.append(gws.common.model.generic_feature(uid=uid, attributes=atts))
 
     return fs

@@ -2,7 +2,7 @@ import re
 
 import gws.tools.xml2
 import gws.gis.shape
-import gws.gis.feature
+import gws.common.model
 
 
 # GeoBAK (https://www.egovernment.sachsen.de/geodaten.html)
@@ -36,7 +36,7 @@ def parse(text, first_el, crs=None, invert_axis=None, **kwargs):
                 a.get_text('Name').strip(): a.get_text('Wert').strip()
                 for a in ds.all('Attribut')
             }
-            fs.append(gws.gis.feature.Feature(
+            fs.append(gws.common.model.generic_feature(
                 category=layer_name,
                 attributes=atts
             ))
