@@ -46,7 +46,8 @@ class AlkisConnection(gws.ext.db.provider.postgres.driver.Connection):
 
     def drop_all(self):
         for tab in self.table_names(self.index_schema):
-            self.exec(f'DROP TABLE IF EXISTS {self.index_schema}.{tab}')
+            if tab.startswith('idx_'):
+                self.exec(f'DROP TABLE IF EXISTS {self.index_schema}.{tab}')
 
     def validate_index_geoms(self, table):
         idx = self.index_schema

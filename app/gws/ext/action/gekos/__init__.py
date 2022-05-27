@@ -196,9 +196,8 @@ class Object(gws.common.action.Object):
             schema, name = conn.schema_and_table(table_name)
 
             sql = [
-                f'''DROP TABLE IF EXISTS {schema}.{name} CASCADE''',
                 f'''
-                    CREATE TABLE {schema}.{name} (
+                    CREATE TABLE IF NOT EXISTS {schema}.{name} (
                         "uid" CHARACTER VARYING PRIMARY KEY,
                         "ObjectID" CHARACTER VARYING,
                         "AntragsartBez" CHARACTER VARYING,
@@ -215,8 +214,9 @@ class Object(gws.common.action.Object):
                         "wkb_geometry" geometry(POINT, {srid})
                     )
                 ''',
-                f'''CREATE INDEX {name}_antragsart ON {schema}.{name} USING btree("AntragsartID")''',
-                f'''CREATE INDEX {name}_geom ON {schema}.{name} USING GIST(wkb_geometry)'''
+                f'''CREATE INDEX IF NOT EXISTS {name}_antragsart ON {schema}.{name} USING btree("AntragsartID")''',
+                f'''CREATE INDEX IF NOT EXISTS {name}_geom ON {schema}.{name} USING GIST(wkb_geometry)''',
+                f'''TRUNCATE TABLE {schema}.{name}''',
             ]
 
             for s in sql:
