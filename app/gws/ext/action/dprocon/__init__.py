@@ -44,6 +44,12 @@ _DEFAULT_TEMPLATES = [
 ]
 
 
+class ExtraColumnConfig:
+    name: str
+    type: str
+    sql: str
+
+
 class Config(t.WithTypeAndAccess):
     """D-Procon connector action"""
 
@@ -51,10 +57,11 @@ class Config(t.WithTypeAndAccess):
     dataTableName: str  #: table to store consolidated results
     dataTablePattern: str  #: pattern for result tables to consolidate
     gemeindeFilter: t.Optional[t.List[str]]  #: gemeinde (AU) ids to keep in the index
-    infoTitle: str = '' #: information box title
+    infoTitle: str = ''  #: information box title
     requestTableName: str  #: table to store outgoing requests
-    requestUrl: t.Url #: main program url, with the placholder {REQUEST_ID}
+    requestUrl: t.Url  #: main program url, with the placholder {REQUEST_ID}
     templates: t.Optional[t.List[t.ext.template.Config]]  #: feature formatting templates
+    extraColumns: t.Optional[t.List[ExtraColumnConfig]]
 
 
 class ConnectParams(t.Params):
@@ -89,6 +96,11 @@ class Object(gws.common.action.Object):
         if not self.alkis or not self.alkis.has_index:
             gws.log.warn('dprocon cannot init, no alkis index found')
             return
+
+        self.extra_columns = self.var('extraColumns', default=[])
+        self.data_fields = dict(self._std_data_fields)
+        for ec in self.extra_columns:
+            self.data_fields[ec.name] = ec.type
 
     def api_connect(self, req: t.IRequest, p: ConnectParams) -> ConnectResponse:
         req.require_project(p.projectUid)
@@ -127,7 +139,7 @@ class Object(gws.common.action.Object):
 
         return GetDataResponse(feature=f.props)
 
-    _data_fields = {
+    _std_data_fields = {
         'meso_key': 'CHARACTER VARYING',
         'land': 'CHARACTER VARYING',
         'regierungsbezirk': 'CHARACTER VARYING',
@@ -151,10 +163,40 @@ class Object(gws.common.action.Object):
         'bezirk'
     ]
 
-    def setup(self):
+    def sync_columns(self, conn, table_name, ignore):
+        schema, name = table_name.split('.')
+        rs = conn.select('''
+            SELECT column_name
+            FROM information_schema.columns 
+            WHERE table_schema = %s and table_name = %s
+        ''', [schema, name])
+        cols = [list(r.values())[0] for r in rs]
+
+        if not cols:
+            return []
+
+        sql = []
+
+        for col, type in self.data_fields.items():
+            if col not in ignore and col not in cols:
+                sql.append(f'''
+                    ALTER TABLE {conn.quote_table(table_name)}
+                    ADD COLUMN {col} {type}
+                ''')
+
+        for col in cols:
+            if col not in ignore and col not in self.data_fields:
+                sql.append(f'''
+                    ALTER TABLE {conn.quote_table(table_name)}
+                    DROP COLUMN {col}
+                ''')
+
+        return sql
+
+    def setup(self, remove_request_table=False):
         with self.alkis.db.connect() as conn:
-            data_fields = ','.join(k + ' ' + v for k, v in self._data_fields.items())
-            index_table_name = conn.quote_table(_INDEX_TABLE_NAME, self.alkis.index_schema)
+            data_fields = ','.join(k + ' ' + v for k, v in self.data_fields.items())
+            index_table_name = self.alkis.index_schema + '.' + _INDEX_TABLE_NAME
             alkis_schema = self.alkis.data_schema
             srid = self.alkis.crs.split(':')[1]
 
@@ -165,20 +207,42 @@ class Object(gws.common.action.Object):
 
             sql = [
                 f'''
-                    DROP TABLE IF EXISTS {index_table_name} CASCADE
-                ''',
-                f'''
-                    CREATE TABLE {index_table_name} (
+                    CREATE TABLE IF NOT EXISTS {conn.quote_table(index_table_name)} (
                         gml_id CHARACTER(16) PRIMARY KEY,
                         {data_fields},
                         geom geometry(POINT, {srid})
                     )
                 ''',
+
+                *self.sync_columns(
+                    conn, index_table_name, ignore=['gml_id', 'geom']),
+
                 f'''
-                    INSERT INTO {index_table_name}
+                    TRUNCATE TABLE {conn.quote_table(index_table_name)}
+                ''',
+
+                f'''
+                    INSERT INTO {conn.quote_table(index_table_name)}
+                        (
+                            gml_id,
+                            meso_key,
+                            land,
+                            regierungsbezirk,
+                            kreis,
+                            gemeinde,
+                            lage,
+                            hausnummer,
+                            adresse,
+                            bezeichnung,
+                            wert,
+                            beschreibung,
+                            x,
+                            y,
+                            geom                        
+                        )
                         SELECT
                             h.gml_id,
-                            h.lage || ' ' || h.hausnummer AS meso_key,
+                            h.lage || ' ' || h.hausnummer,
                             h.land,
                             h.regierungsbezirk,
                             h.kreis,
@@ -189,9 +253,9 @@ class Object(gws.common.action.Object):
                             c.bezeichnung,
                             gf.wert,
                             gf.beschreibung,
-                            ST_X(p.wkb_geometry) AS x,
-                            ST_Y(p.wkb_geometry) AS y,
-                            p.wkb_geometry AS geom
+                            ST_X(p.wkb_geometry),
+                            ST_Y(p.wkb_geometry),
+                            p.wkb_geometry
                         FROM
                             "{alkis_schema}".ax_lagebezeichnungmithausnummer AS h,
                             "{alkis_schema}".ax_lagebezeichnungkatalogeintrag AS c,
@@ -216,13 +280,17 @@ class Object(gws.common.action.Object):
                     ON CONFLICT DO NOTHING
                 ''',
                 f'''
-                    CREATE INDEX geom_index ON {index_table_name} USING GIST(geom)
+                    CREATE INDEX IF NOT EXISTS geom_index 
+                    ON {conn.quote_table(index_table_name)} 
+                    USING GIST(geom)
                 ''',
             ]
 
             with conn.transaction():
                 for s in sql:
                     conn.exec(s)
+                for ec in self.extra_columns:
+                    conn.exec(ec.sql)
 
             cnt = conn.select_value(f'SELECT COUNT(*) FROM {index_table_name}')
             print('index ok, ', cnt, 'entries')
@@ -247,7 +315,7 @@ class Object(gws.common.action.Object):
             d = {
                 a.name: a.value
                 for a in f.attributes
-                if a.name in self._data_fields
+                if a.name in self.data_fields
             }
             d['request_id'] = request_id
             data.append(d)
@@ -274,24 +342,29 @@ class Object(gws.common.action.Object):
         srid = self.alkis.crs.split(':')[1]
 
         with self.alkis.db.connect() as conn:
-            request_table_name = conn.quote_table(self.request_table_name)
-            data_fields = ','.join(k + ' ' + v for k, v in self._data_fields.items())
+            data_fields = ','.join(k + ' ' + v for k, v in self.data_fields.items())
+
+            sql = [
+                f'''
+                    CREATE TABLE IF NOT EXISTS {conn.quote_table(self.request_table_name)} (
+                        id SERIAL PRIMARY KEY,
+                        request_id CHARACTER VARYING,
+                        {data_fields},
+                        selection geometry(GEOMETRY, {srid}),
+                        ts TIMESTAMP WITH TIME ZONE
+                    )
+                ''',
+                *self.sync_columns(
+                    conn, self.request_table_name, ignore=['id', 'request_id', 'selection', 'ts'])
+            ]
+
+            for s in sql:
+                conn.exec(s)
 
             conn.exec(f'''
-                CREATE TABLE IF NOT EXISTS {request_table_name} (
-                    id SERIAL PRIMARY KEY,
-                    request_id CHARACTER VARYING,
-                    {data_fields},
-                    selection geometry(GEOMETRY, {srid}),
-                    ts TIMESTAMP WITH TIME ZONE
-                )
-            ''')
-
-            # clean up obsolete request records
-            conn.exec(f'''
-                DELETE FROM {request_table_name}
-                WHERE ts < CURRENT_DATE - INTERVAL '%s seconds'
-            ''', [self.var('cacheTime')])
+                    DELETE FROM {conn.quote_table(self.request_table_name)}
+                    WHERE ts < CURRENT_DATE - INTERVAL '%s seconds'
+                ''', [self.var('cacheTime')])
 
     def _selection_for_request(self, request_id):
         with self.alkis.db.connect() as conn:
@@ -305,7 +378,7 @@ class Object(gws.common.action.Object):
         # collect data from various dprocon-tables into a single data table
         # dprocon-tables contain (request_id, common fields, specific fields)
 
-        exclude_fields = list(self._data_fields) + self._exclude_fields
+        exclude_fields = list(self.data_fields) + self._exclude_fields
         data = []
 
         with self.alkis.db.connect() as conn:
@@ -339,21 +412,20 @@ class Object(gws.common.action.Object):
                                 'value': v
                             })
 
-            tmp = f"{self.data_table_name}{_rand_id()}"
-
             conn.exec(f'''
-                CREATE TABLE IF NOT EXISTS {conn.quote_table(tmp)} (
+                CREATE TABLE IF NOT EXISTS {conn.quote_table(self.data_table_name)} (
                     table_name CHARACTER VARYING,
                     request_id CHARACTER VARYING,
                     field CHARACTER VARYING,
                     value BIGINT)
             ''')
 
-            if data:
-                conn.insert_many(tmp, data)
+            conn.exec(f'''
+                TRUNCATE TABLE {conn.quote_table(self.data_table_name)}
+            ''')
 
-            conn.exec(f'''DROP TABLE IF EXISTS {conn.quote_table(self.data_table_name)} CASCADE''')
-            conn.exec(f'''ALTER TABLE {conn.quote_table(tmp)} RENAME TO {data_name}''')
+            if data:
+                conn.insert_many(self.data_table_name, data)
 
     def _select_data(self, request_id):
         d = {}
