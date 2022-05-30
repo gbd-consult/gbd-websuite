@@ -5,7 +5,6 @@ Location Manager
 
 .. rubric:: Allgemein
 
-
 Der Location Manager ist ein universell verwendbares Modul. Es ermöglicht die Darstellung von temporären Ereignissen,
 die aus den unterschiedlichsten Anwendungsfällen kommen können. Es ist sozusagen ein generisches Werkzeug, um temporäre Ereignisse darzustellen.
 Für die gewünschten Ereignisse, können Attributformulare definiert werden. Wie in QGIS, kann einzelnen Feldern des Attributformulars,
@@ -111,7 +110,6 @@ Wenn die Aufstellung und Darstellung geplant wurde, kann der Plan auf zwei Wegen
 Der Plan könnte dann, über die GBD WebSuite online zur Verfügung gestellt werden. Alternativ könnte dieser Plan auch als Bilddatei exportiert werden.
 Diese Datei könnte dann wiederum ausgedruckt und als Lageplan am Wochenmarkt aufgehangen werden. So könnte sich jeder Besucher entweder online oder
 über den Lageplan vor Ort, einen Überblick verschaffen.
-
 
 Beispiel Karnevalsumzug:
 
