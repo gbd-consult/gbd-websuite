@@ -25,5 +25,6 @@ Dadurch ist es möglich, auf jeden Wunsch individuell einzugehen.
     gkos.rst
     dimensioning.rst
     measure.rst
+    cadastral_unit_tools.rst
     print.rst
     screenshot.rst
