@@ -25,8 +25,6 @@ Am unteren Fensterrand befinden sich erneut eine Reihe von Funktionen für spezi
 Es ist möglich die Auswahl zu speichern |save| oder eine zuvor abgespeicherte Auswahl erneut zu laden |load|.
 Über |delete_marking| können Sie die gesamte Auswahl löschen.
 
-
-
  .. figure:: ../../../screenshots/de/client-user/select2.png
   :align: center
 
