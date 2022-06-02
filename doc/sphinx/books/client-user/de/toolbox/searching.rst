@@ -15,8 +15,8 @@ Wählen Sie Ihre gewünschte Geometrie aus mit der die räumliche Suche erfolgen
 
 Durch einen Klick in die Karte mit der linken Maustaste, starten Sie das Zeichnen der Geometrie. Mit einem Doppelklick beenden Sie die Erstellung der Geometrie.
 Eine nachträgliche Anpassung der Position und der Ausmaße der Geometrie ist möglich.
-Durch ein Anklicken und gedrückt halten der linken Maustaste auf |navi| kann die Position der Geometrie angepasst werden.
-Durch ein 
+Durch ein Anklicken und gedrückt halten der linken Maustaste auf |navi| innerhalb der Geometrie, kann die Position der Geometrie angepasst werden.
+Durch ein Anklicken eines Stützpunktes und dann gedrückt halten der linken Maustaste, kann dieser verschoben werden.
 Durch einen Klick auf |cancel| wird das Werkzeug beendet.
 
 .. figure:: ../../../screenshots/de/client-user/search1.png
