@@ -15,7 +15,6 @@ Bei der Druckfunktion wird der aktuelle Kartenausschnitt mit seinen Inhalten unv
 Dazu gehören: auf der Karte gezeichnete, beschriftete oder durch eine Abfrage markierte Objekte,
 globale Einstellung wie die festgelegte :ref:`Rotation <turn>` und maßstabsbezogene Ebenendarstellungen,
 sowie manuell festgelegte Transparenzen für einzelne Layer und Layergruppen.
-
 Beim Aktivieren der Druckfunktion wechselt die Ansicht der GBD WebSuite.
 
 .. figure:: ../../../screenshots/de/client-user/print3.png
@@ -23,15 +22,16 @@ Beim Aktivieren der Druckfunktion wechselt die Ansicht der GBD WebSuite.
 
 Es öffnet sich auf der Karte ein Kartenrahmen mit dazugehörigem Dialogfenster.
 Der Kartenrahmen stellt den zu druckenden Ausschnitt dar. Das Dialogfenster bietet die Konfigurationsmöglichkeiten dafür.
-Hier können Sie die Ausrichtung der ``Druckvorlage`` und somit die Ausdehnung des Kartenrahmens konfigurieren.
-Die Konfiguration der ``Druckqualität`` kann verschieden bereitgestellt werden.
-Es ist möglich, dass vordefinierte Werte mit Titeln wie niedrig, mittel, hoch verknüpft sind, die dann zur Wahl stehen.
-Alternativ ist es auch möglich, dass über eine Schieberegler die DPI frei gewählt werden kann.
-In der Regel steht dann aber kein DPI- Wert von unter 70 DPI zur Verfügung, da sonst die Qualität des Drucks nicht gewährt wäre.
-Unter ``Beschriftung`` können Sie einen Titel für den Druck vergeben.
 
 .. figure:: ../../../screenshots/de/client-user/print1.png
   :align: center
+
+Hier können Sie die Ausrichtung der ``Druckvorlage`` und somit die Ausdehnung des Kartenrahmens konfigurieren.
+Die Auswahl der ``Druckqualität`` kann unterschiedlich bereitgestellt werden.
+Es ist möglich, dass vordefinierte Werte mit Titeln wie niedrig, mittel, hoch verknüpft sind, die dann zur Wahl stehen.
+Alternativ ist es auch möglich, dass über ein Schieberegler der DPI-Wert frei gewählt werden kann.
+In der Regel steht dann aber kein DPI-Wert von unter 70 DPI zur Verfügung, da sonst die Qualität des Drucks nicht gewährt wäre.
+Unter ``Beschriftung`` können Sie einen Titel für den Druck vergeben.
 
 Der Kartenrahmen kann beliebig verschoben werden.
 Mit der linken Maustaste und dem Mausrad kann der entsprechende Ausschnitt und die Zoomstufe eingestellt werden.
