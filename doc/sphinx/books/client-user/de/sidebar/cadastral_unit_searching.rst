@@ -21,7 +21,7 @@ Es stehen verschiedene Flurstück-Parameter zur Auswahl, die individuell konfigu
 So können Flurstücke anhand von Straßen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern gesucht werden.
 Wenn der ``Zugang zu Personendaten`` aktiviert wird, ist es ebenfalls möglich anhand von Vor- und Nachname, Flurstücke zu suchen.
 Der Zugang zu persönlichen Daten kann so konfiguriert werden, dass zum Beispiel nur verifizierte Nutzer, Zugriff darauf haben.
-Es ist möglich, dass alle Anfragen nach Personendaten geloggt und in einer PostGIS Datei abgelegt werden. So wird jede Anfrage protokolliert und kann somit kontrolliert werden.
+Es ist möglich, dass alle Anfragen nach Personendaten geloggt und in einer PostGIS Datei abgelegt werden. So wird jede Anfrage protokolliert und kann kontrolliert werden.
 
 .. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_search_data_rights.png
   :align: center
@@ -31,23 +31,22 @@ Wenn der Zugang aktiviert ist, sieht die Suchmaske wie folgt aus.
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_6.png
   :align: center
 
-Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Anfrage kann per |new_search| ``Neue Anfrage`` gestartet werden.
-Dabei werden die Inhalte aller Felder gelöscht. Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>`,
-:ref:`Räumliche Suche <searching>` und :ref:`Auswählen <selecting>` entnehmen Sie bitte dem jeweiligen Kapitel in dieser Hilfe.
-Auf Wunsch könnten diese Funktionen als Werkzeug, direkt in der Werkzeugleiste platziert werden.
-Wenn Sie zum Beispiel ein GBD WebSuite Projekt nutzen würden, um damit ausschließlich Flurstücke zu verwalten, könnte dies von Nutzen sein.
-Die Flurstück-:ref:`Auswählen <selecting>` Funktion könnte dann zum Beispiel in der Werkzeugleiste integriert sein.
+Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Suche kann per |new_search| ``Neue Anfrage`` gestartet werden.
+Dabei werden die Inhalte aller Felder gelöscht. Die Erklärung für die Funktionen |spatial_search| ``Flurstücke über räumliche Suche finden``
+und |select| ``Einzelne Flurstücke in der Karte auswählen`` erfolgt im späteren Teil dieses Kapitels.
+Auf Wunsch können diese Funktionen als Werkzeug, prominent in der Werkzeugleiste platziert werden.
+Wenn Sie zum Beispiel ein GBD WebSuite Projekt nutzen, um damit ausschließlich Flurstücke zu verwalten, könnte dies von Nutzen sein.
 So wäre ein schnelles Auswählen einzelner Flurstücke möglich, ohne den Menüpunkt ``Flurstücksuche`` auswählen zu müssen.
-Dieser öffnet sich dann automatisch, wenn ein Flurstück ausgewählt wurde.
+Dieser öffnet sich dann automatisch, wenn Sie das Werkzeug auswählen.
+
+.. rubric:: Optionale Konfigurationen zur Darstellung der Gemarkungsliste
 
 Es gibt verschiedene Möglichkeiten zur Konfiguration der Flurstücksuche. Es müssen nicht alle Parameter definiert werden.
-So können Sie definieren, ob die Suche nach einem speziellen Flurstück oder nach allen Flurstücken einer Straße erfolgen soll.
-Um nach einer Straße zu suchen, muss auch keine Gemarkung eingetragen werden. So ist die Suche auch bei großen Datenmengen performant möglich.
+So können Sie zum Beispiel definieren, ob die Suche nach einem speziellen Flurstück oder nach allen Flurstücken einer Straße erfolgen soll.
+Um nach einer Straße zu suchen, muss keine Gemarkung eingetragen werden. So ist die Suche auch bei großen Datenmengen performant möglich.
 Ob die Suche nach Straßen mit oder ohne Vorauswahl der Gemarkung stattfinden soll, kann ebenfalls konfiguriert werden.
 Bei der Suche anhand von Mindest- und Maximalfläche in Quadratmetern, können Kommastellen für das Eintragen von Zentimeter-Werten verwendet werden.
 Folgende Konfigurationen stehen zur Verfügung:
-
-.. rubric:: Optionale Konfigurationen zur Darstellung der Gemarkungsliste
 
 * keine Gemarkungsliste anzeigen
 * die Gemarkungsliste anzeigen als eine Liste von Gemarkungsnamen
@@ -139,7 +138,7 @@ Beim Export in das CSV Format können Sie eine Auswahl treffen und dann auf den 
 .. rubric:: Drucken der Flurstückinformationen
 
 Über das |print| Symbol können Sie die ausgewählten Flurstückinformationen drucken.
-Der Inhalt des Ausdrucks, kann individuell über ein Template vorbereitet werden.
+Der Inhalt des Ausdrucks, kann individuell über eine Vorlage vorbereitet werden.
 Dieses kann auch eine Kartendarstellung des jeweiligen Flurstücks beinhalten.
 
 .. rubric:: Arbeiten mit der Ablage

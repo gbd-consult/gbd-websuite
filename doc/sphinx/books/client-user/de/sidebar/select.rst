@@ -3,28 +3,27 @@
 Auswahl
 =======
 
-Der Menüpunkt |select| ``Auswahl`` in der Menüleiste |menu| ist ein Ablagebereich für Objekte, die über das |select| ``Auswählen``-Werkzeug im Kartenfenster erfasst wurden.
+Der Menüpunkt |select| ``Auswahl`` ist ein Ablagebereich für Objekte, die über das |select| :ref:`Auswählen <selecting>`-Werkzeug im Kartenfenster selektiert wurden.
 Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
 
- .. figure:: ../../../screenshots/de/client-user/select.png
+ .. figure:: ../../../screenshots/de/client-user/select1.png
    :align: center
 
-So können Sie in diesem Menüpunkt eine Übersicht, über die von Ihnen ausgewählten Objekte, gewinnen.
+Hier können Sie eine Übersicht, über die von Ihnen ausgewählten Objekte, gewinnen.
+Alle angewählten und somit aufgelisteten Objekte werden orange markiert.
 Diese Objekte können über |fokus| fokusiert werden oder über das |delete| Icon aus der Auswahl entfernt werden.
+Wenn Sie den Titel eines Objektes anklicken, wird das Objekt rot markiert und es öffnet sich ein zusätzliches Informationsfenster.
 
-Am unteren Fensterrand befinden sich erneut eine Reihe von Funktionen für speziell dieses Menü.
+.. figure:: ../../../screenshots/de/client-user/select2.png
+  :align: center
+
+In diesem Pop-Up Fenster können verschiedene Informationen über das angewählte Objekt abgelesen werden. Außerdem ist es möglich über |settings| weitere Funktionen auszuwählen.
+Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>` und :ref:`Auswählen <selecting>` entnehmen Sie bitte dem jeweiligen Punkt, dieser Dokumentation.
+Über |fokus| ``Hinzoomen`` fokusieren Sie das dazugehörige Objekt.
+
+Am unteren Rand des Menüfensters befinden sich Funktionen zum Verwalten der Ablage.
 Es ist möglich die Auswahl zu speichern |save| oder eine zuvor abgespeicherte Auswahl erneut zu laden |load|.
 Über |delete_marking| können Sie die gesamte Auswahl löschen.
-
-Wenn ein Objekt ausgewählt wird, wird dieses gelb markiert und es erscheint, rechts unten im Kartenfenster, ein Informationsfenster (siehe Bild unten).
-In diesem Pop-Up Fenster können verschiedene Informationen über das angewählte Objekt abgelesen werden. Außerdem ist es möglich über |settings| weitere Funktionen auszuwählen.
-Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>`, :ref:`Räumliche Suche <searching>` und :ref:`Auswählen <selecting>` entnehmen Sie bitte dem jeweiligen Punkt, dieser Dokumentation.
-Über ``Auswahl`` kehren Sie wieder zum ursprünglichen ``Auswahl``-Werkzeug zurück. So können Sie weitere Objekte auswählen, welche dann in dem Auswahl-Menü aufgelistet werden.
-Alle angewählten und somit aufgelisteten Objekte werden rot markiert. Das zuletzt angewählte Objekt wird gelb markiert und es öffnet sich das dazugehörige Informationsfenster.
-Über |fokus| ``Hinzoomen`` fokusieren Sie das gewünschte Objekt.
-
- .. figure:: ../../../screenshots/de/client-user/select2.png
-  :align: center
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
