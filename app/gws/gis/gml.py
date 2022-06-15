@@ -51,13 +51,13 @@ def shape_to_tag(shape: t.IShape, precision=0, invert_axis=False, crs_format='ur
         cs = []
 
         if invert_axis:
-            for x, y in geom.coords:
-                cs.append(y)
-                cs.append(x)
+            for c in geom.coords:
+                cs.append(c[1])
+                cs.append(c[0])
         else:
-            for x, y in geom.coords:
-                cs.append(x)
-                cs.append(y)
+            for c in geom.coords:
+                cs.append(c[0])
+                cs.append(c[1])
 
         if precision:
             cs = [round(c, precision) for c in cs]

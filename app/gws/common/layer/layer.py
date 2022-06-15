@@ -373,7 +373,7 @@ class Layer(gws.Object, t.ILayer):
             return service.uid in self._ows_enabled_services_uids
         if self._ows_enabled_services_pattern:
             return re.search(self._ows_enabled_services_pattern, service.uid) is not None
-        if service.type == 'wms' and self.supports_wms:
+        if service.type in {'wms', 'wmts'} and self.supports_wms:
             return True
         if service.type == 'wfs' and self.supports_wfs:
             return True
