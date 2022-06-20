@@ -37,6 +37,29 @@ Der WFS-Dienst ist gemäß der Eigenschaften der Version ``2.0`` implementiert. 
 
 ^NOTE In der Zukunft, planen wir das "Basic WFS" Profil sowie WFS 3.0 umzusetzen.
 
+Ein Ausschnitt aus einer Projektkonfiguration um eine Layer-Gruppe mit einer Postgres Layer als wfs Dienst zur Verfügung stellen kann z.B. so aussehen: ::
+
+    api.actions+ {
+        type "ows"
+        services [
+            {
+                uid "my_wfs_service"
+                root "my_project_uid.map.wfs_layer_root"
+            }
+        ]
+    }
+
+    layers+ {
+        type "group"
+        uid "wfs_layer_root"
+        layers+ {
+            type "postgres"
+            title "my wfs layer"
+            table.name "schema.table"
+        }
+    }
+
+
 wcs
 ~~~
 
