@@ -8,7 +8,7 @@ module.exports = v => ({
         width: '100%',
         backgroundColor: v.SIDEBAR_BODY_BACKGROUND,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
         zIndex: 3,
         ...v.SHADOW,
         ...v.TRANSITION('left', 'padding-bottom'),

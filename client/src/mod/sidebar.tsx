@@ -8,6 +8,8 @@ interface SidebarProps extends gws.types.ViewProps {
     sidebarVisible: boolean;
     sidebarOverflowExpanded: boolean;
     sidebarSize: number;
+    sidebarWidth: number;
+    sidebarResizing: boolean;
 }
 
 const SidebarStoreKeys = [
@@ -15,6 +17,8 @@ const SidebarStoreKeys = [
     'sidebarVisible',
     'sidebarOverflowExpanded',
     'sidebarSize',
+    'sidebarWidth',
+    'sidebarResizing'
 ];
 
 let {Row, Cell} = gws.ui.Layout;
@@ -177,11 +181,45 @@ class SidebarView extends gws.View<SidebarProps> {
     render() {
         return <React.Fragment>
             {!this.props.sidebarVisible && <OpenButton {...this.props}/>}
-            <div {...gws.tools.cls('modSidebar', this.props.sidebarVisible && 'isVisible')}>
-                <Header {...this.props} />
-                <Body {...this.props} />
+            <div {...gws.tools.cls('modSidebar', this.props.sidebarVisible && 'isVisible')}
+                style={{ width: this.props.sidebarWidth && this.props.sidebarWidth+'px' || '400px' }}
+            >
+                <div style={{ height: "100%" }}>
+                    <Header {...this.props} />
+                    <Body {...this.props} />
+                </div>
+                <SidebarResizeHandle {...this.props}/>
             </div>
         </React.Fragment>
+    }
+}
+
+class SidebarResizeHandle extends gws.View<SidebarProps> {
+    render() {
+        return <div 
+                style={{ 
+                    height: "100%", width: "3px", 
+                    backgroundColor: "red",
+                    cursor: "ew-resize"
+                }}
+                onMouseDown={ e => {
+                    this.props.controller.setSidebarResizing(true) 
+                    document.onmousemove = e => {
+                        if(this.props.sidebarResizing) {
+                            this.props.controller.setSidebarWidth(this.props.sidebarWidth+e.movementX)
+                        }
+                    }
+                    document.onmouseup = e => {
+                        this.props.controller.setSidebarResizing(false)
+                    }
+                }}
+                //onMouseMove={ e => {
+                //    if(this.props.sidebarResizing) {
+                //        this.props.controller.setSidebarWidth(this.props.sidebarWidth+e.movementX)
+                //    }
+                //}}
+                //onMouseUp={ e=> this.props.controller.setSidebarResizing(false)}
+            ></div>
     }
 }
 
@@ -199,7 +237,19 @@ class SidebarController extends gws.Controller {
             this.setVisible(false)
         }
 
+        this.setSidebarResizing(false)
+        this.setSidebarWidth(300)
 
+    }
+
+    setSidebarWidth(width) {
+        console.log(width)
+        this.update({ sidebarWidth: width })
+    }
+
+    setSidebarResizing(resizing) {
+        console.log(resizing)
+        this.update({ sidebarResizing: resizing })
     }
 
     setActiveTab(tab) {
