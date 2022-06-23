@@ -2,6 +2,7 @@
 
 import gws
 import gws.common.template
+import gws.common.model
 import gws.config.loader
 import gws.core.spec
 import gws.web.auth
@@ -43,11 +44,15 @@ def _handle_request2(root, req) -> t.IResponse:
     if cors and req.method == 'OPTIONS':
         return _with_cors_headers(cors, req.response('', 'text/plain'))
 
+    gws.common.model.session.open()
     req.auth_open()
 
     ## gws.p('REQUEST', {'user': req.user, 'params': req.params})
 
-    res = _handle_action(root, req)
+    try:
+        res = _handle_action(root, req)
+    finally:
+        gws.common.model.session.close()
 
     req.auth_close(res)
 

@@ -164,8 +164,7 @@ class Object(gws.common.action.Object):
 
         gws.debug.time_start('api_get_features_SELECT')
 
-        with gws.common.model.session():
-            flist = layer.get_features_ex(req.user, model, args)
+        flist = layer.get_features_ex(req.user, model, args)
 
         gws.debug.time_end('api_get_features_SELECT')
 

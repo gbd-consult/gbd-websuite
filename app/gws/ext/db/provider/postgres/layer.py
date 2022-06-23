@@ -26,15 +26,12 @@ class Object(gws.common.layer.Vector):
     def configure(self):
         super().configure()
 
-
         self.provider = t.cast(provider.Object, gws.common.db.require_provider(self, provider.Object))
         self.db = self.provider  # for new models
         self.table = self.provider.configure_table(self.var('table'))
 
-        # if not self.data_model:
-        #     p = self.provider.table_data_model_config(self.table)
-        #     if p:
-        #         self.data_model = t.cast(t.IModel, self.create_child('gws.common.model', p))
+    def create_model(self, cfg):
+        return self.create_child(gws.common.model.DbModel, cfg)
 
     @property
     def own_bounds(self):

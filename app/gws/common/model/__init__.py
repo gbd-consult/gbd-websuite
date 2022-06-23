@@ -11,8 +11,8 @@ import gws.config
 import gws.gis.shape
 import gws.gis.feature
 import gws.common.db
-
 import gws.tools.os2
+import gws.tools.mime
 
 import gws.types as t
 
@@ -37,6 +37,7 @@ _SCALAR_TYPES = {
 
 class WidgetConfig(t.WithType):
     items: t.Optional[t.List[t.Any]]
+    fileFieldName: t.Optional[str]
 
 
 class WidgetProps(t.Props):
@@ -74,15 +75,19 @@ class Widget(gws.Object, t.IModelWidget):
         )
 
 
-class StringWidget(Widget):
+class InputWidget(Widget):
     pass
 
 
-class RelationListWidget(Widget):
+class FeatureListWidget(Widget):
     pass
 
 
-class RelationSelectWidget(Widget):
+class DocumentListWidget(Widget):
+    pass
+
+
+class FeatureSelectWidget(Widget):
     pass
 
 
@@ -94,7 +99,11 @@ class DateWidget(Widget):
     pass
 
 
-class TextboxWidget(Widget):
+class TextareaWidget(Widget):
+    pass
+
+
+class CheckboxWidget(Widget):
     pass
 
 
@@ -141,7 +150,7 @@ class Validator(gws.Object, t.IModelValidator):
         self.type = self.var('type')
 
     def validate_value(self, field, value, attributes):
-        pass
+        return None, value
 
 
 ##
@@ -162,6 +171,10 @@ EXPRESSIONS = {
 
 
 ##
+
+class ValidationError(Exception):
+    pass
+
 
 class FieldValueConfig(t.WithType):
     value: t.Optional[t.Any]
@@ -319,8 +332,8 @@ class Field(gws.Object, t.IModelField):
     def write_to_orm(self, fe: t.IFeature, obj):
         pass
 
-    def validate(self, attributes, errors):
-        value = attributes.get(self.name)
+    def validate(self, fe: t.IFeature, errors):
+        value = fe.attr(self.name)
 
         if value is None:
             if self.is_required:
@@ -328,18 +341,19 @@ class Field(gws.Object, t.IModelField):
             return
 
         if not self.validators:
-            err = self.validate_value(value, attributes)
-            if err:
-                errors.append(t.FeatureError(name=self.name, error=err))
+            try:
+                fe.attributes[self.name] = self.validate_value(value)
+            except ValidationError as err:
+                errors.append(t.FeatureError(name=self.name, error=err.args[0]))
                 return
 
-        for v in self.validators:
-            err = v.validate_value(self, value, attributes)
-            if err:
-                errors.append(t.FeatureError(name=self.name, error=err))
+        # for v in self.validators:
+        #     err = v.validate_value(self, value, attributes)
+        #     if err:
+        #         errors.append(t.FeatureError(name=self.name, error=err))
 
-    def validate_value(self, value, attributes):
-        pass
+    def validate_value(self, value):
+        return value
 
     @property
     def props(self):
@@ -395,9 +409,8 @@ class ScalarField(Field):
             return
 
     def write_to_orm(self, fe: t.IFeature, obj):
-        val = fe.attributes.get(self.name)
-        if val is not None:
-            setattr(obj, self.name, val)
+        if self.name in fe.attributes:
+            setattr(obj, self.name, fe.attributes[self.name])
             return
         val = self.get_default()
         if val is not None:
@@ -410,67 +423,112 @@ class StringField(ScalarField):
     def sa_adapt_select(self, state):
         model = t.cast(t.IDbModel, self.model)
 
-        ok = (
-                state.args.keyword
-                and state.keyword_columns
-                and self.name in state.keyword_columns)
-
-        if ok:
+        if state.args.keyword and self.is_searchable:
             state.keyword_conds.append((
                 getattr(model.get_class(), self.name).ilike(
                     '%' + _escape_like(state.args.keyword) + '%', escape='\\')))
 
-    def validate_value(self, value, attributes):
+    def validate_value(self, value):
         v = str(value).strip()
-        if not v and self.is_required:
-            return 'validationErrorNull'
+        if v == '':
+            if self.is_required:
+                raise ValidationError('validationErrorNull')
+            return v
         if self.min_len is not None and len(v) < self.min_len:
-            return 'validationErrorStringTooShort'
+            raise ValidationError('validationErrorStringTooShort')
         if self.max_len is not None and len(v) > self.max_len:
-            return 'validationErrorStringTooLong'
+            raise ValidationError('validationErrorStringTooLong')
         if self.pattern and not re.match(str(self.pattern), v):
-            return 'validationErrorPattern'
+            raise ValidationError('validationErrorPattern')
+        return v
 
 
 class IntegerField(ScalarField):
     data_type = 'integer'
 
-    def validate_value(self, value, attributes):
+    def convert(self, val):
+        if isinstance(val, int):
+            return val
+        v = str(val).strip()
+        if not v:
+            return None
+        return int(v)
+
+    def validate_value(self, value):
         try:
-            v = int(value)
+            v = self.convert(value)
         except:
-            return 'validationErrorInvalidInteger'
+            raise ValidationError('validationErrorInvalidInteger')
+        if v is None:
+            if self.is_required:
+                raise ValidationError('validationErrorNull')
+            return v
         if self.min_value is not None and v < self.min_value:
-            return 'validationErrorNumberTooSmall'
+            raise ValidationError('validationErrorNumberTooSmall')
         if self.max_value is not None and v > self.max_value:
-            return 'validationErrorNumberTooBig'
+            raise ValidationError('validationErrorNumberTooBig')
+        return v
 
 
 class FloatField(ScalarField):
     data_type = 'float'
 
-    def validate_value(self, value, attributes):
+    def convert(self, val):
+        if isinstance(val, (int, float)):
+            return float(val)
+        v = str(val).strip()
+        if not v:
+            return None
+        return float(v)
+
+    def validate_value(self, value):
         try:
-            v = float(value)
+            v = self.convert(value)
         except:
-            return 'validationErrorInvalidFloat'
+            raise ValidationError('validationErrorInvalidFloat')
+        if v is None:
+            if self.is_required:
+                raise ValidationError('validationErrorNull')
+            return v
         if self.min_value is not None and v < self.min_value:
-            return 'validationErrorNumberTooSmall'
+            raise ValidationError('validationErrorNumberTooSmall')
         if self.max_value is not None and v > self.max_value:
-            return 'validationErrorNumberTooBig'
+            raise ValidationError('validationErrorNumberTooBig')
+        return v
 
 
 class DateField(ScalarField):
     data_type = 'date'
+
+    def convert(self, val):
+        if isinstance(val, datetime.date):
+            return val
+        if isinstance(val, datetime.datetime):
+            return datetime.date(val.year, val.month, val.day)
+        v = str(val).strip()
+        if not v:
+            return None
+        m = re.match(r'^(\d{4})-(\d\d)-(\d\d)$', v)
+        if not m:
+            raise ValueError('invalid date')
+        return datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+    def validate_value(self, value):
+        try:
+            v = self.convert(value)
+        except:
+            raise ValidationError('validationErrorInvalidDate')
+        return v
 
 
 def _is_record_with_type(val, type):
     return isinstance(val, (dict, t.Data)) and val.get('type') == type
 
 
-class FieldFieldValue(t.Data):
+class FileValue(t.Data):
     name: str
-    content: bytes
+    content: t.Optional[bytes]
+    mime: t.Optional[str]
 
 
 class FileField(ScalarField):
@@ -485,32 +543,30 @@ class FileField(ScalarField):
         gws.write_file_b(file_path, content)
         return True
 
-    def get_file(self, fe: t.IFeature):
-        file_name = fe.attr(self.name)
-        file_path = self.var('basePath') + '/' + file_name
-        return t.FileResponse(
-            path=file_path
-        )
+    def get_file_path(self, fe: t.IFeature):
+        val = fe.attr(self.name)
+        if val:
+            return self.var('basePath') + '/' + val.name
 
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
         if val is not None:
-            fe.attributes[self.name] = FieldFieldValue(
+            fe.attributes[self.name] = FileValue(
                 name=gws.get(val, 'name'),
                 content=gws.get(val, 'content'))
 
     def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
-        val = fe.attributes.get(self.name)
+        val = fe.attr(self.name)
         if val:
-            props.attributes[self.name] = FieldFieldValue(name=val.name)
+            props.attributes[self.name] = val
 
     def read_from_orm(self, fe: t.IFeature, obj, depth):
-        val = getattr(obj, self.name, None)
-        if val is not None:
-            fe.attributes[self.name] = FieldFieldValue(name=val)
+        fname = getattr(obj, self.name, None)
+        if fname is not None:
+            fe.attributes[self.name] = FileValue(name=fname, mime=gws.tools.mime.for_path(fname))
 
     def write_to_orm(self, fe: t.IFeature, obj):
-        val = fe.attributes.get(self.name)
+        val = fe.attr(self.name)
         if val is not None:
             fname = self.normalize_file_name(gws.get(val, 'name'))
             content = gws.get(val, 'content')
@@ -637,7 +693,7 @@ class RelatedFeatureField(RelatedField):
             return
 
         rel_model = self.first_related_model()
-        uid = val.get('attributes').get(rel_model.key_name)
+        uid = val.get('attributes', {}).get(rel_model.key_name)
         fe.attributes[self.name] = rel_model.get_feature(uid, depth - 1)
 
     def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
@@ -1055,11 +1111,13 @@ class Field_relatedDiscriminatedFeature(RelatedFeatureField):
         columns.append(col)
 
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
+        if depth <= 0:
+            return
         val = props.attributes.get(self.name)
         if val is not None:
-            rel_model = registry().get_model(val.modelUid)
-            uid = val.attributes.get(rel_model.key_name)
-            fe.attributes[self.name] = rel_model.feature_from_uid2(uid)
+            rel_model = registry().get_model(val.get('modelUid'))
+            uid = val.get('attributes', {}).get(rel_model.key_name)
+            fe.attributes[self.name] = rel_model.get_feature(uid, depth - 1)
 
     def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = fe.attributes.get(self.name)
@@ -1094,11 +1152,13 @@ _WIDGET_TYPES = {
     'geometry': GeometryWidget,
     'integer': IntegerWidget,
     'readonly': ReadonlyWidget,
-    'relationList': RelationListWidget,
-    'relationSelect': RelationSelectWidget,
+    'featureList': FeatureListWidget,
+    'documentList': FeatureListWidget,
+    'featureSelect': FeatureSelectWidget,
     'select': SelectWidget,
-    'string': StringWidget,
-    'textbox': TextboxWidget,
+    'input': InputWidget,
+    'textarea': TextareaWidget,
+    'checkbox': CheckboxWidget,
     'measurement': MeasurementWidget,
 }
 
@@ -1159,6 +1219,7 @@ class Object(gws.Object, t.IModel):
     fields: t.List[t.IModelField] = []
     key_name: str = ''
     geometry_name: str = ''
+    keyword_columns: t.List[str] = []
 
     def configure(self):
         super().configure()
@@ -1319,19 +1380,13 @@ class DbModel(Object, t.IDbModel):
     def validate(self, fe) -> t.List[t.FeatureError]:
         errors = []
         for f in self.fields:
-            f.validate(fe.attributes, errors)
+            f.validate(fe, errors)
         return errors
 
     def get_feature(self, uid, depth=0):
         obj = self.get_object(uid)
         if obj:
             return self.feature_from_orm(obj, depth)
-
-    def feature_from_uid2(self, props: t.FeatureProps, depth=0):
-        fe = self.init_feature()
-        uid = props.attributes.get(self.key_name)
-        obj = self.get_object(uid)
-        return self.feature_from_orm(obj, depth)
 
     def feature_from_orm(self, obj, depth=0):
         fe = self.init_feature()
@@ -1458,6 +1513,7 @@ def generic_feature(**args):
 
 class SaBase:
     feature: t.IFeature
+
 
 class ModelRegistry:
     def __init__(self, root):

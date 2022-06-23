@@ -36,12 +36,6 @@ class GetModelsResponse(t.Response):
     models: t.List[gws.common.model.Props]
 
 
-class GetPathParams(t.Params):
-    layerUid: str
-    featureUid: str
-    fieldName: str
-
-
 ##
 
 class ListParams(t.Params):
@@ -51,6 +45,7 @@ class ListParams(t.Params):
 class QueryParams(t.Params):
     layerUids: t.List[str]
     shapes: t.Optional[t.List[t.ShapeProps]]
+    keyword: t.Optional[str]
     tolerance: t.Optional[str]
     resolution: float
 
@@ -73,24 +68,6 @@ class Object(gws.common.action.Object):
         project = req.require_project(p.projectUid)
         layers = self._editable_layers(req, project)
         return GetLayersResponse(layers=[la.props for la in layers])
-
-    def http_get_path(self, req: t.IRequest, p: GetPathParams) -> t.FileResponse:
-        layer = t.cast(t.ILayer, req.acquire('gws.ext.layer', p.layerUid))
-        if not layer or not layer.edit_access(req.user):
-            raise gws.web.error.Forbidden()
-
-        with gws.common.model.session():
-            args = t.SelectArgs(uids=[p.featureUid])
-            flist = layer.editor.model.select(args)
-
-        if not flist:
-            raise gws.web.error.NotFound()
-
-        field = layer.editor.model.get_field(p.fieldName)
-        if not field or not hasattr(field, 'get_file'):
-            raise gws.web.error.NotFound()
-
-        return field.get_file(flist[0])
 
     def api_get_models(self, req: t.IRequest, p: GetModelsParams) -> GetModelsResponse:
         project = req.require_project(p.projectUid)
@@ -120,16 +97,20 @@ class Object(gws.common.action.Object):
         if p.layerUids:
             layers = [la for la in layers if la.uid in p.layerUids]
 
-        out_features = []
-
-        shape = gws.gis.shape.union([gws.gis.shape.from_props(s) for s in p.shapes])
-
         PIXEL_TOLERANCE = 10
 
-        with gws.common.model.session():
-            for layer in layers:
-                args = t.SelectArgs(shape=shape, depth=1, map_tolerance=PIXEL_TOLERANCE * p.resolution)
-                out_features.extend(layer.editor.model.select(args))
+        args = t.SelectArgs(
+            keyword=p.keyword,
+            depth=1,
+            map_tolerance=PIXEL_TOLERANCE * p.resolution)
+
+        if p.shapes:
+            args.shape = gws.gis.shape.union([gws.gis.shape.from_props(s) for s in p.shapes])
+
+        out_features = []
+
+        for layer in layers:
+            out_features.extend(layer.editor.model.select(args))
 
         for fe in out_features:
             self._apply_templates_deep(fe, 'title')
@@ -143,14 +124,13 @@ class Object(gws.common.action.Object):
 
         out_features = [None] * len(pc.features)
 
-        with gws.common.model.session():
-            for layer_uid, indexes in pc.by_layer.items():
-                layer = pc.layers[layer_uid]
-                args = t.SelectArgs(uids=[pc.features[n].uid for n in indexes], depth=1)
-                found = layer.editor.model.select(args)
-                by_uid = {str(fe.uid): fe for fe in found}
-                for n in indexes:
-                    out_features[n] = by_uid.get(str(pc.features[n].uid))
+        for layer_uid, indexes in pc.by_layer.items():
+            layer = pc.layers[layer_uid]
+            args = t.SelectArgs(uids=[pc.features[n].uid for n in indexes], depth=1)
+            found = layer.editor.model.select(args)
+            by_uid = {str(fe.uid): fe for fe in found}
+            for n in indexes:
+                out_features[n] = by_uid.get(str(pc.features[n].uid))
 
         out_features = gws.compact(out_features)
 
@@ -176,19 +156,18 @@ class Object(gws.common.action.Object):
         if has_validation_errors:
             return self._list_response(pc.features)
 
-        with gws.common.model.session() as sess:
-            for layer_uid, indexes in pc.by_layer.items():
-                layer = pc.layers[layer_uid]
-                for n in indexes:
-                    fe = pc.features[n]
-                    layer.editor.model.save(fe, fe.is_new)
+        for layer_uid, indexes in pc.by_layer.items():
+            layer = pc.layers[layer_uid]
+            for n in indexes:
+                fe = pc.features[n]
+                layer.editor.model.save(fe)
 
-            sess.commit()
+        gws.common.model.session.commit()
 
-            for fe in pc.features:
-                fe.layer.editor.model.reload(fe, depth=1)
-                fe.is_new = False
-                self._apply_templates_deep(fe, 'title')
+        for fe in pc.features:
+            fe.layer.editor.model.reload(fe, depth=1)
+            fe.is_new = False
+            self._apply_templates_deep(fe, 'title')
 
         return self._list_response(pc.features)
 
@@ -199,13 +178,13 @@ class Object(gws.common.action.Object):
         if not pc:
             return self._list_response([])
 
-        with gws.common.model.session() as sess:
-            for layer_uid, indexes in pc.by_layer.items():
-                layer = pc.layers[layer_uid]
-                for n in indexes:
-                    fe = pc.features[n]
-                    layer.editor.model.delete(fe)
-            sess.commit()
+        for layer_uid, indexes in pc.by_layer.items():
+            layer = pc.layers[layer_uid]
+            for n in indexes:
+                fe = pc.features[n]
+                layer.editor.model.delete(fe)
+
+        gws.common.model.session.commit()
 
         return self._list_response([])
 
@@ -226,7 +205,7 @@ class Object(gws.common.action.Object):
                 pc.by_layer[lid] = []
                 pc.layers[lid] = layer
 
-            fe = gws.gis.feature.from_props(pc.layers[lid].editor.model, fp, depth=1)
+            fe = pc.layers[lid].editor.model.feature_from_props(fp, depth=1)
             pc.features.append(fe)
             pc.by_layer[lid].append(index)
 

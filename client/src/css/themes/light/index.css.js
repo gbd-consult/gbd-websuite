@@ -286,6 +286,7 @@ let rules = [
     require('./components/feature.css'),
     require('./components/form.css'),
     require('./components/infobox.css'),
+    require('./components/document.css'),
 
     require('./mod/alkis.css'),
     require('./mod/altbar.css'),

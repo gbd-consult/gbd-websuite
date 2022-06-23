@@ -3,7 +3,6 @@
 import mimetypes
 import os
 
-
 _common = {
     'css': 'text/css',
     'csv': 'text/csv',
@@ -23,6 +22,19 @@ _common = {
 
     'gml': 'application/vnd.ogc.gml',
     'gml3': 'application/vnd.ogc.gml/3.1.1',
+
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+
+    'doc': 'application/msword',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'xls': 'application/vnd.ms-excel',
+    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'ppt': 'application/vnd.ms-powerpoint',
+    'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+
+    'odp': 'application/vnd.oasis.opendocument.presentation',
+    'ods': 'application/vnd.oasis.opendocument.spreadsheet',
+    'odt': 'application/vnd.oasis.opendocument.text',
 }
 
 _aliases = {

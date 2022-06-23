@@ -179,7 +179,7 @@ class Layer(gws.Object, t.ILayer):
         self.model: t.Optional[t.IModel] = None
         p = self.var('model')
         if p:
-            self.model = t.cast(t.IModel, self.create_child('gws.common.model', p))
+            self.model = t.cast(t.IModel, self.create_model(p))
             self.model.layer = self
 
         self.resolutions: t.List[float] = gws.gis.zoom.resolutions_from_config(self.var('zoom'), self.map.resolutions)
@@ -212,6 +212,11 @@ class Layer(gws.Object, t.ILayer):
 
         self.editor: t.Optional[LayerEditor] = None
 
+
+    def create_model(self, cfg):
+        pass
+
+
     def post_configure(self):
         super().post_configure()
 
@@ -234,7 +239,7 @@ class Layer(gws.Object, t.ILayer):
                     filter=p.filter
                 )
                 if p.model:
-                    self.editor.model = t.cast(t.IModel, self.create_child('gws.common.model', p))
+                    self.editor.model = t.cast(t.IModel, self.create_model(p))
                     self.editor.model.layer = self
 
     def configure_metadata(self, provider_meta=None) -> t.MetaData:

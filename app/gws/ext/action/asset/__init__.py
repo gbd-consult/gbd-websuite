@@ -4,6 +4,7 @@ import os
 
 import gws
 import gws.common.action
+import gws.common.model
 import gws.common.template
 import gws.config
 import gws.server
@@ -22,6 +23,14 @@ class Config(t.WithTypeAndAccess):
 
 class GetPathParams(t.Params):
     path: str
+    mode: t.Optional[str]  #: normal, preview, attachment
+
+
+class GetFileParams(t.Params):
+    modelUid: str
+    featureUid: str
+    fieldName: str
+    mode: t.Optional[str]  #: normal, preview, attachment
 
 
 class GetResultParams(t.Params):
@@ -30,17 +39,27 @@ class GetResultParams(t.Params):
 
 class Object(gws.common.action.Object):
 
-    def api_get(self, req: t.IRequest, p: GetPathParams) -> t.HttpResponse:
+    def api_get_path(self, req: t.IRequest, p: GetPathParams) -> t.HttpResponse:
         """Return an asset under the given path and project"""
+
         return self._serve_path(req, p)
 
     def http_get_path(self, req: t.IRequest, p: GetPathParams) -> t.HttpResponse:
         return self._serve_path(req, p)
 
-    def http_get_download(self, req: t.IRequest, p) -> t.HttpResponse:
-        return self._serve_path(req, p, True)
+    def http_get_download(self, req: t.IRequest, p: GetPathParams) -> t.HttpResponse:
+        p.mode = 'attachment'
+        return self._serve_path(req, p)
 
-    def _serve_path(self, req: t.IRequest, p: GetPathParams, as_attachment=False):
+    def api_get_file(self, req: t.IRequest, p: GetFileParams) -> t.HttpResponse:
+        return self._serve_file(req, p)
+
+    def http_get_file(self, req: t.IRequest, p: GetFileParams) -> t.HttpResponse:
+        return self._serve_file(req, p)
+
+    ##
+
+    def _serve_path(self, req: t.IRequest, p: GetPathParams):
         spath = str(p.get('path') or '')
         if not spath:
             raise gws.web.error.NotFound()
@@ -102,11 +121,40 @@ class Object(gws.common.action.Object):
 
         attachment_name = None
 
-        if as_attachment:
+        if p.mode == 'attachment':
             p = gws.tools.os2.parse_path(spath)
             attachment_name = p['name'] + '.' + gws.tools.mime.extension(mime)
 
         return t.FileResponse(mime=mime, path=rpath, attachment_name=attachment_name)
+
+    def _serve_file(self, req: t.IRequest, p: GetFileParams) -> t.HttpResponse:
+        model = gws.common.model.get(p.modelUid)
+        if not model:
+            raise gws.web.error.NotFound()
+
+        if not req.user.can_use(model.layer):
+            raise gws.web.error.Forbidden()
+
+        # @TODO field access
+
+        field = model.get_field(p.fieldName)
+
+        if not field:
+            raise gws.web.error.NotFound()
+
+        fe = model.get_feature(p.featureUid)
+        if not fe:
+            raise gws.web.error.NotFound()
+
+        fn = getattr(field, 'get_file_path', None)
+        if fn:
+            path = fn(fe)
+            mime = gws.tools.mime.for_path(path)
+            return t.HttpResponse(
+                mime=mime,
+                content=gws.read_file_b(path))
+
+        raise gws.web.error.NotFound()
 
 
 def _projects_for_user(user):

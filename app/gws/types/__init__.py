@@ -1238,6 +1238,7 @@ class ILayer(IObject):
     def configure_legend(self) -> 'LayerLegend': pass
     def configure_metadata(self, provider_meta=None) -> 'MetaData': pass
     def configure_search(self): pass
+    def create_model(self, cfg): pass
     def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
@@ -1270,6 +1271,7 @@ class IModel(IObject):
     fields: list
     geometry_name: str
     key_name: str
+    keyword_columns: List[str]
     layer: Optional['ILayer']
     def delete(self, fe: 'IFeature'): pass
     def feature_from_props(self, props: 'FeatureProps', depth=0): pass
@@ -1298,8 +1300,8 @@ class IModelField(IObject):
     def sa_adapt_select(self, state): pass
     def sa_columns(self, columns): pass
     def sa_properties(self, properties): pass
-    def validate(self, attributes, errors): pass
-    def validate_value(self, value, attributes): pass
+    def validate(self, fe: 'IFeature', errors): pass
+    def validate_value(self, value): pass
     def write_to_orm(self, fe: 'IFeature', obj): pass
     def write_to_props(self, fe: 'IFeature', props: 'FeatureProps', depth: int): pass
 
@@ -1440,7 +1442,6 @@ class IWebSite(IObject):
 
 class IDbModel(IModel):
     def feature_from_orm(self, obj, depth=0): pass
-    def feature_from_uid2(self, props: 'FeatureProps', depth=0): pass
     def get_class(self): pass
     def get_db(self): pass
     def get_keys(self): pass

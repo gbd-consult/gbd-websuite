@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as ol from 'openlayers';
 import * as gws from 'gws';
 
 let {Row, Cell} = gws.ui.Layout;
@@ -6,10 +7,14 @@ let {Row, Cell} = gws.ui.Layout;
 interface PositionProps extends gws.types.ViewProps {
     mapPointerX: number;
     mapPointerY: number;
+    mapPointerZ: number;
 }
 
 class PositionView extends gws.View<PositionProps> {
     render() {
+        let hasZ = typeof this.props.mapPointerZ === 'number';
+
+
         return <div className="modInfobarWidget modInfobarPosition">
             <Cell className="modInfobarLabel">{this.__('modInfobarPosition')}</Cell>
             <Cell className="modInfobarPositionInput">
@@ -18,6 +23,14 @@ class PositionView extends gws.View<PositionProps> {
                     disabled
                 />
             </Cell>
+            {hasZ && <Cell className="modInfobarLabel">Höhe</Cell>}
+            {hasZ && <Cell className="modInfobarPositionInput">
+                <gws.ui.TextInput
+                    value={String(this.props.mapPointerZ) + 'm'}
+                    disabled
+                />
+            </Cell>
+            }
         </div>
     }
 }
@@ -25,7 +38,7 @@ class PositionView extends gws.View<PositionProps> {
 class PositionWidget extends gws.Controller {
     get defaultView() {
         return this.createElement(
-            this.connect(PositionView, ['mapPointerX', 'mapPointerY']));
+            this.connect(PositionView, ['mapPointerX', 'mapPointerY', 'mapPointerZ']));
     }
 
 }
@@ -286,7 +299,9 @@ class AboutDialog extends gws.View<AboutViewProps> {
         let content = <div className="modAboutDialogContent">
             <Row>
                 <Cell flex/>
-                <Cell><gws.ui.Button/></Cell>
+                <Cell>
+                    <gws.ui.Button/>
+                </Cell>
                 <Cell flex/>
             </Row>
 

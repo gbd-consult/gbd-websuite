@@ -84,7 +84,8 @@ class DialogController extends gws.Controller {
                 dialogContent: {
                     title: args.title,
                     withZoom: true,
-                    children: [<gws.ui.HtmlBlock content={html}/>]
+                    children: [<gws.ui.HtmlBlock content={html}/>],
+                    className: args.className,
                 }
             })
         });

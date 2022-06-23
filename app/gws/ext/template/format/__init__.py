@@ -22,5 +22,9 @@ class Config(gws.common.template.Config):
 class Object(gws.common.template.Object):
 
     def render(self, context: dict, mro=None, out_path=None, legends=None, format=None):
-        content = gws.tools.misc.format_placeholders(self.text, context)
+        try:
+            content = gws.tools.misc.format_placeholders(self.text, context)
+        except (AttributeError, IndexError, KeyError):
+            gws.log.exception()
+            content = ''
         return t.TemplateOutput(mime=gws.tools.mime.get('text'), content=content)

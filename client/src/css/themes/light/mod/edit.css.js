@@ -19,7 +19,12 @@ module.exports = v => ({
         // '&.modEditSidebarFormTab .modSidebarTabHeader': {
         //     padding: [v.UNIT, v.UNIT4, v.UNIT, v.UNIT4],
         // },
-        '.modSearchBox': {},
+        '.modSearchBox': {
+            padding: v.UNIT2,
+            // borderBottom: [1, 'solid', v.BORDER_COLOR],
+            // backgroundColor:v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
+
+        },
 
     },
 
@@ -78,7 +83,7 @@ module.exports = v => ({
     },
     '.modEditDeleteButton': {
         ...v.ROUND_FORM_BUTTON('google:action/delete'),
-        backgroundColor: v.COLOR.red600,
+        backgroundColor: v.COLOR.red300,
     },
     '.modEditResetButton': {
         ...v.ROUND_FORM_BUTTON('google:content/undo'),
