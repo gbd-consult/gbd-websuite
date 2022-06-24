@@ -16,7 +16,8 @@ module.exports = v => ({
             overflow: 'hidden',
             '.uiRawButton': {
                 textAlign: 'left',
-            }
+            },
+            wordBreak: 'break-word', // when resizing the sidebar long words need to break
         },
 
         '.uiIconButton': {

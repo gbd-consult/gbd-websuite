@@ -14,6 +14,28 @@ module.exports = v => ({
         ...v.TRANSITION('left', 'padding-bottom'),
     },
 
+    '.modSidebarResizeHandle': {
+        flexShrink: 0,
+        height: '100%',
+        width: '20px',
+        backgroundColor: v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
+        cursor: 'ew-resize'
+    },
+
+    '.modSidebarResizeHandle:hover:not(.isResizing)': {
+        backgroundColor: v.COLOR.blueGrey100
+    },
+
+    '.modSidebarResizeHandle.isResizing': {
+        backgroundColor: v.COLOR.blueGrey300
+    },
+
+    '.modSidebarLeftContainer': {
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+    },
+
     '.modSidebarHeaderButton': {
         marginLeft: v.UNIT2,
         ...v.TRANSITION('all'),

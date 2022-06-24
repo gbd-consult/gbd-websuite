@@ -110,12 +110,12 @@ class PopupHeaderButton extends gws.View<ButtonProps> {
 
 class Header extends gws.View<SidebarProps> {
     render() {
-        let size = this.props.sidebarSize || 999;
+        let visibleSidebarTabs = this.props.controller.calculateVisibleSidebarTabs();
 
         let expanded = this.props.sidebarOverflowExpanded,
             items = this.props.controller.children,
-            front = items.slice(0, size),
-            rest = items.slice(size);
+            front = items.slice(0, visibleSidebarTabs),
+            rest = items.slice(visibleSidebarTabs);
 
         return <div className="modSidebarHeader">
             <Row>
@@ -141,12 +141,12 @@ class Header extends gws.View<SidebarProps> {
 class SidebarOverflowView extends gws.View<SidebarProps> {
 
     render() {
-        let size = this.props.sidebarSize || 999;
+        let visibleSidebarTabs = this.props.controller.calculateVisibleSidebarTabs()
 
         let expanded = this.props.sidebarOverflowExpanded,
             items = this.props.controller.children,
-            front = items.slice(0, size),
-            rest = items.slice(size);
+            front = items.slice(0, visibleSidebarTabs),
+            rest = items.slice(visibleSidebarTabs);
 
         if (rest.length === 0 || !expanded)
             return null;
@@ -182,9 +182,9 @@ class SidebarView extends gws.View<SidebarProps> {
         return <React.Fragment>
             {!this.props.sidebarVisible && <OpenButton {...this.props}/>}
             <div {...gws.tools.cls('modSidebar', this.props.sidebarVisible && 'isVisible')}
-                style={{ width: this.props.sidebarWidth && this.props.sidebarWidth+'px' || '400px' }}
+                style={{ width: this.props.sidebarWidth }}
             >
-                <div style={{ height: "100%" }}>
+                <div {...gws.tools.cls('modSidebarLeftContainer')}>
                     <Header {...this.props} />
                     <Body {...this.props} />
                 </div>
@@ -196,29 +196,8 @@ class SidebarView extends gws.View<SidebarProps> {
 
 class SidebarResizeHandle extends gws.View<SidebarProps> {
     render() {
-        return <div 
-                style={{ 
-                    height: "100%", width: "3px", 
-                    backgroundColor: "red",
-                    cursor: "ew-resize"
-                }}
-                onMouseDown={ e => {
-                    this.props.controller.setSidebarResizing(true) 
-                    document.onmousemove = e => {
-                        if(this.props.sidebarResizing) {
-                            this.props.controller.setSidebarWidth(this.props.sidebarWidth+e.movementX)
-                        }
-                    }
-                    document.onmouseup = e => {
-                        this.props.controller.setSidebarResizing(false)
-                    }
-                }}
-                //onMouseMove={ e => {
-                //    if(this.props.sidebarResizing) {
-                //        this.props.controller.setSidebarWidth(this.props.sidebarWidth+e.movementX)
-                //    }
-                //}}
-                //onMouseUp={ e=> this.props.controller.setSidebarResizing(false)}
+        return <div {...gws.tools.cls('modSidebarResizeHandle', this.props.sidebarResizing && 'isResizing')}
+                onMouseDown={ e => this.props.controller.sidebarResizeEvent(e) }
             ></div>
     }
 }
@@ -238,18 +217,10 @@ class SidebarController extends gws.Controller {
         }
 
         this.setSidebarResizing(false)
-        this.setSidebarWidth(300)
+        let configuredWidth = this.getValue('sidebarWidth');
+        let initialWidth = configuredWidth && configuredWidth > 240 || 240;
+        this.setSidebarWidth(initialWidth)
 
-    }
-
-    setSidebarWidth(width) {
-        console.log(width)
-        this.update({ sidebarWidth: width })
-    }
-
-    setSidebarResizing(resizing) {
-        console.log(resizing)
-        this.update({ sidebarResizing: resizing })
     }
 
     setActiveTab(tab) {
@@ -261,6 +232,58 @@ class SidebarController extends gws.Controller {
 
     setVisible(v) {
         this.update({sidebarVisible: v});
+    }
+
+    setSidebarWidth(width) {
+        this.update({ sidebarWidth: width })
+    }
+
+    setSidebarResizing(resizing) {
+        this.update({ sidebarResizing: resizing })
+    }
+
+    sidebarResizeEvent(e) {
+        e.preventDefault()
+        this.setSidebarResizing(true);
+
+        let onMove = e => {
+            e.preventDefault()
+            if(this.getValue('sidebarResizing')) {
+                let newWidth = e.clientX+10; //+10 is half the handle width, so we grab the handle in the middle
+                if(newWidth > 300 //minimum width of sidebar before some controls break
+                    && newWidth < window.innerWidth*0.9 //maximum width of sidebar
+                    ) {
+                    this.setSidebarWidth(newWidth)
+                }
+            }
+        }
+        let onMoveEnd = e => {
+            e.preventDefault()
+            this.setSidebarResizing(false)
+            document.onmousemove = (window as any).old_onmousemove
+            document.onmouseup   = (window as any).old_onmouseup
+        }
+
+        (window as any).old_onmousemove = document.onmousemove;
+        (window as any).old_onmouseup   = document.onmouseup;
+        document.onmousemove = onMove
+        document.onmouseup   = onMoveEnd
+    }
+
+    calculateVisibleSidebarTabs() {
+        let leftPad = 8,
+            hideSidebarButtonWidth = 40,
+            sidebarPageButtonWidth = 48,
+            rightPad = 16,
+            sidebarHandleWidth = 20
+
+        let availableSidebarSpace = this.getValue('sidebarWidth') - (leftPad+hideSidebarButtonWidth+rightPad+sidebarHandleWidth);
+        let visibleSidebarTabs = Math.floor(availableSidebarSpace / sidebarPageButtonWidth);
+
+        if(visibleSidebarTabs != this.children.length){
+            visibleSidebarTabs = Math.min(visibleSidebarTabs - 1, this.children.length)
+        }
+        return visibleSidebarTabs
     }
 
     get defaultView() {
