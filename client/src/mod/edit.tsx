@@ -5,6 +5,7 @@ import * as gws from 'gws';
 import * as sidebar from './sidebar';
 import * as toolbar from './toolbar';
 import * as draw from './draw';
+import * as list from "gws/components/list";
 
 let {Form, Row, Cell, VBox, VRow} = gws.ui.Layout;
 
@@ -43,17 +44,21 @@ interface EditState {
     relationFieldName?: string;
 }
 
-interface FeatureListState {
-    searchText: string;
-    foundFeatures: Array<gws.types.IFeature>;
+
+interface SearchKeywords {
+    [key: string]: string;
 }
 
+interface SearchResults {
+    [key: string]: Array<gws.types.IFeature>;
+}
 
 interface EditViewProps extends gws.types.ViewProps {
     editState: EditState;
     editDialogData?: EditDialogData;
     editUpdateCount: number;
-    editFeatureListStates?: { [uid: string]: FeatureListState };
+    editSearchResults?: SearchResults;
+    editSearchKeywords?: SearchKeywords;
     editListedFeatures?: Array<gws.types.IFeature>,
     editErrors: gws.types.Dict;
     mapUpdateCount: number;
@@ -64,7 +69,9 @@ const EditStoreKeys = [
     'editState',
     'editDialogData',
     'editUpdateCount',
-    'editFeatureListStates',
+    'editSearchText',
+    'editSearchResults',
+    'editSearchKeywords',
     'editListedFeatures',
     'editErrors',
     'mapUpdateCount',
@@ -190,6 +197,81 @@ class EditDrawTool extends draw.Tool {
 }
 
 
+interface FeatureListProps extends gws.types.ViewProps {
+    layers: Array<gws.types.IFeatureLayer>;
+    whenFeatureListNameTouched: (f: gws.types.IFeature) => void;
+}
+
+class FeatureList extends gws.View<FeatureListProps> {
+    render() {
+        let cc = _master(this);
+        let layers = this.props.layers;
+        let [searchText, features] = cc.getSearch('list', layers);
+
+        if (!searchText) {
+            features = [];
+            for (let la of layers) {
+                if (la.loadingStrategy === 'all' || la.loadingStrategy === 'bbox') {
+                    features = features.concat(la.features || []);
+                }
+            }
+        }
+
+        let zoomTo = f => this.props.controller.update({
+            marker: {
+                features: [f],
+                mode: 'zoom draw fade'
+            }
+        });
+
+        let leftButton = f => {
+            if (f.geometryName)
+                return <gws.components.list.Button
+                    className="cmpListZoomListButton"
+                    whenTouched={() => zoomTo(f)}
+                />
+            else
+                return <gws.components.list.Button
+                    className="cmpListDefaultListButton"
+                    whenTouched={() => cc.whenFeatureListNameTouched(f)}
+                />
+        }
+
+        return <VBox>
+            <VRow>
+                <div className="modSearchBox">
+                    <Row>
+                        <Cell>
+                            <gws.ui.Button className='modSearchIcon'/>
+                        </Cell>
+                        <Cell flex>
+                            <gws.ui.TextInput
+                                placeholder={this.__('modSearchPlaceholder')}
+                                withClear={true}
+                                value={searchText}
+                                whenChanged={val => cc.whenFeatureListSearchChanged(layers, val)}
+                            />
+                        </Cell>
+                    </Row>
+                </div>
+            </VRow>
+            <VRow flex>
+                <gws.components.feature.List
+                    controller={cc}
+                    features={features}
+                    content={f => <gws.ui.Link
+                        content={cc.featureTitle(f)}
+                        whenTouched={() => this.props.whenFeatureListNameTouched(f)}
+                    />}
+                    leftButton={leftButton}
+                />
+            </VRow>
+        </VBox>
+
+
+    }
+}
+
 class FeatureDetailsTab extends gws.View<EditViewProps> {
     render() {
         let cc = _master(this);
@@ -285,41 +367,8 @@ class FeatureListTab extends gws.View<EditViewProps> {
     render() {
         let cc = _master(this);
         let layer = cc.activeLayer;
-        // let features = [...layer.features.sort(
-        //     (a, b) => cc.featureTitle(a).localeCompare(cc.featureTitle(b)))
-        // ];
+        let hasGeom = Boolean(cc.map.models.getModelForLayer(layer).geometryName);
 
-        let fls = this.props.editFeatureListStates || {};
-        let activeFls = fls[layer.uid] || {searchText: '', foundFeatures: null}
-        let features = activeFls.foundFeatures;
-
-        if (!features) {
-            if (layer.loadingStrategy === 'all' || layer.loadingStrategy === 'bbox') {
-                features = [...layer.features]
-            }
-        }
-
-        if (!features)
-            features = [];
-
-
-        let hasGeom = Boolean(cc.map.models.getModelForLayer(layer).geometryName)
-
-        let searchBox = <div className="modSearchBox">
-            <Row>
-                <Cell>
-                    <gws.ui.Button className='modSearchIcon'/>
-                </Cell>
-                <Cell flex>
-                    <gws.ui.TextInput
-                        placeholder={this.__('modSearchPlaceholder')}
-                        withClear={true}
-                        value={activeFls.searchText}
-                        whenChanged={val => cc.whenFeatureListSearchChanged(val)}
-                    />
-                </Cell>
-            </Row>
-        </div>;
 
         return <sidebar.Tab className="modEditSidebar">
 
@@ -331,20 +380,11 @@ class FeatureListTab extends gws.View<EditViewProps> {
                 </Row>
             </sidebar.TabHeader>
 
-            {searchBox}
-
             <sidebar.TabBody>
-                <gws.components.feature.List
+                <FeatureList
                     controller={cc}
-                    features={features}
-                    content={f => <gws.ui.Link
-                        content={cc.featureTitle(f)}
-                        whenTouched={() => cc.whenFeatureListNameTouched(f)}
-                    />}
-                    leftButton={f => <gws.components.list.Button
-                        className="modEditorLayerListButton"
-                        whenTouched={() => cc.whenFeatureListNameTouched(f)}
-                    />}
+                    layers={[layer]}
+                    whenFeatureListNameTouched={cc.whenFeatureListNameTouched.bind(cc)}
                 />
             </sidebar.TabBody>
 
@@ -400,19 +440,23 @@ class LayerListTab extends gws.View<EditViewProps> {
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
-                <gws.components.List
-                    controller={this.props.controller}
-                    items={layers}
-                    content={la => <gws.ui.Link
-                        whenTouched={() => cc.whenLayerNameTouched(la)}
-                        content={la.title}
-                    />}
-                    uid={la => la.uid}
-                    leftButton={la => <gws.components.list.Button
-                        className="modEditorLayerListButton"
-                        whenTouched={() => cc.whenLayerNameTouched(la)}
-                    />}
-                />
+                <VBox>
+                    <VRow flex>
+                        <gws.components.List
+                            controller={this.props.controller}
+                            items={layers}
+                            content={la => <gws.ui.Link
+                                whenTouched={() => cc.whenLayerNameTouched(la)}
+                                content={la.title}
+                            />}
+                            uid={la => la.uid}
+                            leftButton={la => <gws.components.list.Button
+                                className="modEditorLayerListButton"
+                                whenTouched={() => cc.whenLayerNameTouched(la)}
+                            />}
+                        />
+                    </VRow>
+                </VBox>
             </sidebar.TabBody>
         </sidebar.Tab>
     }
@@ -505,19 +549,26 @@ class EditDialog extends gws.View<EditViewProps> {
                 buttons={[cancelButton]}
             >
                 <Form>
-                    <Row>
-                        <Cell flex>
-                            <gws.components.feature.List
-                                controller={cc}
-                                features={features}
-                                content={f => <gws.ui.Link
-                                    content={cc.featureTitle(f)}
-                                    whenTouched={() => dd.whenFeatureSelected(f)}
-                                />}
-                                withZoom
-                            />
-                        </Cell>
-                    </Row>
+
+                    <FeatureList
+                        controller={cc}
+                        layers={dd.layers}
+                        whenFeatureListNameTouched={dd.whenFeatureSelected.bind(dd)}
+                    />
+
+                    {/*<Row>*/}
+                    {/*    <Cell flex>*/}
+                    {/*        <gws.components.feature.List*/}
+                    {/*            controller={cc}*/}
+                    {/*            features={features}*/}
+                    {/*            content={f => <gws.ui.Link*/}
+                    {/*                content={cc.featureTitle(f)}*/}
+                    {/*                whenTouched={() => dd.whenFeatureSelected(f)}*/}
+                    {/*            />}*/}
+                    {/*            withZoom*/}
+                    {/*        />*/}
+                    {/*    </Cell>*/}
+                    {/*</Row>*/}
                 </Form>
             </gws.ui.Dialog>;
         }
@@ -682,6 +733,13 @@ class Controller extends gws.Controller {
             ...es,
         });
 
+        // let widgetCfg = field.widget || {};
+        // if (widgetCfg['type'] === 'featureSuggest') {
+        //     let relLayer = field.relations[0].model.getLayer();
+        //     this.updateSearchKeyword('suggest', relLayer, '');
+        // }
+
+
     }
 
     async whenFormEntered(field: gws.types.IModelField) {
@@ -822,6 +880,7 @@ class Controller extends gws.Controller {
     makeWidget(field: gws.types.IModelField, feature: gws.types.IFeature, values: gws.types.Dict): React.ReactElement | null {
         let cfg = field.widget || {};
         let type = cfg['type'];
+        let options = cfg['options'] || {};
         let cls = gws.components.widget.WIDGETS[type];
 
         if (!cls)
@@ -832,7 +891,7 @@ class Controller extends gws.Controller {
             feature,
             field,
             values,
-            options: cfg['options'] || {},
+            options,
             whenChanged: this.whenFormChanged.bind(this),
             whenEntered: this.whenFormEntered.bind(this),
         }
@@ -853,9 +912,25 @@ class Controller extends gws.Controller {
             props['whenDeleteButtonTouched'] = this.whenFeatureListWidgetDeleteButtonTouched.bind(this);
         }
 
+        if (type == 'featureSelect') {
+            let relLayer = field.relations[0].model.getLayer();
+            props['features'] = relLayer.features;
+            props['withSearch'] = options['withSearch'];
+        }
+
+        if (type == 'featureSuggest') {
+            let relLayer = field.relations[0].model.getLayer();
+            let [searchText, features] = this.getSearch('suggest', [relLayer]);
+
+            if (!searchText)
+                features = [values[field.name]]
+
+            props['searchText'] = searchText;
+            props['features'] = features;
+            props['whenSearchTextChanged'] = this.whenFeatureWidgetSearchTextChanged.bind(this);
+        }
+
         return React.createElement(cls, props);
-
-
     }
 
 
@@ -924,54 +999,71 @@ class Controller extends gws.Controller {
 
     searchTimer = null;
 
-    whenFeatureListSearchChanged(val) {
-        let layer = this.activeLayer;
-        let fls = this.getValue('editFeatureListStates') || {};
-        let activeFls = fls[layer.uid] || {};
+    getSearch(context, layers): [string, Array<gws.types.IFeature>] {
+        let sk = this.getValue('editSearchKeywords') || {};
+        let sr = this.getValue('editSearchResults') || {};
+        let key = context + '/' + layers.map(la => la.uid).sort().join();
+        return [sk[key], sr[key] || []];
+    }
 
-        let runSearch = async (searchText) => {
-            let fs = null;
+    async keywordSearch(context: string, layers: Array<gws.types.IFeatureLayer>, val: string) {
+        let key = context + '/' + layers.map(la => la.uid).sort().join();
 
-            if (searchText) {
-                let res = await this.app.server.editQueryFeatures({
-                    keyword: searchText,
-                    layerUids: [layer.uid],
-                    resolution: this.map.viewState.resolution,
-                })
+
+        let updateKeyword = (text) => {
+            let sk = this.getValue('editSearchKeywords') || {};
+            this.update({
+                editSearchKeywords: {...sk, [key]: text}
+            })
+        }
+
+        let updateResult = (features) => {
+            let sr = this.getValue('editSearchResults') || {};
+            this.update({
+                editSearchResults: {...sr, [key]: features}
+            })
+        }
+
+        let runSearch = async () => {
+            let [text, _] = this.getSearch(context, layers);
+
+            if (!text) {
+                updateResult([]);
+                return;
+            }
+
+            let res = await this.app.server.editQueryFeatures({
+                keyword: text,
+                layerUids: layers.map(la => la.uid),
+                resolution: this.map.viewState.resolution,
+            });
+
+            let fs = [];
+
+            if (res.features) {
                 fs = this.map.featureListFromProps(res.features);
             }
 
-            this.update({
-                editFeatureListStates: {
-                    ...fls,
-                    [layer.uid]: {
-                        searchText,
-                        foundFeatures: fs,
-                    }
-                }
-            })
+            updateResult(fs);
         }
 
         clearTimeout(this.searchTimer);
 
         val = val || '';
-
         if (!val.trim())
             val = '';
 
-        this.update({
-            editFeatureListStates: {
-                ...fls,
-                [layer.uid]: {
-                    foundFeatures: activeFls.foundFeatures,
-                    searchText: val,
-                }
-            }
-        })
+        updateKeyword(val);
+        this.searchTimer = setTimeout(runSearch, 500);
+    }
 
-        this.searchTimer = setTimeout(() => runSearch(val), 500);
+    async whenFeatureListSearchChanged(layers, val) {
+        return this.keywordSearch('list', layers, val);
+    }
 
-
+    async whenFeatureWidgetSearchTextChanged(widget, searchText) {
+        let layer = widget.props.field.relations[0].model.getLayer();
+        return this.keywordSearch('suggest', [layer], searchText);
     }
 
 
@@ -1125,7 +1217,6 @@ class Controller extends gws.Controller {
             features: [feSave.getProps(onlyGeometry ? 0 : 1)]
         }, {binary: true});
 
-
         if (res.error) {
             this.update({
                 editDialogData: {
@@ -1166,8 +1257,6 @@ class Controller extends gws.Controller {
 
         feature.layer.addFeature(feature);
         feature.redraw();
-
-        // newState.formValues = feature.attributes;
 
         if (es.prevState)
             this.popState()

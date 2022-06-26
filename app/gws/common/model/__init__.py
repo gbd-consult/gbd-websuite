@@ -37,8 +37,8 @@ _SCALAR_TYPES = {
 
 class WidgetConfig(t.WithType):
     items: t.Optional[t.List[t.Any]]
-    fileFieldName: t.Optional[str]
-
+    fileField: t.Optional['FieldNameTypeConfig']
+    search: t.Optional[str]
 
 class WidgetProps(t.Props):
     type: str
@@ -61,11 +61,15 @@ class Widget(gws.Object, t.IModelWidget):
         if p:
             self.options['items'] = [
                 {
-                    'value': q.get('value'),
-                    'text': q.get('text') or str(q.get('value')),
+                    'value': it.get('value'),
+                    'text': it.get('text') or str(it.get('value')),
                 }
-                for q in p
+                for it in p
             ]
+
+        p = self.var('fileField')
+        if p:
+            self.options['fileFieldName'] = gws.get(p, 'name')
 
     @property
     def props(self):
@@ -88,6 +92,9 @@ class DocumentListWidget(Widget):
 
 
 class FeatureSelectWidget(Widget):
+    pass
+
+class FeatureSuggestWidget(Widget):
     pass
 
 
@@ -788,7 +795,7 @@ class Field_relatedFeature(RelatedFeatureField):
 
 
 """
-childFeatures   1->M
+relatedFeatureList   1->M
     
     STREET -> HOUSE (list)
 
@@ -812,7 +819,7 @@ class Field_relatedFeatureList(RelatedFeatureListField):
 
 
 """
-omMultiRelation   1->M 
+relatedMultiFeatureList   1->M 
 
     STREET.id = HOUSE.street_id
     STREET.id = TREE.street_id
@@ -927,17 +934,8 @@ class Field_relatedLinkedFeatureList(RelatedFeatureListField):
         properties[self.name] = sa.orm.relationship(rel_cls, **kwargs)
 
 
-def _get_uid(val):
-    if isinstance(val, (int, str)):
-        return val
-    if _is_record_with_type(val, 'Feature'):
-        return val.get('attributes').get(val.get('keyName'))
-    if isinstance(val, t.IFeature):
-        return val.uid
-
-
 """
-omGenericRelation   1->M 
+relatedGenericFeatureList   1->M 
     
     https://docs.sqlalchemy.org/en/14/_modules/examples/generic_associations/generic_fk.html
     
@@ -975,7 +973,7 @@ class Field_relatedGenericFeatureList(RelatedFeatureListField):
 
 
 """
-moGenericRelation   M->1 
+relatedGenericFeature   M->1 
     
     https://docs.sqlalchemy.org/en/14/_modules/examples/generic_associations/generic_fk.html
     
@@ -995,10 +993,19 @@ class Field_relatedGenericFeature(RelatedFeatureField):
 
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
+        gws.p('read_from_props val=', val)
         if val is None:
             return
 
-        uid = _get_uid(val)
+        if isinstance(val, (int, str)):
+            uid = val
+        elif isinstance(val, t.IFeature):
+            uid = val.uid
+        else:
+            key = gws.get(val, 'keyName')
+            uid = gws.get(val, ['attributes', key])
+
+        gws.p('read_from_props uid=', uid)
         if uid:
             fe.attributes[self.name] = generic_feature(uid=uid)
 
@@ -1155,6 +1162,7 @@ _WIDGET_TYPES = {
     'featureList': FeatureListWidget,
     'documentList': FeatureListWidget,
     'featureSelect': FeatureSelectWidget,
+    'featureSuggest': FeatureSuggestWidget,
     'select': SelectWidget,
     'input': InputWidget,
     'textarea': TextareaWidget,

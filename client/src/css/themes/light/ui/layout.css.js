@@ -9,14 +9,6 @@ module.exports = v => ({
     '.uiVRow': {
         width: '100%',
         overflowY: 'auto',
-        marginBottom: v.UNIT4,
-        paddingRight: v.UNIT2,
-        '> .uiCell': {
-            marginLeft: v.UNIT4,
-            '&:first-child': {
-                marginLeft: 0,
-            },
-        }
     },
 
 

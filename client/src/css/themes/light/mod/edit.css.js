@@ -16,25 +16,23 @@ module.exports = v => ({
         '.modSidebarTabHeader': {
             padding: v.UNIT4,
         },
-        // '&.modEditSidebarFormTab .modSidebarTabHeader': {
-        //     padding: [v.UNIT, v.UNIT4, v.UNIT, v.UNIT4],
-        // },
+        '.modSidebarTabBody': {
+            padding: 0,
+            '.uiVRow': {
+                padding: [v.UNIT2, 0, 0, v.UNIT2],
+            }
+
+        },
+        '&.modEditSidebarFormTab .modSidebarTabBody .uiVRow': {
+            padding: [v.UNIT4],
+        },
         '.modSearchBox': {
-            padding: v.UNIT2,
+            padding: 0,
             // borderBottom: [1, 'solid', v.BORDER_COLOR],
             // backgroundColor:v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
 
         },
 
-    },
-
-    '.modEditSidebar.modEditSidebarFormTab': {
-        '.modSidebarTabBody': {
-            padding: 0,
-            '.uiVRow': {
-                padding: [v.UNIT4, v.UNIT4],
-            }
-        },
     },
 
     '.modEditSidebarIcon': {
@@ -96,6 +94,15 @@ module.exports = v => ({
     '.modEditStyleButton': {
         ...v.ROUND_FORM_BUTTON('google:image/brush')
     },
+
+    '.modEditSelectFeatureDialog .uiDialogContent': {
+        padding: 0,
+        '.uiVBox': {
+            height: 350,
+            padding: [0, 0, 0, v.UNIT4],
+
+        }
+    }
 
 
 });

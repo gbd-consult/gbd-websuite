@@ -5,6 +5,7 @@ import * as gws from 'gws';
 
 const FADE_DURATION = 1500;
 const ZOOM_BUFFER = 150;
+const MIN_SCALE = 1000; // @TODO should be an option
 
 interface IMarkerContent {
     features: Array<gws.types.IFeature>;
@@ -168,7 +169,7 @@ class MarkerController extends gws.Controller {
         let extent = (new ol.geom.GeometryCollection(geoms)).getExtent();
 
         if (mode.zoom) {
-            this.map.setViewExtent(extent, !mode.noanimate, ZOOM_BUFFER);
+            this.map.setViewExtent(extent, !mode.noanimate, ZOOM_BUFFER, MIN_SCALE);
         } else if (mode.pan) {
             this.map.setCenter(ol.extent.getCenter(extent), !mode.noanimate);
         }
