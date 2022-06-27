@@ -189,7 +189,7 @@ class Spacer extends gws.Controller {
 interface LinkProps extends gws.types.ViewProps {
     controller: LinkWidget;
     title: string;
-    href: string;
+    url: string;
     className?: string;
 }
 
@@ -215,7 +215,7 @@ class LinkButtonView extends gws.View<LinkProps> {
 class LinkWidget extends gws.Controller {
 
     touched() {
-        let url = this.options.href;
+        let url = this.options.url;
 
         if (this.options.target === 'frame')
             this.update({dialogContent: {frame: url}});
@@ -226,7 +226,10 @@ class LinkWidget extends gws.Controller {
     }
 
     get defaultView() {
-        return this.createElement(LinkView, this.options);
+        if (this.options.type === 'button')
+            return this.createElement(LinkButtonView, this.options);
+        else
+            return this.createElement(LinkView, this.options);
     }
 
 }
@@ -237,7 +240,7 @@ class HelpWidget extends LinkWidget {
         this.options = {
             ...this.options,
             target: 'frame',
-            href: this.getValue('helpUrl'),
+            url: this.getValue('helpUrl'),
             title: this.__('modInfobarHelpTitle'),
             className: 'modInfobarHelpButton',
         };
@@ -250,7 +253,7 @@ class HomeLinkWidget extends LinkWidget {
     get defaultView() {
         this.options = {
             ...this.options,
-            href: this.getValue('homeUrl'),
+            url: this.getValue('homeUrl'),
             title: this.__('modInfobarHomeLinkTitle'),
             className: 'modInfobarHomeLinkButton',
         };
