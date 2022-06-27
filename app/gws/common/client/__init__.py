@@ -8,6 +8,7 @@ class ElementConfig(t.WithAccess):
     tag: str  #: element tag
     before: str = ''  #: insert before this tag
     after: str = ''  #: insert after this tag
+    options: t.Optional[dict] #: options
 
 
 class Config(t.WithAccess):
@@ -21,6 +22,7 @@ class Config(t.WithAccess):
 
 class ElementProps(t.Data):
     tag: str
+    options: t.Optional[dict]
 
 
 class Props(t.Data):
@@ -33,6 +35,7 @@ class Element(gws.Object):
     def props(self):
         return ElementProps({
             'tag': self.var('tag'),
+            'options': self.var('options'),
         })
 
 
