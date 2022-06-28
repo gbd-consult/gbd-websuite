@@ -1,0 +1,116 @@
+body {
+    box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, td, th, li {
+    font-family: Roboto, Helvetica, sans-serif;
+    color: #263238;
+    line-height: 1.5;
+}
+
+pre {
+    background: #f3f5f6;
+    padding: 1em;
+
+}
+
+code {
+    background: #f3f5f6;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 12px;
+
+}
+
+
+.db_diagram {
+    display: inline-block;
+    padding: 0.5em;
+    margin: 0.5em;
+    border: 1px dotted #ccc;
+
+}
+
+.db_diagram h6 {
+    margin: 2em 0 0 0;
+    padding: 0;
+    max-width: 30em;
+
+}
+
+.db_diagram span {
+    display: block;
+    padding: 1em;
+    font-size: 18px;
+}
+
+.dotgraph {
+}
+
+
+.toc {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 16em;
+    padding: 1em;
+    bottom: 0;
+    background: #37474f;
+    font-size: 16px;
+}
+
+.toc p[data-level="1"] {
+    font-size: 24px;
+}
+.toc p[data-level="2"] {
+}
+.toc p[data-level="3"] {
+    margin-left: 1.5em;
+    font-size: 14px;
+}
+.toc p[data-level="4"] {
+    margin-left: 3em;
+    font-size: 12px;
+}
+.toc p[data-level="5"] {
+    display: none;
+}
+
+.toc a {
+    text-decoration: none;
+    color: white;
+}
+.toc a:hover {
+    text-decoration: underline;
+}
+
+.main {
+    padding: 0 5em 0 20em;
+    max-width: 80em;
+}
+
+.main h2 {
+    margin:2em 0 1em 0;
+    font-size: 26px;
+    font-weight: 300;
+    padding: 0;
+
+}
+
+.main table {
+    min-width: 20em;
+    background: #f3f5f6;
+    border-collapse: collapse;
+}
+
+.main table th {
+    background: #eceff1;
+    font-size: 12px;
+    padding: 1em;
+    border: 1px solid white;
+    text-align: left;
+}
+.main table td {
+    font-size: 12px;
+    padding: 1em;
+    border: 1px solid white;
+}

@@ -1,0 +1,115 @@
+@let LIGHT = '#f3f5f6'
+
+@let blueGrey50 = '#eceff1'
+@let blueGrey100 = '#cfd8dc'
+@let blueGrey200 = '#b0bec5'
+@let blueGrey300 = '#90a4ae'
+@let blueGrey400 = '#78909c'
+@let blueGrey500 = '#607d8b'
+@let blueGrey600 = '#546e7a'
+@let blueGrey700 = '#455a64'
+@let blueGrey800 = '#37474f'
+@let blueGrey900 = '#263238'
+
+
+@let amber50 = '#fff8e1'
+@let amber100 = '#ffecb3'
+@let amber200 = '#ffe082'
+@let amber300 = '#ffd54f'
+@let amber400 = '#ffca28'
+@let amber500 = '#ffc107'
+@let amber600 = '#ffb300'
+@let amber700 = '#ffa000'
+@let amber800 = '#ff8f00'
+@let amber900 = '#ff6f00'
+
+@import subprocess
+
+@code
+
+def dot_render(text):
+    with open('/tmp/doc.dot', 'w') as fp:
+        fp.write(text)
+    p = subprocess.Popen(
+        ['/opt/homebrew/bin/dot', '-Tsvg', '/tmp/doc.dot'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+    out, _ = p.communicate()
+    out = out.decode('utf8')
+    if p.returncode:
+        out = 'ERROR: <xmp>' + out + '</xmp>'
+    else:
+        out = '<svg' + out.split('<svg')[1]
+    return '<div class="dotgraph">' + out + '</div>'
+
+def dot_defaults():
+    return """
+        rankdir="LR"
+        bgcolor="transparent"
+        splines="spline"
+        node [fontname="RobotoMono, Menlo, monospace", fontsize=9, color="{blueGrey200}", shape="plaintext"]
+        edge [fontname="RobotoMono, Menlo, monospace", fontsize=9, color="{blueGrey200}", arrowhead="vee"]
+    """
+
+def db_row(row):
+    row = row.split()
+
+    key = ''
+    if row[0] == 'PK':
+        row.pop(0)
+        key = " <FONT COLOR='#ff8f00'><B>&#x26bf;</B></FONT>"
+    if row[0] == 'FK':
+        row.pop(0)
+        key = " <FONT COLOR='#00c5cf'><B>&#x26bf;</B></FONT>"
+
+    type = ''
+    if len(row) > 1:
+        type = '<B>' + (row[1] + (' ' * 10))[:10] + '</B>'
+
+    return  f'<TR><TD ALIGN="left" PORT="{row[0]}">{type}{row[0]}{key}</TD></TR>'
+
+
+@end
+
+@block db_diagram(text)
+    @let head, rest = text.split('\n', 1)
+    @return ("\n<div class='db_diagram'>" +
+        dot_render("digraph {" + dot_defaults() + rest + "}") +
+        "\n<h6>" + head + "</h6>" +
+        "\n</div>\n\n"
+    )
+@end
+
+@def db_table(name, rows)
+    @let key = name
+    @let head = name
+    @if name.startswith('...')
+        @let key = name[3:]
+        @let head = '...'
+    @end
+
+    {key} [ label=<
+        <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" COLOR="{blueGrey100}">
+            <TR>
+                <TD WIDTH="80" BGCOLOR="{blueGrey100}"><B>{head}</B></TD>
+            </TR>
+            @for r in rows.split('|')
+                {db_row(r)}
+            @end
+        </TABLE>
+    >]
+@end
+
+@def db_arrow_m(a, b)
+    @let x = (a + b).replace(':', '_')
+    {x} [shape=point width=0.001]
+    {a} -> {x} [color="{blueGrey200}", arrowhead="crowcrow"]
+    {x} -> {b} [color="{blueGrey200}", arrowhead="none"]
+@end
+
+@def db_arrow_1(a, b)
+    @let x = (a + b).replace(':', '_')
+    {x} [shape=point width=0.001]
+    {a} -> {x} [color="{blueGrey200}", arrowhead="vee"]
+    {x} -> {b} [color="{blueGrey200}", arrowhead="none"]
+@end
