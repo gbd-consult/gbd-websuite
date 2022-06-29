@@ -7,8 +7,8 @@ interface SidebarProps extends gws.types.ViewProps {
     sidebarActiveTab: string;
     sidebarVisible: boolean;
     sidebarOverflowExpanded: boolean;
-    sidebarSize: number;
     sidebarWidth: number;
+    sidebarResizable: boolean; 
     sidebarResizing: boolean;
 }
 
@@ -16,8 +16,8 @@ const SidebarStoreKeys = [
     'sidebarActiveTab',
     'sidebarVisible',
     'sidebarOverflowExpanded',
-    'sidebarSize',
     'sidebarWidth',
+    'sidebarResizable',
     'sidebarResizing'
 ];
 
@@ -188,7 +188,7 @@ class SidebarView extends gws.View<SidebarProps> {
                     <Header {...this.props} />
                     <Body {...this.props} />
                 </div>
-                <SidebarResizeHandle {...this.props}/>
+                {this.props.sidebarResizable && <SidebarResizeHandle {...this.props}/>}
             </div>
         </React.Fragment>
     }
@@ -217,9 +217,7 @@ class SidebarController extends gws.Controller {
         }
 
         this.setSidebarResizing(false)
-        let configuredWidth = this.getValue('sidebarWidth');
-        let initialWidth = configuredWidth && configuredWidth > 240 || 240;
-        this.setSidebarWidth(initialWidth)
+        this.setSidebarWidth(this.getValue('sidebarWidth') || 300);
 
     }
 
