@@ -4,11 +4,11 @@ Die Konfiguration eines Feldes ist umfangreich und beinhaltet in der Regel:
 
 - allgemeine Attribute wie Name, Titel und Typ
 - Daten- und Relations- Attribute
-- default Werte
-- Validierungsregel
-- Formularfeld (`widget`) Konfiguration
+- Default Werte
+- eine Validierungsregel
+- eine Formularfeld (`widget`) Konfiguration
 
-Allgemeine Pflicht-Optionen für Felder:
+Allgemeine Pflicht-Optionen für Felder sind:
 
 
 Option | Typ | Bedeutung
