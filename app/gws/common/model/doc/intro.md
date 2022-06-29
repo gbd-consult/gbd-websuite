@@ -1,9 +1,8 @@
-GWS Modelle beschreiben Konfiguration von strukturen Datenquellen und Formularen. Zu strukturen Datenquellen gehören Datenbanktabellen, Shape- und GeoJSON Daten und WMS/WFS Features.
+GWS Modelle beschreiben die Konfiguration der Strukturen von Datenquellen und Formularen. Zu den Strukturen von Datenquellen gehören Datenbanktabellen, Shape- und GeoJSON Daten sowie WMS/WFS Feature.
 
-Ein Model muss eine eindeutige ID haben und besteht aus Feld (`field`) Objekten. Ein Feld Objekt beschreibt eine Spalte, Attribute oder Formularfeld.
+Ein Modell muss eine eindeutige ID haben und besteht aus Feld (`field`) Objekten. Ein Feld Objekt beschreibt eine Spalte, Attribute oder Formularfeld.
 
-Konkretes Beispiel: angenommen wir haben Tabellen `house` (Haus)  und `street` (Strasse) mit dieser Struktur:
-
+Konkretes Beispiel: Angenommen wir haben die beiden Tabellen `house` (Haus)  und `street` (Strasse) mit dieser Struktur:
 
 @db_diagram
 Tabellen "house" und "street".
@@ -13,7 +12,7 @@ Tabellen "house" und "street".
 @end
 
 
-Für die Tabelle `house` kann das Model ungefähr wie folgt konfiguriert werden:
+Für die Tabelle `house` kann das Modell ungefähr wie folgt konfiguriert werden:
 
 ```
 {
