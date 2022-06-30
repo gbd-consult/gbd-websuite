@@ -1,13 +1,13 @@
 module.exports = v => ({
 
     '.modSidebar': {
-        left: '-150%',
+        left: 0,
+        transform:'translateX(-100%)',
         width: '100%',
         bottom: v.INFOBAR_HEIGHT,
 
         [v.MEDIA('small+')]: {
-            left: -v.SIDEBAR_WIDTH,
-            width: v.SIDEBAR_WIDTH,
+            width: v.SIDEBAR_WIDTH+'!important',
         }
     },
 

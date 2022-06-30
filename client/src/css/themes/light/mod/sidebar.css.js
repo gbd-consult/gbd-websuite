@@ -11,7 +11,7 @@ module.exports = v => ({
         flexDirection: 'row',
         zIndex: 3,
         ...v.SHADOW,
-        ...v.TRANSITION('left', 'padding-bottom'),
+        ...v.TRANSITION('transform', 'padding-bottom'),
     },
 
     '.modSidebarResizeHandle': {
@@ -68,7 +68,7 @@ module.exports = v => ({
 
 
     '.modSidebar.isVisible': {
-        left: 0,
+        transform: 'translateX(0%)'
     },
 
     '.modSidebarHeader': {
