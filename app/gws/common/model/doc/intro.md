@@ -15,13 +15,13 @@ Tabellen "house" und "street".
 Für die Tabelle `house` kann das Modell ungefähr wie folgt konfiguriert werden:
 
 ```
-{
+model {
+
     uid "houseModel"
 
     fields [
         {
             name "id" type "integer" title "ID" isPrimaryKey true
-            widget { type "readonly" }
         }
         {
             name "address" type "string" title "Adresse"
@@ -35,7 +35,11 @@ Für die Tabelle `house` kann das Modell ungefähr wie folgt konfiguriert werden
             widget { type "integer" }
             validators [
                 { type "required" message "Bitte Etagenzahl eingeben"}
-                { type "range" minValue 1 maxValue 30 message "Etagenzahl muss zwischen 1 und 30 sein"}
+                { type "range"
+                    minValue { type "static" value 1 }
+                    minValue { type "static" value 30 }
+                    message "Etagenzahl muss zwischen 1 und 30 sein"
+                }
             ]
         }
         {
@@ -43,11 +47,16 @@ Für die Tabelle `house` kann das Modell ungefähr wie folgt konfiguriert werden
             geometry { type "point" crs 3857 }
             widget { type "geometry" }
             validators [
-                { type "geometryWithin" target "POLYGON((0 0) (1 1) (2 2) (0 0))"}
+                { type "geometry"
+                    operation "within"
+                    value { type "static" value "POLYGON((0 0) (1 1) (2 2) (0 0))" }
+                    messsage "Das Geometrie muss innerhalb der Stadtgrenze liegen"
+                }
             ]
         }
         {
             name "street" type "relatedFeature" title "Strasse"
+            relation { modelUid "streetModel" }
             foreignKey { name "street_id" }
         }
     ]

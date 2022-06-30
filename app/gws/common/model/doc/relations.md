@@ -26,7 +26,7 @@ Der Werte eines Relationsfeldes sind entweder ein Feature (Datensatz) bei `M:1` 
 
 Es werden diverse Typen von Relationen unterstützt.
 
-### relatedFeature
+### `relatedFeature`
 
 @db_diagram
 Beispiel: Ein Haus gehört zu einer Strasse.
@@ -54,7 +54,7 @@ Der Relationsfeld type `relatedFeature` beschreibt eine `M:1` oder "child-parent
 }
 ```
 
-### relatedFeatureList
+### `relatedFeatureList`
 
 @db_diagram
 Beispiel: Eine Strasse hat mehrere Häuser.
@@ -79,7 +79,7 @@ Ein Gegensatz zum type `relatedFeature`, beschreibt der type `relatedFeatureList
 }
 ```
 
-### relatedMultiFeatureList
+### `relatedMultiFeatureList`
 
 @db_diagram
 Beispiel: Eine Strasse hat mehrere Objekte wie Bäume, Laternen und Bushaltestellen.
@@ -109,7 +109,7 @@ Dieser type `relatedMultiFeatureList` beschreibt eine `1:M` Verbindung zwischen 
 }
 ```
 
-### relatedLinkedFeatureList
+### `relatedLinkedFeatureList`
 
 @db_diagram
 Beispiel: Eine Strasse kann zu mehreren Stadtteilen gehören, zu einem Stadtteil gehören mehrere Strassen.
@@ -156,7 +156,7 @@ Beschreibt eine `M:N` Relation über eine Link-Tabelle. An beiden Seiten der Rel
 }
 ```
 
-### relatedDiscriminatedFeature
+### `relatedDiscriminatedFeature`
 
 @db_diagram
 Beispiel: Ein Bild ist mit einem Baum, einer Bushaltestelle oder Laterne verknüpft.
@@ -194,7 +194,7 @@ so-genannte ["generic association"](https://docs.sqlalchemy.org/en/14/_modules/e
 }
 ```
 
-### relatedDiscriminatedFeatureList
+### `relatedDiscriminatedFeatureList`
 
 @db_diagram
 Beispiel: Ein Baum, eine Bushaltestelle oder eine Laterne können dazugehörige Bilder haben.
@@ -223,7 +223,7 @@ Das Gegenstück zu `relatedDiscriminatedFeature`. In der Konfiguration muss nur 
 }
 ```
 
-### relatedGenericFeature
+### `relatedGenericFeature`
 
 @db_diagram
 Beispiel: Ein Bild kann mit einem beliebigen Objekt verknüpft werden.
@@ -251,7 +251,7 @@ Eine Variante der "generic association" ohne Tabellen ID, d.h. das Feld kann mit
 }
 ```
 
-### relatedGenericFeatureList
+### `relatedGenericFeatureList`
 
 @db_diagram
 Beispiel: Beliebige Objekte können dazugehörigen Bilder haben.

@@ -22,6 +22,7 @@ __TOC__
 @include common.md
 @include scalars.md
 @include relations.md
-@include misc.md
+@include widgets.md
+@include validators.md
 
 </div>

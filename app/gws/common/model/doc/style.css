@@ -1,5 +1,8 @@
-body {
+* {
     box-sizing: border-box;
+}
+body {
+    font-size: 16px;
 }
 
 h1, h2, h3, h4, h5, h6, p, span, td, th, li {
@@ -8,17 +11,19 @@ h1, h2, h3, h4, h5, h6, p, span, td, th, li {
     line-height: 1.5;
 }
 
-pre {
-    background: #f3f5f6;
-    padding: 1em;
-
+pre, code {
+    font-family: Menlo, Consolas, monospace;
 }
 
-code {
+.main pre {
     background: #f3f5f6;
-    font-family: Menlo, Consolas, monospace;
-    font-size: 12px;
+    padding: 1em;
+    font-size: 14px;
+}
 
+.main code {
+    background: #f3f5f6;
+    font-size: 14px;
 }
 
 
@@ -37,12 +42,6 @@ code {
 
 }
 
-.db_diagram span {
-    display: block;
-    padding: 1em;
-    font-size: 18px;
-}
-
 .dotgraph {
 }
 
@@ -51,9 +50,11 @@ code {
     position: fixed;
     left: 0;
     top: 0;
-    width: 16em;
-    padding: 1em;
-    bottom: 0;
+    width: 320px;
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: #37474f;
     font-size: 16px;
 }
@@ -84,7 +85,7 @@ code {
 }
 
 .main {
-    padding: 0 5em 0 20em;
+    padding: 0 20px 0 340px;
     max-width: 80em;
 }
 
@@ -98,19 +99,16 @@ code {
 
 .main table {
     min-width: 20em;
-    background: #f3f5f6;
     border-collapse: collapse;
+    margin: 2em 0;
 }
 
-.main table th {
-    background: #eceff1;
-    font-size: 12px;
-    padding: 1em;
-    border: 1px solid white;
+.main table th, .main table td {
+    padding: 6px 12px;
+    border: 1px solid #eceff1;
     text-align: left;
 }
-.main table td {
-    font-size: 12px;
-    padding: 1em;
-    border: 1px solid white;
+.main table th {
+    font-weight: 600;
+    font-size: 14px;
 }
