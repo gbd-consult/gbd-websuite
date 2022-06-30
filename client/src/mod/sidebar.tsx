@@ -11,6 +11,7 @@ interface SidebarProps extends gws.types.ViewProps {
     sidebarWidth: number;
     sidebarResizable: boolean; 
     sidebarResizing: boolean;
+    appMediaWidth: string;
 }
 
 const SidebarStoreKeys = [
@@ -19,7 +20,8 @@ const SidebarStoreKeys = [
     'sidebarOverflowExpanded',
     'sidebarWidth',
     'sidebarResizable',
-    'sidebarResizing'
+    'sidebarResizing',
+    'appMediaWidth'
 ];
 
 let {Row, Cell} = gws.ui.Layout;
@@ -183,13 +185,13 @@ class SidebarView extends gws.View<SidebarProps> {
         return <React.Fragment>
             {!this.props.sidebarVisible && <OpenButton {...this.props}/>}
             <div {...gws.tools.cls('modSidebar', this.props.sidebarVisible && 'isVisible')}
-                style={{ width: this.props.sidebarWidth }}
+                style={{ width: this.props.controller.getSidebarWidth() }}
             >
                 <div {...gws.tools.cls('modSidebarLeftContainer')}>
                     <Header {...this.props} />
                     <Body {...this.props} />
                 </div>
-                {this.props.sidebarResizable && <SidebarResizeHandle {...this.props}/>}
+                {this.props.controller.getSidebarResizable() && <SidebarResizeHandle {...this.props}/>}
             </div>
         </React.Fragment>
     }
@@ -213,12 +215,23 @@ class SidebarController extends gws.Controller {
 
         this.app.whenCalled('setSidebarActiveTab', args => this.setActiveTab(args.tab));
 
+        this.setSidebarResizing(false)
+
         if (this.getValue('appMediaWidth') === 'xsmall') {
             this.setVisible(false)
         }
 
-        this.setSidebarResizing(false)
-        this.setSidebarWidth(this.getValue('sidebarWidth') || 300)
+    }
+
+    getSidebarResizable() {
+        return !(this.getValue('appMediaWidth') === 'xsmall') && this.getValue('sidebarResizable')
+    }
+
+    getSidebarWidth() {
+        if( this.getValue('appMediaWidth') === 'xsmall') {
+            return '100%'
+        }
+        return this.getValue('sidebarWidth') || 300
     }
 
     setActiveTab(tab) {
@@ -269,7 +282,7 @@ class SidebarController extends gws.Controller {
     }
 
     calculateVisibleSidebarTabs() {
-        let configuredSidebarWidth = this.getValue('sidebarWidth')
+        let configuredSidebarWidth = this.getSidebarWidth()
 
         // allow percentage based values for client.sidebarWidth
         let clientWidth = document.getElementsByClassName('gws')[0].clientWidth
