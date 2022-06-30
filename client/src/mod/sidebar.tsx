@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import * as gws from 'gws';
+import { toNumber } from 'lodash';
 
 interface SidebarProps extends gws.types.ViewProps {
     controller: SidebarController;
@@ -217,8 +218,7 @@ class SidebarController extends gws.Controller {
         }
 
         this.setSidebarResizing(false)
-        this.setSidebarWidth(this.getValue('sidebarWidth') || 300);
-
+        this.setSidebarWidth(this.getValue('sidebarWidth') || 300)
     }
 
     setActiveTab(tab) {
@@ -269,13 +269,21 @@ class SidebarController extends gws.Controller {
     }
 
     calculateVisibleSidebarTabs() {
+        let configuredSidebarWidth = this.getValue('sidebarWidth')
+
+        // allow percentage based values for client.sidebarWidth
+        let clientWidth = document.getElementsByClassName('gws')[0].clientWidth
+        if (typeof configuredSidebarWidth == 'string' && configuredSidebarWidth.indexOf('%')) {
+            configuredSidebarWidth = (toNumber(configuredSidebarWidth.replace(/[^0-9]/g, '')) / 100) * clientWidth
+        }
+
         let leftPad = 8,
             hideSidebarButtonWidth = 40,
             sidebarPageButtonWidth = 48,
             rightPad = 16,
             sidebarHandleWidth = 20
 
-        let availableSidebarSpace = this.getValue('sidebarWidth') - (leftPad+hideSidebarButtonWidth+rightPad+sidebarHandleWidth);
+        let availableSidebarSpace = configuredSidebarWidth - (leftPad+hideSidebarButtonWidth+rightPad+sidebarHandleWidth);
         let visibleSidebarTabs = Math.floor(availableSidebarSpace / sidebarPageButtonWidth);
 
         if(visibleSidebarTabs != this.children.length){
