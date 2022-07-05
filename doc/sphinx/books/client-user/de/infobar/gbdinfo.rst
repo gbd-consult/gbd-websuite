@@ -8,7 +8,7 @@ GBD Informationen
 Außerdem können Sie unter dem Reiter Dokumentation, einen Überblick über die Nutzung der GBD WebSuite verschaffen.
 
 .. note::
- Auch hier können bisherige Anpassungsmöglichkeiten angewendet werden. Es ist möglich, einen weiteren Button mit der von Ihnen gewünschten Verlinkung, einzupflegen.
+ Auch hier können bisherige Anpassungsmöglichkeiten angewendet werden. Es ist möglich, weitere Buttons mit der von Ihnen gewünschten Verlinkung, einzupflegen.
 
  .. |gbd| image:: ../../../images/gws_logo.svg
   :width: 30em

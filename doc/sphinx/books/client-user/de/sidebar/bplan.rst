@@ -10,6 +10,8 @@ Diese Bauleipläne werden in Form von Rasterbildern integriert und sind mit Flur
 Das Thema Bauleitplanung gehört zu den von der EU vorgegeben Themen, welche in INSPIRE-konformer Bereitstellung erfolgen sollen.
 Im Rahmen eines IKZ-Projektes des LK Marburg-Biedenkopf, wurden bis Anfang 2021 nun die ersten beiden INSPIRE Themen, Bauleitplanung und Schulstandorte, umgesetzt.
 Die Dienste werden dynamisch über das Geoservice-Portal des LK Marburg-Biedenkopf bereitgestellt und sind in das Geoportal Hessen integriert.
+Alle Informationen und Dokumente zu einem Bauplan, kann über die GBD WebSuite per Email versendet werden.
+Alle Anpassungen werden in einer PostGIS Datenbank gesichert und geloggt.So wird eine Aktualität der Daten bei allen Nutzern gewährt.
 
 .. rubric:: Bauleitpläne anzeigen, suchen und löschen
 

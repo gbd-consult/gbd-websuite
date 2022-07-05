@@ -4,6 +4,7 @@ Menüleiste
 ==========
 
 Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs.
+Die Darstellung der Menüleiste kann über ein Greifen der rechts angeordneten Leiste angepasst werden.
 
 .. toctree::
     :maxdepth: 2

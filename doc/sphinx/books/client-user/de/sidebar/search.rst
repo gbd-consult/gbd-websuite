@@ -12,7 +12,7 @@ wird auf Informationen einzelner Spalten der Datenbank zugegriffen.
 
 .. note::
  Wenn gewünscht kann die Suche deaktiviert werden. Außerdem ist es möglich, dass die Suche anstatt in der Menüleiste, prominent auf der Karte zu sehen ist.
- Optional können Suchparameter definiert werden.
+ Optional können Suchparameter definiert werden. Die integrierte Autocomplete-Funktion sorgt für eine dynamische Suche.
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em

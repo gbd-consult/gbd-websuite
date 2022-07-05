@@ -21,7 +21,6 @@ Außerdem können Dokumente über den Reiter |results| ``Dokumente`` eingesehen 
 Wenn Sie die entsprechende Rechtevergabe besitzen, können Sie neue Dokumente hinzufügen.
 Außerdem können bereits vorhandene Informationen geändert, heruntergeladen oder gelöscht werden.
 
-
  .. |results| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
  .. |search| image:: ../../../images/baseline-search-24px.svg
