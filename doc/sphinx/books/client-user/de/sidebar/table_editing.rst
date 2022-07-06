@@ -22,8 +22,7 @@ wenn die Attributspalte zum editieren freigegeben ist.
 Durch ein Klicken auf |save|, speichern Sie die vorgenommenen Anpassungen. Durch ein Klicken auf |cancel|, wird die Attributtabelle ohne schließen gespeichert.
 Zur besseren Übersicht, kann die Attributtabelle auch in Vollbild dargestellt werden. Klicken Sie dazu oben rechts auf |full_size|.
 
-.. Über die Exportfunktion ist es außerdem möglich, die Attributtabelle in einer Datei lokal abzuspeichern. 
-
+.. Über die Exportfunktion ist es außerdem möglich, die Attributtabelle in einer Datei lokal abzuspeichern.
 
  .. |table_edit| image:: ../../../images/table_view_black_24dp.svg
    :width: 30em

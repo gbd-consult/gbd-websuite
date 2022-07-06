@@ -59,7 +59,6 @@ Ein Ausschnitt aus einer Projektkonfiguration um eine Layer-Gruppe mit einer Pos
         }
     }
 
-
 wcs
 ~~~
 
