@@ -21,8 +21,8 @@ _COMBINED_UID_DELIMITER = '___'
 
 #:export
 class FeatureError(t.Data):
-    name: str
-    error: str
+    fieldName: str
+    message: str
 
 
 #:export

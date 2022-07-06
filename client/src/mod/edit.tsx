@@ -18,6 +18,9 @@ function _master(obj: any) {
         return obj.props.controller.app.controller(MASTER) as Controller;
 }
 
+const VALIDATION_ERROR_PREFIX = 'validationError';
+
+
 interface EditDialogData {
     name: string;
     relations?: Array<gws.types.IModelRelation>;
@@ -922,8 +925,12 @@ class Controller extends gws.Controller {
             let relLayer = field.relations[0].model.getLayer();
             let [searchText, features] = this.getSearch('suggest', [relLayer]);
 
-            if (!searchText)
-                features = [values[field.name]]
+            if (!searchText) {
+                features = [];
+                let f = values[field.name];
+                if (f)
+                    features.push(f);
+            }
 
             props['searchText'] = searchText;
             props['features'] = features;
@@ -941,15 +948,10 @@ class Controller extends gws.Controller {
         let feature = es.drawFeature;
         let geom = oFeature.getGeometry();
 
-        this.app.startTool('Tool.Edit.Pointer');
-
-        if (feature) {
-            feature.setGeometry(geom);
-        } else {
-            feature = await this.createNewFeature(this.activeLayer, {}, geom);
-        }
+        feature = await this.updateOrCreateFromGeometry(feature, geom)
 
         this.activateFeature(feature, '');
+        this.app.startTool('Tool.Edit.Pointer');
 
     }
 
@@ -992,9 +994,9 @@ class Controller extends gws.Controller {
 
     geomTimer = null;
 
-    whenModifyEnded(feature) {
+    whenModifyEnded(feature: gws.types.IFeature) {
         clearTimeout(this.geomTimer);
-        this.geomTimer = setTimeout(() => this.saveFeature(feature, true), 500);
+        this.geomTimer = setTimeout(() => this.updateOrCreateFromGeometry(feature, feature.geometry), 500);
     }
 
     searchTimer = null;
@@ -1190,6 +1192,20 @@ class Controller extends gws.Controller {
         return val;
     }
 
+    async updateOrCreateFromGeometry(feature: gws.types.IFeature | null, geom: ol.geom.Geometry) {
+        if (feature) {
+            feature.layer.removeFeature(feature);
+            feature.setGeometry(geom);
+            feature.attributes[feature.geometryName] = this.map.geom2shape(geom);
+            feature.layer.addFeature(feature);
+        } else {
+            feature = await this.createNewFeature(this.activeLayer, {}, geom);
+        }
+        await this.saveFeature(feature, false);
+        return feature;
+    }
+
+
     async saveFeature(feature: gws.types.IFeature, onlyGeometry = false) {
         let feSave = new gws.map.Feature(this.map);
 
@@ -1238,7 +1254,10 @@ class Controller extends gws.Controller {
         if (props.errors) {
             newState.formErrors = {};
             for (let e of props.errors) {
-                newState.formErrors[e['name']] = e['error'];
+                let msg = e['message'];
+                if (msg.startsWith(VALIDATION_ERROR_PREFIX))
+                    msg = this.__(msg)
+                newState.formErrors[e['fieldName']] = msg;
             }
             this.setState(newState);
             return;

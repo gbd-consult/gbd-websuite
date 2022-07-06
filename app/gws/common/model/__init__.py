@@ -40,6 +40,7 @@ class WidgetConfig(t.WithType):
     fileField: t.Optional['FieldNameTypeConfig']
     search: t.Optional[str]
 
+
 class WidgetProps(t.Props):
     type: str
     options: dict
@@ -57,15 +58,7 @@ class Widget(gws.Object, t.IModelWidget):
             if k not in {'type', 'uid'}:
                 self.options[k] = v
 
-        p = self.var('items')
-        if p:
-            self.options['items'] = [
-                {
-                    'value': it.get('value'),
-                    'text': it.get('text') or str(it.get('value')),
-                }
-                for it in p
-            ]
+        self.options['items'] = self.var('items')
 
         p = self.var('fileField')
         if p:
@@ -79,74 +72,15 @@ class Widget(gws.Object, t.IModelWidget):
         )
 
 
-class InputWidget(Widget):
-    pass
-
-
-class FeatureListWidget(Widget):
-    pass
-
-
-class DocumentListWidget(Widget):
-    pass
-
-
-class FeatureSelectWidget(Widget):
-    pass
-
-class FeatureSuggestWidget(Widget):
-    pass
-
-
-class FileWidget(Widget):
-    pass
-
-
-class DateWidget(Widget):
-    pass
-
-
-class TextareaWidget(Widget):
-    pass
-
-
-class CheckboxWidget(Widget):
-    pass
-
-
-class SelectWidget(Widget):
-    pass
-
-
-class ComboWidget(Widget):
-    pass
-
-
-class MeasurementWidget(Widget):
-    pass
-
-
-class IntegerWidget(Widget):
-    pass
-
-
-class FloatWidget(Widget):
-    pass
-
-
-class GeometryWidget(Widget):
-    pass
-
-
-class ReadonlyWidget(Widget):
-    pass
-
-
 ##
+
+VALIDATION_ERROR_PREFIX = 'validationError'
 
 
 class ValidatorConfig(t.WithType):
-    pass
+    message: str
+    operation: t.Optional[str]
+    value: t.Optional['ValueConfig']
 
 
 #:export IModelValidator
@@ -154,27 +88,66 @@ class Validator(gws.Object, t.IModelValidator):
     def configure(self):
         super().configure()
 
-        self.type = self.var('type')
+        self.type: str = self.var('type')
+        self.message: str = self.var('message')
 
-    def validate_value(self, field, value, attributes):
-        return None, value
+    def validate(self, field: t.IModelField, value: t.Any, fe: t.IFeature):
+        pass
+
+
+class Validator_string(Validator):
+    def validate(self, field, value, fe):
+        v = str(value).strip()
+        if len(v) == 0 and field.is_required:
+            raise ValidationError('Null')
+        fe.attributes[field.name] = v
+
+
+class Validator_integer(Validator):
+    def validate(self, field, value, fe):
+        try:
+            fe.attributes[field.name] = int(value)
+        except ValueError:
+            raise ValidationError('InvalidInteger')
+
+
+class Validator_float(Validator):
+    def validate(self, field, value, fe):
+        try:
+            fe.attributes[field.name] = float(value)
+        except ValueError:
+            raise ValidationError('InvalidFloat')
+
+
+class Validator_geometryConstraint(Validator):
+    def validate(self, field, value, fe):
+        this = t.cast(gws.gis.shape.Shape, value)
+
+        v = eval_value(fe, self.var('value'))
+        if isinstance(v, dict):
+            other = gws.gis.shape.from_geometry(v, this.crs)
+        elif isinstance(v, str):
+            other = gws.gis.shape.from_wkt(v, this.crs)
+        else:
+            other = t.cast(gws.gis.shape.Shape, v)
+
+        other = other.transformed_to(this.crs)
+
+        op = self.var('operation')
+        if op == 'within' and not this.within(other):
+            raise ValidationError('GeometryConstraint')
+        if op == 'intersects' and not this.intersects(other):
+            raise ValidationError('GeometryConstraint')
 
 
 ##
 
 
-def _expr_now():
-    return datetime.datetime.now().strftime('%Y-%m-%d')
-
-
-def _expr_uuid():
-    return uuid.uuid4()
-
-
-EXPRESSIONS = {
-    'now()': _expr_now,
-    'uuid_generate_v4()': _expr_uuid,
-}
+def eval_value(fe: t.IFeature, val: 'ValueConfig'):
+    if val.type == 'static':
+        return val.value
+    if val.type == 'expression':
+        return eval(val.expression)
 
 
 ##
@@ -183,9 +156,16 @@ class ValidationError(Exception):
     pass
 
 
-class FieldValueConfig(t.WithType):
+class ValueConfig(t.WithType):
     value: t.Optional[t.Any]
     expression: t.Optional[str]
+
+
+class FieldValueConfig(t.Config):
+    read: t.Optional[ValueConfig]
+    write: t.Optional[ValueConfig]
+    readDefault: t.Optional[ValueConfig]
+    writeDefault: t.Optional[ValueConfig]
 
 
 class FieldRelationConfig(t.Config):
@@ -218,26 +198,19 @@ class FieldConfig(t.WithType):
     discriminatorKey: t.Optional[FieldNameTypeConfig]
     link: t.Optional[FieldLinkConfig]
 
-    basePath: t.Optional[str]
+    fileName: t.Optional[str]
 
-    default: t.Optional[FieldValueConfig]
+    value: t.Optional[FieldValueConfig]
     validators: t.Optional[t.List[ValidatorConfig]]
-
-    minValue: t.Optional[float]
-    maxValue: t.Optional[float]
-
-    minLen: t.Optional[int]
-    maxLen: t.Optional[int]
-    pattern: t.Optional[str]
 
     geometryType: t.Optional[str]
 
+    errorMessages: t.Optional[dict]
+
     isRequired: bool = False
-    isEditable: bool = True
-    isPrimaryKey: bool = False
     isUnique: bool = False
+    isPrimaryKey: bool = False
     isSearchable: bool = False
-    isViewable: bool = True
 
 
 class FieldRelationProps(t.Props):
@@ -275,35 +248,26 @@ class Field(gws.Object, t.IModelField):
         self.title = self.var('title', default=self.name)
         self.geometry_type = self.var('geometryType', default='').upper()
 
-        self.default = self.var('default')
+        self.value = self.var('value') or t.Data()
 
-        self.is_primary_key = self.var('isPrimaryKey')
-        self.is_editable = self.var('isEditable')
-        self.is_required = self.var('isRequired')
-        self.is_searchable = self.var('isSearchable')
-        self.is_viewable = self.var('isViewable')
+        self.is_primary_key: bool = self.var('isPrimaryKey')
+        self.is_required: bool = self.var('isRequired')
+        self.is_searchable: bool = self.var('isSearchable')
+        self.is_unique: bool = self.var('isUnique')
 
-        self.min_value = self.var('minValue')
-        self.max_value = self.var('maxValue')
-        self.min_len = self.var('minLen')
-        self.max_len = self.var('maxLen')
-        self.pattern = self.var('pattern')
+        self.error_messages = self.var('errorMessages', default={})
 
         self.widget = None
         p = self.var('widget')
         if p:
-            cls = _WIDGET_TYPES.get(p.type)
-            if not cls:
-                raise Error(f'no widget {p.type}')
+            cls = _TYPES['widget:' + p.type]
             self.widget = t.cast(t.IModelWidget, self.create_child(cls, p))
 
         self.validators = []
         ps = self.var('validators')
         if ps:
             for p in ps:
-                cls = _VALIDATOR_TYPES.get(p.type)
-                if not cls:
-                    raise Error(f'no validator {p.type}')
+                cls = _TYPES['validator:' + p.type]
                 v = t.cast(t.IModelValidator, self.create_child(cls, p))
                 v.field = self
                 self.validators.append(v)
@@ -317,16 +281,6 @@ class Field(gws.Object, t.IModelField):
     def sa_adapt_select(self, state):
         pass
 
-    def get_default(self):
-        if not self.default:
-            return
-        v = self.default.get('value')
-        if v is not None:
-            return v
-        v = self.default.get('expression')
-        if v is not None:
-            return EXPRESSIONS[v]()
-
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth: int):
         pass
 
@@ -339,25 +293,39 @@ class Field(gws.Object, t.IModelField):
     def write_to_orm(self, fe: t.IFeature, obj):
         pass
 
-    def validate(self, fe: t.IFeature, errors):
-        value = fe.attr(self.name)
-
-        if value is None:
-            if self.is_required:
-                errors.append(t.FeatureError(name=self.name, error='validationErrorNull'))
+    def apply_defaults(self, fe: t.IFeature, mode):
+        p = gws.get(self.value, mode)
+        if p:
+            fe.attributes[self.name] = eval_value(fe, p)
             return
+        if fe.attr(self.name) is None:
+            p = gws.get(self.value, mode + 'Default')
+            if p:
+                fe.attributes[self.name] = eval_value(fe, p)
 
-        if not self.validators:
-            try:
-                fe.attributes[self.name] = self.validate_value(value)
-            except ValidationError as err:
-                errors.append(t.FeatureError(name=self.name, error=err.args[0]))
+    def prepend_validator(self, cfg):
+        for v in self.validators:
+            if v.type == cfg.type:
                 return
+        cls = _TYPES['validator:' + cfg.type]
+        v = t.cast(t.IModelValidator, self.create_child(cls, cfg))
+        self.validators.insert(0, v)
 
-        # for v in self.validators:
-        #     err = v.validate_value(self, value, attributes)
-        #     if err:
-        #         errors.append(t.FeatureError(name=self.name, error=err))
+    def validate(self, fe: t.IFeature, errors):
+        try:
+            if fe.attr(self.name) is None:
+                if self.is_required:
+                    raise ValidationError('Null')
+                return
+            for v in self.validators:
+                v.validate(self, fe.attr(self.name), fe)
+        except ValidationError as err:
+            msg = err.args[0]
+            if msg in self.error_messages:
+                msg = self.error_messages[msg]
+            else:
+                msg = VALIDATION_ERROR_PREFIX + msg
+            errors.append(t.FeatureError(fieldName=self.name, message=msg))
 
     def validate_value(self, value):
         return value
@@ -389,43 +357,28 @@ class ScalarField(Field):
         val = props.attributes.get(self.name)
         if val is not None:
             fe.attributes[self.name] = val
-            return
-        val = self.get_default()
-        if val is not None:
-            fe.attributes[self.name] = val
-            return
 
     def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = fe.attributes.get(self.name)
         if val is not None:
             props.attributes[self.name] = val
-            return
-        val = self.get_default()
-        if val is not None:
-            props.attributes[self.name] = val
-            return
 
     def read_from_orm(self, fe: t.IFeature, obj, depth):
         val = getattr(obj, self.name, None)
         if val is not None:
             fe.attributes[self.name] = val
-            return
-        val = self.get_default()
-        if val is not None:
-            fe.attributes[self.name] = val
-            return
 
     def write_to_orm(self, fe: t.IFeature, obj):
         if self.name in fe.attributes:
             setattr(obj, self.name, fe.attributes[self.name])
-            return
-        val = self.get_default()
-        if val is not None:
-            setattr(obj, self.name, val)
 
 
-class StringField(ScalarField):
+class Field_string(ScalarField):
     data_type = 'string'
+
+    def configure(self):
+        super().configure()
+        self.prepend_validator(t.Data(type='string'))
 
     def sa_adapt_select(self, state):
         model = t.cast(t.IDbModel, self.model)
@@ -435,58 +388,36 @@ class StringField(ScalarField):
                 getattr(model.get_class(), self.name).ilike(
                     '%' + _escape_like(state.args.keyword) + '%', escape='\\')))
 
-    def validate_value(self, value):
-        v = str(value).strip()
-        if v == '':
-            if self.is_required:
-                raise ValidationError('validationErrorNull')
-            return v
-        if self.min_len is not None and len(v) < self.min_len:
-            raise ValidationError('validationErrorStringTooShort')
-        if self.max_len is not None and len(v) > self.max_len:
-            raise ValidationError('validationErrorStringTooLong')
-        if self.pattern and not re.match(str(self.pattern), v):
-            raise ValidationError('validationErrorPattern')
-        return v
 
-
-class IntegerField(ScalarField):
+class Field_integer(ScalarField):
     data_type = 'integer'
 
-    def convert(self, val):
-        if isinstance(val, int):
-            return val
-        v = str(val).strip()
-        if not v:
-            return None
-        return int(v)
+    def configure(self):
+        super().configure()
+        self.prepend_validator(t.Data(type='integer'))
 
-    def validate_value(self, value):
-        try:
-            v = self.convert(value)
-        except:
-            raise ValidationError('validationErrorInvalidInteger')
-        if v is None:
-            if self.is_required:
-                raise ValidationError('validationErrorNull')
-            return v
-        if self.min_value is not None and v < self.min_value:
-            raise ValidationError('validationErrorNumberTooSmall')
-        if self.max_value is not None and v > self.max_value:
-            raise ValidationError('validationErrorNumberTooBig')
-        return v
+    # def validate(self, fe: t.IFeature, errors):
+    #     try:
+    #         v = self.convert(value)
+    #     except:
+    #         raise ValidationError('validationErrorInvalidInteger')
+    #     if v is None:
+    #         if self.is_required:
+    #             raise ValidationError('validationErrorNull')
+    #         return v
+    #     if self.min_value is not None and v < self.min_value:
+    #         raise ValidationError('validationErrorNumberTooSmall')
+    #     if self.max_value is not None and v > self.max_value:
+    #         raise ValidationError('validationErrorNumberTooBig')
+    #     return v
 
 
-class FloatField(ScalarField):
+class Field_float(ScalarField):
     data_type = 'float'
 
-    def convert(self, val):
-        if isinstance(val, (int, float)):
-            return float(val)
-        v = str(val).strip()
-        if not v:
-            return None
-        return float(v)
+    def configure(self):
+        super().configure()
+        self.prepend_validator(t.Data(type='float'))
 
     def validate_value(self, value):
         try:
@@ -504,7 +435,7 @@ class FloatField(ScalarField):
         return v
 
 
-class DateField(ScalarField):
+class Field_date(ScalarField):
     data_type = 'date'
 
     def convert(self, val):
@@ -528,32 +459,31 @@ class DateField(ScalarField):
         return v
 
 
-def _is_record_with_type(val, type):
-    return isinstance(val, (dict, t.Data)) and val.get('type') == type
-
-
 class FileValue(t.Data):
     name: str
+    path: t.Optional[str]
     content: t.Optional[bytes]
     mime: t.Optional[str]
 
 
-class FileField(ScalarField):
+class Field_file(ScalarField):
     data_type = 'string'
 
     def normalize_file_name(self, s):
         p = gws.tools.os2.parse_path(s)
-        return gws.as_uid(p['name']) + '.' + gws.as_uid(p['extension'])
+        return
 
-    def store_file(self, fname, content):
-        file_path = self.var('basePath') + '/' + fname
-        gws.write_file_b(file_path, content)
-        return True
+    def store_file(self, path, content):
+        gws.write_file_b(path, content)
 
-    def get_file_path(self, fe: t.IFeature):
-        val = fe.attr(self.name)
-        if val:
-            return self.var('basePath') + '/' + val.name
+    def name_to_path(self, name: str, fe: t.IFeature):
+        p = gws.tools.os2.parse_path(name)
+        context = dict(fe.attributes)
+        context['file'] = t.Data(
+            name=gws.as_uid(p['name']),
+            extension=gws.as_uid(p['extension'])
+        )
+        return self.var('fileName').format_map(context)
 
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
@@ -565,24 +495,31 @@ class FileField(ScalarField):
     def write_to_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = fe.attr(self.name)
         if val:
-            props.attributes[self.name] = val
+            props.attributes[self.name] = FileValue(
+                name=val.name,
+                mime=val.mime)
 
     def read_from_orm(self, fe: t.IFeature, obj, depth):
-        fname = getattr(obj, self.name, None)
-        if fname is not None:
-            fe.attributes[self.name] = FileValue(name=fname, mime=gws.tools.mime.for_path(fname))
+        path = getattr(obj, self.name, None)
+        if path is not None:
+            p = gws.tools.os2.parse_path(path)
+            fe.attributes[self.name] = FileValue(
+                path=path,
+                name=p['filename'],
+                mime=gws.tools.mime.for_path(path))
 
     def write_to_orm(self, fe: t.IFeature, obj):
         val = fe.attr(self.name)
         if val is not None:
-            fname = self.normalize_file_name(gws.get(val, 'name'))
+            name = gws.get(val, 'name')
             content = gws.get(val, 'content')
-            if fname and content:
-                self.store_file(fname, content)
-                setattr(obj, self.name, fname)
+            if name and content:
+                path = self.name_to_path(name, fe)
+                self.store_file(path, content)
+                setattr(obj, self.name, path)
 
 
-class GeometryField(ScalarField):
+class Field_geometry(ScalarField):
     data_type = 'string'
     geometry_type = ''
 
@@ -1151,52 +1088,52 @@ class Field_relatedDiscriminatedFeature(RelatedFeatureField):
 
 ##
 
-_WIDGET_TYPES = {
-    'combo': ComboWidget,
-    'date': DateWidget,
-    'file': FileWidget,
-    'float': FloatWidget,
-    'geometry': GeometryWidget,
-    'integer': IntegerWidget,
-    'readonly': ReadonlyWidget,
-    'featureList': FeatureListWidget,
-    'documentList': FeatureListWidget,
-    'featureSelect': FeatureSelectWidget,
-    'featureSuggest': FeatureSuggestWidget,
-    'select': SelectWidget,
-    'input': InputWidget,
-    'textarea': TextareaWidget,
-    'checkbox': CheckboxWidget,
-    'measurement': MeasurementWidget,
-}
+_TYPES = {
+    'widget:checkBox': Widget,
+    'widget:comboBox': Widget,
+    'widget:date': Widget,
+    'widget:documentList': Widget,
+    'widget:featureList': Widget,
+    'widget:featureSelect': Widget,
+    'widget:featureSuggest': Widget,
+    'widget:file': Widget,
+    'widget:floatInput': Widget,
+    'widget:geometry': Widget,
+    'widget:input': Widget,
+    'widget:integerInput': Widget,
+    'widget:measurement': Widget,
+    'widget:select': Widget,
+    'widget:staticText': Widget,
+    'widget:textArea': Widget,
 
-_FIELD_TYPES = {
-    'string': StringField,
-    'integer': IntegerField,
-    'float': FloatField,
-    'date': DateField,
-    'file': FileField,
+    'field:string': Field_string,
+    'field:integer': Field_integer,
+    'field:float': Field_float,
+    'field:date': Field_date,
+    'field:file': Field_file,
+    'field:geometry': Field_geometry,
+    'field:relatedFeature': Field_relatedFeature,
+    'field:relatedFeatureList': Field_relatedFeatureList,
+    'field:relatedMultiFeatureList': Field_relatedMultiFeatureList,
+    'field:relatedLinkedFeatureList': Field_relatedLinkedFeatureList,
+    'field:relatedGenericFeatureList': Field_relatedGenericFeatureList,
+    'field:relatedGenericFeature': Field_relatedGenericFeature,
+    'field:relatedDiscriminatedFeatureList': Field_relatedDiscriminatedFeatureList,
+    'field:relatedDiscriminatedFeature': Field_relatedDiscriminatedFeature,
 
-    'geometry': GeometryField,
+    'validator:string': Validator_string,
+    'validator:integer': Validator_integer,
+    'validator:float': Validator_float,
+    'validator:geometryConstraint': Validator_geometryConstraint,
 
-    'relatedFeature': Field_relatedFeature,
-    'relatedFeatureList': Field_relatedFeatureList,
-    'relatedMultiFeatureList': Field_relatedMultiFeatureList,
-    'relatedLinkedFeatureList': Field_relatedLinkedFeatureList,
-    'relatedGenericFeatureList': Field_relatedGenericFeatureList,
-    'relatedGenericFeature': Field_relatedGenericFeature,
-    'relatedDiscriminatedFeatureList': Field_relatedDiscriminatedFeatureList,
-    'relatedDiscriminatedFeature': Field_relatedDiscriminatedFeature,
-}
-
-_VALIDATOR_TYPES = {
 }
 
 
 ##
 
 
-##
+class Permissions(t.Config):
+    read: t.List[t.Access]
 
 
 class Config(t.WithAccess):
@@ -1240,15 +1177,12 @@ class Object(gws.Object, t.IModel):
         self.fields = []
 
         for p in self.var('fields'):
-            cls = _FIELD_TYPES[p.type]
-            if not cls:
-                raise Error(f'no field {p.type!r}')
-
+            cls = _TYPES['field:' + p.type]
             f = t.cast(t.IModelField, self.create_child(cls, p))
             f.model = self
             self.fields.append(f)
 
-            if isinstance(f, GeometryField) and not self.geometry_name:
+            if isinstance(f, Field_geometry) and not self.geometry_name:
                 self.geometry_name = f.name
             if f.is_primary_key:
                 self.key_name = f.name
@@ -1265,8 +1199,15 @@ class Object(gws.Object, t.IModel):
     def reload(self, fe: t.IFeature, depth: int = 0):
         pass
 
+    def apply_defaults(self, fe: t.IFeature, mode):
+        for f in self.fields:
+            f.apply_defaults(fe, mode)
+
     def validate(self, fe: t.IFeature) -> t.List[t.FeatureError]:
-        return []
+        errors = []
+        for f in self.fields:
+            f.validate(fe, errors)
+        return errors
 
     def init_feature(self):
         fe = gws.gis.feature.Feature(self)
@@ -1291,12 +1232,6 @@ class Object(gws.Object, t.IModel):
         fe.is_new = bool(props.get('isNew'))
         for f in self.fields:
             f.read_from_props(fe, props, depth)
-
-        # s = p.get('style')
-        # if isinstance(s, dict):
-        #     s = t.StyleProps(s)
-        # f.style = gws.common.style.from_props(s)
-
         return fe
 
     def feature_props(self, fe, depth=0):
@@ -1385,12 +1320,6 @@ class DbModel(Object, t.IDbModel):
             fe.attributes = f2.attributes
         return fe
 
-    def validate(self, fe) -> t.List[t.FeatureError]:
-        errors = []
-        for f in self.fields:
-            f.validate(fe, errors)
-        return errors
-
     def get_feature(self, uid, depth=0):
         obj = self.get_object(uid)
         if obj:
@@ -1465,9 +1394,9 @@ class DbModel(Object, t.IDbModel):
 def _escape_like(s, escape='\\'):
     return (
         s
-            .replace(escape, escape + escape)
-            .replace('%', escape + '%')
-            .replace('_', escape + '_'))
+        .replace(escape, escape + escape)
+        .replace('%', escape + '%')
+        .replace('_', escape + '_'))
 
 
 ##

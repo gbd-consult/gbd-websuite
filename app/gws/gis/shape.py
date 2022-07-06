@@ -175,6 +175,9 @@ class Shape(t.IShape):
     def intersects(self, shape: t.IShape) -> bool:
         return self.geom.intersects(t.cast(Shape, shape).geom)
 
+    def within(self, shape: t.IShape) -> bool:
+        return self.geom.within(t.cast(Shape, shape).geom)
+
     def tolerance_polygon(self, tolerance, resolution=None) -> t.IShape:
         is_poly = self.type in (t.GeometryType.polygon, t.GeometryType.multipolygon)
 

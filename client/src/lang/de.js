@@ -332,15 +332,14 @@ module.exports = {
     modCollectorSaveButton: 'Speichern',
 
     validationErrorNull: 'das Feld darf nicht leer sein',
-    validationErrorStringTooShort: 'String zu kurz',
-    validationErrorStringTooLong: 'String zu lang',
+    validationErrorTooShort: 'Eingabe zu kurz',
+    validationErrorTooLong: 'Eingabe zu lang',
     validationErrorPattern: 'falsches Format',
     validationErrorInvalidInteger: 'Ganzzahl erwartet',
     validationErrorInvalidFloat: 'Fließkommazahl erwartet',
-    validationErrorNumberTooSmall: 'Wert zu klein',
-    validationErrorNumberTooBig: 'Wert zu groß',
-    validationErrorListTooShort: 'Liste zu kurz',
-    validationErrorListTooLong: 'Liste zu lang',
+    validationErrorTooSmall: 'Wert zu klein',
+    validationErrorTooBig: 'Wert zu groß',
+    validationErrorGeometryConstraint: 'die Geometrie ist falsch positioniert',
 
 };
 

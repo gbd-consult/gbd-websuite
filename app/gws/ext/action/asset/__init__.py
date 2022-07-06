@@ -146,13 +146,11 @@ class Object(gws.common.action.Object):
         if not fe:
             raise gws.web.error.NotFound()
 
-        fn = getattr(field, 'get_file_path', None)
-        if fn:
-            path = fn(fe)
-            mime = gws.tools.mime.for_path(path)
+        val = fe.attr(field.name)
+        if val:
             return t.HttpResponse(
-                mime=mime,
-                content=gws.read_file_b(path))
+                mime=val.mime,
+                content=gws.read_file_b(val.path))
 
         raise gws.web.error.NotFound()
 

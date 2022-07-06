@@ -292,8 +292,8 @@ class DocumentRoot(Data):
 
 
 class FeatureError(Data):
-    error: str
-    name: str
+    fieldName: str
+    message: str
 
 
 class FeatureProps(Data):
@@ -424,6 +424,7 @@ class IShape:
     def to_type(self, new_type: 'GeometryType') -> 'IShape': pass
     def tolerance_polygon(self, tolerance, resolution=None) -> 'IShape': pass
     def transformed_to(self, to_crs, **kwargs) -> 'IShape': pass
+    def within(self, shape: 'IShape') -> bool: pass
 
 
 class IStyle:
@@ -1273,6 +1274,7 @@ class IModel(IObject):
     key_name: str
     keyword_columns: List[str]
     layer: Optional['ILayer']
+    def apply_defaults(self, fe: 'IFeature', mode): pass
     def delete(self, fe: 'IFeature'): pass
     def feature_from_props(self, props: 'FeatureProps', depth=0): pass
     def feature_props(self, fe, depth=0): pass
@@ -1289,12 +1291,17 @@ class IModel(IObject):
 class IModelField(IObject):
     data_type: str
     geometry_type: str
+    is_primary_key: bool
+    is_required: bool
+    is_searchable: bool
+    is_unique: bool
     model: 'IModel'
     name: str
     type: str
     validators: list
     widget: Optional['IModelWidget']
-    def get_default(self): pass
+    def apply_defaults(self, fe: 'IFeature', mode): pass
+    def prepend_validator(self, cfg): pass
     def read_from_orm(self, fe: 'IFeature', obj, depth): pass
     def read_from_props(self, fe: 'IFeature', props: 'FeatureProps', depth: int): pass
     def sa_adapt_select(self, state): pass
@@ -1307,7 +1314,9 @@ class IModelField(IObject):
 
 
 class IModelValidator(IObject):
-    def validate_value(self, field, value, attributes): pass
+    message: str
+    type: str
+    def validate(self, field: 'IModelField', value: Any, fe: 'IFeature'): pass
 
 
 class IModelWidget(IObject):

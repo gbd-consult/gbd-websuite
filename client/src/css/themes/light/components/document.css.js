@@ -21,7 +21,7 @@ module.exports = v => ({
 
     '.cmpDocument': {
 
-        backgroundColor: v.COLOR.blueGrey50,
+        backgroundColor: v.EVEN_STRIPE_COLOR,
 
         textAlign: 'center',
         ...v.TRANSITION(),
@@ -63,8 +63,8 @@ module.exports = v => ({
         width: v.UNIT * 30,
         padding: v.UNIT2,
         fontSize: v.TINY_FONT_SIZE,
-        backgroundColor: v.BORDER_COLOR,
-        color: 'white',
+        // backgroundColor: v.BORDER_COLOR,
+        // color: 'white',
         overflow: 'hidden',
 
 

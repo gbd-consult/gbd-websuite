@@ -86,6 +86,7 @@ class Object(gws.common.action.Object):
             return self._list_response([])
 
         for fe in pc.features:
+            fe.model.apply_defaults(fe, 'read')
             self._apply_templates_deep(fe, 'title')
 
         return self._list_response(pc.features)
@@ -135,6 +136,7 @@ class Object(gws.common.action.Object):
         out_features = gws.compact(out_features)
 
         for fe in out_features:
+            fe.model.apply_defaults(fe, 'read')
             self._apply_templates_deep(fe, 'title')
 
         return self._list_response(out_features)
@@ -148,8 +150,44 @@ class Object(gws.common.action.Object):
 
         has_validation_errors = False
         for fe in pc.features:
+            fe.model.apply_defaults(fe, 'write')
             errors = fe.model.validate(fe)
             if errors:
+                fe.attributes = {}
+                fe.errors = errors
+                has_validation_errors = True
+
+        if has_validation_errors:
+            return self._list_response(pc.features)
+
+        for layer_uid, indexes in pc.by_layer.items():
+            layer = pc.layers[layer_uid]
+            for n in indexes:
+                fe = pc.features[n]
+                layer.editor.model.save(fe)
+
+        gws.common.model.session.commit()
+
+        for fe in pc.features:
+            fe.layer.editor.model.reload(fe, depth=1)
+            fe.is_new = False
+            self._apply_templates_deep(fe, 'title')
+
+        return self._list_response(pc.features)
+
+    def api_write_features_geometry(self, req: t.IRequest, p: ListParams) -> ListResponse:
+        """Write feature geomtries on the layer"""
+
+        pc = self._prepare_features(req, p)
+        if not pc:
+            return self._list_response([])
+
+        has_validation_errors = False
+        for fe in pc.features:
+            fe.model.apply_defaults(fe, 'write')
+            errors = fe.model.validate(fe)
+            if errors:
+                fe.attributes = {}
                 fe.errors = errors
                 has_validation_errors = True
 
