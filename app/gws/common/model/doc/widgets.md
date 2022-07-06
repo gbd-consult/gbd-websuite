@@ -1,20 +1,20 @@
 ## Widgets
 
 
-Mit der Option `widget` kann man Formularelemente für Felder konfigurieren. Die Anzeige und Verhalten von Widgets sind von Zugriffsrechten abhängig:
+Mit der Option `widget` kann man Formularelemente für Felder konfigurieren. Die Anzeige und das Verhalten von Widgets sind von den Zugriffsrechten abhängig:
 
-- wird kein `widget` definiert, wird auch kein Formularelement angezeigt
+- wird kein `widget` definiert ist, wird auch kein Formularelement angezeigt
 
-- wenn Nutzer über kein Leserecht verfügt, wird kein Formularelement angezeigt
+- wenn ein Nutzer über kein Leserecht verfügt, wird kein Formularelement angezeigt
 
-- wenn Nutzer über kein Schreibrecht verfügt, wird das Formularelement als `readonly` angezeigt
+- wenn ein Nutzer über kein Schreibrecht verfügt, wird das Formularelement als `readonly` angezeigt
 
 - ansonsten wird das Formularelement normal angezeigt
 
 
-Beachten Sie: wenn Sie das Widget weglassen, wird damit das direkte Aktualisieren des Feldes durch API nicht verhindert. Sollte das Feld nicht schreibbar sein, müssen dafür Zugriffsrechte definiert werden!
+Beachten Sie: Wenn Sie das Widget weglassen, wird damit das direkte Aktualisieren des Feldes durch die API nicht verhindert. Sollte das Feld nicht schreibbar sein, müssen dafür Zugriffsrechte definiert werden!
 
-Es steht eine Reihe von Widgets zur Verfügung. Für machen Widgets können zusätzliche Optionen konfiguriert werden.
+Es stehen eine Reihe von Widgets zur Verfügung. Für mache Widgets können zusätzliche Optionen konfiguriert werden.
 
 ### `staticText`
 
@@ -85,7 +85,7 @@ widget {
 
 ### `comboBox`
 
-Eine Liste der string Optionen mit der Möglichkeit einer freien Eingabe
+Eine Liste von string Optionen mit der Möglichkeit einer freien Eingabe
 
 ```
 widget {
@@ -100,7 +100,7 @@ widget {
 
 ### `checkBox`, `radioButton`
 
-Widgets zur Eingabe der booleschen Werten.
+Widgets zur Eingabe von booleschen Werten.
 
 ### `geometry`
 
@@ -112,9 +112,9 @@ Widget für einen numerischen Wert mit einer Maßeinheit, wie z.B. `2 m`.
 
 ### `featureSelect`
 
-Bei `M:1` Relationen, wie z.B. `relatedFeature`, zeigt eine Auswahlbox für das "parent" Feature an. Dieser Widget empfiehlt sich für "kleine" Referenztabellen (Layer) die im Klient komplett geladen werden (mit `loadingStrategy: all`).
+Bei `M:1` Relationen, wie z.B. `relatedFeature`, wird eine Auswahlbox für das "parent" Feature angezeigt. Dieses Widget empfiehlt sich für "kleine" Referenztabellen (Layer) die im Klient komplett geladen werden (mit `loadingStrategy: all`).
 
-Im nachfolgenden Beispiel sind für Straßenarbeiten (`roadwork`) vier Typen von Auftraggeber (`customer`) definiert.
+Im nachfolgenden Beispiel sind für Straßenarbeiten (`roadwork`) vier Typen von Auftraggebern (`customer`) definiert.
 
 @db_diagram
 Straßenarbeiten und Auftraggeber.
@@ -123,7 +123,7 @@ Straßenarbeiten und Auftraggeber.
 @db_arrow_1 "roadwork:customer_type" "customer"
 @end
 
-Im Model `roadworkModel` kann man für `customer` diese Feldkonfiguration nutzen:
+Im Modell `roadworkModel` kann man für `customer` diese Feldkonfiguration nutzen:
 
 ```
 {
@@ -144,7 +144,7 @@ Im Model `roadworkModel` kann man für `customer` diese Feldkonfiguration nutzen
 
 ### `featureSuggest`
 
-Bei `M:1` Relationen, zeigt eine Autocomplete-Box für das "parent" Feature mit der "live" Suche on Server-Seite. Diese Widget ist für größeren Tabellen (Layer), die nicht komplett geladen werden (`loadingStrategy: lazy`).
+Bei `M:1` Relationen, zeigt eine Autocomplete-Box für das "parent" Feature mit der "live" Suche, die serverseitig stattfindet. Dieses Widget ist gut für größere Tabellen (Layer) geeignet, die nicht komplett geladen werden (`loadingStrategy: lazy`).
 
 In diesem Beispiel sind Straßenarbeiten mit Straßen verbunden, wobei die Liste von Straßen serverseitig durchsucht wird:
 
@@ -178,7 +178,7 @@ Straßenarbeiten und Straßen.
 
 ### `featureList`
 
-Bei `1:M` Relationen, zeigt eine Liste der verknüpften Features mit entsprechenden Editierbuttons, die mit der Option `buttons` eingeschaltet werden können:
+Bei `1:M` Relationen wird eine Liste der verknüpften Feature mit entsprechenden Editierbuttons angezeigt, die mit der Option `buttons` eingeschaltet werden können:
 
 ```
 widget {
@@ -195,7 +195,7 @@ widget {
 
 ### `documentList`
 
-Zeigt eine Liste der verknüpften Dokumenten. Ein "Dokument" ist ein Feature dessen Modell ein `file` bzw `blob` Field enthält. Neben den o.g. `button` Option, muss hier auch den Namen des File-Fields konfiguriert werden.
+Zeigt eine Liste der verknüpften Dokumente. Ein "Dokument" ist ein Feature, dessen Modell ein `file` bzw `blob` Feld enthält. Neben den o.g. `button` Optionen, müssen hier auch die Namen der File-Fields konfiguriert werden.
 
 Angenommen es gibt zu Straßenarbeiten eine Liste von Dokumenten (`document`), wobei die Daten im Feld `datei` gespeichert werden.
 

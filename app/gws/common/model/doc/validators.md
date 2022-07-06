@@ -1,8 +1,8 @@
 ## Validatoren
 
-An einem Modell-Feld kann eine beliebige Anzahl von Validatoren angehängt werden. Beim Erstellen oder Aktualisieren von Features werden alle Validatoren nach der Reihe überprüft. Falls einer der Validatoren fehlschlägt, wird das Aktualisieren abgebrochen und dem Nutzer die entsprechende Fehlermeldung gezeigt.
+An einem Modell-Feld kann eine beliebige Anzahl von Validatoren angehängt werden. Beim Erstellen oder Aktualisieren von Features werden alle Validatoren nach der Reihe überprüft. Falls einer der Validatoren fehlschlägt, wird das Aktualisieren abgebrochen und dem Nutzer eine entsprechende Fehlermeldung angezeigt.
 
-Für einen Validator muss zumindest den Typ (`type`) und die Fehlermeldung (`messsage`) konfiguriert werden. Mache Validatoren haben auch weitere Optionen.
+Für einen Validator muss zumindest der Typ (`type`) und die Fehlermeldung (`messsage`) konfiguriert werden. Manche Validatoren haben auch weitere Optionen.
 
 Ein Feld mit Validatoren kann wie folgt aussehen:
 
@@ -40,7 +40,7 @@ Folgende Validatortypen sind definiert:
 
 ### `required`
 
-Das Feld darf nicht leer (also `NULL` oder ein leeres String) sein.
+Das Feld darf nicht leer (also `NULL` oder ein leerer String) sein.
 
 ### `pattern`
 
@@ -62,7 +62,7 @@ Der Stringwert des Feldes muss mit einem regulären Ausdruck übereinstimmen.
 
 ### `length`
 
-Die Länge des Wertes muss zwischen `minLength` und `maxLength` (inklusiv) liegen. Bei Relationen wird Anzahl von verknüpften Features geprüft. Es können nur "min" oder nur "max" konfiguriert werden, oder beides.
+Die Länge des Wertes muss zwischen `minLength` und `maxLength` (inklusive) liegen. Bei Relationen wird die Anzahl der verknüpften Feature geprüft. Es kann nur "min" oder nur "max" konfiguriert werden, oder beides.
 
 ```
 {
