@@ -309,6 +309,17 @@ def _read_url(rd, val, spec):
     return _read_str(rd, val, spec)
 
 
+def _read_acl(rd, val, spec):
+    if isinstance(val, list):
+        return [t.Data(v) for v in val]
+    # a string like "allow foo, deny bar"
+    ls = []
+    for p in val.split(','):
+        typ, role = p.split()
+        ls.append(t.Data(type=typ.strip(), role=role.strip()))
+    return ls
+
+
 ## utils
 
 def _property_value(rd, prop_val, spec):
@@ -387,6 +398,7 @@ _HANDLERS = {
     'gws.types.FormatStr': _read_formatstr,
     'gws.types.Regex': _read_regex,
     'gws.types.Url': _read_url,
+    'gws.types.AccessList': _read_acl,
 
     'gws.types.Any': _read_any,
 
