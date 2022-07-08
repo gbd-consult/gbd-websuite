@@ -3,7 +3,7 @@
 INSPIRE
 =======
 
-INSPIRE (Infrastructure for Spatial Information in Europe) steht als Kürzel für eine EU-Richtlinie zur Schaffung einer Geodateninfrastruktur, auf die über standardisierte Dienste interoperabel zugegriffen werden kann. Es gibt 34 INSPIRE Themenfelder, die grundlegende Basisinformationen über Geographische Namen, Adressen oder Grundstücke sowie fachspezifische Informationen z.B. zu den Themen Gesundheit, Bevölkerung oder Bodenschätze bereitstellen. 
+INSPIRE (Infrastructure for Spatial Information in Europe) steht als Kürzel für eine EU-Richtlinie zur Schaffung einer Geodateninfrastruktur, auf die über standardisierte Dienste interoperabel zugegriffen werden kann. Es gibt 34 INSPIRE Themenfelder, die grundlegende Basisinformationen über Geographische Namen, Adressen oder Grundstücke sowie fachspezifische Informationen z.B. zu den Themen Gesundheit, Bevölkerung oder Bodenschätze bereitstellen.
 
 .. rubric:: INSPIRE-konforme Daten- und Metadatenbereitstellung
 
@@ -31,8 +31,6 @@ Unterstützt werden aktuell folgende INSPIRE-Themen:
 - Feuerwehrstandorte und Einsatzbereiche (bis Ende 2022)
 - Rettungswachen und Bezirke (bis Ende 2022)
 - Kindertageseinrichtungen (bis Ende 2022)
-
-
 
  .. |bplan| image:: ../../../images/bplan.svg
    :width: 30em
