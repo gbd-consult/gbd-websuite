@@ -3,31 +3,36 @@
 INSPIRE
 =======
 
-Das INSPIRE Modul der GBD WebSuite ermöglicht die dynamische Harmonisierung von Geodaten und deren Metadaten, in eine INSPIRE-konforme Datenbereitstellung.
-Damit die Eingabe der Daten in einem GIS einheitlich geschieht, können Attributformulare definiert und vorgegeben werden.
-So ist die Eingabe der Daten in einem vorgegebenen Format garantiert.
-Dank der daraus resultierenden einheitlichen Struktur kann die WebSuite, eine Harmonisierung in eine INSPIRE-konforme Datenbereitstellung durchführen.
-Diese Harmonisierung auf INSPIRE-Konformität, findet auf dem GBD WebSuite Server statt.
-Die Bereitstellung der Geodaten erfolgt auf Anfrage dynamisch durch den Server auf Basis von XML−Schemas.
-Das bedeutet, dass keine temporären, redundanten Daten erstellt und auf dem Server abgelegt werden.
-Die INSPIRE-konformen Dienste basieren immer auf den aktuellen Originaldaten.
-Für Transformation von Gauß−Krüger nach ETRS89 ist ein geeigneter Transformationsansatz integriert.
-Das Modul ist dabei so konzipiert, dass es zukünftig um weitere INSPIRE-Fachthemen erweitert werden kann.
-Wenn mehrere Fachthemen vorhanden sind, kann im Vorfeld das Fachthema ausgewählt und den Daten zugewiesen werden.
+INSPIRE (Infrastructure for Spatial Information in Europe) steht als Kürzel für eine EU-Richtlinie zur Schaffung einer Geodateninfrastruktur, auf die über standardisierte Dienste interoperabel zugegriffen werden kann. Es gibt 34 INSPIRE Themenfelder, die grundlegende Basisinformationen über Geographische Namen, Adressen oder Grundstücke sowie fachspezifische Informationen z.B. zu den Themen Gesundheit, Bevölkerung oder Bodenschätze bereitstellen. 
 
-Diese Datenharmonisierung stellt das Grundmodul dar und kann generisch auf eine Vielzahl von Themen übertragen werden.
-Wir haben diese Funktionalität bisher für zwei INSPIRE-Themen umgesetzt.
-Für den Landkreis Marburg-Biedenkopf haben wir eine INSPIRE-konforme Datenharmonisierung, für die Themen Bauleitpläne und Schulstandorte umgesetzt.
-Dies sind aber nur 2 von insgesamt 34 Datenthemen, welche durch INSPIRE harmonisiert werden können.
+.. rubric:: INSPIRE-konforme Daten- und Metadatenbereitstellung
 
-Unterstützt wird die Bereitstellung folgender INSPIRE Dienste:
+Das INSPIRE Modul der GBD WebSuite ermöglicht eine dynamische, INSPIRE-konforme Bereitstellung von INSPIRE Themen als Geodaten und deren Metadaten. Dynamisch bedeutet dabei, dass die Bereitstellung des angeforderten INSPIRE-Dienstes bei Anfrage, also "in Echtzeit", aus dem originalem Datenbestand stattfindet. Damit wird sichergestellt, dass die INSPIRE-konformen Dienste immer dem aktuellen Stand entsprechen und dass keine redundante Datenhaltung notwendig ist.
 
-- INSPIRE konformer Catalogue Service for the Web (CSW)
-- INSPIRE konformer Web Mapping Service (WMS/WMTS)
-- Umsetzung INSPIRE konformer Web Feature Service (WFS)
-- Umsetzung INSPIRE konformer Web Coverage Service (WCS)
+Unterstützt wird aktuell die Bereitstellung folgender INSPIRE Dienste:
 
-Für weitere Informationen zum Thema INSPIRE, besuchen Sie zum Beispiel die Seite: https://www.geoportal.nrw/inspire/
+- INSPIRE-konformer Web Mapping Service (WMS/WMTS)
+- INSPIRE-konformer Web Feature Service (WFS)
+- INSPIRE-konformer Web Coverage Service (WCS)
+- INSPIRE-konformer Catalogue Service for the Web (CSW)
+
+Die INSPIRE-Datenharmonisierung, d.h die Überführung bestehender, originaler Geodatenbestände in die erforderlichen INSPIRE-Datenstrukturen und Metadaten, findet im INSPIRE Modul der GBD WebSuite automatisch mittels einer individuell konfigurierbaren Datenharmonisierung statt. Die Aktualisierung der Geodaten und der dazugehörigen Metadaten kann bei Bedarf aber auch über ein Administrationstool ermöglicht werden.
+
+Für die Datentransformation, z.B. von Gauß−Krüger nach ETRS89, sind geeignete Transformationsansätze integriert.
+
+.. rubric:: INSPIRE Themen
+
+Das INSPIRE Modul der GBD WebSuite ist generisch umgesetzt und so konzipiert, dass es um weitere INSPIRE-Fachthemen erweitert werden kann.
+
+Unterstützt werden aktuell folgende INSPIRE-Themen:
+
+- Bauleitpläne (`Beispielumsetzung beim LK Marburg-Biedenkopf <https://www.marburg-biedenkopf.de/dienste_und_leistungen/geoportal/Bauleitplaene-Landkreis-Marburg-Biedenkopf.php>`_)
+- Schulstandorte (`Beispielintegration Schulstandorte des LK Marburg-Biedenkopf in das Geoportal Hessen <https://www.geoportal.hessen.de/map?WMC=4768>`_)
+- Feuerwehrstandorte und Einsatzbereiche (bis Ende 2022)
+- Rettungswachen und Bezirke (bis Ende 2022)
+- Kindertageseinrichtungen (bis Ende 2022)
+
+
 
  .. |bplan| image:: ../../../images/bplan.svg
    :width: 30em
