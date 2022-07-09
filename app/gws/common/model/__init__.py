@@ -34,6 +34,20 @@ _SCALAR_TYPES = {
 
 ##
 
+class ModelPermissions(t.Config):
+    read: t.Optional[t.WithAccess]
+    write: t.Optional[t.WithAccess]
+    create: t.Optional[t.WithAccess]
+    delete: t.Optional[t.WithAccess]
+
+
+class FieldPermissions(t.Config):
+    read: t.Optional[t.WithAccess]
+    write: t.Optional[t.WithAccess]
+
+
+##
+
 
 class WidgetConfig(t.WithType):
     items: t.Optional[t.List[t.Any]]
@@ -44,6 +58,7 @@ class WidgetConfig(t.WithType):
 class WidgetProps(t.Props):
     type: str
     options: dict
+    readOnly: bool = False
 
 
 #:export IModelWidget
@@ -69,6 +84,7 @@ class Widget(gws.Object, t.IModelWidget):
         return WidgetProps(
             type=self.type,
             options=self.options,
+            readOnly=False,
         )
 
 
@@ -212,6 +228,8 @@ class FieldConfig(t.WithType):
     isPrimaryKey: bool = False
     isSearchable: bool = False
 
+    permissions: t.Optional[FieldPermissions]
+
 
 class FieldRelationProps(t.Props):
     type: str
@@ -271,6 +289,17 @@ class Field(gws.Object, t.IModelField):
                 v = t.cast(t.IModelValidator, self.create_child(cls, p))
                 v.field = self
                 self.validators.append(v)
+
+        self.permissions: FieldPermissions = FieldPermissions(
+            read=self.var('permissions.read') or t.Data(),
+            write=self.var('permissions.write') or t.Data(),
+        )
+
+    def props_for(self, user):
+        p = super().props_for(user)
+        if p['widget'] and not user.can_use(self.permissions.write):
+            p['widget']['readOnly'] = True
+        return p
 
     def sa_columns(self, columns):
         pass
@@ -930,7 +959,6 @@ class Field_relatedGenericFeature(RelatedFeatureField):
 
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
-        gws.p('read_from_props val=', val)
         if val is None:
             return
 
@@ -942,7 +970,6 @@ class Field_relatedGenericFeature(RelatedFeatureField):
             key = gws.get(val, 'keyName')
             uid = gws.get(val, ['attributes', key])
 
-        gws.p('read_from_props uid=', uid)
         if uid:
             fe.attributes[self.name] = generic_feature(uid=uid)
 
@@ -1132,14 +1159,11 @@ _TYPES = {
 ##
 
 
-class Permissions(t.Config):
-    read: t.List[t.Access]
-
-
 class Config(t.WithAccess):
     """Model configuration"""
 
     fields: t.List[FieldConfig]
+    permissions: t.Optional[ModelPermissions]
     sqlFilter: t.Optional[str]
 
 
@@ -1176,10 +1200,19 @@ class Object(gws.Object, t.IModel):
 
         self.fields = []
 
+        self.permissions: ModelPermissions = ModelPermissions(
+            read=self.var('permissions.read') or t.Data(),
+            write=self.var('permissions.write') or t.Data(),
+            create=self.var('permissions.create') or t.Data(),
+            delete=self.var('permissions.delete') or t.Data(),
+        )
+
         for p in self.var('fields'):
             cls = _TYPES['field:' + p.type]
             f = t.cast(t.IModelField, self.create_child(cls, p))
             f.model = self
+            f.permissions.read.parent = self.permissions.read
+            f.permissions.write.parent = self.permissions.write
             self.fields.append(f)
 
             if isinstance(f, Field_geometry) and not self.geometry_name:
@@ -1259,9 +1292,14 @@ class Object(gws.Object, t.IModel):
             if f.name == name:
                 return f
 
+    def props_for(self, user):
+        p = super().props_for(user)
+        p['fields'] = [f.props_for(user) for f in self.fields]
+        return p
+
     @property
     def props(self):
-        p = Props(uid=self.uid, fields=[f.props for f in self.fields])
+        p = Props(uid=self.uid)
         if self.layer:
             p.layerUid = self.layer.uid
         if self.key_name:
@@ -1545,15 +1583,12 @@ class ModelRegistry:
 
     def create_table(self, name, cols):
         metadata = self.sa_registry.metadata
-        if name in metadata.tables:
-            gws.log.info(f'TABLE {name} already exists')
-            return metadata.tables[name]
 
         schema = 'public'
         if '.' in name:
             schema, name = name.split('.')
 
-        return sa.Table(name, metadata, *cols, schema=schema)
+        return sa.Table(name, metadata, *cols, schema=schema, extend_existing=True)
 
     def session(self, db):
         uid = db.uid

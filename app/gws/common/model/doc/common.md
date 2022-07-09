@@ -20,35 +20,17 @@ Für jedes Feld können zusätzlich `read` (lesen) und `write` (aktualisieren) Z
 
     permissions {
         // "mitarbeiter" und "editor" können lesen
-        read {
-            access [
-                { role "mitarbeiter" type allow }
-                { role "editor"      type allow }
-                { role "all"         type deny  }
-            ]
-        }
+        read { access "allow mitarbeiter, allow editor, deny all" }
+
         // nur "editor" können Felder updaten
-        write {
-            access [
-                { role "editor"      type allow }
-                { role "all"         type deny  }
-            ]
-        }
+        write { access "allow editor, deny all" }
+
         // nur "editor" können neue Records erstellen
-        create {
-            access [
-                { role "editor"      type allow }
-                { role "all"         type deny  }
-            ]
-        }
-        // nur "it" kann Records löschen
-        delete {
-            access [
-                { role "it"          type allow }
-                { role "all"         type deny  }
-            ]
-        }
-    ]
+        create { access "allow editor, deny all" }
+
+        // nur "dba" kann Records löschen
+        delete { access "allow dba, deny all" }
+    }
 
     fields [
         ...
@@ -58,20 +40,11 @@ Für jedes Feld können zusätzlich `read` (lesen) und `write` (aktualisieren) Z
             title "Adresse"
 
             permissions {
-                // "adresse" in nur von "ema" lesbar
-                read {
-                    access [
-                        { role "ema"   type allow }
-                        { role "all"   type deny  }
-                    ]
-                }
+                // "adresse" in nur von "ema" or "dba" lesbar
+                read { access "allow ema, allow dba, deny all" }
+
                 // "adresse" in nur von "ema" schreibbar
-                write {
-                    access [
-                        { role "ema"   type allow }
-                        { role "all"   type deny  }
-                    ]
-                }
+                write { access "allow ema, deny all" }
             }
         }
         ...

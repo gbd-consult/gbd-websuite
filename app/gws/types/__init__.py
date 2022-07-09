@@ -1240,7 +1240,6 @@ class ILayer(IObject):
     def configure_metadata(self, provider_meta=None) -> 'MetaData': pass
     def configure_search(self): pass
     def create_model(self, cfg): pass
-    def edit_access(self, user): pass
     def edit_operation(self, operation: str, feature_props: List['FeatureProps']) -> List['IFeature']: pass
     def get_features(self, bounds: 'Bounds', limit: int = 0) -> List['IFeature']: pass
     def get_features_ex(self, user: 'IUser', model: 'IModel', args: 'SelectArgs') -> List['IFeature']: pass
@@ -1274,6 +1273,7 @@ class IModel(IObject):
     key_name: str
     keyword_columns: List[str]
     layer: Optional['ILayer']
+    permissions: 'ModelPermissions'
     def apply_defaults(self, fe: 'IFeature', mode): pass
     def delete(self, fe: 'IFeature'): pass
     def feature_from_props(self, props: 'FeatureProps', depth=0): pass
@@ -1297,6 +1297,7 @@ class IModelField(IObject):
     is_unique: bool
     model: 'IModel'
     name: str
+    permissions: 'FieldPermissions'
     type: str
     validators: list
     widget: Optional['IModelWidget']

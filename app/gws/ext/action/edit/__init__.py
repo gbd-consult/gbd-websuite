@@ -54,6 +54,14 @@ class ListResponse(t.Response):
     features: t.List[t.FeatureProps]
 
 
+class FeatureParams(t.Params):
+    feature: t.FeatureProps
+
+
+class FeatureResponse(t.Response):
+    feature: t.FeatureProps
+
+
 _COMBINED_UID_DELIMITER = '___'
 
 
@@ -74,22 +82,10 @@ class Object(gws.common.action.Object):
 
         models = []
 
-        for la in self._enum_layers(project.map):
-            if la.editor and la.editor.model:
-                models.append(la.editor.model.props)
+        for la in self._editable_layers(req, project):
+            models.append(la.editor.model)
 
-        return GetModelsResponse(models=models)
-
-    def api_init_features(self, req: t.IRequest, p: ListParams) -> ListResponse:
-        pc = self._prepare_features(req, p)
-        if not pc:
-            return self._list_response([])
-
-        for fe in pc.features:
-            fe.model.apply_defaults(fe, 'read')
-            self._apply_templates_deep(fe, 'title')
-
-        return self._list_response(pc.features)
+        return GetModelsResponse(models=[m.props_for(req.user) for m in models])
 
     def api_query_features(self, req: t.IRequest, p: QueryParams) -> ListResponse:
         project = req.require_project(p.projectUid)
@@ -116,142 +112,114 @@ class Object(gws.common.action.Object):
         for fe in out_features:
             self._apply_templates_deep(fe, 'title')
 
-        return self._list_response(out_features)
+        return ListResponse(features=[fe.props for fe in out_features])
 
-    def api_read_features(self, req: t.IRequest, p: ListParams) -> ListResponse:
-        pc = self._prepare_features(req, p)
-        if not pc:
-            return self._list_response([])
+    def api_init_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
+        fe_in = self._load_feature(req, p)
 
-        out_features = [None] * len(pc.features)
+        if not req.user.can_use(fe_in.model.permissions.read):
+            raise gws.web.error.Forbidden()
 
-        for layer_uid, indexes in pc.by_layer.items():
-            layer = pc.layers[layer_uid]
-            args = t.SelectArgs(uids=[pc.features[n].uid for n in indexes], depth=1)
-            found = layer.editor.model.select(args)
-            by_uid = {str(fe.uid): fe for fe in found}
-            for n in indexes:
-                out_features[n] = by_uid.get(str(pc.features[n].uid))
+        fe = fe_in
+        self._apply_permissions_and_defaults(fe, req, 'read')
+        self._apply_templates_deep(fe, 'title')
 
-        out_features = gws.compact(out_features)
+        return FeatureResponse(feature=fe.props)
 
-        for fe in out_features:
-            fe.model.apply_defaults(fe, 'read')
-            self._apply_templates_deep(fe, 'title')
+    def api_read_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
+        fe_in = self._load_feature(req, p)
 
-        return self._list_response(out_features)
+        if not req.user.can_use(fe_in.model.permissions.read):
+            raise gws.web.error.Forbidden()
 
-    def api_write_features(self, req: t.IRequest, p: ListParams) -> ListResponse:
-        """Write features on the layer"""
+        fe = fe_in.model.get_feature(fe_in.uid)
+        if not fe:
+            raise gws.web.error.NotFound()
 
-        pc = self._prepare_features(req, p)
-        if not pc:
-            return self._list_response([])
+        gws.p(fe.model.uid, list(fe.attributes.keys()))
+        self._apply_permissions_and_defaults(fe, req, 'read')
+        gws.p(list(fe.attributes.keys()))
+        self._apply_templates_deep(fe, 'title')
 
-        has_validation_errors = False
-        for fe in pc.features:
-            fe.model.apply_defaults(fe, 'write')
-            errors = fe.model.validate(fe)
-            if errors:
-                fe.attributes = {}
-                fe.errors = errors
-                has_validation_errors = True
+        return FeatureResponse(feature=fe.props)
 
-        if has_validation_errors:
-            return self._list_response(pc.features)
+    def api_write_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
+        fe = self._load_feature(req, p)
 
-        for layer_uid, indexes in pc.by_layer.items():
-            layer = pc.layers[layer_uid]
-            for n in indexes:
-                fe = pc.features[n]
-                layer.editor.model.save(fe)
+        if fe.is_new and not req.user.can_use(fe.model.permissions.create):
+            raise gws.web.error.Forbidden()
+        if not fe.is_new and not req.user.can_use(fe.model.permissions.write):
+            raise gws.web.error.Forbidden()
 
+        self._apply_permissions_and_defaults(fe, req, 'write')
+
+        errors = fe.model.validate(fe)
+        if errors:
+            fe.attributes = {}
+            fe.errors = errors
+            return FeatureResponse(feature=fe.props)
+
+        fe.model.save(fe)
+        gws.common.model.session.commit()
+        fe.model.reload(fe)
+        fe.is_new = False
+        self._apply_templates_deep(fe, 'title')
+
+        return FeatureResponse(feature=fe.props)
+
+    def api_delete_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
+        fe = self._load_feature(req, p)
+
+        if not req.user.can_use(fe.model.permissions.delete):
+            raise gws.web.error.Forbidden()
+
+        fe.model.delete(fe)
         gws.common.model.session.commit()
 
-        for fe in pc.features:
-            fe.layer.editor.model.reload(fe, depth=1)
-            fe.is_new = False
-            self._apply_templates_deep(fe, 'title')
+        return FeatureResponse(feature=None)
 
-        return self._list_response(pc.features)
+    def _apply_permissions_and_defaults(self, fe: t.IFeature, req: t.IRequest, mode):
+        fe.model.apply_defaults(fe, mode)
+        for f in fe.model.fields:
+            if not req.user.can_use(f.permissions.get(mode)):
+                gws.log.debug(f'remove field={f.name!r} mode={mode!r}')
+                del fe.attributes[f.name]
+        return fe
 
-    def api_write_features_geometry(self, req: t.IRequest, p: ListParams) -> ListResponse:
-        """Write feature geomtries on the layer"""
+    def _load_feature(self, req: t.IRequest, p: FeatureParams) -> t.IFeature:
+        layer_uid = p.feature.layerUid
+        layer = t.cast(t.ILayer, self.root.find('gws.ext.layer', layer_uid))
+        if not layer or not req.user.can_use(layer.editor):
+            raise gws.web.error.Forbidden()
+        fe = layer.editor.model.feature_from_props(p.feature, depth=1)
+        return fe
 
-        pc = self._prepare_features(req, p)
-        if not pc:
-            return self._list_response([])
-
-        has_validation_errors = False
-        for fe in pc.features:
-            fe.model.apply_defaults(fe, 'write')
-            errors = fe.model.validate(fe)
-            if errors:
-                fe.attributes = {}
-                fe.errors = errors
-                has_validation_errors = True
-
-        if has_validation_errors:
-            return self._list_response(pc.features)
-
-        for layer_uid, indexes in pc.by_layer.items():
-            layer = pc.layers[layer_uid]
-            for n in indexes:
-                fe = pc.features[n]
-                layer.editor.model.save(fe)
-
-        gws.common.model.session.commit()
-
-        for fe in pc.features:
-            fe.layer.editor.model.reload(fe, depth=1)
-            fe.is_new = False
-            self._apply_templates_deep(fe, 'title')
-
-        return self._list_response(pc.features)
-
-    def api_delete_features(self, req: t.IRequest, p: ListParams) -> ListResponse:
-        """Delete features"""
-
-        pc = self._prepare_features(req, p)
-        if not pc:
-            return self._list_response([])
-
-        for layer_uid, indexes in pc.by_layer.items():
-            layer = pc.layers[layer_uid]
-            for n in indexes:
-                fe = pc.features[n]
-                layer.editor.model.delete(fe)
-
-        gws.common.model.session.commit()
-
-        return self._list_response([])
-
-    def _prepare_features(self, req: t.IRequest, p: ListParams) -> t.Optional[_PreparedCollection]:
-        pc = _PreparedCollection(
-            by_layer={},
-            layers={},
-            features=[],
-        )
-
-        for index, fp in enumerate(p.features):
-            lid = fp.layerUid
-
-            if lid not in pc.by_layer:
-                layer = t.cast(t.ILayer, req.acquire('gws.ext.layer', lid))
-                if not layer or not layer.edit_access(req.user):
-                    raise gws.web.error.Forbidden()
-                pc.by_layer[lid] = []
-                pc.layers[lid] = layer
-
-            fe = pc.layers[lid].editor.model.feature_from_props(fp, depth=1)
-            pc.features.append(fe)
-            pc.by_layer[lid].append(index)
-
-        if not pc.features:
-            return
-
-        return pc
-
+    # def _prepare_features(self, req: t.IRequest, p: ListParams) -> t.Optional[_PreparedCollection]:
+    #     pc = _PreparedCollection(
+    #         by_layer={},
+    #         layers={},
+    #         features=[],
+    #     )
+    #
+    #     for index, fp in enumerate(p.features):
+    #         lid = fp.layerUid
+    #
+    #         if lid not in pc.by_layer:
+    #             layer = t.cast(t.ILayer, self.root.find('gws.ext.layer', lid))
+    #             if not layer or not layer.edit_access(req.user):
+    #                 raise gws.web.error.Forbidden()
+    #             pc.by_layer[lid] = []
+    #             pc.layers[lid] = layer
+    #
+    #         fe = pc.layers[lid].editor.model.feature_from_props(fp, depth=1)
+    #         pc.features.append(fe)
+    #         pc.by_layer[lid].append(index)
+    #
+    #     if not pc.features:
+    #         return
+    #
+    #     return pc
+    #
     def _apply_templates_deep(self, fe: t.IFeature, key):
         fe.apply_template(key)
         for k, v in fe.attributes.items():
@@ -264,7 +232,7 @@ class Object(gws.common.action.Object):
     def _editable_layers(self, req, project):
         ls = []
         for la in self._enum_layers(project.map):
-            if la.edit_access(req.user) and la.editor and la.editor.model:
+            if req.user.can_use(la.editor):
                 ls.append(la)
         return ls
 

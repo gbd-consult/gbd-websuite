@@ -881,7 +881,11 @@ class Controller extends gws.Controller {
     }
 
     makeWidget(field: gws.types.IModelField, feature: gws.types.IFeature, values: gws.types.Dict): React.ReactElement | null {
-        let cfg = field.widget || {};
+        let cfg = field.widget;
+
+        if (!cfg)
+            return null;
+
         let type = cfg['type'];
         let options = cfg['options'] || {};
         let cls = gws.components.widget.WIDGETS[type];
@@ -895,6 +899,7 @@ class Controller extends gws.Controller {
             field,
             values,
             options,
+            readOnly: cfg.readOnly,
             whenChanged: this.whenFormChanged.bind(this),
             whenEntered: this.whenFormEntered.bind(this),
         }
@@ -1102,11 +1107,11 @@ class Controller extends gws.Controller {
         feNew.model = model;
         feNew.isNew = true;
 
-        let res = await this.app.server.editInitFeatures({
-            features: [feNew.getProps(1)]
+        let res = await this.app.server.editInitFeature({
+            feature: feNew.getProps(1)
         });
 
-        let feature = this.map.featureFromProps(res.features[0]);
+        let feature = this.map.featureFromProps(res.feature);
 
         // if (!feature.oFeature && model.geometryName)
         //     feature.oFeature = new ol.Feature();
@@ -1148,8 +1153,8 @@ class Controller extends gws.Controller {
 
             let layer = feature.layer;
 
-            let res = await this.app.server.editDeleteFeatures({
-                features: [feature.getProps(0)]
+            let res = await this.app.server.editDeleteFeature({
+                feature: feature.getProps(0)
             });
 
             if (res.error) {
@@ -1229,8 +1234,8 @@ class Controller extends gws.Controller {
 
         feSave.attributes = atts;
 
-        let res = await this.app.server.editWriteFeatures({
-            features: [feSave.getProps(onlyGeometry ? 0 : 1)]
+        let res = await this.app.server.editWriteFeature({
+            feature: feSave.getProps(onlyGeometry ? 0 : 1)
         }, {binary: true});
 
         if (res.error) {
@@ -1249,7 +1254,7 @@ class Controller extends gws.Controller {
 
         newState.formErrors = null;
 
-        let props = res.features[0];
+        let props = res.feature;
 
         if (props.errors) {
             newState.formErrors = {};
@@ -1304,17 +1309,17 @@ class Controller extends gws.Controller {
     }
 
     async loadFeature(feature: gws.types.IFeature) {
-        let res = await this.app.server.editReadFeatures({
-            features: [{
+        let res = await this.app.server.editReadFeature({
+            feature: {
                 layerUid: String(feature.layer.uid),
                 attributes: {
-                    [feature.model.keyName]: String(feature.uid)
+                    [feature.keyName]: String(feature.uid)
                 },
-                keyName: feature.model.keyName,
-            }]
+                keyName: feature.keyName,
+            }
         });
 
-        return this.map.featureFromProps(res.features[0]);
+        return this.map.featureFromProps(res.feature);
     }
 
 

@@ -154,23 +154,25 @@ def _can_use(roles, target, parent):
         # gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: _ROLE_ADMIN')
         return True
 
-    c = _check_access(roles, target, target)
+    c = _check_access(roles, target)
     if c is not None:
+        gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {c}')
         return c
 
     current = parent or gws.get(target, 'parent')
 
     while current:
-        c = _check_access(roles, target, current)
+        c = _check_access(roles, current)
         if c is not None:
+            gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {c} in {_repr(current)}')
             return c
         current = gws.get(current, 'parent')
 
-    gws.log.debug(f'PERMS: query: obj={_repr(target)} roles={roles!r}: not found')
+    gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r}: not found')
     return False
 
 
-def _check_access(roles, target, current):
+def _check_access(roles, current):
     access = gws.get(current, 'access')
 
     if not access:
@@ -178,11 +180,10 @@ def _check_access(roles, target, current):
 
     for a in access:
         if a.role in roles:
-            # gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {a.role}:{a.type} in {_repr(current)}')
             return a.type == 'allow'
 
 
 def _repr(obj):
     if not obj:
         return repr(obj)
-    return repr(gws.get(obj, 'uid') or obj)
+    return repr(gws.get(obj, 'uid') or obj.__class__.__name__)

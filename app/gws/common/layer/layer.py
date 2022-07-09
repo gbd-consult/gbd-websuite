@@ -41,7 +41,7 @@ class Config(t.WithTypeAndAccess):
     clientOptions: types.ClientOptions = {}  #: options for the layer display in the client
     model: t.Optional[gws.common.model.Config]  #: layer data model
     display: types.DisplayMode = 'box'  #: layer display mode
-    edit: t.Optional[types.EditConfig]  #: editing permissions
+    editor: t.Optional[types.EditorConfig]  #: layer editor
     extent: t.Optional[t.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
     legend: types.LegendConfig = {}  #: legend configuration
@@ -62,7 +62,7 @@ class CustomConfig(t.WithAccess):
     clientOptions: t.Optional[types.ClientOptions]  #: options for the layer display in the client
     model: t.Optional[gws.common.model.Config]  #: layer data model
     display: t.Optional[types.DisplayMode]  #: layer display mode
-    edit: t.Optional[types.EditConfig]  #: editing permissions
+    editor: t.Optional[types.EditorConfig]  #: layer editor
     extent: t.Optional[t.Extent]  #: layer extent
     extentBuffer: t.Optional[int]  #: extent buffer
     legend: t.Optional[types.LegendConfig]  #: legend configuration
@@ -231,16 +231,19 @@ class Layer(gws.Object, t.ILayer):
             self.legend.options = self.var('legend.options', default={})
 
         if self.is_editable:
-            p = self.var('edit')
+            p = self.var('editor')
             if p:
                 self.editor = LayerEditor(
                     access=p.access,
-                    model=self.model,
                     filter=p.filter
                 )
-                if p.model:
-                    self.editor.model = t.cast(t.IModel, self.create_model(p))
-                    self.editor.model.layer = self
+                m = t.cast(t.IModel, self.create_model(p.model))
+                m.layer = self
+                m.permissions.create.parent = self.editor
+                m.permissions.delete.parent = self.editor
+                m.permissions.read.parent = self.editor
+                m.permissions.write.parent = self.editor
+                self.editor.model = m
 
     def configure_metadata(self, provider_meta=None) -> t.MetaData:
         """Load metadata from the config or from a provider, whichever comes first."""
@@ -288,12 +291,6 @@ class Layer(gws.Object, t.ILayer):
         for cfg in p.providers:
             self.create_child('gws.ext.search.provider', cfg)
 
-    def edit_access(self, user):
-        # @TODO granular edit access
-
-        if self.editor and user.can_use(self.editor, parent=self):
-            return ['all']
-
     def edit_operation(self, operation: str, feature_props: t.List[t.FeatureProps]) -> t.List[t.IFeature]:
         pass
 
@@ -306,11 +303,8 @@ class Layer(gws.Object, t.ILayer):
     def props_for(self, user):
         p = super().props_for(user)
         if p:
-            p['editAccess'] = self.edit_access(user)
+            p['editAccess'] = user.can_use(self.editor)
             p['isEditable'] = bool(p['editAccess'])
-            # p['form'] = self.form
-            # action = 'edit2' if self.editModel else 'edit'
-            # p['url'] = gws.SERVER_ENDPOINT + f'/cmd/{action}HttpGetFeatures/projectUid/{self.map.parent.uid}/layerUid/{self.uid}'
         return p
 
     def mapproxy_config(self, mc):

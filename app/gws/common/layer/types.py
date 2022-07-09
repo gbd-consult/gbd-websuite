@@ -46,7 +46,7 @@ class ClientOptions(t.Data):
     exclusive: t.Optional[bool] = False  #: only one of this layer's children is visible at a time
 
 
-class EditConfig(t.WithAccess):
+class EditorConfig(t.WithAccess):
     """Edit access for a layer"""
 
     filter: t.Optional[str]
