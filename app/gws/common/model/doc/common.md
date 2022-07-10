@@ -71,7 +71,7 @@ Option | Typ | Bedeutung
 `name`  | `string` | Name (interne Bezeichnung)
 `title` | `string`| Beschriftung
 `isPrimaryKey` |  `boolean`| das Feld ist ein Primärschlüssel, oder ein Teil davon
-`isSearchable` |  `boolean`| das Feld kann für die Volltextsuche verwendet werden
+`isUnique` |  `boolean`| das Feld ist ein eindeutiger Schlüssel
 
 
 

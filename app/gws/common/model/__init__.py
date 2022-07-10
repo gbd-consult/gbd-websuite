@@ -201,6 +201,12 @@ class FieldLinkConfig:
     keyName: str
 
 
+class FieldTextSearchConfig:
+    type: str
+    caseSensitive: bool = False
+    minLength: int = 0
+
+
 class FieldConfig(t.WithType):
     name: str
     title: t.Optional[str]
@@ -214,7 +220,7 @@ class FieldConfig(t.WithType):
     discriminatorKey: t.Optional[FieldNameTypeConfig]
     link: t.Optional[FieldLinkConfig]
 
-    fileName: t.Optional[str]
+    filePath: t.Optional[str]
 
     value: t.Optional[FieldValueConfig]
     validators: t.Optional[t.List[ValidatorConfig]]
@@ -226,9 +232,9 @@ class FieldConfig(t.WithType):
     isRequired: bool = False
     isUnique: bool = False
     isPrimaryKey: bool = False
-    isSearchable: bool = False
 
     permissions: t.Optional[FieldPermissions]
+    textSearch: t.Optional[FieldTextSearchConfig]
 
 
 class FieldRelationProps(t.Props):
@@ -295,9 +301,11 @@ class Field(gws.Object, t.IModelField):
             write=self.var('permissions.write') or t.Data(),
         )
 
+        self.text_search = self.var('textSearch')
+
     def props_for(self, user):
         p = super().props_for(user)
-        if p['widget'] and not user.can_use(self.permissions.write):
+        if gws.get(p, 'widget') and not user.can_use(self.permissions.write):
             p['widget']['readOnly'] = True
         return p
 
@@ -401,6 +409,33 @@ class ScalarField(Field):
         if self.name in fe.attributes:
             setattr(obj, self.name, fe.attributes[self.name])
 
+    def sa_adapt_select(self, state):
+        if state.args.keyword and self.text_search:
+
+            ts = self.text_search
+
+            if ts.minLength and len(state.args.keyword) < ts.minLength:
+                return
+
+            model = t.cast(t.IDbModel, self.model)
+            fld = sa.sql.cast(
+                getattr(model.get_class(), self.name),
+                sa.String)
+
+            kw = _escape_like(state.args.keyword)
+
+            if ts.type == 'substring':
+                kw = '%' + kw + '%'
+            if ts.type == 'begin':
+                kw = kw + '%'
+            if ts.type == 'end':
+                kw = '%' + kw
+
+            if ts.caseSensitive:
+                state.keyword_conds.append(fld.like(kw, escape='\\'))
+            else:
+                state.keyword_conds.append(fld.ilike(kw, escape='\\'))
+
 
 class Field_string(ScalarField):
     data_type = 'string'
@@ -408,14 +443,6 @@ class Field_string(ScalarField):
     def configure(self):
         super().configure()
         self.prepend_validator(t.Data(type='string'))
-
-    def sa_adapt_select(self, state):
-        model = t.cast(t.IDbModel, self.model)
-
-        if state.args.keyword and self.is_searchable:
-            state.keyword_conds.append((
-                getattr(model.get_class(), self.name).ilike(
-                    '%' + _escape_like(state.args.keyword) + '%', escape='\\')))
 
 
 class Field_integer(ScalarField):
@@ -512,7 +539,7 @@ class Field_file(ScalarField):
             name=gws.as_uid(p['name']),
             extension=gws.as_uid(p['extension'])
         )
-        return self.var('fileName').format_map(context)
+        return self.var('filePath').format_map(context)
 
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
         val = props.attributes.get(self.name)
@@ -1118,7 +1145,7 @@ class Field_relatedDiscriminatedFeature(RelatedFeatureField):
 _TYPES = {
     'widget:checkBox': Widget,
     'widget:comboBox': Widget,
-    'widget:date': Widget,
+    'widget:dateInput': Widget,
     'widget:documentList': Widget,
     'widget:featureList': Widget,
     'widget:featureSelect': Widget,
@@ -1319,6 +1346,7 @@ class DbModel(Object, t.IDbModel):
 
         sel = self.sa_make_select(args)
         if sel is None:
+            gws.log.debug('empty select')
             return []
 
         cls = self.get_class()

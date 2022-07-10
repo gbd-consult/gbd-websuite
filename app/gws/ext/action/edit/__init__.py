@@ -132,13 +132,11 @@ class Object(gws.common.action.Object):
         if not req.user.can_use(fe_in.model.permissions.read):
             raise gws.web.error.Forbidden()
 
-        fe = fe_in.model.get_feature(fe_in.uid)
+        fe = fe_in.model.get_feature(fe_in.uid, depth=1)
         if not fe:
             raise gws.web.error.NotFound()
 
-        gws.p(fe.model.uid, list(fe.attributes.keys()))
         self._apply_permissions_and_defaults(fe, req, 'read')
-        gws.p(list(fe.attributes.keys()))
         self._apply_templates_deep(fe, 'title')
 
         return FeatureResponse(feature=fe.props)
@@ -161,8 +159,8 @@ class Object(gws.common.action.Object):
 
         fe.model.save(fe)
         gws.common.model.session.commit()
-        fe.model.reload(fe)
-        fe.is_new = False
+
+        fe = fe.model.get_feature(fe.uid, depth=1)
         self._apply_templates_deep(fe, 'title')
 
         return FeatureResponse(feature=fe.props)

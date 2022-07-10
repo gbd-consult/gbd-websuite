@@ -966,8 +966,13 @@ class Controller extends gws.Controller {
     }
 
     whenPointerDownAtFeature(feature) {
-        if (feature !== this.activeFeature)
+        if (feature !== this.activeFeature) {
+            if (feature.layer && feature.layer.loadingStrategy === 'lazy')
+                feature.layer.clear();
             this.reloadAndActivateFeature(feature, '');
+        }
+
+
     }
 
     async whenPointerDownAtCoordinate(coord: ol.Coordinate) {
@@ -982,14 +987,16 @@ class Controller extends gws.Controller {
         let flist = this.map.featureListFromProps(res.features);
         if (flist.length > 0) {
             let feature = flist[0];
+            if (feature.layer && feature.layer.loadingStrategy === 'lazy')
+                feature.layer.clear();
             feature.layer.addFeature(feature);
-            await this.activateFeature(feature, 'pan');
+            await this.activateFeature(feature, 'pan zoom');
             return true;
         }
 
         let layer = this.activeLayer;
 
-        if (layer && layer.loadingStrategy === 'single')
+        if (layer && layer.loadingStrategy === 'lazy')
             layer.clear();
 
         this.setState({layer});

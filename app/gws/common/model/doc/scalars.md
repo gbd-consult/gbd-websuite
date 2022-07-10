@@ -43,8 +43,8 @@ Für Dateien sind 2 Feldtypen vorhanden:
     type "file"
     title "Anlage"
     // in "path" können andere Felder des Models verwendet werden,
-    // sowie "{filename}" und "{extension}" für Original-Namen und Erweiterung
-    fileName "/extern/files/emails/{id}.{extension}"
+    // sowie "{file.name}" und "{file.extension}" für Original-Namen und Erweiterung
+    filePath "/extern/files/emails/{id}.{file.extension}"
 }
 {
     name "avatar"
@@ -151,6 +151,56 @@ model {
         ...
     ]
 }
+```
+@end
+
+
+### Volltextsuche
+
+Skalare Felder können für die Volltextsuche im Client verwendet werden. Dafür muss eine `textSearch` Konfiguration vorhanden sein, mit folgenden Eigenschaften:
+
+Typ | Bedeutung
+---|---
+`type` | Suchmodus
+`caseSensitive` | `true` falls die Suche case-sensitiv erfolgt, default `false`
+`minLength` | min. Länge des Suchbegriffs, default `1`
+
+Für `type` sind folgende Werte möglich:
+
+Wert | Bedeutung
+---|---
+`exact` | das Feld ist gleich dem Suchbegriff
+`substring` | das Feld enthält den Suchbegriff (`LIKE`)
+`begin` | das Feld beginnt mit dem Suchbegriff
+`end` | das Feld endet mit dem Suchbegriff
+
+Im folgenden Beispiel ist für `surname` die `LIKE` Suche konfiguriert, mit mindestens 3 Zeichen, und das Feld `code` muss exact übereinstimmen:
+
+
+@quote
+```
+model {
+    ...
+    fields [
+
+        {
+            name "surname"
+            type "string"
+            title "Nachname"
+            textSearch {
+                type "substring"
+                minLength 3
+            }
+        }
+        {
+            name "code"
+            type "string"
+            title "Artikelnummer"
+            textSearch {
+                type "exact"
+                caseSensitive true
+            }
+        }
 ```
 @end
 

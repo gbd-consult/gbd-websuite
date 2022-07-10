@@ -52,12 +52,12 @@ Eine Input-Box zur Eingabe einer reellen Zahl. Die Option `precision` gibt an, w
 widget { type "float" precision 3 min 0 max 1 step 0.05 }
 ```
 
-### `date`, `time`, `dateTime`
+### `dateInput`, `timeInput`, `dateTimeInput`
 
 Widgets zur Eingabe von Datum, Uhrzeit und Datum-Uhrzeit Werten.
 
 ```
-widget { type "date" }
+widget { type "dateInput" }
 ```
 
 ### `file`
