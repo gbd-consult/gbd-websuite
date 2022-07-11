@@ -4,7 +4,7 @@ Werkzeugleiste
 ==============
 
 Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst werden.
-So kann jedes Element der Werkzeugleiste optional hinzugefügt oder auch herausgenommen werden.
+Die zur Verfügung stehenden Elemente der Werkzeugleiste, können individuell aus dem Werkzeugkatalog der GBD WebSuite ausgewählt und kombiniert werden.
 Außerdem kann die Anordnung auf dem Bildschirm, sowie die Reihenfolge in den Menüs angepasst werden.
 Dadurch ist es möglich, auf jeden Wunsch individuell einzugehen.
 
@@ -26,5 +26,6 @@ Dadurch ist es möglich, auf jeden Wunsch individuell einzugehen.
     dimensioning.rst
     measure.rst
     cadastral_unit_tools.rst
+    spatial_searching.rst
     print.rst
     screenshot.rst

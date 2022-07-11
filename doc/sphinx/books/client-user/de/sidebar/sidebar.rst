@@ -3,8 +3,12 @@
 Menüleiste
 ==========
 
+Dank der modularen Struktur der GBD WebSuite, kann die Menüleiste individuell werden. So kann jedes Element optional hinzugefügt und kombiniert werden.
+Auch die Reihenfolge der Menüelemente kann definiert werden. Dadurch ist es möglich, auf jeden Wunsch individuell einzugehen.
+Die zur Verfügung stehenden Funktionen, kann durch eine integrierte Benutzerverwaltung vom eingeloggten Benutzer, abhängig gemacht werden.
+
 Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs.
-Die Darstellung der Menüleiste kann über ein Greifen der rechts angeordneten Leiste angepasst werden.
+Die Breite der Menüleiste kann über ein Greifen der rechts angeordneten Leiste angepasst werden.
 
 .. toctree::
     :maxdepth: 2
@@ -23,9 +27,3 @@ Die Darstellung der Menüleiste kann über ein Greifen der rechts angeordneten L
     inspire.rst
     sign_in.rst
     search.rst
-
-.. note::
-  Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst werden. So kann jedes Element optional hinzugefügt oder auch herausgenommen werden.
-  Außerdem kann die Anordnung auf dem Bildschirm, sowie die Reihenfolge in den Menüs angepasst werden. Dadurch ist es möglich, auf jeden Wunsch individuell einzugehen.
-  Diese verschiedenen Anpassungen können zusätzlich, vom eingeloggten Benutzer, abhängig gemacht werden.
-  So ist es zum Beispiel möglich, dass privaten Nutzern ein kleineres Angebot an Funktionen zur Verfügung gestellt wird, als amtlichen Nutzern.

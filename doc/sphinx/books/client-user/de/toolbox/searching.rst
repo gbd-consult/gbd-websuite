@@ -1,35 +1,28 @@
 .. _searching:
 
-Räumliche Suche
-===============
+Suchen
+======
+Durch die verschiedenen Konfigurationsmöglichkeiten der GBD WebSuite kann die |search| ``Suche`` in die Werkzeugleiste,
+sowie in die Menüleiste als Menüpunkt :ref:`Suche <search>` integriert sein.
+Die Möglichkeiten und Optionen dazu sind im "GBD WebSuite Server Administrator Handbuch" beschrieben.
 
-Das Werkzeug |geo_search| ``Räumliche Suche`` ermöglicht die Erstellung geometrischer Formen mit Hilfe derer, verschiedene Objekte ausgewählt werden können.
-Es ist möglich Punkte, Linien, Polygone oder Kreise zu erstellen. Diese können beliebig auf der Karte verschoben werden, um so verschiedene Objekte zu selektieren.
-Welche Objekte ausgewählt werden, definiert man unter dem Menüpunkt ``Layer``. Nur die Objekte aus dem gewählten Layer oder der Layergruppe werden selektiert.
+Je nachdem ob Sie die Suche über die Menü- oder Werkzeugleiste aktivieren, öffnet sich auch eine Suchleiste an dazugehöriger Stelle.
+In diese Suchleiste können Sie nun klicken und Ihren gesuchten Begriff eingeben.
+Unterstützt wird die Suche durch Eingabe von Anfangsbuchstaben, freien Texten sowie ??Zahlenwerten??.
+Optional können Suchparameter definiert werden, welche unter dem Screenshot beschrieben werden.
+Die integrierte Autocomplete-Funktion sorgt für eine dynamische Suche, sowie dafür dass Ihnen die Ergebnisse direkt angezeigt werden.
+Wenn Sie die Suche über die Menüleiste öffnen, werden Ihnen die Ergebnisse im unterhalb der Werkzeugleiste angezeigt.
+Durch ein Anklicken eines Ergebnis, wird das dazugehörige Objekt automatisch im Kartenfenster fokussiert
+und es öffnen sich die dazugehörigen Objekteigenschaften in einen Pop-Up Fenster.
 
-Über |geo_search| in der Werkzeugleiste kann das ``Räumliche Suche``-Werkzeug aktiviert werden.
-Wählen Sie Ihre gewünschte Geometrie aus mit der die räumliche Suche erfolgen soll.
-
-.. figure:: ../../../screenshots/de/client-user/search.png
+.. figure:: ../../../screenshots/de/client-user/suche_werkzeugleiste.png
   :align: center
 
-Durch einen Klick in die Karte mit der linken Maustaste, starten Sie das Zeichnen der Geometrie. Mit einem Doppelklick beenden Sie die Erstellung der Geometrie.
-Eine nachträgliche Anpassung der Position und der Ausmaße der Geometrie ist möglich.
-Durch ein Anklicken und gedrückt halten der linken Maustaste auf |navi| innerhalb der Geometrie, kann die Position der Geometrie angepasst werden.
-Durch ein Anklicken eines Stützpunktes und dann gedrückt halten der linken Maustaste, kann dieser verschoben werden.
-Durch einen Klick auf |cancel| wird das Werkzeug beendet.
+Die integrierte |search| ``Suche`` der GBD WebSuite kann unterschiedlich konfiguriert werden.
+Die Suche kann Nominatim, sprich OSM-Daten, sowie Postgres-Datenbanken durchsuchen.
+Bei der Nominatim-Suche werden die Objekteigenschaften von OSM-Objekten genutzt.
+Bei der Suche in Postgres-Datenbanken, wird auf Informationen einzelner Spalten der Datenbank zugegriffen.
 
-.. figure:: ../../../screenshots/de/client-user/search1.png
-  :align: center
 
-.. note::
- Die räumliche Suche kann auf Wunsch deaktiviert oder wo anders angeordnet werden. Einzelne Funktionen wie die Suche per Punkt, Linie, Rechteck, Fläche oder Kreis können seperat aktiviert oder deaktiviert werden.
-
- .. |geo_search| image:: ../../../images/gbd-icon-raeumliche-suche-01.svg
-   :width: 30em
- .. |edit| image:: ../../../images/sharp-edit-24px.svg
-   :width: 30em
- .. |navi| image:: ../../../images/Feather-core-move.svg
-   :width: 30em
- .. |cancel| image:: ../../../images/baseline-close-24px.svg
+ .. |search| image:: ../../../images/baseline-search-24px.svg
    :width: 30em

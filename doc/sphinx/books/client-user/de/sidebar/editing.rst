@@ -32,17 +32,37 @@ Mit der Funktion |add| ``Hinzufügen`` können Sie neue Objekte durch die Eingab
 Außerdem können Sie über |cancel| ``Beenden`` zurück zur Layeransicht navigieren.
 
 Wenn ein Objekt ausgewählt oder ein neues Objekt erstellt wurde, öffnen sich die Objekteigenschaften.
-Hier kann sich ein Überblick, über sämtliche Attributwerte verschafft werden.
+Hier kann sich ein Überblick, über die vorhandenen Attributfelder verschafft werden.
+Falls dem Objekt Dateien oder Bilder angehangen sind, können diese hier geladen werden. 
 
 .. figure:: ../../../screenshots/de/client-user/editing_3.png
   :align: center
+
+Die Attributfelder können durch primitive wie auch komplexe Datentypen definiert sein.
+Primitive Datentypen entsprechen direkt den Datenbank-Typen. Es werden folgende Datentypen unterstützt:
+
+* string
+* integer
+* float
+* boolean
+* date
+* datetime
+
+Komplexe Datentypen werden als primitive Datenbank-Typen gespeichert, haben jedoch eine andere Semantik. Zu komplexen Datentypen gehören
+
+* measurement: numerischer Wert mit einer Maßeinheit, wie 2 m oder 4 ha
+* money: monetärer Wert wie 12.34
+* currency: monetärer Wert mit Währung, wie 12.34 EUR
+* crs KBS Wert wie 3857
+* extent: 4 reelle Zahlen die eine räumliche BoundingBox beschreiben
+
 
 In unserem Beispiel können "ID", "Feature Klasse", "Name" und "X-Y Koordinaten" abgelesen werden.
 Die Attributwerte für "ID" und "Feature Klasse" sind so konfiguriert, dass sie nicht verändert werden können.
 "Name" sowie "X-Y Koordinaten" (und somit die Position) können hingegen angepasst werden.
 Außerdem könnte eine Bereitstellung von gewissen Attributen, für verifizierte Nutzer, konfiguriert werden.
 Dies würde dazu führen, dass nicht jeder Nutzer Einsicht auf alle Attribute hat.
-Ebenfalls können vorgegebene Wertebereich definiert sein, in denen die Eingabe liegen muss.
+Ebenfalls kann ein Wertebereich definiert sein, in dem die eingegebenen Werte liegen müssen.
 Außerdem ist es möglich, dass nur ein Datum eingetragen werden kann, weil das Feld als Datumsfeld definiert ist.
 Dies kann für jedes GBD WebSuite Projekt individuell konfiguriert sein. Über das Menü |settings| ``Aufgaben`` können weitere Funktionen ausgewählt werden.
 Hier steht die Funktion ``Hinzoomen`` zur Verfügung. Über |cancel| ist es möglich ins vorherige Menü zu navigieren.

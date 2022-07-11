@@ -7,8 +7,5 @@ GBD Informationen
 Über den Link gelangen Sie auf die Website der GBD WebSuite. Hier können Sie sich über neue Funktionen, unter dem Reiter Changelogs, informieren.
 Außerdem können Sie unter dem Reiter Dokumentation, einen Überblick über die Nutzung der GBD WebSuite verschaffen.
 
-.. note::
- Auch hier können bisherige Anpassungsmöglichkeiten angewendet werden. Es ist möglich, weitere Buttons mit der von Ihnen gewünschten Verlinkung, einzupflegen.
-
  .. |gbd| image:: ../../../images/gws_logo.svg
   :width: 30em
