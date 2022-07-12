@@ -34,7 +34,7 @@ Wenn der Zugang aktiviert ist, sieht die Suchmaske wie folgt aus.
 Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Suche kann per |new_search| ``Neue Anfrage`` gestartet werden.
 Dabei werden die Inhalte aller Felder gelöscht. Die Erklärung für die Funktionen |spatial_search| ``Flurstücke über räumliche Suche finden``
 und |select| ``Einzelne Flurstücke in der Karte auswählen`` erfolgt im späteren Teil dieses Kapitels.
-Auf Wunsch können diese Funktionen als Werkzeug, prominent in der Werkzeugleiste platziert werden.
+Diese Funktionen können zusätzlich als Werkzeug, in der Werkzeugleiste platziert werden.
 Wenn Sie zum Beispiel ein GBD WebSuite Projekt nutzen, um damit ausschließlich Flurstücke zu verwalten, könnte dies von Nutzen sein.
 So wäre ein schnelles Auswählen einzelner Flurstücke möglich, ohne den Menüpunkt ``Flurstücksuche`` auswählen zu müssen.
 Dieser öffnet sich dann automatisch, wenn Sie das Werkzeug auswählen.
@@ -77,12 +77,12 @@ Nach dem Anklicken des Suchbuttons |search| unter den Suchfeldern, werden die Er
 
 Durch ein Klicken auf die Flurstückbezeichnung, gelangen Sie zu den Flurstückinformationen. Diese können individuell konfiguriert werden und
 bestehen in diesem Beispiel aus den Abschnitten Basisdaten, Lage, Gebäudenachweis, Buchungssatz und Nutzung.
-Falls Sie die Flurstückinformationen wieder schließen möchten, wählen Sie den gewünschten Menüpunkt der Flurstücksuche.
-Durch ein Klicken auf |fokus| ``Hinzoomen`` fokussieren Sie das gewünschte Objekt. Über die Symbole |add| und |delete| rechts neben der Flurstückbezeichnung,
+Durch ein Klicken auf |fokus| ``Hinzoomen`` fokussieren Sie das ausgewählte Objekt. Über die Symbole |add| und |delete| rechts neben der Flurstückbezeichnung,
 können einzelne Flurstücke in eine |tab| Ablage hinzugefügt oder herausgelöscht werden.
 Über das |addall| Icon, welches sich ebenfalls in der Leiste am unteren Fensterrand befindet, können Sie ``Alle zur Ablage`` hinzufügen.
 Diese kann für einen späteren Zugriff gespeichert werden.
 Die darin befindlichen Flurstücke können ausgedruckt oder in eine CSV Tabelle exportiert werden.
+Um die Flurstückinformationen wieder zu schließen, wählen Sie einen anderen Menüpunkt in der Flurstücksuche aus.
 
 .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_4.png
   :align: center

@@ -33,7 +33,7 @@ Außerdem können Sie über |cancel| ``Beenden`` zurück zur Layeransicht navigi
 
 Wenn ein Objekt ausgewählt oder ein neues Objekt erstellt wurde, öffnen sich die Objekteigenschaften.
 Hier kann sich ein Überblick, über die vorhandenen Attributfelder verschafft werden.
-Falls dem Objekt Dateien oder Bilder angehangen sind, können diese hier geladen werden. 
+Falls dem Objekt Dateien oder Bilder angehangen sind, können diese hier geladen werden.
 
 .. figure:: ../../../screenshots/de/client-user/editing_3.png
   :align: center
@@ -55,7 +55,6 @@ Komplexe Datentypen werden als primitive Datenbank-Typen gespeichert, haben jedo
 * currency: monetärer Wert mit Währung, wie 12.34 EUR
 * crs KBS Wert wie 3857
 * extent: 4 reelle Zahlen die eine räumliche BoundingBox beschreiben
-
 
 In unserem Beispiel können "ID", "Feature Klasse", "Name" und "X-Y Koordinaten" abgelesen werden.
 Die Attributwerte für "ID" und "Feature Klasse" sind so konfiguriert, dass sie nicht verändert werden können.

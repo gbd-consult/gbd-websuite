@@ -23,6 +23,5 @@ Die Suche kann Nominatim, sprich OSM-Daten, sowie Postgres-Datenbanken durchsuch
 Bei der Nominatim-Suche werden die Objekteigenschaften von OSM-Objekten genutzt.
 Bei der Suche in Postgres-Datenbanken, wird auf Informationen einzelner Spalten der Datenbank zugegriffen.
 
-
  .. |search| image:: ../../../images/baseline-search-24px.svg
    :width: 30em

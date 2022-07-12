@@ -16,4 +16,4 @@ Verwenden Sie hier das Vergeben eines Wertes für die Rotation in der Projektüb
   :width: 10em
 
 .. Note::
- Falls es nicht gewünscht ist, dass die Karte eine Rotationsfunktion hat oder diese nur bis zu einem gewissen Wert möglich sein soll, kann das auf Wunsch umgesetzt werden.
+ Die Rotation kann so konfiguriert werden, dass diese nur bis zu einem gewissen Wert möglich ist.

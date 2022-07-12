@@ -27,6 +27,8 @@ Außerdem können bereits vorhandene Informationen geändert, heruntergeladen od
    :width: 30em
  .. |person_info| image:: ../../../images/person_search_black_24dp.svg
    :width: 30em
+ .. |person| image:: ../../../images/person_black_24dp.svg
+   :width: 30em
  .. |save| image:: ../../../images/sharp-save-24px.svg
    :width: 30em
  .. |cancel| image:: ../../../images/baseline-close-24px.svg

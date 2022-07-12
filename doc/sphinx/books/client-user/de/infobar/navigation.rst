@@ -10,7 +10,7 @@ Des Weiteren kann das Zoomen durch die Navigationsbutton |zoomin| ``Hineinzoomen
 Als weitere Steuerfunktion kann über |zoommap| ``Ganzes Projekt anzeigen``, auf die Ausdehnung der gesamten Karte heraus gezoomt werden.
 
 .. note::
- Falls diese Navigationshilfen nicht gewünscht sind oder sich anders verhalten sollen, können auch diese verändert und angepasst werden.
+ Falls diese Navigationshilfen nicht zur Verfügung stehen oder sich anders verhalten sollen, kann dies dementsprechend konfiguriert werden.
 
  .. |zoomin| image:: ../../../images/zoom-24.svg
    :width: 30em

@@ -35,5 +35,3 @@ Um ein Objekt zu zeichnen, ist dies über |line| möglich. Bei dem Zeichnen eine
    :width: 35em
  .. |2| image:: ../../../images/gws_digits-02.svg
    :width: 35em
-
-.. Wenn das ``Bemaßung``-Werkzeug generell nicht gewünscht ist, kann es aber auch entfernt bzw. deaktiviert werden.

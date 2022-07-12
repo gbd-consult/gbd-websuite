@@ -14,8 +14,5 @@ welche Informationen über die demografische Entwicklung bereitstellen.
 
 Für ausführliche Informationen schauen Sie gerne auch unter: https://www.sisterhenn-it.de/d-procon-2/
 
-.. note::
- Es kann auf Wunsch eingebunden oder ausgetragen werden, sowie an eine beliebige Stelle in der Werkzeugleiste plaziert werden.
-
  .. |dpro| image:: ../../../images/gbd-icon-d-procon-02.svg
    :width: 30em

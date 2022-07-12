@@ -19,7 +19,8 @@ Zum anderen kann es sein, dass Sie die Fehlermeldung "Standort außerhalb der Ka
 Dies kann passieren wenn in der WebSuite, sich nur ein kleiner Ausschnitt eines Gebietes befindet und Sie sich außerhalb befinden.
 
 .. note::
- Auf Wunsch kann die ``Mein Standort``-Funktion deaktiviert werden. Ebenfalls wäre es möglich, dass der Standort von einem oder mehreren anderen Geräten angezeigt wird.
+ Es können diverse Geräte parallel eingebunden werden, so dass der Standort auch von mehreren Geräten angezeigt werden kann.
  Außerdem könnte eine Aufzeichnung der Bewegungen erstellt werden. So könnten zum Beispiel Tiere, welche mit GPS-Sendern markiert wurden, verfolgt und beobachtet werden.
 
  .. |location| image:: ../../../images/gps_fixed-24px.svg
+   :width: 30em

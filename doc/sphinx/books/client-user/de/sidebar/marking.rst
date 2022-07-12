@@ -73,7 +73,6 @@ Das Laden |load| und Abspeichern |save| der gewählten Markierungen ist ebenfall
 
 .. note::
   Die Einheit der Markierung kann beliebig angepasst werden. Für weitere Informationen schauen Sie unter :ref:`Markieren & Messen <measure>` nach.
-  All diese Funktionen können auf Wunsch auch deaktiviert oder nur gewissen Nutzern zur Verfügung gestellt werden.
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em

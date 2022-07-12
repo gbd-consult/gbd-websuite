@@ -3,7 +3,7 @@
 Koordinaten
 ===========
 
-In der Statusleiste befindet sich außerdem die ``Koordinatenanzeige``. Hier können die X & Y Koordinaten abgelesen werden.
+In der Statusleiste befindet sich die ``Koordinatenanzeige``. Hier können die X & Y Koordinaten abgelesen werden.
 Diese Koordinatenanzeige wird nur ab einer bestimmten Bildschirmgröße angezeigt, wodurch sie zum Beispiel auf mobilen Endgeräten nicht sichtbar ist.
 
 .. figure:: ../../../screenshots/de/client-user/xy.png
@@ -11,4 +11,4 @@ Diese Koordinatenanzeige wird nur ab einer bestimmten Bildschirmgröße angezeig
   :width: 7em
 
 .. note::
- Auf Wunsch kann diese Anzeige auch deaktiviert werden, wo anders platziert werden oder in einer anderen Metrik dargestellt werden.
+ Die Metrik der Koordinatenanzeige kann in den gängigen Einheiten konfiguriert werden.

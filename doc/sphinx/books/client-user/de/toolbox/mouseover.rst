@@ -19,8 +19,6 @@ Alternativ kann der unterste Layer in einer Layerstruktur gewählt werden, wodur
 Wenn mehrere Objekte markiert wurden, kann man über |continue| und
 |back| die einzelnen Informationen anzeigen lassen. Des Weiteren kann man über |options| die Auswahl der Objekte auch auf andere Werkzeuge, wie dem ``Auswählen``, ``Räumliche Suche`` und ``Annotieren`` Werkzeug übertragen, sowie über das ``Hinzoomen``-Werkzeug fokussiert werden. Über |cancel| ist es möglich die Information zu schließen.
 
-.. note::
- Wie alle Werkzeuge kann auch dieses deaktiviert oder anders plaziert werden.
 
  .. |mouseover| image:: ../../../images/gbd-icon-anzeige-01.svg
    :width: 30em

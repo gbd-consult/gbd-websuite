@@ -1,4 +1,4 @@
-.. _searching:
+.. _spatial_searching:
 
 Räumliche Suche
 ===============
@@ -23,7 +23,7 @@ Durch einen Klick auf |cancel| wird das Werkzeug beendet.
   :align: center
 
 .. note::
- Die räumliche Suche kann auf Wunsch deaktiviert oder wo anders angeordnet werden. Einzelne Funktionen wie die Suche per Punkt, Linie, Rechteck, Fläche oder Kreis können seperat aktiviert oder deaktiviert werden.
+ Einzelne Funktionen wie die Suche per Punkt, Linie, Rechteck, Fläche oder Kreis können separat aktiviert oder deaktiviert werden.
 
  .. |geo_search| image:: ../../../images/gbd-icon-raeumliche-suche-01.svg
    :width: 30em
