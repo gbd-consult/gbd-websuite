@@ -237,7 +237,10 @@ class Layer(gws.Object, t.ILayer):
                     access=p.access,
                     filter=p.filter
                 )
-                m = t.cast(t.IModel, self.create_model(p.model))
+                if p.model:
+                    m = t.cast(t.IModel, self.create_model(p.model))
+                else:
+                    m = self.model
                 m.layer = self
                 m.permissions.create.parent = self.editor
                 m.permissions.delete.parent = self.editor

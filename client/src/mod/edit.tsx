@@ -678,6 +678,8 @@ class Controller extends gws.Controller {
     //
 
     whenFeatureListNameTouched(feature: gws.types.IFeature) {
+        if (feature.layer && feature.layer.loadingStrategy === 'lazy')
+            feature.layer.clear();
         this.reloadAndActivateFeature(feature, 'pan');
     }
 

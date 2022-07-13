@@ -159,7 +159,7 @@ class Validator_geometryConstraint(Validator):
 ##
 
 
-def eval_value(fe: t.IFeature, val: 'ValueConfig'):
+def eval_value(fe: t.IFeature, val: 'ValueConfig', env):
     if val.type == 'static':
         return val.value
     if val.type == 'expression':
@@ -330,15 +330,20 @@ class Field(gws.Object, t.IModelField):
     def write_to_orm(self, fe: t.IFeature, obj):
         pass
 
-    def apply_defaults(self, fe: t.IFeature, mode):
+    def apply_fixed_value(self, fe: t.IFeature, mode, env):
         p = gws.get(self.value, mode)
         if p:
-            fe.attributes[self.name] = eval_value(fe, p)
-            return
+            fe.attributes[self.name] = eval_value(fe, p, env)
+            return True
+        return False
+
+    def apply_default_value(self, fe: t.IFeature, mode, env):
         if fe.attr(self.name) is None:
             p = gws.get(self.value, mode + 'Default')
             if p:
-                fe.attributes[self.name] = eval_value(fe, p)
+                fe.attributes[self.name] = eval_value(fe, p, env)
+                return True
+        return False
 
     def prepend_validator(self, cfg):
         for v in self.validators:
@@ -782,6 +787,14 @@ class Field_relatedFeature(RelatedFeatureField):
         rel_model = self.first_related_model()
         rel_cls = rel_model.get_class()
         kwargs = {}
+
+        own_pk = self.model.get_keys()
+        rel_pk = rel_model.get_keys()[0].name
+        own_cls = self.model.get_class()
+
+        kwargs['primaryjoin'] = getattr(own_cls, self.foreign_key_name) == getattr(rel_cls, rel_pk)
+
+
         if self.relations[0].field_name:
             kwargs['back_populates'] = self.relations[0].field_name
         properties[self.name] = sa.orm.relationship(rel_cls, **kwargs)
@@ -807,6 +820,15 @@ class Field_relatedFeatureList(RelatedFeatureListField):
         rel_model = self.first_related_model()
         rel_cls = rel_model.get_class()
         kwargs = {}
+
+        own_pk = self.model.get_keys()
+        rel_fk_name = rel_model.get_field(self.relations[0].field_name).foreign_key_name
+        own_cls = self.model.get_class()
+
+        kwargs['primaryjoin'] = getattr(own_cls, own_pk[0].name) == getattr(rel_cls, rel_fk_name)
+        kwargs['foreign_keys'] = getattr(rel_cls, rel_fk_name)
+
+
         kwargs['back_populates'] = self.relations[0].field_name
         properties[self.name] = sa.orm.relationship(rel_cls, **kwargs)
 
@@ -1186,12 +1208,17 @@ _TYPES = {
 ##
 
 
+class SortConfig:
+    fieldName: str
+    order: str
+
 class Config(t.WithAccess):
     """Model configuration"""
 
     fields: t.List[FieldConfig]
     permissions: t.Optional[ModelPermissions]
-    sqlFilter: t.Optional[str]
+    filter: t.Optional[str]
+    sort: t.Optional[t.List[SortConfig]]
 
 
 class Props(t.Data):
@@ -1258,10 +1285,6 @@ class Object(gws.Object, t.IModel):
 
     def reload(self, fe: t.IFeature, depth: int = 0):
         pass
-
-    def apply_defaults(self, fe: t.IFeature, mode):
-        for f in self.fields:
-            f.apply_defaults(fe, mode)
 
     def validate(self, fe: t.IFeature) -> t.List[t.FeatureError]:
         errors = []
@@ -1340,7 +1363,8 @@ class Object(gws.Object, t.IModel):
 class DbModel(Object, t.IDbModel):
     def configure(self):
         super().configure()
-        self.sql_filter = self.var('sqlFilter')
+        self.filter = self.var('filter')
+        self.sort = self.var('sort', default=[])
 
     def select(self, args: t.SelectArgs) -> t.List[t.IFeature]:
 
@@ -1449,8 +1473,11 @@ class DbModel(Object, t.IDbModel):
                 s = s.bindparams(**args.extra_where[1])
             state.sel = state.sel.where(s)
 
-        if self.sql_filter:
-            state.sel = state.sel.where(sa.text(self.sql_filter))
+        if self.filter:
+            state.sel = state.sel.where(sa.text(self.filter))
+        for s in self.sort:
+            fn = sa.desc if s.order == 'desc' else sa.asc
+            state.sel = state.sel.order_by(fn(getattr(cls, s.fieldName)))
 
         gws.log.debug(f'SA_MAKE_SELECT: {str(state.sel)}')
 

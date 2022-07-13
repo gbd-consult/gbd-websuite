@@ -177,11 +177,14 @@ class Object(gws.common.action.Object):
         return FeatureResponse(feature=None)
 
     def _apply_permissions_and_defaults(self, fe: t.IFeature, req: t.IRequest, mode):
-        fe.model.apply_defaults(fe, mode)
+        env = t.Data(user=req.user)
         for f in fe.model.fields:
+            if f.apply_fixed_value(fe, mode, env):
+                continue
             if not req.user.can_use(f.permissions.get(mode)):
                 gws.log.debug(f'remove field={f.name!r} mode={mode!r}')
                 del fe.attributes[f.name]
+            f.apply_default_value(fe, mode, env)
         return fe
 
     def _load_feature(self, req: t.IRequest, p: FeatureParams) -> t.IFeature:
