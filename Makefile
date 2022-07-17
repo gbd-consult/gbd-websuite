@@ -6,20 +6,16 @@ PYTHON = python3
 
 SPHINXOPTS = -v -n -b html -j auto -c $(DOC)/sphinx
 
-.PHONY: help spec client-dev client doc doc-dev image image-debug clean
+.PHONY: help spec client-dev client doc doc-dev clean
 
 help:
-	echo 'base', $(BASE)
 	@echo ""
-	@echo "commands"
-	@echo "--------"
 	@echo "spec        - build the Server spec files"
-	@echo "client      - build the Client in client/_build"
+	@echo "client      - build the Client"
 	@echo "client-dev  - start the Client dev server"
-	@echo "doc         - build the Docs in doc/_build"
+	@echo "doc         - build the Docs"
 	@echo "doc-dev     - start the Docs dev server"
-	@echo "image       - build the Docker Image (with optional IMAGE_NAME=...)"
-	@echo "image-debug - build the debug Docker Image (with optional IMAGE_NAME=...)"
+	@echo "package DIR=<dir> [MANIFEST=manifest-path] - build the Application package"
 	@echo ""
 
 
@@ -45,13 +41,10 @@ doc: spec
 doc-dev: doc
 	sphinx-autobuild --open-browser $(SPHINXOPTS) $(DOC)/sphinx $(DOC)/_build
 
-image:
-	$(PYTHON) $(BASE)install/build.py docker release $(IMAGE_NAME) && cd $(CWD)
-
-image-debug:
-	$(PYTHON) $(BASE)install/build.py docker debug $(IMAGE_NAME) && cd $(CWD)
+package:
+	$(PYTHON) $(BASE)install/package.py $(DIR) --manifest $(MANIFEST)
 
 clean:
 	rm -rf $(BASE)client/_build
 	rm -rf $(BASE)doc/_build
-	rm -rf $(BASE)install/_build
+	rm -rf $(BASE)install/___build

@@ -18,7 +18,6 @@
 /client/node_modules
 /doc/_build
 /doc/sphinx/ref
-/install/_build
 ___*
 __pycache__
 _autosummary

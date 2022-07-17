@@ -68,7 +68,7 @@ def environ(root: t.IRootObject):
     gws.write_file(base_dir + '/profiles/profiles/default/QGIS/QGIS3.ini', ini)
 
     # server options, as documented on
-    # see https://docs.qgis.org/testing/en/docs/user_manual/working_with_ogc/server/config.html#environment-variables
+    # see https://docs.qgis.org/3.22/en/docs/server_manual/config.html
 
     server_env = {
         # not used here 'QGIS_PLUGINPATH': '',
@@ -112,7 +112,7 @@ def environ(root: t.IRootObject):
 
 def version():
     _, txt = gws.tools.os2.run([EXEC_PATH])
-    m = re.search(r'QGis version (.+)', gws.as_str(txt))
+    m = re.search(r'qgis\s+version\s+([\d.]+)', gws.as_str(txt).lower())
     if m:
         return m.group(1).strip()
     return 'unknown'

@@ -247,6 +247,8 @@ class Expression:
             return repr(n.n)
         if t == 'Str':
             return repr(n.s)
+        if t == 'Constant':
+            return repr(n.value)
 
         if t == 'List':
             return '[' + _comma(self.walk(x) for x in n.elts) + ']'
