@@ -110,8 +110,8 @@ def as_xml(tags: t.List[t.Tag]) -> str:
 def as_png(tags: t.List[t.Tag], size: t.Size) -> bytes:
     sort_by_z_index(tags)
     svg = gws.tools.xml2.as_string(('svg', SVG_ATTRIBUTES, *tags))
-    with wand.image.Image(blob=svg.encode('utf8'), format='svg', background='None', width=size[0], height=size[1]) as image:
-        return image.make_blob('png')
+    # with wand.image.Image(blob=svg.encode('utf8'), format='svg', background='None', width=size[0], height=size[1]) as image:
+    #     return image.make_blob('png')
 
 
 def fragment_tags(fragment: t.SvgFragment, rv: t.MapRenderView) -> t.List[t.Tag]:

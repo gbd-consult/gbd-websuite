@@ -22,5 +22,4 @@ SQLAlchemy
 sqlparse
 uWSGI
 uwsgitop
-Wand
 Werkzeug
