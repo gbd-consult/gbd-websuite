@@ -7,17 +7,17 @@ Location Manager
 
 Der Location Manager ist ein universell verwendbares Modul. Es ermöglicht die Darstellung von temporären Ereignissen,
 die aus den unterschiedlichsten Anwendungsfällen kommen können. Es ist sozusagen ein generisches Werkzeug, um temporäre Ereignisse darzustellen.
-Für die gewünschten Ereignisse, können Attributformulare definiert werden. Wie in QGIS, kann einzelnen Feldern des Attributformulars,
+Für die gewünschten Ereignisse können Attributformulare definiert werden. Wie in QGIS kann einzelnen Feldern des Attributformulars,
 gewisse Funktionen oder Restriktionen vorgegeben werden. So kann zum Beispiel erzwungen werden, dass ohne Eintragen eines Werts für ein gewisses Feld,
 das Abspeichern des neuen Objekts nicht möglich ist. Bereits vorhandene Objekte können später editiert werden.
 Den Objekten können individuelle SVG Icons zugeordnet werden. Außerdem können geometrische Formen, mit eingebunden werden.
-Diese werden in der Regel, für Zusatzinformationen benutzt und können individuell gestaltet werden. Eine datendefinierte Übersteuerung kann eingerichtet werden.
+Diese werden in der Regel für Zusatzinformationen benutzt und können individuell gestaltet werden. Eine datendefinierte Übersteuerung kann eingerichtet werden.
 So können sich zum Beispiel die SVG Icons verändern, wenn ein Wert sich verändert oder ein Datum überschritten wurde.
 Auch maßstabsabhängige Darstellungen können für Beschriftungen, sowie für geometrische Objekte eingestellt werden.
 Diese Gestaltung der Darstellung findet durch den Administrator in QGIS statt.
-Dabei stehen sämtliche Gestaltungsmöglichkeiten für Symbolisierung, Darstellung und Beschriftung aus QGIS, zur Verfügung.
+Dabei stehen sämtliche Gestaltungsmöglichkeiten für Symbolisierung, Darstellung und Beschriftung aus QGIS zur Verfügung.
 QGIS greift dabei auf die verwendete PostGIS Datenbank zu, in der alle Elemente und Objekte gespeichert werden.
-Ein Zugriff und Editieren über ein anderes GIS Programm, wäre somit ebenfalls möglich.
+Ein Zugriff und Editieren über ein anderes GIS Programm wäre somit ebenfalls möglich.
 Die Grundlage stellt somit die PostGIS Datenbank da, welche in einem GIS Projekt symbolisiert und dann in der GBD WebSuite dargestellt wird.
 
 .. rubric:: Beispiel Baustellenverwaltung
@@ -29,8 +29,8 @@ Das Projekt "Baustellenverwaltung Düsseldorf" zeigt das Aufkommen von Baustelle
   :align: center
 
 Wenn die Berechtigung vorliegt, Daten zu editieren, kann das |location_manager| Location Manager Werkzeug genutzt werden.
-Diese Berechtigung kann zum Beispiel, nur gewissen, beziehungsweise dazu verifizierten Nutzern zur Verfügung gestellt werden.
-In diesem Beispiel können dann, Baustellen eingetragen und editiert werden.
+Diese Berechtigung kann zum Beispiel nur gewissen, beziehungsweise dazu verifizierten Nutzern, zur Verfügung gestellt werden.
+In diesem Beispiel können Baustellen eingetragen und editiert werden.
 Wenn man das Werkzeug über die Menüleiste öffnet, findet man eine Übersicht über die vorhandenen Baustellen.
 
 .. figure:: ../../../screenshots/de/client-user/location_manager_5.png
@@ -52,15 +52,15 @@ Ansonsten kann das Objekt nicht gespeichert werden.
 In diesem Beispiel ist es zum Beispiel die Eingabe des Start- und Enddatum.
 Hintergrund ist der, dass die Symbole der Baustellen, je nach Aktualität, unterschiedlich dargestellt.
 In diesem Projekt wurden die Symbole so definiert,
-dass nicht mehr vorhandene Baustellen, mit einem grauen Symbol, dargestellt werden.
+dass nicht mehr vorhandene Baustellen, mit einem grauen Symbol dargestellt werden.
 Zukünftige Baustellen werden mit einem blauen Symbol dargestellt.
 Alle Eintragungen unter ``Daten`` können jederzeit verändert werden.
 Über |done| können Sie das Objekt abspeichern, über |delete_marking| können Sie das Objekt löschen.
 
 Neben den Baustellen können weitere ``Objekte`` hinzugefügt werden.
 Es können geometrische Objekte, Texte oder auch Links in dem Kartenfenster platziert werden.
-Welche Objekte zur Verfügung stehen und wie diese dargestellt, beziehungsweise symbolisiert werden,
-wird durch den Administrator definiert.Diese Konfiguration findet über ein QGIS Projekt statt,
+Welche Objekte zur Verfügung stehen und wie diese dargestellt beziehungsweise symbolisiert werden,
+wird durch den Administrator definiert. Diese Konfiguration findet über ein QGIS Projekt statt,
 wodurch dem Administrator sämtliche Gestaltungsmöglichkeiten zur Auswahl stehen.
 In dem Beispiel Projekt stehen Punktobjekte in Form von Verkehrsschildern,
 in Linienobjekte in Form von Sperrungen, Umleitungen und Kanalarbeiten zur Verfügung.
@@ -68,8 +68,7 @@ in Linienobjekte in Form von Sperrungen, Umleitungen und Kanalarbeiten zur Verf�
 .. figure:: ../../../screenshots/de/client-user/location_manager_3.png
   :align: center
 
-Maßstabsabhängige Darstellungen oder datendefinierte Übersteuerungen können ebenfalls,
-aus den Funktionen von QGIS übernommen werden.
+Maßstabsabhängige Darstellungen oder datendefinierte Übersteuerungen können ebenfalls aus den Funktionen von QGIS übernommen werden.
 Wenn ein Objekttyp ausgewählt wurde, kann das Eintragen über |new| gestartet werden.
 Jetzt können Sie die gewünschten Objekte in die Karte zeichnen.
 
@@ -92,33 +91,33 @@ Beispiel Wochenmarkt:
 
 Eine Möglichkeit wäre die Verwendung des Location Managers, zum Koordinieren und Darstellen von Wochenmärkten.
 Mit Hilfe des Location Managers, können die unterschiedlichen Stände eines Wochenmarkts eintragen werden.
-Die Rechte für das Eintragen könnten so konfiguriert werden, dass lediglich ein administrativer Nutzer oder jeder Standbetreiber, die Stände eintragen und platzieren kann.
-Dabei ist es möglich die genaue Form der Stände maßstabsgetreu darzustellen. Egal ob der Stand eckig oder rund ist.
-Dank der verschiedenen Geometrietypen kann der Stand exakt dargestellt werden. Durch die implementierten Längeneinheiten,
-kann die Verteilung und das Ausmaß der Stände maßstabsgetreu geplant werden. Auch eine Einteilung der Stände in verschiedene Kategorien, wäre denkbar.
+Die Rechte für das Eintragen könnten so konfiguriert werden, dass lediglich ein administrativer Nutzer oder ein Standbetreiber, einen Stand eintragen und platzieren kann.
+Dabei ist es möglich, die genaue Form der Stände maßstabsgetreu darzustellen. Egal ob der Stand eckig oder rund ist.
+Dank der verschiedenen Geometrietypen kann der Stand exakt dargestellt werden. Durch die implementierten Längeneinheiten
+kann die Verteilung und das Ausmaß der Stände maßstabsgetreu geplant werden. Auch eine Einteilung der Stände in verschiedene Kategorien wäre denkbar.
 Den einzelnen Kategorien, wie zum Beispiel Lebensmittelstand, Textilstand, Blumenstand, etc., könnten spezielle Farben zugeordnet werden.
 
 Zusätzlich könnte man eine weitere Informationsebene einbringen, welche zum Beispiel nur für eine gewisse Nutzergruppe, wie die Organisatoren und Standbetreiber, einsehbar wäre.
 Diese Ebene könnte zum Beispiel Informationen über Strom- und Wasseranschlussstellen bereithalten.
-Das Verlegen der Stromkabel und Wasserschläuche könnte damit geplant werden. Dabei könnte dies nicht nur durch eine verwaltende Personen geschehen.
+Das Verlegen der Stromkabel und Wasserschläuche könnte damit geplant werden. Dabei könnte dies nicht nur durch eine verwaltende Person geschehen.
 Es wäre auch möglich, dass jeder Standbetreiber einen Benutzeraccount bekommt, dem die Werkzeuge zum Einzeichnen der Leitungen bereitgestellt werden.
 So könnte dies jeder Standbetreiber selber für sich planen und die Verwaltung wäre damit ausgelagert.
 Die Darstellung der Strom- und Wasseranschlussstellen könnte durch individuelle Punktsignaturen umgesetzt
-werden. Für die Stromkabel und Wasserleitungen könnten jeweils, spezielle Liniensignaturen durch den Administrator eingebunden werden.
+werden. Für die Stromkabel und Wasserleitungen könnten jeweils spezielle Liniensignaturen durch den Administrator eingebunden werden.
 
 Wenn die Aufstellung und Darstellung geplant wurde, kann der Plan auf zwei Wegen zur Verfügung gestellt werden.
-Der Plan könnte dann, über die GBD WebSuite online zur Verfügung gestellt werden. Alternativ könnte dieser Plan auch als Bilddatei exportiert werden.
-Diese Datei könnte dann wiederum ausgedruckt und als Lageplan am Wochenmarkt aufgehangen werden. So könnte sich jeder Besucher entweder online oder
+Der Plan könnte dann über die GBD WebSuite online zur Verfügung gestellt werden. Alternativ könnte dieser Plan auch als Bilddatei exportiert werden.
+Diese Datei könnte dann wiederum ausgedruckt und als Lageplan am Wochenmarkt aufgehangen werden. So könnte sich jeder Besucher, entweder online oder
 über den Lageplan vor Ort, einen Überblick verschaffen.
 
 Beispiel Karnevalsumzug:
 
 Eine andere Verwendungsmöglichkeit könnte, dass räumliche Darstellen eines Karnevalsumzug sein.
-Die Route könnte mit ihren einzelnen Stationen, von einem verifizierten Nutzer eingetragen werden.
+Die Route könnte mit ihren einzelnen Stationen von einem verifizierten Nutzer eingetragen werden.
 Durch eine Verknüpfung mit den ALKIS Daten, könnte eine Ermittlung der Straßen und somit die genaue Route einfach ermittelt werden.
-Die Darstellung der Linien und der Stationen, könnte durch den Administrator gestaltet werden.
+Die Darstellung der Linien und der Stationen könnte durch den Administrator gestaltet werden.
 Weitere Elemente wie Straßensperren und Umleitungen einzutragen wäre ebenfalls möglich.
-Bereiche in denen Glasflaschenverbot und Maskenpflicht gilt, könnten durch das Einzeichnen von Flächen dargestellt werden.
+Bereiche, in denen Glasflaschenverbot und Maskenpflicht gilt, könnten durch das Einzeichnen von Flächen dargestellt werden.
 Die Flächen Schraffur kann durch den Administrator gestaltet werden.
 So wäre eine Schraffur aus roten Linien möglich, um diese Flächen deutlich zu kennzeichnen.
 
@@ -127,10 +126,10 @@ Diese könnten ebenfalls in Form von Punktsignaturen dargestellt werden.
 Zu diesen Einlasskontrollen wäre es zum Beispiel denkbar,
 dass weitere relevante Informationen bestehen, die jedoch nicht der Öffentlichkeit zur Verfügung gestellt werden sollen.
 Diese sensiblen Informationen könnten nur verifizierten Nutzer zur Verfügung gestellt werden.
-So könnten zum Beispiel vertrauliche Informationen, zu den Einlasskontrollen hinzugefügt werden.
-Denkbar wären hier zum Beispiel Informationen, die der Veranstalter den Personen die die Einlasskontrolle durchführen, zur Verfügung stellen möchte.
+So könnten zum Beispiel vertrauliche Informationen zu den Einlasskontrollen hinzugefügt werden.
+Denkbar wären hier zum Beispiel Informationen, die der Veranstalter den Personen, die die Einlasskontrolle durchführen, zur Verfügung stellen möchte.
 So was könnten zum Beispiel Einlasskriterien, Hygienekonzept oder auch interne Schichtpläne sein.
-Dies ist aber nur ein Beispiel. Das Hinterlegen von vertraulichen Informationen, wäre für alle Elemente eines GBD WebSuite Projekts möglich.
+Dies ist aber nur ein Beispiel. Das Hinterlegen von Passwort gesicherten Informationen, wäre für alle Elemente eines GBD WebSuite Projekts möglich.
 
 .. Beispiel Bombenfunde:
 

@@ -9,7 +9,7 @@ Die beiden Funktionen ``Flurstücke über räumliche Suche finden`` und ``Einzel
 .. rubric:: Flurstücke in der Karte über eine räumliche Suche finden
 
 Mit Hilfe des Werkzeuges |spatial_search| ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln.
-Es öffnet sich in der Toolbar die Leiste für die Räumliche Suche, mit dem Verweis, dass nun in den Flurstücken gesucht wird.
+Es öffnet sich in der Toolbar die Leiste für die ``Räumliche Suche`` mit dem Verweis, dass nun in den Flurstücken gesucht wird.
 
 **Beispiel: Auswahl Flurstücke durch Linie**
 

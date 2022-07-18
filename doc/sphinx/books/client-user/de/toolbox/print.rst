@@ -3,12 +3,12 @@
 Drucken
 =======
 
-Mithilfe des |print| ``Drucken``-Werkzeugs wird eine PDF generiert, die gespeichert und gedruckt werden kann.
+Mit Hilfe des |print| ``Drucken``-Werkzeugs wird eine PDF generiert, die gespeichert und gedruckt werden kann.
 Die GBD WebSuite kann in QGIS erstellte Druckvorlagen übernehmen und in Form einer Auswahl bereitstellen.
-Außerdem können mit dem QGIS Drucklayout erstellte Legenden, bereitgestellt und eingebunden werden.
+Außerdem können mit dem QGIS Drucklayout erstellte Legenden bereitgestellt und eingebunden werden.
 Es können als PNG oder HTML gespeicherte Legenden im Druck verwendet werden.
 So kann man bei Layern der GBD WebSuite, welche keine eigenen Legenden besitzen, Legenden zur druckbaren Karte hinzufügen.
-Auch Layer die direkt über den WebSuite :ref:`Client <client>` eingebunden werden, können mit gedruckt werden.
+Auch Layer, die direkt über den WebSuite :ref:`Client <client>` eingebunden werden, können mit gedruckt werden.
 Ein Implementieren in den WebSuite Server ist nicht notwendig.
 
 Bei der Druckfunktion wird der aktuelle Kartenausschnitt mit seinen Inhalten unverändert übernommen.
@@ -28,19 +28,19 @@ Der Kartenrahmen stellt den zu druckenden Ausschnitt dar. Das Dialogfenster biet
 
 Hier können Sie die Ausrichtung der ``Druckvorlage`` und somit die Ausdehnung des Kartenrahmens konfigurieren.
 Die Auswahl der ``Druckqualität`` kann unterschiedlich bereitgestellt werden.
-Es ist möglich, dass vordefinierte Werte mit Titeln wie niedrig, mittel, hoch verknüpft sind, die dann zur Wahl stehen.
+Es ist möglich, dass vordefinierte Werte mit Titeln wie niedrig, mittel und hoch verknüpft sind, die dann zur Wahl stehen.
 Alternativ ist es auch möglich, dass über ein Schieberegler der DPI-Wert frei gewählt werden kann.
 In der Regel steht dann aber kein DPI-Wert von unter 70 DPI zur Verfügung, da sonst die Qualität des Drucks nicht gewährt wäre.
 Unter ``Beschriftung`` können Sie einen Titel für den Druck vergeben.
 
 Der Kartenrahmen kann beliebig verschoben werden.
-Mit der linken Maustaste und dem Mausrad kann der entsprechende Ausschnitt und die Zoomstufe eingestellt werden.
+Mit der linken Maustaste und dem Mausrad kann der gewünschte Ausschnitt und die Zoomstufe eingestellt werden.
 Wenn Sie alles für den Druck vorbereitet haben, können Sie über das Drucksymbol |print| im Dialogfenster die druckfertige PDF generieren und öffnen.
 
 .. |print| image:: ../../../images/baseline-print-24px.svg
     :width: 30em
 
-.. können Sie über das Drucksymbol |print| den Export der druckfertigen PDF starten. Es öffnet sich ein Druckvorschaumodul. Hier wird Ihnen eine Vorschau des Drucks bereitgestellt. So kann der gewählte Ausschnitt nochmal kontrolliert werden.
+.. können Sie über das Drucksymbol |print| den Export der druckfertigen PDF starten. Es öffnet sich ein Druckvorschaumodul. aHier wird Ihnen eine Vorschau des Drucks bereitgestellt. So kann der gewählte Ausschnitt nochmal kontrolliert werden.
 
  .. |print| image:: ../../../images/baseline-print-24px.svg
    :width: 30em

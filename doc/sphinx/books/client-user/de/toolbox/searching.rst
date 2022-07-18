@@ -8,12 +8,12 @@ Die Möglichkeiten und Optionen dazu sind im "GBD WebSuite Server Administrator 
 
 Je nachdem ob Sie die Suche über die Menü- oder Werkzeugleiste aktivieren, öffnet sich auch eine Suchleiste an dazugehöriger Stelle.
 In diese Suchleiste können Sie nun klicken und Ihren gesuchten Begriff eingeben.
-Unterstützt wird die Suche durch Eingabe von Anfangsbuchstaben, freien Texten sowie ??Zahlenwerten??.
+Unterstützt wird die Suche durch Eingabe von Anfangsbuchstaben, freien Texten und Zahlenwerten.
 Optional können Suchparameter definiert werden, welche unter dem Screenshot beschrieben werden.
 Die integrierte Autocomplete-Funktion sorgt für eine dynamische Suche, sowie dafür dass Ihnen die Ergebnisse direkt angezeigt werden.
 Wenn Sie die Suche über die Menüleiste öffnen, werden Ihnen die Ergebnisse im unterhalb der Werkzeugleiste angezeigt.
-Durch ein Anklicken eines Ergebnis, wird das dazugehörige Objekt automatisch im Kartenfenster fokussiert
-und es öffnen sich die dazugehörigen Objekteigenschaften in einen Pop-Up Fenster.
+Durch ein Anklicken eines Ergebnisses, wird das dazugehörige Objekt automatisch im Kartenfenster fokussiert
+und es öffnen sich die dazugehörigen Objekteigenschaften in einen Pop-up Fenster.
 
 .. figure:: ../../../screenshots/de/client-user/suche_werkzeugleiste.png
   :align: center

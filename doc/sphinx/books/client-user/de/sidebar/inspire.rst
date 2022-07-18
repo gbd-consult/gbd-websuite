@@ -3,11 +3,16 @@
 INSPIRE
 =======
 
-INSPIRE (Infrastructure for Spatial Information in Europe) steht als Kürzel für eine EU-Richtlinie zur Schaffung einer Geodateninfrastruktur, auf die über standardisierte Dienste interoperabel zugegriffen werden kann. Es gibt 34 INSPIRE Themenfelder, die grundlegende Basisinformationen über Geographische Namen, Adressen oder Grundstücke sowie fachspezifische Informationen z.B. zu den Themen Gesundheit, Bevölkerung oder Bodenschätze bereitstellen.
+INSPIRE (Infrastructure for Spatial Information in Europe) steht als Kürzel für eine EU-Richtlinie zur Schaffung einer Geodateninfrastruktur,
+auf die über standardisierte Dienste interoperabel zugegriffen werden kann.
+Es gibt 34 INSPIRE Themenfelder, die grundlegende Basisinformationen über geographische Namen, Adressen oder Grundstücke sowie fachspezifische Informationen
+z.B. zu den Themen Gesundheit, Bevölkerung oder Bodenschätze bereitstellen.
 
 .. rubric:: INSPIRE-konforme Daten- und Metadatenbereitstellung
 
-Das INSPIRE Modul der GBD WebSuite ermöglicht eine dynamische, INSPIRE-konforme Bereitstellung von INSPIRE Themen als Geodaten und deren Metadaten. Dynamisch bedeutet dabei, dass die Bereitstellung des angeforderten INSPIRE-Dienstes bei Anfrage, also "in Echtzeit", aus dem originalem Datenbestand stattfindet. Damit wird sichergestellt, dass die INSPIRE-konformen Dienste immer dem aktuellen Stand entsprechen und dass keine redundante Datenhaltung notwendig ist.
+Das INSPIRE Modul der GBD WebSuite ermöglicht eine dynamische, INSPIRE-konforme Bereitstellung von INSPIRE Themen als Geodaten und deren Metadaten.
+Dynamisch bedeutet dabei, dass die Bereitstellung des angeforderten INSPIRE-Dienstes bei Anfrage, also "in Echtzeit", aus dem originalem Datenbestand stattfindet.
+Damit wird sichergestellt, dass die INSPIRE-konformen Dienste immer dem aktuellen Stand entsprechen und dass keine redundante Datenhaltung notwendig ist.
 
 Unterstützt wird aktuell die Bereitstellung folgender INSPIRE Dienste:
 

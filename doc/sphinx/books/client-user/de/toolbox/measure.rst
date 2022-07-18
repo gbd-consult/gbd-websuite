@@ -38,10 +38,10 @@ Durch einen Doppelklick wird das Zeichnen beendet und das Polygon abgeschlossen.
 Falls nichts Individuelles gewählt wird, wird das Polygon mit der Flächengröße beschriftet.
 
 Bei einer |measurecircle| **Kreisflächenmessung** wird zuerst ein Punkt mit einem Klick in die Karte gesetzt, dies ist der Kreismittelpunkt.
-Mit einem zweiten Klick um den Kreis, wird der Radius festgelegt. Es wird nun ein Kreis gezeichnet, welcher mit dem Radius in Metern beschriftet wird.
+Mit einem zweiten Klick um den Kreis wird der Radius festgelegt. Es wird nun ein Kreis gezeichnet, welcher mit dem Radius in Metern beschriftet wird.
 Der Radius sowie die Beschriftung können nachträglich verändert werden. Hierzu nutzen Sie das entsprechende Feld in dem sich geöffneten Menüfenster.
 
-Über die Symbole in der Werkzeugleiste können Sie zusätzlich das Zeichnen jeglischer Geometrie bestätigen |savedraw| oder abbrechen |canceldraw|.
+Über die Symbole in der Werkzeugleiste können Sie zusätzlich das Zeichnen aller Geometrien bestätigen |savedraw| oder abbrechen |canceldraw|.
 Zu jedem Objekt stehen die bekannten Werkzeuge |fokus| ``Hinzoomen`` und |geo_search| ``Räumliche Suche`` zur Verfügung.
 
 .. rubric:: Eigenschaften
@@ -77,7 +77,7 @@ Dabei ist die Eingabe von Werten mit Nachkommastellen möglich, welche je nach g
 
 Für die Verwendung der Platzhalter wurde eine Formel entwickelt, wodurch die Einheit und die Präzision individuell bestimmt werden können.
 Diese Formel besitzt folgende Form { |  | }. In den ersten Abschnitt wird der gewünschte Platzhalter eingetragen. In den zweiten Abschnitt wird die Einheit eingetragen.
-Der letzte Abschnitt bestimmt die Präzision bzw wie viele Nachkommastellen vergeben werden sollen.
+Der letzte Abschnitt bestimmt die Präzision bzw. wie viele Nachkommastellen vergeben werden sollen.
 
 Hier ein paar Beispiele:
 

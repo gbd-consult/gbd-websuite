@@ -3,15 +3,15 @@
 Bemaßung
 ========
 
-Das |dimensions| ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichen von Linien. Ähnlich einer technischen Bemaßung.
-Die gezeichneten Linien werden automatisch, mit den jeweiligen Streckenlängen beschriftet.
+Das |dimensions| ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichnen von Linien. Ähnlich einer technischen Bemaßung.
+Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet.
 Wenn Sie das Tool aktiviert haben, öffnet sich unter der Werkzeugleiste ein Feld mit verschiedenen Optionen.
 
 .. figure:: ../../../screenshots/de/client-user/dimensions_tool.png
   :align: center
 
 Über |arrow| können die gezeichneten Objekte verschoben und bearbeitet werden. Mit Hilfe der gelb markierten Stützpunkte |1| kann die Bemaßung versetzt werden.
-Durch Klicken auf den grünen Hilfspunkt |2|, kann sowohl die Bemaßung als auch die Beschriftung auf der Linie verschoben werden.
+Durch ein Klicken auf den grünen Hilfspunkt |2|, kann sowohl die Bemaßung als auch die Beschriftung auf der Linie verschoben werden.
 Um ein Objekt zu zeichnen, ist dies über |line| möglich. Bei dem Zeichnen einer Linie, wird die Länge der einzelnen Strecken als Beschriftung angelegt.
 Über |trash| kann die ausgewählte Strecke gelöscht werden. Das Tool schließen Sie per |cancel|.
 

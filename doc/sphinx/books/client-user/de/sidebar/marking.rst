@@ -12,7 +12,7 @@ Die Objekte, die man mit Hilfe des :ref:`Markieren und Messen <measure>` - Werkz
 
 Wenn ein Objekt neu gezeichnet oder im Menü ``Markierungen`` ausgewählt wurde, öffnet sich das jeweilige Objektfenster.
 Hier können Geometrieeigenschaften abgelesen und Beschriftung eingetragen werden.
-Unter dem Reiter ``Platzhalter`` befinden sich vorgefertigte Ausdrücke welche häufig zum Beschreiben von Geometrien verwendet werden.
+Unter dem Reiter ``Platzhalter`` befinden sich vorgefertigte Ausdrücke, welche häufig zum Beschreiben von Geometrien verwendet werden.
 Wenn keine Beschriftung eingetragen wird, werden Punkte, Linien und Flächen standardmäßig mit Koordinaten, Streckenlänge in Kilometer oder Fläche in Quadratkilometer beschriftet.
 Falls dies auch nicht gewünscht ist, muss lediglich die Formel in dem Beschriftungsfenster gelöscht werden.
 

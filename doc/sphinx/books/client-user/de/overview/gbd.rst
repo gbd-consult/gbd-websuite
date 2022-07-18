@@ -1,10 +1,10 @@
 Geoinformatikbüro Dassau GmbH
 =============================
 
-Die **Geoinformatikbüro Dassau GmbH** ist seit mehr als 10 Jahren, an der Entwicklung von Open Source Software und Projekten beteiligt.
+Die **Geoinformatikbüro Dassau GmbH** ist seit mehr als 10 Jahren an der Entwicklung von Open Source Software und Projekten beteiligt.
 Wir setzen diese Erfahrung erfolgreich in GIS- und WebGIS-Projekten, sowie in Geodateninfrastrukturen (GDI) in Deutschland und darüber hinaus, bei unseren Kunden ein.
 
-Auf Basis unserer Expertise, bieten wir umfassende Unterstützung in den Bereichen GIS und GDI. Dazu gehört:
+Auf Basis unserer Expertise bieten wir umfassende Unterstützung in den Bereichen GIS und GDI. Dazu gehört:
 
 * Beratung und Konzeption
 * Schulung und Workshops

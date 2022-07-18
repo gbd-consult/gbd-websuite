@@ -3,20 +3,20 @@
 Layer
 =====
 
-In der Menüebene |layers| ``Layer`` findet man eine Auflistung, der implementierten Layer und Layergruppen des Projekts.
-Wenn die Zugriffrechte vorhanden sind, ist das individuelle Implementieren und Konfigurieren von einzelnen Layern, sowie das Erstellen von Layergruppen in der GBD WebSuite möglich.
+In der Menüebene |layers| ``Layer`` findet man eine Auflistung der implementierten Layer und Layergruppen des Projekts.
+Wenn die Zugriffsrechte vorhanden sind, ist das individuelle Implementieren und Konfigurieren von einzelnen Layern, sowie das Erstellen von Layergruppen in der GBD WebSuite möglich.
 Dieses Konfigurieren findet über dazugehörige QGIS Projekte statt.
-Anhand der Auflistung unter diesem Menüpunkt kann zusätzlich, ein Überblick über die Sichtbarkeit der einzelnen Layer gewonnen werden.
+Anhand der Auflistung unter diesem Menüpunkt kann zusätzlich ein Überblick über die Sichtbarkeit der einzelnen Layer gewonnen werden.
 
 .. figure:: ../../../screenshots/de/client-user/layer.png
   :align: center
 
-Das Einblenden oder Ausblenden eines Layers oder einer Layergruppe ,erfolgt über einen Klick auf |showlayer| ``Layersichtbarkeit ändern``.
+Das Einblenden oder Ausblenden eines Layers oder einer Layergruppe, erfolgt über einen Klick auf |showlayer| ``Layersichtbarkeit ändern``.
 Erscheint neben dem Layer das Icon |showlayer|, ist dieser sichtbar. Erscheint das Icon |hidelayer|, ist er nicht sichtbar.
-Außerdem können maßstabsbezogene Darstellungen für Layer und Layergruppen, in der Konfiguration der GBD WebSuite, vergeben werden.
+Außerdem können maßstabsbezogene Darstellungen für Layer und Layergruppen in der Konfiguration der GBD WebSuite, vergeben werden.
 Diese Layer werden nur dann dargestellt, wenn der Kartenmaßstab einem Wert für die maßstabsbezogene Darstellung entspricht.
 Wenn dies nicht der Fall ist, wird der Layer nicht angezeigt und neben ihm erscheint das Symbol |scale_layer|.
-Das Anpassen und Konfigurieren von Layern ist per QGIS möglich. Sämtliche Änderungen die in dem verknüpften QGIS Projekt vorgenommen werden,
+Das Anpassen und Konfigurieren von Layern ist per QGIS möglich. Sämtliche Änderungen, die in dem verknüpften QGIS Projekt vorgenommen werden,
 werden so in die GBD WebSuite hochgeladen.
 
 Mit einem Klick auf den Layernamen öffnet man die Eigenschaften dieses Layers.
@@ -27,9 +27,9 @@ Eine bereits durch QGIS bereitgestellte Legende kann bei Bedarf ausgeblendet ode
 
 Unter den Layereigenschaften befinden sich drei Werkzeuge.
 Für einzelne Layer oder Layergruppen kann über |transperency| die ``Transparenz`` eingestellt werden.
-Der Grad der Transparenz kann über den Schieberegler, wie auch über das vergeben eines Wertes gewählt werden.
-Dies wirkt sich auf jedes Objekt dieses Layers, unabhängig davon ob es ein Punkt-, Linien- und Flächenlayern ist, aus.
-Mit |zoom_layer| ``Auf den Layer zoomen`` ist es möglich auf die Gesamtausdehnung des gewählten Layers zu zoomen.
+Der Grad der Transparenz kann über den Schieberegler, wie auch über das Eintragen eines Wertes gewählt werden.
+Dies wirkt sich auf jedes Objekt dieses Layers unabhängig davon, ob es ein Punkt-, Linien- und Flächenlayern ist, aus.
+Mit |zoom_layer| ``Auf den Layer zoomen`` ist es möglich, auf die Gesamtausdehnung des gewählten Layers zu zoomen.
 Über |cancel| ``Layerlegende schließen`` kann die Layerlegende geschlossen werden.
 
 .. note::

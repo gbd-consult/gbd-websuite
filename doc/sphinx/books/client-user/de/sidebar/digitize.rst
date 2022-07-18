@@ -6,13 +6,14 @@ Digitalisieren
 Über das Menüfeld |menu|
 in der linken oberen Ecke gelangt man in das Digitalisierungsmenü |edit|.
 Über das Pluszeichen |level|
-in der linken unteren Ecke fügt man eine neue Ebene hinzu, diese kann man nun benennen und eine Farbe für die Füllung und den Rahmen auswählen. Über das Pluszeichen unter Attribute kann man entsprechende Spalten hinzufügen |attribut|
+in der linken unteren Ecke fügt man eine neue Ebene hinzu, diese kann man nun benennen und eine Farbe für die Füllung und den Rahmen auswählen.
+Über das Pluszeichen unter Attribute kann man entsprechende Spalten hinzufügen |attribut|
 , sie dann benennen oder löschen. |deleteattributes|
 
-Beim Digitalisieren kann man zwischen Punkt|newpoint|
-, Linien |newline|
-oder Flächen |newpolygon|
-wählen. Die Element werden durch einen Klick in die Karte hinzugefügt. Nach der Benennung des Objektes, kann über |labelon| die Beschriftung angeschaltet oder abgeschaltet werden |labeloff|. Des Weiteren kann man digitalisierte Objekte auswählen |selectedit|
+Beim Digitalisieren kann man zwischen Punkt|newpoint|, Linien |newline| oder Flächen |newpolygon| wählen.
+Die Elemente werden durch einen Klick in die Karte hinzugefügt.
+Nach der Benennung des Objektes, kann über |labelon| die Beschriftung angeschaltet oder abgeschaltet werden |labeloff|.
+Des Weiteren kann man digitalisierte Objekte auswählen |selectedit|
 oder Punkte zu einem Objekt hinzufügen.
 
 Symbol                        Funktion

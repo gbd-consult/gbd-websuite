@@ -19,8 +19,8 @@ Um einen Überblick zu erhalten, werden im folgenden Text die einzelnen Bestandt
 
 Es stehen verschiedene Flurstück-Parameter zur Auswahl, die individuell konfiguriert werden können.
 So können Flurstücke anhand von Straßen, Gemarkungen, Flächengrößen, Buchungsblatt- oder Flurstücknummern gesucht werden.
-Wenn der ``Zugang zu Personendaten`` aktiviert wird, ist es ebenfalls möglich anhand von Vor- und Nachname, Flurstücke zu suchen.
-Der Zugang zu persönlichen Daten kann so konfiguriert werden, dass zum Beispiel nur verifizierte Nutzer, Zugriff darauf haben.
+Wenn der ``Zugang zu Personendaten`` aktiviert wird, ist es ebenfalls möglich, anhand von Vor- und Nachname Flurstücke zu suchen.
+Der Zugang zu persönlichen Daten kann so konfiguriert werden, dass zum Beispiel nur verifizierte Nutzer Zugriff darauf haben.
 Es ist möglich, dass alle Anfragen nach Personendaten geloggt und in einer PostGIS Datei abgelegt werden. So wird jede Anfrage protokolliert und kann kontrolliert werden.
 
 .. .. figure:: ../../../screenshots/de/client-user/cadastral_unit_search_data_rights.png
@@ -34,7 +34,7 @@ Wenn der Zugang aktiviert ist, sieht die Suchmaske wie folgt aus.
 Die Flurstücksuche wird über das Icon |search| ``Suche`` gestartet. Eine neue Suche kann per |new_search| ``Neue Anfrage`` gestartet werden.
 Dabei werden die Inhalte aller Felder gelöscht. Die Erklärung für die Funktionen |spatial_search| ``Flurstücke über räumliche Suche finden``
 und |select| ``Einzelne Flurstücke in der Karte auswählen`` erfolgt im späteren Teil dieses Kapitels.
-Diese Funktionen können zusätzlich als Werkzeug, in der Werkzeugleiste platziert werden.
+Diese Funktionen können zusätzlich als Werkzeug in der Werkzeugleiste platziert werden.
 Wenn Sie zum Beispiel ein GBD WebSuite Projekt nutzen, um damit ausschließlich Flurstücke zu verwalten, könnte dies von Nutzen sein.
 So wäre ein schnelles Auswählen einzelner Flurstücke möglich, ohne den Menüpunkt ``Flurstücksuche`` auswählen zu müssen.
 Dieser öffnet sich dann automatisch, wenn Sie das Werkzeug auswählen.

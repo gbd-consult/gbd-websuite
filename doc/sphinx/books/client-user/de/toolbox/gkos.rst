@@ -12,17 +12,17 @@ Falls Sie mit GeKoS zusammenarbeiten, können Sie mit Hilfe dieses Werkzeugs, Da
 
 Eingebundene Daten stehen Ihnen als eigene Layer zur Verfügung. In diesem Beispiel wurden via Gekos Baugenehmigungsverfahren eingebunden,
 welche konkreten Flurstücken aus einem anderen Layer zugeordnet sind. Diese Baugenehmigungsverfahren können in der GBD WebSuite eingesehen und editiert werden.
-Ein häufige Aufgabe bei diesen Verfahren ist es, die Vorgangskoordinaten zu ermitteln. Hierzu wurden drei Icons mit Funktionen in die Gekos Maske eingebunden.
+Eine häufige Aufgabe bei diesen Verfahren ist es, die Vorgangskoordinaten zu ermitteln. Hierzu wurden drei Icons mit Funktionen in die Gekos Maske eingebunden.
 
 .. figure:: ../../../screenshots/de/client-user/gkos2.png
   :align: center
 
-* |1| Über dieses Icon können Sie die die Karte auf die vorhandene Vorgangskoordinate fokussieren.
-  (Die Vorgangskoordinate wurde aus der Adresse des Grundstück bzw. aus der Mittelpunktskoordinate des Flurstücks bei deren Eingabe automatisch im Hintergrund ermittelt).
+* |1| Über dieses Icon können Sie die Karte auf die vorhandene Vorgangskoordinate fokussieren.
+  (Die Vorgangskoordinate wurde aus der Adresse des Grundstücks bzw. aus der Mittelpunktskoordinate des Flurstücks bei deren Eingabe automatisch im Hintergrund ermittelt).
 * |2| Wenn Sie auf dieses Icon klicken, öffnet sich ein Fenster. Hier können Sie die Vorgangskoordinate manuell eingeben oder die Koordinate aus der Adresse selber ermitteln.
 * |3| Über dieses Icon können Sie die Vorgangskoordinate in der Karte auswählen.
 
-Die Symbolisierung und Beschriftung der Gekos Daten bzw. der Objekte eines Gekos Layers, werden in QGIS konfiguriert.
+Die Symbolisierung und Beschriftung der Gekos Daten bzw. der Objekte eines Gekos Layers werden in QGIS konfiguriert.
 Dabei stehen sämtliche QGIS Darstellungsoptionen zur Verfügung.
 
 .. figure:: ../../../screenshots/de/client-user/gkos4.png

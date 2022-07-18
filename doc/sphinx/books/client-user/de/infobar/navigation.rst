@@ -3,11 +3,11 @@
 Zoomen
 ======
 
-Die Navigation kann über die Maus gesteuert werden. Mit der linken Maustaste oder dem gedrückten Mausrad, kann die Karte bewegt werden.
+Die Navigation kann über die Maus gesteuert werden. Mit der linken Maustaste oder dem gedrückten Mausrad kann die Karte bewegt werden.
 Zum Zoomen wird das Mausrad genutzt. Zum Vergrößern wird das Mausrad nach vorne und zum Verkleinern nach hinten gedreht.
 Des Weiteren kann das Zoomen durch die Navigationsbutton |zoomin| ``Hineinzoomen`` und |zoomout| ``Hinauszoomen`` vorgenommen werden.
 
-Als weitere Steuerfunktion kann über |zoommap| ``Ganzes Projekt anzeigen``, auf die Ausdehnung der gesamten Karte heraus gezoomt werden.
+Als weitere Steuerfunktion kann über |zoommap| ``Ganzes Projekt anzeigen`` auf die Ausdehnung der gesamten Karte heraus gezoomt werden.
 
 .. note::
  Falls diese Navigationshilfen nicht zur Verfügung stehen oder sich anders verhalten sollen, kann dies dementsprechend konfiguriert werden.
