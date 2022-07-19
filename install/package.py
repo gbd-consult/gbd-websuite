@@ -25,17 +25,13 @@ def run(cmd):
     rc = p.returncode
 
     if rc:
-        print('!' * 80)
-        print('>> ' + cmd)
-        print(f'FAILED (code {rc})')
-        print('!' * 80)
+        print(f'FAILED {cmd!r} (code {rc})')
         sys.exit(1)
 
     return out
 
 
 script_dir = os.path.abspath(os.path.dirname(__file__))
-build_dir = os.path.abspath(script_dir + '/___build')
 gws_dir = os.path.abspath(script_dir + '/..')
 
 documents = ['NOTICE', 'NOTICE_DOCKER', 'README.md', 'LICENSE', 'VERSION']
@@ -52,6 +48,12 @@ def main():
     if target_dir.startswith('-'):
         print(USAGE)
         sys.exit(255)
+
+    if not os.path.isabs(target_dir):
+        target_dir = os.path.join(os.getcwd(), target_dir)
+
+    if not os.path.isdir(target_dir):
+        print(f'ERROR {target_dir!r} does not exist')
 
     manifest = None
     manifest_path = None
