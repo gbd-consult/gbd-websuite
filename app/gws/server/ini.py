@@ -46,9 +46,8 @@ def create(root: t.IRootObject, base_dir, pid_dir):
     commands = []
     frontends = []
 
-    # Check the marker file created by our docker build (see install/build.py)
     try:
-        in_container = os.path.isfile('/.GWS_IN_CONTAINER')
+        in_container = os.path.isfile('/.dockerenv')
     except:
         in_container = False
 
@@ -71,7 +70,7 @@ def create(root: t.IRootObject, base_dir, pid_dir):
     spool_workers = root.var('server.spool.workers')
     spool_threads = root.var('server.spool.threads')
     spool_socket = gws.TMP_DIR + '/uwsgi.spooler.sock'
-    spool_dir = gws.SPOOL_DIR
+    spool_dir = gws.ensure_dir(gws.SPOOL_DIR)
     spool_freq = root.var('server.spool.jobFrequency')
 
     mapproxy_enabled = root.var('server.mapproxy.enabled') and os.path.exists(MAPPROXY_YAML_PATH)
@@ -123,8 +122,8 @@ def create(root: t.IRootObject, base_dir, pid_dir):
         if k.startswith('GWS_')
     )
 
-    stdenv += f'\nTMP={gws.TMP_DIR}'
-    stdenv += f'\nTEMP={gws.TMP_DIR}'
+    stdenv += f'\nenv TMP={gws.TMP_DIR}'
+    stdenv += f'\nenv TEMP={gws.TMP_DIR}'
 
     # rsyslogd
     # ---------------------------------------------------------
@@ -132,18 +131,11 @@ def create(root: t.IRootObject, base_dir, pid_dir):
     if rsyslogd_enabled:
         #  based on /etc/rsyslog.conf
         syslog_conf = f"""
-            ##
-            
             module(
                 load="imuxsock"
                 SysSock.UsePIDFromSystem="on"
             )
     
-            module(
-                load="imklog" 
-                PermitNonKernelFacility="on"
-            )
-            
             template(name="gws" type="list") {{
                 property(name="timestamp" dateFormat="rfc3339")
                 constant(value=" ")
@@ -159,10 +151,6 @@ def create(root: t.IRootObject, base_dir, pid_dir):
                 Template="gws"
             )
     
-    
-            # *.*;kern.none /dev/stdout
-            # kern.*	      -/var/log/kern.log
-            
             *.* /dev/stdout
         """
 
