@@ -5,6 +5,8 @@ import importlib
 
 import gws
 
+import gws.core.manifest
+
 import gws.common.api
 import gws.common.auth
 import gws.common.client
@@ -21,8 +23,6 @@ import gws.tools.os2
 import gws.web.site
 
 import gws.types as t
-
-from . import manifest
 
 
 class DbConfig(t.Config):
@@ -179,7 +179,7 @@ class Object(gws.Object, t.IApplication):
         if not gws.tools.os2.is_file('/data/MANIFEST.json'):
             return
 
-        mf = manifest.from_path('/data/MANIFEST.json')
+        mf = gws.core.manifest.from_path('/data/MANIFEST.json')
         plugins_conf = self.var('plugins', default={})
 
         for p in mf['plugins']:
