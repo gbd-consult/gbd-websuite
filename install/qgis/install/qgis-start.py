@@ -92,6 +92,18 @@ http {{
             fastcgi_read_timeout {TIMEOUT}s;
             add_header 'Access-Control-Allow-Origin' *;
             include /etc/nginx/fastcgi_params;
+            
+            # replace mapproxy forward params (e.g. LAYERS__gws) with their real names
+            
+            if ($args ~* (.*?)(?:\blayers=-?)(?:&|$)(.*) ) {{
+                set $args $1$2;
+            }}
+            if ($args ~* (.*?)(?:\bdpi=-?)(?:&|$)(.*) ) {{
+                set $args $1$2;
+            }}
+            if ($args ~* (.*?)(?:__gws)(.*)) {{
+                set $args $1$2;
+            }}
         }}
     }}
 }}

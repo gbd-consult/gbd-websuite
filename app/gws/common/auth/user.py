@@ -156,7 +156,7 @@ def _can_use(roles, target, parent):
 
     c = _check_access(roles, target)
     if c is not None:
-        gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {c}')
+        # gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {c}')
         return c
 
     current = parent or gws.get(target, 'parent')
@@ -164,11 +164,11 @@ def _can_use(roles, target, parent):
     while current:
         c = _check_access(roles, current)
         if c is not None:
-            gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {c} in {_repr(current)}')
+            # gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r} found: {c} in {_repr(current)}')
             return c
         current = gws.get(current, 'parent')
 
-    gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r}: not found')
+    # gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r}: not found')
     return False
 
 

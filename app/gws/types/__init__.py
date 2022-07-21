@@ -1274,7 +1274,6 @@ class IModel(IObject):
     keyword_columns: List[str]
     layer: Optional['ILayer']
     permissions: 'ModelPermissions'
-    def apply_defaults(self, fe: 'IFeature', mode): pass
     def delete(self, fe: 'IFeature'): pass
     def feature_from_props(self, props: 'FeatureProps', depth=0): pass
     def feature_props(self, fe, depth=0): pass
@@ -1301,7 +1300,8 @@ class IModelField(IObject):
     type: str
     validators: list
     widget: Optional['IModelWidget']
-    def apply_defaults(self, fe: 'IFeature', mode): pass
+    def apply_default_value(self, fe: 'IFeature', mode, env): pass
+    def apply_fixed_value(self, fe: 'IFeature', mode, env): pass
     def prepend_validator(self, cfg): pass
     def read_from_orm(self, fe: 'IFeature', obj, depth): pass
     def read_from_props(self, fe: 'IFeature', props: 'FeatureProps', depth: int): pass

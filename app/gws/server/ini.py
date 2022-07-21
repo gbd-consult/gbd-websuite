@@ -213,11 +213,14 @@ def create(root: t.IRootObject, base_dir, pid_dir):
                     
                     # replace mapproxy forward params (e.g. LAYERS__gws) with their real names
                     
-                    if ($args ~* (.*?)(layers=-)(.*)) {{
-                        set $args $1$3;
+                    if ($args ~* (.*?)(?:\blayers=-?)(?:&|$)(.*) ) {{
+                        set $args $1$2;
                     }}
-                    if ($args ~ (.*?)(__gws)(.*)) {{
-                        set $args $1$3;
+                    if ($args ~* (.*?)(?:\bdpi=-?)(?:&|$)(.*) ) {{
+                        set $args $1$2;
+                    }}
+                    if ($args ~* (.*?)(?:__gws)(.*)) {{
+                        set $args $1$2;
                     }}
 
                     include /etc/nginx/fastcgi_params;
