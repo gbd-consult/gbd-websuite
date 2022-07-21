@@ -13,17 +13,17 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs:
 .. toctree::
     :maxdepth: 2
 
-    project_overview.rst
-    map_element.rst
+    sign_in.rst
     select.rst
-    dimensions.rst
-    cadastral_unit_searching.rst
-    person_info.rst
     bplan.rst
+    dimensions.rst
+    editing.rst
+    cadastral_unit_searching.rst
+    inspire.rst
+    map_element.rst
     location_manager.rst
     marking.rst
-    editing.rst
-    table_editing.rst
-    inspire.rst
-    sign_in.rst
+    person_info.rst
+    project_overview.rst
     search.rst
+    table_editing.rst

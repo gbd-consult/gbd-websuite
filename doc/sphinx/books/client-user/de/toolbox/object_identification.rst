@@ -3,11 +3,13 @@
 Abfragen
 ========
 
-Bestimmte Sachdaten können in der Karte abgefragt werden. Dies ist möglich über das |info| ``Abfragen``-Werkzeug.
-Ein Objekt in der Karte wird mit der linken Maustaste angewählt.
-Das gewählte Objekt wird markiert und es öffnet sich ein Pop-up Fenster im Kartenfenster, wo verschiedene Informationen zu dem markierten Objekt angezeigt werden.
+Mit Hilfe des |info| ``Abfragen``-Werkzeugs können Objekte in der Karte selektiert werden,
+derer Objekteigenschaften sich dann in einem Pop-up Fenster öffnen.
 
-Bestimmte Sachdaten können in der Karte abgefragt werden. Aus welchen Daten gewählt wird, muss vorher durch die Auswahl der Karte unter ``Layer`` festgelegt werden.
+Wählen Sie das Werkzeug in der Werkzeugleiste aus. Sie erkennen das es aktiviert ist daran, dass sich der Mauszeiger verändert hat.
+Jetzt können Sie ein Objekt in dem Kartenfenster wird mit der linken Maustaste auswählen.
+Das gewählte Objekt wird markiert und es öffnet sich ein Pop-up Fenster, in dem die Objekteigenschaften abgelesen werden können.
+Welche Objekte mit diesem Werkzeug selektiert werden können, wird durch die Auswahl im :ref:`Layer <map_element>` Menü definiert.
 Es gibt verschiedene Möglichkeiten, die Auswahl genauer zu definieren.
 Durch die Auswahl eines übergeordneten Layers, greift die Abfrage auf alle darunter liegenden Layer zu.
 
@@ -19,9 +21,16 @@ Alternativ kann der unterste Layer in einer Layerstruktur gewählt werden, wodur
 .. figure:: ../../../screenshots/de/client-user/mouseover_identification_2.png
   :align: center
 
-Wenn mehrere Objekte markiert wurden, kann man über |continue| und |back| sich die einzelnen Informationen anzeigen lassen.
-Des Weiteren kann man über |options| die Auswahl der Objekte auch auf andere Werkzeuge, wie dem ``Auswählen``, ``Räumliche Suche`` und ``Annotieren`` Werkzeug übertragen.
-Zusätzlich ist es möglich, über das ``Hinzoomen``-Werkzeug die einzelnen Objekte zu fokussieren. Über |cancel| schließen Sie das Pop-up Fenster.
+Wenn Sie mehrere Objekte markiert haben, können Sie über |continue| und |back| durch die verschiedenen Objekteigenschaften navigieren.
+Über das ``Hinzoomen``-Werkzeug können Sie die einzelnen Objekte fokussieren.
+Unter |options| stehen weitere Funktionen zur Verfügung, bei denen die Auswahl der Objekte übernommen wird:
+
+ * :ref:`Auswählen <selecting>`
+ * :ref:`Räumliche Suche <spatial_searching>`
+ * :ref:`Annotieren <measure>`
+
+Über |cancel| schließen Sie das Pop-up Fenster. ( Sollen so triviale Sachen noch erwähnt werden, kann man eigentlich von jedem Nutzer erwarten, das Symbol mit einem Schließen zu verbinden oder?)
+
 
  .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
    :width: 30em

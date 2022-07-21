@@ -1,21 +1,44 @@
-Funktionsübersicht
-==================
+Bedienungsübersicht
+===================
 
-Funktionsübersicht der GBD WebSuite.
+In diesem Kapitel können Sie Informationen zur Nutzung der GBD WebSuite erlangen.
+Zuerst wird der Aufbau der Kapitel, sowie sie Verwendung der unterschiedlichen Schreibstile erläutert.
+Danach wird eine Übersicht über die Bedienelemente geliefert und erklärt wie man durch die verschiedenen Kapitel navigiert.
 
-Die GBD WebSuite ist eine webbasierte Open Source GIS Plattform. Sie beinhaltet den GBD WebSuite Server und GBD WebSuite
-Client und zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus, externe Anwendungen und
-neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen. Die
-Kern-Bibliotheken von Client und Server sind schlank gehalten. Die gesamte Architektur ist Plugin-basiert. Auch die QGIS
-Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
+.. rubric:: Aufbau der Kapitel
 
+Die Kapitel zu den einzelnen Bedienelementen sind in der Regel wie folgt aufgebaut.
+Zuerst wird eine kurze Erläuterung des Bedienelements geliefert.
+Dann wird mit Hilfe von Screenshots und Erläuterungen die Bedienung dargestellt.
+Einzelne Konfigurationsmöglichkeiten werden am Ende eines Kapitels in einem Bermerkungsfeld zusammengefasst.
+
+
+.. rubric:: GBD WebSuite Schreibstile
+
+In dieser Dokumentation werden zum besseren Verständnis, verschiedene Schreibstile verwendet.
+Außerdem sind zur schnellen Wiedererkennung, die Icons der Bedienelemente mit integriert.
+Unterhalb befindet sich eine Auflistung der verwendeten Schreibstile.
+
++-------------------------------------------------+--------------------------------------------------+
+| **Symbol**                                      | **Funktion**                                     |
++-------------------------------------------------+--------------------------------------------------+
+|:guilabel:`Bedienelemente`                       |Bedienelemente                                    |
++-------------------------------------------------+--------------------------------------------------+
+|      ``Schaltflächen``                          |Schaltflächen die getätigt werden können          |
++-------------------------------------------------+--------------------------------------------------+
+|      ``Paramater``                              |Paramater bei denen eine Eingabe möglich ist      |
++-------------------------------------------------+--------------------------------------------------+
+|     :ref:`Verlinkungen <function>`              |Verlinkungen innerhalb der Dokumentation          |
++-------------------------------------------------+--------------------------------------------------+
+| `Querverweise <https://www.gbd-consult.de>`_    |Querverweise zu Internetseiten                    |
++-------------------------------------------------+--------------------------------------------------+
+
+.. rubric:: Bedienelemente
+
+Über das Inhaltsverzeichnis unten und über die Seitenleiste können Sie durch die Kapitel der Dokumentation navigieren.
+Sie können alternativ auch die Suchfunktion verwenden, welche in der Seitenleiste oberhalb angeordnet ist.
 Eine ausführliche Hilfe im Umgang mit der GBD WebSuite, erhalten Sie im weiteren Verlauf dieser Dokumentation.
-Hier finden Sie einen Überblick aller Funktionen.
-
-Übersicht der Bedienelemente in der GBD WebSuite:
-
-.. toctree::
-    :maxdepth: 2
+Hier finden Sie zum Überblick, eine Auflistung aller Bedienelemente der GBD WebSuite.
 
 **Werkzeugleiste**
 
@@ -100,8 +123,6 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste <sidebar
 +------------------------+--------------------------------------------+-----------------------------------------+
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Statusleiste <infobar>`
-
-Informationen zur Geoinformatikbüro Dassau GmbH und zur GBD WebSuite finden Sie unter: https://gbd-websuite.de/
 
    .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
      :width: 30em

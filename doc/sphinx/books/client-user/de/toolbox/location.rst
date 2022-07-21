@@ -3,11 +3,15 @@
 Mein Standort
 =============
 
-Mit der |location| ``Mein Standort``-Funktion können Sie Ihren aktuellen Standort ermitteln. Sobald Sie den Button anklicken, zoomt die Karte zu Ihrem aktuellen Standort.
-Mit der Genauigkeit von wenigen Metern wird ein Punkt in der Karte angezeigt, welcher Ihrer Position entsprechen sollte. Zusätzlich wird die Koordinate des Punktes angegeben.
+Mit der |location| ``Mein Standort``-Funktion können Sie Ihren aktuellen Standort ermitteln.
+
+Wenn Sie das Bedienelement auswählen, zoomt die Karte zu Ihrem aktuellen Standort.
+Mit der Genauigkeit von wenigen Metern wird ein Punkt in der Karte angezeigt, welcher Ihrer Position entspricht. Zusätzlich wird die Koordinate des Punktes angegeben.
 
 .. figure:: ../../../screenshots/de/client-user/r4_mein_standort.png
   :align: center
+
+.. tip::
 
 Falls Sie eine Fehlermeldung erhalten, kann dies verschiedene Gründe haben:
 

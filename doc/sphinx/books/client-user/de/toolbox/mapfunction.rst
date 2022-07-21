@@ -15,16 +15,16 @@ So ist es zum Beispiel möglich, dass privaten Nutzern ein kleineres Angebot an 
 .. toctree::
     :maxdepth: 2
 
-    location.rst
-    selecting.rst
     object_identification.rst
     mouseover.rst
-    searching.rst
-    dprocon.rst
-    gkos.rst
+    selecting.rst
     dimensioning.rst
-    measure.rst
-    cadastral_unit_tools.rst
-    spatial_searching.rst
+    dprocon.rst
     print.rst
+    cadastral_unit_tools.rst
+    gkos.rst
+    measure.rst
+    location.rst
+    spatial_searching.rst
     screenshot.rst
+    searching.rst
