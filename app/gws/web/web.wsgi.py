@@ -52,7 +52,7 @@ def _handle_request2(root, req) -> t.IResponse:
 
     req.auth_close(res)
 
-    if cors and req.method == 'POST':
+    if cors and req.method in ['GET', 'POST']:
         res = _with_cors_headers(cors, res)
 
     return res
@@ -174,7 +174,7 @@ def _with_cors_headers(cors, res: t.IResponse) -> t.IResponse:
         res.add_header('Access-Control-Allow-Credentials', 'true')
     if cors.get('allow_headers'):
         res.add_header('Access-Control-Allow-Headers', ', '.join(cors.get('allow_headers')))
-    res.add_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.add_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
 
     return res
 
