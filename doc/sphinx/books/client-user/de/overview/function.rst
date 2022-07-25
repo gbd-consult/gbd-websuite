@@ -1,3 +1,5 @@
+.. _function:
+
 GBD WebSuite
 ============
 

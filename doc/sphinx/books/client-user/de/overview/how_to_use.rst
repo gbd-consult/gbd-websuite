@@ -1,22 +1,30 @@
+===================
 Bedienungsübersicht
 ===================
+
 
 In diesem Kapitel können Sie Informationen zur Nutzung der GBD WebSuite erlangen.
 Zuerst wird der Aufbau der Kapitel, sowie sie Verwendung der unterschiedlichen Schreibstile erläutert.
 Danach wird eine Übersicht über die Bedienelemente geliefert und erklärt wie man durch die verschiedenen Kapitel navigiert.
 
-.. rubric:: Aufbau der Kapitel
 
-Die Kapitel zu den einzelnen Bedienelementen sind in der Regel wie folgt aufgebaut.
-Zuerst wird eine kurze Erläuterung des Bedienelements geliefert.
-Dann wird mit Hilfe von Screenshots und Erläuterungen die Bedienung dargestellt.
-Einzelne Konfigurationsmöglichkeiten werden am Ende eines Kapitels in einem Bermerkungsfeld zusammengefasst.
+Aufbau der Kapitel
+===================
+Die Kapitel zu den einzelnen Bedienelementen sind wie folgt aufgebaut:
+
+* kurze Zusammenfassung der Funktionen des Bedienelements
+* Darstellung der Bedienung mit Hilfe von Screenshots und Erläuterungen
+* Anmerkungen zu Bedienungstipps und Konfigurationsmöglichkeiten in Nachrichtenboxen
+
+.. tip:: **Bedienungstipps**
+
+.. note:: **Konfigurationsmöglichkeiten**
 
 
-.. rubric:: GBD WebSuite Schreibstile
-
+GBD WebSuite Schreibstile
+=========================
 In dieser Dokumentation werden zum besseren Verständnis, verschiedene Schreibstile verwendet.
-Außerdem sind zur schnellen Wiedererkennung, die Icons der Bedienelemente mit integriert.
+Zusätzlich sind zur schneller Wiedererkennung, die Icons der Bedienelemente in den Text integriert.
 Unterhalb befindet sich eine Auflistung der verwendeten Schreibstile.
 
 +-------------------------------------------------+--------------------------------------------------+
@@ -26,15 +34,15 @@ Unterhalb befindet sich eine Auflistung der verwendeten Schreibstile.
 +-------------------------------------------------+--------------------------------------------------+
 |      ``Schaltflächen``                          |Schaltflächen die getätigt werden können          |
 +-------------------------------------------------+--------------------------------------------------+
-|      ``Paramater``                              |Paramater bei denen eine Eingabe möglich ist      |
+|      :command:`Paramater`                       |Paramater bei denen eine Eingabe möglich ist      |
 +-------------------------------------------------+--------------------------------------------------+
 |     :ref:`Verlinkungen <function>`              |Verlinkungen innerhalb der Dokumentation          |
 +-------------------------------------------------+--------------------------------------------------+
 | `Querverweise <https://www.gbd-consult.de>`_    |Querverweise zu Internetseiten                    |
 +-------------------------------------------------+--------------------------------------------------+
 
-.. rubric:: Bedienelemente
-
+Bedienelemente
+==============
 Über das Inhaltsverzeichnis unten und über die Seitenleiste können Sie durch die Kapitel der Dokumentation navigieren.
 Sie können alternativ auch die Suchfunktion verwenden, welche in der Seitenleiste oberhalb angeordnet ist.
 Eine ausführliche Hilfe im Umgang mit der GBD WebSuite, erhalten Sie im weiteren Verlauf dieser Dokumentation.
