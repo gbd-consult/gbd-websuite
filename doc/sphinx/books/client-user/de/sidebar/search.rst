@@ -1,11 +1,11 @@
 Suche
 =====
 
-Mit der |search| ``Suche`` Funktion ist es möglich, in Attributwerten von Objekten zu suchen.
+Mit der |search| :guilabel:`Suche` Funktion ist es möglich, in Attributwerten von Objekten zu suchen.
 Diese Objekte werden dann aufgelistet und können so überblickt werden.
 
 Wenn Sie den Menüpunkt auswählen, öffnet sich eine Suchleiste.
-In diese können Sie nun klicken und Ihren gesuchten Begriff eingeben.
+In diese können Sie klicken und Ihren gesuchten Begriff eingeben.
 Die Ergebnisse werden unterhalb der Suchleiste aufgelistet.
 Durch ein Anklicken eines Ergebnis, wird das dazugehörige Objekt automatisch im Kartenfenster fokussiert
 und es öffnen sich die dazugehörigen Objekteigenschaften in einen Pop-up Fenster.

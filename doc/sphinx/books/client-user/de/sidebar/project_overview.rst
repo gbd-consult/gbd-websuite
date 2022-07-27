@@ -3,7 +3,7 @@
 Projektübersicht
 ================
 
-Im |menu| ``Menü`` finden Sie die Ebene |project| ``Projektübersicht``.
+Im |menu| ``Menü`` finden Sie den Menüpunkt |project| :guilabel:`Projektübersicht`.
 Diese bietet die Möglichkeit, dem Nutzer allgemeine Informationen zum aktuellen Projekt zu vermitteln.
 Dazu gehört eine Übersichtskarte, welche den aktuellen Ausschnitt der Hauptkarte darstellt.
 Sie können den Rahmen in der Übersichtskarte verschieben, um den dargestellten Ausschnitt der Hauptkarte an eine andere Position zu bewegen.

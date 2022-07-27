@@ -3,7 +3,7 @@
 Bemaßung
 ========
 
-Das ``Bemaßung``-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichnen von Linien. Ähnlich einer technischen Bemaßung.
+Das :guilabel:`Bemaßung`-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichnen von Linien. Ähnlich einer technischen Bemaßung.
 Zum genauen Bemessen der Strecken, wird das Zeichnen durch eine Snap-Funktion unterstützt.
 Diese Snap-Funktion fängt auf ALKIS und Gebäude Daten.
 Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet und können frei verschoben und textlich erweitert werden.

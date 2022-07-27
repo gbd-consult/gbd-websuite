@@ -3,7 +3,7 @@
 Tabellen editieren
 ==================
 
-Das |table_edit| ``Tabellen editieren``-Werkzeug bietet die Möglichkeit, Attributfelder in Attributtabellen zu editieren.
+Das |table_edit| :guilabel:`Tabellen editieren`-Werkzeug bietet die Möglichkeit, Attributfelder in Attributtabellen zu editieren.
 
 Beim Auswählen der Funktion öffnet sich eine Liste mit den editierbaren Layern dieses GBD WebSuite Projekts.
 

@@ -3,7 +3,7 @@
 Abfragen
 ========
 
-Mit Hilfe des |info| ``Abfragen``-Werkzeugs können Objekte in der Karte selektiert werden,
+Mit Hilfe des |info| :guilabel:`Abfragen`-Werkzeugs können Objekte in der Karte selektiert werden,
 derer Objekteigenschaften sich dann automatisch in einem Pop-up Fenster öffnen.
 
 Wählen Sie das Werkzeug in der Werkzeugleiste an.

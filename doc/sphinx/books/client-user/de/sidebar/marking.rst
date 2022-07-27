@@ -3,7 +3,7 @@
 Markierungen
 ============
 
-Über die Menüleiste |menu| gelangt man zu dem Menüpunkt |marking| ``Markierungen``.
+Über die Menüleiste |menu| gelangt man zu dem Menüpunkt |marking| :guilabel:`Markierungen`.
 Die Objekte, die man mit Hilfe des :ref:`Markieren und Messen <measure>` - Werkzeuges erzeugt hat, werden hier aufgelistet.
 Über |fokus| kann man zu dem gezeichneten Objekt hineinzoomen, über |delete| können Sie das gezeichnete Objekt direkt löschen.
 

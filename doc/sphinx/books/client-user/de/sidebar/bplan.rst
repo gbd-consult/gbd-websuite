@@ -3,7 +3,7 @@
 Bauleitplanung
 ==============
 
-Das |bplan| ``Bauleitplanung`` -Modul dient dem Verwalten von Bauleitplänen. Wenn ein autorisierter Benutzer anmeldet ist,
+Das |bplan| :guilabel:`Bauleitplanung`-Modul dient dem Verwalten von Bauleitplänen. Wenn ein autorisierter Benutzer anmeldet ist,
 kann er das INSPIRE Modul |bplan| ``Bauleitplanung`` nutzen, um Bauleitpläne zu verwalten.
 (Falls die Berechtigung vorhanden ist, verschiedene INSPIRE-Datensätze zu bearbeiten, muss vorab eine Auswahl des Themas stattfinden.)
 Diese Bauleitpläne werden in Form von Rasterbildern integriert und sind mit Flurstückflächen des eingebundenen Liegenschaftskatasters verknüpft.

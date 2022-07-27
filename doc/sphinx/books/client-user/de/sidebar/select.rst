@@ -3,7 +3,7 @@
 Auswahl
 =======
 
-Der Menüpunkt |select| ``Auswahl`` ist ein Ablagebereich für Objekte, die über das |select| :ref:`Auswählen <selecting>`-Werkzeug im Kartenfenster selektiert wurden.
+Der Menüpunkt |select| :guilabel:`Auswahl` ist ein Ablagebereich für Objekte, die über das |select| :ref:`Auswählen <selecting>`-Werkzeug im Kartenfenster selektiert wurden.
 Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
 
  .. figure:: ../../../screenshots/de/client-user/select1.png

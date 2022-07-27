@@ -5,7 +5,7 @@ Location Manager
 
 .. rubric:: Allgemein
 
-Der Location Manager ist ein universell verwendbares Modul. Es ermöglicht die Darstellung von temporären Ereignissen,
+Der :guilabel:`Location Manager` ist ein universell verwendbares Modul. Es ermöglicht die Darstellung von temporären Ereignissen,
 die aus den unterschiedlichsten Anwendungsfällen kommen können. Es ist sozusagen ein generisches Werkzeug, um temporäre Ereignisse darzustellen.
 Für die gewünschten Ereignisse können Attributformulare definiert werden. Wie in QGIS kann einzelnen Feldern des Attributformulars,
 gewisse Funktionen oder Restriktionen vorgegeben werden. So kann zum Beispiel erzwungen werden, dass ohne Eintragen eines Werts für ein gewisses Feld,

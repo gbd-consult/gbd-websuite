@@ -3,7 +3,7 @@
 Personen Informationen
 ======================
 
-Das |person_info| ``Personen Informationen``-Modul dient dem Verwalten von personenbezogenen Informationen und Dokumenten.
+Das |person_info| :guilabel:`Personen Informationen`-Modul dient dem Verwalten von personenbezogenen Informationen und Dokumenten.
 Außerdem können diese Personeninformationen gewissen Layern oder Objekten zugeordnet werden, zum Beispiel einzelnen Flurstückflächen des Liegenschaftskatasters.
 Es ist möglich, nach Personen, Personennummern und Flurstücken zu suchen und sich personenbezogene Daten und Dokumente anzeigen zu lassen.
 

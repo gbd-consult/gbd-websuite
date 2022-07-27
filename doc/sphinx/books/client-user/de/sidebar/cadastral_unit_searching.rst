@@ -3,7 +3,7 @@
 Flurstücksuche
 ==============
 
-In der Menüleiste |menu| findet man unter dem Symbol |cadastralunit| die ``Flurstücksuche``.
+In der Menüleiste |menu| findet man unter dem Symbol |cadastralunit| die :guilabel:`Flurstücksuche`.
 Diese kann auf amtliche ALKIS-Daten angewendet werden.
 Das Modul an sich und der Zugriff darauf kann individuell projekt- und benutzerspezifisch konfiguriert.
 Anfragen zum Einhalten des Datenschutzes können geloggt werden.
