@@ -2,7 +2,7 @@ import gws
 import gws.types as t
 
 
-class ElementConfig(gws.WithAccess):
+class ElementConfig(gws.ConfigWithAccess):
     """GWS client UI element configuration"""
 
     tag: str  #: element tag
@@ -10,7 +10,7 @@ class ElementConfig(gws.WithAccess):
     after: str = ''  #: insert after this tag
 
 
-class Config(gws.WithAccess):
+class Config(gws.ConfigWithAccess):
     """GWS client configuration"""
 
     options: t.Optional[dict]  #: client options

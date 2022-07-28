@@ -51,7 +51,7 @@ class GridConfig(gws.Config):
     reqBuffer: int = 0  #: pixel buffer
 
 
-class EditConfig(gws.WithAccess):
+class EditConfig(gws.ConfigWithAccess):
     """Edit access for a layer"""
 
     pass
@@ -64,11 +64,11 @@ class LegendConfig(gws.Config):
     enabled: bool = True  #: the legend is enabled
     options: t.Optional[dict]  #: provider-dependent legend options
     path: t.Optional[gws.FilePath]  #: path of the legend image
-    template: t.Optional[gws.ext.template.Config]  #: template for an HTML legend
+    template: t.Optional[gws.ext.config.template]  #: template for an HTML legend
     url: t.Optional[gws.Url]  #: url of the legend image
 
 
-class Config(gws.WithAccess):
+class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
     clientOptions: ClientOptions = {}  # type:ignore #: options for the layer display in the client
@@ -82,12 +82,12 @@ class Config(gws.WithAccess):
     opacity: float = 1  #: layer opacity
     ows: bool = True  # layer is enabled for OWS services
     search: gws.base.search.Config = {}  # type:ignore #: layer search configuration
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
+    templates: t.Optional[t.List[gws.ext.config.template]]  #: client templates
     title: str = ''  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 
 
-class CustomConfig(gws.WithAccess):
+class CustomConfig(gws.ConfigWithAccess):
     """Custom layer configuration"""
 
     applyTo: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers this configuration applies to
@@ -102,7 +102,7 @@ class CustomConfig(gws.WithAccess):
     opacity: t.Optional[float]  #: layer opacity
     ows: bool = True  # layer is enabled for OWS services
     search: t.Optional[gws.base.search.Config]  #: layer search configuration
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: client templates
+    templates: t.Optional[t.List[gws.ext.config.template]]  #: client templates
     title: t.Optional[str]  #: layer title
     zoom: t.Optional[gws.gis.zoom.Config]  #: layer resolutions and scales
 

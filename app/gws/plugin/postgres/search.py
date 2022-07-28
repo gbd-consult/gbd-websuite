@@ -6,7 +6,7 @@ import gws.types as t
 from . import provider
 
 
-@gws.ext.Config('search.provider.postgres')
+@gws.ext.config.finder('postgres')
 class Config(gws.base.search.provider.Config):
     """Database-based search"""
 
@@ -15,7 +15,7 @@ class Config(gws.base.search.provider.Config):
     sort: t.Optional[str]  #: sort expression
 
 
-@gws.ext.Object('search.provider.postgres')
+@gws.ext.object.finder('postgres')
 class Object(gws.base.search.provider.Object):
     provider: provider.Object
     table: gws.SqlTable

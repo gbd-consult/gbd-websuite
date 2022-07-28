@@ -1,7 +1,5 @@
 import os
 
-VERSION = '8.0.0'
-
 APP_DIR = '/gws-app'
 VAR_DIR = '/gws-var'
 TMP_DIR = '/tmp/gws'
@@ -37,3 +35,11 @@ ROLE_ADMIN = 'admin'
 ROLE_USER = 'user'
 ROLE_GUEST = 'guest'
 ROLE_ALL = 'all'
+
+ACCESS_ALLOWED = 1
+ACCESS_DENIED = 2
+ACCESS_UNKNOWN = 3
+
+JS_BUNDLE = "app.bundle.json"
+JS_VENDOR_BUNDLE = 'vendor.bundle.js'
+JS_UTIL_BUNDLE = 'util.bundle.js'

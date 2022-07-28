@@ -6,7 +6,7 @@ import PIL.ImageFont
 import base64
 import io
 import re
-import wand.image
+# import wand.image
 
 import gws
 import gws.lib.mime

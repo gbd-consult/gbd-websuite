@@ -2,441 +2,326 @@ import re
 
 from typing import cast
 
-from . import base
+from . import base, util
 
 
-def normalize(state: base.ParserState, meta):
-    _add_system_aliases(state)
-    _check_enums(state)
-    _check_variants(state)
-    _synthesize_ext_configs_and_props(state)
-    _synthesize_ext_type_props(state)
-    _synthesize_ext_variants(state)
-    _resolve_aliases(state)
-    _make_props(state)
-
-
-def prepare_for_server(state: base.ParserState, meta):
-    objects: dict = {}
-    commands: dict = {}
-    isa_map: dict = {}
-
-    deps = {'gws.base.application.Config'}
-
-    for t in state.types.values():
-        if isinstance(t, base.TRecord) and _is_a(state, t, 'gws.core.tree.Node'):
-            objects[t.name] = dict(
-                _='TNode',
-                ext_category=t.ext_category,
-                ext_type=t.ext_type,
-                ident=t.ident,
-                module_name=t.pos['module_name'],
-                module_path=t.pos['module_path'],
-                name=t.name,
-            )
-
-            isa = [t.name]
-            if t.name.endswith('.Object'):
-                isa.append(t.name.rpartition('.')[0])
-
-            for src, dst in state.aliases.items():
-                if dst == t.name:
-                    isa.append(src)
-                    isa.append(src.rpartition('.')[0])
-
-            if t.ext_type:
-                isa.append(f'{base.GWS_EXT_PREFIX}.{t.ext_category}')
-                isa.append(f'{base.GWS_EXT_PREFIX}.{t.ext_category}.{t.ext_type}')
-                isa.append(f'{base.GWS_EXT_PREFIX}.{t.ext_category}.{t.ext_type}.Object')
-
-            isa_map[t.name] = sorted(isa)
-
-    for t in state.types.values():
-        if isinstance(t, base.TCommand):
-            owner_type = cast(base.TRecord, _get_type(state, t.owner_t))
-            if owner_type.name not in objects:
-                raise ValueError(f'object {owner_type.name!r} is not a Node')
-            commands[t.name] = dict(
-                _='TCommand',
-                arg=t.arg_t,
-                class_name=owner_type.name,
-                cmd_action=t.cmd_action,
-                cmd_command=t.cmd_command,
-                cmd_method=t.cmd_method,
-                cmd_name=t.cmd_name,
-                function_name=t.ident,
-                name=t.name,
-            )
-            deps.add(t.arg_t)
-
-    specs: dict = {}
-
-    specs.update(_dependent_specs(state, deps))
-    specs.update(objects)
-    specs.update(commands)
-    specs['ISA_MAP'] = isa_map
-
-    return specs
-
-
-def _is_a(state, t, cls):
-    if t.name == cls or cls in t.supers:
-        return True
-    for s in t.supers:
-        st = state.types.get(s)
-        if st and isinstance(st, base.TRecord) and _is_a(state, st, cls):
-            return True
-    return False
-
-
-def _dependent_specs(state, names):
-    queue = [['root', n] for n in names]
-    selected = {}
-
-    while queue:
-        parent, q = queue.pop(0)
-        t = _get_type(state, q) if isinstance(q, str) else cast(base.Type, q)
-
-        if not t:
-            raise base.Error(f'not found {q!r} in {parent!r}')
-
-        if t.name in selected:
-            continue
-
-        if isinstance(t, base.TAtom):
-            continue
-
-        nxt = []
-
-        if isinstance(t, base.TDict):
-            nxt = [t.key_t, t.value_t]
-        if isinstance(t, base.TList):
-            nxt = [t.item_t]
-        if isinstance(t, base.TOptional):
-            nxt = t.target_t
-        if isinstance(t, (base.TTuple, base.TUnion)):
-            nxt = t.items
-        if isinstance(t, base.TVariant):
-            nxt = t.members.values()
-
-        if isinstance(t, base.TRecord):
-            selected[t.name] = dict(name=t.name, props=t.props)
-            nxt = t.props.values()
-
-        if isinstance(t, base.TProperty):
-            selected[t.name] = dict(
-                default=t.default, has_default=t.has_default, name=t.name, ident=t.ident, property_t=t.property_t)
-            nxt = [t.property_t]
-
-        if isinstance(t, base.TAlias):
-            selected[t.name] = dict(target_t=t.target_t)
-            nxt = [t.target_t]
-
-        if isinstance(t, base.TEnum):
-            selected[t.name] = dict(values=t.values)
-
-        for it in nxt:
-            queue.append([t.name, it])
-
-        selected.setdefault(t.name, dict(vars(t)))
-        selected[t.name]['_'] = type(t).__name__
-
-    return selected
+def normalize(gen: base.Generator):
+    _add_global_aliases(gen)
+    _expand_aliases(gen)
+    _resolve_aliases(gen)
+    _check_variants(gen)
+    _evaluate_defaults(gen)
+    _synthesize_ext_configs_and_props(gen)
+    _synthesize_ext_type_properties(gen)
+    _synthesize_ext_variant_types(gen)
+    _check_undefined(gen)
+    _make_props(gen)
 
 
 ##
 
 
-def _add_system_aliases(state):
-    # alias global short names (e.g. `gws.Crs`) to long names (`gws.core.types.Crs`)
+def _add_global_aliases(gen):
+    """Add globals aliases.
 
-    for t in state.types.values():
-        if t.name.startswith('gws.core.'):
-            alias = re.sub(r'^[a-z.]+', '', t.name)
-            if alias:
-                state.aliases['gws.' + alias] = t.name
+     If we have `mod.GlobalName` and `mod.some.module.GlobalName`, and `mod.some.module` 
+     is in `GLOBAL_MODULES`, the former should an alias for the latter.
+     """
 
-
-def _resolve_aliases(state):
-    resolved = {}
-    newtypes = {}
-    stack = []
-
-    def _visit(t):
-        if isinstance(t, (base.TAtom, base.TLiteral, base.TEnum)):
-            return t
-
-        if isinstance(t, base.TDict):
-            return base.TDict(key_t=_resolve(t.key_t), value_t=_resolve(t.value_t))
-
-        if isinstance(t, base.TList):
-            return base.TList(item_t=_resolve(t.item_t))
-
-        if isinstance(t, base.TSet):
-            return base.TSet(item_t=_resolve(t.item_t))
-
-        if isinstance(t, base.TOptional):
-            return base.TOptional(target_t=_resolve(t.target_t))
-
-        if isinstance(t, base.TTuple):
-            return base.TTuple(items=[_resolve(it) for it in t.items])
-
-        if isinstance(t, base.TUnion):
-            return base.TUnion(items=[_resolve(it) for it in t.items])
-
-        if isinstance(t, base.TVariant):
-            return base.TVariant(members={k: _resolve(v) for k, v in t.members.items()})
-
-        if isinstance(t, base.TCommand):
-            t.arg_t = _resolve(t.arg_t)
-            t.ret_t = _resolve(t.ret_t)
-            t.owner_t = _resolve(t.owner_t)
-            return t
-
-        if isinstance(t, base.TRecord):
-            if t.supers:
-                t.supers = [_resolve(s) for s in t.supers]
-            return t
-
-        if isinstance(t, base.TProperty):
-            t.owner_t = _resolve(t.owner_t)
-            t.property_t = _resolve(t.property_t)
-            return t
-
-        if isinstance(t, base.TAlias):
-            t.target_t = _resolve(t.target_t)
-            return t
-
-    def _resolve(name):
-        if not name:
-            return name
-        if name in resolved:
-            return resolved[name]
-        if name in stack:
-            raise base.Error(f'circular reference {stack!r}->{name!r}')
-
-        t = _get_type(state, name)
-
-        if not t:
-            base.debug_log(f'unbound reference {name!r}', state.types[name])
-            return name
-
-        if isinstance(t, base.TUnresolvedReference):
-            if 'vendor' not in name:
-                base.debug_log(f'unresolved reference {name!r}', t)
-            return name
-
-        stack.append(t.name)
-        t2 = _visit(t)
-        stack.pop()
-
-        resolved[name] = t2.name
-        newtypes[t2.name] = t2
-        return t2.name
-
-    for name in state.types:
-        _resolve(name)
-
-    state.types = newtypes
+    for typ in gen.types.values():
+        if typ.name in gen.aliases:
+            continue
+        m = re.match(r'^gws\.([A-Z].*)$', typ.name)
+        if not m:
+            continue
+        for mod in base.GLOBAL_MODULES:
+            name = mod + DOT + m.group(1)
+            if name in gen.types:
+                base.log.debug(f'global alias {typ.name!r} => {name!r}')
+                gen.aliases[typ.name] = name
+                break
 
 
-def _check_enums(state):
-    for t in state.types.values():
-        default = getattr(t, 'default', None)
-        if isinstance(default, base.TUncheckedEnum):
-            name = default.name
-            obj_name, _, item_name = name.rpartition('.')
-            enum_spec = _get_type(state, obj_name)
-            if enum_spec and isinstance(enum_spec, base.TEnum) and item_name in enum_spec.values:
-                t.default = enum_spec.values[item_name]
-                t.property_t = enum_spec.name
-            else:
-                t.default = name
-                t.has_default = False
-                t.property_t = 'str'
-                base.debug_log(f'invalid enum value {name!r}', t)
+def _expand_aliases(gen):
+    def _exp(target, stack):
+        if target in gen.types:
+            return target
+        if target in stack:
+            raise base.Error(f'circular alias {stack!r} => {target!r}')
+        if target in gen.aliases:
+            return _exp(gen.aliases[target], stack + [target])
+        base.log.warn(f'unbound alias {target!r}')
+        return target
+
+    new_aliases = {}
+    for src, target in gen.aliases.items():
+        new_aliases[src] = _exp(target, [])
+    gen.aliases = new_aliases
 
 
-def _check_variants(state):
-    upd = {}
+_type_scalars = [
+    'tItem',
+    'tKey',
+    'tValue',
+    'tTarget',
+    'tOwner',
+    'tReturn',
+]
 
-    for t in state.types.values():
-        if not isinstance(t, base.TVariantStub):
+_type_lists = [
+    'tArgs',
+    'tItems',
+    'tSupers',
+]
+
+
+def _resolve_aliases(gen):
+    new_types = {}
+
+    def _rename_uid(uid):
+        if uid in gen.aliases:
+            new = gen.aliases[uid]
+        else:
+            new = COMMA.join(gen.aliases.get(s, s) for s in uid.split(COMMA))
+        if new != uid:
+            base.log.debug(f'resolved alias {uid!r} => {new!r}')
+        return new
+
+    for typ in gen.types.values():
+        if typ.uid in new_types:
             continue
 
-        members = {}
-
-        for item_name in t.items:
-            try:
-                item_type = _get_type(state, item_name)
-                tag_prop = _get_type(state, item_type.name + '.' + base.GWS_TAG_PROPERTY)
-                tag_prop_type = _get_type(state, tag_prop.property_t)
-                if isinstance(tag_prop_type, base.TLiteral) and len(tag_prop_type.values) == 1:
-                    members[tag_prop_type.values[0]] = item_name
-                else:
-                    raise ValueError()
-            except Exception:
-                raise base.Error(f'invalid Variant: {t.pos!r}')
-
-        upd[t.name] = base.TVariant(members=members)
-
-    state.types.update(upd)
-
-
-_synthesized_pos = {
-    'lineno': 0,
-    'module_name': '<synthesized>',
-    'module_path': '',
-}
-
-
-def _synthesize_ext_configs_and_props(state):
-    upd = {}
-
-    existing_names = set(t.name for t in state.types.values() if hasattr(t, 'ext_kind'))
-
-    super_types = {
-        'Config': _get_type(state, 'gws.WithAccess'),
-        'Props': _get_type(state, 'gws.Props'),
-    }
-
-    for t in state.types.values():
-        if getattr(t, 'ext_kind', None) != 'Object':
+        if typ.uid in gen.aliases:
+            base.log.debug(f'skip resolving {typ.uid} {typ.c}')
             continue
 
-        for kind in ['Config', 'Props']:
-            name = '.'.join(t.name.split('.')[:-1]) + '.' + kind
-            if name in existing_names:
-                continue
-            upd[name] = base.TRecord(
-                doc=t.doc,
-                ident=kind,
-                name=name,
-                pos=_synthesized_pos,
-                supers=[super_types[kind].name],
-                ext_category=t.ext_category,
-                ext_kind=kind,
-                ext_type=t.ext_type,
+        dct = vars(typ)
+
+        for f in _type_scalars:
+            if f in dct:
+                dct[f] = _rename_uid(dct[f])
+        for f in _type_lists:
+            if f in dct:
+                dct[f] = [_rename_uid(s) for s in dct[f]]
+        if not typ.name:
+            typ.uid = _rename_uid(typ.uid)
+
+        new_types[typ.uid] = typ
+
+    gen.types = new_types
+
+
+def _evaluate_defaults(gen):
+    """Replace enum and constant values with literal values"""
+
+    def _get_type(name):
+        if name in gen.aliases:
+            name = gen.aliases[name]
+        return gen.types.get(name)
+
+    def _eval(val):
+        c, value = val
+        if c == base.C.LITERAL:
+            return value
+        if isinstance(value, list):
+            return [_eval(v) for v in value]
+
+        if isinstance(value, dict):
+            return {k: _eval(v) for k, v in value.items()}
+
+        # constant?
+        typ = _get_type(value)
+        if typ and typ.c == base.C.CONSTANT:
+            return typ.value
+
+        # enum?
+        obj_name, _, item = value.rpartition('.')
+        typ = _get_type(obj_name)
+        if typ and typ.c == base.C.ENUM and item in typ.enumValues:
+            return typ.enumValues[item]
+
+        base.log.warn(f'invalid expression {value!r}')
+        return None
+
+    for typ in gen.types.values():
+        d = getattr(typ, 'EVAL_DEFAULT', None)
+        if d:
+            typ.default = _eval(d)
+            typ.hasDefault = True
+            base.log.debug(f'evaluated {d!r} => {typ.default!r}')
+
+
+def _check_variants(gen):
+    """Create Variant objects from VariantStubs
+
+    Example:
+
+    Given
+
+        Foo: VariantStub { items ['Type1', 'Type2'] }
+        Type1 { type t.Literal['first'] }
+        Type2 { type t.Literal['second'] }
+
+    we create a mapping { "type value" => "type name" }, e.g;
+
+        Foo: Variant {
+            tMembers {
+                first:  Type1
+                second: Type2
+            }
+        }
+    """
+
+    for typ in gen.types.values():
+        if typ.c == base.C.VARIANT and not typ.tMembers:
+            members = {}
+            for tItem in typ.tItems:
+                try:
+                    item_type = gen.types.get(tItem)
+                    tag_property_type = gen.types.get(item_type.name + '.' + base.TAG_PROPERTY)
+                    tag_value_type = gen.types.get(tag_property_type.tValue)
+                    if tag_value_type.c == base.C.LITERAL and len(tag_value_type.values) == 1:
+                        members[tag_value_type.values[0]] = item_type.name
+                    else:
+                        raise ValueError()
+                except Exception:
+                    raise base.Error(f'invalid Variant: {typ.pos!r}')
+            delattr(typ, 'tItems')
+            typ.tMembers = members
+
+
+def _synthesize_ext_configs_and_props(gen):
+    """Synthesize gws.ext.config... and gws.ext.props for ext objects that don't define them explicitly"""
+
+    upd = {}
+
+    existing_names = set(t.extName for t in gen.types.values() if t.extName)
+
+    for t in gen.types.values():
+        if t.extName.startswith(base.EXT_OBJECT_PREFIX):
+            ps = t.extName.split('.')
+            for kind in ['config', 'props']:
+                ps[2] = kind
+                name = DOT.join(ps)
+                if name not in existing_names:
+                    nt = gen.new_type(base.C.CLASS, doc=t.doc, ident=kind, name=name, pos=t.pos, tSupers=[base.DEFAULT_EXT_SUPERS[kind]], extName=name)
+                    upd[nt.uid] = nt
+
+    gen.types.update(upd)
+
+
+def _synthesize_ext_type_properties(gen):
+    """Synthesize type properties for ext.config and ext.props objects"""
+
+    upd = {}
+
+    for t in gen.types.values():
+        if t.extName.startswith((base.EXT_CONFIG_PREFIX, base.EXT_PROPS_PREFIX)):
+            name = t.extName.rpartition(DOT)[-1]
+            literal = gen.new_type(base.C.LITERAL, values=[name], pos=t.pos)
+            upd[literal.uid] = literal
+
+            nt = gen.new_type(
+                base.C.PROPERTY,
+                doc='object type',
+                ident=base.TAG_PROPERTY,
+                name=t.name + DOT + base.TAG_PROPERTY,
+                pos=t.pos,
+                default=[None, None],
+                tValue=literal.uid,
+                tOwner=t.uid,
             )
+            upd[nt.uid] = nt
 
-    state.types.update(upd)
-
-
-def _synthesize_ext_type_props(state):
-    upd = {}
-
-    for t in state.types.values():
-        if getattr(t, 'ext_kind', None) not in ('Config', 'Props'):
-            continue
-
-        literal = base.TLiteral(values=[t.ext_type])
-        upd[literal.name] = literal
-
-        name = _dot(t.name, base.GWS_TAG_PROPERTY)
-        upd[name] = base.TProperty(
-            doc='',
-            ident=base.GWS_TAG_PROPERTY,
-            name=name,
-            pos=_synthesized_pos,
-            default=None,
-            has_default=False,
-            property_t=literal.name,
-            owner_t=t.name,
-        )
-
-    state.types.update(upd)
+    gen.types.update(upd)
 
 
-def _synthesize_ext_variants(state):
+def _synthesize_ext_variant_types(gen):
+    """Synthesize by-category variant types for ext objects
+
+    Example:
+
+        When we have
+
+            gws.ext.object.layer.qgis
+            gws.ext.object.layer.wms
+            gws.ext.object.layer.wfs
+
+        This will create a Variant `gws.ext.object.layer` with the members `qgis`, `wms`, `wfs`
+    """
+
     variants = {}
 
-    for t in state.types.values():
-        if not isinstance(t, base.TRecord) or not getattr(t, 'ext_type', None):
-            continue
-        # gws.ext.db.provider.foo.Object => gws.ext.db.provider.Object
-        variant_name = _dot(base.GWS_EXT_PREFIX, t.ext_category, t.ext_kind)
-        variants.setdefault(variant_name, {})[t.ext_type] = t.name
+    for t in gen.types.values():
+        if t.extName and not t.extName.startswith(base.EXT_COMMAND_PREFIX):
+            # "gws.ext.object.owsService.wms" belongs to "gws.ext.object.owsService"
+            var_name, _, name = t.extName.rpartition(DOT)
+            variants.setdefault(var_name, {})[name] = t.name
 
     upd = {}
 
     for name, members in variants.items():
-        variant_type = base.TVariant(members=members)
-        upd[variant_type.name] = variant_type
+        variant_typ = gen.new_type(base.C.VARIANT, tMembers=members, name=name, extName=name)
+        upd[variant_typ.uid] = variant_typ
+        base.log.debug(f'created variant {variant_typ.uid!r} for {list(members.values())}')
 
-        alias_type = base.TAlias(
-            doc='',
-            ident=name.split('.')[-1],
-            name=name,
-            pos=_synthesized_pos,
-            target_t=variant_type.name,
-        )
-        upd[alias_type.name] = alias_type
-
-    state.types.update(upd)
+    gen.types.update(upd)
 
 
-def _make_props(state):
+def _make_props(gen):
     done = {}
-    own_props = {}
-    stack = []
+    own_props_by_name = {}
 
-    for t in state.types.values():
-        if isinstance(t, base.TProperty):
-            obj_name, _, prop_name = t.name.rpartition('.')
-            own_props.setdefault(obj_name, {})[prop_name] = t
+    for typ in gen.types.values():
+        if typ.c == base.C.PROPERTY:
+            obj_name, _, prop_name = typ.name.rpartition('.')
+            own_props_by_name.setdefault(obj_name, {})[prop_name] = typ
 
-    def _make(t):
-        name = t.name
+    def _make(typ, stack):
+        if typ.name in done:
+            return done[typ.name]
+        if typ.name in stack:
+            raise base.Error(f'circular inheritance {stack!r}->{typ.name!r}')
 
-        if name in done:
-            return done[name]
-        if name in stack:
-            raise base.Error(f'circular inheritance {stack!r}->{name!r}')
+        ps = {}
 
-        props = {}
+        for sup in typ.tSupers:
+            super_typ = gen.types.get(sup)
+            if super_typ:
+                ps.update(_make(super_typ, stack + [typ.name]))
+            elif 'vendor' not in sup:
+                base.log.warn(f'unknown supertype {sup!r}')
 
-        if isinstance(t, base.TRecord):
-            for sup in t.supers:
-                super_type = _get_type(state, sup)
-                if super_type:
-                    stack.append(name)
-                    props.update(_make(super_type))
-                    stack.pop()
-                elif 'vendor' not in sup:
-                    base.debug_log(f'unknown supertype {sup!r}', t)
-            if name in own_props:
-                _check_property_overrides(state, t, props, own_props[name])
-                props.update(own_props[name])
-            t.props = {k: v.name for k, v in props.items()}
+        if typ.name in own_props_by_name:
+            ps.update(own_props_by_name[typ.name])
+        typ.tProperties = {k: v.name for k, v in ps.items()}
 
-        done[name] = props
-        return props
+        done[typ.name] = ps
+        return ps
 
-    for t in state.types.values():
-        if isinstance(t, base.TRecord):
-            _make(t)
+    for typ in gen.types.values():
+        if typ.c == base.C.CLASS:
+            _make(typ, [])
 
 
-def _check_property_overrides(state, t, super_props, own_props):
+def _check_undefined(gen):
+    for typ in gen.types.values():
+        if typ.c == base.C.UNDEFINED:
+            base.log.warn(f'undefined type {typ.uid!r} in {typ.pos}')
+
+
+def _check_property_overrides(gen, t, super_props, own_props):
     for k in own_props:
         if k in super_props:
             old = super_props[k]
             new = own_props[k]
-            if old.property_t != new.property_t:
+            if old.tValue != new.tValue:
                 # @TODO check extended types and literals vs strings
                 pass
             elif not old.has_default and not new.has_default:
-                base.debug_log(f'unnecessary property override: {k!r} in {t.name!r}', t)
+                pass
+                # base.log.warn(f'unnecessary property override: {k!r} in {t.name!r}', t)
 
 
-def _get_type(state, name):
-    while name in state.aliases:
-        a = state.aliases.get(name)
-        if not a or a == name:
-            break
-        name = a
-    return state.types.get(name)
-
-
-def _dot(*args):
-    return '.'.join(args)
+DOT = '.'
+COMMA = ','

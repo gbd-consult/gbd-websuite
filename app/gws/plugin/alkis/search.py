@@ -43,7 +43,7 @@ grant usage on <name>_id_seq to <user>
 """
 
 
-class EigentuemerConfig(gws.WithAccess):
+class EigentuemerConfig(gws.ConfigWithAccess):
     """Access to the Eigentümer (owner) information"""
 
     controlMode: bool = False  #: restricted mode enabled
@@ -64,7 +64,7 @@ class EigentuemerOptions(gws.Node):
 
 ##
 
-class BuchungConfig(gws.WithAccess):
+class BuchungConfig(gws.ConfigWithAccess):
     """Access to the Grundbuch (register) information"""
     pass
 
@@ -173,21 +173,21 @@ _DEFAULT_EXPORT_GROUPS = [
 
 ##
 
-@gws.ext.Config('action.alkissearch')
+@gws.ext.config.action('alkissearch')
 class Config(provider.Config):
     """Flurstücksuche (cadaster parlcels search) action"""
 
     eigentuemer: t.Optional[EigentuemerConfig]  #: access to the Eigentümer (owner) information
     buchung: t.Optional[BuchungConfig]  #: access to the Grundbuch (register) information
     limit: int = 100  #: search results limit
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: templates for Flurstueck details
+    templates: t.Optional[t.List[gws.ext.config.template]]  #: templates for Flurstueck details
     ui: t.Optional[types.UiOptions]  #: ui options
     export: t.Optional[ExportConfig]  #: csv export configuration
 
 
 ##
 
-@gws.ext.Props('action.alkissearch')
+@gws.ext.props.action('alkissearch')
 class Props(gws.base.api.action.Props):
     exportGroups: t.List[ExportGroupProps]
     gemarkungen: t.List[types.Gemarkung]
@@ -350,7 +350,7 @@ _EF_FAIL = -1  # access to Eigentümer granted, control check failed
 ##
 
 
-@gws.ext.Object('action.alkissearch')
+@gws.ext.object.action('alkissearch')
 class Object(gws.base.api.action.Object):
     buchung: BuchungOptions
     eigentuemer: EigentuemerOptions
@@ -423,7 +423,7 @@ class Object(gws.base.api.action.Object):
             withFlurnummer=self.provider.has_flurnummer,
         )
 
-    @gws.ext.command('api.alkissearch.getToponyms')
+    @gws.ext.command.api('alkissearchGetToponyms')
     def get_toponyms(self, req: gws.IWebRequest, p: GetToponymsParams) -> GetToponymsResponse:
         """Return all Toponyms (Gemeinde/Gemarkung/Strasse) in the area"""
 
@@ -446,13 +446,13 @@ class Object(gws.base.api.action.Object):
             strasseGemarkungUids=[s.gemarkungUid for s in res.strassen],
         )
 
-    @gws.ext.command('api.alkissearch.findFlurstueck')
+    @gws.ext.command.api('alkissearchFindFlurstueck')
     def find_flurstueck(self, req: gws.IWebRequest, p: FindFlurstueckParams) -> FindFlurstueckResponse:
         """Perform a Flurstueck search"""
 
         return self._find_and_format(req, p, ['feature.title', 'feature.teaser'], self.limit, self.limit)
 
-    @gws.ext.command('api.alkissearch.getDetails')
+    @gws.ext.command.api('alkissearchGetDetails')
     def get_details(self, req: gws.IWebRequest, p: GetDetailsParams) -> GetDetailsResponse:
         """Return a Flurstueck feature with details"""
 
@@ -463,7 +463,7 @@ class Object(gws.base.api.action.Object):
 
         return GetDetailsResponse(feature=res.features[0])
 
-    @gws.ext.command('api.alkissearch.export')
+    @gws.ext.command.api('alkissearchExport')
     def export(self, req: gws.IWebRequest, p: ExportParams) -> ExportResponse:
         """Export Flurstueck features"""
 
@@ -494,7 +494,7 @@ class Object(gws.base.api.action.Object):
 
         return ExportResponse(content=csv_bytes, mime='text/csv')
 
-    @gws.ext.command('api.alkissearch.print')
+    @gws.ext.command.api('alkissearchPrint')
     def print(self, req: gws.IWebRequest, p: PrintParams) -> gws.base.printer.types.StatusResponse:
         """Print Flurstueck features"""
 
@@ -535,7 +535,7 @@ class Object(gws.base.api.action.Object):
         job = gws.base.printer.job.start(req, pp)
         return gws.base.printer.job.status(job)
 
-    @gws.ext.command('api.alkissearch.storage')
+    @gws.ext.command.api('alkissearchStorage')
     def storage(self, req: gws.IWebRequest, p: gws.base.storage.Params) -> gws.base.storage.Response:
         helper: gws.base.storage.Object = self.root.application.require_helper('storage')
         return helper.handle_action(req, p, STORAGE_CATEGORY)

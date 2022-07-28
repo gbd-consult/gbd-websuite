@@ -11,7 +11,7 @@ from .providers import sqlite
 # @TODO: direct API (.read, .write etc)
 
 
-@gws.ext.Config('helper.storage')
+@gws.ext.config.helper('storage')
 class Config(gws.Config):
     """Storage helper"""
 
@@ -30,7 +30,7 @@ class Permission(gws.Node):
 
 
 
-@gws.ext.Object('helper.storage')
+@gws.ext.object.helper('storage')
 class Object(gws.Node):
     provider: sqlite.Object
     permissions: t.List[Permission]

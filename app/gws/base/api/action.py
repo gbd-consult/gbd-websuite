@@ -5,7 +5,7 @@ class Props(gws.Props):
     type: str
 
 
-class Config(gws.WithAccess):
+class Config(gws.ConfigWithAccess):
     pass
 
 

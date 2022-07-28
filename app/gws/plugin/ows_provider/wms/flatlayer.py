@@ -8,12 +8,12 @@ from . import provider as provider_module
 from . import search
 
 
-@gws.ext.Config('layer.wmsflat')
+@gws.ext.config.layer('wmsflat')
 class Config(gws.base.layer.image.Config, provider_module.Config):
     pass
 
 
-@gws.ext.Object('layer.wmsflat')
+@gws.ext.object.layer('wmsflat')
 class Object(gws.base.layer.image.Object, gws.IOwsClient):
     provider: provider_module.Object
     source_crs: gws.ICrs

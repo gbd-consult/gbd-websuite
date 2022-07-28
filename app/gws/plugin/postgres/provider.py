@@ -8,7 +8,7 @@ import gws.lib.sql.postgres
 import gws.types as t
 
 
-@gws.ext.Config('db.provider.postgres')
+@gws.ext.config.db('postgres')
 class Config(gws.Config):
     """Postgres/Postgis database provider"""
 
@@ -21,7 +21,7 @@ class Config(gws.Config):
     user: str  #: username
 
 
-@gws.ext.Object('db.provider.postgres')
+@gws.ext.object.db('postgres')
 class Object(gws.Node, gws.ISqlDbProvider):
     def configure(self):
 

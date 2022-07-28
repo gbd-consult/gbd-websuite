@@ -17,16 +17,16 @@ class LoginParams(gws.Params):
     password: str
 
 
-@gws.ext.Object('action.auth')
+@gws.ext.object.action('auth')
 class Object(gws.base.api.action.Object):
 
-    @gws.ext.command('api.auth.check')
+    @gws.ext.command.api('authCheck')
     def check(self, req: gws.IWebRequest, p: gws.Params) -> Response:
         """Check the authorization status"""
 
         return self._resp(req)
 
-    @gws.ext.command('api.auth.login')
+    @gws.ext.command.api('authLogin')
     def login(self, req: gws.IWebRequest, p: LoginParams) -> Response:
         """Perform a login"""
 
@@ -47,7 +47,7 @@ class Object(gws.base.api.action.Object):
         wr.session = new_session
         return self._resp(req)
 
-    @gws.ext.command('api.auth.logout')
+    @gws.ext.command.api('authLogout')
     def logout(self, req: gws.IWebRequest, p: gws.Params) -> Response:
         """Perform a logout"""
 

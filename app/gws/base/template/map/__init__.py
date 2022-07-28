@@ -9,12 +9,12 @@ import gws.lib.mime
 import gws.gis.render
 
 
-@gws.ext.Config('template.map')
+@gws.ext.config.template('map')
 class Config(gws.base.template.Config):
     pass
 
 
-@gws.ext.Object('template.map')
+@gws.ext.object.template('map')
 class Object(gws.base.template.Object):
 
     def render(self, tri, notify=None):

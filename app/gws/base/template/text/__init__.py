@@ -6,12 +6,12 @@ import gws.lib.vendor.chartreux as chartreux
 import gws.types as t
 
 
-@gws.ext.Config('template.text')
+@gws.ext.config.template('text')
 class Config(gws.base.template.Config):
     pass
 
 
-@gws.ext.Object('template.text')
+@gws.ext.object.template('text')
 class Object(gws.base.template.Object):
     """Text-only template"""
 

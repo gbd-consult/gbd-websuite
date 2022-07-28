@@ -8,11 +8,11 @@ import gws.types as t
 from . import core, types
 
 
-@gws.ext.Config('layer.group')
+@gws.ext.config.layer('group')
 class Config(types.Config):
     """Group layer"""
 
-    layers: t.List[gws.ext.layer.Config]  #: layers in this group
+    layers: t.List[gws.ext.config.layer]  #: layers in this group
 
 
 class FlattenOption(gws.Config):
@@ -29,7 +29,7 @@ class TreeConfig(types.Config):
     layerConfig: t.Optional[t.List[types.CustomConfig]]  #: custom configurations for specific layers
 
 
-@gws.ext.Object('layer.group')
+@gws.ext.object.layer('group')
 class Object(core.Object):
     is_group = True
 
@@ -58,7 +58,7 @@ class Object(core.Object):
 
         # configs need to be reparsed so that defaults can be injected
         cfgs = [
-            gws.config.parse(self.root.specs, c, 'gws.ext.layer.Config', with_internal_objects=True)
+            gws.config.parse(self.root.specs, c, 'gws.ext.config.layer', with_internal_objects=True)
             for c in cfgs
         ]
 

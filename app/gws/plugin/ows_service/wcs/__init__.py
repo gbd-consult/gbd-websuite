@@ -7,13 +7,13 @@ import gws.types as t
 from .. import core
 
 
-@gws.ext.Config('ows.service.wcs')
+@gws.ext.config.owsService('wcs')
 class Config(core.ServiceConfig):
     """WCS Service configuration"""
     pass
 
 
-@gws.ext.Object('ows.service.wcs')
+@gws.ext.object.owsService('wcs')
 class Object(core.Service):
     protocol = gws.OwsProtocol.WCS
     supported_versions = ['2.0.1', '1.0.0']

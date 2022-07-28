@@ -7,7 +7,7 @@ import gws.types as t
 from . import provider
 
 
-@gws.ext.Object('search.provider.qgiswms')
+@gws.ext.object.finder('qgiswms')
 class Object(gws.base.search.provider.Object):
     supports_geometry = True
 

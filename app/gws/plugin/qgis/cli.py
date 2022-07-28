@@ -11,10 +11,9 @@ class CapsParams(gws.CliParams):
     out: str = ''  #: output filename
 
 
-@gws.ext.Object('cli.qgis')
 class Object(gws.Node):
 
-    @gws.ext.command('cli.qgis.caps')
+    @gws.ext.command.cli('qgisCaps')
     def caps(self, p: CapsParams):
         """Print the capabilities of a document in JSON format"""
 

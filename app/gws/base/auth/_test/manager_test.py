@@ -25,9 +25,9 @@ class MockProvider(provider.Object):
 
 @test.fixture(scope='module')
 def auth():
-    test.register_ext('gws.ext.auth.provider.mock.Object', MockProvider)
-    test.register_ext('gws.ext.auth.method.foo.Object', FooMethod)
-    test.register_ext('gws.ext.auth.method.bar.Object', BarMethod)
+    test.register_ext(gws.ext.object.authProvider.mock, MockProvider)
+    test.register_ext(gws.ext.object.authMethod.foo, FooMethod)
+    test.register_ext(gws.ext.object.authMethod.bar, BarMethod)
 
     defaults = {
         'providers': [

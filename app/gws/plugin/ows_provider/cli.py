@@ -12,10 +12,9 @@ class CapsParams(gws.CliParams):
     out: str = ''  #: output filename
 
 
-@gws.ext.Object('cli.ows')
 class Object(gws.Node):
 
-    @gws.ext.command('cli.ows.caps')
+    @gws.ext.command.cli('owsCaps')
     def caps(self, p: CapsParams):
         """Print the capabilities of a service in JSON format"""
 

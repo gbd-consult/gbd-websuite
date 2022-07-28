@@ -16,7 +16,7 @@ class Profile(t.Enum):
     DCMI = 'DCMI'
 
 
-@gws.ext.Config('ows.service.csw')
+@gws.ext.config.owsService('csw')
 class Config(core.ServiceConfig):
     """CSW Service configuration"""
     # @TODO no support for DCMI yet
@@ -24,7 +24,7 @@ class Config(core.ServiceConfig):
     pass
 
 
-@gws.ext.Object('ows.service.csw')
+@gws.ext.object.owsService('csw')
 class Object(core.Service):
     protocol = gws.OwsProtocol.CSW
     supported_versions = ['2.0.2']

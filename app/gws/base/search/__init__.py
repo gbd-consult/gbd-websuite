@@ -6,4 +6,4 @@ from . import provider
 
 class Config(gws.Config):
     enabled: bool = True  #: search is enabled
-    providers: t.Optional[t.List[gws.ext.search.provider.Config]]  #: search prodivers
+    providers: t.Optional[t.List[gws.ext.config.finder]]  #: search prodivers

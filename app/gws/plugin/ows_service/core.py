@@ -43,13 +43,13 @@ class LayerConfig(gws.Config):
     featureName: t.Optional[str]  #: feature name for this service
 
 
-class ServiceConfig(gws.WithAccess):
+class ServiceConfig(gws.ConfigWithAccess):
     layerConfig: t.Optional[t.List[LayerConfig]]  #: custom configurations for specific layers
     metadata: t.Optional[gws.lib.metadata.Config]  #: service metadata
     rootLayer: str = ''  #: root layer uid
     strictParams: bool = False  #: strict parameter parsing
     supportedCrs: t.Optional[t.List[gws.CrsId]]  #: supported CRS for this service
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: service XML templates
+    templates: t.Optional[t.List[gws.ext.config.template]]  #: service XML templates
     updateSequence: t.Optional[str]  #: service update sequence
     withInspireMeta: bool = False  #: use INSPIRE Metadata
 

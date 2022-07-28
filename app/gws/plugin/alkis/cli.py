@@ -19,10 +19,10 @@ class IndexParams(gws.CliParams):
     uid: t.Optional[str]  #: alkis action uid
 
 
-@gws.ext.Object('cli.alkis')
+@gws.ext.object.cli('alkis')
 class Object(gws.Node):
 
-    @gws.ext.command('cli.alkis.parse')
+    @gws.ext.command.cli('alkisParse')
     def parse(self, p: ParseParams):
         """Preprocess the NAS data model files"""
 
@@ -33,7 +33,7 @@ class Object(gws.Node):
         props = nas.parse_properties(p.path)
         print(gws.lib.json2.to_string(props, pretty=True))
 
-    @gws.ext.command('cli.alkis.setup')
+    @gws.ext.command.cli('alkisSetup')
     def setup(self, p: IndexParams):
         """Create the ALKIS search index"""
 
@@ -47,7 +47,7 @@ class Object(gws.Node):
         ts = time.time() - ts
         gws.log.info(f'index done in {ts:.2f} sec')
 
-    @gws.ext.command('cli.alkis.drop')
+    @gws.ext.command.cli('alkisDrop')
     def drop(self, p: IndexParams):
         """Remove the ALKIS search index"""
 
@@ -58,7 +58,7 @@ class Object(gws.Node):
         user, password = self._database_credentials()
         prov.drop_index(user, password)
 
-    @gws.ext.command('cli.alkis.check')
+    @gws.ext.command.cli('alkisCheck')
     def check(self, p: IndexParams):
         """Check the status of the ALKIS search index."""
 

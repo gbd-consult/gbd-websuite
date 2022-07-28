@@ -1,82 +1,86 @@
-"""Parser for manifest files."""
+"""Tools to deal with r8 MANIFEST files."""
 
 import json
 import os
-import re
-
-from . import base
 
 
-def load(path):
-    """Load the manifest from the path"""
+class Error(Exception):
+    pass
 
+
+def from_path(path):
     with open(path, 'rt', encoding='utf8') as fp:
-        text = fp.read()
+        return from_text(fp.read(), path)
 
-    # we allow newline + // or # comments
 
+def from_text(text, path):
     lines = []
     for s in text.split('\n'):
+        # we allow // or # comments in json
         if s.strip().startswith(('//', '#')):
             s = ''
         lines.append(s)
 
-    return _convert_value(path, '', json.loads('\n'.join(lines)))
+    try:
+        js = json.loads('\n'.join(lines))
+    except Exception as exc:
+        raise Error('invalid json') from exc
+
+    return _parse(js, path)
 
 
-def enumerate_plugins(mfst, local_plugin_dir):
-    if not mfst:
-        return list(_local_plugins(local_plugin_dir))
+##
 
-    cdict = {c.name: c for c in _local_plugins(local_plugin_dir)}
-
-    lst = mfst.get('plugins')
-    if lst is not None:
-        cdict.update({c.name: c for c in _manifest_plugins(lst)})
-
-    chunks = list(cdict.values())
-
-    lst = mfst.get('excludePlugins')
-    if lst is not None:
-        lst = set(_plugin_name(p) for p in lst)
-        chunks = [p for p in chunks if p.name not in lst]
-
-    return chunks
+def _version(val, js, path):
+    p = [int(s) for s in val.split('.')]
+    return '.'.join(str(s) for s in p)
 
 
-def _local_plugins(basedir):
-    for path in _find_dirs(basedir):
-        name = os.path.basename(path)
-        yield base.Data(name=_plugin_name(name), sourceDir=path, bundleDir=path)
+def _plugins(val, js, path):
+    plugins = []
+    basedir = os.path.dirname(path)
 
-
-def _manifest_plugins(lst):
-    for p in lst:
-        path = p.get('path')
+    for p in val:
+        path = p['path'] if os.path.isabs(p['path']) else os.path.abspath(os.path.join(basedir, p['path']))
         name = p.get('name') or os.path.basename(path)
-        yield base.Data(name=_plugin_name(name), sourceDir=path, bundleDir=path)
+        plugins.append({'name': name, 'path': path})
+
+    return plugins
 
 
-def _plugin_name(name):
-    return base.GWS_PLUGIN_PREFIX + '.' + name
+def _strlist(val, js, path):
+    return [str(s) for s in val]
 
 
-def _convert_value(path, key, val):
-    if isinstance(val, str):
-        if key.lower().endswith('path') and val.startswith('.'):
-            val = os.path.abspath(os.path.join(os.path.dirname(path), val))
-        return val
-    if isinstance(val, list):
-        return [_convert_value(path, '', v) for v in val]
-    if isinstance(val, dict):
-        return {k: _convert_value(path, k, v) for k, v in val.items()}
-    return val
+def _str(val, js, path):
+    return str(val)
 
 
-def _find_dirs(basedir):
-    for fname in os.listdir(basedir):
-        if fname.startswith('.'):
-            continue
-        path = os.path.join(basedir, fname)
-        if os.path.isdir(path):
-            yield path
+def _bool(val, js, path):
+    return bool(val)
+
+
+_KEYS = [
+    ('uid', _str, None),
+    ('release', _version, None),
+    ('locales', _strlist, []),
+    ('plugins', _plugins, []),
+    ('excludePlugins', _strlist, []),
+    ('withFallbackConfig', _bool, False),
+    ('withStrictConfig', _bool, False),
+]
+
+
+def _parse(js, path):
+    res = {}
+
+    for key, fn, default in _KEYS:
+        if key not in js:
+            res[key] = default
+        else:
+            try:
+                res[key] = fn(js[key], js, path)
+            except Exception as exc:
+                raise Error(f'invalid value for key {key!r} in {path!r}') from exc
+
+    return res

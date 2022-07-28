@@ -12,21 +12,21 @@ class ServiceParams(gws.Params):
     serviceUid: str
 
 
-@gws.ext.Config('action.ows')
+@gws.ext.config.action('ows')
 class Config(gws.base.api.action.Config):
     """OWS server action"""
 
-    services: t.List[gws.ext.ows.service.Config]  #: services configuration
+    services: t.List[gws.ext.config.owsService]  #: services configuration
 
 
-@gws.ext.Object('action.ows')
+@gws.ext.object.action('ows')
 class Object(gws.base.api.action.Object):
     services: t.List[gws.IOwsService]
 
     def configure(self):
         self.services = self.create_children('gws.ext.ows.service', self.var('services'))
 
-    @gws.ext.command('get.ows.service')
+    @gws.ext.command.get('owsService')
     def service(self, req: gws.IWebRequest, p: ServiceParams) -> gws.ContentResponse:
         srv = self._find_service(p.serviceUid)
         if not srv:

@@ -13,10 +13,10 @@ class SpatialContext(t.Enum):
     view = 'view'  #: search in the client view extent
 
 
-class Config(gws.WithAccess):
+class Config(gws.ConfigWithAccess):
     dataModel: t.Optional[gws.base.model.Config]  #: feature data model
     defaultContext: t.Optional[SpatialContext] = SpatialContext.map  #: default spatial context
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: feature formatting templates
+    templates: t.Optional[t.List[gws.ext.config.template]]  #: feature formatting templates
     title: t.Optional[str]  #: provider title
     tolerance: str = '10px'  #: tolerance, in pixels or map units
     withGeometry: bool = True  #: enable geometry search

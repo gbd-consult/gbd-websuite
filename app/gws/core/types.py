@@ -5,52 +5,52 @@ from gws.types import Any, Callable, Dict, Enum, List, Literal, Optional, Protoc
 # custom types, used everywhere
 
 
-#: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]
+"""type: An array of 4 elements representing extent coordinates [minx, miny, maxx, maxy]. """
 Extent = Tuple[float, float, float, float]
 
-#: Point coordinates [x, y]
+"""type: Point coordinates [x, y]. """
 Point = Tuple[float, float]
 
-#: Size [width, height]
+"""type: Size [width, height]. """
 Size = Tuple[float, float]
 
-#: A value with a unit
+"""type: A value with a unit. """
 Measurement = Tuple[float, str]
 
-#: A Point with a unit
+"""type: A Point with a unit. """
 MPoint = Tuple[float, float, str]
 
-#: A Size with a unit
+"""type: A Size with a unit. """
 MSize = Tuple[float, float, str]
 
-#: An XML generator tag
+"""type: An XML generator tag. """
 Tag = tuple
 
-#: Valid readable file path on the server
+"""type: Valid readable file path on the server. """
 FilePath = str
 
-#: Valid readable directory path on the server
+"""type: Valid readable directory path on the server. """
 DirPath = str
 
-#: String like "1w 2d 3h 4m 5s" or a number of seconds
+"""type: String like "1w 2d 3h 4m 5s" or a number of seconds. """
 Duration = str
 
-#: CSS color name
+"""type: CSS color name. """
 Color = str
 
-#: Regular expression, as used in Python
+"""type: Regular expression, as used in Python. """
 Regex = str
 
-#: String with {attribute} placeholders
+"""type: String with {attribute} placeholders. """
 FormatStr = str
 
-#: ISO date like "2019-01-30"
+"""type: ISO date like "2019-01-30". """
 Date = str
 
-#: ISO date/time like "2019-01-30 01:02:03"
+"""type: ISO date/time like "2019-01-30 01:02:03". """
 DateTime = str
 
-#: Http or https URL
+"""type: Http or https URL. """
 Url = str
 
 
@@ -91,7 +91,7 @@ class Access(Data):
     role: str  #: a role to which this rule applies
 
 
-class WithAccess(Config):
+class ConfigWithAccess(Config):
     access: Optional[List[Access]]  #: access rights
 
 
@@ -171,21 +171,18 @@ class IRoot(Protocol):
 
 
 class ExtObjectDescriptor(Data):
-    class_ptr: type
-    ext_category: str
-    ext_type: str
+    extName: str
+    classPtr: type
     ident: str
-    module_name: str
-    module_path: str
-    name: str
+    modName: str
+    modPath: str
 
 
 class ExtCommandDescriptor(Data):
-    class_name: str
-    cmd_action: str
-    cmd_name: str
-    function_name: str
-    params: 'Params'
+    extName: str
+    classPtr: type
+    methodName: str
+    request: 'Request'
 
 
 class ISpecRuntime(Protocol):
@@ -211,6 +208,13 @@ class ISpecRuntime(Protocol):
 # requests and responses
 
 class Params(Data):
+    """Web request params"""
+
+    projectUid: Optional[str]  #: project uid
+    localeUid: Optional[str]  #: locale for this request
+
+
+class Request(Data):
     """Web request params"""
 
     projectUid: Optional[str]  #: project uid
@@ -458,13 +462,13 @@ class IDataModel(INode, Protocol):
 # ----------------------------------------------------------------------------------------------------------------------
 # CRS
 
-#: Axis orientation
+"""type: Axis orientation. """
 Axis = int
 
 AXIS_XY = 1
 AXIS_YX = 2
 
-#: CRS code like "EPSG:3857" or a srid like 3857
+"""type: CRS code like "EPSG:3857" or a srid like 3857. """
 CrsId = Union[str, int]
 
 

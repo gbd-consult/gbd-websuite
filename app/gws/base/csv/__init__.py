@@ -3,9 +3,10 @@
 import gws
 import gws.types as t
 
+
 # @TODO use locale-dependent formatting
 
-@gws.ext.Config('helper.csv')
+@gws.ext.config.helper('csv')
 class Config(gws.Config):
     """CSV format settings"""
 
@@ -19,7 +20,7 @@ class Config(gws.Config):
     rowDelimiter: str = '\n'  #: row delimiter
 
 
-@gws.ext.Object('helper.csv')
+@gws.ext.object.helper('csv')
 class Object(gws.Node):
     def configure(self):
         self.decimal = self.var('decimal')

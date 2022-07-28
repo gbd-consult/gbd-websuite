@@ -26,25 +26,25 @@ class SysAssetParams(gws.Params):
     version: str = ''
 
 
-@gws.ext.Object('action.web')
+@gws.ext.object.action('web')
 class Object(gws.base.api.action.Object):
     """Web action"""
 
-    @gws.ext.command('api.web.asset')
+    @gws.ext.command.api('webAsset')
     def api_asset(self, req: gws.IWebRequest, p: GetAssetParams) -> GetAssetResponse:
         """Return an asset under the given path and project"""
         r = _serve_path(self.root, req, p)
         return GetAssetResponse(content=r.content, mime=r.mime)
 
-    @gws.ext.command('get.web.asset')
+    @gws.ext.command.get('webAsset')
     def http_asset(self, req: gws.IWebRequest, p: GetAssetParams) -> gws.ContentResponse:
         return _serve_path(self.root, req, p)
 
-    @gws.ext.command('get.web.download')
+    @gws.ext.command.get('webDownload')
     def download(self, req: gws.IWebRequest, p) -> gws.ContentResponse:
         return _serve_path(self.root, req, p, True)
 
-    @gws.ext.command('get.web.sysAsset')
+    @gws.ext.command.get('webSystemAsset')
     def sys_asset(self, req: gws.IWebRequest, p: SysAssetParams) -> gws.ContentResponse:
         locale_uid = p.localeUid or self.root.application.locale_uids[0]
 

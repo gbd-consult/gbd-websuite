@@ -190,7 +190,7 @@ class ClientCmdResponse(gws.Data):
     status: int
     json: dict
     cookies: dict
-    response: werkzeug.wrappers.BaseResponse
+    response: werkzeug.wrappers.Response
 
 
 def client_cmd_request(cmd, params, cookies=None, headers=None) -> ClientCmdResponse:

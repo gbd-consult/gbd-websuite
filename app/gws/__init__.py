@@ -6,6 +6,6 @@ from .core.const import *
 from .core.data import Data, is_data_object
 from .core.debug import p, time_start, time_end
 from .core.error import Error, ConfigurationError
-from .core.tree import Object, Node, Root, props, is_public_object, create_root_object
+from .core.tree import Object, Node, Root #, props, is_public_object, create_root_object
 from .core.types import *
 from .core.util import *

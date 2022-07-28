@@ -4,10 +4,10 @@ import gws.types as t
 from . import action
 
 
-class Config(gws.WithAccess):
+class Config(gws.ConfigWithAccess):
     """Server actions"""
 
-    actions: t.Optional[t.List[gws.ext.action.Config]]  #: available actions
+    actions: t.Optional[t.List[gws.ext.config.action]]  #: available actions
 
 
 # @TODO allow multiple actions with the same ext_type with different permissions
@@ -23,3 +23,15 @@ class Object(gws.Node, gws.IApi):
         for a in self.actions:
             ds[a.ext_type] = a
         return ds
+
+
+class Error(gws.Error):
+    pass
+
+class CommandNotFound(Error):
+    pass
+
+class CommandNotAllowed(Error):
+    pass
+
+

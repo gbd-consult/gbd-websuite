@@ -41,7 +41,7 @@ class SiteConfig(gws.Config):
 
     assets: t.Optional[DocumentRootConfig]  #: assets location and options
     cors: t.Optional[CorsConfig]  #: cors configuration
-    errorPage: t.Optional[gws.ext.template.Config]  #: error page template
+    errorPage: t.Optional[gws.ext.config.template]  #: error page template
     host: str = '*'  #: host name
     rewrite: t.Optional[t.List[RewriteRule]]  #: rewrite rules
     canonicalHost: str = ''  #: hostname for reversed rewriting

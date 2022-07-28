@@ -7,13 +7,13 @@ from .. import error, manager, method
 
 # @TODO support WWW-Authenticate at some point
 
-@gws.ext.Config('auth.method.basic')
+@gws.ext.config.authMethod('basic')
 class Config(method.Config):
     """HTTP-basic authorization options"""
     pass
 
 
-@gws.ext.Object('auth.method.basic')
+@gws.ext.object.authMethod('basic')
 class Object(method.Object):
 
     def open_session(self, auth, req):

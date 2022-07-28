@@ -10,14 +10,14 @@ import gws.types as t
 from .. import error, provider, user
 
 
-@gws.ext.Config('auth.provider.file')
+@gws.ext.config.authProvider('file')
 class Config(provider.Config):
     """File-based authorization provider"""
 
     path: gws.FilePath  #: path to the users json file
 
 
-@gws.ext.Object('auth.provider.file')
+@gws.ext.object.authProvider('file')
 class Object(provider.Object):
     path: str
     db: t.List[dict]
@@ -67,7 +67,7 @@ class Object(provider.Object):
             attributes={'displayName': rec.get('name', rec['login'])}
         )
 
-    @gws.ext.command('cli.auth.password')
+    @gws.ext.command.cli('authPassword')
     def passwd(self, p: gws.NoParams):
         """Encode a password for the authorization file"""
 

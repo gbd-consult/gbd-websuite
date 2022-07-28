@@ -7,10 +7,10 @@ import gws.types as t
 from . import manager
 
 
-@gws.ext.Object('cli.auth')
+@gws.ext.object.cli('auth')
 class Object(gws.Node):
 
-    @gws.ext.command('cli.auth.sessions')
+    @gws.ext.command.cli('authSessions')
     def sessions(self, p: gws.NoParams):
         """Print currently active sessions"""
 
@@ -28,7 +28,7 @@ class Object(gws.Node):
         print(gws.lib.console.text_table(rs, header=('user', 'login', 'activity', 'duration')))
         print('\n')
 
-# @gws.ext.Object('cli.auth')
+# @gws.ext.object.cli('auth')
 # class Object(gws.Node):
 #
 #     @gws.ext.command()

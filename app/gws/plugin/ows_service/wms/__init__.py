@@ -15,13 +15,13 @@ _WMS_111 = '1.1.1'
 _WMS_110 = '1.1.0'
 
 
-@gws.ext.Config('ows.service.wms')
+@gws.ext.config.owsService('wms')
 class Config(core.ServiceConfig):
     """WMS Service configuration"""
     pass
 
 
-@gws.ext.Object('ows.service.wms')
+@gws.ext.object.owsService('wms')
 class Object(core.Service):
     protocol = gws.OwsProtocol.WMS
     supported_versions = [_WMS_130, _WMS_111, _WMS_110]

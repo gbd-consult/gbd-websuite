@@ -8,7 +8,7 @@ class PermissionMode(t.Enum):
     all = 'all'  #: an object can be read and written
 
 
-class PermissionRule(gws.WithAccess):
+class PermissionRule(gws.ConfigWithAccess):
     """Permission rule for a storage category"""
 
     category: str  #: storage category name

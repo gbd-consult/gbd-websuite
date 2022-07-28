@@ -7,12 +7,12 @@ import gws.types as t
 from . import provider as provider_module
 
 
-@gws.ext.Config('layer.wms')
+@gws.ext.config.layer('wms')
 class Config(gws.base.layer.image.Config, provider_module.Config, gws.base.layer.group.TreeConfig):
     pass
 
 
-@gws.ext.Object('layer.wms')
+@gws.ext.object.layer('wms')
 class Object(gws.base.layer.group.Object):
     provider: provider_module.Object
 

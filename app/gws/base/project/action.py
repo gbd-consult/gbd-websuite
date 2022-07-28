@@ -13,11 +13,11 @@ class InfoResponse(gws.Response):
     user: t.Optional[gws.base.auth.user.Props]
 
 
-@gws.ext.Object('action.project')
+@gws.ext.object.action('project')
 class Object(gws.base.api.action.Object):
     """Project information action"""
 
-    @gws.ext.command('api.project.info')
+    @gws.ext.command.api('projectInfo')
     def info(self, req: gws.IWebRequest, p: gws.Params) -> InfoResponse:
         """Return the project configuration"""
 

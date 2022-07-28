@@ -205,7 +205,7 @@ def _remove_dir(dirname):
 #     layers: t.Optional[t.List[str]]  #: list of layer IDs
 #
 #
-# @gws.ext.Object('cli.cache')
+# @gws.ext.object.cli('cache')
 # class Cli(gws.Node):
 #
 #     @gws.ext.command()

@@ -5,7 +5,7 @@ import gws.types as t
 class Config(gws.Config):
     """Database configuration"""
 
-    providers: t.List[gws.ext.db.provider.Config]  #: database providers
+    providers: t.List[gws.ext.config.db]  #: database providers
 
 
 class SqlTableConfig(gws.Config):

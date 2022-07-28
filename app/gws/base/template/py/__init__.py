@@ -12,13 +12,13 @@ import gws.base.template
 import gws.types as t
 
 
-@gws.ext.Config('template.py')
+@gws.ext.config.template('py')
 class Config(gws.base.template.Config):
     """Python template"""
     pass
 
 
-@gws.ext.Object('template.py')
+@gws.ext.object.template('py')
 class Object(gws.base.template.Object):
     def configure(self):
         self.compile()

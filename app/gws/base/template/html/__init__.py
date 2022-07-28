@@ -14,7 +14,7 @@ import gws.lib.vendor.chartreux as chartreux
 import gws.types as t
 
 
-@gws.ext.Config('template.html')
+@gws.ext.config.template('html')
 class Config(gws.base.template.Config):
     pass
 
@@ -22,7 +22,7 @@ class Config(gws.base.template.Config):
 _dummy_fn = lambda *args: None
 
 
-@gws.ext.Object('template.html')
+@gws.ext.object.template('html')
 class Object(gws.base.template.Object):
 
     def configure(self):

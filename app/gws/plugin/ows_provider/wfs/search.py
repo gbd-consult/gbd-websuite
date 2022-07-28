@@ -7,12 +7,12 @@ import gws.types as t
 from . import provider as provider_module
 
 
-@gws.ext.Config('search.provider.wfs')
+@gws.ext.config.finder('wfs')
 class Config(gws.base.search.Config, provider_module.Config):
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
 
 
-@gws.ext.Object('search.provider.wfs')
+@gws.ext.object.finder('wfs')
 class Object(gws.base.search.provider.Object):
     # @TODO support filters
     supports_geometry = True

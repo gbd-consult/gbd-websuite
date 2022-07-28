@@ -16,8 +16,8 @@ SQLITE_STORE_PATH = gws.MISC_DIR + '/sessions8.sqlite'
 class Config(gws.Config):
     """Authentication and authorization options"""
 
-    methods: t.Optional[t.List[gws.ext.auth.method.Config]]  #: authorization methods
-    providers: t.Optional[t.List[gws.ext.auth.provider.Config]]  #: authorization providers
+    methods: t.Optional[t.List[gws.ext.config.authMethod]]  #: authorization methods
+    providers: t.Optional[t.List[gws.ext.config.authProvider]]  #: authorization providers
     sessionLifeTime: gws.Duration = '1200'  #: session life time
     sessionStore: str = 'sqlite'  #: session storage engine
     sessionStorePath: t.Optional[str]  #: session storage path
@@ -41,7 +41,7 @@ class Object(gws.Node, gws.IAuthManager):
 
         # always create the System provider
         p = self.var('providers', default=[]) + [
-            gws.config.parse(self.root.specs, {'type': 'system'}, 'gws.ext.auth.provider.Config')
+            gws.config.parse(self.root.specs, {'type': 'system'}, gws.ext.config.authProvider)
         ]
         self.providers = self.create_children('gws.ext.auth.provider', p)
 
@@ -49,7 +49,7 @@ class Object(gws.Node, gws.IAuthManager):
         self.system_user = self.providers[-1].get_user('system')
 
         # if no methods configured, enable the Web method
-        web_method = gws.config.parse(self.root.specs, {'type': 'web'}, 'gws.ext.auth.method.Config')
+        web_method = gws.config.parse(self.root.specs, {'type': 'web'}, gws.ext.config.authMethod)
         p = self.var('methods', default=[web_method])
         self.methods = self.create_children('gws.ext.auth.method', p)
 

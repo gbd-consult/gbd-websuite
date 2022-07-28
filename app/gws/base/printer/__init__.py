@@ -6,7 +6,7 @@ import gws.types as t
 class Config(gws.Config):
     """Printer configuration"""
 
-    templates: t.List[gws.ext.template.Config]  #: print templates
+    templates: t.List[gws.ext.config.template]  #: print templates
 
 
 class Props(gws.Data):

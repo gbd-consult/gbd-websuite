@@ -8,13 +8,13 @@ import gws.types as t
 from . import provider
 
 
-@gws.ext.Config('layer.qgis')
+@gws.ext.config.layer('qgis')
 class Config(gws.base.layer.image.Config, provider.Config, gws.base.layer.group.TreeConfig):
     """QGIS Project layer"""
     pass
 
 
-@gws.ext.Object('layer.qgis')
+@gws.ext.object.layer('qgis')
 class Object(gws.base.layer.group.Object):
     provider: provider.Object
 

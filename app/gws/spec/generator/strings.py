@@ -1,45 +1,37 @@
 import re
 
-from . import base
+from . import base, util
 
 
-def generate(state, server_specs, text):
-    ini = _parse_ini(text)
-
-    type_names = set()
-
-    for type_name in server_specs:
-        t = state.types.get(type_name)
-        if not t or not isinstance(t, base.TNamedType):
-            continue
-        type_names.add(type_name)
-        if not t.doc:
-            continue
-        lang = 'en'
-        doc = t.doc
-        m = re.match(r'^\[(\w\w)\](.+)$', doc)
-        if m:
-            lang = m.group(1)
-            doc = m.group(2).strip()
-        ini.setdefault(lang, {})[type_name] = _decode(doc)
-
-    # for lang, entries in ini.items():
-    #     es = set(entries)
-    #     for e in sorted(type_names.difference(es)):
-    #         base.debug_log(f'strings: [{lang}] MISSING: {e}')
-    #     for e in sorted(es.difference(type_names)):
-    #         base.debug_log(f'strings: [{lang}] INVALID: {e}')
-
-    return {
-        k: dict(sorted(v.items()))
-        for k, v in sorted(ini.items())
-    }
-
-
-# configparser? no, thanks ;)
-
-def _parse_ini(text):
+def generate(gen: base.Generator):
     ini = {}
+
+    for uid, spec in gen.specs.items():
+        if spec['c'] not in {base.C.CONFIG, base.C.COMMAND, base.C.CLASS, base.C.PROPERTY}:
+            continue
+        typ = gen.types[uid]
+        _add_string(ini, typ.name, typ.doc)
+        if typ.enumDocs:
+            for k, v in typ.enumDocs.items():
+                _add_string(ini, typ.name + '.' + k, v)
+
+    for path in util.find_files(gen.rootDir + '/gws/spec', pattern=r'/strings.+?\.ini$', deep=False):
+        base.log.debug(f'parsing strings from {path!r}')
+        _parse_ini(ini, util.read_file(path))
+
+    return _make_ini(ini)
+
+
+def _add_string(ini, uid, doc):
+    lang = 'en'
+    m = re.match(r'^\[(\w\w)](.+)$', doc)
+    if m:
+        lang = m.group(1)
+        doc = m.group(2).strip()
+    ini.setdefault(lang, {})[uid] = _decode(doc)
+
+
+def _parse_ini(ini, text):
     section = 'DEFAULT'
 
     for ln in text.strip().splitlines():
@@ -51,8 +43,8 @@ def _parse_ini(text):
             continue
         if '=' not in ln:
             raise ValueError(f'invalid ini string {ln!r}')
-        k, v = ln.split('=', maxsplit=1)
-        ini.setdefault(section, {})[k.strip()] = v.strip()
+        key, _, val = ln.partition('=')
+        ini.setdefault(section, {})[key.strip()] = _decode(val.strip())
 
     return ini
 

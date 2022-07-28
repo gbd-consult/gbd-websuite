@@ -7,7 +7,7 @@ import gws.types as t
 from . import provider as provider_module, types
 
 
-@gws.ext.Config('action.alkisgeocoder')
+@gws.ext.config.action('alkisgeocoder')
 class Config(provider_module.Config):
     """ALKIS Geocoder action."""
     pass
@@ -32,14 +32,14 @@ class GeocoderResponse(gws.Response):
     coordinates: t.List[gws.Point]
 
 
-@gws.ext.Object('action.alkisgeocoder')
+@gws.ext.object.action('alkisgeocoder')
 class Object(gws.base.api.action.Object):
     provider: provider_module.Object
 
     def configure(self):
         self.provider = provider_module.create(self.root, self.config, shared=True)
 
-    @gws.ext.command('api.alkisgeocoder.decode')
+    @gws.ext.command.api('alkisgeocoderDecode')
     def api_decode(self, req: gws.IWebRequest, p: GeocoderParams) -> GeocoderResponse:
         return GeocoderResponse(
             coordinates=[

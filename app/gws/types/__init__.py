@@ -2,7 +2,20 @@
 
 import enum
 
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union, cast
+from typing import (
+    cast,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    Set,
+    Tuple,
+    Union,
+)
+
 
 # Variant is tagged Union, discriminated by the 'type' property
 # mypy doesn't accept aliases to special forms,
@@ -11,17 +24,6 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union, cast
 # so that the spec generator can handle them
 
 # Variant = Union
-
-# @TODO upgrade to py3.8
-try:
-    from typing import Literal
-except ImportError:
-    from .vendor.typing_extensions import Literal  # type: ignore
-
-try:
-    from typing import Protocol
-except ImportError:
-    from .vendor.typing_extensions import Protocol  # type: ignore
 
 
 # We cannot use the standard Enum, because after "class Color(Enum): RED = 1"
@@ -34,5 +36,17 @@ class Enum(enum.Enum):
 
 globals()['Enum'] = type('Enum', (), {})
 
-# avoid 'unused imports'
-__all__ = ['Any', 'Callable', 'Dict', 'Enum', 'List', 'Literal', 'Optional', 'Protocol', 'Set', 'Tuple', 'Union', 'cast']
+__all__ = [
+    'cast',
+    'Any',
+    'Callable',
+    'Dict',
+    'List',
+    'Literal',
+    'Optional',
+    'Protocol',
+    'Set',
+    'Tuple',
+    'Union',
+    'Enum',
+]

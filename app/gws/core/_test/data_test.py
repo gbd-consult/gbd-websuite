@@ -8,7 +8,7 @@ def test_init_accepts_dicts_and_kwargs():
 
 
 def test_init_accepts_data_objects():
-    e = Data(a='A', b='B')
+    e = Data(c='A', b='B')
     d = Data(e, c='C')
     assert vars(d) == {'a': 'A', 'b': 'B', 'c': 'C'}
 

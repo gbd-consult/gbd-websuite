@@ -59,7 +59,7 @@ def layer_from_a_b():
 
 @test.fixture(scope='module')
 def web_request():
-    user = test.root().find(klass='gws.ext.auth.provider.system.Object').users['system']
+    user = test.root().find(klass=gws.ext.object.authProvider('system')).users['system']
     return gws.Data(user=user)
 
 

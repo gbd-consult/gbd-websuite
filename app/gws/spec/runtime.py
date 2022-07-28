@@ -8,7 +8,8 @@ import gws.lib.date
 import gws.lib.json2
 import gws.lib.os2
 import gws.lib.units
-import gws.spec.generator
+
+from . import core, generator
 
 
 class Error(Exception):
@@ -16,21 +17,21 @@ class Error(Exception):
 
 
 def create(manifest_path: str = None) -> 'Object':
-    genres = _generate(manifest_path)
-    return Object(genres)
+    gs = _generate(manifest_path)
+    return Object(gs)
 
 
 def create_and_store(manifest_path: str = None) -> 'Object':
-    genres = _generate(manifest_path)
+    gs = _generate(manifest_path)
     cc = _cache_path(manifest_path)
 
     try:
-        gws.lib.json2.to_path(cc, genres, pretty=True)
+        gws.lib.json2.to_path(cc, gs, pretty=True)
         gws.log.debug(f'spec.create: stored to {cc!r}')
     except:
         gws.log.exception(f'spec.create: store failed')
 
-    return Object(genres)
+    return Object(gs)
 
 
 def load(manifest_path: str = None) -> 'Object':
@@ -38,9 +39,9 @@ def load(manifest_path: str = None) -> 'Object':
 
     if gws.is_file(cc):
         try:
-            genres = gws.lib.json2.from_path(cc)
+            gs = gws.lib.json2.from_path(cc)
             gws.log.debug(f'spec.load: loaded from {cc!r}')
-            return Object(genres)
+            return Object(gs)
         except:
             gws.log.exception(f'spec.load: load failed')
 
@@ -50,11 +51,17 @@ def load(manifest_path: str = None) -> 'Object':
 def _generate(manifest_path):
     ts = gws.time_start('SPEC GENERATOR')
     try:
-        genres = gws.spec.generator.generate_for_server(manifest_path)
+        gs = generator.generate(manifest_path)
+
+
+
+        return {
+            'meta': gws.SpecMeta
+        }
     except Exception as exc:
         raise Error(f'system error, spec generator failed') from exc
     gws.time_end(ts)
-    return genres
+    return gs
 
 
 def _cache_path(manifest_path):
@@ -65,12 +72,11 @@ def _cache_path(manifest_path):
 
 
 class Object(gws.ISpecRuntime):
-    def __init__(self, genres):
-        self.meta = genres['meta']
-        self.manifest = gws.Manifest(self.meta['manifest'])
-        self.specs = genres['specs']
-        self.strings = genres['strings']
-        self.isa_map = {k: set(v) for k, v in self.specs['ISA_MAP'].items()}
+    def __init__(self, gs):
+        self.meta = core.Meta(gs['meta'])
+        self.manifest = gws.Manifest(self.meta.manifest)
+        self.specs = [gws.Data(s) for s in gs['specs']]
+        self.strings = gs['strings']
 
     def bundle_paths(self, category):
         if category == 'vendor':

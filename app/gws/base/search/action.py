@@ -12,7 +12,7 @@ from . import runner
 MAX_LIMIT = 1000
 
 
-@gws.ext.Config('action.search')
+@gws.ext.config.action('search')
 class Config(gws.base.api.action.Config):
     """Search action"""
 
@@ -34,14 +34,14 @@ class Params(gws.Params):
     shapes: t.Optional[t.List[gws.gis.shape.Props]]
 
 
-@gws.ext.Object('action.search')
+@gws.ext.object.action('search')
 class Object(gws.base.api.action.Object):
     limit = 0
 
     def configure(self):
         self.limit = self.var('limit')
 
-    @gws.ext.command('api.search.findFeatures')
+    @gws.ext.command.api('searchFind')
     def find_features(self, req: gws.IWebRequest, p: Params) -> Response:
         """Perform a search"""
 

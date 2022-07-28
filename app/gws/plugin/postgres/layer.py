@@ -10,7 +10,7 @@ import gws.types as t
 from . import provider
 
 
-@gws.ext.Config('layer.postgres')
+@gws.ext.config.layer('postgres')
 class Config(gws.base.layer.vector.Config):
     """SQL-based layer"""
 
@@ -18,7 +18,7 @@ class Config(gws.base.layer.vector.Config):
     table: gws.base.db.SqlTableConfig  #: sql table configuration
 
 
-@gws.ext.Object('layer.postgres')
+@gws.ext.object.layer('postgres')
 class Object(gws.base.layer.vector.Object):
     provider: provider.Object
     table: gws.SqlTable

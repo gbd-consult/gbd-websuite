@@ -11,14 +11,14 @@ class NamespaceConfig(gws.Config):
     schemaLocation: t.Optional[gws.Url]  #: namespace schema location
 
 
-@gws.ext.Config('helper.xml')
+@gws.ext.config.helper('xml')
 class Config(gws.Config):
     """XML settings"""
 
     namespaces: t.Optional[t.List[NamespaceConfig]]  #: custom namespaces
 
 
-@gws.ext.Object('helper.xml')
+@gws.ext.object.helper('xml')
 class Object(gws.Node):
     def activate(self):
         for ns in self.var('namespaces', default=[]):

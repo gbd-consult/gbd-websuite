@@ -39,7 +39,7 @@ class Config(gws.Config):
     crs: t.Optional[gws.CrsId] = 'EPSG:3857'  #: crs for this map
     extent: t.Optional[gws.Extent]  #: map extent
     extentBuffer: t.Optional[int]  #: extent buffer
-    layers: t.List[gws.ext.layer.Config]  #: collection of layers for this map
+    layers: t.List[gws.ext.config.layer]  #: collection of layers for this map
     skipInvalidLayers: bool = False  #: remove invalid layers from the map
     title: str = ''  #: map title
     zoom: t.Optional[gws.gis.zoom.Config]  #: map scales and resolutions

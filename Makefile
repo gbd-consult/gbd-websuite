@@ -16,34 +16,34 @@ GWS Makefile
 ~~~~~~~~~~~~
 
 	make spec [MANIFEST=<manifest>]
-	    - build the Specs
+		- build the Specs
 
 	make client [MANIFEST=<manifest>] [ARGS=<builder args>]
-	    - build the Client for production
+		- build the Client for production
 
 	make client-dev [MANIFEST=<manifest>] [ARGS=<builder args>]
-	    - build the Client for development
+		- build the Client for development
 
 	make client-dev-server [MANIFEST=<manifest>] [ARGS=<builder args>]
-	    - start the Client dev server
+		- start the Client dev server
 
 	make client-help
-	    - Client Builder help
+		- Client Builder help
 
 	make doc [MANIFEST=<manifest>]
-	    - build the Docs
+		- build the Docs
 
 	make doc-dev-server [MANIFEST=<manifest>]
-	    - start the Docs dev server
+		- start the Docs dev server
 
 	make test [MANIFEST=<manifest>]
-	    - run Server tests
+		- run Server tests
 
 	make image [NAME=<name>] [DEBUG=<1/0>]
-	    - build the Docker Image
+		- build the Docker Image
 
 	make clean
-	    - remove all build artifacts
+		- remove all build artifacts
 
 endef
 
@@ -51,6 +51,11 @@ export HELP
 
 help:
 	@echo "$$HELP"
+
+mypy:
+	cd $(ROOT)/app
+	mypy .
+	cd $(CWD)
 
 spec:
 	$(PYTHON) $(APP)/gws/spec/generator/run.py build --manifest "$(MANIFEST)" $(ARGS)

@@ -1,170 +1,99 @@
-import json
 import os
-import re
 
-from . import base, manifest, parser, normalizer, strings, typescript
-
-EXCLUDE_PATHS = ['___', '/vendor/', 'test', 'core/ext']
-
-CONST_PATH = base.APP_DIR + '/gws/core/const.py'
-STRINGS_PATH = base.APP_DIR + '/gws/spec/strings.ini'
-TYPESCRIPT_PATH = base.APP_DIR + '/js/src/gws/core/__build.gwsapi.ts'
-
-BUNDLE_FILENAME = "__build.app.json"
-VENDOR_BUNDLE_PATH = base.APP_DIR + '/gws/__build.vendor.js'
-UTIL_BUNDLE_PATH = base.APP_DIR + '/gws/__build.util.js'
-
-SPEC_BUILD_DIR = base.APP_DIR + '/gws/spec/__build'
-PLUGIN_DIR = base.APP_DIR + '/gws/plugin'
-
-SYSTEM_CHUNKS = [
-    base.Data(name='gws', sourceDir=base.APP_DIR + '/js/src/gws', bundleDir=base.APP_DIR + '/gws'),
-    base.Data(name='gws.core', sourceDir=base.APP_DIR + '/gws/core', bundleDir=base.APP_DIR + '/gws'),
-    base.Data(name='gws.base', sourceDir=base.APP_DIR + '/gws/base', bundleDir=base.APP_DIR + '/gws'),
-    base.Data(name='gws.gis', sourceDir=base.APP_DIR + '/gws/gis', bundleDir=base.APP_DIR + '/gws'),
-    base.Data(name='gws.lib', sourceDir=base.APP_DIR + '/gws/lib', bundleDir=base.APP_DIR + '/gws'),
-    base.Data(name='gws.server', sourceDir=base.APP_DIR + '/gws/server', bundleDir=base.APP_DIR + '/gws'),
-]
+from . import base, manifest, normalizer, parser, specs, strings, typescript, util
 
 
-def generate_for_build(manifest_path):
-    os.makedirs(SPEC_BUILD_DIR, exist_ok=True)
+def generate_and_save(root_dir=None, out_dir=None, manifest_path=None, debug=False):
+    gen = generate(root_dir, out_dir, manifest_path, debug)
 
-    meta = _init_meta('build', manifest_path)
-    _write_json(SPEC_BUILD_DIR + '/meta.spec.json', meta)
+    util.write_json(gen.outDir + '/types.json', {'meta': gen.meta, 'types': gen.types})
+    util.write_json(gen.outDir + '/specs.json', {'meta': gen.meta, 'specs': gen.specs})
 
-    parser.write_file(
-        CONST_PATH,
-        re.sub(
-            r'VERSION\s*=.*',
-            f'VERSION = {meta.version!r}',
-            parser.read_file(CONST_PATH)))
-
-    state = base.ParserState()
-
-    parser.parse(state, meta)
-    _write_json(SPEC_BUILD_DIR + '/parsed.spec.json', state)
-
-    normalizer.normalize(state, meta)
-    _write_json(SPEC_BUILD_DIR + '/full.spec.json', state)
-
-    ts = typescript.generate(state, meta)
-    parser.write_file(SPEC_BUILD_DIR + '/api.ts', ts)
-    parser.write_file(TYPESCRIPT_PATH, ts)
-
-    specs = normalizer.prepare_for_server(state, meta)
-    _write_json(SPEC_BUILD_DIR + '/server.spec.json', specs)
-
-    strs = strings.generate(state, specs, parser.read_file(STRINGS_PATH))
-    _write_json(SPEC_BUILD_DIR + '/strings.json', strs)
+    util.write_file(gen.outDir + '/specs.strings.ini', gen.strings)
+    util.write_file(gen.outDir + '/specs.ts', gen.typescript)
 
 
-def generate_for_server(manifest_path):
-    meta = _init_meta('server', manifest_path)
+def generate(root_dir=None, out_dir=None, manifest_path=None, debug=False):
+    base.log.set_level('DEBUG' if debug else 'INFO')
 
-    state = base.ParserState()
+    gen = base.Generator()
+    gen.rootDir = root_dir or base.APP_DIR
+    gen.outDir = out_dir or gen.rootDir + base.OUT_DIR
+    gen.debug = debug
+    gen.manifestPath = manifest_path
 
-    parser.parse(state, meta)
-    normalizer.normalize(state, meta)
-    specs = normalizer.prepare_for_server(state, meta)
+    init_generator(gen)
+    run_generator(gen)
 
-    strs = strings.generate(state, specs, parser.read_file(STRINGS_PATH))
-
-    return {
-        'meta': _as_json(meta),
-        'specs': _as_json(specs),
-        'strings': strs,
-    }
+    return gen
 
 
-def _init_meta(mode, manifest_path):
-    meta = base.Data(
-        mode=mode,
-        manifest_path=None,
-        manifest=None,
-        version=base.VERSION,
-    )
+def init_generator(gen) -> base.Generator:
+    gen.meta = base.Meta()
+    gen.meta.version = util.read_file(gen.rootDir + '/VERSION').strip()
+    gen.meta.manifest_path = None
+    gen.meta.manifest = None
 
-    if manifest_path:
+    gen.chunks = [
+        base.Chunk(name=name, sourceDir=gen.rootDir + path, bundleDir=gen.outDir)
+        for name, path in base.SYSTEM_CHUNKS
+    ]
+
+    manifest_plugins = None
+
+    if gen.manifestPath:
         try:
-            base.debug_log(f'loading manifest {manifest_path!r}')
-            meta.manifest_path = manifest_path
-            meta.manifest = manifest.load(manifest_path)
+            base.log.debug(f'loading manifest {gen.manifestPath!r}')
+            gen.meta.manifestPath = gen.manifestPath
+            gen.meta.manifest = manifest.from_path(gen.manifestPath)
         except Exception as e:
-            raise base.Error(f'error loading manifest {manifest_path!r}') from e
+            raise base.Error(f'error loading manifest {gen.manifestPath!r}') from e
+        manifest_plugins = gen.meta.manifest.get('plugins')
 
-    chunks = list(SYSTEM_CHUNKS) + manifest.enumerate_plugins(meta.manifest, PLUGIN_DIR)
+    plugin_dict = {}
 
-    for chunk in chunks:
-        _enum_sources(chunk)
+    for path in util.find_dirs(gen.rootDir + base.PLUGIN_DIR):
+        name = os.path.basename(path)
+        chunk = base.Chunk(name=base.PLUGIN_PREFIX + '.' + name, sourceDir=path, bundleDir=path)
+        plugin_dict[chunk.name] = chunk
 
-    meta.chunks = chunks
+    for p in manifest_plugins or []:
+        path = p.get('path')
+        name = p.get('name') or os.path.basename(path)
+        chunk = base.Chunk(name=base.PLUGIN_PREFIX + '.' + name, sourceDir=path, bundleDir=path)
+        plugin_dict[chunk.name] = chunk
 
-    meta.BUNDLE_FILENAME = BUNDLE_FILENAME
-    meta.VENDOR_BUNDLE_PATH = VENDOR_BUNDLE_PATH
-    meta.UTIL_BUNDLE_PATH = UTIL_BUNDLE_PATH
+    gen.chunks.extend(plugin_dict.values())
 
-    return meta
+    for chunk in gen.chunks:
+        excl = base.EXCLUDE_PATHS + (chunk.exclude or [])
+        chunk.paths = {kind: [] for _, kind in base.FILE_KINDS}
 
-
-_KIND_PATTERNS = [
-    ['.py', 'python'],
-    ['/index.ts', 'ts'],
-    ['/index.tsx', 'ts'],
-    ['/index.css.js', 'css'],
-    ['.theme.css.js', 'theme'],
-    ['/strings.ini', 'strings'],
-]
-
-
-def _enum_sources(chunk):
-    excl = EXCLUDE_PATHS + (chunk.exclude or [])
-    chunk.paths = {key: [] for _, key in _KIND_PATTERNS}
-
-    if not os.path.isdir(chunk.sourceDir):
-        return
-
-    for path in _find_files(chunk.sourceDir):
-        if any(x in path for x in excl):
-            continue
-        for pattern, key in _KIND_PATTERNS:
-            if path.endswith(pattern):
-                chunk.paths[key].append(path)
-                break
-
-
-def _find_files(dirname, pattern=None, ext=None, deep=True):
-    if not pattern and ext:
-        if isinstance(ext, (list, tuple)):
-            ext = '|'.join(ext)
-        pattern = '\\.(' + ext + ')$'
-
-    de: os.DirEntry
-    for de in os.scandir(dirname):
-        if de.name.startswith('.'):
+        if not os.path.isdir(chunk.sourceDir):
             continue
 
-        if de.is_dir() and deep:
-            yield from _find_files(de.path, pattern)
-            continue
+        for path in util.find_files(chunk.sourceDir):
+            if any(x in path for x in excl):
+                continue
+            for pattern, kind in base.FILE_KINDS:
+                if path.endswith(pattern):
+                    chunk.paths[kind].append(path)
+                    break
 
-        if de.is_file() and (pattern is None or re.search(pattern, de.path)):
-            yield de.path
-
-
-def _as_json(x):
-    if x is None or isinstance(x, (str, int, float, bool)):
-        return x
-    if isinstance(x, bytes):
-        return repr(x)
-    if isinstance(x, (list, tuple)):
-        return [_as_json(x) for x in x]
-    if isinstance(x, dict):
-        return {k: _as_json(v) for k, v in x.items()}
-    d = _as_json(vars(x))
-    d['_'] = type(x).__name__
-    return d
+    return gen
 
 
-def _write_json(path, obj):
-    parser.write_file(path, json.dumps(_as_json(obj), indent=4, sort_keys=True))
+def run_generator(gen: base.Generator):
+    gen.dump('init')
+
+    parser.parse(gen)
+    gen.dump('parsed')
+
+    normalizer.normalize(gen)
+    gen.dump('normalized')
+
+    gen.specs = specs.extract(gen)
+    gen.dump('specs')
+
+    gen.typescript = typescript.create(gen)
+    gen.strings = strings.generate(gen)

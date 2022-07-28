@@ -18,17 +18,17 @@ class CliPrintParams(gws.CliParams):
     output: str  #: output path
 
 
-@gws.ext.Object('action.printer')
+@gws.ext.object.action('printer')
 class Object(gws.base.api.action.Object):
 
-    @gws.ext.command('api.printer.startPrint')
+    @gws.ext.command.api('printerStart')
     def start_print(self, req: gws.IWebRequest, p: types.Params) -> types.StatusResponse:
         """Start a backround print job"""
 
         job = core.start_job(self.root, req, p)
         return core.job_status(job)
 
-    @gws.ext.command('api.printer.getStatus')
+    @gws.ext.command.api('printerStatus')
     def get_status(self, req: gws.IWebRequest, p: types.StatusParams) -> types.StatusResponse:
         """Query the print job status"""
 
@@ -38,7 +38,7 @@ class Object(gws.base.api.action.Object):
 
         return core.job_status(job)
 
-    @gws.ext.command('api.printer.cancelPrinting')
+    @gws.ext.command.api('printerCancel')
     def cancel(self, req: gws.IWebRequest, p: types.StatusParams) -> types.StatusResponse:
         """Cancel a print job"""
 
@@ -49,7 +49,7 @@ class Object(gws.base.api.action.Object):
         job.cancel()
         return core.job_status(job)
 
-    @gws.ext.command('get.printer.getResult')
+    @gws.ext.command.get('printerResult')
     def get_result(self, req: gws.IWebRequest, p: types.StatusParams) -> gws.ContentResponse:
         """Get the result of a print job as a byte stream"""
 
@@ -63,7 +63,7 @@ class Object(gws.base.api.action.Object):
 
         return gws.ContentResponse(path=res_path)
 
-    @gws.ext.command('cli.printer.print')
+    @gws.ext.command.cli('printerPrint')
     def print(self, p: CliPrintParams):
         """Print using the specified params"""
 

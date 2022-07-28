@@ -19,7 +19,7 @@ _DEFAULT_TEMPLATES = [
 ]
 
 
-class Config(gws.WithAccess):
+class Config(gws.ConfigWithAccess):
     """Project configuration"""
 
     api: t.Optional[gws.base.api.Config]  #: project-specific actions
@@ -31,12 +31,12 @@ class Config(gws.WithAccess):
     overviewMap: t.Optional[gws.base.map.Config]  #: Overview map configuration
     printer: t.Optional[gws.base.printer.Config]  #: print configuration
     search: t.Optional[gws.base.search.Config] = {}  # type: ignore #: project-wide search configuration
-    templates: t.Optional[t.List[gws.ext.template.Config]]  #: project info templates
+    templates: t.Optional[t.List[gws.ext.config.template]]  #: project info templates
     title: str = ''  #: project title
 
 
 class Props(gws.Props):
-    actions: t.List[gws.ext.action.Props]
+    actions: t.List[gws.ext.props.action]
     client: t.Optional[gws.base.client.Props]
     description: str
     locales: t.List[str]

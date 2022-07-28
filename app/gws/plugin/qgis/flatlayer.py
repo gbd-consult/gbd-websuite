@@ -8,14 +8,14 @@ import gws.types as t
 from . import provider as provider_module
 
 
-@gws.ext.Config('layer.qgisflat')
+@gws.ext.config.layer('qgisflat')
 class Config(gws.base.layer.image.Config, provider_module.Config):
     """Flat Qgis layer"""
 
     sourceLayers: t.Optional[gws.gis.source.LayerFilterConfig]  #: source layers to use
 
 
-@gws.ext.Object('layer.qgisflat')
+@gws.ext.object.layer('qgisflat')
 class Object(gws.base.layer.image.Object, gws.IOwsClient):
     provider: provider_module.Object
     source_crs: gws.ICrs

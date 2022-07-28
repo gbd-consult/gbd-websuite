@@ -58,54 +58,54 @@ class GetFeaturesResponse(gws.Response):
     features: t.List[gws.gis.feature.Props]
 
 
-@gws.ext.Object('action.map')
+@gws.ext.object.action('map')
 class Object(gws.base.api.action.Object):
 
-    @gws.ext.command('api.map.getBox')
+    @gws.ext.command.api('mapGetBox')
     def api_get_box(self, req: gws.IWebRequest, p: GetBoxParams) -> gws.BytesResponse:
         """Get a part of the map inside a bounding box"""
         r = self._get_box(req, p)
         return gws.BytesResponse(mime=r.mime, content=r.content)
 
-    @gws.ext.command('get.map.getBox')
+    @gws.ext.command.get('mapGetBox')
     def http_get_box(self, req: gws.IWebRequest, p: GetBoxParams) -> gws.ContentResponse:
         r = self._get_box(req, p)
         return gws.ContentResponse(mime=r.mime, content=r.content)
 
-    @gws.ext.command('api.map.getXYZ')
+    @gws.ext.command.api('mapGetXYZ')
     def api_get_xyz(self, req: gws.IWebRequest, p: GetXyzParams) -> gws.BytesResponse:
         """Get an XYZ tile"""
         r = self._get_xyz(req, p)
         return gws.BytesResponse(mime=r.mime, content=r.content)
 
-    @gws.ext.command('get.map.getXYZ')
+    @gws.ext.command.get('mapGetXYZ')
     def http_get_xyz(self, req: gws.IWebRequest, p: GetXyzParams) -> gws.ContentResponse:
         r = self._get_xyz(req, p)
         return gws.ContentResponse(mime=r.mime, content=r.content)
 
-    @gws.ext.command('api.map.getLegend')
+    @gws.ext.command.api('mapGetLegend')
     def api_get_legend(self, req: gws.IWebRequest, p: GetLegendParams) -> gws.BytesResponse:
         """Get a legend for a layer"""
         r = self._get_legend(req, p)
         return gws.BytesResponse(mime=r.mime, content=r.content)
 
-    @gws.ext.command('get.map.getLegend')
+    @gws.ext.command.get('mapGetLegend')
     def http_get_legend(self, req: gws.IWebRequest, p: GetLegendParams) -> gws.ContentResponse:
         r = self._get_legend(req, p)
         return gws.ContentResponse(mime=r.mime, content=r.content)
 
-    @gws.ext.command('api.map.describeLayer')
+    @gws.ext.command.api('mapDescribeLayer')
     def describe_layer(self, req: gws.IWebRequest, p: DescribeLayerParams) -> DescribeLayerResponse:
         layer = req.require_layer(p.layerUid)
         return DescribeLayerResponse(description=layer.description)
 
-    @gws.ext.command('api.map.getFeatures')
+    @gws.ext.command.api('mapGetFeatures')
     def api_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> GetFeaturesResponse:
         """Get a list of features in a bounding box"""
         found = self._get_features(req, p)
         return GetFeaturesResponse(features=[gws.props(f, req.user, context=self) for f in found])
 
-    @gws.ext.command('get.map.getFeatures')
+    @gws.ext.command.get('mapGetFeatures')
     def http_get_features(self, req: gws.IWebRequest, p: GetFeaturesParams) -> gws.ContentResponse:
         # @TODO the response should be geojson FeatureCollection
 

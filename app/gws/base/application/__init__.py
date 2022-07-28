@@ -24,7 +24,7 @@ class FontConfig(gws.Config):
     dir: gws.DirPath  #: directory with custom fonts
 
 
-class Config(gws.WithAccess):
+class Config(gws.ConfigWithAccess):
     """Main application configuration"""
 
     api: t.Optional[gws.base.api.Config]  #: system-wide server actions
@@ -34,7 +34,7 @@ class Config(gws.WithAccess):
     db: t.Optional[gws.base.db.Config]  #: database configuration
     developer: t.Optional[dict]  #: developer options
     fonts: t.Optional[FontConfig]  #: fonts configuration
-    helpers: t.Optional[t.List[gws.ext.helper.Config]]  #: helpers configurations
+    helpers: t.Optional[t.List[gws.ext.config.helper]]  #: helpers configurations
     locales: t.Optional[t.List[str]]  #: default locales for all projects
     metadata: t.Optional[gws.lib.metadata.Config]  # application metadata
     projectDirs: t.Optional[t.List[gws.DirPath]]  #: directories with additional projects
@@ -98,7 +98,7 @@ class Object(gws.Node, gws.IApplication):
             if desc.ext_type not in cnf:
                 gws.log.debug(f'ad-hoc helper {desc.ext_type!r} will be created')
                 cfg = gws.Config(type=desc.ext_type)
-                cnf[desc.ext_type] = gws.config.parse(self.root.specs, cfg, 'gws.ext.helper.Config')
+                cnf[desc.ext_type] = gws.config.parse(self.root.specs, cfg, 'gws.ext.config.helper')
         self.helpers = self.create_children('gws.ext.helper', list(cnf.values()))
 
         self.auth = self.require_child(gws.base.auth.manager.Object, self.var('auth'))
@@ -133,6 +133,63 @@ class Object(gws.Node, gws.IApplication):
         #
         # if root.application.developer_option('server.auto_reload'):
         #     root.application.monitor.add_directory(gws.APP_DIR, '\.py$')
+
+
+    def populate_action_object(self, desc, user, project):
+
+        if project:
+            for action in project.api.find_actions(ext_name=desc.actionSpec.extName):
+                desc.actionObject = action
+                acc = user.access(action, project.api, project)
+                if acc == gws.ACCESS_ALLOWED:
+                    return desc
+                if acc == gws.ACCESS_DENIED:
+                    return desc.with_error(DispatchError.actionForbidden)
+
+        for action in self.api.find_actions(ext_name=desc.actionSpec.extName):
+            acc = user.access(action, self.api, self)
+            if acc == gws.ACCESS_ALLOWED:
+                if not desc.actionObject:
+                    desc.actionObject = action
+                return desc
+            if acc == gws.ACCESS_DENIED:
+                return desc.with_error(DispatchError.actionForbidden)
+
+        return desc.with_error(DispatchError.actionNotFound)
+
+
+
+
+    def command_descriptor(self, command_name, request_method, params, user, strict_mode):
+        desc = self.root.specs.command_descriptor(command_name, request_method)
+
+        if not desc:
+            gws.log.error(f'command not found cmd={command_name!r} m={request_method!r}')
+            return gws.ExtCommandDescriptor().with_error(DispatchError.commandNotFound)
+
+        try:
+            desc.request = self.root.specs.read(params, desc.requestSpec, strict_mode)
+        except gws.spec.ReadError as exc:
+            gws.log.exception(exc)
+            return desc.with_attr(error=DispatchError.badRequest)
+
+        project = None
+        project_uid = desc.request.get('projectUid')
+
+        if project_uid:
+            project = self.find_project(uid=project_uid)
+            if not project:
+                return desc.with_error(DispatchError.projectNotFound)
+            if not user.can_use(project):
+                return desc.with_error(DispatchError.projectForbidden)
+
+        desc = self.populate_action_object(desc, user, project)
+        if desc.error:
+            return desc
+
+        desc.methodPtr = desc.actionObject.getattr(desc.methodName)
+        return desc
+
 
     def find_action(self, user, ext_type, project_uid=None):
         actions = {}

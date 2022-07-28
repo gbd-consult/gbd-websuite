@@ -8,21 +8,21 @@ import gws.types as t
 STORAGE_CATEGORY = 'Dimension'
 
 
-@gws.ext.Props('action.dimension')
+@gws.ext.props.action('dimension')
 class Props(gws.base.api.action.Props):
     layerUids: t.Optional[t.List[str]]
     pixelTolerance: int
 
 
-@gws.ext.Config('action.dimension')
-class Config(gws.WithAccess):
+@gws.ext.config.action('dimension')
+class Config(gws.ConfigWithAccess):
     """Dimension action"""
 
     layers: t.Optional[t.List[str]]  #: target layer uids
     pixelTolerance: int = 10  #: pixel tolerance
 
 
-@gws.ext.Object('action.dimension')
+@gws.ext.object.action('dimension')
 class Object(gws.base.api.action.Object):
 
     def props_for(self, user):
@@ -32,7 +32,7 @@ class Object(gws.base.api.action.Object):
             pixelTolerance=self.var('pixelTolerance'),
         )
 
-    @gws.ext.command('api.dimension.storage')
+    @gws.ext.command.api('dimensionStorage')
     def storage(self, req: gws.IWebRequest, p: gws.base.storage.Params) -> gws.base.storage.Response:
         helper: gws.base.storage.Object = self.root.application.require_helper('storage')
         return helper.handle_action(req, p, STORAGE_CATEGORY)

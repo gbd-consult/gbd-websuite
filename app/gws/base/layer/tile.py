@@ -22,7 +22,7 @@ class Service(gws.Data):
     tile_size: int
 
 
-@gws.ext.Config('layer.tile')
+@gws.ext.config.layer('tile')
 class Config(image.Config):
     """Tile layer"""
     display: types.DisplayMode = types.DisplayMode.tile  #: layer display mode
@@ -31,7 +31,7 @@ class Config(image.Config):
     url: gws.Url  #: rest url with placeholders {x}, {y} and {z}
 
 
-@gws.ext.Object('layer.tile')
+@gws.ext.object.layer('tile')
 class Object(image.Object):
     url: gws.Url
     service: Service
