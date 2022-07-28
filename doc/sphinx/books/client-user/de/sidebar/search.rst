@@ -23,7 +23,5 @@ und es öffnen sich die dazugehörigen Objekteigenschaften in einen Pop-up Fenst
 .. note:: **Konfigurationsmöglichkeiten**
  Die verwendeten Suchparameter können definiert werden.
 
-
-
  .. |search| image:: ../../../images/baseline-search-24px.svg
    :width: 30em

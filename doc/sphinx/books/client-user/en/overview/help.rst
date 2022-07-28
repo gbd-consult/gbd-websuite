@@ -17,8 +17,8 @@ Overview of the controls in the GBD WebSuite
 Toolbar
 #######
 
-Symbol				               Function
-=================================
+Symbol                     Function
+===================================
 |savedraw|			Confirm
 |canceldraw|			Cancel
 |distance| 			Measure lines
@@ -30,8 +30,8 @@ Symbol				               Function
 |continue|			continue
 |back|				back
 |delete|			delete
-|back1|				Close submenu
-========================
+|back1|       Close submenu
+===========================
 
 .. note:: You can find more about the individual functions under: `Toolbar`
 
@@ -40,8 +40,8 @@ Menu
 
 .. _table_attribute_2:
 
-Symbol				               Function
-=================================
+Symbol                       Function
+=====================================
 |menu|				Expand the menu
 |cancel|			Fold in the menu
 |layers|			Layer
@@ -50,8 +50,8 @@ Symbol				               Function
 |hidelayer| 			Sign out
 |authorization|			Sign in
 |search|			Search
-|alkis|				Parcel search
-========================
+|alkis|       Parcel search
+===========================
 
 .. note:: You can find out more about the individual functions under: `Menu`
 
@@ -60,16 +60,16 @@ Status bar
 
 .. _table_attribute_3:
 
-Symbol				               Function
-=================================
+Symbol                        Function
+======================================
 |zoomin|	 Zoom in
 |zoomout|	 Zoom out
 |zoommap|	 Show whole project
 |zoomrect| Pull up the zoom rectangle
 |massstab| Changing the scale
 |rotation| Changing the rotation
-|xy| 			 View the mouse position
-================================
+|xy|       View the mouse position
+==================================
 
 .. note:: Mehr über die einzelnen Funktionen finden sie unter: `Status bar`
 

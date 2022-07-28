@@ -29,7 +29,6 @@ Unter |options| stehen weitere Funktionen zur Verfügung:
  * :ref:`Markieren und Messen <measure>`
  * :ref:`Auswählen <selecting>`
 
-
  .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
    :width: 30em
  .. |continue| image:: ../../../images/baseline-chevron_right-24px.svg

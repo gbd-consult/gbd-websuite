@@ -36,7 +36,6 @@ Hier kann ein Überblick über die vorhandenen Attributfelder gewonnen, sowie At
 Mit der Funktion |add| ``Hinzufügen`` können Sie neue Objekte durch die Eingabe von Koordinaten erstellen.
 Außerdem können Sie über |cancel| ``Beenden`` zurück zur Layeransicht navigieren.
 
-
 .. note::
  Attributfelder können durch primitive wie auch komplexe Datentypen definiert sein.
  Primitive Datentypen entsprechen Datenbank-Typen. Es werden folgende Datentypen unterstützt:
@@ -66,7 +65,6 @@ Außerdem können Sie über |cancel| ``Beenden`` zurück zur Layeransicht navigi
  Außerdem ist es möglich eingebundene Web-Formulare anzupassen.
  Darüber können zum Beispiel Umfragen, Antrags-, Anmelde- und Bestellformulare bereitgestellt werden.
  Diese Formulare können Sie dann auf Ihrer Internet- oder Intranetseite veröffentlichen oder per E-Mail und sozialen Medien teilen.
-
 
  .. |add| image:: ../../../images/sharp-control_point-24px.svg
    :width: 30em

@@ -1,15 +1,12 @@
-===================
 Bedienungsübersicht
 ===================
-
 
 In diesem Kapitel können Sie Informationen zur Nutzung der GBD WebSuite erlangen.
 Zuerst wird der Aufbau der Kapitel, sowie sie Verwendung der unterschiedlichen Schreibstile erläutert.
 Danach wird eine Übersicht über die Bedienelemente geliefert und erklärt wie man durch die verschiedenen Kapitel navigiert.
 
-
 Aufbau der Kapitel
-===================
+==================
 Die Kapitel zu den einzelnen Bedienelementen sind wie folgt aufgebaut:
 
 * kurze Zusammenfassung der Funktionen des Bedienelements
@@ -19,7 +16,6 @@ Die Kapitel zu den einzelnen Bedienelementen sind wie folgt aufgebaut:
 .. tip:: **Bedienungstipps**
 
 .. note:: **Konfigurationsmöglichkeiten**
-
 
 GBD WebSuite Schreibstile
 =========================
