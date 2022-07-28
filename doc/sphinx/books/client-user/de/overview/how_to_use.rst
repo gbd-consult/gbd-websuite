@@ -1,53 +1,49 @@
-Bedienungsübersicht
-===================
+Hinweise zur Dokumentation
+==========================
 
-In diesem Kapitel können Sie Informationen zur Nutzung der GBD WebSuite erlangen.
 Zuerst wird der Aufbau der Kapitel, sowie sie Verwendung der unterschiedlichen Schreibstile erläutert.
-Danach wird eine Übersicht über die Bedienelemente geliefert und erklärt wie man durch die verschiedenen Kapitel navigiert.
+Danach wird eine Übersicht über die Bedienelemente geliefert und erklärt, wie man durch die verschiedenen Kapitel navigiert.
 
-Aufbau der Kapitel
-==================
-Die Kapitel zu den einzelnen Bedienelementen sind wie folgt aufgebaut:
+.. Aufbau der Kapitel
+  ------------------
+  Die Kapitel zu den einzelnen Bedienelementen sind wie folgt aufgebaut:
 
-* kurze Zusammenfassung der Funktionen des Bedienelements
-* Darstellung der Bedienung mit Hilfe von Screenshots und Erläuterungen
-* Anmerkungen zu Bedienungstipps und Konfigurationsmöglichkeiten in Nachrichtenboxen
+  * kurze Zusammenfassung der Funktionen des Bedienelements
+  * Darstellung der Bedienung mit Hilfe von Screenshots und Erläuterungen
+  * Anmerkungen zu Bedienungstipps und Konfigurationsmöglichkeiten in Nachrichtenboxen
 
-.. tip:: **Bedienungstipps**
+  .. tip:: **Bedienungstipps**
 
-.. note:: **Konfigurationsmöglichkeiten**
+  .. note:: **Konfigurationsmöglichkeiten**
 
 GBD WebSuite Schreibstile
-=========================
-In dieser Dokumentation werden zum besseren Verständnis, verschiedene Schreibstile verwendet.
-Zusätzlich sind zur schneller Wiedererkennung, die Icons der Bedienelemente in den Text integriert.
-Unterhalb befindet sich eine Auflistung der verwendeten Schreibstile.
+-------------------------
+In dieser Dokumentation werden zum besseren Verständnis verschiedene Schreibstile verwendet.
+Zusätzlich sind zur schnellen Wiedererkennung die Icons der Bedienelemente integriert.
 
-+-------------------------------------------------+--------------------------------------------------+
-| **Symbol**                                      | **Funktion**                                     |
-+-------------------------------------------------+--------------------------------------------------+
-|:guilabel:`Bedienelemente`                       |Bedienelemente                                    |
-+-------------------------------------------------+--------------------------------------------------+
-|      ``Schaltflächen``                          |Schaltflächen die getätigt werden können          |
-+-------------------------------------------------+--------------------------------------------------+
-|      :command:`Paramater`                       |Paramater bei denen eine Eingabe möglich ist      |
-+-------------------------------------------------+--------------------------------------------------+
-|     :ref:`Verlinkungen <function>`              |Verlinkungen innerhalb der Dokumentation          |
-+-------------------------------------------------+--------------------------------------------------+
-| `Querverweise <https://www.gbd-consult.de>`_    |Querverweise zu Internetseiten                    |
-+-------------------------------------------------+--------------------------------------------------+
++-------------------------------------------------+--------------------------------------------------------------+
+| **Symbol**                                      | **Beschreibung**                                             |
++-------------------------------------------------+--------------------------------------------------------------+
+|:guilabel:`Bedienelement`                        |Titel des Bedienelements                                      |
++-------------------------------------------------+--------------------------------------------------------------+
+|      ``Schaltfläche``                           |Schaltfläche zum Anklicken                                    |
++-------------------------------------------------+--------------------------------------------------------------+
+|      :command:`Parameter`                       |Parameter mit Eingabemöglichkeit                              |
++-------------------------------------------------+--------------------------------------------------------------+
+|     :ref:`Verlinkung <function>`                |innerhalb der Dokumentation oder zu externer Webseite         |
++-------------------------------------------------+--------------------------------------------------------------+
 
 Bedienelemente
-==============
-Über das Inhaltsverzeichnis unten und über die Seitenleiste können Sie durch die Kapitel der Dokumentation navigieren.
+--------------
+Die Navigation durch die Kapitel der Dokumentation ist standardmäßig über die Seitenleiste möglich, oder auch über die untenstehende Auflistung.
 Sie können alternativ auch die Suchfunktion verwenden, welche in der Seitenleiste oberhalb angeordnet ist.
-Eine ausführliche Hilfe im Umgang mit der GBD WebSuite, erhalten Sie im weiteren Verlauf dieser Dokumentation.
-Hier finden Sie zum Überblick, eine Auflistung aller Bedienelemente der GBD WebSuite.
+Eine ausführliche Hilfe im Umgang mit der GBD WebSuite erhalten Sie im weiteren Verlauf dieser Dokumentation.
+Hier finden Sie im Folgenden einen Überblick zur Funktionalität mit einer Auflistung aller Bedienelemente der GBD WebSuite.
 
 **Werkzeugleiste**
 
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-| **Symbol**             | **Funktion**                                     |        **Funktionsbeschreibung**                          |
+| **Symbol**             | **Funktion**                                     |        **Beschreibung**                                   |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 |      |select|          |:ref:`Auswählen <selecting>`                      |Auswählen von Objekten per Mausklick                       |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
@@ -55,19 +51,19 @@ Hier finden Sie zum Überblick, eine Auflistung aller Bedienelemente der GBD Web
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 |      |mouseover|       |:ref:`Anzeigen <mouseover>`                       |Informationen von Objekten per Mouseover                   |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |location|        |:ref:`Mein Standort <location>`                   |Informationen zum akutellen Standort                       |
+|      |location|        |:ref:`Mein Standort <location>`                   |Informationen zum aktuellen Standort                       |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 |      |geo_search|      |:ref:`Räumliche Suche <searching>`                |Suche mit Hilfe von geometrischen Objekten                 |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 |      |dimensions|      |:ref:`Bemaßung <dimensioning>`                    |Erfassung von Strecken-Distanzen                           |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |measure|         |:ref:`Markieren & Messen <measure>`               |Markieren mit Hilfe von geometrischen Objekten             |
+|      |measure|         |:ref:`Markieren und Messen <measure>`             |Markieren mit Hilfe von geometrischen Objekten             |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |dpro|            |:ref:`Auswahl an D-ProCon übermittlen <dprocon>`  |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
+|      |dpro|            |:ref:`Auswahl an D-ProCon übermitteln <dprocon>`  |Selektierte Auswahl an Objekten an D-ProCon übermitteln    |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |gkos|            |:ref:`Auswahl an GeKos übermittlen <gkos>`        |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
+|      |gkos|            |:ref:`Auswahl an GeKos übermitteln <gkos>`        |Selektierte Auswahl an Objekten an GeKoS übermitteln       |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
-|      |print|           |:ref:`Drucken <print>`                            |PDF-Generierung welche gespeichert und gedruckt werden kann|
+|      |print|           |:ref:`Drucken <print>`                            |PDF-Generierung                                            |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
 |      |screenshot|      |:ref:`Screenshot exportieren <screenshot>`        |Abspeichern eines Kartenausschnitts als PNG-Datei          |
 +------------------------+--------------------------------------------------+-----------------------------------------------------------+
@@ -76,37 +72,37 @@ Mehr über die einzelnen Funktionen finden sie unter: :ref:`Werkzeugleiste <mapf
 
 **Menüleiste**
 
-+------------------------+------------------------------------------------------+-----------------------------------------+
-| **Symbol**             | **Funktion**                                         |          **Funktionsbeschreibung**      |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |menu|            |    Menü ausklappen                                   |Anzeigen des Untermenüs                  |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |project|         |:ref:`Projektübersicht <project_overview>`            |Übersicht über die Projekteigenschaften  |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |layers|          |:ref:`Layer <map_element>`                            |Übersicht über die einzelnen Layer       |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |search|          |:ref:`Suche <search>`                                 |Liste von Ergebnissen der Suche          |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |select|          |:ref:`Auswahl <select>`                               |Liste der ausgewählten Objekte           |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |cadastralunit|   |:ref:`Flurstücksuche <cadastral_unit_searching>`      |Liste der ausgewählten Flurstücke        |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |person_info|     |:ref:`Personen Informationen <person_info>`           |Personenbezogene Flurstücksinformationen |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |location_manager||:ref:`Location Manager <location_manager>`            |Verwalten temporärer Ereignisse          |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |bplan|           |:ref:`Bauleitplanung <bplan>`                         |INSPIRE Bereitstellung Bauleitplanung    |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |measure|         |:ref:`Markierungen <markings>`                        |Liste der ausgewählten Markierungen      |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |dimensions|      |:ref:`Bemaßung <dimensions>`                          |Auflistung der erstellten Bemaßungen     |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |edit|            |:ref:`Editieren <editing>`                            |Liste der editierbaren Objekte           |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |table_edit|      |:ref:`Tabelle editieren <table_editing>`              |Öffnet Tabelle zum Attribute editieren   |
-+------------------------+------------------------------------------------------+-----------------------------------------+
-|      |authorization|   |:ref:`Anmeldung <sign_in>`                            |An- und Abmelden von Benutzern           |
-+------------------------+------------------------------------------------------+-----------------------------------------+
++------------------------+------------------------------------------------------+------------------------------------------+
+| **Symbol**             | **Funktion**                                         |          **Beschreibung**                |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |menu|            |    Menü ausklappen                                   |Anzeigen des Untermenüs                   |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |project|         |:ref:`Projektübersicht <project_overview>`            |Übersicht über die Projekteigenschaften   |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |layers|          |:ref:`Layer <map_element>`                            |Übersicht über die einzelnen Layer        |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |search|          |:ref:`Suche <search>`                                 |Liste von Ergebnissen der Suche           |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |select|          |:ref:`Auswahl <select>`                               |Liste der ausgewählten Objekte            |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |cadastralunit|   |:ref:`Flurstücksuche <cadastral_unit_searching>`      |Liste der ausgewählten Flurstücke         |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |person_info|     |:ref:`Personen Informationen <person_info>`           |Personenbezogene Flurstücksinformationen  |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |location_manager||:ref:`Location Manager <location_manager>`            |Modul zur Verwaltung temporärer Ereignisse|
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |bplan|           |:ref:`Bauleitplanung <bplan>`                         |INSPIRE Bereitstellung Bauleitplanung     |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |measure|         |:ref:`Markierungen <markings>`                        |Liste der ausgewählten Markierungen       |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |dimensions|      |:ref:`Bemaßung <dimensions>`                          |Auflistung der erstellten Bemaßungen      |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |edit|            |:ref:`Editieren <editing>`                            |Liste der editierbaren Objekte            |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |table_edit|      |:ref:`Tabelle editieren <table_editing>`              |Öffnet Tabelle zum Attribute editieren    |
++------------------------+------------------------------------------------------+------------------------------------------+
+|      |authorization|   |:ref:`Anmeldung <sign_in>`                            |An- und Abmelden von Benutzern            |
++------------------------+------------------------------------------------------+------------------------------------------+
 
 Mehr über die einzelnen Funktionen finden sie unter: :ref:`Menüleiste <sidebar>`
 

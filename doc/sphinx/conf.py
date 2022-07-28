@@ -17,9 +17,9 @@ GEN_ROOT = util.GEN_ROOT
 extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
-    # 'sphinx.ext.autosummary',
-    # 'sphinx.ext.doctest',
-    # 'sphinx.ext.intersphinx',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
     # 'sphinx.ext.todo',
     # 'sphinx.ext.coverage',
     # 'sphinx.ext.ifconfig',

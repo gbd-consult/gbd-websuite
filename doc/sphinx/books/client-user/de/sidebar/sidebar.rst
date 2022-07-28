@@ -3,12 +3,12 @@
 Menüleiste
 ==========
 
-.. note::
- Dank der modularen Struktur der GBD WebSuite, kann die Menüleiste individuell konfiguriert werden. So kann jedes Element optional hinzugefügt und kombiniert werden.
- Zusätzlich ist es möglich, die Elemente der Menüleiste in die Werkzeugleiste zu integrieren.
- Auch die Reihenfolge der Menüelemente kann definiert werden. Dadurch ist es möglich, auf jeden Wunsch individuell einzugehen.
- Die zur Verfügung stehenden Funktionen können, durch eine integrierte Benutzerverwaltung, vom eingeloggten Benutzer abhängig gemacht werden.
- Die Breite der Menüleiste kann über ein Greifen der rechts angeordneten Leiste angepasst werden.
+.. note:: **Konfigurationsmöglichkeiten**:
+ Dank der modularen Struktur der GBD WebSuite, kann diese nach Belieben angepasst werden.
+ So kann jedes Element der Menüleiste optional hinzugefügt oder auch herausgenommen werden.
+ Außerdem kann die Anordnung auf dem Bildschirm, sowie die Reihenfolge in der Menüleiste angepasst werden.
+ Dadurch ist es möglich, auf jeden Wunsch individuell einzugehen.
+ Die Auswahl der zur Verfügung stehenden Bedienelemente ist innerhalb der integrierten Benutzerverwaltung durch den Administrator für jeden Benutzer oder Benutzergruppe anzupassen.
 
 Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs:
 
@@ -21,7 +21,6 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs:
     dimensions.rst
     editing.rst
     cadastral_unit_searching.rst
-    inspire.rst
     map_element.rst
     location_manager.rst
     marking.rst
@@ -29,3 +28,5 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs:
     project_overview.rst
     search.rst
     table_editing.rst
+
+Die Breite der Menüleiste kann mit der Maus angepasst werden.

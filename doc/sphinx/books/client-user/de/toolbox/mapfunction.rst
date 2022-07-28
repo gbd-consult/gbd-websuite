@@ -3,13 +3,12 @@
 Werkzeugleiste
 ==============
 
-.. note::
- Dank der modularen Struktur der GBD WebSuite, kann diese nach belieben angepasst werden.
- Die zur Verfügung stehenden Elemente der Werkzeugleiste, können individuell aus dem Werkzeugkatalog der GBD WebSuite ausgewählt und kombiniert werden.
- Außerdem kann die Anordnung auf dem Bildschirm, sowie die Reihenfolge in den Menüs angepasst werden.
+.. note:: **Konfigurationsmöglichkeiten**:
+ Dank der modularen Struktur der GBD WebSuite, kann diese nach Belieben angepasst werden.
+ So kann jedes Element der Werkzeugleiste optional hinzugefügt oder auch herausgenommen werden.
+ Außerdem kann die Anordnung auf dem Bildschirm, sowie die Reihenfolge in der Werkzeugleiste angepasst werden.
  Dadurch ist es möglich, auf jeden Wunsch individuell einzugehen.
- Diese verschiedenen Anpassungen, können zusätzlich vom eingeloggten Benutzer abhängig gemacht werden.
- So ist es zum Beispiel möglich, dass privaten Nutzern ein kleineres Angebot an Funktionen zur Verfügung gestellt wird, als amtlichen Nutzern.
+ Die Auswahl der zur Verfügung stehenden Bedienelemente ist innerhalb der integrierten Benutzerverwaltung durch den Administrator für jeden Benutzer oder Benutzergruppe anzupassen.
 
 Hier finden Sie alle Informationen, zu den einzelnen Elementen der Werkzeugleiste:
 
