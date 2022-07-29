@@ -88,10 +88,24 @@ class Object(gws.common.action.Object):
                 if not conn.user_can('INSERT', self.log_table):
                     raise ValueError(f'no INSERT acccess to {self.log_table!r}')
 
-    # fs_count integer,
-    # fs_ids text
 
     def log_access(self, action, req: t.IRequest, layer, features=None):
+        """
+        example table for logging:
+
+        create table if not exists log.test (
+            id serial primary key,
+            action text,
+            layer_uid text,
+            layer_name text,
+            login text,
+            user_name text,
+            ip text,
+            date_time timestamp,
+            feature_count numeric,
+            feature_ids text
+        )
+        """
         if self.log_table:
             if not self.logged_layers_uids or \
                     layer.uid in self.logged_layers_uids:
@@ -103,12 +117,12 @@ class Object(gws.common.action.Object):
                     'login': req.user.uid,
                     'user_name': req.user.display_name,
                     'ip': req.env('REMOTE_ADDR', ''),
-                    'fs_count': None,
-                    'fs_ids': None
+                    'feature_count': None,
+                    'feature_ids': None
                 }
                 if features:
-                    data['fs_count'] = len(features)
-                    data['fs_ids'] = ",".join(f.uid for f in features if f.uid)
+                    data['feature_count'] = len(features)
+                    data['feature_ids'] = ",".join(f.uid for f in features if f.uid)
 
                 with self.db.connect() as conn:
                     conn.insert_one(self.log_table, 'id', data)
