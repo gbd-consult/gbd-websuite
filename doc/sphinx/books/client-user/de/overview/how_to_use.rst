@@ -4,17 +4,13 @@ Hinweise zur Dokumentation
 Zuerst wird der Aufbau der Kapitel, sowie sie Verwendung der unterschiedlichen Schreibstile erläutert.
 Danach wird eine Übersicht über die Bedienelemente geliefert und erklärt, wie man durch die verschiedenen Kapitel navigiert.
 
-.. Aufbau der Kapitel
-  ------------------
-  Die Kapitel zu den einzelnen Bedienelementen sind wie folgt aufgebaut:
+Aufbau der Kapitel
+------------------
+Die Kapitel zu den einzelnen Bedienelementen sind wie folgt aufgebaut:
 
   * kurze Zusammenfassung der Funktionen des Bedienelements
   * Darstellung der Bedienung mit Hilfe von Screenshots und Erläuterungen
   * Anmerkungen zu Bedienungstipps und Konfigurationsmöglichkeiten in Nachrichtenboxen
-
-  .. tip:: **Bedienungstipps**
-
-  .. note:: **Konfigurationsmöglichkeiten**
 
 GBD WebSuite Schreibstile
 -------------------------
