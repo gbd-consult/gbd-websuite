@@ -3,8 +3,12 @@
 Anzeigen
 ========
 
-Das |mouseover| ``Anzeigen``-Werkzeug ermöglicht ein schnelles Abfragen der Objekteigenschaften.
-Ähnlich wie das |info|
+**Funktion:**
+
+Das |mouseover| :guilabel:`Anzeigen`-Werkzeug ermöglicht ein schnelles Abfragen der Objekteigenschaften. 
+Ähnlich wie die Funktion des |info| :guilabel:`Abfragen`-Werkzeugs.
+
+**Bedienung:**
 
 Wählen Sie das Werkzeug in der Werkzeugleiste an.
 Halten Sie jetzt den Mauszeiger für mindestens 1,5 Sekunden auf das gewünschte Objekt.
@@ -13,12 +17,12 @@ Automatisch öffnen sich die Objekteigenschaften im Pop-Up Fenster.
 Aus welchen Daten gewählt wird, muss vorher durch die Auswahl der Karte unter ``Layer`` festgelegt werden. Es gibt verschiedene Möglichkeiten, die Auswahl genauer zu definieren.
 Es kann ein übergeordneter Layer ausgewählt werden, wodurch die Abfrage auf alle darunter liegenden Layer greift.
 
-.. figure:: ../../../screenshots/de/client-user/mouseover_identification_1.png
+.. figure:: ../../../screenshots/de/client-user/object_identification_1.png
   :align: center
 
 Alternativ kann der unterste Layer in einer Layerstruktur gewählt werden, wodurch die Abfrage ausschließlich auf diese Layer greift.
 
-.. figure:: ../../../screenshots/de/client-user/mouseover_identification_2.png
+.. figure:: ../../../screenshots/de/client-user/object_identification_2.png
   :align: center
 
 Wenn mehrere Objekte markiert wurden, kann man über |continue| und

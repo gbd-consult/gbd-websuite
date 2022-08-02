@@ -6,9 +6,10 @@ GBD WebSuite
 .. rubric:: Funktionalität
 
 Die GBD WebSuite wird als Docker Image bereitgestellt und kann plattformunabhängig in IT-Infrastrukturen integriert werden.
-Sie kombiniert die Funktionalität zahlreicher Open Source Software, wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
+Sie kombiniert die Funktionalität zahlreicher Open Source Software wie QGIS, MapProxy, uWSGI oder NGINX und stellt diese den Anwendern zur Verfügung.
 Die umfangreichen Funktionalitäten werden auf Basis von Plugins zur Verfügung gestellt und können flexibel konfiguriert werden.
-Das Aussehen des GBD WebSuite Clients, kann individuell an eine bestehende Umgebung angepasst oder in diese integriert werden. Die aktuelle Funktionalität umfasst:
+Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebung angepasst oder in diese integriert werden.
+Die aktuelle Funktionalität umfasst:
 
 * QGIS und QGIS Server Integration
 * Caching von Getmap und GetPrint Anfragen

@@ -1,7 +1,8 @@
 GBD WebSuite Client Benutzerhandbuch
 ====================================
 
-Anleitungen für GBD WebSuite Client Nutzer
+Willkommen zum Benutzerhandbuch des GBD WebSuite Clients.
+Hier finden Sie eine Auflistung der Kapitel.
 
 .. toctree::
     :maxdepth: 2

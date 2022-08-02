@@ -16,6 +16,7 @@ Hier finden Sie alle Informationen, zu den einzelnen Elementen der Werkzeugleist
     :maxdepth: 2
 
     object_identification.rst
+    object_identification_v1.rst
     object_identification_v2.rst
     mouseover.rst
     selecting.rst

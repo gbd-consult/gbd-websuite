@@ -1,14 +1,9 @@
-.. _object_identi:
+.. _object_identi_v1:
 
-Abfragen
-========
-
-**Funktion:**
+Abfragen (Version 1)
+====================
 
 Mit Hilfe des |info| :guilabel:`Abfragen`-Werkzeugs werden die Eigenschaften von markierten Objekten angezeigt.
-
-**Bedienung:**
-
 Markieren Sie mit der linken Maustaste ein Objekt im Kartenfenster.
 Es öffnet sich ein Pop-up Fenster, in dem die Objekteigenschaften angezeigt werden.
 Unter |options| ``Aufgaben`` stehen weitere Funktionen zur Verfügung:
@@ -17,7 +12,7 @@ Unter |options| ``Aufgaben`` stehen weitere Funktionen zur Verfügung:
  |measure| :guilabel:`Markieren und Messen`
  |select| :guilabel:`Auswählen`
 
-.. figure:: ../../../screenshots/de/client-user/object_identification_1.png
+.. figure:: ../../../screenshots/de/client-user/mouseover_identification_1.png
   :align: center
 
 Welche Objekte abgefragt werden können, wird im |layers| :guilabel:`Layer` Menü definiert.
@@ -26,9 +21,9 @@ Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe m
 
 .. admonition:: Konfigurationsmöglichkeiten
 
- - Hier könnten Infos zu Konfigurationen in Stichpunkten stehen
- - Hier könnten Infos zu Konfigurationen in Stichpunkten stehen
- - Hier könnten Infos zu Konfigurationen in Stichpunkten stehen
+ - Hier könnten Informationen zu Konfigurationen stehen in Stichpunkten stehen
+ - Hier könnten Informationen zu Konfigurationen stehen in Stichpunkten stehen
+ - Hier könnten Informationen zu Konfigurationen stehen in Stichpunkten stehen
 
  .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
    :width: 30em
