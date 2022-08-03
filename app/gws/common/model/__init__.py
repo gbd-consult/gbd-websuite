@@ -182,6 +182,7 @@ class FieldValueConfig(t.Config):
     write: t.Optional[ValueConfig]
     readDefault: t.Optional[ValueConfig]
     writeDefault: t.Optional[ValueConfig]
+    serverDefault: t.Optional[str]
 
 
 class FieldRelationConfig(t.Config):
@@ -285,7 +286,9 @@ class Field(gws.Object, t.IModelField):
         p = self.var('widget')
         if p:
             cls = _TYPES['widget:' + p.type]
-            self.widget = t.cast(t.IModelWidget, self.create_child(cls, p))
+            uid = gws.sha256(repr(p))
+            wgt = t.cast(t.IModelWidget, self.root.create_shared_object(cls, uid, p))
+            self.widget = wgt
 
         self.validators = []
         ps = self.var('validators')
@@ -330,19 +333,11 @@ class Field(gws.Object, t.IModelField):
     def write_to_orm(self, fe: t.IFeature, obj):
         pass
 
-    def apply_fixed_value(self, fe: t.IFeature, mode, env):
-        p = gws.get(self.value, mode)
-        if p:
-            fe.attributes[self.name] = eval_value(fe, p, env)
+    def apply_value(self, fe: t.IFeature, mode, kind, env):
+        val = gws.get(self.value, mode + ('Default' if kind == 'default' else ''))
+        if val is not None and (kind == 'fixed' or fe.attr(self.name) is None):
+            fe.attributes[self.name] = eval_value(fe, val, env)
             return True
-        return False
-
-    def apply_default_value(self, fe: t.IFeature, mode, env):
-        if fe.attr(self.name) is None:
-            p = gws.get(self.value, mode + 'Default')
-            if p:
-                fe.attributes[self.name] = eval_value(fe, p, env)
-                return True
         return False
 
     def prepend_validator(self, cfg):
@@ -392,7 +387,13 @@ class Field(gws.Object, t.IModelField):
 
 class ScalarField(Field):
     def sa_columns(self, columns):
-        col = sa.Column(self.name, _SCALAR_TYPES[self.data_type], primary_key=self.is_primary_key)
+        kwargs = {}
+        if self.is_primary_key:
+            kwargs['primary_key'] = True
+        if self.value.serverDefault:
+            kwargs['server_default'] = sa.text(self.value.serverDefault)
+
+        col = sa.Column(self.name, _SCALAR_TYPES[self.data_type], **kwargs)
         columns.append(col)
 
     def read_from_props(self, fe: t.IFeature, props: t.FeatureProps, depth):
@@ -429,7 +430,7 @@ class ScalarField(Field):
 
             kw = _escape_like(state.args.keyword)
 
-            if ts.type == 'substring':
+            if ts.type == 'like':
                 kw = '%' + kw + '%'
             if ts.type == 'begin':
                 kw = kw + '%'
@@ -680,6 +681,16 @@ class RelatedField(Field):
             if r.model_uid == model.uid:
                 return r
 
+    def apply_value(self, fe: t.IFeature, mode, kind, env):
+        val = gws.get(self.value, mode + ('Default' if kind == 'default' else ''))
+        if val is not None and (kind == 'fixed' or fe.attr(self.name) is None):
+            v = eval_value(fe, val, env)
+            rel_model = self.first_related_model()
+            if rel_model:
+                fe.attributes[self.name] = rel_model.get_feature(v)
+            return True
+        return False
+
     ##
 
 
@@ -717,9 +728,9 @@ class RelatedFeatureField(RelatedField):
 
     def write_to_orm(self, fe: t.IFeature, obj):
         rel_model = self.first_related_model()
-        fe2 = fe.attributes.get(self.name)
-        if fe2:
-            setattr(obj, self.name, rel_model.get_object(fe2.uid))
+        rel_feature = fe.attributes.get(self.name)
+        if rel_feature:
+            setattr(obj, self.name, rel_model.get_object(rel_feature.uid))
 
 
 class RelatedFeatureListField(RelatedField):
@@ -794,7 +805,6 @@ class Field_relatedFeature(RelatedFeatureField):
 
         kwargs['primaryjoin'] = getattr(own_cls, self.foreign_key_name) == getattr(rel_cls, rel_pk)
 
-
         if self.relations[0].field_name:
             kwargs['back_populates'] = self.relations[0].field_name
         properties[self.name] = sa.orm.relationship(rel_cls, **kwargs)
@@ -827,7 +837,6 @@ class Field_relatedFeatureList(RelatedFeatureListField):
 
         kwargs['primaryjoin'] = getattr(own_cls, own_pk[0].name) == getattr(rel_cls, rel_fk_name)
         kwargs['foreign_keys'] = getattr(rel_cls, rel_fk_name)
-
 
         kwargs['back_populates'] = self.relations[0].field_name
         properties[self.name] = sa.orm.relationship(rel_cls, **kwargs)
@@ -1212,6 +1221,7 @@ class SortConfig:
     fieldName: str
     order: str
 
+
 class Config(t.WithAccess):
     """Model configuration"""
 
@@ -1408,6 +1418,7 @@ class DbModel(Object, t.IDbModel):
         if md:
             f2 = self.feature_from_orm(md['object'], depth=depth)
             fe.attributes = f2.attributes
+        fe.is_new = False
         return fe
 
     def get_feature(self, uid, depth=0):
@@ -1423,7 +1434,6 @@ class DbModel(Object, t.IDbModel):
         for f in self.fields:
             f.read_from_orm(fe, obj, depth)
 
-        fe._model_data = {'object': obj}
         return fe
 
     def get_db(self):

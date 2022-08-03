@@ -159,8 +159,9 @@ class Object(gws.common.action.Object):
 
         fe.model.save(fe)
         gws.common.model.session.commit()
+        fe.model.reload(fe, depth=1)
 
-        fe = fe.model.get_feature(fe.uid, depth=1)
+        # fe = fe.model.get_feature(fe.uid, depth=1)
         self._apply_templates_deep(fe, 'title')
 
         return FeatureResponse(feature=fe.props)
@@ -179,12 +180,12 @@ class Object(gws.common.action.Object):
     def _apply_permissions_and_defaults(self, fe: t.IFeature, req: t.IRequest, mode):
         env = t.Data(user=req.user)
         for f in fe.model.fields:
-            if f.apply_fixed_value(fe, mode, env):
+            if f.apply_value(fe, mode, 'fixed', env):
                 continue
             if not req.user.can_use(f.permissions.get(mode)):
                 gws.log.debug(f'remove field={f.name!r} mode={mode!r}')
                 del fe.attributes[f.name]
-            f.apply_default_value(fe, mode, env)
+            f.apply_value(fe, mode, 'default', env)
         return fe
 
     def _load_feature(self, req: t.IRequest, p: FeatureParams) -> t.IFeature:

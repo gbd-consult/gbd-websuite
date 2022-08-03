@@ -170,11 +170,11 @@ Für `type` sind folgende Werte möglich:
 Wert | Bedeutung
 ---|---
 `exact` | das Feld ist gleich dem Suchbegriff
-`substring` | das Feld enthält den Suchbegriff (`LIKE`)
+`like` | das Feld enthält den Suchbegriff
 `begin` | das Feld beginnt mit dem Suchbegriff
 `end` | das Feld endet mit dem Suchbegriff
 
-Im folgenden Beispiel ist für `surname` die `LIKE` Suche konfiguriert, mit mindestens 3 Zeichen, und das Feld `code` muss exact übereinstimmen:
+Im folgenden Beispiel ist für `surname` die `like` Suche konfiguriert, mit mindestens 3 Zeichen, und das Feld `code` muss exact übereinstimmen:
 
 
 @quote
@@ -188,7 +188,7 @@ model {
             type "string"
             title "Nachname"
             textSearch {
-                type "substring"
+                type "like"
                 minLength 3
             }
         }

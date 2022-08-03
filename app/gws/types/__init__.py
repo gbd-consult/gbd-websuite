@@ -1300,8 +1300,7 @@ class IModelField(IObject):
     type: str
     validators: list
     widget: Optional['IModelWidget']
-    def apply_default_value(self, fe: 'IFeature', mode, env): pass
-    def apply_fixed_value(self, fe: 'IFeature', mode, env): pass
+    def apply_value(self, fe: 'IFeature', mode, kind, env): pass
     def prepend_validator(self, cfg): pass
     def read_from_orm(self, fe: 'IFeature', obj, depth): pass
     def read_from_props(self, fe: 'IFeature', props: 'FeatureProps', depth: int): pass
