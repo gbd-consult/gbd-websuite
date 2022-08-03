@@ -147,7 +147,7 @@ _ROLE_ALL = 'all'
 
 def _can_use(roles, target, parent):
     if not target:
-        gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r}: empty')
+        # gws.log.debug(f'PERMS: query: t={_repr(target)} roles={roles!r}: empty')
         return False
 
     if _ROLE_ADMIN in roles:
