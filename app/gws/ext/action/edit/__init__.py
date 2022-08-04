@@ -115,18 +115,20 @@ class Object(gws.common.action.Object):
         return ListResponse(features=[fe.props for fe in out_features])
 
     def api_init_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
+        project = req.require_project(p.projectUid)
         fe_in = self._load_feature(req, p)
 
         if not req.user.can_use(fe_in.model.permissions.read):
             raise gws.web.error.Forbidden()
 
         fe = fe_in
-        self._apply_permissions_and_defaults(fe, req, 'read')
+        self._apply_permissions_and_defaults(fe, req, project, 'read')
         self._apply_templates_deep(fe, 'title')
 
         return FeatureResponse(feature=fe.props)
 
     def api_read_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
+        project = req.require_project(p.projectUid)
         fe_in = self._load_feature(req, p)
 
         if not req.user.can_use(fe_in.model.permissions.read):
@@ -136,12 +138,13 @@ class Object(gws.common.action.Object):
         if not fe:
             raise gws.web.error.NotFound()
 
-        self._apply_permissions_and_defaults(fe, req, 'read')
+        self._apply_permissions_and_defaults(fe, req, project, 'read')
         self._apply_templates_deep(fe, 'title')
 
         return FeatureResponse(feature=fe.props)
 
     def api_write_feature(self, req: t.IRequest, p: FeatureParams) -> FeatureResponse:
+        project = req.require_project(p.projectUid)
         fe = self._load_feature(req, p)
 
         if fe.is_new and not req.user.can_use(fe.model.permissions.create):
@@ -149,7 +152,7 @@ class Object(gws.common.action.Object):
         if not fe.is_new and not req.user.can_use(fe.model.permissions.write):
             raise gws.web.error.Forbidden()
 
-        self._apply_permissions_and_defaults(fe, req, 'write')
+        self._apply_permissions_and_defaults(fe, req, project, 'write')
 
         errors = fe.model.validate(fe)
         if errors:
@@ -177,8 +180,8 @@ class Object(gws.common.action.Object):
 
         return FeatureResponse(feature=None)
 
-    def _apply_permissions_and_defaults(self, fe: t.IFeature, req: t.IRequest, mode):
-        env = t.Data(user=req.user)
+    def _apply_permissions_and_defaults(self, fe: t.IFeature, req: t.IRequest, project, mode):
+        env = t.Data(user=req.user, project=project)
         for f in fe.model.fields:
             if f.apply_value(fe, mode, 'fixed', env):
                 continue
