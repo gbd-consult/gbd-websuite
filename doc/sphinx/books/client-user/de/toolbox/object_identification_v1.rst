@@ -12,7 +12,7 @@ Unter |options| ``Aufgaben`` stehen weitere Funktionen zur Verfügung:
  |measure| :guilabel:`Markieren und Messen`
  |select| :guilabel:`Auswählen`
 
-.. figure:: ../../../screenshots/de/client-user/mouseover_identification_1.png
+.. figure:: ../../../screenshots/de/client-user/object_identification_1.png
   :align: center
 
 Welche Objekte abgefragt werden können, wird im |layers| :guilabel:`Layer` Menü definiert.

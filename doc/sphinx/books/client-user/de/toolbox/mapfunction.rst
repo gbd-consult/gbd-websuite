@@ -3,7 +3,8 @@
 Werkzeugleiste
 ==============
 
-.. note:: **Konfigurationsmöglichkeiten**:
+.. admonition:: Konfigurationsmöglichkeiten
+
  Dank der modularen Struktur der GBD WebSuite, kann diese nach Belieben angepasst werden.
  So kann jedes Element der Werkzeugleiste optional hinzugefügt oder auch herausgenommen werden.
  Außerdem kann die Anordnung auf dem Bildschirm, sowie die Reihenfolge in der Werkzeugleiste angepasst werden.
@@ -16,8 +17,6 @@ Hier finden Sie alle Informationen, zu den einzelnen Elementen der Werkzeugleist
     :maxdepth: 2
 
     object_identification.rst
-    object_identification_v1.rst
-    object_identification_v2.rst
     mouseover.rst
     selecting.rst
     dimensioning.rst

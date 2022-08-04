@@ -12,7 +12,7 @@ Durch eine vorherige Anwahl im :ref:`Layer <map_element>` Menü wird die möglic
 Durch die Auswahl eines spezifischen Layers ist die Abfrage auf ausschließlich diesen Layer möglich.
 Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe möglich.
 
-.. figure:: ../../../screenshots/de/client-user/mouseover_identification_1.png
+.. figure:: ../../../screenshots/de/client-user/object_identification_1.png
   :align: center
 
 **Objekteigenschaften**

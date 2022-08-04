@@ -3,7 +3,8 @@
 Statusleiste
 ============
 
-.. note:: **Konfigurationsmöglichkeiten**:
+.. admonition:: Konfigurationsmöglichkeiten
+
  Dank der modularen Struktur der GBD WebSuite, kann diese nach Belieben angepasst werden.
  So kann jedes Element der Statusleiste optional hinzugefügt oder auch herausgenommen werden.
  Außerdem kann die Anordnung auf dem Bildschirm, sowie die Reihenfolge in der Statusleiste angepasst werden.

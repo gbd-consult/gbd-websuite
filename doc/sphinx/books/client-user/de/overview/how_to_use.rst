@@ -70,6 +70,7 @@ Hier finden Sie im Folgenden eine Auflistung aller Bedienelemente der GBD WebSui
 +------------------------+------------------------------------------------------+----------------------------------------------------------+
 
 Die ausführliche Beschreibung zu den einzelnen Bedienelementen finden Sie unter :ref:`Menüleiste <sidebar>`
+
 **Werkzeugleiste**
 
 +------------------------+----------------------------------------------------------------+-----------------------------------------------------------+

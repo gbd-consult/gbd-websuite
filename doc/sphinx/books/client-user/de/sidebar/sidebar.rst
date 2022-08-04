@@ -3,7 +3,8 @@
 Menüleiste
 ==========
 
-.. note:: **Konfigurationsmöglichkeiten**:
+.. admonition:: Konfigurationsmöglichkeiten
+
  Dank der modularen Struktur der GBD WebSuite, kann diese nach Belieben angepasst werden.
  So kann jedes Element der Menüleiste optional hinzugefügt oder auch herausgenommen werden.
  Außerdem kann die Anordnung auf dem Bildschirm, sowie die Reihenfolge in der Menüleiste angepasst werden.
@@ -28,5 +29,3 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs:
     project_overview.rst
     search.rst
     table_editing.rst
-
-Die Breite der Menüleiste kann mit der Maus angepasst werden.

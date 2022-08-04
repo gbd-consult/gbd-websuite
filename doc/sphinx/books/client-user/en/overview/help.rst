@@ -30,8 +30,8 @@ Symbol                     Function
 |continue|			continue
 |back|				back
 |delete|			delete
-|back1|       Close submenu
-===========================
+|back1|               Close submenu
+===================================
 
 .. note:: You can find more about the individual functions under: `Toolbar`
 
