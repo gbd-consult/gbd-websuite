@@ -25,59 +25,66 @@
 
 @import subprocess
 
-@code
-
-def dot_render(text):
-    with open('/tmp/doc.dot', 'w') as fp:
-        fp.write(text)
-    p = subprocess.Popen(
-        ['/opt/homebrew/bin/dot', '-Tsvg', '/tmp/doc.dot'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
-    out, _ = p.communicate()
-    out = out.decode('utf8')
-    if p.returncode:
-        out = 'ERROR: <xmp>' + out + '</xmp>'
-    else:
-        out = '<svg' + out.split('<svg')[1]
-    return '<div class="dotgraph">' + out + '</div>'
-
-def dot_defaults():
-    return """
-        rankdir="LR"
-        bgcolor="transparent"
-        splines="spline"
-        node [fontname="RobotoMono, Menlo, monospace", fontsize=9, color="{blueGrey200}", shape="plaintext"]
-        edge [fontname="RobotoMono, Menlo, monospace", fontsize=9, color="{blueGrey200}", arrowhead="vee"]
-    """
-
-def db_row(row):
-    row = row.split()
-
-    key = ''
-    if row[0] == 'PK':
-        row.pop(0)
-        key = " <FONT COLOR='#ff8f00'><B>&#x26bf;</B></FONT>"
-    if row[0] == 'FK':
-        row.pop(0)
-        key = " <FONT COLOR='#00c5cf'><B>&#x26bf;</B></FONT>"
-
-    type = ''
-    if len(row) > 1:
-        type = '<B>' + (row[1] + (' ' * 10))[:10] + '</B>'
-
-    return  f'<TR><TD ALIGN="left" PORT="{row[0]}">{type}{row[0]}{key}</TD></TR>'
-
-
+@def dot_render(text)
+    @code
+        with open('/tmp/doc.dot', 'w') as fp:
+            fp.write(text)
+        p = subprocess.Popen(
+            ['/opt/homebrew/bin/dot', '-Tsvg', '/tmp/doc.dot'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+        out, _ = p.communicate()
+        out = out.decode('utf8')
+        if p.returncode:
+            out = 'ERROR: <xmp>' + out + '</xmp>'
+        else:
+            out = '<svg' + out.split('<svg')[1]
+        return '<div class="dotgraph">' + out + '</div>'
+    @end
 @end
 
-@block db_diagram(text)
+@def dot_defaults()
+    rankdir="LR"
+    bgcolor="transparent"
+    splines="spline"
+    node [fontname="RobotoMono, Menlo, monospace", fontsize=9, color="{blueGrey200}", shape="plaintext"]
+    edge [fontname="RobotoMono, Menlo, monospace", fontsize=9, color="{blueGrey200}", arrowhead="vee"]
+@end
+
+
+@def db_row(row)
+    @let items = row.split()
+    @let key = ''
+
+    @if items[0] == 'PK'
+        @do items.pop(0)
+        @let key = " <FONT COLOR='#ff8f00'><B>&#x26bf;</B></FONT>"
+    @end
+
+    @if items[0] == 'FK'
+        @do items.pop(0)
+        @let key = " <FONT COLOR='#00c5cf'><B>&#x26bf;</B></FONT>"
+    @end
+
+    @let type = ''
+    @if len(items) > 1
+        @let type = '<B>' + (items[1] + (' ' * 10))[:10] + '</B>'
+    @end
+
+    <TR>
+        <TD ALIGN="left" PORT="{items[0]}">{type}{items[0]}{key}</TD>
+    </TR>
+@end
+
+
+@box db_diagram(text)
     @let head, rest = text.split('\n', 1)
-    @return ("\n<div class='db_diagram'>" +
-        dot_render("digraph {" + dot_defaults() + rest + "}") +
-        "\n<h6>" + head + "</h6>" +
-        "\n</div>\n\n"
-    )
+
+    {'\n'}<div class='db_diagram'>
+        @dot_render("digraph {" + dot_defaults() + rest + "}")
+        <h6>{head}</h6>
+    </div>
+
 @end
 
 @def db_table(name, rows)
