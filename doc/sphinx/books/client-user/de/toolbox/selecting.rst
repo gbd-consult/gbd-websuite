@@ -10,16 +10,16 @@ Auswählen
 **Bedienung:**
 
 Aktivieren Sie das Werkzeug, indem Sie auf |select| in der Werkzeugleiste klicken.
-Durch ein Anklicken der Objekte werden diese selektiert. Die ausgewählten Objekte werden orange markiert.
+Durch ein Anklicken von Objekten werden diese selektiert. Die ausgewählten Objekte werden orange markiert.
 Wenn Sie ein Objekt ein zweites mal Anklicken wird die Selektion aufgehoben.
-
-Alle selektierten Objekte werden in der Ablage des Menüpunkts :ref:`Auswahl <select>` aufgelistet.
-Dieser Menüpunkt öffnet sich automatisch, wenn das |select| :guilabel:`Auswählen`-Werkzeug aktiviert wird.
 
 .. figure:: ../../../screenshots/de/client-user/select1.png
   :align: center
 
-Am unteren Menüfensterrand befinden sich folgend Funktionen für den Menüpunkt :ref:`Auswahl <select>`:
+
+Alle selektierten Objekte werden in der Ablage des Menüpunkts :ref:`Auswahl <select>` aufgelistet.
+Dieser Menüpunkt öffnet sich automatisch, wenn das |select| :guilabel:`Auswählen`-Werkzeug aktiviert wird.
+Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüpunkt:
 
  * |load| Auswahl laden
  * |save| Auswahl speichern
@@ -27,7 +27,7 @@ Am unteren Menüfensterrand befinden sich folgend Funktionen für den Menüpunkt
 
 .. admonition:: Konfigurationsmöglichkeiten
 
- Durch eine Konfiguration ist eine Beschränkung dieser Funktion auf definierte Layer möglich.
+ Eine Beschränkung dieser Funktion auf definierte Layer kann konfiguriert werden.
 
  .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
    :width: 30em

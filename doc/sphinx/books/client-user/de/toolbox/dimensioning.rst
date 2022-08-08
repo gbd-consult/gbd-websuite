@@ -6,7 +6,7 @@ Bemaßung
 **Funktion:**
 
 Das |dimensions| :guilabel:`Bemaßung`-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichnen von Linien. Ähnlich einer technischen Bemaßung.
-Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet.
+Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet. Zusätzlich kann eine individuelle Beschriftung angehangen werden.
 
 **Bedienung:**
 
@@ -21,15 +21,15 @@ Nach Aktivierung des Tools, öffnet sich unter der Werkzeugleiste ein Feld mit f
 
   * Klicken Sie einmal um einen neuen Stützpunkt zu setzen
   * Klicken Sie zweimal um das Zeichnen einer Linie zu beenden
-  * Halten Sie die Muasgedrückt um den Kartenausschnitt zu verschieben
+  * Halten Sie die Mausgedrückt um den Kartenausschnitt zu verschieben
 
- .. figure:: ../../../screenshots/de/client-user/dimensions2.png
+ .. figure:: ../../../screenshots/de/client-user/dimensions1.png
    :align: center
-
 
 Alle erstellten Bemaßungen werden in der Ablage des Menüpunkts :ref:`Bemaßungen <dimensions>` aufgelistet.
 Dieser Menüpunkt öffnet sich automatisch, wenn das |dimensions| :guilabel:`Bemaßung`-Werkzeug aktiviert wird.
-Am unteren Menüfensterrand befinden sich folgende Funktionen für den Menüpunkt Bemaßungen:
+Durch das Anklicken einer Bemaßung, kann eine individuelle :command:`Beschriftung` vergeben werden.
+Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüpunkt:
 
  * |load| Auswahl laden
  * |save| Auswahl speichern

@@ -4,14 +4,17 @@ Flurstücksuche Werkzeuge
 ========================
 
 Funktionen der :ref:`Flurstücksuche <cadastral_unit_searching>` können prominent in der Werkzeugleiste angeordnet werden.
-Die beiden Funktionen ``Flurstücke über räumliche Suche finden`` und ``Einzelne Flurstücke in der Karte auswählen`` können so direkt aktiviert werden.
+Die beiden Funktionen :guilabel:`Flurstücke über räumliche Suche finden` und :guilabel:`Einzelne Flurstücke in der Karte auswählen` können so direkt aktiviert werden.
 
-.. rubric:: Flurstücke in der Karte über eine räumliche Suche finden
+Flurstücke in der Karte über eine räumliche Suche finden
+--------------------------------------------------------
 
-Mit Hilfe des Werkzeuges |spatial_search| ``Flurstücke über räumliche Suche finden`` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln.
+**Funktion:**
+
+Mit Hilfe des Werkzeuges |spatial_search| :guilabel:`Flurstücke über räumliche Suche finden` ist es möglich, Flurstücke durch das Zeichnen von Geometrien zu ermitteln.
 Es öffnet sich in der Toolbar die Leiste für die ``Räumliche Suche`` mit dem Verweis, dass nun in den Flurstücken gesucht wird.
 
-**Beispiel: Auswahl Flurstücke durch Linie**
+**Bedienung:**
 
 Wählen Sie das Tool Linie aus. Zeichnen Sie nun parallel zu einer Straße eine Linie und schließen Sie diese mit einem Doppelklick ab.
 Anschließend werden Ihnen die Flurstücke in den Ergebnissen aufgelistet, welche von der Linie geschnitten werden. Auf dem Screenshot unten sieht man ein mögliches Ergebnis.
@@ -19,16 +22,23 @@ Anschließend werden Ihnen die Flurstücke in den Ergebnissen aufgelistet, welch
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_area_search.png
    :align: center
 
-.. rubric:: Flurstücke in der Karte selektieren
+Flurstücke in der Karte selektieren
+-----------------------------------
 
-Das Werkzeug |select| ``Einzelne Flurstücke in der Karte wählen`` ermöglicht die Selektierung einzelner Flurstücke.
+**Funktion:**
+
+Das Werkzeug |select| :guilabel:`Einzelne Flurstücke in der Karte wählen` ermöglicht die Selektierung einzelner Flurstücke.
+
+**Bedienung:**
+
 Sobald das Werkzeug aktiviert ist, können Sie per Mausklick gewünschte Flurstücke aussuchen, welche dann in der Ablage aufgelistet werden.
 
  .. figure:: ../../../screenshots/de/client-user/cadastral_unit_searching_5.png
    :align: center
 
-.. note::
-  Die Längeneinheit kann individuell angepasst werden.
+.. admonition:: Konfigurationsmöglichkeiten
+
+ Die Längeneinheit kann individuell angepasst werden.
 
  .. |dimensions| image:: ../../../images/gbd-icon-bemassung-02.svg
    :width: 30em

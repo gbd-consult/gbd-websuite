@@ -3,18 +3,22 @@
 GeKoS
 =====
 
-GeKos ist ein Anbieter für kommunale Software Lösungen. Das |gkos| ``GeKoS``-Werkzeug ist eine Schnittstelle zum Einbinden dieser externen Fachschale in die GBD WebSuite.
+**Funktion:**
+
+GeKos ist ein Anbieter für kommunale Software Lösungen. Das |gkos| :guilabel:`GeKoS`-Werkzeug ist eine Schnittstelle zum Einbinden dieser externen Fachschale in die GBD WebSuite.
 Falls Sie mit GeKoS zusammenarbeiten, können Sie mit Hilfe dieses Werkzeugs, Daten und Informationen einbinden, verwalten und weiterleiten.
 Änderungen werden in der GBD WebSuite übernommen, sowie an die Gekos Software übermittelt.
-
-.. figure:: ../../../screenshots/de/client-user/gkos1.png
-  :align: center
-
 Eingebundene Daten stehen Ihnen als eigene Layer zur Verfügung. In diesem Beispiel wurden via Gekos Baugenehmigungsverfahren eingebunden,
 welche konkreten Flurstücken aus einem anderen Layer zugeordnet sind. Diese Baugenehmigungsverfahren können in der GBD WebSuite eingesehen und editiert werden.
-Eine häufige Aufgabe bei diesen Verfahren ist es, die Vorgangskoordinaten zu ermitteln. Hierzu wurden drei Icons mit Funktionen in die Gekos Maske eingebunden.
 
-.. figure:: ../../../screenshots/de/client-user/gkos2.png
+.. figure:: ../../../screenshots/de/client-user/gkos11.png
+  :align: center
+
+**Bedienung:**
+
+Die Ermittlung der Vorgangskoordinate ist eine gefragte Aufgabe bei diesen Verfahren. Hierzu wurden drei Icons mit Funktionen in die Gekos Maske eingebunden.
+
+.. figure:: ../../../screenshots/de/client-user/gkos22.png
   :align: center
 
 * |1| Über dieses Icon können Sie die Karte auf die vorhandene Vorgangskoordinate fokussieren.
@@ -25,14 +29,16 @@ Eine häufige Aufgabe bei diesen Verfahren ist es, die Vorgangskoordinaten zu er
 Die Symbolisierung und Beschriftung der Gekos Daten bzw. der Objekte eines Gekos Layers werden in QGIS konfiguriert.
 Dabei stehen sämtliche QGIS Darstellungsoptionen zur Verfügung.
 
-.. figure:: ../../../screenshots/de/client-user/gkos4.png
+.. figure:: ../../../screenshots/de/client-user/gkos44.png
   :align: center
 
-Die Suchfunktion der GBD WebSuite kann so eingerichtet werden, dass eine Suche die Attributwerte der Gekos Objekte mit einbezieht.
-So können Sie durch ein einziges Schlagwort einen Vorgang finden und sich anzeigen lassen.
+.. admonition:: Konfigurationsmöglichkeiten
 
-.. figure:: ../../../screenshots/de/client-user/gkos3.png
-  :align: center
+ Die Suchfunktion der GBD WebSuite kann so eingerichtet werden, dass eine Suche die Attributwerte der Gekos Objekte mit einbezieht.
+ So können Sie durch ein einziges Schlagwort einen Vorgang finden und sich anzeigen lassen.
+
+ ..   .. figure:: ../../../screenshots/de/client-user/gkos3.png
+    :align: center
 
 Für zusätzliche Informationen schauen Sie gerne auch unter: https://www.gekos.de/
 

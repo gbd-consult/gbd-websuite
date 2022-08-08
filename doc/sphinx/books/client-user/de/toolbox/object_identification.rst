@@ -25,11 +25,6 @@ Welche Objekte abgefragt werden können, wird im |layers| :guilabel:`Layer` Men�
 Durch die Auswahl eines spezifischen Layers ist die Abfrage auf ausschließlich diesen :ref:`Layer <map_element>` möglich.
 Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe möglich.
 
-.. admonition:: Konfigurationsmöglichkeiten
-
- - Hier könnten Infos zu Konfigurationen in Stichpunkten stehen
- - Hier könnten Infos zu Konfigurationen in Stichpunkten stehen
- - Hier könnten Infos zu Konfigurationen in Stichpunkten stehen
 
  .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
    :width: 30em

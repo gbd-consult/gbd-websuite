@@ -16,7 +16,7 @@ Wenn Sie mit Hilfe des Werkzeuges |dimensions| ``Bemaßung`` Objekte gezeichnet 
 Hier findet eine Auflistung aller gezeichneten Bemaßungen statt.
 Durch Klicken auf |fokus| wird auf das gewählte Objekt gezoomt. Durch Klicken auf |delete| wird dieses Objekt gelöscht.
 
-.. figure:: ../../../screenshots/de/client-user/dimensions_menue.png
+.. figure:: ../../../screenshots/de/client-user/dimensions.png
   :align: center
 
 Unter den Objekten finden Sie Optionen, die sich auf alle aufgelisteten Objekte beziehen.

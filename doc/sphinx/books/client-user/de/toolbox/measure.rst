@@ -3,16 +3,21 @@
 Markieren & Messen
 ==================
 
-Beim Aktivieren des |measure| ``Markieren & Messen``-Werkzeugs öffnet sich automatisch der Menüpunkt :ref:`Markierungen <markings>` in der Menüleiste.
-Unter diesem Menüpunkt werden alle erstellten Objekte aufgelistet.
+**Funktion:**
 
-Das ``Markieren & Messen``-Werkzeug kann mit Hilfe von fünf verschiedenen Geometrischen Formen angewendet werden:
+Mit dem |measure| :guilabel:`Markieren & Messen`-Werkzeug ist es möglich, Punkte zu markieren, sowie Strecken und Flächen zu messen.
 
-**Punktmarkierung** |point|,
-**Distanzmessung** |distance|,
-**Rechteck-** |quadrat|,
-**Polygon-** |polygon|,
-und **Kreisflächenmessung** |measurecircle|
+
+**Bedienung:**
+
+Beim Aktivieren des |measure| :guilabel:`Markieren & Messen`-Werkzeugs öffnet sich automatisch der Menüpunkt :ref:`Markierungen <markings>` in der Menüleiste.
+Unter diesem Menüpunkt werden alle erstellten Objekte aufgelistet. Es stehen fünf verschiedene Geometrien zur Verfügung:
+
+ * |point| :command:`Punktmarkierung`
+ * |distance| :command:`Distanzmessung`
+ * |quadrat| :command:`Rechteckflächenmessung`
+ * |polygon| :command:`Polygonflächenmessung`
+ * |measurecircle| :command:`Kreisflächenmessung`
 
 .. figure:: ../../../screenshots/de/client-user/marking_tool.png
   :align: center
