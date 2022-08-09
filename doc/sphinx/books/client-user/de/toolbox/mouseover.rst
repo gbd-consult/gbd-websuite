@@ -14,11 +14,11 @@ Wählen Sie das Werkzeug in der Werkzeugleiste an.
 Halten Sie jetzt den Mauszeiger für mindestens 1,5 Sekunden auf das gewünschte Objekt.
 Automatisch öffnen sich die Objekteigenschaften im Pop-up Fenster.
 
-Unter |options| ``Aufgaben`` stehen weitere Funktionen zur Verfügung:
+Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
 
- * |fokus| :guilabel:`Hinzoomen`
- * |measure| :guilabel:`Markieren und Messen`
- * |select| :guilabel:`Auswählen`
+* |fokus| :ref:`Hinzoomen <navigation>`
+* |measure| :ref:`Markieren und Messen <measure>`
+* |select| :ref:`Auswählen <selecting>`
 
 .. figure:: ../../../screenshots/de/client-user/object_identification_2.png
   :align: center

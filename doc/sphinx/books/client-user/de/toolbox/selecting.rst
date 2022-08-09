@@ -16,7 +16,6 @@ Wenn Sie ein Objekt ein zweites mal Anklicken wird die Selektion aufgehoben.
 .. figure:: ../../../screenshots/de/client-user/select1.png
   :align: center
 
-
 Alle selektierten Objekte werden in der Ablage des Menüpunkts :ref:`Auswahl <select>` aufgelistet.
 Dieser Menüpunkt öffnet sich automatisch, wenn das |select| :guilabel:`Auswählen`-Werkzeug aktiviert wird.
 Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüpunkt:
@@ -24,6 +23,13 @@ Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüp
  * |load| Auswahl laden
  * |save| Auswahl speichern
  * |delete_marking| Auswahl löschen
+
+Beim Anwählen eines Objekts in der Liste öffnet sich automatisch das Pop-up Fenster mit den Objekteigenschaften.
+Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
+
+* |fokus| :ref:`Hinzoomen <navigation>`
+* |measure| :ref:`Markieren und Messen <measure>`
+* |select| :ref:`Auswählen <selecting>`
 
 .. admonition:: Konfigurationsmöglichkeiten
 
@@ -37,3 +43,9 @@ Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüp
    :width: 30em
  .. |delete_marking| image:: ../../../images/sharp-delete_forever-24px.svg
      :width: 30em
+ .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
+   :width: 30em
+ .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
+   :width: 30em
+ .. |options| image:: ../../../images/round-settings-24px.svg
+   :width: 30em

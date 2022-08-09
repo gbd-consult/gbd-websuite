@@ -12,11 +12,11 @@ Mit Hilfe des |info| :guilabel:`Abfragen`-Werkzeugs werden die Eigenschaften von
 Markieren Sie mit der linken Maustaste ein Objekt im Kartenfenster.
 Es öffnet sich ein Pop-up Fenster, in dem die Objekteigenschaften angezeigt werden.
 
-Unter |options| ``Aufgaben`` stehen weitere Funktionen zur Verfügung:
+Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
 
- * |fokus| :guilabel:`Hinzoomen`
- * |measure| :guilabel:`Markieren und Messen`
- * |select| :guilabel:`Auswählen`
+* |fokus| :ref:`Hinzoomen <navigation>`
+* |measure| :ref:`Markieren und Messen <measure>`
+* |select| :ref:`Auswählen <selecting>`
 
 .. figure:: ../../../screenshots/de/client-user/object_identification_2.png
   :align: center
@@ -24,7 +24,6 @@ Unter |options| ``Aufgaben`` stehen weitere Funktionen zur Verfügung:
 Welche Objekte abgefragt werden können, wird im |layers| :guilabel:`Layer` Menü definiert.
 Durch die Auswahl eines spezifischen Layers ist die Abfrage auf ausschließlich diesen :ref:`Layer <map_element>` möglich.
 Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe möglich.
-
 
  .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
    :width: 30em
