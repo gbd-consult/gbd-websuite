@@ -12,8 +12,8 @@ Hinweise zur Dokumentation
   * Darstellung der Bedienung mit Hilfe von Screenshots und Erläuterungen
   * Anmerkungen zu Bedienungstipps und Konfigurationsmöglichkeiten in Nachrichtenboxen
 
-GBD WebSuite Schreibstile
--------------------------
+Schreibstile
+------------
 In dieser Dokumentation werden zum besseren Verständnis verschiedene Schreibstile verwendet.
 
 +-------------------------------------------------+--------------------------------------------------------------+

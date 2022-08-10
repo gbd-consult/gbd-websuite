@@ -3,8 +3,6 @@
 Anzeigen
 ========
 
-**Funktion:**
-
 Das |mouseover| :guilabel:`Anzeigen`-Werkzeug ermöglicht ein schnelles Abfragen der Objekteigenschaften.
 Ähnlich wie die Funktion des |info| :guilabel:`Abfragen`-Werkzeugs.
 
@@ -14,18 +12,33 @@ Wählen Sie das Werkzeug in der Werkzeugleiste an.
 Halten Sie jetzt den Mauszeiger für mindestens 1,5 Sekunden auf das gewünschte Objekt.
 Automatisch öffnen sich die Objekteigenschaften im Pop-up Fenster.
 
-Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
-
-* |fokus| :ref:`Hinzoomen <navigation>`
-* |measure| :ref:`Markieren und Messen <measure>`
-* |select| :ref:`Auswählen <selecting>`
-
 .. figure:: ../../../screenshots/de/client-user/object_identification_2.png
   :align: center
 
-Welche Objekte abgefragt werden können, wird im |layers| :guilabel:`Layer` Menü definiert.
-Durch die Auswahl eines spezifischen Layers ist die Abfrage auf ausschließlich diesen :ref:`Layer <map_element>` möglich.
+Welche Objekte abgefragt werden können, wird im :ref:`Layer-Menü` definiert.
+Durch die Auswahl eines spezifischen Layers ist die Abfrage auf ausschließlich diesen Layer möglich.
 Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe möglich.
+
+Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
+
+.. figure:: ../../../screenshots/de/client-user/object_identification_22.png
+  :align: center
+
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+| **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+|      |fokus|           |   :guilabel:`Hinzoomen`                              |:ref:`Zoomt zum gewählten Objekt <navigation>`            |
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+|     |measure|          |   :guilabel:`Markieren und Messen`                   |:ref:`Erstellen von Markierungen <measure>`               |
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+|    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+
+.. admonition:: Konfigurationsmöglichkeiten
+
+ * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
+ * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
+ * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
 
  .. |mouseover| image:: ../../../images/gbd-icon-anzeige-01.svg
    :width: 30em

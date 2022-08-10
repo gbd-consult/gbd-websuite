@@ -3,8 +3,6 @@
 Bemaßung
 ========
 
-**Funktion:**
-
 Das |dimensions| :guilabel:`Bemaßung`-Werkzeug ermöglicht die Erfassung von Streckenlängen, durch das Zeichnen von Linien. Ähnlich einer technischen Bemaßung.
 Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet. Zusätzlich kann eine individuelle Beschriftung angehangen werden.
 

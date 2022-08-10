@@ -12,7 +12,6 @@ Mit dem |measure| :guilabel:`Markieren & Messen`-Werkzeug ist es möglich, Posit
 Nach Aktivierung des Tools, öffnet sich unter der Werkzeugleiste ein Dialogfenster.
 Hier kann eine Auswahl zwischen fünf verschiedenen geometrischen Formen getroffen werden:
 
-
 Die |point| **Punktmarkierung** dient dem Markierungszweck. Ein Messen ist hier nicht möglich.
 Aktivieren Sie das Werkzeug und klicken Sie mit der linken Maustaste auf den gewünschten Punkt in der Karte.
 Sofort wird ein Punkt gesetzt, welcher standardmäßig mit X- und Y-Koordinate beschriftet wird.

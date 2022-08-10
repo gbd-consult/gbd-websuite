@@ -3,8 +3,6 @@
 Auswählen
 =========
 
-**Funktion:**
-
 Über das |select| :guilabel:`Auswählen`-Werkzeug werden Objekte in der Karte selektiert.
 
 **Bedienung:**
@@ -27,13 +25,24 @@ Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüp
 Beim Anwählen eines Objekts in der Liste öffnet sich automatisch das Pop-up Fenster mit den Objekteigenschaften.
 Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
 
-* |fokus| :ref:`Hinzoomen <navigation>`
-* |measure| :ref:`Markieren und Messen <measure>`
-* |select| :ref:`Auswählen <selecting>`
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+| **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+|      |fokus|           |   :guilabel:`Hinzoomen`                              |:ref:`Zoomt zum gewählten Objekt <navigation>`            |
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+|     |measure|          |   :guilabel:`Markieren und Messen`                   |:ref:`Erstellen von Markierungen <measure>`               |
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+|    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
++------------------------+------------------------------------------------------+----------------------------------------------------------+
+
+.. figure:: ../../../screenshots/de/client-user/object_identification_22.png
+  :align: center
 
 .. admonition:: Konfigurationsmöglichkeiten
 
- Eine Beschränkung dieser Funktion auf definierte Layer kann konfiguriert werden.
+ * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
+ * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
+ * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
 
  .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
    :width: 30em
