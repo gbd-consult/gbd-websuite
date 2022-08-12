@@ -5,14 +5,12 @@ Werkzeugleiste
 
 Hier finden Sie eine Übersicht über alle Bedienelemente der Werkzeugleiste.
 Sie können ein Objekt in der Liste anwählen und so das dazugehörige Kapitel öffnen.
-Dort finden Sie alle weiteren Informationen zu diesem Bedienelement.
+Dort finden Sie alle weiteren Informationen zu den Bedienelementen.
 
 **Bedienung:**
 
-Wenn ein Werkzeug aktiviert ist, ist das Icon blau markiert.
-Falls Sie die GBD WebSuite schließen und wieder öffnen,
-ist das gleiche Werkzeug aktiv, welches zuletzt aktiviert war. 
-
+Das ein Werkzeug aktiv ist, wird durch die blaue Markierung des Icons dargestellt.
+Beim Starten der GBD WebSuite ist immer das zuletzt verwendete Werkzeug aktiv.
 
 .. toctree::
     :maxdepth: 2

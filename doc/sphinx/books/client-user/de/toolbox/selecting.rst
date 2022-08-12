@@ -18,31 +18,40 @@ Alle selektierten Objekte werden in der Ablage des Menüpunkts :ref:`Auswahl <se
 Dieser Menüpunkt öffnet sich automatisch, wenn das |select| :guilabel:`Auswählen`-Werkzeug aktiviert wird.
 Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüpunkt:
 
- * |load| Auswahl laden
- * |save| Auswahl speichern
- * |delete_marking| Auswahl löschen
++------------------------+------------------------------------------------------+
+| **Symbol**             | **Bedienelement**                                    |
++------------------------+------------------------------------------------------+
+|      |load|            |   ``Auswahl laden``                                  |
++------------------------+------------------------------------------------------+
+|     |save|             |   ``Auswahl speichern``                              |
++------------------------+------------------------------------------------------+
+|    |delete_marking|    |   ``Auswahl löschen``                                |
++------------------------+------------------------------------------------------+
 
 Beim Anwählen eines Objekts in der Liste öffnet sich automatisch das Pop-up Fenster mit den Objekteigenschaften.
 Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
 
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-| **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-|      |fokus|           |   :guilabel:`Hinzoomen`                              |:ref:`Zoomt zum gewählten Objekt <navigation>`            |
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-|     |measure|          |   :guilabel:`Markieren und Messen`                   |:ref:`Erstellen von Markierungen <measure>`               |
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-|    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-
 .. figure:: ../../../screenshots/de/client-user/object_identification_22.png
-  :align: center
+  :align: left
+
+
+.. table::
+ :align: right
+
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ | **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |      |fokus|           |   :guilabel:`Hinzoomen`                              |:ref:`Zoomt zum gewählten Objekt <navigation>`            |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |     |measure|          |   :guilabel:`Markieren und Messen`                   |:ref:`Erstellen von Markierungen <measure>`               |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+
 
 .. admonition:: Konfigurationsmöglichkeiten
 
- * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
- * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
- * `GWS Anzeigen Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
+ * `Auswählen-Werkzeug Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
 
  .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
    :width: 30em

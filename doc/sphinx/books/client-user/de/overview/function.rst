@@ -66,24 +66,3 @@ Die GBD WebSuite als **Applikations Server**:
 
   *  bietet ein Framework für domänenspezifische Erweiterungen
   *  verfügt über eine modulare Architektur zur einfachen Integration von (Fach)-Anwendungen
-
- .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
-   :width: 30em
- .. |add| image:: ../../../images/sharp-control_point-24px.svg
-   :width: 30em
- .. |delete| image:: ../../../images/sharp-remove_circle_outline-24px.svg
-   :width: 30em
- .. |addall| image:: ../../../images/gbd-icon-alle-ablage-01.svg
-   :width: 30em
- .. |tab| image:: ../../../images/sharp-bookmark_border-24px.svg
-   :width: 30em
- .. |save| image:: ../../../images/sharp-save-24px.svg
-   :width: 30em
- .. |load| image:: ../../../images/gbd-icon-ablage-oeffnen-01.svg
-   :width: 30em
- .. |csv| image:: ../../../images/sharp-grid_on-24px.svg
-   :width: 30em
- .. |print| image:: ../../../images/baseline-print-24px.svg
-   :width: 30em
- .. |delete_shelf| image:: ../../../images/sharp-delete_forever-24px.svg
-   :width: 30em
