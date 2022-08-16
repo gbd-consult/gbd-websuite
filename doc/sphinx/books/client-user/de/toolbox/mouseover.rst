@@ -22,17 +22,20 @@ Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe m
 Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
 
 .. figure:: ../../../screenshots/de/client-user/object_identification_22.png
-  :align: center
+ :align: center
 
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-| **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-|      |fokus|           |   :guilabel:`Hinzoomen`                              |:ref:`Zoomen zum gewählten Objekt <navigation>`           |
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-|     |measure|          |   :guilabel:`Markieren und Messen`                   |:ref:`Erstellen von Markierungen <measure>`               |
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
-|    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
-+------------------------+------------------------------------------------------+----------------------------------------------------------+
+.. table::
+ :align: center
+
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ | **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |      |fokus|           |   :guilabel:`Hinzoomen`                              |:ref:`Zoomen zum gewählten Objekt <navigation>`           |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |     |measure|          |   :guilabel:`Markieren und Messen`                   |:ref:`Erstellen von Markierungen <measure>`               |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
 
 .. admonition:: Konfigurationsmöglichkeiten
 

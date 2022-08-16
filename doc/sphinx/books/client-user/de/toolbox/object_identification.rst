@@ -8,8 +8,8 @@ Dazu werden Objekte markiert, von denen dann automatisch die Objekteigenschaften
 
 **Bedienung:**
 
-Aktivieren Sie das Werkzeug.
-Markieren Sie mit der linken Maustaste ein Objekt im Kartenfenster.
+Aktivieren Sie das Werkzeug über das |info| Icon in der Werkzeugleiste.
+Markieren Sie nun mit der linken Maustaste ein Objekt im Kartenfenster.
 Es öffnet sich ein Pop-up Fenster, in dem die Objekteigenschaften angezeigt werden.
 
 .. figure:: ../../../screenshots/de/client-user/object_identification_11.png
@@ -25,7 +25,6 @@ Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
 .. figure:: ../../../screenshots/de/client-user/object_identification_22.png
   :align: center
 
-
 .. table::
  :align: center
 
@@ -39,11 +38,9 @@ Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
  |    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
  +------------------------+------------------------------------------------------+----------------------------------------------------------+
 
-
 .. admonition:: Konfigurationsmöglichkeiten
 
  * `Abfragen-Werkzeug Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
-
 
  .. |info| image:: ../../../images/gbd-icon-abfrage-01.svg
    :width: 30em

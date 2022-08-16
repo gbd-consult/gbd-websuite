@@ -8,30 +8,81 @@ Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen be
 
 **Bedienung:**
 
-Nach Aktivierung des Tools, öffnet sich unter der Werkzeugleiste ein Feld mit folgenden Optionen:
+Nach Aktivierung des Werkzeugs, öffnet sich unter der Werkzeugleiste ein Feld mit folgenden Optionen:
 
- * |arrow| gezeichnete Linie verschieben und bearbeiten
+ .. figure:: ../../../screenshots/de/client-user/dimensions_menu.png
+  :align: center
 
-  * |1| Mit Hilfe der gelb markierten Stützpunkte kann die Bemaßung versetzt werden.
-  * |2| Durch ein Klicken auf den grünen Hilfspunkt, kann sowohl die Bemaßung als auch die Beschriftung auf der Linie verschoben werden.
+.. table::
+ :align: center
 
- * |line| Zeichnen einer Linie, wobei die Länge der Strecke als Beschriftung angelegt wird
+ +------------------------+-------------------------------------------------------------------------------------------------------------+
+ |      **Symbol** | **Beschreibung**                                                                                                   |
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
+ |         |arrow| |   ``Bemaßung auswählen und bearbeiten``                                                                            |
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
+ |* |1| Mit Hilfe der gelb markierten Stützpunkte kann die Bemaßung versetzt werden.                                                    |
+ |* |2| Durch ein Klicken auf den grünen Hilfspunkt, kann sowohl die Bemaßung als auch die Beschriftung auf der Linie verschoben werden.|
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
+ |         |line|  |   ``Bemaßung zeichnen``                                                                                            |
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
+ |* Klicken Sie einmal um einen neuen Stützpunkt zu setzen                                                                              |
+ |* Klicken Sie zweimal um das Zeichnen einer Linie zu beenden                                                                          |
+ |* Halten Sie die Mausgedrückt um den Kartenausschnitt zu verschieben.                                                                 |
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
+ |        |delete| |   ``ausgewählte Bemaßung löschen``                                                                                 |
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
+ |* Durch einen Klick auf das Icon werden die ausgewählten Bemaßungen gelöscht.                                                         |
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
+ |        |cancel| |   ``Beenden``                                                                                                      |
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
+ |* Durch einen Klick auf das Icon wird das Werkzeug deaktiviert.                                                                       |
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
 
-  * Klicken Sie einmal um einen neuen Stützpunkt zu setzen
-  * Klicken Sie zweimal um das Zeichnen einer Linie zu beenden
-  * Halten Sie die Mausgedrückt um den Kartenausschnitt zu verschieben
+.. * |arrow| ``Bemaßung auswählen und bearbeiten``
 
- .. figure:: ../../../screenshots/de/client-user/dimensions1.png
-   :align: center
+..  * |1| Mit Hilfe der gelb markierten Stützpunkte kann die Bemaßung versetzt werden.
+..  * |2| Durch ein Klicken auf den grünen Hilfspunkt, kann sowohl die Bemaßung als auch die Beschriftung auf der Linie verschoben werden.
+
+.. * |line| ``Bemaßung zeichnen``
+
+..  * Klicken Sie einmal um einen neuen Stützpunkt zu setzen
+..  * Klicken Sie zweimal um das Zeichnen einer Linie zu beenden
+..  * Halten Sie die Mausgedrückt um den Kartenausschnitt zu verschieben
+
+.. * |delete| ``ausgewählte Bemaßung löschen``
+
+..  * Durch einen Klick auf das Icon werden die ausgewählten Bemaßungen gelöscht.
+
+.. * |cancel| ``Beenden``
+
+..  * Durch einen Klick auf das Icon wird das Werkzeug deaktiviert.
+
+
+.. figure:: ../../../screenshots/de/client-user/dimensions1.png
+ :align: center
 
 Alle erstellten Bemaßungen werden in der Ablage des Menüpunkts :ref:`Bemaßungen <dimensions>` aufgelistet.
 Dieser Menüpunkt öffnet sich automatisch, wenn das |dimensions| :guilabel:`Bemaßung`-Werkzeug aktiviert wird.
 Durch das Anklicken einer Bemaßung, kann eine individuelle :command:`Beschriftung` vergeben werden.
+
+.. figure:: ../../../screenshots/de/client-user/dimensions_annotate.png
+ :align: center
+
 Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüpunkt:
 
- * |load| Auswahl laden
- * |save| Auswahl speichern
- * |delete_marking| Auswahl löschen
+.. table::
+ :align: center
+
+ +------------------------+------------------------------------------------------+
+ | **Symbol**             | **Bedienelement**                                    |
+ +------------------------+------------------------------------------------------+
+ |      |load|            |   ``Auswahl laden``                                  |
+ +------------------------+------------------------------------------------------+
+ |     |save|             |   ``Auswahl speichern``                              |
+ +------------------------+------------------------------------------------------+
+ |    |delete_marking|    |   ``Auswahl löschen``                                |
+ +------------------------+------------------------------------------------------+
 
 .. admonition:: Konfigurationsmöglichkeiten
 
@@ -56,4 +107,6 @@ Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüp
  .. |load| image:: ../../../images/ic_folder_open_24px.svg
    :width: 30em
  .. |delete_marking| image:: ../../../images/sharp-delete_forever-24px.svg
+   :width: 30em
+ .. |delete| image:: ../../../images/baseline-delete-24px.svg
    :width: 30em

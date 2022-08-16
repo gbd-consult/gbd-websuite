@@ -7,7 +7,6 @@ externe Anwendungen und neue Funktionalitäten modular und effizient zu integrie
 Die Kern-Bibliotheken von Client und Server sind kompakt gehalten. Die gesamte Architektur ist Plugin-basiert.
 Auch die QGIS Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
 
-
 Die aktuelle Funktionalität umfasst:
 
 * QGIS und QGIS Server Integration

@@ -9,7 +9,7 @@ Auswählen
 
 Aktivieren Sie das Werkzeug, indem Sie auf |select| in der Werkzeugleiste klicken.
 Durch ein Anklicken von Objekten werden diese selektiert. Die ausgewählten Objekte werden orange markiert.
-Wenn Sie ein Objekt ein zweites mal Anklicken wird die Selektion aufgehoben.
+Durch ein zweites Anklicken wird die Selektion aufgehoben.
 
 .. figure:: ../../../screenshots/de/client-user/select1.png
   :align: center
@@ -18,25 +18,27 @@ Alle selektierten Objekte werden in der Ablage des Menüpunkts :ref:`Auswahl <se
 Dieser Menüpunkt öffnet sich automatisch, wenn das |select| :guilabel:`Auswählen`-Werkzeug aktiviert wird.
 Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüpunkt:
 
-+------------------------+------------------------------------------------------+
-| **Symbol**             | **Bedienelement**                                    |
-+------------------------+------------------------------------------------------+
-|      |load|            |   ``Auswahl laden``                                  |
-+------------------------+------------------------------------------------------+
-|     |save|             |   ``Auswahl speichern``                              |
-+------------------------+------------------------------------------------------+
-|    |delete_marking|    |   ``Auswahl löschen``                                |
-+------------------------+------------------------------------------------------+
+.. table::
+ :align: center
+
+ +------------------------+------------------------------------------------------+
+ | **Symbol**             | **Bedienelement**                                    |
+ +------------------------+------------------------------------------------------+
+ |      |load|            |   ``Auswahl laden``                                  |
+ +------------------------+------------------------------------------------------+
+ |     |save|             |   ``Auswahl speichern``                              |
+ +------------------------+------------------------------------------------------+
+ |    |delete_marking|    |   ``Auswahl löschen``                                |
+ +------------------------+------------------------------------------------------+
 
 Beim Anwählen eines Objekts in der Liste öffnet sich automatisch das Pop-up Fenster mit den Objekteigenschaften.
 Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
 
 .. figure:: ../../../screenshots/de/client-user/object_identification_22.png
-  :align: left
-
+  :align: center
 
 .. table::
- :align: right
+ :align: center
 
  +------------------------+------------------------------------------------------+----------------------------------------------------------+
  | **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
@@ -47,7 +49,6 @@ Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
  +------------------------+------------------------------------------------------+----------------------------------------------------------+
  |    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
  +------------------------+------------------------------------------------------+----------------------------------------------------------+
-
 
 .. admonition:: Konfigurationsmöglichkeiten
 
