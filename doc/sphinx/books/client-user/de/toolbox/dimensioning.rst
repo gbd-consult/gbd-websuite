@@ -16,7 +16,8 @@ Nach Aktivierung des Werkzeugs, öffnet sich unter der Werkzeugleiste ein Feld m
 .. table::
  :align: center
 
- +------------------------+-------------------------------------------------------------------------------------------------------------+
+
+ +-----------------+--------------------------------------------------------------------------------------------------------------------+
  |      **Symbol** | **Beschreibung**                                                                                                   |
  +-----------------+--------------------------------------------------------------------------------------------------------------------+
  |         |arrow| |   ``Bemaßung auswählen und bearbeiten``                                                                            |
@@ -57,7 +58,6 @@ Nach Aktivierung des Werkzeugs, öffnet sich unter der Werkzeugleiste ein Feld m
 .. * |cancel| ``Beenden``
 
 ..  * Durch einen Klick auf das Icon wird das Werkzeug deaktiviert.
-
 
 .. figure:: ../../../screenshots/de/client-user/dimensions1.png
  :align: center

@@ -14,9 +14,10 @@ Durch ein zweites Anklicken wird die Selektion aufgehoben.
 .. figure:: ../../../screenshots/de/client-user/select1.png
   :align: center
 
-Alle selektierten Objekte werden in der Ablage des Menüpunkts :ref:`Auswahl <select>` aufgelistet.
-Dieser Menüpunkt öffnet sich automatisch, wenn das |select| :guilabel:`Auswählen`-Werkzeug aktiviert wird.
-Am unteren Menüfensterrand befinden sich folgende Funktionen für diesen Menüpunkt:
+
+Der Menüpunkt :ref:`Auswahl <select>` öffnet sich automatisch wenn dass Werkzeug aktiviert wird.
+Alle selektierten Objekte werden in der Ablage dieses Menüpunkts aufgelistet.
+Am unteren Menüfensterrand befinden sich folgende Funktionen für die Ablage:
 
 .. table::
  :align: center

@@ -16,7 +16,7 @@ Es öffnet sich ein Pop-up Fenster, in dem die Objekteigenschaften angezeigt wer
   :align: center
 
 Bei der Aktivierung des Tools ist eine Abfrage auf alle Objekte der aktuell aktiven Layer möglich.
-Im :ref:`Layer-Menü <map_element>` kann definiert werden, welche Objekte abgefragt werden können.
+Im :ref:`Layer <map_element>`-Menü kann definiert werden, welche Objekte abgefragt werden können.
 Durch die Auswahl eines spezifischen Layers ist die Abfrage auf ausschließlich diesen Layer möglich.
 Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe möglich.
 
