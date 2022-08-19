@@ -4,6 +4,7 @@ Auswählen
 =========
 
 Über das |select| :guilabel:`Auswählen`-Werkzeug werden Objekte in der Karte selektiert.
+Die ausgewählten Objekte werden in der Menüleiste unter dem Punkt :ref:`Auswahl <select>` aufgelistet.
 
 **Bedienung:**
 
@@ -13,7 +14,6 @@ Durch ein zweites Anklicken wird die Selektion aufgehoben.
 
 .. figure:: ../../../screenshots/de/client-user/select1.png
   :align: center
-
 
 Der Menüpunkt :ref:`Auswahl <select>` öffnet sich automatisch wenn dass Werkzeug aktiviert wird.
 Alle selektierten Objekte werden in der Ablage dieses Menüpunkts aufgelistet.

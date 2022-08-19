@@ -10,7 +10,6 @@ Dort finden Sie alle weiteren Informationen zu den Bedienelementen.
 **Bedienung:**
 
 Das ein Werkzeug aktiv ist, wird durch die blaue Markierung des Icons dargestellt.
-Beim Starten der GBD WebSuite ist immer das zuletzt verwendete Werkzeug aktiv.
 
 .. toctree::
     :maxdepth: 2
@@ -21,7 +20,6 @@ Beim Starten der GBD WebSuite ist immer das zuletzt verwendete Werkzeug aktiv.
     dimensioning.rst
     dprocon.rst
     print.rst
-    cadastral_unit_tools.rst
     gkos.rst
     measure.rst
     location.rst
@@ -31,7 +29,8 @@ Beim Starten der GBD WebSuite ist immer das zuletzt verwendete Werkzeug aktiv.
 
 .. admonition:: Konfigurationsmöglichkeiten
 
- Die Werkzeugleiste der GBD WebSuite ist modular in Form von Plugins entwickelt.
- So kann jedes Element optional hinzugefügt oder auch herausgenommen werden.
- Die Anordnung auf dem Bildschirm, sowie die Reihenfolge in der Werkzeugleiste kann individuell konfiguriert werden.
- Die Auswahl der zur Verfügung stehenden Bedienelemente ist innerhalb der integrierten Benutzerverwaltung durch den Administrator für jeden Benutzer oder Benutzergruppe anzupassen.
+ * aktives Werkzeug beim Starten der GBD WebSuite
+ * zur Verfügung stehende Werkzeuge
+ * Positionierung auf dem Bildschirm
+ * Reihenfolge in der Werkzeugleiste
+ * zur Verfügung stehende Werkzeuge durch die integrierte Benutzerverwaltung

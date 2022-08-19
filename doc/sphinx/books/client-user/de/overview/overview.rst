@@ -2,28 +2,9 @@
 =========
 
 Die **GBD WebSuite** ist eine webbasierte Open Source GIS Plattform zur Geodatenverarbeitung.
-Sie beinhaltet den GBD WebSuite Server und GBD WebSuite Client und zeichnet sich neben der klassischen WebGIS Funktionalität vor allem dadurch aus,
-externe Anwendungen und neue Funktionalitäten modular und effizient zu integrieren und umfangreiche Konfigurationen zu ermöglichen.
-Die Kern-Bibliotheken von Client und Server sind kompakt gehalten. Die gesamte Architektur ist Plugin-basiert.
-Auch die QGIS Integration ist als Plugin implementiert, welche nativ mit QGIS kommuniziert.
-
-Die aktuelle Funktionalität umfasst:
-
-* QGIS und QGIS Server Integration
-* Caching von Getmap und GetPrint Anfragen
-* Einbinden von Hintergrunddiensten
-* Objektabfragen per Klick oder Mouseover
-* Räumliche Suche von Objekten in der Karte
-* Markieren und Messen in der Karte
-* Bemaßung von Segmentlängen in der Karte
-* Benutzer-Authentifizierung (LDAP-, Postgres- und Datei-basiert)
-* Editieren von Punkten, Linien und Flächen
-* ALKIS Integration (Flurstücksuche, Beauskunftung und Druck)
-* Konfigurierbare Suche (Nominatim, ALKIS-Adressen und Postgres)
-* Schnittstelle zur Fachanwendung D-ProCon (Demographische Analysen)
-* Schnittstelle zur Fachanwendung GekoS Online (E-Government)
-* Drucken in unterschiedlicher Auflösung inklusive redlining
-* Screenshots erstellen im PNG-Format
+Sie ermöglicht das Editieren und Visualisieren von Geodaten.
+QGIS Projekte können auf bequeme Art bereitgestellt und online bearbeitet werden.
+Des Weiteren können externe Anwendungen und neue Funktionalitäten modular und effizient integriert und konfiguriert werden.
 
 .. rubric:: GBD WebSuite Server und Client
 

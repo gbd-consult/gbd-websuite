@@ -16,13 +16,34 @@ Es öffnet sich ein Pop-up Fenster, in dem die Objekteigenschaften angezeigt wer
   :align: center
 
 Bei der Aktivierung des Tools ist eine Abfrage auf alle Objekte der aktuell aktiven Layer möglich.
-Im :ref:`Layer <map_element>`-Menü kann definiert werden, welche Objekte abgefragt werden können.
+In der :ref:`Layer-Menüleiste <map_element>` kann definiert werden, welche Objekte abgefragt werden können.
 Durch die Auswahl eines spezifischen Layers ist die Abfrage auf ausschließlich diesen Layer möglich.
 Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe möglich.
 
-Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
+**Pop-up Bedienung:**
 
 .. figure:: ../../../screenshots/de/client-user/object_identification_22.png
+  :align: center
+
+.. table::
+ :align: center
+
+ +------------------------+--------------------------------------------+-------------------------------------------------------------------+
+ | **Symbol**             | **Bedienelement**                          | **Kurzbeschreibung der Funktion**                                 |
+ +------------------------+--------------------------------------------+-------------------------------------------------------------------+
+ |      |left|            |:guilabel:`Zurück`                          |Navigiert zum vorherigen ausgewählten Objekt                       |
+ +------------------------+--------------------------------------------+-------------------------------------------------------------------+
+ |      |right|           |:guilabel:`Weiter`                          |Navigiert zum nächsten ausgewählten Objekt                         |
+ +------------------------+--------------------------------------------+-------------------------------------------------------------------+
+ |      |options|         |:guilabel:`Aufgaben`                        |Öffnet das Aufgaben Fenster                                        |
+ +------------------------+--------------------------------------------+-------------------------------------------------------------------+
+ |      |cancel|          |:guilabel:`Schließen`                       |Schließt das Pop-up Fenster                                        |
+ +------------------------+--------------------------------------------+-------------------------------------------------------------------+
+
+
+Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
+
+.. figure:: ../../../screenshots/de/client-user/object_identification_33.png
   :align: center
 
 .. table::
@@ -59,4 +80,8 @@ Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
  .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
    :width: 30em
  .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
+   :width: 30em
+ .. |left| image:: ../../../images/baseline-keyboard_arrow_left-24px.svg
+   :width: 30em
+ .. |right| image:: ../../../images/baseline-chevron_right-24px.svg
    :width: 30em

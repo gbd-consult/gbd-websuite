@@ -17,7 +17,7 @@ Hier finden Sie alle Informationen zu den einzelnen Elementen des Menüs:
     :maxdepth: 2
 
     sign_in.rst
-    select.rst
+
     bplan.rst
     dimensions.rst
     editing.rst
