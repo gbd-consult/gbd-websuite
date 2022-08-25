@@ -39,3 +39,8 @@ Unterstützt werden aktuell folgende INSPIRE-Themen:
 
  .. |bplan| image:: ../../../images/bplan.svg
    :width: 30em
+
+.. toctree::
+    :maxdepth: 3
+
+    bplan.rst

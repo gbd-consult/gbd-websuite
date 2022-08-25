@@ -3,32 +3,43 @@
 Anzeigen
 ========
 
-**Funktion:**
-
-Das |mouseover| :guilabel:`Anzeigen`-Werkzeug ermöglicht ein schnelles Abfragen der Objekteigenschaften. 
+Das |mouseover| :guilabel:`Anzeigen`-Werkzeug ermöglicht ein schnelles Abfragen der Objekteigenschaften.
 Ähnlich wie die Funktion des |info| :guilabel:`Abfragen`-Werkzeugs.
 
 **Bedienung:**
 
 Wählen Sie das Werkzeug in der Werkzeugleiste an.
 Halten Sie jetzt den Mauszeiger für mindestens 1,5 Sekunden auf das gewünschte Objekt.
-Automatisch öffnen sich die Objekteigenschaften im Pop-Up Fenster.
-
-Aus welchen Daten gewählt wird, muss vorher durch die Auswahl der Karte unter ``Layer`` festgelegt werden. Es gibt verschiedene Möglichkeiten, die Auswahl genauer zu definieren.
-Es kann ein übergeordneter Layer ausgewählt werden, wodurch die Abfrage auf alle darunter liegenden Layer greift.
+Automatisch öffnen sich die Objekteigenschaften im Pop-up Fenster.
 
 .. figure:: ../../../screenshots/de/client-user/object_identification_1.png
   :align: center
 
-Alternativ kann der unterste Layer in einer Layerstruktur gewählt werden, wodurch die Abfrage ausschließlich auf diese Layer greift.
+Welche Objekte abgefragt werden können, wird im :ref:`Layer-Menü` definiert.
+Durch die Auswahl eines spezifischen Layers ist die Abfrage auf ausschließlich diesen Layer möglich.
+Durch die Auswahl einer Layergruppe, ist die Abfrage auf alle Layer der Gruppe möglich.
 
-.. figure:: ../../../screenshots/de/client-user/object_identification_2.png
-  :align: center
+Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
 
-Wenn mehrere Objekte markiert wurden, kann man über |continue| und
-|back| die einzelnen Informationen anzeigen lassen.
-Des Weiteren kann man über |options| die Auswahl der Objekte auch auf andere Werkzeuge, wie dem ``Auswählen``, ``Räumliche Suche`` und ``Annotieren`` Werkzeug übertragen,
-sowie über das ``Hinzoomen``-Werkzeug fokussiert werden. Über |cancel| ist es möglich die Information zu schließen.
+.. figure:: ../../../screenshots/de/client-user/object_identification_22.png
+ :align: center
+
+.. table::
+ :align: center
+
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ | **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |      |fokus|           |   :guilabel:`Hinzoomen`                              |:ref:`Zoomen zum gewählten Objekt <navigation>`           |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |     |measure|          |   :guilabel:`Markieren und Messen`                   |:ref:`Erstellen von Markierungen <measure>`               |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+
+.. admonition:: Konfigurationsmöglichkeiten
+
+ * `Anzeigen-Werkzeug Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
 
  .. |mouseover| image:: ../../../images/gbd-icon-anzeige-01.svg
    :width: 30em
@@ -41,4 +52,12 @@ sowie über das ``Hinzoomen``-Werkzeug fokussiert werden. Über |cancel| ist es 
  .. |options| image:: ../../../images/round-settings-24px.svg
    :width: 30em
  .. |cancel| image:: ../../../images/baseline-close-24px.svg
+   :width: 30em
+ .. |layers| image:: ../../../images/baseline-layers-24px.svg
+   :width: 30em
+ .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
+   :width: 30em
+ .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
+   :width: 30em
+ .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
    :width: 30em

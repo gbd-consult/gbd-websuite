@@ -3,28 +3,69 @@
 Auswählen
 =========
 
-Über das |select| ``Auswählen``-Werkzeug können Objekte in der Karte selektiert werden.
-Aktivieren Sie das Werkzeug, indem Sie auf |select| in der Werkzeugleiste klicken.
-Jetzt können Sie Objekte anklicken und somit selektieren. Die ausgewählten Objekte werden orange markiert.
-Wenn Sie ein Objekt, ein zweites mal Anklicken, wird die Selektion aufgehoben.
+Über das |select| :guilabel:`Auswählen`-Werkzeug werden Objekte in der Karte selektiert.
+Die ausgewählten Objekte werden in der Menüleiste unter dem Punkt :ref:`Auswahl <select>` aufgelistet.
 
-Alle selektierten Objekte werden in der Ablage des Menüpunkts :ref:`Auswahl <select>` aufgelistet.
-Dieser Menüpunkt öffnet sich automatisch, wenn das ``Auswählen``-Werkzeug aktiviert wird.
+**Bedienung:**
+
+Aktivieren Sie das Werkzeug, indem Sie auf |select| in der Werkzeugleiste klicken.
+Durch ein Anklicken von Objekten werden diese selektiert. Die ausgewählten Objekte werden orange markiert.
+Durch ein zweites Anklicken wird die Selektion aufgehoben.
 
 .. figure:: ../../../screenshots/de/client-user/select1.png
   :align: center
 
-Am unteren Menüfensterrand befinden sich eine Reihe von Funktionen für diesen Menüpunkt.
-Zum einen ist es möglich, die Auswahl zu speichern |save|, eine zuvor abgespeicherte Auswahl erneut zu laden |load|, sowie die Auswahl zu löschen |delete_marking|.
+Der Menüpunkt :ref:`Auswahl <select>` öffnet sich automatisch wenn dass Werkzeug aktiviert wird.
+Alle selektierten Objekte werden in der Ablage dieses Menüpunkts aufgelistet.
+Am unteren Menüfensterrand befinden sich folgende Funktionen für die Ablage:
 
-.. note::
- Es wäre möglich, dieses Werkzeug so zu konfigurieren, dass nur Objekte von gewissen Layern oder nur gewisse Geometrietypen ausgewählt werden können.
+.. table::
+ :align: center
+
+ +------------------------+------------------------------------------------------+
+ | **Symbol**             | **Bedienelement**                                    |
+ +------------------------+------------------------------------------------------+
+ |      |load|            |   ``Auswahl laden``                                  |
+ +------------------------+------------------------------------------------------+
+ |     |save|             |   ``Auswahl speichern``                              |
+ +------------------------+------------------------------------------------------+
+ |    |delete_marking|    |   ``Auswahl löschen``                                |
+ +------------------------+------------------------------------------------------+
+
+Beim Anwählen eines Objekts in der Liste öffnet sich automatisch das Pop-up Fenster mit den Objekteigenschaften.
+Unter |options| :guilabel:`Aufgaben` stehen weitere Funktionen zur Verfügung:
+
+.. figure:: ../../../screenshots/de/client-user/object_identification_22.png
+  :align: center
+
+.. table::
+ :align: center
+
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ | **Symbol**             | **Bedienelement**                                    |          **Kurzbeschreibung der Funktion**               |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |      |fokus|           |   :guilabel:`Hinzoomen`                              |:ref:`Zoomt zum gewählten Objekt <navigation>`            |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |     |measure|          |   :guilabel:`Markieren und Messen`                   |:ref:`Erstellen von Markierungen <measure>`               |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+ |    |select|            |   :guilabel:`Auswählen`                              |:ref:`Auswählen von Objekten <selecting>`                 |
+ +------------------------+------------------------------------------------------+----------------------------------------------------------+
+
+.. admonition:: Konfigurationsmöglichkeiten
+
+ * `Auswählen-Werkzeug Konfigurationen <https://gbd-websuite.de/doc/latest/books/server-admin/de/config/index.html>`_
 
  .. |select| image:: ../../../images/gbd-icon-auswahl-01.svg
    :width: 30em
  .. |save| image:: ../../../images/sharp-save-24px.svg
      :width: 30em
- .. |load| image:: ../../../images/gbd-icon-ablage-oeffnen-01.svg
+ .. |load| image:: ../../../images/ic_folder_open_24px.svg
    :width: 30em
  .. |delete_marking| image:: ../../../images/sharp-delete_forever-24px.svg
      :width: 30em
+ .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
+   :width: 30em
+ .. |fokus| image:: ../../../images/sharp-center_focus_weak-24px.svg
+   :width: 30em
+ .. |options| image:: ../../../images/round-settings-24px.svg
+   :width: 30em

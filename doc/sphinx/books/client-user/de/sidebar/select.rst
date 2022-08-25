@@ -3,27 +3,33 @@
 Auswahl
 =======
 
-Der Menüpunkt |select| :guilabel:`Auswahl` ist ein Ablagebereich für Objekte, die über das |select| :ref:`Auswählen <selecting>`-Werkzeug im Kartenfenster selektiert wurden.
-Die Menüebene wird automatisch geöffnet, wenn das ``Auswählen``-Werkzeug aktiviert wird.
+**Funktion:**
+
+Der Menüpunkt |select| :guilabel:`Auswahl` ist ein Ablagebereich für Objekte, die über
+das |select| :ref:`Auswählen <selecting>`-Werkzeug im Kartenfenster selektiert wurden.
+
+**Bedienung:**
+
+Die Menüebene wird automatisch beim Aktivieren des :guilabel:`Auswählen`-Werkzeugs geöffnet.
+Hier kann eine Übersicht über die von Ihnen ausgewählten Objekte gewonnen werden.
+Am unteren Menüfensterrand befinden sich folgende Funktionen zum Verwalten der Ablage:
+
+ * |load| Auswahl laden
+ * |save| Auswahl speichern
+ * |delete_marking| Auswahl löschen
 
  .. figure:: ../../../screenshots/de/client-user/select1.png
    :align: center
 
-Hier können Sie eine Übersicht über die von Ihnen ausgewählten Objekte gewinnen.
-Alle angewählten und somit aufgelisteten Objekte werden orange markiert.
-Diese Objekte können über |fokus| fokussiert werden oder über das |delete| Icon aus der Auswahl entfernt werden.
-Wenn Sie den Titel eines Objektes anklicken, wird das Objekt rot markiert und es öffnet sich ein zusätzliches Informationsfenster.
+Die aufgelisteten Objekte können über |fokus| fokussiert werden oder über |delete| aus der Auswahl entfernt werden.
+Beim Anwählen des Titels eines Objektes wird das Objekt fokussiert und orange markiert.
+Zusätzlich öffnen sich die Objekteigenschaften im Pop-up Fenster am unteren Bildschirmrand.
+In diesem Pop-up Fenster können die Objekteigenschaften des angewählten Objekts abgelesen werden.
+Außerdem ist es möglich, über |settings| weitere Funktionen auszuwählen:
 
-.. figure:: ../../../screenshots/de/client-user/select2.png
-  :align: center
-
-In diesem Pop-up Fenster können verschiedene Informationen über das angewählte Objekt abgelesen werden. Außerdem ist es möglich, über |settings| weitere Funktionen auszuwählen.
-Die Erklärung für die Funktionen :ref:`Markieren und Messen <measure>` und :ref:`Auswählen <selecting>` entnehmen Sie bitte dem jeweiligen Punkt dieser Dokumentation.
-Über |fokus| ``Hinzoomen`` fokussieren Sie das dazugehörige Objekt.
-
-Am unteren Rand des Menüfensters befinden sich Funktionen zum Verwalten der Ablage.
-Es ist möglich, die Auswahl zu speichern |save| oder eine zuvor abgespeicherte Auswahl erneut zu laden |load|.
-Über |delete_marking| können Sie die gesamte Auswahl löschen.
+ * |fokus| :guilabel:`Hinzoomen`
+ * |measure| :guilabel:`Markieren und Messen`
+ * |select| :guilabel:`Auswählen`
 
  .. |menu| image:: ../../../images/baseline-menu-24px.svg
    :width: 30em
@@ -35,9 +41,11 @@ Es ist möglich, die Auswahl zu speichern |save| oder eine zuvor abgespeicherte 
    :width: 30em
  .. |save| image:: ../../../images/sharp-save-24px.svg
    :width: 30em
- .. |load| image:: ../../../images/gbd-icon-ablage-oeffnen-01.svg
+ .. |load| image:: ../../../images/ic_folder_open_24px.svg
    :width: 30em
  .. |delete_marking| image:: ../../../images/sharp-delete_forever-24px.svg
    :width: 30em
  .. |settings| image:: ../../../images/round-settings-24px.svg
+   :width: 30em
+ .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
    :width: 30em

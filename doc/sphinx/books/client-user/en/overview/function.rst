@@ -5,7 +5,8 @@ Funktionalität
 ..............
 
 Die **GBD WebSuite** bietet eine Vielzahl an Funktionalitäten, welche auf Basis von Plugins zur Verfügung gestellt und flexibel konfiguriert werden können.
-Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebung angepasst oder in diese integriert werden. Die aktuelle Funktionalität umfasst:
+Das Aussehen des GBD WebSuite Clients kann individuell an eine bestehende Umgebung angepasst oder in diese integriert werden.
+Die aktuelle Funktionalität umfasst:
 
 * QGIS und QGIS Server Integration
 * Caching von Getmap und GetPrint Anfragen

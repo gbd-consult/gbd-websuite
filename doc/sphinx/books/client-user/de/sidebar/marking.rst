@@ -90,7 +90,7 @@ Das Laden |load| und Abspeichern |save| der gewählten Markierungen ist ebenfall
    :width: 30em
  .. |save| image:: ../../../images/sharp-save-24px.svg
    :width: 30em
- .. |load| image:: ../../../images/gbd-icon-ablage-oeffnen-01.svg
+ .. |load| image:: ../../../images/ic_folder_open_24px.svg
    :width: 30em
  .. |measure| image:: ../../../images/gbd-icon-markieren-messen-01.svg
    :width: 30em
