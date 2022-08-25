@@ -8,7 +8,7 @@ module.exports = v => ({
         width: '100%',
         backgroundColor: v.SIDEBAR_BODY_BACKGROUND,
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         zIndex: 3,
         ...v.SHADOW,
         ...v.TRANSITION('transform', 'padding-bottom'),
@@ -17,7 +17,7 @@ module.exports = v => ({
     '.modSidebarResizeHandle': {
         flexShrink: 0,
         height: '100%',
-        width: '20px',
+        width: '4px',
         backgroundColor: v.SIDEBAR_AUX_TOOLBAR_BACKGROUND,
         cursor: 'ew-resize'
     },
@@ -33,7 +33,8 @@ module.exports = v => ({
     '.modSidebarLeftContainer': {
         flexGrow: 1,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
+        overflow: 'hidden',
     },
 
     '.modSidebarHeaderButton': {

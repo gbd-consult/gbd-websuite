@@ -187,11 +187,11 @@ class SidebarView extends gws.View<SidebarProps> {
             <div {...gws.tools.cls('modSidebar', this.props.sidebarVisible && 'isVisible')}
                 style={{ width: this.props.controller.getSidebarWidth() }}
             >
+                <Header {...this.props} />
                 <div {...gws.tools.cls('modSidebarLeftContainer')}>
-                    <Header {...this.props} />
                     <Body {...this.props} />
+                    {this.props.controller.getSidebarResizable() && <SidebarResizeHandle {...this.props}/>}
                 </div>
-                {this.props.controller.getSidebarResizable() && <SidebarResizeHandle {...this.props}/>}
             </div>
         </React.Fragment>
     }
@@ -260,7 +260,7 @@ class SidebarController extends gws.Controller {
         let onMove = e => {
             e.preventDefault()
             if(this.getValue('sidebarResizing')) {
-                let newWidth = e.clientX+10; //+10 is half the handle width, so we grab the handle in the middle
+                let newWidth = e.clientX+2; //+2 is half the handle width, so we grab the handle in the middle
                 if(newWidth > 300 //minimum width of sidebar before some controls break
                     && newWidth < window.innerWidth*0.9 //maximum width of sidebar
                     ) {
