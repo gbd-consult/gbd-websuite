@@ -20,3 +20,5 @@ __build*
 __pycache__
 _autosummary
 node_modules
+*bundle.json
+*bundle.js

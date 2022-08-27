@@ -4,6 +4,8 @@ DOC     = $(ROOT)/doc
 APP     = $(ROOT)/app
 INSTALL = $(ROOT)/install
 
+SPEC_BUILD = $(APP)/__build
+
 PYTHON = python3
 
 SPHINXOPTS = -v -n -b html -j auto -c $(DOC)/sphinx
@@ -58,7 +60,7 @@ mypy:
 	cd $(CWD)
 
 spec:
-	$(PYTHON) $(APP)/gws/spec/generator/run.py build --manifest "$(MANIFEST)" $(ARGS)
+	mkdir -p $(SPEC_BUILD) && $(PYTHON) $(APP)/gws/spec/make.py --out $(SPEC_BUILD) --manifest "$(MANIFEST)" $(ARGS)
 
 client-help:
 	cd $(APP)/js && npm run help && cd $(CWD)

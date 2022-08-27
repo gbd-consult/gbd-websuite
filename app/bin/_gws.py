@@ -3,24 +3,94 @@ import sys
 import gws
 import gws.spec.runtime
 
-gws.ensure_system_dirs()
+
+def main(argv):
+    gws.ensure_system_dirs()
+
+    args, params = parse_args(argv[1:])
+
+    verbose = params.get('v') or params.get('verbose')
+    if verbose:
+        params.set('logLevel', 'DEBUG')
+    elif not params.get('logLevel'):
+        params.set('logLevel', 'INFO')
+
+    gws.log.set_level(params.get('logLevel'))
+
+    try:
+        specs = gws.spec.runtime.create(params.get('manifest'), read_cache=True, write_cache=True)
+    except:
+        sys.stdout.flush()
+        gws.log.exception()
+        return 255
+
+    # all cli command lines are "gws command subcommand --opt1 val --opt2 ...."
+
+    if not args:
+        return usage(specs, None, None)
+
+    if len(args) == 1:
+        return usage(specs, args[0], None)
+
+    if len(args) > 2:
+        return usage(specs, args[0], args[1])
+
+    if params.get('h') or params.get('help'):
+        return usage(specs, args[0], args[1])
+
+    # 'gws auth password' => 'authPassword'
+    cmd_name = camelize(args[0] + '-' + args[1])
+    cmd_desc = command_descriptor(specs, cmd_name, params)
+    if not cmd_desc:
+        return usage(specs, args[0], args[1])
+
+    try:
+        prn('')
+        cmd_desc.methodPtr(cmd_desc.request)
+        prn('')
+    except:
+        sys.stdout.flush()
+        gws.log.exception()
+        return 255
 
 
-def prn(msg):
-    sys.stdout.write(msg + '\n')
-    sys.stdout.flush()
+def usage(specs, cmd1, cmd2):
+    docs = specs.cli_docs('en')
+
+    s = f'GWS version {specs.version}'
+    prn('')
+    prn(s)
+    prn('~' * len(s))
+    prn('')
+
+    show = [d for d in docs if d[0] == cmd1 and d[1] == cmd2]
+    if not show:
+        show = [d for d in docs if d[0] == cmd1]
+    if not show:
+        show = docs
+
+    for d in sorted(show):
+        prn(d[2])
+
+    return 1
 
 
-def camelize(p):
-    parts = []
-    for s in p.split('-'):
-        s = s.strip()
-        if s:
-            parts.append(s[0].upper() + s[1:])
-    if not parts:
-        return ''
-    s = ''.join(parts)
-    return s[0].lower() + s[1:]
+def command_descriptor(specs, cmd_name, params):
+    cmd_desc = specs.command_descriptor('cli', cmd_name)
+    if not cmd_desc:
+        return None
+
+    try:
+        cmd_desc.request = specs.read(params, cmd_desc.tArg, strict_mode=False)
+    except gws.spec.ReadError:
+        return None
+
+    root = gws.create_root_object(specs)
+    obj_desc = specs.object_descriptor(cmd_desc.tOwner)
+    gws.load_class(obj_desc)
+    cmd_desc.methodPtr = getattr(obj_desc.classPtr(), cmd_desc.methodName)
+
+    return cmd_desc
 
 
 def parse_args(argv):
@@ -44,85 +114,22 @@ def parse_args(argv):
     return args, gws.Data(kwargs)
 
 
-def print_usage_and_fail(specs, ext_type, cmd):
-    docs = specs.cli_docs('en')
-
-    prn(f'\nGWS version {gws.VERSION}\n')
-
-    disp = [d for d in docs if d[0] == ext_type and d[1] == cmd]
-    if not disp:
-        disp = [d for d in docs if d[0] == ext_type]
-    if not disp:
-        disp = docs
-
-    for d in sorted(disp):
-        prn(d[2])
-
-    return 1
+def camelize(p):
+    parts = []
+    for s in p.split('-'):
+        s = s.strip()
+        if s:
+            parts.append(s[0].upper() + s[1:])
+    if not parts:
+        return ''
+    s = ''.join(parts)
+    return s[0].lower() + s[1:]
 
 
-def dispatch(root, ext_type, cmd, params):
-    # e.g. 'gws auth password' => 'authPassword'
-    cmd_name = camelize(ext_type + '-' + cmd)
-
-    try:
-        command_desc = root.specs.parse_command(cmd_name, 'cli', params, with_strict_mode=False)
-    except gws.spec.runtime.Error:
-        return print_usage_and_fail(root.specs, ext_type, cmd)
-
-    if not command_desc:
-        return print_usage_and_fail(root.specs, ext_type, cmd)
-
-    handler = root.create_object(command_desc.class_name)
-    prn('')
-    res = getattr(handler, command_desc.function_name)(command_desc.params)
-    prn('')
-    return res
-
-
-def main():
-    args, params = parse_args(sys.argv[1:])
-
-    verbose = params.get('v') or params.get('verbose')
-    if verbose:
-        params.set('logLevel', 'DEBUG')
-    elif not params.get('logLevel'):
-        params.set('logLevel', 'INFO')
-
-    gws.log.set_level(params.get('logLevel'))
-
-    # all cli command lines are "gws ext_type command_name --opt1 val --opt2 ...."
-
-    try:
-        if args[0] == 'spec':
-            gws.spec.runtime.create_and_store(params.get('manifest'))
-            return 0
-        else:
-            specs = gws.spec.runtime.load(params.get('manifest'))
-    except:
-        sys.stdout.flush()
-        gws.log.exception()
-        return 255
-
-    if len(args) == 0:
-        return print_usage_and_fail(specs, None, None)
-
-    if len(args) == 1:
-        return print_usage_and_fail(specs, args[0], None)
-
-    if len(args) > 2:
-        return print_usage_and_fail(specs, args[0], args[1])
-
-    if params.get('h') or params.get('help'):
-        return print_usage_and_fail(specs, args[0], args[1])
-
-    try:
-        return dispatch(gws.create_root_object(specs), args[0], args[1], params)
-    except:
-        sys.stdout.flush()
-        gws.log.exception()
-        return 255
+def prn(msg):
+    sys.stdout.write(msg + '\n')
+    sys.stdout.flush()
 
 
 if __name__ == '__main__':
-    sys.exit(main() or 0)
+    sys.exit(main(sys.argv) or 0)
