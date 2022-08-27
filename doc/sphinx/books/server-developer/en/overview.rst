@@ -63,7 +63,7 @@ Data and friends
 All non-object structures in GWS inherit from ``gws.Data``, which is a dictionary-alike bag of values. ``gws.Data`` has some descendants for specific purposes:
 
 - ``gws.Config`` - configuration objects
-- ``gws.Params`` - request parameters
+- ``gws.Request`` - request parameters
 - ``gws.Response`` - request responses
 - ``gws.Props`` - structures returned by ``props`` getters
 

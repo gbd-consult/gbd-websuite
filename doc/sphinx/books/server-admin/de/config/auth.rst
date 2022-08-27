@@ -183,7 +183,7 @@ Sendet die Zugangsdaten als eine JSON-Struktur an den Server Endpunkt. Bei der p
 
 Im Browser wird zur Bearbeitung eines Login-Formulars eine Javascript Funktion benötigt, die den Endpunkt mittels AJAX aufruft. Eine beispielhafte Vorlage des Formulars kann wie folgt aussehen: ::
 
-    @if user.is_guest
+    @if user.isGuest
         ## Login Formular für nicht-eingeloggte Nutzer
 
         <form onsubmit="gwsLogin()">

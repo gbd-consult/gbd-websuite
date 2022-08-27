@@ -78,7 +78,7 @@ Here's a code snippet that illustrates the above concepts ::
 
     # define the parameters structure for the `hello` command
 
-    class HelloParams(gws.Params):
+    class HelloParams(gws.Request):
         color: str  #: color for the message
 
     # define the response structure for `hello`
@@ -102,7 +102,7 @@ Here's a code snippet that illustrates the above concepts ::
         # request handler method for `hello`
         # all action handlers accept the request object and parameters structure
 
-        def api_hello(self, req: gws.IWebRequest, p: HelloParams) -> HelloResponse:
+        def api_hello(self, req: gws.IWebRequester, p: HelloParams) -> HelloResponse:
 
             # check the params
 
@@ -112,7 +112,7 @@ Here's a code snippet that illustrates the above concepts ::
 
             # use the request, the params and the preconfigured value to create a message
 
-            message = f'<font color={p.color}>{self.hello}, {req.user.display_name}</font>'
+            message = f'<font color={p.color}>{self.hello}, {req.user.displayName}</font>'
 
             # create and return the response object
 
